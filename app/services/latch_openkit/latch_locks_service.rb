@@ -114,7 +114,8 @@ module LatchOpenkit
           "endTime": @end_time&.to_i,
           "doorUuids": @key_ids,
           "shareable": true,
-          "passcodeType": "PERMANENT"
+          "passcodeType": "PERMANENT",
+          "shouldNotify": false
         }
       end
 
