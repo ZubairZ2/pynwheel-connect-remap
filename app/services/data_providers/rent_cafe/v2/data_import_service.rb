@@ -152,7 +152,7 @@ module DataProviders
 
           def yardi_rent_cafe_rent_matrix(property_code, apartment_name, available_date)
             begin
-              rent_matrix = get_apartment_pricing_details(property_code, apartment_name)
+              rent_matrix = get_apartment_pricing_details(property_code, apartment_name, available_date)
 
               if rent_matrix.present?
                 uniq_terms = rent_matrix.map{|x| x["term"].to_i }.uniq

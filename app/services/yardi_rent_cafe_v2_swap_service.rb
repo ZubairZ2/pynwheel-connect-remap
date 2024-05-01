@@ -1,4 +1,9 @@
 class YardiRentCafeV2SwapService < BaseService
+  attr_reader :credentials
+
+  def initialize(credentials)
+    @credentials = credentials
+  end
 
   def perform
     import_yardirentcafe_floorplans
@@ -9,21 +14,17 @@ class YardiRentCafeV2SwapService < BaseService
   private
 
     def import_yardirentcafe_units
-      property_codes = credentials.p_code.split(',') rescue []
+      property_codes = @credentials.p_code.split(',') rescue []
       property_codes.each do |property_code|
         begin
           response = get_appartments_availability(property_code)
           if response.present?
             response.each do |r|
               begin
-                unit = Unit.where(community_id: credentials.community_id, marketing_name: r["apartmentName"])
-                
-                if unit.count > 1
-                  unit = Unit.where(community_id: credentials.community_id, marketing_name: r["apartmentName"], floorplan_id: Floorplan.find_by(name: r["floorplanName"]).provider_floorplan_id)
-                end
+                unit = fetch_unit_record(r)
+                puts "\n#{unit&.marketing_name}\n"
 
                 if unit.present?
-                  unit = unit.first
                   unit.provider = "yardirentcafe_new"
                   unit.provider_unit_id = r["apartmentId"]
                   unit.property_id = r["propertyId"]
@@ -65,14 +66,8 @@ class YardiRentCafeV2SwapService < BaseService
 
                   unit.save
                 else
-                  dup = Unit.find_by(community_id: credentials.community_id, provider_unit_id: r["apartmentId"])
-                  
-                  if dup.present?
-                    dup.destroy
-                  end
-
                   unit = Unit.new
-                  unit.community_id = credentials.community_id
+                  unit.community_id = @credentials.community_id
                   unit.provider = "yardirentcafe_new"
                   unit.property_id = r["propertyId"]
                   unit.provider_unit_id = r["apartmentId"]
@@ -115,7 +110,8 @@ class YardiRentCafeV2SwapService < BaseService
                   unit.save
                 end
               rescue => e
-                ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
+                puts "\n\n\n #{e.message} \n\n\n"
+                ExceptionNotifier.notify_exception(e, data: {community_id: @credentials.community_id})
               end
             end
           else
@@ -126,22 +122,18 @@ class YardiRentCafeV2SwapService < BaseService
     end
 
     def import_yardirentcafe_floorplans
-      property_codes = credentials.p_code.split(',') rescue []
+      property_codes = @credentials.p_code.split(',') rescue []
       property_codes.each do |property_code|
         begin
           response = get_floorplan_details(property_code)
 
           if response.present?
             response.each do |r|
-              fp = Floorplan.where(community_id: credentials.community_id, name: r["floorplanName"])
-
-              if fp.count > 1
-                fp = Floorplan.where(community_id: credentials.community_id,name: r["floorplanName"],square_feet: r["minimumSQFT"],bedrooms: r["beds"],bathrooms: r["baths"])
-              end
-
+              fp = fetch_floorplan_record(r)
+              puts "\n#{fp&.name}\n"
               if fp.present?
-                fp = fp.first
                 fp.provider = "yardirentcafe_new"
+                fp.name = r["floorplanName"]
                 fp.provider_floorplan_id = r["floorplanId"]
                 fp.property_id = r["propertyId"]
                 fp.provider_floorplan_id = r["floorplanId"]
@@ -160,14 +152,8 @@ class YardiRentCafeV2SwapService < BaseService
                 fp.deposit = r["minimumDeposit"]
                 fp.save(validate: false)
               else
-                dup = Floorplan.find_by(community_id: credentials.community_id,provider_floorplan_id: r["floorplanId"])
-
-                if dup.present?
-                  dup.destroy
-                end
-
                 fp = Floorplan.new
-                fp.community_id = credentials.community_id
+                fp.community_id = @credentials.community_id
                 fp.provider = "yardirentcafe_new"
                 fp.property_id = r["propertyId"]
                 fp.provider_floorplan_id = r["floorplanId"]
@@ -188,7 +174,6 @@ class YardiRentCafeV2SwapService < BaseService
                 fp.save(validate: false)
               end
             end
-          else
           end
         rescue => e
         end
@@ -218,39 +203,19 @@ class YardiRentCafeV2SwapService < BaseService
     end
 
     def rename_provider
-      fp = Floorplan.where(community_id: credentials.community_id)
-      fp.each do |d|
-        unless d.provider == "yardirentcafe_new"
-          d.destroy
-        end
-      end
-      unit = Unit.where(community_id: credentials.community_id)
-      unit.each do |d|
-        unless d.provider == "yardirentcafe_new" || d.provider == "manually"
-          d.destroy
-        end
-      end
-      unit = Unit.where(community_id: credentials.community_id)
-      unit.each do |d|
-        if d.provider == "yardirentcafe_new"
-          d.provider = "yardirentcafe"
-          d.save(validate: false)
-        end
-      end
+      property_floorplans = Floorplan.where(community_id: @credentials.community_id)
+      property_units = Unit.where(community_id: @credentials.community_id)
 
-      fp = Floorplan.where(community_id: credentials.community_id)
-      fp.each do |d|
+      property_floorplans.where.not(provider: "yardirentcafe_new").destroy_all
+      property_units.where.not(provider: "yardirentcafe_new").destroy_all
 
-        if d.provider == "yardirentcafe_new"
-          d.provider = "yardirentcafe"
-          d.save(validate: false)
-        end
-      end
+      property_floorplans.where(provider: "yardirentcafe_new").update_all(provider: "yardirentcafe")
+      property_units.where(provider: "yardirentcafe_new").update_all(provider: "yardirentcafe")
     end
 
-    def yardi_rent_cafe_rent_matrix(property_code, apartment_name)
+    def yardi_rent_cafe_rent_matrix(property_code, apartment_name, available_date)
       begin
-        rent_matrix = get_apartment_pricing_details(property_code, apartment_name)
+        rent_matrix = get_apartment_pricing_details(property_code, apartment_name, available_date)
         if rent_matrix.present?
           uniq_terms = rent_matrix.map{|x| x["term"].to_i }.uniq
           distinct_data = uniq_terms.map{|term| rent_matrix.map{|data| data if data["term"] == term.to_s}.compact}.compact
@@ -265,15 +230,53 @@ class YardiRentCafeV2SwapService < BaseService
       end
     end
 
-    def get_appartments_availability property_code
-      DataProviders::RentCafe::V2ApisService.new(credentials.community_id).get_apartment_availability(property_code)
+    def fetch_floorplan_record(r)
+      fp = Floorplan.where(community_id: @credentials.community_id)
+    
+      if r["floorplanName"].present?
+        fp = fp.where(name: r["floorplanName"])
+        fp = fp.where(square_feet: r["minimumSQFT"], bedrooms: r["beds"], bathrooms: r["baths"]) if fp.count > 1
+      end
+    
+      if r["unitTypeMapping"].present? && fp.blank?
+        fp = Floorplan.where(provider_floorplan_id: r["unitTypeMapping"])
+        fp = fp.where(square_feet: r["minimumSQFT"], bedrooms: r["beds"], bathrooms: r["baths"]) if fp.count > 1
+      end
+    
+      fp.first
+    rescue => e
+      nil
     end
 
-    def get_apartment_pricing_details property_code, apartment_name
-      DataProviders::RentCafe::V2ApisService.new(credentials.community_id).get_apartment_pricing_matrix(apartment_name, property_code)
+    def fetch_unit_record(r)
+      unit = Unit.where(community_id: @credentials.community_id)
+      fp = Floorplan.where(community_id: @credentials.community_id)
+
+      fp = fp.where(name: r["floorplanName"])
+      fp = fp.where("provider_floorplan_id LIKE ?", "%#{r["floorplanName"]}") if fp.blank?
+      fp = fp.where(square_feet: r["minimumSQFT"], bedrooms: r["beds"], bathrooms: r["baths"]) if fp.count > 1
+      fp = fp.first
+
+      if r["apartmentName"].present?
+        unit = unit.where(marketing_name: r["apartmentName"])
+        unit = unit.where(floorplan_id: fp.provider_floorplan_id) if unit.count > 1
+      end
+
+      unit.first
+      
+    rescue => e
+      nil
+    end
+
+    def get_appartments_availability property_code
+      DataProviders::RentCafe::V2ApisService.new(@credentials.community_id).get_apartment_availability(property_code)
+    end
+
+    def get_apartment_pricing_details property_code, apartment_name, available_date
+      DataProviders::RentCafe::V2ApisService.new(@credentials.community_id).get_apartment_pricing_matrix(apartment_name, property_code, available_date)
     end
 
     def get_floorplan_details property_code
-      DataProviders::RentCafe::V2ApisService.new(credentials.community_id).get_floorplans(property_code)
+      DataProviders::RentCafe::V2ApisService.new(@credentials.community_id).get_floorplans(property_code)
     end
 end
