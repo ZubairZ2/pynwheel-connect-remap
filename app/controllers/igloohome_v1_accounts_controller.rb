@@ -40,10 +40,10 @@ class IgloohomeV1AccountsController < ApplicationController
   def handle_valid_single_lock_params
     igloohome_lock = @igloohome.igloohome_locks.find_by(device_id: params["device_id"])
     if igloohome_lock.present?
-      flash[:alert] = "Igloohome Lock with this device id already exists"
+      flash[:alert] = "Igloohome lock with this device id already exists"
     else
       @igloohome.igloohome_locks.create(device_id: params["device_id"], device_name: params["device_name"])
-      flash[:notice] = "Igloohome Lock added"
+      flash[:notice] = "Igloohome lock added successfully!"
     end
   end
 

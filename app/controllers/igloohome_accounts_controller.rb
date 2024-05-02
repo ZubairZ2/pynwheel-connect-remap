@@ -1,9 +1,15 @@
 class IgloohomeAccountsController < ApplicationController
   before_action :create_igloohome_account, except: [:remove_igloohome_locks] 
 
+  def create
+    @igloohome.update(version: params[:igloohome][:version]) if params[:igloohome][:version].present?
+    # flash[:notice] = "Igloohome version updated successfully!"
+    # redirect_to new_community_dwelo_path(current_community)
+  end
+
   def add_lock_instructions
     @igloohome.update(lock_instruction_text: params[:igloohome][:lock_instruction_text])
-    flash[:notice] = "Updated successfully!"
+    flash[:notice] = "Igloohome lock instructions updated successfully!"
     redirect_to new_community_dwelo_path(current_community)
   end
 
@@ -14,10 +20,11 @@ class IgloohomeAccountsController < ApplicationController
   def remove_igloohome_locks 
     if current_community&.igloohome&.igloohome_locks.present?
       current_community.igloohome.igloohome_locks.destroy_all
-      flash[:notice] = "Locks deleted successfully"
+      flash[:notice] = "Igloohome locks deleted successfully"
     else
-      flash[:error] = "No locks are present"
+      flash[:error] = "No Igloohome locks are present"
     end
+
     redirect_to new_community_dwelo_path(current_community)
   end
 
