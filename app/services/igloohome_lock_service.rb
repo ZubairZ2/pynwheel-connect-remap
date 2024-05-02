@@ -1,55 +1,44 @@
 class IgloohomeLockService < BaseService
       
   def initialize(community)
-      @igloohome_account = Igloohome.find_by(community_id: community.id)
+    @igloohome_account = Igloohome.find_by(community_id: community.id)
   end
   
+  # DONE - Client credentials authorization
   def client_credentials
-      if @igloohome_account.present?
-
-          auth_url = "#{ENV['REMOTELOCK_AUTH_BASE_URL']}oauth/token"
-
-          response = HTTParty.post(auth_url,
-              body: {
-                  client_id: @igloohome_account.client_id,
-                  client_secret: @igloohome_account.client_secret,
-                  grant_type: "client_credentials"
-              },
-              headers: { 'Content-Type' => 'application/x-www-form-urlencoded' } )
-          puts response["access_token"]
-          return response["access_token"]
-      end
+    return unless @igloohome_account.present?
+  
+    response = HTTParty.post(auth_base_url,
+      body: client_credentials_params,
+      headers: auth_request_header
+    )
+    
+    handle_client_credentials_auth_response(response)
   end
 
+  # DONE - Code grant authorization
   def code_grant_authorization(code)
-      if code.present?
-          auth_url = "#{ENV['REMOTELOCK_AUTH_BASE_URL']}oauth/token"
-          body = {
-              code: code,
-              client_id: ENV['REMOTELOCK_CLIENT_ID'],
-              client_secret: ENV['REMOTELOCK_SECRET'],
-              redirect_uri: ENV['REMOTELOCK_REDIRECT_URI'],
-              grant_type: 'authorization_code'
-          }
-          response = HTTParty.post(auth_url, body: body, headers: { 'Content-Type' => 'application/x-www-form-urlencoded' })
-          puts response["access_token"]
-          return response
-      end
+    return unless code.present?
+
+    response = HTTParty.post(auth_base_url, 
+      body: code_grant_authorization_params(code), 
+      headers: auth_request_header 
+    )
+
+    handle_code_grant_authorization_response(response)
   end
 
+  # DONE - Refresh Token
   def get_access_token_after_refresh
-      if @igloohome_account.present?
-          auth_url = "#{ENV['REMOTELOCK_AUTH_BASE_URL']}oauth/token"
-          body = {
-              client_id: ENV['REMOTELOCK_CLIENT_ID'],
-              client_secret: ENV['REMOTELOCK_SECRET'],
-              refresh_token: @igloohome_account.refresh_token,
-              grant_type: 'refresh_token'
-          }
-          response = HTTParty.post(auth_url, body: body, headers: { 'Content-Type' => 'application/x-www-form-urlencoded' })
-          @igloohome_account.update_attributes(refresh_token: response['refresh_token']) if response['refresh_token'].present?
-          return response["access_token"]
-      end
+    return unless @igloohome_account.present?
+
+    response = HTTParty.post(auth_base_url, 
+      body: get_access_token_after_refresh_params, 
+      headers: auth_request_header 
+    )
+
+    @igloohome_account.update_attributes(refresh_token: response['refresh_token']) if response['refresh_token'].present?
+    handle_client_credentials_auth_response(response)
   end
 
   def get_all_deivces(access_token)
@@ -182,6 +171,7 @@ class IgloohomeLockService < BaseService
           return response
       end
   end
+
   def update_access_guest(access_token,guest_id,tour_user)
       if @igloohome_account.present?
           token_type = "Bearer"
@@ -263,8 +253,6 @@ class IgloohomeLockService < BaseService
       end
   end
 
-
-
   def create_igloo_guests(access_token,tour_user,igloo_lock_id,current_time)
       if @igloohome_account.present?
           token_type = "Bearer"
@@ -339,9 +327,83 @@ class IgloohomeLockService < BaseService
       end
   end
 
-  def base_url
-      # community.dwelo.api_url
-      # "https://api.remotelock.com"
+  private
+
+    def get_access_token_after_refresh_params auth_code
+      {
+        'grant_type' => 'refresh_token',
+        'client_id' => client_id_through_pynwheel,
+        'refresh_token' => @igloohome_account.refresh_token
+      }
+    end
+
+    def code_grant_authorization_params auth_code
+      {
+        'grant_type' => 'authorization_code',
+        'client_id' => client_id_through_pynwheel,
+        'code' => auth_code,
+        'redirect_uri' => redirect_uri
+      }
+    end
+
+    def client_credentials_params
+      { 'grant_type' => 'client_credentials' }
+    end
+
+    def auth_request_header
+      { 
+        'Authorization' => "Basic #{encode_credentials}",
+        'Content-Type' => 'application/x-www-form-urlencoded' 
+      }
+    end
+
+    def encode_credentials
+      Base64.strict_encode64("#{client_id_associated_with_client}:#{secret_id_associated_with_client}")
+    end
+
+    def handle_client_credentials_auth_response
+      if response.code == 200 && response["access_token"]
+        puts response["access_token"]
+        return response["access_token"]
+      else
+        raise "Error: #{response.code} - #{response.body}"
+      end
+    end
+
+    def handle_code_grant_authorization_response
+      if response.code == 200 && response["access_token"]
+        puts response["access_token"]
+        return response
+      else
+        raise "Error: #{response.code} - #{response.body}"
+      end
+    end
+
+    def client_id_through_pynwheel
+      ENV["PYNWHEEL_IGLOOHOME_CLIENT_ID"]
+    end
+
+    def secret_id_through_pynwheel
+      ENV["PYNWHEEL_IGLOOHOME_SECRET_ID"]
+    end
+
+    def client_id_associated_with_client
+      @igloohome_account.client_id
+    end
+
+    def secret_id_associated_with_client
+      @igloohome_account.client_secret
+    end
+
+    def base_url
       "https://api.igloodeveloper.co/igloohome"
-  end
+    end
+
+    def auth_base_url
+      "https://auth.igloohome.co/oauth2/token"
+    end
+
+    def redirect_uri
+      "https://pynwheelconnect.com/"
+    end
 end
