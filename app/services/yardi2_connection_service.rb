@@ -13,6 +13,7 @@ class Yardi2ConnectionService < BaseService
       database = credentials.database
       platform = credentials.platform
       property_id = property_ids[0]
+      property_id = property_id&.strip
       interface_entity = credentials.interface_entity
       license_key = YARDI_LICENSE_KEY
       response = HTTParty.post(

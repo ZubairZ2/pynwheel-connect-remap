@@ -74,6 +74,8 @@ class Credential < ApplicationRecord
         psi_credentials
       when "yardirentcafe"
         yardirentcafe_credentials
+      when "rentmanager"
+        rentmanager_credentials
       when "realpagesvc"
         realpagesvc_credentials
       when "yardi"
@@ -93,6 +95,15 @@ class Credential < ApplicationRecord
     selected_code_option = self.api_token.present? ? API_TOKEN : PROPERTY_CODE
     cred = {code_option: selected_code_option, p_code: self.p_code}
     cred.merge!(fetch_code(selected_code_option))
+  end
+
+  def rentmanager_credentials
+    {
+      rentmanager_username: self.rentmanager_username,
+      rentmanager_password: self.rentmanager_password,
+      rentmanager_property_id: self.rentmanager_property_id,
+      rentmanager_base_url: self.rentmanager_base_url
+    }
   end
   
   def fetch_code(selected_code_option)
@@ -163,9 +174,10 @@ class Credential < ApplicationRecord
   private
 
   def create_or_update_unit community_id, u
-    unit = Unit.where(provider: "spreadsheet", community_id: community_id, provider_unit_id: u[0].to_s.gsub(".","") ).first_or_initialize
+    provider_unit_id = [ u[0].to_s.gsub(".",""), u[0].to_s.gsub(".","").gsub(/\s+/, '-') ]&.compact&.uniq
+    unit = Unit.where(provider: "spreadsheet", community_id: community_id, provider_unit_id: provider_unit_id ).first_or_initialize
 
-    unit.provider_unit_id = u[0].to_s.gsub(".","")
+    unit.provider_unit_id = u[0].to_s.gsub(".","").gsub(/\s+/, '-')
     unit.marketing_name = get_integer_value(u[0])
     unit.unit_type = get_integer_value(u[0])
     unit.floorplan_id = u[1]

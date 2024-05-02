@@ -59,6 +59,8 @@ json.community_group @communities do |co|
 
   json.community_name  @community.name
   json.currency_symbol @community.get_currency_symbol()
+  json.country_code DateFormatter.country_code_by_region(@community.country_code)
+  json.date_format_by_region DateFormatter.date_format_by_region(@community.country_code) 
   json.community_id  @community.id
   json.data_url "/api/v1/communities/#{@community.id}/data.json"
   json.company_name  Company.find_by(id: @community.company_id).name
@@ -1402,7 +1404,7 @@ json.community_group @communities do |co|
         json.avg_rent unit.avg_effective_rent.present? ? unit.avg_effective_rent : 0
         json.max_rent (unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override) ?  (unit.effective_rent.present? ? unit.effective_rent : 0) : (unit.max_effective_rent.present? && unit.max_effective_rent.to_i > 0)? unit.max_effective_rent : (unit.effective_rent.present? ? unit.effective_rent : 0)
         json.availability unit.availability
-        json.available_date unit.available_date.present? ? ((unit.available_date < Time.now) ? Time.now.strftime('%m/%d/%Y') : unit.available_date.strftime('%m/%d/%Y')) : Date.today - 1.day
+        json.available_date DateFormatter.formatted_date_by_region(@community.country_code, (unit.available_date.present? ? ((unit.available_date < Time.now) ? Time.now.strftime('%m/%d/%Y') : unit.available_date.strftime('%m/%d/%Y')) : Date.today - 1.day) )
         json.available unit.available
         json.sold unit.sold
         if @community.theme_name == "modernist"
@@ -1615,7 +1617,7 @@ json.community_group @communities do |co|
       json.images @community.gallery_images.each do |img|
         unless params[:action] == "ios_data"
           if img.standard_image_url.include?(".mp4") || img.standard_image_url.include?(".MP4")
-            json.url Rails.env.development? ? local_assets_base_url+img.standard_image_url : img.video.url
+            json.url Rails.env.development? ? local_assets_base_url+img.standard_image_url : (img.video.url || img.standard_image_url)
             json.video true
             json.poster "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/amenity/image/124/124-1518624577-video-placeholder.jpg"
           else

@@ -35,7 +35,7 @@
         = f.text_field :effective_rent, :class=>"form-control validate[required,custom[onlyDecimal]]", :placeholder=>"Rent",:maxlength=>"9", :value => f.object.effective_rent.to_i
         %small Price (Manual Override Required)
       .col-sm-6.col-lg-4.col-md-4.col-xs-12
-        = f.text_field :marketing_name, :class=>"form-control validate[required]", :placeholder=>"Marketing Name",:maxlength=>"5"
+        = f.text_field :marketing_name, :class=>"form-control validate[required]", :placeholder=>"Marketing Name"
         %small Marketing Name (Manual Override Required)
       .col-sm-6.col-lg-4.col-md-4.col-xs-12
         = f.text_field :available_date, :class=>"form-control datepicker", :placeholder=>"Available Date",:maxlength=>"15",:autocomplete=>"off",:readonly=>true

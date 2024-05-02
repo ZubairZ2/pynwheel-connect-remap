@@ -70,11 +70,11 @@ module SchedualToursHelper
     if property_tour_type == "Remote Tour" || tour_type == "Virtual tour"
       "Virtual Tour"
     elsif property_tour_type == "Unscheduled Self Tour"
-      "Self Tour - Unscheduled"
+      "App Guided Tour - Unscheduled"
     elsif property_tour_type == "Self Tour"  || tour_type == "Self guided"
-      "Self Tour - Scheduled"
+      "App Guided Tour - Scheduled"
     else
-      return property_tour_type
+      return "Person #{property_tour_type} - Scheduled"
     end
   end
 

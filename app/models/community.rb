@@ -85,7 +85,9 @@ class Community < ApplicationRecord
   after_create :change_touchscreen_app_for_dwelo
   # after_create :set_company_level_settings_yes
   before_save :turn_off_chat, if: Proc.new { chat_control == false }
-  after_save :set_community_time_zone, if: ->(obj){ (obj.latitude.present? and obj.latitude_changed?) ||  (obj.longitude.present? and obj.longitude_changed?) }
+  after_save :set_community_time_zone, if: ->(obj) { obj.latitude_changed? || obj.longitude_changed? }
+  after_save :set_country_code, if: ->(obj) { obj.latitude_changed? || obj.longitude_changed? || obj.city_changed? || obj.state_changed? || obj.address_changed? || obj.zip_changed? }
+
   after_save :create_default_credential
   after_update :set_default_provider
 
@@ -114,7 +116,7 @@ class Community < ApplicationRecord
 
   def as_json(options = {})
     data = super(
-      :only => [:id , :name , :logo , :file, :address , :city , :longitude, :latitude, :state , :email , :phone , :zip, :web_map_type, :is_sitemap, :display_building ,:property_manager_name,:property_manager_phone,:property_manager_email ,:enable_three_d_maps , :website , :number_of_units, :production_started_date, :released_date, :submitted_final_approval_date, :product_options, :use_company_level_data_settings], :methods => [:schedule_tour_url, :community_code],include: { company: {except: [:created_at]}})
+      :only => [:id , :name , :logo , :file, :address , :city , :longitude, :latitude, :state , :email , :phone , :zip, :web_map_type, :is_sitemap, :display_building ,:property_manager_name,:property_manager_phone,:property_manager_email ,:enable_three_d_maps , :website , :number_of_units, :production_started_date, :released_date, :submitted_final_approval_date, :product_options, :use_company_level_data_settings, :country_code], :methods => [:schedule_tour_url, :community_code],include: { company: {except: [:created_at]}})
     check_brand_access = options[:brand_pdf_feature]
     if check_brand_access == true
       data.merge!(:brand_feature_access => true , :brand_details_pdf => brand_details())
@@ -124,7 +126,7 @@ class Community < ApplicationRecord
   end
 
   def available_unit_for_self_tour
-    return false unless self.community_tour&.tour_setting&.enable_tour_customization
+    return [] unless customization_enabled?
 
     units_query = if SELF_TOUR_PROVIDERS.include?(self.data_provider)
                     self.units.vacant_and_available
@@ -133,12 +135,41 @@ class Community < ApplicationRecord
                   end
 
     if self.is_sitemap
-      units_query.count > 0
+      units_query
     else
-      units_query.where.not(floor: [nil], building: ["", nil, "N/A"]).count > 0
+      units_query.where.not(floor: [nil], building: ["", nil, "N/A"])
     end
   end
 
+  def amenities_available_for_tour?
+    return false unless customization_enabled?
+    
+    property_availbale_amenities.exists?
+
+  rescue => ex
+    false
+  end
+
+  def property_availbale_amenities
+    plotted_amenities_query = self.amenities.plotted_amenities
+
+    if self.is_sitemap
+      amenities_count = plotted_amenities_query
+    else
+      amenities_count = plotted_amenities_query.where.not(floor: [nil], building: ["", nil, "N/A"])
+    end
+  end
+
+  def amenities_left_for_tour?(tour_id)
+    return false unless customization_enabled?
+    property_amenities_ids = property_availbale_amenities.ids
+    stop_amenities_ids = TourStop.where(display_stop: true, tour_id: tour_id, stop_type: "amenity").pluck(:stop_id)
+    (property_amenities_ids - stop_amenities_ids).present?
+  end
+
+  def customization_enabled?
+    self.community_tour&.tour_setting&.enable_tour_customization
+  end
 
   def plotted_units
     # self&.units&.are_ploted_units
@@ -270,7 +301,7 @@ class Community < ApplicationRecord
   end
 
   def disregard_forms form_type
-    ([ADDITIONAL_PAGES, EBROCHURE, HARDWARE_SPECS, AMENITY_IMAGES, DESIGN_DIRECTION].include?(form_type))
+    ([ADDITIONAL_PAGES, EBROCHURE, HARDWARE_SPECS, AMENITY_IMAGES, DESIGN_DIRECTION, COMPANY_DETAILS].include?(form_type))
   end
 
   def set_community_status(current_user)
@@ -478,6 +509,8 @@ class Community < ApplicationRecord
         credential.entrata_url.present? && credential.username.present? && credential.password.present? && credential.property_id.present?
       when "yardirentcafe"
         (credential.c_code.present? || credential.api_token.present?) && credential.p_code.present?
+      when "rentmanager"
+        (credential.rentmanager_username.present? && credential.rentmanager_password.present? && credential.rentmanager_property_id.present? && credential.rentmanager_base_url.present?)
       when "realpagesvc"
         credential.site_id.present? && credential.pmc_id.present?
       when "yardi"
@@ -532,8 +565,8 @@ class Community < ApplicationRecord
   def set_visiting_hours_status(current_user, status)
     @tour = self.community_tour
     return unless self.self_tour
-    # self_tour_visiting_hours(current_user) if @tour&.tour_setting&.allow_self_tour # commented this code so that the status shold be changed based on self tour in community setting
-    # guided_visiting_hours(current_user) if @tour&.tour_setting&.allow_guided_tour # commented this code so that the status shold be changed based on self tour in community setting
+    # self_tour_visiting_hours(current_user) if @tour&.tour_setting&.allow_self_tour # commented this code so that the status shold be changed based on Pynwheel Tour in community setting
+    # guided_visiting_hours(current_user) if @tour&.tour_setting&.allow_guided_tour # commented this code so that the status shold be changed based on Pynwheel Tour in community setting
     self_tour_visiting_hours(current_user, status)
     guided_visiting_hours(current_user, status)
   end
@@ -704,24 +737,6 @@ class Community < ApplicationRecord
     self.credential.apply_now == "true" || self.credential.apply_now == "separate_link"
   end
 
-  def set_default_country_code
-    begin
-
-      addr = Geocoder.search([self.latitude, self.longitude])
-      addr = Geocoder.search(self.address) unless addr.present?
-
-      if (addr && addr.first && addr.first.data && addr.first.data["address"] && addr.first.data["address"]["country_code"]).present?
-        addr.first.data["address"]["country_code"].upcase 
-      else
-        "US"
-      end
-
-    rescue => error
-      "US"
-    end
-
-  end
-
   def logo_for_email
     if self&.email_logo.present? && self&.email_logo&.url.present?
       self&.email_logo&.url
@@ -738,9 +753,29 @@ class Community < ApplicationRecord
   def set_community_time_zone
     if self.latitude.present? && self.longitude.present?
       time_zone = Timezone.lookup(self.latitude, self.longitude)&.name rescue "UTC"
-      self.update_column :time_zone, time_zone
+      self.update_column :time_zone, time_zone if time_zone.present? 
     end
   end
+
+  def set_country_code
+    c_code = fetch_country_code
+    update_column(:country_code, c_code) if c_code.present?
+  end
+
+  def fetch_country_code
+    begin
+      addr = Geocoder.search([latitude, longitude]) || Geocoder.search(address)
+
+      if addr.present? && addr.first&.data&.dig("address", "country_code").present?
+        addr.first.data["address"]["country_code"].upcase
+      else
+        "US"
+      end
+    rescue StandardError
+      "US"
+    end
+  end
+
 
   def community_data_updated_on
     self.update(data_provider_updated_on: Time.now.to_s)
@@ -825,6 +860,7 @@ class Community < ApplicationRecord
 
   def crop_secondary_image
     secondary_logo.recreate_versions! if (crop_x_secondary.present? && !image_bit && do_crop_secondary)
+    self.update_columns(do_crop_secondary: false)
   end
 
   def is_futurist?
@@ -925,6 +961,8 @@ class Community < ApplicationRecord
         import_psi_data
       when "yardirentcafe"
         import_yardirentcafe_data
+      when "rentmanager"
+        import_rentmanager_data
       when "realpagesvc"
         import_realpage_svc_data
       when "yardi"
@@ -980,6 +1018,8 @@ class Community < ApplicationRecord
       EntrataDataUpdateWorker.perform_async self.id
     when "yardirentcafe"
       YardirentcafeDataUpdateWorker.perform_async self.id
+    when "rentmanager"
+      RentManagerDataImportWorker.perform_async self.id
     when "realpagesvc"
       RealPageDataUpdateWorker.perform_async self.id
     when "yardi"
@@ -987,9 +1027,9 @@ class Community < ApplicationRecord
     when "resman"
       ResmanDataUpdateWorker.perform_async self.id
     when "zaremba"
-      ImportZarembaDataJob.perform_async self.credential.attributes.to_json
+      ZarembaDataUpdateWorker.perform_async self.id
     when "xml"
-      ImportXmlDataJob.perform_async self.credential.attributes.to_json
+      XmlDataUpdateWorker.perform_async self.id
     end
   end
 
@@ -1130,6 +1170,10 @@ s  end
     RentCafeDataImportWorker.perform_async self.id
   end
 
+  def import_rentmanager_data
+    RentManagerDataImportWorker.perform_async self.id
+  end
+
   def swap_yardirentcafe_data
     ImportYardirentcafeSwapDataJob.perform_async credential.attributes.to_json
   end
@@ -1230,6 +1274,8 @@ s  end
         connect_to_psi
       when "yardirentcafe"
         connect_to_yardirentcafe
+      when "rentmanager"
+        connect_to_rentmanager
       when "realpagesvc"
         connect_to_realpagesvc
       when "yardi"
@@ -1258,6 +1304,11 @@ s  end
       connect_space_configuration_psi
     end
 
+  end
+
+  def connect_to_rentmanager
+    rentmanager_connection_service = DataProviders::RentManager::V1::TestConnectionService.new(self.id)
+    rentmanager_connection_service.perform
   end
 
   def connect_pricing_to_psi
@@ -1387,10 +1438,11 @@ s  end
   end
 
   def submit_crm_leads email_to, favorites
-    return unless favorites.present?
+    return unless use_yardi_as_lead?
+
     case data_provider
       when "yardirentcafe"
-        LeadsUploader::YardiRentCafe.new(self.id, email_to, favorites).leads_uploader()
+        LeadsUploader::YardiRentCafe.new(self.id, email_to, favorites).leads_uploader() if favorites.present?
     end
   end
 

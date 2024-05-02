@@ -20,8 +20,8 @@ module DataProviders
         response["apartmentAvailabilities"] rescue []
       end
 
-      def get_apartment_pricing_matrix apartment_name, property_code
-        response = fetch_apartment_pricing_data(apartment_name, property_code)
+      def get_apartment_pricing_matrix apartment_name, property_code, available_date
+        response = fetch_apartment_pricing_data(apartment_name, property_code, available_date)
         response["pricingDetails"] rescue []
       end
 
@@ -95,11 +95,11 @@ module DataProviders
           )
         end
 
-        def fetch_apartment_pricing_data apartment_name, property_code
+        def fetch_apartment_pricing_data apartment_name, property_code, available_date
           url = "#{ENV["RENT_CAFE_V2_BASE_URL"]}/UnitPricingData/getunitpricingdetails"
 
           HTTParty.post(url,
-            body: get_unit_pricing_params(apartment_name, property_code),
+            body: get_unit_pricing_params(apartment_name, property_code, available_date),
             headers: { 
               'Content-Type' => 'application/json',
               'Authorization' => "Bearer #{@credential&.rentcafe_v2_auth_token}",
@@ -139,13 +139,14 @@ module DataProviders
           }.to_json
         end
 
-        def get_unit_pricing_params apartment_name, property_code
+        def get_unit_pricing_params apartment_name, property_code, available_date
           {
             apiToken: api_token, #required
             companyCode: company_code, #required
             propertyCode: property_code&.strip, #required
             apartmentName: apartment_name,
-            showAllUnit: !@credential&.limit_result
+            showAllUnit: !@credential&.limit_result,
+            pricingStartDate: available_date
           }.to_json
         end
 

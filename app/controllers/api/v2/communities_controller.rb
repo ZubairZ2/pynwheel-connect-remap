@@ -113,7 +113,7 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
 
 
   def disregard_forms
-    ([ADDITIONAL_PAGES, EBROCHURE, HARDWARE_SPECS, AMENITY_IMAGES, DESIGN_DIRECTION].include?(params[:detail_type]))
+    ([ADDITIONAL_PAGES, EBROCHURE, HARDWARE_SPECS, AMENITY_IMAGES, DESIGN_DIRECTION, COMPANY_DETAILS].include?(params[:detail_type]))
   end
 
   def send_emails(community, status)

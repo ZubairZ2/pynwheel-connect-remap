@@ -50,7 +50,7 @@ class YardiRentCafeV2SwapService < BaseService
                     unit.effective_rent = 1.0
                   end
 
-                  rentStrs = yardi_rent_cafe_rent_matrix(property_code, r["apartmentName"])
+                  rentStrs = yardi_rent_cafe_rent_matrix(property_code, r["apartmentName"], available_date_convertor(r["availableDate"]))
                   leasing = ""
 
                   if rentStrs.present?
@@ -99,7 +99,7 @@ class YardiRentCafeV2SwapService < BaseService
                     unit.effective_rent = 1.0
                   end
 
-                  rentStrs = yardi_rent_cafe_rent_matrix(property_code, r["apartmentName"])
+                  rentStrs = yardi_rent_cafe_rent_matrix(property_code, r["apartmentName"], available_date_convertor(r["availableDate"]))
                   leasing = ""
                   
                   if rentStrs.present?

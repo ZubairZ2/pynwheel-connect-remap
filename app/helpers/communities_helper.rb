@@ -22,7 +22,7 @@ module CommunitiesHelper
     worksheet.write(0, 11, "Map Type", format)
     worksheet.write(0, 12, "Design Style", format)
     worksheet.write(0, 13, "Data Provider", format)
-    worksheet.write(0, 14, "Self Tour (Yes/No)", format)
+    worksheet.write(0, 14, "Pynwheel Tour (Yes/No)", format)
     worksheet.write(0, 15, "Active/Inactive", format)
     worksheet.write(0, 16, "Subscription Start Date", format)
     worksheet.write(0, 17, "Date Inactivated", format)

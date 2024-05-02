@@ -75,6 +75,34 @@
 //= require bootstrap-wysihtml5/locales
 //= require automate_plotting
 
+
 $(document).ready(function(){
-	new Clipboard('.clipboard-btn');
+  new Clipboard('.clipboard-btn');
 });
+
+
+function formatDate(date, format) {
+  if(date == "Now" || !date) return date;
+
+
+  date = (date instanceof Date) ? date : new Date(date)
+
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = String(date.getFullYear()).slice(-2);
+
+  return format.replace("dd", day).replace("mm", month).replace("yy", year);
+}
+
+function formattedDateByRegion(community_code, date) {
+  switch (community_code) {
+    case "US":
+      return formatDate(date, 'mm/dd/yy');
+    case "GB":
+      return formatDate(date, 'dd/mm/yy');
+    case "CA":
+      return formatDate(date, 'dd/mm/yy');
+    default:
+      return formatDate(date, 'mm/dd/yy');
+  }
+}

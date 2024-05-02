@@ -87,7 +87,7 @@ module DataProviders
               update_attribute_if_blank(unit, :available, unit_availability(r["availableDate"]) == "Unoccupied")
               unit.effective_rent = 1.0 if unit.effective_rent <= 0
               unit.availability_url = r["applyOnlineURL"] if r["applyOnlineURL"].present?
-              unit.lease_pricing = calculate_lease_pricing(property_code, r["apartmentName"])
+              unit.lease_pricing = calculate_lease_pricing(property_code, r["apartmentName"], available_date_convertor(r["availableDate"]))
               unit.description = unit_description(r["amenities"]) if r["amenities"].present?
               unit.property_id = r["propertyId"]
               unit.unit_type = r["apartmentName"]
@@ -116,9 +116,27 @@ module DataProviders
             available_date = available_date.split("/")
             Date.parse("#{available_date[2]}-#{available_date[0]}-#{available_date[1]}")
           end
+          
+          def available_date_convertor available_date
+            today_date = Date.today.strftime("%m/%d/%Y")
 
-          def calculate_lease_pricing(property_code, apartment_name)
-            rentStrs = yardi_rent_cafe_rent_matrix(property_code, apartment_name)
+            if ( available_date != "" && available_date != nil )
+              parsed_today_date = Date.parse(set_availabilty_date(today_date))
+              parsed_available_date = Date.parse(set_availabilty_date(available_date))
+
+              if parsed_available_date > parsed_today_date
+                available_date
+              else
+                today_date
+              end
+            else
+              today_date
+            end
+          end
+
+
+          def calculate_lease_pricing(property_code, apartment_name, available_date)
+            rentStrs = yardi_rent_cafe_rent_matrix(property_code, apartment_name, available_date)
             leasing = ""
 
             if rentStrs.present?
@@ -132,7 +150,7 @@ module DataProviders
             leasing
           end
 
-          def yardi_rent_cafe_rent_matrix(property_code, apartment_name)
+          def yardi_rent_cafe_rent_matrix(property_code, apartment_name, available_date)
             begin
               rent_matrix = get_apartment_pricing_details(property_code, apartment_name)
 

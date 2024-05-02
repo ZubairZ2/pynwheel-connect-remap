@@ -1,15 +1,21 @@
 class ZarembaService < BaseService
+  attr_reader :credentials
+
+  def initialize credentials
+    @credentials = credentials
+  end
+
   def perform
     @unit_record = []
-    property_ids = credentials.zaremba_property_id.split(',') rescue []
-    community = Community.find credentials.community_id
+    property_ids = @credentials.zaremba_property_id.split(',') rescue []
+    community = Community.find @credentials.community_id
     community&.community_data_updated_on()
 
     property_ids.each do |property_id|
       begin
-        username = credentials.zaremba_username
-        password = credentials.zaremba_password
-        filename = credentials.zaremba_filename
+        username = @credentials.zaremba_username
+        password = @credentials.zaremba_password
+        filename = @credentials.zaremba_filename
         url = "http://pynwheel.com/swoop/scripts/proxy_redatasysSFTP.php"
         url = url + "?" + "filename=" + filename + ".xml" + "&" + "username=" + username + "&" + "password=" + password
 
@@ -58,7 +64,7 @@ class ZarembaService < BaseService
           end
           # save_website_column_of_community(response)
           begin
-            cred = Credential.find credentials.id
+            cred = Credential.find @credentials.id
             cred.data_error_message = nil
             PaperTrail.enabled = false
             cred.save
@@ -67,18 +73,18 @@ class ZarembaService < BaseService
           end
         else
           begin
-            cred = Credential.find credentials.id
+            cred = Credential.find @credentials.id
             cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
             PaperTrail.enabled = false
             cred.save
             PaperTrail.enabled = true
           rescue => err
           end
-          ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
+          ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: @credentials.community_id})
         end
       rescue => e
         begin
-          cred = Credential.find credentials.id
+          cred = Credential.find @credentials.id
           cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
           PaperTrail.enabled = false
           cred.save
@@ -91,11 +97,11 @@ class ZarembaService < BaseService
   end
   def save_zaremba_units(units,property_id)
 
-    unit_present =  Unit.where("community_id = ? AND provider IN (?)", credentials.community_id, ["zaremba"]).map{|x| x.provider_unit_id}
+    unit_present =  Unit.where("community_id = ? AND provider IN (?)", @credentials.community_id, ["zaremba"]).map{|x| x.provider_unit_id}
     units.each do |u|
       vacateDate = ""
 
-      unit = Unit.find_by(provider: "zaremba",community_id: credentials.community_id,provider_unit_id: u["BuildingID"]+"-"+u["IDValue"],building: u["BuildingID"])#.first_or_initialize
+      unit = Unit.find_by(provider: "zaremba",community_id: @credentials.community_id,provider_unit_id: u["BuildingID"]+"-"+u["IDValue"],building: u["BuildingID"])#.first_or_initialize
       if unit.present?
           # unit.property_id = property_id
           # unit.unit_type = u["UnitType"]
@@ -142,7 +148,7 @@ class ZarembaService < BaseService
       else
         flag = 0
         vacateDate = ""
-        unit = Unit.where(provider: "zaremba",community_id: credentials.community_id,provider_unit_id: u["BuildingID"]+"-"+u["IDValue"],building: u["BuildingID"]).first_or_initialize
+        unit = Unit.where(provider: "zaremba",community_id: @credentials.community_id,provider_unit_id: u["BuildingID"]+"-"+u["IDValue"],building: u["BuildingID"]).first_or_initialize
 
         unit.property_id = property_id
         unit.unit_type = u["UnitType"]
@@ -207,7 +213,7 @@ class ZarembaService < BaseService
       no_unit = nil
     end
     no_unit.each do |un|
-      unit = Unit.find_by(community_id: credentials.community_id, provider_unit_id: un)
+      unit = Unit.find_by(community_id: @credentials.community_id, provider_unit_id: un)
       unit.availability = "Occupied"
       unit.available = false
       unit.available_date = nil
@@ -218,7 +224,7 @@ class ZarembaService < BaseService
   
   def save_zaremba_floorplans(floorplans,property_id)
     floorplans.each do |f|
-      floorplan = Floorplan.find_by(provider: "zaremba",community_id: credentials.community_id,provider_floorplan_id: f["IDValue"])#.first_or_initialize
+      floorplan = Floorplan.find_by(provider: "zaremba",community_id: @credentials.community_id,provider_floorplan_id: f["IDValue"])#.first_or_initialize
       if floorplan.present?
         # floorplan.property_id = property_id
         # floorplan.name = f["Name"]
@@ -252,7 +258,7 @@ class ZarembaService < BaseService
         floorplan.save
 
       else
-        floorplan = Floorplan.where(provider: "zaremba",community_id: credentials.community_id,provider_floorplan_id: f["IDValue"]).first_or_initialize
+        floorplan = Floorplan.where(provider: "zaremba",community_id: @credentials.community_id,provider_floorplan_id: f["IDValue"]).first_or_initialize
         floorplan.property_id = property_id
         unless floorplan.name_is_updated.present? && floorplan.name_is_updated
           floorplan.name = f["Name"]
@@ -301,7 +307,7 @@ class ZarembaService < BaseService
 
   def save_zaremba_single_floorplans(floorplans,property_id)
 
-    floorplan = Floorplan.find_by(provider: "zaremba",community_id: credentials.community_id,provider_floorplan_id: floorplans["IDValue"])#.first_or_initialize
+    floorplan = Floorplan.find_by(provider: "zaremba",community_id: @credentials.community_id,provider_floorplan_id: floorplans["IDValue"])#.first_or_initialize
     if floorplan.present?
       # floorplan.property_id = property_id
       # floorplan.name = floorplans["Name"]
@@ -335,7 +341,7 @@ class ZarembaService < BaseService
       floorplan.save
 
     else
-      floorplan = Floorplan.where(provider: "zaremba",community_id: credentials.community_id,provider_floorplan_id: floorplans["IDValue"]).first_or_initialize
+      floorplan = Floorplan.where(provider: "zaremba",community_id: @credentials.community_id,provider_floorplan_id: floorplans["IDValue"]).first_or_initialize
       floorplan.property_id = property_id
       unless floorplan.name_is_updated.present? && floorplan.name_is_updated
         floorplan.name = floorplans["Name"]

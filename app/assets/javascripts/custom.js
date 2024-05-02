@@ -515,6 +515,9 @@ function selectDataProvider(data_provider){
         case "resman":
             showResmanFields();
             break;
+        case "rentmanager":
+            showRentManagerFields();
+            break;
         case "zaremba":
             showZarembaFields();
             break;
@@ -590,6 +593,15 @@ function showResmanFields(){
     $('#data-connection-buttons').show();
     $('#data-replace-update-buttons').hide();
 }
+
+function showRentManagerFields() {
+    $('.credential_fields').hide();
+    $('#rentmanager_username').show();
+    $('#rentmanager_password').show();
+    $('#rentmanager_property_id').show();
+    $('#rentmanager_base_url').show();
+}
+
 function showYardiFields(){
     $('.credential_fields').hide();
     $('#company_data_settings').show();

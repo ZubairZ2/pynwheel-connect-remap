@@ -1,4 +1,5 @@
 module ApplicationHelper
+  
   def currencies
     Community.last&.all_currencies(Money::Currency::table)
   end
@@ -20,9 +21,10 @@ module ApplicationHelper
         ["YardiRentCafe", "yardirentcafe"],
         ["Yardi", "yardi"],
         ["ResMan", "resman"],
+        ["RentManager", "rentmanager"],
         ["RE Data Systems (ftp)", "zaremba"],
         ["Xml", "xml"],
-        ["Spreadsheet", "spreadsheet"]
+        ["Spreadsheet", "spreadsheet"],
       ]
     end
     options.compact.reject(&:empty?)

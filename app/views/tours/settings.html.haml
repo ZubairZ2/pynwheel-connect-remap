@@ -124,7 +124,7 @@
     }
   }
 
-- content_for :title, "Self Tour Settings - Pynwheel"
+- content_for :title, "Pynwheel Tour Settings - Pynwheel"
 .divLoading.hidden
 - left_margin = ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i rescue 0
 - right_margin = ((20.0 / 25.0).to_f * (@community.design.property_map_size_integer)).to_i rescue 0
@@ -141,7 +141,7 @@
     .box.box-info.add-plan.mt-20#logo_header
       .box-header
         %h3.box-title
-          SELF TOUR SETTINGS
+          Pynwheel TOUR SETTINGS
           %span
         -# = link_to("EdgeState Account", "edgestate_accounts/new" , class: "btn btn-primary", style: "float:right")
     .row
@@ -166,7 +166,7 @@
                   Show "Start Tour" in Pynwheel Touch
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "1Popover","data-content" => " "}
                     %span#propertyDetailNameText
-                      When this is switched to "yes" there will be a "Start Tour" button in the menu on your Pynwheel Touch app. When touched, the user will enter their cell phone umber or scan a QR code and receive a link to download / open the Self Tour app. 
+                      When this is switched to "yes" there will be a "Start Tour" button in the menu on your Pynwheel Touch app. When touched, the user will enter their cell phone umber or scan a QR code and receive a link to download / open the Pynwheel Tour app. 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
                     %span.pr-15 No
@@ -229,7 +229,7 @@
                   Scheduler Tool
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "4Popover","data-content" => " "}
                     %span#propertyDetailNameText
-                      If you plan on using the Pynwheel Scheduler tool to allow users to schedule Self Tours on your website, switch this to "Yes". You can then add email / text confirmation text below and get the scheduler widget code in the menu on the left.
+                      If you plan on using the Pynwheel Scheduler tool to allow users to schedule Pynwheel Tours on your website, switch this to "Yes". You can then add email / text confirmation text below and get the scheduler widget code in the menu on the left.
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
                     %span.pr-15 No
@@ -274,19 +274,19 @@
             - if @tour_setting.allow_self_tour.nil? || @tour_setting.allow_self_tour
               .form-group.limit_max_tour_class.hidden
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                  Max Self-Guided Tours at One Time
+                  Max App Guided Tours at One Time
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "7Popover","data-content" => " "}
                     %span#propertyDetailNameText
-                      Enter the maximum number of in-person Self Tour visitors you would like at the property at one time. Leave blank if there is no limit. 
+                      Enter the maximum number of app guided tours visitors you would like at the property at one time. Leave blank if there is no limit. 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   %input.day-list.max-users-v.form-control{type: "number", id: "max_self_tour_users", name: "max_self_tour_users", min: "1", max:"10", value: @community.community_tour.max_self_tour_users}
             - if (@tour_setting.allow_guided_tour.nil? || @tour_setting.allow_guided_tour) && !@community.is_salesforce_community?
               .form-group.limit_max_tour_class.hidden
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                  Max Guided Tours at One Time
+                  Max Person Guided Tours at One Time
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "7Popover","data-content" => " "}
                     %span#propertyDetailNameText
-                      Enter the maximum number of Guided Tour visitors you would like at the property at one time. Leave blank if there is no limit. 
+                      Enter the maximum number of person guided tours visitors you would like at the property at one time. Leave blank if there is no limit. 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   %input.day-list.max-users-v.form-control{type: "number", id: "max_guided_tour_users", name: "max_guided_tour_users", min: "1", max:"10", value: @community.community_tour.max_guided_tour_users}    
             .form-group
@@ -318,7 +318,7 @@
 
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Allow Customize Tours in Self Tour
+                Allow Customize Tours in Pynwheel Tour
                 %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "4Popover","data-content" => " "}
                   %span#propertyDetailNameText
                     Enabling this toggle will allow prospects to choose available units and amenities of their own choice to customize their tours 
@@ -377,14 +377,14 @@
                         .col-sm-6.col-lg-6.col-md-4.col-xs-12
                           .checkbox
                             = check_box_tag :allow_self_tour, true, @tour_setting.allow_self_tour.nil? ? true :  @tour_setting.allow_self_tour
-                            %label Self Tour
+                            %label App Guided Tour
 
                     .col-sm-12.col-lg-12.col-md-12.col-xs-12
                       .row
                         .col-sm-6.col-lg-6.col-md-4.col-xs-12
                           .checkbox
                             = check_box_tag :allow_guided_tour, true, @tour_setting.allow_guided_tour.nil? ? true : @tour_setting.allow_guided_tour
-                            %label Guided Tour
+                            %label Person Guided Tour
 
                     -# .col-sm-12.col-lg-12.col-md-12.col-xs-12
                     -#   .row
@@ -439,7 +439,7 @@
                         Only allow scheduled tours
                         %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "5Popover","data-content" => " "}
                           %span#propertyDetailNameText
-                            Only give on-site access via the Self Tour app to users who have scheduled a tour in advance and start their tour at the scheduled time.
+                            Only give on-site access via the Pynwheel Tour app to users who have scheduled a tour in advance and start their tour at the scheduled time.
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         .TriSea-technologies-Switch
                           %span.pr-15 No
@@ -520,7 +520,7 @@
         .box.box-info.add-plan.mt-20#logo_header
           .box-header
             %h3.box-title
-              SELF TOUR VISITING HOURS
+              APP GUIDED TOUR VISITING HOURS
               %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "9Popover","data-content" => " "}
                 %span#propertyDetailNameText
                   You can add multiple time slots per day. Drag and drop the days to rearrange them. Click on the "x" to delete them.
@@ -634,7 +634,7 @@
         .box.box-info.add-plan.mt-20#logo_header
           .box-header
             %h3.box-title
-              GUIDED TOUR VISITING HOURS
+              PERSON GUIDED TOUR VISITING HOURS
               %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "9Popover","data-content" => " "}
                 %span#propertyDetailNameText
                   You can add multiple time slots per day. Drag and drop the days to rearrange them. Click on the "x" to delete them.
@@ -811,7 +811,7 @@
                         %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "10Popover","data-content" => " "}
                           %span#propertyDetailNameText
                             This is the alert that your guest will receive upon scheduling a tour (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:
-                            Thank you for scheduling your tour! We look forward to having you at the property on (date) at (time). When you go to the property, you will need a photo ID and your mobile device with the Pynwheel app downloaded. Please download the Pynwheel self-guided tour app before you arrive. (Links to app stores)
+                            Thank you for scheduling your tour! We look forward to having you at the property on (date) at (time). When you go to the property, you will need a photo ID and your mobile device with the Pynwheel app downloaded. Please download the Pynwheel Tour App before you arrive. (Links to app stores)
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         = f.text_area :email_text, :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
                   .col-lg-9.col-lg-offset-1
@@ -821,7 +821,7 @@
                         %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "11Popover","data-content" => " "}
                           %span#propertyDetailNameText
                             This is the alert that your guest will receive 1 day prior to their scheduled arrival (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:
-                            We look forward to having you visit our property at <time> tomorrow for your tour. Download Pynwheel Self Tour (links to app stores). (Link to reschedule appointment).
+                            We look forward to having you visit our property at <time> tomorrow for your tour. Download Pynwheel Tour (links to app stores). (Link to reschedule appointment).
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         = f.text_area :one_day_email_text, :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
                   .col-lg-9.col-lg-offset-1
@@ -831,7 +831,7 @@
                         %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "12Popover","data-content" => " "}
                           %span#propertyDetailNameText
                             This is the alert that your guest will receive 1 hour prior to their scheduled arrival (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:
-                            Your tour starts soon! Directions to Property (link opens Google map with address pre-populated). When you arrive at the property, open Pynwheel Self Tour to start your tour.
+                            Your tour starts soon! Directions to Property (link opens Google map with address pre-populated). When you arrive at the property, open Pynwheel Tour to start your tour.
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         = f.text_area :one_hour_email_text, :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
                 .col-lg-9.col-lg-offset-1
@@ -842,7 +842,7 @@
                         %span#propertyDetailNameText
                           This message will be sent to guest after tour will end.
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                      = f.text_area :thank_you_message, :value=> @community.thank_you_message.nil? ? "Thank you for visiting #{@community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour." : @community.thank_you_message , :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
+                      = f.text_area :thank_you_message, :value=> @community.thank_you_message.nil? ? "Thank you for visiting #{SentenceFormatter.capitalized_words(@community.name)}! We hope you enjoyed your tour. Go back to the Pynwheel Tour app any time to review the details of your tour." : @community.thank_you_message , :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
                 - if !@community.is_salesforce_community? && current_community.community_tour.only_scheduled_tour and (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget )
                   .col-lg-9.col-lg-offset-1
                     .form-group
@@ -1424,7 +1424,7 @@
   {
     $('[data-toggle="1Popover"]').popover({
         html: true,
-        template: '<div class="popover pyn-popover" style="width: fit-content; top -18px;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">When this is set to "on" there will be a "Start Tour" button in your Pynwheel Touch app. When touched, the user will enter their cell phone number or scan a QR code and receive a link to download / open the Self Tour app.</div><div class="popover-footer"><a id="1PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover" style="width: fit-content; top -18px;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">When this is set to "on" there will be a "Start Tour" button in your Pynwheel Touch app. When touched, the user will enter their cell phone number or scan a QR code and receive a link to download / open the Pynwheel Tour app.</div><div class="popover-footer"><a id="1PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
     }).popover('show');
   }
 
@@ -1453,7 +1453,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="4Popover"]:first').popover({
         html: true,
-        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">If you plan on using the Pynwheel Scheduler widget to allow users to schedule Self Tours on your website, switch this to "Yes". Tou can then add email / text confirmation text below and get the scheduler widget code in the menu on the left.</div><div class="popover-footer"><a id="4PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">If you plan on using the Pynwheel Scheduler widget to allow users to schedule Pynwheel Tours on your website, switch this to "Yes". Tou can then add email / text confirmation text below and get the scheduler widget code in the menu on the left.</div><div class="popover-footer"><a id="4PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -1483,7 +1483,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="7Popover"]').popover({
         html: true,
-        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Enter the maximum number of in-person Self Tour visitors you would like at the property at one time. Leave blank if there is no limit. </div><div class="popover-footer"><a id="7PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Enter the maximum number of in-person Pynwheel Tour visitors you would like at the property at one time. Leave blank if there is no limit. </div><div class="popover-footer"><a id="7PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -1523,7 +1523,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="11Popover"]').popover({
         html: true,
-        template: '<div class="popover pyn-popover" style="width: fit-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">This is the alert that your guest will receive 1 day prior to their scheduled arrival (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:<br>We look forward to having you visit our property at <time> tomorrow for your tour. Download Pynwheel Self Tour (links to app stores). (Link to reschedule appointment).</div><div class="popover-footer"><a id="11PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover" style="width: fit-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">This is the alert that your guest will receive 1 day prior to their scheduled arrival (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:<br>We look forward to having you visit our property at <time> tomorrow for your tour. Download Pynwheel Tour (links to app stores). (Link to reschedule appointment).</div><div class="popover-footer"><a id="11PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -1533,7 +1533,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="12Popover"]').popover({
         html: true,
-        template: '<div class="popover pyn-popover" style="width: fit-content; "><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">This is the alert that your guest will receive 1 hour prior to their scheduled arrival (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:<br>Your tour starts soon! Directions to Property (link opens Google map with address pre-populated). When you arrive at the property, open Pynwheel Self Tour to start your tour.</div><div class="popover-footer"><a id="12PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover" style="width: fit-content; "><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">This is the alert that your guest will receive 1 hour prior to their scheduled arrival (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:<br>Your tour starts soon! Directions to Property (link opens Google map with address pre-populated). When you arrive at the property, open Pynwheel Tour to start your tour.</div><div class="popover-footer"><a id="12PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 

@@ -15,7 +15,7 @@ class Yardi2Service < BaseService
     property_ids = @credentials.property_id.split(',') rescue []
     property_ids&.each do |property_id|
       begin
-        property_id = property_id.strip
+        property_id = property_id&.strip
         external_property_id = ""
         ils_units = []
         floorplans = []

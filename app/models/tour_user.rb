@@ -48,6 +48,10 @@ class TourUser < ApplicationRecord
   mount_base64_uploader :image, AvatarUploader
   mount_base64_uploader :id_card, AvatarUploader
 
+  def user_completed_tours
+    self.tour_histories.where(tour_state: "completed", tour_site: "onsite")
+  end
+
   def set_tour_user_name
     self.update_column :name, "#{self.first_name} #{self.last_name}"
   end

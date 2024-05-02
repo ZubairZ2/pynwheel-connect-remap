@@ -59,8 +59,8 @@ class User < ApplicationRecord
   devise :invitable, :database_authenticatable, :registerable,
          :recoverable, :rememberable, :trackable, :validatable, :timeoutable, :timeout_in => 8.hours
   #ROLES = ["super admin" , "company admin" , "community manager", "region admin" , "member"]
-  ROLES = ["Community admin", "Community manager",["Company admin","Company admin"] ,["Regional admin", "Regional admin"], ["Pynwheel admin","Super admin"],["View Visitor Details","visitor_detail_page"], ["Dwelo admin","Dwelo admin"], ["Community Assistant (Self Tour)","Community assistant"]]
-  ROLES_DWELO_ADMIN = [["Company admin","Company admin"] ,["Regional admin", "Regional admin"], ["Community admin", "Community admin"],["Community manager","Community manager"],["View Visitor Details","visitor_detail_page"], ["Community Assistant (Self Tour)","Community assistant"]]
+  ROLES = ["Community admin", "Community manager",["Company admin","Company admin"] ,["Regional admin", "Regional admin"], ["Pynwheel admin","Super admin"],["View Visitor Details","visitor_detail_page"], ["Dwelo admin","Dwelo admin"], ["Community Assistant (Pynwheel Tour)","Community assistant"]]
+  ROLES_DWELO_ADMIN = [["Company admin","Company admin"] ,["Regional admin", "Regional admin"], ["Community admin", "Community admin"],["Community manager","Community manager"],["View Visitor Details","visitor_detail_page"], ["Community Assistant (Pynwheel Tour)","Community assistant"]]
   ROLES_ADMIN = [ "Community manager"]
   belongs_to :company
   belongs_to :region

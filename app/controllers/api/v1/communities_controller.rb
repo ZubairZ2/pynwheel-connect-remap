@@ -209,10 +209,10 @@ module Api
           tour_user.restricted_property_access = true
           visitor_name = tour_user.name.titleize
           sleep 1
-          create_tour_history(tour_user,tour_type,community)
+          # create_tour_history(tour_user,tour_type,community)
           subject = "Property Access Code for #{visitor_name}"
-          body = "#{visitor_name} is ready to start a Self Tour at #{community.name}. 
-          Please instruct #{tour_user.first_name.titleize} to enter this property access code into the Self Tour app:<br>
+          body = "#{visitor_name} is ready to start a Pynwheel Tour at #{community.name}. 
+          Please instruct #{tour_user.first_name.titleize} to enter this property access code into the Pynwheel Tour app:<br>
           <br>#{tour_user.property_access_code}<br>
           <br>This code will expire in #{tour_length_stay_limit} minutes<br> 
           <br>Thanks!"
@@ -222,7 +222,7 @@ module Api
     
       #TODO:: Incase if you need to create tourhistory here otherwise remove it later.
       def create_tour_history(tour_user,tour_type,community)
-        tour_history = TourHistory.find_or_create_by(tour_user_id: tour_user.id) rescue TourHistory.new
+        tour_history = TourHistory.find_or_create_by(community_id: community.id, tour_user_id: tour_user.id) rescue TourHistory.new
         tour_history.update_columns(community_id: community.id, tour_type: tour_type, tour_user_id: tour_user.id, tour_id: community.community_tour.id)
         last_arrival = tour_user.tour_histories.where(tour_id: community.community_tour.id).last rescue nil
         last_arrival.update_columns(arrived: Time.now) if last_arrival.present?
@@ -345,7 +345,7 @@ module Api
           
           stops_arr = []
           if @community.is_sitemap
-            stops_arr = @community.mdu ? @tour.tour_stops.where(display_stop: true).order(:sort) :  @tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
+            stops_arr = @community.mdu ? @tour.tour_stops.where(display_stop: true).order(:sort) :  @tour.tour_stops.where(display_stop: true, stop_type: "amenity").order(:sort)
           else
             @building_list = @floor_list = []
     
@@ -373,7 +373,9 @@ module Api
           stops_arr = stops_arr.compact.map{|x| x.id}.uniq
     
           un_ordered_visited_stops = VisitedStop.where(tour_user_id: @tour_user.id ,tour_id: @tour.id ).map{|x| x.tour_stop_id}.uniq
-    
+          
+          # @visited_stops = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: @tour.id).order(created_at: :desc).map{|x| x.tour_stop_id}.uniq
+
           @visited_stops = []
           
           stops_arr.each do |val|
@@ -1393,8 +1395,9 @@ module Api
           # dt = DateTime.now
         end
     
-        tour_type = tour.tour_type.eql?("") ? tour.property_tour_type : tour.tour_type
-        return {schedule_tour_url: get_schedule_tour_url(tour.community, tour, tour.tour_user), grace_period: tour.community.community_tour.grace_period, schedule_tour_id: tour.id, tour_type: tour_type, tour_time: "#{t_date} - #{t_time}", community: tour.community}
+        display_tour_type = tour.scheduled_tour_type
+        tour_type = tour_type.eql?("") ? tour.property_tour_type : tour.tour_type
+        return {schedule_tour_url: tour.get_schedule_tour_url(), grace_period: tour.community.community_tour.grace_period, schedule_tour_id: tour.id, tour_type: tour_type, display_tour_type: display_tour_type , tour_time: "#{t_date} - #{t_time}", community: tour.community}
       end
     
       def get_last_visited_community(scheduled_tours)

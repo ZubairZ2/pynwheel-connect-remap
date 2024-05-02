@@ -56,7 +56,7 @@ module LeadsUploader
       end
 
       def message
-        "#{@email},\nThank you for visiting #{@community.name}, Here are your favorites:\n#{favorit_items}"
+        "#{@email},\nThank you for visiting #{SentenceFormatter.capitalized_words(@community.name)}, Here are your favorites:\n#{favorit_items}"
       end
 
       def first_name
@@ -96,11 +96,11 @@ module LeadsUploader
       end
 
       def source
-        "G5"
+        "Pynwheel"
       end
 
       def secondary_source
-        "ILS-Ads"
+        "Pynwheel"
       end
   end
 end

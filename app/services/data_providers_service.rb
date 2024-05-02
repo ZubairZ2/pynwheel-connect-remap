@@ -12,12 +12,18 @@ class DataProvidersService
         RealPageDataUpdateWorker.perform_async community.id
       when "yardirentcafe"
         YardirentcafeDataUpdateWorker.perform_async community.id
+      when "rentmanager"
+        RentManagerDataImportWorker.perform_async community.id
       when "psi"
         EntrataDataUpdateWorker.perform_async community.id
       when "yardi"
         YardiDataUpdateWorker.perform_async community.id
       when "resman"
         ResmanDataUpdateWorker.perform_async community.id
+      when "zaremba"
+        ZarembaDataUpdateWorker.perform_async community.id
+      when "xml"
+        XmlDataUpdateWorker.perform_async community.id
       else
         next
       end

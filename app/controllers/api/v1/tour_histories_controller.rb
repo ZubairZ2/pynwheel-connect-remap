@@ -20,7 +20,7 @@ module Api
             tour_history.community_id = params[:community_id]
             tour_history.community_time_zone = community.get_time_zone()
             if  params[:tour_site].present?
-              if params[:tour_site] == "self_tour"
+              if params[:tour_site] == "self_tour" || params[:tour_site] == "guided_tour"
                 tour_history.tour_site = "onsite"
               elsif params[:tour_site] == "virtual_tour"
                 tour_history.tour_site = "offsite"
@@ -194,7 +194,7 @@ module Api
           phone_number_text = phone_number.present? ? ("<br><br><b>Want to check in with them? " + "<a href='tel:" + phone_number + "'> " + phone_number + " <a>" + "<b>") : ""
           contact_user = (phone_number_text + (community.chat_control ? ("#{tu.phone_number.present? ? "<br><br>Or" : ""}<br><br><b>Want to check in with them?  <a href='" + base_url+"companies/#{community.company.id}/communities/#{community.id}/edit?tour_user_id=#{tu.id}" + "'>Open Chat</a>" ) : ""))
     
-          @mail_content = ["lengthy_stay", "#{tu.name.titleize} has been on a Self Tour at #{community.name} for #{stay_time} minutes. They are currently at #{at_stop}. #{contact_user}</b>"] #get_alert_message('lengthy_stay')
+          @mail_content = ["lengthy_stay", "#{tu.name.titleize} has been on a Pynwheel Tour at #{community.name} for #{stay_time} minutes. They are currently at #{at_stop}. #{contact_user}</b>"] #get_alert_message('lengthy_stay')
           tour_history.update_column 'lengthy_stay_email_sent',true
     
           emails = community.email.gsub(" ","").split(',')

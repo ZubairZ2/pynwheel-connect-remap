@@ -1,9 +1,9 @@
 class NotifyManagerService < BaseService
   attr_reader :community_id
 
-  NOTIFY_MANAGER_EMAIL_SUBJECT = "IMPORTANT- new units have been added to your self-guided tour".freeze
+  NOTIFY_MANAGER_EMAIL_SUBJECT = "IMPORTANT- new units have been added to your pynwheel tour".freeze
   NOTIFY_MANAGER_EMAIL_TEMPLATE = "Hello!
-    <br>The following units have been added to Pynwheel Self Tour because their status changed to 'ready' in your property management system:
+    <br>The following units have been added to Pynwheel Tour because their status changed to 'ready' in your property management system:
     <ul>%s</ul>
     Below is a list of all units currently available to tour:
     <ul>%s</ul>

@@ -183,8 +183,8 @@ class CompaniesController < ApplicationController
   
   def fetch_tour_status(tour_status)
     type = "Virtual Tour"
-    type = "Self Tour" if ["self_tour", "Self Guided"].include?(tour_status)
-    type = "Guided Tour" if ["guided_tour"].include?(tour_status)
+    type = "App Guided Tour" if ["self_tour", "Self Guided"].include?(tour_status)
+    type = "Person Guided Tour" if ["guided_tour"].include?(tour_status)
     type
   end
   
@@ -224,14 +224,14 @@ class CompaniesController < ApplicationController
 
   def fetch_schedule_tour_status(property_tour_type,tt)
     if (property_tour_type == "scheduled_tour" || property_tour_type.blank?)  && tt == "self_tour"
-      "Self Tour - Scheduled"
+      "App Guided Tour - Scheduled"
     elsif property_tour_type == "unscheduled_self_tour"
-      "Self Tour - Unscheduled"
+      "App Guided Tour - Unscheduled"
     elsif property_tour_type == "remote_tour"
       "Remote"
     else
       if !property_tour_type.present? && (tt == "guided_tour")
-      "Scheduled"
+        "Scheduled"
       else
         "Remote"
       end
@@ -240,8 +240,8 @@ class CompaniesController < ApplicationController
 
   def fetch_tour_type(tour_type)
     type = "Virtual Tour"
-    type = "Self Tour" if ["self_tour", "Self Guided"].include?(tour_type)
-    type = "Guided Tour" if ["guided_tour"].include?(tour_type)
+    type = "App Guided Tour" if ["self_tour", "Self Guided"].include?(tour_type)
+    type = "Person Guided Tour" if ["guided_tour"].include?(tour_type)
     type
   end
 
