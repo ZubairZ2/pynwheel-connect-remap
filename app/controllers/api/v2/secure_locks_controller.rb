@@ -223,17 +223,14 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
   end
 
   def igloo_home_lock(lock)
-    unless @community.igloohome.present?
-      @community.create_igloohome(email: lock['email'], file: lock["file"])
-      @locks_provider << IGLOOHOME
+    @igloohome = get_igloohome_account
 
-    else
-      if lock["file"].present?
-        @community.igloohome.update_attributes(email: lock['email'], file: lock["file"])
-      else
-        @community.igloohome.update_attributes(email: lock['email'])
-      end
+    if(lock['is_auth_code'].present?)
+      @community.igloohome.update_attributes(is_authorized_with_pynwheel: lock['is_auth_code'])
+    elsif(lock['is_client_auth'])
+      @community.igloohome.update_attributes(is_authorized_with_pynwheel: false, client_id: lock['client_id'], client_secret: lock['client_secret'])
     end
+
   end
 
   def zerv_lock(lock)
@@ -274,6 +271,13 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
     locks << { type: IGLOOHOMECLIENT, details: igloo_home } if igloo_home.present?
     locks << { type: OTHERLOCK, details: other_lock } if other_lock.present?
     locks
+  end
+
+  def get_igloohome_account
+    Igloohome.find_or_create_by(community_id: @community&.id) do |igloohome|
+      igloohome.username = "Username"
+      igloohome.password = "Password"
+    end
   end
 
   def load_community

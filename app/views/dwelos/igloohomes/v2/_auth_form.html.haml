@@ -1,46 +1,11 @@
-.box-body
-  .row
-    .col-lg-9.col-lg-offset-1
-      .col-sm-12.col-lg-3.col-md-3.col-xs-12
-        %input{:name => "lock_authorization", :id => "code_grant_auth", :type => "radio", :value => "code grant", checked: current_community.igloohome.is_authorized_with_pynwheel }
-        %label Authorization Code Grant
-      .col-sm-12.col-lg-3.col-md-3.col-xs-12
-        %input{:name => "lock_authorization", :id => "client_credential_auth", :type => "radio", :value => "client credental", checked: !current_community.igloohome.is_authorized_with_pynwheel }
-        %label OAuth Client Credentials
-
-  .row.igloohome_auth_btn.mt-30
-    .col-lg-9.col-lg-offset-1
-      .col-sm-12.col-lg-12.col-md-12.col-xs-12.mb-20
-        %p
-          Authorization Code Grant flow provides a secure way for Pynwheel to obtain access token from Igloo, allowing Pynwheel to access lock on behalf of properties with their consent.
-        .row.mb-10
-        %a{:href => "https://connect.remotelock.com/oauth/authorize?response_type=code&client_id=#{ENV['REMOTELOCK_CLIENT_ID']}&redirect_uri=#{ENV['REMOTELOCK_REDIRECT_URI']}", id: "code_grant_btn", class: "btn btn-primary connect_acc"}
-          Authorize
-        %p.mt-10
-          %strong NOTE: 
-          You must have Igloohome account signed up via RemoteLock (connect.remotelock.com)
-
-:javascript
-  $(document).ready(function () {
-    if ($('#client_credential_auth')[0].checked == true) {
-      $(".igloohome_auth_btn").hide()
-    }
-    else if ($('#code_grant_auth')[0].checked == true) {
-      $(".igloohome_auth_form").hide()
-    }
-    else {
-      $(".igloohome_auth_form").show()
-      $(".igloohome_auth_btn").hide()
-    }
-
-    $('input[type=radio][name=lock_authorization]').change(function() {
-      if (this.value == 'client credental') {
-        $(".igloohome_auth_form").show()
-        $(".igloohome_auth_btn").hide()
-        }
-      else if (this.value == 'code grant') {
-        $(".igloohome_auth_form").hide()
-        $(".igloohome_auth_btn").show()
-      }
-    });
-  })
+.row.igloohome_auth_btn.mt-30
+  .col-lg-9.col-lg-offset-1
+    .col-sm-12.col-lg-12.col-md-12.col-xs-12.mb-20
+      %p
+        Authorization Code Grant flow provides a secure way for Pynwheel to obtain access token from Igloo, allowing Pynwheel to access lock on behalf of properties with their consent.
+      .row.mb-10
+      %a{:href => "https://connect.remotelock.com/oauth/authorize?response_type=code&client_id=#{ENV['REMOTELOCK_CLIENT_ID']}&redirect_uri=#{ENV['REMOTELOCK_REDIRECT_URI']}", id: "code_grant_btn", class: "btn btn-primary connect_acc"}
+        Authorize
+      %p.mt-10
+        %strong NOTE: 
+        You must have Igloohome account signed up via RemoteLock (connect.remotelock.com)

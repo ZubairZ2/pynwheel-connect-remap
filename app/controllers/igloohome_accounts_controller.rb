@@ -2,9 +2,7 @@ class IgloohomeAccountsController < ApplicationController
   before_action :create_igloohome_account, except: [:remove_igloohome_locks] 
 
   def create
-    @igloohome.update(version: params[:igloohome][:version]) if params[:igloohome][:version].present?
-    # flash[:notice] = "Igloohome version updated successfully!"
-    # redirect_to new_community_dwelo_path(current_community)
+    @igloohome.update(version: params.dig(:igloohome, :version)) if params.dig(:igloohome, :version).present?
   end
 
   def add_lock_instructions

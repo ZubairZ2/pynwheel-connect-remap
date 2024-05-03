@@ -15,22 +15,21 @@
 #communityLock{data: {community_id: @community&.id}}
 
 :javascript
+  function import_dwelo_locks(community_dwelo_id){
+    var community_id = #{@community.id}
+    $.ajax({
+      type: 'POST',
+      url: '/api/v1/save_data',
+      data: {dwelo_account_id: community_dwelo_id, community_id: community_id},
+      success: function (data) {}
+    });
+  }
 
-    function import_dwelo_locks(community_dwelo_id){
-      var community_id = #{@community.id}
-      $.ajax({
-        type: 'POST',
-        url: '/api/v1/save_data',
-        data: {dwelo_account_id: community_dwelo_id, community_id: community_id},
-        success: function (data) {}
-      });
-    }
-
-    function import_edgestate_locks(community_id){
-      $.ajax({
-        type: 'POST',
-        url: '/communities/'+ community_id + '/edgestate_accounts/import_edgestate_locks',
-        cache: false,
-        success: function (data) {}
-      });
-    }
+  function import_edgestate_locks(community_id){
+    $.ajax({
+      type: 'POST',
+      url: '/communities/'+ community_id + '/edgestate_accounts/import_edgestate_locks',
+      cache: false,
+      success: function (data) {}
+    });
+  }

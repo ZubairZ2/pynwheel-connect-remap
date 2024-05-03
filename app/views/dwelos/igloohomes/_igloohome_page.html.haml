@@ -15,6 +15,7 @@
             - version_seleted = current_community.igloohome.present? ? current_community.igloohome.version : ""
             = f.select :version , options_for_select(["v1", "v2"], version_seleted),{:include_blank => false},{:class=>"form-control", onchange: 'submitIgloohomeFormOnChange()'}
           = f.hidden_field :community_id, :value=> current_community.id
+          
       .row.mt-10{:style=>"font-size: 17px"}
         .col-lg-9.col-lg-offset-1
           %p Please note only one Igloo version may be selected per community.

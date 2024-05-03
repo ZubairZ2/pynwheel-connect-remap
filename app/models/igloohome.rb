@@ -10,8 +10,18 @@ class Igloohome < ApplicationRecord
 
   def as_json options = {}
     super(
-      :only => [:id, :email, :file]
+      :only => [:id, :community_id, :client_id, :client_secret],
+      :methods => [:is_client_auth, :is_auth_code]
+      
     )
+  end
+
+  def is_client_auth
+    client_id && client_secret && !is_authorized_with_pynwheel
+  end
+
+  def is_auth_code
+    is_authorized_with_pynwheel
   end
 
   def import_data file

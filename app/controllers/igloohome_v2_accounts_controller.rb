@@ -129,6 +129,10 @@ class IgloohomeV2AccountsController < ApplicationController
     end
   end
 
+  def update_igloo_auth_toggle
+    current_community.igloohome.update(is_authorized_with_pynwheel: params.dig(:is_authorized_with_pynwheel) === "true") if params.dig(:is_authorized_with_pynwheel).present?
+  end
+
   private
 
   def igloohome_params
