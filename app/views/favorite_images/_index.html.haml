@@ -11,7 +11,7 @@
             - else
               %a#pdf_viewer{:href => "#{favorite_image.image.url}"} #{ image_tag "pdf_viewer.jpeg"}
               -#%iframe{:src => "#{favorite_image.image.url}"} #{favorite_image.image}  width="600" height="780" style="border: none;"&gt;
-          = image_tag "exclamation-mark.png", class: "waring_exal #{(favorite_image.image.width < 300 && favorite_image.image.height < 300) ? "" : "hidden"}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
+          = image_tag "exclamation-mark.png", class: "waring_exal #{(favorite_image.image.width < 300 && favorite_image.image.height < 300) ? "" : "hidden" rescue ""}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
 
         .icons
           / = link_to show_image_in_modal_community_favorite_setting_path(@community,@favorite_setting,favorite_image_id: favorite_image.id), remote: true do 
