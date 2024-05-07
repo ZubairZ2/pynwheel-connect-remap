@@ -71,7 +71,7 @@ class IgloohomeV2AccountsController < ApplicationController
     community = Community.find params[:community_id]
     igloohome_account = Igloohome.find_by(community_id: community.id) rescue nil
     if (igloohome_account && igloohome_account.refresh_token).present?
-      access_token = generate_remotelock_token
+      access_token = generate_igloohome_token
       responce = IgloohomeLockService.new(current_community).get_all_deivces(access_token)
 
       if responce.present?
@@ -90,7 +90,7 @@ class IgloohomeV2AccountsController < ApplicationController
     community = Community.find params[:community_id]
     igloohome_account = Igloohome.find_by(community_id: community.id) rescue nil
     if (igloohome_account && igloohome_account.refresh_token).present?
-      access_token = generate_remotelock_token
+      access_token = generate_igloohome_token
       responce = IgloohomeLockService.new(current_community).get_all_deivces(access_token)
     
       if responce.present? and responce["data"].present?
