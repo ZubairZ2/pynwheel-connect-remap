@@ -1054,7 +1054,10 @@ function renderChangedUnits(){
   sortType = document.getElementById('filter');
   floorUnits = getFilteredUnits(filtered_units, sortType.value);
   document.getElementById('unit-title-count').innerHTML = floorUnits.length + " " + "Units Found";
+  console.log("All units: ", units);
   console.log("filtered_units: ", filtered_units);
+
+
   filtered_units.forEach((unit) => {
     var unit_details_div = `
     <div class='left-side-30-units' id='unit_${unit['id']}'>
@@ -2770,7 +2773,7 @@ function applyFilters(){
 function get_unit_availability(unit) {
   const todayDate = new Date();
   let availableDateString = "";
-  debugger;
+
   if (unit.sold) {
     availableDateString = "Unavailable:";
   } else if (unit.available && unit.available_date) {
@@ -2778,12 +2781,11 @@ function get_unit_availability(unit) {
     if (availableDate <= todayDate) {
       availableDateString = "Available: Now";
     } else {
-      // Assuming formattedDateByRegion function is available and works correctly
-      const countryCode = webCommunity.country_code || "US"; // Default value if country_code is undefined
-      console.log("countryCode: ", countryCode);
-      console.log("availableDate: ", availableDate);
-
-      availableDateString = `Available: ${formattedDateByRegion(countryCode, availableDate)}`;
+      if (typeof webCommunity !== 'undefined' && webCommunity.country_code) {
+        availableDateString = `Available: ${formattedDateByRegion(webCommunity.country_code, availableDate)}`;
+      } else {
+        availableDateString = `Available: ${formattedDateByRegion("US", availableDate)}`;
+      }
     }
   } else {
     availableDateString = "Unavailable:";
