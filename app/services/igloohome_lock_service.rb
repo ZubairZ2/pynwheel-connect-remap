@@ -17,7 +17,7 @@ class IgloohomeLockService < BaseService
   def client_credentials
     return unless @igloohome_account.present?
   
-    HTTParty.post(auth_base_url,
+    HTTParty.post("#{auth_base_url}/oauth2/token",
       body: client_credentials_params,
       headers: client_auth_request_header
     )
@@ -26,7 +26,7 @@ class IgloohomeLockService < BaseService
   def code_grant_authorization(code)
     return unless code.present?
 
-    response = HTTParty.post(auth_base_url, 
+    response = HTTParty.post("#{auth_base_url}/oauth2/token", 
                 body: code_grant_authorization_params(code), 
                 headers: auth_request_header 
               )
@@ -36,7 +36,7 @@ class IgloohomeLockService < BaseService
   def get_access_token_after_refresh
     return unless @igloohome_account.present?
 
-    HTTParty.post(auth_base_url, 
+    HTTParty.post("#{auth_base_url}/oauth2/token", 
       headers: auth_request_header, 
       body: get_access_token_after_refresh_params
     )
@@ -297,19 +297,15 @@ class IgloohomeLockService < BaseService
       @igloohome_account.client_secret
     end
 
-    def base_url
-      "https://api.igloodeveloper.co/igloohome"
-    end
-
     def api_base_url
-      "https://api.igloodeveloper.co/igloohome"
+      ENV["IGLOOHOME_API_BASE_URL"]
     end
 
     def auth_base_url
-      "https://auth.igloohome.co/oauth2/token"
+      ENV["IGLOOHOME_AUTH_BASE_URL"]
     end
 
     def redirect_uri
-      "https://pynwheelconnect.com/"
+      ENV["IGLOOHOME_REDIRECT_URI"]
     end
 end
