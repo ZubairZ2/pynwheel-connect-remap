@@ -30,9 +30,7 @@ $(document).ready(function () {
   is_floorplates = $("#communityWebpagesData").data("is_floorplate");
   currency = $("#communityWebpagesData").data("currency");
   
-  console.log("Web Community: ", webCommunity);
-
-  if(webCommunity) {
+  if (typeof webCommunity !== 'undefined') {
     selectMap = webCommunity.web_map_type;
     enable3DMaps = webCommunity.enable_three_d_maps;
     defaultMapType = webCommunity.web_map_type;
@@ -60,6 +58,8 @@ $(document).ready(function () {
 
     renderChangedUnits();
     handleMapControl()
+  } else {
+    console.error("webCommunity is undefined");
   }
 
 });
@@ -1054,9 +1054,6 @@ function renderChangedUnits(){
   sortType = document.getElementById('filter');
   floorUnits = getFilteredUnits(filtered_units, sortType.value);
   document.getElementById('unit-title-count').innerHTML = floorUnits.length + " " + "Units Found";
-  console.log("All units: ", units);
-  console.log("filtered_units: ", filtered_units);
-
 
   filtered_units.forEach((unit) => {
     var unit_details_div = `

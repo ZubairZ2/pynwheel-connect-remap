@@ -80,7 +80,6 @@ $(document).ready(function(){
   new Clipboard('.clipboard-btn');
 });
 
-
 function formatDate(date, format) {
   if(date == "Now" || !date) return date;
 
@@ -94,9 +93,6 @@ function formatDate(date, format) {
 }
 
 function formattedDateByRegion(country_code, date) {
-  console.log("Country Code: ", country_code);
-  console.log("DATE CONVERSION: ", date);
-
   switch (country_code) {
     case "US":
       return formatDate(date, 'mm/dd/yy');
