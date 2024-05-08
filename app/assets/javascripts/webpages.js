@@ -29,7 +29,8 @@ $(document).ready(function () {
   _3dConfigurations = $("#communityWebpagesData").data("mapConfigurations");
   is_floorplates = $("#communityWebpagesData").data("is_floorplate");
   currency = $("#communityWebpagesData").data("currency");
-  renderChangedUnits();
+  
+  console.log("Web Community: ", webCommunity);
 
   if(webCommunity) {
     selectMap = webCommunity.web_map_type;
@@ -57,6 +58,7 @@ $(document).ready(function () {
       );
     }
 
+    renderChangedUnits();
     handleMapControl()
   }
 
@@ -2791,8 +2793,6 @@ function get_unit_availability(unit) {
 
 function updateSession(end_point_url) {
   community_id = $("#maps_community_id").val()
-  console.log("community_id: ",community_id)
-  console.log("update session")
     if(community_id) {
       $.ajax({
         type: "GET",
@@ -2822,7 +2822,6 @@ function resetInactivityTimer() {
   clearTimeout(inactivityTimer);
   const currentTime = Date.now();
   const timeSinceLastActivity = currentTime - lastActivityTime;
-  console.log("Clear timer");
   
   if (!updateRequestSent) {
     // User has become active, send the request immediately
@@ -2841,8 +2840,6 @@ function resetInactivityTimer() {
 }
 
 function sendUpdateRequest() {
-  console.log('User activity updated successfully.');
-  updateSession("update_last_active");
   updateRequestSent = false; // Reset the flag
   lastActivityTime = Date.now();
 }
@@ -2854,10 +2851,7 @@ function updateLastActive() {
 $(document).ready(function() {
   var currentURL = window.location.pathname;
 
-  console.log("Current URL:", currentURL);
-
   if (currentURL.endsWith("/webpages") || currentURL.endsWith("/webpages/favorites")) {
-    console.log("Matching URL, executing code");
 
     document.addEventListener("mousemove", function () {
       updateLastActive();
