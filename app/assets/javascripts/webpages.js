@@ -1054,7 +1054,7 @@ function renderChangedUnits(){
   sortType = document.getElementById('filter');
   floorUnits = getFilteredUnits(filtered_units, sortType.value);
   document.getElementById('unit-title-count').innerHTML = floorUnits.length + " " + "Units Found";
-
+  console.log("filtered_units: ", filtered_units);
   filtered_units.forEach((unit) => {
     var unit_details_div = `
     <div class='left-side-30-units' id='unit_${unit['id']}'>
@@ -2779,7 +2779,11 @@ function get_unit_availability(unit) {
       availableDateString = "Available: Now";
     } else {
       // Assuming formattedDateByRegion function is available and works correctly
-      availableDateString = `Available: ${formattedDateByRegion(webCommunity.country_code, availableDate)}`;
+      const countryCode = webCommunity.country_code || "US"; // Default value if country_code is undefined
+      console.log("countryCode: ", countryCode);
+      console.log("availableDate: ", availableDate);
+
+      availableDateString = `Available: ${formattedDateByRegion(countryCode, availableDate)}`;
     }
   } else {
     availableDateString = "Unavailable:";
