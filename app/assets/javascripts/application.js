@@ -84,9 +84,8 @@ $(document).ready(function(){
 function formatDate(date, format) {
   if(date == "Now" || !date) return date;
 
-
   date = (date instanceof Date) ? date : new Date(date)
-
+  
   const day = String(date.getDate()).padStart(2, '0');
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const year = String(date.getFullYear()).slice(-2);
@@ -94,8 +93,11 @@ function formatDate(date, format) {
   return format.replace("dd", day).replace("mm", month).replace("yy", year);
 }
 
-function formattedDateByRegion(community_code, date) {
-  switch (community_code) {
+function formattedDateByRegion(country_code, date) {
+  console.log("Country Code: ", country_code);
+  console.log("DATE CONVERSION: ", date);
+
+  switch (country_code) {
     case "US":
       return formatDate(date, 'mm/dd/yy');
     case "GB":

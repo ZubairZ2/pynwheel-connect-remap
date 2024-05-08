@@ -2771,7 +2771,7 @@ function get_unit_availability(unit) {
   let todayDate = new Date();
   let availableDate = new Date(unit.available_date);
   let availableDateString = "";
-
+  console.log("Unit: ", unit);
   if (unit.sold) {
     availableDateString = "Unavailable:"
   } else {
