@@ -2768,28 +2768,26 @@ function applyFilters(){
 }
 
 function get_unit_availability(unit) {
-  let todayDate = new Date();
-  let availableDate = new Date(unit.available_date);
+  const todayDate = new Date();
   let availableDateString = "";
-  console.log("Unit: ", unit);
+  debugger;
   if (unit.sold) {
-    availableDateString = "Unavailable:"
-  } else {
-    if (unit.available && availableDate) {
-      if(availableDate <= todayDate) {
-        availableDateString = "Available: Now"
-      } else {
-        // date_arr = unit.available_date.split("-");        
-        // availableDateString = "Available: " + (`${date_arr[1]}/${date_arr[2]}/${date_arr[0]}`)
-        availableDateString = `Available: ${formattedDateByRegion(webCommunity.country_code, availableDate)}`
-      }
+    availableDateString = "Unavailable:";
+  } else if (unit.available && unit.available_date) {
+    const availableDate = new Date(unit.available_date);
+    if (availableDate <= todayDate) {
+      availableDateString = "Available: Now";
     } else {
-      availableDateString = "Unavailable:"
+      // Assuming formattedDateByRegion function is available and works correctly
+      availableDateString = `Available: ${formattedDateByRegion(webCommunity.country_code, availableDate)}`;
     }
+  } else {
+    availableDateString = "Unavailable:";
   }
 
   return availableDateString;
 }
+
 
 function updateSession(end_point_url) {
   community_id = $("#maps_community_id").val()
