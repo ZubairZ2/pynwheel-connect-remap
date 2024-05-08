@@ -20,7 +20,18 @@
           %i.fa.fa-warning
           This action will either import new, or update existing locks.
       .propertyDetailName{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+
         %button.btn.btn-primary.impo#import_locks{:onclick => "import_igloohome_locks(#{@community.id})", :type => "button"} Import Locks Data
         - if @community.igloohome.present? and @community.igloohome.igloohome_locks.present?
           = link_to "Map Units" , map_igloohome_locks_community_igloohome_v2_accounts_path(current_community) , :method => :post, :class=>"btn btn-success"
           = link_to "Delete all Existing Locks" , remove_igloohome_locks_community_igloohome_accounts_path(current_community) , :method => :delete, :class=>"btn btn-danger", :style=> "background-color: #dd4b39d4;"
+
+:javascript
+  function import_igloohome_locks(community_id){
+    $.ajax({
+      type: 'POST',
+      url: '/communities/'+ community_id + '/igloohome_v2_accounts/import_igloohome_locks',
+      cache: false,
+      success: function (data) {}
+    });
+  }

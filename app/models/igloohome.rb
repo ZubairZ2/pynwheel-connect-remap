@@ -12,10 +12,17 @@ class Igloohome < ApplicationRecord
     super(
       :only => [:id, :community_id, :client_id, :client_secret],
       :methods => [:is_client_auth, :is_auth_code]
-      
     )
   end
 
+  def access_token_expired?
+    access_token.nil? || Time.now >= access_token_expiry
+  end
+
+  def refresh_token_expired?
+    refresh_token.nil? || Time.now >= refresh_token_expiry
+  end
+  
   def is_client_auth
     client_id && client_secret && !is_authorized_with_pynwheel
   end
@@ -32,8 +39,6 @@ class Igloohome < ApplicationRecord
     end
   end
 
-  private
-
   def save_lock_info lock_row
     igloohome_lock = self.igloohome_locks.find_by(device_id: lock_row[1]) if lock_row[1].present?
     
@@ -44,15 +49,5 @@ class Igloohome < ApplicationRecord
 
   def map_locks_with_stops
     MapLocksJob.perform_async community, "Igloohome"
-  end
-
-  def self.active_client_credential_igloohome(igloohome)
-    !igloohome.present? || (igloohome and igloohome.client_id and igloohome.client_secret).present? ||
-    (igloohome and !igloohome.client_id and !igloohome.client_secret and !igloohome.refresh_token).present? rescue false
-  end
-
-  def self.active_code_grant_auth(igloohome)
-    (igloohome.present? and igloohome.is_authorized_with_pynwheel == true) || 
-    (igloohome and igloohome.refresh_token && !igloohome.client_id and !igloohome.client_secret).present? rescue false
   end
 end

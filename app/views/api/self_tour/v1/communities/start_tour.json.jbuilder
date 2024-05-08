@@ -483,6 +483,7 @@ json.tours @tours do |tour|
       json.igloohome_lock_id ''
       json.igloohome_guest_bluetooth_key ''
       json.igloohome_guest_pin ''
+      json.igloohome_version ''
       json.lock_provider_mac_id ''
       json.list_of_zerv_lock_ids list_of_zerv_lock_ids
       json.navigation_title navigation_title
@@ -551,6 +552,7 @@ json.tours @tours do |tour|
               json.unit_dwelo_lock_id ''
               json.igloohome_lock_id ''
               json.igloohome_guest_bluetooth_key ''
+              json.igloohome_version ''
               json.igloohome_guest_pin ''
               json.lock_provider_mac_id ''
               json.list_of_zerv_lock_ids list_of_zerv_lock_ids              
@@ -560,6 +562,7 @@ json.tours @tours do |tour|
               json.unit_dwelo_lock_id ''
               json.igloohome_lock_id ''
               json.igloohome_guest_bluetooth_key ''
+              json.igloohome_version ''
               json.igloohome_guest_pin ''
               json.lock_provider_mac_id ''
               json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -579,6 +582,7 @@ json.tours @tours do |tour|
                 json.unit_dwelo_lock_id ''
                 json.igloohome_lock_id ''
                 json.igloohome_guest_bluetooth_key ''
+                json.igloohome_version ''
                 json.igloohome_guest_pin ''
                 json.lock_provider_mac_id ''
                 json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -588,6 +592,7 @@ json.tours @tours do |tour|
                 json.unit_dwelo_lock_id ''
                 json.igloohome_lock_id ''
                 json.igloohome_guest_bluetooth_key ''
+                json.igloohome_version ''
                 json.igloohome_guest_pin ''
                 json.lock_provider_mac_id ''
                 json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -598,6 +603,7 @@ json.tours @tours do |tour|
               json.unit_dwelo_lock_id ''
               json.igloohome_lock_id ''
               json.igloohome_guest_bluetooth_key ''
+              json.igloohome_version ''
               json.igloohome_guest_pin ''
               json.lock_provider_mac_id ''
               json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -608,6 +614,7 @@ json.tours @tours do |tour|
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
+            json.igloohome_version ''
             json.igloohome_guest_pin ''
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -624,6 +631,7 @@ json.tours @tours do |tour|
               json.unit_dwelo_lock_id ''
               json.igloohome_lock_id ''
               json.igloohome_guest_bluetooth_key ''
+              json.igloohome_version ''
               json.igloohome_guest_pin ''
               json.lock_provider_mac_id zrv.mac_id
               json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -636,6 +644,7 @@ json.tours @tours do |tour|
                 json.unit_dwelo_lock_id ''
                 json.igloohome_lock_id ''
                 json.igloohome_guest_bluetooth_key ''
+                json.igloohome_version ''
                 json.igloohome_guest_pin ''
                 json.lock_provider_mac_id zrv.mac_id
                 json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -645,6 +654,7 @@ json.tours @tours do |tour|
                 json.unit_dwelo_lock_id ''
                 json.igloohome_lock_id ''
                 json.igloohome_guest_bluetooth_key ''
+                json.igloohome_version ''
                 json.igloohome_guest_pin ''
                 json.lock_provider_mac_id zrv.mac_id
                 json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -656,6 +666,7 @@ json.tours @tours do |tour|
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
+            json.igloohome_version ''
             json.igloohome_guest_pin ''
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -670,6 +681,7 @@ json.tours @tours do |tour|
             json.unit_dwelo_lock_id dwelo_lock.device_id
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
+            json.igloohome_version ''
             json.igloohome_guest_pin ''
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -679,6 +691,7 @@ json.tours @tours do |tour|
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
+            json.igloohome_version ''
             json.igloohome_guest_pin ''
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -691,6 +704,7 @@ json.tours @tours do |tour|
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
+            json.igloohome_version ''
             json.igloohome_guest_pin ''
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -700,6 +714,7 @@ json.tours @tours do |tour|
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
+            json.igloohome_version ''
             json.igloohome_guest_pin ''
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -716,6 +731,7 @@ json.tours @tours do |tour|
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id igloohome_lock.device_id
             json.igloohome_guest_bluetooth_key igloohome_guest.guest_bluetooth_key
+            json.igloohome_version @community&.igloohome&.version
             json.igloohome_guest_pin igloohome_guest.guest_pin
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -725,6 +741,7 @@ json.tours @tours do |tour|
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
+            json.igloohome_version ''
             json.igloohome_guest_pin ''
             json.stop_lock_provider ''
             json.lock_provider_mac_id ''
@@ -736,6 +753,7 @@ json.tours @tours do |tour|
           json.unit_dwelo_lock_id ''
           json.igloohome_lock_id ''
           json.igloohome_guest_bluetooth_key ''
+          json.igloohome_version ''
           json.igloohome_guest_pin ''
           json.lock_provider_mac_id ''
           json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -748,6 +766,7 @@ json.tours @tours do |tour|
         json.unit_dwelo_lock_id ''
         json.igloohome_lock_id ''
         json.igloohome_guest_bluetooth_key ''
+        json.igloohome_version ''
         json.igloohome_guest_pin ''
         json.lock_provider_mac_id ''
         json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -758,6 +777,7 @@ json.tours @tours do |tour|
         json.unit_dwelo_lock_id ''
         json.igloohome_lock_id ''
         json.igloohome_guest_bluetooth_key ''
+        json.igloohome_version ''
         json.igloohome_guest_pin ''
         json.lock_provider_mac_id ''
         json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -785,6 +805,7 @@ json.tours @tours do |tour|
                 json.unit_dwelo_lock_id ''
                 json.igloohome_lock_id ''
                 json.igloohome_guest_bluetooth_key ''
+                json.igloohome_version ''
                 json.igloohome_guest_pin ''
                 json.lock_provider_mac_id ''
                 json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -794,6 +815,7 @@ json.tours @tours do |tour|
                 json.unit_dwelo_lock_id ''
                 json.igloohome_lock_id ''
                 json.igloohome_guest_bluetooth_key ''
+                json.igloohome_version ''
                 json.igloohome_guest_pin ''
                 json.lock_provider_mac_id ''
                 json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -804,6 +826,7 @@ json.tours @tours do |tour|
               json.unit_dwelo_lock_id ''
               json.igloohome_lock_id ''
               json.igloohome_guest_bluetooth_key ''
+              json.igloohome_version ''
               json.igloohome_guest_pin ''
               json.lock_provider_mac_id ''
               json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -814,6 +837,7 @@ json.tours @tours do |tour|
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
+            json.igloohome_version ''
             json.igloohome_guest_pin ''
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -835,6 +859,7 @@ json.tours @tours do |tour|
               json.unit_dwelo_lock_id ''
               json.igloohome_lock_id ''
               json.igloohome_guest_bluetooth_key ''
+              json.igloohome_version ''
               json.igloohome_guest_pin ''
               json.lock_provider_mac_id ''
               json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -844,6 +869,7 @@ json.tours @tours do |tour|
               json.unit_dwelo_lock_id ''
               json.igloohome_lock_id ''
               json.igloohome_guest_bluetooth_key ''
+              json.igloohome_version ''
               json.igloohome_guest_pin ''
               json.lock_provider_mac_id ''
               json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -854,6 +880,7 @@ json.tours @tours do |tour|
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
+            json.igloohome_version ''
             json.igloohome_guest_pin ''
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -870,6 +897,7 @@ json.tours @tours do |tour|
             json.unit_dwelo_lock_id dwelo_lock.device_id
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
+            json.igloohome_version ''
             json.igloohome_guest_pin ''
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -879,6 +907,7 @@ json.tours @tours do |tour|
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
+            json.igloohome_version ''
             json.igloohome_guest_pin ''
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -897,6 +926,7 @@ json.tours @tours do |tour|
               json.unit_dwelo_lock_id ''
               json.igloohome_lock_id ''
               json.igloohome_guest_bluetooth_key ''
+              json.igloohome_version ''
               json.igloohome_guest_pin ''
               json.lock_provider_mac_id zrv.mac_id
               json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -909,6 +939,7 @@ json.tours @tours do |tour|
                 json.unit_dwelo_lock_id ''
                 json.igloohome_lock_id ''
                 json.igloohome_guest_bluetooth_key ''
+                json.igloohome_version ''
                 json.igloohome_guest_pin ''
                 json.lock_provider_mac_id zrv.mac_id
                 json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -918,6 +949,7 @@ json.tours @tours do |tour|
                 json.unit_dwelo_lock_id ''
                 json.igloohome_lock_id ''
                 json.igloohome_guest_bluetooth_key ''
+                json.igloohome_version ''
                 json.igloohome_guest_pin ''
                 json.lock_provider_mac_id zrv.mac_id
                 json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -929,6 +961,7 @@ json.tours @tours do |tour|
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
+            json.igloohome_version ''
             json.igloohome_guest_pin ''
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -945,6 +978,7 @@ json.tours @tours do |tour|
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id igloohome_lock.device_id
             json.igloohome_guest_bluetooth_key igloohome_guest.guest_bluetooth_key
+            json.igloohome_version @community&.igloohome&.version
             json.igloohome_guest_pin igloohome_guest.guest_pin
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -954,6 +988,7 @@ json.tours @tours do |tour|
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
+            json.igloohome_version ''
             json.igloohome_guest_pin ''
             json.stop_lock_provider ''
             json.lock_provider_mac_id ''
@@ -971,6 +1006,7 @@ json.tours @tours do |tour|
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
+            json.igloohome_version ''
             json.igloohome_guest_pin ''
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -980,6 +1016,7 @@ json.tours @tours do |tour|
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
+            json.igloohome_version ''
             json.igloohome_guest_pin ''
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -990,6 +1027,7 @@ json.tours @tours do |tour|
           json.unit_dwelo_lock_id ''
           json.igloohome_lock_id ''
           json.igloohome_guest_bluetooth_key ''
+          json.igloohome_version ''
           json.igloohome_guest_pin ''
           json.lock_provider_mac_id ''
           json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -1000,6 +1038,7 @@ json.tours @tours do |tour|
         json.unit_dwelo_lock_id ''
         json.igloohome_lock_id ''
         json.igloohome_guest_bluetooth_key ''
+        json.igloohome_version ''
         json.igloohome_guest_pin ''
         json.lock_provider_mac_id ''
         json.list_of_zerv_lock_ids list_of_zerv_lock_ids
@@ -1010,6 +1049,7 @@ json.tours @tours do |tour|
       json.unit_dwelo_lock_id ''
       json.igloohome_lock_id ''
       json.igloohome_guest_bluetooth_key ''
+      json.igloohome_version ''
       json.igloohome_guest_pin ''
       json.lock_provider_mac_id ''
       json.list_of_zerv_lock_ids list_of_zerv_lock_ids
