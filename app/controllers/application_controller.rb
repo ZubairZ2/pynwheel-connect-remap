@@ -127,15 +127,6 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  def generate_igloohome_token
-    igloohome_account = current_community.igloohome
-    if igloohome_account.is_client_auth
-      IgloohomeLockService.new(current_community).client_credentials
-    elsif igloohome_account.is_auth_code && igloohome_account.refresh_token.present?
-      IgloohomeLockService.new(current_community).get_access_token_after_refresh
-    end
-  end
-
   def load_tour_users_chats
     # below code will not be executed if call made from browser is ajax
     # request.xhr? => returns numeric or nil values not BOOLEAN values and
