@@ -209,7 +209,7 @@ module DweloDevicesHelper
         end
         
         tour_user.update_column 'igloohome_status' , 'in progress'
-        
+
         if(community.igloohome.version == "v1")
           IgloohomeService.new(community, current_time, tour_user).assign_guest_bluetooth_key
         else

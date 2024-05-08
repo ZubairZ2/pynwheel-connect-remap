@@ -43,33 +43,51 @@ class IgloohomeLockService < BaseService
   end
 
   def get_properties
-    HTTParty.get("#{api_base_url}/properties", :headers => api_request_header) 
+    HTTParty.get(
+      "#{api_base_url}/properties", 
+      :headers => api_request_header
+    ) 
   end
 
   def get_property property_id
-    HTTParty.get("#{api_base_url}/properties/#{property_id}", :headers => api_request_header) 
+    HTTParty.get(
+      "#{api_base_url}/properties/#{property_id}", 
+      :headers => api_request_header
+    ) 
   end
 
   def get_deivces
-    HTTParty.get("#{api_base_url}/devices", :headers => api_request_header) 
+    HTTParty.get(
+      "#{api_base_url}/devices", 
+      :headers => api_request_header
+    ) 
   end
 
   def get_property_devices property_id
-    HTTParty.get("#{api_base_url}/properties/#{property_id}/devices", :headers => api_request_header) 
+    HTTParty.get(
+      "#{api_base_url}/properties/#{property_id}/devices", 
+      :headers => api_request_header
+    ) 
   end
 
   def get_device device_id
-    HTTParty.get("#{api_base_url}/devices/#{device_id}", :headers => api_request_header) 
+    HTTParty.get(
+      "#{api_base_url}/devices/#{device_id}", 
+      :headers => api_request_header
+    ) 
   end
 
   def generate_master_pin device_id
-    HTTParty.get("#{api_base_url}/devices/#{device_id}/masterpin", :headers => api_request_header) 
+    HTTParty.get(
+      "#{api_base_url}/devices/#{device_id}/masterpin", 
+      :headers => pin_code_api_header
+    ) 
   end
 
   def generate_one_time_pin device_id, access_name, start_time
     HTTParty.post(
       "#{api_base_url}/devices/#{device_id}/algopin/onetime", 
-      :headers => api_request_header, 
+      :headers => pin_code_api_header, 
       :body => one_time_pin_params(access_name, start_time)
     )
   end
@@ -77,23 +95,24 @@ class IgloohomeLockService < BaseService
   def generate_permanent_pin device_id, access_name, start_time
     HTTParty.post(
       "#{api_base_url}/devices/#{device_id}/algopin/permanent", 
-      :headers => api_request_header,
+      :headers => pin_code_api_header,
       :body => permanent_pin_params(access_name, start_time)
     ) 
   end
 
-  def generate_hourly_pin device_id, access_name, start_time, end_time
+  def generate_hourly_pin(device_id, access_name, start_time, end_time)
     HTTParty.post(
-      "#{api_base_url}/devices/#{device_id}/algopin/hourly", 
-      :headers => api_request_header,
-      :body => hourly_pin_params(access_name, start_time, end_time)
-    ) 
+      "#{api_base_url}/devices/#{device_id}/algopin/hourly",
+      headers: pin_code_api_header,
+      body: hourly_pin_params(access_name, start_time, end_time).to_json
+    )
   end
+  
 
   def generate_daily_pin device_id, access_name, start_time, end_time
     HTTParty.post(
       "#{api_base_url}/devices/#{device_id}/algopin/daily", 
-      :headers => api_request_header,
+      :headers => pin_code_api_header,
       :body => daily_pin_params(access_name, start_time, end_time)
     ) 
   end
@@ -110,7 +129,6 @@ class IgloohomeLockService < BaseService
 
     def assign_pin_codes igloohome_locks
       IgloohomeGuest.where(community_id: @community.id, tour_user_id: @tour_user.id).delete_all
-
       igloohome_locks.each do |lock|
         if lock.device_id.present?
           pin_code = get_device_pin_code(lock)
@@ -124,7 +142,8 @@ class IgloohomeLockService < BaseService
     end
 
     def get_device_pin_code lock
-      access_name = lock.stop_name
+      access = lock.stop_type.classify.constantize.find_by_id lock.stop_id
+      access_name = access.name
       device_id = lock.device_id
       start_time = @current_time.strftime("%Y-%m-%dT%H:00:00%:z")
       end_time = (@current_time + 3.hours).strftime("%Y-%m-%dT%H:00:00%:z")
@@ -245,6 +264,13 @@ class IgloohomeLockService < BaseService
 
     def api_request_header
       { 'Authorization' => "Bearer #{@igloohome_account.access_token}" }
+    end
+
+    def pin_code_api_header
+      { 
+        'Authorization' => "Bearer #{@igloohome_account.access_token}",
+        'Content-Type' => 'application/json'
+      }
     end
 
     def encode_pynwheel_credentials

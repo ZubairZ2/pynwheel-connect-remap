@@ -52,7 +52,7 @@ class IgloohomeV2AccountsController < ApplicationController
 
   def test_igloohome_connection
     general_error_redirection unless @devices.present?
-    render xml: response
+    render xml: @devices
   end
   
   def import_igloohome_locks
@@ -96,7 +96,6 @@ class IgloohomeV2AccountsController < ApplicationController
     
       property_data = properties.fetch("payload", []).find { |property| property["name"] == current_community.name }
       general_error_redirection unless property_data
-    
       @property_id = property_data["id"]
     end
 
