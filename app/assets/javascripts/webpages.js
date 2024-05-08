@@ -59,7 +59,7 @@ $(document).ready(function () {
     renderChangedUnits();
     handleMapControl()
   } else {
-    console.error("webCommunity is undefined");
+    window.location.reload();
   }
 
 });
