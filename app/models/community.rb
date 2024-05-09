@@ -1175,8 +1175,9 @@ s  end
   end
 
   def swap_yardirentcafe_data
-    ImportYardirentcafeSwapDataJob.perform_async credential.attributes.to_json
+    RentCafeDataSwapWorker.perform_async self.id
   end
+
   def import_yardi2_data
     ImportYardi2StaticDataJob.perform_async credential.attributes.to_json
   end

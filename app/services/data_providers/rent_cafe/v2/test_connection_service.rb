@@ -6,7 +6,10 @@ module DataProviders
           begin
             property_code = @credential&.p_code&.split(",")[0] rescue ""
             property_code = property_code&.strip
-            DataProviders::RentCafe::V2ApisService.new(@community_id).get_apartment_availability(property_code) if property_code.present?
+            rent_cafe_v2_service = DataProviders::RentCafe::V2ApisService.new(@community_id)
+            floorplans = rent_cafe_v2_service.get_floorplans(property_code) if property_code.present?
+            units = rent_cafe_v2_service.get_apartment_availability(property_code) if property_code.present?
+            {floorplans: floorplans, units: units}
           rescue
             false
           end
