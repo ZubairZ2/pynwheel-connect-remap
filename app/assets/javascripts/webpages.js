@@ -57,9 +57,9 @@ $(document).ready(function () {
     }
 
     renderChangedUnits();
-    handleMapControl()
+    handleMapControl();
   } else {
-    window.location.reload();
+    console.error("webCommunity not loaded properly");
   }
 
 });
