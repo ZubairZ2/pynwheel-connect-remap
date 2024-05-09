@@ -92,11 +92,11 @@ class IgloohomeV2AccountsController < ApplicationController
 
     def set_igloohome_property_id
       properties = IgloohomeLockService.new(current_community.id).get_properties
-      general_error_redirection unless properties.present?
-    
       property_data = properties.fetch("payload", []).find { |property| property["name"] == current_community.name }
-      general_error_redirection unless property_data
       @property_id = property_data["id"]
+      
+    rescue
+      general_error_redirection
     end
 
     def authorization_params_present?
