@@ -57,10 +57,10 @@ Rails.application.configure do
   # config.active_job.queue_adapter     = :resque
   # config.active_job.queue_name_prefix = "pynwheel-cms_#{Rails.env}"
   config.action_mailer.perform_caching = false
-  config.after_initialize do
-    ActiveRecord::Base.logger = Rails.logger.clone
-    ActiveRecord::Base.logger.level = Logger::ERROR
-  end
+  # config.after_initialize do
+  #   ActiveRecord::Base.logger = Rails.logger.clone
+  #   ActiveRecord::Base.logger.level = Logger::ERROR
+  # end
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
   # config.action_mailer.raise_delivery_errors = false
@@ -73,17 +73,17 @@ Rails.application.configure do
   config.active_support.deprecation = :notify
 
   # Use default logging formatter so that PID and timestamp are not suppressed.
-  config.log_formatter = ::Logger::Formatter.new
+  # config.log_formatter = ::Logger::Formatter.new
 
   # Use a different logger for distributed setups.
   # require 'syslog/logger'
   # config.logger = ActiveSupport::TaggedLogging.new(Syslog::Logger.new 'app-name')
 
-  if ENV["RAILS_LOG_TO_STDOUT"].present?
-    logger           = ActiveSupport::Logger.new(STDOUT)
-    logger.formatter = config.log_formatter
-    config.logger = ActiveSupport::TaggedLogging.new(logger)
-  end
+  # if ENV["RAILS_LOG_TO_STDOUT"].present?
+  #   logger           = ActiveSupport::Logger.new(STDOUT)
+  #   logger.formatter = config.log_formatter
+  #   config.logger = ActiveSupport::TaggedLogging.new(logger)
+  # end
 
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
