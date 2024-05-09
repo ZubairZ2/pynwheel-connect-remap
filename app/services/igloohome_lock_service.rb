@@ -298,7 +298,7 @@ class IgloohomeLockService < BaseService
     end
 
     def api_base_url
-      ENV["IGLOOHOME_API_BASE_URL"]
+      ENV["IGLOOHOME_API_V2_BASE_URL"]
     end
 
     def auth_base_url
