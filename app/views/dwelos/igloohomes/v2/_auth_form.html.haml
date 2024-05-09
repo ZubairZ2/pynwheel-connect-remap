@@ -1,4 +1,4 @@
-.row.igloohome_auth_btn.mt-30
+.row.igloohome_auth_btn.mt-30.hide
   .col-lg-9.col-lg-offset-1
     .col-sm-12.col-lg-12.col-md-12.col-xs-12.mb-20
       %p
@@ -6,6 +6,7 @@
       .row.mb-10
       %a{:href => "https://connect.remotelock.com/oauth/authorize?response_type=code&client_id=#{ENV['REMOTELOCK_CLIENT_ID']}&redirect_uri=#{ENV['REMOTELOCK_REDIRECT_URI']}", id: "code_grant_btn", class: "btn btn-primary connect_acc"}
         Authorize
+      
       %p.mt-10
         %strong NOTE: 
         You must have an Igloohome account

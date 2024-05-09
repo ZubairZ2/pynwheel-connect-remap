@@ -12,7 +12,7 @@
           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label{:style=>"padding: 0px"}
             Igloo Version
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            - version_seleted = current_community.igloohome.present? ? current_community.igloohome.version : ""
+            - version_seleted = current_community.igloohome.present? ? current_community&.igloohome&.version : ""
             = f.select :version , options_for_select(["v1", "v2"], version_seleted),{:include_blank => false},{:class=>"form-control", onchange: 'submitIgloohomeFormOnChange()'}
           = f.hidden_field :community_id, :value=> current_community.id
           
@@ -26,7 +26,7 @@
     = render :partial=>'dwelos/igloohomes/v1/form'
 
 :javascript
-  var current_version = "#{current_community.igloohome.version}";
+  var current_version = "#{current_community&.igloohome&.version}";
   handleLockView();
 
   function submitIgloohomeFormOnChange() {
