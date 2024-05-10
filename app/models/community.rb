@@ -649,7 +649,7 @@ class Community < ApplicationRecord
     return if igloohome.blank?
     
     if igloohome.is_auth_code
-      status_attr = status_string(igloohome.access_token.present? && igloohome.refresh_token.present? && igloohome.is_authorized_with_pynwheel)
+      status_attr = status_string(igloohome.refresh_token.present? && igloohome.is_authorized_with_pynwheel)
     elsif igloohome.is_client_auth
       status_attr = status_string(igloohome.client_id.present? && igloohome.client_secret.present?)
     else

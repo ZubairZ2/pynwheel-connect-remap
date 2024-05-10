@@ -6,13 +6,16 @@ class Igloohome < ApplicationRecord
   mount_uploader :file, CsvfileUploader
   has_one :status, as: :statusable
   mount_base64_uploader :lock_image, AvatarUploader
-  # mount_uploader :file, SchlagelockUploader
 
   def as_json options = {}
     super(
       :only => [:id, :community_id, :client_id, :client_secret],
-      :methods => [:is_client_auth, :is_auth_code]
+      :methods => [:is_client_auth, :is_auth_code, :authenticated_with_pynwheel, :redirect_uri]
     )
+  end
+
+  def redirect_uri
+    "https://auth.igloohome.co/login?client_id=#{ENV['PYNWHEEL_IGLOOHOME_CLIENT_ID']}&response_type=code&redirect_uri=https%3A%2F%2Fpynwheelconnect.com&scope=igloohomeapi%2Falgopin-daily+igloohomeapi%2Falgopin-hourly+igloohomeapi%2Falgopin-onetime+igloohomeapi%2Falgopin-permanent+igloohomeapi%2Fcreate-pin-bridge-proxied-job+igloohomeapi%2Fdelete-pin-bridge-proxied-job+igloohomeapi%2Fget-devices+igloohomeapi%2Fget-job-status+igloohomeapi%2Flock-bridge-proxied-job+igloohomeapi%2Funlock-bridge-proxied-job+igloohomeapi%2Fget-master-pin+igloohomeapi%2Fget-properties+openid+profile"
   end
 
   def access_token_expired?
@@ -28,8 +31,13 @@ class Igloohome < ApplicationRecord
   end
 
   def is_auth_code
-    is_authorized_with_pynwheel
+    (is_authorized_with_pynwheel || !(client_id && client_secret).present?) && !refresh_token_expired?
   end
+
+  def authenticated_with_pynwheel
+    is_authorized_with_pynwheel && !refresh_token_expired?
+  end
+
 
   def import_data file
     if file.path.split('.').last.include?("csv")

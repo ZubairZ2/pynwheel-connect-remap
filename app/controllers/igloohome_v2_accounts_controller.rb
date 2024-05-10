@@ -68,6 +68,21 @@ class IgloohomeV2AccountsController < ApplicationController
     redirect_to new_community_dwelo_path(current_community)
   end
 
+  def remove_igloohome_auth_account
+    if current_community.igloohome.present?
+      if current_community.igloohome.refresh_token.present?
+        current_community.igloohome.update_attributes(refresh_token: nil, is_authorized_with_pynwheel: false)
+        flash[:notice] = "Account disconnected successfully"
+      else
+        flash[:error] = "No account is attached"
+      end
+    else
+      flash[:error] = "Credentials for igloohome are missing"
+    end
+
+    redirect_to new_community_dwelo_path(current_community)
+  end
+
   def update_igloo_auth_toggle
     is_authorized = params.dig(:is_authorized_with_pynwheel)
     current_community.igloohome.update(is_authorized_with_pynwheel: is_authorized == "true") if is_authorized.present?

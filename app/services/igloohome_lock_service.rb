@@ -286,7 +286,7 @@ class IgloohomeLockService < BaseService
     end
 
     def secret_id_through_pynwheel
-      ENV["PYNWHEEL_IGLOOHOME_SECRET_ID"]
+      ENV["PYNWHEEL_IGLOOHOME_CLIENT_SECRET"]
     end
 
     def client_id_associated_with_client

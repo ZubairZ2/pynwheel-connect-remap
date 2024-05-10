@@ -187,7 +187,7 @@ Rails.application.routes.draw do
         post :map_igloohome_locks
         get :igloohome_code_grant_authorization
         post :update_igloo_auth_toggle
-
+        delete :remove_igloohome_auth_account
       end
     end
 
@@ -748,6 +748,7 @@ Rails.application.routes.draw do
         post :add_secure_locks, to: 'secure_locks#add_secure_locks'
         post :send_latch_initation_email, to: 'secure_locks#send_latch_initation_email'
         delete :delete_secure_lock, to: 'secure_locks#delete_secure_lock'
+        post :remove_igloohome_auth_account, to: 'secure_locks#remove_igloohome_auth_account'
         delete :delete_lock_files, to: 'secure_locks#delete_lock_files'
         post :send_follow_up_emails, to: 'follow_up_emails#send_follow_up_emails'
         get :preview_follow_up_email, to: 'follow_up_emails#preview_follow_up_email'

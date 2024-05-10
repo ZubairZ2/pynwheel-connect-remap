@@ -1,6 +1,6 @@
 class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
   before_action :doorkeeper_authorize!
-  before_action :load_community, only: %i[index add_secure_locks delete_secure_lock]
+  before_action :load_community, only: %i[index add_secure_locks delete_secure_lock remove_igloohome_auth_account]
 
   def index
     locks = get_all_locks
@@ -8,6 +8,19 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
       render json: { success: true, data: locks.as_json }
     else
       render json: { success: false, message: 'No locks added yet!' }
+    end
+  end
+
+  def remove_igloohome_auth_account
+    if @community.igloohome.present?
+      if @community.igloohome.refresh_token.present?
+        @community.igloohome.update_attributes(refresh_token: nil, is_authorized_with_pynwheel: false)
+        render json: { success: true, message: "Account disconnected successfully" }
+      else
+        render json: { success: false, message: "No account is attached" }
+      end
+    else
+      render json: { success: false, message: "Credentials for igloohome are missing" }
     end
   end
 
