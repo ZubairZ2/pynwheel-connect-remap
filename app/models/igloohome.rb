@@ -31,6 +31,11 @@ class Igloohome < ApplicationRecord
   end
 
   def is_auth_code
+    return true if !is_client_auth && !is_code_authorized
+    is_code_authorized
+  end
+
+  def is_code_authorized
     (is_authorized_with_pynwheel || !(client_id && client_secret).present?) && !refresh_token_expired?
   end
 
