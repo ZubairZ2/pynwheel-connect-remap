@@ -111,7 +111,8 @@ class IgloohomeV2AccountsController < ApplicationController
 
     def set_igloohome_property_id
       properties = IgloohomeLockService.new(current_community.id).get_properties
-      property_data = properties.fetch("payload", []).find { |property| property["name"] == current_community.name }
+      property_data = properties.fetch("payload", []).find { |property| property["name"] === current_community&.igloohome&.home_name }
+
       @property_id = property_data["id"]
       
     rescue
