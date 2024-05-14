@@ -237,13 +237,11 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
 
   def igloo_home_lock(lock)
     @igloohome = get_igloohome_account
-
     if(lock['is_auth_code'].present?)
-      @community.igloohome.update_attributes(is_authorized_with_pynwheel: lock['is_auth_code'])
+      @community.igloohome.update_attributes(home_name: lock['home_name'], is_authorized_with_pynwheel: lock['is_auth_code'])
     elsif(lock['is_client_auth'])
-      @community.igloohome.update_attributes(is_authorized_with_pynwheel: false, client_id: lock['client_id'], client_secret: lock['client_secret'])
+      @community.igloohome.update_attributes(home_name: lock['home_name'], is_authorized_with_pynwheel: false, client_id: lock['client_id'], client_secret: lock['client_secret'])
     end
-
   end
 
   def zerv_lock(lock)
