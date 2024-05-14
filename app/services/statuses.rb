@@ -7,7 +7,7 @@ class Statuses
   end
 
   def update_statuses
-    set_company_details_status
+    # set_company_details_status
     set_community_details_status
     set_property_map_status
     set_floorplan_status
