@@ -633,6 +633,12 @@ Rails.application.routes.draw do
           end
         end
 
+        resources :igloohome_accounts, only: [:index] do
+          collection do
+            get :get_pin_code
+          end
+        end
+
         resources :communities do
           get :user_tour_status
           get :initialize_tour

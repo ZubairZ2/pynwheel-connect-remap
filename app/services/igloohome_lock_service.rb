@@ -107,7 +107,6 @@ class IgloohomeLockService < BaseService
       body: hourly_pin_params(access_name, start_time, end_time).to_json
     )
   end
-  
 
   def generate_daily_pin device_id, access_name, start_time, end_time
     HTTParty.post(
