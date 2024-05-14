@@ -648,10 +648,14 @@ class Community < ApplicationRecord
   def igloohome_lock_status(current_user, status)
     return if igloohome.blank?
     
-    if igloohome.is_auth_code
-      status_attr = status_string(igloohome.home_name && (igloohome.refresh_token.present? || igloohome.is_authorized_with_pynwheel) )
-    elsif igloohome.is_client_auth
-      status_attr = status_string(igloohome.home_name && igloohome.client_id.present? && igloohome.client_secret.present?)
+    unless status.present?
+      if igloohome.is_auth_code
+        status_attr = status_string(igloohome.home_name && (igloohome.refresh_token.present? || igloohome.is_authorized_with_pynwheel) )
+      elsif igloohome.is_client_auth
+        status_attr = status_string(igloohome.home_name && igloohome.client_id.present? && igloohome.client_secret.present?)
+      else
+        status_attr = status
+      end
     else
       status_attr = status
     end
