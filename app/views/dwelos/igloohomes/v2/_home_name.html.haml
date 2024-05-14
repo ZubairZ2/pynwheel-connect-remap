@@ -4,7 +4,7 @@
       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
         Home Name
       .col-sm-12.col-lg-9.col-md-9.col-xs-12
-        = f.text_field :home_name, :class=>"form-control validate[required]", :placeholder=>"Home name", :value=> @community.igloohome.present? ? @community.igloohome.home_name : ""
+        = f.text_field :home_name, :class=>"form-control validate[required]", :placeholder=>"Enter home name", :value=> @community.igloohome.present? ? @community.igloohome.home_name : ""
 
 :javascript
   $(document).ready(function () {

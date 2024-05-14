@@ -9,7 +9,7 @@ class Igloohome < ApplicationRecord
 
   def as_json options = {}
     super(
-      :only => [:id, :community_id, :client_id, :client_secret],
+      :only => [:id, :community_id, :client_id, :client_secret, :home_name],
       :methods => [:is_client_auth, :is_auth_code, :authenticated_with_pynwheel, :redirect_uri]
     )
   end
