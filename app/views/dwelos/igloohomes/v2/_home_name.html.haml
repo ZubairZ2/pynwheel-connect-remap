@@ -5,6 +5,7 @@
         Home Name
       .col-sm-12.col-lg-9.col-md-9.col-xs-12
         = f.text_field :home_name, :class=>"form-control validate[required]", :placeholder=>"Enter home name", :value=> @community.igloohome.present? ? @community.igloohome.home_name : ""
+        %span{:style => "color: #9ea2a5;"} Provide the home name exactly as it appears in Igloohome
 
 :javascript
   $(document).ready(function () {
