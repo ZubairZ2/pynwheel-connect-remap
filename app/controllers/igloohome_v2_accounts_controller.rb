@@ -87,6 +87,10 @@ class IgloohomeV2AccountsController < ApplicationController
     is_authorized = params.dig(:is_authorized_with_pynwheel)
     current_community.igloohome.update(is_authorized_with_pynwheel: is_authorized == "true") if is_authorized.present?
   end
+
+  def update_igloo_home_name
+    current_community.igloohome.update(home_name: params.dig("igloohome", "home_name"))
+  end
   
   private
 

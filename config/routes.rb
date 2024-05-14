@@ -187,6 +187,7 @@ Rails.application.routes.draw do
         post :map_igloohome_locks
         get :igloohome_code_grant_authorization
         post :update_igloo_auth_toggle
+        post :update_igloo_home_name
         delete :remove_igloohome_auth_account
       end
     end
