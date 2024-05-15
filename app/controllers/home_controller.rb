@@ -32,9 +32,9 @@ class HomeController < ApplicationController
     
     def handle_code_grant_authorization(brand_url)
       case brand_url
-      when REMOTELOCK_AUTH_BASE_URL
+      when ENV["REMOTELOCK_AUTH_BASE_URL"]
         handle_code_grant_authorization_for('edgestate')
-      when IGLOOHOME_AUTH_BASE_URL
+      when ENV["IGLOOHOME_AUTH_BASE_URL"]
         handle_code_grant_authorization_for('igloohome')
       else
       end
