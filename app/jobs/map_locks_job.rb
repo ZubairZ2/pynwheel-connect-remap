@@ -32,11 +32,18 @@ class MapLocksJob < ApplicationJob
         end
       end
 
+    elsif community.edge_state.present? and type == "Igloohome"
+      clear_locks_provider(community, type)
+      community.igloohome.igloohome_locks.each do |igloohome_lock|
+        data = parse_stop(community, igloohome_lock.device_name)
+        auto_map_locks(community, data, type, igloohome_lock.device_id) if data.present?
+      end
+
     elsif community.latch.present? and type == "Latch"
       clear_locks_provider(community, type)
       community.latch.latch_locks.each do |latch_lock|
         data = parse_stop(community, latch_lock.lock_name)
-        auto_map_latch_locks(community, data, latch_lock, type) if data.present?
+        auto_map_locks(community, data, type, latch_lock.lock_id) if data.present?
       end
 
     elsif community.dwelo.present? and type == "Dwelo"
@@ -109,18 +116,18 @@ class MapLocksJob < ApplicationJob
 
   private
 
-    def auto_map_latch_locks(community, data, latch_lock, type)
+    def auto_map_locks(community, data, type, lock_id)
       if data.class.name.classify.downcase == "amenity"
         if data.doors.present?
-          update_door_lock(data, data.doors.last, type, community, latch_lock.lock_id)
+          update_door_lock(data, data.doors.last, type, community, lock_id)
         else
-          update_stop_lock(data, type, community, latch_lock.lock_id)
+          update_stop_lock(data, type, community, lock_id)
         end
       else
         if data.door.present?
-          update_door_lock(data, data.door, type, community, latch_lock.lock_id)
+          update_door_lock(data, data.door, type, community, lock_id)
         else
-          update_stop_lock(data, type, community, latch_lock.lock_id)
+          update_stop_lock(data, type, community, lock_id)
         end
       end
     end
