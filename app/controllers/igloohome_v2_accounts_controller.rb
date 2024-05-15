@@ -69,7 +69,7 @@ class IgloohomeV2AccountsController < ApplicationController
   def remove_igloohome_auth_account
     if current_community.igloohome.present?
       if current_community.igloohome.refresh_token.present?
-        current_community.igloohome.update_attributes(refresh_token: nil, is_authorized_with_pynwheel: false)
+        current_community.igloohome.update_attributes(refresh_token: nil, is_authorized_with_pynwheel: false, version: "v1")
         flash[:notice] = "Account disconnected successfully"
       else
         flash[:error] = "No account is attached"
