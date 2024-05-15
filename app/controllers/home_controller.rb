@@ -17,10 +17,6 @@ class HomeController < ApplicationController
       @communities = current_user.communities.where(locked: [false, nil])
     end
 
-    puts "\n\n\n-------- referer: #{request&.headers['referer']} ------- \n\n\n"
-    puts "\n\n\n-------- code: #{params["code"]} ------- \n\n\n"
-
-
     handle_code_grant_authorization(request&.headers['referer']) if params["code"].present?
   end
 
@@ -28,9 +24,6 @@ class HomeController < ApplicationController
 
     def handle_code_grant_authorization_for(brand)
       community_id = session[:community_id]
-      puts "\n\n\n-------- community_id: #{community_id} ------- \n\n\n"
-      puts "\n\n\n-------- brand: #{brand} ------- \n\n\n"
-
       return unless community_id.present?
       
       session[:authorization_code] = params['code']
@@ -43,14 +36,12 @@ class HomeController < ApplicationController
     end
     
     def handle_code_grant_authorization(brand_url)
-      puts "\n\n\n-------- brand_url: #{brand_url} ------- \n\n\n"
-
-      case brand_url
-      when ENV["REMOTELOCK_AUTH_BASE_URL"]
+      if brand_url.include?("edgestate")
         handle_code_grant_authorization_for('edgestate')
-      when ENV["IGLOOHOME_AUTH_BASE_URL"]
+      elsif brand_url.include?("igloohome")
         handle_code_grant_authorization_for('igloohome')
       else
+        puts "Redirectional URL Mismatch"
       end
     end
 end
