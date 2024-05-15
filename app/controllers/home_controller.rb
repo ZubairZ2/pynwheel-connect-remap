@@ -27,7 +27,11 @@ class HomeController < ApplicationController
       return unless community_id.present?
       
       session[:authorization_code] = params['code']
-      redirect_to "/communities/#{community_id}/#{brand}_accounts/#{brand}_code_grant_authorization"
+      if brand === "edgestate"
+        redirect_to "/communities/#{community_id}/edgestate_accounts/edgestate_code_grant_authorization"
+      elsif brand === "igloohome"
+        redirect_to "/communities/#{community_id}/igloohome_v2_accounts/igloohome_code_grant_authorization"
+      end
     end
     
     def handle_code_grant_authorization(brand_url)
