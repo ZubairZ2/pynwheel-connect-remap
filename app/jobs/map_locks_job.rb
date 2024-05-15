@@ -32,7 +32,7 @@ class MapLocksJob < ApplicationJob
         end
       end
 
-    elsif community.edge_state.present? and type == "Igloohome"
+    elsif community.igloohome.present? and type == "Igloohome"
       clear_locks_provider(community, type)
       community.igloohome.igloohome_locks.each do |igloohome_lock|
         data = parse_stop(community, igloohome_lock.device_name)
