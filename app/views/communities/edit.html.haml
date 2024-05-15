@@ -29,7 +29,7 @@
     }
   });
   
-  if("#{@chatroom.id.present?}" == "true")
+  if("#{@chatroom&.id&.present?}" == "true")
   {
     show_modal();
   }
@@ -38,30 +38,30 @@
   {
     setTimeout(function(){
       $("#ChatSupport").modal('show');
-      if ($("#chat_person_#{@chatroom.id}").length == 0) {
+      if ($("#chat_person_#{@chatroom&.id}").length == 0) {
         
        
 
         $('#support_sidebar').prepend(`
-            <div class="chat_list" id="chat_with_#{@chatroom.id}">
+            <div class="chat_list" id="chat_with_#{@chatroom&.id}">
                 <div class="chat_people">
-                    <div class="chat_img"> <img id="img_id" src=#{@chatroom.tour_user.present? ? (@chatroom.tour_user.image.present? ? @chatroom.tour_user.image : "/assets/chat-tour-user.jpg") : ""} alt=#{@chatroom.tour_user.present? ? @chatroom.tour_user.name : ""}> </div>
+                    <div class="chat_img"> <img id="img_id" src=#{@chatroom&.tour_user&.present? ? (@chatroom&.tour_user&.image.present? ? @chatroom&.tour_user&.image : "/assets/chat-tour-user.jpg") : ""} alt=#{@chatroom&.tour_user&.present? ? @chatroom&.tour_user&.name : ""}> </div>
                     <div class="chat_ib">
-                        <a class="sidebar-chat" data-remote="true" href="/chats/#{@chatroom.id}" style="overflow: hidden;display: block; width: 100%;" id="chat_person_#{@chatroom.id}" > 
-                            <p> <span style="color: black;"> #{@chatroom.tour_user.present? ? @chatroom.tour_user.name : ""} </span></p>
-                            <p> <a> #{@chatroom.tour_user.present? ? @chatroom.tour_user.email : ""} </a> </p>
+                        <a class="sidebar-chat" data-remote="true" href="/chats/#{@chatroom&.id}" style="overflow: hidden;display: block; width: 100%;" id="chat_person_#{@chatroom&.id}" > 
+                            <p> <span style="color: black;"> #{@chatroom&.tour_user&.present? ? @chatroom&.tour_user&.name : ""} </span></p>
+                            <p> <a> #{@chatroom&.tour_user&.present? ? @chatroom&.tour_user&.email : ""} </a> </p>
                         </a>
                     </div> 
                 </div>
             </div>`);
 
-        $("#chat_person_#{@chatroom.id}").click();
-        $("#chatroom_id").val( "#{@chatroom.id}" );
+        $("#chat_person_#{@chatroom&.id}").click();
+        $("#chatroom_id").val( "#{@chatroom&.id}" );
       }
       else
       {
-        $("#chat_person_#{@chatroom.id}").click();
-        $("#chatroom_id").val( "#{@chatroom.id}" );  
+        $("#chat_person_#{@chatroom&.id}").click();
+        $("#chatroom_id").val( "#{@chatroom&.id}" );  
       }
     }, 1000);
   }

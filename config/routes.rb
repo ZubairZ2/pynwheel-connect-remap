@@ -166,6 +166,32 @@ Rails.application.routes.draw do
       end
     end
 
+    resources :igloohome_accounts do
+      collection do
+        delete :remove_igloohome_locks
+        post :add_lock_instructions
+        put :upload_lock_image
+      end
+    end
+
+    resources :igloohome_v1_accounts do
+      collection do
+        post :import_single_lock
+      end
+    end
+
+    resources :igloohome_v2_accounts do
+      collection do
+        get :test_igloohome_connection
+        post :import_igloohome_locks
+        post :map_igloohome_locks
+        get :igloohome_code_grant_authorization
+        post :update_igloo_auth_toggle
+        post :update_igloo_home_name
+        delete :remove_igloohome_auth_account
+      end
+    end
+
     resources :latch_accounts do
       collection do
         put :upload_lock_image
@@ -173,15 +199,6 @@ Rails.application.routes.draw do
         get :test_latch_connection
         post :import_latch_locks
         post :map_latch_locks
-      end
-    end
-
-    resources :igloohome_accounts do
-      collection do
-        delete :remove_igloohome_locks
-        post :import_single_lock
-        post :add_lock_instructions
-        put :upload_lock_image
       end
     end
 
@@ -617,6 +634,12 @@ Rails.application.routes.draw do
           end
         end
 
+        resources :igloohome_accounts, only: [:index] do
+          collection do
+            get :get_pin_code
+          end
+        end
+
         resources :communities do
           get :user_tour_status
           get :initialize_tour
@@ -732,6 +755,7 @@ Rails.application.routes.draw do
         post :add_secure_locks, to: 'secure_locks#add_secure_locks'
         post :send_latch_initation_email, to: 'secure_locks#send_latch_initation_email'
         delete :delete_secure_lock, to: 'secure_locks#delete_secure_lock'
+        post :remove_igloohome_auth_account, to: 'secure_locks#remove_igloohome_auth_account'
         delete :delete_lock_files, to: 'secure_locks#delete_lock_files'
         post :send_follow_up_emails, to: 'follow_up_emails#send_follow_up_emails'
         get :preview_follow_up_email, to: 'follow_up_emails#preview_follow_up_email'

@@ -4862,6 +4862,10 @@ a#favoriteclickme {
     display: none !important;
 }
 
+.hide_igloohome {
+    display: none !important;
+}
+
 .hide_latch {
     display: none;
 }
@@ -5080,6 +5084,10 @@ a#favoriteclickme {
 }
 
 .hide_edgestate {
+    display: none !important;
+}
+
+.hide_igloohome {
     display: none !important;
 }
 

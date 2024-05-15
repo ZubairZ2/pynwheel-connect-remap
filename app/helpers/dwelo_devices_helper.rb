@@ -209,9 +209,13 @@ module DweloDevicesHelper
         end
         
         tour_user.update_column 'igloohome_status' , 'in progress'
-        
-        IgloohomeService.new(community, current_time, tour_user).assign_guest_bluetooth_key
-        
+
+        if(community.igloohome.version == "v1")
+          IgloohomeService.new(community, current_time, tour_user).assign_guest_bluetooth_key
+        else
+          IgloohomeLockService.new(community.id, current_time, tour_user).generate_accesses()
+        end
+
         tour_user.update_column 'igloohome_status' , 'complete'
 
       rescue => ex

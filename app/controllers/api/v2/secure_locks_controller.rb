@@ -1,6 +1,6 @@
 class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
   before_action :doorkeeper_authorize!
-  before_action :load_community, only: %i[index add_secure_locks delete_secure_lock]
+  before_action :load_community, only: %i[index add_secure_locks delete_secure_lock remove_igloohome_auth_account]
 
   def index
     locks = get_all_locks
@@ -8,6 +8,19 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
       render json: { success: true, data: locks.as_json }
     else
       render json: { success: false, message: 'No locks added yet!' }
+    end
+  end
+
+  def remove_igloohome_auth_account
+    if @community.igloohome.present?
+      if @community.igloohome.refresh_token.present?
+        @community.igloohome.update_attributes(refresh_token: nil, is_authorized_with_pynwheel: false)
+        render json: { success: true, message: "Account disconnected successfully" }
+      else
+        render json: { success: false, message: "No account is attached" }
+      end
+    else
+      render json: { success: false, message: "Credentials for igloohome are missing" }
     end
   end
 
@@ -223,16 +236,11 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
   end
 
   def igloo_home_lock(lock)
-    unless @community.igloohome.present?
-      @community.create_igloohome(email: lock['email'], file: lock["file"])
-      @locks_provider << IGLOOHOME
-
-    else
-      if lock["file"].present?
-        @community.igloohome.update_attributes(email: lock['email'], file: lock["file"])
-      else
-        @community.igloohome.update_attributes(email: lock['email'])
-      end
+    @igloohome = get_igloohome_account
+    if(lock['is_auth_code'].present?)
+      @community.igloohome.update_attributes(home_name: lock['home_name'], is_authorized_with_pynwheel: lock['is_auth_code'])
+    elsif(lock['is_client_auth'])
+      @community.igloohome.update_attributes(home_name: lock['home_name'], is_authorized_with_pynwheel: false, client_id: lock['client_id'], client_secret: lock['client_secret'])
     end
   end
 
@@ -274,6 +282,14 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
     locks << { type: IGLOOHOMECLIENT, details: igloo_home } if igloo_home.present?
     locks << { type: OTHERLOCK, details: other_lock } if other_lock.present?
     locks
+  end
+
+  def get_igloohome_account
+    Igloohome.find_or_create_by(community_id: @community&.id) do |igloohome|
+      igloohome.username = "Username"
+      igloohome.password = "Password"
+      igloohome.version = "v2"
+    end
   end
 
   def load_community

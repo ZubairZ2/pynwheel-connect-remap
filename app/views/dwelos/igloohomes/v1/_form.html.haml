@@ -1,0 +1,11 @@
+
+.igloohome-border
+= render :partial=>'dwelos/igloohomes/v1/single_lock_form'
+= render :partial=>'dwelos/igloohomes/v1/multi_lock_form'
+
+.igloohome-border
+  = render :partial=>'dwelos/igloohomes/instructions_form'
+
+.box-footer
+  - if current_community.igloohome.present?
+    = link_to "Delete all Existing Locks" , remove_igloohome_locks_community_igloohome_accounts_path(current_community) , :class=>"btn btn-danger", :method => :delete, :style=> "background-color: #dd4b39d4;"

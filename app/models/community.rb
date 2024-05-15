@@ -646,13 +646,20 @@ class Community < ApplicationRecord
   end
 
   def igloohome_lock_status(current_user, status)
-    return if self.igloohome.blank?
-    igloohome = self.igloohome
+    return if igloohome.blank?
+    
     unless status.present?
-      status_attr = status_string(igloohome.email.present? && igloohome.file.present?)
+      if igloohome.is_auth_code
+        status_attr = status_string(igloohome.home_name && (igloohome.refresh_token.present? || igloohome.is_authorized_with_pynwheel) )
+      elsif igloohome.is_client_auth
+        status_attr = status_string(igloohome.home_name && igloohome.client_id.present? && igloohome.client_secret.present?)
+      else
+        status_attr = status
+      end
     else
       status_attr = status
     end
+
     set_status_for_all(igloohome,status_attr,current_user)
   end
 

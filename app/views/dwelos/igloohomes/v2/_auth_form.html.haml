@@ -1,0 +1,15 @@
+.row.igloohome_auth_btn.mt-30.hide
+  .col-lg-9.col-lg-offset-1
+    .col-sm-12.col-lg-12.col-md-12.col-xs-12.mb-20
+      %p
+        Authorization Code Grant flow provides a secure way for Pynwheel to obtain access token from Igloo, allowing Pynwheel to access lock on behalf of properties with their consent.
+      .row.mb-10
+      - if current_community&.igloohome&.authenticated_with_pynwheel
+        = link_to "Remove Account" , remove_igloohome_auth_account_community_igloohome_v2_accounts_path(current_community) , :method => :delete, :class=>"btn btn-danger", :style=> "background-color: #dd4b39d4;"
+      - else
+        %a{:href => current_community&.igloohome&.redirect_uri, id: "code_grant_btn", class: "btn btn-primary connect_acc"}
+          Authorize
+
+      %p.mt-10
+        %strong NOTE: 
+        You must have an Igloohome account

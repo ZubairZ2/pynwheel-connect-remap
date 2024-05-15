@@ -1,0 +1,53 @@
+- content_for :title, "Save Igloohome - Pynwheel", class: "igloohome hide_igloohome"
+.box.box-info.add-plan
+  .box-header
+    %h3.box-title
+      Create
+      %span Igloohome Account
+    .col-md-12
+  = form_for :igloohome, :url=>community_igloohome_accounts_path(:community_id=>current_community.id),:html=>{:class=>"form-horizontal igloohome-lock-form"} do |f|
+    .box-body
+      .row
+        .col-lg-9.col-lg-offset-1
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label{:style=>"padding: 0px"}
+            Igloo Version
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            - version_seleted = current_community.igloohome.present? ? current_community&.igloohome&.version : ""
+            = f.select :version , options_for_select(["v1", "v2"], version_seleted),{:include_blank => false},{:class=>"form-control", onchange: 'submitIgloohomeFormOnChange()'}
+          = f.hidden_field :community_id, :value=> current_community.id
+          
+      .row.mt-10{:style=>"font-size: 17px"}
+        .col-lg-9.col-lg-offset-1
+          %p Please note only one Igloo version may be selected per community.
+      
+  #igloohome-v2
+    = render :partial=>'dwelos/igloohomes/v2/form'
+  #igloohome-v1
+    = render :partial=>'dwelos/igloohomes/v1/form'
+
+:javascript
+  var current_version = "#{current_community&.igloohome&.version}";
+  handleLockView();
+
+  function submitIgloohomeFormOnChange() {
+    $(".igloohome-lock-form").submit();
+    handleLockView();
+  }
+
+  function handleLockView(){
+    if($("#igloohome_version").val() === "v1")
+      displayVersion1View();
+
+    if($("#igloohome_version").val() === "v2")
+      displayVersion2View();
+  }
+
+  function displayVersion1View() {
+    $("#igloohome-v1").removeClass("hide");
+    $("#igloohome-v2").addClass("hide");
+  }
+
+  function displayVersion2View() {
+    $("#igloohome-v2").removeClass("hide");
+    $("#igloohome-v1").addClass("hide");
+  }

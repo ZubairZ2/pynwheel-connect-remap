@@ -1,0 +1,34 @@
+= form_for :igloohome, :url=> add_lock_instructions_community_igloohome_accounts_path(current_community),:html=>{:class=>"form-horizontal",  multipart: true} do |f|
+  .box-body
+    .row
+      .col-lg-9.col-lg-offset-1
+        .form-group{:style => "margin-bottom: 0px;"}
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+            Lock Instructions
+
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12{:style => "margin-bottom: inherit;"}
+            = f.text_area :lock_instruction_text, :class=>"form-control igloohome_lock_instruction_field igloohome_lock_instruction_wysihtml5", :placeholder=>"Lock Instructions",  :value=> @community.igloohome.present? ? @community.igloohome.lock_instruction_text : ""
+            <!-- %span.igloohome_lock_instruction_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 275 -->
+
+        .form-group.lock_img_background
+          %span.btn.btn-primary.btn-file.ml-15
+            %i.fa.fa-upload
+            Upload File
+            = file_field_tag :lock_image, :id => "igloohome-lock-image"
+
+          .text-center.drag-box.mt-15.image-upload#igloohome-lock-upload-holder
+            %span.icon-upload
+              = image_tag "upload-image.png"
+              %p Drag &amp; Drop file to Upload
+
+          .select-logo.center-img.mb-20.mt-30.logo-upload-bg{:style => "border: 2px solid #ddd; margin-bottom: 30px"}
+            .select-logo-logo.logo-container.logo-upload-container
+
+              - rn =  rand(9999999999999999999999999)
+              - lock_image = @community.igloohome.present? ? @community.igloohome.lock_image : ""
+
+              %a.preview-image{:href=> lock_image.present? ? lock_image  : asset_path("default.jpeg"), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
+                = image_tag lock_image.present? ? lock_image : "default.jpeg",:height=>"100%",:width=>"100%",:id=>"igloohome-preview-image"
+    .row
+      .col-lg-9.col-lg-offset-1
+        = f.submit "Save", :class=>"btn btn-success pull-right loader_class", :style => "padding: 10px 50px 10px 50px;"

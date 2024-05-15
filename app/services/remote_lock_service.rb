@@ -7,7 +7,7 @@ class RemoteLockService < BaseService
     def client_credentials
         if @edge_state_user.present?
 
-            auth_url = ENV['REMOTELOCK_AUTH_URL']
+            auth_url = "#{ENV['REMOTELOCK_AUTH_BASE_URL']}/oauth/token"
 
             response = HTTParty.post(auth_url,
                 body: {
@@ -23,7 +23,7 @@ class RemoteLockService < BaseService
 
     def code_grant_authorization(code)
         if code.present?
-            auth_url = ENV['REMOTELOCK_AUTH_URL']
+            auth_url = "#{ENV['REMOTELOCK_AUTH_BASE_URL']}/oauth/token"
             body = {
                 code: code,
                 client_id: ENV['REMOTELOCK_CLIENT_ID'],
@@ -39,7 +39,7 @@ class RemoteLockService < BaseService
 
     def get_access_token_after_refresh
         if @edge_state_user.present?
-            auth_url = ENV['REMOTELOCK_AUTH_URL']
+            auth_url = "#{ENV['REMOTELOCK_AUTH_BASE_URL']}/oauth/token"
             body = {
                 client_id: ENV['REMOTELOCK_CLIENT_ID'],
                 client_secret: ENV['REMOTELOCK_SECRET'],
