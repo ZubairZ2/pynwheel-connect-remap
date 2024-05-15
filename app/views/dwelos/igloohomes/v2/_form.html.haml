@@ -10,9 +10,10 @@
           %input{:name => "is_authorized_with_pynwheel", :id => "client_credential_auth", :type => "radio", :value => "false", checked: current_community&.igloohome&.is_client_auth }
           %label OAuth Client Credentials
 
-= render :partial=>'dwelos/igloohomes/v2/home_name'
-= render :partial=>'dwelos/igloohomes/v2/auth_form'
-= render :partial=>'dwelos/igloohomes/v2/credentials_form'
+.igloo-form-aligment{:style => "padding-left: 30px;"}
+  = render :partial=>'dwelos/igloohomes/v2/home_name'
+  = render :partial=>'dwelos/igloohomes/v2/auth_form'
+  = render :partial=>'dwelos/igloohomes/v2/credentials_form'
 
 .igloohome-border
   = render :partial=>'dwelos/igloohomes/instructions_form'
