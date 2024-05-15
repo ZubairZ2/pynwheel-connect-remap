@@ -32,6 +32,7 @@ class IgloohomeV1AccountsController < ApplicationController
   def handle_single_lock_import
     if params["device_id"].present? && params["device_name"].present?
       handle_valid_single_lock_params
+      update_community_lock_provider
     else
       flash[:error] = "Device id and device name are required"
     end
