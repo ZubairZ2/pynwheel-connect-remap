@@ -51,12 +51,10 @@ class IgloohomeV2AccountsController < ApplicationController
   end
 
   def test_igloohome_connection
-    general_error_redirection unless @devices.present?
     render xml: @devices
   end
   
   def import_igloohome_locks
-    general_error_redirection unless @devices.present?
     store_devices
     flash[:notice] = "Igloohome locks imported successfully."
     render :js => "window.location = '/communities/#{current_community&.id}/dwelos/new'"
@@ -107,16 +105,21 @@ class IgloohomeV2AccountsController < ApplicationController
 
     def fetch_property_devices
       @devices = IgloohomeLockService.new(current_community&.id).get_property_devices(@property_id)["payload"]
+      general_error_redirection unless @devices.present?
     end
 
     def set_igloohome_property_id
       properties = IgloohomeLockService.new(current_community.id).get_properties
       property_data = properties.fetch("payload", []).find { |property| property["name"] === current_community&.igloohome&.home_name }
-
       @property_id = property_data["id"]
       
     rescue
-      general_error_redirection
+      home_name_error
+    end
+
+    def home_name_error
+      flash[:error] = "No device found, Confirm entered home name is correct"
+      redirect_to new_community_dwelo_path
     end
 
     def authorization_params_present?
