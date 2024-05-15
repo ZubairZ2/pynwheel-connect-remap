@@ -182,12 +182,11 @@ class IgloohomeLockService < BaseService
       )
     end
 
-    def store_tokens access_token, refresh_token
-      return unless access_token.present?
+    def store_tokens response
       if response&.dig("access_token").present? && response&.dig("refresh_token").present?
         @igloohome_account.update_attributes(
-          access_token: access_token, access_token_expiry: DAILY_EXPIRY,
-          refresh_token: refresh_token,refresh_token_expiry: YEAR_EXPIRY
+          access_token: response&.dig("access_token"), access_token_expiry: DAILY_EXPIRY,
+          refresh_token: response&.dig("refresh_token"), refresh_token_expiry: YEAR_EXPIRY
         )
       end
     end
