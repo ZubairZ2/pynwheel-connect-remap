@@ -16,9 +16,7 @@ class XmlService < BaseService
 
         filename = @credentials.xml_filename
         domain = property_id
-        url = "http://pynwheel.com/swoop/datafeeds/tgm/"
-        url = url  + filename + ".xml"
-
+        url = "http://pynwheel.com/swoop/datafeeds/#{filename.include?(".xml") ? filename : "#{filename}.xml"}"
 
         response = HTTParty.get(url)
         result = ""
@@ -31,6 +29,7 @@ class XmlService < BaseService
             end
           end
         else
+
           p = response['PhysicalProperty']['Property']
 
           if p['PropertyID']['Identification']['SecondaryID'] == domain
@@ -265,5 +264,12 @@ class XmlService < BaseService
       end
     end
   end
+
+  private
+
+    def file_url
+      filename = @credentials.xml_filename
+      "http://pynwheel.com/swoop/datafeeds/#{filename.include?(".xml") ? filename : "#{filename}.xml"}"
+    end
 
 end

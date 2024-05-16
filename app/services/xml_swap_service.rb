@@ -6,9 +6,7 @@ class XmlSwapService < BaseService
 
         filename = credentials.xml_filename
         domain = property_id
-        url = "http://pynwheel.com/swoop/datafeeds/tgm/"
-        url = url  + filename + ".xml"
-
+        url = "http://pynwheel.com/swoop/datafeeds/#{filename.include?(".xml") ? filename : "#{filename}.xml"}"
 
         response = HTTParty.get(url)
         result = ""
