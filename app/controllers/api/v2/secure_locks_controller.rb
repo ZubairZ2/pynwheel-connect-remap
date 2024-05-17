@@ -53,15 +53,6 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
     end
   end
 
-  def store_igloohome_property_id
-    return unless params[:community_id].present?
-
-    session[:community_id] = params[:community_id]
-    puts "\n\n\n -------------- Session Community ID: #{session[:community_id]}--------------- \n\n\n"
-
-    render json: {success: true}
-  end
-
   def delete_lock_files
     success = false
     @type = params["type"]
