@@ -17,6 +17,8 @@ class HomeController < ApplicationController
       @communities = current_user.communities.where(locked: [false, nil])
     end
 
+    puts "\n\n\n -------------- Home 1 Community ID: #{session[:community_id]}--------------- \n\n\n"
+
     handle_code_grant_authorization(request&.headers['referer']) if params["code"].present?
   end
 
@@ -36,12 +38,13 @@ class HomeController < ApplicationController
     end
     
     def handle_code_grant_authorization(brand_url)
-      if brand_url.include?("edgestate")
+      if brand_url&.include?("edgestate")
         handle_code_grant_authorization_for('edgestate')
-      elsif brand_url.include?("igloohome")
+      elsif brand_url&.include?("igloohome")
         handle_code_grant_authorization_for('igloohome')
       else
         puts "Redirectional URL Mismatch"
+        puts "\n\n\n -------------- Home 2 Community ID: #{session[:community_id]}--------------- \n\n\n"
       end
     end
 end
