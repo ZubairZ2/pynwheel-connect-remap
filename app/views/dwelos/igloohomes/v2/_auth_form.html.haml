@@ -7,7 +7,7 @@
       - if current_community&.igloohome&.authenticated_with_pynwheel
         = link_to "Remove Account" , remove_igloohome_auth_account_community_igloohome_v2_accounts_path(current_community) , :method => :delete, :class=>"btn btn-danger", :style=> "background-color: #dd4b39d4;"
       - else
-        %a{:href => current_community&.igloohome&.redirect_uri, id: "code_grant_btn", class: "btn btn-primary connect_acc"}
+        %a{:href => "https://auth.igloohome.co/login?client_id=#{ENV['PYNWHEEL_IGLOOHOME_CLIENT_ID']}&response_type=code&redirect_uri=https%3A%2F%2Fpynwheelconnect.com&scope=igloohomeapi%2Falgopin-daily+igloohomeapi%2Falgopin-hourly+igloohomeapi%2Falgopin-onetime+igloohomeapi%2Falgopin-permanent+igloohomeapi%2Fcreate-pin-bridge-proxied-job+igloohomeapi%2Fdelete-pin-bridge-proxied-job+igloohomeapi%2Fget-devices+igloohomeapi%2Fget-job-status+igloohomeapi%2Flock-bridge-proxied-job+igloohomeapi%2Funlock-bridge-proxied-job+igloohomeapi%2Fget-master-pin+igloohomeapi%2Fget-properties+openid+profile", id: "code_grant_btn", class: "btn btn-primary connect_acc"}
           Authorize
 
       %p.mt-10
