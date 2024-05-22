@@ -1149,7 +1149,7 @@ class Community < ApplicationRecord
 
   def import_xml_provider
     ImportXmlStaticDataJob.perform_async credential.attributes.to_json
-s  end
+  end
 
   def swap_psi_data
     ImportPsiSwapDataJob.perform_async credential

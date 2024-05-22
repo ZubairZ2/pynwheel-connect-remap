@@ -6,12 +6,12 @@ class XmlStaticService < BaseService
 
         filename = credentials.xml_filename
         domain = property_id
-        url = "http://pynwheel.com/swoop/datafeeds/tgm/"
-        url = url  + filename + ".xml"
+        url = "http://pynwheel.com/swoop/datafeeds/#{filename.include?(".xml") ? filename : "#{filename}.xml"}"
 
+        response = HTTParty.get(URI.encode(url))
 
-        response = HTTParty.get(url)
         result = ""
+        
         if response['PhysicalProperty']['Property'].class == Array
           response['PhysicalProperty']['Property'].each do |p|
             if p['PropertyID']['Identification']['SecondaryID'].present?
@@ -39,8 +39,8 @@ class XmlStaticService < BaseService
           result["Floorplan"].each do |pro|
             floorplans << pro
           end
-          save_xml_units(units,property_id)
           save_xml_floorplans(floorplans,property_id)
+          save_xml_units(units,property_id)
         else
           # puts '-----------------------------' , response["response"]["error"]["message"]
           ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
@@ -59,7 +59,7 @@ class XmlStaticService < BaseService
         unit.property_id = property_id
         unit.unit_type = u["Unit"]["Information"]["UnitType"]
         unless unit.name_is_updated.present? && unit.name_is_updated
-          unit.marketing_name = u["Unit"]["MarketingName"]["__content__"]
+          unit.marketing_name = get_marketing_name(u)
         end
         unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
           unit.floorplan_id = u["FloorplanID"]
@@ -155,5 +155,17 @@ class XmlStaticService < BaseService
 
     end
   end
+
+  private
+    def get_marketing_name u
+      if u["Unit"]["MarketingName"]["__content__"].present?
+        u["Unit"]["MarketingName"]["__content__"]
+      else
+        u["Unit"]["MarketingName"]
+      end
+
+    rescue => e
+      u["Unit"]["MarketingName"]
+    end
 
 end
