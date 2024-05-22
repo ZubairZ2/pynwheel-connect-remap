@@ -17,9 +17,10 @@ class XmlService < BaseService
         filename = @credentials.xml_filename
         domain = property_id
         url = "http://pynwheel.com/swoop/datafeeds/#{filename.include?(".xml") ? filename : "#{filename}.xml"}"
+        response = HTTParty.get(URI.encode(url))
 
-        response = HTTParty.get(url)
         result = ""
+
         if response['PhysicalProperty']['Property'].class == Array
           response['PhysicalProperty']['Property'].each do |p|
             if p['PropertyID']['Identification']['SecondaryID'].present?
