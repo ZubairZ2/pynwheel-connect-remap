@@ -114,8 +114,9 @@ class CredentialsValid < BaseService
         domain = credentials.xml_domain.split(',')[0]
         url = "http://pynwheel.com/swoop/datafeeds/#{filename.include?(".xml") ? filename : "#{filename}.xml"}"
 
-        response = HTTParty.get(url)
+        response = HTTParty.get(URI.encode(url))
         result = ""
+
         if response['PhysicalProperty']['Property'].class == Array
           response['PhysicalProperty']['Property'].each do |p|
             if p['PropertyID']['Identification']['SecondaryID'].present?

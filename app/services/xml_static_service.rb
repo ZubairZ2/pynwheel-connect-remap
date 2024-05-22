@@ -59,7 +59,7 @@ class XmlStaticService < BaseService
         unit.property_id = property_id
         unit.unit_type = u["Unit"]["Information"]["UnitType"]
         unless unit.name_is_updated.present? && unit.name_is_updated
-          unit.marketing_name = u["Unit"]["MarketingName"]["__content__"]
+          unit.marketing_name = get_marketing_name(u)
         end
         unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
           unit.floorplan_id = u["FloorplanID"]
@@ -155,5 +155,17 @@ class XmlStaticService < BaseService
 
     end
   end
+
+  private
+    def get_marketing_name u
+      if u["Unit"]["MarketingName"]["__content__"].present?
+        u["Unit"]["MarketingName"]["__content__"]
+      else
+        u["Unit"]["MarketingName"]
+      end
+
+    rescue => e
+      u["Unit"]["MarketingName"]
+    end
 
 end

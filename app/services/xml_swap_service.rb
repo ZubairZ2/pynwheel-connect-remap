@@ -56,9 +56,9 @@ class XmlSwapService < BaseService
     units.each do |u|
       vacateDate = ""
 
-      unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Unit"]["MarketingName"]["__content__"])
+      unit = Unit.where(community_id: credentials.community_id,marketing_name: get_marketing_name(u))
       if unit.count > 1
-        unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Unit"]["MarketingName"]["__content__"],building: u["BuildingID"].present? ? u["BuildingID"] : "")
+        unit = Unit.where(community_id: credentials.community_id,marketing_name: get_marketing_name(u),building: u["BuildingID"].present? ? u["BuildingID"] : "")
       end
       if unit.present?
         unit = unit.first
@@ -106,7 +106,7 @@ class XmlSwapService < BaseService
         unit.provider_unit_id = u["Id"]
         unit.property_id = property_id
         unit.unit_type = u["Unit"]["Information"]["UnitType"]
-        unit.marketing_name = u["Unit"]["MarketingName"]["__content__"]
+        unit.marketing_name = get_marketing_name(u)
         unit.floorplan_id = u["FloorplanID"]
         unit.effective_rent = 1.0 #Setting rent to avoid validation issues
         if u["EffectiveRent"]["Min"].present?
@@ -251,4 +251,16 @@ class XmlSwapService < BaseService
     end
 
   end
+
+  private
+    def get_marketing_name u
+      if u["Unit"]["MarketingName"]["__content__"].present?
+        u["Unit"]["MarketingName"]["__content__"]
+      else
+        u["Unit"]["MarketingName"]
+      end
+
+    rescue => e
+      u["Unit"]["MarketingName"]
+    end
 end

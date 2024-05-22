@@ -18,7 +18,7 @@ class XmlService < BaseService
         domain = property_id
         url = "http://pynwheel.com/swoop/datafeeds/#{filename.include?(".xml") ? filename : "#{filename}.xml"}"
         response = HTTParty.get(URI.encode(url))
-
+        
         result = ""
 
         if response['PhysicalProperty']['Property'].class == Array
@@ -71,7 +71,7 @@ class XmlService < BaseService
         if unit.present?
           # unit.property_id = property_id
           # unit.unit_type = u["Unit"]["Information"]["UnitType"]
-          # unit.marketing_name = u["Unit"]["MarketingName"]["__content__"]
+          # unit.marketing_name = get_marketing_name(u)
           # unit.floorplan_id = u["FloorplanID"]
           unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
             unit.effective_rent = 1.0 #Setting rent to avoid validation issues
@@ -124,7 +124,7 @@ class XmlService < BaseService
             unit.property_id = property_id
             unit.unit_type = u["Unit"]["Information"]["UnitType"]
             unless unit.name_is_updated.present? && unit.name_is_updated
-              unit.marketing_name = u["Unit"]["MarketingName"]["__content__"]
+              unit.marketing_name = get_marketing_name(u)
             end
             unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
               unit.floorplan_id = u["FloorplanID"]
@@ -271,6 +271,17 @@ class XmlService < BaseService
     def file_url
       filename = @credentials.xml_filename
       "http://pynwheel.com/swoop/datafeeds/#{filename.include?(".xml") ? filename : "#{filename}.xml"}"
+    end
+
+    def get_marketing_name u
+      if u["Unit"]["MarketingName"]["__content__"].present?
+        u["Unit"]["MarketingName"]["__content__"]
+      else
+        u["Unit"]["MarketingName"]
+      end
+
+    rescue => e
+      u["Unit"]["MarketingName"]
     end
 
 end
