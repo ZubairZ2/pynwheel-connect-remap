@@ -41,7 +41,6 @@ module Api
         @floorplates = floorplan_units_service(@community).get_floorplates
       end
 
-
       def update_tour_stops_list
         return unless @tour.present?
         @tour_stop = @tour.tour_stops.where(stop_id: params[:stop_id]).last

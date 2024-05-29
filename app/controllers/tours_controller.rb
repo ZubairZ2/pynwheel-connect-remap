@@ -172,7 +172,6 @@ class ToursController < ApplicationController
   end
 
   def sort_stops
-    
     if params[:sitemap] == "false"
       tour = @community.community_tour
       hash = {}
