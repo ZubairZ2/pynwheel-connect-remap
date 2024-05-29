@@ -7,6 +7,7 @@ module Api
       before_action :laod_community
       before_action :load_tour_user, except: [:index]
       before_action :load_tour_user_tour, except: [:index]
+      before_action :skip_editing_tour_stops, only: [:update_tour_stops_list]
 
       def index
         floorplans = floorplan_units_service(@community).get_floorplans
@@ -44,6 +45,7 @@ module Api
       def update_tour_stops_list
         return unless @tour.present?
         @tour_stop = @tour.tour_stops.where(stop_id: params[:stop_id]).last
+
         if @tour_stop.present?
           remove_tour_stop(@tour_stop)
         else
@@ -52,6 +54,11 @@ module Api
       end
 
       private
+
+      def skip_editing_tour_stops
+        return unless @tour.present?
+        @tour.update(skip_tour_editing: true) if !@tour.skip_tour_editing
+      end
 
       def available_floorplans_list floorplans_list, available_floorplan_list = []    
         floorplans_list.each do |floorplan|
