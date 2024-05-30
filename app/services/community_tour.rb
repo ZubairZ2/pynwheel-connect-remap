@@ -187,6 +187,7 @@ class CommunityTour
   end
 
   def sorted_stops_list 
+    # If does not work properly return just @stops_arr
     @stops_arr = SortedTourStopsList.new(@stops_arr, @community, @tour).get_sorted_stops_list()
   end
 
