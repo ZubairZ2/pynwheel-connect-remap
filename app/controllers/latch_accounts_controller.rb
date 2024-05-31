@@ -32,7 +32,7 @@ class LatchAccountsController < ApplicationController
 
   def test_latch_connection
     if current_community.enable_locks and current_community.multiple_locks_provider.include?("Latch") and current_community.latch.present?
-      response = LatchOpenkit::LatchLocksService.new(nil, current_community.id).property_latch_locks_data()
+      response = LatchOpenkit::LatchLocksService.new(nil, current_community.id).test_connection()
       render :xml => response
     else
       flash[:error] = "Please enter the Latch credentials before testing data."
@@ -42,11 +42,11 @@ class LatchAccountsController < ApplicationController
 
   def import_latch_locks
     if current_community.enable_locks and current_community.multiple_locks_provider.include?("Latch") and current_community.latch.present?
-      response = LatchOpenkit::LatchLocksService.new(nil, current_community.id).property_latch_locks_data()
+      response = LatchOpenkit::LatchLocksService.new(nil, current_community.id).test_connection()
 
       if response[:status] == :OK
-        import_latch_locks_in_database(response)
-        flash[:notice] = "Locks imported successfully."
+        ImportLatchLocksWorker.perform_async current_community&.id        
+        flash[:notice] = "Import of latch locks has begun. The process will be completed shortly"
       else
         flash[:error] = response[:message]
       end
@@ -71,16 +71,6 @@ class LatchAccountsController < ApplicationController
   end
 
   private
-
-    def import_latch_locks_in_database property_data
-      property = property_data[:building]
-      property_doors = property_data[:doors]
-
-      property_doors&.dig("doors").each do |door|
-        door_lock = LatchLock.find_or_initialize_by(lock_id: door["uuid"], lock_name: door["name"], latch_id: current_community&.latch&.id)
-        door_lock.save! if door_lock.id.nil?
-      end
-    end
 
     def add_lock_provider
       locks_provider = current_community.multiple_locks_provider

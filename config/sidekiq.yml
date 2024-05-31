@@ -2,6 +2,7 @@
 :queues:
   - restarts
   - message
+  - latch_lock
   - delete_data
   - import_data
   - real_page
