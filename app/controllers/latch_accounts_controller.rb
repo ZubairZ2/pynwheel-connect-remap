@@ -43,6 +43,7 @@ class LatchAccountsController < ApplicationController
   def import_latch_locks
     if current_community.enable_locks and current_community.multiple_locks_provider.include?("Latch") and current_community.latch.present?
       response = LatchOpenkit::LatchLocksService.new(nil, current_community.id).property_latch_locks_data()
+
       if response[:status] == :OK
         import_latch_locks_in_database(response)
         flash[:notice] = "Locks imported successfully."
@@ -75,7 +76,7 @@ class LatchAccountsController < ApplicationController
       property = property_data[:building]
       property_doors = property_data[:doors]
 
-      property_doors.each do |door|
+      property_doors&.dig("doors").each do |door|
         door_lock = LatchLock.find_or_initialize_by(lock_id: door["uuid"], lock_name: door["name"], latch_id: current_community&.latch&.id)
         door_lock.save! if door_lock.id.nil?
       end
