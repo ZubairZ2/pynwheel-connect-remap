@@ -37,7 +37,7 @@ module Api
 
         def verify_otp
           if @tour_user.present?
-            if params[:pin_code].to_s === ENV["PIN_CODE"] || @tour_user.pin_code === params[:pin_code].to_s
+            if @tour_user.pin_code === params[:pin_code].to_s
               render json: {message: "User is verified successfully", success_code: 200, status: true, data: user_tours_data(@tour_user)}
             else
               render json: {message: "OTP is wrong or expired", success_code: 404, status: false}
