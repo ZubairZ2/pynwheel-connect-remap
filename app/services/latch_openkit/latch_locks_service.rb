@@ -21,44 +21,73 @@ module LatchOpenkit
 
     def property_latch_locks_data
       partner_scopped_token = parner_scopped_access_token()
+
       if partner_scopped_token.present?
+        
         buildings_list = get_buildings(partner_scopped_token)
         building = filter_property_uuid(buildings_list)
 
-        doors = get_doors(partner_scopped_token) 
-        doors = filter_property_doors(doors, building["uuid"]) if building.present?
+        puts "\n\n\n\n Time Before: #{Time.now} \n\n\n\n"
+        # doors = get_all_doors(partner_scopped_token, building["uuid"])
+        doors = get_doors(partner_scopped_token, building["uuid"])
+        puts "\n\n\n\n Time After: #{Time.now} \n\n\n\n"
+
         if building.present? && (@latch.latch_property_name&.strip === building["name"]&.strip)
           {building: building, doors: doors, status: :OK, code: 200}
         else
           {message: "No exact matches for property name", status: :unprocessable_entity, code: 400}
         end
+
       else
         {message: "Invalid latch credentials", status: :unprocessable_entity, code: 400}
       end
     end
 
     private
-      def get_doors partner_scopped_token
-        HTTParty.get("#{ENV["Latch_OPENKIT_URL"]}/v1/doors",
-          headers: { 
-            'Content-Type' => 'application/json',
-            'Authorization' => "Bearer #{partner_scopped_token}"
-          }                                  
-        )
+
+      # def get_all_doors(partner_scopped_token, building_uuid, page_size = 50)
+      #   all_doors = []
+      #   page_token = 0
+      
+      #   loop do
+      #     response = get_doors(partner_scopped_token, building_uuid, page_size, page_token)
+      #     doors = response["doors"]
+      #     page_token = response["nextPageToken"]
+      #     puts "\n\n\n\n nextPageToken: #{response["nextPageToken"]} \n\n\n\n"
+      
+      #     break if doors.empty? || page_token.nil?
+      
+      #     all_doors.concat(doors)
+      #   end
+      
+      #   all_doors
+      # end
+
+      # def get_doors partner_scopped_token, building_uuid, page_size, page_token
+      #   url = "#{ENV['Latch_OPENKIT_URL']}/v1/doors"
+
+      #   query = {
+      #     buildingUuid: building_uuid,
+      #     pageSize: page_size,
+      #     pageToken: page_token
+      #   }
+
+      #   headers = auth_headers(partner_scopped_token)
+
+      #   HTTParty.get(url, query: query, headers: headers)
+      # end
+
+      def get_doors partner_scopped_token, building_uuid
+        url = "#{ENV['Latch_OPENKIT_URL']}/v1/doors?buildingUuid=#{building_uuid}"
+        headers = auth_headers(partner_scopped_token)
+        HTTParty.get(url, headers: headers)
       end
 
       def get_buildings partner_scopped_token
-        HTTParty.get("#{ENV["Latch_OPENKIT_URL"]}/v1/buildings",
-          headers: { 
-            'Content-Type' => 'application/json',
-            'Authorization' => "Bearer #{partner_scopped_token}"
-          }                                  
+        HTTParty.get(
+          "#{ENV["Latch_OPENKIT_URL"]}/v1/buildings", 
+          headers: auth_headers(partner_scopped_token)
         )
-      end
-
-      def filter_property_doors doors_list, building_uuid
-        return if doors_list.empty?
-        doors_list&.dig("doors").filter{|door| door.dig("buildingUuid") == building_uuid}.compact
       end
 
       def filter_property_uuid(buildings_list)
@@ -103,6 +132,13 @@ module LatchOpenkit
                           'Authorization' => "Bearer #{partner_scopped_token}"
                         }                                  
                       )
+      end
+
+      def auth_headers partner_scopped_token
+        { 
+          'Content-Type' => 'application/json',
+          'Authorization' => "Bearer #{partner_scopped_token}"
+        }
       end
 
       def invite_user_payload
