@@ -14,9 +14,9 @@
           %span.btn.btn-primary.btn-file.ml-15
             %i.fa.fa-upload
             Upload File
-            = file_field_tag :lock_image, :id => "igloohome-lock-image"
+            = file_field_tag :lock_image, :id => "igloohome-lock-image", :class => "igloohome-lock-image"
 
-          .text-center.drag-box.mt-15.image-upload#igloohome-lock-upload-holder
+          .text-center.drag-box.mt-15.image-upload#igloohome-lock-upload-holder.igloohome-lock-upload-holder
             %span.icon-upload
               = image_tag "upload-image.png"
               %p Drag &amp; Drop file to Upload
@@ -28,7 +28,7 @@
               - lock_image = @community.igloohome.present? ? @community.igloohome.lock_image : ""
 
               %a.preview-image{:href=> lock_image.present? ? lock_image  : asset_path("default.jpeg"), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
-                = image_tag lock_image.present? ? lock_image : "default.jpeg",:height=>"100%",:width=>"100%",:id=>"igloohome-preview-image"
+                = image_tag lock_image.present? ? lock_image : "default.jpeg",:height=>"100%",:width=>"100%",:id=>"igloohome-preview-image", :class=>"igloohome-preview-image"
     .row
       .col-lg-9.col-lg-offset-1
         = f.submit "Save", :class=>"btn btn-success pull-right loader_class", :style => "padding: 10px 50px 10px 50px;"

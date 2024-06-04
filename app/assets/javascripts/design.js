@@ -815,8 +815,8 @@ $(document).ready(function () {
     readLockImageSrcFromInput(this, "dwelo", $('#dwelo-preview-image') );
   });
 
-  $("#igloohome-lock-image").change(function () {
-    readLockImageSrcFromInput(this, "igloohome", $('#igloohome-preview-image') );
+  $(".igloohome-lock-image").change(function () {
+    readLockImageSrcFromInput(this, "igloohome", $('.igloohome-preview-image') );
   });
 
   $("#edgestate-lock-image").change(function () {
@@ -1360,18 +1360,18 @@ function uploadDweloLockImage() {
 }
 
 function uploadIgloohomeLockImage() {
-  var lockUploadHolder = document.getElementById('igloohome-lock-upload-holder');
+  var lockUploadHolder = $('.igloohome-lock-upload-holder');
   if (lockUploadHolder) {
-    lockUploadHolder.ondrop = function (e) {
+    lockUploadHolder.on('drop', function(e) {
       e.preventDefault();
-      files = e.dataTransfer.files;
-      if ((files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") ){
-          readLockImageSrc(files[0], "igloohome", $('#igloohome-preview-image') );
+      var files = e.originalEvent.dataTransfer.files;
+      if (files.length > 0 && (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg")) {
+        readLockImageSrc(files[0], "igloohome", $('.igloohome-preview-image'));
       } else {
         console.log('file type is not allowed');
         $('#image-upload-warning').modal('show');
       }
-    }
+    });
   }
 }
 
