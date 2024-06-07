@@ -289,7 +289,7 @@
                     //renderChangedUnits(units, is_floorplate, community);
           %footer.c-footer#footer
             .inner-footer
-              .footer-logo
+              .footer-logo{:style=> "visibility: #{@community.powered_by_btn ? "" : "hidden" }"}
                 %img{:src => "/assets/powered_by_logo.png"}/
               %ul.location-items.desktop-content
                 - if @community.enable_home_legend
