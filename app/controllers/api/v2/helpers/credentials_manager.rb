@@ -13,7 +13,8 @@ module CredentialsManager
         c_code: :c_code,
         p_code: :p_code,
         rentcafe_api_version: :rentcafe_api_version,
-        currency: :currency
+        currency: :currency,
+        limit_result: :limit_result
       }
     },
     'psi' => {
@@ -28,7 +29,8 @@ module CredentialsManager
         username: :username,
         password: :password,
         currency: :currency,
-        property_id: :property_id
+        property_id: :property_id,
+        limit_result: :limit_result
       }
     }
     # Add more providers and their respective credentials as needed
