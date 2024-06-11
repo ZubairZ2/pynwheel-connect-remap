@@ -538,7 +538,7 @@ json.tours @tours do |tour|
       
       begin
       if counter == 1 and @community.enable_locks and @tour_user.tour_type != "virtual_tour"
-        stop_lock_provider = stop.fetch_lock_stop_provider
+        stop_lock_provider = stop.lock_provider
         json.stop_lock_provider stop_lock_provider
         
         if stop_lock_provider == "Latch" and @community.latch.present? and stop.latch_locks.present?
