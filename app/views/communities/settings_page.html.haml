@@ -116,16 +116,6 @@
                   Pynwheel Touch Code
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   = f.text_field :code, :class=>"form-control", :placeholder=>"Code",:maxlength=>"30"
-              -#.form-group
-              -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-              -#    Property Map / Floorplates
-              -#
-              -#  .col-sm-12.col-lg-3.col-md-3.col-xs-12
-              -#    = f.radio_button :is_sitemap, true
-              -#    = f.label :is_sitemap, "Property Map", :value => "true"
-              -#  .col-sm-12.col-lg-3.col-md-3.col-xs-12
-              -#    = f.radio_button :is_sitemap, false
-              -#    = f.label :is_sitemap, "Floorplates", :value => "false"
               .form-group#display_types_row
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Pynwheel Touch Display Type
@@ -135,14 +125,6 @@
                 .col-sm-12.col-lg-3.col-md-3.col-xs-12
                   = f.radio_button :is_vertical_app, false
                   = f.label :is_vertical_app, "Horizontal", :value => "false"
-              -#.form-group#billing_rate_maps
-              -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-              -#    Billing Rate (Self & Touch)
-              -#
-              -#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              -#
-              -#    = f.text_field :billing_rate_for_both, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13", value: @community.billing_rate_for_both.present? ? @community.billing_rate_for_both : "$2,413"
-              -#
               .form-group#billing_rate_touch
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Billing Rate (Touch)
@@ -187,7 +169,7 @@
                     %span.pl-15 Yes
               .form-group#powered_by_pynwheel_row
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Show 'Powered by Pynwheel' on Pynwheel Touch Home Screen
+                  Show 'Powered by Pynwheel' on Pynwheel Touch Home Screen and Pynwheel Map
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
                     %span.pr-15 No
