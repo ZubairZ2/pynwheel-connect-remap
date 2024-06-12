@@ -1058,6 +1058,10 @@ class Community < ApplicationRecord
     self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.crm_provider == "yardirentcafe"
   end
 
+  def use_realpage_as_lead
+    self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.crm_provider == "realpagesvc"
+  end
+
   def is_funnel_community?
     self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential&.crm_provider === "funnel" && self.crm_credential&.funnel_community_id.present? && self.crm_credential&.funnel_api_key.present?
   end

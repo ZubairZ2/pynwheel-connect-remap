@@ -10,7 +10,7 @@ class KnockService < BaseService
   end
  
   def create_knock_prospect
-    knock_prospect_response = create_prospect(knock_prospect_api_key, knock_prospect_payload) if is_knock_crm
+    knock_prospect_response = create_prospect(knock_api_key, knock_prospect_payload) if is_knock_crm
     display_logs("Create Prospect", knock_prospect_response)
     add_knock_prospect_id(knock_prospect_response["payload"]["id"]) if prospect_created(knock_prospect_response)
   end
@@ -59,6 +59,11 @@ class KnockService < BaseService
       knock_visit_response = create_visit(knock_api_key, knock_visit_payload(visited_stops, visit_time))
       display_logs("Create Knock Visit", knock_visit_response)
     end
+  end
+
+  def get_discovery_sources
+    response = get_community_sources(knock_api_key, get_knock_community_id)
+    response.payload["edges"].map{|obj| obj["node"]["sourceTitle"]} rescue []
   end
 
   private
@@ -161,10 +166,6 @@ class KnockService < BaseService
 
   def is_knock_crm
     @community.is_knock_community?
-  end
-
-  def knock_prospect_api_key
-    ENV["KNOCK_PROSPECT_KEY"] || @crm_credentials&.knock_api_key
   end
 
   def knock_api_key

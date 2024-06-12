@@ -422,6 +422,14 @@
                     <%= select_tag :funnel_prospect_discover_source, options_for_select( @funnel_discovery_sources ), :class=>"form-control", include_blank: @selected_discovery_source %>
                   </div>
                 <% end %>
+
+                <% if @community.is_knock_community? %>
+                  <div class="w-left-50">
+                    <label>How did you hear about us ?</label>
+                    <span class="hidden" id="discovery-source"></span>
+                    <%= select_tag :knock_prospect_discover_source, options_for_select( @knock_discovery_sources ), :class=>"form-control", include_blank: @knock_selected_discovery_source %>
+                  </div>
+                <% end %>
           
                 <% if false %>
                   <div class="form-group expiry">
@@ -478,14 +486,14 @@
 
                 <div class="clearfix"></div>
 
-                <% if @community.data_provider == "realpagesvc" && @marketing_source_required %>
+                <% if @community.use_realpage_as_lead && @marketing_source_required %>
                   <div class="form-group w-left-50 w-100 tag-margin">
                     <label> How did you hear about <%= @community.name.titleize %> ? <span class="asterisk_color" >*</span></label>
                     <%= select_tag :marketing_source, options_for_select(@community.credential.realpage_marketing_sources.present? ? @community.credential.realpage_marketing_sources.collect{|s| [ s["Text"], s["Value"] ]} : []), include_blank: false , prompt: "Select your option", required: 'required', class: "span2 form-control marketing_source"%>
                   </div>
                 <% end %>
                 
-                <div class="<%= @community.data_provider == "realpagesvc" && @marketing_source_required ? "form-group w-100 w-right-checkbox" : "form-group w-100" %>" style="margin-top: 20px;">
+                <div class="<%= @community.use_realpage_as_lead && @marketing_source_required ? "form-group w-100 w-right-checkbox" : "form-group w-100" %>" style="margin-top: 20px;">
                   <% privacy_policy_link = 'https://pynwheeltouchscreens.com/privacy-policy' %>
                   <%= f.check_box :is_sms_enabled, id: "text_instructions", class: "hidden" %>
 
