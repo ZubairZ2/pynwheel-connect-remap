@@ -67,6 +67,23 @@ module KnockApisHelper
     OpenStruct.new({success?: true, error: nil, payload: response})
   end
 
+   # get sources of a community
+  def get_community_sources knock_api_key, community_id
+    url = "#{ENV["KNOCK_BASE_URL"]}/community/#{community_id}/sources"
+
+    response = HTTParty.get(url, 
+      headers: { 
+      'Content-Type' => 'application/json',
+      'x-api-key' => knock_api_key
+      }
+    )
+
+  rescue HTTParty::Error => e
+    OpenStruct.new({success?: false, error: e, payload: nil})
+  else
+    OpenStruct.new({success?: true, error: nil, payload: response})
+  end
+
   # create a visit for a prospect
   def create_visit knock_api_key, payload
     url = "#{ENV["KNOCK_BASE_URL"]}/visit"

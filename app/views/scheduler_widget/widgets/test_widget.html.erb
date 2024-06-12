@@ -993,7 +993,7 @@
             minimumDate = minimumDate.replaceAll("-", "/");
           }
           let knockAvailableDates = knock_available_time_slots.available_dates
-          initializeDatePicker(datePickerTag, steps, [], availableDates, minimumDate);
+          initializeDatePicker(datePickerTag, steps, [], knockAvailableDates, minimumDate);
         }
         else if (use_yardi_as_lead && !is_virtual_on){
           let rentCafeAvailableDates = <%= raw @yardi_enable_days %>;
