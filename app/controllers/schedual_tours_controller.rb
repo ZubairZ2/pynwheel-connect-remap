@@ -124,6 +124,7 @@ class SchedualToursController < ApplicationController
 
       # Update funnel discovery source
       schedual_tour.update_attributes(funnel_prospect_discover_source: params[:funnel_prospect_discover_source]) if community.is_funnel_community? && params[:funnel_prospect_discover_source].present?
+      schedual_tour.update_attributes(knock_prospect_discover_source: params[:knock_prospect_discover_source]) if community.is_knock_community? && params[:knock_prospect_discover_source].present?
       
       if previous_tour[:is_rescheduled]
         is_rescheduled = true
@@ -358,7 +359,8 @@ class SchedualToursController < ApplicationController
 
     # Update funnel discovery source
     @schedual_tour.update_attributes(funnel_prospect_discover_source: params[:funnel_prospect_discover_source]) if @schedual_tour.community.is_funnel_community? && params[:funnel_prospect_discover_source].present?
-    
+    @schedual_tour.update_attributes(knock_prospect_discover_source: params[:knock_prospect_discover_source]) if @schedual_tour.community.is_knock_community? && params[:knock_prospect_discover_source].present?
+
     if @schedual_tour&.community&.credential&.rentcafe_api_version == "RentCafe V2"
       YardiRentCafeV2Services::MarketingApisV2Service.new(@schedual_tour).schedule_tour(previous_tour)
     else

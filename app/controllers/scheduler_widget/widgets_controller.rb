@@ -97,7 +97,9 @@ class SchedulerWidget::WidgetsController < ApplicationController
 
     @is_knock_community = @schedule_tour.community.is_knock_community?
     @knock_available_slots =  @is_knock_community ? KnockService.new(@schedule_tour).available_slots : {}
-
+    @knock_discovery_sources = @is_knock_community ? KnockService.new(@schedule_tour).get_discovery_sources : []
+    @knock_selected_discovery_source = @is_knock_community ? (@schedule_tour&.knock_prospect_discover_source.present? ? @knock_discovery_sources.map{|s| s if s == @schedule_tour&.knock_prospect_discover_source }&.compact&.uniq[0] : "Select an option" ) : ""
+    
     @is_funnel_community = @schedule_tour.community.is_funnel_community?
     @funnel_available_days =  @is_funnel_community ? FunnelService.new(@schedule_tour).get_available_days : {}
     @funnel_discovery_sources = @is_funnel_community ? FunnelService.new(@schedule_tour).get_discovery_sources : []

@@ -213,7 +213,7 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
     params.require(:crm_credential).permit(:crm_provider, :entrata_domain, :entrata_username, :entrata_password, :entrata_property_id,
       :realpage_site_id, :realpage_pmc_id, :rentcafe_c_code, :rentcafe_p_code, :rentcafe_domain ,:salesforce_username,
       :yardirentcafe_marketing_api_key, :yardirentcafe_property_id, :yardirentcafe_property_code,:salesforce_password, 
-      :salesforce_client_id, :salesforce_secret_id, :salesforce_property_id, :knock_api_key, :knock_community_id, :knock_sms_consent_url, :salesforce_grant_type, :funnel_community_id, :funnel_api_key)
+      :salesforce_client_id, :salesforce_secret_id, :salesforce_property_id, :knock_api_key, :knock_community_id, :knock_company_id, :knock_sms_consent_url, :salesforce_grant_type, :funnel_community_id, :funnel_api_key)
   end
 
 end
