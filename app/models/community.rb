@@ -1585,13 +1585,10 @@ class Community < ApplicationRecord
 
   def community_tour_available_stops tour_user, tour
     scheduled_tour = MaxDateScheduledTourService.new(tour_user, self, false).get_scheduled_tour
-
-    if scheduled_tour.present? && scheduled_tour.stops_list.present?
-      stops = tour.tour_stops.plotted_stops.where(id: scheduled_tour.stops_list).order(:sort)
-      stops = stops.where()
-    else
-      nil
-    end
+    
+    return nil unless scheduled_tour.present? && scheduled_tour.stops_list.present?
+    
+    tour.tour_stops.plotted_stops.where(id: scheduled_tour.stops_list).order(:sort)
   end
 
   def is_virtual_permission_on
