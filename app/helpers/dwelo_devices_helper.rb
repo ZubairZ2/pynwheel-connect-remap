@@ -319,8 +319,8 @@ module DweloDevicesHelper
       elevator_ids = TourStop.where(id: stops_ids, stop_type: "elevator").pluck(:stop_id)
       building_starting_point_ids = TourStop.where(id: stops_ids, stop_type: "building_starting_point").pluck(:stop_id)
       
-      units = Unit.where(id: unit_ids, lock_provider: "Latch").includes(:latch_locks)
-      amenities = Amenity.where(id: amenity_ids, lock_provider: "Latch").includes(:latch_locks)
+      units = Unit.where(id: unit_ids).includes(:latch_locks)
+      amenities = Amenity.where(id: amenity_ids).includes(:latch_locks)
       elevators = Elevator.where(id: elevator_ids, lock_provider: "Latch").includes(:latch_locks)
       building_starting_points = BuildingStartingPoint.where(id: building_starting_point_ids, lock_provider: "Latch").includes(:latch_locks)
 
@@ -328,22 +328,30 @@ module DweloDevicesHelper
       locks_data << community&.latch&.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten if community&.latch&.latch_locks.present?
 
       units.each do |unit|
-        if unit.door.present?
-          lock_info = unit.door.latch_lock.present? ? unit.door.latch_lock.latch_lock_columns : []
-        else
-          lock_info = unit.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten  
-        end
-        locks_data << lock_info if lock_info.present? and locks_data.map{|x| x if x[0] == lock_info[0]}.compact.flatten.length == 0
-      end
+        if unit&.lock_provider === "Latch" || unit&.door&.lock_provider === "Latch"
+          if unit.door.present?
+            lock_info = unit.door.latch_lock.present? ? unit.door.latch_lock.latch_lock_columns : []
+          else
+            lock_info = unit.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten  
+          end
+
+          locks_data << lock_info if lock_info.present? and locks_data.map{|x| x if x[0] == lock_info[0]}.compact.flatten.length == 0
       
-      amenities.each do |amenity|
-        if amenity.doors.any?
-          lock_info = amenity.doors.first.latch_lock.present? ? amenity.doors.first.latch_lock.latch_lock_columns : []
-        else
-          lock_info = amenity.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten  
         end
-        locks_data << lock_info if lock_info.present? and locks_data.map{|x| x if x[0] == lock_info[0]}.compact.flatten.length == 0
-      end 
+      end
+
+      amenities.each do |amenity|
+        if amenity&.lock_provider === "Latch" || amenity&.doors&.first&.lock_provider === "Latch"
+          if amenity.doors.any?
+            lock_info = amenity.doors.first.latch_lock.present? ? amenity.doors.first.latch_lock.latch_lock_columns : []
+          else
+            lock_info = amenity.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten  
+          end
+
+          locks_data << lock_info if lock_info.present? and locks_data.map{|x| x if x[0] == lock_info[0]}.compact.flatten.length == 0
+      
+        end 
+      end
 
       elevators.each do |elevator|
         lock_info = elevator.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten
