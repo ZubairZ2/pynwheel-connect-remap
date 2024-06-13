@@ -10,26 +10,26 @@ class KnockService < BaseService
   end
  
   def create_knock_prospect
-    knock_prospect_response = create_prospect(knock_api_key, knock_prospect_payload) if is_knock_crm
+    knock_prospect_response = create_prospect(knock_api_key, knock_prospect_payload, get_knock_community_id, get_knock_company_id) if is_knock_crm
     display_logs("Create Prospect", knock_prospect_response)
     add_knock_prospect_id(knock_prospect_response["payload"]["id"]) if prospect_created(knock_prospect_response)
   end
 
   def create_knock_appointment
-    knock_appointment_response = create_appointment(knock_api_key, knock_appointment_payload) if is_knock_crm
+    knock_appointment_response = create_appointment(knock_api_key, knock_appointment_payload, get_knock_community_id, get_knock_company_id) if is_knock_crm
     display_logs("Create Appointment", knock_appointment_response)
     add_knock_appointment_id(knock_appointment_response["payload"]["appointment"]["id"]) if appointment_created(knock_appointment_response)
   end
 
   def cancel_knock_appointment
-    cancel_appointment_response = cancel_appointment(knock_api_key, @scheduled_tour.knock_appointment_id)  if @scheduled_tour.knock_appointment_id.present?
+    cancel_appointment_response = cancel_appointment(knock_api_key, @scheduled_tour.knock_appointment_id, get_knock_community_id, get_knock_company_id)  if @scheduled_tour.knock_appointment_id.present?
     display_logs("Cancel Appointment", cancel_appointment_response)
     add_knock_appointment_id(nil) if appointment_canceled(cancel_appointment_response)
   end
 
   def available_slots
-    self_guided_available_time_slots = get_community_available_times(knock_api_key, get_knock_community_id, true) 
-    in_person_available_time_slots = get_community_available_times(knock_api_key, get_knock_community_id, false)
+    self_guided_available_time_slots = get_community_available_times(knock_api_key, true, get_knock_community_id, get_knock_company_id) 
+    in_person_available_time_slots = get_community_available_times(knock_api_key, false, get_knock_community_id, get_knock_company_id)
     
     self_guided_slots = formate_time_slots_array_to_hash(self_guided_available_time_slots["payload"]["acceptableTimes"]) if self_guided_available_time_slots.present? && self_guided_available_time_slots["payload"]["acceptableTimes"].present?
     in_person_slots = formate_time_slots_array_to_hash(in_person_available_time_slots["payload"]["acceptableTimes"]) if in_person_available_time_slots.present? && in_person_available_time_slots["payload"]["acceptableTimes"].present?
@@ -56,13 +56,13 @@ class KnockService < BaseService
 
   def create_knock_visit visited_stops, visit_time
     if is_knock_crm && @scheduled_tour.property_tour_type.present?
-      knock_visit_response = create_visit(knock_api_key, knock_visit_payload(visited_stops, visit_time))
+      knock_visit_response = create_visit(knock_api_key, knock_visit_payload(visited_stops, visit_time), get_knock_community_id, get_knock_company_id)
       display_logs("Create Knock Visit", knock_visit_response)
     end
   end
 
   def get_discovery_sources
-    response = get_community_sources(knock_api_key, get_knock_community_id)
+    response = get_community_sources(knock_api_key, get_knock_community_id, get_knock_company_id)
     response.payload["edges"].map{|obj| obj["node"]["sourceTitle"]} rescue []
   end
 
@@ -174,6 +174,10 @@ class KnockService < BaseService
 
   def get_knock_community_id
     @crm_credentials&.knock_community_id
+  end
+
+  def get_knock_company_id
+    @crm_credentials&.knock_company_id
   end
 
   def get_knock_consent_url
