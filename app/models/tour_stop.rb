@@ -152,18 +152,18 @@ class TourStop < ApplicationRecord
 
   def stop_building_text actual_stop
     return "" unless actual_stop&.building.present?
-    " to go to Building #{actual_stop.building}"
+    building_list = Buildings.new(actual_stop.community).get_community_buildings()
+
+    if building_list.size > 1
+      " to go to Building #{actual_stop.building}"
+    else
+      ""
+    end
   end
 
   def stop_floor_text actual_stop
     return "" unless actual_stop&.floor.present?
-    building_list = Buildings.new(actual_stop.community).get_community_buildings()
-    
-    if building_list.size > 1
-      " on the #{number_to_ordinal_form(actual_stop&.floor.to_i)} floor"
-    else
-      ""
-    end
+    " on the #{number_to_ordinal_form(actual_stop&.floor.to_i)} floor"
   end
 
   def actual_stop_text actual_stop
