@@ -44,7 +44,7 @@ class CrmCredential < ApplicationRecord
   end
 
   def knock_crm_credentials
-	  {knock_api_key: self.knock_api_key, knock_community_id: self.knock_community_id, knock_company_id: self.knock_company_id, knock_sms_consent_url: self.knock_sms_consent_url}
+	  {knock_community_id: self.knock_community_id, knock_company_id: self.knock_company_id}
   end
 
   def funnel_crm_credentials

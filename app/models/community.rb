@@ -548,7 +548,7 @@ class Community < ApplicationRecord
       when "salesforce"
         crm_credential.salesforce_username.present? && crm_credential.salesforce_password.present? && crm_credential.salesforce_client_id.present? && crm_credential.salesforce_secret_id.present? && crm_credential.salesforce_property_id.present?
       when "knock"
-        crm_credential.knock_api_key.present? && crm_credential.knock_community_id.present? && crm_credential.knock_company_id.present? && crm_credential.knock_sms_consent_url.present?
+        crm_credential.knock_community_id.present? && crm_credential.knock_company_id.present?
       when "funnel"
         crm_credential.funnel_api_key.present? && crm_credential.funnel_community_id.present?
     end
@@ -1067,7 +1067,7 @@ class Community < ApplicationRecord
   end
 
   def is_knock_community?
-    self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential&.crm_provider === "knock" && self.crm_credential&.knock_community_id.present? && self.crm_credential&.knock_company_id.present? && self.crm_credential&.knock_api_key.present?
+    self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential&.crm_provider === "knock" && self.crm_credential&.knock_community_id.present? && self.crm_credential&.knock_company_id.present?
   end
 
   def is_salesforce_community?
