@@ -23,7 +23,7 @@ class CommunityTour
       get_floorplate_tour_stops()
     end
 
-    sorted_stops_list()
+    # sorted_stops_list()
     get_finalized_tour_stops_list_for_self_tour()
   end
 
