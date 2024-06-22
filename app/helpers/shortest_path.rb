@@ -821,21 +821,33 @@ module ShortestPath
       @amenity_with_doors.compact!
       @starting_point = {x_plot: @community.community_tour.x_plot, y_plot: @community.community_tour.y_plot }
     end
+
+    def filter_stops(tour_stops, stop_type)
+      tour_stops.select { |stop| stop.stop_type == stop_type && stop.display_stop }&.map(&:stop_id)
+    end
+
     def fetch_related_data_according_to_mobile(new_stops_arr, community_id)
       @planned_to_visit_units_and_doors_ids     = []
       @planned_to_visit_amenities_and_doors_ids = []
       @community = Community.find community_id
       if @community.is_sitemap
-        tour_stops_ids = new_stops_arr[1..(new_stops_arr.length - 2)].pluck(:id)
-        tour_stops = TourStop.where(id: tour_stops_ids).order(:sort)
+
+        tour_stops = new_stops_arr[1..(new_stops_arr.length - 2)]
+        # tour_stops_ids = new_stops_arr[1..(new_stops_arr.length - 2)].pluck(:id)
+        # tour_stops = TourStop.where(id: tour_stops_ids).order(:sort)
+        
         @stops_id_hash = {}
         @precedence_arr = tour_stops.pluck(:stop_id, :stop_type)
         tour_stops.each {|tour_stop| @stops_id_hash[tour_stop.id] = tour_stop.stop_id}
         @sitemap = @community.sitemap
         @hallways = @sitemap.hallways.order("id ASC")
         @access_points = @sitemap.access_points
-        planned_to_visit_units_ids     = tour_stops.where(stop_type: "unit", display_stop: true).pluck(:stop_id) rescue []
-        planned_to_visit_amenities_ids = tour_stops.where(stop_type: "amenity",display_stop: true).pluck(:stop_id) rescue []
+
+        # planned_to_visit_units_ids     = tour_stops.where(stop_type: "unit", display_stop: true).pluck(:stop_id) rescue []
+        # planned_to_visit_amenities_ids = tour_stops.where(stop_type: "amenity",display_stop: true).pluck(:stop_id) rescue []
+        planned_to_visit_units_ids     = filter_stops(tour_stops, "unit")
+        planned_to_visit_amenities_ids = filter_stops(tour_stops, "amenity")
+
         @community_units = @community.units.are_ploted_units.where(floorplate_id: nil).order(:building, :unit_type).includes(:door) # only plotted units
         @unit_with_door = @community_units.map do |unit| 
           if planned_to_visit_units_ids.include?(unit.id) 
