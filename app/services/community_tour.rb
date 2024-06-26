@@ -186,7 +186,7 @@ class CommunityTour
     @favorite_amenity_array = (fs.user_favorites_amenity[(@tour_user.present? ? @tour_user.email : nil)].present? ? fs.user_favorites_amenity[@tour_user.email] : [])
   end
 
-  def sorted_stops_list 
+  def sorted_stops_list
     # If does not work properly return just @stops_arr
     @stops_arr = SortedTourStopsList.new(@stops_arr, @community, @tour).get_sorted_stops_list()
   end

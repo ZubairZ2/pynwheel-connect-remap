@@ -3,6 +3,7 @@ class SortedTourStopsList
     @tour_stops = tour_stops
     @community = community
     @tour = tour
+    @original_stops = []
   end
 
   def get_sorted_stops_list
@@ -12,17 +13,80 @@ class SortedTourStopsList
   private
 
   def sitemap_sorted_stops_list
-    stops_points = fetch_stops_points
-    sorted_points = sort_stops_by_distance(get_starting_point, stops_points)
-    fetch_sorted_tour_stops(sorted_points)
+    starting_point = get_starting_point(@tour)
+    index = 0
+  
+    while index < @tour_stops.length
+      if @tour_stops[index].is_a?(TourStop)
+        unit_or_amenity_stops = []
+        
+        while index < (@tour_stops.length) && @tour_stops[index].is_a?(TourStop) && ["unit", "amenity"].include?(@tour_stops[index].stop_type)
+          unit_or_amenity_stops << @tour_stops[index]
+          index += 1
+        end
+
+        
+        if unit_or_amenity_stops.present?
+          stops_points = fetch_stops_points(unit_or_amenity_stops)
+          sorted_points = sort_stops_by_distance(starting_point, stops_points)
+          stops = fetch_sorted_tour_stops(sorted_points)
+
+          stops.each do |s|
+            @original_stops << s
+          end
+        end
+
+      else
+        starting_point = get_starting_point(@tour_stops[index])
+        @original_stops << @tour_stops[index]
+        index += 1
+      end
+    end
+    @original_stops
   end
 
   def floorplate_sorted_stops_list
-    @tour_stops
-  end
+    starting_point = get_starting_point(@tour)
+    index = 0
+  
+    while index < @tour_stops.length
+      if @tour_stops[index].is_a?(TourStop)
+        if ["elevator", "building_starting_point"].include?(@tour_stops[index].stop_type)
+          actual_stop = fetch_actual_stop(@tour_stops[index])
+          starting_point = get_starting_point(actual_stop)
+          @original_stops << @tour_stops[index]
+          index += 1
+        else
+          unit_or_amenity_stops = []
 
-  def fetch_stops_points
-    make_stops_hash.map do |tour_stop|
+          while index < @tour_stops.length && ["unit", "amenity"].include?(@tour_stops[index].stop_type)
+            unit_or_amenity_stops << @tour_stops[index]
+            index += 1
+          end
+
+          if unit_or_amenity_stops.present?
+            stops_points = fetch_stops_points(unit_or_amenity_stops)
+            sorted_points = sort_stops_by_distance(starting_point, stops_points)
+            stops = fetch_sorted_tour_stops(sorted_points)
+
+            stops.each do |s|
+              @original_stops << s
+            end
+
+          end
+        end
+      else
+        starting_point = get_starting_point(@tour_stops[index])
+        @original_stops << @tour_stops[index]
+        index += 1
+      end
+    end
+
+    @original_stops
+  end
+  
+  def fetch_stops_points tour_stops
+    make_stops_hash(tour_stops).map do |tour_stop|
       actual_stop = fetch_actual_stop(tour_stop)
       build_stop_point(tour_stop, actual_stop)
     end
@@ -32,8 +96,8 @@ class SortedTourStopsList
     tour_stops_list.map { |stop| TourStop.find(stop[:id]) }
   end
 
-  def make_stops_hash
-    @tour_stops.map { |stop| stop.slice(:id, :stop_type, :stop_id) }
+  def make_stops_hash tour_stops
+    tour_stops.map { |stop| stop.slice(:id, :stop_type, :stop_id) }
   end
 
   def fetch_actual_stop(tour_stop)
@@ -50,8 +114,8 @@ class SortedTourStopsList
     }
   end
 
-  def get_starting_point
-    { x_plot: @tour.x_plot, y_plot: @tour.y_plot }
+  def get_starting_point startin_point
+    { x_plot: startin_point.x_plot, y_plot: startin_point.y_plot }
   end
 
   def sort_stops_by_distance(starting_point, stops_list)
