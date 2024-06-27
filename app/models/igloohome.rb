@@ -6,6 +6,8 @@ class Igloohome < ApplicationRecord
   mount_uploader :file, CsvfileUploader
   has_one :status, as: :statusable
   mount_base64_uploader :lock_image, AvatarUploader
+  mount_base64_uploader :amenity_lock_image, AvatarUploader
+
 
   def as_json options = {}
     super(
