@@ -5542,6 +5542,10 @@ body {
     float: left;
     width: 20%;
 }
+.lock-box-shadow {
+    box-shadow: 0 0 0px 1px #eee;
+    padding: 30px;
+}
 ul.location-items li {
     list-style: none;
     display: inline-block;

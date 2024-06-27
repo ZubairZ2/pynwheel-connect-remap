@@ -47,9 +47,13 @@ class DwelosController < ApplicationController
   end
 
   def upload_lock_image
-    return unless params[:lock_image].present?
     @dwelo = current_community.dwelo || Dwelo.new(community_id: current_community.id)
-    @dwelo.update(lock_image: params[:lock_image])
+
+    if params[:type].present? && params[:type] === "amenity"
+      @dwelo.update(amenity_lock_image: params[:amenity_lock_image]) if params[:amenity_lock_image].present?
+    else
+      @dwelo.update(lock_image: params[:lock_image]) if params[:lock_image].present?
+    end
   end
 
   def test_dwelo_connection
@@ -99,6 +103,7 @@ class DwelosController < ApplicationController
   end
 
   private
+  
   def set_community
     @community = Community.find(params[:community_id])
   end
@@ -113,7 +118,7 @@ class DwelosController < ApplicationController
   end
 
   def dwelo_params
-    params.require(:dwelo).permit(:client_id, :client_secret, :default_community_id,:api_url, :lock_instruction_text)
+    params.require(:dwelo).permit(:client_id, :client_secret, :default_community_id,:api_url, :lock_instruction_text, :amenity_lock_instruction_text)
   end
   def set_dwelo
     @dwelo = current_community.dwelo

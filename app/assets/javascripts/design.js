@@ -8,7 +8,10 @@ $(document).ready(function () {
   // Locks Instruction Text Initializer
   zervLockIntructionText();
   latchLockIntructionText();
+  
   dweloLockIntructionText();
+  amenityDweloLockIntructionText();
+
   igloohomeLockIntructionText();
   edgestateLockIntructionText();
 
@@ -19,7 +22,10 @@ $(document).ready(function () {
   // Locks Image Uploader
   uploadZervLockImage();
   uploadLatchLockImage();
+
   uploadDweloLockImage();
+  uploadAmenityDweloLockImage();
+
   uploadIgloohomeLockImage();
   uploadEdgestateLockImage();
 
@@ -812,7 +818,11 @@ $(document).ready(function () {
   });
 
   $("#dwelo-lock-image").change(function () {
-    readLockImageSrcFromInput(this, "dwelo", $('#dwelo-preview-image') );
+    readLockImageSrcFromInput(this, "dwelo", $('#dwelo-preview-image'), "unit" );
+  });
+
+  $("#amenity-dwelo-lock-image").change(function () {
+    readLockImageSrcFromInput(this, "dwelo", $('#amenity-dwelo-preview-image'), "amenity" );
   });
 
   $(".igloohome-lock-image").change(function () {
@@ -1159,6 +1169,44 @@ function dweloLockIntructionText() {
   });
 }
 
+function amenityDweloLockIntructionText() {
+  let characterLimit = 275;
+
+  $('.amenity_dwelo_lock_instruction_wysihtml5').each(function(i, elem) {
+    $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
+      events: {
+        load:function(){
+          $('.wysihtml5-sandbox').contents().find('body').on("keydown",function(event) {
+            if (wysihtml5Editor.getValue() != "")
+            {
+              var text_split = $('.amenity_dwelo_lock_instruction_count').text().split(" ")
+              var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
+              $('.amenity_dwelo_lock_instruction_count').text( text_split[0] + " " + text_split[1] + " " + (characterLimit - total_length)).toString()
+            }
+          });
+
+          var wysihtml5Editor = $('#amenity_dwelo_lock_instruction_text').data("wysihtml5").editor;
+          var t = wysihtml5Editor.getValue();
+            
+          if(t!= '') {
+            t1 = t.substr(0, characterLimit)
+            t2 = t.substr(characterLimit, t.length)
+            // t2 = t2.fontcolor("red");
+            wysihtml5Editor.setValue(t1 + t2);
+            var text_split = $('.amenity_dwelo_lock_instruction_count').text().split(" ")
+            var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
+            $('.amenity_dwelo_lock_instruction_count').text( text_split[0] + " " + text_split[1] + " " + (characterLimit - total_length)).toString()
+          }
+        },
+
+        change: function() {
+          $('.amenity_dwelo_lock_instruction_field').change();
+        }
+      }
+    });
+  });
+}
+
 function editElevatorDirectionalTextField () {
   // let characterLimit = 275;
 
@@ -1350,7 +1398,23 @@ function uploadDweloLockImage() {
       e.preventDefault();
       files = e.dataTransfer.files;
       if ((files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") ){
-          readLockImageSrc(files[0], "dwelo", $('#dwelo-preview-image') );
+          readLockImageSrc(files[0], "dwelo", $('#dwelo-preview-image'), "unit" );
+      } else {
+        console.log('file type is not allowed');
+        $('#image-upload-warning').modal('show');
+      }
+    }
+  }
+}
+
+function uploadAmenityDweloLockImage() {
+  var lockUploadHolder = document.getElementById('amenity-dwelo-lock-upload-holder');
+  if (lockUploadHolder) {
+    lockUploadHolder.ondrop = function (e) {
+      e.preventDefault();
+      files = e.dataTransfer.files;
+      if ((files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") ){
+          readLockImageSrc(files[0], "dwelo", $('#amenity-dwelo-preview-image'), "amenity" );
       } else {
         console.log('file type is not allowed');
         $('#image-upload-warning').modal('show');
@@ -1507,14 +1571,14 @@ function readEmailLogoSrc(file) {
   reader.readAsDataURL(file);
 }
 
-function readLockImageSrc(file, type, element) {
+function readLockImageSrc(file, lockType, element, type) {
   $(".divLoading").removeClass("hidden");
   var reader = new FileReader();
   reader.onload = function (e) {
     element.attr('src', e.target.result);
     element.parent().attr('href', e.target.result);
 
-    LockImageUploader(e.target.result, type);
+    LockImageUploader(e.target.result, lockType, type);
   }
 
   reader.readAsDataURL(file);
@@ -2349,32 +2413,39 @@ function designPageLogo(src) {
     });
 }
 
-function getLockImageURL(type, community_id) {
-  switch(type) {
+function getLockImageURL(lockType, communityId) {
+  switch(lockType) {
     case 'zerv':
-      return `/communities/${community_id}/zerv_accounts/upload_lock_image`;
+      return `/communities/${communityId}/zerv_accounts/upload_lock_image`;
     case 'latch':
-      return `/communities/${community_id}/latch_accounts/upload_lock_image`;
+      return `/communities/${communityId}/latch_accounts/upload_lock_image`;
     case 'dwelo':
-      return `/communities/${community_id}/dwelos/upload_lock_image`;
+      return `/communities/${communityId}/dwelos/upload_lock_image`;
     case 'igloohome':
-      return `/communities/${community_id}/igloohome_accounts/upload_lock_image`;
+      return `/communities/${communityId}/igloohome_accounts/upload_lock_image`;
     case 'edgestate':
-      return `/communities/${community_id}/edgestate_accounts/upload_lock_image`;
+      return `/communities/${communityId}/edgestate_accounts/upload_lock_image`;
   }
 }
 
 
-function LockImageUploader(src, type) {
+function LockImageUploader(src, lockType, type) {
   let lockData = $("#communityLock").data();
   let community_id = lockData.communityId;
   $(".divLoading").removeClass("hidden"); 
+  let payload;
+
+  if(type === "amenity") {
+    payload =  {amenity_lock_image: src, type: "amenity"}
+  } else {
+    payload =  {lock_image: src, type: "unit"}
+  }
 
   $.ajax({
-    url: getLockImageURL(type, community_id),
+    url: getLockImageURL(lockType, community_id),
     type: "PUT",
     dataType: "script",
-    data: {lock_image: src}
+    data: payload
   }).done(function () {
     $(".divLoading").addClass("hidden");
   });
@@ -3088,7 +3159,7 @@ function designPageHomeScreenbutton(src, button, screen_id) {
   });
 }
 
-function readLockImageSrcFromInput(input, type, element) {
+function readLockImageSrcFromInput(input, lockType, element, type) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
       var reader = new FileReader();
@@ -3096,7 +3167,7 @@ function readLockImageSrcFromInput(input, type, element) {
       reader.onload = function (e) {
         element.attr('src', e.target.result);
         element.parent().attr('href', e.target.result);
-        LockImageUploader(e.target.result, type);
+        LockImageUploader(e.target.result, lockType, type);
       }
 
       reader.readAsDataURL(input.files[0]);

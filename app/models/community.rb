@@ -2067,7 +2067,10 @@ class Community < ApplicationRecord
       lock_type: lock_object.class.name.camelcase,
       lock_description: ActionView::Base.full_sanitizer.sanitize(lock_object.lock_instruction_text),
       lock_long_description: styling_start + lock_object&.lock_instruction_text.gsub('red','') + styling_end,
-      lock_image: lock_object.lock_image
+      lock_image: lock_object.lock_image,
+      amenity_lock_description: ActionView::Base.full_sanitizer.sanitize(lock_object.amenity_lock_instruction_text),
+      amenity_lock_long_description: styling_start + lock_object&.amenity_lock_instruction_text.gsub('red','') + styling_end,
+      amenity_lock_image: lock_object.amenity_lock_image
     }
   end
 
