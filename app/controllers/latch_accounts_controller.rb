@@ -1,5 +1,6 @@
 class LatchAccountsController < ApplicationController
   before_action :set_latch_account, except: [:new, :remove_latch_locks]
+  before_action :update_default_image, except: [:new, :remove_latch_locks]
 
   def new
     @latch = Latch.new
@@ -74,6 +75,25 @@ class LatchAccountsController < ApplicationController
   end
 
   private
+
+    def update_default_image
+      default_image_base64 = image_to_base64("latch-lock-image.png")
+
+      if @latch.amenity_lock_image.blank?
+        @latch.update(amenity_lock_image: default_image_base64)
+      end
+
+      if @latch.lock_image.blank?
+        @latch.update(lock_image: default_image_base64)
+      end
+    end
+
+    def image_to_base64(filename)
+      image_path = Rails.root.join('app', 'assets', 'images', filename)
+      image_data = File.read(image_path)
+      base64_image = Base64.strict_encode64(image_data)
+      "data:image/png;base64,#{base64_image}"
+    end
 
     def add_lock_provider
       locks_provider = current_community.multiple_locks_provider
