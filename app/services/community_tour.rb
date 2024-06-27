@@ -23,7 +23,6 @@ class CommunityTour
       get_floorplate_tour_stops()
     end
 
-    sorted_stops_list()
     get_finalized_tour_stops_list_for_self_tour()
   end
 
@@ -184,11 +183,6 @@ class CommunityTour
     fs = @community.favorite_stop.present? ? @community.favorite_stop : FavoriteStop.new
     @favorite_unit_array = (fs.present? ? fs.favorite_unit : []) + (fs.user_favorites_unit[(@tour_user.present? ? @tour_user.email : nil)].present? ? fs.user_favorites_unit[@tour_user.email] : [])
     @favorite_amenity_array = (fs.user_favorites_amenity[(@tour_user.present? ? @tour_user.email : nil)].present? ? fs.user_favorites_amenity[@tour_user.email] : [])
-  end
-
-  def sorted_stops_list
-    # If does not work properly return just @stops_arr
-    @stops_arr = SortedTourStopsList.new(@stops_arr, @community, @tour).get_sorted_stops_list()
   end
 
 end
