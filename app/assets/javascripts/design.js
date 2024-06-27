@@ -18,6 +18,8 @@ $(document).ready(function () {
   amenityDweloLockIntructionText();
 
   igloohomeLockIntructionText();
+  amenityIgloohomeLockIntructionText();
+
 
   edgestateLockIntructionText();
   amenityEdgestateLockIntructionText();
@@ -38,6 +40,7 @@ $(document).ready(function () {
   uploadAmenityDweloLockImage();
 
   uploadIgloohomeLockImage();
+  uploadAmenityIgloohomeLockImage();
 
   uploadEdgestateLockImage();
   uploadAmenityEdgestateLockImage();
@@ -848,7 +851,11 @@ $(document).ready(function () {
   });
 
   $(".igloohome-lock-image").change(function () {
-    readLockImageSrcFromInput(this, "igloohome", $('.igloohome-preview-image') );
+    readLockImageSrcFromInput(this, "igloohome", $('.igloohome-preview-image'), "unit" );
+  });
+
+  $(".amenity-igloohome-lock-image").change(function () {
+    readLockImageSrcFromInput(this, "igloohome", $('.amenity-igloohome-preview-image'), "amenity" );
   });
 
   $("#edgestate-lock-image").change(function () {
@@ -1423,6 +1430,44 @@ function igloohomeLockIntructionText() {
   });
 }
 
+function amenityIgloohomeLockIntructionText() {
+  let characterLimit = 275;
+
+  $('.amenity_igloohome_lock_instruction_wysihtml5').each(function(i, elem) {
+    $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
+      events: {
+        load:function(){
+          $('.wysihtml5-sandbox').contents().find('body').on("keydown",function(event) {
+            if (wysihtml5Editor.getValue() != "")
+            {
+              var text_split = $('.amenity_igloohome_lock_instruction_count').text().split(" ")
+              var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
+              $('.amenity_igloohome_lock_instruction_count').text( text_split[0] + " " + text_split[1] + " " + (characterLimit - total_length)).toString()
+            }
+          });
+
+          var wysihtml5Editor = $('#amenity_igloohome_lock_instruction_text').data("wysihtml5").editor;
+          var t = wysihtml5Editor.getValue();
+            
+          if(t!= '') {
+            t1 = t.substr(0, characterLimit)
+            t2 = t.substr(characterLimit, t.length)
+            // t2 = t2.fontcolor("red");
+            wysihtml5Editor.setValue(t1 + t2);
+            var text_split = $('.amenity_igloohome_lock_instruction_count').text().split(" ")
+            var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
+            $('.amenity_igloohome_lock_instruction_count').text( text_split[0] + " " + text_split[1] + " " + (characterLimit - total_length)).toString()
+          }
+        },
+
+        change: function() {
+          $('.amenity_igloohome_lock_instruction_field').change();
+        }
+      }
+    });
+  });
+}
+
 function edgestateLockIntructionText() {
   let characterLimit = 275;
 
@@ -1603,7 +1648,23 @@ function uploadIgloohomeLockImage() {
       e.preventDefault();
       var files = e.originalEvent.dataTransfer.files;
       if (files.length > 0 && (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg")) {
-        readLockImageSrc(files[0], "igloohome", $('.igloohome-preview-image'));
+        readLockImageSrc(files[0], "igloohome", $('.igloohome-preview-image'), "unit");
+      } else {
+        console.log('file type is not allowed');
+        $('#image-upload-warning').modal('show');
+      }
+    });
+  }
+}
+
+function uploadAmenityIgloohomeLockImage() {
+  var lockUploadHolder = $('.amenity-igloohome-lock-upload-holder');
+  if (lockUploadHolder) {
+    lockUploadHolder.on('drop', function(e) {
+      e.preventDefault();
+      var files = e.originalEvent.dataTransfer.files;
+      if (files.length > 0 && (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg")) {
+        readLockImageSrc(files[0], "igloohome", $('.amenity-igloohome-preview-image'), "amenity");
       } else {
         console.log('file type is not allowed');
         $('#image-upload-warning').modal('show');
