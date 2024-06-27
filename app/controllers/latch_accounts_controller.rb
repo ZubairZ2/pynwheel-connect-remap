@@ -16,8 +16,11 @@ class LatchAccountsController < ApplicationController
   end
 
   def upload_lock_image
-    return unless params[:lock_image].present?
-    @latch.update(lock_image: params[:lock_image])
+    if params[:type].present? && params[:type] === "amenity"
+      @latch.update(amenity_lock_image: params[:amenity_lock_image]) if params[:amenity_lock_image].present?
+    else
+      @latch.update(lock_image: params[:lock_image]) if params[:lock_image].present?
+    end
   end
 
   def remove_latch_locks
@@ -86,6 +89,6 @@ class LatchAccountsController < ApplicationController
     end
 
     def latch_params
-      params.require(:latch).permit(:latch_property_name, :community_id, :lock_instruction_text)
+      params.require(:latch).permit(:latch_property_name, :community_id, :lock_instruction_text, :amenity_lock_instruction_text)
     end
 end
