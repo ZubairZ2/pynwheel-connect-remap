@@ -41,7 +41,7 @@
                     Amenity Lock Instructions
 
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12{:style => "margin-bottom: inherit;"}
-                    = f.text_area :amenity_lock_instruction_text, :class=>"form-control amenity_dwelo_lock_instruction_field amenity_dwelo_lock_instruction_wysihtml5", :placeholder=>"Lock Instructions",  :value=> @community.dwelo.present? ? @community.dwelo.amenity_lock_instruction_text : ""
+                    = f.text_area :amenity_lock_instruction_text, :class=>"form-control amenity_dwelo_lock_instruction_field amenity_dwelo_lock_instruction_wysihtml5", :placeholder=>"Amenity Lock Instructions",  :value=> @community.dwelo.present? ? @community.dwelo.amenity_lock_instruction_text : ""
                     <!-- %span.amenity_dwelo_lock_instruction_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 275 -->
 
                 .form-group.lock_img_background.theme-setting
@@ -71,7 +71,7 @@
                     Unit Door Lock Instructions
 
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12{:style => "margin-bottom: inherit;"}
-                    = f.text_area :lock_instruction_text, :class=>"form-control dwelo_lock_instruction_field dwelo_lock_instruction_wysihtml5", :placeholder=>"Lock Instructions",  :value=> @community.dwelo.present? ? @community.dwelo.lock_instruction_text : ""
+                    = f.text_area :lock_instruction_text, :class=>"form-control dwelo_lock_instruction_field dwelo_lock_instruction_wysihtml5", :placeholder=>"Unit Lock Instructions",  :value=> @community.dwelo.present? ? @community.dwelo.lock_instruction_text : ""
                     <!-- %span.dwelo_lock_instruction_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 275 -->
 
                 .form-group.lock_img_background.theme-setting
