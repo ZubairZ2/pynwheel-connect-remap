@@ -77,13 +77,14 @@ class LatchAccountsController < ApplicationController
   private
 
     def update_default_image
-      default_image_base64 = image_to_base64("latch-lock-image.png")
 
       if @latch.amenity_lock_image.blank?
+        default_image_base64 = image_to_base64("latch-lock-image-amenity.png")
         @latch.update(amenity_lock_image: default_image_base64)
       end
 
       if @latch.lock_image.blank?
+        default_image_base64 = image_to_base64("latch-lock-image-unit.png")
         @latch.update(lock_image: default_image_base64)
       end
     end

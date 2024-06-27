@@ -21,7 +21,7 @@
                 Amenity Lock Instructions
 
               .col-sm-12.col-lg-9.col-md-9.col-xs-12{:style => "margin-bottom: inherit;"}
-                = f.text_area :amenity_lock_instruction_text, :class=>"form-control amenity_latch_lock_instruction_field amenity_latch_lock_instruction_wysihtml5", :placeholder=>"Lock Instructions",  :value=> @community.latch.present? ? @community.latch.amenity_lock_instruction_text : LATCH_LOCK_INSTRUCTION_TEXT
+                = f.text_area :amenity_lock_instruction_text, :class=>"form-control amenity_latch_lock_instruction_field amenity_latch_lock_instruction_wysihtml5", :placeholder=>"Lock Instructions",  :value=> @community.latch.present? ? @community.latch.amenity_lock_instruction_text : AMENITY_LATCH_LOCK_INSTRUCTION_TEXT
                 <!-- %span.latch_lock_instruction_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 275 -->
 
             .form-group.lock_img_background
@@ -41,8 +41,8 @@
                   - rn =  rand(9999999999999999999999999)
                   - amenity_lock_image = @community.latch.present? ? @community.latch.amenity_lock_image : ""
 
-                  %a.preview-image{:href=> amenity_lock_image.present? ? amenity_lock_image  : asset_path("latch-lock-image.png"), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
-                    = image_tag amenity_lock_image.present? ? amenity_lock_image : "latch-lock-image.png",:height=>"100%",:width=>"100%",:id=>"amenity-latch-preview-image"
+                  %a.preview-image{:href=> amenity_lock_image.present? ? amenity_lock_image  : asset_path("latch-lock-image-amenity.png"), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
+                    = image_tag amenity_lock_image.present? ? amenity_lock_image : "latch-lock-image-amenity.png",:height=>"100%",:width=>"100%",:id=>"amenity-latch-preview-image"
 
           -# Unit Door Lock Instruction & Image Uploader
           .lock-box-shadow
@@ -51,7 +51,7 @@
                 Unit Door Lock Instructions
 
               .col-sm-12.col-lg-9.col-md-9.col-xs-12{:style => "margin-bottom: inherit;"}
-                = f.text_area :lock_instruction_text, :class=>"form-control latch_lock_instruction_field latch_lock_instruction_wysihtml5", :placeholder=>"Lock Instructions",  :value=> @community.latch.present? ? @community.latch.lock_instruction_text : LATCH_LOCK_INSTRUCTION_TEXT
+                = f.text_area :lock_instruction_text, :class=>"form-control latch_lock_instruction_field latch_lock_instruction_wysihtml5", :placeholder=>"Lock Instructions",  :value=> @community.latch.present? ? @community.latch.lock_instruction_text : UNIT_LATCH_LOCK_INSTRUCTION_TEXT
                 <!-- %span.latch_lock_instruction_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 275 -->
 
             .form-group.lock_img_background
@@ -71,8 +71,8 @@
                   - rn =  rand(9999999999999999999999999)
                   - lock_image = @community.latch.present? ? @community.latch.lock_image : ""
 
-                  %a.preview-image{:href=> lock_image.present? ? lock_image  : asset_path("latch-lock-image.png"), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
-                    = image_tag lock_image.present? ? lock_image : "latch-lock-image.png",:height=>"100%",:width=>"100%",:id=>"latch-preview-image"
+                  %a.preview-image{:href=> lock_image.present? ? lock_image  : asset_path("latch-lock-image-unit.png"), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
+                    = image_tag lock_image.present? ? lock_image : "latch-lock-image-unit.png",:height=>"100%",:width=>"100%",:id=>"latch-preview-image"
 
     
     .box-footer

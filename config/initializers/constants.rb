@@ -69,7 +69,9 @@ WEBPAGE = "webpage"
 IMAGEPAGE = "imagepage"
 MAJOR_CURRENCIES = ["840", "826", "124"]
 ZERV_LOCK_INSTRUCTION_TEXT = "When you are near the fob reader press unlock below to gain access."
-LATCH_LOCK_INSTRUCTION_TEXT = "When you are near the door tap the 'unlock' button below to unlock the door. For apartment doors turn the lever to the right to unlock the door."
+UNIT_LATCH_LOCK_INSTRUCTION_TEXT = "When you are near the door tap the 'unlock' button below to unlock the door and turn the lever to the right to unlock the door. Apple users: If your apple wallet opens, move your phone further from the device."
+AMENITY_LATCH_LOCK_INSTRUCTION_TEXT = "When you are near the door tap the 'unlock' button below to unlock the door. Apple users: If your apple wallet opens, move your phone further from the device."
+
 IGLOOHOME_LOCK_INSTRUCTION_TEXT = "Tap the black circle to wake lock up. Enter code then press the unlock button in the middle of the lock face."
 ELEVATOR_STOP_TEXT = "The next stop is on floor "
 
