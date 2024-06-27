@@ -22,9 +22,13 @@ class ZervAccountsController < ApplicationController
     end
 
     def upload_lock_image
-      return unless params[:lock_image].present?
       @zerv = current_community.zerv || Zerv.new(community_id: current_community.id)
-      @zerv.update(lock_image: params[:lock_image])
+
+      if params[:type].present? && params[:type] === "amenity"
+        @zerv.update(amenity_lock_image: params[:amenity_lock_image]) if params[:amenity_lock_image].present?
+      else
+        @zerv.update(lock_image: params[:lock_image]) if params[:lock_image].present?
+      end
     end
 
     def show_lock_image_in_modal
@@ -52,8 +56,6 @@ class ZervAccountsController < ApplicationController
       redirect_to new_community_dwelo_path(current_community)
     end
 
-    
-
     def map_zerv_locks
       @zerv.map_locks_with_stops
       flash[:notice] =  ZervConstants::LOCKS_MATCHED
@@ -61,8 +63,9 @@ class ZervAccountsController < ApplicationController
     end
 
     private
+
       def zerv_params
-        params.require(:zerv).permit(:username, :password, :facility_id, :badge_id, :card_format, :lock_instruction_text)
+        params.require(:zerv).permit(:username, :password, :facility_id, :badge_id, :card_format, :lock_instruction_text, :amenity_lock_instruction_text)
       end
 
       def set_zerv

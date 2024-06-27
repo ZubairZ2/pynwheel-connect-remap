@@ -7,6 +7,8 @@ $(document).ready(function () {
 
   // Locks Instruction Text Initializer
   zervLockIntructionText();
+  amenityZervLockIntructionText();
+
 
   latchLockIntructionText();
   amenityLatchLockIntructionText();
@@ -26,6 +28,8 @@ $(document).ready(function () {
 
   // Locks Image Uploader
   uploadZervLockImage();
+  uploadAmenityZervLockImage();
+
 
   uploadLatchLockImage();
   uploadAmenityLatchLockImage();
@@ -820,7 +824,11 @@ $(document).ready(function () {
   });
 
   $("#zerv-lock-image").change(function () {
-    readLockImageSrcFromInput(this, "zerv", $('#zerv-preview-image') );
+    readLockImageSrcFromInput(this, "zerv", $('#zerv-preview-image'), "unit" );
+  });
+
+  $("#amenity-zerv-lock-image").change(function () {
+    readLockImageSrcFromInput(this, "zerv", $('#amenity-zerv-preview-image'), "amenity" );
   });
 
   $("#latch-lock-image").change(function () {
@@ -1105,6 +1113,44 @@ function zervLockIntructionText() {
 
         change: function() {
           $('.zerv_lock_instruction_field').change();
+        }
+      }
+    });
+  });
+}
+
+function amenityZervLockIntructionText() {
+  let characterLimit = 275;
+
+  $('.amenity_zerv_lock_instruction_wysihtml5').each(function(i, elem) {
+    $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
+      events: {
+        load:function(){
+          $('.wysihtml5-sandbox').contents().find('body').on("keydown",function(event) {
+            if (wysihtml5Editor.getValue() != "")
+            {
+              var text_split = $('.amenity_zerv_lock_instruction_count').text().split(" ")
+              var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
+              $('.amenity_zerv_lock_instruction_count').text( text_split[0] + " " + text_split[1] + " " + (characterLimit - total_length)).toString()
+            }
+          });
+
+          var wysihtml5Editor = $('#amenity_zerv_lock_instruction_text').data("wysihtml5").editor;
+          var t = wysihtml5Editor.getValue();
+            
+          if(t!= '') {
+            t1 = t.substr(0, characterLimit)
+            t2 = t.substr(characterLimit, t.length)
+            // t2 = t2.fontcolor("red");
+            wysihtml5Editor.setValue(t1 + t2);
+            var text_split = $('.amenity_zerv_lock_instruction_count').text().split(" ")
+            var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
+            $('.amenity_zerv_lock_instruction_count').text( text_split[0] + " " + text_split[1] + " " + (characterLimit - total_length)).toString()
+          }
+        },
+
+        change: function() {
+          $('.amenity_zerv_lock_instruction_field').change();
         }
       }
     });
@@ -1461,7 +1507,23 @@ function uploadZervLockImage() {
       e.preventDefault();
       files = e.dataTransfer.files;
       if ((files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") ){
-          readLockImageSrc(files[0], "zerv", $('#zerv-preview-image') );
+          readLockImageSrc(files[0], "zerv", $('#zerv-preview-image'), "unit" );
+      } else {
+        console.log('file type is not allowed');
+        $('#image-upload-warning').modal('show');
+      }
+    }
+  }
+}
+
+function uploadAmenityZervLockImage() {
+  var lockUploadHolder = document.getElementById('amenity-zerv-lock-upload-holder');
+  if (lockUploadHolder) {
+    lockUploadHolder.ondrop = function (e) {
+      e.preventDefault();
+      files = e.dataTransfer.files;
+      if ((files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") ){
+          readLockImageSrc(files[0], "zerv", $('#amenity-zerv-preview-image'), "amenity" );
       } else {
         console.log('file type is not allowed');
         $('#image-upload-warning').modal('show');
