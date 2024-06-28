@@ -18,12 +18,64 @@ class UpdateTourStopsSortingOrder
   end
 
   def sort_floorplate_stops
-    # Implement the logic for sorting floorplate stops if needed
+    sort_single_building_floorplate_stops
+  end
+  
+  def get_building_starting_point
+  end
+
+  def sort_single_building_floorplate_stops
+    g_index = 1
+    t = tour
+
+    buildings&.each do |b|
+      # bsp = get_building_starting_point()
+      floors&.each do |f|
+        esp = get_elevator(b, f)
+
+        floor_stop_ids = t&.sort_hash["#{b},#{f}"]
+        floor_stops = get_floor_stops(floor_stop_ids)
+        stops_points = fetch_stops_points(floor_stops)
+        sorted_points = sort_stops_by_distance(esp, stops_points)
+        sorted_stops = fetch_sorted_tour_stops(sorted_points)
+
+        if sorted_stops.present?
+          update_hash(t, b, f, sorted_stops)
+          sorted_stops.each_with_index do |stop, index|
+            g_index = (g_index + index + 1)
+            stop.update_column(:sort, g_index)
+          end
+        end
+
+      end
+    end
+
+  end
+
+  def update_hash t, b, f, sorted_stops
+    t.sort_hash["#{b},#{f}"] = sorted_stops&.pluck(:id)&.map(&:to_s)
+    t.save!
+  end
+
+  def get_elevator b, f
+    @community&.elevators&.where(building: b)&.each do |e|
+      floors_covering_range = get_floors_covering_range(e&.floorplate_covering_range)
+      return e if floors_covering_range.include?(f)
+    end
+  end
+
+  def get_floors_covering_range range_string
+    if range_string.include?('-')
+      start_num, end_num = range_string.split('-').map(&:to_i)
+      (start_num..end_num).to_a
+    else
+      [range_string.to_i]
+    end
   end
 
   def update_stops_sorting_order(sorted_stops)
     sorted_stops.each_with_index do |stop, index|
-      stop.update_column(:sort, index + 1)
+      stop.update_column(:sort, ( index+1 )  )
     end
   end
 
@@ -65,6 +117,10 @@ class UpdateTourStopsSortingOrder
 
   def sitemap_stops
     tour.tour_stops
+  end
+
+  def get_floor_stops stop_ids
+    TourStop.where(id: stop_ids)
   end
 
   def tour
