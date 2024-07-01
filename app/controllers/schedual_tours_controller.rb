@@ -79,10 +79,10 @@ class SchedualToursController < ApplicationController
 
       end
 
-      new_tour = SchedualTour.find(params[:sched_tour_id])
+      new_tour = SchedualTour.find_by_id(params[:sched_tour_id])
 
       unless new_tour.present?
-        new_tour = SchedualTour.create!(community_id: params[:community_id], user_time_zone: params[:user_time_zone], tour_user_id: tu.id)
+        new_tour = SchedualTour.create!(community_id: params[:community_id], user_time_zone: params[:user_time_zone])
         new_tour.save
       end
 
