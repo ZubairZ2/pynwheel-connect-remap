@@ -167,6 +167,13 @@ class Community < ApplicationRecord
     (property_amenities_ids - stop_amenities_ids).present?
   end
 
+  def units_left_for_tour?(tour_id)
+    return false unless customization_enabled?
+    property_units_ids = available_unit_for_self_tour.ids
+    stop_units_ids = TourStop.where(display_stop: true, tour_id: tour_id, stop_type: "unit").pluck(:stop_id)
+    (property_units_ids - stop_units_ids).present?
+  end
+
   def customization_enabled?
     self.community_tour&.tour_setting&.enable_tour_customization
   end
