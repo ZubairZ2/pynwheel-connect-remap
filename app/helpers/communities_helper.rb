@@ -1,5 +1,6 @@
 module CommunitiesHelper
   def write_account_report(workbook)
+    update_units_count
 
     worksheet = workbook.add_worksheet("Sheet 1")
     format = workbook.add_format({ 'align': 'left', 'font': 'Arial', 'size': '10', 'locked': true })
@@ -34,7 +35,7 @@ module CommunitiesHelper
       if community.present?
         worksheet.write(row, 0, community.company.name, format1)
         worksheet.write(row, 1, community.name, format1)
-        worksheet.write(row, 2, community.units.count, format1)
+        worksheet.write(row, 2, community.number_of_units, format1)
         worksheet.write(row, 3, community.address, format1)
         worksheet.write(row, 4, community.city, format1)
         worksheet.write(row, 5, community.state, format1)
@@ -263,6 +264,21 @@ module CommunitiesHelper
 
     def map_type community
       community.is_sitemap ? "Property Maps" : "Floorplates"
+    end
+
+    def update_units_count
+      ActiveRecord::Base.connection.execute( <<-SQL
+                                                UPDATE communities
+                                                SET number_of_units = subquery.units_total
+                                                FROM (
+                                                    SELECT communities.id AS community_id, COUNT(units.id) AS units_total
+                                                    FROM communities
+                                                    LEFT JOIN units ON units.community_id = communities.id
+                                                    GROUP BY communities.id
+                                                ) AS subquery
+                                                WHERE communities.id = subquery.community_id;
+                                              SQL
+                                            )
     end
 
 end
