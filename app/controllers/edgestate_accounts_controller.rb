@@ -147,15 +147,22 @@ class EdgestateAccountsController < ApplicationController
   end
 
   def add_lock_instructions
-    @edge_state.update(lock_instruction_text: params[:edgestate][:lock_instruction_text])
+    return unless params[:edgestate].present?
+    @edge_state.update(lock_instruction_text: params[:edgestate][:lock_instruction_text]) if params[:edgestate][:lock_instruction_text].present?
+    @edge_state.update(amenity_lock_instruction_text: params[:edgestate][:amenity_lock_instruction_text]) if params[:edgestate][:amenity_lock_instruction_text].present?
+
     flash[:notice] = "Updated successfully!"
     redirect_to new_community_dwelo_path(current_community)
   end
 
   def upload_lock_image
-    return unless params[:lock_image].present?
     @edge_state = current_community.edge_state || EdgeState.new(community_id: current_community.id)
-    @edge_state.update(lock_image: params[:lock_image])
+
+    if params[:type].present? && params[:type] === "amenity"
+     @edge_state.update(amenity_lock_image: params[:amenity_lock_image]) if params[:amenity_lock_image].present?
+    else
+     @edge_state.update(lock_image: params[:lock_image]) if params[:lock_image].present?
+    end
   end
 
   private

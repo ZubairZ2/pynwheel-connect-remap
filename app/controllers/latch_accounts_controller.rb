@@ -1,5 +1,6 @@
 class LatchAccountsController < ApplicationController
   before_action :set_latch_account, except: [:new, :remove_latch_locks]
+  before_action :update_default_image, except: [:new, :remove_latch_locks]
 
   def new
     @latch = Latch.new
@@ -16,8 +17,11 @@ class LatchAccountsController < ApplicationController
   end
 
   def upload_lock_image
-    return unless params[:lock_image].present?
-    @latch.update(lock_image: params[:lock_image])
+    if params[:type].present? && params[:type] === "amenity"
+      @latch.update(amenity_lock_image: params[:amenity_lock_image]) if params[:amenity_lock_image].present?
+    else
+      @latch.update(lock_image: params[:lock_image]) if params[:lock_image].present?
+    end
   end
 
   def remove_latch_locks
@@ -72,6 +76,26 @@ class LatchAccountsController < ApplicationController
 
   private
 
+    def update_default_image
+
+      if @latch.amenity_lock_image.blank?
+        default_image_base64 = image_to_base64("latch-lock-image-amenity.png")
+        @latch.update(amenity_lock_image: default_image_base64)
+      end
+
+      if @latch.lock_image.blank?
+        default_image_base64 = image_to_base64("latch-lock-image-unit.png")
+        @latch.update(lock_image: default_image_base64)
+      end
+    end
+
+    def image_to_base64(filename)
+      image_path = Rails.root.join('app', 'assets', 'images', filename)
+      image_data = File.read(image_path)
+      base64_image = Base64.strict_encode64(image_data)
+      "data:image/png;base64,#{base64_image}"
+    end
+
     def add_lock_provider
       locks_provider = current_community.multiple_locks_provider
 
@@ -86,6 +110,6 @@ class LatchAccountsController < ApplicationController
     end
 
     def latch_params
-      params.require(:latch).permit(:latch_property_name, :community_id, :lock_instruction_text)
+      params.require(:latch).permit(:latch_property_name, :community_id, :lock_instruction_text, :amenity_lock_instruction_text)
     end
 end

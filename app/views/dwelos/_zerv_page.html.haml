@@ -38,42 +38,66 @@
               = f.select :card_format , options_for_select(cards_formats, card_format_seleted),{:include_blank => 'Choose Card'},{:class=>"form-control"}
             = f.hidden_field :community_id, :value=> current_community.id
    
-          .form-group{:style => "margin-bottom: 0px;"}
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-              Lock Instructions
+          -# Amenity Lock Instruction & Image Uploader
+          .lock-box-shadow
+            .form-group{:style => "margin-bottom: 0px;"}
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                Amenity Lock Instructions
 
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12{:style => "margin-bottom: inherit;"}
-              = f.text_area :lock_instruction_text, :class=>"form-control zerv_lock_instruction_field zerv_lock_instruction_wysihtml5", :placeholder=>"Lock Instructions",  :value=> @community.zerv.present? ? @community.zerv.lock_instruction_text : ZERV_LOCK_INSTRUCTION_TEXT
-              <!-- %span.zerv_lock_instruction_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 275 -->
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12{:style => "margin-bottom: inherit;"}
+                = f.text_area :amenity_lock_instruction_text, :class=>"form-control amenity_zerv_lock_instruction_field amenity_zerv_lock_instruction_wysihtml5", :placeholder=>"Lock Instructions",  :value=> @community.zerv.present? ? @community.zerv.amenity_lock_instruction_text : ZERV_LOCK_INSTRUCTION_TEXT
+                <!-- %span.amenity_zerv_lock_instruction_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 275 -->
 
-          .form-group.lock_img_background
-            %span.btn.btn-primary.btn-file.ml-15
-              %i.fa.fa-upload
-              Upload File
-              = file_field_tag :lock_image, :id => "zerv-lock-image"
+            .form-group.lock_img_background
+              %span.btn.btn-primary.btn-file.ml-15
+                %i.fa.fa-upload
+                Upload File
+                = file_field_tag :amenity_lock_image, :id => "amenity-zerv-lock-image"
 
-            .text-center.drag-box.mt-15.image-upload#zerv-lock-upload-holder
-              %span.icon-upload
-                = image_tag "upload-image.png"
-                %p Drag &amp; Drop file to Upload
+              .text-center.drag-box.mt-15.image-upload#amenity-zerv-lock-upload-holder
+                %span.icon-upload
+                  = image_tag "upload-image.png"
+                  %p Drag &amp; Drop file to Upload
 
-            .select-logo.center-img.mb-20.mt-30.logo-upload-bg{:style => "border: 2px solid #ddd; margin-bottom: 30px"}
-              .select-logo-logo.logo-container.logo-upload-container
+              .select-logo.center-img.mb-20.mt-30.logo-upload-bg{:style => "border: 2px solid #ddd; margin-bottom: 30px"}
+                .select-logo-logo.logo-container.logo-upload-container
 
-                - rn =  rand(9999999999999999999999999)
-                - lock_image = @community.zerv.present? ? @community.zerv.lock_image : ""
+                  - rn =  rand(9999999999999999999999999)
+                  - amenity_lock_image = @community.zerv.present? ? @community.zerv.amenity_lock_image : ""
 
-                %a.preview-image{:href=> lock_image.present? ? lock_image  : asset_path("default.jpeg"), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
-                  = image_tag lock_image.present? ? lock_image : "default.jpeg",:height=>"100%",:width=>"100%",:id=>"zerv-preview-image"
-                  -# = image_tag "exclamation-mark.png", class: "waring_exal", style: "width: 25px", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
+                  %a.preview-image{:href=> amenity_lock_image.present? ? amenity_lock_image  : asset_path("default.jpeg"), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
+                    = image_tag amenity_lock_image.present? ? amenity_lock_image : "default.jpeg",:height=>"100%",:width=>"100%",:id=>"amenity-zerv-preview-image"
 
-            -# - if lock_image.present?
-            -#   .row{:style => "padding-left: 47%;"}
-            -#     = link_to show_lock_image_in_modal_community_zerv_accounts_path(),:class => "", remote: true do
-            -#       %span.btn.btn-primary.btn-success.ml-15{"data-target" => "#edit-name", "data-toggle" => "modal"}
-            -#         Crop
+          -# Unit Door Lock Instruction & Image Uploader
+          .lock-box-shadow
+            .form-group{:style => "margin-bottom: 0px;"}
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                Unit Door Lock Instructions
 
-    / /.box-body
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12{:style => "margin-bottom: inherit;"}
+                = f.text_area :lock_instruction_text, :class=>"form-control zerv_lock_instruction_field zerv_lock_instruction_wysihtml5", :placeholder=>"Lock Instructions",  :value=> @community.zerv.present? ? @community.zerv.lock_instruction_text : ZERV_LOCK_INSTRUCTION_TEXT
+                <!-- %span.zerv_lock_instruction_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 275 -->
+
+            .form-group.lock_img_background
+              %span.btn.btn-primary.btn-file.ml-15
+                %i.fa.fa-upload
+                Upload File
+                = file_field_tag :lock_image, :id => "zerv-lock-image"
+
+              .text-center.drag-box.mt-15.image-upload#zerv-lock-upload-holder
+                %span.icon-upload
+                  = image_tag "upload-image.png"
+                  %p Drag &amp; Drop file to Upload
+
+              .select-logo.center-img.mb-20.mt-30.logo-upload-bg{:style => "border: 2px solid #ddd; margin-bottom: 30px"}
+                .select-logo-logo.logo-container.logo-upload-container
+
+                  - rn =  rand(9999999999999999999999999)
+                  - lock_image = @community.zerv.present? ? @community.zerv.lock_image : ""
+
+                  %a.preview-image{:href=> lock_image.present? ? lock_image  : asset_path("default.jpeg"), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
+                    = image_tag lock_image.present? ? lock_image : "default.jpeg",:height=>"100%",:width=>"100%",:id=>"zerv-preview-image"
+
     .box-footer
       - if current_community.zerv.present?
         = f.submit "Update Account", :class=>"btn btn-success pull-right loader_class"
@@ -81,7 +105,6 @@
         = f.submit "Save Account", :class=>"btn btn-success pull-right loader_class"
 
 .row#data-connection-buttons
-  / Start Panel left Side
   .col-lg-12.col-md-12
     .row
       .col-md-6

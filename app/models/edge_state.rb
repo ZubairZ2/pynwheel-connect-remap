@@ -4,6 +4,8 @@ class EdgeState < ApplicationRecord
   has_many :edgestate_locks, -> { where(dwelo_id: nil) },  class_name: 'RemoteLock'
   has_one :status, as: :statusable
   mount_base64_uploader :lock_image, AvatarUploader
+  mount_base64_uploader :amenity_lock_image, AvatarUploader
+
 
   def map_locks_with_stops
     MapLocksJob.perform_async community, "EdgeState"

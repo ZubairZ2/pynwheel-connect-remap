@@ -1,5 +1,7 @@
 class Zerv < ApplicationRecord
   mount_base64_uploader :lock_image, AvatarUploader
+  mount_base64_uploader :amenity_lock_image, AvatarUploader
+
   belongs_to :community
   has_many :zerv_locks, dependent: :destroy
   has_one :status, as: :statusable

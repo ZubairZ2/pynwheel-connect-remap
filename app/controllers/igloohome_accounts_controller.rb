@@ -6,13 +6,20 @@ class IgloohomeAccountsController < ApplicationController
   end
 
   def add_lock_instructions
-    @igloohome.update(lock_instruction_text: params[:igloohome][:lock_instruction_text])
+    return unless params[:igloohome].present?
+    @igloohome.update(lock_instruction_text: params[:igloohome][:lock_instruction_text]) if params[:igloohome][:lock_instruction_text].present?
+    @igloohome.update(amenity_lock_instruction_text: params[:igloohome][:amenity_lock_instruction_text]) if params[:igloohome][:amenity_lock_instruction_text].present?
+
     flash[:notice] = "Igloohome lock instructions updated successfully!"
     redirect_to new_community_dwelo_path(current_community)
   end
 
   def upload_lock_image
-    @igloohome.update(lock_image: params[:lock_image]) if params[:lock_image].present?
+    if params[:type].present? && params[:type] === "amenity"
+      @igloohome.update(amenity_lock_image: params[:amenity_lock_image]) if params[:amenity_lock_image].present?
+    else
+      @igloohome.update(lock_image: params[:lock_image]) if params[:lock_image].present?
+    end
   end
 
   def remove_igloohome_locks 

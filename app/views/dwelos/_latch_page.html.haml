@@ -13,35 +13,68 @@
               Building Name
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               = f.text_field :latch_property_name, :class=>"form-control validate[required]", :placeholder=>"Latch Property Name", :value=> @community.latch.present? ? @community.latch.latch_property_name : ""
+          
+          -# Amenity Lock Instruction & Image Uploader
+          .lock-box-shadow
+            .form-group{:style => "margin-bottom: 0px;"}
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                Amenity Lock Instructions
 
-          .form-group{:style => "margin-bottom: 0px;"}
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-              Lock Instructions
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12{:style => "margin-bottom: inherit;"}
+                = f.text_area :amenity_lock_instruction_text, :class=>"form-control amenity_latch_lock_instruction_field amenity_latch_lock_instruction_wysihtml5", :placeholder=>"Lock Instructions",  :value=> @community.latch.present? ? @community.latch.amenity_lock_instruction_text : AMENITY_LATCH_LOCK_INSTRUCTION_TEXT
+                <!-- %span.latch_lock_instruction_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 275 -->
 
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12{:style => "margin-bottom: inherit;"}
-              = f.text_area :lock_instruction_text, :class=>"form-control latch_lock_instruction_field latch_lock_instruction_wysihtml5", :placeholder=>"Lock Instructions",  :value=> @community.latch.present? ? @community.latch.lock_instruction_text : LATCH_LOCK_INSTRUCTION_TEXT
-              <!-- %span.latch_lock_instruction_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 275 -->
+            .form-group.lock_img_background
+              %span.btn.btn-primary.btn-file.ml-15
+                %i.fa.fa-upload
+                Upload File
+                = file_field_tag :amenity_lock_image, :id => "amenity-latch-lock-image"
 
-          .form-group.lock_img_background
-            %span.btn.btn-primary.btn-file.ml-15
-              %i.fa.fa-upload
-              Upload File
-              = file_field_tag :lock_image, :id => "latch-lock-image"
+              .text-center.drag-box.mt-15.image-upload#amenity-latch-lock-upload-holder
+                %span.icon-upload
+                  = image_tag "upload-image.png"
+                  %p Drag &amp; Drop file to Upload
 
-            .text-center.drag-box.mt-15.image-upload#latch-lock-upload-holder
-              %span.icon-upload
-                = image_tag "upload-image.png"
-                %p Drag &amp; Drop file to Upload
+              .select-logo.center-img.mb-20.mt-30.logo-upload-bg{:style => "border: 2px solid #ddd; margin-bottom: 30px"}
+                .select-logo-logo.logo-container.logo-upload-container
 
-            .select-logo.center-img.mb-20.mt-30.logo-upload-bg{:style => "border: 2px solid #ddd; margin-bottom: 30px"}
-              .select-logo-logo.logo-container.logo-upload-container
+                  - rn =  rand(9999999999999999999999999)
+                  - amenity_lock_image = @community.latch.present? ? @community.latch.amenity_lock_image : ""
 
-                - rn =  rand(9999999999999999999999999)
-                - lock_image = @community.latch.present? ? @community.latch.lock_image : ""
+                  %a.preview-image{:href=> amenity_lock_image.present? ? amenity_lock_image  : asset_path("latch-lock-image-amenity.png"), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
+                    = image_tag amenity_lock_image.present? ? amenity_lock_image : "latch-lock-image-amenity.png",:height=>"100%",:width=>"100%",:id=>"amenity-latch-preview-image"
 
-                %a.preview-image{:href=> lock_image.present? ? lock_image  : asset_path("latch-lock-image.png"), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
-                  = image_tag lock_image.present? ? lock_image : "latch-lock-image.png",:height=>"100%",:width=>"100%",:id=>"latch-preview-image"
+          -# Unit Door Lock Instruction & Image Uploader
+          .lock-box-shadow
+            .form-group{:style => "margin-bottom: 0px;"}
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                Unit Door Lock Instructions
 
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12{:style => "margin-bottom: inherit;"}
+                = f.text_area :lock_instruction_text, :class=>"form-control latch_lock_instruction_field latch_lock_instruction_wysihtml5", :placeholder=>"Lock Instructions",  :value=> @community.latch.present? ? @community.latch.lock_instruction_text : UNIT_LATCH_LOCK_INSTRUCTION_TEXT
+                <!-- %span.latch_lock_instruction_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 275 -->
+
+            .form-group.lock_img_background
+              %span.btn.btn-primary.btn-file.ml-15
+                %i.fa.fa-upload
+                Upload File
+                = file_field_tag :lock_image, :id => "latch-lock-image"
+
+              .text-center.drag-box.mt-15.image-upload#latch-lock-upload-holder
+                %span.icon-upload
+                  = image_tag "upload-image.png"
+                  %p Drag &amp; Drop file to Upload
+
+              .select-logo.center-img.mb-20.mt-30.logo-upload-bg{:style => "border: 2px solid #ddd; margin-bottom: 30px"}
+                .select-logo-logo.logo-container.logo-upload-container
+
+                  - rn =  rand(9999999999999999999999999)
+                  - lock_image = @community.latch.present? ? @community.latch.lock_image : ""
+
+                  %a.preview-image{:href=> lock_image.present? ? lock_image  : asset_path("latch-lock-image-unit.png"), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
+                    = image_tag lock_image.present? ? lock_image : "latch-lock-image-unit.png",:height=>"100%",:width=>"100%",:id=>"latch-preview-image"
+
+    
     .box-footer
       - if current_community.latch.present?
         = f.submit "Update Account", :class=>"btn btn-success pull-right loader_class"
