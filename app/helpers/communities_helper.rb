@@ -34,7 +34,7 @@ module CommunitiesHelper
       if community.present?
         worksheet.write(row, 0, community.company.name, format1)
         worksheet.write(row, 1, community.name, format1)
-        worksheet.write(row, 2, community.number_of_units, format1)
+        worksheet.write(row, 2, community.units.count, format1)
         worksheet.write(row, 3, community.address, format1)
         worksheet.write(row, 4, community.city, format1)
         worksheet.write(row, 5, community.state, format1)
