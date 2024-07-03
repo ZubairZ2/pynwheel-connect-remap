@@ -821,6 +821,7 @@ module ShortestPath
       @amenity_with_doors.compact!
       @starting_point = {x_plot: @community.community_tour.x_plot, y_plot: @community.community_tour.y_plot }
     end
+
     def fetch_related_data_according_to_mobile(new_stops_arr, community_id)
       @planned_to_visit_units_and_doors_ids     = []
       @planned_to_visit_amenities_and_doors_ids = []

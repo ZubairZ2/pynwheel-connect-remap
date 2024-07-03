@@ -83,8 +83,6 @@ json.tours @tours do |tour|
         stops_arr = @community.mdu ? tour.tour_stops.plotted_stops.where(display_stop: true).where.not(id: unoccupied).order(:sort) : tour.tour_stops.plotted_stops.where.not(display_stop: false,stop_type: "unit").order(:sort)
       end
 
-      # If does not work properly return just @stops_arr
-      # stops_arr = SortedTourStopsList.new(stops_arr, @community, tour).get_sorted_stops_list()
       stop_count = stops_arr.compact.count
       second_last = stops_arr.compact[stop_count - 2]
       last_stop = stops_arr.compact[stop_count - 1]      

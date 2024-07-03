@@ -96,14 +96,13 @@ module Api
           @floorplans = get_floorplans_with_required_filter()
           @tour_type = params[:tour_status] rescue @tour_user.tour_type
           @tour_user.update(tour_type: params[:tour_status], tour_key: @random_string, verified_by: params[:verfied_by_provider])
-          
           charge_for_id_verfication(@tour_user, 200) if (do_verfication params[:verfied_by_provider], @community)
-          update_verification_attributes()
           PropertyAccessCode.new(@community ,@tour_user, @tour_type).restrict_property_access_with_code
           @community.update(deleted_ids: [])
         end
 
         def customize_tour
+          UpdateTourStopsSortingOrder.new(@community, @tour_user).sort()
           @tour = CustomizeTourService.new(@community, @tour_user).get_user_tour
           @building_list = Buildings.new(@community).get_community_buildings
           @floor_list = Floors.new(@community).get_community_floors
