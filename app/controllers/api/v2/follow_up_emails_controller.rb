@@ -20,10 +20,9 @@ class Api::V2::FollowUpEmailsController < Api::V2::ApiApplicationController
   end
 
   def send_follow_up_emails
-    email_params = JSON.parse(params[:email])
-    if email_params.present?
-      @users = email_params["emails"]
-      @subject = email_params["subject"]
+    if params["emails"].present?
+      @users = params["emails"]&.split(",")&.map{|e| e&.strip}
+      @subject = params["subject"]
       @body = params["email_body"]
       if FollowUpMailer.send_email_request(@users, @subject, @body)
         render json: {success: true}
