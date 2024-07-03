@@ -241,26 +241,25 @@
                 
                   <%# ---------------- Disable virtual tour for now --------------------- %>
 
-                  <%#
                     <div class="w-35 unschedule_tour">
                       <%= f.radio_button :property_tour_type, 'unscheduled_self_tour', :checked => (@schedule_tour.property_tour_type.present? && @schedule_tour.property_tour_type == "unscheduled_self_tour") || @schedule_tour.property_tour_type == nil ? true : false, :class => "select_property_tour", :id => "unscheduled_self_tour" %> 
                       
-                      <%#<%= label :select_property_tour, 'Visit at your own convenience', value: 'own_convenience_tour', for: "unscheduled_self_tour" %>
-                  <%#
+                      <%= label :select_property_tour, 'Visit at your own convenience', value: 'own_convenience_tour', for: "unscheduled_self_tour" %>
+
                       <i class="fa fa-question-circle propertyDetailName" data-content=" " data-toggle="tooltip" data-placement="top" >
                         <span id="propertyDetailNameText" class="tooltip-pynwheel">
                           Use an app to tour our property at your convenience; you will have full, secured access to vacant units and amenities during extended hours. We will send you instructions so you know what to do!
                         </span>
                       </i>
                     </div>
-                  %>
 
 
 
                   <div class="w-37">
-                    <%# <%= f.radio_button :property_tour_type, 'scheduled_tour', :id => "scheduled_tour",:class => "select_property_tour", :checked => @schedule_tour.property_tour_type.present? && @schedule_tour.property_tour_type == "scheduled_tour" ? true : false  %>
+                    <%= f.radio_button :property_tour_type, 'scheduled_tour', :id => "scheduled_tour",:class => "select_property_tour", :checked => @schedule_tour.property_tour_type.present? && @schedule_tour.property_tour_type == "scheduled_tour" ? true : false  %>
 
-                    <%= f.radio_button :property_tour_type, 'scheduled_tour', :id => "scheduled_tour",:class => "select_property_tour", :checked => true %>
+                    <%# <%= f.radio_button :property_tour_type, 'scheduled_tour', :id => "scheduled_tour",:class => "select_property_tour", :checked => true %>
+                    
                     
                     <%= label :select_property_tour, 'Schedule a tour on a specific date', value: 'tour_on_specific_date', for: "scheduled_tour" %>
                     <i class="fa fa-question-circle propertyDetailName" data-content=" " data-toggle="tooltip" data-placement="top" >
