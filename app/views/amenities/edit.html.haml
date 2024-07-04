@@ -45,13 +45,19 @@
                   Building
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   = f.text_field :building ,  class: "form-control amenity_edit_field", placeholder: "building"
-              - if !@community.is_sitemap && bool_check
 
+              - if !@community.is_sitemap && bool_check
                 .form-group
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                     Floor
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
                     = f.select :floor , (f.object.amenityable.floors.flatten.uniq.sort),{:include_blank => true}, class: "form-control amenity_edit_field", placeholder: "Floor"
+              - else
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Floor
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    = f.text_field :floor, :class=>"form-control amenity_edit_field", :placeholder=> "Floor"
 
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
