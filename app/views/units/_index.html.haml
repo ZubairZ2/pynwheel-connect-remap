@@ -116,12 +116,12 @@
                       %span#unit_sold_text
                         This option is for For Sale properties only. When a Sold is set to Yes, then the details on the unit pop-up will show that the unit is sold.
                   -#%th Unit Space
-                  - unless @community.is_sitemap
-                    %th
-                      Floor
-                      %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "unitGridFloorPopover","data-content" => " "}
-                        %span#propertyDetailNameText
-                          Changing the Floor will change the floor that each unit appears on in the interactive map. Units will not appear on the interactive map unless a floor has been selected.
+                  -#- unless @community.is_sitemap
+                  %th
+                    Floor
+                    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "unitGridFloorPopover","data-content" => " "}
+                      %span#propertyDetailNameText
+                        Changing the Floor will change the floor that each unit appears on in the interactive map. Units will not appear on the interactive map unless a floor has been selected.
                   -#%th Description
                   %th
                     Interior Images
@@ -171,8 +171,8 @@
                     %td= best_in_place u, :sold, :as => :checkbox, collection: {false: "No", true: "Yes"}, :url => community_unit_path(@community,u), :data => {:sold => u.sold },:style => u.sold_is_updated? ? "color: #dd4a39;" : ""
                     -#%td= best_in_place u, :square_feet, :as => :input, :url => community_unit_path(@community,u), :data => {:square_feet => u.square_feet }
 
-                    - unless @community.is_sitemap
-                      %td= best_in_place u, :floor, :url => community_unit_path(@community,u), :data => {:floor => u.floor },:style => u.floor_is_updated? ? "color: #dd4a39;" : ""
+                    -#- unless @community.is_sitemap
+                    %td= best_in_place u, :floor, :url => community_unit_path(@community,u), :data => {:floor => u.floor },:style => u.floor_is_updated? ? "color: #dd4a39;" : ""
                     -#%td= raw(u.description)
                     %td
                       = link_to 'Manage Images' , community_unit_amenities_path(@community,u),:class=>"btn btn-default black-button"
