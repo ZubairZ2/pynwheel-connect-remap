@@ -60,12 +60,13 @@ class TourHistory < ApplicationRecord
 
         @complete_tour_content = ["#{fetch_property_name(community.name)} has been visited", "#{touruser.name.titleize} (#{touruser.email}#{', ' + touruser.phone_number if touruser.phone_number.present?}) has completed a tour of your property! To view the details of their visit, please click here: <a href='#{tour_user_url}'>#{touruser.name.titleize} Visitor Details</a> "]
         
-        if self.tour_user_id == 1445
-          @thank_you_content = community.thank_you_message.present? ? community.thank_you_message : "completed Thank you for visiting #{fetch_property_name(community.name)}!\n\nWe hope you enjoyed your tour.\n\nGo back to the Pynwheel Tour app any time to review the details of your tour:"
-        else
-          @thank_you_content = community.thank_you_message.present? ? community.thank_you_message : "Thank you for visiting #{fetch_property_name(community.name)}!\n\nWe hope you enjoyed your tour.\n\nGo back to the Pynwheel Tour app any time to review the details of your tour:"
-        end
+        # if self.tour_user_id == 1445
+        #   @thank_you_content = community.thank_you_message.present? ? community.thank_you_message : "completed Thank you for visiting #{fetch_property_name(community.name)}!\n\nWe hope you enjoyed your tour.\n\nGo back to the Pynwheel Tour app any time to review the details of your tour:"
+        # else
+        #   @thank_you_content = community.thank_you_message.present? ? community.thank_you_message : "Thank you for visiting #{fetch_property_name(community.name)}!\n\nWe hope you enjoyed your tour.\n\nGo back to the Pynwheel Tour app any time to review the details of your tour:"
+        # end
 
+        @thank_you_content = "Thank you for visiting #{fetch_property_name(community.name)}!\n\nWe hope you enjoyed your tour.\n\nGo back to the Pynwheel Tour app any time to review the details of your tour:"
         # @thank_you_content = append_app_links_with_emailbody(community, @thank_you_content)
         
         tour_user_remotelock_data(community)
@@ -292,7 +293,7 @@ class TourHistory < ApplicationRecord
 
   def send_sms_tour_user message_body, community
     begin
-      message_body = append_app_links_with_text_message(community, message_body)
+      message_body = append_app_links_with_text_message(community, message_body) #unless community.thank_you_message.present?
       TwilioSmsWorker.perform_async(message_body, self&.tour_user&.phone_number, self&.tour_user&.email, community&.id) if self.tour_user.phone_number.present? && self.tour_user.is_sms_enabled
     rescue
     end
@@ -301,7 +302,7 @@ class TourHistory < ApplicationRecord
   def send_email_tour_user subj, body, community_email, community
     begin
       emails = community_email.gsub(" ","").split(',')
-      body = append_app_links_with_emailbody(community, body)
+      body = append_app_links_with_emailbody(community, body) #unless community.thank_you_message.present?
 
       NotificationMailer.tour_history_mail(subj, body, self.tour_user.email, emails[0],community,false,nil).deliver
     rescue
@@ -370,7 +371,7 @@ class TourHistory < ApplicationRecord
     company_name = community.company.name.downcase
     @app_link = AppLinks.one_link(company_name)
 
-    "<div>#{email_body} <a href=#{@app_link} target='_blank'> Click Here! </a> <br></div>"
+    "<div>#{email_body} <a href=#{@app_link} target='_blank'>Download Pynwheel Tour App</a><br><br>If you would like to apply for an apartment visit this url: <a href=#{@app_link} target='_blank'>Apply</a><br><br></div>"
   end
 
   def append_app_links_with_text_message community, message_body
@@ -378,6 +379,6 @@ class TourHistory < ApplicationRecord
     company_name = community.company.name.downcase
     @app_link = AppLinks.one_link(company_name)
 
-    "#{message_body} #{@app_link}\n"
+    "#{message_body} #{@app_link}\n\nIf you would like to apply for an apartment visit this url: \n\n"
   end
 end

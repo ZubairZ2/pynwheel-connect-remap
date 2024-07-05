@@ -842,7 +842,7 @@
                         %span#propertyDetailNameText
                           This message will be sent to guest after tour will end.
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                      = f.text_area :thank_you_message, :value=> @community.thank_you_message.nil? ? "Thank you for visiting #{SentenceFormatter.capitalized_words(@community.name)}! We hope you enjoyed your tour. Go back to the Pynwheel Tour app any time to review the details of your tour." : @community.thank_you_message , :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
+                      = f.text_area :thank_you_message, :value=> @community.thank_you_message.nil? ? "Thank you for visiting #{SentenceFormatter.capitalized_words(@community.name)}!\n\nWe hope you enjoyed your tour.\n\nGo back to the Pynwheel Tour app any time to review the details of your tour:" : @community.thank_you_message , :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
                 - if !@community.is_salesforce_community? && current_community.community_tour.only_scheduled_tour and (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget )
                   .col-lg-9.col-lg-offset-1
                     .form-group
