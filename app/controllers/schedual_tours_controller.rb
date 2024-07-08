@@ -538,34 +538,34 @@ class SchedualToursController < ApplicationController
 
       (is_rescheduled && property_tour_type == "scheduled_tour") ? schedual_tour.update_attributes(reschedule_notification: web_notification) : schedual_tour.update_attributes(confirmation_notification: web_notification)
       sms_content = (is_rescheduled && property_tour_type == "scheduled_tour") ? 
-      "Thank you for rescheduling your tour! We look forward to having you at #{community.name if community.present?} on #{schedual_tour.tour_date.strftime("%A, %b %-d %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")} #{previous_text} When you go to the property, you will need: 
+      "Thank you for rescheduling your tour! We look forward to having you at #{community.name if community.present?} on #{schedual_tour.tour_date.strftime("%A, %b %-d %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")} #{previous_text}#{"\n"}#{"\n"}When you go to the property, you will need: 
       - A photo ID 
       - Your mobile device with the #{community_text} app installed#{"\n"}
 #{community.email_text}#{"\n"}
-Download #{community_text} #{app_link}#{"\n"}
+#{"\n"}#{"\n"}Use this link to download #{community_text}: #{one_link}#{"\n"}#{"\n"}
 #{community.email_text}#{"\n"}
 Get information about your tour here: #{confirmation_page_link}" :
 
       if property_tour_type == "unscheduled_self_tour"
         "We look forward to having you at #{community.name if community.present?} ! Our visiting hours are:
-#{sms_slot_str} #{"\n"} #{"\n"} When you go to the property, you will need:
+#{sms_slot_str}#{"\n"}#{"\n"}When you go to the property, you will need:
             - A photo ID
             - Your mobile device with the #{community_text} app installed#{"\n"}
 #{community.email_text}#{"\n"}
-Download #{community_text} #{app_link}#{"\n"}
+#{"\n"}#{"\n"}Use this link to download #{community_text}: #{one_link}#{"\n"}#{"\n"}
 Get information about your tour here: #{confirmation_page_link}"
       elsif property_tour_type == "remote_tour"
         "Thank you for choosing to tour #{community.name if community.present?} remotely! You can visit at any time from the comfort of your own home using our mobile app.#{"\n"}
 #{community.email_text}#{"\n"}
-Download #{community_text} #{app_link}#{"\n"}
+#{"\n"}#{"\n"}Use this link to download #{community_text}: #{one_link}#{"\n"}#{"\n"}
 Get information about your tour here: #{confirmation_page_link}"
 
       else
-        "Thank you for scheduling your tour! We look forward to having you at #{community.name if community.present?} on #{schedual_tour.tour_date.strftime("%A, %b %-d %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}.#{"\n"}When you go to the property, you will need: 
+        "Thank you for scheduling your tour! We look forward to having you at #{community.name if community.present?} on #{schedual_tour.tour_date.strftime("%A, %b %-d %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}.#{"\n"}#{"\n"}When you go to the property, you will need: 
         - A photo ID
         - Your mobile device with the #{community_text} app installed#{"\n"}
 #{community.email_text}#{"\n"}
-Download #{community_text} #{app_link}#{"\n"}
+#{"\n"}#{"\n"}Use this link to download #{community_text}: #{one_link}#{"\n"}#{"\n"}
 Get information about your tour here: #{confirmation_page_link}"
       end
 

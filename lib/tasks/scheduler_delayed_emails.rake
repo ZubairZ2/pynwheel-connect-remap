@@ -51,18 +51,8 @@ namespace :delayed_email_notifications do
   				if community.present? and (Time.now - th.updated_at) > 60 
 
   					@mail_content = ["abandoned_tour_at_stop", "#{tour_user.name rescue "User"} abandoned a tour of #{(community.name.titleize)} at "]
-
   					@mail_content[1] = "#{@mail_content.last} #{(TourStop.find th.abandoned_tour_at_stop.to_i).name.titleize rescue "Not Found"}."
-
-						# if th.tour_user_id == 1445
-						# 	@thank_you_content = community.thank_you_message.present? ? community.thank_you_message : "111Thank you for visiting #{fetch_property_name(community.name)}!\n\nWe hope you enjoyed your tour.\n\nGo back to the Pynwheel Tour app any time to review the details of your tour:"
-						# else
-						# 	@thank_you_content = community.thank_you_message.present? ? community.thank_you_message : "Thank you for visiting #{fetch_property_name(community.name)}!\n\nWe hope you enjoyed your tour.\n\nGo back to the Pynwheel Tour app any time to review the details of your tour:"
-						# end
-
 						@thank_you_content = "Thank you for visiting #{fetch_property_name(community.name)}!\n\nWe hope you enjoyed your tour.\n\nGo back to the Pynwheel Tour app any time to review the details of your tour:"
-
-						# @thank_you_content = append_app_links_with_emailbody(community, @thank_you_content)
 
   					touruser_remotelock_data community, th
   					send_email_sms_or_both(@mail_content, community) unless tour_user&.is_virtual_tour?
@@ -105,6 +95,7 @@ namespace :delayed_email_notifications do
 
   def send_email_sms_or_both_to_touruser thank_you_msg, community, th
     content = (community.community_tour.tour_setting.enable_header_footer ? (thank_you_msg.gsub("\n", "<br>").html_safe) :  "<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo_for_email}' data-title='#{fetch_property_name(community.name)}' /></div><br/> " + (thank_you_msg.gsub("\n", "<br>").html_safe))
+		
 		if community.alert_contact == "email"
 			send_email_to_user_without_humanize "Thank you for visiting #{fetch_property_name(community.name)}", content, th, community.email, community
 		elsif community.alert_contact == "phone"
@@ -118,7 +109,7 @@ namespace :delayed_email_notifications do
 	def send_email_to_user_without_humanize subj, body, th=nil, comm_email=nil,community
 		begin
 			emails = comm_email&.gsub(" ","")&.split(',')
-			body = append_app_links_with_emailbody(community, body) #nless community.thank_you_message.present?
+			body = append_app_links_with_emailbody(community, body)
 			NotificationMailer.tour_history_mail(subj, body, th.tour_user. email,emails[0], community, false, nil).deliver
 		rescue
 
@@ -154,7 +145,7 @@ namespace :delayed_email_notifications do
 
 	def send_sms_tour_user message_body, th, community
 		begin
-			message_body = append_app_links_with_text_message(community, message_body) #unless community.thank_you_message.present?
+			message_body = append_app_links_with_text_message(community, message_body)
 			TwilioSmsWorker.perform_async(message_body, th&.tour_user&.phone_number, th&.tour_user&.email, community&.id) if th.tour_user.phone_number.present? && th.tour_user.is_sms_enabled && community.crm_credential.crm_provider != "salesforce"
 		rescue
 		end
@@ -192,7 +183,7 @@ namespace :delayed_email_notifications do
 			  content = "<div style='vertical-align:middle; text-align:center'><img style='#{logo_style}' align='center' border='0' width='200' src='#{community.logo_for_email}' data-title='#{community.name}' /></div><br/>Don't forget! You have an appointment for a Pynwheel Tour tomorrow at <b>#{community.name if community.present?}</b> at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}. Make sure you have downloaded the #{community_text} app before you arrive. <br> iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Tour from the App Store</a><br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Tour from Google Play</a><br>#{community.one_day_email_text.gsub("\n", "<br>").html_safe rescue ""}"
 		  end
 		  sms_content = "Don't forget! You have an appointment for a Pynwheel Tour tomorrow at #{community.name if community.present?} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}. Make sure you have downloaded the #{community_text} app before you arrive.
-Use this link to download #{community_text} #{one_link}#{"\n"}
+#{"\n"}#{"\n"}Use this link to download #{community_text}: #{one_link}#{"\n"}#{"\n"}
 #{mobile_change_appointment}
 Get information about your tour here: #{confirmation_page_link}#{"\n"}
 #{community.one_day_email_text}"
@@ -344,7 +335,7 @@ Get information about your tour here: #{confirmation_page_link}#{"\n"}
     company_name = community.company.name.downcase
     @app_link = AppLinks.one_link(company_name)
 
-    "<div>#{email_body} <a href=#{@app_link} target='_blank'>Download Pynwheel Tour App</a><br><br>If you would like to apply for an apartment visit this url: <a href=#{@app_link} target='_blank'>Apply</a><br><br></div>"
+    "<div>#{email_body} <a href=#{@app_link} target='_blank'>Download Pynwheel Tour App</a><br><br>#{email_thank_you_message(community)}</div>"
   end
 
   def append_app_links_with_text_message community, message_body
@@ -352,7 +343,17 @@ Get information about your tour here: #{confirmation_page_link}#{"\n"}
     company_name = community.company.name.downcase
     @app_link = AppLinks.one_link(company_name)
 
-    "#{message_body} #{@app_link}\n\nIf you would like to apply for an apartment visit this url: \n\n"
+    "#{message_body} #{@app_link}\n\n#{text_thank_you_message(community)}"
+  end
+
+  def email_thank_you_message community
+    return "" unless community.thank_you_message.present?
+    "#{community.thank_you_message&.gsub("\n", "<br>").html_safe}"
+  end
+
+  def text_thank_you_message community
+    return "" unless community.thank_you_message.present?
+    community.thank_you_message
   end
 
 end
