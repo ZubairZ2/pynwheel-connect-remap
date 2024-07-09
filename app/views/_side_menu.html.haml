@@ -1,8 +1,5 @@
-/ Start menu nav left Section
 %aside.main-sidebar{:style => "margin-top: 25px;"}
-  / sidebar: style can be found in sidebar.less
   %section.sidebar
-    / Sidebar user panel
     %ul.sidebar-menu{"data-widget" => "tree"}
       - if current_user.is_admin?
         %li.treeview{:class=>"#{controller_name =='companies' ? 'active' : ''}"}
@@ -57,11 +54,13 @@
           = link_to community_settings_page_path(current_community) do
             %i.fa.fa-cog
             %span Settings
-      - if (current_user.is_super_admin? && current_community.touchscreen_app)
+            
+      - if current_community.show_design_tab(current_user)
         %li.loader_class{:class=>"#{controller_name =='design' && params[:action] != 'logo' && params[:action] != 'secondary_logo' && params[:action] !='map_marker_design' ? 'active' : ''}"}
           = link_to community_design_index_path(current_community) do
             %i.fa.fa-tv
             %span Design
+
       - if (current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_company_admin? || current_user.is_regional_admin? ) && current_community.mdu
         %li.loader_class{:class=>"#{controller_name =='settings' ? 'active' : ''}"}
           %a{:href => "#{community_settings_path(current_community)}"}
@@ -126,34 +125,7 @@
                 = link_to community_units_path(current_community)  do
                   %i.fa.fa-laptop
                   %span Units
-      -#- if (current_community.is_sitemap && (current_user.is_super_admin? || current_user.is_community_admin? ))
-      -#  %li{:class=>"#{controller_name =='sitemaps' && params[:action] != 'plot_amenities' ? 'active' : ''}"}
-      -#    %a{:href => "#{plotexp_community_sitemaps_path(current_community)}"}
-      -#      %i.fa.fa-map-marker
-      -#      %span Property Map
-      -#      %span.pull-right-container
-      -#- elsif (current_user.is_super_admin? || current_user.is_community_admin? )
-      -#  %li{:class=>"#{controller_name =='floorplates' && params[:amenities].blank? ? 'active' : ''}"}
-      -#    %a{:href => "#{community_floorplates_path(current_community)}"}
-      -#      %i.fa.fa-database
-      -#      %span Property Map
-      -#      %span.pull-right-container
-      -#- if (current_community.sitemap.present? && !(current_community.sitemap.new_record?)) || current_community.floorplates.present?
-      -#  %li{:class=>"#{controller_name =='sitemap_amenities' || controller_name =='floorplate_amenities' || controller_name =='amenities' || (controller_name =='floorplates' && params[:amenities].present?) || (params[:action] == 'plot_amenities' && controller_name != "floorplan_amenities" )? 'active' : ''}"}
-      -#    = link_to community_amenities_path(current_community)  do
-      -#      %i.fa.fa-plus-square
-      -#      %span Amenity Images
-      -#- if (current_user.is_super_admin? || current_user.is_community_admin? )
-      -#  %li{:class=>"#{controller_name =='floorplans' || controller_name =='floorplan_amenities' ? 'active' : ''}"}
-      -#    %a{:href => "#{community_floorplans_path(current_community)}"}
-      -#      %i.fa.fa-columns
-      -#      %span Floor Plans
-      -#      %span.pull-right-container
-      -#- if (current_user.is_super_admin? || current_user.is_community_admin? )
-      -#  %li{:class=>"#{controller_name =='units' ? 'active' : ''}"}
-      -#    = link_to community_units_path(current_community)  do
-      -#      %i.fa.fa-laptop
-      -#      %span Units
+
       - if current_community.touchscreen_app && current_user.is_admin?
         %li.loader_class{:class=>"#{controller_name =='galleries' ? 'active' : ''}"}
           %a{:href => "#{community_galleries_path(current_community)}"}
@@ -179,39 +151,6 @@
           %a{"data-toggle"=>"modal","data-target"=>"#share-webpages",:href => "##"}
             %i.fa.fa-share
             %span Pynwheel Map
-      / - if (current_community.self_tour && (current_user.is_super_admin? || current_user.is_community_admin?) && (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget ))
-      /   %li
-      /     %a{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget",:href => "##"}
-      /       %i.fa.fa-share
-      /       %span Tour Scheduler Widget
-
-      / - if (current_community.self_tour && (current_user.is_super_admin? || current_user.is_community_admin?) && (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget ))
-      /   %li
-      /     %a{:href => "#{scheduler_widget_community_tours_path(current_community)}"}
-      /       %i.fa.fa-share
-      /       %span Tour Scheduler Widget
-      /     / %a{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget",:href => "##"}
-      /     /   %i.fa.fa-share
-      /     /   %span Tour Scheduler Widget
-      / - if (current_community.self_tour && (current_user.is_super_admin? || current_user.is_community_admin?) && (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget ))
-      /   %li
-      /     %a{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget-link",:href => "##"}
-      /       %i.fa.fa-share
-      /       %span Tour Scheduler Widget Link
-      /     %a{:href => "#{scheduler_widget_community_tours_path(current_community)}"}
-      /     %a{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget",:href => "##"}
-      /       %i.fa.fa-share
-      /       %span Tour Scheduler Widget
-      -# - if (current_community.chat_control)
-      -#   %li
-      -#     %a{"data-toggle"=>"modal","data-target"=>"#share-chat-widget",:href => "##"}
-      -#       %i.fa.fa-share
-      -#       %span Chat Widget
-      / - if (current_community.self_tour) && current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager?
-      /   %li.loader_class{:class=>"#{controller_name =='tours_setup' || controller_name =='tours' ? 'active' : ''}"}
-      /     %a{:href => "#{community_tours_path(current_community)}"}
-      /       %i.fa.fa-plane
-      /       %span Tour Setup
 
       - if (current_user.is_admin? || current_user.is_community_assistant?) and current_community.self_tour
         %li.treeview{:class=>"#{controller_name =='tours' ? 'active' : 'active'}"}

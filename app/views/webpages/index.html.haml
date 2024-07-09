@@ -251,19 +251,22 @@
                         = link_to "<div id='s_#{unit.id}' class='fas fa-map-marker-alt fa-map-marker-alt-responsive unit_marker' style='font-size: 22px; color: #{map_marker_color};'> <span style = '#{coordinates_array.count([unit.x_plot,unit.y_plot]) > 9 ? "position: absolute; left:#{spanSize_y - 1}px; top:#{spanSize_x + 2}px; font-size: #{spanSize_size - 4}px;" : "position: absolute; left:#{spanSize_y}px; top:#{spanSize_x}px; font-size: #{spanSize_size}px;"}' ></span> </div>".html_safe, "##", :class => "marker #{coordinates_array.count([unit.x_plot,unit.y_plot]) > 1 ? 'overlapping-unit' : ''}", :id => "m_#{unit.id}", :style => "left:#{(unit.x_plot.to_f-(left_margin).to_f).to_s}px; top:#{(unit.y_plot.to_f-(right_margin).to_f)}px; font-size: #{fontsize}px; position:absolute;","data-floor" => unit.floor ,"data-target" => "#unitModal", "data-toggle" => "modal","data-community-id"=>@community.id,"data-unit-id"=>unit.id,"data-is-fav"=>unit_id_is_in_cookies?(cookies[:favorite_unit_ids],unit.id),"data-provider"=>@community_info.data_provider,"data-website"=>@community_info.website,"data-availability-url"=>(unit.get_availability_url()),"data-community-property-id"=>(@community_info.credential.present? && @community_info.credential.property_id.present? ? @community_info.credential.property_id : 0),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id,"data-floorplan-name"=>floorplan.present? ? floorplan.name : '',"data-unit-marketing-name"=>unit.api_unit_marketing_name,"data-market-rent"=> number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ','),"data-total-market-rent"=> number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ','),"data-square-feet"=>unit.square_feet? ? hide_decimals(unit.square_feet) : (floorplan.present? ? hide_decimals(floorplan.square_feet) : nil),"data-availability"=>unit.availability,"data-available-date"=>unit.available_date.present? ? determine_available_date(unit.available_date) : nil,"data-bedrooms"=>floorplan.present? ? floorplan.bedrooms.to_i : nil,"data-bathrooms"=>floorplan.present? ? hide_decimals(floorplan.bathrooms.to_i) : nil,"data-floorplan-image"=>unit.standard_image_url.present? ? unit.standard_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.standard_image_url : "/assets/default.jpeg"),"data-unit-x-plot"=>unit.x_plot-left_margin,"data-unit-y-plot"=>unit.y_plot-right_margin,"data-title"=>unit.api_unit_marketing_name,"data-sold"=>unit.sold,"data-available"=>unit.available,"data-unit-lease-pricing"=>unit.lease_pricing,"data-unit-description"=>(unit.description.present? ? unit.description : (floorplan.description.present? ? floorplan.description : "")), "data-unit-virtual-tour-label" => unit.get_virtual_tour_label, "data-unit-virtual-tour-url" => unit.get_virtual_tour_url
                   .hidden-units
                   
-                  - if @amenities.present?
-                    - if @community_info.has_floorplates?
-                      - @floors.each do |floor|
-                        - floorplate = @floorplates.select{|f| f.floors.include?(floor)}.first
-                        - floorplate.amenities.where(floor: [floor, nil]).each do |amenity|
+                  - if @community_info.show_amenity_key
+                    - if @amenities.present?
+                      - if @community_info.has_floorplates?
+                        - @floors.each do |floor|
+                          - floorplate = @floorplates.select{|f| f.floors.include?(floor)}.first
+                          - floorplate.amenities.where(floor: [floor, nil]).each do |amenity|
+                            - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
+                              = link_to "<span class='custom-icon custom-icon-responsive' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};'  ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{amenity_marker_color}; margin-top:#{camera_margin}px;'  ></i></span>  <span class='amenitytooltiptext'> <h2 style='display:#{@community.show_amenity_name ? "block": "none"}' >#{amenity.name}</h2> <img src=#{amenity.standard_image_url} alt='Image Title'></span>".html_safe, "#", :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"a_#{floor} amenity-marker hidden slider-amenity amenityTooltip", :id => "a_#{amenity.id}", "data-amenity-id"=>amenity.id, "data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot, :onclick => "openAmenityViewerModal(#{amenity.to_json}, #{amenity.amenity_galleries.to_json})"
+                      - else
+                        - @amenities.each do |amenity|
                           - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
-                            = link_to "<span class='custom-icon custom-icon-responsive' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};'  ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{amenity_marker_color}; margin-top:#{camera_margin}px;'  ></i></span>  <span class='amenitytooltiptext'> <h2 style='display:#{@community.show_amenity_name ? "block": "none"}' >#{amenity.name}</h2> <img src=#{amenity.standard_image_url} alt='Image Title'></span>".html_safe, "#", :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"a_#{floor} amenity-marker hidden slider-amenity amenityTooltip", :id => "a_#{amenity.id}", "data-amenity-id"=>amenity.id, "data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot, :onclick => "openAmenityViewerModal(#{amenity.to_json}, #{amenity.amenity_galleries.to_json})"
-                    - else
-                      - @amenities.each do |amenity|
-                        - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
-                          = link_to "<span class='custom-icon custom-icon-responsive' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};'  ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{amenity_marker_color}; margin-top:#{camera_margin}px;'  ></i></span>  <span class='amenitytooltiptext'>  <h2 style='display:#{@community.show_amenity_name ? "block": "none"}' >#{amenity.name}</h2> <img src=#{amenity.standard_image_url} alt='Image Title'></span>".html_safe, "#", :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"sitemap-amenity-marker slider-amenity amenityTooltip", :id => "a_#{amenity.id}", "data-amenity-id"=>amenity.id, "data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot, :onclick => "openAmenityViewerModal(#{amenity.to_json}, #{amenity.amenity_galleries.to_json})"
+                            = link_to "<span class='custom-icon custom-icon-responsive' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};'  ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{amenity_marker_color}; margin-top:#{camera_margin}px;'  ></i></span>  <span class='amenitytooltiptext'>  <h2 style='display:#{@community.show_amenity_name ? "block": "none"}' >#{amenity.name}</h2> <img src=#{amenity.standard_image_url} alt='Image Title'></span>".html_safe, "#", :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"sitemap-amenity-marker slider-amenity amenityTooltip", :id => "a_#{amenity.id}", "data-amenity-id"=>amenity.id, "data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot, :onclick => "openAmenityViewerModal(#{amenity.to_json}, #{amenity.amenity_galleries.to_json})"
+                
                 .alert.alert-danger.fade.in{:style => "display:none;position:absolute;top:0%;width:100%;"}
                   Units not available
+              
               .left-side.tabcontent.list_view
                 -all_details = @units_with_floorplan_info.present? ? JSON.parse(@units_with_floorplan_info) : []
                 %div.left-side-title
@@ -291,6 +294,7 @@
             .inner-footer
               .footer-logo{:style=> "visibility: #{@community.powered_by_btn ? "" : "hidden" }"}
                 %img{:src => "/assets/powered_by_logo.png"}/
+                
               %ul.location-items.desktop-content
                 - if @community.enable_home_legend
                   %li
@@ -301,6 +305,7 @@
                     .custom-icon{:style => "height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};"}
                       %i.fas.fa-camera-retro{:style => "color: #{amenity_marker_color}; font-size: #{camera_font_size}px; margin-top:#{camera_margin}px;"}
                     %span Amenity image
+              
               .div.map-instruction-text
                 %span 
                   %strong Note: 

@@ -1,7 +1,6 @@
 %script{:src => "https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"}
 %script{:src => "https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"}
 %script{:src => "https://timmywil.com/panzoom/demo/panzoom.js"}
--#%link{:crossorigin => "anonymous", :href => "https://use.fontawesome.com/releases/v5.7.2/css/all.css", :integrity => "sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr", :rel => "stylesheet"}/
 = render '/font_awesome_v5'
 - content_for :title, "Plot Unit - Pynwheel"
 .divLoading.hidden
@@ -103,8 +102,7 @@
                     Add Access point in hallways that are not associated with any specific unit or amenity- if @community.enable_locks and @community.self_tour and @community.auto_wayfinding
           - if false && @community.self_tour and @community.auto_wayfinding
             %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'automate_path()'}Automate Path
-      / /.box-header
-      / form start
+
       = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks, locks_present_hash: @current_locks_provider}
       %form.form-horizontal
         .box-body.map-body-top
@@ -195,7 +193,6 @@
               %h5.mt-40.hidden SELECTED UNITS
               .add-plan.mt-10.mb-20
                 %ul#selected-units
-              / %button.btn.btn-success#new{:type => "button"} PLOT NOW
               %label#newmsg Place marker for selected units on Map
         #map-marker{"data-toggle" => "tooltip", :onclick => "selMarker()", :title => "new marker"}
           %i.icon-screenshot
