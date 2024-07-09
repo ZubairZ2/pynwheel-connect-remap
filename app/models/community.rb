@@ -2064,6 +2064,21 @@ class Community < ApplicationRecord
     locks.compact.uniq
   end
 
+  def embed_code
+    <<-HTML.strip.gsub(/\n\s*/, "")
+      <embed onload='window.parent.$("body").animate({scrollTop:0}, "slow");' 
+        style='margin-top: 0px; overflow:scroll;' 
+        src='http://localhost:3000/communities/#{self.id}/webpages' 
+        width='100%' 
+        height='750px' />
+      <script type='text/javascript'>
+        $(window).on("orientationchange", function(event) {
+          window.location.reload();
+        });
+      </script>
+    HTML
+  end
+
   private
 
   def get_lock_info_object lock_object, styling_start, styling_end
