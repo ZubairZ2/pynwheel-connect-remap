@@ -17,4 +17,8 @@ module AppLinks
   def self.get_android_link(company_name)
     LINKS.fetch(company_name.to_sym, LINKS[:default])[:android]
   end
+
+  def self.one_link company_name
+    company_name == "lincoln" ? "http://onelink.to/6fsxvq" : "http://onelink.to/m5vuhn"
+  end
 end

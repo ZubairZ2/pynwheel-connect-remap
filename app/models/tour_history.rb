@@ -59,14 +59,7 @@ class TourHistory < ApplicationRecord
         tour_user_url = "https://#{Rails.env.production? ? 'pynwheelapp.com' : 'pynwheel-staging.herokuapp.com'}/communities/#{community.id}/tour_users/#{touruser.id}"
 
         @complete_tour_content = ["#{fetch_property_name(community.name)} has been visited", "#{touruser.name.titleize} (#{touruser.email}#{', ' + touruser.phone_number if touruser.phone_number.present?}) has completed a tour of your property! To view the details of their visit, please click here: <a href='#{tour_user_url}'>#{touruser.name.titleize} Visitor Details</a> "]
-        
-        if self.tour_user_id == 1445
-          @thank_you_content = community.thank_you_message.present? ? community.thank_you_message : "completed Thank you for visiting #{fetch_property_name(community.name)}! We hope you enjoyed your tour. Go back to the Pynwheel Tour app any time to review the details of your tour."
-        else
-          @thank_you_content = community.thank_you_message.present? ? community.thank_you_message : "Thank you for visiting #{fetch_property_name(community.name)}! We hope you enjoyed your tour. Go back to the Pynwheel Tour app any time to review the details of your tour."
-        end
-
-        # @thank_you_content = append_app_links_with_emailbody(community, @thank_you_content)
+        @thank_you_content = "Thank you for visiting #{fetch_property_name(community.name)}!\n\nWe hope you enjoyed your tour.\n\nGo back to the Pynwheel Tour app any time to review the details of your tour:"
         
         tour_user_remotelock_data(community)
 
@@ -244,7 +237,8 @@ class TourHistory < ApplicationRecord
 
   def send_email_sms_or_both_to_touruser thank_you_msg, community
     content = (community.community_tour.tour_setting.enable_header_footer ? (thank_you_msg.gsub("\n", "<br>").html_safe) :  "<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo_for_email}' data-title='#{fetch_property_name(community.name)}' /></div><br/> " + (thank_you_msg.gsub("\n", "<br>").html_safe))
-  	if community.alert_contact == "email"
+  	
+    if community.alert_contact == "email"
       send_email_tour_user "Thank you for visiting #{fetch_property_name(community.name)}", content, community.email, community
   	elsif community.alert_contact == "phone"
   		send_sms_tour_user( thank_you_msg, community )
@@ -264,9 +258,7 @@ class TourHistory < ApplicationRecord
       emails.each do |email|
         NotificationMailer.tour_history_mail(subj, body, email,"info@pynwheel.com",community,false,nil).deliver
       end
-      # NotificationMailer.tour_history_mail(subj.humanize, body, community.email).deliver
     rescue
-
     end
   end
 
@@ -277,7 +269,6 @@ class TourHistory < ApplicationRecord
         NotificationMailer.tour_history_mail(subj, body, email,"info@pynwheel.com",community,false,nil).deliver
       end
     rescue
-
     end
   end
 
@@ -286,7 +277,6 @@ class TourHistory < ApplicationRecord
       emails = community_email.gsub(" ","").split(',')
       NotificationMailer.tour_history_mail(subj, body, self.tour_user.email, email[0],community,false,nil).deliver
     rescue
-
     end
   end
 
@@ -368,20 +358,26 @@ class TourHistory < ApplicationRecord
   def append_app_links_with_emailbody community, email_body
     @community = community
     company_name = community.company.name.downcase
+    @app_link = AppLinks.one_link(company_name)
 
-    @app_link = AppLinks.get_app_link(company_name)
-    @android_link = AppLinks.get_android_link(company_name)
-
-    "<div>#{email_body}<br>iPhone Users: <a href=#{@app_link} target='_blank'>Download Pynwheel Tour from the App Store</a><br>Android Users: <a href=#{@android_link} target='_blank'>Download Pynwheel Tour from Google Play</a><br></div>"
+    "<div>#{email_body} <a href=#{@app_link} target='_blank'>Download Pynwheel Tour App</a><br><br>#{email_thank_you_message(community)}</div>"
   end
 
   def append_app_links_with_text_message community, message_body
     @community = community
     company_name = community.company.name.downcase
+    @app_link = AppLinks.one_link(company_name)
 
-    @app_link = AppLinks.get_app_link(company_name)
-    @android_link = AppLinks.get_android_link(company_name)
+    "#{message_body} #{@app_link}\n\n#{text_thank_you_message(community)}"
+  end
 
-    "#{message_body}\niPhone Users: #{@app_link}\nAndroid Users: #{@android_link}\n"
+  def email_thank_you_message community
+    return "" unless community.thank_you_message.present?
+    "#{community.thank_you_message&.gsub("\n", "<br>").html_safe}"
+  end
+
+  def text_thank_you_message community
+    return "" unless community.thank_you_message.present?
+    community.thank_you_message
   end
 end

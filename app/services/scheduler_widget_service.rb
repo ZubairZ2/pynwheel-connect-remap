@@ -135,16 +135,16 @@ class SchedulerWidgetService < BaseService
     end
     community_text = (Company.find community.company_id).name.downcase == "lincoln" ? "Lincoln Property Company Pynwheel Tour" : "Pynwheel Tour"
     sms_content = !is_rescheduled ? 
-    "Thank you for scheduling your tour! We look forward to having you at #{community.name if community.present?} on #{schedual_tour.tour_date.strftime("%A, %b %-d %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}.#{"\n"}When you go to the property, you will need: 
+    "Thank you for scheduling your tour! We look forward to having you at #{community.name if community.present?} on #{schedual_tour.tour_date.strftime("%A, %b %-d %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}.#{"\n"}#{"\n"}When you go to the property, you will need: 
     - A photo ID
     - Your mobile device with the #{community_text} app installed 
-    Download #{community_text} #{app_link} 
+    #{"\n"}#{"\n"}Use this link to download #{community_text}: #{one_link}#{"\n"}#{"\n"} 
     
     #{community.email_text}" : 
-    "Thank you for rescheduling your tour! We look forward to having you at #{community.name if community.present?} on #{schedual_tour.tour_date.strftime("%A, %b %-d %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")} instead of #{previous_tour[:tour_date].strftime("%A, %b %-d, %Y")} at #{ Time.parse(previous_tour[:tour_time].to_s).strftime("%-I:%M %P")}. When you go to the property, you will need: 
+    "Thank you for rescheduling your tour! We look forward to having you at #{community.name if community.present?} on #{schedual_tour.tour_date.strftime("%A, %b %-d %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")} instead of #{previous_tour[:tour_date].strftime("%A, %b %-d, %Y")} at #{ Time.parse(previous_tour[:tour_time].to_s).strftime("%-I:%M %P")}.#{"\n"}#{"\n"}When you go to the property, you will need: 
     - A photo ID 
     - Your mobile device with the #{community_text} app installed 
-    Download #{community_text} #{app_link}
+    #{"\n"}#{"\n"}Use this link to download #{community_text}: #{one_link}#{"\n"}#{"\n"}
     
     #{community.email_text}"
 

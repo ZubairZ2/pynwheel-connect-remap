@@ -51,16 +51,8 @@ namespace :delayed_email_notifications do
   				if community.present? and (Time.now - th.updated_at) > 60 
 
   					@mail_content = ["abandoned_tour_at_stop", "#{tour_user.name rescue "User"} abandoned a tour of #{(community.name.titleize)} at "]
-
   					@mail_content[1] = "#{@mail_content.last} #{(TourStop.find th.abandoned_tour_at_stop.to_i).name.titleize rescue "Not Found"}."
-  					
-  					if th.tour_user_id == 1445
-  						@thank_you_content  = community.thank_you_message.present? ? community.thank_you_message : "111Thank you for visiting #{fetch_property_name(community.name)}! We hope you enjoyed your tour. Go back to the Pynwheel Tour app any time to review the details of your tour."
-  					else
-  						@thank_you_content  = community.thank_you_message.present? ? community.thank_you_message : "Thank you for visiting #{fetch_property_name(community.name)}! We hope you enjoyed your tour. Go back to the Pynwheel Tour app any time to review the details of your tour."
-  					end
-
-						# @thank_you_content = append_app_links_with_emailbody(community, @thank_you_content)
+						@thank_you_content = "Thank you for visiting #{fetch_property_name(community.name)}!\n\nWe hope you enjoyed your tour.\n\nGo back to the Pynwheel Tour app any time to review the details of your tour:"
 
   					touruser_remotelock_data community, th
   					send_email_sms_or_both(@mail_content, community) unless tour_user&.is_virtual_tour?
@@ -102,22 +94,23 @@ namespace :delayed_email_notifications do
 	end
 
   def send_email_sms_or_both_to_touruser thank_you_msg, community, th
-
+    content = (community.community_tour.tour_setting.enable_header_footer ? (thank_you_msg.gsub("\n", "<br>").html_safe) :  "<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo_for_email}' data-title='#{fetch_property_name(community.name)}' /></div><br/> " + (thank_you_msg.gsub("\n", "<br>").html_safe))
+		
 		if community.alert_contact == "email"
-			send_email_to_user_without_humanize "Thank you for visiting #{fetch_property_name(community.name)}", "<div style='vertical-align:middle; text-align:center'><img style='#{logo_style}' align='center' border='0' width='200' src='#{community.logo_for_email}' data-title='#{community.name}' /></div><br/> " + thank_you_msg, th, community.email,community
+			send_email_to_user_without_humanize "Thank you for visiting #{fetch_property_name(community.name)}", content, th, community.email, community
 		elsif community.alert_contact == "phone"
 			send_sms_tour_user( thank_you_msg, th, community)
 		else
-			send_email_to_user_without_humanize "Thank you for visiting #{fetch_property_name(community.name)}","<div style='vertical-align:middle; text-align:center'><img style='#{logo_style}' align='center' border='0' width='200' src='#{community.logo_for_email}' data-title='#{community.name}' /></div><br/> " + thank_you_msg, th, community.email,community
+			send_email_to_user_without_humanize "Thank you for visiting #{fetch_property_name(community.name)}", content, th, community.email,community
 			send_sms_tour_user(thank_you_msg, th, community)
 		end
 	end
 
 	def send_email_to_user_without_humanize subj, body, th=nil, comm_email=nil,community
 		begin
-			emails = comm_email.gsub(" ","").split(',')
+			emails = comm_email&.gsub(" ","")&.split(',')
 			body = append_app_links_with_emailbody(community, body)
-			NotificationMailer.tour_history_mail(subj, body, th.tour_user.email,emails[0],community,false,nil).deliver
+			NotificationMailer.tour_history_mail(subj, body, th.tour_user. email,emails[0], community, false, nil).deliver
 		rescue
 
 		end
@@ -125,7 +118,7 @@ namespace :delayed_email_notifications do
 
 	def send_email subj, body, community
 		begin
-			emails = community.email.gsub(" ","").split(',')
+			emails = community&.email&.gsub(" ","")&.split(',')
 			NotificationMailer.tour_history_mail(subj, body, emails[0],"info@pynwheel.com",community,false,nil).deliver
 		rescue
 
@@ -133,7 +126,7 @@ namespace :delayed_email_notifications do
   	end
   	def send_email_without_humanize subj, body, community
 		begin
-			emails = community.email.gsub(" ","").split(',')
+			emails = community&.email&.gsub(" ","")&.split(',')
 			emails.each do |email|
 				NotificationMailer.tour_history_mail(subj, body, email,"info@pynwheel.com",community,false,nil).deliver
 			end
@@ -190,7 +183,7 @@ namespace :delayed_email_notifications do
 			  content = "<div style='vertical-align:middle; text-align:center'><img style='#{logo_style}' align='center' border='0' width='200' src='#{community.logo_for_email}' data-title='#{community.name}' /></div><br/>Don't forget! You have an appointment for a Pynwheel Tour tomorrow at <b>#{community.name if community.present?}</b> at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}. Make sure you have downloaded the #{community_text} app before you arrive. <br> iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Tour from the App Store</a><br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Tour from Google Play</a><br>#{community.one_day_email_text.gsub("\n", "<br>").html_safe rescue ""}"
 		  end
 		  sms_content = "Don't forget! You have an appointment for a Pynwheel Tour tomorrow at #{community.name if community.present?} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}. Make sure you have downloaded the #{community_text} app before you arrive.
-Download The #{community_text} #{one_link}#{"\n"}
+#{"\n"}#{"\n"}Use this link to download #{community_text}: #{one_link}#{"\n"}#{"\n"}
 #{mobile_change_appointment}
 Get information about your tour here: #{confirmation_page_link}#{"\n"}
 #{community.one_day_email_text}"
@@ -225,13 +218,12 @@ Get information about your tour here: #{confirmation_page_link}#{"\n"}
 				is_rescheduled = false
 				confirmation_page_link = "#{base_url}scheduler_widget/confirmation_instructions?community_id=#{community.id}&schedual_tour=#{schedual_tour.id}&reschedule=#{is_rescheduled}"
 				if community.community_tour.tour_setting.enable_header_footer
-					content = "<div style='vertical-align:middle; text-align:center'><p style='font-weight: normal;line-height: 30px;font-size: 16px; font-family: arial,helvetica,sans-serif;'> Your tour starts soon!<br><a href=' https://www.google.com/maps/search/?api=1&query=#{community.get_propery_address()}'>Directions to Property</a><br>When you arrive at the property, open the #{community_text} app to begin your tour.<br> <b> Please download Pynwheel Tour app before you arrive:</b> <br>#{community.one_hour_email_text.gsub("\n", "<br>").html_safe rescue ""} </p></div>"
+					content = "<div style='vertical-align:middle; text-align:center'><p style='font-weight: normal;line-height: 30px;font-size: 16px; font-family: arial,helvetica,sans-serif;'> Your tour starts soon!<br><a href=' https://www.google.com/maps/search/?api=1&query=#{community.get_propery_address()}'>Directions to Property</a><br>#{community.one_hour_email_text.gsub("\n", "<br>").html_safe rescue ""}<br>When you arrive at the property, open the #{community_text} app to begin your tour.<br> <b> Please download Pynwheel Tour app before you arrive:</b></p></div>"
 				else
-					content = "<div style='vertical-align:middle; font-family: arial,helvetica,sans-serif; text-align:center'><img style='#{logo_style}' align='center' border='0' width='200' src='#{community.logo_for_email}' data-title='#{community.name}' /></div><br/>Your tour starts soon!<br><a href=' https://www.google.com/maps/search/?api=1&query=#{community.get_propery_address()}'>Directions to Property</a><br>When you arrive at the property, open the #{community_text} app to begin your tour.<br>iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Tour from the App Store</a> <br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Tour from Google Play</a><br>#{community.one_hour_email_text.gsub("\n", "<br>").html_safe rescue ""}"
+					content = "<div style='vertical-align:middle; font-family: arial,helvetica,sans-serif; text-align:center'><img style='#{logo_style}' align='center' border='0' width='200' src='#{community.logo_for_email}' data-title='#{community.name}' /></div><br/>Your tour starts soon!<br><a href=' https://www.google.com/maps/search/?api=1&query=#{community.get_propery_address()}'>Directions to Property</a><br>#{community.one_hour_email_text.gsub("\n", "<br>").html_safe rescue ""}<br>When you arrive at the property, open the #{community_text} app to begin your tour.<br>iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Tour from the App Store</a> <br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Tour from Google Play</a>"
 				end
 				sms_content = "Your tour starts soon!
-				#{"\n"}Here are directions to #{community.name}:#{"\n"}https://www.google.com/maps/search/?api=1&query=#{community.get_propery_address()} #{"\n"}#{"\n"}When you arrive at the property, open the #{community_text} app to begin your tour. #{"\n"} #{"\n"}Open #{community_text}:#{"\n"}#{one_link}#{"\n"} #{"\n"}Get more information about your tour here: #{"\n"}#{confirmation_page_link}
-				#{community.one_hour_email_text}"
+				#{"\n"}Here are directions to #{community.name}:#{"\n"}https://www.google.com/maps/search/?api=1&query=#{community.get_propery_address()}#{"\n"}#{"\n"}#{community.one_hour_email_text}#{"\n"}#{"\n"}When you arrive at the property, open the #{community_text} app to begin your tour. #{"\n"} #{"\n"}Open #{community_text}:#{"\n"}#{one_link}#{"\n"} #{"\n"}Get more information about your tour here: #{"\n"}#{confirmation_page_link}"
 				schedual_tour.update_columns(hourly_email_sent: true)
 				emails = community_email.gsub(" ","").split(',')
 				
@@ -339,23 +331,29 @@ Get information about your tour here: #{confirmation_page_link}#{"\n"}
   end
 	
 	def append_app_links_with_emailbody community, email_body
-		@community = community
-		company_name = community.company.name.downcase
+    @community = community
+    company_name = community.company.name.downcase
+    @app_link = AppLinks.one_link(company_name)
 
-		@app_link = AppLinks.get_app_link(company_name)
-		@android_link = AppLinks.get_android_link(company_name)
+    "<div>#{email_body} <a href=#{@app_link} target='_blank'>Download Pynwheel Tour App</a><br><br>#{email_thank_you_message(community)}</div>"
+  end
 
-		"<div>#{email_body}<br>iPhone Users: <a href=#{@app_link} target='_blank'>Download Pynwheel Tour from the App Store</a><br>Android Users: <a href=#{@android_link} target='_blank'>Download Pynwheel Tour from Google Play</a><br></div>"
-	end
+  def append_app_links_with_text_message community, message_body
+    @community = community
+    company_name = community.company.name.downcase
+    @app_link = AppLinks.one_link(company_name)
 
-	def append_app_links_with_text_message community, message_body
-		@community = community
-		company_name = community.company.name.downcase
+    "#{message_body} #{@app_link}\n\n#{text_thank_you_message(community)}"
+  end
 
-		@app_link = AppLinks.get_app_link(company_name)
-		@android_link = AppLinks.get_android_link(company_name)
+  def email_thank_you_message community
+    return "" unless community.thank_you_message.present?
+    "#{community.thank_you_message&.gsub("\n", "<br>").html_safe}"
+  end
 
-		"#{message_body}\niPhone Users: #{@app_link}\nAndroid Users: #{@android_link}\n"
-	end
+  def text_thank_you_message community
+    return "" unless community.thank_you_message.present?
+    community.thank_you_message
+  end
 
 end
