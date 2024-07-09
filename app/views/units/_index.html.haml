@@ -1,5 +1,4 @@
 .row
-  / Start Panel left Side
   .col-lg-12.col-md-12
     .row
       .col-md-12
@@ -19,18 +18,13 @@
             %a{:href => "##","data-target" =>"#modal-to-set-available-date", "data-toggle" => "modal"} Available Date
             %a{:href => "##","data-target" =>"#modal-to-set-manual-override", "data-toggle" => "modal"} Manual Override
             %a{:href => "##","data-target" => "#modal-to-set-sold", "data-toggle" => "modal"} Sold
-            - unless @community.is_sitemap
-              %a{:href => '##',"data-target" => "#modal-to-change-floor", "data-toggle" => "modal"} Units Floor
-              %a{:href => '##',"data-target" => "#modal-to-change-building", "data-toggle" => "modal"} Add Buildings
+            %a{:href => '##',"data-target" => "#modal-to-change-floor", "data-toggle" => "modal"} Units Floor
+            %a{:href => '##',"data-target" => "#modal-to-change-building", "data-toggle" => "modal"} Add Buildings
             %a{:href => "##","data-target" => "#modal-to-add-description", "data-toggle" => "modal"} Add Details
             %a{:href => "##","data-target" => "#modal-to-set-image", "data-toggle" => "modal"} Floor Plan Images
         %i.propertyDetailName.mb-20.fa.fa-question-circle{ "data-toggle" => "unitMassOverridePopover","data-content" => " "}
           %span#propertyDetailNameText
             Use this button to change data for multiple units at once, such as availability, floor number, details, and images.
-      -#.col-lg-12.col-md-12.mb-20
-      -#  %button.btn-success.done_btn{:onclick => "unit_goBack()"}
-      -#    %i.fa.fa-plus-circle
-      -#    DONE
 
       .col-md-12
         %h4{:style => "margin-left: 3px; color: grey;"}
@@ -48,25 +42,7 @@
         .box.box-widget.panel-box.mb-15.alert-danger
           %h5.ml-15.mb-20
             *Note: If you have made changes to units in your property management software, please contact Pynwheel support at support@pynwheel.com to import your data.
-          / - unless @community.is_sitemap  
-          /   %button.btn.btn-primary.pull-right.mb-20.mr-5{"data-target" => "#modal-to-change-floor", "data-toggle" => "modal"}
-          /     %i.fa.fa-adjust
-          /     Set UNITS FLOOR
-          / %button.btn.btn-primary.pull-right.mb-20.mr-5{"data-target" => "#modal-to-set-available-date", "data-toggle" => "modal"}
-          /   %i.fa.fa-adjust
-          /   Set Available Date       
-          / %button.btn.btn-primary.pull-right.mb-20.mr-5{"data-target" => "#modal-to-set-available", "data-toggle" => "modal"}
-          /   %i.fa.fa-adjust
-          /   Set Available       
-          / %button.btn.btn-primary.pull-right.mb-20.mr-5{"data-target" => "#modal-to-set-manual-override", "data-toggle" => "modal"}
-          /   %i.fa.fa-adjust
-          /   Set Manual Override       
-          / %button.btn.btn-primary.pull-right.mb-20.mr-5{"data-target" => "#modal-to-set-sold", "data-toggle" => "modal"}
-          /   %i.fa.fa-adjust
-          /   Set Sold       
-          / %button.btn.btn-primary.pull-right.mb-20.mr-5{"data-target" => "#modal-to-set-image", "data-toggle" => "modal"}
-          /   %i.fa.fa-adjust
-          /   Upload Image       
+     
     .box.box-widget.panel-box
       .box-header     
         .row
@@ -100,7 +76,6 @@
                     %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "unitGridAvailableDatePopover","data-content" => " "}
                       %span#propertyDetailNameText
                         Changing the Available Date will change when the unit is displayed as available as long as Available is set to "Yes."
-                  -#%th Manually Updated
                   %th
                     Available
                     %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "unitGridAvailablePopover","data-content" => " "}
@@ -115,19 +90,24 @@
                     %i.unit_sold.fa.fa-question-circle{ "data-toggle" => "unitGridSoldPopover","data-content" => " "}
                       %span#unit_sold_text
                         This option is for For Sale properties only. When a Sold is set to Yes, then the details on the unit pop-up will show that the unit is sold.
-                  -#%th Unit Space
-                  - unless @community.is_sitemap
-                    %th
-                      Floor
-                      %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "unitGridFloorPopover","data-content" => " "}
-                        %span#propertyDetailNameText
-                          Changing the Floor will change the floor that each unit appears on in the interactive map. Units will not appear on the interactive map unless a floor has been selected.
-                  -#%th Description
+                  %th
+                    Floor
+                    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "unitGridFloorPopover","data-content" => " "}
+                      %span#propertyDetailNameText
+                        Changing the Floor will change the floor that each unit appears on in the interactive map. Units will not appear on the interactive map unless a floor has been selected.
+
+                  %th
+                    Building
+                    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "unitGridBuildingPopover","data-content" => " "}
+                      %span#propertyDetailNameText
+                        Changing the Building will change the building that each unit appears on in the interactive map. Units will not appear on the interactive map unless a building has been selected.
+
                   %th
                     Interior Images
                     %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "unitGridInteriorImagesPopover","data-content" => " "}
                       %span#propertyDetailNameText
                         Add or change images (such as interior photography or renderings) associated with each unit.
+
                   %th Floor Plan Image
                   %th
                     Actions
@@ -138,42 +118,30 @@
 
                 - @community_info.units.map{|i| i.marketing_name = '' if i.marketing_name.nil? }
                 - units = @community_info.units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@community_info.units).sort.map{|x,y| y}
-                / - units_arr = units.map{|x| x.marketing_name}
-                / - counts = Hash.new(0)
-                / - units_arr.each { |name| counts[name] += 1 }
-                -#- byebug
                 - units.each_with_index  do |u,index|
                   - floorplan = @community_info.floorplans.select{|f| f.provider_floorplan_id == u.floorplan_id}.first
                   %tr{style: "color: #{u.manual_override ? '#dd4a39' : ''};"}
                     %td= index+1
                     %td= best_in_place u, :manual_override, :as => :checkbox, collection: {false: "No", true: "Yes"}, :url => community_unit_path(@community,u), :data => {:manual_override => u.manual_override }
-                    -#- if counts[u.marketing_name] == 1
-                    -#  %td= best_in_place u, :marketing_name,:url => community_unit_path(@community,u), :data => {:number => u.marketing_name },:style => u.name_is_updated? ? "color: #dd4a39;" : ""
-                    -#- else
+                    
                     - if @community.data_provider == "yardi"
                       %td= best_in_place u, :marketing_name, :url => community_unit_path(@community,u),:display_as => :provider_unit_id, :data => {:number => u.marketing_name },:style => u.name_is_updated? ? "color: #dd4a39;" : ""
                     - else
                       %td= best_in_place u, :marketing_name, :url => community_unit_path(@community,u),:display_as => :unit_market, :data => {:number => u.marketing_name },:style => u.name_is_updated? ? "color: #dd4a39;" : ""
                     
                     %td= best_in_place u, :floorplan_id, :as => :select, :collection => @community_info.floorplans.collect{|f| [f.provider_floorplan_id,f.name]}, :url => community_unit_path(@community,u), :data => {:floorplan_id => floorplan.present? ? floorplan.id : nil },:style => u.floorplan_id_is_updated? ? "color: #dd4a39;" : ""
-
                     %td= best_in_place u, :effective_rent, :as => :input, :url => community_unit_path(@community,u),:display_as => :show_integer_rent, :data => {:rent => u.effective_rent },:style => u.effective_rent_is_updated? ? "color: #dd4a39;" : ""
-
                     %td= best_in_place u, :available_date,:as => :date, :url => community_unit_path(@community,u), :place_holder => (u.sold  ? "Never Available" : "-"), :data => {:available_date => u.available_date },:style => u.available_date_is_updated? ? "color: #dd4a39;" : ""
-
-                    -#%td{:id=>"best_in_place_unit_#{u.id}_manually_updated"}= u.manually_updated ? "Yes" : "No"
                     %td= best_in_place u, :available, :as => :checkbox, collection: {false: "No", true: "Yes"}, :url => community_unit_path(@community,u), :data => {:available => u.available },:style => u.available_is_updated? ? "color: #dd4a39;" : ""
                     
                     %td
                       = render :partial=>'attached_lock',:locals=>{:u=>u, :community=>@community}
                        
-
                     %td= best_in_place u, :sold, :as => :checkbox, collection: {false: "No", true: "Yes"}, :url => community_unit_path(@community,u), :data => {:sold => u.sold },:style => u.sold_is_updated? ? "color: #dd4a39;" : ""
-                    -#%td= best_in_place u, :square_feet, :as => :input, :url => community_unit_path(@community,u), :data => {:square_feet => u.square_feet }
-
-                    - unless @community.is_sitemap
-                      %td= best_in_place u, :floor, :url => community_unit_path(@community,u), :data => {:floor => u.floor },:style => u.floor_is_updated? ? "color: #dd4a39;" : ""
-                    -#%td= raw(u.description)
+                    
+                    %td= best_in_place u, :floor, :url => community_unit_path(@community,u), :data => {:floor => u.floor },:style => u.floor_is_updated? ? "color: #dd4a39;" : ""
+                    %td= best_in_place u, :building, :url => community_unit_path(@community,u), :data => {:building => u.building },:style => u.building_is_updated? ? "color: #dd4a39;" : ""
+                    
                     %td
                       = link_to 'Manage Images' , community_unit_amenities_path(@community,u),:class=>"btn btn-default black-button"
                     %td
@@ -384,7 +352,6 @@
           %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel
 
 
-  / End Panel left Side
   :javascript
     function unit_goBack()
     {

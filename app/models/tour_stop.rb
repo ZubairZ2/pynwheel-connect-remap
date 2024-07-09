@@ -143,7 +143,7 @@ class TourStop < ApplicationRecord
     return stop_directional_text if stop_directional_text.present?
       default_text = "Follow the map below"
 
-    if actual_stop&.community&.is_sitemap || actual_stop.is_a?(Elevator)
+    if actual_stop.is_a?(Elevator)
       "#{default_text}#{actual_stop_text(actual_stop)}."
     else
       "#{default_text}#{stop_building_text(actual_stop)}#{actual_stop_text(actual_stop)}#{stop_floor_text(actual_stop)}."

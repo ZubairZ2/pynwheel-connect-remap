@@ -48,6 +48,7 @@
       .col-sm-6.col-lg-4.col-md-4.col-xs-12
         = f.text_field :building, :class=>"form-control", :placeholder=>"Building",:maxlength=>"20"
         %small Building (Manual Override Required)
+
       - unless @community.is_sitemap
         - if f.object.floorplate.present?
           .col-sm-6.col-lg-4.col-md-4.col-xs-12
@@ -57,25 +58,25 @@
           .col-sm-6.col-lg-4.col-md-4.col-xs-12
             = f.text_field :floor, :class=>"form-control validate[custom[floor]]", :placeholder=>"Floor"
             %small Floor (Manual Override Required)
+      - else
+        .col-sm-6.col-lg-4.col-md-4.col-xs-12
+          = f.text_field :floor, :class=>"form-control validate[custom[floor]]", :placeholder=>"Floor"
+          %small Floor (Manual Override Required)
+
       .col-sm-6.col-lg-4.col-md-4.col-xs-12
         = f.text_field :square_feet, :class=>"form-control ", :placeholder=>"Unit space", :value => f.object.square_feet.to_i
         %small Square footage (Manual Override Required)
+  
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
 
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .row
       .col-sm-6.col-lg-4.col-md-4.col-xs-12
         = f.text_field :unit_status, :class=>"form-control ", :placeholder=>"Unit Status", :value => f.object.unit_status
         %small Unit Status
 
 = f.hidden_field :provider
-
--#.form-group
--#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
--#    Display Virtual Tour Button Label
--#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
--#    .TriSea-technologies-Switch
--#      %span.pr-15 No
--#      = f.check_box :display_virtual_tour_button_label,:class=>"form-control"
--#      %label.label-primary{:for => "unit_display_virtual_tour_button_label"}
--#      %span.pl-15 Yes
 
 .form-group#unit_virtual_tour_button_label_field
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
