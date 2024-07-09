@@ -473,22 +473,21 @@ class SchedualToursController < ApplicationController
       time_slot ||= []
       slot_str = ""
       sms_slot_str = ""
+
       @community_opening_hours.each do |slot|
         time_slot << {"#{slot.day[0..2]}": "#{Time.zone.parse(slot.opening_time).strftime("%I:%M%p")} - #{Time.zone.parse(slot.closing_time).strftime("%I:%M%p")}"}
       end
 
       merged_slots = time_slot.each_with_object({}) { |h, o| h.each { |k,v| (o[k] ||= []) << v } }
+
       merged_slots.each do |k,v|
         slot_str += "<b>#{k}:</b> #{v.join(' and ')}#{merged_slots.keys.last == k ? "" : ", "}"
         sms_slot_str += "#{k}: #{v.join(' and ')}#{merged_slots.keys.last == k ? "" : "\n"}"
       end
 
-      puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{params}---"
-      app_link = (Company.find community.company_id).name.downcase == "lincoln" ? "http://onelink.to/6fsxvq" : "http://onelink.to/m5vuhn"
-      android_link = (Company.find community.company_id).name.downcase == "lincoln" ? "http://onelink.to/6fsxvq" : "http://onelink.to/m5vuhn"
-      
-      app_link_web = (Company.find community.company_id).name.downcase == "lincoln" ? "https://apps.apple.com/us/app/lincoln-property-self-tour/id1508997129" : "https://apps.apple.com/us/app/self-tour/id1488907392"
-      android_link_web = (Company.find community.company_id).name.downcase == "lincoln" ? "https://play.google.com/store/apps/details?id=com.pynwheel.lincolnselftour" : "https://play.google.com/store/apps/details?id=com.pynwheel.selftour"
+      company_name = community.company.name.downcase
+      @app_link = AppLinks.one_link(company_name)
+
       previous_text = ""
 
         if community.community_tour.tour_setting.enable_header_footer
@@ -508,21 +507,23 @@ class SchedualToursController < ApplicationController
           if previous_tour[:tour_date].present? && previous_tour[:tour_time].present?
             previous_text = "instead of <b>#{previous_tour[:tour_date].strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(previous_tour[:tour_time].to_s).strftime("%-I:%M %P")}</b>."
           end
-          email_content = (property_tour_type == "scheduled_tour" && is_rescheduled) ? "<div style='vertical-align:middle; text-align:center'><img style='#{logo_style}' align='center' border='0' width='200' src='#{community.logo_for_email}' data-title='#{community.name}' /><p style='text-align: center; font-size: 16px; margin-bottom: 10px; line-height: 22px;'><br/><p class='mt-10' style='text-align: center; font-size: 16px; margin-bottom: 10px; line-height: 22px;'>Thank you for rescheduling your tour! We look forward to having you at <b>#{community.name if community.present?}</b> on <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b> #{previous_text} When you go to the property, you will need: </p></div> <ul><li style='font-size: 16px; text-align: left; line-height: 22px; margin-bottom: 10px;'>A photo ID</li> <li style='font-size: 16px; text-align: left; line-height: 22px; margin-bottom: 10px;'>Your mobile device with the Pynwheel Tour app installed.</li></ul><div style='font-size: 18px;text-align:center'><br>#{community.email_text.gsub("\n", "<br>").html_safe rescue ""}<br><br>Please download Pynwheel Tour app before you arrive: <br>iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Tour from the App Store</a><br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Tour from Google Play</a><br></div>" : 
+          email_content = (property_tour_type == "scheduled_tour" && is_rescheduled) ? "<div style='vertical-align:middle; text-align:center'><img style='#{logo_style}' align='center' border='0' width='200' src='#{community.logo_for_email}' data-title='#{community.name}' /><p style='text-align: center; font-size: 16px; margin-bottom: 10px; line-height: 22px;'><br/><p class='mt-10' style='text-align: center; font-size: 16px; margin-bottom: 10px; line-height: 22px;'>Thank you for rescheduling your tour! We look forward to having you at <b>#{community.name if community.present?}</b> on <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b> #{previous_text} When you go to the property, you will need: </p></div> <ul><li style='font-size: 16px; text-align: left; line-height: 22px; margin-bottom: 10px;'>A photo ID</li> <li style='font-size: 16px; text-align: left; line-height: 22px; margin-bottom: 10px;'>Your mobile device with the Pynwheel Tour app installed.</li></ul><div style='font-size: 18px;text-align:center'><br>#{community.email_text.gsub("\n", "<br>").html_safe rescue ""}<br><br>Please download Pynwheel Tour app before you arrive: <br>iPhone Users: <a href=#{@app_link} target='_blank'>Download Pynwheel Tour from the App Store</a><br>Android Users: <a href=#{@app_link} target='_blank'>Download Pynwheel Tour from Google Play</a><br></div>" : 
           if property_tour_type == "unscheduled_self_tour"
             "<div style='vertical-align:middle; text-align:center;'><img style='#{logo_style}' align='center' border='0' width='200' src='#{community.logo_for_email}' data-title='#{community.name}' /><br/><p class='mt-10' style='text-align: center; font-size: 16px; margin-bottom: 10px; line-height: 22px;'> We look forward to having you at <b>#{community.name if community.present?}!</b> Our visiting hours are:<br/>#{slot_str}<br/>When you go to the property, you will need a <b>photo ID</b> and a <b>mobile device</b> with the Pynwheel Tour app.</p></div><div style='text-align: center; font-size: 16px; margin-bottom: 10px; line-height: 22px;'><b>Please download the Pynwheel Tour app before you arrive:</b></p></div>"
           elsif property_tour_type == "remote_tour"
             "<div style='vertical-align:middle; text-align:center'><img style='#{logo_style}' align='center' border='0' width='200' src='#{community.logo_for_email}' data-title='#{community.name}' /><br/><p class='mt-10' style='text-align: center; font-size: 16px; margin-bottom: 10px; line-height: 22px;'> Thank you <b>#{tu.name}</b> for choosing to tour <b>#{community.name if community.present?}</b> remotely! You can visit at any time from the comfort of your own home using our mobile app.</p><p style='text-align: center; font-size: 16px; margin-bottom: 10px; line-height: 22px; '><b>Please download the Pynwheel Tour app before you arrive:</b></p></div>"
           else
-            "<div style='vertical-align:middle; text-align:center'><img style='#{logo_style}' align='center' border='0' width='200' src='#{community.logo_for_email}' data-title='#{community.name}' /><br/><p style='text-align: center; font-size: 16px; margin-bottom: 10px; line-height: 22px;'>Thank you <b>#{tu.name}</b> for scheduling your tour! We look forward to having you at <b>#{community.name if community.present?}</b> on <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b>. When you go to the property, you will need: </p></div> <br/> <ul><li style='font-size: 16px; text-align: left; line-height: 22px; margin-bottom: 10px;'>A photo ID</li> <li style='font-size: 16px; text-align: left; line-height: 22px; margin-bottom: 10px;'>Your mobile device with the Pynwheel Tour app installed.</li></ul><div style='font-size: 18px;text-align:center'><br>#{community.email_text.gsub("\n", "<br>").html_safe rescue ""}<br><br>Please download Pynwheel Tour app before you arrive: <br>iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Tour from the App Store</a><br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Tour from Google Play</a><br></div><br/>"
+            "<div style='vertical-align:middle; text-align:center'><img style='#{logo_style}' align='center' border='0' width='200' src='#{community.logo_for_email}' data-title='#{community.name}' /><br/><p style='text-align: center; font-size: 16px; margin-bottom: 10px; line-height: 22px;'>Thank you <b>#{tu.name}</b> for scheduling your tour! We look forward to having you at <b>#{community.name if community.present?}</b> on <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b>. When you go to the property, you will need: </p></div> <br/> <ul><li style='font-size: 16px; text-align: left; line-height: 22px; margin-bottom: 10px;'>A photo ID</li> <li style='font-size: 16px; text-align: left; line-height: 22px; margin-bottom: 10px;'>Your mobile device with the Pynwheel Tour app installed.</li></ul><div style='font-size: 18px;text-align:center'><br>#{community.email_text.gsub("\n", "<br>").html_safe rescue ""}<br><br>Please download Pynwheel Tour app before you arrive: <br>iPhone Users: <a href=#{@app_link} target='_blank'>Download Pynwheel Tour from the App Store</a><br>Android Users: <a href=#{@app_link} target='_blank'>Download Pynwheel Tour from Google Play</a><br></div><br/>"
           end
         end
       community_text = (Company.find community.company_id).name.downcase == "lincoln" ? "Lincoln Property Company Pynwheel Tour" : "Pynwheel Tour"
+      
       if previous_tour[:tour_date].present? && previous_tour[:tour_time].present?
         previous_text = "instead of <b>#{previous_tour[:tour_date].strftime("%A, %b %-d, %Y")}</b> <br/> at <b>#{ Time.parse(previous_tour[:tour_time].to_s).strftime("%-I:%M %P")}</b>."
       end
 
       web_notification = (property_tour_type == "scheduled_tour" && is_rescheduled) ? "<div style='vertical-align:middle; text-align:center;'><img style='#{logo_style}' align='center' border='0' width='200' src='#{community.logo_for_email}' data-title='#{community.name}' /><br/><p class='mt-10' style='text-align: center; font-size: 16px; margin-bottom: 10px; line-height: 22px; font-family: arial, helvetica, sans-serif;'>Thank you, <b>#{tu.name}</b> Your reservation is rescheduled. We look forward to having you at <b>#{community.name if community.present?}</b> on <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b> #{previous_text} Please keep an eye out for texts and emails with further instructions.</p><p style='text-align: center; font-size: 16px; margin-bottom: 10px; line-height: 22px; font-family: arial, helvetica, sans-serif;'><b>Please download the Pynwheel Tour app before you arrive:</b></p></div>" : 
+      
       if property_tour_type == "unscheduled_self_tour"
         "<div style='vertical-align:middle; text-align:center;'><img style='#{logo_style}' align='center' border='0' width='200' src='#{community.logo_for_email}' data-title='#{community.name}' /><br/><p class='mt-10' style='text-align: center; font-size: 16px; margin-bottom: 10px; line-height: 22px; font-family: arial, helvetica, sans-serif;'> Thank you, <b>#{tu.name}</b> We look forward to having you at <b>#{community.name if community.present?}!</b> Our visiting hours are:</p><p style='text-align: center; font-size: 16px; margin-bottom: 10px; line-height: 22px;font-family: arial, helvetica, sans-serif !important; padding-right: 8%;padding-left: 5%'>#{slot_str}</p><p style='text-align: center; font-size: 16px; margin-bottom: 10px; line-height: 22px;font-family: arial, helvetica, sans-serif !important;'>When you go to the property, you will need a <b>photo ID</b> and a <b>mobile device</b> with the Pynwheel Tour app.</p></div><div style='text-align: center; font-size: 16px; margin-bottom: 10px; line-height: 22px;font-family: arial, helvetica, sans-serif !important;'><b>Please download the Pynwheel Tour app before you arrive:</b></p></div>"
       elsif property_tour_type == "remote_tour"
@@ -530,6 +531,7 @@ class SchedualToursController < ApplicationController
       else
         "<div style='vertical-align:middle; text-align:center'><img style='#{logo_style}' align='center' border='0' width='200' src='#{community.logo_for_email}' data-title='#{community.name}' /><br/><p class='mt-10' style='text-align: center; font-size: 16px; margin-bottom: 10px; line-height: 22px; font-family: arial, helvetica, sans-serif;'> Thank you, <b>#{tu.name}</b> Your reservation is confirmed. We look forward to having you at <b>#{community.name if community.present?}</b> on <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> <br/>at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b>. Please keep an eye out for texts and emails with further instructions. </p><p style='text-align: center; font-size: 16px; margin-bottom: 10px; line-height: 22px; font-family: arial, helvetica, sans-serif;'><b>Please download the Pynwheel Tour app before you arrive:</b></p></div>"
       end 
+
       confirmation_page_link = "#{root_url}scheduler_widget/confirmation_instructions?community_id=#{community.id}&schedual_tour=#{schedual_tour.id}&reschedule=#{is_rescheduled}"
       
       if previous_tour[:tour_date].present? && previous_tour[:tour_time].present?
@@ -542,7 +544,7 @@ class SchedualToursController < ApplicationController
       - A photo ID 
       - Your mobile device with the #{community_text} app installed#{"\n"}
 #{community.email_text}#{"\n"}
-#{"\n"}#{"\n"}Use this link to download #{community_text}: #{one_link}#{"\n"}#{"\n"}
+#{"\n"}#{"\n"}Use this link to download #{community_text}: #{@app_link}#{"\n"}#{"\n"}
 #{community.email_text}#{"\n"}
 Get information about your tour here: #{confirmation_page_link}" :
 
@@ -552,12 +554,12 @@ Get information about your tour here: #{confirmation_page_link}" :
             - A photo ID
             - Your mobile device with the #{community_text} app installed#{"\n"}
 #{community.email_text}#{"\n"}
-#{"\n"}#{"\n"}Use this link to download #{community_text}: #{one_link}#{"\n"}#{"\n"}
+#{"\n"}#{"\n"}Use this link to download #{community_text}: #{@app_link}#{"\n"}#{"\n"}
 Get information about your tour here: #{confirmation_page_link}"
       elsif property_tour_type == "remote_tour"
         "Thank you for choosing to tour #{community.name if community.present?} remotely! You can visit at any time from the comfort of your own home using our mobile app.#{"\n"}
 #{community.email_text}#{"\n"}
-#{"\n"}#{"\n"}Use this link to download #{community_text}: #{one_link}#{"\n"}#{"\n"}
+#{"\n"}#{"\n"}Use this link to download #{community_text}: #{@app_link}#{"\n"}#{"\n"}
 Get information about your tour here: #{confirmation_page_link}"
 
       else
@@ -565,7 +567,7 @@ Get information about your tour here: #{confirmation_page_link}"
         - A photo ID
         - Your mobile device with the #{community_text} app installed#{"\n"}
 #{community.email_text}#{"\n"}
-#{"\n"}#{"\n"}Use this link to download #{community_text}: #{one_link}#{"\n"}#{"\n"}
+#{"\n"}#{"\n"}Use this link to download #{community_text}: #{@app_link}#{"\n"}#{"\n"}
 Get information about your tour here: #{confirmation_page_link}"
       end
 
