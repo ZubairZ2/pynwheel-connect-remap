@@ -5,7 +5,6 @@
     %meta{:content => "width=device-width, initial-scale=1.0", :name => "viewport"}/
     %meta{:content => "IE=edge,chrome=1", "http-equiv" => "X-UA-Compatible"}/
     %meta{:content => "telephone=no", :name => "format-detection"}/
-    / disable auto telephone linking in iOS
     %title Welcome
     :css
       body,#bodyTable,#bodyCell,#bodyCell{
@@ -340,28 +339,28 @@
                           %tr
                             %td
                               %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
-                                %p Congratulations! Your production application for <strong> #{@community.name} </strong> is completed. Here’s what you need to do next: 
+                                %p Congratulations! Production is complete for your Pynwheel Applications: Pynwheel Tour and Pynwheel Maps! Here’s what you need to do next: 
 
                           %tr
                             %td
                               %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
-                                %p 1. Add your Pynwheel interactive property map to your website. Send this link to your webmaster to link to it from the menu on your website: </br /> #{root_url}communities/#{@community.id}/webpages
+                                %p <strong>1. Schedule Your Orientation</strong><br /><a href="https://calendly.com/johnbhall/community-orientation"> Click here </a> to schedule an orientation. This is a very helpful session and everyone is welcome to attend!
 
                           %tr
                             %td
                               %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
-                                %p 2. Download Pynwheel Tour <br /> Download the Pynwheel Tour app from the Apple app store or Google Play to check it out! <br /> <a href="https://play.google.com/store/apps/details?id=com.pynwheel.selftour&hl=en&gl=US"> Google Play </a> <br /> <a href="https://apps.apple.com/us/app/self-tour/id1488907392"> App Store </a>
+                                %p <strong>2. Add your Pynwheel interactive property map to your website.</strong><br />Send this codelink to your webmaster to add your interactive map to your link to it from the menu on your website:<br /><br /><strong>Code:</strong><br /><textarea rows="6" cols="65" style="border: 1px solid #ccc; padding: 10px;"> #{@community.map_embed_code} </textarea> <br /><br /><strong>Link:</strong><br /><textarea rows="1" cols="65" style="border: 1px solid #ccc; padding: 10px;"> #{@community.map_link} </textarea>
 
                           %tr
                             %td
                               %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
-                                %p 3. Pynwheel Connect <br /> Please let us know the emails of additional people who should have access to Pynwheel Connect. This is our user friendly dashboard that simplifies managing all of your content and Pynwheel apps. Log in at pynwheel.com. 
+                                %p <strong>3. Download Pynwheel Tour</strong><br />Download the Pynwheel Tour app from the Apple app store or Google Play to check it out! <br /> <a href="https://play.google.com/store/apps/details?id=com.pynwheel.selftour&hl=en&gl=US"> Google Play </a> <br /> <a href="https://apps.apple.com/us/app/self-tour/id1488907392"> App Store </a>
 
                           %tr
                             %td
                               %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
-                                %p 4. Schedule Orientation <br /> Our team will be in touch with the property manager shortly to schedule your staff orientation. This is very helpful session and everyone is welcome to attend! If you want to get ahead of it, email support@pynwheel.com to get it scheduled. 
-                          
+                                %p <strong>4. Pynwheel Connect</strong><br />Please let us know the emails of additional people who should have access to Pynwheel Connect. This is our user friendly dashboard that simplifies managing all of your content and Pynwheel apps. Log in at pynwheel.com. 
+
                           %tr
                             %td
                               %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
@@ -375,7 +374,7 @@
                           %tr
                             %td
                               %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
-                                %p P.S. If you ever need anything, please email us at support@pynwheel.com. We're here to help.
+                                %p P.S. If you ever need anything, please email us at <a href="mailto:support@pynwheel.com">support@pynwheel.com</a>. We're here to help.
 
                             %tr
                               %td
