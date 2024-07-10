@@ -55,7 +55,7 @@
             %i.fa.fa-cog
             %span Settings
             
-      - if current_community.show_design_tab(current_user)
+      - if current_user.is_super_admin?
         %li.loader_class{:class=>"#{controller_name =='design' && params[:action] != 'logo' && params[:action] != 'secondary_logo' && params[:action] !='map_marker_design' ? 'active' : ''}"}
           = link_to community_design_index_path(current_community) do
             %i.fa.fa-tv

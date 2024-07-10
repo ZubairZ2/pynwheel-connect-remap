@@ -2064,16 +2064,8 @@ class Community < ApplicationRecord
     locks.compact.uniq
   end
 
-  def show_design_tab user
-    user.is_super_admin? && touch_or_map_enabled?
-  end
-
-  def touch_or_map_enabled?
-    (pynwheel_touch_enabled? || pynwheel_map_enabled?)
-  end
-
-  def only_map_products?
-    touch_or_map_enabled? && !pynwheel_tour_enabled?
+  def pynwheel_map_enabled?
+    !pynwheel_tour_enabled? && !pynwheel_touch_enabled?
   end
 
   def pynwheel_tour_enabled?
@@ -2082,13 +2074,6 @@ class Community < ApplicationRecord
 
   def pynwheel_touch_enabled?
     self.touchscreen_app
-  end
-
-  def pynwheel_map_enabled?
-    return false unless self.product_options.present?
-    
-    options = JSON.parse(self.product_options)
-    options["product_options"]["pynwheel_maps"]
   end
 
   private

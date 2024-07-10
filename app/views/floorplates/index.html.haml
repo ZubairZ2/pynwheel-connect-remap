@@ -12,7 +12,6 @@
       = render :partial=>'floorplates'
     - else
       .row
-        / Start Panel left Side
         .col-lg-12.col-md-12
           .box.box-info.add-plan.mt-10
             .box-header
@@ -20,57 +19,57 @@
                 INTERACTIVE MAP (High Rise / Mid Rise)
           .row
             .col-md-12
-                .box.box-widget.panel-box.add-plan.pt-30
-                  = form_tag community_save_apartment_settings_path(@community) ,{:class => 'apartment-settings-form'} do
-                    = hidden_field_tag "community_id", @community.id
-                    - unless @community.only_map_products?
-                      .form-group
-                        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                          Page Name
-                          %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "floorplatePageNamePopover","data-content" => " "}
-                            %span#propertyDetailNameText
-                              Changing the Page Name will change the menu label for the interactive map and dynamic floor plan gallery page in the Pynwheel app.
-                        .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                          = text_field_tag :apartment_page_name, @community.apartment_page_name, :class=>"form-control apartment-setting-field"
+              .box.box-widget.panel-box.add-plan.pt-30
+                = form_tag community_save_apartment_settings_path(@community) ,{:class => 'apartment-settings-form'} do
+                  = hidden_field_tag "community_id", @community.id
+                  - if @community.pynwheel_touch_enabled?
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                        Page Name
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "floorplatePageNamePopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            Changing the Page Name will change the menu label for the interactive map and dynamic floor plan gallery page in the Pynwheel app.
+                      .col-sm-12.col-lg-6.col-md-6.col-xs-12
+                        = text_field_tag :apartment_page_name, @community.apartment_page_name, :class=>"form-control apartment-setting-field"
 
-                      .form-group
-                        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                          Show property map page
-                          %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "floorplateShowPropertyMapPagePopover","data-content" => " "}
-                            %span#propertyDetailNameText
-                              Switching this will change whether or not this page appears in the Pynwheel app.
-                        .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                          .TriSea-technologies-Switch
-                            %span.pr-15 No
-                            = check_box_tag :display_sitemap, true, @community.display_sitemap, class: "apartment-setting-field"
-                            %label.label-primary{:for => "display_sitemap"}
-                            %span.pl-15 Yes
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                        Show property map page
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "floorplateShowPropertyMapPagePopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            Switching this will change whether or not this page appears in the Pynwheel app.
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .TriSea-technologies-Switch
+                          %span.pr-15 No
+                          = check_box_tag :display_sitemap, true, @community.display_sitemap, class: "apartment-setting-field"
+                          %label.label-primary{:for => "display_sitemap"}
+                          %span.pl-15 Yes
 
-                      .form-group
-                        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                          Display floor plan gallery
-                          %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "floorplateDisplayFloorplanGalleryPopover","data-content" => " "}
-                            %span#propertyDetailNameText
-                              Switching display floor plan gallery will change whether or not the dynamic floor plan gallery appears in the app.
-                        .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                          .TriSea-technologies-Switch
-                            %span.pr-15 No
-                            = check_box_tag :display_floorplan_gallery, true, @community.display_floorplan_gallery, class: "apartment-setting-field"
-                            %label.label-primary{:for => "display_floorplan_gallery"}
-                            %span.pl-15 Yes
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                        Display floor plan gallery
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "floorplateDisplayFloorplanGalleryPopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            Switching display floor plan gallery will change whether or not the dynamic floor plan gallery appears in the app.
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .TriSea-technologies-Switch
+                          %span.pr-15 No
+                          = check_box_tag :display_floorplan_gallery, true, @community.display_floorplan_gallery, class: "apartment-setting-field"
+                          %label.label-primary{:for => "display_floorplan_gallery"}
+                          %span.pl-15 Yes
 
-                      .form-group
-                        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                          Display on home page
-                          %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "floorplateDisplayOnHomepagePopover","data-content" => " "}
-                            %span#propertyDetailNameText
-                              Switching this will change whether or not there is a menu button for this page on the home page of the Pynwheel app.
-                        .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                          .TriSea-technologies-Switch
-                            %span.pr-15 No
-                            = check_box_tag :display_unit_on_homepage, true, @community.display_unit_on_homepage, class: "apartment-setting"
-                            %label.label-primary{:for => "display_unit_on_homepage"}
-                            %span.pl-15 Yes
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                        Display on home page
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "floorplateDisplayOnHomepagePopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            Switching this will change whether or not there is a menu button for this page on the home page of the Pynwheel app.
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .TriSea-technologies-Switch
+                          %span.pr-15 No
+                          = check_box_tag :display_unit_on_homepage, true, @community.display_unit_on_homepage, class: "apartment-setting"
+                          %label.label-primary{:for => "display_unit_on_homepage"}
+                          %span.pl-15 Yes
 
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
@@ -156,10 +155,64 @@
                       .col-sm-12.col-lg-6.col-md-6.col-xs-12
                         = text_field_tag :show_amenity_key_text, @community.show_amenity_key_text, :class=>"form-control apartment-setting-field"
 
+                  - elsif (@community.pynwheel_map_enabled? || @community.pynwheel_tour_enabled?)
                     .form-group
-                      .col-lg-12.col-md-12
-                        %button.btn-primary.done_btn.mb-20{:onclick => "floorplate_goBack()"}
-                          DONE
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                        Display Price
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "floorplateDisplaPricePopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            Switching this will change whether or not pricing is displayed on the interactive property map and in the floor plan gallery.
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .TriSea-technologies-Switch
+                          %span.pr-15 No
+                          = check_box_tag :display_rent, true, @community.display_rent, class: "apartment-setting-field"
+                          %label.label-primary{:for => "display_rent"}
+                          %span.pl-15 Yes
+                    
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                        Display Pricing Options (Matrix)
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "floorplateDisplaPricePopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            Switching this will change whether or not pricing options is displayed on all products (Pynwheel Touch Map, Pynwheel Tour pricing, and Pynwheel Map).
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .TriSea-technologies-Switch
+                          %span.pr-15 No
+                          = check_box_tag :display_pricing_options, true, @community.display_pricing_options, class: "apartment-setting-field"
+                          %label.label-primary{:for => "display_pricing_options"}
+                          %span.pl-15 Yes
+
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                        Display Building Number
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "floorplateDisplayBuildingPopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            Switching this will change whether or not building number is displayed on all products (Pynwheel Touch Map, Pynwheel Tour pricing, and Pynwheel Map).
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .TriSea-technologies-Switch
+                          %span.pr-15 No
+                          = check_box_tag :display_building, true, @community.display_building, class: "apartment-setting-field"
+                          %label.label-primary{:for => "display_building"}
+                          %span.pl-15 Yes
+
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                        Display Available date
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            Switching this will change whether or not available date is displayed on the interactive property map and in the floor plan gallery.
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .TriSea-technologies-Switch
+                          %span.pr-15 No
+                          = check_box_tag :display_available_date, true, @community.display_available_date, class: "apartment-setting-field"
+                          %label.label-primary{:for => "display_available_date"}
+                          %span.pl-15 Yes
+                  
+                  .form-group
+                    .col-lg-12.col-md-12
+                      %button.btn-success.done_btn.mb-20{:onclick => "floorplate_goBack()"}
+                        DONE
+
                     = submit_tag 'Save', class: "hidden"
 
             .col-md-6
