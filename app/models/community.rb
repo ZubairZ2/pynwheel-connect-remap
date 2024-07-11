@@ -40,7 +40,7 @@ class Community < ApplicationRecord
   has_many :doors, dependent: :destroy
   has_many :access_points, -> { where("attached_with_type = 'Floorplate' OR attached_with_type = 'Sitemap'") }, class_name: 'Door', dependent: :destroy
   has_many :other_locks, dependent: :destroy
-
+  has_many :map_partners, dependent: :destroy
 
   has_one :credential, dependent: :destroy
   has_one :crm_credential, dependent: :destroy
@@ -1433,9 +1433,9 @@ class Community < ApplicationRecord
   def make_address
     address = ""
     address = self.address if self.address.present?
-    address = (address.present? ? ( address + " , " + self.city ) : ( self.city )) if self.city.present?
-    address = (address.present? ? ( address + " , " + self.state ) : ( self.state )) if self.state.present?
-    address = (address.present? ? ( address + " , " + self.zip ) : ( self.zip )) if self.zip.present?
+    address = (address.present? ? ( address + ", " + self.city ) : ( self.city )) if self.city.present?
+    address = (address.present? ? ( address + ", " + self.state ) : ( self.state )) if self.state.present?
+    address = (address.present? ? ( address + ", " + self.zip ) : ( self.zip )) if self.zip.present?
     
     if address.present?
       return address
@@ -2062,6 +2062,25 @@ class Community < ApplicationRecord
     locks << get_lock_info_object(self.edge_state, styling_start, styling_end)
     locks << get_manual_lock_info_object(styling_start, styling_end)
     locks.compact.uniq
+  end
+
+  def map_embed_code
+    <<-HTML.strip.gsub(/\n\s*/, "")
+      <embed onload='window.parent.$("body").animate({scrollTop:0}, "slow");' 
+        style='margin-top: 0px; overflow:scroll;' 
+        src='#{map_link}' 
+        width='100%' 
+        height='750px' />
+      <script type='text/javascript'>
+        $(window).on("orientationchange", function(event) {
+          window.location.reload();
+        });
+      </script>
+    HTML
+  end
+
+  def map_link
+    "#{ENV['HOST_URL']}/communities/#{self.id}/webpages"
   end
 
   private
