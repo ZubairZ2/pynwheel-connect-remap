@@ -2064,6 +2064,25 @@ class Community < ApplicationRecord
     locks.compact.uniq
   end
 
+  def map_embed_code
+    <<-HTML.strip.gsub(/\n\s*/, "")
+      <embed onload='window.parent.$("body").animate({scrollTop:0}, "slow");' 
+        style='margin-top: 0px; overflow:scroll;' 
+        src='#{map_link}' 
+        width='100%' 
+        height='750px' />
+      <script type='text/javascript'>
+        $(window).on("orientationchange", function(event) {
+          window.location.reload();
+        });
+      </script>
+    HTML
+  end
+
+  def map_link
+    "#{ENV['HOST_URL']}/communities/#{self.id}/webpages"
+  end
+
   private
 
   def get_lock_info_object lock_object, styling_start, styling_end
@@ -2087,13 +2106,10 @@ class Community < ApplicationRecord
       lock_type: "Manual",
       lock_description: "",
       lock_long_description: "",
-      # lock_description: "When you are at the door, For access enter manual door code.",
-      # lock_long_description: styling_start + "When you are at the door, For access enter manual door code." + styling_end,
       lock_image: ""
     }
   end
 
-    #return_time_slots("0:00", "01:00", 15)
   def return_time_slots(opening_time, closing_time, steps)
     slots = []
     start_minute = opening_time
