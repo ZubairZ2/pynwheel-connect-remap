@@ -51,12 +51,13 @@ class WebpagesController < ActionController::Base
   end
 
   def normalize_amenities
-    @amenities.each do |amenity|
+    @amenities&.each do |amenity|
       struct = {
         id: amenity.id,
         floor: amenity.floor,
         floorplate_id: amenity.amenityable_id
       }
+
       @amenities_data << struct
     end
   end

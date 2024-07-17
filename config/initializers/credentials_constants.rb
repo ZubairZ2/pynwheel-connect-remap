@@ -15,4 +15,11 @@ REALPAGE_INSERT_FOLLOW_UP_ACTION = 'http://tempuri.org/IRPXService/insertfollowu
 REALPAGE_MATRIX_ACTION = 'http://tempuri.org/IRPXService/getrentmatrix'
 REALPAGE_PRICE_ACTION = 'http://tempuri.org/IRPXService/getunitlist'
 REALPAGE_BUILDING_ACTION = 'http://tempuri.org/IRPXService/getpicklist'
+
 YARDI_LICENSE_KEY= ENV["YARDI_LICENSE_KEY"]
+
+# New additions
+SOAP_ACTION_BASE_URL = 'http://tempuri.org/IRPXService/'
+RP_TOUCH_AND_MAP_API_URL = "https://gateway.rpx.realpage.com/RPXGateway/partner/Pynwheel/Pynwheel.svc"
+RP_TOUR_API_URL = "https://gateway.rpx.realpage.com/RPXGateway/partner/PynwheelSelfTour-OneSite/PynwheelSelfTour-OneSite.svc"
+

@@ -41,51 +41,7 @@ class CredentialsValid < BaseService
         return false
       end
     elsif community.data_provider == "realpagesvc"
-      begin
-        url = REALPAGE_URL
-        soap_action = REALPAGE_FLOORPLAN_ACTION
-        pmc_id = credentials.pmc_id
-        site_id = credentials.site_id.split(',')[0]
-        username = REALPAGESVC_USERNAME
-        password = REALPAGESVC_PASSWORD
-        license_key = REALPAGESVC_LICENSE_KEY
-        community_id = credentials.community_id
-        response = HTTParty.post(
-            url,
-            :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
-            :body => '<soapenv:Envelope
-                      xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                      xmlns:tem="http://tempuri.org/"
-                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                      xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-                      <soapenv:Header/>
-                      <soapenv:Body>
-
-                        <tem:getfloorplanlist>
-                          <tem:auth>
-                            <tem:pmcid>'+pmc_id+'</tem:pmcid>
-                            <tem:siteid>'+site_id+'</tem:siteid>
-                            <tem:username>'+username+'</tem:username>
-                            <tem:password>'+password+'</tem:password>
-                            <tem:licensekey>'+license_key+'</tem:licensekey>
-                            <tem:system>OneSite</tem:system>
-                          </tem:auth>
-                        </tem:getfloorplanlist>
-
-                      </soapenv:Body>
-                    </soapenv:Envelope>')
-
-        #result = Hash.from_xml(response.body) #That method was taking too much memory on heroku
-        result = Ox.load(response.body, mode: :hash)
-        if result[:"s:Envelope"][1][:"s:Body"][1].present?
-          return true
-        else
-          return false
-        end
-      rescue => e
-        return false
-        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
-      end
+      verify_rp_credentials(community, credentials)
     elsif community.data_provider == "resman"
       begin
         account_id = credentials.resman_account_id
@@ -257,6 +213,19 @@ class CredentialsValid < BaseService
   end
 
   private
+
+    def verify_rp_credentials community, credentials
+      begin
+        site_id = credentials.site_id.split(',')[0]
+        rp_service = DataProviders::RealPage::V1ApisService.new(community.id)
+        response = rp_service.fetch_units_data(site_id)
+        
+        return response.success?
+
+      rescue => e
+        return false
+      end
+    end
 
     def verify_rent_manager_credentials community, credentials
       begin

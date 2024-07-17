@@ -4,11 +4,7 @@ module DataProviders
       class TestConnectionService < DataProviders::RealPage::V1::BaseService
         def perform
           begin
-            property_code = @credential&.p_code&.split(",")[0] rescue ""
-            property_code = property_code&.strip
-
-            DataProviders::RealPage::V1ApisService.new(@community_id).get_apartment_availability(property_code) if property_code.present?
-            
+            DataProviders::RealPage::V1ApisService.new(@community.id).fetch_units_data(@site_ids[0])
           rescue
             false
           end

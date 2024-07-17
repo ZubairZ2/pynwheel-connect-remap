@@ -2,49 +2,29 @@ class RealPageSvcStaticService < BaseService
   def perform
     @array_of_units = []
     @apply_now_base_url = get_availability_base_url(credentials.community_id)
-    import_realpage_svc_floorplans
-    import_initial_realpage_units
+    
+    community = Community.find credentials.community_id
+    
+    if community.all_apps_enabled? || community.pynwheel_tour_enabled?
+      import_realpage_svc_floorplans
+      import_initial_realpage_units
+    else
+      import_new_realpage_svc_floorplans
+      import_new_initial_realpage_units
+    end
+
     import_realpage_svc_units
     import_realpage_svc_price
   end
 
+  # For Pynwheel Tour Package
   def import_realpage_svc_floorplans
     site_ids = credentials.site_id.split(',').map(&:strip) rescue []
     site_ids.each do |site_id|
       begin
-        url = REALPAGE_URL
-        soap_action = REALPAGE_FLOORPLAN_ACTION
-        pmc_id = credentials.pmc_id
         site_id = site_id&.strip
-        username = REALPAGESVC_USERNAME
-        password = REALPAGESVC_PASSWORD
-        license_key = REALPAGESVC_LICENSE_KEY
         community_id = credentials.community_id
-
-        response = HTTParty.post(
-            url,
-            :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
-            :body => '<soapenv:Envelope
-                    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                    xmlns:tem="http://tempuri.org/"
-                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-                    <soapenv:Header/>
-                    <soapenv:Body>
-                      <tem:getfloorplanlist>
-                        <tem:auth>
-                          <tem:pmcid>'+pmc_id+'</tem:pmcid>
-                          <tem:siteid>'+site_id+'</tem:siteid>
-                          <tem:username>'+username+'</tem:username>
-                          <tem:password>'+password+'</tem:password>
-                          <tem:licensekey>'+license_key+'</tem:licensekey>
-                          <tem:system>OneSite</tem:system>
-                        </tem:auth>
-                      </tem:getfloorplanlist>
-                    </soapenv:Body>
-                  </soapenv:Envelope>')
-
-        #result = Hash.from_xml(response.body) #That method was taking too much memory on heroku
+        response = DataProviders::RealPage::V1ApisService.new(community_id).fetch_floorplans_data(site_id)
         result = Ox.load(response.body, mode: :hash)
 
         if result[:"s:Envelope"][1][:"s:Body"][1].present?
@@ -89,10 +69,12 @@ class RealPageSvcStaticService < BaseService
           end
         end
       rescue => e
-        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
+        raise e
       end
     end
   end
+
+  # For Pynwheel Tour Package
   def import_initial_realpage_units
     #building_result = realpage_building #Ignore it for now
     site_ids = credentials.site_id.split(',').map(&:strip) rescue []
@@ -101,38 +83,11 @@ class RealPageSvcStaticService < BaseService
         @array_of_dates = [{ready_date: Date.today,units: []}]
         current_date = Date.today
 
-        url = REALPAGE_URL
-        soap_action = REALPAGE_UNIT_ACTION
-        pmc_id = credentials.pmc_id
         site_id = site_id&.strip
-        username = REALPAGESVC_USERNAME
-        password = REALPAGESVC_PASSWORD
-        license_key = REALPAGESVC_LICENSE_KEY
         community_id = credentials.community_id
-        response = HTTParty.post(
-            url,
-            :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
-            :body => '<soapenv:Envelope
-                        xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                        xmlns:tem="http://tempuri.org/"
-                        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                        xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-                        <soapenv:Header/>
-                        <soapenv:Body>
-                          <tem:getunitsbyproperty>
-                            <tem:auth>
-                              <tem:pmcid>'+pmc_id+'</tem:pmcid>
-                              <tem:siteid>'+site_id+'</tem:siteid>
-                              <tem:username>'+username+'</tem:username>
-                              <tem:password>'+password+'</tem:password>
-                              <tem:licensekey>'+license_key+'</tem:licensekey>
-                              <tem:system>OneSite</tem:system>
-                            </tem:auth>
-                          </tem:getunitsbyproperty>
-                        </soapenv:Body>
-                      </soapenv:Envelope>
-          ')
+        response = DataProviders::RealPage::V1ApisService.new(community_id).fetch_units_data(site_id)
         result = Ox.load(response.body, mode: :hash)
+
         if result[:"s:Envelope"][1][:"s:Body"][1].present?
           units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitsbypropertyResponse][1][:getunitsbypropertyResult][:GetUnitsByProperty]
           units.each do |u|
@@ -237,6 +192,212 @@ class RealPageSvcStaticService < BaseService
                 unit.manually_updated = false
                 unit.save(validate: false)
                 #puts "++++++++++++++++++++++///////// ", unit.errors.message.join(',')
+              end
+            end
+          end
+          begin
+            cred = Credential.find credentials.id
+            cred.data_error_message = nil
+            cred.save
+          rescue => err
+          end
+        else
+          begin
+            cred = Credential.find credentials.id
+            cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
+            cred.save
+          rescue => err
+          end
+        end
+
+      rescue => e
+        begin
+          cred = Credential.find credentials.id
+          cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
+          cred.save
+        rescue => err
+        end
+        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
+      end
+    end
+  end
+  
+  # For Pynwheel Touch and Map Package
+  def import_new_realpage_svc_floorplans
+    site_ids = credentials.site_id.split(',').map(&:strip) rescue []
+    site_ids.each do |site_id|
+      begin
+        site_id = site_id&.strip
+        community_id = credentials.community_id
+        response = DataProviders::RealPage::V1ApisService.new(community_id).fetch_floorplans_data(site_id)
+        result = Ox.load(response.body, mode: :hash)
+
+        if result[:"s:Envelope"][1][:"s:Body"][1].present?
+          floorplans = result[:"s:Envelope"][1][:"s:Body"][1][:getfloorplansResponse][1][:getfloorplansResult][:FloorPlans]
+          
+          floorplans.each do |fp|
+            if fp.key?(:FloorPlan)
+              fp = fp[:FloorPlan]
+
+              provider_floorplan_id = "#{fp[:FpID]}-#{site_id.to_s}"
+              floorplan = Floorplan.where(provider: "realpagesvc", community_id: community_id, provider_floorplan_id: provider_floorplan_id).first_or_initialize
+
+              unless floorplan.name_is_updated.present? && floorplan.name_is_updated
+                if fp[:FpName].present?
+                  floorplan.name = fp[:FpName]
+                elsif fp[:Code].present?
+                  if fp[:Code] != fp[:FpName]
+                    floorplan.name = fp[:Code] + " - " + fp[:FpName]
+                  else
+                    floorplan.name = fp[:Code] + " - " + fp[:FpNameMarketing]
+                  end
+                else
+                  floorplan.name = fp[:FpNameMarketing]
+                end
+              end
+
+              unless floorplan.bathroom_is_updated.present? && floorplan.bathroom_is_updated
+                floorplan.bathrooms = fp[:Bath]
+              end
+
+              unless floorplan.bedroom_is_updated.present? && floorplan.bedroom_is_updated
+                floorplan.bedrooms = fp[:Bed]
+              end
+
+              unless floorplan.square_feet_is_updated.present? && floorplan.square_feet_is_updated
+                floorplan.square_feet = fp[:GrossSqFt]
+              end
+
+              unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated
+                floorplan.market_rent = fp[:FpMarketRent]
+              end
+
+              floorplan.save(:validate => false)
+
+            end
+          end
+        end
+      rescue => e
+        raise e
+      end
+    end
+  end
+
+  # For Pynwheel Touch and Map Package
+  def import_new_initial_realpage_units
+    #building_result = realpage_building #Ignore it for now
+    site_ids = credentials.site_id.split(',').map(&:strip) rescue []
+    site_ids.each do |site_id|
+      begin
+        @array_of_dates = [{ready_date: Date.today,units: []}]
+        current_date = Date.today
+
+        site_id = site_id&.strip
+        community_id = credentials.community_id
+        response = DataProviders::RealPage::V1ApisService.new(community_id).fetch_units_data(site_id)
+        result = Ox.load(response.body, mode: :hash)
+
+        if result[:"s:Envelope"][1][:"s:Body"][1].present?
+          units = result[:"s:Envelope"][1][:"s:Body"][1][:unitlistResponse][1][:unitlistResult][:UnitList]
+          units.each do |u|
+            if u.key?(:Unit)
+              u = u[:Unit]
+              hit = false
+              provider_unit_id = "#{u[:UnitID]}-#{site_id.to_s}"
+              
+              unit = Unit.where(provider: "realpagesvc",community_id: community_id, provider_unit_id: provider_unit_id).first_or_initialize
+
+              unless unit.manual_override
+                unit.property_id = site_id
+                unit.provider_unit_id = provider_unit_id
+                unit.unit_type = u[:UnitNumber]
+
+                #It should be MadeReadyBit
+                if u[:Vacant] == "T"
+                  unit.unit_status = "Unoccupied"
+                else
+                  unit.unit_status = "Occupied"
+                end
+
+                if u[:BuildingNumber].present?
+                  unit.building = u[:BuildingNumber] unless u[:BuildingNumber] == "N/A"
+                end
+
+                unless unit.name_is_updated.present? && unit.name_is_updated
+                  unit.marketing_name = u[:UnitNumber]
+                end
+
+                unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
+                  unit.floorplan_id = "#{u[:FloorplanID]}-#{site_id}"
+                end
+
+                unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
+                  unit.effective_rent = u[:MarketRent].to_f > 0 ? u[:MarketRent] : 1
+                end
+
+                unless unit.availability_is_updated.present? && unit.availability_is_updated && !(unit.manual_override)
+                  unit.availability = u[:Available] == "T" ? "Unoccupied" : "Occupied"
+                end
+
+                if u[:RentableSqft].present?
+                  unit.square_feet = u[:RentableSqft]
+                end
+
+                #TODO
+                unless unit.floor_is_updated.present? && unit.floor_is_updated
+                  unit.floor = u[:FloorNumber] rescue nil
+                end
+
+                unless unit.available_date_is_updated.present? && unit.available_date_is_updated
+                  if u[:AvailableDate].present?
+                    unit.available_date = u[:AvailableDate]
+                  end
+
+                  if u[:UnitMadeReadyDate].present?
+                    unit.available_date = u[:UnitMadeReadyDate]
+                  end
+
+                  if unit.available_date.year == 1900
+                    unit.available_date = ""
+                  end
+
+                  if unit.availability == "Occupied"
+                    unit.available_date = ""
+                  end
+                end
+
+                unless unit.available_is_updated.present? && unit.available_is_updated
+                  if unit.availability == "Occupied"
+                    unit.available = false
+                  else
+                    unit.available = true
+                  end
+
+                end
+
+                if unit.available_date.present?
+                  current_date = unit.available_date
+                elsif unit.available_date.present? && unit.available_date < Date.today
+                  current_date = Date.today
+                end
+
+                @array_of_dates.each do |hash|
+                  if hash[:ready_date] == current_date
+                    hash[:units] << unit.provider_unit_id
+                    hit = true
+                  end
+                end
+
+                if !hit
+                  struct = {
+                      ready_date: current_date,
+                      units: [unit.provider_unit_id]
+                  }
+                  @array_of_dates << struct
+                end
+
+                unit.manually_updated = false
+                unit.save(validate: false)
               end
             end
           end

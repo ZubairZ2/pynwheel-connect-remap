@@ -1334,23 +1334,22 @@ class Community < ApplicationRecord
     psi_pricing_connection_service = PsiPricingConnectionService.new(credential.attributes)
     psi_pricing_connection_service.perform
   end
+
   def connect_space_configuration_psi
     psi_space_configuration_connection_service = PsiSpaceConfigurationConnectionService.new(credential.attributes)
     psi_space_configuration_connection_service.perform
   end
+
   def connect_to_realpagesvc_pricing
     psi_space_configuration_connection_service = RealPageSvcPricingConnectionService.new(credential.attributes)
     psi_space_configuration_connection_service.perform
-    # if com.realpage_pricing_data.present?
-    #   return com.realpage_pricing_data
-    # end
-    # real_page_svc_pricing_connection_service = RealPageSvcPricingConnectionService.new(credential.attributes)
-    # real_page_svc_pricing_connection_service.perform
   end
+
   def connect_to_psi
     psi_connection_service = PsiConnectionService.new(credential.attributes)
     psi_connection_service.perform
   end
+
   def connect_to_resman
     resman_connection_service = ResmanConnectionService.new(credential.attributes)
     resman_connection_service.perform
@@ -1376,11 +1375,8 @@ class Community < ApplicationRecord
   end
 
   def connect_to_realpagesvc
-    real_page_svc_connection_service = RealPageSvcConnectionService.new(credential.attributes)
-    real_page_svc_connection_service.perform
-    # RealPageSvcPricingJob.perform_async credential.attributes.to_json
-    # real_page_svc_pricing_connection_service = RealPageSvcPricingConnectionService.new(credential.attributes)
-    # real_page_svc_pricing_connection_service.perform
+    rp_connection_service = DataProviders::RealPage::V1::TestConnectionService.new(self.id)
+    rp_connection_service.perform
   end
 
   def connect_to_yardi
@@ -1417,7 +1413,6 @@ class Community < ApplicationRecord
     default_galleries.each do |gallery_name|
       self.galleries.create(name: gallery_name, is_default: true)
     end
-    # self.galleries.create(name: 'default')
   end
 
   def create_sms_email_content
@@ -1425,10 +1420,6 @@ class Community < ApplicationRecord
     self.email_text = CommunityConstants::EMAIL_TEXT
     self.save
   end
-
-  # def gen_uuid
-  #   self.uuid = SecureRandom.uuid
-  # end
 
   def make_address
     address = ""
@@ -1499,7 +1490,6 @@ class Community < ApplicationRecord
   def image_src
     if sitemap.image.present?
       sitemap.image.url
-      # sitemap.image.url(:svg_for_metro).present? ? sitemap.image.url(:svg_for_metro) : sitemap.image.url
     else
       "/assets/default.jpeg"
     end
@@ -2066,6 +2056,10 @@ class Community < ApplicationRecord
 
   def pynwheel_map_enabled?
     !pynwheel_tour_enabled? && !pynwheel_touch_enabled?
+  end
+
+  def all_apps_enabled?
+    pynwheel_tour_enabled? && pynwheel_touch_enabled?
   end
 
   def pynwheel_tour_enabled?
