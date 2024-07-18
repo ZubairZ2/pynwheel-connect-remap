@@ -8,16 +8,22 @@ class RealPageInsertFollowUpService < BaseService
         site_ids = (use_crm_credentials ? community.crm_credential.realpage_site_id.split(',') : credentials.site_id.split(',')) rescue []
         site_ids.each do |site_id|
             begin
-                
-                url = REALPAGE_URL
+                community_id = credentials.community_id
+                @community = Community.find community_id
+
+                if @community.all_apps_enabled? || @community.pynwheel_tour_enabled?
+                    url = RP_TOUR_API_URL
+                    license_key = ENV['RP_TOUR_API_KEY']
+                else
+                    url = RP_TOUCH_API_URL
+                    license_key = ENV['RP_TOUCH_API_KEY']
+                end
+
                 soap_action = REALPAGE_INSERT_FOLLOW_UP_ACTION
                 username = REALPAGESVC_USERNAME
                 password = REALPAGESVC_PASSWORD
-                license_key = REALPAGESVC_LICENSE_KEY
                 pmc_id = use_crm_credentials ? community.crm_credential.realpage_pmc_id : credentials.pmc_id
            
-                community_id = credentials.community_id
-                
                 community = Community.find community_id
                 prospect = Prospect.where(tour_user_id: guest.id, community_id: community.id,  data_provider: community.data_provider).last
                 

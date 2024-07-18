@@ -3,15 +3,24 @@ class RealPageSvcPricingConnectionService < BaseService
     site_ids = credentials.site_id.split(',') rescue []
     site_id = site_ids[0]
     @array_of_units = []
-    url = REALPAGE_URL
+
+    community_id = credentials.community_id
+    @community = Community.find community_id
+
+    if @community.all_apps_enabled? || @community.pynwheel_tour_enabled?
+      url = RP_TOUR_API_URL
+      license_key = ENV['RP_TOUR_API_KEY']
+    else
+      url = RP_TOUCH_API_URL
+      license_key = ENV['RP_TOUCH_API_KEY']
+    end
+
     soap_action = REALPAGE_PRICE_ACTION
     pmc_id = credentials.pmc_id
-    #site_id = credentials.site_id
     username = REALPAGESVC_USERNAME
     password = REALPAGESVC_PASSWORD
-    license_key = REALPAGESVC_LICENSE_KEY
     date_needed = Date.today + 540
-    community_id = credentials.community_id
+
     response = HTTParty.post(
         url,
         :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
@@ -63,14 +72,23 @@ class RealPageSvcPricingConnectionService < BaseService
     end
 
     begin
-      url = REALPAGE_URL
+
+      community_id = credentials.community_id
+      @community = Community.find community_id
+
+      if @community.all_apps_enabled? || @community.pynwheel_tour_enabled?
+        url = RP_TOUR_API_URL
+        license_key = ENV['RP_TOUR_API_KEY']
+      else
+        url = RP_TOUCH_API_URL
+        license_key = ENV['RP_TOUCH_API_KEY']
+      end
+  
       soap_action = REALPAGE_MATRIX_ACTION
       pmc_id = credentials.pmc_id
       site_id = credentials.site_id.split(",")[0]
       username = REALPAGESVC_USERNAME
       password = REALPAGESVC_PASSWORD
-      license_key = REALPAGESVC_LICENSE_KEY
-      community_id = credentials.community_id
 
       date_check = Date.today
       response = HTTParty.post(

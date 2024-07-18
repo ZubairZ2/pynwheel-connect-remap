@@ -14,9 +14,9 @@ class RealPageSvcService < BaseService
   def perform
     before_updation_units = NotifyManagerService.new(@credentials.community_id)
 
-    community = Community.find credentials.community_id
+    @community = @Community.find credentials.community_id
     
-    if community.all_apps_enabled? || community.pynwheel_tour_enabled?
+    if @community.all_apps_enabled? || @community.pynwheel_tour_enabled?
       import_realpage_svc_floorplans
       # import_initials_realpage_units
     else
@@ -390,17 +390,26 @@ class RealPageSvcService < BaseService
         @array_of_dates = []
         @array_of_units = []
         current_date = Date.today
-        url = REALPAGE_URL
+
+        community_id = @credentials.community_id
+        @community = Community.find community_id
+
+        if @community.all_apps_enabled? || @community.pynwheel_tour_enabled?
+          url = RP_TOUR_API_URL
+          license_key = ENV['RP_TOUR_API_KEY']
+        else
+          url = RP_TOUCH_API_URL
+          license_key = ENV['RP_TOUCH_API_KEY']
+        end
+
         soap_action = REALPAGE_PRICE_ACTION
         pmc_id = @credentials.pmc_id
         site_id = site_id&.strip
         username = REALPAGESVC_USERNAME
         password = REALPAGESVC_PASSWORD
-        license_key = REALPAGESVC_LICENSE_KEY
         date_needed = Date.today + 540
         # limit_result = @credentials.limit_result ? "True" : "False"
         limit_result = "False"
-        community_id = @credentials.community_id
         
         response = HTTParty.post(
             url,
@@ -628,15 +637,25 @@ class RealPageSvcService < BaseService
 
     begin
       import_units = []
-      url = REALPAGE_URL
+
+      community_id = @credentials.community_id
+      @community = Community.find community_id
+
+      if @community.all_apps_enabled? || @community.pynwheel_tour_enabled?
+        url = RP_TOUR_API_URL
+        license_key = ENV['RP_TOUR_API_KEY']
+      else
+        url = RP_TOUCH_API_URL
+        license_key = ENV['RP_TOUCH_API_KEY']
+      end
+
       soap_action = 'http://tempuri.org/IRPXService/getrentmatrix'
       pmc_id = @credentials.pmc_id
       site_id = site_id&.strip
       username = REALPAGESVC_USERNAME
       password = REALPAGESVC_PASSWORD
-      license_key = REALPAGESVC_LICENSE_KEY
-      community_id = @credentials.community_id
       date_check = Date.today
+
       begin
 
         response = HTTParty.post(

@@ -3,24 +3,32 @@ class RealPageInsertActivityService < BaseService
         insert_activity(tour_user, tour_time, avail_stops_name, leasing_agent, activity_types, community)
     end
 
-    def insert_activity(guest, action_date, stops_name, leasing_agent, activity_types,community)
+    def insert_activity(guest, action_date, stops_name, leasing_agent, activity_types, community)
         use_crm_credentials = community.use_crm_credentials?
         site_ids = (use_crm_credentials ? community.crm_credential.realpage_site_id.split(',') : credentials.site_id.split(',')) rescue []
         site_ids.each do |site_id|
             begin
-                url = REALPAGE_URL
+                community_id = credentials.community_id
+                @community = Community.find community_id
+
+                if @community.all_apps_enabled? || @community.pynwheel_tour_enabled?
+                    url = RP_TOUR_API_URL
+                    license_key = ENV['RP_TOUR_API_KEY']
+                else
+                    url = RP_TOUCH_API_URL
+                    license_key = ENV['RP_TOUCH_API_KEY']
+                end
+
                 soap_action = REALPAGE_INSERT_ACTIVITY_ACTION
                 username = REALPAGESVC_USERNAME
                 password = REALPAGESVC_PASSWORD
-                license_key = REALPAGESVC_LICENSE_KEY
                 pmc_id = use_crm_credentials ? community.crm_credential.realpage_pmc_id : credentials.pmc_id
                 
-                community_id = credentials.community_id
                 property_id = credentials.property_id
                 action_date = action_date.strftime("%Y-%m-%d")
                 agent_id = leasing_agent[:Value]
-   
                 community = Community.find community_id
+
                 prospect = Prospect.where(tour_user_id: guest.id, community_id: community.id,  data_provider: community.data_provider).last
                 
                 if prospect.present?
