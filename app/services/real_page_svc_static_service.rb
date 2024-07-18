@@ -299,6 +299,7 @@ class RealPageSvcStaticService < BaseService
 
         if result[:"s:Envelope"][1][:"s:Body"][1].present?
           units = result[:"s:Envelope"][1][:"s:Body"][1][:unitlistResponse][1][:unitlistResult][:UnitList]
+          
           units.each do |u|
             if u.key?(:Unit)
               u = u[:Unit]

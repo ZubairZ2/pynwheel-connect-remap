@@ -1,50 +1,33 @@
 class RealPageSvcSwapService < BaseService
   def perform
     @apply_now_base_url = get_availability_base_url(credentials.community_id)
-    import_realpage_svc_floorplans
-    import_initial_realpage_units
+
+    community = Community.find credentials.community_id
+    
+    if community.all_apps_enabled? || community.pynwheel_tour_enabled?
+      import_realpage_svc_floorplans
+      import_initial_realpage_units
+    else
+      import_new_realpage_svc_floorplans
+      import_new_initial_realpage_units
+    end
+
     import_realpage_svc_units
     import_realpage_svc_price
     rename_provider
   end
 
+  # For Pynwheel Tour Package
   def import_realpage_svc_floorplans
     site_ids = credentials.site_id.split(',').map(&:strip) rescue []
     site_ids.each do |site_id|
       begin
-        url = REALPAGE_URL
-        soap_action = REALPAGE_FLOORPLAN_ACTION
-        pmc_id = credentials.pmc_id
-        site_id = site_id&.strip
-        username = REALPAGESVC_USERNAME
-        password = REALPAGESVC_PASSWORD
-        license_key = REALPAGESVC_LICENSE_KEY
-        community_id = credentials.community_id
-        response = HTTParty.post(
-            url,
-            :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
-            :body => '<soapenv:Envelope
-                    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                    xmlns:tem="http://tempuri.org/"
-                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-                    <soapenv:Header/>
-                    <soapenv:Body>
-                      <tem:getfloorplanlist>
-                        <tem:auth>
-                          <tem:pmcid>'+pmc_id+'</tem:pmcid>
-                          <tem:siteid>'+site_id+'</tem:siteid>
-                          <tem:username>'+username+'</tem:username>
-                          <tem:password>'+password+'</tem:password>
-                          <tem:licensekey>'+license_key+'</tem:licensekey>
-                          <tem:system>OneSite</tem:system>
-                        </tem:auth>
-                      </tem:getfloorplanlist>
-                    </soapenv:Body>
-                  </soapenv:Envelope>')
 
-        #result = Hash.from_xml(response.body) #That method was taking too much memory on heroku
+        site_id = site_id&.strip
+        community_id = credentials.community_id
+        response = DataProviders::RealPage::V1ApisService.new(community_id).fetch_floorplans_data(site_id)
         result = Ox.load(response.body, mode: :hash)
+
         if result[:"s:Envelope"][1][:"s:Body"][1].present?
           floorplans = result[:"s:Envelope"][1][:"s:Body"][1][:getfloorplanlistResponse][1][:getfloorplanlistResult][:GetFloorPlanList]
           floorplans.each do |fp|
@@ -52,12 +35,15 @@ class RealPageSvcSwapService < BaseService
             if fp.key?(:FloorPlanObject)
               fp = fp[:FloorPlanObject]
               floorplan = Floorplan.where(community_id: community_id,name: fp[:FloorPlanName])
+
               unless floorplan.present?
                 floorplan = Floorplan.where(community_id: community_id,name: fp[:FloorPlanCode] + " - " + fp[:FloorPlanName])
               end
+
               unless floorplan.present?
                 floorplan = Floorplan.where(community_id: community_id,name: fp[:FloorPlanCode] + " - " + fp[:FloorPlanNameMarketing])
               end
+
               if floorplan.count > 1
                 floorplan = Floorplan.where(community_id: community_id,name: fp[:FloorPlanName],bathrooms: fp[:Bathrooms],bathrooms: fp[:Bedrooms],square_feet: fp[:GrossSquareFootage])
                 unless floorplan.present?
@@ -67,6 +53,7 @@ class RealPageSvcSwapService < BaseService
                   floorplan = Floorplan.where(community_id: community_id,name: fp[:FloorPlanCode] + " - " + fp[:FloorPlanName],bathrooms: fp[:Bathrooms],bathrooms: fp[:Bedrooms],square_feet: fp[:GrossSquareFootage])
                 end
               end
+
               if floorplan.present?
                 floorplan = floorplan.first
                 floorplan.provider = "realpagesvc_new"
@@ -90,10 +77,11 @@ class RealPageSvcSwapService < BaseService
                 floorplan.save(:validate => false)
               else
                 dup = Floorplan.find_by(community_id: credentials.community_id, provider_floorplan_id: "#{fp[:FloorPlanID]}-#{site_id}")
+                
                 if dup.present?
                   dup.destroy
                 end
-                # floorplan = Floorplan.where(community_id: community_id).first
+
                 floorplan = Floorplan.new
                 floorplan.community_id = community_id
                 floorplan.provider_floorplan_id = "#{fp[:FloorPlanID]}-#{site_id}"
@@ -115,7 +103,6 @@ class RealPageSvcSwapService < BaseService
                 floorplan.square_feet = fp[:GrossSquareFootage]
                 floorplan.save(:validate => false)
               end
-
             end
           end
 
@@ -123,12 +110,13 @@ class RealPageSvcSwapService < BaseService
 
         end
       rescue => e
-        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
+        raise e
       end
     end
 
   end
 
+  # For Pynwheel Tour Package
   def import_initial_realpage_units
     #building_result = realpage_building #Ignore it for now
     site_ids = credentials.site_id.split(',').map(&:strip) rescue []
@@ -137,39 +125,11 @@ class RealPageSvcSwapService < BaseService
         @array_of_dates = [{ready_date: Date.today,units: []}]
         current_date = Date.today
 
-        url = REALPAGE_URL
-        soap_action = REALPAGE_UNIT_ACTION
-        pmc_id = credentials.pmc_id
-        #site_id = credentials.site_id
-        username = REALPAGESVC_USERNAME
-        password = REALPAGESVC_PASSWORD
-        license_key = REALPAGESVC_LICENSE_KEY
+        site_id = site_id&.strip
         community_id = credentials.community_id
-        community = Community.find_by_id community_id
-        response = HTTParty.post(
-            url,
-            :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
-            :body => '<soapenv:Envelope
-                        xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                        xmlns:tem="http://tempuri.org/"
-                        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                        xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-                        <soapenv:Header/>
-                        <soapenv:Body>
-                          <tem:getunitsbyproperty>
-                            <tem:auth>
-                              <tem:pmcid>'+pmc_id+'</tem:pmcid>
-                              <tem:siteid>'+site_id+'</tem:siteid>
-                              <tem:username>'+username+'</tem:username>
-                              <tem:password>'+password+'</tem:password>
-                              <tem:licensekey>'+license_key+'</tem:licensekey>
-                              <tem:system>OneSite</tem:system>
-                            </tem:auth>
-                          </tem:getunitsbyproperty>
-                        </soapenv:Body>
-                      </soapenv:Envelope>
-          ')
+        response = DataProviders::RealPage::V1ApisService.new(community_id).fetch_units_data(site_id)
         result = Ox.load(response.body, mode: :hash)
+
         if result[:"s:Envelope"][1][:"s:Body"][1].present?
           units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitsbypropertyResponse][1][:getunitsbypropertyResult][:GetUnitsByProperty]
           units.each do |u|
@@ -198,17 +158,21 @@ class RealPageSvcSwapService < BaseService
                 end
 
                 unit.floorplan_id = "#{u[:FloorplanID]}-#{site_id}"
+
                 if u[:BuildingNumber].present?
                   unit.building = u[:BuildingNumber] unless u[:BuildingNumber] == "N/A"
                 end
+
                 unit.market_rent = u[:BaseRentAmount]
                 unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount] : 1
                 unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
+
                 if u[:RentSqFtCount].present?
                   unit.square_feet = u[:RentSqFtCount]
                 end
-                # unit.floor = evaluate_floor(unit.marketing_name) rescue nil
+
                 unit.floor = u[:FloorNumber] rescue nil
+
                 if u[:AvailableDate].present?
                   unit.available_date = u[:AvailableDate]
                 end
@@ -216,10 +180,12 @@ class RealPageSvcSwapService < BaseService
                 if u[:MadeReadyDate].present?
                   unit.available_date = u[:MadeReadyDate]
                 end
+
                 if unit.available_date.year == 1900
                   unit.available_date = ""
                 end
-                if unit.availability == "Occupied" #&& unit.available_date < Date.today
+
+                if unit.availability == "Occupied"
                   unit.available_date = ""
                 end
 
@@ -243,25 +209,15 @@ class RealPageSvcSwapService < BaseService
                   }
                   @array_of_dates << struct
                 end
-
-
-                # unit.building = ""
-                # bldgResult = getBuildingNumber(u["BuildingID"],building_result)
-                # if bldgResult.present?
-                #   if bldgResult == "N/A"
-                #     unit.building = ""
-                #   else
-                #     unit.building = bldgResult
-                #   end
-                # end
+                
                 unit.save
+
               else
                 dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: "#{u[:UnitID]}-#{site_id}")
                 if dup.present?
                   dup.destroy
                 end
 
-                # unit = Unit.where(community_id: community_id).first
                 unit = Unit.new
                 unit.community_id = community_id
                 unit.provider = "realpagesvc_new"
@@ -275,16 +231,17 @@ class RealPageSvcSwapService < BaseService
                 end
                 unit.marketing_name = u[:UnitNumber]
 
-                # unit.building = u[:BuildingID]
                 unit.floorplan_id = "#{u[:FloorplanID]}-#{site_id}"
                 unit.market_rent = u[:BaseRentAmount]
                 unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount] : 1
                 unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
+                
                 if u[:RentSqFtCount].present?
                   unit.square_feet = u[:RentSqFtCount]
                 end
-                #unit.floor = evaluate_floor(unit.marketing_name) rescue nil
+
                 unit.floor = u[:FloorNumber] rescue nil
+
                 if u[:AvailableDate].present?
                   unit.available_date = u[:AvailableDate]
                 end
@@ -292,10 +249,12 @@ class RealPageSvcSwapService < BaseService
                 if u[:MadeReadyDate].present?
                   unit.available_date = u[:MadeReadyDate]
                 end
+
                 if unit.available_date.year == 1900
                   unit.available_date = ""
                 end
-                if unit.availability == "Occupied" #&& unit.available_date < Date.today
+
+                if unit.availability == "Occupied"
                   unit.available_date = ""
                 end
 
@@ -320,23 +279,317 @@ class RealPageSvcSwapService < BaseService
                   @array_of_dates << struct
                 end
 
+                unit.save
 
-                # unit.building = ""
-                # bldgResult = getBuildingNumber(u["BuildingID"],building_result)
-                # if bldgResult.present?
-                #   if bldgResult == "N/A"
-                #     unit.building = ""
-                #   else
-                #     unit.building = bldgResult
-                #   end
-                # end
+              end
+            end
+          end
+
+          unit = Unit.where(community_id: credentials.community_id)
+
+          unit.each do |d|
+            unless d.provider == "realpagesvc_new" || d.provider == "manually"
+              d.destroy
+            end
+          end
+        end
+
+      rescue => e
+        raise e
+      end
+    end
+  end
+
+  # For Pynwheel Touch and Map Package
+  def import_new_realpage_svc_floorplans
+    site_ids = credentials.site_id.split(',').map(&:strip) rescue []
+    site_ids.each do |site_id|
+      begin
+
+        site_id = site_id&.strip
+        community_id = credentials.community_id
+        response = DataProviders::RealPage::V1ApisService.new(community_id).fetch_floorplans_data(site_id)
+        result = Ox.load(response.body, mode: :hash)
+        if result[:"s:Envelope"][1][:"s:Body"][1].present?
+          floorplans = result[:"s:Envelope"][1][:"s:Body"][1][:getfloorplansResponse][1][:getfloorplansResult][:FloorPlans]
+
+          floorplans.each do |fp|
+
+            if fp.key?(:FloorPlan)
+              fp = fp[:FloorPlan]
+
+              floorplan = Floorplan.where(community_id: community_id, name: fp[:Code] + " - " + fp[:FpName])
+
+              unless floorplan.present?
+                floorplan = Floorplan.where(community_id: community_id, name: fp[:Code] + " - " + (fp[:FpNameMarketing] || ""))
+              end
+
+              # unless floorplan.present?
+              #   floorplan = Floorplan.where(community_id: community_id, name: fp[:FpName])
+              # end
+
+              if floorplan.count > 1
+                floorplan = Floorplan.where(community_id: community_id, name: fp[:FpName], bathrooms: fp[:Bath], bathrooms: fp[:Bed], square_feet: fp[:GrossSqFt])
+                
+                unless floorplan.present?
+                  floorplan = Floorplan.where(community_id: community_id, name: fp[:Code] + " - " + fp[:FpName], bathrooms: fp[:Bath], bathrooms: fp[:Bed], square_feet: fp[:GrossSqFt])
+                end
+
+                unless floorplan.present?
+                  floorplan = Floorplan.where(community_id: community_id, name: fp[:Code] + " - " + fp[:FpName], bathrooms: fp[:Bath], bathrooms: fp[:Bed], square_feet: fp[:GrossSqFt])
+                end
+              end
+
+              if floorplan.present?
+
+                floorplan = floorplan.first
+                floorplan.provider = "realpagesvc_new"
+                floorplan.provider_floorplan_id = "#{fp[:FpID]}-#{site_id}"
+
+                if fp[:FpName].present?
+                  floorplan.name = fp[:FpName]
+                elsif fp[:Code].present?
+                  if fp[:Code] != fp[:FpName]
+                    floorplan.name = fp[:Code] + " - " + fp[:FpName]
+                  else
+                    floorplan.name = fp[:Code] + " - " + (fp[:FpNameMarketing] || "")
+                  end
+                else
+                  floorplan.name = (fp[:FpNameMarketing] || "")
+                end
+
+                floorplan.bathrooms = fp[:Bath]
+                floorplan.bedrooms = fp[:Bed]
+                floorplan.market_rent = fp[:FpMarketRent]
+                floorplan.square_feet = fp[:GrossSqFt]
+                floorplan.save(:validate => false)
+
+              else
+                dup = Floorplan.find_by(community_id: credentials.community_id, provider_floorplan_id: "#{fp[:FpID]}-#{site_id}")
+
+                if dup.present?
+                  dup.destroy
+                end
+
+                floorplan = Floorplan.new
+                floorplan.community_id = community_id
+                floorplan.provider_floorplan_id = "#{fp[:FpID]}-#{site_id}"
+                floorplan.provider = "realpagesvc_new"
+
+                if fp[:FpName].present?
+                  floorplan.name = fp[:FpName]
+                elsif fp[:Code].present?
+                  if fp[:Code] != fp[:FpName]
+                    floorplan.name = fp[:Code] + " - " + fp[:FpName]
+                  else
+                    floorplan.name = fp[:Code] + " - " + (fp[:FpNameMarketing] || "")
+                  end
+                else
+                  floorplan.name = (fp[:FpNameMarketing] || "")
+                end
+
+                floorplan.bathrooms = fp[:Bath]
+                floorplan.bedrooms = fp[:Bed]
+                floorplan.market_rent = fp[:FpMarketRent]
+                floorplan.square_feet = fp[:GrossSqFt]
+
+                floorplan.save(:validate => false)
+
+              end
+            end
+          end
+
+
+
+        end
+      rescue => e
+        raise e
+      end
+    end
+
+  end
+
+  # For Pynwheel Touch and Map Package
+  def import_new_initial_realpage_units
+    #building_result = realpage_building #Ignore it for now
+    site_ids = credentials.site_id.split(',').map(&:strip) rescue []
+    site_ids.each do |site_id|
+      begin
+        @array_of_dates = [{ready_date: Date.today,units: []}]
+        current_date = Date.today
+
+        site_id = site_id&.strip
+        community_id = credentials.community_id
+        response = DataProviders::RealPage::V1ApisService.new(community_id).fetch_units_data(site_id)
+        result = Ox.load(response.body, mode: :hash)
+
+        if result[:"s:Envelope"][1][:"s:Body"][1].present?
+          units = result[:"s:Envelope"][1][:"s:Body"][1][:unitlistResponse][1][:unitlistResult][:UnitList]
+
+          units.each do |u|
+            if u.key?(:Unit)
+              u = u[:Unit]
+              hit = false
+
+              unit = Unit.where(community_id: community_id,marketing_name: u[:UnitNumber])
+             
+              unless unit.count == 1
+                unit = Unit.where(community_id: community_id, marketing_name: u[:UnitNumber], building: u[:BuildingNumber])
+              end
+
+              if unit.present?
+                unit = unit.first
+                unit.provider = "realpagesvc_new"
+                unit.provider_unit_id = "#{u[:UnitID]}-#{site_id}"
+                unit.property_id = site_id
+                unit.unit_type = u[:UnitNumber]
+                
+                if u[:Vacant] == "T"
+                  unit.unit_status = "Unoccupied"
+                else
+                  unit.unit_status = "Occupied"
+                end
+
+                unit.floorplan_id = "#{u[:FloorplanID]}-#{site_id}"
+
+                if u[:BuildingNumber].present?
+                  unit.building = u[:BuildingNumber] unless u[:BuildingNumber] == "N/A"
+                end
+
+                unit.market_rent = u[:MarketRent]
+                unit.effective_rent = u[:MarketRent].to_f > 0 ? u[:MarketRent] : 1
+                unit.availability = u[:Available] == "T" ? "Unoccupied" : "Occupied"
+
+                if u[:RentableSqft].present?
+                  unit.square_feet = u[:RentableSqft]
+                end
+
+                 #TODO
+                unit.floor = u[:FloorNumber] rescue nil
+
+                if u[:AvailableDate].present?
+                  unit.available_date = u[:AvailableDate]
+                end
+
+                if u[:UnitMadeReadyDate].present?
+                  unit.available_date = u[:UnitMadeReadyDate]
+                end
+
+                if unit.available_date.year == 1900
+                  unit.available_date = ""
+                end
+
+                if unit.availability == "Occupied"
+                  unit.available_date = ""
+                end
+
+                if unit.available_date.present?
+                  current_date = unit.available_date
+                elsif unit.available_date.present? && unit.available_date < Date.today
+                  current_date = Date.today
+                end
+
+                @array_of_dates.each do |hash|
+                  if hash[:ready_date] == current_date
+                    hash[:units] << unit.provider_unit_id
+                    hit = true
+                  end
+                end
+
+                if !hit
+                  struct = {
+                      ready_date: current_date,
+                      units: [unit.provider_unit_id]
+                  }
+                  @array_of_dates << struct
+                end
+
+                unit.save
+
+              else
+                dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: "#{u[:UnitID]}-#{site_id}")
+                
+                if dup.present?
+                  dup.destroy
+                end
+
+                unit = Unit.new
+                unit.community_id = community_id
+                unit.provider = "realpagesvc_new"
+                unit.property_id = site_id
+                unit.provider_unit_id = "#{u[:UnitID]}-#{site_id}"
+                unit.unit_type = u[:UnitNumber]
+                
+                if u[:Vacant] == "T"
+                  unit.unit_status = "Unoccupied"
+                else
+                  unit.unit_status = "Occupied"
+                end
+
+                if u[:BuildingNumber].present?
+                  unit.building = u[:BuildingNumber] unless u[:BuildingNumber] == "N/A"
+                end
+
+                unit.marketing_name = u[:UnitNumber]
+
+                unit.floorplan_id = "#{u[:FloorplanID]}-#{site_id}"
+                unit.market_rent = u[:MarketRent]
+                unit.effective_rent = u[:MarketRent].to_f > 0 ? u[:MarketRent] : 1
+                unit.availability = u[:Available] == "T" ? "Unoccupied" : "Occupied"
+
+                if u[:RentableSqft].present?
+                  unit.square_feet = u[:RentableSqft]
+                end
+
+                #TODO
+                unit.floor = u[:FloorNumber] rescue nil
+
+                if u[:AvailableDate].present?
+                  unit.available_date = u[:AvailableDate]
+                end
+
+                if u[:UnitMadeReadyDate].present?
+                  unit.available_date = u[:UnitMadeReadyDate]
+                end
+
+                if unit.available_date.year == 1900
+                  unit.available_date = ""
+                end
+
+                if unit.availability == "Occupied"
+                  unit.available_date = ""
+                end
+
+                if unit.available_date.present?
+                  current_date = unit.available_date
+                elsif unit.available_date.present? && unit.available_date < Date.today
+                  current_date = Date.today
+                end
+
+                @array_of_dates.each do |hash|
+                  if hash[:ready_date] == current_date
+                    hash[:units] << unit.provider_unit_id
+                    hit = true
+                  end
+                end
+
+                if !hit
+                  struct = {
+                      ready_date: current_date,
+                      units: [unit.provider_unit_id]
+                  }
+                  @array_of_dates << struct
+                end
+
                 unit.save
 
               end
 
             end
           end
+
           unit = Unit.where(community_id: credentials.community_id)
+
           unit.each do |d|
             unless d.provider == "realpagesvc_new" || d.provider == "manually"
               d.destroy
@@ -347,7 +600,7 @@ class RealPageSvcSwapService < BaseService
         end
 
       rescue => e
-        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
+        raise e
       end
     end
   end
