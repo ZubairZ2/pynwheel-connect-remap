@@ -76,7 +76,6 @@ class RealPageSvcStaticService < BaseService
 
   # For Pynwheel Tour Package
   def import_initial_realpage_units
-    #building_result = realpage_building #Ignore it for now
     site_ids = credentials.site_id.split(',').map(&:strip) rescue []
     site_ids.each do |site_id|
       begin
@@ -111,6 +110,7 @@ class RealPageSvcStaticService < BaseService
                 if u[:BuildingNumber].present?
                   unit.building = u[:BuildingNumber] unless u[:BuildingNumber] == "N/A"
                 end
+
                 unless unit.name_is_updated.present? && unit.name_is_updated
                   unit.marketing_name = u[:UnitNumber]
                 end
@@ -119,7 +119,6 @@ class RealPageSvcStaticService < BaseService
                   unit.floorplan_id = "#{u[:FloorplanID]}-#{site_id}"
                 end
 
-                # unit.market_rent = u[:BaseRentAmount]
                 unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
                   unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount] : 1
                 end
@@ -130,10 +129,11 @@ class RealPageSvcStaticService < BaseService
                 if u[:RentSqFtCount].present?
                   unit.square_feet = u[:RentSqFtCount]
                 end
-                #unit.floor = evaluate_floor(unit.marketing_name) rescue nil
+
                 unless unit.floor_is_updated.present? && unit.floor_is_updated
                   unit.floor = u[:FloorNumber] rescue nil
                 end
+
                 unless unit.available_date_is_updated.present? && unit.available_date_is_updated
                   if u[:AvailableDate].present?
                     unit.available_date = u[:AvailableDate]
@@ -145,10 +145,11 @@ class RealPageSvcStaticService < BaseService
                   if unit.available_date.year == 1900
                     unit.available_date = ""
                   end
-                  if unit.availability == "Occupied" #&& unit.available_date < Date.today
+                  if unit.availability == "Occupied"
                     unit.available_date = ""
                   end
                 end
+
                 unless unit.available_is_updated.present? && unit.available_is_updated
                   if unit.availability == "Occupied"
                     unit.available = false
@@ -179,19 +180,8 @@ class RealPageSvcStaticService < BaseService
                   @array_of_dates << struct
                 end
 
-
-                # unit.building = ""
-                # bldgResult = getBuildingNumber(u["BuildingID"],building_result)
-                # if bldgResult.present?
-                #   if bldgResult == "N/A"
-                #     unit.building = ""
-                #   else
-                #     unit.building = bldgResult
-                #   end
-                # end
                 unit.manually_updated = false
                 unit.save(validate: false)
-                #puts "++++++++++++++++++++++///////// ", unit.errors.message.join(',')
               end
             end
           end
@@ -285,7 +275,6 @@ class RealPageSvcStaticService < BaseService
 
   # For Pynwheel Touch and Map Package
   def import_new_initial_realpage_units
-    #building_result = realpage_building #Ignore it for now
     site_ids = credentials.site_id.split(',').map(&:strip) rescue []
     site_ids.each do |site_id|
       begin
@@ -424,13 +413,11 @@ class RealPageSvcStaticService < BaseService
           cred.save
         rescue => err
         end
-        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
   end
 
   def import_realpage_svc_units
-    #building_result = realpage_building #Ignore it for now
     site_ids = credentials.site_id.split(',').map(&:strip) rescue []
     site_ids.each do |site_id|
       begin
@@ -509,27 +496,26 @@ class RealPageSvcStaticService < BaseService
                 unit.floorplan_id = "#{u[:FloorPlan][:FloorPlanID]}-#{site_id}"
               end
 
-              # unit.market_rent = u[:BaseRentAmount]
               unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
                 if u[:RentMatrix].present?
                   unit.effective_rent = u[:RentMatrix][1][:Rows][:Row][0][:MinRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MinRent] : 1
                 else
                   unit.effective_rent = u[:BaseRentAmount]
                 end
-                # unit.min_effective_rent = u[:RentMatrix][1][:Rows][:Row][0][:MinRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MinRent] : 1
-                # unit.max_effectent_rent = u[:RentMatrix][1][:Rows][:Row][0][:MaxRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MaxRent] : 0
               end
 
               unless unit.availability_is_updated.present? && unit.availability_is_updated && !(unit.manual_override)
                 unit.availability = u[:Availability][:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
               end
+
               if u[:UnitDetails][:RentSqFtCount].present?
                 unit.square_feet = u[:UnitDetails][:RentSqFtCount]
               end
-              #unit.floor = evaluate_floor(unit.marketing_name) rescue nil
+
               unless unit.floor_is_updated.present? && unit.floor_is_updated
                 unit.floor = u[:UnitDetails][:FloorNumber] rescue nil
               end
+
               unless unit.available_date_is_updated.present? && unit.available_date_is_updated && !(unit.manual_override)
                 if u[:Availability][:MadeReadyDate].present?
                   madeReadyDate = u[:Availability][:MadeReadyDate].split("/")[1] + "/" + u[:Availability][:MadeReadyDate].split("/")[0] + "/" + u[:Availability][:MadeReadyDate].split("/")[2]
@@ -544,6 +530,7 @@ class RealPageSvcStaticService < BaseService
                   unit.available_date = availableDate
                 end
               end
+
               unless unit.available_is_updated.present? && unit.available_is_updated
                 if unit.availability == "Occupied"
                   unit.available = false
@@ -561,9 +548,9 @@ class RealPageSvcStaticService < BaseService
 
 
               unit.save(validate: false)
-              #puts "++++++++++++++++++++++///////// ", unit.errors.message.join(',')
             end
           end
+
           begin
             cred = Credential.find credentials.id
             cred.data_error_message = nil
@@ -586,7 +573,6 @@ class RealPageSvcStaticService < BaseService
           cred.save
         rescue => err
         end
-        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
   end
@@ -640,7 +626,6 @@ class RealPageSvcStaticService < BaseService
                     </soapenv:Body>
                 </soapenv:Envelope>')
         sleep 2
-        #result = Hash.from_xml(response.body) This method consumes too much memory on heroku
         result = Ox.load(response.body, mode: :hash)
 
         if result[:"s:Envelope"][1][:"s:Body"][1].present?
@@ -667,110 +652,40 @@ class RealPageSvcStaticService < BaseService
                 next if index == 0
                 unless unitLeaseTerm.include?(opts[:Option][0][:LeaseTerm].to_s)
                   rentStr = rentStr + (opts[:Option][0][:LeaseTerm].to_s) + ":" + opts[:Option][0][:Rent] + "::" + startdate + ":" + opts[:Option][0][:LeaseEndDate].to_s + "\;"
-                  # unitLeaseTerm << opt[:Option][0][:LeaseTerm].to_s
                 end
-                # hashData = {(u[:RentMatrix][1][:Rows][:Row][index][:Options][ind][:Option][0][:LeaseTerm].to_s) => [u[:RentMatrix][1][:Rows][:Row][index][:Options][ind][:Option][0][:Rent], startdate, u[:RentMatrix][1][:Rows][:Row][index][:Options][ind][:Option][0][:LeaseEndDate] ]}
-                # unitHash.merge! hashData
               end
 
-                # unitHash = (unitHash.sort_by {|k, v| k.to_i}).to_h
             rescue => ex
-
               unitHash = nil
             end
 
             if unit_min_rent.present?
               unit = Unit.where("provider = ? AND community_id = ? AND marketing_name =? AND building = ? AND provider_unit_id LIKE ?", "realpagesvc", community_id, unit_no, unit_add, "%-#{site_id}").last
-              # unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no, building: unit_add)
+            
               unless unit.present?
                 unit = Unit.where("provider = ? AND community_id = ? AND marketing_name =? AND provider_unit_id LIKE ?", "realpagesvc", community_id, unit_no, "%-#{site_id}").last
-                # unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no)
               end
 
               if unit.present?
                 unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated  && !(unit.manual_override)
                   unit.effective_rent = unit_min_rent
                 end
+
                 unit.min_effective_rent = unit_min_rent
                 unit.max_effective_rent = unit_max_rent
                 unit.lease_pricing = rentStr
                 unit.save(:validate => false)
-                # @doc = @doc + response.body
               end
+
               unit.min_effective_rent = unit_min_rent
               unit.max_effective_rent = unit_max_rent
               unit.lease_pricing = rentStr
               unit.save(:validate => false)
-              # @doc = @doc + response.body
             end
 
           end
         end
       rescue => e
-        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
-      end
-    end
-  end
-
-  def realpage_building
-    begin
-      url = REALPAGE_URL
-      soap_action = REALPAGE_BUILDING_ACTION
-      pmc_id = credentials.pmc_id
-      site_id = credentials.site_id
-      username = REALPAGESVC_USERNAME
-      password = REALPAGESVC_PASSWORD
-      license_key = REALPAGESVC_LICENSE_KEY
-      response = HTTParty.post(
-          url,
-          :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
-          :body => '<soapenv:Envelope
-                      xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                      xmlns:tem="http://tempuri.org/"
-                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                      xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-                      <soapenv:Header/>
-                      <soapenv:Body>
-                        <tem:getpicklist>
-                          <tem:auth>
-                            <tem:pmcid>'+pmc_id+'</tem:pmcid>
-                            <tem:siteid>'+site_id+'</tem:siteid>
-                            <tem:username>'+username+'</tem:username>
-                            <tem:password>'+password+'</tem:password>
-                            <tem:licensekey>'+license_key+'</tem:licensekey>
-                            <tem:system>OneSite</tem:system>
-                          </tem:auth>
-                          <tem:lType>LIST_BUILDING</tem:lType>
-                        </tem:getpicklist>
-                      </soapenv:Body>
-                    </soapenv:Envelope>
-        ')
-      result = Hash.from_xml(response.body)
-      unless result["Envelope"]["Body"]["Fault"].present?
-        return result["Envelope"]["Body"]["getpicklistResponse"]["getpicklistResult"]["GetPickList"]["Contents"]["PicklistItem"]
-      else
-        #Thread.current[:errors] << result["Envelope"]["Body"]["Fault"]["faultstring"]
-        ExceptionNotifier.notify_exception(Exception.new,data: {message: result["Envelope"]["Body"]["Fault"]["faultstring"],community_id: credentials.community_id})
-      end
-    rescue => e
-      #Thread.current[:errors] << e.message
-      #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
-    end
-  end
-
-  def getBuildingNumber(building_no, building_result)
-    if building_result.is_a?(Array)
-      building = building_result.select{|x| x if x['Value'] == building_no}
-      if building.present?
-        return building.first["Text"]
-      else
-        return ""
-      end
-    else
-      if building_result["Value"] == building_no
-        return building_result["Text"]
-      else
-        return ""
       end
     end
   end

@@ -185,46 +185,17 @@ class RealPageSvcService < BaseService
 
 
   def import_initials_realpage_units
-    #building_result = realpage_building #Ignore it for now
     site_ids = @credentials.site_id.split(',').map(&:strip) rescue []
     site_ids.each do |site_id|
       begin
         @array_of_dates = [{ready_date: Date.today,units: []}]
         current_date = Date.today
 
-        url = REALPAGE_URL
-        soap_action = REALPAGE_UNIT_ACTION
-        pmc_id = @credentials.pmc_id
         site_id = site_id&.strip
-        username = REALPAGESVC_USERNAME
-        password = REALPAGESVC_PASSWORD
-        license_key = REALPAGESVC_LICENSE_KEY
-        community_id = @credentials.community_id
-
-        response = HTTParty.post(
-            url,
-            :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
-            :body => '<soapenv:Envelope
-                        xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                        xmlns:tem="http://tempuri.org/"
-                        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                        xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-                        <soapenv:Header/>
-                        <soapenv:Body>
-                          <tem:getunitsbyproperty>
-                            <tem:auth>
-                              <tem:pmcid>'+pmc_id+'</tem:pmcid>
-                              <tem:siteid>'+site_id+'</tem:siteid>
-                              <tem:username>'+username+'</tem:username>
-                              <tem:password>'+password+'</tem:password>
-                              <tem:licensekey>'+license_key+'</tem:licensekey>
-                              <tem:system>OneSite</tem:system>
-                            </tem:auth>
-                          </tem:getunitsbyproperty>
-                        </soapenv:Body>
-                      </soapenv:Envelope>
-          ')
+        community_id = credentials.community_id
+        response = DataProviders::RealPage::V1ApisService.new(community_id).fetch_units_data(site_id)
         result = Ox.load(response.body, mode: :hash)
+
         if result[:"s:Envelope"][1][:"s:Body"][1].present?
           units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitsbypropertyResponse][1][:getunitsbypropertyResult][:GetUnitsByProperty]
           import_units = []
@@ -410,7 +381,6 @@ class RealPageSvcService < BaseService
 
   def import_realpage_svc_units
     return unless @all_units_hash.present?
-    #building_result = realpage_building #Ignore it for now
     unit_present = @all_units_hash.keys
 
     site_ids = @credentials.site_id.split(',').map(&:strip) rescue []
@@ -736,14 +706,10 @@ class RealPageSvcService < BaseService
           end
 
           if unit_min_rent.present?
-            # unit = @all_units_marketing_name_and_building_hash["#{unit_add}-#{unit_no}"]
-            # unit = @all_units_marketing_name_hash[unit_no.to_s] unless unit.present?
-
             unit = Unit.where("community_id = ? AND marketing_name =? AND building = ? AND provider_unit_id LIKE ?", community_id, unit_no, unit_add, "%-#{site_id}").last
-            # unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no, building: unit_add)
+
             unless unit.present?
               unit = Unit.where("community_id = ? AND marketing_name =? AND provider_unit_id LIKE ?", community_id, unit_no, "%-#{site_id}").last
-              # unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no)
             end
 
             if unit.present?
@@ -767,67 +733,6 @@ class RealPageSvcService < BaseService
       end
     rescue => e
       raise e
-    end
-  end
-
-  def realpage_building
-    begin
-      url = REALPAGE_URL
-      soap_action = REALPAGE_BUILDING_ACTION
-      pmc_id = @credentials.pmc_id
-      site_id = @credentials.site_id
-      username = REALPAGESVC_USERNAME
-      password = REALPAGESVC_PASSWORD
-      license_key = REALPAGESVC_LICENSE_KEY
-      response = HTTParty.post(
-          url,
-          :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
-          :body => '<soapenv:Envelope
-                      xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                      xmlns:tem="http://tempuri.org/"
-                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                      xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-                      <soapenv:Header/>
-                      <soapenv:Body>
-                        <tem:getpicklist>
-                          <tem:auth>
-                            <tem:pmcid>'+pmc_id+'</tem:pmcid>
-                            <tem:siteid>'+site_id+'</tem:siteid>
-                            <tem:username>'+username+'</tem:username>
-                            <tem:password>'+password+'</tem:password>
-                            <tem:licensekey>'+license_key+'</tem:licensekey>
-                            <tem:system>OneSite</tem:system>
-                          </tem:auth>
-                          <tem:lType>LIST_BUILDING</tem:lType>
-                        </tem:getpicklist>
-                      </soapenv:Body>
-                    </soapenv:Envelope>
-        ')
-      result = Hash.from_xml(response.body)
-      unless result["Envelope"]["Body"]["Fault"].present?
-        return result["Envelope"]["Body"]["getpicklistResponse"]["getpicklistResult"]["GetPickList"]["Contents"]["PicklistItem"]
-      else
-        ExceptionNotifier.notify_exception(Exception.new,data: {message: result["Envelope"]["Body"]["Fault"]["faultstring"],community_id: @credentials.community_id})
-      end
-    rescue => e
-      raise e
-    end
-  end
-
-  def getBuildingNumber(building_no, building_result)
-    if building_result.is_a?(Array)
-      building = building_result.select{|x| x if x['Value'] == building_no}
-      if building.present?
-        return building.first["Text"]
-      else
-        return ""
-      end
-    else
-      if building_result["Value"] == building_no
-        return building_result["Text"]
-      else
-        return ""
-      end
     end
   end
 

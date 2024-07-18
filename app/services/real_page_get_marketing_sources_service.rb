@@ -15,10 +15,13 @@ class RealPageGetMarketingSourcesService < BaseService
 
     def get_marketing_sources_by_property
       site_ids = site_ids_for_community
+      
       site_ids.each do |site_id|
         begin
-          response = fetch_marketing_sources(site_id)
+          site_id = site_id&.strip
+          response = DataProviders::RealPage::V1ApisService.new(@community.id).fetch_marketing_sources(site_id)
           process_marketing_sources(response)
+
         rescue => e
           handle_error
         end
@@ -29,48 +32,6 @@ class RealPageGetMarketingSourcesService < BaseService
       @community.use_crm_credentials? ? @crm_credential.realpage_site_id.split(',') : @credential.site_id.split(',')
     rescue
       []
-    end
-
-    def fetch_marketing_sources(site_id)
-      pmc_id = @community.use_crm_credentials? ? @crm_credential.realpage_pmc_id : @credential.pmc_id
-      body = generate_soap_request(pmc_id, site_id)
-      send_soap_request(body)
-    end
-
-    def generate_soap_request(pmc_id, site_id)
-      <<~XML
-        <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                           xmlns:tem="http://tempuri.org/">
-          <soapenv:Header/>
-          <soapenv:Body>
-            <tem:getmarketingsourcesbyproperty>
-              <tem:auth>
-                <tem:pmcid>#{pmc_id}</tem:pmcid>
-                <tem:siteid>#{site_id}</tem:siteid>
-                <tem:username>#{REALPAGESVC_USERNAME}</tem:username>
-                <tem:password>#{REALPAGESVC_PASSWORD}</tem:password>
-                <tem:licensekey>#{REALPAGESVC_LICENSE_KEY}</tem:licensekey>
-                <tem:system>OneSite</tem:system>
-              </tem:auth>
-            </tem:getmarketingsourcesbyproperty>
-          </soapenv:Body>
-        </soapenv:Envelope>
-      XML
-    end
-
-    def send_soap_request(body)
-      HTTParty.post(
-        REALPAGE_URL,
-        headers: {
-          "Content-Type" => "text/xml",
-          "Content-Length" => body.length.to_s,
-          "Accept" => "text/xml",
-          "Cache-Control" => "no-cache",
-          "Pragma" => "no-cache",
-          "SOAPAction" => REALPAGE_MARKETING_SOURCES_ACTION
-        },
-        body: body
-      )
     end
 
     def process_marketing_sources(response)
