@@ -54,10 +54,12 @@ class RealPageSvcSwapService < BaseService
                 end
               end
 
+              provider_floorplan_id = "#{fp[:FloorPlanID]}-#{site_id}"
+
               if floorplan.present?
                 floorplan = floorplan.first
                 floorplan.provider = "realpagesvc_new"
-                floorplan.provider_floorplan_id = "#{fp[:FloorPlanID]}-#{site_id}"
+                floorplan.provider_floorplan_id = provider_floorplan_id
                 floorplan.name = fp[:FloorPlanNameMarketing]
                 if fp[:FloorPlanName].present?
                   floorplan.name = fp[:FloorPlanName]
@@ -76,7 +78,7 @@ class RealPageSvcSwapService < BaseService
                 floorplan.square_feet = fp[:GrossSquareFootage]
                 floorplan.save(:validate => false)
               else
-                dup = Floorplan.find_by(community_id: credentials.community_id, provider_floorplan_id: "#{fp[:FloorPlanID]}-#{site_id}")
+                dup = Floorplan.find_by(community_id: credentials.community_id, provider_floorplan_id: provider_floorplan_id)
                 
                 if dup.present?
                   dup.destroy
@@ -84,7 +86,7 @@ class RealPageSvcSwapService < BaseService
 
                 floorplan = Floorplan.new
                 floorplan.community_id = community_id
-                floorplan.provider_floorplan_id = "#{fp[:FloorPlanID]}-#{site_id}"
+                floorplan.provider_floorplan_id = provider_floorplan_id
                 floorplan.provider = "realpagesvc_new"
                 if fp[:FloorPlanNameMarketing].present?
                   floorplan.name = fp[:FloorPlanNameMarketing]

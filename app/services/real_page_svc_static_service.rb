@@ -249,10 +249,10 @@ class RealPageSvcStaticService < BaseService
                   if fp[:Code] != fp[:FpName]
                     floorplan.name = fp[:Code] + " - " + fp[:FpName]
                   else
-                    floorplan.name = fp[:Code] + " - " + fp[:FpNameMarketing]
+                    floorplan.name = fp[:Code] + " - " + (fp[:FpNameMarketing] || "")
                   end
                 else
-                  floorplan.name = fp[:FpNameMarketing]
+                  floorplan.name = (fp[:FpNameMarketing] || "")
                 end
               end
 

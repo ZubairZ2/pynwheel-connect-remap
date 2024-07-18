@@ -13,51 +13,33 @@ class RealPageSvcService < BaseService
 
   def perform
     before_updation_units = NotifyManagerService.new(@credentials.community_id)
-    import_realpage_svc_floorplans
-    # import_initials_realpage_units
+
+    community = Community.find credentials.community_id
+    
+    if community.all_apps_enabled? || community.pynwheel_tour_enabled?
+      import_realpage_svc_floorplans
+      # import_initials_realpage_units
+    else
+      import_new_realpage_svc_floorplans
+      # import_initials_realpage_units
+    end
+
     import_realpage_svc_units
     before_updation_units.compare_status_and_notify()
   end
 
+  # For Pynwheel Tour Package
   def import_realpage_svc_floorplans
     return unless @all_floorplans_hash.present?
     site_ids = @credentials.site_id.split(',').map(&:strip) rescue []
     site_ids.each do |site_id|
       begin
         import_floorplans = []
-        url = REALPAGE_URL
-        soap_action = REALPAGE_FLOORPLAN_ACTION
-        pmc_id = @credentials.pmc_id
         site_id = site_id&.strip
-        username = REALPAGESVC_USERNAME
-        password = REALPAGESVC_PASSWORD
-        license_key = REALPAGESVC_LICENSE_KEY
-        community_id = @credentials.community_id
-        response = HTTParty.post(
-            url,
-            :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
-            :body => '<soapenv:Envelope
-                    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                    xmlns:tem="http://tempuri.org/"
-                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-                    <soapenv:Header/>
-                    <soapenv:Body>
-                      <tem:getfloorplanlist>
-                        <tem:auth>
-                          <tem:pmcid>'+pmc_id+'</tem:pmcid>
-                          <tem:siteid>'+site_id+'</tem:siteid>
-                          <tem:username>'+username+'</tem:username>
-                          <tem:password>'+password+'</tem:password>
-                          <tem:licensekey>'+license_key+'</tem:licensekey>
-                          <tem:system>OneSite</tem:system>
-                        </tem:auth>
-                      </tem:getfloorplanlist>
-                    </soapenv:Body>
-                  </soapenv:Envelope>')
-        
-        #result = Hash.from_xml(response.body) #That method was taking too much memory on heroku
+        community_id = credentials.community_id
+        response = DataProviders::RealPage::V1ApisService.new(community_id).fetch_floorplans_data(site_id)
         result = Ox.load(response.body, mode: :hash)
+
         if result[:"s:Envelope"][1][:"s:Body"][1].present?
           floorplans = result[:"s:Envelope"][1][:"s:Body"][1][:getfloorplanlistResponse][1][:getfloorplanlistResult][:GetFloorPlanList]
 
@@ -78,7 +60,7 @@ class RealPageSvcService < BaseService
                   import_floorplans << floorplan
 
                 else
-                  floorplan = Floorplan.where(provider: "realpagesvc", community_id: community_id, provider_floorplan_id: fp[:FloorPlanID]).first_or_initialize
+                  floorplan = Floorplan.where(provider: "realpagesvc", community_id: community_id, provider_floorplan_id: provider_floorplan_id).first_or_initialize
 
                   unless floorplan.name_is_updated.present? && floorplan.name_is_updated
                     if fp[:FloorPlanName].present?
@@ -121,6 +103,86 @@ class RealPageSvcService < BaseService
       end
     end
   end
+
+  # For Pynwheel Touch and Map Package
+  def import_new_realpage_svc_floorplans
+    return unless @all_floorplans_hash.present?
+    site_ids = @credentials.site_id.split(',').map(&:strip) rescue []
+    site_ids.each do |site_id|
+      begin
+        import_floorplans = []
+        site_id = site_id&.strip
+        community_id = credentials.community_id
+        response = DataProviders::RealPage::V1ApisService.new(community_id).fetch_floorplans_data(site_id)
+        result = Ox.load(response.body, mode: :hash)
+
+        if result[:"s:Envelope"][1][:"s:Body"][1].present?
+          floorplans = result[:"s:Envelope"][1][:"s:Body"][1][:getfloorplansResponse][1][:getfloorplansResult][:FloorPlans]
+
+          if floorplans.present?
+            floorplans.each do |fp|
+              if fp.key?(:FloorPlan)
+                fp = fp[:FloorPlan]
+                provider_floorplan_id = "#{fp[:FpID].to_s}-#{site_id.to_s}"
+                floorplan = @all_floorplans_hash[provider_floorplan_id]
+
+                if floorplan.present?
+                  puts "----------------- #{floorplan.name} -----------------------\n"
+
+                  unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated && floorplan.manual_override
+                    floorplan.market_rent = fp[:FpMarketRent]
+                  end
+
+                  import_floorplans << floorplan
+
+                else
+                  floorplan = Floorplan.where(provider: "realpagesvc", community_id: community_id, provider_floorplan_id: provider_floorplan_id).first_or_initialize
+
+                  unless floorplan.name_is_updated.present? && floorplan.name_is_updated
+                    if fp[:FpName].present?
+                      floorplan.name = fp[:FpName]
+                    elsif fp[:Code].present?
+                      if fp[:Code] != fp[:FpName]
+                        floorplan.name = fp[:Code] + " - " + fp[:FpName]
+                      else
+                        floorplan.name = fp[:Code] + " - " + (fp[:FpNameMarketing] || "")
+                      end
+                    else
+                      floorplan.name = (fp[:FpNameMarketing] || "")
+                    end
+                  end
+
+                  unless floorplan.bathroom_is_updated.present? && floorplan.bathroom_is_updated
+                    floorplan.bathrooms = fp[:Bath]
+                  end
+
+                  unless floorplan.bedroom_is_updated.present? && floorplan.bedroom_is_updated
+                    floorplan.bedrooms = fp[:Bed]
+                  end
+
+                  unless floorplan.square_feet_is_updated.present? && floorplan.square_feet_is_updated
+                    floorplan.square_feet = fp[:GrossSqFt]
+                  end
+
+                  unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated
+                    floorplan.market_rent = fp[:FpMarketRent]
+                  end
+
+                  import_floorplans << floorplan
+
+                end
+              end
+            end
+          end
+
+          ProvidersDataUpdationService.new().update_or_create_floorplans_records(import_floorplans)
+        end
+      rescue => e
+        raise e
+      end
+    end
+  end
+
 
   def import_initials_realpage_units
     #building_result = realpage_building #Ignore it for now
@@ -175,40 +237,30 @@ class RealPageSvcService < BaseService
               unit = Unit.where(provider: "realpagesvc",community_id: community_id,provider_unit_id: provider_unit_id).first_or_initialize
 
               if unit&.id.present?
-
-                # unit.property_id = u[:SiteID]
-                # unit.provider_unit_id = u[:UnitID]
-                # unit.unit_type = u[:UnitNumber]
-                # if u[:BuildingID].present?
-                #   unit.marketing_name = u[:BuildingID] + "-" + u[:UnitNumber]
-                # else
-                #   unit.marketing_name = u[:UnitNumber]
-                # end
-                # unit.floorplan_id = u[:FloorplanID]
                 unit.market_rent = u[:BaseRentAmount].to_f
+
                 unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
                   unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount].to_f : 1
                 end
+
                 unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
                   unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
                 end
 
-                # if u[:RentSqFtCount].present?
-                #   unit.square_feet = u[:RentSqFtCount]
-                # end
-                #unit.floor = evaluate_floor(unit.marketing_name) rescue nil
-                # unit.floor = u[:FloorNumber] rescue nil
                 unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
                   if u[:AvailableDate].present?
                     unit.available_date = u[:AvailableDate]
                   end
+
                   if u[:MadeReadyDate].present?
                     unit.available_date = u[:MadeReadyDate]
                   end
+
                   if unit.available_date.year == 1900
                     unit.available_date = ""
                   end
-                  if unit.availability == "Occupied" #&& unit.available_date < Date.today
+
+                  if unit.availability == "Occupied"
                     unit.available_date = ""
                     unit.available = false
                   else
@@ -240,27 +292,18 @@ class RealPageSvcService < BaseService
                 end
 
 
-                # unit.building = ""
-                # bldgResult = getBuildingNumber(u["BuildingID"],building_result)
-                # if bldgResult.present?
-                #   if bldgResult == "N/A"
-                #     unit.building = ""
-                #   else
-                #     unit.building = bldgResult
-                #   end
-                # end
                 import_units << unit
-                # unit.save
-
 
               else
                 unless unit.manual_override
                   unit.property_id = u[:SiteID]
                   unit.provider_unit_id = provider_unit_id
                   unit.unit_type = u[:UnitNumber]
+
                   if u[:BuildingNumber].present?
                     unit.building = u[:BuildingNumber] unless u[:BuildingNumber] == "N/A"
                   end
+
                   unless unit.name_is_updated.present? && unit.name_is_updated
                     unit.marketing_name = u[:UnitNumber]
                   end
@@ -269,7 +312,6 @@ class RealPageSvcService < BaseService
                     unit.floorplan_id = "#{u[:FloorplanID]}-#{site_id}"
                   end
 
-                  # unit.market_rent = u[:BaseRentAmount]
                   unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
                     unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount].to_f : 1
                   end
@@ -277,13 +319,15 @@ class RealPageSvcService < BaseService
                   unless unit.availability_is_updated.present? && unit.availability_is_updated
                     unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
                   end
+
                   if u[:RentSqFtCount].present?
                     unit.square_feet = u[:RentSqFtCount]
                   end
-                  #unit.floor = evaluate_floor(unit.marketing_name) rescue nil
+
                   unless unit.floor_is_updated.present? && unit.floor_is_updated
                     unit.floor = u[:FloorNumber] rescue nil
                   end
+
                   unless unit.available_date_is_updated.present? && unit.available_date_is_updated
                     if u[:AvailableDate].present?
                       unit.available_date = u[:AvailableDate]
@@ -295,17 +339,17 @@ class RealPageSvcService < BaseService
                     if unit.available_date.year == 1900
                       unit.available_date = ""
                     end
-                    if unit.availability == "Occupied" #&& unit.available_date < Date.today
+                    if unit.availability == "Occupied"
                       unit.available_date = ""
                     end
                   end
+
                   unless unit.available_is_updated.present? && unit.available_is_updated
                     if unit.availability == "Occupied"
                       unit.available = false
                     else
                       unit.available = true
                     end
-
                   end
                   
                   unit_status_update(unit, u)
@@ -331,19 +375,9 @@ class RealPageSvcService < BaseService
                     @array_of_dates << struct
                   end
 
-
-                  # unit.building = ""
-                  # bldgResult = getBuildingNumber(u["BuildingID"],building_result)
-                  # if bldgResult.present?
-                  #   if bldgResult == "N/A"
-                  #     unit.building = ""
-                  #   else
-                  #     unit.building = bldgResult
-                  #   end
-                  # end
                   unit.manually_updated = false
-                  # unit.save(validate: false)
                   import_units << unit
+
                 end
               end
             end
@@ -370,7 +404,6 @@ class RealPageSvcService < BaseService
         rescue => err
           raise err
         end
-        #ExceptionNotifier.notify_exception(e,data: {community_id: @credentials.community_id})
       end
     end
   end
