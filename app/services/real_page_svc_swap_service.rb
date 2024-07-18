@@ -672,6 +672,7 @@ class RealPageSvcSwapService < BaseService
                         </soapenv:Envelope>')
         sleep 1
         result = Ox.load(response.body, mode: :hash)
+
         if result[:"s:Envelope"][1][:"s:Body"][1].present?
           units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitlistResponse][1][:getunitlistResult][:GetUnitList][1][:UnitObjects][:UnitObject]
           units = [units] if units.is_a?(Hash)
@@ -699,14 +700,14 @@ class RealPageSvcSwapService < BaseService
                 unit.effective_rent = u[:RentMatrix][1][:Rows][:Row][0][:MinRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MinRent] : 1
               else
                 unit.effective_rent = u[:BaseRentAmount]
-              end                # unit.min_effective_rent = u[:RentMatrix][1][:Rows][:Row][0][:MinRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MinRent] : 1
-              # unit.max_effectent_rent = u[:RentMatrix][1][:Rows][:Row][0][:MaxRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MaxRent] : 0
+              end               
 
               unit.availability = u[:Availability][:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
+
               if u[:UnitDetails][:RentSqFtCount].present?
                 unit.square_feet = u[:UnitDetails][:RentSqFtCount]
               end
-              #unit.floor = evaluate_floor(unit.marketing_name) rescue nil
+
               unit.floor = u[:UnitDetails][:FloorNumber] rescue nil
               if u[:Availability][:MadeReadyDate].present?
                 madeReadyDate = u[:Availability][:MadeReadyDate].split("/")[1] + "/" + u[:Availability][:MadeReadyDate].split("/")[0] + "/" + u[:Availability][:MadeReadyDate].split("/")[2]
@@ -738,7 +739,6 @@ class RealPageSvcSwapService < BaseService
                 dup.destroy
               end
 
-              # unit = Unit.where(community_id: community_id).first
               unit = Unit.new
               unit.community_id = community_id
               unit.provider = "realpagesvc_new"

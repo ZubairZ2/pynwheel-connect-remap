@@ -54,7 +54,7 @@ module DataProviders
         post_request(RP_TOUCH_API_URL, API_METHODS[:get_floorplans], site_id, ENV['RP_TOUCH_API_KEY'])
       end
 
-      def get_units_list(site_id)
+      def unit_list(site_id)
         post_request(RP_TOUCH_API_URL, API_METHODS[:unit_list], site_id, ENV['RP_TOUCH_API_KEY'])
       end
 

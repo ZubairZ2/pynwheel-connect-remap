@@ -391,28 +391,10 @@ class RealPageSvcStaticService < BaseService
               end
             end
           end
-          begin
-            cred = Credential.find credentials.id
-            cred.data_error_message = nil
-            cred.save
-          rescue => err
-          end
-        else
-          begin
-            cred = Credential.find credentials.id
-            cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
-            cred.save
-          rescue => err
-          end
         end
 
       rescue => e
-        begin
-          cred = Credential.find credentials.id
-          cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
-          cred.save
-        rescue => err
-        end
+        raise e
       end
     end
   end
@@ -484,6 +466,7 @@ class RealPageSvcStaticService < BaseService
                         </soapenv:Envelope>')
         sleep 1
         result = Ox.load(response.body, mode: :hash)
+
         if result[:"s:Envelope"][1][:"s:Body"][1].present?
           units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitlistResponse][1][:getunitlistResult][:GetUnitList][1][:UnitObjects][:UnitObject]
           units = [units] if units.is_a?(Hash)
