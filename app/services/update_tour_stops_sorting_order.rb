@@ -12,9 +12,27 @@ class UpdateTourStopsSortingOrder
 
   def sort_sitemap_stops
     stops_points = fetch_stops_points(sitemap_stops)
-    sorted_points = sort_stops_by_distance(sitemap_starting_point, stops_points)
+
+    # sorted_points = sort_stops_by_distance(sitemap_starting_point, stops_points)
+    sorted_points = sort_stops_by_previous_point(sitemap_starting_point, stops_points)
+
     sorted_stops = fetch_sorted_tour_stops(sorted_points)
     update_stops_sorting_order(sorted_stops)
+  end
+
+  # New method to sort stops based on the previous stop
+  def sort_stops_by_previous_point(starting_point, stops_list)
+    sorted_stops = []
+    current_point = starting_point
+
+    until stops_list.empty?
+      next_stop = stops_list.min_by { |stop| distance(current_point, stop) }
+      sorted_stops << next_stop
+      stops_list.delete(next_stop)
+      current_point = next_stop
+    end
+
+    sorted_stops
   end
 
   def sort_floorplate_stops
@@ -36,7 +54,10 @@ class UpdateTourStopsSortingOrder
         floor_stop_ids = t&.sort_hash["#{b},#{f}"]
         floor_stops = get_floor_stops(floor_stop_ids)
         stops_points = fetch_stops_points(floor_stops)
-        sorted_points = sort_stops_by_distance(starting_point, stops_points)
+
+        # sorted_points = sort_stops_by_distance(starting_point, stops_points)
+        sorted_points = sort_stops_by_previous_point(starting_point, stops_points)
+
         sorted_stops = fetch_sorted_tour_stops(sorted_points)
 
         if sorted_stops.present?
