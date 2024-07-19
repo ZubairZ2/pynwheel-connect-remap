@@ -22,6 +22,8 @@ class UpdateTourStopsSortingOrder
 
   # New method to sort stops based on the previous stop
   def sort_stops_by_previous_point(starting_point, stops_list)
+    return [] unless stops_list.present?
+
     sorted_stops = []
     current_point = starting_point
 
@@ -45,26 +47,31 @@ class UpdateTourStopsSortingOrder
   def sort_single_building_floorplate_stops
     g_index = 1
     t = tour
+    current_point = sitemap_starting_point
 
     buildings&.each do |b|
       # bsp = get_building_starting_point()
       floors&.each_with_index do |f, f_index|
-        starting_point = f_index > 0 ? get_elevator(b, f) : sitemap_starting_point # for the first floor us tour as starting point
-
         floor_stop_ids = t&.sort_hash["#{b},#{f}"]
-        floor_stops = get_floor_stops(floor_stop_ids)
-        stops_points = fetch_stops_points(floor_stops)
 
-        # sorted_points = sort_stops_by_distance(starting_point, stops_points)
-        sorted_points = sort_stops_by_previous_point(starting_point, stops_points)
+        if floor_stop_ids.present?
+          starting_point = f_index > 0 ? get_elevator(b, f, current_point) : sitemap_starting_point # for the first floor use tour as starting point
 
-        sorted_stops = fetch_sorted_tour_stops(sorted_points)
+          floor_stops = get_floor_stops(floor_stop_ids)
+          stops_points = fetch_stops_points(floor_stops)
+          # sorted_points = sort_stops_by_distance(starting_point, stops_points)
 
-        if sorted_stops.present?
-          update_hash(t, b, f, sorted_stops)
-          sorted_stops.each_with_index do |stop, index|
-            g_index = (g_index + index + 1)
-            stop.update_column(:sort, g_index)
+          sorted_points = sort_stops_by_previous_point(starting_point, stops_points)
+          current_point = sorted_points.last
+          sorted_stops = fetch_sorted_tour_stops(sorted_points)
+
+          if sorted_stops.present?
+            update_hash(t, b, f, sorted_stops)
+
+            sorted_stops.each_with_index do |stop, index|
+              g_index = (g_index + index + 1)
+              stop.update_column(:sort, g_index)
+            end
           end
         end
 
@@ -77,13 +84,26 @@ class UpdateTourStopsSortingOrder
     t.sort_hash["#{b},#{f}"] = sorted_stops&.pluck(:id)&.map(&:to_s)
     t.save!
   end
+  
+  def get_elevator(b, f, current_point)
+    begin
+      elevators = @community&.elevators&.where(building: b)&.select do |elevator|
+        floors_covering_range = get_floors_covering_range(elevator&.floorplate_covering_range)
+        
+        if f === floors.last
+          floors_covering_range.include?(f)
+        else
+          floors_covering_range.include?(f) && f != floors_covering_range.last
+        end
+      end 
 
-  def get_elevator b, f
-    @community&.elevators&.where(building: b)&.each do |e|
-      floors_covering_range = get_floors_covering_range(e&.floorplate_covering_range)
-      return e if floors_covering_range.include?(f)
+      elevators.min_by { |elevator| distance(current_point, elevator) }
+
+    rescue => error
+      puts "Elevator sorting error: #{error.message}"
     end
   end
+  
 
   def get_floors_covering_range range_string
     if range_string.include?('-')
