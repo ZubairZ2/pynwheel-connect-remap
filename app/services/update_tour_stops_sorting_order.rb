@@ -2,6 +2,7 @@ class UpdateTourStopsSortingOrder
   def initialize(community, tour_user)
     @community = community
     @tour_user = tour_user
+    @tour = get_tour
   end
 
   def sort
@@ -11,7 +12,7 @@ class UpdateTourStopsSortingOrder
   private
 
   def sort_sitemap_stops
-    stops_points = fetch_stops_points(sitemap_stops)
+    stops_points = fetch_stops_points(get_tour_stops)
 
     # sorted_points = sort_stops_by_distance(sitemap_starting_point, stops_points)
     sorted_points = sort_stops_by_previous_point(sitemap_starting_point, stops_points)
@@ -28,10 +29,12 @@ class UpdateTourStopsSortingOrder
     current_point = starting_point
 
     until stops_list.empty?
-      next_stop = stops_list.min_by { |stop| distance(current_point, stop) }
-      sorted_stops << next_stop
-      stops_list.delete(next_stop)
-      current_point = next_stop
+      next_stop = stops_list&.min_by { |stop| distance(current_point, stop) }
+      if next_stop.present?
+        sorted_stops << next_stop
+        stops_list.delete(next_stop)
+        current_point = next_stop
+      end
     end
 
     sorted_stops
@@ -46,13 +49,12 @@ class UpdateTourStopsSortingOrder
 
   def sort_single_building_floorplate_stops
     g_index = 1
-    t = tour
     current_point = sitemap_starting_point
 
     buildings&.each do |b|
       # bsp = get_building_starting_point()
       floors&.each_with_index do |f, f_index|
-        floor_stop_ids = t&.sort_hash["#{b},#{f}"]
+        floor_stop_ids = @tour&.sort_hash["#{b},#{f}"]
 
         if floor_stop_ids.present?
           starting_point = f_index > 0 ? get_elevator(b, f, current_point) : sitemap_starting_point # for the first floor use tour as starting point
@@ -66,7 +68,7 @@ class UpdateTourStopsSortingOrder
           sorted_stops = fetch_sorted_tour_stops(sorted_points)
 
           if sorted_stops.present?
-            update_hash(t, b, f, sorted_stops)
+            update_hash(b, f, sorted_stops)
 
             sorted_stops.each_with_index do |stop, index|
               g_index = (g_index + index + 1)
@@ -80,9 +82,9 @@ class UpdateTourStopsSortingOrder
 
   end
 
-  def update_hash t, b, f, sorted_stops
-    t.sort_hash["#{b},#{f}"] = sorted_stops&.pluck(:id)&.map(&:to_s)
-    t.save!
+  def update_hash b, f, sorted_stops
+    @tour.sort_hash["#{b},#{f}"] = sorted_stops&.pluck(:id)&.map(&:to_s)
+    @tour.save!
   end
   
   def get_elevator(b, f, current_point)
@@ -97,7 +99,7 @@ class UpdateTourStopsSortingOrder
         end
       end 
 
-      elevators.min_by { |elevator| distance(current_point, elevator) }
+      elevators&.min_by { |elevator| distance(current_point, elevator) }
 
     rescue => error
       puts "Elevator sorting error: #{error.message}"
@@ -149,22 +151,22 @@ class UpdateTourStopsSortingOrder
   end
 
   def fetch_sorted_tour_stops(tour_stops_list)
-    tour_stops_list.map { |stop| TourStop.find(stop[:id]) }
+    tour_stops_list.map { |stop| get_tour_stops.where(id: stop[:id])&.last }&.compact
   end
 
   def distance(point1, point2)
     Math.sqrt((point1[:x_plot] - point2[:x_plot])**2 + (point1[:y_plot] - point2[:y_plot])**2)
   end
 
-  def sitemap_stops
-    tour.tour_stops
+  def get_tour_stops
+    @tour.tour_stops.plotted_stops.visible
   end
 
   def get_floor_stops stop_ids
-    TourStop.where(id: stop_ids)
+    get_tour_stops.where(id: stop_ids)
   end
 
-  def tour
+  def get_tour
     if @community.customization_enabled? 
       CustomizeTourService.new(@community, @tour_user).get_user_tour
     else
