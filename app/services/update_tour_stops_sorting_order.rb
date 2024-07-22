@@ -55,14 +55,13 @@ class UpdateTourStopsSortingOrder
       # bsp = get_building_starting_point()
       floors&.each_with_index do |f, f_index|
         floor_stop_ids = @tour&.sort_hash["#{b},#{f}"]
+          starting_point = f_index > 0 ? get_elevator(b, f, current_point) : sitemap_starting_point # for the first floor use tour as starting point
+          current_point = starting_point
 
         if floor_stop_ids.present?
-          starting_point = f_index > 0 ? get_elevator(b, f, current_point) : sitemap_starting_point # for the first floor use tour as starting point
-
           floor_stops = get_floor_stops(floor_stop_ids)
           stops_points = fetch_stops_points(floor_stops)
           # sorted_points = sort_stops_by_distance(starting_point, stops_points)
-
           sorted_points = sort_stops_by_previous_point(starting_point, stops_points)
           current_point = sorted_points.last
           sorted_stops = fetch_sorted_tour_stops(sorted_points)
