@@ -63,6 +63,7 @@ class UpdateTourStopsSortingOrder
           # sorted_points = sort_stops_by_distance(starting_point, stops_points)
           sorted_points = sort_stops_by_previous_point(starting_point, stops_points)
           current_point = sorted_points.last
+          current_point = get_elevator(b, f, current_point) #sorted_points.last
           sorted_stops = fetch_sorted_tour_stops(sorted_points)
 
           if sorted_stops.present?
