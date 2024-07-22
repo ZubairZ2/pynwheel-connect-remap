@@ -30,7 +30,9 @@ class UpdateTourStopsSortingOrder
 
     until stops_list.empty?
       next_stop = stops_list&.min_by { |stop| distance(current_point, stop) }
+
       if next_stop.present?
+        sort_doors_by_distance(current_point, next_stop)
         sorted_stops << next_stop
         stops_list.delete(next_stop)
         current_point = next_stop
@@ -38,6 +40,24 @@ class UpdateTourStopsSortingOrder
     end
 
     sorted_stops
+  end
+
+  def sort_doors_by_distance current_point, next_stop
+    if next_stop[:stop_type] === "amenity"
+      amenity = Amenity.find_by_id  next_stop[:stop_id]
+      doors = amenity.doors
+
+      if doors.present? && doors.count > 1
+        binding.pry
+        # nearest_door = doors&.min_by { |door| distance(current_point, door) }
+        doors = doors.sort_by { |door| distance(current_point, door) }
+
+        doors.each_with_index do |door, index|
+          door.update_column(:sort, index + 1)
+        end
+
+      end
+    end
   end
 
   def sort_floorplate_stops
@@ -62,8 +82,17 @@ class UpdateTourStopsSortingOrder
           stops_points = fetch_stops_points(floor_stops)
           # sorted_points = sort_stops_by_distance(starting_point, stops_points)
           sorted_points = sort_stops_by_previous_point(starting_point, stops_points)
+
+          puts "Sorted Points: \n\n"
+          puts sorted_points.inspect
+          puts "\n\n\n\n"
+
           current_point = sorted_points.last
           current_point = get_elevator(b, f, current_point) #sorted_points.last
+          puts "Current Point: \n\n"
+          puts current_point.inspect
+          puts "\n\n\n\n"
+
           sorted_stops = fetch_sorted_tour_stops(sorted_points)
 
           if sorted_stops.present?

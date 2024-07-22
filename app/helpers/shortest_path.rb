@@ -2397,7 +2397,8 @@ module ShortestPath
     end
 
     def amenity_door amenity
-      amenity.doors.order("created_at ASC").first
+      # amenity.doors.order("created_at ASC").first
+      amenity.doors.order("sort ASC").first
     end
 
 end
