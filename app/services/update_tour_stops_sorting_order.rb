@@ -54,7 +54,6 @@ class UpdateTourStopsSortingOrder
       doors = amenity.doors
 
       if doors.present? && doors.count > 1
-        binding.pry
         # nearest_door = doors&.min_by { |door| distance(current_point, door) }
         doors = doors.sort_by { |door| distance(current_point, door) }
 
