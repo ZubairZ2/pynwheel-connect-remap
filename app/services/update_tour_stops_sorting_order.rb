@@ -3,7 +3,7 @@ class UpdateTourStopsSortingOrder
     @community = community
     @tour_user = tour_user
     @tour = get_tour
-    @ignore_stop_ids = stop_ids || []
+    @ignore_stop_ids = stop_ids
     puts "******"*30
     puts "\n\n"
     puts @ignore_stop_ids.inspect

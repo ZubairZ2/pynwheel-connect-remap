@@ -102,7 +102,10 @@ module Api
         end
 
         def customize_tour
-          UpdateTourStopsSortingOrder.new(@community, @tour_user, params[:stop_id]).sort()
+          delete_array = params[:stop_id].gsub(/[\[\]']/, '').split(",").map(&:to_i) if params[:stop_id].present?
+          delete_array = delete_array.present? ? delete_array : []
+
+          UpdateTourStopsSortingOrder.new(@community, @tour_user, delete_array).sort()
           @tour = CustomizeTourService.new(@community, @tour_user).get_user_tour
           @building_list = Buildings.new(@community).get_community_buildings
           @floor_list = Floors.new(@community).get_community_floors
