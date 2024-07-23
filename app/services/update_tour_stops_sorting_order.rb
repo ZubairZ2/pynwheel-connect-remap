@@ -153,14 +153,21 @@ class UpdateTourStopsSortingOrder
   end
 
   def fetch_stops_points(tour_stops)
-    tour_stops.map do |tour_stop|
+    tour_stops.each_with_object([]) do |tour_stop, points|
       actual_stop = fetch_actual_stop(tour_stop)
-      build_stop_point(tour_stop, actual_stop) if actual_stop
-    end.compact
+  
+      next unless actual_stop
+  
+      if @community.is_sitemap || (actual_stop.floor.present? && actual_stop.building.present?)
+        points << build_stop_point(tour_stop, actual_stop)
+      end
+    end
   end
+  
 
   def fetch_actual_stop(tour_stop)
     tour_stop[:stop_type].classify.constantize.find_by(id: tour_stop[:stop_id])
+    
   rescue StandardError => e
     Rails.logger.error("Error fetching stop: #{e.message}")
     nil
