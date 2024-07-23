@@ -102,7 +102,7 @@ module Api
         end
 
         def customize_tour
-          sort_stops()
+          UpdateTourStopsSortingOrder.new(@community, @tour_user).sort() if @community.auto_wayfinding
           @tour = CustomizeTourService.new(@community, @tour_user).get_user_tour
           @building_list = Buildings.new(@community).get_community_buildings
           @floor_list = Floors.new(@community).get_community_floors
@@ -147,7 +147,8 @@ module Api
             session["check_lock_access#{@tour_user.id.to_s}"] = 0
             current_time = current_community_time(@community, params)
 
-            sort_stops()
+            UpdateTourStopsSortingOrder.new(@community, @tour_user).sort() if @community.auto_wayfinding && !(@community.deleted_ids.empty? || @community.deleted_ids == [0])
+
             @tour_sort_hash = CustomizeTourService.new(@community, @tour_user).get_tour_sort_hash
             @building_list = Buildings.new(@community).get_community_buildings
             @floor_list = Floors.new(@community).get_community_floors
@@ -160,10 +161,6 @@ module Api
         end
         
         private
-
-        def sort_stops
-          UpdateTourStopsSortingOrder.new(@community, @tour_user).sort() if @community.auto_wayfinding
-        end
 
         def chat_room_count tour_user, community
           chatroom = Chatroom.find_by(tour_user_id: tour_user.id, tour_id: community.community_tour.id)
