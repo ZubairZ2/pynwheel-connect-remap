@@ -102,10 +102,7 @@ module Api
         end
 
         def customize_tour
-          delete_array = params[:stop_id].gsub(/[\[\]']/, '').split(",").map(&:to_i) if params[:stop_id].present?
-          delete_array = delete_array.present? ? delete_array : []
-
-          UpdateTourStopsSortingOrder.new(@community, @tour_user, delete_array).sort()
+          sort_stops()
           @tour = CustomizeTourService.new(@community, @tour_user).get_user_tour
           @building_list = Buildings.new(@community).get_community_buildings
           @floor_list = Floors.new(@community).get_community_floors
@@ -146,9 +143,11 @@ module Api
             @community.deleted_ids = delete_array.present? ? delete_array + te : [] + te
             @community.save!
 
+
             session["check_lock_access#{@tour_user.id.to_s}"] = 0
             current_time = current_community_time(@community, params)
 
+            sort_stops()
             @tour_sort_hash = CustomizeTourService.new(@community, @tour_user).get_tour_sort_hash
             @building_list = Buildings.new(@community).get_community_buildings
             @floor_list = Floors.new(@community).get_community_floors
@@ -161,6 +160,10 @@ module Api
         end
         
         private
+
+        def sort_stops
+          UpdateTourStopsSortingOrder.new(@community, @tour_user).sort() if @community.auto_wayfinding
+        end
 
         def chat_room_count tour_user, community
           chatroom = Chatroom.find_by(tour_user_id: tour_user.id, tour_id: community.community_tour.id)

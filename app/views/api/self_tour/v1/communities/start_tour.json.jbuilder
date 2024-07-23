@@ -119,7 +119,7 @@ json.tours @tours do |tour|
 
               begin
                 if @community&.community_tour&.starting_floor.present? and @community&.community_tour&.starting_floor != min_floor #and !bsp.present?
-
+                  binding.pry
                   first_floor_elev = @all_elevators.map{|x| x[0] if (@community&.community_tour&.building.present? ? x[2] == @community.community_tour.building : x[2] == building) and (@community.community_tour.starting_floor.present? ? (x[1].include? @community.community_tour.starting_floor) : (x[1].include? min_floor))}.compact.first
                   first_floor_elev = TourStop.find_by stop_id: first_floor_elev.id
                   if first_floor_elev.present?
@@ -139,6 +139,8 @@ json.tours @tours do |tour|
 
             begin
               if bsp.present? and bsp.floor != min_floor
+                binding.pry
+
                 first_floor_elev = @all_elevators.map{|x| x[0] if ( x[2] == bsp.building ) and  (x[1].include? bsp.floor) }.compact.first
                 first_floor_elev = TourStop.find_by stop_id: first_floor_elev.id
                 if first_floor_elev.present?
@@ -167,6 +169,10 @@ json.tours @tours do |tour|
 
                   if (add_mdu) and !(@community.deleted_ids.include? add_stop.id)
                     if (add_stop.is_a?(Tour)) || add_stop.stop_type === "elevator" || add_stop.stop_type === "building_starting_point"
+                      binding.pry
+                      if add_stop.stop_type === "elevator"
+                      end
+
                       if available_units_count > 0 || available_amenities_count > 0
                         stops_arr << add_stop
                       end
@@ -273,8 +279,6 @@ json.tours @tours do |tour|
         end
       end
     end
-
-
 
     stops = @community.mdu ? tour.tour_stops.plotted_stops : tour.tour_stops.plotted_stops.where.not(stop_type: "unit")
     stops_except_deleted = []

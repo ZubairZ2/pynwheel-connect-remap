@@ -1,14 +1,8 @@
 class UpdateTourStopsSortingOrder
-  def initialize(community, tour_user, stop_ids)
+  def initialize(community, tour_user)
     @community = community
     @tour_user = tour_user
     @tour = get_tour
-    @ignore_stop_ids = stop_ids
-    puts "******"*30
-    puts "\n\n"
-    puts @ignore_stop_ids.inspect
-    puts "\n\n"
-    puts "******"*30
   end
 
   def sort
@@ -201,7 +195,7 @@ class UpdateTourStopsSortingOrder
   end
 
   def get_tour_stops
-    ids = @tour.tour_stops.ids - @ignore_stop_ids
+    ids = @tour.tour_stops.ids - @community.deleted_ids
     @tour.tour_stops.where(id: ids).plotted_stops.visible
   end
 
