@@ -56,6 +56,7 @@ module Api
             delete_array = @community.deleted_ids
             delete_array << @tour_stop.id
             @community.deleted_ids = delete_array&.compact&.uniq
+            @community.save!
             render json: { success: true, error_code: 200, message: "Tour stop has been removed successfully", is_unit_already_available: false}, status: 200
           end
         end
