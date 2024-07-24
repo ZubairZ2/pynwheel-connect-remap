@@ -23,6 +23,8 @@ class CommunityTour
       get_floorplate_tour_stops()
     end
 
+    @stops_arr = @stops_arr.where.not(id: @community.deleted_ids).order(:sort)
+
     get_finalized_tour_stops_list_for_self_tour()
   end
 
