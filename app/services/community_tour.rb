@@ -23,8 +23,6 @@ class CommunityTour
       get_floorplate_tour_stops()
     end
 
-    @stops_arr = @stops_arr.where.not(id: @community.deleted_ids).order(:sort)
-
     get_finalized_tour_stops_list_for_self_tour()
   end
 
@@ -150,6 +148,8 @@ class CommunityTour
     else
       @stops_arr =  @community.mdu ? @tour.tour_stops.plotted_stops.where(display_stop: true).order(:sort) : @tour.tour_stops.plotted_stops.where(display_stop: true, stop_type: "amenity").order(:sort)
     end
+
+    @stops_arr = @stops_arr.where.not(id: @community.deleted_ids).order(:sort)
   end
 
   def get_floorplate_tour_stops
@@ -175,6 +175,8 @@ class CommunityTour
         end
       end
     end
+
+    @stops_arr = @stops_arr.reject { |stop| @community.deleted_ids.include?(stop.id) }.sort_by(&:sort)
   end
 
   def get_filtered_tour_stops
