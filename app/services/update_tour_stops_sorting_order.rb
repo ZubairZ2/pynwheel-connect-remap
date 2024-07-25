@@ -63,7 +63,7 @@ class UpdateTourStopsSortingOrder
     sort_single_building_floorplate_stops
   end
   
-  def get_building_starting_point
+  def get_building_starting_point building
     bsp = BuildingStartingPoint.find_by(community_id: @community.id,building: building)
     bsp
   end
@@ -72,7 +72,7 @@ class UpdateTourStopsSortingOrder
     g_index = 1
 
     buildings&.each do |b|
-      bsp = get_building_starting_point()
+      bsp = get_building_starting_point(b)
       current_point = (bsp.present? ? bsp : sitemap_starting_point)
 
       floors&.each_with_index do |f, f_index|
