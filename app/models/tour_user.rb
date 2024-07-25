@@ -118,6 +118,19 @@ class TourUser < ApplicationRecord
     ( (community.community_tour&.tour_setting&.enable_tour_customization) && (self.tours.where(community_id: community.id).last.present?) )
   end
 
+  def get_latch_connected_elevator_bluetooth_ids latch_guest, stop
+    bluetooth_ids = []
+
+    if stop.stop_type.classify == "Elevator"
+      bluetooth_ids << latch_guest.latch_link
+      bluetooth_ids << latch_guest.latch_link
+      bluetooth_ids << latch_guest.latch_link
+    end
+
+    bluetooth_ids
+  end
+
+
   def get_list_of_zerv_lock_ids tour, community, stop, new_stops_arr, counter, zev_mac_ids = [], current_stop_zerv_id
     return [] if community.is_sitemap
     begin
