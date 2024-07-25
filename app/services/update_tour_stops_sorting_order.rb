@@ -157,7 +157,7 @@ class UpdateTourStopsSortingOrder
   def fetch_stops_points(tour_stops)
     tour_stops.each_with_object([]) do |tour_stop, points|
       actual_stop = fetch_actual_stop(tour_stop)
-
+  
       next unless actual_stop.present?
   
       if @community.is_sitemap || (actual_stop.floor.present? && actual_stop.building.present?)
@@ -199,7 +199,7 @@ class UpdateTourStopsSortingOrder
 
   def get_tour_stops
     ids = @tour.tour_stops.ids - @community.deleted_ids
-    @tour.tour_stops.where(id: ids).plotted_stops.visible
+    @tour.tour_stops.where(id: ids, stop_type: ["unit", "amenity"]).plotted_stops.visible
   end
 
   def get_floor_stops stop_ids
