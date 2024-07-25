@@ -9,6 +9,43 @@ class UpdateTourStopsSortingOrder
     @community.is_sitemap ? sort_sitemap_stops : sort_floorplate_stops
   end
 
+  def nearest_elevator
+    elevators = {}
+    buildings&.each do |b|
+      bsp = get_building_starting_point(b)
+      current_point = (bsp.present? ? bsp : sitemap_starting_point)
+      
+      floors&.each_with_index do |f, f_index|
+        # starting_point = f_index > 0 ? get_elevator(b, f, current_point) : (bsp.present? ? bsp : sitemap_starting_point) # for the first floor use tour as starting point
+
+        floor_stop_ids = @tour&.sort_hash["#{b},#{f}"]
+        if floor_stop_ids.present?
+          tour_stop = TourStop.find_by_id floor_stop_ids&.last
+
+          if tour_stop.present?
+            tour_stop.stop_type.classify.constantize.find_by(id: tour_stop.stop_id)
+
+            actual_stop = fetch_actual_stop(tour_stop)
+
+            if actual_stop.present?
+              elevator = get_elevator(b, f, actual_stop)
+            else
+              elevator =  get_elevator(b, f, current_point)
+            end
+          else
+            elevator =  get_elevator(b, f, current_point)
+          end
+        else
+          elevator =  get_elevator(b, f, current_point)
+        end
+
+        elevators[f] = [elevator.id]
+        current_point = elevator
+      end
+    end
+    elevators
+  end
+
   private
 
   def sort_sitemap_stops

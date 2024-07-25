@@ -388,7 +388,7 @@ json.tours @tours do |tour|
         mobile_path, new_stops_arr = ShortestPath.return_floorplate_mobile_path_for_multiple_buildings(new_stops_arr, building_list, @community.id, 'sorting')
       else
         new_stops_arr = ShortestPath.fetch_tour_stops_which_are_required_from_mobile_side(new_stops_arr, @community.id, @tour_user) # Here we add this community elevator for shortest path making        
-        mobile_path, new_stops_arr = ShortestPath.return_floorplate_path_for_mobile(new_stops_arr, @community.id, 'sorting')
+        mobile_path, new_stops_arr = ShortestPath.return_floorplate_path_for_mobile(new_stops_arr, @community.id, 'sorting', @tour_user)
       end
     end
   end
