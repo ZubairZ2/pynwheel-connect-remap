@@ -1,5 +1,6 @@
 class UpdateTourStopsSortingOrder
   def initialize(community, tour_user)
+    return unless community.present? && tour_user.present?
     @community = community
     @tour_user = tour_user
     @tour = get_tour
@@ -8,6 +9,37 @@ class UpdateTourStopsSortingOrder
   def sort
     @community.is_sitemap ? sort_sitemap_stops : sort_floorplate_stops
   end
+
+  def nearest_elevator(tour_stops)
+    is_multiple_building, building_list = ShortestPath.check_stops_have_multiple_buildings(tour_stops, @community, @tour_user)
+    elevators = {}
+  
+    building_list&.each do |building|
+      starting_point = get_building_starting_point(building) || sitemap_starting_point
+      elevators[building] = {}
+  
+      floors&.each_with_index do |floor, index|
+        floor_stop_ids = @tour&.sort_hash["#{building},#{floor}"]
+        last_stop_id = floor_stop_ids&.last
+        tour_stop = TourStop.find_by(id: last_stop_id)
+  
+        actual_stop = tour_stop ? fetch_actual_stop(tour_stop) : nil
+        current_point = actual_stop || starting_point
+        elevator = get_elevator(building, floor, current_point)
+  
+        if is_multiple_building
+          elevators[building][floor] = [elevator.id]
+        else
+          elevators[floor] = [elevator.id]
+        end
+  
+        starting_point = elevator
+      end
+    end
+  
+    elevators
+  end
+  
 
   private
 
