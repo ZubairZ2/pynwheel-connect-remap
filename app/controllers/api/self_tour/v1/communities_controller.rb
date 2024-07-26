@@ -11,6 +11,8 @@ module Api
         before_action :load_floors_list, only: [:customize_tour, :start_tour]
         before_action :sort_stops_list, only: [:customize_tour]
         after_action :update_deleted_stops_list, only: [:initialize_tour, :start_tour]
+        before_action :copy_sort_hash_if_needed, only: :customize_tour
+        after_action :restore_sort_hash, except: :customize_tour
 
         include DweloDevicesHelper
         include ApplicationHelper
@@ -143,12 +145,20 @@ module Api
         
         private
 
+        def copy_sort_hash_if_needed
+          if @tour.copy_sort_hash.present? &&  @tour.copy_sort_hash === "{}"
+            @tour.update(copy_sort_hash: @tour.sort_hash)
+          end
+        end
+      
+        def restore_sort_hash
+          if @tour.copy_sort_hash.present? &&  @tour.copy_sort_hash != "{}"
+            @tour.update(sort_hash: @tour.copy_sort_hash, copy_sort_hash: "{}")
+          end
+        end
+
         def update_deleted_stops_list
           @community.update(deleted_ids: [])
-          
-          if @tour.copy_sort_hash.present? && @tour.copy_sort_hash != "{}"
-            @tour.update!(sort_hash: @tour.copy_sort_hash) unless @community.customization_enabled?
-          end
         end
 
         def chat_room_count tour_user, community
