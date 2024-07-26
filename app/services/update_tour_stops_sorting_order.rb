@@ -1,5 +1,6 @@
 class UpdateTourStopsSortingOrder
   def initialize(community, tour_user)
+    return unless community.present? && tour_user.present?
     @community = community
     @tour_user = tour_user
     @tour = get_tour
@@ -9,42 +10,36 @@ class UpdateTourStopsSortingOrder
     @community.is_sitemap ? sort_sitemap_stops : sort_floorplate_stops
   end
 
-  def nearest_elevator
+  def nearest_elevator(tour_stops)
+    is_multiple_building, building_list = ShortestPath.check_stops_have_multiple_buildings(tour_stops, @community, @tour_user)
     elevators = {}
-    buildings&.each do |b|
-      bsp = get_building_starting_point(b)
-      current_point = (bsp.present? ? bsp : sitemap_starting_point)
-      
-      floors&.each_with_index do |f, f_index|
-        # starting_point = f_index > 0 ? get_elevator(b, f, current_point) : (bsp.present? ? bsp : sitemap_starting_point) # for the first floor use tour as starting point
-
-        floor_stop_ids = @tour&.sort_hash["#{b},#{f}"]
-        if floor_stop_ids.present?
-          tour_stop = TourStop.find_by_id floor_stop_ids&.last
-
-          if tour_stop.present?
-            tour_stop.stop_type.classify.constantize.find_by(id: tour_stop.stop_id)
-
-            actual_stop = fetch_actual_stop(tour_stop)
-
-            if actual_stop.present?
-              elevator = get_elevator(b, f, actual_stop)
-            else
-              elevator =  get_elevator(b, f, current_point)
-            end
-          else
-            elevator =  get_elevator(b, f, current_point)
-          end
+  
+    building_list&.each do |building|
+      starting_point = get_building_starting_point(building) || sitemap_starting_point
+      elevators[building] = {}
+  
+      floors&.each_with_index do |floor, index|
+        floor_stop_ids = @tour&.sort_hash["#{building},#{floor}"]
+        last_stop_id = floor_stop_ids&.last
+        tour_stop = TourStop.find_by(id: last_stop_id)
+  
+        actual_stop = tour_stop ? fetch_actual_stop(tour_stop) : nil
+        current_point = actual_stop || starting_point
+        elevator = get_elevator(building, floor, current_point)
+  
+        if is_multiple_building
+          elevators[building][floor] = [elevator.id]
         else
-          elevator =  get_elevator(b, f, current_point)
+          elevators[floor] = [elevator.id]
         end
-
-        elevators[f] = [elevator.id]
-        current_point = elevator
+  
+        starting_point = elevator
       end
     end
+  
     elevators
   end
+  
 
   private
 
