@@ -4,6 +4,7 @@ class UpdateTourStopsSortingOrder
     @community = community
     @tour_user = tour_user
     @tour = get_tour
+    store_copy_of_sort_hash
   end
 
   def sort
@@ -40,8 +41,14 @@ class UpdateTourStopsSortingOrder
     elevators
   end
   
-
   private
+
+  def store_copy_of_sort_hash
+    return if @community.customization_enabled?
+    
+    @tour.update!(copy_sort_hash: @tour.sort_hash)
+  end
+  
 
   def sort_sitemap_stops
     stops_points = fetch_stops_points(get_tour_stops)

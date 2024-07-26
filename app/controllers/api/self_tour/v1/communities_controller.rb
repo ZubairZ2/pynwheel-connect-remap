@@ -145,6 +145,7 @@ module Api
 
         def update_deleted_stops_list
           @community.update(deleted_ids: [])
+          @tour.update!(sort_hash: @tour.copy_sort_hash) unless @community.customization_enabled?
         end
 
         def chat_room_count tour_user, community
