@@ -168,15 +168,13 @@ class CommunityTour
             @tour.sort_hash[building + ","+ floor.to_s].each do |s_id|
               if (s_id.present?)
                 stop = (TourStop.find_by_id(s_id))
-                @stops_arr << stop if (stop.display_stop && (@community.mdu ? true : (stop.stop_type != "unit")) ) rescue next
+                @stops_arr << stop if (!@community.deleted_ids.include?(stop.id) && stop.display_stop && (@community.mdu ? true : (stop.stop_type != "unit")) ) rescue next
               end
             end
           end
         end
       end
     end
-
-    @stops_arr = @stops_arr.reject { |stop| @community.deleted_ids.include?(stop.id) }.sort_by(&:sort)
   end
 
   def get_filtered_tour_stops
