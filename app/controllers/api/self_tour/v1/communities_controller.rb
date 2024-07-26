@@ -10,7 +10,7 @@ module Api
         before_action :load_building_list, only: [:customize_tour, :start_tour]
         before_action :load_floors_list, only: [:customize_tour, :start_tour]
         before_action :sort_stops_list, only: [:customize_tour]
-        after_action :update_deleted_stops_list, only: [:initialize_tour, :start_tour]
+        after_action :update_deleted_stops_list, except: :customize_tour
         before_action :copy_sort_hash_if_needed, only: :customize_tour
         after_action :restore_sort_hash, except: :customize_tour
 
@@ -29,7 +29,7 @@ module Api
             @location_received = false
             @is_tour_completed = false
 
-            if params[:latitude].present? and params[:latitude].present?
+            if params[:latitude].present? and params[:longitude].present?
               @tour_user.latitude = params[:latitude]
               @tour_user.longitude = params[:longitude]
               @location_received = true
@@ -146,12 +146,15 @@ module Api
         private
 
         def copy_sort_hash_if_needed
+          return if @community.customization_enabled?
           if @tour.copy_sort_hash.present? &&  @tour.copy_sort_hash === "{}"
             @tour.update(copy_sort_hash: @tour.sort_hash)
           end
         end
       
         def restore_sort_hash
+          return if @community.customization_enabled?
+
           if @tour.copy_sort_hash.present? &&  @tour.copy_sort_hash != "{}"
             @tour.update(sort_hash: @tour.copy_sort_hash, copy_sort_hash: "{}")
           end
@@ -159,6 +162,7 @@ module Api
 
         def update_deleted_stops_list
           @community.update(deleted_ids: [])
+          @tour.update(copy_sort_hash: "{}")
         end
 
         def chat_room_count tour_user, community
