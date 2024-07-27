@@ -58,6 +58,7 @@ module Api
             @community.deleted_ids = delete_array&.compact&.uniq
             @community.save!
             
+            UpdateTourStopsSortingOrder.new(@community, @tour_user).sort() if @community.auto_wayfinding
             render json: { success: true, error_code: 200, message: "Tour stop has been removed successfully", is_unit_already_available: false}, status: 200
           end
         end
