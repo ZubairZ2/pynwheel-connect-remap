@@ -888,8 +888,8 @@ module ShortestPath
       planned_to_visit_units_ids  = tour_stops.where(stop_type: "unit", display_stop: true).pluck(:stop_id) rescue []
       planned_to_visit_amenities_ids = tour_stops.where(stop_type: "amenity", display_stop: true).pluck(:stop_id) rescue []
       elevators_ids = tour_stops.where(stop_type: "elevator", display_stop: true).pluck(:stop_id) rescue []
-      # @floor_to_elevators = Elevator.fetch_elevator_according_to_floor(@floors_ids, elevators_ids)
-      @floor_to_elevators = UpdateTourStopsSortingOrder.new(@community, tour_user).nearest_elevator(tour_stops)
+      @floor_to_elevators = Elevator.fetch_elevator_according_to_floor(@floors_ids, elevators_ids)
+      # @floor_to_elevators = UpdateTourStopsSortingOrder.new(@community, tour_user).nearest_elevator(tour_stops)
       @floors_specific_units = fetch_units_according_to_floor(planned_to_visit_units_ids)
       @floors_specific_amenities = fetch_amenities_according_to_floor(planned_to_visit_amenities_ids)
       @original_presendece_arr = fetch_unit_and_amenity_in_floor_by_floor_sorted_way(tour_stops, @floors_specific_units, @floors_specific_amenities, @floors_ids)
@@ -950,8 +950,8 @@ module ShortestPath
       planned_to_visit_units_ids  = tour_stops.where(stop_type: "unit", display_stop: true).pluck(:stop_id) rescue []
       planned_to_visit_amenities_ids = tour_stops.where(stop_type: "amenity", display_stop: true).pluck(:stop_id) rescue []
       elevators_ids = tour_stops.where(stop_type: "elevator", display_stop: true).pluck(:stop_id) rescue []
-      # @floor_to_elevators = Elevator.fetch_elevator_according_to_floor(@floors_ids, elevators_ids)
-      @floor_to_elevators = UpdateTourStopsSortingOrder.new(@community, tour_user).nearest_elevator(tour_stops)
+      @floor_to_elevators = Elevator.fetch_elevator_according_to_floor(@floors_ids, elevators_ids)
+      # @floor_to_elevators = UpdateTourStopsSortingOrder.new(@community, tour_user).nearest_elevator(tour_stops)
       floors_specific_units = fetch_units_according_to_floor(planned_to_visit_units_ids)
       floors_specific_amenities = fetch_amenities_according_to_floor(planned_to_visit_amenities_ids)
       @precedence_according_to_floors = fetch_unit_and_amenity_in_floor_by_floor_sorted_way(tour_stops, floors_specific_units, floors_specific_amenities, @floors_ids)
@@ -1015,8 +1015,8 @@ module ShortestPath
       building_starting_exit_records.each {|building_starting_point| @building_starting_exit_points[building_starting_point.building] = { "id" => building_starting_point.id, "building_name" => building_starting_point.name ,"x_plot" => building_starting_point.x_plot, "y_plot" => building_starting_point.y_plot } }
       building_starting_exit_records.each {|building_starting_point| @building_to_building_id[building_starting_point.building] = building_starting_point.id }
       elevators_ids = tour_stops.where(stop_type: "elevator", display_stop: true).pluck(:stop_id) rescue []
-      # @building_to_floor_to_elevators = Elevator.fetch_elevator_according_to_building(@floors_ids, elevators_ids, building_list)
-      @building_to_floor_to_elevators = UpdateTourStopsSortingOrder.new(@community, tour_user).nearest_elevator(tour_stops)
+      @building_to_floor_to_elevators = Elevator.fetch_elevator_according_to_building(@floors_ids, elevators_ids, building_list)
+      # @building_to_floor_to_elevators = UpdateTourStopsSortingOrder.new(@community, tour_user).nearest_elevator(tour_stops)
       building_floors_specific_units = fetch_units_according_to_building_to_floor(planned_to_visit_units_ids, building_list)
       building_floors_specific_amenities = fetch_amenities_according_to_building_to_floor(planned_to_visit_amenities_ids, building_list)
       @precedence_according_to_building_to_floors = fetch_unit_and_amenity_in_floor_by_floor_sorted_way_for_building(tour_stops, building_floors_specific_units, building_floors_specific_amenities, @floors_ids, building_list)
@@ -1086,8 +1086,8 @@ module ShortestPath
       building_starting_exit_records.each {|building_starting_point| @building_starting_exit_points[building_starting_point.building] = { "id" => building_starting_point.id, "building_name" => building_starting_point.name ,"x_plot" => building_starting_point.x_plot, "y_plot" => building_starting_point.y_plot } }
       building_starting_exit_records.each {|building_starting_point| @building_to_building_id[building_starting_point.building] = building_starting_point.id }
       elevators_ids = tour_stops.where(stop_type: "elevator", display_stop: true).pluck(:stop_id) rescue []
-      # @building_to_floor_to_elevators = Elevator.fetch_elevator_according_to_building(@floors_ids, elevators_ids, building_list)
-      @building_to_floor_to_elevators = UpdateTourStopsSortingOrder.new(@community, tour_user).nearest_elevator(tour_stops)
+      @building_to_floor_to_elevators = Elevator.fetch_elevator_according_to_building(@floors_ids, elevators_ids, building_list)
+      # @building_to_floor_to_elevators = UpdateTourStopsSortingOrder.new(@community, tour_user).nearest_elevator(tour_stops)
 
       building_floors_specific_units = fetch_units_according_to_building_to_floor(planned_to_visit_units_ids, building_list)
       building_floors_specific_amenities = fetch_amenities_according_to_building_to_floor(planned_to_visit_amenities_ids, building_list)
