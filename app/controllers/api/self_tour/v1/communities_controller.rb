@@ -9,10 +9,12 @@ module Api
         before_action :load_tour, only: [:initialize_tour, :customize_tour, :start_tour]
         before_action :load_building_list, only: [:customize_tour, :start_tour]
         before_action :load_floors_list, only: [:customize_tour, :start_tour]
+
         before_action :copy_sort_hash_if_needed, only: :customize_tour
-        after_action :update_deleted_stops_list, except: :customize_tour
-        after_action :restore_sort_hash, except: :customize_tour
         before_action :sort_stops_list, only: [:customize_tour]
+        
+        after_action :restore_sort_hash, except: :customize_tour
+        after_action :update_deleted_stops_list, except: :customize_tour
 
         include DweloDevicesHelper
         include ApplicationHelper
