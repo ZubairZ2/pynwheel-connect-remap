@@ -106,11 +106,19 @@
 
               .form-group#lock_access_code.hide_it
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   = text_field_tag :lock_input, '', :placeholder => "Search by lock name", :list => "locks_list", :autocomplete=> "off", :type => "text", :class => "form-control elevator_edit_field"
                   %datalist#locks_list
-
+                
+              .form-group#latch_multi_locks_selection.hide_it
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  - select_tag_latch_elevator_lock = []
+                  - @all_locks[:latch_locks]&.each do |latch_lock|
+                    - select_tag_latch_elevator_lock << [latch_lock[:name], latch_lock[:id]]
+    
+                  = select_tag "latch_elevator_accesses", options_for_select(select_tag_latch_elevator_lock, @selected_locks), :class => 'chosen-select-latch-elevator-lock',:"data-placeholder" => "- select lock -", :multiple => "multiple",:name => "latch_elevator_selected", style: "width: 100%;"
+                  %input{:value => "Assign Locks", :type => "submit", :id=> 'add_elevator_latch_lock', :class => 'btn btn-success', :style => "margin-top: 10px;"}/  
               
 
     %span.btn.btn-primary.btn-file
@@ -165,6 +173,43 @@
 
 #edit-gallery-image.modal.fade.edit-gallery-image
 :javascript
+
+  $(document).ready(function() {
+    $(".chosen-select-latch-elevator-lock").change(function(){
+      if($('select[name="latch_elevator_selected"]').val().length > 0) {
+        $("#add_elevator_latch_lock").removeClass('hidden')
+      }
+      else {
+        $("#add_elevator_latch_lock").addClass('hidden')
+      }
+    });
+
+
+    $(".chosen-select-latch-elevator-lock").chosen({
+      no_results_text: "Oops, nothing found!"
+    });
+
+
+    $("#add_elevator_latch_lock").click(function(event){
+      event.preventDefault();
+      access_points = $('select[name="latch_elevator_selected"]').val();
+      add_locks(access_points);
+    });
+  });
+
+  function add_locks(access_points) {
+    $.ajax({
+      url: `/communities/${community_id}/elevators/${elevator_id}/assign_multiple_locks`,
+      type: "POST",
+      dataType: "script",
+      data: {
+        access_points: access_points
+      }
+    }).done(function (data) {
+      window.location.reload();
+    });
+  }
+
   var locks_input, locks_list, param_name;
   $(document).ready(function(){
     // run it on ready 
@@ -175,6 +220,7 @@
       if ($('#elevator_lock_provider').val().length == 0)
         $('.edit_elevator').submit();
     });
+    
     function update_locks_select_and_lock_code_field(){
       // if any lock selected selected
       if ($('#elevator_lock_provider').val().length > 0 && $('#elevator_lock_provider').val() != "Manual")
@@ -188,22 +234,32 @@
         locks_list = "#locks_list"
         param_name = "lock_id"
         // assign values
-        if (lock_provider_type == "zerv")
+        if (lock_provider_type == "zerv"){
           $('#lock_access_code').find('label').html("Lock <span>Assign the lock to this elevator</span>")
-        else
+          $('#latch_multi_locks_selection').find('label').html("Lock <span>Assign the lock to this elevator</span>")
+        }
+        else{
           $('#lock_access_code').find('label').html(capitalize(lock_provider_type) + " Lock <span>Assign the lock to this elevator</span>")
+          $('#latch_multi_locks_selection').find('label').html(capitalize(lock_provider_type) + " Lock <span>Assign the lock to this elevator</span>")
+        }
 
-        $('#lock_input').val( $(lock_input_value).val() )
-        $('datalist#locks_list').html($(options).html())
-        $('#lock_access_code').removeClass('hide_it') 
+        $('#lock_input').val( $(lock_input_value).val() );
+        $('datalist#locks_list').html($(options).html());
+
+        if(lock_provider_type === "latch")
+          $('#latch_multi_locks_selection').removeClass('hide_it');
+        else
+          $('#lock_access_code').removeClass('hide_it');
       }
       else if ($('#elevator_lock_provider').val().length > 0)
       {
+        $('#latch_multi_locks_selection').addClass('hide_it');
         $('#lock_access_code').addClass('hide_it')
         $('#manual_access_code').removeClass('hide_it')
         locks_input = undefined
       }
       else{
+        $('#latch_multi_locks_selection').addClass('hide_it');
         $('#lock_access_code').addClass('hide_it')
         $('#manual_access_code').addClass('hide_it')
       }
