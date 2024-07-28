@@ -175,16 +175,7 @@
 :javascript
 
   $(document).ready(function() {
-    $(".chosen-select-latch-elevator-lock").change(function(){
-      if($('select[name="latch_elevator_selected"]').val().length > 0) {
-        $("#add_elevator_latch_lock").removeClass('hidden')
-      }
-      else {
-        $("#add_elevator_latch_lock").addClass('hidden')
-      }
-    });
-
-
+    
     $(".chosen-select-latch-elevator-lock").chosen({
       no_results_text: "Oops, nothing found!"
     });

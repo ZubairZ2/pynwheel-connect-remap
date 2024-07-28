@@ -43,6 +43,9 @@ class ElevatorsController < ApplicationController
       latch_locks = LatchLock.where(lock_id: lock_ids, latch_id: current_community.latch.id) rescue nil
       latch_locks.update_all(stop_id: @elevator.id, stop_type: @elevator.class.name)
       @elevator.update_column(:lock_provider, "Latch")
+    else
+      LatchLock.where(stop_id: @elevator.id).update_all(stop_id: nil, stop_type: nil)
+      @elevator.update_column(:lock_provider, "")
     end
 
     redirect_to edit_community_elevator_path(current_community, @elevator), notice: "Lock assigned successfully"
