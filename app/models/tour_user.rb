@@ -118,13 +118,12 @@ class TourUser < ApplicationRecord
     ( (community.community_tour&.tour_setting&.enable_tour_customization) && (self.tours.where(community_id: community.id).last.present?) )
   end
 
-  def get_latch_connected_elevator_bluetooth_ids latch_guest, stop
+  def get_latch_connected_elevator_bluetooth_ids community_id, stop
     bluetooth_ids = []
 
     if stop.stop_type.classify == "Elevator"
-      bluetooth_ids << latch_guest.latch_link
-      bluetooth_ids << latch_guest.latch_link
-      bluetooth_ids << latch_guest.latch_link
+      guests = self.latch_guests.where(community_id: community_id, guest_of_stop_id: stop.stop_id, guest_of_stop_type: stop.stop_type.classify, status: "active")
+      bluetooth_ids = (guests.present? && guests.count > 1) ? guests.pluck(:latch_link) : []
     end
 
     bluetooth_ids

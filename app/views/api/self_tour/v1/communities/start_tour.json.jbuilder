@@ -881,7 +881,7 @@ json.tours @tours do |tour|
               latch_guest = @tour_user.latch_guests.find_by(community_id: @community.id, guest_of_stop_id: stop.stop_id, guest_of_stop_type: stop.stop_type.classify, status: "active") if @tour_user.present?
             end
             if latch_guest.present?
-              latch_connected_elevator_bluetooth_ids = @tour_user.get_latch_connected_elevator_bluetooth_ids(latch_guest, stop)
+              latch_connected_elevator_bluetooth_ids = @tour_user.get_latch_connected_elevator_bluetooth_ids(@community.id, stop)
 
               is_latch_lock_present = true
               json.guest_pin ''

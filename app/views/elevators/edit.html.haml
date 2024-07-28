@@ -246,10 +246,14 @@
         $('#lock_input').val( $(lock_input_value).val() );
         $('datalist#locks_list').html($(options).html());
 
-        if(lock_provider_type === "latch")
+        if(lock_provider_type === "latch"){
           $('#latch_multi_locks_selection').removeClass('hide_it');
-        else
+          $('#lock_access_code').addClass('hide_it');
+        }
+        else{
+          $('#latch_multi_locks_selection').addClass('hide_it');
           $('#lock_access_code').removeClass('hide_it');
+        }
       }
       else if ($('#elevator_lock_provider').val().length > 0)
       {
