@@ -13,10 +13,7 @@ class RealPageSvcService < BaseService
 
   def perform
     before_updation_units = NotifyManagerService.new(@credentials.community_id)
-
-    @community = @Community.find credentials.community_id
-    
-    if @community.all_apps_enabled? || @community.pynwheel_tour_enabled?
+    if @credentials&.community&.all_apps_enabled? || @credentials&.community&.pynwheel_tour_enabled?
       import_realpage_svc_floorplans
       # import_initials_realpage_units
     else

@@ -100,7 +100,6 @@ class Community < ApplicationRecord
   scope :active_client_properties, -> { active_properties.where.not(company_id: [44, 783]) }
 
   scope :count_properties_in_each_state, -> {active_client_properties&.where.not(state: [nil, ""]).distinct.group(:state).count} 
-  scope :count_properties_in_each_state, -> {active_client_properties&.where.not(state: [nil, ""]).distinct.group(:state).count} 
   scope :active_touch_properties, -> {active_client_properties&.where(touchscreen_app: true)}
   scope :launch_properties, -> {where(pynwheel_launch_access: true).where.not(company_id: [44, 728, 730])}
   scope :touch_and_launch_properties, -> { active_touch_properties | launch_properties }

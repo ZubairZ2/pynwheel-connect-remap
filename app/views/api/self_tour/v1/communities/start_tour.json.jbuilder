@@ -574,6 +574,18 @@ json.tours @tours do |tour|
               json.list_of_zerv_lock_ids list_of_zerv_lock_ids
               json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
             end
+          else
+            json.stop_lock_provider ''
+            json.guest_pin ''
+            json.latch_link ''
+            json.unit_dwelo_lock_id ''
+            json.igloohome_lock_id ''
+            json.igloohome_guest_bluetooth_key ''
+            json.igloohome_version ''
+            json.igloohome_guest_pin ''
+            json.lock_provider_mac_id ''
+            json.list_of_zerv_lock_ids list_of_zerv_lock_ids
+            json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
           end
 
         elsif stop_lock_provider == "EdgeState" and @community.edge_state.present? and stop.edgestate_locks.present?
@@ -881,9 +893,9 @@ json.tours @tours do |tour|
             else
               latch_guest = @tour_user.latch_guests.find_by(community_id: @community.id, guest_of_stop_id: stop.stop_id, guest_of_stop_type: stop.stop_type.classify, status: "active") if @tour_user.present?
             end
+
             if latch_guest.present?
               latch_connected_elevator_bluetooth_ids = @tour_user.get_latch_connected_elevator_bluetooth_ids(@community.id, stop)
-
               is_latch_lock_present = true
               json.guest_pin ''
               json.latch_link latch_guest.latch_link
@@ -909,6 +921,7 @@ json.tours @tours do |tour|
               json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
             end
           else
+            json.stop_lock_provider ''
             json.guest_pin ''
             json.latch_link ''
             json.unit_dwelo_lock_id ''
