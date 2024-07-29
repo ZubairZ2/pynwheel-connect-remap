@@ -1,10 +1,8 @@
 class RealPageSvcSwapService < BaseService
   def perform
     @apply_now_base_url = get_availability_base_url(credentials.community_id)
-
-    @community = Community.find credentials.community_id
     
-    if @community.all_apps_enabled? || @community.pynwheel_tour_enabled?
+    if credentials&.community&.all_apps_enabled? || credentials&.community&.pynwheel_tour_enabled?
       import_realpage_svc_floorplans
       import_initial_realpage_units
     else
@@ -614,9 +612,8 @@ class RealPageSvcSwapService < BaseService
         current_date = Date.today
 
         community_id = credentials.community_id
-        @community = Community.find community_id
 
-        if @community.all_apps_enabled? || @community.pynwheel_tour_enabled?
+        if credentials&.community&.all_apps_enabled? || credentials&.community&.pynwheel_tour_enabled?
           url = RP_TOUR_API_URL
           license_key = ENV['RP_TOUR_API_KEY']
         else
@@ -823,9 +820,8 @@ class RealPageSvcSwapService < BaseService
     site_ids.each do |site_id|
       begin
         community_id = credentials.community_id
-        @community = Community.find community_id
 
-        if @community.all_apps_enabled? || @community.pynwheel_tour_enabled?
+        if credentials&.community&.all_apps_enabled? || credentials&.community&.pynwheel_tour_enabled?
           url = RP_TOUR_API_URL
           license_key = ENV['RP_TOUR_API_KEY']
         else

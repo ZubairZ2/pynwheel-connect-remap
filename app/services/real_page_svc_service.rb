@@ -13,10 +13,8 @@ class RealPageSvcService < BaseService
 
   def perform
     before_updation_units = NotifyManagerService.new(@credentials.community_id)
-
-    @community = @Community.find credentials.community_id
     
-    if @community.all_apps_enabled? || @community.pynwheel_tour_enabled?
+    if @credentials&.community&.all_apps_enabled? || @credentials&.community&.pynwheel_tour_enabled?
       import_realpage_svc_floorplans
       # import_initials_realpage_units
     else
@@ -47,9 +45,9 @@ class RealPageSvcService < BaseService
             floorplans.each do |fp|
               if fp.key?(:FloorPlanObject)
                 fp = fp[:FloorPlanObject]
+
                 provider_floorplan_id = "#{fp[:FloorPlanID].to_s}-#{site_id.to_s}"
                 floorplan = @all_floorplans_hash[provider_floorplan_id]
-
                 if floorplan.present?
                   puts "----------------- #{floorplan.name} -----------------------\n"
 
@@ -390,11 +388,9 @@ class RealPageSvcService < BaseService
         @array_of_dates = []
         @array_of_units = []
         current_date = Date.today
-
         community_id = @credentials.community_id
-        @community = Community.find community_id
 
-        if @community.all_apps_enabled? || @community.pynwheel_tour_enabled?
+        if @credentials&.community&.all_apps_enabled? || @credentials&.community&.pynwheel_tour_enabled?
           url = RP_TOUR_API_URL
           license_key = ENV['RP_TOUR_API_KEY']
         else
@@ -458,7 +454,7 @@ class RealPageSvcService < BaseService
           units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitlistResponse][1][:getunitlistResult][:GetUnitList][1][:UnitObjects][:UnitObject]
           units = [units] if units.is_a?(Hash)
 
-          community = Community.find @credentials.community_id
+          community = @credentials.community
           community&.community_data_updated_on()
           units.each do |u|
             provider_unit_id = "#{u[:Address][:UnitID]}-#{site_id}"
@@ -639,9 +635,8 @@ class RealPageSvcService < BaseService
       import_units = []
 
       community_id = @credentials.community_id
-      @community = Community.find community_id
 
-      if @community.all_apps_enabled? || @community.pynwheel_tour_enabled?
+      if @credentials&.community&.all_apps_enabled? || @credentials&.community&.pynwheel_tour_enabled?
         url = RP_TOUR_API_URL
         license_key = ENV['RP_TOUR_API_KEY']
       else
