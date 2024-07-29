@@ -562,6 +562,7 @@ json.tours @tours do |tour|
               json.list_of_zerv_lock_ids list_of_zerv_lock_ids
               json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
             else
+              json.stop_lock_provider ''
               json.guest_pin ''
               json.latch_link ''
               json.unit_dwelo_lock_id ''
@@ -895,6 +896,7 @@ json.tours @tours do |tour|
               json.list_of_zerv_lock_ids list_of_zerv_lock_ids
               json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
             else
+              json.stop_lock_provider ''
               json.guest_pin ''
               json.latch_link ''
               json.unit_dwelo_lock_id ''
