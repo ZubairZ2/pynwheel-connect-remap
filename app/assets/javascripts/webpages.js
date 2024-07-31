@@ -134,7 +134,6 @@ $(window).bind('load', function () {
 
     $('#unitModal').on('show.bs.modal', function (e) {
       resetToDefaultZoom();
-
       if(selectMap === "3d-map" && enable3DMaps) {
         _3dUnitModalDisplay();
         $('.unit-buttons').addClass('hidden');
@@ -642,7 +641,6 @@ function updateAvailabilitFilterDropdownList() {
     $(mobileFilterId).append(`<option value="121-"> In 121+ days </option>`);
   }
 }
-
 
 function updateSquareFootageFilterDropdownList(floorplateUnits) {
   floorplateUnits = filterUnitsBasedOnCommunityType(floorplateUnits);

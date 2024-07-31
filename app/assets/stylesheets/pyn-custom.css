@@ -6662,7 +6662,7 @@ ul.add-fav-options {
 
 .c-popup .c-m-iframe-content img {
     width: auto;
-    /* max-height: 400px; */
+    max-height: 550px;
 }
 
 .modal-middle-section {
@@ -6764,6 +6764,7 @@ ul.add-fav-options {
 .c-connect-map-wrapper .c-m-iframe-content img {
     width: 100%;
     max-width: 620px;
+    max-height: 620px;
     margin: auto;
 }
 .c-connect-map-wrapper .c-modal-sidebar {

@@ -45,7 +45,7 @@ $(document).ready(function(){
       prevArrow: "<div class='btn prevArrowBtn view-btn-arrow btn-sm btn-block product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left' style='font-size: 30px'></i></div>",
       nextArrow: "<div class='btn nextArrowBtn view-btn-arrow btn-sm btn-block product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-right' style='font-size: 30px'></i></div>"
     }).on('afterChange', function(event, slick, currentSlide) {
-      resetToDefaultZoom();
+      favResetToDefaultZoom();
     });
 	}
   if((window.location.href.includes('favorites') && units.length > 0) || window.location.href.includes('favorites_share_link')){
@@ -175,7 +175,7 @@ function zoomInOut(unit_id){
     favPanZoom.zoomInOut(189);
   });
   $('#'+unit_id+'-fav-reset-zoom').on('click', function (e) {
-    resetToDefaultZoom();
+    favResetToDefaultZoom();
   });  
 
   $('#'+unit_id+'-zoomable-fav-image').on('wheel', function(e) {
@@ -185,7 +185,7 @@ function zoomInOut(unit_id){
   responsiveZoomInOut(unit_id)
 }
 
-function resetToDefaultZoom() {
+function favResetToDefaultZoom() {
   for (var unit_id in favPanZoomInstances) {
     if (favPanZoomInstances.hasOwnProperty(unit_id)) {
       var panZoomInstance = favPanZoomInstances[unit_id];
@@ -194,8 +194,6 @@ function resetToDefaultZoom() {
     }
   }
 }
-
-
 
 function responsiveZoomInOut(unit_id){
   $('#'+unit_id+'-res-zoomable-image a').on("touchstart", function (e) {e.stopImmediatePropagation();});
