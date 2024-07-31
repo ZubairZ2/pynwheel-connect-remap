@@ -7330,3 +7330,7 @@ span.to-input {
     right: 13px;
     padding: 10px 26px;
 }
+
+#latch_elevator_accesses_chosen {
+    width: 100% !important;
+}

@@ -4,7 +4,7 @@ class ElevatorsController < ApplicationController
   before_action :authenticate_user!
   before_action :check_community
   add_breadcrumb "Home", :root_path
-  before_action :set_elevator, only: [:show, :edit, :update, :destroy]
+  before_action :set_elevator, only: [:show, :edit, :update, :destroy, :assign_multiple_locks]
 
   # GET /elevators
   # GET /elevators.json
@@ -29,6 +29,26 @@ class ElevatorsController < ApplicationController
     @community = Community.find params[:community_id]
     @elevator = Elevator.find_by_id(params[:id])
     @all_locks = all_locks(@community)
+    @elevator_latch_locks = @all_locks[:latch_locks]
+    @elevator_assigned_latch_locks = @elevator_latch_locks&.select { |lock| lock[:stop_id] == @elevator.id }
+    @selected_locks = @elevator_assigned_latch_locks.map { |lock| lock[:id] }
+
+  end
+
+  def assign_multiple_locks
+    lock_ids = params["access_points"]
+
+    if lock_ids.present?
+      LatchLock.where(stop_id: @elevator.id).update_all(stop_id: nil, stop_type: nil)
+      latch_locks = LatchLock.where(lock_id: lock_ids, latch_id: current_community.latch.id) rescue nil
+      latch_locks.update_all(stop_id: @elevator.id, stop_type: @elevator.class.name)
+      @elevator.update_column(:lock_provider, "Latch")
+    else
+      LatchLock.where(stop_id: @elevator.id).update_all(stop_id: nil, stop_type: nil)
+      @elevator.update_column(:lock_provider, "")
+    end
+
+    redirect_to edit_community_elevator_path(current_community, @elevator), notice: "Lock assigned successfully"
   end
 
   def save_elevator_gallery

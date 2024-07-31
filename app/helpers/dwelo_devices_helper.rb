@@ -354,8 +354,11 @@ module DweloDevicesHelper
       end
 
       elevators.each do |elevator|
-        lock_info = elevator.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten
-        locks_data << lock_info if lock_info.present? and locks_data.map{|x| x if x[0] == lock_info[0]}.compact.flatten.length == 0
+        elevator_locks = elevator.latch_locks.pluck(:lock_id, :stop_type, :stop_id)
+        elevator_locks.each do |lock_info|
+          lock_info = lock_info.flatten
+          locks_data << lock_info if lock_info.present? and locks_data.map{|x| x if x[0] == lock_info[0]}.compact.flatten.length == 0
+        end
       end
 
       building_starting_points.each do |building_starting_point|

@@ -297,9 +297,12 @@ Rails.application.routes.draw do
       # member do
       #   get :edit_gallery_image_of
       # end
+
       member do
         delete :remove_elevator_plotting
+        post :assign_multiple_locks
       end
+
       collection do
         delete :remove_elevators_plotting
         post :save_elevator_gallery
