@@ -45,14 +45,30 @@ module Api
         return unless @tour.present?
         @tour_stop = @tour.tour_stops.where(stop_id: params[:stop_id]).last
 
-        if @tour_stop.present?
-          remove_tour_stop(@tour_stop)
+        if is_customization_enabled
+          if @tour_stop.present?
+            remove_tour_stop(@tour_stop)
+          else
+            add_tour_stop()
+          end
         else
-          add_tour_stop()
+          if @tour_stop.present?
+            delete_array = @community.deleted_ids
+            delete_array << @tour_stop.id
+            @community.deleted_ids = delete_array&.compact&.uniq
+            @community.save!
+            
+            UpdateTourStopsSortingOrder.new(@community, @tour_user).sort() if @community.auto_wayfinding
+            render json: { success: true, error_code: 200, message: "Tour stop has been removed successfully", is_unit_already_available: false}, status: 200
+          end
         end
       end
 
       private
+
+      def is_customization_enabled
+        @community.community_tour&.tour_setting&.enable_tour_customization
+      end
 
       def skip_editing_tour_stops
         return unless @tour.present?

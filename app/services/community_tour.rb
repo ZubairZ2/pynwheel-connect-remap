@@ -148,6 +148,8 @@ class CommunityTour
     else
       @stops_arr =  @community.mdu ? @tour.tour_stops.plotted_stops.where(display_stop: true).order(:sort) : @tour.tour_stops.plotted_stops.where(display_stop: true, stop_type: "amenity").order(:sort)
     end
+
+    @stops_arr = @stops_arr.where.not(id: @community.deleted_ids).order(:sort)
   end
 
   def get_floorplate_tour_stops
@@ -166,7 +168,7 @@ class CommunityTour
             @tour.sort_hash[building + ","+ floor.to_s].each do |s_id|
               if (s_id.present?)
                 stop = (TourStop.find_by_id(s_id))
-                @stops_arr << stop if (stop.display_stop && (@community.mdu ? true : (stop.stop_type != "unit")) ) rescue next
+                @stops_arr << stop if (!@community.deleted_ids.include?(stop.id) && stop.display_stop && (@community.mdu ? true : (stop.stop_type != "unit")) ) rescue next
               end
             end
           end
