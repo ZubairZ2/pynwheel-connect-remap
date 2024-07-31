@@ -1,0 +1,37 @@
+.row#data-connection-buttons
+  .col-lg-12.col-md-12
+    .row
+      .col-md-6
+        %h4.title Test Data Connection
+    .box.box-widget.panel-box.pl-20.pr-20.pb-20
+      %p
+        This option allows you to test connection settings in the data section.A new browser window will open and attempt to write the data feed output.
+      = link_to "Test Connection" , test_igloohome_connection_community_igloohome_iglooworks_accounts_path(current_community) , :class=>"btn btn-primary",:target=>"_blank"
+      %p{:style => "margin-bottom: -7px; margin-top: 10px;"}
+        If the page that opens contains a bunch of data, it's probably good! If it contains one line that is an error message, then your data cannot be imported into Pynwheel. Please contact your data provider to troubleshoot.
+    .row
+      .col-md-6
+        %h4.title Import Locks Data
+    .box.box-widget.panel-box.pl-20.pr-20.pb-20
+      %p
+        This option allows you to import Igloohome lock data.
+      .callout.callout-danger
+        %p
+          %i.fa.fa-warning
+          This action will either import new, or update existing locks.
+      .propertyDetailName{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+
+        %button.btn.btn-primary.impo#import_locks{:onclick => "import_igloohome_locks(#{@community.id})", :type => "button"} Import Locks Data
+        - if @community.igloohome.present? and @community.igloohome.igloohome_locks.present?
+          = link_to "Map Units" , map_igloohome_locks_community_igloohome_iglooworks_accounts_path(current_community) , :method => :post, :class=>"btn btn-success"
+          = link_to "Delete all Existing Locks" , remove_igloohome_locks_community_igloohome_accounts_path(current_community) , :method => :delete, :class=>"btn btn-danger", :style=> "background-color: #dd4b39d4;"
+
+:javascript
+  function import_igloohome_locks(community_id){
+    $.ajax({
+      type: 'POST',
+      url: '/communities/'+ community_id + '/igloohome_iglooworks_accounts/import_igloohome_locks',
+      cache: false,
+      success: function (data) {}
+    });
+  }
