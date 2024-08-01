@@ -129,9 +129,11 @@ $(window).bind('load', function () {
     $('#unitModal').on('hidden.bs.modal', function (e) {
       applyNowChildClickHandled = false
       unitChildClickHandled = false
+      resetToDefaultZoom();
     });
 
     $('#unitModal').on('show.bs.modal', function (e) {
+      resetToDefaultZoom();
       if(selectMap === "3d-map" && enable3DMaps) {
         _3dUnitModalDisplay();
         $('.unit-buttons').addClass('hidden');
@@ -318,8 +320,9 @@ $(window).bind('load', function () {
       $($marea).removeClass("transform-none");
       modalPanZoom.zoomInOut(189);
     });
+
     $(".reset-modal").on('click', function (e) {
-      $($marea).addClass("transform-none");
+      resetToDefaultZoom();
       $(".reset-modal").addClass("hidden")
     });
 
@@ -639,7 +642,6 @@ function updateAvailabilitFilterDropdownList() {
   }
 }
 
-
 function updateSquareFootageFilterDropdownList(floorplateUnits) {
   floorplateUnits = filterUnitsBasedOnCommunityType(floorplateUnits);
   var unitsSqFeet = floorplateUnits.map(unit => unit.square_feet);
@@ -839,9 +841,12 @@ function getFilteredUnits(units, type){
   return new_units
 }
 
+function resetToDefaultZoom() {
+  modalPanZoom.zoomAbs(0, 0, 1);
+  modalPanZoom.moveTo(0, 0);
+} 
+
 function click_marker_tag(id){
-  var $marea = document.getElementById('zoomable-modal-image')
-  $($marea).addClass("transform-none");
   var marker_tags = document.getElementsByClassName('unit_marker');
   Array.from(marker_tags).forEach(item => {
     if (item.id === id ){
