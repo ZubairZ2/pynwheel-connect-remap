@@ -3,9 +3,13 @@ class IgloohomeIglooworksAccountsController < ApplicationController
   before_action :fetch_property_locks, only: [:test_igloohome_connection, :import_igloohome_locks]
 
   def create
-    @igloohome.update(iglooworks_api_key: params[:iglooworks_api_key])
+    if @igloohome.update(iglooworks_params)
+      flash[:notice] = "Igloohome credentials updated successfully!"
+    else
+      flash[:alert] = "Failed to update Igloohome credentials. Please ensure all required fields are filled."
+    end
+
     redirect_to new_community_dwelo_path(current_community)
-    flash[:notice] = "API key added successfully!"
   end
 
   def test_igloohome_connection
@@ -49,7 +53,11 @@ class IgloohomeIglooworksAccountsController < ApplicationController
     end
 
     def general_error_redirection
-      flash[:error] = "Something wrong! Please make sure you entered the correct API key"
+      flash[:error] = "Something wrong! Please make sure you entered the correct credentials"
       redirect_to new_community_dwelo_path(current_community)
+    end
+
+    def iglooworks_params
+      params.permit(:iglooworks_api_key, :iglooworks_department_id)
     end
 end

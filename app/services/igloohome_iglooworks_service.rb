@@ -77,22 +77,22 @@ class IgloohomeIglooworksService < BaseService
       }
     end
 
-      def api_request_header
-        { 
-          'X-IGLOOWORKS-APIKEY' => iglooworks_api_key,
-          'Content-Type' => 'application/json' 
-        }
-      end
+    def api_request_header
+      { 
+        'X-IGLOOWORKS-APIKEY' => iglooworks_api_key,
+        'Content-Type' => 'application/json' 
+      }
+    end
 
-      def iglooworks_api_key
-        @igloohome_account.iglooworks_api_key
-      end
+    def iglooworks_api_key
+      @igloohome_account.iglooworks_api_key
+    end
 
-      def api_base_url
-        "https://api.iglooworks.co/v1"
-      end
+    def department_id
+      @department_id = @igloohome_account.iglooworks_department_id
+    end
 
-      def department_id
-        @department_id = "656653557c505c00096a8acd"
-      end
-end
+    def api_base_url
+      ENV["IGLOOHOME_IGLOOWORKS_API_BASE_URL"]
+    end
+  end
