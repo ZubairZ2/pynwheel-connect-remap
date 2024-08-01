@@ -37,7 +37,7 @@ class IgloohomeIglooworksAccountsController < ApplicationController
     end
 
     def fetch_property_locks
-      @locks = IgloohomeIglooworksService.new(current_community).get_locks()["payload"]
+      @locks = IgloohomeIglooworksService.new(current_community.id).get_locks()["payload"]
       general_error_redirection unless @locks.present?
     end
 
