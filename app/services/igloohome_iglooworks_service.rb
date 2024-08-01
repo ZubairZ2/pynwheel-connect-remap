@@ -37,6 +37,6 @@ class IgloohomeIglooworksService < BaseService
     end
 
     def department_id
-      
+      @department_id = "656653557c505c00096a8acd"
     end
 end

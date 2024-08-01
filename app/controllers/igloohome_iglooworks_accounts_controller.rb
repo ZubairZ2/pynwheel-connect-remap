@@ -13,12 +13,28 @@ class IgloohomeIglooworksAccountsController < ApplicationController
   end
 
   def import_igloohome_locks
+    store_devices
+    flash[:notice] = "Igloohome locks imported successfully."
+    render :js => "window.location = '/communities/#{current_community&.id}/dwelos/new'"
   end
 
   def map_igloohome_locks
+    @igloohome.map_locks_with_stops
+    flash[:notice] =  "Locks are automapped successfully."
+    redirect_to new_community_dwelo_path(current_community)
   end
 
   private
+
+    def store_devices
+      locks = current_community.igloohome.igloohome_locks
+      locks_by_id = locks.index_by(&:device_id)
+    
+      @locks.each do |device|
+        lock = locks_by_id[device["lockId"]]
+        lock ? lock.update(device_name: device["lockName"]) : locks.create(device_id: device["lockId"], device_name: device["lockName"])
+      end
+    end
 
     def fetch_property_locks
       @locks = IgloohomeIglooworksService.new(current_community).get_locks()["payload"]
