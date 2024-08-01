@@ -288,7 +288,7 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
     Igloohome.find_or_create_by(community_id: @community&.id) do |igloohome|
       igloohome.username = "Username"
       igloohome.password = "Password"
-      igloohome.version = "v2"
+      igloohome.version = "igloohome"
     end
   end
 

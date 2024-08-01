@@ -13,7 +13,7 @@
             Igloo Version
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             - version_seleted = current_community.igloohome.present? ? current_community&.igloohome&.version : ""
-            = f.select :version , options_for_select(["v1", "v2", "iglooworks"], version_seleted),{:include_blank => false},{:class=>"form-control", onchange: 'submitIgloohomeFormOnChange()'}
+            = f.select :version , options_for_select(["v1", "igloohome", "iglooworks"], version_seleted),{:include_blank => false},{:class=>"form-control", onchange: 'submitIgloohomeFormOnChange()'}
           = f.hidden_field :community_id, :value=> current_community.id
           
       .row.mt-10{:style=>"font-size: 17px"}
@@ -40,7 +40,7 @@
     if($("#igloohome_version").val() === "v1")
       displayVersion1View();
 
-    if($("#igloohome_version").val() === "v2")
+    if($("#igloohome_version").val() === "igloohome")
       displayVersion2View();
 
     if($("#igloohome_version").val() === "iglooworks")
