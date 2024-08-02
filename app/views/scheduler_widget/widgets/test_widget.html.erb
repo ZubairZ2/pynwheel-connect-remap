@@ -814,10 +814,11 @@
       })
 
       function currentForm() {
-        if(form_for_reschedule_tour)
-          return $(".edit_tour_user");
-        else
+        if ($("#new_tour_user").length) {
           return $("#new_tour_user");
+        } else {
+          return $(".edit_tour_user");
+        }
       }
 
       function isFormValid() {
