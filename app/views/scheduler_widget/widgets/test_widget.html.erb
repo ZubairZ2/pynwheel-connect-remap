@@ -828,7 +828,7 @@
         const elements = $form[0].querySelectorAll('input, select, textarea');
 
         elements.forEach(element => {
-          if (element.required && !element.value) {
+          if (element.required && element.offsetParent !== null && !element.value) {
             isValid = false;
           }
         });
@@ -975,9 +975,11 @@
           if($('.select_property_tour').val() == "remote_tour"){
             $('#charge_text').text("A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded)")
           }
+
           else if (verification_type_authenteq && $('.select_property_tour').val() != "remote_tour" ){
            $('#charge_text').text("A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded) and $2.00 for ID verification processing when you begin the tour.") 
           }
+
           add_or_remove_question_mark(tour_type)
         });
         function add_or_remove_question_mark(tour_type){
