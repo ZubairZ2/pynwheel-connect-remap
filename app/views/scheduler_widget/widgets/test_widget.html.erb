@@ -812,9 +812,41 @@
         }
           
       })
+
+      function currentForm() {
+        if(form_for_reschedule_tour)
+          return $(".edit_tour_user");
+        else
+          return $("#new_tour_user");
+      }
+
+      function isFormValid() {
+        $form = currentForm();
+        let isValid = true;
+
+        const elements = $form[0].querySelectorAll('input, select, textarea');
+
+        elements.forEach(element => {
+          if (element.required && !element.value) {
+            isValid = false;
+          }
+        });
+
+        return isValid;
+      }
       
       var tour_id;
       $(document).ready(function(){
+        $('#confirm_reservation').on('click', function() {
+          console.log("isFormValid:  ", isFormValid());
+
+          if(isFormValid()) {
+            $('#confirm_reservation').attr('disabled', true);
+            $('#confirm_reservation').css("opacity", "0.5");
+            currentForm().submit();
+          }
+        });
+
         $(".select_number").on("change", function() {
           cleavePhone.setPhoneRegionCode(this.value);
           cleavePhone.setRawValue("");
