@@ -8,7 +8,7 @@ module AppLinks
       app: "https://apps.apple.com/us/app/self-tour/id1488907392",
       android: "https://play.google.com/store/apps/details?id=com.pynwheel.selftour"
     }
-  }.freeze
+  }
 
   def self.get_app_link(company_name)
     LINKS.fetch(company_name.to_sym, LINKS[:default])[:app]

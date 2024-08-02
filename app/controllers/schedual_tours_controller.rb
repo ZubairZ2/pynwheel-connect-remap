@@ -148,7 +148,7 @@ class SchedualToursController < ApplicationController
         sent_notifications = send_email_and_other_notifications(schedual_tour, previous_tour, is_rescheduled, property_tour_type)
         redirect_to scheduler_widget_test_widget_path(message: sent_notifications[:web_notification], community_id: community.id, property_tour_type: property_tour_type, tour_type: tour_type)
       rescue Exception => e
-        AccessLogsService.new().scheduler_widget_logs(community.id, params, e)
+        AccessLogsService.new().scheduler_widget_logs(community.id, params, e.message)
         redirect_to scheduler_widget_test_widget_path(message: sent_notifications[:web_notification], community_id: community.id, property_tour_type: property_tour_type, tour_type: tour_type)
       end
     else
