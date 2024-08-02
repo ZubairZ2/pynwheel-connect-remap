@@ -118,8 +118,8 @@ class MapLocksJob < ApplicationJob
 
     def auto_map_locks(community, data, type, lock_id)
       if data.class.name.classify.downcase == "amenity"
-        if data.doors.present?
-          update_door_lock(data, data.doors.last, type, community, lock_id)
+        if data.ordered_doors.present?
+          update_door_lock(data, data.ordered_doors.first, type, community, lock_id)
         else
           update_stop_lock(data, type, community, lock_id)
         end

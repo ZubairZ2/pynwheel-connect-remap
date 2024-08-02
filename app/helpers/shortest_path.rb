@@ -726,7 +726,7 @@ module ShortestPath
       if stop.class.name == "Unit"
         lock = stop.door.present? ? return_lock(stop.door) : return_lock(stop)
       elsif stop.class.name == "Amenity"
-        lock = stop.doors.present? ? return_lock(amenity_door(stop)) : return_lock(stop)
+        lock = stop.ordered_doors.present? ? return_lock(amenity_door(stop)) : return_lock(stop)
       else
         lock = return_lock(stop)
       end
@@ -808,14 +808,14 @@ module ShortestPath
       @amenities_doors = @sitemap.amenities.includes(:doors)
       @amenity_with_doors = @amenities_doors.map do |amenity| 
         if planned_to_visit_amenities_ids.include?(amenity.id)
-          if amenity.doors.present?
+          if amenity.ordered_doors.present?
             planned_to_visit_amenities_ids = planned_to_visit_amenities_ids - [amenity.id]
             @planned_to_visit_amenities_and_doors_ids << amenity_door(amenity).id # currenly connected with one of multiple door
             update_precedence('amenity', amenity.id, amenity_door(amenity).id)
           else
             @planned_to_visit_amenities_and_doors_ids << amenity.id
           end
-          { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } } 
+          { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.ordered_doors.present? ? amenity.ordered_doors : {} } } 
         end
       end
       @amenity_with_doors.compact!
@@ -854,14 +854,14 @@ module ShortestPath
         @amenities_doors = @sitemap.amenities.includes(:doors)
         @amenity_with_doors = @amenities_doors.map do |amenity| 
           if planned_to_visit_amenities_ids.include?(amenity.id)
-            if amenity.doors.present?
+            if amenity.ordered_doors.present?
               planned_to_visit_amenities_ids = planned_to_visit_amenities_ids - [amenity.id]
               @planned_to_visit_amenities_and_doors_ids << amenity_door(amenity).id # currenly connected with one of multiple door
               update_precedence('amenity', amenity.id, amenity_door(amenity).id)
             else
               @planned_to_visit_amenities_and_doors_ids << amenity.id
             end
-            { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } } 
+            { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.ordered_doors.present? ? amenity.ordered_doors : {} } } 
           end
         end
         @amenity_with_doors.compact!
@@ -917,7 +917,7 @@ module ShortestPath
       @amenity_with_doors = {}
       @amenities_doors.each do |amenity| 
         if planned_to_visit_amenities_ids.include?(amenity.id)
-          if amenity.doors.present?
+          if amenity.ordered_doors.present?
             planned_to_visit_amenities_ids = planned_to_visit_amenities_ids - [amenity.id]
             @planned_to_visit_amenities_and_doors_ids << amenity_door(amenity).id # currenly connected with one of multiple door
             update_precedence_for_floors(amenity.floor, 'amenity', amenity.id, amenity_door(amenity).id)
@@ -925,9 +925,9 @@ module ShortestPath
             @planned_to_visit_amenities_and_doors_ids << amenity.id
           end
           if @amenity_with_doors.has_key?(amenity.floor)
-            @amenity_with_doors[amenity.floor] << { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } }           
+            @amenity_with_doors[amenity.floor] << { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.ordered_doors.present? ? amenity.ordered_doors : {} } }           
           else
-            @amenity_with_doors[amenity.floor] = [{ amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } }]
+            @amenity_with_doors[amenity.floor] = [{ amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.ordered_doors.present? ? amenity.ordered_doors : {} } }]
           end
         end
       end
@@ -978,7 +978,7 @@ module ShortestPath
       @amenity_with_doors = {}
       @amenities_doors.each do |amenity| 
         if planned_to_visit_amenities_ids.include?(amenity.id)
-          if amenity.doors.present?
+          if amenity.ordered_doors.present?
             planned_to_visit_amenities_ids = planned_to_visit_amenities_ids - [amenity.id]
             @planned_to_visit_amenities_and_doors_ids << amenity_door(amenity).id # currenly connected with one of multiple door
             update_precedence_for_floors(amenity.floor, 'amenity', amenity.id, amenity_door(amenity).id)
@@ -986,9 +986,9 @@ module ShortestPath
             @planned_to_visit_amenities_and_doors_ids << amenity.id
           end
           if @amenity_with_doors.has_key?(amenity.floor)
-            @amenity_with_doors[amenity.floor] << { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } }           
+            @amenity_with_doors[amenity.floor] << { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.ordered_doors.present? ? amenity.ordered_doors : {} } }           
           else
-            @amenity_with_doors[amenity.floor] = [{ amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } }]
+            @amenity_with_doors[amenity.floor] = [{ amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.ordered_doors.present? ? amenity.ordered_doors : {} } }]
           end
         end
       end
@@ -1048,7 +1048,7 @@ module ShortestPath
       building_list.each {|building| @amenity_with_doors[building] = {}}
       @amenities_doors.each do |amenity| 
         if planned_to_visit_amenities_ids.include?(amenity.id)
-          if amenity.doors.present?
+          if amenity.ordered_doors.present?
             planned_to_visit_amenities_ids = planned_to_visit_amenities_ids - [amenity.id]
             @planned_to_visit_amenities_and_doors_ids << amenity_door(amenity).id # currenly connected with one of multiple door
             update_precedence_for_building(amenity.building, amenity.floor, 'amenity', amenity.id, amenity_door(amenity).id)
@@ -1056,9 +1056,9 @@ module ShortestPath
             @planned_to_visit_amenities_and_doors_ids << amenity.id
           end
           if @amenity_with_doors[amenity.building].has_key?(amenity.floor)
-            @amenity_with_doors[amenity.building][amenity.floor] << { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } }           
+            @amenity_with_doors[amenity.building][amenity.floor] << { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.ordered_doors.present? ? amenity.ordered_doors : {} } }           
           else
-            @amenity_with_doors[amenity.building][amenity.floor] = [{ amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } }]
+            @amenity_with_doors[amenity.building][amenity.floor] = [{ amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.ordered_doors.present? ? amenity.ordered_doors : {} } }]
           end
         end
       end
@@ -1118,7 +1118,7 @@ module ShortestPath
       building_list.each {|building| @amenity_with_doors[building] = {}}
       @amenities_doors.each do |amenity| 
         if planned_to_visit_amenities_ids.include?(amenity.id)
-          if amenity.doors.present?
+          if amenity.ordered_doors.present?
             planned_to_visit_amenities_ids = planned_to_visit_amenities_ids - [amenity.id]
             @planned_to_visit_amenities_and_doors_ids << amenity_door(amenity).id # currenly connected with one of multiple door
             update_precedence_for_building(amenity.building, amenity.floor, 'amenity', amenity.id, amenity_door(amenity).id)
@@ -1127,9 +1127,9 @@ module ShortestPath
           end
 
           if @amenity_with_doors[amenity.building].has_key?(amenity.floor)
-            @amenity_with_doors[amenity.building][amenity.floor] << { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } }           
+            @amenity_with_doors[amenity.building][amenity.floor] << { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.ordered_doors.present? ? amenity.ordered_doors : {} } }           
           else
-            @amenity_with_doors[amenity.building][amenity.floor] = [{ amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } }]
+            @amenity_with_doors[amenity.building][amenity.floor] = [{ amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.ordered_doors.present? ? amenity.ordered_doors : {} } }]
           end
         end
       end
@@ -2405,8 +2405,7 @@ module ShortestPath
     end
 
     def amenity_door amenity
-      # amenity.doors.order("created_at ASC").first
-      amenity.doors.order("sort ASC").first
+      amenity.ordered_doors.first
     end
 
 end

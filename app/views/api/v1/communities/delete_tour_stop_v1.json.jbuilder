@@ -957,7 +957,7 @@ json.tours @tours do |tour|
         elsif stop_lock_provider == "Manual"
           _stop_ = stop.stop_type.classify.constantize.find_by_id stop.stop_id
           if (defined?(_stop_.door).present? && _stop_.door.present?) ||  (defined?(_stop_.doors).present? && _stop_.doors.any?)
-            _stop_ = defined?(_stop_.door).present? ? _stop_.door : (_stop_.doors.order("created_at ASC").first)
+            _stop_ = defined?(_stop_.door).present? ? _stop_.door : (_stop_.ordered_doors.first)
           end
           if _stop_.present? and _stop_.access_code.present?
             json.guest_pin "Use code " + _stop_.access_code + " to enter."

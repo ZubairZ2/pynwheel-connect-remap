@@ -27,7 +27,7 @@ class AmenitiesController < ApplicationController
   def edit
     @community = Community.find params[:community_id]
     @amenity = Amenity.find (params[:id])
-    @doors = @amenity.doors.order("created_at ASC")
+    @doors = @amenity.ordered_doors
     if params[:unit].present?
       @unit = Unit.find (params[:unit])
     end
@@ -133,7 +133,7 @@ class AmenitiesController < ApplicationController
 
   def update_amenity_door_lock
     @amenity = @community.amenities.find_by(id: params[:id])
-    @door = @amenity.doors.find_by(id: params[:door_id])
+    @door = @amenity.ordered_doors.find_by(id: params[:door_id])
 
     if get_lock_provider() == "Manual" && params[:access_code] == ""
       @door.update_columns(lock_provider: "", access_code: "")
@@ -148,7 +148,7 @@ class AmenitiesController < ApplicationController
 
   def remove_amenity_door_plot
     @amenity = @community.amenities.find_by(id: params[:id])
-    @door = @amenity.doors.find_by(id: params[:door_id])
+    @door = @amenity.ordered_doors.find_by(id: params[:door_id])
     @door.destroy
     redirect_to plot_amenities_community_floorplate_amenities_path(@community, @amenity) + "?floor=" + params["floor"]
     # render json: {amenity: @amenity, door: @door, success: true}
@@ -183,8 +183,8 @@ class AmenitiesController < ApplicationController
 
   def update_locks
     if @community.enable_locks
-      if @amenity.doors.present?
-        @door = @amenity.doors.find_by id: params[:door_id]
+      if @amenity.ordered_doors.present?
+        @door = @amenity.ordered_doors.find_by id: params[:door_id]
         
         if get_lock_provider() == "Manual" && params[:access_code] == ""
           @door.update_columns(lock_provider: "", access_code: "", updated_at: Time.now.utc)

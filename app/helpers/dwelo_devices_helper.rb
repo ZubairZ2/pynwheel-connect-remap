@@ -341,9 +341,9 @@ module DweloDevicesHelper
       end
 
       amenities.each do |amenity|
-        if amenity&.lock_provider === "Latch" || amenity&.doors&.first&.lock_provider === "Latch"
-          if amenity.doors.any?
-            lock_info = amenity.doors.first.latch_lock.present? ? amenity.doors.first.latch_lock.latch_lock_columns : []
+        if amenity&.lock_provider === "Latch" || amenity&.ordered_doors&.first&.lock_provider === "Latch"
+          if amenity.ordered_doors.any?
+            lock_info = amenity.ordered_doors.first.latch_lock.present? ? amenity.ordered_doors.first.latch_lock.latch_lock_columns : []
           else
             lock_info = amenity.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten  
           end

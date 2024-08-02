@@ -79,10 +79,10 @@ class SitemapAmenitiesController < ApplicationController
 		amenity = @sitemap.amenities.find_by(id: params[:id])
 		if amenity.present?
 		  if params[:door_id].present? and params[:door_id].to_i != 0
-			door = amenity.doors.find params[:door_id]
+			door = amenity.ordered_doors.find params[:door_id]
 			status = "updated"
 		  else
-			door = amenity.doors.build
+			door = amenity.ordered_doors.build
 			status = "created"
 		  end
 		  door.update_attributes(community_id: @community.id, x_plot: params[:x_plot], y_plot: params[:y_plot])
@@ -94,7 +94,7 @@ class SitemapAmenitiesController < ApplicationController
 
 	def load_amenity_door_lock
 		@amenity = @sitemap.amenities.find params[:id]
-		@door = @amenity.doors.find params[:door_id]
+		@door = @amenity.ordered_doors.find params[:door_id]
 
 		respond_to do |format|
 			format.js { render :template => "floorplate_amenities/load_amenity_door_lock.js.erb" }

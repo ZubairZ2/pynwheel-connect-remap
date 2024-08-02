@@ -97,14 +97,14 @@ class AutomatePlottingController < ApplicationController
       @amenities_doors = @sitemap.amenities.where(id: planned_to_visit_amenities_ids).includes(:doors)
       # In future we will @amenity_with_doors it for plotting or delete unit stop
       @amenity_with_doors = @amenities_doors.map do |amenity| 
-        if planned_to_visit_amenities_ids.include?(amenity.id) && amenity.doors.present?
+        if planned_to_visit_amenities_ids.include?(amenity.id) && amenity.ordered_doors.present?
           planned_to_visit_amenities_ids = planned_to_visit_amenities_ids - [amenity.id]
-          @planned_to_visit_amenities_and_doors_ids << amenity.doors.first.id # currenly connected with one of multiple door
-          update_precedence('amenity', amenity.id, amenity.doors.first.id)
+          @planned_to_visit_amenities_and_doors_ids << amenity.ordered_doors.first.id # currenly connected with one of multiple door
+          update_precedence('amenity', amenity.id, amenity.ordered_doors.first.id)
         elsif planned_to_visit_amenities_ids.include?(amenity.id)
           @planned_to_visit_amenities_and_doors_ids << amenity.id
         end
-        { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } } 
+        { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.ordered_doors.present? ? amenity.ordered_doors : {} } } 
       end
     end
 
@@ -126,7 +126,7 @@ class AutomatePlottingController < ApplicationController
         @elevators[floor] = @floor_to_floorplate[floor].fetch_elevators(floor)
         # unit_with_door and amenity_with_door for automate_path button and used in js 
         @unit_with_door[floor] = @community_units[floor].map { |unit| { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } } } rescue []
-        @amenity_with_doors[floor] = @amenities_doors[floor].map { |amenity| { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } } } rescue []
+        @amenity_with_doors[floor] = @amenities_doors[floor].map { |amenity| { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.ordered_doors.present? ? amenity.ordered_doors : {} } } } rescue []
       end
     end
 
@@ -155,7 +155,7 @@ class AutomatePlottingController < ApplicationController
           # unit_with_door and amenity_with_door for automate_path button and used in js 
           unit_with_door_hash = { floor => (@community_units[building][floor].map { |unit| { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } } } rescue []) }
           @unit_with_door[building] = @unit_with_door[building].present? ? @unit_with_door[building].merge(unit_with_door_hash) : unit_with_door_hash
-          amenity_with_doors_hash = { floor => (@amenities_doors[building][floor].map { |amenity| { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } } } rescue []) }
+          amenity_with_doors_hash = { floor => (@amenities_doors[building][floor].map { |amenity| { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.ordered_doors.present? ? amenity.ordered_doors : {} } } } rescue []) }
           @amenity_with_doors[building] = @amenity_with_doors[building].present? ? @amenity_with_doors[building].merge(amenity_with_doors_hash) : amenity_with_doors_hash
         end
       end

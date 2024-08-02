@@ -126,7 +126,7 @@ class SitemapsController < ApplicationController
     @amenities_doors = @sitemap.amenities.includes(:doors)
 
     @amenities_doors.each do |amenity|    # following json is created same as with unit to reuse the unit's code.
-        response = amenity.doors.map { |door| { unit_info: { unit: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.id, x_plot: amenity.x_plot, y_plot: amenity.x_plot }, door: door }}}
+        response = amenity.ordered_doors.map { |door| { unit_info: { unit: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.id, x_plot: amenity.x_plot, y_plot: amenity.x_plot }, door: door }}}
         @amenity_with_doors << response
     end
     @amenity_with_doors = @amenity_with_doors.flatten

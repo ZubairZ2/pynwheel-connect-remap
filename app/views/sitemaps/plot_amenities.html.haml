@@ -120,7 +120,7 @@
                               %i{class: "fa fa-plus-circle fa-xs", style: "color: #59de83; font-size: #{fontsize/1.8}px;" }
                         
                         - if @community.self_tour and @community.auto_wayfinding
-                          - amenity.doors.each do |door|
+                          - amenity.ordered_doors.each do |door|
                             = link_to "javascript:void(0);", { id: "amenity_#{amenity.id}__door_#{door.id}", class: "marker", style: "left:#{door.x_plot}px; top:#{door.y_plot}px; position:absolute; font-size: #{door_fontsize}px", title: "#{door.name}", data: {door_id: "#{door.id}", toggle: "tooltip", toggle: "modal", target: "#amenity-door-detail-modal", plotted_category: "amenity_door"}, onclick: 'open_amenity_door_modal(event)'} do
                               %i{class: "fa fa-sign-in fa-xs", style: "color: #{door_marker_color};"}
 

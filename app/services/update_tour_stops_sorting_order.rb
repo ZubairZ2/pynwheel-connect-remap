@@ -76,7 +76,7 @@ class UpdateTourStopsSortingOrder
   def sort_doors_by_distance current_point, next_stop
     if next_stop[:stop_type] === "amenity"
       amenity = Amenity.find_by_id  next_stop[:stop_id]
-      doors = amenity.doors
+      doors = amenity.ordered_doors
 
       if doors.present? && doors.count > 1
         # nearest_door = doors&.min_by { |door| distance(current_point, door) }

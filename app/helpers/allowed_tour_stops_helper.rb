@@ -11,9 +11,9 @@ module AllowedTourStopsHelper
       end
      end
 
-      if tour_stop.class.name === "Amenity" && ( tour_stop.lock_provider == "Igloohome" || (tour_stop.doors.present? && tour_stop.doors.first.lock_provider === "Igloohome") )
-        if tour_stop.present? && tour_stop.doors.present? && tour_stop.doors.first.lock_provider === "Igloohome"
-          allowed_stops << tour_stop.doors.first.id
+      if tour_stop.class.name === "Amenity" && ( tour_stop.lock_provider == "Igloohome" || (tour_stop.ordered_doors.present? && tour_stop.ordered_doors.first.lock_provider === "Igloohome") )
+        if tour_stop.present? && tour_stop.ordered_doors.present? && tour_stop.ordered_doors.first.lock_provider === "Igloohome"
+          allowed_stops << tour_stop.ordered_doors.first.id
         else
           allowed_stops << tour_stop.id
         end

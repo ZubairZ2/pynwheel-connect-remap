@@ -78,10 +78,10 @@ class FloorplateAmenitiesController < ApplicationController
     amenity = @floorplate.amenities.find_by(id: params[:id])
     if amenity.present?
       if params[:door_id].present? and params[:door_id].to_i != 0
-        door = amenity.doors.find params[:door_id]
+        door = amenity.ordered_doors.find params[:door_id]
         status = "updated"
       else
-        door = amenity.doors.build
+        door = amenity.ordered_doors.build
         status = "created"
       end
       door.update_attributes(community_id: @community.id, x_plot: params[:x_plot], y_plot: params[:y_plot])
@@ -93,7 +93,7 @@ class FloorplateAmenitiesController < ApplicationController
 
   def load_amenity_door_lock
     @amenity = @floorplate.amenities.find params[:id]
-    @door = @amenity.doors.find params[:door_id]
+    @door = @amenity.ordered_doors.find params[:door_id]
   end
 
   def plot_amenities
@@ -113,7 +113,7 @@ class FloorplateAmenitiesController < ApplicationController
     @amenities_doors        = @floorplate.amenities.includes(:doors)
 
     @amenities_doors.each do |amenity|    # following json is created same as with unit to reuse the unit's code.
-        response = amenity.doors.map { |door| { unit_info: { unit: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.id, x_plot: amenity.x_plot, y_plot: amenity.x_plot }, door: door }}}
+        response = amenity.ordered_doors.map { |door| { unit_info: { unit: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.id, x_plot: amenity.x_plot, y_plot: amenity.x_plot }, door: door }}}
         @amenity_with_doors << response
     end
     @amenity_with_doors = @amenity_with_doors.flatten
