@@ -41,12 +41,14 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
         zerv_lock(lock) if type.eql?(ZERV)
         other_lock(lock) if type.eql?(OTHERLOCK)
       end
+      
       unique_locks_provider = @locks_provider.uniq
       @community.update_attributes(multiple_locks_provider: unique_locks_provider)
       previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(LOCK_PROVIDER) 
       @community.set_lock_providers_status(current_user, @status)
       FollowUpMailer.send_email_after_form_submission(@community, LOCK_PROVIDER, previous_status)
       locks = get_all_locks
+      
       render json: { success: true, data: locks.as_json }
     rescue => e
       render json: { success: false, message: e.message }
@@ -237,10 +239,17 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
 
   def igloo_home_lock(lock)
     @igloohome = get_igloohome_account
-    if(lock['is_auth_code'].present?)
-      @community.igloohome.update_attributes(home_name: lock['home_name'], is_authorized_with_pynwheel: lock['is_auth_code'])
-    elsif(lock['is_client_auth'])
-      @community.igloohome.update_attributes(home_name: lock['home_name'], is_authorized_with_pynwheel: false, client_id: lock['client_id'], client_secret: lock['client_secret'])
+
+    if lock['version'].present?
+      if lock['version'] === 'igloohome'
+        if(lock['is_auth_code'].present?)
+          @community.igloohome.update_attributes(home_name: lock['home_name'], is_authorized_with_pynwheel: lock['is_auth_code'], version: lock['version'])
+        elsif(lock['is_client_auth'])
+          @community.igloohome.update_attributes(home_name: lock['home_name'], is_authorized_with_pynwheel: false, client_id: lock['client_id'], client_secret: lock['client_secret'], version: lock['version'])
+        end
+      elsif lock['version'] === 'iglooworks'
+        @community.igloohome.update_attributes(iglooworks_api_key: lock['iglooworks_api_key'], iglooworks_department_id: lock['iglooworks_department_id'], version: lock['version'])
+      end
     end
   end
 
@@ -288,7 +297,6 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
     Igloohome.find_or_create_by(community_id: @community&.id) do |igloohome|
       igloohome.username = "Username"
       igloohome.password = "Password"
-      igloohome.version = "igloohome"
     end
   end
 

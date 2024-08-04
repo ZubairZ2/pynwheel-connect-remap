@@ -655,10 +655,16 @@ class Community < ApplicationRecord
     return if igloohome.blank?
     
     unless status.present?
-      if igloohome.is_auth_code
-        status_attr = status_string(igloohome.home_name && (igloohome.refresh_token.present? || igloohome.is_authorized_with_pynwheel) )
-      elsif igloohome.is_client_auth
-        status_attr = status_string(igloohome.home_name && igloohome.client_id.present? && igloohome.client_secret.present?)
+      if igloohome.version === "igloohome"
+        if igloohome.is_auth_code
+          status_attr = status_string(igloohome.home_name && (igloohome.refresh_token.present? || igloohome.is_authorized_with_pynwheel) )
+        elsif igloohome.is_client_auth
+          status_attr = status_string(igloohome.home_name && igloohome.client_id.present? && igloohome.client_secret.present?)
+        else
+          status_attr = status
+        end
+      elsif igloohome.version === "iglooworks"
+        status_attr = status_string(igloohome.iglooworks_api_key.present? && igloohome.iglooworks_department_id.present?)
       else
         status_attr = status
       end
