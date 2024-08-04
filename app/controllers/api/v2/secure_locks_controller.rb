@@ -240,15 +240,15 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
   def igloo_home_lock(lock)
     @igloohome = get_igloohome_account
 
-    if lock['version'].present?
-      if lock['version'] === 'igloohome'
+    if lock['igloo_version'].present?
+      if lock['igloo_version'] === 'igloohome'
         if(lock['is_auth_code'].present?)
-          @community.igloohome.update_attributes(home_name: lock['home_name'], is_authorized_with_pynwheel: lock['is_auth_code'], version: lock['version'])
+          @community.igloohome.update_attributes(home_name: lock['home_name'], is_authorized_with_pynwheel: lock['is_auth_code'], version: lock['igloo_version'])
         elsif(lock['is_client_auth'])
-          @community.igloohome.update_attributes(home_name: lock['home_name'], is_authorized_with_pynwheel: false, client_id: lock['client_id'], client_secret: lock['client_secret'], version: lock['version'])
+          @community.igloohome.update_attributes(home_name: lock['home_name'], is_authorized_with_pynwheel: false, client_id: lock['client_id'], client_secret: lock['client_secret'], version: lock['igloo_version'])
         end
-      elsif lock['version'] === 'iglooworks'
-        @community.igloohome.update_attributes(iglooworks_api_key: lock['iglooworks_api_key'], iglooworks_department_id: lock['iglooworks_department_id'], version: lock['version'])
+      elsif lock['igloo_version'] === 'iglooworks'
+        @community.igloohome.update_attributes(iglooworks_api_key: lock['iglooworks_api_key'], iglooworks_department_id: lock['iglooworks_department_id'], version: lock['igloo_version'])
       end
     end
   end
