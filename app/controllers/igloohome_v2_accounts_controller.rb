@@ -139,7 +139,7 @@ class IgloohomeV2AccountsController < ApplicationController
     end
     
     def general_error_redirection
-      flash[:error] = "Something wrong! Please make sure you authorized with Igloohome"
+      flash[:error] = "No devices were found for the specified home name."
       redirect_to new_community_dwelo_path(current_community)
     end
 
