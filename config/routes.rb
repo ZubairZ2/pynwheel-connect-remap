@@ -174,6 +174,14 @@ Rails.application.routes.draw do
       end
     end
 
+    resources :igloohome_iglooworks_accounts, only: [:create] do
+      collection do
+        get :test_igloohome_connection
+        post :import_igloohome_locks
+        post :map_igloohome_locks
+      end
+    end
+
     resources :igloohome_v1_accounts do
       collection do
         post :import_single_lock

@@ -212,8 +212,10 @@ module DweloDevicesHelper
 
         if(community.igloohome.version == "v1")
           IgloohomeService.new(community, current_time, tour_user).assign_guest_bluetooth_key
-        else
+        elsif(community.igloohome.version == "igloohome")
           IgloohomeLockService.new(community.id, current_time, tour_user).generate_accesses()
+        else
+          IgloohomeIglooworksService.new(community.id, current_time, tour_user).generate_accesses()
         end
 
         tour_user.update_column 'igloohome_status' , 'complete'

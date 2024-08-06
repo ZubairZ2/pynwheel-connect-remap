@@ -8,12 +8,15 @@ class Igloohome < ApplicationRecord
   mount_base64_uploader :lock_image, AvatarUploader
   mount_base64_uploader :amenity_lock_image, AvatarUploader
 
-
   def as_json options = {}
     super(
-      :only => [:id, :community_id, :client_id, :client_secret, :home_name],
-      :methods => [:is_client_auth, :is_auth_code, :authenticated_with_pynwheel, :redirect_uri]
+      :only => [:id, :community_id, :client_id, :client_secret, :home_name, :iglooworks_api_key, :iglooworks_department_id],
+      :methods => [:is_client_auth, :is_auth_code, :authenticated_with_pynwheel, :redirect_uri, :igloo_version]
     )
+  end
+
+  def igloo_version
+    version === "v1" ? "igloohome" : self.version
   end
 
   def map_locks_with_stops

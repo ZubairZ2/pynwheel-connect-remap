@@ -13,7 +13,7 @@
             Igloo Version
           .col-sm-12.col-lg-9.col-md-9.col-xs-12
             - version_seleted = current_community.igloohome.present? ? current_community&.igloohome&.version : ""
-            = f.select :version , options_for_select(["v1", "v2"], version_seleted),{:include_blank => false},{:class=>"form-control", onchange: 'submitIgloohomeFormOnChange()'}
+            = f.select :version , options_for_select(["v1", "igloohome", "iglooworks"], version_seleted),{:include_blank => false},{:class=>"form-control", onchange: 'submitIgloohomeFormOnChange()'}
           = f.hidden_field :community_id, :value=> current_community.id
           
       .row.mt-10{:style=>"font-size: 17px"}
@@ -24,6 +24,8 @@
     = render :partial=>'dwelos/igloohomes/v2/form'
   #igloohome-v1
     = render :partial=>'dwelos/igloohomes/v1/form'
+  #igloohome-iglooworks
+    = render :partial=>'dwelos/igloohomes/iglooworks/form'
 
 :javascript
   var current_version = "#{current_community&.igloohome&.version}";
@@ -38,16 +40,27 @@
     if($("#igloohome_version").val() === "v1")
       displayVersion1View();
 
-    if($("#igloohome_version").val() === "v2")
+    if($("#igloohome_version").val() === "igloohome")
       displayVersion2View();
+
+    if($("#igloohome_version").val() === "iglooworks")
+      displayVersionIglooworksView();
   }
 
   function displayVersion1View() {
     $("#igloohome-v1").removeClass("hide");
     $("#igloohome-v2").addClass("hide");
+    $("#igloohome-iglooworks").addClass("hide");
   }
 
   function displayVersion2View() {
     $("#igloohome-v2").removeClass("hide");
+    $("#igloohome-v1").addClass("hide");
+    $("#igloohome-iglooworks").addClass("hide");
+  }
+
+  function displayVersionIglooworksView() {
+    $("#igloohome-iglooworks").removeClass("hide");
+    $("#igloohome-v2").addClass("hide");
     $("#igloohome-v1").addClass("hide");
   }
