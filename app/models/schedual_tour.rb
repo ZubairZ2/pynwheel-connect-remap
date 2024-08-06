@@ -4,7 +4,7 @@ class SchedualTour < ApplicationRecord
   belongs_to :tour, optional: true
   belongs_to :community, optional: true
   
-  before_destroy :cancel_funnel_appointment, :cancel_yardi_tour, :cancel_knock_appointment, :notify_community_on_cancel_tour
+  before_destroy :cancel_tour, :notify_community_on_cancel_tour
 
   scope :desc_tour_date, -> {order('coalesce(tour_date, created_at) desc')}
   scope :scheduled_tours, -> { where.not(tour_user_id: nil, tour_date: nil, tour_time: nil, community_id: nil) }
@@ -72,13 +72,25 @@ class SchedualTour < ApplicationRecord
     "#{ENV['HOST_URL']}/scheduler_widget/test_widget?scheduled_tour_id=#{self.id}&community_id=#{self&.community&.id}&tour_user_id=#{self&.tour_user&.id}&reschedule_tour=true&direct=true&community_code=#{self&.community&.community_code}"
   end
 
+  def cancel_tour
+    return unless check_tour_status
+  
+    community = self.community
+  
+    if community.is_funnel_community?
+      cancel_funnel_appointment
+    elsif community.use_yardi_as_lead?
+      cancel_yardi_tour
+    elsif community.is_knock_community?
+      cancel_knock_appointment
+    end
+  end  
+
   def cancel_funnel_appointment
-    return unless self.community.is_funnel_community?
     FunnelService.new(self).cancel_funnel_appointment
   end
 
   def cancel_knock_appointment
-    return unless self.community.is_knock_community?
     KnockService.new(self).cancel_knock_appointment
   end
 
@@ -92,10 +104,10 @@ class SchedualTour < ApplicationRecord
   end
   
   def notify_community_on_cancel_tour
-    if is_unscheduled_tour() 
+    if is_unscheduled_tour
       CancelTourMailer.cancel_tour_email(self).deliver_now
     else
-      if check_tour_status()
+      if check_tour_status
         CancelTourMailer.cancel_tour_email(self).deliver_now
       end
     end
