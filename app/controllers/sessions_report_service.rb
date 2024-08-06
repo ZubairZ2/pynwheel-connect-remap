@@ -1,39 +1,55 @@
 class SessionsReportService < BaseService
-  HEADERS = %w{Company\ Name Property\ Name Annual\ Sessions\ Count}.freeze
+  HEADERS = %w{Company\ Name Property\ Name Sessions\ Count}.freeze
 
-  def initialize()
-    @end_date =  Date.today
+  def initialize
+    @end_date = Date.today
     @start_date = Date.new(2024, 1, 1)
   end
 
   def get_report
     CSV.generate(headers: true) do |csv|
       csv << HEADERS
-      companies_with_properties.each do |company, properties|
-        properties.each do |property|
-          csv << format_csv(company, property)
-        end
+      sorted_properties.each do |property|
+        csv << format_csv(property)
       end
     end
   end
 
   private
 
-  def companies_with_properties
-    Company.where.not(id: [44, 783]).joins(communities: :track_sessions)
-           .where(track_sessions: { track_session_type: TOUCH_TYPES })
-           .where('track_sessions.start_datetime > ? AND track_sessions.start_datetime < ?', @start_date.beginning_of_day, @end_date.end_of_day)
-           .group('companies.id', 'communities.id')
-           .order('companies.name', 'communities.name')
-           .pluck('companies.name', 'communities.name', 'COUNT(track_sessions.id)')
-           .group_by { |company_name, _, _| company_name }
+  def all_properties
+    # Fetch all properties with the touchscreen app
+    properties = Community.active_touch_properties
+                          .includes(:company)
+
+    # Fetch session counts for the given timestamp
+    session_counts = TrackSession
+                       .where(community_id: properties.pluck(:id))
+                       .where(track_session_type: TOUCH_TYPES)
+                       .where('start_datetime >= ? AND start_datetime <= ?', @start_date.beginning_of_day, @end_date.end_of_day)
+                       .group(:community_id)
+                       .count
+
+    # Merge properties with session counts
+    properties.map do |property|
+      sessions_count = session_counts.fetch(property.id, 0)
+      {
+        company_name: property.company&.name,
+        property_name: property.name,
+        sessions_count: sessions_count
+      }
+    end
   end
 
-  def format_csv(company, property_data)
+  def sorted_properties
+    all_properties.sort_by { |property| [property[:company_name], property[:property_name]] }
+  end
+
+  def format_csv(property_data)
     [
-      company,
-      property_data[1],
-      property_data[2]
+      property_data[:company_name],
+      property_data[:property_name],
+      property_data[:sessions_count]
     ]
   end
 end
