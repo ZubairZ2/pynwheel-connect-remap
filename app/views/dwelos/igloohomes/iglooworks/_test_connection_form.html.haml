@@ -32,6 +32,8 @@
       type: 'POST',
       url: '/communities/'+ community_id + '/igloohome_iglooworks_accounts/import_igloohome_locks',
       cache: false,
-      success: function (data) {}
+      success: function (data) {
+        window.location.reload();
+      }
     });
   }

@@ -19,7 +19,7 @@ class IgloohomeIglooworksAccountsController < ApplicationController
   def import_igloohome_locks
     store_devices
     flash[:notice] = "Igloohome locks imported successfully."
-    render :js => "window.location = '/communities/#{current_community&.id}/dwelos/new'"
+    redirect_to new_community_dwelo_path(current_community)
   end
 
   def map_igloohome_locks
