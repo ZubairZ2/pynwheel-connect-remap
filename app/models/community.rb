@@ -40,7 +40,7 @@ class Community < ApplicationRecord
   has_many :doors, dependent: :destroy
   has_many :access_points, -> { where("attached_with_type = 'Floorplate' OR attached_with_type = 'Sitemap'") }, class_name: 'Door', dependent: :destroy
   has_many :other_locks, dependent: :destroy
-
+  has_many :track_sessions, dependent: :destroy
 
   has_one :credential, dependent: :destroy
   has_one :crm_credential, dependent: :destroy

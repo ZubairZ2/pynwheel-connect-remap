@@ -142,6 +142,10 @@ class CompaniesController < ApplicationController
     send_data(PropertiesAverageDataReportService.new().get_report() , :type => 'application/xlsx', :filename => "pynwheel-properties-data-report.csv")
   end
 
+  def generate_sessions_report
+    send_data(SessionsReportService.new().get_report() , :type => 'application/xlsx', :filename => "pynwheel-touch-annual-sessions-report.csv")
+  end
+
   private
 
   def set_company

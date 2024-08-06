@@ -87,6 +87,7 @@ Rails.application.routes.draw do
       get :properties_average_data_report
       get :generate_salesforce_report
       get :company_data_provider_communities_list
+      get :generate_sessions_report
     end
 
     member do
