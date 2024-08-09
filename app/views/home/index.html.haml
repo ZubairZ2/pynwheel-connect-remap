@@ -23,10 +23,10 @@
         - allowed_emails = ["johnhall@pynwheel.com", "lizzy@pynwheel.com", ENV["PYNWHEEL_DEV_EMAIL"], "jennifer@pynwheel.com", "kellie@pynwheel.com"]
 
         - if allowed_emails.include?(current_user.email)
-          .col-md-2
-            .mt-35
-              %a.btn.btn-success.pull-right.mb-20{:href => "/companies/generate_webpages_report", :format => "csv"}
-                Webpages report
+          -# .col-md-2
+          -#   .mt-35
+          -#     %a.btn.btn-success.pull-right.mb-20{:href => "/companies/generate_webpages_report", :format => "csv"}
+          -#       Webpages report
 
           .col-md-2
             .mt-35
@@ -41,7 +41,7 @@
           .col-md-2
             .mt-35
               %a.btn.btn-success.pull-right.mb-20{:href => "/companies/generate_sessions_report", :format => "csv"}
-                Sessions Report
+                Touch Sessions Report
           
 
 
