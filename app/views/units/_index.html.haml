@@ -385,6 +385,7 @@
       window.location.reload();
     }
 
+
     $(document).ready(function(){
 
       var $chkboxes = $('.mass-override');
@@ -538,58 +539,67 @@
             break
 
       } 
+
       $(this).parent().parent().css('color','#dd4a39');
       var id = $(this).attr("id");
       id = id.split('_');
+
       if($(this).data('bipAttribute') == 'sold' && $(this).html() == 'Yes'){
         $('#best_in_place_unit_'+id[4]+'_manual_override').html('Yes');
         $('#best_in_place_unit_'+id[4]+'_available_date').html('Never Available');
         $('#best_in_place_unit_'+id[4]+'_available_date').css("pointer-events","none");
 
       }
+
       if($(this).data('bipAttribute') == 'sold' && $(this).html() == 'No'){
         $('#best_in_place_unit_'+id[4]+'_available_date').html("-");
         $('#best_in_place_unit_'+id[4]+'_available_date').css("pointer-events","");
       }
+
       if($('#best_in_place_unit_'+id[4]+'_manual_override').html() == 'No'){
         $(this).parent().parent().css('color','#00000');
       }
+
       $('#flash-message').html('<div class="alert alert-success">'+field+' updated successfully.</div>');
 
       $('#best_in_place_unit_'+id[4]+'_floorplan_id').change(function(){
         $('#best_in_place_unit_'+id[4]+'_manually_updated').html('Yes');
         $('#best_in_place_unit_'+id[4]+'_floorplan_id').css("color","#dd4a39");
       });
+
       $('#best_in_place_unit_'+id[4]+'_marketing_name').change(function(){
         $('#best_in_place_unit_'+id[4]+'_manually_updated').html('Yes');
         $('#best_in_place_unit_'+id[4]+'_marketing_name').css("color","#dd4a39");
       });
+
       $('#best_in_place_unit_'+id[4]+'_effective_rent').change(function(){
         $('#best_in_place_unit_'+id[4]+'_manually_updated').html('Yes');
         $('#best_in_place_unit_'+id[4]+'_effective_rent').css("color","#dd4a39");
       });
+
       $('#best_in_place_unit_'+id[4]+'_available').click(function(){
         $('#best_in_place_unit_'+id[4]+'_manually_updated').html('Yes');
         $('#best_in_place_unit_'+id[4]+'_available').css("color","#dd4a39");
       });
+
       $('#best_in_place_unit_'+id[4]+'_sold').click(function(){
         $('#best_in_place_unit_'+id[4]+'_manually_updated').html('Yes');
         $('#best_in_place_unit_'+id[4]+'_sold').css("color","#dd4a39");
       });
+
       $('#best_in_place_unit_'+id[4]+'_floor').change(function(){
         $('#best_in_place_unit_'+id[4]+'_manually_updated').html('Yes');
         $('#best_in_place_unit_'+id[4]+'_floor').css("color","#dd4a39");
       });
-      if ($('#best_in_place_unit_'+id[4]+'_sold').html() == 'Yes')
-        {
-          $('#best_in_place_unit_'+id[4]+'_available').html('No');
-        }
+
+      if ($('#best_in_place_unit_'+id[4]+'_sold').html() == 'Yes'){
+        $('#best_in_place_unit_'+id[4]+'_available').html('No');
+      }
+      
       $('#best_in_place_unit_'+id[4]+'_available_date').change(function(){
-        //alert($('#best_in_place_unit_'+id[4]+'_available_date').html());
         $('#best_in_place_unit_'+id[4]+'_available_date').css("color","#dd4a39");
         $('#best_in_place_unit_'+id[4]+'_manually_updated').html('Yes');
-        if ($('#best_in_place_unit_'+id[4]+'_sold').html() == 'Yes' && $('#best_in_place_unit_'+id[4]+'_available_date').html() == '-')
-        {
+        if ($('#best_in_place_unit_'+id[4]+'_sold').html() == 'Yes' && $('#best_in_place_unit_'+id[4]+'_available_date').html() == '-'){
           $('#best_in_place_unit_'+id[4]+'_available_date').html('Never Available');
         }
       });
