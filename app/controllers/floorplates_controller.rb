@@ -177,6 +177,7 @@ class FloorplatesController < ApplicationController
       flash[:error] = "Please import unit data first"
       return
     end
+    
     @community_units = @floorplate.fetch_units.includes(:door)
     
     @map_ocr_data = @floorplate.is_ocr_enabled ? @floorplate.map_ocr_data : []

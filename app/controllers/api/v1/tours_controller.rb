@@ -471,7 +471,7 @@ module Api
             floorplan_id: entity.is_a?(Floorplan) ? entity.provider_floorplan_id : entity.floorplan_id,
             community_id: @community.id,
             available: true
-          ).where.not('marketing_name ILIKE ?', "%WAIT%")
+          ).visible_units
 
           units
         else

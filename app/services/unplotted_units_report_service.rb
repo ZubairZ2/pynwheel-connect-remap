@@ -23,11 +23,13 @@ class UnplottedUnitsReportService < BaseService
 
   def communities_with_counts
     Community.active_client_properties
-             .joins(:company)
-             .left_joins(:units)
-             .select('communities.*, companies.name AS company_name, COUNT(CASE WHEN units.x_plot = 0 AND units.y_plot = 0 THEN 1 END) AS unplotted_units_count')
-             .group('communities.id, companies.name')
-             .having('COUNT(CASE WHEN units.x_plot = 0 AND units.y_plot = 0 THEN 1 END) > 0')
-             .order('companies.name ASC, communities.name ASC')
+         .joins(:company)
+         .left_joins(:units)
+         .merge(Unit.visible_units)
+         .select('communities.*, companies.name AS company_name, COUNT(CASE WHEN units.x_plot = 0 AND units.y_plot = 0 THEN 1 END) AS unplotted_units_count')
+         .group('communities.id, companies.name')
+         .having('COUNT(CASE WHEN units.x_plot = 0 AND units.y_plot = 0 THEN 1 END) > 0')
+         .order('companies.name ASC, communities.name ASC')
+
   end
 end

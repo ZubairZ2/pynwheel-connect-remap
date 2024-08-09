@@ -150,8 +150,12 @@
                     %td
                       %a.text-success{:href => "#{edit_community_unit_path(@community,u)}"}
                         %i.fa.fa-edit.icon_size
+                      
                       %a.text-danger{"data-name"=>"Unit","data-href" => "#{community_unit_path(@community,u)}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
                         %i.fa.fa-trash.icon_size
+
+                      = link_to "", id: "display_unit", data: { unit_id: u.id }, class: "unit_toggle text-warning ml-5" do
+                        %i.fa.icon_size{class: u.visible ? "fa-eye" : "fa-eye-slash"}
 
 .row
   .col-md-12
@@ -353,11 +357,35 @@
 
 
   :javascript
-    function unit_goBack()
-    {
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.unit_toggle').forEach(function(link) {
+          link.addEventListener('click', function(event) {
+            event.preventDefault();
+            var unit_id = this.dataset.unitId;
+
+            $.ajax({
+                url: "/communities/#{@community.id}/units/" + unit_id + "/display_unit",
+                type: "PUT",
+              }).done(function (data) {
+                if (data.visible) {
+                  link.querySelector('.fa').classList.remove('fa-eye-slash');
+                  link.querySelector('.fa').classList.add('fa-eye');
+                  $(".strike_" + unit_id).css("text-decoration", "");
+                } else {
+                  link.querySelector('.fa').classList.remove('fa-eye');
+                  link.querySelector('.fa').classList.add('fa-eye-slash');
+                  $(".strike_" + unit_id).css("text-decoration", "line-through");
+                }
+            });
+          });
+        });
+      });
+
+    function unit_goBack() {
       window.location.reload();
     }
-     $(document).ready(function(){
+
+    $(document).ready(function(){
 
       var $chkboxes = $('.mass-override');
       var lastChecked = null;
@@ -382,6 +410,7 @@
         $(elem).wysihtml5({'toolbar': {'image': false,'link' : false}});
       });
     })
+
     if (#{@community.is_sitemap}){
       $('#miyazaki.unit_data_table').DataTable({
           'aoColumnDefs': [{

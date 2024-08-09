@@ -19,6 +19,14 @@ class UnitsController < ApplicationController
     @unit = Unit.find params[:id]
   end
 
+  def display_unit
+    unit = Unit.find params[:id]
+    unit.visible ? unit.visible = false : unit.visible = true
+    unit.save
+
+    render :json => {:visible=> unit.visible, :status => "200"}
+  end
+
   def crop_unit_image
     @community = Community.find params["community_id"]
     @unit = Unit.find params["id"]

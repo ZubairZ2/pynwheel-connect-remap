@@ -62,36 +62,16 @@ class SitemapsController < ApplicationController
       @sitemap = Sitemap.new(community_id: @community.id)
       @sitemap.save(validate: false)
     end
-    unless @community.units.size > 0
+
+    @units = @community.units.visible_units
+
+    unless  @units.size > 0
       flash[:error] = "Please import unit data first"
     end
     
-    @units = @community.units.where(floorplate_id: nil).order(:building, :unit_type).includes(:door)
+    @units = @units.where(floorplate_id: nil).order(:building, :unit_type).includes(:door)
     @dimensions = @sitemap.is_ocr_enabled ? s3_img_dimensions(sitemap_image_url(@sitemap)) : {}
     @map_ocr_data = @sitemap.is_ocr_enabled ? @sitemap.map_ocr_data : []
-
-
-    # get member(:plotexp) do
-    #   authorize! :plot, Sitemap
-    #   @map = @sitemap
-    #   @units = Unit.all :community_id => @sitemap.community_id, :order => [:building, :number]
-            
-    #   if params[:unit_id].to_i != 0
-    #     @unit = @sitemap.community.units.get params[:unit_id].to_i
-    #   end
-      
-    #   # get pre-selected units
-    #   session[:before] = []
-    #   @sitemap.community.units.sort! { |x, y| x["number"].to_s <=> y["number"].to_s }
-    #   @sitemap.community.units.each do |u|
-    #     session[:before] << u.id
-    #   end
-      
-    #   marker = Marker.first :community_id => @sitemap.community_id, :type => "sitemap_bdr_1"
-    #   @marker_tag = "<i class='icon-screenshot'></i>"
-			
-    #   erb :'sitemap/plotexp'
-    # end
 
     @all_locks              =   all_locks(@community)
     @current_locks_provider =   existing_locks_provider(@community)
@@ -158,7 +138,6 @@ class SitemapsController < ApplicationController
 
   def s3_img_dimensions url
     img = MiniMagick::Image.open(url)
-
     {
       width: img[:width],
       height: img[:height],
