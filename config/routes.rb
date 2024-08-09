@@ -88,6 +88,7 @@ Rails.application.routes.draw do
       get :generate_salesforce_report
       get :company_data_provider_communities_list
       get :generate_sessions_report
+      get :unplotted_units_report
     end
 
     member do

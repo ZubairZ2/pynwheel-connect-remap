@@ -146,6 +146,10 @@ class CompaniesController < ApplicationController
     send_data(SessionsReportService.new().get_report() , :type => 'application/xlsx', :filename => "pynwheel-touch-annual-sessions-report.csv")
   end
 
+  def unplotted_units_report
+    send_data(UnplottedUnitsReportService.new().get_report() , :type => 'application/xlsx', :filename => "pynwheel-unplotted-units-report.csv")
+  end
+
   private
 
   def set_company
