@@ -61,7 +61,8 @@ class IgloohomeIglooworksService < BaseService
 
     def find_or_create_igloohome_account community_id
       Igloohome.find_or_create_by(community_id: community_id) do |igloohome|
-        igloohome.community_id = community_id
+        igloohome.username = "Username"
+        igloohome.password = "Password"
       end
     rescue StandardError => e
       Rails.logger.error("Error finding or creating Igloohome account: #{e.message}")
@@ -89,7 +90,7 @@ class IgloohomeIglooworksService < BaseService
     end
 
     def department_id
-      @department_id = @igloohome_account.iglooworks_department_id
+      @igloohome_account.iglooworks_department_id
     end
 
     def api_base_url

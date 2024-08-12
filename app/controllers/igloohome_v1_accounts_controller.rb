@@ -15,8 +15,8 @@ class IgloohomeV1AccountsController < ApplicationController
 
   def create_igloohome_account
     @igloohome = Igloohome.find_or_create_by(community_id: params[:community_id]) do |igloohome|
-      igloohome.username = "testing igloohome lock"
-      igloohome.password = "igloohome password"
+      igloohome.username = "Username"
+      igloohome.password = "Password"
     end
   end
 

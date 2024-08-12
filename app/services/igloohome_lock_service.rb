@@ -153,7 +153,8 @@ class IgloohomeLockService < BaseService
 
     def find_or_create_igloohome_account community_id
       Igloohome.find_or_create_by(community_id: community_id) do |igloohome|
-        igloohome.community_id = community_id
+        igloohome.username = "Username"
+        igloohome.password = "Password"
       end
     rescue StandardError => e
       Rails.logger.error("Error finding or creating Igloohome account: #{e.message}")

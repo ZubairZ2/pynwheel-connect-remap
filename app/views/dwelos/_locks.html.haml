@@ -8,7 +8,7 @@
       %a{:href => "#s-edge-state","aria-expanded" => "false", "data-toggle" => "tab", :role => "tab",:class => @community.edge_state.present? ? "disabled half_opacity" : "show"} Edge State
       %a{:href => "#s-latch","aria-expanded" => "false", "data-toggle" => "tab", :role => "tab",:class => @community.latch.present? ? "disabled half_opacity" : "show"} Latch
       %a{:href => "#s-zerv","aria-expanded" => "false", "data-toggle" => "tab", :role => "tab",:class => @community.zerv.present? ? "disabled half_opacity" : "show"} Pynwheel Access
-      %a{:href => "#s-igloohome","aria-expanded" => "false", "data-toggle" => "tab", :role => "tab",:class => @community.igloohome.present? ? "disabled half_opacity" : "show"} Igloo Home
+      %a{:href => "#s-igloohome","aria-expanded" => "false", "data-toggle" => "tab", :role => "tab",:class => @community.igloohome.present? ? "disabled half_opacity" : "show"} Igloo
 
   %ul#lock_tabs.nav.nav-tabs.add-new-lock{:role => "tablist"}
     %li{:role => "presentation",:class => @community.dwelo.nil? ? "hidden" : "show"}
@@ -20,7 +20,7 @@
     %li{:role => "presentation",:class => @community.zerv.nil? ? "hidden" : "show"}
       %a#zerv-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-zerv", :role => "tab"} Pynwheel Access
     %li{:role => "presentation",:class => @community.igloohome.nil? ? "hidden" : "show"}
-      %a#igloohome-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-igloohome", :role => "tab"} Igloo Home
+      %a#igloohome-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-igloohome", :role => "tab"} Igloo
 
   #s-dwelo.tab-pane.fade{:role => "tabpanel",:class => @community.dwelo.nil? ? "hidden" : "show"}
     = render :partial => 'dwelo_page'

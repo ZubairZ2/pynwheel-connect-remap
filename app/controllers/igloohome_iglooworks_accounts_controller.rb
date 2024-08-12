@@ -4,6 +4,7 @@ class IgloohomeIglooworksAccountsController < ApplicationController
 
   def create
     if @igloohome.update(iglooworks_params)
+      update_community_lock_provider
       flash[:notice] = "Igloohome credentials updated successfully!"
     else
       flash[:alert] = "Failed to update Igloohome credentials. Please ensure all required fields are filled."
@@ -47,9 +48,13 @@ class IgloohomeIglooworksAccountsController < ApplicationController
 
     def create_igloohome_account
       @igloohome = Igloohome.find_or_create_by(community_id: params[:community_id]) do |igloohome|
-        igloohome.username = "testing igloohome lock"
-        igloohome.password = "igloohome password"
+        igloohome.username = "Username"
+        igloohome.password = "Password"
       end
+    end
+
+    def update_community_lock_provider
+      current_community.update_columns(multiple_locks_provider: current_community.multiple_locks_provider.concat(["Igloohome"]).uniq)
     end
 
     def general_error_redirection
