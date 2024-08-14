@@ -88,7 +88,7 @@
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                     Access Code
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    = text_field_tag :access_code, (@doors.present?) ? @doors.first.access_code : @amenity.access_code, :name => "access_code" , :oninput => "this.value = this.value.replace(/[^0-9#*]/g, '')", :class=>"form-control amenity_edit_field", :placeholder=>"Access Code",:maxLength => "6"
+                    = text_field_tag :access_code, (@doors.present?) ? @doors.first.access_code : @amenity.access_code, :name => "access_code" , :oninput => "this.value = this.value.replace(/[^0-9#*]/g, '')", :class=>"form-control amenity_edit_field", :placeholder=>"Access Code",:maxLength => "10"
 
                 .form-group.hidden.mt-30#digital_lock_field
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
