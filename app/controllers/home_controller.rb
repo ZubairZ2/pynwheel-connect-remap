@@ -8,13 +8,13 @@ class HomeController < ApplicationController
       dwelo_communities_ids = Community.where(creator_id: User.where(role: "Dwelo admin").ids).pluck(:id)
       dwelo_companies_communities = Community.joins(:company).where(companies: {creator_id: User.where(role: "Dwelo admin").ids}).pluck(:id)
       ids = (assigned_communities_ids + dwelo_communities_ids + dwelo_companies_communities).uniq
-      @communities = ids.present? ? Community.where(id: ids, locked: [false, nil]) : []
+      @communities = ids.present? ? Community.active_properties.where(id: ids) : []
     when current_user.is_company_admin?
-      @communities = current_user.company.communities.where(locked: [false, nil])
+      @communities = current_user.company.communities.active_properties
     when current_user.is_regional_admin?
-      @communities = current_user.region.communities.where(locked: [false, nil])
+      @communities = current_user.region.communities.active_properties
     else
-      @communities = current_user.communities.where(locked: [false, nil])
+      @communities = current_user.communities.active_properties
     end
 
     puts "\n\n\n -------------- Home 1 Community ID: #{session[:community_id]}--------------- \n\n\n"

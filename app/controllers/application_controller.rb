@@ -161,6 +161,7 @@ class ApplicationController < ActionController::Base
   end
 
   def alphabetical_sort(recods)
+    recods = recods.map{|r| r if r.name != DUMMY_COMMUNITY_NAME}.compact
     # recods.sort_by { |c| ((c.name.include?("(Dwelo)") or c.name.include?("The")) ? c.name.split(" ", 2)[1] : c.name).downcase }
     recods.sort_by { |c| ((c.name.include?("(Dwelo)") or c.name.include?("The")) ? (c.name&.split(" ", 2)[1].present? ? c.name&.split(" ", 2)[1] : c.name&.split(" ", 2)[0]) : c.name).downcase }
   end

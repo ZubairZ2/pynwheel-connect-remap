@@ -36,7 +36,7 @@ class Company < ApplicationRecord
                                                                                                                             credential: {except: [:created_at]}}
     )
   end
-
+  
   def set_company_details_status(current_user, status)
     return if self.blank?
     if status.nil?

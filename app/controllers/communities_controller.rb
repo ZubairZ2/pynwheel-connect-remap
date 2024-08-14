@@ -509,18 +509,18 @@ class CommunitiesController < ApplicationController
   def invitation_communities
     if params[:user_communities].present?
       if params[:company_id].present?
-        result = Company.find(params[:company_id]).communities.order(:name).pluck(:name, :id).to_json
+        result = Company.find(params[:company_id]).communities.real_properties.order(:name).pluck(:name, :id).to_json
       elsif params[:region_id].present?
-        result = Region.find(params[:region_id]).communities.order(:name).pluck(:name, :id).to_json
+        result = Region.find(params[:region_id]).communities.real_properties.order(:name).pluck(:name, :id).to_json
       else
         user = User.find params[:user] if params[:user].present?
-        result = user.present? ? user.communities.order(:name).pluck(:name, :id).to_json : []
+        result = user.present? ? user.communities.real_properties.order(:name).pluck(:name, :id).to_json : []
       end
       render :json => {data: result}, :status => 200
     elsif params['company'].present?
       company =  params['company']
       comp = Company.find_by(name: company )
-      result = params['region'].present? ? (comp.regions.where(id: params['region']).first.communities.order(:name).pluck(:name,:id).to_json) :  (comp.communities.order(:name).pluck(:name,:id).to_json) rescue [].json
+      result = params['region'].present? ? (comp.regions.where(id: params['region']).first.communities.real_properties.order(:name).pluck(:name, :id).to_json) :  (comp.communities.real_properties.order(:name).pluck(:name, :id).to_json) rescue [].json
       render :json => { data: result }, :status => 200
     else
       render :json => { data: [].to_json }, :status => 200

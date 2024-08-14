@@ -340,7 +340,7 @@ module ApplicationHelper
 
   def invitation_communities(company)
     c = Company.find_by(name: company)
-    c.communities.pluck(:name,:id)
+    c.communities.real_properties.pluck(:name,:id)
   end
 
   def delete_logs(item_type, item_id)
