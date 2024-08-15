@@ -122,6 +122,10 @@
                                   = link_to 'Reset Tour Stops', community_tour_user_reset_tour_stops_path(@community, user),:class=>"btn btn-success"
 
                             - else
+                              - if user.customized_tour(@community)
+                                %div
+                                  = link_to 'Reset Tour Stops', community_tour_user_reset_tour_stops_path(@community, user),:class=>"btn btn-success"
+
                               Removed at Consumer Request
 
                         %td.col-lg-2
