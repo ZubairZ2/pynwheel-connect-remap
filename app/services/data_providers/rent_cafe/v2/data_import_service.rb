@@ -55,7 +55,6 @@ module DataProviders
           end
 
           def process_units_response(response, property_code)
-            binding.pry
             response.each_slice(@batch_size) do |batch|
               units = build_units(batch, property_code)
               import_units(units)
@@ -142,7 +141,6 @@ module DataProviders
               end
             end
 
-
             min_term_rent = lease_prices_array&.min
             max_term_rent = lease_prices_array&.max
             
@@ -151,7 +149,6 @@ module DataProviders
             unit.min_effective_rent = min_term_rent if min_term_rent.present?
             unit.max_effective_rent = max_term_rent if max_term_rent.present?
             unit.lease_pricing = leasing
-            puts "\n\n #{unit.marketing_name}: #{unit.lease_pricing}\n\n"
             unit.save(validate: false)
           end
 

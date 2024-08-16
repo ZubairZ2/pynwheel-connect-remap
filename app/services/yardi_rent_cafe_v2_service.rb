@@ -10,7 +10,7 @@ class YardiRentCafeV2Service < BaseService
 
   def perform
     begin
-      before_updation_units = NotifyManagerService.new(@credentials.community_id).
+      before_updation_units = NotifyManagerService.new(@credentials.community_id)
 
       property_codes = @credentials.p_code.split(',') rescue []
       property_codes.each do |property_code|
@@ -225,7 +225,6 @@ class YardiRentCafeV2Service < BaseService
       end
     end
 
-
     def set_availabilty_date(available_date)
       available_date = available_date.split("/")
       "#{available_date[2]}-#{available_date[0]}-#{available_date[1]}"
@@ -270,7 +269,6 @@ class YardiRentCafeV2Service < BaseService
       unit.min_effective_rent = min_term_rent if min_term_rent.present?
       unit.max_effective_rent = max_term_rent if max_term_rent.present?
       unit.lease_pricing = leasing
-      puts "\n\n #{unit.marketing_name}: #{unit.lease_pricing}\n\n"
       unit.save(validate: false)
     end
 
@@ -278,8 +276,8 @@ class YardiRentCafeV2Service < BaseService
       DataProviders::RentCafe::V2ApisService.new(@credentials.community_id).get_apartment_availability(property_code)
     end
 
-    def get_apartment_pricing_details property_code, apartment_name, available_date
-      DataProviders::RentCafe::V2ApisService.new(@credentials.community_id).get_apartment_pricing_matrix(apartment_name, property_code, available_date)
+    def get_apartment_pricing_details property_code
+      DataProviders::RentCafe::V2ApisService.new(@credentials.community_id).get_apartment_pricing_matrix(property_code)
     end
 
     def get_floorplan_details property_code

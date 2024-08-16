@@ -95,7 +95,6 @@ class YardiRentCafeV2SwapService < BaseService
       if response.present?
         response.each do |r|
           fp = fetch_floorplan_record(r)
-          puts "\n#{fp&.name}\n"
           if fp.present?
             fp.provider = "yardirentcafe_new"
             fp.name = r["floorplanName"]
@@ -181,7 +180,6 @@ class YardiRentCafeV2SwapService < BaseService
       unit.min_effective_rent = min_term_rent if min_term_rent.present?
       unit.max_effective_rent = max_term_rent if max_term_rent.present?
       unit.lease_pricing = leasing
-      puts "\n\n #{unit.marketing_name}: #{unit.lease_pricing}\n\n"
       unit.save(validate: false)
     end
 
