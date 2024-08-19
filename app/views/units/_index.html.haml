@@ -153,9 +153,16 @@
                       
                       %a.text-danger{"data-name"=>"Unit","data-href" => "#{community_unit_path(@community,u)}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
                         %i.fa.fa-trash.icon_size
-
-                      = link_to "", id: "display_unit", data: { unit_id: u.id }, class: "unit_toggle text-warning ml-5" do
-                        %i.fa.icon_size{class: u.visible ? "fa-eye" : "fa-eye-slash"}
+                      - if u.x_plot > 0 && u.y_plot > 0
+                        %i.additionalPageAction.fa.fa-map-marker.icon_size{"data-toggle" => "unitGridActionPopover","data-content" => " "}
+                          %span#additionalPageActionText
+                            If it is marker icon, that means the unit has already been plotted on the map.
+                      - else
+                        = link_to "", id: "display_unit", data: { unit_id: u.id }, class: "unit_toggle text-warning ml-5" do
+                          %i.additionalPageAction.fa.icon_size{class: u.visible ? "fa-eye" : "fa-eye-slash", "data-toggle" => "unitGridActionPopover","data-content" => " "}
+                            %span#additionalPageActionText
+                              Click the eye icon to hide the unit from the units to be plotted on the map. If it is marker icon, that means the unit has already been plotted on the map.
+                      
 
 .row
   .col-md-12
