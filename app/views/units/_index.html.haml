@@ -154,7 +154,7 @@
                       %a.text-danger{"data-name"=>"Unit","data-href" => "#{community_unit_path(@community,u)}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
                         %i.fa.fa-trash.icon_size
                       - if u.x_plot > 0 && u.y_plot > 0
-                        %i.additionalPageAction.fa.fa-map-marker.icon_size{"data-toggle" => "unitGridActionPopover","data-content" => " "}
+                        %i.additionalPageAction.fa.fa-map-marker.icon_size{"data-toggle" => "unitGridActionPopover","data-content" => " ", :style => "margin-left: 5px;"}
                           %span#additionalPageActionText
                             If it is marker icon, that means the unit has already been plotted on the map.
                       - else

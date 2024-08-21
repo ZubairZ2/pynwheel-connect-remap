@@ -1886,8 +1886,6 @@ function display2DMap() {
     $(".popup-arrow").css("background-color", $(".fa-map-marker-alt")[0].style.color);
 
     $(".custom-select").change(()=> {
-      // var units_to_display = units; //select_units_according_to_filters(units)
-      // var units_to_display = filterUnitsBasedOnCommunityType(units);
       renderChangedUnits();
     })
   }
