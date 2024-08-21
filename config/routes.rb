@@ -88,6 +88,7 @@ Rails.application.routes.draw do
       get :generate_salesforce_report
       get :company_data_provider_communities_list
       get :generate_sessions_report
+      get :unplotted_units_report
     end
 
     member do
@@ -395,6 +396,7 @@ Rails.application.routes.draw do
         get :show_unit_secondary_image_in_modal
         put :crop_unit_secondary_image
         put :update_lock_provider
+        put :display_unit
       end
       member do
         post :load_unit_door_lock

@@ -77,6 +77,7 @@ ELEVATOR_STOP_TEXT = "The next stop is on floor "
 
 SELF_TOUR_PROVIDERS = ["yardirentcafe", "realpagesvc", "psi", "resman"]
 UNIT_STATUSES = ["unoccupied", "vacant unrented ready"]
+HIDE_UNIT_PATTERN = "wait"
 
 # TOUCH INFO
 TOUCH_SESSIONS_INFO = "One “Session” is defined as an instance in which the user goes from the Home screen to at least one other page and then back to the Home screen."

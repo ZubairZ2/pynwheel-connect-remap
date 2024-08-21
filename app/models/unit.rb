@@ -81,6 +81,8 @@ class Unit < ApplicationRecord
   has_one :door, as: :attached_with, dependent: :destroy
   has_one :tour_stop, as: :stop, dependent: :destroy
   
+  scope :visible_units, -> {where(visible: true)}
+  
   scope :are_sold, -> { where("sold = ? and (x_plot > ? or y_plot > ?)", true, 0, 0) }
   #scope :are_available, -> { where("available = ? and sold = ?", true,false) }
   scope :past_available_units, -> { where("availability = ? and available_date <= ? and x_plot > ?", "Unoccupied", Date.today, 0) }
@@ -96,6 +98,11 @@ class Unit < ApplicationRecord
   after_update :crop_unit_secondary_image
   after_update :remove_doors_plotting, if: Proc.new { x_plot == 0 and y_plot == 0 }
   before_destroy :destroy_associated_stops
+  # before_save :auto_hide_wait_units
+
+  # def auto_hide_wait_units
+  #   self.visible = false if marketing_name.downcase.include?(HIDE_UNIT_PATTERN)
+  # end
 
   def stop_description_text
     description

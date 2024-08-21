@@ -101,7 +101,7 @@ class Floorplate < ApplicationRecord
   end
 
   def fetch_units
-    units = Unit.where(community_id: community_id,floor: self.floors)
+    units = Unit.visible_units.where(community_id: community_id,floor: self.floors)
   end
 
   def fetch_elevators(floor, building = [nil,""]) # nil or empty string for 0 or no building
