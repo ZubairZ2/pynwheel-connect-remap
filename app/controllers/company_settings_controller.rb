@@ -42,6 +42,6 @@ class CompanySettingsController < ApplicationController
   end
 
   def company_setting_params
-    params.require(:company_setting).permit(:company_level_data_import, :company_id)
+    params.require(:company_setting).permit(:pynwheel_launch_access, :company_level_data_import, :company_id)
   end
 end
