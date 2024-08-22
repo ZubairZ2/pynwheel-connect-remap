@@ -18,10 +18,10 @@ var currentUnitSelected = null;
 var applyNowChildClickHandled = false
 var unitChildClickHandled = false
 
-let inactivityTimer;
-const inactivityThreshold = 60000; // 1 minutes (adjust as needed)
-let lastActivityTime = Date.now();
-let updateRequestSent = false;
+var inactivityTimer;
+var inactivityThreshold = 60000; // 1 minutes (adjust as needed)
+var lastActivityTime = Date.now();
+var updateRequestSent = false;
 
 $(document).ready(function () {
   webCommunity = $("#communityWebpagesData").data("community");
@@ -55,6 +55,7 @@ $(document).ready(function () {
         }
       );
     }
+    debugger;
     renderChangedUnits();
     handleMapControl();
   } else {
@@ -98,7 +99,7 @@ document.addEventListener('DOMContentLoaded', touchScreenEvent);
 $(window).bind('load', function () {
 
   if ($('.is-webpage')[0]) {
-    resetFilters();
+    // resetFilters();
     $('[data-toggle="tooltip"]').tooltip({trigger: "hover"});
     $(document).keydown(function (event) {
       if (event.ctrlKey == true && (event.which == '61' || event.which == '107' || event.whFich == '173' || event.which == '109' || event.which == '187' || event.which == '189')) {
@@ -168,6 +169,7 @@ $(window).bind('load', function () {
         $('#select-all-filters-checkbox').prop('checked', false);
         $('#select-all-filters-checkbox').removeClass('active')
       }
+      debugger;
       showMarkers();
     });
     /////////////////////////////////////////
@@ -181,6 +183,7 @@ $(window).bind('load', function () {
       selectMap = "2d-map"
       display2DMap();
       if(defaultMapType != "3d-map"){
+        debugger;
         showMarkers();
       }
     });
@@ -214,6 +217,7 @@ $(window).bind('load', function () {
           $(this).prop('checked', true);
           $(this).parent().addClass('active');
         });
+        debugger;
         showMarkers();
       } else {
         $(this).parent().removeClass('active');
@@ -221,6 +225,7 @@ $(window).bind('load', function () {
           $(this).prop('checked', false);
           $(this).parent().removeClass('active');
         });
+        debugger;
         showMarkers();
       }
     });
@@ -507,7 +512,6 @@ function bedroomFilterChanged() {
 
 function maxPriceFilterFilterChanged() {
   filterUnitsBasedOnSelectedFilters();
-
   showMarkers();
 }
 
@@ -517,7 +521,6 @@ function squareFootageFilterChanged() {
 
   updateMaxPriceFilterDropDownList(units);
   filterUnitsBasedOnMarketRent();
-
   showMarkers();
 }
 
@@ -530,7 +533,6 @@ function availabilityFilterChanged() {
 
   updateMaxPriceFilterDropDownList(units);
   filterUnitsBasedOnMarketRent();
-
   showMarkers();
 }
 
@@ -735,8 +737,8 @@ function showMarkers() {
   $('.hidden-units').empty();
 
   units_to_display = filterUnitsBasedOnCommunityType(units);
-  renderChangedUnits();
-
+  // renderChangedUnits();
+  debugger;
   var json_object = {}
   for (var i = 0; i < units_to_display.length; i++) {
     if ($('#m_' + units_to_display[i]['id']).hasClass('overlapping-unit')) {
@@ -817,7 +819,7 @@ function populate_current_units() {
       current_units.push(units[i]);
     }
   }
-
+  debugger;
   showMarkers();
 }
 
@@ -856,6 +858,7 @@ function click_marker_tag(id){
 }
 
 function renderChangedUnits(){
+  debugger;
   var element = document.getElementById("units-body");
   
   if(element == null) return;
@@ -1842,6 +1845,7 @@ function display2DMap() {
   $(".2d-map-option").addClass("hidden");
   $(".div.map-instruction-text").addClass('hidden');
   if(defaultMapType == "3d-map"){
+    debugger;
     showMarkers();
   }
   let sidebarDiv = document.getElementsByClassName('c-sidebar')[0]
@@ -1886,6 +1890,7 @@ function display2DMap() {
     $(".popup-arrow").css("background-color", $(".fa-map-marker-alt")[0].style.color);
 
     $(".custom-select").change(()=> {
+      debugger;
       renderChangedUnits();
     })
   }
@@ -2034,6 +2039,7 @@ function resetFilters() {
   $("#responsive_unit_bedroom").val($("#responsive_unit_bedroom option:first").val());
   $("#unit_bedroom").val($("#unit_bedroom option:first").val());
   bedroomFilterChanged();
+  debugger;
   showMarkers();
 }
 
@@ -2042,6 +2048,7 @@ function applyFilters(){
     _3dMapViewMarkers();
   }
   else{
+    debugger;
     showMarkers();
   }
   
