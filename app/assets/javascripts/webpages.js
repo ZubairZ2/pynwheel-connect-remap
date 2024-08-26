@@ -765,6 +765,7 @@ function showMarkers() {
   }
 
   disabled_enabled_anchors();
+  centerImageOnMobile();
 }
 
 function handleResize(){
@@ -1124,10 +1125,20 @@ function disabled_enabled_anchors() {
     else{
       $('.alert').hide()
     }
+    
     if($(window).width() < 567){
       $('.c-footer').css({"bottom": 70});
     }    
   }
+}
+
+function centerImageOnMobile() {
+  if($(window).width() < 567) {
+    if(webCommunity['is_sitemap'])
+      $('.map-container-center-align').css({"top": "5rem"});
+    else
+      $('.map-container-center-align').css({"top": "2rem"});
+  }   
 }
 
 function change_units_view(evt, type){
