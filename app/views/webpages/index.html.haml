@@ -222,15 +222,15 @@
                 =button_tag " Map View",:onClick => "change_units_view(event, 'map_view')", :class => "fa fa-map-marker"
               %div.tablinks
                 =button_tag " List View", :onClick => "change_units_view(event, 'list_view')", :class => "fa fa-list"
-            %div.map-body
+            %div.map-body.map-container-center-align
               .right-side.parent.tabcontent.map_view#panzomm-container.mobile_map_view
                 .image-map#zoomable.zoomable-map-container{style: "text-align: center"}
                   - if @community_info.has_floorplates?
                     - @floors.each do |floor|
                       - floorplate = @floorplates.select{|f| f.floors.include?(floor)}.first
-                      = image_tag floorplate.standard_image_url, :class=>"floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}",:id=>"f_#{floor}","data-height"=>"#{floorplate.floorplate_image_height()}","data-width"=>"#{floorplate.floorplate_image_width()}"
+                      = image_tag floorplate.standard_image_url, :class=>"map-image-align floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}",:id=>"f_#{floor}","data-height"=>"#{floorplate.floorplate_image_height()}","data-width"=>"#{floorplate.floorplate_image_width()}"
                   - else
-                    %img.floorplate-image.sitemap-image{:alt => "", :src => "#{@community.sitemap.present? ? @community.image_src : "/assets/default.jpeg"}", :id => "property-map-image", :title => "","data-height"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.height : nil}","data-width"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.width : nil}"}/
+                    %img.floorplate-image.sitemap-image.map-image-align{:alt => "", :src => "#{@community.sitemap.present? ? @community.image_src : "/assets/default.jpeg"}", :id => "property-map-image", :title => "","data-height"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.height : nil}","data-width"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.width : nil}"}/
 
                   - coordinates_array = []
                   - units.each do |unit|
