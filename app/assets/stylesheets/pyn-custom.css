@@ -5799,7 +5799,7 @@ html, .add-fav-body {
       text-align: unset !important;
   }
   .custom-iframe-modeule .header-buttons-groups {
-      width: 100%;
+      width: 100% !important;
       text-align: center;
       position: fixed;
       left: 25%;
@@ -5830,9 +5830,9 @@ html, .add-fav-body {
   .c-body {
     margin-bottom: 100px;
   }
-  .custom-iframe-modeule .header-buttons-groups {
-      width: 50%;
-  }
+    .custom-iframe-modeule .header-buttons-groups {
+        width: 50%;
+    }
   .footer-logo {
       width: 15%;
   }
@@ -5991,7 +5991,7 @@ html, .add-fav-body {
     grid-auto-flow: column;
     align-items: center;
     justify-content: center;
-    width: 100% !important;
+    width: 60% !important;
     padding: 0px !important;
   }
   .desktop-content{
@@ -6151,6 +6151,18 @@ ul.add-fav-options {
 }
 
 @media screen and (max-width:567px){
+    .left-side {
+        top: 8rem;
+    }
+    .align-home-buttons {
+        display: grid;
+        grid-auto-flow: column;
+        align-items: center;
+        justify-content: center;
+        width: 100% !important;
+        padding: 0px !important;
+    }
+
     .map-container-center-align {
         align-items: center;
         top: 3rem;
