@@ -219,9 +219,16 @@
                   
             %div#tab
               %div.tablinks.active_unit_view
-                =button_tag " Map View",:onClick => "change_units_view(event, 'map_view')", :class => "fa fa-map-marker"
+                = button_tag :onClick => "change_units_view(event, 'map_view')" do
+                  %i.fa.fa-map-marker
+                  %strong Map View
+
               %div.tablinks
-                =button_tag " List View", :onClick => "change_units_view(event, 'list_view')", :class => "fa fa-list"
+                = button_tag :onClick => "change_units_view(event, 'list_view')" do
+                  %i.fa.fa-list
+                  %strong List View
+
+
             %div.map-body.map-container-center-align
               .right-side.parent.tabcontent.map_view#panzomm-container.mobile_map_view
                 .image-map#zoomable.zoomable-map-container{style: "text-align: center"}
