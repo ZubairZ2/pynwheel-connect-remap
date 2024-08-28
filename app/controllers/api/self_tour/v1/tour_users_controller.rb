@@ -6,6 +6,8 @@ module Api
         before_action :check_authentication, except: :get_tour_user
         before_action :set_tour_user
         before_action :get_apple_store_test_number, only: [:generate_otp, :verify_otp]
+        before_action :destroy_latch_screen_session, only: [:verify_otp]
+
         def delete_account
           if @tour_user.present?
             if destroy_user
@@ -73,6 +75,11 @@ module Api
         end
 
         private
+
+        def destroy_latch_screen_session
+          return unless @tour_user&.latch_auth_token.present?
+          @tour_user.latch_auth_token.destroy!
+        end
 
         def send_otp_phone
           @tour_user.update(pin_code: random_otp)

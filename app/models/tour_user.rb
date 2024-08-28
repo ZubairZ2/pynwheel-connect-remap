@@ -34,7 +34,8 @@ class TourUser < ApplicationRecord
   has_many :tours, dependent: :destroy
 
   has_one :feedbacks
-  
+  has_one :latch_auth_token, dependent: :destroy
+
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :first_name, presence: true
   validates :last_name, presence: true
@@ -47,6 +48,14 @@ class TourUser < ApplicationRecord
 
   mount_base64_uploader :image, AvatarUploader
   mount_base64_uploader :id_card, AvatarUploader
+  
+  def create_or_update_latch_auth_token(attributes)
+    if latch_auth_token
+      latch_auth_token.update(attributes)
+    else
+      create_latch_auth_token(attributes)
+    end
+  end
 
   def user_completed_tours
     self.tour_histories.where(tour_state: "completed", tour_site: "onsite")
