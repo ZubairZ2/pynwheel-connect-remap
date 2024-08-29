@@ -57,6 +57,10 @@ class TourUser < ApplicationRecord
     end
   end
 
+  def get_latch_access_token
+    latch_auth_token&.token unless latch_auth_token&.expired?
+  end
+  
   def user_completed_tours
     self.tour_histories.where(tour_state: "completed", tour_site: "onsite")
   end
