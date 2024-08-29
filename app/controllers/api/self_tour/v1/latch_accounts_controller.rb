@@ -12,7 +12,7 @@ module Api
 
         def get_user_auth_token
           token_record = find_or_create_token
-          render json: { token: token_record&.token }
+          render json: { access_token: token_record&.token }
         end
 
         private
