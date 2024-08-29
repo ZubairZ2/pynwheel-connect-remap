@@ -162,8 +162,11 @@ module Api
         end
 
         def update_deleted_stops_list
-          @community.update(deleted_ids: [])
-          @tour.update(copy_sort_hash: "{}")
+          begin
+            @community.update(deleted_ids: [])
+            @tour.update(copy_sort_hash: "{}") if @tour.present?
+          rescue => e
+          end
         end
 
         def chat_room_count tour_user, community

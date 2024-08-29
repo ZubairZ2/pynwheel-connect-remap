@@ -117,11 +117,6 @@ module Api
     
       def portico_list_communities
         @allow_usage, @redirect_url = get_version_access params
-        # if @tour_user.present?
-        #   @communities = Community.select(:id,:name,:email,:phone,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company, :allowed_emails).self_tour_enabled_only.where(allowed_emails: {email: [nil, @tour_user.email]})
-        # else
-        #   @communities = Community.select(:id,:name,:email,:phone,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only
-        # end
 
         @communities = Community.select(:id, :name, :email, :phone, :company_id, :locked, :latitude, :longitude, :address, :logo, :state, :city, :restrict_access)
                                 .includes(:company, :allowed_emails)

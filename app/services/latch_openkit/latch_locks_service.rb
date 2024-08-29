@@ -27,7 +27,7 @@ module LatchOpenkit
         building = filter_property_uuid(buildings_list)
         
         if building.present? && (@latch.latch_property_name&.strip === building["name"]&.strip)
-          doors = get_doors(partner_scopped_token, building["uuid"], 5, 0)
+          doors = get_doors(partner_scopped_token, building["uuid"], 1000, 0) # replace 1000 number pagination work accordingly
           {building: building, doors: doors, status: :OK, code: 200}
         else
           {message: "No exact matches for property name", status: :unprocessable_entity, code: 400}

@@ -1,9 +1,11 @@
 class AllowedEmail < ApplicationRecord
   belongs_to :community
 
-  after_create :downcase
+  before_save :sanitize_email
 
-  def downcase
-    self.update_attributes(email: self.email.downcase)
+  private
+
+  def sanitize_email
+    self.email = self.email.strip.downcase
   end
 end
