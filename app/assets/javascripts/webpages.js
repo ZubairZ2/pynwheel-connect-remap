@@ -1690,11 +1690,11 @@ function adjustMarkerPosition(marker) {
   }
 
   if($(window).width() >= 825 && $(window).width() <= 950 ){
-    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+3), "margin-top": -($('#s_'+unit_id).height()+5)})       
+    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()), "margin-top": -($('#s_'+unit_id).height()+5)})       
   }
 
   if($(window).width() >= 700 && $(window).width() <= 825 ){
-    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+3), "margin-top": -($('#s_'+unit_id).height()+1)})
+    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()), "margin-top": -($('#s_'+unit_id).height()+1)})
   }
 
   if($(window).width() >= 567 && $(window).width() <= 700 ){
@@ -1702,7 +1702,7 @@ function adjustMarkerPosition(marker) {
   }
 
   if($(window).width() >= 480 && $(window).width() <= 567){
-    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+2), "margin-top": -($('#s_'+unit_id).height()-3)})       
+    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()-2), "margin-top": -($('#s_'+unit_id).height()-5)})       
   }
 
   if($(window).width() >= 420 && $(window).width() <= 480){
@@ -1710,11 +1710,11 @@ function adjustMarkerPosition(marker) {
   }
 
   if($(window).width() >= 320 && $(window).width() <= 420){
-    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+2), "margin-top": -($('#s_'+unit_id).height()-6)})       
+    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width() - 3), "margin-top": -($('#s_'+unit_id).height() - 8)})       
   }
 
   if($(window).width() < 320 ){
-    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+1), "margin-top": -($('#s_'+unit_id).height()-9)})       
+    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()-4), "margin-top": -($('#s_'+unit_id).height()-10)})       
   }
 
 }

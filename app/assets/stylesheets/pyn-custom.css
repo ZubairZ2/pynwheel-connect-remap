@@ -6152,7 +6152,7 @@ ul.add-fav-options {
 
 @media screen and (max-width:567px){
     .left-side {
-        top: 8rem;
+        top: 9rem;
     }
     .align-home-buttons {
         display: grid;
@@ -6325,7 +6325,7 @@ ul.add-fav-options {
       padding: 0 0px 0 1px;
   }
   .mobile-trigger {
-      width: 25%;
+      width: 30%;
       position: absolute;
       top: 10px;
       right: 18px;
