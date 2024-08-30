@@ -45,7 +45,7 @@ module Api
             return unless response["access_token"].present?
 
             @tour_user.create_or_update_latch_auth_token(
-              token: "#{response["token_type"]} #{response["access_token"]}",
+              token: "#{response["access_token"]}",
               expires_at: Time.current + response["expires_in"]
             )
           end
