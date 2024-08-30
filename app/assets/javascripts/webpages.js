@@ -839,8 +839,13 @@ function getFilteredUnits(units, type){
 }
 
 function resetToDefaultZoom() {
+  // for web
   modalPanZoom.zoomAbs(0, 0, 1);
   modalPanZoom.moveTo(0, 0);
+
+  // for mobile
+  responsiveModalPanZoom.zoomAbs(0, 0, 1);
+  responsiveModalPanZoom.moveTo(0, 0);
 } 
 
 function click_marker_tag(id){
