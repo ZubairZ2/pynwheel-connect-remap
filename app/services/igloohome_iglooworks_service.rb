@@ -12,7 +12,7 @@ class IgloohomeIglooworksService < BaseService
 
   def get_locks
     HTTParty.get(
-      "#{api_base_url}/locks", 
+      "#{api_base_url}/locks?page=#{page}&perPage=#{per_page}", 
       :headers => api_request_header
     ) 
   end
@@ -95,5 +95,13 @@ class IgloohomeIglooworksService < BaseService
 
     def api_base_url
       ENV["IGLOOHOME_IGLOOWORKS_API_BASE_URL"]
+    end
+
+    def page
+      1
+    end
+
+    def per_page
+      1000
     end
   end
