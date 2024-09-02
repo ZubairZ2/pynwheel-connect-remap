@@ -110,6 +110,7 @@ $(window).bind('load', function () {
       if (event.ctrlKey == true) {
       }
     });
+    
     ////////////// Disable browser zoom for webpage  ends here ////////////////
     $('#clickme').click(function () {
       $("#clickme").html($("#clickme").html() == 'Select Filter' ? 'Hide Filter' : 'Select Filter');
@@ -119,11 +120,13 @@ $(window).bind('load', function () {
                 0 : -331
       });
     });
+
     ////////////////////////////////////////////////
     $('#leasing-start-date-icon').click(function (event) {
       event.preventDefault();
       $('#leasing-start-date').focus();
     });
+
     ////////////////////////////////////////////////
     /* unit modal*/
     $('#unitModal').on('hidden.bs.modal', function (e) {
@@ -574,14 +577,29 @@ function filterUnitsBasedOnDate(floorplateUnits, startIndex, endIndex) {
   return floorplateUnits
 }
 
+function filterBasedOnScreen(filterTag) {
+  const webFilterId = "#".concat(filterTag); //works on web view
+  const mobileFilterId = "#responsive_".concat(filterTag); //works on mobile view
+
+  if($(window).width() <= 993) {
+    if(filterTag === 'market_rent')
+      return parseInt($(mobileFilterId).val().split("-")[1]);
+    else
+      return parseInt($(mobileFilterId).val().split("-")[0]);
+  } else
+    return parseInt($(webFilterId).val());
+}
+
 function filterUnitsBasedOnSqfeet() {
-  sqFeet = parseInt( ($('#square_feet').val() || $('#responsive_square_feet').val()).split("-")[0] )
+  sqFeet = filterBasedOnScreen('square_feet');
+  
   if(sqFeet)
     units = units.filter(unit => unit.square_feet >= sqFeet )
 }
 
 function filterUnitsBasedOnMarketRent() {
-  marketRent = parseInt( ($('#market_rent').val() || $('#responsive_market_rent').val()).split("-")[1] )
+  marketRent = filterBasedOnScreen('market_rent');
+
   if(marketRent)
     units = units.filter(unit => unit.market_rent <= marketRent )
 }
@@ -590,7 +608,7 @@ function filterUnitsBasedOnBedroom() {
   $(".alert").hide();
 
   units = total_units;
-  unitBedroom = parseInt( ($('#unit_bedroom').val() || $('#responsive_unit_bedroom').val()).split("_")[0] )
+  unitBedroom = filterBasedOnScreen('unit_bedroom');
 
   if(unitBedroom || unitBedroom === 0)
     units = units.filter(unit => unit.bedrooms == unitBedroom)

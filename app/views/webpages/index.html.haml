@@ -380,6 +380,7 @@
    $(".c-modal-dialog").css("margin-top", "27%")
    $("#responsive-floorplan-image").css("max-height", '300px')
   }
+  
   function iOSversion() {
 
     if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream)
@@ -390,11 +391,15 @@
 
   $("embed").ready(function(){
     if(iOSversion()){
-      $('html, body').animate({
-          scrollTop: $('#clickme').offset().top
-      }, 500);
+      var target = $('#clickme');
+      if (target.length) {
+        $('html, body').animate({
+          scrollTop: target.offset().top
+        }, 500);
+      }
     }
   });
+
 
 
   $(".webPageLoader").removeClass("hidden");
