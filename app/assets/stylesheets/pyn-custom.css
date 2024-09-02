@@ -5543,6 +5543,9 @@ body {
     float: left;
     width: 20%;
 }
+.footer-logo img {
+    width: 136px;
+}
 .lock-box-shadow {
     box-shadow: 0 0 0px 1px #eee;
     padding: 20px;
