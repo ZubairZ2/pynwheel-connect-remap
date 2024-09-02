@@ -936,7 +936,7 @@ function unitListHover() {
         }
 
         focused_marker = document.getElementById(selectedMarker.id);
-        focused_marker.childNodes[0].style.fontSize = "25px";
+        // focused_marker.childNodes[0].style.fontSize = "25px";
         $('#popover-marketing-unit').html(marker.dataset.unitMarketingName);
 
         const position = selectedMarker.getBoundingClientRect();
@@ -955,7 +955,7 @@ function unitListHover() {
   },
   function () {
     if (focused_marker) {
-      focused_marker.childNodes[0].style.fontSize = "20px";
+      // focused_marker.childNodes[0].style.fontSize = "20px";
       $('#marker-popover-unit').addClass('hidden');
     }
   });
