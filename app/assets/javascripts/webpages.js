@@ -684,8 +684,10 @@ function updateMaxPriceFilterDropDownList(floorplateUnits){
     $('#market_rent').append(`<option value="${minValue}-${uniqueList[i]}"> ${uniqueList[i]} </option>`); //works on web view
     $('#responsive_market_rent').append(`<option value="${minValue}-${uniqueList[i]}"> ${uniqueList[i]} </option>`); //works on mobile view
   }
+
   disablePriceRentOptions();
   $("#market_rent option:last").attr("selected", "selected");
+  $("#responsive_market_rent option:last").attr("selected", "selected");
 }
 
 function disablePriceRentOptions() {
@@ -2065,8 +2067,8 @@ function applyFilters(){
   selected_available_unit = $("#responsive_available_unit option:selected").text();
   selected_unit_bedrooms = $("#responsive_unit_bedroom option:selected").text();
 
-  $("#max_price_responsive").html(selected_market_rent == "All" ? "All" : currency+selected_market_rent);
-  $("#sq_feet_responsive").html(selected_square_feet == "All" ? "All" : selected_square_feet);
+  $("#max_price_responsive").html(currency+selected_market_rent);
+  $("#sq_feet_responsive").html(selected_square_feet);
   $("#unit_availability").html(selected_available_unit);
   $("#bedroom_responsive").html(selected_unit_bedrooms);
   $('.mobile-filter-mega-menu').slideToggle()
