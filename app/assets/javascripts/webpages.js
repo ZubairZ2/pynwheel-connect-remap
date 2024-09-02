@@ -389,6 +389,7 @@ $(window).bind('load', function () {
           y_plot = y_plot - 1
           // x_plot = x_plot - 4
         }
+        
         $(this).css({"left": ((x_plot)) + left_diff, "top": y_plot});
         
         if ($(window).width() > 1360) {
@@ -2052,6 +2053,7 @@ function resetFilters() {
   units = current_units
   $("#responsive_unit_bedroom").val($("#responsive_unit_bedroom option:first").val());
   $("#unit_bedroom").val($("#unit_bedroom option:first").val());
+  $('.mobile-filter-mega-menu').slideToggle();
   bedroomFilterChanged();
   showMarkers();
 }
@@ -2073,7 +2075,7 @@ function applyFilters(){
   $("#sq_feet_responsive").html(selected_square_feet);
   $("#unit_availability").html(selected_available_unit);
   $("#bedroom_responsive").html(selected_unit_bedrooms);
-  $('.mobile-filter-mega-menu').slideToggle()
+  $('.mobile-filter-mega-menu').slideToggle();
 }
 
 function get_unit_availability(unit) {
