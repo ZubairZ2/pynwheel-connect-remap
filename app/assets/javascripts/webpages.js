@@ -642,7 +642,7 @@ function updateAvailabilitFilterDropdownList() {
 function updateSquareFootageFilterDropdownList(floorplateUnits) {
   floorplateUnits = filterUnitsBasedOnCommunityType(floorplateUnits);
   var unitsSqFeet = floorplateUnits.map(unit => unit.square_feet);
-  var uniqueList = getUniqueAndSortedList(unitsSqFeet);
+  var uniqueList = getUniqueAndSortedListSquareFeet(unitsSqFeet);
   var maxValue = Math.max(...uniqueList);
 
   reInitializeDropDownList("square_feet");
@@ -675,7 +675,7 @@ function updateMaxPriceFilterDropDownList(floorplateUnits){
   
   floorplateUnits = filterUnitsBasedOnCommunityType(floorplateUnits);
   var unitsMarketRent = floorplateUnits.map(unit => unit.market_rent);
-  var uniqueList = getUniqueAndSortedList(unitsMarketRent);
+  var uniqueList = getUniqueAndSortedListMarketRent(unitsMarketRent);
   var minValue = Math.min(...uniqueList);
 
   reInitializeDropDownList("market_rent");
@@ -686,8 +686,6 @@ function updateMaxPriceFilterDropDownList(floorplateUnits){
   }
 
   disablePriceRentOptions();
-  $("#market_rent option:last").attr("selected", "selected");
-  $("#responsive_market_rent option:last").attr("selected", "selected");
 }
 
 function disablePriceRentOptions() {
@@ -712,8 +710,12 @@ function filterUnitsBasedOnCommunityType(floorplateUnits) {
   return floorplateUnits;
 }
 
-function getUniqueAndSortedList(list) {
-  return list.filter((x, i, a) => a.indexOf(x) === i).sort(function (a, b) {  return a - b;  });
+function getUniqueAndSortedListSquareFeet(list) {
+  return list.filter((x, i, a) => a.indexOf(x) === i).sort(function (a, b) {  return a - b; });
+}
+
+function getUniqueAndSortedListMarketRent(list) {
+  return list.filter((x, i, a) => a.indexOf(x) === i).sort(function (a, b) { return b - a; });
 }
 
 function reInitializeDropDownList(filter) {

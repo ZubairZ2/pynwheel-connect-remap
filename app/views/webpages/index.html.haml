@@ -106,10 +106,10 @@
                   = select_tag :responsive_unit_bedroom, options_for_select(@unit_bedrooms.present? ? @unit_bedrooms : []),{:class=>"custom-select", :include_blank => "All "}
                 .selectable-field
                   %label Maximum Price
-                  = select_tag :responsive_market_rent, options_for_select(@market_rent.present? ? @market_rent : []),{:class=>"custom-select", :include_blank => "All"}
+                  = select_tag :responsive_market_rent, options_for_select(@market_rent.present? ? @market_rent : []),{:class=>"custom-select"}
                 .selectable-field
                   %label Min Square Footage
-                  = select_tag :responsive_square_feet, options_for_select(@square_feet.present? ? @square_feet : []),{:class=>"custom-select", :include_blank => "All"}
+                  = select_tag :responsive_square_feet, options_for_select(@square_feet.present? ? @square_feet : []),{:class=>"custom-select"}
                 .selectable-field
                   %label Availability
                   = select_tag :responsive_available_unit, options_for_select(@available_units.present? ? @available_units : []),{:class=>"custom-select", :include_blank => "All "}
