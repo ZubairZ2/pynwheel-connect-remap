@@ -5784,11 +5784,6 @@ html, .add-fav-body {
     .custom-iframe-modeule .header-buttons-groups {
         width: 21%;
     }
-    /* .header-buttons-groups .header-action-btn {
-        max-width: 90px;
-        font-size: 9px;
-        margin-right: 4px;
-    } */
 
     .custom-iframe-modeule .selection-fields {
         width: 100%;
@@ -5891,18 +5886,28 @@ html, .add-fav-body {
     .left-side-30-units:last-child {
         margin-bottom: 345px;
     }
-    .header-buttons-groups {
-        justify-content: center !important;
-    }
 
   }
 
 @media screen and (max-width:993px){
+
+    .custom-iframe-modeule .header-buttons-groups {
+        right: 0;
+        left: 0;
+        text-align: center;
+        width: 100%;
+        bottom: 0;
+        position: fixed;
+        background: #e8e9e9;
+        padding-top: inherit;
+        padding-bottom: 7px;
+        z-index: 1030;
+    }
     #webpages-overlay-button {
         top: 55% !important;
     }
     .header-buttons-groups {
-        justify-content: center !important;
+        justify-content: space-evenly !important;
     }
 
     .alert_message{
@@ -6020,7 +6025,7 @@ html, .add-fav-body {
       background: #e8e9e9;
       z-index: 999;
       padding: 0;
-      top: 80px;
+      top: 60px;
       margin: auto;
       display: none;
       text-align: center;
@@ -6151,10 +6156,6 @@ ul.add-fav-options {
         border-radius: 5px;
         border-bottom: 1px solid rgb(225, 225, 225);
     }
-
-    .header-buttons-groups {
-        justify-content: center !important;
-    }
 }
 
 @media screen and (max-width:567px){
@@ -6193,10 +6194,6 @@ ul.add-fav-options {
     #sidebar .floor-counts .slick-list .slick-track {
         display: flex;
         flex-direction: row-reverse;
-    }
-
-    .header-buttons-groups {
-        justify-content: center !important;
     }
 
     #webpages-overlay-text {
@@ -6268,18 +6265,6 @@ ul.add-fav-options {
     max-height: 80%;
 }
 
-  .custom-iframe-modeule .header-buttons-groups {
-      right: 0;
-      left: 0;
-      text-align: center;
-      width: 100%;
-      bottom: 0;
-      position: fixed;
-      background: #e8e9e9;
-      padding-top: inherit;
-      padding-bottom: 7px;
-      z-index: 1030;
-  }
   .footer-logo {
       width: 50%;
   }
@@ -6344,7 +6329,7 @@ ul.add-fav-options {
       padding: 10px;
   }
   .mobile-filter-mega-menu {
-      top: 50px;
+      top: 40px;
   }
   .mobile-filter-mega-menu .selectable-field {
       width: 42%;

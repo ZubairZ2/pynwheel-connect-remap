@@ -789,6 +789,7 @@ function showMarkers() {
 
   disabled_enabled_anchors();
   centerImageOnMobile();
+  mobileFooterAlignment();   
 }
 
 function handleResize(){
@@ -1152,32 +1153,47 @@ function disabled_enabled_anchors() {
     }
     else{
       $('.alert').hide()
-    }
-    
-    if($(window).width() < 567){
-      $('.c-footer').css({"bottom": 70});
     }    
   }
 }
 
 function centerImageOnMobile() {
   if($(window).width() < 567) {
-    if(webCommunity['is_sitemap'])
+    if(webCommunity['is_sitemap']) {
       $('.map-container-center-align').css({"top": "5rem"});
-    else
+    }
+    else {
       $('.map-container-center-align').css({"top": "2rem"});
+    }
   }   
 }
+
+function mobileFooterAlignment() {
+  const windowWidth = $(window).width();
+  const footerCss = {
+    "display": "flex",
+    "justify-content": "center"
+  };
+
+  if (windowWidth <= 993 && windowWidth >= 567) {
+    footerCss["bottom"] = 70;
+    $('.c-footer').css(footerCss);
+  } else if (windowWidth <= 567) {
+    footerCss["bottom"] = webCommunity['is_sitemap'] ? 70 : 130;
+    $('.c-footer').css(footerCss);
+  }
+}
+
 
 function change_units_view(evt, type){
   if (type === "list_view"){
     document.getElementsByClassName('zoom-controls zooming-content-h')[0].style.visibility = 'hidden'
     document.getElementsByClassName('zoom-controls zooming-content-h')[1].style.visibility = 'hidden'
-    $('.mobile-footer').hide();
+    $('.c-footer').hide();
   } else {
     document.getElementsByClassName('zoom-controls zooming-content-h')[0].style.visibility = 'visible'
     document.getElementsByClassName('zoom-controls zooming-content-h')[1].style.visibility = 'visible'
-    $('.mobile-footer').show();
+    $('.c-footer').show();
   }
 
   var i, tabcontent, tablinks;
