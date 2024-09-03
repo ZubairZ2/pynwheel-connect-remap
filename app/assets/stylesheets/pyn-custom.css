@@ -5545,6 +5545,7 @@ body {
 }
 .footer-logo img {
     width: 136px;
+    margin-top: 5px;
 }
 .lock-box-shadow {
     box-shadow: 0 0 0px 1px #eee;
@@ -6082,6 +6083,9 @@ ul.add-fav-options {
     padding: 0px 5% 0 5%;
 }
 @media screen and (max-width: 320px){
+    .footer-logo img {
+        margin-top: 15px;
+    }
     .custom-iframe-modeule .app-logo-mobile {
         display: block;
     }
@@ -7362,8 +7366,7 @@ span.to-input {
     margin-top: 30px;
 }
 .webpage-header{
-    right: 13px;
-    padding: 10px 26px;
+    padding: 10px 13px;
 }
 
 #latch_elevator_accesses_chosen {
