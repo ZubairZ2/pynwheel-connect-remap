@@ -2087,7 +2087,10 @@ function resetFilters() {
   units = current_units
   $("#responsive_unit_bedroom").val($("#responsive_unit_bedroom option:first").val());
   $("#unit_bedroom").val($("#unit_bedroom option:first").val());
-  $('.mobile-filter-mega-menu').slideToggle();
+
+  if($(window).width() <= 993)
+    $('.mobile-filter-mega-menu').slideToggle();
+  
   bedroomFilterChanged();
   showMarkers();
 }
