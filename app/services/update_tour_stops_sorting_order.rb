@@ -123,20 +123,20 @@ class UpdateTourStopsSortingOrder
               # sorted_points = sort_stops_by_distance(starting_point, stops_points)
               sorted_points = sort_stops_by_previous_point(starting_point, stops_points)
               
-              puts "Sorted Points: \n\n"
-              puts sorted_points.inspect
-              puts "\n\n\n\n"
+              if sorted_points.present?
+                puts "Sorted Points #{f}, #{b}: \n\n"
+                puts sorted_points.inspect
+                puts "\n\n\n\n"
 
-              current_point = sorted_points.last
-              current_point = get_elevator(b, f, current_point) #sorted_points.last
-              
-              puts "Current Point: \n\n"
-              puts current_point.inspect
-              puts "\n\n\n\n"
+                current_point = sorted_points.last
+                current_point = get_elevator(b, f, current_point) #sorted_points.last
+                
+                puts "Current Point #{f}, #{b}: \n\n"
+                puts current_point.inspect
+                puts "\n\n\n\n"
 
-              sorted_stops = fetch_sorted_tour_stops(sorted_points)
+                sorted_stops = fetch_sorted_tour_stops(sorted_points)
 
-              if sorted_stops.present?
                 update_hash(b, f, sorted_stops)
 
                 sorted_stops.each_with_index do |stop, index|
@@ -175,7 +175,7 @@ class UpdateTourStopsSortingOrder
       elevators&.min_by { |elevator| distance(current_point, elevator) }
 
     rescue => error
-      puts "Elevator sorting error: #{error.message}"
+      puts "Elevator sorting error  #{f}, #{b}: #{error.message}"
     end
   end
   
