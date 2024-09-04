@@ -99,6 +99,10 @@ class UpdateTourStopsSortingOrder
     bsp
   end
 
+  def skip_sorting
+    (@community.id === 2919 && f === 2) ? true : false
+  end
+
   def sort_single_building_floorplate_stops
     g_index = 1
 
@@ -107,6 +111,7 @@ class UpdateTourStopsSortingOrder
       current_point = (bsp.present? ? bsp : sitemap_starting_point)
 
       floors&.each_with_index do |f, f_index|
+        next if skip_sorting #Temporary solution for sofia to avoid passthrough point
         floor_stop_ids = @tour&.sort_hash["#{b},#{f}"]
 
         if floor_stop_ids.present?
