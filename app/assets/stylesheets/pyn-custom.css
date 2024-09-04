@@ -6325,6 +6325,7 @@ ul.add-fav-options {
   .header-inner {
       display: block;
       padding: 10px;
+      height: 65px;
   }
   .mobile-filter-mega-menu {
       top: 40px;
