@@ -606,7 +606,7 @@ function filterUnitsBasedOnDate(floorplateUnits, startIndex, endIndex) {
 function filterBasedOnScreen(filterTag) {
   const webFilterId = "#".concat(filterTag); //works on web view
   const mobileFilterId = "#responsive_".concat(filterTag); //works on mobile view
-
+  debugger;
   if($(window).width() <= 993) {
     if(filterTag === 'market_rent')
       return parseInt($(mobileFilterId).val().split("-")[1]);
@@ -617,14 +617,16 @@ function filterBasedOnScreen(filterTag) {
 }
 
 function filterUnitsBasedOnSqfeet() {
-  sqFeet = filterBasedOnScreen('square_feet');
-  
+  // sqFeet = filterBasedOnScreen('square_feet');
+  sqFeet = parseInt( ($('#square_feet').val() || $('#responsive_square_feet').val()).split("-")[0] )
+
   if(sqFeet)
     units = units.filter(unit => unit.square_feet >= sqFeet )
 }
 
 function filterUnitsBasedOnMarketRent() {
-  marketRent = filterBasedOnScreen('market_rent');
+  // marketRent = filterBasedOnScreen('market_rent');
+  marketRent = parseInt( ($('#market_rent').val() || $('#responsive_market_rent').val()).split("-")[1] )
 
   if(marketRent)
     units = units.filter(unit => unit.market_rent <= marketRent )
@@ -634,8 +636,9 @@ function filterUnitsBasedOnBedroom() {
   $(".alert").hide();
 
   units = total_units;
-  unitBedroom = filterBasedOnScreen('unit_bedroom');
-
+  // unitBedroom = filterBasedOnScreen('unit_bedroom');
+  unitBedroom = parseInt( ($('#unit_bedroom').val() || $('#responsive_unit_bedroom').val()).split("_")[0] )
+  
   if(unitBedroom || unitBedroom === 0)
     units = units.filter(unit => unit.bedrooms == unitBedroom)
 }
@@ -1187,11 +1190,11 @@ function centerImageOnMobile() {
   if($(window).width() < 567) {
     if(webCommunity['is_sitemap']) {
       $('.map-container-center-align').css({"top": "5rem"});
-      $('.left-side').css({"top": "5rem"});
+      $('.left-side').css({"top": "6rem"});
     }
     else {
       $('.map-container-center-align').css({"top": "2rem"});
-      $('.left-side').css({"top": "8rem"});
+      $('.left-side').css({"top": "9rem"});
     }
   }   
 }
