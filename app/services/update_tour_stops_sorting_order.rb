@@ -99,7 +99,7 @@ class UpdateTourStopsSortingOrder
     bsp
   end
 
-  def skip_sorting
+  def skip_sorting f
     (@community.id == 2938 && f == 2) ? true : false
   end
 
@@ -120,7 +120,7 @@ class UpdateTourStopsSortingOrder
             if floor_stops.present?
               stops_points = fetch_stops_points(floor_stops)
               # sorted_points = sort_stops_by_distance(starting_point, stops_points)
-              if skip_sorting
+              if skip_sorting(f)
                 sorted_points = stops_points
               else
                 sorted_points = sort_stops_by_previous_point(starting_point, stops_points)
