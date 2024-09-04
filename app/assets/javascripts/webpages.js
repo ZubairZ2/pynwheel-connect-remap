@@ -389,7 +389,7 @@ $(window).bind('load', function () {
           y_plot = y_plot - 17
         }
         else{
-          y_plot = y_plot - 1
+          y_plot = y_plot + 1;
           // x_plot = x_plot - 4
         }
         
