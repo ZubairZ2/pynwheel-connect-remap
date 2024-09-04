@@ -400,38 +400,64 @@ $(window).bind('load', function () {
         }
 
         if($(window).width() >= 1125 && $(window).width() <= 1360 ){
+          if(webCommunity['is_sitemap'])
+            $(this).css({"left": ((x_plot)) + left_diff+6, "top": y_plot + 10});
           $(this).css({"margin-left": -5, "margin-top": -7})
         }
 
         if($(window).width() >= 950 && $(window).width() <= 1125 ){
+          if(webCommunity['is_sitemap'])
+            $(this).css({"left": ((x_plot)) + left_diff, "top": y_plot + 3});
+
           $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-16 ), "margin-top": -($('.fa-map-marker-alt-responsive').height()-20)})       
         }
 
         if($(window).width() >= 825 && $(window).width() <= 950 ){
+          if(webCommunity['is_sitemap'])
+            $(this).css({"left": ((x_plot)) + left_diff + 3, "top": y_plot + 6});
+
           $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-14 ), "margin-top": -($('.fa-map-marker-alt-responsive').height()-22)})       
         }
 
         if($(window).width() >= 700 && $(window).width() <= 825 ){
+          if(webCommunity['is_sitemap'])
+            $(this).css({"left": ((x_plot)) + left_diff + 5, "top": y_plot + 8});
+
           $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-10), "margin-top": -($('.fa-map-marker-alt-responsive').height()-20)})       
         }
 
         if($(window).width() >= 567 && $(window).width() <= 700 ){
+          if(webCommunity['is_sitemap'])
+            $(this).css({"left": ((x_plot)) + left_diff + 3, "top": y_plot + 11});
+
           $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-10), "margin-top": -($('.fa-map-marker-alt-responsive').height()-16)}) 
         }
 
         if($(window).width() >= 480 && $(window).width() <= 567){
+          if(webCommunity['is_sitemap'])
+            $(this).css({"left": ((x_plot)) + left_diff + 3, "top": y_plot + 11});
+
           $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-8), "margin-top": -($('.fa-map-marker-alt-responsive').height()-15)})
         }
         
         if($(window).width() >= 420 && $(window).width() <= 480){
+          if(webCommunity['is_sitemap'])
+            $(this).css({"left": ((x_plot)) + left_diff + 3, "top": y_plot + 11});
+
           $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-8), "margin-top": -($('.fa-map-marker-alt-responsive').height()-13)})       
         }
 
         if($(window).width() >= 320 && $(window).width() <= 420){
+          if(webCommunity['is_sitemap'])
+            $(this).css({"left": ((x_plot)) + left_diff + 6, "top": y_plot + 13});
+
           $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-5), "margin-top": -($('.fa-map-marker-alt-responsive').height()-11)})       
         }
 
         if($(window).width() <= 320 ){
+          if(webCommunity['is_sitemap'])
+            $(this).css({"left": ((x_plot)) + left_diff + 6, "top": y_plot + 14});
+          
           $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-4), "margin-top": -($('.fa-map-marker-alt-responsive').height()-10)})       
         }
       });
@@ -1161,9 +1187,11 @@ function centerImageOnMobile() {
   if($(window).width() < 567) {
     if(webCommunity['is_sitemap']) {
       $('.map-container-center-align').css({"top": "5rem"});
+      $('.left-side').css({"top": "5rem"});
     }
     else {
       $('.map-container-center-align').css({"top": "2rem"});
+      $('.left-side').css({"top": "8rem"});
     }
   }   
 }
@@ -1176,14 +1204,16 @@ function mobileFooterAlignment() {
   };
 
   if (windowWidth <= 993 && windowWidth >= 567) {
-    footerCss["bottom"] = 70;
+    footerCss["bottom"] = 65;
     $('.c-footer').css(footerCss);
-  } else if (windowWidth <= 567) {
-    footerCss["bottom"] = webCommunity['is_sitemap'] ? 70 : 130;
-    $('.c-footer').css(footerCss);
-  }
-}
 
+  } else if (windowWidth <= 567) {
+    footerCss["bottom"] = webCommunity['is_sitemap'] ? 65 : 130;
+    $('.c-footer').css(footerCss);
+
+  }
+
+}
 
 function change_units_view(evt, type){
   if (type === "list_view"){
