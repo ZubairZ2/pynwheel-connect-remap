@@ -100,7 +100,7 @@ class UpdateTourStopsSortingOrder
   end
 
   def skip_sorting
-    (@community.id === 2938 && f === 2) ? true : false
+    (@community.id == 2938 && f == 2) ? true : false
   end
 
   def sort_single_building_floorplate_stops
@@ -111,7 +111,6 @@ class UpdateTourStopsSortingOrder
       current_point = (bsp.present? ? bsp : sitemap_starting_point)
 
       floors&.each_with_index do |f, f_index|
-        unless skip_sorting
           floor_stop_ids = @tour&.sort_hash["#{b},#{f}"]
 
           if floor_stop_ids.present?
@@ -121,7 +120,11 @@ class UpdateTourStopsSortingOrder
             if floor_stops.present?
               stops_points = fetch_stops_points(floor_stops)
               # sorted_points = sort_stops_by_distance(starting_point, stops_points)
-              sorted_points = sort_stops_by_previous_point(starting_point, stops_points)
+              if skip_sorting
+                sorted_points = stops_points
+              else
+                sorted_points = sort_stops_by_previous_point(starting_point, stops_points)
+              end
               
               puts "Sorted Points: \n\n"
               puts sorted_points.inspect
@@ -148,7 +151,6 @@ class UpdateTourStopsSortingOrder
           else
             current_point =  get_elevator(b, f, current_point)
           end
-        end
 
       end
     end
