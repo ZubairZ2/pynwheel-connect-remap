@@ -142,7 +142,9 @@
                 forEachProp(defaults, function(key, value) {
                     _this.options[key] = customOptions.hasOwnProperty(key) ? customOptions[key] : value;
                 });
-                this.hadInitialPlaceholder = Boolean(input.getAttribute("placeholder"));
+                
+                if(input)
+                    this.hadInitialPlaceholder = Boolean(input.getAttribute("placeholder"));
             }
             _createClass(Iti, [ {
                 key: "_init",
@@ -335,87 +337,89 @@
                     // prevent autocomplete as there's no safe, cross-browser event we can react to, so it can
                     // easily put the plugin in an inconsistent state e.g. the wrong flag selected for the
                     // autocompleted number, which on submit could mean wrong number is saved (esp in nationalMode)
-                    if (!this.telInput.hasAttribute("autocomplete") && !(this.telInput.form && this.telInput.form.hasAttribute("autocomplete"))) {
-                        this.telInput.setAttribute("autocomplete", "off");
-                    }
-                    // containers (mostly for positioning)
-                    var parentClass = "iti";
-                    if (this.options.allowDropdown) parentClass += " iti--allow-dropdown";
-                    if (this.options.separateDialCode) parentClass += " iti--separate-dial-code";
-                    if (this.options.customContainer) {
-                        parentClass += " ";
-                        parentClass += this.options.customContainer;
-                    }
-                    var wrapper = this._createEl("div", {
-                        "class": parentClass
-                    });
-                    this.telInput.parentNode.insertBefore(wrapper, this.telInput);
-                    this.flagsContainer = this._createEl("div", {
-                        "class": "iti__flag-container"
-                    }, wrapper);
-                    wrapper.appendChild(this.telInput);
-                    // selected flag (displayed to left of input)
-                    this.selectedFlag = this._createEl("div", {
-                        "class": "iti__selected-flag",
-                        role: "combobox",
-                        "aria-controls": "iti-".concat(this.id, "__country-listbox"),
-                        "aria-owns": "iti-".concat(this.id, "__country-listbox"),
-                        "aria-expanded": "false"
-                    }, this.flagsContainer);
-                    this.selectedFlagInner = this._createEl("div", {
-                        "class": "iti__flag"
-                    }, this.selectedFlag);
-                    if (this.options.separateDialCode) {
-                        this.selectedDialCode = this._createEl("div", {
-                            "class": "iti__selected-dial-code"
-                        }, this.selectedFlag);
-                    }
-                    if (this.options.allowDropdown) {
-                        // make element focusable and tab navigable
-                        this.selectedFlag.setAttribute("tabindex", "0");
-                        this.dropdownArrow = this._createEl("div", {
-                            "class": "iti__arrow"
-                        }, this.selectedFlag);
-                        // country dropdown: preferred countries, then divider, then all countries
-                        this.countryList = this._createEl("ul", {
-                            "class": "iti__country-list iti__hide",
-                            id: "iti-".concat(this.id, "__country-listbox"),
-                            role: "listbox",
-                            "aria-label": "List of countries"
-                        });
-                        if (this.preferredCountries.length) {
-                            this._appendListItems(this.preferredCountries, "iti__preferred", true);
-                            this._createEl("li", {
-                                "class": "iti__divider",
-                                role: "separator",
-                                "aria-disabled": "true"
-                            }, this.countryList);
+                    if(this.telInput){
+                        if (!this.telInput.hasAttribute("autocomplete") && !(this.telInput.form && this.telInput.form.hasAttribute("autocomplete"))) {
+                            this.telInput.setAttribute("autocomplete", "off");
                         }
-                        this._appendListItems(this.countries, "iti__standard");
-                        // create dropdownContainer markup
-                        if (this.options.dropdownContainer) {
-                            this.dropdown = this._createEl("div", {
-                                "class": "iti iti--container"
+                        // containers (mostly for positioning)
+                        var parentClass = "iti";
+                        if (this.options.allowDropdown) parentClass += " iti--allow-dropdown";
+                        if (this.options.separateDialCode) parentClass += " iti--separate-dial-code";
+                        if (this.options.customContainer) {
+                            parentClass += " ";
+                            parentClass += this.options.customContainer;
+                        }
+                        var wrapper = this._createEl("div", {
+                            "class": parentClass
+                        });
+                        this.telInput.parentNode.insertBefore(wrapper, this.telInput);
+                        this.flagsContainer = this._createEl("div", {
+                            "class": "iti__flag-container"
+                        }, wrapper);
+                        wrapper.appendChild(this.telInput);
+                        // selected flag (displayed to left of input)
+                        this.selectedFlag = this._createEl("div", {
+                            "class": "iti__selected-flag",
+                            role: "combobox",
+                            "aria-controls": "iti-".concat(this.id, "__country-listbox"),
+                            "aria-owns": "iti-".concat(this.id, "__country-listbox"),
+                            "aria-expanded": "false"
+                        }, this.flagsContainer);
+                        this.selectedFlagInner = this._createEl("div", {
+                            "class": "iti__flag"
+                        }, this.selectedFlag);
+                        if (this.options.separateDialCode) {
+                            this.selectedDialCode = this._createEl("div", {
+                                "class": "iti__selected-dial-code"
+                            }, this.selectedFlag);
+                        }
+                        if (this.options.allowDropdown) {
+                            // make element focusable and tab navigable
+                            this.selectedFlag.setAttribute("tabindex", "0");
+                            this.dropdownArrow = this._createEl("div", {
+                                "class": "iti__arrow"
+                            }, this.selectedFlag);
+                            // country dropdown: preferred countries, then divider, then all countries
+                            this.countryList = this._createEl("ul", {
+                                "class": "iti__country-list iti__hide",
+                                id: "iti-".concat(this.id, "__country-listbox"),
+                                role: "listbox",
+                                "aria-label": "List of countries"
                             });
-                            this.dropdown.appendChild(this.countryList);
-                        } else {
-                            this.flagsContainer.appendChild(this.countryList);
+                            if (this.preferredCountries.length) {
+                                this._appendListItems(this.preferredCountries, "iti__preferred", true);
+                                this._createEl("li", {
+                                    "class": "iti__divider",
+                                    role: "separator",
+                                    "aria-disabled": "true"
+                                }, this.countryList);
+                            }
+                            this._appendListItems(this.countries, "iti__standard");
+                            // create dropdownContainer markup
+                            if (this.options.dropdownContainer) {
+                                this.dropdown = this._createEl("div", {
+                                    "class": "iti iti--container"
+                                });
+                                this.dropdown.appendChild(this.countryList);
+                            } else {
+                                this.flagsContainer.appendChild(this.countryList);
+                            }
                         }
-                    }
-                    if (this.options.hiddenInput) {
-                        var hiddenInputName = this.options.hiddenInput;
-                        var name = this.telInput.getAttribute("name");
-                        if (name) {
-                            var i = name.lastIndexOf("[");
-                            // if input name contains square brackets, then give the hidden input the same name,
-                            // replacing the contents of the last set of brackets with the given hiddenInput name
-                            if (i !== -1) hiddenInputName = "".concat(name.substr(0, i), "[").concat(hiddenInputName, "]");
+                        if (this.options.hiddenInput) {
+                            var hiddenInputName = this.options.hiddenInput;
+                            var name = this.telInput.getAttribute("name");
+                            if (name) {
+                                var i = name.lastIndexOf("[");
+                                // if input name contains square brackets, then give the hidden input the same name,
+                                // replacing the contents of the last set of brackets with the given hiddenInput name
+                                if (i !== -1) hiddenInputName = "".concat(name.substr(0, i), "[").concat(hiddenInputName, "]");
+                            }
+                            this.hiddenInput = this._createEl("input", {
+                                type: "hidden",
+                                name: hiddenInputName
+                            });
+                            wrapper.appendChild(this.hiddenInput);
                         }
-                        this.hiddenInput = this._createEl("input", {
-                            type: "hidden",
-                            name: hiddenInputName
-                        });
-                        wrapper.appendChild(this.hiddenInput);
                     }
                 }
             }, {
@@ -446,41 +450,43 @@
                     // fix firefox bug: when first load page (with input with value set to number with intl dial
                     // code) and initialising plugin removes the dial code from the input, then refresh page,
                     // and we try to init plugin again but this time on number without dial code so get grey flag
-                    var attributeValue = this.telInput.getAttribute("value");
-                    var inputValue = this.telInput.value;
-                    var useAttribute = attributeValue && attributeValue.charAt(0) === "+" && (!inputValue || inputValue.charAt(0) !== "+");
-                    var val = useAttribute ? attributeValue : inputValue;
-                    var dialCode = this._getDialCode(val);
-                    var isRegionlessNanp = this._isRegionlessNanp(val);
-                    var _this$options = this.options, initialCountry = _this$options.initialCountry, nationalMode = _this$options.nationalMode, autoHideDialCode = _this$options.autoHideDialCode, separateDialCode = _this$options.separateDialCode;
-                    // if we already have a dial code, and it's not a regionlessNanp, we can go ahead and set the
-                    // flag, else fall back to the default country
-                    if (dialCode && !isRegionlessNanp) {
-                        this._updateFlagFromNumber(val);
-                    } else if (initialCountry !== "auto") {
-                        // see if we should select a flag
-                        if (initialCountry) {
-                            this._setFlag(initialCountry.toLowerCase());
-                        } else {
-                            if (dialCode && isRegionlessNanp) {
-                                // has intl dial code, is regionless nanp, and no initialCountry, so default to US
-                                this._setFlag("us");
+                    if(this.telInput){
+                        var attributeValue = this.telInput.getAttribute("value");
+                        var inputValue = this.telInput.value;
+                        var useAttribute = attributeValue && attributeValue.charAt(0) === "+" && (!inputValue || inputValue.charAt(0) !== "+");
+                        var val = useAttribute ? attributeValue : inputValue;
+                        var dialCode = this._getDialCode(val);
+                        var isRegionlessNanp = this._isRegionlessNanp(val);
+                        var _this$options = this.options, initialCountry = _this$options.initialCountry, nationalMode = _this$options.nationalMode, autoHideDialCode = _this$options.autoHideDialCode, separateDialCode = _this$options.separateDialCode;
+                        // if we already have a dial code, and it's not a regionlessNanp, we can go ahead and set the
+                        // flag, else fall back to the default country
+                        if (dialCode && !isRegionlessNanp) {
+                            this._updateFlagFromNumber(val);
+                        } else if (initialCountry !== "auto") {
+                            // see if we should select a flag
+                            if (initialCountry) {
+                                this._setFlag(initialCountry.toLowerCase());
                             } else {
-                                // no dial code and no initialCountry, so default to first in list
-                                this.defaultCountry = this.preferredCountries.length ? this.preferredCountries[0].iso2 : this.countries[0].iso2;
-                                if (!val) {
-                                    this._setFlag(this.defaultCountry);
+                                if (dialCode && isRegionlessNanp) {
+                                    // has intl dial code, is regionless nanp, and no initialCountry, so default to US
+                                    this._setFlag("us");
+                                } else {
+                                    // no dial code and no initialCountry, so default to first in list
+                                    this.defaultCountry = this.preferredCountries.length ? this.preferredCountries[0].iso2 : this.countries[0].iso2;
+                                    if (!val) {
+                                        this._setFlag(this.defaultCountry);
+                                    }
                                 }
                             }
+                            // if empty and no nationalMode and no autoHideDialCode then insert the default dial code
+                            if (!val && !nationalMode && !autoHideDialCode && !separateDialCode) {
+                                this.telInput.value = "+".concat(this.selectedCountryData.dialCode);
+                            }
                         }
-                        // if empty and no nationalMode and no autoHideDialCode then insert the default dial code
-                        if (!val && !nationalMode && !autoHideDialCode && !separateDialCode) {
-                            this.telInput.value = "+".concat(this.selectedCountryData.dialCode);
-                        }
+                        // NOTE: if initialCountry is set to auto, that will be handled separately
+                        // format - note this wont be run after _updateDialCode as that's only called if no val
+                        if (val) this._updateValFromNumber(val);
                     }
-                    // NOTE: if initialCountry is set to auto, that will be handled separately
-                    // format - note this wont be run after _updateDialCode as that's only called if no val
-                    if (val) this._updateValFromNumber(val);
                 }
             }, {
                 key: "_initListeners",
@@ -530,7 +536,9 @@
                             _this4._showDropdown();
                         }
                     };
-                    this.selectedFlag.addEventListener("click", this._handleClickSelectedFlag);
+                    this.selectedFlag;
+                    if (this.selectedFlag)
+                        this.selectedFlag.addEventListener("click", this._handleClickSelectedFlag);
                     // open dropdown list if currently focused
                     this._handleFlagsContainerKeydown = function(e) {
                         var isDropdownHidden = _this4.countryList.classList.contains("iti__hide");
@@ -597,27 +605,31 @@
             }, {
                 key: "_initKeyListeners",
                 value: function _initKeyListeners() {
-                    var _this6 = this;
-                    // update flag on keyup
-                    this._handleKeyupEvent = function() {
-                        if (_this6._updateFlagFromNumber(_this6.telInput.value)) {
-                            _this6._triggerCountryChange();
-                        }
-                    };
-                    this.telInput.addEventListener("keyup", this._handleKeyupEvent);
-                    // update flag on cut/paste events (now supported in all major browsers)
-                    this._handleClipboardEvent = function() {
-                        // hack because "paste" event is fired before input is updated
-                        setTimeout(_this6._handleKeyupEvent);
-                    };
-                    this.telInput.addEventListener("cut", this._handleClipboardEvent);
-                    this.telInput.addEventListener("paste", this._handleClipboardEvent);
+                    if(this.telInput){
+                        var _this6 = this;
+                        // update flag on keyup
+                        this._handleKeyupEvent = function() {
+                            if (_this6._updateFlagFromNumber(_this6.telInput.value)) {
+                                _this6._triggerCountryChange();
+                            }
+                        };
+                        this.telInput.addEventListener("keyup", this._handleKeyupEvent);
+                        // update flag on cut/paste events (now supported in all major browsers)
+                        this._handleClipboardEvent = function() {
+                            // hack because "paste" event is fired before input is updated
+                            setTimeout(_this6._handleKeyupEvent);
+                        };
+                        this.telInput.addEventListener("cut", this._handleClipboardEvent);
+                        this.telInput.addEventListener("paste", this._handleClipboardEvent);
+                    }
                 }
             }, {
                 key: "_cap",
                 value: function _cap(number) {
-                    var max = this.telInput.getAttribute("maxlength");
-                    return max && number.length > max ? number.substr(0, max) : number;
+                    if(this.telInput){
+                        var max = this.telInput.getAttribute("maxlength");
+                        return max && number.length > max ? number.substr(0, max) : number;
+                    }
                 }
             }, {
                 key: "_initBlurListeners",

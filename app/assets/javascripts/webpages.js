@@ -18,10 +18,10 @@ var currentUnitSelected = null;
 var applyNowChildClickHandled = false
 var unitChildClickHandled = false
 
-let inactivityTimer;
-const inactivityThreshold = 60000; // 1 minutes (adjust as needed)
-let lastActivityTime = Date.now();
-let updateRequestSent = false;
+var inactivityTimer;
+var inactivityThreshold = 60000; // 1 minutes (adjust as needed)
+var lastActivityTime = Date.now();
+var updateRequestSent = false;
 
 $(document).ready(function () {
   webCommunity = $("#communityWebpagesData").data("community");
@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', touchScreenEvent);
 $(window).bind('load', function () {
 
   if ($('.is-webpage')[0]) {
-    resetFilters();
+    // resetFilters();
     $('[data-toggle="tooltip"]').tooltip({trigger: "hover"});
     $(document).keydown(function (event) {
       if (event.ctrlKey == true && (event.which == '61' || event.which == '107' || event.whFich == '173' || event.which == '109' || event.which == '187' || event.which == '189')) {
@@ -110,6 +110,7 @@ $(window).bind('load', function () {
       if (event.ctrlKey == true) {
       }
     });
+    
     ////////////// Disable browser zoom for webpage  ends here ////////////////
     $('#clickme').click(function () {
       $("#clickme").html($("#clickme").html() == 'Select Filter' ? 'Hide Filter' : 'Select Filter');
@@ -119,11 +120,13 @@ $(window).bind('load', function () {
                 0 : -331
       });
     });
+
     ////////////////////////////////////////////////
     $('#leasing-start-date-icon').click(function (event) {
       event.preventDefault();
       $('#leasing-start-date').focus();
     });
+
     ////////////////////////////////////////////////
     /* unit modal*/
     $('#unitModal').on('hidden.bs.modal', function (e) {
@@ -389,6 +392,7 @@ $(window).bind('load', function () {
           y_plot = y_plot - 1
           // x_plot = x_plot - 4
         }
+        
         $(this).css({"left": ((x_plot)) + left_diff, "top": y_plot});
         
         if ($(window).width() > 1360) {
@@ -507,7 +511,6 @@ function bedroomFilterChanged() {
 
 function maxPriceFilterFilterChanged() {
   filterUnitsBasedOnSelectedFilters();
-
   showMarkers();
 }
 
@@ -517,7 +520,6 @@ function squareFootageFilterChanged() {
 
   updateMaxPriceFilterDropDownList(units);
   filterUnitsBasedOnMarketRent();
-
   showMarkers();
 }
 
@@ -530,7 +532,6 @@ function availabilityFilterChanged() {
 
   updateMaxPriceFilterDropDownList(units);
   filterUnitsBasedOnMarketRent();
-
   showMarkers();
 }
 
@@ -576,14 +577,29 @@ function filterUnitsBasedOnDate(floorplateUnits, startIndex, endIndex) {
   return floorplateUnits
 }
 
+function filterBasedOnScreen(filterTag) {
+  const webFilterId = "#".concat(filterTag); //works on web view
+  const mobileFilterId = "#responsive_".concat(filterTag); //works on mobile view
+
+  if($(window).width() <= 993) {
+    if(filterTag === 'market_rent')
+      return parseInt($(mobileFilterId).val().split("-")[1]);
+    else
+      return parseInt($(mobileFilterId).val().split("-")[0]);
+  } else
+    return parseInt($(webFilterId).val());
+}
+
 function filterUnitsBasedOnSqfeet() {
-  sqFeet = parseInt( ($('#square_feet').val() || $('#responsive_square_feet').val()).split("-")[0] )
+  sqFeet = filterBasedOnScreen('square_feet');
+  
   if(sqFeet)
     units = units.filter(unit => unit.square_feet >= sqFeet )
 }
 
 function filterUnitsBasedOnMarketRent() {
-  marketRent = parseInt( ($('#market_rent').val() || $('#responsive_market_rent').val()).split("-")[1] )
+  marketRent = filterBasedOnScreen('market_rent');
+
   if(marketRent)
     units = units.filter(unit => unit.market_rent <= marketRent )
 }
@@ -592,7 +608,7 @@ function filterUnitsBasedOnBedroom() {
   $(".alert").hide();
 
   units = total_units;
-  unitBedroom = parseInt( ($('#unit_bedroom').val() || $('#responsive_unit_bedroom').val()).split("_")[0] )
+  unitBedroom = filterBasedOnScreen('unit_bedroom');
 
   if(unitBedroom || unitBedroom === 0)
     units = units.filter(unit => unit.bedrooms == unitBedroom)
@@ -645,7 +661,7 @@ function updateAvailabilitFilterDropdownList() {
 function updateSquareFootageFilterDropdownList(floorplateUnits) {
   floorplateUnits = filterUnitsBasedOnCommunityType(floorplateUnits);
   var unitsSqFeet = floorplateUnits.map(unit => unit.square_feet);
-  var uniqueList = getUniqueAndSortedList(unitsSqFeet);
+  var uniqueList = getUniqueAndSortedListSquareFeet(unitsSqFeet);
   var maxValue = Math.max(...uniqueList);
 
   reInitializeDropDownList("square_feet");
@@ -678,7 +694,7 @@ function updateMaxPriceFilterDropDownList(floorplateUnits){
   
   floorplateUnits = filterUnitsBasedOnCommunityType(floorplateUnits);
   var unitsMarketRent = floorplateUnits.map(unit => unit.market_rent);
-  var uniqueList = getUniqueAndSortedList(unitsMarketRent);
+  var uniqueList = getUniqueAndSortedListMarketRent(unitsMarketRent);
   var minValue = Math.min(...uniqueList);
 
   reInitializeDropDownList("market_rent");
@@ -687,8 +703,8 @@ function updateMaxPriceFilterDropDownList(floorplateUnits){
     $('#market_rent').append(`<option value="${minValue}-${uniqueList[i]}"> ${uniqueList[i]} </option>`); //works on web view
     $('#responsive_market_rent').append(`<option value="${minValue}-${uniqueList[i]}"> ${uniqueList[i]} </option>`); //works on mobile view
   }
+
   disablePriceRentOptions();
-  $("#market_rent option:last").attr("selected", "selected");
 }
 
 function disablePriceRentOptions() {
@@ -713,8 +729,12 @@ function filterUnitsBasedOnCommunityType(floorplateUnits) {
   return floorplateUnits;
 }
 
-function getUniqueAndSortedList(list) {
-  return list.filter((x, i, a) => a.indexOf(x) === i).sort(function (a, b) {  return a - b;  });
+function getUniqueAndSortedListSquareFeet(list) {
+  return list.filter((x, i, a) => a.indexOf(x) === i).sort(function (a, b) {  return a - b; });
+}
+
+function getUniqueAndSortedListMarketRent(list) {
+  return list.filter((x, i, a) => a.indexOf(x) === i).sort(function (a, b) { return b - a; });
 }
 
 function reInitializeDropDownList(filter) {
@@ -736,7 +756,6 @@ function showMarkers() {
 
   units_to_display = filterUnitsBasedOnCommunityType(units);
   renderChangedUnits();
-
   var json_object = {}
   for (var i = 0; i < units_to_display.length; i++) {
     if ($('#m_' + units_to_display[i]['id']).hasClass('overlapping-unit')) {
@@ -769,6 +788,8 @@ function showMarkers() {
   }
 
   disabled_enabled_anchors();
+  centerImageOnMobile();
+  mobileFooterAlignment();   
 }
 
 function handleResize(){
@@ -842,8 +863,13 @@ function getFilteredUnits(units, type){
 }
 
 function resetToDefaultZoom() {
+  // for web
   modalPanZoom.zoomAbs(0, 0, 1);
   modalPanZoom.moveTo(0, 0);
+
+  // for mobile
+  responsiveModalPanZoom.zoomAbs(0, 0, 1);
+  responsiveModalPanZoom.moveTo(0, 0);
 } 
 
 function click_marker_tag(id){
@@ -934,7 +960,7 @@ function unitListHover() {
         }
 
         focused_marker = document.getElementById(selectedMarker.id);
-        focused_marker.childNodes[0].style.fontSize = "25px";
+        // focused_marker.childNodes[0].style.fontSize = "25px";
         $('#popover-marketing-unit').html(marker.dataset.unitMarketingName);
 
         const position = selectedMarker.getBoundingClientRect();
@@ -953,7 +979,7 @@ function unitListHover() {
   },
   function () {
     if (focused_marker) {
-      focused_marker.childNodes[0].style.fontSize = "20px";
+      // focused_marker.childNodes[0].style.fontSize = "20px";
       $('#marker-popover-unit').addClass('hidden');
     }
   });
@@ -1127,21 +1153,49 @@ function disabled_enabled_anchors() {
     }
     else{
       $('.alert').hide()
-    }
-    if($(window).width() < 567){
-      $('.c-footer').css({"bottom": 70});
     }    
   }
 }
+
+function centerImageOnMobile() {
+  if($(window).width() < 567) {
+    if(webCommunity['is_sitemap']) {
+      $('.map-container-center-align').css({"top": "5rem"});
+    }
+    else {
+      $('.map-container-center-align').css({"top": "2rem"});
+    }
+  }   
+}
+
+function mobileFooterAlignment() {
+  const windowWidth = $(window).width();
+  const footerCss = {
+    "display": "flex",
+    "justify-content": "center"
+  };
+
+  if (windowWidth <= 993 && windowWidth >= 567) {
+    footerCss["bottom"] = 70;
+    $('.c-footer').css(footerCss);
+  } else if (windowWidth <= 567) {
+    footerCss["bottom"] = webCommunity['is_sitemap'] ? 70 : 130;
+    $('.c-footer').css(footerCss);
+  }
+}
+
 
 function change_units_view(evt, type){
   if (type === "list_view"){
     document.getElementsByClassName('zoom-controls zooming-content-h')[0].style.visibility = 'hidden'
     document.getElementsByClassName('zoom-controls zooming-content-h')[1].style.visibility = 'hidden'
+    $('.c-footer').hide();
   } else {
     document.getElementsByClassName('zoom-controls zooming-content-h')[0].style.visibility = 'visible'
     document.getElementsByClassName('zoom-controls zooming-content-h')[1].style.visibility = 'visible'
+    $('.c-footer').show();
   }
+
   var i, tabcontent, tablinks;
   tabcontent = document.getElementsByClassName("tabcontent");
   for (i = 0; i < tabcontent.length; i++) {
@@ -1680,11 +1734,11 @@ function adjustMarkerPosition(marker) {
   }
 
   if($(window).width() >= 825 && $(window).width() <= 950 ){
-    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+3), "margin-top": -($('#s_'+unit_id).height()+5)})       
+    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()), "margin-top": -($('#s_'+unit_id).height()+5)})       
   }
 
   if($(window).width() >= 700 && $(window).width() <= 825 ){
-    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+3), "margin-top": -($('#s_'+unit_id).height()+1)})
+    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()), "margin-top": -($('#s_'+unit_id).height()+1)})
   }
 
   if($(window).width() >= 567 && $(window).width() <= 700 ){
@@ -1692,7 +1746,7 @@ function adjustMarkerPosition(marker) {
   }
 
   if($(window).width() >= 480 && $(window).width() <= 567){
-    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+2), "margin-top": -($('#s_'+unit_id).height()-3)})       
+    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()-2), "margin-top": -($('#s_'+unit_id).height()-5)})       
   }
 
   if($(window).width() >= 420 && $(window).width() <= 480){
@@ -1700,11 +1754,11 @@ function adjustMarkerPosition(marker) {
   }
 
   if($(window).width() >= 320 && $(window).width() <= 420){
-    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+2), "margin-top": -($('#s_'+unit_id).height()-6)})       
+    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width() - 3), "margin-top": -($('#s_'+unit_id).height() - 8)})       
   }
 
   if($(window).width() < 320 ){
-    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+1), "margin-top": -($('#s_'+unit_id).height()-9)})       
+    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()-4), "margin-top": -($('#s_'+unit_id).height()-10)})       
   }
 
 }
@@ -2033,6 +2087,10 @@ function resetFilters() {
   units = current_units
   $("#responsive_unit_bedroom").val($("#responsive_unit_bedroom option:first").val());
   $("#unit_bedroom").val($("#unit_bedroom option:first").val());
+
+  if($(window).width() <= 993)
+    $('.mobile-filter-mega-menu').slideToggle();
+  
   bedroomFilterChanged();
   showMarkers();
 }
@@ -2050,11 +2108,11 @@ function applyFilters(){
   selected_available_unit = $("#responsive_available_unit option:selected").text();
   selected_unit_bedrooms = $("#responsive_unit_bedroom option:selected").text();
 
-  $("#max_price_responsive").html(selected_market_rent == "All" ? "All" : currency+selected_market_rent);
-  $("#sq_feet_responsive").html(selected_square_feet == "All" ? "All" : selected_square_feet);
+  $("#max_price_responsive").html(currency+selected_market_rent);
+  $("#sq_feet_responsive").html(selected_square_feet);
   $("#unit_availability").html(selected_available_unit);
   $("#bedroom_responsive").html(selected_unit_bedrooms);
-  $('.mobile-filter-mega-menu').slideToggle()
+  $('.mobile-filter-mega-menu').slideToggle();
 }
 
 function get_unit_availability(unit) {

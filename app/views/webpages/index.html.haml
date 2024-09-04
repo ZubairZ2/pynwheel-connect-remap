@@ -48,7 +48,7 @@
                   %label Bedrooms
                   = select_tag :unit_bedroom, options_for_select(@unit_bedrooms.present? ? @unit_bedrooms : []),{:class=>"custom-select", :include_blank => "All "}
 
-                .selectable-field{:style => "display: #{@community.display_rent ? "block" : "none"}"}
+                .selectable-field
                   %label Max Price
                   = select_tag :market_rent, options_for_select(@market_rent.present? ? @market_rent : []),{:class=>"custom-select"}
 
@@ -67,30 +67,36 @@
                   Reset
                   %i.fa.fa-refresh
                
-                %ul.selected-data-mobile.responsive-content
-                  %li
-                    %span.data-title Bedrooms
-                    %strong#bedroom_responsive
-                  %li
-                    %span.data-title Max Price:
-                    %strong#max_price_responsive
-                  %li
-                    %span.data-title Min Sq Ft:
-                    %strong#sq_feet_responsive
-                  %li
-                    %span.data-title Availability:
-                    %strong#unit_availability
+                -# %ul.selected-data-mobile.responsive-content{:style => "display"}
+                -#   %li
+                -#     %span.data-title Bedrooms
+                -#     %strong#bedroom_responsive
+                -#   %li
+                -#     %span.data-title Max Price:
+                -#     %strong#max_price_responsive
+                -#   %li
+                -#     %span.data-title Min Sq Ft:
+                -#     %strong#sq_feet_responsive
+                -#   %li
+                -#     %span.data-title Availability:
+                -#     %strong#unit_availability
                     
               .header-buttons-groups
                 - if @square_feet.present?
                   %a.transparent-btn.header-action-btn{:href => "#{favorites_community_webpages_path(@community)}",:target=>"_parent"}
                     View Saved
                     %i.fa.fa-heart
+                    
                 - crm_provider = @community&.crm_credential&.crm_provider
                 - data_provider = @community&.data_provider
+
                 - if @community.self_tour && @community.scheduler_widget && (data_provider != "yardirentcafe" || data_provider != "yardi") && crm_provider != "yardirentcafe" 
                   %a.colourd-btn.header-action-btn{:href => "#{@scheduler_widget_link}",:target=>"_blank"}
                     Schedule Tour
+                  
+                .footer-logo.responsive-content{:style=> "visibility: #{@community.powered_by_btn ? "" : "hidden" }"}
+                  %img{:src => "/assets/powered_by_logo.png"}/
+                  
               .mobile-trigger.responsive-content
                 %span.filter-btn Filters
                 %img{:src => "/assets/menu-icon.png"}/
@@ -100,10 +106,10 @@
                   = select_tag :responsive_unit_bedroom, options_for_select(@unit_bedrooms.present? ? @unit_bedrooms : []),{:class=>"custom-select", :include_blank => "All "}
                 .selectable-field
                   %label Maximum Price
-                  = select_tag :responsive_market_rent, options_for_select(@market_rent.present? ? @market_rent : []),{:class=>"custom-select", :include_blank => "All"}
+                  = select_tag :responsive_market_rent, options_for_select(@market_rent.present? ? @market_rent : []),{:class=>"custom-select"}
                 .selectable-field
                   %label Min Square Footage
-                  = select_tag :responsive_square_feet, options_for_select(@square_feet.present? ? @square_feet : []),{:class=>"custom-select", :include_blank => "All"}
+                  = select_tag :responsive_square_feet, options_for_select(@square_feet.present? ? @square_feet : []),{:class=>"custom-select"}
                 .selectable-field
                   %label Availability
                   = select_tag :responsive_available_unit, options_for_select(@available_units.present? ? @available_units : []),{:class=>"custom-select", :include_blank => "All "}
@@ -210,31 +216,28 @@
 
             - marker_font_size = (marker_font_size.to_i) -5
             - camera_font_size = (marker_font_size.to_i) / 2
-
-            %ul.location-items.location-responsive.responsive-content.responsive-legends
-              - if @community.enable_home_legend
-                %li
-                  %i.fas.fa-map-marker-alt{:style => "color: #{map_marker_color}; font-size: #{marker_font_size}px"}
-                  %span Available home
-              - if @community.enable_amenity_legend
-                %li
-                  .custom-icon{:style => "height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};"}
-                    %i.fas.fa-camera-retro{:style => "color: #{amenity_marker_color}; font-size: #{camera_font_size}px; margin-top:#{camera_margin}px;"}
-                  %span Amenity image
+                  
             %div#tab
               %div.tablinks.active_unit_view
-                =button_tag " Map View",:onClick => "change_units_view(event, 'map_view')", :class => "fa fa-map-marker"
+                = button_tag :onClick => "change_units_view(event, 'map_view')" do
+                  %i.fa.fa-map-marker
+                  %strong Map View
+
               %div.tablinks
-                =button_tag " List View", :onClick => "change_units_view(event, 'list_view')", :class => "fa fa-list"
-            %div.map-body
+                = button_tag :onClick => "change_units_view(event, 'list_view')" do
+                  %i.fa.fa-list
+                  %strong List View
+
+
+            %div.map-body.map-container-center-align
               .right-side.parent.tabcontent.map_view#panzomm-container.mobile_map_view
                 .image-map#zoomable.zoomable-map-container{style: "text-align: center"}
                   - if @community_info.has_floorplates?
                     - @floors.each do |floor|
                       - floorplate = @floorplates.select{|f| f.floors.include?(floor)}.first
-                      = image_tag floorplate.standard_image_url, :class=>"floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}",:id=>"f_#{floor}","data-height"=>"#{floorplate.floorplate_image_height()}","data-width"=>"#{floorplate.floorplate_image_width()}"
+                      = image_tag floorplate.standard_image_url, :class=>"map-image-align floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}",:id=>"f_#{floor}","data-height"=>"#{floorplate.floorplate_image_height()}","data-width"=>"#{floorplate.floorplate_image_width()}"
                   - else
-                    %img.floorplate-image.sitemap-image{:alt => "", :src => "#{@community.sitemap.present? ? @community.image_src : "/assets/default.jpeg"}", :id => "property-map-image", :title => "","data-height"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.height : nil}","data-width"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.width : nil}"}/
+                    %img.floorplate-image.sitemap-image.map-image-align{:alt => "", :src => "#{@community.sitemap.present? ? @community.image_src : "/assets/default.jpeg"}", :id => "property-map-image", :title => "","data-height"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.height : nil}","data-width"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.width : nil}"}/
 
                   - coordinates_array = []
                   - units.each do |unit|
@@ -266,7 +269,7 @@
                 
                 .alert.alert-danger.fade.in{:style => "display:none;position:absolute;top:0%;width:100%;"}
                   Units not available
-              
+
               .left-side.tabcontent.list_view
                 -all_details = @units_with_floorplan_info.present? ? JSON.parse(@units_with_floorplan_info) : []
                 %div.left-side-title
@@ -278,6 +281,7 @@
                       = select_tag :filter,  options_for_select([["Sort by"],["Price: Low to High"], ["Price: High to Low"], ["Availability: Soonest to Latest"], ["Availability: Latest to Soonest"], ["Sq Ft: More to Less"], ["Sq Ft: Less to More"]])
                     - else
                       = select_tag :filter,  options_for_select([["Sort by"], ["Availability: Soonest to Latest"], ["Availability: Latest to Soonest"], ["Sq Ft: More to Less"], ["Sq Ft: Less to More"]])
+                
                 %div#units-body
                   :javascript
                     var units = "#{@units_with_floorplan_info}";
@@ -290,12 +294,24 @@
                     amenities = amenities.replace(/&quot;/g,'"');
                     amenities = JSON.parse(amenities);
                     //renderChangedUnits(units, is_floorplate, community);
-          %footer.c-footer#footer
+          %footer.c-footer#footer.responsive-content.mobile-footer
+            %ul.location-items.location-responsive.responsive-content.responsive-legends.align-home-buttons
+              - if @community.enable_home_legend
+                %li
+                  %i.fas.fa-map-marker-alt{:style => "color: #{map_marker_color}; font-size: #{marker_font_size}px"}
+                  %span Available home
+              - if @community.enable_amenity_legend
+                %li
+                  .custom-icon{:style => "height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};"}
+                    %i.fas.fa-camera-retro{:style => "color: #{amenity_marker_color}; font-size: #{camera_font_size}px; margin-top:#{camera_margin}px;"}
+                  %span Amenity image
+
+          %footer.c-footer#footer.desktop-content
             .inner-footer
-              .footer-logo{:style=> "visibility: #{@community.powered_by_btn ? "" : "hidden" }"}
+              .footer-logo.desktop-content{:style=> "visibility: #{@community.powered_by_btn ? "" : "hidden" }"}
                 %img{:src => "/assets/powered_by_logo.png"}/
                 
-              %ul.location-items.desktop-content
+              %ul.location-items
                 - if @community.enable_home_legend
                   %li
                     %i.fas.fa-map-marker-alt{:style => "color: #{map_marker_color}; font-size: #{marker_font_size}px"}
@@ -311,7 +327,7 @@
                   %strong Note: 
                   Press the Control (or Ctrl ⌃) key before you move your mouse and while you navigate
                 
-              .zooming-content.zoomable-map-container
+              .zooming-content.zoomable-map-container.desktop-content
                 %a.plus-action.zooming-action.zoom-in-webpage.zoom-controls.zooming-content-h{:href => "#"}
                   %img{:src => "/assets/plus.png"}/
                 %a.minus-action.zooming-action.zoom-out-webpage.zoom-controls.zooming-content-h{:href => "#"}
@@ -364,6 +380,7 @@
    $(".c-modal-dialog").css("margin-top", "27%")
    $("#responsive-floorplan-image").css("max-height", '300px')
   }
+  
   function iOSversion() {
 
     if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream)
@@ -374,11 +391,15 @@
 
   $("embed").ready(function(){
     if(iOSversion()){
-      $('html, body').animate({
-          scrollTop: $('#clickme').offset().top
-      }, 500);
+      var target = $('#clickme');
+      if (target.length) {
+        $('html, body').animate({
+          scrollTop: target.offset().top
+        }, 500);
+      }
     }
   });
+
 
 
   $(".webPageLoader").removeClass("hidden");
@@ -547,6 +568,7 @@
       $("._3d-apply-filter-button").hide();
       $(".web-reset-button").hide();
     }
+    
     $("#max_price_responsive").html("Max Price");
     $("#sq_feet_responsive").html("Min Sq Feet");
     $("#unit_availability").html("All");
