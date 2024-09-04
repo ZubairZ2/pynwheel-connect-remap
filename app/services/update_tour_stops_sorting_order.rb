@@ -111,46 +111,43 @@ class UpdateTourStopsSortingOrder
       current_point = (bsp.present? ? bsp : sitemap_starting_point)
 
       floors&.each_with_index do |f, f_index|
-          floor_stop_ids = @tour&.sort_hash["#{b},#{f}"]
+        next if skip_sorting(f)
+        floor_stop_ids = @tour&.sort_hash["#{b},#{f}"]
 
-          if floor_stop_ids.present?
-            starting_point = f_index > 0 ? get_elevator(b, f, current_point) : (bsp.present? ? bsp : sitemap_starting_point) # for the first floor use tour as starting point
-            floor_stops = get_floor_stops(floor_stop_ids)
+        if floor_stop_ids.present?
+          starting_point = f_index > 0 ? get_elevator(b, f, current_point) : (bsp.present? ? bsp : sitemap_starting_point) # for the first floor use tour as starting point
+          floor_stops = get_floor_stops(floor_stop_ids)
+          
+          if floor_stops.present?
+            stops_points = fetch_stops_points(floor_stops)
+            # sorted_points = sort_stops_by_distance(starting_point, stops_points)
+            sorted_points = sort_stops_by_previous_point(starting_point, stops_points)
             
-            if floor_stops.present?
-              stops_points = fetch_stops_points(floor_stops)
-              # sorted_points = sort_stops_by_distance(starting_point, stops_points)
-              if skip_sorting(f)
-                sorted_points = stops_points
-              else
-                sorted_points = sort_stops_by_previous_point(starting_point, stops_points)
-              end
-              
-              puts "Sorted Points: \n\n"
-              puts sorted_points.inspect
-              puts "\n\n\n\n"
+            puts "Sorted Points: \n\n"
+            puts sorted_points.inspect
+            puts "\n\n\n\n"
 
-              current_point = sorted_points.last
-              current_point = get_elevator(b, f, current_point) #sorted_points.last
-              
-              puts "Current Point: \n\n"
-              puts current_point.inspect
-              puts "\n\n\n\n"
+            current_point = sorted_points.last
+            current_point = get_elevator(b, f, current_point) #sorted_points.last
+            
+            puts "Current Point: \n\n"
+            puts current_point.inspect
+            puts "\n\n\n\n"
 
-              sorted_stops = fetch_sorted_tour_stops(sorted_points)
+            sorted_stops = fetch_sorted_tour_stops(sorted_points)
 
-              if sorted_stops.present?
-                update_hash(b, f, sorted_stops)
+            if sorted_stops.present?
+              update_hash(b, f, sorted_stops)
 
-                sorted_stops.each_with_index do |stop, index|
-                  g_index = (g_index + index + 1)
-                  stop.update_column(:sort, g_index)
-                end
+              sorted_stops.each_with_index do |stop, index|
+                g_index = (g_index + index + 1)
+                stop.update_column(:sort, g_index)
               end
             end
-          else
-            current_point =  get_elevator(b, f, current_point)
           end
+        else
+          current_point =  get_elevator(b, f, current_point)
+        end
 
       end
     end
