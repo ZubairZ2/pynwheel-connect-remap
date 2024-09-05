@@ -100,7 +100,7 @@ class UpdateTourStopsSortingOrder
   end
 
   def skip_sorting f
-    (@community.id == 2938 && f == 2) ? true : false
+    (@community.id == 2919 && f == 2) ? true : false
   end
 
   def sort_single_building_floorplate_stops
