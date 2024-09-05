@@ -156,7 +156,7 @@
       Details
 
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      = f.text_area :description,:class=>"form-control mb-20 validate[required] unit-description-wysihtml5",:placeholder=>"Enter Description"
+      = f.text_area :description,:class=>"form-control mb-20 unit-description-wysihtml5",:placeholder=>"Enter Description"
       <!-- %span.unit_details_text{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: #{ENV["DESCRIPTION_LIMIT"].to_i} -->
 
 - if @community.self_tour
