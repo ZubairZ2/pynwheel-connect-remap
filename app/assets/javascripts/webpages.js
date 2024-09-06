@@ -389,77 +389,11 @@ $(window).bind('load', function () {
           y_plot = y_plot - 17
         }
         else{
-          y_plot = y_plot + 1;
-          // x_plot = x_plot - 4
+          y_plot = y_plot;
+          x_plot = x_plot - 2
         }
         
         $(this).css({"left": ((x_plot)) + left_diff, "top": y_plot});
-        
-        if ($(window).width() > 1360) {
-          $(this).css({"margin-left": 2, "margin-top": 7})
-        }
-
-        if($(window).width() >= 1125 && $(window).width() <= 1360 ){
-          if(webCommunity['is_sitemap'])
-            $(this).css({"left": ((x_plot)) + left_diff+6, "top": y_plot + 10});
-          $(this).css({"margin-left": -5, "margin-top": -7})
-        }
-
-        if($(window).width() >= 950 && $(window).width() <= 1125 ){
-          if(webCommunity['is_sitemap'])
-            $(this).css({"left": ((x_plot)) + left_diff, "top": y_plot + 3});
-
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-16 ), "margin-top": -($('.fa-map-marker-alt-responsive').height()-20)})       
-        }
-
-        if($(window).width() >= 825 && $(window).width() <= 950 ){
-          if(webCommunity['is_sitemap'])
-            $(this).css({"left": ((x_plot)) + left_diff + 3, "top": y_plot + 6});
-
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-14 ), "margin-top": -($('.fa-map-marker-alt-responsive').height()-22)})       
-        }
-
-        if($(window).width() >= 700 && $(window).width() <= 825 ){
-          if(webCommunity['is_sitemap'])
-            $(this).css({"left": ((x_plot)) + left_diff + 5, "top": y_plot + 8});
-
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-10), "margin-top": -($('.fa-map-marker-alt-responsive').height()-20)})       
-        }
-
-        if($(window).width() >= 567 && $(window).width() <= 700 ){
-          if(webCommunity['is_sitemap'])
-            $(this).css({"left": ((x_plot)) + left_diff + 3, "top": y_plot + 11});
-
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-10), "margin-top": -($('.fa-map-marker-alt-responsive').height()-16)}) 
-        }
-
-        if($(window).width() >= 480 && $(window).width() <= 567){
-          if(webCommunity['is_sitemap'])
-            $(this).css({"left": ((x_plot)) + left_diff + 3, "top": y_plot + 11});
-
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-8), "margin-top": -($('.fa-map-marker-alt-responsive').height()-15)})
-        }
-        
-        if($(window).width() >= 420 && $(window).width() <= 480){
-          if(webCommunity['is_sitemap'])
-            $(this).css({"left": ((x_plot)) + left_diff + 3, "top": y_plot + 11});
-
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-8), "margin-top": -($('.fa-map-marker-alt-responsive').height()-13)})       
-        }
-
-        if($(window).width() >= 320 && $(window).width() <= 420){
-          if(webCommunity['is_sitemap'])
-            $(this).css({"left": ((x_plot)) + left_diff + 6, "top": y_plot + 13});
-
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-5), "margin-top": -($('.fa-map-marker-alt-responsive').height()-11)})       
-        }
-
-        if($(window).width() <= 320 ){
-          if(webCommunity['is_sitemap'])
-            $(this).css({"left": ((x_plot)) + left_diff + 6, "top": y_plot + 14});
-          
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-4), "margin-top": -($('.fa-map-marker-alt-responsive').height()-10)})       
-        }
       });
 
       $('.sitemap-amenity-marker').each(function () {
@@ -1750,49 +1684,10 @@ function adjustMarkerPosition(marker) {
   }
   else{
     y_plot = y_plot - 14
-    // x_plot = x_plot 
+    // x_plot = x_plot - 3
   }
 
   $(marker).css({"left": ((x_plot)) + left_diff, "top": y_plot});
-  // $(marker).removeClass('hidden');
-  // marker_width = $('#m_' + unit_id).width();
-  // marker_height = $('#m_' + unit_id).height();
-  // $(marker).css({"left": ((x_plot - (marker_width/2)) + 7) +  left_diff, "top": (y_plot - marker_height) + 9});
-  if($(window).width() >= 1125 && $(window).width() <= 1360 ){
-    $(marker).css({"margin-left": -5, "margin-top": -2})
-  }
-
-  if($(window).width() >= 950 && $(window).width() <= 1125 ){
-    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+4), "margin-top": -($('#s_'+unit_id).height()+5)})       
-  }
-
-  if($(window).width() >= 825 && $(window).width() <= 950 ){
-    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()), "margin-top": -($('#s_'+unit_id).height()+5)})       
-  }
-
-  if($(window).width() >= 700 && $(window).width() <= 825 ){
-    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()), "margin-top": -($('#s_'+unit_id).height()+1)})
-  }
-
-  if($(window).width() >= 567 && $(window).width() <= 700 ){
-    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+3), "margin-top": -($('#s_'+unit_id).height()-1)})
-  }
-
-  if($(window).width() >= 480 && $(window).width() <= 567){
-    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()-2), "margin-top": -($('#s_'+unit_id).height()-5)})       
-  }
-
-  if($(window).width() >= 420 && $(window).width() <= 480){
-    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+2), "margin-top": -($('#s_'+unit_id).height()-5)})       
-  }
-
-  if($(window).width() >= 320 && $(window).width() <= 420){
-    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width() - 3), "margin-top": -($('#s_'+unit_id).height() - 8)})       
-  }
-
-  if($(window).width() < 320 ){
-    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()-4), "margin-top": -($('#s_'+unit_id).height()-10)})       
-  }
 
 }
 
