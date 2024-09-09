@@ -392,59 +392,47 @@ $(window).bind('load', function () {
           y_plot = y_plot - 1
           // x_plot = x_plot - 4
         }
-
+        $(this).css({"left": ((x_plot)) + left_diff, "top": y_plot});
+        
         if ($(window).width() > 1360) {
-          x_plot = x_plot - 1;
-          y_plot = y_plot + 7;
+          $(this).css({"margin-left": 2, "margin-top": 7})
         }
 
         if($(window).width() >= 1125 && $(window).width() <= 1360 ){
-          x_plot = x_plot + 1;
-          y_plot = y_plot + 4;
+          $(this).css({"margin-left": -5, "margin-top": -7})
         }
 
         if($(window).width() >= 950 && $(window).width() <= 1125 ){
-          x_plot = x_plot - 1;
-          y_plot = y_plot + 3;
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-16 ), "margin-top": -($('.fa-map-marker-alt-responsive').height()-20)})       
         }
 
         if($(window).width() >= 825 && $(window).width() <= 950 ){
-          x_plot = x_plot - 1;
-          y_plot = y_plot + 7;
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-14 ), "margin-top": -($('.fa-map-marker-alt-responsive').height()-22)})       
         }
 
         if($(window).width() >= 700 && $(window).width() <= 825 ){
-          x_plot = x_plot - 1;
-          y_plot = y_plot + 8;
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-10), "margin-top": -($('.fa-map-marker-alt-responsive').height()-20)})       
         }
 
         if($(window).width() >= 567 && $(window).width() <= 700 ){
-          x_plot = x_plot + 2;
-          y_plot = y_plot + 13;
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-10), "margin-top": -($('.fa-map-marker-alt-responsive').height()-16)}) 
         }
 
         if($(window).width() >= 480 && $(window).width() <= 567){
-          x_plot = x_plot + 2;
-          y_plot = y_plot + 13;
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-8), "margin-top": -($('.fa-map-marker-alt-responsive').height()-15)})
         }
         
         if($(window).width() >= 420 && $(window).width() <= 480){
-          x_plot = x_plot + 2;
-          y_plot = y_plot + 13;
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-8), "margin-top": -($('.fa-map-marker-alt-responsive').height()-13)})       
         }
 
-        if($(window).width() > 320 && $(window).width() <= 420){
-          x_plot = x_plot + 2;
-          y_plot = y_plot + 13;
+        if($(window).width() >= 320 && $(window).width() <= 420){
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-5), "margin-top": -($('.fa-map-marker-alt-responsive').height()-11)})       
         }
 
         if($(window).width() <= 320 ){
-          x_plot = x_plot + 2;
-          y_plot = y_plot + 13;
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-4), "margin-top": -($('.fa-map-marker-alt-responsive').height()-10)})       
         }
-
-
-        $(this).css({"left": ((x_plot)) + left_diff, "top": y_plot});
       });
 
       $('.sitemap-amenity-marker').each(function () {
@@ -459,6 +447,7 @@ $(window).bind('load', function () {
         $(this).css({"left": ((x_plot - (marker_width/2)) + 4) +  left_diff, "top": (y_plot - marker_height) + 4});
       });
     }
+
   }
 
   if(selectMap === "3d-map" && enable3DMaps) {
