@@ -383,56 +383,68 @@ $(window).bind('load', function () {
 
         x_plot = (((stretched_image_width / actual_image_width) * x_plot));
         y_plot = (((stretched_image_height / actual_image_height) * y_plot));
-        debugger;
+
         if(actual_image_width > 1412){
-          x_plot = x_plot - 7
-          y_plot = y_plot - 12
+          x_plot = x_plot - 6
+          y_plot = y_plot - 17
         }
         else{
-          y_plot = y_plot - 3
+          y_plot = y_plot - 1
           // x_plot = x_plot - 4
         }
-        $(this).css({"left": ((x_plot)) + left_diff, "top": y_plot});
-        
+
         if ($(window).width() > 1360) {
-          $(this).css({"margin-left": 2, "margin-top": 2})
+          x_plot = x_plot - 1;
+          y_plot = y_plot + 7;
         }
 
         if($(window).width() >= 1125 && $(window).width() <= 1360 ){
-          $(this).css({"margin-left": 0, "margin-top": -2})
+          x_plot = x_plot + 1;
+          y_plot = y_plot + 4;
         }
 
         if($(window).width() >= 950 && $(window).width() <= 1125 ){
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-16 ), "margin-top": -($('.fa-map-marker-alt-responsive').height()-20)})       
+          x_plot = x_plot - 1;
+          y_plot = y_plot + 3;
         }
 
         if($(window).width() >= 825 && $(window).width() <= 950 ){
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-14 ), "margin-top": -($('.fa-map-marker-alt-responsive').height()-19)})       
+          x_plot = x_plot - 1;
+          y_plot = y_plot + 7;
         }
 
         if($(window).width() >= 700 && $(window).width() <= 825 ){
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-12), "margin-top": -($('.fa-map-marker-alt-responsive').height()-18)})       
+          x_plot = x_plot - 1;
+          y_plot = y_plot + 8;
         }
 
         if($(window).width() >= 567 && $(window).width() <= 700 ){
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-10), "margin-top": -($('.fa-map-marker-alt-responsive').height()-16)}) 
+          x_plot = x_plot + 2;
+          y_plot = y_plot + 13;
         }
 
         if($(window).width() >= 480 && $(window).width() <= 567){
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-8), "margin-top": -($('.fa-map-marker-alt-responsive').height()-15)})
+          x_plot = x_plot + 2;
+          y_plot = y_plot + 13;
         }
         
         if($(window).width() >= 420 && $(window).width() <= 480){
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-6), "margin-top": -($('.fa-map-marker-alt-responsive').height()-13)})       
+          x_plot = x_plot + 2;
+          y_plot = y_plot + 13;
         }
 
-        if($(window).width() > 380 && $(window).width() <= 420){
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-6), "margin-top": -($('.fa-map-marker-alt-responsive').height()-13)})       
+        if($(window).width() > 320 && $(window).width() <= 420){
+          x_plot = x_plot + 2;
+          y_plot = y_plot + 13;
         }
 
-        if($(window).width() <= 380 ){
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-5), "margin-top": -($('.fa-map-marker-alt-responsive').height()-11 )})       
+        if($(window).width() <= 320 ){
+          x_plot = x_plot + 2;
+          y_plot = y_plot + 13;
         }
+
+
+        $(this).css({"left": ((x_plot)) + left_diff, "top": y_plot});
       });
 
       $('.sitemap-amenity-marker').each(function () {
@@ -447,7 +459,6 @@ $(window).bind('load', function () {
         $(this).css({"left": ((x_plot - (marker_width/2)) + 4) +  left_diff, "top": (y_plot - marker_height) + 4});
       });
     }
-
   }
 
   if(selectMap === "3d-map" && enable3DMaps) {
@@ -1765,7 +1776,8 @@ function getElementHeight(element) {
     if($(window).width() < 320 ){
       $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+1), "margin-top": -($('#s_'+unit_id).height()-9)})       
     }
-  }  
+  
+  }
 
 function adjustAmenitiesPosition() {
   /*adjusting markers according to screen size*/
