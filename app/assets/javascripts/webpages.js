@@ -383,17 +383,56 @@ $(window).bind('load', function () {
 
         x_plot = (((stretched_image_width / actual_image_width) * x_plot));
         y_plot = (((stretched_image_height / actual_image_height) * y_plot));
-
+        debugger;
         if(actual_image_width > 1412){
-          x_plot = x_plot - 6
-          y_plot = y_plot - 17
+          x_plot = x_plot - 7
+          y_plot = y_plot - 12
         }
         else{
-          y_plot = y_plot;
-          x_plot = x_plot - 2
+          y_plot = y_plot - 3
+          // x_plot = x_plot - 4
+        }
+        $(this).css({"left": ((x_plot)) + left_diff, "top": y_plot});
+        
+        if ($(window).width() > 1360) {
+          $(this).css({"margin-left": 2, "margin-top": 2})
+        }
+
+        if($(window).width() >= 1125 && $(window).width() <= 1360 ){
+          $(this).css({"margin-left": 0, "margin-top": -2})
+        }
+
+        if($(window).width() >= 950 && $(window).width() <= 1125 ){
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-16 ), "margin-top": -($('.fa-map-marker-alt-responsive').height()-20)})       
+        }
+
+        if($(window).width() >= 825 && $(window).width() <= 950 ){
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-14 ), "margin-top": -($('.fa-map-marker-alt-responsive').height()-19)})       
+        }
+
+        if($(window).width() >= 700 && $(window).width() <= 825 ){
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-12), "margin-top": -($('.fa-map-marker-alt-responsive').height()-18)})       
+        }
+
+        if($(window).width() >= 567 && $(window).width() <= 700 ){
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-10), "margin-top": -($('.fa-map-marker-alt-responsive').height()-16)}) 
+        }
+
+        if($(window).width() >= 480 && $(window).width() <= 567){
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-8), "margin-top": -($('.fa-map-marker-alt-responsive').height()-15)})
         }
         
-        $(this).css({"left": ((x_plot)) + left_diff, "top": y_plot});
+        if($(window).width() >= 420 && $(window).width() <= 480){
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-6), "margin-top": -($('.fa-map-marker-alt-responsive').height()-13)})       
+        }
+
+        if($(window).width() > 380 && $(window).width() <= 420){
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-6), "margin-top": -($('.fa-map-marker-alt-responsive').height()-13)})       
+        }
+
+        if($(window).width() <= 380 ){
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-5), "margin-top": -($('.fa-map-marker-alt-responsive').height()-11 )})       
+        }
       });
 
       $('.sitemap-amenity-marker').each(function () {
@@ -540,7 +579,6 @@ function filterUnitsBasedOnDate(floorplateUnits, startIndex, endIndex) {
 function filterBasedOnScreen(filterTag) {
   const webFilterId = "#".concat(filterTag); //works on web view
   const mobileFilterId = "#responsive_".concat(filterTag); //works on mobile view
-  debugger;
   if($(window).width() <= 993) {
     if(filterTag === 'market_rent')
       return parseInt($(mobileFilterId).val().split("-")[1]);
@@ -1656,40 +1694,78 @@ function getElementHeight(element) {
 }
 
   // for floorplates
-function adjustMarkerPosition(marker) {
-  // performHardRefresh()
-  /*adjusting markers according to screen size*/
-  setImageHeight()
-  var in_browser_height = 0;
-  var in_browser_width = 0;
-  var left_diff = 0;
-  unit_id = $(marker).data('unit-id')
-  in_browser_height = getElementHeight($('#f_' + current_floor).parent());
-  in_browser_width = parseFloat($('#f_' + current_floor).parent().width());
-
-  actual_image_height = parseInt($('#f_' + current_floor).data("height"))
-  actual_image_width = parseInt($('#f_' + current_floor).data("width"))
-  stretched_image_width = $('#f_' + current_floor).width();
-  stretched_image_height = $('#f_' + current_floor).height();
-  var x_plot = parseFloat($(marker).data('unit-x-plot'));
-  var y_plot = parseFloat($(marker).data('unit-y-plot'));
-
-  left_diff = (in_browser_width - stretched_image_width) / 2
-  x_plot = (((stretched_image_width / actual_image_width) * x_plot));
-  y_plot = (((stretched_image_height / actual_image_height) * y_plot));
-
-  if(actual_image_width > 1412){
-    x_plot = x_plot - 6
-    y_plot = y_plot - 17 
-  }
-  else{
-    y_plot = y_plot - 14
-    // x_plot = x_plot - 3
-  }
-
-  $(marker).css({"left": ((x_plot)) + left_diff, "top": y_plot});
-
-}
+  function adjustMarkerPosition(marker) {
+    // performHardRefresh()
+    /*adjusting markers according to screen size*/
+    setImageHeight()
+    var in_browser_height = 0;
+    var in_browser_width = 0;
+    var left_diff = 0;
+    unit_id = $(marker).data('unit-id')
+    in_browser_height = getElementHeight($('#f_' + current_floor).parent());
+    in_browser_width = parseFloat($('#f_' + current_floor).parent().width());
+  
+    actual_image_height = parseInt($('#f_' + current_floor).data("height"))
+    actual_image_width = parseInt($('#f_' + current_floor).data("width"))
+    stretched_image_width = $('#f_' + current_floor).width();
+    stretched_image_height = $('#f_' + current_floor).height();
+    var x_plot = parseFloat($(marker).data('unit-x-plot'));
+    var y_plot = parseFloat($(marker).data('unit-y-plot'));
+  
+    left_diff = (in_browser_width - stretched_image_width) / 2
+    x_plot = (((stretched_image_width / actual_image_width) * x_plot));
+    y_plot = (((stretched_image_height / actual_image_height) * y_plot));
+  
+    if(actual_image_width > 1412){
+      x_plot = x_plot - 6
+      y_plot = y_plot - 17 
+    }
+    else{
+      y_plot = y_plot - 14
+      // x_plot = x_plot 
+    }
+  
+    $(marker).css({"left": ((x_plot)) + left_diff, "top": y_plot});
+    // $(marker).removeClass('hidden');
+    // marker_width = $('#m_' + unit_id).width();
+    // marker_height = $('#m_' + unit_id).height();
+    // $(marker).css({"left": ((x_plot - (marker_width/2)) + 7) +  left_diff, "top": (y_plot - marker_height) + 9});
+    if($(window).width() >= 1125 && $(window).width() <= 1360 ){
+      $(marker).css({"margin-left": -5, "margin-top": -2})
+    }
+  
+    if($(window).width() >= 950 && $(window).width() <= 1125 ){
+      $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+4), "margin-top": -($('#s_'+unit_id).height()+5)})       
+    }
+  
+    if($(window).width() >= 825 && $(window).width() <= 950 ){
+      $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+3), "margin-top": -($('#s_'+unit_id).height()+5)})       
+    }
+  
+    if($(window).width() >= 700 && $(window).width() <= 825 ){
+      $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+3), "margin-top": -($('#s_'+unit_id).height()+1)})
+    }
+  
+    if($(window).width() >= 567 && $(window).width() <= 700 ){
+      $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+3), "margin-top": -($('#s_'+unit_id).height()-1)})
+    }
+  
+    if($(window).width() >= 480 && $(window).width() <= 567){
+      $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+2), "margin-top": -($('#s_'+unit_id).height()-3)})       
+    }
+  
+    if($(window).width() >= 420 && $(window).width() <= 480){
+      $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+2), "margin-top": -($('#s_'+unit_id).height()-5)})       
+    }
+  
+    if($(window).width() >= 320 && $(window).width() <= 420){
+      $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+2), "margin-top": -($('#s_'+unit_id).height()-6)})       
+    }
+  
+    if($(window).width() < 320 ){
+      $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+1), "margin-top": -($('#s_'+unit_id).height()-9)})       
+    }
+  }  
 
 function adjustAmenitiesPosition() {
   /*adjusting markers according to screen size*/
