@@ -301,6 +301,11 @@ Rails.application.routes.draw do
 
     resources :elevators do
       resources :elevator_galleries
+      resources :elevator_banks, only: [] do
+        collection do
+          post :assign_lock
+        end
+      end      
 
       member do
         delete :remove_elevator_plotting

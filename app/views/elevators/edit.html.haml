@@ -103,12 +103,16 @@
                   Access Code
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   = f.text_field :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/g, '')", :class=>"form-control elevator_edit_field", :placeholder=>"Access Code",:maxLength => "10"
+              
+              #lock_access_code.hide_it
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    = text_field_tag :lock_input, '', :placeholder => "Search by lock name", :list => "locks_list", :autocomplete=> "off", :type => "text", :class => "form-control elevator_edit_field"
+                    %datalist#locks_list
 
-              .form-group#lock_access_code.hide_it
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = text_field_tag :lock_input, '', :placeholder => "Search by lock name", :list => "locks_list", :autocomplete=> "off", :type => "text", :class => "form-control elevator_edit_field"
-                  %datalist#locks_list
+                = render :partial=>'elevator_bank_block.html'
+                #elevator-bank-data{ data: {all_locks: @all_locks.to_json } }
 
     %span.btn.btn-primary.btn-file
       %i.fa.fa-upload
@@ -162,7 +166,6 @@
 
 #edit-gallery-image.modal.fade.edit-gallery-image
 :javascript
-
   var locks_input, locks_list, param_name;
   $(document).ready(function(){
     // run it on ready 
