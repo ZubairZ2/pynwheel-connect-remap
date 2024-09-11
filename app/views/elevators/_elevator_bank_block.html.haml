@@ -9,155 +9,209 @@
   document.addEventListener("DOMContentLoaded", () => {
     let sectionIdCounter = 1;
     let allLocks = [];
-    let providerSpecificlocks = [];
+    let bankLocks = [];
+    let assignedLocks = [];
+    let lock_provider_type = "Latch";
 
     const setDataAttributes = () => {
-      if ($('#elevator-bank-data').data() != undefined) {
-        const data = $('#elevator-bank-data').data();
-        allLocks = data["allLocks"];
-      }
-    }
-
-    const getLocksList = () => {
-      switch (lock_provider_type) {
-        case 'latch':
-          providerSpecificlocks = allLocks?.latch_locks?.map(lock => ({ value: lock.id, name: lock.name }));
-          return providerSpecificlocks;
-        case 'zerv':
-          // Add specific logic for 'zerv'
-          break;
-        case 'igloohome':
-          // Add specific logic for 'igloohome'
-          break;
-        case 'dwelo':
-          // Add specific logic for 'dwelo'
-          break;
-        case 'edgestate':
-          // Add specific logic for 'edgestate'
-          break;
-        default:
-          break;
+      const data = $('#elevator-bank-data').data();
+      if (data) {
+        allLocks = data.allLocks;
+        bankLocks = data.bankLocks;
       }
     };
 
-    const createElevatorHeading = (sectionIdCounter) => `
-      <div class="form-group">
-        <h4 class="elevator-title">Elevator ${sectionIdCounter}</h4>
-      </div>
-    `;
+    const getLocksList = () => {
+      switch (lock_provider_type) {
+        case 'Latch':
+          return {
+            providerSpecificLocks: allLocks.latch_locks.map(lock => ({
+              name: lock.name, 
+              lock_id: lock.id
+            })),
+            assignedLocks: bankLocks.map(lock => ({
+              name: lock.name, 
+              position: lock.position, 
+              lock_name: lock.lock_name, 
+              lock_id: lock.lock_id,
+              id: lock.id
+            }))
+          };
 
-    const createNameField = () => `
-      <div class="form-group">
-        <label class="col-sm-12 col-lg-3 col-md-3 col-xs-12 control-label">Name</label>
-        <div class="col-sm-12 col-lg-9 col-md-9 col-xs-12">
-          <input type="text" name="name[]" class="form-control">
-        </div>
-      </div>
-    `;
+        default:
+          return { providerSpecificLocks: [], assignedLocks: [] };
+      }
+    };
 
-    const createPositionField = () => `
-      <div class="form-group">
-        <label class="col-sm-12 col-lg-3 col-md-3 col-xs-12 control-label">Position</label>
-        <div class="col-sm-12 col-lg-9 col-md-9 col-xs-12">
-          <input type="text" name="position[]" class="form-control">
-        </div>
-      </div>
-    `;
-
-    const createLockSelectionField = (locks) => `
-      <div class="form-group" id="lock_access_code">
-        <label class="col-sm-12 col-lg-3 col-md-3 col-xs-12 control-label">
-          Select Lock
-          <span>Assign the lock to this elevator</span>
-        </label>
-        <div class="col-sm-12 col-lg-9 col-md-9 col-xs-12">
-          <input type="text" placeholder="Search by lock name" list="locks_list" class="form-control elevator_edit_field" autocomplete="off">
-          <datalist id="locks_list">
-            ${locks.map(lock => `<option value="${lock.value}" data-lock-name="${lock.name}">${lock.name}</option>`).join('')}
-          </datalist>
-        </div>
-      </div>
-    `;
-
-    const createButtons = (sectionId) => `
-      <div class="form-group text-right">
-        <button type="button" class="btn btn-success assign-lock-btn" data-section-id="${sectionId}">
-          <i class="fas fa-lock"></i> Assign Lock
-        </button>
-        <button type="button" class="btn btn-danger remove-section-btn" data-section-id="${sectionId}">
-          <i class="fas fa-trash-alt"></i> Remove
-        </button>
-      </div>
-    `;
-
-    const createElevatorFields = (locks) => {
+    const createElevatorFields = (name = "", position = "", selectedLock = "", existingId = "") => {
       const sectionId = `elevator-section-${sectionIdCounter}`;
       const html = `
-        <div id="${sectionId}" class="elevator-section" style="border: 1px solid #ddd; padding: 15px; margin-bottom: 15px;">
-          ${createElevatorHeading(sectionIdCounter)}
-          ${createNameField()}
-          ${createPositionField()}
-          ${createLockSelectionField(locks)}
-          ${createButtons(sectionId)}
+        <div id="${sectionId}" class="elevator-section" style="border: 1px solid #ddd; padding: 15px; margin-bottom: 15px;" data-existing-id="${existingId}">
+          <div class="form-group">
+            <h4 class="elevator-title">Elevator ${sectionIdCounter}</h4>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-12 col-lg-3 control-label">Name</label>
+            <div class="col-sm-12 col-lg-9">
+              <input type="text" name="name[]" class="form-control" value="${name}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-12 col-lg-3 control-label">Position</label>
+            <div class="col-sm-12 col-lg-9">
+              <input type="text" name="position[]" class="form-control" value="${position}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-12 col-lg-3 control-label">
+              ${capitalize(lock_provider_type)} Lock
+              <span>Assign the lock to this elevator</span>
+            </label>
+            <div class="col-sm-12 col-lg-9">
+              <input type="text" placeholder="Search by lock name" list="locks_list" class="form-control" value="${selectedLock}">
+              <datalist id="locks_list">
+                ${allLocks.latch_locks.map(lock => `<option value="${lock.name}" data-lock-id="${lock.id}">${lock.name}</option>`).join('')}
+              </datalist>
+            </div>
+          </div>
+          <div class="form-group text-right">
+            <button type="button" class="btn btn-success assign-lock-btn" data-section-id="${sectionId}" disabled>
+              <i class="fas fa-lock"></i> ${existingId ? "Update" : "Assign"} Lock
+            </button>
+            <button type="button" class="btn btn-danger remove-section-btn" data-section-id="${sectionId}">
+              <i class="fas fa-trash-alt"></i> Remove
+            </button>
+          </div>
         </div>
       `;
       sectionIdCounter++;
       return html;
     };
 
-    const sendAssignmentData = (sectionId, name, position, lockName, lockValue) => {
-      const url = `/communities/${community_id}/elevators/${elevator_id}/elevator_banks/assign_lock`;
-      const data = { 
+    const loadAssignedLocks = () => {
+      const elevatorContainer = document.getElementById("elevator-container");
+      assignedLocks.forEach(lock => {
+        const sectionHtml = createElevatorFields(lock.name, lock.position, lock.lock_name, lock.id);
+        elevatorContainer.insertAdjacentHTML('beforeend', sectionHtml);
+      });
+    };
+
+    const getElevatorBankUrl = (existingId = '') => {
+      const baseUrl = `/communities/${community_id}/elevators/${elevator_id}/elevator_banks/`;
+      return existingId ? `${baseUrl}${existingId}` : baseUrl;
+    };
+
+    const getElevatorBankParams = (name, position, lockName, lockValue) => {
+      return { 
         name,
         position,
         lock_name: lockName,
         lock_type: lock_provider_type,
         lock_id: lockValue
       };
+    };
 
-      $.ajax({
+    const makeAjaxRequest = (method, url, data) => {
+      return $.ajax({
         url: url,
-        type: "POST",
+        type: method,
         dataType: "json",
-        data: datas
-      }).done(function (data) {
+        data: data
       });
     };
 
+    const handleResponse = () => {
+      location.reload();
+    };
+
+    const createElevatorBank = (sectionId, name, position, lockName, lockValue) => {
+      const url = getElevatorBankUrl();
+      const data = getElevatorBankParams(name, position, lockName, lockValue);
+
+      makeAjaxRequest("POST", url, data).done(() => {
+        handleResponse();
+        disableAllAssignButtons();
+      });
+    };
+
+    const updateElevatorBank = (sectionId, name, position, lockName, lockValue, existingId) => {
+      const url = getElevatorBankUrl(existingId);
+      const data = getElevatorBankParams(name, position, lockName, lockValue);
+
+      makeAjaxRequest("PUT", url, data).done(() => {
+        handleResponse();
+        disableAllAssignButtons();
+      });
+    };
+
+    const sendAssignmentData = (sectionId, name, position, lockName, lockValue, existingId, assignButton) => {
+      if (existingId) {
+        updateElevatorBank(sectionId, name, position, lockName, lockValue, existingId);
+      } else {
+        createElevatorBank(sectionId, name, position, lockName, lockValue);
+      }
+      assignButton.disabled = true; // Disable the button immediately after click
+    };
+
+    const removeElevatorBank = (existingId) => {
+      if(existingId) {
+        const url = getElevatorBankUrl(existingId);
+        makeAjaxRequest("DELETE", url).done(handleResponse);
+      }
+    }
+
+    const disableAllAssignButtons = () => {
+      document.querySelectorAll('.assign-lock-btn').forEach(btn => btn.disabled = true);
+    };
+
+    const enableAssignButton = (section) => {
+      const assignButton = section.querySelector('.assign-lock-btn');
+      if (assignButton) {
+        assignButton.disabled = false;
+      }
+    };
+
+    const handleFieldChange = (e) => {
+      const section = e.target.closest('.elevator-section');
+      if (section) {
+        enableAssignButton(section);
+      }
+    };
 
     document.getElementById("add-elevator-btn").addEventListener("click", (e) => {
       e.preventDefault();
-      setDataAttributes();
       const elevatorContainer = document.getElementById("elevator-container");
-      elevatorContainer.insertAdjacentHTML('beforeend', createElevatorFields(getLocksList()));
+      elevatorContainer.insertAdjacentHTML('beforeend', createElevatorFields());
     });
 
+    document.getElementById("elevator-container").addEventListener("input", handleFieldChange);
     document.getElementById("elevator-container").addEventListener("click", (e) => {
+      const sectionId = e.target.getAttribute('data-section-id');
+      const section = document.getElementById(sectionId);
+      const existingId = section.getAttribute('data-existing-id');
+
       if (e.target.classList.contains('remove-section-btn')) {
-        const sectionId = e.target.getAttribute('data-section-id');
-        const sectionToRemove = document.getElementById(sectionId);
-        if (sectionToRemove) sectionToRemove.remove();
+        document.getElementById(sectionId).remove();
+        removeElevatorBank(existingId);
       }
 
       if (e.target.classList.contains('assign-lock-btn')) {
-        const sectionId = e.target.getAttribute('data-section-id');
-        const section = document.getElementById(sectionId);
+        const name = section.querySelector('input[name="name[]"]').value;
+        const position = section.querySelector('input[name="position[]"]').value;
+        const lockName = section.querySelector('input[list="locks_list"]').value;
+        const lockValue = allLocks.latch_locks.find(lock => lock.name === lockName)?.id;
+        const assignButton = e.target;
 
-        if (section) {
-          const name = section.querySelector('input[name="name[]"]').value;
-          const position = section.querySelector('input[name="position[]"]').value;
-          const lockNameInput = section.querySelector('input[list="locks_list"]');
-          const lockName = lockNameInput.value;
-          const lockValue = providerSpecificlocks?.find(option => option.name === lockName)?.value;
-
-          if (lockValue) {
-            sendAssignmentData(sectionId, name, position, lockName, lockValue);
-          } else {
-            alert('Invalid lock selection.');
-          }
+        if (lockValue) {
+          sendAssignmentData(sectionId, name, position, lockName, lockValue, existingId, assignButton);
         } else {
-          alert('Section not found!');
+          alert('Invalid lock selection.');
         }
       }
     });
+
+    setDataAttributes();
+    const { assignedLocks: locks } = getLocksList();
+    assignedLocks = locks;
+    loadAssignedLocks();
   });

@@ -29,6 +29,7 @@ class ElevatorsController < ApplicationController
     @community = Community.find params[:community_id]
     @elevator = Elevator.find_by_id(params[:id])
     @all_locks = all_locks(@community)
+    @elevator_banks = @elevator.elevator_banks
   end
 
   def save_elevator_gallery
