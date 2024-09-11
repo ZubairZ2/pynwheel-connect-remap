@@ -6,12 +6,13 @@
       Add Elevator
 
 :javascript
+
   document.addEventListener("DOMContentLoaded", () => {
     let sectionIdCounter = 1;
     let allLocks = [];
     let bankLocks = [];
     let assignedLocks = [];
-    let lock_provider_type = "Latch";
+    let lock_provider_type = $('#elevator_lock_provider').val();
 
     const setDataAttributes = () => {
       const data = $('#elevator-bank-data').data();
@@ -129,8 +130,8 @@
       const data = getElevatorBankParams(name, position, lockName, lockValue);
 
       makeAjaxRequest("POST", url, data).done(() => {
-        handleResponse();
         disableAllAssignButtons();
+        handleResponse();
       });
     };
 
@@ -139,8 +140,8 @@
       const data = getElevatorBankParams(name, position, lockName, lockValue);
 
       makeAjaxRequest("PUT", url, data).done(() => {
-        handleResponse();
         disableAllAssignButtons();
+        handleResponse();
       });
     };
 
