@@ -122,7 +122,7 @@ class TourUser < ApplicationRecord
     return [] unless stop.stop_type.classify == "Elevator"
     
     guests = latch_guests.where(community_id: community_id, guest_of_stop_id: stop.stop_id, guest_of_stop_type: "Elevator", status: "active")
-    elevator_banks = ElevatorBank.where(elevator_id: stop_id).pluck(:lock_id, :lock_name, :name, :position, :lock_type)&.order(created_at: :asc)
+    elevator_banks = ElevatorBank.where(elevator_id: stop_id)&.order(created_at: :asc)&.pluck(:lock_id, :lock_name, :name, :position, :lock_type)
     
     return [] unless (guests.size > 1 && elevator_banks.size > 1)
     
