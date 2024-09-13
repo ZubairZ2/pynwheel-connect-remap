@@ -122,16 +122,18 @@ class TourUser < ApplicationRecord
     return [] unless stop.stop_type.classify == "Elevator"
     
     guests = latch_guests.where(community_id: community_id, guest_of_stop_id: stop.stop_id, guest_of_stop_type: "Elevator", status: "active")
-    return [] unless guests.size > 1
+    elevator_banks = ElevatorBank.where(elevator_id: stop_id).pluck(:lock_id, :lock_name, :name, :position, :lock_type)&.order(created_at: :asc)
     
-    elevator_assigned_locks(guests, stop.stop_id)
+    return [] unless (guests.size > 1 && elevator_banks.size > 1)
+    
+    elevator_assigned_locks(guests, stop.stop_id, elevator_banks)
   end
   
-  def elevator_assigned_locks(guests, stop_id)
+  def elevator_assigned_locks(guests, stop_id, elevator_banks)
     access_set = guests.pluck(:latch_link).map { |latch_link| latch_link.split(" | ").first }.to_set
     return [] if access_set.empty?
   
-    ElevatorBank.where(elevator_id: stop_id).pluck(:lock_id, :lock_name, :name, :position, :lock_type)&.order(created_at: :asc)&.each_with_object([]) do |(lock_id, lock_name, name, position, lock_type), formatted_response|
+    elevator_banks&.each_with_object([]) do |(lock_id, lock_name, name, position, lock_type), formatted_response|
       if access_set.include?(lock_id.to_s)
         formatted_response << {
           name: name,

@@ -223,6 +223,8 @@
         $('#manual_access_code').addClass('hide_it')
       }
     }
+
+
     $('#elevator_lock_provider').change(function(){
         $('.done_btn').click(function(){
           if ($('#elevator_lock_provider').val() == "Manual" && $("#elevator_access_code").val().length > 0)

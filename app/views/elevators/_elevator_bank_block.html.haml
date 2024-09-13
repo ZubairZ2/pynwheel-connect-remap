@@ -115,7 +115,6 @@
       return html;
     };
 
-
     const loadAssignedLocks = () => {
       const elevatorContainer = document.getElementById("elevator-container");
       assignedLocks.forEach(lock => {
@@ -222,6 +221,7 @@
         removeElevatorBank(existingId, sectionId);
         setTimeout(() => {
           document.getElementById(sectionId).remove();
+          sectionIdCounter--;
         }, 3000);
       }
 
