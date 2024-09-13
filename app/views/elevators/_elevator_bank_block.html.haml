@@ -6,7 +6,6 @@
       Add Elevator
 
 :javascript
-
   document.addEventListener("DOMContentLoaded", () => {
     let sectionIdCounter = 1;
     let allLocks = [];
@@ -69,7 +68,12 @@
             </div>
           </div>
           <div class="form-group">
-            <label class="col-sm-12 col-lg-3 control-label">Position</label>
+            <label class="col-sm-12 col-lg-3 col-md-3 col-xs-12 control-label">
+              Position
+              <i class="elevatorPositionToolTip fa fa-question-circle" data-toggle="positionPopover" data-content=" ">
+                <span id="elevatorPositionToolTipText">Add the position of the elevator in relation to the other elevator(s). For example: Right, Left, or Middle.</span>
+              </i>
+            </label>
             <div class="col-sm-12 col-lg-9">
               <input type="text" name="position[]" class="form-control" value="${position}">
             </div>

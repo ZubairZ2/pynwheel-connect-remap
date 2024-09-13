@@ -119,7 +119,9 @@ $(document).ready(function () {
             }
         });
     });
+  
     $('[data-toggle="popover"]').popover();
+  
   if ($('.is-home-page')[0]) {
     showTabsAccordingToTheme(selected_theme);
     set_primary_font_changes();
