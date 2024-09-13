@@ -22,6 +22,17 @@
       }
     };
 
+    const showAlert = (sectionId, type, message) => {
+      const alertBox = document.getElementById(`${type}-message-${sectionId}`);
+      alertBox.textContent = message;
+      alertBox.style.display = "block";
+
+      setTimeout(() => {
+        alertBox.style.display = "none";
+      }, 3000);
+    };
+
+
     const getLocksList = () => {
       switch (lock_provider_type) {
         case 'Latch':
@@ -75,6 +86,17 @@
               </datalist>
             </div>
           </div>
+
+          <!-- ALERT AREA -->
+          <div class="form-group alert-area">
+            <div class="alert alert-success" id="success-message-${sectionId}" style="display:none;">
+              Lock assigned successfully!
+            </div>
+            <div class="alert alert-danger" id="failure-message-${sectionId}" style="display:none;">
+              Failed to assign lock!
+            </div>
+          </div>
+
           <div class="form-group text-right">
             <button type="button" class="btn btn-success assign-lock-btn" data-section-id="${sectionId}" disabled>
               <i class="fas fa-lock"></i> ${existingId ? "Update" : "Assign"} Lock
@@ -88,6 +110,7 @@
       sectionIdCounter++;
       return html;
     };
+
 
     const loadAssignedLocks = () => {
       const elevatorContainer = document.getElementById("elevator-container");
@@ -112,13 +135,21 @@
       };
     };
 
-    const makeAjaxRequest = (method, url, data) => {
+    const makeAjaxRequest = (method, url, data, sectionId) => {
       return $.ajax({
         url: url,
         type: method,
         dataType: "json",
-        data: data
-      });
+        data: data,
+      }).done((response) => {
+        debugger;
+        if(response.status == 'OK') {
+          disableAllAssignButtons();
+          showAlert(sectionId, 'success', response.message);
+        } else {
+          showAlert(sectionId, 'failure', response.message);
+        }
+      })
     };
 
     const handleResponse = () => {
@@ -128,21 +159,13 @@
     const createElevatorBank = (sectionId, name, position, lockName, lockValue) => {
       const url = getElevatorBankUrl();
       const data = getElevatorBankParams(name, position, lockName, lockValue);
-
-      makeAjaxRequest("POST", url, data).done(() => {
-        disableAllAssignButtons();
-        handleResponse();
-      });
+      makeAjaxRequest("POST", url, data, sectionId);
     };
 
     const updateElevatorBank = (sectionId, name, position, lockName, lockValue, existingId) => {
       const url = getElevatorBankUrl(existingId);
       const data = getElevatorBankParams(name, position, lockName, lockValue);
-
-      makeAjaxRequest("PUT", url, data).done(() => {
-        disableAllAssignButtons();
-        handleResponse();
-      });
+      makeAjaxRequest("PUT", url, data, sectionId)
     };
 
     const sendAssignmentData = (sectionId, name, position, lockName, lockValue, existingId, assignButton) => {
@@ -154,10 +177,10 @@
       assignButton.disabled = true; // Disable the button immediately after click
     };
 
-    const removeElevatorBank = (existingId) => {
+    const removeElevatorBank = (existingId, sectionId) => {
       if(existingId) {
         const url = getElevatorBankUrl(existingId);
-        makeAjaxRequest("DELETE", url).done(handleResponse);
+        makeAjaxRequest("DELETE", url, null, sectionId)
       }
     }
 
@@ -192,8 +215,10 @@
       const existingId = section.getAttribute('data-existing-id');
 
       if (e.target.classList.contains('remove-section-btn')) {
-        document.getElementById(sectionId).remove();
-        removeElevatorBank(existingId);
+        removeElevatorBank(existingId, sectionId);
+        setTimeout(() => {
+          document.getElementById(sectionId).remove();
+        }, 3000);
       }
 
       if (e.target.classList.contains('assign-lock-btn')) {

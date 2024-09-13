@@ -29,11 +29,7 @@ class ElevatorsController < ApplicationController
     @community = Community.find params[:community_id]
     @elevator = Elevator.find_by_id(params[:id])
     @all_locks = all_locks(@community)
-    @elevator_banks = @elevator.elevator_banks
-    binding.pry
-    # @elevator_latch_locks = @all_locks[:latch_locks]
-    # @elevator_assigned_latch_locks = @elevator_latch_locks&.select { |lock| lock[:stop_id] == @elevator.id }
-    # @selected_locks = @elevator_assigned_latch_locks.map { |lock| lock[:id] }
+    @elevator_banks = @elevator.elevator_banks.order(created_at: :asc)
   end
 
   def save_elevator_gallery

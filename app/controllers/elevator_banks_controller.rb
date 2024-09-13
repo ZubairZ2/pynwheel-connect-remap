@@ -8,25 +8,25 @@ class ElevatorBanksController < ApplicationController
     elevator_bank = @elevator.elevator_banks.new(elevator_bank_create_params)
     
     if elevator_bank.save
-      redirect_to edit_community_elevator_path(@community, @elevator), notice: 'Elevator bank was successfully created.'
+      render json: {message: 'Elevator created successfully.', status: :OK}
     else
-     redirect_to edit_community_elevator_path(@community, @elevator), error: 'Failed to create elevator bank.'
+      render json: {message: 'Failed to create elevator.', status: :unprocessable_entity}
     end
   end
 
   def update
     if @elevator_bank.update(elevator_bank_update_params)
-      redirect_to edit_community_elevator_path(@community, @elevator), notice: 'Elevator bank was successfully updated.'
+      render json: {message: 'Elevator updated successfully.', status: :OK}
     else
-     redirect_to edit_community_elevator_path(@community, @elevator), error: 'Failed to update elevator bank.'
+      render json: {message: 'Failed to update elevator.', status: :unprocessable_entity}
     end
   end
 
   def destroy
     if @elevator_bank.destroy
-      redirect_to edit_community_elevator_path(@community, @elevator), notice: 'Elevator bank was successfully deleted.'
+      render json: {message: 'Elevator deleted successfully.', status: :OK}
     else
-      redirect_to edit_community_elevator_path(@community, @elevator), error: 'Failed to delete elevator bank.'
+      render json: {message: 'Failed to delete elevator.', status: :unprocessable_entity}
     end
   end
 

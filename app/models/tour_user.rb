@@ -131,7 +131,7 @@ class TourUser < ApplicationRecord
     access_set = guests.pluck(:latch_link).map { |latch_link| latch_link.split(" | ").first }.to_set
     return [] if access_set.empty?
   
-    ElevatorBank.where(elevator_id: stop_id).pluck(:lock_id, :lock_name, :name, :position, :lock_type).each_with_object([]) do |(lock_id, lock_name, name, position, lock_type), formatted_response|
+    ElevatorBank.where(elevator_id: stop_id).pluck(:lock_id, :lock_name, :name, :position, :lock_type)&.order(created_at: :asc)&.each_with_object([]) do |(lock_id, lock_name, name, position, lock_type), formatted_response|
       if access_set.include?(lock_id.to_s)
         formatted_response << {
           name: name,
