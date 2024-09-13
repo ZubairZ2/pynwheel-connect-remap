@@ -99,6 +99,9 @@
             <div class="alert alert-danger" id="failure-message-${sectionId}" style="display:none;">
               Failed to assign lock!
             </div>
+            <div class="alert alert-danger" id="fields-failure-message-${sectionId}" style="display:none;">
+              Please fill in all required fields before submitting.
+            </div>
           </div>
 
           <div class="form-group text-right">
@@ -239,7 +242,7 @@
         if (lockValue) {
           sendAssignmentData(sectionId, name, position, lockName, lockValue, existingId, assignButton);
         } else {
-          alert('Invalid lock selection.');
+          showAlert(sectionId, 'fields-failure', "Please fill in all required fields before submitting.");
         }
       }
     });
