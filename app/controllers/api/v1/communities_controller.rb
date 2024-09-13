@@ -754,7 +754,7 @@ module Api
       
       def include_application_data
         @version = AppVersion.first.version
-        @community = Community.includes(:imagepages,:webpages,:galleries,{floorplans: [:amenities]},:favorite_setting,{sitemap: [:amenities]},{floorplates: [:amenities]},{units: [:floorplate]},{gallery_images: [:gallery]},{neighborhood: [:locations]},{design: [:home_page_images,:home_page_video,:gable,:menu,:expressionist,:filter_panel]}).find_by_id(params[:id])
+        @community = fetch_property_data(params[:id])
       end
     
       def update_unit_floorplan_data
@@ -769,7 +769,7 @@ module Api
         @communities = []
     
         @community_group.communities.each do |com|
-          community = Community.includes(:imagepages,:webpages,:galleries,{floorplans: [:amenities]},:favorite_setting,{sitemap: [:amenities]},{floorplates: [:amenities]},{units: [:floorplate]},{gallery_images: [:gallery]},{neighborhood: [:locations]},{design: [:home_page_images,:home_page_video,:gable,:menu,:expressionist,:filter_panel]}).find(com.id)
+          community = fetch_property_data(com.id)
           @communities << community unless community.locked
         end
         @community_master = Community.find_by(community_group_id: @community_group.id,master_community: true)
@@ -1377,6 +1377,21 @@ module Api
       end
     
       private
+
+      def fetch_property_data community_id
+        Community.includes( :imagepages,
+                            :webpages,
+                            :galleries,
+                            {floorplans: [:amenities]},
+                            :favorite_setting,
+                            {sitemap: [:amenities]},
+                            {floorplates: [:amenities]},
+                            {units: [:amenities]},
+                            {gallery_images: [:gallery]},
+                            {neighborhood: [:locations]},
+                            {design: [:home_page_images,:home_page_video,:gable,:menu,:expressionist,:filter_panel]}
+                          ).find(community_id)
+      end
     
       def get_community_tour(tour)
     

@@ -1344,9 +1344,12 @@ json.apartments do
   end
   units_floorplans = []
   floorplans = @community.floorplans
-  available_units_and_sold_units = @community.units.available_units #+ @community.units.are_sold
+
+  available_units_and_sold_units = @community.units.includes(:amenities).available_units
+  sorted_units = available_units_and_sold_units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(available_units_and_sold_units).sort.map{|x,y| y}
+
   json.display_unit_on_homepage @community.display_unit_on_homepage
-  json.units available_units_and_sold_units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(available_units_and_sold_units).sort.map{|x,y| y}.each do |unit|
+  json.units sorted_units.each do |unit|
     if @community.data_provider == "psi"
       conditionAvailable = unit.available
     else
@@ -1400,23 +1403,20 @@ json.apartments do
         json.image unit.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+unit.standard_image_url + (unit.crop_x.present? ? "?temp/"+unit.crop_x.to_s +  unit.standard_image_url.split('/')[ unit.standard_image_url.split('/').count - 1] : "")  : unit.standard_image_url + (unit.crop_x.present? ? "?temp/"+unit.crop_x.to_s +  unit.standard_image_url.split('/')[ unit.standard_image_url.split('/').count - 1] : "")) : nil
         json.secondary_image unit.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+unit.secondary_image.url + (unit.crop_x_secondary.present? ? "?temp/"+unit.crop_x_secondary.to_s +  unit.secondary_image.url.split('/')[ unit.secondary_image.url.split('/').count - 1] : "") : unit.secondary_image.url + (unit.crop_x_secondary.present? ? "?temp/"+unit.crop_x_secondary.to_s + unit.secondary_image.url.split('/')[ unit.secondary_image.url.split('/').count - 1] : "")) : nil
       else
-        # json.image floorplan.present? ? (floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil) : nil
-        # json.secondary_image floorplan.present? ? (floorplan.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.secondary_image.url : floorplan.secondary_image.url) : nil) : nil
-
         json.image floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url + (floorplan.crop_x.present? ? "?temp/"+floorplan.crop_x.to_s +  floorplan.standard_image_url.split('/')[ floorplan.standard_image_url.split('/').count - 1] : ""): floorplan.standard_image_url + (floorplan.crop_x.present? ? "?temp/"+floorplan.crop_x.to_s+  floorplan.standard_image_url.split('/')[ floorplan.standard_image_url.split('/').count - 1] : "")) : nil
         json.secondary_image floorplan.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.secondary_image.url + (floorplan.crop_x_secondary.present? ? "?temp/"+floorplan.crop_x_secondary.to_s +  floorplan.secondary_image.url.split('/')[ floorplan.secondary_image.url.split('/').count - 1] : ""): floorplan.secondary_image.url + (floorplan.crop_x_secondary.present? ? "?temp/"+floorplan.crop_x_secondary.to_s + floorplan.secondary_image.url.split('/')[ floorplan.secondary_image.url.split('/').count - 1] : "")) : nil
       end
+
       json.floorplan_image floorplan.present? ? (floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil) : nil
-      # json.floorplate_number unit.floorplate.present? ? unit.floorplate.number : 0
       json.floorplate_number unit.floor.present? ? unit.floor : 0
-      if unit.amenities.plotted_amenities.size > 0
+      
+      if unit.amenities.present?
         json.unit_amenities unit.amenities.plotted_amenities do |amenity|
           json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
           json.name amenity.name
           json.x_plot amenity.x_plot
           json.y_plot amenity.y_plot
           json.unit_id unit.id
-          #json.id amenity.id
           random_number = SecureRandom.random_number(59999)
           unless random_numbers.include?(random_number)
             random_numbers << random_number
@@ -1436,29 +1436,32 @@ json.apartments do
           end
         end
       elsif !unit.standard_image_url.present?
-        #If unit amenities are not present then send floorplan amenities
-        json.unit_amenities floorplan.amenities.plotted_amenities do |amenity|
-          json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
-          json.name amenity.name
-          json.x_plot amenity.x_plot
-          json.y_plot amenity.y_plot
-          json.unit_id unit.id
-          random_number = SecureRandom.random_number(59999)
-          unless random_numbers.include?(random_number)
-            random_numbers << random_number
-            json.id random_number
-          else
-            random_number = SecureRandom.random_number(69999)
-            random_numbers << random_number
-            json.id random_number
+        if floorplan.amenities.present?
+          json.unit_amenities floorplan.amenities.plotted_amenities do |amenity|
+            json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
+            json.name amenity.name
+            json.x_plot amenity.x_plot
+            json.y_plot amenity.y_plot
+            json.unit_id unit.id
+            random_number = SecureRandom.random_number(59999)
+            unless random_numbers.include?(random_number)
+              random_numbers << random_number
+              json.id random_number
+            else
+              random_number = SecureRandom.random_number(69999)
+              random_numbers << random_number
+              json.id random_number
+            end
+            json.gallery amenity.amenity_galleries do |ag|
+              json.id ag.id
+              json.name ag.name
+              json.type "unit_stop"
+              json.image ag.image.url
+              json.description = ag.description.present? ? ag.description : ""    
+            end
           end
-          json.gallery amenity.amenity_galleries do |ag|
-            json.id ag.id
-            json.name ag.name
-            json.type "unit_stop"
-            json.image ag.image.url
-            json.description = ag.description.present? ? ag.description : ""    
-          end
+        else
+          json.unit_amenities []
         end
       else
         json.unit_amenities []
@@ -1483,20 +1486,23 @@ json.apartments do
     json.virtual_tour_button_label floorplan.virtual_tour_button_label.present? ? floorplan.virtual_tour_button_label : "3D Tour"
     json.virtual_tour floorplan.get_floorplan_virtual_tour_url()
 
-    json.floorplan_amenities floorplan.amenities.plotted_amenities do |amenity|
-      json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
-      json.name amenity.name
-      json.x_plot amenity.x_plot
-      json.y_plot amenity.y_plot
-      json.floorplan_id floorplan.id
-      json.id amenity.id
+    if floorplan.amenities.present?
+      json.floorplan_amenities floorplan.amenities.plotted_amenities do |amenity|
+        json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
+        json.name amenity.name
+        json.x_plot amenity.x_plot
+        json.y_plot amenity.y_plot
+        json.floorplan_id floorplan.id
+        json.id amenity.id
+      end
+    else
+      json.floorplan_amenities []
     end
   end
-  #json.floorplates @community.floorplates.order("number DESC") do |floorplate|
+
   if @community.has_floorplates?
     floorplates = @community.floorplates
     floors = floorplates.map{|f| f.floors}.flatten.sort.reverse
-    # floorplates = floorplates.sort_by { |f| -f.number }
     json.floorplates floors do |floor|
       floorplate = floorplates.select{|f| f.floors.include?(floor)}.first
       image_url = floorplate.svg_image_url.present? ? floorplate.svg_image_url : (floorplate.standard_image_url.present? ? floorplate.standard_image_url : floorplate.image.url)
@@ -1535,6 +1541,7 @@ json.apartments do
     json.floorplates nil  
   end
 end
+
 
 json.neighborhood do
   if @community.neighborhood.present?
