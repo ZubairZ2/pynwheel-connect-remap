@@ -24,13 +24,21 @@ class Elevator < ApplicationRecord
   
   has_one :tour_stop, as: :stop, dependent: :destroy
   validate :check_floorplate_covering_range
-
   scope :plotted_elevators, -> { where("x_plot > ? or y_plot > ?", 0, 0) }
+
+  after_save :remove_elevator_banks
+  after_save :remove_elevator_banks, if: ->(obj) { obj.lock_provider_changed? }
+
+  def remove_elevator_banks
+    elevator_banks.destroy_all unless lock_provider === "Latch"
+  end
+
   def check_floorplate_covering_range
     unless floorplate_covering_range.present?
       errors[:base] << "Floorplate covering range can not be blank."
     end
   end
+
   def floors
     floors = []
     h = floorplate_covering_range
