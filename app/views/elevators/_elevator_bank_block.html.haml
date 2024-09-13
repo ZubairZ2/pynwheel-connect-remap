@@ -145,7 +145,6 @@
         dataType: "json",
         data: data,
       }).done((response) => {
-        debugger;
         if(response.status == 'OK') {
           disableAllAssignButtons();
           showAlert(sectionId, 'success', response.message);
@@ -184,7 +183,15 @@
       if(existingId) {
         const url = getElevatorBankUrl(existingId);
         makeAjaxRequest("DELETE", url, null, sectionId)
+        setTimeout(() => { removeSection(sectionId); }, 3000);
+      } else {
+        removeSection(sectionId);
       }
+
+    }
+
+    const removeSection = (sectionId) => {
+      document.getElementById(sectionId).remove();
     }
 
     const disableAllAssignButtons = () => {
@@ -219,10 +226,7 @@
 
       if (e.target.classList.contains('remove-section-btn')) {
         removeElevatorBank(existingId, sectionId);
-        setTimeout(() => {
-          document.getElementById(sectionId).remove();
-          sectionIdCounter--;
-        }, 3000);
+        
       }
 
       if (e.target.classList.contains('assign-lock-btn')) {
