@@ -29,7 +29,7 @@
       setTimeout(() => {
         alertBox.style.display = "none";
         window.location.reload();
-      }, 1000);
+      }, 1500);
     };
 
 
@@ -194,7 +194,7 @@
       if(existingId) {
         const url = getElevatorBankUrl(existingId);
         makeAjaxRequest("DELETE", url, null, sectionId)
-        setTimeout(() => { removeSection(sectionId); }, 1000);
+        setTimeout(() => { removeSection(sectionId); }, 1500);
       } else {
         removeSection(sectionId);
       }
