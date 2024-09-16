@@ -64,7 +64,6 @@
               - locks_present_hash["Zerv"] = @community.multiple_locks_provider.include?("Zerv") &&  @community.zerv.present? && @all_locks[:zerv_locks].any?
               - locks_present_hash["Igloohome"] = @community.multiple_locks_provider.include?("Igloohome") &&  @community.igloohome.present? && @all_locks[:igloohome_locks].any?
 
-              // load options and input values start
               - if locks_present_hash["Dwelo"]
                 = hidden_field_tag "dwelo_lock_input_value", @elevator.remote_locks.dwelo_locks.present? ? @elevator.remote_locks.dwelo_locks.last.name + " (" + @elevator.remote_locks.dwelo_locks.last.remote_lock_type + ")" : ''
                 .dwelo_options.hide_it
@@ -130,22 +129,24 @@
         .select-logo-logo.logo-container.logo-upload-container
           %a.preview-image{:href=>@elevator.image.present? ? @elevator.image.url : asset_path("elev2.png"),"data-toggle"=>"lightbox","data-title"=>"Elevator Image"}
             = image_tag @elevator.image.present? ? @elevator.image.url : "elev2.png",:height=>"100%",:width=>"100%",:id=>"preview-image"
-    //////////////////////// Amenity Gallery
-    .box.box-info.add-plan
 
+    .box.box-info.add-plan
       .col-lg-12
         %h4{:style => "color: grey;"}
           Upload Elevator Gallery
+
       .col-lg-12.mt-35
-        /%span.btn.btn-primary.btn-file.pull-right.mb-20
         %span.btn.btn-success.btn-file.some{ :style => "margin-right: 5px; width: 135px" }
           %i.fa.fa-plus-circle
           ADD FILES
           %input#elevator-gallery-images{:multiple => "multiple", :type => "file"}/
+        
         .mt-10
           - if @community.is_sitemap && current_user.is_admin?
             = link_to "PLOT ELEVATORS", plot_amenities_community_sitemaps_path(@community), class: "btn btn-primary hidden btn-file plot_amenities_btn"
+        
         .divLoading.hidden
+       
         #images-index1
           = render :partial=>'edit_elevator'
 
@@ -165,9 +166,15 @@
 #edit-elevator-data{ data: {elevator_id: @elevator.id, community_id: @community.id} }
 
 #edit-gallery-image.modal.fade.edit-gallery-image
+
 :javascript
   var locks_input, locks_list, param_name;
+  let bankLocks = [];
   $(document).ready(function(){
+    const data = $('#elevator-bank-data').data();
+    if (data)
+      bankLocks = data.bankLocks;
+
     // run it on ready 
     update_locks_select_and_lock_code_field();
     handleElevatorBankVisibility();
@@ -181,10 +188,19 @@
     });
 
     function handleElevatorBankVisibility() {
-      if( $('#elevator_lock_provider').val() === 'Latch')
+      if($('#elevator_lock_provider').val() === 'Latch')
         $('#elevator-bank').removeClass('hide_it');
       else
-        $('#elevator-bank').addClass('hide_it');    
+        $('#elevator-bank').addClass('hide_it');
+    }
+
+    function handleLockFieldVisibilityForLatchBank() {
+      if($('#elevator_lock_provider').val() === 'Latch') {
+        if(bankLocks.length > 0)
+          $('#lock_access_code').addClass('hide_it')
+        else
+          $('#lock_access_code').removeClass('hide_it')
+      }
     }
     
     function update_locks_select_and_lock_code_field(){
@@ -210,6 +226,7 @@
         $('#lock_input').val( $(lock_input_value).val() )
         $('datalist#locks_list').html($(options).html())
         $('#lock_access_code').removeClass('hide_it') 
+        handleLockFieldVisibilityForLatchBank();
       }
 
       else if ($('#elevator_lock_provider').val().length > 0)
@@ -217,13 +234,13 @@
         $('#lock_access_code').addClass('hide_it')
         $('#manual_access_code').removeClass('hide_it')
         locks_input = undefined
+        handleLockFieldVisibilityForLatchBank();
       }
       else{
         $('#lock_access_code').addClass('hide_it')
         $('#manual_access_code').addClass('hide_it')
       }
     }
-
 
     $('#elevator_lock_provider').change(function(){
         $('.done_btn').click(function(){
@@ -264,6 +281,7 @@
           }
         });
     });
+    debugger;
   });
   $('.elevator_edit_field').change(function(){
     setTimeout(function(){ 

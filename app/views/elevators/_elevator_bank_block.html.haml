@@ -58,7 +58,7 @@
     const createElevatorFields = (name = "", position = "", selectedLock = "", existingId = "") => {
       const sectionId = `elevator-section-${sectionIdCounter}`;
       const html = `
-        <div id="${sectionId}" class="elevator-section" style="border: 1px solid #ddd; padding: 15px; margin-bottom: 15px;" data-existing-id="${existingId}">
+        <div id="${sectionId}" class="elevator-section" style="border: 2px solid #ddd; padding: 15px; margin-bottom: 15px;" data-existing-id="${existingId}">
           <div class="form-group">
             <h4 class="elevator-title">Elevator ${sectionIdCounter}</h4>
           </div>
@@ -183,6 +183,13 @@
       assignButton.disabled = true; // Disable the button immediately after click
     };
 
+    const handleVisibility = () => {
+      if(sectionIdCounter > 1)
+        $("#lock_access_code").addClass("hide_it");
+      else
+        $("#lock_access_code").removeClass("hide_it");
+    }
+
     const removeElevatorBank = (existingId, sectionId) => {
       if(existingId) {
         const url = getElevatorBankUrl(existingId);
@@ -191,6 +198,9 @@
       } else {
         removeSection(sectionId);
       }
+
+      sectionIdCounter--;
+      handleVisibility();
     }
 
     const removeSection = (sectionId) => {
@@ -219,6 +229,7 @@
       e.preventDefault();
       const elevatorContainer = document.getElementById("elevator-container");
       elevatorContainer.insertAdjacentHTML('beforeend', createElevatorFields());
+      handleVisibility();
     });
 
     document.getElementById("elevator-container").addEventListener("input", handleFieldChange);
@@ -229,7 +240,6 @@
 
       if (e.target.classList.contains('remove-section-btn')) {
         removeElevatorBank(existingId, sectionId);
-        
       }
 
       if (e.target.classList.contains('assign-lock-btn')) {
