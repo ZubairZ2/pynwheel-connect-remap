@@ -754,9 +754,9 @@ module Api
       
       def include_application_data
         @version = AppVersion.first.version
-        puts "\n\n\n Data Query Before Time: #{Time.now} \n\n\n"
+        puts "\n\n\n Data Query Before Time #{params[:id]} : #{Time.now} \n\n\n"
         @community = fetch_property_data(params[:id])
-        puts "\n\n\n Data Query After Time: #{Time.now} \n\n\n"
+        puts "\n\n\n Data Query After Time #{params[:id]} : #{Time.now} \n\n\n"
       end
     
       def update_unit_floorplan_data
