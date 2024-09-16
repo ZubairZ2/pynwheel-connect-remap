@@ -1353,6 +1353,8 @@ json.apartments do
   sorted_units = available_units_and_sold_units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(available_units_and_sold_units).sort.map{|x,y| y}
 
   json.display_unit_on_homepage @community.display_unit_on_homepage
+  puts "\n\n\n apartments Units Before Time #{@community.id} : #{Time.now} \n\n\n"
+
   json.units sorted_units.each do |unit|
     if @community.data_provider == "psi"
       conditionAvailable = unit.available
@@ -1415,6 +1417,7 @@ json.apartments do
 
       json.floorplan_image floorplan.present? ? (floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil) : nil
       json.floorplate_number unit.floor.present? ? unit.floor : 0
+      puts "\n\n\n apartments Units Amenities Before Time #{@community.id} : #{Time.now} \n\n\n"
       
       if unit.amenities.present?
         json.unit_amenities unit.amenities.plotted_amenities do |amenity|
@@ -1472,9 +1475,12 @@ json.apartments do
       else
         json.unit_amenities []
       end
+      puts "\n\n\n apartments Units Amenities After Time #{@community.id} : #{Time.now} \n\n\n"
+
     end
   end
-
+  puts "\n\n\n apartments Units After Time #{@community.id} : #{Time.now} \n\n\n"
+  puts "\n\n\n apartments Floorplans Before Time #{@community.id} : #{Time.now} \n\n\n"
   json.floorplans units_floorplans&.uniq&.map {|i| (i.name.present? ? i.name : "").gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(units_floorplans).sort.map{|x,y| y}.uniq do |floorplan|
     json.id floorplan.id
     json.provider_floorplan_id floorplan.provider_floorplan_id
@@ -1506,7 +1512,8 @@ json.apartments do
       json.floorplan_amenities []
     end
   end
-
+  puts "\n\n\n apartments Floorplans After Time #{@community.id} : #{Time.now} \n\n\n"
+  puts "\n\n\n apartments Floorplates Before Time #{@community.id} : #{Time.now} \n\n\n"
   if @community.has_floorplates?
     floorplates = @community.floorplates
     floors = floorplates.map{|f| f.floors}.flatten.sort.reverse
@@ -1547,6 +1554,8 @@ json.apartments do
   else
     json.floorplates nil  
   end
+  puts "\n\n\n apartments Floorplates After Time #{@community.id} : #{Time.now} \n\n\n"
+
 end
 puts "\n\n\n apartments After Time #{@community.id} : #{Time.now} \n\n\n"
 puts "\n\n\n neighborhood Before Time #{@community.id} : #{Time.now} \n\n\n"
