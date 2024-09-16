@@ -33,21 +33,21 @@ module PynwheelCms
     # ========TAIM LOGGING WITH LOGRAGGE========
 
     #-----------------------------------------------------------
-    config.log_level = :info
-    config.lograge.enabled = true
-    config.log_tags = [:request_id]
-    config.log_formatter  = ::Logger::Formatter.new
-    config.lograge.formattter = Lograge::Formatters::JsonCustom.new
+    # config.log_level = :info
+    # config.lograge.enabled = true
+    # config.log_tags = [:request_id]
+    # config.log_formatter  = ::Logger::Formatter.new
+    # config.lograge.formattter = Lograge::Formatters::JsonCustom.new
 
-    # Need and ENV Variable here to assure the logging is stdout or not
-    # shift_age = after shift_size of file the logs will be splitted and divided into shift_age file size
-    # After 20 mb
-    logger = ActiveSupport::Logger.new(STDOUT, shift_age = 3, shift_size = 20.megabytes, shift_period_suffix:  '%Y%m%d-%H:%M:%S')
-    # logger = ActiveSupport::Logger.new(STDOUT)
-    logger.formatter = proc do |severity, datetime, progname, msg|
-      "[#{severity}] [RAILS] #{msg} \n"
-    end
-    config.logger = ActiveSupport::TaggedLogging.new(logger)
+    # # Need and ENV Variable here to assure the logging is stdout or not
+    # # shift_age = after shift_size of file the logs will be splitted and divided into shift_age file size
+    # # After 20 mb
+    # logger = ActiveSupport::Logger.new(STDOUT, shift_age = 3, shift_size = 20.megabytes, shift_period_suffix:  '%Y%m%d-%H:%M:%S')
+    # # logger = ActiveSupport::Logger.new(STDOUT)
+    # logger.formatter = proc do |severity, datetime, progname, msg|
+    #   "[#{severity}] [RAILS] #{msg} \n"
+    # end
+    # config.logger = ActiveSupport::TaggedLogging.new(logger)
     #-----------------------------------------------------------
 
   end

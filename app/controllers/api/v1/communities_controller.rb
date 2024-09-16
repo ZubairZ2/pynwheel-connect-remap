@@ -754,7 +754,9 @@ module Api
       
       def include_application_data
         @version = AppVersion.first.version
+        puts "\n\n\n Data Query Before Time: #{Time.now} \n\n\n"
         @community = fetch_property_data(params[:id])
+        puts "\n\n\n Data Query After Time: #{Time.now} \n\n\n"
       end
     
       def update_unit_floorplan_data
@@ -1386,11 +1388,11 @@ module Api
                             :favorite_setting,
                             {sitemap: [:amenities]},
                             {floorplates: [:amenities]},
-                            {units: [:amenities]},
+                            {units: [:floorplate]},
                             {gallery_images: [:gallery]},
                             {neighborhood: [:locations]},
                             {design: [:home_page_images,:home_page_video,:gable,:menu,:expressionist,:filter_panel]}
-                          ).find(community_id)
+                          ).find_by_id(community_id)
       end
     
       def get_community_tour(tour)

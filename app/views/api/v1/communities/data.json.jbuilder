@@ -10,6 +10,7 @@ json.date_format_by_region DateFormatter.date_format_by_region(@community.countr
 json.show_apply_now @community.show_apply_now
 json.show_amenity_name @community.show_amenity_name
 
+puts "\n\n\n UI Setting Before Time: #{Time.now} \n\n\n"
 json.ui_settigs do
   json.selected_theme @community.temporary_theme_name
   if @community.temporary_theme_name.include?('gables') || @community.temporary_theme_name == 'modernist'
@@ -1252,7 +1253,8 @@ json.ui_settigs do
 
   #end
 end
-
+puts "\n\n\n UI Setting After Time: #{Time.now} \n\n\n"
+puts "\n\n\n homescreen Before Time: #{Time.now} \n\n\n"
 json.homescreen do
   if @community.design.present?
     if @community.design.home_page_images.present?
@@ -1285,6 +1287,8 @@ json.homescreen do
     json.loop_type "images"
   end
 end
+puts "\n\n\n homescreen After Time: #{Time.now} \n\n\n"
+puts "\n\n\n apartments Before Time: #{Time.now} \n\n\n"
 
 json.apartments do
   if @community.has_floorplates?
@@ -1544,6 +1548,8 @@ json.apartments do
     json.floorplates nil  
   end
 end
+puts "\n\n\n apartments After Time: #{Time.now} \n\n\n"
+puts "\n\n\n neighborhood Before Time: #{Time.now} \n\n\n"
 
 
 json.neighborhood do
@@ -1587,6 +1593,10 @@ json.neighborhood do
   end
 end
 
+puts "\n\n\n neighborhood After Time: #{Time.now} \n\n\n"
+puts "\n\n\n favorite Before Time: #{Time.now} \n\n\n"
+
+
 json.favorite do
   if @community.favorite_setting.present?
     json.show_favorite_page @community.favorite_setting.show_favorite
@@ -1598,6 +1608,9 @@ json.favorite do
     json.favorite_page_name "Favorites"
   end
 end
+puts "\n\n\n favorite After Time: #{Time.now} \n\n\n"
+puts "\n\n\n gallery Before Time: #{Time.now} \n\n\n"
+
 
 json.gallery do
   json.show_gallery_page @community.show_gallery
@@ -1632,6 +1645,10 @@ json.gallery do
   end
 end
 
+puts "\n\n\n gallery After Time: #{Time.now} \n\n\n"
+puts "\n\n\n additional_pages Before Time: #{Time.now} \n\n\n"
+
+
 json.additional_pages do
   if @community.webpages.present?
     json.webpages @community.webpages.active.each do |webpage|
@@ -1659,5 +1676,8 @@ json.additional_pages do
     end
   end
 end
+
+puts "\n\n\n additional_pages After Time: #{Time.now} \n\n\n"
+
 json.message "success"
 json.operation "data"
