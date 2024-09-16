@@ -1348,7 +1348,7 @@ json.apartments do
   end
 
   units_floorplans = []
-  floorplans = @community.floorplans
+  floorplans = @community.floorplans.includes(:amenities)
   available_units_and_sold_units = @community.units.includes(:amenities).available_units
   sorted_units = available_units_and_sold_units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(available_units_and_sold_units).sort.map{|x,y| y}
 
@@ -1515,7 +1515,7 @@ json.apartments do
   puts "\n\n\n apartments Floorplans After Time #{@community.id} : #{Time.now} \n\n\n"
   puts "\n\n\n apartments Floorplates Before Time #{@community.id} : #{Time.now} \n\n\n"
   if @community.has_floorplates?
-    floorplates = @community.floorplates
+    floorplates = @community.floorplates.includes(:amenities)
     floors = floorplates.map{|f| f.floors}.flatten.sort.reverse
     json.floorplates floors do |floor|
       floorplate = floorplates.select{|f| f.floors.include?(floor)}.first
