@@ -1395,8 +1395,10 @@ json.community_group @communities do |co|
       else
         conditionAvailable = 1
       end
-      if floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id} && conditionAvailable
-        floorplan = floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
+
+      floorplan = floorplans.select { |f| f.provider_floorplan_id == unit.floorplan_id }.first
+
+      if floorplan.present? && conditionAvailable
         units_floorplans << floorplan
         json.marketing_name unit.api_unit_marketing_name
         json.rent unit.effective_rent.present? ? unit.effective_rent : 0
@@ -1408,9 +1410,9 @@ json.community_group @communities do |co|
         json.available unit.available
         json.sold unit.sold
         if @community.theme_name == "modernist"
-          json.unit_description unit.description.present? ? "<div style='color:#{(@community.design.primary_font_color.present? ? @community.design.primary_font_color : "#FFFFFF")}'>"+unit.description+"</div>" : (unit&.floorplan&.description.present? ? "<div style='color:#{(@community.design.primary_font_color.present? ? @community.design.primary_font_color : "#FFFFFF")}'>"+unit&.floorplan&.description+"</div>"  : nil)
+          json.unit_description unit.description.present? ? "<div style='color:#{(@community.design.primary_font_color.present? ? @community.design.primary_font_color : "#FFFFFF")}'>"+unit.description+"</div>" : (floorplan&.description.present? ? "<div style='color:#{(@community.design.primary_font_color.present? ? @community.design.primary_font_color : "#FFFFFF")}'>"+floorplan&.description+"</div>"  : nil)
         else
-          json.unit_description unit.description.present? ? "<div>"+unit.description+"</div>" : (unit&.floorplan&.description.present? ? "<div'>"+unit&.floorplan&.description+"</div>"  : nil)
+          json.unit_description unit.description.present? ? "<div>"+unit.description+"</div>" : (floorplan&.description.present? ? "<div'>"+floorplan&.description+"</div>"  : nil)
         end
         json.x_plot unit.x_plot
         json.y_plot unit.y_plot
@@ -1496,7 +1498,7 @@ json.community_group @communities do |co|
         end
       end
     end
-    json.floorplans units_floorplans.map {|i| i.name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(units_floorplans).sort.map{|x,y| y}.uniq do |floorplan|
+    json.floorplans units_floorplans&.uniq&.map {|i| i.name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(units_floorplans).sort.map{|x,y| y}.uniq do |floorplan|
       json.id floorplan.id
       json.provider_floorplan_id floorplan.provider_floorplan_id
       json.name floorplan.name

@@ -1342,9 +1342,9 @@ json.apartments do
   else
     json.sitemap nil
   end
+
   units_floorplans = []
   floorplans = @community.floorplans
-
   available_units_and_sold_units = @community.units.includes(:amenities).available_units
   sorted_units = available_units_and_sold_units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(available_units_and_sold_units).sort.map{|x,y| y}
 
@@ -1354,9 +1354,11 @@ json.apartments do
       conditionAvailable = unit.available
     else
       conditionAvailable = 1
-    end  
-    if floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id} && conditionAvailable
-      floorplan = floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
+    end
+    
+    floorplan = floorplans.select { |f| f.provider_floorplan_id == unit.floorplan_id }.first
+    
+    if floorplan.present? && conditionAvailable
       units_floorplans << floorplan
       json.marketing_name unit.api_unit_marketing_name
       json.rent unit.effective_rent.present? ? unit.effective_rent : 0
@@ -1368,9 +1370,9 @@ json.apartments do
       json.available unit.available
       json.sold unit.sold
       if @community.theme_name == "modernist"
-        json.unit_description unit.description.present? ? "<div style='color:#{(@community.design.primary_font_color.present? ? @community.design.primary_font_color : "#FFFFFF")}'>"+unit.description+"</div>" : (unit&.floorplan&.description.present? ? "<div style='color:#{(@community.design.primary_font_color.present? ? @community.design.primary_font_color : "#FFFFFF")}'>"+unit&.floorplan&.description+"</div>"  : nil)
+        json.unit_description unit.description.present? ? "<div style='color:#{(@community.design.primary_font_color.present? ? @community.design.primary_font_color : "#FFFFFF")}'>"+unit.description+"</div>" : (floorplan&.description.present? ? "<div style='color:#{(@community.design.primary_font_color.present? ? @community.design.primary_font_color : "#FFFFFF")}'>"+floorplan&.description+"</div>"  : nil)
       else
-        json.unit_description unit.description.present? ? "<div>"+unit.description+"</div>" : (unit&.floorplan&.description.present? ? "<div>"+unit&.floorplan&.description+"</div>"  : nil)
+        json.unit_description unit.description.present? ? "<div>"+unit.description+"</div>" : (floorplan&.description.present? ? "<div>"+floorplan&.description+"</div>"  : nil)
       end
       json.x_plot unit.x_plot
       json.y_plot unit.y_plot
@@ -1385,7 +1387,7 @@ json.apartments do
       json.virtual_tour_button_label unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : "3D Tour"
       json.virtual_tour unit.get_unit_virtual_tour_url()
 
-      json.availability_url unit.get_availability_url()
+      json.availability_url unit.get_availability_url(floorplan)
       
       json.bathrooms floorplan.present? ? convert_float_to_integer(floorplan.bathrooms) : 0
       json.floorplan_description floorplan.description.present? ? "<div>"+floorplan.description+"</div>"  : nil
@@ -1468,7 +1470,8 @@ json.apartments do
       end
     end
   end
-  json.floorplans units_floorplans.map {|i| (i.name.present? ? i.name : "").gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(units_floorplans).sort.map{|x,y| y}.uniq do |floorplan|
+
+  json.floorplans units_floorplans&.uniq&.map {|i| (i.name.present? ? i.name : "").gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(units_floorplans).sort.map{|x,y| y}.uniq do |floorplan|
     json.id floorplan.id
     json.provider_floorplan_id floorplan.provider_floorplan_id
     json.name floorplan.name

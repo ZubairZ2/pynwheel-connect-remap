@@ -220,13 +220,15 @@ class Unit < ApplicationRecord
     lease_pricing
   end
 
-  def get_availability_url url = ""
+  def get_availability_url fp = nil, url = ""
+    fp = fp.present? ? fp : floorplan
+    
     if self&.community&.credential.present? and self&.community&.credential&.apply_now.to_s == "separate_link"
       url = self&.community&.credential.separate_link
     elsif self&.community&.data_provider == "psi"
-      url = (self.availability_url_deep_linking.present? ? self.availability_url_deep_linking : self.availability_url.present? ? self.availability_url : self&.floorplan&.availability_url)
+      url = (self.availability_url_deep_linking.present? ? self.availability_url_deep_linking : self.availability_url.present? ? self.availability_url : fp&.availability_url)
     else
-      url = self.availability_url.present? ? self.availability_url : self&.floorplan&.availability_url
+      url = self.availability_url.present? ? self.availability_url : fp&.availability_url
     end
 
     url
