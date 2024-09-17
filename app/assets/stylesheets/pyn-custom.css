@@ -3847,11 +3847,13 @@ a#favoriteclickme {
     .chart-title i{
         margin-top: 24px !important;
     }
-    #analyticsToolTipText::after {
+    #analyticsToolTipText::after,
+    #elevatorPositionToolTipText::after {
         right: 30% !important;
         left: auto !important;
     }
-    #analyticsToolTipText {
+    #analyticsToolTipText,
+    #elevatorPositionToolTip::after {
         width: 180px !important;
         transform: translateX(-30%) !important;
         left: 0% !important;
@@ -4354,14 +4356,16 @@ a#favoriteclickme {
 .propertyDetailName,
 .pyn-toolTip,
 .mapConfigurationToolTip, 
-.analyticsToolTip {
+.analyticsToolTip,
+.elevatorPositionToolTip {
     position: relative;
     display: inline-block;
     white-space: initial;
     z-index: 1000;
 }
 .propertyDetailName #propertyDetailNameText,
-.analyticsToolTip #analyticsToolTipText {
+.analyticsToolTip #analyticsToolTipText,
+.elevatorPositionToolTip #elevatorPositionToolTipText {
     visibility: hidden;
     background-color: #000000;
     color: white;
@@ -4418,7 +4422,8 @@ a#favoriteclickme {
 }
 
 .propertyDetailName #propertyDetailNameText::after,
-.analyticsToolTip #analyticsToolTipText::after {
+.analyticsToolTip #analyticsToolTipText::after,
+.elevatorPositionToolTip #elevatorPositionToolTipText::after {
     content: "";
     position: absolute;
     top: 100%;
@@ -4430,17 +4435,20 @@ a#favoriteclickme {
 }
 
 @media (min-width: 1200px) and (max-width: 1560px){
-    #analyticsToolTipText::after {
+    #analyticsToolTipText::after,
+    #elevatorPositionToolTipText::after {
         right: 37% !important;
         left: auto !important;
     }
-    #analyticsToolTipText {
+    #analyticsToolTipText,
+    #elevatorPositionToolTipText {
         width: 240px !important;
         transform: translateX(-35%) !important;
     }
 }
 .propertyDetailName:hover #propertyDetailNameText,
-.analyticsToolTip:hover #analyticsToolTipText {
+.analyticsToolTip:hover #analyticsToolTipText,
+.elevatorPositionToolTip:hover #elevatorPositionToolTipText {
     visibility: visible;
 }
 
@@ -7352,7 +7360,7 @@ span.to-input {
 .webpage-header{
     padding: 15px;
 }
-
-#latch_elevator_accesses_chosen {
-    width: 100% !important;
+.elevator-title {
+    font-weight: bold;
+    margin-bottom: 10px;
 }

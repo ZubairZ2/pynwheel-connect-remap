@@ -64,7 +64,6 @@
               - locks_present_hash["Zerv"] = @community.multiple_locks_provider.include?("Zerv") &&  @community.zerv.present? && @all_locks[:zerv_locks].any?
               - locks_present_hash["Igloohome"] = @community.multiple_locks_provider.include?("Igloohome") &&  @community.igloohome.present? && @all_locks[:igloohome_locks].any?
 
-              // load options and input values start
               - if locks_present_hash["Dwelo"]
                 = hidden_field_tag "dwelo_lock_input_value", @elevator.remote_locks.dwelo_locks.present? ? @elevator.remote_locks.dwelo_locks.last.name + " (" + @elevator.remote_locks.dwelo_locks.last.remote_lock_type + ")" : ''
                 .dwelo_options.hide_it
@@ -103,23 +102,16 @@
                   Access Code
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   = f.text_field :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/g, '')", :class=>"form-control elevator_edit_field", :placeholder=>"Access Code",:maxLength => "10"
-
+              
               .form-group#lock_access_code.hide_it
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   = text_field_tag :lock_input, '', :placeholder => "Search by lock name", :list => "locks_list", :autocomplete=> "off", :type => "text", :class => "form-control elevator_edit_field"
                   %datalist#locks_list
-                
-              .form-group#latch_multi_locks_selection.hide_it
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  - select_tag_latch_elevator_lock = []
-                  - @all_locks[:latch_locks]&.each do |latch_lock|
-                    - select_tag_latch_elevator_lock << [latch_lock[:name], latch_lock[:id]]
-    
-                  = select_tag "latch_elevator_accesses", options_for_select(select_tag_latch_elevator_lock, @selected_locks), :class => 'chosen-select-latch-elevator-lock',:"data-placeholder" => "- select lock -", :multiple => "multiple",:name => "latch_elevator_selected", style: "width: 100%;"
-                  %input{:value => "Assign Locks", :type => "submit", :id=> 'add_elevator_latch_lock', :class => 'btn btn-success', :style => "margin-top: 10px;"}/  
               
+              #elevator-bank.hide_it
+                = render :partial=>'elevator_bank_block.html'
+                #elevator-bank-data{ data: { all_locks: @all_locks.to_json, bank_locks: @elevator_banks.to_json } }
 
     %span.btn.btn-primary.btn-file
       %i.fa.fa-upload
@@ -137,22 +129,24 @@
         .select-logo-logo.logo-container.logo-upload-container
           %a.preview-image{:href=>@elevator.image.present? ? @elevator.image.url : asset_path("elev2.png"),"data-toggle"=>"lightbox","data-title"=>"Elevator Image"}
             = image_tag @elevator.image.present? ? @elevator.image.url : "elev2.png",:height=>"100%",:width=>"100%",:id=>"preview-image"
-    //////////////////////// Amenity Gallery
-    .box.box-info.add-plan
 
+    .box.box-info.add-plan
       .col-lg-12
         %h4{:style => "color: grey;"}
           Upload Elevator Gallery
+
       .col-lg-12.mt-35
-        /%span.btn.btn-primary.btn-file.pull-right.mb-20
         %span.btn.btn-success.btn-file.some{ :style => "margin-right: 5px; width: 135px" }
           %i.fa.fa-plus-circle
           ADD FILES
           %input#elevator-gallery-images{:multiple => "multiple", :type => "file"}/
+        
         .mt-10
           - if @community.is_sitemap && current_user.is_admin?
             = link_to "PLOT ELEVATORS", plot_amenities_community_sitemaps_path(@community), class: "btn btn-primary hidden btn-file plot_amenities_btn"
+        
         .divLoading.hidden
+       
         #images-index1
           = render :partial=>'edit_elevator'
 
@@ -172,45 +166,42 @@
 #edit-elevator-data{ data: {elevator_id: @elevator.id, community_id: @community.id} }
 
 #edit-gallery-image.modal.fade.edit-gallery-image
+
 :javascript
-
-  $(document).ready(function() {
-    
-    $(".chosen-select-latch-elevator-lock").chosen({
-      no_results_text: "Oops, nothing found!"
-    });
-
-
-    $("#add_elevator_latch_lock").click(function(event){
-      event.preventDefault();
-      access_points = $('select[name="latch_elevator_selected"]').val();
-      add_locks(access_points);
-    });
-  });
-
-  function add_locks(access_points) {
-    $.ajax({
-      url: `/communities/${community_id}/elevators/${elevator_id}/assign_multiple_locks`,
-      type: "POST",
-      dataType: "script",
-      data: {
-        access_points: access_points
-      }
-    }).done(function (data) {
-      window.location.reload();
-    });
-  }
-
   var locks_input, locks_list, param_name;
+  let bankLocks = [];
   $(document).ready(function(){
+    const data = $('#elevator-bank-data').data();
+    if (data)
+      bankLocks = data.bankLocks;
+
     // run it on ready 
-    update_locks_select_and_lock_code_field()
+    update_locks_select_and_lock_code_field();
+    handleElevatorBankVisibility();
+
     // provide locks on change 
     $('#elevator_lock_provider').change(function(){
       update_locks_select_and_lock_code_field();
+      handleElevatorBankVisibility();
       if ($('#elevator_lock_provider').val().length == 0)
         $('.edit_elevator').submit();
     });
+
+    function handleElevatorBankVisibility() {
+      if($('#elevator_lock_provider').val() === 'Latch')
+        $('#elevator-bank').removeClass('hide_it');
+      else
+        $('#elevator-bank').addClass('hide_it');
+    }
+
+    function handleLockFieldVisibilityForLatchBank() {
+      if($('#elevator_lock_provider').val() === 'Latch') {
+        if(bankLocks.length > 0)
+          $('#lock_access_code').addClass('hide_it')
+        else
+          $('#lock_access_code').removeClass('hide_it')
+      }
+    }
     
     function update_locks_select_and_lock_code_field(){
       // if any lock selected selected
@@ -227,38 +218,30 @@
         // assign values
         if (lock_provider_type == "zerv"){
           $('#lock_access_code').find('label').html("Lock <span>Assign the lock to this elevator</span>")
-          $('#latch_multi_locks_selection').find('label').html("Lock <span>Assign the lock to this elevator</span>")
         }
         else{
           $('#lock_access_code').find('label').html(capitalize(lock_provider_type) + " Lock <span>Assign the lock to this elevator</span>")
-          $('#latch_multi_locks_selection').find('label').html(capitalize(lock_provider_type) + " Lock <span>Assign the lock to this elevator</span>")
         }
 
-        $('#lock_input').val( $(lock_input_value).val() );
-        $('datalist#locks_list').html($(options).html());
-
-        if(lock_provider_type === "latch"){
-          $('#latch_multi_locks_selection').removeClass('hide_it');
-          $('#lock_access_code').addClass('hide_it');
-        }
-        else{
-          $('#latch_multi_locks_selection').addClass('hide_it');
-          $('#lock_access_code').removeClass('hide_it');
-        }
+        $('#lock_input').val( $(lock_input_value).val() )
+        $('datalist#locks_list').html($(options).html())
+        $('#lock_access_code').removeClass('hide_it') 
+        handleLockFieldVisibilityForLatchBank();
       }
+
       else if ($('#elevator_lock_provider').val().length > 0)
       {
-        $('#latch_multi_locks_selection').addClass('hide_it');
         $('#lock_access_code').addClass('hide_it')
         $('#manual_access_code').removeClass('hide_it')
         locks_input = undefined
+        handleLockFieldVisibilityForLatchBank();
       }
       else{
-        $('#latch_multi_locks_selection').addClass('hide_it');
         $('#lock_access_code').addClass('hide_it')
         $('#manual_access_code').addClass('hide_it')
       }
     }
+
     $('#elevator_lock_provider').change(function(){
         $('.done_btn').click(function(){
           if ($('#elevator_lock_provider').val() == "Manual" && $("#elevator_access_code").val().length > 0)
@@ -298,6 +281,7 @@
           }
         });
     });
+    debugger;
   });
   $('.elevator_edit_field').change(function(){
     setTimeout(function(){ 

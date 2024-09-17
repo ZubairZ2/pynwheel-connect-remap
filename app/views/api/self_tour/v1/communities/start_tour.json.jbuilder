@@ -7,7 +7,7 @@ is_latch_lock_present = false
 is_edgestate_lock_present = false
 is_dwello_lock_present = false
 list_of_zerv_lock_ids = []
-latch_connected_elevator_bluetooth_ids = []
+elevator_bank_list = []
 
 
 styling_start = '<div style="font-family: gotham-light; color: white !important;"><p>'
@@ -399,7 +399,7 @@ json.tours @tours do |tour|
   
   json.tour_stop new_stops_arr.compact do |stop|
     list_of_zerv_lock_ids = []
-    latch_connected_elevator_bluetooth_ids = []
+    elevator_bank_list = []
     
     unless @community.auto_wayfinding
       begin
@@ -489,7 +489,7 @@ json.tours @tours do |tour|
       json.igloohome_version ''
       json.lock_provider_mac_id ''
       json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-      json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+      json.elevator_bank_list elevator_bank_list
       json.navigation_title navigation_title
       json.bypass_stop_lock bypass_stop_lock
       json.id stop.id
@@ -560,7 +560,7 @@ json.tours @tours do |tour|
               json.igloohome_guest_pin ''
               json.lock_provider_mac_id ''
               json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-              json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+              json.elevator_bank_list elevator_bank_list
             else
               json.stop_lock_provider ''
               json.guest_pin ''
@@ -572,7 +572,7 @@ json.tours @tours do |tour|
               json.igloohome_guest_pin ''
               json.lock_provider_mac_id ''
               json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-              json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+              json.elevator_bank_list elevator_bank_list
             end
           else
             json.stop_lock_provider ''
@@ -585,7 +585,7 @@ json.tours @tours do |tour|
             json.igloohome_guest_pin ''
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-            json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+            json.elevator_bank_list elevator_bank_list
           end
 
         elsif stop_lock_provider == "EdgeState" and @community.edge_state.present? and stop.edgestate_locks.present?
@@ -605,7 +605,7 @@ json.tours @tours do |tour|
                 json.igloohome_guest_pin ''
                 json.lock_provider_mac_id ''
                 json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-                json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+                json.elevator_bank_list elevator_bank_list
               else
                 json.guest_pin "Use code " + igloo_guest.guest_code + " to enter." if igloo_guest.guest_code.present?
                 json.latch_link ''
@@ -616,7 +616,7 @@ json.tours @tours do |tour|
                 json.igloohome_guest_pin ''
                 json.lock_provider_mac_id ''
                 json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-                json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+                json.elevator_bank_list elevator_bank_list
               end
             else
               json.guest_pin ''
@@ -628,7 +628,7 @@ json.tours @tours do |tour|
               json.igloohome_guest_pin ''
               json.lock_provider_mac_id ''
               json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-              json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+              json.elevator_bank_list elevator_bank_list
             end
           else
             json.guest_pin ''
@@ -640,7 +640,7 @@ json.tours @tours do |tour|
             json.igloohome_guest_pin ''
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-            json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+            json.elevator_bank_list elevator_bank_list
           end
 
         elsif stop_lock_provider == "Zerv" and @community.zerv.present? and stop.zerv_locks.present?
@@ -658,7 +658,7 @@ json.tours @tours do |tour|
               json.igloohome_guest_pin ''
               json.lock_provider_mac_id zrv.mac_id
               json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-              json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+              json.elevator_bank_list elevator_bank_list
             else
               zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, status: "active")
               if zrv_guest.present?
@@ -672,7 +672,7 @@ json.tours @tours do |tour|
                 json.igloohome_guest_pin ''
                 json.lock_provider_mac_id zrv.mac_id
                 json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-                json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+                json.elevator_bank_list elevator_bank_list
               else
                 json.guest_pin ''
                 json.latch_link ''
@@ -683,7 +683,7 @@ json.tours @tours do |tour|
                 json.igloohome_guest_pin ''
                 json.lock_provider_mac_id zrv.mac_id
                 json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-                json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+                json.elevator_bank_list elevator_bank_list
               end
             end
           else
@@ -696,7 +696,7 @@ json.tours @tours do |tour|
             json.igloohome_guest_pin ''
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-            json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+            json.elevator_bank_list elevator_bank_list
           end
 
         elsif stop_lock_provider == "Dwelo"
@@ -712,7 +712,7 @@ json.tours @tours do |tour|
             json.igloohome_guest_pin ''
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-            json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+            json.elevator_bank_list elevator_bank_list
           else
             json.guest_pin ''
             json.latch_link ''
@@ -723,7 +723,7 @@ json.tours @tours do |tour|
             json.igloohome_guest_pin ''
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-            json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+            json.elevator_bank_list elevator_bank_list
           end
 
         elsif stop_lock_provider == "Manual"
@@ -737,7 +737,7 @@ json.tours @tours do |tour|
             json.igloohome_guest_pin ''
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-            json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+            json.elevator_bank_list elevator_bank_list
           else
             json.guest_pin ''
             json.latch_link ''
@@ -748,7 +748,7 @@ json.tours @tours do |tour|
             json.igloohome_guest_pin ''
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-            json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+            json.elevator_bank_list elevator_bank_list
           end
         
         elsif stop_lock_provider == "Igloohome"
@@ -766,7 +766,7 @@ json.tours @tours do |tour|
             json.igloohome_guest_pin igloohome_guest.guest_pin
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-            json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+            json.elevator_bank_list elevator_bank_list
           else
             json.guest_pin ''
             json.latch_link ''
@@ -778,7 +778,7 @@ json.tours @tours do |tour|
             json.stop_lock_provider ''
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-            json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+            json.elevator_bank_list elevator_bank_list
           end
         else
           json.guest_pin ''
@@ -790,7 +790,7 @@ json.tours @tours do |tour|
           json.igloohome_guest_pin ''
           json.lock_provider_mac_id ''
           json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-          json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+          json.elevator_bank_list elevator_bank_list
         end
 
 
@@ -804,7 +804,7 @@ json.tours @tours do |tour|
         json.igloohome_guest_pin ''
         json.lock_provider_mac_id ''
         json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-        json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+        json.elevator_bank_list elevator_bank_list
       end
       rescue => exception
         json.guest_pin ''
@@ -816,7 +816,7 @@ json.tours @tours do |tour|
         json.igloohome_guest_pin ''
         json.lock_provider_mac_id ''
         json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-        json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+        json.elevator_bank_list elevator_bank_list
       end
 
       next
@@ -845,7 +845,7 @@ json.tours @tours do |tour|
                 json.igloohome_guest_pin ''
                 json.lock_provider_mac_id ''
                 json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-                json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+                json.elevator_bank_list elevator_bank_list
               else
                 json.guest_pin "Use code " + igloo_guest.guest_code + " to enter." if igloo_guest.guest_code.present?
                 json.latch_link ''
@@ -856,7 +856,7 @@ json.tours @tours do |tour|
                 json.igloohome_guest_pin ''
                 json.lock_provider_mac_id ''
                 json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-                json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+                json.elevator_bank_list elevator_bank_list
               end
             else
               json.guest_pin ''
@@ -868,7 +868,7 @@ json.tours @tours do |tour|
               json.igloohome_guest_pin ''
               json.lock_provider_mac_id ''
               json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-              json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+              json.elevator_bank_list elevator_bank_list
             end
           else
             json.guest_pin ''
@@ -880,7 +880,7 @@ json.tours @tours do |tour|
             json.igloohome_guest_pin ''
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-            json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+            json.elevator_bank_list elevator_bank_list
           end
 
         elsif stop_lock_provider == "Latch"
@@ -895,7 +895,7 @@ json.tours @tours do |tour|
             end
 
             if latch_guest.present?
-              latch_connected_elevator_bluetooth_ids = @tour_user.get_latch_connected_elevator_bluetooth_ids(@community.id, stop)
+              elevator_bank_list = @tour_user.get_elevator_bank_list(@community.id, stop)
               is_latch_lock_present = true
               json.guest_pin ''
               json.latch_link latch_guest.latch_link
@@ -906,7 +906,7 @@ json.tours @tours do |tour|
               json.igloohome_guest_pin ''
               json.lock_provider_mac_id ''
               json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-              json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+              json.elevator_bank_list elevator_bank_list
             else
               json.stop_lock_provider ''
               json.guest_pin ''
@@ -918,7 +918,7 @@ json.tours @tours do |tour|
               json.igloohome_guest_pin ''
               json.lock_provider_mac_id ''
               json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-              json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+              json.elevator_bank_list elevator_bank_list
             end
           else
             json.stop_lock_provider ''
@@ -931,7 +931,7 @@ json.tours @tours do |tour|
             json.igloohome_guest_pin ''
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-            json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+            json.elevator_bank_list elevator_bank_list
           end
 
         elsif stop_lock_provider == "Dwelo"
@@ -949,7 +949,7 @@ json.tours @tours do |tour|
             json.igloohome_guest_pin ''
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-            json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+            json.elevator_bank_list elevator_bank_list
           else
             json.guest_pin ''
             json.latch_link ''
@@ -960,7 +960,7 @@ json.tours @tours do |tour|
             json.igloohome_guest_pin ''
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-            json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+            json.elevator_bank_list elevator_bank_list
           end
 
         elsif stop_lock_provider == "Zerv"
@@ -980,7 +980,7 @@ json.tours @tours do |tour|
               json.igloohome_guest_pin ''
               json.lock_provider_mac_id zrv.mac_id
               json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-              json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+              json.elevator_bank_list elevator_bank_list
             else
               zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, status: "active")
               if zrv_guest.present?
@@ -994,7 +994,7 @@ json.tours @tours do |tour|
                 json.igloohome_guest_pin ''
                 json.lock_provider_mac_id zrv.mac_id
                 json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-                json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+                json.elevator_bank_list elevator_bank_list
               else
                 json.guest_pin ''
                 json.latch_link ''
@@ -1005,7 +1005,7 @@ json.tours @tours do |tour|
                 json.igloohome_guest_pin ''
                 json.lock_provider_mac_id zrv.mac_id
                 json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-                json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+                json.elevator_bank_list elevator_bank_list
               end
             end
           else
@@ -1018,7 +1018,7 @@ json.tours @tours do |tour|
             json.igloohome_guest_pin ''
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-            json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+            json.elevator_bank_list elevator_bank_list
           end
         
         elsif stop_lock_provider == "Igloohome"
@@ -1036,7 +1036,7 @@ json.tours @tours do |tour|
             json.igloohome_guest_pin igloohome_guest.guest_pin
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-            json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+            json.elevator_bank_list elevator_bank_list
           else
             json.guest_pin ''
             json.latch_link ''
@@ -1048,7 +1048,7 @@ json.tours @tours do |tour|
             json.stop_lock_provider ''
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-            json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+            json.elevator_bank_list elevator_bank_list
           end
 
         elsif stop_lock_provider == "Manual"
@@ -1066,7 +1066,7 @@ json.tours @tours do |tour|
             json.igloohome_guest_pin ''
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-            json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+            json.elevator_bank_list elevator_bank_list
           else
             json.guest_pin ''
             json.latch_link ''
@@ -1077,7 +1077,7 @@ json.tours @tours do |tour|
             json.igloohome_guest_pin ''
             json.lock_provider_mac_id ''
             json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-            json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+            json.elevator_bank_list elevator_bank_list
           end
         else
           json.guest_pin ''
@@ -1089,7 +1089,7 @@ json.tours @tours do |tour|
           json.igloohome_guest_pin ''
           json.lock_provider_mac_id ''
           json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-          json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+          json.elevator_bank_list elevator_bank_list
         end
       else
         json.guest_pin ''
@@ -1101,7 +1101,7 @@ json.tours @tours do |tour|
         json.igloohome_guest_pin ''
         json.lock_provider_mac_id ''
         json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-        json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+        json.elevator_bank_list elevator_bank_list
       end
     rescue => pin
       json.guest_pin ''
@@ -1113,7 +1113,7 @@ json.tours @tours do |tour|
       json.igloohome_guest_pin ''
       json.lock_provider_mac_id ''
       json.list_of_zerv_lock_ids list_of_zerv_lock_ids
-      json.latch_connected_elevator_bluetooth_ids latch_connected_elevator_bluetooth_ids
+      json.elevator_bank_list elevator_bank_list
     end
     
     json.navigation_title navigation_title

@@ -131,18 +131,35 @@ class TourUser < ApplicationRecord
     ( (community.community_tour&.tour_setting&.enable_tour_customization) && (self.tours.where(community_id: community.id).last.present?) )
   end
 
-  def get_latch_connected_elevator_bluetooth_ids community_id, stop
-    bluetooth_ids = []
-
-    if stop.stop_type.classify == "Elevator"
-      guests = self.latch_guests.where(community_id: community_id, guest_of_stop_id: stop.stop_id, guest_of_stop_type: stop.stop_type.classify, status: "active")
-      bluetooth_ids = (guests.present? && guests.count > 1) ? guests.pluck(:latch_link) : []
-    end
-
-    bluetooth_ids
+  def get_elevator_bank_list(community_id, stop)
+    return [] unless stop.stop_type.classify == "Elevator"
+    
+    guests = latch_guests.where(community_id: community_id, guest_of_stop_id: stop.stop_id, guest_of_stop_type: "Elevator", status: "active")
+    elevator_banks = ElevatorBank.where(elevator_id: stop.stop_id)&.order(created_at: :asc)&.pluck(:lock_id, :lock_name, :name, :position, :lock_type)
+    
+    return [] unless (guests.size > 1 && elevator_banks.size > 1)
+    
+    elevator_assigned_locks(guests, elevator_banks)
   end
-
-
+  
+  def elevator_assigned_locks(guests, elevator_banks)
+    access_set = guests.pluck(:latch_link).map { |latch_link| latch_link.split(" | ").first }.to_set
+    return [] if access_set.empty?
+  
+    elevator_banks&.each_with_object([]) do |(lock_id, lock_name, name, position, lock_type), formatted_response|
+      if access_set.include?(lock_id.to_s)
+        formatted_response << {
+          name: name,
+          position: position,
+          lock_type: lock_type,
+          lock_name: lock_name,
+          lock_id: lock_id,
+          latch_link: "#{lock_id} | #{lock_name}"
+        }
+      end
+    end
+  end
+  
   def get_list_of_zerv_lock_ids tour, community, stop, new_stops_arr, counter, zev_mac_ids = [], current_stop_zerv_id
     return [] if community.is_sitemap
     begin
