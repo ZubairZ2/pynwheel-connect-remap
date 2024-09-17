@@ -1648,6 +1648,7 @@ json.tours @tours do |tour|
     json.authenticate_zerv is_zerv_lock_present
     json.is_igloohome_lock_present is_igloohome_lock_present
     json.is_latch_lock_present is_latch_lock_present
+    json.latch_access_token is_latch_lock_present ? @tour_user.get_latch_access_token() : nil
     json.is_edgestate_lock_present is_edgestate_lock_present
     json.is_dwello_lock_present is_dwello_lock_present
 
