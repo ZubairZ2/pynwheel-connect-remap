@@ -1387,7 +1387,7 @@ json.community_group @communities do |co|
 
     units_floorplans = []
     floorplans = @community.floorplans
-    available_units_and_sold_units = @community.units.includes(:amenities).available_units# + @community.units.are_sold
+    available_units_and_sold_units = @community.units.available_units# + @community.units.are_sold
     json.display_unit_on_homepage @community.display_unit_on_homepage
     json.units available_units_and_sold_units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(available_units_and_sold_units).sort.map{|x,y| y}.each do |unit|
       if @community.data_provider == "psi"
@@ -1395,10 +1395,8 @@ json.community_group @communities do |co|
       else
         conditionAvailable = 1
       end
-
-      floorplan = floorplans.select { |f| f.provider_floorplan_id == unit.floorplan_id }.first
-
-      if floorplan.present? && conditionAvailable
+      if floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id} && conditionAvailable
+        floorplan = floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
         units_floorplans << floorplan
         json.marketing_name unit.api_unit_marketing_name
         json.rent unit.effective_rent.present? ? unit.effective_rent : 0
@@ -1410,9 +1408,9 @@ json.community_group @communities do |co|
         json.available unit.available
         json.sold unit.sold
         if @community.theme_name == "modernist"
-          json.unit_description unit.description.present? ? "<div style='color:#{(@community.design.primary_font_color.present? ? @community.design.primary_font_color : "#FFFFFF")}'>"+unit.description+"</div>" : (floorplan&.description.present? ? "<div style='color:#{(@community.design.primary_font_color.present? ? @community.design.primary_font_color : "#FFFFFF")}'>"+floorplan&.description+"</div>"  : nil)
+          json.unit_description unit.description.present? ? "<div style='color:#{(@community.design.primary_font_color.present? ? @community.design.primary_font_color : "#FFFFFF")}'>"+unit.description+"</div>" : (unit&.floorplan&.description.present? ? "<div style='color:#{(@community.design.primary_font_color.present? ? @community.design.primary_font_color : "#FFFFFF")}'>"+unit&.floorplan&.description+"</div>"  : nil)
         else
-          json.unit_description unit.description.present? ? "<div>"+unit.description+"</div>" : (floorplan&.description.present? ? "<div'>"+floorplan&.description+"</div>"  : nil)
+          json.unit_description unit.description.present? ? "<div>"+unit.description+"</div>" : (unit&.floorplan&.description.present? ? "<div'>"+unit&.floorplan&.description+"</div>"  : nil)
         end
         json.x_plot unit.x_plot
         json.y_plot unit.y_plot
@@ -1454,7 +1452,7 @@ json.community_group @communities do |co|
         json.floorplan_image floorplan.present? ? (floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil) : nil
         # json.floorplate_number unit.floorplate.present? ? unit.floorplate.number : 0
         json.floorplate_number unit.floor.present? ? unit.floor : 0
-        if unit.amenities.present?
+        if unit.amenities.plotted_amenities.size > 0
           json.unit_amenities unit.amenities.plotted_amenities do |amenity|
             json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
             json.name amenity.name
@@ -1473,32 +1471,29 @@ json.community_group @communities do |co|
             end
           end
         elsif !unit.standard_image_url.present?
-          if floorplan.amenities.present?
-            json.unit_amenities floorplan.amenities.plotted_amenities do |amenity|
-              json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
-              json.name amenity.name
-              json.x_plot amenity.x_plot
-              json.y_plot amenity.y_plot
-              json.unit_id unit.id
-              random_number = SecureRandom.random_number(59999)
-              unless random_numbers.include?(random_number)
-                random_numbers << random_number
-                json.id random_number
-              else
-                random_number = SecureRandom.random_number(69999)
-                random_numbers << random_number
-                json.id random_number
-              end
+          #If unit amenities are not present then send floorplan amenities
+          json.unit_amenities floorplan.amenities.plotted_amenities do |amenity|
+            json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
+            json.name amenity.name
+            json.x_plot amenity.x_plot
+            json.y_plot amenity.y_plot
+            json.unit_id unit.id
+            random_number = SecureRandom.random_number(59999)
+            unless random_numbers.include?(random_number)
+              random_numbers << random_number
+              json.id random_number
+            else
+              random_number = SecureRandom.random_number(69999)
+              random_numbers << random_number
+              json.id random_number
             end
-          else
-            json.unit_amenities []
           end
         else
           json.unit_amenities []
         end
       end
     end
-    json.floorplans units_floorplans&.uniq&.map {|i| i.name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(units_floorplans).sort.map{|x,y| y}.uniq do |floorplan|
+    json.floorplans units_floorplans.map {|i| i.name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(units_floorplans).sort.map{|x,y| y}.uniq do |floorplan|
       json.id floorplan.id
       json.provider_floorplan_id floorplan.provider_floorplan_id
       json.name floorplan.name
@@ -1514,18 +1509,14 @@ json.community_group @communities do |co|
       json.display_virtual_tour_button_label true #floorplan.display_virtual_tour_button_label.present? ? floorplan.display_virtual_tour_button_label : false
       json.virtual_tour_button_label floorplan.virtual_tour_button_label.present? ? floorplan.virtual_tour_button_label : "3D Tour"
       json.virtual_tour floorplan.get_floorplan_virtual_tour_url()
-      
-      if floorplan.amenities.present?
-        json.floorplan_amenities floorplan.amenities.plotted_amenities do |amenity|
-          json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
-          json.name amenity.name
-          json.x_plot amenity.x_plot
-          json.y_plot amenity.y_plot
-          json.floorplan_id floorplan.id
-          json.id amenity.id
-        end
-      else
-        json.floorplan_amenities []
+
+      json.floorplan_amenities floorplan.amenities.plotted_amenities do |amenity|
+        json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
+        json.name amenity.name
+        json.x_plot amenity.x_plot
+        json.y_plot amenity.y_plot
+        json.floorplan_id floorplan.id
+        json.id amenity.id
       end
     end
     #json.floorplates @community.floorplates.order("number DESC") do |floorplate|
