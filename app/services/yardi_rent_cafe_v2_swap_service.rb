@@ -146,7 +146,7 @@ class YardiRentCafeV2SwapService < BaseService
       if rent_matrix.present?
         uniq_units = rent_matrix.map{|x| x["apartmentId"].to_i }&.compact&.uniq
         uniq_units.each do |apartment_id|
-          unit = Unit.find_by(provider: "yardirentcafe", community_id: @community_id, provider_unit_id: apartment_id)
+          unit = Unit.find_by(provider: "yardirentcafe", community_id: @credentials.community_id, provider_unit_id: apartment_id)
 
           if unit.present?
             apartment_pricing = rent_matrix.map{|data| data if data["apartmentId"] == apartment_id}.compact

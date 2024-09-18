@@ -20,7 +20,6 @@ module LeadsUploader
 
       def is_user_authorized?
         if (@community.use_yardi_as_lead? && DataProviders::RentCafe::V2ApisService.new(@community.id).is_user_authorized?)
-          # This line is added to get updated credentials after updating api token in RentCafeApiV2Service
           @credential = Credential.where(community_id: @community.id).last
           true
         else
