@@ -30,6 +30,7 @@ class Amenity < ApplicationRecord
   mount_base64_uploader :image, AvatarUploader
   belongs_to :amenityable, polymorphic: true
   belongs_to :community
+  
   has_many :amenity_galleries, dependent: :destroy
   has_one :status, as: :statusable
   

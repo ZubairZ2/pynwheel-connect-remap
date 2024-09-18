@@ -163,7 +163,7 @@ class TourStop < ApplicationRecord
 
   def stop_floor_text actual_stop
     return "" unless actual_stop&.floor.present?
-    " on the #{number_to_ordinal_form(actual_stop&.floor.to_i)} floor"
+    " on the #{handle_floor_display(actual_stop)} floor"
   end
 
   def actual_stop_text actual_stop
@@ -175,6 +175,44 @@ class TourStop < ApplicationRecord
       " and proceed to the #{actual_stop.name}"
     end
   end
+
+  def handle_floor_display(actual_stop)
+    return number_to_ordinal_form(actual_stop&.floor.to_i) if actual_stop.community.is_sitemap
+  
+    case actual_stop
+    when Unit, Amenity
+      display_floorplate_info(actual_stop)
+    else
+      number_to_ordinal_form(actual_stop.floor.to_i)
+    end
+  end
+  
+  def display_floorplate_info(actual_stop)
+    floorplate = get_floorplate(actual_stop)
+    return number_to_ordinal_form(actual_stop.floor.to_i) unless floorplate.present?
+  
+    if floorplate_has_multiple_floors?(floorplate)
+      number_to_ordinal_form(actual_stop.floor.to_i)
+    elsif floorplate_name_added?(floorplate)
+      floorplate.floor_name
+    else
+      number_to_ordinal_form(actual_stop.floor.to_i)
+    end
+  end
+  
+  def get_floorplate(actual_stop)
+    return actual_stop.floorplate if actual_stop.is_a?(Unit)
+    return Floorplate.find_by(id: actual_stop.amenityable_id) if actual_stop.is_a?(Amenity)
+  end
+  
+  def floorplate_has_multiple_floors?(floorplate)
+    floorplate&.floors&.count.to_i > 1
+  end
+  
+  def floorplate_name_added?(floorplate)
+    floorplate&.floor_name_added && floorplate.floor_name.present?
+  end
+  
 
   def number_to_ordinal_form(number)
     "#{number}" + case number % 100
