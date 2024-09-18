@@ -326,19 +326,21 @@ class PsiSwapService < BaseService
   def getMoveInDate(property_id)
     response = get_move_in_dates(property_id)
     moveIn_dates = []
-    if (response.present? && response["response"].present? && (response["response"]["code"] == 200) )
-      response['response']['result']['Property'][0]['leasePeriods']['leasePeriod'].each do |dates|
-        if dates['leaseStartDate'].present?
-          ss = dates['leaseStartDate'].split('/')
-          date1 = ss[2] + "-" +ss[0] + "-" + ss[1]
-          date1 = (date1.to_date + 31).to_s
-          ss = date1.split('-')
-          added_date = ss[1] + "/" + ss[2] + "/" + ss[0]
-          moveIn_dates << added_date
+  
+    if response.present? && response.dig('response', 'code') == 200
+      lease_periods = response.dig('response', 'result', 'Property', 0, 'leasePeriods', 'leasePeriod')
+  
+      if lease_periods.present?
+        lease_periods.each do |dates|
+          if dates['leaseStartDate'].present?
+            ss = dates['leaseStartDate'].split('/')
+            date1 = "#{ss[2]}-#{ss[0]}-#{ss[1]}".to_date + 31
+            moveIn_dates << date1.strftime("%m/%d/%Y")
+          end
         end
       end
     end
-
+  
     moveIn_dates
   end
 
