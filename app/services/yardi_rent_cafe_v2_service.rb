@@ -41,7 +41,6 @@ class YardiRentCafeV2Service < BaseService
           unit = @all_units_hash[r["apartmentId"].to_s]
 
           if unit.present?
-            puts "Unit: #{unit.marketing_name}"
             unit.market_rent = r["minimumRent"]
             
             unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
@@ -176,8 +175,6 @@ class YardiRentCafeV2Service < BaseService
           fp = @all_floorplans_hash[r["floorplanId"].to_s]
           
           if fp.present?
-            puts "Floorplan: #{fp.name}"
-
             unless fp.market_rent_is_updated.present? && fp.market_rent_is_updated && fp.manual_override
               fp.market_rent = r["minimumRent"]
             end
@@ -241,14 +238,12 @@ class YardiRentCafeV2Service < BaseService
           unit = Unit.find_by(provider: "yardirentcafe", community_id: @credentials.community_id, provider_unit_id: apartment_id)
 
           if unit.present?
-            puts "\n\nPricing Unit: #{unit.marketing_name}"
             apartment_pricing = rent_matrix.map{|data| data if data["apartmentId"] == apartment_id}.compact
-            puts "apartment_pricing: #{apartment_pricing.inspect}\n\n"
 
             uniq_terms = rent_matrix.map{|x| x["term"].to_i }.uniq
             distinct_data = uniq_terms.map{|term| apartment_pricing.map{|data| data if data["term"] == term.to_s}.compact}.compact
             rentStrs = distinct_data.map{|data| data.map{|r| [r["rent"].to_i, r["term"], r["start_Date"], r["end_Date"]]}.min}
-            calculate_lease_pricing(unit, rentStrs)
+            calculate_lease_pricing(unit, rentStrs.compact)
           end
         end
       end

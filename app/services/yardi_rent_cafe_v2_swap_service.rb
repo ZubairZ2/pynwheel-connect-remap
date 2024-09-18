@@ -153,7 +153,7 @@ class YardiRentCafeV2SwapService < BaseService
             uniq_terms = rent_matrix.map{|x| x["term"].to_i }.uniq
             distinct_data = uniq_terms.map{|term| apartment_pricing.map{|data| data if data["term"] == term.to_s}.compact}.compact
             rentStrs = distinct_data.map{|data| data.map{|r| [r["rent"].to_i, r["term"], r["start_Date"], r["end_Date"]]}.min}
-            calculate_lease_pricing(unit, rentStrs)
+            calculate_lease_pricing(unit, rentStrs.compact)
           end
         end
       end
