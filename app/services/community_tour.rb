@@ -130,7 +130,7 @@ class CommunityTour
                 "primary_floorplan": primary_floorplan,
                 "secondary_floorplan": secondary_floorplan,
                 "stop_type": stop.stop_type,
-                "floor": new_stop&.floor,
+                "floor": stop.stop_floor_name(new_stop),
                 "building": new_stop&.building
               }
             end
