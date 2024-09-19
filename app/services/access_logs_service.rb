@@ -1,5 +1,5 @@
 class AccessLogsService
-  def create_access_log tour_user_id, community_id, stop_ids, lock_type, payload, response, url, is_resident
+  def create_access_log tour_user_id, community_id, stop_ids, lock_type, payload=nil, response=nil, url=nil, is_resident=false
     AccessLog.create!( 
       tour_user_id: tour_user_id,
       community_id: community_id, 
