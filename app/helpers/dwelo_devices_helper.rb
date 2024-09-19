@@ -369,17 +369,19 @@ module DweloDevicesHelper
       end
 
       locks_data = locks_data.map{|lock| lock[0]}
+
+      AccessLogsService.new().create_access_log(tour_user&.id, community&.id, locks_data, "latch")
       LatchOpenkit::LatchLocksService.new(tour_user, community.id).generate_latch_doors_accesses(start_time, end_time, locks_data)  if locks_data.present?
     
       tour_user.update_column 'latch_status' , 'complete'
 
-      rescue => ex
+      rescue => error
         tour_user.update_column 'latch_status' , 'complete'
-        puts "--------- Latch error -------- ", ex
+        AccessLogsService.new().create_access_log(tour_user&.id, community&.id, locks_data, "latch", nil, error&.backtrace&.join("\n"))
       end
-      
     end
   end
+  
 
   def locks_with_same_type(type, community, tour_user, allowed_stops = [])
     visible_stops = CustomizeTourService.new(community, tour_user).available_stops
@@ -677,6 +679,7 @@ module DweloDevicesHelper
         allowed_stops = zerv_multiple_stops_access(community, tour_user)
         ZervServices::GrantAccessesService.call(community: community, tour_user: tour_user, stop_list: allowed_stops, is_resident: false)
       end
+
       tour_user.update_column 'zerv_status' , 'complete'
       rescue => ex
         tour_user.update_column 'zerv_status' , 'complete'

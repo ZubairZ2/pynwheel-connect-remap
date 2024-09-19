@@ -109,12 +109,16 @@ module Api
         end
 
         def generate_locks_accesses
-          create_zerv_user(@community, @tour_user)
-          current_time = current_community_time(@community, params)
-          lock_access_by_type(params, @community, @tour_user, current_time) if @community.enable_locks and @tour_user.tour_type != "virtual_tour"
-          @tour_user.update(lock_access_time: current_time)
-          
-          render :json=> {status: true, :message => "Locks access generation is started", code: 200}
+          begin
+            create_zerv_user(@community, @tour_user)
+            current_time = current_community_time(@community, params)
+            lock_access_by_type(params, @community, @tour_user, current_time) #if @community.enable_locks and @tour_user.tour_type != "virtual_tour"
+            @tour_user.update(lock_access_time: current_time)
+
+            render :json=> {status: true, :message => "Locks access generation is started", code: 200}
+          rescue => e
+            render :json=> {status: false, :message => "Locks Access not Granted: #{e.message}", code: 500}
+          end
         end
 
         def check_lock_access
