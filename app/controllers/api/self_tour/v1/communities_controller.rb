@@ -112,7 +112,7 @@ module Api
           begin
             create_zerv_user(@community, @tour_user)
             current_time = current_community_time(@community, params)
-            lock_access_by_type(params, @community, @tour_user, current_time) #if @community.enable_locks and @tour_user.tour_type != "virtual_tour"
+            lock_access_by_type(params, @community, @tour_user, current_time) if @community.enable_locks and @tour_user.tour_type != "virtual_tour"
             @tour_user.update(lock_access_time: current_time)
 
             render :json=> {status: true, :message => "Locks access generation is started", code: 200}
@@ -152,16 +152,19 @@ module Api
 
         def copy_sort_hash_if_needed
           return if @community.customization_enabled?
-          if @tour.copy_sort_hash.present? &&  @tour.copy_sort_hash === "{}"
+          if @tour&.copy_sort_hash&.present? &&  @tour&.copy_sort_hash === "{}"
             @tour.update(copy_sort_hash: @tour.sort_hash)
           end
         end
       
         def restore_sort_hash
-          return if @community.customization_enabled?
+          begin
+            return if @community.customization_enabled?
 
-          if @tour.copy_sort_hash.present? &&  @tour.copy_sort_hash != "{}"
-            @tour.update(sort_hash: @tour.copy_sort_hash, copy_sort_hash: "{}")
+            if @tour.copy_sort_hash.present? &&  @tour.copy_sort_hash != "{}"
+              @tour.update(sort_hash: @tour.copy_sort_hash, copy_sort_hash: "{}")
+            end
+          rescue => e
           end
         end
 
