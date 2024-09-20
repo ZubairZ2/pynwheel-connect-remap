@@ -186,7 +186,7 @@ class TourStop < ApplicationRecord
     return number_to_ordinal_form(actual_stop&.floor.to_i, formatted) if actual_stop.community.is_sitemap
   
     case actual_stop
-    when Unit, Amenity
+    when Unit, Amenity, BuildingStartingPoint
       display_floorplate_info(actual_stop, formatted)
     else
       number_to_ordinal_form(actual_stop.floor.to_i, formatted)
@@ -195,6 +195,7 @@ class TourStop < ApplicationRecord
   
   def display_floorplate_info(actual_stop, formatted)
     floorplate = get_floorplate(actual_stop)
+
     return number_to_ordinal_form(actual_stop.floor.to_i, formatted) unless floorplate.present?
   
     if floorplate_has_multiple_floors?(floorplate)
@@ -207,8 +208,13 @@ class TourStop < ApplicationRecord
   end
   
   def get_floorplate(actual_stop)
-    return actual_stop.floorplate if actual_stop.is_a?(Unit)
-    return Floorplate.find_by(id: actual_stop.amenityable_id) if actual_stop.is_a?(Amenity)
+    community = actual_stop.community
+    return unless community
+
+    community.floorplates.all.find { |floorplate| floorplate.contains_floor?(actual_stop.floor) }
+  end
+
+  def find_floorplate_by_floor floor
   end
   
   def floorplate_has_multiple_floors?(floorplate)
