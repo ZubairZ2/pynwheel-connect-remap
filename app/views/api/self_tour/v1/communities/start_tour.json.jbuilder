@@ -1461,7 +1461,7 @@ json.tours @tours do |tour|
       json.elevator_next_floor next_floor
       
       if elevator.elevator_galleries.count == 0
-        json.gallery ["name" => elevator.name,"type" => "unit_stop", "image" => elevator.image.present? ? elevator.image.url : "no image", "elevator_next_floor" => next_floor, "description" => elevator_stop_description, "directional_text" => ActionView::Base.full_sanitizer.sanitize(elevator.directional_text)]
+        json.gallery ["name" => elevator.name,"type" => "unit_stop", "image" => elevator.image.present? ? elevator.image.url : "no image", "description" => elevator_stop_description, "directional_text" => ActionView::Base.full_sanitizer.sanitize(elevator.directional_text)]
       else
         elevatorGalleryArr = []
         elevatorGalleryArr << elevator
