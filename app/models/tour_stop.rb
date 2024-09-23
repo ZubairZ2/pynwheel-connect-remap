@@ -139,7 +139,6 @@ class TourStop < ApplicationRecord
     end
   end
 
-  # Floorplate name
   def stop_floor_name actual_stop
     handle_floor_display(actual_stop, false)
   end

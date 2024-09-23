@@ -133,7 +133,6 @@ class CommunityTour
                 "floor": stop.stop_floor_name(new_stop),
                 "building": new_stop&.building
               }
-              
             end
           end
         end
