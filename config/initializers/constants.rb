@@ -119,3 +119,4 @@ MAPS_FAVORITE_SAVED_INFO = "This is the tally of the number of units or images t
 MAPS_FAVORITE_SHARED_INFO = "The number of times that the user clicks on the “Share” button from the Favorites page."
 
 DUMMY_COMMUNITY_NAME = "@@@"
+SOFIA_ID = 2919

@@ -126,6 +126,10 @@ class Community < ApplicationRecord
     end
   end
 
+  def show_trash_icon stop_type
+    (stop_type === "amenity" && id === SOFIA_ID && customization_enabled?) ? false : true
+  end
+
   def available_unit_for_self_tour
     return [] unless customization_enabled?
 
