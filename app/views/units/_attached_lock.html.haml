@@ -1,66 +1,66 @@
 - if u.door.present?
   - if u.door.lock_provider == 'Latch'
-    %select.form-control{name: 'unit[lock_id]', id: "latch-dropdown-#{u.id}", onchange: "handleLockChange(this, 'Latch', '#{u.id}', '#{community.id}')"}
+    %select.form-control.locks-field-width{name: 'unit[lock_id]', id: "latch-dropdown-#{u.id}", onchange: "handleLockChange(this, 'Latch', '#{u.id}', '#{community.id}')"}
       - community&.latch&.latch_locks&.each do |lock|
         %option{value: lock.lock_id, selected: u.door.id == lock.stop_id}
           = "Latch ( #{lock.lock_name} )"
 
   - elsif u.door.lock_provider == 'Zerv'
-    %select.form-control{name: 'unit[lock_id]', id: "zerv-dropdown-#{u.id}", onchange: "handleLockChange(this, 'Zerv', '#{u.id}', '#{community.id}')"}
+    %select.form-control.locks-field-width{name: 'unit[lock_id]', id: "zerv-dropdown-#{u.id}", onchange: "handleLockChange(this, 'Zerv', '#{u.id}', '#{community.id}')"}
       - community&.zerv&.zerv_locks&.each do |lock|
         %option{value: lock.mac_id, selected: u.door.id == lock.stop_id}
           = "Zerv ( #{lock.sub_location_friendly_name} )"
 
   - elsif u.door.lock_provider == 'Igloohome'
-    %select.form-control{name: 'unit[lock_id]', id: "igloohome-dropdown-#{u.id}", onchange: "handleLockChange(this, 'Igloohome', '#{u.id}', '#{community.id}')"}
+    %select.form-control.locks-field-width{name: 'unit[lock_id]', id: "igloohome-dropdown-#{u.id}", onchange: "handleLockChange(this, 'Igloohome', '#{u.id}', '#{community.id}')"}
       - community&.igloohome&.igloohome_locks&.each do |lock|
         %option{value: lock.device_id, selected: u.door.id == lock.stop_id}
           = "Igloohome ( #{lock.device_name} )"
 
   - elsif u.door.lock_provider == 'Dwelo'
-    %select.form-control{name: 'unit[lock_id]', id: "dwelo-dropdown-#{u.id}", onchange: "handleLockChange(this, 'Dwelo', '#{u.id}', '#{community.id}')"}
+    %select.form-control.locks-field-width{name: 'unit[lock_id]', id: "dwelo-dropdown-#{u.id}", onchange: "handleLockChange(this, 'Dwelo', '#{u.id}', '#{community.id}')"}
       - community&.dwelo&.dwelo_locks&.each do |lock|
         %option{value: lock.device_id, selected: u.door.id == lock.stop_id}
           = "Dwelo ( #{lock.name} )"
 
   - elsif u.door.lock_provider == 'EdgeState'
-    %select.form-control{name: 'unit[lock_id]', id: "edgestate-dropdown-#{u.id}", onchange: "handleLockChange(this, 'EdgeState', '#{u.id}', '#{community.id}')"}
+    %select.form-control.locks-field-width{name: 'unit[lock_id]', id: "edgestate-dropdown-#{u.id}", onchange: "handleLockChange(this, 'EdgeState', '#{u.id}', '#{community.id}')"}
       - community&.edge_state&.edgestate_locks&.each do |lock|
         %option{value: lock.device_id, selected: u.door.id == lock.stop_id}
           = "EdgeState ( #{lock.name} )"
 - else
   - if u.lock_provider == 'Latch'
-    %select.form-control{name: 'unit[lock_id]', id: "latch-dropdown-#{u.id}", onchange: "handleLockChange(this, 'Latch', '#{u.id}', '#{community.id}')"}
+    %select.form-control.locks-field-width{name: 'unit[lock_id]', id: "latch-dropdown-#{u.id}", onchange: "handleLockChange(this, 'Latch', '#{u.id}', '#{community.id}')"}
       - community&.latch&.latch_locks&.each do |lock|
         %option{value: lock.lock_id, selected: u.id == lock.stop_id}
           = "Latch ( #{lock.lock_name} )"
 
   - elsif u.lock_provider == 'Zerv'
-    %select.form-control{name: 'unit[lock_id]', id: "zerv-dropdown-#{u.id}", onchange: "handleLockChange(this, 'Zerv', '#{u.id}', '#{community.id}')"}
+    %select.form-control.locks-field-width{name: 'unit[lock_id]', id: "zerv-dropdown-#{u.id}", onchange: "handleLockChange(this, 'Zerv', '#{u.id}', '#{community.id}')"}
       - community&.zerv&.zerv_locks&.each do |lock|
         %option{value: lock.mac_id, selected: u.id == lock.stop_id}
           = "Zerv ( #{lock.sub_location_friendly_name} )"
 
   - elsif u.lock_provider == 'Igloohome'
-    %select.form-control{name: 'unit[lock_id]', id: "igloohome-dropdown-#{u.id}", onchange: "handleLockChange(this, 'Igloohome', '#{u.id}', '#{community.id}')"}
+    %select.form-control.locks-field-width{name: 'unit[lock_id]', id: "igloohome-dropdown-#{u.id}", onchange: "handleLockChange(this, 'Igloohome', '#{u.id}', '#{community.id}')"}
       - community&.igloohome&.igloohome_locks&.each do |lock|
         %option{value: lock.device_id, selected: u.id == lock.stop_id}
           = "Igloohome ( #{lock.device_name} )"
 
   - elsif u.lock_provider == 'Dwelo'
-    %select.form-control{name: 'unit[lock_id]', id: "dwelo-dropdown-#{u.id}", onchange: "handleLockChange(this, 'Dwelo', '#{u.id}', '#{community.id}')"}
+    %select.form-control.locks-field-width{name: 'unit[lock_id]', id: "dwelo-dropdown-#{u.id}", onchange: "handleLockChange(this, 'Dwelo', '#{u.id}', '#{community.id}')"}
       - community&.dwelo&.dwelo_locks&.each do |lock|
         %option{value: lock.device_id, selected: u.id == lock.stop_id}
           = "Dwelo ( #{lock.name} )"
 
   - elsif u.lock_provider == 'EdgeState'
-    %select.form-control{name: 'unit[lock_id]', id: "edgestate-dropdown-#{u.id}", onchange: "handleLockChange(this, 'EdgeState', '#{u.id}', '#{community.id}')"}
+    %select.form-control.locks-field-width{name: 'unit[lock_id]', id: "edgestate-dropdown-#{u.id}", onchange: "handleLockChange(this, 'EdgeState', '#{u.id}', '#{community.id}')"}
       - community&.edge_state&.edgestate_locks&.each do |lock|
         %option{value: lock.device_id, selected: u.id == lock.stop_id}
           = "EdgeState ( #{lock.name} )"
 
   - elsif u.lock_provider == 'Manual'
-    %select.form-control{name: 'unit[lock_id]', id: "manual-dropdown-#{u.id}"}
+    %select.form-control.locks-field-width{name: 'unit[lock_id]', id: "manual-dropdown-#{u.id}"}
       %option{value: u.access_code, selected: true}
         = "Manual"
 

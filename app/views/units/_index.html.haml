@@ -81,7 +81,10 @@
                     %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "unitGridAvailablePopover","data-content" => " "}
                       %span#propertyDetailNameText
                         Changing Available to "No" will exclude this unit from appearing as available in the app, regardless of the date that is set.
-                  
+                  - if PROPERTIES_LIST.include?(@community.id)
+                    %th
+                      Tour Order
+
                   %th
                     Lock Provider
                     
@@ -134,7 +137,10 @@
                     %td= best_in_place u, :available_date,:as => :date, :url => community_unit_path(@community,u), :place_holder => (u.sold  ? "Never Available" : "-"), :data => {:available_date => u.available_date },:style => u.available_date_is_updated? ? "color: #dd4a39;" : ""
                     %td= best_in_place u, :available, :as => :checkbox, collection: {false: "No", true: "Yes"}, :url => community_unit_path(@community,u), :data => {:available => u.available },:style => u.available_is_updated? ? "color: #dd4a39;" : ""
                     
-                    %td
+                    - if PROPERTIES_LIST.include?(@community.id)
+                      %td= best_in_place u, :tour_visiting_order_number, :as => :input, :url => community_unit_path(@community,u), :data => {:tour_visiting_order_number => u.tour_visiting_order_number}
+                    
+                    %td.locks-field-width
                       = render :partial=>'attached_lock',:locals=>{:u=>u, :community=>@community}
                        
                     %td= best_in_place u, :sold, :as => :checkbox, collection: {false: "No", true: "Yes"}, :url => community_unit_path(@community,u), :data => {:sold => u.sold },:style => u.sold_is_updated? ? "color: #dd4a39;" : ""
@@ -434,7 +440,7 @@
       $('#miyazaki.unit_data_table').DataTable({
           'aoColumnDefs': [{
               'bSortable': false,
-              'aTargets': [10,12],
+              'aTargets': [12,13],
           }],
           "ordering": true,
           "stateSave": true,

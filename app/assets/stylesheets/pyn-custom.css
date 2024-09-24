@@ -7364,3 +7364,7 @@ span.to-input {
     font-weight: bold;
     margin-bottom: 10px;
 }
+
+.locks-field-width {
+    width: 200px !important;
+}
