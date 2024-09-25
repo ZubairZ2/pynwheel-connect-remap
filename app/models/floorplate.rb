@@ -46,6 +46,17 @@ class Floorplate < ApplicationRecord
   before_destroy :reset_units_plots
   after_commit :populate_image_urls, on: [:create,:update]
 
+  def contains_floor?(floor_number)
+    floor_number = floor_number.to_i
+      
+    if range.include?('-')
+      start_floor, end_floor = range.split('-').map(&:to_i)
+      floor_number.between?(start_floor, end_floor)
+    else
+      range.to_i == floor_number
+    end
+  end
+
   def get_floorplate_amenities_data floor, community_id
     amenities = self.amenities.where(floor: floor, community_id: community_id).where.not(building: ["", nil, "N/A"])
     floorplate_amenities = []

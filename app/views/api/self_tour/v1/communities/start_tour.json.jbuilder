@@ -245,9 +245,13 @@ json.tours @tours do |tour|
       Floorplate.where(community_id: @community.id).each{|x| @plates << x}
 
       @plates.each do |pl|
-        pl.floors.select{ |fl| plates_name[fl.to_s] = (pl.floor_name.present? ? pl.floor_name : fl.to_s ) } rescue nil # assigning name 
-        floor_pl = Floorplate.find pl
-        Elevator.where(floorplate_id: pl).map{|x| @ele_ << x}
+        if pl.floors.size == 1
+          plates_name[pl.floors.first.to_s] = (pl&.floor_name_added && pl&.floor_name.present?) ? pl.floor_name : pl.floors.first.to_s
+        else
+          pl.floors.each { |fl| plates_name[fl.to_s] = fl.to_s }
+        end
+
+        Elevator.where(floorplate_id: pl.id).map { |x| @ele_ << x }
       end
       
       ele_hit = false
@@ -1389,7 +1393,7 @@ json.tours @tours do |tour|
         from_id = (from_type == "TourStop" && need_original_id_arr.include?( TourStop.find(from_id).stop_type ) ) ? TourStop.find(from_id).stop_id : from_id
         to_id = (to_type == "TourStop" && need_original_id_arr.include?( TourStop.find(to_id).stop_type ) ) ? TourStop.find(to_id).stop_id : to_id
         next_floor = ShortestPath.return_next_floor_to_mobile(mobile_path, from_type, to_type, from_id, to_id)
-        elevator_stop_description = ELEVATOR_STOP_TEXT + next_floor.to_s
+        elevator_stop_description = ELEVATOR_STOP_TEXT + (plates_name[next_floor.to_s].present? ? plates_name[next_floor.to_s] : next_floor.to_s)
       else
         if new_stops_arr.compact[counter + 1].present?
           next_stop = new_stops_arr.compact[counter + 1]
@@ -1451,7 +1455,10 @@ json.tours @tours do |tour|
         end
       end
 
+      next_floor = (plates_name[next_floor.to_s].present? ? plates_name[next_floor.to_s] : next_floor.to_s)
+
       json.stop_description elevator_stop_description
+      json.elevator_next_floor next_floor
       
       if elevator.elevator_galleries.count == 0
         json.gallery ["name" => elevator.name,"type" => "unit_stop", "image" => elevator.image.present? ? elevator.image.url : "no image", "description" => elevator_stop_description, "directional_text" => ActionView::Base.full_sanitizer.sanitize(elevator.directional_text)]

@@ -84,6 +84,7 @@ class TourStop < ApplicationRecord
     stop_lock_provider = ""
     actual_stop = (self.stop_type.classify.constantize.find_by_id self.stop_id)
     have_door = (actual_stop.class.name == "Unit" &&  actual_stop.door.present?) || (actual_stop.class.name == "Amenity" &&  actual_stop.ordered_doors.any?)
+    
     if have_door
       if actual_stop.class.name == "Unit"
         stop_lock_provider = actual_stop.door.lock_provider
@@ -93,6 +94,7 @@ class TourStop < ApplicationRecord
     else
       stop_lock_provider = actual_stop.lock_provider
     end
+
     stop_lock_provider
   end
 
@@ -137,6 +139,10 @@ class TourStop < ApplicationRecord
     end
   end
 
+  def stop_floor_name actual_stop
+    handle_floor_display(actual_stop, false)
+  end
+
   private
 
   def get_stop_formatted_directional_text(actual_stop, stop_directional_text)
@@ -163,7 +169,7 @@ class TourStop < ApplicationRecord
 
   def stop_floor_text actual_stop
     return "" unless actual_stop&.floor.present?
-    " on the #{number_to_ordinal_form(actual_stop&.floor.to_i)} floor"
+    " on the #{handle_floor_display(actual_stop, true)} floor"
   end
 
   def actual_stop_text actual_stop
@@ -176,7 +182,53 @@ class TourStop < ApplicationRecord
     end
   end
 
-  def number_to_ordinal_form(number)
+  def handle_floor_display(actual_stop, formatted)
+    return number_to_ordinal_form(actual_stop&.floor.to_i, formatted) if actual_stop.community.is_sitemap
+  
+    case actual_stop
+    when Unit, Amenity, BuildingStartingPoint
+      display_floorplate_info(actual_stop, formatted)
+    else
+      number_to_ordinal_form(actual_stop.floor.to_i, formatted)
+    end
+  end
+  
+  def display_floorplate_info(actual_stop, formatted)
+    floorplate = get_floorplate(actual_stop)
+
+    return number_to_ordinal_form(actual_stop.floor.to_i, formatted) unless floorplate.present?
+  
+    if floorplate_has_multiple_floors?(floorplate)
+      number_to_ordinal_form(actual_stop.floor.to_i, formatted)
+    elsif floorplate_name_added?(floorplate)
+      floorplate.floor_name
+    else
+      number_to_ordinal_form(actual_stop.floor.to_i, formatted)
+    end
+  end
+  
+  def get_floorplate(actual_stop)
+    community = actual_stop.community
+    return unless community
+
+    community.floorplates.all.find { |floorplate| floorplate.contains_floor?(actual_stop.floor) }
+  end
+
+  def find_floorplate_by_floor floor
+  end
+  
+  def floorplate_has_multiple_floors?(floorplate)
+    floorplate&.floors&.count.to_i > 1
+  end
+  
+  def floorplate_name_added?(floorplate)
+    floorplate&.floor_name_added && floorplate.floor_name.present?
+  end
+  
+
+  def number_to_ordinal_form(number, formatted)
+    return number unless formatted
+
     "#{number}" + case number % 100
                  when 11, 12, 13 then 'th'
                  else

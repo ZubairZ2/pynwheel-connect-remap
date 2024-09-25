@@ -233,6 +233,9 @@ class Community < ApplicationRecord
     else
       0.0
     end
+
+  rescue => e
+    0.0
   end
 
   def property_map_height map
@@ -248,6 +251,8 @@ class Community < ApplicationRecord
     else
       0.0
     end
+  rescue => e
+    0.0
   end
 
   def get_map_url map
