@@ -57,7 +57,9 @@ class CommunityTour
           availability = u.availability
           availability_url = u.get_availability_url()
           lease_pricing = u.get_unit_leasing_price
+
           if u.present? && (u.available || u.modal_unit)
+            show_trash_icon = @community.show_trash_icon("unit")
             name = u.api_unit_marketing_name
             is_favorite = @favorite_unit_array.include?(stop.stop_id.to_s) ? true : false
             bedrooms = u&.floorplan&.bedrooms.to_i
@@ -76,6 +78,7 @@ class CommunityTour
           primary_floorplan = a.standard_image_url.present? ? a.standard_image_url : nil
           secondary_floorplan = nil
           name =  stop.name
+          show_trash_icon = @community.show_trash_icon("amenity")
           is_favorite = @favorite_amenity_array.include?(stop.stop_id.to_s) ? true : false
         end
 
@@ -105,7 +108,8 @@ class CommunityTour
               "primary_floorplan": primary_floorplan,
               "secondary_floorplan": secondary_floorplan,
               "floor": "",
-              "building": ""
+              "building": "",
+              "show_trash_icon": show_trash_icon 
             }
           else
             if new_stop&.floor.present? && new_stop&.building.present?
@@ -130,8 +134,9 @@ class CommunityTour
                 "primary_floorplan": primary_floorplan,
                 "secondary_floorplan": secondary_floorplan,
                 "stop_type": stop.stop_type,
-                "floor": stop.stop_floor_name(new_stop),
-                "building": new_stop&.building
+                "floor": new_stop&.floor,
+                "building": new_stop&.building,
+                "show_trash_icon": show_trash_icon
               }
             end
           end
