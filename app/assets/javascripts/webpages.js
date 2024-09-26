@@ -589,16 +589,16 @@ function filterBasedOnScreen(filterTag) {
 }
 
 function filterUnitsBasedOnSqfeet() {
-  // sqFeet = filterBasedOnScreen('square_feet');
-  sqFeet = parseInt( ($('#square_feet').val() || $('#responsive_square_feet').val()).split("-")[0] )
+  const sqFeet = filterBasedOnScreen('square_feet');
+  // sqFeet = parseInt( ($('#square_feet').val() || $('#responsive_square_feet').val()).split("-")[0] )
 
   if(sqFeet)
     units = units.filter(unit => unit.square_feet >= sqFeet )
 }
 
 function filterUnitsBasedOnMarketRent() {
-  // marketRent = filterBasedOnScreen('market_rent');
-  marketRent = parseInt( ($('#market_rent').val() || $('#responsive_market_rent').val()).split("-")[1] )
+  const marketRent = filterBasedOnScreen('market_rent');
+  // marketRent = parseInt( ($('#market_rent').val() || $('#responsive_market_rent').val()).split("-")[1] )
 
   if(marketRent)
     units = units.filter(unit => unit.market_rent <= marketRent )
