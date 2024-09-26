@@ -1211,8 +1211,11 @@ function change_units_view(evt, type){
   for (i = 0; i < tablinks.length; i++) {
     tablinks[i].className = tablinks[i].className.replace(" active_unit_view", "");
   }
+
   document.getElementsByClassName(type)[0].style.display = "block";
   evt.target.parentElement.className += " active_unit_view";
+
+  populate_current_units();
 }
 
 function set_yardirentcafe_url(element){
