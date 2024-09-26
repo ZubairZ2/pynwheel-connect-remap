@@ -7368,3 +7368,42 @@ span.to-input {
 .locks-field-width {
     width: 200px !important;
 }
+
+.camera-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background-color: transparent;
+    border-radius: 50%;
+    border: 5px solid #333;
+    transition: all 0.3s ease;
+  }
+
+  .camera-icon i {
+    font-size: 1rem;
+    color: #333;
+  }
+
+  @media (max-width: 768px) {
+    .camera-icon {
+      width: 13px;
+      height: 13px;
+    }
+
+    .camera-icon i {
+      font-size: 5px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .camera-icon {
+      width: 13px;
+      height: 13px;
+    }
+
+    .camera-icon i {
+      font-size: 5px;
+    }
+  }
