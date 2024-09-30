@@ -365,95 +365,98 @@ $(window).bind('load', function () {
 
     if (!(has_floorplate == 'true')) {
       setImageHeight()
-      var in_browser_height = 0;
-      var in_browser_width = 0;
-      var left_diff = 0;
-      var actual_image_width = 0;
-      var actual_image_height = 0;
-      in_browser_height = parseFloat($('.sitemap-image').parent().height());
-      in_browser_width = parseFloat($('.sitemap-image').parent().width());
-      actual_image_height = parseInt($('.sitemap-image').data("height"));
-      actual_image_width = parseInt($('.sitemap-image').data("width"));
-      stretched_image_width = image_width_2d || parseInt($('.sitemap-image').width());
-      stretched_image_height = parseInt($('.sitemap-image').height());
-      left_diff = (in_browser_width - stretched_image_width) / 2
-      $('.marker').each(function () {
-        var x_plot = parseFloat($(this).data('unit-x-plot'));
-        var y_plot = parseFloat($(this).data('unit-y-plot'));
+      
+      const container = getContainerDimensions();
+      const actualImage = getActualImageDimensions();
+      const stretchedImage = getStretchedImageDimensions();
+      const { left_diff, top_diff } = calculateDiffs(container, stretchedImage);
+      const { extra_left_diff, extra_top_diff } = getExtraDiffs();
 
-        x_plot = (((stretched_image_width / actual_image_width) * x_plot));
-        y_plot = (((stretched_image_height / actual_image_height) * y_plot));
-
-        if(actual_image_width > 1412){
-          x_plot = x_plot - 6
-          y_plot = y_plot - 17
-        }
-        else{
-          y_plot = y_plot - 1
-          // x_plot = x_plot - 4
-        }
-        $(this).css({"left": ((x_plot)) + left_diff, "top": y_plot});
-        
-        if ($(window).width() > 1360) {
-          $(this).css({"margin-left": 2, "margin-top": 7})
-        }
-
-        if($(window).width() >= 1125 && $(window).width() <= 1360 ){
-          $(this).css({"margin-left": -5, "margin-top": -7})
-        }
-
-        if($(window).width() >= 950 && $(window).width() <= 1125 ){
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-16 ), "margin-top": -($('.fa-map-marker-alt-responsive').height()-20)})       
-        }
-
-        if($(window).width() >= 825 && $(window).width() <= 950 ){
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-14 ), "margin-top": -($('.fa-map-marker-alt-responsive').height()-22)})       
-        }
-
-        if($(window).width() >= 700 && $(window).width() <= 825 ){
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-10), "margin-top": -($('.fa-map-marker-alt-responsive').height()-20)})       
-        }
-
-        if($(window).width() >= 567 && $(window).width() <= 700 ){
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-10), "margin-top": -($('.fa-map-marker-alt-responsive').height()-16)}) 
-        }
-
-        if($(window).width() >= 480 && $(window).width() <= 567){
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-8), "margin-top": -($('.fa-map-marker-alt-responsive').height()-15)})
-        }
-        
-        if($(window).width() >= 420 && $(window).width() <= 480){
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-8), "margin-top": -($('.fa-map-marker-alt-responsive').height()-13)})       
-        }
-
-        if($(window).width() >= 320 && $(window).width() <= 420){
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-5), "margin-top": -($('.fa-map-marker-alt-responsive').height()-11)})       
-        }
-
-        if($(window).width() <= 320 ){
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-4), "margin-top": -($('.fa-map-marker-alt-responsive').height()-10)})       
-        }
-      });
-
-      $('.sitemap-amenity-marker').each(function () {
-        var x_plot = parseFloat($(this).data('amenity-x-plot'));
-        var y_plot = parseFloat($(this).data('amenity-y-plot'));
-        x_plot = (((stretched_image_width / actual_image_width) * x_plot));
-        y_plot = (((stretched_image_height / actual_image_height) * y_plot));
-
-        $(this).removeClass('hidden');
-        marker_width = $(this).width();
-        marker_height = $(this).height();
-        $(this).css({"left": ((x_plot - (marker_width/2)) + 4) +  left_diff, "top": (y_plot - marker_height) + 4});
-      });
+      positionMarkers(stretchedImage, actualImage, left_diff, top_diff, extra_left_diff, extra_top_diff);
+      positionAmenityMarkers(stretchedImage, actualImage, left_diff, top_diff, extra_left_diff, extra_top_diff);
     }
-
   }
 
   if(selectMap === "3d-map" && enable3DMaps) {
     _3dMapViewMarkers();
   }
 });
+
+function getContainerDimensions() {
+  return {
+    width: parseFloat($('.sitemap-image').parent().width()),
+    height: parseFloat($('.sitemap-image').parent().height())
+  };
+}
+
+function getActualImageDimensions() {
+  return {
+    width: parseInt($('.sitemap-image').data("width")),
+    height: parseInt($('.sitemap-image').data("height"))
+  };
+}
+
+function getStretchedImageDimensions() {
+  return {
+    width: parseInt($('.sitemap-image').width()),
+    height: parseInt($('.sitemap-image').height())
+  };
+}
+
+function calculateDiffs(container, stretched) {
+  return {
+    left_diff: (container.width - stretched.width) / 2,
+    top_diff: (container.height - stretched.height) / 2
+  };
+}
+
+function positionMarkers(stretched, actual, left_diff, top_diff, extra_left_diff, extra_top_diff) {
+  $('.marker').each(function () {
+    let x_plot = parseFloat($(this).data('unit-x-plot'));
+    let y_plot = parseFloat($(this).data('unit-y-plot'));
+
+    calculatePosition(x_plot, y_plot, stretched.width, stretched.height, actual.width, actual.height, left_diff, top_diff, $(this), extra_left_diff, extra_top_diff);
+  });
+}
+
+function positionAmenityMarkers(stretched, actual, left_diff, top_diff, extra_left_diff, extra_top_diff) {
+  $('.sitemap-amenity-marker').each(function () {
+    let x_plot = parseFloat($(this).data('amenity-x-plot'));
+    let y_plot = parseFloat($(this).data('amenity-y-plot'));
+
+    $(this).removeClass('hidden');
+    calculatePosition(x_plot, y_plot, stretched.width, stretched.height, actual.width, actual.height, left_diff, top_diff, $(this), extra_left_diff, extra_top_diff);
+  });
+}
+
+function calculatePosition(x_plot, y_plot, stretched_width, stretched_height, actual_width, actual_height, left_diff, top_diff, marker, extra_left_diff, extra_top_diff) {
+  let marker_width = marker.width();
+  let marker_height = marker.height();
+
+  x_plot = (stretched_width / actual_width) * x_plot;
+  y_plot = (stretched_height / actual_height) * y_plot;
+
+  marker.css({
+    "left": (x_plot + left_diff - ((marker_width / 2) + extra_left_diff)) + "px",
+    "top": (y_plot + top_diff - ((marker_height / 2) + extra_top_diff)) + "px"
+  });
+}
+
+function getExtraDiffs() {
+  let extra_left_diff = -7;
+  let extra_top_diff = -9;
+
+  if ($(window).width() <= 567) {
+    extra_left_diff = -2;
+    extra_top_diff = -2;
+  } else if ($(window).width() <= 993) {
+    extra_left_diff = -5;
+    extra_top_diff = -5;
+  }
+
+  return { extra_left_diff, extra_top_diff };
+}
+
 
 function polygonClickPopup(feature) {
   let htmlToDisplay;
@@ -1721,7 +1724,7 @@ function getElementHeight(element) {
   
     if(actual_image_width > 1412){
       x_plot = x_plot - 6
-      y_plot = y_plot - 17 
+      y_plot = y_plot - 17
     }
     else{
       y_plot = y_plot - 14
@@ -1729,46 +1732,7 @@ function getElementHeight(element) {
     }
   
     $(marker).css({"left": ((x_plot)) + left_diff, "top": y_plot});
-    // $(marker).removeClass('hidden');
-    // marker_width = $('#m_' + unit_id).width();
-    // marker_height = $('#m_' + unit_id).height();
-    // $(marker).css({"left": ((x_plot - (marker_width/2)) + 7) +  left_diff, "top": (y_plot - marker_height) + 9});
-    if($(window).width() >= 1125 && $(window).width() <= 1360 ){
-      $(marker).css({"margin-left": -5, "margin-top": -2})
-    }
-  
-    if($(window).width() >= 950 && $(window).width() <= 1125 ){
-      $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+4), "margin-top": -($('#s_'+unit_id).height()+5)})       
-    }
-  
-    if($(window).width() >= 825 && $(window).width() <= 950 ){
-      $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+3), "margin-top": -($('#s_'+unit_id).height()+5)})       
-    }
-  
-    if($(window).width() >= 700 && $(window).width() <= 825 ){
-      $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+3), "margin-top": -($('#s_'+unit_id).height()+1)})
-    }
-  
-    if($(window).width() >= 567 && $(window).width() <= 700 ){
-      $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+3), "margin-top": -($('#s_'+unit_id).height()-1)})
-    }
-  
-    if($(window).width() >= 480 && $(window).width() <= 567){
-      $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+2), "margin-top": -($('#s_'+unit_id).height()-3)})       
-    }
-  
-    if($(window).width() >= 420 && $(window).width() <= 480){
-      $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+2), "margin-top": -($('#s_'+unit_id).height()-5)})       
-    }
-  
-    if($(window).width() >= 320 && $(window).width() <= 420){
-      $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+2), "margin-top": -($('#s_'+unit_id).height()-6)})       
-    }
-  
-    if($(window).width() < 320 ){
-      $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+1), "margin-top": -($('#s_'+unit_id).height()-9)})       
-    }
-  
+    
   }
 
 function adjustAmenitiesPosition() {

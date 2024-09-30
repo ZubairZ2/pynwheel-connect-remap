@@ -416,8 +416,8 @@
   var diffL = 0
   var ele = document.getElementsByClassName('fa-map-marker-alt-responsive');
   var amenityEle = document.getElementsByClassName('custom-icon-responsive');
-  if (current_width < 993)
-  {
+
+  if (current_width < 993) {
     for (var i = 0; i < ele.length; i++ ) {
       ele[i].style.fontSize = (current_width * .76) / 30 + ((#{fontsize} - 25) / 5)
       ele[i].style.marginTop = diff - 3
@@ -426,27 +426,30 @@
       ele[i].children[0].style.marginLeft = 1
       ele[i].children[0].style.left = (current_width * .20) / 30 + ((#{fontsize} - 25) / 9)
       factor = 0
-      if ($(window).height() > 800)
-      {
+
+      if ($(window).height() > 800) {
         factor = (($(window).height() ) / 800)
       }
+
       ele[i].children[0].style.top = (current_width * .15) / 30 + factor + ((#{fontsize} - 25) / 5)
       ele[i].children[0].style.fontSize = (current_width * .20) / 30 + ((#{fontsize} - 25) / 10)
     }
+
     for (var i = 0; i < amenityEle.length; i++ ) {
       amenityEle[i].style.height = (#{marker_font_size} / (1100 / current_width)  )
       amenityEle[i].style.width = (#{marker_font_size} / (1100 / current_width)  )
       amenityEle[i].children[0].style.marginTop = 1 * ( current_width / 250)
       amenityEle[i].children[0].style.fontSize = (#{marker_font_size} / (2800 / current_width)  )
     }
-  }
-  else if(current_width > 993 < current_width < 1500){
+  } else {
+  //else if(current_width > 993 && current_width < 1500) {
     for (var i = 0; i < ele.length; i++ ) {
       ele[i].style.fontSize = 20
       ele[i].children[0].style.left = 6
       ele[i].children[0].style.top = 4
       ele[i].children[0].style.fontSize = 6
     }
+
     for (var i = 0; i < amenityEle.length; i++ ) {
       amenityEle[i].style.height = 20
       amenityEle[i].style.width = 20
@@ -454,6 +457,7 @@
       amenityEle[i].children[0].style.fontSize = 10
     }
   }
+
   var slides_to_show = 4;
   var slides_to_scroll = 1;
   var $slider = $("#slider");
@@ -554,7 +558,6 @@
 
   $(document).ready(function () {
     if(current_width >= 993){
-
       let main_container_height = $('.c-body').height() - $('.c-footer').height();
       console.log("main_container_height "+main_container_height)
       $('.floorplate-image').attr("height", main_container_height - large_image_height)

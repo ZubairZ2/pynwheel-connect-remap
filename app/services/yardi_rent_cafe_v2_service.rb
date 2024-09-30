@@ -13,6 +13,7 @@ class YardiRentCafeV2Service < BaseService
       before_updation_units = NotifyManagerService.new(@credentials.community_id)
 
       property_codes = @credentials.p_code.split(',') rescue []
+      
       property_codes.each do |property_code|
         import_yardirentcafe_floorplans(property_code)
         import_yardirentcafe_units(property_code)
