@@ -24,9 +24,7 @@ Rails.application.configure do
 
   # Do not fallback to assets pipeline if a precompiled asset is missed.
   config.assets.compile = true
-  # config.cache_store = :redis_store, ENV['REDIS_URL'], { expires_in: 1.year }
-  config.cache_store = :redis_store, {
-    url: ENV['REDIS_TLS_URL'],
+  config.cache_store = :redis_store, ENV['REDIS_TLS_URL'], {
     expires_in: 1.year,
     ssl_params: { verify_mode: OpenSSL::SSL::VERIFY_NONE }
   }
