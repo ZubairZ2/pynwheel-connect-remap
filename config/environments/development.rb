@@ -25,7 +25,6 @@ Rails.application.configure do
     config.cache_store = :memory_store
   end
 
-  # config.cache_store = :redis_store, ENV['REDIS_URL'], { expires_in: 1.year }
   # config.cache_store = :memory_store
 
   # config.time_zone = 'Eastern Time (US & Canada)'
