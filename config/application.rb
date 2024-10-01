@@ -19,7 +19,7 @@ module PynwheelCms
 
     # config.active_job.queue_adapter = :sucker_punch
     config.eager_load_paths += %W{#{config.root}/lib}
-    config.active_job.queue_adapter = :sidekiq
+    config.active_job.queue_adapter = :resque
 
     config.action_dispatch.rack_cache = true
 
