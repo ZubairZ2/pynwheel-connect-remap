@@ -18,11 +18,17 @@ module PynwheelCms
     # config.active_jobs.running_on[:resque] = [RealPageDataUpdateWorker, YardirentcafeDataUpdateWorker, EntrataDataUpdateWorker, YardiDataUpdateWorker ]
 
     # config.active_job.queue_adapter = :sucker_punch
-    config.eager_load_paths += %W{#{config.root}/lib}
+    config.eager_load_paths += %W #{config.root}/lib}
     config.active_job.queue_adapter = :sidekiq
 
     config.action_dispatch.rack_cache = true
-    config.cache_store = :redis_store, ENV["REDIS_URL"], { expires_in: 120.minutes }
+    # config.cache_store = :redis_store, ENV["REDIS_URL"], { expires_in: 120.minutes }
+
+    config.cache_store = :redis_store, {
+      url: ENV['REDIS_TLS_URL'],
+      expires_in: 120.minutes,
+      ssl_params: { verify_mode: OpenSSL::SSL::VERIFY_NONE }
+    }
 
     config.middleware.insert_before 0, Rack::Cors do
       allow do
