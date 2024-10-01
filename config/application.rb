@@ -23,7 +23,7 @@ module PynwheelCms
 
     config.action_dispatch.rack_cache = true
     # config.cache_store = :redis_store, ENV["REDIS_URL"], { expires_in: 120.minutes }
-    config.cache_store = :redis_store, ENV["REDIS_URL"], {
+    config.cache_store = :redis_store, ENV["REDIS_TLS_URL"], {
       expires_in: 120.minutes,
       ssl_params: { verify_mode: OpenSSL::SSL::VERIFY_NONE }
     }
