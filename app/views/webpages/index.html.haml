@@ -268,7 +268,10 @@
                             = link_to "<span class='custom-icon custom-icon-responsive' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};'  ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{amenity_marker_color}; margin-top:#{camera_margin}px;'  ></i></span>  <span class='amenitytooltiptext'>  <h2 style='display:#{@community.show_amenity_name ? "block": "none"}' >#{amenity.name}</h2> <img src=#{amenity.standard_image_url} alt='Image Title'></span>".html_safe, "#", :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"sitemap-amenity-marker slider-amenity amenityTooltip", :id => "a_#{amenity.id}", "data-amenity-id"=>amenity.id, "data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot, :onclick => "openAmenityViewerModal(#{amenity.to_json}, #{amenity.amenity_galleries.to_json})"
                 
                 .alert.alert-danger.fade.in{:style => "display:none;position:absolute;top:0%;width:100%;"}
-                  Units not available
+                  - if @community_info.has_floorplates?
+                    There are currently no available unit options on this floor.
+                  -else 
+                    There are currently no available unit options on this property.
 
               .left-side.tabcontent.list_view
                 -all_details = @units_with_floorplan_info.present? ? JSON.parse(@units_with_floorplan_info) : []
