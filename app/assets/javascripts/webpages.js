@@ -359,21 +359,13 @@ $(window).bind('load', function () {
       $(imageArea).removeClass("transform-none"); 
     })
 
-    unitMarkerHover();    
+    unitMarkerHover();
 
     populate_current_units();
 
     if (!(has_floorplate == 'true')) {
       setImageHeight()
-      
-      const container = getContainerDimensions();
-      const actualImage = getActualImageDimensions();
-      const stretchedImage = getStretchedImageDimensions();
-      const { left_diff, top_diff } = calculateDiffs(container, stretchedImage);
-      const { extra_left_diff, extra_top_diff } = getExtraDiffs();
-
-      positionMarkers(stretchedImage, actualImage, left_diff, top_diff, extra_left_diff, extra_top_diff);
-      positionAmenityMarkers(stretchedImage, actualImage, left_diff, top_diff, extra_left_diff, extra_top_diff);
+      adjustSitmapMarkerPositions();
     }
   }
 
@@ -381,6 +373,17 @@ $(window).bind('load', function () {
     _3dMapViewMarkers();
   }
 });
+
+function adjustSitmapMarkerPositions() {
+  const container = getContainerDimensions();
+  const actualImage = getActualImageDimensions();
+  const stretchedImage = getStretchedImageDimensions();
+  const { left_diff, top_diff } = calculateDiffs(container, stretchedImage);
+  const { extra_left_diff, extra_top_diff } = getExtraDiffs();
+
+  positionMarkers(stretchedImage, actualImage, left_diff, top_diff, extra_left_diff, extra_top_diff);
+  positionAmenityMarkers(stretchedImage, actualImage, left_diff, top_diff, extra_left_diff, extra_top_diff);
+}
 
 function getContainerDimensions() {
   return {
@@ -456,7 +459,6 @@ function getExtraDiffs() {
 
   return { extra_left_diff, extra_top_diff };
 }
-
 
 function polygonClickPopup(feature) {
   let htmlToDisplay;
@@ -822,6 +824,7 @@ function setImageHeight(){
     $('.floorplate-image').attr("height", main_container_height - large_image_height)
   }
 }
+
 function populate_current_units() {
   $('.marker').addClass('hidden');
   current_units = [];
@@ -1699,41 +1702,37 @@ function getElementHeight(element) {
   return height;
 }
 
-  // for floorplates
-  function adjustMarkerPosition(marker) {
-    // performHardRefresh()
-    /*adjusting markers according to screen size*/
-    setImageHeight()
-    var in_browser_height = 0;
-    var in_browser_width = 0;
-    var left_diff = 0;
-    unit_id = $(marker).data('unit-id')
-    in_browser_height = getElementHeight($('#f_' + current_floor).parent());
-    in_browser_width = parseFloat($('#f_' + current_floor).parent().width());
+// for floorplates
+function adjustMarkerPosition(marker) {
+  // performHardRefresh()
+  /*adjusting markers according to screen size*/
+  setImageHeight()
+  var in_browser_height = 0;
+  var in_browser_width = 0;
+  var left_diff = 0;
+  unit_id = $(marker).data('unit-id')
+  in_browser_height = getElementHeight($('#f_' + current_floor).parent());
+  in_browser_width = parseFloat($('#f_' + current_floor).parent().width());
+
+  actual_image_height = parseInt($('#f_' + current_floor).data("height"))
+  actual_image_width = parseInt($('#f_' + current_floor).data("width"))
+  stretched_image_width = $('#f_' + current_floor).width();
+  stretched_image_height = $('#f_' + current_floor).height();
+  var x_plot = parseFloat($(marker).data('unit-x-plot'));
+  var y_plot = parseFloat($(marker).data('unit-y-plot'));
+
+  left_diff = (in_browser_width - stretched_image_width) / 2
+  top_diff = (in_browser_height - stretched_image_height) / 2
+
+  x_plot = (((stretched_image_width / actual_image_width) * x_plot));
+  y_plot = (((stretched_image_height / actual_image_height) * y_plot));
   
-    actual_image_height = parseInt($('#f_' + current_floor).data("height"))
-    actual_image_width = parseInt($('#f_' + current_floor).data("width"))
-    stretched_image_width = $('#f_' + current_floor).width();
-    stretched_image_height = $('#f_' + current_floor).height();
-    var x_plot = parseFloat($(marker).data('unit-x-plot'));
-    var y_plot = parseFloat($(marker).data('unit-y-plot'));
+  const { extra_left_diff, extra_top_diff } = getExtraDiffs();
+
+
+  $(marker).css({"left": (x_plot + left_diff + extra_left_diff), "top": (y_plot + top_diff + extra_top_diff)});
   
-    left_diff = (in_browser_width - stretched_image_width) / 2
-    x_plot = (((stretched_image_width / actual_image_width) * x_plot));
-    y_plot = (((stretched_image_height / actual_image_height) * y_plot));
-  
-    if(actual_image_width > 1412){
-      x_plot = x_plot - 6
-      y_plot = y_plot - 17
-    }
-    else{
-      y_plot = y_plot - 14
-      // x_plot = x_plot 
-    }
-  
-    $(marker).css({"left": ((x_plot)) + left_diff, "top": y_plot});
-    
-  }
+}
 
 function adjustAmenitiesPosition() {
   /*adjusting markers according to screen size*/
@@ -1747,9 +1746,13 @@ function adjustAmenitiesPosition() {
 
   stretched_image_width = $('#f_' + current_floor).width();
   stretched_image_height = $('#f_' + current_floor).height();
+
   left_diff = (in_browser_width - stretched_image_width) / 2
+  top_diff = (in_browser_height - stretched_image_height) / 2
+
   amenity_width = $('#a_' + amenity_id).width();
   amenity_height = $('#a_' + amenity_id).height();
+  const { extra_left_diff, extra_top_diff } = getExtraDiffs();
 
   // adjusting amenity markers
   $('.a_' + current_floor).each(function () {
@@ -1759,16 +1762,8 @@ function adjustAmenitiesPosition() {
     x_plot = (((stretched_image_width / actual_image_width) * x_plot));
     y_plot = (((stretched_image_height / actual_image_height) * y_plot));
 
-    if(actual_image_width > 1412){
-      x_plot = x_plot - 6
-      y_plot = y_plot - 7 
-    }
-    else{
-      // y_plot = y_plot - 14
-      // x_plot = x_plot - 4
-    }
+    $(this).css({"left": (x_plot + left_diff + extra_left_diff), "top": (y_plot + top_diff + extra_top_diff)});
 
-    $(this).css({"left": (x_plot) + left_diff , "top": (y_plot)});
   });
 }
 
