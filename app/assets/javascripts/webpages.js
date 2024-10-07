@@ -447,7 +447,7 @@ function calculatePosition(x_plot, y_plot, stretched_width, stretched_height, ac
 
 function getExtraDiffs() {
   let extra_left_diff = -7;
-  let extra_top_diff = -9;
+  let extra_top_diff = -7;
 
   if ($(window).width() <= 567) {
     extra_left_diff = -2;
