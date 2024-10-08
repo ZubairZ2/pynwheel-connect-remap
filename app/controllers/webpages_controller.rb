@@ -148,26 +148,13 @@ class WebpagesController < ActionController::Base
   end
 
   def build_square_feet_range
-    maximum_square_feet = @units_with_floorplan_info.max_by{|k| k[:square_feet] }[:square_feet]
-    minimum_square_feet = @units_with_floorplan_info.min_by{|k| k[:square_feet] }[:square_feet]
-    @square_feet = []
-    square_feet_range = minimum_square_feet.to_i..maximum_square_feet.to_i
-    square_feet_range_hash = {}
-    slice = 100 #square_feet_range.last/4 > 0 ? square_feet_range.last/4 : 1
-    starting_value = minimum_square_feet
-    while starting_value <= maximum_square_feet
-      square_feet_range_hash[starting_value.to_i.to_s+'-'+maximum_square_feet.to_f.ceil.to_s] = starting_value.to_i
-      starting_value += slice
-    end
-    square_feet_range_hash = square_feet_range_hash.invert
-    square_feet_range_hash.each do |v|
-      @square_feet << v
-    end
+    square_feet_list = @units_with_floorplan_info.map{|obj| obj[:square_feet].to_i}.uniq.sort()
+    @square_feet =  square_feet_list.map{|sqft| [sqft, sqft]}
   end
 
   def build_market_rent_range
     rent_list = @units_with_floorplan_info.map{|obj| obj[:market_rent].to_i}.uniq.sort().reverse!
-    @market_rent =  rent_list.map{|price| [price, "#{rent_list.min}-#{price}"]}
+    @market_rent =  rent_list.map{|price| [price, price]}
   end
 
   def apply_now

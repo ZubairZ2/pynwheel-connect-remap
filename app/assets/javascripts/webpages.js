@@ -584,18 +584,15 @@ function filterUnitsBasedOnDate(floorplateUnits, startIndex, endIndex) {
 function filterBasedOnScreen(filterTag) {
   const webFilterId = "#".concat(filterTag); //works on web view
   const mobileFilterId = "#responsive_".concat(filterTag); //works on mobile view
-  if($(window).width() <= 993) {
-    if(filterTag === 'market_rent')
-      return parseInt($(mobileFilterId).val().split("-")[1]);
-    else
-      return parseInt($(mobileFilterId).val().split("-")[0]);
+  
+  if(current_width <= 993) {
+    return parseInt($(mobileFilterId).val());
   } else
     return parseInt($(webFilterId).val());
 }
 
 function filterUnitsBasedOnSqfeet() {
   const sqFeet = filterBasedOnScreen('square_feet');
-  // sqFeet = parseInt( ($('#square_feet').val() || $('#responsive_square_feet').val()).split("-")[0] )
 
   if(sqFeet)
     units = units.filter(unit => unit.square_feet >= sqFeet )
@@ -603,7 +600,6 @@ function filterUnitsBasedOnSqfeet() {
 
 function filterUnitsBasedOnMarketRent() {
   const marketRent = filterBasedOnScreen('market_rent');
-  // marketRent = parseInt( ($('#market_rent').val() || $('#responsive_market_rent').val()).split("-")[1] )
 
   if(marketRent)
     units = units.filter(unit => unit.market_rent <= marketRent )
@@ -613,8 +609,7 @@ function filterUnitsBasedOnBedroom() {
   $(".alert").hide();
 
   units = total_units;
-  // unitBedroom = filterBasedOnScreen('unit_bedroom');
-  unitBedroom = parseInt( ($('#unit_bedroom').val() || $('#responsive_unit_bedroom').val()).split("_")[0] )
+  const unitBedroom = filterBasedOnScreen('unit_bedroom');
   
   if(unitBedroom || unitBedroom === 0)
     units = units.filter(unit => unit.bedrooms == unitBedroom)
@@ -673,8 +668,8 @@ function updateSquareFootageFilterDropdownList(floorplateUnits) {
   reInitializeDropDownList("square_feet");
 
   for(var i=0 ; i < uniqueList.length; i++) {
-    $('#square_feet').append(`<option value="${uniqueList[i]}-${maxValue}"> ${uniqueList[i]} </option>`); //works on web view
-    $('#responsive_square_feet').append(`<option value="${uniqueList[i]}-${maxValue}"> ${uniqueList[i]} </option>`); //works on mobile view
+    $('#square_feet').append(`<option value="${uniqueList[i]}}"> ${uniqueList[i]} </option>`); //works on web view
+    $('#responsive_square_feet').append(`<option value="${uniqueList[i]}"> ${uniqueList[i]} </option>`); //works on mobile view
   }
 
   disableSquareFeetOptions();
@@ -706,8 +701,8 @@ function updateMaxPriceFilterDropDownList(floorplateUnits){
   reInitializeDropDownList("market_rent");
 
   for(var i=0 ; i < uniqueList.length; i++) {
-    $('#market_rent').append(`<option value="${minValue}-${uniqueList[i]}"> ${uniqueList[i]} </option>`); //works on web view
-    $('#responsive_market_rent').append(`<option value="${minValue}-${uniqueList[i]}"> ${uniqueList[i]} </option>`); //works on mobile view
+    $('#market_rent').append(`<option value="${uniqueList[i]}"> ${uniqueList[i]} </option>`); //works on web view
+    $('#responsive_market_rent').append(`<option value="${uniqueList[i]}"> ${uniqueList[i]} </option>`); //works on mobile view
   }
 
   disablePriceRentOptions();
