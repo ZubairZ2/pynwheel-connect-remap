@@ -15,7 +15,7 @@ module Api
             # Replace with worker
             ::Log::Impression.new(requester: response, exception: ex).exception_filler
           end
-        end 
+        end
       end
     end
   end

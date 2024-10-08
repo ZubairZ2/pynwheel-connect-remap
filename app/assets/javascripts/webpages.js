@@ -668,7 +668,7 @@ function updateSquareFootageFilterDropdownList(floorplateUnits) {
   reInitializeDropDownList("square_feet");
 
   for(var i=0 ; i < uniqueList.length; i++) {
-    $('#square_feet').append(`<option value="${uniqueList[i]}}"> ${uniqueList[i]} </option>`); //works on web view
+    $('#square_feet').append(`<option value="${uniqueList[i]}"> ${uniqueList[i]} </option>`); //works on web view
     $('#responsive_square_feet').append(`<option value="${uniqueList[i]}"> ${uniqueList[i]} </option>`); //works on mobile view
   }
 
