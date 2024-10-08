@@ -6166,6 +6166,9 @@ ul.add-fav-options {
 }
 
 @media screen and (max-width:567px){
+    .units-alert {
+        top: 10rem !important;
+    }
     .left-side {
         top: 6rem;
     }

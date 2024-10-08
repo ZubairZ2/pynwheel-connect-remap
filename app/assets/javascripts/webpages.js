@@ -233,6 +233,7 @@ $(window).bind('load', function () {
       var floor_for_showing_image = $(this).attr('id');
       if (floor_for_showing_image != current_floor) {
         $(".alert").hide();
+
         $('.floorplate-image').addClass('hidden');
         $('#f_' + floor_for_showing_image).removeClass('hidden');
         $('#' + floor_for_showing_image).addClass('selected');
@@ -247,7 +248,7 @@ $(window).bind('load', function () {
           $('.alert').show()
           timer = setTimeout(function () {
             $('.alert').fadeOut('slow');
-          }, 2000); // <-- time in milliseconds
+          }, 2000);
         }
         else if ($(this).hasClass('no-units'))
         {
@@ -1101,7 +1102,7 @@ function disabled_enabled_anchors() {
         $('.alert').show()
         timer = setTimeout(function () {
           $('.alert').fadeOut('slow');
-        }, 2000); // <-- time in milliseconds
+        }, 2000);
       }
     } 
     else if (units_to_display.length == 0 && floorplate_amenities.length==0) {
@@ -1109,7 +1110,6 @@ function disabled_enabled_anchors() {
       if ($('#' + floors[i]).hasClass('selected')) {
         $('.alert').show()
         clearTimeout(timeoutId);
-        // clearTimeout(timer);
       }
     } else {
       $('#' + floors[i]).removeClass('no-units');
@@ -1146,12 +1146,11 @@ function disabled_enabled_anchors() {
       $('.alert').show()
       timer = setTimeout(function () {
         $('.alert').fadeOut('slow');
-      }, 2000); // <-- time in milliseconds
+      }, 2000);
     } 
     else if (units.length == 0 && amenities.length == 0) {
       $('.alert').show()
       clearTimeout(timeoutId);
-      // clearTimeout(timer);
     }
     else{
       $('.alert').hide()
