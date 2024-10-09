@@ -128,30 +128,37 @@ PROPERTIES_LIST = [2919]
 REPORTS = [
   {
     title: "Touch Sessions Report",
-    path: "generate_sessions_report"
+    path: "generate_sessions_report",
+    has_date_range: true
   },
   {
     title: "Unplotted Units Report",
-    path: "unplotted_units_report"
+    path: "unplotted_units_report",
+    has_date_range: false
   },
   {
     title: "Properties Data Report",
-    path: "properties_average_data_report"
+    path: "properties_average_data_report",
+    has_date_range: false
   },
   {
     title: "Webpages Report",
-    path: "generate_webpages_report"
+    path: "generate_webpages_report",
+    has_date_range: false
   },
   {
     title: "Salesforce Report",
-    path: "generate_salesforce_report"
+    path: "generate_salesforce_report",
+    has_date_range: false
   },
   {
     title: "Account Report",
-    path: "account_report"
+    path: "account_report",
+    has_date_range: false
   },
   {
     title: "Tour Feedback Report",
-    path: "tour_feedback_report"
+    path: "tour_feedback_report",
+    has_date_range: false
   }
 ]

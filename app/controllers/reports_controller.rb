@@ -18,7 +18,7 @@ class ReportsController < ApplicationController
   end
 
   def generate_sessions_report
-    send_data(SessionsReportService.new().get_report() , :type => 'application/xlsx', :filename => "pynwheel-touch-annual-sessions-report.csv")
+    send_data(SessionsReportService.new(params[:start_date], params[:end_date]).get_report() , :type => 'application/xlsx', :filename => "pynwheel-touch-annual-sessions-report.csv")
   end
 
   def unplotted_units_report
