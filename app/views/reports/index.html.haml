@@ -1,0 +1,43 @@
+- content_for :title, "Reports - Pynwheel"
+
+.divLoading.hidden
+%section.is-home-page
+  .content
+    .title-heading
+      %h3
+        Reports
+    
+    .box.box-widget.panel-box
+      .box-header
+        .row
+          .col-md-12
+            %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive.reports_data_table
+              %thead
+                %tr
+                  %th
+                    Sr #
+                  %th
+                    Title
+                  %th
+                    Actions
+              %tbody
+                - REPORTS.each_with_index do |report, index|
+                  %tr
+                    %td
+                      = index + 1
+                    %td
+                      = report[:title]
+                    %td
+                      %a.mb-20{href: "/communities/#{current_community.id}/reports/#{report[:path]}", format: "csv"}
+                        Download
+
+:javascript
+  $('#miyazaki.reports_data_table').DataTable({
+    'aoColumnDefs': [{
+        'bSortable': false,
+        'aTargets': [0, 1, 2],
+    }],
+    "ordering": false,
+    "stateSave": false,
+    "paging": false
+  });

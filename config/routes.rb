@@ -16,6 +16,7 @@ Rails.application.routes.draw do
   get 'tutorial/index'
 
   mount ActionCable.server => '/cable'
+
   get 'tour_users/index'
   get '/error', to: 'error_logs#generate_error', as: 'error_logs_generate'
   get '/error_page', to: 'error_logs#error_page', as: 'error_page'
@@ -26,16 +27,14 @@ Rails.application.routes.draw do
 
   post '/schedual_tours/:id', to: 'schedual_tours#update', format: :json
   post '/destroy_schedual_tours/:id', to: 'schedual_tours#destroy', format: :json
+
   resources :schedual_tours do
-    # post :create_tour_user_from
-    # member do
-    # end
     get :get_tour_type, on: :collection
     get :get_funnel_available_times, on: :collection
 
   end
+
   post :map_dwelo_locks, to: 'dwelos#map_dwelo_locks'
-  # selfie matching
   get '/id_selfie_matching/:tour_user_id', to: 'tours#id_selfie_matching', as: 'manual_selfie_match', format: :json
   post :flag_id_mismatch, to: 'tours#flag_id_mismatch'
 
@@ -48,10 +47,8 @@ Rails.application.routes.draw do
     get 'test_widget', to: 'widgets#test_widget'
     get 'confirmation_instructions', to: 'widgets#confirmation_instructions'
     get 'scheduler_widget_button', to: 'widgets#scheduler_widget_button'
-
-    # get 'change_schedule_tour_time/:id', to: 'widgets#change_tour_time_widget', as: :change_tour_time
-
   end
+
   get 'scheduler/change_schedule_tour_time/:id', to: 'scheduler_widget/widgets#change_tour_time_widget', as: :change_tour_time
 
   devise_for :users, :controllers => { :invitations => 'invitations', sessions: 'users/sessions', passwords: "users/passwords" }
@@ -59,7 +56,6 @@ Rails.application.routes.draw do
   post 'users/:id/turn_off_chat', to: 'users#chat_service_not_available'
   post 'webpages/:id/update_session', to: 'webpages#update_session'
 
-  # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
   root to: "home#index"
   resources :chatrooms
   resources :chats
@@ -83,12 +79,7 @@ Rails.application.routes.draw do
     
     collection do
       get :get_regions
-      get :generate_webpages_report
-      get :properties_average_data_report
-      get :generate_salesforce_report
       get :company_data_provider_communities_list
-      get :generate_sessions_report
-      get :unplotted_units_report
     end
 
     member do
@@ -96,11 +87,9 @@ Rails.application.routes.draw do
       get :generate_csv_for_scheduled_records
       put :company_data_credentials
     end
-
   end
 
   resources :community_groups do
-
     member do
       delete :remove_community
     end
@@ -121,7 +110,6 @@ Rails.application.routes.draw do
         post :set_loop_type
       end
     end
-
   end
 
   resources :communities do
@@ -250,9 +238,6 @@ Rails.application.routes.draw do
     get :clone_community
     get :change_expressionist_default
     get :test_connection
-    get :authenteq_report
-    get :account_report
-    get :tour_feedback_report
     get :psi_pricing_test_connection
     get :psi_space_configuration_test_connection
     get :realpage_load_pricing_data
@@ -261,12 +246,24 @@ Rails.application.routes.draw do
     post :save_temporary_image
     delete :delete_temporary_image
     patch :update_web_maps_configurations
-    resources :impressions , :only => [:index, :show, :destroy]
+    
+    resources :impressions, :only => [:index, :show, :destroy]
+
+    resources :reports, :only => [:index] do
+      collection do
+        get :generate_webpages_report
+        get :properties_average_data_report
+        get :generate_salesforce_report
+        get :generate_sessions_report
+        get :unplotted_units_report
+        get :authenteq_report
+        get :account_report
+        get :tour_feedback_report
+      end
+    end
+    
     resources :schedual_tours, path: 'scheduled_tours' do
       post :update_tour_type
-      # post :create_tour_user_from
-      # member do
-      # end
     end
 
     resources :floorplans do
@@ -540,15 +537,6 @@ Rails.application.routes.draw do
       end
     end
 
-    # resources :pynwheel_accesses, only: [:index] do
-    #   collection do
-    #     delete :delete_pynwheel_access_user
-    #     get :get_pynwheel_user_accesses
-    #     post :create_or_update_pynwheel_access_user
-    #     post :active_or_inactive_user
-    #   end
-    # end
-
     resources :favorite_settings, only: [:index, :create, :update] do
       resources :favorite_images
       resources :ebrochure_menu_buttons
@@ -560,9 +548,11 @@ Rails.application.routes.draw do
         get :show_images
       end
     end
+
     resources :neighborhoods, only: [:index, :create, :update] do
       resources :locations
     end
+
     resources :galleries do
       member do
         get :show_image_in_modal
@@ -574,6 +564,7 @@ Rails.application.routes.draw do
         post :save_gallery_video
       end
     end
+
     resources :webpages, only: :index do
       collection do
         get :apply_now
@@ -589,6 +580,7 @@ Rails.application.routes.draw do
         get :ipad_version
       end
     end
+
     resources :additional_pages, only: :index
     resources :contentpages
     resources :imagepages do
@@ -599,8 +591,10 @@ Rails.application.routes.draw do
         delete :delete_additional_image
       end
     end
+
     get 'return_door_lock', to: 'amenities#return_door_lock'
   end
+
   post '/draw_map_line/:unit_or_amenity', to: 'tours#draw_map_line', as: :draw_line
   post '/add_elevator/:tour_id/:community_id', to: 'tours#add_elevator', as: :create_elevator
   post '/update_elevator', to: 'tours#update_elevator', as: :update_elevator
@@ -611,14 +605,12 @@ Rails.application.routes.draw do
   post :delete_path_point, to: 'tours#point_delete'
   post :delete_path_on_sort_change, to: 'tours#delete_path_on_sort_change'
 
-  #### Hallways Controller Routes ####
   post :save_hallways_point, to: 'hallways#point_save'
   post :update_hallways_point, to: 'hallways#update_point'
   post :delete_hallways_point, to: 'hallways#remove_point'
   post :connect_leaf_point, to: 'hallways#connect_leaf_point'
   post :save_selected_point, to: 'hallways#save_selected_point'
 
-  #### Automate Plotting Controller Routes ####
   resources :automate_plotting, only: :index do
     collection do
       get :shortest_path
@@ -626,13 +618,12 @@ Rails.application.routes.draw do
   end
 
   namespace :api, constraints: { format: 'json' } do
-
     namespace :partner do
       namespace :realync do
         post :update_video_links, to: 'webhooks#update_video_links'
       end
     end
-  
+
     namespace :self_tour do
       namespace :v1 do
         resources :latch_accounts, only: [:index] do
@@ -917,13 +908,11 @@ Rails.application.routes.draw do
       post '/mis_match_verification', to: 'tours#mis_match_verification'
       get '/path/:floorplate_id', to: 'wayfinding#floorplate_path_points'
 
-      #
       post :save_tour_history, to: 'tour_histories#save_tour_history'
       post :alerts_during_tour, to: 'tour_histories#alerts_during_tour'
       get :get_tour_history, to: 'tour_histories#get_tour_history'
       post :verify_property_access_code, to: 'tour_histories#verify_property_access_code'
 
-      # ID/Selfie get status
       get :get_id_selfie_mismatch_status, to: 'tours#get_id_selfie_mismatch'
       post :change_id_selfie_mismatch_status, to: 'tour_histories#change_id_selfie_status'
 

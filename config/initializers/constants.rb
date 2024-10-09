@@ -124,3 +124,34 @@ SOFIA_ID = 2919
 MANUAL_SORTING_FLOORS = [2, 3]
 
 PROPERTIES_LIST = [2919]
+
+REPORTS = [
+  {
+    title: "Touch Sessions Report",
+    path: "generate_sessions_report"
+  },
+  {
+    title: "Unplotted Units Report",
+    path: "unplotted_units_report"
+  },
+  {
+    title: "Properties Data Report",
+    path: "properties_average_data_report"
+  },
+  {
+    title: "Webpages Report",
+    path: "generate_webpages_report"
+  },
+  {
+    title: "Salesforce Report",
+    path: "generate_salesforce_report"
+  },
+  {
+    title: "Account Report",
+    path: "account_report"
+  },
+  {
+    title: "Tour Feedback Report",
+    path: "tour_feedback_report"
+  }
+]

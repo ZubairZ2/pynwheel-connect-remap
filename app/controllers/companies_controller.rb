@@ -130,26 +130,6 @@ class CompaniesController < ApplicationController
     send_data(csv_file, :type => 'application/xlsx', :filename => "#{company.name} - Scheduled Records.csv")
   end
 
-  def generate_webpages_report
-    send_data(WebpagesReportService.new().get_report() , :type => 'application/xlsx', :filename => "pynwheel-webpages-report.csv")
-  end
-
-  def generate_salesforce_report
-    send_data(SalesforceReportService.new().get_report() , :type => 'application/xlsx', :filename => "salesforce-properties-report.csv")
-  end
-
-  def properties_average_data_report
-    send_data(PropertiesAverageDataReportService.new().get_report() , :type => 'application/xlsx', :filename => "pynwheel-properties-data-report.csv")
-  end
-
-  def generate_sessions_report
-    send_data(SessionsReportService.new().get_report() , :type => 'application/xlsx', :filename => "pynwheel-touch-annual-sessions-report.csv")
-  end
-
-  def unplotted_units_report
-    send_data(UnplottedUnitsReportService.new().get_report() , :type => 'application/xlsx', :filename => "pynwheel-unplotted-units-report.csv")
-  end
-
   private
 
   def set_company
