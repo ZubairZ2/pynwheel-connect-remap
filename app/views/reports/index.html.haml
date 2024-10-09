@@ -1,0 +1,111 @@
+- content_for :title, "Reports - Pynwheel"
+
+.divLoading.hidden
+%section.is-home-page
+  .content
+    .title-heading
+      %h3
+        Reports
+    
+    .box.box-widget.panel-box
+      .box-header
+        .row
+          .col-md-12
+            %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive.reports_data_table
+              %thead
+                %tr
+                  %th
+                    Sr #
+                  %th
+                    Title
+                  %th
+                    Start Date
+                  %th
+                    End Date
+                  %th
+                    Actions
+              %tbody
+                - REPORTS.each_with_index do |report, index|
+                  %tr
+                    %td
+                      = index + 1
+                    %td
+                      = report[:title]
+                    %td
+                      - if report[:has_date_range]
+                        .start-date-wrapper
+                          %input{type: "text", class: "form-control start-date-picker", placeholder: "Start Date", data: { report_path: report[:path] }}
+                    %td
+                      - if report[:has_date_range]
+                        .end-date-wrapper
+                          %input{type: "text", class: "form-control end-date-picker", placeholder: "End Date", data: { report_path: report[:path] }}
+                    %td
+                      %a.mb-20{href: "#", class: "download-link", data: { path: "/communities/#{current_community.id}/reports/#{report[:path]}" }}
+                        .fa.fa-download
+
+:javascript
+  $('#miyazaki.reports_data_table').DataTable({
+    'aoColumnDefs': [{
+        'bSortable': false,
+        'aTargets': [0, 1, 2, 3, 4],
+    }],
+    "ordering": false,
+    "stateSave": false,
+    "paging": false
+  });
+
+  const today = new Date();
+  const startDateISO = new Date(today.getFullYear(), today.getMonth() - 15, today.getDate()).toISOString().split('T')[0];
+  const endDateISO = today.toISOString().split('T')[0];
+
+  const startDate = formatDateToMMDDYYYY(startDateISO);
+  const endDate = formatDateToMMDDYYYY(endDateISO);
+
+  $('.start-date-picker').datepicker({
+    format: 'mm/dd/yyyy',
+    autoclose: true,
+    todayHighlight: true
+  }).val(startDate);
+
+  $('.end-date-picker').datepicker({
+    format: 'mm/dd/yyyy',
+    autoclose: true,
+    todayHighlight: true
+  }).val(endDate);
+
+  $('.download-link').on('click', function(e) {
+    e.preventDefault();
+    let path = $(this).data('path');
+    const row = $(this).closest('tr');
+    const startDatePicker = row.find('.start-date-picker');
+    const endDatePicker = row.find('.end-date-picker');
+    
+    const startDate = startDatePicker.val();
+    const endDate = endDatePicker.val();
+
+    const formattedStartDate = convertDateFormat(startDate);
+    const formattedEndDate = convertDateFormat(endDate);
+
+    debugger;
+    if (formattedStartDate && formattedEndDate) {
+      path += `?start_date=${encodeURIComponent(formattedStartDate)}&end_date=${encodeURIComponent(formattedEndDate)}`;
+    }
+
+    window.location.href = path;
+  });
+
+  function convertDateFormat(dateStr) {
+    const datePattern = /^\d{2}\/\d{2}\/\d{4}$/;
+
+    if (datePattern.test(dateStr)) {
+      const parts = dateStr.split("/");
+      return `${parts[2]}-${parts[0]}-${parts[1]}`;
+    }
+
+    return dateStr;
+  }
+
+  function formatDateToMMDDYYYY(dateISO) {
+    const [year, month, day] = dateISO.split("-");
+    return `${month}/${day}/${year}`;
+  }

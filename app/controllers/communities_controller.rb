@@ -407,25 +407,6 @@ class CommunitiesController < ApplicationController
       redirect_to community_settings_path(:community_id=>@community.id)
     end
   end
-  def account_report
-    @community = Community.find(params[:community_id])
-    workbook = WriteXLSX.new("public/AccountReport/AccountReport.xlsx")
-    zip_data = write_account_report(workbook)    
-    send_data(zip_data, :type => 'application/zip', :filename => "AccountReport.zip")
-  end
-
-  def authenteq_report
-    # @community = Community.find(params[:community_id])
-    # workbook = WriteXLSX.new("public/AuthenteqReport/AuthenteqReport.xlsx")
-    # zip_data = write_authenteq_report(workbook)
-    # send_data(zip_data, :type => 'application/zip', :filename => "AuthenteqReport.zip")
-  end
-
-  def tour_feedback_report
-    workbook = WriteXLSX.new("public/TourFeedbackReport/TourFeedbackReport.xlsx")
-    zip_data = write_feedback_report(workbook)
-    send_data(zip_data, :type => 'application/zip', :filename => "TourFeedbackReport.zip")
-  end
 
   def reset_neighborhood_request_counter
     Community.where(id: params[:community_id]).update_all(neighborhood_request_counter: 0, neighborhood_request_counter_limit: 600)

@@ -197,16 +197,24 @@
             %i.fa.fa-lock
             %span Pynwheel Access Users
 
+      - if current_user.is_super_admin?
+        %li.loader_class{:class=>"#{controller_name =='Community' && params[:action] == "reports" ? 'active' : ''}"}
+          %a{:href => "#{community_reports_path(current_community)}"}
+            %i.fa.fa-file
+            %span Reports
+
       - if (current_user.is_super_admin? || current_user.is_view_visitor_details_page?) && current_user.is_super_admin?
         %li.loader_class{:class=>"#{controller_name =='Community' && params[:action] == "logs" ? 'active' : ''}"}
           %a{:href => "#{community_logs_path(current_community)}"}
             %i.fa.fa-history
             %span CMS Logs
+
       -if (current_user.email == ENV["PYNWHEEL_DEV_EMAIL"])
         %li.loader_class{:class=>"#{controller_name =='impressions' ? 'active' : ''}"}
           %a{:href => "#{community_impressions_path(current_community)}"}
             %i.fa.fa-history
             %span Impressions Logs
+            
       - unless (current_user.is_view_visitor_details_page? || current_user.is_community_assistant?)
         %li.loader_class{:class=>"#{controller_name =='tutorials' ? 'active' : ''}"}
           %a{:href => "#{community_tutorials_path(current_community)}"}

@@ -46,38 +46,28 @@
                   %i
                     %b{style: "font-weight: 900;"} !
           %li.search-box.hidden
-            / search form
             %form#sidebar-form.sidebar-form{:action => "#", :method => "get"}
               .input-group
                 %input.form-control{:name => "q", :placeholder => "Search...", :type => "text"}/
                 %span.input-group-btn
                   %button#search-btn.btn.btn-flat{:name => "search", :type => "submit"}
                     %i.fa.fa-search
-            / /.search form
-          / - if current_user.is_super_admin? && current_community.present?
-          /   %li.mt-5
-          /     = link_to "Authenteq Report" , community_authenteq_report_path(current_community) , :class=>"btn mr-5", style: "background: #138fd4; color:white;  height: 34px;padding-top: 7px; border-radius: 4px;",:target => "_blank"
           
-          - if current_user.is_super_admin? && current_community.present?
-            %li.mt-5
-              = link_to "Account Report" , community_account_report_path(current_community) , :class=>"btn mr-5", style: "background: #138fd4; color:white;  height: 34px;padding-top: 7px; border-radius: 4px;",:target => "_blank"
-          - if current_user.is_super_admin? && current_community.present?
-            %li.mt-5
-              = link_to "Tour Feedback Report" , community_tour_feedback_report_path(current_community) , :class=>"btn mr-5", style: "background: #138fd4; color:white;  height: 34px;padding-top: 7px; border-radius: 4px;",:target => "_blank"
           - if current_community.present? and current_community.touchscreen_app
-
             %li.mt-5
               %input#publish_changes{:type => "button", :value => "How to Publish Changes" ,:class => "btn btn-primary"}/
+          
           %li.hidden
             %a{"data-toggle" => "control-sidebar", :href => "#"}
               %i.fa.fa-gear
+          
           %li.dropdown.user.user-menu
             %a.dropdown-toggle{"data-toggle" => "dropdown", :href => "#"}
               %img.user-image{:alt => "User Image", :src => current_user.avatar.present? ? current_user.avatar.url : "/assets/default-user128x128.jpg"}/
               %span.hidden-xs= current_user.name 
               %i.fa.fa-angle-down
+            
             %ul.dropdown-menu
-              / User image
               %li.user-header
                 %img.img-circle{:alt => "User Image", :src => current_user.avatar.present? ? current_user.avatar.url : "/assets/default-user128x128.jpg"}/
                 %p

@@ -18,37 +18,7 @@
           - if current_user.is_super_admin? or current_user.is_dwelo_admin?
             .mt-35
               %a.btn.btn-success.pull-right.mb-20{:href => "/companies"}
-                List all companies
-          
-        - allowed_emails = ["johnhall@pynwheel.com", "lizzy@pynwheel.com", ENV["PYNWHEEL_DEV_EMAIL"], "jennifer@pynwheel.com", "kellie@pynwheel.com"]
-
-        - if allowed_emails.include?(current_user.email)
-          -# .col-md-2
-          -#   .mt-35
-          -#     %a.btn.btn-success.pull-right.mb-20{:href => "/companies/generate_webpages_report", :format => "csv"}
-          -#       Webpages report
-
-          .col-md-2
-            .mt-35
-              %a.btn.btn-success.pull-right.mb-20{:href => "/companies/generate_salesforce_report", :format => "csv"}
-                Salesforce report
-
-          .col-md-2
-            .mt-35
-              %a.btn.btn-success.pull-right.mb-20{:href => "/companies/properties_average_data_report", :format => "csv"}
-                Properties Data Report
-          
-          .col-md-2
-            .mt-35
-              %a.btn.btn-success.pull-right.mb-20{:href => "/companies/generate_sessions_report", :format => "csv"}
-                Touch Sessions Report
-
-          .col-md-2
-            .mt-35
-              %a.btn.btn-success.pull-right.mb-20{:href => "/companies/unplotted_units_report", :format => "csv"}
-                Unplotted Units Report
-          
-
+                List all companies         
 
     .box.box-widget.panel-box
       #new-search-area
