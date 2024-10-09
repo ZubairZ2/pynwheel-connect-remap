@@ -38,7 +38,6 @@ gem 'puma'
 gem 'sass-rails', '~> 5.0'
 # Use Uglifier as compressor for JavaScript assets
 gem 'uglifier', '>= 1.3.0'
-gem 'terser'
 # Use CoffeeScript for .coffee assets and views
 gem 'coffee-rails', '~> 4.2'
 # See https://github.com/rails/execjs#readme for more supported runtimes
@@ -72,8 +71,7 @@ gem 'best_in_place', '~> 3.0.1'
 # For Pagination
 gem 'kaminari'
 gem 'execjs'
-# gem 'therubyracer'
-gem 'mini_racer'
+gem 'therubyracer'
 gem 'carrierwave', '~> 1.0'
 gem 'jquery-datatables-rails', '~> 3.4.0'
 gem 'will_paginate'

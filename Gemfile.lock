@@ -1527,8 +1527,6 @@ GEM
     sucker_punch (2.1.2)
       concurrent-ruby (~> 1.0)
     temple (0.8.2)
-    terser (1.2.4)
-      execjs (>= 0.3.0, < 3)
     therubyracer (0.12.3)
       libv8 (~> 3.16.14.15)
       ref
@@ -1671,7 +1669,6 @@ DEPENDENCIES
   stackprof
   stripe
   sucker_punch
-  terser
   therubyracer
   time_difference
   timezone (~> 1.0)
