@@ -127,6 +127,11 @@ PROPERTIES_LIST = [2919]
 
 REPORTS = [
   {
+    title: "Account Report",
+    path: "account_report",
+    has_date_range: false
+  },
+  {
     title: "Touch Sessions Report",
     path: "generate_sessions_report",
     has_date_range: true
@@ -137,7 +142,7 @@ REPORTS = [
     has_date_range: false
   },
   {
-    title: "Properties Data Report",
+    title: "Map Type (Floorplates vs Map) Report",
     path: "properties_average_data_report",
     has_date_range: false
   },
@@ -149,11 +154,6 @@ REPORTS = [
   {
     title: "Salesforce Report",
     path: "generate_salesforce_report",
-    has_date_range: false
-  },
-  {
-    title: "Account Report",
-    path: "account_report",
     has_date_range: false
   },
   {
