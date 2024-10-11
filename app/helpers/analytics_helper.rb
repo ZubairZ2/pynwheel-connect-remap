@@ -330,8 +330,13 @@ module AnalyticsHelper
     return str
   end
   
+  # def return_community_datetime(datetime, community_time_zone)
+  #   return (Time.zone.parse(datetime.to_s).in_time_zone(community_time_zone).to_datetime)
+  # end
+
   def return_community_datetime(datetime, community_time_zone)
-    return (Time.zone.parse(datetime.to_s).in_time_zone(community_time_zone).to_datetime)
+    datetime = Time.zone.parse(datetime.to_s) unless datetime.is_a?(Time)
+    datetime.in_time_zone(community_time_zone).to_datetime
   end
 
   def charts_styling
