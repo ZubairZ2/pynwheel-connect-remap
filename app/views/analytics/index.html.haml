@@ -1,24 +1,25 @@
 - content_for :title, "Analytics - Pynwheel"
-%link{:href => "https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css", :rel => "stylesheet"}/
-%script{:src => "https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"}
-%script{:src => "https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js", :type => "text/javascript"}
-%link{:href => "https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css", :rel => "stylesheet", :type => "text/css"}/
+= stylesheet_link_tag 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css'
+= stylesheet_link_tag 'https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css'
+= javascript_include_tag 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js'
+= javascript_include_tag 'https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js'
+.divLoading.hidden
 %section.is-community-page
-  - community_id =  defined?(@community_id).nil? ? '' : @community_id
-  - company_id = defined?(@company_id).nil? ? '' : @company_id
-  - region_id = defined?(@region_id).nil? ? '' : @region_id
-  - admin_type_selected = defined?(@admin_type).nil? ? '' : @admin_type
+  - community_id = @community_id&.to_s || ''
+  - company_id = @company_id&.to_s || ''
+  - region_id = @region_id&.to_s || ''
+  - admin_type_selected = @admin_type&.to_s || ''
   = hidden_field_tag "start_date", @start_date
   = hidden_field_tag "end_date", @end_date
+
   .content
     - if current_user.role == "Dwelo admin"
-      .box-info.add-plan{style: "margin-right: 10px;"}
-        %img.dwelo-logo{:alt => "Smiley face", :src => "/assets/Dwelo-Logo.png"}
-    
+      .box-info.add-plan{ style: "margin-right: 10px;" }
+        %img.dwelo-logo{ alt: "Smiley face", src: "/assets/Dwelo-Logo.png" }
+
     .box.box-info.add-plan.mt-20
       .box-header
-        %h3.box-title
-          Filters
+        %h3.box-title Filters
 
       .box-body
         - unless current_user.is_comm_admin? || current_user.is_community_manager?
@@ -26,74 +27,85 @@
             - if current_user.is_super_admin? || current_user.is_dwelo_admin? || current_user.is_company_admin?
               - unless current_user.is_company_admin?
                 .col-xl-4.col-lg-4
-                  %h4.empty_other{:title => "On Selected this other marked(*) filters will unselect"} Select any company
-                  = select_tag 'companies', options_for_select(companies_list(current_user), company_id),{ :class=>"form-control filter_select2 company_filter", :include_blank => 'All', :style => "width: 100%" }
+                  %h4.empty_other{ title: "On Selected this other marked(*) filters will unselect" } Select any company
+                  = select_tag 'companies', options_for_select(companies_list(current_user), company_id), { class: "form-control filter_select2 company_filter", style: "width: 100%" }
+
               - if current_user.is_company_admin?
                 .col-xl-4.col-lg-4
-                  %h4.empty_other{:title => "On Selected this other marked(*) filters will unselect"} Select any community
-                  = select_tag 'communities', options_for_select(@communities_list, community_id), { :class=>"form-control filter_select2 community_filter", :include_blank => 'All', :style => "width: 100%" }
+                  %h4.empty_other{ title: "On Selected this other marked(*) filters will unselect" } Select any community
+                  = select_tag 'communities', options_for_select(@communities_list, community_id), { class: "form-control filter_select2 community_filter", include_blank: 'All', style: "width: 100%" }
+
               .col-xl-4.col-lg-4
-                %h4.empty_other{:title => "On Selected this other marked(*) filters will unselect"} Select any region
-                = select_tag 'regions', options_for_select(regions_list(current_user), region_id),{:class=>"form-control filter_select2", :include_blank => 'All', :style => "width: 100%" }
+                %h4.empty_other{ title: "On Selected this other marked(*) filters will unselect" } Select any region
+                = select_tag 'regions', options_for_select(regions_list(current_user), region_id), { class: "form-control filter_select2", include_blank: 'All', style: "width: 100%" }
+
             - if current_user.is_super_admin?
               .col-xl-4.col-lg-4
-                %h4.empty_other{:title => "On Selected this other marked(*) filters will unselect"} Select admin type
-                = select_tag 'admin_type', options_for_select(admin_type, admin_type_selected),{:class=>"form-control filter_select2", :include_blank => 'All', :style => "width: 100%" }
+                %h4.empty_other{ title: "On Selected this other marked(*) filters will unselect" } Select admin type
+                = select_tag 'admin_type', options_for_select(admin_type, admin_type_selected), { class: "form-control filter_select2", include_blank: 'All', style: "width: 100%" }
+
             - if current_user.is_dwelo_admin? || current_user.is_company_admin?
               .col-xl-4.col-lg-4
                 %h4 Time frame
-                = text_field_tag 'timeframe', nil, { class: 'date_range_filter', :style => "width: 100%" }
+                = text_field_tag 'timeframe', nil, { class: 'date_range_filter', style: "width: 100%" }
+
         .row
           - unless current_user.is_company_admin?
             .col-xl-4.col-lg-4
-              %h4.empty_other{:title => "On Selected this other marked(*) filters will unselect"} Select any community
-              = select_tag 'communities', options_for_select(@communities_list, community_id), { :class=>"form-control filter_select2 community_filter", :include_blank => 'All', :style => "width: 100%" }
+              %h4.empty_other{ title: "On Selected this other marked(*) filters will unselect" } Select any community
+              = select_tag 'communities', options_for_select(@communities_list, community_id), { class: "form-control filter_select2 community_filter", include_blank: 'All', style: "width: 100%" }
 
           - unless current_user.is_dwelo_admin? || current_user.is_company_admin?
             .col-xl-4.col-lg-4
               %h4 Time frame
-              = text_field_tag 'timeframe', nil, { class: 'date_range_filter', :style => "width: 100%" }
+              = text_field_tag 'timeframe', nil, { class: 'date_range_filter', style: "width: 100%" }
+
           .col-xl-4.col-lg-4
-            %button.btn.btn-secondary{:style=> "margin-top: 35px;", :type=> "button", :id=> "reset-filters"} Reset Filters
+            %button.btn.btn-secondary{ style: "margin-top: 35px;", type: "button", id: "reset-filters" } Reset Filters
+
     .box.box-info
       .box-header
         .col-md-12.theme-setting.product_tabs
-          %ul#product_type_tabs.nav.nav-tabs.add-new-lock{:role => "tablist"}
-            %li{:role => "presentation",:class => "#{@show_self_tour ? 'active in' : ''}"}
-              %a#self-tour-tab{"class" => "#{@show_self_tour ? '' : 'hidden'}","aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-self-tour", :role => "tab"} Pynwheel Tour
-            %li{:role => "presentation",:class => ""}
-              %a#maps-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-maps", :role => "tab"} Maps
-            %li{:role => "presentation"}
-              %a#maps-tab{"class" => "#{@show_touch ? '' : 'hidden'}","aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-touch", :role => "tab"} Touch
-          
-          #s-self-tour.tab-pane.fade.in{:class => "#{@show_self_tour ? 'active' : ''}",:role => "tabpanel"}
-            = render 'self_tour'
-          #s-maps.tab-pane.fade{:role => "tabpanel"}
-            = render 'maps'
-          #s-touch.tab-pane.fade{:class => "#{@show_touch ? 'active' : ''}",:role => "tabpanel"}
-            = render 'touch'
+          %ul#product_type_tabs.nav.nav-tabs.add-new-lock{ role: "tablist" }
+            %li{ role: "presentation", class: "#{params[:product_type].nil? || params[:product_type] == 'touch' ? 'active in' : ''}" }
+              %a#maps-tab{ "data-toggle" => "tab", href: "#s-touch", role: "tab", "aria-expanded" => "false" } Touch
+            
+            %li{ role: "presentation", class: "#{params[:product_type] == 'pynwheel_tour' ? 'active in' : ''}" }
+              %a#self-tour-tab{ "data-toggle" => "tab", href: "#s-self-tour", role: "tab", "aria-expanded" => "false" } Pynwheel Tour
+            
+            %li{ role: "presentation", class: "#{params[:product_type] == 'maps' ? 'active in' : ''}" }
+              %a#maps-tab{ "data-toggle" => "tab", href: "#s-maps", role: "tab", "aria-expanded" => "false" } Maps
+
+          - if params[:product_type].nil? || params[:product_type] == 'touch'
+            #s-touch.tab-pane.fade{ class: "active", role: "tabpanel" }
+              = render 'touch'
+
+          - if params[:product_type] == 'pynwheel_tour'
+            #s-self-tour.tab-pane.fade.in{ class: "active", role: "tabpanel" }
+              = render 'self_tour'
+
+          - if params[:product_type] == 'maps'
+            #s-maps.tab-pane.fade{ class: "active", role: "tabpanel" }
+              = render 'maps'
+
+#productTypeData{ data: { product_type: params[:product_type] } }
 
 :javascript
-  var minDateForSelfTour = "#{@min_date_for_self_tour}"
-  var minDateForTouch = "#{@min_date_for_touch}"
-  console.log("minDateForSelfTour:  ", minDateForSelfTour)
-  console.log("minDateForTouch:  ", minDateForTouch)
+  var minDateForSelfTour = "#{@min_date_for_self_tour}";
+  var minDateForTouch = "#{@min_date_for_touch}";
 
-  $(document).ready(function() {
-    $('.company_filter').change(function() { 
+  document.addEventListener('DOMContentLoaded', function() {
+    $('.company_filter').change(function() {
       var selectedCompany = $(this).val();
       $.ajax({
-        url: '/analytics/get_associated_communities', 
+        url: '/analytics/get_associated_communities',
         type: 'GET',
         data: { company: selectedCompany },
         dataType: 'json',
         success: function(response) {
-          var options = '';
-  
-          $.each(response, function(index, community) {
-            options += '<option value="' + community.id + '">' + community.name + '</option>';
-          });
-  
+          var options = response.map(function(community) {
+            return '<option value="' + community.id + '">' + community.name + '</option>';
+          }).join('');
           $('.community_filter').html(options);
         },
         error: function(xhr) {
@@ -101,14 +113,10 @@
         }
       });
     });
-  });
 
-  document.addEventListener('DOMContentLoaded', function() {  
     var resetButton = document.getElementById('reset-filters');
     resetButton.addEventListener('click', function(event) {
       event.preventDefault();
-      var newUrl = window.location.origin + window.location.pathname;
-      window.location.href = newUrl;
+      window.location.href = window.location.origin + window.location.pathname;
     });
   });
-  
