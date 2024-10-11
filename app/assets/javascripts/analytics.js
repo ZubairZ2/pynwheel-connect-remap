@@ -1,157 +1,144 @@
-$(document).ready(function() {
-  if ($(".filter_select2").length > 0){
-    $('.filter_select2').select2({
-      width: 'resolve'
-    });
-    if (window.localStorage.getItem('tabSet') == 'false'){
-      if(!$('#self-tour-tab').hasClass('hidden') && !$('#maps-tab').hasClass('hidden')){
-        var current_tab = window.localStorage.getItem('currentTab');
-        window.localStorage.setItem('tab', current_tab);
-      }
-      else if(!$('#self-tour-tab').hasClass('hidden')){
-        window.localStorage.setItem('tab', "SelfTour");
-      }
-      else if(!$('#maps-tab').hasClass('hidden')){
-        window.localStorage.setItem('tab', "Maps");
-      }
-      else if(!$('#touch-tab').hasClass('hidden')){
-        window.localStorage.setItem('tab', "Touch");
-      }
-    }
+let selectedProductType;
 
-    setAnalyticsTab();  
-    
-    $('#no-sidemenu .breadcrumb').css('display', 'block')
-    $('#no-sidemenu .breadcrumb').css('margin', '0px')
+$(document).ready(function() {
+  selectedProductType = $("#productTypeData").data("productType") || "touch";
+  const filterSelect = $(".filter_select2");
+  
+  if (filterSelect.length > 0) {
+    initializeSelect2Dropdowns(filterSelect);
+    setupDateRangeFilter(minDateForSelfTour);
+    showBreadcrumbInNoSidemenu();
   }
 
-  $('input[name="timeframe"]').on('apply.daterangepicker', function (ev, picker) {
-    set_url()
-  });
-
-  $('.filter_select2').on('select2:select', function (e) { 
-    disable_another_selects(e.target.id)
-    set_url()
-  });
-
-  $('#product_type_tabs a[data-toggle="tab"]').on('click', function(){
-    window.localStorage.setItem('tabSet', true);
-
-    if ($(this).html() == "Touch")
-      window.localStorage.setItem('tab', "Touch");
-    else if ($(this).html() == "Maps")
-      window.localStorage.setItem('tab', "Maps");
-    else
-      window.localStorage.setItem('tab', "SelfTour");
-  });
-
+  bindTimeframeSelectionEvent();
+  bindSelect2SelectionEvent(filterSelect);
+  bindProductTypeTabChangeEvent();
+  productTypeTabSelector();
 });
 
-window.addEventListener('beforeunload', function(event) {
-  window.localStorage.setItem('tabSet', false);
-  if($("#s-self-tour").hasClass('active'))
-    window.localStorage.setItem('currentTab', "SelfTour");
-  else if ($("#s-maps").hasClass('active'))
-    window.localStorage.setItem('currentTab', "Maps");
-  else
-    window.localStorage.setItem('currentTab', "Touch");
-});
+function initializeSelect2Dropdowns(filterSelect) {
+  filterSelect.select2({ width: 'resolve' });
+}
 
-function default_method(min_date) {
-  var start = moment($('#start_date').val());
-  var end = moment($('#end_date').val());
+function setupDateRangeFilter(minDate) {
+  const startDate = moment($('#start_date').val());
+  const endDate = moment($('#end_date').val());
 
-  function cb(start, end) {
-    $('.date_range_filter span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+  function updateDateRangeLabel(startDate, endDate) {
+    $('.date_range_filter span').text(`${startDate.format('MMMM D, YYYY')} - ${endDate.format('MMMM D, YYYY')}`);
   }
 
   $('.date_range_filter').daterangepicker({
-      startDate: start,
-      endDate: end,
-      minDate: new Date(min_date),
-      maxDate: new Date(),
-      ranges: {
-         'Today': [moment(), moment()],
-         'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-         'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-         'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-         'This Month': [moment().startOf('month'), moment().endOf('month')],
-         'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-      }
-  }, cb);
-
-  cb(start, end);
-};
-
-function disable_another_selects(current_select){
-  switch(current_select){
-    case "companies":
-      $("#communities").val("")
-      $("#regions").val("")
-      $("#admin_type").val("")
-      break;
-    case "communities":
-      $("#companies").val("")
-      $("#regions").val("")
-      $("#admin_type").val("")
-      break;
-    case "regions":
-      $("#communities").val("")
-      $("#companies").val("")
-      $("#admin_type").val("")
-      break;
-    case "admin_type":
-      $("#communities").val("")
-      $("#companies").val("")
-      $("#regions").val("")
-      break;
-    default:
-  }
-}
-
-function set_url(){
-  params = {}
-  params["community"] = $('#communities').val()
-  params["timeframe"] = $('#timeframe').val()
-  if ($('#companies').val())
-    params["company"] = $('#companies').val()
-  if ($('#regions').val())
-    params["region"] = $('#regions').val()
-  if ($('#admin_type').val())
-    params["admin_type"] = $('#admin_type').val()
-  url = window.location.origin + window.location.pathname + "?"
-  for (const [index, [key, value]] of Object.entries(Object.entries(params))) {
-    if (index > 0)
-      url = url + "&"
-    if (`${key}` == "timeframe"){
-      daterange = `${value}`
-      start_date = daterange.split('-')[0].trim()
-      end_date = daterange.split('-')[1].trim()
-      url = url + `start_date=${start_date}` 
-      url = url + "&" + `end_date=${end_date}` 
+    startDate: startDate,
+    endDate: endDate,
+    minDate: new Date(minDate),
+    maxDate: new Date(),
+    ranges: {
+      'Today': [moment(), moment()],
+      'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+      'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+      'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+      'This Month': [moment().startOf('month'), moment().endOf('month')],
+      'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
     }
-    else
-      url = url + `${key}=${value}` 
-  }
+  }, updateDateRangeLabel);
 
-  window.location.href = url
+  updateDateRangeLabel(startDate, endDate);
 }
 
-function setAnalyticsTab() {
-  let tabName = window.localStorage.getItem('tab');
-
-  if(tabName && tabName == "Touch")
-    $('a[href="#s-touch"]').tab("show");
-  else if (tabName && tabName == "Maps")
-    $('a[href="#s-maps"]').tab("show");
-  else
-    $('a[href="#s-self-tour"]').tab("show");
-
-  default_method(minDateForSelfTour);
-}
-$(document).ready(function() {
-  $('#product_type_tabs a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
-    var target = $(e.target).attr('href');
-    $(target).addClass('active in');
+function showBreadcrumbInNoSidemenu() {
+  $('#no-sidemenu .breadcrumb').css({
+    display: 'block',
+    margin: '0px'
   });
+}
+
+function bindTimeframeSelectionEvent() {
+  $('input[name="timeframe"]').on('apply.daterangepicker', updateUrlWithCurrentSelections);
+}
+
+function bindSelect2SelectionEvent(filterSelect) {
+  filterSelect.on('select2:select', function(e) { 
+    clearOtherSelectOptions(e.target.id);
+    updateUrlWithCurrentSelections();
+  });
+}
+
+function bindProductTypeTabChangeEvent() {
+  $('#product_type_tabs a[data-toggle="tab"]').on('click', function() {
+    selectedProductType = formatProductTypeText($(this).text());
+    updateUrlWithProductType();
+    updateUrlWithCurrentSelections();
+  });
+}
+
+function productTypeTabSelector() {
+  const tabMap = {
+    pynwheel_tour: "#s-self-tour",
+    maps: "#s-maps",
+    touch: "#s-touch"
+  };
+
+  const selector = tabMap[selectedProductType]
+  $(selector).addClass('active in');
+}
+
+
+function updateUrlWithProductType() {
+  const currentUrl = new URL(window.location);
+  currentUrl.searchParams.set("product_type", selectedProductType);
+  window.history.pushState({}, "", currentUrl);
+}
+
+function formatProductTypeText(text) {
+  return text.toLowerCase().replace(/\s+/g, '_');
+}
+
+function clearOtherSelectOptions(currentSelectId) {
+  const selectIds = ["companies", "communities", "regions", "admin_type"];
+  selectIds.forEach(selectId => {
+    if (selectId !== currentSelectId) {
+      $(`#${selectId}`).val("");
+    }
+  });
+}
+
+function updateUrlWithCurrentSelections() {
+  const params = {
+    community: $('#communities').val(),
+    timeframe: $('#timeframe').val(),
+    company: $('#companies').val(),
+    region: $('#regions').val(),
+    admin_type: $('#admin_type').val(),
+    product_type: selectedProductType
+  };
+
+  const newUrl = constructUrlWithParams(params);
+  window.location.href = newUrl;
+}
+
+function constructUrlWithParams(params) {
+  const baseUrl = `${window.location.origin}${window.location.pathname}?`;
+
+  const urlParams = Object.entries(params).reduce((accumulatedParams, [key, value]) => {
+    if (value) {
+      if (key === "timeframe") {
+        const [startDate, endDate] = value.split('-').map(date => date.trim());
+        accumulatedParams.push(`start_date=${startDate}`, `end_date=${endDate}`);
+      } else {
+        accumulatedParams.push(`${key}=${value}`);
+      }
+    }
+    return accumulatedParams;
+  }, []).join("&");
+
+  return `${baseUrl}${urlParams}`;
+}
+
+window.addEventListener("beforeunload", function(event) {
+  $(".divLoading").removeClass("hidden");
+});
+
+window.addEventListener('load', function() {
+  $(".divLoading").addClass("hidden");
 });

@@ -7,71 +7,88 @@ class AnalyticsController < ApplicationController
     start_date , end_date = (params[:start_date].present? && params[:end_date].present?) ? [(params[:start_date].split("/")[1] + "/" + params[:start_date].split("/")[0] + "/" + params[:start_date].split("/")[2]).to_date, ((params[:end_date].split("/")[1] + "/" + params[:end_date].split("/")[0] + "/" + params[:end_date].split("/")[2]).to_date)] : [Date.today - 7.day, Date.today]
     @days_count = return_total_days(start_date, end_date) > 0 ? return_total_days(start_date, end_date) : 1
     communities = fetch_communities(current_user).active_communities
-    track_sessions = TrackSession.where(community_id: communities.ids)
-    tour_histories = TourHistory.where(community_id: communities.self_tour_enabled_only.ids)
-    @maps_records = track_sessions.where(track_session_type: "maps").where('start_datetime > ? AND start_datetime < ?',start_date.beginning_of_day, end_date.end_of_day)
-    @metro_records = track_sessions.where(track_session_type: TOUCH_TYPES).where('start_datetime > ? AND start_datetime < ?',start_date.beginning_of_day, end_date.end_of_day)
-    @self_tour_records = tour_histories.where('arrived > ? AND arrived < ?',start_date.beginning_of_day, end_date.end_of_day)
-    @self_tour_records_all = tour_histories.where('arrived > ? AND arrived < ?',start_date.beginning_of_day, end_date.end_of_day)
-    @min_date_for_self_tour = tour_histories.order('created_at asc')&.first&.created_at
-    @min_date_for_touch = track_sessions.where(track_session_type: TOUCH_TYPES).order('created_at asc')&.first&.created_at
-
-    apply_filters(params)
     @date_range_text = fetch_date_range_text(start_date , end_date, @days_count)
+    # apply_filters(params)
+    @product_type = params[:product_type].present? ? params[:product_type] : nil
+
+
     # For Webpage
-    if @maps_records.any? && (@product_type == "all" || @product_type == "maps")
-      collect_session_each_day_data(start_date, @days_count, @maps_records, :start_datetime, "maps")
-      collect_session_each_day_data_in_minutes(start_date, @days_count, @maps_records, :start_datetime, :end_datetime, "maps")
-      collect_session_each_day_data_in_hours(@maps_records, :start_datetime, "maps")
-      bounce_rate_on_pages(@maps_records, :visited_pages ,"maps")
-      events_per_session(start_date, @days_count, @maps_records, :start_datetime, "maps")
-      apply_clicks_track_session(start_date, @days_count, @maps_records, :start_datetime, "maps")
-      favourite_saved_track_session(start_date, @days_count, @maps_records, "maps")
-      favourite_sent_track_session(start_date, @days_count, @maps_records, "maps")
-      price_opened_track_session(start_date, @days_count, @maps_records, :start_datetime, "maps")
+    if @product_type == "maps"
+      track_sessions = TrackSession.where(community_id: communities.ids)
+      @maps_records = track_sessions.where(track_session_type: "maps").where('start_datetime > ? AND start_datetime < ?',start_date.beginning_of_day, end_date.end_of_day)
+      apply_filters(params)
+
+      if @maps_records.any?
+        collect_session_each_day_data(start_date, @days_count, @maps_records, :start_datetime, "maps")
+        collect_session_each_day_data_in_minutes(start_date, @days_count, @maps_records, :start_datetime, :end_datetime, "maps")
+        collect_session_each_day_data_in_hours(@maps_records, :start_datetime, "maps")
+        bounce_rate_on_pages(@maps_records, :visited_pages ,"maps")
+        events_per_session(start_date, @days_count, @maps_records, :start_datetime, "maps")
+        apply_clicks_track_session(start_date, @days_count, @maps_records, :start_datetime, "maps")
+        favourite_saved_track_session(start_date, @days_count, @maps_records, "maps")
+        favourite_sent_track_session(start_date, @days_count, @maps_records, "maps")
+        price_opened_track_session(start_date, @days_count, @maps_records, :start_datetime, "maps")
+      end
     end
 
     # For Metro 
-    if @metro_records.any? && (@product_type == "all" || @product_type == "touch")
-      collect_session_each_day_data(start_date, @days_count, @metro_records, :start_datetime, "metro")
-      collect_session_each_day_data_in_minutes(start_date, @days_count, @metro_records, :start_datetime, :end_datetime, "metro")
-      collect_session_each_day_data_in_hours(@metro_records, :start_datetime, "metro")
-      bounce_rate_on_pages(@metro_records, :visited_pages ,"metro")
-      pages_per_session(start_date, @days_count, @metro_records, "metro")
-      events_per_session(start_date, @days_count, @metro_records, :start_datetime, "metro")
-      apply_clicks_track_session(start_date, @days_count, @metro_records, :start_datetime, "metro")
-      favourite_saved_track_session(start_date, @days_count, @metro_records, "metro")
-      favourite_sent_track_session(start_date, @days_count, @metro_records, "metro")
-      interface_used(start_date, @days_count, @metro_records, "metro")
-      price_opened_track_session(start_date, @days_count, @metro_records, :start_datetime, "metro")
-      visits_per_session_page(@metro_records, "metro")
+    if  (@product_type.nil? || @product_type == "touch")
+      track_sessions = TrackSession.where(community_id: communities.ids)
+      @min_date_for_touch = track_sessions.where(track_session_type: TOUCH_TYPES).order('created_at asc')&.first&.created_at
+      @metro_records = track_sessions.where(track_session_type: TOUCH_TYPES).where('start_datetime > ? AND start_datetime < ?',start_date.beginning_of_day, end_date.end_of_day)
+      apply_filters(params)
+
+      if @metro_records.any?
+        collect_session_each_day_data(start_date, @days_count, @metro_records, :start_datetime, "metro")
+        collect_session_each_day_data_in_minutes(start_date, @days_count, @metro_records, :start_datetime, :end_datetime, "metro")
+        collect_session_each_day_data_in_hours(@metro_records, :start_datetime, "metro")
+        bounce_rate_on_pages(@metro_records, :visited_pages ,"metro")
+        pages_per_session(start_date, @days_count, @metro_records, "metro")
+        events_per_session(start_date, @days_count, @metro_records, :start_datetime, "metro")
+        apply_clicks_track_session(start_date, @days_count, @metro_records, :start_datetime, "metro")
+        favourite_saved_track_session(start_date, @days_count, @metro_records, "metro")
+        favourite_sent_track_session(start_date, @days_count, @metro_records, "metro")
+        interface_used(start_date, @days_count, @metro_records, "metro")
+        price_opened_track_session(start_date, @days_count, @metro_records, :start_datetime, "metro")
+        visits_per_session_page(@metro_records, "metro")
+      end
     end
 
-    # For Pynwheel Tour
-    if @self_tour_records.any? && (@product_type == "all" || @product_type == "self_tour")
-      collect_session_each_day_data(start_date, @days_count, @self_tour_records, :arrived, "self_tour")
-      collect_session_each_day_data_in_minutes(start_date, @days_count, @self_tour_records, :arrived, :left, "self_tour")
-      collect_session_each_day_data_in_hours(@self_tour_records, :arrived, "self_tour")
-      bounce_rate_on_pages(@self_tour_records_all, :visited_pages_counter, "self_tour")
-      events_per_session(start_date, @days_count, @self_tour_records, :arrived, "self_tour")
-      apply_clicks_track_session(start_date, @days_count, @self_tour_records, :arrived, "self_tour")
-      see_availability_session(start_date, @days_count, @self_tour_records, "self_tour")
-      tour_site_or_tour_state_session(start_date, @days_count, @self_tour_records, :tour_site, "self_tour")
-      tour_type_session(start_date, @days_count, @self_tour_records, "self_tour") 
-      price_opened_track_session(start_date, @days_count, @self_tour_records, :arrived, "self_tour")
-      opened_counter_session(start_date, @days_count, @self_tour_records, :arrived, :camera_opened_counter, "self_tour") 
-      opened_counter_session(start_date, @days_count, @self_tour_records, :arrived, :notes_opened_counter, "self_tour") 
-      stops_per_tour(start_date, @days_count, @self_tour_records, "self_tour")
-      visits_per_tour_stop(@self_tour_records, "self_tour")
+    if @product_type == "pynwheel_tour"
+      tour_histories = TourHistory.where(community_id: communities.self_tour_enabled_only.ids)
+      @self_tour_records = tour_histories.where('arrived > ? AND arrived < ?',start_date.beginning_of_day, end_date.end_of_day)
+      @self_tour_records_all = tour_histories.where('arrived > ? AND arrived < ?',start_date.beginning_of_day, end_date.end_of_day)
+      @min_date_for_self_tour = tour_histories.order('created_at asc')&.first&.created_at
+      apply_filters(params)
 
-      @schedule_records = SchedualTour.where(community_id: @self_tour_records_all.pluck(:community_id).compact.uniq).where.not(tour_user_id: nil).where('tour_date >= ? AND tour_date <= ?',start_date.beginning_of_day, DateTime.now).where(tour_type: ["self_tour", "guided_tour", "Virtual Tour"])
-      days_count_for_schedule_records = return_total_days(start_date, Date.today) > 0 ? return_total_days(start_date, Date.yesterday.end_of_day) : 1
-      till_now_tour_histories = @self_tour_records_all.where('arrived < ?', Date.yesterday.end_of_day)
-      no_shows(start_date, days_count_for_schedule_records, @schedule_records, till_now_tour_histories, "self_tour")
+      # For Pynwheel Tour
+      if @self_tour_records.any?
+        collect_session_each_day_data(start_date, @days_count, @self_tour_records, :arrived, "self_tour")
+        collect_session_each_day_data_in_minutes(start_date, @days_count, @self_tour_records, :arrived, :left, "self_tour")
+        collect_session_each_day_data_in_hours(@self_tour_records, :arrived, "self_tour")
+        bounce_rate_on_pages(@self_tour_records_all, :visited_pages_counter, "self_tour")
+        events_per_session(start_date, @days_count, @self_tour_records, :arrived, "self_tour")
+        apply_clicks_track_session(start_date, @days_count, @self_tour_records, :arrived, "self_tour")
+        see_availability_session(start_date, @days_count, @self_tour_records, "self_tour")
+        tour_site_or_tour_state_session(start_date, @days_count, @self_tour_records, :tour_site, "self_tour")
+        tour_type_session(start_date, @days_count, @self_tour_records, "self_tour") 
+        price_opened_track_session(start_date, @days_count, @self_tour_records, :arrived, "self_tour")
+        opened_counter_session(start_date, @days_count, @self_tour_records, :arrived, :camera_opened_counter, "self_tour") 
+        opened_counter_session(start_date, @days_count, @self_tour_records, :arrived, :notes_opened_counter, "self_tour") 
+        stops_per_tour(start_date, @days_count, @self_tour_records, "self_tour")
+        visits_per_tour_stop(@self_tour_records, "self_tour")
+
+        @schedule_records = SchedualTour.where(community_id: @self_tour_records_all.pluck(:community_id).compact.uniq).where.not(tour_user_id: nil).where('tour_date >= ? AND tour_date <= ?',start_date.beginning_of_day, DateTime.now).where(tour_type: ["self_tour", "guided_tour", "Virtual Tour"])
+        days_count_for_schedule_records = return_total_days(start_date, Date.today) > 0 ? return_total_days(start_date, Date.yesterday.end_of_day) : 1
+        till_now_tour_histories = @self_tour_records_all.where('arrived < ?', Date.yesterday.end_of_day)
+        no_shows(start_date, days_count_for_schedule_records, @schedule_records, till_now_tour_histories, "self_tour")
+      end
+
+      if @self_tour_records_all.any?
+        tour_site_or_tour_state_session(start_date, @days_count, @self_tour_records_all, :tour_state, "self_tour")
+      end
     end
-    if @self_tour_records_all.any? && (@product_type == "all" || @product_type == "self_tour")
-      tour_site_or_tour_state_session(start_date, @days_count, @self_tour_records_all, :tour_state, "self_tour")
-    end
+
     @communities_list = params[:company].present? ? Community.where(company_id: params[:company]).pluck(:name, :id) : communities_list(current_user)
     @communities_list = params[:region].present? ? Community.where(region_id: params[:region]).pluck(:name, :id) : @communities_list
     @start_date = start_date
@@ -99,7 +116,7 @@ class AnalyticsController < ApplicationController
     end
 
     def apply_filters(params)
-      @product_type = params[:product_type].present? ? params[:product_type] : "all"
+      @product_type = params[:product_type].present? ? params[:product_type] : nil
       @admin_type = params[:admin_type] if params[:admin_type]
       @community_id = params[:community] if params[:community].present?
       @community = Community.find(@community_id) if @community_id.present?
@@ -147,10 +164,16 @@ class AnalyticsController < ApplicationController
     end
     
     def on_selected_communities(ids)
-      @maps_records = @maps_records.where(community_id: ids)
-      @metro_records = @metro_records.where(community_id: ids)
-      @self_tour_records = @self_tour_records.where(community_id: ids)
-      @self_tour_records_all = @self_tour_records_all.where(community_id: ids)
+      @maps_records = (@product_type == "maps") ? @maps_records.where(community_id: ids) : []
+      @metro_records = (@product_type == "touch") ? @metro_records.where(community_id: ids) : []
+
+      if @product_type == "pynwheel_tour"
+        @self_tour_records = @self_tour_records.where(community_id: ids)
+        @self_tour_records_all = @self_tour_records_all.where(community_id: ids)
+      else
+        @self_tour_records = []
+        @self_tour_records_all = []
+      end
     end
 
     def collect_session_each_day_data(start_date, days_count, total_records, start_attr_name, for_device_type)
@@ -799,7 +822,7 @@ class AnalyticsController < ApplicationController
 
     def get_name product_type
       case product_type
-      when "self_tour"
+      when "pynwheel_tour"
         "Tours"
       when "maps"
         "Interactions"
