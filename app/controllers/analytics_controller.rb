@@ -16,17 +16,36 @@ class AnalyticsController < ApplicationController
       track_sessions = TrackSession.where(community_id: communities.ids)
       @maps_records = track_sessions.where(track_session_type: "maps").where('start_datetime > ? AND start_datetime < ?',start_date.beginning_of_day, end_date.end_of_day)
       apply_filters(params)
+      puts "\n\n\n Maps Start: #{Time.now}\n\n\n"
 
       if @maps_records.any?
         collect_session_each_day_data(start_date, @days_count, @maps_records, :start_datetime, "maps")
+        puts "\n\n\nEach Day Session: #{Time.now}\n\n\n"
+
         collect_session_each_day_data_in_minutes(start_date, @days_count, @maps_records, :start_datetime, :end_datetime, "maps")
+        puts "\n\n\nEach Day Session In Minutes: #{Time.now}\n\n\n"
+
         collect_session_each_day_data_in_hours(@maps_records, :start_datetime, "maps")
+        puts "\n\n\nEach Day Session In Hours: #{Time.now}\n\n\n"
+
         bounce_rate_on_pages(@maps_records, :visited_pages ,"maps")
+        puts "\n\n\nBounce Rate: #{Time.now}\n\n\n"
+
         events_per_session(start_date, @days_count, @maps_records, :start_datetime, "maps")
+        puts "\n\n\nEvents: #{Time.now}\n\n\n"
+
         apply_clicks_track_session(start_date, @days_count, @maps_records, :start_datetime, "maps")
+        puts "\n\n\n Apply Clicks: #{Time.now}\n\n\n"
+
         favourite_saved_track_session(start_date, @days_count, @maps_records, "maps")
+        puts "\n\n\n Fav Saved: #{Time.now}\n\n\n"
+
         favourite_sent_track_session(start_date, @days_count, @maps_records, "maps")
+        puts "\n\n\n Fav Sent: #{Time.now}\n\n\n"
+
         price_opened_track_session(start_date, @days_count, @maps_records, :start_datetime, "maps")
+        puts "\n\n\n Price Opened: #{Time.now}\n\n\n"
+        
       end
     end
 
