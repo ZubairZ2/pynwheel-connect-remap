@@ -195,33 +195,23 @@ class AnalyticsController < ApplicationController
     end
 
     def collect_session_each_day_data(start_date, days_count, total_records, start_attr_name, for_device_type)
-      # Initialize the sessions hash with default values for the days
       sessions_each_day_hash = return_empty_hash(days_count, start_date)
-    
-      # Efficiently pluck and convert start dates to avoid repeated mapping
-      records_start_date = total_records.pluck(start_attr_name).map(&:to_date)
-    
-      # Count occurrences of each date in a single pass
-      counts_hash = records_start_date.tally
-    
-      # Update the sessions hash with the counts
+
+      counts_hash = total_records.group("DATE(#{start_attr_name})").order("DATE(#{start_attr_name})").count
       sessions_each_day_hash.merge!(counts_hash) { |_, old_val, new_val| old_val + new_val }
-    
-      # Calculate visited days count based on device type
+
       visited_days_count = if for_device_type == "self_tour"
                              total_records.distinct.count(:arrived)
                            else
                              counts_hash.keys.size
                            end
-    
+
       total_record_count = total_records.size
       avg_sessions_per_day = (total_record_count.to_f / visited_days_count.to_f).round
-    
-      # Set instance variables for the calculated data
+
       instance_variable_set("@track_session_count_#{for_device_type}", formatted_number(total_record_count))
       instance_variable_set("@avg_track_session_#{for_device_type}", formatted_number(avg_sessions_per_day))
     
-      # Prepare data for charts
       session_each_day_labels = sessions_each_day_hash.keys.map(&:to_s)
       session_each_day_counts = sessions_each_day_hash.values
     
@@ -233,11 +223,9 @@ class AnalyticsController < ApplicationController
         "rgba(137, 199, 101, 1)"
       )
     
-      # Set the chart data
       instance_variable_set("@session_each_day_data_#{for_device_type}", session_each_day_data)
       instance_variable_set("@session_each_day_options_#{for_device_type}", session_each_day_options)
-    end
-    
+    end    
 
     def collect_session_each_day_data_in_minutes(start_date, days_count, total_records, start_attr_name, end_attr_name, for_device_type)
       # Initialize the sessions hash with default values for each day
