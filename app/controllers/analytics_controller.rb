@@ -395,45 +395,47 @@ class AnalyticsController < ApplicationController
     end
 
     def apply_clicks_track_session(start_date, days_count, total_records, start_attr_name, for_device_type) 
+      # Fetch records and aggregate data directly in SQL
+      records = total_records
+        .where("#{start_attr_name} >= ? AND #{start_attr_name} <= ?", start_date, start_date + days_count.days)
+        .group("DATE(#{start_attr_name})")
+        .pluck(
+          "DATE(#{start_attr_name})", 
+          'SUM(apply_click_counter)', 
+          'COUNT(*)', 
+          'SUM(CASE WHEN apply_click_counter > 0 THEN 1 ELSE 0 END)'
+        )
+    
+      # Initialize hash to track sessions each day
       sessions_each_day_hash = return_empty_hash(days_count, start_date)
-      
-      # Fetch records and transform in one go
-      records = total_records.order(start_attr_name).pluck(start_attr_name, :apply_click_counter)
-      
-      # Initialize counters
-      session_with_counts = 0
-      session_without_counts = 0
-      counts_by_date = Hash.new(0) # Hash for counting apply clicks by date
-      
-      # Process records in a single loop
-      records.each do |start_date, apply_click_counter|
-        date = start_date.to_date
-        if apply_click_counter > 0
-          counts_by_date[date] += apply_click_counter
-          session_with_counts += 1
-        else
-          session_without_counts += 1
-        end
+    
+      total_sessions_with_counts = 0
+      total_sessions = 0
+    
+      # Populate sessions_each_day_hash and track counts
+      records.each do |date, apply_clicks, session_count, sessions_with_clicks|
+        sessions_each_day_hash[date] = apply_clicks
+        total_sessions_with_counts += sessions_with_clicks
+        total_sessions += session_count
       end
     
-      # Fill sessions_each_day_hash with counts
-      counts_by_date.each do |date, count|
-        sessions_each_day_hash[date] = count
-      end
-      
       # Set total number of apply clicks
-      instance_variable_set("@total_number_of_apply_clicks_#{for_device_type}", formatted_number(sessions_each_day_hash.values.sum))
-      
+      total_apply_clicks = sessions_each_day_hash.values.sum
+      instance_variable_set("@total_number_of_apply_clicks_#{for_device_type}", formatted_number(total_apply_clicks))
+    
+      # Calculate sessions without counts
+      session_without_counts = total_sessions - total_sessions_with_counts
+    
       # Calculate percentages
-      records_count = records.size
-      percentage_session_with_counts = formate_percentage(session_with_counts, records_count)
-      percentage_session_without_counts = formate_percentage(session_without_counts, records_count)
+      percentage_session_with_counts = formate_percentage(total_sessions_with_counts, total_sessions)
+      percentage_session_without_counts = formate_percentage(session_without_counts, total_sessions)
     
       # Create pie chart data
       pie_chart_hash = {
         "#{get_name(for_device_type)} with Apply Clicks" => percentage_session_with_counts,
         "#{get_name(for_device_type)} without Apply Clicks" => percentage_session_without_counts
       }
+      
       pie_apply_click_data_labels, pie_apply_click_data_options = make_pie_chart(
         pie_chart_hash.keys,
         pie_chart_hash.values,
@@ -441,7 +443,7 @@ class AnalyticsController < ApplicationController
         ["rgba(137, 199, 101, 0.7)", "rgba(255,212,0,0.5)"],
         ["rgba(137, 199, 101, 1)", "rgba(255,212,0,1)"]
       )
-      
+    
       # Prepare line chart data
       line_apply_click_data_labels, line_apply_click_data_options = make_line_chart(
         sessions_each_day_hash.keys.map { |date| date.strftime("%Y-%m-%d") },
@@ -458,7 +460,8 @@ class AnalyticsController < ApplicationController
       instance_variable_set("@pie_apply_click_data_options_#{for_device_type}", pie_apply_click_data_options)
       instance_variable_set("@line_apply_click_data_labels_#{for_device_type}", line_apply_click_data_labels)
       instance_variable_set("@line_apply_click_data_options_#{for_device_type}", line_apply_click_data_options)
-    end    
+    end
+       
     
     def favourite_saved_track_session(start_date, days_count, total_records, for_device_type)
       # Fetch records grouped by date
