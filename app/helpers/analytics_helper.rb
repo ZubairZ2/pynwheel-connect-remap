@@ -264,8 +264,8 @@ module AnalyticsHelper
     fetch_companies(user).pluck(:name, :id)    
   end
 
-  def regions_list(user)
-    fetch_regions(user).pluck(:name, :id)    
+  def regions_list(company_id)
+    fetch_regions(company_id).pluck(:name, :id)    
   end
 
   def fetch_companies(user)
@@ -299,8 +299,8 @@ module AnalyticsHelper
     communities.active_communities.order(:name)
   end
 
-  def fetch_regions(user)
-    Region.where(company_id: fetch_companies(user).ids)
+  def fetch_regions(company_id)
+    Region.where(company_id: company_id)
   end
 
   def fetch_dwelo_communities
