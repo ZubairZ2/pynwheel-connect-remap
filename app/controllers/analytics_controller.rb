@@ -42,10 +42,6 @@ class AnalyticsController < ApplicationController
 
         favourite_sent_track_session(start_date, @days_count, @maps_records, "maps")
         puts "\n\n\n Fav Sent: #{Time.now}\n\n\n"
-
-        price_opened_track_session(start_date, @days_count, @maps_records, :start_datetime, "maps")
-        puts "\n\n\n Price Opened: #{Time.now}\n\n\n"
-        
       end
     end
 
@@ -67,7 +63,6 @@ class AnalyticsController < ApplicationController
         favourite_saved_track_session(start_date, @days_count, @metro_records, "metro")
         favourite_sent_track_session(start_date, @days_count, @metro_records, "metro")
         interface_used(start_date, @days_count, @metro_records, "metro")
-        price_opened_track_session(start_date, @days_count, @metro_records, :start_datetime, "metro")
         visits_per_session_page(@metro_records, "metro")
       end
     end
@@ -90,7 +85,6 @@ class AnalyticsController < ApplicationController
         see_availability_session(start_date, @days_count, @self_tour_records, "self_tour")
         tour_site_or_tour_state_session(start_date, @days_count, @self_tour_records, :tour_site, "self_tour")
         tour_type_session(start_date, @days_count, @self_tour_records, "self_tour") 
-        price_opened_track_session(start_date, @days_count, @self_tour_records, :arrived, "self_tour")
         opened_counter_session(start_date, @days_count, @self_tour_records, :arrived, :camera_opened_counter, "self_tour") 
         opened_counter_session(start_date, @days_count, @self_tour_records, :arrived, :notes_opened_counter, "self_tour") 
         stops_per_tour(start_date, @days_count, @self_tour_records, "self_tour")
@@ -465,41 +459,41 @@ class AnalyticsController < ApplicationController
       instance_variable_set("@line_apply_click_data_labels_#{for_device_type}", line_apply_click_data_labels)
       instance_variable_set("@line_apply_click_data_options_#{for_device_type}", line_apply_click_data_options)
     end    
-
-    def favourite_saved_track_session(start_date, days_count, total_records, for_device_type) 
+    
+    def favourite_saved_track_session(start_date, days_count, total_records, for_device_type)
+      # Fetch records grouped by date
+      records = total_records
+        .where('start_datetime >= ? AND start_datetime <= ?', start_date, start_date + days_count.days)
+        .group('DATE(start_datetime)')
+        .pluck(
+          'DATE(start_datetime)', 
+          'SUM(favorite_saved_counter)', 
+          'COUNT(*)', 
+          'SUM(CASE WHEN favorite_saved_counter > 0 THEN 1 ELSE 0 END)'
+        )
+    
+      # Initialize the sessions_each_day_hash
       sessions_each_day_hash = return_empty_hash(days_count, start_date)
     
-      # Fetch records only once
-      records = total_records.order(:start_datetime).pluck(:start_datetime, :favorite_saved_counter)
-      
-      session_with_counts = 0
-      session_without_counts = 0
-      
-      # Use a hash to sum counters by date directly
-      counts_by_date = Hash.new(0)
+      total_sessions_with_counts = 0
+      total_sessions = 0
     
-      # Process records in a single loop
-      records.each do |start_datetime, favorite_saved_counter|
-        date = start_datetime.to_date
-        counts_by_date[date] += favorite_saved_counter
-        session_with_counts += 1 if favorite_saved_counter > 0
+      # Populate sessions_each_day_hash and calculate sessions with counts
+      records.each do |date, total_count, session_count, sessions_with_favorites|
+        sessions_each_day_hash[date] = total_count
+        total_sessions_with_counts += sessions_with_favorites
+        total_sessions += session_count
       end
     
-      # Fill the sessions_each_day_hash
-      counts_by_date.each do |date, count|
-        sessions_each_day_hash[date] = count
-      end
-      
       # Calculate total number of favorite saved
       total_favourite_saved = sessions_each_day_hash.values.sum
       instance_variable_set("@total_number_of_favourite_saved_#{for_device_type}", formatted_number(total_favourite_saved))
-      
-      records_count = records.size
-      session_without_counts = records_count - session_with_counts
+    
+      session_without_counts = total_sessions - total_sessions_with_counts
     
       # Calculate percentages
-      percentage_session_with_counts = formate_percentage(session_with_counts, records_count)
-      percentage_session_without_counts = formate_percentage(session_without_counts, records_count)
+      percentage_session_with_counts = formate_percentage(total_sessions_with_counts, total_sessions)
+      percentage_session_without_counts = formate_percentage(session_without_counts, total_sessions)
     
       # Prepare data for charts
       pie_chart_hash = {
@@ -514,7 +508,7 @@ class AnalyticsController < ApplicationController
         ["rgba(143, 73, 156, 0.5)", "rgba(255,212,0,0.5)"],
         ["rgba(143, 73, 156, 1)", "rgba(255,212,0,1)"]
       )
-      
+    
       bar_favourite_saved_data_labels, bar_favourite_saved_data_options = make_bar_chart(
         sessions_each_day_hash.keys.map { |s_date| s_date.strftime("%Y-%m-%d") },
         sessions_each_day_hash.values,
@@ -530,41 +524,42 @@ class AnalyticsController < ApplicationController
       instance_variable_set("@pie_favourite_saved_data_options_#{for_device_type}", pie_favourite_saved_data_options)
       instance_variable_set("@bar_favourite_saved_data_labels_#{for_device_type}", bar_favourite_saved_data_labels)
       instance_variable_set("@bar_favourite_saved_data_options_#{for_device_type}", bar_favourite_saved_data_options)
-    end    
-
-    def favourite_sent_track_session(start_date, days_count, total_records, for_device_type) 
+    end
+    
+    def favourite_sent_track_session(start_date, days_count, total_records, for_device_type)
+      # Fetch records grouped by date with counts calculated directly in SQL
+      records = total_records
+        .where('start_datetime >= ? AND start_datetime <= ?', start_date, start_date + days_count.days)
+        .group('DATE(start_datetime)')
+        .pluck(
+          'DATE(start_datetime)', 
+          'SUM(favorite_sent_counter)', 
+          'COUNT(*)', 
+          'SUM(CASE WHEN favorite_sent_counter > 0 THEN 1 ELSE 0 END)'
+        )
+    
+      # Initialize the sessions_each_day_hash
       sessions_each_day_hash = return_empty_hash(days_count, start_date)
     
-      # Fetch records only once
-      records = total_records.order(:start_datetime).pluck(:start_datetime, :favorite_sent_counter)
+      total_sessions_with_counts = 0
+      total_sessions = 0
     
-      session_with_counts = 0
-      records_count = records.size
-      
-      # Use a hash to sum counters by date directly
-      counts_by_date = Hash.new(0)
-    
-      # Process records in a single loop
-      records.each do |start_datetime, favorite_sent_counter|
-        date = start_datetime.to_date
-        counts_by_date[date] += favorite_sent_counter
-        session_with_counts += 1 if favorite_sent_counter > 0
+      # Populate sessions_each_day_hash and calculate sessions with counts
+      records.each do |date, total_count, session_count, sessions_with_favorites|
+        sessions_each_day_hash[date] = total_count
+        total_sessions_with_counts += sessions_with_favorites
+        total_sessions += session_count
       end
     
-      # Fill the sessions_each_day_hash
-      counts_by_date.each do |date, count|
-        sessions_each_day_hash[date] = count
-      end
-      
       # Calculate total number of favorite sent
       total_favourite_sent = sessions_each_day_hash.values.sum
       instance_variable_set("@total_number_of_favourite_sent_#{for_device_type}", formatted_number(total_favourite_sent))
-      
-      session_without_counts = records_count - session_with_counts
+    
+      session_without_counts = total_sessions - total_sessions_with_counts
     
       # Calculate percentages
-      percentage_session_with_counts = formate_percentage(session_with_counts, records_count)
-      percentage_session_without_counts = formate_percentage(session_without_counts, records_count)
+      percentage_session_with_counts = formate_percentage(total_sessions_with_counts, total_sessions)
+      percentage_session_without_counts = formate_percentage(session_without_counts, total_sessions)
     
       # Prepare data for charts
       pie_chart_hash = {
@@ -576,10 +571,10 @@ class AnalyticsController < ApplicationController
         pie_chart_hash.keys,
         pie_chart_hash.values,
         "Total #{get_name(for_device_type)}",
-        ["rgba(240, 90, 142, 0.5)", "rgba(255,212,0,0.8)"],
-        ["rgba(240, 90, 142, 1)", "rgba(255,212,0,1)"]
+        ["rgba(240, 90, 142, 0.5)", "rgba(255, 212, 0, 0.8)"],
+        ["rgba(240, 90, 142, 1)", "rgba(255, 212, 0, 1)"]
       )
-      
+    
       bar_favourite_sent_data_labels, bar_favourite_sent_data_options = make_bar_chart(
         sessions_each_day_hash.keys.map { |s_date| s_date.strftime("%Y-%m-%d") },
         sessions_each_day_hash.values,
@@ -596,8 +591,7 @@ class AnalyticsController < ApplicationController
       instance_variable_set("@bar_favourite_sent_data_labels_#{for_device_type}", bar_favourite_sent_data_labels)
       instance_variable_set("@bar_favourite_sent_data_options_#{for_device_type}", bar_favourite_sent_data_options)
     end
-    
-
+     
     def interface_used(start_date, days_count, total_records, for_device_type)
       sessions_each_day_hash = return_empty_hash(days_count,start_date)
       labels = sessions_each_day_hash.keys.map{|date| date.to_date.to_s}
@@ -647,28 +641,6 @@ class AnalyticsController < ApplicationController
       instance_variable_set("@bar_touch_data_options_#{for_device_type}", bar_touch_data_options)
       instance_variable_set("@pie_touch_data_labels_#{for_device_type}", pie_touch_data_labels)
       instance_variable_set("@pie_touch_data_options_#{for_device_type}", pie_touch_data_options)
-    end
-
-    def price_opened_track_session(start_date, days_count, total_records, start_attr_name, for_device_type) 
-      
-      records = total_records.order(start_attr_name).pluck(start_attr_name, :price_opened_counter)
-      session_with_counts = 0
-      records.each { |ar| session_with_counts += 1  if ar.last > 0 }
-      records_count = records.size
-      records_last_counts = records.map{ |arr| arr.last }
-      instance_variable_set("@total_number_of_price_opened_#{for_device_type}", records_last_counts.sum)
-      session_without_counts = records_count - session_with_counts
-      
-      percentage_session_with_counts = formate_percentage(session_with_counts, records_count)
-      percentage_session_without_counts = formate_percentage(session_without_counts, records_count)
-      
-      pie_chart_hash = {"#{get_name(for_device_type)} with Price Opened" => percentage_session_with_counts, "#{get_name(for_device_type)} without Price Opened" => percentage_session_without_counts}
-      pie_price_opened_data_labels, pie_price_opened_data_options = make_pie_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total #{get_name(for_device_type)}", ["rgba(137, 199, 101, 0.8)",  "rgba(255,212,0,0.8)"], ["rgba(137, 199, 101, 1)", "rgba(255,212,0,1)"])
-      instance_variable_set("@percentage_session_with_price_opened_#{for_device_type}", "#{percentage_session_with_counts}%")
-      instance_variable_set("@percentage_session_without_price_opened_#{for_device_type}", "#{percentage_session_without_counts}%")
-      instance_variable_set("@pie_price_opened_data_labels_#{for_device_type}", pie_price_opened_data_labels)
-      instance_variable_set("@pie_price_opened_data_options_#{for_device_type}", pie_price_opened_data_options)
-
     end
 
     def opened_counter_session(start_date, days_count, total_records, start_attr_name, counter_attr_type, for_device_type) 
