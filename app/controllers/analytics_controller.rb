@@ -335,7 +335,6 @@ class AnalyticsController < ApplicationController
       instance_variable_set("@session_each_day_hour_options_#{for_device_type}", session_each_day_hour_options)
     end
     
-
     def bounce_rate_on_pages(total_records, visited_pages_attr_name, for_device_type)
       pages_hash = {"Single" => 0, "Multiple" => 0}
       visite_pages_counts = for_device_type == "self_tour" ? total_records.pluck(visited_pages_attr_name) : total_records.pluck(visited_pages_attr_name).map(&:count) 
@@ -351,41 +350,83 @@ class AnalyticsController < ApplicationController
       instance_variable_set("@bounce_data_labels_#{for_device_type}", bounce_data_labels)
       instance_variable_set("@bounce_data_options_#{for_device_type}", bounce_data_options)
     end
-
+    
     def events_per_session(start_date, days_count, total_records, start_attr_name, for_device_type)
-      sessions_each_day_hash = return_empty_hash(days_count,start_date)
-
+      # Define the SQL query columns based on the device type
       if for_device_type == "self_tour"
-        records = total_records.order(start_attr_name).pluck(start_attr_name, :see_availability_counter, :apply_click_counter, 0, :notes_opened_counter, :camera_opened_counter)
+        records = total_records
+          .where("#{start_attr_name} >= ? AND #{start_attr_name} <= ?", start_date, start_date + days_count.days)
+          .group("DATE(#{start_attr_name})")
+          .select("DATE(#{start_attr_name}) AS event_date, 
+                   SUM(COALESCE(see_availability_counter, 0)) AS see_availability_count,
+                   SUM(COALESCE(apply_click_counter, 0)) AS apply_click_count,
+                   SUM(COALESCE(notes_opened_counter, 0)) AS notes_opened_count,
+                   SUM(COALESCE(camera_opened_counter, 0)) AS camera_opened_count")
       else
-        records = total_records.order(start_attr_name).pluck(start_attr_name, :apply_click_counter,:favorite_saved_counter, :favorite_sent_counter, 0)
+        records = total_records
+          .where("#{start_attr_name} >= ? AND #{start_attr_name} <= ?", start_date, start_date + days_count.days)
+          .group("DATE(#{start_attr_name})")
+          .select("DATE(#{start_attr_name}) AS event_date, 
+                   SUM(COALESCE(apply_click_counter, 0)) AS apply_click_count,
+                   SUM(COALESCE(favorite_saved_counter, 0)) AS favorite_saved_count,
+                   SUM(COALESCE(favorite_sent_counter, 0)) AS favorite_sent_count")
       end
-
-      session_with_counts = 0
-      for_device_type == "self_tour" ? (records.each {|ar| session_with_counts += 1 if ar[1] > 0 || ar[2] > 0 || ar[3] > 0 || ar[4] > 0 || ar[4] > 0 || ar[5] > 0}) : (records.each {|ar| session_with_counts += 1 if ar[1] > 0 || ar[2] > 0 || ar[3] > 0 || ar[4] > 0 })
-      records_count = records.size
-      records = records.map{ |arr| for_device_type == "self_tour" ? [arr.first.to_date, arr[1], arr[2], arr[3], arr[4], arr[5]] : [arr.first.to_date, arr[1], arr[2], arr[3], arr[4]] }
-      records_start_date = records.map{ |arr| arr.first }
-      uniq_start_date = records_start_date.uniq
-      uniq_start_date_size = uniq_start_date.size
-
-      uniq_start_date_set = Set.new(uniq_start_date)
-      sessions_each_day_hash = Hash.new(0)
-      records.each do |arr|
-        date = arr.first
-        if uniq_start_date_set.include?(date)
-          count = for_device_type == "self_tour" ? arr[1..5].sum : arr[1..4].sum
-          sessions_each_day_hash[date] += count
-        end
+    
+      # Initialize session count and the sessions_each_day_hash
+      sessions_each_day_hash = return_empty_hash(days_count, start_date)
+    
+      # Populate the sessions_each_day_hash in a single iteration
+      records.each do |record|
+        total_count = for_device_type == "self_tour" ? 
+                      record.see_availability_count + record.apply_click_count + record.notes_opened_count + record.camera_opened_count :
+                      record.apply_click_count + record.favorite_saved_count + record.favorite_sent_count
+    
+        sessions_each_day_hash[record.event_date] = total_count
       end
-
-      instance_variable_set("@total_number_of_events_#{for_device_type}", formatted_number(sessions_each_day_hash.values.sum))
-      session_without_counts = records_count - session_with_counts
-      percentage_session_with_counts = formate_percentage(session_with_counts, records_count)
-      percentage_session_without_counts = formate_percentage(session_without_counts, records_count)
-      pie_chart_hash = {"#{get_name(for_device_type)} with Events" => percentage_session_with_counts, "#{get_name(for_device_type)} without Events" => percentage_session_without_counts}
-      pie_events_data_labels, pie_events_data_options = make_pie_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total #{get_name(for_device_type)}", ["rgba(0, 143, 212,0.5)", "rgba(255,212,0,0.5)"], ["rgba(0, 143, 212,1)","rgba(255,212,0,1)"])
-      bar_events_data_labels, bar_events_data_options = make_bar_chart(sessions_each_day_hash.keys.map {|s_date| s_date.strftime("%Y-%m-%d") }, sessions_each_day_hash.values, "Total Events", "rgba(0, 143, 212,0.5)", "rgba(0, 143, 212,1)")
+    
+      # Calculate total events and session counts
+      total_events = sessions_each_day_hash.values.sum
+      total_sessions = total_records
+                      .where("#{start_attr_name} >= ? AND #{start_attr_name} <= ?", start_date, start_date + days_count.days)
+                      .count
+    
+      # Set total number of events
+      instance_variable_set("@total_number_of_events_#{for_device_type}", formatted_number(total_events))
+    
+      # Calculate the number of sessions with counts (at least one interaction)
+      session_with_counts = sessions_each_day_hash.values.count { |count| count > 0 }
+      
+      # Calculate sessions without counts
+      session_without_counts = total_sessions - session_with_counts
+    
+      # Calculate percentages based on total_records
+      percentage_session_with_counts = formate_percentage(session_with_counts, total_sessions)
+      percentage_session_without_counts = formate_percentage(session_without_counts, total_sessions)
+    
+      # Create pie chart data
+      pie_chart_hash = {
+        "#{get_name(for_device_type)} with Events" => percentage_session_with_counts,
+        "#{get_name(for_device_type)} without Events" => percentage_session_without_counts
+      }
+    
+      pie_events_data_labels, pie_events_data_options = make_pie_chart(
+        pie_chart_hash.keys,
+        pie_chart_hash.values,
+        "Total #{get_name(for_device_type)}",
+        ["rgba(0, 143, 212, 0.5)", "rgba(255, 212, 0, 0.5)"],
+        ["rgba(0, 143, 212, 1)", "rgba(255, 212, 0, 1)"]
+      )
+    
+      # Prepare bar chart data
+      bar_events_data_labels, bar_events_data_options = make_bar_chart(
+        sessions_each_day_hash.keys.map { |date| date.strftime("%Y-%m-%d") },
+        sessions_each_day_hash.values,
+        "Total Events",
+        "rgba(0, 143, 212, 0.5)",
+        "rgba(0, 143, 212, 1)"
+      )
+    
+      # Set instance variables for results
       instance_variable_set("@percentage_session_with_events_#{for_device_type}", "#{percentage_session_with_counts}%")
       instance_variable_set("@percentage_session_without_events_#{for_device_type}", "#{percentage_session_without_counts}%")
       instance_variable_set("@pie_events_data_labels_#{for_device_type}", pie_events_data_labels)
@@ -393,6 +434,8 @@ class AnalyticsController < ApplicationController
       instance_variable_set("@bar_events_data_labels_#{for_device_type}", bar_events_data_labels)
       instance_variable_set("@bar_events_data_options_#{for_device_type}", bar_events_data_options)
     end
+    
+    
 
     def apply_clicks_track_session(start_date, days_count, total_records, start_attr_name, for_device_type) 
       # Fetch records and aggregate data directly in SQL
