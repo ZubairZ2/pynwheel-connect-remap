@@ -96,18 +96,20 @@ function formatProductTypeText(text) {
 
 function clearOtherSelectOptions(currentSelectId) {
   const selectIds = ["companies", "communities", "regions", "admin_type"];
-  selectIds.forEach(selectId => {
-    if (selectId !== currentSelectId) {
-      $(`#${selectId}`).val("");
-    }
-  });
+  if (currentSelectId === "companies") {
+    selectIds.forEach(selectId => {
+      if (selectId !== currentSelectId) {
+        $(`#${selectId}`).val("");
+      }
+    });
+  }
 }
 
 function updateUrlWithCurrentSelections() {
   const params = {
+    company: $('#companies').val(),
     community: $('#communities').val(),
     timeframe: $('#timeframe').val(),
-    company: $('#companies').val(),
     region: $('#regions').val(),
     admin_type: $('#admin_type').val(),
     product_type: selectedProductType
