@@ -5337,8 +5337,8 @@ body {
 .c-sidebar {
     position: fixed;
     top: 0;
-    bottom: 0;
-    z-index: 1030;
+    /* bottom: 0; */
+    z-index: 1;
     left: 0;
     background: #1d2425;
     width: 100%;
@@ -6167,7 +6167,7 @@ ul.add-fav-options {
 
 @media screen and (max-width:567px){
     .units-alert {
-        top: 10rem !important;
+        top: 17rem !important;
     }
     .left-side {
         top: 6rem;
@@ -6295,10 +6295,11 @@ ul.add-fav-options {
   }
   .c-sidebar {
       position: fixed;
-      top: auto;
+      /* top: auto; */
       display: inline-flex;
       max-width: 100%;
-      bottom: 65px;
+      /* bottom: 65px; */
+      top: 12.5rem;
   }
   .c-sidebar .c-sidebar-brand {
     width: 20%;
