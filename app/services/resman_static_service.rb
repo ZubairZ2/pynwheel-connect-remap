@@ -4,7 +4,6 @@ class ResmanStaticService < BaseService
     property_ids = credentials.resman_property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
-
         account_id = credentials.resman_account_id
         url = "#{ENV["RESMAN_BASE_URL"]}/GetMarketing2_0"
         response = HTTParty.post(url,
@@ -15,10 +14,11 @@ class ResmanStaticService < BaseService
                                      "PropertyID": property_id,
                                  },
                                  :headers => { 'Content-Type' => 'application/x-www-form-urlencoded' } )
-        # response =  JSON.parse(response.body)
+
         if response["ResMan"]["Status"] == "Success"
           units = []
           floorplans = []
+
           response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["ILS_Unit"].each do |pro|
             units << pro
           end
@@ -26,37 +26,18 @@ class ResmanStaticService < BaseService
           response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["Floorplan"].each do |pro|
             floorplans << pro
           end
+
           $units_availability_url = response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["Information"]["UnitApplicationBaseURL"]
           
           save_resman_units(units,property_id)
           save_resman_floorplans(floorplans,property_id)
-          begin
-            cred = Credential.find credentials.id
-            cred.data_error_message = nil
-            cred.save
-          rescue => err
-          end
-          # save_website_column_of_community(response)
-        else
-          begin
-            cred = Credential.find credentials.id
-            cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
-            cred.save
-          rescue => err
-          end
-          ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
         end
-      rescue => e
-        begin
-          cred = Credential.find credentials.id
-          cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
-          cred.save
-        rescue => err
-        end
-        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
+      rescue => error
+        raise error
       end
     end
   end
+
   def save_resman_units(units,property_id)
     units.each do |u|
       vacateDate = ""
@@ -172,9 +153,31 @@ class ResmanStaticService < BaseService
         end
       end
 
+      add_floorplan_images(floorplan, f['File'])
+
       floorplan.save(validate: false)
 
     end
+  end
+
+  def add_floorplan_images fp, image_urls
+    primary_image = fetch_floorplan_image_url(image_urls)
+    fp.image = image_base64(primary_image) if primary_image.present?
+  end
+
+  def fetch_floorplan_image_url image_urls
+    return unless image_urls.present?
+    image_urls['Src'] rescue nil
+  end
+
+  def image_base64(image_url)
+    return unless image_url.present?
+    encoded_url = URI.encode(image_url)
+    uri = URI.parse(encoded_url)
+    file = uri.open
+    image_data = file.read
+    encoded_image = Base64.strict_encode64(image_data)
+    "data:image/png;base64,#{encoded_image}"
   end
 
   def unit_status_update unit, u
