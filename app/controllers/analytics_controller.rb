@@ -222,16 +222,15 @@ class AnalyticsController < ApplicationController
     end    
 
     def collect_session_each_day_data_in_minutes(start_date, days_count, total_records, start_attr_name, end_attr_name, for_device_type)
-      # Initialize the sessions hash with default values for each day
-      sessions_each_day_hash = return_empty_hash(days_count, start_date)
-    
-      # Optimized query for plucking records
+      sessions_each_day_hash = return_empty_hash(days_count,start_date)
+      total_records_with_abondoned = total_records.pluck(end_attr_name)
+
       if for_device_type == "self_tour"
-        start_end_datetime_arr = total_records.where("#{end_attr_name} IS NOT NULL").pluck(start_attr_name, end_attr_name)
+        start_end_datetime_arr = total_records_with_abondoned.include?(nil) ? total_records.pluck(start_attr_name, :updated_at) : total_records.pluck(start_attr_name, end_attr_name)
       else
         start_end_datetime_arr = total_records.pluck(
           start_attr_name,
-          Arel.sql("COALESCE(#{end_attr_name}, updated_at) AS end_datetime")
+          Arel.sql("COALESCE(end_datetime, updated_at) AS end_datetime")
         )
       end
     
