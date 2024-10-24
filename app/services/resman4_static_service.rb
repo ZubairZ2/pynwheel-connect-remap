@@ -30,7 +30,7 @@ class Resman4StaticService < BaseService
           end
 
           $units_availability_url = property["Information"]["UnitApplicationBaseURL"]
-          
+
           save_resman_property_details(property)
           save_resman_units(units, property_id)
           save_resman_floorplans(floorplans, property_id)
@@ -44,6 +44,7 @@ class Resman4StaticService < BaseService
   def save_resman_property_details property
     begin
       @community = Community.find credentials.community_id
+      
       @community.update!(
         name: property["PropertyID"]["MarketingName"],
         address: property["PropertyID"]["Address"]["AddressLine1"],
@@ -252,12 +253,16 @@ class Resman4StaticService < BaseService
   end
 
   def unit_status_update unit, u
-    vacancy_class = u["Availability"]["VacancyClass"]
-    unit_occupancy_status =  u["Units"]["Unit"]["UnitOccupancyStatus"]
+    begin
+      vacancy_class = u["Availability"]["VacancyClass"]
+      unit_occupancy_status =  u["Units"]["Unit"]["UnitOccupancyStatus"]
 
-    if (vacancy_class == "Unoccupied") && (unit_occupancy_status == "vacant")
-      unit.unit_status = "Unoccupied"
-    else
+      if (vacancy_class == "Unoccupied") && (unit_occupancy_status == "vacant")
+        unit.unit_status = "Unoccupied"
+      else
+        unit.unit_status = "Occupied"
+      end
+    rescue => error
       unit.unit_status = "Occupied"
     end
   end

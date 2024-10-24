@@ -18,23 +18,42 @@ class ResmanStaticService < BaseService
         if response["ResMan"]["Status"] == "Success"
           units = []
           floorplans = []
+          property = response["ResMan"]["Response"]["PhysicalProperty"]["Property"]
 
-          response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["ILS_Unit"].each do |pro|
+          property["ILS_Unit"].each do |pro|
             units << pro
           end
 
-          response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["Floorplan"].each do |pro|
+          property["Floorplan"].each do |pro|
             floorplans << pro
           end
 
-          $units_availability_url = response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["Information"]["UnitApplicationBaseURL"]
+          $units_availability_url = property["Information"]["UnitApplicationBaseURL"]
           
-          save_resman_units(units,property_id)
-          save_resman_floorplans(floorplans,property_id)
+          save_resman_property_details(property)
+          save_resman_units(units, property_id)
+          save_resman_floorplans(floorplans, property_id)
         end
       rescue => error
         raise error
       end
+    end
+  end
+
+  def save_resman_property_details property
+    begin
+      @community = Community.find credentials.community_id
+      @community.update!(
+        name: property["PropertyID"]["MITS:Identification"]["MITS:MarketingName"],
+        address: property["PropertyID"]["MITS:Address"]["MITS:Address1"],
+        city: property["PropertyID"]["MITS:Address"]["MITS:City"],
+        state: property["PropertyID"]["MITS:Address"]["MITS:State"],
+        zip: property["PropertyID"]["MITS:Address"]["MITS:PostalCode"],
+        latitude: property["ILS_Identification"]["Latitude"],
+        longitude: property["ILS_Identification"]["Longitude"]
+      )
+    rescue => error
+      raise error
     end
   end
 
@@ -181,12 +200,16 @@ class ResmanStaticService < BaseService
   end
 
   def unit_status_update unit, u
-    vacancy_class = u["Availability"]["VacancyClass"]
-    unit_occupancy_status =  u["Units"]["Unit"]["UnitOccupancyStatus"]
+    begin
+      vacancy_class = u["Availability"]["VacancyClass"]
+      unit_occupancy_status =  u["Units"]["Unit"]["UnitOccupancyStatus"]
 
-    if (vacancy_class == "Unoccupied") && (unit_occupancy_status == "vacant")
-      unit.unit_status = "Unoccupied"
-    else
+      if (vacancy_class == "Unoccupied") && (unit_occupancy_status == "vacant")
+        unit.unit_status = "Unoccupied"
+      else
+        unit.unit_status = "Occupied"
+      end
+    rescue => error
       unit.unit_status = "Occupied"
     end
   end
