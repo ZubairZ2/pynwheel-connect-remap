@@ -19,22 +19,45 @@ class Resman4StaticService < BaseService
           units = []
           floorplans = []
           
-          response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["ILS_Unit"].each do |pro|
+          property = response["ResMan"]["Response"]["PhysicalProperty"]["Property"]
+
+          property["ILS_Unit"].each do |pro|
             units << pro
           end
 
-          response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["Floorplan"].each do |pro|
+          property["Floorplan"].each do |pro|
             floorplans << pro
           end
 
-          $units_availability_url = response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["Information"]["UnitApplicationBaseURL"]
+          $units_availability_url = property["Information"]["UnitApplicationBaseURL"]
           
-          save_resman_units(units,property_id)
-          save_resman_floorplans(floorplans,property_id)
+          save_resman_property_details(property)
+          save_resman_units(units, property_id)
+          save_resman_floorplans(floorplans, property_id)
         end
       rescue => error
         raise error
       end
+    end
+  end
+
+  def save_resman_property_details property
+    begin
+      @community = Community.find credentials.community_id
+      @community.update!(
+        name: property["PropertyID"]["MarketingName"],
+        address: property["PropertyID"]["Address"]["AddressLine1"],
+        city: property["PropertyID"]["Address"]["City"],
+        state: property["PropertyID"]["Address"]["State"],
+        zip: property["PropertyID"]["Address"]["PostalCode"],
+        phone: property["PropertyID"]["Phone"]["PhoneNumber"],
+        email: property["PropertyID"]["Email"],
+        website: property["PropertyID"]["WebSite"],
+        latitude: property["ILS_Identification"]["Latitude"],
+        longitude: property["ILS_Identification"]["Longitude"]
+      )
+    rescue => error
+      raise error
     end
   end
 
