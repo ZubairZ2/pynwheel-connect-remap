@@ -114,7 +114,10 @@
                           %span.price{id: "#{unit.id}-total-price"}= "#{@community.get_currency_symbol}#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
                           %span.per-month /month
 
-                %span.move-in-date-text Pricing is based on a move-in date of today. Click “apply now” for more options.           
+                - if @community.display_rent
+                  %span.move-in-date-text Pricing is based on a move-in date of today. Click “apply now” for more options.
+                -else
+                  %span.move-in-date-text Click “Apply Now” for pricing options or contact us for a quote.           
             
             - elsif @community.credential.present? and @community.credential.apply_now.to_s == "separate_link"
               .m-filters
@@ -128,7 +131,10 @@
                     %span.per-month-price-text /month
                 %a.apply-now.apply_now{:href => @community.credential.separate_link,:target => "_blank" } Apply Now
               
-              %span.move-in-date-text Pricing is based on a move-in date of today. Click “apply now” for more options.
+              - if @community.display_rent
+                %span.move-in-date-text Pricing is based on a move-in date of today. Click “apply now” for more options.
+              -else
+                %span.move-in-date-text Click “Apply Now” for pricing options or contact us for a quote.
             
             - else
               .disabaled-apply-now
@@ -136,6 +142,8 @@
                   %span.fix-text
                     %span.c-m-total-price{id: "#{unit.id}-total-price"}= "#{@community.get_currency_symbol}#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
                     %span{style: 'font-size: 12px'} /month
+                - else
+                  %span.move-in-date-text{:style => "display: flex; justify-content: center; vertical-align: middle;align-items: center;"} Please contact us for a quote.
 
         .c-modal-wrapper.h-class
           .c-modal-body.centered-image

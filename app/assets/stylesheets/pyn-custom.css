@@ -6640,15 +6640,19 @@ ul.add-fav-options {
     display: block;
     text-align: center;
 }
+
 .disabaled-apply-now{
-    /* margin-top: 76px; */
     height: 80px;
     color: white;
     font-size: 20px;
     font-weight: 600;
-    /* padding: 24px 20px 15px 13px; */
-    background: #1d2425;text-align: center;
+    background: #1d2425;
+    display: flex; 
+    justify-content: center; 
+    vertical-align: middle;
+    align-items: center;
 }
+
 .disabaled-apply-now-for-bigger-screen{
     position: absolute !important;
     left: 0 !important;
