@@ -44,14 +44,14 @@ class Resman4StaticService < BaseService
   def save_resman_property_details property
     begin
       @community = Community.find credentials.community_id
-      
+
       @community.update!(
         name: property["PropertyID"]["MarketingName"],
         address: property["PropertyID"]["Address"]["AddressLine1"],
         city: property["PropertyID"]["Address"]["City"],
         state: property["PropertyID"]["Address"]["State"],
         zip: property["PropertyID"]["Address"]["PostalCode"],
-        phone: property["PropertyID"]["Phone"]["PhoneNumber"],
+        phone: get_phone_number(property),
         email: property["PropertyID"]["Email"],
         website: property["PropertyID"]["WebSite"],
         latitude: property["ILS_Identification"]["Latitude"],
@@ -60,6 +60,12 @@ class Resman4StaticService < BaseService
     rescue => error
       raise error
     end
+  end
+  
+  def get_phone_number property
+    property["PropertyID"]["Phone"]["PhoneNumber"]
+  rescue
+    property["PropertyID"]["Phone"][0]["PhoneNumber"] rescue ""
   end
 
   def save_resman_units(units,property_id)
