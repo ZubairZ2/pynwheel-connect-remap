@@ -21,9 +21,6 @@ module ZervServices
 
       if result.success?
         if result.payload["code"] == "200" and result.payload["status"] == "success"
-          puts "------------------- token --------------"
-          puts result.payload["idToken"]
-          puts "------------------- token --------------"
           {id_token:  result.payload["idToken"], error: nil}
         else
           {id_token:  nil, error: "api executed with status: #{result.payload["status"]}"}
@@ -63,7 +60,6 @@ module ZervServices
     end
 
     def create_zerv_guest__success(community, tour_user, stop_list)
-      puts '--------------------------    Zerv guest created successfully    ------------------------'
       ZervGuest.where(community_id: community.id, tour_user_id: tour_user.id).update_all(status: "deleted")
       if stop_list.present?
         stop_list.each do |stop|
@@ -77,16 +73,12 @@ module ZervServices
     end
 
     def create_zerv_guest__failure(community, tour_user, errors)
-      puts '--------------------------    Failure in creating Zerv User      ------------------------'
-      puts errors
-      puts '--------------------------    Failure in creating Zerv User      ------------------------'
       ZervGuest.where(community_id: community.id, tour_user_id: tour_user.id).update_all(status: "deleted")
       ZervGuest.create(community_id: community.id, tour_user_id: tour_user.id, status: "active", res_errors: errors)
       Rails.cache.delete(:id_token)
     end
 
     def resident_create_zerv_guest__success(community, tour_user, stop_list)
-      puts '--------------------------    Zerv guest created successfully    ------------------------'
       ZervGuest.where(community_id: community.id, pynwheel_access_user_id: tour_user.id).update_all(status: "deleted")
       if stop_list.present?
         stop_list.each do |stop|
@@ -100,9 +92,6 @@ module ZervServices
     end
 
     def resident_zerv_guest__failure(community, tour_user, errors)
-      puts '--------------------------    Failure in creating Zerv User      ------------------------'
-      puts errors
-      puts '--------------------------    Failure in creating Zerv User      ------------------------'
       ZervGuest.where(community_id: community.id, pynwheel_access_user_id: tour_user.id).update_all(status: "deleted")
       ZervGuest.create(community_id: community.id, pynwheel_access_user_id: tour_user.id, status: "active", res_errors: errors)
       Rails.cache.delete(:id_token)
