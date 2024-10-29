@@ -260,7 +260,7 @@ module DweloDevicesHelper
       tour_user.update_column 'edge_state_status' , 'in progress'
       access_token = RemoteLockService.new(community).client_credentials
       prev_data = tour_user.as_guests.where(community_id: community.id)
-      # ----------- creating a guest for remote lock (type = locks) ----------------- #
+      
       unless prev_data.present?
         response = RemoteLockService.new(community).create_access_guest(access_token,tour_user,current_time)
         tour_user.as_guests.create(community_id: community.id, edgestate_pin: response["data"]["attributes"]["pin"], guest_id: response["data"]["id"])
@@ -269,25 +269,27 @@ module DweloDevicesHelper
         response = RemoteLockService.new(community).create_access_guest(access_token,tour_user,current_time)
         prev_data.last.update_attributes(edgestate_pin: response["data"]["attributes"]["pin"], guest_id: response["data"]["id"])
       end
-      # ------------ creating guest and granting access for igloo lock -------------------------------- #
+     
       allowed_stops = locks_with_same_type("EdgeState", community, tour_user)
       locks = RemoteLock.where(stop_id: allowed_stops, edge_state_id: community.edge_state.id, remote_lock_type: "igloo_lock").pluck(:device_id, :stop_id)
      
       if locks.present?
         igloo_guest_ids = @tour_user.igloo_guests.where(community_id: community.id, status: "active").map{|x| x.guest_id} rescue ''
+        
         locks.each do |lock|
-            response = RemoteLockService.new(community).create_igloo_guests(access_token, @tour_user, lock[0] ,current_time)
-            @tour_user.igloo_guests.create(community_id: community.id, stop_id: lock[1], guest_type: response["data"]["type"],  guest_code: response["data"]["attributes"]["code"], guest_id: response["data"]["id"], status: "active") unless response["status"] == 500
+          response = RemoteLockService.new(community).create_igloo_guests(access_token, @tour_user, lock[0] ,current_time)
+          @tour_user.igloo_guests.create(community_id: community.id, stop_id: lock[1], guest_type: response["data"]["type"],  guest_code: response["data"]["attributes"]["code"], guest_id: response["data"]["id"], status: "active") unless response["status"] == 500
         end
+
         igloo_guest_ids.map{ |guest_id| RemoteLockService.new(community).delete_igloo_guests(access_token, guest_id) unless guest_id == ''}
         IglooGuest.where(guest_id: igloo_guest_ids).update_all(status: 'deleted')
       end
+      
       tour_user.update_column 'edge_state_status' , 'complete'
+      
       rescue => ex
         tour_user.update_column 'edge_state_status' , 'complete'
-        puts "--------- EdgeState error -------- ", ex
       end
-
     end
   end
 
