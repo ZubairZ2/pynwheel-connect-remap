@@ -20,15 +20,17 @@ module DweloDevicesHelper
 
     url = base_url + "/v4/integrations/pynwheel/devices/"
 
-    response = HTTParty.put(url,
-                            body: [{
+    response = HTTParty.put(  url,
+                              body: [{
                                 "lock_id": updated_device_data.device_id,
                                 "name": updated_device_data.name
-
-                            }].to_json,
-                            :headers => {'Authorization' => auth_header,
-                                         'Accept' => 'application/vnd.lockstate+json; version=1',
-                                         'Content-Type' => 'application/json'})
+                              }].to_json,
+                              :headers => {
+                                'Authorization' => auth_header,
+                                'Accept' => 'application/vnd.lockstate+json; version=1',
+                                'Content-Type' => 'application/json'
+                              }
+                            )
     return response
   end
 
@@ -39,111 +41,94 @@ module DweloDevicesHelper
       devices.each do |device|
         type = device["type"]
         name = device["attributes"]["name"]
-        # serial_number = device["attributes"]["serial_number"]
         device_id = device["id"]
-        # rml = RemoteLock.find_by(device_id: device_id, edge_state_id: @edge_state_user.id)
         remote_lock = RemoteLock.find_by(device_id: device_id, dwelo_id: dwelo_user.id)
+
         if remote_lock.nil?
-          # remote_lock = RemoteLock.create(device_id: device_id, remote_lock_type: type, name: name, edge_state_id: @edge_state_user.id)
           remote_lock = RemoteLock.create(device_id: device_id, remote_lock_type: type, name: name, dwelo_id: dwelo_user.id)
         elsif remote_lock.remote_lock_type != type or remote_lock.name != name
           remote_lock.update_attributes(remote_lock_type: type, name: name)
         end
+
         available_ids << remote_lock.id
       end
       RemoteLock.where(dwelo_id: dwelo_user.id).where.not(id: available_ids).delete_all
-    # else
-    #   flash[:notice] = "Something went wrong, please check your credentials."
-    #   # render :js => "window.location = '/communities/#{dwelo_user.community_id}/dwelos/new'"
-    #   return false
     end
-    # render json: {locks: RemoteLock.all}
   end
 
   def create_dwelo_access_guest(access_token, tour_user, current_time)
-      token_type = "Bearer"
-      auth_header = token_type + " " + access_token
-      id = SecureRandom.random_number(100000000)
-      tour_user.update!(random_number: id)
-      url = base_url + "/v4/integrations/pynwheel/access_persons/"
+    token_type = "Bearer"
+    auth_header = token_type + " " + access_token
+    id = SecureRandom.random_number(100000000)
+    tour_user.update!(random_number: id)
+    url = base_url + "/v4/integrations/pynwheel/access_persons/"
 
-      start_time = Time.now.utc.strftime('%Y-%m-%dT%H:%M:%SZ')
-      ends_time = (Time.now.utc + 90.minutes).strftime('%Y-%m-%dT%H:%M:%SZ')
-      puts start_time
-      puts ends_time
+    start_time = Time.now.utc.strftime('%Y-%m-%dT%H:%M:%SZ')
+    ends_time = (Time.now.utc + 90.minutes).strftime('%Y-%m-%dT%H:%M:%SZ')
 
-      request_body = { type: "access_guest", id: tour_user.random_number, starts_at: start_time, ends_at: ends_time }
-      puts "--------------------------- create access_persons request ----------------------------"
-      puts request_body
+    request_body = { type: "access_guest", id: tour_user.random_number, starts_at: start_time, ends_at: ends_time }
 
+    response = HTTParty.post( url,
+                              body: {
+                                type: "access_guest",
+                                id: tour_user.random_number,
+                                starts_at: start_time,
+                                ends_at: ends_time
+                              }.to_json,
+                              :headers => {
+                                'Authorization' => auth_header,
+                                'Accept' => 'application/vnd.lockstate+json; version=1',
+                                'Content-Type' => 'application/json'
+                              }
+                            )
 
-      response = HTTParty.post(url,
-                               body: {
-                                   type: "access_guest",
-                                   id: tour_user.random_number,
-                                   starts_at: start_time,
-                                   ends_at: ends_time
-                               }.to_json,
-                               :headers => {'Authorization' => auth_header,
-                                            'Accept' => 'application/vnd.lockstate+json; version=1',
-                                            'Content-Type' => 'application/json'})
-
-      puts "--------------------------- create access_persons response ----------------------------"
-      puts response
-      return response
+    return response
   end
 
   def delete_dwelo_access_guest(access_token, guest_id)
 
-      token_type = "Bearer"
-      auth_header = token_type + " " + access_token
+    token_type = "Bearer"
+    auth_header = token_type + " " + access_token
 
-      url = base_url + "/v4/integrations/pynwheel/access_persons/"
+    url = base_url + "/v4/integrations/pynwheel/access_persons/"
 
-      response = HTTParty.delete(url,
-                                 :headers => {'Authorization' => auth_header,
-                                              'Accept' => 'application/vnd.lockstate+json; version=1',
-                                              'Content-Type' => 'application/json'},
-                                 :body => [guest_id].to_json)
+    response = HTTParty.delete( url,
+                                :headers => {
+                                  'Authorization' => auth_header,
+                                  'Accept' => 'application/vnd.lockstate+json; version=1',
+                                  'Content-Type' => 'application/json'
+                                },
+                                :body => [guest_id].to_json
+                              )
 
-
-      return response
-
+    return response
   end
 
   def grant_dwelo_user_access(access_token, access_person_id, accessible_id)
+    token_type = "Bearer"
+    auth_header = token_type + " " + access_token
 
-      token_type = "Bearer"
-      auth_header = token_type + " " + access_token
+    url = base_url + "/v4/integrations/pynwheel/access_persons/accesses/"
 
-      url = base_url + "/v4/integrations/pynwheel/access_persons/accesses/"
-
-      response = HTTParty.post(url,
-                               body: {
-                                   "access_person_id": access_person_id,
-                                   "lock_id": accessible_id,
-                               }.to_json,
-                               :headers => {'Authorization' => auth_header,
-                                            'Accept' => 'application/vnd.lockstate+json; version=1',
-                                            'Content-Type' => 'application/json'})
-
-      puts "------------------- create grant_access_person_accesses response -----------------------"
-      puts response
-      puts "----------------------------------------------------------------------------------------"
-
-      return response
-
+    response = HTTParty.post( url,
+                              body: {
+                                "access_person_id": access_person_id,
+                                "lock_id": accessible_id,
+                              }.to_json,
+                              :headers => {
+                                'Authorization' => auth_header,
+                                'Accept' => 'application/vnd.lockstate+json; version=1',
+                                'Content-Type' => 'application/json'
+                              }
+                            )
+    return response
   end
 
   def base_url
     @community.dwelo.api_url
-    # "https://api.dwelo.com"
   end
 
-
   def get_scheduled_tours(community, tour_user, time_param)
-    # current_tour = get_current_tour(time_param)
-    # SchedualTour.where('community_id = ? and tour_user_id = ? and tour_date = ?', community_id, tour_user_id, current_tour.tour_date).order(:id)    
     UserScheduledTourService.new(tour_user, community).get_scheduled_tour_in_future if tour_user.present? &&  community.present?
   end
 
@@ -157,7 +142,7 @@ module DweloDevicesHelper
   def get_current_tour(time_param)
     current_datetime = time_param.to_datetime.strftime('%d/%m/%Y %l:%M %p')
     current_time = current_datetime.to_datetime.strftime('%l:%M %p')
-    current_date = current_datetime.to_datetime.strftime('%d/%m/%Y')
+    current_date = current_datetime.to_datetime.strAftime('%d/%m/%Y')
     current_tour = SchedualTour.new(tour_date: current_date, tour_time: current_time)
   end
 
@@ -258,10 +243,11 @@ module DweloDevicesHelper
           grant_dwelo_user_access(access_token, tour_user_guest_id, lock[0])
         end
       end
+      
       tour_user.update_column 'dwelo_status' , 'complete'
+     
       rescue => ex
         tour_user.update_column 'dwelo_status' , 'complete'
-        puts "--------- Dwelo error -------- ", ex
       end
 
     end
