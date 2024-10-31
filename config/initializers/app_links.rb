@@ -30,7 +30,7 @@ module AppLinks
     end
   end
 
-  def self.app_identification_text
+  def self.app_identification_text company_name
     if company_name == "lincoln"
       LINKS.fetch(company_name.to_sym, LINKS[:lincoln])[:app_identification_text]
     else
