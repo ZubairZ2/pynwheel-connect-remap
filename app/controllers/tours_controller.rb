@@ -14,7 +14,7 @@ class ToursController < ApplicationController
     @existing_stops, @existing_path_points, @building_list, floor_choice, @building_choice = [],[],[],[],[]
     @sorted_building = @tours.building_order
     @floor = nil
-    @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue nil
+    @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.distinct.sort rescue nil
     params[:floorNo] = params[:floorNo].present? ? params[:floorNo] : @floor_list.first rescue nil
     #########################################################################
     @building_list = @community.fetch_building_list(@sorted_building)
@@ -155,9 +155,9 @@ class ToursController < ApplicationController
     @tours = @community.community_tour
     @sitemap = @community.is_sitemap ? @community.sitemap : (@community.community_tour.starting_floor.present? ? @community.floorplates.select{|x| x if x.floors.include?(@community.community_tour.starting_floor.to_i)}.last : @community.floorplates.select{|f| f.floors.include?(@community.floorplates.map{|f| f.floors}.flatten.sort[0].to_i)}.first)
     @amenities = @community.amenities
-    @floors =  @community.floorplates.map{|f| f.floors}.flatten.uniq.sort
-    @building = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
-    @building = @building.compact.reject { |c| c.empty? }.uniq.sort
+    @floors =  @community.floorplates.map{|f| f.floors}.flatten.distinct.sort
+    @building = @community.units.map{|x| x.building rescue next}.distinct.compact + @community.amenities.map{|x| x.building rescue next}.distinct.compact
+    @building = @building.compact.reject { |c| c.empty? }.distinct.sort
     @tours.x_plot = @tours.x_plot - 3 unless @tours.x_plot == 0
     @tours.y_plot = @tours.y_plot - 3 unless @tours.y_plot == 0
     @all_locks = all_locks(@community)

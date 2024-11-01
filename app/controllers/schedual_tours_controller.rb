@@ -449,7 +449,7 @@ class SchedualToursController < ApplicationController
     def scheduled_tour_users community
       scheduled_tours = SchedualTour.where(community_id: community.id).where.not(tour_user_id: nil)
       tour_user_ids = scheduled_tours_in_future(scheduled_tours, community)
-      TourUser.where(id: tour_user_ids).pluck(:email).uniq
+      TourUser.where(id: tour_user_ids).pluck(:email).distinct
     end
 
     def scheduled_tours_in_future(scheduled_tours, community, tour_user_ids = [], community_time_zone = nil)

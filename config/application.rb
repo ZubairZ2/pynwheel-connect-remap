@@ -23,15 +23,21 @@ module PynwheelCms
 
     config.action_dispatch.rack_cache = true
 
-    config.session_store :redis_store, {
-      servers: [
-        {
-          url: ENV["REDIS_URL"],
-          ssl_params: { verify_mode: OpenSSL::SSL::VERIFY_NONE }
-        }
-      ],
-      expire_after: 90.minutes
-    }
+    if Rails.env.production? || Rails.env.staging?
+      config.session_store :redis_store, {
+        servers: [
+          {
+            url: ENV["REDIS_URL"],
+            ssl_params: { verify_mode: OpenSSL::SSL::VERIFY_NONE }
+          }
+        ],
+        key: '_pynwheel-cms_session',
+        expire_after: 90.minutes,
+        secure: true # Use this if your application is served over HTTPS
+      }
+    else
+      config.session_store :cookie_store, key: '_pynwheel-cms_session'
+    end
 
     config.middleware.insert_before 0, Rack::Cors do
       allow do

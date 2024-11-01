@@ -112,7 +112,7 @@ class AutomatePlottingController < ApplicationController
       @floor_lists_hash, @hallways, @community_units, @unit_with_door, @amenities_doors, @amenity_with_doors, @elevators = {}, {}, {}, {}, {}, {}, {}
       @floorplates = @community.floorplates
       #@access_points = @floorplate.access_points # @floorplate.access_points.select('DISTINCT ON (x_plot, y_plot) *')
-      @floors = @floorplates.map { |x| x.floors }.flatten!.uniq.sort
+      @floors = @floorplates.map { |x| x.floors }.flatten!.distinct.sort
       @floorplates.map { |x| @floor_lists_hash[x.id] = x.floors }
       @floor_lists = @community.floorplates.map { |x| [x.id, x.floors] }
       @floor_to_floorplate_id = fetch_hash_for_floor_to_floorplate_id()
@@ -133,7 +133,7 @@ class AutomatePlottingController < ApplicationController
     def fetch_data_for_floorplate_and_multiple_buildings
       @floor_lists_hash, @hallways, @community_units, @unit_with_door, @amenities_doors, @amenity_with_doors, @elevators = {}, {}, {}, {}, {}, {}, {}
       @floorplates = @community.floorplates
-      @floors = @floorplates.map { |x| x.floors }.flatten!.uniq.sort
+      @floors = @floorplates.map { |x| x.floors }.flatten!.distinct.sort
       @floorplates.map { |x| @floor_lists_hash[x.id] = x.floors }
       @floor_lists = @community.floorplates.map { |x| [x.id, x.floors] }
       @floor_to_floorplate_id = fetch_hash_for_floor_to_floorplate_id()

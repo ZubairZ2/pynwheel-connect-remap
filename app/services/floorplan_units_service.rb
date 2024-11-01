@@ -45,7 +45,7 @@ class FloorplanUnitsService < BaseService
   def fetch_floors
     floorplates = @community.floorplates
     floors = floorplates.map{|f| f.floors}.flatten.sort_by { |f| f }
-    floors.uniq
+    floors.distinct
   end
 
   private

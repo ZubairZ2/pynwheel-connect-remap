@@ -29,7 +29,7 @@ class CommunityTour
   private
 
   def get_finalized_tour_stops_list_for_self_tour available_stops = []
-    @stops_arr.uniq.compact.each do |stop|
+    @stops_arr.distinct.compact.each do |stop|
       unless stop.stop_type == "building_starting_point" || stop.stop_type == "elevator" || (stop.latitude.present? && (stop.latitude + stop.longitude) < 1) && @community.show_map
         name = ""
         is_favorite = ""

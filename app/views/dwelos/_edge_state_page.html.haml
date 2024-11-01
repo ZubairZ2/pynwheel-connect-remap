@@ -86,10 +86,10 @@
                 .select-logo-logo.logo-container.logo-upload-container
 
                   - rn =  rand(9999999999999999999999999)
-                  - amenity_lock_image = @community.edge_state.present? ? @community.edge_state.amenity_lock_image : ""
+                  - amenity_lock_image = @community&.edge_state&.amenity_lock_image&.url
 
-                  %a.preview-image{:href=> amenity_lock_image.present? ? amenity_lock_image  : asset_path("default.jpeg"), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
-                    = image_tag amenity_lock_image.present? ? amenity_lock_image : "default.jpeg",:height=>"100%",:width=>"100%",:id=>"amenity-edgestate-preview-image"
+                  %a.preview-image{:href=> (amenity_lock_image  || asset_path("default.jpeg")), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
+                    = image_tag (amenity_lock_image || "default.jpeg"),:height=>"100%",:width=>"100%",:id=>"amenity-edgestate-preview-image"
   
       -# Unit Door Lock Instruction & Image Uploader
       .row
@@ -118,10 +118,10 @@
                 .select-logo-logo.logo-container.logo-upload-container
 
                   - rn =  rand(9999999999999999999999999)
-                  - lock_image = @community.edge_state.present? ? @community.edge_state.lock_image : ""
+                  - lock_image = @community&.edge_state&.lock_image&.url
 
-                  %a.preview-image{:href=> lock_image.present? ? lock_image  : asset_path("default.jpeg"), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
-                    = image_tag lock_image.present? ? lock_image : "default.jpeg",:height=>"100%",:width=>"100%",:id=>"edgestate-preview-image"
+                  %a.preview-image{:href=> (lock_image  || asset_path("default.jpeg")), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
+                    = image_tag (lock_image || "default.jpeg"),:height=>"100%",:width=>"100%",:id=>"edgestate-preview-image"
       .row
         .col-lg-9.col-lg-offset-1
           = f.submit "Save", :class=>"btn btn-success pull-right loader_class", :style => "padding: 10px 50px 10px 50px;"

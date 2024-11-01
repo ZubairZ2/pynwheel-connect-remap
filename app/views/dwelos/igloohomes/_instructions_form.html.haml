@@ -27,10 +27,10 @@
               .select-logo-logo.logo-container.logo-upload-container
 
                 - rn =  rand(9999999999999999999999999)
-                - amenity_lock_image = @community.igloohome.present? ? @community.igloohome.amenity_lock_image : ""
+                - amenity_lock_image = @community&.igloohome&.amenity_lock_image&.url
 
-                %a.preview-image{:href=> amenity_lock_image.present? ? amenity_lock_image  : asset_path("default.jpeg"), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
-                  = image_tag amenity_lock_image.present? ? amenity_lock_image : "default.jpeg",:height=>"100%",:width=>"100%",:id=>"amenity-igloohome-preview-image", :class=>"amenity-igloohome-preview-image"
+                %a.preview-image{:href=> (amenity_lock_image || asset_path("default.jpeg")), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
+                  = image_tag (amenity_lock_image || "default.jpeg"),:height=>"100%",:width=>"100%",:id=>"amenity-igloohome-preview-image", :class=>"amenity-igloohome-preview-image"
         
 
     -# Unit Door Lock Instruction & Image Uploader
@@ -60,10 +60,10 @@
               .select-logo-logo.logo-container.logo-upload-container
 
                 - rn =  rand(9999999999999999999999999)
-                - lock_image = @community.igloohome.present? ? @community.igloohome.lock_image : ""
+                - lock_image = @community&.igloohome&.lock_image&.url
 
-                %a.preview-image{:href=> lock_image.present? ? lock_image  : asset_path("default.jpeg"), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
-                  = image_tag lock_image.present? ? lock_image : "default.jpeg",:height=>"100%",:width=>"100%",:id=>"igloohome-preview-image", :class=>"igloohome-preview-image"
+                %a.preview-image{:href=> (lock_image || asset_path("default.jpeg")), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
+                  = image_tag (lock_image || "default.jpeg"),:height=>"100%",:width=>"100%",:id=>"igloohome-preview-image", :class=>"igloohome-preview-image"
     .row
       .col-lg-9.col-lg-offset-1
         = f.submit "Save", :class=>"btn btn-success pull-right loader_class", :style => "padding: 10px 50px 10px 50px;"

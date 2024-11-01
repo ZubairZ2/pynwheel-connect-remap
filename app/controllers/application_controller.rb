@@ -88,7 +88,7 @@ class ApplicationController < ActionController::Base
       assigned_communities_ids = current_user.communities.ids # all assinged communities
       dwelo_communities_ids = Community.where(creator_id: User.where(role: "Dwelo admin").ids).ids # all communities created by any dwelo admin
       dwelo_companies_communities = Community.joins(:company).where(companies: {creator_id: User.where(role: "Dwelo admin").ids}).ids # all communities under dwelo_companies (either created by dwelo_admin or super_admin)
-      ids = (assigned_communities_ids + dwelo_communities_ids + dwelo_companies_communities).uniq
+      ids = (assigned_communities_ids + dwelo_communities_ids + dwelo_companies_communities).distinct
       communities = Community.where(id: ids)
 
       if params[:community_id].present?
@@ -116,10 +116,8 @@ class ApplicationController < ActionController::Base
   end
 
   def generate_remotelock_token
-    # do block will only execute in case of cache miss
-    # token  = Rails.cache.fetch('access_token', expires_in: 1.8.hours.from_now) do
-    # end
     edge_state_account = current_community.edge_state
+
     if edge_state_account.client_id.present? && edge_state_account.client_secret.present?
       RemoteLockService.new(current_community).client_credentials
     elsif edge_state_account.refresh_token.present?
@@ -128,12 +126,9 @@ class ApplicationController < ActionController::Base
   end
 
   def load_tour_users_chats
-    # below code will not be executed if call made from browser is ajax
-    # request.xhr? => returns numeric or nil values not BOOLEAN values and
-    # it works with unless condition as suited with our case
     unless request.xhr?
       if current_user.present? and @community.present? and @community.community_tour.present?
-        chat_enabled_communities = current_user.communities.where(community_users: {chat_enable: true}).uniq.includes(:tour)
+        chat_enabled_communities = current_user.communities.where(community_users: { chat_enable: true }).distinct.includes(:tour)
         @chatrooms = Chatroom.where(tour_id: chat_enabled_communities.map{|c| c.community_tour.id if c.community_tour.present?}).includes(:chats, :tour, :tour_user)
         @listening_channels = chat_enabled_communities.map{|c| (c.name + "_with_id_" + c.id.to_s).parameterize.gsub("-", "").gsub("_", "")}
         @notifications =  @chatrooms.map{ |chatroom| notifications_by_chatroom(@community, chatroom) }

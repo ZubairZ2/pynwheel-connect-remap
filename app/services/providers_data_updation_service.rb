@@ -31,7 +31,7 @@ class ProvidersDataUpdationService
     return unless import_floorplans.present?
   
     new_floorplans = import_floorplans.reject(&:id)
-    existing_floorplans = import_floorplans.select(&:id).uniq
+    existing_floorplans = import_floorplans.select(&:id).distinct
   
     create_new_floorplans_records(new_floorplans)
     update_existing_floorplans_records(existing_floorplans)
@@ -41,7 +41,7 @@ class ProvidersDataUpdationService
     return unless import_units.present?
   
     new_units = import_units.reject(&:id)
-    existing_units = import_units.select(&:id).uniq
+    existing_units = import_units.select(&:id).distinct
   
     create_new_units_records(new_units)
     update_existing_units_records(existing_units)

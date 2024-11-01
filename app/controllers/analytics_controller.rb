@@ -78,7 +78,7 @@ class AnalyticsController < ApplicationController
         stops_per_tour(start_date, @days_count, @self_tour_records, "self_tour")
         visits_per_tour_stop(@self_tour_records, "self_tour")
 
-        @schedule_records = SchedualTour.where(community_id: @self_tour_records_all.pluck(:community_id).compact.uniq).where.not(tour_user_id: nil).where('tour_date >= ? AND tour_date <= ?',start_date.beginning_of_day, DateTime.now).where(tour_type: ["self_tour", "guided_tour", "Virtual Tour"])
+        @schedule_records = SchedualTour.where(community_id: @self_tour_records_all.pluck(:community_id).compact.distinct).where.not(tour_user_id: nil).where('tour_date >= ? AND tour_date <= ?',start_date.beginning_of_day, DateTime.now).where(tour_type: ["self_tour", "guided_tour", "Virtual Tour"])
         days_count_for_schedule_records = return_total_days(start_date, Date.today) > 0 ? return_total_days(start_date, Date.yesterday.end_of_day) : 1
         till_now_tour_histories = @self_tour_records_all.where('arrived < ?', Date.yesterday.end_of_day)
         no_shows(start_date, days_count_for_schedule_records, @schedule_records, till_now_tour_histories, "self_tour")
@@ -460,11 +460,12 @@ class AnalyticsController < ApplicationController
         .where("#{start_attr_name} >= ? AND #{start_attr_name} <= ?", start_date, start_date + days_count.days)
         .group("DATE(#{start_attr_name})")
         .pluck(
-          "DATE(#{start_attr_name})", 
-          'SUM(apply_click_counter)', 
-          'COUNT(*)', 
-          'SUM(CASE WHEN apply_click_counter > 0 THEN 1 ELSE 0 END)'
+          Arel.sql("DATE(#{start_attr_name})"),
+          Arel.sql('SUM(apply_click_counter)'),
+          Arel.sql('COUNT(*)'),
+          Arel.sql('SUM(CASE WHEN apply_click_counter > 0 THEN 1 ELSE 0 END)')
         )
+
     
       # Initialize hash to track sessions each day
       sessions_each_day_hash = return_empty_hash(days_count, start_date)
@@ -529,11 +530,12 @@ class AnalyticsController < ApplicationController
         .where('start_datetime >= ? AND start_datetime <= ?', start_date, start_date + days_count.days)
         .group('DATE(start_datetime)')
         .pluck(
-          'DATE(start_datetime)', 
-          'SUM(favorite_saved_counter)', 
-          'COUNT(*)', 
-          'SUM(CASE WHEN favorite_saved_counter > 0 THEN 1 ELSE 0 END)'
+          Arel.sql('DATE(start_datetime)'), 
+          Arel.sql('SUM(favorite_saved_counter)'), 
+          Arel.sql('COUNT(*)'), 
+          Arel.sql('SUM(CASE WHEN favorite_saved_counter > 0 THEN 1 ELSE 0 END)')
         )
+
     
       # Initialize the sessions_each_day_hash
       sessions_each_day_hash = return_empty_hash(days_count, start_date)
@@ -595,11 +597,12 @@ class AnalyticsController < ApplicationController
         .where('start_datetime >= ? AND start_datetime <= ?', start_date, start_date + days_count.days)
         .group('DATE(start_datetime)')
         .pluck(
-          'DATE(start_datetime)', 
-          'SUM(favorite_sent_counter)', 
-          'COUNT(*)', 
-          'SUM(CASE WHEN favorite_sent_counter > 0 THEN 1 ELSE 0 END)'
+          Arel.sql('DATE(start_datetime)'), 
+          Arel.sql('SUM(favorite_sent_counter)'), 
+          Arel.sql('COUNT(*)'), 
+          Arel.sql('SUM(CASE WHEN favorite_sent_counter > 0 THEN 1 ELSE 0 END)')
         )
+
     
       # Initialize the sessions_each_day_hash
       sessions_each_day_hash = return_empty_hash(days_count, start_date)
@@ -738,7 +741,7 @@ class AnalyticsController < ApplicationController
       records_count = records.size
       records = records.map{ |arr| [arr.first.to_date, arr.last] }
       records_start_date = records.map{ |arr| arr.first }
-      uniq_start_date = records_start_date.uniq
+      uniq_start_date = records_start_date.distinct
       uniq_start_date_size = uniq_start_date.size
       uniq_start_date_size.times do |i|
         count_onsite_completed = 0
@@ -810,7 +813,7 @@ class AnalyticsController < ApplicationController
       records_count = records.size
       records = records.map{ |arr| [arr.first.to_date, arr.last] }
       records_start_date = records.map{ |arr| arr.first }
-      uniq_start_date = records_start_date.uniq
+      uniq_start_date = records_start_date.distinct
       uniq_start_date_size = uniq_start_date.size
       uniq_start_date_size.times do |i|
         count = 0
@@ -842,10 +845,10 @@ class AnalyticsController < ApplicationController
     def stops_per_tour(start_date, days_count, total_records, for_device_type)
       tour_keys = total_records.where.not(tour_key: nil).pluck(:tour_key)
       visited_stops = VisitedStop.where(tour_key: tour_keys)
-      @average_number_of_stops_per_session = visited_stops.uniq.size / (tour_keys.size rescue 1)
+      @average_number_of_stops_per_session = visited_stops.distinct.size / (tour_keys.size rescue 1)
       sessions_each_day_hourly_hash = return_empty_hash_hourly
       records_start_date_hours = visited_stops.pluck(:created_at).map {|dt| dt.strftime("%H").to_i }
-      uniq_hours = records_start_date_hours.uniq
+      uniq_hours = records_start_date_hours.distinct
       max_count = 0
       max_hour = 0
       uniq_hours.each do |h|
@@ -875,7 +878,7 @@ class AnalyticsController < ApplicationController
       visites_stops_hash = {}
       tour_keys = total_records.where.not(tour_key: nil).pluck(:tour_key)
       visited_stops = VisitedStop.where(tour_key: tour_keys)
-      @average_number_of_stops_per_session_tour_stop = visited_stops.uniq.size / tour_keys.size
+      @average_number_of_stops_per_session_tour_stop = visited_stops.distinct.size / tour_keys.size
       tour_stop_ids = visited_stops.pluck(:tour_stop_id)
       tour_stops = TourStop.where(id: tour_stop_ids)
       stops = tour_stops.where.not(stop_id: nil).pluck(:stop_type, :stop_id)
@@ -949,7 +952,7 @@ class AnalyticsController < ApplicationController
       end
       no_shows_schedule_records = scheduled_tours_date_with_user - tour_histories_date_with_user
       records_start_date = no_shows_schedule_records.map {|arr| arr.first}
-      uniq_start_date = records_start_date.uniq
+      uniq_start_date = records_start_date.distinct
       uniq_start_date_size = uniq_start_date.size
 
       uniq_start_date_size.times do |i|

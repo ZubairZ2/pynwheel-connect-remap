@@ -241,7 +241,7 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     favorite_images = @community.favorite_setting.favorite_images
     favorite_images.map {|image| status << image&.status&.status_and_remarks_obj} if favorite_images.present?
 
-    status.compact.uniq
+    status.compact.distinct
   end
 
   def additional_pages_status
@@ -252,7 +252,7 @@ class PynwheelLaunch::Communities::CommunityDetailForms
 
     imagepages = @community.imagepages
     imagepages.map {|imagepage| status << imagepage&.status&.status_and_remarks_obj} if imagepages.present?
-    status.compact.uniq
+    status.compact.distinct
   end
 
   def design_direction_status
@@ -265,7 +265,7 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     return [] if @community.amenities.blank?
     amenities = @community.amenities
     amenities_status = amenities.map {|amenity| amenity&.status&.status_and_remarks_obj rescue nil}
-    amenities_status.compact.uniq
+    amenities_status.compact.distinct
   end
 
   def property_map_status
@@ -275,7 +275,7 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     elsif @community.has_floorplates?
       floorplates = @community.floorplates
       floorplate_status = floorplates.map {|floorplate| floorplate&.status&.status_and_remarks_obj rescue nil}
-      floorplate_status.compact.uniq
+      floorplate_status.compact.distinct
     end
   end
 
@@ -283,7 +283,7 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     return [] if @community.floorplans.blank?
     floorplans = @community.floorplans
     floorplan_status = floorplans.map {|floorplan| floorplan&.status&.status_and_remarks_obj rescue nil}
-    floorplan_status.compact.uniq
+    floorplan_status.compact.distinct
   end
 
   def data_provider_status
@@ -296,7 +296,7 @@ class PynwheelLaunch::Communities::CommunityDetailForms
       data_provider_status << @community.crm_credential&.status&.status_and_remarks_obj rescue nil
     end
 
-    data_provider_status.compact.uniq
+    data_provider_status.compact.distinct
   end
 
   def visiting_hours_status
@@ -306,14 +306,14 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     guided_visiting_hours = @community.guided_opening_hours
     visiting_hours_status << self_visiting_hours.map {|oh| oh&.status&.status_and_remarks_obj rescue nil} if self_visiting_hours.present?
     visiting_hours_status << guided_visiting_hours.map {|gh| gh&.status&.status_and_remarks_obj rescue nil} if guided_visiting_hours.present?
-    visiting_hours_status.flatten.compact.uniq
+    visiting_hours_status.flatten.compact.distinct
   end
 
   def touch_gallery_media_status
     return [] if @community.galleries.blank?
     galleries = @community.galleries
     gallery_media_status = galleries.map {|gallery| gallery&.status&.status_and_remarks_obj rescue nil} if galleries.present?
-    gallery_media_status.compact.uniq
+    gallery_media_status.compact.distinct
   end
 
   def hardware_specs_status
@@ -330,7 +330,7 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     home_page_video = @community.design.home_page_video
     home_page_medias_status = home_page_images.map {|hp_img| hp_img&.status&.status_and_remarks_obj rescue nil} if home_page_images.present?
     home_page_medias_status << home_page_video&.status&.status_and_remarks_obj rescue nil if home_page_video.present?
-    home_page_medias_status.compact.uniq rescue []
+    home_page_medias_status.compact.distinct rescue []
   end
 
   def tour_stops_status
@@ -338,7 +338,7 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     tour_stops = @community.community_tour&.tour_stops
     
     tour_stops_status = tour_stops.map {|ts| ts&.status&.status_and_remarks_obj rescue nil}
-    tour_stops_status.compact.uniq
+    tour_stops_status.compact.distinct
   end
 
   def lock_providers_status
@@ -369,7 +369,7 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     end
 
     locks_status << remote_locks&.status&.status_and_remarks_obj rescue nil unless remote_locks.nil?
-    locks_status.compact.uniq
+    locks_status.compact.distinct
   end
 
   def update_company_status_and_remarks status, remarks

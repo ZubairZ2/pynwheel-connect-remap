@@ -4,7 +4,7 @@ json.message "success"
 floorplates_obj = []
 
 unless @community.is_sitemap
-  @floorplates.uniq.each do |floorplate|
+  @floorplates.distinct.each do |floorplate|
     floorplate.floors.each do |f|
       floorplates_obj << floorplate.get_floorplate_amenities_data(f, @community.id)
     end

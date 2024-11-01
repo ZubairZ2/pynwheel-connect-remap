@@ -4,7 +4,7 @@ class Floors
   end
 
   def get_community_floors
-    @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue []
+    @community.floorplates.map{|x| x.floors}.flatten!.distinct.sort rescue []
   end
 
   def get_community_temp_floors floor_list

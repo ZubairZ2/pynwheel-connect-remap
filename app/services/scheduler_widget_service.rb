@@ -48,7 +48,7 @@ class SchedulerWidgetService < BaseService
         available_time_slots << time
       end
     end
-    # available_time_slots.each {|value_arr| value_arr.uniq}
+    # available_time_slots.each {|value_arr| value_arr.distinct}
     available_time_slots
   end 
 

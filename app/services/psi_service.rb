@@ -356,7 +356,7 @@ class PsiService < BaseService
       move_in_dates = getMoveInDate(property_id)
       move_in_dates << "0" unless move_in_dates.present?
 
-      move_in_dates.compact.uniq.each do |move_in_date|
+      move_in_dates.compact.distinct.each do |move_in_date|
         response = get_units_pricing(property_id, move_in_date)
         next unless response.present?
 

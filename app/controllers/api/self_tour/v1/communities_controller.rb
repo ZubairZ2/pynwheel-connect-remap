@@ -226,7 +226,7 @@ module Api
 
         def get_floorplans_with_required_filter
           all_floorplans = FloorplanUnitsService.new(@community).get_floorplans
-          all_floorplans = all_floorplans.sort_by {|f| f.bedrooms}.uniq { |b| b.bedrooms }
+          all_floorplans = all_floorplans.sort_by {|f| f.bedrooms}.distinct { |b| b.bedrooms }
           all_floorplans
         end
 

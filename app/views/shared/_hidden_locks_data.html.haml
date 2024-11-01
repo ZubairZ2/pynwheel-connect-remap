@@ -1,26 +1,26 @@
 - if community.enable_locks && locks_present_hash.present?
 
-    - if locks_present_hash["Dwelo"]
-        .dwelo_options.hide_it
-            - all_locks[:dwelo_locks].each do |lock|
-                %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
-    - if locks_present_hash["EdgeState"]
-        .edgestate_options.hide_it
-            - all_locks[:edgestate_locks].each do |lock|
-                %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}  
-    - if locks_present_hash["Latch"]
-        .latch_options.hide_it
-            - all_locks[:latch_locks].each do |lock|
-                %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
-    - if locks_present_hash["Zerv"]
-        .zerv_options.hide_it
-            - all_locks[:zerv_locks].each do |lock|
-                %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
-    - if locks_present_hash["Igloohome"]
-        .igloohome_options.hide_it
-            - all_locks[:igloohome_locks].each do |lock|
-                %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}  
+  - if locks_present_hash["Dwelo"]
+    .dwelo_options.hide_it
+      - all_locks[:dwelo_locks].each do |lock|
+        %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
+  - if locks_present_hash["EdgeState"]
+    .edgestate_options.hide_it
+      - all_locks[:edgestate_locks].each do |lock|
+        %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}  
+  - if locks_present_hash["Latch"]
+    .latch_options.hide_it
+      - all_locks[:latch_locks].each do |lock|
+        %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
+  - if locks_present_hash["Zerv"]
+    .zerv_options.hide_it
+      - all_locks[:zerv_locks].each do |lock|
+        %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
+  - if locks_present_hash["Igloohome"]
+    .igloohome_options.hide_it
+      - all_locks[:igloohome_locks].each do |lock|
+        %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}  
 
 :javascript
-    var locks_present_hash = #{locks_present_hash.to_json.html_safe}
+  var locks_present_hash = #{locks_present_hash.to_json.html_safe}
     

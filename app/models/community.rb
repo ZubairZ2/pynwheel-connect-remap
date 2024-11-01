@@ -86,7 +86,6 @@ class Community < ApplicationRecord
   after_update :crop_secondary_image
   after_create :create_tour_also
   after_create :change_touchscreen_app_for_dwelo
-  # after_create :set_company_level_settings_yes
   before_save :turn_off_chat, if: Proc.new { chat_control == false }
   after_save :set_community_time_zone, if: ->(obj) { obj.latitude_changed? || obj.longitude_changed? }
   after_save :set_country_code, if: ->(obj) { obj.latitude_changed? || obj.longitude_changed? || obj.city_changed? || obj.state_changed? || obj.address_changed? || obj.zip_changed? }
@@ -1723,7 +1722,7 @@ class Community < ApplicationRecord
     keys_which_have_no_slot = (slots.map { |date, arr| unless arr.any?; date; end } ).compact
     slots.delete_if { |k,v| keys_which_have_no_slot.include?(k) }
     time_slots = slots
-    time_slots.each {|key, value_arr| time_slots[key] = value_arr.uniq}
+    time_slots.each {|key, value_arr| time_slots[key] = value_arr.distinct}
     time_slots
   end
 
@@ -1750,7 +1749,7 @@ class Community < ApplicationRecord
       end
     end
 
-    time_slots.each {|key, value_arr| time_slots[key] = value_arr.uniq}
+    time_slots.each {|key, value_arr| time_slots[key] = value_arr.distinct}
     time_slots
   end
 
@@ -2113,7 +2112,7 @@ class Community < ApplicationRecord
   end
 
   def fetch_bedroom_list
-    bedroom_list = self.floorplans.map{|x| x.bedrooms.to_i}.uniq
+    bedroom_list = self.floorplans.map{|x| x.bedrooms.to_i}.distinct
     bedroom_list = bedroom_list.sort.map {|bedroom| [bedroom, bedroom]}
     bedroom_list.unshift(["Number of Bedrooms", nil])
     bedroom_list
@@ -2121,8 +2120,8 @@ class Community < ApplicationRecord
 
   def fetch_building_list(sorted_building)
     building_list = []
-    building_list = self.units.map{|x| x.building rescue next}.uniq.compact + self.amenities.map{|x| x.building rescue next}.uniq.compact
-    building_list = building_list.compact.reject { |c| c.empty? }.uniq
+    building_list = self.units.map{|x| x.building rescue next}.distinct.compact + self.amenities.map{|x| x.building rescue next}.distinct.compact
+    building_list = building_list.compact.reject { |c| c.empty? }.distinct
     building_list = building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(building_list).sort.map{|x,y| y}
     if sorted_building.present?
       if (building_list - sorted_building != [] )
@@ -2143,7 +2142,7 @@ class Community < ApplicationRecord
     locks << get_lock_info_object(self.igloohome, styling_start, styling_end)
     locks << get_lock_info_object(self.edge_state, styling_start, styling_end)
     locks << get_manual_lock_info_object(styling_start, styling_end)
-    locks.compact.uniq
+    locks.compact.distinct
   end
 
   def pynwheel_map_enabled?

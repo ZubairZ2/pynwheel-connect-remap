@@ -26,7 +26,7 @@ attr_reader :user , :params
       assigned_communities_ids = user.communities.ids # all assinged communities
       dwelo_communities_ids = Community.where(creator_id: User.where(role: "Dwelo admin").ids).ids # all communities created by any dwelo admin
       dwelo_companies_communities = Community.joins(:company).where(companies: {creator_id: User.where(role: "Dwelo admin").ids}).ids # all communities under dwelo_companies (either created by dwelo_admin or super_admin)
-      ids = (assigned_communities_ids + dwelo_communities_ids + dwelo_companies_communities).uniq
+      ids = (assigned_communities_ids + dwelo_communities_ids + dwelo_companies_communities).distinct
       communities = CommunityUser.where(community_id: ids)
     elsif user.is_community_admin? || user.is_community_manager?
       communities = user&.community_users
@@ -132,7 +132,7 @@ attr_reader :user , :params
   def search_by_status(collection, statuses)
     selected_communities = []
     statuses.values.each do |status|
-      communities_id = collection.pluck(:community_id).uniq
+      communities_id = collection.pluck(:community_id).distinct
 
       communities_collection = Community.includes(:status, :community_users, design: [:status, {home_page_images: :status}, {home_page_video: :status}], sitemap: :status, company: :status, floorplates: :status, floorplans: :status, credential: :status, crm_credential: :status, opening_hours: :status, guided_opening_hours: :status, galleries: :status, zerv: :status, latch: :status, dwelo: :status, schlage: :status, yale: :status, launch_remote: :status).where(id: communities_id)
       communities_collection.each do |community|
