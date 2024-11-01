@@ -11,7 +11,7 @@ class TourUsersController < ApplicationController
     add_breadcrumb "All Visitors", '#'
     @community = Community.find params[:community_id]
     tour_ids = CustomizeTourService.new(@community, nil).get_community_tours_ids
-    user_ids = TourHistory.where(tour_id: tour_ids).pluck(:tour_user_id).uniq if @community.present? && @community.community_tour.present?
+    user_ids = TourHistory.where(tour_id: tour_ids).pluck(:tour_user_id).distinct if @community.present? && @community.community_tour.present?
     @tour_users = user_ids.present? ? TourUser.where(id: user_ids) : []
   end
   
@@ -44,8 +44,8 @@ class TourUsersController < ApplicationController
       @visited_amenities_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "amenity", event: "unlocked_event")
     end
 
-    unit_ids = @visited_units_history.map{|x| x.stop_id}.uniq
-    amenity_ids = @visited_amenities_history.map{|x| x.stop_id}.uniq
+    unit_ids = @visited_units_history.map{|x| x.stop_id}.distinct
+    amenity_ids = @visited_amenities_history.map{|x| x.stop_id}.distinct
 
     unless @community.is_sitemap
       units = @community.floorplates.all.order("id ASC").first.units.where(id: unit_ids)
@@ -81,8 +81,8 @@ class TourUsersController < ApplicationController
     if params[:dwelo_id] == "present"
       visited_amenities_history = LockHistory.where(tour_user_id: tour_user_id, tour_history_id: tour_history_id, stop_type: "amenity", event: "app_unlock")
       visited_units_history = LockHistory.where(tour_user_id: tour_user_id, tour_history_id: tour_history_id, stop_type: "unit", event: "app_unlock")
-      unit_ids = visited_units_history.map{|x| x.stop_id}.uniq
-      amenity_ids = visited_amenities_history.map{|x| x.stop_id}.uniq
+      unit_ids = visited_units_history.map{|x| x.stop_id}.distinct
+      amenity_ids = visited_amenities_history.map{|x| x.stop_id}.distinct
 
       unless community.is_sitemap
         units = (Floorplate.find floorplate_id).units.where(id: unit_ids)
@@ -108,8 +108,8 @@ class TourUsersController < ApplicationController
     else
       visited_units_history = LockHistory.where(tour_user_id: tour_user_id, tour_history_id: tour_history_id, stop_type: "unit", event: "unlocked_event")
       visited_amenities_history = LockHistory.where(tour_user_id: tour_user_id, tour_history_id: tour_history_id, stop_type: "amenity", event: "unlocked_event")
-      unit_ids = visited_units_history.map{|x| x.stop_id}.uniq
-      amenity_ids = visited_amenities_history.map{|x| x.stop_id}.uniq
+      unit_ids = visited_units_history.map{|x| x.stop_id}.distinct
+      amenity_ids = visited_amenities_history.map{|x| x.stop_id}.distinct
 
       unless community.is_sitemap
         units = (Floorplate.find floorplate_id).units.where(id: unit_ids)
@@ -197,8 +197,8 @@ class TourUsersController < ApplicationController
           end
         end
 
-        floors = floors.compact.uniq.sort
-        buildings = buildings.compact.uniq
+        floors = floors.compact.distinct.sort
+        buildings = buildings.compact.distinct
       end
 
       render json: {:stops => stops, :floors => floors, :buildings => buildings, :floor_image => floor_image, :lock_access_time => (tour_history.lock_access_time.strftime("%I:%M %p") rescue ""), :left => tour_history.left}, status: 200

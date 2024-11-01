@@ -11,8 +11,8 @@ json.floorplans @floorplans do |floorplan|
       json.availability availability.present? ? availability <= Date.today ? "Now" : availability.strftime("%m-%d-%y") : ""
       json.up_to floorplan.market_rent.present? ? floorplan.market_rent : (availability.present? ? (@community.get_currency_symbol + available_units.pluck(:effective_rent).compact.min.to_i.to_s+"/month") : "")
       available_buildings = available_units.pluck(:building).compact.reject { |c| c.empty? } rescue ""
-      available_floors = available_units.pluck(:floor).compact.uniq.sort rescue ""
-      json.buildings available_buildings.present? ? available_buildings.uniq.join(', ') : "" 
+      available_floors = available_units.pluck(:floor).compact.distinct.sort rescue ""
+      json.buildings available_buildings.present? ? available_buildings.distinct.join(', ') : "" 
       json.floors available_floors.present? ? available_floors.join(', ') : ""
     json.thumbnail_image floorplan.image.present? ? floorplan.image.url : ""
     floorplan_images = []

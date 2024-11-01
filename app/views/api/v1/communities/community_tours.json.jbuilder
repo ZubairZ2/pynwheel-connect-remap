@@ -72,7 +72,7 @@ json.tours @tours do |tour|
 
   stops_arr = @community.filter_final_stops(stops_arr.compact)
 
-  json.tour_stop stops_arr.uniq.compact.each do |stop|
+  json.tour_stop stops_arr.distinct.compact.each do |stop|
     unless stop.stop_type == "elevator" || (stop.latitude.present? && (stop.latitude + stop.longitude) < 1) && @community.show_map
       
       if stop.stop_type == "unit"

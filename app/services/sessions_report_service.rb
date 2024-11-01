@@ -18,7 +18,7 @@ class SessionsReportService < BaseService
   private
 
   def generate_months
-    (@start_date..@end_date).map { |d| "Sessions Count ( #{d.strftime("%B %Y")} )" }.uniq
+    (@start_date..@end_date).map { |d| "Sessions Count ( #{d.strftime("%B %Y")} )" }.distinct
   end
 
   def generate_headers

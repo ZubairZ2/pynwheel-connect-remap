@@ -60,7 +60,7 @@ module SalesforceServices
 
                 if sf_user.present?
                     show_chat_only_in_first_stop = true
-                    stops_visited = VisitedStop.where(tour_id: community.community_tour.id, tour_user_id: tour_user.id, tour_key: sf_user.tour_key).pluck(:tour_stop_id).uniq
+                    stops_visited = VisitedStop.where(tour_id: community.community_tour.id, tour_user_id: tour_user.id, tour_key: sf_user.tour_key).pluck(:tour_stop_id).distinct
 
                     stops_detail_for_sf = []
                     stops_visited.each do |stop_id|

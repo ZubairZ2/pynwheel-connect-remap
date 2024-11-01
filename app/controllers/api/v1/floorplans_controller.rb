@@ -18,7 +18,7 @@ module Api
         
         floorplans_list = any_option.include?(true) ? floorplans : filtered_floorplans 
         sorting_param = params[:sort_by].present? ? params[:sort_by] : "default"
-        sorted_floorplans = floorplans_list.present? ? sort_floorplans(floorplans_list, sorting_param).uniq : []
+        sorted_floorplans = floorplans_list.present? ? sort_floorplans(floorplans_list, sorting_param).distinct : []
         sorted_floorplans = available_floorplans_list(sorted_floorplans)
         @floorplans = Kaminari.paginate_array(sorted_floorplans).page(params[:page]).per(params[:per_page])
       end
@@ -55,7 +55,7 @@ module Api
           if @tour_stop.present?
             delete_array = @community.deleted_ids
             delete_array << @tour_stop.id
-            @community.deleted_ids = delete_array&.compact&.uniq
+            @community.deleted_ids = delete_array&.compact&.distinct
             @community.save!
             
             UpdateTourStopsSortingOrder.new(@community, @tour_user).sort() if @community.auto_wayfinding
@@ -181,11 +181,11 @@ module Api
 
         case sorting_param
         when "floors_asc"
-          list = floorplans_list.map { |f| [FloorplanUnitsService.new(@community).get_floorplan_units(f).pluck(:floor).compact.uniq.sort.first, f] }
+          list = floorplans_list.map { |f| [FloorplanUnitsService.new(@community).get_floorplan_units(f).pluck(:floor).compact.distinct.sort.first, f] }
           sorted_floorplans = list.sort_by{|f| f[0] }
           sorted_floorplans = sorted_floorplans.map{|f| f[1]}
         when "floors_desc"
-          list = floorplans_list.map { |f| [FloorplanUnitsService.new(@community).get_floorplan_units(f).pluck(:floor).compact.uniq.sort.first, f] }
+          list = floorplans_list.map { |f| [FloorplanUnitsService.new(@community).get_floorplan_units(f).pluck(:floor).compact.distinct.sort.first, f] }
           sorted_floorplans = list.sort_by{|f| f[0] }.reverse
           sorted_floorplans = sorted_floorplans.map{|f| f[1]}
         when "sq_ft_asc"

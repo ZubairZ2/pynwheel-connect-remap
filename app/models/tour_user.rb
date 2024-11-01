@@ -215,9 +215,8 @@ class TourUser < ApplicationRecord
         end
       end
 
-      zev_mac_ids&.compact&.uniq&.count > 1 ? zev_mac_ids&.compact&.uniq : []
+      zev_mac_ids&.compact&.distinct&.count > 1 ? zev_mac_ids&.compact&.distinct : []
     rescue => error
-      puts "\n\n------------------------------------------ Multiple Zerver Response: \n #{error.inspect} -----------------------------\n\n"
       []
     end
   end

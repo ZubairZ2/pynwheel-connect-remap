@@ -59,10 +59,10 @@
                     .select-logo-logo.logo-container.logo-upload-container
 
                       - rn =  rand(9999999999999999999999999)
-                      - amenity_lock_image = @community.dwelo.present? ? @community.dwelo.amenity_lock_image : ""
+                      - amenity_lock_image = @community&.dwelo&.amenity_lock_image&.url
 
-                      %a.preview-image{:href=> amenity_lock_image.present? ? amenity_lock_image  : asset_path("default.jpeg"), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
-                        = image_tag amenity_lock_image.present? ? amenity_lock_image : "default.jpeg",:height=>"100%",:width=>"100%",:id=>"amenity-dwelo-preview-image"
+                      %a.preview-image{:href=> (amenity_lock_image || asset_path("default.jpeg")), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
+                        = image_tag (amenity_lock_image || "default.jpeg"),:height=>"100%",:width=>"100%",:id=>"amenity-dwelo-preview-image"
               
               -# Unit Door Lock Instruction & Image Uploader
               .lock-box-shadow
@@ -89,10 +89,10 @@
                     .select-logo-logo.logo-container.logo-upload-container
 
                       - rn =  rand(9999999999999999999999999)
-                      - lock_image = @community.dwelo.present? ? @community.dwelo.lock_image : ""
+                      - lock_image =@community&.dwelo&.lock_image&.url
 
-                      %a.preview-image{:href=> lock_image.present? ? lock_image  : asset_path("default.jpeg"), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
-                        = image_tag lock_image.present? ? lock_image : "default.jpeg",:height=>"100%",:width=>"100%",:id=>"dwelo-preview-image"
+                      %a.preview-image{:href=> (lock_image || asset_path("default.jpeg")), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
+                        = image_tag (lock_image || "default.jpeg"),:height=>"100%",:width=>"100%",:id=>"dwelo-preview-image"
 
 
           .box-footer

@@ -23,9 +23,8 @@
 #
 
 class Floorplate < ApplicationRecord
-  # has_paper_trail
   include StandardUrl
-  serialize :map_ocr_data, Array
+  serialize :map_ocr_data
 
   mount_uploader :image, SiteMapUploader
   mount_uploader :label_image, SiteMapUploader
@@ -194,5 +193,13 @@ class Floorplate < ApplicationRecord
       unique_floorplat_unit_identifier: "#{self.id}-#{floor}",
       floorplate_units: floorplate_stops
     }
+  end
+
+  def map_ocr_data
+    read_attribute(:map_ocr_data) || []
+  end
+
+  def map_ocr_data=(value)
+    write_attribute(:map_ocr_data, value.is_a?(Array) ? value.to_json : value)
   end
 end

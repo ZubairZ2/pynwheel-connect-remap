@@ -13,8 +13,8 @@ class ZervAccountsController < ApplicationController
       if @zerv.errors.present?
         flash[:error] = @zerv.errors.full_messages.join(',')
       else
-        @zerv.update_attributes(zerv_params)
-        current_community.update_attributes(:multiple_locks_provider => locks_provider)
+        @zerv.update(zerv_params)
+        current_community.update(:multiple_locks_provider => locks_provider)
         flash[:notice] = ZervConstants::SAVED
       end
 

@@ -8,8 +8,8 @@ namespace :tour_stops do
         tour = community.community_tour
         sort_hash = tour.sort_hash
 
-        building_list = community.units.pluck(:building).uniq + community.amenities.pluck(:building).uniq
-        building_list = building_list.compact.uniq.sort!
+        building_list = community.units.pluck(:building).distinct + community.amenities.pluck(:building).distinct
+        building_list = building_list.compact.distinct.sort!
 
         floors_list = Floors.new(community).get_community_floors
 

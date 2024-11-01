@@ -21,7 +21,6 @@ var unitChildClickHandled = false
 var inactivityTimer;
 var inactivityThreshold = 60000; // 1 minutes (adjust as needed)
 var lastActivityTime = Date.now();
-var updateRequestSent = false;
 
 $(document).ready(function () {
   webCommunity = $("#communityWebpagesData").data("community");

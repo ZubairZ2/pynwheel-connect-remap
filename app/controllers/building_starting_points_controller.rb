@@ -6,7 +6,7 @@ class BuildingStartingPointsController < ApplicationController
 
 	def edit
 		@community = Community.find params[:community_id]
-    @floors = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue []
+    @floors = @community.floorplates.map{|x| x.floors}.flatten!.distinct.sort rescue []
     @building_starting_point = BuildingStartingPoint.find_by_id(params[:id])
     @all_locks = all_locks(@community)
   end
@@ -28,7 +28,7 @@ class BuildingStartingPointsController < ApplicationController
           format.js { render :show, status: :ok, location: @building_starting_point }
         end
       else
-        @floors = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue []
+        @floors = @community.floorplates.map{|x| x.floors}.flatten!.distinct.sort rescue []
         flash[:error] = @building_starting_point.errors.full_messages.join(',')
         format.html { redirect_back(fallback_location: community_building_starting_point_path) }
         format.json { render json: @building_starting_point.errors, status: :unprocessable_entity }

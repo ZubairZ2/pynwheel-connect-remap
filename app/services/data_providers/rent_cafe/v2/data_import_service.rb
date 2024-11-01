@@ -153,7 +153,7 @@ module DataProviders
               rent_matrix = get_apartment_pricing_details(property_code, apartment_name, available_date)
 
               if rent_matrix.present?
-                uniq_terms = rent_matrix.map{|x| x["term"].to_i }.uniq
+                uniq_terms = rent_matrix.map{|x| x["term"].to_i }.distinct
                 distinct_data = uniq_terms.map{|term| rent_matrix.map{|data| data if data["term"] == term.to_s}.compact}.compact
                 return distinct_data.map{|data| data.map{|r| [r["rent"].to_i, r["term"], r["start_Date"], r["end_Date"]]}.min}
               else

@@ -182,7 +182,7 @@ json.tours @tours do |tour|
 
               arr_to_remove = @community.community_tour.sort_hash[building + ","+ floor.to_s].grep(/\d+/, &:to_i) - @community.deleted_ids 
               
-              # if arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.count == 1 && (min_floor != floor && @building_list[0] != building) && (arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.include? "elevator") && (@community.community_tour.starting_floor.present? ? @community.community_tour.starting_floor != floor.to_i : true )
+              # if arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.distinct.count == 1 && (min_floor != floor && @building_list[0] != building) && (arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.distinct.include? "elevator") && (@community.community_tour.starting_floor.present? ? @community.community_tour.starting_floor != floor.to_i : true )
               #   begin
               #     unless ((TourStop.find arr_to_remove).map{|x| (Elevator.find x.stop_id).floors.max - 1 if x.stop_type == "elevator"}).include? floor
               #     next
@@ -245,7 +245,7 @@ json.tours @tours do |tour|
         end
         begin
           
-          if stops_arr.map{|x| x.stop_type if (x.is_a? TourStop and x.building == building and x.stop_type != "elevator" and x.stop_type != "building_starting_point")}.uniq.compact == []
+          if stops_arr.map{|x| x.stop_type if (x.is_a? TourStop and x.building == building and x.stop_type != "elevator" and x.stop_type != "building_starting_point")}.distinct.compact == []
             stops_arr = stops_arr[0..stops_arr.size-2]
           end
           
@@ -389,7 +389,7 @@ json.tours @tours do |tour|
             unit_dlt_ids = []
             if @community.community_tour.sort_hash[building + ","+ floor.to_s].present?
               arr_to_remove = @community.community_tour.sort_hash[building + ","+ floor.to_s].grep(/\d+/, &:to_i) - ( @community.deleted_ids + unit_dlt_ids)
-              if arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.count == 1 && (min_floor != floor) && (arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.include? "elevator")
+              if arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.distinct.count == 1 && (min_floor != floor) && (arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.distinct.include? "elevator")
                 begin
                   # unless ((TourStop.find arr_to_remove).map{|x| (Elevator.find x.stop_id).floors.max - 1 if x.stop_type == "elevator"}).include? floor
                   next

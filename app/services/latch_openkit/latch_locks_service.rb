@@ -160,7 +160,7 @@ module LatchOpenkit
 
     def update_latch_lock_access(response)
       begin
-        granted_accesses = response&.dig("doors")&.compact&.uniq
+        granted_accesses = response&.dig("doors")&.compact&.distinct
         granted_accesses&.each do |lock|
           LatchLock.where(lock_id: lock["uuid"], latch_id: @community&.latch&.id).each do |stop_data|
             @tour_user.latch_guests.create(

@@ -174,16 +174,16 @@ module Api
             @tour_user.update_attributes(checkpoint_verified_at: params[:verified_at].to_datetime,is_checkpoint_verified: true) if @community.community_tour.verification_type == "check_point_id" && params[:verfied_by_provider] == "check_point_id"
           end
           all_floorplans = FloorplanUnitsService.new(@community).get_floorplans
-          @floorplans = all_floorplans.sort_by {|f| f.bedrooms}.uniq { |b| b.bedrooms }
+          @floorplans = all_floorplans.sort_by {|f| f.bedrooms}.distinct { |b| b.bedrooms }
     
           unless @tour_user.email == "Removed at Consumer Request"
             #####
-            @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
-            @building_list = @building_list.compact.reject { |c| c.empty? }.uniq.sort
+            @building_list = @community.units.map{|x| x.building rescue next}.distinct.compact + @community.amenities.map{|x| x.building rescue next}.distinct.compact
+            @building_list = @building_list.compact.reject { |c| c.empty? }.distinct.sort
             @building_list = @building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@building_list).sort.map{|x,y| y}
             @community.community_tour.building_order.present? ? (@building_list =  @community.community_tour.building_order) : ""
     
-            @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue []
+            @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.distinct.sort rescue []
             @floor_list_temp = (@floor_list - [@community.community_tour.starting_floor]).unshift(@community.community_tour.starting_floor) if @community.community_tour.starting_floor.present? rescue []
             #####
             current_time = current_community_time(@community, params)
@@ -244,12 +244,12 @@ module Api
     
         @building_list = @floor_list = []
     
-        @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
-        @building_list = @building_list.compact.reject { |c| c.empty? }.uniq.sort
+        @building_list = @community.units.map{|x| x.building rescue next}.distinct.compact + @community.amenities.map{|x| x.building rescue next}.distinct.compact
+        @building_list = @building_list.compact.reject { |c| c.empty? }.distinct.sort
         @building_list = @building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@building_list).sort.map{|x,y| y}
         @community.community_tour.building_order.present? ? (@building_list =  @community.community_tour.building_order) : ""
     
-        @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue nil
+        @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.distinct.sort rescue nil
         current_time = current_community_time(@community, params)
     
         edge_state = EdgeState.find_by(community_id: params[:id])
@@ -288,12 +288,12 @@ module Api
     
             @building_list = @floor_list = []
     
-            @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
-            @building_list = @building_list.compact.reject { |c| c.empty? }.uniq.sort
+            @building_list = @community.units.map{|x| x.building rescue next}.distinct.compact + @community.amenities.map{|x| x.building rescue next}.distinct.compact
+            @building_list = @building_list.compact.reject { |c| c.empty? }.distinct.sort
             @building_list = @building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@building_list).sort.map{|x,y| y}
             @community.community_tour.building_order.present? ? (@building_list =  @community.community_tour.building_order) : ""
             
-            @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue nil
+            @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.distinct.sort rescue nil
     
             chatroom = Chatroom.find_by(tour_user_id: @tour_user.id, tour_id: @community.community_tour.id)
             @chat_count = Chat.where("name = ? AND chatroom_id = ?", "Support Team", chatroom.id).last.id rescue 0
@@ -365,11 +365,11 @@ module Api
             end
           end
           
-          stops_arr = stops_arr.compact.map{|x| x.id}.uniq
+          stops_arr = stops_arr.compact.map{|x| x.id}.distinct
     
-          un_ordered_visited_stops = VisitedStop.where(tour_user_id: @tour_user.id ,tour_id: @tour.id ).map{|x| x.tour_stop_id}.uniq
+          un_ordered_visited_stops = VisitedStop.where(tour_user_id: @tour_user.id ,tour_id: @tour.id ).map{|x| x.tour_stop_id}.distinct
           
-          # @visited_stops = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: @tour.id).order(created_at: :desc).map{|x| x.tour_stop_id}.uniq
+          # @visited_stops = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: @tour.id).order(created_at: :desc).map{|x| x.tour_stop_id}.distinct
 
           @visited_stops = []
           
@@ -462,7 +462,7 @@ module Api
               community_visited << stop.tour.community
             end
             @scheduled_tours = @tour_user.schedual_tours
-            data = {visited_history: @visited_history, tour_user: @tour_user, scheduled: @scheduled_tours.count, visited: community_visited.uniq}
+            data = {visited_history: @visited_history, tour_user: @tour_user, scheduled: @scheduled_tours.count, visited: community_visited.distinct}
             render :json=> {data: data, :status=>true, :message => "data retuned succesfully", code: 200}
           else
             render :json=> {data: data, :status=>false, :message => "Invalid or Missing comunity_id/tour_user_id", code: 400}
@@ -517,7 +517,7 @@ module Api
               end
     
               last_visit = get_last_visited_community(@scheduled_tours)
-              data = {tour_user: @tour_user, last_visit: last_visit, upcoming: upcoming_tours.uniq, completed: completed_tours.uniq, exipred: expired_tours.uniq }
+              data = {tour_user: @tour_user, last_visit: last_visit, upcoming: upcoming_tours.distinct, completed: completed_tours.distinct, exipred: expired_tours.distinct }
               render :json=> {data: data.as_json, :status=> true, :message => "data returned succesfully", code: 200 }
             else
               data = {tour_user: @tour_user, last_visit: last_visit, upcoming: upcoming_tours, completed: completed_tours, exipred: expired_tours }

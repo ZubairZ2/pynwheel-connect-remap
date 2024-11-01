@@ -63,10 +63,10 @@
                 .select-logo-logo.logo-container.logo-upload-container
 
                   - rn =  rand(9999999999999999999999999)
-                  - amenity_lock_image = @community.zerv.present? ? @community.zerv.amenity_lock_image : ""
+                  - amenity_lock_image = @community&.zerv&.amenity_lock_image&.url
 
-                  %a.preview-image{:href=> amenity_lock_image.present? ? amenity_lock_image  : asset_path("default.jpeg"), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
-                    = image_tag amenity_lock_image.present? ? amenity_lock_image : "default.jpeg",:height=>"100%",:width=>"100%",:id=>"amenity-zerv-preview-image"
+                  %a.preview-image{:href=> (amenity_lock_image || asset_path("default.jpeg")), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
+                    = image_tag (amenity_lock_image || "default.jpeg"),:height=>"100%",:width=>"100%",:id=>"amenity-zerv-preview-image"
 
           -# Unit Door Lock Instruction & Image Uploader
           .lock-box-shadow
@@ -93,10 +93,10 @@
                 .select-logo-logo.logo-container.logo-upload-container
 
                   - rn =  rand(9999999999999999999999999)
-                  - lock_image = @community.zerv.present? ? @community.zerv.lock_image : ""
+                  - lock_image = @community&.zerv&.lock_image&.url
 
-                  %a.preview-image{:href=> lock_image.present? ? lock_image  : asset_path("default.jpeg"), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
-                    = image_tag lock_image.present? ? lock_image : "default.jpeg",:height=>"100%",:width=>"100%",:id=>"zerv-preview-image"
+                  %a.preview-image{:href=> (lock_image || asset_path("default.jpeg")), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
+                    = image_tag (lock_image || "default.jpeg"),:height=>"100%",:width=>"100%",:id=>"zerv-preview-image"
 
     .box-footer
       - if current_community.zerv.present?

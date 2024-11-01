@@ -315,7 +315,7 @@ module Api
             floorplans << u.floorplan
           end
     
-          @floorplans = floorplans.present? ? floorplans.uniq.compact.sort_by { |f| f.bedrooms } : []
+          @floorplans = floorplans.present? ? floorplans.distinct.compact.sort_by { |f| f.bedrooms } : []
         end
       end
     

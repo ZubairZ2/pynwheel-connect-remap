@@ -7,7 +7,7 @@ class HomeController < ApplicationController
       assigned_communities_ids = current_user.communities.ids
       dwelo_communities_ids = Community.where(creator_id: User.where(role: "Dwelo admin").ids).pluck(:id)
       dwelo_companies_communities = Community.joins(:company).where(companies: {creator_id: User.where(role: "Dwelo admin").ids}).pluck(:id)
-      ids = (assigned_communities_ids + dwelo_communities_ids + dwelo_companies_communities).uniq
+      ids = (assigned_communities_ids + dwelo_communities_ids + dwelo_companies_communities).distinct
       @communities = ids.present? ? Community.active_properties.where(id: ids) : []
     when current_user.is_company_admin?
       @communities = current_user.company.communities.active_properties
@@ -16,8 +16,6 @@ class HomeController < ApplicationController
     else
       @communities = current_user.communities.active_properties
     end
-
-    puts "\n\n\n -------------- Home 1 Community ID: #{session[:community_id]}--------------- \n\n\n"
 
     handle_code_grant_authorization(request&.headers['referer']) if params["code"].present?
   end
