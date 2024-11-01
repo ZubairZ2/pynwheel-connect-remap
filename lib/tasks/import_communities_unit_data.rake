@@ -57,6 +57,6 @@ namespace :import do
     current_user.community_logs = current_user.community_logs + community_logs.to_s
     # current_user.entrata_list_logs = current_user.entrata_list_logs + entrata_list_logs.to_s
     current_user.save
-    PaperTrail::Version.where(whodunnit: nil).destroy_all
+    #PaperTrail::Version.where(whodunnit: nil).destroy_all
   end
 end

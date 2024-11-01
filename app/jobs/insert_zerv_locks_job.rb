@@ -16,7 +16,7 @@ class InsertZervLocksJob < ApplicationJob
                         sub_location_friendly_name: lock["subLocationFriendlyName"],
                         universal_access_code: lock["universalAccessCode"], zerv_id: zerv.id)
                 else
-                    zerv_lock.update_attributes(
+                    zerv_lock.update_columns(
                         is_device_active: lock["active"], location_name: lock["locationName"],
                         location_friendly_name: lock["locationFriendlyName"], sub_location_name: lock["subLocationName"],
                         sub_location_friendly_name: lock["subLocationFriendlyName"], universal_access_code: lock["universalAccessCode"])

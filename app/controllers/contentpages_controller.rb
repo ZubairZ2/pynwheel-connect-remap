@@ -24,7 +24,7 @@ class ContentpagesController < ApplicationController
 	def update
 		@webpage = @community.webpages.find(params[:id])
 		@webpage.position = nil unless params[:webpage][:position].present?
-    if @webpage.update_attributes(webpage_params)
+    if @webpage.update_columns(webpage_params)
       flash[:notice] = "Webpage updated successfully."
     else
       flash[:error] = @webpage.errors.full_messages.join(',')

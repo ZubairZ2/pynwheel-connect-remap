@@ -165,7 +165,7 @@ module Api
             
             is_rescheduled = false
             
-            schedual_tour.update_attributes(tour_date: new_tour.tour_date, tour_time: new_tour.tour_time, tour_user_id: @tu.id,charge_id: res.present? ? res[:id] : nil, pay_back_id: pay_back.present? ? pay_back.refund_id : nil, desired_move_in_date: params[:desired_move_in_date], desired_bedroom: desired_bedroom , created_by: "Appartments.com")
+            schedual_tour.update_columns(tour_date: new_tour.tour_date, tour_time: new_tour.tour_time, tour_user_id: @tu.id,charge_id: res.present? ? res[:id] : nil, pay_back_id: pay_back.present? ? pay_back.refund_id : nil, desired_move_in_date: params[:desired_move_in_date], desired_bedroom: desired_bedroom , created_by: "Appartments.com")
 
             if previous_tour[:is_rescheduled]
               is_rescheduled = true

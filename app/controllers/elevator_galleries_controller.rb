@@ -8,7 +8,7 @@ class ElevatorGalleriesController < ApplicationController
   def update
     @elevator = Elevator.find params[:elevator_id]
     @elevator_gallery_image = ElevatorGallery.find(params[:id])
-    if @elevator_gallery_image.update_attributes(elevator_gallery_params)
+    if @elevator_gallery_image.update_columns(elevator_gallery_params)
       # redirect_to "/communities/#{current_community.id}/amenities/#{@elevator}/edit"
       redirect_to edit_community_elevator_path(current_community,@elevator), notice: "Elevator Gallery updated successfully"
     else

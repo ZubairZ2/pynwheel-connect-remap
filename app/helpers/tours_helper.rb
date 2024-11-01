@@ -33,7 +33,7 @@ module ToursHelper
     if params[:version].present?
       app_version = AppVersion.first
       PorticoRequest.create(app_name: params[:appName], user_id: params[:tour_user_id], os_type: params[:appPlatform], app_version: params[:version].to_i)
-      app_version.update_attributes(portico_version: params[:version].to_i) if (params[:version].to_i > app_version.portico_version)
+      app_version.update_columns(portico_version: params[:version].to_i) if (params[:version].to_i > app_version.portico_version)
       if (params[:appPlatform] == "ios") && (params[:version].to_i >= ENV["MINIMUM_SUPPORTED_VERSION_FOR_IOS"].to_i)
         true
       elsif (params[:appPlatform] == "android") && (params[:version].to_i >= ENV["MINIMUM_SUPPORTED_VERSION_FOR_ANDROID"].to_i)

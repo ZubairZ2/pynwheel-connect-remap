@@ -58,9 +58,9 @@ class FloorplatesController < ApplicationController
 
     if @floorplate.save
       flash[:notice] = "Floorplate created successfully."
-      PaperTrail::Version.create(item_type: "Floorplate", item_id: @floorplate.id, event: "create", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
+      # PaperTrail::Version.create(item_type: "Floorplate", item_id: @floorplate.id, event: "create", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
       redirect_to community_floorplates_path(current_community)
-      PaperTrail::Version.create(item_type: "Floorplate", item_id: @floorplate.id, event: "create", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
+      # PaperTrail::Version.create(item_type: "Floorplate", item_id: @floorplate.id, event: "create", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
       return
     else
       add_breadcrumb "Floor plates", community_floorplates_path(current_community)
@@ -171,7 +171,7 @@ class FloorplatesController < ApplicationController
           clear_svg_plotted_units_and_amenities(@floorplate, file_checksum, original_svg_image_checksum) if original_svg_image_checksum.present?
   
           flash[:notice] = "Floorplate updated successfully."
-          PaperTrail::Version.create(item_type: "Floorplate", item_id: @floorplate.id, event: "update", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
+          #PaperTrail::Version.create(item_type: "Floorplate", item_id: @floorplate.id, event: "update", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
 
           redirect_to community_floorplates_path(current_community) and return
         else
@@ -190,7 +190,7 @@ class FloorplatesController < ApplicationController
   end
 
   def destroy
-    PaperTrail::Version.create(item_type: "Floorplate", item_id: @floorplate.id, event: "destroy", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
+    #PaperTrail::Version.create(item_type: "Floorplate", item_id: @floorplate.id, event: "destroy", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
 
     @floorplate.destroy
     flash[:notice] = "Floorplate deleted successfully."
@@ -262,7 +262,7 @@ class FloorplatesController < ApplicationController
   def ajax_path_draw_on_floorplate
     unit = @community.units.where(provider_unit_id: params[:id])
     if unit.present?
-      #unit.first.update_attributes(x_plot: params[:x_plot],y_plot: params[:y_plot],floorplate_id: params[:floorplate_id])
+      #unit.first.update_columns(x_plot: params[:x_plot],y_plot: params[:y_plot],floorplate_id: params[:floorplate_id])
       unit = unit.first
       unit.x_plot = params[:x_plot]
       unit.y_plot = params[:y_plot]

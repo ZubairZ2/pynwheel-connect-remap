@@ -5,7 +5,8 @@ gem "letter_opener", group: :development
 gem 'rest-client'
 gem 'browser'
 gem 'rack-cors', '~> 1.1'
-gem 'rails', '~> 7.2.2'
+gem 'rails', '~> 8.0.0.rc2'
+# gem 'rails', '~> 7.2.0'
 gem 'rack', '~> 2.2.2'
 gem 'stripe'
 gem 'annotate'
@@ -70,7 +71,6 @@ gem 'tinymce-rails'
 gem 'gyoku', '~> 1.0'
 gem 'carrierwave_backgrounder', git: 'https://github.com/lardawge/carrierwave_backgrounder.git'
 gem 'delayed_job_active_record'
-gem 'bullet', group: 'development'
 gem 'derailed_benchmarks', group: :development
 gem 'stackprof', group: :development
 gem 'ox'
