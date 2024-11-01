@@ -95,7 +95,8 @@ class Community < ApplicationRecord
   after_save :create_default_credential
   after_update :set_default_provider
 
-  enum alert_contact: [:email, :phone, :both]
+  enum :alert_contact, [:email, :phone, :both]
+
   scope :real_properties, -> {where.not(name: DUMMY_COMMUNITY_NAME)}
 
   scope :active_communities, -> { real_properties.where(locked: false) }

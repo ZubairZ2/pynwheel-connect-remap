@@ -1,5 +1,5 @@
 class PynwheelAccessUser < ApplicationRecord
-  enum user_type: [ :resident, :staff ]
+  enum :user_type, [ :resident, :staff ]
 
   belongs_to :community
   has_many :resident_access_points, dependent: :destroy
