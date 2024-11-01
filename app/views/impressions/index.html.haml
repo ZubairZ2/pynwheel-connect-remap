@@ -22,7 +22,7 @@
                     %td
                       = f.name_space
                     %td
-                      = URI.parse(URI.encode(f.in_request["request_url"])).path if f.in_request["request_url"].present?
+                      = URI.parse(URI::DEFAULT_PARSER.escape(f.in_request["request_url"])).path if f.in_request["request_url"].present?
                     %td
                       = f.created_at
                     %td

@@ -43,7 +43,7 @@ class Api::V2::AmenitiesController < Api::V2::ApiApplicationController
     begin
       params[:amenities]&.each do |amenity_param|
         amenity = @community.amenities.find amenity_param[:id]
-        amenity.update_attributes(name: amenity_param[:name], amenity_type: amenity_param[:amenity_type], video_link: amenity_param[:video_link], description: amenity_param[:description]) if amenity.present?
+        amenity.update_columns(name: amenity_param[:name], amenity_type: amenity_param[:amenity_type], video_link: amenity_param[:video_link], description: amenity_param[:description]) if amenity.present?
         update_amenity_galleries_info(amenity, amenity_param[:amenity_galleries])
       end
 
@@ -70,7 +70,7 @@ class Api::V2::AmenitiesController < Api::V2::ApiApplicationController
       amenity_galleries&.each do |amenity_gallery_param|
         if amenity.present?
           amenity_gallery = amenity.amenity_galleries.find amenity_gallery_param[:id]
-          amenity_gallery.update_attributes(name: amenity_gallery_param[:name], description: amenity_gallery_param[:description])
+          amenity_gallery.update_columns(name: amenity_gallery_param[:name], description: amenity_gallery_param[:description])
         end
       end
     end

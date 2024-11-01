@@ -119,7 +119,7 @@ module SalesforceServices
                         puts response
                         puts "*******"*100
 
-                        sf_user.update_attributes(sf_status: "deleted", data: response.merge(feedback: body))
+                        sf_user.update_columns(sf_status: "deleted", data: response.merge(feedback: body))
                     rescue HTTParty::Error => e
                         OpenStruct.new({success?: false, error: e, payload: nil})
                     else

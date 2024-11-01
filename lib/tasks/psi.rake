@@ -183,7 +183,7 @@ namespace :provider do
             end
           end
           
-          #unit.update_attribute(:min_rent,u[1]["Rent"]["@attributes"]["MinRent"].gsub(",",""))
+          #unit.update_column(:min_rent,u[1]["Rent"]["@attributes"]["MinRent"].gsub(",",""))
         end
       #end
     end

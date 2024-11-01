@@ -31,7 +31,7 @@ class TourHistory < ApplicationRecord
       if time_difference >= 90 && self.lengthy_stay_email_sent == false
         @mail_content = ["lengthy_stay", "Visitor is on site for more than one hour.", "lengthy_stay", "#{self.tour_user.name.titleize} has been on a Pynwheel Tour at #{community.name.gsub("(", "( ").split.map(&:capitalize).join(' ')} for more than"] #get_alert_message('lengthy_stay')
         @mail_content[1] = "#{@mail_content.last} #{plural(time_difference, 'minute')}"
-        self.update_attributes(lengthy_stay_email_sent: true)
+        self.update_columns(lengthy_stay_email_sent: true)
         send_email_sms_or_both(@mail_content, community) unless touruser.is_virtual_tour?
       end
 

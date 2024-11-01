@@ -47,7 +47,7 @@ module DweloDevicesHelper
         if remote_lock.nil?
           remote_lock = RemoteLock.create(device_id: device_id, remote_lock_type: type, name: name, dwelo_id: dwelo_user.id)
         elsif remote_lock.remote_lock_type != type or remote_lock.name != name
-          remote_lock.update_attributes(remote_lock_type: type, name: name)
+          remote_lock.update_columns(remote_lock_type: type, name: name)
         end
 
         available_ids << remote_lock.id
@@ -267,7 +267,7 @@ module DweloDevicesHelper
       else
         RemoteLockService.new(community).delete_access_guest(access_token,prev_data.last.guest_id)
         response = RemoteLockService.new(community).create_access_guest(access_token,tour_user,current_time)
-        prev_data.last.update_attributes(edgestate_pin: response["data"]["attributes"]["pin"], guest_id: response["data"]["id"])
+        prev_data.last.update_columns(edgestate_pin: response["data"]["attributes"]["pin"], guest_id: response["data"]["id"])
       end
      
       allowed_stops = locks_with_same_type("EdgeState", community, tour_user)

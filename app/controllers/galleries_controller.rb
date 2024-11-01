@@ -17,7 +17,7 @@ class GalleriesController < ApplicationController
 	def create
 		@gallery = @community.galleries.new(gallery_params)
     if @gallery.save
-			PaperTrail::Version.create(item_type: "Gallery",item_id: @gallery.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: '#{@gallery.name}' community_id: '#{current_community.id}'")
+			#PaperTrail::Version.create(item_type: "Gallery",item_id: @gallery.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: '#{@gallery.name}' community_id: '#{current_community.id}'")
 			flash[:notice] = "Gallery created successfully."
     else
       flash[:error] = @gallery.errors.full_messages.join(',')
@@ -30,8 +30,8 @@ class GalleriesController < ApplicationController
 
 	def update
 		@gallery = @community.galleries.find(params[:id])
-    if @gallery.update_attributes(gallery_params)
-			PaperTrail::Version.create(item_type: "Gallery",item_id: @gallery.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: '#{@gallery.name}' community_id: '#{current_community.id}'")
+    if @gallery.update_columns(gallery_params)
+			#PaperTrail::Version.create(item_type: "Gallery",item_id: @gallery.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: '#{@gallery.name}' community_id: '#{current_community.id}'")
 			flash[:notice] = "Gallery updated successfully."
     else
       flash[:error] = @gallery.errors.full_messages.join(',')
@@ -41,7 +41,7 @@ class GalleriesController < ApplicationController
 	def destroy
 
 		@gallery = @community.galleries.find(params[:id])
-		PaperTrail::Version.create(item_type: "Gallery",item_id: @gallery.id,event: "destroy",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: '#{@gallery.name}' community_id: '#{current_community.id}'")
+		#PaperTrail::Version.create(item_type: "Gallery",item_id: @gallery.id,event: "destroy",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: '#{@gallery.name}' community_id: '#{current_community.id}'")
 		@gallery.delete_gallery
 		flash[:notice] = "Your gallery will be deleted shortly."
     # if @gallery.destroy
@@ -65,7 +65,7 @@ class GalleriesController < ApplicationController
 	def save_gallery_image
 		@gallery = @community.galleries.find(params[:id])
 		image = @gallery.gallery_images.create(image: params[:file], community_id: @community.id)
-		PaperTrail::Version.create(item_type: "GalleryImage",item_id: image.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: '#{image.name}' gallery_id: #{image.gallery_id} community_id: '#{current_community.id}'")
+		#PaperTrail::Version.create(item_type: "GalleryImage",item_id: image.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: '#{image.name}' gallery_id: #{image.gallery_id} community_id: '#{current_community.id}'")
 
 		#@gallery_images = @gallery.gallery_images.order(:sort).all
 		render :json=>{"status"=>"success"}
@@ -79,7 +79,7 @@ class GalleriesController < ApplicationController
 			@uploader.standard_image_url = @uploader.remote_video_url
 			@uploader.name = params[:key].split('/').last
 			@uploader.save
-			PaperTrail::Version.create(item_type: "GalleryVideo",item_id: @uploader.id,event: "create",whodunnit: current_user.id,object: "name: '#{@uploader.name}' gallery_id: #{@uploader.gallery_id} community_id: '#{current_community.id}'")
+			#PaperTrail::Version.create(item_type: "GalleryVideo",item_id: @uploader.id,event: "create",whodunnit: current_user.id,object: "name: '#{@uploader.name}' gallery_id: #{@uploader.gallery_id} community_id: '#{current_community.id}'")
 
 			redirect_to show_images_community_gallery_path, notice: 'Video has been uploaded'
 		else
@@ -89,7 +89,7 @@ class GalleriesController < ApplicationController
 	def delete_gallery_image
 		@gallery_image = GalleryImage.find(params[:gallery_image_id])
 		file_type = @gallery_image.is_video? ? 'Video' : 'Image'
-		PaperTrail::Version.create(item_type: "GalleryImage",item_id: @gallery_image.id,event: "destroy",community_id: current_community.id, company_id: current_company.id,whodunnit: current_user.id,object: "name: '#{@gallery_image.name}' gallery_id: #{@gallery_image.gallery_id} community_id: '#{current_community.id}'")
+		#PaperTrail::Version.create(item_type: "GalleryImage",item_id: @gallery_image.id,event: "destroy",community_id: current_community.id, company_id: current_company.id,whodunnit: current_user.id,object: "name: '#{@gallery_image.name}' gallery_id: #{@gallery_image.gallery_id} community_id: '#{current_community.id}'")
 
 		@gallery_image.destroy
 		flash[:notice] = "#{file_type} deleted successfully."
@@ -117,7 +117,7 @@ class GalleriesController < ApplicationController
 		@gallery_image.crop_w = params[:gallery_image][:crop_w].to_f
 		@gallery_image.crop_h = params[:gallery_image][:crop_h].to_f
 		@gallery_image.save
-		PaperTrail::Version.create(item_type: "GalleryImage",item_id: @gallery_image.id,event: "update",community_id: current_community.id, company_id: current_company.id,whodunnit: current_user.id,object: "name: '#{@gallery_image.name}' gallery_id: #{@gallery_image.gallery_id} community_id: '#{current_community.id}'")
+		#PaperTrail::Version.create(item_type: "GalleryImage",item_id: @gallery_image.id,event: "update",community_id: current_community.id, company_id: current_company.id,whodunnit: current_user.id,object: "name: '#{@gallery_image.name}' gallery_id: #{@gallery_image.gallery_id} community_id: '#{current_community.id}'")
 
 		# @gallery_image.update(gallery_image_params)
 		flash[:notice] = "Image is edited successfully."

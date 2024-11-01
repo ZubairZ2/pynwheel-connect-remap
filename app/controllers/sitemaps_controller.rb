@@ -126,7 +126,7 @@ class SitemapsController < ApplicationController
       redirect_to community_sitemaps_path(@community)
     else
       sitemap = Sitemap.where(community_id: params[:community_id],id: params[:sitemap_id]).first
-      if sitemap.update_attributes(image: params[:file], width: image.width  , height: image.height, map_ocr_data: nil, is_ocr_enabled: false)
+      if sitemap.update_columns(image: params[:file], width: image.width  , height: image.height, map_ocr_data: nil, is_ocr_enabled: false)
         render :json=>{"status"=>"success"}
       else
         render :json=>{"status"=>"fail"}

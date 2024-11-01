@@ -66,7 +66,7 @@ class HomePageController < ApplicationController
       @home_page_image.is_small = (params[:home_page_image][:crop_w].to_f < 800 && params[:home_page_image][:crop_h].to_f < 600) ? true : false
     end
     @home_page_image.update(home_page_image_params)
-    PaperTrail::Version.create(item_type: "HomePageImage",item_id: @home_page_image.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@home_page_image.name} community_id: #{@home_page_image.design.community_id}")
+    #PaperTrail::Version.create(item_type: "HomePageImage",item_id: @home_page_image.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@home_page_image.name} community_id: #{@home_page_image.design.community_id}")
     flash[:notice] = "Image is edited successfully."
     redirect_back(fallback_location: root_path)
   end
@@ -84,7 +84,7 @@ class HomePageController < ApplicationController
 
   def save_home_page_video
     if current_community.design.home_page_video.present?
-      current_community.design.home_page_video.update_attribute(:video,params[:file])
+      current_community.design.home_page_video.update_column(:video,params[:file])
     else
       current_community.design.create_home_page_video(video: params[:file])
     end

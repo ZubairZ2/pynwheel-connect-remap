@@ -156,7 +156,7 @@ module Api
         
         add_remove_stop_into_sort_hash(params[:building], params[:floor], ts, "add")
         
-        PaperTrail::Version.create(item_type: "TourStop", item_id: st.id, event: "create", whodunnit: @community&.users&.first&.id, community_id: @community.id, company_id: @community.company.id, object: "name: '#{stName}' community_id: '#{@community.id}'")
+        #PaperTrail::Version.create(item_type: "TourStop", item_id: st.id, event: "create", whodunnit: @community&.users&.first&.id, community_id: @community.id, company_id: @community.company.id, object: "name: '#{stName}' community_id: '#{@community.id}'")
         render json: { success: true, error_code: 200, message: "Tour stop has been added successfully", is_unit_already_available: TourStop.find_by(stop_id: params[:stop_id]).present?}, status: 200
       end
 

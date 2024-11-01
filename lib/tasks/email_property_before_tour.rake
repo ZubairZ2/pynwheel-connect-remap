@@ -29,6 +29,6 @@ namespace :email_property_before_tour do
   end
 
   def mark_tour_user(scheduled_tour)
-      scheduled_tour.update_attributes(community_inform_email: true)
+      scheduled_tour.update_columns(community_inform_email: true)
   end
 end

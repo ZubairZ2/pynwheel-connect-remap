@@ -44,7 +44,7 @@ class UnitsController < ApplicationController
     @unit.crop_h = params[:unit][:crop_h]
     @unit.image_bit = true
     @unit.save!
-    # PaperTrail::Version.create(item_type: "Unit",item_id: @unit.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@floorplan.name} community_id: '#{@floorplan.community_id}'")
+    # #PaperTrail::Version.create(item_type: "Unit",item_id: @unit.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@floorplan.name} community_id: '#{@floorplan.community_id}'")
 
     redirect_to edit_community_unit_path(@community, @unit)
     # render :json=> {:success=>false}
@@ -82,7 +82,7 @@ class UnitsController < ApplicationController
     @unit.image_bit = false
 
     @unit.save
-    # PaperTrail::Version.create(item_type: "Floorplan",item_id: @floorplan.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@floorplan.name} community_id: '#{@floorplan.community_id}'")
+    # #PaperTrail::Version.create(item_type: "Floorplan",item_id: @floorplan.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@floorplan.name} community_id: '#{@floorplan.community_id}'")
 
     redirect_to edit_community_unit_path(@community, @unit)
     # render :json=> {:success=>false}
@@ -108,7 +108,7 @@ class UnitsController < ApplicationController
         floorplan_amenities = @unit.floorplan.amenities
         add_floorplan_amenities = "true"
         AssignFloorplanImagesToUnitJob.perform_async floorplan_amenities, add_floorplan_amenities, @unit
-        PaperTrail::Version.create(item_type: "Unit", item_id: @unit.id, event: "create", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
+        #PaperTrail::Version.create(item_type: "Unit", item_id: @unit.id, event: "create", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
       end
       flash[:notice] = "Unit created successfully."
       redirect_to community_units_path(:community_id => @community.id)
@@ -233,7 +233,7 @@ class UnitsController < ApplicationController
             AssignFloorplanImagesToUnitJob.perform_async floorplan_amenities, add_floorplan_amenities, @unit
           end
           set_manually_updated_column
-          PaperTrail::Version.create(item_type: "Unit", item_id: @unit.id, event: "update", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
+          #PaperTrail::Version.create(item_type: "Unit", item_id: @unit.id, event: "update", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
           if params[:floorNo].nil?
             format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
           else
@@ -262,7 +262,7 @@ class UnitsController < ApplicationController
             AssignFloorplanImagesToUnitJob.perform_async floorplan_amenities, add_floorplan_amenities, @unit
           end
           set_manually_updated_column
-          PaperTrail::Version.create(item_type: "Unit", item_id: @unit.id, event: "update", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
+          #PaperTrail::Version.create(item_type: "Unit", item_id: @unit.id, event: "update", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
           if params[:floorNo].nil?
             format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
           else
@@ -294,7 +294,7 @@ class UnitsController < ApplicationController
               AssignFloorplanImagesToUnitJob.perform_async floorplan_amenities, add_floorplan_amenities, @unit
             end
             set_manually_updated_column
-            PaperTrail::Version.create(item_type: "Unit", item_id: @unit.id, event: "update", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
+            #PaperTrail::Version.create(item_type: "Unit", item_id: @unit.id, event: "update", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
             if params[:floorNo].nil?
               format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
             else
@@ -313,16 +313,16 @@ class UnitsController < ApplicationController
   end
 
   def set_manually_updated_column
-    # @unit.update_attribute(:manually_updated, true)
+    # @unit.update_column(:manually_updated, true)
     if @unit.sold
-      @unit.update_attributes(availability: "Occupied", available: false, available_date: '', availability_is_updated: true)
+      @unit.update_columns(availability: "Occupied", available: false, available_date: '', availability_is_updated: true)
     end
     if params[:unit][:available] == 'true'
 
-      @unit.update_attributes(availability: "Unoccupied", available: true, availability_is_updated: true)
+      @unit.update_columns(availability: "Unoccupied", available: true, availability_is_updated: true)
     end
     if params[:unit][:available] == 'false'
-      @unit.update_attributes(availability: "Occupied", available: false, availability_is_updated: true)
+      @unit.update_columns(availability: "Occupied", available: false, availability_is_updated: true)
     end
   end
 
@@ -334,7 +334,7 @@ class UnitsController < ApplicationController
       ts.destroy_all
     end
 
-    PaperTrail::Version.create(item_type: "Unit", item_id: @unit.id, event: "delete", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
+    #PaperTrail::Version.create(item_type: "Unit", item_id: @unit.id, event: "delete", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
     @unit.destroy
 
     flash[:notice] = "Unit deleted successfully."
@@ -357,7 +357,7 @@ class UnitsController < ApplicationController
     unit = @community.units.where(floorplate_id: nil, provider_unit_id: params[:id])
     if unit.present?
       unit = unit.first
-      #unit.first.update_attributes(x_plot: params[:x_plot],y_plot: params[:y_plot])
+      #unit.first.update_columns(x_plot: params[:x_plot],y_plot: params[:y_plot])
       unit.x_plot = params[:x_plot]
       unit.y_plot = params[:y_plot]
       unit.save(validate: false)
@@ -377,7 +377,7 @@ class UnitsController < ApplicationController
   def ajaxplotunitforfloorplate
     unit = @community.units.where(provider_unit_id: params[:id])
     if unit.present?
-      #unit.first.update_attributes(x_plot: params[:x_plot],y_plot: params[:y_plot],floorplate_id: params[:floorplate_id])
+      #unit.first.update_columns(x_plot: params[:x_plot],y_plot: params[:y_plot],floorplate_id: params[:floorplate_id])
       unit = unit.first
       unit.x_plot = params[:x_plot]
       unit.y_plot = params[:y_plot]
@@ -401,7 +401,7 @@ class UnitsController < ApplicationController
     unit = @community.units.where(provider_unit_id: params[:id]).first
     if unit.present?
       door ||= unit.door || unit.build_door
-      door.update_attributes(community_id: @community.id, x_plot: params[:x_plot], y_plot: params[:y_plot])
+      door.update_columns(community_id: @community.id, x_plot: params[:x_plot], y_plot: params[:y_plot])
       render json: {unit: unit, door: door.reload, success: true}
     else
       render json: {unit: {}, door: {}, success: false}
@@ -436,7 +436,7 @@ class UnitsController < ApplicationController
     params[:ids].each do |id|
       unit = @community.units.where(provider_unit_id: id).first
       door ||= unit.door || unit.build_door
-      door.update_attributes(community_id: @community.id, x_plot: params[:x_plot], y_plot: params[:y_plot])
+      door.update_columns(community_id: @community.id, x_plot: params[:x_plot], y_plot: params[:y_plot])
     end
 
     data = []

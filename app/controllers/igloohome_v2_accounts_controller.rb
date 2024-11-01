@@ -33,9 +33,9 @@ class IgloohomeV2AccountsController < ApplicationController
       end
     else
       @igloohome = Igloohome.find_by(community_id: current_community.id)
-      if @igloohome.update_attributes(igloohome_params)
+      if @igloohome.update_columns(igloohome_params)
         current_community.update_columns(:multiple_locks_provider => locks_provider)
-        @igloohome.update_attributes(is_authorized_with_pynwheel: false) if @igloohome.is_authorized_with_pynwheel
+        @igloohome.update_columns(is_authorized_with_pynwheel: false) if @igloohome.is_authorized_with_pynwheel
         flash[:notice] = "Igloohome credentails updated successfully"
         redirect_to new_community_dwelo_path(current_community)
       else
@@ -69,7 +69,7 @@ class IgloohomeV2AccountsController < ApplicationController
   def remove_igloohome_auth_account
     if current_community.igloohome.present?
       if current_community.igloohome.refresh_token.present?
-        current_community.igloohome.update_attributes(refresh_token: nil, is_authorized_with_pynwheel: false, version: "v1")
+        current_community.igloohome.update_columns(refresh_token: nil, is_authorized_with_pynwheel: false, version: "v1")
         flash[:notice] = "Account disconnected successfully"
       else
         flash[:error] = "No account is attached"

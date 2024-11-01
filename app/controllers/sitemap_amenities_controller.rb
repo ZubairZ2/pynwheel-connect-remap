@@ -37,7 +37,7 @@ class SitemapAmenitiesController < ApplicationController
 
 	# def update
 	# 	@amenity = @community.sitemap.amenities.find(params[:id])
-	# 	if @amenity.update_attributes(amenity_params)
+	# 	if @amenity.update_columns(amenity_params)
 	# 		redirect_to community_sitemap_amenities_path(@community,@sitemap), notice: "Amenity updated successfully"
 	# 	else
 	# 		add_breadcrumb "Amenities", community_sitemap_amenities_path(@community,@sitemap) 
@@ -85,7 +85,7 @@ class SitemapAmenitiesController < ApplicationController
 			door = amenity.ordered_doors.build
 			status = "created"
 		  end
-		  door.update_attributes(community_id: @community.id, x_plot: params[:x_plot], y_plot: params[:y_plot])
+		  door.update_columns(community_id: @community.id, x_plot: params[:x_plot], y_plot: params[:y_plot])
 		  render json: {amenity: amenity, door: door.reload, status: status, success: true}
 		else
 		  render json: {unit: {}, door: {}, status: nil, success: false}

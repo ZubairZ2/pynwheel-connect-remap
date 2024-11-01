@@ -18,7 +18,7 @@ class BuildingStartingPointsController < ApplicationController
         update_enable_locks()
         ts = TourStop.find_by(stop_type: "building_starting_point", stop_id: @building_starting_point.id)
         if ts.present?
-          ts.update_attributes(name: @building_starting_point.name)
+          ts.update_columns(name: @building_starting_point.name)
         end
         if params[:done_action] == "true"
           format.html { redirect_to( session[:go_back] , notice: "Building starting point was successfully updated.")}

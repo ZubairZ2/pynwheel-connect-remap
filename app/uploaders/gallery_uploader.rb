@@ -1,19 +1,8 @@
 class GalleryUploader < CarrierWave::Uploader::Base
-
-  # Include RMagick or MiniMagick support:
   include CarrierWave::RMagick
-  include CarrierWave::Video  # for your video processing
+  include CarrierWave::Video
   include CarrierWave::Video::Thumbnailer
-  # include Piet::CarrierWaveExtension
-  # include CarrierWave::MiniMagick
-
-  # Choose what kind of storage to use for this uploader:
-  #storage :file
-
   storage Rails.env.development? ? :file : :fog 
-  #resize_to_fit(1920, 1080)
-  # Override the directory where uploaded files will be stored.
-  # This is a sensible default for uploaders that are meant to be mounted:
 
   def filename
     if model.crop_x.present?
@@ -47,13 +36,13 @@ class GalleryUploader < CarrierWave::Uploader::Base
   version :ios, :if => :image? do
     resize_to_limit(1024, 768)
   end
+
   process :crop
   resize_to_limit(1920, 1080)
   version :large, :if => :image? do
-    # process :crop
     resize_to_limit(1920, 1080)
   end
-  # process optimize: [{quality: 50, level: 7}]
+
   def png_name for_file, version_name
     %Q{#{version_name}_#{for_file.chomp(File.extname(for_file))}.png}
   end
@@ -76,6 +65,7 @@ class GalleryUploader < CarrierWave::Uploader::Base
   end
 
   protected
+  
   def secure_token
     var = :"@#{mounted_as}_secure_token"
     model.instance_variable_get(var) or model.instance_variable_set(var, SecureRandom.uuid)

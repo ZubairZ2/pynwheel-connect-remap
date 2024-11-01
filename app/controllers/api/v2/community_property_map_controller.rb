@@ -125,8 +125,8 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
     floorplates.values.each do |floorplate|
       if floorplate["id"].present?
         @floorplate = @community.floorplates.find_by_id(floorplate["id"])
-        @floorplate.update_attributes(name: floorplate["name"], range: floorplate["range"])
-        @floorplate.update_attributes(label_image: floorplate["label_image"]) if floorplate["label_image"].present?
+        @floorplate.update_columns(name: floorplate["name"], range: floorplate["range"])
+        @floorplate.update_columns(label_image: floorplate["label_image"]) if floorplate["label_image"].present?
       else
         if floorplate["image"].present?
           image = MiniMagick::Image.open(floorplate["image"].path)
