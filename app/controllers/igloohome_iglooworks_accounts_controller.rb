@@ -54,7 +54,7 @@ class IgloohomeIglooworksAccountsController < ApplicationController
     end
 
     def update_community_lock_provider
-      current_community.update_columns(multiple_locks_provider: current_community.multiple_locks_provider.concat(["Igloohome"]).distinct)
+      current_community.update_columns(multiple_locks_provider: current_community.multiple_locks_provider.concat(["Igloohome"]).uniq)
     end
 
     def general_error_redirection

@@ -73,7 +73,7 @@ class SchedulerWidget::WidgetsController < ApplicationController
     @is_funnel_community = @schedule_tour.community.is_funnel_community?
     @funnel_available_days =  @is_funnel_community ? FunnelService.new(@schedule_tour).get_available_days : {}
     @funnel_discovery_sources = @is_funnel_community ? FunnelService.new(@schedule_tour).get_discovery_sources : []
-    @selected_discovery_source = @is_funnel_community ? (@schedule_tour&.funnel_prospect_discover_source.present? ? @funnel_discovery_sources.map{|s| s[0] if s[1] == @schedule_tour&.funnel_prospect_discover_source.to_i }&.compact&.distinct[0] : "Select an option" ) : ""
+    @selected_discovery_source = @is_funnel_community ? (@schedule_tour&.funnel_prospect_discover_source.present? ? @funnel_discovery_sources.map{|s| s[0] if s[1] == @schedule_tour&.funnel_prospect_discover_source.to_i }&.compact&.uniq[0] : "Select an option" ) : ""
     
     @rentcafe_discovery_sources = @use_yardi_as_lead ? @community&.crm_discovery_source&.sources.map { |source| source["name"] } : []
     @rentcafe_selected_discovery_source = @use_yardi_as_lead ? (@schedule_tour&.rentcafe_discover_source.present? ?  @rentcafe_discovery_sources.map{|source| source if source == @schedule_tour&.rentcafe_discover_source }&.compact&.uniq[0] : "Select an option" ) : ""
@@ -204,8 +204,8 @@ class SchedulerWidget::WidgetsController < ApplicationController
   def scheduled_tour_users community
     scheduled_tours = SchedualTour.where(community_id: community.id).where.not(tour_user_id: nil)
     tour_user_ids = scheduled_tours_in_future(scheduled_tours, community)
-    emails = TourUser.where(id: tour_user_ids).pluck(:email).distinct
-    phone_numbers = TourUser.where(id: tour_user_ids).pluck(:phone_number).distinct
+    emails = TourUser.where(id: tour_user_ids).pluck(:email).uniq
+    phone_numbers = TourUser.where(id: tour_user_ids).pluck(:phone_number).uniq
 
     {emails: emails, phone_numbers: phone_numbers}
   end

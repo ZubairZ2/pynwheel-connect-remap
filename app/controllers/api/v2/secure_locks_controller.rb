@@ -42,7 +42,7 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
         other_lock(lock) if type.eql?(OTHERLOCK)
       end
       
-      unique_locks_provider = @locks_provider.distinct
+      unique_locks_provider = @locks_provider.uniq
       @community.update_columns(multiple_locks_provider: unique_locks_provider)
       previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(LOCK_PROVIDER) 
       @community.set_lock_providers_status(current_user, @status)

@@ -78,7 +78,7 @@ class AnalyticsController < ApplicationController
         stops_per_tour(start_date, @days_count, @self_tour_records, "self_tour")
         visits_per_tour_stop(@self_tour_records, "self_tour")
 
-        @schedule_records = SchedualTour.where(community_id: @self_tour_records_all.pluck(:community_id).compact.distinct).where.not(tour_user_id: nil).where('tour_date >= ? AND tour_date <= ?',start_date.beginning_of_day, DateTime.now).where(tour_type: ["self_tour", "guided_tour", "Virtual Tour"])
+        @schedule_records = SchedualTour.where(community_id: @self_tour_records_all.pluck(:community_id).compact.uniq).where.not(tour_user_id: nil).where('tour_date >= ? AND tour_date <= ?',start_date.beginning_of_day, DateTime.now).where(tour_type: ["self_tour", "guided_tour", "Virtual Tour"])
         days_count_for_schedule_records = return_total_days(start_date, Date.today) > 0 ? return_total_days(start_date, Date.yesterday.end_of_day) : 1
         till_now_tour_histories = @self_tour_records_all.where('arrived < ?', Date.yesterday.end_of_day)
         no_shows(start_date, days_count_for_schedule_records, @schedule_records, till_now_tour_histories, "self_tour")
@@ -740,7 +740,7 @@ class AnalyticsController < ApplicationController
       records_count = records.size
       records = records.map{ |arr| [arr.first.to_date, arr.last] }
       records_start_date = records.map{ |arr| arr.first }
-      uniq_start_date = records_start_date.distinct
+      uniq_start_date = records_start_date.uniq
       uniq_start_date_size = uniq_start_date.size
       uniq_start_date_size.times do |i|
         count_onsite_completed = 0
@@ -812,7 +812,7 @@ class AnalyticsController < ApplicationController
       records_count = records.size
       records = records.map{ |arr| [arr.first.to_date, arr.last] }
       records_start_date = records.map{ |arr| arr.first }
-      uniq_start_date = records_start_date.distinct
+      uniq_start_date = records_start_date.uniq
       uniq_start_date_size = uniq_start_date.size
       uniq_start_date_size.times do |i|
         count = 0
@@ -847,7 +847,7 @@ class AnalyticsController < ApplicationController
       @average_number_of_stops_per_session = visited_stops.distinct.size / (tour_keys.size rescue 1)
       sessions_each_day_hourly_hash = return_empty_hash_hourly
       records_start_date_hours = visited_stops.pluck(:created_at).map {|dt| dt.strftime("%H").to_i }
-      uniq_hours = records_start_date_hours.distinct
+      uniq_hours = records_start_date_hours.uniq
       max_count = 0
       max_hour = 0
       uniq_hours.each do |h|
@@ -951,7 +951,7 @@ class AnalyticsController < ApplicationController
       end
       no_shows_schedule_records = scheduled_tours_date_with_user - tour_histories_date_with_user
       records_start_date = no_shows_schedule_records.map {|arr| arr.first}
-      uniq_start_date = records_start_date.distinct
+      uniq_start_date = records_start_date.uniq
       uniq_start_date_size = uniq_start_date.size
 
       uniq_start_date_size.times do |i|

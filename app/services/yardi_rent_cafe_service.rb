@@ -381,23 +381,16 @@ class YardiRentCafeService < BaseService
   end
 
   def yardi_rent_cafe_rent_matrix(api_token, property_code, apartment_name, credentials, available_date)
-   
     begin
-      
       request_type = "pricingmatrix"
       url = "#{@credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&ApartmentName=#{apartment_name}&availabledate=#{available_date}"
-    
       response = HTTParty.get(url)
       rent_matrix = JSON.parse(response.body)
 
       unless rent_matrix[0]["Error"].present?
-        # puts "---------------------------- pricing Matrix Present --------------------------"
-        # puts "URL :   #{url}"
-        uniq_terms = rent_matrix.map{|x| x["Term"].to_i }.distinct
+        uniq_terms = rent_matrix.map{|x| x["Term"].to_i }.uniq
         distinct_data = uniq_terms.map{|term| rent_matrix.map{|data| data if data["Term"] == term.to_s}.compact}.compact
-
         return distinct_data.map{|data| data.map{|r| [r["Rent"].to_i, r["Term"], r["Start_Date"], r["End_Date"]]}.min}
-
       else
         return nil
       end

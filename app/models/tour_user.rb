@@ -215,7 +215,7 @@ class TourUser < ApplicationRecord
         end
       end
 
-      zev_mac_ids&.compact&.distinct&.count > 1 ? zev_mac_ids&.compact&.distinct : []
+      zev_mac_ids&.compact&.uniq&.count > 1 ? zev_mac_ids&.compact&.uniq : []
     rescue => error
       []
     end

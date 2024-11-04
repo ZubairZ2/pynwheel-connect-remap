@@ -250,7 +250,7 @@ class YardiRentCafeStaticService < BaseService
       response = HTTParty.get(url)
       rent_matrix = JSON.parse(response.body)
       unless rent_matrix[0]["Error"].present?
-        uniq_terms = rent_matrix.map{|x| x["Term"].to_i }.distinct
+        uniq_terms = rent_matrix.map{|x| x["Term"].to_i }.uniq
         distinct_data = uniq_terms.map{|term| rent_matrix.map{|data| data if data["Term"] == term.to_s}.compact}.compact
         return distinct_data.map{|data| data.map{|r| [r["Rent"].to_i, r["Term"], r["Start_Date"], r["End_Date"]]}.min}
       else

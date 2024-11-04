@@ -132,12 +132,12 @@ class Api::V1::CommunitiesController < ActionController::Base
     @community.save
     unless @tour_user.email == "Removed at Consumer Request"
     #####
-    @building_list = @community.units.map{|x| x.building rescue next}.distinct.compact + @community.amenities.map{|x| x.building rescue next}.distinct.compact
-    @building_list = @building_list.compact.reject { |c| c.empty? }.distinct.sort
+    @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
+    @building_list = @building_list.compact.reject { |c| c.empty? }.uniq.sort
     @building_list = @building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@building_list).sort.map{|x,y| y}
     @community.community_tour.building_order.present? ? (@building_list =  @community.community_tour.building_order) : ""
 
-    @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.distinct.sort rescue nil
+    @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue nil
     #####
     @tours = Tour.where(community_id: params[:id])
 
@@ -275,12 +275,12 @@ class Api::V1::CommunitiesController < ActionController::Base
 
     @building_list = @floor_list = []
 
-    @building_list = @community.units.map{|x| x.building rescue next}.distinct.compact + @community.amenities.map{|x| x.building rescue next}.distinct.compact
-    @building_list = @building_list.compact.reject { |c| c.empty? }.distinct.sort
+    @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
+    @building_list = @building_list.compact.reject { |c| c.empty? }.uniq.sort
     @building_list = @building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@building_list).sort.map{|x,y| y}
     @community.community_tour.building_order.present? ? (@building_list =  @community.community_tour.building_order) : ""
 
-    @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.distinct.sort rescue nil
+    @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue nil
 
     current_time = params[:current_time].present? ? params[:current_time] : DateTime.now
     current_time = current_time.to_datetime
@@ -353,12 +353,12 @@ class Api::V1::CommunitiesController < ActionController::Base
 
       @building_list = @floor_list = []
 
-      @building_list = @community.units.map{|x| x.building rescue next}.distinct.compact + @community.amenities.map{|x| x.building rescue next}.distinct.compact
-      @building_list = @building_list.compact.reject { |c| c.empty? }.distinct.sort
+      @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
+      @building_list = @building_list.compact.reject { |c| c.empty? }.uniq.sort
       @building_list = @building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@building_list).sort.map{|x,y| y}
       @community.community_tour.building_order.present? ? (@building_list =  @community.community_tour.building_order) : ""
       
-      @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.distinct.sort rescue nil
+      @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue nil
       @all_elevators = @community.elevators.map{|x| [x,x.floors, x.building]}
 
       # @floor_list = Floorplate.where(community_id: @community.id).order('building asc').map{|x| x.floors if x.building.present?}.compact.flatten!
@@ -418,10 +418,10 @@ class Api::V1::CommunitiesController < ActionController::Base
     else
       @building_list = @floor_list = []
 
-      @building_list = @community.units.map{|x| x.building rescue next}.distinct.compact + @community.amenities.map{|x| x.building rescue next}.distinct.compact
-      @building_list = @building_list.compact.reject { |c| c.empty? }.distinct.sort
+      @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
+      @building_list = @building_list.compact.reject { |c| c.empty? }.uniq.sort
       @building_list = @building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@building_list).sort.map{|x,y| y}
-      @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.distinct.sort rescue nil
+      @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue nil
 
       @building_list << "" if @building_list == []
         @building_list.each do |building|
@@ -440,9 +440,9 @@ class Api::V1::CommunitiesController < ActionController::Base
         end
     end
     
-    stops_arr = stops_arr.compact.map{|x| x.id}.distinct
+    stops_arr = stops_arr.compact.map{|x| x.id}.uniq
 
-    un_ordered_visited_stops = VisitedStop.where(tour_user_id: @tour_user.id ,tour_id: @community.community_tour.id ).map{|x| x.tour_stop_id}.distinct
+    un_ordered_visited_stops = VisitedStop.where(tour_user_id: @tour_user.id ,tour_id: @community.community_tour.id ).map{|x| x.tour_stop_id}.uniq
     @visited_stops = []
     stops_arr.each do |val|
       if un_ordered_visited_stops.include?(val)
