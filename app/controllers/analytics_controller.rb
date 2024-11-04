@@ -734,7 +734,6 @@ class AnalyticsController < ApplicationController
     end
 
     def tour_site_or_tour_state_session(start_date, days_count, total_records, tour_site_or_tour_state_attr, for_device_type) 
-      
       sessions_each_day_hash_onsite_completed = return_empty_hash(days_count,start_date)
       sessions_each_day_hash_offsite_abandoned = return_empty_hash(days_count,start_date)
       records = total_records.order(:arrived).pluck(:arrived, tour_site_or_tour_state_attr)

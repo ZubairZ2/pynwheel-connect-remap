@@ -1723,7 +1723,7 @@ class Community < ApplicationRecord
     keys_which_have_no_slot = (slots.map { |date, arr| unless arr.any?; date; end } ).compact
     slots.delete_if { |k,v| keys_which_have_no_slot.include?(k) }
     time_slots = slots
-    time_slots.each {|key, value_arr| time_slots[key] = value_arr.distinct}
+    time_slots.each {|key, value_arr| time_slots[key] = value_arr.uniq}
     time_slots
   end
 
@@ -1737,12 +1737,15 @@ class Community < ApplicationRecord
       allow_self_tour = tour_setting.allow_self_tour
       allow_guided_tour = tour_setting.allow_guided_tour
       self_tour_data = (allow_self_tour && self.opening_hours.present?) ? self.opening_hours.pluck(:day, :opening_time, :closing_time) : []
+      
       if self_tour_data.present? && tour_type == "self_tour"
         self_tour_data.each do |data|
           time_slots[week_days[data[0]]] = time_slots[week_days[data[0]]].present? ? (time_slots[week_days[data[0]]] + return_time_slots(data[1], data[2], stepping)) : (return_time_slots(data[1], data[2], stepping))
         end
       end
+
       guided_tour_data = (allow_guided_tour && self.guided_opening_hours.present?) ? self.guided_opening_hours.pluck(:day, :opening_time, :closing_time) : []
+      
       if guided_tour_data.present? && tour_type == "guided_tour"
         guided_tour_data.each do |data|
           time_slots[week_days[data[0]]] = time_slots[week_days[data[0]]].present? ? (time_slots[week_days[data[0]]] + return_time_slots(data[1], data[2], stepping)) : (return_time_slots(data[1], data[2], stepping))
@@ -1750,7 +1753,7 @@ class Community < ApplicationRecord
       end
     end
 
-    time_slots.each {|key, value_arr| time_slots[key] = value_arr.distinct}
+    time_slots.each {|key, value_arr| time_slots[key] = value_arr&.uniq}
     time_slots
   end
 
@@ -2113,7 +2116,7 @@ class Community < ApplicationRecord
   end
 
   def fetch_bedroom_list
-    bedroom_list = self.floorplans.map{|x| x.bedrooms.to_i}.distinct
+    bedroom_list = self.floorplans.map{|x| x.bedrooms.to_i}.uniq
     bedroom_list = bedroom_list.sort.map {|bedroom| [bedroom, bedroom]}
     bedroom_list.unshift(["Number of Bedrooms", nil])
     bedroom_list
@@ -2121,9 +2124,10 @@ class Community < ApplicationRecord
 
   def fetch_building_list(sorted_building)
     building_list = []
-    building_list = self.units.map{|x| x.building rescue next}.distinct.compact + self.amenities.map{|x| x.building rescue next}.distinct.compact
-    building_list = building_list.compact.reject { |c| c.empty? }.distinct
+    building_list = self.units.map{|x| x.building rescue next}.uniq.compact + self.amenities.map{|x| x.building rescue next}.uniq.compact
+    building_list = building_list.compact.reject { |c| c.empty? }.uniq
     building_list = building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(building_list).sort.map{|x,y| y}
+    
     if sorted_building.present?
       if (building_list - sorted_building != [] )
         building_list = (sorted_building) + (building_list - sorted_building)
@@ -2143,7 +2147,7 @@ class Community < ApplicationRecord
     locks << get_lock_info_object(self.igloohome, styling_start, styling_end)
     locks << get_lock_info_object(self.edge_state, styling_start, styling_end)
     locks << get_manual_lock_info_object(styling_start, styling_end)
-    locks.compact.distinct
+    locks&.compact&.uniq
   end
 
   def pynwheel_map_enabled?

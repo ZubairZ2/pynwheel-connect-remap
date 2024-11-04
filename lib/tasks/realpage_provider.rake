@@ -6,9 +6,8 @@ namespace :realpage_provider do
 
     communities&.each do |community|
       begin
-        puts "\n\n\n----------------- #{community.name}: #{community.id}  started updating provider id"
         if community&.credential.present? &&  community&.credential&.site_id.present?
-          site_ids = community&.credential&.site_id&.split(",").compact.distinct.map(&:strip)
+          site_ids = community&.credential&.site_id&.split(",").compact.uniq.map(&:strip)
           if site_ids.count === 1
             site_ids&.each do |site_id|
               units = community.units.where("provider_unit_id NOT LIKE ?", "%-%")
@@ -39,10 +38,8 @@ namespace :realpage_provider do
 
           end
         end
-        puts "----------------- #{community.name}: #{community.id}  ended updating provider id"
       
       rescue => ex
-        puts "\n\n------------Error:  #{ ex.inspect }------------\n\n"
         next
       end
 
