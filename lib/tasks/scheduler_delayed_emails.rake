@@ -176,7 +176,7 @@ namespace :delayed_email_notifications do
       schedual_tour.update_columns(daily_email_sent: true) if diff == 1
       emails = community_email.gsub(" ","").split(',')
 
-      ScheduledTourMailerJob.perform_async("Your Tour Tomorrow", content, tu.email,community,nil,nil,nil,emails[0],true,schedual_tour) if (schedual_tour.property_tour_type == "scheduled_tour" && (diff == 1 && !(community.alert_contact == "phone")) && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce"))
+      ScheduledTourMailerJob.perform_async("Your Tour Tomorrow", content, tu.email, community, nil, nil, nil, emails[0], true, schedual_tour) if (schedual_tour.property_tour_type == "scheduled_tour" && (diff == 1 && !(community.alert_contact == "phone")) && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce"))
       TwilioSmsWorker.perform_async(sms_content, tu&.phone_number, tu&.email, community&.id) if (schedual_tour.property_tour_type == "scheduled_tour" && schedual_tour.tour_user.is_sms_enabled && (diff == 1 && !(community.alert_contact == "email")) && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce"))
     end
 
