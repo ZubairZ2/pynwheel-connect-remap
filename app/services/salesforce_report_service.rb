@@ -23,7 +23,7 @@ class SalesforceReportService < BaseService
   end
 
   def get_salesforce_logs
-    WebHookLog.where(webhook_type: "salesforce").pluck(:community_id, :community_name).distinct.compact
+    WebHookLog.where(webhook_type: "salesforce").pluck(:community_id, :community_name).uniq.compact
   end
 
   def formate_csv salesforce_log

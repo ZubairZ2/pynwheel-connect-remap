@@ -110,7 +110,7 @@
                   %datalist#locks_list
               
               #elevator-bank.hide_it
-                = render :partial=>'elevator_bank_block.html'
+                = render :partial=>'elevator_bank_block'
                 #elevator-bank-data{ data: { all_locks: @all_locks.to_json, bank_locks: @elevator_banks.to_json } }
 
     %span.btn.btn-primary.btn-file

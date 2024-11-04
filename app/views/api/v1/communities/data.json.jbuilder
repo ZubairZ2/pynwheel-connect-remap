@@ -1465,7 +1465,7 @@ json.apartments do
       end
     end
   end
-  json.floorplans units_floorplans.map {|i| (i.name.present? ? i.name : "").gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(units_floorplans).sort.map{|x,y| y}.distinct do |floorplan|
+  json.floorplans units_floorplans.map {|i| (i.name.present? ? i.name : "").gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(units_floorplans).sort.map{|x,y| y}.uniq do |floorplan|
     json.id floorplan.id
     json.provider_floorplan_id floorplan.provider_floorplan_id
     json.name floorplan.name

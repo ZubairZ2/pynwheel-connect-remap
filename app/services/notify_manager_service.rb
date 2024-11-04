@@ -28,7 +28,7 @@ class NotifyManagerService < BaseService
     available_units = @community.units.vacant_and_available
 
     if updated_units.present? && available_units.present?
-      recipients = [@community.email, @community.property_manager_email].distinct
+      recipients = [@community.email, @community.property_manager_email].uniq
       email_body = generate_email_body(available_units, updated_units)
 
       recipients.each do |recipient|

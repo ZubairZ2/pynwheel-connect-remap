@@ -35,9 +35,11 @@ class FloorplanUnitsService < BaseService
       @floorplates = @community.floorplates
       @floors = fetch_floors()
       floorplates = []
+      
       @floors.each do |floor|
         floorplates << @floorplates.select{|f| f.floors.include?(floor)}
       end
+
       floorplates.flatten
     end
   end
@@ -45,7 +47,7 @@ class FloorplanUnitsService < BaseService
   def fetch_floors
     floorplates = @community.floorplates
     floors = floorplates.map{|f| f.floors}.flatten.sort_by { |f| f }
-    floors.distinct
+    floors.uniq
   end
 
   private

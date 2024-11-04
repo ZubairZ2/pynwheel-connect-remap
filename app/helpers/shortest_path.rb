@@ -680,10 +680,10 @@ module ShortestPath
     building_list, actual_building_list = []
     actual_building_list = (Unit.where(community_id: community.id).pluck(:building)).reject { |e| e.to_s.strip.empty? } rescue []
     actual_building_list += Amenity.where(community_id: community.id).pluck(:building).reject { |e| e.to_s.strip.empty? }
-    is_multiple_building = actual_building_list.distinct.count > 1
+    is_multiple_building = actual_building_list.uniq.count > 1
     building_list = (Unit.where(id: unit_ids).pluck(:building)).reject { |e| e.to_s.strip.empty? } rescue []
     building_list += Amenity.where(id: amenity_ids).pluck(:building).reject { |e| e.to_s.strip.empty? }
-    building_list = building_list.compact.reject { |c| c.empty? }.distinct
+    building_list = building_list.compact.reject { |c| c.empty? }.uniq
     building_list = building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(building_list).sort.map{|x,y| y}
     
     if sorted_building.present?
@@ -881,7 +881,7 @@ module ShortestPath
       @planned_to_visit_units_and_doors_ids, @planned_to_visit_amenities_and_doors_ids, @floors_specific_units, @floors_specific_amenities = [], [], {}, {}
       @floorplates = @community.floorplates
       @community.floorplates.map { |x| @floor_lists_hash[x.id] = x.floors }
-      @floors_ids = @community.floorplates.map { |x| x.floors }.flatten!.distinct.sort
+      @floors_ids = @community.floorplates.map { |x| x.floors }.flatten!.uniq.sort
       @floor_to_floorplate_id = fetch_hash_for_floor_to_floorplate_id()
       @floorplates.each {|floorplate| @floorplate_hallways[floorplate.id] = floorplate.hallways.order("id ASC") }
       #@floorplates.each {|floorplate| @floorplate_access_points[floorplate.id] = floorplate.access_points } # For future use
@@ -943,7 +943,7 @@ module ShortestPath
       @planned_to_visit_units_and_doors_ids, @planned_to_visit_amenities_and_doors_ids, @floors_specific_units, @floors_specific_amenities = [], [], {}, {}
       @floorplates = @community.floorplates
       @community.floorplates.map { |x| @floor_lists_hash[x.id] = x.floors }
-      @floors_ids = @community.floorplates.map { |x| x.floors }.flatten!.distinct.sort
+      @floors_ids = @community.floorplates.map { |x| x.floors }.flatten!.uniq.sort
       @floor_to_floorplate_id = fetch_hash_for_floor_to_floorplate_id()
       @floorplates.each {|floorplate| @floorplate_hallways[floorplate.id] = floorplate.hallways.order("id ASC") }
       #@floorplates.each {|floorplate| @floorplate_access_points[floorplate.id] = floorplate.access_points } # For future use
@@ -1004,7 +1004,7 @@ module ShortestPath
       @planned_to_visit_units_and_doors_ids, @planned_to_visit_amenities_and_doors_ids, @floors_specific_units, @floors_specific_amenities = [], [], {}, {}
       @floorplates = @community.floorplates
       @community.floorplates.map { |x| @floor_lists_hash[x.id] = x.floors }
-      @floors_ids = @community.floorplates.map { |x| x.floors }.flatten!.distinct.sort
+      @floors_ids = @community.floorplates.map { |x| x.floors }.flatten!.uniq.sort
       @floor_to_floorplate_id = fetch_hash_for_floor_to_floorplate_id()
       @floorplates.each {|floorplate| @floorplate_hallways[floorplate.id] = floorplate.hallways.order("id ASC") }
       #@floorplates.each {|floorplate| @floorplate_access_points[floorplate.id] = floorplate.access_points } # For future use
@@ -1075,7 +1075,7 @@ module ShortestPath
       @planned_to_visit_units_and_doors_ids, @planned_to_visit_amenities_and_doors_ids, @floors_specific_units, @floors_specific_amenities = [], [], {}, {}
       @floorplates = @community.floorplates
       @community.floorplates.map { |x| @floor_lists_hash[x.id] = x.floors }
-      @floors_ids = @community.floorplates.map { |x| x.floors }.flatten!.distinct.sort
+      @floors_ids = @community.floorplates.map { |x| x.floors }.flatten!.uniq.sort
       @floor_to_floorplate_id = fetch_hash_for_floor_to_floorplate_id()
       @floorplates.each {|floorplate| @floorplate_hallways[floorplate.id] = floorplate.hallways.order("id ASC") }
       #@floorplates.each {|floorplate| @floorplate_access_points[floorplate.id] = floorplate.access_points } # For future use
