@@ -339,8 +339,9 @@ class UnitsController < ApplicationController
       @unit.remove_secondary_image!
       @unit.save
     end
-
-    redirect_to :back, notice: "Image removed successfully."
+    
+    flash[:notice] = "Image removed successfully."
+    redirect_back(fallback_location: root_path)
   end
 
   def ajaxplotunit
@@ -512,19 +513,19 @@ class UnitsController < ApplicationController
   def set_floor
     @community.units.where(id: params[:unit_ids]).update_all(floor: params[:floor], manually_updated: true, floor_is_updated: true)
     flash[:notice] = "Floor is updated for units successfully."
-    redirect_to :back
+    redirect_back(fallback_location: root_path)
   end
 
   def set_building
     @community.units.where(id: params[:unit_ids]).update_all(building: params[:building], manually_updated: true)
     flash[:notice] = "Building is updated for units successfully."
-    redirect_to :back
+    redirect_back(fallback_location: root_path)
   end
 
   def set_available_date
     @community.units.where(id: params[:unit_ids]).update_all(available_date: params[:available_date], manually_updated: true, available_date_is_updated: true)
     flash[:notice] = "Available date is updated for units successfully."
-    redirect_to :back
+    redirect_back(fallback_location: root_path)
   end
 
   def set_available
@@ -535,13 +536,13 @@ class UnitsController < ApplicationController
     end
     
     flash[:notice] = "Available is updated for units successfully."
-    redirect_to :back
+    redirect_back(fallback_location: root_path)
   end
 
   def set_manual_override
     @community.units.where(id: params[:unit_ids]).update_all(manual_override: params[:manual_override])
     flash[:notice] = "Manual Override is updated for units successfully."
-    redirect_to :back
+    redirect_back(fallback_location: root_path)
   end
 
   def set_sold
@@ -552,7 +553,7 @@ class UnitsController < ApplicationController
     end
 
     flash[:notice] = "Sold is updated for units successfully."
-    redirect_to :back
+    redirect_back(fallback_location: root_path)
   end
 
   def add_additional_fees
@@ -573,7 +574,7 @@ class UnitsController < ApplicationController
 
     @community.units.where(id: params[:unit_ids]).update_all(description: str2, manually_updated: true)
     flash[:notice] = "description is updated for units successfully."
-    redirect_to :back
+    redirect_back(fallback_location: root_path)
   end
 
   def add_padding_description(desc)
@@ -615,7 +616,8 @@ class UnitsController < ApplicationController
 
   def set_image
     UploadImageForUnit.perform_async @community, params[:unit_ids], params[:image_file]
-    redirect_to :back, notice: "Image is uploaded for units successfully."
+    flash[:notice] = "Image is uploaded for units successfully."
+    redirect_back(fallback_location: root_path)
   end
 
   def set_amenities_for_units
