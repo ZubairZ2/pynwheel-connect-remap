@@ -5,13 +5,16 @@
       %i.unit_manualoverride.fa.fa-question-circle
         %span#unit_manualoverride_text
           (Dwelo) will be added as default at the start of name
+
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :name, :class=>"form-control validate[required]", :placeholder=>"Name"
+
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Address
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_area :address, :class=>"form-control", :placeholder=>"Address"
+
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Code
@@ -24,6 +27,7 @@
   .col-sm-12.col-lg-3.col-md-3.col-xs-12
     = f.radio_button :page_type, true
     = f.label :page_type, "Map", :value => "true"
+
   .col-sm-12.col-lg-3.col-md-3.col-xs-12
     = f.radio_button :page_type, false
     = f.label :page_type, "Menu", :value => "false"
@@ -33,18 +37,16 @@
     Page Name
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :page_name, :class=>"form-control", :placeholder=>"Page Name"
+
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Region
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.select(:region_id, options_for_select(@all_regions,f.object.region_id), {:include_blank => 'Select a region'}, { :class => 'form-control' })
+
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Logo
-
-    -#%span
-    -#  Upload logo for this community group.
-    -#  %br/
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .image-box.video-box
@@ -55,18 +57,6 @@
       Select Image
       = f.file_field :logo
 
--#.form-group
--#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
--#    Menu button shade
--#
--#  .col-sm-12.col-lg-3.col-md-3.col-xs-12
--#    = f.radio_button :menu_button_shade, "dark"
--#    = f.label :menu_button_shade, "Dark", :value => "dark"
--#  .col-sm-12.col-lg-3.col-md-3.col-xs-12
--#    = f.radio_button :menu_button_shade, "light"
--#    = f.label :menu_button_shade, "light", :value => "light"
-
-
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Inactivated
@@ -76,265 +66,39 @@
         .checkbox
           = f.check_box :inactivate
           %label Inactivate
-  -#.col-sm-12.col-lg-3.col-md-3.col-xs-12
-  -#  = f.radio_button :inactivate, true
-  -#  = f.label :inactivate, "False", :value => "true"
-  -#.col-sm-12.col-lg-3.col-md-3.col-xs-12
-  -#  = f.radio_button :inactivate, false
-  -#  = f.label :inactivate, "True", :value => "false"
+
 - if params[:action] == "edit"
   = link_to "Design" , community_group_group_design_index_path(@community_group.id), :class=>"btn btn-success"
-= f.hidden_field :creator_id, :value=> current_user.id
-
--#
--#= f.fields_for :group_design do |d|
--#  .row
--#    .col-lg-12
--#      .form-group.mt-30
--#        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
--#          Position of logo
--#        .col-sm-12.col-lg-9.col-md-9.col-xs-12
--#          = d.select :logo_position , options_for_select(home_page_position_of_logo,d.object.logo_position.present? ? d.object.logo_position : "Centre"),{},{class: "form-control",id: ""}
--#
--#  .row
--#    .col-lg-12
--#      .form-group.mt-30
--#        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
--#          Button shape
--#        .col-sm-12.col-lg-9.col-md-9.col-xs-12
--#          = d.select :button_shape , options_for_select(button_shape_options,d.object.button_shape.present? ? d.object.button_shape : "Rectangular"),{},{class: "form-control",id: ""}
--#
--#  .row
--#    .col-lg-12
--#      .form-group.mt-30
--#        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
--#          Button width
--#        .col-sm-12.col-lg-9.col-md-9.col-xs-12
--#          = d.select :button_width , options_for_select(home_page_button_width,d.object.button_width.present? ? d.object.button_width : "450px"),{},{class: "form-control",id: ""}
--#
--#  .row
--#    .col-lg-12
--#      .form-group.mt-30
--#        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
--#          Button height
--#        .col-sm-12.col-lg-9.col-md-9.col-xs-12
--#          = d.select :button_height , options_for_select(button_height_options,d.object.button_height.present? ? d.object.button_height : "150px"),{},{class: "form-control",id: ""}
--#
--#  .row
--#    .col-lg-12
--#      .form-group.mt-30
--#        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
--#          Button Spacing
--#        .col-sm-12.col-lg-9.col-md-9.col-xs-12
--#          = d.select :button_spacing , options_for_select(spacing_between_buttons_options,d.object.button_spacing.present? ? d.object.button_spacing : "10px"),{},{class: "form-control",id: ""}
--#
--#  .row
--#    .col-lg-12
--#      .form-group.mt-30
--#        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
--#          Button border color
--#        .col-sm-12.col-lg-9.col-md-9.col-xs-12
--#          = d.select :button_spacing , options_for_select(spacing_between_buttons_options,d.object.button_spacing.present? ? d.object.button_spacing : "10px"),{},{class: "form-control",id: ""}
--#
--#  .row
--#    .col-lg-12
--#      .form-group.mt-30
--#        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
--#          Button opacity
--#        .col-sm-12.col-lg-9.col-md-9.col-xs-12
--#          = d.select :button_opacity , options_for_select(opacity_options,d.object.button_opacity.present? ? d.object.button_opacity : "100%"),{},{class: "form-control",id: ""}
--#
--#  .row
--#    .col-lg-12
--#      .form-group.mt-30
--#        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
--#          Button border side
--#        .col-sm-12.col-lg-9.col-md-9.col-xs-12
--#          = d.select :button_border_side , options_for_select(border_options,d.object.button_border_side.present? ? d.object.button_border_side : "All sides"),{},{class: "form-control",id: ""}
--#
--#  .form-group
--#    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
--#      Button border color
--#    .col-sm-12.col-lg-9.col-md-9.col-xs-12
--#      .input-group.colorpicker-style.hex-format-colorpicker
--#        .input-group-addon
--#          %i
--#          = d.text_field :button_border_color , class: "form-control gables-field",autocomplete: true,"data-value"=>d.object.button_border_color.present? ? d.object.button_border_color : "#3B3B3B"
--#
--#  .row
--#    .col-lg-12
--#      .form-group.mt-30
--#        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
--#          Button border opacity
--#        .col-sm-12.col-lg-9.col-md-9.col-xs-12
--#          = d.select :button_border_opacity , options_for_select(opacity_options,d.object.button_border_opacity.present? ? d.object.button_border_opacity : "100%"),{},{class: "form-control",id: ""}
--#
--#  .row
--#    .col-lg-12
--#      .form-group.mt-30
--#        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
--#          Button border thickness
--#        .col-sm-12.col-lg-9.col-md-9.col-xs-12
--#          = d.select :button_border_thickness , options_for_select(global_navigation_border_thickness_space,d.object.button_border_thickness.present? ? d.object.button_border_thickness : "0px"),{},{class: "form-control",id: ""}
--#  .row
--#    .col-lg-12
--#      .form-group.mt-30
--#        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
--#          Button font family
--#        .col-sm-12.col-lg-9.col-md-9.col-xs-12
--#          = d.select :button_font_family , options_for_select(font_families,d.object.button_font_family),{},{class: "form-control",id: ""}
--#  .row
--#    .col-lg-12
--#      .form-group.mt-30
--#        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
--#          Button font size
--#        .col-sm-12.col-lg-9.col-md-9.col-xs-12
--#          = d.select :button_font_size , options_for_select(font_sizes,d.object.button_font_size.present? ? d.object.button_font_size : "18px"),{},{class: "form-control",id: ""}
--#
--#  .form-group
--#    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
--#      Button font color
--#    .col-sm-12.col-lg-9.col-md-9.col-xs-12
--#      .input-group.colorpicker-style.hex-format-colorpicker
--#        .input-group-addon
--#          %i
--#          = d.text_field :button_font_color , class: "form-control gables-field",autocomplete: true,"data-value"=>d.object.button_font_color.present? ? d.object.button_font_color : "#3B3B3B"
--#  .form-group
--#    %h4.mt-30
--#      Select Home Page Type
--#      %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "selectHomepageTypePopover","data-content" => " "}
--#        %span#propertyDetailNameText
--#          Changing the Home Page Type will change whether the home page shows a video or slideshow.
--#      .row
--#        .col-lg-12
--#          .form-group
--#            .radio.radio-primary.pull-left
--#              %input#images-loop-type-radio{:name => "loop_type_radio", :type => "radio", :value => "images_loop_type_radio",:checked=>d.object.has_images_loop_type? ? true : false}
--#                %label{:for => "main_screen_radio",:style=>"cursor: auto;"}
--#                  Images
--#            .radio.radio-primary.pull-left.ml-20{:style => "margin-top:12px;"}
--#              %input#video-loop-type-radio{:name => "loop_type_radio", :type => "radio", :value => "video_loop_type_radio",:checked=>d.object.has_video_loop_type? ? true : false}
--#                %label{:for => "home_screen_radio",:style=>"cursor: auto;"}
--#                  Video
--#          -#- if gables_theme(@community)
--#          -#  = link_to "Secondary Images", community_homepage_icons_path(@community), class: "btn btn-primary btn-file pull-right"
--#
--#  .row
--#    .col-lg-12
--#      .form-group.mt-30
--#        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
--#          Bouncing effect
--#        .col-sm-12.col-lg-9.col-md-9.col-xs-12
--#          = d.text_field :bouncing_effecting , class: "form-control gables-field",autocomplete: true,"data-value"=>d.object.bouncing_effecting.present? ? d.object.bouncing_effecting : "#3B3B3B"
--#
--#  .form-group
--#    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
--#      Background image
--#
--#      -#%span
--#      -#  Upload logo for this community group.
--#      -#  %br/
--#
--#    .col-sm-12.col-lg-9.col-md-9.col-xs-12
--#      .image-box.video-box
--#        .images.height-200
--#          %a.preview-image{:href=>d.object.background_image.present? ? d.object.background_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Home page background image"}
--#            = image_tag d.object.background_image.present? ? d.object.background_image.url : "default.jpeg",:height=>"",:width=>"170",:id=>"preview-community-group-homepage-background-image", :style => "max-height: 190px; max-width: 270px;"
--#      %span.btn.btn-default.black-button.btn-sm.btn-file
--#        Select Image
--#        = d.file_field :background_image
--#
--#  .form-group
--#    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
--#      Background Video
--#
--#      -#%span
--#      -#  Upload logo for this community group.
--#      -#  %br/
--#
--#    .col-sm-12.col-lg-9.col-md-9.col-xs-12
--#      .image-box.video-box
--#        .images.height-200
--#          = image_tag d.object.video.present? ? d.object.video.url : "default.jpeg",:height=>"",:width=>"170",:id=>"group_design_homepage_video", :style => "max-height: 190px; max-width: 270px;"
--#      %span.btn.btn-default.black-button.btn-sm.btn-file#file-load
--#        Select Image
--#        = d.file_field :video
--#
--#  = direct_upload_form_for @uploader, :id => "direct_form_video" do |f|
--#    = f.file_field :avatar, :id => "video_field",:class => "hidden"
--#    = f.submit "Upload Directly!", :id => "video_submit",:class => "hidden"
-  -#.row
-  -#  .col-lg-12
-  -#
-  -#    .title-home
-  -#      %h4
-  -#        Slide Show Images
-  -#        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "slideShowImagePopover","data-content" => " "}
-  -#          %span#propertyDetailNameText
-  -#            Adding files will add images to the home page slide show. You can drag and drop the images below to rearrange them.
-  -#        .br
-  -#        %h4#slide_show_span
-  -#          Images will appear at a size of 1920 x 1080 px. Please note that images that are too small may appear pixelated.
-  -#
-  -#
-  -#      %span.btn.btn-success.btn-file.text-UP{:onclick=>"$('#home-page-image-upload-holder').click();"}
-  -#        %i.fa.fa-plus-circle
-  -#        Add Files
-
-  -#%h4.mt-30
-  -#  Select Home Page Type
-  -#  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "selectHomepageTypePopover","data-content" => " "}
-  -#    %span#propertyDetailNameText
-  -#      Changing the Home Page Type will change whether the home page shows a video or slideshow.
-  -#  .row
-  -#    .col-lg-12
-  -#      .form-group
-  -#        .radio.radio-primary.pull-left
-  -#          %input#images-loop-type-radio{:name => "loop_type_radio", :type => "radio", :value => "images_loop_type_radio",:checked=>current_community.design.has_images_loop_type? ? true : false}
-  -#            %label{:for => "main_screen_radio",:style=>"cursor: auto;"}
-  -#              Images
-  -#        .radio.radio-primary.pull-left.ml-20{:style => "margin-top:12px;"}
-  -#          %input#video-loop-type-radio{:name => "loop_type_radio", :type => "radio", :value => "video_loop_type_radio",:checked=>current_community.design.has_video_loop_type? ? true : false}
-  -#            %label{:for => "home_screen_radio",:style=>"cursor: auto;"}
-  -#              Video
-  -#        - if gables_theme(@community)
-  -#          = link_to "Secondary Images", community_homepage_icons_path(@community), class: "btn btn-primary btn-file pull-right"
-
-
-
+  = f.hidden_field :creator_id, :value=> current_user.id
   = f.hidden_field :company_id, :class=>"form-control", :value=>"#{@community_group.company_id.present? ? @community_group.company_id : current_company.id}"
 
 :javascript
   $("#community_group_logo").change(function(){
-      readCommunityGroupLogoURL(this);
+    readCommunityGroupLogoURL(this);
   });
+  
   $("#community_group_group_design_attributes_background_image").change(function(){
-      readCommunityGroupHomepageImageURL(this);
+    readCommunityGroupHomepageImageURL(this);
   });
+
   $("#file-load").on('click', function(e) {
     $('#video_field').click();
   });
+
   $("#video_field").on('change', function(e) {
-
     input = this.files[0];
+
     if (input.files && input.files[0]) {
-        if(true){
-
-            var reader = new FileReader();
-
-            reader.onload = function (e) {
-                // $('#preview-community-group-logo').attr('src', e.target.result);
-                $('#group_design_homepage_video').parent().attr('href', e.target.result);
-            }
-
-            reader.readAsDataURL(input.files[0]);
-
-
+      if(true){
+        let reader = new FileReader();
+        reader.onload = function (e) {
+          $('#group_design_homepage_video').parent().attr('href', e.target.result);
         }
-        else{
-            $(input).val('');
-            $('#image-upload-warning').modal('show');
-            //console.log($(input).val());
-        }
+        reader.readAsDataURL(input.files[0]);
+      }
+      else{
+        $(input).val('');
+        $('#image-upload-warning').modal('show');
+      }
     }
   });

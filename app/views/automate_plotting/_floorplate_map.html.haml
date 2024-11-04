@@ -44,7 +44,7 @@
         // %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"run_algo(false, 'sorting', false, 'down')"}Move downstair
         // %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"run_algo(false, 'sorting', false, 'starting_point')"}Move towards starting point
         %button.btn.btn-primary.grid-overlay.header_map_btn{:type=>"button",:onclick=>"run_algo(true, 'sorting', false, 'up')"}Run Algo(Animated)
-  = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks, locks_present_hash: @current_locks_provider}
+  = render :partial=>'shared/hidden_locks_data',locals: {community: @community, all_locks: @all_locks, locks_present_hash: @current_locks_provider}
   - # render map of each floor
   - if @building_list.count < 2
     - @floors.each do |floor|
