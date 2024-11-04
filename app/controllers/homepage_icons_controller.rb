@@ -4,6 +4,7 @@ class HomepageIconsController < ApplicationController
   add_breadcrumb "Home", :root_path
   add_breadcrumb "Home Page", :community_home_page_index_path
   add_breadcrumb "Home Page Secondary Images"
+  
   def index
     @design = current_community.design || current_community.create_design
     @homepage_icons = @design.homepage_icons.order(:sort).all

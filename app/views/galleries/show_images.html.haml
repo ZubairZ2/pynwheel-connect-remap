@@ -1,6 +1,5 @@
 - content_for :title, "#{@gallery.name} - Gallery"
 .divLoading.hidden
-/ Main content
 %section
   .content
     .title-heading
@@ -12,10 +11,8 @@
             = @community.code
     %h5
       = link_to "< Back to All Galleries", community_galleries_path(@community), class: "btn mb-20",style: "background-color: #8f4a9b; color: white;"
-    / Start Tabs Secttions
     .bs-example.bs-example-tabs{"data-example-id" => "togglable-tabs",:style => "margin-bottom: 70px;"}
       #myTabContent.tab-content
-        / Start image-slide section
         #image-slide.tab-pane.fade.active.in{:role => "tabpanel"}
           .row
             .col-md-12
@@ -31,22 +28,12 @@
                 %span.btn.btn-success.btn-file.text-UP.pull-left#file-load1{:onclick=>"$('#gallery-image-upload-holder').click();"}
                   %i.fa.fa-plus-circle
                   Add Files
-                  / %input#gallery-images{:multiple => "multiple", :type => "file"}/
               .mt-35
-          /       = form_tag save_gallery_video_community_gallery_path(@community,@gallery),:method=>"POST",:id=>"gallery-page-video-form",:multipart => true,:remote=>true  do 
-          /         %span.btn.btn-primary.btn-file.ml-5.text-UP.pull-left
-          /           %i.fa.fa-plus-circle
-          /           Add Video
-          /           = file_field_tag :gallery_page_video
           #images-index
             = render 'index'
         = direct_upload_form_for @uploader, :id => "direct_form" do |f|
           = f.file_field :avatar, :id => "video_field",:class => "hidden"
           = f.submit "Upload Directly!", :id => "video_submit",:class => "hidden"
-        / End image-slide section
-    / End Tabs Secttions
-/ /.content
-/ End Body right Section
 .row
   .col-md-12{:style => "position: absolute; bottom: 51px;"}
     .box-footer.mt-30.pt-15
@@ -97,20 +84,19 @@
   //   }
   // };
   $("#video_field").on('change', function(e) {
-    if (e.currentTarget.files[0].size < 500000000)
-    {
-      if ( e.currentTarget.files[0].type == "video/mp4")
-      {
+    if (e.currentTarget.files[0].size < 500000000){
+      if ( e.currentTarget.files[0].type == "video/mp4") {
         $(".divLoading").removeClass("hidden");
         $("#video_submit").click();
       }
       else
-      {
         $('#video-upload-warning').modal('show');
-      }
-    }
-    else
-    {
-      // $('#video-size-warning').modal('show');
     }
   });
+
+  function show_gallery_image_goBack() {
+    if (window.history.length == 1)
+    window.location.reload();
+    else
+    window.history.back();
+  }

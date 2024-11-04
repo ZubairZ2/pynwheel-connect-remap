@@ -44,7 +44,8 @@
                 Changing Animation will change the movement of the menu buttons on the home page.
           = select_tag :animation, options_for_select(["bouncing effects","none"],@community.design.animation),{:class=>"form-control"}    
     .box.box-widget.panel-box.add-plan.pt-30
-      = form_for @community,:method=>"PUT",:html=>{:id=>"home-page-image-form"},:remote=>true  do |f|
+    
+      = form_for @community, :method=>"PUT", :html=>{:id=>"home-page-image-form"}, :remote=>true  do |f|
         = hidden_field_tag "home_page_tab", true
         = f.fields_for :design do |d|
           = d.fields_for :expressionist do |e|
@@ -56,8 +57,6 @@
                       Overlay text
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
                       = e.text_area :overlay_text,:class=>"form-control mb-20 home-page-image-field ",:placeholder=>"Enter Overlay Text...", :rows => "3"
-
-                      -#= e.select :overlay_text , options_for_select(global_navigation_border_thickness_space,e.object.homepage_button_border_thickness.present? ? e.object.homepage_button_border_thickness : '0px'),{},{class: "form-control home-page-field"}
               .row
                 .col-lg-10
                   .form-group.mt-30
@@ -104,13 +103,8 @@
                       %button.btn-primary.done_btn{:onclick => "home_page_goBack()", :style => "margin-top: 0px;"}
                         DONE
 
-
-
-
-
     .bs-example.bs-example-tabs{"data-example-id" => "togglable-tabs"}
       #myTabContent.tab-content
-        / Start image-slide section
         #image-slide.tab-pane.fade.active.in{:role => "tabpanel"}
           .row
             .col-lg-12
@@ -125,20 +119,17 @@
                   %h4#slide_show_span
                     Images will appear at a size of 1920 x 1080 px. Please note that images that are too small may appear pixelated.
 
-
                 %span.btn.btn-success.btn-file.text-UP{:onclick=>"$('#home-page-image-upload-holder').click();"}
                   %i.fa.fa-plus-circle
                   Add Files
-                /   %input#home-page-images{:type => "file",:multiple=>"multiple"}
-                -#%button.btn-success.done_btn{:onclick => "home_page_goBack()", :style => "margin-top: 40px;"}
-                -#  %i.fa.fa-plus-circle
-                -#  DONE
+
           .row
             .col-lg-12
               .pull-right
-                /%a.view-slide#slideshow-button{"data-target" => ".bs-example-modal-lg", "data-toggle" => "modal", :href => "javascript::;"} View SlideShow
+
           #images-index
             = render 'index'
+
         #video-slide.tab-pane.fade{:role => "tabpanel"}
           .row
             .col-lg-12
@@ -147,20 +138,14 @@
                 %h4#slide_show_span
                   Home Page video size limit is 500MB.
 
-                / = form_for :home_page_video,:url=>save_home_page_video_community_home_page_index_path(current_community),:method=>"POST",:html=>{:id=>"home-page-video-form",:class=>"mb-40",:multipart => true },:remote=>true  do |f|
-                -#%input#add_video{:type => "file",:multiple=>"multiple"}
                 %span.btn.btn-success.btn-file.text-UP#file-load
                   %i.fa.fa-plus-circle
                   Add Video
+
                 %div{:style => "margin-left: 125px;"}
                   %i.propertyDetailName.fa.fa-question-circle{:style => " margin-top: 10px;"}
                     %span#propertyDetailNameText
                       Adding a video file (MP4 files only) will change the video that appears on the the home page.
-                /     = f.file_field :video
-                -#%button.btn-success.done_btn{:onclick => "home_page_goBack()", :style => "margin-top: 15px;"}
-                -#  %i.fa.fa-plus-circle
-                -#  DONE
-
 
           .slide-imgage-boxs
             #videos-index
@@ -169,7 +154,6 @@
         = direct_upload_form_for @uploader, :id => "direct_form" do |f|
           = f.file_field :avatar, :id => "video_field",:class => "hidden"
           = f.submit "Upload Directly!", :id => "video_submit",:class => "hidden"
-
 
   #edit-image.modal.fade.edit-image
 :javascript
@@ -184,7 +168,6 @@
   }
 
   $("#file-load-drop").on('drop', function(e) {
-    // $("#video_submit").click();
   });
   function dropHandler(e)
   {
@@ -226,6 +209,7 @@
       $('#video-size-warning').modal('show');
     }
   });
+  
   $(".divLoading").addClass("hidden");
   // $(function() {
   // // $('#file_upload').change(function(e) { alert("askjd") });

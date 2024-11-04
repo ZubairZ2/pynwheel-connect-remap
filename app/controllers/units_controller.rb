@@ -8,7 +8,6 @@ class UnitsController < ApplicationController
   before_action :load_all_locks, only: [:new, :create, :edit, :update]
 
   def index
-    #@units = @community.units.page(params[:page]).per(10)
     @community_info = Community.includes(:floorplans, :units).find(params[:community_id])
     @communities = current_company.communities
     add_breadcrumb "Units", community_units_path(@community)
@@ -47,7 +46,6 @@ class UnitsController < ApplicationController
     # #PaperTrail::Version.create(item_type: "Unit",item_id: @unit.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@floorplan.name} community_id: '#{@floorplan.community_id}'")
 
     redirect_to edit_community_unit_path(@community, @unit)
-    # render :json=> {:success=>false}
   end
 
   def show_unit_secondary_image_in_modal
@@ -159,14 +157,6 @@ class UnitsController < ApplicationController
 
       if (params[:unit][:marketing_name].present? && params[:unit][:marketing_name] != @unit.marketing_name)
         @unit.name_is_updated = true
-        # begin
-        #   ts = TourStop.find_by(stop_id: @unit.id)
-        #   if ts.present?
-        #     ts.name = params[:unit][:marketing_name]
-        #     ts.save
-        #   end
-        # rescue => ex
-        # end
         TourStop.where(stop_id: @unit.id).update_all(name: params[:unit][:marketing_name])
       end
 
@@ -307,18 +297,12 @@ class UnitsController < ApplicationController
             end
             format.json { respond_with_bip(@unit) }
           end
-
-          # @unit.errors[:base] << "Please set manual override field first"
-          # flash[:error] = @unit.errors.full_messages.join(',')
-          # format.html { render :action => "edit" }
-          # format.json { respond_with_bip(@unit) }
         end
       end
     end
   end
 
   def set_manually_updated_column
-    # @unit.update_column(:manually_updated, true)
     if @unit.sold
       @unit.update_columns(availability: "Occupied", available: false, available_date: '', availability_is_updated: true)
     end
@@ -355,6 +339,7 @@ class UnitsController < ApplicationController
       @unit.remove_secondary_image!
       @unit.save
     end
+
     redirect_to :back, notice: "Image removed successfully."
   end
 
@@ -373,12 +358,7 @@ class UnitsController < ApplicationController
       end
       unit.save(validate: false)
       TourStop.where(stop_id: unit.id).update_all(latitude: unit.x_plot, longitude: unit.y_plot)
-      # if ts.present?
-      #   ts.update_all(latitude: unit.x_plot, longitude: unit.y_plot)
-      #   # ts.latitude = unit.x_plot
-      #   # ts.longitude = unit.y_plot
-      #   # ts.save
-      # end
+
       render json: { unit: unit }, status: 200
     else
       render json: {}, status: 404
@@ -388,7 +368,6 @@ class UnitsController < ApplicationController
   def ajaxplotunitforfloorplate
     unit = @community.units.where(provider_unit_id: params[:id])
     if unit.present?
-      #unit.first.update_columns(x_plot: params[:x_plot],y_plot: params[:y_plot],floorplate_id: params[:floorplate_id])
       unit = unit.first
       if params[:x_plot].present? && params[:y_plot].present?
         unit.x_plot = params[:x_plot]
@@ -400,13 +379,8 @@ class UnitsController < ApplicationController
       end
       unit.floorplate_id = params[:floorplate_id]
       unit.save(validate: false)
-      
       TourStop.where(stop_id: unit.id).update_all(latitude: unit.x_plot, longitude: unit.y_plot)
-      # if ts.present?
-      #   ts.latitude = unit.x_plot
-      #   ts.longitude = unit.y_plot
-      #   ts.save
-      # end
+      
       @test_units = Floorplate.find(params[:floorplate_id]).fetch_units
       render json: { unit: unit }, status: 200
     else
@@ -414,7 +388,7 @@ class UnitsController < ApplicationController
     end
   end
 
-  def plot_unit_door                                # create or update
+  def plot_unit_door
     unit = @community.units.where(provider_unit_id: params[:id]).first
     if unit.present?
       door ||= unit.door || unit.build_door
@@ -506,9 +480,6 @@ class UnitsController < ApplicationController
     ts = TourStop.where(stop_id: @unit.id) unless @unit.modal_unit
     if @unit.modal_unit
       if ts.present?
-        # ts.latitude = 0
-        # ts.longitude = 0
-        # ts.save
         ts.update_all(latitude: 0, longitude: 0)
       end
     else
@@ -562,6 +533,7 @@ class UnitsController < ApplicationController
     else
       @community.units.where(id: params[:unit_ids]).update_all(availability: "Occupied", manually_updated: true, available: false, available_is_updated: true, availability_is_updated: true)
     end
+    
     flash[:notice] = "Available is updated for units successfully."
     redirect_to :back
   end
@@ -578,6 +550,7 @@ class UnitsController < ApplicationController
     else
       @community.units.where(id: params[:unit_ids]).update_all(sold: params[:sold], manually_updated: true, availability_is_updated: true, available_is_updated: true)
     end
+
     flash[:notice] = "Sold is updated for units successfully."
     redirect_to :back
   end
@@ -605,7 +578,7 @@ class UnitsController < ApplicationController
 
   def add_padding_description(desc)
     str = ""
-    ds = desc.split('<ul>') # Adding padding for <ul>
+    ds = desc.split('<ul>')
     if ds.count > 1
       ds.each do |d|
         unless d == ""
@@ -642,11 +615,6 @@ class UnitsController < ApplicationController
 
   def set_image
     UploadImageForUnit.perform_async @community, params[:unit_ids], params[:image_file]
-    # units = @community.units.where(id: params[:unit_ids])
-    # units.each do |unit|
-    #   units.update(image: params[:image_file],manually_updated: true)
-    # end
-    # flash[:notice] = "Image is uploaded for units successfully."
     redirect_to :back, notice: "Image is uploaded for units successfully."
   end
 
