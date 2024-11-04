@@ -6,8 +6,8 @@ class Users::PasswordsController < Devise::PasswordsController
       user = User.find_by(email: email)
       if user.present?
         if user.first_name.nil?
-          redirect_to :back
           flash[:alert] = 'You account is not setup yet.'
+          redirect_back(fallback_location: root_path)
         else
           super
         end
