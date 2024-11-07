@@ -3,15 +3,14 @@ namespace :images do
   task download: :environment do
     require 'open-uri'
     require 'fileutils'
-    require 'pathname'
 
-    # Define the root directory for images on your local machine
-    images_root_path = Pathname.new(File.expand_path('~/Documents/pynwheel/Images'))  # Absolute path to your directory
+    # Define the root directory for images
+    images_root_path = Rails.root.join('Images')
     FileUtils.mkdir_p(images_root_path)
 
     # Find the company and iterate over each community with floorplans
-    company = Company.find_by(id: 424)
-    company&.communities&.where.not(floorplans: []).find_each do |community|
+    communities = Community.where(id: [3300, 3298, 3299])
+    communities&.where.not(floorplans: []).find_each do |community|
       community_folder_path = images_root_path.join(community.name.parameterize)
       FileUtils.mkdir_p(community_folder_path)
 
@@ -19,23 +18,33 @@ namespace :images do
       community.floorplans.each do |floorplan|
         image_url = floorplan.image.url
         next if image_url.blank? # Skip if image_url is nil or empty
-
-        file_name = File.basename(URI.parse(image_url).path)
-        file_path = community_folder_path.join(file_name)
-
-        # Download the image and save it to the local machine
+        image_url = "https://images-pynwheel-cms-v2.s3.amazonaws.com#{image_url}"
+        # Validate and parse file name from URL
         begin
+          file_name = File.basename(URI.parse(image_url).path)
+          file_path = community_folder_path.join(file_name)
+        rescue URI::InvalidURIError
+          puts "Invalid URL for #{community.name}: #{image_url}"
+          next
+        end
+
+        # Download the image and save it to the community's folder
+        begin
+          puts "Attempting to download: #{image_url} for #{community.name}"
+
+          # Open the URL and save the file in binary mode
           URI.open(image_url) do |image_file|
-            # Open file in binary mode to avoid encoding issues
-            File.open(file_path, 'wb') do |file|
+            File.open(file_path, 'wb') do |file|  # 'wb' mode for binary writing
               file.write(image_file.read)
             end
           end
           puts "Downloaded #{file_name} for #{community.name}"
-        rescue URI::InvalidURIError
-          puts "Invalid URL for #{community.name}: #{image_url}"
+        rescue OpenURI::HTTPError => e
+          puts "Failed to download #{file_name} for #{community.name}: HTTP error - #{e.message}"
+        rescue Errno::ENOENT => e
+          puts "File or directory error for #{community.name} - could not write #{file_name}: #{e.message}"
         rescue => e
-          puts "Failed to download #{file_name} for #{community.name}: #{e.message}"
+          puts "Unexpected error for #{file_name} for #{community.name}: #{e.message}"
         end
       end
     end
