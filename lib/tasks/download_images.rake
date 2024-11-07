@@ -3,9 +3,10 @@ namespace :images do
   task download: :environment do
     require 'open-uri'
     require 'fileutils'
+    require 'pathname'
 
     # Define the root directory for images on your local machine
-    images_root_path = File.expand_path('~/Documents/pynwheel/Images')  # Absolute path to your directory
+    images_root_path = Pathname.new(File.expand_path('~/Documents/pynwheel/Images'))  # Absolute path to your directory
     FileUtils.mkdir_p(images_root_path)
 
     # Find the company and iterate over each community with floorplans
