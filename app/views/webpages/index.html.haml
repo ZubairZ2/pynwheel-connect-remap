@@ -48,9 +48,9 @@
                   %label Bedrooms
                   = select_tag :unit_bedroom, options_for_select(@unit_bedrooms.present? ? @unit_bedrooms : []),{:class=>"custom-select", :include_blank => "All "}
 
-                .selectable-field
+                .selectable-field{ class: !@community_info.display_rent ? "pricing_filter_visibility" : nil }
                   %label Max Price
-                  = select_tag :market_rent, options_for_select(@market_rent.present? ? @market_rent : []),{:class=>"custom-select"}
+                  = select_tag :market_rent, options_for_select(@market_rent.present? ? @market_rent : []), { class: "custom-select" }
 
                 .selectable-field
                   %label Min Square Footage
@@ -66,20 +66,6 @@
                 %button.reset-filter-button.web-reset-button{:type => "button", :onclick => "resetFilters();"}
                   Reset
                   %i.fa.fa-refresh
-               
-                -# %ul.selected-data-mobile.responsive-content{:style => "display"}
-                -#   %li
-                -#     %span.data-title Bedrooms
-                -#     %strong#bedroom_responsive
-                -#   %li
-                -#     %span.data-title Max Price:
-                -#     %strong#max_price_responsive
-                -#   %li
-                -#     %span.data-title Min Sq Ft:
-                -#     %strong#sq_feet_responsive
-                -#   %li
-                -#     %span.data-title Availability:
-                -#     %strong#unit_availability
                     
               .header-buttons-groups
                 - if @square_feet.present?
@@ -104,9 +90,11 @@
                 .selectable-field
                   %label Bedrooms
                   = select_tag :responsive_unit_bedroom, options_for_select(@unit_bedrooms.present? ? @unit_bedrooms : []),{:class=>"custom-select", :include_blank => "All "}
-                .selectable-field
-                  %label Maximum Price
-                  = select_tag :responsive_market_rent, options_for_select(@market_rent.present? ? @market_rent : []),{:class=>"custom-select"}
+                
+                .selectable-field{ class: !@community_info.display_rent ? "pricing_filter_visibility" : nil }
+                  %label  Maximum Price
+                  = select_tag :responsive_market_rent, options_for_select(@market_rent.present? ? @market_rent : []), { class: "custom-select" }
+
                 .selectable-field
                   %label Min Square Footage
                   = select_tag :responsive_square_feet, options_for_select(@square_feet.present? ? @square_feet : []),{:class=>"custom-select"}
