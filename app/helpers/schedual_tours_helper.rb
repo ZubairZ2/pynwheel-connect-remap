@@ -63,21 +63,32 @@ module SchedualToursHelper
     scheduled_tour.is_tour_completed && scheduled_tour&.tour_completed_at.present? ? (scheduled_tour.tour_completed_at.in_time_zone(timezone)).strftime("%Y-%m-%d %I:%M%p") : (scheduled_tour.created_at.in_time_zone(timezone)).strftime("%Y-%m-%d %I:%M%p")
   end
 
-  def scheduled_tour_type tour
-    tour_type = tour.tour_type.split('_').map(&:capitalize).join(' ')
-
-    property_tour_type = tour.property_tour_type == "scheduled_tour" ? tour_type : tour.property_tour_type.present? ? tour.property_tour_type.split('_').map(&:capitalize).join(' ') : tour_type 
-    if property_tour_type == "Remote Tour" || tour_type == "Virtual tour"
+  def format_tour_type(type)
+    type.to_s.split('_').map(&:capitalize).join(' ')
+  end
+  
+  def determine_property_tour_type(tour, tour_type)
+    return tour_type if tour.property_tour_type == "scheduled_tour"
+    tour.property_tour_type.present? ? format_tour_type(tour.property_tour_type) : tour_type
+  end
+  
+  def scheduled_tour_type(tour)
+    tour_type = format_tour_type(tour.tour_type)
+    property_tour_type = determine_property_tour_type(tour, tour_type)
+  
+    case property_tour_type
+    when "Remote Tour", "Virtual Tour"
       "Virtual Tour"
-    elsif property_tour_type == "Unscheduled Self Tour"
+    when "Unscheduled Self Tour"
       "App Guided Tour - Unscheduled"
-    elsif property_tour_type == "Self Tour"  || tour_type == "Self guided"
+    when "Self Tour", "Self Guided"
       "App Guided Tour - Scheduled"
     else
-      return "Person #{property_tour_type} - Scheduled"
+      # "Person #{property_tour_type} - Scheduled"
+      "Person Guided Tour - Scheduled"
     end
   end
-
+  
   def confirmation_tour_second_card_title(title,property_tour_type,tour_type,id_verification,key,unsched_title)
     (property_tour_type == "unscheduled_self_tour" && !id_verification && key == 2) || (property_tour_type == "scheduled_tour" && tour_type == "self_tour" && !id_verification && key == 2) ? unsched_title : title
   end
