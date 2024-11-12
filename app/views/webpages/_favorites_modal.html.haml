@@ -143,7 +143,8 @@
                     %span.c-m-total-price{id: "#{unit.id}-total-price"}= "#{@community.get_currency_symbol}#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
                     %span{style: 'font-size: 12px'} /month
                 - else
-                  %span.move-in-date-text{:style => "display: flex; justify-content: center; vertical-align: middle;align-items: center;"} Please contact us for a quote.
+                  %span.move-in-date-text{:style => "display: flex; justify-content: center; vertical-align: middle;align-items: center;"} 
+                    = @community.pricing_message
 
         .c-modal-wrapper.h-class
           .c-modal-body.centered-image

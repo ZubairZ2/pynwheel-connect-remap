@@ -807,6 +807,7 @@ class CommunitiesController < ApplicationController
     @community.sitemap_auto_zoom = params[:sitemap_auto_zoom].present? ? params[:sitemap_auto_zoom] : false
     @community.show_property_map_key_text = params[:show_property_map_key_text] if params[:show_property_map_key_text].present?
     @community.show_amenity_key_text = params[:show_amenity_key_text] if params[:show_amenity_key_text].present?
+    @community.pricing_message =  params[:pricing_message] if params[:pricing_message].present?
 
     if @community.save
       flash[:notice] = "Apartment settings updated successfully."
