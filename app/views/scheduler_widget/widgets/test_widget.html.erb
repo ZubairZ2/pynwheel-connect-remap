@@ -939,7 +939,7 @@
                     $('#tour_type').html(options)
                     $(`#tour_type option[value="${tour_types[0][0]}"]`).attr("selected", true);
                     add_or_remove_question_mark(tour_types[0][0])
-                    $("#tour_type").prop('required',false);
+                    $("#tour_type").prop('required',true);
 
                     // hideTourTypeDropDown();
                   }
