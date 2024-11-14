@@ -64,6 +64,7 @@ class SchedulerWidget::WidgetsController < ApplicationController
     @default_country_code = @community.fetch_country_code()
     cutt_of = @stepping < 60 ? @stepping.to_s + " minutes" : (@stepping == 60 ? "1 hour" : "2 hours")
     set_yardi_time_slots()
+    
     @is_knock_community = @schedule_tour.community.is_knock_community?
     @knock_available_slots =  @is_knock_community ? KnockService.new(@schedule_tour).available_slots : {}
     @knock_discovery_sources = @is_knock_community ? KnockService.new(@schedule_tour).get_discovery_sources : []
@@ -74,6 +75,9 @@ class SchedulerWidget::WidgetsController < ApplicationController
     @funnel_discovery_sources = @is_funnel_community ? FunnelService.new(@schedule_tour).get_discovery_sources : []
     @selected_discovery_source = @is_funnel_community ? (@schedule_tour&.funnel_prospect_discover_source.present? ? @funnel_discovery_sources.map{|s| s[0] if s[1] == @schedule_tour&.funnel_prospect_discover_source.to_i }&.compact&.uniq[0] : "Select an option" ) : ""
     
+    @rentcafe_discovery_sources = @use_yardi_as_lead ? @community&.crm_discovery_source&.sources.map { |source| source["name"] } : []
+    @rentcafe_selected_discovery_source = @use_yardi_as_lead ? (@schedule_tour&.rentcafe_discover_source.present? ?  @rentcafe_discovery_sources.map{|source| source if source == @schedule_tour&.rentcafe_discover_source }&.compact&.uniq[0] : "Select an option" ) : ""
+
     @occupied_slots = OccupiedTourTimeSlotsService.new(@community).occupied_slots()
     @occupied_dates = @occupied_slots&.keys rescue []
     @is_allowed_schedule = can_user_schedule_tour(@tour_type_count, @community)
