@@ -35,6 +35,16 @@ module DataProviders
         response["properties"][0] rescue []
       end
 
+      def get_discovery_sources property_code
+        response = fetch_discovery_sources_data(property_code)
+        response["sources"] rescue []
+      end
+
+      def get_available_slots property_code
+        response = fetch_available_slots(property_code)
+        response["availableSlots"] rescue []
+      end
+
       def is_user_authorized?
         begin
           token_expired? ? renew_token : true
@@ -120,6 +130,33 @@ module DataProviders
           )
         end
 
+        def fetch_discovery_sources_data property_code
+          url = "#{ENV["RENT_CAFE_V2_BASE_URL"]}/property/getpropertyconfiguration"
+
+          HTTParty.post(url,
+            body: get_property_sources_params(property_code),
+            headers: { 
+              'Content-Type' => 'application/json',
+              'Authorization' => "Bearer #{@credential&.rentcafe_v2_auth_token}",
+              'vendor' => ENV['RENT_CAFE_V2_USERNAME']
+            }
+          )
+        end
+
+        # This API comes under RentCafe marketing API
+        def fetch_available_slots property_code
+          url = "#{ENV["RENT_CAFE_V2_MARKETING_API_BASE_URL"]}/appointments/getavailableslots"
+
+          HTTParty.post(url,
+            body: available_slots_body_params(property_code),
+            headers: { 
+              'Content-Type' => 'application/json',
+              'Authorization' => "Bearer #{@credential&.rentcafe_v2_auth_token}",
+              'vendor' => ENV['RENT_CAFE_V2_USERNAME']
+            }
+          )
+        end
+
         def get_auth_params
           {
             username: ENV['RENT_CAFE_V2_USERNAME'],
@@ -162,6 +199,22 @@ module DataProviders
             apiToken: api_token,
             companyCode: company_code,
             propertyCode: property_code&.strip
+          }.to_json
+        end
+
+        def get_property_sources_params property_code
+          {
+            apiToken: api_token,
+            companyCode: company_code,
+            propertyCode: property_code&.strip
+          }.to_json
+        end
+
+        def available_slots_body_params property_code
+          {
+            apiToken: api_token,
+            companyCode: company_code,
+            propertyCode: property_code
           }.to_json
         end
 

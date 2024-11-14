@@ -93,9 +93,7 @@ class SchedulerWidget::WidgetsController < ApplicationController
   def set_yardi_time_slots
     return set_default_time_slots unless @use_yardi_as_lead
   
-    @yardi_time_slots = @community.available_slots(@schedule_tour)
-    update_crm_time_slot if @yardi_time_slots.present?
-    crm_time_slot = @community.crm_time_slot&.slots
+    crm_time_slot = @community.available_slots(@schedule_tour)
 
     if @community.credential.rentcafe_api_version == "RentCafe V2"
       process_rentcafe_v2_time_slots(crm_time_slot)
@@ -104,11 +102,6 @@ class SchedulerWidget::WidgetsController < ApplicationController
     end
   end
 
-  def update_crm_time_slot
-    crm_time_slot = @community.crm_time_slot || @community.build_crm_time_slot
-    crm_time_slot.update(slots: @yardi_time_slots)
-  end
-  
   def process_rentcafe_v2_time_slots(crm_time_slot)
     return set_default_time_slots unless crm_time_slot.present?
 

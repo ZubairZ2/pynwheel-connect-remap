@@ -64,6 +64,7 @@ class Community < ApplicationRecord
   has_one :launch_remote
   has_one :design_direction
   has_one :crm_time_slot
+  has_one :crm_discovery_source
 
   accepts_nested_attributes_for :credential
   accepts_nested_attributes_for :design
@@ -1277,7 +1278,8 @@ class Community < ApplicationRecord
 
   def available_slots scheduled_tour
     if credential&.rentcafe_api_version == "RentCafe V2"
-      YardiRentCafeV2Services::MarketingApisV2Service.new(scheduled_tour).available_slots
+      # YardiRentCafeV2Services::MarketingApisV2Service.new(scheduled_tour).available_slots
+      self&.crm_time_slot&.slots
     else
       YardiRentCafeServices::MarketingApisService.new(scheduled_tour).available_slots
     end
@@ -1950,7 +1952,7 @@ class Community < ApplicationRecord
 
   def filter_rent_cafe_tour_types_v2 scheduled_tour, date_str, tour_time
     tour_type = []
-    yardi_time_slots = self.crm_time_slot.slots #self.available_slots(scheduled_tour)
+    yardi_time_slots = self.available_slots(scheduled_tour)
 
     if yardi_time_slots.present?
       yardi_self_time_slots = yardi_time_slots.map{|x| [x["startTime"].split(' ')[0],"#{x["startTime"].split(' ')[1]} #{x["startTime"].split(' ')[2]}","#{x["endTime"].split(' ')[1]} #{x["endTime"].split(' ')[2]}" ] if x['slotType'] == "SelfTour"}.compact
@@ -1964,7 +1966,7 @@ class Community < ApplicationRecord
 
   def filter_rent_cafe_tour_types_v1 scheduled_tour, date_str, tour_time
     tour_type = []
-    yardi_time_slots = self.crm_time_slot.slots #self.available_slots(scheduled_tour)
+    yardi_time_slots = self.available_slots(scheduled_tour)
     if yardi_time_slots["Response"].present?
       yardi_self_time_slots = yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "SelfTour"}.compact
       yardi_guided_time_slots = yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "GuidedTour"}.compact

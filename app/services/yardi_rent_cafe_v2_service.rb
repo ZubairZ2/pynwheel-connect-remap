@@ -2,10 +2,15 @@ class YardiRentCafeV2Service < BaseService
   attr_reader :credentials
 
   def initialize(credentials)
-    @credentials = credentials
-    @unit_record = []
-    @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(@credentials.community_id, "yardirentcafe")
-    @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(@credentials.community_id, "yardirentcafe")
+    begin
+      @credentials = credentials
+      @community = Community.find @credentials.community_id
+      @unit_record = []
+      @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(@credentials.community_id, "yardirentcafe")
+      @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(@credentials.community_id, "yardirentcafe")
+    rescue => error
+      raise error
+    end
   end
 
   def perform
@@ -13,6 +18,7 @@ class YardiRentCafeV2Service < BaseService
     import_yardirentcafe_floorplans
     import_yardirentcafe_units
     before_updation_units.compare_status_and_notify()
+    update_property_crm_data()
   end
 
   private
@@ -382,5 +388,34 @@ class YardiRentCafeV2Service < BaseService
 
     def get_floorplan_details property_code
       DataProviders::RentCafe::V2ApisService.new(@credentials.community_id).get_floorplans(property_code)
+    end
+
+    def update_property_crm_data
+      return unless @community.use_yardi_as_lead?
+      property_code = @credentials.p_code.split(',')[0]
+      fetch_discovery_sources(property_code)
+      fetch_time_slots(property_code)
+    end
+
+    def fetch_discovery_sources property_code
+      sources = DataProviders::RentCafe::V2ApisService.new(@credentials.community_id).get_discovery_sources(property_code)
+      update_discovery_sources(sources)
+    end
+
+    def fetch_time_slots property_code
+      time_slots = DataProviders::RentCafe::V2ApisService.new(@credentials.community_id).get_available_slots(property_code)
+      update_time_slots(time_slots)
+    end
+
+    def update_discovery_sources sources
+      return unless sources.present?
+      crm_discovery_source = @community.crm_discovery_source || @community.build_crm_discovery_source
+      crm_discovery_source.update(sources: sources)
+    end
+
+    def update_time_slots time_slots
+      return unless time_slots.present?
+      crm_time_slot = @community.crm_time_slot || @community.build_crm_time_slot
+      crm_time_slot.update(slots: time_slots)
     end
 end
