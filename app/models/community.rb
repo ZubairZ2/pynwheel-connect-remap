@@ -1871,16 +1871,43 @@ class Community < ApplicationRecord
   end
 
 
-  def process_slots_data(data)
-    result_hash = {}
-
-    data.each do |date_str, start_time_str, end_time_str|
-      result_hash[date_str] ||= []
-      result_hash[date_str] << start_time_str
-    end
-
-    result_hash
+  def process_slots_data(all_slots)
+    scheduled_slots = fetch_scheduled_slots
+    available_slots = filter_available_slots(all_slots, scheduled_slots)
+    format_slots_by_date(available_slots)
   end
+  
+  def format_slots_by_date(available_slots)
+    available_slots.each_with_object({}) do |(date_str, start_time_str, _end_time_str), result|
+      result[date_str] ||= []
+      result[date_str] << start_time_str
+    end
+  end
+  
+  def filter_available_slots(all_slots, scheduled_slots)
+    all_slots.reject do |slot|
+      scheduled_slots.include?([slot[0], slot[1]])
+    end
+  end
+  
+  def fetch_scheduled_slots
+    fetch_scheduled_tours.map do |tour|
+      [
+        tour.tour_date.strftime("%m/%d/%Y"),    # Format date as "MM/DD/YYYY"
+        tour.tour_time.strftime("%I:%M %p")    # Format time as "HH:MM AM/PM"
+      ]
+    end
+  end
+  
+  def fetch_scheduled_tours
+    schedual_tours
+      .where("property_tour_type = ? AND tour_date >= ?", "scheduled_tour", current_time)
+      .where.not(tour_user_id: nil)
+  end
+  
+  def current_time
+    Time.current.in_time_zone(get_time_zone)
+  end 
 
   def fetch_tour_type_according_to_time(day, tour_time)
     tour_type = []

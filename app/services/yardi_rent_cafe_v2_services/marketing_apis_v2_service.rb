@@ -7,7 +7,7 @@ module YardiRentCafeV2Services
     def schedule_tour(previous_tour = nil)
       cancel_tour(previous_tour)
       response = create_appointment
-      binding.pry
+
       create_access_log(create_appointment_body_params&.to_json, response)
 
       yardi_response = response.dig("prospectInfo")

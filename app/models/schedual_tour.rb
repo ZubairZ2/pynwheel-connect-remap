@@ -4,7 +4,8 @@ class SchedualTour < ApplicationRecord
   belongs_to :tour, optional: true
   belongs_to :community, optional: true
   
-  before_destroy :cancel_tour, :notify_community_on_cancel_tour
+  before_destroy :cancel_tour
+  before_destroy :notify_community_on_cancel_tour
 
   scope :desc_tour_date, -> {order('coalesce(tour_date, created_at) desc')}
   scope :scheduled_tours, -> { where.not(tour_user_id: nil, tour_date: nil, tour_time: nil, community_id: nil) }
@@ -73,8 +74,6 @@ class SchedualTour < ApplicationRecord
   end
 
   def cancel_tour
-    return unless check_tour_status
-  
     community = self.community
   
     if community.is_funnel_community?
@@ -96,6 +95,7 @@ class SchedualTour < ApplicationRecord
 
   def cancel_yardi_tour
     return unless self.community.use_yardi_as_lead?
+
     if community&.credential&.rentcafe_api_version == "RentCafe V2"
       YardiRentCafeV2Services::MarketingApisV2Service.new(self).cancel_tour
     else
