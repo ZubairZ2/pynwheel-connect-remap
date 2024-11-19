@@ -37,7 +37,7 @@ module DataProviders
 
       def get_discovery_sources property_code
         response = fetch_discovery_sources_data(property_code)
-        response["sources"] rescue []
+        response["sources"].map{|s| s if s["useOnWebsite"]}.compact.uniq rescue []
       end
 
       def get_available_slots property_code
