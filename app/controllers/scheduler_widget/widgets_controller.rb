@@ -64,6 +64,7 @@ class SchedulerWidget::WidgetsController < ApplicationController
     @default_country_code = @community.fetch_country_code()
     cutt_of = @stepping < 60 ? @stepping.to_s + " minutes" : (@stepping == 60 ? "1 hour" : "2 hours")
     set_yardi_time_slots()
+    
     @is_knock_community = @schedule_tour.community.is_knock_community?
     @knock_available_slots =  @is_knock_community ? KnockService.new(@schedule_tour).available_slots : {}
     @knock_discovery_sources = @is_knock_community ? KnockService.new(@schedule_tour).get_discovery_sources : []
@@ -74,6 +75,9 @@ class SchedulerWidget::WidgetsController < ApplicationController
     @funnel_discovery_sources = @is_funnel_community ? FunnelService.new(@schedule_tour).get_discovery_sources : []
     @selected_discovery_source = @is_funnel_community ? (@schedule_tour&.funnel_prospect_discover_source.present? ? @funnel_discovery_sources.map{|s| s[0] if s[1] == @schedule_tour&.funnel_prospect_discover_source.to_i }&.compact&.uniq[0] : "Select an option" ) : ""
     
+    @rentcafe_discovery_sources = @use_yardi_as_lead ? @community&.crm_discovery_source&.sources.map { |source| source["name"] } : []
+    @rentcafe_selected_discovery_source = @use_yardi_as_lead ? (@schedule_tour&.rentcafe_discover_source.present? ?  @rentcafe_discovery_sources.map{|source| source if source == @schedule_tour&.rentcafe_discover_source }&.compact&.uniq[0] : "Select an option" ) : ""
+
     @occupied_slots = OccupiedTourTimeSlotsService.new(@community).occupied_slots()
     @occupied_dates = @occupied_slots&.keys rescue []
     @is_allowed_schedule = can_user_schedule_tour(@tour_type_count, @community)
@@ -93,9 +97,7 @@ class SchedulerWidget::WidgetsController < ApplicationController
   def set_yardi_time_slots
     return set_default_time_slots unless @use_yardi_as_lead
   
-    @yardi_time_slots = @community.available_slots(@schedule_tour)
-    update_crm_time_slot if @yardi_time_slots.present?
-    crm_time_slot = @community.crm_time_slot&.slots
+    crm_time_slot = @community.available_slots(@schedule_tour)
 
     if @community.credential.rentcafe_api_version == "RentCafe V2"
       process_rentcafe_v2_time_slots(crm_time_slot)
@@ -104,11 +106,6 @@ class SchedulerWidget::WidgetsController < ApplicationController
     end
   end
 
-  def update_crm_time_slot
-    crm_time_slot = @community.crm_time_slot || @community.build_crm_time_slot
-    crm_time_slot.update(slots: @yardi_time_slots)
-  end
-  
   def process_rentcafe_v2_time_slots(crm_time_slot)
     return set_default_time_slots unless crm_time_slot.present?
 

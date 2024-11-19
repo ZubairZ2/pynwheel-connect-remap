@@ -74,7 +74,7 @@ module YardiRentCafeV2Services
       end
 
       def get_scheduled_tour_type
-        (@scheduled_tour.tour_type == 'self_tour') ? 1 : 0
+        (@scheduled_tour.tour_type == 'self_tour') ? "1" : "0"
       end
 
       def zip_code
@@ -98,11 +98,11 @@ module YardiRentCafeV2Services
       end
 
       def secondary_source
-       "Pynwheel"
+        @schedule_tour&.rentcafe_discover_source || "Pynwheel"
       end
 
       def source
-        "Pynwheel"
+        @schedule_tour&.rentcafe_discover_source || "Pynwheel"
       end
 
       def get_scheduled_tour_cancel_date previous_tour
@@ -152,9 +152,14 @@ module YardiRentCafeV2Services
         end
       end
 
-
       def length_of_tour start_time, end_time
         ((end_time - start_time)/60.0 ).round
+      end
+
+      def create_access_log(payload, response)
+        AccessLogsService.new.create_crm_logs(
+          @tour_user&.id, @community&.id, payload, response
+        )
       end
   end
 end

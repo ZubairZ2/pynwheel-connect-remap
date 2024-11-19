@@ -429,6 +429,14 @@
                     <%= select_tag :knock_prospect_discover_source, options_for_select( @knock_discovery_sources ), :class=>"form-control", include_blank: @knock_selected_discovery_source %>
                   </div>
                 <% end %>
+
+                <% if @community.use_yardi_as_lead? %>
+                  <div class="w-left-50">
+                    <label>How did you hear about us ?</label>
+                    <span class="hidden" id="discovery-source"></span>
+                    <%= select_tag :rentcafe_discover_source, options_for_select( @rentcafe_discovery_sources ), :class=>"form-control", include_blank: @rentcafe_selected_discovery_source %>
+                  </div>
+                <% end %>
           
                 <% if false %>
                   <div class="form-group expiry">

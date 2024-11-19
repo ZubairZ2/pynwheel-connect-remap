@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20240320051326) do
+ActiveRecord::Schema.define(version: 20241114133038) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -22,7 +22,7 @@ ActiveRecord::Schema.define(version: 20240320051326) do
     t.integer  "community_id"
     t.integer  "tour_user_id"
     t.boolean  "is_resident"
-    t.integer  "stop_ids",     default: [],              array: true
+    t.string   "stop_ids",     default: [],              array: true
     t.jsonb    "payload"
     t.jsonb    "response"
     t.datetime "created_at",                null: false
@@ -73,8 +73,8 @@ ActiveRecord::Schema.define(version: 20240320051326) do
     t.string   "amenty_type"
     t.text     "description"
     t.integer  "unit_id"
-    t.datetime "created_at",                                     null: false
-    t.datetime "updated_at",                                     null: false
+    t.datetime "created_at",                                        null: false
+    t.datetime "updated_at",                                        null: false
     t.string   "name"
     t.string   "image"
     t.integer  "x_plot"
@@ -88,7 +88,7 @@ ActiveRecord::Schema.define(version: 20240320051326) do
     t.string   "directional_text"
     t.integer  "floor"
     t.string   "video_link"
-    t.string   "video_link_button_label", default: "PLAY VIDEO"
+    t.string   "video_link_button_label",    default: "PLAY VIDEO"
     t.string   "mass_upload_id"
     t.string   "building"
     t.integer  "floorplan_amenity_id"
@@ -97,9 +97,10 @@ ActiveRecord::Schema.define(version: 20240320051326) do
     t.float    "crop_w"
     t.float    "crop_h"
     t.boolean  "do_crop"
-    t.boolean  "breezway_lock_visible",   default: true
-    t.string   "lock_provider",           default: ""
-    t.string   "amenity_type",            default: ""
+    t.boolean  "breezway_lock_visible",      default: true
+    t.string   "lock_provider",              default: ""
+    t.string   "amenity_type",               default: ""
+    t.integer  "tour_visiting_order_number"
     t.index ["amenityable_type", "amenityable_id"], name: "index_amenities_on_amenityable_type_and_amenityable_id", using: :btree
   end
 
@@ -200,8 +201,8 @@ ActiveRecord::Schema.define(version: 20240320051326) do
     t.boolean  "locked"
     t.string   "data_provider"
     t.integer  "company_id"
-    t.datetime "created_at",                                                    null: false
-    t.datetime "updated_at",                                                    null: false
+    t.datetime "created_at",                                                                              null: false
+    t.datetime "updated_at",                                                                              null: false
     t.string   "theme_name"
     t.string   "website"
     t.string   "code"
@@ -260,7 +261,7 @@ ActiveRecord::Schema.define(version: 20240320051326) do
     t.date     "date_installed"
     t.date     "date_activated"
     t.date     "date_inactivated"
-    t.integer  "deleted_ids",                        default: [],                            array: true
+    t.integer  "deleted_ids",                        default: [],                                                      array: true
     t.boolean  "touchscreen_app",                    default: true
     t.boolean  "lincoln_app",                        default: false
     t.boolean  "show_camera_button",                 default: true
@@ -296,7 +297,7 @@ ActiveRecord::Schema.define(version: 20240320051326) do
     t.boolean  "enable_locks",                       default: true
     t.boolean  "manual_lat_long",                    default: false
     t.integer  "enable_community_id"
-    t.string   "multiple_locks_provider",            default: [],                            array: true
+    t.string   "multiple_locks_provider",            default: [],                                                      array: true
     t.integer  "region_id"
     t.boolean  "pynwheel_access",                    default: false
     t.string   "web_map_type",                       default: "2d-map"
@@ -326,6 +327,7 @@ ActiveRecord::Schema.define(version: 20240320051326) do
     t.boolean  "sitemap_auto_zoom",                  default: false
     t.boolean  "use_company_level_data_settings",    default: false
     t.string   "country_code"
+    t.string   "pricing_message",                    default: "Please see an agent for pricing details."
     t.index ["community_group_id"], name: "index_communities_on_community_group_id", using: :btree
     t.index ["company_id"], name: "index_communities_on_company_id", using: :btree
     t.index ["region_id"], name: "index_communities_on_region_id", using: :btree
@@ -383,6 +385,7 @@ ActiveRecord::Schema.define(version: 20240320051326) do
     t.integer  "company_id"
     t.datetime "created_at",                                null: false
     t.datetime "updated_at",                                null: false
+    t.boolean  "pynwheel_launch_access",    default: false
     t.index ["company_id"], name: "index_company_settings_on_company_id", using: :btree
   end
 
@@ -475,12 +478,27 @@ ActiveRecord::Schema.define(version: 20240320051326) do
     t.string   "yardirentcafe_marketing_api_key"
     t.string   "yardirentcafe_property_id"
     t.string   "yardirentcafe_property_code"
-    t.string   "knock_api_key",                   default: ""
     t.string   "knock_community_id",              default: ""
-    t.string   "knock_sms_consent_url",           default: ""
     t.string   "funnel_api_key",                  default: ""
     t.string   "funnel_community_id",             default: ""
+    t.string   "knock_company_id",                default: ""
     t.index ["community_id"], name: "index_crm_credentials_on_community_id", using: :btree
+  end
+
+  create_table "crm_discovery_sources", force: :cascade do |t|
+    t.jsonb    "sources"
+    t.integer  "community_id"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
+    t.index ["community_id"], name: "index_crm_discovery_sources_on_community_id", using: :btree
+  end
+
+  create_table "crm_time_slots", force: :cascade do |t|
+    t.jsonb    "slots"
+    t.integer  "community_id"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
+    t.index ["community_id"], name: "index_crm_time_slots_on_community_id", using: :btree
   end
 
   create_table "default_images", force: :cascade do |t|
@@ -663,6 +681,7 @@ ActiveRecord::Schema.define(version: 20240320051326) do
     t.datetime "created_at",                         null: false
     t.datetime "updated_at",                         null: false
     t.boolean  "name_overrided",     default: false
+    t.integer  "sort",               default: 1
     t.index ["attached_with_type", "attached_with_id"], name: "index_doors_on_attached_with_type_and_attached_with_id", using: :btree
     t.index ["community_id"], name: "index_doors_on_community_id", using: :btree
   end
@@ -671,12 +690,14 @@ ActiveRecord::Schema.define(version: 20240320051326) do
     t.string   "client_id"
     t.string   "client_secret"
     t.integer  "community_id"
-    t.datetime "created_at",                                              null: false
-    t.datetime "updated_at",                                              null: false
+    t.datetime "created_at",                                                      null: false
+    t.datetime "updated_at",                                                      null: false
     t.string   "default_community_id"
-    t.string   "api_url",               default: "https://api.dwelo.com"
-    t.string   "lock_instruction_text", default: ""
-    t.string   "lock_image",            default: ""
+    t.string   "api_url",                       default: "https://api.dwelo.com"
+    t.string   "lock_instruction_text",         default: ""
+    t.string   "lock_image",                    default: ""
+    t.string   "amenity_lock_instruction_text", default: ""
+    t.string   "amenity_lock_image",            default: ""
     t.index ["community_id"], name: "index_dwelos_on_community_id", using: :btree
   end
 
@@ -692,13 +713,27 @@ ActiveRecord::Schema.define(version: 20240320051326) do
     t.string   "client_id"
     t.string   "client_secret"
     t.integer  "community_id"
-    t.datetime "created_at",                                  null: false
-    t.datetime "updated_at",                                  null: false
+    t.datetime "created_at",                                    null: false
+    t.datetime "updated_at",                                    null: false
     t.string   "refresh_token"
-    t.boolean  "is_authorized_with_pynwheel", default: false
-    t.string   "lock_instruction_text",       default: ""
-    t.string   "lock_image",                  default: ""
+    t.boolean  "is_authorized_with_pynwheel",   default: false
+    t.string   "lock_instruction_text",         default: ""
+    t.string   "lock_image",                    default: ""
+    t.string   "amenity_lock_instruction_text", default: ""
+    t.string   "amenity_lock_image",            default: ""
     t.index ["community_id"], name: "index_edge_states_on_community_id", using: :btree
+  end
+
+  create_table "elevator_banks", force: :cascade do |t|
+    t.string   "name"
+    t.string   "position"
+    t.string   "lock_type"
+    t.string   "lock_name"
+    t.string   "lock_id"
+    t.integer  "elevator_id", null: false
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
+    t.index ["elevator_id"], name: "index_elevator_banks_on_elevator_id", using: :btree
   end
 
   create_table "elevator_galleries", force: :cascade do |t|
@@ -1228,12 +1263,25 @@ ActiveRecord::Schema.define(version: 20240320051326) do
     t.string   "username"
     t.string   "password"
     t.integer  "community_id"
-    t.datetime "created_at",                         null: false
-    t.datetime "updated_at",                         null: false
+    t.datetime "created_at",                                    null: false
+    t.datetime "updated_at",                                    null: false
     t.string   "email"
     t.string   "file"
-    t.string   "lock_instruction_text", default: ""
-    t.string   "lock_image",            default: ""
+    t.string   "lock_instruction_text",         default: ""
+    t.string   "lock_image",                    default: ""
+    t.boolean  "is_authorized_with_pynwheel",   default: false
+    t.string   "client_id"
+    t.string   "client_secret"
+    t.string   "refresh_token"
+    t.string   "access_token"
+    t.datetime "access_token_expiry"
+    t.datetime "refresh_token_expiry"
+    t.string   "version",                       default: "v1"
+    t.string   "home_name"
+    t.string   "amenity_lock_instruction_text", default: ""
+    t.string   "amenity_lock_image",            default: ""
+    t.string   "iglooworks_api_key",            default: ""
+    t.string   "iglooworks_department_id",      default: ""
     t.index ["community_id"], name: "index_igloohomes_on_community_id", using: :btree
   end
 
@@ -1274,6 +1322,15 @@ ActiveRecord::Schema.define(version: 20240320051326) do
     t.index ["stop_type", "stop_id"], name: "index_latch_allowed_accesses_on_stop_type_and_stop_id", using: :btree
   end
 
+  create_table "latch_auth_tokens", force: :cascade do |t|
+    t.integer  "tour_user_id", null: false
+    t.string   "token"
+    t.datetime "expires_at"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
+    t.index ["tour_user_id"], name: "index_latch_auth_tokens_on_tour_user_id", using: :btree
+  end
+
   create_table "latch_guests", force: :cascade do |t|
     t.integer  "community_id"
     t.integer  "tour_user_id"
@@ -1310,17 +1367,19 @@ ActiveRecord::Schema.define(version: 20240320051326) do
     t.string   "client_id"
     t.string   "client_secret"
     t.integer  "community_id"
-    t.datetime "created_at",                                 null: false
-    t.datetime "updated_at",                                 null: false
+    t.datetime "created_at",                                    null: false
+    t.datetime "updated_at",                                    null: false
     t.string   "file"
-    t.string   "lock_instruction_text",      default: ""
-    t.string   "lock_image",                 default: ""
-    t.string   "passwordless_client_id",     default: ""
-    t.string   "passwordless_client_secret", default: ""
-    t.string   "latch_property_name",        default: ""
-    t.boolean  "is_building_name_added",     default: false
-    t.boolean  "is_integration_submitted",   default: false
-    t.boolean  "is_mission_control_setup",   default: false
+    t.string   "lock_instruction_text",         default: ""
+    t.string   "lock_image",                    default: ""
+    t.string   "passwordless_client_id",        default: ""
+    t.string   "passwordless_client_secret",    default: ""
+    t.string   "latch_property_name",           default: ""
+    t.boolean  "is_building_name_added",        default: false
+    t.boolean  "is_integration_submitted",      default: false
+    t.boolean  "is_mission_control_setup",      default: false
+    t.string   "amenity_lock_instruction_text", default: ""
+    t.string   "amenity_lock_image",            default: ""
     t.index ["community_id"], name: "index_latches_on_community_id", using: :btree
   end
 
@@ -1373,6 +1432,16 @@ ActiveRecord::Schema.define(version: 20240320051326) do
     t.integer  "design_id"
     t.datetime "created_at",          null: false
     t.datetime "updated_at",          null: false
+  end
+
+  create_table "map_partners", force: :cascade do |t|
+    t.integer  "community_id", null: false
+    t.string   "partner",      null: false
+    t.string   "api_key",      null: false
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
+    t.index ["community_id", "partner", "api_key"], name: "index_map_partners_on_community_partner_api_key", unique: true, using: :btree
+    t.index ["community_id"], name: "index_map_partners_on_community_id", using: :btree
   end
 
   create_table "maps_positions", force: :cascade do |t|
@@ -1562,7 +1631,8 @@ ActiveRecord::Schema.define(version: 20240320051326) do
     t.string   "start_tour_point"
   end
 
-  create_table "portico_requests", force: :cascade do |t|
+  create_table "portico_requests", id: false, force: :cascade do |t|
+    t.serial   "id",          null: false
     t.string   "app_name"
     t.integer  "user_id"
     t.string   "os_type"
@@ -1705,6 +1775,8 @@ ActiveRecord::Schema.define(version: 20240320051326) do
     t.string   "funnel_prospect_id"
     t.string   "funnel_appointment_id"
     t.string   "funnel_prospect_discover_source", default: ""
+    t.string   "knock_prospect_discover_source",  default: ""
+    t.string   "rentcafe_discover_source",        default: ""
     t.index ["tour_id"], name: "index_schedual_tours_on_tour_id", using: :btree
     t.index ["tour_user_id"], name: "index_schedual_tours_on_tour_user_id", using: :btree
   end
@@ -1977,11 +2049,14 @@ ActiveRecord::Schema.define(version: 20240320051326) do
     t.string   "lock_provider",             default: ""
     t.string   "access_code"
     t.integer  "tour_user_id"
+    t.boolean  "skip_tour_editing",         default: false
+    t.json     "copy_sort_hash",            default: "{}",             null: false
     t.index ["community_id"], name: "index_tours_on_community_id", using: :btree
     t.index ["tour_user_id"], name: "index_tours_on_tour_user_id", using: :btree
   end
 
-  create_table "track_sessions", force: :cascade do |t|
+  create_table "track_sessions", id: false, force: :cascade do |t|
+    t.serial   "id",                                     null: false
     t.datetime "start_datetime"
     t.datetime "end_datetime"
     t.string   "track_session_type",     default: ""
@@ -2087,6 +2162,8 @@ ActiveRecord::Schema.define(version: 20240320051326) do
     t.boolean  "do_crop_secpndary",                 default: false
     t.string   "lock_provider",                     default: ""
     t.string   "unit_status",                       default: ""
+    t.boolean  "visible",                           default: true
+    t.integer  "tour_visiting_order_number"
   end
 
   create_table "user_stripes", force: :cascade do |t|
@@ -2162,7 +2239,8 @@ ActiveRecord::Schema.define(version: 20240320051326) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, using: :btree
   end
 
-  create_table "versions", force: :cascade do |t|
+  create_table "versions", id: false, force: :cascade do |t|
+    t.serial   "id",           null: false
     t.string   "item_type",    null: false
     t.bigint   "item_id",      null: false
     t.string   "event",        null: false
@@ -2260,13 +2338,15 @@ ActiveRecord::Schema.define(version: 20240320051326) do
     t.string   "username"
     t.string   "password"
     t.integer  "community_id"
-    t.datetime "created_at",                         null: false
-    t.datetime "updated_at",                         null: false
+    t.datetime "created_at",                                 null: false
+    t.datetime "updated_at",                                 null: false
     t.string   "facility_id"
     t.string   "badge_id"
     t.string   "card_format"
-    t.string   "lock_instruction_text", default: ""
-    t.string   "lock_image",            default: ""
+    t.string   "lock_instruction_text",         default: ""
+    t.string   "lock_image",                    default: ""
+    t.string   "amenity_lock_instruction_text", default: ""
+    t.string   "amenity_lock_image",            default: ""
     t.index ["community_id"], name: "index_zervs_on_community_id", using: :btree
   end
 
@@ -2288,9 +2368,12 @@ ActiveRecord::Schema.define(version: 20240320051326) do
   add_foreign_key "credentials", "communities"
   add_foreign_key "credentials", "companies"
   add_foreign_key "crm_credentials", "communities"
+  add_foreign_key "crm_discovery_sources", "communities"
+  add_foreign_key "crm_time_slots", "communities"
   add_foreign_key "doors", "communities"
   add_foreign_key "dwelos", "communities"
   add_foreign_key "edge_states", "communities"
+  add_foreign_key "elevator_banks", "elevators"
   add_foreign_key "elevator_galleries", "elevators"
   add_foreign_key "elevators", "communities"
   add_foreign_key "elevators", "floorplates"
@@ -2316,6 +2399,7 @@ ActiveRecord::Schema.define(version: 20240320051326) do
   add_foreign_key "igloohomes", "communities"
   add_foreign_key "imagepages", "communities"
   add_foreign_key "latch_allowed_accesses", "latch_guests"
+  add_foreign_key "latch_auth_tokens", "tour_users"
   add_foreign_key "latch_guests", "communities"
   add_foreign_key "latch_guests", "tour_users"
   add_foreign_key "latch_locks", "latches"
@@ -2323,6 +2407,7 @@ ActiveRecord::Schema.define(version: 20240320051326) do
   add_foreign_key "locations", "neighborhoods"
   add_foreign_key "lock_histories", "tour_histories"
   add_foreign_key "lock_histories", "tour_users"
+  add_foreign_key "map_partners", "communities"
   add_foreign_key "maps_positions", "communities"
   add_foreign_key "maps_positions", "floorplates"
   add_foreign_key "maps_positions", "sitemaps"
