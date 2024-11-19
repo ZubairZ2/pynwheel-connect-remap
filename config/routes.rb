@@ -622,6 +622,10 @@ Rails.application.routes.draw do
       namespace :realync do
         post :update_video_links, to: 'webhooks#update_video_links'
       end
+
+      namespace :maps do
+        get :all_maps, to: 'maps#all_maps'
+      end
     end
 
     namespace :self_tour do
