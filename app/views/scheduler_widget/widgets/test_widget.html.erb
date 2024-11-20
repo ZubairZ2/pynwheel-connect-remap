@@ -253,8 +253,6 @@
                       </i>
                     </div>
 
-
-
                   <div class="w-37">
                     <%= f.radio_button :property_tour_type, 'scheduled_tour', :id => "scheduled_tour",:class => "select_property_tour", :checked => @schedule_tour.property_tour_type.present? && @schedule_tour.property_tour_type == "scheduled_tour" ? true : false  %>
 
@@ -414,28 +412,30 @@
                 </div>
                 <% end %> 
 
-                <% if @community.is_funnel_community? %>
-                  <div class="w-left-50">
-                    <label>How did you hear about us ?</label>
-                    <span class="hidden" id="discovery-source"></span>
-                    <%= select_tag :funnel_prospect_discover_source, options_for_select( @funnel_discovery_sources ), :class=>"form-control", include_blank: @selected_discovery_source %>
-                  </div>
-                <% end %>
+                <% if @is_allowed_schedule %>
+                  <% if @community.is_funnel_community? %>
+                    <div class="w-left-50 discovery_source_field">
+                      <label>How did you hear about us ?</label>
+                      <span class="hidden" id="discovery-source"></span>
+                      <%= select_tag :funnel_prospect_discover_source, options_for_select( @funnel_discovery_sources ), :class=>"form-control", include_blank: @selected_discovery_source %>
+                    </div>
+                  <% end %>
 
-                <% if @community.is_knock_community? %>
-                  <div class="w-left-50">
-                    <label>How did you hear about us ?</label>
-                    <span class="hidden" id="discovery-source"></span>
-                    <%= select_tag :knock_prospect_discover_source, options_for_select( @knock_discovery_sources ), :class=>"form-control", include_blank: @knock_selected_discovery_source %>
-                  </div>
-                <% end %>
+                  <% if @community.is_knock_community? %>
+                    <div class="w-left-50 discovery_source_field">
+                      <label>How did you hear about us ?</label>
+                      <span class="hidden" id="discovery-source"></span>
+                      <%= select_tag :knock_prospect_discover_source, options_for_select( @knock_discovery_sources ), :class=>"form-control", include_blank: @knock_selected_discovery_source %>
+                    </div>
+                  <% end %>
 
-                <% if @community.use_yardi_as_lead? %>
-                  <div class="w-left-50">
-                    <label>How did you hear about us ?</label>
-                    <span class="hidden" id="discovery-source"></span>
-                    <%= select_tag :rentcafe_discover_source, options_for_select( @rentcafe_discovery_sources ), :class=>"form-control", include_blank: @rentcafe_selected_discovery_source %>
-                  </div>
+                  <% if @community.use_yardi_as_lead? %>
+                    <div class="w-left-50 discovery_source_field">
+                      <label>How did you hear about us ?</label>
+                      <span class="hidden" id="discovery-source"></span>
+                      <%= select_tag :rentcafe_discover_source, options_for_select( @rentcafe_discovery_sources ), :class=>"form-control", include_blank: @rentcafe_selected_discovery_source %>
+                    </div>
+                  <% end %>
                 <% end %>
           
                 <% if false %>
@@ -685,6 +685,7 @@
           $("#unscheduled_self_tour").attr('checked', "checked")
         }
         if( ( $('#unscheduled_self_tour')[0] && $('#unscheduled_self_tour')[0].checked == true) || ( $('#remote_tour')[0] && $('#remote_tour')[0].checked == true ) ) {
+          $(".discovery_source_field").addClass('hidden');
           $(".tour_date").addClass('hidden');
           $(".tour_time").addClass('hidden');
           $(".tour_type").addClass('hidden');
@@ -696,6 +697,7 @@
         if("<%= params['schedule_another_tour'] == "true" %>"){
           if(scheduled_tour_for_another_tour == "unscheduled_self_tour"){
             $("#unscheduled_self_tour").attr('checked', "checked");
+            $(".discovery_source_field").addClass('hidden');
             $(".tour_date").addClass('hidden');
             $(".tour_time").addClass('hidden');
             $(".tour_type").addClass('hidden');
@@ -705,6 +707,7 @@
           }
           if(scheduled_tour_for_another_tour == "scheduled_tour"){
             $("#scheduled_tour").attr('checked', "checked");
+            $(".discovery_source_field").removeClass('hidden');
             $(".tour_date").removeClass('hidden');
             $(".tour_time").removeClass('hidden');
             $(".tour_type").removeClass('hidden');
@@ -714,6 +717,7 @@
           }
           if(scheduled_tour_for_another_tour == "remote_tour"){
             $("#remote_tour").attr('checked', "checked");
+            $(".discovery_source_field").addClass('hidden');
             $(".tour_date").addClass('hidden');
             $(".tour_time").addClass('hidden');
             $(".tour_type").addClass('hidden');
@@ -734,6 +738,7 @@
 
       $('.select_property_tour').change(function() {
         if (this.value == 'remote_tour'){
+          $(".discovery_source_field").addClass('hidden');
           $(".tour_date").addClass('hidden');
           $(".tour_time").addClass('hidden');
           $(".tour_type").addClass('hidden');
@@ -745,6 +750,7 @@
           }
         }
         else if (this.value == 'unscheduled_self_tour') {
+          $(".discovery_source_field").addClass('hidden');
           $(".tour_date").addClass('hidden');
           $(".tour_time").addClass('hidden');
           $(".tour_type").addClass('hidden');
@@ -756,6 +762,7 @@
           }
         }
         else if (this.value == 'scheduled_tour') {
+          $(".discovery_source_field").removeClass('hidden');
           $(".tour_date").removeClass('hidden');
           $(".tour_time").removeClass('hidden');
           $(".tour_type").removeClass('hidden');
@@ -766,6 +773,11 @@
             $('#charge_text').text("A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded) and $2.00 for ID verification processing when you begin the tour.")
           }
         }
+
+        if( "<%= !@time_slots.any? %>" == "true" && this.value == 'scheduled_tour')
+          $(".no-tour-time-error").css("display", "block")
+        else
+          $(".no-tour-time-error").css("display", "none")
       })
 
       $(document).ready(function(){       
@@ -809,17 +821,6 @@
       $("#user_phone_number_field").keyup(function() {
         displayNotification();
       });
-
-      $('.select_property_tour').change(function() {
-        if( "<%= !@time_slots.any? %>" == "true" && this.value == 'scheduled_tour') {
-          $(".no-tour-time-error").css("display", "block")
-        }
-        else
-        {
-          $(".no-tour-time-error").css("display", "none")
-        }
-          
-      })
 
       function currentForm() {
         if ($("#new_tour_user").length) {
