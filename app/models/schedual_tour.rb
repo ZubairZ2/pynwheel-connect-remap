@@ -6,7 +6,7 @@ class SchedualTour < ApplicationRecord
   
   before_destroy :cancel_tour, :notify_community_on_cancel_tour
 
-  scope :desc_tour_date, -> {order('coalesce(tour_date, created_at) desc')}
+  scope :desc_tour_date, -> { order(Arel.sql("coalesce(tour_date, created_at) desc")) }  
   scope :scheduled_tours, -> { where.not(tour_user_id: nil, tour_date: nil, tour_time: nil, community_id: nil) }
 
   COUNTRIES =  JSON.parse(File.read(Rails.root.join("app/assets/jsons/country_codes.json")))
