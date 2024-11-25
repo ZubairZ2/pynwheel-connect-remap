@@ -131,7 +131,7 @@ private
 
   def fetch_scheduled_tours
     if params[:sSearch].blank?
-      scheduled_tours = SchedualTour.where(community_id: @community).where.not(tour_user_id: nil).desc_tour_date rescue ""
+      scheduled_tours = SchedualTour.where(community_id: @community).where.not(tour_user_id: nil).desc_tour_date
       # scheduled_tours = scheduled_tours.joins(joins_relation(sort_column)).order("#{sort_column} #{sort_direction}")
       scheduled_tours = scheduled_tours.page(page).per_page(per_page)
     else
