@@ -136,13 +136,17 @@ module DweloDevicesHelper
     current_tour = get_current_tour(time_param)
     before_margin = current_tour.tour_time - grace_time.minutes
     after_margin = current_tour.tour_time + grace_time.minutes
-    scheduled_tours.where(tour_date: current_tour.tour_date, tour_time: before_margin..after_margin).last
+  
+    scheduled_tours.where(
+      tour_date: current_tour.tour_date,
+      tour_time: before_margin..after_margin
+    ).last
   end
-
+  
   def get_current_tour(time_param)
     current_datetime = time_param.to_datetime.strftime('%d/%m/%Y %l:%M %p')
     current_time = current_datetime.to_datetime.strftime('%l:%M %p')
-    current_date = current_datetime.to_datetime.strAftime('%d/%m/%Y')
+    current_date = current_datetime.to_datetime.strftime('%d/%m/%Y')
     current_tour = SchedualTour.new(tour_date: current_date, tour_time: current_time)
   end
 
@@ -402,11 +406,13 @@ module DweloDevicesHelper
   end
 
   def current_community_time(community, params)
-    timezone = community.get_time_zone()
-    (timezone != "UTC") ? Time.now.in_time_zone(timezone) : (params[:current_time].present? ? params[:current_time].to_datetime : Time.now.in_time_zone(timezone))
-    rescue
+    timezone = community.get_time_zone
+    time = params[:current_time].presence || Time.now
+    time.in_time_zone(timezone)
+  rescue
     Time.now.utc
   end
+  
 
   def is_tour_in_visiting_hours(time_param, community)
     current_time = time_param.strftime("%H:%M")
