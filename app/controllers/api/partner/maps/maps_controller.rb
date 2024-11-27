@@ -36,9 +36,11 @@ module Api
         def formatted_response
           @companies.map do |company|
             {
+              'id' => company.id,
               'name' => company.name,
               'communities' => @communities.select { |community| community.company_id == company.id }.map do |community|
                 {
+                  'id' => community.id,
                   'name' => community.name,
                   'address' => community.make_address,
                   'map_embed_code' => community.map_embed_code,
