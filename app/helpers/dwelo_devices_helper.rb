@@ -408,12 +408,15 @@ module DweloDevicesHelper
   def current_community_time(community, params)
     timezone = community.get_time_zone
     time = params[:current_time].presence || Time.now
+    
+    # Unescape only if `time` is a string
+    time = CGI.unescape(time) if time.is_a?(String)
+    
     time.in_time_zone(timezone)
   rescue
     Time.now.utc
-  end
+  end  
   
-
   def is_tour_in_visiting_hours(time_param, community)
     current_time = time_param.strftime("%H:%M")
     current_day = time_param.strftime('%A')
