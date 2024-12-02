@@ -4,7 +4,7 @@ Rails.application.configure do
   config.consider_all_requests_local       = false
   config.action_controller.perform_caching = false
   config.public_file_server.enabled = ENV['RAILS_SERVE_STATIC_FILES'].present?
-  config.assets.js_compressor = Uglifier.new(harmony: true)
+  # config.assets.js_compressor = Uglifier.new(harmony: true)
   config.assets.compile = true
   config.action_controller.asset_host = ENV['HOST_URL']
   config.force_ssl = true
