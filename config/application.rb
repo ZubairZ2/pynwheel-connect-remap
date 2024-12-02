@@ -22,23 +22,14 @@ module PynwheelCms
     config.active_job.queue_adapter = :sidekiq
 
     config.action_dispatch.rack_cache = true
+    Rails.application.config.session_store :cookie_store, expire_after: 14.days
 
     if Rails.env.production? || Rails.env.staging?
-      config.session_store :redis_store, {
-        servers: [
-          {
-            url: ENV["REDIS_TLS_URL"],
-            ssl_params: { verify_mode: OpenSSL::SSL::VERIFY_NONE }
-          }
-        ],
-        key: '_pynwheel-cms_session',
-        expire_after: 90.minutes,
-        secure: true # Use this if your application is served over HTTPS
-      }
+      config.session_store :redis_store, servers: ENV["REDIS_TLS_URL"], key: '_pynwheel-cms_session'
     else
       config.session_store :cookie_store, key: '_pynwheel-cms_session'
-    end
-
+    end    
+    
     config.middleware.insert_before 0, Rack::Cors do
       allow do
         origins '*'
