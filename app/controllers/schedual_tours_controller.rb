@@ -123,22 +123,20 @@ class SchedualToursController < ApplicationController
       schedual_tour.update_columns(knock_prospect_ip_address: knock_prospect_ip, tour_date: new_tour.tour_date, tour_time: new_tour.tour_time,property_tour_type: property_tour_type,tour_type: tour_type,tour_user_id: tu.id,charge_id: res.present? ? res[:id] : nil, pay_back_id: pay_back.present? ? pay_back.refund_id : nil, desired_move_in_date: desired_move_in_date, desired_bedroom: params[:desired_bedroom],user_time_zone: params[:user_time_zone],country_code: params[:country_code], realpage_marketing_source: realpage_marketing_source.present? ? realpage_marketing_source : "")
 
       # Update funnel discovery source
-      schedual_tour.update_columns(funnel_prospect_discover_source: params[:funnel_prospect_discover_source]) if community.is_funnel_community? && params[:funnel_prospect_discover_source].present?
-      schedual_tour.update_columns(knock_prospect_discover_source: params[:knock_prospect_discover_source]) if community.is_knock_community? && params[:knock_prospect_discover_source].present?
+      schedual_tour.update_attributes(funnel_prospect_discover_source: params[:funnel_prospect_discover_source]) if community.is_funnel_community? && params[:funnel_prospect_discover_source].present?
+      schedual_tour.update_attributes(knock_prospect_discover_source: params[:knock_prospect_discover_source]) if community.is_knock_community? && params[:knock_prospect_discover_source].present?
+      schedual_tour.update_attributes(rentcafe_discover_source: params[:rentcafe_discover_source]) if community.use_yardi_as_lead? && params[:rentcafe_discover_source].present?
       
       if previous_tour[:is_rescheduled]
         is_rescheduled = true
         new_tour.delete
       end
 
-      if community&.credential&.rentcafe_api_version == "RentCafe V2"
-        YardiRentCafeV2Services::MarketingApisV2Service.new(schedual_tour).schedule_tour(previous_tour)
-      else
-        YardiRentCafeServices::MarketingApisService.new(schedual_tour).schedule_tour(previous_tour)
+      if property_tour_type === "scheduled_tour"
+        book_yardi_appointment(schedual_tour, previous_tour)
+        KnockService.new(schedual_tour).knock_crm(is_rescheduled)
+        FunnelService.new(schedual_tour).funnel_crm(is_rescheduled)
       end
-      
-      KnockService.new(schedual_tour).knock_crm(is_rescheduled)
-      FunnelService.new(schedual_tour).funnel_crm(is_rescheduled)
 
       appointment_time = (schedual_tour.tour_date.to_s +  " " + schedual_tour.tour_time.to_s.split(' ')[1]).to_datetime if schedual_tour.tour_date.present? and schedual_tour.tour_time.present?
       marketing_source = params[:marketing_source].present? ? params[:marketing_source] : "" rescue  ""
@@ -208,7 +206,6 @@ class SchedualToursController < ApplicationController
     response = response.map { |date| date.to_datetime.strftime("%I:%M %P")  }
 
     render json: {data: response, status: :OK, code: 200}, layout: false
-
   end
 
   def get_tour_type
@@ -355,22 +352,16 @@ class SchedualToursController < ApplicationController
       tour_time: @schedual_tour.tour_time,
     }
 
-
-
     # Update funnel discovery source
-    @schedual_tour.update_columns(funnel_prospect_discover_source: params[:funnel_prospect_discover_source]) if @schedual_tour.community.is_funnel_community? && params[:funnel_prospect_discover_source].present?
-    @schedual_tour.update_columns(knock_prospect_discover_source: params[:knock_prospect_discover_source]) if @schedual_tour.community.is_knock_community? && params[:knock_prospect_discover_source].present?
+    @schedual_tour.update_attributes(funnel_prospect_discover_source: params[:funnel_prospect_discover_source]) if @schedual_tour.community.is_funnel_community? && params[:funnel_prospect_discover_source].present?
+    @schedual_tour.update_attributes(knock_prospect_discover_source: params[:knock_prospect_discover_source]) if @schedual_tour.community.is_knock_community? && params[:knock_prospect_discover_source].present?
+    @schedual_tour.update_attributes(rentcafe_discover_source: params[:rentcafe_discover_source]) if @schedual_tour.community.use_yardi_as_lead? && params[:rentcafe_discover_source].present?
 
-    if @schedual_tour&.community&.credential&.rentcafe_api_version == "RentCafe V2"
-      YardiRentCafeV2Services::MarketingApisV2Service.new(@schedual_tour).schedule_tour(previous_tour)
-    else
-      YardiRentCafeServices::MarketingApisService.new(@schedual_tour).schedule_tour(previous_tour)
-    end
-
+    book_yardi_appointment(@schedual_tour, previous_tour)
     KnockService.new(@schedual_tour).knock_crm(true)
     FunnelService.new(@schedual_tour).funnel_crm(true)
-
-    @schedual_tour.update_columns(tour_date: date, tour_time: tour_time, day_diff: day_diff)
+    
+    @schedual_tour.update_attributes(tour_date: date, tour_time: tour_time, day_diff: day_diff)
     
     set_daily_email_sent = false
     set_daily_email_sent = true if day_diff >= 1
@@ -418,6 +409,14 @@ class SchedualToursController < ApplicationController
   end
 
   private
+
+    def book_yardi_appointment schedual_tour, previous_tour
+      if schedual_tour&.community&.credential&.rentcafe_api_version == "RentCafe V2"
+        response = YardiRentCafeV2Services::MarketingApisV2Service.new(schedual_tour).schedule_tour(previous_tour)
+      else
+        YardiRentCafeServices::MarketingApisService.new(schedual_tour).schedule_tour(previous_tour)
+      end
+    end
 
     def community_allowed_tour_types community
       tour = community.community_tour

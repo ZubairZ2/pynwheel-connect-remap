@@ -63,38 +63,8 @@ class SchedulerWidget::WidgetsController < ApplicationController
     @tour_type_count = @enabled_tour_types.count
     @default_country_code = @community.fetch_country_code()
     cutt_of = @stepping < 60 ? @stepping.to_s + " minutes" : (@stepping == 60 ? "1 hour" : "2 hours")
+    set_yardi_time_slots()
     
-    if @use_yardi_as_lead
-      @yardi_time_slots = @community.available_slots(@schedule_tour)
-      if @community.credential.rentcafe_api_version == "RentCafe V2"
-        if @yardi_time_slots.present?
-          @yardi_self_time_slots = @yardi_time_slots.map{|x|  [x["startTime"].split(' ')[0],"#{x["startTime"].split(' ')[1]} #{x["startTime"].split(' ')[2]}","#{x["endTime"].split(' ')[1]} #{x["endTime"].split(' ')[2]}" ] if x['slotType'] == "SelfTour"}.compact
-          @yardi_guided_time_slots = @yardi_time_slots.map{|x| [x["startTime"].split(' ')[0],"#{x["startTime"].split(' ')[1]} #{x["startTime"].split(' ')[2]}","#{x["endTime"].split(' ')[1]} #{x["endTime"].split(' ')[2]}" ] if x['slotType'] == "AgentGuided"}.compact
-          @time_slots = @community.collect_time_slots_for_yardi(@stepping, @yardi_self_time_slots, @yardi_guided_time_slots)
-          @yardi_enable_days = @time_slots.keys
-        else
-          @time_slots = @reschedule_tour ? @community.collect_time_slots_for_rechedule_tours(@stepping,@tour_type) : @community.collect_time_slots(@stepping)
-          @yardi_enable_days = []
-          @use_yardi_as_lead = false
-        end
-      else
-        if @yardi_time_slots["Response"].present?
-          @yardi_self_time_slots = @yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "SelfTour"}.compact
-          @yardi_guided_time_slots = @yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "GuidedTour"}.compact
-          @time_slots = @community.collect_time_slots_for_yardi(@stepping, @yardi_self_time_slots, @yardi_guided_time_slots)
-          @yardi_enable_days = @time_slots.keys
-        else
-          @time_slots = @reschedule_tour ? @community.collect_time_slots_for_rechedule_tours(@stepping,@tour_type) : @community.collect_time_slots(@stepping)
-          @yardi_enable_days = []
-          @use_yardi_as_lead = false
-        end
-      end
-    else
-      @time_slots = @reschedule_tour ? @community.collect_time_slots_for_rechedule_tours(@stepping,@tour_type) : @community.collect_time_slots(@stepping)
-      @yardi_enable_days = []
-      @use_yardi_as_lead = false
-    end
-
     @is_knock_community = @schedule_tour.community.is_knock_community?
     @knock_available_slots =  @is_knock_community ? KnockService.new(@schedule_tour).available_slots : {}
     @knock_discovery_sources = @is_knock_community ? KnockService.new(@schedule_tour).get_discovery_sources : []
@@ -105,6 +75,9 @@ class SchedulerWidget::WidgetsController < ApplicationController
     @funnel_discovery_sources = @is_funnel_community ? FunnelService.new(@schedule_tour).get_discovery_sources : []
     @selected_discovery_source = @is_funnel_community ? (@schedule_tour&.funnel_prospect_discover_source.present? ? @funnel_discovery_sources.map{|s| s[0] if s[1] == @schedule_tour&.funnel_prospect_discover_source.to_i }&.compact&.uniq[0] : "Select an option" ) : ""
     
+    @rentcafe_discovery_sources = @use_yardi_as_lead ? @community&.crm_discovery_source&.sources.map { |source| source["name"] } : []
+    @rentcafe_selected_discovery_source = @use_yardi_as_lead ? (@schedule_tour&.rentcafe_discover_source.present? ?  @rentcafe_discovery_sources.map{|source| source if source == @schedule_tour&.rentcafe_discover_source }&.compact&.uniq[0] : "Select an option" ) : ""
+
     @occupied_slots = OccupiedTourTimeSlotsService.new(@community).occupied_slots()
     @occupied_dates = @occupied_slots&.keys rescue []
     @is_allowed_schedule = can_user_schedule_tour(@tour_type_count, @community)
@@ -117,9 +90,64 @@ class SchedulerWidget::WidgetsController < ApplicationController
     flash[:success] = params[:message] if params[:message].present?
     render :test_widget, locals: {ios_link: app_link,android_link: android_link,property_tour_type: property_tour_type,community_name: community.name,tour_type: tour_type}, layout: false
   rescue => e
-    flash[:error] = "Something went wrong!"
+    flash[:error] = e.message
     redirect_to community_schedual_tours_path(@community)
   end
+
+  def set_yardi_time_slots
+    return set_default_time_slots unless @use_yardi_as_lead
+  
+    crm_time_slot = @community.available_slots(@schedule_tour)
+
+    if @community.credential.rentcafe_api_version == "RentCafe V2"
+      process_rentcafe_v2_time_slots(crm_time_slot)
+    else
+      process_rentcafe_v1_time_slots(crm_time_slot)
+    end
+  end
+
+  def process_rentcafe_v2_time_slots(crm_time_slot)
+    return set_default_time_slots unless crm_time_slot.present?
+
+    @yardi_self_time_slots = extract_time_slots(crm_time_slot, "SelfTour", "startTime", "endTime")
+    @yardi_guided_time_slots = extract_time_slots(crm_time_slot, "AgentGuided", "startTime", "endTime")
+    @time_slots = @community.collect_time_slots_for_yardi(@stepping, @yardi_self_time_slots, @yardi_guided_time_slots)
+    @yardi_enable_days = @time_slots.keys
+  end
+  
+  def process_rentcafe_v1_time_slots(crm_time_slot)
+    return set_default_time_slots unless crm_time_slot.present?
+
+    slots = crm_time_slot["Response"][0]["AvailableSlots"]
+    @yardi_self_time_slots = extract_time_slots(slots, "SelfTour", "dtStart", "dtEnd")
+    @yardi_guided_time_slots = extract_time_slots(slots, "GuidedTour", "dtStart", "dtEnd")
+    @time_slots = @community.collect_time_slots_for_yardi(@stepping, @yardi_self_time_slots, @yardi_guided_time_slots)
+    @yardi_enable_days = @time_slots.keys
+  end
+  
+  def set_default_time_slots
+    @time_slots = @reschedule_tour ? @community.collect_time_slots_for_rechedule_tours(@stepping, @tour_type) : @community.collect_time_slots(@stepping)
+    @yardi_enable_days = []
+    @use_yardi_as_lead = false
+  end
+  
+  def extract_time_slots(slots, slot_type, start_key, end_key)
+    slots.map do |slot|
+      format_time_slot(slot, start_key, end_key) if slot['slotType'] == slot_type
+    end.compact
+  end
+
+  def format_time_slot(slot, start_key, end_key)
+    start_date, start_time, start_period = slot[start_key].split(' ')
+    _, end_time, end_period = slot[end_key].split(' ')
+  
+    [
+      start_date,
+      "#{start_time} #{start_period}",
+      "#{end_time} #{end_period}"
+    ]
+  end
+  
 
   def confirmation_instructions
     community = Community.find params[:community_id]

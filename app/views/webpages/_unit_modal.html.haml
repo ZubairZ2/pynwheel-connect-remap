@@ -152,7 +152,8 @@
                       %span.c-m-total-price#total-market-rent
                       %span{style: 'font-size: 12px'} /month
                   - else
-                    %span.move-in-date-text{:style => "display: flex; justify-content: center; vertical-align: middle;align-items: center;"} Please contact us for a quote.
+                    %span.move-in-date-text{:style => "display: flex; justify-content: center; vertical-align: middle;align-items: center;"} 
+                      = @community.pricing_message
         
         .c-modal-wrapper
           = render partial: "image_with_zoom_controls"

@@ -1351,6 +1351,7 @@ json.community_group @communities do |co|
     end
     json.apartment_page_name @community.apartment_page_name
     json.display_rent @community.display_rent
+    json.pricing_message @community.pricing_message
     json.display_pricing_options @community.display_pricing_options
     json.display_sitemap @community.display_sitemap
     json.display_floorplan_gallery @community.display_floorplan_gallery

@@ -41,6 +41,7 @@ class Community < ApplicationRecord
   has_many :access_points, -> { where("attached_with_type = 'Floorplate' OR attached_with_type = 'Sitemap'") }, class_name: 'Door', dependent: :destroy
   has_many :other_locks, dependent: :destroy
   has_many :track_sessions, dependent: :destroy
+  has_many :map_partners, dependent: :destroy
 
   has_one :credential, dependent: :destroy
   has_one :crm_credential, dependent: :destroy
@@ -63,6 +64,8 @@ class Community < ApplicationRecord
   has_one :schlage
   has_one :launch_remote
   has_one :design_direction
+  has_one :crm_time_slot
+  has_one :crm_discovery_source
 
   accepts_nested_attributes_for :credential
   accepts_nested_attributes_for :design
@@ -1276,7 +1279,8 @@ class Community < ApplicationRecord
 
   def available_slots scheduled_tour
     if credential&.rentcafe_api_version == "RentCafe V2"
-      YardiRentCafeV2Services::MarketingApisV2Service.new(scheduled_tour).available_slots
+      # YardiRentCafeV2Services::MarketingApisV2Service.new(scheduled_tour).available_slots
+      self&.crm_time_slot&.slots
     else
       YardiRentCafeServices::MarketingApisService.new(scheduled_tour).available_slots
     end
@@ -1440,9 +1444,9 @@ class Community < ApplicationRecord
   def make_address
     address = ""
     address = self.address if self.address.present?
-    address = (address.present? ? ( address + " , " + self.city ) : ( self.city )) if self.city.present?
-    address = (address.present? ? ( address + " , " + self.state ) : ( self.state )) if self.state.present?
-    address = (address.present? ? ( address + " , " + self.zip ) : ( self.zip )) if self.zip.present?
+    address = (address.present? ? ( address + ", " + self.city ) : ( self.city )) if self.city.present?
+    address = (address.present? ? ( address + ", " + self.state ) : ( self.state )) if self.state.present?
+    address = (address.present? ? ( address + ", " + self.zip ) : ( self.zip )) if self.zip.present?
     
     if address.present?
       return address
@@ -1871,16 +1875,43 @@ class Community < ApplicationRecord
   end
 
 
-  def process_slots_data(data)
-    result_hash = {}
-
-    data.each do |date_str, start_time_str, end_time_str|
-      result_hash[date_str] ||= []
-      result_hash[date_str] << start_time_str
-    end
-
-    result_hash
+  def process_slots_data(all_slots)
+    scheduled_slots = fetch_scheduled_slots
+    available_slots = filter_available_slots(all_slots, scheduled_slots)
+    format_slots_by_date(available_slots)
   end
+  
+  def format_slots_by_date(available_slots)
+    available_slots.each_with_object({}) do |(date_str, start_time_str, _end_time_str), result|
+      result[date_str] ||= []
+      result[date_str] << start_time_str
+    end
+  end
+  
+  def filter_available_slots(all_slots, scheduled_slots)
+    all_slots.reject do |slot|
+      scheduled_slots.include?([slot[0], slot[1]])
+    end
+  end
+  
+  def fetch_scheduled_slots
+    fetch_scheduled_tours.map do |tour|
+      [
+        tour.tour_date.strftime("%m/%d/%Y"),    # Format date as "MM/DD/YYYY"
+        tour.tour_time.strftime("%I:%M %p")    # Format time as "HH:MM AM/PM"
+      ]
+    end
+  end
+  
+  def fetch_scheduled_tours
+    schedual_tours
+      .where("property_tour_type = ? AND tour_date >= ?", "scheduled_tour", current_time)
+      .where.not(tour_user_id: nil)
+  end
+  
+  def current_time
+    Time.current.in_time_zone(get_time_zone)
+  end 
 
   def fetch_tour_type_according_to_time(day, tour_time)
     tour_type = []
@@ -1965,7 +1996,7 @@ class Community < ApplicationRecord
   end
 
   def filter_rent_cafe_tour_types_v1 scheduled_tour, date_str, tour_time
-        tour_type = []
+    tour_type = []
     yardi_time_slots = self.available_slots(scheduled_tour)
     if yardi_time_slots["Response"].present?
       yardi_self_time_slots = yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "SelfTour"}.compact

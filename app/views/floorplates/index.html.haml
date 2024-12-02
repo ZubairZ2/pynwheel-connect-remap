@@ -77,19 +77,27 @@
                         %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "floorplateDisplaPricePopover","data-content" => " "}
                           %span#propertyDetailNameText
                             Switching this will change whether or not pricing is displayed on the interactive property map and in the floor plan gallery.
+                      
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         .TriSea-technologies-Switch
                           %span.pr-15 No
                           = check_box_tag :display_rent, true, @community.display_rent, class: "apartment-setting-field"
                           %label.label-primary{:for => "display_rent"}
                           %span.pl-15 Yes
-                    
+
+                    .form-group{ style: "display: #{'none' if @community.display_rent}" }
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                        Pricing Message (Optional)
+                      .col-sm-12.col-lg-6.col-md-6.col-xs-12
+                        = text_field_tag :pricing_message, @community.pricing_message, class: "form-control apartment-setting-field", placeholder: "Enter pricing message"
+
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                         Display Pricing Options (Matrix)
                         %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "floorplateDisplaPricePopover","data-content" => " "}
                           %span#propertyDetailNameText
                             Switching this will change whether or not pricing options is displayed on all products (Pynwheel Touch Map, Pynwheel Tour pricing, and Pynwheel Map).
+                      
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         .TriSea-technologies-Switch
                           %span.pr-15 No
@@ -162,6 +170,7 @@
                         %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "floorplateDisplaPricePopover","data-content" => " "}
                           %span#propertyDetailNameText
                             Switching this will change whether or not pricing is displayed on the interactive property map and in the floor plan gallery.
+                      
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         .TriSea-technologies-Switch
                           %span.pr-15 No
@@ -169,12 +178,19 @@
                           %label.label-primary{:for => "display_rent"}
                           %span.pl-15 Yes
                     
+                    .form-group{ style: "display: #{'none' if @community.display_rent}" }
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                        Pricing Message (Optional)
+                      .col-sm-12.col-lg-6.col-md-6.col-xs-12
+                        = text_field_tag :pricing_message, @community.pricing_message, class: "form-control apartment-setting-field", placeholder: "Enter pricing message"
+
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                         Display Pricing Options (Matrix)
                         %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "floorplateDisplaPricePopover","data-content" => " "}
                           %span#propertyDetailNameText
                             Switching this will change whether or not pricing options is displayed on all products (Pynwheel Touch Map, Pynwheel Tour pricing, and Pynwheel Map).
+                      
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         .TriSea-technologies-Switch
                           %span.pr-15 No

@@ -142,7 +142,7 @@ module DweloDevicesHelper
   def get_current_tour(time_param)
     current_datetime = time_param.to_datetime.strftime('%d/%m/%Y %l:%M %p')
     current_time = current_datetime.to_datetime.strftime('%l:%M %p')
-    current_date = current_datetime.to_datetime.strAftime('%d/%m/%Y')
+    current_date = current_datetime.to_datetime.strftime('%d/%m/%Y')
     current_tour = SchedualTour.new(tour_date: current_date, tour_time: current_time)
   end
 

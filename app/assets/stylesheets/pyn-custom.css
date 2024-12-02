@@ -6031,11 +6031,11 @@ html, .add-fav-body {
       left: 0px;
       background: #e8e9e9;
       z-index: 999;
-      padding: 0;
+      padding: 10;
       top: 55px;
       margin: auto;
       display: none;
-      text-align: center;
+      /* text-align: center; */
   }
   .mobile-filter-mega-menu .selectable-field {
       width: 45%;
@@ -7375,6 +7375,10 @@ span.to-input {
 
 .locks-field-width {
     width: 200px !important;
+}
+
+.pricing_filter_visibility {
+    display: none !important;
 }
 
 .camera-icon {

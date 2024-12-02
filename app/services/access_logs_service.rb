@@ -36,4 +36,13 @@ class AccessLogsService
       response: err_response
     )
   end
+
+  def create_crm_logs tour_user_id, community_id, payload, response
+    AccessLog.create!( 
+      tour_user_id: tour_user_id,
+      community_id: community_id, 
+      payload: payload, 
+      response: response, 
+    )
+  end
 end
