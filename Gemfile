@@ -5,7 +5,7 @@ gem "letter_opener", group: :development
 gem 'rest-client'
 gem 'browser'
 gem 'rack-cors', '~> 1.1'
-gem 'rails', '~> 8.0.0.rc2'
+gem 'rails', '~> 7.1'
 # gem 'rails', '~> 7.2.0'
 gem 'rack', '~> 2.2.2'
 gem 'stripe'
