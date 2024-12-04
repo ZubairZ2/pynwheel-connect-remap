@@ -122,8 +122,8 @@ module Api
         end
 
         def check_lock_access
-          counter = check_lock_access_counter(@tour_user)
-          puts "1 - Counter #{counter}"
+          # counter = check_lock_access_counter(@tour_user)
+          # puts "1 - Counter #{counter}"
           puts "Igloohome: #{@tour_user.igloohome_status}"
           puts "Dwelo: #{@tour_user.dwelo_status}"
           puts "EdgeState: #{@tour_user.edge_state_status}"
@@ -133,11 +133,11 @@ module Api
           if ( @community.enable_locks && (params[:tour_type] == "self_tour" || params[:tour_type] == "guided_tour"))
             if ((@community.multiple_locks_provider.include?("Igloohome") && (@tour_user.igloohome_status == "in progress")) || (@community.multiple_locks_provider.include?("Dwelo") && (@tour_user.dwelo_status == "in progress")) || (@community.multiple_locks_provider.include?("EdgeState")  && (@tour_user.edge_state_status == "in progress")) || (@community.multiple_locks_provider.include?("Latch")  && (@tour_user.latch_status == "in progress")) || (@community.multiple_locks_provider.include?("Zerv")  && (@tour_user.zerv_status == "in progress")))
               puts "Lock Condition Fail"
-              puts "Counter #{counter}" 
+              # puts "Counter #{counter}" 
               render :json=> {success: "false", completed: false}
             else
               puts "Lock Condition True"
-              puts "Counter #{counter}" 
+              # puts "Counter #{counter}" 
               render :json=> {success: "true", completed: true}
             end
           else
