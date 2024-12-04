@@ -702,7 +702,7 @@ module Api
           community = Community.find params[:id]
           tu = TourUser.find params[:tour_user_id]
           counter = check_lock_access_counter(tu)
-          if (params[:tour_type] == "self_tour" && tu.tour_type != "guided_tour" && community.enable_locks)
+          if ((params[:tour_type] == "self_tour" || params[:tour_type] == "guided_tour") && community.enable_locks)
             if ((community.multiple_locks_provider.include?("Igloohome") && (tu.igloohome_status == "in progress")) || (community.multiple_locks_provider.include?("Dwelo") && (tu.dwelo_status == "in progress")) || (community.multiple_locks_provider.include?("EdgeState")  && (tu.edge_state_status == "in progress")) || (community.multiple_locks_provider.include?("Latch")  && (tu.latch_status == "in progress")) || (community.multiple_locks_provider.include?("Zerv")  && (tu.zerv_status == "in progress")) && !(counter >= 20))
               render :json=> {success: "false", completed: false}
             else
