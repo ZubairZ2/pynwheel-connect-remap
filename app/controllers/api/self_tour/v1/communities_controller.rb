@@ -129,9 +129,9 @@ module Api
           puts "EdgeState: #{@tour_user.edge_state_status}"
           puts "Latch: #{@tour_user.latch_status}"
           puts "Zerv: #{@tour_user.zerv_status}"
-
+          # && !(counter >= 20)
           if ( @community.enable_locks && (params[:tour_type] == "self_tour" || params[:tour_type] == "guided_tour"))
-            if ((@community.multiple_locks_provider.include?("Igloohome") && (@tour_user.igloohome_status == "in progress")) || (@community.multiple_locks_provider.include?("Dwelo") && (@tour_user.dwelo_status == "in progress")) || (@community.multiple_locks_provider.include?("EdgeState")  && (@tour_user.edge_state_status == "in progress")) || (@community.multiple_locks_provider.include?("Latch")  && (@tour_user.latch_status == "in progress")) || (@community.multiple_locks_provider.include?("Zerv")  && (@tour_user.zerv_status == "in progress")) && !(counter >= 20))
+            if ((@community.multiple_locks_provider.include?("Igloohome") && (@tour_user.igloohome_status == "in progress")) || (@community.multiple_locks_provider.include?("Dwelo") && (@tour_user.dwelo_status == "in progress")) || (@community.multiple_locks_provider.include?("EdgeState")  && (@tour_user.edge_state_status == "in progress")) || (@community.multiple_locks_provider.include?("Latch")  && (@tour_user.latch_status == "in progress")) || (@community.multiple_locks_provider.include?("Zerv")  && (@tour_user.zerv_status == "in progress")))
               puts "Lock Condition Fail"
               puts "Counter #{counter}" 
               render :json=> {success: "false", completed: false}
