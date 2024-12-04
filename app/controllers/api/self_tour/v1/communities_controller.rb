@@ -124,7 +124,7 @@ module Api
         def check_lock_access
           counter = check_lock_access_counter(@tour_user)
 
-          if (params[:tour_type] == "self_tour" && @tour_user.tour_type != "guided_tour" && @community.enable_locks)
+          if ( @community.enable_locks && (params[:tour_type] == "self_tour" || params[:tour_type] == "guided_tour"))
             if ((@community.multiple_locks_provider.include?("Igloohome") && (@tour_user.igloohome_status == "in progress")) || (@community.multiple_locks_provider.include?("Dwelo") && (@tour_user.dwelo_status == "in progress")) || (@community.multiple_locks_provider.include?("EdgeState")  && (@tour_user.edge_state_status == "in progress")) || (@community.multiple_locks_provider.include?("Latch")  && (@tour_user.latch_status == "in progress")) || (@community.multiple_locks_provider.include?("Zerv")  && (@tour_user.zerv_status == "in progress")) && !(counter >= 20))
               render :json=> {success: "false", completed: false}
             else
