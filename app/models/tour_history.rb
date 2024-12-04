@@ -40,11 +40,11 @@ class TourHistory < ApplicationRecord
         @mail_content = ["tour_has_ended", "#{self.tour_user.name.titleize} has completed a tour of #{fetch_property_name(community.name)}}"] #get_alert_message('tour_has_ended')
         url = Rails.env.production? ? "https://pynwheelapp.com/communities/#{community.id}/tour%5Fusers" : "https://pynwheel-staging.herokuapp.com/communities/#{community.id}/tour%5Fusers"
 
-        if touruser.tour_type == "self_tour" && (scheduled_tour&.property_tour_type.present? && scheduled_tour.property_tour_type == "scheduled_tour" )         
+        if (scheduled_tour&.tour_type == "self_tour" || scheduled_tour&.tour_type == "guided_tour") && (scheduled_tour&.property_tour_type.present? && scheduled_tour.property_tour_type == "scheduled_tour" )         
           if scheduled_tour.present? && is_tour_on_time(scheduled_tour, community)
             complete_scheduled_tour(scheduled_tour)
           end
-        end 
+        end
 
         if touruser.tour_type == "virtual_tour" && (scheduled_tour&.property_tour_type.present? && (scheduled_tour.property_tour_type == "remote_tour" || scheduled_tour.property_tour_type == "unscheduled_self_tour"))
           complete_scheduled_tour(scheduled_tour)
