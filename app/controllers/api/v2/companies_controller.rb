@@ -1,6 +1,5 @@
 class Api::V2::CompaniesController < Api::V2::ApiApplicationController
-  require_relative 'helpers/credentials_manager'
-  include CredentialsManager
+  include Api::V2::Helpers::CredentialsManager
 
   before_action :doorkeeper_authorize!
   before_action :check_required_credentials, only: :import_data_credentials
