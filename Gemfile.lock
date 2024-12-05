@@ -14,6 +14,7 @@ GEM
       activesupport (= 7.2.2)
       nio4r (~> 2.0)
       websocket-driver (>= 0.6.1)
+      zeitwerk (~> 2.6)
     actionmailbox (7.2.2)
       actionpack (= 7.2.2)
       activejob (= 7.2.2)
@@ -2067,6 +2068,7 @@ GEM
       rackup (>= 1.0.0)
       rake (>= 12.2)
       thor (~> 1.0, >= 1.2.2)
+      zeitwerk (~> 2.6)
     rake (13.2.1)
     rate_throttle_client (0.1.2)
     rb-fsevent (0.11.2)
@@ -2235,6 +2237,7 @@ GEM
     write_xlsx (1.12.1)
       nkf
       rubyzip (>= 1.0.0)
+    zeitwerk (2.7.1)
     ziptz (5.1.2)
       sqlite3 (~> 2.0)
 
