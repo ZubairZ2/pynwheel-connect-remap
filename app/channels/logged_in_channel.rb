@@ -1,4 +1,4 @@
-# class LoggedInChannel < ApplicationCable::Channel
+class LoggedInChannel < ApplicationCable::Channel
 #     def subscribed
 #         user_activated
 
@@ -74,4 +74,4 @@
 #         end
 #     end
     
-# end
+end
