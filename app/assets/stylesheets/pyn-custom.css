@@ -1676,7 +1676,7 @@ element.style {}
 }
 
 .TriSea-technologies-Switch>label::before {
-    background: rgb(0, 0, 0);
+    background: rgb(0, 0, 0, 0);
     box-shadow: inset 0px 0px 10px rgba(0, 0, 0, 0.5);
     border-radius: 8px;
     content: '';
@@ -1689,7 +1689,7 @@ element.style {}
 }
 
 .TriSea-technologies-Switch>label::after {
-    background: rgb(255, 255, 255);
+    background: rgb(255, 255, 255, 1);
     border-radius: 16px;
     box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
     content: '';
@@ -2587,7 +2587,7 @@ img-responsive {
 }
 
 .left-side {
-    background: rgb(232, 233, 233);
+    background: rgb(232, 233, 233, 1);
 	width: 25%;
     height: 100%;
     position: relative;
@@ -2633,7 +2633,7 @@ img-responsive {
 
 #tab {
     display: none;
-    border-bottom: 1px solid rgb(206, 206, 206);
+    border-bottom: 1px solid rgb(206, 206, 206, 1);
 }
 
 .tablinks {
@@ -6071,7 +6071,7 @@ html, .add-fav-body {
 }
 
 .c-modal-sidebar-description .c-m-description {
-    border-bottom: 1px solid rgb(225, 225, 225);
+    border-bottom: 1px solid rgb(225, 225, 225, 1);
 }
 
 /*ul.add-fav-options {*/
@@ -6169,9 +6169,9 @@ ul.add-fav-options {
         overflow-wrap: break-word;
         overflow-y: auto;
         line-height: 0.5;
-        background-color: rgb(236, 236, 236);
+        background-color: rgb(236, 236, 236, 1);
         border-radius: 5px;
-        border-bottom: 1px solid rgb(225, 225, 225);
+        border-bottom: 1px solid rgb(225, 225, 225, 1);
     }
 }
 
