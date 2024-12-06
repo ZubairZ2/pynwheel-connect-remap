@@ -1902,13 +1902,28 @@ function display2DMap() {
     }
 
     handleViewportChange(windowWidth);
-    $(".popup-title").css("background-color", $(".fa-map-marker-alt")[0].style.color);
-    $(".popup-arrow").css("background-color", $(".fa-map-marker-alt")[0].style.color);
+    let markerColor = $(".fa-map-marker-alt")[0].style.color;
+    markerColor =  isColorWhite(markerColor) ? "grey" : markerColor
+    
+    $(".popup-title").css("background-color", markerColor);
+    $(".popup-arrow").css("background-color", markerColor);
 
     $(".custom-select").change(()=> {
       renderChangedUnits();
     })
   }
+}
+
+function isColorWhite(color) {
+  const normalizedColor = color.toLowerCase();
+
+  return (
+    normalizedColor === "#ffffff" ||
+    normalizedColor === "#fff" ||
+    normalizedColor === "white" ||
+    normalizedColor === "rgb(255, 255, 255)" ||
+    normalizedColor === "rgba(255, 255, 255, 1)"
+  );
 }
 
 function handleViewportChange() {
