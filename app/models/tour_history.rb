@@ -74,7 +74,7 @@ class TourHistory < ApplicationRecord
         visited_stops_data = stop_marketing_names_visited_by_user
 
         FunnelService.new(scheduled_tour).update_appointment_status("complete") if community.is_funnel_community?
-        KnockService.new(scheduled_tour).create_knock_visit(visited_stops_data, self.left) if community.is_knock_community?
+        KnockService.new(scheduled_tour.community).create_knock_visit(scheduled_tour, visited_stops_data, self.left) if community.is_knock_community?
         upload_rent_cafe_leads_data(community, scheduled_tour, visited_stops_data)
 
         community.save
@@ -82,7 +82,7 @@ class TourHistory < ApplicationRecord
 
       if self.abandoned_tour_at_stop.present?
         FunnelService.new(scheduled_tour).update_appointment_status("complete") if community.is_funnel_community?
-        KnockService.new(scheduled_tour).create_knock_visit(visited_stops_data, get_current_time(community)) if community.is_knock_community?
+        KnockService.new(scheduled_tour.community).create_knock_visit(scheduled_tour, visited_stops_data, get_current_time(community)) if community.is_knock_community?
         upload_rent_cafe_leads_data(community, scheduled_tour, visited_stops_data)
 
         save_salesforce_feedback_data(community, touruser) if community.is_salesforce_community?

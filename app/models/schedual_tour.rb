@@ -90,7 +90,7 @@ class SchedualTour < ApplicationRecord
   end
 
   def cancel_knock_appointment
-    KnockService.new(self).cancel_knock_appointment
+    KnockService.new(self.community).cancel_knock_appointment(self)
   end
 
   def cancel_yardi_tour

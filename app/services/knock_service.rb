@@ -1,28 +1,26 @@
 class KnockService < BaseService
   include KnockApisHelper
 
-  def initialize scheduled_tour
-    @scheduled_tour = scheduled_tour
-    @tour_user = @scheduled_tour&.tour_user
-    @community = @scheduled_tour&.community
+  def initialize community
+    @community = community
     @crm_credentials = @community&.crm_credential
     @timezone = @community&.get_time_zone(DEFAULT_TIME_ZONE)
   end
  
-  def create_knock_prospect
-    knock_prospect_response = create_prospect(knock_prospect_payload, get_knock_community_id, get_knock_company_id) if is_knock_crm
+  def create_knock_prospect scheduled_tour
+    knock_prospect_response = create_prospect(knock_prospect_payload(scheduled_tour), get_knock_community_id, get_knock_company_id) if is_knock_crm
     display_logs("Create Prospect", knock_prospect_response)
     add_knock_prospect_id(knock_prospect_response["payload"]["id"]) if prospect_created(knock_prospect_response)
   end
 
-  def create_knock_appointment
-    knock_appointment_response = create_appointment(knock_appointment_payload, get_knock_community_id, get_knock_company_id) if is_knock_crm
+  def create_knock_appointment scheduled_tour
+    knock_appointment_response = create_appointment(knock_appointment_payload(scheduled_tour), get_knock_community_id, get_knock_company_id) if is_knock_crm
     display_logs("Create Appointment", knock_appointment_response)
     add_knock_appointment_id(knock_appointment_response["payload"]["appointment"]["id"]) if appointment_created(knock_appointment_response)
   end
 
-  def cancel_knock_appointment
-    cancel_appointment_response = cancel_appointment(@scheduled_tour.knock_appointment_id, get_knock_community_id, get_knock_company_id)  if @scheduled_tour.knock_appointment_id.present?
+  def cancel_knock_appointment scheduled_tour
+    cancel_appointment_response = cancel_appointment(scheduled_tour.knock_appointment_id, get_knock_community_id, get_knock_company_id)  if scheduled_tour.knock_appointment_id.present?
     display_logs("Cancel Appointment", cancel_appointment_response)
     add_knock_appointment_id(nil) if appointment_canceled(cancel_appointment_response)
   end
@@ -46,17 +44,17 @@ class KnockService < BaseService
     is_slot_present_in_self_guided_tour(available_slots, date, time)
   end
 
-  def knock_crm reschedule
-    if is_knock_crm && @scheduled_tour.property_tour_type.present?
-      cancel_knock_appointment if reschedule && @scheduled_tour.property_tour_type === "scheduled_tour"
-      create_knock_prospect unless @scheduled_tour.knock_prospect_id.present?
-      create_knock_appointment if @scheduled_tour.property_tour_type === "scheduled_tour"
+  def knock_crm scheduled_tour, reschedule
+    if is_knock_crm && scheduled_tour.property_tour_type.present?
+      cancel_knock_appointment(scheduled_tour) if reschedule && scheduled_tour.property_tour_type === "scheduled_tour"
+      create_knock_prospect(scheduled_tour) unless scheduled_tour.knock_prospect_id.present?
+      create_knock_appointment(scheduled_tour) if scheduled_tour.property_tour_type === "scheduled_tour"
     end
   end
 
-  def create_knock_visit visited_stops, visit_time
-    if is_knock_crm && @scheduled_tour.property_tour_type.present?
-      knock_visit_response = create_visit(knock_visit_payload(visited_stops, visit_time), get_knock_community_id, get_knock_company_id)
+  def create_knock_visit scheduled_tour, visited_stops, visit_time
+    if is_knock_crm && scheduled_tour.property_tour_type.present?
+      knock_visit_response = create_visit(knock_visit_payload(scheduled_tour, visited_stops, visit_time), get_knock_community_id, get_knock_company_id)
       display_logs("Create Knock Visit", knock_visit_response)
     end
   end
@@ -156,12 +154,12 @@ class KnockService < BaseService
     available_time_slots
   end
 
-  def add_knock_appointment_id appointment_id
-    @scheduled_tour.update_attributes(knock_appointment_id: appointment_id)
+  def add_knock_appointment_id scheduled_tour, appointment_id
+    scheduled_tour.update_attributes(knock_appointment_id: appointment_id)
   end
 
-  def add_knock_prospect_id prospect_id
-    @scheduled_tour.update_attributes(knock_prospect_id: prospect_id)
+  def add_knock_prospect_id scheduled_tour, prospect_id
+    scheduled_tour.update_attributes(knock_prospect_id: prospect_id)
   end
 
   def is_knock_crm
@@ -180,16 +178,16 @@ class KnockService < BaseService
     ENV["KNOCK_SMS_CONSENT_URL"]
   end
 
-  def prospect_move_in_date
-    @scheduled_tour&.desired_move_in_date&.strftime("%F").to_s
+  def prospect_move_in_date scheduled_tour
+    scheduled_tour&.desired_move_in_date&.strftime("%F").to_s
   end
   
   def sms_consent_disclaimer
     "I consent to appointment updates via SMS communication for my Pynwheel Tour using Pynwheel mobile app."
   end
 
-  def is_self_guided_tour
-    case @scheduled_tour.tour_type
+  def is_self_guided_tour scheduled_tour
+    case scheduled_tour.tour_type
     when "guided_tour"
       false
     when "self_tour"
@@ -199,8 +197,8 @@ class KnockService < BaseService
     end
   end
 
-  def knock_tour_type
-    case @scheduled_tour.tour_type
+  def knock_tour_type scheduled_tour
+    case scheduled_tour.tour_type
     when "guided_tour"
       "IN_PERSON"
     when "self_tour"
@@ -210,24 +208,24 @@ class KnockService < BaseService
     end  
   end
 
-  def desire_bedrooms
-    if @scheduled_tour.desired_bedroom.present?
-      if@scheduled_tour.desired_bedroom.eql?(0 || 1)
+  def desire_bedrooms scheduled_tour
+    if scheduled_tour.desired_bedroom.present?
+      if scheduled_tour.desired_bedroom.eql?(0 || 1)
         ["1_BEDROOM"]
-      elsif @scheduled_tour.desired_bedroom > 2
+      elsif scheduled_tour.desired_bedroom > 2
         ["3_OR_MORE_BEDROOMS"]
       else
-        ["#{@scheduled_tour.desired_bedroom}_BEDROOMS"]
+        ["#{scheduled_tour.desired_bedroom}_BEDROOMS"]
       end
     else
       []
     end
   end
 
-  def knock_message
-    case @scheduled_tour.property_tour_type
+  def knock_message scheduled_tour
+    case scheduled_tour.property_tour_type
     when "scheduled_tour"
-      @scheduled_tour.tour_type === "self_tour" ? "Pynwheel scheduled self-tour. Scheduled on: #{knock_tour_date_time}" : "Pynwheel guided in-person tour. Scheduled on: #{knock_tour_date_time}"
+      scheduled_tour.tour_type === "self_tour" ? "Pynwheel scheduled self-tour. Scheduled on: #{knock_tour_date_time(scheduled_tour)}" : "Pynwheel guided in-person tour. Scheduled on: #{knock_tour_date_time(scheduled_tour)}"
     when "unscheduled_self_tour"
       "Pynwheel unscheduled self-tour: Prospect will visit at his/her own convenience during property visiting hours and appointment will be created right after the tour and also visit will be registered."
     when "remote_tour"
@@ -235,71 +233,71 @@ class KnockService < BaseService
     end
   end
 
-  def get_knock_appointment_id
-    @scheduled_tour.knock_appointment_id || create_knock_appointment()
+  def get_knock_appointment_id scheduled_tour
+    scheduled_tour.knock_appointment_id || create_knock_appointment()
   end
 
-  def get_knock_prospect_id
-    @scheduled_tour.knock_prospect_id || create_knock_prospect()
+  def get_knock_prospect_id scheduled_tour
+    scheduled_tour.knock_prospect_id || create_knock_prospect()
   end
 
   def get_knock_visit_time visit_time
     visit_time.in_time_zone(@timezone).strftime("%FT%T%:z").to_s
   end
 
-  def knock_visit_payload visited_stops, visit_time
+  def knock_visit_payload scheduled_tour, visited_stops, visit_time
     {
-      "appointmentId": get_knock_appointment_id,
-      "prospectId": get_knock_prospect_id,
+      "appointmentId": get_knock_appointment_id(scheduled_tour),
+      "prospectId": get_knock_prospect_id(scheduled_tour),
       "visitTime": get_knock_visit_time(visit_time),
-      "isSelfGuided": is_self_guided_tour,
+      "isSelfGuided": is_self_guided_tour(scheduled_tour),
       "sourceTitle": "Property Website",
       "unitNames": visited_stops
     }
   end
 
-  def knock_prospect_payload
+  def knock_prospect_payload scheduled_tour
     {
       "communityId": get_knock_community_id,
-      "firstName": @tour_user.first_name,
-      "lastName": @tour_user.last_name,
-      "email": @tour_user.email,
-      "phone": @tour_user.phone_number,
+      "firstName": scheduled_tour&.tour_user.first_name,
+      "lastName": scheduled_tour&.tour_user.last_name,
+      "email": scheduled_tour&.tour_user.email,
+      "phone": scheduled_tour&.tour_user.phone_number,
       "address": @community.address,
       "city": @community.city,
       "state": @community&.state.slice(0, 2).upcase,
       "zip": @community.zip,
       "autorespond": true,
       "sourceTitle": "Property Website",
-      "moveDate": prospect_move_in_date,
+      "moveDate": prospect_move_in_date(scheduled_tour),
       "bedrooms": desire_bedrooms,
       "occupants": 1,
       "leaseTermMonths": 12,
       "minBudget": 1000,
       "maxBudget": 2000,
-      "message": knock_message, 
+      "message": knock_message(scheduled_tour),
       "firstContactType": "internet",
       "smsConsent": true,
       "smsConsentDisclaimer": sms_consent_disclaimer,
       "smsConsentUrl": get_knock_consent_url,
-      "prospectIpAddress": @scheduled_tour.knock_prospect_ip_address
+      "prospectIpAddress": scheduled_tour.knock_prospect_ip_address
     }
   end
 
-  def knock_appointment_payload
+  def knock_appointment_payload scheduled_tour
     {
       "communityId": get_knock_community_id,
       "requestedTimes": [
         {
-          "startTime": knock_tour_date_time
+          "startTime": knock_tour_date_time(scheduled_tour)
         }
       ],
       "profile": {
-        "firstName": @tour_user.first_name,
-        "lastName": @tour_user.last_name,
-        "email": @tour_user.email,
-        "phone": @tour_user.phone_number,
-        "moveDate": prospect_move_in_date,
+        "firstName": scheduled_tour&.tour_user.first_name,
+        "lastName": scheduled_tour&.tour_user.last_name,
+        "email": scheduled_tour&.tour_user.email,
+        "phone": scheduled_tour&.tour_user.phone_number,
+        "moveDate": prospect_move_in_date(scheduled_tour),
         "bedrooms": desire_bedrooms,
         "occupants": 1,
         "leaseTermMonths": 12,
@@ -314,8 +312,8 @@ class KnockService < BaseService
     }
   end
 
-  def knock_tour_date_time
-    tour_datetime = (@scheduled_tour.tour_date.to_s + " " + @scheduled_tour.tour_time.strftime("%I:%M%p")).in_time_zone(@timezone) if @scheduled_tour.tour_date.present? && @scheduled_tour.tour_time.present?
+  def knock_tour_date_time scheduled_tour
+    tour_datetime = (scheduled_tour.tour_date.to_s + " " + scheduled_tour.tour_time.strftime("%I:%M%p")).in_time_zone(@timezone) if scheduled_tour.tour_date.present? && scheduled_tour.tour_time.present?
     tour_datetime = tour_datetime.strftime("%FT%T%:z").to_s if tour_datetime.present?
     tour_datetime || Time.now.in_time_zone(@timezone).strftime("%FT%T%:z").to_s
   end
