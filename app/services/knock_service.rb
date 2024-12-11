@@ -29,8 +29,11 @@ class KnockService < BaseService
     self_guided_available_time_slots = get_community_available_times(true, get_knock_community_id, get_knock_company_id) 
     in_person_available_time_slots = get_community_available_times(false, get_knock_community_id, get_knock_company_id)
     
-    self_guided_slots = formate_time_slots_array_to_hash(self_guided_available_time_slots["payload"]["acceptableTimes"]) if self_guided_available_time_slots.present? && self_guided_available_time_slots["payload"]["acceptableTimes"].present?
-    in_person_slots = formate_time_slots_array_to_hash(in_person_available_time_slots["payload"]["acceptableTimes"]) if in_person_available_time_slots.present? && in_person_available_time_slots["payload"]["acceptableTimes"].present?
+    self_guided_slots = self_guided_available_time_slots["payload"]["acceptableTimes"] rescue nil
+    self_guided_slots = formate_time_slots_array_to_hash(self_guided_slots) if self_guided_slots.present?
+    
+    in_person_slots = in_person_available_time_slots["payload"]["acceptableTimes"] rescue nil
+    in_person_slots = formate_time_slots_array_to_hash(in_person_slots) if in_person_slots.present?
 
     self_guided_slots = get_filtered_self_guided_slots(self_guided_slots)
     in_person_slots = get_filtered_in_person_slots(in_person_slots)

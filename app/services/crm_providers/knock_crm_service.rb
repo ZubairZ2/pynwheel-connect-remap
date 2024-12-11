@@ -1,5 +1,5 @@
 module CrmProviders
-  class KnockService < CrmProviders::BaseService
+  class KnockCrmService < CrmProviders::BaseService
 
     def update_property_crm_data
       fetch_discovery_sources
