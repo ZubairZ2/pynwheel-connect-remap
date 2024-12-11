@@ -66,8 +66,8 @@ class SchedulerWidget::WidgetsController < ApplicationController
     set_yardi_time_slots()
     
     @is_knock_community = @schedule_tour.community.is_knock_community?
-    @knock_available_slots =  @is_knock_community ? KnockService.new(@schedule_tour.community).available_slots : {}
-    @knock_discovery_sources = @is_knock_community ? KnockService.new(@schedule_tour.community).get_discovery_sources : []
+    @knock_available_slots =  @is_knock_community ? @schedule_tour&.community&.crm_time_slot&.slots : {}
+    @knock_discovery_sources = @is_knock_community ? @schedule_tour&.community&.crm_discovery_source&.sources : []
     @knock_selected_discovery_source = @is_knock_community ? (@schedule_tour&.knock_prospect_discover_source.present? ? @knock_discovery_sources.map{|s| s if s == @schedule_tour&.knock_prospect_discover_source }&.compact&.uniq[0] : "Select an option" ) : ""
     
     @is_funnel_community = @schedule_tour.community.is_funnel_community?

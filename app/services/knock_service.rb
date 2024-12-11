@@ -9,19 +9,19 @@ class KnockService < BaseService
  
   def create_knock_prospect scheduled_tour
     knock_prospect_response = create_prospect(knock_prospect_payload(scheduled_tour), get_knock_community_id, get_knock_company_id) if is_knock_crm
-    display_logs("Create Prospect", knock_prospect_response)
+    create_access_log(scheduled_tour, knock_prospect_payload(scheduled_tour), knock_prospect_response)
     add_knock_prospect_id(knock_prospect_response["payload"]["id"]) if prospect_created(knock_prospect_response)
   end
 
   def create_knock_appointment scheduled_tour
     knock_appointment_response = create_appointment(knock_appointment_payload(scheduled_tour), get_knock_community_id, get_knock_company_id) if is_knock_crm
-    display_logs("Create Appointment", knock_appointment_response)
+    create_access_log(scheduled_tour, knock_appointment_payload(scheduled_tour), knock_appointment_response)
     add_knock_appointment_id(knock_appointment_response["payload"]["appointment"]["id"]) if appointment_created(knock_appointment_response)
   end
 
   def cancel_knock_appointment scheduled_tour
     cancel_appointment_response = cancel_appointment(scheduled_tour.knock_appointment_id, get_knock_community_id, get_knock_company_id)  if scheduled_tour.knock_appointment_id.present?
-    display_logs("Cancel Appointment", cancel_appointment_response)
+    create_access_log(scheduled_tour, scheduled_tour.knock_appointment_id, cancel_appointment_response)
     add_knock_appointment_id(nil) if appointment_canceled(cancel_appointment_response)
   end
 
@@ -41,7 +41,8 @@ class KnockService < BaseService
   end
 
   def knock_available_tour_types date, day, time
-    is_slot_present_in_self_guided_tour(available_slots, date, time)
+    slots = @community&.crm_time_slot&.slots || []
+    is_slot_present_in_self_guided_tour(slots, date, time)
   end
 
   def knock_crm scheduled_tour, reschedule
@@ -55,7 +56,7 @@ class KnockService < BaseService
   def create_knock_visit scheduled_tour, visited_stops, visit_time
     if is_knock_crm && scheduled_tour.property_tour_type.present?
       knock_visit_response = create_visit(knock_visit_payload(scheduled_tour, visited_stops, visit_time), get_knock_community_id, get_knock_company_id)
-      display_logs("Create Knock Visit", knock_visit_response)
+      create_access_log(scheduled_tour, knock_visit_payload(scheduled_tour, visited_stops, visit_time), knock_visit_response)
     end
   end
 
@@ -323,5 +324,11 @@ class KnockService < BaseService
     puts "----------------------------- #{msg} --------------------------"
     puts resp
     puts "*************"*50
+  end
+
+  def create_access_log(scheduled_tour, payload, response)
+    AccessLogsService.new.create_crm_logs(
+      scheduled_tour&.tour_user&.id, @community&.id, payload, response
+    )
   end
 end
