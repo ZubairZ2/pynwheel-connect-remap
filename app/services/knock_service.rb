@@ -127,8 +127,8 @@ class KnockService < BaseService
     tour_type = []
     date = date.gsub('/',"-")
 
-    is_self_guided_tour = knock_slots[:self_guided_available_time_slots][date]
-    is_in_person_tour = knock_slots[:in_person_available_time_slots][date]
+    is_self_guided_tour = knock_slots["self_guided_available_time_slots"][date]
+    is_in_person_tour = knock_slots["in_person_available_time_slots"][date]
 
     if is_self_guided_tour.present? && is_self_guided_tour.include?(time)
       tour_type << ["guided_tour", "Guided Tour"]
@@ -274,7 +274,7 @@ class KnockService < BaseService
       "autorespond": true,
       "sourceTitle": "Property Website",
       "moveDate": prospect_move_in_date(scheduled_tour),
-      "bedrooms": desire_bedrooms,
+      "bedrooms": desire_bedrooms(scheduled_tour),
       "occupants": 1,
       "leaseTermMonths": 12,
       "minBudget": 1000,
@@ -302,7 +302,7 @@ class KnockService < BaseService
         "email": scheduled_tour&.tour_user.email,
         "phone": scheduled_tour&.tour_user.phone_number,
         "moveDate": prospect_move_in_date(scheduled_tour),
-        "bedrooms": desire_bedrooms,
+        "bedrooms": desire_bedrooms(scheduled_tour),
         "occupants": 1,
         "leaseTermMonths": 12,
         "minBudget": 1000,
@@ -312,7 +312,7 @@ class KnockService < BaseService
       "smsConsentDisclaimer": sms_consent_disclaimer,
       "smsConsentUrl": get_knock_consent_url,
       "sourceTitle": "Property Website",
-      "tourType": knock_tour_type
+      "tourType": knock_tour_type(scheduled_tour)
     }
   end
 
@@ -320,13 +320,6 @@ class KnockService < BaseService
     tour_datetime = (scheduled_tour.tour_date.to_s + " " + scheduled_tour.tour_time.strftime("%I:%M%p")).in_time_zone(@timezone) if scheduled_tour.tour_date.present? && scheduled_tour.tour_time.present?
     tour_datetime = tour_datetime.strftime("%FT%T%:z").to_s if tour_datetime.present?
     tour_datetime || Time.now.in_time_zone(@timezone).strftime("%FT%T%:z").to_s
-  end
-
-  def display_logs msg, resp
-    puts "*************"*50
-    puts "----------------------------- #{msg} --------------------------"
-    puts resp
-    puts "*************"*50
   end
 
   def create_access_log(scheduled_tour, payload, response)
