@@ -132,11 +132,13 @@ class SchedualToursController < ApplicationController
         new_tour.delete
       end
 
-      if property_tour_type === "scheduled_tour"
+      if schedual_tour&.property_tour_type === "scheduled_tour"
         book_yardi_appointment(schedual_tour, previous_tour)
-        book_knock_appointment(schedual_tour, is_rescheduled)
         FunnelService.new(schedual_tour).funnel_crm(is_rescheduled)
       end
+
+      book_knock_appointment(schedual_tour, is_rescheduled)
+
 
       appointment_time = (schedual_tour.tour_date.to_s +  " " + schedual_tour.tour_time.to_s.split(' ')[1]).to_datetime if schedual_tour.tour_date.present? and schedual_tour.tour_time.present?
       marketing_source = params[:marketing_source].present? ? params[:marketing_source] : "" rescue  ""
@@ -357,9 +359,12 @@ class SchedualToursController < ApplicationController
     @schedual_tour.update_attributes(knock_prospect_discover_source: params[:knock_prospect_discover_source]) if @schedual_tour.community.is_knock_community? && params[:knock_prospect_discover_source].present?
     @schedual_tour.update_attributes(rentcafe_discover_source: params[:rentcafe_discover_source]) if @schedual_tour.community.use_yardi_as_lead? && params[:rentcafe_discover_source].present?
 
-    book_yardi_appointment(@schedual_tour, previous_tour)
+    if schedual_tour&.property_tour_type === "scheduled_tour"
+      book_yardi_appointment(@schedual_tour, previous_tour)
+      FunnelService.new(@schedual_tour).funnel_crm(true)
+    end
+    
     book_knock_appointment(@schedual_tour, true)
-    FunnelService.new(@schedual_tour).funnel_crm(true)
     
     @schedual_tour.update_attributes(tour_date: date, tour_time: tour_time, day_diff: day_diff)
     

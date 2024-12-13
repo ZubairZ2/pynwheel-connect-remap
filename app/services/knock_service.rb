@@ -35,8 +35,8 @@ class KnockService < BaseService
     in_person_slots = in_person_available_time_slots["payload"]["acceptableTimes"] rescue nil
     in_person_slots = formate_time_slots_array_to_hash(in_person_slots) if in_person_slots.present?
 
-    self_guided_slots = get_filtered_self_guided_slots(self_guided_slots)
-    in_person_slots = get_filtered_in_person_slots(in_person_slots)
+    # self_guided_slots = get_filtered_self_guided_slots(self_guided_slots)
+    # in_person_slots = get_filtered_in_person_slots(in_person_slots)
 
     tour_available_date = get_tour_available_dates(self_guided_slots, in_person_slots) if (self_guided_slots.present? || in_person_slots.present?)
   
@@ -70,46 +70,46 @@ class KnockService < BaseService
 
   private
 
-  def get_filtered_in_person_slots slots
-    tour_setting = @community.community_tour.tour_setting
-    allow_guided_tour = tour_setting.allow_guided_tour
-    guided_tour_data = (allow_guided_tour && @community.guided_opening_hours.present?) ? @community.guided_opening_hours.pluck(:day, :opening_time, :closing_time) : []
-    calculate_available_time_slots_hash(slots, guided_tour_data)
-  end
+  # def get_filtered_in_person_slots slots
+  #   tour_setting = @community.community_tour.tour_setting
+  #   allow_guided_tour = tour_setting.allow_guided_tour
+  #   guided_tour_data = (allow_guided_tour && @community.guided_opening_hours.present?) ? @community.guided_opening_hours.pluck(:day, :opening_time, :closing_time) : []
+  #   calculate_available_time_slots_hash(slots, guided_tour_data)
+  # end
 
-  def get_filtered_self_guided_slots slots
-    tour_setting = @community.community_tour.tour_setting
-    allow_self_tour = tour_setting.allow_self_tour if tour_setting.present?
-    self_tour_data = (allow_self_tour && @community.opening_hours.present?) ? @community.opening_hours.pluck(:day, :opening_time, :closing_time) : []
-    calculate_available_time_slots_hash(slots, self_tour_data)
-  end
+  # def get_filtered_self_guided_slots slots
+  #   tour_setting = @community.community_tour.tour_setting
+  #   allow_self_tour = tour_setting.allow_self_tour if tour_setting.present?
+  #   self_tour_data = (allow_self_tour && @community.opening_hours.present?) ? @community.opening_hours.pluck(:day, :opening_time, :closing_time) : []
+  #   calculate_available_time_slots_hash(slots, self_tour_data)
+  # end
 
-  def calculate_available_time_slots_hash knock_slots, pynwheel_slots
-    new_hash = Hash.new
-    new_hash = knock_slots
+  # def calculate_available_time_slots_hash knock_slots, pynwheel_slots
+  #   new_hash = Hash.new
+  #   new_hash = knock_slots
 
-    if knock_slots.present?
-      knock_slots.each do |slot|
-        date = slot[0].split("-")
-        date = date[1]+"/"+date[0]+"/"+date[2]
-        date_day = Time.parse(date).strftime("%A")
+  #   if knock_slots.present?
+  #     knock_slots.each do |slot|
+  #       date = slot[0].split("-")
+  #       date = date[1]+"/"+date[0]+"/"+date[2]
+  #       date_day = Time.parse(date).strftime("%A")
   
-        select_slot = pynwheel_slots.map{|d| d if d[0] === date_day}.compact
-        select_slot = select_slot[0] if select_slot[0].present?
+  #       select_slot = pynwheel_slots.map{|d| d if d[0] === date_day}.compact
+  #       select_slot = select_slot[0] if select_slot[0].present?
   
-        if select_slot.present? && select_slot[1].present? && select_slot[2].present?
-          start_time = Time.strptime(select_slot[1], "%H:%M")  if select_slot.present? && select_slot[1].present?  
-          end_time = Time.strptime(select_slot[2], "%H:%M")  if select_slot.present? && select_slot[2].present?
+  #       if select_slot.present? && select_slot[1].present? && select_slot[2].present?
+  #         start_time = Time.strptime(select_slot[1], "%H:%M")  if select_slot.present? && select_slot[1].present?  
+  #         end_time = Time.strptime(select_slot[2], "%H:%M")  if select_slot.present? && select_slot[2].present?
   
-          new_hash[slot[0]] = slot[1].map{|v| v if Time.strptime(@community.get_time_in_24_hours_format(v),"%H:%M").between?(start_time, end_time) }.compact
-        else
-          new_hash[slot[0]] = []
-        end
-      end
-    end
+  #         new_hash[slot[0]] = slot[1].map{|v| v if Time.strptime(@community.get_time_in_24_hours_format(v),"%H:%M").between?(start_time, end_time) }.compact
+  #       else
+  #         new_hash[slot[0]] = []
+  #       end
+  #     end
+  #   end
 
-    new_hash
-  end
+  #   new_hash
+  # end
 
   def appointment_canceled resp
     resp.present? && resp["payload"].present? && resp["payload"]["appointment"].present? && resp["payload"]["appointment"]["status"] === "CANCELLED" && resp["payload"]["appointment"]["id"].present?
