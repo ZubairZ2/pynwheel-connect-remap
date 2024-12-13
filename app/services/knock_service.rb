@@ -10,7 +10,7 @@ class KnockService < BaseService
   def create_knock_prospect scheduled_tour
     knock_prospect_response = create_prospect(knock_prospect_payload(scheduled_tour), get_knock_community_id, get_knock_company_id) if is_knock_crm
     create_access_log(scheduled_tour, knock_prospect_payload(scheduled_tour), knock_prospect_response)
-    add_knock_prospect_id(knock_prospect_response["payload"]["id"]) if prospect_created(knock_prospect_response)
+    add_knock_prospect_id(scheduled_tour, knock_prospect_response["payload"]["id"]) if prospect_created(knock_prospect_response)
   end
 
   def create_knock_appointment scheduled_tour
