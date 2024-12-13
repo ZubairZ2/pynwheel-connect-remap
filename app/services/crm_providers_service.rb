@@ -8,7 +8,7 @@ class CrmProvidersService
     @communities.each do |community|
       if community.use_yardi_as_lead?
         RentCafeCrmWorker.perform_async community.id
-      if community.is_knock_community?
+      elsif community.is_knock_community?
         KnockCrmWorker.perform_async community.id
       end
     end
