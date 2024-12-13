@@ -16,13 +16,13 @@ class KnockService < BaseService
   def create_knock_appointment scheduled_tour
     knock_appointment_response = create_appointment(knock_appointment_payload(scheduled_tour), get_knock_community_id, get_knock_company_id) if is_knock_crm
     create_access_log(scheduled_tour, knock_appointment_payload(scheduled_tour), knock_appointment_response)
-    add_knock_appointment_id(knock_appointment_response["payload"]["appointment"]["id"]) if appointment_created(knock_appointment_response)
+    add_knock_appointment_id(scheduled_tour, knock_appointment_response["payload"]["appointment"]["id"]) if appointment_created(knock_appointment_response)
   end
 
   def cancel_knock_appointment scheduled_tour
     cancel_appointment_response = cancel_appointment(scheduled_tour.knock_appointment_id, get_knock_community_id, get_knock_company_id)  if scheduled_tour.knock_appointment_id.present?
     create_access_log(scheduled_tour, scheduled_tour.knock_appointment_id, cancel_appointment_response)
-    add_knock_appointment_id(nil) if appointment_canceled(cancel_appointment_response)
+    add_knock_appointment_id(scheduled_tour, nil) if appointment_canceled(cancel_appointment_response)
   end
 
   def available_slots
