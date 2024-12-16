@@ -171,9 +171,8 @@ class Amenity < ApplicationRecord
   end
 
   def ordered_doors
-    community = self.community
 
-    if community.auto_wayfinding
+    if self&.community&.auto_wayfinding
       self.doors.order("sort ASC")
     else
       self.doors.order("created_at ASC")

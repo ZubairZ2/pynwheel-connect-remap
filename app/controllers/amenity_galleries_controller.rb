@@ -7,7 +7,7 @@ class AmenityGalleriesController < ApplicationController
   end
 
   def update
-    if @amenity_gallery_image.update_columns(amenity_gallery_params)
+    if @amenity_gallery_image.update(amenity_gallery_params)
       FloorplanAmenitiesService.new(get_floorplan(), @amenity, @community).update_floorplan_amenity_gallery_info(@amenity_gallery_image&.id, amenity_gallery_params )
       redirect_to_page()
     else
