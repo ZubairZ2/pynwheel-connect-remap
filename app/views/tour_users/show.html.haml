@@ -175,7 +175,7 @@
                     -# - left_margin = ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i
                     -# - right_margin = ((20.0 / 25.0).to_f * (@community.design.property_map_size_integer)).to_i
                     .div#mapp
-                      = image_tag @sitemap.image, :class => "my_class hiddens", :id => "floorplane_img", :style => "height: 100%; width: 100%; display: none"
+                      = image_tag @sitemap&.image&.url, :class => "my_class hiddens", :id => "floorplane_img", :style => "height: 100%; width: 100%; display: none"
                     %canvas#myCanvas{:height => "725", :style => "border:1px solid #d3d3d3;", :width => "725"}
 
                       
