@@ -9,7 +9,7 @@
         .image-box.video-box
           .images.height-200
             - if gallery_image.is_video? || gallery_image.video.present?
-              = video_tag (gallery_image.video.present? ? gallery_image.standard_image_url : gallery_image.image.url rescue asset_path("default.jpeg")), :controls => true, :autobuffer => true
+              = video_tag (gallery_image.video.present? && gallery_image.standard_image_url.present? ? gallery_image.standard_image_url : asset_path("default.jpeg")), controls: true, autobuffer: true
 
             - else
               - rn =  rand(9999)

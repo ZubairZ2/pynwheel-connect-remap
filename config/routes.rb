@@ -557,7 +557,7 @@ Rails.application.routes.draw do
       member do
         get :show_image_in_modal
         post :save_gallery_image
-        get :upload_video_direct
+        post :upload_video_direct
         put :update_gallery_image
         delete :delete_gallery_image
         get :show_images

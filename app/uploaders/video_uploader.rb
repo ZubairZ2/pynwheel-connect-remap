@@ -4,7 +4,7 @@ class VideoUploader < CarrierWave::Uploader::Base
   storage Rails.env.development? ? :file : :fog 
 
   def filename
-    @name ||= "#{timestamp}.#{file.extension}" if original_filename.present?
+    @name ||= "#{timestamp}.#{file.extension}"
   end
 
   def timestamp
