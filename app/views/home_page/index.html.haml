@@ -151,9 +151,9 @@
             #videos-index
             = render 'videos_index'
 
-        = direct_upload_form_for @uploader, :id => "direct_form" do |f|
-          = f.file_field :avatar, :id => "video_field",:class => "hidden"
-          = f.submit "Upload Directly!", :id => "video_submit",:class => "hidden"
+        = form_for @uploader, url: upload_video_direct_community_home_page_index_path(@community), html: { multipart: true } do |f|
+          = f.file_field :video, id: "video_field", class: "hidden"
+          = f.submit "Upload Video", id: "video_submit", class: "hidden"
 
   #edit-image.modal.fade.edit-image
 :javascript

@@ -4,9 +4,7 @@ class HomePageController < ApplicationController
   add_breadcrumb "Home Page", :community_home_page_index_path
 
   def index
-    @uploader = HomePageVideo.new.video
-    @uploader.success_action_redirect = upload_video_direct_community_home_page_index_url
-
+    @uploader = HomePageVideo.new
     @design = current_community.design || current_community.create_design
     @home_page_images = @design.home_page_images.order(:sort).all
   end
@@ -20,13 +18,14 @@ class HomePageController < ApplicationController
   def upload_video_direct
     home = HomePageVideo.where(design_id: current_community.design.id).first
     home.destroy if home.present?
-    @uploader =  HomePageVideo.new(params[:home_page_video])
+
+    @uploader =  HomePageVideo.new(home_page_video_params)
+    @uploader.design_id = current_community.design.id
 
     if @uploader.save
-      @uploader.remote_video_url = @uploader.video.direct_fog_url + params[:key]
-      @uploader.design_id = current_community.design.id
-
+      @uploader.remote_video_url = @uploader&.video&.url
       @uploader.save
+
       redirect_to community_home_page_index_path, notice: 'Video has been uploaded'
     else
       render action: "index"
@@ -103,9 +102,9 @@ class HomePageController < ApplicationController
     def home_page_image_params
       params.require(:home_page_image).permit!
     end
-
+    
     def home_page_video_params
-      params.require(:home_page_video).permit!
+      params.require(:home_page_video).permit(:video)
     end
 
     def iframe
