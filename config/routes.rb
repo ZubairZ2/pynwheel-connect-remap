@@ -428,11 +428,13 @@ Rails.application.routes.draw do
         post :plot_multiple_units_door_for_floorplate
       end
     end
+
     resources :tutorials do
-      collection do
-        get :upload_video_direct
+      member do
+        patch :upload_video_direct
       end
     end
+
     resources :sitemaps do
       resources :amenities, controller: "sitemap_amenities" do
         post :plot_amenity
