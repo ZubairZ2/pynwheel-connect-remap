@@ -467,7 +467,7 @@ Rails.application.routes.draw do
     end
     resources :home_page do
       collection do
-        get :upload_video_direct
+        post :upload_video_direct
         get :show_image_in_modal
         post :save_home_page_image
         put :update_home_page_image
