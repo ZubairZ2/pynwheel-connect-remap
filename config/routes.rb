@@ -106,7 +106,7 @@ Rails.application.routes.draw do
         put :update_home_page_images
         delete :delete_home_page_image
         delete :delete_home_page_video
-        get :upload_video_direct
+        post :upload_video_direct
         post :set_loop_type
       end
     end

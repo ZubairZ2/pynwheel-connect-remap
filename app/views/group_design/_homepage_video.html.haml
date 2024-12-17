@@ -7,7 +7,7 @@
       .slide-image
         .image-box.video-box
           .images.height-200
-            = video_tag @community_group.group_design.group_homepage_video.video.url.present? ? @community_group.group_design.group_homepage_video.video : "", :controls => true, :autobuffer => true,:type => "video/mp4"
+            = video_tag @community_group.group_design.group_homepage_video.video.url.present? ? @community_group.group_design.group_homepage_video.video.url : "", :controls => true, :autobuffer => true,:type => "video/mp4"
           .icons
             %a.text-danger{"data-name"=>"Video","data-href" => "/community_groups/#{@community_group.group_design.id}/group_design/delete_home_page_video?home_page_video_id=#{@community_group.group_design.group_homepage_video.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "##"}
               %i.fa.fa-close
