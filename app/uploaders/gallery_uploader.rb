@@ -72,11 +72,13 @@ class GalleryUploader < CarrierWave::Uploader::Base
   end
 
   def image?(new_file)
-    new_file.content_type.start_with? 'image'
+    return false if new_file.nil? || new_file.content_type.nil?
+    new_file.content_type.start_with?('image')
   end
-
+  
   def video?(new_file)
-    new_file.content_type.start_with? 'application'
+    return false if new_file.nil? || new_file.content_type.nil?
+    new_file.content_type.start_with?('application')
   end
 
 end
