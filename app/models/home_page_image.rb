@@ -24,9 +24,8 @@ class HomePageImage < ApplicationRecord
   include StandardUrl
   include RailsSortable::Model
   set_sortable :sort
-  #mount_base64_uploader :image, ImageUploader
+  mount_base64_uploader :image, ImageUploader
   # mount_uploader :image, ImageUploader
-  mount_base64_uploader :image, AvatarUploader
   process_in_background :image
   belongs_to :design
   has_one :status, as: :statusable
