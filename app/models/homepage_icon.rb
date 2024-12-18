@@ -20,7 +20,8 @@ class HomepageIcon < ApplicationRecord
   include RailsSortable::Model
   set_sortable :sort  
   #mount_base64_uploader :image, ImageUploader
-  mount_uploader :image, ImageUploader
+  # mount_uploader :image, ImageUploader
+  mount_base64_uploader :image, AvatarUploader
   belongs_to :design
   before_create :set_image_name
   after_update :crop_image
