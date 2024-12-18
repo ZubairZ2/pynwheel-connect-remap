@@ -763,7 +763,10 @@ class Community < ApplicationRecord
 
   def set_status_for_all(status_entity, status_attribute, current_user)
     status_entity.build_status unless status_entity.status
-    status_entity.status.update_columns(status: status_attribute, whodunnit: current_user&.id)
+    # status_entity.status.update_columns(status: status_attribute, whodunnit: current_user&.id)
+    status_entity.status.status = status_attribute
+    status_entity.status.whodunnit = current_user&.id
+    status_entity.status.save(validate: false)
   end
 
   def show_apply_now
