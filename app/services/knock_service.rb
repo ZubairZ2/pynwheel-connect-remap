@@ -212,13 +212,13 @@ class KnockService < BaseService
     end  
   end
 
-  def desire_bedrooms
-    if @scheduled_tour.desired_bedroom.present?
-      if @scheduled_tour.desired_bedroom == 0
+  def desire_bedrooms scheduled_tour
+    if scheduled_tour.desired_bedroom.present?
+      if scheduled_tour.desired_bedroom == 0
         ["STUDIO"]
-      elsif @scheduled_tour.desired_bedroom == 1
+      elsif scheduled_tour.desired_bedroom == 1
         ["1_BEDROOM"]
-      elsif @scheduled_tour.desired_bedroom == 2
+      elsif scheduled_tour.desired_bedroom == 2
         ["2_BEDROOMS"]
       else
         ["3_OR_MORE_BEDROOMS"]
@@ -227,6 +227,8 @@ class KnockService < BaseService
       []
     end
   end
+
+  
 
   def knock_message scheduled_tour
     case scheduled_tour.property_tour_type
