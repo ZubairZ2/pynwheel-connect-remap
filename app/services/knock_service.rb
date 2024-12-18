@@ -141,9 +141,17 @@ class KnockService < BaseService
     tour_type
   end
 
-  def get_tour_available_dates self_guided_slots, in_person_slots
-    (self_guided_slots.keys | in_person_slots.keys).sort
+  # def get_tour_available_dates self_guided_slots, in_person_slots
+  #   (self_guided_slots.keys | in_person_slots.keys).sort
+  # end
+
+  def get_tour_available_dates(self_guided_slots, in_person_slots)
+    (self_guided_slots.keys | in_person_slots.keys)
+      .map { |date| Date.strptime(date, '%m-%d-%Y') } # Convert to Date objects
+      .sort # Sort chronologically
+      .map { |date| date.strftime('%m-%d-%Y') } # Convert back to strings
   end
+
 
   def formate_time_slots_array_to_hash dates
     hash = dates.group_by(&:to_date)
