@@ -28,7 +28,8 @@ class GalleryImage < ApplicationRecord
   has_one :status, as: :statusable
   set_sortable :sort  
 	#mount_base64_uploader :image, GalleryUploader
-	mount_uploader :image, GalleryUploader
+	# mount_uploader :image, GalleryUploader
+	mount_base64_uploader :image, AvatarUploader
 	mount_uploader :video, VideoUploader
 	process_in_background :video
 	process_in_background :image
