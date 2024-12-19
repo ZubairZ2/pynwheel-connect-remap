@@ -2097,29 +2097,31 @@ function applyFilters(){
 }
 
 function get_unit_availability(unit) {
-  const todayDate = new Date();
+  const todayDate = moment();
   let availableDateString = "";
+
+  console.log("unitAvailableDate: ", unit.available_date);
 
   if (unit.sold) {
     availableDateString = "Unavailable:";
   } else if (unit.available && unit.available_date) {
-    const availableDate = new Date(unit.available_date);
-    if (availableDate <= todayDate) {
+    const availableDate = moment(unit.available_date, "YYYY-MM-DD");
+    if (availableDate.isSameOrBefore(todayDate, "day")) {
       availableDateString = "Available: Now";
     } else {
-      if (typeof webCommunity !== 'undefined' && webCommunity.country_code) {
-        availableDateString = `Available: ${formattedDateByRegion(webCommunity.country_code, availableDate)}`;
+      if (typeof webCommunity !== "undefined" && webCommunity.country_code) {
+        availableDateString = `Available: ${formattedDateByRegion(webCommunity.country_code, availableDate.toDate())}`;
       } else {
-        availableDateString = `Available: ${formattedDateByRegion("US", availableDate)}`;
+        availableDateString = `Available: ${formattedDateByRegion("US", availableDate.toDate())}`;
       }
     }
   } else {
     availableDateString = "Unavailable:";
   }
 
+  console.log("availableDateString: ", availableDateString);
   return availableDateString;
 }
-
 
 function updateSession(end_point_url) {
   community_id = $("#maps_community_id").val()
