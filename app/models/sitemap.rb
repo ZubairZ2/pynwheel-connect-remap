@@ -10,8 +10,8 @@
 #
 
 class Sitemap < ApplicationRecord
-  # has_paper_trail
-  serialize :map_ocr_data, Array
+  serialize :map_ocr_data
+
   mount_uploader :image, SiteMapUploader
   mount_uploader :label_image, SiteMapUploader
   mount_uploader :file, DesignUploader
@@ -111,6 +111,12 @@ class Sitemap < ApplicationRecord
     }
   end
 
+  def map_ocr_data
+    read_attribute(:map_ocr_data) || []
+  end
 
+  def map_ocr_data=(value)
+    write_attribute(:map_ocr_data, value.is_a?(Array) ? value.to_json : value)
+  end
 
 end
