@@ -23,7 +23,6 @@
 #
 
 class Floorplate < ApplicationRecord
-  # has_paper_trail
   include StandardUrl
   include ::S3Acceleration
   serialize :map_ocr_data
@@ -160,6 +159,13 @@ class Floorplate < ApplicationRecord
     self.height > 0 ? self.height : self.image.height rescue 0
   end
 
+  def map_ocr_data
+    read_attribute(:map_ocr_data) || []
+  end
+
+  def map_ocr_data=(value)
+    write_attribute(:map_ocr_data, value.is_a?(Array) ? value.to_json : value)
+  end
 
   private
 
