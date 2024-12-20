@@ -47,13 +47,13 @@ module Api
           @companies.map do |company|
             {
               'id' => company.id,
-              'partner' => @partner,
               'name' => company.name,
               'communities' => @communities.select { |community| community.company_id == company.id }.map do |community|
                 {
                   'id' => community.id,
                   'name' => community.name,
                   'address' => community.make_address,
+                  'partner' => @partner,
                   'map_embed_code' => community.map_embed_code(@partner),
                   'map_link' => community.map_link(@partner)
                 }
