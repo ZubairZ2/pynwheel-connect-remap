@@ -2117,11 +2117,11 @@ class Community < ApplicationRecord
     self.touchscreen_app
   end
   
-  def map_embed_code
+  def map_embed_code partner = nil
     <<-HTML.strip.gsub(/\n\s*/, "")
       <embed onload='window.parent.$("body").animate({scrollTop:0}, "slow");' 
         style='margin-top: 0px; overflow:scroll;' 
-        src='#{map_link}' 
+        src='#{map_link(partner)}' 
         width='100%' 
         height='750px' />
       <script type='text/javascript'>
@@ -2132,8 +2132,8 @@ class Community < ApplicationRecord
     HTML
   end
 
-  def map_link
-    "#{ENV['HOST_URL']}/communities/#{self.id}/webpages"
+  def map_link partner = nil
+    "#{ENV['HOST_URL']}/communities/#{self.id}/webpages#{partner.present? ? "?partner=#{partner}" : ""}"
   end
 
   private
