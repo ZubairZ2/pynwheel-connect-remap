@@ -88,8 +88,8 @@
                         %span#propertyDetailNameText
                           This section will show the time the tour began, how long the tour lasted, and when the tour ended.
                   .col-lg-12{:style => "background: #efefef; margin: 30px"}
-                    - if @alerts.last.history == false
-                      - @alerts.order("id DESC").each_with_index do |alert,index|
+                    - if @alerts&.last&.history == false
+                      - @alerts&.order("id DESC").each_with_index do |alert,index|
                         - end_time = alert.left.present? ? alert.left : alert.lengthy_stay
                         .col-lg-6{:style => "#{index == 0 ? "margin-top: 5px" : "margin-top: 13px"}"}
                           .alert-div1{:style => "margin-top: 10px"}
@@ -136,14 +136,14 @@
                     -#= select :floorplates , :images , @community.floorplates.all.order("id ASC").collect{|f| [ f.name, f.id ] },{:prompt => 'Select the Floorplate'}, class: "form-control"
                     .col-sm-12.col-lg-12.col-md-12.col-xs-12{style: "padding-right: 0;"}
                       - begin
-                        - if @alerts.last.history == false
-                          = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| f.my_time_zone.present? ? [f.arrived.in_time_zone(f.my_time_zone).strftime("%m-%d-%Y %I:%M %p"), f.id ]  : [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
-                        - elsif @alerts.last.history == true
+                        - if @alerts&.last&.history == false
+                          = select :tour_histories , :dates , @alerts&.order("id DESC").collect{|f| f.my_time_zone.present? ? [f.arrived.in_time_zone(f.my_time_zone).strftime("%m-%d-%Y %I:%M %p"), f.id ]  : [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                        - elsif @alerts&.last&.history == true
                           Removed at Consumer Request
                       - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
-                        - if @alerts.present? && @alerts.last.history == false
-                          = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] if  f.arrived.present? } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
-                        - elsif @alerts.last.history == true
+                        - if @alerts&.present? && @alerts&.last&.history == false
+                          = select :tour_histories , :dates , @alerts&.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] if  f.arrived.present? } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                        - elsif @alerts&.last.history == true
                           Removed at Consumer Request
 
 
