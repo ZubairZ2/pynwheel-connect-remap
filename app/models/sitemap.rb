@@ -121,12 +121,6 @@ class Sitemap < ApplicationRecord
     }
   end
 
-  def map_ocr_data
-    read_attribute(:map_ocr_data) || []
-  end
 
-  def map_ocr_data=(value)
-    write_attribute(:map_ocr_data, value.is_a?(Array) ? value.to_json : value)
-  end
 
 end
