@@ -21,6 +21,7 @@ var unitChildClickHandled = false
 var inactivityTimer;
 var inactivityThreshold = 60000; // 1 minutes (adjust as needed)
 var lastActivityTime = Date.now();
+var updateRequestSent = false;
 
 $(document).ready(function () {
   webCommunity = $("#communityWebpagesData").data("community");
@@ -1901,13 +1902,28 @@ function display2DMap() {
     }
 
     handleViewportChange(windowWidth);
-    $(".popup-title").css("background-color", $(".fa-map-marker-alt")[0].style.color);
-    $(".popup-arrow").css("background-color", $(".fa-map-marker-alt")[0].style.color);
+    let markerColor = $(".fa-map-marker-alt")[0].style.color;
+    markerColor =  isColorWhite(markerColor) ? "grey" : markerColor
+    
+    $(".popup-title").css("background-color", markerColor);
+    $(".popup-arrow").css("background-color", markerColor);
 
     $(".custom-select").change(()=> {
       renderChangedUnits();
     })
   }
+}
+
+function isColorWhite(color) {
+  const normalizedColor = color.toLowerCase();
+
+  return (
+    normalizedColor === "#ffffff" ||
+    normalizedColor === "#fff" ||
+    normalizedColor === "white" ||
+    normalizedColor === "rgb(255, 255, 255)" ||
+    normalizedColor === "rgba(255, 255, 255, 1)"
+  );
 }
 
 function handleViewportChange() {
@@ -2081,29 +2097,31 @@ function applyFilters(){
 }
 
 function get_unit_availability(unit) {
-  const todayDate = new Date();
+  const todayDate = moment();
   let availableDateString = "";
+
+  console.log("unitAvailableDate: ", unit.available_date);
 
   if (unit.sold) {
     availableDateString = "Unavailable:";
   } else if (unit.available && unit.available_date) {
-    const availableDate = new Date(unit.available_date);
-    if (availableDate <= todayDate) {
+    const availableDate = moment(unit.available_date, "YYYY-MM-DD");
+    if (availableDate.isSameOrBefore(todayDate, "day")) {
       availableDateString = "Available: Now";
     } else {
-      if (typeof webCommunity !== 'undefined' && webCommunity.country_code) {
-        availableDateString = `Available: ${formattedDateByRegion(webCommunity.country_code, availableDate)}`;
+      if (typeof webCommunity !== "undefined" && webCommunity.country_code) {
+        availableDateString = `Available: ${formattedDateByRegion(webCommunity.country_code, availableDate.toDate())}`;
       } else {
-        availableDateString = `Available: ${formattedDateByRegion("US", availableDate)}`;
+        availableDateString = `Available: ${formattedDateByRegion("US", availableDate.toDate())}`;
       }
     }
   } else {
     availableDateString = "Unavailable:";
   }
 
+  console.log("availableDateString: ", availableDateString);
   return availableDateString;
 }
-
 
 function updateSession(end_point_url) {
   community_id = $("#maps_community_id").val()
