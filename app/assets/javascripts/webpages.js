@@ -2864,6 +2864,18 @@ function display2DMap() {
   }
 }
 
+function isColorWhite(color) {
+  const normalizedColor = color.toLowerCase();
+
+  return (
+    normalizedColor === "#ffffff" ||
+    normalizedColor === "#fff" ||
+    normalizedColor === "white" ||
+    normalizedColor === "rgb(255, 255, 255)" ||
+    normalizedColor === "rgba(255, 255, 255, 1)"
+  );
+}
+
 function handleViewportChange() {
   const viewportWidth = window.innerWidth;
   let filters_width = "65%";
@@ -3072,6 +3084,8 @@ function get_unit_availability(unit) {
   const todayDate = moment();
   let availableDateString = "";
 
+  console.log("unitAvailableDate: ", unit.available_date);
+
   if (unit.sold) {
     availableDateString = "Unavailable:";
   } else if (unit.available && unit.available_date) {
@@ -3095,6 +3109,7 @@ function get_unit_availability(unit) {
     availableDateString = "Unavailable:";
   }
 
+  console.log("availableDateString: ", availableDateString);
   return availableDateString;
 }
 
