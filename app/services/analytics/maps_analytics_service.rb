@@ -6,7 +6,7 @@ module Analytics
       @session = session
       @cookies = cookies
       @params = params
-      @request_url = request_url
+      @partner = parsed_request_url(request_url)
     end
 
     def maintain_maps_session
@@ -40,11 +40,11 @@ module Analytics
       end
 
       def get_track_sessions
-        TrackSession.where(session_id: @cookies[:webpages_session_id])
+        TrackSession.where(session_id: @cookies[:webpages_session_id], partner: @partner)
       end
 
       def return_new_session
-        TrackSession.new(start_datetime: (fetch_datetime), track_session_type: "maps", community_id: @community.id, community_time_zone: @timezone,session_id: @cookies[:webpages_session_id], partner: parsed_request_url)
+        TrackSession.new(start_datetime: (fetch_datetime), track_session_type: "maps", community_id: @community.id, community_time_zone: @timezone,session_id: @cookies[:webpages_session_id], partner: @partner)
       end
 
       def manage_session_info(track_session)
@@ -82,8 +82,8 @@ module Analytics
         datetime.in_time_zone(@timezone).to_datetime if datetime.present? && @timezone.present?
       end
 
-      def parsed_request_url
-        uri = URI.parse(@request_url)
+      def parsed_request_url request_url
+        uri = URI.parse(request_url)
         if uri.query.present?
           query_params = CGI.parse(uri.query)
           query_params["partner"].first rescue nil
