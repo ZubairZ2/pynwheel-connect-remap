@@ -1,11 +1,12 @@
 module Analytics
   class MapsAnalyticsService
-    def initialize(community, timezone, session, cookies, params)
+    def initialize(community, timezone, session, cookies, params, request_url)
       @community = community
       @timezone = timezone
       @session = session
       @cookies = cookies
       @params = params
+      @request_url = request_url
     end
 
     def maintain_maps_session
@@ -14,7 +15,6 @@ module Analytics
         return unless track_session.present?
         manage_session_info(track_session)
         track_session.save
-
       rescue StandardError => e
         puts "\n\n---------------------------#{e.message} ----------------------\n\n"
       end
@@ -23,19 +23,15 @@ module Analytics
     private
     
       def return_last_maps_session
-        track_sessions = get_track_sessions() 
+        track_sessions = get_track_sessions()
         return return_new_session unless track_sessions.any?
-      
         track_session = track_sessions.last
         track_session_last_updated_at = return_community_datetime(track_session.updated_at)
-
         if session_datetime_not_in_limit?(track_session_last_updated_at)
           # update_last_session_end_datetime(track_session, track_session_last_updated_at)
           track_session = return_new_session
         end
-
         track_session.updated_at = fetch_datetime()
-      
         track_session
       end
       
@@ -48,7 +44,7 @@ module Analytics
       end
 
       def return_new_session
-        TrackSession.new(start_datetime: (fetch_datetime), track_session_type: "maps", community_id: @community.id, community_time_zone: @timezone,session_id: @cookies[:webpages_session_id])
+        TrackSession.new(start_datetime: (fetch_datetime), track_session_type: "maps", community_id: @community.id, community_time_zone: @timezone,session_id: @cookies[:webpages_session_id], partner: parsed_request_url)
       end
 
       def manage_session_info(track_session)
@@ -74,8 +70,8 @@ module Analytics
     
       def session_datetime_not_in_limit?(session_datetime)
         current_time = fetch_datetime()
-        time_difference_in_minutes = ((current_time.to_datetime - session_datetime.to_datetime) * 24 * 60 ).to_i
-        time_difference_in_minutes >= ENV["IDLE_TIME_MAPS"].to_i
+        time_difference_in_minutes = ((current_time.to_datetime - session_datetime.to_datetime) * 24 * 60 ).to_f
+        time_difference_in_minutes >= ENV["IDLE_TIME_MAPS"].to_f
       end
       
       def fetch_datetime
@@ -84,6 +80,16 @@ module Analytics
 
       def return_community_datetime(datetime)
         datetime.in_time_zone(@timezone).to_datetime if datetime.present? && @timezone.present?
-      end  
+      end
+
+      def parsed_request_url
+        uri = URI.parse(@request_url)
+        if uri.query.present?
+          query_params = CGI.parse(uri.query)
+          query_params["partner"].first rescue nil
+        else
+          nil
+        end
+      end
   end
 end
