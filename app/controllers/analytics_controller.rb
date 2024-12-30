@@ -15,7 +15,8 @@ class AnalyticsController < ApplicationController
       @maps_records = TrackSession.where(track_session_type: "maps", community_id: communities.ids, partner: nil)
                                   .where('start_datetime > ? AND start_datetime < ?', start_date.beginning_of_day, end_date.end_of_day)
                                   # .where( Arel.sql("EXTRACT(EPOCH FROM (COALESCE(end_datetime, updated_at) - start_datetime)) > 10") )
-      
+
+      puts "\n\n@maps_records: #{@maps_records.count}\n\n"
       apply_filters(params)
 
       if @maps_records.any?
