@@ -286,7 +286,7 @@ class WebpagesController < ActionController::Base
 
     def maintain_session
       begin
-        Analytics::MapsAnalyticsService.new(@community, @timezone, session, cookies, params, request&.url).maintain_maps_session()
+        Analytics::MapsAnalyticsService.new(@community, @timezone, session, cookies, params, (request.referer || request.url)).maintain_maps_session()
       rescue StandardError => e
         puts "\n----------------- #{e.message} --------------- \n"
       end
