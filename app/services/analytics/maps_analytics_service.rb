@@ -11,7 +11,11 @@ module Analytics
 
     def maintain_maps_session
       begin
+        puts"\n\n Session ID: #{@cookies[:webpages_session_id]}\n\n"
+
         track_session = return_last_maps_session
+        puts"\n\n track_session: #{track_session.inspect}\n\n"
+        
         return unless track_session.present?
         manage_session_info(track_session)
         track_session.save
@@ -26,7 +30,10 @@ module Analytics
         track_sessions = get_track_sessions()
         return return_new_session unless track_sessions.any?
         track_session = track_sessions.last
+        puts"\n\n track_session: #{track_session.inspect}\n\n"
+        
         track_session_last_updated_at = return_community_datetime(track_session.updated_at)
+        puts "\n\n session_datetime_not_in_limit?(track_session_last_updated_at): #{session_datetime_not_in_limit?(track_session_last_updated_at)} \n\n"
         if session_datetime_not_in_limit?(track_session_last_updated_at)
           # update_last_session_end_datetime(track_session, track_session_last_updated_at)
           track_session = return_new_session
@@ -40,7 +47,7 @@ module Analytics
       end
 
       def get_track_sessions
-        TrackSession.where(session_id: @cookies[:webpages_session_id], partner: @partner)
+        TrackSession.where(community_id: @community, session_id: @cookies[:webpages_session_id], partner: @partner)
       end
 
       def return_new_session
@@ -70,8 +77,11 @@ module Analytics
     
       def session_datetime_not_in_limit?(session_datetime)
         current_time = fetch_datetime()
-        time_difference_in_minutes = ((current_time.to_datetime - session_datetime.to_datetime) * 24 * 60 ).to_f
-        time_difference_in_minutes >= ENV["IDLE_TIME_MAPS"].to_f
+        puts"\n\n current time: #{current_time}\n\n"
+        
+        time_difference_in_minutes = ((current_time.to_datetime - session_datetime.to_datetime) * 24 * 60 ).to_i
+        puts"\n\n current time: #{time_difference_in_minutes}\n\n"
+        time_difference_in_minutes >= ENV["IDLE_TIME_MAPS"].to_i
       end
       
       def fetch_datetime
