@@ -12,8 +12,10 @@ class AnalyticsController < ApplicationController
 
     # For Webpage
     if @product_type == "maps"
-      track_sessions = TrackSession.where(community_id: communities.ids, partner: nil)
-      @maps_records = track_sessions.where(track_session_type: "maps").where('start_datetime > ? AND start_datetime < ?',start_date.beginning_of_day, end_date.end_of_day)
+      @maps_records = TrackSession.where(track_session_type: "maps", community_id: communities.ids, partner: nil)
+                                  .where('start_datetime > ? AND start_datetime < ?', start_date.beginning_of_day, end_date.end_of_day)
+                                  .where( Arel.sql("EXTRACT(EPOCH FROM (COALESCE(end_datetime, updated_at) - start_datetime)) > 10") )
+      
       apply_filters(params)
 
       if @maps_records.any?
