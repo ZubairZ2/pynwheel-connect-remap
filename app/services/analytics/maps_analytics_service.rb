@@ -72,22 +72,31 @@ module Analytics
       end
 
       def track_session_activity track_session
-        if @params[:activity].present? && @params[:activity][:event].present?
-          case @params[:activity][:event]
+        activity = @params[:activity]
+
+        if activity.present? && activity[:event].present?
+          case activity[:event]
           when "click"
-            
+            track_click_events(activity[:name], track_session)
           when "hover"
-            track_hover_events(@params[:activity][:name], track_session)
+            track_hover_events(activity[:name], track_session)
           end
         end
       end 
+
+      def track_click_events event, track_session
+        case event
+        when "unit_marker"
+          track_session.unit_marker_clicks += 1
+        when "amenity_marker"
+          track_session.amenity_marker_clicks += 1
+        end
+      end
       
       def track_hover_events event, track_session
-        case @params[:activity][:name]
+        case event
         when "unit_marker"
           track_session.unit_marker_hovers += 1
-        when "unit_list"
-          track_session.unit_list_hovers += 1
         when "amenity_marker"
           track_session.amenity_marker_hovers += 1
         end

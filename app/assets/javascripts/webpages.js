@@ -2212,47 +2212,64 @@ function trackingMapHoverEvents() {
 
 function amenityMarkerHoverEvent() {
   $(document).off("mouseenter", ".amenity-marker").on("mouseenter", ".amenity-marker", function () {
+    console.log("Amenity Marker hovered");
     updateActivityData("amenity_marker", "hover");
   });   
 }
 
 function unitMarkerHoverEvent() {
   $(document).off("mouseenter", ".unit_marker").on("mouseenter", ".unit_marker", function () {
+    console.log("Unit Marker hovered");
     updateActivityData("unit_marker", "hover");
   });
 }
 
 function unitsListHoverEvent() {
   $(document).off("mouseenter", ".left-side-30-units").on("mouseenter", ".left-side-30-units", function () {
-    updateActivityData("unit_list", "hover");
+    console.log("Unit List Marker hovered");
+    updateActivityData("unit_marker", "hover");
   });
 }
 
 // Map Click Events Tracking
 function trackingMapClickEvents() {
+  // new Methods
+  amenityMarkerClickEvent();
+  unitMarkerClickEvent();
+
+  // Old methods
   trackApplyNowClickActivity();
-  trackUnitMarkerClickActivity();
   trackShareFavoritesActivity();
 }
 
-function trackApplyNowClickActivity() {
-  $(document).off("click", ".apply_now").on("click", ".apply_now", function () {
-    console.log("Apply Now clicked");
-    updateSession("apply_now_count")
+// New Activity Tracking Methods.
+function amenityMarkerClickEvent() {
+  $(document).off("click", ".amenity-marker").on("click", ".amenity-marker", function () {
+    console.log("Amenity Marker clicked");
+    updateActivityData("amenity_marker", "click");
+  });   
+}
+
+function unitMarkerClickEvent() {
+  $(document).off("click", ".unit_marker").on("click", ".unit_marker", function () {
+    console.log("Unit Marker clicked");
+    updateActivityData("unit_marker", "click");
+    updateSession("price_opened");
   });
 }
 
-function trackUnitMarkerClickActivity() {
-  $(document).off("click", ".unit_marker").on("click", ".unit_marker", function () {
-    console.log("Unit Marker clicked");
-    updateSession("price_opened")
+// Old methods which still working.
+function trackApplyNowClickActivity() {
+  $(document).off("click", ".apply_now").on("click", ".apply_now", function () {
+    console.log("Apply Now clicked");
+    updateSession("apply_now_count");
   });
 }
 
 function trackShareFavoritesActivity() {
   $(document).off("click", ".share-favorite").on("click", ".share-favorite", function () {
     console.log("Share Fav clicked");
-    updateSession("sent_favorite")
+    updateSession("sent_favorite");
   });
 }
 
