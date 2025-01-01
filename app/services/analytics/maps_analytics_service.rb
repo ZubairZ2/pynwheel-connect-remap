@@ -58,12 +58,6 @@ module Analytics
           visited_pages << "View favorites page" unless visited_pages.include?("View favorites page")
         when "save_favorite"
           track_session.favorite_saved_counter += 1
-        when "sent_favorite"
-          track_session.favorite_sent_counter += 1
-        when "price_opened"
-          track_session.price_opened_counter += 1
-        when "apply_now_count"
-          track_session.apply_click_counter += 1
         when "activity_tracking"
           track_session_activity(track_session)
         end
@@ -88,8 +82,43 @@ module Analytics
         case event
         when "unit_marker"
           track_session.unit_marker_clicks += 1
+          track_session.price_opened_counter += 1
         when "amenity_marker"
           track_session.amenity_marker_clicks += 1
+        when "amenity_marker"
+          track_session.amenity_marker_clicks += 1
+        when "sorting_filter"
+          track_session.sorting_filter_clicks += 1
+        when "bedroom_filter"
+          track_session.bedroom_filter_clicks += 1
+        when "pricing_filter"
+          track_session.pricing_filter_clicks += 1
+        when "square_feet_filter"
+          track_session.square_feet_filter_clicks += 1
+        when "availability_filter"
+          track_session.availability_filter_clicks += 1
+        when "reset_filter"
+          track_session.reset_filter_clicks += 1
+        when "view_saved"
+          track_session.view_saved_clicks += 1
+        when "schedule_tour"
+          track_session.schedule_tour_clicks += 1
+        when "logo"
+          track_session.logo_clicks += 1
+        when "floor_number"
+          track_session.floor_number_clicks += 1
+        when "zoom_in"
+          track_session.zoom_in_clicks += 1
+        when "zoom_out"
+          track_session.zoom_out_clicks += 1
+        when "zoom_refresh"
+          track_session.zoom_refresh_clicks += 1
+        when "clear_favorites"
+          track_session.clear_favorites_clicks += 1
+        when "sent_favorite"
+          track_session.favorite_sent_counter += 1
+        when "apply_now_count"
+          track_session.apply_click_counter += 1
         end
       end
       
