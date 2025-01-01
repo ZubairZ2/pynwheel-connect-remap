@@ -15,13 +15,16 @@ var currency = "$";
 var real_page_provider_unit_id = null;
 var currentUnitSelected = null;
 
-var applyNowChildClickHandled = false
-var unitChildClickHandled = false
+/* Start - Activity tracking variables needed */
+// var applyNowChildClickHandled = false
+// var unitChildClickHandled = false
 
 var inactivityTimer;
 var inactivityThreshold = 60000; // 1 minutes (adjust as needed)
 var lastActivityTime = Date.now();
 var updateRequestSent = false;
+/* Start - Activity tracking variables needed */
+
 
 $(document).ready(function () {
   webCommunity = $("#communityWebpagesData").data("community");
@@ -130,8 +133,6 @@ $(window).bind('load', function () {
     ////////////////////////////////////////////////
     /* unit modal*/
     $('#unitModal').on('hidden.bs.modal', function (e) {
-      applyNowChildClickHandled = false
-      unitChildClickHandled = false
       resetToDefaultZoom();
     });
 
@@ -1683,9 +1684,6 @@ function leaseTermPricingOptions(ss) {
 }
 
 function setUnitAttributes(element) {
-  applyNowChildClickHandled = false
-  unitChildClickHandled = false
-  
   $('.modal-unit-button').each(function () {
     $(this).removeClass('btn-primary');
     $(this).addClass('btn-default');
@@ -2100,8 +2098,6 @@ function get_unit_availability(unit) {
   const todayDate = moment();
   let availableDateString = "";
 
-  console.log("unitAvailableDate: ", unit.available_date);
-
   if (unit.sold) {
     availableDateString = "Unavailable:";
   } else if (unit.available && unit.available_date) {
@@ -2119,36 +2115,47 @@ function get_unit_availability(unit) {
     availableDateString = "Unavailable:";
   }
 
-  console.log("availableDateString: ", availableDateString);
   return availableDateString;
 }
 
-function updateSession(end_point_url) {
-  community_id = $("#maps_community_id").val()
-    if(community_id) {
-      $.ajax({
-        type: "GET",
-        url: `/communities/${community_id}/webpages/${end_point_url}`,
-        success: function(response) {}
-      });
-    }
-  }
+/* --------------------------- Start-Webpages Analytics track Activities Section ---------------------------------------------*/
 
 $(document).ready(function() {
-  $(".apply_now").click(function() {
-    if(applyNowChildClickHandled) return;
-    applyNowChildClickHandled = true;
-    updateSession("apply_now_count")
-  });
-
-  $(".unit_marker").click(function() {
-    if (unitChildClickHandled) return;
-    unitChildClickHandled = true;
-    updateSession("price_opened")
-  });
-
-  $(".share-favorite").click(function() { updateSession("sent_favorite") });
+  trackingMapActivities();
+  trackingMapClickEvents();
+  trackingMapHoverEvents();
 });
+
+function updateSession(end_point_url) {
+  community_id = $("#maps_community_id").val()
+  if(community_id) {
+    $.ajax({
+      type: "GET",
+      url: `/communities/${community_id}/webpages/${end_point_url}`,
+      success: function(response) {}
+    });
+  }
+}
+
+function updateActivityData(activityName, activityEvent) {
+  const payload = {
+    activity: {
+      name: activityName,
+      event: activityEvent,
+    }
+  };
+
+  const community_id = $("#maps_community_id").val();
+  if (community_id) {
+    $.ajax({
+      type: "POST",
+      url: `/communities/${community_id}/webpages/activity_tracking`,
+      data: JSON.stringify(payload),
+      contentType: "application/json",
+      success: function(response) {}
+    });
+  }
+}
 
 function resetInactivityTimer() {
   clearTimeout(inactivityTimer);
@@ -2180,11 +2187,10 @@ function updateLastActive() {
   resetInactivityTimer();
 }
 
-$(document).ready(function() {
-  var currentURL = window.location.pathname;
+function trackingMapActivities() {
+  const currentURL = window.location.pathname;
 
   if (currentURL.endsWith("/webpages") || currentURL.endsWith("/webpages/favorites")) {
-
     document.addEventListener("mousemove", function () {
       updateLastActive();
     });
@@ -2195,4 +2201,59 @@ $(document).ready(function() {
 
     resetInactivityTimer();
   }
-});
+}
+
+// Map Hover Events Tracking
+function trackingMapHoverEvents() {
+  amenityMarkerHoverEvent();
+  unitMarkerHoverEvent();
+  unitsListHoverEvent();
+}
+
+function amenityMarkerHoverEvent() {
+  $(document).off("mouseenter", ".amenity-marker").on("mouseenter", ".amenity-marker", function () {
+    updateActivityData("amenity_marker", "hover");
+  });   
+}
+
+function unitMarkerHoverEvent() {
+  $(document).off("mouseenter", ".unit_marker").on("mouseenter", ".unit_marker", function () {
+    updateActivityData("unit_marker", "hover");
+  });
+}
+
+function unitsListHoverEvent() {
+  $(document).off("mouseenter", ".left-side-30-units").on("mouseenter", ".left-side-30-units", function () {
+    updateActivityData("unit_list", "hover");
+  });
+}
+
+// Map Click Events Tracking
+function trackingMapClickEvents() {
+  trackApplyNowClickActivity();
+  trackUnitMarkerClickActivity();
+  trackShareFavoritesActivity();
+}
+
+function trackApplyNowClickActivity() {
+  $(document).off("click", ".apply_now").on("click", ".apply_now", function () {
+    console.log("Apply Now clicked");
+    updateSession("apply_now_count")
+  });
+}
+
+function trackUnitMarkerClickActivity() {
+  $(document).off("click", ".unit_marker").on("click", ".unit_marker", function () {
+    console.log("Unit Marker clicked");
+    updateSession("price_opened")
+  });
+}
+
+function trackShareFavoritesActivity() {
+  $(document).off("click", ".share-favorite").on("click", ".share-favorite", function () {
+    console.log("Share Fav clicked");
+    updateSession("sent_favorite")
+  });
+}
+
+/* --------------------------- Start-Webpages Analytics track Activities Section ---------------------------------------------*/

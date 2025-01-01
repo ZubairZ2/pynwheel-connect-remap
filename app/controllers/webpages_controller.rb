@@ -161,6 +161,9 @@ class WebpagesController < ActionController::Base
     
   end
 
+  def activity_tracking
+  end
+
   def save_favorite
     array = cookies[:favorite_unit_ids].present? ? JSON.parse(cookies[:favorite_unit_ids]) : []
 

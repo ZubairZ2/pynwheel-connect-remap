@@ -64,9 +64,33 @@ module Analytics
           track_session.price_opened_counter += 1
         when "apply_now_count"
           track_session.apply_click_counter += 1
+        when "activity_tracking"
+          track_session_activity(track_session)
         end
       
         track_session.visited_pages = visited_pages
+      end
+
+      def track_session_activity track_session
+        if @params[:activity].present? && @params[:activity][:event].present?
+          case @params[:activity][:event]
+          when "click"
+            
+          when "hover"
+            track_hover_events(@params[:activity][:name], track_session)
+          end
+        end
+      end 
+      
+      def track_hover_events event, track_session
+        case @params[:activity][:name]
+        when "unit_marker"
+          track_session.unit_marker_hovers += 1
+        when "unit_list"
+          track_session.unit_list_hovers += 1
+        when "amenity_marker"
+          track_session.amenity_marker_hovers += 1
+        end
       end
     
       def session_datetime_not_in_limit?(session_datetime)
