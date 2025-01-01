@@ -15,17 +15,6 @@ var currency = "$";
 var real_page_provider_unit_id = null;
 var currentUnitSelected = null;
 
-/* Start - Activity tracking variables needed */
-// var applyNowChildClickHandled = false
-// var unitChildClickHandled = false
-
-var inactivityTimer;
-var inactivityThreshold = 60000; // 1 minutes (adjust as needed)
-var lastActivityTime = Date.now();
-var updateRequestSent = false;
-/* Start - Activity tracking variables needed */
-
-
 $(document).ready(function () {
   webCommunity = $("#communityWebpagesData").data("community");
   _3dAmenities = $("#communityWebpagesData").data("amenities");
@@ -2121,21 +2110,9 @@ function get_unit_availability(unit) {
 /* --------------------------- Start-Webpages Analytics track Activities Section ---------------------------------------------*/
 
 $(document).ready(function() {
-  trackingMapActivities();
   trackingMapClickEvents();
   trackingMapHoverEvents();
 });
-
-function updateSession(end_point_url) {
-  community_id = $("#maps_community_id").val()
-  if(community_id) {
-    $.ajax({
-      type: "GET",
-      url: `/communities/${community_id}/webpages/${end_point_url}`,
-      success: function(response) {}
-    });
-  }
-}
 
 function updateActivityData(activityName, activityEvent) {
   const payload = {
@@ -2154,52 +2131,6 @@ function updateActivityData(activityName, activityEvent) {
       contentType: "application/json",
       success: function(response) {}
     });
-  }
-}
-
-function resetInactivityTimer() {
-  clearTimeout(inactivityTimer);
-  const currentTime = Date.now();
-  const timeSinceLastActivity = currentTime - lastActivityTime;
-  
-  if (!updateRequestSent) {
-    // User has become active, send the request immediately
-    sendUpdateRequest();
-    updateRequestSent = true;
-  }
-  
-  if (timeSinceLastActivity >= inactivityThreshold) {
-    // User has been inactive for the specified threshold, send the request again
-    sendUpdateRequest();
-  } else {
-    // Calculate the remaining time within the 1-minute window
-    const remainingTime = inactivityThreshold - timeSinceLastActivity;
-    inactivityTimer = setTimeout(sendUpdateRequest, remainingTime);
-  }
-}
-
-function sendUpdateRequest() {
-  updateRequestSent = false; // Reset the flag
-  lastActivityTime = Date.now();
-}
-
-function updateLastActive() {
-  resetInactivityTimer();
-}
-
-function trackingMapActivities() {
-  const currentURL = window.location.pathname;
-
-  if (currentURL.endsWith("/webpages") || currentURL.endsWith("/webpages/favorites")) {
-    document.addEventListener("mousemove", function () {
-      updateLastActive();
-    });
-
-    document.addEventListener("keydown", function () {
-      updateLastActive();
-    });
-
-    resetInactivityTimer();
   }
 }
 
@@ -2268,7 +2199,6 @@ function unitMarkerClickEvent() {
   $(document).off("click", ".unit_marker").on("click", ".unit_marker", function () {
     console.log("Unit Marker clicked");
     updateActivityData("unit_marker", "click");
-    updateSession("price_opened");
   });
 }
 

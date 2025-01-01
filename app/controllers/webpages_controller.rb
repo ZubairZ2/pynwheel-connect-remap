@@ -181,18 +181,6 @@ class WebpagesController < ActionController::Base
     favorite.save!
   end
 
-  def sent_favorite
-  end
-
-  def price_opened
-  end
-
-  def apply_now_count
-  end
-
-  def update_last_active
-  end
-
   def delete_favorite
     array = cookies[:favorite_unit_ids].present? ? JSON.parse(cookies[:favorite_unit_ids]) : []
     @unit = Unit.find params[:unit_id]
