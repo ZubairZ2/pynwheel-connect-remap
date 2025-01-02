@@ -567,12 +567,9 @@ Rails.application.routes.draw do
 
     resources :webpages, only: :index do
       collection do
+        post :activity_tracking
         get :apply_now
         get :save_favorite
-        get :sent_favorite
-        get :price_opened
-        get :apply_now_count
-        get :update_last_active
         get :delete_favorite
         get :favorites
         get :favorites_share_link

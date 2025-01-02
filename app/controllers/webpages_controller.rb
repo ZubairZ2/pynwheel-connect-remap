@@ -161,6 +161,9 @@ class WebpagesController < ActionController::Base
     
   end
 
+  def activity_tracking
+  end
+
   def save_favorite
     array = cookies[:favorite_unit_ids].present? ? JSON.parse(cookies[:favorite_unit_ids]) : []
 
@@ -176,18 +179,6 @@ class WebpagesController < ActionController::Base
     fs.favorite_unit << params[:unit_id] unless fs.favorite_unit.include?(params[:unit_id])
     fs.save
     favorite.save!
-  end
-
-  def sent_favorite
-  end
-
-  def price_opened
-  end
-
-  def apply_now_count
-  end
-
-  def update_last_active
   end
 
   def delete_favorite

@@ -15,13 +15,10 @@ var currency = "$";
 var real_page_provider_unit_id = null;
 var currentUnitSelected = null;
 
-var applyNowChildClickHandled = false
-var unitChildClickHandled = false
+var isMouseMoving = false;
+var intervalId = null;
+var timeoutId = null;
 
-var inactivityTimer;
-var inactivityThreshold = 60000; // 1 minutes (adjust as needed)
-var lastActivityTime = Date.now();
-var updateRequestSent = false;
 
 $(document).ready(function () {
   webCommunity = $("#communityWebpagesData").data("community");
@@ -130,8 +127,6 @@ $(window).bind('load', function () {
     ////////////////////////////////////////////////
     /* unit modal*/
     $('#unitModal').on('hidden.bs.modal', function (e) {
-      applyNowChildClickHandled = false
-      unitChildClickHandled = false
       resetToDefaultZoom();
     });
 
@@ -230,6 +225,7 @@ $(window).bind('load', function () {
     ///////////////////////////////////////////
     $('.floorplate-anchor').click(function (e) {
       e.stopPropagation();
+
       var floor_for_showing_image = $(this).attr('id');
       if (floor_for_showing_image != current_floor) {
         $(".alert").hide();
@@ -1683,9 +1679,6 @@ function leaseTermPricingOptions(ss) {
 }
 
 function setUnitAttributes(element) {
-  applyNowChildClickHandled = false
-  unitChildClickHandled = false
-  
   $('.modal-unit-button').each(function () {
     $(this).removeClass('btn-primary');
     $(this).addClass('btn-default');
@@ -2100,8 +2093,6 @@ function get_unit_availability(unit) {
   const todayDate = moment();
   let availableDateString = "";
 
-  console.log("unitAvailableDate: ", unit.available_date);
-
   if (unit.sold) {
     availableDateString = "Unavailable:";
   } else if (unit.available && unit.available_date) {
@@ -2119,80 +2110,222 @@ function get_unit_availability(unit) {
     availableDateString = "Unavailable:";
   }
 
-  console.log("availableDateString: ", availableDateString);
   return availableDateString;
 }
 
-function updateSession(end_point_url) {
-  community_id = $("#maps_community_id").val()
-    if(community_id) {
-      $.ajax({
-        type: "GET",
-        url: `/communities/${community_id}/webpages/${end_point_url}`,
-        success: function(response) {}
-      });
+/* --------------------------- Start-Webpages Analytics track Activities Section ---------------------------------------------*/
+
+$(document).ready(function() {
+  mapContainerClickEvents();
+
+  trackingMapClickEvents();
+  trackingMapHoverEvents();
+});
+
+function updateActivityData(activityName, activityEvent) {
+  const payload = {
+    activity: {
+      name: activityName,
+      event: activityEvent,
     }
-  }
+  };
 
-$(document).ready(function() {
-  $(".apply_now").click(function() {
-    if(applyNowChildClickHandled) return;
-    applyNowChildClickHandled = true;
-    updateSession("apply_now_count")
+  const community_id = $("#maps_community_id").val();
+  if (community_id) {
+    $.ajax({
+      type: "POST",
+      url: `/communities/${community_id}/webpages/activity_tracking`,
+      data: JSON.stringify(payload),
+      contentType: "application/json",
+      success: function(response) {}
+    });
+  }
+}
+
+// Map Hover Events Tracking
+function trackingMapHoverEvents() {
+  amenityMarkerHoverEvent();
+  unitMarkerHoverEvent();
+  unitsListHoverEvent();
+}
+
+function amenityMarkerHoverEvent() {
+  $(document).off("mouseenter", ".amenity-marker").on("mouseenter", ".amenity-marker", function () {
+    updateActivityData("amenity_marker", "hover");
+  });   
+}
+
+function unitMarkerHoverEvent() {
+  $(document).off("mouseenter", ".unit_marker").on("mouseenter", ".unit_marker", function () {
+    updateActivityData("unit_marker", "hover");
+  });
+}
+
+function unitsListHoverEvent() {
+  $(document).off("mouseenter", ".left-side-30-units").on("mouseenter", ".left-side-30-units", function () {
+    updateActivityData("unit_marker", "hover");
+  });
+}
+
+// Map Click Events Tracking
+function trackingMapClickEvents() {
+  // new Methods
+  amenityMarkerClickEvent();
+  unitMarkerClickEvent();
+  sortingFilterClickEvent();
+  bedroomFilterClickEvent();
+  pricingFilterClickEvent();
+  squareFootageFilterClickEvent();
+  availabilityFilterClickEvent();
+
+  resetFilterClickEvent();
+  viewSavedButtonClickEvent();
+  scheduleTourButtonClickEvent();
+  logoIconClickEvent();
+  zoomInClickEvent();
+  zoomOutClickEvent();
+  zoomRefreshClickEvent();
+  floorNumberClickEvent();
+  clearAllFavoritesClickEvent();
+
+  shareFavoritesButtonClickEvent();
+  applyNowClickEvent();
+}
+
+// New Activity Tracking Methods.
+function amenityMarkerClickEvent() {
+  $(document).off("click", ".amenity-marker").on("click", ".amenity-marker", function () {
+    updateActivityData("amenity_marker", "click");
+  });   
+}
+
+function unitMarkerClickEvent() {
+  $(document).off("click", ".unit_marker").on("click", ".unit_marker", function () {
+    updateActivityData("unit_marker", "click");
+  });
+}
+
+function sortingFilterClickEvent() {
+  $(document).off("mousedown", "#filter").on("mousedown", "#filter", function () {
+    updateActivityData("sorting_filter", "click");
+  });
+}
+
+function bedroomFilterClickEvent() {
+  $(document).off("mousedown", "#unit_bedroom").on("mousedown", "#unit_bedroom", function () {
+    updateActivityData("bedroom_filter", "click");
+  });
+}
+
+function pricingFilterClickEvent() {
+  $(document).off("mousedown", "#market_rent").on("mousedown", "#market_rent", function () {
+    updateActivityData("pricing_filter", "click");
+  });
+}
+
+function squareFootageFilterClickEvent() {
+  $(document).off("mousedown", "#square_feet").on("mousedown", "#square_feet", function () {
+    updateActivityData("square_feet_filter", "click");
+  });
+}
+
+function availabilityFilterClickEvent() {
+  $(document).off("mousedown", "#available_unit").on("mousedown", "#available_unit", function () {
+    updateActivityData("availability_filter", "click");
+  });
+}
+
+function resetFilterClickEvent() {
+  $(document).off("click", ".reset-filter-button").on("click", ".reset-filter-button", function () {
+    updateActivityData("reset_filter", "click");
+  });
+}
+
+function viewSavedButtonClickEvent() {
+  $(document).off("click", ".view-saved-btn").on("click", ".view-saved-btn", function () {
+    updateActivityData("view_saved", "click");
+  });
+}
+
+function scheduleTourButtonClickEvent() {
+  $(document).off("click", ".schedule-tour-btn").on("click", ".schedule-tour-btn", function () {
+    updateActivityData("schedule_tour", "click");
+  });
+}
+
+function logoIconClickEvent() {
+  $(document).off("click", ".app-logo").on("click", ".app-logo", function () {
+    updateActivityData("logo", "click");
+  });
+}
+
+function floorNumberClickEvent() {
+  $(document).off("click", ".slick-slide").on("click", ".slick-slide", function () {
+    updateActivityData("floor_number", "click");
+  });
+}
+
+function zoomInClickEvent() {
+  $(document).off("click", ".plus-action").on("click", ".plus-action", function () {
+    updateActivityData("zoom_in", "click");
+  });
+}
+
+function zoomOutClickEvent() {
+  $(document).off("click", ".minus-action").on("click", ".minus-action", function () {
+    updateActivityData("zoom_out", "click");
+  });
+}
+
+function zoomRefreshClickEvent() {
+  $(document).off("click", ".refresh-action").on("click", ".refresh-action", function () {
+    updateActivityData("zoom_refresh", "click");
+  });
+}
+
+function clearAllFavoritesClickEvent() {
+  $(document).off("click", ".clear-all").on("click", ".clear-all", function () {
+    updateActivityData("clear_favorites", "click");
+  });
+}
+
+function shareFavoritesButtonClickEvent() {
+  $(document).off("click", ".share-favorite").on("click", ".share-favorite", function () {
+    updateActivityData("sent_favorite", "click");
+  });
+}
+
+function applyNowClickEvent() {
+  $(document).off("click", ".apply_now").on("click", ".apply_now", function () {
+    updateActivityData("apply_now_count", "click");
+  });
+}
+
+function mapContainerClickEvents() {
+  $('.maps-analytics-container').off('click').on('click', function (event) {
+    updateActivityData("other", "click");    
   });
 
-  $(".unit_marker").click(function() {
-    if (unitChildClickHandled) return;
-    unitChildClickHandled = true;
-    updateSession("price_opened")
+  $('.maps-analytics-container').off('mousemove').on('mousemove', function (event) {
+    if (!isMouseMoving) {
+      // Log the start of the mousemove
+      isMouseMoving = true;
+  
+      // Log every 3 seconds while the mouse is moving
+      intervalId = setInterval(() => {
+        updateActivityData("other", "hover");    
+      }, 3000);
+    }
+  
+    // Reset the timeout every time mousemove is triggered
+    clearTimeout(timeoutId);
+  
+    timeoutId = setTimeout(() => {
+      // Stop logging when mouse stops moving for 3 seconds
+      clearInterval(intervalId);
+      isMouseMoving = false;
+    }, 3000); // Timeout to detect when the mouse stops moving
   });
-
-  $(".share-favorite").click(function() { updateSession("sent_favorite") });
-});
-
-function resetInactivityTimer() {
-  clearTimeout(inactivityTimer);
-  const currentTime = Date.now();
-  const timeSinceLastActivity = currentTime - lastActivityTime;
-  
-  if (!updateRequestSent) {
-    // User has become active, send the request immediately
-    sendUpdateRequest();
-    updateRequestSent = true;
-  }
-  
-  if (timeSinceLastActivity >= inactivityThreshold) {
-    // User has been inactive for the specified threshold, send the request again
-    sendUpdateRequest();
-  } else {
-    // Calculate the remaining time within the 1-minute window
-    const remainingTime = inactivityThreshold - timeSinceLastActivity;
-    inactivityTimer = setTimeout(sendUpdateRequest, remainingTime);
-  }
 }
 
-function sendUpdateRequest() {
-  updateRequestSent = false; // Reset the flag
-  lastActivityTime = Date.now();
-}
-
-function updateLastActive() {
-  resetInactivityTimer();
-}
-
-$(document).ready(function() {
-  var currentURL = window.location.pathname;
-
-  if (currentURL.endsWith("/webpages") || currentURL.endsWith("/webpages/favorites")) {
-
-    document.addEventListener("mousemove", function () {
-      updateLastActive();
-    });
-
-    document.addEventListener("keydown", function () {
-      updateLastActive();
-    });
-
-    resetInactivityTimer();
-  }
-});
+/* --------------------------- Start-Webpages Analytics track Activities Section ---------------------------------------------*/
