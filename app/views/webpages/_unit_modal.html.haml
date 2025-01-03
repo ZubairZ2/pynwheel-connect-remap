@@ -80,7 +80,7 @@
                 %div{style: "padding: 0px 0px 8px 7px"}
                   .unit-buttons
             .c-modal-sidebar-filters
-              - if @community_info.credential.present? and @community_info.credential.apply_now.to_s == "true"
+              - if !params[:partner].present? && @community_info.credential.present? and @community_info.credential.apply_now.to_s == "true"
                 .m-filters
                   - if @community_info.data_provider == "psi" || @community_info.data_provider == "realpagesvc" || @community_info.data_provider == "resman"
                     .m-filter-1.c-m-filter{style: 'display: none;'}
@@ -128,7 +128,7 @@
                 -else
                   %span.move-in-date-text Click “Apply Now” for pricing options or contact us for a quote.
 
-              - elsif @community_info.credential.present? and @community_info.credential.apply_now.to_s == "separate_link"
+              - elsif !params[:partner].present? && @community_info.credential.present? and @community_info.credential.apply_now.to_s == "separate_link"
                 .m-filters
                   .m-filter-1.c-m-filter{style: 'display: none;'}
                     %label= @community_info.data_provider == "psi" ? 'Lease Start Date' : "Move In Date"
