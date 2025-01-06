@@ -21,12 +21,18 @@ class PartnerAnalyticsReportService < BaseService
   def get_report
     return empty_report if @communities.empty?
 
-    CSV.generate(headers: true) do |csv|
+    start_time = Time.now
+    puts "Generating report..."
+    
+    csv = CSV.generate(headers: true) do |csv|
       csv << HEADERS
-      @communities.each do |community|
+      @communities.find_each(batch_size: 100) do |community|
         csv << format_csv_row(community)
       end
     end
+
+    puts "Report generated in #{Time.now - start_time} seconds"
+    csv
   end
 
   private
@@ -36,17 +42,20 @@ class PartnerAnalyticsReportService < BaseService
   end
 
   def format_csv_row(community)
+    start_time = Time.now
     interactions = track_sessions(community)
     active_sessions = filter_active_sessions(interactions)
-    puts "\n Hovers start\n"
+
+    puts "\nSumming hover events for community #{community.id}..."
     hovers = sum_hover_events(interactions)
-    puts "\n Hovers end\n"
-    puts "\n Clicks start\n"
+
+    puts "\nSumming click events for community #{community.id}..."
     clicks = sum_click_events(interactions)
-    puts "\n Clicks end\n"
-    puts "\n Duration start\n"
+
+    puts "\nCalculating activity duration for community #{community.id}..."
     duration = calculate_activity_duration(active_sessions)
-    puts "\n Duration end\n"
+
+    puts "Row for community #{community.id} processed in #{Time.now - start_time} seconds"
 
     [
       community&.company&.id,
@@ -62,63 +71,71 @@ class PartnerAnalyticsReportService < BaseService
   end
 
   def fetch_partner_properties
+    start_time = Time.now
     community_ids = MapPartner.where(partner: @partner).pluck(:community_id)
-    Community.where(id: community_ids)
-             .includes(:company)
-             .includes(:track_sessions)
-             .order('companies.name, communities.name')
+    communities = Community.joins(:company)
+                           .includes(:track_sessions)
+                           .where(id: community_ids)
+                           .order('companies.name, communities.name')
+
+    puts "Fetched partner properties in #{Time.now - start_time} seconds"
+    communities
   end
 
   def track_sessions(community)
-    community&.track_sessions.where(
+    start_time = Time.now
+    sessions = community.track_sessions.where(
       track_session_type: "maps",
-      partner: @partner
-    ).where(
+      partner: @partner,
       start_datetime: @start_date.beginning_of_day..@end_date.end_of_day
     )
+
+    puts "Fetched track sessions for community #{community.id} in #{Time.now - start_time} seconds"
+    sessions
   end
 
   def filter_active_sessions(sessions)
-    sessions.where(
+    start_time = Time.now
+    active_sessions = sessions.where(
       Arel.sql("EXTRACT(EPOCH FROM (COALESCE(end_datetime, updated_at) - start_datetime)) > 10")
     )
+
+    puts "Filtered active sessions in #{Time.now - start_time} seconds"
+    active_sessions
   end
 
   def sum_hover_events(sessions)
-    sessions.sum(:amenity_marker_hovers) +
-      sessions.sum(:unit_marker_hovers)
+    start_time = Time.now
+    hover_sum = sessions.sum("amenity_marker_hovers + unit_marker_hovers")
+    puts "Summed hover events in #{Time.now - start_time} seconds"
+    hover_sum
   end
 
   def sum_click_events(sessions)
-    sessions.sum(:unit_marker_clicks) +
-      sessions.sum(:amenity_marker_clicks) +
-      sessions.sum(:sorting_filter_clicks) +
-      sessions.sum(:bedroom_filter_clicks) +
-      sessions.sum(:pricing_filter_clicks) +
-      sessions.sum(:square_feet_filter_clicks) +
-      sessions.sum(:availability_filter_clicks) +
-      sessions.sum(:reset_filter_clicks) +
-      sessions.sum(:view_saved_clicks) +
-      sessions.sum(:schedule_tour_clicks) +
-      sessions.sum(:logo_clicks) +
-      sessions.sum(:floor_number_clicks) +
-      sessions.sum(:zoom_in_clicks) +
-      sessions.sum(:zoom_out_clicks) +
-      sessions.sum(:zoom_refresh_clicks) +
-      sessions.sum(:clear_favorites_clicks)
+    start_time = Time.now
+    click_sum = sessions.sum(
+      "unit_marker_clicks + amenity_marker_clicks + sorting_filter_clicks + bedroom_filter_clicks + pricing_filter_clicks + 
+      square_feet_filter_clicks + availability_filter_clicks + reset_filter_clicks + view_saved_clicks + 
+      schedule_tour_clicks + logo_clicks + floor_number_clicks + zoom_in_clicks + zoom_out_clicks + zoom_refresh_clicks + 
+      clear_favorites_clicks"
+    )
+    puts "Summed click events in #{Time.now - start_time} seconds"
+    click_sum
   end
 
   def calculate_activity_duration(sessions)
+    start_time = Time.now
     total_sessions = sessions.size
     return 0 if total_sessions.zero?
   
-    # Calculate total minutes for all sessions
+    # Perform the division within SQL, not Ruby
     total_minutes = sessions.sum(
-      Arel.sql("EXTRACT(EPOCH FROM (COALESCE(updated_at, start_datetime) - start_datetime))")
-    ) / 60.0 # Convert seconds to minutes
+      Arel.sql("EXTRACT(EPOCH FROM (COALESCE(updated_at, start_datetime) - start_datetime))") 
+    ) / 60.0 # Divide here in SQL
+    duration = (total_minutes / total_sessions).round(2)
   
-    # Calculate average duration per session
-    (total_minutes / total_sessions).round(2)
+    puts "Calculated activity duration in #{Time.now - start_time} seconds"
+    duration
   end
   
 end
