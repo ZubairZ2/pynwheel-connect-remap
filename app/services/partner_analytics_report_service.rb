@@ -21,18 +21,13 @@ class PartnerAnalyticsReportService < BaseService
   def get_report
     return empty_report if @communities.empty?
 
-    start_time = Time.now
-    puts "Generating report..."
-    
-    csv = CSV.generate(headers: true) do |csv|
+    CSV.generate(headers: true) do |csv|
       csv << HEADERS
-      @communities.find_each(batch_size: 100) do |community|
-        csv << format_csv_row(community)
+      @communities.each do |community|
+        sessions = track_sessions(community)
+        csv << format_csv_row(community, sessions)
       end
     end
-
-    puts "Report generated in #{Time.now - start_time} seconds"
-    csv
   end
 
   private
@@ -41,101 +36,92 @@ class PartnerAnalyticsReportService < BaseService
     CSV.generate(headers: true) { |csv| csv << HEADERS }
   end
 
-  def format_csv_row(community)
-    start_time = Time.now
-    interactions = track_sessions(community)
-    active_sessions = filter_active_sessions(interactions)
+  def format_csv_row(community, sessions)
+    sessions ||= []  # Ensure sessions is always an array (empty if nil)
 
-    puts "\nSumming hover events for community #{community.id}..."
-    hovers = sum_hover_events(interactions)
-
-    puts "\nSumming click events for community #{community.id}..."
-    clicks = sum_click_events(interactions)
-
-    puts "\nCalculating activity duration for community #{community.id}..."
-    duration = calculate_activity_duration(active_sessions)
-
-    puts "Row for community #{community.id} processed in #{Time.now - start_time} seconds"
+    active_sessions = filter_active_sessions(sessions)
+    interactions = sessions.size
 
     [
-      community&.company&.id,
+      community.company&.id,
       community.id,
-      community&.company&.name,
+      community.company&.name,
       community.name,
-      interactions.size,
+      interactions,
       active_sessions.size,
-      hovers,
-      clicks,
-      duration
+      sum_hover_events(sessions),
+      sum_click_events(sessions),
+      calculate_activity_duration(active_sessions)
     ]
   end
 
   def fetch_partner_properties
-    start_time = Time.now
     community_ids = MapPartner.where(partner: @partner).pluck(:community_id)
-    communities = Community.joins(:company)
-                           .includes(:track_sessions)
-                           .where(id: community_ids)
-                           .order('companies.name, communities.name')
-
-    puts "Fetched partner properties in #{Time.now - start_time} seconds"
-    communities
+    Community.where(id: community_ids)
+             .includes(:company)
+             .order('companies.name, communities.name')
   end
 
   def track_sessions(community)
-    start_time = Time.now
-    sessions = community.track_sessions.where(
+    TrackSession.where(
       track_session_type: "maps",
-      partner: @partner,
+      community_id: community.id,
+      partner: @partner
+    ).where(
       start_datetime: @start_date.beginning_of_day..@end_date.end_of_day
     )
-
-    puts "Fetched track sessions for community #{community.id} in #{Time.now - start_time} seconds"
-    sessions
   end
 
   def filter_active_sessions(sessions)
-    start_time = Time.now
-    active_sessions = sessions.where(
-      Arel.sql("EXTRACT(EPOCH FROM (COALESCE(end_datetime, updated_at) - start_datetime)) > 10")
-    )
+    return [] if sessions.nil? || sessions.empty?  # Handle nil or empty sessions
 
-    puts "Filtered active sessions in #{Time.now - start_time} seconds"
-    active_sessions
+    sessions.select do |session|
+      session.updated_at - session.start_datetime > 10 # Consider sessions that last more than 10 seconds
+    end
   end
 
   def sum_hover_events(sessions)
-    start_time = Time.now
-    hover_sum = sessions.sum("amenity_marker_hovers + unit_marker_hovers")
-    puts "Summed hover events in #{Time.now - start_time} seconds"
-    hover_sum
+    hover_events = sessions.flat_map { |session| [session.amenity_marker_hovers, session.unit_marker_hovers] }
+    hover_events.sum
   end
-
+  
   def sum_click_events(sessions)
-    start_time = Time.now
-    click_sum = sessions.sum(
-      "unit_marker_clicks + amenity_marker_clicks + sorting_filter_clicks + bedroom_filter_clicks + pricing_filter_clicks + 
-      square_feet_filter_clicks + availability_filter_clicks + reset_filter_clicks + view_saved_clicks + 
-      schedule_tour_clicks + logo_clicks + floor_number_clicks + zoom_in_clicks + zoom_out_clicks + zoom_refresh_clicks + 
-      clear_favorites_clicks"
-    )
-    puts "Summed click events in #{Time.now - start_time} seconds"
-    click_sum
+    click_events = sessions.flat_map do |session|
+      [
+        session.unit_marker_clicks, 
+        session.amenity_marker_clicks, 
+        session.sorting_filter_clicks, 
+        session.bedroom_filter_clicks, 
+        session.pricing_filter_clicks, 
+        session.square_feet_filter_clicks, 
+        session.availability_filter_clicks, 
+        session.reset_filter_clicks, 
+        session.view_saved_clicks, 
+        session.schedule_tour_clicks, 
+        session.logo_clicks, 
+        session.floor_number_clicks, 
+        session.zoom_in_clicks, 
+        session.zoom_out_clicks, 
+        session.zoom_refresh_clicks, 
+        session.clear_favorites_clicks
+      ]
+    end
+    click_events.sum
   end
+  
 
   def calculate_activity_duration(sessions)
-    start_time = Time.now
     total_sessions = sessions.size
     return 0 if total_sessions.zero?
-  
-    # Perform the division within SQL, not Ruby
-    total_minutes = sessions.sum(
-      Arel.sql("EXTRACT(EPOCH FROM (COALESCE(updated_at, start_datetime) - start_datetime))") 
-    ) / 60.0 # Divide here in SQL
-    duration = (total_minutes / total_sessions).round(2)
-  
-    puts "Calculated activity duration in #{Time.now - start_time} seconds"
-    duration
+
+    # Calculate total seconds for all sessions
+    total_seconds = sessions.map do |session|
+      (session.updated_at - session.start_datetime)
+    end
+
+    total_minutes = (total_seconds.sum) / 60.0
+
+    # Calculate average duration per session
+    (total_minutes / total_sessions).round(2)
   end
-  
 end
