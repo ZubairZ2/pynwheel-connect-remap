@@ -2151,18 +2151,21 @@ function trackingMapHoverEvents() {
 
 function amenityMarkerHoverEvent() {
   $(document).off("mouseenter", ".amenity-marker").on("mouseenter", ".amenity-marker", function () {
+    console.log("Amenity Marker hovered");
     updateActivityData("amenity_marker", "hover");
   });   
 }
 
 function unitMarkerHoverEvent() {
   $(document).off("mouseenter", ".unit_marker").on("mouseenter", ".unit_marker", function () {
+    console.log("Unit Marker hovered");
     updateActivityData("unit_marker", "hover");
   });
 }
 
 function unitsListHoverEvent() {
   $(document).off("mouseenter", ".left-side-30-units").on("mouseenter", ".left-side-30-units", function () {
+    console.log("Unit Box hovered");
     updateActivityData("unit_marker", "hover");
   });
 }
@@ -2195,124 +2198,146 @@ function trackingMapClickEvents() {
 // New Activity Tracking Methods.
 function amenityMarkerClickEvent() {
   $(document).off("click", ".amenity-marker").on("click", ".amenity-marker", function () {
+    console.log("Amenity Marker Clicked");
     updateActivityData("amenity_marker", "click");
   });   
 }
 
 function unitMarkerClickEvent() {
   $(document).off("click", ".unit_marker").on("click", ".unit_marker", function () {
+    console.log("Unit Marker Clicked");
     updateActivityData("unit_marker", "click");
   });
 }
 
 function sortingFilterClickEvent() {
   $(document).off("mousedown", "#filter").on("mousedown", "#filter", function () {
+    console.log("Unit Box Clicked");
     updateActivityData("sorting_filter", "click");
   });
 }
 
 function bedroomFilterClickEvent() {
   $(document).off("mousedown", "#unit_bedroom").on("mousedown", "#unit_bedroom", function () {
+    console.log("Bedroom filter Clicked");
     updateActivityData("bedroom_filter", "click");
   });
 }
 
 function pricingFilterClickEvent() {
   $(document).off("mousedown", "#market_rent").on("mousedown", "#market_rent", function () {
+    console.log("Pricing filter Clicked");
     updateActivityData("pricing_filter", "click");
   });
 }
 
 function squareFootageFilterClickEvent() {
   $(document).off("mousedown", "#square_feet").on("mousedown", "#square_feet", function () {
+    console.log("Square Feet filter Clicked");
     updateActivityData("square_feet_filter", "click");
   });
 }
 
 function availabilityFilterClickEvent() {
   $(document).off("mousedown", "#available_unit").on("mousedown", "#available_unit", function () {
+    console.log("Available date filter Clicked");
     updateActivityData("availability_filter", "click");
   });
 }
 
 function resetFilterClickEvent() {
   $(document).off("click", ".reset-filter-button").on("click", ".reset-filter-button", function () {
+    console.log("Reset filter Clicked");
     updateActivityData("reset_filter", "click");
   });
 }
 
 function viewSavedButtonClickEvent() {
   $(document).off("click", ".view-saved-btn").on("click", ".view-saved-btn", function () {
+    console.log("View Saved Clicked");
     updateActivityData("view_saved", "click");
   });
 }
 
 function scheduleTourButtonClickEvent() {
   $(document).off("click", ".schedule-tour-btn").on("click", ".schedule-tour-btn", function () {
+    console.log("Schedule tour Clicked");
     updateActivityData("schedule_tour", "click");
   });
 }
 
 function logoIconClickEvent() {
   $(document).off("click", ".app-logo").on("click", ".app-logo", function () {
+    console.log("App Logo Clicked");
     updateActivityData("logo", "click");
   });
 }
 
 function floorNumberClickEvent() {
   $(document).off("click", ".slick-slide").on("click", ".slick-slide", function () {
+    console.log("Floor Number Clicked");
     updateActivityData("floor_number", "click");
   });
 }
 
 function zoomInClickEvent() {
   $(document).off("click", ".plus-action").on("click", ".plus-action", function () {
+    console.log("Zoom In Clicked");
     updateActivityData("zoom_in", "click");
   });
 }
 
 function zoomOutClickEvent() {
   $(document).off("click", ".minus-action").on("click", ".minus-action", function () {
+    console.log("Zoom out Clicked");
     updateActivityData("zoom_out", "click");
   });
 }
 
 function zoomRefreshClickEvent() {
   $(document).off("click", ".refresh-action").on("click", ".refresh-action", function () {
+    console.log("Zoom Refresh Clicked");
     updateActivityData("zoom_refresh", "click");
   });
 }
 
 function clearAllFavoritesClickEvent() {
   $(document).off("click", ".clear-all").on("click", ".clear-all", function () {
+    console.log("Clear Favorite Clicked");
     updateActivityData("clear_favorites", "click");
   });
 }
 
 function shareFavoritesButtonClickEvent() {
   $(document).off("click", ".share-favorite").on("click", ".share-favorite", function () {
+    console.log("Share Favorite Clicked");
+
     updateActivityData("sent_favorite", "click");
   });
 }
 
 function applyNowClickEvent() {
   $(document).off("click", ".apply_now").on("click", ".apply_now", function () {
+    console.log("Apply now Clicked");
     updateActivityData("apply_now_count", "click");
   });
 }
 
 function mapContainerClickEvents() {
   $('.maps-analytics-container').off('click').on('click', function (event) {
+    console.log("Container Clicked");
     updateActivityData("other", "click");    
   });
 
   $('.maps-analytics-container').off('mousemove').on('mousemove', function (event) {
+
     if (!isMouseMoving) {
       // Log the start of the mousemove
       isMouseMoving = true;
   
       // Log every 3 seconds while the mouse is moving
       intervalId = setInterval(() => {
+        console.log("Container Hovered");
         updateActivityData("other", "hover");    
       }, 3000);
     }
