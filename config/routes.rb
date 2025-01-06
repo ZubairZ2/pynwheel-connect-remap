@@ -259,6 +259,7 @@ Rails.application.routes.draw do
         get :authenteq_report
         get :account_report
         get :tour_feedback_report
+        get :partner_analytics_report
       end
     end
     

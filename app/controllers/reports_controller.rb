@@ -38,4 +38,8 @@ class ReportsController < ApplicationController
     send_data(zip_data, :type => 'application/zip', :filename => "TourFeedbackReport.zip")
   end
 
+  def partner_analytics_report
+    send_data(PartnerAnalyticsReportService.new(params[:start_date], params[:end_date], params[:partner]).get_report() , :type => 'application/xlsx', :filename => "partner-analytics-report.csv")
+  end
+
 end

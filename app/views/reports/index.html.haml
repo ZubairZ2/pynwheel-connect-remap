@@ -23,6 +23,8 @@
                   %th
                     End Date
                   %th
+                    Partner
+                  %th
                     Actions
               %tbody
                 - REPORTS.each_with_index do |report, index|
@@ -39,6 +41,12 @@
                       - if report[:has_date_range]
                         .end-date-wrapper
                           %input{type: "text", class: "form-control end-date-picker", placeholder: "End Date", data: { report_path: report[:path] }}
+                    %td
+                      - if report[:partner]
+                        .partner-wrapper
+                          %select{ class: "form-control", data: { report_path: report[:path] } }
+                            - report[:partner_list].each do |value|
+                              %option{ value: value }= value.capitalize
                     %td
                       %a.mb-20{href: "#", class: "download-link", data: { path: "/communities/#{current_community.id}/reports/#{report[:path]}" }}
                         .fa.fa-download
@@ -79,16 +87,22 @@
     const row = $(this).closest('tr');
     const startDatePicker = row.find('.start-date-picker');
     const endDatePicker = row.find('.end-date-picker');
+    const partnerSelect = row.find('select');
+
     
     const startDate = startDatePicker.val();
     const endDate = endDatePicker.val();
+    const partner = partnerSelect.val();
 
     const formattedStartDate = convertDateFormat(startDate);
     const formattedEndDate = convertDateFormat(endDate);
 
-    debugger;
     if (formattedStartDate && formattedEndDate) {
       path += `?start_date=${encodeURIComponent(formattedStartDate)}&end_date=${encodeURIComponent(formattedEndDate)}`;
+
+      if (partner) {
+        path += `&partner=${partner}`;
+      }
     }
 
     window.location.href = path;

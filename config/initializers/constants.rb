@@ -129,36 +129,57 @@ REPORTS = [
   {
     title: "Account Report",
     path: "account_report",
-    has_date_range: false
+    has_date_range: false,
+    partner: false,
+    partner_list: []
   },
   {
     title: "Touch Sessions Report",
     path: "generate_sessions_report",
-    has_date_range: true
+    has_date_range: true,
+    partner: false,
+    partner_list: []
   },
   {
     title: "Unplotted Units Report",
     path: "unplotted_units_report",
-    has_date_range: false
+    has_date_range: false,
+    partner: false,
+    partner_list: []
   },
   {
     title: "Map Type (Floorplates vs Map) Report",
     path: "properties_average_data_report",
-    has_date_range: false
+    has_date_range: false,
+    partner: false,
+    partner_list: []
   },
   {
     title: "Webpages Report",
     path: "generate_webpages_report",
-    has_date_range: false
+    has_date_range: false,
+    partner: false,
+    partner_list: []
   },
   {
     title: "Salesforce Report",
     path: "generate_salesforce_report",
-    has_date_range: false
+    has_date_range: false,
+    partner: false,
+    partner_list: []
   },
   {
     title: "Tour Feedback Report",
     path: "tour_feedback_report",
-    has_date_range: false
+    has_date_range: false,
+    partner: false,
+    partner_list: []
+  },
+  {
+    title: "Partner Analytics Report",
+    path: "partner_analytics_report",
+    has_date_range: true,
+    partner: true,
+    partner_list: ["apartmentlist", "rent"]
   }
 ]
