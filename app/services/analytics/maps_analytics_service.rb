@@ -119,6 +119,8 @@ module Analytics
           track_session.favorite_sent_counter += 1
         when "apply_now_count"
           track_session.apply_click_counter += 1
+        when "other"
+          track_session.other_clicks +=1
         end
       end
       
@@ -128,6 +130,8 @@ module Analytics
           track_session.unit_marker_hovers += 1
         when "amenity_marker"
           track_session.amenity_marker_hovers += 1
+        when "other"
+          track_session.other_hovers +=1
         end
       end
     
