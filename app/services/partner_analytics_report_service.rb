@@ -81,11 +81,20 @@ class PartnerAnalyticsReportService < BaseService
   end
 
   def sum_hover_events(sessions)
+    started_time = Time.now
+    puts "\n Hover started \n"
+
     hover_events = sessions.flat_map { |session| [session.amenity_marker_hovers, session.unit_marker_hovers] }
-    hover_events.sum
+    hover_sum = hover_events.sum
+
+    puts "\n Hover Ended #{Time.now - started_time}\n"
+    hover_sum
   end
   
   def sum_click_events(sessions)
+    started_time = Time.now
+    puts "\n Click started \n"
+
     click_events = sessions.flat_map do |session|
       [
         session.unit_marker_clicks, 
@@ -106,22 +115,33 @@ class PartnerAnalyticsReportService < BaseService
         session.clear_favorites_clicks
       ]
     end
-    click_events.sum
+
+    click_sum = click_events.sum
+    puts "\n Click Ended #{Time.now - started_time}\n"
+
+    click_sum
   end
   
 
   def calculate_activity_duration(sessions)
+    started_time = Time.now
+    puts "\n Activity Duration started \n"
+
     total_sessions = sessions.size
     return 0 if total_sessions.zero?
 
+    dates = sessions.pluck(:updated_at, :start_datetime)
+
     # Calculate total seconds for all sessions
-    total_seconds = sessions.map do |session|
-      (session.updated_at - session.start_datetime)
+    total_seconds = dates&.map do |date|
+      (date[0] - date[1])
     end
 
     total_minutes = (total_seconds.sum) / 60.0
 
     # Calculate average duration per session
-    (total_minutes / total_sessions).round(2)
+    cal_mins = (total_minutes / total_sessions).round(2)
+    puts "\n Activity Duration Ended #{Time.now - started_time}\n"
+    cal_mins
   end
 end
