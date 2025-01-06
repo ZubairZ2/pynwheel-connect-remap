@@ -24,7 +24,8 @@ class PartnerAnalyticsReportService < BaseService
     CSV.generate(headers: true) do |csv|
       csv << HEADERS
       @communities.each do |community|
-        csv << format_csv_row(community)
+        sessions = track_sessions(community)
+        csv << format_csv_row(community, sessions)
       end
     end
   end
@@ -35,19 +36,21 @@ class PartnerAnalyticsReportService < BaseService
     CSV.generate(headers: true) { |csv| csv << HEADERS }
   end
 
-  def format_csv_row(community)
-    interactions = track_sessions(community)
-    active_sessions = filter_active_sessions(interactions)
+  def format_csv_row(community, sessions)
+    sessions ||= []  # Ensure sessions is always an array (empty if nil)
+
+    active_sessions = filter_active_sessions(sessions)
+    interactions = sessions.size
 
     [
-      community&.company&.id,
+      community.company&.id,
       community.id,
-      community&.company&.name,
+      community.company&.name,
       community.name,
-      interactions.size,
+      interactions,
       active_sessions.size,
-      sum_hover_events(interactions),
-      sum_click_events(interactions),
+      sum_hover_events(sessions),
+      sum_click_events(sessions),
       calculate_activity_duration(active_sessions)
     ]
   end
@@ -70,9 +73,11 @@ class PartnerAnalyticsReportService < BaseService
   end
 
   def filter_active_sessions(sessions)
-    sessions.where(
-      Arel.sql("EXTRACT(EPOCH FROM (COALESCE(end_datetime, updated_at) - start_datetime)) > 10")
-    )
+    return [] if sessions.nil? || sessions.empty?  # Handle nil or empty sessions
+
+    sessions.select do |session|
+      session.updated_at - session.start_datetime > 10 # Consider sessions that last more than 10 seconds
+    end
   end
 
   def sum_hover_events(sessions)
@@ -102,14 +107,13 @@ class PartnerAnalyticsReportService < BaseService
   def calculate_activity_duration(sessions)
     total_sessions = sessions.size
     return 0 if total_sessions.zero?
-  
+
     # Calculate total minutes for all sessions
-    total_minutes = sessions.sum(
-      Arel.sql("EXTRACT(EPOCH FROM (COALESCE(updated_at, start_datetime) - start_datetime))")
-    ) / 60.0 # Convert seconds to minutes
-  
+    total_minutes = sessions.sum do |session|
+      (session.updated_at - session.start_datetime) / 60.0  # Convert seconds to minutes
+    end
+
     # Calculate average duration per session
     (total_minutes / total_sessions).round(2)
   end
-  
 end
