@@ -38,6 +38,15 @@ class PartnerAnalyticsReportService < BaseService
   def format_csv_row(community)
     interactions = track_sessions(community)
     active_sessions = filter_active_sessions(interactions)
+    puts "\n Hovers start\n"
+    hovers = sum_hover_events(interactions)
+    puts "\n Hovers end\n"
+    puts "\n Clicks start\n"
+    clicks = sum_click_events(interactions)
+    puts "\n Clicks end\n"
+    puts "\n Duration start\n"
+    duration = calculate_activity_duration(active_sessions)
+    puts "\n Duration end\n"
 
     [
       community&.company&.id,
@@ -46,9 +55,9 @@ class PartnerAnalyticsReportService < BaseService
       community.name,
       interactions.size,
       active_sessions.size,
-      sum_hover_events(interactions),
-      sum_click_events(interactions),
-      calculate_activity_duration(active_sessions)
+      hovers,
+      clicks,
+      duration
     ]
   end
 
