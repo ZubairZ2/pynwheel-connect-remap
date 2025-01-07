@@ -11,9 +11,15 @@ module Analytics
 
     def maintain_maps_session
       begin
-        track_session = return_last_maps_session
-        return unless track_session.present?
+        if(@params[:action] === "index")
+          track_session = return_new_session
+        else
+          track_session = return_last_maps_session
+          return unless track_session.present?
+        end
+
         manage_session_info(track_session)
+
         track_session.save
       rescue StandardError => e
         puts "\n\n---------------------------#{e.message} ----------------------\n\n"
@@ -25,15 +31,37 @@ module Analytics
       def return_last_maps_session
         track_sessions = get_track_sessions()
         return return_new_session unless track_sessions.any?
+
         track_session = track_sessions.last
         track_session_last_updated_at = return_community_datetime(track_session.updated_at)
 
         if session_datetime_not_in_limit?(track_session_last_updated_at)
-          # update_last_session_end_datetime(track_session, track_session_last_updated_at)
           track_session = return_new_session
+        else
+          check_map_interactions(track_session)
         end
+
         track_session.updated_at = fetch_datetime()
         track_session
+      end
+
+      def check_map_interactions track_session
+        is_interaction = false
+        if ["index", "favorites", "save_favorite"].include?(@params[:action])
+          is_interaction = true
+        elsif @params[:action] == "activity_tracking"
+          if @params[:activity][:event] == "click" && ["sent_favorite", "apply_now_count", "unit_marker"].include?(@params[:activity][:name])
+            is_interaction = true
+          end
+        end
+        
+        if is_interaction
+          last_active = return_community_datetime(track_session.map_interactions_last_active)
+          if session_datetime_not_in_limit?(last_active)
+            track_session.map_interactions += 1
+            track_session.map_interactions_last_active = return_community_datetime(Time.now)
+          end
+        end
       end
       
       def update_last_session_end_datetime(track_session, track_session_last_updated_at)
@@ -45,7 +73,15 @@ module Analytics
       end
 
       def return_new_session
-        TrackSession.new(start_datetime: (fetch_datetime), track_session_type: "maps", community_id: @community.id, community_time_zone: @timezone,session_id: @cookies[:webpages_session_id], partner: @partner)
+        TrackSession.new(
+          start_datetime: (fetch_datetime),
+          track_session_type: "maps",
+          community_id: @community.id,
+          community_time_zone: @timezone,
+          session_id: @cookies[:webpages_session_id],
+          partner: @partner,
+          map_interactions_last_active: return_community_datetime(Time.now)
+        )
       end
 
       def manage_session_info(track_session)
@@ -54,10 +90,13 @@ module Analytics
         case @params[:action]
         when "index"
           visited_pages << "Webpage main page" unless visited_pages.include?("Webpage main page")
+          track_session.map_interactions_last_active = return_community_datetime(Time.now)
         when "favorites"
           visited_pages << "View favorites page" unless visited_pages.include?("View favorites page")
+          track_session.map_interactions_last_active = return_community_datetime(Time.now)
         when "save_favorite"
           track_session.favorite_saved_counter += 1
+          track_session.map_interactions_last_active = return_community_datetime(Time.now)
         when "activity_tracking"
           track_session_activity(track_session)
         end
@@ -83,6 +122,7 @@ module Analytics
         when "unit_marker"
           track_session.unit_marker_clicks += 1
           track_session.price_opened_counter += 1
+          track_session.map_interactions_last_active = return_community_datetime(Time.now)
         when "amenity_marker"
           track_session.amenity_marker_clicks += 1
         when "amenity_marker"
@@ -117,8 +157,10 @@ module Analytics
           track_session.clear_favorites_clicks += 1
         when "sent_favorite"
           track_session.favorite_sent_counter += 1
+          track_session.map_interactions_last_active = return_community_datetime(Time.now)
         when "apply_now_count"
           track_session.apply_click_counter += 1
+          track_session.map_interactions_last_active = return_community_datetime(Time.now)
         when "other"
           track_session.other_clicks +=1
         end

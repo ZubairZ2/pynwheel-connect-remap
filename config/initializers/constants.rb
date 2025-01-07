@@ -109,7 +109,8 @@ SELF_TOUR_NO_SHOWS = "The number of scheduled tours that did not use the applica
 
 
 # Maps INFO
-MAPS_SESSIONS_INFO = "Map interaction is defined as an instance in which the user interacts with the Pynwheel Map until the browser is closed or the activity is idle for two minutes."
+# MAPS_SESSIONS_INFO = "Map interaction is defined as an instance in which the user interacts with the Pynwheel Map until the browser is closed or the activity is idle for two minutes."
+MAPS_SESSIONS_INFO = "Map interaction is defined as a session of a highly engaged user during which one or more of the following events occurs: opens a pricing modal; saves a favorite; clicks on “apply now”; clicks to share favorites. A session begins when the map is loaded and ends when the map is closed or the activity is idle for two minutes."
 MAPS_SESSION_DURATION = "Average duration of interaction on the Pynwheel Map until the browser is closed or the activity is idle for two minutes."
 MAPS_SESSIONS_BY_TIME_OF_DAY_INFO = "Number of interactions per time of day at the location of the user."
 MAPS_SINGLE_VS_MULTIPLE_PAGE_VISITS_INFO = "A single page visit means the user only visited the map. Multiple pages means that they also visited the Favorites page."

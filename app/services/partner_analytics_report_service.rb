@@ -5,6 +5,7 @@ class PartnerAnalyticsReportService < BaseService
     Company\ Name
     Community\ Name
     Map\ Interactions
+    Sessions
     Active\ Sessions
     Hover\ Events
     Click\ Events
@@ -39,14 +40,13 @@ class PartnerAnalyticsReportService < BaseService
 
   def format_csv_row(community, sessions)
     active_sessions = filter_active_sessions(sessions)
-    interactions = sessions.size
-
     [
       community.company&.id,
       community.id,
       community.company&.name,
       community.name,
-      interactions,
+      map_interactions(sessions),
+      sessions.size,
       active_sessions.size,
       sum_hover_events(sessions),
       sum_click_events(sessions),
@@ -72,13 +72,33 @@ class PartnerAnalyticsReportService < BaseService
   end
 
   def filter_active_sessions(sessions)
-    sessions.select { |session| session.updated_at - session.start_datetime > 10 }
-  end
+    sessions.select do |session|
+      hover_events = [
+        session.amenity_marker_hovers,
+        session.unit_marker_hovers,
+        session.other_hovers
+    ].sum
+      click_events = [
+        session.unit_marker_clicks, session.amenity_marker_clicks,
+        session.sorting_filter_clicks, session.bedroom_filter_clicks,
+        session.pricing_filter_clicks, session.square_feet_filter_clicks,
+        session.availability_filter_clicks, session.reset_filter_clicks,
+        session.view_saved_clicks, session.schedule_tour_clicks,
+        session.logo_clicks, session.floor_number_clicks,
+        session.zoom_in_clicks, session.zoom_out_clicks,
+        session.zoom_refresh_clicks, session.clear_favorites_clicks,
+        session.other_clicks
+      ].sum
+  
+      # Consider the session active if it has any hover or click events
+      (hover_events > 0 || click_events > 0)
+    end
+  end  
 
   def sum_hover_events(sessions)
     # Calculate hover events dynamically without modifying TrackSession
     sessions.sum do |session|
-      session.amenity_marker_hovers + session.unit_marker_hovers
+      session.amenity_marker_hovers + session.unit_marker_hovers + session.other_hovers
     end
   end
 
@@ -93,10 +113,15 @@ class PartnerAnalyticsReportService < BaseService
         session.view_saved_clicks, session.schedule_tour_clicks,
         session.logo_clicks, session.floor_number_clicks,
         session.zoom_in_clicks, session.zoom_out_clicks,
-        session.zoom_refresh_clicks, session.clear_favorites_clicks
+        session.zoom_refresh_clicks, session.clear_favorites_clicks,
+        session.other_clicks
       ].sum
     end
   end
+
+  def map_interactions(sessions)
+    sessions.sum(&:map_interactions)
+  end  
 
   def calculate_activity_duration(sessions)
     total_sessions = sessions.size
