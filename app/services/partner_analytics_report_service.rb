@@ -9,7 +9,7 @@ class PartnerAnalyticsReportService < BaseService
     Active\ Sessions
     Hover\ Events
     Click\ Events
-    Activity\ Duration
+    Activity\ Duration\ (In\ Minutes)
   ].freeze
 
   def initialize(start_date, end_date, partner)
