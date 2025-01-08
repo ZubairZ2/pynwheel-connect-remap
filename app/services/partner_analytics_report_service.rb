@@ -98,7 +98,7 @@ class PartnerAnalyticsReportService < BaseService
   def sum_hover_events(sessions)
     # Calculate hover events dynamically without modifying TrackSession
     sessions.sum do |session|
-      session.amenity_marker_hovers + session.unit_marker_hovers + session.other_hovers
+      session.amenity_marker_hovers + session.unit_marker_hovers
     end
   end
 
@@ -113,8 +113,7 @@ class PartnerAnalyticsReportService < BaseService
         session.view_saved_clicks, session.schedule_tour_clicks,
         session.logo_clicks, session.floor_number_clicks,
         session.zoom_in_clicks, session.zoom_out_clicks,
-        session.zoom_refresh_clicks, session.clear_favorites_clicks,
-        session.other_clicks
+        session.zoom_refresh_clicks, session.clear_favorites_clicks
       ].sum
     end
   end
