@@ -87,7 +87,9 @@ class PartnerAnalyticsReportService < BaseService
         session.logo_clicks, session.floor_number_clicks,
         session.zoom_in_clicks, session.zoom_out_clicks,
         session.zoom_refresh_clicks, session.clear_favorites_clicks,
-        session.other_clicks
+        session.favorite_saved_counter, session.virtual_tour_clicks,
+        session.unit_modal_buttons_clicks, session.open_pricing_matrix_clicks,
+        session.hide_pricing_matrix_clicks, session.other_clicks
       ].sum
   
       (hover_events > 0 || click_events > 0)
@@ -110,7 +112,10 @@ class PartnerAnalyticsReportService < BaseService
         session.view_saved_clicks, session.schedule_tour_clicks,
         session.logo_clicks, session.floor_number_clicks,
         session.zoom_in_clicks, session.zoom_out_clicks,
-        session.zoom_refresh_clicks, session.clear_favorites_clicks
+        session.zoom_refresh_clicks, session.clear_favorites_clicks, 
+        session.favorite_saved_counter, session.virtual_tour_clicks,
+        session.unit_modal_buttons_clicks, session.open_pricing_matrix_clicks,
+        session.hide_pricing_matrix_clicks
       ].sum
     end
   end
