@@ -90,20 +90,17 @@ class PartnerAnalyticsReportService < BaseService
         session.other_clicks
       ].sum
   
-      # Consider the session active if it has any hover or click events
       (hover_events > 0 || click_events > 0)
     end
   end  
 
   def sum_hover_events(sessions)
-    # Calculate hover events dynamically without modifying TrackSession
     sessions.sum do |session|
       session.amenity_marker_hovers + session.unit_marker_hovers
     end
   end
 
   def sum_click_events(sessions)
-    # Calculate click events dynamically without modifying TrackSession
     sessions.sum do |session|
       [
         session.unit_marker_clicks, session.amenity_marker_clicks,

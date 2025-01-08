@@ -2222,10 +2222,22 @@ function bedroomFilterClickEvent() {
     console.log("Bedroom filter Clicked");
     updateActivityData("bedroom_filter", "click");
   });
+
+  $(document).off("mousedown", "#responsive_unit_bedroom").on("mousedown", "#responsive_unit_bedroom", function () {
+    console.log("Bedroom filter Clicked");
+    updateActivityData("bedroom_filter", "click");
+  });
 }
+
+
 
 function pricingFilterClickEvent() {
   $(document).off("mousedown", "#market_rent").on("mousedown", "#market_rent", function () {
+    console.log("Pricing filter Clicked");
+    updateActivityData("pricing_filter", "click");
+  });
+
+  $(document).off("mousedown", "#responsive_market_rent").on("mousedown", "#responsive_market_rent", function () {
     console.log("Pricing filter Clicked");
     updateActivityData("pricing_filter", "click");
   });
@@ -2236,10 +2248,20 @@ function squareFootageFilterClickEvent() {
     console.log("Square Feet filter Clicked");
     updateActivityData("square_feet_filter", "click");
   });
+
+  $(document).off("mousedown", "#responsive_square_feet").on("mousedown", "#responsive_square_feet", function () {
+    console.log("Square Feet filter Clicked");
+    updateActivityData("square_feet_filter", "click");
+  });
 }
 
 function availabilityFilterClickEvent() {
   $(document).off("mousedown", "#available_unit").on("mousedown", "#available_unit", function () {
+    console.log("Available date filter Clicked");
+    updateActivityData("availability_filter", "click");
+  });
+
+  $(document).off("mousedown", "#responsive_available_unit").on("mousedown", "#responsive_available_unit", function () {
     console.log("Available date filter Clicked");
     updateActivityData("availability_filter", "click");
   });

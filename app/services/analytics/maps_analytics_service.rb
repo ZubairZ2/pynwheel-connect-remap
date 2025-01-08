@@ -30,6 +30,7 @@ module Analytics
     
       def return_last_maps_session
         track_sessions = get_track_sessions()
+
         return return_new_session unless track_sessions.any?
 
         track_session = track_sessions.last
@@ -69,7 +70,8 @@ module Analytics
       end
 
       def get_track_sessions
-        TrackSession.where(community_id: @community, session_id: @cookies[:webpages_session_id], partner: @partner)
+        # TrackSession.where(community_id: @community, session_id: @cookies[:webpages_session_id], partner: @partner)
+        TrackSession.where(community_id: @community, partner: @partner)
       end
 
       def return_new_session
@@ -78,7 +80,7 @@ module Analytics
           track_session_type: "maps",
           community_id: @community.id,
           community_time_zone: @timezone,
-          session_id: @cookies[:webpages_session_id],
+          # session_id: @cookies[:webpages_session_id],
           partner: @partner,
           map_interactions_last_active: return_community_datetime(Time.now)
         )
