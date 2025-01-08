@@ -163,6 +163,14 @@ module Analytics
         when "apply_now_count"
           track_session.apply_click_counter += 1
           track_session.map_interactions_last_active = return_community_datetime(Time.now)
+        when "virtual_tour"
+          track_session.virtual_tour_clicks += 1
+        when "unit_modal_buttons"
+          track_session.unit_modal_buttons_clicks += 1
+        when "open_pricing_matrix"
+          track_session.open_pricing_matrix_clicks += 1
+        when "hide_pricing_matrix"
+          track_session.hide_pricing_matrix_clicks += 1
         when "other"
           track_session.other_clicks +=1
         end

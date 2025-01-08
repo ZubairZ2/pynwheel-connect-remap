@@ -2153,7 +2153,12 @@ function amenityMarkerHoverEvent() {
   $(document).off("mouseenter", ".amenity-marker").on("mouseenter", ".amenity-marker", function () {
     console.log("Amenity Marker hovered");
     updateActivityData("amenity_marker", "hover");
-  });   
+  });  
+  
+  $(document).off("mouseenter", ".sitemap-amenity-marker").on("mouseenter", ".sitemap-amenity-marker", function () {
+    console.log("Amenity Marker hovered");
+    updateActivityData("amenity_marker", "hover");
+  });  
 }
 
 function unitMarkerHoverEvent() {
@@ -2190,9 +2195,11 @@ function trackingMapClickEvents() {
   zoomRefreshClickEvent();
   floorNumberClickEvent();
   clearAllFavoritesClickEvent();
-
+  view3DTourClickEvent();
   shareFavoritesButtonClickEvent();
   applyNowClickEvent();
+  modalUnitButtonsClickEvent()
+  pricingMatrixClickEvents();
 }
 
 // New Activity Tracking Methods.
@@ -2200,7 +2207,12 @@ function amenityMarkerClickEvent() {
   $(document).off("click", ".amenity-marker").on("click", ".amenity-marker", function () {
     console.log("Amenity Marker Clicked");
     updateActivityData("amenity_marker", "click");
-  });   
+  }); 
+  
+  $(document).off("click", ".sitemap-amenity-marker").on("click", ".sitemap-amenity-marker", function () {
+    console.log("Amenity Marker Clicked");
+    updateActivityData("amenity_marker", "click");
+  }); 
 }
 
 function unitMarkerClickEvent() {
@@ -2228,8 +2240,6 @@ function bedroomFilterClickEvent() {
     updateActivityData("bedroom_filter", "click");
   });
 }
-
-
 
 function pricingFilterClickEvent() {
   $(document).off("mousedown", "#market_rent").on("mousedown", "#market_rent", function () {
@@ -2271,6 +2281,32 @@ function resetFilterClickEvent() {
   $(document).off("click", ".reset-filter-button").on("click", ".reset-filter-button", function () {
     console.log("Reset filter Clicked");
     updateActivityData("reset_filter", "click");
+  });
+}
+
+function view3DTourClickEvent() {
+  $(document).off("click", ".virtual-tour-btn").on("click", ".virtual-tour-btn", function () {
+    console.log("View 3D Clicked");
+    updateActivityData("virtual_tour", "click");
+  });
+}
+
+function modalUnitButtonsClickEvent() {
+  $(document).off("click", ".modal-unit-button").on("click", ".modal-unit-button", function () {
+    console.log("Unit Modal Button Clicked");
+    updateActivityData("unit_modal_buttons", "click");
+  });
+}
+
+function pricingMatrixClickEvents() {
+  $(document).off("click", ".show-more-price").on("click", ".show-more-price", function () {
+    console.log("Unit Modal Button Clicked");
+    updateActivityData("open_pricing_matrix", "click");
+  });
+
+  $(document).off("click", ".hide-more-price").on("click", ".hide-more-price", function () {
+    console.log("Unit Modal Button Clicked");
+    updateActivityData("hide_pricing_matrix", "click");
   });
 }
 
