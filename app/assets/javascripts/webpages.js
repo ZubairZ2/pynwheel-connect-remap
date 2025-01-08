@@ -2198,7 +2198,7 @@ function trackingMapClickEvents() {
   view3DTourClickEvent();
   shareFavoritesButtonClickEvent();
   applyNowClickEvent();
-  modalUnitButtonsClickEvent()
+  modalUnitButtonsClickEvent();
   pricingMatrixClickEvents();
 }
 
@@ -2299,15 +2299,15 @@ function modalUnitButtonsClickEvent() {
 }
 
 function pricingMatrixClickEvents() {
-  $(document).off("click", ".show-more-price").on("click", ".show-more-price", function () {
-    console.log("Unit Modal Button Clicked");
+  $(document).off("click", ".show-more").on("click", ".show-more", function () {
+    console.log("Show more pricing Clicked");
     updateActivityData("open_pricing_matrix", "click");
   });
 
-  $(document).off("click", ".hide-more-price").on("click", ".hide-more-price", function () {
-    console.log("Unit Modal Button Clicked");
-    updateActivityData("hide_pricing_matrix", "click");
-  });
+  // $(document).off("click", ".hide-more-price").on("click", ".hide-more-price", function () {
+  //   console.log("Hide more pricing Clicked");
+  //   updateActivityData("hide_pricing_matrix", "click");
+  // });
 }
 
 function viewSavedButtonClickEvent() {
