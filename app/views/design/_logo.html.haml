@@ -34,7 +34,7 @@
           - rn =  rand(9999999999999999999999999)
           %a.preview-image{:href=>current_community.logo.present? ? (current_community.crop_x.present? ? current_community.logo.url + "?timestamp=#{rn}" : current_community.logo.url + "?timestamp=#{rn}")  : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Logo"}
             = image_tag current_community.logo.present? ? (current_community.crop_x.present? ? current_community.logo.url + "?timestamp=#{rn}" : current_community.logo.url + "?timestamp=#{rn}") : "default.jpeg",:height=>"100%",:width=>"100%",:id=>"preview-image"
-            = image_tag "exclamation-mark.png", class: "waring_exal #{(current_community.logo.present? ? (current_community.logo.width < 200 && current_community.logo.height < 200) ? "" : "hidden" : "hidden") rescue "hidden" }", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
+            = image_tag "exclamation-mark.png", class: "waring_exal #{(current_community.logo.present? ? ((current_community.logo.width < 200 && current_community.logo.height < 200) rescue "hidden") ? "" : "hidden" : "hidden") rescue "hidden" }", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
       - if current_community.logo.present?
         .row{:style => "padding-left: 47%;"}
           = link_to show_logo_in_modal_community_design_index_path(),:class => "", remote: true do
