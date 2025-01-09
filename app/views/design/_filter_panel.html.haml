@@ -295,7 +295,7 @@
                         .select-logo-logo
                           %a.preview-image{:href=>current_community.design.filter_button.present? ? current_community.design.filter_button.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Filter button Image"}
                             = image_tag current_community.design.filter_button.present? ? current_community.design.filter_button.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"filter-button-preview-image"
-                            = image_tag "exclamation-mark.png", class: "exal_filter_button #{(current_community.design.filter_button.present? ? (current_community.design.filter_button.width < 200 && current_community.design.filter_button.height < 200) ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
+                            = image_tag "exclamation-mark.png", class: "exal_filter_button #{(current_community.design.filter_button.present? ? ((current_community.design.filter_button.width < 200 && current_community.design.filter_button.height < 200) rescue "hidden") ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
 
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -329,7 +329,7 @@
                         .select-logo-logo
                           %a.preview-image{:href=>current_community.design.gallery_button.present? ? current_community.design.gallery_button.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Gallery button Image"}
                             = image_tag current_community.design.gallery_button.present? ? current_community.design.gallery_button.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"gallery-button-preview-image"
-                            = image_tag "exclamation-mark.png", class: "exal_gallery_button #{(current_community.design.gallery_button.present? ? (current_community.design.gallery_button.width < 200 && current_community.design.gallery_button.height < 200) ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
+                            = image_tag "exclamation-mark.png", class: "exal_gallery_button #{(current_community.design.gallery_button.present? ? ( (current_community.design.gallery_button.width < 200 && current_community.design.gallery_button.height < 200) rescue "hidden") ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
 
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -363,7 +363,7 @@
                         .select-logo-logo
                           %a.preview-image{:href=>current_community.design.filter_panel_background_image.present? ? current_community.design.filter_panel_background_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Filter panel background button Image"}
                             = image_tag current_community.design.filter_panel_background_image.present? ? current_community.design.filter_panel_background_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"filter-panel-background-preview-image"
-                            = image_tag "exclamation-mark.png", class: "exal_filter_panel_background_image #{(current_community.design.filter_panel_background_image.present? ? (current_community.design.filter_panel_background_image.width < 200 && current_community.design.filter_panel_background_image.height < 200) ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
+                            = image_tag "exclamation-mark.png", class: "exal_filter_panel_background_image #{(current_community.design.filter_panel_background_image.present? ? ((current_community.design.filter_panel_background_image.width < 200 && current_community.design.filter_panel_background_image.height < 200) rescue "hidden") ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
 
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -397,7 +397,7 @@
                         .select-logo-logo
                           %a.preview-image{:href=>current_community.design.gallery_button_on_image.present? ? current_community.design.gallery_button_on_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Gallery Image on"}
                             = image_tag current_community.design.gallery_button_on_image.present? ? current_community.design.gallery_button_on_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"gallery-image-on-preview"
-                            = image_tag "exclamation-mark.png", class: "exal_gallery_button_on_image #{(current_community.design.gallery_button_on_image.present? ? (current_community.design.gallery_button_on_image.width < 200 && current_community.design.gallery_button_on_image.height < 200) ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
+                            = image_tag "exclamation-mark.png", class: "exal_gallery_button_on_image #{(current_community.design.gallery_button_on_image.present? ? ((current_community.design.gallery_button_on_image.width < 200 && current_community.design.gallery_button_on_image.height < 200) rescue "hidden") ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
 
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -432,7 +432,7 @@
                         .select-logo-logo
                           %a.preview-image{:href=>current_community.design.filter_label_image.present? ? current_community.design.filter_label_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Filter label image"}
                             = image_tag current_community.design.filter_label_image.present? ? current_community.design.filter_label_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"filter-label-image-preview"
-                            = image_tag "exclamation-mark.png", class: "exal_filter_label_image #{(current_community.design.filter_label_image.present? ? (current_community.design.filter_label_image.width < 200 && current_community.design.filter_label_image.height < 200) ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
+                            = image_tag "exclamation-mark.png", class: "exal_filter_label_image #{(current_community.design.filter_label_image.present? ? ( (current_community.design.filter_label_image.width < 200 && current_community.design.filter_label_image.height < 200) rescue "hidden") ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
 
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
