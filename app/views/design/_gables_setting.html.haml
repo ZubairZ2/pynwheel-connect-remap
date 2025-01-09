@@ -137,7 +137,7 @@
                   .select-logo-logo
                     %a.preview-image{:href=>current_community.design.gable.home_page_nav_bg_image.present? ? current_community.design.gable.home_page_nav_bg_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Home Page Navigation Background Image"}
                       = image_tag current_community.design.gable.home_page_nav_bg_image.present? ? current_community.design.gable.home_page_nav_bg_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"gable-home-page-nav-bg-image-preview"
-                      = image_tag "exclamation-mark.png", class: "exal_home_page_nav_bg_image #{(current_community.design.gable.home_page_nav_bg_image.present? ? (current_community.design.gable.home_page_nav_bg_image.width < 200 && current_community.design.gable.home_page_nav_bg_image.height < 200) ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
+                      = image_tag "exclamation-mark.png", class: "exal_home_page_nav_bg_image #{(current_community.design.gable.home_page_nav_bg_image.present? ? ( (current_community.design.gable.home_page_nav_bg_image.width < 200 && current_community.design.gable.home_page_nav_bg_image.height < 200) rescue "hidden") ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
 
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -170,7 +170,7 @@
                   .select-logo-logo
                     %a.preview-image{:href=>current_community.design.gable.global_nav_bg_image.present? ? current_community.design.gable.global_nav_bg_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Global Navigation Background Image"}
                       = image_tag current_community.design.gable.global_nav_bg_image.present? ? current_community.design.gable.global_nav_bg_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"gable-global-nav-bg-image-preview"
-                      = image_tag "exclamation-mark.png", class: "exal_global_nav_bg_image #{(current_community.design.gable.global_nav_bg_image.present? ? (current_community.design.gable.global_nav_bg_image.width < 200 && current_community.design.gable.global_nav_bg_image.height < 200) ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
+                      = image_tag "exclamation-mark.png", class: "exal_global_nav_bg_image #{(current_community.design.gable.global_nav_bg_image.present? ? ((current_community.design.gable.global_nav_bg_image.width < 200 && current_community.design.gable.global_nav_bg_image.height < 200) rescue "hidden") ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
 
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -204,7 +204,7 @@
                   .select-logo-logo
                     %a.preview-image{:href=>current_community.design.gable.filter_panel_bg_image.present? ? current_community.design.gable.filter_panel_bg_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Filter Panel Background Image"}
                       = image_tag current_community.design.gable.filter_panel_bg_image.present? ? current_community.design.gable.filter_panel_bg_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"gable-filter-panel-bg-image-preview"
-                      = image_tag "exclamation-mark.png", class: "exal_filter_panel_bg_image #{(current_community.design.gable.filter_panel_bg_image.present? ? (current_community.design.gable.filter_panel_bg_image.width < 200 && current_community.design.gable.filter_panel_bg_image.height < 200) ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
+                      = image_tag "exclamation-mark.png", class: "exal_filter_panel_bg_image #{(current_community.design.gable.filter_panel_bg_image.present? ? ((current_community.design.gable.filter_panel_bg_image.width < 200 && current_community.design.gable.filter_panel_bg_image.height < 200) rescue "hidden") ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
 
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -252,7 +252,7 @@
                         .select-logo-logo
                           %a.preview-image{:href=>current_community.design.gable.application_bg_image_gables.present? ? current_community.design.gable.application_bg_image_gables.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Application Background Image"}
                             = image_tag current_community.design.gable.application_bg_image_gables.present? ? current_community.design.gable.application_bg_image_gables.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"application-bg-image-gables-preview-image"
-                            = image_tag "exclamation-mark.png", class: "exal_application_bg_image_gables #{(current_community.design.gable.application_bg_image_gables.present? ? (current_community.design.gable.application_bg_image_gables.width < 200 && current_community.design.gable.application_bg_image_gables.height < 200) ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
+                            = image_tag "exclamation-mark.png", class: "exal_application_bg_image_gables #{(current_community.design.gable.application_bg_image_gables.present? ? ((current_community.design.gable.application_bg_image_gables.width < 200 && current_community.design.gable.application_bg_image_gables.height < 200) rescue "hidden") ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
 
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -284,7 +284,7 @@
                         .select-logo-logo
                           %a.preview-image{:href=>current_community.design.gable.apartment_bg_image_gables.present? ? current_community.design.gable.apartment_bg_image_gables.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Apartment Background Image"}
                             = image_tag current_community.design.gable.apartment_bg_image_gables.present? ? current_community.design.gable.apartment_bg_image_gables.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"apartment-nav-bg-image-gables-preview-image"
-                            = image_tag "exclamation-mark.png", class: "exal_apartment_bg_image_gables #{(current_community.design.gable.apartment_bg_image_gables.present? ? (current_community.design.gable.apartment_bg_image_gables.width < 200 && current_community.design.gable.apartment_bg_image_gables.height < 200) ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
+                            = image_tag "exclamation-mark.png", class: "exal_apartment_bg_image_gables #{(current_community.design.gable.apartment_bg_image_gables.present? ? ((current_community.design.gable.apartment_bg_image_gables.width < 200 && current_community.design.gable.apartment_bg_image_gables.height < 200) rescue "hidden") ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
 
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -316,7 +316,7 @@
                         .select-logo-logo
                           %a.preview-image{:href=>current_community.design.gable.gallery_bg_image_gables.present? ? current_community.design.gable.gallery_bg_image_gables.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Gallery Background Image"}
                             = image_tag current_community.design.gable.gallery_bg_image_gables.present? ? current_community.design.gable.gallery_bg_image_gables.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"gallery-bg-image-gables-preview-image"
-                            = image_tag "exclamation-mark.png", class: "exal_gallery_bg_image_gables #{(current_community.design.gable.gallery_bg_image_gables.present? ? (current_community.design.gable.gallery_bg_image_gables.width < 200 && current_community.design.gable.gallery_bg_image_gables.height < 200) ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
+                            = image_tag "exclamation-mark.png", class: "exal_gallery_bg_image_gables #{(current_community.design.gable.gallery_bg_image_gables.present? ? ((current_community.design.gable.gallery_bg_image_gables.width < 200 && current_community.design.gable.gallery_bg_image_gables.height < 200) rescue "hidden") ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
 
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -348,7 +348,7 @@
                         .select-logo-logo
                           %a.preview-image{:href=>current_community.design.gable.favourite_bg_image_gables.present? ? current_community.design.gable.favourite_bg_image_gables.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Favorites Background Image"}
                             = image_tag current_community.design.gable.favourite_bg_image_gables.present? ? current_community.design.gable.favourite_bg_image_gables.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"favourite-bg-image-gables-preview-image"
-                            = image_tag "exclamation-mark.png", class: "exal_favourite_bg_image_gables #{(current_community.design.gable.favourite_bg_image_gables.present? ? (current_community.design.gable.favourite_bg_image_gables.width < 200 && current_community.design.gable.favourite_bg_image_gables.height < 200) ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
+                            = image_tag "exclamation-mark.png", class: "exal_favourite_bg_image_gables #{(current_community.design.gable.favourite_bg_image_gables.present? ? ((current_community.design.gable.favourite_bg_image_gables.width < 200 && current_community.design.gable.favourite_bg_image_gables.height < 200) rescue "hidden") ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
 
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -380,7 +380,7 @@
                         .select-logo-logo
                           %a.preview-image{:href=>current_community.design.gable.additional_pages_bg_image_gables.present? ? current_community.design.gable.additional_pages_bg_image_gables.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Additional Pages Background Image"}
                             = image_tag current_community.design.gable.additional_pages_bg_image_gables.present? ? current_community.design.gable.additional_pages_bg_image_gables.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"additional-pages-bg-image-gables-preview-image"
-                            = image_tag "exclamation-mark.png", class: "exal_additional_pages_bg_image_gables #{(current_community.design.gable.additional_pages_bg_image_gables.present? ? (current_community.design.gable.additional_pages_bg_image_gables.width < 200 && current_community.design.gable.additional_pages_bg_image_gables.height < 200) ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
+                            = image_tag "exclamation-mark.png", class: "exal_additional_pages_bg_image_gables #{(current_community.design.gable.additional_pages_bg_image_gables.present? ? ((current_community.design.gable.additional_pages_bg_image_gables.width < 200 && current_community.design.gable.additional_pages_bg_image_gables.height < 200) rescue "hidden") ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
 
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
