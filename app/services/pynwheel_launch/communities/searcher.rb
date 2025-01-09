@@ -43,7 +43,7 @@ attr_reader :user , :params
 
   def pynwheel_launch_access(communities)
     return unless communities.present?
-    community_users_ids = communities.joins(:community).where('communities.pynwheel_launch_access = ? ', 'true')
+    community_users_ids = communities.joins(:community).where('communities.pynwheel_launch_access = ? AND communities.name != ? ', 'true', DUMMY_COMMUNITY_NAME)
     CommunityUser.where(id: community_users_ids)
   end
 
