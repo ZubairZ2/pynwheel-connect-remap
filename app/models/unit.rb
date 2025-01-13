@@ -266,11 +266,11 @@ class Unit < ApplicationRecord
 
   def crop_unit_secondary_image
     secondary_image.recreate_versions! if (crop_x_secondary.present? && !image_bit && do_crop_secpndary)
-    self.update_columns(do_crop_secpndary: false)
+    self.update(do_crop_secpndary: false)
   end
   def crop_unit_image
     image.recreate_versions! if (crop_x.present? && image_bit && do_crop)
-    self.update_columns(do_crop: false)
+    self.update(do_crop: false)
   end
 
   def destroy_associated_stops

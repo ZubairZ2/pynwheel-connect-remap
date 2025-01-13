@@ -198,7 +198,7 @@ class FloorplatesController < ApplicationController
   def ajax_path_draw_on_floorplate
     unit = @community.units.where(provider_unit_id: params[:id])
     if unit.present?
-      #unit.first.update_columns(x_plot: params[:x_plot],y_plot: params[:y_plot],floorplate_id: params[:floorplate_id])
+      #unit.first.update(x_plot: params[:x_plot],y_plot: params[:y_plot],floorplate_id: params[:floorplate_id])
       unit = unit.first
       unit.x_plot = params[:x_plot]
       unit.y_plot = params[:y_plot]

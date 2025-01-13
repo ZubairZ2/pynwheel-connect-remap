@@ -24,7 +24,7 @@ class RemoteLocksController < ApplicationController
     # device_id = params[:id]
     # if @community.enable_locks and @community.locks_provider == "EdgeState" and @community.edge_state.present?
     #   remote_lock = RemoteLock.find_by(device_id: device_id, edge_state_id: current_community.edge_state.id)
-    #   remote_lock.update_columns(remote_lock_params)
+    #   remote_lock.update(remote_lock_params)
 
     #   access_token = generate_remotelock_token
     #   responce = RemoteLockService.new(current_community).update_device(access_token, device_id, remote_lock)

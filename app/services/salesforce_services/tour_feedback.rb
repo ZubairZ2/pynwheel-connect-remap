@@ -94,7 +94,7 @@ module SalesforceServices
                 )
 
 
-                sf_user.update_columns(sf_status: "deleted", data: response.merge(feedback: body))
+                sf_user.update(sf_status: "deleted", data: response.merge(feedback: body))
 
               rescue HTTParty::Error => e
                 OpenStruct.new({success?: false, error: e, payload: nil})

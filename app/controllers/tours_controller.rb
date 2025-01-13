@@ -263,7 +263,7 @@ class ToursController < ApplicationController
 
   def save_schedule_widget_btn_setting
     @schedule_widget_setting = @community.community_tour.scheduler_widget_setting
-    @schedule_widget_setting.update_columns(btn_text: params[:btn_text], btn_font: params[:btn_font], btn_font_size: params[:btn_font_size], btn_color: params[:btn_color], btn_width: params[:btn_width].to_i, btn_height: params[:btn_height].to_i)
+    @schedule_widget_setting.update(btn_text: params[:btn_text], btn_font: params[:btn_font], btn_font_size: params[:btn_font_size], btn_color: params[:btn_color], btn_width: params[:btn_width].to_i, btn_height: params[:btn_height].to_i)
     flash[:notice] = "Tour settings updated successfully."
     redirect_to settings_community_tours_path(@community)
   end
@@ -419,7 +419,7 @@ class ToursController < ApplicationController
     @building_starting_point = BuildingStartingPoint.find_by_id params[:bsp_id]
     @tour_stop = TourStop.find_by(stop_id: @building_starting_point, stop_type: "building_starting_point")
     respond_to do |format|
-      if @building_starting_point.update_columns(x_plot: params[:x_plot], y_plot: params[:y_plot]) && @tour_stop.update_columns(latitude: params[:x_plot], longitude: params[:y_plot])
+      if @building_starting_point.update(x_plot: params[:x_plot], y_plot: params[:y_plot]) && @tour_stop.update(latitude: params[:x_plot], longitude: params[:y_plot])
         format.json { render json: @building_starting_point, status: :ok }
       else
         format.json { render json: @building_starting_point.errors, status: :unprocessable_entity }
@@ -483,7 +483,7 @@ class ToursController < ApplicationController
 
   def point_update
     path_point = PathPoint.find(params[:point_id])
-    path_point.update_columns(x_plot: params[:x_plot], y_plot: params[:y_plot])
+    path_point.update(x_plot: params[:x_plot], y_plot: params[:y_plot])
     path_point.neighbour_units.destroy_all
     NeighbourUnit.create path_point: path_point, unit_id: params[:unit_ids].join(',') if params[:unit_ids].present?
     begin

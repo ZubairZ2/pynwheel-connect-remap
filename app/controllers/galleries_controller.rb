@@ -29,7 +29,7 @@ class GalleriesController < ApplicationController
 
 	def update
 		@gallery = @community.galleries.find(params[:id])
-    if @gallery.update_columns(gallery_params)
+    if @gallery.update(gallery_params)
 			#PaperTrail::Version.create(item_type: "Gallery",item_id: @gallery.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: '#{@gallery.name}' community_id: '#{current_community.id}'")
 			flash[:notice] = "Gallery updated successfully."
     else

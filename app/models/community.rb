@@ -763,7 +763,7 @@ class Community < ApplicationRecord
 
   def set_status_for_all(status_entity, status_attribute, current_user)
     status_entity.build_status unless status_entity.status
-    # status_entity.status.update_columns(status: status_attribute, whodunnit: current_user&.id)
+    # status_entity.status.update(status: status_attribute, whodunnit: current_user&.id)
     status_entity.status.status = status_attribute
     status_entity.status.whodunnit = current_user&.id
     status_entity.status.save(validate: false)
@@ -843,12 +843,12 @@ class Community < ApplicationRecord
   end
 
   def change_touchscreen_app_for_dwelo
-    self.update_columns(touchscreen_app: false)
+    self.update(touchscreen_app: false)
   end
 
   # def set_company_level_settings_yes
   #   if self.company.credential.present?
-  #     self.update_columns(use_company_level_data_settings: true)
+  #     self.update(use_company_level_data_settings: true)
   #   end
   # end
   def set_default_provider
@@ -858,9 +858,9 @@ class Community < ApplicationRecord
     if self.use_company_level_data_settings == true
       unless current_company.data_providers.include?(self.data_provider)
         if current_company.data_providers.present?
-          self.update_columns(data_provider: current_company.data_providers.first )
+          self.update(data_provider: current_company.data_providers.first )
         else
-          self.update_columns(data_provider: nil )
+          self.update(data_provider: nil )
         end
       end
     end
@@ -896,7 +896,7 @@ class Community < ApplicationRecord
 
   def crop_secondary_image
     secondary_logo.recreate_versions! if (crop_x_secondary.present? && !image_bit && do_crop_secondary)
-    self.update_columns(do_crop_secondary: false)
+    self.update(do_crop_secondary: false)
   end
 
   def is_futurist?

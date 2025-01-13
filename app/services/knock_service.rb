@@ -157,11 +157,11 @@ class KnockService < BaseService
   end
 
   def add_knock_appointment_id appointment_id
-    @scheduled_tour.update_columns(knock_appointment_id: appointment_id)
+    @scheduled_tour.update(knock_appointment_id: appointment_id)
   end
 
   def add_knock_prospect_id prospect_id
-    @scheduled_tour.update_columns(knock_prospect_id: prospect_id)
+    @scheduled_tour.update(knock_prospect_id: prospect_id)
   end
 
   def is_knock_crm

@@ -10,11 +10,11 @@ class MapLocksJob < ApplicationJob
         data = parse_stop(community, zerv_lock.sub_location_name)
 
         if data.present?
-          data.zerv_locks.map{|z| z.update_columns(stop_type: nil, stop_id: nil)}
-          zerv_lock.update_columns(stop_type: data.class.to_s.classify, stop_id: data.id)
+          data.zerv_locks.map{|z| z.update(stop_type: nil, stop_id: nil)}
+          zerv_lock.update(stop_type: data.class.to_s.classify, stop_id: data.id)
           data.update_column(:lock_provider, "Zerv")
         else
-          zerv_lock.update_columns(stop_id: nil, stop_type: nil)
+          zerv_lock.update(stop_id: nil, stop_type: nil)
         end
       end
 
@@ -25,10 +25,10 @@ class MapLocksJob < ApplicationJob
         data = parse_stop(community, edgestate_lock.name)
         if data.present?
             data.edgestate_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
-            edgestate_lock.update_columns(stop_id: data.id, stop_type: data.class.name.classify) rescue nil
+            edgestate_lock.update(stop_id: data.id, stop_type: data.class.name.classify) rescue nil
             data.update_column(:lock_provider, type)
         else
-          edgestate_lock.update_columns(stop_id: nil, stop_type: nil, stop_name: nil)
+          edgestate_lock.update(stop_id: nil, stop_type: nil, stop_name: nil)
         end
       end
 
@@ -54,10 +54,10 @@ class MapLocksJob < ApplicationJob
 
         if data.present?
           data.dwelo_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
-          dwelo_lock.update_columns(stop_id: data.id, stop_type: data.class.name.classify) rescue nil
+          dwelo_lock.update(stop_id: data.id, stop_type: data.class.name.classify) rescue nil
           data.update_column(:lock_provider, type)
         else
-          dwelo_lock.update_columns(stop_id: nil, stop_type: nil, stop_name: nil)
+          dwelo_lock.update(stop_id: nil, stop_type: nil, stop_name: nil)
         end
       end
       
@@ -135,8 +135,8 @@ class MapLocksJob < ApplicationJob
     def update_door_lock(stop, door, type, community, lock_id)
       return unless lock_id.present?
 
-      door.update_columns(lock_provider: type, access_code: lock_id, updated_at: Time.now.utc)
-      stop.update_columns(lock_provider: type, access_code: lock_id )
+      door.update(lock_provider: type, access_code: lock_id, updated_at: Time.now.utc)
+      stop.update(lock_provider: type, access_code: lock_id )
 
       assign_lock_to_door(community, door, lock_id)
     end
@@ -144,7 +144,7 @@ class MapLocksJob < ApplicationJob
     def update_stop_lock(stop, type, community, lock_id)
       return unless lock_id.present?
 
-      stop.update_columns(lock_provider: type, access_code: lock_id )
+      stop.update(lock_provider: type, access_code: lock_id )
       assign_lock(community, stop, lock_id) if lock_id.present?
     end
 

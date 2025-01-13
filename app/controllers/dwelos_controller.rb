@@ -21,11 +21,11 @@ class DwelosController < ApplicationController
   def create
     unless @community.dwelo.present?
       @dwelo = Dwelo.create!(client_id: params[:dwelo][:client_id], client_secret: params[:dwelo][:client_secret], default_community_id: params[:dwelo][:default_community_id], community_id: @community.id)
-      @community.update_columns(:multiple_locks_provider => @locks_provider)
+      @community.update(:multiple_locks_provider => @locks_provider)
       redirect_to new_community_dwelo_path(@community), notice: 'Dwelo Account Created Successfully'
     else
       if @dwelo.present?
-        @community.update_columns(multiple_locks_provider: @locks_provider)
+        @community.update(multiple_locks_provider: @locks_provider)
         flash[:notice] = "Dwelo Account Updated Successfully."
       end
     end
@@ -38,7 +38,7 @@ class DwelosController < ApplicationController
 
   def update
     @dwelo_user_account = Dwelo.find params[:id]
-    @community.update_columns(multiple_locks_provider: @locks_provider)
+    @community.update(multiple_locks_provider: @locks_provider)
     if @dwelo_user_account.update!(dwelo_params)
       respond_to do |format|
         format.html { redirect_to new_community_dwelo_path, notice: 'Dwelo account successfully updated.' }

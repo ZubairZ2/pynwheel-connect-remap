@@ -102,7 +102,7 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
 
     def set_property_and_community_user
       begin
-        @community.update_columns(use_company_level_data_settings: true, pynwheel_launch_access: true)
+        @community.update(use_company_level_data_settings: true, pynwheel_launch_access: true)
         CommunityUser.find_or_create_by(user_id: current_pynwheel_user.id, community_id: @community.id)
       rescue => error
         render_response(error.message, false)

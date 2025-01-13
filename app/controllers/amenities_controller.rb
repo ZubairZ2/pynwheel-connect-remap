@@ -136,10 +136,10 @@ class AmenitiesController < ApplicationController
     @door = @amenity.ordered_doors.find_by(id: params[:door_id])
 
     if get_lock_provider() == "Manual" && params[:access_code] == ""
-      @door.update_columns(lock_provider: "", access_code: "")
+      @door.update(lock_provider: "", access_code: "")
       @amenity.update(lock_provider: "", access_code: "")
     else
-      @door.update_columns(lock_provider: get_lock_provider(), access_code: params[:access_code])
+      @door.update(lock_provider: get_lock_provider(), access_code: params[:access_code])
       @amenity.update(lock_provider: get_lock_provider(), access_code: params[:access_code])
     end
 
@@ -187,10 +187,10 @@ class AmenitiesController < ApplicationController
         @door = @amenity.ordered_doors.find_by id: params[:door_id]
         
         if get_lock_provider() == "Manual" && params[:access_code] == ""
-          @door.update_columns(lock_provider: "", access_code: "", updated_at: Time.now.utc)
+          @door.update(lock_provider: "", access_code: "", updated_at: Time.now.utc)
           @amenity.update(lock_provider: "", access_code: "")
         else
-          @door.update_columns(lock_provider: get_lock_provider(), access_code: params[:access_code], updated_at: Time.now.utc)
+          @door.update(lock_provider: get_lock_provider(), access_code: params[:access_code], updated_at: Time.now.utc)
           @amenity.update(lock_provider: get_lock_provider(), access_code: params[:access_code])
         end
 

@@ -299,14 +299,14 @@ class UnitsController < ApplicationController
 
   def set_manually_updated_column
     if @unit.sold
-      @unit.update_columns(availability: "Occupied", available: false, available_date: '', availability_is_updated: true)
+      @unit.update(availability: "Occupied", available: false, available_date: '', availability_is_updated: true)
     end
     if params[:unit][:available] == 'true'
 
-      @unit.update_columns(availability: "Unoccupied", available: true, availability_is_updated: true)
+      @unit.update(availability: "Unoccupied", available: true, availability_is_updated: true)
     end
     if params[:unit][:available] == 'false'
-      @unit.update_columns(availability: "Occupied", available: false, availability_is_updated: true)
+      @unit.update(availability: "Occupied", available: false, availability_is_updated: true)
     end
   end
 
@@ -375,7 +375,7 @@ class UnitsController < ApplicationController
     unit = @community.units.where(provider_unit_id: params[:id]).first
     if unit.present?
       door ||= unit.door || unit.build_door
-      door.update_columns(community_id: @community.id, x_plot: params[:x_plot], y_plot: params[:y_plot])
+      door.update(community_id: @community.id, x_plot: params[:x_plot], y_plot: params[:y_plot])
       render json: {unit: unit, door: door.reload, success: true}
     else
       render json: {unit: {}, door: {}, success: false}
@@ -399,9 +399,9 @@ class UnitsController < ApplicationController
     @unit = @community.units.where(provider_unit_id: params[:id]).first
     @door = @unit.door
     if params[:lock_provider] == "Manual" && params[:access_code] == ""
-      @door.update_columns(lock_provider: "", access_code: "")
+      @door.update(lock_provider: "", access_code: "")
     else
-      @door.update_columns(lock_provider: params[:lock_provider], access_code: params[:access_code])
+      @door.update(lock_provider: params[:lock_provider], access_code: params[:access_code])
     end
     assign_lock_to_door(@community, @door, params[:lock_id]) if params.has_key?("lock_id") && params[:lock_provider] != "Manual"
   end
@@ -410,7 +410,7 @@ class UnitsController < ApplicationController
     params[:ids].each do |id|
       unit = @community.units.where(provider_unit_id: id).first
       door ||= unit.door || unit.build_door
-      door.update_columns(community_id: @community.id, x_plot: params[:x_plot], y_plot: params[:y_plot])
+      door.update(community_id: @community.id, x_plot: params[:x_plot], y_plot: params[:y_plot])
     end
 
     data = []
@@ -622,9 +622,9 @@ class UnitsController < ApplicationController
       if @unit.door.present?
         @door = @unit.door
         if params[:unit][:lock_provider] == "Manual" && params[:unit][:access_code] == ""
-          @door.update_columns(lock_provider: "", access_code: "", updated_at: Time.now.utc)
+          @door.update(lock_provider: "", access_code: "", updated_at: Time.now.utc)
         else
-          @door.update_columns(lock_provider: params[:unit][:lock_provider], access_code: params[:unit][:access_code], updated_at: Time.now.utc)
+          @door.update(lock_provider: params[:unit][:lock_provider], access_code: params[:unit][:access_code], updated_at: Time.now.utc)
         end
         assign_lock_to_door(@community, @unit.door, params[:lock_id]) if params.has_key?("lock_id") && params[:unit][:lock_provider] != "Manual"
       else

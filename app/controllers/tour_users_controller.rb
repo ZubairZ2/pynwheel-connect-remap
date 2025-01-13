@@ -356,11 +356,11 @@ class TourUsersController < ApplicationController
     end
     
     if params[:authentiq_verified_at] == "true"
-      tour_user.update_columns(authentiq_verified_at: nil, is_authentiq_verified: false) if community.community_tour.verification_type == "authenteq"
+      tour_user.update(authentiq_verified_at: nil, is_authentiq_verified: false) if community.community_tour.verification_type == "authenteq"
     end
 
     if params[:checkpoint_verified_at] == "true"
-      tour_user.update_columns(checkpoint_verified_at: nil, is_checkpoint_verified: false) if community.community_tour.verification_type == "check_point_id"
+      tour_user.update(checkpoint_verified_at: nil, is_checkpoint_verified: false) if community.community_tour.verification_type == "check_point_id"
     end
   end
 
