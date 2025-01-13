@@ -69,6 +69,14 @@ class Sitemap < ApplicationRecord
     self.height > 0 ? self.height : self.image.height
   end
 
+  def map_ocr_data
+    read_attribute(:map_ocr_data) || []
+  end
+
+  def map_ocr_data=(value)
+    write_attribute(:map_ocr_data, value.is_a?(Array) ? value.to_json : value)
+  end
+
   private
 
   def unit_info unit
@@ -119,14 +127,6 @@ class Sitemap < ApplicationRecord
       unique_floorplat_unit_identifier: "#{self.id}",
       floorplate_units: sitemap_stops
     }
-  end
-
-  def map_ocr_data
-    read_attribute(:map_ocr_data) || []
-  end
-
-  def map_ocr_data=(value)
-    write_attribute(:map_ocr_data, value.is_a?(Array) ? value.to_json : value)
   end
 
 end
