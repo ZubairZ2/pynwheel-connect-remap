@@ -282,7 +282,7 @@
                       total_units = units;
                       var is_floorplate =$("#communityWebpagesData").data("isFloorplate"); // "#{@community_info.has_floorplates?}"
                       var community = $("#communityWebpagesData").data("communityName"); //"#{@community_info.name}"
-                      var amenities = $("#communityWebpagesData").data("amenities"); //"#{@amenities_data}";
+                      var amenities = $("#communityWebpagesData").data("amenitiesData"); //"#{@amenities_data}";
                       //amenities = amenities.replace(/&quot;/g,'"');
                       //amenities = JSON.parse(amenities);
                     });
@@ -356,9 +356,8 @@
   amenities: @amenities.to_json, 
   map_configurations: @community&.three_d_maps_configuration.to_json, 
   units: @units_with_floorplan_info, 
-  amenities: @amenities_data,
+  amenities_data: @amenities_data,
   community_name: @community_info.name
-
   } 
 }
 
