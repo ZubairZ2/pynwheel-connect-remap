@@ -275,15 +275,17 @@
                 
                 %div#units-body
                   :javascript
-                    var units = "#{@units_with_floorplan_info}";
-                    units = units.replace(/&quot;/g,'"');
-                    units = JSON.parse(units);
-                    total_units = units;
-                    var is_floorplate = "#{@community_info.has_floorplates?}"
-                    var community = "#{@community_info.name}"
-                    var amenities = "#{@amenities_data}";
-                    amenities = amenities.replace(/&quot;/g,'"');
-                    amenities = JSON.parse(amenities);
+                    $(document).ready(function () {
+                      var units = $("#communityWebpagesData").data("units"); //"#{@units_with_floorplan_info}";
+                      //units = units.replace(/&quot;/g,'"');
+                      //units = JSON.parse(units);
+                      total_units = units;
+                      var is_floorplate =$("#communityWebpagesData").data("isFloorplate"); // "#{@community_info.has_floorplates?}"
+                      var community = $("#communityWebpagesData").data("communityName"); //"#{@community_info.name}"
+                      var amenities = $("#communityWebpagesData").data("amenities"); //"#{@amenities_data}";
+                      //amenities = amenities.replace(/&quot;/g,'"');
+                      //amenities = JSON.parse(amenities);
+                    });
                     //renderChangedUnits(units, is_floorplate, community);
           %footer.c-footer#footer.responsive-content.mobile-footer
             %ul.location-items.location-responsive.responsive-content.responsive-legends.align-home-buttons
@@ -347,14 +349,25 @@
 = render partial: "virtual_tour_modal"
 = render partial: "amenity_virtual_tour_modal"
 
-#communityWebpagesData{data: {currency: @community.get_currency_symbol(), community: @community.to_json, is_floorplate: @community_info.has_floorplates?, amenities: @amenities.to_json, map_configurations: @community&.three_d_maps_configuration.to_json} }
+#communityWebpagesData{data: {
+  currency: @community.get_currency_symbol(), 
+  community: @community.to_json, 
+  is_floorplate: @community_info.has_floorplates?, 
+  amenities: @amenities.to_json, 
+  map_configurations: @community&.three_d_maps_configuration.to_json, 
+  units: @units_with_floorplan_info, 
+  amenities: @amenities_data,
+  community_name: @community_info.name
+
+  } 
+}
 
 :javascript
   var large_image_height = 166;
   var apply_now_url = "#{apply_now_community_webpages_url(@community)}"
   var redirect_url = "#{community_webpages_url(@community)}"
-  var has_floorplate = "#{@community_info.has_floorplates?}";
-  var community_name = "#{@community_info.name}"
+  var has_floorplate = $("#communityWebpagesData").data("isFloorplate"); //"#{@community_info.has_floorplates?}";
+  var community_name = $("#communityWebpagesData").data("communityName"); //"#{@community_info.name}"
   var display_rent = "#{@community_info.display_rent}"
   var isSiteMap = "#{@community.sitemap.present?}"
   var img_width = "#{@community.sitemap.present? && @community.sitemap.image.present? ? (@community.sitemap.width || @community.sitemap.image.width) : nil}"
@@ -579,11 +592,11 @@
   });
 
   document.getElementById('filter').addEventListener('change', () => {
-    var units = "#{@units_with_floorplan_info}";
-    units = units.replace(/&quot;/g,'"');
-    units = JSON.parse(units);
-    var is_floorplate = "#{@community_info.has_floorplates?}"
-    var community_name = "#{@community_info.name}"
+    var units = $("#communityWebpagesData").data("units"); //"#{@units_with_floorplan_info}";
+    //units = units.replace(/&quot;/g,'"');
+    //units = JSON.parse(units);
+    var is_floorplate = $("#communityWebpagesData").data("isFloorplate"); //"#{@community_info.has_floorplates?}"
+    var community_name = $("#communityWebpagesData").data("communityName"); //"#{@community_info.name}"
     renderChangedUnits();
   });
 
@@ -601,9 +614,9 @@
   /////////////////////////////////////////
   var current_units = [];
   /////////////////////////////////////////
-  var units = "#{@units_with_floorplan_info}";
-  units = units.replace(/&quot;/g,'"');
-  units = JSON.parse(units);
+  var units = $("#communityWebpagesData").data("units"); //"#{@units_with_floorplan_info}";
+  //units = units.replace(/&quot;/g,'"');
+  //units = JSON.parse(units);
   _beansApiKey = "#{ENV['BEANS_API_KEY']}"
   
   var community_logo = "#{@community.logo.present? ? true : false}"
