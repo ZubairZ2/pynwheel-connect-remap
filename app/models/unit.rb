@@ -145,8 +145,8 @@ class Unit < ApplicationRecord
     end
   }
   after_commit :populate_image_urls, on: [:create,:update]
-  after_update :crop_unit_image
-  after_update :crop_unit_secondary_image
+  after_update :crop_unit_image, if: ->(obj) { obj.image_changed? }
+  after_update :crop_unit_secondary_image, if: ->(obj) { obj.secondary_image_changed? }
   after_update :remove_doors_plotting, if: Proc.new { x_plot == 0 and y_plot == 0 }
   before_destroy :destroy_associated_stops
   # before_save :auto_hide_wait_units

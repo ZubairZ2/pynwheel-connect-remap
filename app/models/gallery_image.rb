@@ -34,7 +34,7 @@ class GalleryImage < ApplicationRecord
 	process_in_background :image
 	before_create :set_image_name
 	# before_save :populate_image_urls
-	after_update :crop_image
+	after_update :crop_image, if: ->(obj) { obj.image_changed? }
   after_commit :populate_image_urls, on: :create
 
 
