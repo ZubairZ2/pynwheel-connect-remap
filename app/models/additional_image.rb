@@ -23,7 +23,7 @@ class AdditionalImage < ApplicationRecord
   set_sortable :sort  
 	mount_uploader :image, AvatarUploader
 	before_create :set_image_name
-	after_update :crop_image
+	after_update :crop_image, if: ->(obj) { obj.image_changed? }
 
 
 	def crop_image

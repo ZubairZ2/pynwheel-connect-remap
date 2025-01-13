@@ -82,8 +82,8 @@ class Community < ApplicationRecord
   after_create :create_sms_email_content
 
   attr_accessor :default_community_id
-  after_update :crop_image
-  after_update :crop_secondary_image
+  after_update :crop_image, if: ->(obj) { obj.logo_changed? }
+  after_update :crop_secondary_image, if: ->(obj) { obj.secondary_logo_changed? }
   after_create :create_tour_also
   after_create :change_touchscreen_app_for_dwelo
   before_save :turn_off_chat, if: Proc.new { chat_control == false }
@@ -91,7 +91,7 @@ class Community < ApplicationRecord
   after_save :set_country_code, if: ->(obj) { obj.latitude_changed? || obj.longitude_changed? || obj.city_changed? || obj.state_changed? || obj.address_changed? || obj.zip_changed? }
 
   after_save :create_default_credential
-  after_update :set_default_provider
+  after_update :set_default_provider, if: ->(obj) { obj.data_provider_changed? }
 
   enum :alert_contact, [:email, :phone, :both]
 
