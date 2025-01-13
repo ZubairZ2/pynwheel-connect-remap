@@ -334,13 +334,13 @@ module Api
         if has_access
           @community = Community.find params[:community_id] if params[:community_id].present?
           @tour_user = TourUser.find params[:tour_user_id]
-          @tour = CustomizeTourService.new(community, tour_user).get_user_tour
+          @tour = CustomizeTourService.new(@community, @tour_user).get_user_tour
           chatroom = Chatroom.find_by(tour_user_id: @tour_user.id, tour_id: @community.community_tour.id)
           @latest_message_id = Chat.where("name = ? AND chatroom_id = ?", "Support Team", chatroom.id).last.id rescue 0
           
           stops_arr = []
           if @community.is_sitemap
-            stops_arr = community.mdu ? tour.tour_stops.where(display_stop: true).order(:sort) :  tour.tour_stops.where(display_stop: true, stop_type: "amenity").order(:sort)
+            stops_arr = @community.mdu ? @tour.tour_stops.where(display_stop: true).order(:sort) :  @tour.tour_stops.where(display_stop: true, stop_type: "amenity").order(:sort)
           else
             @building_list = @floor_list = []
     
@@ -364,10 +364,10 @@ module Api
               end
             end
           end
-
-          stops_arr = stops_arr.compact.map{|x| x.id}.uniq rescue []
-          user_stops = VisitedStop.where(tour_user_id: tour_user.id ,tour_id: tour.id )
-          un_ordered_visited_stops = user_stops.any? ? user_stops.map{|x| x.tour_stop_id}.uniq : []
+          
+          stops_arr = stops_arr.compact&.map{|x| x.id}&.uniq
+    
+          un_ordered_visited_stops = VisitedStop.where(tour_user_id: @tour_user.id ,tour_id: @tour.id ).map{|x| x.tour_stop_id}&.uniq
           
           # @visited_stops = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: @tour.id).order(created_at: :desc).map{|x| x.tour_stop_id}.distinct
 
