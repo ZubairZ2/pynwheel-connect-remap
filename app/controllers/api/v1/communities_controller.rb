@@ -365,7 +365,7 @@ module Api
             end
           end
           
-          stops_arr = stops_arr.compact.map{|x| x.id}.distinct
+          stops_arr = stops_arr.compact.map{|x| x.id}.distinct rescue []
     
           un_ordered_visited_stops = VisitedStop.where(tour_user_id: @tour_user.id ,tour_id: @tour.id ).map{|x| x.tour_stop_id}.distinct
           
@@ -373,7 +373,7 @@ module Api
 
           @visited_stops = []
           
-          stops_arr.each do |val|
+          stops_arr&.each do |val|
             if un_ordered_visited_stops.include?(val)
               @visited_stops << val
             end
