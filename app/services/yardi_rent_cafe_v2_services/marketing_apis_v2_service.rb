@@ -10,8 +10,10 @@ module YardiRentCafeV2Services
 
       create_access_log(create_appointment_body_params&.to_json, response)
 
-      yardi_response = response&.dig("prospectInfo") if response.present?
-      yardi_scheduled_tour_response(yardi_response) if yardi_response.present?
+      if response.present? && response&.parsed_response&.dig("prospectInfo").present?
+        yardi_response = response&.dig("prospectInfo") 
+        yardi_scheduled_tour_response(yardi_response) if yardi_response.present?
+      end
     end
 
     def cancel_tour(previous_tour = nil)
