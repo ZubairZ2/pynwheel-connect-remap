@@ -49,7 +49,7 @@ class RemoteLockService < BaseService
       
       response = HTTParty.post(auth_url, body: body, headers: { 'Content-Type' => 'application/x-www-form-urlencoded' })
       
-      @edge_state_user.update_columns(refresh_token: response['refresh_token']) if response['refresh_token'].present?
+      @edge_state_user.update(refresh_token: response['refresh_token']) if response['refresh_token'].present?
 
       return response["access_token"]
     end
@@ -310,7 +310,7 @@ class RemoteLockService < BaseService
         if rml.nil?
           rml = RemoteLock.create(device_id: device_id, remote_lock_type: type, name: name, edge_state_id: @edge_state_user.id)
         elsif rml.remote_lock_type != type  or rml.name != name
-          rml.update_columns(remote_lock_type: type, name: name)
+          rml.update(remote_lock_type: type, name: name)
         end
 
         available_ids << rml.id

@@ -39,7 +39,7 @@ class Api::V2::FloorplansController < Api::V2::ApiApplicationController
     begin
       params[:floorplans]&.each do |floorplan_param|
         floorplan = @community.floorplans.find floorplan_param[:id]
-        floorplan.update_columns(name: floorplan_param[:name], virtual_tour_url: floorplan_param[:virtual_tour_url], description: floorplan_param[:description]) if floorplan.present?
+        floorplan.update(name: floorplan_param[:name], virtual_tour_url: floorplan_param[:virtual_tour_url], description: floorplan_param[:description]) if floorplan.present?
         update_floorplan_amenities_info(floorplan, floorplan_param[:amenities])
       end
 
@@ -67,7 +67,7 @@ class Api::V2::FloorplansController < Api::V2::ApiApplicationController
       floorplan_amenities&.each do |floorplan_amenity_param|
         if floorplan.present?
           floorplan_amenity = floorplan.amenities.find floorplan_amenity_param[:id]
-          floorplan_amenity.update_columns(name: floorplan_amenity_param[:name], description: floorplan_amenity_param[:description])
+          floorplan_amenity.update(name: floorplan_amenity_param[:name], description: floorplan_amenity_param[:description])
           FloorplanAmenitiesService.new(floorplan, floorplan_amenity, @community).update_description_and_name()
         end
       end

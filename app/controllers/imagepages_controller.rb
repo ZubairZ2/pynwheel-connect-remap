@@ -27,7 +27,7 @@ class ImagepagesController < ApplicationController
 	def update
 		@imagepage = @community.imagepages.find(params[:id])
 		@imagepage.position = nil unless params[:imagepage][:position].present?
-    if @imagepage.update_columns(imagepage_params)
+    if @imagepage.update(imagepage_params)
       flash[:notice] = "Imagepage updated successfully."
     else
       flash[:error] = @imagepage.errors.full_messages.join(',')

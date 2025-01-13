@@ -47,13 +47,13 @@ class Door < ApplicationRecord
         if attached_with.digital_lock_provider?
             lock = attached_with.public_send(attached_with.lock_provider.downcase + "_locks").first
             if lock.present?
-                lock.update_columns(stop_id: self.id, stop_type: self.class.name)
-                self.update_columns(lock_provider: attached_with.lock_provider, access_code: attached_with.access_code) 
+                lock.update(stop_id: self.id, stop_type: self.class.name)
+                self.update(lock_provider: attached_with.lock_provider, access_code: attached_with.access_code) 
             end
-            attached_with.update_columns(lock_provider: "", access_code: "")
+            attached_with.update(lock_provider: "", access_code: "")
         elsif attached_with.lock_provider == "Manual"
-            self.update_columns(lock_provider: attached_with.lock_provider, access_code: attached_with.access_code) 
-            attached_with.update_columns(lock_provider: "", access_code: "")
+            self.update(lock_provider: attached_with.lock_provider, access_code: attached_with.access_code) 
+            attached_with.update(lock_provider: "", access_code: "")
         end
     end
 
@@ -61,16 +61,16 @@ class Door < ApplicationRecord
         if digital_lock_provider?
             lock = self.public_send(lock_provider.downcase + "_lock")
             if lock.present?
-                lock.update_columns(stop_id: attached_with_id, stop_type: attached_with_type)
-                attached_with.update_columns(lock_provider: lock_provider, access_code: access_code)
+                lock.update(stop_id: attached_with_id, stop_type: attached_with_type)
+                attached_with.update(lock_provider: lock_provider, access_code: access_code)
             end
         elsif lock_provider == "Manual"
-            attached_with.update_columns(lock_provider: lock_provider, access_code: access_code)
+            attached_with.update(lock_provider: lock_provider, access_code: access_code)
         end
     end
 
     def unplot_crossponding_unit
-        self.attached_with.update_columns(x_plot: 0, y_plot: 0, floorplate_id: nil)
+        self.attached_with.update(x_plot: 0, y_plot: 0, floorplate_id: nil)
         modal_unit = self.attached_with.modal_unit rescue false
         tour_stop = self.attached_with.tour_stop
 
@@ -78,7 +78,7 @@ class Door < ApplicationRecord
             VisitedStop.where(tour_stop_id: tour_stop.id).destroy_all
             tour_stop.destroy
         elsif tour_stop.present?
-            tour_stop.update_columns(latitude: 0, longitude: 0)
+            tour_stop.update(latitude: 0, longitude: 0)
         end
     end
 

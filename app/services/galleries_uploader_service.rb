@@ -18,7 +18,7 @@ class GalleriesUploaderService
 
         unless gallery["image"] == @gallery.name  
           puts "------------------------------- Update Gallery Update: #{gallery["name"]} ------------------------\n"
-          @gallery.update_columns(name: gallery["name"])
+          @gallery.update(name: gallery["name"])
           #PaperTrail::Version.create(item_type: "Gallery",item_id: @gallery.id,event: "update",whodunnit: @current_pynwheel_user.id,community_id: @community.id, company_id: @community.company.id,object: "name: '#{@gallery.name}' community_id: '#{@community.id}'")
         end
 
@@ -64,9 +64,9 @@ class GalleriesUploaderService
           image_name = @gallery_image.set_image_name rescue ""
 
           if @gallery_image.is_video?
-            @gallery_image.update_columns(name: image_name, video: img["file"])
+            @gallery_image.update(name: image_name, video: img["file"])
           else
-            @gallery_image.update_columns(name: image_name, image: img["file"])
+            @gallery_image.update(name: image_name, image: img["file"])
           end
 
           #PaperTrail::Version.create(item_type: "GalleryImage",item_id: gallery.id,event: "update",whodunnit: @current_pynwheel_user.id,community_id: @community.id, company_id: @community.company.id,object: "name: '#{gallery.name}' community_id: '#{@community.id}'")

@@ -374,48 +374,48 @@ class PynwheelLaunch::Communities::CommunityDetailForms
 
   def update_company_status_and_remarks status, remarks
     return if @community.company.status.blank?
-    @community&.company&.status.update_columns(status: status, remarks: remarks)
+    @community&.company&.status.update(status: status, remarks: remarks)
   end
 
   def update_community_status_and_remarks status, remarks
     return if @community.status.blank?
-    @community&.status.update_columns(status: status, remarks: remarks)
+    @community&.status.update(status: status, remarks: remarks)
   end
 
   def update_property_map_status_and_remarks status, remarks
     if @community.is_sitemap
-      @community.sitemap&.status.update_columns(status: status, remarks: remarks)
+      @community.sitemap&.status.update(status: status, remarks: remarks)
     elsif @community.has_floorplates?
-      @community.floorplates.each {|floorplate| floorplate&.status&.update_columns(status: status, remarks: remarks) }
+      @community.floorplates.each {|floorplate| floorplate&.status&.update(status: status, remarks: remarks) }
     end
   end
 
   def update_floorplan_status_and_remarks status, remarks
     return if @community.floorplans.blank?
-    @community.floorplans.each {|floorplan| floorplan&.status&.update_columns(status: status, remarks: remarks) }
+    @community.floorplans.each {|floorplan| floorplan&.status&.update(status: status, remarks: remarks) }
   end
 
   def update_data_provider_status_and_remarks status, remarks
     return if @community.data_provider.blank? && @community.credential.blank?
     credential = Credential.where(community_id: @community.id).order(updated_at: :desc).first
-    credential&.status.update_columns(status: status, remarks: remarks) 
-    @community.crm_credential&.status.update_columns(status: status, remarks: remarks) if @community.credential&.use_different_crm_provider
+    credential&.status.update(status: status, remarks: remarks) 
+    @community.crm_credential&.status.update(status: status, remarks: remarks) if @community.credential&.use_different_crm_provider
   end
 
   def update_visiting_hours_status_and_remarks status, remarks
     return if @community.opening_hours.blank? && @community.guided_opening_hours.blank?
-    @community&.opening_hours.each {|oh| oh&.status.update_columns(status: status, remarks: remarks) } if @community&.opening_hours.present?
-    @community&.guided_opening_hours.each {|gh| gh&.status.update_columns(status: status, remarks: remarks) } if @community&.guided_opening_hours.present?
+    @community&.opening_hours.each {|oh| oh&.status.update(status: status, remarks: remarks) } if @community&.opening_hours.present?
+    @community&.guided_opening_hours.each {|gh| gh&.status.update(status: status, remarks: remarks) } if @community&.guided_opening_hours.present?
   end
 
   def update_touch_gallery_media_status_and_remarks status, remarks
     return if @community.galleries.blank?
-    @community&.galleries.map {|gallery| gallery&.status.update_columns(status: status, remarks: remarks) } if @community&.galleries.present?
+    @community&.galleries.map {|gallery| gallery&.status.update(status: status, remarks: remarks) } if @community&.galleries.present?
   end
 
   def update_hardware_specs_status_and_remarks status, remarks
     return if @community.hardware_spec.nil?
-    @community&.hardware_spec&.status.update_columns(status: status, remarks: remarks) if @community&.hardware_spec.present?
+    @community&.hardware_spec&.status.update(status: status, remarks: remarks) if @community&.hardware_spec.present?
   end
 
   def update_home_page_media_status_and_remarks status, remarks
@@ -424,8 +424,8 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     home_page_images = @community&.design&.home_page_images
     home_page_video = @community&.design&.home_page_video
 
-    home_page_images.map {|hp_img| hp_img&.status.update_columns(status: status, remarks: remarks) } if home_page_images.present?
-    home_page_video&.status.update_columns(status: status, remarks: remarks) if home_page_video.present?
+    home_page_images.map {|hp_img| hp_img&.status.update(status: status, remarks: remarks) } if home_page_images.present?
+    home_page_video&.status.update(status: status, remarks: remarks) if home_page_video.present?
   end
 
   def update_tour_stops_status_and_remarks status, remarks
@@ -433,7 +433,7 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     tour_stops = @community.community_tour&.tour_stops
     tour_stops.map do |ts|
       unless ts.status.nil?
-        ts&.status.update_columns(status: status, remarks: remarks)
+        ts&.status.update(status: status, remarks: remarks)
       end
     end
   end
@@ -450,40 +450,40 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     igloohome_lock = @community.igloohome
     remote_locks = @community.launch_remote
 
-    zerv&.status&.update_columns(status: status, remarks: remarks) if zerv.present?
-    latch&.status&.update_columns(status: status, remarks: remarks) if latch.present?
-    dwelo&.status&.update_columns(status: status, remarks: remarks) if dwelo.present?
-    igloohome_lock&.status&.update_columns(status: status, remarks: remarks) if igloohome_lock.present?
-    schlage_locks&.status&.update_columns(status: status, remarks: remarks) if schlage_locks.present?
-    yale_locks&.status&.update_columns(status: status, remarks: remarks) if yale_locks.present?
-    other_locks&.each {|lock| lock&.status.update_columns(status: status, remarks: remarks) } if other_locks.present?
-    remote_locks&.status&.update_columns(status: status, remarks: remarks) unless remote_locks.nil?
+    zerv&.status&.update(status: status, remarks: remarks) if zerv.present?
+    latch&.status&.update(status: status, remarks: remarks) if latch.present?
+    dwelo&.status&.update(status: status, remarks: remarks) if dwelo.present?
+    igloohome_lock&.status&.update(status: status, remarks: remarks) if igloohome_lock.present?
+    schlage_locks&.status&.update(status: status, remarks: remarks) if schlage_locks.present?
+    yale_locks&.status&.update(status: status, remarks: remarks) if yale_locks.present?
+    other_locks&.each {|lock| lock&.status.update(status: status, remarks: remarks) } if other_locks.present?
+    remote_locks&.status&.update(status: status, remarks: remarks) unless remote_locks.nil?
   end
 
   def update_design_direction_status_and_remarks status, remarks
     return if @community&.design_direction&.blank?
-    @community&.design_direction&.status.update_columns(status: status, remarks: remarks) if @community&.design_direction.present?
+    @community&.design_direction&.status.update(status: status, remarks: remarks) if @community&.design_direction.present?
   end
 
   def update_amenity_images_status_and_remarks status, remarks
     return if @community.amenities.blank?
-    @community.amenities.each {|amenity| amenity&.status.update_columns(status: status, remarks: remarks) }
+    @community.amenities.each {|amenity| amenity&.status.update(status: status, remarks: remarks) }
   end
 
   def update_additional_pages_status_and_remarks status, remarks
     return if @community.imagepages.blank? && @community.webpages.blank?
-    @community.imagepages.each {|imagepage| imagepage&.status.update_columns(status: status, remarks: remarks) } if @community.imagepages.present?
-    @community.webpages.each {|webpage| webpage&.status.update_columns(status: status, remarks: remarks) } if @community.webpages.present?
+    @community.imagepages.each {|imagepage| imagepage&.status.update(status: status, remarks: remarks) } if @community.imagepages.present?
+    @community.webpages.each {|webpage| webpage&.status.update(status: status, remarks: remarks) } if @community.webpages.present?
 
   end
 
   def update_ebrochure_status_and_remarks status, remarks
     return if @community.favorite_setting.blank?
     weblinks = @community.favorite_setting.ebrochure_menu_buttons
-    weblinks.each {|weblink| weblink&.status.update_columns(status: status, remarks: remarks) } if weblinks.present?
+    weblinks.each {|weblink| weblink&.status.update(status: status, remarks: remarks) } if weblinks.present?
 
     images = @community.favorite_setting.favorite_images
-    images.each {|image| image&.status.update_columns(status: status, remarks: remarks) } if images.present?
+    images.each {|image| image&.status.update(status: status, remarks: remarks) } if images.present?
 
   end
 

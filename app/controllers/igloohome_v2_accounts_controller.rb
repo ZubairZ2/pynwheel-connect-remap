@@ -23,7 +23,7 @@ class IgloohomeV2AccountsController < ApplicationController
     unless @is_already_exists
       @igloohome = Igloohome.new(igloohome_params)
       if @igloohome.save
-        current_community.update_columns(multiple_locks_provider: locks_provider)
+        current_community.update(multiple_locks_provider: locks_provider)
         Community.find(params[:community_id]).update!(:multiple_locks_provider => locks_provider)
         flash[:notice] = "Igloohome credentails saved successfully"
         redirect_to new_community_dwelo_path
@@ -33,9 +33,9 @@ class IgloohomeV2AccountsController < ApplicationController
       end
     else
       @igloohome = Igloohome.find_by(community_id: current_community.id)
-      if @igloohome.update_columns(igloohome_params)
-        current_community.update_columns(:multiple_locks_provider => locks_provider)
-        @igloohome.update_columns(is_authorized_with_pynwheel: false) if @igloohome.is_authorized_with_pynwheel
+      if @igloohome.update(igloohome_params)
+        current_community.update(:multiple_locks_provider => locks_provider)
+        @igloohome.update(is_authorized_with_pynwheel: false) if @igloohome.is_authorized_with_pynwheel
         flash[:notice] = "Igloohome credentails updated successfully"
         redirect_to new_community_dwelo_path(current_community)
       else
@@ -69,7 +69,7 @@ class IgloohomeV2AccountsController < ApplicationController
   def remove_igloohome_auth_account
     if current_community.igloohome.present?
       if current_community.igloohome.refresh_token.present?
-        current_community.igloohome.update_columns(refresh_token: nil, is_authorized_with_pynwheel: false, version: "v1")
+        current_community.igloohome.update(refresh_token: nil, is_authorized_with_pynwheel: false, version: "v1")
         flash[:notice] = "Account disconnected successfully"
       else
         flash[:error] = "No account is attached"
@@ -151,7 +151,7 @@ class IgloohomeV2AccountsController < ApplicationController
     def update_community_locks_provider
       locks_provider = current_community.multiple_locks_provider
       locks_provider << "Igloohome" unless locks_provider.include?("Igloohome")
-      current_community.update_columns(multiple_locks_provider: locks_provider)
+      current_community.update(multiple_locks_provider: locks_provider)
     end
     
     def redirect_with_error(message)

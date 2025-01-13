@@ -113,7 +113,7 @@ class CommunitiesController < ApplicationController
     end
 
     unless @community.data_provider.present?
-      @community.update_columns(data_provider: "psi" )
+      @community.update(data_provider: "psi" )
     end
 
     @all_regions = current_company.regions.order(:name).collect {|p| [ p.name, p.id ] } rescue []
@@ -121,7 +121,7 @@ class CommunitiesController < ApplicationController
       @community.crop_x = nil
     end
     if params["community"]["latitude"].present?
-      @community.neighborhood.update_columns(latitude: params["community"]["latitude"], longitude: params["community"]["longitude"]) rescue ""
+      @community.neighborhood.update(latitude: params["community"]["latitude"], longitude: params["community"]["longitude"]) rescue ""
     end
 
     if params["verification_type"].present?
@@ -282,8 +282,8 @@ class CommunitiesController < ApplicationController
     end
   end
   def make_cordinate    
-    @community.update_columns(latitude: params[:lat], longitude: params[:long]) rescue ""
-    @community.neighborhood.update_columns(latitude: address[0], longitude: address[1]) rescue ""
+    @community.update(latitude: params[:lat], longitude: params[:long]) rescue ""
+    @community.neighborhood.update(latitude: address[0], longitude: address[1]) rescue ""
     render :json=>{"cord"=> "ok" }
   end
 

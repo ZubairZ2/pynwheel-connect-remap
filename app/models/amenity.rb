@@ -134,7 +134,7 @@ class Amenity < ApplicationRecord
 
   def crop_amenity_image
     image.recreate_versions! if (crop_x.present?  && do_crop)
-    self.update_columns(do_crop: false)
+    self.update(do_crop: false)
   end
 
   def url_validity

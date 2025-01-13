@@ -173,7 +173,7 @@ namespace :delayed_email_notifications do
   Get information about your tour here: #{confirmation_page_link}#{"\n"}
   #{community.one_day_email_text}"
       diff = (schedual_tour.tour_date - (Date.strptime(DateTime.current.in_time_zone(time_zone).strftime("%m/%d/%Y"), "%m/%d/%Y")))
-      schedual_tour.update_columns(daily_email_sent: true) if diff == 1
+      schedual_tour.update(daily_email_sent: true) if diff == 1
       emails = community_email.gsub(" ","").split(',')
 
       ScheduledTourMailerJob.perform_async("Your Tour Tomorrow", content, tu.email, community, nil, nil, nil, emails[0], true, schedual_tour) if (schedual_tour.property_tour_type == "scheduled_tour" && (diff == 1 && !(community.alert_contact == "phone")) && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce"))
@@ -213,7 +213,7 @@ namespace :delayed_email_notifications do
 
           sms_content = "Your tour starts soon!
           #{"\n"}Here are directions to #{community.name}:#{"\n"}https://www.google.com/maps/search/?api=1&query=#{community.get_propery_address()}#{"\n"}#{"\n"}#{community.one_hour_email_text}#{"\n"}#{"\n"}When you arrive at the property, open the #{community_text} app to begin your tour. #{"\n"} #{"\n"}Open #{community_text}:#{"\n"}#{one_link}#{"\n"} #{"\n"}Get more information about your tour here: #{"\n"}#{confirmation_page_link}"
-          schedual_tour.update_columns(hourly_email_sent: true)
+          schedual_tour.update(hourly_email_sent: true)
           emails = community_email.gsub(" ","").split(',')
           
           ScheduledTourMailerJob.perform_async("Your tour starts soon!", content, tu.email,community,nil,nil,nil,emails[0],true,schedual_tour) if !(community.alert_contact == "phone") && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce")

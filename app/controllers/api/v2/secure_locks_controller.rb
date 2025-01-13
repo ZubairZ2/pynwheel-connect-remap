@@ -14,7 +14,7 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
   def remove_igloohome_auth_account
     if @community.igloohome.present?
       if @community.igloohome.refresh_token.present?
-        @community.igloohome.update_columns(refresh_token: nil, is_authorized_with_pynwheel: false)
+        @community.igloohome.update(refresh_token: nil, is_authorized_with_pynwheel: false)
         render json: { success: true, message: "Account disconnected successfully" }
       else
         render json: { success: false, message: "No account is attached" }
@@ -43,7 +43,7 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
       end
       
       unique_locks_provider = @locks_provider.uniq
-      @community.update_columns(multiple_locks_provider: unique_locks_provider)
+      @community.update(multiple_locks_provider: unique_locks_provider)
       previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(LOCK_PROVIDER) 
       @community.set_lock_providers_status(current_user, @status)
       FollowUpMailer.send_email_after_form_submission(@community, LOCK_PROVIDER, previous_status)
@@ -243,12 +243,12 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
     if lock['igloo_version'].present?
       if lock['igloo_version'] === 'igloohome'
         if(lock['is_auth_code'].present?)
-          @community.igloohome.update_columns(home_name: lock['home_name'], is_authorized_with_pynwheel: lock['is_auth_code'], version: lock['igloo_version'])
+          @community.igloohome.update(home_name: lock['home_name'], is_authorized_with_pynwheel: lock['is_auth_code'], version: lock['igloo_version'])
         elsif(lock['is_client_auth'])
-          @community.igloohome.update_columns(home_name: lock['home_name'], is_authorized_with_pynwheel: false, client_id: lock['client_id'], client_secret: lock['client_secret'], version: lock['igloo_version'])
+          @community.igloohome.update(home_name: lock['home_name'], is_authorized_with_pynwheel: false, client_id: lock['client_id'], client_secret: lock['client_secret'], version: lock['igloo_version'])
         end
       elsif lock['igloo_version'] === 'iglooworks'
-        @community.igloohome.update_columns(iglooworks_api_key: lock['iglooworks_api_key'], iglooworks_department_id: lock['iglooworks_department_id'], version: lock['igloo_version'])
+        @community.igloohome.update(iglooworks_api_key: lock['iglooworks_api_key'], iglooworks_department_id: lock['iglooworks_department_id'], version: lock['igloo_version'])
       end
     end
   end
@@ -265,7 +265,7 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
   def other_lock(lock)
     if lock["id"].present?
       other_lock = OtherLock.find lock["id"]
-      other_lock.update_columns(description: lock["description"], area_type: lock["otherType"])
+      other_lock.update(description: lock["description"], area_type: lock["otherType"])
     else
       @community.other_locks.create(description: lock["description"], area_type: lock["otherType"])
       @locks_provider << OTHERLOCK

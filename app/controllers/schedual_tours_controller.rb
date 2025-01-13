@@ -120,7 +120,7 @@ class SchedualToursController < ApplicationController
       property_tour_type = params['tour_user']['property_tour_type'] if (params['tour_user'] && params['tour_user']['property_tour_type']).present? 
       knock_prospect_ip = Rails.env.development? ? "127.0.0.0" : (request.ip || request.remote_ip)
       
-      schedual_tour.update_columns(knock_prospect_ip_address: knock_prospect_ip, tour_date: new_tour.tour_date, tour_time: new_tour.tour_time,property_tour_type: property_tour_type,tour_type: tour_type,tour_user_id: tu.id,charge_id: res.present? ? res[:id] : nil, pay_back_id: pay_back.present? ? pay_back.refund_id : nil, desired_move_in_date: desired_move_in_date, desired_bedroom: params[:desired_bedroom],user_time_zone: params[:user_time_zone],country_code: params[:country_code], realpage_marketing_source: realpage_marketing_source.present? ? realpage_marketing_source : "")
+      schedual_tour.update(knock_prospect_ip_address: knock_prospect_ip, tour_date: new_tour.tour_date, tour_time: new_tour.tour_time,property_tour_type: property_tour_type,tour_type: tour_type,tour_user_id: tu.id,charge_id: res.present? ? res[:id] : nil, pay_back_id: pay_back.present? ? pay_back.refund_id : nil, desired_move_in_date: desired_move_in_date, desired_bedroom: params[:desired_bedroom],user_time_zone: params[:user_time_zone],country_code: params[:country_code], realpage_marketing_source: realpage_marketing_source.present? ? realpage_marketing_source : "")
 
       # Update funnel discovery source
       schedual_tour.update(funnel_prospect_discover_source: params[:funnel_prospect_discover_source]) if community.is_funnel_community? && params[:funnel_prospect_discover_source].present?
@@ -370,7 +370,7 @@ class SchedualToursController < ApplicationController
     
     set_daily_email_sent = false
     set_daily_email_sent = true if day_diff >= 1
-    @schedual_tour.update_columns(hourly_email_sent: false, daily_email_sent: set_daily_email_sent)
+    @schedual_tour.update(hourly_email_sent: false, daily_email_sent: set_daily_email_sent)
     tu = @schedual_tour.tour_user
     respond_to do |format|
       if @schedual_tour.save 
@@ -546,7 +546,7 @@ class SchedualToursController < ApplicationController
         previous_text = "instead of #{previous_tour[:tour_date].strftime("%A, %b %-d, %Y")} at #{ Time.parse(previous_tour[:tour_time].to_s).strftime("%-I:%M %P")}.#{"\n"}"
       end
 
-      (is_rescheduled && property_tour_type == "scheduled_tour") ? schedual_tour.update_columns(reschedule_notification: web_notification) : schedual_tour.update_columns(confirmation_notification: web_notification)
+      (is_rescheduled && property_tour_type == "scheduled_tour") ? schedual_tour.update(reschedule_notification: web_notification) : schedual_tour.update(confirmation_notification: web_notification)
       sms_content = (is_rescheduled && property_tour_type == "scheduled_tour") ? 
       "Thank you for rescheduling your tour! We look forward to having you at #{community.name if community.present?} on #{schedual_tour.tour_date.strftime("%A, %b %-d %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")} #{previous_text}#{"\n"}#{"\n"}When you go to the property, you will need: 
       - A photo ID 

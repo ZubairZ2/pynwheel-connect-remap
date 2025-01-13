@@ -170,8 +170,8 @@ module Api
           restrict_property_access_with_code(@community,@tour_user,@tour_type)
           time_zone = @community.get_time_zone()
           if (params[:verfied_by_provider] && params[:verified_at]).present? && @community.community_tour.visual_id_verification #TODO:: change to 1 month after testing
-            @tour_user.update_columns(authentiq_verified_at: params[:verified_at].to_datetime,is_authentiq_verified: true) if @community.community_tour.verification_type == "authenteq" && params[:verfied_by_provider] == "authenteq"
-            @tour_user.update_columns(checkpoint_verified_at: params[:verified_at].to_datetime,is_checkpoint_verified: true) if @community.community_tour.verification_type == "check_point_id" && params[:verfied_by_provider] == "check_point_id"
+            @tour_user.update(authentiq_verified_at: params[:verified_at].to_datetime,is_authentiq_verified: true) if @community.community_tour.verification_type == "authenteq" && params[:verfied_by_provider] == "authenteq"
+            @tour_user.update(checkpoint_verified_at: params[:verified_at].to_datetime,is_checkpoint_verified: true) if @community.community_tour.verification_type == "check_point_id" && params[:verfied_by_provider] == "check_point_id"
           end
           all_floorplans = FloorplanUnitsService.new(@community).get_floorplans
           @floorplans = all_floorplans.sort_by {|f| f.bedrooms}.distinct { |b| b.bedrooms }
@@ -218,9 +218,9 @@ module Api
       #TODO:: Incase if you need to create tourhistory here otherwise remove it later.
       def create_tour_history(tour_user,tour_type,community)
         tour_history = TourHistory.find_or_create_by(community_id: community.id, tour_user_id: tour_user.id) rescue TourHistory.new
-        tour_history.update_columns(community_id: community.id, tour_type: tour_type, tour_user_id: tour_user.id, tour_id: community.community_tour.id)
+        tour_history.update(community_id: community.id, tour_type: tour_type, tour_user_id: tour_user.id, tour_id: community.community_tour.id)
         last_arrival = tour_user.tour_histories.where(tour_id: community.community_tour.id).last rescue nil
-        last_arrival.update_columns(arrived: Time.now) if last_arrival.present?
+        last_arrival.update(arrived: Time.now) if last_arrival.present?
       end
     
       def send_access_code_email subj, body, community
@@ -556,7 +556,7 @@ module Api
               @tour_user.is_virtual_tour = ( (@in_visiting_hours ? false : true)  || @limit_exceeded)
               @tour_user.latitude = params[:latitude]
               @tour_user.longitude = params[:longitude]
-              # @tour_user.update_columns(is_virtual_tour: ((@in_visiting_hours.present? ? (@in_visiting_hours ? false : true) : false) || @limit_exceeded), latitude: params[:latitude], longitude: params[:longitude])
+              # @tour_user.update(is_virtual_tour: ((@in_visiting_hours.present? ? (@in_visiting_hours ? false : true) : false) || @limit_exceeded), latitude: params[:latitude], longitude: params[:longitude])
     
               if @community.credential.present? and @community.credential.use_different_crm_provider and @community.crm_credential.present? and @community.crm_credential.crm_provider == "salesforce"
                 response = SalesforceServices::GetBookingByNeighbor.call(community: @community, tour_user: @tour_user)
@@ -583,7 +583,7 @@ module Api
               else
     
                 @scheduled_tours = get_scheduled_tours(@community.id, @tour_user.id, current_time)
-                @tour_user.update_columns(is_virtual_tour: ((@in_visiting_hours ? false : true ) || @limit_exceeded), latitude: params[:latitude], longitude: params[:longitude])
+                @tour_user.update(is_virtual_tour: ((@in_visiting_hours ? false : true ) || @limit_exceeded), latitude: params[:latitude], longitude: params[:longitude])
     
                 if @scheduled_tours.present?
                   @is_tour_ontime = is_tour_on_time(current_time, @scheduled_tours, @tour.grace_period)

@@ -178,7 +178,7 @@ class IgloohomeLockService < BaseService
 
     def store_access_token access_token
       return unless access_token.present?
-      @igloohome_account.update_columns(
+      @igloohome_account.update(
         access_token: access_token, 
         access_token_expiry: DAILY_EXPIRY, 
         is_authorized_with_pynwheel: true
@@ -187,7 +187,7 @@ class IgloohomeLockService < BaseService
 
     def store_tokens response
       if response&.dig("access_token").present? && response&.dig("refresh_token").present?
-        @igloohome_account.update_columns(
+        @igloohome_account.update(
           access_token: response&.dig("access_token"), access_token_expiry: DAILY_EXPIRY,
           refresh_token: response&.dig("refresh_token"), refresh_token_expiry: YEAR_EXPIRY,
           is_authorized_with_pynwheel: true

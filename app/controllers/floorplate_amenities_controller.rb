@@ -34,7 +34,7 @@ class FloorplateAmenitiesController < ApplicationController
 
   # def update
   #   @amenity = @floorplate.amenities.find(params[:id])
-  #   if @amenity.update_columns(amenity_params)
+  #   if @amenity.update(amenity_params)
   #     redirect_to community_floorplate_amenities_path(@community,@floorplate), notice: "Amenity updated successfully"
   #   else
   #     add_breadcrumb "Floorplates", community_floorplates_path(current_community)
@@ -92,7 +92,7 @@ class FloorplateAmenitiesController < ApplicationController
         door = amenity.ordered_doors.build
         status = "created"
       end
-      door.update_columns(community_id: @community.id, x_plot: params[:x_plot], y_plot: params[:y_plot])
+      door.update(community_id: @community.id, x_plot: params[:x_plot], y_plot: params[:y_plot])
       render json: {amenity: amenity, door: door.reload, status: status, success: true}
     else
       render json: {unit: {}, door: {}, status: nil, success: false}

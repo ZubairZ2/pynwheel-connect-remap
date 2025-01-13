@@ -21,7 +21,7 @@ namespace :realpage_provider do
                     provider_unit_id = "#{unit.provider_unit_id}-" + (unit.property_id.present? ? unit.property_id : site_id)
                     floorplan_id = "#{unit.floorplan_id }-" + (unit.property_id.present? ? unit.property_id : site_id)
                     community&.floorplans.where(provider_floorplan_id: unit.floorplan_id).update_all(provider_floorplan_id: floorplan_id)
-                    unit.update_columns(provider_unit_id: provider_unit_id, floorplan_id: floorplan_id)
+                    unit.update(provider_unit_id: provider_unit_id, floorplan_id: floorplan_id)
                   end
                 end
               end

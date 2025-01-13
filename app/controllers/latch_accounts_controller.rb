@@ -101,7 +101,7 @@ class LatchAccountsController < ApplicationController
 
       unless locks_provider.include?("Latch")
         locks_provider << "Latch"
-        current_community.update_columns(multiple_locks_provider: locks_provider)
+        current_community.update(multiple_locks_provider: locks_provider)
       end
     end
 
