@@ -1,7 +1,7 @@
 module YardiRentCafeV2Services
   class MarketingApisV2Service < YardiRentCafeV2Services::BaseService
     def available_slots
-      fetch_available_slots.dig("availableSlots") || []
+      fetch_available_slots&.dig("availableSlots") || []
     end
 
     def schedule_tour(previous_tour = nil)
@@ -10,7 +10,7 @@ module YardiRentCafeV2Services
 
       create_access_log(create_appointment_body_params&.to_json, response)
 
-      yardi_response = response.dig("prospectInfo") if response.present?
+      yardi_response = response&.dig("prospectInfo") if response.present?
       yardi_scheduled_tour_response(yardi_response) if yardi_response.present?
     end
 
