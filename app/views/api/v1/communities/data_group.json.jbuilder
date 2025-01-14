@@ -1356,7 +1356,7 @@ json.community_group @communities do |co|
     json.display_sitemap @community.display_sitemap
     json.display_floorplan_gallery @community.display_floorplan_gallery
     json.display_available_date @community.display_available_date
-
+    json.units_availability_over_120_days @community.units_availability_over_120_days
     json.show_property_map_key @community.show_property_map_key
     json.show_property_map_key_text @community.show_property_map_key_text
     json.show_amenity_key @community.show_amenity_key
@@ -1388,7 +1388,7 @@ json.community_group @communities do |co|
 
     units_floorplans = []
     floorplans = @community.floorplans
-    available_units_and_sold_units = @community.units.available_units# + @community.units.are_sold
+    available_units_and_sold_units = @community.units.available_units(@community.units_availability_over_120_days)# + @community.units.are_sold
     json.display_unit_on_homepage @community.display_unit_on_homepage
     json.units available_units_and_sold_units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(available_units_and_sold_units).sort.map{|x,y| y}.each do |unit|
       if @community.data_provider == "psi"

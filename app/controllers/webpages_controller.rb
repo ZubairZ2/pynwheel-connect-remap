@@ -26,7 +26,7 @@ class WebpagesController < ActionController::Base
       else
         @amenities = @community_info.sitemap.amenities if @community.sitemap.present?
       end
-      @available_units_and_sold_units = @community_info.units.available_units #+ @community_info.units.are_sold
+      @available_units_and_sold_units = @community_info.units.available_units(@community.units_availability_over_120_days) #+ @community_info.units.are_sold
       if @available_units_and_sold_units.size > 0
         normalize_units
         if @units_with_floorplan_info.present?
@@ -123,6 +123,7 @@ class WebpagesController < ActionController::Base
     sixty_days = today + 60.days;
     ninty_days = today + 90.days;
     one_twenty_days = today + 120.days;
+
     @units_with_floorplan_info.each do |available_unit|
       available_date = available_unit[:available_date]
       if (available_date <= today)
@@ -140,10 +141,11 @@ class WebpagesController < ActionController::Base
       if (available_date >= ninty_days && available_date <= one_twenty_days)
         @available_units << ["In 91-120 days","91-120"]
       end
-      if (available_date > one_twenty_days)
+      if (available_date > one_twenty_days) && @community.units_availability_over_120_days
         @available_units << ["In 121+ days","121-"]
       end
     end
+
     @available_units = @available_units.uniq
   end
 

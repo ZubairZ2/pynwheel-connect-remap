@@ -139,7 +139,7 @@ class Community < ApplicationRecord
     units_query = if SELF_TOUR_PROVIDERS.include?(self.data_provider)
                     self.units.vacant_and_available
                   else
-                    self.units.available_units
+                    self.units.available_units(true)
                   end
 
     if self.is_sitemap

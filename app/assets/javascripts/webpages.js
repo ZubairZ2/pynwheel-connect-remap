@@ -623,8 +623,8 @@ function updateAvailabilitFilterDropdownList() {
   const unitsAvailableUnder60Days = filterUnitsBasedOnDate(units, 31, 60);
   const unitsAvailableUnder90Days = filterUnitsBasedOnDate(units, 61, 90);
   const unitsAvailableUnder120Days = filterUnitsBasedOnDate(units, 91, 120);
-  const unitsAvailableAbove121Days = filterUnitsBasedOnDate(units, 121, NaN);
-
+  
+  
   const webFilterId = "#".concat("available_unit"); //works on web view
   const mobileFilterId = "#responsive_".concat("available_unit"); //works on mobile view
 
@@ -653,9 +653,12 @@ function updateAvailabilitFilterDropdownList() {
     $(mobileFilterId).append(`<option value="91-120"> In 91-120 days </option>`);
   }
 
-  if(unitsAvailableAbove121Days && unitsAvailableAbove121Days.length > 0) {
-    $(webFilterId).append(`<option value="121-"> In 121+ days </option>`);
-    $(mobileFilterId).append(`<option value="121-"> In 121+ days </option>`);
+  if(units_availability_over_120_days === 'true') {
+    const unitsAvailableAbove121Days = filterUnitsBasedOnDate(units, 121, NaN);
+    if(unitsAvailableAbove121Days && unitsAvailableAbove121Days.length > 0) {
+      $(webFilterId).append(`<option value="121-"> In 121+ days </option>`);
+      $(mobileFilterId).append(`<option value="121-"> In 121+ days </option>`);
+    }
   }
 }
 

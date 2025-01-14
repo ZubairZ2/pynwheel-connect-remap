@@ -144,6 +144,19 @@
                     = check_box_tag :display_available_date, true, @community.display_available_date, class: "apartment-setting-field"
                     %label.label-primary{:for => "display_available_date"}
                     %span.pl-15 Yes
+
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                  Display availability over 120 days
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
+                    %span#propertyDetailNameText
+                      Toggle to display units availability on all application over 120 days. Default is 'Yes'. Set to 'No' to limit availability to 120 days or less.
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = check_box_tag :units_availability_over_120_days, true, @community.units_availability_over_120_days, class: "apartment-setting-field"
+                    %label.label-primary{:for => "units_availability_over_120_days"}
+                    %span.pl-15 Yes
               
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
@@ -237,6 +250,19 @@
                     %span.pr-15 No
                     = check_box_tag :display_available_date, true, @community.display_available_date, class: "apartment-setting-field"
                     %label.label-primary{:for => "display_available_date"}
+                    %span.pl-15 Yes
+
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                  Display availability over 120 days
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
+                    %span#propertyDetailNameText
+                      Toggle to display units availability on all application over 120 days. Default is 'Yes'. Set to 'No' to limit availability to 120 days or less.
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = check_box_tag :units_availability_over_120_days, true, @community.units_availability_over_120_days, class: "apartment-setting-field"
+                    %label.label-primary{:for => "units_availability_over_120_days"}
                     %span.pl-15 Yes
 
             .form-group
