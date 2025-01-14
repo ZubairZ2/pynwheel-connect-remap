@@ -81,10 +81,10 @@ module KnockApisHelper
     end
 
     def api_key
-      if Rails.env.production?
-        {'apikey' => ENV["KNOCK_API_KEY"]}
-      else
+      unless Rails.env.production?
         {'x-api-key' => ENV["KNOCK_API_KEY"]}
+      else
+        {'apikey' => ENV["KNOCK_API_KEY"]}
       end
     end
 end

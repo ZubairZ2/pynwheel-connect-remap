@@ -40,11 +40,11 @@ class TourHistory < ApplicationRecord
         @mail_content = ["tour_has_ended", "#{self.tour_user.name.titleize} has completed a tour of #{fetch_property_name(community.name)}}"] #get_alert_message('tour_has_ended')
         url = Rails.env.production? ? "https://pynwheelapp.com/communities/#{community.id}/tour%5Fusers" : "https://pynwheel-staging.herokuapp.com/communities/#{community.id}/tour%5Fusers"
 
-        if touruser.tour_type == "self_tour" && (scheduled_tour&.property_tour_type.present? && scheduled_tour.property_tour_type == "scheduled_tour" )         
+        if (scheduled_tour&.tour_type == "self_tour" || scheduled_tour&.tour_type == "guided_tour") && (scheduled_tour&.property_tour_type.present? && scheduled_tour.property_tour_type == "scheduled_tour" )         
           if scheduled_tour.present? && is_tour_on_time(scheduled_tour, community)
             complete_scheduled_tour(scheduled_tour)
           end
-        end 
+        end
 
         if touruser.tour_type == "virtual_tour" && (scheduled_tour&.property_tour_type.present? && (scheduled_tour.property_tour_type == "remote_tour" || scheduled_tour.property_tour_type == "unscheduled_self_tour"))
           complete_scheduled_tour(scheduled_tour)
@@ -74,7 +74,7 @@ class TourHistory < ApplicationRecord
         visited_stops_data = stop_marketing_names_visited_by_user
 
         FunnelService.new(scheduled_tour).update_appointment_status("complete") if community.is_funnel_community?
-        KnockService.new(scheduled_tour).create_knock_visit(visited_stops_data, self.left) if community.is_knock_community?
+        KnockService.new(scheduled_tour.community).create_knock_visit(scheduled_tour, visited_stops_data, self.left) if community.is_knock_community?
         upload_rent_cafe_leads_data(community, scheduled_tour, visited_stops_data)
 
         community.save
@@ -82,7 +82,7 @@ class TourHistory < ApplicationRecord
 
       if self.abandoned_tour_at_stop.present?
         FunnelService.new(scheduled_tour).update_appointment_status("complete") if community.is_funnel_community?
-        KnockService.new(scheduled_tour).create_knock_visit(visited_stops_data, get_current_time(community)) if community.is_knock_community?
+        KnockService.new(scheduled_tour.community).create_knock_visit(scheduled_tour, visited_stops_data, get_current_time(community)) if community.is_knock_community?
         upload_rent_cafe_leads_data(community, scheduled_tour, visited_stops_data)
 
         save_salesforce_feedback_data(community, touruser) if community.is_salesforce_community?

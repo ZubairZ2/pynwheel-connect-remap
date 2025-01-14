@@ -32,23 +32,36 @@
           elsif @scheduled_data.tours_exist and !@scheduled_data.on_time_tour.present?
             if @scheduled_data.time_status == "before time"
               json.scheduler_widget_allowed false
-              if @community.arrive_too_early_alert.present?
-                @community.arrive_too_early_alert.gsub!("<date>", @tour_date).gsub!("<time>", @tour_time).gsub!("<grace time>", @community.community_tour.grace_period.to_s)
-                json.tour_alert @community.arrive_too_early_alert
-              else
-                json.tour_alert "Your tour is scheduled for #{@tour_date}, #{@tour_time}. You will be able start your tour #{@community.community_tour.grace_period.to_s} minutes before that time."
-              end
-            elsif @scheduled_data.time_status == "after time"
-              if @community.arrive_too_late_alert.present?
-                @community.arrive_too_late_alert.gsub!("<date>", @tour_date).gsub!("<time>", @tour_time)
-                if @community.scheduler_widget
-                  json.tour_alert @community.arrive_too_late_alert + " Please click on the Reschedule button to reschedule."
-                  json.scheduler_widget_url "#{root_url}scheduler/change_schedule_tour_time/#{@scheduled_data.nearest_tour.id}?datetime=#{@scheduled_data.nearest_tour.tour_date.strftime('%Y-%m-%d')}T#{@scheduled_data.nearest_tour.tour_time.strftime("%H:%M")}&community_code=#{community_code}&direct=true"
-                else
-                  json.tour_alert @community.arrive_too_late_alert
+              early_arrive_base_alert = @community.arrive_too_early_alert
+              if early_arrive_base_alert.present?
+                begin
+                  arrive_too_early_alert = early_arrive_base_alert.gsub!("<date>", @tour_date).gsub!("<time>", @tour_time).gsub!("<grace time>", @community.community_tour.grace_period.to_s)
+                rescue => error
+                  arrive_too_early_alert = "Your tour is scheduled for #{@tour_date}, #{@tour_time}. You will be able start your tour #{@community.community_tour.grace_period.to_s} minutes before that time."
                 end
               else
-                message = "Your tour is scheduled for #{@tour_date}, #{@tour_time}. You will be able start your tour #{@community.community_tour.grace_period.to_s} minutes before that time. "
+                arrive_too_early_alert = "Your tour is scheduled for #{@tour_date}, #{@tour_time}. You will be able start your tour #{@community.community_tour.grace_period.to_s} minutes before that time."
+              end
+
+              json.tour_alert arrive_too_early_alert
+            elsif @scheduled_data.time_status == "after time"
+              late_arrive_base_alert = @community.arrive_too_late_alert
+
+              if late_arrive_base_alert.present?
+                begin
+                  arrive_too_late_alert = arrive_too_late_alert.gsub!("<date>", @tour_date).gsub!("<time>", @tour_time)
+                rescue => error
+                  arrive_too_late_alert = "I'm sorry! You have missed your scheduled appointment. Your tour was scheduled for #{@tour_date}, #{@tour_time}."
+                end
+
+                if @community.scheduler_widget
+                  json.tour_alert arrive_too_late_alert + " Please click on the Reschedule button to reschedule."
+                  json.scheduler_widget_url "#{root_url}scheduler/change_schedule_tour_time/#{@scheduled_data.nearest_tour.id}?datetime=#{@scheduled_data.nearest_tour.tour_date.strftime('%Y-%m-%d')}T#{@scheduled_data.nearest_tour.tour_time.strftime("%H:%M")}&community_code=#{community_code}&direct=true"
+                else
+                  json.tour_alert arrive_too_late_alert
+                end
+              else
+                message = "Your tour is scheduled for #{@tour_date}, #{@tour_time}. You will be able start your tour #{@community.community_tour.grace_period.to_s} minutes before that time."
                 if @community.scheduler_widget
                   json.tour_alert message + " Please click on the Reschedule button to reschedule."
                   json.scheduler_widget_url "#{root_url}scheduler/change_schedule_tour_time/#{@scheduled_data.nearest_tour.id}?datetime=#{@scheduled_data.nearest_tour.tour_date.strftime('%Y-%m-%d')}T#{@scheduled_data.nearest_tour.tour_time.strftime("%H:%M")}&community_code=#{community_code}&direct=true"
@@ -75,8 +88,13 @@
               end
 
               if @community.unscheduled_alert.present?
-                @community.unscheduled_alert.gsub!("<phone>", phone)
-                json.tour_alert @community.unscheduled_alert
+                begin
+                  unscheduled_alert = @community.unscheduled_alert.gsub!("<phone>", phone)
+                rescue => error
+                  unscheduled_alert = "I'm sorry! We only allow scheduled tours. #{contact_property}"
+                end
+                
+                json.tour_alert unscheduled_alert
               else
                 json.tour_alert "I'm sorry! We only allow scheduled tours. #{contact_property}"
               end

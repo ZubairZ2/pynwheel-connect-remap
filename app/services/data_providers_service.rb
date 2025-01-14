@@ -1,6 +1,6 @@
 class DataProvidersService
   def initialize
-    @communities = Community.all
+    @communities = Community.active_client_properties
   end
 
   def update_providers_data

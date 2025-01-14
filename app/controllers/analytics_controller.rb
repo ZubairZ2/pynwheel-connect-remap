@@ -10,44 +10,32 @@ class AnalyticsController < ApplicationController
     @date_range_text = fetch_date_range_text(start_date , end_date, @days_count)
     @product_type = params[:product_type].present? ? params[:product_type] : nil
 
-
     # For Webpage
     if @product_type == "maps"
-      track_sessions = TrackSession.where(community_id: communities.ids)
-      @maps_records = track_sessions.where(track_session_type: "maps").where('start_datetime > ? AND start_datetime < ?',start_date.beginning_of_day, end_date.end_of_day)
+      @maps_records = TrackSession.where(track_session_type: "maps", community_id: communities.ids, partner: nil)
+                                  .where('start_datetime > ? AND start_datetime < ?', start_date.beginning_of_day, end_date.end_of_day)
+                                  # .where( Arel.sql("EXTRACT(EPOCH FROM (COALESCE(end_datetime, updated_at) - start_datetime)) > 10") )
+
+      puts "\n\n@maps_records: #{@maps_records.count}\n\n"
       apply_filters(params)
-      puts "\n\n\n Maps Start: #{Time.now}\n\n\n"
 
       if @maps_records.any?
-        collect_session_each_day_data(start_date, @days_count, @maps_records, :start_datetime, "maps")
-        puts "\n\n\nEach Day Session: #{Time.now}\n\n\n"
+        # collect_session_each_day_data_maps(start_date, @days_count, @maps_records, :start_datetime, "maps")
+        collect_interactions_each_day_data_maps(start_date, @days_count, @maps_records, :start_datetime, "maps")
 
         collect_session_each_day_data_in_minutes(start_date, @days_count, @maps_records, :start_datetime, :end_datetime, "maps")
-        puts "\n\n\nEach Day Session In Minutes: #{Time.now}\n\n\n"
-
         collect_session_each_day_data_in_hours(@maps_records, :start_datetime, "maps")
-        puts "\n\n\nEach Day Session In Hours: #{Time.now}\n\n\n"
-
         bounce_rate_on_pages(@maps_records, :visited_pages ,"maps")
-        puts "\n\n\nBounce Rate: #{Time.now}\n\n\n"
-
         events_per_session(start_date, @days_count, @maps_records, :start_datetime, "maps")
-        puts "\n\n\nEvents: #{Time.now}\n\n\n"
-
         apply_clicks_track_session(start_date, @days_count, @maps_records, :start_datetime, "maps")
-        puts "\n\n\n Apply Clicks: #{Time.now}\n\n\n"
-
         favourite_saved_track_session(start_date, @days_count, @maps_records, "maps")
-        puts "\n\n\n Fav Saved: #{Time.now}\n\n\n"
-
         favourite_sent_track_session(start_date, @days_count, @maps_records, "maps")
-        puts "\n\n\n Fav Sent: #{Time.now}\n\n\n"
       end
     end
 
     # For Metro 
     if  (@product_type.nil? || @product_type == "touch")
-      track_sessions = TrackSession.where(community_id: communities.ids)
+      track_sessions = TrackSession.where(community_id: communities.ids, partner: nil)
       @min_date_for_touch = track_sessions.where(track_session_type: TOUCH_TYPES).order('created_at asc')&.first&.created_at
       @metro_records = track_sessions.where(track_session_type: TOUCH_TYPES).where('start_datetime > ? AND start_datetime < ?',start_date.beginning_of_day, end_date.end_of_day)
       apply_filters(params)
@@ -186,6 +174,36 @@ class AnalyticsController < ApplicationController
         @self_tour_records = []
         @self_tour_records_all = []
       end
+    end
+
+    def collect_interactions_each_day_data_maps(start_date, days_count, total_records, start_attr_name, for_device_type)
+      sessions_each_day_hash = return_empty_hash(days_count, start_date)
+      
+      counts_hash = total_records.group("DATE(#{start_attr_name})").order("DATE(#{start_attr_name})").sum(:map_interactions)
+
+      sessions_each_day_hash.merge!(counts_hash) { |_, old_val, new_val| old_val + new_val }
+
+      visited_days_count = counts_hash.keys.size
+
+      total_record_count = counts_hash.values.sum
+      avg_sessions_per_day = (total_record_count.to_f / visited_days_count.to_f).round
+
+      instance_variable_set("@track_session_count_#{for_device_type}", formatted_number(total_record_count))
+      instance_variable_set("@avg_track_session_#{for_device_type}", formatted_number(avg_sessions_per_day))
+    
+      session_each_day_labels = sessions_each_day_hash.keys.map(&:to_s)
+      session_each_day_counts = sessions_each_day_hash.values
+
+      session_each_day_data, session_each_day_options = make_bar_chart(
+        session_each_day_labels,
+        session_each_day_counts,
+        "Total #{get_name(for_device_type)}",
+        "rgba(137, 199, 101, 0.5)",
+        "rgba(137, 199, 101, 1)"
+      )
+    
+      instance_variable_set("@session_each_day_data_#{for_device_type}", session_each_day_data)
+      instance_variable_set("@session_each_day_options_#{for_device_type}", session_each_day_options)
     end
 
     def collect_session_each_day_data(start_date, days_count, total_records, start_attr_name, for_device_type)

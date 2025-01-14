@@ -76,7 +76,6 @@ class Unit < ApplicationRecord
   has_many :zerv_guests, as: :guest_of_stop, dependent: :destroy
   has_many :igloohome_locks, as: :stop, dependent: :destroy
   has_many :igloohome_guests, as: :guest_of_stop, dependent: :destroy
-  
 
   has_one :door, as: :attached_with, dependent: :destroy
   has_one :tour_stop, as: :stop, dependent: :destroy
@@ -91,8 +90,17 @@ class Unit < ApplicationRecord
   scope :ploted_units, -> { has_x_plot.or(has_y_plot) }
   scope :are_ploted_units, -> { where("(x_plot > ? or y_plot > ?)", 0, 0) }
   scope :vacant_and_available, -> {past_available_units.where("LOWER(unit_status) IN (?)", UNIT_STATUSES)}
-  #scope :available_units, -> { ploted_units.or(past_available_units).where.not(available: true) }
-  scope :available_units, -> { ploted_units.or(past_available_units).where.not(sold: true) } #Don't fetch units where are sold
+  # scope :available_units, -> { ploted_units.or(past_available_units).where.not(sold: true) } #Don't fetch units where are sold
+  
+  scope :available_units, ->(units_availability_over_120_days) { 
+    if units_availability_over_120_days
+      ploted_units.or(past_available_units).where.not(sold: true)
+    else
+      ploted_units.or(past_available_units)
+                .where.not(sold: true)
+                .where("available_date <= ?", Date.today + 120.days)
+    end
+  }
   after_commit :populate_image_urls, on: [:create,:update]
   after_update :crop_unit_image, if: ->(obj) { obj.image_changed? }
   after_update :crop_unit_secondary_image, if: ->(obj) { obj.secondary_image_changed? }

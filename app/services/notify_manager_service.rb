@@ -40,7 +40,7 @@ class NotifyManagerService < BaseService
   private
 
   def community_units_updated
-    after_updation_units = Unit.where(id: @before_updation_units.keys).available_units
+    after_updation_units = Unit.where(id: @before_updation_units.keys).available_units(true)
     updated_units = []
     after_updation_units.each do |updated_unit|
       if updated_unit.available_date.present? && updated_unit.available_date <= Date.today

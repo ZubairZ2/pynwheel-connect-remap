@@ -69,7 +69,7 @@ class Floorplate < ApplicationRecord
   end
 
   def get_floorplate_units_data floor, provider_floorplan_id, community_id
-    units = self.units.available_units.where(floor: floor, floorplan_id: provider_floorplan_id, community_id: community_id).where.not(building: ["", nil, "N/A"])
+    units = self.units.available_units(true).where(floor: floor, floorplan_id: provider_floorplan_id, community_id: community_id).where.not(building: ["", nil, "N/A"])
     floorplate_units = []
 
     units.each do |stop|

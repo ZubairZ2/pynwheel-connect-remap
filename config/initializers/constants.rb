@@ -107,7 +107,8 @@ SELF_TOUR_NO_SHOWS = "The number of scheduled tours that did not use the applica
 
 
 # Maps INFO
-MAPS_SESSIONS_INFO = "Map interaction is defined as an instance in which the user interacts with the Pynwheel Map until the browser is closed or the activity is idle for two minutes."
+# MAPS_SESSIONS_INFO = "Map interaction is defined as an instance in which the user interacts with the Pynwheel Map until the browser is closed or the activity is idle for two minutes."
+MAPS_SESSIONS_INFO = "Map interaction is defined as a session of a highly engaged user during which one or more of the following events occurs: opens a pricing modal; saves a favorite; clicks on “apply now”; clicks to share favorites. A session begins when the map is loaded and ends when the map is closed or the activity is idle for two minutes."
 MAPS_SESSION_DURATION = "Average duration of interaction on the Pynwheel Map until the browser is closed or the activity is idle for two minutes."
 MAPS_SESSIONS_BY_TIME_OF_DAY_INFO = "Number of interactions per time of day at the location of the user."
 MAPS_SINGLE_VS_MULTIPLE_PAGE_VISITS_INFO = "A single page visit means the user only visited the map. Multiple pages means that they also visited the Favorites page."
@@ -127,36 +128,57 @@ REPORTS = [
   {
     title: "Account Report",
     path: "account_report",
-    has_date_range: false
+    has_date_range: false,
+    partner: false,
+    partner_list: []
   },
   {
     title: "Touch Sessions Report",
     path: "generate_sessions_report",
-    has_date_range: true
+    has_date_range: true,
+    partner: false,
+    partner_list: []
   },
   {
     title: "Unplotted Units Report",
     path: "unplotted_units_report",
-    has_date_range: false
+    has_date_range: false,
+    partner: false,
+    partner_list: []
   },
   {
     title: "Map Type (Floorplates vs Map) Report",
     path: "properties_average_data_report",
-    has_date_range: false
+    has_date_range: false,
+    partner: false,
+    partner_list: []
   },
   {
     title: "Webpages Report",
     path: "generate_webpages_report",
-    has_date_range: false
+    has_date_range: false,
+    partner: false,
+    partner_list: []
   },
   {
     title: "Salesforce Report",
     path: "generate_salesforce_report",
-    has_date_range: false
+    has_date_range: false,
+    partner: false,
+    partner_list: []
   },
   {
     title: "Tour Feedback Report",
     path: "tour_feedback_report",
-    has_date_range: false
+    has_date_range: false,
+    partner: false,
+    partner_list: []
+  },
+  {
+    title: "Partner Analytics Report",
+    path: "partner_analytics_report",
+    has_date_range: true,
+    partner: true,
+    partner_list: ["apartmentlist", "rent"]
   }
 ]
