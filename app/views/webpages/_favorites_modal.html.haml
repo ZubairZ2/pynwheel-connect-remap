@@ -170,13 +170,13 @@
             %a.refresh-action.zooming-action.zoom-controls{:href => "#", :id => "#{unit.id}-fav-reset-zoom"}
               %img{:src => "/assets/refresh.png"}/
 
-#communityWebpagesFavoriteData{data: {currency: @community.get_currency_symbol()} }
+#communityWebpagesFavoriteData{data: {currency: @community.get_currency_symbol(), units: @fav_units_info} }
 
 :javascript
   var data_provider = "#{@community.data_provider}"
-  var units = "#{@fav_units_info}";
-  units = units.replace(/&quot;/g,'"');
-  units = JSON.parse(units);
+  var units = $("#communityWebpagesFavoriteData").data("units");//"#{@fav_units_info}";
+  //units = units.replace(/&quot;/g,'"');
+  //units = JSON.parse(units);
   var apply_now_url = "#{apply_now_community_webpages_url(@community)}"
   var redirect_url = "#{community_webpages_url(@community)}"
   $('.show-more-option-fav').click(function(){   
