@@ -27,7 +27,6 @@ $(document).ready(function () {
   webCommunity = $("#communityWebpagesData").data("community");
   _3dAmenities = $("#communityWebpagesData").data("amenities");
   _3dConfigurations = $("#communityWebpagesData").data("mapConfigurations");
-  is_floorplates = $("#communityWebpagesData").data("is_floorplate");
   currency = $("#communityWebpagesData").data("currency");
   
   if (typeof webCommunity !== 'undefined') {
@@ -269,7 +268,7 @@ $(window).bind('load', function () {
       let rightSide = document.getElementsByClassName('right-side')[0]
       rightSide.style.height = "50%";
 
-      if (x.matches && is_floorplate === "true"){
+      if (x.matches && has_floorplate === "true"){
         rightSide.style.bottom = "60px";
         rightSide.style.height = "25%";
 
