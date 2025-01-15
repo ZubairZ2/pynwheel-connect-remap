@@ -160,17 +160,11 @@ class Floorplate < ApplicationRecord
   end
 
   def map_ocr_data
-    data = read_attribute(:map_ocr_data)
-    if data.is_a?(String)
-      JSON.parse(data) rescue []
-    else
-      data || []
-    end
+    read_attribute(:map_ocr_data) || []
   end
-  
+
   def map_ocr_data=(value)
-    formatted_value = value.is_a?(Array) ? value.to_json : value
-    write_attribute(:map_ocr_data, formatted_value)
+    write_attribute(:map_ocr_data, value.is_a?(Array) ? value.to_json : value)
   end
 
   private
