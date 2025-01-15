@@ -517,7 +517,7 @@ module Api
               end
     
               last_visit = get_last_visited_community(@scheduled_tours)
-              data = {tour_user: @tour_user, last_visit: last_visit, upcoming: upcoming_tours.distinct, completed: completed_tours.distinct, exipred: expired_tours.distinct }
+              data = {tour_user: @tour_user, last_visit: last_visit, upcoming: upcoming_tours.uniq, completed: completed_tours.uniq, exipred: expired_tours.uniq }
               render :json=> {data: data.as_json, :status=> true, :message => "data returned succesfully", code: 200 }
             else
               data = {tour_user: @tour_user, last_visit: last_visit, upcoming: upcoming_tours, completed: completed_tours, exipred: expired_tours }
