@@ -597,8 +597,8 @@ module DweloDevicesHelper
   def set_sitemap_markers_on_map(units, detected_units, img_dimensions)
     units = units.where(x_plot: [0, "0", nil], y_plot: [0, "0", nil])
 
-    if units.present?
-      detected_units.each do |detected_unit|
+    if units.present? && detected_units.present?
+      detected_units&.each do |detected_unit|
         if detected_unit[:text].present? && detected_unit[:text].length > 2
 
           units.each do |unit|  
