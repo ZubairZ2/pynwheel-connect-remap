@@ -145,7 +145,7 @@ attr_reader :user , :params
 
   def get_communities_statuses(community, status, selected_communities)
     statuses = []
-    statuses << company_status(community)
+    # statuses << company_status(community)
 
     statuses << community_status(community)
     
