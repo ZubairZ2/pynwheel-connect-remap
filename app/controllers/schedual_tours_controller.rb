@@ -359,7 +359,7 @@ class SchedualToursController < ApplicationController
     @schedual_tour.update(knock_prospect_discover_source: params[:knock_prospect_discover_source]) if @schedual_tour.community.is_knock_community? && params[:knock_prospect_discover_source].present?
     @schedual_tour.update(rentcafe_discover_source: params[:rentcafe_discover_source]) if @schedual_tour.community.use_yardi_as_lead? && params[:rentcafe_discover_source].present?
 
-    if schedual_tour&.property_tour_type === "scheduled_tour"
+    if @schedual_tour&.property_tour_type === "scheduled_tour"
       book_yardi_appointment(@schedual_tour, previous_tour)
       FunnelService.new(@schedual_tour).funnel_crm(true)
     end
