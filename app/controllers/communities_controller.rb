@@ -811,6 +811,7 @@ class CommunitiesController < ApplicationController
     @community.units_availability_over_120_days = params[:units_availability_over_120_days]
     @community.display_additional_fee = params[:display_additional_fee]
     @community.display_manual_additional_fee = params[:display_manual_additional_fee]
+    @community.manual_additional_fee = params[:manual_additional_fee]
 
     if @community.save
       flash[:notice] = "Apartment settings updated successfully."

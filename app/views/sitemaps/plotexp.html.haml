@@ -160,12 +160,21 @@
                     %label.label-primary{:for => "display_manual_additional_fee"}
                     %span.pl-15 Yes
 
+              -# - if @community.display_manual_additional_fee
+              .form-group{style: "height: 200px"}
+                .col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = text_area_tag :manual_additional_fee, @community.manual_additional_fee, class: 'form-control mb-20 wysihtml5', placeholder: 'Enter Additional Fees and Pricing'
+                  .text-right
+                    = button_tag 'Save', type: 'submit', class: 'btn btn-success'
+
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                   Display Available date
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
                     %span#propertyDetailNameText
                       Switching this will change whether or not available date is displayed on the interactive property map and in the floor plan gallery.
+                
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
                     %span.pr-15 No
@@ -179,6 +188,7 @@
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
                     %span#propertyDetailNameText
                       Toggle to display units availability on all application over 120 days. Default is 'Yes'. Set to 'No' to limit availability to 120 days or less.
+                
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
                     %span.pr-15 No
@@ -294,6 +304,14 @@
                     = check_box_tag :display_manual_additional_fee, true, @community.display_manual_additional_fee, class: "apartment-setting-field"
                     %label.label-primary{:for => "display_manual_additional_fee"}
                     %span.pl-15 Yes
+
+              -# - if @community.display_manual_additional_fee
+              .form-group{style: "height: 200px"}
+                .col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = text_area_tag :manual_additional_fee, @community.manual_additional_fee, class: 'form-control mb-20 wysihtml5', placeholder: 'Enter Additional Fees and Pricing'
+                  .text-right
+                    = button_tag 'Save', type: 'submit', class: 'btn btn-success'
 
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
@@ -623,7 +641,10 @@
 #ocrData{data: {ocr_data: @map_ocr_data.to_json, image_dimensions: @dimensions.to_json}}
 :javascript
   $(document).ready(function () {
-  
+    $('.wysihtml5').each(function(i, elem) {
+      $(elem).wysihtml5({'toolbar': {'image': false,'link' : false}});
+    });
+
     document.addEventListener("touchstart", touchHandler, true);
     document.addEventListener("touchmove", touchHandler, true);
     document.addEventListener("touchend", touchHandler, true);
