@@ -38,8 +38,10 @@ class ResmanService < BaseService
           end
 
           $units_availability_url = response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["Information"]["UnitApplicationBaseURL"]
+          
           save_resman_units(units,property_id)
           save_resman_floorplans(floorplans,property_id)
+          update_additional_fee_and_pricing(community, response)
 
           begin
             cred = Credential.find @credentials.id
@@ -76,6 +78,8 @@ class ResmanService < BaseService
     end
     before_updation_units.compare_status_and_notify()
   end
+
+  private
 
   def save_resman_units(units,property_id)
     import_units = []
@@ -293,4 +297,41 @@ class ResmanService < BaseService
     end
   end
 
+  def update_additional_fee_and_pricing(community, response)
+    # Fetch data
+    fee = response.dig("ResMan", "Response", "PhysicalProperty", "Property", "Fee")
+
+    # Generate categorized lists
+    categorized_list = [
+      format_category("Standard Fees", format_fee_list(fee))
+    ].compact.join
+  
+    return if categorized_list.blank?
+    binding.pry
+    # Update community with categorized HTML list
+    community.update(additional_fee: "<div>#{categorized_list}</div>")
+  end
+  
+  def format_category(title, items)
+    return nil if items.blank?
+  
+    <<~HTML
+      <strong>#{title}</strong>
+      <ul>
+        #{items}
+      </ul>
+    HTML
+  end
+  
+  def format_fee_list(fees)
+    return "" unless fees
+  
+    fees.filter_map do |key, value|
+      value = value.to_f
+      next if value.zero?
+  
+      "<li>$#{'%.2f' % value} - #{key.gsub(/([a-z])([A-Z])/, '\1 \2')}</li>"
+    end.join
+  end
+  
 end

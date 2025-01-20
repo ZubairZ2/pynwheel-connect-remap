@@ -37,9 +37,12 @@ class Resman4Service < BaseService
           response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["Floorplan"].each do |pro|
             floorplans << pro
           end
+
           $units_availability_url = response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["Information"]["UnitApplicationBaseURL"]
+
           save_resman_units(units,property_id)
           save_resman_floorplans(floorplans,property_id)
+          update_additional_fee_and_pricing(community, response)
 
           begin
             cred = Credential.find @credentials.id
@@ -75,6 +78,8 @@ class Resman4Service < BaseService
     end
     before_updation_units.compare_status_and_notify()
   end
+
+  private
 
   def save_resman_units(units, property_id)
     import_units = []
@@ -323,5 +328,81 @@ class Resman4Service < BaseService
       unit.unit_status = "Occupied"
     end
   end
+
+  def update_additional_fee_and_pricing(community, response)
+    # Fetch data
+    fee = response.dig("ResMan", "Response", "PhysicalProperty", "Property", "Fee")
+    pet_fees = response.dig("ResMan", "Response", "PhysicalProperty", "Property", "Policy", "Pet")
+    parking_fees = response.dig("ResMan", "Response", "PhysicalProperty", "Property", "Information", "Parking")
+
+    # Generate categorized lists
+    categorized_list = [
+      format_category("Standard Fees", format_fee_list(fee)),
+      format_category("Pet Fees", format_pet_fee_list(pet_fees)),
+      format_category("Parking Fees", format_parking_fee_list(parking_fees))
+    ].compact.join
+  
+    return if categorized_list.blank?
+  
+    # Update community with categorized HTML list
+    community.update(additional_fee: "<div>#{categorized_list}</div>")
+  end
+  
+  def format_category(title, items)
+    return nil if items.blank?
+  
+    <<~HTML
+      <strong>#{title}</strong>
+      <ul>
+        #{items}
+      </ul>
+    HTML
+  end
+  
+  def format_fee_list(fees)
+    return "" unless fees
+  
+    fees.filter_map do |key, value|
+      value = value.to_f
+      next if value.zero?
+  
+      "<li>$#{'%.2f' % value} - #{key.gsub(/([a-z])([A-Z])/, '\1 \2')}</li>"
+    end.join
+  end
+  
+  def format_pet_fee_list(pet_fees)
+    return "" unless pet_fees
+  
+    pet_fees.filter_map do |pet_fee|
+      pet_type = pet_fee.dig("Pets", "PetType")
+      [
+        format_fee_item(pet_fee["Fee"], "Pet Fee", pet_type),
+        format_fee_item(pet_fee["Rent"], "Pet Rent", pet_type)
+      ]
+    end.flatten.join
+  end
+
+  def format_parking_fee_list(parking_fees)
+    return "" unless parking_fees
+  
+    parking_fees.filter_map do |parking_fee|
+      space_fee = parking_fee["SpaceFee"].to_f
+      next if space_fee.zero?
+  
+      parking_type = parking_fee["ParkingType"]
+      assigned = parking_fee["Assigned"] == "true" ? "Assigned" : "Unassigned"
+      comment = parking_fee["Comment"] ? " - #{parking_fee['Comment']}" : ""
+  
+      "<li>$#{'%.2f' % space_fee} - #{assigned} Parking (#{parking_type})#{comment}</li>"
+    end.join
+  end
+  
+  def format_fee_item(amount, label, type = nil)
+    amount = amount.to_f
+    return nil if amount.zero?
+  
+    "<li>$#{'%.2f' % amount} - #{label}#{type ? " (#{type})" : ''}</li>"
+  end
+  
 
 end
