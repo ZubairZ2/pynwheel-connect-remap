@@ -11,6 +11,7 @@ class Resman4Service < BaseService
     before_updation_units = NotifyManagerService.new(@credentials.community_id)
     community = Community.find @credentials.community_id
     property_ids = @credentials.resman_property_id.split(',') rescue []
+
     property_ids.each do |property_id|
       begin
 
@@ -26,7 +27,7 @@ class Resman4Service < BaseService
                                      "PropertyID": property_id,
                                  },
                                  :headers => { 'Content-Type' => 'application/x-www-form-urlencoded' } )
-        # response =  JSON.parse(response.body)
+        
         if response["ResMan"]["Status"] == "Success"
           units = []
           floorplans = []
@@ -43,39 +44,13 @@ class Resman4Service < BaseService
           save_resman_units(units,property_id)
           save_resman_floorplans(floorplans,property_id)
           update_additional_fee_and_pricing(community, response)
-
-          begin
-            cred = Credential.find @credentials.id
-            cred.data_error_message = nil
-            PaperTrail.enabled = false
-            cred.save
-            PaperTrail.enabled = true
-          rescue => err
-          end
-
-        else
-          begin
-            cred = Credential.find @credentials.id
-            cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
-            PaperTrail.enabled = false
-            cred.save
-            PaperTrail.enabled = true
-          rescue => err
-          end
-          ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: @credentials.community_id})
         end
 
       rescue => e
-        begin
-          cred = Credential.find @credentials.id
-          cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
-          PaperTrail.enabled = false
-          cred.save
-          PaperTrail.enabled = true
-        rescue => err
-        end
+       raise e
       end
     end
+    
     before_updation_units.compare_status_and_notify()
   end
 
