@@ -330,21 +330,30 @@ class Resman4Service < BaseService
   end
 
   def update_additional_fee_and_pricing(community, response)
-    # Fetch data
-    fee = response.dig("ResMan", "Response", "PhysicalProperty", "Property", "Fee")
-    pet_fees = response.dig("ResMan", "Response", "PhysicalProperty", "Property", "Policy", "Pet")
-    parking_fees = response.dig("ResMan", "Response", "PhysicalProperty", "Property", "Information", "Parking")
+    property = fetch_property_data(response)
+    categorized_list = generate_categorized_fee_list(property)
+    update_community_with_fees(community, categorized_list)
+  end
 
-    # Generate categorized lists
-    categorized_list = [
+  def fetch_property_data(response)
+    response.dig("ResMan", "Response", "PhysicalProperty", "Property")
+  end
+
+  def generate_categorized_fee_list(property)
+    fee = property.dig("Fee")
+    pet_fees = property.dig("Policy", "Pet")
+    parking_fees = property.dig("Information", "Parking")
+
+    [
       format_category("Standard Fees", format_fee_list(fee)),
       format_category("Pet Fees", format_pet_fee_list(pet_fees)),
       format_category("Parking Fees", format_parking_fee_list(parking_fees))
     ].compact.join
-  
+  end
+
+  def update_community_with_fees(community, categorized_list)
     return if categorized_list.blank?
   
-    # Update community with categorized HTML list
     community.update(additional_fee: "<div>#{categorized_list}</div>")
   end
   

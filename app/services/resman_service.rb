@@ -10,6 +10,7 @@ class ResmanService < BaseService
   def perform
     before_updation_units = NotifyManagerService.new(@credentials.community_id)
     property_ids = @credentials.resman_property_id.split(',') rescue []
+
     property_ids.each do |property_id|
       begin
 
@@ -24,7 +25,7 @@ class ResmanService < BaseService
                                      "PropertyID": property_id,
                                  },
                                  :headers => { 'Content-Type' => 'application/x-www-form-urlencoded' } )
-        # response =  JSON.parse(response.body)
+
         if response["ResMan"]["Status"] == "Success"
           units = []
           floorplans = []
@@ -42,40 +43,13 @@ class ResmanService < BaseService
           save_resman_units(units,property_id)
           save_resman_floorplans(floorplans,property_id)
           update_additional_fee_and_pricing(community, response)
-
-          begin
-            cred = Credential.find @credentials.id
-            cred.data_error_message = nil
-            PaperTrail.enabled = false
-            cred.save
-            PaperTrail.enabled = true
-          rescue => err
-          end
-          
-        else
-          begin
-            cred = Credential.find @credentials.id
-            cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
-            PaperTrail.enabled = false
-            cred.save
-            PaperTrail.enabled = true
-          rescue => err
-          end
-          ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: @credentials.community_id})
         end
       
       rescue => e
-        begin
-          cred = Credential.find @credentials.id
-          cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
-          PaperTrail.enabled = false
-          cred.save
-          PaperTrail.enabled = true
-        rescue => err
-        end
+        raise e
       end
-
     end
+
     before_updation_units.compare_status_and_notify()
   end
 
@@ -286,29 +260,37 @@ class ResmanService < BaseService
 
   end
 
-  def unit_status_update unit, u
-    vacancy_class = u["Availability"]["VacancyClass"]
-    unit_occupancy_status =  u["Units"]["Unit"]["UnitOccupancyStatus"]
-
-    if (vacancy_class == "Unoccupied") && (unit_occupancy_status == "vacant")
-      unit.unit_status = "Unoccupied"
-    else
-      unit.unit_status = "Occupied"
-    end
-  end
+  def unit_status_update(unit, u)
+    vacancy_class = u.dig("Availability", "VacancyClass") || u.dig("Unit", "MITS:Information", "MITS:UnitOccupancyStatus")
+  
+    unit.unit_status = if %w[unoccupied vacant].include?(vacancy_class.downcase)
+                         "Unoccupied"
+                       else
+                         "Occupied"
+                       end
+  end  
 
   def update_additional_fee_and_pricing(community, response)
-    # Fetch data
-    fee = response.dig("ResMan", "Response", "PhysicalProperty", "Property", "Fee")
+    property = fetch_property_data(response)
+    categorized_list = generate_categorized_fee_list(property)
+    update_community_with_fees(community, categorized_list)
+  end
 
-    # Generate categorized lists
-    categorized_list = [
+  def fetch_property_data(response)
+    response.dig("ResMan", "Response", "PhysicalProperty", "Property")
+  end
+
+  def generate_categorized_fee_list(property)
+    fee = property.dig("Fee")
+
+    [
       format_category("Standard Fees", format_fee_list(fee))
     ].compact.join
-  
+  end
+
+  def update_community_with_fees(community, categorized_list)
     return if categorized_list.blank?
-    binding.pry
-    # Update community with categorized HTML list
+  
     community.update(additional_fee: "<div>#{categorized_list}</div>")
   end
   
