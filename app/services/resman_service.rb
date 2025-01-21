@@ -309,10 +309,10 @@ class ResmanService < BaseService
     return "" unless fees
   
     fees.filter_map do |key, value|
-      value = value.to_f
+      value = value.to_i
       next if value.zero?
   
-      "<li>$#{'%.2f' % value} - #{key.gsub(/([a-z])([A-Z])/, '\1 \2')}</li>"
+      "<li>$#{value} - #{key.gsub(/([a-z])([A-Z])/, '\1 \2')}</li>"
     end.join
   end
   
