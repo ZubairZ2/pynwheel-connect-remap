@@ -11,20 +11,10 @@ class PsiService < BaseService
 
   def perform
     begin
-      com_test = Community.find @credentials.community_id
-      com_test.entrata_exception_logs = "" unless com_test.entrata_exception_logs.present?
-      com_test.entrata_exception_logs = com_test.entrata_exception_logs + "Before call logs -"+Time.now.to_s + "-"
-      PaperTrail.enabled = false
-      com_test.save
-      PaperTrail.enabled = true
-    rescue => ex
-      raise ex
-    end
-    before_updation_units = NotifyManagerService.new(@credentials.community_id)
-    property_ids = @credentials.property_id.split(',') rescue []
+      before_updation_units = NotifyManagerService.new(@credentials.community_id)
+      property_ids = @credentials.property_id.split(',') rescue []
 
-    property_ids.each do |property_id|
-      begin
+      property_ids.each do |property_id|
 
         if @credentials.entrata_url.include?('https://') || @credentials.entrata_url.include?('http://')
           url = @credentials.entrata_url
@@ -36,22 +26,22 @@ class PsiService < BaseService
         username = @credentials.username
 
         response = HTTParty.post(url,
-                                 :body => {
-                                     "auth": {
-                                         "type": "basic",
-                                         "password": password,
-                                         "username": username
-                                     },
-                                     "method": {
-                                         "name": "getMitsPropertyUnits",
-                                         "params": {
-                                             "propertyIds": property_id,
-                                             "availableUnitsOnly": @credentials&.entrata_available_units_only,
-                                             "showUnitSpaces": @credentials&.entrata_show_unit_spaces
-                                         }
-                                     }
-                                 }.to_json,
-                                 :headers => { 'Content-Type' => 'application/json' } )
+                                :body => {
+                                    "auth": {
+                                        "type": "basic",
+                                        "password": password,
+                                        "username": username
+                                    },
+                                    "method": {
+                                        "name": "getMitsPropertyUnits",
+                                        "params": {
+                                            "propertyIds": property_id,
+                                            "availableUnitsOnly": @credentials&.entrata_available_units_only,
+                                            "showUnitSpaces": @credentials&.entrata_show_unit_spaces
+                                        }
+                                    }
+                                }.to_json,
+                                :headers => { 'Content-Type' => 'application/json' } )
         response =  JSON.parse(response.body)
         
         if response["response"]["code"] == 200
@@ -63,7 +53,7 @@ class PsiService < BaseService
                 units << ils
               end
             end
-           
+          
             if  pro["Floorplan"].present?
               pro["Floorplan"].each do |f|
                 floorplans << f
@@ -71,83 +61,23 @@ class PsiService < BaseService
             end
           end
 
+          community = Community.find @credentials.community_id
+
           save_psi_floorplans(floorplans, property_id)
           save_psi_units(units, property_id)
-
-          community = Community.find @credentials.community_id
+          update_additional_fee_and_pricing(community, response)
           community&.community_data_updated_on()
-
-          begin
-            cred = Credential.find @credentials.id
-            cred.data_error_message = nil
-            PaperTrail.enabled = false
-            cred.save
-            PaperTrail.enabled = true
-
-          rescue => err
-            raise err
-          end
-
-        else
-          begin
-            cred = Credential.find @credentials.id
-            cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
-            PaperTrail.enabled = false
-            cred.save
-            PaperTrail.enabled = true
-          rescue => err
-            raise err
-          end
         end
-
-      rescue => e
-        raise e
-
-        begin
-          cred = Credential.find @credentials.id
-          cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
-          PaperTrail.enabled = false
-          cred.save
-          PaperTrail.enabled = true
-        
-        rescue => err
-          raise err
-        end
-
-        begin
-          raise e
-
-          com = Community.find @credentials.community_id
-          unless com.entrata_exception_logs.present?
-            com.entrata_exception_logs = ""
-          end
-          com.entrata_exception_logs = Time.now.to_s + com.entrata_exception_logs + "|||||||MITS|||||||| " + com.id.to_s + "--- "+ e.message
-          PaperTrail.enabled = false
-          com.save
-          PaperTrail.enabled = true
-        
-        rescue => p
-          raise p
-        end
-
       end
-    end
 
-    begin
-      com_test = Community.find @credentials.community_id
-      com_test.entrata_exception_logs = "" unless com_test.entrata_exception_logs.present?
-      com_test.entrata_exception_logs = com_test.entrata_exception_logs + "After call logs -"+Time.now.to_s + "-  =========================="
-      PaperTrail.enabled = false
-      com_test.save
-      PaperTrail.enabled = true
-    
-    rescue => ex
-      raise ex
+      fill_psi_pricing_details()
+      before_updation_units.compare_status_and_notify()
+    rescue => e
+      raise e
     end
-
-    fill_psi_pricing_details()
-    before_updation_units.compare_status_and_notify()
   end
+
+  private
 
   def save_psi_units(units,property_id)
     return unless @all_units_hash.present?
@@ -702,4 +632,74 @@ class PsiService < BaseService
   rescue StandardError => e
     12
   end
+
+  def update_additional_fee_and_pricing(community, response)
+    if community.display_additional_fee && !community.display_manual_additional_fee 
+      property = fetch_property_data(response)
+      categorized_list = generate_categorized_fee_list(property)
+      update_community_with_fees(community, categorized_list)
+    end
+  end
+  
+  def fetch_property_data(response)
+    response.dig("response", "result", "PhysicalProperty", "Property")
+  end
+  
+  def generate_categorized_fee_list(property)
+    pet_fees = property.dig(0, "Policy", "Pet")
+    application_fees = property.dig(0, "Fee", "ApplicationFee")
+
+    [
+      format_category("Application Fees", format_application_fee_list(application_fees)),
+      format_category("Pet Fees", format_pet_fee_list(pet_fees))
+    ].compact.join
+  end
+  
+  def update_community_with_fees(community, categorized_list)
+    return if categorized_list.blank?
+  
+    community.update(additional_fee: "<div>#{categorized_list}</div>")
+  end
+  
+  def format_category(title, items)
+    return nil if items.blank?
+  
+    <<~HTML
+      <strong>#{title}</strong>
+      <ul>
+        #{items}
+      </ul>
+    HTML
+  end
+  
+  def format_pet_fee_list(pet_policies)
+    return "" unless pet_policies
+  
+    pet_policies.filter_map do |pet_policy|
+      pet_type = pet_policy.dig("Pets", "@attributes", "PetType")
+      rent = pet_policy["Rent"].to_i
+      fee = pet_policy["Fee"].to_i
+  
+      details = []
+      details << "$#{fee} - Pet Fee (#{pet_type})" if fee.positive?
+      details << "$#{rent} - Pet Rent (#{pet_type})" if rent.positive?
+  
+      details.any? ? "<li>#{details.join(', ')}</li>" : nil
+    end.join
+  end
+  
+
+  def format_application_fee_list(application_fees)
+    return "" unless application_fees
+  
+    application_fees.filter_map do |app_fee|
+
+      type = app_fee.dig("@attributes", "Type")
+      amount = app_fee.dig("@attributes", "Amount").to_i
+      next if amount.zero?
+  
+      "<li>$#{amount} - #{type}</li>"
+    end.join
+  end
+  
 end

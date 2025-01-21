@@ -11,6 +11,7 @@ class Resman4Service < BaseService
     before_updation_units = NotifyManagerService.new(@credentials.community_id)
     community = Community.find @credentials.community_id
     property_ids = @credentials.resman_property_id.split(',') rescue []
+
     property_ids.each do |property_id|
       begin
 
@@ -26,7 +27,7 @@ class Resman4Service < BaseService
                                      "PropertyID": property_id,
                                  },
                                  :headers => { 'Content-Type' => 'application/x-www-form-urlencoded' } )
-        # response =  JSON.parse(response.body)
+        
         if response["ResMan"]["Status"] == "Success"
           units = []
           floorplans = []
@@ -37,44 +38,23 @@ class Resman4Service < BaseService
           response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["Floorplan"].each do |pro|
             floorplans << pro
           end
+
           $units_availability_url = response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["Information"]["UnitApplicationBaseURL"]
+
           save_resman_units(units,property_id)
           save_resman_floorplans(floorplans,property_id)
-
-          begin
-            cred = Credential.find @credentials.id
-            cred.data_error_message = nil
-            PaperTrail.enabled = false
-            cred.save
-            PaperTrail.enabled = true
-          rescue => err
-          end
-
-        else
-          begin
-            cred = Credential.find @credentials.id
-            cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
-            PaperTrail.enabled = false
-            cred.save
-            PaperTrail.enabled = true
-          rescue => err
-          end
-          ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: @credentials.community_id})
+          update_additional_fee_and_pricing(community, response)
         end
 
       rescue => e
-        begin
-          cred = Credential.find @credentials.id
-          cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
-          PaperTrail.enabled = false
-          cred.save
-          PaperTrail.enabled = true
-        rescue => err
-        end
+       raise e
       end
     end
+    
     before_updation_units.compare_status_and_notify()
   end
+
+  private
 
   def save_resman_units(units, property_id)
     import_units = []
@@ -323,5 +303,92 @@ class Resman4Service < BaseService
       unit.unit_status = "Occupied"
     end
   end
+
+  def update_additional_fee_and_pricing(community, response)
+    if community.display_additional_fee && !community.display_manual_additional_fee
+      property = fetch_property_data(response)
+      categorized_list = generate_categorized_fee_list(property)
+      update_community_with_fees(community, categorized_list)
+    end
+  end
+
+  def fetch_property_data(response)
+    response.dig("ResMan", "Response", "PhysicalProperty", "Property")
+  end
+
+  def generate_categorized_fee_list(property)
+    fee = property.dig("Fee")
+    pet_fees = property.dig("Policy", "Pet")
+    parking_fees = property.dig("Information", "Parking")
+
+    [
+      format_category("Standard Fees", format_fee_list(fee)),
+      format_category("Pet Fees", format_pet_fee_list(pet_fees)),
+      format_category("Parking Fees", format_parking_fee_list(parking_fees))
+    ].compact.join
+  end
+
+  def update_community_with_fees(community, categorized_list)
+    return if categorized_list.blank?
+  
+    community.update(additional_fee: "<div>#{categorized_list}</div>")
+  end
+  
+  def format_category(title, items)
+    return nil if items.blank?
+  
+    <<~HTML
+      <strong>#{title}</strong>
+      <ul>
+        #{items}
+      </ul>
+    HTML
+  end
+  
+  def format_fee_list(fees)
+    return "" unless fees
+  
+    fees.filter_map do |key, value|
+      value = value.to_i
+      next if value.zero?
+  
+      "<li>$#{value} - #{key.gsub(/([a-z])([A-Z])/, '\1 \2')}</li>"
+    end.join
+  end
+  
+  def format_pet_fee_list(pet_fees)
+    return "" unless pet_fees
+  
+    pet_fees.filter_map do |pet_fee|
+      pet_type = pet_fee.dig("Pets", "PetType")
+      [
+        format_fee_item(pet_fee["Fee"], "Pet Fee", pet_type),
+        format_fee_item(pet_fee["Rent"], "Pet Rent", pet_type)
+      ]
+    end.flatten.join
+  end
+
+  def format_parking_fee_list(parking_fees)
+    return "" unless parking_fees
+  
+    parking_fees.filter_map do |parking_fee|
+      space_fee = parking_fee["SpaceFee"].to_i
+      next if space_fee.zero?
+  
+      parking_type = parking_fee["ParkingType"]
+      assigned = parking_fee["Assigned"] == "true" ? "Assigned" : "Unassigned"
+      comment = parking_fee["Comment"] ? " - #{parking_fee['Comment']}" : ""
+  
+      "<li>$#{space_fee} - #{assigned} Parking (#{parking_type})#{comment}</li>"
+    end.join
+  end
+  
+  def format_fee_item(amount, label, type = nil)
+    amount = amount.to_i
+    return nil if amount.zero?
+  
+    "<li>$#{amount} - #{label}#{type ? " (#{type})" : ''}</li>"
+  end
+  
 
 end

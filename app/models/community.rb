@@ -129,6 +129,12 @@ class Community < ApplicationRecord
     end
   end
 
+  def have_additional_fee?
+    fee = self.additional_fee.to_s.strip
+    sanitized_content = ActionController::Base.helpers.strip_tags(fee).strip
+    sanitized_content.present?
+  end
+
   def show_trash_icon stop_type
     (stop_type === "amenity" && id === SOFIA_ID) ? false : true
   end
@@ -2461,6 +2467,4 @@ class Community < ApplicationRecord
       self.update_column(:is_chat_available, false)
     end
   end
-
-
 end

@@ -813,6 +813,9 @@ class CommunitiesController < ApplicationController
     @community.show_amenity_key_text = params[:show_amenity_key_text] if params[:show_amenity_key_text].present?
     @community.pricing_message =  params[:pricing_message]
     @community.units_availability_over_120_days = params[:units_availability_over_120_days]
+    @community.display_additional_fee = params[:display_additional_fee]
+    @community.display_manual_additional_fee = params[:display_manual_additional_fee]
+    @community.additional_fee = params[:additional_fee]
 
     if @community.save
       flash[:notice] = "Apartment settings updated successfully."

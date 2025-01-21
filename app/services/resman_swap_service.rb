@@ -217,14 +217,13 @@ class ResmanSwapService < BaseService
     Unit.where(community_id: credentials.community_id).where(provider: "resman_new").update_all(provider: "resman")
   end
 
-  def unit_status_update unit, u
-    vacancy_class = u["Availability"]["VacancyClass"]
-    unit_occupancy_status =  u["Units"]["Unit"]["UnitOccupancyStatus"]
-
-    if (vacancy_class == "Unoccupied") && (unit_occupancy_status == "vacant")
-      unit.unit_status = "Unoccupied"
-    else
-      unit.unit_status = "Occupied"
-    end
+  def unit_status_update(unit, u)
+    vacancy_class = u.dig("Availability", "VacancyClass") || u.dig("Unit", "MITS:Information", "MITS:UnitOccupancyStatus")
+  
+    unit.unit_status = if %w[unoccupied vacant].include?(vacancy_class.downcase)
+                         "Unoccupied"
+                       else
+                         "Occupied"
+                       end
   end
 end

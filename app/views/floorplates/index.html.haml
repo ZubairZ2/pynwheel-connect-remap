@@ -104,6 +104,41 @@
                           = check_box_tag :display_pricing_options, true, @community.display_pricing_options, class: "apartment-setting-field"
                           %label.label-primary{:for => "display_pricing_options"}
                           %span.pl-15 Yes
+                    
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                        Display Fees
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            Display Fees will import any additional fees from the data feed if possible to the application.
+                      
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .TriSea-technologies-Switch
+                          %span.pr-15 No
+                          = check_box_tag :display_additional_fee, true, @community.display_additional_fee, class: "apartment-setting-field"
+                          %label.label-primary{:for => "display_additional_fee"}
+                          %span.pl-15 Yes
+                    
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                        Manually Enter Fees
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            When "Manually Enter Fees" is toggled to "Yes" then that will override any fee information coming from the data feed.
+
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .TriSea-technologies-Switch
+                          %span.pr-15 No
+                          = check_box_tag :display_manual_additional_fee, true, @community.display_manual_additional_fee, class: "apartment-setting-field"
+                          %label.label-primary{:for => "display_manual_additional_fee"}
+                          %span.pl-15 Yes
+
+                    .form-group{style: "height: 200px"}
+                      .col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        = text_area_tag :additional_fee, @community.additional_fee, class: 'form-control mb-20 wysihtml5', placeholder: 'Enter Additional Fees and Pricing'
+                        .text-right
+                          = button_tag 'Save', type: 'submit', class: 'btn btn-success'
 
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
@@ -210,6 +245,41 @@
                           = check_box_tag :display_pricing_options, true, @community.display_pricing_options, class: "apartment-setting-field"
                           %label.label-primary{:for => "display_pricing_options"}
                           %span.pl-15 Yes
+
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                        Display Fees
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            Display Fees will import any additional fees from the data feed if possible to the application.
+                      
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .TriSea-technologies-Switch
+                          %span.pr-15 No
+                          = check_box_tag :display_additional_fee, true, @community.display_additional_fee, class: "apartment-setting-field"
+                          %label.label-primary{:for => "display_additional_fee"}
+                          %span.pl-15 Yes
+                    
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                        Manually Enter Fees
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            When "Manually Enter Fees" is toggled to "Yes" then that will override any fee information coming from the data feed.
+                
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .TriSea-technologies-Switch
+                          %span.pr-15 No
+                          = check_box_tag :display_manual_additional_fee, true, @community.display_manual_additional_fee, class: "apartment-setting-field"
+                          %label.label-primary{:for => "display_manual_additional_fee"}
+                          %span.pl-15 Yes
+                    
+                    .form-group{style: "height: 200px"}
+                      .col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        = text_area_tag :additional_fee, @community.additional_fee, class: 'form-control mb-20 wysihtml5', placeholder: 'Enter Additional Fees and Pricing'
+                        .text-right
+                          = button_tag 'Save', type: 'submit', class: 'btn btn-success'
 
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
@@ -346,6 +416,10 @@
   #select_floor.modal.fade.select_floor
 
 :javascript
+  $('.wysihtml5').each(function(i, elem) {
+    $(elem).wysihtml5({'toolbar': {'image': false,'link' : false}});
+  });
+
   $('.apartment-setting-field').change(function(){
     $('.apartment-settings-form').submit();
   });

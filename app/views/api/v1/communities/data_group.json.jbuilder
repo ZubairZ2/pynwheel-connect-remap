@@ -59,6 +59,7 @@ json.community_group @communities do |co|
 
   json.community_name  @community.name
   json.currency_symbol @community.get_currency_symbol()
+  json.additional_fee @community.have_additional_fee? ? "<div>" + @community.additional_fee + "</div>" : nil
   json.country_code DateFormatter.country_code_by_region(@community.country_code)
   json.date_format_by_region DateFormatter.date_format_by_region(@community.country_code) 
   json.community_id  @community.id

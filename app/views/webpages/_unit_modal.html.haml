@@ -56,10 +56,12 @@
                       %img{:src => "/assets/sq-feet-icon.png"}/
                       %span#square-feet
                     Sq Feet
+
               .availabilty-container-start
                 %span.available-heading#available-text
                 %b
                   %span#available-date
+
               %div#overall-scroller.overall-scroller.mobile_modal{style: "height: 25em; max-height: 25em;"}
                 #unit-lease-pricing-text-li.availabilty-container
                   %span.text-left.available-info
@@ -74,11 +76,19 @@
                       %div{style: "max-height: 6em; overflow-y: auto;"}
                         %span#unit-lease-pricing
 
+                - if @community.have_additional_fee?
+                  .c-modal-sidebar-fees
+                    %h4.fees-heading Fees
+                    %div.c-m-fees
+                      = @community.additional_fee.html_safe
+
                 .c-modal-sidebar-description
-                  %h4.des-heading Description
+                  %h4.des-heading More Details
                   %p.c-m-description#unit-description
+
                 %div{style: "padding: 0px 0px 8px 7px"}
                   .unit-buttons
+
             .c-modal-sidebar-filters
               - if !params[:partner].present? && @community_info.credential.present? and @community_info.credential.apply_now.to_s == "true"
                 .m-filters
