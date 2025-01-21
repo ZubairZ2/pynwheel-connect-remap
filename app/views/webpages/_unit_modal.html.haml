@@ -76,10 +76,7 @@
                       %div{style: "max-height: 6em; overflow-y: auto;"}
                         %span#unit-lease-pricing
 
-                - additional_fee = @community.additional_fee.to_s.strip
-                - sanitized_content = ActionController::Base.helpers.strip_tags(additional_fee).strip
-
-                - if sanitized_content.present?
+                - if @community.have_additional_fee?
                   .c-modal-sidebar-fees
                     %h4.fees-heading Fees
                     %div.c-m-fees
