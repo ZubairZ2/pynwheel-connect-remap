@@ -75,11 +75,15 @@
                     #pricing-option.hidden
                       %div{style: "max-height: 6em; overflow-y: auto;"}
                         %span#unit-lease-pricing
-                
-                .c-modal-sidebar-fees
-                  %h4.fees-heading Fees
-                  %div.c-m-fees
-                    = @community_info.additional_fee.html_safe
+
+                - additional_fee = @community.additional_fee.to_s.strip
+                - sanitized_content = ActionController::Base.helpers.strip_tags(additional_fee).strip
+
+                - if sanitized_content.present?
+                  .c-modal-sidebar-fees
+                    %h4.fees-heading Fees
+                    %div.c-m-fees
+                      = @community.additional_fee.html_safe
 
                 .c-modal-sidebar-description
                   %h4.des-heading More Details

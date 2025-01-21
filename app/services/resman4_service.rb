@@ -305,9 +305,11 @@ class Resman4Service < BaseService
   end
 
   def update_additional_fee_and_pricing(community, response)
-    property = fetch_property_data(response)
-    categorized_list = generate_categorized_fee_list(property)
-    update_community_with_fees(community, categorized_list)
+    if community.display_additional_fee && !community.display_manual_additional_fee
+      property = fetch_property_data(response)
+      categorized_list = generate_categorized_fee_list(property)
+      update_community_with_fees(community, categorized_list)
+    end
   end
 
   def fetch_property_data(response)
