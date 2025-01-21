@@ -25,7 +25,7 @@ module PynwheelCms
     Rails.application.config.session_store :cookie_store, expire_after: 14.days
 
     if Rails.env.production? || Rails.env.staging?
-      config.session_store :redis_store, servers: ENV["REDIS_TLS_URL"], key: '_pynwheel-cms_session'
+      config.session_store :redis_store, servers: ENV["REDIS_URL"], key: '_pynwheel-cms_session'
     else
       config.session_store :cookie_store, key: '_pynwheel-cms_session'
     end    
