@@ -91,6 +91,8 @@ class Community < ApplicationRecord
   after_save :set_community_time_zone, if: ->(obj) { obj.latitude_changed? || obj.longitude_changed? }
   after_save :set_country_code, if: ->(obj) { obj.latitude_changed? || obj.longitude_changed? || obj.city_changed? || obj.state_changed? || obj.address_changed? || obj.zip_changed? }
 
+  after_save :set_additiona_fees, if: ->(obj) { obj.additional_fee_changed? || obj.display_manual_additional_fee_changed?}
+
   after_save :create_default_credential
   after_update :set_default_provider
 
@@ -127,6 +129,11 @@ class Community < ApplicationRecord
     else
       data.merge!(:brand_feature_access => false)
     end
+  end
+
+  def set_additiona_fees
+    return unless display_manual_additional_fee
+    self.units.update_all(additional_fee: self.additional_fee)
   end
 
   def have_additional_fee?

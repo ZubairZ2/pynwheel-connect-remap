@@ -812,7 +812,7 @@ class CommunitiesController < ApplicationController
     @community.display_additional_fee = params[:display_additional_fee]
     @community.display_manual_additional_fee = params[:display_manual_additional_fee]
     @community.additional_fee = params[:additional_fee]
-
+    
     if @community.save
       flash[:notice] = "Apartment settings updated successfully."
       redirect_back(fallback_location: root_path)
