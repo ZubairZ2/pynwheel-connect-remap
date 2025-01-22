@@ -159,7 +159,7 @@ class Community < ApplicationRecord
 
   def available_unit_for_self_tour
     return [] unless customization_enabled?
-
+    
     units_query = if SELF_TOUR_PROVIDERS.include?(self.data_provider)
                     self.units.vacant_and_available
                   else

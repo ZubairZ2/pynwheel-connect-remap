@@ -378,28 +378,28 @@
           %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel
   
 #modal-to-set-image.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
-.modal-dialog.modal-lg
-  .modal-content
-    .modal-header
-      Upload Floor Plan Image
-    = form_tag set_image_community_units_path(@community), multipart: true do
-      .modal-body.set-floor-modal-body
-        = file_field_tag 'image_file', :accept => 'image/*',:required=>true, :id => "size_limit"
-        .row
-          .col-md-4
-            = check_box_tag 'select_all_units_for_image'
-            %label Select all
-        .row
-          - units.each do |unit|
-            .col-md-3.pt-5.pb-5
-              = check_box_tag 'unit_ids[]', unit.id,false,class: 'image-checkbox mass-override'
-              - if @community.data_provider == "yardi"
-                = h unit.provider_unit_id
-              - else
-                = h unit.unit_market
-      .modal-footer
-        = submit_tag 'Submit',:class=>"btn btn-success"
-        %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel
+  .modal-dialog.modal-lg
+    .modal-content
+      .modal-header
+        Upload Floor Plan Image
+      = form_tag set_image_community_units_path(@community), multipart: true do
+        .modal-body.set-floor-modal-body
+          = file_field_tag 'image_file', :accept => 'image/*',:required=>true, :id => "size_limit"
+          .row
+            .col-md-4
+              = check_box_tag 'select_all_units_for_image'
+              %label Select all
+          .row
+            - units.each do |unit|
+              .col-md-3.pt-5.pb-5
+                = check_box_tag 'unit_ids[]', unit.id,false,class: 'image-checkbox mass-override'
+                - if @community.data_provider == "yardi"
+                  = h unit.provider_unit_id
+                - else
+                  = h unit.unit_market
+        .modal-footer
+          = submit_tag 'Submit',:class=>"btn btn-success"
+          %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel
 
 
   :javascript
