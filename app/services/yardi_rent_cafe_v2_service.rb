@@ -17,6 +17,7 @@ class YardiRentCafeV2Service < BaseService
     before_updation_units = NotifyManagerService.new(@credentials.community_id)
     import_yardirentcafe_floorplans
     import_yardirentcafe_units
+    update_additional_fees
     before_updation_units.compare_status_and_notify()
   end
 
@@ -117,10 +118,10 @@ class YardiRentCafeV2Service < BaseService
                       unit.max_effective_rent = max_term_rent if max_term_rent.present?
                       
                     end
+
                   end
 
                   unit.lease_pricing = leasing
-                  
                   import_units << unit
 
                 else
@@ -337,7 +338,6 @@ class YardiRentCafeV2Service < BaseService
       end
     end
 
-
     def set_availabilty_date(available_date)
       available_date = available_date.split("/")
       "#{available_date[2]}-#{available_date[0]}-#{available_date[1]}"
@@ -375,6 +375,49 @@ class YardiRentCafeV2Service < BaseService
       rescue => ex
         raise ex
       end
+    end
+
+    def update_additional_fees
+      begin
+        return unless @all_units_hash.present?
+
+        property_codes = @credentials.p_code.split(',') rescue []
+
+        property_codes.each do |property_code|
+          import_units = []
+          response = get_additional_fees(property_code)
+          if response.present?
+            response.each do |r|
+              unit = @all_units_hash[r["apartmentId"].to_s]
+              if unit.present?
+                fee_list = process_lease_fees_details(r)
+                unit.additional_fee = fee_list
+                import_units << unit
+              end
+            end
+
+            ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
+          end
+        end
+
+      rescue => e
+        raise e
+      end
+    end
+    
+    def process_lease_fees_details(apartment)
+      return "" if apartment["moveInFees"].blank?
+    
+      fee_items = apartment["moveInFees"].map do |fee|
+        (fee["feeCost"].to_i > 0) ? "<li>#{fee["feeName"]}: #{fee["feeCost"]}</li>" : ""
+      end.join
+    
+      "<ul>#{fee_items}</ul>"
+    end
+    
+
+    def get_additional_fees property_code
+      DataProviders::RentCafe::V2ApisService.new(@credentials.community_id).get_additional_fees(property_code)
     end
 
     def get_appartments_availability property_code

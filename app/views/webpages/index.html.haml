@@ -274,17 +274,7 @@
                       = select_tag :filter,  options_for_select([["Sort by"], ["Availability: Soonest to Latest"], ["Availability: Latest to Soonest"], ["Sq Ft: More to Less"], ["Sq Ft: Less to More"]])
                 
                 %div#units-body
-                  :javascript
-                    var units = "#{@units_with_floorplan_info}";
-                    units = units.replace(/&quot;/g,'"');
-                    units = JSON.parse(units);
-                    total_units = units;
-                    var is_floorplate = "#{@community_info.has_floorplates?}"
-                    var community = "#{@community_info.name}"
-                    var amenities = "#{@amenities_data}";
-                    amenities = amenities.replace(/&quot;/g,'"');
-                    amenities = JSON.parse(amenities);
-                    //renderChangedUnits(units, is_floorplate, community);
+
           %footer.c-footer#footer.responsive-content.mobile-footer
             %ul.location-items.location-responsive.responsive-content.responsive-legends.align-home-buttons
               - if @community.enable_home_legend
@@ -347,7 +337,7 @@
 = render partial: "virtual_tour_modal"
 = render partial: "amenity_virtual_tour_modal"
 
-#communityWebpagesData{data: {currency: @community.get_currency_symbol(), community: @community.to_json, is_floorplate: @community_info.has_floorplates?, amenities: @amenities.to_json, map_configurations: @community&.three_d_maps_configuration.to_json} }
+#communityWebpagesData{data: { currency: @community.get_currency_symbol(), community: @community.to_json, amenities: @amenities.to_json, map_configurations: @community&.three_d_maps_configuration.to_json, units: @units_with_floorplan_info, amenities_data: @amenities_data } }
 
 :javascript
   var large_image_height = 166;
@@ -364,6 +354,13 @@
   var floors = "#{@floors.present? and @floors.size > 0 ? @floors : []}";
   floors = JSON.parse(floors);
   var current_width = $(window).width();
+  var current_units = [];
+  var units = $("#communityWebpagesData").data("units");
+  var amenities = $("#communityWebpagesData").data("amenitiesData");
+  var total_units = units
+  _beansApiKey = "#{ENV['BEANS_API_KEY']}"
+
+  var community_logo = "#{@community.logo.present? ? true : false}"
   
   if ((current_width > 767 && current_width < 993) && (window.matchMedia("(orientation: landscape)").matches)) {
    $(".c-modal-dialog").css("margin-top", "12%")
@@ -580,10 +577,8 @@
   });
 
   document.getElementById('filter').addEventListener('change', () => {
-    var units = "#{@units_with_floorplan_info}";
-    units = units.replace(/&quot;/g,'"');
-    units = JSON.parse(units);
-    var is_floorplate = "#{@community_info.has_floorplates?}"
+    var units = $("#communityWebpagesData").data("units");
+    var has_floorplate = "#{@community_info.has_floorplates?}"
     var community_name = "#{@community_info.name}"
     renderChangedUnits();
   });
@@ -599,15 +594,7 @@
     $('#show-more-price').removeClass('hidden');
     $("#pricing-option").addClass('hidden')
   }); 
-  /////////////////////////////////////////
-  var current_units = [];
-  /////////////////////////////////////////
-  var units = "#{@units_with_floorplan_info}";
-  units = units.replace(/&quot;/g,'"');
-  units = JSON.parse(units);
-  _beansApiKey = "#{ENV['BEANS_API_KEY']}"
-  
-  var community_logo = "#{@community.logo.present? ? true : false}"
+
   if(community_logo == "false" && current_width < 567){
     $(".mobile-trigger").addClass("pt");
   }
