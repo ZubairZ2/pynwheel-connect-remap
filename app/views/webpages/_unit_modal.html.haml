@@ -76,11 +76,9 @@
                       %div{style: "max-height: 6em; overflow-y: auto;"}
                         %span#unit-lease-pricing
 
-                - if @community.have_additional_fee?
-                  .c-modal-sidebar-fees
-                    %h4.fees-heading Fees
-                    %div.c-m-fees
-                      = @community.additional_fee.html_safe
+                .c-modal-sidebar-fees
+                  %h4.fees-heading Fees
+                  %div.c-m-fees#unit-additional-fees
 
                 .c-modal-sidebar-description
                   %h4.des-heading More Details

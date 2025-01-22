@@ -93,9 +93,9 @@ class WebpagesController < ActionController::Base
           lease_pricing: (unit.lease_pricing.present? && unit.community.display_pricing_options) ? unit.lease_pricing : "",
           description: unit.description || unit&.floorplan&.description,
           display_rent: unit&.community&.display_rent,
-          addition_fees: unit&.community&.get_additional_fees(unit)
+          additional_fees: unit&.community&.get_additional_fees(unit)
         }
-        
+
         @units_with_floorplan_info << struct
       end
     end
