@@ -216,11 +216,16 @@ class UnitsController < ApplicationController
         @unit.availability = "Occupied"
         @unit.available = false
       end
-      ########
+
       if @unit.manual_override
         if params[:unit][:description].present?
           params[:unit][:description] = add_padding_description params[:unit][:description]
         end
+
+        if params[:unit][:additional_fee].present?
+          params[:unit][:additional_fee] = add_padding_description params[:unit][:additional_fee]
+        end
+
         if @unit.update(unit_params)
           update_locks()
           if params[:unit].present? and @unit.floorplan.present? and params[:unit][:floorplan_id] != previous_floorplan_id
@@ -556,8 +561,18 @@ class UnitsController < ApplicationController
     redirect_to :back
   end
 
-  def add_description
+  def add_additional_fees
+    additional_fee = params[:additional_fee].to_s
+    fee = additional_fee[2..additional_fee.length - 3]
+    formated_fee = add_padding_description fee
 
+    @community.units.where(id: params[:unit_ids]).update_all(additional_fee: formated_fee, manually_updated: true)
+    
+    flash[:notice] = "Additional Fees is updated for units successfully."
+    redirect_to :back
+  end
+
+  def add_description
     description = params[:description].to_s
     desc = description[2..description.length - 3]
     str2 = add_padding_description desc

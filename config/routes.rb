@@ -382,6 +382,7 @@ Rails.application.routes.draw do
           post :delete_unit_plot
         end
       end
+
       member do
         get :show_unit_image_in_modal
         put :crop_unit_image
@@ -390,6 +391,7 @@ Rails.application.routes.draw do
         put :update_lock_provider
         put :display_unit
       end
+
       member do
         post :load_unit_door_lock
         post :ajaxplotunit
@@ -405,6 +407,7 @@ Rails.application.routes.draw do
         post :set_amenities_for_units
         put :update_unit_door_lock
       end
+
       collection do
         post :set_floor
         post :set_building
@@ -413,6 +416,7 @@ Rails.application.routes.draw do
         post :set_manual_override
         post :set_sold
         post :add_description
+        post :add_additional_fees
         post :set_image
         post :plot_multiple_units_door_for_floorplate
       end
