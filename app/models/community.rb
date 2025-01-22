@@ -91,7 +91,7 @@ class Community < ApplicationRecord
   after_save :set_community_time_zone, if: ->(obj) { obj.latitude_changed? || obj.longitude_changed? }
   after_save :set_country_code, if: ->(obj) { obj.latitude_changed? || obj.longitude_changed? || obj.city_changed? || obj.state_changed? || obj.address_changed? || obj.zip_changed? }
 
-  after_save :set_additiona_fees, if: ->(obj) { obj.additional_fee_changed? || obj.display_manual_additional_fee_changed?}
+  # after_save :set_additiona_fees, if: ->(obj) { obj.additional_fee_changed? || obj.display_manual_additional_fee_changed?}
 
   after_save :create_default_credential
   after_update :set_default_provider
@@ -131,15 +131,26 @@ class Community < ApplicationRecord
     end
   end
 
-  def set_additiona_fees
-    return unless display_manual_additional_fee
-    self.units.update_all(additional_fee: self.additional_fee)
-  end
+  # def set_additiona_fees
+  #   return unless display_manual_additional_fee
+  #   self.units.update_all(additional_fee: self.additional_fee)
+  # end
 
-  def have_additional_fee?
-    fee = self.additional_fee.to_s.strip
-    sanitized_content = ActionController::Base.helpers.strip_tags(fee).strip
-    sanitized_content.present?
+  def get_additional_fees(unit = nil)
+    community_fee = self.additional_fee
+    unit_fee = unit&.additional_fee
+  
+    if display_manual_additional_fee
+      community_fee if sanitize_content(community_fee).present?
+    else
+      if sanitize_content(unit_fee).present?
+        unit_fee
+      elsif sanitize_content(community_fee).present?
+        community_fee
+      else
+        nil
+      end
+    end
   end
 
   def show_trash_icon stop_type
@@ -2150,6 +2161,11 @@ class Community < ApplicationRecord
   end
 
   private
+
+  def sanitize_content(content)
+    return nil unless content.present?
+    ActionController::Base.helpers.strip_tags(content.to_s.strip).strip
+  end
 
   def get_lock_info_object lock_object, styling_start, styling_end
     return unless lock_object.present?
