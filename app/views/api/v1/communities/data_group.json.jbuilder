@@ -59,7 +59,6 @@ json.community_group @communities do |co|
 
   json.community_name  @community.name
   json.currency_symbol @community.get_currency_symbol()
-  json.additional_fee @community.have_additional_fee? ? "<div>" + @community.additional_fee + "</div>" : nil
   json.country_code DateFormatter.country_code_by_region(@community.country_code)
   json.date_format_by_region DateFormatter.date_format_by_region(@community.country_code) 
   json.community_id  @community.id
@@ -1409,6 +1408,8 @@ json.community_group @communities do |co|
         json.available_date DateFormatter.formatted_date_by_region(@community.country_code, (unit.available_date.present? ? ((unit.available_date < Time.now) ? Time.now.strftime('%m/%d/%Y') : unit.available_date.strftime('%m/%d/%Y')) : Date.today - 1.day) )
         json.available unit.available
         json.sold unit.sold
+        json.additional_fee @community.get_additional_fees(unit)
+
         if @community.theme_name == "modernist"
           json.unit_description unit.description.present? ? "<div style='color:#{(@community.design.primary_font_color.present? ? @community.design.primary_font_color : "#FFFFFF")}'>"+unit.description+"</div>" : (unit&.floorplan&.description.present? ? "<div style='color:#{(@community.design.primary_font_color.present? ? @community.design.primary_font_color : "#FFFFFF")}'>"+unit&.floorplan&.description+"</div>"  : nil)
         else

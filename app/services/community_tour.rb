@@ -47,6 +47,8 @@ class CommunityTour
         availability_url = ""
         lease_pricing=[]
         floorplan_id = ""
+        additional_fees = nil
+
         if stop.stop_type == "unit"
           u = Unit.find_by_id stop.stop_id
           unit_id = u.id
@@ -57,6 +59,7 @@ class CommunityTour
           availability = u.availability
           availability_url = u.get_availability_url()
           lease_pricing = u.get_unit_leasing_price
+          additional_fees = @community.get_additional_fees(u)
 
           if u.present? && (u.available || u.modal_unit)
             show_trash_icon = @community.show_trash_icon("unit")
@@ -104,6 +107,7 @@ class CommunityTour
               "bathrooms": bathrooms,
               "pricing": pricing,
               "lease_pricing": lease_pricing,
+              "additional_fees": additional_fees,
               "floorplan_image": floorplan_image,
               "primary_floorplan": primary_floorplan,
               "secondary_floorplan": secondary_floorplan,
@@ -130,6 +134,7 @@ class CommunityTour
                 "bathrooms": bathrooms,
                 "pricing": pricing,
                 "lease_pricing": lease_pricing,
+                "additional_fees": additional_fees,
                 "floorplan_image": floorplan_image,
                 "primary_floorplan": primary_floorplan,
                 "secondary_floorplan": secondary_floorplan,

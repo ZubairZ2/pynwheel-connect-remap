@@ -21,7 +21,9 @@
             %a{:href => '##',"data-target" => "#modal-to-change-floor", "data-toggle" => "modal"} Units Floor
             %a{:href => '##',"data-target" => "#modal-to-change-building", "data-toggle" => "modal"} Add Buildings
             %a{:href => "##","data-target" => "#modal-to-add-description", "data-toggle" => "modal"} Add Details
+            %a{:href => "##","data-target" => "#modal-to-set-additional-fee", "data-toggle" => "modal"} Add Additional Fees
             %a{:href => "##","data-target" => "#modal-to-set-image", "data-toggle" => "modal"} Floor Plan Images
+
         %i.propertyDetailName.mb-20.fa.fa-question-circle{ "data-toggle" => "unitMassOverridePopover","data-content" => " "}
           %span#propertyDetailNameText
             Use this button to change data for multiple units at once, such as availability, floor number, details, and images.
@@ -203,6 +205,7 @@
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
           %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel
+
 #modal-to-change-building.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog.modal-lg
     .modal-content
@@ -225,7 +228,8 @@
                   = h unit.unit_market
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
-          %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel          
+          %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel
+      
 #modal-to-set-available-date.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog.modal-lg
     .modal-content
@@ -248,7 +252,8 @@
                   = h unit.unit_market 
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
-          %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel                                   
+          %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel
+                             
 #modal-to-set-available.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog.modal-lg
     .modal-content
@@ -271,7 +276,8 @@
                   = h unit.unit_market 
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
-          %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel                                   
+          %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel
+                              
 #modal-to-set-manual-override.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog.modal-lg
     .modal-content
@@ -294,7 +300,8 @@
                   = h unit.unit_market
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
-          %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel                                   
+          %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel
+                                
 #modal-to-set-sold.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog.modal-lg
     .modal-content
@@ -344,6 +351,32 @@
           = submit_tag 'Submit',:class=>"btn btn-success"
           %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel
 
+#modal-to-set-additional-fee.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog.modal-lg
+    .modal-content
+      .modal-header
+        Add Aditional Fees
+
+      = form_tag add_additional_fees_community_units_path(@community), multipart: true do
+        .modal-body.set-floor-modal-body
+          = text_area :additional_fee, nil, :class=>"form-control mb-20 validate[required] wysihtml5",:placeholder=>"Enter Additional Fees"
+ 
+          .row
+            .col-md-4
+              = check_box_tag 'select_all_units_for_image'
+              %label Select all
+          .row
+            - units.each do |unit|
+              .col-md-3.pt-5.pb-5
+                = check_box_tag 'unit_ids[]', unit.id,false,class: 'image-checkbox mass-override'
+                - if @community.data_provider == "yardi"
+                  = h unit.provider_unit_id
+                - else
+                  = h unit.unit_market
+        .modal-footer
+          = submit_tag 'Submit',:class=>"btn btn-success"
+          %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel
+  
 #modal-to-set-image.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog.modal-lg
     .modal-content

@@ -14,7 +14,6 @@ json.community_schedule_tour @community.schedule_tour_url
 json.is_sitemap @community.is_sitemap
 json.display_rent @community.display_rent
 json.display_pricing_options @community.display_pricing_options
-json.additional_fee @community.have_additional_fee? ? "<div>" + @community.additional_fee + "</div>" : nil
 json.show_add_amenities_button @community.amenities_left_for_tour?(@tour.id)
 json.show_add_units_button @community.units_left_for_tour?(@tour.id)
 json.tour_stops CommunityTour.new(@community, @tour_user, @building_list, @floor_list_loop, @floor_list_temp, @tour).get_tour_stops

@@ -153,6 +153,13 @@
       = text_field_tag :lock_input, '', :placeholder => "Search by lock name", :list => "locks_list", :autocomplete=> "off", :type => "text", :class => "form-control lock_provider_input"
       %datalist#locks_list
     = hidden_field_tag "lock_id", ""
+  
+  .form-group
+    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+      Fees
+
+    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+      = f.text_area :additional_fee, :class=>"form-control mb-20 wysihtml5", :placeholder=>"Enter Additional Fees"
 
 - if @community.touchscreen_app
   .form-group
@@ -173,16 +180,6 @@
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
       = f.text_area :stop_description,:class=>"form-control mb-20 wysihtml5",:placeholder=>"Enter Directional Description", :rows => "8"
       <!-- %span.unit_directional_text{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: #{ENV["DESCRIPTION_LIMIT"].to_i} -->
--#.form-group
--#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
--#    Available
--#
--#  .col-sm-12.col-lg-1.col-md-1.col-xs-12
--#    = f.radio_button :available, true, class: "settings-field"
--#    = f.label :manually_updated, "Yes", :value => "true"
--#  .col-sm-12.col-lg-2.col-md-2.col-xs-12
--#    = f.radio_button :available, false, class: "settings-field"
--#    = f.label :available, "No", :value => "false"
 
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -217,8 +214,6 @@
       Images will appear at a size of 325 x 300 px. Please note that images that are too small may appear pixelated.
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    -#.select-img.mb-20
-    -#  .select-img-img
     .col-lg-5.col-md-5.col-sm-6.col-xs-6
       .slide-image
         .image-box.video-box
@@ -252,8 +247,6 @@
       Images will appear at a size of 325 x 300 px. Please note that images that are too small may appear pixelated.
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    -#.select-img.mb-20
-    -#  .select-img-img
     .col-lg-5.col-md-5.col-sm-6.col-xs-6
       .slide-image
         .image-box.video-box
@@ -409,7 +402,6 @@
                 }
             }
         });
-
       });
 
 

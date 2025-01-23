@@ -45,6 +45,11 @@ module DataProviders
         response["availableSlots"] rescue []
       end
 
+      def get_additional_fees property_code
+        response = fetch_additional_fees(property_code)
+        response["leaseFeesDetails"] rescue []
+      end
+
       def is_user_authorized?
         begin
           token_expired? ? renew_token : true
@@ -84,6 +89,19 @@ module DataProviders
 
           HTTParty.post(url,
             body: get_property_details_params(property_code),
+            headers: { 
+              'Content-Type' => 'application/json',
+              'Authorization' => "Bearer #{@credential&.rentcafe_v2_auth_token}",
+              'vendor' => ENV['RENT_CAFE_V2_USERNAME']
+            }
+          )
+        end
+
+        def fetch_additional_fees property_code
+          url = "#{ENV["RENT_CAFE_V2_BASE_URL"]}/UnitPricingData/getunitleasefeesdetails"
+
+          HTTParty.post(url,
+            body: get_additional_fees_params(property_code),
             headers: { 
               'Content-Type' => 'application/json',
               'Authorization' => "Bearer #{@credential&.rentcafe_v2_auth_token}",
@@ -172,6 +190,14 @@ module DataProviders
             companyCode: company_code, #required
             propertyCode: property_code&.strip, #required
             showAllUnit: !@credential&.limit_result
+          }.to_json
+        end
+
+        def get_additional_fees_params property_code
+          {
+            apiToken: api_token, #required
+            companyCode: company_code, #required
+            propertyCode: property_code&.strip #required
           }.to_json
         end
 

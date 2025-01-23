@@ -211,6 +211,11 @@ class UnitsController < ApplicationController
         if params[:unit][:description].present?
           params[:unit][:description] = add_padding_description params[:unit][:description]
         end
+
+        if params[:unit][:additional_fee].present?
+          params[:unit][:additional_fee] = add_padding_description params[:unit][:additional_fee]
+        end
+
         if @unit.update(unit_params)
           update_locks()
           if params[:unit].present? and @unit.floorplan.present? and params[:unit][:floorplan_id] != previous_floorplan_id
@@ -527,6 +532,17 @@ class UnitsController < ApplicationController
 
     flash[:notice] = "Sold is updated for units successfully."
     redirect_back(fallback_location: root_path)
+  end
+
+  def add_additional_fees
+    additional_fee = params[:additional_fee].to_s
+    fee = additional_fee[2..additional_fee.length - 3]
+    formated_fee = add_padding_description fee
+
+    @community.units.where(id: params[:unit_ids]).update_all(additional_fee: formated_fee, manually_updated: true)
+    
+    flash[:notice] = "Additional Fees is updated for units successfully."
+    redirect_to :back
   end
 
   def add_description

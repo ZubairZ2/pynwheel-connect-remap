@@ -16,7 +16,7 @@ json.data @units do |u|
   json.rent "#{@community.get_currency_symbol}#{u.effective_rent&.to_i}"
   json.availability u.availability
   json.available_date u&.available_date < Date.today + 1 ? "Now" : u&.available_date&.strftime("%-d %b") rescue "N/A"
-  json.additional_fee @community.have_additional_fee? ? "<div>" + @community.additional_fee + "</div>" : nil
+  json.additional_fee @community.get_additional_fees(u)
   json.building u.building
   json.created_at u.created_at
   json.updated_at u.updated_at
