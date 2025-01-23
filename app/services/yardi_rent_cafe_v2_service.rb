@@ -409,7 +409,7 @@ class YardiRentCafeV2Service < BaseService
       return "" if apartment["moveInFees"].blank?
     
       fee_items = apartment["moveInFees"].map do |fee|
-        (fee["feeCost"].to_i > 0) ? "<li>#{fee["feeName"].to_i}: #{fee["feeCost"].to_i}</li>" : ""
+        (fee["feeCost"].to_i > 0) ? "<li>#{fee["feeName"]}: #{fee["feeCost"].to_i}</li>" : ""
       end.join
     
       "<ul>#{fee_items}</ul>"
