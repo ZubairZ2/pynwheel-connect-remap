@@ -311,7 +311,7 @@ class ResmanService < BaseService
     return "" unless fees
 
     fees.filter_map do |key, value|
-        next if !( amount.is_a?(String) || amount.is_a?(Integer) )
+        next if !( value.is_a?(String) || value.is_a?(Integer) )
         value = value.to_i
         next if value.zero?
     

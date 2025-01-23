@@ -136,11 +136,11 @@ class Floorplate < ApplicationRecord
   end
 
   def floorplate_image_width
-    self.width > 0 ? self.width : self.image.width
+    self.width > 0 ? self.width : self.image.width rescue 0
   end
 
   def floorplate_image_height
-    self.height > 0 ? self.height : self.image.height
+    self.height > 0 ? self.height : self.image.height rescue 0
   end
 
   def map_ocr_data
