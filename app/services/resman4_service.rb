@@ -347,12 +347,12 @@ class Resman4Service < BaseService
   
   def format_fee_list(fees)
     return "" unless fees
-  
+
     fees.filter_map do |key, value|
       value = value.to_i
       next if value.zero?
   
-      "<li>$#{value} - #{key.gsub(/([a-z])([A-Z])/, '\1 \2')}</li>"
+      "<li>#{key.gsub(/([a-z])([A-Z])/, '\1 \2')}: $#{value}</li>"
     end.join
   end
   
@@ -375,11 +375,9 @@ class Resman4Service < BaseService
       space_fee = parking_fee["SpaceFee"].to_i
       next if space_fee.zero?
   
-      parking_type = parking_fee["ParkingType"]
-      assigned = parking_fee["Assigned"] == "true" ? "Assigned" : "Unassigned"
-      comment = parking_fee["Comment"] ? " - #{parking_fee['Comment']}" : ""
+      comment = parking_fee["Comment"]
   
-      "<li>$#{space_fee} - #{assigned} Parking (#{parking_type})#{comment}</li>"
+      "<li>#{comment}: $#{space_fee}</li>"
     end.join
   end
   
@@ -387,7 +385,7 @@ class Resman4Service < BaseService
     amount = amount.to_i
     return nil if amount.zero?
   
-    "<li>$#{amount} - #{label}#{type ? " (#{type})" : ''}</li>"
+    "<li>#{label}#{type ? " (#{type})" : ''}: $#{amount}</li>"
   end
   
 

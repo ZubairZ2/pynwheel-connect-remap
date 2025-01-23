@@ -309,12 +309,12 @@ class ResmanService < BaseService
   
   def format_fee_list(fees)
     return "" unless fees
-  
+
     fees.filter_map do |key, value|
       value = value.to_i
       next if value.zero?
   
-      "<li>$#{value} - #{key.gsub(/([a-z])([A-Z])/, '\1 \2')}</li>"
+      "<li>#{key.gsub(/([a-z])([A-Z])/, '\1 \2')}: $#{value}</li>"
     end.join
   end
   
