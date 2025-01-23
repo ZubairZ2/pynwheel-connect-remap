@@ -382,10 +382,12 @@ class Resman4Service < BaseService
   end
   
   def format_fee_item(amount, label, type = nil)
-    amount = amount.to_i
-    return nil if amount.zero?
-  
-    "<li>#{label}#{type ? " (#{type})" : ''}: $#{amount}</li>"
+    if amount.is_a?(String) || amount.is_a?(Integer)
+      amount = amount.to_i
+      return nil if amount.zero?
+    
+      "<li>#{label}#{type ? " (#{type})" : ''}: $#{amount}</li>"
+    end
   end
   
 

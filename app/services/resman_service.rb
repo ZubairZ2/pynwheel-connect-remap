@@ -311,10 +311,11 @@ class ResmanService < BaseService
     return "" unless fees
 
     fees.filter_map do |key, value|
-      value = value.to_i
-      next if value.zero?
-  
-      "<li>#{key.gsub(/([a-z])([A-Z])/, '\1 \2')}: $#{value}</li>"
+        next if !( amount.is_a?(String) || amount.is_a?(Integer) )
+        value = value.to_i
+        next if value.zero?
+    
+        "<li>#{key.gsub(/([a-z])([A-Z])/, '\1 \2')}: $#{value}</li>"
     end.join
   end
   
