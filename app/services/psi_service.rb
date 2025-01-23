@@ -681,12 +681,12 @@ class PsiService < BaseService
       fee = pet_policy["Fee"].to_i
   
       details = []
-      details << "$#{fee} - Pet Fee (#{pet_type})" if fee.positive?
-      details << "$#{rent} - Pet Rent (#{pet_type})" if rent.positive?
+      details << "Pet Fee (#{pet_type}): $#{fee}" if fee.positive?
+      details << "Pet Rent (#{pet_type}): $#{rent}" if rent.positive?
   
-      details.any? ? "<li>#{details.join(', ')}</li>" : nil
+      details.map { |detail| "<li>#{detail}</li>" }.join
     end.join
-  end
+  end  
   
 
   def format_application_fee_list(application_fees)
@@ -698,7 +698,7 @@ class PsiService < BaseService
       amount = app_fee.dig("@attributes", "Amount").to_i
       next if amount.zero?
   
-      "<li>$#{amount} - #{type}</li>"
+      "<li>#{type}: $#{amount}</li>"
     end.join
   end
   
