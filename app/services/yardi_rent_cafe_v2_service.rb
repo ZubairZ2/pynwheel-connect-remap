@@ -405,15 +405,82 @@ class YardiRentCafeV2Service < BaseService
       end
     end
     
-    def process_lease_fees_details(apartment)
-      return "" if apartment["moveInFees"].blank?
+    # def process_lease_fees_details(apartment)
+    #   return "" if apartment["moveInFees"].blank?
     
-      fee_items = apartment["moveInFees"].map do |fee|
-        (fee["feeCost"].to_i > 0) ? "<li>#{fee["feeName"]}: $#{fee["feeCost"].to_i}</li>" : ""
-      end.join
+    #   fee_items = apartment["moveInFees"].map do |fee|
+    #     (fee["feeCost"].to_i > 0) ? "<li>#{fee["feeName"]}: $#{fee["feeCost"].to_i}</li>" : ""
+    #   end.join
     
-      "<ul>#{fee_items}</ul>"
+    #   "<ul>#{fee_items}</ul>"
+    # end
+
+  def process_lease_fees_details(apartment)
+    return "" if apartment["moveInFees"].blank?
+
+    categorized_fees = categorize_fees(apartment["moveInFees"])
+
+    categorized_fees.map do |category, fees|
+      next if fees.empty?
+
+      "<strong>#{category}</strong><ul>#{fees.join}</ul>"
+    end.compact.join("<br>")
+  end
+
+  def categorize_fees(fees)
+    categories = {
+      "Standard Fees" => [],
+      "Pet Fees" => [],
+      "Parking Fees" => [],
+      "Application Fees" => [],
+      "Admin Fees" => [],
+      "Other Fees" => []
+    }
+
+    fees.each do |fee|
+      next unless fee["feeCost"].to_i > 0
+
+      fee_description = build_fee_description(fee)
+      category = categorize_fee(fee["feeName"])
+
+      categories[category] << "<li>#{fee_description}</li>"
     end
+
+    categories
+  end
+
+  def categorize_fee(fee_name)
+    case fee_name.downcase
+    when /pet/ then "Pet Fees"
+    when /garage|parking/ then "Parking Fees"
+    when /application/ then "Application Fees"
+    when /admin/ then "Admin Fees"
+    when /rent|unit|monthly/ then "Standard Fees"
+    else
+      "Other Fees"
+    end
+  end
+
+  def build_fee_description(fee)
+    fee_name = fee["feeName"]
+    fee_cost = "$#{fee["feeCost"].to_i}"
+
+    # Remove "Non Refundable" from fee name if present
+    fee_name.gsub!(/Non Refundable/i, '')
+
+    suffix = []
+    suffix << "per person" if fee["isAppliedPerApplicant"]
+    suffix << "refundable" if fee["isRefundable"]
+    suffix << "mo" if fee["isRecurring"]
+
+    suffix_str = suffix.any? ? " /#{suffix.join(' /')}" : ""
+
+    # Append "Refundable" only if the flag is true
+    fee_name = "#{fee_name} (Refundable)" if fee["isRefundable"]
+
+    "#{fee_name.strip}: #{fee_cost}#{suffix_str}"
+  end
+
     
 
     def get_additional_fees property_code
