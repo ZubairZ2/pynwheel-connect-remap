@@ -564,7 +564,7 @@ class UnitsController < ApplicationController
     @community.units.where(id: params[:unit_ids]).update_all(additional_fee: formated_fee, manually_updated: true)
     
     flash[:notice] = "Additional Fees is updated for units successfully."
-    redirect_to :back
+    redirect_back(fallback_location: root_path)
   end
 
   def add_description
