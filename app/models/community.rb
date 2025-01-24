@@ -137,6 +137,7 @@ class Community < ApplicationRecord
   # end
 
   def get_additional_fees(unit = nil)
+    return nil unless community.display_additional_fee
     community_fee = self.additional_fee
     unit_fee = unit&.additional_fee
   
