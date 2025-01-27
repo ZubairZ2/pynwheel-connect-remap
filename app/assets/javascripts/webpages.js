@@ -1333,6 +1333,20 @@ function unitAdditionalFees(additional_fees) {
   }
 }
 
+function showFees() {
+  $("#unit-additional-fees").show();
+  $("#show-fees").hide();
+  $("#hide-fees").show();
+}
+
+function hideFees() {
+  $("#unit-additional-fees").hide();
+  $("#hide-fees").hide();
+  $("#show-fees").show();
+}
+
+
+
 function setModalAttributes(element) {
   currentUnitSelected = element;
 

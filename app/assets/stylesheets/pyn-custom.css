@@ -6060,8 +6060,7 @@ html, .add-fav-body {
   }
 }
 
-.c-modal-sidebar-description .c-m-description,
-.c-modal-sidebar-fees .c-m-fees {
+.c-modal-sidebar-description .c-m-description {
     border-bottom: 1px solid rgb(225, 225, 225);
 }
 
@@ -6140,13 +6139,11 @@ ul.add-fav-options {
         padding: 5px 10px;
     }
 
-    .c-modal-sidebar-description,
-    .c-modal-sidebar-fees {
+    .c-modal-sidebar-description {
         border-bottom: 1px solid black;
     }
 
-    .c-modal-sidebar-description .des-heading,
-    .c-modal-sidebar-fees .fees-heading {
+    .c-modal-sidebar-description .des-heading {
         padding: 5px 0px;
         font-weight: 500;
     }
@@ -6156,8 +6153,7 @@ ul.add-fav-options {
         overflow: scroll;
     }
 
-    .c-modal-sidebar-description .c-m-description
-    .c-modal-sidebar-fees .c-m-fees {
+    .c-modal-sidebar-description .c-m-description {
         padding: 5px;
         height: 100px;
         overflow-wrap: break-word;
@@ -6166,6 +6162,15 @@ ul.add-fav-options {
         background-color: rgb(236, 236, 236);
         border-radius: 5px;
         border-bottom: 1px solid rgb(225, 225, 225);
+    }
+
+    .c-m-fees {
+        padding: 5px;
+        height: 100px;
+        overflow-wrap: break-word;
+        overflow-y: auto;
+        line-height: 0.5;
+        background-color: rgb(236, 236, 236);
     }
 }
 
@@ -6245,7 +6250,7 @@ ul.add-fav-options {
     }
 
     .c-modal-sidebar-description .c-m-description,
-    .c-modal-sidebar-fees .c-m-fees {
+    .c-m-fees {
         height: 60px;
         overflow: scroll;
     }
@@ -6545,15 +6550,14 @@ ul.add-fav-options {
     color: black;
     cursor: pointer;
 }
-.c-modal-sidebar-description .des-heading,
-.c-modal-sidebar-fees .fees-heading {
+.c-modal-sidebar-description .des-heading {
     padding: 10px 10px 0px 0px;
     margin-bottom: 0;
     font-weight: 500;
     margin-top: 0;
 }
 .c-modal-sidebar-description  .c-m-description,
-.c-modal-sidebar-fees .c-m-fees {
+.c-m-fees {
     font-weight: 500;
     font-size: 13px;
     line-height: 2;
@@ -6772,8 +6776,7 @@ ul.add-fav-options {
 ::-webkit-calendar-picker-indicator {
     filter: invert(1);
 }
-.c-modal-sidebar-description,
-.c-modal-sidebar-fees {
+.c-modal-sidebar-description {
     padding-left: 13px;
     padding-right: 13px;
     background: white;
