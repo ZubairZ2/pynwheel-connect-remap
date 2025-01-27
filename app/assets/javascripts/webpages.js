@@ -1321,6 +1321,7 @@ function canShowAdditionalFees(additional_fees) {
 }
 
 function unitAdditionalFees(additional_fees) {
+  hideFees();
   try {
     if (canShowAdditionalFees(additional_fees)) {
       $('#unitModal').find('.c-modal-sidebar-fees').hide();
@@ -1345,8 +1346,6 @@ function hideFees() {
   $("#hide-fees").hide();
   $("#show-fees").show();
 }
-
-
 
 function setModalAttributes(element) {
   currentUnitSelected = element;
