@@ -14,11 +14,11 @@ class YardiRentCafeV2Service < BaseService
   end
 
   def perform
-    # before_updation_units = NotifyManagerService.new(@credentials.community_id)
-    # import_yardirentcafe_floorplans
-    # import_yardirentcafe_units
+    before_updation_units = NotifyManagerService.new(@credentials.community_id)
+    import_yardirentcafe_floorplans
+    import_yardirentcafe_units
     update_additional_fees
-    # before_updation_units.compare_status_and_notify()
+    before_updation_units.compare_status_and_notify()
   end
 
   private
