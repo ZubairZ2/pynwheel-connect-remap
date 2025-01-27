@@ -76,9 +76,10 @@
                       %div{style: "max-height: 6em; overflow-y: auto;"}
                         %span#unit-lease-pricing
 
-                .c-modal-sidebar-fees
-                  %h4.fees-heading Fees
-                  %div.c-m-fees#unit-additional-fees
+                .c-modal-sidebar-fees.availabilty-container
+                  %a.show-more#show-fees{ href: "javascript:void(0);", onclick: "showFees()" } Show Fees
+                  %a.show-more#hide-fees{ href: "javascript:void(0);", onclick: "hideFees()", style: "display: none;" } Hide Fees
+                  %div.c-m-fees#unit-additional-fees{style: "display: none;" }
 
                 .c-modal-sidebar-description
                   %h4.des-heading More Details

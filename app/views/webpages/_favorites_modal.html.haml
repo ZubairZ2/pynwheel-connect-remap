@@ -69,11 +69,12 @@
             - additional_fees = @community.get_additional_fees(unit)
 
             - if additional_fees.present?
-              .c-modal-sidebar-fees
-                %h4.fees-heading Fees
-                %div.c-m-fees
+              .c-modal-sidebar-fees.availabilty-container
+                %a.show-more#show-fees{ href: "javascript:void(0);", onclick: "showFees()" } Show Fees
+                %a.show-more#hide-fees{ href: "javascript:void(0);", onclick: "hideFees()", style: "display: none;" } Hide Fees
+                %div.c-m-fees#unit-additional-fees{style: "display: none;" }
                   = additional_fees.html_safe
-              
+
             .c-modal-sidebar-description
               %h4.des-heading More Details
               .c-m-description= (unit.description.present? ? unit.description : (floorplan.description.present? ? floorplan.description : "Not Available")).html_safe
