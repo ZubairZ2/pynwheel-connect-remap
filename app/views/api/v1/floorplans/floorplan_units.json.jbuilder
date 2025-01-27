@@ -51,6 +51,7 @@ json.units @units do |u|
   json.available u.available
   json.availability u.availability
   json.effective_rent "#{@community.get_currency_symbol}#{u.effective_rent.to_i}"
+  json.additional_fee @community.get_additional_fees(u)
   json.lease_pricing u.get_unit_leasing_price()
   json.display_rent @community.display_rent
   json.display_pricing_options @community.display_pricing_options
