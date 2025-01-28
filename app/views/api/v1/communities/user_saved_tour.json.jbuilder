@@ -41,7 +41,7 @@ json.tours tours do |tour|
         json.x_plot unit.x_plot
         json.y_plot unit.y_plot
         json.modal_unit unit.modal_unit
-
+        json.additional_fee @community.get_additional_fees(unit)
         json.floorplan_image @community.unit_floorplan_images(unit)
         json.event_time (stop.event_date.present? ? stop.event_date.strftime("%m/%d/%Y") + " " : "") + (stop.event_time.present? ? stop.event_time.strftime("%H:%M:%S") : "")  rescue ""
         json.video_link_button_label  unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : unit&.floorplan&.virtual_tour_button_label
