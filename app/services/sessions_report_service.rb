@@ -22,11 +22,11 @@ class SessionsReportService < BaseService
   end
 
   def generate_headers
-    ["Company Name", "Property Name", "Property Email", "Units Count"] + @months
+    ["Company Name", "Property Name", "Active/Inactive", "Subscription Start Date", "Date Inactivated", "Property Email", "Units Count"] + @months
   end
 
   def all_properties
-    properties = Community.active_touch_properties.includes(:units, :company)
+    properties = Community.without_test_properties.includes(:units, :company)
     session_counts = fetch_session_counts(properties.ids)
 
     properties.map do |property|
@@ -59,6 +59,9 @@ class SessionsReportService < BaseService
     {
       company_name: property.company&.name,
       property_name: property.name,
+      active_status: property.locked.present? ? (property.locked ? "Inactive" : "Active") : "Active",
+      date_activated: property.date_activated,
+      date_inactivated: property.date_inactivated,
       property_email: property.email,
       units_count: property.units.size,
       monthly_sessions: monthly_sessions
@@ -78,6 +81,9 @@ class SessionsReportService < BaseService
     [
       property_data[:company_name],
       property_data[:property_name],
+      property_data[:active_status],
+      property_data[:date_activated],
+      property_data[:date_inactivated],
       property_data[:property_email],
       property_data[:units_count]
     ]

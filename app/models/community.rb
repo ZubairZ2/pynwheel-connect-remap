@@ -108,7 +108,7 @@ class Community < ApplicationRecord
 
   scope :count_properties_in_each_state, -> {active_client_properties&.where.not(state: [nil, ""]).distinct.group(:state).count} 
   scope :active_touch_properties, -> {active_client_properties&.where(touchscreen_app: true)}
-  scope :launch_properties, -> {real_properties.where(pynwheel_launch_access: true).where.not(company_id: [44, 728, 730])}
+  scope :launch_properties, -> {real_properties.where(pynwheel_launch_access: true).where.not(company_id: [44, 783])}
   scope :touch_and_launch_properties, -> { active_touch_properties | launch_properties }
   
   scope :test_properties, -> { 
