@@ -1,6 +1,6 @@
 - content_for :title, "Property Logo - Pynwheel"
 .divLoading.hidden
-- if @community.touchscreen_app || current_community.self_tour
+- if @community.pynwheel_touch_enabled? || @community.pynwheel_tour_enabled? || @community.pynwheel_map_enabled?
   %section.is-home-page
     .content
       .title-heading
@@ -24,7 +24,7 @@
               #home.tab-pane.fade.active.in{:role => "tabpanel"}
                 = render 'logo'
 
-- if @community.touchscreen_app
+- if @community.pynwheel_touch_enabled?
   %section.is-home-page
     .content
       .row
@@ -36,7 +36,7 @@
               #home.tab-pane.fade.active.in{:role => "tabpanel"}
                 = render 'secondary_logo'
 
-- if current_community.self_tour
+- if @community.pynwheel_tour_enabled?
   %section.is-home-page
     .content
       .row
