@@ -112,6 +112,13 @@ class Unit < ApplicationRecord
   #   self.visible = false if marketing_name.downcase.include?(HIDE_UNIT_PATTERN)
   # end
 
+  scope :sorted_by_marketing_name, -> {
+    order(
+      Arel.sql("REGEXP_REPLACE(marketing_name, '[^A-Za-z]', '')"),  # Sort by alphabetic part first
+      Arel.sql("CASE WHEN REGEXP_REPLACE(marketing_name, '[^0-9]', '') = '' THEN 0 ELSE REGEXP_REPLACE(marketing_name, '[^0-9]', '')::integer END")  # Then by numeric part, fallback to 0 if no numeric part
+    )
+  }
+
   def stop_description_text
     description
   end
