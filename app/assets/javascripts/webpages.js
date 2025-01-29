@@ -1347,6 +1347,20 @@ function hideFees() {
   $("#show-fees").show();
 }
 
+function adjustHeightForContentArea() {
+  if ($(".m-filters").css("display") === "none") {
+    $("#overall-scroller").css({
+      "height": "25em",
+      "max-height": "25em"
+    });
+  } else {
+    $("#overall-scroller").css({
+      "height": "18em",
+      "max-height": "25em"
+    });
+  }
+}
+
 function setModalAttributes(element) {
   currentUnitSelected = element;
 
@@ -1495,8 +1509,9 @@ function setModalAttributes(element) {
     // $('#floorplan-image').css({"max-width": 310});
     $('.c-modal-footer').css({"padding-bottom": 7});
     $('.m-filters').hide();
-
   }
+
+  adjustHeightForContentArea();
 }
 
 function setApplyNowURLDate(element) {
