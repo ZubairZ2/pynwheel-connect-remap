@@ -1,22 +1,25 @@
 var favPanZoomInstances = {};
+var currency = "$";
 
 $(document).ready(function() {
-    // Store the initial window width
-    var initialWidth = $(window).width();
-    $(window).on('resize', function() {
-        var currentWidth = $(window).width();
-        // Check if the window width has changed significantly (e.g., ignore small changes due to scrollbars)
-        if (Math.abs(currentWidth - initialWidth) > 20 ) {
-            if (window.location.href.includes('favorites') || window.location.href.includes('favorites_share_link')) {
-                $(".divLoading").removeClass("hidden");
-                window.location.reload();
-            }
-            $('#sidebar-for-responsive').addClass("hidden");
-            $('.h-class').removeClass('hidden');
-            addAttributes();
-        }
-        initialWidth = currentWidth;
-    });
+  currency = $("#communityWebpagesFavoriteData").data("currency");
+  debugger;
+  // Store the initial window width
+  var initialWidth = $(window).width();
+  $(window).on('resize', function() {
+    var currentWidth = $(window).width();
+    // Check if the window width has changed significantly (e.g., ignore small changes due to scrollbars)
+    if (Math.abs(currentWidth - initialWidth) > 20 ) {
+      if (window.location.href.includes('favorites') || window.location.href.includes('favorites_share_link')) {
+        $(".divLoading").removeClass("hidden");
+        window.location.reload();
+      }
+      $('#sidebar-for-responsive').addClass("hidden");
+      $('.h-class').removeClass('hidden');
+      addAttributes();
+    }
+    initialWidth = currentWidth;
+  });
 });
 
 $(document).ready(function(){
@@ -70,8 +73,6 @@ function addAttributes(){
 }
 
 function setAttributes(){
-  var currency = $("#communityWebpagesFavoriteData").data("currency");
-
   for(var x = 0; x < units.length; x++) {
     var unit_id = units[x].id
     var lease_pricing = $('#'+unit_id+'-lease-pricing').text();
