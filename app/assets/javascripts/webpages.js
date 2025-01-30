@@ -1351,12 +1351,14 @@ function adjustHeightForContentArea() {
   if ($(".m-filters").css("display") === "none") {
     $("#overall-scroller").css({
       "height": "25em",
-      "max-height": "25em"
+      "max-height": "25em",
+      "overflow-y": "auto"
     });
   } else {
     $("#overall-scroller").css({
       "height": "18em",
-      "max-height": "25em"
+      "max-height": "25em",
+      "overflow-y": "auto"
     });
   }
 }
