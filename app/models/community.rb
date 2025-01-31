@@ -136,8 +136,8 @@ class Community < ApplicationRecord
   #   self.units.update_all(additional_fee: self.additional_fee)
   # end
 
-  def sorted_units_by_marketing_name
-    units.sort_by do |unit|
+  def sorted_units_by_marketing_name selected_units
+    selected_units.sort_by do |unit|
       match = unit.marketing_name.match(/^([A-Za-z]+)(\d+)$/) || unit.marketing_name.match(/^(\d+)([A-Za-z]+)$/)
 
       if match

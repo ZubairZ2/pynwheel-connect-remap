@@ -63,8 +63,13 @@ class SitemapsController < ApplicationController
       @sitemap.save(validate: false)
     end
 
-    @units = @community.units.where(floorplate_id: nil).includes(:door)
-    @units = @community.sorted_units_by_marketing_name.select { |unit| unit.visible && @units.include?(unit) }.uniq
+    @community.units.where(building: nil).update_all(building: "")
+    
+    @units = @community.units.visible_units.where(floorplate_id: nil).includes(:door)
+    @units = @community.sorted_units_by_marketing_name(@units)
+
+    @units = @units.sort_by {|obj| obj.building}
+    @units_by_plotted_doors_order = @units.sort_by {|obj| obj.door.present? ? obj.door.id : obj.id}
 
     unless  @units.size > 0
       flash[:error] = "Please import unit data first"
