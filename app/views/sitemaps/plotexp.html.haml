@@ -495,7 +495,8 @@
                     = image_tag @sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg", id:"map_img",name:"viewArea", id:"viewArea",draggable:"false", class: 'viewArea', data: {'map_id' => "map"}
                     - if @community.community_tour.x_plot.to_i + @community.community_tour.y_plot.to_i > 0
                       = link_to image_tag("/assets/star.png", style: 'width:15px;'), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "m_", :style => "left:#{@community.community_tour.x_plot}px; top:#{@community.community_tour.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/tours/#{@community.community_tour.id}/resetStartingPoint"
-                  - community_units = @units.sort_by{|u| u.marketing_name}
+                  
+                  - community_units = @units
                   - units_by_plotted_doors_order = community_units.sort_by {|obj| obj.door.present? ? obj.door.id : obj.id}
 
                   - coordinates_array = []
@@ -546,8 +547,9 @@
                 - if community_units.present?
                   - community_units.each do |u|
                     - u.building = "" if u.building == nil
-                  - community_units = community_units.sort_by {|obj| obj.marketing_name.to_i}
-                  - community_units = community_units.sort_by {|obj| obj.building.to_i}
+
+                  - community_units = community_units.sort_by {|obj| obj.building}
+
                 - community_units.each do |unit|
                   - if unit.x_plot.to_i + unit.y_plot.to_i == 0 and unit.provider_unit_id.present?
                     - if unit.building != nil && unit.building != ""
@@ -606,8 +608,9 @@
                 - if community_units.present?
                   - community_units.each do |u|
                     - u.building = "" if u.building == nil
-                  - community_units = community_units.sort_by {|obj| obj.marketing_name.to_i}
-                  - community_units = community_units.sort_by {|obj| obj.building.to_i}
+
+                  - community_units = community_units.sort_by {|obj| obj.building}
+                  
                 - community_units.each do |unit|
                   - if unit.x_plot.to_i + unit.y_plot.to_i == 0 and unit.provider_unit_id.present?
                     - if unit.building != nil && unit.building != ""

@@ -63,20 +63,20 @@ class SitemapsController < ApplicationController
       @sitemap.save(validate: false)
     end
 
-    @units = @community.units.visible_units
+    @units = @community.units.where(floorplate_id: nil).includes(:door)
+    @units = @community.sorted_units_by_marketing_name.select { |unit| unit.visible && @units.include?(unit) }.uniq
 
     unless  @units.size > 0
       flash[:error] = "Please import unit data first"
     end
     
-    @units = @units.where(floorplate_id: nil).order(:building, :unit_type).includes(:door)
     @dimensions = @sitemap.is_ocr_enabled ? s3_img_dimensions(sitemap_image_url(@sitemap)) : {}
     @map_ocr_data = @sitemap.is_ocr_enabled ? @sitemap.map_ocr_data : []
 
     @all_locks              =   all_locks(@community)
     @current_locks_provider =   existing_locks_provider(@community)
     @hallways               =   make_sure_one_selected_hallway(@sitemap.hallways.order("id ASC"))
-    @access_points          =   @sitemap.access_points     # @sitemap.access_points.select('DISTINCT ON (x_plot, y_plot) *')
+    @access_points          =   @sitemap.access_points
     @unit_with_door         =   @units.map{|unit| { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.x_plot }, door: unit.door.present? ? unit.door : {} }}}
 
     add_breadcrumb "Plot Property Map Units", plotexp_community_sitemaps_path

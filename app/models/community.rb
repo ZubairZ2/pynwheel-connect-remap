@@ -136,6 +136,24 @@ class Community < ApplicationRecord
   #   self.units.update_all(additional_fee: self.additional_fee)
   # end
 
+  def sorted_units_by_marketing_name
+    units.sort_by do |unit|
+      match = unit.marketing_name.match(/^([A-Za-z]+)(\d+)$/) || unit.marketing_name.match(/^(\d+)([A-Za-z]+)$/)
+
+      if match
+        letter_part, number_part = if match[1].match?(/[A-Za-z]/)
+                                      [match[1], match[2].to_i]
+                                    else
+                                      [match[2], match[1].to_i]
+                                    end
+
+        [letter_part, number_part]
+      else
+        [unit.marketing_name, 0]
+      end
+    end
+  end
+
   def get_additional_fees(unit = nil)
     return nil unless self.display_additional_fee
     community_fee = self.additional_fee
