@@ -178,18 +178,24 @@ class FloorplatesController < ApplicationController
       return
     end
     
-    @community_units = @floorplate.fetch_units.includes(:door)
-    
+    @community.units.where(building: nil).update_all(building: "")
+
+    @floorplate_units = @floorplate.fetch_units.includes(:door)
+    @floorplate_units = @community.sorted_units_by_marketing_name(@floorplate_units)
+
+    @floorplate_units = @floorplate_units.sort_by {|obj| obj.building}
+    @floorplate_units_by_plotted_doors_order = @floorplate_units.sort_by {|obj| obj.door.present? ? obj.door.id : obj.id}
+
     @map_ocr_data = @floorplate.is_ocr_enabled ? @floorplate.map_ocr_data : []
     @dimensions = @floorplate.is_ocr_enabled ? s3_img_dimensions(floorplate_image_url(@floorplate)) : {}
     
-    @test_units = @community_units.to_json
+    @test_units = @floorplate_units.to_json
 
     @current_locks_provider = existing_locks_provider(@community)
     @all_locks = all_locks(@community)
     @hallways = make_sure_one_selected_hallway(@floorplate.hallways.order("id ASC"))
-    @access_points = @floorplate.access_points # @floorplate.access_points.select('DISTINCT ON (x_plot, y_plot) *')
-    @unit_with_door = @community_units.map { |unit| { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } } }
+    @access_points = @floorplate.access_points
+    @unit_with_door = @floorplate_units.map { |unit| { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } } }
 
     add_breadcrumb "Floor plates", community_floorplates_path(current_community)
     add_breadcrumb "Plot Floor Plate Units", community_floorplate_plotexp_path(current_community, @floorplate)

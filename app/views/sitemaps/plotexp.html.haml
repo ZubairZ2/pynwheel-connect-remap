@@ -497,7 +497,7 @@
                       = link_to image_tag("/assets/star.png", style: 'width:15px;'), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "m_", :style => "left:#{@community.community_tour.x_plot}px; top:#{@community.community_tour.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/tours/#{@community.community_tour.id}/resetStartingPoint"
                   
                   - coordinates_array = []
-                  - @units_by_plotted_doors_order.each do |unit|
+                  - @units_by_plotted_doors_order&.each do |unit|
                     - if unit.x_plot.to_i + unit.y_plot.to_i > 0
                       - unless coordinates_array.include?([unit.x_plot, unit.y_plot])
 
@@ -541,7 +541,7 @@
                     You can select one or multiple amenity images to plot in one position (with one marker) on the map. If no units appear in the list, that means that all units that have been imported or entered have already been plotted on the map.
               %select.amenities-list.form-control{:multiple=>"multiple"}
                 - arr = []
-                - @units.each do |unit|
+                - @units&.each do |unit|
                   - if unit.x_plot.to_i + unit.y_plot.to_i == 0 and unit.provider_unit_id.present?
                     - if unit.building != nil && unit.building != ""
                       %option{:value=>unit.provider_unit_id}= "#{unit.building}-#{unit.marketing_name}"
@@ -596,7 +596,7 @@
             %label.col-sm-2.col-form-label
             .col-sm-10.unit-selects-in-popup
               %select.amenities-list-on-popup.form-control{:multiple=>"multiple"}
-                - @units.each do |unit|
+                - @units&.each do |unit|
                   - if unit.x_plot.to_i + unit.y_plot.to_i == 0 and unit.provider_unit_id.present?
                     - if unit.building != nil && unit.building != ""
                       %option{:value=>unit.provider_unit_id}= "#{unit.building}-#{unit.marketing_name}"
