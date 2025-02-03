@@ -126,11 +126,9 @@
                     = image_tag @floorplate.image? ? @floorplate.image.url : "default.jpeg" ,name:"viewArea", id:"viewArea",draggable:"false", class: 'viewArea', data: {'map_id' => "map"}
                     - if @community.community_tour.x_plot.to_i + @community.community_tour.y_plot.to_i > 0
                       = link_to image_tag("/assets/star.png", style: 'width:15px;'), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "m_", :style => "left:#{@community.community_tour.x_plot}px; top:#{@community.community_tour.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/tours/#{@community.community_tour.id}/resetStartingPoint"
-                  - community_units = @community_units
-                  - units_by_plotted_doors_order = @community_units.sort_by {|obj| obj.door.present? ? obj.door.id : obj.id}
 
                   - coordinates_array = []
-                  - units_by_plotted_doors_order.each do |unit|
+                  - @floorplate_units_by_plotted_doors_order&.each do |unit|
                     - if unit.x_plot.to_i + unit.y_plot.to_i > 0
                       - unless coordinates_array.include?([unit.x_plot,unit.y_plot])
                         - coordinates_array.push([unit.x_plot - left_margin,unit.y_plot - right_margin])
@@ -175,12 +173,7 @@
 
               %select.amenities-list.form-control{:multiple=>"multiple"}
                 - arr = []
-                - if community_units.present?
-                  - community_units.each do |u|
-                    - u.building = "" if u.building == nil
-                  - community_units = community_units.sort_by {|obj| obj.marketing_name.to_i}
-                  - community_units = community_units.sort_by {|obj| obj.building.to_i}
-                - community_units.each do |unit|
+                - @floorplate_units&.each do |unit|
                   - if unit.x_plot.to_i + unit.y_plot.to_i == 0 and unit.provider_unit_id.present?
                     - if unit.building != nil && unit.building != ""
                       %option{:value => "#{unit.provider_unit_id}"}= "#{unit.building}-#{unit.marketing_name}"
@@ -234,12 +227,7 @@
             %label.col-sm-2.col-form-label
             .col-sm-10.unit-selects-in-popup
               %select.amenities-list-on-popup.form-control{:multiple=>"multiple"}
-                - if community_units.present?
-                  - community_units.each do |u|
-                    - u.building = "" if u.building == nil
-                  - community_units = community_units.sort_by {|obj| obj.marketing_name.to_i}
-                  - community_units = community_units.sort_by {|obj| obj.building.to_i}
-                - community_units.each do |unit|
+                - @floorplate_units&.each do |unit|
                   - if unit.x_plot.to_i + unit.y_plot.to_i == 0 and unit.provider_unit_id.present?
                     - if unit.building != nil && unit.building != ""
                       %option{:value=>unit.provider_unit_id}= "#{unit.building}-#{unit.marketing_name}"
