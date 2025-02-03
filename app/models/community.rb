@@ -131,23 +131,40 @@ class Community < ApplicationRecord
     end
   end
 
+  # def sorted_units_by_marketing_name(selected_units)
+  #   selected_units.sort_by do |unit|
+  #     match = unit.marketing_name.match(/^([A-Za-z]+)-?(\d+)$/) || unit.marketing_name.match(/^(\d+)-?([A-Za-z]+)$/)
+  
+  #     if match
+  #       letter_part, number_part = if match[1].match?(/[A-Za-z]/)
+  #                                     [match[1].downcase, match[2].to_i]
+  #                                   else
+  #                                     [match[2].downcase, match[1].to_i]
+  #                                   end
+  
+  #       [letter_part, number_part]
+  #     else
+  #       [unit.marketing_name.downcase, 0] # Ensure unmatched names are sorted case-insensitively
+  #     end
+  #   end
+  # end
+  
   def sorted_units_by_marketing_name(selected_units)
     selected_units.sort_by do |unit|
-      match = unit.marketing_name.match(/^([A-Za-z]+)-?(\d+)$/) || unit.marketing_name.match(/^(\d+)-?([A-Za-z]+)$/)
+      name = unit.marketing_name.strip
   
-      if match
-        letter_part, number_part = if match[1].match?(/[A-Za-z]/)
-                                      [match[1].downcase, match[2].to_i]
-                                    else
-                                      [match[2].downcase, match[1].to_i]
-                                    end
-  
-        [letter_part, number_part]
+      if name.match?(/^\d+$/)  # If it's purely numeric
+        [nil, name.to_i]
+      elsif name.match(/^([A-Za-z]+)-?(\d+)$/)  # Matches `A-101` or `A101`
+        [$1.downcase, $2.to_i]
+      elsif name.match(/^(\d+)-?([A-Za-z]+)$/)  # Matches `101-A` or `101A`
+        [$2.downcase, $1.to_i]
       else
-        [unit.marketing_name.downcase, 0] # Ensure unmatched names are sorted case-insensitively
+        [name.downcase, 0]  # For unrecognized formats
       end
     end
-  end  
+  end
+  
   
   
 
