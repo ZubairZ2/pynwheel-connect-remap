@@ -10,6 +10,9 @@ $(document).ready(function () {
     $("#map").css('cursor', 'default');
     imageOCRResponse = $("#ocrData").data("ocrData");
     ocrImageDimensions = $("#ocrData").data("imageDimensions");
+    console.log("imageOCRResponse:", imageOCRResponse );
+    console.log("ocrImageDimensions:", ocrImageDimensions );
+
 
     doDraggable();
 
@@ -106,7 +109,7 @@ $(document).ready(function () {
 });
 
 function displayHints() {
-  console.log(imageOCRResponse);
+  console.log("imageOCRResponse", imageOCRResponse);
   if(imageOCRResponse.length > 0 ) {
     let  html = "";
 
