@@ -603,7 +603,6 @@ class CommunitiesController < ApplicationController
 
       if sitemap.present? && sitemap.image.present? && sitemap.image.url.present?
         units = @community.units.where(floorplate_id: nil)
-        aws_ocr_detected_units = []
 
         aws_ocr_detected_units = fetch_aws_detected_units(sitemap.validated_image_url)
         store_map_ocr_data(sitemap, aws_ocr_detected_units)
@@ -847,6 +846,16 @@ class CommunitiesController < ApplicationController
   end
 
   private
+
+  def store_map_ocr_data model_object, aws_ocr_detected_units
+    if model_object.present? && model_object.image.present? && model_object.image.url.present?
+      model_object.update(map_ocr_data: aws_ocr_detected_units)
+    end
+  end
+
+  def fetch_aws_detected_units image_url
+    AwsTextract.aws_texract_ocr_service(image_url)
+  end
 
   def store_map_ocr_data model_object, aws_ocr_detected_units
     if model_object.present? && model_object.image.present? && model_object.image.url.present?
