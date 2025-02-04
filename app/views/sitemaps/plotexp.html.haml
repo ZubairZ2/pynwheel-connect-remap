@@ -640,7 +640,9 @@
       .modal-footer
         %a.btn.btn-primary{:id=> "add-unplotted-doors"} Add
         %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel   
-#ocrData{data: {ocr_data: @map_ocr_data, image_dimensions: @dimensions.to_json}}
+
+#ocrData{data: {ocr_data: @map_ocr_data.to_json, image_dimensions: @dimensions.to_json}}
+
 :javascript
   $(document).ready(function () {
     $('.wysihtml5').each(function(i, elem) {

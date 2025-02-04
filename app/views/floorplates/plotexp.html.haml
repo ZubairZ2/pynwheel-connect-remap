@@ -240,7 +240,8 @@
           = submit_tag "Add",:class=>"btn btn-primary" 
           %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
 
-#ocrData{data: {ocr_data: @map_ocr_data, image_dimensions: @dimensions.to_json}}
+#ocrData{data: {ocr_data: @map_ocr_data.to_json, image_dimensions: @dimensions.to_json}}
+
 #ajax-doors-detail-modal.modal.fade{"aria-hidden" => "true", "data-backdrop" => "static", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog
     .modal-content
