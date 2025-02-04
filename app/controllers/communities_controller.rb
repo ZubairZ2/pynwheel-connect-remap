@@ -572,12 +572,8 @@ class CommunitiesController < ApplicationController
       sitemap = @community.sitemap if @community.sitemap.present?
       sitemap.update(is_ocr_enabled: params[:is_ocr_enabled])
 
-      if sitemap.present? && sitemap.image.present? && sitemap.image.url.present?
-        unless sitemap.map_ocr_data.present?
-          aws_ocr_detected_units = AwsTextract.aws_texract_ocr_service(sitemap_image_url(sitemap))
-          sitemap.update(map_ocr_data: aws_ocr_detected_units)
-        end
-      end
+      aws_ocr_detected_units = fetch_aws_detected_units(sitemap_image_url(sitemap))
+      store_map_ocr_data(sitemap, aws_ocr_detected_units)
 
       redirect_to plotexp_community_sitemaps_path(@community), notice: "Suggestions for sitemap has #{sitemap.is_ocr_enabled ? "enabled" : "disabled"} successfully"
     else
@@ -591,12 +587,8 @@ class CommunitiesController < ApplicationController
       floorplate = Floorplate.find params[:floorplate_id] if params[:floorplate_id].present?
       floorplate.update(is_ocr_enabled: params[:is_ocr_enabled])
 
-      if floorplate.present? && floorplate.image.present? && floorplate.image.url.present? && floorplate.is_ocr_enabled
-        unless floorplate.map_ocr_data.present? 
-          aws_ocr_detected_units = AwsTextract.aws_texract_ocr_service(floorplate_image_url(floorplate))
-          floorplate.update(map_ocr_data: aws_ocr_detected_units)
-        end
-      end
+      aws_ocr_detected_units = fetch_aws_detected_units(floorplate_image_url(floorplate))
+      store_map_ocr_data(floorplate, aws_ocr_detected_units)
 
       redirect_to community_floorplate_plotexp_path(:community_id=>@community.id,floorplate_id: params[:floorplate_id]), notice: "Suggestions for floorplate has #{floorplate.is_ocr_enabled ? "enabled" : "disabled"} successfully"
     else
@@ -611,14 +603,9 @@ class CommunitiesController < ApplicationController
 
       if sitemap.present? && sitemap.image.present? && sitemap.image.url.present?
         units = @community.units.where(floorplate_id: nil)
-        aws_ocr_detected_units = []
 
-        if sitemap.map_ocr_data.present? 
-          aws_ocr_detected_units = sitemap.map_ocr_data
-        else
-          aws_ocr_detected_units = AwsTextract.aws_texract_ocr_service(sitemap_image_url(sitemap))
-          sitemap.update(map_ocr_data: aws_ocr_detected_units)
-        end
+        aws_ocr_detected_units = fetch_aws_detected_units(sitemap_image_url(sitemap))
+        store_map_ocr_data(sitemap, aws_ocr_detected_units)
 
         dimensions = s3_img_dimensions(sitemap_image_url(sitemap))
         set_sitemap_markers_on_map(units, aws_ocr_detected_units, dimensions)
@@ -639,14 +626,8 @@ class CommunitiesController < ApplicationController
       floorplate = Floorplate.find params[:floorplate_id] if params[:floorplate_id].present?
       
       if floorplate.present? && floorplate.image.present? && floorplate.image.url.present?
-        aws_ocr_detected_units = []
-
-        if floorplate.map_ocr_data.present? 
-          aws_ocr_detected_units = floorplate.map_ocr_data
-        else
-          aws_ocr_detected_units = AwsTextract.aws_texract_ocr_service(floorplate_image_url(floorplate))
-          floorplate.update(map_ocr_data: aws_ocr_detected_units)
-        end
+        aws_ocr_detected_units = fetch_aws_detected_units(floorplate_image_url(floorplate))
+        store_map_ocr_data(floorplate, aws_ocr_detected_units)
 
         units = floorplate.fetch_units
         dimensions = s3_img_dimensions(floorplate_image_url(floorplate))
@@ -843,6 +824,16 @@ class CommunitiesController < ApplicationController
   end
 
 private
+
+  def store_map_ocr_data model_object, aws_ocr_detected_units
+    if model_object.present? && model_object.image.present? && model_object.image.url.present?
+      model_object.update(map_ocr_data: aws_ocr_detected_units)
+    end
+  end
+
+  def fetch_aws_detected_units image_url
+    AwsTextract.aws_texract_ocr_service(image_url)
+  end
 
   def show_chat_modal(tour_user_id, tour_id)
     @chatroom = Chatroom.find_by(tour_user_id: tour_user_id, tour_id: tour_id)
