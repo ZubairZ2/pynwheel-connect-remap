@@ -6,7 +6,8 @@ $(document).ready(function () {
         imageOCRResponse = $("#ocrData").data("ocrData");
         ocrImageDimensions = $("#ocrData").data("imageDimensions");
 
-        console.log(imageOCRResponse);
+      console.log("imageOCRResponse:", imageOCRResponse );
+      console.log("ocrImageDimensions:", ocrImageDimensions );
 
         selected = [];
         $("#map, #svg_map").css('cursor', 'default');
