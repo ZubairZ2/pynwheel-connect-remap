@@ -52,9 +52,9 @@
                         - if @tour_user.image.url.include? "default-user128x128.jpg"
                           Removed at Consumer Request
                         - else
-                          = image_tag (@tour_user.image.present? ? @tour_user.image : "default-user128x128.jpg"), :class => "user_id_image1", :style => "height: 100%; width: 100px; margin-left: -48px; #{@tour_user.image.present? ? "" : ""}"
+                          = image_tag (@tour_user&.image&.url.present? ? @tour_user&.image&.url : "default-user128x128.jpg"), :class => "user_id_image1", :style => "height: 100%; width: 100px; margin-left: -48px; #{@tour_user.image.present? ? "" : ""}"
                       - else
-                        = image_tag (@tour_user.image.present? ? @tour_user.image : "default-user128x128.jpg"), :class => "user_id_image1", :style => "height: 100%; width: 100px; margin-left: -48px; #{@tour_user.image.present? ? "" : ""}"
+                        = image_tag (@tour_user&.image&.url.present? ? @tour_user&.image&.url : "default-user128x128.jpg"), :class => "user_id_image1", :style => "height: 100%; width: 100px; margin-left: -48px; #{@tour_user.image.present? ? "" : ""}"
                     .col-lg-3.col-md-3.col-sm-3.col-xs-12.email_div{:style => " "}
                       %strong
                         #{(@tour_user.last_name.present? ? @tour_user.last_name + ", " : "") + (@tour_user.first_name.present? ? @tour_user.first_name : @tour_user.name)}
@@ -73,9 +73,9 @@
                         - if @tour_user.id_card.url.include? "default_id_card.jpg"
                           Removed at Consumer Request
                         - else
-                          = image_tag  (@tour_user.id_card.present? ? @tour_user.id_card : "default id card.jpg"), :class => "user_id_image2", :style => " width: 115px;  margin-left: 99px; #{@tour_user.id_card.present? ? "" : ""}"
+                          = image_tag  (@tour_user&.id_card&.url.present? ? @tour_user&.id_card&.url : "default id card.jpg"), :class => "user_id_image2", :style => " width: 115px;  margin-left: 99px; #{@tour_user.id_card.present? ? "" : ""}"
                       - else
-                        = image_tag  (@tour_user.id_card.present? ? @tour_user.id_card : "default id card.jpg"), :class => "user_id_image2", :style => " width: 115px;  margin-left: 99px; #{@tour_user.id_card.present? ? "" : ""}"
+                        = image_tag  (@tour_user&.id_card&.url.present? ? @tour_user&.id_card&.url : "default id card.jpg"), :class => "user_id_image2", :style => " width: 115px;  margin-left: 99px; #{@tour_user.id_card.present? ? "" : ""}"
 
                   - if @tour_user.desired_bedroom.present?
                     .col-lg-12
@@ -244,14 +244,17 @@
                                     = stop_image.event_date.present? ? (stop_image.event_date).strftime("%Y-%m-%d") : (stop_image.created_at.in_time_zone(time_zone)).strftime("%Y-%m-%d")
                                     = stop_image.event_time.present? ? (stop_image.event_time).strftime("%I:%M %p") : (stop_image.created_at.in_time_zone(time_zone)).strftime("%I:%M %p")
                             - stop[1].each do |stop_image|
-                              - if stop_image.image.url.present?
+                              - if stop_image&.image&.url.present?
                                 - is_data_loaded = true
-                                = image_tag  @stop.image, :class => "my_class", id: "#{@stop.id}", :style => " display: none; height: 72px; width: 100px; margin-top: 10px;"
-                                = " "
+
+                                - if @stop&.image&.url.present?
+                                  = image_tag  @stop&.image&.url, :class => "my_class", id: "#{@stop&.id}", :style => " display: none; height: 72px; width: 100px; margin-top: 10px;"
+
                                 - if stop_image.is_rotated == true
                                   = image_tag  stop_image.image.url, :class => "", :style => "height: 200px; width: auto; margin-top: -4px; margin-left: 28px; transform: rotate(90deg);"
                                 - else
                                   = image_tag  stop_image.image.url, :class => "", :style => "height: 148px; width: auto; margin-top: 8px; margin-left: 15px; "
+                            
                             - stop[1].each do |stop_decription|
                               - if stop_decription.description.present?
                                 - is_data_loaded = true
