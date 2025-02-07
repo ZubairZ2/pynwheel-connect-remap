@@ -225,12 +225,6 @@
                       - floorplate = @floorplates.select{|f| f.floors.include?(floor)}.first
                       = image_tag floorplate.standard_image_url, :class=>"map-image-align floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}",:id=>"f_#{floor}","data-height"=>"#{floorplate.floorplate_image_height()}","data-width"=>"#{floorplate.floorplate_image_width()}"
                   - else
-                    - extension = File.extname(@community&.sitemap&.image&.url) # Get the file extension (e.g., .jpg, .png)
-                    - local_file_path = Rails.root.join("public", "maps", "property_#{@community&.id}#{extension}")
-
-                    - if File.exist?(local_file_path)
-                      %img.floorplate-image.sitemap-image.map-image-align{:alt => "", :src => "#{@community.sitemap.present? ? "/maps/property_#{@community.id}#{extension}" : "/assets/default.jpeg"}", :id => "property-map-image", :title => "","data-height"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.height : nil}","data-width"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.width : nil}"}/
-                    - else
                       %img.floorplate-image.sitemap-image.map-image-align{:alt => "", :src => "#{@community.sitemap.present? ? @community.image_src : "/assets/default.jpeg"}", :id => "property-map-image", :title => "","data-height"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.height : nil}","data-width"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.width : nil}"}/
 
                   - coordinates_array = []
