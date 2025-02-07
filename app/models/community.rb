@@ -150,6 +150,8 @@ class Community < ApplicationRecord
   # end
   
   def sorted_units_by_marketing_name(selected_units)
+    return unless selected_units.present?
+    
     selected_units.sort_by do |unit|
       name = unit.marketing_name.strip
   
