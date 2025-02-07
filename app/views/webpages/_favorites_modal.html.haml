@@ -51,33 +51,35 @@
                 - available_date = unit.available_date.present? ? determine_available_date(unit.available_date) : nil
 
                 %span{style: "margin-left: 4%"}= DateFormatter.formatted_date_by_region(@community.country_code, available_date)
-            .availabilty-container{:id => "#{unit.id}-unit-lease-pricing-text-li"}
-              %span.available-info{:id => "#{unit.id}-leas-price-option"}
-              
-              - if @community.display_rent && @community.display_pricing_options
-              
-                %div.show-pricing-options
-                  %span.available-info
-                    %a.show-more.show-more-option-fav{:id => "#{unit.id}-show-more-option-fav"} Show more prices
-                    %a.show-more.hide-more-option.hidden{:id => "#{unit.id}-hide-more-option"} Hide more prices
+            
+            %div{style: "overflow-y: auto; height: 28em; max-height: 28em;"}
+              .availabilty-container{:id => "#{unit.id}-unit-lease-pricing-text-li"}
+                %span.available-info{:id => "#{unit.id}-leas-price-option"}
+                
+                - if @community.display_rent && @community.display_pricing_options
+                
+                  %div.show-pricing-options
+                    %span.available-info
+                      %a.show-more.show-more-option-fav{:id => "#{unit.id}-show-more-option-fav"} Show more prices
+                      %a.show-more.hide-more-option.hidden{:id => "#{unit.id}-hide-more-option"} Hide more prices
 
-                %span{:id => "#{unit.id}-first-unit-lease-pricing"}
-                .pricing-option-for-fav.hidden{:id => "#{unit.id}-pricing-option-for-fav"}
-                  %div{style: "max-height: 6em; overflow-y: auto;"}
-                    %span{:id => "#{unit.id}-lease-pricing"}= unit.lease_pricing
-              
-            - additional_fees = @community.get_additional_fees(unit)
+                  %span{:id => "#{unit.id}-first-unit-lease-pricing"}
+                  .pricing-option-for-fav.hidden{:id => "#{unit.id}-pricing-option-for-fav"}
+                    %div{style: "max-height: 6em; overflow-y: auto;"}
+                      %span{:id => "#{unit.id}-lease-pricing"}= unit.lease_pricing
+                
+              - additional_fees = @community.get_additional_fees(unit)
 
-            - if additional_fees.present?
-              .c-modal-sidebar-fees.availabilty-container
-                %a.show-more#show-fees{ href: "javascript:void(0);", onclick: "showFees()" } Show Fees
-                %a.show-more#hide-fees{ href: "javascript:void(0);", onclick: "hideFees()", style: "display: none;" } Hide Fees
-                %div.c-m-fees#unit-additional-fees{style: "display: none;" }
-                  = additional_fees.html_safe
+              - if additional_fees.present?
+                .c-modal-sidebar-fees.availabilty-container
+                  %a.show-more.show-fees{ href: "javascript:void(0);", onclick: "showFees()" } Show Fees
+                  %a.show-more.hide-fees{ href: "javascript:void(0);", onclick: "hideFees()", style: "display: none;" } Hide Fees
+                  %div.unit-additional-fees{style: "display: none;" }
+                    = additional_fees.html_safe
 
-            .c-modal-sidebar-description
-              %h4.des-heading More Details
-              .c-m-description= (unit.description.present? ? unit.description : (floorplan.description.present? ? floorplan.description : "Not Available")).html_safe
+              .c-modal-sidebar-description
+                %h4.des-heading More Details
+                .c-m-description= (unit.description.present? ? unit.description : (floorplan.description.present? ? floorplan.description : "Not Available")).html_safe
 
           .c-modal-sidebar-filters.sidebar-footer
             - if @community.credential.present? and @community.credential.apply_now.to_s == "true"

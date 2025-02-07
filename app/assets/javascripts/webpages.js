@@ -1327,7 +1327,7 @@ function unitAdditionalFees(additional_fees) {
     }
     else {
       $('#unitModal').find('.c-modal-sidebar-fees').show();
-      $('#unitModal').find('#unit-additional-fees').html(additional_fees);
+      $('#unitModal').find('.unit-additional-fees').html(additional_fees);
     }
   } catch(err) {
     $('#unitModal').find('.c-modal-sidebar-fees').hide();
@@ -1335,27 +1335,29 @@ function unitAdditionalFees(additional_fees) {
 }
 
 function showFees() {
-  $("#unit-additional-fees").show();
-  $("#show-fees").hide();
-  $("#hide-fees").show();
+  $(".unit-additional-fees").show();
+  $(".show-fees").hide();
+  $(".hide-fees").show();
 }
 
 function hideFees() {
-  $("#unit-additional-fees").hide();
-  $("#hide-fees").hide();
-  $("#show-fees").show();
+  $(".unit-additional-fees").hide();
+  $(".hide-fees").hide();
+  $(".show-fees").show();
 }
 
 function adjustHeightForContentArea() {
   if ($(".m-filters").css("display") === "none") {
     $("#overall-scroller").css({
       "height": "25em",
-      "max-height": "25em"
+      "max-height": "25em",
+      "overflow-y": "auto"
     });
   } else {
     $("#overall-scroller").css({
       "height": "18em",
-      "max-height": "25em"
+      "max-height": "25em",
+      "overflow-y": "auto"
     });
   }
 }
