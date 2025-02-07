@@ -131,27 +131,9 @@ class Community < ApplicationRecord
     end
   end
 
-  # def sorted_units_by_marketing_name(selected_units)
-  #   selected_units.sort_by do |unit|
-  #     match = unit.marketing_name.match(/^([A-Za-z]+)-?(\d+)$/) || unit.marketing_name.match(/^(\d+)-?([A-Za-z]+)$/)
-  
-  #     if match
-  #       letter_part, number_part = if match[1].match?(/[A-Za-z]/)
-  #                                     [match[1].downcase, match[2].to_i]
-  #                                   else
-  #                                     [match[2].downcase, match[1].to_i]
-  #                                   end
-  
-  #       [letter_part, number_part]
-  #     else
-  #       [unit.marketing_name.downcase, 0] # Ensure unmatched names are sorted case-insensitively
-  #     end
-  #   end
-  # end
-  
   def sorted_units_by_marketing_name(selected_units)
     return unless selected_units.present?
-    
+
     selected_units.sort_by do |unit|
       name = unit.marketing_name.strip
   
@@ -166,9 +148,6 @@ class Community < ApplicationRecord
       end
     end
   end
-  
-  
-  
 
   def get_additional_fees(unit = nil)
     return nil unless self.display_additional_fee
