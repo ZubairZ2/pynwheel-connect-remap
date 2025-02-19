@@ -26,7 +26,7 @@ class SessionsReportService < BaseService
   end
 
   def all_properties
-    properties = Community.without_test_properties.includes(:units, :company)
+    properties = Community.active_touch_properties.includes(:units, :company)
     session_counts = fetch_session_counts(properties.ids)
 
     properties.map do |property|
