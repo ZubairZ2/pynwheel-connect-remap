@@ -1043,15 +1043,19 @@ function unitMarkerHover() {
     var marker_color_map = $(".fa-map-marker-alt")[0].style.color
 
     const unitElement = document.getElementById('unit_' + $(this).data('unitId'));
-    const scrollableParent = document.querySelector('.left-side');
+    const scrollableParent = document.querySelector('.left-side'); // Adjust the selector if needed
 
     if (unitElement && scrollableParent) {
+      const parentHeight = scrollableParent.clientHeight;
+      const elementHeight = unitElement.clientHeight;
+      const scrollTop = unitElement.offsetTop - scrollableParent.offsetTop - (parentHeight / 2) + (elementHeight / 2);
+
       scrollableParent.scrollTo({
-        top: unitElement.offsetTop - scrollableParent.offsetTop,
+        top: scrollTop,
         behavior: 'smooth'
       });
     }
-    
+
     var new_dx = parseInt(event.pageX) - parseInt($('#panzomm-container').offset().left) + parseInt($('#panzomm-container').scrollLeft());
     var new_dy = parseInt(event.pageY) - parseInt($('#panzomm-container').offset().top) + parseInt($('#panzomm-container').scrollTop());
     const diffLeft = webCommunity['is_sitemap'] ? 25 : 115
