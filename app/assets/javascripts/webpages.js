@@ -1041,7 +1041,16 @@ function unitMarkerHover() {
   
     $('#popover-price').html((currency + $(this).data('market-rent')))
     var marker_color_map = $(".fa-map-marker-alt")[0].style.color
-    $($('#unit_'+ $(this).data('unitId')))[0].scrollIntoView({behavior: 'smooth', block: 'center', inline: 'center' });
+
+    const unitElement = document.getElementById('unit_' + $(this).data('unitId'));
+    const scrollableParent = document.querySelector('.left-side');
+
+    if (unitElement && scrollableParent) {
+      scrollableParent.scrollTo({
+        top: unitElement.offsetTop - scrollableParent.offsetTop,
+        behavior: 'smooth'
+      });
+    }
     
     var new_dx = parseInt(event.pageX) - parseInt($('#panzomm-container').offset().left) + parseInt($('#panzomm-container').scrollLeft());
     var new_dy = parseInt(event.pageY) - parseInt($('#panzomm-container').offset().top) + parseInt($('#panzomm-container').scrollTop());
