@@ -1,4 +1,4 @@
-export function isPointInPolygon(point, polygonPoints) {
+window.isPointInPolygon = function isPointInPolygon(point, polygonPoints) {
   let x = point.x,
     y = point.y;
   let inside = false;
@@ -16,9 +16,9 @@ export function isPointInPolygon(point, polygonPoints) {
   }
 
   return inside;
-}
+};
 
-export function isPointInRect(point, rect) {
+window.isPointInRect = function isPointInRect(point, rect) {
   let x = point.x,
     y = point.y;
   let rectX = parseFloat(rect.getAttribute("x"));
@@ -32,9 +32,9 @@ export function isPointInRect(point, rect) {
     y >= rectY &&
     y <= rectY + rectHeight
   );
-}
+};
 
-export function getPolygonArea(polygonPoints) {
+window.getPolygonArea = function getPolygonArea(polygonPoints) {
   let area = 0;
   let n = polygonPoints.numberOfItems;
   for (let i = 0, j = n - 1; i < n; j = i++) {
@@ -45,49 +45,50 @@ export function getPolygonArea(polygonPoints) {
     area += xi * yj - xj * yi;
   }
   return Math.abs(area) / 2;
-}
+};
 
-export function getSvgClickedElementWithCenterPoint(svgParentSelector) {
-  const svg = document.querySelector(`${svgParentSelector} > svg`);
+window.getSvgClickedElementWithCenterPoint =
+  function getSvgClickedElementWithCenterPoint(svgParentSelector) {
+    const svg = document.querySelector(`${svgParentSelector} > svg`);
 
-  if (!svg) return {};
+    if (!svg) return {};
 
-  const point = svg.createSVGPoint();
-  point.x = e.clientX;
-  point.y = e.clientY;
+    const point = svg.createSVGPoint();
+    point.x = e.clientX;
+    point.y = e.clientY;
 
-  const svgPoint = point.matrixTransform(svg.getScreenCTM().inverse());
+    const svgPoint = point.matrixTransform(svg.getScreenCTM().inverse());
 
-  const resultingElement = Array.from(svg.querySelectorAll("rect")).filter(
-    (rect) => isPointInRect(svgPoint, rect)
-  )[0];
-  const centerPoint = null;
+    const resultingElement = Array.from(svg.querySelectorAll("rect")).filter(
+      (rect) => isPointInRect(svgPoint, rect)
+    )[0];
+    const centerPoint = null;
 
-  if (!resultingElement) {
-    const polygons = Array.from(svg.querySelectorAll("polygon"))
-      .filter((polygon) => isPointInPolygon(svgPoint, polygon.points))
-      .map((polygon) => ({ polygon, area: getPolygonArea(polygon.points) }));
+    if (!resultingElement) {
+      const polygons = Array.from(svg.querySelectorAll("polygon"))
+        .filter((polygon) => isPointInPolygon(svgPoint, polygon.points))
+        .map((polygon) => ({ polygon, area: getPolygonArea(polygon.points) }));
 
-    if (polygons.length > 0) {
-      resultingElement = polygons.sort((a, b) => a.area - b.area)[0].polygon;
+      if (polygons.length > 0) {
+        resultingElement = polygons.sort((a, b) => a.area - b.area)[0].polygon;
+      }
     }
-  }
 
-  if (resultingElement) {
-    const svgRect = svg.getBoundingClientRect();
-    const parentRect = svg.offsetParent?.getBoundingClientRect() || {
-      left: 0,
-      top: 0,
-    };
+    if (resultingElement) {
+      const svgRect = svg.getBoundingClientRect();
+      const parentRect = svg.offsetParent?.getBoundingClientRect() || {
+        left: 0,
+        top: 0,
+      };
 
-    centerPoint.x = centerPoint.x + svgRect.left - parentRect.left;
-    centerPoint.y = centerPoint.y + svgRect.top - parentRect.top;
-  }
+      centerPoint.x = centerPoint.x + svgRect.left - parentRect.left;
+      centerPoint.y = centerPoint.y + svgRect.top - parentRect.top;
+    }
 
-  return { element: resultingElement, centerPoint };
-}
+    return { element: resultingElement, centerPoint };
+  };
 
-export function getElementSelector(element) {
+window.getElementSelector = function getElementSelector(element) {
   if (!element) return null;
 
   const parent = element.parentElement;
@@ -100,4 +101,4 @@ export function getElementSelector(element) {
   } else {
     return `${getElementSelector(element)}${nthChild}`;
   }
-}
+};

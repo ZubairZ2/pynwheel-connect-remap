@@ -2,11 +2,13 @@
    Editor: Alexey Klimuk, Softensity, Inc.
  * sitemap, floorplate, amenity map plotting
 */
+
+//= require common_functions
+
 // var algo_unit_data = [];
 // var algo_amenity_data = [];
 // var algo_access_point_data = [];
 // var start_point_data = {};
-import { getSvgClickedElementWithCenterPoint } from './common_functions.js'
 
 var stops_type_arr = ["unit", "amenity", "elevator", "building_starting_exit_point"]
 var tmp_id = 0;

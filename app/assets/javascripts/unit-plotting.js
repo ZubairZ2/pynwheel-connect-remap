@@ -1,4 +1,5 @@
-import { getSvgClickedElementWithCenterPoint, getElementSelector } from './common_functions.js';
+//= require common_functions
+
 // save an individual unit (even if same x/y)
 function savePlot (id, dx, dy, door_id = 0, pointerData = {}) {
     if (typeof floorplan_id !== 'undefined') {
@@ -476,7 +477,6 @@ function removeUnitFromSelectedArray(value) {
 
 
 function start__original_work(event, ui) {
-    // debugger
     // get the initial X and Y position when dragging starts
     xpos = Math.round(ui.position.left);
     ypos = Math.round(ui.position.top);

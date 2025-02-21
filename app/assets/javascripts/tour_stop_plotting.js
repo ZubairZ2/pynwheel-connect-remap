@@ -1,4 +1,4 @@
-import { getSvgClickedElementWithCenterPoint, getElementSelector } from './common_functions.js';
+//= require common_functions
 
 $(document).ready(function () {
     selected = [];
