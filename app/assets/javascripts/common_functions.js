@@ -48,7 +48,7 @@ window.getPolygonArea = function getPolygonArea(polygonPoints) {
 };
 
 window.getSvgClickedElementWithCenterPoint =
-  function getSvgClickedElementWithCenterPoint(svgParentSelector) {
+  function getSvgClickedElementWithCenterPoint(svgParentSelector, e) {
     const svg = document.querySelector(`${svgParentSelector} > svg`);
 
     if (!svg) return {};
@@ -59,10 +59,10 @@ window.getSvgClickedElementWithCenterPoint =
 
     const svgPoint = point.matrixTransform(svg.getScreenCTM().inverse());
 
-    const resultingElement = Array.from(svg.querySelectorAll("rect")).filter(
+    let resultingElement = Array.from(svg.querySelectorAll("rect")).filter(
       (rect) => isPointInRect(svgPoint, rect)
     )[0];
-    const centerPoint = null;
+    const centerPoint = {};
 
     if (!resultingElement) {
       const polygons = Array.from(svg.querySelectorAll("polygon"))
@@ -76,13 +76,10 @@ window.getSvgClickedElementWithCenterPoint =
 
     if (resultingElement) {
       const svgRect = svg.getBoundingClientRect();
-      const parentRect = svg.offsetParent?.getBoundingClientRect() || {
-        left: 0,
-        top: 0,
-      };
+      const elRect = resultingElement.getBoundingClientRect() || { x: 0, y: 0 };
 
-      centerPoint.x = centerPoint.x + svgRect.left - parentRect.left;
-      centerPoint.y = centerPoint.y + svgRect.top - parentRect.top;
+      centerPoint.x = elRect.x + elRect.width / 2 - svgRect.x;
+      centerPoint.y = elRect.y + elRect.height / 2 - svgRect.y;
     }
 
     return { element: resultingElement, centerPoint };

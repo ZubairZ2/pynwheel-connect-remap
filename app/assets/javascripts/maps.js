@@ -51,7 +51,7 @@ function initialize_variables(hallways_coordinates, map_id){
     }
   }); 
   $(document).click('.viewArea', function(e){
-    const { element, centerPoint } = getSvgClickedElementWithCenterPoint("#map.plot-image");
+    const { element, centerPoint } = getSvgClickedElementWithCenterPoint("#map.plot-image", e);
 
     if ($(e.target).hasClass('viewArea')){
       map_id = "#" + $(e.target).data('map-id')

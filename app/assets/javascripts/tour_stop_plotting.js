@@ -162,7 +162,7 @@ $(document).ready(function () {
     };
 
     $("#map").bind("mouseup touchend", function (e) {
-       const { element, centerPoint } = getSvgClickedElementWithCenterPoint('#map.plot-image');
+       const { element, centerPoint } = getSvgClickedElementWithCenterPoint('#map.plot-image', e);
 
         // first check if user is clicking on scrollbar
         if (e.target != $('#map').get(0)) {

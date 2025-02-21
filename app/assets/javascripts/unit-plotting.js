@@ -286,7 +286,7 @@ var temp = [];
 var pointerOffset = { x: 0, y: 0 };
 
 function doDraggable () {
-    if (document.querySelector("#map.plot-image svg")) {
+    if (document.querySelector("#map.plot-image")?.dataset.svgUrl) {
         doSvgDraggable();
         return
     }
@@ -536,7 +536,7 @@ function start_svg_original_work(event, ui, scale) {
         temp = arr.filter((marker) => (marker[1] === xpos && marker[2] === ypos)).map((marker) => marker[0]);
     }
 
-    pointerOffset.x = 0 * scale;
+    pointerOffset.x = left_margin * scale;
     pointerOffset.y = top_margin * scale;
 }
 
@@ -562,17 +562,14 @@ function stop_svg_original_work (event, ui) {
                 arr[markerIndex][1] = xPlot;
                 arr[markerIndex][2] = yPlot;
             }
-            if (svg) {
-                const { element, centerPoint } = getSvgClickedElementWithCenterPoint("#map.plot-image")
-                if (element) {
-                    const elId = element.id
-                    const selector = elId ? null : getElementSelector(element);
-                    const dataSet = { tag: element.tagName?.toLowerCase(), id: elId, selector }
-                    savePlot(temp[i], centerPoint.x, centerPoint.y, null, dataSet);
-                } else
-                    savePlot(temp[i], xPlot, yPlot);
-            } 
-            else
+
+            const { element, centerPoint } = getSvgClickedElementWithCenterPoint("#map.plot-image", event);
+            if (element) {
+                const elId = element.id
+                const selector = elId ? null : getElementSelector(element);
+                const dataSet = { tag: element.tagName?.toLowerCase(), id: elId, selector }
+                savePlot(temp[i], centerPoint.x, centerPoint.y, null, dataSet);
+            } else
                 savePlot(temp[i], xPlot, yPlot);
         });
     }
