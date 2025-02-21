@@ -1,5 +1,4 @@
 function saveAccessPoint(floor, dx, dy, id=0){
-    debugger
     plotted_data = false
     url = ajax_url(id)
     $.post( url,
@@ -9,7 +8,6 @@ function saveAccessPoint(floor, dx, dy, id=0){
         "floor": floor,
         "locks_present_hash": locks_present_hash,
     }).done(function(response) {
-        debugger
         var index = access_points.findIndex(access_point => access_point.id == response.access_point.id); 
         if(index !== -1)
             access_points.splice(index,1)
@@ -69,7 +67,6 @@ function drag__access_point(event, ui){
 }
 
 function stop__access_point(event, ui){
-    debugger
     for(var access_point of same_location_access_points){
         access_point.x_plot = Math.round(parseFloat(ui.position.left));
         access_point.y_plot = Math.round(parseFloat(ui.position.top));

@@ -260,7 +260,6 @@
     
     // add listner to prev points 
     $.each($("*.path_point"), function(i, existing_point){
-      // debugger
       id = $(existing_point).prop('id');
       dragElement(document.getElementById(id));
     });
@@ -370,11 +369,9 @@
       }
 
       function elementDrag(e) {
-        // debugger
         e = e || window.event;
         e.preventDefault();
         // calculate the new cursor position:
-        // debugger
         pos1 = pos3 - e.clientX;
         pos2 = pos4 - e.clientY;
         pos3 = e.clientX;

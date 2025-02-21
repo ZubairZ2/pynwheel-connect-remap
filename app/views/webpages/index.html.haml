@@ -50,7 +50,7 @@
 
                 .selectable-field{ class: !@community_info.display_rent ? "pricing_filter_visibility" : nil }
                   %label Max Price
-                  = select_tag :market_rent, options_for_select(@market_rent.present? ? @market_rent : []), { class: "custom-select" }
+                  = select_tag :market_rent, options_for_select(@market_rent.present? ? @market_rent : []), { class: "custom-select"}
 
                 .selectable-field
                   %label Min Square Footage
@@ -179,13 +179,6 @@
               - marker_font_size = @community&.design&.panther_amenity_map_size || 30
             - else
               - fontsize = 30
-            - if fontsize.to_i > 33
-              - margin_left_var = -2
-            - elsif fontsize.to_i > 32
-              - margin_left_var = -1
-            - else
-              - margin_left_var = -3
-            - top_margin_var = -2#(fontsize.to_i - 30)/ 1.7
 
             - if @community.theme_name.include?('gables')
               - amenity_marker_color = @community&.design&.amenity_map_marker_color || "#d37474"
@@ -219,27 +212,38 @@
 
             %div.map-body.map-container-center-align
               .right-side.parent.tabcontent.map_view#panzomm-container.mobile_map_view
-                .image-map#zoomable.zoomable-map-container{style: "text-align: center"}
+                .image-map#zoomable.zoomable-map-container{style: "text-align: center; position: relative"}
                   - if @community_info.has_floorplates?
                     - @floors.each do |floor|
                       - floorplate = @floorplates.select{|f| f.floors.include?(floor)}.first
-                      = image_tag floorplate.standard_image_url, :class=>"map-image-align floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}",:id=>"f_#{floor}","data-height"=>"#{floorplate.floorplate_image_height()}","data-width"=>"#{floorplate.floorplate_image_width()}"
-                  - else
-                    %img.floorplate-image.sitemap-image.map-image-align{:alt => "", :src => "#{@community.sitemap.present? ? @community.image_src : "/assets/default.jpeg"}", :id => "property-map-image", :title => "","data-height"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.height : nil}","data-width"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.width : nil}"}/
-
-                  - coordinates_array = []
-                  - units.each do |unit|
-                    - coordinates_array.push([unit.x_plot,unit.y_plot])
-                  - units.each do |unit|
-                    - if unit.x_plot.to_i + unit.y_plot.to_i > 0 and @floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id}
-                      - floorplan = @floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
-
-                      - unless coordinates_array.include?([unit.x_plot,unit.y_plot])
-                        - coordinates_array.push([unit.x_plot,unit.y_plot])
-                      - if @community_info.has_floorplates?
-                        = link_to "<div id='s_#{unit.id}' class='fas fa-map-marker-alt fa-map-marker-alt-responsive unit_marker' style='font-size: 22px; color: #{map_marker_color};'> <span style = '#{coordinates_array.count([unit.x_plot,unit.y_plot]) > 9 ? "position: absolute; left:#{spanSize_y - 1}px; top:#{spanSize_x + 2}px; font-size: #{spanSize_size - 4}px;" : "position: absolute; left:#{spanSize_y}px; top:#{spanSize_x}px; font-size: #{spanSize_size}px;"}' ></span> </div>".html_safe, "##", :class => "marker #{coordinates_array.count([unit.x_plot,unit.y_plot]) > 1 ? 'overlapping-unit' : ''}", :id => "m_#{unit.id}", :style => "font-size: #{fontsize}px; position:absolute;","data-target" => "#unitModal", "data-toggle" => "modal","data-community-id"=>@community.id,"data-floor" => unit.floor ,"data-unit-id"=>unit.id,"data-is-fav"=>unit_id_is_in_cookies?(cookies[:favorite_unit_ids],unit.id),"data-provider"=>@community_info.data_provider,"data-website"=>@community_info.website,"data-availability-url"=>(unit.get_availability_url()),"data-community-property-id"=>(@community_info.credential.present? && @community_info.credential.property_id.present? ? @community_info.credential.property_id : 0),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id,"data-floorplan-name"=>floorplan.present? ? floorplan.name : '',"data-unit-marketing-name"=>unit.api_unit_marketing_name,"data-market-rent"=> number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ','),"data-total-market-rent"=> number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ','),"data-square-feet"=>unit.square_feet? ? hide_decimals(unit.square_feet) : (floorplan.present? ? hide_decimals(floorplan.square_feet) : nil),"data-availability"=>unit.availability,"data-available-date"=>unit.available_date.present? ? determine_available_date(unit.available_date) : nil,"data-bedrooms"=>floorplan.present? ? floorplan.bedrooms.to_i : nil,"data-bathrooms"=>floorplan.present? ? hide_decimals(floorplan.bathrooms.to_i) : nil,"data-floorplan-image"=>unit.standard_image_url.present? ? unit.standard_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.standard_image_url : "/assets/default.jpeg"),"data-unit-x-plot"=>unit.x_plot,"data-unit-y-plot"=>unit.y_plot,"data-title"=>unit.api_unit_marketing_name,"data-sold"=>unit.sold,"data-available"=>unit.available,"data-unit-lease-pricing"=>unit.lease_pricing, "data-unit-additional-fees" => @community.get_additional_fees(unit), "data-unit-description"=>(unit.description.present? ? unit.description : (floorplan.description.present? ? floorplan.description : "")), "data-unit-virtual-tour-label"=>unit.get_virtual_tour_label, "data-unit-virtual-tour-url"=>unit.get_virtual_tour_url
+                      - if floorplate&.standard_image_url&.ends_with?(".svg")
+                        %div#property-map-image-container{data: {svg_url: floorplate.standard_image_url}, class: "map-image-align floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}", id: "f_#{floor}", data: {height: floorplate.floorplate_image_height, width: floorplate.floorplate_image_width}}
                       - else
-                        = link_to "<div id='s_#{unit.id}' class='fas fa-map-marker-alt fa-map-marker-alt-responsive unit_marker' style='font-size: 22px; color: #{map_marker_color};'> <span style = '#{coordinates_array.count([unit.x_plot,unit.y_plot]) > 9 ? "position: absolute; left:#{spanSize_y - 1}px; top:#{spanSize_x + 2}px; font-size: #{spanSize_size - 4}px;" : "position: absolute; left:#{spanSize_y}px; top:#{spanSize_x}px; font-size: #{spanSize_size}px;"}' ></span> </div>".html_safe, "##", :class => "marker #{coordinates_array.count([unit.x_plot,unit.y_plot]) > 1 ? 'overlapping-unit' : ''}", :id => "m_#{unit.id}", :style => "left:#{(unit.x_plot.to_f-(left_margin).to_f).to_s}px; top:#{(unit.y_plot.to_f-(right_margin).to_f)}px; font-size: #{fontsize}px; position:absolute;","data-floor" => unit.floor ,"data-target" => "#unitModal", "data-toggle" => "modal","data-community-id"=>@community.id,"data-unit-id"=>unit.id,"data-is-fav"=>unit_id_is_in_cookies?(cookies[:favorite_unit_ids],unit.id),"data-provider"=>@community_info.data_provider,"data-website"=>@community_info.website,"data-availability-url"=>(unit.get_availability_url()),"data-community-property-id"=>(@community_info.credential.present? && @community_info.credential.property_id.present? ? @community_info.credential.property_id : 0),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id,"data-floorplan-name"=>floorplan.present? ? floorplan.name : '',"data-unit-marketing-name"=>unit.api_unit_marketing_name,"data-market-rent"=> number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ','),"data-total-market-rent"=> number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ','),"data-square-feet"=>unit.square_feet? ? hide_decimals(unit.square_feet) : (floorplan.present? ? hide_decimals(floorplan.square_feet) : nil),"data-availability"=>unit.availability,"data-available-date"=>unit.available_date.present? ? determine_available_date(unit.available_date) : nil,"data-bedrooms"=>floorplan.present? ? floorplan.bedrooms.to_i : nil,"data-bathrooms"=>floorplan.present? ? hide_decimals(floorplan.bathrooms.to_i) : nil,"data-floorplan-image"=>unit.standard_image_url.present? ? unit.standard_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.standard_image_url : "/assets/default.jpeg"),"data-unit-x-plot"=>unit.x_plot-left_margin,"data-unit-y-plot"=>unit.y_plot-right_margin,"data-title"=>unit.api_unit_marketing_name,"data-sold"=>unit.sold,"data-available"=>unit.available,"data-unit-lease-pricing"=>unit.lease_pricing, "data-unit-additional-fees" => @community.get_additional_fees(unit), "data-unit-description"=>(unit.description.present? ? unit.description : (floorplan.description.present? ? floorplan.description : "")), "data-unit-virtual-tour-label" => unit.get_virtual_tour_label, "data-unit-virtual-tour-url" => unit.get_virtual_tour_url
+                        = image_tag (floorplate.standard_image_url  || "/assets/default.jpeg"), :class=>"map-image-align floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}",:id=>"f_#{floor}","data-height"=>"#{floorplate.floorplate_image_height()}","data-width"=>"#{floorplate.floorplate_image_width()}"
+                  - else
+                    - if @community.sitemap.present? && @community&.image_src&.ends_with?(".svg")
+                      - left_margin = 8
+                      - top_margin = 20
+
+                      %div#property-map-image-container{data: {svg_url: @community.image_src}}
+                    - else
+                      %img.floorplate-image.sitemap-image.map-image-align{alt: "", src: @community.image_src || "/assets/default.jpeg", id: "property-map-image", title: "", "data-height"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.height : nil}", "data-width"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.width : nil}"}/
+                      - coordinates_array = []
+
+                      - units.each do |unit|
+                        - coordinates_array.push([unit.x_plot,unit.y_plot])
+                      - units.each do |unit|
+                        - if unit.x_plot.to_i + unit.y_plot.to_i > 0 and @floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id}
+                          - unless coordinates_array.include?([unit.x_plot,unit.y_plot])
+                            - coordinates_array.push([unit.x_plot,unit.y_plot])
+                          - if @community_info.has_floorplates?
+                            = link_to "<div id='s_#{unit.id}' class='fas fa-map-marker-alt fa-map-marker-alt-responsive unit_marker' style='font-size: 22px; color: #{map_marker_color};'> <span style = '#{coordinates_array.count([unit.x_plot,unit.y_plot]) > 9 ? "position: absolute; left:#{spanSize_y - 1}px; top:#{spanSize_x + 2}px; font-size: #{spanSize_size - 4}px;" : "position: absolute; left:#{spanSize_y}px; top:#{spanSize_x}px; font-size: #{spanSize_size}px;"}' ></span> </div>".html_safe, "##", :class => "marker #{coordinates_array.count([unit.x_plot,unit.y_plot]) > 1 ? 'overlapping-unit' : ''}", :id => "m_#{unit.id}", :style => "font-size: #{fontsize}px; position:absolute;", **(fetch_unit_info_struct(unit))[:data_attributes]
+                          - else
+                            = link_to "<div id='s_#{unit.id}' class='fas fa-map-marker-alt fa-map-marker-alt-responsive unit_marker' style='font-size: 22px; color: #{map_marker_color};'> <span style = '#{coordinates_array.count([unit.x_plot,unit.y_plot]) > 9 ? "position: absolute; left:#{spanSize_y - 1}px; top:#{spanSize_x + 2}px; font-size: #{spanSize_size - 4}px;" : "position: absolute; left:#{spanSize_y}px; top:#{spanSize_x}px; font-size: #{spanSize_size}px;"}' ></span> </div>".html_safe, "##", :class => "marker #{coordinates_array.count([unit.x_plot,unit.y_plot]) > 1 ? 'overlapping-unit' : ''}", :id => "m_#{unit.id}", :style => "left:#{(unit.x_plot.to_f-(left_margin).to_f).to_s}px; top:#{(unit.y_plot.to_f-(top_margin).to_f)}px; font-size: #{fontsize}px; position:absolute;",**(fetch_unit_info_struct(unit))[:data_attributes]
+
+
+                  %span.hidden#left_margin #{left_margin}
+                  %span.hidden#top_margin #{top_margin}
                   .hidden-units
                   
                   - if @community_info.show_amenity_key
@@ -272,7 +276,6 @@
                       = select_tag :filter,  options_for_select([["Sort by"],["Price: Low to High"], ["Price: High to Low"], ["Availability: Soonest to Latest"], ["Availability: Latest to Soonest"], ["Sq Ft: More to Less"], ["Sq Ft: Less to More"]])
                     - else
                       = select_tag :filter,  options_for_select([["Sort by"], ["Availability: Soonest to Latest"], ["Availability: Latest to Soonest"], ["Sq Ft: More to Less"], ["Sq Ft: Less to More"]])
-                
                 %div#units-body
 
           %footer.c-footer#footer.responsive-content.mobile-footer
@@ -361,7 +364,9 @@
   _beansApiKey = "#{ENV['BEANS_API_KEY']}"
 
   var community_logo = "#{@community.logo.present? ? true : false}"
-  
+  var leftMargin = #{raw left_margin}
+  var topMargin = #{raw top_margin}
+
   if ((current_width > 767 && current_width < 993) && (window.matchMedia("(orientation: landscape)").matches)) {
    $(".c-modal-dialog").css("margin-top", "12%")
   }
@@ -387,9 +392,40 @@
         }, 500);
       }
     }
+    fetchSVG();
   });
 
+  function fetchSVG() {
+    const container = document.getElementById("property-map-image-container");
+    const imageUrl = container.dataset.svgUrl; // Get the SVG URL from the data attribute
 
+    if (imageUrl && imageUrl.endsWith(".svg")) {
+      fetch(imageUrl)
+        .then(response => response.text())
+        .then(svgText => {
+          parsedSVG = parseSVG(svgText);
+          if (parsedSVG) {
+            setSVG();
+            setPointersCoordinates();
+          } else {
+            console.error("Error: No <svg> element found in the response.");
+          }
+        })
+        .catch(error => console.error("Error loading SVG:", error));
+    }
+  }
+
+  function parseSVG(svgText) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(svgText, "image/svg+xml");
+    return doc.querySelector("svg");
+  }
+
+  function setSVG() {
+    const container = document.getElementById("property-map-image-container");
+    container.innerHTML = "";
+    container.appendChild(parsedSVG);
+  }
 
   $(".webPageLoader").removeClass("hidden");
   $(window).on( "orientationchange", function( event ) {
@@ -407,21 +443,20 @@
   var amenityEle = document.getElementsByClassName('custom-icon-responsive');
 
   if (current_width < 993) {
+    const calculatedFontSize = (current_width * .76) / 30 + ((#{fontsize} - 25) / 5);
+    const childFontSize = calculatedFontSize / 2
+  
     for (var i = 0; i < ele.length; i++ ) {
-      ele[i].style.fontSize = (current_width * .76) / 30 + ((#{fontsize} - 25) / 5)
-      ele[i].style.marginTop = diff - 3
-      ele[i].style.marginLeft = diffL + 1
-      ele[i].children[0].style.marginTop = -3
-      ele[i].children[0].style.marginLeft = 1
-      ele[i].children[0].style.left = (current_width * .20) / 30 + ((#{fontsize} - 25) / 9)
+      ele[i].style.fontSize = calculatedFontSize
       factor = 0
 
       if ($(window).height() > 800) {
         factor = (($(window).height() ) / 800)
       }
 
-      ele[i].children[0].style.top = ( (current_width * .15) / 30 + factor + ((#{fontsize} - 25) / 5) -1)
-      ele[i].children[0].style.fontSize = (current_width * .20) / 30 + ((#{fontsize} - 25) / 10)
+      
+      ele[i].children[0].style.fontSize = childFontSize
+      ele[i].children[0].style.top = childFontSize
     }
 
     for (var i = 0; i < amenityEle.length; i++ ) {
@@ -434,9 +469,6 @@
   //else if(current_width > 993 && current_width < 1500) {
     for (var i = 0; i < ele.length; i++ ) {
       ele[i].style.fontSize = 20
-      ele[i].children[0].style.left = 6
-      ele[i].children[0].style.top = 4
-      ele[i].children[0].style.fontSize = 6
     }
 
     for (var i = 0; i < amenityEle.length; i++ ) {
@@ -581,6 +613,7 @@
     var has_floorplate = "#{@community_info.has_floorplates?}"
     var community_name = "#{@community_info.name}"
     renderChangedUnits();
+    setPointersCoordinates();
   });
 
   $("#show-more-price").click(function(){

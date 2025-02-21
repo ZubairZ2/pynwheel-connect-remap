@@ -302,7 +302,6 @@
     canvas = document.getElementById("myCanvas");
     ctx = canvas.getContext("2d");
     img = document.getElementById("floorplane_img");
-    //debugger;
     if(img_src != null)
       img.src = img_src
 
@@ -494,7 +493,6 @@
           },
         url: '/communities/' + community_id + '/tour_users/' + tour_user_id + '/visited_stops_data?tour_history_id=' + tour_history_id + '&floorplate_id=' + floorplate_id,
         success: function(data){
-          //debugger;
           delete_image_canvas();
           draw_image_canvas(null);     
           $('#building_label').addClass('hidden');
@@ -561,7 +559,6 @@
               $('.selected_floor').click();
             }, 1000);
 
-            //debugger;
             $('.btns').click(function(){
               vertices_count = 0;
               delete_image_canvas();
@@ -576,7 +573,6 @@
               visited_units_amenities_count = 0;
               indexesArr = [];
               diableButtons();
-              debugger;
               if(this.id.includes("building")) {
                 $('.building_btn').each(function( index, item ) { item.style.background = ""; $('#'+item.id).removeClass('selected_building');});
                 this.style.background = "green";
@@ -632,7 +628,6 @@
 
               for(var s = 0; s < data.stops.length; s++) {
                 current_stop = data.stops[s];
-                //debugger
                 let currentFloor = getCurrentFloor(data.stops[s], selected_floor);
                 let currentBuilding = getCurrentBuilding(data.stops[s], selected_building);
 
@@ -769,7 +764,6 @@
     already_displayed = false; 
     // already_displayed =isItemInArray(already_watched,[selected_floor[0],selected_building[0]])
     //already_displayed ? ( points = vertices) :  points = calcWaypoints(vertices)
-    //debugger;
     points = calcWaypoints(visitedPoints);
     // extend the line from start to finish with animation
 
@@ -783,7 +777,6 @@
         if (t <= points.length - 1) {
           
           if(points[t-2] != undefined &&  vertices[vertices_count] && points[t-2] && vertices[vertices_count].x == points[t-2].x && vertices[vertices_count].y == points[t-2].y ) { 
-            //debugger;  
             close_pop();
             if (data_array[vertices_count] != undefined) {
 

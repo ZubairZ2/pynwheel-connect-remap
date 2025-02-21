@@ -430,10 +430,14 @@
             - fontsize = 30
 
           - left_margin = (((@community&.design&.property_map_size_integer&.to_f || 30) - 25) / 2.0)&.to_i
-          - right_margin = ((20.0 / 25.0).to_f * ( @community&.design&.property_map_size_integer || 30 ))&.to_i
+          - top_margin = ((20.0 / 25.0).to_f * ( @community&.design&.property_map_size_integer || 30 ))&.to_i
+
+          - if @sitemap.present? && @sitemap.image.present? && @sitemap.image_url.ends_with?(".svg")
+            - left_margin = 13
+            - top_margin = 35
 
           %span.hidden#left_margin #{left_margin}
-          %span.hidden#right_margin #{right_margin}
+          %span.hidden#top_margin #{top_margin}
           %span.hidden#font_size #{fontsize}
           %span.hidden#marker_color #{marker_color}
 
@@ -485,13 +489,10 @@
                   %i.fa.fa-minus
                 %a.btn.btn-sm.btn-primary.reset.zoom-controls
                   %i.fa.fa-refresh
-              .map-block{:style=>"position: relative;"}
-                #map.plot-image
+              .map-block{style: "position: unset"}
+                #map.plot-image{data: {svg_url: @sitemap.present? && @sitemap.image.present? && @sitemap.image_url.ends_with?(".svg") ? @community.image_src : nil}, style: "min-width: 100%; height: 100%; position: relative" }
                   .grid-graph.hidden
-                  - if @sitemap.present? && @sitemap.image.present? && @sitemap.image.content_type == "image/svg+xml"
-                    %object{:data => "your.svg", :type => "image/svg+xml"}
-                      = image_tag (@sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"), :style => "width: #{@sitemap.sitemap_image_width()}px; height: #{@sitemap.sitemap_image_height()}px;", id:"map_img",name:"viewArea", id:"viewArea",draggable:"false", class: 'viewArea', data: {'map_id' => "map"}
-                  - else
+                  - unless @sitemap.present? && @sitemap.image.present? && @sitemap.image_url.ends_with?(".svg")
                     = image_tag @sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg", id:"map_img",name:"viewArea", id:"viewArea",draggable:"false", class: 'viewArea', data: {'map_id' => "map"}
                     - if @community.community_tour.x_plot.to_i + @community.community_tour.y_plot.to_i > 0
                       = link_to image_tag("/assets/star.png", style: 'width:15px;'), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "m_", :style => "left:#{@community.community_tour.x_plot}px; top:#{@community.community_tour.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/tours/#{@community.community_tour.id}/resetStartingPoint"
@@ -501,10 +502,10 @@
                     - if unit.x_plot.to_i + unit.y_plot.to_i > 0
                       - unless coordinates_array.include?([unit.x_plot, unit.y_plot])
 
-                        - coordinates_array.push([unit.x_plot - left_margin, unit.y_plot - right_margin])
+                        - coordinates_array.push([unit.x_plot - left_margin, unit.y_plot - top_margin])
                         - unit_door_exists = unit.door.present? ? true : false
 
-                        %p{class: "marker", style: "left:#{unit.x_plot - left_margin}px; top:#{unit.y_plot - right_margin}px; position:absolute"}
+                        %p{class: "marker", style: "left:#{unit.x_plot - left_margin}px; top:#{unit.y_plot - top_margin}px; position:absolute"}
                           = link_to "javascript:void(0);", { id: "m_#{unit.provider_unit_id}", style: "font-size: #{fontsize}px", data_provider: @community.data_provider, provider_unit_id: unit.provider_unit_id, title: (unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, data: {toggle: "tooltip", toggle: "modal", name: "plot", target: "#markers-modal", href: "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot", horizontal: unit.x_plot, vertical: unit.y_plot, unit_form_url: "/communities/#{@community.id}/units/#{unit.id}/adjust_position", plotted_category: "unit"}} do
                             %i{class: "fas fa-map-marker-alt", style: "color: #{marker_color};"}
 
@@ -550,7 +551,7 @@
                     - else
                       %option{:value=>unit.provider_unit_id}= "#{unit.marketing_name}"
                   
-                  - arr.push([unit.provider_unit_id, unit.x_plot.to_i - left_margin, unit.y_plot.to_i - right_margin, true, unit.id.to_s, 5 , 0])
+                  - arr.push([unit.provider_unit_id, unit.x_plot.to_i - left_margin, unit.y_plot.to_i - top_margin, true, unit.id.to_s, 5 , 0])
               %h5.mt-40 SELECTED UNITS
               .add-plan.mt-10.mb-20
                 %ul#selected-units
@@ -643,15 +644,18 @@
 #ocrData{data: {ocr_data: @map_ocr_data.to_json, image_dimensions: @dimensions.to_json}}
 :javascript
   $(document).ready(function () {
+    fetchSVG()
+
     $('.wysihtml5').each(function(i, elem) {
       $(elem).wysihtml5({'toolbar': {'image': false,'link' : false}});
     });
+  })
 
+  function activateZoomPan(elem) {
     document.addEventListener("touchstart", touchHandler, true);
     document.addEventListener("touchmove", touchHandler, true);
     document.addEventListener("touchend", touchHandler, true);
     document.addEventListener("touchcancel", touchHandler, true);
-    let elem = document.querySelector('#map');
     window.mapPanZoom = panzoom(elem, {
         minZoom: 0.5,
         maxZoom: 1.0,
@@ -661,7 +665,11 @@
     var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
     var scaleFactor = (1 / (transform.scale || 1));
     var previous_scale = 0;
-    while ($('#map').width() / scaleFactor > $('.map-block').width() || $('#map').height() / scaleFactor > $('.map-block').height()) {
+    let mapBoxWidth = $('#map').width();
+    let mapBoxHeight = $('#map').height();
+    let mapContainerWidth = $('.map-block').width();
+    let mapContainerHeight = $('.map-block').height();
+    while ((mapBoxWidth / scaleFactor > mapContainerWidth) || (mapBoxHeight / scaleFactor > mapContainerHeight)) {
         mapPanZoom.zoomInOut(189);
         transform = mapPanZoom ? mapPanZoom.getTransform() : {};
         scaleFactor = (1 / (transform.scale || 1));
@@ -671,7 +679,54 @@
         previous_scale = scaleFactor
     }
     mapPanZoom.moveTo(0, 0);
-    })
+  }
+
+  function fetchSVG() {
+    const container = document.querySelector("#map.plot-image");
+    let childrenArray = Array.from(container.children)
+
+    const svgIndex = childrenArray.findIndex((el) => el.tagName.toLowerCase() == 'svg');
+    const imageUrl = container.dataset.svgUrl;
+
+    if (imageUrl && imageUrl.endsWith(".svg")) {
+      fetch(imageUrl)
+        .then(response => response.text())
+        .then(svg => {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(svg, "image/svg+xml");
+          const svgElement = doc.documentElement;
+
+          const attributes = {
+            id: 'viewArea',
+            draggable: false,
+            class: 'viewArea',
+            'data-map_id': 'map',
+            name: 'viewArea',
+            position: 'relative'
+          };
+
+          for (const key in attributes) {
+            svgElement.setAttribute(key, attributes[key]);
+          }
+          
+          if (svgElement.nodeName === "svg") {
+            container.innerHTML = "";
+            if (svgIndex > -1) {
+              childrenArray[svgIndex] = svgElement;
+            } else {
+              childrenArray = [childrenArray.shift(), svgElement, ...childrenArray]
+            }
+            container.append(...childrenArray);
+            activateZoomPan(container)
+          } else {
+            console.error("Error parsing SVG:", svgElement);
+          }
+        })
+        .catch(error => console.error("Error loading SVG:", error));
+    } else {
+      activateZoomPan(container)
+    }
+  }  
   
   function touchHandler(event) {
     var touch = event.changedTouches[0];
@@ -699,7 +754,7 @@
   var access_points = #{@access_points.to_json.html_safe}
 
   var left_margin = #{raw left_margin}
-  var right_margin = #{raw right_margin}
+  var top_margin = #{raw top_margin}
   var community_id = #{params[:community_id]};
   var sitemap_id = '#{@sitemap.id}';
 

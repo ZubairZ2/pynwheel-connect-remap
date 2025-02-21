@@ -3269,7 +3269,6 @@ a#favoriteclickme {
 
 .left-side-30-units:hover {
     background-color: white;
-    border: 3px solid brown !important;
     border-radius: 6px;
 }
 
@@ -3511,7 +3510,7 @@ a#favoriteclickme {
     padding: 5px;
     font-size: 18px;
     font-weight: bold;
-    color: white;
+    color: rgba(255, 255, 255, 0.867);
     border: none;
     border-radius: 5px;
 }

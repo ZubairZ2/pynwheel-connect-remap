@@ -1,4 +1,12 @@
 module CommunitiesHelper
+  include ApplicationHelper
+  include ActionView::Helpers::NumberHelper
+
+  DATA_ATTRIBUTES_SAME_KEYS = %w[
+    is-fav availability-url community-property-id floorplan-name square-feet availability bedrooms
+    bathrooms floorplan-image floor sold available
+  ].freeze
+
   def write_account_report(workbook)
     update_units_count
 
@@ -212,78 +220,181 @@ module CommunitiesHelper
     end
   end
 
+  def fetch_unit_info_struct(unit)
+    floorplan = @floorplans.select{ |f| f.provider_floorplan_id == unit.floorplan_id }.first
+
+    struct = {
+      id: unit.id,
+      marketing_name: unit.marketing_name,
+      market_rent: unit.effective_rent,
+      building: unit.building,
+      bedrooms: if floorplan.present?
+                  hide_decimals(floorplan.bedrooms)
+                else
+                  nil
+                end,
+      bathrooms: if floorplan.present?
+                   hide_decimals(floorplan.bathrooms)
+                 else
+                   nil
+                 end,
+      square_feet: if unit.square_feet?
+                     hide_decimals(unit.square_feet)
+                   elsif floorplan.present?
+                     hide_decimals(floorplan.square_feet)
+                   else
+                     nil
+                   end,
+      availability: unit.availability,
+      available_date: if unit.available_date.present?
+                        unit.available_date
+                      else
+                        nil
+                      end,
+      x_plot: unit.x_plot,
+      y_plot: unit.y_plot,
+      pointer_data: unit.pointer_data,
+      floor: unit.floor,
+      sold: unit.sold,
+      available: unit.available,
+      provider_floorplan_id: floorplan.provider_floorplan_id,
+      community_property_id: if @community_info.credential.present? && @community_info.credential.property_id.present?
+                               @community_info.credential.property_id
+                             else
+                               0
+                             end,
+      lease_term: unit.lease_term,
+      availability_url: unit.get_availability_url(),
+      floorplan_image: if unit.standard_image_url.present?
+                         unit.standard_image_url
+                       elsif floorplan.present? && floorplan.standard_image_url.present?
+                         floorplan.standard_image_url
+                       else
+                         "/assets/default.jpeg"
+                       end,
+      is_fav: unit&.community&.favorite_stop&.favorite_unit&.include?(unit.id.to_s) || unit_id_is_in_cookies?(cookies[:favorite_unit_ids], unit.id),
+      floorplan_name: if floorplan.present?
+                        floorplan.name
+                      else
+                        ''
+                      end,
+      lease_pricing: (unit.lease_pricing.present? && unit.community.display_pricing_options) ? unit.lease_pricing : "",
+      description: if unit.description.present?
+                     unit.description
+                   elsif floorplan.description.present?
+                     floorplan.description
+                   else
+                     ""
+                   end,
+      display_rent: unit&.community&.display_rent,
+      additional_fees: @community.get_additional_fees(unit),
+    }
+    struct[:data_attributes] = fetch_unit_data_attributes(unit, struct)
+
+    struct
+  end
+
   private
 
-    def create_work_sheet2 workbook
-      worksheet2 = workbook.add_worksheet("Sheet 2")
-      format = workbook.add_format({ 'align': 'left', 'font': 'Arial', 'size': '10', 'locked': true })
-      format.set_bold()
-      format.set_locked()
-      format1 = workbook.add_format({ 'align': 'left', 'font': 'Arial', 'size': '10' })
-      row = 1
-
-      worksheet2.write(0, 0, "All Active Properties", format)
-      worksheet2.write(0, 1, "Floorplates(Touch + Launch)", format)
-      worksheet2.write(0, 2, "Property Maps(Touch + Launch)", format)
-      worksheet2.write(0, 3, "Futurist(Touch + Launch)", format)
-      worksheet2.write(0, 4, "Modernist(Touch + Launch)", format)
-      worksheet2.write(0, 5, "Expressionist(Touch + Launch)", format)
-      worksheet2.write(0, 6, "State Name", format)
-      worksheet2.write(0, 7, "Properties Count In Each State", format)
-
-      worksheet2.write(1, 0, Community.active_client_properties.size, format)
-      worksheet2.write(1, 1, map_type_percentage(false), format)
-      worksheet2.write(1, 2, map_type_percentage(true), format)
-      worksheet2.write(1, 3, design_type_percentage("futurist"), format)
-      worksheet2.write(1, 4, design_type_percentage("modernist"), format)
-      worksheet2.write(1, 5, design_type_percentage("expressionist"), format)
-      
-      Community.count_properties_in_each_state.each_with_index do |state, index|
-        if state[0].present? 
-          worksheet2.write(index + 1, 6, state[0].strip, format)
-          worksheet2.write(index + 1, 7, state[1], format)
-        end
+  def fetch_unit_data_attributes(unit, struct)
+    { 
+      "data-target": "#unitModal",
+      "data-toggle": "modal",
+      "data-unit-id": unit.id,
+      "data-floorplan-provider-id": struct[:provider_floorplan_id],
+      "data-unit-x_plot": unit.x_plot,
+      "data-unit-y_plot": unit.y_plot,
+      "data-community-id": @community.id,
+      "data-website": @community_info.website,
+      "data-provider": @community_info.data_provider,
+      "data-unit-provider-id": unit.provider_unit_id,
+      "data-unit-marketing-name": unit.api_unit_marketing_name,
+      "data-available-date": determine_available_date(struct[:available_date]),
+      "data-market-rent": number_with_precision(struct[:market_rent], precision: 2, delimiter: ','),
+      "data-total-market-rent": number_with_precision(struct[:market_rent], precision: 2, delimiter: ','),
+      "data-title": unit.api_unit_marketing_name,
+      "data-unit-virtual-tour-label": unit.get_virtual_tour_label,
+      "data-unit-virtual-tour-url": unit.get_virtual_tour_url,
+      "data-unit-lease-pricing": struct[:lease_pricing],
+      "data-unit-additional-fees": struct[:additional_fees],
+      "data-unit-description": struct[:description],
+    }.merge(
+      DATA_ATTRIBUTES_SAME_KEYS.each_with_object({}) do |key, result|
+        result["data-#{key}".to_sym] = struct[key.underscore.to_sym]
       end
+    )
+  end
 
-      worksheet2
+  def create_work_sheet2 workbook
+    worksheet2 = workbook.add_worksheet("Sheet 2")
+    format = workbook.add_format({ 'align': 'left', 'font': 'Arial', 'size': '10', 'locked': true })
+    format.set_bold()
+    format.set_locked()
+    format1 = workbook.add_format({ 'align': 'left', 'font': 'Arial', 'size': '10' })
+    row = 1
+
+    worksheet2.write(0, 0, "All Active Properties", format)
+    worksheet2.write(0, 1, "Floorplates(Touch + Launch)", format)
+    worksheet2.write(0, 2, "Property Maps(Touch + Launch)", format)
+    worksheet2.write(0, 3, "Futurist(Touch + Launch)", format)
+    worksheet2.write(0, 4, "Modernist(Touch + Launch)", format)
+    worksheet2.write(0, 5, "Expressionist(Touch + Launch)", format)
+    worksheet2.write(0, 6, "State Name", format)
+    worksheet2.write(0, 7, "Properties Count In Each State", format)
+
+    worksheet2.write(1, 0, Community.active_client_properties.size, format)
+    worksheet2.write(1, 1, map_type_percentage(false), format)
+    worksheet2.write(1, 2, map_type_percentage(true), format)
+    worksheet2.write(1, 3, design_type_percentage("futurist"), format)
+    worksheet2.write(1, 4, design_type_percentage("modernist"), format)
+    worksheet2.write(1, 5, design_type_percentage("expressionist"), format)
+    
+    Community.count_properties_in_each_state.each_with_index do |state, index|
+      if state[0].present? 
+        worksheet2.write(index + 1, 6, state[0].strip, format)
+        worksheet2.write(index + 1, 7, state[1], format)
+      end
     end
 
-    def map_type_percentage is_sitemap
-      total_count = Community.active_client_properties.size
-      touch_and_launch_properties = Community.active_touch_properties | Community.launch_properties
-      properties_count = Community.where(id: touch_and_launch_properties.map(&:id), is_sitemap: is_sitemap).size
-      "#{(properties_count *100) / total_count}%"
-    end
+    worksheet2
+  end
 
-    def design_type_percentage design_type
-      total_count = Community.active_client_properties.size
-      touch_and_launch_properties = Community.active_touch_properties | Community.launch_properties
-      properties_count = Community.where(id: touch_and_launch_properties.map(&:id), theme_name: design_type).size
-      "#{(properties_count *100) / total_count}%"
-    end
+  def map_type_percentage is_sitemap
+    total_count = Community.active_client_properties.size
+    touch_and_launch_properties = Community.active_touch_properties | Community.launch_properties
+    properties_count = Community.where(id: touch_and_launch_properties.map(&:id), is_sitemap: is_sitemap).size
+    "#{(properties_count *100) / total_count}%"
+  end
 
-    def billing_rate_convertion billing_rate
-      return 0 unless billing_rate.present?
-      billing_rate&.gsub(/[$,]/, '')&.to_i rescue 0
-    end
+  def design_type_percentage design_type
+    total_count = Community.active_client_properties.size
+    touch_and_launch_properties = Community.active_touch_properties | Community.launch_properties
+    properties_count = Community.where(id: touch_and_launch_properties.map(&:id), theme_name: design_type).size
+    "#{(properties_count *100) / total_count}%"
+  end
 
-    def map_type community
-      community.is_sitemap ? "Property Maps" : "Floorplates"
-    end
+  def billing_rate_convertion billing_rate
+    return 0 unless billing_rate.present?
+    billing_rate&.gsub(/[$,]/, '')&.to_i rescue 0
+  end
 
-    def update_units_count
-      ActiveRecord::Base.connection.execute( <<-SQL
-                                                UPDATE communities
-                                                SET number_of_units = subquery.units_total
-                                                FROM (
-                                                    SELECT communities.id AS community_id, COUNT(units.id) AS units_total
-                                                    FROM communities
-                                                    LEFT JOIN units ON units.community_id = communities.id
-                                                    GROUP BY communities.id
-                                                ) AS subquery
-                                                WHERE communities.id = subquery.community_id;
-                                              SQL
-                                            )
-    end
+  def map_type community
+    community.is_sitemap ? "Property Maps" : "Floorplates"
+  end
+
+  def update_units_count
+    ActiveRecord::Base.connection.execute( <<-SQL
+                                              UPDATE communities
+                                              SET number_of_units = subquery.units_total
+                                              FROM (
+                                                  SELECT communities.id AS community_id, COUNT(units.id) AS units_total
+                                                  FROM communities
+                                                  LEFT JOIN units ON units.community_id = communities.id
+                                                  GROUP BY communities.id
+                                              ) AS subquery
+                                              WHERE communities.id = subquery.community_id;
+                                            SQL
+                                          )
+  end
 
 end

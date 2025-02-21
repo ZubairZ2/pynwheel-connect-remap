@@ -706,7 +706,6 @@ function createPanZoom(domElement, options) {
   }
 
   function onMouseWheel(e) {
-    // debugger;
     // if client does not want to handle this event - just ignore the call
     if (beforeWheel(e)) return
 

@@ -917,7 +917,6 @@
     var start_point_array = []
     var stop_point_array = []
     function drop_point_on_screen(db_data){
-    debugger;
       var size =  point_size.toString()+ 'px';
 
       id = "point_"+db_data.point.id.toString()
@@ -946,7 +945,6 @@
         $(".plot-image").append(line)
       }
       else if(path_array.length > 1 && db_data.line_start_point != "" && db_data.exist){
-        // debugger;
         // te = path_array.sort(function(a, b) {
         //   var compA = $(a).attr('id').toUpperCase();
         //   var compB = $(b).attr('id').toUpperCase();
@@ -1032,7 +1030,6 @@
         e = e || window.event;
         e.preventDefault();
         // calculate the new cursor position:
-        // debugger
         pos1 = pos3 - e.clientX;
         pos2 = pos4 - e.clientY;
         pos3 = e.clientX;

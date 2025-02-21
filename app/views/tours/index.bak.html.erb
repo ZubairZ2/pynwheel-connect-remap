@@ -278,7 +278,6 @@
       { "tour_stop_id": tour_stop_id },
       function(data,status,xhr) {
         if(data){
-          debugger
           
         }
       }
@@ -344,7 +343,6 @@
     }
 
     function drop_point_on_screen(db_data){
-            debugger;
       var size =  point_size.toString()+ 'px';
 
       id = "point_"+db_data.point.id.toString()
@@ -436,11 +434,9 @@
       }
 
       function elementDrag(e) {
-        // debugger
         e = e || window.event;
         e.preventDefault();
         // calculate the new cursor position:
-        // debugger
         pos1 = pos3 - e.clientX;
         pos2 = pos4 - e.clientY;
         pos3 = e.clientX;

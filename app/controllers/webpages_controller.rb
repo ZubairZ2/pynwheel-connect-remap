@@ -1,4 +1,6 @@
 class WebpagesController < ActionController::Base  
+  include CommunitiesHelper
+
   before_action :set_community, except: [:update_session]
   before_action :set_webpages_session_id_cookies, only: [:index]
 
@@ -66,37 +68,7 @@ class WebpagesController < ActionController::Base
     @floorplans = @community_info.floorplans
     @available_units_and_sold_units.each do |unit|
       if unit.effective_rent.present? && unit.effective_rent >= 1  && @floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id}
-        floorplan = @floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
-        
-        struct = {
-          id: unit.id,
-          marketing_name: unit.marketing_name,
-          market_rent: unit.effective_rent,
-          building: unit.building,
-          bedrooms: floorplan.bedrooms,
-          bathrooms: floorplan.bathrooms,
-          square_feet: (unit.square_feet.present? && unit.square_feet != 0) ? unit.square_feet : (floorplan.present? ? floorplan.square_feet : 0),
-          availability: unit.availability,
-          available_date: unit.available_date,
-          x_plot: unit.x_plot,
-          y_plot: unit.y_plot,
-          floor: unit.floor,
-          sold: unit.sold,
-          available: unit.available,
-          provider_floorplan_id: unit&.floorplan&.provider_floorplan_id,
-          community_property_id: unit&.community&.credential&.property_id,
-          lease_term: unit.lease_term,
-          availability_url: unit&.get_availability_url(),
-          floorplan_image: unit.standard_image_url || unit&.floorplan&.standard_image_url || '/assets/default.jpeg',
-          is_fav: unit&.community&.favorite_stop&.favorite_unit&.include?(unit.id.to_s),
-          floorplan_name: unit&.floorplan.name,
-          lease_pricing: (unit.lease_pricing.present? && unit.community.display_pricing_options) ? unit.lease_pricing : "",
-          description: unit.description || unit&.floorplan&.description,
-          display_rent: unit&.community&.display_rent,
-          additional_fees: unit&.community&.get_additional_fees(unit)
-        }
-
-        @units_with_floorplan_info << struct
+        @units_with_floorplan_info << fetch_unit_info_struct(unit)
       end
     end
   end

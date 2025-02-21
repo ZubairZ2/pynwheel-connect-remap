@@ -6,6 +6,8 @@
 // var algo_amenity_data = [];
 // var algo_access_point_data = [];
 // var start_point_data = {};
+import { getSvgClickedElementWithCenterPoint } from './common_functions.js'
+
 var stops_type_arr = ["unit", "amenity", "elevator", "building_starting_exit_point"]
 var tmp_id = 0;
 var cntrlIsPressed = false;
@@ -32,6 +34,7 @@ function initialize_variables(hallways_coordinates, map_id){
   var addmode = false;
   map_id = map_id
 }
+
   $(document).mousemove('.viewArea', function(event){
     if ($(event.target).hasClass('viewArea')){
       map_id = "#" + $(event.target).data('map-id')
@@ -46,6 +49,8 @@ function initialize_variables(hallways_coordinates, map_id){
     }
   }); 
   $(document).click('.viewArea', function(e){
+    const { element, centerPoint } = getSvgClickedElementWithCenterPoint("#map.plot-image");
+
     if ($(e.target).hasClass('viewArea')){
       map_id = "#" + $(e.target).data('map-id')
       marker_color = $('#marker_color').html();
@@ -53,8 +58,13 @@ function initialize_variables(hallways_coordinates, map_id){
       marker_font_size = ($('#font_size').html());
       left_margin = parseInt($('#left_margin').html());
       right_margin = parseInt($('#right_margin').html());
-      dx = parseInt(event.pageX) - parseInt($(map_id).offset().left) + parseInt($(map_id).scrollLeft());
-      dy = parseInt(event.pageY) - parseInt($(map_id).offset().top) + parseInt($(map_id).scrollTop());
+
+      if (element && centerPoint) {
+        [dx, dy] = [centerPoint.x, centerPoint.y]
+      } else {
+        dx = parseInt(event.pageX) - parseInt($(map_id).offset().left) + parseInt($(map_id).scrollLeft());
+        dy = parseInt(event.pageY) - parseInt($(map_id).offset().top) + parseInt($(map_id).scrollTop());
+      }
       if ($("#hallway_btn").html() == "Start Plotting Hallways") {
           $(this).css('cursor', 'default');
           e.preventDefault();
@@ -211,7 +221,7 @@ function initialize_map_click(map_id){
       /**
        * misc
        */
-      addmode = (window.isamenity === undefined ? false : true);
+      addmode = !!window.isamenity;
 
   });
 

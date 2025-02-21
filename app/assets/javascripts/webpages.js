@@ -14,6 +14,8 @@ var maxSelectedPrice;
 var currency = "$";
 var real_page_provider_unit_id = null;
 var currentUnitSelected = null;
+var marker_color_map = null;
+var parsedSVG = null;
 
 var isMouseMoving = false;
 var intervalId = null;
@@ -53,6 +55,7 @@ $(document).ready(function () {
       );
     }
     renderChangedUnits();
+    setPointersCoordinates();
     handleMapControl();
   } else {
     console.error("webCommunity not loaded properly");
@@ -761,6 +764,7 @@ function showMarkers() {
 
   units_to_display = filterUnitsBasedOnCommunityType(units);
   renderChangedUnits();
+  setPointersCoordinates();
   var json_object = {}
   for (var i = 0; i < units_to_display.length; i++) {
     if ($('#m_' + units_to_display[i]['id']).hasClass('overlapping-unit')) {
@@ -881,67 +885,143 @@ function resetToDefaultZoom() {
   responsiveModalPanZoom.moveTo(0, 0);
 } 
 
-function click_marker_tag(id){
-  var marker_tags = document.getElementsByClassName('unit_marker');
+function click_marker_tag (id, selector) {
+  const markersSelector = parsedSVG ? 'cloned-element' : 'unit_marker';
+  var marker_tags = document.getElementsByClassName(markersSelector);
   Array.from(marker_tags).forEach(item => {
-    if (item.id === id ){
-      item.click();
+    if (item.id === id || (selector && item.id === `${selector}_cloned`)) {
+      $(item).click();
     }
   })
 }
 
 function renderChangedUnits(){
   var element = document.getElementById("units-body");
-  
-  if(element == null) return;
-  element.innerHTML = ""
-  
+
+  if (element == null) return;
+  element.innerHTML = "";
+
   filtered_units = filterUnitsBasedOnCommunityType(units);
 
-  sortType = document.getElementById('filter');
+  sortType = document.getElementById("filter");
   floorUnits = getFilteredUnits(filtered_units, sortType.value);
-  document.getElementById('unit-title-count').innerHTML = floorUnits.length + " " + "Units Found";
+  document.getElementById("unit-title-count").innerHTML =
+    floorUnits.length + " " + "Units Found";
 
   filtered_units.forEach((unit) => {
     var unit_details_div = `
-    <div class='left-side-30-units' id='unit_${unit['id']}'>
-      <div class='image-styles'>
-        <a class='image_link' href='#' id="s_${unit['id']}" onClick=click_marker_tag('s_${unit['id']}')>
-          <img src=${unit['floorplan_image']} class='image-image-styles' />
-        </a>
+      <div
+        class='left-side-30-units'
+        style='hover:border: 3px solid ${marker_color_map} !important;'
+        id='unit_${unit["id"]}'
+        data-pointer-data='${JSON.stringify(unit["pointer_data"])}'
+        data-unit-marketing-name='${unit["data_attributes"]["data-unit-marketing-name"]}'
+      >
+        <div class='image-styles'>
+          <a class='image_link'
+            href='#'
+            id="s_${unit["id"]}"
+            onClick=onUnitClick(event)
+          >
+            <img src=${unit["floorplan_image"]} class='image-image-styles' />
+          </a>
+        </div>
+        <div class='unit-details-section'>
+          <p id='unit-detail-market-title'>
+            Unit # ${
+              webCommunity &&
+              webCommunity["is_sitemap"] &&
+              !webCommunity["display_building"]
+                ? unit["marketing_name"]
+                : unit["building"]
+                ? unit["building"] + "-" + unit["marketing_name"]
+                : unit["marketing_name"]
+            }
+          </p>
+        </div>
+        <div class='unit-details-section'>
+          <p>
+            <i class='fa.fa-bed'> &nbsp ${unit["bedrooms"]} Bed </i>
+          </p>
+          <p>
+            <i class='fa.fa-bath'> &nbsp ${unit["bathrooms"]} Bath </i>
+          </p>
+          <p>
+            <i class='fa.fa-building'> &nbsp ${unit["square_feet"]} Sq Ft </i>
+          </p>
+        </div>
+        <div class='unit-details-section'>
+          <p id='right-bar-unit-availability'>
+            ${get_unit_availability(unit)}
+          </p>
+          <p>
+            ${unitMarketRent(unit)}
+          </p>
+        </div>
       </div>
-      <div class='unit-details-section'>
-        <p id='unit-detail-market-title'>
-          Unit # ${(webCommunity && webCommunity['is_sitemap'] && !webCommunity['display_building']) ? unit['marketing_name'] : (unit['building'] ?  (unit['building'] + "-" + unit['marketing_name']) :  unit['marketing_name']) }
-        </p>
-      </div>
-      <div class='unit-details-section'>
-        <p>
-        <i class='fa.fa-bed'> &nbsp ${unit['bedrooms']} Bed </i>
-        </p>
-        <p>
-        <i class='fa.fa-bath'> &nbsp ${unit['bathrooms']} Bath </i>
-        </p>
-        <p>
-        <i class='fa.fa-building'> &nbsp ${unit['square_feet']} Sq Ft </i>
-        </p>
-      </div>
-      <div class='unit-details-section'>
-        <p id='right-bar-unit-availability'>
-          ${ get_unit_availability(unit) }
-        </p>
-        <p>
-          ${unitMarketRent(unit)}
-        </p>
-      </div>
-    </div>
     `;
-    
-    element.innerHTML += unit_details_div
+
+    element.innerHTML += unit_details_div;
   });
 
   unitListHover();
 }
+
+
+function setPointersCoordinates() {
+  if (!parsedSVG) return;
+
+  parsedSVG
+    .querySelectorAll(".cloned-element")
+    .forEach((node) => $(node).addClass("hidden"));
+
+  if (units?.length) {
+    units.forEach(({ pointer_data, data_attributes }) => {
+      let { tag, id, selector } = pointer_data || {};
+      if (tag && (id || selector)) {
+        hash_operator = "#";
+        if (id)
+          selector = `${tag}${hash_operator}${id}`;
+        const block = parsedSVG.querySelector(selector);
+        const existingDuplicate = parsedSVG.querySelector(
+          id ? `${selector}_cloned` : `${selector}.cloned-element`
+        );
+
+        if (existingDuplicate) {
+          $(existingDuplicate).removeClass("hidden");
+        } else {
+          const duplicateBlock = block.cloneNode(true);
+
+          for (const key in data_attributes) {
+            duplicateBlock.setAttribute(key, data_attributes[key]);
+          }
+          duplicateBlock.setAttribute(
+            "id",
+            `${id ? block.id : selector}_cloned`
+          );
+          marker_color_map = "#7cff8a"
+          duplicateBlock.setAttribute("fill", marker_color_map);
+          const jqueryEl = $(duplicateBlock);
+          jqueryEl.addClass("cloned-element");
+          jqueryEl.on("click", () => {
+            $("#unitModal").show();
+          });
+          jqueryEl.on("mouseenter", markerHoverEffect);
+          jqueryEl.on("mouseleave", markerHoverEffectEnd);
+          block.parentElement.appendChild(duplicateBlock);
+        }
+      }
+    });
+
+    $(".popup-title").css("background-color", marker_color_map);
+    $(".popup-arrow").css("background-color", marker_color_map);
+  }
+}
+
+function onUnitClick (e) {
+  const { pointerData: { id, selector } } = getUnitData(e.target);
+  click_marker_tag(`${id}_cloned`, selector)
+};
 
 function unitMarketRent(unit) {
   return unit['display_rent'] ? `${currency + unit['market_rent']}/month` : ""
@@ -950,141 +1030,147 @@ function unitMarketRent(unit) {
 function unitListHover() {
   let focused_marker ;
 
-  $('div.left-side-30-units').hover(function (e) {
-    let unit_num = getUnitNum(e.target);
-    const all_markers = document.getElementsByClassName('marker');
-    Array.from(all_markers).forEach((marker) => {
-      if (unit_num === `unit_${marker.dataset.unitId}`) {
-        let selectedMarker = marker;
-        if (selectedMarker.classList.contains('overlapping-unit')) {
-          Array.from(all_markers).forEach((findOverlappedMarker) => {
-            if (
-              selectedMarker.dataset.unitXPlot === findOverlappedMarker.dataset.unitXPlot &&
-              selectedMarker.dataset.unitYPlot === findOverlappedMarker.dataset.unitYPlot &&
-              !findOverlappedMarker.classList.contains("hidden")
-            ) {
-              selectedMarker = findOverlappedMarker;
-            }
+  $("div.left-side-30-units").hover(
+    function (e) {
+      const { id, pointerData, unitMarketingName } = getUnitData(e.target);
+      const markersSelector = parsedSVG ? 'cloned-element' : 'marker';
+      const all_markers = document.getElementsByClassName(markersSelector);
+
+      Array.from(all_markers).forEach((marker) => {
+        if (
+          id === `unit_${marker.dataset.unitId}` ||
+          `${pointerData.id}_cloned` === marker.id ||
+          pointerData.selector === marker.id
+        ) {
+          let selectedMarker = marker;
+          if (selectedMarker.classList.contains("overlapping-unit")) {
+            Array.from(all_markers).forEach((findOverlappedMarker) => {
+              if (
+                selectedMarker.dataset.unitXPlot ===
+                  findOverlappedMarker.dataset.unitXPlot &&
+                selectedMarker.dataset.unitYPlot ===
+                  findOverlappedMarker.dataset.unitYPlot &&
+                !findOverlappedMarker.classList.contains("hidden")
+              ) {
+                selectedMarker = findOverlappedMarker;
+              }
+            });
+          }
+
+          focused_marker = document.getElementById(selectedMarker.id);
+          // focused_marker.childNodes[0].style.fontSize = "25px";
+          $("#popover-marketing-unit").html(unitMarketingName);
+
+          const position = selectedMarker.getBoundingClientRect();
+          const markerPopover = $("#marker-popover-unit");
+          markerPopover.css({
+            left: `${position.left - 92}px`,
+            top: `${position.top - 53}px`,
+            height: "100px",
+            background: "transparent",
+            margin: "0px",
+            padding: "0px",
           });
+          markerPopover.removeClass("hidden");
         }
-
-        focused_marker = document.getElementById(selectedMarker.id);
-        // focused_marker.childNodes[0].style.fontSize = "25px";
-        $('#popover-marketing-unit').html(marker.dataset.unitMarketingName);
-
-        const position = selectedMarker.getBoundingClientRect();
-        const markerPopover = $('#marker-popover-unit');
-        markerPopover.css({
-          left: `${position.left - 92}px`,
-          top: `${position.top - 53}px`,
-          height: "100px",
-          background: "transparent",
-          margin: "0px",
-          padding: "0px"
-        });
-        markerPopover.removeClass('hidden');
-      }
-    });
-  },
-  function () {
-    if (focused_marker) {
-      // focused_marker.childNodes[0].style.fontSize = "20px";
-      $('#marker-popover-unit').addClass('hidden');
-    }
-  });
-}
-
-function unitMarkerHover() {
-  $(".marker").hover(function (event) {
-    if ($(this).data('is-fav') || favoritesArr.includes($(this).data('unit-id'))) {
-      $('.fav-heart').removeClass('hidden')
-    } else {
-      $('.fav-heart').addClass('hidden')
-    }
-    $('#popover-marketing-name').html($(this).data('unit-marketing-name') + "</b>");            
-      $('#popover-floorplan').html($(this).data('unit-description'))
-      
-      if( !canShowAdditionalFees($(this).data('unit-additional-fees')) ) {
-        $('#popover-floorplan').html($(this).data('unit-additional-fees'))
-      }
-
-      $('#popover-floorplan').html($(this).data('unit-lease-pricing'))
-      $('#popover-floorplan').html($(this).data('floorplan-name'))
-    if ($(this).data('floorplan-image') != '') {
-      $('#media-object').attr('src', $(this).data('floorplan-image'));
-    } else {
-      $('#media-object').attr('src', '/assets/default.jpeg');
-    }
-    $('#popover-square-feet').html($(this).data('square-feet'));
-    $('#popover-bathrooms').html($(this).data('bathrooms'));
-    if ($('#popover-bathrooms').html() == '1') {
-      $('#popover-bathrooms').siblings("small").html("Bathroom")
-    } else {
-      $('#popover-bathrooms').siblings("small").html("Bathrooms")
-    }
-    $('#popover-bedrooms').html($(this).data('bedrooms'));
-    if ($('#popover-bedrooms').html() == '1') {
-      $('#popover-bedrooms').siblings("small").html("Bedroom")
-    } else {
-      $('#popover-bedrooms').siblings("small").html("Bedrooms")
-    }
-
-    if ($(this).data('sold')) {
-      $('#popover-available-date').html('');
-      $('#hover-available-text').html('Sold')
-    } else {
-      $('#hover-available-text').html('Available');
-      // $('#popover-available-date').html($(this).data('available-date'));
-      $('#popover-available-date').html( formattedDateByRegion( webCommunity.country_code, $(this).data('available-date') ) );
-      
-    }
-  
-    $('#popover-price').html((currency + $(this).data('market-rent')))
-    var marker_color_map = $(".fa-map-marker-alt")[0].style.color
-
-    const unitElement = document.getElementById('unit_' + $(this).data('unitId'));
-    const scrollableParent = document.querySelector('.left-side'); // Adjust the selector if needed
-
-    if (unitElement && scrollableParent) {
-      const parentHeight = scrollableParent.clientHeight;
-      const elementHeight = unitElement.clientHeight;
-      const scrollTop = unitElement.offsetTop - scrollableParent.offsetTop - (parentHeight / 2) + (elementHeight / 2);
-
-      scrollableParent.scrollTo({
-        top: scrollTop,
-        behavior: 'smooth'
       });
+    },
+    function () {
+      if (focused_marker) {
+        // focused_marker.childNodes[0].style.fontSize = "20px";
+        $("#marker-popover-unit").addClass("hidden");
+      }
     }
-
-    var new_dx = parseInt(event.pageX) - parseInt($('#panzomm-container').offset().left) + parseInt($('#panzomm-container').scrollLeft());
-    var new_dy = parseInt(event.pageY) - parseInt($('#panzomm-container').offset().top) + parseInt($('#panzomm-container').scrollTop());
-    const diffLeft = webCommunity['is_sitemap'] ? 25 : 115
-    $('#marker-popover').css({left: (new_dx + diffLeft) + "px", top: (new_dy - 100) + "px"});
-    if (window.innerWidth >= 768) {
-      $('#marker-popover').removeClass('hidden');
-    }
-    $($('#unit_'+ $(this).data('unitId'))).css("border", `5px solid ${marker_color_map}`)
-  },
-  function() {
-    $('#marker-popover').addClass('hidden');
-    $($('#unit_'+ $(this).data('unitId'))).css("border", "none")        
-  });   
+  );
 }
 
-function getUnitNum(targetElement) {
-  if (targetElement.classList.contains("left-side-30-units")) {
-    return targetElement.id;
-  } else if (targetElement.classList.contains("image-styles")) {
-    return targetElement.parentElement.id;
-  } else if (targetElement.classList.contains("image-image-styles")) {
-    return targetElement.parentElement.parentElement.parentElement.id;
+function markerHoverEffect (event) {
+  if ($(this).data('is-fav') || favoritesArr.includes($(this).data('unit-id'))) {
+    $('.fav-heart').removeClass('hidden')
   } else {
-    let closestUnit = $(targetElement).closest('.left-side-30-units');
+    $('.fav-heart').addClass('hidden')
+  }
+  $('#popover-marketing-name').html($(this).data('unit-marketing-name') + "</b>");
+  $('#popover-floorplan').html($(this).data('unit-description'))
+    
+  if (!canShowAdditionalFees($(this).data('unit-additional-fees'))) {
+    $('#popover-floorplan').html($(this).data('unit-additional-fees'))
+  }
+
+  $('#popover-floorplan').html($(this).data('unit-lease-pricing'))
+  $('#popover-floorplan').html($(this).data('floorplan-name'))
+  if ($(this).data('floorplan-image') != '') {
+    $('#media-object').attr('src', $(this).data('floorplan-image'));
+  } else {
+    $('#media-object').attr('src', '/assets/default.jpeg');
+  }
+  $('#popover-square-feet').html($(this).data('square-feet'));
+  $('#popover-bathrooms').html($(this).data('bathrooms'));
+  if ($('#popover-bathrooms').html() == '1') {
+    $('#popover-bathrooms').siblings("small").html("Bathroom")
+  } else {
+    $('#popover-bathrooms').siblings("small").html("Bathrooms")
+  }
+  $('#popover-bedrooms').html($(this).data('bedrooms'));
+  if ($('#popover-bedrooms').html() == '1') {
+    $('#popover-bedrooms').siblings("small").html("Bedroom")
+  } else {
+    $('#popover-bedrooms').siblings("small").html("Bedrooms")
+  }
+
+  if ($(this).data('sold')) {
+    $('#popover-available-date').html('');
+    $('#hover-available-text').html('Sold')
+  } else {
+    $('#hover-available-text').html('Available');
+    // $('#popover-available-date').html($(this).data('available-date'));
+    $('#popover-available-date').html(formattedDateByRegion(webCommunity.country_code, $(this).data('available-date')));
+    
+  }
+
+  $('#popover-price').html((currency + $(this).data('market-rent')))
+  marker_color_map = parsedSVG ? $(".cloned-element")[0].getAttribute('fill') : $(".fa-map-marker-alt")[0].style.color
+  $($('#unit_' + $(this).data('unitId')))[0].scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+  
+  var new_dx = parseInt(event.pageX) - parseInt($('#panzomm-container').offset().left) + parseInt($('#panzomm-container').scrollLeft());
+  var new_dy = parseInt(event.pageY) - parseInt($('#panzomm-container').offset().top) + parseInt($('#panzomm-container').scrollTop());
+  const diffLeft = webCommunity['is_sitemap'] ? 25 : 115
+  $('#marker-popover').css({ left: (new_dx + diffLeft) + "px", top: (new_dy - 100) + "px" });
+  if (window.innerWidth >= 768) {
+    $('#marker-popover').removeClass('hidden');
+  }
+  $($('#unit_' + $(this).data('unitId'))).css("border", `5px solid ${marker_color_map}`)
+}
+
+
+function markerHoverEffectEnd (event) {
+  $('#marker-popover').addClass('hidden');
+  $($('#unit_'+ $(this).data('unitId'))).css("border", "none")
+}
+
+
+function unitMarkerHover () {
+  $(".cloned-element").hover(markerHoverEffect, markerHoverEffectEnd);   
+}
+
+function getUnitData(targetElement) {
+  if (targetElement.classList.contains("left-side-30-units")) {
+    return {
+      id: targetElement.id,
+      pointerData: JSON.parse(targetElement.dataset.pointerData) || {},
+      unitMarketingName: targetElement.dataset.unitMarketingName,
+    };
+  } else {
+    let closestUnit = $(targetElement).closest(".left-side-30-units");
 
     if (closestUnit.length > 0) {
-      return closestUnit[0].id;
+      return {
+        id: closestUnit[0].id,
+        pointerData: JSON.parse(closestUnit[0].dataset.pointerData) || {},
+        unitMarketingName: closestUnit[0].dataset.unitMarketingName,
+      };
     } else {
-      return null;
+      return { id: null, pointerData: {}, unitMarketingName: null };
     }
   }
 }
@@ -1846,15 +1932,15 @@ function _3dMapViewMarkers() {
 }
 
 function clean3DMarkers(unit_names) {
-  return unit_names.map(a => a.substr(0,3)).join()
+  return (unit_names || []).map(a => a.substr(0,3)).join()
 }
 
 function getUnitsMarketingNames() {
-  return _3dFilteredUnits.map(a => a.marketing_name)
+  return (_3dFilteredUnits || []).map(a => a.marketing_name)
 }
 
 function set3DSelectedUnit(unitName, floor) {
-  return _3dFilteredUnits.filter(a => (a.marketing_name.substr(0,3) === unitName) )[0];;
+  return (_3dFilteredUnits || []).filter(a => (a.marketing_name.substr(0,3) === unitName) )[0];;
 }
 
 function handleMapControl() {
@@ -1919,46 +2005,54 @@ function display3DMap() {
 function display2DMap() {
   $("._3d-apply-filter-button").css("display", "none");
   $(".beans-map-container").hide();
-  $('.image-map').show();
-  $('.zoom-in-webpage').show();
-  $('.zoom-out-webpage').show();
+  $(".image-map").show();
+  $(".zoom-in-webpage").show();
+  $(".zoom-out-webpage").show();
   $("#panzomm-container").css("width", "");
   $(".c-wrapper").css("margin-left", "90px");
-  $(".c-footer").css("margin-left", webCommunity['is_sitemap'] ? "0px" : "90px");
+  $(".c-footer").css(
+    "margin-left",
+    webCommunity["is_sitemap"] ? "0px" : "90px"
+  );
   $(".c-sidebar").show();
   $(".desktop-content").show();
   $(".satelite-view-icon").addClass("hidden");
   $(".3d-map-option").removeClass("hidden");
   $(".2d-map-option").addClass("hidden");
-  $(".div.map-instruction-text").addClass('hidden');
-  if(defaultMapType == "3d-map"){
+  $(".div.map-instruction-text").addClass("hidden");
+  if (defaultMapType == "3d-map") {
     showMarkers();
   }
-  let sidebarDiv = document.getElementsByClassName('c-sidebar')[0]
+  let sidebarDiv = document.getElementsByClassName("c-sidebar")[0];
   let leftSideWidth = document.getElementsByClassName("left-side")[0];
   let rightSideWidth = document.getElementsByClassName("right-side")[0];
-  let title = document.getElementsByClassName("webpage-left-list-view-title")[0];
+  let title = document.getElementsByClassName(
+    "webpage-left-list-view-title"
+  )[0];
   title.style.width = `${leftSideWidth.offsetWidth - 12}px`;
   let inner_footer = $(".inner-footer")[0];
   let footerWidth = document.getElementById("footer");
   var windowWidth = $(window).width();
-  footerWidth.style.width = `${windowWidth - (leftSideWidth.offsetWidth)}px`;
-  if (selectMap !== "3d-map"){
+  footerWidth.style.width = `${windowWidth - leftSideWidth.offsetWidth}px`;
+  if (selectMap !== "3d-map") {
     if (sidebarDiv) {
-      leftSideWidth.style.width = `${windowWidth - (sidebarDiv.offsetWidth + rightSideWidth.offsetWidth)}px`;
+      leftSideWidth.style.width = `${
+        windowWidth - (sidebarDiv.offsetWidth + rightSideWidth.offsetWidth)
+      }px`;
       title.style.width = `${leftSideWidth.offsetWidth}px`;
       let footerWidth = document.getElementById("footer");
       if (windowWidth >= 567 && windowWidth <= 991) {
         title.style.width = `Calc(100% - ${sidebarDiv.offsetWidth}px)`;
         inner_footer.style.width = `Calc(100% - ${sidebarDiv.offsetWidth}px)`;
-        footerWidth.style.width = `${windowWidth - (sidebarDiv.offsetWidth)}px`;
-      } else if (windowWidth >= 991 ) {
+        footerWidth.style.width = `${windowWidth - sidebarDiv.offsetWidth}px`;
+      } else if (windowWidth >= 991) {
         title.style.width = `${leftSideWidth.offsetWidth - 12}px`;
         inner_footer.style.width = "100%";
-        footerWidth.style.width = `${windowWidth - (sidebarDiv.offsetWidth + leftSideWidth.offsetWidth)}px`;
-      }
-      else {
-        inner_footer.style.width = "100%"
+        footerWidth.style.width = `${
+          windowWidth - (sidebarDiv.offsetWidth + leftSideWidth.offsetWidth)
+        }px`;
+      } else {
+        inner_footer.style.width = "100%";
         inner_footer.style.marginBottom = 15;
         footerWidth.style.bottom = "6rem";
       }
@@ -1966,21 +2060,28 @@ function display2DMap() {
       if (windowWidth >= 567 && windowWidth <= 991) {
         title.style.width = "100%";
         inner_footer.style.marginBottom = 0;
-      } else if (windowWidth >= 991 ) {
+      } else if (windowWidth >= 991) {
         inner_footer.style.width = "100%";
       }
     }
 
     handleViewportChange(windowWidth);
-    let markerColor = $(".fa-map-marker-alt")[0].style.color;
-    markerColor =  isColorWhite(markerColor) ? "grey" : markerColor
-    
+    marker_color_map =
+      marker_color_map ||
+      (parsedSVG
+        ? $(".cloned-element")[0].getAttribute("fill")
+        : $(".fa-map-marker-alt")[0].style.color);
+    const markerColor = isColorWhite(marker_color_map)
+      ? "grey"
+      : marker_color_map;
+
     $(".popup-title").css("background-color", markerColor);
     $(".popup-arrow").css("background-color", markerColor);
 
-    $(".custom-select").change(()=> {
+    $(".custom-select").change(() => {
       renderChangedUnits();
-    })
+      setPointersCoordinates();
+    });
   }
 }
 
@@ -2239,17 +2340,23 @@ function amenityMarkerHoverEvent() {
 }
 
 function unitMarkerHoverEvent() {
-  $(document).off("mouseenter", ".unit_marker").on("mouseenter", ".unit_marker", function () {
-    console.log("Unit Marker hovered");
-    updateActivityData("unit_marker", "hover");
-  });
+  const markerSelector = parsedSVG ? "cloned-element" : "unit_marker";
+  $(document)
+    .off("mouseenter", `.${markerSelector}`)
+    .on("mouseenter", `.${markerSelector}`, function () {
+      console.log("Unit Marker hovered");
+      updateActivityData(markerSelector, "hover");
+    });
 }
 
 function unitsListHoverEvent() {
-  $(document).off("mouseenter", ".left-side-30-units").on("mouseenter", ".left-side-30-units", function () {
-    console.log("Unit Box hovered");
-    updateActivityData("unit_marker", "hover");
-  });
+  const markerSelector = parsedSVG ? "cloned-element" : "unit_marker";
+  $(document)
+    .off("mouseenter", ".left-side-30-units")
+    .on("mouseenter", ".left-side-30-units", function () {
+      console.log("Unit Box hovered");
+      updateActivityData(markerSelector, "hover");
+    });
 }
 
 // Map Click Events Tracking
@@ -2293,10 +2400,13 @@ function amenityMarkerClickEvent() {
 }
 
 function unitMarkerClickEvent() {
-  $(document).off("click", ".unit_marker").on("click", ".unit_marker", function () {
-    console.log("Unit Marker Clicked");
-    updateActivityData("unit_marker", "click");
-  });
+  const markerSelector = parsedSVG ? "cloned-element" : "unit_marker";
+  $(document)
+    .off("click", `.${markerSelector}`)
+    .on("click", `.${markerSelector}`, function () {
+      console.log("Unit Marker Clicked");
+      updateActivityData(markerSelector, "click");
+    });
 }
 
 function sortingFilterClickEvent() {

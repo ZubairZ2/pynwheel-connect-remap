@@ -3,7 +3,6 @@ var currency = "$";
 
 $(document).ready(function() {
   currency = $("#communityWebpagesFavoriteData").data("currency");
-  debugger;
   // Store the initial window width
   var initialWidth = $(window).width();
   $(window).on('resize', function() {

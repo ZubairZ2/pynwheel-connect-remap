@@ -46,7 +46,6 @@ class Yardi4ConnectionService < BaseService
         return response.body
       end
 
-      binding.pry
 
     rescue 
       return {"Result" => "Invalid Credentials"}

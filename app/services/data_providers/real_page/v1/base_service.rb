@@ -64,7 +64,6 @@ module DataProviders
           end
 
           def get_unit_availability u
-            binding.pry
             u["AvailableBit"] == "true" ? "Unoccupied" : "Occupied"
           end
 

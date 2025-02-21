@@ -133,7 +133,6 @@ $(document).ready(function () {
         //     // first check if user is clicking on scrollbar
         //     if (e.target != $('#map').get(0)) {
         //         e.preventDefault();
-        //         debugger;
         //         left_margin = parseInt($('#left_margin').html());
         //         right_margin = parseInt($('#right_margin').html());
         //
@@ -190,7 +189,6 @@ $('#ajax-remaining-doors-modal').modal('show');
 }
 
 function plot_entry_point(event){
-  debugger
   if ($(event.currentTarget).hasClass('disabled')) return;
   $(event.currentTarget).addClass('disabled');
   $(event.target).css({"color": "#c9ffdd", "cursor": "crosshair"})

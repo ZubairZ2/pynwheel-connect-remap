@@ -365,6 +365,12 @@ class UnitsController < ApplicationController
       #unit.first.update_attributes(x_plot: params[:x_plot],y_plot: params[:y_plot])
       unit.x_plot = params[:x_plot]
       unit.y_plot = params[:y_plot]
+
+      unit.pointer_data = if params[:pointer].present?
+                            { tag: params[:pointer][:tag], id: params[:pointer][:id], selector: params[:pointer][:selector] }
+                          else
+                            {}
+                          end
       unit.save(validate: false)
       TourStop.where(stop_id: unit.id).update_all(latitude: unit.x_plot, longitude: unit.y_plot)
       # if ts.present?
@@ -386,6 +392,11 @@ class UnitsController < ApplicationController
       unit = unit.first
       unit.x_plot = params[:x_plot]
       unit.y_plot = params[:y_plot]
+      unit.pointer_data = if params[:pointer].present?
+                            { tag: params[:pointer][:tag], id: params[:pointer][:id], selector: params[:pointer][:selector] }
+                          else
+                            {}
+                          end
       unit.floorplate_id = params[:floorplate_id]
       unit.save(validate: false)
       

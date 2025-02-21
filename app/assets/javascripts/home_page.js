@@ -952,7 +952,6 @@ function saveGalleryImage(){
     if (!(file.type == "image/png" || file.type == "image/jpeg" || file.type == "image/jpg")) {
       $(".divLoading").addClass("hidden");
       // $('#image-and-video-upload-warning').modal('show');
-      //   debugger;
         // f = video_field.files;
         // f.add(file)
         // f = file;
@@ -1132,7 +1131,6 @@ function saveHomePageVideo(){
           // $('#video-size-warning').modal('show');
       }
     // console.log(file.type);
-    // debugger;
     // if (file.size <  500000001)
     // {
     //     $(".divLoading").removeClass("hidden");

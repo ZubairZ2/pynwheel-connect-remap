@@ -1,3 +1,5 @@
+import { getSvgClickedElementWithCenterPoint, getElementSelector } from './common_functions.js';
+
 $(document).ready(function () {
     selected = [];
     var temp = [];
@@ -160,6 +162,7 @@ $(document).ready(function () {
     };
 
     $("#map").bind("mouseup touchend", function (e) {
+       const { element, centerPoint } = getSvgClickedElementWithCenterPoint('#map.plot-image');
 
         // first check if user is clicking on scrollbar
         if (e.target != $('#map').get(0)) {
@@ -169,21 +172,29 @@ $(document).ready(function () {
                 return;
             }
             var elemPos = position($('.map-block')[0]);
-            // var elemPos = position(e.target);
-
-            dx = e.type === 'touchend' ? ((e.changedTouches[0].pageX - elemPos.left)) : parseInt($('#active_x_plot').html());
-            dy = e.type === 'touchend' ? ((e.changedTouches[0].pageY - elemPos.top)) : parseInt($('#active_y_plot').html());
-
-            marker_color = $('#marker_color').html();
-            marker_font_size = ($('#font_size').html()) ? $('#font_size').html() : $('#marker_font_size').html();
-            left_margin = parseInt($('#left_margin').html());
-            right_margin = parseInt($('#right_margin').html());
 
             var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
             var scaleFactor = (1 / (transform.scale || 1));
 
-            dx = (dx * scaleFactor) - (e.type === 'touchend' ? (transform.x * scaleFactor) : (10 * scaleFactor));
-            dy = (dy * scaleFactor) - (e.type === 'touchend' ? (transform.y * scaleFactor) : (10 * scaleFactor));
+            if (element && centerPoint) {
+                topMargin = 35;
+                leftMargin = 13;
+                [dx, dy] = [centerPoint.x * scaleFactor, centerPoint.y * scaleFactor]
+            } else {
+                marker_color = $('#marker_color').html();
+                marker_font_size = ($('#font_size').html()) ? $('#font_size').html() : $('#marker_font_size').html();
+
+                left_margin = parseInt($('#left_margin').html());
+                right_margin = parseInt($('#right_margin').html());
+
+                if (e.type === 'touchend') {
+                    dx = ((e.changedTouches[0].pageX - elemPos.left) * scaleFactor) - (transform.x * scaleFactor);
+                    dy = ((e.changedTouches[0].pageY - elemPos.top) * scaleFactor) - (transform.y * scaleFactor);
+                } else {
+                    dx = (parseInt($('#active_x_plot').html()) * scaleFactor) - (10 * scaleFactor);
+                    dy = (parseInt($('#active_y_plot').html()) * scaleFactor) - (10 * scaleFactor);
+                }
+            }
 
             dx = Math.round(dx)
             dy = Math.round(dy)
@@ -208,8 +219,14 @@ $(document).ready(function () {
                 }
                 else{
                     try {
-                        for (i=0; i<selected.length; i++) {
-                            savePlot(selected[i][0], dx, dy);
+                        for (i = 0; i < selected.length; i++) {
+                            if (element) {
+                                const elId = element.id
+                                const selector = elId ? null : getElementSelector(element);
+                                const dataSet = { tag: element.tagName?.toLowerCase(), id: elId, selector }
+                                savePlot(selected[i][0], dx, dy, null, dataSet);
+                            } else
+                                savePlot(selected[i][0], dx, dy);
                         }
                     }
                     catch(err) {
@@ -300,7 +317,7 @@ function getTagToPlot(url){
         else
             plus_icon = ''
 
-        tag =   `<p class="marker ui-draggable ui-draggable-handle" style="left:${dx - left_margin}px; top:${dy - right_margin}px; position:absolute">
+        tag =   `<p class="marker ui-draggable ui-draggable-handle" style="left:${dx - leftMargin}px; top:${dy - topMargin}px; position:absolute;">
                     <a id="m_${selected[0][0]}" style="font-size: ${marker_font_size}px" title="${selected[0][1]}" data-toggle="modal" data-name="plot" data-target="#confirm-delete" data-href="${url}" data-plotted-category="unit" href="javascript:void(0)">
                         <i class="fas fa-map-marker-alt" style="color: ${marker_color};"></i> </a>
                     ${plus_icon}
@@ -336,5 +353,3 @@ function getTagToPlot(url){
     }
     return tag
 }
-
-
