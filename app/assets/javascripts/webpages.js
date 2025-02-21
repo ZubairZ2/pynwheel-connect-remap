@@ -14,15 +14,19 @@ var maxSelectedPrice;
 var currency = "$";
 var real_page_provider_unit_id = null;
 var currentUnitSelected = null;
+var selectionFillColor = "#7cff8a";
+var mapMarkerColor = "brown";
 var marker_color_map = null;
 var parsedSVG = null;
 
+var isSVG = false;
 var isMouseMoving = false;
 var intervalId = null;
 var timeoutId = null;
 
 
 $(document).ready(function () {
+  isSVG = !!document.querySelector('#property-map-image-container').dataset.svgUrl;
   webCommunity = $("#communityWebpagesData").data("community");
   _3dAmenities = $("#communityWebpagesData").data("amenities");
   _3dConfigurations = $("#communityWebpagesData").data("mapConfigurations");
@@ -142,9 +146,8 @@ $(window).bind('load', function () {
       else {
         $('.unit-buttons').empty();
         $('.unit-buttons').addClass('hidden');
-        if (parsedSVG) {
+        if (isSVG) {
           units.filter((unit) => unit.pointer_data['id'] == e.relatedTarget.id.replace('_cloned', '')).forEach(function (unit) {
-            debugger
             if (unit.id === parseInt(e.relatedTarget.dataset.unitId)) {
               button_style = "btn-primary"
             }
@@ -904,7 +907,7 @@ function resetToDefaultZoom() {
 } 
 
 function click_marker_tag (id, selector) {
-  const markersSelector = parsedSVG ? 'cloned-element' : 'unit_marker';
+  const markersSelector = isSVG ? 'cloned-element' : 'unit_marker';
   var marker_tags = document.getElementsByClassName(markersSelector);
   Array.from(marker_tags).forEach(item => {
     if (item.id === id || (selector && item.id === `${selector}_cloned`)) {
@@ -925,12 +928,15 @@ function renderChangedUnits(){
   floorUnits = getFilteredUnits(filtered_units, sortType.value);
   document.getElementById("unit-title-count").innerHTML =
     floorUnits.length + " " + "Units Found";
-
+  if (isSVG) {
+    marker_color_map = selectionFillColor;
+  } else {
+    marker_color_map = mapMarkerColor;
+  }
   filtered_units.forEach((unit) => {
     var unit_details_div = `
       <div
         class='left-side-30-units'
-        style='hover:border: 3px solid ${marker_color_map} !important;'
         id='unit_${unit["id"]}'
         data-pointer-data='${JSON.stringify(unit["pointer_data"])}'
         data-unit-marketing-name='${unit["data_attributes"]["data-unit-marketing-name"]}'
@@ -998,8 +1004,7 @@ function setPointersCoordinates() {
       let { tag, id, selector } = pointer_data || {};
       if (tag && (id || selector)) {
         hash_operator = "#";
-        if (id)
-          selector = `${tag}${hash_operator}${id}`;
+        if (id) selector = `${tag}${hash_operator}${id}`;
         const block = parsedSVG.querySelector(selector);
         const existingDuplicate = parsedSVG.querySelector(
           id ? `${selector}_cloned` : `${selector}.cloned-element`
@@ -1017,7 +1022,7 @@ function setPointersCoordinates() {
             "id",
             `${id ? block.id : selector}_cloned`
           );
-          marker_color_map = "#7cff8a"
+          marker_color_map = selectionFillColor;
           duplicateBlock.setAttribute("fill", marker_color_map);
           const jqueryEl = $(duplicateBlock);
           jqueryEl.addClass("cloned-element");
@@ -1046,12 +1051,22 @@ function unitMarketRent(unit) {
 }
 
 function unitListHover() {
-  let focused_marker ;
+  let focused_marker;
+  if (isSVG === null)
+    isSVG = !!document.querySelector('#property-map-image-container').dataset.svgUrl;;
 
   $("div.left-side-30-units").hover(
     function (e) {
       const { id, pointerData, unitMarketingName } = getUnitData(e.target);
-      const markersSelector = parsedSVG ? 'cloned-element' : 'marker';
+      let markersSelector = "marker";
+      marker_color_map = mapMarkerColor;
+      
+      if (isSVG) {
+        markersSelector = "cloned-element";
+        marker_color_map = selectionFillColor;
+      }
+      e.currentTarget.style.border = `3px solid ${marker_color_map}`;
+
       const all_markers = document.getElementsByClassName(markersSelector);
 
       Array.from(all_markers).forEach((marker) => {
@@ -1093,7 +1108,8 @@ function unitListHover() {
         }
       });
     },
-    function () {
+    function (e) {
+      e.currentTarget.style.border = "none";
       if (focused_marker) {
         // focused_marker.childNodes[0].style.fontSize = "20px";
         $("#marker-popover-unit").addClass("hidden");
@@ -1147,7 +1163,7 @@ function markerHoverEffect (event) {
   }
 
   $('#popover-price').html((currency + $(this).data('market-rent')))
-  marker_color_map = parsedSVG ? $(".cloned-element")[0].getAttribute('fill') : $(".fa-map-marker-alt")[0].style.color
+  marker_color_map = isSVG ? selectionFillColor : mapMarkerColor;
   $($('#unit_' + $(this).data('unitId')))[0].scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
   
   var new_dx = parseInt(event.pageX) - parseInt($('#panzomm-container').offset().left) + parseInt($('#panzomm-container').scrollLeft());
@@ -1465,8 +1481,6 @@ function hideFees() {
 }
 
 function adjustHeightForContentArea () {
-  debugger
-  
   if ($(".m-filters").css("display") === "none") {
     $("#overall-scroller").css({
       "height": "25em",
@@ -2087,10 +2101,7 @@ function display2DMap() {
 
     handleViewportChange(windowWidth);
     marker_color_map =
-      marker_color_map ||
-      (parsedSVG
-        ? $(".cloned-element")[0].getAttribute("fill")
-        : $(".fa-map-marker-alt")[0].style.color);
+      marker_color_map || (isSVG ? selectionFillColor : mapMarkerColor);
     const markerColor = isColorWhite(marker_color_map)
       ? "grey"
       : marker_color_map;
@@ -2360,7 +2371,7 @@ function amenityMarkerHoverEvent() {
 }
 
 function unitMarkerHoverEvent() {
-  const markerSelector = parsedSVG ? "cloned-element" : "unit_marker";
+  const markerSelector = isSVG ? "cloned-element" : "unit_marker";
   $(document)
     .off("mouseenter", `.${markerSelector}`)
     .on("mouseenter", `.${markerSelector}`, function () {
@@ -2370,7 +2381,7 @@ function unitMarkerHoverEvent() {
 }
 
 function unitsListHoverEvent() {
-  const markerSelector = parsedSVG ? "cloned-element" : "unit_marker";
+  const markerSelector = isSVG ? "cloned-element" : "unit_marker";
   $(document)
     .off("mouseenter", ".left-side-30-units")
     .on("mouseenter", ".left-side-30-units", function () {
@@ -2420,7 +2431,7 @@ function amenityMarkerClickEvent() {
 }
 
 function unitMarkerClickEvent() {
-  const markerSelector = parsedSVG ? "cloned-element" : "unit_marker";
+  const markerSelector = isSVG ? "cloned-element" : "unit_marker";
   $(document)
     .off("click", `.${markerSelector}`)
     .on("click", `.${markerSelector}`, function () {
