@@ -266,7 +266,6 @@ $('#markers-modal').on('show.bs.modal', function(e) {
         else{
          button_style = "btn-default" 
         }
-        // debugger
         // if($(e.relatedTarget).attr('data_provider') == "yardi") {
         //     $('.unit-buttons').append('<button class="btn modal-unit-button ml-5 '+button_style+'" type="button" data-href="'+$(this).data('href')+'" data-unit-form-url="'+$(this).data('unit-form-url')+'" onclick="setHrefAndFormUrl(this);">'+$(e.relatedTarget).attr('provider_unit_id')+'</button>');
         // }

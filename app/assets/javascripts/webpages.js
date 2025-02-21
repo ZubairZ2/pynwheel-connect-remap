@@ -142,21 +142,39 @@ $(window).bind('load', function () {
       else {
         $('.unit-buttons').empty();
         $('.unit-buttons').addClass('hidden');
-        if ($('.h-' + $(e.relatedTarget).data('unit-x-plot') + '-' + $(e.relatedTarget).data('unit-y-plot')).length > 1) {
-          $('.h-' + $(e.relatedTarget).data('unit-x-plot') + '-' + $(e.relatedTarget).data('unit-y-plot')).each(function () {
-            var target_id = $(e.relatedTarget).attr('id');
-            var underneath_unit_id = $(this).data().unitId
-            var button_style = ""
-            if (parseInt(target_id.split('_')[1]) == underneath_unit_id) {
+        if (parsedSVG) {
+          units.filter((unit) => unit.pointer_data['id'] == e.relatedTarget.id.replace('_cloned', '')).forEach(function (unit) {
+            debugger
+            if (unit.id === parseInt(e.relatedTarget.dataset.unitId)) {
               button_style = "btn-primary"
-            } else {
+            }
+            else {
               button_style = "btn-default"
             }
             $('.unit-buttons').removeClass('hidden');
-            // $('.unit-buttons').append('<button class="btn modal-unit-button ml-5 ' + button_style + '" type="button" data-title="' + $(this).data('title') + '" data-community-id="' + $(this).data('community-id') + '" data-unit-id="' + $(this).data('unit-id') + '" data-is-fav="' + $(this).data('is-fav') + '" data-provider="' + $(this).data('provider') + '" data-website="' + $(this).data('website') + '" data-community-property-id="' + $(this).data('community-property-id') + '" data-unit-provider-id="' + $(this).data('unit-provider-id') + '" data-floorplan-provider-id="' + $(this).data('floorplan-provider-id') + '" data-floorplan-name="' + $(this).data('floorplan-name') + '" data-unit-description="' + $(this).data('unit-description') + '" data-unit-marketing-name="' + $(this).data('unit-marketing-name') + '" data-market-rent="' + $(this).data('market-rent') + '" data-square-feet="' + $(this).data('square-feet') + '" data-availability="' + $(this).data('availability') + '" data-available-date="' + $(this).data('available-date') + '" data-availability-url="' + $(this).data('availability-url') + '" data-bedrooms="' + $(this).data('bedrooms') + '" data-bathrooms="' + $(this).data('bathrooms') + '" data-floorplan-image="' + $(this).data('floorplan-image') + '" data-lease-term="' + $(this).data('lease-term') + '" data-unit-lease-pricing="' + $(this).data('unit-lease-pricing') +  '" onclick="setUnitAttributes(this);">' + $(this).data('title') + '</button>');
-            $('.unit-buttons').append('<button class="btn modal-unit-button ml-5 ' + button_style + '" type="button" data-title="' + $(this).data('title') + '" data-community-id="' + $(this).data('community-id') + '" data-unit-id="' + $(this).data('unit-id') + '" data-is-fav="' + $(this).data('is-fav') + '" data-provider="' + $(this).data('provider') + '" data-website="' + $(this).data('website') + '" data-community-property-id="' + $(this).data('community-property-id') + '" data-unit-provider-id="' + $(this).data('unit-provider-id') + '" data-floorplan-provider-id="' + $(this).data('floorplan-provider-id') + '" data-floorplan-name="' + $(this).data('floorplan-name') + '" data-unit-description="' + $(this).data('unit-description') + '" data-unit-marketing-name="' + $(this).data('unit-marketing-name') + '" data-market-rent="' + $(this).data('market-rent') + '" data-square-feet="' + $(this).data('square-feet') + '" data-availability="' + $(this).data('availability') + '" data-available-date="' + $(this).data('available-date') + '" data-availability-url="' + $(this).data('availability-url') + '" data-bedrooms="' + $(this).data('bedrooms') + '" data-bathrooms="' + $(this).data('bathrooms') + '" data-floorplan-image="' + $(this).data('floorplan-image') + '" data-lease-term="' + $(this).data('lease-term') + '" data-unit-lease-pricing="' + $(this).data('unit-lease-pricing') + '" data-unit-additional-fees="' + $(this).data('unit-additional-fees') + '" onclick="setUnitAttributes(this);">' + $(this).data('title') + '</button>');
 
-          });
+            result = ""
+            for (const key in unit.data_attributes) {
+              result = `${result} ${key}="${unit.data_attributes[key]}"`
+            }
+            $('.unit-buttons').append('<button class="btn modal-unit-button ml-5 ' + button_style + '" type="button" ' + result + ' onclick="setUnitAttributes(this)">' + unit.data_attributes['data-title'] + '</button>');
+          }
+        )
+        } else {
+          if ($('.h-' + $(e.relatedTarget).data('unitX_plot') + '-' + $(e.relatedTarget).data('unitY_plot')).length > 1) {
+            $('.h-' + $(e.relatedTarget).data('unitX_plot') + '-' + $(e.relatedTarget).data('unitY_plot')).each(function () {
+              var target_id = $(e.relatedTarget).attr('id');
+              var underneath_unit_id = $(this).data().unitId
+              var button_style = ""
+              if (parseInt(target_id.split('_')[1]) == underneath_unit_id) {
+                button_style = "btn-primary"
+              } else {
+                button_style = "btn-default"
+              }
+              $('.unit-buttons').removeClass('hidden');
+              $('.unit-buttons').append('<button class="btn modal-unit-button ml-5 ' + button_style + '" type="button" data-title="' + $(this).data('title') + '" data-community-id="' + $(this).data('community-id') + '" data-unit-id="' + $(this).data('unit-id') + '" data-is-fav="' + $(this).data('is-fav') + '" data-provider="' + $(this).data('provider') + '" data-website="' + $(this).data('website') + '" data-community-property-id="' + $(this).data('community-property-id') + '" data-unit-provider-id="' + $(this).data('unit-provider-id') + '" data-floorplan-provider-id="' + $(this).data('floorplan-provider-id') + '" data-floorplan-name="' + $(this).data('floorplan-name') + '" data-unit-description="' + $(this).data('unit-description') + '" data-unit-marketing-name="' + $(this).data('unit-marketing-name') + '" data-market-rent="' + $(this).data('market-rent') + '" data-square-feet="' + $(this).data('square-feet') + '" data-availability="' + $(this).data('availability') + '" data-available-date="' + $(this).data('available-date') + '" data-availability-url="' + $(this).data('availability-url') + '" data-bedrooms="' + $(this).data('bedrooms') + '" data-bathrooms="' + $(this).data('bathrooms') + '" data-floorplan-image="' + $(this).data('floorplan-image') + '" data-lease-term="' + $(this).data('lease-term') + '" data-unit-lease-pricing="' + $(this).data('unit-lease-pricing') + '" data-unit-additional-fees="' + $(this).data('unit-additional-fees') + '" onclick="setUnitAttributes(this);">' + $(this).data('title') + '</button>');
+            });
+          }
         }
 
         setModalAttributes(e.relatedTarget);
@@ -1446,7 +1464,9 @@ function hideFees() {
   $(".show-fees").show();
 }
 
-function adjustHeightForContentArea() {
+function adjustHeightForContentArea () {
+  debugger
+  
   if ($(".m-filters").css("display") === "none") {
     $("#overall-scroller").css({
       "height": "25em",
@@ -1841,7 +1861,7 @@ function leaseTermPricingOptions(ss) {
   $(`#lease_term option[value="${first_lease_item[0]+first_lease_item[1]+" months"}"]`).attr("selected", true);
 }
 
-function setUnitAttributes(element) {
+function setUnitAttributes (element) {
   $('.modal-unit-button').each(function () {
     $(this).removeClass('btn-primary');
     $(this).addClass('btn-default');
