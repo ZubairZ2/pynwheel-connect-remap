@@ -56,12 +56,15 @@ class WebpagesController < ActionController::Base
     @amenities&.each do |amenity|
       struct = {
         id: amenity.id,
+        name: amenity.name,
+        image_url: amenity.standard_image_url,
         floor: amenity.floor,
         floorplate_id: amenity.amenityable_id,
         x_plot: amenity.x_plot,
         y_plot: amenity.y_plot,
         pointer_data: amenity.pointer_data,
-        galleries: amenity.amenity_galleries
+        galleries: amenity.amenity_galleries,
+        show_name: @community.show_amenity_name
       }
 
       @amenities_data << struct

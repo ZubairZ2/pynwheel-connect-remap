@@ -703,6 +703,7 @@
           const parser = new DOMParser();
           const doc = parser.parseFromString(svg, "image/svg+xml");
           const svgElement = doc.documentElement;
+          parsedSVG = svgElement;
 
           const attributes = {
             id: 'viewArea',

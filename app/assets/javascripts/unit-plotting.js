@@ -213,14 +213,16 @@ function saveAmenityPlotForUnit(id, dx, dy) {
 }
 
 function saveSiteMapUnit (id, dx, dy, pointerData = {}) {
+    console.log("ready to ajaxsave SiteMapUnit", id, dx, dy);
     var xPlot;
     var yPlot;
-    if(addmode){
-        xPlot = dx;
-        yPlot = dy
-    }else{
+
+    if (!addmode || parsedSVG) {
         xPlot = dx + left_margin;
-        yPlot = dy + top_margin
+        yPlot = dy + top_margin;
+    }else{
+        xPlot = dx;
+        yPlot = dy;
     }
     $.post("/communities/" + community_id + "/units/" + id + "/ajaxplotunit",
         {
@@ -229,13 +231,6 @@ function saveSiteMapUnit (id, dx, dy, pointerData = {}) {
             "pointer": pointerData
         },
         function (data, status, xhr) {
-            console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
-            console.debug(data.unit);
-            console.debug(data.unit.id);
-            console.debug(data.unit.x_plot);
-            console.debug(data.unit.y_plot);
-            console.debug(data.unit.marketing_name);
-
             var index = arr.findIndex(unit => unit[0] == data.unit.provider_unit_id);
             arr.splice(index, 1)
 
@@ -251,6 +246,33 @@ function saveSiteMapUnit (id, dx, dy, pointerData = {}) {
             $('#' + data.unit.provider_unit_id + '-selectable').remove();
             $('#' + data.unit.provider_unit_id + '-selection').remove();
             $(".hint-unit-blink").remove();
+        });
+}
+
+function saveAmenityPlotForSitemap(id, dx, dy, pointerData = {}) {
+    console.log("ready to ajaxsave AmenityPlotForSitemap", id, dx, dy);
+    if (parsedSVG) {
+        dx = dx + left_margin;
+        dy = dy + top_margin;
+    }
+    $.post("/communities/" + community_id + "/sitemaps/" + sitemap_id_for_amenity + "/amenities/" + id + "/plot_amenity",
+        {
+            "x_plot": dx,
+            "y_plot": dy,
+            "pointer": pointerData
+        },
+        function (data, status, xhr) {
+            var index = arr.findIndex(amenity => amenity[0] == data.amenity.id);
+            arr.splice(index, 1)
+
+            arr.push([data.amenity.id, data.amenity.x_plot, data.amenity.y_plot, true, data.amenity.name]);
+            doDraggable();
+            // delete from unused list
+            $('.amenities-list option').each(function () {
+                if ($(this).val() == id) {
+                    $(this).remove();
+                }
+            });
         });
 }
 
@@ -435,36 +457,6 @@ function reset() {
         $(this).css({"display": "block"});
     });
 }
-
-function saveAmenityPlotForSitemap(id, dx, dy, pointerData = {}) {
-    console.log("ready to ajaxsave ajaxplotunit", id, dx, dy);
-    if (parsedSVG) {
-        dx = dx + left_margin;
-        dy = dy + top_margin;
-    }
-    $.post("/communities/" + community_id + "/sitemaps/" + sitemap_id_for_amenity + "/amenities/" + id + "/plot_amenity",
-        {
-            "x_plot": dx,
-            "y_plot": dy,
-            "pointer": pointerData
-        },
-        function (data, status, xhr) {
-            console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
-
-            var index = arr.findIndex(amenity => amenity[0] == data.amenity.id);
-            arr.splice(index, 1)
-
-            arr.push([data.amenity.id, data.amenity.x_plot, data.amenity.y_plot, true, data.amenity.name]);
-            doDraggable();
-            // delete from unused list
-            $('.amenities-list option').each(function () {
-                if ($(this).val() == id) {
-                    $(this).remove();
-                }
-            });
-        });
-}
-
 
 function removeUnitFromSelectedArray(value) {
     console.log("Selected Units Before: ", selected);

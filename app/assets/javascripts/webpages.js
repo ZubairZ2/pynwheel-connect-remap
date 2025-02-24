@@ -1062,28 +1062,44 @@ function setAmenitiesCoordinates() {
             `${id ? block.id : selector}_cloned`
           );
           duplicateBlock.setAttribute("fill", map_marker_color);
-          duplicateBlock.getBoundingClientRect();
-          const jqueryEl = $(duplicateBlock);
-          jqueryEl.addClass("cloned-amenity");
+          duplicateBlock.classList.add("cloned-amenity", "sitemap-amenity-marker", "slider-amenity", "amenityTooltip");
           block.parentElement.appendChild(duplicateBlock);
 
+          const foreignObject = document.createElementNS("http://www.w3.org/2000/svg", "foreignObject");
+          foreignObject.setAttribute("width", "150");
+          foreignObject.setAttribute("height", "100");
+          foreignObject.setAttribute("x", "0");
+          foreignObject.setAttribute("y", "0");
+          foreignObject.setAttribute("class", "amenityTooltiptext");
+
+          const toolTipContent = `
+            <div xmlns="http://www.w3.org/1999/xhtml" style="background: white; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+              <h2 style="display: ${amenity.show_name ? "block" : "none"}">${amenity.name}</h2>
+              <img src="${amenity.image_url}" alt="Image Title" style="max-width: 100%; height: auto;">
+            </div>
+          `;
+          foreignObject.innerHTML = toolTipContent;
+
+          duplicateBlock.appendChild(foreignObject);
+
+          const jqueryEl = $(duplicateBlock);
           jqueryEl.on("click", () => {
             openAmenityViewerModal(amenity, amenity.galleries)
           });
-          jqueryEl.on("mouseenter", (_e) => amenityHoverEffect(amenity));
-          jqueryEl.on("mouseleave", (_e) => amenityHoverEffectEnd(amenity));
+          jqueryEl.on("mouseenter", (_e) => amenityHoverEffect(foreignObject));
+          jqueryEl.on("mouseleave", (_e) => amenityHoverEffectEnd(foreignObject));
         }
       }
     });
   }
 }
 
-function amenityHoverEffect (amenity) {
-  $(`span#amenity-title-${amenity.id}`).removeClass('hidden');
+function amenityHoverEffect (foreignObject) {
+  foreignObject.style.visibility = "visible";
 }
 
-function amenityHoverEffectEnd (amenity) {
-  $(`span#amenity-title-${amenity.id}`).addClass('hidden');
+function amenityHoverEffectEnd (foreignObject) {
+  foreignObject.style.visibility = "hidden";
 }
 
 function onUnitClick (e) {

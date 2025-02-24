@@ -107,17 +107,18 @@
                       - unless coordinates_array.include?([amenity.x_plot, amenity.y_plot])
 
                         - coordinates_array.push([amenity.x_plot, amenity.y_plot])
-                        = link_to "javascript:void(0);", :id => "m_#{amenity.id}", :title => amenity.name, class: "marker", style: "left:#{amenity.x_plot - left_margin}px; top:#{amenity.y_plot - top_margin}px; position:absolute", data: {toggle: "tooltip", name: "plot", target: "#confirm-delete", toggle: "modal", href: "/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/#{amenity.id}/remove_amenity", plotted_category: "amenity"} do
-                          %i{class: "custom-icon", style: "height:#{fontsize}px; width: #{fontsize}px; border: 2px solid  #{marker_color};"}
-                            %i{class: "fas fa-camera-retro", style: "font-size:#{camera_font_size}px; color: #{marker_color}; margin-top: #{camera_margin}px;"}
-                        
-                        - if @community.self_tour and @community.auto_wayfinding
-                          = link_to "javascript:void(0);", { id: "plus_#{amenity.id}", title:  "Click to plot this amenity door", data: {toggle: "tooltip", plotted_category: "create_amenity_door"}, onclick: 'plot_entry_point(event)'} do
-                            %i{class: "fa fa-plus-circle fa-xs", style: "color: #59de83; font-size: #{fontsize/1.8}px;" }
+                        %p{class: "marker", style: "left:#{amenity.x_plot - left_margin}px; top:#{amenity.y_plot - top_margin}px; position:absolute"}
+                          = link_to "#", :id => "m_#{amenity.id}", :title => amenity.name, data: {toggle: "tooltip", name: "plot", target: "#confirm-delete", toggle: "modal", href: "/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/#{amenity.id}/remove_amenity", plotted_category: "amenity"} do
+                            %i{class: "custom-icon", style: "height:#{fontsize}px; width: #{fontsize}px; border: 2px solid  #{marker_color};"}
+                              %i{class: "fas fa-camera-retro", style: "font-size:#{camera_font_size}px; color: #{marker_color}; margin-top: #{camera_margin}px;"}
+                          
+                          - if @community.self_tour and @community.auto_wayfinding
+                            = link_to "#", { id: "plus_#{amenity.id}", title:  "Click to plot this amenity door", data: {toggle: "tooltip", plotted_category: "create_amenity_door"}, onclick: 'plot_entry_point(event)'} do
+                              %i{class: "fa fa-plus-circle fa-xs", style: "color: #59de83; font-size: #{fontsize/1.8}px;" }
                         
                         - if @community.self_tour and @community.auto_wayfinding
                           - amenity.ordered_doors.each do |door|
-                            = link_to "javascript:void(0);", { id: "amenity_#{amenity.id}__door_#{door.id}", class: "marker", style: "left:#{door.x_plot}px; top:#{door.y_plot}px; position:absolute; font-size: #{door_fontsize}px", title: "#{door.name}", data: {door_id: "#{door.id}", toggle: "tooltip", toggle: "modal", target: "#amenity-door-detail-modal", plotted_category: "amenity_door"}, onclick: 'open_amenity_door_modal(event)'} do
+                            = link_to "#", { id: "amenity_#{amenity.id}__door_#{door.id}", class: "marker", style: "left:#{door.x_plot}px; top:#{door.y_plot}px; position:absolute; font-size: #{door_fontsize}px", title: "#{door.name}", data: {door_id: "#{door.id}", toggle: "tooltip", toggle: "modal", target: "#amenity-door-detail-modal", plotted_category: "amenity_door"}, onclick: 'open_amenity_door_modal(event)'} do
                               %i{class: "fa fa-sign-in fa-xs", style: "color: #{door_marker_color};"}
 
                       - else
@@ -254,6 +255,7 @@
           const parser = new DOMParser();
           const doc = parser.parseFromString(svg, "image/svg+xml");
           const svgElement = doc.documentElement;
+          parsedSVG = svgElement;
 
           const attributes = {
             id: 'viewArea',

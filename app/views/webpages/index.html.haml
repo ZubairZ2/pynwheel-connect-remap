@@ -220,7 +220,7 @@
                     - @floors.each do |floor|
                       - floorplate = @floorplates.select{|f| f.floors.include?(floor)}.first
                       - if floorplate&.standard_image_url&.ends_with?(".svg")
-                        %div#property-map-image-container{data: {svg_url: floorplate.standard_image_url}, class: "map-image-align floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}", id: "f_#{floor}", data: {height: floorplate.floorplate_image_height, width: floorplate.floorplate_image_width}}
+                        %div#property-map-image-container{data: {svg_url: floorplate.standard_image_url, style: "position: relative;"}, class: "map-image-align floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}", id: "f_#{floor}", data: {height: floorplate.floorplate_image_height, width: floorplate.floorplate_image_width}}
                       - else
                         = image_tag (floorplate.standard_image_url  || "/assets/default.jpeg"), :class=>"map-image-align floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}",:id=>"f_#{floor}","data-height"=>"#{floorplate.floorplate_image_height()}","data-width"=>"#{floorplate.floorplate_image_width()}"
                   - else
@@ -248,11 +248,6 @@
 
                   .hidden-units
                   - if @community.sitemap.present? && @community&.image_src&.ends_with?(".svg")
-                    - @amenities.each do |amenity|
-                      - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
-                        %span.hidden{ id: "amenity-title-#{amenity.id}", class: "amenitytooltiptext" }
-                          %h2{ style: "display: #{@community.show_amenity_name ? 'block': 'none'}"} #{amenity.name}
-                          %img{ src: amenity.standard_image_url, alt: 'Image Title'}
                   - else
                     - if @community_info.show_amenity_key
                       - if @amenities.present?
