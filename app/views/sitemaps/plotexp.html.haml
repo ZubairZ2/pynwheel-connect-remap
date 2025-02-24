@@ -480,15 +480,40 @@
       = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks, locks_present_hash: @current_locks_provider}
       %form.form-horizontal
         .box-body.map-body-top
-          .row
-            .col-lg-9#container.p-0{:style => "float: right;"}
-              .buttons{:style=>"position: absolute; right: 20px; top: 5px;z-index:999;"}
-                %a.btn.btn-sm.btn-primary.zoom-in.zoom-controls
-                  %i.fa.fa-plus
-                %a.btn.btn-sm.btn-primary.zoom-out.zoom-controls
-                  %i.fa.fa-minus
-                %a.btn.btn-sm.btn-primary.reset.zoom-controls
-                  %i.fa.fa-refresh
+          .row.style{ style: "display: flex;" }
+            - community_units = @units.sort_by{|u| u.marketing_name}
+            - units_by_plotted_doors_order = community_units.sort_by {|obj| obj.door.present? ? obj.door.id : obj.id}
+
+            .col-lg-3.multi-select-units.select-units-on-page
+              %h5.mt-40.mb-20
+                SELECT UNITS TO PLOT
+                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapSelectPlotToUnitsPopover","data-content" => " "}
+                  %span#propertyDetailNameText{:style => "font-weight: normal;"}
+                    You can select one or multiple amenity images to plot in one position (with one marker) on the map. If no units appear in the list, that means that all units that have been imported or entered have already been plotted on the map.
+              %select.amenities-list.form-control{:multiple=>"multiple"}
+                - arr = []
+                - if community_units.present?
+                  - community_units.each do |u|
+                    - u.building = "" if u.building == nil
+                  - community_units = community_units.sort_by {|obj| obj.marketing_name.to_i}
+                  - community_units = community_units.sort_by {|obj| obj.building.to_i}
+                - community_units.each do |unit|
+                  - if unit.x_plot.to_i + unit.y_plot.to_i == 0 and unit.provider_unit_id.present?
+                    - if unit.building != nil && unit.building != ""
+                      %option{:value=>unit.provider_unit_id}= "#{unit.building}-#{unit.marketing_name}"
+                    - elsif @community.data_provider == "yardi"
+                      %option{:value => "#{unit.provider_unit_id}"}= unit.provider_unit_id
+                    - else
+                      %option{:value=>unit.provider_unit_id}= "#{unit.marketing_name}"
+                  
+                  - arr.push([unit.provider_unit_id, unit.x_plot.to_i - left_margin, unit.y_plot.to_i - top_margin, true, unit.id.to_s, 5 , 0])
+              %h5.mt-40 SELECTED UNITS
+              .add-plan.mt-10.mb-20
+                %ul#selected-units
+              / %button.btn.btn-success#new{:type => "button"} PLOT NOW
+              %label#newmsg Place marker for selected units on Map
+
+            .col-lg-9#container.p-0
               .map-block{style: "position: unset"}
                 #map.plot-image{data: {svg_url: @sitemap.present? && @sitemap.image.present? && @sitemap.image_url.ends_with?(".svg") ? @community.image_src : nil}, style: "min-width: 100%; height: 100%; position: relative" }
                   .grid-graph.hidden
@@ -532,30 +557,14 @@
                         = link_to open_access_point_modal_community_sitemap_access_point_path(@community, @sitemap, access_point, x_plot: access_point.x_plot, y_plot: access_point.y_plot, plotted_id: access_point.id, locks_present_hash: @current_locks_provider.to_json), { id: "access_point_#{access_point.id}", class: "marker", style: "left:#{access_point.x_plot}px; top:#{access_point.y_plot}px; position:absolute; font-size: #{door_fontsize.to_i/2}px", title: "#{access_point.name}", data: {door_id: "#{access_point.id}", toggle: "tooltip", remote: true, plotted_category: "access_point"}} do
                           %i{class: "fa fa-lock", style: "color: #66bf60"}
 
-            .col-lg-3.multi-select-units.select-units-on-page{:style => "float: left;"}
-              
-              %h5.mt-40.mb-20
-                SELECT UNITS TO PLOT
-                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapSelectPlotToUnitsPopover","data-content" => " "}
-                  %span#propertyDetailNameText{:style => "font-weight: normal;"}
-                    You can select one or multiple amenity images to plot in one position (with one marker) on the map. If no units appear in the list, that means that all units that have been imported or entered have already been plotted on the map.
-              %select.amenities-list.form-control{:multiple=>"multiple"}
-                - arr = []
-                - @units&.each do |unit|
-                  - if unit.x_plot.to_i + unit.y_plot.to_i == 0 and unit.provider_unit_id.present?
-                    - if unit.building != nil && unit.building != ""
-                      %option{:value=>unit.provider_unit_id}= "#{unit.building}-#{unit.marketing_name}"
-                    - elsif @community.data_provider == "yardi"
-                      %option{:value => "#{unit.provider_unit_id}"}= unit.provider_unit_id
-                    - else
-                      %option{:value=>unit.provider_unit_id}= "#{unit.marketing_name}"
-                  
-                  - arr.push([unit.provider_unit_id, unit.x_plot.to_i - left_margin, unit.y_plot.to_i - top_margin, true, unit.id.to_s, 5 , 0])
-              %h5.mt-40 SELECTED UNITS
-              .add-plan.mt-10.mb-20
-                %ul#selected-units
-              / %button.btn.btn-success#new{:type => "button"} PLOT NOW
-              %label#newmsg Place marker for selected units on Map
+              .buttons{:style=>"position: absolute; right: 20px; top: 5px;z-index:999;"}
+                %a.btn.btn-sm.btn-primary.zoom-in.zoom-controls
+                  %i.fa.fa-plus
+                %a.btn.btn-sm.btn-primary.zoom-out.zoom-controls
+                  %i.fa.fa-minus
+                %a.btn.btn-sm.btn-primary.reset.zoom-controls
+                  %i.fa.fa-refresh
+
         #map-marker{"data-toggle" => "tooltip", :onclick => "selMarker()", :title => "new marker"}
           %i.icon-screenshot
 #markers-modal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
@@ -657,7 +666,7 @@
     document.addEventListener("touchcancel", touchHandler, true);
     window.mapPanZoom = panzoom(elem, {
         minZoom: 0.5,
-        maxZoom: 1.0,
+        maxZoom: 3.0,
         bounds: true,
         boundsPadding: 0.3
     });
@@ -885,6 +894,12 @@
     });
   
 :css
+  @media (max-width: 1200px) {
+    .map-body-top > div.row {
+      flex-direction: column;
+    }
+  }
+
   .overlay {
     width: 100%;
     height: 100%;
