@@ -502,9 +502,8 @@
                     - if unit.x_plot.to_i + unit.y_plot.to_i > 0
                       - unless coordinates_array.include?([unit.x_plot, unit.y_plot])
 
-                        - coordinates_array.push([unit.x_plot - left_margin, unit.y_plot - top_margin])
+                        - coordinates_array.push([unit.x_plot, unit.y_plot])
                         - unit_door_exists = unit.door.present? ? true : false
-
                         %p{class: "marker", style: "left:#{unit.x_plot - left_margin}px; top:#{unit.y_plot - top_margin}px; position:absolute"}
                           = link_to "javascript:void(0);", { id: "m_#{unit.provider_unit_id}", style: "font-size: #{fontsize}px", data_provider: @community.data_provider, provider_unit_id: unit.provider_unit_id, title: (unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, data: {toggle: "tooltip", toggle: "modal", name: "plot", target: "#markers-modal", href: "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot", horizontal: unit.x_plot, vertical: unit.y_plot, unit_form_url: "/communities/#{@community.id}/units/#{unit.id}/adjust_position", plotted_category: "unit"}} do
                             %i{class: "fas fa-map-marker-alt", style: "color: #{marker_color};"}
@@ -683,10 +682,10 @@
 
   function fetchSVG() {
     const container = document.querySelector("#map.plot-image");
-    let childrenArray = Array.from(container.children)
+    let childrenArray = Array.from(container?.children || [])
 
     const svgIndex = childrenArray.findIndex((el) => el.tagName.toLowerCase() == 'svg');
-    const imageUrl = container.dataset.svgUrl;
+    const imageUrl = container?.dataset.svgUrl;
 
     if (imageUrl && imageUrl.endsWith(".svg")) {
       fetch(imageUrl)

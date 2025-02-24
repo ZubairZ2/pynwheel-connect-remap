@@ -26,7 +26,7 @@ var timeoutId = null;
 
 
 $(document).ready(function () {
-  isSVG = !!document.querySelector('#property-map-image-container').dataset.svgUrl;
+  isSVG = !!document.querySelector('#property-map-image-container')?.dataset.svgUrl;
   webCommunity = $("#communityWebpagesData").data("community");
   _3dAmenities = $("#communityWebpagesData").data("amenities");
   _3dConfigurations = $("#communityWebpagesData").data("mapConfigurations");
@@ -1053,7 +1053,7 @@ function unitMarketRent(unit) {
 function unitListHover() {
   let focused_marker;
   if (isSVG === null)
-    isSVG = !!document.querySelector('#property-map-image-container').dataset.svgUrl;;
+    isSVG = !!document.querySelector('#property-map-image-container')?.dataset.svgUrl;;
 
   $("div.left-side-30-units").hover(
     function (e) {

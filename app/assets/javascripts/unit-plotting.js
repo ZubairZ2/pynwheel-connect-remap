@@ -568,7 +568,7 @@ function stop_svg_original_work (event, ui) {
                 const elId = element.id
                 const selector = elId ? null : getElementSelector(element);
                 const dataSet = { tag: element.tagName?.toLowerCase(), id: elId, selector }
-                savePlot(temp[i], centerPoint.x, centerPoint.y, null, dataSet);
+                savePlot(temp[i], centerPoint.x - left_margin, centerPoint.y - top_margin, null, dataSet);
             } else
                 savePlot(temp[i], xPlot, yPlot);
         });

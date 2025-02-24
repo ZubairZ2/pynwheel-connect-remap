@@ -397,7 +397,7 @@
 
   function fetchSVG() {
     const container = document.getElementById("property-map-image-container");
-    const imageUrl = container.dataset.svgUrl; // Get the SVG URL from the data attribute
+    const imageUrl = container?.dataset.svgUrl;
 
     if (imageUrl && imageUrl.endsWith(".svg")) {
       fetch(imageUrl)
