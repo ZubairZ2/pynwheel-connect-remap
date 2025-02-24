@@ -23,7 +23,7 @@ function savePlot (id, dx, dy, door_id = 0, pointerData = {}) {
         if (adddoorsmode)
             saveAmenityDoorPlot(id, dx, dy, door_id);
         else
-            saveAmenityPlotForSitemap(id, dx, dy);
+            saveAmenityPlotForSitemap(id, dx, dy, pointerData);
     } else if (typeof floorplate_id_for_elevator !== 'undefined') {
         saveElevatorPlotForFloorplate(id, dx, dy);
     } else if (typeof unit_id_for_amenity !== 'undefined') {
@@ -436,12 +436,13 @@ function reset() {
     });
 }
 
-function saveAmenityPlotForSitemap(id, dx, dy) {
+function saveAmenityPlotForSitemap(id, dx, dy, pointerData = {}) {
     console.log("ready to ajaxsave ajaxplotunit", id, dx, dy);
     $.post("/communities/" + community_id + "/sitemaps/" + sitemap_id_for_amenity + "/amenities/" + id + "/plot_amenity",
         {
             "x_plot": dx,
-            "y_plot": dy
+            "y_plot": dy,
+            "pointer": pointerData
         },
         function (data, status, xhr) {
             console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
@@ -531,16 +532,25 @@ function start_svg_original_work(event, ui, scale) {
     const xpos = Math.round(ui.helper[0].offsetLeft);
     const ypos = Math.round(ui.helper[0].offsetTop);
 
+    const marginedXpos = Math.round(xpos + left_margin);
+    const marginedYpos = Math.round(ypos + top_margin);
+
     temp = [];
     if (arr) {
-        temp = arr.filter((marker) => (marker[1] === xpos && marker[2] === ypos)).map((marker) => marker[0]);
+        temp = arr
+        .filter(
+            (marker) =>
+            (marker[1] === xpos && marker[2] === ypos) ||
+            (marker[1] === marginedXpos && marker[2] === marginedYpos)
+        )
+        .map((marker) => parseInt(marker[0]));
     }
 
     pointerOffset.x = left_margin * scale;
     pointerOffset.y = top_margin * scale;
 }
 
-function drag_svg_original_work(event, ui) {
+function drag_svg_original_work (event, ui) {
     if (temp) {
         temp.forEach((markerId) => {
             $(`#m_${markerId}`).css({
@@ -554,23 +564,30 @@ function drag_svg_original_work(event, ui) {
 function stop_svg_original_work (event, ui) {
     if (temp) {
         temp.forEach((markerId, i) => {
-            console.log("stop drag", markerId, Math.round(ui.position.left), Math.round(ui.position.top));
-            const markerIndex = arr.findIndex((marker) => marker[0] === markerId);
-            const xPlot = Math.round(ui.position.left);
-            const yPlot = Math.round(ui.position.top);
-            if (markerIndex !== -1) {
-                arr[markerIndex][1] = xPlot;
-                arr[markerIndex][2] = yPlot;
-            }
+            msrkerId = parseInt(markerId);
+            const markerIndex = arr.findIndex((marker) => parseInt(marker[0]) === markerId);
+            let xPlot = Math.round(ui.position.left);
+            let yPlot = Math.round(ui.position.top);
 
             const { element, centerPoint } = getSvgClickedElementWithCenterPoint("#map.plot-image", event);
             if (element) {
                 const elId = element.id
                 const selector = elId ? null : getElementSelector(element);
                 const dataSet = { tag: element.tagName?.toLowerCase(), id: elId, selector }
-                savePlot(temp[i], centerPoint.x - left_margin, centerPoint.y - top_margin, null, dataSet);
+                xPlot = Math.round(centerPoint.x);
+                yPlot = Math.round(centerPoint.y);
+                savePlot(temp[i], xPlot, yPlot, null, dataSet);
             } else
                 savePlot(temp[i], xPlot, yPlot);
+
+            $(`#m_${markerId}`).css({
+                left: xPlot - left_margin,
+                top: yPlot - top_margin,
+            });
+            if (markerIndex !== -1) {
+                arr[markerIndex][1] = xPlot;
+                arr[markerIndex][2] = yPlot;
+            }
         });
     }
 }

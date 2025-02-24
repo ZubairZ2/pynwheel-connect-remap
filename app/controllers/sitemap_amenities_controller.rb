@@ -62,6 +62,11 @@ class SitemapAmenitiesController < ApplicationController
 		@amenity.amenityable_id = params[:sitemap_id]
 		@amenity.x_plot = params[:x_plot]
 		@amenity.y_plot = params[:y_plot]
+		@amenity.pointer_data = if params[:pointer].present?
+															{ tag: params[:pointer][:tag], id: params[:pointer][:id], selector: params[:pointer][:selector] }
+														else
+															{}
+														end
 		ts = TourStop.find_by(stop_id: @amenity.id)
 		if ts.present?
 			ts.latitude  = @amenity.x_plot
@@ -69,7 +74,7 @@ class SitemapAmenitiesController < ApplicationController
 			ts.save
 		end
 		if @amenity.save(validate: false)
-			render json: {amenity: @amenity}, status: 200
+			render json: {amenity: @amenity.attributes}, status: 200
 	    else
 	      render json: {}, status: 404
 	    end

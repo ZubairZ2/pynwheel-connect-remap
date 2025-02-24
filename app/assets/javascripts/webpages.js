@@ -14,9 +14,6 @@ var maxSelectedPrice;
 var currency = "$";
 var real_page_provider_unit_id = null;
 var currentUnitSelected = null;
-var selectionFillColor = "#7cff8a";
-var mapMarkerColor = "brown";
-var marker_color_map = null;
 var parsedSVG = null;
 
 var isSVG = false;
@@ -147,22 +144,24 @@ $(window).bind('load', function () {
         $('.unit-buttons').empty();
         $('.unit-buttons').addClass('hidden');
         if (isSVG) {
-          units.filter((unit) => unit.pointer_data['id'] == e.relatedTarget.id.replace('_cloned', '')).forEach(function (unit) {
-            if (unit.id === parseInt(e.relatedTarget.dataset.unitId)) {
-              button_style = "btn-primary"
-            }
-            else {
-              button_style = "btn-default"
-            }
-            $('.unit-buttons').removeClass('hidden');
+          const filteredUnits = units.filter((unit) => unit.pointer_data['id'] == e.relatedTarget.id.replace('_cloned', ''));
+          if (filteredUnits.length > 1) {
+            filteredUnits.forEach(function (unit) {
+              if (unit.id === parseInt(e.relatedTarget.dataset.unitId)) {
+                button_style = "btn-primary"
+              }
+              else {
+                button_style = "btn-default"
+              }
+              $('.unit-buttons').removeClass('hidden');
 
-            result = ""
-            for (const key in unit.data_attributes) {
-              result = `${result} ${key}="${unit.data_attributes[key]}"`
-            }
-            $('.unit-buttons').append('<button class="btn modal-unit-button ml-5 ' + button_style + '" type="button" ' + result + ' onclick="setUnitAttributes(this, event)">' + unit.data_attributes['data-title'] + '</button>');
+              result = ""
+              for (const key in unit.data_attributes) {
+                result = `${result} ${key}="${unit.data_attributes[key]}"`
+              }
+              $('.unit-buttons').append('<button class="btn modal-unit-button ml-5 ' + button_style + '" type="button" ' + result + ' onclick="setUnitAttributes(this, event)">' + unit.data_attributes['data-title'] + '</button>');
+            });
           }
-        )
         } else {
           if ($('.h-' + $(e.relatedTarget).data('unitX_plot') + '-' + $(e.relatedTarget).data('unitY_plot')).length > 1) {
             $('.h-' + $(e.relatedTarget).data('unitX_plot') + '-' + $(e.relatedTarget).data('unitY_plot')).each(function () {
@@ -907,7 +906,7 @@ function resetToDefaultZoom() {
 } 
 
 function click_marker_tag (id, selector) {
-  const markersSelector = isSVG ? 'cloned-element' : 'unit_marker';
+  const markersSelector = isSVG ? 'cloned-unit' : 'unit_marker';
   var marker_tags = document.getElementsByClassName(markersSelector);
   Array.from(marker_tags).forEach(item => {
     if (item.id === id || (selector && item.id === `${selector}_cloned`)) {
@@ -928,11 +927,6 @@ function renderChangedUnits(){
   floorUnits = getFilteredUnits(filtered_units, sortType.value);
   document.getElementById("unit-title-count").innerHTML =
     floorUnits.length + " " + "Units Found";
-  if (isSVG) {
-    marker_color_map = selectionFillColor;
-  } else {
-    marker_color_map = mapMarkerColor;
-  }
   filtered_units.forEach((unit) => {
     var unit_details_div = `
       <div
@@ -996,7 +990,7 @@ function setPointersCoordinates() {
   if (!parsedSVG) return;
 
   parsedSVG
-    .querySelectorAll(".cloned-element")
+    .querySelectorAll(".cloned-unit")
     .forEach((node) => $(node).addClass("hidden"));
 
   if (units?.length) {
@@ -1007,7 +1001,7 @@ function setPointersCoordinates() {
         if (id) selector = `${tag}${hash_operator}${id}`;
         const block = parsedSVG.querySelector(selector);
         const existingDuplicate = parsedSVG.querySelector(
-          id ? `${selector}_cloned` : `${selector}.cloned-element`
+          id ? `${selector}_cloned` : `${selector}.cloned-unit`
         );
 
         if (existingDuplicate) {
@@ -1022,10 +1016,9 @@ function setPointersCoordinates() {
             "id",
             `${id ? block.id : selector}_cloned`
           );
-          marker_color_map = selectionFillColor;
-          duplicateBlock.setAttribute("fill", marker_color_map);
+          duplicateBlock.setAttribute("fill", map_marker_color);
           const jqueryEl = $(duplicateBlock);
-          jqueryEl.addClass("cloned-element");
+          jqueryEl.addClass("cloned-unit");
           jqueryEl.on("click", () => {
             $("#unitModal").show();
           });
@@ -1036,9 +1029,61 @@ function setPointersCoordinates() {
       }
     });
 
-    $(".popup-title").css("background-color", marker_color_map);
-    $(".popup-arrow").css("background-color", marker_color_map);
+    $(".popup-title").css("background-color", map_marker_color);
+    $(".popup-arrow").css("background-color", map_marker_color);
   }
+}
+
+function setAmenitiesCoordinates() {
+  if (!parsedSVG) return;
+  parsedSVG
+    .querySelectorAll(".cloned-amenity")
+    .forEach((node) => $(node).addClass("hidden"));
+
+  if (amenities?.length) {
+    amenities.forEach((amenity) => {
+      const { pointer_data: pointerData } = amenity || {};
+      let { tag, id, selector } = pointerData || {};
+      if (tag && (id || selector)) {
+        hash_operator = "#";
+        if (id) selector = `${tag}${hash_operator}${id}`;
+        const block = parsedSVG.querySelector(selector);
+        const existingDuplicate = parsedSVG.querySelector(
+          id ? `${selector}_cloned` : `${selector}.cloned-amenity`
+        );
+
+        if (existingDuplicate) {
+          $(existingDuplicate).removeClass("hidden");
+        } else {
+          const duplicateBlock = block.cloneNode(true);
+
+          duplicateBlock.setAttribute(
+            "id",
+            `${id ? block.id : selector}_cloned`
+          );
+          duplicateBlock.setAttribute("fill", map_marker_color);
+          duplicateBlock.getBoundingClientRect();
+          const jqueryEl = $(duplicateBlock);
+          jqueryEl.addClass("cloned-amenity");
+          block.parentElement.appendChild(duplicateBlock);
+
+          jqueryEl.on("click", () => {
+            openAmenityViewerModal(amenity, amenity.galleries)
+          });
+          jqueryEl.on("mouseenter", (_e) => amenityHoverEffect(amenity));
+          jqueryEl.on("mouseleave", (_e) => amenityHoverEffectEnd(amenity));
+        }
+      }
+    });
+  }
+}
+
+function amenityHoverEffect (amenity) {
+  $(`span#amenity-title-${amenity.id}`).removeClass('hidden');
+}
+
+function amenityHoverEffectEnd (amenity) {
+  $(`span#amenity-title-${amenity.id}`).addClass('hidden');
 }
 
 function onUnitClick (e) {
@@ -1059,13 +1104,11 @@ function unitListHover() {
     function (e) {
       const { id, pointerData, unitMarketingName } = getUnitData(e.target);
       let markersSelector = "marker";
-      marker_color_map = mapMarkerColor;
-      
+
       if (isSVG) {
-        markersSelector = "cloned-element";
-        marker_color_map = selectionFillColor;
+        markersSelector = "cloned-unit";
       }
-      e.currentTarget.style.border = `3px solid ${marker_color_map}`;
+      e.currentTarget.style.border = `3px solid ${map_marker_color}`;
 
       const all_markers = document.getElementsByClassName(markersSelector);
 
@@ -1163,7 +1206,6 @@ function markerHoverEffect (event) {
   }
 
   $('#popover-price').html((currency + $(this).data('market-rent')))
-  marker_color_map = isSVG ? selectionFillColor : mapMarkerColor;
   $($('#unit_' + $(this).data('unitId')))[0].scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
   
   var new_dx = parseInt(event.pageX) - parseInt($('#panzomm-container').offset().left) + parseInt($('#panzomm-container').scrollLeft());
@@ -1173,7 +1215,7 @@ function markerHoverEffect (event) {
   if (window.innerWidth >= 768) {
     $('#marker-popover').removeClass('hidden');
   }
-  $($('#unit_' + $(this).data('unitId'))).css("border", `5px solid ${marker_color_map}`)
+  $($('#unit_' + $(this).data('unitId'))).css("border", `5px solid ${map_marker_color}`)
 }
 
 
@@ -1184,7 +1226,7 @@ function markerHoverEffectEnd (event) {
 
 
 function unitMarkerHover () {
-  $(".cloned-element").hover(markerHoverEffect, markerHoverEffectEnd);   
+  $(".cloned-unit").hover(markerHoverEffect, markerHoverEffectEnd);   
 }
 
 function getUnitData(targetElement) {
@@ -2101,11 +2143,9 @@ function display2DMap() {
     }
 
     handleViewportChange(windowWidth);
-    marker_color_map =
-      marker_color_map || (isSVG ? selectionFillColor : mapMarkerColor);
-    const markerColor = isColorWhite(marker_color_map)
+    const markerColor = isColorWhite(map_marker_color)
       ? "grey"
-      : marker_color_map;
+      : map_marker_color;
 
     $(".popup-title").css("background-color", markerColor);
     $(".popup-arrow").css("background-color", markerColor);
@@ -2360,7 +2400,8 @@ function trackingMapHoverEvents() {
 }
 
 function amenityMarkerHoverEvent() {
-  $(document).off("mouseenter", ".amenity-marker").on("mouseenter", ".amenity-marker", function () {
+  const markerSelector = isSVG ? ".cloned-amenity" : ".amenity-marker";
+  $(document).off("mouseenter", markerSelector).on("mouseenter", markerSelector, function () {
     console.log("Amenity Marker hovered");
     updateActivityData("amenity_marker", "hover");
   });  
@@ -2372,7 +2413,7 @@ function amenityMarkerHoverEvent() {
 }
 
 function unitMarkerHoverEvent() {
-  const markerSelector = isSVG ? "cloned-element" : "unit_marker";
+  const markerSelector = isSVG ? "cloned-unit" : "unit_marker";
   $(document)
     .off("mouseenter", `.${markerSelector}`)
     .on("mouseenter", `.${markerSelector}`, function () {
@@ -2382,7 +2423,7 @@ function unitMarkerHoverEvent() {
 }
 
 function unitsListHoverEvent() {
-  const markerSelector = isSVG ? "cloned-element" : "unit_marker";
+  const markerSelector = isSVG ? "cloned-unit" : "unit_marker";
   $(document)
     .off("mouseenter", ".left-side-30-units")
     .on("mouseenter", ".left-side-30-units", function () {
@@ -2420,7 +2461,8 @@ function trackingMapClickEvents() {
 
 // New Activity Tracking Methods.
 function amenityMarkerClickEvent() {
-  $(document).off("click", ".amenity-marker").on("click", ".amenity-marker", function () {
+  const markerSelector = isSVG ? ".cloned-amenity" : ".amenity-marker";
+  $(document).off("click", markerSelector).on("click", markerSelector, function () {
     console.log("Amenity Marker Clicked");
     updateActivityData("amenity_marker", "click");
   }); 
@@ -2432,7 +2474,7 @@ function amenityMarkerClickEvent() {
 }
 
 function unitMarkerClickEvent() {
-  const markerSelector = isSVG ? "cloned-element" : "unit_marker";
+  const markerSelector = isSVG ? "cloned-unit" : "unit_marker";
   $(document)
     .off("click", `.${markerSelector}`)
     .on("click", `.${markerSelector}`, function () {

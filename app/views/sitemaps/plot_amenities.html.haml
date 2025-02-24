@@ -55,8 +55,8 @@
           - else
             - fontsize = 30
 
-          - left_margin = 0
-          - right_margin = 0
+          - left_margin = 13
+          - top_margin = 13
           - fontsize = fontsize -5
           - camera_font_size = fontsize / 2
           
@@ -64,7 +64,7 @@
           - camera_margin = (marker_font_size2 <= 27 ? 3 : (marker_font_size2 <= 30 ? 4 : (marker_font_size2 <= 33 ? 5 : (marker_font_size2 <= 35 ? 6 : 6))))
           
           %span.hidden#left_margin #{left_margin}
-          %span.hidden#right_margin #{right_margin}
+          %span.hidden#top_margin #{top_margin}
           %span.hidden#font_size #{fontsize}
           %span.hidden#marker_color #{marker_color}
           %span.hidden#camera_margin #{camera_margin}
@@ -84,7 +84,7 @@
 
       / /.box-header
       / form start
-      = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks, locks_present_hash: @current_locks_provider}
+      = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks, locks_present_hash: @current_locks_provider || {}}
       %form.form-horizontal
         .box-body.map-body-top
           .row
@@ -97,12 +97,9 @@
                 %a.btn.btn-sm.btn-primary.reset.zoom-controls
                   %i.fa.fa-refresh
               .map-block{:style=>"position: relative;"}
-                .plot-image#map
-                  - if @sitemap.present? && @sitemap.image.present? && @sitemap.image.content_type == "image/svg+xml"
-                    %object{:data => "your.svg", :type => "image/svg+xml"}
-                    = image_tag @sitemap.image.present? ? @sitemap.image.url : "default.jpeg", :style => "width: #{@sitemap.sitemap_image_width()}px; height: #{@sitemap.sitemap_image_height()}px;", name:"viewArea", id:"viewArea",draggable:"false", class: 'viewArea', data: {'map_id' => "map"}
-                  - else
-                    = image_tag @sitemap.image.present? ? @sitemap.image.url : "default.jpeg",name:"viewArea", id:"viewArea",draggable:"false", class: 'viewArea', data: {'map_id' => "map"}
+                .plot-image#map{data: {svg_url: @sitemap.present? && @sitemap.image.present? && @sitemap.image_url.ends_with?(".svg") ? @sitemap.image_url : nil}, style: "min-width: 100%; height: 100%; position: relative" }
+                  - unless @sitemap.present? && @sitemap.image.present? && @sitemap.image_url.ends_with?(".svg")
+                    = image_tag @sitemap.image.present? ? @sitemap.image.url : "default.jpeg", id:"map_img", name:"viewArea", id:"viewArea", draggable:"false", class: 'viewArea', data: {'map_id' => "map"}
 
                   - coordinates_array = []
                   - @sitemap.amenities.each do |amenity|
@@ -110,14 +107,13 @@
                       - unless coordinates_array.include?([amenity.x_plot, amenity.y_plot])
 
                         - coordinates_array.push([amenity.x_plot, amenity.y_plot])
-                        %p{class: "marker", style: "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute"}
-                          = link_to "javascript:void(0);", :id => "m_#{amenity.id}", :title => amenity.name, data: {toggle: "tooltip", name: "plot", target: "#confirm-delete", toggle: "modal", href: "/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/#{amenity.id}/remove_amenity", plotted_category: "amenity"} do
-                            %i{class: "custom-icon", style: "height:#{fontsize}px; width: #{fontsize}px; border: 2px solid  #{marker_color};"}
-                              %i{class: "fas fa-camera-retro", style: "font-size:#{camera_font_size}px; color: #{marker_color}; margin-top: #{camera_margin}px;"}
-                          
-                          - if @community.self_tour and @community.auto_wayfinding
-                            = link_to "javascript:void(0);", { id: "plus_#{amenity.id}", title:  "Click to plot this amenity door", data: {toggle: "tooltip", plotted_category: "create_amenity_door"}, onclick: 'plot_entry_point(event)'} do
-                              %i{class: "fa fa-plus-circle fa-xs", style: "color: #59de83; font-size: #{fontsize/1.8}px;" }
+                        = link_to "javascript:void(0);", :id => "m_#{amenity.id}", :title => amenity.name, class: "marker", style: "left:#{amenity.x_plot - left_margin}px; top:#{amenity.y_plot - top_margin}px; position:absolute", data: {toggle: "tooltip", name: "plot", target: "#confirm-delete", toggle: "modal", href: "/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/#{amenity.id}/remove_amenity", plotted_category: "amenity"} do
+                          %i{class: "custom-icon", style: "height:#{fontsize}px; width: #{fontsize}px; border: 2px solid  #{marker_color};"}
+                            %i{class: "fas fa-camera-retro", style: "font-size:#{camera_font_size}px; color: #{marker_color}; margin-top: #{camera_margin}px;"}
+                        
+                        - if @community.self_tour and @community.auto_wayfinding
+                          = link_to "javascript:void(0);", { id: "plus_#{amenity.id}", title:  "Click to plot this amenity door", data: {toggle: "tooltip", plotted_category: "create_amenity_door"}, onclick: 'plot_entry_point(event)'} do
+                            %i{class: "fa fa-plus-circle fa-xs", style: "color: #59de83; font-size: #{fontsize/1.8}px;" }
                         
                         - if @community.self_tour and @community.auto_wayfinding
                           - amenity.ordered_doors.each do |door|
@@ -175,6 +171,27 @@
     document.addEventListener("touchmove", touchHandler, true);
     document.addEventListener("touchend", touchHandler, true);
     document.addEventListener("touchcancel", touchHandler, true);
+    fetchSVG();
+  })
+  
+  function touchHandler(event) {
+    var touch = event.changedTouches[0];
+
+    var simulatedEvent = document.createEvent("MouseEvent");
+        simulatedEvent.initMouseEvent({
+        touchstart: "mousedown",
+        touchmove: "mousemove",
+        touchend: "mouseup"
+    }[event.type], true, true, window, 1,
+        touch.screenX, touch.screenY,
+        touch.clientX, touch.clientY, false,
+        false, false, false, 0, null);
+
+    touch.target.dispatchEvent(simulatedEvent);
+    // event.preventDefault();
+  }
+
+  function activateZoomPan () {
     let elem = document.querySelector('#map');
     window.mapPanZoom = panzoom(elem, {
         minZoom: 0.5,
@@ -195,30 +212,14 @@
         previous_scale = scaleFactor
     }
     mapPanZoom.moveTo(0, 0);
-    })
-  
-  function touchHandler(event) {
-    var touch = event.changedTouches[0];
-
-    var simulatedEvent = document.createEvent("MouseEvent");
-        simulatedEvent.initMouseEvent({
-        touchstart: "mousedown",
-        touchmove: "mousemove",
-        touchend: "mouseup"
-    }[event.type], true, true, window, 1,
-        touch.screenX, touch.screenY,
-        touch.clientX, touch.clientY, false,
-        false, false, false, 0, null);
-
-    touch.target.dispatchEvent(simulatedEvent);
-    // event.preventDefault();
   }
+
   var floor = null;
   var arr = #{raw amenity_arr}
   var units_info = #{@amenity_with_doors.to_json.html_safe}
 
   var left_margin = #{raw left_margin}
-  var right_margin = #{raw right_margin}
+  var top_margin = #{raw top_margin}
   var community_id = #{params[:community_id]}
   var sitemap_id_for_amenity = #{@sitemap.id}
 
@@ -238,4 +239,50 @@
     draw_initial_hallways(hallways_coordinates)
     //draw_line(hallways_coordinates);
   });
-  
+
+  function fetchSVG() {
+    const container = document.querySelector("#map.plot-image");
+    let childrenArray = Array.from(container?.children || [])
+
+    const svgIndex = childrenArray.findIndex((el) => el.tagName.toLowerCase() == 'svg');
+    const imageUrl = container?.dataset.svgUrl;
+
+    if (imageUrl && imageUrl.endsWith(".svg")) {
+      fetch(imageUrl)
+        .then(response => response.text())
+        .then(svg => {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(svg, "image/svg+xml");
+          const svgElement = doc.documentElement;
+
+          const attributes = {
+            id: 'viewArea',
+            draggable: false,
+            class: 'viewArea',
+            'data-map_id': 'map',
+            name: 'viewArea',
+            position: 'relative'
+          };
+
+          for (const key in attributes) {
+            svgElement.setAttribute(key, attributes[key]);
+          }
+          
+          if (svgElement.nodeName === "svg") {
+            container.innerHTML = "";
+            if (svgIndex > -1) {
+              childrenArray[svgIndex] = svgElement;
+            } else {
+              childrenArray = [svgElement, ...childrenArray]
+            }
+            container.append(...childrenArray);
+            activateZoomPan(container)
+          } else {
+            console.error("Error parsing SVG:", svgElement);
+          }
+        })
+        .catch(error => console.error("Error loading SVG:", error));
+    } else {
+      activateZoomPan(container)
+    }
+  }

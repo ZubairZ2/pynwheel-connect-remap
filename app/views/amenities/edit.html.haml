@@ -73,7 +73,7 @@
 
               - if @community.enable_locks
 
-                = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks, locks_present_hash: @current_locks_provider}
+                = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks, locks_present_hash: @current_locks_provider || {}}
                 - if @doors.present?
                   .form-group
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label

@@ -57,7 +57,11 @@ class WebpagesController < ActionController::Base
       struct = {
         id: amenity.id,
         floor: amenity.floor,
-        floorplate_id: amenity.amenityable_id
+        floorplate_id: amenity.amenityable_id,
+        x_plot: amenity.x_plot,
+        y_plot: amenity.y_plot,
+        pointer_data: amenity.pointer_data,
+        galleries: amenity.amenity_galleries
       }
 
       @amenities_data << struct

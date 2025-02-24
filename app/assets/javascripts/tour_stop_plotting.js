@@ -177,15 +177,15 @@ $(document).ready(function () {
             var scaleFactor = (1 / (transform.scale || 1));
 
             if (element && centerPoint) {
-                topMargin = 35;
-                leftMargin = 13;
+                top_margin = 35;
+                left_margin = 13;
                 [dx, dy] = [centerPoint.x * scaleFactor, centerPoint.y * scaleFactor]
             } else {
                 marker_color = $('#marker_color').html();
                 marker_font_size = ($('#font_size').html()) ? $('#font_size').html() : $('#marker_font_size').html();
 
                 left_margin = parseInt($('#left_margin').html());
-                right_margin = parseInt($('#right_margin').html());
+                top_margin = parseInt($('#right_margin').html());
 
                 if (e.type === 'touchend') {
                     dx = ((e.changedTouches[0].pageX - elemPos.left) * scaleFactor) - (transform.x * scaleFactor);
@@ -317,7 +317,7 @@ function getTagToPlot(url){
         else
             plus_icon = ''
 
-        tag =   `<p class="marker ui-draggable ui-draggable-handle" style="left:${dx - leftMargin}px; top:${dy - topMargin}px; position:absolute;">
+        tag =   `<p class="marker ui-draggable ui-draggable-handle" style="left:${dx - left_margin}px; top:${dy - top_margin}px; position:absolute;">
                     <a id="m_${selected[0][0]}" style="font-size: ${marker_font_size}px" title="${selected[0][1]}" data-toggle="modal" data-name="plot" data-target="#confirm-delete" data-href="${url}" data-plotted-category="unit" href="javascript:void(0)">
                         <i class="fas fa-map-marker-alt" style="color: ${marker_color};"></i> </a>
                     ${plus_icon}
