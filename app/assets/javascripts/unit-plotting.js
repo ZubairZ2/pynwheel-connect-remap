@@ -438,6 +438,10 @@ function reset() {
 
 function saveAmenityPlotForSitemap(id, dx, dy, pointerData = {}) {
     console.log("ready to ajaxsave ajaxplotunit", id, dx, dy);
+    if (parsedSVG) {
+        dx = dx + left_margin;
+        dy = dy + top_margin;
+    }
     $.post("/communities/" + community_id + "/sitemaps/" + sitemap_id_for_amenity + "/amenities/" + id + "/plot_amenity",
         {
             "x_plot": dx,
@@ -576,14 +580,21 @@ function stop_svg_original_work (event, ui) {
                 const dataSet = { tag: element.tagName?.toLowerCase(), id: elId, selector }
                 xPlot = Math.round(centerPoint.x);
                 yPlot = Math.round(centerPoint.y);
-                savePlot(temp[i], xPlot, yPlot, null, dataSet);
+                savePlot(temp[i], xPlot - left_margin, yPlot - top_margin, null, dataSet);
             } else
                 savePlot(temp[i], xPlot, yPlot);
 
-            $(`#m_${markerId}`).css({
+            const marker = $(`#m_${markerId}`)
+            marker.css({
                 left: xPlot - left_margin,
                 top: yPlot - top_margin,
             });
+            if (marker.parent()?.[0]?.classList.contains('marker')) {
+                marker.parent().css({
+                    left: xPlot - left_margin,
+                    top: yPlot - top_margin,
+                });
+            }
             if (markerIndex !== -1) {
                 arr[markerIndex][1] = xPlot;
                 arr[markerIndex][2] = yPlot;
