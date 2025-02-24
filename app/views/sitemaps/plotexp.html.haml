@@ -477,7 +477,7 @@
 
       / /.box-header
       / form start
-      = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks, locks_present_hash: @current_locks_provider || {}}
+      = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks, locks_present_hash: @current_locks_provider}
       %form.form-horizontal
         .box-body.map-body-top
           .row.style{ style: "display: flex;" }

@@ -103,7 +103,7 @@
           - if false && @community.self_tour and @community.auto_wayfinding
             %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'automate_path()'}Automate Path
 
-      = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks, locks_present_hash: @current_locks_provider || {}}
+      = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks, locks_present_hash: @current_locks_provider}
       %form.form-horizontal
         .box-body.map-body-top
           .row
