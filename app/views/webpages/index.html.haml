@@ -164,8 +164,8 @@
             - is_svg = false
             - left_margin = ((fontsize.to_f - 35) / 5).to_i
             - top_margin = ((13.0 / 25.0).to_f * (fontsize.to_f)).to_i
-            - amenity_left_margin = ((fontsize.to_f - 8) / 5).to_i
-            - amenity_top_margin = ((8.0 / 25.0).to_f * (fontsize.to_f)).to_i
+            - amenity_left_margin = ((fontsize.to_f - 13) / 5).to_i
+            - amenity_top_margin = ((13.0 / 25.0).to_f * (fontsize.to_f)).to_i
 
             - spanSize_x = ((5 / 25.0).to_f * (fontsize.to_f)).to_f
             - spanSize_y = ((7 / 25.0).to_f * (fontsize.to_f)).to_f
@@ -247,7 +247,7 @@
                         - @floors.each do |floor|
                           - floorplate = @floorplates.select{|f| f.floors.include?(floor)}.first
                           - if floor == unit.floor && !floorplate&.standard_image_url&.ends_with?(".svg")
-                            = link_to "<div id='s_#{unit.id}' class='fas fa-map-marker-alt fa-map-marker-alt-responsive unit_marker' style='font-size: 22px; color: #{map_marker_color};'> <span style = '#{coordinates_array.count([unit.x_plot,unit.y_plot]) > 9 ? "position: absolute; left:#{spanSize_y - 1}px; top:#{spanSize_x + 2}px; font-size: #{spanSize_size - 4}px;" : "position: absolute; left:#{spanSize_y}px; top:#{spanSize_x}px; font-size: #{spanSize_size}px;"}' ></span> </div>".html_safe, "##", :class => "marker #{coordinates_array.count([unit.x_plot,unit.y_plot]) > 1 ? 'overlapping-unit' : ''}", :id => "m_#{unit.id}", :style => "font-size: #{fontsize}px; position:absolute;", **(fetch_unit_info_struct(unit))[:data_attributes]
+                            = link_to "<div id='s_#{unit.id}' class='fas fa-map-marker-alt fa-map-marker-alt-responsive unit_marker' style='font-size: 22px; color: #{map_marker_color};'> <span style = '#{coordinates_array.count([unit.x_plot,unit.y_plot]) > 9 ? "position: absolute; left:#{spanSize_y}px; top:#{spanSize_x}px; font-size: #{spanSize_size}px;" : "position: absolute; left:#{spanSize_y}px; top:#{spanSize_x}px; font-size: #{spanSize_size}px;"}' ></span> </div>".html_safe, "##", :class => "marker #{coordinates_array.count([unit.x_plot,unit.y_plot]) > 1 ? 'overlapping-unit' : ''}", :id => "m_#{unit.id}", :style => "left:#{(unit.x_plot.to_f - left_margin)}px; top:#{(unit.y_plot.to_f - top_margin)}px; font-size: #{fontsize}px; position:absolute;", **(fetch_unit_info_struct(unit))[:data_attributes]
                       - elsif !is_svg
                         = link_to "<div id='s_#{unit.id}' class='fas fa-map-marker-alt fa-map-marker-alt-responsive unit_marker' style='font-size: 22px; color: #{map_marker_color};'> <span style = '#{coordinates_array.count([unit.x_plot,unit.y_plot]) > 9 ? "position: absolute; left:#{spanSize_y - 1}px; top:#{spanSize_x + 2}px; font-size: #{spanSize_size - 4}px;" : "position: absolute; left:#{spanSize_y}px; top:#{spanSize_x}px; font-size: #{spanSize_size}px;"}' ></span> </div>".html_safe, "##", :class => "marker #{coordinates_array.count([unit.x_plot,unit.y_plot]) > 1 ? 'overlapping-unit' : ''}", :id => "m_#{unit.id}", :style => "left:#{(unit.x_plot.to_f-(left_margin).to_f)}px; top:#{(unit.y_plot.to_f-(top_margin).to_f)}px; font-size: #{fontsize}px; position:absolute;",**(fetch_unit_info_struct(unit))[:data_attributes]
 

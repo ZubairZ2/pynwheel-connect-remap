@@ -24,7 +24,7 @@ var timeoutId = null;
 
 
 $(document).ready(function () {
-  if (has_floorplate.toString() === "true")
+  if (has_floorplate?.toString() === "true")
     isSVG = !!document.querySelector(`svg#viewArea-${current_floor}`)
   else
     isSVG = !!document.querySelector('#property-map-image-container')?.dataset.svgUrl;
@@ -1018,7 +1018,7 @@ function unitMarketRent(unit) {
 function unitListHover() {
   let focused_marker;
 
-  if (has_floorplate.toString() === "true")
+  if (has_floorplate?.toString() === "true")
     isSVG = !!document.querySelector(`svg#viewArea-${current_floor}`)
   else
     isSVG = !!document.querySelector('#property-map-image-container')?.dataset.svgUrl;
