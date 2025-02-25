@@ -74,7 +74,7 @@ class SitemapAmenitiesController < ApplicationController
 			ts.save
 		end
 		if @amenity.save(validate: false)
-			render json: {amenity: @amenity.attributes}, status: 200
+			render json: { amenity: @amenity.attributes }, status: 200
 	    else
 	      render json: {}, status: 404
 	    end

@@ -162,11 +162,12 @@ $(document).ready(function () {
     };
 
     $("#map").bind("mouseup touchend", function (e) {
-       const { element, centerPoint } = getSvgClickedElementWithCenterPoint('#map.plot-image', e);
+        const { element, centerPoint } = getSvgClickedElementWithCenterPoint('#map.plot-image', e);
 
         // first check if user is clicking on scrollbar
         if (e.target != $('#map').get(0)) {
-            e.preventDefault();
+            if (addmode)
+                e.preventDefault();
 
             if (e.type === 'mouseup' && mobileCheck()) {
                 return;
@@ -175,9 +176,9 @@ $(document).ready(function () {
 
             var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
             var scaleFactor = (1 / (transform.scale || 1));
-
+            
             if (element && centerPoint) {
-                [dx, dy] = [(centerPoint.x * scaleFactor) - left_margin, (centerPoint.y * scaleFactor) - top_margin]
+                [dx, dy] = [centerPoint.x - left_margin, centerPoint.y - top_margin]
             } else {
                 marker_color = $('#marker_color').html();
                 marker_font_size = ($('#font_size').html()) ? $('#font_size').html() : $('#marker_font_size').html();
@@ -293,7 +294,7 @@ function getDeletionUrl(){
     }
 }
 
-function getTagToPlot(url){
+function getTagToPlot (url) {
     if (typeof tour_id_for_stop !== 'undefined') {
         tag = "<a class='marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy + "px; position:absolute;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
         tag += "<i class='custom-icon' style='width: " + marker_font_size + "px; height: " + marker_font_size + "px; border: 2px solid " + marker_color + "; '><i class='fa fa-star' style='color: " + marker_color + "; font-size: " + (parseInt(marker_font_size) / 2) + "px; margin-top:" + camera_margin + "px;'></i></i>";

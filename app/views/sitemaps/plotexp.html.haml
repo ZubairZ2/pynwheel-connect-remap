@@ -431,8 +431,10 @@
 
           - left_margin = (((@community&.design&.property_map_size_integer&.to_f || 30) - 25) / 2.0)&.to_i
           - top_margin = ((20.0 / 25.0).to_f * ( @community&.design&.property_map_size_integer || 30 ))&.to_i
+          - is_svg = false
 
           - if @sitemap.present? && @sitemap.image.present? && @sitemap.image_url.ends_with?(".svg")
+            - is_svg = true
             - left_margin = 13
             - top_margin = 34
 
@@ -515,9 +517,9 @@
 
             .col-lg-9#container.p-0
               .map-block{style: "position: unset"}
-                #map.plot-image{data: {svg_url: @sitemap.present? && @sitemap.image.present? && @sitemap.image_url.ends_with?(".svg") ? @community.image_src : nil}, style: "min-width: 100%; height: 100%; position: relative" }
+                #map.plot-image{data: {svg_url: is_svg ? @community.image_src : nil}, style: "min-width: 100%; height: 100%; position: relative" }
                   .grid-graph.hidden
-                  - unless @sitemap.present? && @sitemap.image.present? && @sitemap.image_url.ends_with?(".svg")
+                  - unless is_svg
                     = image_tag @sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg", id:"map_img",name:"viewArea", id:"viewArea",draggable:"false", class: 'viewArea', data: {'map_id' => "map"}
                     - if @community.community_tour.x_plot.to_i + @community.community_tour.y_plot.to_i > 0
                       = link_to image_tag("/assets/star.png", style: 'width:15px;'), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "m_", :style => "left:#{@community.community_tour.x_plot}px; top:#{@community.community_tour.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/tours/#{@community.community_tour.id}/resetStartingPoint"
@@ -526,9 +528,9 @@
                   - @units_by_plotted_doors_order&.each do |unit|
                     - if unit.x_plot.to_i + unit.y_plot.to_i > 0
                       - unless coordinates_array.include?([unit.x_plot, unit.y_plot])
-
                         - coordinates_array.push([unit.x_plot, unit.y_plot])
                         - unit_door_exists = unit.door.present? ? true : false
+
                         %p{class: "marker", style: "left:#{unit.x_plot - left_margin}px; top:#{unit.y_plot - top_margin}px; position:absolute"}
                           = link_to "javascript:void(0);", { id: "m_#{unit.provider_unit_id}", style: "font-size: #{fontsize}px", data_provider: @community.data_provider, provider_unit_id: unit.provider_unit_id, title: (unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, data: {toggle: "tooltip", toggle: "modal", name: "plot", target: "#markers-modal", href: "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot", horizontal: unit.x_plot, vertical: unit.y_plot, unit_form_url: "/communities/#{@community.id}/units/#{unit.id}/adjust_position", plotted_category: "unit"}} do
                             %i{class: "fas fa-map-marker-alt", style: "color: #{marker_color};"}
@@ -652,108 +654,17 @@
 #ocrData{data: {ocr_data: @map_ocr_data.to_json, image_dimensions: @dimensions.to_json}}
 :javascript
   $(document).ready(function () {
-    fetchSVG()
+    parsedSVGs = [];
+    fetchSVG(
+      "#map.plot-image",
+      { svgPosition: 1, activateZoom: true }
+    );
 
     $('.wysihtml5').each(function(i, elem) {
       $(elem).wysihtml5({'toolbar': {'image': false,'link' : false}});
     });
   })
 
-  function activateZoomPan(elem) {
-    document.addEventListener("touchstart", touchHandler, true);
-    document.addEventListener("touchmove", touchHandler, true);
-    document.addEventListener("touchend", touchHandler, true);
-    document.addEventListener("touchcancel", touchHandler, true);
-    window.mapPanZoom = panzoom(elem, {
-        minZoom: 0.5,
-        maxZoom: 3.0,
-        bounds: true,
-        boundsPadding: 0.3
-    });
-    var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
-    var scaleFactor = (1 / (transform.scale || 1));
-    var previous_scale = 0;
-    let mapBoxWidth = $('#map').width();
-    let mapBoxHeight = $('#map').height();
-    let mapContainerWidth = $('.map-block').width();
-    let mapContainerHeight = $('.map-block').height();
-    while ((mapBoxWidth / scaleFactor > mapContainerWidth) || (mapBoxHeight / scaleFactor > mapContainerHeight)) {
-        mapPanZoom.zoomInOut(189);
-        transform = mapPanZoom ? mapPanZoom.getTransform() : {};
-        scaleFactor = (1 / (transform.scale || 1));
-        if (scaleFactor === previous_scale) {
-            break;
-        }
-        previous_scale = scaleFactor
-    }
-    mapPanZoom.moveTo(0, 0);
-  }
-
-  function fetchSVG() {
-    const container = document.querySelector("#map.plot-image");
-    let childrenArray = Array.from(container?.children || [])
-
-    const svgIndex = childrenArray.findIndex((el) => el.tagName.toLowerCase() == 'svg');
-    const imageUrl = container?.dataset.svgUrl;
-
-    if (imageUrl && imageUrl.endsWith(".svg")) {
-      fetch(imageUrl)
-        .then(response => response.text())
-        .then(svg => {
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(svg, "image/svg+xml");
-          const svgElement = doc.documentElement;
-          parsedSVG = svgElement;
-
-          const attributes = {
-            id: 'viewArea',
-            draggable: false,
-            class: 'viewArea',
-            'data-map_id': 'map',
-            name: 'viewArea',
-            position: 'relative'
-          };
-
-          for (const key in attributes) {
-            svgElement.setAttribute(key, attributes[key]);
-          }
-          
-          if (svgElement.nodeName === "svg") {
-            container.innerHTML = "";
-            if (svgIndex > -1) {
-              childrenArray[svgIndex] = svgElement;
-            } else {
-              childrenArray = [childrenArray.shift(), svgElement, ...childrenArray]
-            }
-            container.append(...childrenArray);
-            activateZoomPan(container)
-          } else {
-            console.error("Error parsing SVG:", svgElement);
-          }
-        })
-        .catch(error => console.error("Error loading SVG:", error));
-    } else {
-      activateZoomPan(container)
-    }
-  }  
-  
-  function touchHandler(event) {
-    var touch = event.changedTouches[0];
-
-    var simulatedEvent = document.createEvent("MouseEvent");
-    simulatedEvent.initMouseEvent({
-    touchstart: "mousedown",
-    touchmove: "mousemove",
-    touchend: "mouseup"
-  }
-  [event.type], true, true, window, 1,
-    touch.screenX, touch.screenY,
-    touch.clientX, touch.clientY, false,
-    false, false, false, 0, null);
-
-    touch.target.dispatchEvent(simulatedEvent);
-    // event.preventDefault();
-  }
   $('.apartment-setting-field').change(function(){
     $('.apartment-settings-form').submit();
   });

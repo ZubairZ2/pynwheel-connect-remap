@@ -52,16 +52,19 @@
           - else
             - fontsize = 30
 
-          - left_margin = 0
-          - right_margin = 0
+          - is_svg = false
+          - left_margin = 13
+          - top_margin = 13
           - fontsize = fontsize -5
           - camera_font_size = fontsize / 2
+          - if @sitemap.image.present? && @sitemap.image_url.ends_with?(".svg")
+            - is_svg = true
 
           - marker_font_size2 = fontsize
           - camera_margin = (marker_font_size2 <= 27 ? 3 : (marker_font_size2 <= 30 ? 4 : (marker_font_size2 <= 33 ? 5 : (marker_font_size2 <= 35 ? 6 : 6))))
 
           %span.hidden#left_margin #{left_margin}
-          %span.hidden#right_margin #{right_margin}
+          %span.hidden#top_margin #{top_margin}
           %span.hidden#font_size #{fontsize}
           %span.hidden#marker_color #{marker_color}
           %span.hidden#camera_margin #{camera_margin}
@@ -94,11 +97,8 @@
                 %a.btn.btn-sm.btn-primary.reset.zoom-controls
                   %i.fa.fa-refresh
               .map-block{:style=>"position: relative;"}
-                .plot-image#map
-                  - if @sitemap.image? and @sitemap.image.content_type == "image/svg+xml"
-                    .svg_image_style{:style =>  "width: #{@floorplate.floorplate_image_width()}px; height: #{@floorplate.floorplate_image_height()}px;"}
-                      = image_tag @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"
-                  - else
+                #map.plot-image{data: {svg_url: is_svg ? @sitemap.image_url : nil}, style: "min-width: 100%; height: 100%; position: relative" }
+                  - unless is_svg
                     = image_tag @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"
 
                   - coordinates_array = []
@@ -108,7 +108,7 @@
 
                         - coordinates_array.push([amenity.x_plot, amenity.y_plot])
 
-                        %p{class: "marker", style: "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute"}
+                        %p{class: "marker", style: "left:#{amenity.x_plot - left_margin}px; top:#{amenity.y_plot - top_margin}px; position:absolute"}
                           = link_to "javascript:void(0);", :id => "m_#{amenity.id}", :title => amenity.name, data: {toggle: "tooltip", name: "plot", target: "#confirm-delete", toggle: "modal", href: "/communities/#{@community.id}/floorplates/#{@sitemap.id}/amenities/#{amenity.id}/remove_amenity?floor=#{@floor}", plotted_category: "amenity"} do
                             %i{class: "custom-icon", style: "height:#{fontsize}px; width: #{fontsize}px; border: 2px solid  #{marker_color};"}
                               %i{class: "fas fa-camera-retro", style: "font-size:#{camera_font_size}px; color: #{marker_color}; margin-top: #{camera_margin}px;"}
@@ -166,55 +166,18 @@
 
 :javascript
   $(document).ready(function () {
-    document.addEventListener("touchstart", touchHandler, true);
-    document.addEventListener("touchmove", touchHandler, true);
-    document.addEventListener("touchend", touchHandler, true);
-    document.addEventListener("touchcancel", touchHandler, true);
-    let elem = document.querySelector('#map');
-    window.mapPanZoom = panzoom(elem, {
-      minZoom: 0.5,
-      maxZoom: 1.0,
-      bounds: true,
-      boundsPadding: 0.3
-    });
-    var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
-    var scaleFactor = (1 / (transform.scale || 1));
-    var previous_scale = 0;
-    while($('#map').width()/scaleFactor > $('.map-block').width()  || $('#map').height()/scaleFactor > $('.map-block').height()){
-       mapPanZoom.zoomInOut(189);
-           transform = mapPanZoom ? mapPanZoom.getTransform() : {};
-           scaleFactor = (1 / (transform.scale || 1));
-           if(scaleFactor === previous_scale)
-           {
-            break;
-           }
-           previous_scale = scaleFactor
-    }
-    mapPanZoom.moveTo(0,0);
+    parsedSVGs = [];
+    fetchSVG(
+      '#map.plot-image',
+      { svgPosition: 0, activateZoom: true }
+    );
   })
-  
-  function touchHandler(event) {
-    var touch = event.changedTouches[0];
-
-    var simulatedEvent = document.createEvent("MouseEvent");
-        simulatedEvent.initMouseEvent({
-        touchstart: "mousedown",
-        touchmove: "mousemove",
-        touchend: "mouseup"
-    }[event.type], true, true, window, 1,
-        touch.screenX, touch.screenY,
-        touch.clientX, touch.clientY, false,
-        false, false, false, 0, null);
-
-    touch.target.dispatchEvent(simulatedEvent);
-    // event.preventDefault();
-  }
   
   var arr = #{raw amenity_arr}
   var units_info = #{@amenity_with_doors.to_json.html_safe}
 
   var left_margin = #{raw left_margin}
-  var right_margin = #{raw right_margin}
+  var top_margin = #{raw top_margin}
   var community_id = #{params[:community_id]}
   var floorplate_id_for_amenity = #{@sitemap.id}
   var fp_id = #{@sitemap.id}

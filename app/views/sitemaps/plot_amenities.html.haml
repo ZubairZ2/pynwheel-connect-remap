@@ -55,10 +55,14 @@
           - else
             - fontsize = 30
 
+          - is_svg = false
           - left_margin = 13
           - top_margin = 13
           - fontsize = fontsize -5
           - camera_font_size = fontsize / 2
+
+          - if @sitemap.image.present? && @sitemap.image_url.ends_with?(".svg")
+            - is_svg = true
           
           - marker_font_size2 = fontsize
           - camera_margin = (marker_font_size2 <= 27 ? 3 : (marker_font_size2 <= 30 ? 4 : (marker_font_size2 <= 33 ? 5 : (marker_font_size2 <= 35 ? 6 : 6))))
@@ -97,8 +101,8 @@
                 %a.btn.btn-sm.btn-primary.reset.zoom-controls
                   %i.fa.fa-refresh
               .map-block{:style=>"position: relative;"}
-                .plot-image#map{data: {svg_url: @sitemap.present? && @sitemap.image.present? && @sitemap.image_url.ends_with?(".svg") ? @sitemap.image_url : nil}, style: "min-width: 100%; height: 100%; position: relative" }
-                  - unless @sitemap.present? && @sitemap.image.present? && @sitemap.image_url.ends_with?(".svg")
+                .plot-image#map{data: {svg_url: is_svg ? @sitemap.image_url : nil}, style: "min-width: 100%; height: 100%; position: relative" }
+                  - unless is_svg
                     = image_tag @sitemap.image.present? ? @sitemap.image.url : "default.jpeg", id:"map_img", name:"viewArea", id:"viewArea", draggable:"false", class: 'viewArea', data: {'map_id' => "map"}
 
                   - coordinates_array = []
@@ -168,52 +172,12 @@
 
 :javascript
   $(document).ready(function () {
-    document.addEventListener("touchstart", touchHandler, true);
-    document.addEventListener("touchmove", touchHandler, true);
-    document.addEventListener("touchend", touchHandler, true);
-    document.addEventListener("touchcancel", touchHandler, true);
-    fetchSVG();
+    parsedSVGs = [];
+    fetchSVG(
+      "#map.plot-image",
+      { svgPosition: 0, activateZoom: true }
+    );
   })
-  
-  function touchHandler(event) {
-    var touch = event.changedTouches[0];
-
-    var simulatedEvent = document.createEvent("MouseEvent");
-        simulatedEvent.initMouseEvent({
-        touchstart: "mousedown",
-        touchmove: "mousemove",
-        touchend: "mouseup"
-    }[event.type], true, true, window, 1,
-        touch.screenX, touch.screenY,
-        touch.clientX, touch.clientY, false,
-        false, false, false, 0, null);
-
-    touch.target.dispatchEvent(simulatedEvent);
-    // event.preventDefault();
-  }
-
-  function activateZoomPan () {
-    let elem = document.querySelector('#map');
-    window.mapPanZoom = panzoom(elem, {
-        minZoom: 0.5,
-        maxZoom: 1.0,
-        bounds: true,
-        boundsPadding: 0.3
-    });
-    var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
-    var scaleFactor = (1 / (transform.scale || 1));
-    var previous_scale = 0;
-    while ($('#map').width() / scaleFactor > $('.map-block').width() || $('#map').height() / scaleFactor > $('.map-block').height()) {
-        mapPanZoom.zoomInOut(189);
-        transform = mapPanZoom ? mapPanZoom.getTransform() : {};
-        scaleFactor = (1 / (transform.scale || 1));
-        if (scaleFactor === previous_scale) {
-            break;
-        }
-        previous_scale = scaleFactor
-    }
-    mapPanZoom.moveTo(0, 0);
-  }
 
   var floor = null;
   var arr = #{raw amenity_arr}
@@ -240,51 +204,3 @@
     draw_initial_hallways(hallways_coordinates)
     //draw_line(hallways_coordinates);
   });
-
-  function fetchSVG() {
-    const container = document.querySelector("#map.plot-image");
-    let childrenArray = Array.from(container?.children || [])
-
-    const svgIndex = childrenArray.findIndex((el) => el.tagName.toLowerCase() == 'svg');
-    const imageUrl = container?.dataset.svgUrl;
-
-    if (imageUrl && imageUrl.endsWith(".svg")) {
-      fetch(imageUrl)
-        .then(response => response.text())
-        .then(svg => {
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(svg, "image/svg+xml");
-          const svgElement = doc.documentElement;
-          parsedSVG = svgElement;
-
-          const attributes = {
-            id: 'viewArea',
-            draggable: false,
-            class: 'viewArea',
-            'data-map_id': 'map',
-            name: 'viewArea',
-            position: 'relative'
-          };
-
-          for (const key in attributes) {
-            svgElement.setAttribute(key, attributes[key]);
-          }
-          
-          if (svgElement.nodeName === "svg") {
-            container.innerHTML = "";
-            if (svgIndex > -1) {
-              childrenArray[svgIndex] = svgElement;
-            } else {
-              childrenArray = [svgElement, ...childrenArray]
-            }
-            container.append(...childrenArray);
-            activateZoomPan(container)
-          } else {
-            console.error("Error parsing SVG:", svgElement);
-          }
-        })
-        .catch(error => console.error("Error loading SVG:", error));
-    } else {
-      activateZoomPan(container)
-    }
-  }

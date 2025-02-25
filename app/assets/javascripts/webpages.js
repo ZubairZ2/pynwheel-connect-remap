@@ -11,10 +11,11 @@ var _3dUnitsToBeSelected;
 var enable3DMaps;
 var image_width_2d;
 var maxSelectedPrice;
+var timer;
 var currency = "$";
 var real_page_provider_unit_id = null;
 var currentUnitSelected = null;
-var parsedSVG = null;
+var parsedSVGs = [];
 
 var isSVG = false;
 var isMouseMoving = false;
@@ -23,7 +24,11 @@ var timeoutId = null;
 
 
 $(document).ready(function () {
-  isSVG = !!document.querySelector('#property-map-image-container')?.dataset.svgUrl;
+  if (has_floorplate.toString() === "true")
+    isSVG = !!document.querySelector(`svg#viewArea-${current_floor}`)
+  else
+    isSVG = !!document.querySelector('#property-map-image-container')?.dataset.svgUrl;
+
   webCommunity = $("#communityWebpagesData").data("community");
   _3dAmenities = $("#communityWebpagesData").data("amenities");
   _3dConfigurations = $("#communityWebpagesData").data("mapConfigurations");
@@ -56,7 +61,6 @@ $(document).ready(function () {
       );
     }
     renderChangedUnits();
-    setPointersCoordinates();
     handleMapControl();
   } else {
     console.error("webCommunity not loaded properly");
@@ -264,7 +268,9 @@ $(window).bind('load', function () {
 
         current_floor = floor_for_showing_image
         populate_current_units();
-        
+        isSVG = !!document.querySelector(`svg#viewArea-${current_floor}`)
+        setAmenitiesCoordinates();
+
         if ($(this).hasClass('only-amenity')) {
           $('.alert').show()
           timer = setTimeout(function () {
@@ -907,6 +913,9 @@ function resetToDefaultZoom() {
 
 function click_marker_tag (id, selector) {
   const markersSelector = isSVG ? 'cloned-unit' : 'unit_marker';
+  if (!isSVG) {
+    id = id.replace('unit_', 's_')
+  }
   var marker_tags = document.getElementsByClassName(markersSelector);
   Array.from(marker_tags).forEach(item => {
     if (item.id === id || (selector && item.id === `${selector}_cloned`)) {
@@ -985,110 +994,6 @@ function renderChangedUnits(){
   unitListHover();
 }
 
-
-function setPointersCoordinates() {
-  if (!parsedSVG) return;
-
-  parsedSVG
-    .querySelectorAll(".cloned-unit")
-    .forEach((node) => $(node).addClass("hidden"));
-
-  if (units?.length) {
-    units.forEach(({ pointer_data, data_attributes }) => {
-      let { tag, id, selector } = pointer_data || {};
-      if (tag && (id || selector)) {
-        hash_operator = "#";
-        if (id) selector = `${tag}${hash_operator}${id}`;
-        const block = parsedSVG.querySelector(selector);
-        const existingDuplicate = parsedSVG.querySelector(
-          id ? `${selector}_cloned` : `${selector}.cloned-unit`
-        );
-
-        if (existingDuplicate) {
-          $(existingDuplicate).removeClass("hidden");
-        } else {
-          const duplicateBlock = block.cloneNode(true);
-
-          for (const key in data_attributes) {
-            duplicateBlock.setAttribute(key, data_attributes[key]);
-          }
-          duplicateBlock.setAttribute(
-            "id",
-            `${id ? block.id : selector}_cloned`
-          );
-          duplicateBlock.setAttribute("fill", map_marker_color);
-          const jqueryEl = $(duplicateBlock);
-          jqueryEl.addClass("cloned-unit");
-          jqueryEl.on("click", () => {
-            $("#unitModal").show();
-          });
-          jqueryEl.on("mouseenter", markerHoverEffect);
-          jqueryEl.on("mouseleave", markerHoverEffectEnd);
-          block.parentElement.appendChild(duplicateBlock);
-        }
-      }
-    });
-
-    $(".popup-title").css("background-color", map_marker_color);
-    $(".popup-arrow").css("background-color", map_marker_color);
-  }
-}
-
-function setAmenitiesCoordinates() {
-  if (!parsedSVG) return;
-  parsedSVG
-    .querySelectorAll(".cloned-amenity")
-    .forEach((node) => $(node).addClass("hidden"));
-
-  if (amenities?.length) {
-    amenities.forEach((amenity) => {
-      const { pointer_data: pointerData } = amenity || {};
-      let { tag, id, selector } = pointerData || {};
-      if (tag && (id || selector)) {
-        hash_operator = "#";
-        if (id) selector = `${tag}${hash_operator}${id}`;
-        const block = parsedSVG.querySelector(selector);
-        const existingDuplicate = parsedSVG.querySelector(
-          id ? `${selector}_cloned` : `${selector}.cloned-amenity`
-        );
-
-        if (existingDuplicate) {
-          $(existingDuplicate).removeClass("hidden");
-        } else {
-          const duplicateBlock = block.cloneNode(true);
-
-          duplicateBlock.setAttribute(
-            "id",
-            `${id ? block.id : selector}_cloned`
-          );
-          duplicateBlock.setAttribute("fill", map_marker_color);
-          duplicateBlock.classList.add("cloned-amenity", "sitemap-amenity-marker", "slider-amenity", "amenityTooltip");
-          block.parentElement.appendChild(duplicateBlock);
-
-          const { x, y } = duplicateBlock.getBoundingClientRect();
-          const toolTipSpan = document.createElement('span')
-          toolTipSpan.classList.add("amenityTooltipText")
-          toolTipSpan.innerHTML = `
-            <h2 style="display: ${amenity.show_name ? "block" : "none"}">${amenity.name}</h2>
-            <img src="${amenity.image_url}" alt="Image Title">
-          `;
-          parsedSVG.insertAdjacentElement('afterend', toolTipSpan)
-          toolTipSpan.style.position = "absolute"
-          toolTipSpan.style.top = y - 92
-          toolTipSpan.style.left = x - 53
-
-          const jqueryEl = $(duplicateBlock);
-          jqueryEl.on("click", () => {
-            openAmenityViewerModal(amenity, amenity.galleries)
-          });
-          jqueryEl.on("mouseenter", (_e) => amenityHoverEffect(toolTipSpan));
-          jqueryEl.on("mouseleave", (_e) => amenityHoverEffectEnd(toolTipSpan));
-        }
-      }
-    });
-  }
-}
-
 function amenityHoverEffect (toolTipSpan) {
   toolTipSpan.style.visibility = "visible";
 }
@@ -1098,8 +1003,12 @@ function amenityHoverEffectEnd (toolTipSpan) {
 }
 
 function onUnitClick (e) {
-  const { pointerData: { id, selector } } = getUnitData(e.target);
-  click_marker_tag(`${id}_cloned`, selector)
+  const { id, pointerData: { id: pointerId, selector } } = getUnitData(e.target);
+  if (pointerId || selector)
+    click_marker_tag(`${pointerId}_cloned`, selector)
+  else {
+    click_marker_tag(id, null)
+  }
 };
 
 function unitMarketRent(unit) {
@@ -1108,8 +1017,11 @@ function unitMarketRent(unit) {
 
 function unitListHover() {
   let focused_marker;
-  if (isSVG === null)
-    isSVG = !!document.querySelector('#property-map-image-container')?.dataset.svgUrl;;
+
+  if (has_floorplate.toString() === "true")
+    isSVG = !!document.querySelector(`svg#viewArea-${current_floor}`)
+  else
+    isSVG = !!document.querySelector('#property-map-image-container')?.dataset.svgUrl;
 
   $("div.left-side-30-units").hover(
     function (e) {

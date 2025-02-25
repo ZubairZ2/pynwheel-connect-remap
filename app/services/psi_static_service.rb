@@ -591,8 +591,10 @@ class PsiStaticService < BaseService
       availability = u['Availability']
       unit.availability_url = availability['UnitAvailabilityURL'] if availability.present?
     
-      unit_floorplan = @all_floorplans_hash[unit.floorplan_id]
-      unit.availability_url ||= unit_floorplan&.availability_url
+      if @all_floorplans_hash.present? && @all_floorplans_hash.key?(unit.floorplan_id)
+        unit_floorplan = @all_floorplans_hash[unit.floorplan_id]
+        unit.availability_url ||= unit_floorplan&.availability_url
+      end
     
       if availability.present? && availability['UnitAvailabilityURL'].present?
         url_split = availability['UnitAvailabilityURL'].split('/')
