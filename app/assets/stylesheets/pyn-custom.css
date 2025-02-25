@@ -3873,11 +3873,11 @@ a#favoriteclickme {
         width: 73% !important;
     }
 
-    .amenityTooltip .amenityTooltiptext h2 {
+    .amenityTooltipText h2 {
         font-size: 10px !important;
     }
 
-    .amenityTooltip .amenityTooltiptext {
+    .amenityTooltipText {
         width: 120px !important;
         font-size: 10px;
     }
@@ -7296,7 +7296,7 @@ span.to-input {
     position: relative;
 }
 
-.amenityTooltiptext {
+.amenityTooltipText {
     visibility: hidden;
     position: absolute;
     top: 100%;
@@ -7307,17 +7307,17 @@ span.to-input {
     border-radius: 4px
 }
 @media (min-width: 769px) {
-    .amenityTooltip:hover .amenityTooltiptext {
+    .amenityTooltip:hover .amenityTooltipText {
         visibility: visible;
     }
 }
-.amenityTooltiptext img {
+.amenityTooltipText img {
     display: block;
     margin: 0px auto;
     border-radius: 3px;
 }
 
-.amenityTooltiptext h2 {
+.amenityTooltipText h2 {
     text-align: center;
     margin: 5px 5px;
     font-size: 16px;

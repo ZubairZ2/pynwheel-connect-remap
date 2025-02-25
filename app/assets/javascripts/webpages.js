@@ -1065,41 +1065,36 @@ function setAmenitiesCoordinates() {
           duplicateBlock.classList.add("cloned-amenity", "sitemap-amenity-marker", "slider-amenity", "amenityTooltip");
           block.parentElement.appendChild(duplicateBlock);
 
-          const foreignObject = document.createElementNS("http://www.w3.org/2000/svg", "foreignObject");
-          foreignObject.setAttribute("width", "150");
-          foreignObject.setAttribute("height", "100");
-          foreignObject.setAttribute("x", "0");
-          foreignObject.setAttribute("y", "0");
-          foreignObject.setAttribute("class", "amenityTooltiptext");
-
-          const toolTipContent = `
-            <div xmlns="http://www.w3.org/1999/xhtml" style="background: white; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
-              <h2 style="display: ${amenity.show_name ? "block" : "none"}">${amenity.name}</h2>
-              <img src="${amenity.image_url}" alt="Image Title" style="max-width: 100%; height: auto;">
-            </div>
+          const { x, y } = duplicateBlock.getBoundingClientRect();
+          const toolTipSpan = document.createElement('span')
+          toolTipSpan.classList.add("amenityTooltipText")
+          toolTipSpan.innerHTML = `
+            <h2 style="display: ${amenity.show_name ? "block" : "none"}">${amenity.name}</h2>
+            <img src="${amenity.image_url}" alt="Image Title">
           `;
-          foreignObject.innerHTML = toolTipContent;
-
-          duplicateBlock.appendChild(foreignObject);
+          parsedSVG.insertAdjacentElement('afterend', toolTipSpan)
+          toolTipSpan.style.position = "absolute"
+          toolTipSpan.style.top = y - 92
+          toolTipSpan.style.left = x - 53
 
           const jqueryEl = $(duplicateBlock);
           jqueryEl.on("click", () => {
             openAmenityViewerModal(amenity, amenity.galleries)
           });
-          jqueryEl.on("mouseenter", (_e) => amenityHoverEffect(foreignObject));
-          jqueryEl.on("mouseleave", (_e) => amenityHoverEffectEnd(foreignObject));
+          jqueryEl.on("mouseenter", (_e) => amenityHoverEffect(toolTipSpan));
+          jqueryEl.on("mouseleave", (_e) => amenityHoverEffectEnd(toolTipSpan));
         }
       }
     });
   }
 }
 
-function amenityHoverEffect (foreignObject) {
-  foreignObject.style.visibility = "visible";
+function amenityHoverEffect (toolTipSpan) {
+  toolTipSpan.style.visibility = "visible";
 }
 
-function amenityHoverEffectEnd (foreignObject) {
-  foreignObject.style.visibility = "hidden";
+function amenityHoverEffectEnd (toolTipSpan) {
+  toolTipSpan.style.visibility = "hidden";
 }
 
 function onUnitClick (e) {
