@@ -147,7 +147,7 @@ $(window).bind('load', function () {
       else {
         $('.unit-buttons').empty();
         $('.unit-buttons').addClass('hidden');
-        if (isSVG) {
+        if (isSVG()) {
           const filteredUnits = units.filter((unit) => unit.pointer_data['id'] == e.relatedTarget.id.replace('_cloned', ''));
           if (filteredUnits.length > 1) {
             filteredUnits.forEach(function (unit) {
@@ -268,7 +268,6 @@ $(window).bind('load', function () {
 
         current_floor = floor_for_showing_image
         populate_current_units();
-        isSVG = !!document.querySelector(`svg#viewArea-${current_floor}`)
         setAmenitiesCoordinates();
 
         if ($(this).hasClass('only-amenity')) {
@@ -912,8 +911,9 @@ function resetToDefaultZoom() {
 } 
 
 function click_marker_tag (id, selector) {
-  const markersSelector = isSVG ? 'cloned-unit' : 'unit_marker';
-  if (!isSVG) {
+  const isSVGMarker = isSVG();
+  const markersSelector = isSVGMarker ? 'cloned-unit' : 'unit_marker';
+  if (!isSVGMarker) {
     id = id.replace('unit_', 's_')
   }
   var marker_tags = document.getElementsByClassName(markersSelector);
@@ -1018,17 +1018,12 @@ function unitMarketRent(unit) {
 function unitListHover() {
   let focused_marker;
 
-  if (has_floorplate?.toString() === "true")
-    isSVG = !!document.querySelector(`svg#viewArea-${current_floor}`)
-  else
-    isSVG = !!document.querySelector('#property-map-image-container')?.dataset.svgUrl;
-
   $("div.left-side-30-units").hover(
     function (e) {
       const { id, pointerData, unitMarketingName } = getUnitData(e.target);
       let markersSelector = "marker";
 
-      if (isSVG) {
+      if (isSVG()) {
         markersSelector = "cloned-unit";
       }
       e.currentTarget.style.border = `3px solid ${map_marker_color}`;
@@ -2323,7 +2318,7 @@ function trackingMapHoverEvents() {
 }
 
 function amenityMarkerHoverEvent() {
-  const markerSelector = isSVG ? ".cloned-amenity" : ".amenity-marker";
+  const markerSelector = isSVG() ? ".cloned-amenity" : ".amenity-marker";
   $(document).off("mouseenter", markerSelector).on("mouseenter", markerSelector, function () {
     console.log("Amenity Marker hovered");
     updateActivityData("amenity_marker", "hover");
@@ -2336,7 +2331,7 @@ function amenityMarkerHoverEvent() {
 }
 
 function unitMarkerHoverEvent() {
-  const markerSelector = isSVG ? "cloned-unit" : "unit_marker";
+  const markerSelector = isSVG() ? "cloned-unit" : "unit_marker";
   $(document)
     .off("mouseenter", `.${markerSelector}`)
     .on("mouseenter", `.${markerSelector}`, function () {
@@ -2346,7 +2341,7 @@ function unitMarkerHoverEvent() {
 }
 
 function unitsListHoverEvent() {
-  const markerSelector = isSVG ? "cloned-unit" : "unit_marker";
+  const markerSelector = isSVG() ? "cloned-unit" : "unit_marker";
   $(document)
     .off("mouseenter", ".left-side-30-units")
     .on("mouseenter", ".left-side-30-units", function () {
@@ -2384,7 +2379,7 @@ function trackingMapClickEvents() {
 
 // New Activity Tracking Methods.
 function amenityMarkerClickEvent() {
-  const markerSelector = isSVG ? ".cloned-amenity" : ".amenity-marker";
+  const markerSelector = isSVG() ? ".cloned-amenity" : ".amenity-marker";
   $(document).off("click", markerSelector).on("click", markerSelector, function () {
     console.log("Amenity Marker Clicked");
     updateActivityData("amenity_marker", "click");
@@ -2397,7 +2392,7 @@ function amenityMarkerClickEvent() {
 }
 
 function unitMarkerClickEvent() {
-  const markerSelector = isSVG ? "cloned-unit" : "unit_marker";
+  const markerSelector = isSVG() ? "cloned-unit" : "unit_marker";
   $(document)
     .off("click", `.${markerSelector}`)
     .on("click", `.${markerSelector}`, function () {

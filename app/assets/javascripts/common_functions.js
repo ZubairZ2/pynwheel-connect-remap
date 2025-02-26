@@ -1,5 +1,17 @@
 var has_floorplate;
-window.activateZoomPan = function activateZoomPan (elem) {
+if (typeof has_floorplate === "undefined") {
+  has_floorplate = false;
+}
+
+window.isSVG = function isSVG() {
+  return (
+    (has_floorplate?.toString() === "true" &&
+      !!document.querySelector(`svg#viewArea-${current_floor}`)) ||
+    !!document.querySelector("svg#viewArea")
+  );
+};
+
+window.activateZoomPan = function activateZoomPan(elem) {
   document.addEventListener("touchstart", touchHandler, true);
   document.addEventListener("touchmove", touchHandler, true);
   document.addEventListener("touchend", touchHandler, true);
@@ -110,8 +122,7 @@ window.setPointersCoordinates = function setPointersCoordinates() {
       floorBasedUnits = units.filter(({ floor }) => floor === floorNum);
     }
 
-    if (!floorBasedUnits?.length)
-      return;
+    if (!floorBasedUnits?.length) return;
 
     floorBasedUnits.forEach(({ pointer_data, data_attributes }) => {
       let { tag, id, selector } = pointer_data || {};
@@ -184,7 +195,9 @@ window.setAmenitiesCoordinates = function setAmenitiesCoordinates() {
         hash_operator = "#";
         if (id) selector = `${tag}${hash_operator}${id}`;
         const block = svgElement.querySelector(selector);
-        const existingDuplicate = svgElement.getElementById(`${selector}_cloned`);
+        const existingDuplicate = svgElement.getElementById(
+          `${selector}_cloned`
+        );
 
         if (existingDuplicate) {
           $(existingDuplicate).removeClass("hidden");

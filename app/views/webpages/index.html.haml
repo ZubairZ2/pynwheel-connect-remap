@@ -178,6 +178,11 @@
               - amenity_left_margin = 13
               - amenity_top_margin = 13
 
+            %span.hidden#left_margin #{left_margin}
+            %span.hidden#top_margin #{top_margin}
+            %span.hidden#amenity_left_margin #{amenity_left_margin}
+            %span.hidden#amenity_top_margin #{amenity_top_margin}
+
             - if @community.theme_name.include?('gables')
               - marker_font_size = @community&.design&.amenity_map_marker_size_integer || 30
             - elsif @community.theme_name == 'modernist'
@@ -266,11 +271,6 @@
                           - @amenities.each do |amenity|
                             - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
                               = link_to "<span class='camera-icon' style='border: 2px solid  #{amenity_marker_color};'><i class='fas fa-camera-retro' style='color: #{amenity_marker_color};'></i></span><span class='amenityTooltipText'><h2 style='display:#{@community.show_amenity_name ? "block": "none"}' >#{amenity.name}</h2> <img src=#{amenity.standard_image_url} alt='Image Title'></span>".html_safe, "#", :style => "left:#{amenity.x_plot - amenity_left_margin}px; top:#{amenity.y_plot - amenity_top_margin}px; position:absolute;",:class=>"sitemap-amenity-marker slider-amenity amenityTooltip", :id => "a_#{amenity.id}", "data-amenity-id"=>amenity.id, "data-amenity-x-plot"=>amenity.x_plot, "data-amenity-y-plot"=>amenity.y_plot, "data-amenity-pointer-data"=>amenity.pointer_data.to_json, :onclick => "openAmenityViewerModal(#{amenity.to_json}, #{amenity.amenity_galleries.to_json})"
-
-                  %span.hidden#left_margin #{left_margin}
-                  %span.hidden#top_margin #{top_margin}
-                  %span.hidden#amenity_left_margin #{amenity_left_margin}
-                  %span.hidden#amenity_top_margin #{amenity_top_margin}
 
                 .alert.alert-danger.units-alert.fade.in{:style => "display:none;position:absolute;top:0%;width:100%;"}
                   - if @community_info.has_floorplates?

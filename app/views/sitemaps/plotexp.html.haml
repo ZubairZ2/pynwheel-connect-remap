@@ -429,14 +429,12 @@
           - else
             - fontsize = 30
 
-          - left_margin = (((@community&.design&.property_map_size_integer&.to_f || 30) - 25) / 2.0)&.to_i
-          - top_margin = ((20.0 / 25.0).to_f * ( @community&.design&.property_map_size_integer || 30 ))&.to_i
+          - left_margin = 13
+          - top_margin = 34
           - is_svg = false
 
           - if @sitemap.present? && @sitemap.image.present? && @sitemap.image_url.ends_with?(".svg")
             - is_svg = true
-            - left_margin = 13
-            - top_margin = 34
 
           %span.hidden#left_margin #{left_margin}
           %span.hidden#top_margin #{top_margin}

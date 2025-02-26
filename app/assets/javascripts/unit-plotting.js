@@ -36,19 +36,14 @@ function savePlot (id, dx, dy, door_id = 0, pointerData = {}) {
 }
 
 function saveFloorplateUnit (id, dx, dy, pointerData = {}) {
-    var xPlot;
-    var yPlot;
-    if(!addmode || parsedSVGs.length){
-        xPlot = dx + left_margin;
-        yPlot = dy + top_margin
-    }else{
-        xPlot = dx;
-        yPlot = dy
-    }
+    console.log("ready to ajaxsave FloorplateUnit", addmode, parsedSVGs.length, left_margin, top_margin, id, dx, dy);
+    dx = dx + left_margin;
+    dy = dy + top_margin;
+
     $.post("/communities/" + community_id + "/units/" + id + "/ajaxplotunitforfloorplate",
         {
-            "x_plot": xPlot,
-            "y_plot": yPlot,
+            "x_plot": dx,
+            "y_plot": dy,
             "floorplate_id": floorplate_id,
             "pointer": pointerData
         },
@@ -149,10 +144,10 @@ function saveFloorplanPlot(id, dx, dy) {
 }
 
 function saveAmenityPlotForFloorplate (id, dx, dy, pointerData = {}) {
-    if (parsedSVGs.length) {
-        dx = dx + left_margin;
-        dy = dy + top_margin
-    }
+    console.log("ready to ajaxsave AmenityPlotForFloorplate", addmode, parsedSVGs.length, left_margin, top_margin, id, dx, dy);
+    dx = dx + left_margin;
+    dy = dy + top_margin;
+
     $.post("/communities/" + community_id + "/floorplates/" + floorplate_id_for_amenity + "/amenities/" + id + "/plot_amenity",
         {
             "x_plot": dx,
@@ -179,7 +174,6 @@ function saveAmenityPlotForFloorplate (id, dx, dy, pointerData = {}) {
 }
 
 function saveElevatorPlotForFloorplate(id, dx, dy) {
-
     $.post("/communities/" + community_id + "/floorplates/" + floorplate_id_for_elevator + "/elevators/" + id + "/plot_elevator",
         {
             "x_plot": dx,
@@ -218,21 +212,14 @@ function saveAmenityPlotForUnit(id, dx, dy) {
 }
 
 function saveSiteMapUnit (id, dx, dy, pointerData = {}) {
-    console.log("ready to ajaxsave SiteMapUnit", id, dx, dy);
-    var xPlot;
-    var yPlot;
+    console.log("ready to ajaxsave SiteMapUnit", addmode, parsedSVGs.length, left_margin, top_margin, id, dx, dy);
+    dx = dx + left_margin;
+    dy = dy + top_margin;
 
-    if (!addmode || parsedSVGs.length) {
-        xPlot = dx + left_margin;
-        yPlot = dy + top_margin;
-    }else{
-        xPlot = dx;
-        yPlot = dy;
-    }
     $.post("/communities/" + community_id + "/units/" + id + "/ajaxplotunit",
         {
-            "x_plot": xPlot,
-            "y_plot": yPlot,
+            "x_plot": dx,
+            "y_plot": dy,
             "pointer": pointerData
         },
         function (data, status, xhr) {
@@ -255,11 +242,10 @@ function saveSiteMapUnit (id, dx, dy, pointerData = {}) {
 }
 
 function saveAmenityPlotForSitemap(id, dx, dy, pointerData = {}) {
-    console.log("ready to ajaxsave AmenityPlotForSitemap", id, dx, dy);
-    if (parsedSVGs.length) {
-        dx = dx + left_margin;
-        dy = dy + top_margin;
-    }
+    console.log("ready to ajaxsave AmenityPlotForSitemap", addmode, parsedSVGs.length, left_margin, top_margin, id, dx, dy);
+    dx = dx + left_margin;
+    dy = dy + top_margin;
+
     $.post("/communities/" + community_id + "/sitemaps/" + sitemap_id_for_amenity + "/amenities/" + id + "/plot_amenity",
         {
             "x_plot": dx,
@@ -313,59 +299,45 @@ var temp = [];
 var pointerOffset = { x: 0, y: 0 };
 
 function doDraggable () {
-    if (document.querySelector("#map.plot-image")?.dataset.svgUrl) {
-        doSvgDraggable();
-        return
-    }
-
     console.log("called do draggable")
-    // marker move
-    var pointerX;
-    var pointerY;
 
     $('.marker').draggable({
         containment: 'parent',
         stack: ".marker",
         // get the initial X and Y position when dragging starts
         start: function (event, ui) {
+            const { x, y, scale} = mapPanZoom ? mapPanZoom.getTransform() : { scale: 1, x: 0, y: 0 };
 
-            console.log("start drag 123")
-            var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
-            var scaleFactor = (1 / (transform.scale || 1));
-            ui.position.top = (ui.position.top * scaleFactor) - (transform.y * scaleFactor);
-            ui.position.left = (ui.position.left * scaleFactor) - (transform.x * scaleFactor);
-
-            pointerY = (event.pageY - $('#map').offset().top) / transform.scale - parseInt($(event.target).css('top'));
-            pointerX = (event.pageX - $('#map').offset().left) / transform.scale - parseInt($(event.target).css('left'));
+            ui.position.left = (ui.position.left - x) / scale;
+            ui.position.top = (ui.position.top - y) / scale;
 
             if (is_ui_a_door(ui))
                 start__door_work(event, ui)
             else if (is_ui_a_accesspoint(ui))
                 start__access_point(event, ui)
             else
-                start__original_work(event, ui)
+                start__original_work(event, ui, scale)
         },
         drag: function (event, ui) {
+            const draggingElement = $(this);
+            const mapElement = $('#map');
 
-            var canvasTop = $('#map').offset().top;
-            var canvasLeft = $('#map').offset().left;
-            var canvasHeight = $('#map').height();
-            var canvasWidth = $('#map').width();
+            const canvasTop = mapElement.offset().top;
+            const canvasLeft = mapElement.offset().left;
+            const canvasHeight = mapElement.height();
+            const canvasWidth = mapElement.width();
 
-            var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
-            var scaleFactor = (1 / (transform.scale || 1));
-            ui.position.top = (ui.position.top * scaleFactor) - (transform.y * scaleFactor);
-            ui.position.left = (ui.position.left * scaleFactor) - (transform.x * scaleFactor);
+            const { scale } = mapPanZoom ? mapPanZoom.getTransform() : { scale: 1, x: 0, y: 0 };
 
-            if (ui.position.left < 0) ui.position.left = 0;
-            if (ui.position.left + $(this).width() > canvasWidth) ui.position.left = canvasWidth - $(this).width();
-            if (ui.position.top < 0) ui.position.top = 0;
-            if (ui.position.top + $(this).height() > canvasHeight) ui.position.top = canvasHeight - $(this).height();
+            const calculatedUiTop = (event.pageY - canvasTop - pointerOffset.y) / scale;
+            const calculatedUiLeft = (event.pageX - canvasLeft - pointerOffset.x) / scale;
+
+            ui.position.left = Math.max(0, Math.min(calculatedUiLeft, canvasWidth - draggingElement.width()));
+            ui.position.top = Math.max(0, Math.min(calculatedUiTop, canvasHeight - draggingElement.height()));
 
             // Finally, make sure offset aligns with position
             ui.offset.top = Math.round(ui.position.top + canvasTop);
             ui.offset.left = Math.round(ui.position.left + canvasLeft);
-
 
             xmove = ui.position.left - xpos;
             ymove = ui.position.top - ypos;
@@ -385,60 +357,6 @@ function doDraggable () {
                 stop__access_point(event, ui)
             else
                 stop__original_work(event, ui)
-        }
-
-    }).on('mousedown touchstart', function (e) {
-        e.stopImmediatePropagation();
-        return false;
-    })
-}
-
-
-function doSvgDraggable() {
-    $('.marker').draggable({
-        containment: 'parent',
-        stack: ".marker",
-        // get the initial X and Y position when dragging starts
-        start: function (event, ui) {
-            console.log("start drag");
-            const transform = mapPanZoom ? mapPanZoom.getTransform() : { scale: 1, x: 0, y: 0 };
-
-            ui.position.left = (ui.position.left - transform.x) / transform.scale;
-            ui.position.top = (ui.position.top - transform.y) / transform.scale;
-
-            if (is_ui_a_door(ui))
-                start__door_work(event, ui)
-            else if (is_ui_a_accesspoint(ui))
-                start__access_point(event, ui)
-            else
-                start_svg_original_work(event, ui, transform.scale)
-        },
-        drag: function (event, ui) {
-            const transform = mapPanZoom ? mapPanZoom.getTransform() : { scale: 1, x: 0, y: 0 };
-
-            ui.position.left = (event.pageX - $('#map').offset().left - pointerOffset.x) / transform.scale;
-            ui.position.top = (event.pageY - $('#map').offset().top - pointerOffset.y) / transform.scale;
-
-            const canvasWidth = $('#map').width();
-            const canvasHeight = $('#map').height();
-            ui.position.left = Math.max(0, Math.min(ui.position.left, canvasWidth - $(this).width()));
-            ui.position.top = Math.max(0, Math.min(ui.position.top, canvasHeight - $(this).height()));
-
-            if (is_ui_a_door(ui))
-                drag__door_work(event, ui)
-            else if (is_ui_a_accesspoint(ui))
-                drag__access_point(event, ui)
-            else
-                drag_svg_original_work(event, ui)
-
-        },
-        stop: function (event, ui) {
-            if (is_ui_a_door(ui))
-                stop__door_work(event, ui)
-            else if (is_ui_a_accesspoint(ui))
-                stop__access_point(event, ui)
-            else
-                stop_svg_original_work(event, ui)
         }
 
     }).on('mousedown touchstart', function (e) {
@@ -478,58 +396,7 @@ function removeUnitFromSelectedArray(value) {
 }
 
 
-function start__original_work(event, ui) {
-    // get the initial X and Y position when dragging starts
-    xpos = Math.round(ui.position.left);
-    ypos = Math.round(ui.position.top);
-
-    xpos1 = xpos+2;     // for new markers
-    ypos1 = ypos+24;    // for new markers
-    // temp array of just markers at same x/y
-    temp = [];
-
-    if (arr != null) {
-        for (i = 0; i < arr.length; i++) {
-            if ((arr[i][1] == xpos && arr[i][2] == ypos) || (arr[i][1] == xpos1 && arr[i][2] == ypos1)) {
-                // alert(arr[i]);
-                // alert(arr[i][0]);
-                temp.push(arr[i][0])
-            }
-        }
-    }
-}
-
-function drag__original_work(event, ui) {
-
-    if (temp != null) {
-        for (i = 0; i < temp.length; i++) {
-            $('#m_' + temp[i]).css({"left": Math.round(ui.position.left), "top": Math.round(ui.position.top)});
-        }
-    }
-}
-
-function stop__original_work(event, ui) {
-    if (temp != null) {
-        for (i = 0; i < temp.length; i++) {
-            console.log("stop drag", temp[i], Math.round(ui.position.left), Math.round(ui.position.top));
-            for (j = 0; j < arr.length; j++) {
-                if (arr[j][0] == temp[i]) {       // computationally expensive, I will try to do this in one iteration
-                    $('#m_' + temp[i]).parent().css({
-                        "left": Math.round(ui.position.left),
-                        "top": Math.round(ui.position.top)
-                    });
-                    arr[j][1] = Math.round(ui.position.left);
-                    arr[j][2] = Math.round(ui.position.top);
-                }
-            }
-            // alert(temp[i]);
-            savePlot(temp[i], Math.round(ui.position.left), Math.round(ui.position.top));
-        }
-    }
-}
-
-
-function start_svg_original_work(event, ui, scale) {
+function start__original_work(event, ui, scale) {
     const xpos = Math.round(ui.helper[0].offsetLeft);
     const ypos = Math.round(ui.helper[0].offsetTop);
 
@@ -551,72 +418,59 @@ function start_svg_original_work(event, ui, scale) {
     pointerOffset.y = top_margin * scale;
 }
 
-function drag_svg_original_work(event, ui) {
-  console.log(
-    "drag ===> ",
-    temp,
-    Math.round(ui.position.left),
-    Math.round(ui.position.top)
-  );
-  let left = Math.round(ui.position.left);
-  let top = Math.round(ui.position.top);
-
-  if (temp) {
-    temp.forEach((markerId) => {
-      $(`#m_${markerId}`).css({
-        left,
-        top,
+function drag__original_work(event, ui) {
+    const left = Math.round(ui.position.left);
+    const top = Math.round(ui.position.top);
+  
+    if (temp) {
+      temp.forEach((markerId) => {
+        $(`#m_${markerId}`).css({
+          left,
+          top,
+        });
       });
-    });
-  }
+    }
 }
 
-function stop_svg_original_work (event, ui) {
-    let xPlot = Math.round(ui.position.left);
-    let yPlot = Math.round(ui.position.top);
+function stop__original_work(event, ui) {
+    let left = Math.round(ui.position.left);
+    let top = Math.round(ui.position.top);
     let dataSet = null;
 
-    console.log("end drag position ===> ", xPlot, yPlot);
-
-    const { element, centerPoint } = getSvgClickedElementWithCenterPoint("#map.plot-image", event);
-    if (element) {
-        const elId = element.id
-        const selector = elId ? null : getElementSelector(element);
-        dataSet = { tag: element.tagName?.toLowerCase(), id: elId, selector }
-        xPlot = Math.round(centerPoint.x);
-        yPlot = Math.round(centerPoint.y);
+    if (isSVG()) {
+        const { element, centerPoint } = getSvgClickedElementWithCenterPoint("#map.plot-image", event);
+        if (element) {
+            const elId = element.id
+            const selector = elId ? null : getElementSelector(element);
+            dataSet = { tag: element.tagName?.toLowerCase(), id: elId, selector }
+            left = Math.round(centerPoint.x);
+            top = Math.round(centerPoint.y);
+        }
     }
 
-    const marginedXPlot = xPlot - left_margin
-    const marginedYPlot = yPlot - top_margin
-
-    console.log("end drag ===> ", temp, xPlot, yPlot, marginedXPlot, marginedYPlot, element, centerPoint);
+    const marginedLeft = left - left_margin
+    const marginedTop = top - top_margin
 
     if (temp) {
         temp.forEach((markerId, i) => {
-            const markerIndex = arr.findIndex((marker) => marker[0].toString() === markerId);
-
-            if (dataSet)
-                savePlot(temp[i], marginedXPlot, marginedYPlot, null, dataSet);
-            else
-                savePlot(temp[i], xPlot, yPlot);
-
-            console.log("end drag ===> ", temp, xPlot, yPlot, markerId, markerIndex)
-            
-            const marker = $(`#m_${markerId}`)
-            marker.css({
-                left: marginedXPlot,
-                top: marginedYPlot,
-            });
+            let marker = $(`#m_${markerId}`);
             if (marker.parent()?.[0]?.classList.contains('marker')) {
-                marker.parent().css({
-                    left: marginedXPlot,
-                    top: marginedYPlot,
+                marker = marker.parent();
+            }
+
+            if (dataSet) {
+                savePlot(temp[i], marginedLeft, marginedTop, null, dataSet);
+                marker.css({
+                    left: marginedLeft,
+                    top: marginedTop,
                 });
             }
-            if (markerIndex !== -1) {
-                arr[markerIndex][1] = xPlot;
-                arr[markerIndex][2] = yPlot;
+            else {
+                savePlot(temp[i], left, top);
+                marker.css({
+                    left: left,
+                    top: top,
+                });
             }
         });
     }

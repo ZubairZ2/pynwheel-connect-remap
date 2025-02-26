@@ -162,6 +162,9 @@ $(document).ready(function () {
     };
 
     $("#map").bind("mouseup touchend", function (e) {
+        if (!addmode)
+            return;
+
         const { element, centerPoint } = getSvgClickedElementWithCenterPoint('#map.plot-image', e);
 
         // first check if user is clicking on scrollbar
@@ -178,25 +181,25 @@ $(document).ready(function () {
             var scaleFactor = (1 / (transform.scale || 1));
             
             if (element && centerPoint) {
-                [dx, dy] = [centerPoint.x - left_margin, centerPoint.y - top_margin]
+                [dx, dy] = [centerPoint.x, centerPoint.y];
             } else {
                 marker_color = $('#marker_color').html();
                 marker_font_size = ($('#font_size').html()) ? $('#font_size').html() : $('#marker_font_size').html();
 
-                left_margin = parseInt($('#left_margin').html());
-                top_margin = parseInt($('#top_margin').html());
-
                 if (e.type === 'touchend') {
-                    dx = ((e.changedTouches[0].pageX - elemPos.left) * scaleFactor) - (transform.x * scaleFactor);
-                    dy = ((e.changedTouches[0].pageY - elemPos.top) * scaleFactor) - (transform.y * scaleFactor);
+                    dx = e.changedTouches[0].pageX - (elemPos.left + transform.x);
+                    dy = e.changedTouches[0].pageY - (elemPos.top + transform.y);
                 } else {
-                    dx = (parseInt($('#active_x_plot').html()) * scaleFactor) - (10 * scaleFactor);
-                    dy = (parseInt($('#active_y_plot').html()) * scaleFactor) - (10 * scaleFactor);
+                    dx = e.offsetX;
+                    dy = e.offsetY;
                 }
+
+                dx = dx * scaleFactor;
+                dy = dy * scaleFactor;
             }
 
-            dx = Math.round(dx)
-            dy = Math.round(dy)
+            dx = Math.round(dx - left_margin)
+            dy = Math.round(dy - top_margin)
 
             camera_margin = $('#camera_margin').html();
             door_marker_color = $('#door_marker_color').html();
