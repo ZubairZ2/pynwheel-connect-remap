@@ -74,7 +74,7 @@ class WebpagesController < ActionController::Base
   def normalize_units
     @floorplans = @community_info.floorplans
     @available_units_and_sold_units.each do |unit|
-      if unit.effective_rent.present? && unit.effective_rent >= 1  && @floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id}
+      if unit.effective_rent.present? && unit.effective_rent >= 1  && @floorplans.any? { |f| f.provider_floorplan_id == unit.floorplan_id }
         @units_with_floorplan_info << fetch_unit_info_struct(unit)
       end
     end

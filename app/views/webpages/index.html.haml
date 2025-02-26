@@ -161,11 +161,12 @@
               - map_marker_color = 'rgba(247, 0, 0, 0.61)'
 
             - units = @available_units_and_sold_units
+
             - is_svg = false
-            - left_margin = ((fontsize.to_f - 35) / 5).to_i
-            - top_margin = ((13.0 / 25.0).to_f * (fontsize.to_f)).to_i
-            - amenity_left_margin = ((fontsize.to_f - 13) / 5).to_i
-            - amenity_top_margin = ((13.0 / 25.0).to_f * (fontsize.to_f)).to_i
+            - left_margin = ((6.0 / 25.0).to_f * (fontsize.to_f)).to_f
+            - top_margin = ((13.0 / 25.0).to_f * (fontsize.to_f)).to_f
+            - amenity_left_margin = ((6.0 / 25.0).to_f * (fontsize.to_f)).to_f
+            - amenity_top_margin = ((6.0 / 25.0).to_f * (fontsize.to_f)).to_f
 
             - spanSize_x = ((5 / 25.0).to_f * (fontsize.to_f)).to_f
             - spanSize_y = ((7 / 25.0).to_f * (fontsize.to_f)).to_f
@@ -225,7 +226,6 @@
                   %i.fa.fa-list
                   %strong List View
 
-
             %div.map-body.map-container-center-align
               .right-side.parent.tabcontent.map_view#panzomm-container.mobile_map_view
                 .image-map#zoomable.zoomable-map-container{style: "text-align: center; position: relative"}
@@ -245,32 +245,28 @@
                   - coordinates_array = []
 
                   - units.each do |unit|
-                    - if unit.x_plot.to_i + unit.y_plot.to_i > 0 and @floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id}
-                      - unless coordinates_array.include?([unit.x_plot,unit.y_plot])
-                        - coordinates_array.push([unit.x_plot,unit.y_plot])
+                    - if (unit.x_plot.to_i + unit.y_plot.to_i) > 0 and @floorplans.any? { |f| f.provider_floorplan_id == unit.floorplan_id }
+                      - unless coordinates_array.include?([unit.x_plot, unit.y_plot])
+                        - coordinates_array.push([unit.x_plot, unit.y_plot])
                       - if @community_info.has_floorplates?
-                        - @floors.each do |floor|
-                          - floorplate = @floorplates.select{|f| f.floors.include?(floor)}.first
-                          - if floor == unit.floor && !floorplate&.standard_image_url&.ends_with?(".svg")
-                            = link_to "<div id='s_#{unit.id}' class='fas fa-map-marker-alt fa-map-marker-alt-responsive unit_marker' style='font-size: 22px; color: #{map_marker_color};'> <span style = '#{coordinates_array.count([unit.x_plot,unit.y_plot]) > 9 ? "position: absolute; left:#{spanSize_y}px; top:#{spanSize_x}px; font-size: #{spanSize_size}px;" : "position: absolute; left:#{spanSize_y}px; top:#{spanSize_x}px; font-size: #{spanSize_size}px;"}' ></span> </div>".html_safe, "##", :class => "marker #{coordinates_array.count([unit.x_plot,unit.y_plot]) > 1 ? 'overlapping-unit' : ''}", :id => "m_#{unit.id}", :style => "left:#{(unit.x_plot.to_f - left_margin)}px; top:#{(unit.y_plot.to_f - top_margin)}px; font-size: #{fontsize}px; position:absolute;", **(fetch_unit_info_struct(unit))[:data_attributes]
+                        - floorplate = @floorplates.select{|f| f.floors.include?(unit.floor)}.first
+                        - unless floorplate&.standard_image_url&.ends_with?(".svg")
+                          = link_to "<div id='s_#{unit.id}' class='fas fa-map-marker-alt fa-map-marker-alt-responsive unit_marker' style='font-size: 22px; color: #{map_marker_color};'> <span style = '#{coordinates_array.count([unit.x_plot, unit.y_plot]) > 9 ? "position: absolute; left: #{spanSize_y - 1}px; top: #{spanSize_x + 2}px; font-size: #{spanSize_size - 4}px;" : "position: absolute; left: #{spanSize_y}px; top:# {spanSize_x}px; font-size: #{spanSize_size}px;"}' ></span> </div>".html_safe, "##", class: "marker #{coordinates_array.count([unit.x_plot, unit.y_plot]) > 1 ? 'overlapping-unit' : ''}", id: "m_#{unit.id}", style: "font-size: #{fontsize}px; position: absolute;", **(fetch_unit_info_struct(unit))[:data_attributes]
                       - elsif !is_svg
-                        = link_to "<div id='s_#{unit.id}' class='fas fa-map-marker-alt fa-map-marker-alt-responsive unit_marker' style='font-size: 22px; color: #{map_marker_color};'> <span style = '#{coordinates_array.count([unit.x_plot,unit.y_plot]) > 9 ? "position: absolute; left:#{spanSize_y - 1}px; top:#{spanSize_x + 2}px; font-size: #{spanSize_size - 4}px;" : "position: absolute; left:#{spanSize_y}px; top:#{spanSize_x}px; font-size: #{spanSize_size}px;"}' ></span> </div>".html_safe, "##", :class => "marker #{coordinates_array.count([unit.x_plot,unit.y_plot]) > 1 ? 'overlapping-unit' : ''}", :id => "m_#{unit.id}", :style => "left:#{(unit.x_plot.to_f-(left_margin).to_f)}px; top:#{(unit.y_plot.to_f-(top_margin).to_f)}px; font-size: #{fontsize}px; position:absolute;",**(fetch_unit_info_struct(unit))[:data_attributes]
-
+                        = link_to "<div id='s_#{unit.id}' class='fas fa-map-marker-alt fa-map-marker-alt-responsive unit_marker' style='font-size: 22px; color: #{map_marker_color};'> <span style = '#{coordinates_array.count([unit.x_plot ,unit.y_plot]) > 9 ? "position: absolute; left :#{spanSize_y - 1}px; top :#{spanSize_x + 2}px; font-size: #{spanSize_size - 4}px;" : "position: absolute; left: #{spanSize_y}px; top: #{spanSize_x}px; font-size: #{spanSize_size}px;"}' ></span> </div>".html_safe, "##", class: "marker #{coordinates_array.count([unit.x_plot, unit.y_plot]) > 1 ? 'overlapping-unit' : ''}", id: "m_#{unit.id}", style: "font-size: #{fontsize}px; position: absolute;", **(fetch_unit_info_struct(unit))[:data_attributes], "data-unit-x-plot": (unit.x_plot - left_margin).to_i, "data-unit-y-plot": (unit.y_plot - top_margin).to_i
                   .hidden-units
                   - if @community_info.show_amenity_key
                     - if @amenities.present?
                       - if @community_info.has_floorplates?
                         - @floors.each do |floor|
-                          - floorplate = @floorplates.select{|f| f.floors.include?(floor)}.first
-                          - unless floorplate&.standard_image_url&.ends_with?(".svg")
-                            - floorplate.amenities.where(floor: [floor, nil]).each do |amenity|
-                              - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
-                                = link_to "<span class='camera-icon' style='border: 2px solid  #{amenity_marker_color};'><i class='fas fa-camera-retro' style='color: #{amenity_marker_color};'></i></span><span class='amenityTooltipText'><h2 style='display:#{@community.show_amenity_name ? "block": "none"}' >#{amenity.name}</h2><img src=#{amenity.standard_image_url} alt='Image Title'></span>".html_safe, "#", :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"a_#{floor} amenity-marker hidden slider-amenity amenityTooltip", :id => "a_#{amenity.id}", "data-amenity-id"=>amenity.id, "data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot, :onclick => "openAmenityViewerModal(#{amenity.to_json}, #{amenity.amenity_galleries.to_json})"
+                          - floorplate = @floorplates.select{ |f| f.floors.include?(floor) }.first
+                          - floorplate.amenities.where(floor: [floor, nil]).each do |amenity|
+                            - if (amenity.x_plot.to_i + amenity.y_plot.to_i > 0) && !floorplate&.standard_image_url&.ends_with?(".svg")
+                              = link_to "<span class='camera-icon camera-icon-responsive' style='border: 2px solid  #{amenity_marker_color};'><i class='fas fa-camera-retro' style='color: #{amenity_marker_color};'></i></span><span class='amenitytooltiptext'><h2 style='display:#{@community.show_amenity_name ? "block": "none"}' >#{amenity.name}</h2><img src=#{amenity.standard_image_url} alt='Image Title'></span>".html_safe, "#", style: "left: #{amenity.x_plot - amenity_left_margin}px; top: #{amenity.y_plot - amenity_top_margin}px; position: absolute;", class: "a_#{floor} amenity-marker hidden slider-amenity amenityTooltip", id: "a_#{amenity.id}", "data-amenity-id": amenity.id, "data-amenity-x-plot": amenity.x_plot - amenity_left_margin, "data-amenity-y-plot": amenity.y_plot - amenity_top_margin, onclick: "openAmenityViewerModal(#{amenity.to_json}, #{amenity.amenity_galleries.to_json})"
                       - else
-                        - unless is_svg
-                          - @amenities.each do |amenity|
-                            - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
-                              = link_to "<span class='camera-icon' style='border: 2px solid  #{amenity_marker_color};'><i class='fas fa-camera-retro' style='color: #{amenity_marker_color};'></i></span><span class='amenityTooltipText'><h2 style='display:#{@community.show_amenity_name ? "block": "none"}' >#{amenity.name}</h2> <img src=#{amenity.standard_image_url} alt='Image Title'></span>".html_safe, "#", :style => "left:#{amenity.x_plot - amenity_left_margin}px; top:#{amenity.y_plot - amenity_top_margin}px; position:absolute;",:class=>"sitemap-amenity-marker slider-amenity amenityTooltip", :id => "a_#{amenity.id}", "data-amenity-id"=>amenity.id, "data-amenity-x-plot"=>amenity.x_plot, "data-amenity-y-plot"=>amenity.y_plot, "data-amenity-pointer-data"=>amenity.pointer_data.to_json, :onclick => "openAmenityViewerModal(#{amenity.to_json}, #{amenity.amenity_galleries.to_json})"
+                        - @amenities.each do |amenity|
+                          - if (amenity.x_plot.to_i + amenity.y_plot.to_i > 0) && !is_svg
+                            = link_to "<span class='camera-icon camera-icon-responsive' style='border: 2px solid  #{amenity_marker_color};'><i class='fas fa-camera-retro' style='color: #{amenity_marker_color};'></i></span><span class='amenitytooltiptext'><h2 style='display:#{@community.show_amenity_name ? "block": "none"}' >#{amenity.name}</h2> <img src=#{amenity.standard_image_url} alt='Image Title'></span>".html_safe, "#", style: "left: #{amenity.x_plot - amenity_left_margin}px; top: #{amenity.y_plot - amenity_top_margin}px; position: absolute;", class: "sitemap-amenity-marker amenity-marker slider-amenity amenityTooltip", id: "a_#{amenity.id}", "data-amenity-id": amenity.id, "data-amenity-x-plot": amenity.x_plot - amenity_left_margin, "data-amenity-y-plot": amenity.y_plot - amenity_top_margin, onclick: "openAmenityViewerModal(#{amenity.to_json}, #{amenity.amenity_galleries.to_json})"
 
                 .alert.alert-danger.units-alert.fade.in{:style => "display:none;position:absolute;top:0%;width:100%;"}
                   - if @community_info.has_floorplates?
@@ -356,6 +352,7 @@
 #communityWebpagesData{data: { currency: @community.get_currency_symbol(), community: @community.to_json, amenities: @amenities.to_json, map_configurations: @community&.three_d_maps_configuration.to_json, units: @units_with_floorplan_info, amenities_data: @amenities_data } }
 
 :javascript
+  var map_marker_color;
   var large_image_height = 166;
   var units_availability_over_120_days = "#{@community.units_availability_over_120_days}";
   var apply_now_url = "#{apply_now_community_webpages_url(@community)}"
@@ -377,13 +374,23 @@
   _beansApiKey = "#{ENV['BEANS_API_KEY']}"
 
   var community_logo = "#{@community.logo.present? ? true : false}"
+
   var left_margin = #{raw left_margin}
-  var amenity_left_margin = #{raw amenity_left_margin}
   var top_margin = #{raw top_margin}
+  var amenity_left_margin = #{raw amenity_left_margin}
   var amenity_top_margin = #{raw amenity_top_margin}
   const hash_sign = #{raw map_marker_color.include?('#')} ? '#' : ''
-  var map_marker_color = `${hash_sign}#{raw map_marker_color.gsub('#', '')}`
+  map_marker_color = `${hash_sign}#{raw map_marker_color.gsub('#', '')}`
 
+  var window_height = window.innerHeight;
+  var diff = 0
+  var diffL = 0
+  var ele = document.getElementsByClassName('fa-map-marker-alt-responsive');
+  var amenityEle = document.getElementsByClassName('camera-icon-responsive');
+  var slides_to_show = 4;
+  var slides_to_scroll = 1;
+  var $slider = $("#slider");
+  var initial_start;
 
   if ((current_width > 767 && current_width < 993) && (window.matchMedia("(orientation: landscape)").matches)) {
    $(".c-modal-dialog").css("margin-top", "12%")
@@ -416,77 +423,32 @@
   });
   async function fetchSVGAndSetCoordinates () {
     if (has_floorplate.toString() === "true") {
-      await Promise.all(
-        floors.map((floor) => {
-          fetchSVG(`#f_${floor}`, { svgPosition: 0, floor })
-        })
-      );
+      const array = []
+      for (const floor of floors) {
+        array.push(fetchSVG(`#f_${floor}`, { svgPosition: 0, floor }))
+      }
+      await Promise.all(array)
     } else {
       await fetchSVG(
         "#property-map-image-container",
         { svgPosition: 0 }
-      );
+      )
     }
 
-    setPointersCoordinates();
-    setAmenitiesCoordinates();
+    setPointersCoordinates()
+    setAmenitiesCoordinates()
   }
+
   $(".webPageLoader").removeClass("hidden");
+
   $(window).on( "orientationchange", function( event ) {
-        $(".webPageLoader").removeClass("hidden");
-        window.location.reload();
-    });
+    $(".webPageLoader").removeClass("hidden");
+    window.location.reload();
+  });
+
   setTimeout(function(){
     $(".webPageLoader").addClass("hidden");
   }, 1000);
-
-  var window_height = window.innerHeight;
-  var diff = 0
-  var diffL = 0
-  var ele = document.getElementsByClassName('fa-map-marker-alt-responsive');
-  var amenityEle = document.getElementsByClassName('custom-icon-responsive');
-
-  if (current_width < 993) {
-    const calculatedFontSize = (current_width * .76) / 30 + ((#{fontsize} - 25) / 5);
-    const childFontSize = calculatedFontSize / 2
-  
-    for (var i = 0; i < ele.length; i++ ) {
-      ele[i].style.fontSize = calculatedFontSize
-      factor = 0
-
-      if ($(window).height() > 800) {
-        factor = (($(window).height() ) / 800)
-      }
-
-      
-      ele[i].children[0].style.fontSize = childFontSize
-      ele[i].children[0].style.top = childFontSize
-    }
-
-    for (var i = 0; i < amenityEle.length; i++ ) {
-      amenityEle[i].style.height = (#{marker_font_size} / (1100 / current_width)  )
-      amenityEle[i].style.width = (#{marker_font_size} / (1100 / current_width)  )
-      amenityEle[i].children[0].style.marginTop = 1 * ( current_width / 250)
-      amenityEle[i].children[0].style.fontSize = (#{marker_font_size} / (2800 / current_width)  )
-    }
-  } else {
-  //else if(current_width > 993 && current_width < 1500) {
-    for (var i = 0; i < ele.length; i++ ) {
-      ele[i].style.fontSize = 20
-    }
-
-    for (var i = 0; i < amenityEle.length; i++ ) {
-      amenityEle[i].style.height = 20
-      amenityEle[i].style.width = 20
-      amenityEle[i].children[0].style.marginTop = 3
-      amenityEle[i].children[0].style.fontSize = 10
-    }
-  }
-
-  var slides_to_show = 4;
-  var slides_to_scroll = 1;
-  var $slider = $("#slider");
-  var initial_start;
 
   floors.length < 5 ? initial_start = 0 : initial_start = 0
   $(window).on('resize', function(){
@@ -579,6 +541,7 @@
     var anchorTag = $(this).find('a.floorplate-anchor');
     _3dFilterByFloor(anchorTag);
     anchorTag.click();
+    calculateMarkerAttributes();
   });
 
   $(document).ready(function () {
@@ -610,6 +573,10 @@
       $('.modal-wrapper-mobile').removeClass("hidden");
       $('.c-modal-wrapper').addClass("hidden");
     }
+
+    parsedSVGs = [];
+    fetchSVGAndSetCoordinates();
+    calculateMarkerAttributes();
   });
 
   document.getElementById('filter').addEventListener('change', () => {
@@ -634,4 +601,74 @@
 
   if(community_logo == "false" && current_width < 567){
     $(".mobile-trigger").addClass("pt");
+  }
+
+  function calculateMarkerAttributes() {
+    if (current_width < 993) {
+      if (isSVG()) {
+        const calculatedFontSize = (current_width * .76) / 30 + ((#{fontsize} - 25) / 5);
+        const childFontSize = calculatedFontSize / 2
+      
+        for (var i = 0; i < ele.length; i++ ) {
+          ele[i].style.fontSize = calculatedFontSize
+          factor = 0
+
+          if ($(window).height() > 800) {
+            factor = (($(window).height() ) / 800)
+          }
+
+          ele[i].children[0].style.fontSize = childFontSize
+          ele[i].children[0].style.top = childFontSize
+        }
+      } else {
+        for (var i = 0; i < ele.length; i++ ) {
+          ele[i].style.fontSize = (current_width * .76) / 30 + ((#{fontsize} - 25) / 5)
+          ele[i].style.marginTop = diff - 3
+          ele[i].style.marginLeft = diffL + 1
+          ele[i].children[0].style.marginTop = -3
+          ele[i].children[0].style.marginLeft = 1
+          ele[i].children[0].style.left = (current_width * .20) / 30 + ((#{fontsize} - 25) / 9)
+          factor = 0
+
+          if ($(window).height() > 800) {
+            factor = (($(window).height() ) / 800)
+          }
+
+          ele[i].children[0].style.top = ( (current_width * .15) / 30 + factor + ((#{fontsize} - 25) / 5) -1)
+          ele[i].children[0].style.fontSize = (current_width * .20) / 30 + ((#{fontsize} - 25) / 10)
+        }
+      }
+
+      for (var i = 0; i < amenityEle.length; i++ ) {
+        amenityEle[i].style.height = (#{marker_font_size} / (1100 / current_width)  )
+        amenityEle[i].style.width = (#{marker_font_size} / (1100 / current_width)  )
+        amenityEle[i].children[0].style.marginTop = 1 * ( current_width / 250)
+        amenityEle[i].children[0].style.fontSize = (#{marker_font_size} / (2800 / current_width)  )
+      }
+    } else if (isSVG()) {
+      for (var i = 0; i < ele.length; i++ ) {
+        ele[i].style.fontSize = 20
+      }
+
+      for (var i = 0; i < amenityEle.length; i++ ) {
+        amenityEle[i].style.height = 20
+        amenityEle[i].style.width = 20
+        amenityEle[i].children[0].style.marginTop = 3
+        amenityEle[i].children[0].style.fontSize = 10
+      }
+    } else {
+      for (var i = 0; i < ele.length; i++ ) {
+        ele[i].style.fontSize = 20
+        ele[i].children[0].style.left = 6
+        ele[i].children[0].style.top = 4
+        ele[i].children[0].style.fontSize = 6
+      }
+
+      for (var i = 0; i < amenityEle.length; i++ ) {
+        amenityEle[i].style.height = 20
+        amenityEle[i].style.width = 20
+        amenityEle[i].children[0].style.marginTop = 3
+        amenityEle[i].children[0].style.fontSize = 10
+      }
+    }
   }

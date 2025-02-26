@@ -221,7 +221,7 @@ module CommunitiesHelper
   end
 
   def fetch_unit_info_struct(unit)
-    floorplan = @floorplans.select{ |f| f.provider_floorplan_id == unit.floorplan_id }.first
+    floorplan = @floorplans.select { |f| f.provider_floorplan_id == unit.floorplan_id }.first
 
     struct = {
       id: unit.id,
@@ -302,8 +302,8 @@ module CommunitiesHelper
       "data-toggle": "modal",
       "data-unit-id": unit.id,
       "data-floorplan-provider-id": struct[:provider_floorplan_id],
-      "data-unit-x_plot": unit.x_plot,
-      "data-unit-y_plot": unit.y_plot,
+      "data-unit-x-plot": unit.x_plot,
+      "data-unit-y-plot": unit.y_plot,
       "data-community-id": @community.id,
       "data-website": @community_info.website,
       "data-provider": @community_info.data_provider,

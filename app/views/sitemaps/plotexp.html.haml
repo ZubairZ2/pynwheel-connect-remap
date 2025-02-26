@@ -506,7 +506,7 @@
                     - else
                       %option{:value=>unit.provider_unit_id}= "#{unit.marketing_name}"
                   
-                  - arr.push([unit.provider_unit_id, unit.x_plot.to_i - left_margin, unit.y_plot.to_i - top_margin, true, unit.id.to_s, 5 , 0])
+                  - arr.push([unit.provider_unit_id, unit.x_plot.to_i, unit.y_plot.to_i, true, unit.id.to_s, 5 , 0])
               %h5.mt-40 SELECTED UNITS
               .add-plan.mt-10.mb-20
                 %ul#selected-units

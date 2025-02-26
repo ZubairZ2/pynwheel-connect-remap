@@ -52,13 +52,11 @@
             - fontsize = 30
 
           - is_svg = false
-          - left_margin = ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i
-          - top_margin = ((20.0 / 25.0).to_f * (@community.design.property_map_size_integer)).to_i
+          - left_margin = 13
+          - top_margin = 34
 
           - if @floorplate.image.present? && @floorplate.image.url.ends_with?(".svg")
             - is_svg = true
-            - left_margin = 13
-            - top_margin = 34
 
           %span.hidden#left_margin #{left_margin}
           %span.hidden#top_margin #{top_margin}
@@ -185,7 +183,7 @@
                     - else 
                       %option{:value => "#{unit.provider_unit_id}"}= "#{unit.marketing_name}"
 
-                  - arr.push([unit.provider_unit_id, (unit.x_plot.to_i - left_margin ), (unit.y_plot.to_i - top_margin ), true, unit.id.to_s])
+                  - arr.push([unit.provider_unit_id, unit.x_plot.to_i, unit.y_plot.to_i, true, unit.id.to_s])
               %h5.mt-40.hidden SELECTED UNITS
               .add-plan.mt-10.mb-20
                 %ul#selected-units

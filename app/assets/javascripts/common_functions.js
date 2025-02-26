@@ -107,6 +107,10 @@ window.setPointersCoordinates = function setPointersCoordinates() {
   let floorBasedUnits = units;
 
   parsedSVGs.forEach((svgElement) => {
+    $(".cloned-unit", svgElement).each(function () {
+      $(this).addClass("hidden");
+    });
+
     let floorNum = null;
 
     if (has_floorplate?.toString() === "true") {
@@ -151,6 +155,7 @@ window.setPointersCoordinates = function setPointersCoordinates() {
           duplicateBlock.setAttribute("fill", map_marker_color);
           const jqueryEl = $(duplicateBlock);
           jqueryEl.addClass("cloned-unit");
+          jqueryEl.removeClass("hidden");
           jqueryEl.on("click", () => {
             $("#unitModal").show();
           });
@@ -213,7 +218,6 @@ window.setAmenitiesCoordinates = function setAmenitiesCoordinates() {
           duplicateBlock.setAttribute("fill", map_marker_color);
           duplicateBlock.classList.add(
             "cloned-amenity",
-            "sitemap-amenity-marker",
             "slider-amenity",
             "amenityTooltip"
           );
