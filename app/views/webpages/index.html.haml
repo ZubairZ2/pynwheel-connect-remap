@@ -297,7 +297,7 @@
                   %li
                     %i.fas.fa-map-marker-alt{:style => "color: #{map_marker_color}; font-size: #{marker_font_size}px"}
                     %span Available home
-                - if @community.enable_amenity_legend
+                - if @community.enable_amenity_legend && @community.show_amenity_key
                   %li
                     .custom-icon{:style => "height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};"}
                       %i.fas.fa-camera-retro{:style => "color: #{amenity_marker_color}; font-size: #{camera_font_size}px; margin-top:#{camera_margin}px;"}
