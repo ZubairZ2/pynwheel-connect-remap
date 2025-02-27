@@ -17,18 +17,12 @@ var real_page_provider_unit_id = null;
 var currentUnitSelected = null;
 var parsedSVGs = [];
 
-var isSVG = false;
 var isMouseMoving = false;
 var intervalId = null;
 var timeoutId = null;
 
 
 $(document).ready(function () {
-  if (has_floorplate?.toString() === "true")
-    isSVG = !!document.querySelector(`svg#viewArea-${current_floor}`)
-  else
-    isSVG = !!document.querySelector('#property-map-image-container')?.dataset.svgUrl;
-
   webCommunity = $("#communityWebpagesData").data("community");
   _3dAmenities = $("#communityWebpagesData").data("amenities");
   _3dConfigurations = $("#communityWebpagesData").data("mapConfigurations");

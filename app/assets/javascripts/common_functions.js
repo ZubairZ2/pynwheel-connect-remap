@@ -113,7 +113,7 @@ window.setPointersCoordinates = function setPointersCoordinates() {
 
     let floorNum = null;
 
-    if (has_floorplate?.toString() === "true") {
+    if (has_floorplate?.toString() === "true" && svgElement.parentElement) {
       const splittedSvgParentId = svgElement.parentElement.id.split("_");
       floorNum = parseInt(splittedSvgParentId[splittedSvgParentId.length - 1]);
 
@@ -179,7 +179,7 @@ window.setAmenitiesCoordinates = function setAmenitiesCoordinates() {
   parsedSVGs.forEach((svgElement) => {
     let floorNum = null;
 
-    if (has_floorplate?.toString() === "true") {
+    if (has_floorplate?.toString() === "true" && svgElement.parentElement) {
       const splittedSvgParentId = svgElement.parentElement.id.split("_");
       floorNum = parseInt(splittedSvgParentId[splittedSvgParentId.length - 1]);
 
