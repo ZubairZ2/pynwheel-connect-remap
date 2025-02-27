@@ -652,6 +652,9 @@
 #ocrData{data: {ocr_data: @map_ocr_data.to_json, image_dimensions: @dimensions.to_json}}
 :javascript
   $(document).ready(function () {
+    saveSiteMapImage();
+    saveSiteMapSVG();
+
     parsedSVGs = [];
     fetchSVG(
       "#map.plot-image",

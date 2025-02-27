@@ -122,12 +122,6 @@ $(document).ready(function () {
     //     }
     //   }
     // });
-
-
-    if ($("#sitemap-image-upload-holder").length) {
-      saveSiteMapImageOrSvg();
-    }
-
   }
 });
 
@@ -172,24 +166,42 @@ function textFilter(selectedUnit, ocrDetectedUnit) {
   return u_flag;
 }
 
-function saveSiteMapImageOrSvg() {
-  var siteMapImageDropzone = new Dropzone("#sitemap-image-upload-holder", {url: "/communities/" + community_id + "/sitemaps/" + sitemap_id + "/save_sitemap_image"});
+function saveSiteMapImage() {
+  const siteMapImageDropzone = new Dropzone("#sitemap-image-upload-holder", {url: "/communities/" + community_id + "/sitemaps/" + sitemap_id + "/save_sitemap_image"});
   Dropzone.options.siteMapImageDropzone = {
     uploadMultiple: true
   };
 
   siteMapImageDropzone.on("complete", function (file) {
-    console.log(file);
     location.reload();
   });
 
   siteMapImageDropzone.on("addedfile", function (file) {
-    console.log(file.type);
     $(".divLoading").removeClass("hidden");
-    if (!(file.type == "image/png" || file.type == "image/jpeg" || file.type == "image/jpg" || file.type == "image/svg+xml")) {
+    if (!["image/png", "image/jpeg", "image/jpg"].includes(file.type)) {
       $(".divLoading").addClass("hidden");
-      $('#image-and-svg-upload-warning').modal('show');
+      $('#image-upload-warning').modal('show');
       siteMapImageDropzone.removeFile(file);
+    }
+  });
+}
+
+function saveSiteMapSVG() {
+  const siteMapSVGDropzone = new Dropzone("#sitemap-svg-upload-holder", {url: "/communities/" + community_id + "/sitemaps/" + sitemap_id + "/save_sitemap_image"});
+  Dropzone.options.siteMapSVGDropzone = {
+    uploadMultiple: true
+  };
+
+  siteMapSVGDropzone.on("complete", function (file) {
+    location.reload();
+  });
+
+  siteMapSVGDropzone.on("addedfile", function (file) {
+    $(".divLoading").removeClass("hidden");
+    if (file.type != "image/svg+xml") {
+      $(".divLoading").addClass("hidden");
+      $('#svg-upload-warning').modal('show');
+      siteMapSVGDropzone.removeFile(file);
     }
   });
 }
