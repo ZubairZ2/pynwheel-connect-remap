@@ -153,8 +153,8 @@ class Community < ApplicationRecord
     selected_units.sort_by do |unit|
       name = unit.marketing_name.strip
   
-      if name.match?(/^\d+$/)  # If it's purely numeric
-        [nil, name.to_i]
+      if name.match?(/^\d+$/)  # Purely numeric
+        ["", name.to_i]
       elsif name.match(/^([A-Za-z]+)-?(\d+)$/)  # Matches `A-101` or `A101`
         [$1.downcase, $2.to_i]
       elsif name.match(/^(\d+)-?([A-Za-z]+)$/)  # Matches `101-A` or `101A`
@@ -164,9 +164,6 @@ class Community < ApplicationRecord
       end
     end
   end
-  
-  
-  
 
   def get_additional_fees(unit = nil)
     return nil unless self.display_additional_fee
