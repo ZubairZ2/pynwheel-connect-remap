@@ -417,10 +417,8 @@
         }, 500);
       }
     }
-
-    parsedSVGs = [];
-    fetchSVGAndSetCoordinates();
   });
+
   async function fetchSVGAndSetCoordinates () {
     if (has_floorplate.toString() === "true") {
       const array = []
@@ -435,8 +433,9 @@
       )
     }
 
-    setPointersCoordinates()
-    setAmenitiesCoordinates()
+    setPointersCoordinates();
+    setAmenitiesCoordinates();
+    calculateMarkerAttributes();
   }
 
   $(".webPageLoader").removeClass("hidden");
@@ -576,7 +575,6 @@
 
     parsedSVGs = [];
     fetchSVGAndSetCoordinates();
-    calculateMarkerAttributes();
   });
 
   document.getElementById('filter').addEventListener('change', () => {

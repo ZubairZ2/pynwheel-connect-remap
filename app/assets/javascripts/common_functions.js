@@ -1,376 +1,328 @@
-var has_floorplate;
-if (typeof has_floorplate === "undefined") {
-  has_floorplate = false;
-}
+var has_floorplate =
+  typeof has_floorplate !== "undefined" ? has_floorplate : false;
 
-window.isSVG = function isSVG() {
-  return (
-    (has_floorplate?.toString() === "true" &&
-      !!document.querySelector(`svg#viewArea-${current_floor}`)) ||
-    !!document.querySelector("svg#viewArea")
-  );
+const isSVG = () => {
+  const svgSelector =
+    has_floorplate === "true"
+      ? `svg#viewArea-${current_floor}`
+      : "svg#viewArea";
+  return !!document.querySelector(svgSelector);
 };
 
-window.activateZoomPan = function activateZoomPan(elem) {
-  document.addEventListener("touchstart", touchHandler, true);
-  document.addEventListener("touchmove", touchHandler, true);
-  document.addEventListener("touchend", touchHandler, true);
-  document.addEventListener("touchcancel", touchHandler, true);
+const activateZoomPan = (elem) => {
+  const touchEvents = ["touchstart", "touchmove", "touchend", "touchcancel"];
+  touchEvents.forEach((event) =>
+    document.addEventListener(event, touchHandler, true)
+  );
+
   window.mapPanZoom = panzoom(elem, {
     minZoom: 0.5,
     maxZoom: 3.0,
     bounds: true,
     boundsPadding: 0.3,
   });
-  var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
-  var scaleFactor = 1 / (transform.scale || 1);
-  var previous_scale = 0;
 
-  const jQueryElem = $(elem);
-  let mapBoxWidth = jQueryElem.width();
-  let mapBoxHeight = jQueryElem.height();
+  let scaleFactor = 1 / (mapPanZoom.getTransform()?.scale || 1);
+  let previousScale = 0;
 
-  const jQueryParentElem = jQueryElem.parent();
-  let mapBoxParentWidth = jQueryParentElem.width();
-  let mapBoxParentHeight = jQueryParentElem.height();
+  const $elem = $(elem);
+  const $parentElem = $elem.parent();
+  const [mapBoxWidth, mapBoxHeight] = [$elem.width(), $elem.height()];
+  const [parentWidth, parentHeight] = [
+    $parentElem.width(),
+    $parentElem.height(),
+  ];
+
   while (
-    mapBoxWidth / scaleFactor > mapBoxParentWidth ||
-    mapBoxHeight / scaleFactor > mapBoxParentHeight
+    mapBoxWidth / scaleFactor > parentWidth ||
+    mapBoxHeight / scaleFactor > parentHeight
   ) {
     mapPanZoom.zoomInOut(189);
-    transform = mapPanZoom ? mapPanZoom.getTransform() : {};
-    scaleFactor = 1 / (transform.scale || 1);
-    if (scaleFactor === previous_scale) {
-      break;
-    }
-    previous_scale = scaleFactor;
+    scaleFactor = 1 / (mapPanZoom.getTransform()?.scale || 1);
+    if (scaleFactor === previousScale) break;
+    previousScale = scaleFactor;
   }
+
   mapPanZoom.moveTo(0, 0);
 };
 
-window.touchHandler = function touchHandler(event) {
-  var touch = event.changedTouches[0];
+const touchHandler = (event) => {
+  const touch = event.changedTouches[0];
+  const eventType = {
+    touchstart: "mousedown",
+    touchmove: "mousemove",
+    touchend: "mouseup",
+  }[event.type];
 
-  var simulatedEvent = document.createEvent("MouseEvent");
-  simulatedEvent.initMouseEvent(
-    { touchstart: "mousedown", touchmove: "mousemove", touchend: "mouseup" },
-    [event.type],
-    true,
-    true,
-    window,
-    1,
-    touch.screenX,
-    touch.screenY,
-    touch.clientX,
-    touch.clientY,
-    false,
-    false,
-    false,
-    false,
-    0,
-    null
-  );
+  const simulatedEvent = new MouseEvent(eventType, {
+    bubbles: true,
+    cancelable: true,
+    view: window,
+    screenX: touch.screenX,
+    screenY: touch.screenY,
+    clientX: touch.clientX,
+    clientY: touch.clientY,
+  });
 
   touch.target.dispatchEvent(simulatedEvent);
 };
 
-window.fetchSVG = async function fetchSVG(
+const fetchSVG = async (
   dataSetSelector,
   options = { svgPosition: 0, activateZoom: false, floor: 0 }
-) {
+) => {
   const container = document.querySelector(dataSetSelector);
   const imageUrl = container?.dataset.svgUrl;
 
-  if (imageUrl && imageUrl.endsWith(".svg")) {
-    await fetch(imageUrl)
-      .then((response) => response.text())
-      .then((svgText) => {
-        const svgElement = parseSVG(svgText);
-        if (svgElement) {
-          parsedSVGs.push(svgElement);
-          setSVG(container, svgElement, options);
-        } else {
-          console.error("Error: No <svg> element found in the response.");
-        }
-      })
-      .catch((error) => console.error("Error loading SVG:", error));
-  }
+  if (options.activateZoom) activateZoomPan(container);
+  if (!imageUrl?.endsWith(".svg")) return;
 
-  if (options.activateZoom) {
-    activateZoomPan(container);
+  try {
+    const response = await fetch(imageUrl);
+    if (!response.ok)
+      throw new Error(`Failed to fetch SVG: ${response.statusText}`);
+    const svgText = await response.text();
+    const svgElement = parseSVG(svgText);
+
+    if (!svgElement) throw new Error("No <svg> element found in the response.");
+
+    parsedSVGs.push(svgElement);
+    setSVG(container, svgElement, options);
+  } catch (error) {
+    console.error("Error loading SVG:", error);
   }
 };
 
-window.setPointersCoordinates = function setPointersCoordinates() {
-  if (!parsedSVGs.length) return;
+const setPointersCoordinates = () => {
+  setCoordinates(units, {
+    cloneClass: "cloned-unit",
+    additionalClasses: ["marker"],
+    onClick: () => $("#unitModal").show(),
+    updateStyles: true,
+  });
+};
 
-  let floorBasedUnits = units;
+const setAmenitiesCoordinates = () => {
+  setCoordinates(amenities, {
+    cloneClass: "cloned-amenity",
+    additionalClasses: ["slider-amenity", "amenityTooltip"],
+    onClick: (amenity) => openAmenityViewerModal(amenity, amenity.galleries),
+    tooltip: true,
+  });
+};
+
+const setCoordinates = (data, options) => {
+  if (!parsedSVGs.length) return;
+  const { cloneClass, tooltip, additionalClasses, onClick, updateStyles } =
+    options;
+
+  const floorData = floorBasedData(data);
 
   parsedSVGs.forEach((svgElement) => {
-    $(".cloned-unit", svgElement).each(function () {
-      $(this).addClass("hidden");
-    });
+    $(`.${cloneClass}`, svgElement).addClass("hidden");
 
-    let floorNum = null;
+    if (!isCurrentFloorsSVG(svgElement)) return;
 
-    if (has_floorplate?.toString() === "true" && svgElement.parentElement) {
-      const splittedSvgParentId = svgElement.parentElement.id.split("_");
-      floorNum = parseInt(splittedSvgParentId[splittedSvgParentId.length - 1]);
+    floorData.forEach((item) => {
+      const { pointer_data, data_attributes, ...rest } = item || {};
+      const { tag = null, id = null } = pointer_data || {};
 
-      if (
-        svgElement.id !== `viewArea-${floorNum}` ||
-        floorNum !== parseInt(current_floor)
-      )
-        return;
+      const selector = tag && id ? `${tag}#${id}` : pointer_data.selector;
+      if (!selector) return;
 
-      floorBasedUnits = units.filter(({ floor }) => floor === floorNum);
-    }
+      const block = svgElement.querySelector(selector);
+      if (!block) return;
 
-    if (!floorBasedUnits?.length) return;
-
-    floorBasedUnits.forEach(({ pointer_data, data_attributes }) => {
-      let { tag, id, selector } = pointer_data || {};
-      if (tag && (id || selector)) {
-        hash_operator = "#";
-        if (id) selector = `${tag}${hash_operator}${id}`;
-        const block = svgElement.querySelector(selector);
-        const existingDuplicate = svgElement.querySelector(
-          id ? `${selector}_cloned` : `${selector}.cloned-unit`
-        );
-
-        if (existingDuplicate) {
-          $(existingDuplicate).removeClass("hidden");
-        } else {
-          const duplicateBlock = block.cloneNode(true);
-
-          for (const key in data_attributes) {
-            duplicateBlock.setAttribute(key, data_attributes[key]);
-          }
-          duplicateBlock.setAttribute(
-            "id",
-            `${id ? block.id : selector}_cloned`
+      const existingDuplicate = svgElement.getElementById(`${selector}_cloned`);
+      if (existingDuplicate) {
+        $(existingDuplicate).removeClass("hidden");
+      } else {
+        const duplicateBlock = block.cloneNode(true);
+        if (data_attributes) {
+          Object.entries(data_attributes).forEach(([key, value]) =>
+            duplicateBlock.setAttribute(key, value)
           );
-          console.log(map_marker_color);
-
-          duplicateBlock.setAttribute("fill", map_marker_color);
-          const jqueryEl = $(duplicateBlock);
-          jqueryEl.addClass("cloned-unit");
-          jqueryEl.removeClass("hidden");
-          jqueryEl.on("click", () => {
-            $("#unitModal").show();
-          });
-          jqueryEl.on("mouseenter", markerHoverEffect);
-          jqueryEl.on("mouseleave", markerHoverEffectEnd);
-          block.parentElement.appendChild(duplicateBlock);
         }
+        duplicateBlock.setAttribute("id", `${id || selector}_cloned`);
+        duplicateBlock.setAttribute("fill", map_marker_color);
+        duplicateBlock.classList.add(cloneClass, ...(additionalClasses || []));
+
+        $duplicateBlock = $(duplicateBlock);
+
+        switch (cloneClass) {
+          case "cloned-unit":
+            $duplicateBlock
+              .on("mouseenter", markerHoverEffect)
+              .on("mouseleave", markerHoverEffectEnd);
+            break;
+          case "cloned-amenity":
+            if (tooltip) {
+              const { x, y } = block.getBoundingClientRect();
+              const toolTipSpan = document.createElement("span");
+              toolTipSpan.classList.add("amenityTooltipText");
+              toolTipSpan.innerHTML = `
+                <h2 style="display: ${rest.show_name ? "block" : "none"}">
+                  ${rest.name}
+                </h2>
+                <img src="${rest.image_url}" alt="Image Title">
+              `;
+              toolTipSpan.style.position = "absolute";
+              toolTipSpan.style.top = `${y - 92}px`;
+              toolTipSpan.style.left = `${x - 53}px`;
+              svgElement.insertAdjacentElement("afterend", toolTipSpan);
+
+              $duplicateBlock
+                .on("mouseenter", () => amenityHoverEffect(toolTipSpan))
+                .on("mouseleave", () => amenityHoverEffectEnd(toolTipSpan));
+            }
+            break;
+        }
+
+        $duplicateBlock.removeClass("hidden").on("click", () => onClick(rest));
+        block.parentElement.appendChild(duplicateBlock);
       }
     });
   });
 
-  $(".popup-title").css("background-color", map_marker_color);
-  $(".popup-arrow").css("background-color", map_marker_color);
+  if (updateStyles) {
+    $(".popup-title, .popup-arrow").css("background-color", map_marker_color);
+  }
 };
 
-window.setAmenitiesCoordinates = function setAmenitiesCoordinates() {
-  if (!parsedSVGs.length) return;
-
-  let floorBasedAmenities = amenities;
-
-  parsedSVGs.forEach((svgElement) => {
-    let floorNum = null;
-
-    if (has_floorplate?.toString() === "true" && svgElement.parentElement) {
-      const splittedSvgParentId = svgElement.parentElement.id.split("_");
-      floorNum = parseInt(splittedSvgParentId[splittedSvgParentId.length - 1]);
-
-      if (
-        svgElement.id !== `viewArea-${floorNum}` ||
-        floorNum !== parseInt(current_floor)
-      )
-        return;
-
-      floorBasedAmenities = amenities.filter(({ floor }) => floor === floorNum);
-    }
-    if (!floorBasedAmenities?.length) return;
-
-    floorBasedAmenities.forEach((amenity) => {
-      const { pointer_data: pointerData } = amenity || {};
-      let { tag, id, selector } = pointerData || {};
-      if (tag && (id || selector)) {
-        hash_operator = "#";
-        if (id) selector = `${tag}${hash_operator}${id}`;
-        const block = svgElement.querySelector(selector);
-        const existingDuplicate = svgElement.getElementById(
-          `${selector}_cloned`
-        );
-
-        if (existingDuplicate) {
-          $(existingDuplicate).removeClass("hidden");
-        } else {
-          const duplicateBlock = block.cloneNode(true);
-
-          duplicateBlock.setAttribute(
-            "id",
-            `${id ? block.id : selector}_cloned`
-          );
-          console.log(map_marker_color);
-
-          duplicateBlock.setAttribute("fill", map_marker_color);
-          duplicateBlock.classList.add(
-            "cloned-amenity",
-            "slider-amenity",
-            "amenityTooltip"
-          );
-
-          // split in two rounds
-          block.parentElement.appendChild(duplicateBlock);
-
-          const { x, y } = block.getBoundingClientRect();
-          const toolTipSpan = document.createElement("span");
-          toolTipSpan.classList.add("amenityTooltipText");
-          toolTipSpan.innerHTML = `
-            <h2 style="display: ${amenity.show_name ? "block" : "none"}">${
-            amenity.name
-          }</h2>
-            <img src="${amenity.image_url}" alt="Image Title">
-          `;
-          svgElement.insertAdjacentElement("afterend", toolTipSpan);
-          toolTipSpan.style.position = "absolute";
-          toolTipSpan.style.top = y - 92;
-          toolTipSpan.style.left = x - 53;
-
-          const jqueryEl = $(duplicateBlock);
-          jqueryEl.on("click", () => {
-            openAmenityViewerModal(amenity, amenity.galleries);
-          });
-          jqueryEl.on("mouseenter", (_e) => amenityHoverEffect(toolTipSpan));
-          jqueryEl.on("mouseleave", (_e) => amenityHoverEffectEnd(toolTipSpan));
-        }
-      }
-    });
-  });
+const floorBasedData = (data = []) => {
+  return has_floorplate === "true"
+    ? data.filter(({ floor }) => floor === parseInt(current_floor))
+    : data;
 };
 
-window.isPointInPolygon = function isPointInPolygon(point, polygonPoints) {
-  let x = point.x,
-    y = point.y;
+const isCurrentFloorsSVG = (svgElement) => {
+  if (has_floorplate === "true" && svgElement.parentElement) {
+    const floorNum = parseInt(svgElement.parentElement.id.split("_").pop());
+    return (
+      svgElement.id === `viewArea-${floorNum}` &&
+      floorNum === parseInt(current_floor)
+    );
+  } else if (svgElement.id === "viewArea") {
+    return true;
+  }
+
+  return false;
+};
+
+const isPointInPolygon = (point, polygonPoints) => {
   let inside = false;
-  let n = polygonPoints.numberOfItems;
+  const n = polygonPoints.numberOfItems;
 
   for (let i = 0, j = n - 1; i < n; j = i++) {
-    let xi = polygonPoints.getItem(i).x,
+    const xi = polygonPoints.getItem(i).x,
       yi = polygonPoints.getItem(i).y;
-    let xj = polygonPoints.getItem(j).x,
+    const xj = polygonPoints.getItem(j).x,
       yj = polygonPoints.getItem(j).y;
-
-    let intersect =
-      yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+    const intersect =
+      yi > point.y !== yj > point.y &&
+      point.x < ((xj - xi) * (point.y - yi)) / (yj - yi) + xi;
     if (intersect) inside = !inside;
   }
 
   return inside;
 };
 
-window.isPointInRect = function isPointInRect(point, rect) {
-  let x = point.x,
-    y = point.y;
-  let rectX = parseFloat(rect.getAttribute("x"));
-  let rectY = parseFloat(rect.getAttribute("y"));
-  let rectWidth = parseFloat(rect.getAttribute("width"));
-  let rectHeight = parseFloat(rect.getAttribute("height"));
+const isPointInRect = (point, rect) => {
+  const rectX = parseFloat(rect.getAttribute("x"));
+  const rectY = parseFloat(rect.getAttribute("y"));
+  const rectWidth = parseFloat(rect.getAttribute("width"));
+  const rectHeight = parseFloat(rect.getAttribute("height"));
 
   return (
-    x >= rectX &&
-    x <= rectX + rectWidth &&
-    y >= rectY &&
-    y <= rectY + rectHeight
+    point.x >= rectX &&
+    point.x <= rectX + rectWidth &&
+    point.y >= rectY &&
+    point.y <= rectY + rectHeight
   );
 };
 
-window.getPolygonArea = function getPolygonArea(polygonPoints) {
+const getPolygonArea = (polygonPoints) => {
   let area = 0;
-  let n = polygonPoints.numberOfItems;
+  const n = polygonPoints.numberOfItems;
+
   for (let i = 0, j = n - 1; i < n; j = i++) {
-    let xi = polygonPoints.getItem(i).x,
+    const xi = polygonPoints.getItem(i).x,
       yi = polygonPoints.getItem(i).y;
-    let xj = polygonPoints.getItem(j).x,
+    const xj = polygonPoints.getItem(j).x,
       yj = polygonPoints.getItem(j).y;
     area += xi * yj - xj * yi;
   }
+
   return Math.abs(area) / 2;
 };
 
-window.getSvgClickedElementWithCenterPoint =
-  function getSvgClickedElementWithCenterPoint(svgParentSelector, e) {
-    const svg = document.querySelector(`${svgParentSelector} > svg`);
+const getSvgClickedElementWithCenterPoint = (svgParentSelector, e) => {
+  const svg = document.querySelector(`${svgParentSelector} > svg`);
 
-    if (!svg) return {};
+  if (!svg) return {};
 
-    const transform = mapPanZoom ? mapPanZoom.getTransform() : {};
-    const scaleFactor = 1 / (transform.scale || 1);
+  const transform = mapPanZoom ? mapPanZoom.getTransform() : {};
+  const scaleFactor = 1 / (transform.scale || 1);
 
-    const point = svg.createSVGPoint();
-    point.x = e.clientX;
-    point.y = e.clientY;
+  const point = svg.createSVGPoint();
+  point.x = e.clientX;
+  point.y = e.clientY;
 
-    const svgPoint = point.matrixTransform(svg.getScreenCTM().inverse());
+  const svgPoint = point.matrixTransform(svg.getScreenCTM().inverse());
 
-    let resultingElement = Array.from(svg.querySelectorAll("rect")).filter(
-      (rect) => isValidShape(rect) && isPointInRect(svgPoint, rect)
-    )[0];
-    const centerPoint = {};
+  let resultingElement = Array.from(svg.querySelectorAll("rect")).filter(
+    (rect) => isValidShape(rect) && isPointInRect(svgPoint, rect)
+  )[0];
+  const centerPoint = {};
 
-    if (!resultingElement) {
-      const polygons = Array.from(svg.querySelectorAll("polygon"))
-        .filter(
-          (polygon) =>
-            isValidShape(polygon) && isPointInPolygon(svgPoint, polygon.points)
-        )
-        .map((polygon) => ({ polygon, area: getPolygonArea(polygon.points) }));
+  if (!resultingElement) {
+    const polygons = Array.from(svg.querySelectorAll("polygon"))
+      .filter(
+        (polygon) =>
+          isValidShape(polygon) && isPointInPolygon(svgPoint, polygon.points)
+      )
+      .map((polygon) => ({ polygon, area: getPolygonArea(polygon.points) }));
 
-      if (polygons.length > 0) {
-        resultingElement = polygons.sort((a, b) => a.area - b.area)[0].polygon;
-      }
+    if (polygons.length > 0) {
+      resultingElement = polygons.sort((a, b) => a.area - b.area)[0].polygon;
     }
+  }
 
-    if (resultingElement) {
-      const svgRect = svg.getBoundingClientRect();
-      const elRect = resultingElement.getBoundingClientRect() || { x: 0, y: 0 };
+  if (resultingElement) {
+    const svgRect = svg.getBoundingClientRect();
+    const elRect = resultingElement.getBoundingClientRect() || { x: 0, y: 0 };
 
-      centerPoint.x = (elRect.x + elRect.width / 2 - svgRect.x) * scaleFactor;
-      centerPoint.y = (elRect.y + elRect.height / 2 - svgRect.y) * scaleFactor;
-    }
+    centerPoint.x = (elRect.x + elRect.width / 2 - svgRect.x) * scaleFactor;
+    centerPoint.y = (elRect.y + elRect.height / 2 - svgRect.y) * scaleFactor;
+  }
 
-    return { element: resultingElement, centerPoint };
-  };
+  return { element: resultingElement, centerPoint };
+};
 
-window.getElementSelector = function getElementSelector(element) {
+const getElementSelector = (element) => {
   if (!element) return null;
 
   const parent = element.parentElement;
   const nthChild = ` > ${element.tagName.toLowerCase()}:nth-child(${
     Array.from(parent.children).indexOf(element) + 1
   })`;
-  if (parent.id) {
-    const tag = parent.tagName?.toLowerCase();
-    return `${tag}#${parent.id}${nthChild}`;
-  } else {
-    return `${getElementSelector(element)}${nthChild}`;
-  }
+  return parent.id
+    ? `${parent.tagName.toLowerCase()}#${parent.id}${nthChild}`
+    : `${getElementSelector(parent)}${nthChild}`;
 };
 
-function parseSVG(svgText) {
+const parseSVG = (svgText) => {
   const parser = new DOMParser();
   const doc = parser.parseFromString(svgText, "image/svg+xml");
   return doc.querySelector("svg");
-}
+};
 
-function setSVG(container, svgElement, options) {
-  let { svgPosition = 0, floor = 0 } = options;
-  let childrenArray = Array.from(container?.children || []);
+const setSVG = (container, svgElement, options) => {
+  const { svgPosition = 0, floor = 0 } = options;
+  const childrenArray = Array.from(container?.children || []);
 
   const attributes = {
-    id: "viewArea",
+    id: has_floorplate === "true" ? `viewArea-${floor}` : "viewArea",
     draggable: false,
     class: "viewArea",
     "data-map_id": "map",
@@ -378,36 +330,32 @@ function setSVG(container, svgElement, options) {
     position: "relative",
   };
 
-  if (has_floorplate?.toString() === "true") {
-    attributes.id = `viewArea-${floor}`;
-  }
-
-  const svgIndex = childrenArray.findIndex(
-    (el) => el.tagName.toLowerCase() === "svg" && el.id === attributes.id
+  Object.entries(attributes).forEach(([key, value]) =>
+    svgElement.setAttribute(key, value)
   );
-
-  for (const key in attributes) {
-    svgElement.setAttribute(key, attributes[key]);
-  }
 
   if (svgElement.nodeName === "svg") {
     container.innerHTML = "";
-    if (svgIndex > -1) {
-      childrenArray[svgIndex] = svgElement;
-    } else {
-      const arr = [];
-      while (svgPosition > 0) {
-        arr.push(childrenArray.shift());
-        svgPosition--;
-      }
-
-      childrenArray = [...arr, svgElement, ...childrenArray];
-    }
-    container.append(...childrenArray);
+    const svgIndex = childrenArray.findIndex(
+      (el) => el.tagName.toLowerCase() === "svg" && el.id === attributes.id
+    );
+    const newChildren =
+      svgIndex > -1
+        ? [
+            ...childrenArray.slice(0, svgIndex),
+            svgElement,
+            ...childrenArray.slice(svgIndex + 1),
+          ]
+        : [
+            ...childrenArray.slice(0, svgPosition),
+            svgElement,
+            ...childrenArray.slice(svgPosition),
+          ];
+    container.append(...newChildren);
   }
-}
+};
 
-function isValidShape(shape) {
+const isValidShape = (shape) => {
   const parentElement = shape.parentElement;
   if (parentElement.tagName.toLowerCase() === "g") {
     if (
@@ -415,8 +363,7 @@ function isValidShape(shape) {
       parentElement.id?.toLowerCase().includes("units")
     )
       return true;
-    else return isValidShape(parentElement);
+    return isValidShape(parentElement);
   }
-
   return false;
-}
+};

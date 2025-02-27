@@ -262,7 +262,6 @@ $(window).bind('load', function () {
 
         current_floor = floor_for_showing_image
         populate_current_units();
-        setAmenitiesCoordinates();
 
         if ($(this).hasClass('only-amenity')) {
           $('.alert').show()
@@ -760,8 +759,11 @@ function showMarkers() {
   $('.hidden-units').empty();
 
   units_to_display = filterUnitsBasedOnCommunityType(units);
+
   renderChangedUnits();
   setPointersCoordinates();
+  setAmenitiesCoordinates();
+
   var json_object = {}
   for (var i = 0; i < units_to_display.length; i++) {
     const jquerEl = $('#m_' + units_to_display[i]['id']);
