@@ -121,18 +121,31 @@
     document.addEventListener("touchend", touchHandler, true);
     document.addEventListener("touchcancel", touchHandler, true);
     let elem = document.querySelector('#map');
-    window.mapPanZoom = panzoom(elem, {
-      minZoom: 0.5,
-      maxZoom: 1.0,
-      bounds: true,
-      boundsPadding: 0.3
-    });
-    var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
+    const key = `${elem.tagName.toLowerCase()}-${elem.id}`
+    if (window.mapPanZoom) {
+      window.mapPanZoom[key] = panzoom(elem, {
+        minZoom: 0.5,
+        maxZoom: 1.0,
+        bounds: true,
+        boundsPadding: 0.3
+      })
+    } else {
+      window.mapPanZoom = {
+        [key]: panzoom(elem, {
+          minZoom: 0.5,
+          maxZoom: 1.0,
+          bounds: true,
+          boundsPadding: 0.3
+        }),
+      };
+    }
+
+    var transform = mapPanZoom?.[key] ? mapPanZoom[key].getTransform() : {};
     var scaleFactor = (1 / (transform.scale || 1));
     var previous_scale = 0;
     while($('#map').width()/scaleFactor > $('.map-block').width()  || $('#map').height()/scaleFactor > $('.map-block').height()){
-       mapPanZoom.zoomInOut(189);
-           transform = mapPanZoom ? mapPanZoom.getTransform() : {};
+       mapPanZoom[key].zoomInOut(189);
+           transform = mapPanZoom[key] ? mapPanZoom[key].getTransform() : {};
            scaleFactor = (1 / (transform.scale || 1));
            if(scaleFactor === previous_scale)
            {
@@ -140,7 +153,7 @@
            }
            previous_scale = scaleFactor
     }
-    mapPanZoom.moveTo(0,0);
+    mapPanZoom[key].moveTo(0,0);
   })
 
   function touchHandler(event) {

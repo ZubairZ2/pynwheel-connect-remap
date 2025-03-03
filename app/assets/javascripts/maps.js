@@ -3,8 +3,6 @@
  * sitemap, floorplate, amenity map plotting
 */
 
-//= require common_functions
-
 // var algo_unit_data = [];
 // var algo_amenity_data = [];
 // var algo_access_point_data = [];
@@ -37,7 +35,7 @@ function initialize_variables(hallways_coordinates, map_id){
   map_id = map_id
 }
 
-  $(document).mousemove('.viewArea', function(event){
+  $('.viewArea').on('mousemove', function(event){
     if ($(event.target).hasClass('viewArea')){
       map_id = "#" + $(event.target).data('map-id')
     }
@@ -50,7 +48,10 @@ function initialize_variables(hallways_coordinates, map_id){
       $('#active_y_plot').html(dy);
     }
   }); 
-  $(document).click('.viewArea', function(e){
+$(".viewArea").on('click', function (e) {
+  const zoomContainer = e.currentTarget.parentElement;
+  const key = `${zoomContainer.tagName.toLowerCase()}-${zoomContainer.id}`
+
     const { element, centerPoint } = getSvgClickedElementWithCenterPoint("#map.plot-image", e);
 
     if ($(e.target).hasClass('viewArea')){
@@ -81,7 +82,7 @@ function initialize_variables(hallways_coordinates, map_id){
       if ($("#hallway_btn").html() == "Stop Plotting Hallways" ) {
           dx = e.type === 'touchend' ? ((e.changedTouches[0].pageX - elemPos.left)) : dx;
           dy = e.type === 'touchend' ? ((e.changedTouches[0].pageY - elemPos.top)) : dy;
-          var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
+          var transform = mapPanZoom[key] ? mapPanZoom[key].getTransform() : {};
           var scaleFactor = (1 / (transform.scale || 1));
           dx = (dx * scaleFactor) - (e.type === 'touchend' ? (transform.x * scaleFactor) : (10 * scaleFactor));
           dy = (dy * scaleFactor) - (e.type === 'touchend' ? (transform.y * scaleFactor) : (10 * scaleFactor));
@@ -100,7 +101,10 @@ function initialize_variables(hallways_coordinates, map_id){
   });
 function initialize_map_click(map_id){
   map_id = map_id
-  $(document).click('.viewArea', function(e){
+  $('.viewArea').on('click', function (e) {
+    const zoomContainer = e.currentTarget.parentElement;
+    const key = `${zoomContainer.tagName.toLowerCase()}-${zoomContainer.id}`
+    
     map_id = $(this).data('map_id')
     marker_color = $('#marker_color').html();
     camera_margin = $('#camera-margin').html();
@@ -123,7 +127,7 @@ function initialize_map_click(map_id){
     if ($("#hallway_btn").html() == "Stop Plotting Hallways" && e.target == $(map_id + '_viewArea').get(0)) {
         dx = e.type === 'touchend' ? ((e.changedTouches[0].pageX - elemPos.left)) : parseInt($('#active_x_plot').html());
         dy = e.type === 'touchend' ? ((e.changedTouches[0].pageY - elemPos.top)) : parseInt($('#active_y_plot').html());
-        var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
+        var transform = mapPanZoom[key] ? mapPanZoom[key].getTransform() : {};
         var scaleFactor = (1 / (transform.scale || 1));
         dx = (dx * scaleFactor) - (e.type === 'touchend' ? (transform.x * scaleFactor) : (10 * scaleFactor));
         dy = (dy * scaleFactor) - (e.type === 'touchend' ? (transform.y * scaleFactor) : (10 * scaleFactor));
@@ -438,8 +442,10 @@ function initialize_map_click(map_id){
           // get the initial X and Y position when dragging starts
           start: function (event, ui) {
               console.log("start drag")
+              const zoomContainer = document.querySelector('div.plot-image');
+              const key = `${zoomContainer.tagName.toLowerCase()}-${zoomContainer.id}`
 
-              var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
+              var transform = mapPanZoom?.[key] ? mapPanZoom[key].getTransform() : {};
               var scaleFactor = (1 / (transform.scale || 1));
               ui.position.top = (ui.position.top * scaleFactor) - (transform.y * scaleFactor);
               ui.position.left = (ui.position.left * scaleFactor) - (transform.x * scaleFactor);
@@ -457,7 +463,10 @@ function initialize_map_click(map_id){
               var canvasWidth = $(map_id).width();
 
 
-              var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
+              const zoomContainer = document.querySelector('div.plot-image');
+              const key = `${zoomContainer.tagName.toLowerCase()}-${zoomContainer.id}`
+
+              var transform = mapPanZoom?.[key] ? mapPanZoom[key].getTransform() : {};
               var scaleFactor = (1 / (transform.scale || 1));
               ui.position.top = (ui.position.top * scaleFactor) - (transform.y * scaleFactor);
               ui.position.left = (ui.position.left * scaleFactor) - (transform.x * scaleFactor);

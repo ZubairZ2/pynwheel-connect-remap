@@ -1,5 +1,3 @@
-//= require common_functions
-
 $(document).ready(function () {
     selected = [];
     var temp = [];
@@ -177,7 +175,10 @@ $(document).ready(function () {
             }
             var elemPos = position($('.map-block')[0]);
 
-            var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
+            const zoomContainer = document.querySelector('div.plot-image');
+            const key = `${zoomContainer.tagName.toLowerCase()}-${zoomContainer.id}`
+
+            var transform = mapPanZoom?.[key] ? mapPanZoom[key].getTransform() : {};
             var scaleFactor = (1 / (transform.scale || 1));
             
             if (element && centerPoint) {
@@ -257,12 +258,20 @@ $(document).ready(function () {
     });
 
     $(".zoom-in").on('click', function (e) {
-        mapPanZoom.zoomInOut(187);
+        const zoomContainer = document.querySelector('div.plot-image');
+        const key = `${zoomContainer.tagName.toLowerCase()}-${zoomContainer.id}`
+
+        if (mapPanZoom?.[key])
+            mapPanZoom[key].zoomInOut(187);
     });
 
 
     $(".zoom-out").on('click', function (e) {
-        mapPanZoom.zoomInOut(189);
+        const zoomContainer = document.querySelector('div.plot-image');
+        const key = `${zoomContainer.tagName.toLowerCase()}-${zoomContainer.id}`
+
+        if (mapPanZoom?.[key])
+            mapPanZoom[key].zoomInOut(187);
     });
 
 });

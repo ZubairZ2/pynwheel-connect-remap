@@ -1,5 +1,7 @@
 var has_floorplate =
   typeof has_floorplate !== "undefined" ? has_floorplate : false;
+var mapPanZoom =
+  typeof mapPanZoom !== "undefined" ? mapPanZoom : {};
 
 const isSVG = () => {
   const svgSelector =
@@ -15,14 +17,17 @@ const activateZoomPan = (elem) => {
     document.addEventListener(event, touchHandler, true)
   );
 
-  window.mapPanZoom = panzoom(elem, {
-    minZoom: 0.5,
-    maxZoom: 3.0,
-    bounds: true,
-    boundsPadding: 0.3,
-  });
+  const key = `${elem.tagName.toLowerCase()}-${elem.id}`
+  window.mapPanZoom = {
+    [key]: panzoom(elem, {
+      minZoom: 0.5,
+      maxZoom: 3.0,
+      bounds: true,
+      boundsPadding: 0.3,
+    }),
+  };
 
-  let scaleFactor = 1 / (mapPanZoom.getTransform()?.scale || 1);
+  let scaleFactor = 1 / (mapPanZoom[key].getTransform()?.scale || 1);
   let previousScale = 0;
 
   const $elem = $(elem);
@@ -37,13 +42,13 @@ const activateZoomPan = (elem) => {
     mapBoxWidth / scaleFactor > parentWidth ||
     mapBoxHeight / scaleFactor > parentHeight
   ) {
-    mapPanZoom.zoomInOut(189);
-    scaleFactor = 1 / (mapPanZoom.getTransform()?.scale || 1);
+    mapPanZoom[key].zoomInOut(189);
+    scaleFactor = 1 / (mapPanZoom[key].getTransform()?.scale || 1);
     if (scaleFactor === previousScale) break;
     previousScale = scaleFactor;
   }
 
-  mapPanZoom.moveTo(0, 0);
+  mapPanZoom[key].moveTo(0, 0);
 };
 
 const touchHandler = (event) => {
@@ -97,7 +102,9 @@ const setPointersCoordinates = () => {
   setCoordinates(units, {
     cloneClass: "cloned-unit",
     additionalClasses: ["marker"],
-    onClick: () => $("#unitModal").show(),
+    onclick: () => $("#unitModal").show(),
+    onmouseenter: markerHoverEffect,
+    onmouseleave: markerHoverEffectEnd,
     updateStyles: true,
   });
 };
@@ -106,15 +113,16 @@ const setAmenitiesCoordinates = () => {
   setCoordinates(amenities, {
     cloneClass: "cloned-amenity",
     additionalClasses: ["slider-amenity", "amenityTooltip"],
-    onClick: (amenity) => openAmenityViewerModal(amenity, amenity.galleries),
+    onclick: (amenity) => openAmenityViewerModal(amenity, amenity.galleries),
+    onmouseenter: (toolTipSpan) => amenityHoverEffect(toolTipSpan),
+    onmouseleave: (toolTipSpan) => amenityHoverEffectEnd(toolTipSpan),
     tooltip: true,
   });
 };
 
 const setCoordinates = (data, options) => {
   if (!parsedSVGs.length) return;
-  const { cloneClass, tooltip, additionalClasses, onClick, updateStyles } =
-    options;
+  const { cloneClass, updateStyles } = options;
 
   const floorData = floorBasedData(data);
 
@@ -124,63 +132,7 @@ const setCoordinates = (data, options) => {
     if (!isCurrentFloorsSVG(svgElement)) return;
 
     floorData.forEach((item) => {
-      const { pointer_data, data_attributes, ...rest } = item || {};
-      const { tag = null, id = null } = pointer_data || {};
-
-      const selector = tag && id ? `${tag}#${id}` : pointer_data.selector;
-      if (!selector) return;
-
-      const block = svgElement.querySelector(selector);
-      if (!block) return;
-
-      const existingDuplicate = svgElement.getElementById(`${selector}_cloned`);
-      if (existingDuplicate) {
-        $(existingDuplicate).removeClass("hidden");
-      } else {
-        const duplicateBlock = block.cloneNode(true);
-        if (data_attributes) {
-          Object.entries(data_attributes).forEach(([key, value]) =>
-            duplicateBlock.setAttribute(key, value)
-          );
-        }
-        duplicateBlock.setAttribute("id", `${id || selector}_cloned`);
-        duplicateBlock.setAttribute("fill", map_marker_color);
-        duplicateBlock.classList.add(cloneClass, ...(additionalClasses || []));
-
-        $duplicateBlock = $(duplicateBlock);
-
-        switch (cloneClass) {
-          case "cloned-unit":
-            $duplicateBlock
-              .on("mouseenter", markerHoverEffect)
-              .on("mouseleave", markerHoverEffectEnd);
-            break;
-          case "cloned-amenity":
-            if (tooltip) {
-              const { x, y } = block.getBoundingClientRect();
-              const toolTipSpan = document.createElement("span");
-              toolTipSpan.classList.add("amenityTooltipText");
-              toolTipSpan.innerHTML = `
-                <h2 style="display: ${rest.show_name ? "block" : "none"}">
-                  ${rest.name}
-                </h2>
-                <img src="${rest.image_url}" alt="Image Title">
-              `;
-              toolTipSpan.style.position = "absolute";
-              toolTipSpan.style.top = `${y - 92}px`;
-              toolTipSpan.style.left = `${x - 53}px`;
-              svgElement.insertAdjacentElement("afterend", toolTipSpan);
-
-              $duplicateBlock
-                .on("mouseenter", () => amenityHoverEffect(toolTipSpan))
-                .on("mouseleave", () => amenityHoverEffectEnd(toolTipSpan));
-            }
-            break;
-        }
-
-        $duplicateBlock.removeClass("hidden").on("click", () => onClick(rest));
-        block.parentElement.appendChild(duplicateBlock);
-      }
+      processBlock(svgElement, item, options);
     });
   });
 
@@ -207,6 +159,72 @@ const isCurrentFloorsSVG = (svgElement) => {
   }
 
   return false;
+};
+
+const processBlock = (svgElement, item, options, block = null) => {
+  const { pointer_data, data_attributes, ...rest } = item || {};
+  const { tag = null, id = null } = pointer_data || {};
+
+  const selector = tag && id ? `${tag}#${id}` : pointer_data.selector;
+  if (!selector) return;
+
+  if (!block) {
+    block = svgElement.querySelector(selector);
+    if (!block) return;
+  }
+
+  const { cloneClass, tooltip, additionalClasses } = options;
+  let { onclick, onmouseenter, onmouseleave } = options;
+
+  const existingDuplicate = svgElement.getElementById(`${selector}_cloned`);
+  if (existingDuplicate) {
+    $(existingDuplicate).removeClass("hidden");
+  } else {
+    const duplicateBlock = block.cloneNode(true);
+    if (data_attributes) {
+      Object.entries(data_attributes).forEach(([key, value]) =>
+        duplicateBlock.setAttribute(key, value)
+      );
+    }
+    duplicateBlock.setAttribute("id", `${id || selector}_cloned`);
+    duplicateBlock.setAttribute("fill", map_marker_color);
+    duplicateBlock.classList.add(cloneClass, ...(additionalClasses || []));
+
+    $duplicateBlock = $(duplicateBlock);
+
+    switch (cloneClass) {
+      case "cloned-unit":
+        break;
+      case "cloned-amenity":
+        if (tooltip) {
+          const { x, y } = block.getBoundingClientRect();
+          const toolTipSpan = document.createElement("span");
+          toolTipSpan.classList.add("amenityTooltipText");
+          toolTipSpan.innerHTML = `
+            <h2 style="display: ${rest.show_name ? "block" : "none"}">
+              ${rest.name}
+            </h2>
+            <img src="${rest.image_url}" alt="Image Title">
+          `;
+          toolTipSpan.style.position = "absolute";
+          toolTipSpan.style.top = `${y - 92}px`;
+          toolTipSpan.style.left = `${x - 53}px`;
+          svgElement.insertAdjacentElement("afterend", toolTipSpan);
+
+          if (onclick) onclick = onclick(rest);
+          if (onmouseenter) onmouseenter = onmouseenter(toolTipSpan);
+          if (onmouseleave) onmouseleave = onmouseleave(toolTipSpan);
+        }
+        break;
+    }
+
+    $duplicateBlock.removeClass("hidden");
+    if (onclick) $duplicateBlock.on("click", onclick)
+    if (onmouseenter) $duplicateBlock.on("mouseenter", onmouseenter)
+    if (onmouseleave) $duplicateBlock.on("mouseleave", onmouseleave)
+
+    block.parentElement.appendChild(duplicateBlock);
+  }
 };
 
 const isPointInPolygon = (point, polygonPoints) => {
@@ -261,7 +279,8 @@ const getSvgClickedElementWithCenterPoint = (svgParentSelector, e) => {
 
   if (!svg) return {};
 
-  const transform = mapPanZoom ? mapPanZoom.getTransform() : {};
+  const key = `${svg.parentElement.tagName.toLowerCase()}-${svg.parentElement.id}`
+  const transform = mapPanZoom?.[key] ? mapPanZoom[key].getTransform() : {};
   const scaleFactor = 1 / (transform.scale || 1);
 
   const point = svg.createSVGPoint();

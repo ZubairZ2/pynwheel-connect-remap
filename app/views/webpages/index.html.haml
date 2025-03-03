@@ -355,6 +355,9 @@
 
 :javascript
   var map_marker_color;
+  const hash_sign = #{raw map_marker_color.include?('#')} ? '#' : ''
+  map_marker_color = `${hash_sign}#{raw map_marker_color.gsub('#', '')}`
+  
   var large_image_height = 166;
   var units_availability_over_120_days = "#{@community.units_availability_over_120_days}";
   var apply_now_url = "#{apply_now_community_webpages_url(@community)}"
@@ -381,8 +384,6 @@
   var top_margin = #{raw top_margin}
   var amenity_left_margin = #{raw amenity_left_margin}
   var amenity_top_margin = #{raw amenity_top_margin}
-  const hash_sign = #{raw map_marker_color.include?('#')} ? '#' : ''
-  map_marker_color = `${hash_sign}#{raw map_marker_color.gsub('#', '')}`
 
   var window_height = window.innerHeight;
   var diff = 0

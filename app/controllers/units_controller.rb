@@ -367,7 +367,8 @@ class UnitsController < ApplicationController
       unit.y_plot = params[:y_plot]
 
       unit.pointer_data = if params[:pointer].present?
-                            { tag: params[:pointer][:tag], id: params[:pointer][:id], selector: params[:pointer][:selector] }
+                            x_plot, y_plot, tag, id, selector = params[:pointer].values_at(:x_plot, :y_plot, :tag, :id, :selector)
+                            { x_plot: x_plot, y_plot: y_plot, tag: tag, id: id, selector: selector }
                           else
                             {}
                           end
@@ -393,7 +394,8 @@ class UnitsController < ApplicationController
       unit.x_plot = params[:x_plot]
       unit.y_plot = params[:y_plot]
       unit.pointer_data = if params[:pointer].present?
-                            { tag: params[:pointer][:tag], id: params[:pointer][:id], selector: params[:pointer][:selector] }
+                            x_plot, y_plot, tag, id, selector = params[:pointer].values_at(:x_plot, :y_plot, :tag, :id, :selector)
+                            { x_plot: x_plot, y_plot: y_plot, tag: tag, id: id, selector: selector }
                           else
                             {}
                           end
@@ -469,6 +471,7 @@ class UnitsController < ApplicationController
     @unit = Unit.find_by(provider_unit_id: params[:id], community_id: @community.id)
     @unit.x_plot = 0
     @unit.y_plot = 0
+    @unit.pointer_data = {}
 
     ts = TourStop.where(stop_id: @unit.id)
     if ts.present?

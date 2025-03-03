@@ -1,5 +1,3 @@
-//= require common_functions
-
 // save an individual unit (even if same x/y)
 function savePlot (id, dx, dy, door_id = 0, pointerData = {}) {
     if (typeof floorplan_id !== 'undefined') {
@@ -306,7 +304,11 @@ function doDraggable () {
         stack: ".marker",
         // get the initial X and Y position when dragging starts
         start: function (event, ui) {
-            const { x, y, scale} = mapPanZoom ? mapPanZoom.getTransform() : { scale: 1, x: 0, y: 0 };
+            const zoomContainer = event.target.closest('div.plot-image');
+            const key = `${zoomContainer.tagName.toLowerCase()}-${zoomContainer.id}`;
+
+
+            const { x, y, scale} = mapPanZoom?.[key] ? mapPanZoom[key].getTransform() : { scale: 1, x: 0, y: 0 };
 
             ui.position.left = (ui.position.left - x) / scale;
             ui.position.top = (ui.position.top - y) / scale;
@@ -326,8 +328,10 @@ function doDraggable () {
             const canvasLeft = mapElement.offset().left;
             const canvasHeight = mapElement.height();
             const canvasWidth = mapElement.width();
-
-            const { scale } = mapPanZoom ? mapPanZoom.getTransform() : { scale: 1, x: 0, y: 0 };
+            
+            const zoomContainer = document.querySelector('div.plot-image');
+            const key = `${zoomContainer.tagName.toLowerCase()}-${zoomContainer.id}`
+            const {scale} = mapPanZoom?.[key] ? mapPanZoom[key].getTransform() : { scale: 1, x: 0, y: 0 };
 
             const calculatedUiTop = (event.pageY - canvasTop - pointerOffset.y) / scale;
             const calculatedUiLeft = (event.pageX - canvasLeft - pointerOffset.x) / scale;

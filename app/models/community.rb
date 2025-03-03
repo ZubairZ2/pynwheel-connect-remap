@@ -1468,7 +1468,7 @@ class Community < ApplicationRecord
   end
 
   def delete_plots
-    self.units.where(floorplate_id: nil).update_all(x_plot: 0, y_plot: 0)
+    self.units.where(floorplate_id: nil).update_all(x_plot: 0, y_plot: 0, pointer_data: {})
   end
 
   def delete_plots_from_floorplate(floorplate_id)
