@@ -355,7 +355,7 @@
 
 :javascript
   var map_marker_color;
-  const hash_sign = #{raw map_marker_color.include?('#')} ? '#' : ''
+  var hash_sign = #{raw map_marker_color.include?('#')} ? '#' : ''
   map_marker_color = `${hash_sign}#{raw map_marker_color.gsub('#', '')}`
   
   var large_image_height = 166;
