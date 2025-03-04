@@ -138,7 +138,7 @@
                         - unit_door_exists = unit.door.present? ? true : false
 
                         %p{class: "marker", style: "left:#{unit.x_plot - left_margin }px; top:#{unit.y_plot - top_margin}px; position:absolute"}
-                          = link_to "javascript:void(0);", { id: "m_#{unit.provider_unit_id}", style: "font-size: #{fontsize}px", data_provider: @community.data_provider, provider_unit_id: unit.provider_unit_id, title: (unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, data: {toggle: "tooltip", toggle: "modal", name: "plot", target: "#markers-modal", href: "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}", horizontal: unit.x_plot, vertical: unit.y_plot, unit_form_url: "/communities/#{current_community.id}/units/#{unit.id}/adjust_position", plotted_category: "unit"}} do
+                          = link_to "javascript:void(0);", { id: "m_#{unit.provider_unit_id}", style: "font-size: #{fontsize}px", data_provider: @community.data_provider, provider_unit_id: unit.provider_unit_id, title: (unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, data: {toggle: "tooltip", toggle: "modal", name: "plot", target: "#markers-modal", href: "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}", horizontal: unit.x_plot, vertical: unit.y_plot, pointer_data: unit.pointer_data.to_json, unit_form_url: "/communities/#{current_community.id}/units/#{unit.id}/adjust_position", plotted_category: "unit"}} do
                             %i{class: "fas fa-map-marker-alt", style: "color: #{marker_color};"}
 
                           - if !unit_door_exists and @community.self_tour and @community.auto_wayfinding
@@ -198,17 +198,27 @@
       = form_tag "" do
         .modal-body
           = hidden_field_tag 'redirect_path' , community_floorplate_plotexp_path(current_community,@floorplate)
+          - if is_svg
+            %div{style: "margin-bottom: 1rem;"} You can't change the coordinates from here directly, you need to delete and the marker again in the SVG.
           .form-group.row
             %label.col-sm-2.col-form-label X Position
             .col-sm-10
-              = text_field_tag "horizontal_position",0,:class=>"form-control"
+              = text_field_tag "horizontal_position",0,class: "form-control", disabled: is_svg
           .form-group.row
             %label.col-sm-2.col-form-label Y Position
             .col-sm-10
-              = text_field_tag "vertical_position", 0,:class=>"form-control"
+              = text_field_tag "vertical_position", 0,class: "form-control", disabled: is_svg
+          
+          - if is_svg
+            = hidden_field_tag 'pointer[x_plot]'
+            = hidden_field_tag 'pointer[y_plot]'
+            = hidden_field_tag 'pointer[tag]'
+            = hidden_field_tag 'pointer[id]'
+            = hidden_field_tag 'pointer[selector]'
           .unit-buttons
         .modal-footer
-          = submit_tag "Update",:class=>"btn btn-primary"
+          - unless is_svg
+            = submit_tag "Update",:class=>"btn btn-primary"
           %a.btn.btn-danger.delete-marker-ok{"data-method"=>"delete"} Delete Marker
           %a.btn.btn-primary{:onclick=>"addMarkerOnFloorplate()"} Add Marker
           %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
@@ -224,6 +234,13 @@
           = hidden_field_tag 'add_horizontal_position'
           = hidden_field_tag 'add_vertical_position'
           = hidden_field_tag 'unit_provider_ids',"[]"
+
+          - if is_svg
+            = hidden_field_tag 'add_pointer[x_plot]'
+            = hidden_field_tag 'add_pointer[y_plot]'
+            = hidden_field_tag 'add_pointer[tag]'
+            = hidden_field_tag 'add_pointer[id]'
+            = hidden_field_tag 'add_pointer[selector]'
           .form-group.row
             %label.col-sm-2.col-form-label
             .col-sm-10.unit-selects-in-popup

@@ -177,10 +177,21 @@ $(document).ready(function () {
 
 
 function addMarkerOnFloorplate() {
-$('#add-marker-heading').html('Add marker at x:' + $('#horizontal_position').val() + ' y:' + $('#vertical_position').val());
-$('#add_horizontal_position').val($('#horizontal_position').val());
-$('#add_vertical_position').val($('#vertical_position').val());
-$('#add-marker-modal').modal('show');
+  const x_plot = $('#horizontal_position').val();
+  const y_plot = $('#vertical_position').val();
+  $('#add-marker-heading').html('Add marker at x:' + x_plot + ' y:' + y_plot);
+  $('#add_horizontal_position').val(x_plot);
+  $('#add_vertical_position').val(y_plot);
+
+  if (isSVG()) {
+    $('#add_pointer_x_plot').val($('#pointer_x_plot').val());
+    $('#add_pointer_y_plot').val($('#pointer_y_plot').val());
+    $('#add_pointer_tag').val($('#pointer_tag').val());
+    $('#add_pointer_id').val($('#pointer_id').val());
+    $('#add_pointer_selector').val($('#pointer_selector').val());
+  }
+
+  $('#add-marker-modal').modal('show');
 }
 
 

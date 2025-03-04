@@ -283,8 +283,19 @@ $('#markers-modal').on('show.bs.modal', function(e) {
 
     $(this).find('.delete-marker-ok').attr('href', $(e.relatedTarget).data('href'));
     $(this).find("form").attr("action",$(e.relatedTarget).data('unit-form-url'));
-    $(this).find('#horizontal_position').val($(e.relatedTarget).data('horizontal'));
-    $(this).find('#vertical_position').val($(e.relatedTarget).data('vertical'));
+
+    const $elem = $(e.relatedTarget);
+    $(this).find('#horizontal_position').val($elem.data('horizontal'));
+    $(this).find('#vertical_position').val($elem.data('vertical'));
+
+    if (isSVG()) {
+        const { x_plot, y_plot, tag, id, selector } = $elem.data('pointer-data');
+        $(this).find('#pointer_x_plot').val(x_plot);
+        $(this).find('#pointer_y_plot').val(y_plot);
+        $(this).find('#pointer_tag').val(tag);
+        $(this).find('#pointer_id').val(id);
+        $(this).find('#pointer_selector').val(selector);
+    }
 });
 $('#configurations-modal').on('show.bs.modal', function(e) {
     $(this).find('#modal-title').html($(e.relatedTarget).attr('title'));

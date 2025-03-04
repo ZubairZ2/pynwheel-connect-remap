@@ -193,6 +193,9 @@ function processBlock(svgElement, item, options, block = null) {
 
     switch (cloneClass) {
       case "cloned-unit":
+        if (onclick) $duplicateBlock.on("click", onclick);
+        if (onmouseenter) $duplicateBlock.on("mouseenter", onmouseenter);
+        if (onmouseleave) $duplicateBlock.on("mouseleave", onmouseleave);
         break;
       case "cloned-amenity":
         if (tooltip) {
@@ -210,17 +213,16 @@ function processBlock(svgElement, item, options, block = null) {
           toolTipSpan.style.left = `${x - 53}px`;
           svgElement.insertAdjacentElement("afterend", toolTipSpan);
 
-          if (onclick) onclick = onclick(rest);
-          if (onmouseenter) onmouseenter = onmouseenter(toolTipSpan);
-          if (onmouseleave) onmouseleave = onmouseleave(toolTipSpan);
+          if (onmouseenter) $duplicateBlock.on("mouseenter", () => onmouseenter(toolTipSpan));
+          if (onmouseleave) $duplicateBlock.on("mouseleave", () => onmouseleave(toolTipSpan));
         }
+
+        if (onclick) $duplicateBlock.on("click", () => onclick(rest))
+
         break;
     }
 
     $duplicateBlock.removeClass("hidden");
-    if (onclick) $duplicateBlock.on("click", onclick);
-    if (onmouseenter) $duplicateBlock.on("mouseenter", onmouseenter);
-    if (onmouseleave) $duplicateBlock.on("mouseleave", onmouseleave);
 
     block.parentElement.appendChild(duplicateBlock);
   }

@@ -661,13 +661,31 @@ class CommunitiesController < ApplicationController
 
   def add_plots
     units = Unit.where(community_id: params[:id], provider_unit_id: JSON.parse(params[:unit_provider_ids]))
-    units.update_all(x_plot: params[:add_horizontal_position],y_plot: params[:add_vertical_position])
+    units.update_all(
+      x_plot: params[:add_horizontal_position],
+      y_plot: params[:add_vertical_position],
+      pointer_data: if params[:add_pointer].present?
+                      x_plot, y_plot, tag, id, selector = params[:add_pointer].values_at(:x_plot, :y_plot, :tag, :id, :selector)
+                      { x_plot: x_plot, y_plot: y_plot, tag: tag, id: id, selector: selector }
+                    else
+                      {}
+                    end
+    )
     redirect_to plotexp_community_sitemaps_path(@community.present? ? @community : current_community), notice: "Plots are added successfully."
   end
 
   def add_plots_on_floorplate
     units = Unit.where(community_id: params[:id], provider_unit_id: JSON.parse(params[:unit_provider_ids]))
-    units.update_all(x_plot: params[:add_horizontal_position],y_plot: params[:add_vertical_position])
+    units.update_all(
+      x_plot: params[:add_horizontal_position],
+      y_plot: params[:add_vertical_position],
+      pointer_data: if params[:add_pointer].present?
+                      x_plot, y_plot, tag, id, selector = params[:add_pointer].values_at(:x_plot, :y_plot, :tag, :id, :selector)
+                      { x_plot: x_plot, y_plot: y_plot, tag: tag, id: id, selector: selector }
+                    else
+                      {}
+                    end
+    )
     redirect_to params[:redirect_path], notice: "Plots are added successfully."
   end
 
