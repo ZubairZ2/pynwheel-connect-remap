@@ -18,17 +18,41 @@ class WebpagesController < ActionController::Base
     @scheduler_widget_link = get_scheduler_link
     @units_with_floorplan_info = []
     @community_info = Community.includes(:credential,:floorplans,{sitemap: [:amenities]},{floorplates: [:amenities]},{units: [:floorplate]}).find(params[:community_id])
-    
+    svg_enabled = @community_info.enable_svg_mode?
+    svg_points_query = "pointer_data->>'tag' IS NOT NULL AND pointer_data->>'tag' <> ''"
+    community_units = @community_info.units
+    @amenities = @community_info.amenities
+
     unless @community_info.locked
       if @community_info.has_floorplates?
         @floorplates = @community_info.floorplates
         @floors = @floorplates.map{|f| f.floors}.flatten.sort_by { |f| -f }
-        @amenities =  @community_info.floorplates.collect{|c| c.amenities}
-        @amenities = @amenities.flatten
-      else
-        @amenities = @community_info.sitemap.amenities if @community.sitemap.present?
+        floorplates_units = []
+        floorplates_amenities = []
+
+        @community_info.floorplates.find_each do |fp|
+          this_floorplate_units = community_units.where(floorplate_id: fp.id)
+          this_floorplate_amenities = fp.amenities
+
+          if svg_enabled && fp.svg_image_url.present?
+            this_floorplate_units = this_floorplate_units.where(svg_points_query)
+            this_floorplate_amenities = this_floorplate_amenities.where(svg_points_query)
+          end
+
+          floorplates_units << this_floorplate_units
+          floorplates_amenities << this_floorplate_amenities
+        end
+        community_units = floorplates_units.flatten
+        @amenities = floorplates_amenities.flatten
+      elsif @community.sitemap.present?
+        if svg_enabled && @community.sitemap.svg_image_url.present?
+          community_units = community_units.where(svg_points_query)
+          @amenities = @amenities.where(svg_points_query)
+        end
       end
-      @available_units_and_sold_units = @community_info.units.available_units(@community.units_availability_over_120_days) #+ @community_info.units.are_sold
+
+      community_units = Unit.where(id: community_units.map(&:id))
+      @available_units_and_sold_units = community_units.available_units(@community.units_availability_over_120_days) #+ @community_info.units.are_sold
       if @available_units_and_sold_units.size > 0
         normalize_units
         if @units_with_floorplan_info.present?
@@ -75,7 +99,7 @@ class WebpagesController < ActionController::Base
     @floorplans = @community_info.floorplans
     @available_units_and_sold_units.each do |unit|
       if unit.effective_rent.present? && unit.effective_rent >= 1  && @floorplans.any? { |f| f.provider_floorplan_id == unit.floorplan_id }
-        @units_with_floorplan_info << fetch_unit_info_struct(unit)
+        @units_with_floorplan_info << fetch_unit_info_struct_for_webpage(unit)
       end
     end
   end

@@ -33,13 +33,23 @@ class UnitAmenitiesController < ApplicationController
       render 'units/edit'
     end
   end
-  
+
   def plot_amenity
     @amenity = Amenity.find (params[:amenity_id])
     @amenity.amenityable_type = "Unit"
     @amenity.amenityable_id = params[:unit_id]
-    @amenity.x_plot = params[:x_plot]
-    @amenity.y_plot = params[:y_plot]
+
+		if params[:x_plot].present? && params[:y_plot].present?
+			@amenity.x_plot = params[:x_plot]
+			@amenity.y_plot = params[:y_plot]
+		end
+		@amenity.pointer_data = if params[:pointer].present?
+															x_plot, y_plot, tag, id, selector = params[:pointer].values_at(:x_plot, :y_plot, :tag, :id, :selector)
+															{ x_plot: x_plot, y_plot: y_plot, tag: tag, id: id, selector: selector }
+														else
+															{}
+														end
+
     if @amenity.save(validate: false)
       render json: {amenity: @amenity}, status: 200
       Amenity.where('id != ? AND mass_upload_id = ?', @amenity.id, @amenity.mass_upload_id).update_all(x_plot: params[:x_plot], y_plot: params[:y_plot]) if @amenity.mass_upload_id.present?
@@ -68,9 +78,11 @@ class UnitAmenitiesController < ApplicationController
   end
 
   def remove_amenities_plot
+    svg_deletion = params[:svg_deletion].to_s == "true"
+    new_attributes = svg_deletion ? { pointer_data: {} } : { x_plot: 0, y_plot: 0 }
+
     @unit.amenities.each do |amenity|
-      amenity.x_plot = 0
-      amenity.y_plot = 0
+      amenity.assign_attributes(new_attributes)
       amenity.save(validate: false)
     end
     redirect_to plot_amenities_community_unit_amenities_path(@community,@unit), notice: "All plots have been deleted successfully."
@@ -78,12 +90,14 @@ class UnitAmenitiesController < ApplicationController
 
   def remove_amenity
     @amenity = Amenity.find params[:id]
-    amenities = @unit.amenities.where(x_plot: @amenity.x_plot, y_plot: @amenity.y_plot)
-    amenities.each do |amenity|
-      amenity.x_plot = 0
-      amenity.y_plot = 0
-      amenity.save(validate: false)
-    end
+    amenities = @unit.amenities
+
+    svg_deletion = params[:svg_deletion].to_s == "true"
+    new_attributes = svg_deletion ? { pointer_data: {} } : { x_plot: 0, y_plot: 0 }
+
+    amenities = @amenity.filter_amenities_for_plot_removal(amenities, svg_deletion)
+    amenities.update_all(new_attributes)
+
     redirect_to plot_amenities_community_unit_amenities_path(@community,@unit), notice: "Amenity plot have been deleted successfully."
   end
   
@@ -108,9 +122,11 @@ class UnitAmenitiesController < ApplicationController
   def delete_unit_plot
     # @community = Community.find params[:community_id]
     # @unit = Unit.find params[:unit_id]
+    svg_deletion = params[:svg_deletion].to_s == "true"
+    new_attributes = svg_deletion ? { pointer_data: {} } : { x_plot: 0, y_plot: 0 }
+
     @amenity = Amenity.find params[:id]
-    @amenity.x_plot = 0
-    @amenity.y_plot = 0
+    @amenity.assign_attributes(new_attributes)
     @amenity.save
     redirect_to plot_amenities_community_unit_amenities_path(@community,@unit), notice: "Amenity deleted successfully"
   end

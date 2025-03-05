@@ -10,7 +10,7 @@
             = @community.code
     %h4{:style => "color: grey;"}
       %p
-        To change the image of the floorplate, upload a new image here. Please note that images that are too small may appear pixelated.
+        To change the image of the floorplate, upload a new image/SVG here. Please note that images that are too small may appear pixelated.
     .box.box-widget.panel-box.alert-danger
       %h5{style: "margin-left: 15px; margin-top: 0px;"}
         Note: If the new image uploaded is not the exact same dimensions as the existing image, the unit and amenity markers will not be in the correct place on the map.
@@ -35,6 +35,6 @@
 
 :javascript
 
-  $("#floorplate_image").change(function(){
+  $("#floorplate_image, #floorplate_svg_image").change(function(){
       readImageIncludingSVG(this);
   });

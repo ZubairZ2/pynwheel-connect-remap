@@ -528,10 +528,21 @@ $(document).ready(function(){
         plotted_doors_in_modal = []
 
         active_provider_id = $(".delete-door-marker")[0].dataset.providerId
-        plotted_unit = arr.filter(data => data[zero] == active_provider_id)[zero]
+        
+        plotted_unit = unitsArr.filter(
+            ({ providerId }) => providerId == active_provider_id
+        )[zero];
 
-        units_associated_with_this_modal = arr.filter(data => data[1] == plotted_unit[1] && data[2] == plotted_unit[2]).map(function(data) { return data[zero]})
-        buttons.map(function(index, button){plotted_doors_in_modal.push(button.dataset.providerId)})
+        units_associated_with_this_modal = unitsArr
+            .filter(
+                ({ xPlot, yPlot }) =>
+                    xPlot == plotted_unit.x_plot &&
+                    yPlot == plotted_unit.y_plot
+            )
+            .map(({ providerId }) => providerId);
+        buttons.map(function (index, button) {
+            plotted_doors_in_modal.push(button.dataset.providerId);
+        });
 
         unplotted_provider_ids =  units_associated_with_this_modal.filter(plotted_unit_provider_id => !plotted_doors_in_modal.includes(plotted_unit_provider_id))
 

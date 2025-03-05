@@ -1,0 +1,15 @@
+
+#ajax-remaining-doors-modal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header#add-marker-heading
+        Add Doors
+      .modal-body
+        = hidden_field_tag 'selected_doors_info',"[]"
+        .form-group.row
+          %label.col-sm-2.col-form-label
+          .col-sm-10.doors-selects-in-popup
+            %select.doors-list-on-popup.form-control{:multiple=>"multiple"}
+      .modal-footer
+        %a.btn.btn-primary{:id=> "add-unplotted-doors"} Add
+        %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel   

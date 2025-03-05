@@ -1,5 +1,5 @@
-$(document).ready(function(e){
-
+$(document).ready(function (e) {
+  
   ////////// Custom Code for Neighborhood Categories Multi Select starts here //////////
   $('body').on("click", function(e){
     $("#multiselect").hide();
@@ -10,15 +10,19 @@ $(document).ready(function(e){
     e.stopPropagation();
   })
 
-  $('body').on("click", ".imageselect", function(e){
-    if($("#selected-units").children().length == 0 )
-        $("#imageselect").toggle();
+  $(".imageselect").on("click", function (e) {
+    const $scope = $(e.currentTarget).closest(".multi-select-units")
+    const $selectedUnits = $scope.find("#selected-units").children();
+
+    if ($selectedUnits.length)
+      $selectedUnits.addClass("blink_me").css("color", "red");
     else
-        $("#selected-units").children().addClass("blink_me").css("color", "red");
+      $scope.find("#imageselect").toggle();
+    
     e.stopPropagation();
   })
     $('body').on("click", ".amenity-imageselect", function(e){
-        $("#imageselect1").toggle();
+    $("#imageselect1").toggle();
         e.stopPropagation();
     })
     $('body').on("click", ".unit-imageselect", function(e){
@@ -35,7 +39,7 @@ $(document).ready(function(e){
         $(".divLoading").removeClass("hidden");
     })
 
-  $("#multiselect li").click(function(e){
+  $("#multiselect li").click(function (e) {
     if ($(this).hasClass("active")){
       $(this).removeClass("active")
     }else{
@@ -110,6 +114,29 @@ $(document).ready(function(e){
         
     });
     $('.hex-format-colorpicker').colorpicker({format: 'hex'});
+
+    showDataTables();
+    var data_provider = $("#community_data_provider").val();
+    selectDataProvider(data_provider);
+    $("#community_data_provider").change(function(){
+        selectDataProvider($(this).val());
+    });
+
+    //below code is populating images on floorplans right panel
+    $("#mutiple-files").change(function(){
+      var files = $(this).prop("files")
+      for (var i = 0; i < files.length; i++) {
+        if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){
+          readImageSrc(files[i]);
+        }
+      } 
+      if(files.length == 1){
+        if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
+          $('#image-upload-warning').modal('show');
+        }
+      }
+      $("#mutiple-files").val('');
+    });
 
 var headertext = [],
     headers = document.querySelectorAll("#miyazaki th"),
@@ -195,7 +222,7 @@ window.addEventListener("drop",function(e){
 
 //below lines change href on delete anchor tag in delete bootstrap modal
 
-$('#confirm-delete').on('show.bs.modal', function(e) {
+    $('#confirm-delete').on('show.bs.modal', function (e) {
     $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
     $(this).find('#record-name').html('Delete '+$(e.relatedTarget).data('name'));
     $(this).find('#record-message').html('Are you sure you want to delete this '+$(e.relatedTarget).data('name')+'?');
@@ -251,52 +278,6 @@ $('#confirm-delete-gallery').on('show.bs.modal', function(e) {
     $(this).find('#record-message-gallery').html('Are you sure you want to delete this gallery? This cannot be undone.');
 });
 
-$('#markers-modal').on('show.bs.modal', function(e) {
-    console.log("Displaying plotted unit information in markers modal");
-    $('.unit-buttons').empty();
-    if ($('.h-'+$(e.relatedTarget).data('horizontal')+'-'+$(e.relatedTarget).data('vertical')).length > 1){
-      $('.h-'+$(e.relatedTarget).data('horizontal')+'-'+$(e.relatedTarget).data('vertical')).each(function(){
-        console.log('CLick on marker for deleting or updating');
-        var target_id = $(e.relatedTarget).attr('id');
-        var underneath_unit_id = $(this).attr('id');
-        var button_style = ""
-        if(target_id.split('_')[1] == underneath_unit_id.split('-')[1]){
-          button_style = "btn-primary"
-        }
-        else{
-         button_style = "btn-default" 
-        }
-        // if($(e.relatedTarget).attr('data_provider') == "yardi") {
-        //     $('.unit-buttons').append('<button class="btn modal-unit-button ml-5 '+button_style+'" type="button" data-href="'+$(this).data('href')+'" data-unit-form-url="'+$(this).data('unit-form-url')+'" onclick="setHrefAndFormUrl(this);">'+$(e.relatedTarget).attr('provider_unit_id')+'</button>');
-        // }
-        // else {
-            $('.unit-buttons').append('<button class="btn modal-unit-button ml-5 '+button_style+'" type="button" data-href="'+$(this).data('href')+'" data-unit-form-url="'+$(this).data('unit-form-url')+'" onclick="setHrefAndFormUrl(this);">'+$(this).data('title')+'</button>');
-        // }
-      });
-    }
-
-    // if($(e.relatedTarget).attr('data_provider') == "yardi") {
-    //     $(this).find('#u-name').html($(e.relatedTarget).attr('provider_unit_id'));
-    // }else {
-        $(this).find('#u-name').html($(e.relatedTarget).attr('title'));
-    // }
-
-    $(this).find('.delete-marker-ok').attr('href', $(e.relatedTarget).data('href'));
-    $(this).find("form").attr("action",$(e.relatedTarget).data('unit-form-url'));
-
-    const $elem = $(e.relatedTarget);
-    $(this).find('#horizontal_position').val($elem.data('horizontal'));
-    $(this).find('#vertical_position').val($elem.data('vertical'));
-
-    if (isSVG()) {
-        const { x_plot, y_plot, tag, id, selector } = $elem.data('pointer-data');
-        $(this).find('#pointer_x_plot').val(x_plot);
-        $(this).find('#pointer_y_plot').val(y_plot);
-        $(this).find('#pointer_tag').val(tag);
-        $(this).find('#pointer_id').val(id);
-        $(this).find('#pointer_selector').val(selector);
-    }
-});
 $('#configurations-modal').on('show.bs.modal', function(e) {
     $(this).find('#modal-title').html($(e.relatedTarget).attr('title'));
 })
@@ -310,6 +291,331 @@ $('.submit-click').click(function() {
 })
 
 });
+
+function triggerPlottingEvents() {
+  $("#markers-modal, #svg-markers-modal").on("show.bs.modal", function (e) {
+    const $relatedTarget = $(e.relatedTarget);
+    const $this = $(this);
+    const unitProviderId = $relatedTarget.data("provider-unit-id").toString();
+    let $sameHiddenUnits = null;
+
+    console.log("Displaying plotted unit information in markers modal");
+
+    const $unitButtons = $this.find(".unit-buttons");
+    $unitButtons.empty();
+
+    if (this.id === "svg-markers-modal") {
+      const { x_plot, y_plot, tag, id, selector } =
+        $relatedTarget.data("pointer-data");
+
+      $this.find("#pointer_x_plot").val(x_plot);
+      $this.find("#pointer_y_plot").val(y_plot);
+      $this.find("#pointer_tag").val(tag);
+      $this.find("#pointer_id").val(id);
+      $this.find("#pointer_selector").val(selector);
+      $this.find("#horizontal_position").val(x_plot);
+      $this.find("#vertical_position").val(y_plot);
+
+      $sameHiddenUnits = $(".svg-h-" + x_plot + "-" + y_plot);
+    } else {
+      const xPlot = $relatedTarget.data("horizontal");
+      const yPlot = $relatedTarget.data("vertical");
+
+      $this.find("#horizontal_position").val(xPlot);
+      $this.find("#vertical_position").val(yPlot);
+
+      $sameHiddenUnits = $(".h-" + xPlot + "-" + yPlot);
+    }
+
+    if ($sameHiddenUnits.length > 1) {
+      $sameHiddenUnits.each(function () {
+        console.log("CLick on marker for deleting or updating");
+        const $hiddenUnit = $(this);
+        const underneathUnitId = $hiddenUnit.attr("id").split("-")[1];
+
+        $unitButtons.append(
+          getButtonHtml(
+            $hiddenUnit.data(),
+            underneathUnitId === unitProviderId
+              ? "btn-primary"
+              : "btn-default"
+          )
+        );
+      });
+    }
+
+    $this
+      .find("#u-name")
+      .html($relatedTarget.attr("title") || $relatedTarget.data("title"));
+    $this.find(".delete-marker-ok").attr("href", $relatedTarget.data("href"));
+    $this.find("form").attr("action", $relatedTarget.data("unit-form-url"));
+  });
+
+  $(
+    ".select-units-on-svg .ms-elem-selectable, .select-units-on-page .ms-elem-selectable"
+  ).on("click", function (e) {
+    console.log($(this).children("span").text());
+    const $scope  = $(e.currentTarget).closest(".multi-select-units");
+    const selectedForSvg = !!$scope.hasClass('select-units-on-svg');
+
+    const unitProviderId = $(this).attr("id").replace("-selectable", "");
+    selected.push([unitProviderId, $(this).children("span").text()]);
+
+    if (imageOCRResponse.length > 0) displayHints();
+    $scope.find("#newmsg").css({ display: "inline-block" });
+    plotMode(selectedForSvg);
+  });
+
+  $(".unit-selects-in-popup .ms-elem-selectable").click(function (e) {
+    const $scope = $(e.currentTarget).closest(".modal");
+    const unitProviderId = $(this).attr("id").replace("-selectable", "");
+
+    const unitProvidersArray = JSON.parse(
+      $scope.find("#unit_provider_ids").val()
+    );
+    unitProvidersArray.push(unitProviderId);
+
+    $scope.find("#unit_provider_ids").val(JSON.stringify(unitProvidersArray));
+  });
+
+  $(".unit-selects-in-popup .ms-elem-selection").click(function (e) {
+    const $scope = $(e.currentTarget).closest(".modal");
+    const unitProvidersArray = JSON.parse(
+      $scope.find("#unit_provider_ids").val()
+    );
+
+    const unitProviderId = $(this).attr("id").split("-")[0];
+    const index = unitProvidersArray.findIndex(unitProviderId);
+    
+    unitProvidersArray.splice(index, 1);
+    $scope.find("#unit_provider_ids").val(JSON.stringify(unitProvidersArray));
+  });
+
+  $(
+    ".select-units-on-svg .ms-elem-selection, .select-units-on-page .ms-elem-selection"
+  ).click(function (e) {
+    const sId = $(this).attr("id").replace("-selection", "");
+    removeUnitFromSelectedArray(sId);
+  });
+
+  $(".s-unit").on("click", function () {
+    const removeIndex = parseInt($(this).attr("data-id"));
+    selected.splice(removeIndex, removeIndex + 1);
+
+    const dataProviderUnitId = $(this).attr("data-provider-unit-id");
+    const $scope = $(e.currentTarget).closest(".multi-select-units");
+
+    $scope.find('.amenities-list option[value="' + dataProviderUnitId + '"]').css({
+      display: "block",
+    });
+
+    $(this).remove();
+    if (selected.length > 0) resetDataIds();
+  });
+
+  $("#imageselect li").on("click", function (e) {
+    const $this = $(this);
+    const { id, name } = $this.data();
+    const $scope = $(e.currentTarget).closest(".multi-select-units");
+    const index = selected.findIndex(({ id: selectedId }) => selectedId == id);
+
+    if (id) {
+      if (!selected.length) {
+        selected.push([id, name]);
+      } else if (index < 0) {
+        selected.push([id, name]);
+      }
+    }
+
+    $scope.find("#selected-units").empty();
+    for (const [selectedId, selectedName] of selected) {
+      $scope.find("#selected-units").append(
+        '<li class="s-unit" data-id=' + selectedId + ">" + selectedName + "</li>"
+      );
+    }
+
+    $scope.find("#newmsg").hide();
+    $this.css({ display: "none" });
+    $scope.find("#imageselect").toggle();
+
+    plotMode(!!$scope.hasClass('select-units-on-svg'));
+    e.stopPropagation();
+  });
+}
+
+function getButtonHtml(data, buttonStyle) {
+  return (
+    '<button class="btn modal-unit-button ml-5 ' +
+    buttonStyle +
+    '" type="button" data-href="' +
+    data.href +
+    '" data-unit-form-url="' +
+    data.unitFormUrl +
+    '" onclick="setHrefAndFormUrl(this);">' +
+    data.title +
+    "</button>"
+  );
+}
+
+function plotMode(selectedForSvg = false) {
+  console.log("new marked is created");
+  svgMode = selectedForSvg;
+  addmode = true;
+
+  const activeSelectors = selectedForSvg
+    ? "#svg_map, .select-units-on-svg"
+    : "#map, .select-units-on-page";
+  const inactiveSelectors = selectedForSvg
+    ? "#map, .select-units-on-page"
+    : "#svg_map, .select-units-on-svg";
+
+  $(activeSelectors.split(",")[0]).css("cursor", "crosshair");
+  $(inactiveSelectors).css("pointer-events", "none");
+
+  $(activeSelectors)
+    .off("click")
+    .on("click", function () {
+      console.log("Click detected on", activeSelectors);
+
+      $(inactiveSelectors).off("click");
+    });
+  $(inactiveSelectors)
+    .off("click")
+    .on("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      console.log("Click disabled on", inactiveSelectors);
+    });
+}
+
+function addMarker(element) {
+  const $scope = $(element).closest(".modal");
+
+  const x_plot = $scope.find("#horizontal_position").val();
+  const y_plot = $scope.find("#vertical_position").val();
+
+  svgMode = $scope[0].id.startsWith("svg");
+  const $addMarkerScope = svgMode
+    ? $("#svg-add-marker-modal")
+    : $("#add-marker-modal");
+
+  $addMarkerScope
+    .find("#add-marker-heading")
+    .html("Add marker at x:" + x_plot + " y:" + y_plot);
+  $addMarkerScope.find("#add_horizontal_position").val(x_plot);
+  $addMarkerScope.find("#add_vertical_position").val(y_plot);
+
+  if (svgMode) {
+    $addMarkerScope
+      .find("#add_pointer_x_plot")
+      .val($scope.find("#pointer_x_plot").val());
+    $addMarkerScope
+      .find("#add_pointer_y_plot")
+      .val($scope.find("#pointer_y_plot").val());
+    $addMarkerScope
+      .find("#add_pointer_tag")
+      .val($scope.find("#pointer_tag").val());
+    $addMarkerScope
+      .find("#add_pointer_id")
+      .val($scope.find("#pointer_id").val());
+    $addMarkerScope
+      .find("#add_pointer_selector")
+      .val($scope.find("#pointer_selector").val());
+  }
+
+  $addMarkerScope.modal("show");
+}
+
+function removeUnitFromSelectedArray(value) {
+  console.log("Selected Units Before: ", selected);
+  for (i = 0; i < selected.length; i++) {
+    if (selected[i][0] == value) {
+      selected.splice(i, 1);
+      $(`.suggested-circle-${value}`).remove();
+      // selected.splice(i, i + 1);
+    }
+  }
+
+  if (!selected.length) reset();
+
+  console.log("Selected Units After: ", selected);
+}
+
+function resetDataIds() {
+  var i = 0;
+  $("#selected-units li").each(function () {
+    $(this).attr("data-id", i);
+    i++;
+  });
+}
+
+function reset() {
+  addmode = false;
+  adddoorsmode = false;
+  accesspointplot = false;
+  selected = [];
+
+  $(".plot-image").css("cursor", "default");
+
+  const inactiveSelectors = svgMode
+    ? "#map, .select-units-on-page"
+    : "#svg_map, .select-units-on-svg";
+  $(inactiveSelectors).css("pointer-events", "auto");
+
+  const $scope = svgMode
+    ? $(".select-units-on-svg")
+    : $(".select-units-on-page");
+  
+  $scope.find("#selected-units").empty();
+  $scope.find(".ms-selection .ms-list li").css({ display: "none" });
+  $scope.find("#newmsg").css({ display: "none" });
+  $scope.find(".amenities-list option").each(function () {
+    $(this).css({ display: "block" });
+  });
+  svgMode = false;
+}
+
+function displayHints() {
+  console.log(imageOCRResponse);
+  if (imageOCRResponse.length > 0) {
+    let html = "";
+
+    selected.forEach((selected_units) => {
+      $(".fa-circle-thin").remove(".hint-unit-blink");
+      imageOCRResponse.forEach((ocr_u) => {
+        if (ocr_u.text && ocr_u.text.length > 2) {
+          if (textFilter(selected_units[1], ocr_u.text)) {
+            console.log(selected_units[1]);
+            console.log(ocr_u);
+            console.log("Left :   ", ocrImageDimensions.width * ocr_u.left);
+            console.log("Top  :   ", ocrImageDimensions.height * ocr_u.top);
+
+            let unit_left = ocrImageDimensions.width * ocr_u.left + 10;
+            let unit_top = ocrImageDimensions.height * ocr_u.top;
+            let circleTag = `suggested-circle-${selected_units[0]}`;
+            console.log("Suggested unit", selected_units);
+            html += `<i class="fa fa-circle-thin hint-unit-blink ${circleTag}" style="color: #d37474; left:${unit_left}px; top:${unit_top}px; position:absolute; transform: scale(3);"></i>`;
+          }
+        }
+      });
+    });
+
+    $("#map").append(html);
+  }
+}
+
+function textFilter(selectedUnit, ocrDetectedUnit) {
+  u_parts = ocrDetectedUnit.split("-");
+  let u_flag = false;
+  u_parts.forEach((u_text) => {
+    if (selectedUnit && u_text && selectedUnit.includes(u_text)) {
+      u_flag = true;
+    }
+  });
+
+  return u_flag;
+}
 
 function submitSettingFormOnChange() {
     set_fields_for_crm();
@@ -454,56 +760,37 @@ function readCommunityGroupHomepageImageURL(input) {
 }
 
 // preview image function including svg
-function readImageIncludingSVG(input) {  
-    if (input.files && input.files[0]) {
-        if(input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg" || input.files[0].type == "image/svg+xml"){
+function readImageIncludingSVG(input) {
+  const isSvgField = input.id.startsWith("svg");
 
-                var reader = new FileReader();
+  if (input.files && input.files[0]) {
+    const file = input.files[0];
+    const $scope = $(input).closest(".form-group");
+    const fileType = file.type;
+    if (
+      isSvgField
+        ? fileType === "image/svg+xml"
+        : ["image/png", "image/jpeg", "image/jpg", "image/svg+xml"].includes(
+            fileType
+          )
+    ) {
+      const reader = new FileReader();
 
-                reader.onload = function (e) {
-                    $('#preview-image').attr('src', e.target.result);
-                    $('#preview-image').parent().attr('href', e.target.result);
-                }
+      reader.onload = function (e) {
+        $scope.find("#preview-image").attr("src", e.target.result);
+        $scope.find("#preview-image").parent().attr("href", e.target.result);
+      };
 
-                reader.readAsDataURL(input.files[0]);
-
-
-
-      }
-      else{
-        $(input).val('');
-        $('#image-and-svg-upload-warning').modal('show');
-        //console.log($(input).val());
-      }
+      reader.readAsDataURL(file);
+    } else {
+      $(input).val("");
+      $(
+        isSvgField ? "#svg-upload-warning" : "#image-and-svg-upload-warning"
+      ).modal("show");
+      //console.log($(input).val());
     }
+  }
 }
-
-$(document).ready(function () {
-    showDataTables();
-    var data_provider = $("#community_data_provider").val();
-    selectDataProvider(data_provider);
-    $("#community_data_provider").change(function(){
-        selectDataProvider($(this).val());
-    });
-
-    //below code is populating images on floorplans right panel
-    $("#mutiple-files").change(function(){
-        var files = $(this).prop("files")
-        for (var i = 0; i < files.length; i++) {
-            if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){
-                    readImageSrc(files[i]);
-
-
-            }
-        } 
-        if(files.length == 1){
-           if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){ 
-            $('#image-upload-warning').modal('show');
-           } 
-        }
-        $("#mutiple-files").val('');
-    });
-});
 
 function selectDataProvider(data_provider){
     switch(data_provider) {
@@ -722,17 +1009,7 @@ function showCredentialsForm(){
 function readyJsOnAjaxCall(){
     showDataTables();
 }
-function floorplan_names_order() {
-    $.ajax({
-        type: "POST",
-        url: '/communities/'+community_id+'/floorplans/save_floorplan_name_order',
-        data: {desc: $('.floorplan_name_col')[0].classList[1]},
-        success: function(response) {
 
-        }
-
-    });
-}
 function showDataTables(){
     $('#miyazaki.tour_user_table').DataTable({
         'aoColumnDefs': [{
@@ -855,22 +1132,6 @@ function readImageSrc(file){
   }
 
 
-   function saveFloorPlanImage(src,floorplan_id,position){
-    //var community_id = $('#communities_at_floorplans').val();
-    $.ajax({
-        url: "/communities/"+community_id+"/floorplans/"+floorplan_id,
-        type: "PUT",
-        dataType: "script",
-        data: {
-            floorplan: {
-                image: src
-            }
-        }
-    }).done(function(){
-        console.log("floorplan image is saved and now going to delete temporary image");
-        deleteTemporaryImage(position);
-    });
-   }
 
    // function deleteFloorPlanImage(floorplan_id,src,position,name){
    //  //var community_id = $('#communities_at_floorplans').val();
@@ -890,26 +1151,6 @@ function readImageSrc(file){
    // }
 
 
-function trim (str) {
-  if ( typeof str !== 'undefined'){  
-    return str.replace(/^\s+|\s+$/gm,'');
-  }
-}
-
-function rgbaToHex (rgba) {
-    if ( typeof rgba !== 'undefined'){  
-    var parts = rgba.substring(rgba.indexOf("(")).split(",");
-        r = parseInt(trim(parts[0].substring(1)), 10);
-        g = parseInt(trim(parts[1]), 10);
-        b = parseInt(trim(parts[2]), 10);
-        if ( typeof parts[3] !== 'undefined'){ 
-          a = parseFloat(trim(parts[3].substring(0, parts[3].length - 1))).toFixed(2);
-        }
-    if ( typeof a !== 'undefined'){    
-      return ('#' + r.toString(16) + g.toString(16) + b.toString(16) + (a * 255).toString(16).substring(0,2));
-    }
-   }   
-}
 
 function populate_multiselect(){
   var categories = []
@@ -961,27 +1202,28 @@ function removeDivWithTemporaryImage(position){
   deleteTemporaryImage(position)
 }
 
-function showHideOverlayGrid(){
-  if($('.grid-graph').hasClass('hidden')){
-    $('.grid-graph').removeClass('hidden');
-  }
-  else{
-   $('.grid-graph').addClass('hidden'); 
-  }
+function showHideOverlayGrid (element) {
+    const $header = $(element).closest(".box-header");
+    const $scope = ($header.attr('id') === 'svg_header') ? $("#svg_map.plot-image") : $("#map.plot-image");
+    const $grid = $scope.find(".grid-graph");
+
+    if ($grid.hasClass("hidden")) {
+        $grid.removeClass("hidden");
+    } else {
+        $grid.addClass("hidden");
+    }
 }
 
-function setHrefAndFormUrl(element){
-  $('.modal-unit-button').each(function(){
-    $(this).removeClass('btn-primary');
-    $(this).addClass('btn-default');
-  });
-  $(element).removeClass('btn-default');
-  $(element).addClass('btn-primary');
-  $('#markers-modal').find('#u-name').html($(element).html());
-  $('#markers-modal').find('.delete-marker-ok').attr('href', $(element).data('href'));
-  $('#markers-modal').find("form").attr("action",$(element).data('unit-form-url'));
-}
-function capitalize(s)
-{
-  return s && s[0].toUpperCase() + s.slice(1);
+function setHrefAndFormUrl(element) {
+    const $element = $(element);
+    const $scope = $element.closest(".modal");
+    $(".modal-unit-button").each(function () {
+        $(this).removeClass("btn-primary");
+        $(this).addClass("btn-default");
+    });
+    $element.removeClass("btn-default");
+    $element.addClass("btn-primary");
+    $scope.find("#u-name").html($element.html());
+    $scope.find(".delete-marker-ok").attr("href", $element.data("href"));
+    $scope.find("form").attr("action", $element.data("unit-form-url"));
 }

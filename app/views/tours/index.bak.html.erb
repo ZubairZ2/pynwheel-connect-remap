@@ -477,10 +477,10 @@
     });
 
     
-    var arr = newArray();
+    var hrefArr = newArray();
     $("*#create_path").on("click", function(event){
-      arr.push(this.href)
-      if arr.length == 2{       
+      hrefArr.push(this.href)
+      if hrefArr.length == 2{       
         $.ajax({
           type: "POST",
           url: this.href,

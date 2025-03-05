@@ -21,7 +21,7 @@ class SiteMapUploader < CarrierWave::Uploader::Base
 
   # Override the directory where uploaded files will be stored.
   # This is a sensible default for uploaders that are meant to be mounted:
-  version :svg_for_metro do
+  version :svg_for_metro, if: :image? do
     process convert: 'jpg'
     # resize_to_fit(1412, 932)
     def full_filename (for_file = model.image.file) 

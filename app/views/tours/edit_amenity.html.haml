@@ -52,7 +52,7 @@
           Plot Units on Property Map
         .btn-btn-danger.mt-10.loader_class
           = link_to "MANAGE AMENITIES" , community_amenities_path(@community), :class=>"btn btn-success"
-          %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"showHideOverlayGrid();"} GRID OVERLAY
+          %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"showHideOverlayGrid(this);"} GRID OVERLAY
           - if current_user.is_super_admin?
             %a.btn.btn-danger{"data-name" => "sitemap's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots"} RESET ALL PLOTS
       / /.box-header
@@ -69,28 +69,8 @@
 
         #map-marker{"data-toggle" => "tooltip", :onclick => "selMarker()", :title => "new marker"}
           %i.icon-screenshot
-#markers-modal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
-  .modal-dialog
-    .modal-content
-      .modal-header#u-name
+= render partial: 'markers/shared/show_unit_marker_modal', is_svg: false, redirect_path: plotexp_community_sitemaps_path(@community)
 
-      = form_tag "" do
-        .modal-body
-          = hidden_field_tag 'redirect_path' , plotexp_community_sitemaps_path(@community)
-          .form-group.row
-            %label.col-sm-2.col-form-label X Position
-            .col-sm-10
-              = text_field_tag "horizontal_position",0,:class=>"form-control"
-          .form-group.row
-            %label.col-sm-2.col-form-label Y Position
-            .col-sm-10
-              = text_field_tag "vertical_position", 0,:class=>"form-control"
-          .unit-buttons
-        .modal-footer
-          = submit_tag "Update",:class=>"btn btn-primary"
-          %a.btn.btn-danger.delete-marker-ok{"data-method"=>"delete"} Delete Marker
-          %a.btn.btn-primary{:onclick=>"addMarker()"} Add Marker
-          %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
 
 #add-marker-modal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog

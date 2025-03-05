@@ -33,6 +33,85 @@
 
   %body.custom-iframe-modeule
     .webPageLoader.hidden
+
+    - if @community.theme_name.include?('gables')
+      - fontsize = @community&.design&.property_map_size_integer || 30
+    - elsif @community.theme_name == 'modernist'
+      - fontsize = @community&.design&.modernist_property_map_size || 30
+    - elsif @community.theme_name == 'futurist'
+      - fontsize = @community&.design&.futurist_property_map_size || 30
+    - elsif @community.theme_name == 'expressionist'
+      - fontsize = @community&.design&.expressionist_property_map_size || 30
+    - elsif @community.theme_name == 'panther'
+      - fontsize = @community&.design&.panther_property_map_size || 30
+    - else
+      - fontsize = 30
+
+    - if @community.theme_name.include?('gables')
+      - map_marker_color = @community&.design&.property_map_color || "#d37474"
+    - elsif @community.theme_name == 'modernist'
+      - map_marker_color = ( ['no color', ''].include?(@community&.design&.modernist_map_marker_color) ) ? (@community&.design&.primary_color || '#cf492f') : (@community&.design&.modernist_map_marker_color || '#cf492f')
+    - elsif @community.theme_name == 'futurist'
+      - map_marker_color = @community&.design&.futurist_property_map_marker_color || "#d37474"
+    - elsif @community.theme_name == 'expressionist'
+      - map_marker_color = @community&.design&.expressionist_property_map_marker_color || "#d37474"
+    - elsif @community.theme_name == 'panther'
+      - map_marker_color = @community&.design&.panther_property_map_marker_color || "#d37474"
+    - else
+      - map_marker_color = 'rgba(247, 0, 0, 0.61)'
+
+
+    - if @community.theme_name.include?('gables')
+      - marker_font_size = @community&.design&.amenity_map_marker_size_integer || 30
+    - elsif @community.theme_name == 'modernist'
+      - marker_font_size = @community&.design&.modernist_amenity_map_size || 30
+    - elsif @community.theme_name == 'futurist'
+      - marker_font_size = @community&.design&.futurist_amenity_map_size || 30
+    - elsif @community.theme_name == 'expressionist'
+      - marker_font_size = @community&.design&.expressionist_amenity_map_size || 30
+    - elsif @community.theme_name == 'panther'
+      - marker_font_size = @community&.design&.panther_amenity_map_size || 30
+    - else
+      - fontsize = 30
+
+    - if @community.theme_name.include?('gables')
+      - amenity_marker_color = @community&.design&.amenity_map_marker_color || "#d37474"
+    - elsif @community.theme_name == 'modernist'
+      - amenity_marker_color = ( ['no color', ''].include?(@community.design.modernists_amenity_map_marker_color) ) ? (@community&.design&.primary_color || '#cf492f') : (@community&.design&.modernists_amenity_map_marker_color || '#cf492f')
+    - elsif @community.theme_name == 'futurist'
+      - amenity_marker_color = @community&.design&.futurist_amenity_map_marker_color || "#d37474"
+    - elsif @community.theme_name == 'expressionist'
+      - amenity_marker_color = @community&.design&.expressionist__amenity_map_marker_color || "#d37474"
+    - elsif @community.theme_name == 'panther'
+      - amenity_marker_color = @community&.design&.panther_amenity_map_marker_color || "#d37474"
+    - else
+      - amenity_marker_color = 'rgba(247, 0, 0, 0.61)'
+
+    - if (svg_mode = @community.enable_svg_mode?)
+      - left_margin = 13
+      - top_margin = 34
+      - amenity_left_margin = 13
+      - amenity_top_margin = 13
+    - else
+      - left_margin = ((6.0 / 25.0).to_f * (fontsize.to_f)).to_f
+      - top_margin = ((13.0 / 25.0).to_f * (fontsize.to_f)).to_f
+      - amenity_left_margin = ((6.0 / 25.0).to_f * (fontsize.to_f)).to_f
+      - amenity_top_margin = ((6.0 / 25.0).to_f * (fontsize.to_f)).to_f
+
+    - spanSize_x = ((5 / 25.0).to_f * (fontsize.to_f)).to_f
+    - spanSize_y = ((7 / 25.0).to_f * (fontsize.to_f)).to_f
+    - spanSize_size = ((9 / 25.0).to_f * (fontsize.to_f)).to_f
+    - camera_margin = (marker_font_size.to_i <= 27 ? 3 : (marker_font_size.to_i <= 30 ? 4 : (marker_font_size.to_i <= 33 ? 5 : (marker_font_size.to_i <= 35 ? 6 : 6))))
+    - marker_font_size = (marker_font_size.to_i) -5
+    - camera_font_size = (marker_font_size.to_i) / 2
+
+    %span.hidden#left_margin #{left_margin}
+    %span.hidden#top_margin #{top_margin}
+    %span.hidden#amenity_left_margin #{amenity_left_margin}
+    %span.hidden#amenity_top_margin #{amenity_top_margin}
+
+    - units = @available_units_and_sold_units
+
     - unless @community_info.locked
       = hidden_field_tag :maps_community_id, @community_info.id
       %section.is-webpage.maps-analytics-container
@@ -134,87 +213,6 @@
             .beanswidget#beanswidget.some{:style => "width:100%; height:100%"}
 
           .c-body{style: "overflow: hidden", position: "fixed"}
-            - if @community.theme_name.include?('gables')
-              - fontsize = @community&.design&.property_map_size_integer || 30
-            - elsif @community.theme_name == 'modernist'
-              - fontsize = @community&.design&.modernist_property_map_size || 30
-            - elsif @community.theme_name == 'futurist'
-              - fontsize = @community&.design&.futurist_property_map_size || 30
-            - elsif @community.theme_name == 'expressionist'
-              - fontsize = @community&.design&.expressionist_property_map_size || 30
-            - elsif @community.theme_name == 'panther'
-              - fontsize = @community&.design&.panther_property_map_size || 30
-            - else
-              - fontsize = 30
-
-            - if @community.theme_name.include?('gables')
-              - map_marker_color = @community&.design&.property_map_color || "#d37474"
-            - elsif @community.theme_name == 'modernist'
-              - map_marker_color = ( ['no color', ''].include?(@community&.design&.modernist_map_marker_color) ) ? (@community&.design&.primary_color || '#cf492f') : (@community&.design&.modernist_map_marker_color || '#cf492f')
-            - elsif @community.theme_name == 'futurist'
-              - map_marker_color = @community&.design&.futurist_property_map_marker_color || "#d37474"
-            - elsif @community.theme_name == 'expressionist'
-              - map_marker_color = @community&.design&.expressionist_property_map_marker_color || "#d37474"
-            - elsif @community.theme_name == 'panther'
-              - map_marker_color = @community&.design&.panther_property_map_marker_color || "#d37474"
-            - else
-              - map_marker_color = 'rgba(247, 0, 0, 0.61)'
-
-            - units = @available_units_and_sold_units
-
-            - is_svg = false
-            - left_margin = ((6.0 / 25.0).to_f * (fontsize.to_f)).to_f
-            - top_margin = ((13.0 / 25.0).to_f * (fontsize.to_f)).to_f
-            - amenity_left_margin = ((6.0 / 25.0).to_f * (fontsize.to_f)).to_f
-            - amenity_top_margin = ((6.0 / 25.0).to_f * (fontsize.to_f)).to_f
-
-            - spanSize_x = ((5 / 25.0).to_f * (fontsize.to_f)).to_f
-            - spanSize_y = ((7 / 25.0).to_f * (fontsize.to_f)).to_f
-            - spanSize_size = ((9 / 25.0).to_f * (fontsize.to_f)).to_f
-
-            - if !@community_info.has_floorplates? && @community.sitemap.present? && @community&.image_src&.ends_with?(".svg")
-              - is_svg = true
-              - left_margin = 13
-              - top_margin = 34
-              - amenity_left_margin = 13
-              - amenity_top_margin = 13
-
-            %span.hidden#left_margin #{left_margin}
-            %span.hidden#top_margin #{top_margin}
-            %span.hidden#amenity_left_margin #{amenity_left_margin}
-            %span.hidden#amenity_top_margin #{amenity_top_margin}
-
-            - if @community.theme_name.include?('gables')
-              - marker_font_size = @community&.design&.amenity_map_marker_size_integer || 30
-            - elsif @community.theme_name == 'modernist'
-              - marker_font_size = @community&.design&.modernist_amenity_map_size || 30
-            - elsif @community.theme_name == 'futurist'
-              - marker_font_size = @community&.design&.futurist_amenity_map_size || 30
-            - elsif @community.theme_name == 'expressionist'
-              - marker_font_size = @community&.design&.expressionist_amenity_map_size || 30
-            - elsif @community.theme_name == 'panther'
-              - marker_font_size = @community&.design&.panther_amenity_map_size || 30
-            - else
-              - fontsize = 30
-
-            - if @community.theme_name.include?('gables')
-              - amenity_marker_color = @community&.design&.amenity_map_marker_color || "#d37474"
-            - elsif @community.theme_name == 'modernist'
-              - amenity_marker_color = ( ['no color', ''].include?(@community.design.modernists_amenity_map_marker_color) ) ? (@community&.design&.primary_color || '#cf492f') : (@community&.design&.modernists_amenity_map_marker_color || '#cf492f')
-            - elsif @community.theme_name == 'futurist'
-              - amenity_marker_color = @community&.design&.futurist_amenity_map_marker_color || "#d37474"
-            - elsif @community.theme_name == 'expressionist'
-              - amenity_marker_color = @community&.design&.expressionist__amenity_map_marker_color || "#d37474"
-            - elsif @community.theme_name == 'panther'
-              - amenity_marker_color = @community&.design&.panther_amenity_map_marker_color || "#d37474"
-            - else
-              - amenity_marker_color = 'rgba(247, 0, 0, 0.61)'
-
-            - camera_margin = (marker_font_size.to_i <= 27 ? 3 : (marker_font_size.to_i <= 30 ? 4 : (marker_font_size.to_i <= 33 ? 5 : (marker_font_size.to_i <= 35 ? 6 : 6))))
-
-            - marker_font_size = (marker_font_size.to_i) -5
-            - camera_font_size = (marker_font_size.to_i) / 2
-                  
             %div#tab
               %div.tablinks.active_unit_view
                 = button_tag :onClick => "change_units_view(event, 'map_view')" do
@@ -228,47 +226,53 @@
 
             %div.map-body.map-container-center-align
               .right-side.parent.tabcontent.map_view#panzomm-container.mobile_map_view
-                .image-map#zoomable.zoomable-map-container{style: "text-align: center; position: relative"}
+                .image-map#zoomable.zoomable-map-container{style: "text-align: center; position: unset"}
                   - if @community_info.has_floorplates?
                     - @floors.each do |floor|
                       - floorplate = @floorplates.select{|f| f.floors.include?(floor)}.first
-                      - if floorplate&.standard_image_url&.ends_with?(".svg")
-                        %div{data: {svg_url: floorplate.standard_image_url, height: floorplate.floorplate_image_height, width: floorplate.floorplate_image_width}, style: "position: relative;", class: "map-image-align floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}", id: "f_#{floor}"}
+                      - if svg_mode && floorplate.svg_image_url.present?
+                        %div{ data: { svg_url: floorplate.svg_image_url, height: floorplate.svg_metadata['height'] || 0, width: floorplate.svg_metadata['width'] || 0 }, style: "position: relative;", class: "map-image-align floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}", id: "f_#{floor}" }
                       - else
                         = image_tag (floorplate.standard_image_url  || "/assets/default.jpeg"), :class=>"map-image-align floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}",:id=>"f_#{floor}","data-height"=>"#{floorplate.floorplate_image_height()}","data-width"=>"#{floorplate.floorplate_image_width()}"
                   - else
-                    - if is_svg
-                      %div#property-map-image-container{data: {svg_url: @community.image_src}}
+                    - if svg_mode &&  @community.sitemap.svg_image.url.present?
+                      %div#property-map-image-container{ data: { svg_url: @community.svg_src, height: @community.sitemap.svg_metadata['height'] || 0, width: @community.sitemap.svg_metadata['width'] || 0 } }
                     - else
                       %img.floorplate-image.sitemap-image.map-image-align{alt: "", src: @community.image_src || "/assets/default.jpeg", id: "property-map-image", title: "", "data-height"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.height : nil}", "data-width"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.width : nil}"}/
 
-                  - coordinates_array = []
+                  - unless svg_mode
+                    - coordinates_array = []
+                    - units.each do |unit|
+                      - coordinates_array.push([unit.x_plot, unit.y_plot])
 
-                  - units.each do |unit|
-                    - coordinates_array.push([unit.x_plot, unit.y_plot])
-                  - units.each do |unit|
-                    - if (unit.x_plot.to_i + unit.y_plot.to_i) > 0 and @floorplans.any? { |f| f.provider_floorplan_id == unit.floorplan_id }
-                      - unless coordinates_array.include?([unit.x_plot, unit.y_plot])
-                        - coordinates_array.push([unit.x_plot, unit.y_plot])
-                      - if @community_info.has_floorplates?
-                        - floorplate = @floorplates.select{|f| f.floors.include?(unit.floor)}.first
-                        - unless floorplate&.standard_image_url&.ends_with?(".svg")
-                          = link_to "<div id='s_#{unit.id}' class='fas fa-map-marker-alt fa-map-marker-alt-responsive unit_marker' style='font-size: 22px; color: #{map_marker_color};'> <span style = '#{coordinates_array.count([unit.x_plot, unit.y_plot]) > 9 ? "position: absolute; left: #{spanSize_y - 1}px; top: #{spanSize_x + 2}px; font-size: #{spanSize_size - 4}px;" : "position: absolute; left: #{spanSize_y}px; top:# {spanSize_x}px; font-size: #{spanSize_size}px;"}' ></span> </div>".html_safe, "##", class: "marker #{coordinates_array.count([unit.x_plot, unit.y_plot]) > 1 ? 'overlapping-unit' : ''}", id: "m_#{unit.id}", style: "font-size: #{fontsize}px; position: absolute;", **(fetch_unit_info_struct(unit))[:data_attributes]
-                      - elsif !is_svg
-                        = link_to "<div id='s_#{unit.id}' class='fas fa-map-marker-alt fa-map-marker-alt-responsive unit_marker' style='font-size: 22px; color: #{map_marker_color};'> <span style = '#{coordinates_array.count([unit.x_plot, unit.y_plot]) > 9 ? "position: absolute; left: #{spanSize_y - 1}px; top: #{spanSize_x + 2}px; font-size: #{spanSize_size - 4}px;" : "position: absolute; left: #{spanSize_y}px; top: #{spanSize_x}px; font-size: #{spanSize_size}px;"}' ></span> </div>".html_safe, "##", class: "marker #{coordinates_array.count([unit.x_plot, unit.y_plot]) > 1 ? 'overlapping-unit' : ''}", id: "m_#{unit.id}", style: "font-size: #{fontsize}px; position: absolute;", **(fetch_unit_info_struct(unit))[:data_attributes], "data-unit-x-plot": (unit.x_plot - left_margin).to_i, "data-unit-y-plot": (unit.y_plot - top_margin).to_i
-                  .hidden-units
-                  - if @community_info.show_amenity_key
-                    - if @amenities.present?
-                      - if @community_info.has_floorplates?
-                        - @floors.each do |floor|
-                          - floorplate = @floorplates.select{ |f| f.floors.include?(floor) }.first
-                          - floorplate.amenities.where(floor: [floor, nil]).each do |amenity|
-                            - if (amenity.x_plot.to_i + amenity.y_plot.to_i > 0) && !floorplate&.standard_image_url&.ends_with?(".svg")
-                              = link_to "<span class='camera-icon camera-icon-responsive' style='border: 2px solid  #{amenity_marker_color};'><i class='fas fa-camera-retro' style='color: #{amenity_marker_color};'></i></span><span class='amenitytooltiptext'><h2 style='display:#{@community.show_amenity_name ? "block": "none"}' >#{amenity.name}</h2><img src=#{amenity.standard_image_url} alt='Image Title'></span>".html_safe, "#", style: "left: #{amenity.x_plot - amenity_left_margin}px; top: #{amenity.y_plot - amenity_top_margin}px; position: absolute;", class: "a_#{floor} amenity-marker hidden slider-amenity amenityTooltip", id: "a_#{amenity.id}", "data-amenity-id": amenity.id, "data-amenity-x-plot": amenity.x_plot - amenity_left_margin, "data-amenity-y-plot": amenity.y_plot - amenity_top_margin, onclick: "openAmenityViewerModal(#{amenity.to_json}, #{amenity.amenity_galleries.to_json})"
-                      - else
-                        - @amenities.each do |amenity|
-                          - if (amenity.x_plot.to_i + amenity.y_plot.to_i > 0) && !is_svg
-                            = link_to "<span class='camera-icon camera-icon-responsive' style='border: 2px solid  #{amenity_marker_color};'><i class='fas fa-camera-retro' style='color: #{amenity_marker_color};'></i></span><span class='amenitytooltiptext'><h2 style='display:#{@community.show_amenity_name ? "block": "none"}' >#{amenity.name}</h2> <img src=#{amenity.standard_image_url} alt='Image Title'></span>".html_safe, "#", style: "left: #{amenity.x_plot - amenity_left_margin}px; top: #{amenity.y_plot - amenity_top_margin}px; position: absolute;", class: "sitemap-amenity-marker amenity-marker slider-amenity amenityTooltip", id: "a_#{amenity.id}", "data-amenity-id": amenity.id, "data-amenity-x-plot": amenity.x_plot - amenity_left_margin, "data-amenity-y-plot": amenity.y_plot - amenity_top_margin, onclick: "openAmenityViewerModal(#{amenity.to_json}, #{amenity.amenity_galleries.to_json})"
+                    - units.each do |unit|
+                      - coords = [unit.x_plot, unit.y_plot].map(&:to_i)
+                      - x_plot, y_plot = coords
+                      - if coords.sum > 0 and @floorplans.any? { |f| f.provider_floorplan_id == unit.floorplan_id }
+                        - unless coordinates_array.include?(coords)
+                          - coordinates_array.push(coords)
+                        - if @community_info.has_floorplates?
+                          - floorplate = @floorplates.select{|f| f.floors.include?(unit.floor)}.first
+                          = link_to "<div id='s_#{unit.id}' class='fas fa-map-marker-alt fa-map-marker-alt-responsive unit_marker' style='font-size: 22px; color: #{map_marker_color};'> <span style = '#{coordinates_array.count(coords) > 9 ? "position: absolute; left: #{spanSize_y - 1}px; top: #{spanSize_x + 2}px; font-size: #{spanSize_size - 4}px;" : "position: absolute; left: #{spanSize_y}px; top:# {spanSize_x}px; font-size: #{spanSize_size}px;"}' ></span> </div>".html_safe, "##", class: "marker #{coordinates_array.count(coords) > 1 ? 'overlapping-unit' : ''}", id: "m_#{unit.id}", style: "font-size: #{fontsize}px; position: absolute;", **(fetch_unit_info_struct_for_webpage(unit))[:data_attributes]
+                        - else
+                          = link_to "<div id='s_#{unit.id}' class='fas fa-map-marker-alt fa-map-marker-alt-responsive unit_marker' style='font-size: 22px; color: #{map_marker_color};'> <span style = '#{coordinates_array.count(coords) > 9 ? "position: absolute; left: #{spanSize_y - 1}px; top: #{spanSize_x + 2}px; font-size: #{spanSize_size - 4}px;" : "position: absolute; left: #{spanSize_y}px; top: #{spanSize_x}px; font-size: #{spanSize_size}px;"}' ></span> </div>".html_safe, "##", class: "marker #{coordinates_array.count(coords) > 1 ? 'overlapping-unit' : ''}", id: "m_#{unit.id}", style: "font-size: #{fontsize}px; position: absolute;", **(fetch_unit_info_struct_for_webpage(unit))[:data_attributes], "data-unit-x-plot": (x_plot - left_margin).to_i, "data-unit-y-plot": (y_plot - top_margin).to_i
+                    .hidden-units
+                    - if @community_info.show_amenity_key
+                      - if @amenities.present?
+                        - if @community_info.has_floorplates?
+                          - @floors.each do |floor|
+                            - floorplate = @floorplates.select{ |f| f.floors.include?(floor) }.first
+                            - floorplate.amenities.where(floor: [floor, nil]).each do |amenity|
+                              - coords = [amenity.x_plot, amenity.y_plot].map(&:to_i)
+                              - x_plot, y_plot = coords
+                              - if (coords.sum > 0)
+                                = link_to "<span class='camera-icon camera-icon-responsive' style='border: 2px solid  #{amenity_marker_color};'><i class='fas fa-camera-retro' style='color: #{amenity_marker_color};'></i></span><span class='amenitytooltiptext'><h2 style='display:#{@community.show_amenity_name ? "block": "none"}' >#{amenity.name}</h2><img src=#{amenity.standard_image_url} alt='Image Title'></span>".html_safe, "#", style: "left: #{x_plot - amenity_left_margin}px; top: #{y_plot - amenity_top_margin}px; position: absolute;", class: "a_#{floor} amenity-marker hidden slider-amenity amenityTooltip", id: "a_#{amenity.id}", "data-amenity-id": amenity.id, "data-amenity-x-plot": x_plot - amenity_left_margin, "data-amenity-y-plot": y_plot - amenity_top_margin, onclick: "openAmenityViewerModal(#{amenity.to_json}, #{amenity.amenity_galleries.to_json})"
+                        - else
+                          - @amenities.each do |amenity|
+                            - coords = [amenity.x_plot, amenity.y_plot].map(&:to_i)
+                            - x_plot, y_plot = coords
+                            - if (coords.sum > 0)
+                              = link_to "<span class='camera-icon camera-icon-responsive' style='border: 2px solid  #{amenity_marker_color};'><i class='fas fa-camera-retro' style='color: #{amenity_marker_color};'></i></span><span class='amenitytooltiptext'><h2 style='display:#{@community.show_amenity_name ? "block": "none"}' >#{amenity.name}</h2> <img src=#{amenity.standard_image_url} alt='Image Title'></span>".html_safe, "#", style: "left: #{x_plot - amenity_left_margin}px; top: #{y_plot - amenity_top_margin}px; position: absolute;", class: "sitemap-amenity-marker amenity-marker slider-amenity amenityTooltip", id: "a_#{amenity.id}", "data-amenity-id": amenity.id, "data-amenity-x-plot": x_plot - amenity_left_margin, "data-amenity-y-plot": y_plot - amenity_top_margin, onclick: "openAmenityViewerModal(#{amenity.to_json}, #{amenity.amenity_galleries.to_json})"
 
                 .alert.alert-danger.units-alert.fade.in{:style => "display:none;position:absolute;top:0%;width:100%;"}
                   - if @community_info.has_floorplates?
@@ -354,15 +358,13 @@
 #communityWebpagesData{data: { currency: @community.get_currency_symbol(), community: @community.to_json, amenities: @amenities.to_json, map_configurations: @community&.three_d_maps_configuration.to_json, units: @units_with_floorplan_info, amenities_data: @amenities_data } }
 
 :javascript
-  var map_marker_color;
-  var hash_sign = #{raw map_marker_color.include?('#')} ? '#' : ''
-  map_marker_color = `${hash_sign}#{raw map_marker_color.gsub('#', '')}`
-  
+  var map_marker_color = toRgbColor("#{raw map_marker_color}");
   var large_image_height = 166;
   var units_availability_over_120_days = "#{@community.units_availability_over_120_days}";
   var apply_now_url = "#{apply_now_community_webpages_url(@community)}"
   var redirect_url = "#{community_webpages_url(@community)}"
   var has_floorplate = "#{@community_info.has_floorplates?}";
+  var svgMode = #{@community.enable_svg_mode}
   var community_name = "#{@community_info.name}"
   var display_rent = "#{@community_info.display_rent}"
   var isSiteMap = "#{@community.sitemap.present?}"
@@ -426,13 +428,13 @@
     if (has_floorplate.toString() === "true") {
       const array = []
       for (const floor of floors) {
-        array.push(fetchSVG(`#f_${floor}`, { svgPosition: 0, floor }))
+        array.push(fetchSVG(`#f_${floor}`, { svgPosition: 0, floor, activateZoomPan: true }))
       }
       await Promise.all(array)
     } else {
       await fetchSVG(
         "#property-map-image-container",
-        { svgPosition: 0 }
+        { svgPosition: 0, activateZoomPan: true  }
       )
     }
 
@@ -606,7 +608,7 @@
 
   function calculateMarkerAttributes() {
     if (current_width < 993) {
-      if (isSVG()) {
+      if (svgMode) {
         const calculatedFontSize = (current_width * .76) / 30 + ((#{fontsize} - 25) / 5);
         const childFontSize = calculatedFontSize / 2
       
@@ -646,7 +648,7 @@
         amenityEle[i].children[0].style.marginTop = 1 * ( current_width / 250)
         amenityEle[i].children[0].style.fontSize = (#{marker_font_size} / (2800 / current_width)  )
       }
-    } else if (isSVG()) {
+    } else if (svgMode) {
       for (var i = 0; i < ele.length; i++ ) {
         ele[i].style.fontSize = 20
       }

@@ -220,7 +220,7 @@ module CommunitiesHelper
     end
   end
 
-  def fetch_unit_info_struct(unit)
+  def fetch_unit_info_struct_for_webpage(unit)
     floorplan = @floorplans.select { |f| f.provider_floorplan_id == unit.floorplan_id }.first
 
     struct = {
@@ -294,35 +294,134 @@ module CommunitiesHelper
     struct
   end
 
+
+  def fetch_unit_info_struct_for_ploting(unit)
+    floorplan = @floorplans.select { |f| f.provider_floorplan_id == unit.floorplan_id }.first
+
+    struct = {
+      id: unit.id,
+      marketing_name: unit.marketing_name,
+      market_rent: unit.effective_rent,
+      building: unit.building,
+      availability: unit.availability,
+      available_date: if unit.available_date.present?
+                        unit.available_date
+                      else
+                        nil
+                      end,
+      x_plot: unit.x_plot,
+      y_plot: unit.y_plot,
+      pointer_data: unit.pointer_data,
+      floor: unit.floor,
+      sold: unit.sold,
+      available: unit.available,
+      provider_floorplan_id: floorplan.provider_floorplan_id,
+      community_property_id: if @community_info.credential.present? && @community_info.credential.property_id.present?
+                               @community_info.credential.property_id
+                             else
+                               0
+                             end,
+      availability_url: unit.get_availability_url(),
+      floorplan_image: if unit.standard_image_url.present?
+                         unit.standard_image_url
+                       elsif floorplan.present? && floorplan.standard_image_url.present?
+                         floorplan.standard_image_url
+                       else
+                         "/assets/default.jpeg"
+                       end,
+      floorplan_name: if floorplan.present?
+                        floorplan.name
+                      else
+                        ''
+                      end
+    }
+    struct[:data_attributes] = fetch_unit_data_attributes_for_plotting(unit, struct)
+
+    struct
+  end
+
+  def fetch_amenity_info_struct_for_ploting(amenity)
+    struct = {
+      id: amenity.id,
+      name: amenity.name,
+      image_url: amenity.standard_image_url,
+      floor: amenity.floor,
+      floorplate_id: amenity.amenityable_id,
+      x_plot: amenity.x_plot,
+      y_plot: amenity.y_plot,
+      pointer_data: amenity.pointer_data,
+      galleries: amenity.amenity_galleries,
+      show_name: @community.show_amenity_name
+    }
+    struct[:data_attributes] = fetch_amenity_data_attributes_for_plotting(amenity, struct)
+
+    struct
+  end
+
   private
 
   def fetch_unit_data_attributes(unit, struct)
     { 
-      "data-target": "#unitModal",
-      "data-toggle": "modal",
-      "data-unit-id": unit.id,
-      "data-floorplan-provider-id": struct[:provider_floorplan_id],
-      "data-unit-x-plot": unit.x_plot,
-      "data-unit-y-plot": unit.y_plot,
-      "data-community-id": @community.id,
-      "data-website": @community_info.website,
-      "data-provider": @community_info.data_provider,
-      "data-unit-provider-id": unit.provider_unit_id,
-      "data-unit-marketing-name": unit.api_unit_marketing_name,
-      "data-available-date": determine_available_date(struct[:available_date]),
-      "data-market-rent": number_with_precision(struct[:market_rent], precision: 2, delimiter: ','),
-      "data-total-market-rent": number_with_precision(struct[:market_rent], precision: 2, delimiter: ','),
-      "data-title": unit.api_unit_marketing_name,
-      "data-unit-virtual-tour-label": unit.get_virtual_tour_label,
-      "data-unit-virtual-tour-url": unit.get_virtual_tour_url,
-      "data-unit-lease-pricing": struct[:lease_pricing],
-      "data-unit-additional-fees": struct[:additional_fees],
-      "data-unit-description": struct[:description],
-    }.merge(
+      "target": "#unitModal",
+      "toggle": "modal",
+      "unit-id": unit.id,
+      "floorplan-provider-id": struct[:provider_floorplan_id],
+      "unit-x-plot": unit.x_plot,
+      "unit-y-plot": unit.y_plot,
+      "pointer-data": unit.pointer_data.to_json,
+      "community-id": @community.id,
+      "website": @community_info.website,
+      "provider": @community_info.data_provider,
+      "unit-provider-id": unit.provider_unit_id,
+      "unit-marketing-name": unit.api_unit_marketing_name,
+      "available-date": determine_available_date(struct[:available_date]),
+      "market-rent": number_with_precision(struct[:market_rent], precision: 2, delimiter: ','),
+      "total-market-rent": number_with_precision(struct[:market_rent], precision: 2, delimiter: ','),
+      "title": unit.api_unit_marketing_name,
+      "unit-virtual-tour-label": unit.get_virtual_tour_label,
+      "unit-virtual-tour-url": unit.get_virtual_tour_url,
+      "unit-lease-pricing": struct[:lease_pricing],
+      "unit-additional-fees": struct[:additional_fees],
+      "unit-description": struct[:description],
+    }.transform_keys { |key| "data-#{key}".to_sym }.merge(
       DATA_ATTRIBUTES_SAME_KEYS.each_with_object({}) do |key, result|
         result["data-#{key}".to_sym] = struct[key.underscore.to_sym]
       end
     )
+  end
+
+  def fetch_unit_data_attributes_for_plotting(unit, struct)
+    title = (unit.building.present? ? unit.building + '-' : '') + unit.marketing_name
+
+    { 
+      "toggle": "modal",
+      "name": "plot",
+      "target": "#svg-markers-modal",
+      "provider": @community.data_provider,
+      "provider-unit-id": unit.provider_unit_id,
+      "title": title,
+      "href": "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot",
+      "horizontal": unit.pointer_data['x_plot'],
+      "vertical": unit.pointer_data['y_plot'],
+      "pointer-data": unit.pointer_data.to_json,
+      "unit-form-url": "/communities/#{@community.id}/units/#{unit.id}/adjust_position",
+      "plotted-category": "unit"
+    }.transform_keys { |key| "data-#{key}".to_sym }.merge(title: title)
+  end
+
+  def fetch_amenity_data_attributes_for_plotting(amenity, struct)
+    title = amenity.name
+
+    current_data_scope = instance_variable_defined?(:@sitemap) ? 'sitemap' : 'floorplate'
+    {
+      "provider-unit-id": amenity.id,
+      "name": "plot",
+      "target": "#confirm-delete",
+      "toggle": "modal",
+      "href": "/communities/#{@community.id}/#{current_data_scope.pluralize}/#{instance_variable_get("@#{current_data_scope}").id}/amenities/#{amenity.id}/remove_amenity",
+      "plotted-category": "amenity"
+    }.transform_keys { |key| "data-#{key}".to_sym }.merge(title: title)
+
   end
 
   def create_work_sheet2 workbook

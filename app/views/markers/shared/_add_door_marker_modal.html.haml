@@ -1,0 +1,16 @@
+#ajax-doors-detail-modal.modal.fade{"aria-hidden" => "true", "data-backdrop" => "static", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header#door-name
+      .modal-loader.hidden
+      = form_tag "" , {method: :put, remote: true} do
+        .modal-body
+          %i.fa.fa-v.fa-check-circle.save_lock{style: "color: green; visibility: hidden; margin-left: 540px;margin-bottom: 12px;"}
+          .locks-section-in-modal
+          .door-buttons-in-door-modal.mt-30
+        .modal-footer
+          - if community.enable_locks
+            = submit_tag "Update",:class=>"btn btn-primary locks-modal-submit"
+          %a.btn.btn-danger.delete-door-marker.ajax-btn-delete{data: {plotted_category: "unit_door"}} Delete Door
+          %a.btn.btn-primary{:onclick=>"addDoorsMarkerOnFloorplate()"} Add Doors
+          %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel

@@ -565,10 +565,10 @@
   
   $( "#building_buttons" ).sortable({
     stop: function( event, ui ) {
-      var arr = []
+      const textArr = []
       for(var i = 0 ; i < this.children.length; i++)
       {
-        arr.push(this.children[i].text)
+        textArr.push(this.children[i].text)
       }
       
       $.ajax({
@@ -577,7 +577,7 @@
         dataType: "script",
         data: {
             sitemap: "#{@community.is_sitemap}" ,
-            array: arr,
+            array: textArr,
             floor: "#{@floor}",
             building: "#{@building}"
         }
@@ -639,19 +639,19 @@
   });
   }
   
-    var arr = [];
+    let idsArr = [];
     for (i = 0; i < $('.stops_table').children("tbody").children("tr").length ; i++) {
       if ($('.stops_table').children("tbody").children("tr")[i].id.split("TourStop_")[1] != undefined)
       {
         if (!($('.stops_table').children("tbody").children("tr")[i].children[2].children[0].className.includes("not_selected")))
         {
-          arr.push($('.stops_table').children("tbody").children("tr")[i].id.split("TourStop_")[1]);
+          idsArr.push($('.stops_table').children("tbody").children("tr")[i].id.split("TourStop_")[1]);
         }
       }
     }
     if ($('.amenity_row').length == 0 && $('.unit_row').length == 0 && floor != 1)
     {
-      arr = []
+      idsArr = []
     }
     $.ajax({
         url: "/communities/#{@community.id}/tours/sort_stops",
@@ -659,7 +659,7 @@
         dataType: "script",
         data: {
             sitemap: "#{@community.is_sitemap}" ,
-            array: arr,
+            array: idsArr,
             floor: "#{@floor}",
             building: "#{@building}",
             first_building: "#{@building_list[0]}"
@@ -709,17 +709,17 @@
 
   $('.stops_table').children("tbody").sortable({
     stop: function (event, ui) {
-    var arr = [];
+    var idsArr = [];
     for (i = 0; i < this.children.length ; i++) {
     //not_selected
       if (!(this.children[i].children[2].children[0].className.includes("not_selected")))
       {
-        //arr.push(this.children[i].id.split("TourStop_")[1]);
+        //idsArr.push(this.children[i].id.split("TourStop_")[1]);
       }
     }
     if ($('.amenity_row').length == 0 && $('.unit_row').length == 0  && floor != 1)
     {
-      arr = []
+      idsArr = []
     }
 
         $.ajax({
@@ -728,7 +728,7 @@
         dataType: "script",
         data: {
             sitemap: "#{@community.is_sitemap}" ,
-            array: arr,
+            array: idsArr,
             floor: "#{@floor}",
             building: "#{@building}",
             first_building: "#{@building_list[0]}"
@@ -1071,15 +1071,15 @@
     });
 
 
-    var arr = []
+    let hrefArr = []
     data = []
     var highlights = []
     var points = []
     $("*#create_path").on("click", function(event){
       $('.stops').removeClass('animate-element')
       $('.start-point').removeClass('animate-element')
-      arr.push(this.href)
-      var url1  = arr[0].substring(arr[0].lastIndexOf('/') + 1);
+      hrefArr.push(this.href)
+      var url1  = hrefArr[0].substring(hrefArr[0].lastIndexOf('/') + 1);
       var stop_1_id = url1.split('?')[0]
       var stop_1_type = url1.split('=')[1]
       highlights.push(this)
@@ -1095,10 +1095,10 @@
       }
 
       $('#stop_'+url1.split('?')[0]).addClass('animate-element')
-      if (arr.length == 2) {
+      if (hrefArr.length == 2) {
         $('.path_point').hide();
         $('.connectingLines').hide();
-        var url2  = arr[1].substring(arr[1].lastIndexOf('/') + 1);
+        var url2  = hrefArr[1].substring(hrefArr[1].lastIndexOf('/') + 1);
         var stop_2_id = url2.split('?')[0]
         var stop_2_type = url2.split('=')[1]
 
@@ -1128,7 +1128,7 @@
               }
               $('#stop_'+stop_1_id).addClass('animate-element')
               $('#stop_'+stop_2_id).addClass('animate-element')
-              arr = []
+              hrefArr = []
               points = []
               var elmnt = document.getElementById('testimg');
               elmnt.scrollIntoView({behavior: "smooth", inline: "nearest"});
@@ -1138,10 +1138,10 @@
               $("#drawing_path_for").val(response.path.id)
               $('.start-point').removeClass('animate-element')
               / $('.stops').removeClass('animate-element')
-              id = arr[0].substring(arr[0].lastIndexOf('/') + 1);
+              id = hrefArr[0].substring(hrefArr[0].lastIndexOf('/') + 1);
               $('#stop_'+stop_1_id).addClass('animate-element')
               $('#stop_'+stop_2_id).addClass('animate-element')
-              arr = []
+              hrefArr = []
               $('html, body').animate({
                 scrollTop: $(".plot-image").offset().top
               }, 500);

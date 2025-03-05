@@ -180,6 +180,30 @@ class Amenity < ApplicationRecord
     end
   end
 
+  def filter_amenities_for_plot_removal(amenities, svg_deletion = false)
+    if svg_deletion
+      pointer_x_plot, pointer_y_plot = pointer_data.values_at('x_plot', 'y_plot')
+
+      result = amenities.where("pointer_data->>'x_plot' = ? AND pointer_data->>'y_plot' = ?",
+                               pointer_x_plot, pointer_y_plot)
+      if result.none?
+				tag, tag_id, selector = pointer_data.values_at('tag', 'id', 'selector')
+				key , value = if tag_id.present?
+												['id', tag_id]
+											elsif selector.present?
+												['selector', selector]
+											end
+
+        result = amenities.where("pointer_data->>'tag' = ?", tag)
+                          .where("pointer_data->>'#{key}' = ?", value)
+			end
+
+      result
+    else
+      amenities.where(x_plot: x_plot, y_plot: y_plot)
+    end
+  end
+
   private
 
   def sort_associated_unit_amenities

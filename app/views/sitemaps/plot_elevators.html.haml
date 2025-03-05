@@ -99,7 +99,7 @@
                           = image_tag elevator.image.present? ? elevator.image.url : "upload-image.png"
                           %span.ml-5
                             = elevator.name
-                    - elevator_arr.push([elevator.id.to_s, elevator.x_plot.to_i, elevator.y_plot.to_i, true, elevator.name])
+                    - elevator_arr.push({ providerId: elevator.id.to_s, xPlot: elevator.x_plot.to_i, yPlot: elevator.y_plot.to_i, name: elevator.name })
 
               %h5.mt-40 SELECTED ELEVATORS
               .add-plan.mt-10.mb-20
@@ -165,7 +165,7 @@
     touch.target.dispatchEvent(simulatedEvent);
     // event.preventDefault();
   }
-  var arr = #{raw elevator_arr}
+  var unitsArr = #{raw elevator_arr.to_json}
   var lmargin = 0
   var rmargin = 0
   var community_id = #{params[:community_id]}

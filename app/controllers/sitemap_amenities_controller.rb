@@ -58,12 +58,15 @@ class SitemapAmenitiesController < ApplicationController
 
 	def plot_amenity
 		@amenity = Amenity.find (params[:amenity_id])
-		@amenity.amenityable_type = "Sitemap"
-		@amenity.amenityable_id = params[:sitemap_id]
-		@amenity.x_plot = params[:x_plot]
-		@amenity.y_plot = params[:y_plot]
+		@amenity.amenityable_type = @community.sitemap
+
+		if params[:x_plot].present? && params[:y_plot].present?
+			@amenity.x_plot = params[:x_plot]
+			@amenity.y_plot = params[:y_plot]
+		end
 		@amenity.pointer_data = if params[:pointer].present?
-															{ tag: params[:pointer][:tag], id: params[:pointer][:id], selector: params[:pointer][:selector] }
+															x_plot, y_plot, tag, id, selector = params[:pointer].values_at(:x_plot, :y_plot, :tag, :id, :selector)
+															{ x_plot: x_plot, y_plot: y_plot, tag: tag, id: id, selector: selector }
 														else
 															{}
 														end
@@ -73,6 +76,7 @@ class SitemapAmenitiesController < ApplicationController
 			ts.longitude = @amenity.y_plot
 			ts.save
 		end
+
 		if @amenity.save(validate: false)
 			render json: { amenity: @amenity.attributes }, status: 200
 	    else
@@ -107,11 +111,11 @@ class SitemapAmenitiesController < ApplicationController
 	end
 
 	def remove_amenities_plot
-		@community.sitemap.amenities.each do |amenity|
-			amenity.x_plot = 0
-			amenity.y_plot = 0
-			amenity.amenityable_type = nil
-		  amenity.amenityable_id = nil
+		svg_deletion = params[:svg_deletion].to_s == "true"
+		new_attributes = svg_deletion ? { pointer_data: {} } : { x_plot: 0, y_plot: 0 }
+
+		@community.amenities.each do |amenity|
+			amenity.assign_attributes(new_attributes)
 			amenity.save(validate: false)
 			ts = TourStop.find_by(stop_id: amenity.id)
 			if ts.present?
@@ -124,12 +128,14 @@ class SitemapAmenitiesController < ApplicationController
 
 	def remove_amenity
 		@amenity = Amenity.find params[:id]
-		amenities = @sitemap.amenities.where(x_plot: @amenity.x_plot, y_plot: @amenity.y_plot)
+    amenities = @community.amenities
+
+    svg_deletion = params[:svg_deletion].to_s == "true"
+    new_attributes = svg_deletion ? { pointer_data: {} } : { x_plot: 0, y_plot: 0 }
+
+    amenities = @amenity.filter_amenities_for_plot_removal(amenities, svg_deletion)
 		amenities.each do |amenity|
-			amenity.x_plot = 0
-			amenity.y_plot = 0
-			amenity.amenityable_type = nil
-		  amenity.amenityable_id = nil
+      amenity.assign_attributes(new_attributes)
 			amenity.save(validate: false)
 			ts = TourStop.find_by(stop_id: amenity.id)
 			if ts.present?

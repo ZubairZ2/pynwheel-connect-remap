@@ -363,9 +363,10 @@ class UnitsController < ApplicationController
     if unit.present?
       unit = unit.first
       #unit.first.update_attributes(x_plot: params[:x_plot],y_plot: params[:y_plot])
-      unit.x_plot = params[:x_plot]
-      unit.y_plot = params[:y_plot]
-
+      if params[:x_plot].present? && params[:y_plot].present?
+        unit.x_plot = params[:x_plot]
+        unit.y_plot = params[:y_plot]
+      end
       unit.pointer_data = if params[:pointer].present?
                             x_plot, y_plot, tag, id, selector = params[:pointer].values_at(:x_plot, :y_plot, :tag, :id, :selector)
                             { x_plot: x_plot, y_plot: y_plot, tag: tag, id: id, selector: selector }
@@ -391,8 +392,10 @@ class UnitsController < ApplicationController
     if unit.present?
       #unit.first.update_attributes(x_plot: params[:x_plot],y_plot: params[:y_plot],floorplate_id: params[:floorplate_id])
       unit = unit.first
-      unit.x_plot = params[:x_plot]
-      unit.y_plot = params[:y_plot]
+      if params[:x_plot].present? && params[:y_plot].present?
+        unit.x_plot = params[:x_plot]
+        unit.y_plot = params[:y_plot]
+      end
       unit.pointer_data = if params[:pointer].present?
                             x_plot, y_plot, tag, id, selector = params[:pointer].values_at(:x_plot, :y_plot, :tag, :id, :selector)
                             { x_plot: x_plot, y_plot: y_plot, tag: tag, id: id, selector: selector }
@@ -469,9 +472,12 @@ class UnitsController < ApplicationController
 
   def remove_plot
     @unit = Unit.find_by(provider_unit_id: params[:id], community_id: @community.id)
-    @unit.x_plot = 0
-    @unit.y_plot = 0
-    @unit.pointer_data = {}
+    if params[:svg_deletion].to_s == "true"
+      @unit.pointer_data = {}
+    else
+      @unit.x_plot = 0
+      @unit.y_plot = 0
+    end
 
     ts = TourStop.where(stop_id: @unit.id)
     if ts.present?
@@ -493,8 +499,12 @@ class UnitsController < ApplicationController
   def remove_plot_from_floorplate
     @floorplate = Floorplate.find params[:floorplate_id]
     @unit = Unit.find_by(provider_unit_id: params[:id], community_id: @community.id)
-    @unit.x_plot = 0
-    @unit.y_plot = 0
+    if params[:svg_deletion].to_s == "true"
+      @unit.pointer_data = {}
+    else
+      @unit.x_plot = 0
+      @unit.y_plot = 0
+    end
     @unit.floorplate_id = nil
     ts = TourStop.where(stop_id: @unit.id) unless @unit.modal_unit
     if @unit.modal_unit

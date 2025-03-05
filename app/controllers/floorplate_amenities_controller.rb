@@ -1,5 +1,6 @@
 class FloorplateAmenitiesController < ApplicationController
   include AssignLocksHelper
+  include CommunitiesHelper
   # include Error::ErrorHandler
   add_breadcrumb "Home", :root_path
   before_action :authenticate_user!
@@ -57,10 +58,14 @@ class FloorplateAmenitiesController < ApplicationController
     @amenity = Amenity.find (params[:amenity_id])
     @amenity.amenityable_type = "Floorplate"
     @amenity.amenityable_id = params[:floorplate_id]
-    @amenity.x_plot = params[:x_plot]
-    @amenity.y_plot = params[:y_plot]
+
+		if params[:x_plot].present? && params[:y_plot].present?
+			@amenity.x_plot = params[:x_plot]
+			@amenity.y_plot = params[:y_plot]
+		end
 		@amenity.pointer_data = if params[:pointer].present?
-															{ tag: params[:pointer][:tag], id: params[:pointer][:id], selector: params[:pointer][:selector] }
+															x_plot, y_plot, tag, id, selector = params[:pointer].values_at(:x_plot, :y_plot, :tag, :id, :selector)
+															{ x_plot: x_plot, y_plot: y_plot, tag: tag, id: id, selector: selector }
 														else
 															{}
 														end
@@ -106,9 +111,9 @@ class FloorplateAmenitiesController < ApplicationController
     @floor = params[:floor] if params[:floor].present?
     add_breadcrumb "Floorplates", community_floorplates_path(current_community)
     add_breadcrumb "Plot Amenities", plot_amenities_community_floorplate_amenities_path(@community, @floorplate)
-    @sitemap = @floorplate
 
     @amenities              = @community.amenities
+    @mapped_amenities = normalized_amenities_for_svg
     @current_locks_provider =   existing_locks_provider(@community)
     @hallways               = make_sure_one_selected_hallway(@floorplate.hallways)
     @all_locks              = all_locks(@community)
@@ -132,11 +137,11 @@ class FloorplateAmenitiesController < ApplicationController
   end
 
   def remove_amenities_plot
+    svg_deletion = params[:svg_deletion].to_s == "true"
+    new_attributes = svg_deletion ? { pointer_data: {} } : { x_plot: 0, y_plot: 0 }
+
     @floorplate.amenities.each do |amenity|
-      amenity.x_plot = 0
-      amenity.y_plot = 0
-      amenity.amenityable_type = nil
-      amenity.amenityable_id = nil
+      amenity.assign_attributes(new_attributes)
       amenity.save(validate: false)
     end
     redirect_to plot_amenities_community_floorplate_amenities_path(@community, @floorplate), notice: "All plots have been deleted successfully."
@@ -144,12 +149,14 @@ class FloorplateAmenitiesController < ApplicationController
 
   def remove_amenity
     @amenity = Amenity.find params[:id]
-    amenities = @floorplate.amenities.where(x_plot: @amenity.x_plot, y_plot: @amenity.y_plot)
+    amenities = @floorplate.amenities
+
+    svg_deletion = params[:svg_deletion].to_s == "true"
+    new_attributes = svg_deletion ? { pointer_data: {} } : { x_plot: 0, y_plot: 0 }
+
+    amenities = @amenity.filter_amenities_for_plot_removal(amenities, svg_deletion)
     amenities.each do |amenity|
-      amenity.x_plot = 0
-      amenity.y_plot = 0
-      amenity.amenityable_type = nil
-      amenity.amenityable_id = nil
+      amenity.assign_attributes(new_attributes)
       amenity.save(validate: false)
       ts = TourStop.where(stop_id: amenity.id)
       ts.destroy_all if ts.present?
@@ -160,6 +167,12 @@ class FloorplateAmenitiesController < ApplicationController
   end
 
   private
+
+  def normalized_amenities_for_svg
+    @amenities.map do |amenity|
+      fetch_amenity_info_struct_for_ploting(amenity)
+    end
+  end
 
   def set_community_and_floorplate
     @community = Community.find params[:community_id]

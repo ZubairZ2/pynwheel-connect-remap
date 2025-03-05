@@ -1,0 +1,40 @@
+.modal.fade{ id: is_svg ? "svg-add-marker-modal" : "add-marker-modal", role: "dialog", tabindex: "-1", "aria-hidden": "true", "aria-labelledby": "myModalLabel" }
+  .modal-dialog
+    .modal-content
+      .modal-header#add-marker-heading
+        Add Marker
+      = form_tag form_tag_url do
+        .modal-body
+          = hidden_field_tag 'redirect_path' , redirect_path
+          = hidden_field_tag 'add_horizontal_position'
+          = hidden_field_tag 'add_vertical_position'
+          = hidden_field_tag 'unit_provider_ids',"[]"
+
+          - if is_svg
+            = hidden_field_tag 'add_pointer[x_plot]'
+            = hidden_field_tag 'add_pointer[y_plot]'
+            = hidden_field_tag 'add_pointer[tag]'
+            = hidden_field_tag 'add_pointer[id]'
+            = hidden_field_tag 'add_pointer[selector]'
+          .form-group.row
+            %label.col-sm-2.col-form-label
+            .col-sm-10.unit-selects-in-popup
+              %select.amenities-list-on-popup.form-control{:multiple=>"multiple"}
+                - if units.present?
+                  - units.each do |u|
+                    - u.building = "" if u.building == nil
+                  - units = units.sort_by {|obj| obj.marketing_name.to_i}
+                  - units = units.sort_by {|obj| obj.building.to_i}
+                - units.each do |unit|
+                  - x_plot, y_plot = is_svg ? unit.pointer_data.values_at('x_plot', 'y_plot') : [unit.x_plot, unit.y_plot]
+                  - if x_plot.to_i + y_plot.to_i == 0 and unit.provider_unit_id.present?
+                    - if unit.building != nil && unit.building != ""
+                      %option{:value=>unit.provider_unit_id}= "#{unit.building}-#{unit.marketing_name}"
+                    - elsif @community.data_provider == "yardi"
+                      %option{:value => "#{unit.provider_unit_id}"}= unit.provider_unit_id
+                    - else
+                      %option{:value=>unit.provider_unit_id}= "#{unit.marketing_name}"
+
+        .modal-footer
+          = submit_tag "Add",:class=>"btn btn-primary" 
+          %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel

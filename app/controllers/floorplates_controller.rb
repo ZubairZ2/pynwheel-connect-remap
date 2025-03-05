@@ -1,5 +1,6 @@
 class FloorplatesController < ApplicationController
   include AssignLocksHelper
+  include CommunitiesHelper
   # include Error::ErrorHandler
   add_breadcrumb "Home", :root_path
   before_action :authenticate_user!
@@ -23,6 +24,20 @@ class FloorplatesController < ApplicationController
 
   def create
     @floorplate = current_community.floorplates.new(floorplate_params)
+    if params[:floorplate][:svg_image].present?
+      image = MiniMagick::Image.open([:floorplate][:svg_image].path)
+      if image.type != "SVG"
+        flash[:error] = "Image must be of SVG type"
+        render :new
+      elsif image.width < 1000 && image.height < 700
+        flash[:error] = "Too small property map image"
+        render :new
+      else
+        width = (image.width rescue 0)
+        height = (image.height rescue 0)
+        @floorplate.svg_metadata = { width: width, height: height}
+      end
+    end
     unless params[:floorplate][:image].present?
       flash[:error] = "Image not present."
       render :new
@@ -171,28 +186,32 @@ class FloorplatesController < ApplicationController
   end
 
   def plotexp
-    @floorplate = Floorplate.find params[:floorplate_id]
+    @community_info = Community.includes(:credential, :floorplans, { sitemap: [:amenities] }, { floorplates: [:amenities] }, { units: [:floorplate] }).find(params[:community_id])
+    @floorplate = community_info.floorplates.find params[:floorplate_id]
 
     unless current_community.units.size > 0
       flash[:error] = "Please import unit data first"
       return
     end
     
-    @community.units.where(building: nil).update_all(building: "")
+    @community_info.units.where(building: nil).update_all(building: "")
 
     @floorplate_units = @floorplate.fetch_units.includes(:door)
-    @floorplate_units = @community.sorted_units_by_marketing_name(@floorplate_units)
+    @floorplate_units = @community_info.sorted_units_by_marketing_name(@floorplate_units)
 
     @floorplate_units = @floorplate_units.sort_by {|obj| obj.building}
     @floorplate_units_by_plotted_doors_order = @floorplate_units.sort_by {|obj| obj.door.present? ? obj.door.id : obj.id}
 
+    @floorplans = @community_info.floorplans
+    @mapped_units = normalized_units_for_svg
+    
     @map_ocr_data = @floorplate.is_ocr_enabled ? @floorplate.map_ocr_data : []
     @dimensions = @floorplate.is_ocr_enabled ? s3_img_dimensions(floorplate_image_url(@floorplate)) : {}
     
     @test_units = @floorplate_units.to_json
 
-    @current_locks_provider = existing_locks_provider(@community)
-    @all_locks = all_locks(@community)
+    @current_locks_provider = existing_locks_provider(@community_info)
+    @all_locks = all_locks(@community_info)
     @hallways = make_sure_one_selected_hallway(@floorplate.hallways.order("id ASC"))
     @access_points = @floorplate.access_points
     @unit_with_door = @floorplate_units.map { |unit| { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } } }
@@ -232,6 +251,12 @@ class FloorplatesController < ApplicationController
   end
 
   private
+
+  def normalized_units_for_svg
+    @floorplate_units.map do |unit|
+      fetch_unit_info_struct_for_ploting(unit)
+    end
+  end
 
   def s3_img_dimensions url
     img = MiniMagick::Image.open(url)

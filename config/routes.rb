@@ -449,6 +449,7 @@ Rails.application.routes.draw do
         end
       end
       post :save_sitemap_image
+      post :save_sitemap_svg
       collection do
         get :plotexp
         get :map

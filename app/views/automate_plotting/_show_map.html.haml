@@ -4,13 +4,7 @@
   .box-body.map-body-top
     .row
       .col-lg-12#container.p-0
-        .buttons{:style=>"position: absolute; right: 20px; top: 5px;z-index:999;"}
-          %a.btn.btn-sm.btn-primary.zoom-in.zoom-controls
-            %i.fa.fa-plus
-          %a.btn.btn-sm.btn-primary.zoom-out.zoom-controls
-            %i.fa.fa-minus
-          %a.btn.btn-sm.btn-primary.reset.zoom-controls
-            %i.fa.fa-refresh
+        = render partial: 'shared/zoom_control_buttons'
         .mapLoading.hidden
         .map-block{:style=>"position: relative;"}
           - map_id = defined?(building) ? ("" + building.parameterize.underscore + "_map_" + floor.to_s) : ("map_" + floor.to_s)

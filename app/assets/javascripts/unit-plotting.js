@@ -35,16 +35,23 @@ function savePlot (id, dx, dy, door_id = 0, pointerData = {}) {
 
 function saveFloorplateUnit (id, dx, dy, pointerData = {}) {
     console.log("ready to ajaxsave FloorplateUnit", addmode, parsedSVGs.length, left_margin, top_margin, id, dx, dy);
-    dx = dx + left_margin;
-    dy = dy + top_margin;
+
+    if (!addmode){
+        dx = dx + left_margin;
+        dy = dy + top_margin;
+    }
+
+    const payload = svgMode ? {
+        "pointer": pointerData
+    } : {
+        "x_plot": dx,
+        "y_plot": dy,
+    }
+
+    payload.floorplate_id = floorplate_id;
 
     $.post("/communities/" + community_id + "/units/" + id + "/ajaxplotunitforfloorplate",
-        {
-            "x_plot": dx,
-            "y_plot": dy,
-            "floorplate_id": floorplate_id,
-            "pointer": pointerData
-        },
+        payload,
         function (data, status, xhr) {
             console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
             console.debug(data.unit);
@@ -53,10 +60,19 @@ function saveFloorplateUnit (id, dx, dy, pointerData = {}) {
             console.debug(data.unit.y_plot);
             console.debug(data.unit.marketing_name);
 
-            var index = arr.findIndex(unit => unit[0] == data.unit.provider_unit_id);
-            arr.splice(index, 1)
+            const index = unitsArr.findIndex(
+                ({ providerId }) => providerId == data.unit.provider_unit_id
+            );
+            const oldUnit = unitsArr[index];
+            unitsArr.splice(index, 1)
 
-            arr.push([data.unit.provider_unit_id, data.unit.x_plot, data.unit.y_plot, true, data.unit.id]);
+            unitsArr.push({
+                providerId: data.unit.provider_unit_id,
+                xPlot: data.unit.x_plot,
+                yPlot: data.unit.y_plot,
+                name: data.unit.id,
+                svgPoint: oldUnit.svgPoint,
+            });
             doDraggable();
             // delete from unused list
             // $('.amenities-list option').each(function(){
@@ -130,7 +146,12 @@ function saveFloorplanPlot(id, dx, dy) {
         },
         function (data, status, xhr) {
             console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
-            arr.push([data.amenity.id, data.amenity.x_plot, data.amenity.y_plot, true, data.amenity.name]);
+            unitsArr.push({
+                providerId: data.amenity.id,
+                xPlot: data.amenity.x_plot,
+                yPlot: data.amenity.y_plot,
+                name: data.amenity.name,
+            });
             doDraggable();
             // delete from unused list
             $('.amenities-list option').each(function () {
@@ -143,23 +164,37 @@ function saveFloorplanPlot(id, dx, dy) {
 
 function saveAmenityPlotForFloorplate (id, dx, dy, pointerData = {}) {
     console.log("ready to ajaxsave AmenityPlotForFloorplate", addmode, parsedSVGs.length, left_margin, top_margin, id, dx, dy);
-    dx = dx + left_margin;
-    dy = dy + top_margin;
+    if (!addmode){
+        dx = dx + left_margin;
+        dy = dy + top_margin;
+    }
+
+    const payload = svgMode ? {
+        "pointer": pointerData
+    } : {
+        "x_plot": dx,
+        "y_plot": dy,
+    }
+
+    payload.floor = floor;
 
     $.post("/communities/" + community_id + "/floorplates/" + floorplate_id_for_amenity + "/amenities/" + id + "/plot_amenity",
-        {
-            "x_plot": dx,
-            "y_plot": dy,
-            "floor": floor,
-            "pointer": pointerData
-        },
+        payload,
         function (data, status, xhr) {
             console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
+            const index = unitsArr.findIndex(
+                ({ providerId }) => providerId == data.amenity.id
+            );
+            const oldUnit = unitsArr[index];
+            unitsArr.splice(index, 1)
 
-            var index = arr.findIndex(amenity => amenity[0] == data.amenity.id);
-            arr.splice(index, 1)
-
-            arr.push([data.amenity.id, data.amenity.x_plot, data.amenity.y_plot, true, data.amenity.name]);
+            unitsArr.push({
+                providerId: data.amenity.id,
+                xPlot: data.amenity.x_plot,
+                yPlot: data.amenity.y_plot,
+                name: data.amenity.name,
+                svgPoint: oldUnit.svgPoint,
+            });
             doDraggable();
             // delete from unused list
             $('.amenities-list option').each(function () {
@@ -179,7 +214,12 @@ function saveElevatorPlotForFloorplate(id, dx, dy) {
         },
         function (data, status, xhr) {
             console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
-            arr.push([data.elevator.id, data.elevator.x_plot, data.elevator.y_plot, true, data.elevator.name]);
+            unitsArr.push({
+                providerId: data.elevator.id,
+                xPlot: data.elevator.x_plot,
+                yPlot: data.elevator.y_plot,
+                name: data.elevator.name,
+            });
             doDraggable();
             // delete from unused list
             $('.amenities-list option').each(function () {
@@ -198,7 +238,12 @@ function saveAmenityPlotForUnit(id, dx, dy) {
         },
         function (data, status, xhr) {
             console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
-            arr.push([data.amenity.id, data.amenity.x_plot, data.amenity.y_plot, true, data.amenity.name]);
+            unitsArr.push({
+                providerId: data.amenity.id,
+                xPlot: data.amenity.x_plot,
+                yPlot: data.amenity.y_plot,
+                name: data.amenity.name,
+            });
             doDraggable();
             // delete from unused list
             $('.amenities-list option').each(function () {
@@ -211,20 +256,36 @@ function saveAmenityPlotForUnit(id, dx, dy) {
 
 function saveSiteMapUnit (id, dx, dy, pointerData = {}) {
     console.log("ready to ajaxsave SiteMapUnit", addmode, parsedSVGs.length, left_margin, top_margin, id, dx, dy);
-    dx = dx + left_margin;
-    dy = dy + top_margin;
+
+    if (!addmode){
+        dx = dx + left_margin;
+        dy = dy + top_margin;
+    }
+
+    const payload = svgMode ? {
+        "pointer": pointerData
+    } : {
+        "x_plot": dx,
+        "y_plot": dy,
+    }
 
     $.post("/communities/" + community_id + "/units/" + id + "/ajaxplotunit",
-        {
-            "x_plot": dx,
-            "y_plot": dy,
-            "pointer": pointerData
-        },
+        payload,
         function (data, status, xhr) {
-            var index = arr.findIndex(unit => unit[0] == data.unit.provider_unit_id);
-            arr.splice(index, 1)
+            const index = unitsArr.findIndex(
+                ({ providerId }) => providerId == data.unit.provider_unit_id
+            );
+            const oldUnit = unitsArr[index];
+            unitsArr.splice(index, 1);
 
-            arr.push([data.unit.provider_unit_id, data.unit.x_plot, data.unit.y_plot, true, data.unit.id]);
+            unitsArr.push({
+                providerId: data.unit.provider_unit_id,
+                xPlot: data.unit.x_plot,
+                yPlot: data.unit.y_plot,
+                name: data.unit.id,
+                svgPoint: oldUnit.svgPoint,
+                pointerData: data.unit.pointer_data
+            });
             doDraggable();
             // delete from unused list
             // $('.amenities-list option').each(function(){
@@ -241,20 +302,36 @@ function saveSiteMapUnit (id, dx, dy, pointerData = {}) {
 
 function saveAmenityPlotForSitemap(id, dx, dy, pointerData = {}) {
     console.log("ready to ajaxsave AmenityPlotForSitemap", addmode, parsedSVGs.length, left_margin, top_margin, id, dx, dy);
-    dx = dx + left_margin;
-    dy = dy + top_margin;
+
+    if (!addmode){
+        dx = dx + left_margin;
+        dy = dy + top_margin;
+    }
+
+    const payload = svgMode ? {
+        "pointer": pointerData
+    } : {
+        "x_plot": dx,
+        "y_plot": dy,
+    }
 
     $.post("/communities/" + community_id + "/sitemaps/" + sitemap_id_for_amenity + "/amenities/" + id + "/plot_amenity",
-        {
-            "x_plot": dx,
-            "y_plot": dy,
-            "pointer": pointerData
-        },
+        payload,
         function (data, status, xhr) {
-            var index = arr.findIndex(amenity => amenity[0] == data.amenity.id);
-            arr.splice(index, 1)
+            const index = unitsArr.findIndex(
+                ({ providerId }) => providerId == data.amenity.id
+            );
+            const oldUnit = unitsArr[index];
+            unitsArr.splice(index, 1);
 
-            arr.push([data.amenity.id, data.amenity.x_plot, data.amenity.y_plot, true, data.amenity.name]);
+            unitsArr.push({
+                providerId: data.amenity.id,
+                xPlot: data.amenity.x_plot,
+                yPlot: data.amenity.y_plot,
+                name: data.amenity.name,
+                svgPoint: oldUnit.svgPoint
+            });
+            // arr.push([data.amenity.id, data.amenity.x_plot, data.amenity.y_plot, true, data.amenity.name]);
             doDraggable();
             // delete from unused list
             $('.amenities-list option').each(function () {
@@ -265,34 +342,7 @@ function saveAmenityPlotForSitemap(id, dx, dy, pointerData = {}) {
         });
 }
 
-function plotMode(selected) {
-    console.log("new marked is created")
-    addmode = true;
-    $("#newmsg").css({display: 'inline-block'});
-    $("#map").css('cursor', 'crosshair');
-}
-
-$(document).on("click", ".s-unit", function () {
-    //selected.splice( $.inArray("1001", selected), 1 )
-    var remove_index = parseInt($(this).attr("data-id"))
-    selected.splice(remove_index, remove_index + 1)
-    var data_provider_unit_id = $(this).attr("data-provider-unit-id");
-    //$('.amenities-list option').val($(this).attr("data-unit-provider-id")).css({"display": "block"})
-    $('.amenities-list option[value="' + data_provider_unit_id + '"]').css({"display": "block"})
-    $(this).remove()
-    if (selected.length > 0)
-        resetDataIds()
-});
-
-function resetDataIds() {
-    var i = 0
-    $("#selected-units li").each(function () {
-        $(this).attr("data-id", i);
-        i++;
-    })
-}
-
-var arr = [];
+var unitsArr = [];
 var temp = [];
 var pointerOffset = { x: 0, y: 0 };
 
@@ -307,7 +357,7 @@ function doDraggable () {
             const zoomContainer = event.target.closest('div.plot-image');
             const key = `${zoomContainer.tagName.toLowerCase()}-${zoomContainer.id}`;
 
-
+            svgMode = zoomContainer.id === "svg_map";
             const { x, y, scale} = mapPanZoom?.[key] ? mapPanZoom[key].getTransform() : { scale: 1, x: 0, y: 0 };
 
             ui.position.left = (ui.position.left - x) / scale;
@@ -322,15 +372,17 @@ function doDraggable () {
         },
         drag: function (event, ui) {
             const draggingElement = $(this);
-            const mapElement = $('#map');
 
-            const canvasTop = mapElement.offset().top;
-            const canvasLeft = mapElement.offset().left;
-            const canvasHeight = mapElement.height();
-            const canvasWidth = mapElement.width();
-            
-            const zoomContainer = document.querySelector('div.plot-image');
+            const zoomContainer = event.target.closest('div.plot-image');
             const key = `${zoomContainer.tagName.toLowerCase()}-${zoomContainer.id}`
+
+            const $zoomElement = $(zoomContainer);
+            const canvasTop = $zoomElement.offset().top;
+            const canvasLeft = $zoomElement.offset().left;
+            const canvasHeight = $zoomElement.height();
+            const canvasWidth = $zoomElement.width();
+            
+
             const {scale} = mapPanZoom?.[key] ? mapPanZoom[key].getTransform() : { scale: 1, x: 0, y: 0 };
 
             const calculatedUiTop = (event.pageY - canvasTop - pointerOffset.y) / scale;
@@ -361,6 +413,8 @@ function doDraggable () {
                 stop__access_point(event, ui)
             else
                 stop__original_work(event, ui)
+
+            svgMode = false;
         }
 
     }).on('mousedown touchstart', function (e) {
@@ -368,37 +422,6 @@ function doDraggable () {
         return false;
     })
 }
-
-function reset() {
-    addmode = false;
-    adddoorsmode = false;
-    accesspointplot = false;
-    selected = [];
-    dx = 0;
-    dy = 0;
-    $("#map").css('cursor', 'default');
-    $("#selected-units").empty();
-    $("#newmsg").css({display: 'none'});
-    // reset any hidden unused ones that didn't get plotted
-    $('.amenities-list option').each(function () {
-        $(this).css({"display": "block"});
-    });
-}
-
-function removeUnitFromSelectedArray(value) {
-    console.log("Selected Units Before: ", selected);
-    for (i = 0; i < selected.length; i++) {
-        if (selected[i][0] == value) {
-            selected.splice(i, 1);
-            $(`.suggested-circle-${value}`).remove();
-            // selected.splice(i, i + 1);
-            
-        }
-    }
-    console.log("Selected Units After: ", selected);
-
-}
-
 
 function start__original_work(event, ui, scale) {
     const xpos = Math.round(ui.helper[0].offsetLeft);
@@ -408,14 +431,14 @@ function start__original_work(event, ui, scale) {
     const marginedYpos = Math.round(ypos + top_margin);
 
     temp = [];
-    if (arr) {
-        temp = arr
-        .filter(
-            (marker) =>
-            (marker[1] === xpos && marker[2] === ypos) ||
-            (marker[1] === marginedXpos && marker[2] === marginedYpos)
-        )
-        .map((marker) => marker[0].toString());
+    if (unitsArr) {
+        temp = unitsArr
+            .filter(
+                ({ xPlot, yPlot }) =>
+                    (xPlot === xpos && yPlot === ypos) ||
+                    (xPlot === marginedXpos && yPlot === marginedYpos)
+                )
+            .map(({ providerId }) => providerId.toString());
     }
 
     pointerOffset.x = left_margin * scale;
@@ -441,14 +464,16 @@ function stop__original_work(event, ui) {
     let top = Math.round(ui.position.top);
     let dataSet = null;
 
-    if (isSVG()) {
-        const { element, centerPoint } = getSvgClickedElementWithCenterPoint("#map.plot-image", event);
+    if (svgMode) {
+        const { element, centerPoint } = getSvgClickedElementWithCenterPoint("#svg_map.plot-image", event);
         if (element) {
             const elId = element.id
             const selector = elId ? null : getElementSelector(element);
-            dataSet = { tag: element.tagName?.toLowerCase(), id: elId, selector }
+            dataSet = { x_plot: left, y_plot: top, tag: element.tagName?.toLowerCase(), id: elId, selector }
             left = Math.round(centerPoint.x);
             top = Math.round(centerPoint.y);
+        } else {
+            return;
         }
     }
 

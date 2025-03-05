@@ -3,6 +3,8 @@
 %script{:src => "https://timmywil.com/panzoom/demo/panzoom.js"}
 = render '/font_awesome_v5'
 - content_for :title, "Plot Unit - Pynwheel"
+
+- units_arr = []
 .divLoading.hidden
 %section.is-floorplate
   .content
@@ -13,303 +15,27 @@
         %br
           %small.text-primary
             = @community.code
-    %h4{:style => "color: grey;"}
-      %p
-        Select units to add a marker to the floorplate. If nothing appears in the list, then there are no additional units to add.
-      %p
-        Drag and drop markers to reposition them on the property map.
-      %p
-        Click "Grid" to add a grid overlay to the map to make positioning the plots easier.
-    .box.box-info.add-plan
-      .box-header
-        %h3.box-title
-          Plot
 
-          - if @community.theme_name.include?('gables')
-            - marker_color = @community&.design&.property_map_color || "#d37474"
-          - elsif @community.theme_name == 'modernist'
-            - marker_color = ( ['no color', ''].include?(@community&.design&.modernist_map_marker_color) ) ? (@community&.design&.primary_color || '#cf492f') : @community&.design&.modernist_map_marker_color
-          - elsif @community.theme_name == 'futurist'
-            - marker_color = @community&.design&.futurist_property_map_marker_color || "#d37474"
-          - elsif @community.theme_name == 'expressionist'
-            - marker_color = @community&.design&.expressionist_property_map_marker_color || "#d37474"
-          - elsif @community.theme_name == 'panther'
-            - marker_color = @community&.design&.panther_property_map_marker_color || "#d37474"
-          - else
-            - marker_color = 'rgba(247, 0, 0, 0.61)'
-          -#-
-          - if @community.theme_name.include?('gables')
-            - fontsize =@community&.design&.property_map_size_integer || 30
-          - elsif @community.theme_name == 'modernist'
-            - fontsize = @community&.design&.modernist_property_map_size || 30
-          - elsif @community.theme_name == 'futurist'
-            - fontsize = @community&.design&.futurist_property_map_size || 30
-          - elsif @community.theme_name == 'expressionist'
-            - fontsize = @community&.design&.expressionist_property_map_size || 30
-          - elsif @community.theme_name == 'panther'
-            - fontsize = @community&.design&.panther_property_map_size || 30
-          - else
-            - fontsize = 30
+    - locals = { is_svg: false, units: @floorplate_units, units_by_plotted_doors_order: @floorplate_units_by_plotted_doors_order community: @community, floorplate: @floorplate, all_locks: @all_locks, current_locks_provider: @current_locks_provider, access_points: @access_points, current_user: current_user, units_arr: units_arr }
+    = render partial: 'floorplates/svg_or_image_unit_plotting', locals: locals
 
-          - is_svg = false
-          - left_margin = 13
-          - top_margin = 34
+    %br
+    %h3 SVG section
 
-          - if @floorplate.image.present? && @floorplate.image.url.ends_with?(".svg")
-            - is_svg = true
-
-          %span.hidden#left_margin #{left_margin}
-          %span.hidden#top_margin #{top_margin}
-          %span.hidden#font_size #{fontsize}
-          %span.hidden#marker_color #{marker_color}
-
-          - door_fontsize     = fontsize
-          - door_marker_color = "#3153d2"
-
-          %span.hidden#door_fontsize #{door_fontsize}
-          %span.hidden#door_marker_color #{door_marker_color}
-
-          %span= @floorplate.name + " Units"
-          %span.hidden#active_x_plot 0
-
-          %span.hidden#active_y_plot 0
-          %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "plotUnitOnFloorplatePopover","data-content" => " "}
-            %span#propertyDetailNameText
-              Once you have selected unit(s) to plot, click on the correct position on the map to place the marker. You can drag and drop each marker to reposition it. You can also click on a marker to see which units are associated with it; add a unit; or delete the marker.
-
-
-        .btn-btn-danger.mt-10
-          = link_to "ADD AMENITY IMAGES  <i class='propertyDetailName fa fa-question-circle' data-toggle='floorplateManageAmenitiesPopover' data-content='test' ><span id='propertyDetailNameText' style='font-weight: normal;'>Click on 'Manage Amenities' to switch from plotting units to uploading and plotting amenity images.</span></i>".html_safe, community_amenities_path(@community), class: "btn btn-primary loader_class"
-          %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"showHideOverlayGrid();"}
-            Grid Overlay
-            %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "floorplateGridOverlayPopover","data-content" => " "}
-              %span#propertyDetailNameText{:style => "font-weight: normal;"}
-                Add a grid overlay to the map to make it easier to see if the markers are straight.
-          
-          - if !@floorplate.is_ocr_enabled
-            = link_to "Enable Suggestions <i class='propertyDetailName loader_class fa fa-question-circle' data-toggle='sitemapManageAmenitiesPopover' data-content='test' ><span id='propertyDetailNameText' style='font-weight: normal;'>Enabling suggestions will highlight possible matches on the map when units are selected from the list. You still have to click on the map to plot the marker for each unit/unit group.</span></i>".html_safe , "/communities/#{@community.id}/suggest_floorplate_units?floorplate_id=#{@floorplate.id}&&is_ocr_enabled=#{!@floorplate.is_ocr_enabled}" , :class=>"btn btn-success loader_class"
-          - else 
-            = link_to "Disable Suggestions <i class='propertyDetailName loader_class fa fa-question-circle' data-toggle='sitemapManageAmenitiesPopover' data-content='test' ><span id='propertyDetailNameText' style='font-weight: normal;'>Enabling suggestions will highlight possible matches on the map when units are selected from the list. You still have to click on the map to plot the marker for each unit/unit group.</span></i>".html_safe , "/communities/#{@community.id}/suggest_floorplate_units?floorplate_id=#{@floorplate.id}&&is_ocr_enabled=#{!@floorplate.is_ocr_enabled}" , :class=>"btn btn-success loader_class enable-suggestions-btn"
-          
-          - if current_user.is_super_admin?
-            = link_to "Auto Plot <i class='propertyDetailName loader_class fa fa-question-circle' data-toggle='sitemapManageAmenitiesPopover' data-content='test' ><span id='propertyDetailNameText' style='font-weight: normal;'>Use Auto-plotting to add markers only when unit names in list and on map match exactly. All markers will be automatically added to the map.</span></i>".html_safe , "/communities/#{@community.id}/floorplate_auto_plot_units?floorplate_id=#{params[:floorplate_id]}", :class=>"btn btn-success loader_class"
-
-            %a.btn.btn-danger{"data-name" => "floorplate's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots_from_floorplate?floorplate_id=#{params[:floorplate_id]}"} Reset all plots
-          - if @community.self_tour and @community.auto_wayfinding
-            %button.btn.btn-primary.grid-overlay{:type=>"button",id:"hallway_btn",:onclick=>'plotting_hallways($(this))'}Start Plotting Hallways
-          - if false && @community.enable_locks and @community.self_tour and @community.auto_wayfinding
-            = link_to community_floorplate_select_many_floors_path(@community, @floorplate), remote: true do
-              %button.btn.btn-success
-                Add Access Point
-                %i.propertyDetailName.fa.fa-question-circle
-                  %span#propertyDetailNameText{:style => "font-weight: normal;"}
-                    Add Access point in hallways that are not associated with any specific unit or amenity- if @community.enable_locks and @community.self_tour and @community.auto_wayfinding
-          - if false && @community.self_tour and @community.auto_wayfinding
-            %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'automate_path()'}Automate Path
-
-      = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks, locks_present_hash: @current_locks_provider}
-      %form.form-horizontal
-        .box-body.map-body-top
-          .row
-            .col-lg-9#container.p-0
-              .buttons{:style=>"position: absolute; right: 20px; top: 5px;z-index:999;"}
-                %a.btn.btn-sm.btn-primary.zoom-in.zoom-controls
-                  %i.fa.fa-plus
-                %a.btn.btn-sm.btn-primary.zoom-out.zoom-controls
-                  %i.fa.fa-minus
-                %a.btn.btn-sm.btn-primary.reset.zoom-controls
-                  %i.fa.fa-refresh
-              .mapLoading.hidden
-              .map-block{:style=>"position: relative;"}
-                #map.plot-image{data: {svg_url: is_svg ? @floorplate.image.url : nil}, style: "min-width: 100%; height: 100%; position: relative" }
-                  .grid-graph.hidden
-                  - unless is_svg
-                    = image_tag @floorplate.image? ? @floorplate.image.url : "default.jpeg" ,name:"viewArea", id:"viewArea",draggable:"false", class: 'viewArea', data: {'map_id' => "map"}
-                    - if @community.community_tour.x_plot.to_i + @community.community_tour.y_plot.to_i > 0
-                      = link_to image_tag("/assets/star.png", style: 'width:15px;'), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "m_", :style => "left:#{@community.community_tour.x_plot}px; top:#{@community.community_tour.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/tours/#{@community.community_tour.id}/resetStartingPoint"
-                  - community_units = @community_units || []
-                  - units_by_plotted_doors_order = community_units.sort_by {|obj| obj.door.present? ? obj.door.id : obj.id}
-
-                  - coordinates_array = []
-                  - @floorplate_units_by_plotted_doors_order&.each do |unit|
-                    - if unit.x_plot.to_i + unit.y_plot.to_i > 0
-                      - unless coordinates_array.include?([unit.x_plot,unit.y_plot])
-                        - coordinates_array.push([unit.x_plot, unit.y_plot])
-                        - unit_door_exists = unit.door.present? ? true : false
-
-                        %p{class: "marker", style: "left:#{unit.x_plot - left_margin }px; top:#{unit.y_plot - top_margin}px; position:absolute"}
-                          = link_to "javascript:void(0);", { id: "m_#{unit.provider_unit_id}", style: "font-size: #{fontsize}px", data_provider: @community.data_provider, provider_unit_id: unit.provider_unit_id, title: (unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, data: {toggle: "tooltip", toggle: "modal", name: "plot", target: "#markers-modal", href: "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}", horizontal: unit.x_plot, vertical: unit.y_plot, pointer_data: unit.pointer_data.to_json, unit_form_url: "/communities/#{current_community.id}/units/#{unit.id}/adjust_position", plotted_category: "unit"}} do
-                            %i{class: "fas fa-map-marker-alt", style: "color: #{marker_color};"}
-
-                          - if !unit_door_exists and @community.self_tour and @community.auto_wayfinding
-                            = link_to "javascript:void(0);", { id: "plus_#{unit.provider_unit_id}", style: "margin-left: -6px;", data_provider: @community.data_provider, provider_unit_id: unit.provider_unit_id, title:  "Click to plot this unit(s) door", data: {toggle: "tooltip", plotted_category: "create_unit_door"}, onclick: 'plot_entry_point(event)'} do
-                              %i{class: "fa fa-plus-circle fa-xs", style: "color: #59de83; font-size: #{fontsize/2}px;" }
-                            - unit_door_exists = false
-
-                        - if unit_door_exists and @community.self_tour and @community.auto_wayfinding
-                          - unit_door = unit.door
-                          = link_to "javascript:void(0);", { id: "door_#{unit.provider_unit_id}", class: "marker", style: "left:#{unit_door.x_plot}px; top:#{unit_door.y_plot}px; position:absolute; font-size: #{door_fontsize}px", data_provider: @community.data_provider, provider_unit_id: unit.provider_unit_id, title: "#{unit_door.name}", data: {door_id: "#{unit_door.id}", toggle: "tooltip", toggle: "modal", target: "#ajax-doors-detail-modal", plotted_category: "unit_door"}} do
-                            %i{class: "fa fa-sign-in fa-xs", style: "color: #{door_marker_color};"}
-
-                      - else
-                        - puts "duplicated.........."
-                      .hidden{:class=>"h-#{unit.x_plot }-#{unit.y_plot}", :id=>"h-#{unit.provider_unit_id}","data-title"=>(unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, "data-name" => "plot", "data-href" => "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}","data-unit-form-url"=>"/communities/#{current_community.id}/units/#{unit.id}/adjust_position"}
-
-                  - if @community.enable_locks and @community.self_tour and @community.auto_wayfinding
-                    - coordinates_array = []
-
-                    - @access_points.each do |access_point|
-                      - unless coordinates_array.include?([access_point.x_plot, access_point.y_plot])
-                        - coordinates_array.push([access_point.x_plot, access_point.y_plot])
-
-                        = link_to open_access_point_modal_community_floorplate_access_point_path(@community, @floorplate, access_point, x_plot: access_point.x_plot, y_plot: access_point.y_plot, plotted_id: access_point.id, locks_present_hash: @current_locks_provider.to_json), { id: "access_point_#{access_point.id}", class: "marker", style: "left:#{access_point.x_plot}px; top:#{access_point.y_plot}px; position:absolute; font-size: #{door_fontsize/2}px", title: "#{access_point.name}", data: {door_id: "#{access_point.id}", toggle: "tooltip", remote: true, plotted_category: "access_point"}} do
-                          %i{class: "fa fa-lock", style: "color: #66bf60"}
-
-            .col-lg-3.multi-select-units.select-units-on-page
-              %h5.mt-40.mb-20
-                SELECT UNITS TO PLOT
-                %i.additionalPageAction.fa.fa-question-circle{ "data-toggle" => "floorplateSelectPlotToUnitsPopover","data-content" => " "}
-                  %span#additionalPageActionText{:style => "font-weight: normal;"}
-                    You can select one or multiple units to plot in one position (with one marker) on the map. If no units appear in the list, that means that all units that have been imported or entered have already been plotted on the map.
-
-              %select.amenities-list.form-control{:multiple=>"multiple"}
-                - arr = []
-                - @floorplate_units&.each do |unit|
-                  - if unit.x_plot.to_i + unit.y_plot.to_i == 0 and unit.provider_unit_id.present?
-                    - if unit.building != nil && unit.building != ""
-                      %option{:value => "#{unit.provider_unit_id}"}= "#{unit.building}-#{unit.marketing_name}"
-                    - elsif @community.data_provider == "yardi"
-                      %option{:value => "#{unit.provider_unit_id}"}= unit.provider_unit_id
-                    - else 
-                      %option{:value => "#{unit.provider_unit_id}"}= "#{unit.marketing_name}"
-
-                  - arr.push([unit.provider_unit_id, unit.x_plot.to_i, unit.y_plot.to_i, true, unit.id.to_s])
-              %h5.mt-40.hidden SELECTED UNITS
-              .add-plan.mt-10.mb-20
-                %ul#selected-units
-              %label#newmsg Place marker for selected units on Map
-        #map-marker{"data-toggle" => "tooltip", :onclick => "selMarker()", :title => "new marker"}
-          %i.icon-screenshot
-#markers-modal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
-  .modal-dialog
-    .modal-content
-      .modal-header#u-name
-
-      = form_tag "" do
-        .modal-body
-          = hidden_field_tag 'redirect_path' , community_floorplate_plotexp_path(current_community,@floorplate)
-          - if is_svg
-            %div{style: "margin-bottom: 1rem;"} You can't change the coordinates from here directly, you need to delete and the marker again in the SVG.
-          .form-group.row
-            %label.col-sm-2.col-form-label X Position
-            .col-sm-10
-              = text_field_tag "horizontal_position",0,class: "form-control", disabled: is_svg
-          .form-group.row
-            %label.col-sm-2.col-form-label Y Position
-            .col-sm-10
-              = text_field_tag "vertical_position", 0,class: "form-control", disabled: is_svg
-          
-          - if is_svg
-            = hidden_field_tag 'pointer[x_plot]'
-            = hidden_field_tag 'pointer[y_plot]'
-            = hidden_field_tag 'pointer[tag]'
-            = hidden_field_tag 'pointer[id]'
-            = hidden_field_tag 'pointer[selector]'
-          .unit-buttons
-        .modal-footer
-          - unless is_svg
-            = submit_tag "Update",:class=>"btn btn-primary"
-          %a.btn.btn-danger.delete-marker-ok{"data-method"=>"delete"} Delete Marker
-          %a.btn.btn-primary{:onclick=>"addMarkerOnFloorplate()"} Add Marker
-          %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
-
-#add-marker-modal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
-  .modal-dialog
-    .modal-content
-      .modal-header#add-marker-heading
-        Add Marker
-      = form_tag "/communities/#{@community.id}/add_plots_on_floorplate" do
-        .modal-body
-          = hidden_field_tag 'redirect_path' , community_floorplate_plotexp_path(current_community,@floorplate)
-          = hidden_field_tag 'add_horizontal_position'
-          = hidden_field_tag 'add_vertical_position'
-          = hidden_field_tag 'unit_provider_ids',"[]"
-
-          - if is_svg
-            = hidden_field_tag 'add_pointer[x_plot]'
-            = hidden_field_tag 'add_pointer[y_plot]'
-            = hidden_field_tag 'add_pointer[tag]'
-            = hidden_field_tag 'add_pointer[id]'
-            = hidden_field_tag 'add_pointer[selector]'
-          .form-group.row
-            %label.col-sm-2.col-form-label
-            .col-sm-10.unit-selects-in-popup
-              %select.amenities-list-on-popup.form-control{:multiple=>"multiple"}
-                - @floorplate_units&.each do |unit|
-                  - if unit.x_plot.to_i + unit.y_plot.to_i == 0 and unit.provider_unit_id.present?
-                    - if unit.building != nil && unit.building != ""
-                      %option{:value=>unit.provider_unit_id}= "#{unit.building}-#{unit.marketing_name}"
-                    - elsif @community.data_provider == "yardi"
-                      %option{:value => "#{unit.provider_unit_id}"}= unit.provider_unit_id
-                    - else
-                      %option{:value=>unit.provider_unit_id}= "#{unit.marketing_name}"
-
-        .modal-footer
-          = submit_tag "Add",:class=>"btn btn-primary" 
-          %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
+    - locals[:is_svg] = true
+    = render partial: 'floorplates/svg_or_image_unit_plotting', locals: locals
 
 #ocrData{data: {ocr_data: @map_ocr_data.to_json, image_dimensions: @dimensions.to_json}}
-#ajax-doors-detail-modal.modal.fade{"aria-hidden" => "true", "data-backdrop" => "static", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
-  .modal-dialog
-    .modal-content
-      .modal-header#door-name
-      .modal-loader.hidden
-      = form_tag "" , {method: :put, remote: true} do
-        .modal-body
-          %i.fa.fa-v.fa-check-circle.save_lock{style: "color: green; visibility: hidden; margin-left: 540px;margin-bottom: 12px;"}
-          .locks-section-in-modal
-          .door-buttons-in-door-modal.mt-30
-        .modal-footer
-          - if @community.enable_locks
-            = submit_tag "Update",:class=>"btn btn-primary locks-modal-submit"
-          %a.btn.btn-danger.delete-door-marker.ajax-btn-delete{data: {plotted_category: "unit_door"}} Delete Door
-          %a.btn.btn-primary{:onclick=>"addDoorsMarkerOnFloorplate()"} Add Doors
-          %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
-
-#ajax-remaining-doors-modal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
-  .modal-dialog
-    .modal-content
-      .modal-header#add-marker-heading
-        Add Doors
-      .modal-body
-        = hidden_field_tag 'selected_doors_info',"[]"
-        .form-group.row
-          %label.col-sm-2.col-form-label
-          .col-sm-10.doors-selects-in-popup
-            %select.doors-list-on-popup.form-control{:multiple=>"multiple"}
-
-      .modal-footer
-        %a.btn.btn-primary{:id=> "add-unplotted-doors"} Add
-        %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel   
 
 
 :javascript
-  $(document).ready(function () {
-    parsedSVGs = [];
-    fetchSVG(
-      "#map.plot-image",
-      { svgPosition: 1, activateZoom: true }
-    );
-  })
-
   var multi_floors;
-  var arr = #{raw arr}
+  var unitsArr = #{raw units_arr.to_json}
   var units_info = #{@unit_with_door.to_json.html_safe}
+  var mapped_units = #{raw @mapped_units.to_json}
   var access_points = #{@access_points.to_json.html_safe}
   var building_starting_point = {x_plot: #{@community.community_tour.x_plot.to_json.html_safe}, y_plot: #{@community.community_tour.y_plot.to_json.html_safe} };
 
-  var left_margin = #{raw left_margin}
-  var top_margin = #{raw top_margin}
   var community_id = #{params[:community_id]}
   var floorplate_id = #{params[:floorplate_id]}
 
@@ -324,53 +50,78 @@
   var fp_id = #{params[:floorplate_id]}
   hallways_coordinates = #{raw @hallways.to_json}
 
-  $( document ).ready(function() {
-    draw_initial_hallways(hallways_coordinates)
-  });
+  $(document).ready(function () {
+    parsedSVGs = [];
+    const zoomPans = $('.plot-image');
+    zoomPans.each(function () {
+      activateZoomPan(this);
+    });
 
-  if (#{current_user.welcome_floorplate_plot_page})
-    {
-      $('[data-toggle="plotUnitOnFloorplatePopover"]').popover({
-        html: true,
-        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Once you have selected unit(s) to plot, click on the correct position on the map to place the marker. You can drag and drop each marker to reposition it. You can also click on a marker to see which units are associated with it; add a unit; or delete the marker.</div><div class="popover-footer"><a id="propertyDetailNameId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+    triggerPlottingEvents();
+    fetchAndSetCoordinates();
+
+    $('.wysihtml5').each(function(i, elem) {
+      $(elem).wysihtml5({'toolbar': {'image': false,'link' : false}});
+    });
+
+    draw_initial_hallways(hallways_coordinates);
+  })
+
+  async function fetchAndSetCoordinates () {
+    await fetchSVG(
+      "#svg_map.plot-image",
+      { svgPosition: 1, activateHoverEffect: true }
+    );
+
+    if (parsedSVGs.length) {
+      setCoordinates(mapped_units, {
+        cloneClass: "cloned-unit",
+        additionalClasses: ["marker"],
+        updateStyles: true,
+      });
+    }
+  }
+
+  if (#{current_user.welcome_floorplate_plot_page}) {
+    $('[data-toggle="plotUnitOnFloorplatePopover"]').popover({
+      html: true,
+      template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Once you have selected unit(s) to plot, click on the correct position on the map to place the marker. You can drag and drop each marker to reposition it. You can also click on a marker to see which units are associated with it; add a unit; or delete the marker.</div><div class="popover-footer"><a id="propertyDetailNameId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
     }).popover('show');
   }
 
-    $(document).on("click", "#propertyDetailNameId" , function(){
-        $(this).parents(".popover").popover('hide');
-        $(this).parents(".popover").addClass('hidden');
-        $('[data-toggle="floorplateManageAmenitiesPopover"]').popover({
-        html: true,
-        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding"  style="color: ;">Click on "Manage Amenities" to switch from plotting units to uploading and plotting amenity images.</div><div class="popover-footer"><a id="siteShowPropertyMapPagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-      }).popover('show');
-    });
+  $(document).on("click", "#propertyDetailNameId" , function(){
+    $(this).parents(".popover").popover('hide');
+    $(this).parents(".popover").addClass('hidden');
+    $('[data-toggle="floorplateManageAmenitiesPopover"]').popover({
+      html: true,
+      template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding"  style="color: ;">Click on "Manage Amenities" to switch from plotting units to uploading and plotting amenity images.</div><div class="popover-footer"><a id="siteShowPropertyMapPagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+    }).popover('show');
+  });
 
-    $(document).on("click", "#siteShowPropertyMapPagePopoverClose" , function(){
-        $(this).parents(".popover").popover('hide');
-        $(this).parents(".popover").addClass('hidden');
-        $('[data-toggle="floorplateGridOverlayPopover"]').popover({
-        html: true,
-        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">Add a grid overlay to the map to make it easier to see if the markers are straight.</div><div class="popover-footer"><a id="sitemapDisplayFloorplanGalleryPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-      }).popover('show');
-    });
+  $(document).on("click", "#siteShowPropertyMapPagePopoverClose" , function(){
+    $(this).parents(".popover").popover('hide');
+    $(this).parents(".popover").addClass('hidden');
+    $('[data-toggle="floorplateGridOverlayPopover"]').popover({
+      html: true,
+      template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">Add a grid overlay to the map to make it easier to see if the markers are straight.</div><div class="popover-footer"><a id="sitemapDisplayFloorplanGalleryPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+    }).popover('show');
+  });
 
-    $(document).on("click", "#sitemapDisplayFloorplanGalleryPopoverClose" , function(){
-        $('html, body').animate({ scrollTop: 200 });
-        $(this).parents(".popover").popover('hide');
-        $(this).parents(".popover").addClass('hidden');
-        $('[data-toggle="floorplateSelectPlotToUnitsPopover"]').popover({
-        placement: 'left',
-        html: true,
-        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">You can select one or multiple units to plot in one position (with one marker) on the map. If no units appear in the list, that means that all units that have been imported or entered have already been plotted on the map.</div><div class="popover-footer"><a id="sitempaDisplayHomepagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-      }).popover('show');
-      showHideOverlayGrid();
-    });
-    
-    $(document).on("click", "#sitempaDisplayHomepagePopoverClose" , function(){
-        $(this).parents(".popover").popover('hide');
-        $(this).parents(".popover").addClass('hidden');
-        #{current_user.welcome_floorplate_plot_page = false}
-        #{current_user.save}
-    });
-
-
+  $(document).on("click", "#sitemapDisplayFloorplanGalleryPopoverClose" , function(){
+    $('html, body').animate({ scrollTop: 200 });
+    $(this).parents(".popover").popover('hide');
+    $(this).parents(".popover").addClass('hidden');
+    $('[data-toggle="floorplateSelectPlotToUnitsPopover"]').popover({
+      placement: 'left',
+      html: true,
+      template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">You can select one or multiple units to plot in one position (with one marker) on the map. If no units appear in the list, that means that all units that have been imported or entered have already been plotted on the map.</div><div class="popover-footer"><a id="sitempaDisplayHomepagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+    }).popover('show');
+    showHideOverlayGrid(document.querySelector('#map.plot-image'));
+  });
+  
+  $(document).on("click", "#sitempaDisplayHomepagePopoverClose" , function(){
+    $(this).parents(".popover").popover('hide');
+    $(this).parents(".popover").addClass('hidden');
+    #{current_user.welcome_floorplate_plot_page = false}
+    #{current_user.save}
+  });

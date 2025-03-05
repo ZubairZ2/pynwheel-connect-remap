@@ -37,9 +37,10 @@ class FloorplanAmenitiesService
     AmenityGallery.where(associated_amenity_gallery_id: floorplan_amenity_gallery_image_id).destroy_all
   end
 
-  def reset_plotting
+  def reset_plotting(svg_deletion = false)
+    new_attributes = svg_deletion ? { pointer_data: {} } : { x_plot: 0, y_plot: 0 }
     @floorplan_units&.each do |floorplan_unit|
-      floorplan_unit&.amenities&.where(floorplan_amenity_id: @amenity.id)&.update_all(x_plot: 0, y_plot: 0)
+      floorplan_unit&.amenities&.where(floorplan_amenity_id: @amenity.id)&.update_all(new_attributes)
     end
   end
 

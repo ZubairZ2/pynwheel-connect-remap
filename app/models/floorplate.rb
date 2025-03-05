@@ -28,6 +28,7 @@ class Floorplate < ApplicationRecord
   serialize :map_ocr_data, Array
 
   mount_uploader :image, SiteMapUploader
+  mount_uploader :svg_image, SiteMapUploader
   mount_uploader :label_image, SiteMapUploader
   mount_uploader :file, DesignUploader
 
@@ -83,7 +84,7 @@ class Floorplate < ApplicationRecord
 
   def as_json options = {}
     super(
-      :only => [:id , :name , :range , :image , :label_image, :file]
+      :only => [:id, :name, :range, :image, :svg_image, :label_image, :file]
     )
   end
 

@@ -50,7 +50,8 @@
 
 
         .pull-right.btn-btn-danger
-          = link_to "Back",community_unit_amenities_path(@community,@sitemap), :class=>"btn btn-primary mr-5 hidden" 
+          = link_to "Back",community_unit_amenities_path(@community,@sitemap), :class=>"btn btn-primary mr-5 hidden"
+          -# Might to do svg_deletion
           %a.btn.btn-danger{"data-name" => "unit's amenities plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/units/#{@sitemap.id}/amenities/remove_amenities_plot"} Reset all plots
       / /.box-header
       / form start
@@ -79,7 +80,7 @@
                           = image_tag amenity.image.present? ? amenity.image.url : "upload-image.png"
                           %span.ml-5
                             = amenity.name
-                    - amenity_arr.push([amenity.id.to_s, amenity.x_plot.to_i, amenity.y_plot.to_i, true, amenity.name])
+                    - amenity_arr.push({ providerId: amenity.id.to_s, xPlot: amenity.x_plot.to_i, yPlot: amenity.y_plot.to_i, name: amenity.name })
 
               %h5.mt-40 SELECTED IMAGES
               .add-plan.mt-10.mb-20
@@ -200,7 +201,7 @@
     // event.preventDefault();
   }
   var floor = null;
-  var arr = #{raw amenity_arr}
+  var unitsArr = #{raw amenity_arr.to_json}
   var lmargin = 0
   var rmargin = 0
   var community_id = #{params[:community_id]}

@@ -88,7 +88,7 @@
                             %span.ml-5
                               = amenity.name
                       - ts = TourStop.find_by(stop_type: "amenity",stop_id: amenity.id)
-                      - amenity_arr.push([amenity.id.to_s+":amenity", ts.present? ? ts.latitude.to_i : 0, ts.present? ? ts.longitude.to_i : 0, true, amenity.name])
+                      - amenity_arr.push({ providerId: amenity.id.to_s + ":amenity", xPlot: ts.present? ? ts.latitude.to_i : 0, yPlot: ts.present? ? ts.longitude.to_i : 0, name: amenity.name })
 
                 %h5.mt-40 SELECTED IMAGES
                 .add-plan.mt-10.mb-20
@@ -121,7 +121,7 @@
         #map-marker{"data-toggle" => "tooltip", :onclick => "selMarker()", :title => "new marker"}
           %i.icon-screenshot
 :javascript
-  var arr = #{raw amenity_arr}
+  var unitsArr = #{raw amenity_arr.to_json}
   var lmargin = 0
   var rmargin = 0
   var community_id = #{params[:community_id]}

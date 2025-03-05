@@ -40,6 +40,29 @@
                     Upload File
                     = f.file_field :image
                     = f.hidden_field :image_cache
+
+              .form-group.hidden
+                %label.col-sm-12.col-lg-12.col-md-3.col-xs-12.control-label
+                  %p.text-warning
+                    Please upload SVG here.
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Upload SVG
+                  %span
+                    Upload SVG of this
+                    %br/
+                    floorplate.
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  -#.select-img.mb-20
+                  -#  .select-img-img
+                  .image-box.video-box
+                    .images.height-200
+                      %a.preview-image{:href=>f.object.svg_image.present? ? f.object.svg_image_url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Floorplate Image"}
+                        = image_tag f.object.svg_image? ? f.object.svg_image.url : "default.jpeg",:height=>"",:width=>"170",:id=>"preview-image", :style => "max-height: 190px; max-width: 270px;"
+                  %span.btn.btn-default.black-button.btn-sm.btn-file
+                    Select Image
+                    = f.file_field :svg_image
+
         / /.box-body
         .box-footer
           = f.submit "ADD SITEMAP", class: "btn btn-success pull-right"

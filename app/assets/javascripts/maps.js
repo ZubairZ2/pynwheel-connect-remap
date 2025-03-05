@@ -49,11 +49,6 @@ function initialize_variables(hallways_coordinates, map_id){
     }
   }); 
 $(".viewArea").on('click', function (e) {
-  const zoomContainer = e.currentTarget.parentElement;
-  const key = `${zoomContainer.tagName.toLowerCase()}-${zoomContainer.id}`
-
-    const { element, centerPoint } = getSvgClickedElementWithCenterPoint("#map.plot-image", e);
-
     if ($(e.target).hasClass('viewArea')){
       map_id = "#" + $(e.target).data('map-id')
       marker_color = $('#marker_color').html();
@@ -61,13 +56,9 @@ $(".viewArea").on('click', function (e) {
       marker_font_size = ($('#font_size').html());
       left_margin = parseInt($('#left_margin').html());
       right_margin = parseInt($('#right_margin').html());
+      dx = parseInt(event.pageX) - parseInt($(map_id).offset().left) + parseInt($(map_id).scrollLeft());
+      dy = parseInt(event.pageY) - parseInt($(map_id).offset().top) + parseInt($(map_id).scrollTop());
 
-      if (element && centerPoint) {
-        [dx, dy] = [centerPoint.x, centerPoint.y]
-      } else {
-        dx = parseInt(event.pageX) - parseInt($(map_id).offset().left) + parseInt($(map_id).scrollLeft());
-        dy = parseInt(event.pageY) - parseInt($(map_id).offset().top) + parseInt($(map_id).scrollTop());
-      }
       if ($("#hallway_btn").html() == "Start Plotting Hallways") {
           $(this).css('cursor', 'default');
           e.preventDefault();
@@ -82,7 +73,11 @@ $(".viewArea").on('click', function (e) {
       if ($("#hallway_btn").html() == "Stop Plotting Hallways" ) {
           dx = e.type === 'touchend' ? ((e.changedTouches[0].pageX - elemPos.left)) : dx;
           dy = e.type === 'touchend' ? ((e.changedTouches[0].pageY - elemPos.top)) : dy;
-          var transform = mapPanZoom[key] ? mapPanZoom[key].getTransform() : {};
+
+          const zoomContainer = e.currentTarget.parentElement;
+          const zoomPanKey = `${zoomContainer.tagName.toLowerCase()}-${zoomContainer.id}`
+
+          var transform = mapPanZoom[zoomPanKey] ? mapPanZoom[zoomPanKey].getTransform() : {};
           var scaleFactor = (1 / (transform.scale || 1));
           dx = (dx * scaleFactor) - (e.type === 'touchend' ? (transform.x * scaleFactor) : (10 * scaleFactor));
           dy = (dy * scaleFactor) - (e.type === 'touchend' ? (transform.y * scaleFactor) : (10 * scaleFactor));

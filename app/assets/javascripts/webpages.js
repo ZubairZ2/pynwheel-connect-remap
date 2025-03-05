@@ -141,7 +141,7 @@ $(window).bind('load', function () {
       else {
         $('.unit-buttons').empty();
         $('.unit-buttons').addClass('hidden');
-        if (isSVG()) {
+        if (svgMode) {
           const filteredUnits = units.filter((unit) => unit.pointer_data['id'] == e.relatedTarget.id.replace('_cloned', ''));
           if (filteredUnits.length > 1) {
             filteredUnits.forEach(function (unit) {
@@ -885,9 +885,8 @@ function resetToDefaultZoom() {
 } 
 
 function click_marker_tag (id, selector) {
-  const isSVGMarker = isSVG();
-  const markersSelector = isSVGMarker ? 'cloned-unit' : 'unit_marker';
-  if (!isSVGMarker) {
+  const markersSelector = svgMode ? 'cloned-unit' : 'unit_marker';
+  if (!svgMode) {
     id = id.replace('unit_', 's_')
   }
   var marker_tags = document.getElementsByClassName(markersSelector);
@@ -995,11 +994,10 @@ function unitListHover() {
   $("div.left-side-30-units").hover(
     function (e) {
       const { id, pointerData, unitMarketingName } = getUnitData(e.target);
-      const markersSelector = isSVG() ? "cloned-unit" : "marker";
+      const markersSelector = svgMode ? "cloned-unit" : "marker";
+      const all_markers = document.getElementsByClassName(markersSelector);
 
       e.currentTarget.style.border = `3px solid ${map_marker_color}`;
-
-      const all_markers = document.getElementsByClassName(markersSelector);
 
       Array.from(all_markers).forEach((marker) => {
         if (
@@ -2048,14 +2046,12 @@ function display2DMap() {
 }
 
 function isColorWhite(color) {
-  const normalizedColor = color.toLowerCase();
-
   return (
-    normalizedColor === "#ffffff" ||
-    normalizedColor === "#fff" ||
-    normalizedColor === "white" ||
-    normalizedColor === "rgb(255, 255, 255)" ||
-    normalizedColor === "rgba(255, 255, 255, 1)"
+    color === "#ffffff" ||
+    color === "#fff" ||
+    color === "white" ||
+    color === "rgb(255, 255, 255)" ||
+    color === "rgba(255, 255, 255, 1)"
   );
 }
 
@@ -2290,25 +2286,23 @@ function trackingMapHoverEvents() {
 }
 
 function amenityMarkerHoverEvent() {
-  const markerSelector = isSVG() ? "cloned-amenity" : "amenity-marker";
-  $(document).off("mouseenter", `.${markerSelector}`).on("mouseenter", `.${markerSelector}`, function () {
+  const markerSelector = svgMode ? "cloned-amenity" : "amenity-marker";
+  $(`.${markerSelector}`).off("mouseenter").on("mouseenter", function () {
     console.log("Amenity Marker hovered");
     updateActivityData(markerSelector, "hover");
   });
 }
 
 function unitMarkerHoverEvent() {
-  const markerSelector = isSVG() ? "cloned-unit" : "unit_marker";
-  $(document)
-    .off("mouseenter", `.${markerSelector}`)
-    .on("mouseenter", `.${markerSelector}`, function () {
+  const markerSelector = svgMode ? "cloned-unit" : "unit_marker";
+  $(`.${markerSelector}`).off("mouseenter").on("mouseenter", function () {
       console.log("Unit Marker hovered");
       updateActivityData(markerSelector, "hover");
     });
 }
 
 function unitsListHoverEvent() {
-  const markerSelector = isSVG() ? "cloned-unit" : "unit_marker";
+  const markerSelector = svgMode ? "cloned-unit" : "unit_marker";
   $(document)
     .off("mouseenter", ".left-side-30-units")
     .on("mouseenter", ".left-side-30-units", function () {
@@ -2346,21 +2340,19 @@ function trackingMapClickEvents() {
 
 // New Activity Tracking Methods.
 function amenityMarkerClickEvent() {
-  const markerSelector = isSVG() ? ".cloned-amenity" : ".amenity-marker";
-  $(document).off("click", markerSelector).on("click", markerSelector, function () {
+  const markerSelector = svgMode ? ".cloned-amenity" : ".amenity-marker";
+  $(markerSelector).off("click").on("click", function () {
     console.log("Amenity Marker Clicked");
     updateActivityData("amenity_marker", "click");
   });
 }
 
 function unitMarkerClickEvent() {
-  const markerSelector = isSVG() ? "cloned-unit" : "unit_marker";
-  $(document)
-    .off("click", `.${markerSelector}`)
-    .on("click", `.${markerSelector}`, function () {
-      console.log("Unit Marker Clicked");
-      updateActivityData(markerSelector, "click");
-    });
+  const markerSelector = svgMode ? "cloned-unit" : "unit_marker";
+  $(`.${markerSelector}`).off("click").on("click", function () {
+    console.log("Unit Marker Clicked");
+    updateActivityData(markerSelector, "click");
+  });
 }
 
 function sortingFilterClickEvent() {

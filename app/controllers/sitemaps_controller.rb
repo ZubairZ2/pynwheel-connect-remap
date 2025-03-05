@@ -1,5 +1,6 @@
 class SitemapsController < ApplicationController
   include AssignLocksHelper
+  include CommunitiesHelper
   # include Error::ErrorHandler
   before_action :set_community
   before_action :check_community
@@ -56,30 +57,33 @@ class SitemapsController < ApplicationController
   end
 
   def plotexp
-    if @community.sitemap.present?
-      @sitemap = @community.sitemap
+    @community_info = Community.includes(:credential, :floorplans, { sitemap: [:amenities] }, { floorplates: [:amenities] }, { units: [:floorplate] }).find(params[:community_id])
+    if @community_info.sitemap.present?
+      @sitemap = @community_info.sitemap
     else
       @sitemap = Sitemap.new(community_id: @community.id)
       @sitemap.save(validate: false)
     end
 
-    @community.units.where(building: nil).update_all(building: "")
+    @community_info.units.where(building: nil).update_all(building: "")
     
-    @units = @community.units.visible_units.where(floorplate_id: nil).includes(:door)
-    @units = @community.sorted_units_by_marketing_name(@units)
+    @units = @community_info.units.visible_units.where(floorplate_id: nil).includes(:door)
+    @units = @community_info.sorted_units_by_marketing_name(@units)
 
     @units = @units.sort_by {|obj| obj.building}
     @units_by_plotted_doors_order = @units.sort_by {|obj| obj.door.present? ? obj.door.id : obj.id}
+    @floorplans = @community_info.floorplans
 
     unless  @units.size > 0
       flash[:error] = "Please import unit data first"
     end
     
+    @mapped_units = normalized_units_for_svg
     @dimensions = @sitemap.is_ocr_enabled ? s3_img_dimensions(sitemap_image_url(@sitemap)) : {}
     @map_ocr_data = @sitemap.is_ocr_enabled ? @sitemap.map_ocr_data : []
 
-    @all_locks              =   all_locks(@community)
-    @current_locks_provider =   existing_locks_provider(@community)
+    @all_locks              =   all_locks(@community_info)
+    @current_locks_provider =   existing_locks_provider(@community_info)
     @hallways               =   make_sure_one_selected_hallway(@sitemap.hallways.order("id ASC"))
     @access_points          =   @sitemap.access_points
     @unit_with_door         =   @units.map{|unit| { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.x_plot }, door: unit.door.present? ? unit.door : {} }}}
@@ -98,6 +102,7 @@ class SitemapsController < ApplicationController
     
     @sitemap = @community.sitemap
     @amenities = @community.amenities
+    @mapped_amenities = normalized_amenities_for_svg
     @current_locks_provider =   existing_locks_provider(@community)
     @hallways = make_sure_one_selected_hallway(@sitemap.hallways.order("id ASC"))
     @all_locks = all_locks(@community)
@@ -138,8 +143,38 @@ class SitemapsController < ApplicationController
       end
     end
   end
-    
+
+  def save_sitemap_svg
+    image = MiniMagick::Image.open(params[:file].path)
+    if image.type != "SVG"
+      flash[:error] = "Image must be of SVG type"
+      redirect_to community_sitemaps_path(@community)
+    elsif image.width < 1000 && image.height < 700
+      flash[:error] = "Too small property map image"
+      redirect_to community_sitemaps_path(@community)
+    else
+      sitemap = Sitemap.where(community_id: params[:community_id],id: params[:sitemap_id]).first
+      if sitemap.update_attributes(svg_image: params[:file], svg_metadata: { height: image.height, width: image.width }, map_ocr_data: nil, is_ocr_enabled: false)
+        render :json=>{"status"=>"success"}
+      else
+        render :json=>{"status"=>"fail"}
+      end
+    end
+  end
+
   private
+
+  def normalized_units_for_svg
+    @units.map do |unit|
+      fetch_unit_info_struct_for_ploting(unit)
+    end
+  end
+
+  def normalized_amenities_for_svg
+    @amenities.map do |amenity|
+      fetch_amenity_info_struct_for_ploting(amenity)
+    end
+  end
 
   def s3_img_dimensions url
     img = MiniMagick::Image.open(url)

@@ -113,7 +113,7 @@
         </h3>
         <div class="btn-btn-danger mt-10">
           <%= link_to "ADD AMENITY IMAGES", community_amenities_path(@community), class: "btn btn-primary" %>
-          <button class="btn btn-primary grid-overlay" onclick="showHideOverlayGrid();" type="button">Grid Overlay</button>
+          <button class="btn btn-primary grid-overlay" onclick="showHideOverlayGrid(this);" type="button">Grid Overlay</button>
           <% if current_user.is_super_admin? %>
             <a class="btn btn-danger" data-href="/communities/<%= @community.id %>/remove_plots_from_floorplate?floorplate_id=<%= params[:floorplate_id] %>" data-name="floorplate's plots" data-target="#confirm-delete" data-toggle="modal">Reset all plots</a>
           <% end %>
@@ -126,7 +126,7 @@
             <div class="col-lg-12 p-0" id="container">
               <div class="map-block" style="position: relative;">
                 <!-- id map -->
-                <div class="plot-image">
+                <div id="map" class="plot-image">
                   <div class="grid-graph hidden"></div>
                   <%= image_tag @floorplate.image? ? @floorplate.image.url : "default.jpeg", id: "testimg" %>
                   <% community_units = @community_units %>

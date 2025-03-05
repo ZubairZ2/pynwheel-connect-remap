@@ -1,0 +1,19 @@
+%h4{:style => "color: grey;"}
+  %p
+    To change the image of the property map, upload a new image here. Please note that images that are too small may appear pixelated.
+
+.box.box-widget.panel-box.alert-danger
+  %h5{style: "margin-left: 15px; margin-top: 0px;"}
+    Note: If the new image uploaded is not the exact same dimensions as the existing image, the unit and amenity markers will not be in the correct place on the map.
+
+%span.btn.btn-primary.btn-file{:onclick=>"$('#sitemap-image-upload-holder').click();"}
+  %i.fa.fa-upload
+  Upload File
+%i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapUploadFilePopover","data-content" => " "}
+  %span#propertyDetailNameText{:style => "font-weight: normal;"}
+    Uploading a file will change the property map image that appears in the Pynwheel app. Careful! Do not change the file unless you are sure that it is the exact same dimensions as the one already loaded, or the markers will all be in the wrong position.
+%br
+
+.text-center.image-upload.home-page-drag-box#sitemap-image-upload-holder
+  = image_tag "upload-image.png",:class=>"drag-image-padding-top"
+  %p Drag &amp; Drop images to Upload

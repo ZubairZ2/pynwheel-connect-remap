@@ -68,8 +68,18 @@ class FloorplanAmenitiesController < ApplicationController
 
   def plot_amenity
     @amenity = Amenity.find (params[:amenity_id])
-    @amenity.x_plot = params[:x_plot]
-    @amenity.y_plot = params[:y_plot]
+
+		if params[:x_plot].present? && params[:y_plot].present?
+			@amenity.x_plot = params[:x_plot]
+			@amenity.y_plot = params[:y_plot]
+		end
+		@amenity.pointer_data = if params[:pointer].present?
+															x_plot, y_plot, tag, id, selector = params[:pointer].values_at(:x_plot, :y_plot, :tag, :id, :selector)
+															{ x_plot: x_plot, y_plot: y_plot, tag: tag, id: id, selector: selector }
+														else
+															{}
+														end
+
     if @amenity.save(validate: false)
       @plot_amenity_for_units = Amenity.where(floorplan_amenity_id:  @amenity.id)
       plot_amenity_on_unit = "True"
@@ -92,22 +102,29 @@ class FloorplanAmenitiesController < ApplicationController
   end
 
   def remove_amenities_plot
+    svg_deletion = params[:svg_deletion].to_s == "true"
+    new_attributes = svg_deletion ? { pointer_data: {} } : { x_plot: 0, y_plot: 0 }
+
     @floorplan.amenities.each do |amenity| 
-      FloorplanAmenitiesService.new(@floorplan, amenity, @community).reset_plotting()
+      FloorplanAmenitiesService.new(@floorplan, amenity, @community).reset_plotting(svg_deletion)
     end
-    @floorplan.amenities.update_all(x_plot: 0, y_plot: 0)
+    @floorplan.amenities.update_all(new_attributes)
     
     redirect_to plot_amenities_community_floorplan_amenities_path(@community, @floorplan), notice: "All plots have been deleted successfully."
   end
 
   def remove_amenity
     @amenity = Amenity.find params[:id]
-    
-    amenities = @floorplan.amenities.where(x_plot: @amenity.x_plot, y_plot: @amenity.y_plot)
+    amenities = @floorplan.amenities
+
+    svg_deletion = params[:svg_deletion].to_s == "true"
+    new_attributes = svg_deletion ? { pointer_data: {} } : { x_plot: 0, y_plot: 0 }
+
+    amenities = @amenity.filter_amenities_for_plot_removal(amenities, svg_deletion)
     amenities.each do |amenity|
-      FloorplanAmenitiesService.new(@floorplan, amenity, @community).reset_plotting()
+      FloorplanAmenitiesService.new(@floorplan, amenity, @community).reset_plotting(svg_deletion)
     end
-    amenities.update_all(x_plot: 0, y_plot: 0)
+    amenities.update_all(new_attributes)
 
     redirect_to plot_amenities_community_floorplan_amenities_path(@community,@floorplan), notice: "Image plot have been deleted successfully."
   end

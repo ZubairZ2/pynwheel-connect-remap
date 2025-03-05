@@ -1,0 +1,30 @@
+.modal.fade{ id: is_svg ? "svg-markers-modal" : "markers-modal", role: "dialog", tabindex: "-1", "aria-hidden": "true", "aria-labelledby": "myModalLabel" }
+  .modal-dialog
+    .modal-content
+      .modal-header#u-name
+      = form_tag "" do
+        .modal-body
+          = hidden_field_tag 'redirect_path' , redirect_path
+          - if is_svg
+            %div{style: "margin-bottom: 1rem;"} You can't change the coordinates from here directly, you need to delete and the marker again in the SVG.
+          .form-group.row
+            %label.col-sm-2.col-form-label X Position
+            .col-sm-10
+              = text_field_tag "horizontal_position",0,class: "form-control", disabled: is_svg
+          .form-group.row
+            %label.col-sm-2.col-form-label Y Position
+            .col-sm-10
+              = text_field_tag "vertical_position", 0,class: "form-control", disabled: is_svg
+          - if is_svg
+            = hidden_field_tag 'pointer[x_plot]'
+            = hidden_field_tag 'pointer[y_plot]'
+            = hidden_field_tag 'pointer[tag]'
+            = hidden_field_tag 'pointer[id]'
+            = hidden_field_tag 'pointer[selector]'
+          .unit-buttons
+        .modal-footer
+          - unless is_svg
+            = submit_tag "Update",:class=>"btn btn-primary"
+          %a.btn.btn-danger.delete-marker-ok{"data-method"=>"delete"} Delete Marker
+          %a.btn.btn-primary{:onclick=>"addMarker(this)"} Add Marker
+          %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel

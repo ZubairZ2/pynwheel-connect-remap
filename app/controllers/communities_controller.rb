@@ -94,8 +94,8 @@ class CommunitiesController < ApplicationController
   end
 
   def update
-    if params[:community][:billing_rate_touch].present? or params[:community][:lincoln_billing_rate].present? or params[:community][:dwelo_billing_rate].present? or params[:community][:billing_rate_selftour].present? or params[:community][:billing_rate_maps].present? or params[:community][:billing_rate_for_both].present?
-      @community.update!(lincoln_billing_rate: params[:community][:lincoln_billing_rate], dwelo_billing_rate: params[:community][:dwelo_billing_rate],billing_rate_maps: params[:community][:billing_rate_maps],billing_rate_touch: params[:community][:billing_rate_touch],billing_rate_selftour: params[:community][:billing_rate_selftour], billing_rate_for_both: params[:community][:billing_rate_for_both])
+    if params[:community][:enable_svg_mode].present? or params[:community][:billing_rate_touch].present? or params[:community][:lincoln_billing_rate].present? or params[:community][:dwelo_billing_rate].present? or params[:community][:billing_rate_selftour].present? or params[:community][:billing_rate_maps].present? or params[:community][:billing_rate_for_both].present?
+      @community.update!(enable_svg_mode: params[:community][:enable_svg_mode] == "1", lincoln_billing_rate: params[:community][:lincoln_billing_rate], dwelo_billing_rate: params[:community][:dwelo_billing_rate],billing_rate_maps: params[:community][:billing_rate_maps],billing_rate_touch: params[:community][:billing_rate_touch],billing_rate_selftour: params[:community][:billing_rate_selftour], billing_rate_for_both: params[:community][:billing_rate_for_both])
     end
 
     if params[:community][:company_id].present?
@@ -559,7 +559,7 @@ class CommunitiesController < ApplicationController
   end
 
   def remove_plots
-    @community.delete_plots
+    @community.delete_plots(params[:svg_deletion] == "true")
     redirect_to plotexp_community_sitemaps_path(@community), notice: "All plots have been deleted successfully."
   end
 
@@ -661,36 +661,40 @@ class CommunitiesController < ApplicationController
 
   def add_plots
     units = Unit.where(community_id: params[:id], provider_unit_id: JSON.parse(params[:unit_provider_ids]))
-    units.update_all(
-      x_plot: params[:add_horizontal_position],
-      y_plot: params[:add_vertical_position],
-      pointer_data: if params[:add_pointer].present?
-                      x_plot, y_plot, tag, id, selector = params[:add_pointer].values_at(:x_plot, :y_plot, :tag, :id, :selector)
-                      { x_plot: x_plot, y_plot: y_plot, tag: tag, id: id, selector: selector }
-                    else
-                      {}
-                    end
-    )
+    new_attributes = if params[:add_pointer].present?
+                       x_plot, y_plot, tag, id, selector = params[:add_pointer].values_at(:x_plot, :y_plot, :tag, :id, :selector)
+                       { pointer_data: { x_plot: x_plot, y_plot: y_plot, tag: tag, id: id, selector: selector } }
+                     elsif params[:add_horizontal_position].present? && params[:add_vertical_position].present?
+                       { 
+                         x_plot: params[:add_horizontal_position],
+                         y_plot: params[:add_vertical_position],
+                       }
+                     else
+                       {}
+                     end
+    units.update_all(new_attributes)
     redirect_to plotexp_community_sitemaps_path(@community.present? ? @community : current_community), notice: "Plots are added successfully."
   end
 
   def add_plots_on_floorplate
     units = Unit.where(community_id: params[:id], provider_unit_id: JSON.parse(params[:unit_provider_ids]))
-    units.update_all(
-      x_plot: params[:add_horizontal_position],
-      y_plot: params[:add_vertical_position],
-      pointer_data: if params[:add_pointer].present?
-                      x_plot, y_plot, tag, id, selector = params[:add_pointer].values_at(:x_plot, :y_plot, :tag, :id, :selector)
-                      { x_plot: x_plot, y_plot: y_plot, tag: tag, id: id, selector: selector }
-                    else
-                      {}
-                    end
-    )
+    new_attributes = if params[:add_pointer].present?
+                       x_plot, y_plot, tag, id, selector = params[:add_pointer].values_at(:x_plot, :y_plot, :tag, :id, :selector)
+                       { pointer_data: { x_plot: x_plot, y_plot: y_plot, tag: tag, id: id, selector: selector } }
+                     elsif params[:add_horizontal_position].present? && params[:add_vertical_position].present?
+                       { 
+                         x_plot: params[:add_horizontal_position],
+                         y_plot: params[:add_vertical_position],
+                       }
+                     else
+                       {}
+                     end
+    units.update_all(new_attributes)
     redirect_to params[:redirect_path], notice: "Plots are added successfully."
   end
 
   def remove_plots_from_floorplate
-    current_community.delete_plots_from_floorplate(params[:floorplate_id])
+    current_community.delete_plots_from_floorplate(params[:floorplate_id], params[:svg_deletion] == "true")
     redirect_to community_floorplate_plotexp_path(:community_id=>@community.id,floorplate_id: params[:floorplate_id]), notice: "All plots have been deleted successfully."
   end
 
@@ -871,7 +875,7 @@ private
   def community_params
 
     params.require(:community).permit(:use_company_level_data_settings, :show_amenity_name,:property_manager_name,:property_manager_phone,:property_manager_email, :enable_three_d_maps,:web_map_type,:enable_amenity_legend,:enable_home_legend,:community_logo,:pynwheel_access,:name,:creator_id,:default_community_id, :region_id,:billing_rate_touch,:billing_rate_for_both, :lincoln_billing_rate,:dwelo_billing_rate , :billing_rate_selftour, :billing_rate_maps,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description, :manual_lat_long,:latitude,:longitude,:company_id,:logo,:secondary_logo,:self_tour_logo, :email_logo, :restrict_access,:scheduler_widget,:pynwheel_touch,
-      :auto_wayfinding, :data_provider,:theme_name,:code,:is_sitemap,:menu_button_shade,:enable_locks,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn,:tour_setup_visible, :chat_control, :self_tour, :pynwheel_launch_access, :show_map, :mdu, :touchscreen_app,:apply_now_pynwheel_touch_and_go,:apply_now_pynwheel_touch,:apply_now_self_tour, :show_gesture_icons,:billing_type,:billing_rate,:date_installed,:billing_month,:is_vertical_app,
+      :auto_wayfinding, :data_provider,:theme_name,:code,:is_sitemap,:menu_button_shade,:enable_locks,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn,:tour_setup_visible, :chat_control, :self_tour, :pynwheel_launch_access, :show_map, :mdu, :touchscreen_app,:apply_now_pynwheel_touch_and_go,:apply_now_pynwheel_touch,:apply_now_self_tour, :show_gesture_icons,:billing_type,:billing_rate,:date_installed,:billing_month,:is_vertical_app,:enable_svg_mode,
       :credential_attributes=>[:currency, :yardi_rent_cafe_api_url, :entrata_available_units_only, :entrata_show_unit_spaces, :entrata_use_space_configuration,:id,:url,:entrata_url,:rentmanager_username,:rentmanager_password,:rentmanager_property_id, :rentmanager_base_url, :username,:password, :perq_property_id, :is_perq_allowed, :property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,
       :api_token,:p_code,:apply_now,:allow_separate_link,:separate_link,:use_different_crm_provider,:limit_result,:file,:resman_apikey, :resman_partner_id, :resman_account_id, :xml_filename, :xml_domain, :rentcafe_api_version, :resman_api_version, :resman_property_id,:zaremba_filename,:zaremba_property_id,:zaremba_username, :zaremba_password],:crm_credential_attributes=>[:crm_provider, :entrata_domain, :entrata_username, :entrata_password, :entrata_property_id, :realpage_site_id, :realpage_pmc_id, :rentcafe_c_code, :rentcafe_p_code, :rentcafe_domain ,:salesforce_username, :yardirentcafe_marketing_api_key, :yardirentcafe_property_id, :yardirentcafe_property_code,:salesforce_password, :salesforce_client_id, :salesforce_secret_id, :salesforce_property_id, :salesforce_grant_type],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,
         :property_map_size,:property_map_color,:modernist_map_marker_color,:amenity_map_marker_size,:amenity_map_marker_color,:amenity_map_marker_size_integer,

@@ -26,18 +26,12 @@
         // %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'run_algo(true, "actual shortest", true)'}Run Algo With Animation
         // %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'run_algo(false, "sorting", true)'}Run Algo With Sorting
         // %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'run_algo(true, "sorting", true)'}Run Algo With Sorting And Animation
-  = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks, locks_present_hash: @current_locks_provider}
+  = render :partial=>'shared/hidden_locks_data', locals: {community: @community, all_locks: @all_locks, locks_present_hash: @current_locks_provider}
   %form.form-horizontal
     .box-body.map-body-top
       .row
         .col-lg-12#container.p-0
-          .buttons{:style=>"position: absolute; right: 20px; top: 5px;z-index:999;"}
-            %a.btn.btn-sm.btn-primary.zoom-in.zoom-controls
-              %i.fa.fa-plus
-            %a.btn.btn-sm.btn-primary.zoom-out.zoom-controls
-              %i.fa.fa-minus
-            %a.btn.btn-sm.btn-primary.reset.zoom-controls
-              %i.fa.fa-refresh
+          = render partial: 'shared/zoom_control_buttons'
           .mapLoading.hidden
           .map-block{:style=>"position: relative;"}
             #map.plot-image

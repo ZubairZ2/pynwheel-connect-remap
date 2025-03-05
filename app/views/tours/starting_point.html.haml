@@ -173,13 +173,7 @@
         .box-body.map-body-top
           .row
             .col-lg-9#container.p-0
-              .buttons{:style=>"position: absolute; right: 20px; top: 5px;z-index:999;"}
-                %a.btn.btn-sm.btn-primary.zoom-in.zoom-controls
-                  %i.fa.fa-plus
-                %a.btn.btn-sm.btn-primary.zoom-out.zoom-controls
-                  %i.fa.fa-minus
-                %a.btn.btn-sm.btn-primary.reset.zoom-controls
-                  %i.fa.fa-refresh
+              = render partial: 'shared/zoom_control_buttons'
               .map-block{:style=>"position: relative;"}
                 #map.plot-image
   
@@ -207,9 +201,9 @@
               -#  .show-categories
               -#    = "-- select amenity --"
               -#  %ul#imageselect{:style => "display: none;"}
-              - arr1 = []
+              - tour_points = []
               -#- @amenities.each do |amenity|
-              - arr1.push([@tours.id.to_s, @tours.x_plot.to_i, @tours.y_plot.to_i, true,"starting point"])
+              - tour_points.push({ providerId: @tours.id.to_s, xPlot: @tours.x_plot.to_i, yPlot: @tours.y_plot.to_i, name: "starting point" })
               -#- if @tours.x_plot.to_i + @tours.y_plot.to_i == 0
               %button.plot_starting_point#m_7{:type => "button",:disable => true} Plot Stating Point
               -#%li{"data-id" => "#{@tours.id}","data-name" => "starting point"}
@@ -406,7 +400,7 @@
     document.getElementById("m_7").disabled = true;
    });
   var tour_id = #{@tours.id};
-  var arr = #{raw arr1};
+  var unitsArr = #{raw tour_points.to_json};
   var lmargin = 0;
   var rmargin = 0;
   var addmode = false;

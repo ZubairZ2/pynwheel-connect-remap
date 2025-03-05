@@ -1467,14 +1467,23 @@ class Community < ApplicationRecord
     yardi4_connection_service.perform
   end
 
-  def delete_plots
-    self.units.where(floorplate_id: nil).update_all(x_plot: 0, y_plot: 0, pointer_data: {})
+  def delete_plots(svg_deletion = false)
+    filtered_units = self.units.where(floorplate_id: nil)
+    if svg_deletion
+      filtered_units.update_all(pointer_data: {})
+    else
+      filtered_units.update_all(x_plot: 0, y_plot: 0)
+    end
   end
 
-  def delete_plots_from_floorplate(floorplate_id)
+  def delete_plots_from_floorplate(floorplate_id, svg_deletion = false)
     floorplate = Floorplate.find floorplate_id
     units = Unit.where(community_id: id,floor: floorplate.floors)
-    units.update_all(x_plot: 0, y_plot: 0)
+    if svg_deletion
+      units.update_all(pointer_data: {})
+    else
+      units.update_all(x_plot: 0, y_plot: 0)
+    end
   end
 
   def set_default_theme
@@ -1564,6 +1573,14 @@ class Community < ApplicationRecord
   def image_src
     if sitemap.image.present?
       sitemap.image.url
+    else
+      "/assets/default.jpeg"
+    end
+  end
+
+  def svg_src
+    if sitemap.svg_image.present?
+      sitemap.svg_image.url
     else
       "/assets/default.jpeg"
     end

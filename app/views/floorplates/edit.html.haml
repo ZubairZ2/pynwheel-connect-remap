@@ -33,6 +33,6 @@
           = f.submit "SAVE CHANGES", :class=>"btn btn-success pull-right mr-10"
 
 :javascript
-  $("#floorplate_image").change(function(){
+  $("#floorplate_image, #floorplate_svg_image").change(function(){
     readImageIncludingSVG(this);
   });

@@ -1,0 +1,19 @@
+%h4{:style => "color: grey;"}
+  %p
+    To change the image of the property map, upload a new SVG here.
+
+.box.box-widget.panel-box.alert-danger
+  %h5{style: "margin-left: 15px; margin-top: 0px;"}
+    Note: If the new SVG is uploaded, the unit and amenity markers might not show up on the map. You may need to reset and reallocate all the plots.
+
+%span.btn.btn-primary.btn-file{:onclick=>"$('#sitemap-svg-upload-holder').click();"}
+  %i.fa.fa-upload
+  Upload SVG
+%i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapUploadSvgPopover","data-content" => " "}
+  %span#propertyDetailNameText{:style => "font-weight: normal;"}
+    Uploading an svg will change the property map image that appears in the Pynwheel app. Careful! Do not change the file if you are not sure about replotting all the plots.
+%br
+
+.text-center.image-upload.home-page-drag-box#sitemap-svg-upload-holder
+  = image_tag "upload-image.png",:class=>"drag-image-padding-top"
+  %p Drag &amp; Drop SVGs to Upload
