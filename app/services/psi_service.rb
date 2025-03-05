@@ -688,18 +688,16 @@ class PsiService < BaseService
     end.join
   end  
   
-
   def format_application_fee_list(application_fees)
-    return "" unless application_fees
+    return "" unless application_fees&.any?
   
-    application_fees.filter_map do |app_fee|
-
-      type = app_fee.dig("@attributes", "Type")
-      amount = app_fee.dig("@attributes", "Amount").to_i
-      next if amount.zero?
+    latest_fee = application_fees.last
+    type = latest_fee.dig("@attributes", "Type")
+    amount = latest_fee.dig("@attributes", "Amount").to_i
   
-      "<li>#{type}: $#{amount}</li>"
-    end.join
+    return "" if amount.zero?
+  
+    "<li>#{type}: $#{amount}</li>"
   end
   
 end
