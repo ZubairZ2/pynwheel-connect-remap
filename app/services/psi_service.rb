@@ -691,13 +691,15 @@ class PsiService < BaseService
   def format_application_fee_list(application_fees)
     return "" unless application_fees&.any?
   
-    latest_fee = application_fees.last
-    type = latest_fee.dig("@attributes", "Type")
-    amount = latest_fee.dig("@attributes", "Amount").to_i
+    unique_fees = application_fees.uniq { |app_fee| 
+      [app_fee.dig("@attributes", "Type"), app_fee.dig("@attributes", "Amount").to_i] 
+    }
   
-    return "" if amount.zero?
-  
-    "<li>#{type}: $#{amount}</li>"
-  end
+    unique_fees.map do |app_fee|
+      type = app_fee.dig("@attributes", "Type")
+      amount = app_fee.dig("@attributes", "Amount").to_i
+      "<li>#{type}: $#{amount}</li>"
+    end.join
+  end  
   
 end
