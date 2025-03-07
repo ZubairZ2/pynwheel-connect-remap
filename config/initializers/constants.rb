@@ -182,5 +182,12 @@ REPORTS = [
     has_date_range: true,
     partner: true,
     partner_list: ["apartmentlist", "rent"]
+  },
+  {
+    title: "Properties List With No Map Session In Last Month",
+    path: "maps_no_session_report",
+    has_date_range: false,
+    partner: false,
+    partner_list: []
   }
 ]

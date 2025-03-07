@@ -260,6 +260,7 @@ Rails.application.routes.draw do
         get :account_report
         get :tour_feedback_report
         get :partner_analytics_report
+        get :maps_no_session_report
       end
     end
     

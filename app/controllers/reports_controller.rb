@@ -9,6 +9,10 @@ class ReportsController < ApplicationController
     send_data(WebpagesReportService.new().get_report() , :type => 'application/xlsx', :filename => "pynwheel-webpages-report.csv")
   end
 
+  def maps_no_session_report
+    send_data(MapsNoSessionReportService.new().get_report() , :type => 'application/xlsx', :filename => "maps-no-session-report.csv")
+  end
+
   def generate_salesforce_report
     send_data(SalesforceReportService.new().get_report() , :type => 'application/xlsx', :filename => "salesforce-properties-report.csv")
   end
