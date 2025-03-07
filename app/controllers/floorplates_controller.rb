@@ -203,6 +203,7 @@ class FloorplatesController < ApplicationController
     @floorplate_units_by_plotted_doors_order = @floorplate_units.sort_by {|obj| obj.door.present? ? obj.door.id : obj.id}
 
     @floorplans = @community_info.floorplans
+    @floorplans_map = @floorplans.index_by(&:provider_floorplan_id)
     @mapped_units = normalized_units_for_svg
     
     @map_ocr_data = @floorplate.is_ocr_enabled ? @floorplate.map_ocr_data : []
@@ -254,7 +255,7 @@ class FloorplatesController < ApplicationController
 
   def normalized_units_for_svg
     @floorplate_units.map do |unit|
-      fetch_unit_info_struct_for_ploting(unit)
+      fetch_unit_info_struct_for_ploting(unit, @floorplans_map[unit.floorplan_id])
     end
   end
 

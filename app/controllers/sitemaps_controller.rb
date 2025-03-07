@@ -73,12 +73,13 @@ class SitemapsController < ApplicationController
     @units = @units.sort_by {|obj| obj.building}
     @units_by_plotted_doors_order = @units.sort_by {|obj| obj.door.present? ? obj.door.id : obj.id}
     @floorplans = @community_info.floorplans
+    @floorplans_map = @floorplans.index_by(&:provider_floorplan_id)
+    @mapped_units = normalized_units_for_svg
 
     unless  @units.size > 0
       flash[:error] = "Please import unit data first"
     end
     
-    @mapped_units = normalized_units_for_svg
     @dimensions = @sitemap.is_ocr_enabled ? s3_img_dimensions(sitemap_image_url(@sitemap)) : {}
     @map_ocr_data = @sitemap.is_ocr_enabled ? @sitemap.map_ocr_data : []
 
@@ -101,7 +102,7 @@ class SitemapsController < ApplicationController
     add_breadcrumb "Plot Property Map Amenities", plot_amenities_community_sitemaps_path(current_community) 
     
     @sitemap = @community.sitemap
-    @amenities = @community.amenities
+    @amenities = @community.amenities.includes(:amenity_galleries)
     @mapped_amenities = normalized_amenities_for_svg
     @current_locks_provider =   existing_locks_provider(@community)
     @hallways = make_sure_one_selected_hallway(@sitemap.hallways.order("id ASC"))
@@ -166,7 +167,7 @@ class SitemapsController < ApplicationController
 
   def normalized_units_for_svg
     @units.map do |unit|
-      fetch_unit_info_struct_for_ploting(unit)
+      fetch_unit_info_struct_for_ploting(unit, @floorplans_map[unit.floorplan_id])
     end
   end
 

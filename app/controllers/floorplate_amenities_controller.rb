@@ -112,7 +112,7 @@ class FloorplateAmenitiesController < ApplicationController
     add_breadcrumb "Floorplates", community_floorplates_path(current_community)
     add_breadcrumb "Plot Amenities", plot_amenities_community_floorplate_amenities_path(@community, @floorplate)
 
-    @amenities              = @community.amenities
+    @amenities              = @community.amenities.includes(:amenity_galleries)
     @mapped_amenities = normalized_amenities_for_svg
     @current_locks_provider =   existing_locks_provider(@community)
     @hallways               = make_sure_one_selected_hallway(@floorplate.hallways)

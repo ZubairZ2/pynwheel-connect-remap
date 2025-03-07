@@ -9,8 +9,6 @@ class WebpagesController < ActionController::Base
   protect_from_forgery :except => [:update_session]
 
   def index
-    @floorplans = []
-
     units_ids_not_present = (cookies[:favorite_unit_ids] == nil || cookies[:favorite_unit_ids] == "[]")
     set_favorites_unit_ids_cookies(JSON.generate([]))  if units_ids_not_present
 
@@ -18,6 +16,8 @@ class WebpagesController < ActionController::Base
     @scheduler_widget_link = get_scheduler_link
     @units_with_floorplan_info = []
     @community_info = Community.includes(:credential,:floorplans,{sitemap: [:amenities]},{floorplates: [:amenities]},{units: [:floorplate]}).find(params[:community_id])
+    @floorplans = @community_info.floorplans
+    @floorplans_map = @floorplans.index_by(&:provider_floorplan_id)
     svg_enabled = @community_info.enable_svg_mode?
     svg_points_query = "pointer_data->>'tag' IS NOT NULL AND pointer_data->>'tag' <> ''"
     community_units = @community_info.units
@@ -96,10 +96,10 @@ class WebpagesController < ActionController::Base
   end
 
   def normalize_units
-    @floorplans = @community_info.floorplans
     @available_units_and_sold_units.each do |unit|
-      if unit.effective_rent.present? && unit.effective_rent >= 1  && @floorplans.any? { |f| f.provider_floorplan_id == unit.floorplan_id }
-        @units_with_floorplan_info << fetch_unit_info_struct_for_webpage(unit)
+      floorplan = @floorplans_map[unit.floorplan_id]
+      if unit.effective_rent.present? && unit.effective_rent >= 1  && floorplan.present?
+        @units_with_floorplan_info << fetch_unit_info_struct_for_webpage(unit, floorplan)
       end
     end
   end

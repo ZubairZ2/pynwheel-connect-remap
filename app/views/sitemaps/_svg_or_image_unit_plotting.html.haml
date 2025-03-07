@@ -150,7 +150,7 @@
                   - if unit.pointer_data.present?
                     - x_plot, y_plot = unit.pointer_data.values_at('x_plot', 'y_plot').map(&:to_i)
                     - if x_plot + y_plot > 0
-                      .hidden{ class: "svg-h-#{x_plot}-#{y_plot}", id: "h-#{unit.provider_unit_id}", **(fetch_unit_info_struct_for_ploting(unit)[:data_attributes].except(%i[data-target data-toggle])) }
+                      .hidden{ class: "svg-h-#{x_plot}-#{y_plot}", id: "h-#{unit.provider_unit_id}", **(fetch_unit_info_struct_for_ploting(unit, @floorplans_map[unit.floorplan_id])[:data_attributes].except(%i[data-target data-toggle])) }
               - else
                 = image_tag sitemap.present? && sitemap.image.present? ? sitemap.image.url : "default.jpeg", id: "map_img", name: "viewArea", id: "viewArea", draggable: "false", class: 'viewArea', data: { 'map_id' => "map" }
                 - x_plot, y_plot = [community.community_tour.x_plot, community.community_tour.y_plot].map(&:to_i)
@@ -181,7 +181,7 @@
 
                     - else
                       - puts "duplicated.........."
-                    .hidden{ class: "h-#{x_plot}-#{y_plot}", id: "h-#{unit.provider_unit_id}", **(fetch_unit_info_struct_for_ploting(unit)[:data_attributes].except(%i[data-target data-toggle])) }
+                    .hidden{ class: "h-#{x_plot}-#{y_plot}", id: "h-#{unit.provider_unit_id}", **(fetch_unit_info_struct_for_ploting(unit, @floorplans_map[unit.floorplan_id])[:data_attributes].except(%i[data-target data-toggle])) }
                 
                 - if false && community.enable_locks and community.self_tour and community.auto_wayfinding
                   - coordinates_array = []

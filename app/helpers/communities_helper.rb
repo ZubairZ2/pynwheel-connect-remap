@@ -220,9 +220,7 @@ module CommunitiesHelper
     end
   end
 
-  def fetch_unit_info_struct_for_webpage(unit)
-    floorplan = @floorplans.select { |f| f.provider_floorplan_id == unit.floorplan_id }.first
-
+  def fetch_unit_info_struct_for_webpage(unit, floorplan)
     struct = {
       id: unit.id,
       marketing_name: unit.marketing_name,
@@ -295,9 +293,7 @@ module CommunitiesHelper
   end
 
 
-  def fetch_unit_info_struct_for_ploting(unit)
-    floorplan = @floorplans.select { |f| f.provider_floorplan_id == unit.floorplan_id }.first
-
+  def fetch_unit_info_struct_for_ploting(unit, floorplan)
     struct = {
       id: unit.id,
       marketing_name: unit.marketing_name,

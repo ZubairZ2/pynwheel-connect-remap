@@ -143,7 +143,7 @@
                   - if unit.pointer_data.present?
                     - x_plot, y_plot = unit.pointer_data.values_at('x_plot', 'y_plot').map(&:to_i)
                     - if x_plot + y_plot > 0
-                      .hidden{ class: "svg-h-#{x_plot}-#{y_plot}", id: "h-#{unit.provider_unit_id}", **(fetch_unit_info_struct_for_ploting(unit)[:data_attributes].except(%i[data-target data-toggle])), "data-href" => "/communities/#{community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}#{is_svg ? '&svg_deletion=true' : ''}" }
+                      .hidden{ class: "svg-h-#{x_plot}-#{y_plot}", id: "h-#{unit.provider_unit_id}", **(fetch_unit_info_struct_for_ploting(unit, @floorplans_map[unit.floorplan_id])[:data_attributes].except(%i[data-target data-toggle])), "data-href" => "/communities/#{community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}#{is_svg ? '&svg_deletion=true' : ''}" }
               - else is_svg
                 = image_tag floorplate.image? ? floorplate.image.url : "default.jpeg" ,name:"viewArea", id:"viewArea",draggable:"false", class: 'viewArea', data: {'map_id' => "map"}
                 - if community.community_tour.x_plot.to_i + community.community_tour.y_plot.to_i > 0
@@ -205,4 +205,3 @@
   $(document).ready(function() {
     map_marker_color = toRgbColor("#{raw map_marker_color}")
   });
-  
