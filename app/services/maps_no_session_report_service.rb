@@ -28,14 +28,14 @@ class MapsNoSessionReportService < BaseService
         "track_sessions.id IS NULL OR track_sessions.start_datetime NOT BETWEEN ? AND ?",
         @start_date.beginning_of_day, @end_date.end_of_day
       )
-      .select("communities.id, communities.name, communities.email, communities.phone, companies.name AS company_name")
-      .order("companies.name ASC, communities.name ASC") # Sorting by company name, then community name
+      .select("communities.id, communities.name AS community_name, communities.email, communities.phone, companies.name AS company_name")
+      .order("companies.name ASC NULLS LAST, community_name ASC NULLS LAST") # Ensure NULLs are last in sorting
   end
 
   def format_csv(community)
     [
       community.company_name&.strip,
-      community.name&.strip,
+      community.community_name&.strip, # Ensure community name is mapped correctly
       community.email&.strip,
       community.phone&.strip,
     ]
