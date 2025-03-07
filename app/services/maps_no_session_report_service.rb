@@ -1,45 +1,40 @@
 class MapsNoSessionReportService < BaseService
   def initialize
-    @end_date = Time.now.to_date 
+    @end_date = Time.current.to_date
     @start_date = (@end_date - 30.days)
   end
 
   def get_report
-    csv_file = CSV.generate(headers: true) do |csv|
+    CSV.generate(headers: true) do |csv|
       csv << headers
-      communities = get_communities()
-
-      communities.each do |community|
-        if no_track_sessions?(community)
-          csv << formate_csv(community)
-        end
+      get_communities.find_each do |community|
+        csv << format_csv(community)
       end
-
     end
-
-    csv_file
   end
 
   private
 
   def headers
-    %w{Company\ Name Property\ Name Property\ Email Property\ Phone}
+    %w[Company\ Name Property\ Name Property\ Email Property\ Phone]
   end
 
   def get_communities
-    Community.all.active_client_properties.includes(:company, :track_sessions)
+    Community
+      .active_client_properties
+      .joins("LEFT JOIN track_sessions ON track_sessions.community_id = communities.id")
+      .joins("LEFT JOIN companies ON companies.id = communities.company_id")
+      .where(
+        "track_sessions.id IS NULL OR track_sessions.start_datetime NOT BETWEEN ? AND ?",
+        @start_date.beginning_of_day, @end_date.end_of_day
+      )
+      .select("communities.id, communities.name, communities.email, communities.phone, companies.name AS company_name")
+      .order("companies.name ASC, communities.name ASC") # Sorting by company name, then community name
   end
 
-  def no_track_sessions?(community)
-    community.track_sessions
-         .where(track_session_type: "maps")
-         .where(start_datetime: @start_date.beginning_of_day..@end_date.end_of_day)
-         .empty?
-  end
-
-  def formate_csv community
+  def format_csv(community)
     [
-      community&.company&.name,
+      community.company_name&.strip,
       community.name&.strip,
       community.email&.strip,
       community.phone&.strip,
