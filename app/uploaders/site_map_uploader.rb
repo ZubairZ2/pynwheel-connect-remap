@@ -68,7 +68,7 @@ class SiteMapUploader < CarrierWave::Uploader::Base
   end
 
   def image?(file)
-    file.content_type.include?('png') || file.content_type.include?('jpg') || file.content_type.include?('jpeg')
+    file&.content_type&.include?('png') || file&.content_type&.include?('jpg') || file&.content_type&.include?('jpeg')
   end
 
   # Provide a default URL as a default if there hasn't been a file uploaded:

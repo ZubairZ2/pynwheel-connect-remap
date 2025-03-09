@@ -233,12 +233,12 @@
                       - if svg_mode && floorplate.svg_image_url.present?
                         %div{ data: { svg_url: floorplate.svg_image_url, height: floorplate.svg_metadata['height'] || 0, width: floorplate.svg_metadata['width'] || 0 }, style: "position: relative;", class: "map-image-align floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}", id: "f_#{floor}" }
                       - else
-                        = image_tag (floorplate.standard_image_url  || "/assets/default.jpeg"), :class=>"map-image-align floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}",:id=>"f_#{floor}","data-height"=>"#{floorplate.floorplate_image_height()}","data-width"=>"#{floorplate.floorplate_image_width()}"
+                        = image_tag (floorplate.standard_image_url  || "/assets/default.jpeg"), class: "map-image-align floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}", id: "f_#{floor}", data: { height: floorplate.floorplate_image_height(), width: floorplate.floorplate_image_width() }
                   - else
-                    - if svg_mode &&  @community.sitemap.svg_image.url.present?
-                      %div#property-map-image-container{ data: { svg_url: @community.svg_src, height: @community.sitemap.svg_metadata['height'] || 0, width: @community.sitemap.svg_metadata['width'] || 0 } }
+                    - if svg_mode && @community_info&.sitemap&.svg_image.url.present?
+                      %div#property-map-image-container{ data: { svg_url: @community_info.sitemap.svg_image_url, height: @community_info.sitemap.svg_metadata['height'] || 0, width: @community_info.sitemap.svg_metadata['width'] || 0 } }
                     - else
-                      %img.floorplate-image.sitemap-image.map-image-align{alt: "", src: @community.image_src || "/assets/default.jpeg", id: "property-map-image", title: "", "data-height"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.height : nil}", "data-width"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.width : nil}"}/
+                      %img.floorplate-image.sitemap-image.map-image-align{alt: "", src: @community.image_src || "/assets/default.jpeg", id: "property-map-image", title: "", "data-height"=>"#{@community_info.sitemap.present? && @community_info.sitemap.image.present? ? @community_info.sitemap.image.height : nil}", "data-width"=>"#{@community_info.sitemap.present? && @community_info.sitemap.image.present? ? @community_info.sitemap.image.width : nil}"}/
 
                   - unless svg_mode
                     - coordinates_array = []

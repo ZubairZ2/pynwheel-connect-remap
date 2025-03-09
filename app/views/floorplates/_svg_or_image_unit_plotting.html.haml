@@ -139,6 +139,8 @@
             .plot-image{data: {svg_url: is_svg ? floorplate.svg_image.url : nil}, id: is_svg ? 'svg_map' : 'map', style: "min-width: 100%; height: 100%; position: relative" }
               .grid-graph.hidden
               - if is_svg
+                - unless sitemap.svg_image_url.present?
+                  = image_tag "default.jpeg", id: "map_img", name: "viewArea", id: "viewArea", draggable: "false", class: 'viewArea', data: { 'map_id' => "map" }
                 - units_by_plotted_doors_order.each do |unit|
                   - if unit.pointer_data.present?
                     - x_plot, y_plot = unit.pointer_data.values_at('x_plot', 'y_plot').map(&:to_i)

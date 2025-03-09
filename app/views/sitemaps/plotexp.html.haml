@@ -363,7 +363,7 @@
 
               = submit_tag 'Save', class: "hidden"
 
-    - locals = { is_svg: false, units: @units, units_by_plotted_doors_order: @units_by_plotted_doors_order, community: @community, sitemap: @sitemap, all_locks: @all_locks, current_locks_provider: @current_locks_provider, access_points: @access_points, current_user: current_user, units_arr: units_arr }
+    - locals = { is_svg: false, units: @units, units_by_plotted_doors_order: @units_by_plotted_doors_order, community: @community_info, sitemap: @sitemap, all_locks: @all_locks, current_locks_provider: @current_locks_provider, access_points: @access_points, current_user: current_user, units_arr: units_arr }
     = render partial: 'sitemaps/svg_or_image_unit_plotting', locals: locals
 
     %br

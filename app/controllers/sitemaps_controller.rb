@@ -61,10 +61,9 @@ class SitemapsController < ApplicationController
     if @community_info.sitemap.present?
       @sitemap = @community_info.sitemap
     else
-      @sitemap = Sitemap.new(community_id: @community.id)
-      @sitemap.save(validate: false)
+      @sitemap = @community_info.create_sitemap
     end
-
+    
     @community_info.units.where(building: nil).update_all(building: "")
     
     @units = @community_info.units.visible_units.where(floorplate_id: nil).includes(:door)

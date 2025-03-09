@@ -72,7 +72,10 @@
           = render partial: 'shared/zoom_control_buttons'
           .map-block{:style=>"position: unset;"}
             .plot-image{data: {svg_url: is_svg ? floorplate.svg_image_url : nil}, id: is_svg ? 'svg_map' : 'map', style: "min-width: 100%; height: 100%; position: relative" }
-              - unless is_svg
+              - if is_svg
+                - unless sitemap.svg_image_url.present?
+                  = image_tag "default.jpeg", id: "map_img", name: "viewArea", id: "viewArea", draggable: "false", class: 'viewArea', data: { 'map_id' => "map" }
+              - else
                 = image_tag floorplate.image.present? ? floorplate.image.url : "default.jpeg"
 
                 - coordinates_array = []

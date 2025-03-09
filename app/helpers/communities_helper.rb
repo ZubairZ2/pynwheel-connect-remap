@@ -255,7 +255,7 @@ module CommunitiesHelper
       floor: unit.floor,
       sold: unit.sold,
       available: unit.available,
-      provider_floorplan_id: floorplan.provider_floorplan_id,
+      provider_floorplan_id: floorplan&.provider_floorplan_id,
       community_property_id: if @community_info.credential.present? && @community_info.credential.property_id.present?
                                @community_info.credential.property_id
                              else
@@ -311,7 +311,7 @@ module CommunitiesHelper
       floor: unit.floor,
       sold: unit.sold,
       available: unit.available,
-      provider_floorplan_id: floorplan.provider_floorplan_id,
+      provider_floorplan_id: floorplan&.provider_floorplan_id,
       community_property_id: if @community_info.credential.present? && @community_info.credential.property_id.present?
                                @community_info.credential.property_id
                              else
@@ -393,7 +393,7 @@ module CommunitiesHelper
       "toggle": "modal",
       "name": "plot",
       "target": "#svg-markers-modal",
-      "provider": @community.data_provider,
+      "provider": @community_info.data_provider,
       "provider-unit-id": unit.provider_unit_id,
       "title": title,
       "href": "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot",
