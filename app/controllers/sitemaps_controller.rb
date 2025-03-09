@@ -65,7 +65,7 @@ class SitemapsController < ApplicationController
     end
     
     @community_info.units.where(building: nil).update_all(building: "")
-    
+
     @units = @community_info.units.visible_units.where(floorplate_id: nil).includes(:door)
     @units = @community_info.sorted_units_by_marketing_name(@units)
 
@@ -78,7 +78,7 @@ class SitemapsController < ApplicationController
     unless  @units.size > 0
       flash[:error] = "Please import unit data first"
     end
-    
+
     @dimensions = @sitemap.is_ocr_enabled ? s3_img_dimensions(sitemap_image_url(@sitemap)) : {}
     @map_ocr_data = @sitemap.is_ocr_enabled ? @sitemap.map_ocr_data : []
 
@@ -130,22 +130,37 @@ class SitemapsController < ApplicationController
   end
 
   def save_sitemap_image
-    image = MiniMagick::Image.open(params[:file].path)
+    file = params[:file]
+    image = MiniMagick::Image.open(file.path)
+  
     if image.width < 1000 && image.height < 700 && image.type != "SVG"
       flash[:error] = "Too small property map image"
       redirect_to community_sitemaps_path(@community)
     else
-      sitemap = Sitemap.where(community_id: params[:community_id],id: params[:sitemap_id]).first
-      if sitemap.update_attributes(image: params[:file], width: image.width  , height: image.height, map_ocr_data: nil, is_ocr_enabled: false)
-        render :json=>{"status"=>"success"}
+      sitemap = Sitemap.find_by(community_id: params[:community_id], id: params[:sitemap_id])
+  
+      if sitemap
+        sitemap.image = file # Assign the uploaded file to the uploader
+        sitemap.width = image.width
+        sitemap.height = image.height
+        # sitemap.map_ocr_data = nil
+        sitemap.is_ocr_enabled = false
+  
+        if sitemap.save
+          render json: { status: "success" }
+        else
+          render json: { status: "fail" }
+        end
       else
-        render :json=>{"status"=>"fail"}
+        render json: { status: "not_found" }, status: :not_found
       end
     end
   end
 
   def save_sitemap_svg
-    image = MiniMagick::Image.open(params[:file].path)
+    file = params[:file]
+    image = MiniMagick::Image.open(file.path)
+
     if image.type != "SVG"
       flash[:error] = "Image must be of SVG type"
       redirect_to community_sitemaps_path(@community)
@@ -153,11 +168,20 @@ class SitemapsController < ApplicationController
       flash[:error] = "Too small property map image"
       redirect_to community_sitemaps_path(@community)
     else
-      sitemap = Sitemap.where(community_id: params[:community_id],id: params[:sitemap_id]).first
-      if sitemap.update_attributes(svg_image: params[:file], svg_metadata: { height: image.height, width: image.width }, map_ocr_data: nil, is_ocr_enabled: false)
-        render :json=>{"status"=>"success"}
+      sitemap = Sitemap.where(community_id: params[:community_id], id: params[:sitemap_id]).first
+      if sitemap
+        sitemap.svg_image = file # Assign the uploaded file to the uploader
+        sitemap.svg_metadata = { height: image.height, width: image.width }
+        # sitemap.map_ocr_data = nil
+        sitemap.is_ocr_enabled = false
+  
+        if sitemap.save
+          render :json=>{"status"=>"success"}
+        else
+          render :json=>{"status"=>"fail"}
+        end
       else
-        render :json=>{"status"=>"fail"}
+        render json: { status: "not_found" }, status: :not_found
       end
     end
   end
