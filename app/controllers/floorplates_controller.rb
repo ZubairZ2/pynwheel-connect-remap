@@ -24,8 +24,8 @@ class FloorplatesController < ApplicationController
 
   def create
     @floorplate = current_community.floorplates.new(floorplate_params)
-    if params[:floorplate][:svg_image].present?
-      image = MiniMagick::Image.open([:floorplate][:svg_image].path)
+    if floorplate_params[:svg_image].present?
+      image = MiniMagick::Image.open(floorplate_params[:svg_image].path)
       if image.type != "SVG"
         flash[:error] = "Image must be of SVG type"
         render :new
@@ -38,11 +38,11 @@ class FloorplatesController < ApplicationController
         @floorplate.svg_metadata = { width: width, height: height}
       end
     end
-    unless params[:floorplate][:image].present?
+    unless floorplate_params[:image].present?
       flash[:error] = "Image not present."
       render :new
     else
-      image = MiniMagick::Image.open(params[:floorplate][:image].path)
+      image = MiniMagick::Image.open(floorplate_params[:image].path)
       if image.width < 1000 && image.height < 700 && image.type != "SVG"
         flash[:error] = "Too small property map image"
         render :new
