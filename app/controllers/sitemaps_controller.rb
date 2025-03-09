@@ -109,7 +109,7 @@ class SitemapsController < ApplicationController
 
     if @sitemap.image.blank? 
       flash[:error] = "Kindly add Sitemap image first"
-      redirect_to community_sitemaps_path(@community)
+      redirect_to plotexp_community_sitemaps(@community)
     end
 
     @amenity_with_doors = []
@@ -135,7 +135,7 @@ class SitemapsController < ApplicationController
   
     if image.width < 1000 && image.height < 700 && image.type != "SVG"
       flash[:error] = "Too small property map image"
-      redirect_to community_sitemaps_path(@community)
+      redirect_to plotexp_community_sitemaps(@community)
     else
       sitemap = Sitemap.find_by(community_id: params[:community_id], id: params[:sitemap_id])
   
@@ -163,10 +163,10 @@ class SitemapsController < ApplicationController
 
     if image.type != "SVG"
       flash[:error] = "Image must be of SVG type"
-      redirect_to community_sitemaps_path(@community)
+      redirect_to plotexp_community_sitemaps(@community)
     elsif image.width < 1000 && image.height < 700
       flash[:error] = "Too small property map image"
-      redirect_to community_sitemaps_path(@community)
+      redirect_to plotexp_community_sitemaps(@community)
     else
       sitemap = Sitemap.where(community_id: params[:community_id], id: params[:sitemap_id]).first
       if sitemap
