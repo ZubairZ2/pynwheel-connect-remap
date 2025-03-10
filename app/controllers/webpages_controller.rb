@@ -33,7 +33,7 @@ class WebpagesController < ActionController::Base
           this_floorplate_units = community_units.where(floorplate_id: fp.id)
           this_floorplate_amenities = fp.amenities
 
-          if svg_enabled && fp.svg_image_url.present?
+          if svg_enabled && fp.svg_image.url.present?
             this_floorplate_units = this_floorplate_units.where(svg_points_query)
             this_floorplate_amenities = this_floorplate_amenities.where(svg_points_query)
           end
@@ -45,7 +45,7 @@ class WebpagesController < ActionController::Base
         @amenities = floorplates_amenities.flatten
       elsif @community.sitemap.present?
         @amenities = @community_info.amenities
-        if svg_enabled && @community.sitemap.svg_image_url.present?
+        if svg_enabled && @community.sitemap.svg_image.url.present?
           community_units = community_units.where(svg_points_query)
           @amenities = @amenities.where(svg_points_query)
         end
