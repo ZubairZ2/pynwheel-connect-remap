@@ -897,7 +897,7 @@ function click_marker_tag (id, selector) {
   })
 }
 
-function renderChangedUnits(){
+function renderChangedUnits() {
   var element = document.getElementById("units-body");
 
   if (element == null) return;
