@@ -234,7 +234,7 @@
                         %div{ data: { svg_url: floorplate.svg_image_url, height: floorplate.svg_metadata['height'] || 0, width: floorplate.svg_metadata['width'] || 0 }, style: "position: relative;", class: "map-image-align floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}", id: "f_#{floor}" }
                       - else
                         - width, height = [floorplate.floorplate_image_width(), floorplate.floorplate_image_height()]
-                        = image_tag (floorplate.standard_image_url  || "/assets/default.jpeg"), class: "map-image-align sitemap-image floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}", id: "f_#{floor}"
+                        = image_tag (floorplate.standard_image_url  || "/assets/default.jpeg"), class: "map-image-align sitemap-image floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}", id: "f_#{floor}", data: { height: height, width: width }
                   - else
                     - if svg_mode && @community_info&.sitemap&.svg_image.url.present?
                       %div#property-map-image-container{ data: { svg_url: @community_info.sitemap.svg_image_url, height: @community_info.sitemap.svg_metadata['height'] || 0, width: @community_info.sitemap.svg_metadata['width'] || 0 } }
@@ -291,6 +291,7 @@
                     - else
                       = select_tag :filter,  options_for_select([["Sort by"], ["Availability: Soonest to Latest"], ["Availability: Latest to Soonest"], ["Sq Ft: More to Less"], ["Sq Ft: Less to More"]])
                 %div#units-body
+
 
           %footer.c-footer#footer.responsive-content.mobile-footer
             %ul.location-items.location-responsive.responsive-content.responsive-legends.align-home-buttons
@@ -600,7 +601,7 @@
     $('#show-more-price').removeClass('hidden');
     $("#pricing-option").addClass('hidden')
   }); 
-
+  
   if(community_logo == "false" && current_width < 567){
     $(".mobile-trigger").addClass("pt");
   }

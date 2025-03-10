@@ -26,7 +26,6 @@ $(document).ready(function () {
   webCommunity = $("#communityWebpagesData").data("community");
   _3dAmenities = $("#communityWebpagesData").data("amenities");
   _3dConfigurations = $("#communityWebpagesData").data("mapConfigurations");
-  // is_floorplates = $("#communityWebpagesData").data("is_floorplate");
   currency = $("#communityWebpagesData").data("currency");
   
   if (typeof webCommunity !== 'undefined') {
@@ -396,6 +395,13 @@ $(window).bind('load', function () {
   }
 });
 
+function isImageInViewport(img) {
+  const rect = img.getBoundingClientRect();
+  return rect.top >= 0 && rect.left >= 0 &&
+         rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+         rect.right <= (window.innerWidth || document.documentElement.clientWidth) && (rect.height > 0 || rect.width > 0);
+}
+
 function adjustSitmapMarkerPositions() {
   const container = getContainerDimensions();
   const actualImage = getActualImageDimensions();
@@ -413,13 +419,29 @@ function getContainerDimensions() {
 }
 
 function getActualImageDimensions() {
-  const image = $('.floorplate-image');
-  return { width: image.data("width"), height: image.data("height") };
+  const $images = $('.floorplate-image');
+  let result = { width: 0, height: 0}
+  Array.from($images).forEach((image) => {
+    if (isImageInViewport(image)) {
+      result = { width: image.dataset.width, height: image.dataset.height };
+    }
+  })
+  return result;
 }
 
 function getStretchedImageDimensions() {
-  const image = $('.floorplate-image');
-  return { width: image.width(), height: image.height() };
+  const $images = $('.floorplate-image');
+  let result = { width: 0, height: 0}
+  Array.from($images).forEach((image) => {
+    if (isImageInViewport(image)) {
+      const rect = image.getBoundingClientRect();
+      const imageWidth = parseFloat(image.dataset.width) / (parseFloat(image.dataset.height) / rect.height)
+      image.setAttribute('width', imageWidth)
+      result = { width: imageWidth, height: rect.height };
+    }
+  })
+
+  return result;
 }
 
 function calculateDiffs(container, stretched) {
