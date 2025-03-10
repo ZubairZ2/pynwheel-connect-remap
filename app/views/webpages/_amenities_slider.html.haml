@@ -47,18 +47,6 @@
       $(`#amenitySliderModal-${selectedAmenity.id} .am-modal-button-div`).css("visibility", "hidden");
   }
 
-  function openAmenityViewerModal(amenity, galleries) {
-    selectedAmenity = amenity; selectedGalleries = galleries;
-    $(`#amenitySliderModal-${amenity.id}`).modal("show");
-    bindCarousel(amenity.id);
-  }
-
-  function closeAmenityViewerModal(amenityID) {
-    selectedAmenity = null; selectedGalleries = [];
-    $(`#amenitySliderModal-${amenityID}`).modal("close");
-    unbindCarousel(amenityID)
-  }
-
   function bindCarousel(amenityID) {
     $(`#amenity-carousel-${amenityID}`).slick({
       dots: true,

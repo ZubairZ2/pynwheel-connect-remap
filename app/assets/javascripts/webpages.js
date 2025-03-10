@@ -989,6 +989,19 @@ function renderChangedUnits() {
   unitListHover();
 }
 
+
+function openAmenityViewerModal(amenity, galleries) {
+  selectedAmenity = amenity; selectedGalleries = galleries;
+  $(`#amenitySliderModal-${amenity.id}`).modal("show");
+  bindCarousel(amenity.id);
+}
+
+function closeAmenityViewerModal(amenityID) {
+  selectedAmenity = null; selectedGalleries = [];
+  $(`#amenitySliderModal-${amenityID}`).modal("close");
+  unbindCarousel(amenityID)
+}
+
 function amenityHoverEffect (toolTipSpan) {
   toolTipSpan.style.visibility = "visible";
 }
