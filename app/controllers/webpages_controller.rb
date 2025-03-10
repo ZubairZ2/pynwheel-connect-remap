@@ -52,7 +52,7 @@ class WebpagesController < ActionController::Base
       end
 
       community_units = Unit.where(id: community_units.map(&:id))
-      @available_units_and_sold_units = community_units.available_units(@community.units_availability_over_120_days) #+ @community_info.units.are_sold
+      @available_units_and_sold_units = community_units.available_units(svg_enabled, @community.units_availability_over_120_days) #+ @community_info.units.are_sold(svg_enabled)
       if @available_units_and_sold_units.size > 0
         normalize_units
         if @units_with_floorplan_info.present?

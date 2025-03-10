@@ -51,7 +51,17 @@ class Amenity < ApplicationRecord
   has_many :doors, as: :attached_with, dependent: :destroy
   has_one :tour_stop, as: :stop, dependent: :destroy
   
-  scope :plotted_amenities, -> { where("x_plot > ? or y_plot > ?", 0, 0) }
+  scope :has_pointer_x_plot, -> { where("pointer_data->>'x_plot' IS NOT NULL AND (pointer_data->>'x_plot')::integer > ?", 0) }
+  scope :has_pointer_y_plot, -> { where("pointer_data->>'y_plot' IS NOT NULL AND (pointer_data->>'y_plot')::integer > ?", 0) }
+  scope :svg_pointed, -> { has_pointer_x_plot.or(has_pointer_y_plot) }
+
+  scope :plotted_amenities, ->(svg_enabled = false) {
+    if svg_enabled
+      svg_pointed
+    else
+      where("x_plot > ? or y_plot > ?", 0, 0)
+    end
+  }
   validates :image, :presence => {message: "cannot be blank. Please upload Amenity image first."}, if: -> { image.present? }
   after_commit :populate_image_urls, on: [:create,:update]
   after_update :crop_amenity_image
@@ -182,12 +192,12 @@ class Amenity < ApplicationRecord
 
   def filter_amenities_for_plot_removal(amenities, svg_deletion = false)
     if svg_deletion
-      pointer_x_plot, pointer_y_plot = pointer_data.values_at('x_plot', 'y_plot')
+      pointer_x_plot, pointer_y_plot = pointer_data.is_a?(Hash) ? pointer_data.values_at('x_plot', 'y_plot') : [0, 0]
 
       result = amenities.where("pointer_data->>'x_plot' = ? AND pointer_data->>'y_plot' = ?",
                                pointer_x_plot, pointer_y_plot)
       if result.none?
-				tag, tag_id, selector = pointer_data.values_at('tag', 'id', 'selector')
+				tag, tag_id, selector = pointer_data.is_a?(Hash) ? pointer_data.values_at('tag', 'id', 'selector') : [0, 0]
 				key , value = if tag_id.present?
 												['id', tag_id]
 											elsif selector.present?

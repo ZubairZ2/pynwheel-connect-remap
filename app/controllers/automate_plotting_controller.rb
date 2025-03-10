@@ -79,7 +79,7 @@ class AutomatePlottingController < ApplicationController
       #@access_points = @sitemap.access_points
       planned_to_visit_units_ids     = @tour_stops.where(stop_type: "unit", display_stop: true).pluck(:stop_id) rescue []
       planned_to_visit_amenities_ids = @tour_stops.where(stop_type: "amenity",display_stop: true).pluck(:stop_id) rescue []
-      @community_units = @community.units.are_ploted_units.where(floorplate_id: nil).where(id: planned_to_visit_units_ids).order(:building, :unit_type).includes(:door) # only plotted units
+      @community_units = @community.units.are_ploted_units(@community.enable_svg_mode?).where(floorplate_id: nil).where(id: planned_to_visit_units_ids).order(:building, :unit_type).includes(:door) # only plotted units
       # In future we will @unit_with_door it for plotting or delete unit stop
       @unit_with_door = @community_units.map do |unit|
         if planned_to_visit_units_ids.include?(unit.id) 

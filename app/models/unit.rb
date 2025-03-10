@@ -82,23 +82,70 @@ class Unit < ApplicationRecord
   
   scope :visible_units, -> {where(visible: true)}
   
-  scope :are_sold, -> { where("sold = ? and (x_plot > ? or y_plot > ?)", true, 0, 0) }
-  #scope :are_available, -> { where("available = ? and sold = ?", true,false) }
-  scope :past_available_units, -> { where("availability = ? and available_date <= ? and x_plot > ?", "Unoccupied", Date.today, 0) }
-  scope :has_x_plot, -> { where("x_plot > ? and available_date > ? and available_date < ? and available = ?", 0, Date.today, Date.today+2.year,true) }
-  scope :has_y_plot, -> { where("y_plot > ? and available_date > ? and available_date < ? and available = ?", 0, Date.today, Date.today+2.year,true) }
-  scope :ploted_units, -> { has_x_plot.or(has_y_plot) }
-  scope :are_ploted_units, -> { where("(x_plot > ? or y_plot > ?)", 0, 0) }
-  scope :vacant_and_available, -> {past_available_units.where("LOWER(unit_status) IN (?)", UNIT_STATUSES)}
-  # scope :available_units, -> { ploted_units.or(past_available_units).where.not(sold: true) } #Don't fetch units where are sold
-  
-  scope :available_units, ->(units_availability_over_120_days) { 
-    if units_availability_over_120_days
-      ploted_units.or(past_available_units).where.not(sold: true)
+  scope :has_pointer_x_plot, -> { where("pointer_data->>'x_plot' IS NOT NULL AND (pointer_data->>'x_plot')::integer > ?", 0) }
+  scope :has_pointer_y_plot, -> { where("pointer_data->>'y_plot' IS NOT NULL AND (pointer_data->>'y_plot')::integer > ?", 0) }
+  scope :svg_pointed, -> { has_pointer_x_plot.or(has_pointer_y_plot) }
+
+  scope :are_sold, ->(svg_enabled = false) { 
+    sold_units_query = where(sold: true)
+
+    if svg_enabled
+      sold_units_query.svg_pointed
     else
-      ploted_units.or(past_available_units)
-                .where.not(sold: true)
-                .where("available_date <= ?", Date.today + 120.days)
+      sold_units_query.where("x_plot > ? or y_plot > ?", 0, 0)
+    end
+  }
+  scope :past_available_units, ->(svg_enabled = false) { 
+    available_units_query = where("availability = ? and available_date <= ?", "Unoccupied", Date.today)
+
+    if svg_enabled
+      available_units_query.svg_pointed
+    else
+      available_units_query.where("x_plot > ? or y_plot > ?", 0, 0)
+    end
+  }
+  scope :has_x_plot, ->(svg_enabled = false) {
+    available_units_query = where("available_date > ? and available_date < ? and available = ?", Date.today, Date.today + 2.year,true)
+
+    if svg_enabled
+      available_units_query.has_pointer_x_plot
+    else
+      available_units_query.where("x_plot > ?", 0)
+    end
+  }
+  scope :has_y_plot, ->(svg_enabled = false) {
+    available_units_query = where("available_date > ? and available_date < ? and available = ?", Date.today, Date.today + 2.year,true)
+
+    if svg_enabled
+      available_units_query.has_pointer_y_plot
+    else
+      available_units_query.where("y_plot > ?", 0)
+    end
+   }
+  scope :ploted_units, ->(svg_enabled = false) {
+    if svg_enabled
+      svg_pointed
+    else
+      has_x_plot(svg_enabled).or(has_y_plot(svg_enabled))
+    end
+  }
+  scope :are_ploted_units, ->(svg_enabled = false) { 
+    if svg_enabled
+      svg_pointed
+    else
+      where("x_plot > ? or y_plot > ?", 0, 0)
+    end
+  }
+  scope :vacant_and_available, ->(svg_enabled = false) {
+    past_available_units(svg_enabled).where("LOWER(unit_status) IN (?)", UNIT_STATUSES)
+  }
+  scope :available_units, ->(svg_enabled = false, availability_over_120_days = false) { 
+    if availability_over_120_days
+      ploted_units(svg_enabled).or(past_available_units(svg_enabled)).where.not(sold: true)
+    else
+      ploted_units(svg_enabled).or(past_available_units(svg_enabled))
+                               .where.not(sold: true)
+                               .where("available_date <= ?", Date.today + 120.days)
     end
   }
   after_commit :populate_image_urls, on: [:create,:update]

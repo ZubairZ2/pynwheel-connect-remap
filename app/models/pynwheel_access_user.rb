@@ -13,7 +13,7 @@ class PynwheelAccessUser < ApplicationRecord
   after_create :assign_common_access_points
 
   def assign_common_access_points
-    plotted_amenities = self.community.amenities.where("x_plot + y_plot > ?", 0).collect {|amenity| {access_point_id: amenity.id, access_point_type: "amenity"} }
+    plotted_amenities = self.community.amenities.plotted_amenities(self.community.enable_svg_mode?).collect {|amenity| {access_point_id: amenity.id, access_point_type: "amenity"} }
     self.resident_access_points.create(plotted_amenities)
   end
 

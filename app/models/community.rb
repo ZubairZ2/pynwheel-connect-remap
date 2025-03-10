@@ -175,9 +175,9 @@ class Community < ApplicationRecord
     return [] unless customization_enabled?
     
     units_query = if SELF_TOUR_PROVIDERS.include?(self.data_provider)
-                    self.units.vacant_and_available
+                    self.units.vacant_and_available(enable_svg_mode?)
                   else
-                    self.units.available_units(true)
+                    self.units.available_units(enable_svg_mode?, true)
                   end
 
     if self.is_sitemap
@@ -197,7 +197,7 @@ class Community < ApplicationRecord
   end
 
   def property_availbale_amenities
-    plotted_amenities_query = self.amenities.plotted_amenities
+    plotted_amenities_query = self.amenities.plotted_amenities(enable_svg_mode?)
 
     if self.is_sitemap
       amenities_count = plotted_amenities_query
@@ -225,7 +225,7 @@ class Community < ApplicationRecord
   end
 
   def plotted_units
-    # self&.units&.are_ploted_units
+    # self&.units&.are_ploted_units(enable_svg_mode?)
     self&.units - self&.community_tour&.unit_tour_stops rescue []
   end
 

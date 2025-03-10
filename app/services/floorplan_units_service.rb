@@ -13,7 +13,7 @@ class FloorplanUnitsService < BaseService
 
     if floorplan.present?
       if SELF_TOUR_PROVIDERS.include?(@community.data_provider)
-        units = units.vacant_and_available
+        units = units.vacant_and_available(@community.enable_svg_mode?)
       end
 
       unless @community.is_sitemap

@@ -25,7 +25,7 @@ class NotifyManagerService < BaseService
 
   def notify_manager(updated_units)
 
-    available_units = @community.units.vacant_and_available
+    available_units = @community.units.vacant_and_available(@community.enable_svg_mode?)
 
     if updated_units.present? && available_units.present?
       recipients = [@community.email, @community.property_manager_email].uniq
@@ -40,7 +40,7 @@ class NotifyManagerService < BaseService
   private
 
   def community_units_updated
-    after_updation_units = Unit.where(id: @before_updation_units.keys).available_units(true)
+    after_updation_units = Unit.where(id: @before_updation_units.keys).available_units(@community.enable_svg_mode?, true)
     updated_units = []
     after_updation_units.each do |updated_unit|
       if updated_unit.available_date.present? && updated_unit.available_date <= Date.today
