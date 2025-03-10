@@ -113,7 +113,7 @@ class SitemapsController < ApplicationController
     end
 
     @amenity_with_doors = []
-    @amenities_doors = @sitemap.amenities.includes(:doors)
+    @amenities_doors = @sitemap.amenities.includes(:doors, :amenity_galleries)
 
     @amenities_doors.each do |amenity|    # following json is created same as with unit to reuse the unit's code.
         response = amenity.ordered_doors.map { |door| { unit_info: { unit: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.id, x_plot: amenity.x_plot, y_plot: amenity.x_plot }, door: door }}}
@@ -159,7 +159,14 @@ class SitemapsController < ApplicationController
 
   def save_sitemap_svg
     file = params[:file]
-    image = MiniMagick::Image.open(file.path)
+    begin
+      image = MiniMagick::Image.open(file.path)
+    rescue
+      image = nil
+      flash[:error] = "SVG wan unable to process. Please upload a valid SVG file."
+      redirect_to plotexp_community_sitemaps(@community)
+      return
+    end
 
     if image.type != "SVG"
       flash[:error] = "Image must be of SVG type"

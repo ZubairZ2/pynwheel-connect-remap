@@ -13,7 +13,7 @@
               %i.fa.fa-close
     
       .modal-body
-        - if galleries.count > 0
+        - if galleries.length > 0
           .amenity-carousel{id: "amenity-carousel-#{amenity.id}"}
             = image_tag amenity&.standard_image_url, class: "amenity-modal-image"
             - galleries.each do |gallery_image|

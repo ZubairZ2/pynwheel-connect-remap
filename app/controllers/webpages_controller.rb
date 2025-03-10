@@ -15,13 +15,12 @@ class WebpagesController < ActionController::Base
     Favorite.create(session_id: cookies[:webpages_session_id],unit_ids: []) if cookies[:webpages_session_id].nil?
     @scheduler_widget_link = get_scheduler_link
     @units_with_floorplan_info = []
-    @community_info = Community.includes(:credential,:floorplans,{sitemap: [:amenities]},{floorplates: [:amenities]},{units: [:floorplate]}).find(params[:community_id])
+    @community_info = Community.includes(:credential,:floorplans,{sitemap: {amenities: :amenity_galleries}},{floorplates: {amenities: :amenity_galleries}},{units: [:floorplate]}).find(params[:community_id])
     @floorplans = @community_info.floorplans
     @floorplans_map = @floorplans.index_by(&:provider_floorplan_id)
     svg_enabled = @community_info.enable_svg_mode?
     svg_points_query = "pointer_data->>'tag' IS NOT NULL AND pointer_data->>'tag' <> ''"
     community_units = @community_info.units
-    @amenities = @community_info.amenities
 
     unless @community_info.locked
       if @community_info.has_floorplates?
@@ -45,6 +44,7 @@ class WebpagesController < ActionController::Base
         community_units = floorplates_units.flatten
         @amenities = floorplates_amenities.flatten
       elsif @community.sitemap.present?
+        @amenities = @community_info.sitemap.amenities
         if svg_enabled && @community.sitemap.svg_image_url.present?
           community_units = community_units.where(svg_points_query)
           @amenities = @amenities.where(svg_points_query)
