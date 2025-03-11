@@ -2118,6 +2118,7 @@ function display2DMap() {
     $(".custom-select").change(() => {
       renderChangedUnits();
       setPointersCoordinates();
+      setAmenitiesCoordinates();
     });
   }
 }

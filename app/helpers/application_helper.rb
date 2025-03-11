@@ -289,6 +289,8 @@ module ApplicationHelper
   end
 
   def determine_available_date(date)
+    return unless date
+
     if date < Date.today
       "Now"
     else
