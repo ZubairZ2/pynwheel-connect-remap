@@ -7,7 +7,8 @@ class MapsNoSessionReportService < BaseService
   def get_report
     CSV.generate(headers: true) do |csv|
       csv << headers
-      get_communities.find_each do |community|
+      communities = get_communities
+      communities.each do |community|
         csv << format_csv(community)
       end
     end
@@ -22,22 +23,23 @@ class MapsNoSessionReportService < BaseService
   def get_communities
     Community
       .active_client_properties
-      .joins("LEFT JOIN track_sessions ON track_sessions.community_id = communities.id")
+      .joins("LEFT JOIN (
+        SELECT DISTINCT community_id 
+        FROM track_sessions 
+        WHERE start_datetime BETWEEN '#{@start_date.beginning_of_day}' AND '#{@end_date.end_of_day}'
+      ) AS recent_sessions ON recent_sessions.community_id = communities.id")
       .joins("LEFT JOIN companies ON companies.id = communities.company_id")
-      .where(
-        "track_sessions.id IS NULL OR track_sessions.start_datetime NOT BETWEEN ? AND ?",
-        @start_date.beginning_of_day, @end_date.end_of_day
-      )
-      .select("communities.id, communities.name AS community_name, communities.email, communities.phone, companies.name AS company_name")
-      .order("companies.name ASC NULLS LAST, community_name ASC NULLS LAST") # Ensure NULLs are last in sorting
-  end
+      .where("recent_sessions.community_id IS NULL")
+      .order("companies.name ASC NULLS LAST, communities.name ASC NULLS LAST")
+      .pluck("companies.name", "communities.name", "communities.email", "communities.phone") 
+  end  
 
   def format_csv(community)
     [
-      community.company_name&.strip,
-      community.community_name&.strip, # Ensure community name is mapped correctly
-      community.email&.strip,
-      community.phone&.strip,
+      community[0],
+      community[1],
+      community[2],
+      community[3],
     ]
   end
 end
