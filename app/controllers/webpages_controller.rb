@@ -130,7 +130,7 @@ class WebpagesController < ActionController::Base
     one_twenty_days = today + 120.days;
 
     @units_with_floorplan_info.each do |available_unit|
-      available_date = available_unit[:available_date]
+      available_date = available_unit[:available_date] || Date.new(0)
       if (available_date <= today)
         @available_units << ["Now", "now"]
       end
