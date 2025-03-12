@@ -200,7 +200,7 @@ function processBlock(svgElement, item, options, dataset = null) {
       return;
     }
   } catch (e) {
-    console.error(e);
+    console.error("Duplicate not found.", e);
   }
 
   // let clonedGroup = document.querySelector('g#cloned-units-amenitites');
@@ -239,10 +239,10 @@ function processBlock(svgElement, item, options, dataset = null) {
 
   const $duplicateBlock = $(duplicateBlock);
   $duplicateBlock.on("mouseenter", function () {
-    this.style.cursor = 'pointer';
+    this.style.cursor = "pointer";
   });
   $duplicateBlock.on("mouseleave", function () {
-    this.style.cursor = 'default';
+    this.style.cursor = "default";
   });
 
   switch (cloneClass) {
@@ -381,7 +381,11 @@ function isValidShape(shape, parent = false) {
     const parentId = parentElement.id?.toLowerCase();
 
     if (parentElement.tagName.toLowerCase() === "g") {
-      if (parentId?.startsWith("amenities") || parentId?.startsWith("units") || parentId?.startsWith("amenity_outlines"))
+      if (
+        parentId?.startsWith("amenities") ||
+        parentId?.startsWith("units") ||
+        parentId?.startsWith("amenity_outlines")
+      )
         return true;
       else if (
         parentId?.includes("outlines") ||

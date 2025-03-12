@@ -143,7 +143,7 @@
           = render partial: 'shared/zoom_control_buttons'
           .mapLoading.hidden
           .map-block{style: "position: unset"}
-            .plot-image{ data: { svg_url: is_svg ? sitemap.svg_image.url : nil }, id: is_svg ? 'svg_map' : 'map', style: "min-width: 100%; height: 100%; position: relative" }
+            .plot-image{ data: { svg_url: is_svg ? sitemap.svg_image.url : nil }, id: is_svg ? 'svg_map' : 'map', style: "min-width: 100%; height: max-content; position: relative" }
               .grid-graph.hidden
               - if is_svg
                 - unless sitemap.svg_image.url.present?

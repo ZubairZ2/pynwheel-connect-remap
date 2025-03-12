@@ -150,12 +150,17 @@ $(window).bind('load', function () {
               else {
                 button_style = "btn-default"
               }
-              $('.unit-buttons').removeClass('hidden');
 
               result = ""
               for (const key in unit.data_attributes) {
                 result = `${result} ${key}="${unit.data_attributes[key]}"`
               }
+
+              if (has_floorplate.toString() == "true" && unit.floor != parseInt(current_floor)) {
+                return;
+              }
+
+              $('.unit-buttons').removeClass('hidden');
               $('.unit-buttons').append('<button class="btn modal-unit-button ml-5 ' + button_style + '" type="button" ' + result + ' onclick="setUnitAttributes(this, event)">' + unit.data_attributes['data-title'] + '</button>');
             });
           }
@@ -1076,9 +1081,10 @@ function unitListHover() {
 
       Array.from(all_markers).forEach((marker) => {
         if (
-          id === `unit_${marker.dataset.unitId}` ||
-          `${pointerData.id}_cloned` === marker.id ||
-          pointerData.selector === marker.id
+          isVisibleSVGElement(marker) &&
+          (id === `unit_${marker.dataset.unitId}` ||
+            `${pointerData.id}_cloned` === marker.id ||
+            pointerData.selector === marker.id)
         ) {
           let selectedMarker = marker;
           if (selectedMarker.classList.contains("overlapping-unit")) {
