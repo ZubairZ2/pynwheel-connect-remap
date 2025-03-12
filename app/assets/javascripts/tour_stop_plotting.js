@@ -177,7 +177,7 @@ $(document).ready(function () {
             if (svgMode) {
                 if (e.currentTarget.id !== "svg_map")
                     return;
-      
+
                 const { element, centerPoint } = getSvgClickedElementWithCenterPoint('#svg_map.plot-image', e);
                 if (!element) {
                     return;

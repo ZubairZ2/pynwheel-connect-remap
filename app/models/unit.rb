@@ -123,11 +123,7 @@ class Unit < ApplicationRecord
     end
    }
   scope :ploted_units, ->(svg_enabled = false) {
-    if svg_enabled
-      svg_pointed
-    else
-      has_x_plot(svg_enabled).or(has_y_plot(svg_enabled))
-    end
+    has_x_plot(svg_enabled).or(has_y_plot(svg_enabled))
   }
   scope :are_ploted_units, ->(svg_enabled = false) { 
     if svg_enabled

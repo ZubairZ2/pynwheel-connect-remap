@@ -19,7 +19,6 @@ class WebpagesController < ActionController::Base
     @floorplans = @community_info.floorplans
     @floorplans_map = @floorplans.index_by(&:provider_floorplan_id)
     svg_enabled = @community_info.enable_svg_mode?
-    svg_points_query = "pointer_data->>'tag' IS NOT NULL AND pointer_data->>'tag' <> ''"
     community_units = @community_info.units
 
     unless @community_info.locked
@@ -33,11 +32,6 @@ class WebpagesController < ActionController::Base
           this_floorplate_units = community_units.where(floorplate_id: fp.id)
           this_floorplate_amenities = fp.amenities
 
-          if svg_enabled && fp.svg_image.url.present?
-            this_floorplate_units = this_floorplate_units.where(svg_points_query)
-            this_floorplate_amenities = this_floorplate_amenities.where(svg_points_query)
-          end
-
           floorplates_units << this_floorplate_units
           floorplates_amenities << this_floorplate_amenities
         end
@@ -45,15 +39,11 @@ class WebpagesController < ActionController::Base
         @amenities = floorplates_amenities.flatten
       elsif @community.sitemap.present?
         @amenities = @community_info.amenities
-        if svg_enabled && @community.sitemap.svg_image.url.present?
-          community_units = community_units.where(svg_points_query)
-          @amenities = @amenities.where(svg_points_query)
-        end
       end
 
-      community_units = Unit.where(id: community_units.map(&:id))
+      community_units = Unit.where(id: community_units.map(&:id)).includes(:floorplate)
       @available_units_and_sold_units = community_units.available_units(svg_enabled, @community.units_availability_over_120_days) #+ @community_info.units.are_sold(svg_enabled)
-      if @available_units_and_sold_units.size > 0
+      if @available_units_and_sold_units.length > 0
         normalize_units
         if @units_with_floorplan_info.present?
           build_square_feet_range
@@ -211,14 +201,16 @@ class WebpagesController < ActionController::Base
   end
 
   def favorites
-    begin
-      @scheduler_widget_link = get_scheduler_link
-      @favorite = Favorite.find_by_session_id(cookies[:webpages_session_id])
-      @units = Unit.where(id: JSON.parse(cookies[:favorite_unit_ids]),community_id: params[:community_id]).where.not(available_date: nil)
-      @fav_units_info = @units.to_json 
-      @floorplans = Floorplan.where(provider_floorplan_id: @units.map(&:floorplan_id),community_id: params[:community_id])
-    rescue => ex
-    end
+    @scheduler_widget_link = get_scheduler_link
+    @favorite = Favorite.find_by_session_id(cookies[:webpages_session_id])
+    @units = Unit.where(id: JSON.parse(cookies[:favorite_unit_ids]),community_id: params[:community_id]).where.not(available_date: nil)
+    @fav_units_info = @units.to_json 
+    @floorplans = Floorplan.where(provider_floorplan_id: @units.map(&:floorplan_id),community_id: params[:community_id])
+  rescue => e
+    puts e.message
+    puts e.backtrace
+    flash[:error] = "Error while loading the favorites."
+    redirect_back(fallback_location:"/")
   end
 
   def favorites_share_link

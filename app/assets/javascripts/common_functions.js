@@ -1,3 +1,5 @@
+var VALID_SVG_SHAPES = ["polygon", "rect", "ellipse", "circle"];
+
 var has_floorplate =
   typeof has_floorplate !== "undefined" ? has_floorplate : false;
 var svgMode = typeof svgMode !== "undefined" ? svgMode : false;
@@ -73,7 +75,12 @@ function touchHandler(event) {
 
 async function fetchSVG(
   dataSetSelector,
-  options = { svgPosition: 0, activateZoom: false, floor: 0 }
+  options = {
+    svgPosition: 0,
+    activateZoom: false,
+    setWebpageImageHeight: false,
+    floor: 0,
+  }
 ) {
   const container = document.querySelector(dataSetSelector);
   const imageUrl = container?.dataset.svgUrl;
@@ -82,6 +89,7 @@ async function fetchSVG(
   if (!imageUrl?.endsWith(".svg")) return;
 
   try {
+    $(".divLoading").addClass("hidden");
     const response = await fetch(imageUrl);
     if (!response.ok)
       throw new Error(`Failed to fetch SVG: ${response.statusText}`);
@@ -178,10 +186,22 @@ function processBlock(svgElement, item, options, dataset = null) {
   const { cloneClass, tooltip, additionalClasses } = options;
   let { onclick, onmouseenter, onmouseleave } = options;
 
-  const clonedSelector = selector.endsWith("_cloned")
-    ? selector
-    : `${selector}_cloned`;
-  const existingDuplicate = svgElement.getElementById(clonedSelector);
+  try {
+    const clonedSelector = selector.endsWith("_cloned")
+      ? selector
+      : `${selector}_cloned`;
+
+    const existingDuplicate =
+      svgElement.getElementById(clonedSelector) ||
+      svgElement.querySelector(clonedSelector);
+
+    if (existingDuplicate) {
+      $(existingDuplicate).removeClass("hidden");
+      return;
+    }
+  } catch (e) {
+    console.error(e);
+  }
 
   // let clonedGroup = document.querySelector('g#cloned-units-amenitites');
   // if (!clonedGroup) {
@@ -190,76 +210,78 @@ function processBlock(svgElement, item, options, dataset = null) {
   //   svgElement.insertAdjacentElement('beforeend', clonedGroup);
   // }
 
-  if (existingDuplicate) {
-    $(existingDuplicate).removeClass("hidden");
-  } else {
-    const duplicateBlock = block.cloneNode(true);
-    if (data_attributes) {
-      Object.entries(data_attributes).forEach(([key, value]) => {
-        if (key.includes("href") && value.includes("remove_")) {
-          let [mainUrl, queryParams = ""] = value.split("?");
-          if (queryParams) {
-            if (!queryParams.includes("svg_deletion=true"))
-              queryParams = `${queryParams}&svg_deletion=true`;
-          } else queryParams = "svg_deletion=true";
+  const duplicateBlock = block.cloneNode(true);
+  if (data_attributes) {
+    Object.entries(data_attributes).forEach(([key, value]) => {
+      if (key.includes("href") && value.includes("remove_")) {
+        let [mainUrl, queryParams = ""] = value.split("?");
+        if (queryParams) {
+          if (!queryParams.includes("svg_deletion=true"))
+            queryParams = `${queryParams}&svg_deletion=true`;
+        } else queryParams = "svg_deletion=true";
 
-          value = `${mainUrl}?${queryParams}`;
-        }
-        duplicateBlock.setAttribute(key, value);
-      });
-    }
-    duplicateBlock.setAttribute("id", `${id || selector}_cloned`);
-    duplicateBlock.classList.add(cloneClass, ...(additionalClasses || []));
-
-    block.style.fill = "";
-    duplicateBlock.setAttribute("fill", map_marker_color);
-    if (data_attributes) {
-      const titleEl = document.createElement("title");
-      titleEl.innerText =
-        data_attributes["data-title"] || data_attributes["title"];
-      duplicateBlock.appendChild(titleEl);
-    }
-
-    const $duplicateBlock = $(duplicateBlock);
-
-    switch (cloneClass) {
-      case "cloned-amenity":
-        if (tooltip) {
-          const { x, y } = block.getBoundingClientRect();
-          const toolTipSpan = document.createElement("span");
-          toolTipSpan.classList.add("amenityTooltipText");
-          toolTipSpan.innerHTML = `
-            <h2 style="display: ${rest.show_name ? "block" : "none"}">
-              ${rest.name}
-            </h2>
-            <img src="${rest.image_url}" alt="Image Title">
-          `;
-          toolTipSpan.style.position = "absolute";
-          toolTipSpan.style.top = `${y - 92}px`;
-          toolTipSpan.style.left = `${x - 53}px`;
-          svgElement.insertAdjacentElement("afterend", toolTipSpan);
-
-          if (onmouseenter)
-            $duplicateBlock.on("mouseenter", () => onmouseenter(toolTipSpan));
-          if (onmouseleave)
-            $duplicateBlock.on("mouseleave", () => onmouseleave(toolTipSpan));
-        }
-
-        if (onclick) $duplicateBlock.on("click", () => onclick(rest));
-
-        break;
-      default:
-        if (onclick) $duplicateBlock.on("click", onclick);
-        if (onmouseenter) $duplicateBlock.on("mouseenter", onmouseenter);
-        if (onmouseleave) $duplicateBlock.on("mouseleave", onmouseleave);
-        break;
-    }
-
-    $duplicateBlock.removeClass("hidden");
-
-    block.parentElement.appendChild(duplicateBlock);
-    moveTextGroupsToEnd(block.parentElement);
+        value = `${mainUrl}?${queryParams}`;
+      }
+      duplicateBlock.setAttribute(key, value);
+    });
   }
+  duplicateBlock.setAttribute("id", `${id || selector}_cloned`);
+  duplicateBlock.classList.add(cloneClass, ...(additionalClasses || []));
+
+  block.style.fill = "";
+  duplicateBlock.setAttribute("fill", map_marker_color);
+  if (data_attributes) {
+    const titleEl = document.createElement("title");
+    titleEl.innerText =
+      data_attributes["data-title"] || data_attributes["title"];
+    duplicateBlock.appendChild(titleEl);
+  }
+
+  const $duplicateBlock = $(duplicateBlock);
+  $duplicateBlock.on("mouseenter", function () {
+    this.style.cursor = 'pointer';
+  });
+  $duplicateBlock.on("mouseleave", function () {
+    this.style.cursor = 'default';
+  });
+
+  switch (cloneClass) {
+    case "cloned-amenity":
+      if (tooltip) {
+        const { x, y } = block.getBoundingClientRect();
+        const toolTipSpan = document.createElement("span");
+        toolTipSpan.classList.add("amenityTooltipText");
+        toolTipSpan.innerHTML = `
+          <h2 style="display: ${rest.show_name ? "block" : "none"}">
+            ${rest.name}
+          </h2>
+          <img src="${rest.image_url}" alt="Image Title">
+        `;
+        toolTipSpan.style.position = "absolute";
+        toolTipSpan.style.top = `${y - 92}px`;
+        toolTipSpan.style.left = `${x - 53}px`;
+        svgElement.insertAdjacentElement("afterend", toolTipSpan);
+
+        if (onmouseenter)
+          $duplicateBlock.on("mouseenter", () => onmouseenter(toolTipSpan));
+        if (onmouseleave)
+          $duplicateBlock.on("mouseleave", () => onmouseleave(toolTipSpan));
+      }
+
+      if (onclick) $duplicateBlock.on("click", () => onclick(rest));
+
+      break;
+    default:
+      if (onclick) $duplicateBlock.on("click", onclick);
+      if (onmouseenter) $duplicateBlock.on("mouseenter", onmouseenter);
+      if (onmouseleave) $duplicateBlock.on("mouseleave", onmouseleave);
+      break;
+  }
+
+  $duplicateBlock.removeClass("hidden");
+
+  block.parentElement.appendChild(duplicateBlock);
+  moveTextGroupsToEnd(block.parentElement);
 }
 
 function moveTextGroupsToEnd(parentElement) {
@@ -353,36 +375,58 @@ function getPolygonArea(polygon) {
   return Math.abs(area) / 2;
 }
 
-function findByShape(svg, svgPoint, shape) {
-  let result = null;
+function isValidShape(shape, parent = false) {
+  if (VALID_SVG_SHAPES.includes(shape.tagName.toLowerCase()) || parent) {
+    const parentElement = shape.parentElement;
+    const parentId = parentElement.id?.toLowerCase();
 
-  switch (shape) {
-    case "rect":
-    case "circle":
-    case "ellipse":
-      // .reverse() is for getting the top most element
-      result = Array.from(svg.querySelectorAll(shape))
-        .reverse()
-        .find(
-          (svgShape) =>
-            isValidShape(svgShape) &&
-            window[`isPointIn${capitalize(shape)}`](svgPoint, svgShape)
-        );
-      break;
-    case "polygon":
-      const polygons = Array.from(svg.querySelectorAll("polygon"))
-        .filter(
-          (polygon) =>
-            isValidShape(polygon) && isPointInPolygon(svgPoint, polygon)
-        )
-        .map((polygon) => ({ polygon, area: getPolygonArea(polygon) }));
+    if (parentElement.tagName.toLowerCase() === "g") {
+      if (parentId?.startsWith("amenities") || parentId?.startsWith("units") || parentId?.startsWith("amenity_outlines"))
+        return true;
+      else if (
+        parentId?.includes("outlines") ||
+        parentId?.includes("label") ||
+        parentId?.includes("text") ||
+        parentId?.includes("icon")
+      )
+        return false;
 
-      if (polygons.length > 0) {
-        result = polygons.sort((a, b) => a.area - b.area).shift().polygon;
-      }
+      return isValidShape(parentElement, true);
+    }
   }
 
-  return result;
+  return false;
+}
+
+function isVisibleSVGElement(svgElement) {
+  return (
+    svgElement.getAttribute("display") !== "none" &&
+    window.getComputedStyle(svgElement).display !== "none" &&
+    window.getComputedStyle(svgElement).visibility !== "hidden"
+  );
+}
+
+function allSVGParentsVisible(svgElement) {
+  const parentElement = svgElement.parentElement;
+  if (parentElement.tagName.toLowerCase() === "svg") {
+    return true;
+  } else {
+    return (
+      isVisibleSVGElement(parentElement) && allSVGParentsVisible(parentElement)
+    );
+  }
+}
+
+function isMarkableSVGShape(svgShape, svgPoint) {
+  const shapeName = svgShape.tagName.toLowerCase();
+  const pointVerifierFunction = window[`isPointIn${capitalize(shapeName)}`];
+  return (
+    isValidShape(svgShape) &&
+    pointVerifierFunction &&
+    pointVerifierFunction(svgPoint, svgShape) &&
+    isVisibleSVGElement(svgShape) &&
+    allSVGParentsVisible(svgShape)
+  );
 }
 
 function getSvgClickedElementWithCenterPoint(svgParentSelector, e) {
@@ -401,34 +445,20 @@ function getSvgClickedElementWithCenterPoint(svgParentSelector, e) {
   point.y = e.clientY;
 
   const svgPoint = point.matrixTransform(svg.getScreenCTM().inverse());
+  const svgShape = e.target;
 
-  let resultingElement = findByShape(svg, svgPoint, "rect");
-
-  if (!resultingElement) {
-    resultingElement = findByShape(svg, svgPoint, "polygon");
-  }
-
-  if (!resultingElement) {
-    resultingElement = findByShape(svg, svgPoint, "ellipse");
-  }
-
-  if (!resultingElement) {
-    resultingElement = findByShape(svg, svgPoint, "circle");
-  }
-
-  const centerPoint = {};
-
-  if (resultingElement) {
+  if (isMarkableSVGShape(svgShape, svgPoint)) {
     const svgRect = svg.getBoundingClientRect();
-    const elRect = resultingElement.getBoundingClientRect() || { x: 0, y: 0 };
+    const elRect = svgShape.getBoundingClientRect() || { x: 0, y: 0 };
+    const centerPoint = {};
 
     centerPoint.x = (elRect.x + elRect.width / 2 - svgRect.x) * scaleFactor;
     centerPoint.y = (elRect.y + elRect.height / 2 - svgRect.y) * scaleFactor;
+    return { element: svgShape, centerPoint };
   } else {
     $("#invalid-svg-shape").modal("show");
+    return { element: null, centerPoint: {} };
   }
-
-  return { element: resultingElement, centerPoint };
 }
 
 function getElementSelector(element) {
@@ -466,11 +496,23 @@ function setSVG(container, svgElement, options) {
     svgElement.setAttribute(key, value)
   );
 
+  const $svgElement = $(svgElement);
   if (options.activateHoverEffect) {
-    const $shapes = $(svgElement).find("polygon, rect, circle, ellipse");
+    const $shapes = $svgElement.find(VALID_SVG_SHAPES.join(", "));
 
-    $shapes.on("mouseenter", function () {
-      if (addmode && isValidShape(this)) this.style.fill = map_marker_color;
+    $shapes.on("mouseenter", function (e) {
+      if (addmode && isValidShape(this)) {
+        const point = svgElement.createSVGPoint();
+        point.x = e.clientX;
+        point.y = e.clientY;
+
+        const svgPoint = point.matrixTransform(
+          svgElement.getScreenCTM().inverse()
+        );
+
+        if (isMarkableSVGShape(this, svgPoint))
+          this.style.fill = map_marker_color;
+      }
     });
 
     $shapes.on("mouseleave", function () {
@@ -496,20 +538,9 @@ function setSVG(container, svgElement, options) {
             ...childrenArray.slice(svgPosition),
           ];
     container.append(...newChildren);
+    if (options.setWebpageImageHeight)
+      setWebpageImageHeight($(container).find("svg"));
   }
-}
-
-function isValidShape(shape) {
-  const parentElement = shape.parentElement;
-  if (parentElement.tagName.toLowerCase() === "g") {
-    if (
-      parentElement.id?.toLowerCase().startsWith("amenities") ||
-      parentElement.id?.toLowerCase().startsWith("units")
-    )
-      return true;
-    return isValidShape(parentElement);
-  }
-  return false;
 }
 
 function toRgbColor(color) {

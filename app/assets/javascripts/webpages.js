@@ -397,9 +397,7 @@ $(window).bind('load', function () {
 
 function isImageInViewport(img) {
   const rect = img.getBoundingClientRect();
-  return rect.top >= 0 && rect.left >= 0 &&
-         rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-         rect.right <= (window.innerWidth || document.documentElement.clientWidth) && (rect.height > 0 || rect.width > 0);
+  return rect.top >= 0 && rect.left >= 0 && (rect.height > 0 || rect.width > 0);
 }
 
 function adjustSitmapMarkerPositions() {

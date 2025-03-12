@@ -73,6 +73,8 @@
       { svgPosition: 1, activateHoverEffect: true }
     );
 
+    $(".divLoading").removeClass("hidden");
+    
     if (parsedSVGs.length) {
       setCoordinates(mapped_units, {
         cloneClass: "cloned-unit",
