@@ -405,7 +405,6 @@
         array.push(fetchSVG(`#f_${floor}`,
         { 
           svgPosition: 0,
-          setWebpageImageHeight: true,
           floor
         }))
       }
@@ -414,8 +413,7 @@
       await fetchSVG(
         "#property-map-image-container",
         { 
-          svgPosition: 0,
-          setWebpageImageHeight: true
+          svgPosition: 0
         }
       )
     }
