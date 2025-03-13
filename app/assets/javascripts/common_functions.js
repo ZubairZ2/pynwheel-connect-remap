@@ -200,7 +200,6 @@ function processBlock(svgElement, item, options, dataset = null) {
   if (!block) return;
 
   const { cloneClass, tooltip, additionalClasses } = options;
-  let duplicateExists = false;
   try {
     const clonedSelector = selector.endsWith("_cloned")
       ? selector
@@ -210,13 +209,8 @@ function processBlock(svgElement, item, options, dataset = null) {
       svgElement.getElementById(clonedSelector) ||
       svgElement.querySelector(clonedSelector);
 
-    if (existingDuplicate) {
-      if (parseInt(existingDuplicate.dataset.unitId) === parseInt(item.id)) {
-        return;
-      } else {
-        duplicateExists = true;
-        $(existingDuplicate).removeClass("hidden");
-      }
+    if (existingDuplicate && parseInt(existingDuplicate.dataset.unitId) === parseInt(item.id)) {
+      $(existingDuplicate).removeClass("hidden");
     }
   } catch (e) {
     console.error("Duplicate not found.", e);
