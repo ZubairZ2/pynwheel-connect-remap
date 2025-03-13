@@ -98,7 +98,7 @@ async function fetchSVG(
   if (!imageUrl?.endsWith(".svg")) return;
 
   try {
-    $(".divLoading").addClass("hidden");
+    $(".divLoading").removeClass("hidden");
     const response = await fetch(imageUrl);
     if (!response.ok)
       throw new Error(`Failed to fetch SVG: ${response.statusText}`);
@@ -110,12 +110,12 @@ async function fetchSVG(
     parsedSVGs.push(svgElement);
     setSVG(container, svgElement, options);
     if (options.turnoffLoader) {
-      $(".divLoading").removeClass("hidden");
+    $(".divLoading").addClass("hidden");
     }
   } catch (error) {
     console.error("Error loading SVG:", error);
     if (options.turnoffLoader) {
-      $(".divLoading").removeClass("hidden");
+    $(".divLoading").addClass("hidden");
     }
   }
 }
