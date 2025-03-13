@@ -241,7 +241,7 @@
                     - if svg_mode && @community_info&.sitemap&.svg_image.url.present?
                       %div#property-map-image-container{ data: { svg_url: @community_info.sitemap.svg_image.url, height: @community_info.sitemap.svg_metadata['height'] || 0, width: @community_info.sitemap.svg_metadata['width'] || 0 } }
                     - else
-                      - width, height = @community_info.sitemap.present? && @community_info.sitemap.image.present? ? [@community_info.sitemap.image.width, @community_info.sitemap.image.height] : [nil, nil]
+                      - width, height = @community_info.sitemap.present? && @community_info.sitemap.image.present? ? [@community_info.sitemap.image.width || 0, @community_info.sitemap.image.height || 0] : [0, 0]
                       %img.floorplate-image.sitemap-image.map-image-align{alt: "", src: @community.image_src || "/assets/default.jpeg", id: "property-map-image", title: "", data: { height: height, width: width } }
 
                   = render partial: 'webpages/units_and_amenity_markers', locals: locals_for_markers

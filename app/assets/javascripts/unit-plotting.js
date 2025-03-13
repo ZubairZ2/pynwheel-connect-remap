@@ -354,14 +354,19 @@ function doDraggable () {
         stack: ".marker",
         // get the initial X and Y position when dragging starts
         start: function (event, ui) {
-            const zoomContainer = event.target.closest('div.plot-image');
-            const key = `${zoomContainer.tagName.toLowerCase()}-${zoomContainer.id}`;
-
-            svgMode = zoomContainer.id === "svg_map";
-            const { x, y, scale} = mapPanZoom?.[key] ? mapPanZoom[key].getTransform() : { scale: 1, x: 0, y: 0 };
-
-            ui.position.left = (ui.position.left - x) / scale;
-            ui.position.top = (ui.position.top - y) / scale;
+            try {
+                const zoomContainer = event.target.closest('div.plot-image');
+                const key = `${zoomContainer.tagName.toLowerCase()}-${zoomContainer.id}`;
+    
+                svgMode = zoomContainer.id === "svg_map";
+                const { x, y, scale} = mapPanZoom?.[key] ? mapPanZoom[key].getTransform() : { scale: 1, x: 0, y: 0 };
+    
+                ui.position.left = (ui.position.left - x) / scale;
+                ui.position.top = (ui.position.top - y) / scale;
+            } catch (e) {
+                event.preventDefault();
+                return;
+            }
 
             if (is_ui_a_door(ui))
                 start__door_work(event, ui)
@@ -371,29 +376,34 @@ function doDraggable () {
                 start__original_work(event, ui, scale)
         },
         drag: function (event, ui) {
-            const draggingElement = $(this);
-
-            const zoomContainer = event.target.closest('div.plot-image');
-            const key = `${zoomContainer.tagName.toLowerCase()}-${zoomContainer.id}`
-
-            const $zoomElement = $(zoomContainer);
-            const canvasTop = $zoomElement.offset().top;
-            const canvasLeft = $zoomElement.offset().left;
-            const canvasHeight = $zoomElement.height();
-            const canvasWidth = $zoomElement.width();
-            
-
-            const {scale} = mapPanZoom?.[key] ? mapPanZoom[key].getTransform() : { scale: 1, x: 0, y: 0 };
-
-            const calculatedUiTop = (event.pageY - canvasTop - pointerOffset.y) / scale;
-            const calculatedUiLeft = (event.pageX - canvasLeft - pointerOffset.x) / scale;
-
-            ui.position.left = Math.max(0, Math.min(calculatedUiLeft, canvasWidth - draggingElement.width()));
-            ui.position.top = Math.max(0, Math.min(calculatedUiTop, canvasHeight - draggingElement.height()));
-
-            // Finally, make sure offset aligns with position
-            ui.offset.top = Math.round(ui.position.top + canvasTop);
-            ui.offset.left = Math.round(ui.position.left + canvasLeft);
+            try {
+                const draggingElement = $(this);
+    
+                const zoomContainer = event.target.closest('div.plot-image');
+                const key = `${zoomContainer.tagName.toLowerCase()}-${zoomContainer.id}`
+    
+                const $zoomElement = $(zoomContainer);
+                const canvasTop = $zoomElement.offset().top;
+                const canvasLeft = $zoomElement.offset().left;
+                const canvasHeight = $zoomElement.height();
+                const canvasWidth = $zoomElement.width();
+                
+    
+                const {scale} = mapPanZoom?.[key] ? mapPanZoom[key].getTransform() : { scale: 1, x: 0, y: 0 };
+    
+                const calculatedUiTop = (event.pageY - canvasTop - pointerOffset.y) / scale;
+                const calculatedUiLeft = (event.pageX - canvasLeft - pointerOffset.x) / scale;
+    
+                ui.position.left = Math.max(0, Math.min(calculatedUiLeft, canvasWidth - draggingElement.width()));
+                ui.position.top = Math.max(0, Math.min(calculatedUiTop, canvasHeight - draggingElement.height()));
+    
+                // Finally, make sure offset aligns with position
+                ui.offset.top = Math.round(ui.position.top + canvasTop);
+                ui.offset.left = Math.round(ui.position.left + canvasLeft);
+            } catch (e) {
+                event.preventDefault();
+                return;
+            }
 
             xmove = ui.position.left - xpos;
             ymove = ui.position.top - ypos;

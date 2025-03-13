@@ -211,6 +211,7 @@ function processBlock(svgElement, item, options, dataset = null) {
 
     if (existingDuplicate && parseInt(existingDuplicate.dataset.unitId) === parseInt(item.id)) {
       $(existingDuplicate).removeClass("hidden");
+      return
     }
   } catch (e) {
     console.error("Duplicate not found.", e);
@@ -324,8 +325,6 @@ function processBlock(svgElement, item, options, dataset = null) {
       const touchDuration = Date.now() - this.clickStartTime;
       const moveThreshold = 10;
       const timeThreshold = 300;
-
-      debugger
       
       if (
         Math.abs(touchEndX - this.clickStartX) < moveThreshold &&

@@ -140,8 +140,6 @@ $(window).bind('load', function () {
         $(".unit-buttons").empty();
         $(".unit-buttons").addClass("hidden");
         if (svgMode) {
-          debugger
-
           const filteredUnits = units.filter(
             (unit) =>
               unit.pointer_data["id"] ==
@@ -1160,11 +1158,14 @@ function unitListHover() {
       e.currentTarget.style.border = `3px solid ${map_marker_color}`;
 
       Array.from(all_markers).forEach((marker) => {
+        const matchCondition =
+          id === `unit_${marker.dataset.unitId}` ||
+          `${pointerData.id}_cloned` === marker.id ||
+          pointerData.selector === marker.id;
         if (
-          isVisibleSVGElement(marker) &&
-          (id === `unit_${marker.dataset.unitId}` ||
-            `${pointerData.id}_cloned` === marker.id ||
-            pointerData.selector === marker.id)
+          svgMode
+            ? isVisibleSVGElement(marker) && matchCondition
+            : matchCondition
         ) {
           let selectedMarker = marker;
           if (selectedMarker.classList.contains("overlapping-unit")) {
@@ -1185,14 +1186,20 @@ function unitListHover() {
           $("#popover-marketing-unit").html(unitMarketingName);
 
           const position = selectedMarker.getBoundingClientRect();
+          let [left, top] = [position.left - 92, position.top - 53];
           const markerPopover = $("#marker-popover-unit");
+          if (svgMode) {
+            left = left + 10;
+            top = top + 10;
+          }
+
           markerPopover.css({
-            left: `${position.left - 92}px`,
-            top: `${position.top - 53}px`,
             height: "100px",
             background: "transparent",
             margin: "0px",
             padding: "0px",
+            left: `${left}px`,
+            top: `${top}px`,
           });
           markerPopover.removeClass("hidden");
         }
