@@ -70,10 +70,8 @@
   async function fetchAndSetCoordinates () {
     await fetchSVG(
       "#svg_map.plot-image",
-      { svgPosition: 1, activateHoverEffect: true }
+      { svgPosition: 1, activateHoverEffect: true, turnoffLoader: true }
     );
-
-    $(".divLoading").removeClass("hidden");
     
     if (parsedSVGs.length) {
       setCoordinates(mapped_units, {

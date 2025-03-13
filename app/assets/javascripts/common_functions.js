@@ -85,6 +85,7 @@ async function fetchSVG(
   dataSetSelector,
   options = {
     svgPosition: 0,
+    turnoffLoader: false,
     activateZoom: false,
     setWebpageImageHeight: false,
     floor: 0,
@@ -108,8 +109,14 @@ async function fetchSVG(
 
     parsedSVGs.push(svgElement);
     setSVG(container, svgElement, options);
+    if (options.turnoffLoader) {
+      $(".divLoading").removeClass("hidden");
+    }
   } catch (error) {
     console.error("Error loading SVG:", error);
+    if (options.turnoffLoader) {
+      $(".divLoading").removeClass("hidden");
+    }
   }
 }
 
