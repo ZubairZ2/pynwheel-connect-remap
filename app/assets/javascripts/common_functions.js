@@ -94,7 +94,6 @@ async function fetchSVG(
   const container = document.querySelector(dataSetSelector);
   const imageUrl = container?.dataset.svgUrl;
 
-  if (options.activateZoom) activateZoomPan(container);
   if (!imageUrl?.endsWith(".svg")) return;
 
   try {
@@ -118,6 +117,8 @@ async function fetchSVG(
     $(".divLoading").addClass("hidden");
     }
   }
+
+  if (options.activateZoom) activateZoomPan(container);
 }
 
 function setPointersCoordinates() {
@@ -349,10 +350,7 @@ function processBlock(svgElement, item, options, dataset = null) {
   if (onmouseenter) $duplicateBlock.on("mouseenter", mouseenterEvent);
   if (onmouseleave) $duplicateBlock.on("mouseleave", mouseleaveEvent);
   
-  if (duplicateExists)
-    $duplicateBlock.addClass("hidden");
-  else
-    $duplicateBlock.removeClass("hidden");
+  $duplicateBlock.removeClass("hidden");
 
   block.parentElement.appendChild(duplicateBlock);
   moveTextGroupsToEnd(block.parentElement);
