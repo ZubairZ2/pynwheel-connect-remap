@@ -131,52 +131,131 @@ $(window).bind('load', function () {
       resetToDefaultZoom();
     });
 
-    $('#unitModal').on('show.bs.modal', function (e) {
+    $("#unitModal").on("show.bs.modal", function (e) {
       resetToDefaultZoom();
-      if(selectMap === "3d-map" && enable3DMaps) {
+      if (selectMap === "3d-map" && enable3DMaps) {
         _3dUnitModalDisplay();
-        $('.unit-buttons').addClass('hidden');
-      }
-      else {
-        $('.unit-buttons').empty();
-        $('.unit-buttons').addClass('hidden');
+        $(".unit-buttons").addClass("hidden");
+      } else {
+        $(".unit-buttons").empty();
+        $(".unit-buttons").addClass("hidden");
         if (svgMode) {
-          const filteredUnits = units.filter((unit) => unit.pointer_data['id'] == e.relatedTarget.id.replace('_cloned', ''));
+          debugger
+
+          const filteredUnits = units.filter(
+            (unit) =>
+              unit.pointer_data["id"] ==
+              e.relatedTarget.id.replace("_cloned", "")
+          );
           if (filteredUnits.length > 1) {
             filteredUnits.forEach(function (unit) {
-              if (unit.id === parseInt(e.relatedTarget.dataset.unitId)) {
-                button_style = "btn-primary"
-              }
-              else {
-                button_style = "btn-default"
-              }
-
-              result = ""
-              for (const key in unit.data_attributes) {
-                result = `${result} ${key}="${unit.data_attributes[key]}"`
-              }
-
-              if (has_floorplate.toString() == "true" && unit.floor != parseInt(current_floor)) {
+              if (
+                has_floorplate.toString() == "true" &&
+                unit.floor != parseInt(current_floor)
+              ) {
                 return;
               }
 
-              $('.unit-buttons').removeClass('hidden');
-              $('.unit-buttons').append('<button class="btn modal-unit-button ml-5 ' + button_style + '" type="button" ' + result + ' onclick="setUnitAttributes(this, event)">' + unit.data_attributes['data-title'] + '</button>');
+              result = "";
+              for (const key in unit.data_attributes) {
+                result = `${result} ${key}="${unit.data_attributes[key]}"`;
+              }
+
+              if (unit.id === parseInt(e.relatedTarget.dataset.unitId)) {
+                button_style = "btn-primary";
+              } else {
+                button_style = "btn-default";
+              }
+
+              $(".unit-buttons").removeClass("hidden");
+              $(".unit-buttons").append(
+                '<button class="btn modal-unit-button ml-5 ' +
+                  button_style +
+                  '" type="button" ' +
+                  result +
+                  ' onclick="setUnitAttributes(this, event)">' +
+                  unit.data_attributes["data-title"] +
+                  "</button>"
+              );
             });
           }
         } else {
-          if ($('.h-' + $(e.relatedTarget).data('unit-x-plot') + '-' + $(e.relatedTarget).data('unit-y-plot')).length > 1) {
-            $('.h-' + $(e.relatedTarget).data('unit-x-plot') + '-' + $(e.relatedTarget).data('unit-y-plot')).each(function () {
-              var target_id = $(e.relatedTarget).attr('id');
-              var underneath_unit_id = $(this).data().unitId
-              var button_style = ""
-              if (parseInt(target_id.split('_')[1]) == underneath_unit_id) {
-                button_style = "btn-primary"
+          if (
+            $(
+              ".h-" +
+                $(e.relatedTarget).data("unit-x-plot") +
+                "-" +
+                $(e.relatedTarget).data("unit-y-plot")
+            ).length > 1
+          ) {
+            $(
+              ".h-" +
+                $(e.relatedTarget).data("unit-x-plot") +
+                "-" +
+                $(e.relatedTarget).data("unit-y-plot")
+            ).each(function () {
+              var target_id = $(e.relatedTarget).attr("id");
+              var underneath_unit_id = $(this).data().unitId;
+              var button_style = "";
+              if (parseInt(target_id.split("_")[1]) == underneath_unit_id) {
+                button_style = "btn-primary";
               } else {
-                button_style = "btn-default"
+                button_style = "btn-default";
               }
-              $('.unit-buttons').removeClass('hidden');
-              $('.unit-buttons').append('<button class="btn modal-unit-button ml-5 ' + button_style + '" type="button" data-title="' + $(this).data('title') + '" data-community-id="' + $(this).data('community-id') + '" data-unit-id="' + $(this).data('unit-id') + '" data-is-fav="' + $(this).data('is-fav') + '" data-provider="' + $(this).data('provider') + '" data-website="' + $(this).data('website') + '" data-community-property-id="' + $(this).data('community-property-id') + '" data-unit-provider-id="' + $(this).data('unit-provider-id') + '" data-floorplan-provider-id="' + $(this).data('floorplan-provider-id') + '" data-floorplan-name="' + $(this).data('floorplan-name') + '" data-unit-description="' + $(this).data('unit-description') + '" data-unit-marketing-name="' + $(this).data('unit-marketing-name') + '" data-market-rent="' + $(this).data('market-rent') + '" data-square-feet="' + $(this).data('square-feet') + '" data-availability="' + $(this).data('availability') + '" data-available-date="' + $(this).data('available-date') + '" data-availability-url="' + $(this).data('availability-url') + '" data-bedrooms="' + $(this).data('bedrooms') + '" data-bathrooms="' + $(this).data('bathrooms') + '" data-floorplan-image="' + $(this).data('floorplan-image') + '" data-lease-term="' + $(this).data('lease-term') + '" data-unit-lease-pricing="' + $(this).data('unit-lease-pricing') + '" data-unit-additional-fees="' + $(this).data('unit-additional-fees') + '" onclick="setUnitAttributes(this, event);">' + $(this).data('title') + '</button>');
+              $(".unit-buttons").removeClass("hidden");
+              $(".unit-buttons").append(
+                '<button class="btn modal-unit-button ml-5 ' +
+                  button_style +
+                  '" type="button" data-title="' +
+                  $(this).data("title") +
+                  '" data-community-id="' +
+                  $(this).data("community-id") +
+                  '" data-unit-id="' +
+                  $(this).data("unit-id") +
+                  '" data-is-fav="' +
+                  $(this).data("is-fav") +
+                  '" data-provider="' +
+                  $(this).data("provider") +
+                  '" data-website="' +
+                  $(this).data("website") +
+                  '" data-community-property-id="' +
+                  $(this).data("community-property-id") +
+                  '" data-unit-provider-id="' +
+                  $(this).data("unit-provider-id") +
+                  '" data-floorplan-provider-id="' +
+                  $(this).data("floorplan-provider-id") +
+                  '" data-floorplan-name="' +
+                  $(this).data("floorplan-name") +
+                  '" data-unit-description="' +
+                  $(this).data("unit-description") +
+                  '" data-unit-marketing-name="' +
+                  $(this).data("unit-marketing-name") +
+                  '" data-market-rent="' +
+                  $(this).data("market-rent") +
+                  '" data-square-feet="' +
+                  $(this).data("square-feet") +
+                  '" data-availability="' +
+                  $(this).data("availability") +
+                  '" data-available-date="' +
+                  $(this).data("available-date") +
+                  '" data-availability-url="' +
+                  $(this).data("availability-url") +
+                  '" data-bedrooms="' +
+                  $(this).data("bedrooms") +
+                  '" data-bathrooms="' +
+                  $(this).data("bathrooms") +
+                  '" data-floorplan-image="' +
+                  $(this).data("floorplan-image") +
+                  '" data-lease-term="' +
+                  $(this).data("lease-term") +
+                  '" data-unit-lease-pricing="' +
+                  $(this).data("unit-lease-pricing") +
+                  '" data-unit-additional-fees="' +
+                  $(this).data("unit-additional-fees") +
+                  '" onclick="setUnitAttributes(this, event);">' +
+                  $(this).data("title") +
+                  "</button>"
+              );
             });
           }
         }
@@ -909,17 +988,22 @@ function resetToDefaultZoom() {
   responsiveModalPanZoom.moveTo(0, 0);
 } 
 
-function click_marker_tag (id, selector) {
-  const markersSelector = svgMode ? 'cloned-unit' : 'unit_marker';
-  if (!svgMode) {
-    id = id.replace('unit_', 's_')
+function click_marker_tag(unitId, { pointerId, selector } = {}) {
+  const markersSelector = svgMode ? "cloned-unit" : "unit_marker";
+  if (svgMode) {
+    unitId = parseInt(unitId.replace("unit_", ""));
+  } else {
+    unitId = unitId.replace("unit_", "s_");
   }
   var marker_tags = document.getElementsByClassName(markersSelector);
-  Array.from(marker_tags).forEach(item => {
-    if (item.id === id || (selector && item.id === `${selector}_cloned`)) {
+  for (const item of Array.from(marker_tags)) {
+    if (
+      svgMode ? parseInt(item.dataset.unitId) === unitId : item.id === unitId
+    ) {
       $(item).click();
+      break;
     }
-  })
+  }
 }
 
 function renderChangedUnits() {
@@ -1056,12 +1140,8 @@ function amenityHoverEffectEnd (toolTipSpan) {
 }
 
 function onUnitClick (e) {
-  const { id, pointerData: { id: pointerId, selector } } = getUnitData(e.target);
-  if (pointerId || selector)
-    click_marker_tag(`${pointerId}_cloned`, selector)
-  else {
-    click_marker_tag(id, null)
-  }
+  const { id } = getUnitData(e.target);
+  click_marker_tag(id)
 };
 
 function unitMarketRent(unit) {
@@ -1102,7 +1182,6 @@ function unitListHover() {
           }
 
           focused_marker = document.getElementById(selectedMarker.id);
-          // focused_marker.childNodes[0].style.fontSize = "25px";
           $("#popover-marketing-unit").html(unitMarketingName);
 
           const position = selectedMarker.getBoundingClientRect();
