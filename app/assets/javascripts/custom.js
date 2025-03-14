@@ -333,14 +333,28 @@ function triggerPlottingEvents() {
         const $hiddenUnit = $(this);
         const underneathUnitId = $hiddenUnit.attr("id").split("-")[1];
 
-        $unitButtons.append(
-          getButtonHtml(
-            $hiddenUnit.data(),
-            underneathUnitId === unitProviderId
-              ? "btn-primary"
-              : "btn-default"
+        if (
+          Array.from(this.classList).some((className) =>
+            className.startsWith("svg-")
           )
-        );
+        )
+          $unitButtons.prepend(
+            getButtonHtml(
+              $hiddenUnit.data(),
+              underneathUnitId === unitProviderId
+                ? "btn-primary"
+                : "btn-default"
+            )
+          );
+        else
+          $unitButtons.append(
+            getButtonHtml(
+              $hiddenUnit.data(),
+              underneathUnitId === unitProviderId
+                ? "btn-primary"
+                : "btn-default"
+            )
+          );
       });
     }
 
@@ -355,8 +369,8 @@ function triggerPlottingEvents() {
     ".select-units-on-svg .ms-elem-selectable, .select-units-on-page .ms-elem-selectable"
   ).on("click", function (e) {
     console.log($(this).children("span").text());
-    const $scope  = $(e.currentTarget).closest(".multi-select-units");
-    const selectedForSvg = !!$scope.hasClass('select-units-on-svg');
+    const $scope = $(e.currentTarget).closest(".multi-select-units");
+    const selectedForSvg = !!$scope.hasClass("select-units-on-svg");
 
     const unitProviderId = $(this).attr("id").replace("-selectable", "");
     selected.push([unitProviderId, $(this).children("span").text()]);
@@ -386,7 +400,7 @@ function triggerPlottingEvents() {
 
     const unitProviderId = $(this).attr("id").split("-")[0];
     const index = unitProvidersArray.findIndex(unitProviderId);
-    
+
     unitProvidersArray.splice(index, 1);
     $scope.find("#unit_provider_ids").val(JSON.stringify(unitProvidersArray));
   });
@@ -405,9 +419,11 @@ function triggerPlottingEvents() {
     const dataProviderUnitId = $(this).attr("data-provider-unit-id");
     const $scope = $(e.currentTarget).closest(".multi-select-units");
 
-    $scope.find('.amenities-list option[value="' + dataProviderUnitId + '"]').css({
-      display: "block",
-    });
+    $scope
+      .find('.amenities-list option[value="' + dataProviderUnitId + '"]')
+      .css({
+        display: "block",
+      });
 
     $(this).remove();
     if (selected.length > 0) resetDataIds();
@@ -429,16 +445,22 @@ function triggerPlottingEvents() {
 
     $scope.find("#selected-units").empty();
     for (const [selectedId, selectedName] of selected) {
-      $scope.find("#selected-units").append(
-        '<li class="s-unit" data-id=' + selectedId + ">" + selectedName + "</li>"
-      );
+      $scope
+        .find("#selected-units")
+        .append(
+          '<li class="s-unit" data-id=' +
+            selectedId +
+            ">" +
+            selectedName +
+            "</li>"
+        );
     }
 
     $scope.find("#newmsg").hide();
     $this.css({ display: "none" });
     $scope.find("#imageselect").toggle();
 
-    plotMode(!!$scope.hasClass('select-units-on-svg'));
+    plotMode(!!$scope.hasClass("select-units-on-svg"));
     e.stopPropagation();
   });
 }

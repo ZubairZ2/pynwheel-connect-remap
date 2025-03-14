@@ -1216,51 +1216,56 @@ function unitListHover() {
 }
 
 function markerHoverEffect (event) {
-  if ($(this).data('is-fav') || favoritesArr.includes($(this).data('unit-id'))) {
+  let $this = $(event.currentTarget);
+  if (svgMode && event.currentTarget.tagName.toLowerCase() === "g") {
+    $this = $(event.currentTarget.children[event.currentTarget.children.length - 2]);
+  }
+
+  if ($this.data('is-fav') || favoritesArr.includes($this.data('unit-id'))) {
     $('.fav-heart').removeClass('hidden')
   } else {
     $('.fav-heart').addClass('hidden')
   }
-  $('#popover-marketing-name').html($(this).data('unit-marketing-name') + "</b>");
-  $('#popover-floorplan').html($(this).data('unit-description'))
+  $('#popover-marketing-name').html($this.data('unit-marketing-name') + "</b>");
+  $('#popover-floorplan').html($this.data('unit-description'))
     
-  if (!canShowAdditionalFees($(this).data('unit-additional-fees'))) {
-    $('#popover-floorplan').html($(this).data('unit-additional-fees'))
+  if (!canShowAdditionalFees($this.data('unit-additional-fees'))) {
+    $('#popover-floorplan').html($this.data('unit-additional-fees'))
   }
 
-  $('#popover-floorplan').html($(this).data('unit-lease-pricing'))
-  $('#popover-floorplan').html($(this).data('floorplan-name'))
-  if ($(this).data('floorplan-image') != '') {
-    $('#media-object').attr('src', $(this).data('floorplan-image'));
+  $('#popover-floorplan').html($this.data('unit-lease-pricing'))
+  $('#popover-floorplan').html($this.data('floorplan-name'))
+  if ($this.data('floorplan-image') != '') {
+    $('#media-object').attr('src', $this.data('floorplan-image'));
   } else {
     $('#media-object').attr('src', '/assets/default.jpeg');
   }
-  $('#popover-square-feet').html($(this).data('square-feet'));
-  $('#popover-bathrooms').html($(this).data('bathrooms'));
+  $('#popover-square-feet').html($this.data('square-feet'));
+  $('#popover-bathrooms').html($this.data('bathrooms'));
   if ($('#popover-bathrooms').html() == '1') {
     $('#popover-bathrooms').siblings("small").html("Bathroom")
   } else {
     $('#popover-bathrooms').siblings("small").html("Bathrooms")
   }
-  $('#popover-bedrooms').html($(this).data('bedrooms'));
+  $('#popover-bedrooms').html($this.data('bedrooms'));
   if ($('#popover-bedrooms').html() == '1') {
     $('#popover-bedrooms').siblings("small").html("Bedroom")
   } else {
     $('#popover-bedrooms').siblings("small").html("Bedrooms")
   }
 
-  if ($(this).data('sold')) {
+  if ($this.data('sold')) {
     $('#popover-available-date').html('');
     $('#hover-available-text').html('Sold')
   } else {
     $('#hover-available-text').html('Available');
-    // $('#popover-available-date').html($(this).data('available-date'));
-    $('#popover-available-date').html(formattedDateByRegion(webCommunity.country_code, $(this).data('available-date')));
+    // $('#popover-available-date').html($this.data('available-date'));
+    $('#popover-available-date').html(formattedDateByRegion(webCommunity.country_code, $this.data('available-date')));
     
   }
 
-  $('#popover-price').html((currency + $(this).data('market-rent')))
-  $($('#unit_' + $(this).data('unitId')))[0].scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+  $('#popover-price').html((currency + $this.data('market-rent')))
+  $($('#unit_' + $this.data('unitId')))[0].scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
   
   var new_dx = parseInt(event.pageX) - parseInt($('#panzomm-container').offset().left) + parseInt($('#panzomm-container').scrollLeft());
   var new_dy = parseInt(event.pageY) - parseInt($('#panzomm-container').offset().top) + parseInt($('#panzomm-container').scrollTop());
@@ -1269,13 +1274,18 @@ function markerHoverEffect (event) {
   if (window.innerWidth >= 768) {
     $('#marker-popover').removeClass('hidden');
   }
-  $($('#unit_' + $(this).data('unitId'))).css("border", `5px solid ${map_marker_color}`)
+  $($('#unit_' + $this.data('unitId'))).css("border", `5px solid ${map_marker_color}`)
 }
 
 
 function markerHoverEffectEnd (event) {
+  let $this = $(event.currentTarget);
+  if (svgMode && event.currentTarget.tagName.toLowerCase() === "g") {
+    $this = $(event.currentTarget.children[event.currentTarget.children.length - 2]);
+  }
+
   $('#marker-popover').addClass('hidden');
-  $($('#unit_'+ $(this).data('unitId'))).css("border", "none")
+  $($('#unit_'+ $this.data('unitId'))).css("border", "none")
 }
 
 
