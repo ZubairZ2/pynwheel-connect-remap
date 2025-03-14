@@ -333,28 +333,14 @@ function triggerPlottingEvents() {
         const $hiddenUnit = $(this);
         const underneathUnitId = $hiddenUnit.attr("id").split("-")[1];
 
-        if (
-          Array.from(this.classList).some((className) =>
-            className.startsWith("svg-")
+        $unitButtons.append(
+          getButtonHtml(
+            $hiddenUnit.data(),
+            underneathUnitId === unitProviderId
+              ? "btn-primary"
+              : "btn-default"
           )
-        )
-          $unitButtons.prepend(
-            getButtonHtml(
-              $hiddenUnit.data(),
-              underneathUnitId === unitProviderId
-                ? "btn-primary"
-                : "btn-default"
-            )
-          );
-        else
-          $unitButtons.append(
-            getButtonHtml(
-              $hiddenUnit.data(),
-              underneathUnitId === unitProviderId
-                ? "btn-primary"
-                : "btn-default"
-            )
-          );
+        );
       });
     }
 

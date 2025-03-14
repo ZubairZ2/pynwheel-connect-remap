@@ -322,6 +322,9 @@ function processBlock(svgElement, item, options, dataset = null) {
   }
 
   $blockParent.on("mouseup touchend", function (e) {
+    if (mobileCheck() && e.type === "mouseup") {
+      e.preventDefault();
+    }
     if (e.isDefaultPrevented()) {
       return;
     }
@@ -346,17 +349,16 @@ function processBlock(svgElement, item, options, dataset = null) {
       Math.abs(touchEndY - this.clickStartY) < moveThreshold &&
       touchDuration < timeThreshold
     ) {
-      if (onclick) {
+      if (
+        duplicateBlock.getAttribute("data-target") && (mobileCheck() || e.target.tagName !== duplicateBlock.tagName)
+      ) {
+        clickDuplicateBlock();
+      } else if (onclick) {
         if (cloneClass == "cloned-unit" && mobileCheck()) {
           clickDuplicateBlock();
         } else {
           mouseupEvent();
         }
-      } else if (
-        duplicateBlock.getAttribute("data-target") &&
-        !e.target.classList.contains(cloneClass)
-      ) {
-        clickDuplicateBlock();
       }
     }
   });
