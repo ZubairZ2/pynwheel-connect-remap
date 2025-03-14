@@ -207,3 +207,21 @@
   $(document).ready(function() {
     map_marker_color = toRgbColor("#{raw map_marker_color}")
   });
+
+:css
+  @media (max-width: 1200px) {
+    .map-body-top > div.row {
+      flex-direction: column;
+    }
+  }
+
+  .overlay {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: #fff;
+    opacity: .9;
+    display:none;
+  }

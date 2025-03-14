@@ -192,10 +192,13 @@ class WebpagesController < ActionController::Base
       fs.save
     end
 
-    favorite.unit_ids.delete params[:unit_id]
-    favorite.save
+
     updated_unit_ids = []
-    updated_unit_ids << favorite.unit_ids
+    if (favorite)
+      favorite.unit_ids.delete params[:unit_id]
+      favorite.save
+      updated_unit_ids << favorite.unit_ids
+    end
 
     set_favorites_unit_ids_cookies(updated_unit_ids)
   end

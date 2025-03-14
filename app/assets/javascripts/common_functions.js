@@ -3,6 +3,9 @@ var VALID_SVG_SHAPES = ["polygon", "rect", "ellipse", "circle"];
 var has_floorplate =
   typeof has_floorplate !== "undefined" ? has_floorplate : false;
 var svgMode = typeof svgMode !== "undefined" ? svgMode : false;
+var map_marker_color = typeof map_marker_color !== "undefined" ? "brown" : null;
+var amenity_marker_color =
+  typeof amenity_marker_color !== "undefined" ? amenity_marker_color : null;
 
 function mobileCheck() {
   let check = false;
@@ -143,6 +146,7 @@ function setAmenitiesCoordinates() {
     onclick: (amenity) => openAmenityViewerModal(amenity, amenity.galleries),
     onmouseenter: (toolTipSpan) => amenityHoverEffect(toolTipSpan),
     onmouseleave: (toolTipSpan) => amenityHoverEffectEnd(toolTipSpan),
+    fillAmenityOnHoverOnly: true,
     tooltip: true,
   });
 }
@@ -187,39 +191,17 @@ function isCurrentFloorsSVG(svgElement) {
 
   return false;
 }
-
 function processBlock(svgElement, item, options, dataset = null) {
   const { pointer_data = {}, data_attributes, ...rest } = item || {};
-  let { tag = null, id = null, selector = null } = pointer_data || {};
-  if (!tag && dataset) {
-    tag = dataset.tag || null;
-    id = dataset.id || null;
-    selector = dataset.selector || null;
-  }
-
-  selector = tag && id ? `${tag}#${id}` : selector;
+  const { id, selector } = getPointerIdAndSelector(pointer_data, dataset);
   if (!selector) return;
 
   const block = svgElement.querySelector(selector);
   if (!block) return;
 
-  const { cloneClass, tooltip, additionalClasses } = options;
   try {
-    const clonedSelector = selector.endsWith("_cloned")
-      ? selector
-      : `${selector}_cloned`;
-
-    const existingDuplicate =
-      svgElement.getElementById(clonedSelector) ||
-      svgElement.querySelector(clonedSelector);
-
-    if (
-      existingDuplicate &&
-      parseInt(existingDuplicate.dataset.unitId) === parseInt(item.id)
-    ) {
-      $(existingDuplicate).removeClass("hidden");
-      return;
-    }
+    const existingDuplicate = getDuplicateBlock(svgElement, selector, item.id);
+    if (existingDuplicate) return;
   } catch (e) {
     console.error("Duplicate not found.", e);
   }
@@ -231,42 +213,168 @@ function processBlock(svgElement, item, options, dataset = null) {
   //   svgElement.insertAdjacentElement('beforeend', clonedGroup);
   // }
 
-  const duplicateBlock = block.cloneNode(true);
-  if (data_attributes) {
-    Object.entries(data_attributes).forEach(([key, value]) => {
-      if (key.includes("href") && value.includes("remove_")) {
-        let [mainUrl, queryParams = ""] = value.split("?");
-        if (queryParams) {
-          if (!queryParams.includes("svg_deletion=true"))
-            queryParams = `${queryParams}&svg_deletion=true`;
-        } else queryParams = "svg_deletion=true";
-
-        value = `${mainUrl}?${queryParams}`;
-      }
-      duplicateBlock.setAttribute(key, value);
-    });
-  }
-  duplicateBlock.setAttribute("id", `${id || selector}_cloned`);
-  duplicateBlock.classList.add(cloneClass, ...(additionalClasses || []));
-
   block.style.fill = "";
-  duplicateBlock.setAttribute("fill", map_marker_color);
-  if (data_attributes) {
-    const titleEl = document.createElement("title");
-    titleEl.innerText =
-      data_attributes["data-title"] || data_attributes["title"];
-    duplicateBlock.appendChild(titleEl);
-  }
-
   const blockParent = block.parentElement;
   const $blockParent = $(blockParent);
-
   $blockParent.css({
     "pointer-events": "all",
     cursor: "pointer",
   });
 
+  const duplicateBlock = block.cloneNode(true);
   const $duplicateBlock = $(duplicateBlock);
+
+  if (data_attributes) {
+    applyDataAttributes(duplicateBlock, data_attributes);
+    const titleEl = document.createElement("title");
+    titleEl.innerText =
+      data_attributes["data-title"] || data_attributes["title"];
+    duplicateBlock.appendChild(titleEl);
+  }
+  duplicateBlock.setAttribute("id", `${id || selector}_cloned`);
+
+  const amenityFillColor = amenity_marker_color || map_marker_color;
+  const { cloneClass, tooltip, additionalClasses, fillAmenityOnHoverOnly } =
+    options;
+  duplicateBlock.classList.add(cloneClass, ...(additionalClasses || []));
+
+  const { onclick, onmouseenter, onmouseleave } = options;
+  let mouseupEvent = null;
+  let mouseenterEvent = null;
+  let mouseleaveEvent = null;
+
+  switch (cloneClass) {
+    case "cloned-amenity":
+      const isMobileView = mobileCheck();
+
+      if (!isMobileView && tooltip) {
+        const toolTipSpan = setupAmenityToolTip(block, rest, pointer_data);
+        if (toolTipSpan)
+          svgElement.insertAdjacentElement("afterend", toolTipSpan);
+
+        if (onmouseenter) mouseenterEvent = () => onmouseenter(toolTipSpan);
+        if (onmouseleave) mouseleaveEvent = () => onmouseleave(toolTipSpan);
+
+        if (fillAmenityOnHoverOnly) {
+          mouseenterEvent = mouseenterEvent
+            ? () => {
+                duplicateBlock.style.fill = amenityFillColor;
+                onmouseenter(toolTipSpan);
+              }
+            : () => (duplicateBlock.style.fill = amenityFillColor);
+
+          mouseleaveEvent = mouseleaveEvent
+            ? () => {
+                duplicateBlock.style.fill = "";
+                onmouseleave(toolTipSpan);
+              }
+            : () => (duplicateBlock.style.fill = "");
+        }
+      }
+
+      if (isMobileView || !tooltip || !fillAmenityOnHoverOnly)
+        duplicateBlock.setAttribute("fill", amenityFillColor);
+
+      if (onclick) mouseupEvent = () => onclick(rest);
+
+      break;
+    default:
+      duplicateBlock.setAttribute("fill", map_marker_color);
+
+      if (onclick) mouseupEvent = onclick;
+      if (onmouseenter) mouseenterEvent = onmouseenter;
+      if (onmouseleave) mouseleaveEvent = onmouseleave;
+      break;
+  }
+
+  setupMouseEvents(blockParent, duplicateBlock, {
+    onclick,
+    cloneClass,
+    events: {
+      mouseupEvent,
+      mouseenterEvent,
+      mouseleaveEvent,
+    },
+  });
+
+  const firstElementChild = blockParent.children[0];
+
+  if (firstElementChild && firstElementChild.nextSibling) {
+    blockParent.insertBefore(duplicateBlock, firstElementChild.nextSibling);
+  } else {
+    blockParent.appendChild(duplicateBlock);
+  }
+  $duplicateBlock.removeClass("hidden");
+}
+
+function getPointerIdAndSelector(pointerData, dataset) {
+  let { tag = null, id = null, selector = null } = pointerData || {};
+  if (!tag && dataset) {
+    tag = dataset.tag || null;
+    id = dataset.id || null;
+    selector = dataset.selector || null;
+  }
+  return { id, selector: tag && id ? `${tag}#${id}` : selector };
+}
+
+function getDuplicateBlock(svgElement, selector, itemId) {
+  const clonedSelector = selector.endsWith("_cloned")
+    ? selector
+    : `${selector}_cloned`;
+  const existingDuplicate =
+    svgElement.getElementById(clonedSelector) ||
+    svgElement.querySelector(clonedSelector);
+  if (
+    existingDuplicate &&
+    parseInt(existingDuplicate.dataset.unitId) === parseInt(itemId)
+  ) {
+    $(existingDuplicate).removeClass("hidden");
+    return existingDuplicate;
+  }
+  return null;
+}
+
+function applyDataAttributes(duplicateBlock, dataAttributes) {
+  Object.entries(dataAttributes).forEach(([key, value]) => {
+    if (key.includes("href") && value.includes("remove_")) {
+      let [mainUrl, queryParams = ""] = value.split("?");
+      if (queryParams) {
+        if (!queryParams.includes("svg_deletion=true"))
+          queryParams = `${queryParams}&svg_deletion=true`;
+      } else queryParams = "svg_deletion=true";
+
+      value = `${mainUrl}?${queryParams}`;
+    }
+    duplicateBlock.setAttribute(key, value);
+  });
+}
+
+function setupAmenityToolTip(block, data, pointerData) {
+  const { x, y, width, height } = block.getBoundingClientRect();
+  const toolTipSpan = document.createElement("span");
+
+  toolTipSpan.classList.add("amenityTooltipText");
+  toolTipSpan.innerHTML = `
+    <h2 style="display: ${data.show_name ? "block" : "none"}">
+      ${data.name}
+    </h2>
+    <img src="${data.image_url}" alt="Image Title">
+  `;
+  toolTipSpan.style.position = "absolute";
+  toolTipSpan.style.left = `${x + (width * 0.72)}px`;
+  toolTipSpan.style.top = `${y - 103 + (height * 0.72)}px`;
+
+  return toolTipSpan;
+}
+
+function setupMouseEvents(blockParent, duplicateBlock, options = {}) {
+  const $blockParent = $(blockParent);
+  const {
+    onclick,
+    cloneClass,
+    events: { mouseupEvent, mouseenterEvent, mouseleaveEvent } = {},
+  } = options;
+
   $blockParent.on("mousedown touchstart", function (e) {
     if (e.type === "touchstart") {
       this.clickStartX = e.touches[0].clientX;
@@ -278,51 +386,10 @@ function processBlock(svgElement, item, options, dataset = null) {
     this.clickStartTime = Date.now();
   });
 
-  const { onclick, onmouseenter, onmouseleave } = options;
-  let mouseupEvent = null;
-  let mouseenterEvent = null;
-  let mouseleaveEvent = null;
-
-  const clickDuplicateBlock = () => {
-    const $secondLastChild = $(
-      blockParent.children[blockParent.children.length - 2]
-    );
-    $secondLastChild.click();
-  };
-
-  switch (cloneClass) {
-    case "cloned-amenity":
-      if (tooltip) {
-        const { x, y } = block.getBoundingClientRect();
-        const toolTipSpan = document.createElement("span");
-        toolTipSpan.classList.add("amenityTooltipText");
-        toolTipSpan.innerHTML = `
-          <h2 style="display: ${rest.show_name ? "block" : "none"}">
-            ${rest.name}
-          </h2>
-          <img src="${rest.image_url}" alt="Image Title">
-        `;
-        toolTipSpan.style.position = "absolute";
-        toolTipSpan.style.top = `${y - 92}px`;
-        toolTipSpan.style.left = `${x - 53}px`;
-        svgElement.insertAdjacentElement("afterend", toolTipSpan);
-
-        if (onmouseenter) mouseenterEvent = () => onmouseenter(toolTipSpan);
-        if (onmouseleave) mouseleaveEvent = () => onmouseleave(toolTipSpan);
-      }
-
-      if (onclick) mouseupEvent = () => onclick(rest);
-
-      break;
-    default:
-      if (onclick) mouseupEvent = onclick;
-      if (onmouseenter) mouseenterEvent = onmouseenter;
-      if (onmouseleave) mouseleaveEvent = onmouseleave;
-      break;
-  }
-
   $blockParent.on("mouseup touchend", function (e) {
-    if (mobileCheck() && e.type === "mouseup") {
+    const isMobileView = mobileCheck();
+
+    if (isMobileView && e.type === "mouseup") {
       e.preventDefault();
     }
     if (e.isDefaultPrevented()) {
@@ -350,12 +417,13 @@ function processBlock(svgElement, item, options, dataset = null) {
       touchDuration < timeThreshold
     ) {
       if (
-        duplicateBlock.getAttribute("data-target") && (mobileCheck() || e.target.tagName !== duplicateBlock.tagName)
+        duplicateBlock.getAttribute("data-target") &&
+        (isMobileView || e.target.tagName !== duplicateBlock.tagName)
       ) {
-        clickDuplicateBlock();
+        clickSecondLastChildOfGroup(blockParent);
       } else if (onclick) {
-        if (cloneClass == "cloned-unit" && mobileCheck()) {
-          clickDuplicateBlock();
+        if (cloneClass == "cloned-unit" && isMobileView) {
+          clickSecondLastChildOfGroup(blockParent);
         } else {
           mouseupEvent();
         }
@@ -363,27 +431,25 @@ function processBlock(svgElement, item, options, dataset = null) {
     }
   });
 
-  if (onmouseenter)
+  if (mouseenterEvent)
     $blockParent.on("mouseenter", function (e) {
       if (e.isDefaultPrevented()) return;
       e.preventDefault();
       mouseenterEvent(e);
     });
-  if (onmouseleave)
+  if (mouseleaveEvent)
     $blockParent.on("mouseleave", function (e) {
       if (e.isDefaultPrevented()) return;
       e.preventDefault();
       mouseleaveEvent(e);
     });
+}
 
-  const firstElementChild = blockParent.children[0]; // Ensures it's an actual element
-
-  if (firstElementChild && firstElementChild.nextSibling) {
-    blockParent.insertBefore(duplicateBlock, firstElementChild.nextSibling);
-  } else {
-    blockParent.appendChild(duplicateBlock);
-  }
-  $duplicateBlock.removeClass("hidden");
+function clickSecondLastChildOfGroup(blockParent) {
+  const $secondLastChild = $(
+    blockParent.children[blockParent.children.length - 2]
+  );
+  $secondLastChild.click();
 }
 
 function moveTextGroupsToEnd(parentElement) {
@@ -488,10 +554,7 @@ function isValidShape(shape, parent = false) {
         const siblings = Array.from($(shape).siblings());
         const lastSibling = siblings[siblings.length - 1];
 
-        if (
-          lastSibling?.tagName?.toLowerCase() !== "text"
-        )
-          return false;
+        if (lastSibling?.tagName?.toLowerCase() !== "text") return false;
       } else if (
         parentId?.startsWith("amenities") ||
         parentId?.startsWith("units") ||
@@ -550,7 +613,8 @@ function getTheMarkabeSVGShape(svgShape, svgPoint, validated = false) {
     ? { shape: svgShape, valid: true }
     : getTheValidSVGShape(svgShape);
 
-  const pointVerifierFunction = window[`isPointIn${capitalize(shape.tagName.toLowerCase())}`];
+  const pointVerifierFunction =
+    window[`isPointIn${capitalize(shape.tagName.toLowerCase())}`];
   return {
     svgShape: shape,
     markable:
@@ -632,7 +696,7 @@ function setSVG(container, svgElement, options) {
   );
 
   const $svgElement = $(svgElement);
-  if (options.activateHoverEffect) {
+  if (!mobileCheck() && options.activateHoverEffect) {
     const $shapes = $svgElement.find(
       [...VALID_SVG_SHAPES, "text"].join(", ") +
         ":not(.cloned-unit):not(.cloned-amenity)"
