@@ -203,7 +203,7 @@ $(document).ready(function () {
             const elemPos = position($('.map-block')[0]);
       
             const zoomContainer = document.querySelector('div.plot-image');
-            const key = `${zoomContainer.tagName.toLowerCase()}-${zoomContainer.id}`
+            const key = getZoomPanKey(zoomContainer);
       
             const transform = mapPanZoom?.[key] ? mapPanZoom[key].getTransform() : {};
             const scaleFactor = (1 / (transform.scale || 1));
@@ -274,7 +274,7 @@ $(document).ready(function () {
 
     $(".zoom-in").on('click', function (e) {
         const zoomContainer = $(e.currentTarget).closest('.buttons').siblings().find('.plot-image')[0];
-        const key = `${zoomContainer.tagName.toLowerCase()}-${zoomContainer.id}`
+        const key = getZoomPanKey(zoomContainer);
 
         if (mapPanZoom?.[key])
             mapPanZoom[key].zoomInOut(187);
@@ -283,7 +283,7 @@ $(document).ready(function () {
 
     $(".zoom-out").on('click', function (e) {
         const zoomContainer = $(e.currentTarget).closest('.buttons').siblings().find('.plot-image')[0];
-        const key = `${zoomContainer.tagName.toLowerCase()}-${zoomContainer.id}`
+        const key = getZoomPanKey(zoomContainer);
 
         if (mapPanZoom?.[key])
             mapPanZoom[key].zoomInOut(189);

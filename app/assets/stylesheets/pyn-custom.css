@@ -1211,12 +1211,11 @@ table.upload-image tr td {
 }
 
 .webPageLoader {
-    display: none;
+    display: block;
 }
 
-.webPageLoader {
-    display: block;
-    position: fixed;
+.webPageLoader, .svgLoader {
+    position: absolute;
     z-index: 100000;
     background-image: url('dots_loader.gif');
     background-color: #66666669;
@@ -3438,7 +3437,7 @@ a#favoriteclickme {
     margin-left: 7px;
 }
 
-#container .grid-graph {
+#image-container .grid-graph {
     background-size: 30px 30px;
     background-image: linear-gradient(to right, grey 1px, transparent 1px), linear-gradient(to bottom, grey 1px, transparent 1px);
     position: absolute;
@@ -3454,6 +3453,12 @@ a#favoriteclickme {
 
 .is-favorites .right-side {
     position: relative;
+}
+
+.right-side.parent.tabcontent.map_view.mobile_map_view#svg-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .is-favorites .right-side .plan-image img {
@@ -6167,6 +6172,10 @@ ul.add-fav-options {
 @media screen and (max-width:567px){
     .units-alert {
         top: 17rem !important;
+        position: absolute;
+        font-size: small;
+        height: 6rem;
+        z-index: 999;
     }
     .left-side {
         top: 6rem;

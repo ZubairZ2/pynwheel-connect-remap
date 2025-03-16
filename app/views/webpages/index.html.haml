@@ -225,8 +225,8 @@
                   %strong List View
 
             %div.map-body.map-container-center-align
-              .right-side.parent.tabcontent.map_view#panzomm-container.mobile_map_view
-                .image-map#zoomable.zoomable-map-container{style: "text-align: center; position: unset"}
+              .right-side.parent.tabcontent.map_view.mobile_map_view{ id: svg_mode ? "svg-container" : "image-container", style: "position: relative;" }
+                .image-map#zoomable.zoomable-map-container{style: "text-align: center; position: unset #{svg_mode ? '!important' : ''}"}
                   - locals_for_markers = { svg_mode: svg_mode, community_info: @community_info, units: units, amenities: @amenities, floors: @floors, floorplates: @floorplates, floorplans_map: @floorplans_map, spanSize_y: spanSize_y, spanSize_x: spanSize_x, spanSize_size: spanSize_size, fontsize: fontsize, map_marker_color: map_marker_color, amenity_marker_color: amenity_marker_color, top_margin: top_margin, left_margin: left_margin, amenity_top_margin: amenity_top_margin, amenity_left_margin: amenity_left_margin }
 
                   - if @community_info.has_floorplates?
@@ -236,10 +236,10 @@
                         %div{ data: { svg_url: floorplate.svg_image.url, height: floorplate.svg_metadata['height'] || 0, width: floorplate.svg_metadata['width'] || 0 }, style: "position: relative;", class: "map-image-align floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}", id: "f_#{floor}" }
                       - else
                         - width, height = [floorplate.floorplate_image_width(), floorplate.floorplate_image_height()]
-                        = image_tag (floorplate.standard_image_url  || "/assets/default.jpeg"), class: "map-image-align sitemap-image floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}", id: "f_#{floor}", data: { height: height, width: width }
+                        = image_tag (floorplate.standard_image_url || "/assets/default.jpeg"), class: "map-image-align sitemap-image floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}", id: "f_#{floor}", data: { height: height, width: width }
                   - else
                     - if svg_mode && @community_info&.sitemap&.svg_image.url.present?
-                      %div#property-map-image-container{ data: { svg_url: @community_info.sitemap.svg_image.url, height: @community_info.sitemap.svg_metadata['height'] || 0, width: @community_info.sitemap.svg_metadata['width'] || 0 } }
+                      %div#property-map-image-container.floorplate-image.sitemap-image.map-image-align{ data: { svg_url: @community_info.sitemap.svg_image.url, height: @community_info.sitemap.svg_metadata['height'] || 0, width: @community_info.sitemap.svg_metadata['width'] || 0 } }
                     - else
                       - width, height = @community_info.sitemap.present? && @community_info.sitemap.image.present? ? [@community_info.sitemap.image.width || 0, @community_info.sitemap.image.height || 0] : [0, 0]
                       %img.floorplate-image.sitemap-image.map-image-align{alt: "", src: @community.image_src || "/assets/default.jpeg", id: "property-map-image", title: "", data: { height: height, width: width } }
@@ -314,7 +314,7 @@
                 
       // Trigger the modal with a button
       = render partial: "unit_modal"
-                
+
     - else
       .alert.alert-danger Community is Inactivated.
 
@@ -400,48 +400,50 @@
   });
 
   async function fetchSVGAndSetCoordinates () {
+    $(".webPageLoader").removeClass("hidden")
+
     if (has_floorplate.toString() === "true") {
       const array = []
       for (const floor of floors) {
         array.push(fetchSVG(`#f_${floor}`,
         { 
+          floor,
           svgPosition: 0,
-          floor
+          activateZoom: true,
+          setSVGImageHeight: true,
         }))
       }
       await Promise.all(array)
     } else {
       await fetchSVG(
         "#property-map-image-container",
-        { 
-          svgPosition: 0
+        {
+          svgPosition: 1,
+          activateZoom: true,
+          setSVGImageHeight: true,
         }
       )
     }
 
-    $(".divLoading").addClass("hidden");
-
     setPointersCoordinates();
     setAmenitiesCoordinates();
     calculateMarkerAttributes();
+
+    $(".webPageLoader").addClass("hidden")
   }
 
   $(".webPageLoader").removeClass("hidden");
 
   $(window).on( "orientationchange", function( event ) {
-    $(".webPageLoader").removeClass("hidden");
     window.location.reload();
+    $(".webPageLoader").removeClass("hidden");
   });
-
-  setTimeout(function(){
-    $(".webPageLoader").addClass("hidden");
-  }, 1000);
 
   floors.length < 5 ? initial_start = 0 : initial_start = 0
   $(window).on('resize', function(){
     var win = $(this);
-    $(".webPageLoader").removeClass("hidden");
     window.location.reload();
+    $(".webPageLoader").removeClass("hidden");
     if (win.width() >= 568) {
       $('#slider').slick('unslick');
       $slider.on('init', () => {

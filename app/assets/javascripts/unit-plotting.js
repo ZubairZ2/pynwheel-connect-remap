@@ -354,12 +354,14 @@ function doDraggable () {
         stack: ".marker",
         // get the initial X and Y position when dragging starts
         start: function (event, ui) {
+            let currentScale = 1;
             try {
                 const zoomContainer = event.target.closest('div.plot-image');
-                const key = `${zoomContainer.tagName.toLowerCase()}-${zoomContainer.id}`;
+                const key = getZoomPanKey(zoomContainer);
     
                 svgMode = zoomContainer.id === "svg_map";
-                const { x, y, scale} = mapPanZoom?.[key] ? mapPanZoom[key].getTransform() : { scale: 1, x: 0, y: 0 };
+                const { x, y, scale } = mapPanZoom?.[key] ? mapPanZoom[key].getTransform() : { scale: 1, x: 0, y: 0 };
+                currentScale = scale;
     
                 ui.position.left = (ui.position.left - x) / scale;
                 ui.position.top = (ui.position.top - y) / scale;
@@ -373,14 +375,14 @@ function doDraggable () {
             else if (is_ui_a_accesspoint(ui))
                 start__access_point(event, ui)
             else
-                start__original_work(event, ui, scale)
+                start__original_work(event, ui, currentScale)
         },
         drag: function (event, ui) {
             try {
                 const draggingElement = $(this);
     
                 const zoomContainer = event.target.closest('div.plot-image');
-                const key = `${zoomContainer.tagName.toLowerCase()}-${zoomContainer.id}`
+                const key = getZoomPanKey(zoomContainer);
     
                 const $zoomElement = $(zoomContainer);
                 const canvasTop = $zoomElement.offset().top;

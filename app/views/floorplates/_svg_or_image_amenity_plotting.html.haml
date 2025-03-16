@@ -68,15 +68,17 @@
   %form.form-horizontal
     .box-body.map-body-top
       .row.style{ style: "display: flex;" }
-        .col-lg-9#container.p-0
+        .col-lg-9.p-0{ id: is_svg ? "svg-container" : "image-container" }
           = render partial: 'shared/zoom_control_buttons'
           .map-block{:style=>"position: unset;"}
-            .plot-image{data: {svg_url: is_svg ? floorplate.svg_image.url : nil}, id: is_svg ? 'svg_map' : 'map', style: "min-width: 100%; height: max-content; position: relative" }
+            .plot-image{data: {svg_url: is_svg ? floorplate.svg_image.url : nil}, id: is_svg ? 'svg_map' : 'map', style: "height: max-content; position: relative" }
               - if is_svg
+                .svgLoader.hidden
                 - unless floorplate.svg_image.url.present?
                   = image_tag "default.jpeg", id: "map_img", name: "viewArea", id: "viewArea", draggable: "false", class: 'viewArea', data: { 'map_id' => "map" }
               - else
-                = image_tag floorplate.image.present? ? floorplate.image.url : "default.jpeg"
+                - width, height = [floorplate.floorplate_image_width(), floorplate.floorplate_image_height()]
+                = image_tag floorplate.image.present? ? floorplate.image.url : "default.jpeg", name: "viewArea", id: "viewArea", draggable: "false", class: 'viewArea', data: { map_id: "map", height: height, width: width }
 
                 - coordinates_array = []
                 - amenities.where(floor: [current_floor, nil]).each do |amenity|

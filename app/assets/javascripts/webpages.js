@@ -327,38 +327,37 @@ $(window).bind('load', function () {
       }
     });
     ///////////////////////////////////////////
-    $('.floorplate-anchor').click(function (e) {
+    $(".floorplate-anchor").click(function (e) {
       e.stopPropagation();
 
-      var floor_for_showing_image = $(this).attr('id');
+      var floor_for_showing_image = $(this).attr("id");
+      const $currentImageBox = $("#f_" + floor_for_showing_image);
+
       if (floor_for_showing_image != current_floor) {
         $(".alert").hide();
 
-        $('.floorplate-image').addClass('hidden');
-        $('#f_' + floor_for_showing_image).removeClass('hidden');
-        $('#' + floor_for_showing_image).addClass('selected');
+        $(".floorplate-image").addClass("hidden");
+        $currentImageBox.removeClass("hidden");
+        $("#" + floor_for_showing_image).addClass("selected");
 
         $(".digits-list-item").removeClass("selected");
         $(this).parent().addClass("selected");
 
-        current_floor = floor_for_showing_image
+        current_floor = floor_for_showing_image;
         populate_current_units();
 
-        if ($(this).hasClass('only-amenity')) {
-          $('.alert').show()
+        if ($(this).hasClass("only-amenity")) {
+          $(".alert").show();
           timer = setTimeout(function () {
-            $('.alert').fadeOut('slow');
+            $(".alert").fadeOut("slow");
           }, 2000);
-        }
-        else if ($(this).hasClass('no-units'))
-        {
-          $(".alert").show()
+        } else if ($(this).hasClass("no-units")) {
+          $(".alert").show();
           clearTimeout(timeoutId);
           clearTimeout(timer);
-        }
-        else
-          $(".alert").hide()
+        } else $(".alert").hide();
       }
+      if (svgMode) moveZoomableImageToCenter($currentImageBox[0], false);
     });
 
     $('.filter-label').click(function () {
@@ -379,108 +378,25 @@ $(window).bind('load', function () {
     var x = window.matchMedia("(max-width: 567px)");
     adjustBottomOfImageMap(x);
 
-    var $area = document.getElementById('zoomable');
-    webpagePanZoom = panzoom($area, 
-      {
-        bounds: true, contain: 'automatic', smoothScroll: true,
-        boundsPadding: 0.4,
-        maxZoom: 5,
-        minZoom: 1,
-        minScale: 1,
-        zoomDoubleClickSpeed: 1,
-       
-        onTouch: function(e) {
-          e.preventDefault();
-          return false;
-        }
-      });
-
-    $(".reset-webpage").on('click', function (e) {
-      $(".webPageLoader").removeClass("hidden");
-      window.location.reload(true)
-    });
-    
-    $(".zoom-in-webpage").on('click', function (e) {
-      webpagePanZoom.zoomInOut(187);
-    });
-
-    $(".zoom-out-webpage").on('click', function (e) {
-      webpagePanZoom.zoomInOut(189);
-    });
-    $("#zoomable-modal-image a").on("touchstart", function (e) {
-      e.stopImmediatePropagation();
-    });
-    var $marea = document.getElementById('zoomable-modal-image') 
-    modalPanZoom = panzoom($marea,{bounds: true, boundsPadding: 0.4, contain: 'automatic', smoothScroll: false,maxZoom: 5,minZoom: 1,zoomDoubleClickSpeed: 1,
-      onTouch: function(e) {
-        e.preventDefault();
-        return false;
-      }
-    });
-
-    $(".zoom-in-modal").on('click', function (e) {
-      $($marea).removeClass("transform-none");
-      modalPanZoom.zoomInOut(187);
-      $(".reset-modal").removeClass("hidden")
-    });
-    $(".zoom-out-modal").on('click', function (e) {
-      $($marea).removeClass("transform-none");
-      modalPanZoom.zoomInOut(189);
-    });
-
-    $(".reset-modal").on('click', function (e) {
-      resetToDefaultZoom();
-      $(".reset-modal").addClass("hidden")
-    });
-
-    $('#zoomable-modal-image').on('wheel', function(e) {
-      $(".reset-modal").removeClass("hidden")
-      $($marea).removeClass("transform-none"); 
-    })
-
-    $("#zoomable-modal-image-responsive a").on("touchstart", function (e) {
-      e.stopImmediatePropagation();
-    });
-    var imageArea = document.getElementById('zoomable-modal-image-responsive');
-    responsiveModalPanZoom = panzoom(imageArea,{bounds: true, boundsPadding: 0.4, contain: 'automatic', smoothScroll: false,maxZoom: 5,minZoom: 1,zoomDoubleClickSpeed: 1,
-      onTouch: function(e) {
-        e.preventDefault();
-        return false;
-      }
-    });
-    $(".zoom-in-res-modal").on('click', function (e) {
-      $(imageArea).removeClass("transform-none");
-      responsiveModalPanZoom.zoomInOut(187);
-    });
-    $(".zoom-out-res-modal").on('click', function (e) {
-      $(imageArea).removeClass("transform-none");
-      responsiveModalPanZoom.zoomInOut(189);
-    });
-    $(".reset-res-modal").on('click', function (e) {
-      $(imageArea).addClass("transform-none");
-    });
-    $('#zoomable-modal-image-responsive').on('wheel', function(e) {
-      $(imageArea).removeClass("transform-none"); 
-    })
-
     unitMarkerHover();
     populate_current_units();
 
-    setImageHeight()
-    adjustSitmapMarkerPositions();
-    if (!(has_floorplate == 'true')) {
+    if (!svgMode) {
+      $(".floorplate-image").each(function () {
+        setSvgOrImageHeight($(this));
+      });
+      adjustSitmapMarkerPositions();
     }
+    activateWebpageZoom();
+    activateModalImageZoom();
+    activateResponsiveImageModalZoom();
   }
 
   if(selectMap === "3d-map" && enable3DMaps) {
     _3dMapViewMarkers();
   }
+  $(".webPageLoader").addClass("hidden")
 });
-
-function isImageInViewport(img) {
-  const rect = img.getBoundingClientRect();
-  return rect.top >= 0 && rect.left >= 0 && (rect.height > 0 || rect.width > 0);
-}
 
 function adjustSitmapMarkerPositions() {
   const container = getContainerDimensions();
@@ -502,7 +418,7 @@ function getActualImageDimensions() {
   const $images = $('.floorplate-image');
   let result = { width: 0, height: 0}
   Array.from($images).forEach((image) => {
-    if (isImageInViewport(image)) {
+    if (isElementVisibleOnScreen(image)) {
       result = { width: image.dataset.width, height: image.dataset.height };
     }
   })
@@ -513,7 +429,7 @@ function getStretchedImageDimensions() {
   const $images = $('.floorplate-image');
   let result = { width: 0, height: 0}
   Array.from($images).forEach((image) => {
-    if (isImageInViewport(image)) {
+    if (isElementVisibleOnScreen(image)) {
       const rect = image.getBoundingClientRect();
       const imageWidth = parseFloat(image.dataset.width) / (parseFloat(image.dataset.height) / rect.height)
       image.setAttribute('width', imageWidth)
@@ -541,6 +457,7 @@ function getExtraDiffs() {
 
   return { extra_left_diff, extra_top_diff };
 }
+
 function positionAllMarkers(selector, xAttr, yAttr, stretched, actual, left_diff, top_diff, extra_left_diff, extra_top_diff, show = false) {
   $(selector).each(function () {
     const marker = $(this);
@@ -560,6 +477,147 @@ function setMarkerPosition(marker, x_plot, y_plot, stretched, actual, left_diff,
   const top = (stretched.height / actual.height) * y_plot + top_diff + extra_top_diff;
 
   marker.css({ left, top });
+}
+
+function activateWebpageZoom() {
+  const zoomableElement = document.getElementById("zoomable");
+  if (!svgMode) {
+    activateZoomPan(zoomableElement);
+  }
+
+  $(".reset-webpage").on("click", function (e) {
+    $(".webPageLoader").removeClass("hidden");
+    window.location.reload(true);
+  });
+
+  $(".zoom-in-webpage").on("click", function (e) {
+    let zoomElement = null;
+    if (svgMode) {
+      const $images = $(".floorplate-image");
+      const images = Array.from($images);
+
+      for (const image of images) {
+        if (isElementVisibleOnScreen(image)) {
+          const key = getZoomPanKey(image);
+          zoomElement = window.mapPanZoom[key];
+          break;
+        }
+      }
+    } else {
+      const key = getZoomPanKey(zoomableElement);
+      zoomElement = window.mapPanZoom[key];
+    }
+    zoomElement?.zoomInOut(187);
+  });
+
+  $(".zoom-out-webpage").on("click", function (e) {
+    let zoomElement = null;
+    if (svgMode) {
+      const $images = $(".floorplate-image");
+      const images = Array.from($images);
+
+      for (const image of images) {
+        if (isElementVisibleOnScreen(image)) {
+          const key = getZoomPanKey(image);
+          zoomElement = window.mapPanZoom[key];
+          break;
+        }
+      }
+    } else {
+      const key = getZoomPanKey(zoomableElement);
+      zoomElement = window.mapPanZoom[key];
+    }
+    zoomElement?.zoomInOut(189);
+  });
+
+  $("#zoomable-modal-image a").on("touchstart", function (e) {
+    e.stopImmediatePropagation();
+  });
+}
+
+function activateModalImageZoom() {
+  const $modalArea = $("#zoomable-modal-image");
+  const modalArea = $modalArea[0];
+
+  if (modalArea) {
+    modalPanZoom = panzoom(modalArea, {
+      bounds: true,
+      boundsPadding: 0.4,
+      contain: "automatic",
+      smoothScroll: false,
+      maxZoom: 5,
+      minZoom: 1,
+      zoomDoubleClickSpeed: 1,
+      onTouch: function (e) {
+        e.preventDefault();
+        return false;
+      },
+    });
+
+    $(".zoom-in-modal").on("click", function (e) {
+      $modalArea.removeClass("transform-none");
+      modalPanZoom.zoomInOut(187);
+      $(".reset-modal").removeClass("hidden");
+    });
+
+    $(".zoom-out-modal").on("click", function (e) {
+      $modalArea.removeClass("transform-none");
+      modalPanZoom.zoomInOut(189);
+    });
+
+    $(".reset-modal").on("click", function (e) {
+      resetToDefaultZoom();
+      $(".reset-modal").addClass("hidden");
+    });
+
+    $("#zoomable-modal-image").on("wheel", function (e) {
+      $(".reset-modal").removeClass("hidden");
+      $modalArea.removeClass("transform-none");
+    });
+  }
+}
+
+function activateResponsiveImageModalZoom() {
+  const $imageArea = $("#zoomable-modal-image-responsive");
+  const imageArea = $imageArea[0];
+
+  if (imageArea) {
+    responsiveModalPanZoom = panzoom(imageArea, {
+      bounds: true,
+      boundsPadding: 0.4,
+      contain: "automatic",
+      smoothScroll: false,
+      maxZoom: 5,
+      minZoom: 1,
+      zoomDoubleClickSpeed: 1,
+      onTouch: function (e) {
+        e.preventDefault();
+        return false;
+      },
+    });
+
+    $(".zoom-in-res-modal").on("click", function (e) {
+      imageArea.removeClass("transform-none");
+      responsiveModalPanZoom.zoomInOut(187);
+    });
+
+    $(".zoom-out-res-modal").on("click", function (e) {
+      imageArea.removeClass("transform-none");
+      responsiveModalPanZoom.zoomInOut(189);
+    });
+
+    $(".reset-res-modal").on("click", function (e) {
+      imageArea.addClass("transform-none");
+    });
+
+    $("#zoomable-modal-image-responsive").on("wheel", function (e) {
+      imageArea.removeClass("transform-none");
+    });
+
+    $("#zoomable-modal-image-responsive a").on("touchstart", function (e) {
+      e.stopImmediatePropagation();
+    });
+  }
 }
 
 function polygonClickPopup(feature) {
@@ -1266,9 +1324,11 @@ function markerHoverEffect (event) {
 
   $('#popover-price').html((currency + $this.data('market-rent')))
   $($('#unit_' + $this.data('unitId')))[0].scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-  
-  var new_dx = parseInt(event.pageX) - parseInt($('#panzomm-container').offset().left) + parseInt($('#panzomm-container').scrollLeft());
-  var new_dy = parseInt(event.pageY) - parseInt($('#panzomm-container').offset().top) + parseInt($('#panzomm-container').scrollTop());
+
+  const $container = svgMode ? $('#svg-container') : $('#image-container');
+  var new_dx = parseInt(event.pageX) - parseInt($container.offset().left) + parseInt($container.scrollLeft());
+  var new_dy = parseInt(event.pageY) - parseInt($container.offset().top) + parseInt($container.scrollTop());
+
   const diffLeft = webCommunity['is_sitemap'] ? 25 : 115
   $('#marker-popover').css({ left: (new_dx + diffLeft) + "px", top: (new_dy - 100) + "px" });
   if (window.innerWidth >= 768) {
@@ -2003,7 +2063,9 @@ function getElementHeight(element) {
 function adjustMarkerPosition(marker) {
   // performHardRefresh()
   /*adjusting markers according to screen size*/
-  setImageHeight()
+  if (!svgMode) {
+    setImageHeight()
+  }
   var in_browser_height = 0;
   var in_browser_width = 0;
   var left_diff = 0;
@@ -2102,7 +2164,7 @@ function display3DMap() {
   $('.image-map').hide();
   $('.zoom-in-webpage').hide();
   $('.zoom-out-webpage').hide();
-  $("#panzomm-container").css("width", "100%");
+  $("#image-container").css("width", "100%");
   // $(".location-items").hide();
   $(".c-wrapper").css("margin-left", "0px");
   $(".c-footer").css("margin-left", "0px");
@@ -2150,7 +2212,7 @@ function display2DMap() {
   $(".image-map").show();
   $(".zoom-in-webpage").show();
   $(".zoom-out-webpage").show();
-  $("#panzomm-container").css("width", "");
+  $("#image-container").css("width", "");
   $(".c-wrapper").css("margin-left", "90px");
   $(".c-footer").css(
     "margin-left",

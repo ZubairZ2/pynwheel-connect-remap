@@ -53,7 +53,7 @@
       %form.form-horizontal
         .box-body.map-body-top
           .row
-            .col-lg-9#container{:style => "float: right;"}
+            .col-lg-9#image-container{:style => "float: right;"}
               .map-block{:style=>"position: relative;"}
                 #map.plot-image
                   = image_tag @sitemap.present? ? @sitemap.image.url : ""
@@ -121,7 +121,7 @@
     document.addEventListener("touchend", touchHandler, true);
     document.addEventListener("touchcancel", touchHandler, true);
     let elem = document.querySelector('#map');
-    const key = `${elem.tagName.toLowerCase()}-${elem.id}`
+    const key = getZoomPanKey(elem)
     if (window.mapPanZoom) {
       window.mapPanZoom[key] = panzoom(elem, {
         minZoom: 0.5,

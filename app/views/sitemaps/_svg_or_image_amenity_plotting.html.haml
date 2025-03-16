@@ -76,19 +76,21 @@
   %form.form-horizontal
     .box-body.map-body-top
       .row.style{ style: "display: flex;" }
-        .col-lg-9#container.p-0
+        .col-lg-9.p-0{ id: is_svg ? "svg-container" : "image-container" }
           = render partial: 'shared/zoom_control_buttons'
           .mapLoading.hidden
           .map-block{style: "position: unset;"}
-            .plot-image{ data: { svg_url: is_svg ? sitemap.svg_image.url : nil }, id: is_svg ? 'svg_map' : 'map', style: "min-width: 100%; height: max-content; position: relative" }
+            .plot-image{ data: { svg_url: is_svg ? sitemap.svg_image.url : nil }, id: is_svg ? 'svg_map' : 'map', style: "height: max-content; position: relative" }
               - if is_svg
+                .svgLoader.hidden
                 - unless sitemap.svg_image.url.present?
-                  = image_tag "default.jpeg", id: "map_img", name: "viewArea", id: "viewArea", draggable: "false", class: 'viewArea', data: { 'map_id' => "map" }
+                  = image_tag "default.jpeg", name: "viewArea", id: "viewArea", draggable: "false", class: 'viewArea', data: { 'map_id' => "map" }
               - else
-                = image_tag sitemap.image.present? ? sitemap.image.url : "default.jpeg", id:"map_img", name:"viewArea", id:"viewArea", draggable:"false", class: 'viewArea', data: { 'map_id': "map" }
+                - width, height = sitemap.present? && sitemap.image.present? ? [(sitemap.image.width rescue 0) || 0, (sitemap.image.height rescue 0) || 0] : [0, 0]
+                = image_tag sitemap.image.present? ? sitemap.image.url : "default.jpeg", id:"map_img", name:"viewArea", id:"viewArea", draggable:"false", class: 'viewArea', data: { map_id: "map", height: height, width: width }
 
                 - coordinates_array = []
-                - sitemap.amenities.each do |amenity|
+                - amenities.each do |amenity|
                   - coords = [amenity.x_plot, amenity.y_plot].map(&:to_i)
                   - x_plot, y_plot = coords
                   - if coords.sum > 0 

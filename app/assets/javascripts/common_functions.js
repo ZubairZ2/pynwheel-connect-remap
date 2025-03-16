@@ -23,52 +23,193 @@ function mobileCheck() {
   return check;
 }
 
-function activateZoomPan(elem) {
+function isElementVisibleOnScreen(element) {
+  try {
+    const rect = element.getBoundingClientRect();
+    const viewportWidth =
+      window.innerWidth || document.documentElement.clientWidth;
+    const viewportHeight =
+      window.innerHeight || document.documentElement.clientHeight;
+
+    const isInViewport =
+      rect.right > 0 &&
+      rect.bottom > 0 &&
+      rect.left < viewportWidth &&
+      rect.top < viewportHeight;
+
+    if (!isInViewport) return false;
+
+    const hasSize = rect.width > 0 && rect.height > 0;
+
+    const computedStyle = window.getComputedStyle(element);
+    const isVisible =
+      computedStyle.display !== "none" &&
+      computedStyle.visibility !== "hidden" &&
+      parseFloat(computedStyle.opacity) > 0;
+
+    return hasSize && isVisible;
+  } catch (e) {
+    console.error("Not a valid HTML Element", e);
+    return false;
+  }
+}
+
+function setSvgOrImageHeight($image) {
+  const image = $image[0];
+  if (!image) return;
+  const isSVG = image.tagName.toLowerCase() === "svg";
+
+  const { width: imageOriginalWidth, height: imageOriginalHeight } = isSVG
+    ? image.viewBox.baseVal
+    : {
+        width: parseInt(image.dataset.width || 0),
+        height: parseInt(image.dataset.height || 0),
+      };
+
+  const $imageParent = $image.parent();
+  const $imageContainer = $("div#image-container");
+  const imageContainer = $imageContainer[0];
+  const webpageMainContainer = $("div.map-body.map-container-center-align")[0];
+  const $svgContainer = $("div#svg-container");
+  let comparableContainerDimensions = { width: 0, height: 0 };
+
+  if (isSVG && imageContainer) {
+    const { width: parallelContainerWidth, height: parallelContainerHeight } =
+      imageContainer.getBoundingClientRect();
+
+    comparableContainerDimensions.width = parallelContainerWidth;
+    comparableContainerDimensions.height = parallelContainerHeight;
+  } else if (webpageMainContainer) {
+    const { width: webPageContainerWidth, height: webPageContainerHeight } =
+      webpageMainContainer.getBoundingClientRect();
+    const sidebarWidth = Array.from($(".c-sidebar"))
+      .find((sidebarElement) => isElementVisibleOnScreen(sidebarElement))
+      ?.getBoundingClientRect().width;
+    const footerHeight = Array.from($(".c-footer"))
+      .find((footerElement) => isElementVisibleOnScreen(footerElement))
+      ?.getBoundingClientRect().height;
+
+    comparableContainerDimensions.width =
+      webPageContainerWidth - (sidebarWidth || 0);
+    comparableContainerDimensions.height =
+      webPageContainerHeight - (footerHeight || 0);
+  } else {
+    return;
+  //   const viewportWidth = window.innerWidth;
+  //   const viewportHeight = window.innerHeight;
+
+  //   const imageParentRect = $imageParent[0].getBoundingClientRect();
+  //   const siblings = $imageParent.siblings(":visible");
+
+  //   let occupiedTop = 0,
+  //     occupiedBottom = 0,
+  //     occupiedLeft = 0,
+  //     occupiedRight = 0;
+
+  //   siblings.each(function () {
+  //     const rect = this.getBoundingClientRect();
+
+  //     if (rect.bottom <= imageParentRect.top) {
+  //       occupiedTop = Math.max(occupiedTop, rect.bottom);
+  //     }
+  //     if (rect.top >= imageParentRect.bottom) {
+  //       occupiedBottom = Math.max(occupiedBottom, viewportHeight - rect.top);
+  //     }
+  //     if (rect.right <= imageParentRect.left) {
+  //       occupiedLeft = Math.max(occupiedLeft, rect.right);
+  //     }
+  //     if (rect.left >= imageParentRect.right) {
+  //       occupiedRight = Math.max(occupiedRight, viewportWidth - rect.left);
+  //     }
+  //   });
+
+  //   const availableWidth = viewportWidth - (occupiedLeft + occupiedRight);
+  //   const availableHeight = viewportHeight - (occupiedTop + occupiedBottom);
+
+  //   const imageAspectRatio = imageOriginalWidth / imageOriginalHeight;
+  //   const calculatedHeight = availableWidth / imageAspectRatio;
+
+  //   const finalHeight = Math.min(availableHeight, calculatedHeight);
+
+  //   comparableContainerDimensions.width = availableWidth;
+  //   comparableContainerDimensions.height = finalHeight;
+  }
+
+  const { width, height } = comparableContainerDimensions;
+
+  if (isSVG) {
+    $svgContainer.width(width);
+    $svgContainer.height(height);
+  } else {
+    $imageContainer.width(width);
+    $imageContainer.height(height);
+  }
+
+  const ratio =
+    width > height
+      ? height / (imageOriginalHeight || 1)
+      : width / (imageOriginalWidth || 1);
+
+  $imageParent.width(imageOriginalWidth * ratio);
+  $imageParent.height(imageOriginalHeight * ratio);
+}
+
+function getZoomPanKey(element) {
+  return `${element.tagName.toLowerCase()}-${element.id}`;
+}
+
+function activateZoomPan(elem, options = {}) {
   const touchEvents = ["touchstart", "touchmove", "touchend", "touchcancel"];
   touchEvents.forEach((event) =>
     document.addEventListener(event, touchHandler, true)
   );
 
-  const key = `${elem.tagName.toLowerCase()}-${elem.id}`;
-  if (window.mapPanZoom && typeof window.mapPanZoom === "object")
-    window.mapPanZoom[key] = panzoom(elem, {
-      minZoom: 0.5,
-      maxZoom: 3.0,
-      bounds: true,
-      boundsPadding: 0.3,
-    });
-  else
-    window.mapPanZoom = {
-      [key]: panzoom(elem, {
-        minZoom: 0.5,
-        maxZoom: 3.0,
-        bounds: true,
-        boundsPadding: 0.3,
-      }),
-    };
+  const key = getZoomPanKey(elem);
 
-  let scaleFactor = 1 / (mapPanZoom[key].getTransform()?.scale || 1);
-  let previousScale = 0;
+  if (!window.mapPanZoom) window.mapPanZoom = {};
+
+  window.mapPanZoom[key] = panzoom(elem, {
+    minZoom: 0.5,
+    maxZoom: 3.0,
+    bounds: true,
+    boundsPadding: 0.3,
+    ...options,
+  });
+
+  moveZoomableImageToCenter(elem);
+}
+
+function moveZoomableImageToCenter(elem, resetZoom = true) {
+  if (!elem) return;
+  const key = getZoomPanKey(elem);
+
+  const panInstance = window.mapPanZoom[key];
+  if (!panInstance) return;
 
   const $elem = $(elem);
   const $parentElem = $elem.parent();
-  const [mapBoxWidth, mapBoxHeight] = [$elem.width(), $elem.height()];
-  const [parentWidth, parentHeight] = [
-    $parentElem.width(),
-    $parentElem.height(),
-  ];
+  const mapBoxWidth = $elem.width();
+  const mapBoxHeight = $elem.height();
+  const parentWidth = $parentElem.width();
+  const parentHeight = $parentElem.height();
 
-  while (
-    mapBoxWidth / scaleFactor > parentWidth ||
-    mapBoxHeight / scaleFactor > parentHeight
-  ) {
-    mapPanZoom[key].zoomInOut(189);
-    scaleFactor = 1 / (mapPanZoom[key].getTransform()?.scale || 1);
-    if (scaleFactor === previousScale) break;
-    previousScale = scaleFactor;
+  let scaleFactor;
+
+  if (resetZoom) {
+    const scaleX = parentWidth / (mapBoxWidth || 1);
+    const scaleY = parentHeight / (mapBoxHeight || 1);
+    scaleFactor = Math.min(scaleX, scaleY, 1);
+    panInstance.zoomAbs(0, 0, scaleFactor);
+  } else {
+    scaleFactor = panInstance.getTransform().scale;
   }
 
-  mapPanZoom[key].moveTo(0, 0);
+  const elemTransformedWidth = mapBoxWidth * scaleFactor;
+  const elemTransformedHeight = mapBoxHeight * scaleFactor;
+  const centerX = (parentWidth - elemTransformedWidth) / 2;
+  const centerY = (parentHeight - elemTransformedHeight) / 2;
+
+  panInstance.moveTo(centerX, centerY);
 }
 
 function touchHandler(event) {
@@ -95,11 +236,12 @@ function touchHandler(event) {
 async function fetchSVG(
   dataSetSelector,
   options = {
-    svgPosition: 0,
-    turnoffLoader: false,
-    activateZoom: false,
-    setWebpageImageHeight: false,
     floor: 0,
+    svgPosition: 0,
+    activateZoom: false,
+    turnoffLoader: false,
+    setSVGImageHeight: false,
+    activateHoverEffect: false,
   }
 ) {
   const container = document.querySelector(dataSetSelector);
@@ -108,21 +250,29 @@ async function fetchSVG(
   if (!imageUrl?.endsWith(".svg")) return;
 
   try {
-    $(".divLoading").removeClass("hidden");
+    $(".svgLoader").removeClass("hidden");
     const response = await fetch(imageUrl);
+    
+    $(".svgLoader").removeClass("hidden");
     if (!response.ok)
       throw new Error(`Failed to fetch SVG: ${response.statusText}`);
     const svgText = await response.text();
+    
+    $(".svgLoader").removeClass("hidden");
     const svgElement = parseSVG(svgText);
 
     if (!svgElement) throw new Error("No <svg> element found in the response.");
 
     parsedSVGs.push(svgElement);
     setSVG(container, svgElement, options);
-    if (options.turnoffLoader) $(".divLoading").addClass("hidden");
+    if (options.turnoffLoader) {
+      $(".svgLoader").addClass("hidden");
+    }
   } catch (error) {
     console.error("Error loading SVG:", error);
-    if (options.turnoffLoader) $(".divLoading").addClass("hidden");
+    if (options.turnoffLoader) {
+      $(".svgLoader").addClass("hidden");
+    }
   }
 
   if (options.activateZoom) activateZoomPan(container);
@@ -361,8 +511,8 @@ function setupAmenityToolTip(block, data, pointerData) {
     <img src="${data.image_url}" alt="Image Title">
   `;
   toolTipSpan.style.position = "absolute";
-  toolTipSpan.style.left = `${x + (width * 0.72)}px`;
-  toolTipSpan.style.top = `${y - 103 + (height * 0.72)}px`;
+  toolTipSpan.style.left = `${x + width * 0.75}px`;
+  toolTipSpan.style.top = `${y - 103 + height * 0.75}px`;
 
   return toolTipSpan;
 }
@@ -631,9 +781,7 @@ function getSvgClickedElementWithCenterPoint(svgParentSelector, e) {
 
   if (!svg) return {};
 
-  const key = `${svg.parentElement.tagName.toLowerCase()}-${
-    svg.parentElement.id
-  }`;
+  const key = getZoomPanKey(svg.parentElement);
   const transform = mapPanZoom?.[key] ? mapPanZoom[key].getTransform() : {};
   const scaleFactor = 1 / (transform.scale || 1);
 
@@ -751,8 +899,8 @@ function setSVG(container, svgElement, options) {
             ...childrenArray.slice(svgPosition),
           ];
     container.append(...newChildren);
-    if (options.setWebpageImageHeight)
-      setWebpageImageHeight($(container).find("svg"));
+    if (options.setSVGImageHeight)
+      setSvgOrImageHeight($(container).find("svg"));
   }
 }
 

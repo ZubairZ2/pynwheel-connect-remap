@@ -98,8 +98,8 @@ function initialize_map_click(map_id){
   map_id = map_id
   $('.viewArea').on('click', function (e) {
     const zoomContainer = e.currentTarget.parentElement;
-    const key = `${zoomContainer.tagName.toLowerCase()}-${zoomContainer.id}`
-    
+    const key = getZoomPanKey(zoomContainer);
+
     map_id = $(this).data('map_id')
     marker_color = $('#marker_color').html();
     camera_margin = $('#camera-margin').html();
@@ -211,8 +211,8 @@ function initialize_map_click(map_id){
 
       // set @currunit x/y on load
       if ($('#x_plot').val() != "") {
-          $('#container').scrollLeft($('#x_plot').val() - ($('#container').width() / 2));
-          $('#container').scrollTop($('#y_plot').val() - ($('#container').height() / 2));
+          $('#image-container').scrollLeft($('#x_plot').val() - ($('#image-container').width() / 2));
+          $('#image-container').scrollTop($('#y_plot').val() - ($('#image-container').height() / 2));
           var dx = parseInt($('#x_plot').val());
           var dy = parseInt($('#y_plot').val());
           // place marker
@@ -438,7 +438,7 @@ function initialize_map_click(map_id){
           start: function (event, ui) {
               console.log("start drag")
               const zoomContainer = document.querySelector('div.plot-image');
-              const key = `${zoomContainer.tagName.toLowerCase()}-${zoomContainer.id}`
+              const key = getZoomPanKey(zoomContainer);
 
               var transform = mapPanZoom?.[key] ? mapPanZoom[key].getTransform() : {};
               var scaleFactor = (1 / (transform.scale || 1));
@@ -459,7 +459,7 @@ function initialize_map_click(map_id){
 
 
               const zoomContainer = document.querySelector('div.plot-image');
-              const key = `${zoomContainer.tagName.toLowerCase()}-${zoomContainer.id}`
+              const key = getZoomPanKey(zoomContainer);
 
               var transform = mapPanZoom?.[key] ? mapPanZoom[key].getTransform() : {};
               var scaleFactor = (1 / (transform.scale || 1));

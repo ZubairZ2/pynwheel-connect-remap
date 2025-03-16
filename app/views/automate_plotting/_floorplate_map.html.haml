@@ -56,7 +56,7 @@
 
 :javascript
   function apply_zoom_functionality_against_floor(map_id_for_zoom ,elem){
-    const key = `${elem.tagName.toLowerCase()}-${elem.id}`
+    const key = getZoomPanKey(elem)
     if (window.mapPanZoom) {
       window.mapPanZoom[key] = panzoom(elem, {
         minZoom: 0.5,

@@ -396,7 +396,7 @@
 
   $(document).ready(function () {
     parsedSVGs = [];
-    const zoomPans = $('.plot-image');
+    const zoomPans = $('#map.plot-image');
     zoomPans.each(function () {
       activateZoomPan(this);
     });
@@ -414,7 +414,12 @@
   async function fetchAndSetCoordinates () {
     await fetchSVG(
       "#svg_map.plot-image",
-      { svgPosition: 1, activateHoverEffect: true, turnoffLoader: true }
+      {
+        svgPosition: 1,
+        activateZoom: true,
+        setSVGImageHeight: true,
+        activateHoverEffect: true,
+      }
     );
 
     if (parsedSVGs.length) {
@@ -424,6 +429,8 @@
         updateStyles: true,
       });
     }
+
+    $(".svgLoader").addClass("hidden");
   }
 
   $('.apartment-setting-field').change(function(){
