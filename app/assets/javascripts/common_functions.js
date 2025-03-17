@@ -69,7 +69,9 @@ function setSvgOrImageHeight($image) {
   const $imageParent = $image.parent();
   const $imageContainer = $("div#image-container");
   const imageContainer = $imageContainer[0];
-  const webpageMainContainer = $("div.map-body.map-container-center-align")[0];
+  const webpageMainContainer = $(
+    "div.map-body.map-container-center-align > .right-side"
+  )[0];
   const $svgContainer = $("div#svg-container");
   let comparableContainerDimensions = { width: 0, height: 0 };
 
@@ -80,59 +82,55 @@ function setSvgOrImageHeight($image) {
     comparableContainerDimensions.width = parallelContainerWidth;
     comparableContainerDimensions.height = parallelContainerHeight;
   } else if (webpageMainContainer) {
-    const { width: webPageContainerWidth, height: webPageContainerHeight } =
-      webpageMainContainer.getBoundingClientRect();
-    const sidebarWidth = Array.from($(".c-sidebar"))
-      .find((sidebarElement) => isElementVisibleOnScreen(sidebarElement))
-      ?.getBoundingClientRect().width;
+    comparableContainerDimensions.width =
+      webpageMainContainer.getBoundingClientRect().width;
+
     const footerHeight = Array.from($(".c-footer"))
       .find((footerElement) => isElementVisibleOnScreen(footerElement))
       ?.getBoundingClientRect().height;
-
-    comparableContainerDimensions.width =
-      webPageContainerWidth - (sidebarWidth || 0);
     comparableContainerDimensions.height =
-      webPageContainerHeight - (footerHeight || 0);
+      webpageMainContainer.parentElement.getBoundingClientRect().height -
+      (footerHeight || 0);
   } else {
     return;
-  //   const viewportWidth = window.innerWidth;
-  //   const viewportHeight = window.innerHeight;
+    //   const viewportWidth = window.innerWidth;
+    //   const viewportHeight = window.innerHeight;
 
-  //   const imageParentRect = $imageParent[0].getBoundingClientRect();
-  //   const siblings = $imageParent.siblings(":visible");
+    //   const imageParentRect = $imageParent[0].getBoundingClientRect();
+    //   const siblings = $imageParent.siblings(":visible");
 
-  //   let occupiedTop = 0,
-  //     occupiedBottom = 0,
-  //     occupiedLeft = 0,
-  //     occupiedRight = 0;
+    //   let occupiedTop = 0,
+    //     occupiedBottom = 0,
+    //     occupiedLeft = 0,
+    //     occupiedRight = 0;
 
-  //   siblings.each(function () {
-  //     const rect = this.getBoundingClientRect();
+    //   siblings.each(function () {
+    //     const rect = this.getBoundingClientRect();
 
-  //     if (rect.bottom <= imageParentRect.top) {
-  //       occupiedTop = Math.max(occupiedTop, rect.bottom);
-  //     }
-  //     if (rect.top >= imageParentRect.bottom) {
-  //       occupiedBottom = Math.max(occupiedBottom, viewportHeight - rect.top);
-  //     }
-  //     if (rect.right <= imageParentRect.left) {
-  //       occupiedLeft = Math.max(occupiedLeft, rect.right);
-  //     }
-  //     if (rect.left >= imageParentRect.right) {
-  //       occupiedRight = Math.max(occupiedRight, viewportWidth - rect.left);
-  //     }
-  //   });
+    //     if (rect.bottom <= imageParentRect.top) {
+    //       occupiedTop = Math.max(occupiedTop, rect.bottom);
+    //     }
+    //     if (rect.top >= imageParentRect.bottom) {
+    //       occupiedBottom = Math.max(occupiedBottom, viewportHeight - rect.top);
+    //     }
+    //     if (rect.right <= imageParentRect.left) {
+    //       occupiedLeft = Math.max(occupiedLeft, rect.right);
+    //     }
+    //     if (rect.left >= imageParentRect.right) {
+    //       occupiedRight = Math.max(occupiedRight, viewportWidth - rect.left);
+    //     }
+    //   });
 
-  //   const availableWidth = viewportWidth - (occupiedLeft + occupiedRight);
-  //   const availableHeight = viewportHeight - (occupiedTop + occupiedBottom);
+    //   const availableWidth = viewportWidth - (occupiedLeft + occupiedRight);
+    //   const availableHeight = viewportHeight - (occupiedTop + occupiedBottom);
 
-  //   const imageAspectRatio = imageOriginalWidth / imageOriginalHeight;
-  //   const calculatedHeight = availableWidth / imageAspectRatio;
+    //   const imageAspectRatio = imageOriginalWidth / imageOriginalHeight;
+    //   const calculatedHeight = availableWidth / imageAspectRatio;
 
-  //   const finalHeight = Math.min(availableHeight, calculatedHeight);
+    //   const finalHeight = Math.min(availableHeight, calculatedHeight);
 
-  //   comparableContainerDimensions.width = availableWidth;
-  //   comparableContainerDimensions.height = finalHeight;
+    //   comparableContainerDimensions.width = availableWidth;
+    //   comparableContainerDimensions.height = finalHeight;
   }
 
   const { width, height } = comparableContainerDimensions;
@@ -252,12 +250,12 @@ async function fetchSVG(
   try {
     $(".svgLoader").removeClass("hidden");
     const response = await fetch(imageUrl);
-    
+
     $(".svgLoader").removeClass("hidden");
     if (!response.ok)
       throw new Error(`Failed to fetch SVG: ${response.statusText}`);
     const svgText = await response.text();
-    
+
     $(".svgLoader").removeClass("hidden");
     const svgElement = parseSVG(svgText);
 
