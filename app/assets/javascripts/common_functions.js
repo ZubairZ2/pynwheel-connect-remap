@@ -564,7 +564,6 @@ function setupMouseEvents(blockParent, duplicateBlock, options = {}) {
       Math.abs(touchEndY - this.clickStartY) < moveThreshold &&
       touchDuration < timeThreshold
     ) {
-      debugger
       if (
         duplicateBlock.getAttribute("data-target") &&
         (isMobileView || e.target.tagName !== duplicateBlock.tagName)

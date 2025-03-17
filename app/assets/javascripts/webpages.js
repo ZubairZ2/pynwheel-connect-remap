@@ -403,10 +403,9 @@ function adjustSitmapMarkerPositions() {
   const actualImage = getActualImageDimensions();
   const stretchedImage = getStretchedImageDimensions();
   const { left_diff, top_diff } = calculateDiffs(container, stretchedImage);
-  const { extra_left_diff, extra_top_diff } = getExtraDiffs();
 
-  positionAllMarkers('.marker', 'unit-x-plot', 'unit-y-plot', stretchedImage, actualImage, left_diff, top_diff, extra_left_diff, extra_top_diff);
-  positionAllMarkers('.amenity-marker', 'amenity-x-plot', 'amenity-y-plot', stretchedImage, actualImage, left_diff, top_diff, extra_left_diff, extra_top_diff, true);
+  positionAllMarkers('.marker', 'unit-x-plot', 'unit-y-plot', stretchedImage, actualImage, left_diff, top_diff);
+  positionAllMarkers('.amenity-marker', 'amenity-x-plot', 'amenity-y-plot', stretchedImage, actualImage, left_diff, top_diff, true);
 }
 
 function getContainerDimensions() {
@@ -447,14 +446,21 @@ function calculateDiffs(container, stretched) {
   };
 }
 
-function getExtraDiffs() {
+function getExtraDiffs(selector = "") {
   const width = $(window).width();
-
   const ratio = Math.max(Math.log10(width) * 0.45, 1);
-  const extra_left_diff = -Math.round(ratio);
-  const extra_top_diff = -Math.round(ratio);
+  let [extra_left_diff, extra_top_diff] = [Math.round(ratio), Math.round(ratio)];
 
-  return { extra_left_diff, extra_top_diff };
+  if (selector === ".amenity-marker") {
+    extra_left_diff += (amenity_left_margin || 0) / 2;
+    extra_top_diff += amenity_top_margin || 0;
+  } else {
+    extra_left_diff += (left_margin || 0) / 4;
+    extra_top_diff += top_margin || 0;
+  }
+
+
+  return { extra_left_diff: -extra_left_diff, extra_top_diff: -extra_top_diff };
 }
 
 function positionAllMarkers(
@@ -465,22 +471,14 @@ function positionAllMarkers(
   actual,
   left_diff,
   top_diff,
-  extra_left_diff,
-  extra_top_diff,
   show = false
 ) {
-  if (selector === ".amenity-marker") {
-    extra_left_diff -= (amenity_left_margin || 0) / 2;
-    extra_top_diff -= amenity_top_margin || 0;
-  } else {
-    extra_left_diff -= (left_margin || 0) / 4;
-    extra_top_diff -= top_margin || 0;
-  }
-
   $(selector).each(function () {
     const marker = $(this);
     const x_plot = parseFloat(marker.data(xAttr));
     const y_plot = parseFloat(marker.data(yAttr));
+
+    const { extra_left_diff, extra_top_diff } = getExtraDiffs(selector);
 
     if (has_floorplate === "true") {
       show = show && current_floor == marker.data("floor");
@@ -2151,7 +2149,7 @@ function adjustAmenitiesPosition() {
 
   amenity_width = $('#a_' + amenity_id).width();
   amenity_height = $('#a_' + amenity_id).height();
-  const { extra_left_diff, extra_top_diff } = getExtraDiffs();
+  const { extra_left_diff, extra_top_diff } = getExtraDiffs(".amenity-marker");
 
   // adjusting amenity markers
   $('.a_' + current_floor).each(function () {

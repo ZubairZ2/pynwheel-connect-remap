@@ -140,7 +140,7 @@ class FloorplateAmenitiesController < ApplicationController
     svg_deletion = params[:svg_deletion].to_s == "true"
     new_attributes = svg_deletion ? { pointer_data: {} } : { x_plot: 0, y_plot: 0 }
 
-    @floorplate.amenities.each do |amenity|
+    @community.amenities.where(floor: params).each do |amenity|
       amenity.assign_attributes(new_attributes)
       amenity.save(validate: false)
     end
@@ -149,7 +149,7 @@ class FloorplateAmenitiesController < ApplicationController
 
   def remove_amenity
     @amenity = Amenity.find params[:id]
-    amenities = @floorplate.amenities
+    amenities = @community.amenities
 
     svg_deletion = params[:svg_deletion].to_s == "true"
     new_attributes = svg_deletion ? { pointer_data: {} } : { x_plot: 0, y_plot: 0 }
