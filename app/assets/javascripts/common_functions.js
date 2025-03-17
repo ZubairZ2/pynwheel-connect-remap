@@ -509,7 +509,7 @@ function setupAmenityToolTip(block, data, pointerData) {
     <img src="${data.image_url}" alt="Image Title">
   `;
   toolTipSpan.style.position = "absolute";
-  toolTipSpan.style.left = `${x + width * 0.75}px`;
+  toolTipSpan.style.left = `${x - 93 + width * 0.75}px`;
   toolTipSpan.style.top = `${y - 103 + height * 0.75}px`;
 
   return toolTipSpan;
@@ -564,6 +564,7 @@ function setupMouseEvents(blockParent, duplicateBlock, options = {}) {
       Math.abs(touchEndY - this.clickStartY) < moveThreshold &&
       touchDuration < timeThreshold
     ) {
+      debugger
       if (
         duplicateBlock.getAttribute("data-target") &&
         (isMobileView || e.target.tagName !== duplicateBlock.tagName)

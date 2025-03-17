@@ -450,7 +450,6 @@ function calculateDiffs(container, stretched) {
 function getExtraDiffs() {
   const width = $(window).width();
 
-  // Reduce the ratio multiplier to make values slightly less
   const ratio = Math.max(Math.log10(width) * 0.45, 1);
   const extra_left_diff = -Math.round(ratio);
   const extra_top_diff = -Math.round(ratio);
@@ -458,23 +457,64 @@ function getExtraDiffs() {
   return { extra_left_diff, extra_top_diff };
 }
 
-function positionAllMarkers(selector, xAttr, yAttr, stretched, actual, left_diff, top_diff, extra_left_diff, extra_top_diff, show = false) {
+function positionAllMarkers(
+  selector,
+  xAttr,
+  yAttr,
+  stretched,
+  actual,
+  left_diff,
+  top_diff,
+  extra_left_diff,
+  extra_top_diff,
+  show = false
+) {
+  if (selector === ".amenity-marker") {
+    extra_left_diff -= (amenity_left_margin || 0) / 2;
+    extra_top_diff -= amenity_top_margin || 0;
+  } else {
+    extra_left_diff -= (left_margin || 0) / 4;
+    extra_top_diff -= top_margin || 0;
+  }
+
   $(selector).each(function () {
     const marker = $(this);
     const x_plot = parseFloat(marker.data(xAttr));
     const y_plot = parseFloat(marker.data(yAttr));
 
-    if (has_floorplate === 'true') {
-      show = show && current_floor == marker.data('floor');
+    if (has_floorplate === "true") {
+      show = show && current_floor == marker.data("floor");
     }
-    if (show) marker.removeClass('hidden');
-    setMarkerPosition(marker, x_plot, y_plot, stretched, actual, left_diff, top_diff, extra_left_diff, extra_top_diff);
+    if (show) marker.removeClass("hidden");
+    setMarkerPosition(
+      marker,
+      x_plot,
+      y_plot,
+      stretched,
+      actual,
+      left_diff,
+      top_diff,
+      extra_left_diff,
+      extra_top_diff
+    );
   });
 }
 
-function setMarkerPosition(marker, x_plot, y_plot, stretched, actual, left_diff, top_diff, extra_left_diff, extra_top_diff) {
-  const left = (stretched.width / actual.width) * x_plot + left_diff + extra_left_diff;
-  const top = (stretched.height / actual.height) * y_plot + top_diff + extra_top_diff;
+function setMarkerPosition(
+  marker,
+  x_plot,
+  y_plot,
+  stretched,
+  actual,
+  left_diff,
+  top_diff,
+  extra_left_diff,
+  extra_top_diff
+) {
+  const left =
+    (stretched.width / actual.width) * x_plot + left_diff + extra_left_diff;
+  const top =
+    (stretched.height / actual.height) * y_plot + top_diff + extra_top_diff;
 
   marker.css({ left, top });
 }
