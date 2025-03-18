@@ -644,21 +644,21 @@ function activateResponsiveImageModalZoom() {
     });
 
     $(".zoom-in-res-modal").on("click", function (e) {
-      imageArea.removeClass("transform-none");
+      $imageArea.removeClass("transform-none");
       responsiveModalPanZoom.zoomInOut(187);
     });
 
     $(".zoom-out-res-modal").on("click", function (e) {
-      imageArea.removeClass("transform-none");
+      $imageArea.removeClass("transform-none");
       responsiveModalPanZoom.zoomInOut(189);
     });
 
     $(".reset-res-modal").on("click", function (e) {
-      imageArea.addClass("transform-none");
+      $imageArea.addClass("transform-none");
     });
 
     $("#zoomable-modal-image-responsive").on("wheel", function (e) {
-      imageArea.removeClass("transform-none");
+      $imageArea.removeClass("transform-none");
     });
 
     $("#zoomable-modal-image-responsive a").on("touchstart", function (e) {

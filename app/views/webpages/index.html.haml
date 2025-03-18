@@ -225,7 +225,7 @@
                   %strong List View
 
             %div.map-body.map-container-center-align
-              .right-side.parent.tabcontent.map_view.mobile_map_view{ id: svg_mode ? "svg-container" : "image-container", style: "position: relative;" }
+              .right-side.parent.tabcontent.map_view{ id: svg_mode ? "svg-container" : "image-container", style: "position: relative;" }
                 .image-map#zoomable.zoomable-map-container{style: "text-align: center; position: unset #{svg_mode ? '!important' : ''}"}
                   - locals_for_markers = { svg_mode: svg_mode, community_info: @community_info, units: units, amenities: @amenities, floors: @floors, floorplates: @floorplates, floorplans_map: @floorplans_map, spanSize_y: spanSize_y, spanSize_x: spanSize_x, spanSize_size: spanSize_size, fontsize: fontsize, map_marker_color: map_marker_color, amenity_marker_color: amenity_marker_color, top_margin: top_margin, left_margin: left_margin, amenity_top_margin: amenity_top_margin, amenity_left_margin: amenity_left_margin }
 
@@ -386,6 +386,14 @@
       return true;
     else
       return false;
+  }
+
+  if (mobileCheck()) {
+    $(".right-side.parent.tabcontent.map_view").addClass("mobile_map_view")
+  } else {
+    $(".c-sidebar").css({
+      height: "100%"
+    })
   }
 
   $("embed").ready(function(){

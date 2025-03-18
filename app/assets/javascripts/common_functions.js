@@ -73,6 +73,7 @@ function setSvgOrImageHeight($image) {
     "div.map-body.map-container-center-align > .right-side"
   )[0];
   const $svgContainer = $("div#svg-container");
+  
   let comparableContainerDimensions = { width: 0, height: 0 };
 
   if (isSVG && imageContainer) {
@@ -93,49 +94,11 @@ function setSvgOrImageHeight($image) {
       (footerHeight || 0);
   } else {
     return;
-    //   const viewportWidth = window.innerWidth;
-    //   const viewportHeight = window.innerHeight;
-
-    //   const imageParentRect = $imageParent[0].getBoundingClientRect();
-    //   const siblings = $imageParent.siblings(":visible");
-
-    //   let occupiedTop = 0,
-    //     occupiedBottom = 0,
-    //     occupiedLeft = 0,
-    //     occupiedRight = 0;
-
-    //   siblings.each(function () {
-    //     const rect = this.getBoundingClientRect();
-
-    //     if (rect.bottom <= imageParentRect.top) {
-    //       occupiedTop = Math.max(occupiedTop, rect.bottom);
-    //     }
-    //     if (rect.top >= imageParentRect.bottom) {
-    //       occupiedBottom = Math.max(occupiedBottom, viewportHeight - rect.top);
-    //     }
-    //     if (rect.right <= imageParentRect.left) {
-    //       occupiedLeft = Math.max(occupiedLeft, rect.right);
-    //     }
-    //     if (rect.left >= imageParentRect.right) {
-    //       occupiedRight = Math.max(occupiedRight, viewportWidth - rect.left);
-    //     }
-    //   });
-
-    //   const availableWidth = viewportWidth - (occupiedLeft + occupiedRight);
-    //   const availableHeight = viewportHeight - (occupiedTop + occupiedBottom);
-
-    //   const imageAspectRatio = imageOriginalWidth / imageOriginalHeight;
-    //   const calculatedHeight = availableWidth / imageAspectRatio;
-
-    //   const finalHeight = Math.min(availableHeight, calculatedHeight);
-
-    //   comparableContainerDimensions.width = availableWidth;
-    //   comparableContainerDimensions.height = finalHeight;
   }
 
   const { width, height } = comparableContainerDimensions;
 
-  if (isSVG) {
+  if (isSVG && $svgContainer[0]) {
     $svgContainer.width(width);
     $svgContainer.height(height);
   } else {
@@ -177,7 +140,7 @@ function activateZoomPan(elem, options = {}) {
   moveZoomableImageToCenter(elem);
 }
 
-function moveZoomableImageToCenter(elem, resetZoom = true) {
+function moveZoomableImageToCenter(elem, resetScale = true, resetPosition = false) {
   if (!elem) return;
   const key = getZoomPanKey(elem);
 
@@ -193,7 +156,7 @@ function moveZoomableImageToCenter(elem, resetZoom = true) {
 
   let scaleFactor;
 
-  if (resetZoom) {
+  if (resetScale) {
     const scaleX = parentWidth / (mapBoxWidth || 1);
     const scaleY = parentHeight / (mapBoxHeight || 1);
     scaleFactor = Math.min(scaleX, scaleY, 1);
@@ -202,12 +165,16 @@ function moveZoomableImageToCenter(elem, resetZoom = true) {
     scaleFactor = panInstance.getTransform().scale;
   }
 
-  const elemTransformedWidth = mapBoxWidth * scaleFactor;
-  const elemTransformedHeight = mapBoxHeight * scaleFactor;
-  const centerX = (parentWidth - elemTransformedWidth) / 2;
-  const centerY = (parentHeight - elemTransformedHeight) / 2;
-
-  panInstance.moveTo(centerX, centerY);
+  if (resetPosition) {
+    panInstance.moveTo(0, 0);
+  } else {
+    const elemTransformedWidth = mapBoxWidth * scaleFactor;
+    const elemTransformedHeight = mapBoxHeight * scaleFactor;
+    const centerX = (parentWidth - elemTransformedWidth) / 2;
+    const centerY = (parentHeight - elemTransformedHeight) / 2;
+  
+    panInstance.moveTo(centerX, centerY);
+  }
 }
 
 function touchHandler(event) {
