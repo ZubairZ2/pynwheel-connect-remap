@@ -448,17 +448,21 @@ function calculateDiffs(container, stretched) {
   };
 }
 
-function getExtraDiffs(selector = "") {
+function getExtraDiffs (selector = "") {
+  const isMobileView = mobileCheck();
   const width = $(window).width();
   const ratio = Math.max(Math.log10(width) * 0.45, 1);
+
   let [extra_left_diff, extra_top_diff] = [Math.round(ratio), Math.round(ratio)];
 
   if (selector === ".amenity-marker") {
     extra_left_diff += (amenity_left_margin || 0) / 2;
-    extra_top_diff += amenity_top_margin || 0;
+    if (!isMobileView)
+      extra_top_diff += amenity_top_margin || 0;
   } else {
     extra_left_diff += (left_margin || 0) / 4;
-    extra_top_diff += top_margin || 0;
+    if (!isMobileView)
+      extra_top_diff += top_margin || 0;
   }
 
 

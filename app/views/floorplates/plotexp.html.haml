@@ -16,7 +16,7 @@
           %small.text-primary
             = @community.code
 
-    - locals = { is_svg: false, units: @floorplate_units, units_by_plotted_doors_order: @floorplate_units_by_plotted_doors_order, community: @community, floorplate: @floorplate, all_locks: @all_locks, current_locks_provider: @current_locks_provider, access_points: @access_points, current_user: current_user, units_arr: units_arr }
+    - locals = { is_svg: false, units: @floorplate_units || [], units_by_plotted_doors_order: @floorplate_units_by_plotted_doors_order || [], community: @community, floorplate: @floorplate, all_locks: @all_locks, current_locks_provider: @current_locks_provider, access_points: @access_points, current_user: current_user, units_arr: units_arr }
     = render partial: 'floorplates/svg_or_image_unit_plotting', locals: locals
 
     %br
