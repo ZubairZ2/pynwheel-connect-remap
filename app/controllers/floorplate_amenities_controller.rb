@@ -107,14 +107,13 @@ class FloorplateAmenitiesController < ApplicationController
   end
 
   def plot_amenities
-
     @floor = params[:floor] if params[:floor].present?
     add_breadcrumb "Floorplates", community_floorplates_path(current_community)
     add_breadcrumb "Plot Amenities", plot_amenities_community_floorplate_amenities_path(@community, @floorplate)
 
     @amenities              = @community.amenities.includes(:amenity_galleries)
-    @mapped_amenities = normalized_amenities_for_svg
-    @current_locks_provider =   existing_locks_provider(@community)
+    @mapped_amenities       = normalized_amenities_for_svg
+    @current_locks_provider = existing_locks_provider(@community)
     @hallways               = make_sure_one_selected_hallway(@floorplate.hallways)
     @all_locks              = all_locks(@community)
 
@@ -140,16 +139,19 @@ class FloorplateAmenitiesController < ApplicationController
     svg_deletion = params[:svg_deletion].to_s == "true"
     new_attributes = svg_deletion ? { pointer_data: {} } : { x_plot: 0, y_plot: 0 }
 
-    @community.amenities.where(floor: params).each do |amenity|
+    @floorplate.amenities.each do |amenity|
       amenity.assign_attributes(new_attributes)
       amenity.save(validate: false)
     end
-    redirect_to plot_amenities_community_floorplate_amenities_path(@community, @floorplate), notice: "All plots have been deleted successfully."
+
+    url_params = [@community, @floorplate]
+    url_params << { floor: params[:floor] } if params[:floor].present?
+    redirect_to plot_amenities_community_floorplate_amenities_path(*url_params), notice: "All plots have been deleted successfully."
   end
 
   def remove_amenity
     @amenity = Amenity.find params[:id]
-    amenities = @community.amenities
+    amenities = @floorplate.amenities
 
     svg_deletion = params[:svg_deletion].to_s == "true"
     new_attributes = svg_deletion ? { pointer_data: {} } : { x_plot: 0, y_plot: 0 }
@@ -163,13 +165,16 @@ class FloorplateAmenitiesController < ApplicationController
       Path.where(:map_path_to_id => amenity.id).destroy_all rescue ""
       Path.where(:map_path_from_id => amenity.id).destroy_all rescue ""
     end
-    redirect_to plot_amenities_community_floorplate_amenities_path(@community, @floorplate, floor: params[:floor]), notice: "Amenity plot have been deleted successfully."
+
+    url_params = [@community, @floorplate]
+    url_params << { floor: @amenity.floor } if @amenity.floor.present?
+    redirect_to plot_amenities_community_floorplate_amenities_path(*url_params), notice: "Amenity plot has been deleted successfully."
   end
 
   private
 
   def normalized_amenities_for_svg
-    @amenities.map do |amenity|
+    @amenities.svg_pointed.map do |amenity|
       fetch_amenity_info_struct_for_ploting(amenity)
     end
   end

@@ -211,6 +211,7 @@ class FloorplatesController < ApplicationController
   def plotexp
     @community_info = Community.includes(:credential, :floorplans, { sitemap: [:amenities] }, { floorplates: [:amenities] }, { units: [:floorplate] }).find(params[:community_id])
     @floorplate = @community_info.floorplates.find params[:floorplate_id]
+    @floors = @floorplate.floors
 
     unless @community_info.units.size > 0
       flash[:error] = "Please import unit data first"

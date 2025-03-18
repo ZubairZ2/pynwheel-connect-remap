@@ -111,8 +111,8 @@
               = "-- select image --"
             %ul#imageselect.disabled{:style => "display: none;"}
               - amenities.each do |amenity|
-                - x_plot, y_plot = (is_svg ? (amenity.pointer_data.is_a?(Hash) ? amenity.pointer_data.values_at('x_plot', 'y_plot') : [0, 0]) : [amenity.x_plot, amenity.y_plot]).map(&:to_i)
-                - if x_plot + y_plot == 0
+                - x_plot, y_plot = coords = (is_svg ? (amenity.pointer_data.is_a?(Hash) ? amenity.pointer_data.values_at('x_plot', 'y_plot') : [0, 0]) : [amenity.x_plot, amenity.y_plot]).map(&:to_i)
+                - if coords.sum == 0
                   %li{"data-id" => "#{amenity.id}","data-name" => "#{amenity.name}"}
                     %a
                       = image_tag amenity.image.present? ? amenity.image.url : "upload-image.png"

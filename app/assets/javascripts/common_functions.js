@@ -280,7 +280,6 @@ function setPointersCoordinates() {
   setCoordinates(units, {
     cloneClass: "cloned-unit",
     additionalClasses: ["marker"],
-    onclick: () => $("#unitModal").show(),
     onmouseenter: markerHoverEffect,
     onmouseleave: markerHoverEffectEnd,
     updateStyles: true,
@@ -291,11 +290,9 @@ function setAmenitiesCoordinates() {
   setCoordinates(amenities, {
     cloneClass: "cloned-amenity",
     additionalClasses: ["slider-amenity", "amenityTooltip"],
-    onclick: (amenity) => openAmenityViewerModal(amenity, amenity.galleries),
-    onmouseenter: (toolTipSpan) => amenityHoverEffect(toolTipSpan),
-    onmouseleave: (toolTipSpan) => amenityHoverEffectEnd(toolTipSpan),
     fillAmenityOnHoverOnly: true,
     tooltip: true,
+    onClickAmenityModal: true,
   });
 }
 
@@ -322,7 +319,11 @@ function setCoordinates(data, options) {
 
 function floorBasedData(data = []) {
   return has_floorplate === "true"
-    ? data.filter(({ floor }) => floor === parseInt(current_floor))
+    ? data.filter(
+        ({ floor }) =>
+          floor === parseInt(current_floor) ||
+          (!floor && ["object", "undefined"].includes(typeof floor))
+      )
     : data;
 }
 
@@ -330,8 +331,9 @@ function isCurrentFloorsSVG(svgElement) {
   if (has_floorplate === "true" && svgElement.parentElement) {
     const floorNum = parseInt(svgElement.parentElement.id.split("_").pop());
     return (
-      svgElement.id === `viewArea-${floorNum}` &&
-      floorNum === parseInt(current_floor)
+      (svgElement.id === `viewArea-${floorNum}` &&
+        floorNum === parseInt(current_floor)) ||
+      (parsedSVGs.length === 1 && svgElement.parentElement.id === "svg_map")
     );
   } else if (svgElement.id === "viewArea") {
     return true;
@@ -339,6 +341,7 @@ function isCurrentFloorsSVG(svgElement) {
 
   return false;
 }
+
 function processBlock(svgElement, item, options, dataset = null) {
   const { pointer_data = {}, data_attributes, ...rest } = item || {};
   const { id, selector } = getPointerIdAndSelector(pointer_data, dataset);
@@ -347,8 +350,14 @@ function processBlock(svgElement, item, options, dataset = null) {
   const block = svgElement.querySelector(selector);
   if (!block) return;
 
+  const { cloneClass } = options;
   try {
-    const existingDuplicate = getDuplicateBlock(svgElement, selector, item.id);
+    const existingDuplicate = getDuplicateBlock(
+      svgElement,
+      selector,
+      cloneClass,
+      item.id
+    );
     if (existingDuplicate) return;
   } catch (e) {
     console.error("Duplicate not found.", e);
@@ -381,63 +390,76 @@ function processBlock(svgElement, item, options, dataset = null) {
   }
   duplicateBlock.setAttribute("id", `${id || selector}_cloned`);
 
-  const amenityFillColor = amenity_marker_color || map_marker_color;
-  const { cloneClass, tooltip, additionalClasses, fillAmenityOnHoverOnly } =
-    options;
+  const {
+    tooltip,
+    additionalClasses,
+    fillAmenityOnHoverOnly,
+    onClickAmenityModal,
+  } = options;
   duplicateBlock.classList.add(cloneClass, ...(additionalClasses || []));
 
+  const isMobileView = mobileCheck();
   const { onclick, onmouseenter, onmouseleave } = options;
-  let mouseupEvent = null;
-  let mouseenterEvent = null;
-  let mouseleaveEvent = null;
+  let mouseupEvent, mouseenterEvent, mouseleaveEvent;
+
+  const showModalOnClick = (e) => {
+    if (
+      duplicateBlock.getAttribute("data-target") &&
+      (isMobileView || e.target.tagName !== duplicateBlock.tagName)
+    )
+      return clickSecondLastChildOfGroup(blockParent);
+  };
 
   switch (cloneClass) {
     case "cloned-amenity":
-      const isMobileView = mobileCheck();
+      let showTooltip, hideTooltip;
 
-      if (!isMobileView && tooltip) {
-        const toolTipSpan = setupAmenityToolTip(block, rest, pointer_data);
-        if (toolTipSpan)
-          svgElement.insertAdjacentElement("afterend", toolTipSpan);
+      const showAmenityModal = onClickAmenityModal
+        ? () => openAmenityViewerModal(rest, rest.galleries)
+        : null;
 
-        if (onmouseenter) mouseenterEvent = () => onmouseenter(toolTipSpan);
-        if (onmouseleave) mouseleaveEvent = () => onmouseleave(toolTipSpan);
-
-        if (fillAmenityOnHoverOnly) {
-          mouseenterEvent = mouseenterEvent
-            ? () => {
-                duplicateBlock.style.fill = amenityFillColor;
-                onmouseenter(toolTipSpan);
-              }
-            : () => (duplicateBlock.style.fill = amenityFillColor);
-
-          mouseleaveEvent = mouseleaveEvent
-            ? () => {
-                duplicateBlock.style.fill = "";
-                onmouseleave(toolTipSpan);
-              }
-            : () => (duplicateBlock.style.fill = "");
-        }
+      if (tooltip) {
+        const { eventHandlers } = setupAmenityToolTip(block, rest, svgElement);
+        showTooltip = eventHandlers.showTooltip;
+        hideTooltip = eventHandlers.hideTooltip;
       }
 
-      if (isMobileView || !tooltip || !fillAmenityOnHoverOnly)
-        duplicateBlock.setAttribute("fill", amenityFillColor);
+      const { fillAmenityBlock, removeAmenityBlockFill } =
+        setupAmenityFillHandlers(
+          duplicateBlock,
+          !isMobileView && fillAmenityOnHoverOnly
+        );
 
-      if (onclick) mouseupEvent = () => onclick(rest);
+      const amenityEventHandlers = createMouseEventHandlers({
+        onmouseUp: [showModalOnClick, showAmenityModal, onclick],
+        onmouseEnter: [showTooltip, fillAmenityBlock, onmouseenter],
+        onmouseLeave: [hideTooltip, removeAmenityBlockFill, onmouseleave],
+      });
+
+      mouseupEvent = amenityEventHandlers.mouseupEvent;
+      mouseenterEvent = amenityEventHandlers.mouseenterEvent;
+      mouseleaveEvent = amenityEventHandlers.mouseleaveEvent;
+
+      break;
+    case "cloned-unit":
+      duplicateBlock.setAttribute("fill", map_marker_color);
+
+      const eventHandlers = createMouseEventHandlers({
+        onmouseUp: [showModalOnClick, onclick],
+      });
+
+      mouseupEvent = eventHandlers.mouseupEvent;
+      mouseenterEvent = onmouseenter;
+      mouseleaveEvent = onmouseleave;
 
       break;
     default:
-      duplicateBlock.setAttribute("fill", map_marker_color);
-
-      if (onclick) mouseupEvent = onclick;
-      if (onmouseenter) mouseenterEvent = onmouseenter;
-      if (onmouseleave) mouseleaveEvent = onmouseleave;
-      break;
+      mouseupEvent = onclick;
+      mouseenterEvent = onmouseenter;
+      mouseleaveEvent = onmouseleave;
   }
 
-  setupMouseEvents(blockParent, duplicateBlock, {
-    onclick,
-    cloneClass,
+  setupMouseEvents(blockParent, {
     events: {
       mouseupEvent,
       mouseenterEvent,
@@ -465,19 +487,30 @@ function getPointerIdAndSelector(pointerData, dataset) {
   return { id, selector: tag && id ? `${tag}#${id}` : selector };
 }
 
-function getDuplicateBlock(svgElement, selector, itemId) {
+function getDuplicateBlock(svgElement, selector, cloneClass, itemId) {
   const clonedSelector = selector.endsWith("_cloned")
     ? selector
     : `${selector}_cloned`;
   const existingDuplicate =
     svgElement.getElementById(clonedSelector) ||
     svgElement.querySelector(clonedSelector);
-  if (
-    existingDuplicate &&
-    parseInt(existingDuplicate.dataset.unitId) === parseInt(itemId)
-  ) {
-    $(existingDuplicate).removeClass("hidden");
-    return existingDuplicate;
+  if (existingDuplicate) {
+    switch (cloneClass) {
+      case "cloned-unit":
+        if (parseInt(existingDuplicate.dataset.unitId) === parseInt(itemId)) {
+          $(existingDuplicate).removeClass("hidden");
+          return existingDuplicate;
+        }
+
+        break;
+      case "cloned-amenity":
+        if (
+          parseInt(existingDuplicate.dataset.amenityId) === parseInt(itemId)
+        ) {
+          $(existingDuplicate).removeClass("hidden");
+          return existingDuplicate;
+        }
+    }
   }
   return null;
 }
@@ -497,8 +530,7 @@ function applyDataAttributes(duplicateBlock, dataAttributes) {
   });
 }
 
-function setupAmenityToolTip(block, data, pointerData) {
-  const { x, y, width, height } = block.getBoundingClientRect();
+function setupAmenityToolTip(block, data, svgElement) {
   const toolTipSpan = document.createElement("span");
 
   toolTipSpan.classList.add("amenityTooltipText");
@@ -508,76 +540,118 @@ function setupAmenityToolTip(block, data, pointerData) {
     </h2>
     <img src="${data.image_url}" alt="Image Title">
   `;
-  toolTipSpan.style.position = "absolute";
-  toolTipSpan.style.left = `${x - 93 + width * 0.75}px`;
-  toolTipSpan.style.top = `${y - 103 + height * 0.75}px`;
 
-  return toolTipSpan;
+  svgElement.insertAdjacentElement("afterend", toolTipSpan);
+
+  return {
+    tooltip: toolTipSpan,
+    eventHandlers: {
+      showTooltip: (e) => {
+        positionTooltip(e, toolTipSpan, svgElement.parentElement);
+      },
+      hideTooltip: () => {
+        toolTipSpan.style.visibility = "hidden";
+      },
+    },
+  };
 }
 
-function setupMouseEvents(blockParent, duplicateBlock, options = {}) {
+function positionTooltip(e, tooltip) {
+  tooltip.style.position = "absolute";
+  tooltip.style.left = `${e.offsetX + 10}px`;
+  tooltip.style.top = `${e.offsetY + 20}px`;
+  tooltip.style.visibility = "visible";
+}
+
+function setupAmenityFillHandlers(duplicateBlock, fillOnHover = false) {
+  const amenityFillColor = amenity_marker_color || map_marker_color;
+
+  if (fillOnHover) {
+    return {
+      fillAmenityBlock: () => {
+        duplicateBlock.style.fill = amenityFillColor;
+      },
+      removeAmenityBlockFill: () => {
+        duplicateBlock.style.fill = "";
+      },
+    };
+  }
+
+  duplicateBlock.setAttribute("fill", amenityFillColor);
+  return {};
+}
+
+function createMouseEventHandlers({
+  onmouseEnter,
+  onmouseLeave,
+  onmouseUp,
+} = {}) {
+  return {
+    mouseenterEvent: (e) => {
+      (onmouseEnter || []).forEach((fn) => fn?.(e));
+    },
+    mouseleaveEvent: (e) => {
+      (onmouseLeave || []).forEach((fn) => fn?.(e));
+    },
+    mouseupEvent: (e) => {
+      (onmouseUp || []).forEach((fn) => fn?.(e));
+    },
+  };
+}
+
+function setupMouseEvents(
+  blockParent,
+  { events: { mouseupEvent, mouseenterEvent, mouseleaveEvent } = {} } = {}
+) {
+  const isMobileView = mobileCheck();
   const $blockParent = $(blockParent);
-  const {
-    onclick,
-    cloneClass,
-    events: { mouseupEvent, mouseenterEvent, mouseleaveEvent } = {},
-  } = options;
 
-  $blockParent.on("mousedown touchstart", function (e) {
-    if (e.type === "touchstart") {
-      this.clickStartX = e.touches[0].clientX;
-      this.clickStartY = e.touches[0].clientY;
-    } else {
-      this.clickStartX = e.clientX;
-      this.clickStartY = e.clientY;
-    }
-    this.clickStartTime = Date.now();
-  });
-
-  $blockParent.on("mouseup touchend", function (e) {
-    const isMobileView = mobileCheck();
-
-    if (isMobileView && e.type === "mouseup") {
-      e.preventDefault();
-    }
-    if (e.isDefaultPrevented()) {
-      return;
-    }
-    let touchEndX, touchEndY;
-
-    if (e.type === "touchend") {
-      touchEndX = e.changedTouches[0].clientX;
-      touchEndY = e.changedTouches[0].clientY;
-    } else {
-      touchEndX = e.clientX;
-      touchEndY = e.clientY;
-    }
-
-    const touchDuration = Date.now() - this.clickStartTime;
-    const moveThreshold = 10;
-    const timeThreshold = 300;
-
-    e.preventDefault();
-
-    if (
-      Math.abs(touchEndX - this.clickStartX) < moveThreshold &&
-      Math.abs(touchEndY - this.clickStartY) < moveThreshold &&
-      touchDuration < timeThreshold
-    ) {
-      if (
-        duplicateBlock.getAttribute("data-target") &&
-        (isMobileView || e.target.tagName !== duplicateBlock.tagName)
-      ) {
-        clickSecondLastChildOfGroup(blockParent);
-      } else if (onclick) {
-        if (cloneClass == "cloned-unit" && isMobileView) {
-          clickSecondLastChildOfGroup(blockParent);
-        } else {
-          mouseupEvent();
-        }
+  if (mouseupEvent) {
+    $blockParent.on("mousedown touchstart", function (e) {
+      if (e.type === "touchstart") {
+        this.clickStartX = e.touches[0].clientX;
+        this.clickStartY = e.touches[0].clientY;
+      } else {
+        this.clickStartX = e.clientX;
+        this.clickStartY = e.clientY;
       }
-    }
-  });
+      this.clickStartTime = Date.now();
+    });
+
+    $blockParent.on("mouseup touchend", function (e) {
+      if (isMobileView && e.type === "mouseup") {
+        e.preventDefault();
+      }
+      if (e.isDefaultPrevented()) {
+        return;
+      }
+      let touchEndX, touchEndY;
+
+      if (e.type === "touchend") {
+        touchEndX = e.changedTouches[0].clientX;
+        touchEndY = e.changedTouches[0].clientY;
+      } else {
+        touchEndX = e.clientX;
+        touchEndY = e.clientY;
+      }
+
+      const touchDuration = Date.now() - this.clickStartTime;
+      const moveThreshold = 10;
+      const timeThreshold = 300;
+
+      e.preventDefault();
+
+      if (
+        Math.abs(touchEndX - this.clickStartX) < moveThreshold &&
+        Math.abs(touchEndY - this.clickStartY) < moveThreshold &&
+        touchDuration < timeThreshold
+      ) {
+        mouseupEvent(e);
+      }
+    });
+  }
+
+  if (isMobileView) return;
 
   if (mouseenterEvent)
     $blockParent.on("mouseenter", function (e) {
@@ -585,6 +659,7 @@ function setupMouseEvents(blockParent, duplicateBlock, options = {}) {
       e.preventDefault();
       mouseenterEvent(e);
     });
+
   if (mouseleaveEvent)
     $blockParent.on("mouseleave", function (e) {
       if (e.isDefaultPrevented()) return;
@@ -745,6 +820,13 @@ function allSVGParentsVisible(svgElement) {
 
 function getTheValidSVGShape(svgShape) {
   let shapeName = svgShape.tagName.toLowerCase();
+  if (
+    shapeName === "tspan" &&
+    svgShape.parentElement.tagName.toLowerCase() === "text"
+  ) {
+    shapeName = "text";
+    svgShape = svgShape.parentElement;
+  }
   const firstSiblingElement = Array.from($(svgShape).siblings())[0];
 
   if (

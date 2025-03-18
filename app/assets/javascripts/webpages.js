@@ -356,6 +356,8 @@ $(window).bind('load', function () {
           clearTimeout(timeoutId);
           clearTimeout(timer);
         } else $(".alert").hide();
+      } else {
+        showMarkers()
       }
       if (svgMode) moveZoomableImageToCenter($currentImageBox[0], false);
     });
@@ -1223,14 +1225,6 @@ function closeAmenityViewerModal(amenityID) {
   selectedAmenity = null; selectedGalleries = [];
   $(`#amenitySliderModal-${amenityID}`).modal("close");
   unbindCarousel(amenityID)
-}
-
-function amenityHoverEffect (toolTipSpan) {
-  toolTipSpan.style.visibility = "visible";
-}
-
-function amenityHoverEffectEnd (toolTipSpan) {
-  toolTipSpan.style.visibility = "hidden";
 }
 
 function onUnitClick (e) {

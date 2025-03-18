@@ -25,9 +25,13 @@
 = render partial: 'markers/shared/amenity_door_detail_modal', locals: { community: @community }
 
 :javascript
-  var floor = null;
+  var floor = current_floor = (#{raw @floor.present? ? @floor : "null" })
+  if (current_floor === "null") {
+    current_floor = null;
+  }
   var unitsArr = #{raw amenity_arr.to_json}
   var mapped_units = #{raw @mapped_amenities.to_json}
+  var has_floorplate = "#{@community.has_floorplates?}"
 
   var units_info = #{@amenity_with_doors.to_json.html_safe}
   var community_id = #{params[:community_id]}
@@ -43,7 +47,6 @@
   var accesspointplot = false;
 
   var amenity_type = "floorplate"
-  var floor = #{raw @floor.present? ? @floor : 'undefined' }
   hallways_coordinates = #{raw @hallways.to_json}
 
   $(document).ready(function () {

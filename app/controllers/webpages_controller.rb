@@ -15,33 +15,21 @@ class WebpagesController < ActionController::Base
     Favorite.create(session_id: cookies[:webpages_session_id],unit_ids: []) if cookies[:webpages_session_id].nil?
     @scheduler_widget_link = get_scheduler_link
     @units_with_floorplan_info = []
-    @community_info = Community.includes(:credential, :sitemap, :floorplans, amenities: [:amenity_galleries], floorplates: { amenities: :amenity_galleries }, units: [:floorplate]).find(params[:community_id])
+    @community_info = Community.includes(:credential, :sitemap, :floorplates, :floorplans, amenities: [:amenityable, :amenity_galleries], units: [:floorplate]).find(params[:community_id])
     @floorplans = @community_info.floorplans
     @floorplans_map = @floorplans.index_by(&:provider_floorplan_id)
     svg_enabled = @community_info.enable_svg_mode?
     community_units = @community_info.units
+    @amenities = @community_info.amenities.plotted_amenities(svg_enabled)
 
     unless @community_info.locked
       if @community_info.has_floorplates?
         @floorplates = @community_info.floorplates
-        @floors = @floorplates.map{|f| f.floors}.flatten.sort_by { |f| -f }
-        floorplates_units = []
-        floorplates_amenities = []
-
-        @community_info.floorplates.find_each do |fp|
-          this_floorplate_units = community_units.where(floorplate_id: fp.id)
-          this_floorplate_amenities = fp.amenities
-
-          floorplates_units << this_floorplate_units
-          floorplates_amenities << this_floorplate_amenities
-        end
-        community_units = floorplates_units.flatten
-        @amenities = floorplates_amenities.flatten
-      elsif @community.sitemap.present?
-        @amenities = @community_info.amenities
+        @floors = @floorplates.map {|f| f.floors }.flatten.sort_by { |f| -f }
+        community_units = community_units.where(floorplate_id: @floorplates.ids).includes(:floorplate)
+        @amenities = @amenities.where(amenityable: @floorplates).includes(:amenity_galleries)
       end
 
-      community_units = Unit.where(id: community_units.map(&:id)).includes(:floorplate)
       @available_units_and_sold_units = community_units.available_units(svg_enabled, @community.units_availability_over_120_days) #+ @community_info.units.are_sold(svg_enabled)
       if @available_units_and_sold_units.length > 0
         normalize_units
@@ -67,7 +55,7 @@ class WebpagesController < ActionController::Base
   end
 
   def normalize_amenities
-    @amenities&.each do |amenity|
+    @amenities.find_each do |amenity|
       struct = {
         id: amenity.id,
         name: amenity.name,
@@ -78,7 +66,8 @@ class WebpagesController < ActionController::Base
         y_plot: amenity.y_plot,
         pointer_data: amenity.pointer_data,
         galleries: amenity.amenity_galleries,
-        show_name: @community.show_amenity_name
+        show_name: @community.show_amenity_name,
+        data_attributes: { "data-amenity-id": amenity.id, "data-floor": amenity.floor }
       }
 
       @amenities_data << struct
@@ -86,7 +75,7 @@ class WebpagesController < ActionController::Base
   end
 
   def normalize_units
-    @available_units_and_sold_units.each do |unit|
+    @available_units_and_sold_units.find_each do |unit|
       floorplan = @floorplans_map[unit.floorplan_id]
       if unit.effective_rent.present? && unit.effective_rent >= 1  && floorplan.present?
         @units_with_floorplan_info << fetch_unit_info_struct_for_webpage(unit, floorplan)
