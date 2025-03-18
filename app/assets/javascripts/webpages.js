@@ -455,14 +455,17 @@ function getExtraDiffs (selector = "") {
 
   let [extra_left_diff, extra_top_diff] = [Math.round(ratio), Math.round(ratio)];
 
-  if (selector === ".amenity-marker") {
-    extra_left_diff += (amenity_left_margin || 0) / 2;
-    if (!isMobileView)
-      extra_top_diff += amenity_top_margin || 0;
+  if (isMobileView) {
+    extra_left_diff += ((selector === ".amenity-marker" ? amenity_left_margin : left_margin) || 0) * 0.3;
+    extra_top_diff += ((selector === ".amenity-marker" ? amenity_top_margin : top_margin) || 0) * 0.25;
   } else {
-    extra_left_diff += (left_margin || 0) / 4;
-    if (!isMobileView)
-      extra_top_diff += top_margin || 0;
+    if (selector === ".amenity-marker") {
+      extra_left_diff += (amenity_left_margin || 0) * 0.5;
+      extra_top_diff += amenity_top_margin || 0;
+    } else {
+      extra_left_diff += (left_margin || 0) * 0.1;
+      extra_top_diff += (top_margin || 0) * 0.75;
+    }
   }
 
 
