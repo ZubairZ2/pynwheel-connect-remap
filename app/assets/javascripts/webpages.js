@@ -463,7 +463,7 @@ function getExtraDiffs (selector = "") {
       extra_left_diff += (amenity_left_margin || 0) * 0.5;
       extra_top_diff += amenity_top_margin || 0;
     } else {
-      extra_left_diff += (left_margin || 0) * 0.1;
+      extra_left_diff -= (left_margin || 0) * 0.05;
       extra_top_diff += (top_margin || 0) * 0.75;
     }
   }

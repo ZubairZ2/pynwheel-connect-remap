@@ -174,7 +174,7 @@ class FloorplateAmenitiesController < ApplicationController
   private
 
   def normalized_amenities_for_svg
-    @amenities.svg_pointed.map do |amenity|
+    @amenities.map do |amenity|
       fetch_amenity_info_struct_for_ploting(amenity)
     end
   end
