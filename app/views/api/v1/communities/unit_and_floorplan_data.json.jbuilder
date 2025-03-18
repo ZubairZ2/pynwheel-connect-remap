@@ -1,4 +1,5 @@
 local_assets_base_url = "http://192.168.101.77:3000"
+svg_enabled = false && @community.enable_svg_mode?
 json.apartments do
   if @community.has_floorplates?
     json.map_type "floorplates"
@@ -43,7 +44,7 @@ json.apartments do
 
   # units_floorplans = []
   floorplans = @floorplans
-  available_units_and_sold_units = @units# + @community.units.are_sold(@community.enable_svg_mode?)
+  available_units_and_sold_units = @units# + @community.units.are_sold(svg_enabled)
   json.display_unit_on_homepage @community.display_unit_on_homepage
   json.units @units do |unit|
     if unit.availability == "Unoccupied"
@@ -79,8 +80,8 @@ json.apartments do
       end
 
       json.floorplate_number unit.floor.present? ? unit.floor : 0
-      if unit.amenities.plotted_amenities(@community.enable_svg_mode?).size > 0
-        json.unit_amenities unit.amenities.plotted_amenities(@community.enable_svg_mode?) do |amenity|
+      if unit.amenities.plotted_amenities(svg_enabled).size > 0
+        json.unit_amenities unit.amenities.plotted_amenities(svg_enabled) do |amenity|
           json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
           json.name amenity.name
           json.x_plot amenity.x_plot
@@ -99,7 +100,7 @@ json.apartments do
         end
       elsif !unit.standard_image_url.present?
         #If unit amenities are not present then send floorplan amenities
-        # json.unit_amenities floorplan.amenities.plotted_amenities(@community.enable_svg_mode?) do |amenity|
+        # json.unit_amenities floorplan.amenities.plotted_amenities(svg_enabled) do |amenity|
         #   json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
         #   json.name amenity.name
         #   json.x_plot amenity.x_plot
@@ -137,7 +138,7 @@ json.apartments do
     json.virtual_tour_button_label floorplan.virtual_tour_button_label.present? ? floorplan.virtual_tour_button_label : "3D Tour"
     json.virtual_tour floorplan.get_floorplan_virtual_tour_url()
 
-    json.floorplan_amenities floorplan.amenities.plotted_amenities(@community.enable_svg_mode?) do |amenity|
+    json.floorplan_amenities floorplan.amenities.plotted_amenities(svg_enabled) do |amenity|
       json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
       json.name amenity.name
       json.x_plot amenity.x_plot
@@ -153,7 +154,7 @@ json.apartments do
     # floorplates = floorplates.sort_by { |f| -f.number }
     json.floorplates floors do |floor|
       floorplate = floorplates.select{|f| f.floors.include?(floor)}.first
-      image_url = floorplate.svg_image_url.present? ? floorplate.svg_image_url : floorplate.standard_image_url
+      image_url = svg_enabled ? floorplate.svg_image_url : floorplate.standard_image_url
       json.id floor
       json.number floor
       json.name floorplate.name
