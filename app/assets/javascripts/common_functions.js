@@ -441,7 +441,7 @@ function processBlock(svgElement, item, options, dataset = null) {
       mouseleaveEvent = amenityEventHandlers.mouseleaveEvent;
 
       break;
-    case "cloned-unit":
+    default:
       duplicateBlock.setAttribute("fill", map_marker_color);
 
       const eventHandlers = createMouseEventHandlers({
@@ -453,10 +453,6 @@ function processBlock(svgElement, item, options, dataset = null) {
       mouseleaveEvent = onmouseleave;
 
       break;
-    default:
-      mouseupEvent = onclick;
-      mouseenterEvent = onmouseenter;
-      mouseleaveEvent = onmouseleave;
   }
 
   setupMouseEvents(blockParent, {
