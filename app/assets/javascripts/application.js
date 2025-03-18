@@ -21,6 +21,7 @@
 //= require dataTables/bootstrap/3/jquery.dataTables.bootstrap
 // require turbolinks
 //= require common_functions
+//= require_tree ./services
 //= require amenity
 //= require tour_stop_plotting
 //= require door-plotting

@@ -36,9 +36,9 @@ function saveSiteMapImageOrSvg() {
   siteMapImageDropzone.on("addedfile", function (file) {
     console.log(file.type);
     $(".divLoading").removeClass("hidden");
-    if (!["image/png", "image/jpeg", "image/jpg", "image/svg+xml"].includes(file.type)) {
+    if (!["image/png", "image/jpeg", "image/jpg"].includes(file.type)) {
       $(".divLoading").addClass("hidden");
-      $('#image-and-svg-upload-warning').modal('show');
+      $('#image-upload-warning').modal('show');
       siteMapImageDropzone.removeFile(file);
     }
   });

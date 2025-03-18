@@ -778,7 +778,7 @@ function readImageIncludingSVG(input) {
     if (
       isSvgField
         ? fileType === "image/svg+xml"
-        : ["image/png", "image/jpeg", "image/jpg", "image/svg+xml"].includes(
+        : ["image/png", "image/jpeg", "image/jpg"].includes(
             fileType
           )
     ) {
@@ -793,7 +793,7 @@ function readImageIncludingSVG(input) {
     } else {
       $(input).val("");
       $(
-        isSvgField ? "#svg-upload-warning" : "#image-and-svg-upload-warning"
+        isSvgField ? "#svg-upload-warning" : "#image-upload-warning"
       ).modal("show");
       //console.log($(input).val());
     }
