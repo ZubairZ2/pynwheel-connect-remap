@@ -143,12 +143,12 @@
           = render partial: 'shared/zoom_control_buttons'
           .mapLoading.hidden
           .map-block{style: "position: unset"}
-            .plot-image{ data: { svg_url: is_svg ? sitemap.svg_image.url : nil }, id: is_svg ? 'svg_map' : 'map', style: "height: max-content; position: relative" }
+            .plot-image{ data: { svg_url: is_svg && sitemap.svg_image.present? ? sitemap.svg_image.url : nil }, id: is_svg ? 'svg_map' : 'map', style: "position: relative" }
               .grid-graph.hidden
+              .assetLoader.hidden
               - if is_svg
-                .svgLoader.hidden
-                - unless sitemap.svg_image.url.present?
-                  = image_tag "default.jpeg", id: "map_img", name: "viewArea", id: "viewArea", draggable: "false", class: 'viewArea', data: { 'map_id' => "map" }
+                - unless sitemap.svg_image.present?
+                  = image_tag "default.jpeg", name: "viewArea", id: "viewArea", draggable: "false", class: 'viewArea', data: { 'map_id' => "map" }
                 - units_by_plotted_doors_order.each do |unit|
                   - if unit.pointer_data.present?
                     - x_plot, y_plot = unit.pointer_data.is_a?(Hash) ? unit.pointer_data.values_at('x_plot', 'y_plot').map(&:to_i) : [0, 0]

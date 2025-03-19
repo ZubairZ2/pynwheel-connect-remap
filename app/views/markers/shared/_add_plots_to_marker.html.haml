@@ -26,8 +26,8 @@
                   - units = units.sort_by {|obj| obj.marketing_name.to_i}
                   - units = units.sort_by {|obj| obj.building.to_i}
                 - units.each do |unit|
-                  - x_plot, y_plot = is_svg ? unit.pointer_data.values_at('x_plot', 'y_plot') : [unit.x_plot, unit.y_plot]
-                  - if x_plot.to_i + y_plot.to_i == 0 and unit.provider_unit_id.present?
+                  - x_plot, y_plot = cords = (is_svg ? (unit.pointer_data.is_a?(Hash) ? unit.pointer_data.values_at('x_plot', 'y_plot') : [0, 0]) : [unit.x_plot, unit.y_plot]).map(&:to_i)
+                  - if cords.sum == 0 and unit.provider_unit_id.present?
                     - if unit.building != nil && unit.building != ""
                       %option{:value=>unit.provider_unit_id}= "#{unit.building}-#{unit.marketing_name}"
                     - elsif @community.data_provider == "yardi"

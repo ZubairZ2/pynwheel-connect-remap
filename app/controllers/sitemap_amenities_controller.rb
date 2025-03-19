@@ -123,7 +123,7 @@ class SitemapAmenitiesController < ApplicationController
 				ts.destroy
 			end
 		end
-		redirect_to plot_amenities_community_sitemaps_path(@community,@sitemap), notice: "All plots have been deleted successfully."
+		redirect_to plot_amenities_community_sitemaps_path(@community), notice: "All plots have been deleted successfully."
 	end
 
 	def remove_amenity
@@ -143,7 +143,7 @@ class SitemapAmenitiesController < ApplicationController
 				ts.destroy
 			end
 		end
-		redirect_to plot_amenities_community_sitemaps_path(@community,@sitemap),notice: "Amenity plot have been deleted successfully."
+		redirect_to plot_amenities_community_sitemaps_path(@community),notice: "Amenity plot have been deleted successfully."
 	end
 
 	private

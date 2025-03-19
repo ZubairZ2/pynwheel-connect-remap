@@ -149,6 +149,8 @@ function createPanZoom(domElement, options) {
 
 
   function zoomInOut(keyCode){
+    if (!isElementVisible(panController.getZoomElem())) return;
+
   	$.get('/api/v1/communities/3/test_panzoom?keyCode='+window.navigator.userAgent)
     var e = jQuery.Event("keydown")
     e.keyCode = keyCode
@@ -236,6 +238,7 @@ function createPanZoom(domElement, options) {
   }
 
   function moveTo(x, y) {
+    if (!isElementVisible(panController.getZoomElem())) return;
     transform.x = x
     transform.y = y
 
@@ -330,11 +333,12 @@ function createPanZoom(domElement, options) {
   }
 
   function makeDirty() {
-    isDirty = true
+    isDirty = isElementVisible(panController.getZoomElem());
     frameAnimation = window.requestAnimationFrame(frame)
   }
 
   function zoomByRatio(clientX, clientY, ratio) {
+    if (!isElementVisible(panController.getZoomElem())) return;
     if (isNaN(clientX) || isNaN(clientY) || isNaN(ratio)) {
       throw new Error('zoom requires valid numbers')
     }
@@ -387,6 +391,7 @@ function createPanZoom(domElement, options) {
   }
 
   function internalMoveBy(dx, dy, smooth) {
+    if (!isElementVisible(panController.getZoomElem())) return;
     if (!smooth) {
       return moveBy(dx, dy)
     }
@@ -414,6 +419,7 @@ function createPanZoom(domElement, options) {
   }
 
   function dispose() {
+    if (!isElementVisible(panController.getZoomElem())) return;
     releaseEvents();
   }
 
@@ -456,6 +462,7 @@ function createPanZoom(domElement, options) {
   }
 
   function applyTransform() {
+    if (!isElementVisible(panController.getZoomElem())) return;
     isDirty = false
 
     // TODO: Should I allow to cancel this?
@@ -503,7 +510,6 @@ function createPanZoom(domElement, options) {
     if (z) {
       var scaleMultiplier = getScaleMultiplier(z)
       var ownerRect = owner.getBoundingClientRect()
-      console.log(scaleMultiplier)
       publicZoomTo(ownerRect.width/2, ownerRect.height/2, scaleMultiplier)
     }
   }
@@ -706,14 +712,13 @@ function createPanZoom(domElement, options) {
   }
 
   function onMouseWheel(e) {
+    if (!isElementVisible(panController.getZoomElem())) return;
     // if client does not want to handle this event - just ignore the call
     if (beforeWheel(e)) return
 
     smoothScroll.cancel()
 
     var scaleMultiplier = getScaleMultiplier(e.deltaY)
-    console.log("scale "+ scaleMultiplier)
-    console.log("Delta "+ e.deltaY)
 
     if (scaleMultiplier !== 1) {
       var offset = getOffsetXY(e)
@@ -733,7 +738,8 @@ function createPanZoom(domElement, options) {
   }
 
   function smoothZoom(clientX, clientY, scaleMultiplier) {
-      var fromValue = transform.scale
+    if (!isElementVisible(panController.getZoomElem())) return;
+    var fromValue = transform.scale
       var from = {scale: fromValue}
       var to = {scale: scaleMultiplier * fromValue}
 
@@ -772,6 +778,7 @@ function createPanZoom(domElement, options) {
   }
 
   function triggerPanStart() {
+    if (!isElementVisible(panController.getZoomElem())) return;
     if (!panstartFired) {
       triggerEvent('panstart')
       panstartFired = true
@@ -780,6 +787,7 @@ function createPanZoom(domElement, options) {
   }
 
   function triggerPanEnd() {
+    if (!isElementVisible(panController.getZoomElem())) return;
     if (panstartFired) {
       // we should never run smooth scrolling if it was multiTouch (pinch zoom animation):
       if (!multiTouch) smoothScroll.stop()
@@ -788,6 +796,7 @@ function createPanZoom(domElement, options) {
   }
 
   function triggerEvent(name) {
+    if (!isElementVisible(panController.getZoomElem())) return;
     api.fire(name, api);
   }
 }
@@ -867,7 +876,6 @@ function autoRun() {
       return
     }
     var options = collectOptions(panzoomScript)
-    console.log(options)
     window[globalName] = createPanZoom(el, options);
   }
 
@@ -922,12 +930,17 @@ function makeDomController(domElement, options) {
   }
 
   var api = {
+    getZoomElem: getZoomElem,
     getBBox: getBBox,
     getOwner: getOwner,
     applyTransform: applyTransform,
   }
   
   return api
+
+  function getZoomElem() {
+    return domElement;
+  }
 
   function getOwner() {
     return owner
@@ -1097,6 +1110,7 @@ function makeSvgController(svgElement, options) {
   }
 
   var api = {
+    getZoomElem: getZoomElem,
     getBBox: getBBox,
     getScreenCTM: getScreenCTM,
     getOwner: getOwner,
@@ -1105,6 +1119,10 @@ function makeSvgController(svgElement, options) {
   }
   
   return api
+
+  function getZoomElem() {
+    return svgElement;
+  }
 
   function getOwner() {
     return owner

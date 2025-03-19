@@ -182,7 +182,7 @@ $(document).ready(function () {
                     for (const unitData of selected) {
                         if (element) {
                             const elId = element.id
-                            const selector = elId ? null : getElementSelector(element);
+                            const selector = elId ? null : getSvgElementSelector(element);
                             const dataSet = { x_plot: dx, y_plot: dy, tag: element.tagName?.toLowerCase(), id: elId, selector }
                             savePlot(unitData[0], dx, dy, null, dataSet);
                             fillThePlot(unitData, dataSet, getDeletionUrl({ forSvg: true }))
@@ -325,15 +325,7 @@ function getDeletionUrl (options = { forSvg: false }) {
         result = '/communities/'+community_id+'/units/'+$(this).attr("title")+'/remove_plot'
     }
 
-let [mainUrl, queryParams = ""] = result.split('?');
-    if (queryParams) {
-        if (forSvg && !queryParams.includes('svg_deletion=true'))
-            queryParams = `${queryParams}&svg_deletion=true`
-    } else if (forSvg) {
-        queryParams = 'svg_deletion=true'
-    }
-
-    return `${mainUrl}?${queryParams}`
+    return forSvg ? addSvgDeletionParamInURL(result) : result
 }
 
 function getTagToPlot (url) {
@@ -407,7 +399,7 @@ function fillThePlot(unitData, dataSet, deletionUrl) {
         'data-toggle': "modal",
         'data-target': "#confirm-delete",
     }
-    processBlock(
+    processSvgBlock(
         $('svg', '#svg_map')[0],
         unit,
         {

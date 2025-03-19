@@ -29,6 +29,7 @@
 
 
 :javascript
+  var assetTracker;
   var multi_floors;
   var unitsArr = #{raw units_arr.to_json}
   var units_info = #{@unit_with_door.to_json.html_safe}
@@ -51,84 +52,78 @@
   hallways_coordinates = #{raw @hallways.to_json}
 
   $(document).ready(function () {
+    $(".divLoading").removeClass("hidden");
+    assetTracker = new AssetLoadingTracker({ loaderSelector: ".assetLoader" });
     parsedSVGs = [];
-    const zoomPans = $('#map.plot-image');
-    zoomPans.each(function () {
-      activateZoomPan(this);
-    });
-
-    triggerPlottingEvents();
-    fetchAndSetCoordinates();
 
     $('.wysihtml5').each(function(i, elem) {
       $(elem).wysihtml5({'toolbar': {'image': false,'link' : false}});
     });
 
+    if (#{current_user.welcome_floorplate_plot_page}) {
+      $('[data-toggle="plotUnitOnFloorplatePopover"]').popover({
+        html: true,
+        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Once you have selected unit(s) to plot, click on the correct position on the map to place the marker. You can drag and drop each marker to reposition it. You can also click on a marker to see which units are associated with it; add a unit; or delete the marker.</div><div class="popover-footer"><a id="propertyDetailNameId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+      }).popover('show');
+    }
+
+    $(document).on("click", "#propertyDetailNameId" , function(){
+      $(this).parents(".popover").popover('hide');
+      $(this).parents(".popover").addClass('hidden');
+      $('[data-toggle="floorplateManageAmenitiesPopover"]').popover({
+        html: true,
+        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding"  style="color: ;">Click on "Manage Amenities" to switch from plotting units to uploading and plotting amenity images.</div><div class="popover-footer"><a id="siteShowPropertyMapPagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#siteShowPropertyMapPagePopoverClose" , function(){
+      $(this).parents(".popover").popover('hide');
+      $(this).parents(".popover").addClass('hidden');
+      $('[data-toggle="floorplateGridOverlayPopover"]').popover({
+        html: true,
+        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">Add a grid overlay to the map to make it easier to see if the markers are straight.</div><div class="popover-footer"><a id="sitemapDisplayFloorplanGalleryPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#sitemapDisplayFloorplanGalleryPopoverClose" , function(){
+      $('html, body').animate({ scrollTop: 200 });
+      $(this).parents(".popover").popover('hide');
+      $(this).parents(".popover").addClass('hidden');
+      $('[data-toggle="floorplateSelectPlotToUnitsPopover"]').popover({
+        placement: 'left',
+        html: true,
+        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">You can select one or multiple units to plot in one position (with one marker) on the map. If no units appear in the list, that means that all units that have been imported or entered have already been plotted on the map.</div><div class="popover-footer"><a id="sitempaDisplayHomepagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+      }).popover('show');
+      showHideOverlayGrid(document.querySelector('#map.plot-image'));
+    });
+    
+    $(document).on("click", "#sitempaDisplayHomepagePopoverClose" , function(){
+      $(this).parents(".popover").popover('hide');
+      $(this).parents(".popover").addClass('hidden');
+      #{current_user.welcome_floorplate_plot_page = false}
+      #{current_user.save}
+    });
+
+    const $imageZoomPan = $('#map.plot-image');
+    if ($imageZoomPan[0]) {
+      activateZoomPan($imageZoomPan[0]);
+      const image = $imageZoomPan.find('img#viewArea')[0]
+      if (image) {
+        const asset = { node: image, url: image.src, type: "img", completed: false };
+        assetTracker.addOrUpdateAsset(asset, true);
+
+        if (image.complete) {
+          asset.completed = true;
+        } else {
+          $(image).on("load", function () {
+            asset.completed = true;
+          });
+        }
+      }
+    }
+
+    bindPlottingEvents();
+    fetchSVGAndSetPlotCoordinates("unit");
     draw_initial_hallways(hallways_coordinates);
   })
 
-  async function fetchAndSetCoordinates () {
-    await fetchSVG(
-      "#svg_map.plot-image",
-      {
-        svgPosition: 1,
-        activateZoom: true,
-        setSVGImageHeight: true,
-        activateHoverEffect: true,
-      }
-    );
-    
-    if (parsedSVGs.length) {
-      setCoordinates(mapped_units, {
-        cloneClass: "cloned-unit",
-        additionalClasses: ["marker"],
-        updateStyles: true,
-      });
-    }
-
-    $(".svgLoader").addClass("hidden");
-  }
-
-  if (#{current_user.welcome_floorplate_plot_page}) {
-    $('[data-toggle="plotUnitOnFloorplatePopover"]').popover({
-      html: true,
-      template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Once you have selected unit(s) to plot, click on the correct position on the map to place the marker. You can drag and drop each marker to reposition it. You can also click on a marker to see which units are associated with it; add a unit; or delete the marker.</div><div class="popover-footer"><a id="propertyDetailNameId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-    }).popover('show');
-  }
-
-  $(document).on("click", "#propertyDetailNameId" , function(){
-    $(this).parents(".popover").popover('hide');
-    $(this).parents(".popover").addClass('hidden');
-    $('[data-toggle="floorplateManageAmenitiesPopover"]').popover({
-      html: true,
-      template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding"  style="color: ;">Click on "Manage Amenities" to switch from plotting units to uploading and plotting amenity images.</div><div class="popover-footer"><a id="siteShowPropertyMapPagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-    }).popover('show');
-  });
-
-  $(document).on("click", "#siteShowPropertyMapPagePopoverClose" , function(){
-    $(this).parents(".popover").popover('hide');
-    $(this).parents(".popover").addClass('hidden');
-    $('[data-toggle="floorplateGridOverlayPopover"]').popover({
-      html: true,
-      template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">Add a grid overlay to the map to make it easier to see if the markers are straight.</div><div class="popover-footer"><a id="sitemapDisplayFloorplanGalleryPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-    }).popover('show');
-  });
-
-  $(document).on("click", "#sitemapDisplayFloorplanGalleryPopoverClose" , function(){
-    $('html, body').animate({ scrollTop: 200 });
-    $(this).parents(".popover").popover('hide');
-    $(this).parents(".popover").addClass('hidden');
-    $('[data-toggle="floorplateSelectPlotToUnitsPopover"]').popover({
-      placement: 'left',
-      html: true,
-      template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">You can select one or multiple units to plot in one position (with one marker) on the map. If no units appear in the list, that means that all units that have been imported or entered have already been plotted on the map.</div><div class="popover-footer"><a id="sitempaDisplayHomepagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-    }).popover('show');
-    showHideOverlayGrid(document.querySelector('#map.plot-image'));
-  });
-  
-  $(document).on("click", "#sitempaDisplayHomepagePopoverClose" , function(){
-    $(this).parents(".popover").popover('hide');
-    $(this).parents(".popover").addClass('hidden');
-    #{current_user.welcome_floorplate_plot_page = false}
-    #{current_user.save}
-  });

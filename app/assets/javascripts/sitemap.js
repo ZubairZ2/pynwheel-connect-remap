@@ -3,7 +3,6 @@ var ocrImageDimensions;
 
 $(document).ready(function () { 
   if ($('.is-sitemap')[0]) {
-    var selected = [];
     $("#map, #svg_map").css('cursor', 'default');
     imageOCRResponse = $("#ocrData").data("ocrData");
     ocrImageDimensions = $("#ocrData").data("imageDimensions");
@@ -83,4 +82,13 @@ function start_access_point_plot(event){
       background: "#000000",
       opacity: 0.5
     }).appendTo($(".multi-select-units").css("position", "relative"));
+}
+
+function sitemap_goBack() {
+  $('.apartment-settings-form').submit();
+  if (window.history.length == 1) {
+    window.location.reload();
+  } else {
+    window.history.back();
+  }
 }

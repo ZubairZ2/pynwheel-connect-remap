@@ -375,6 +375,7 @@
 #ocrData{data: {ocr_data: @map_ocr_data.to_json, image_dimensions: @dimensions.to_json}}
 
 :javascript
+  var assetTracker;
   var unitsArr = #{raw units_arr.to_json};
   var units_info = #{@unit_with_door.to_json.html_safe}
   var mapped_units = #{raw @mapped_units.to_json}
@@ -395,98 +396,85 @@
   var accesspointplot = false;
 
   $(document).ready(function () {
+    $(".divLoading").removeClass("hidden");
+    assetTracker = new AssetLoadingTracker({ loaderSelector: ".assetLoader" });
     parsedSVGs = [];
-    const zoomPans = $('#map.plot-image');
-    zoomPans.each(function () {
-      activateZoomPan(this);
-    });
-
-    triggerPlottingEvents();
-    fetchAndSetCoordinates();
 
     $('.wysihtml5').each(function(i, elem) {
       $(elem).wysihtml5({'toolbar': {'image': false,'link' : false}});
     });
 
+    if (!#{current_user.welcome_sitemap_page}) {
+      $('[data-toggle="sitemapPageNamePopover"]').popover({
+        html: true,
+        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Changing the Page Name will change the menu label for the interactive map and dynamic floor plan gallery page in the Pynwheel app.</div><div class="popover-footer"><a id="propertyDetailNameId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+      }).popover('show');
+    }
+
+    $(document).on("click", "#propertyDetailNameId" , function(){
+      $(this).parents(".popover").popover('hide');
+      $(this).parents(".popover").addClass('hidden');
+      $('[data-toggle="siteShowPropertyMapPagePopover"]').popover({
+        html: true,
+        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Switching this will change whether or not this page appears in the Pynwheel app.</div><div class="popover-footer"><a id="siteShowPropertyMapPagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#siteShowPropertyMapPagePopoverClose" , function(){
+      $(this).parents(".popover").popover('hide');
+      $(this).parents(".popover").addClass('hidden');
+      $('[data-toggle="sitemapDisplayFloorplanGalleryPopover"]').popover({
+        html: true,
+        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Switching display floor plan gallery will change whether or not the dynamic floor plan gallery appears in the app.</div><div class="popover-footer"><a id="sitemapDisplayFloorplanGalleryPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#sitemapDisplayFloorplanGalleryPopoverClose" , function(){
+        $('html, body').animate({ scrollTop: 200 });
+      $(this).parents(".popover").popover('hide');
+      $(this).parents(".popover").addClass('hidden');
+      $('[data-toggle="sitempaDisplayHomepagePopover"]').popover({
+        html: true,
+        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Switching this will change whether or not there is a menu button for this page on the home page of the Pynwheel app.</div><div class="popover-footer"><a id="sitempaDisplayHomepagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+      }).popover('show');
+    });
+
+    $(document).on("click", "#sitempaDisplayHomepagePopoverClose" , function(){
+        $('html, body').animate({ scrollTop: 400 });
+      $(this).parents(".popover").popover('hide');
+      $(this).parents(".popover").addClass('hidden');
+      $('[data-toggle="sitemapDisplayPricePopover"]:first').popover({
+        html: true,
+        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Switching this will change whether or not pricing is displayed on the interactive property map and in the floor plan gallery.</div><div class="popover-footer"><a id="sitemapDisplayPricePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+      }).popover('show');
+    });
+
+    $('.apartment-setting-field').change(function(){
+      $('.apartment-settings-form').submit();
+    });
+
+    const $imageZoomPan = $('#map.plot-image');
+    if ($imageZoomPan[0]) {
+      activateZoomPan($imageZoomPan[0]);
+      const image = $imageZoomPan.find('img#viewArea')[0]
+      if (image) {
+        const asset = { node: image, url: image.src, type: "img", completed: false };
+        assetTracker.addOrUpdateAsset(asset, true);
+
+        if (image.complete) {
+          asset.completed = true;
+        } else {
+          $(image).on("load", function () {
+            asset.completed = true;
+          });
+        }
+      }
+    }
+
+    bindPlottingEvents();
+    fetchSVGAndSetPlotCoordinates("unit");
     draw_initial_hallways(hallways_coordinates);
   })
 
-  async function fetchAndSetCoordinates () {
-    await fetchSVG(
-      "#svg_map.plot-image",
-      {
-        svgPosition: 1,
-        activateZoom: true,
-        setSVGImageHeight: true,
-        activateHoverEffect: true,
-      }
-    );
 
-    if (parsedSVGs.length) {
-      setCoordinates(mapped_units, {
-        cloneClass: "cloned-unit",
-        additionalClasses: ["marker"],
-        updateStyles: true,
-      });
-    }
-
-    $(".svgLoader").addClass("hidden");
-  }
-
-  $('.apartment-setting-field').change(function(){
-    $('.apartment-settings-form').submit();
-  });
-
-  function sitemap_goBack() {
-    $('.apartment-settings-form').submit();
-    if (window.history.length == 1) {
-      window.location.reload();
-    } else {
-      window.history.back();
-    }
-  }
-  if (!#{current_user.welcome_sitemap_page}) {
-    $('[data-toggle="sitemapPageNamePopover"]').popover({
-      html: true,
-      template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Changing the Page Name will change the menu label for the interactive map and dynamic floor plan gallery page in the Pynwheel app.</div><div class="popover-footer"><a id="propertyDetailNameId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-    }).popover('show');
-  }
-
-  $(document).on("click", "#propertyDetailNameId" , function(){
-    $(this).parents(".popover").popover('hide');
-    $(this).parents(".popover").addClass('hidden');
-    $('[data-toggle="siteShowPropertyMapPagePopover"]').popover({
-      html: true,
-      template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Switching this will change whether or not this page appears in the Pynwheel app.</div><div class="popover-footer"><a id="siteShowPropertyMapPagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-    }).popover('show');
-  });
-
-  $(document).on("click", "#siteShowPropertyMapPagePopoverClose" , function(){
-    $(this).parents(".popover").popover('hide');
-    $(this).parents(".popover").addClass('hidden');
-    $('[data-toggle="sitemapDisplayFloorplanGalleryPopover"]').popover({
-      html: true,
-      template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Switching display floor plan gallery will change whether or not the dynamic floor plan gallery appears in the app.</div><div class="popover-footer"><a id="sitemapDisplayFloorplanGalleryPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-    }).popover('show');
-  });
-
-  $(document).on("click", "#sitemapDisplayFloorplanGalleryPopoverClose" , function(){
-      $('html, body').animate({ scrollTop: 200 });
-    $(this).parents(".popover").popover('hide');
-    $(this).parents(".popover").addClass('hidden');
-    $('[data-toggle="sitempaDisplayHomepagePopover"]').popover({
-      html: true,
-      template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Switching this will change whether or not there is a menu button for this page on the home page of the Pynwheel app.</div><div class="popover-footer"><a id="sitempaDisplayHomepagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-    }).popover('show');
-  });
-
-  $(document).on("click", "#sitempaDisplayHomepagePopoverClose" , function(){
-      $('html, body').animate({ scrollTop: 400 });
-    $(this).parents(".popover").popover('hide');
-    $(this).parents(".popover").addClass('hidden');
-    $('[data-toggle="sitemapDisplayPricePopover"]:first').popover({
-      html: true,
-      template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Switching this will change whether or not pricing is displayed on the interactive property map and in the floor plan gallery.</div><div class="popover-footer"><a id="sitemapDisplayPricePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-    }).popover('show');
-  });
 

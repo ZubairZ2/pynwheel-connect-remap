@@ -1214,7 +1214,7 @@ table.upload-image tr td {
     display: block;
 }
 
-.webPageLoader, .svgLoader {
+.webPageLoader, .assetLoader {
     position: absolute;
     z-index: 100000;
     background-image: url('dots_loader.gif');
@@ -3462,10 +3462,6 @@ a#favoriteclickme {
 #svg-container.mobile_map_view > #zoomable {
     display: flex;
     justify-content: center;
-}
-
-#svg-container > #zoomable > .map-image-align.hidden {
-    display: none;
 }
 
 #svg-container > #zoomable > .map-image-align {

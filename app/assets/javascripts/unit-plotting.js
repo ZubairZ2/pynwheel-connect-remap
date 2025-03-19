@@ -480,7 +480,7 @@ function stop__original_work(event, ui) {
         const { element, centerPoint } = getSvgClickedElementWithCenterPoint("#svg_map.plot-image", event);
         if (element) {
             const elId = element.id
-            const selector = elId ? null : getElementSelector(element);
+            const selector = elId ? null : getSvgElementSelector(element);
             dataSet = { x_plot: left, y_plot: top, tag: element.tagName?.toLowerCase(), id: elId, selector }
             left = Math.round(centerPoint.x);
             top = Math.round(centerPoint.y);

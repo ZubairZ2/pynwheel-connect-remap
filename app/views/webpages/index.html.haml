@@ -232,14 +232,14 @@
                   - if @community_info.has_floorplates?
                     - @floors.each do |floor|
                       - floorplate = @floorplates.select{|f| f.floors.include?(floor)}.first
-                      - if svg_mode && floorplate.svg_image.url.present?
-                        %div{ data: { svg_url: floorplate.svg_image.url, height: floorplate.svg_metadata['height'] || 0, width: floorplate.svg_metadata['width'] || 0 }, style: "position: relative;", class: "map-image-align floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}", id: "f_#{floor}" }
+                      - if svg_mode
+                        %div{ data: { svg_url: floorplate.svg_image.present? ? floorplate.svg_image.url : "/assets/default.jpeg", height: floorplate.svg_metadata['height'] || 0, width: floorplate.svg_metadata['width'] || 0 }, style: "position: relative;", class: "map-image-align floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}", id: "f_#{floor}" }
                       - else
                         - width, height = [floorplate.floorplate_image_width(), floorplate.floorplate_image_height()]
                         = image_tag (floorplate.standard_image_url || "/assets/default.jpeg"), class: "map-image-align sitemap-image floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}", id: "f_#{floor}", data: { height: height, width: width }
                   - else
-                    - if svg_mode && @community_info&.sitemap&.svg_image.url.present?
-                      %div#property-map-image-container.floorplate-image.sitemap-image.map-image-align{ data: { svg_url: @community_info.sitemap.svg_image.url, height: @community_info.sitemap.svg_metadata['height'] || 0, width: @community_info.sitemap.svg_metadata['width'] || 0 } }
+                    - if svg_mode
+                      %div#property-map-image-container.floorplate-image.sitemap-image.map-image-align{ data: { svg_url: @community_info&.sitemap&.svg_image.present? ? @community_info.sitemap.svg_image.url : "/assets/default.jpeg", height: @community_info.sitemap.svg_metadata['height'] || 0, width: @community_info.sitemap.svg_metadata['width'] || 0 } }
                     - else
                       - width, height = @community_info.sitemap.present? && @community_info.sitemap.image.present? ? [@community_info.sitemap.image.width || 0, @community_info.sitemap.image.height || 0] : [0, 0]
                       %img.floorplate-image.sitemap-image.map-image-align{alt: "", src: @community.image_src || "/assets/default.jpeg", id: "property-map-image", title: "", data: { height: height, width: width } }
@@ -332,9 +332,17 @@
 #communityWebpagesData{data: { currency: @community.get_currency_symbol(), community: @community.to_json, amenities: @amenities.to_json, map_configurations: @community&.three_d_maps_configuration.to_json, units: @units_with_floorplan_info, amenities_data: @amenities_data } }
 
 :javascript
+  var assetTracker;
+  var units;
+  var amenities;
+  var total_units;
+  var ele;
+  var amenityEle;
+  var $slider;
+  var $images = [];
+  var largeImageHeight = 166;
   var map_marker_color = toRgbColor("#{raw map_marker_color}");
   var amenity_marker_color = toRgbColor("#{raw amenity_marker_color}");
-  var large_image_height = 166;
   var units_availability_over_120_days = "#{@community.units_availability_over_120_days}";
   var apply_now_url = "#{apply_now_community_webpages_url(@community)}"
   var redirect_url = "#{community_webpages_url(@community)}"
@@ -345,14 +353,14 @@
   var isSiteMap = "#{@community.sitemap.present?}"
   var img_width = "#{@community.sitemap.present? && @community.sitemap.image.present? ? (@community.sitemap.width || @community.sitemap.image.width) : nil}"
   var img_height = "#{@community.sitemap.present? && @community.sitemap.image.present? ? (@community.sitemap.height || @community.sitemap.image.height) : nil}"
-  var current_floor = "#{@floors.present? and @floors.size > 0 ? min_unit_floor : 0}";
+  var current_floor = "#{@floors.present? and @floors.size > 0 ? min_unit_floor : 'null'}";
+  if (current_floor === "null") {
+    current_floor = null;
+  }
   var floors = "#{@floors.present? and @floors.size > 0 ? @floors : []}";
   floors = JSON.parse(floors);
   var current_width = $(window).width();
   var current_units = [];
-  var units = $("#communityWebpagesData").data("units");
-  var amenities = $("#communityWebpagesData").data("amenitiesData");
-  var total_units = units
   _beansApiKey = "#{ENV['BEANS_API_KEY']}"
 
   var community_logo = "#{@community.logo.present? ? true : false}"
@@ -365,191 +373,91 @@
   var window_height = window.innerHeight;
   var diff = 0
   var diffL = 0
-  var ele = document.getElementsByClassName('fa-map-marker-alt-responsive');
-  var amenityEle = document.getElementsByClassName('camera-icon-responsive');
   var slides_to_show = 4;
   var slides_to_scroll = 1;
-  var $slider = $("#slider");
   var initial_start;
 
-  if ((current_width > 767 && current_width < 993) && (window.matchMedia("(orientation: landscape)").matches)) {
-   $(".c-modal-dialog").css("margin-top", "12%")
-  }
-  else if (current_width < 767 && (window.matchMedia("(orientation: landscape)").matches)) {
-   $(".c-modal-dialog").css("margin-top", "27%")
-   $("#responsive-floorplan-image").css("max-height", '300px')
-  }
-  
-  function iOSversion() {
-
-    if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream)
-      return true;
-    else
-      return false;
-  }
-
-  if (mobileCheck()) {
-    $(".right-side.parent.tabcontent.map_view").addClass("mobile_map_view")
-  } else {
-    $(".c-sidebar").css({
-      height: "100%"
-    })
-  }
-
-  $("embed").ready(function(){
-    if(iOSversion()){
-      var target = $('#clickme');
-      if (target.length) {
-        $('html, body').animate({
-          scrollTop: target.offset().top
-        }, 500);
-      }
-    }
-  });
-
-  async function fetchSVGAndSetCoordinates () {
-    $(".webPageLoader").removeClass("hidden")
-
-    if (has_floorplate.toString() === "true") {
-      const array = []
-      for (const floor of floors) {
-        array.push(fetchSVG(`#f_${floor}`,
-        { 
-          floor,
-          svgPosition: 0,
-          activateZoom: true,
-          setSVGImageHeight: true,
-        }))
-      }
-      await Promise.all(array)
-    } else {
-      await fetchSVG(
-        "#property-map-image-container",
-        {
-          svgPosition: 1,
-          activateZoom: true,
-          setSVGImageHeight: true,
-        }
-      )
-    }
-
-    setPointersCoordinates();
-    setAmenitiesCoordinates();
-    calculateMarkerAttributes();
-
-    $(".webPageLoader").addClass("hidden")
-  }
-
-  $(".webPageLoader").removeClass("hidden");
-
-  $(window).on( "orientationchange", function( event ) {
-    window.location.reload();
-    $(".webPageLoader").removeClass("hidden");
-  });
-
-  floors.length < 5 ? initial_start = 0 : initial_start = 0
-  $(window).on('resize', function(){
-    var win = $(this);
-    window.location.reload();
-    $(".webPageLoader").removeClass("hidden");
-    if (win.width() >= 568) {
-      $('#slider').slick('unslick');
-      $slider.on('init', () => {
-        mouseWheel($slider);
-      }).slick({
-        infinite: false,
-        slidesToShow: 4,
-        slidesToScroll: 1,
-        vertical: true,
-        initialSlide: initial_start,
-        prevArrow:
-          "<div class='product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
-        nextArrow:
-          "<div class='product-single__thumb-arrow product-single__thumb-arrow_right'><i class='fa fa-angle-right'></i></div>",
-      });
-    } else if (win.width() <= 567) {
-      $('#slider').slick('unslick');
-      $slider.on('init', () => {mouseWheel($slider)}).slick({
-        infinite: false,
-        slidesToShow: 3,
-        slidesToScroll: 1,
-        vertical: false,
-        speed: 6,
-        initialSlide: floors.length < 4 ? 0 : 0,
-        prevArrow:
-          "<div class='product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
-        nextArrow:
-          "<div class='product-single__thumb-arrow product-single__thumb-arrow_right'><i class='fa fa-angle-right'></i></div>",
-      });
-
-      $('.slick-track').css("width", "235px")
-    }
-  });
-    
-  if ($("#slider")[0]){
-    if (current_width >= 568) {
-      $slider.on('init', () => {mouseWheel($slider)}).slick({
-        infinite: false,
-        slidesToShow: 4,
-        slidesToScroll: 1,
-        vertical: true,
-        speed: 6,
-        initialSlide: initial_start,
-        prevArrow:
-          "<div class='product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
-        nextArrow:
-          "<div class='product-single__thumb-arrow product-single__thumb-arrow_right'><i class='fa fa-angle-right'></i></div>",
-      });
-    }else{
-      $slider.on('init', () => {
-        mouseWheel($slider)
-      }).slick({
-        infinite: false,
-        slidesToShow: 3,
-        slidesToScroll: 1,
-        vertical: false,
-        speed: 6,
-        initialSlide: floors.length < 4 ? 0 : 0,
-        prevArrow:
-          "<div class='product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
-        nextArrow:
-          "<div class='product-single__thumb-arrow product-single__thumb-arrow_right'><i class='fa fa-angle-right'></i></div>",
-      });
-      $('.slick-track').css("width", "235px")
-    }
-
-    function mouseWheel($slider) {
-      $('#slider').on('wheel', { $slider: $slider }, mouseWheelHandler)
-    }
-    function mouseWheelHandler(event) {
-      event.preventDefault()
-      const $slider = event.data.$slider
-      const delta = event.originalEvent.deltaY
-      if(delta > 0) {
-        $slider.slick('slickNext')
-      }
-      else {
-        $slider.slick('slickPrev')
-      }
-    }
-  }
-  
-  $(".slick-slide").on("click", function() {
-    var anchorTag = $(this).find('a.floorplate-anchor');
-    _3dFilterByFloor(anchorTag);
-    anchorTag.click();
-    calculateMarkerAttributes();
-  });
-
   $(document).ready(function () {
-    if(current_width >= 993){
-      let main_container_height = $('.c-body').height() - $('.c-footer').height();
-      console.log("main_container_height "+main_container_height)
-      $('.floorplate-image').attr("height", main_container_height - large_image_height)
+    assetTracker = new AssetLoadingTracker({ loaderSelector: ".webPageLoader" });
 
-      /*if(isSiteMap == 'true') {
-        $('.floorplate-image').attr("width", img_width)
-      }*/
+    if (!units) units = $("#communityWebpagesData").data("units");
+    if (!total_units) total_units = units
+    if (!amenities) amenities = $("#communityWebpagesData").data("amenitiesData");
+
+    ele = document.getElementsByClassName('fa-map-marker-alt-responsive');
+    amenityEle = document.getElementsByClassName('camera-icon-responsive');
+    $slider = $("#slider");
+
+    if (!svgMode) setImageHeight();
+
+    if (mobileCheck()) {
+      $(".right-side.parent.tabcontent.map_view").addClass("mobile_map_view")
+    } else {
+      $(".c-sidebar").css({
+        "min-height": "100%"
+      })
+    }
+
+    $("embed").ready(function(){
+      if(iOSversion()){
+        var target = $('#clickme');
+        if (target.length) {
+          $('html, body').animate({
+            scrollTop: target.offset().top
+          }, 500);
+        }
+      }
+    });
+
+    $(window).on( "orientationchange", function( event ) {
+      window.location.reload();
+      $(".webPageLoader").removeClass("hidden");
+    });
+
+    floors.length < 5 ? initial_start = 0 : initial_start = 0
+    $(window).on('resize', function(){
+      var win = $(this);
+      window.location.reload();
+      $(".webPageLoader").removeClass("hidden");
+      if (win.width() >= 568) {
+        $('#slider').slick('unslick');
+        $slider.on('init', () => {
+          mouseWheel($slider);
+        }).slick({
+          infinite: false,
+          slidesToShow: 4,
+          slidesToScroll: 1,
+          vertical: true,
+          initialSlide: initial_start,
+          prevArrow:
+            "<div class='product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
+          nextArrow:
+            "<div class='product-single__thumb-arrow product-single__thumb-arrow_right'><i class='fa fa-angle-right'></i></div>",
+        });
+      } else if (win.width() <= 567) {
+        $('#slider').slick('unslick');
+        $slider.on('init', () => {mouseWheel($slider)}).slick({
+          infinite: false,
+          slidesToShow: 3,
+          slidesToScroll: 1,
+          vertical: false,
+          speed: 6,
+          initialSlide: floors.length < 4 ? 0 : 0,
+          prevArrow:
+            "<div class='product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
+          nextArrow:
+            "<div class='product-single__thumb-arrow product-single__thumb-arrow_right'><i class='fa fa-angle-right'></i></div>",
+        });
+
+        $('.slick-track').css("width", "235px")
+      }
+    });
+
+    if ((current_width > 767 && current_width < 993) && (window.matchMedia("(orientation: landscape)").matches)) {
+      $(".c-modal-dialog").css("margin-top", "12%")
+    } else if (current_width < 767 && (window.matchMedia("(orientation: landscape)").matches)) {
+      $(".c-modal-dialog").css("margin-top", "27%")
+      $("#responsive-floorplan-image").css("max-height", '300px')
     }
     
     if(current_width <= 993){
@@ -571,33 +479,89 @@
       $('.c-modal-wrapper').addClass("hidden");
     }
 
+    if ($slider[0]){
+      if (current_width >= 568) {
+        $slider.on('init', () => {mouseWheel($slider)}).slick({
+          infinite: false,
+          slidesToShow: 4,
+          slidesToScroll: 1,
+          vertical: true,
+          speed: 6,
+          initialSlide: initial_start,
+          prevArrow:
+            "<div class='product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
+          nextArrow:
+            "<div class='product-single__thumb-arrow product-single__thumb-arrow_right'><i class='fa fa-angle-right'></i></div>",
+        });
+      } else {
+        $slider.on('init', () => {
+          mouseWheel($slider)
+        }).slick({
+          infinite: false,
+          slidesToShow: 3,
+          slidesToScroll: 1,
+          vertical: false,
+          speed: 6,
+          initialSlide: floors.length < 4 ? 0 : 0,
+          prevArrow:
+            "<div class='product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
+          nextArrow:
+            "<div class='product-single__thumb-arrow product-single__thumb-arrow_right'><i class='fa fa-angle-right'></i></div>",
+        });
+        $('.slick-track').css("width", "235px")
+      }
+
+      function mouseWheel($slider) {
+        $slider.on('wheel', { $slider: $slider }, mouseWheelHandler)
+      }
+
+      function mouseWheelHandler(event) {
+        event.preventDefault()
+        const $slider = event.data.$slider
+        const delta = event.originalEvent.deltaY
+        if(delta > 0) {
+          $slider.slick('slickNext')
+        }
+        else {
+          $slider.slick('slickPrev')
+        }
+      }
+    }
+    
+    $(".slick-slide").on("click", function() {
+      var anchorTag = $(this).find('a.floorplate-anchor');
+      _3dFilterByFloor(anchorTag);
+      anchorTag.click();
+      calculateMarkerAttributes();
+    });
+
+    document.getElementById('filter').addEventListener('change', () => {
+      var units = $("#communityWebpagesData").data("units");
+      var has_floorplate = "#{@community_info.has_floorplates?}"
+      var community_name = "#{@community_info.name}"
+      renderChangedUnits();
+      setSvgPointersCoordinates();
+    });
+
+    $("#show-more-price").click(function(){
+      $('#show-more-price').addClass('hidden');
+      $('#hide-more-price').removeClass('hidden');
+      $("#pricing-option").removeClass('hidden')
+    });
+
+    $("#hide-more-price").click(function(){
+      $('#hide-more-price').addClass('hidden');
+      $('#show-more-price').removeClass('hidden');
+      $("#pricing-option").addClass('hidden')
+    }); 
+
+    if(community_logo == "false" && current_width < 567){
+      $(".mobile-trigger").addClass("pt");
+    }
+
     parsedSVGs = [];
-    fetchSVGAndSetCoordinates();
+    fetchWebpageSVGAndSetCoordinates();
   });
-
-  document.getElementById('filter').addEventListener('change', () => {
-    var units = $("#communityWebpagesData").data("units");
-    var has_floorplate = "#{@community_info.has_floorplates?}"
-    var community_name = "#{@community_info.name}"
-    renderChangedUnits();
-    setPointersCoordinates();
-  });
-
-  $("#show-more-price").click(function(){
-    $('#show-more-price').addClass('hidden');
-    $('#hide-more-price').removeClass('hidden');
-    $("#pricing-option").removeClass('hidden')
-  });
-
-  $("#hide-more-price").click(function(){
-    $('#hide-more-price').addClass('hidden');
-    $('#show-more-price').removeClass('hidden');
-    $("#pricing-option").addClass('hidden')
-  }); 
-  
-  if(community_logo == "false" && current_width < 567){
-    $(".mobile-trigger").addClass("pt");
-  }
 
   function calculateMarkerAttributes() {
     if (current_width < 993) {

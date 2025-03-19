@@ -25,6 +25,7 @@
 = render partial: 'markers/shared/amenity_door_detail_modal', locals: { community: @community }
 
 :javascript
+  var assetTracker;
   var floor = current_floor = (#{raw @floor.present? ? @floor : "null" })
   if (current_floor === "null") {
     current_floor = null;
@@ -50,35 +51,30 @@
   hallways_coordinates = #{raw @hallways.to_json}
 
   $(document).ready(function () {
+    $(".divLoading").removeClass("hidden");
+    assetTracker = new AssetLoadingTracker({ loaderSelector: ".assetLoader" });
     parsedSVGs = [];
-    const zoomPans = $('#map.plot-image');
-    zoomPans.each(function () {
-      activateZoomPan(this);
-    });
 
-    triggerPlottingEvents();
-    fetchAndSetCoordinates();
+    const $imageZoomPan = $('#map.plot-image');
+    if ($imageZoomPan[0]) {
+      activateZoomPan($imageZoomPan[0]);
+      const image = $imageZoomPan.find('img#viewArea')[0]
+      if (image) {
+        const asset = { node: image, url: image.src, type: "img", completed: false };
+        assetTracker.addOrUpdateAsset(asset, true);
 
+        if (image.complete) {
+          asset.completed = true;
+        } else {
+          $(image).on("load", function () {
+            asset.completed = true;
+          });
+        }
+      }
+    }
+
+    bindPlottingEvents();
+    fetchSVGAndSetPlotCoordinates("amenity");
     draw_initial_hallways(hallways_coordinates)
   })
 
-  async function fetchAndSetCoordinates () {
-    await fetchSVG(
-      "#svg_map.plot-image",
-      {
-        svgPosition: 1,
-        activateZoom: true,
-        setSVGImageHeight: true,
-        activateHoverEffect: true,
-      }
-    );
-
-    if (parsedSVGs.length) {
-      setCoordinates(mapped_units, {
-        cloneClass: "cloned-amenity",
-        additionalClasses: ["marker"],
-      });
-    }
-
-    $(".svgLoader").addClass("hidden");
-  }

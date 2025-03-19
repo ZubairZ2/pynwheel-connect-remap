@@ -292,11 +292,13 @@ $('.submit-click').click(function() {
 
 });
 
-function triggerPlottingEvents() {
+function bindPlottingEvents() {
   $("#markers-modal, #svg-markers-modal").on("show.bs.modal", function (e) {
-    const $relatedTarget = $(e.relatedTarget);
     const $this = $(this);
+    const relatedTarget = e.relatedTarget;
+    const $relatedTarget = $(relatedTarget);
     const unitProviderId = $relatedTarget.data("provider-unit-id").toString();
+    const isSvgModal = this.id === "svg-markers-modal";
     let $sameHiddenUnits = null;
 
     console.log("Displaying plotted unit information in markers modal");
@@ -304,7 +306,7 @@ function triggerPlottingEvents() {
     const $unitButtons = $this.find(".unit-buttons");
     $unitButtons.empty();
 
-    if (this.id === "svg-markers-modal") {
+    if (isSvgModal) {
       const { x_plot, y_plot, tag, id, selector } =
         $relatedTarget.data("pointer-data");
 
@@ -331,14 +333,15 @@ function triggerPlottingEvents() {
       $sameHiddenUnits.each(function () {
         console.log("CLick on marker for deleting or updating");
         const $hiddenUnit = $(this);
-        const underneathUnitId = $hiddenUnit.attr("id").split("-")[1];
+        const underneathUnitId = $hiddenUnit.attr("id").replace("h-", "");
 
         $unitButtons.append(
           getButtonHtml(
             $hiddenUnit.data(),
             underneathUnitId === unitProviderId
               ? "btn-primary"
-              : "btn-default"
+              : "btn-default",
+            isSvgModal
           )
         );
       });
@@ -451,12 +454,18 @@ function triggerPlottingEvents() {
   });
 }
 
-function getButtonHtml(data, buttonStyle) {
+function getButtonHtml(data, buttonStyle, forSvg = false) {
+  let href = data.href;
+
+  if (forSvg && data.href) {
+    href = addSvgDeletionParamInURL(data.href)
+  }
+
   return (
     '<button class="btn modal-unit-button ml-5 ' +
     buttonStyle +
     '" type="button" data-href="' +
-    data.href +
+    href +
     '" data-unit-form-url="' +
     data.unitFormUrl +
     '" onclick="setHrefAndFormUrl(this);">' +
@@ -1236,4 +1245,50 @@ function setHrefAndFormUrl(element) {
     $scope.find("#u-name").html($element.html());
     $scope.find(".delete-marker-ok").attr("href", $element.data("href"));
     $scope.find("form").attr("action", $element.data("unit-form-url"));
+}
+
+async function fetchSVGAndSetPlotCoordinates(type) {
+  await fetchSVG(
+    "#svg_map.plot-image",
+    {
+      svgPosition: 1,
+      activateZoom: true,
+      tracker: assetTracker,
+      setSVGImageHeight: true,
+      activateHoverEffect: true,
+    }
+  );
+
+  $(".divLoading").addClass("hidden");
+
+  const result = await assetTracker.watchAssetsLoading({
+    checkVisibility: true,
+  });
+
+  if (result.ok) {
+    console.log(message);
+
+    if (parsedSVGs.length) {
+      switch (type) {
+        case "unit":
+          setSvgCoordinates(mapped_units, {
+            cloneClass: type === "cloned-unit",
+            additionalClasses: ["marker"],
+            updateStyles: true,
+          });
+          break;
+        case "amenity":
+          setSvgCoordinates(mapped_units, {
+            cloneClass: "cloned-amenity",
+            additionalClasses: ["marker"],
+          });
+          break;
+      }
+    }
+  } else {
+    console.error(error);
+  }
+
+  assetTracker.clearAllAssetsLists();
+  assetTracker.turnoffLoader();
 }
