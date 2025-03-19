@@ -1,4 +1,4 @@
-svg_enabled = false && @community.enable_svg_mode?
+svg_enabled = @community.enable_svg_mode?
 
 json.group_name @community_group.name
 json.compant_name @community_group.company.name
@@ -1351,7 +1351,6 @@ json.community_group @communities do |co|
     else
       json.show_apartment_page false
     end
-
 
     json.apartment_page_name @community.apartment_page_name
     json.display_rent @community.display_rent
