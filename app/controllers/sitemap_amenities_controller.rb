@@ -58,7 +58,7 @@ class SitemapAmenitiesController < ApplicationController
 
 	def plot_amenity
 		@amenity = Amenity.find (params[:amenity_id])
-		@amenity.amenityable_type = @community.sitemap
+		@amenity.amenityable_type = "Sitemap"
 
 		if params[:x_plot].present? && params[:y_plot].present?
 			@amenity.x_plot = params[:x_plot]
