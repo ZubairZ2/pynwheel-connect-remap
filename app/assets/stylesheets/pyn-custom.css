@@ -2100,7 +2100,7 @@ ul.home-tabs li:hover a {
     margin: 20px 0;
 }
 
-.image-box {
+.svg-box, .image-box {
     background: #FFF;
     padding: 5px;
 }

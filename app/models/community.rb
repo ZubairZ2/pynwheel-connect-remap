@@ -1554,17 +1554,17 @@ class Community < ApplicationRecord
     NeighbourhoodMailer.email_counter_400(ENV["PYNWHEEL_DEV_EMAIL"],ENV["PYNWHEEL_DEV_EMAIL"],"",self).deliver
   end
 
-  def svg_src
-    if sitemap.svg_image.present?
-      sitemap.svg_image.url
+  def image_src
+    if sitemap.image.present?
+      sitemap.image.url
     else
       "/assets/default.jpeg"
     end
   end
 
-  def image_src
-    if sitemap.image.present?
-      sitemap.image.url
+  def svg_src
+    if sitemap.svg_image.present?
+      sitemap.svg_image.url
     else
       "/assets/default.jpeg"
     end

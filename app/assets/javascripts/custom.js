@@ -51,7 +51,7 @@ $(document).ready(function (e) {
   })
   ////////// Custom Code for Neighborhood Categories Multi Select ends here //////////
 
-    $('.preview-image').click(function(event){
+    $('.preview-image, preview-svg').click(function(event){
       event.preventDefault();
       $(this).ekkoLightbox({
         alwaysShowClose: true
@@ -769,8 +769,7 @@ function readCommunityGroupHomepageImageURL(input) {
 
 // preview image function including svg
 function readImageIncludingSVG(input) {
-  const isSvgField = input.id.startsWith("svg");
-
+  const isSvgField = input.id.endsWith("svg_image");
   if (input.files && input.files[0]) {
     const file = input.files[0];
     const $scope = $(input).closest(".form-group");
@@ -783,10 +782,13 @@ function readImageIncludingSVG(input) {
           )
     ) {
       const reader = new FileReader();
+      const fieldTag = isSvgField ? "#preview-svg" : "#preview-image";
+
+      const $previewElement = $scope.find(fieldTag);
 
       reader.onload = function (e) {
-        $scope.find("#preview-image").attr("src", e.target.result);
-        $scope.find("#preview-image").parent().attr("href", e.target.result);
+        $previewElement.attr("src", e.target.result);
+        $previewElement.parent().attr("href", e.target.result);
       };
 
       reader.readAsDataURL(file);

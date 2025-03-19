@@ -14,7 +14,7 @@ $(document).ready(function () {
     $('.amenities-list-on-popup').multiSelect();
 
     if ($("#sitemap-image-upload-holder").length) {
-      saveSiteMapImageOrSvg();
+      saveSiteMapImage();
     }
     if ($("#sitemap-svg-upload-holder").length) {
       saveSiteMapSvg();
@@ -22,7 +22,7 @@ $(document).ready(function () {
   }
 });
 
-function saveSiteMapImageOrSvg() {
+function saveSiteMapImage() {
   const siteMapImageDropzone = new Dropzone("#sitemap-image-upload-holder", {url: "/communities/" + community_id + "/sitemaps/" + sitemap_id + "/save_sitemap_image"});
   Dropzone.options.siteMapImageDropzone = {
     uploadMultiple: true
