@@ -38,6 +38,7 @@ function setSVG(container, svgElement, options) {
             svgPoint,
             true
           );
+          console.log("mouseenter ====> ", svgPoint, "markable ====> ", markable);
 
           if (markable) svgShape.style.fill = map_marker_color;
         }
@@ -553,14 +554,11 @@ function setSvgCoordinates(data, options) {
   }
 }
 
-function getNormalizedMouseCoordinates(e, svgElement, scale = null) {
+function getNormalizedMouseCoordinates(e, svgElement) {
   const rect = svgElement.getBoundingClientRect();
-  scale =
-    scale === null
-      ? window.mapPanZoom[
-          getZoomPanKey(svgElement.parentElement)
-        ].getTransform().scale
-      : scale;
+  const scale =
+    window.mapPanZoom[getZoomPanKey(svgElement.parentElement)].getTransform()
+      .scale;
 
   const mouseX = (e.clientX - rect.left) / scale;
   const mouseY = (e.clientY - rect.top) / scale;
@@ -759,10 +757,11 @@ function getSvgClickedElementWithCenterPoint(svgParentSelector, e) {
   const transform = mapPanZoom?.[key] ? mapPanZoom[key].getTransform() : {};
   const scaleFactor = 1 / (transform.scale || 1);
 
-  const svgPoint = getNormalizedMouseCoordinates(e, svg, scale);
+  const svgPoint = getNormalizedMouseCoordinates(e, svg);
   const targetElement = e.target;
 
   const { svgShape, markable } = getTheMarkabeSVGShape(targetElement, svgPoint);
+  console.log("mouseenter ====> ", svgPoint, "markable ====> ", markable, "scaleFactor ====> ", scaleFactor);
 
   if (markable) {
     const svgRect = svg.getBoundingClientRect();

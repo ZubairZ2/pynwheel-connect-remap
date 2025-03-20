@@ -81,8 +81,8 @@
           .mapLoading.hidden
           .map-block{style: "position: unset;"}
             .plot-image{ data: { svg_url: is_svg && sitemap.svg_image.present? ? sitemap.svg_image.url : nil }, id: is_svg ? 'svg_map' : 'map', style: "position: relative" }
+              .assetLoader.hidden
               - if is_svg
-                .assetLoader.hidden
                 - unless sitemap.svg_image.present?
                   = image_tag "default.jpeg", name: "viewArea", id: "viewArea", draggable: "false", class: 'viewArea', data: { 'map_id' => "map" }
               - else
