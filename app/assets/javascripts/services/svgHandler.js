@@ -38,7 +38,6 @@ function setSVG(container, svgElement, options) {
             svgPoint,
             true
           );
-          console.log("mouseenter ====> ", svgPoint, "markable ====> ", markable);
 
           if (markable) svgShape.style.fill = map_marker_color;
         }
@@ -86,13 +85,12 @@ async function fetchSVG(
   dataSetSelector,
   options = {
     floor: 0,
-    loader: false,
     tracker: null,
     svgPosition: 0,
     activateZoom: false,
-    turnoffLoader: false,
     setSVGImageHeight: false,
     activateHoverEffect: false,
+    trackerVisibilityCheck: false,
   }
 ) {
   const container = document.querySelector(dataSetSelector);
@@ -100,10 +98,10 @@ async function fetchSVG(
 
   if (!imageUrl?.endsWith(".svg")) return;
 
-  const { loader, tracker, activateZoom, turnoffLoader } = options;
+  const { tracker, activateZoom, trackerVisibilityCheck } = options;
 
   const asset = { node: null, url: imageUrl, type: "svg" };
-  tracker?.addOrUpdateAsset(asset);
+  tracker?.addOrUpdateAsset(asset, trackerVisibilityCheck);
 
   try {
     const response = await fetch(imageUrl);
@@ -121,8 +119,7 @@ async function fetchSVG(
 
     if (tracker) {
       asset.node = svgElement;
-      if (tracker.isAssetLoaded(svgElement, "svg")) asset.completed = true;
-      tracker.addOrUpdateAsset(asset);
+      tracker.addOrUpdateAsset(asset, trackerVisibilityCheck);
     }
   } catch (error) {
     console.error("Error loading SVG:", error);
@@ -761,7 +758,6 @@ function getSvgClickedElementWithCenterPoint(svgParentSelector, e) {
   const targetElement = e.target;
 
   const { svgShape, markable } = getTheMarkabeSVGShape(targetElement, svgPoint);
-  console.log("mouseenter ====> ", svgPoint, "markable ====> ", markable, "scaleFactor ====> ", scaleFactor);
 
   if (markable) {
     const svgRect = svg.getBoundingClientRect();

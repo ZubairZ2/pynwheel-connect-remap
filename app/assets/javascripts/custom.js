@@ -1256,6 +1256,7 @@ async function fetchSVGAndSetPlotCoordinates(type) {
       tracker: assetTracker,
       setSVGImageHeight: true,
       activateHoverEffect: true,
+      trackerVisibilityCheck: true,
     }
   );
 
@@ -1267,7 +1268,6 @@ async function fetchSVGAndSetPlotCoordinates(type) {
 
   if (result.ok) {
     console.log(message);
-
     if (parsedSVGs.length) {
       switch (type) {
         case "unit":

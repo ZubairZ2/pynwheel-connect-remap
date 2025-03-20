@@ -70,9 +70,9 @@
       .row.style{ style: "display: flex;" }
         .col-lg-9.p-0{ id: is_svg ? "svg-container" : "image-container" }
           = render partial: 'shared/zoom_control_buttons'
-          .map-block{:style=>"position: unset;"}
+          .map-block{ style: "position: relative;" }
+            .assetLoader.hidden
             .plot-image{data: {svg_url: is_svg && floorplate.svg_image.present? ? floorplate.svg_image.url : nil}, id: is_svg ? 'svg_map' : 'map', style: "position: relative" }
-              .assetLoader.hidden
               - if is_svg
                 - unless floorplate.svg_image.present?
                   = image_tag "default.jpeg", id: "map_img", name: "viewArea", id: "viewArea", draggable: "false", class: 'viewArea', data: { 'map_id' => "map" }

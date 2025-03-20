@@ -135,11 +135,11 @@
         .col-lg-9.p-0{ id: is_svg ? "svg-container" : "image-container" }
           = render partial: 'shared/zoom_control_buttons'
           .mapLoading.hidden
-          .map-block{:style=>"position: unset;"}
+          .map-block{ style: "position: relative;" }
+            .assetLoader.hidden
             .plot-image{data: {svg_url: is_svg && floorplate.svg_image.present? ? floorplate.svg_image.url : nil}, id: is_svg ? 'svg_map' : 'map', style: "position: relative" }
               .grid-graph.hidden
               - if is_svg
-                .assetLoader.hidden
                 - unless floorplate.svg_image.present?
                   = image_tag "default.jpeg", name: "viewArea", id: "viewArea", draggable: "false", class: 'viewArea', data: { 'map_id' => "map" }
                 - units_by_plotted_doors_order.each do |unit|
