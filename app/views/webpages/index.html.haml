@@ -393,9 +393,8 @@
     if (mobileCheck()) {
       $(".right-side.parent.tabcontent.map_view").addClass("mobile_map_view")
     } else {
-      $(".c-sidebar").css({
-        "min-height": "100%"
-      })
+      if (current_width >= 568)
+        $(".c-sidebar").css({ "min-height": "100%" })
     }
 
     $("embed").ready(function(){
