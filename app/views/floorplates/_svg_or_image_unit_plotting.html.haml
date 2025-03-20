@@ -137,7 +137,7 @@
           .mapLoading.hidden
           .map-block{ style: "position: relative;" }
             .assetLoader.hidden
-            .plot-image{data: {svg_url: is_svg && floorplate.svg_image.present? ? floorplate.svg_image.url : nil}, id: is_svg ? 'svg_map' : 'map', style: "position: relative" }
+            .plot-image{data: (is_svg && floorplate.svg_image.present? ? { svg_url: floorplate.svg_image.url, height: floorplate.svg_metadata['height'] || 0, width: floorplate.svg_metadata['width'] || 0 } : {}), id: is_svg ? 'svg_map' : 'map', style: "position: relative" }
               .grid-graph.hidden
               - if is_svg
                 - unless floorplate.svg_image.present?

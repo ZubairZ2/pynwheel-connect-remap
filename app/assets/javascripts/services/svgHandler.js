@@ -5,23 +5,43 @@ var amenity_marker_color =
   typeof amenity_marker_color !== "undefined" ? amenity_marker_color : null;
 
 function setSVG(container, svgElement, options) {
-  const { svgPosition = 0, floor = 0 } = options;
-  const childrenArray = Array.from(container?.children || []);
-
-  const attributes = {
-    id: has_floorplate === "true" ? `viewArea-${floor}` : "viewArea",
-    draggable: false,
-    class: "viewArea",
-    "data-map_id": "map",
-    name: "viewArea",
-    position: "relative",
-  };
-
-  Object.entries(attributes).forEach(([key, value]) =>
-    svgElement.setAttribute(key, value)
-  );
-
   const $svgElement = $(svgElement);
+
+  if (svgElement.nodeName === "svg") {
+    const { svgPosition = 0, floor = null } = options;
+    const childrenArray = Array.from(container?.children || []);
+    const attributes = {
+      id: has_floorplate === "true" ? `viewArea-${floor}` : "viewArea",
+      draggable: false,
+      class: "viewArea",
+      "data-map_id": "map",
+      name: "viewArea",
+      position: "relative",
+    };
+
+    Object.entries(attributes).forEach(([key, value]) =>
+      svgElement.setAttribute(key, value)
+    );
+
+    const svgIndex = childrenArray.findIndex(
+      (el) => el.tagName.toLowerCase() === "svg" && el.id === attributes.id
+    );
+    const newChildren =
+      svgIndex > -1
+        ? [
+            ...childrenArray.slice(0, svgIndex),
+            svgElement,
+            ...childrenArray.slice(svgIndex + 1),
+          ]
+        : [
+            ...childrenArray.slice(0, svgPosition),
+            svgElement,
+            ...childrenArray.slice(svgPosition),
+          ];
+    container.innerHTML = "";
+    container.append(...newChildren);
+  }
+
   if (!mobileCheck() && options.activateHoverEffect) {
     const $shapes = $svgElement.find(
       [...VALID_SVG_SHAPES, "text"].join(", ") +
@@ -52,27 +72,8 @@ function setSVG(container, svgElement, options) {
       });
     });
   }
-  if (svgElement.nodeName === "svg") {
-    container.innerHTML = "";
-    const svgIndex = childrenArray.findIndex(
-      (el) => el.tagName.toLowerCase() === "svg" && el.id === attributes.id
-    );
-    const newChildren =
-      svgIndex > -1
-        ? [
-            ...childrenArray.slice(0, svgIndex),
-            svgElement,
-            ...childrenArray.slice(svgIndex + 1),
-          ]
-        : [
-            ...childrenArray.slice(0, svgPosition),
-            svgElement,
-            ...childrenArray.slice(svgPosition),
-          ];
-    container.append(...newChildren);
-    if (options.setSVGImageHeight)
-      setSvgOrImageHeight($(container).find("svg"));
-  }
+
+  if (options.setSVGImageHeight) setSvgOrImageHeight($(container).find("svg"));
 }
 
 function parseSVG(svgText) {
@@ -84,7 +85,7 @@ function parseSVG(svgText) {
 async function fetchSVG(
   dataSetSelector,
   options = {
-    floor: 0,
+    floor: null,
     tracker: null,
     svgPosition: 0,
     activateZoom: false,
@@ -98,9 +99,15 @@ async function fetchSVG(
 
   if (!imageUrl?.endsWith(".svg")) return;
 
-  const { tracker, activateZoom, trackerVisibilityCheck } = options;
+  const { floor, tracker, activateZoom, trackerVisibilityCheck } = options;
 
-  const asset = { node: null, url: imageUrl, type: "svg" };
+  const asset = {
+    index: `svg-${floor === null || floor === undefined ? 1 : floor}`,
+    node: null,
+    url: imageUrl,
+    type: "svg",
+    completed: false,
+  };
   tracker?.addOrUpdateAsset(asset, trackerVisibilityCheck);
 
   try {
@@ -134,7 +141,12 @@ function setSvgOrImageHeight($image) {
 
   const isSVG = image.tagName.toLowerCase() === "svg";
   const { width: imageOriginalWidth, height: imageOriginalHeight } = isSVG
-    ? image.viewBox.baseVal
+    ? image.viewBox.baseVal.width + image.viewBox.baseVal.height === 0
+      ? {
+          width: parseInt(image.parentElement.dataset.width || 0),
+          height: parseInt(image.parentElement.dataset.height || 0),
+        }
+      : image.viewBox.baseVal
     : {
         width: parseInt(image.dataset.width || 0),
         height: parseInt(image.dataset.height || 0),
@@ -567,6 +579,28 @@ function getNormalizedMouseCoordinates(e, svgElement) {
   return point.matrixTransform(svgElement.getCTM().inverse());
 }
 
+function isPointNearLineSegment(point, p1, p2) {
+  const x1 = p1.x, y1 = p1.y;
+  const x2 = p2.x, y2 = p2.y;
+  const px = point.x, py = point.y;
+
+  const lineLengthSquared = (x2 - x1) ** 2 + (y2 - y1) ** 2;
+  if (lineLengthSquared === 0) return false;
+
+  const t = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / lineLengthSquared;
+  const closestX = x1 + t * (x2 - x1);
+  const closestY = y1 + t * (y2 - y1);
+
+  if (t < 0 || t > 1) return false;
+
+  const dx = px - closestX;
+  const dy = py - closestY;
+  const distanceSquared = dx * dx + dy * dy;
+
+  const tolerance = 2;
+  return distanceSquared <= tolerance * tolerance;
+}
+
 function isPointInPolyline(point, polyline) {
   const polylinePoints = polyline.points;
   const n = polylinePoints.numberOfItems;
@@ -655,8 +689,9 @@ function getPolygonArea(polygon) {
   return Math.abs(area) / 2;
 }
 
-function isValidShape(shape, parent = false) {
-  if (VALID_SVG_SHAPES.includes(shape.tagName.toLowerCase()) || parent) {
+function isValidShape (shape, parent = false) {
+  const shapeTag = shape.tagName.toLowerCase();
+  if (VALID_SVG_SHAPES.includes(shapeTag) || parent) {
     const parentElement = shape.parentElement;
     const parentTag = parentElement.tagName.toLowerCase();
     const parentId = parentElement.id?.toLowerCase();
@@ -665,10 +700,19 @@ function isValidShape(shape, parent = false) {
       if (!parent) {
         const siblings = Array.from($(shape).siblings());
         const lastSibling = siblings[siblings.length - 1];
+        const allSiblingsAreTextOrShape = siblings.every((sibling) => {
+          const siblingSahpeName = sibling.tagName.toLowerCase();
+          return siblingSahpeName === "text" || siblingSahpeName === shapeTag;
+        });
 
-        if (lastSibling?.tagName?.toLowerCase() !== "text") return false;
+        if (
+          !allSiblingsAreTextOrShape ||
+          lastSibling?.tagName?.toLowerCase() !== "text"
+        )
+          return false;
       } else if (
         parentId?.startsWith("amenities") ||
+        parentId?.endsWith("amenities") ||
         parentId?.startsWith("units") ||
         parentId?.startsWith("amenity_outlines")
       )

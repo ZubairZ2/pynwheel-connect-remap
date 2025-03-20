@@ -129,8 +129,8 @@ class FloorplateAmenitiesController < ApplicationController
 
     @all_locks = all_locks(@community)
 
-    if @floorplate.image.blank? 
-      flash[:error] = "Kindly add floor plate image first"
+    if !@floorplate.image.present? && !@floorplate.svg_image.present?
+      flash[:error] = "Kindly add floor plate image/svg first"
       redirect_to community_floorplates_path(@community)
     end
   end

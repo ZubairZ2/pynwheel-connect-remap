@@ -72,7 +72,7 @@
           = render partial: 'shared/zoom_control_buttons'
           .map-block{ style: "position: relative;" }
             .assetLoader.hidden
-            .plot-image{data: {svg_url: is_svg && floorplate.svg_image.present? ? floorplate.svg_image.url : nil}, id: is_svg ? 'svg_map' : 'map', style: "position: relative" }
+            .plot-image{data: (is_svg && floorplate.svg_image.present? ? { svg_url: floorplate.svg_image.url, height: floorplate.svg_metadata['height'] || 0, width: floorplate.svg_metadata['width'] || 0 } : {}), id: is_svg ? 'svg_map' : 'map', style: "position: relative" }
               - if is_svg
                 - unless floorplate.svg_image.present?
                   = image_tag "default.jpeg", id: "map_img", name: "viewArea", id: "viewArea", draggable: "false", class: 'viewArea', data: { 'map_id' => "map" }

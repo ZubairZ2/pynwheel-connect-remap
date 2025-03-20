@@ -3441,22 +3441,15 @@ async function fetchWebpageSVGAndSetCoordinates() {
 
   $images = $("img.sitemap-image.floorplate-image");
   $images.each((_, img) => {
-    const asset = { node: img, url: img.src, type: "img", completed: false };
-    assetTracker.addOrUpdateAsset(asset);
-
-    if (img.complete) {
-      asset.completed = true;
-    } else {
-      $(img).on("load", function () {
-        asset.completed = true;
-        assetTracker.addOrUpdateAsset(asset);
-      });
-    }
+    const visibleCheck = has_floorplate === "true" ? img.id === `f_${current_floor}` : img.id === "property-map-image";
+    const asset = { index: `image-${current_floor === null || current_floor === undefined ? 1 : current_floor}` ,node: img, url: img.src, type: "img", completed: false };
+    assetTracker.addOrUpdateAsset(asset, visibleCheck);
   });
 
   if (has_floorplate.toString() === "true") {
     const array = [];
     for (const floor of floors) {
+
       array.push(
         fetchSVG(`#f_${floor}`, {
           floor,
@@ -3465,6 +3458,7 @@ async function fetchWebpageSVGAndSetCoordinates() {
           activateZoom: true,
           tracker: assetTracker,
           setSVGImageHeight: true,
+          trackerVisibilityCheck: parseInt(current_floor) === floor,
         })
       );
     }
@@ -3476,46 +3470,21 @@ async function fetchWebpageSVGAndSetCoordinates() {
       activateZoom: true,
       tracker: assetTracker,
       setSVGImageHeight: true,
+      trackerVisibilityCheck: true,
     });
   }
 
-  const result = await assetTracker.watchAssetsLoading();
+  const result = await assetTracker.watchAssetsLoading({
+    visibilityCheck: true,
+  });
 
   if (result.ok) {
-    const currentVisibleAsset = (
-      has_floorplate === "true"
-        ? svgMode
-          ? $(`div#f_${current_floor} > svg#viewArea-${current_floor}`)
-          : $(`img#f_${current_floor}`)
-        : svgMode
-        ? $(`#property-map-image-container > svg#viewArea`)
-        : $(`img#property-map-image`)
-    )[0];
+    calculateMarkerAttributes();
+    renderChangedUnits();
+    handleMapControl();
 
-    if (currentVisibleAsset)
-      assetTracker.addOrUpdateAsset({
-        node: currentVisibleAsset,
-        type: svgMode ? "svg" : "img",
-        url: svgMode
-          ? currentVisibleAsset.parentElement?.dataset?.svgUrl
-          : currentVisibleAsset.src,
-      }, true);
-    const visibilityResult = await assetTracker.watchAssetsLoading({
-      checkVisibility: true,
-    });
-
-    if (visibilityResult.ok) {
-      console.log(result.message);
-
-      calculateMarkerAttributes();
-      renderChangedUnits();
-      handleMapControl();
-
-      setSvgPointersCoordinates();
-      setSvgAmenitiesCoordinates();
-    } else {
-      console.error(error);
-    }
+    setSvgPointersCoordinates();
+    setSvgAmenitiesCoordinates();
   } else {
     console.error(error);
   }

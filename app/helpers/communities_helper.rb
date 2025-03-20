@@ -271,6 +271,7 @@ module CommunitiesHelper
                          "/assets/default.jpeg"
                        end,
       is_fav: unit&.community&.favorite_stop&.favorite_unit&.include?(unit.id.to_s) || unit_id_is_in_cookies?(cookies[:favorite_unit_ids], unit.id),
+      # TO DO
       floorplan_name: if floorplan.present?
                         floorplan.name
                       else
