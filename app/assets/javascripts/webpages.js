@@ -50,7 +50,7 @@ $(document).ready(function () {
   _3dConfigurations = $("#communityWebpagesData").data("mapConfigurations");
   currency = $("#communityWebpagesData").data("currency");
 
-  if (typeof webCommunity !== "undefined") {
+  if (isDefined(webCommunity)) {
     selectMap = webCommunity.web_map_type;
     enable3DMaps = webCommunity.enable_three_d_maps;
     defaultMapType = webCommunity.web_map_type;
@@ -130,12 +130,12 @@ $(document).ready(function () {
     populate_current_units();
 
     if (!svgMode) {
-      if (has_floorplate === "true") {
+      if (hasFloorplate()) {
         $(".floorplate-image").each(function () {
           setSvgOrImageHeight($(this));
         });
       } else {
-        setImageHeight()
+        setImageHeight();
       }
       adjustSitmapMarkerPositions();
     }
@@ -414,7 +414,7 @@ function getExtraDiffs(selector = "") {
     Math.round(ratio),
   ];
 
-  if (has_floorplate === "true") {
+  if (hasFloorplate()) {
     if (isMobileView) {
       if (selector === ".amenity-marker") {
         extra_left_diff += (amenity_left_margin || 0) * 0.4;
@@ -472,7 +472,7 @@ function positionAllMarkers(
 
     const { extra_left_diff, extra_top_diff } = getExtraDiffs(selector);
 
-    if (has_floorplate === "true") {
+    if (hasFloorplate()) {
       show = show && current_floor == marker.data("floor");
     }
     if (show) marker.removeClass("hidden");
@@ -943,7 +943,7 @@ function disablePriceRentOptions() {
 }
 
 function filterUnitsBasedOnCommunityType(floorplateUnits) {
-  if (has_floorplate == "true") {
+  if (hasFloorplate()) {
     floorplateUnits = floorplateUnits.filter(
       (unit) => unit.floor == current_floor
     );
@@ -987,9 +987,11 @@ function showMarkers() {
 
   units_to_display = filterUnitsBasedOnCommunityType(units);
 
+  if (svgMode) {
+    setSvgPointersCoordinates();
+    setSvgAmenitiesCoordinates();
+  }
   renderChangedUnits();
-  setSvgPointersCoordinates();
-  setSvgAmenitiesCoordinates();
 
   var json_object = {};
   for (var i = 0; i < units_to_display.length; i++) {
@@ -1072,7 +1074,7 @@ function showMarkers() {
         ] = overlapping_units;
       }
     } else {
-      if (has_floorplate == "true") {
+      if (hasFloorplate()) {
         adjustMarkerPosition(jquerEl);
       }
       jquerEl.removeClass("hidden");
@@ -1086,7 +1088,7 @@ function showMarkers() {
     $("span", jquerEl).html(
       units_from_json.length > 1 ? units_from_json.length : ""
     );
-    if (has_floorplate == "true") {
+    if (hasFloorplate()) {
       adjustMarkerPosition(jquerEl);
     }
     jquerEl.removeClass("hidden");
@@ -1136,7 +1138,7 @@ function populate_current_units() {
   $(".marker").addClass("hidden");
   current_units = [];
 
-  if (has_floorplate == "true") {
+  if (hasFloorplate()) {
     $(".amenity-marker").addClass("hidden"); // first hidding all amenity markers
     $(".a_" + current_floor).removeClass("hidden"); // showing amenity markers on current floorplate
     updateDropdownListValues();
@@ -1570,10 +1572,7 @@ function setUnitModalButtons(event) {
 
     if (filteredUnits.length > 1) {
       filteredUnits.forEach(function (unit) {
-        if (
-          has_floorplate.toString() == "true" &&
-          unit.floor != parseInt(current_floor)
-        ) {
+        if (hasFloorplate() && unit.floor != parseInt(current_floor)) {
           return;
         }
 
@@ -3057,7 +3056,7 @@ function get_unit_availability(unit) {
     if (availableDate.isSameOrBefore(todayDate, "day")) {
       availableDateString = "Available: Now";
     } else {
-      if (typeof webCommunity !== "undefined" && webCommunity.country_code) {
+      if (isDefined(webCommunity) && webCommunity.country_code) {
         availableDateString = `Available: ${formattedDateByRegion(
           webCommunity.country_code,
           availableDate.toDate()
@@ -3080,7 +3079,7 @@ function adjustBottomOfImageMap(x) {
   let rightSide = document.getElementsByClassName("right-side")[0];
   rightSide.style.height = "50%";
 
-  if (x.matches && has_floorplate === "true") {
+  if (x.matches && hasFloorplate()) {
     rightSide.style.bottom = "60px";
     rightSide.style.height = "25%";
   }
@@ -3436,20 +3435,35 @@ function mapContainerClickEvents() {
     });
 }
 
+function hasFloorplate() {
+  return has_floorplate === "true";
+}
+
 async function fetchWebpageSVGAndSetCoordinates() {
   $(".webPageLoader").removeClass("hidden");
 
   $images = $("img.sitemap-image.floorplate-image");
   $images.each((_, img) => {
-    const visibleCheck = has_floorplate === "true" ? img.id === `f_${current_floor}` : img.id === "property-map-image";
-    const asset = { index: `image-${current_floor === null || current_floor === undefined ? 1 : current_floor}` ,node: img, url: img.src, type: "img", completed: false };
+    const isFloorplate = hasFloorplate();
+    const visibleCheck = isFloorplate
+      ? img.id === `f_${current_floor}`
+      : img.id === "property-map-image";
+
+    const asset = {
+      id: `image-${
+        isFloorplate ? "floorplate-" + img.id.replace("f_", "") : "sitemap-1"
+      }`,
+      node: img,
+      url: img.src,
+      type: "img",
+      completed: false,
+    };
     assetTracker.addOrUpdateAsset(asset, visibleCheck);
   });
 
-  if (has_floorplate.toString() === "true") {
+  if (hasFloorplate()) {
     const array = [];
     for (const floor of floors) {
-
       array.push(
         fetchSVG(`#f_${floor}`, {
           floor,
@@ -3458,6 +3472,7 @@ async function fetchWebpageSVGAndSetCoordinates() {
           activateZoom: true,
           tracker: assetTracker,
           setSVGImageHeight: true,
+          trackerAssetId: `svg-floorplate-${floor}`,
           trackerVisibilityCheck: parseInt(current_floor) === floor,
         })
       );
@@ -3471,21 +3486,23 @@ async function fetchWebpageSVGAndSetCoordinates() {
       tracker: assetTracker,
       setSVGImageHeight: true,
       trackerVisibilityCheck: true,
+      trackerAssetId: `svg-sitemap-1`,
     });
   }
 
-  const result = await assetTracker.watchAssetsLoading({
-    visibilityCheck: true,
-  });
+  try {
+    const result = await assetTracker.watchAssetsLoading({
+      visibilityCheck: true,
+    });
 
-  if (result.ok) {
-    calculateMarkerAttributes();
-    renderChangedUnits();
-    handleMapControl();
-
-    setSvgPointersCoordinates();
-    setSvgAmenitiesCoordinates();
-  } else {
+    if (result.ok) {
+      calculateMarkerAttributes();
+      handleMapControl();
+      showMarkers();
+    } else {
+      console.error(result.message);
+    }
+  } catch (error) {
     console.error(error);
   }
 

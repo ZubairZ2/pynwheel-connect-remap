@@ -1198,7 +1198,7 @@ table.upload-image tr td {
 .divLoading {
     display: block;
     position: fixed;
-    z-index: 100000;
+    z-index: 1000000;
     background-image: url('loader.gif');
     background-color: #66666669;
     opacity: 1;

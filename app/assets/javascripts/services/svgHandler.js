@@ -1,8 +1,9 @@
 var VALID_SVG_SHAPES = ["polyline", "rect", "polygon", "ellipse", "circle"];
-var svgMode = typeof svgMode !== "undefined" ? svgMode : false;
-var map_marker_color = typeof map_marker_color !== "undefined" ? "brown" : null;
-var amenity_marker_color =
-  typeof amenity_marker_color !== "undefined" ? amenity_marker_color : null;
+var svgMode = definedAndHasValue(svgMode) ? svgMode : false;
+var map_marker_color = definedAndHasValue(map_marker_color) ? "brown" : null;
+var amenity_marker_color = definedAndHasValue(amenity_marker_color)
+  ? amenity_marker_color
+  : null;
 
 function setSVG(container, svgElement, options) {
   const $svgElement = $(svgElement);
@@ -11,7 +12,7 @@ function setSVG(container, svgElement, options) {
     const { svgPosition = 0, floor = null } = options;
     const childrenArray = Array.from(container?.children || []);
     const attributes = {
-      id: has_floorplate === "true" ? `viewArea-${floor}` : "viewArea",
+      id: hasFloorplate() ? `viewArea-${floor}` : "viewArea",
       draggable: false,
       class: "viewArea",
       "data-map_id": "map",
@@ -89,6 +90,7 @@ async function fetchSVG(
     tracker: null,
     svgPosition: 0,
     activateZoom: false,
+    trackerAssetId: null,
     setSVGImageHeight: false,
     activateHoverEffect: false,
     trackerVisibilityCheck: false,
@@ -99,10 +101,10 @@ async function fetchSVG(
 
   if (!imageUrl?.endsWith(".svg")) return;
 
-  const { floor, tracker, activateZoom, trackerVisibilityCheck } = options;
+  const { tracker, activateZoom, trackerAssetId, trackerVisibilityCheck } = options;
 
   const asset = {
-    index: `svg-${floor === null || floor === undefined ? 1 : floor}`,
+    id: trackerAssetId || `svg-${hasFloorplate() ? "floorplate" : "sitemap"}`,
     node: null,
     url: imageUrl,
     type: "svg",
@@ -130,6 +132,8 @@ async function fetchSVG(
     }
   } catch (error) {
     console.error("Error loading SVG:", error);
+    asset.completed = false;
+    tracker.setAssetError(asset, error.message);
   }
 
   if (activateZoom) activateZoomPan(container);
@@ -202,7 +206,7 @@ function setSvgOrImageHeight($image) {
 }
 
 function floorBasedData(data = []) {
-  return has_floorplate === "true"
+  return hasFloorplate()
     ? data.filter(
         ({ floor }) =>
           floor === parseInt(current_floor) ||
@@ -212,7 +216,7 @@ function floorBasedData(data = []) {
 }
 
 function isCurrentFloorsSVG(svgElement) {
-  if (has_floorplate === "true" && svgElement.parentElement) {
+  if (hasFloorplate() && svgElement.parentElement) {
     const floorNum = parseInt(svgElement.parentElement.id.split("_").pop());
     return (
       (svgElement.id === `viewArea-${floorNum}` &&
@@ -580,9 +584,12 @@ function getNormalizedMouseCoordinates(e, svgElement) {
 }
 
 function isPointNearLineSegment(point, p1, p2) {
-  const x1 = p1.x, y1 = p1.y;
-  const x2 = p2.x, y2 = p2.y;
-  const px = point.x, py = point.y;
+  const x1 = p1.x,
+    y1 = p1.y;
+  const x2 = p2.x,
+    y2 = p2.y;
+  const px = point.x,
+    py = point.y;
 
   const lineLengthSquared = (x2 - x1) ** 2 + (y2 - y1) ** 2;
   if (lineLengthSquared === 0) return false;
@@ -689,7 +696,7 @@ function getPolygonArea(polygon) {
   return Math.abs(area) / 2;
 }
 
-function isValidShape (shape, parent = false) {
+function isValidShape(shape, parent = false) {
   const shapeTag = shape.tagName.toLowerCase();
   if (VALID_SVG_SHAPES.includes(shapeTag) || parent) {
     const parentElement = shape.parentElement;

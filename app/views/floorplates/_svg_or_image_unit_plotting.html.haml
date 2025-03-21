@@ -149,7 +149,7 @@
                       .hidden{ class: "svg-h-#{x_plot}-#{y_plot}", id: "h-#{unit.provider_unit_id}", **(fetch_unit_info_struct_for_ploting(unit, @floorplans_map[unit.floorplan_id])[:data_attributes].except(%i[data-target data-toggle])), "data-href" => "/communities/#{community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}#{is_svg ? '&svg_deletion=true' : ''}" }
               - else
                 - width, height = [floorplate.floorplate_image_width(), floorplate.floorplate_image_height()]
-                = image_tag floorplate.image? ? floorplate.image.url : "default.jpeg", name: "viewArea", id: "viewArea", draggable: "false", class: 'viewArea', data: { map_id: "map", height: height, width: width }
+                = image_tag floorplate.image.present? ? (floorplate.standard_image_url.present? ? floorplate.standard_image_url : floorplate.image.url) : "default.jpeg", name: "viewArea", id: "viewArea", draggable: "false", class: 'viewArea', data: { map_id: "map", height: height, width: width }
                 - if community.community_tour.x_plot.to_i + community.community_tour.y_plot.to_i > 0
                   = link_to image_tag("/assets/star.png", style: 'width:15px;'), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "m_", :style => "left:#{community.community_tour.x_plot}px; top:#{community.community_tour.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{community.id}/tours/#{community.community_tour.id}/resetStartingPoint"
               

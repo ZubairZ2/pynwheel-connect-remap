@@ -1,5 +1,4 @@
-var has_floorplate =
-  typeof has_floorplate !== "undefined" ? has_floorplate : false;
+var has_floorplate = definedAndHasValue(has_floorplate) ? has_floorplate : false;
 
 function mobileCheck() {
   let check = false;
@@ -68,9 +67,8 @@ function capitalize(s) {
 }
 
 function trim(str) {
-  if (typeof str !== "undefined") {
-    return str.replace(/^\s+|\s+$/gm, "");
-  }
+  if (str) str.replace(/^\s+|\s+$/gm, "");
+  else return str;
 }
 
 function isColorWhite(color) {
@@ -95,17 +93,17 @@ function toRgbColor(color) {
 }
 
 function rgbaToHex(rgba) {
-  if (typeof rgba !== "undefined") {
+  if (rgba) {
     var parts = rgba.substring(rgba.indexOf("(")).split(",");
     r = parseInt(trim(parts[0].substring(1)), 10);
     g = parseInt(trim(parts[1]), 10);
     b = parseInt(trim(parts[2]), 10);
-    if (typeof parts[3] !== "undefined") {
+    if (definedAndHasValue(parts[3])) {
       a = parseFloat(trim(parts[3].substring(0, parts[3].length - 1))).toFixed(
         2
       );
     }
-    if (typeof a !== "undefined") {
+    if (definedAndHasValue(a)) {
       return (
         "#" +
         r.toString(16) +
@@ -115,4 +113,16 @@ function rgbaToHex(rgba) {
       );
     }
   }
+}
+
+function isDefined(value) {
+  return typeof value !== "undefined";
+}
+
+function hasValue(value) {
+  return value !== null;
+}
+
+function definedAndHasValue(value) {
+  return isDefined(value) && value !== null;
 }

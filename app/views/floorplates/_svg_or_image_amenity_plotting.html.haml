@@ -78,7 +78,7 @@
                   = image_tag "default.jpeg", id: "map_img", name: "viewArea", id: "viewArea", draggable: "false", class: 'viewArea', data: { 'map_id' => "map" }
               - else
                 - width, height = [floorplate.floorplate_image_width(), floorplate.floorplate_image_height()]
-                = image_tag floorplate.image.present? ? floorplate.image.url : "default.jpeg", name: "viewArea", id: "viewArea", draggable: "false", class: 'viewArea', data: { map_id: "map", height: height, width: width }
+                = image_tag floorplate.image.present? ? (floorplate.standard_image_url.present? ? floorplate.standard_image_url : floorplate.image.url) : "default.jpeg", name: "viewArea", id: "viewArea", draggable: "false", class: 'viewArea', data: { map_id: "map", height: height, width: width }
 
                 - coordinates_array = []
                 - amenities.where(floor: [current_floor, nil]).each do |amenity|

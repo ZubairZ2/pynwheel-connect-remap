@@ -1247,7 +1247,7 @@ function setHrefAndFormUrl(element) {
     $scope.find("form").attr("action", $element.data("unit-form-url"));
 }
 
-async function fetchSVGAndSetPlotCoordinates(type) {
+async function fetchSVGAndSetPlotCoordinates(type, assetIdForTracker = 1) {
   await fetchSVG(
     "#svg_map.plot-image",
     {
@@ -1257,35 +1257,40 @@ async function fetchSVGAndSetPlotCoordinates(type) {
       setSVGImageHeight: true,
       activateHoverEffect: true,
       trackerVisibilityCheck: true,
+      trackerAssetId: `plot-svg-${assetIdForTracker}`,
     }
   );
 
   $(".divLoading").addClass("hidden");
 
-  const result = await assetTracker.watchAssetsLoading({
-    checkVisibility: true,
-  });
-
-  if (result.ok) {
-    console.log(message);
-    if (parsedSVGs.length) {
-      switch (type) {
-        case "unit":
-          setSvgCoordinates(mapped_units, {
-            cloneClass: type === "cloned-unit",
-            additionalClasses: ["marker"],
-            updateStyles: true,
-          });
-          break;
-        case "amenity":
-          setSvgCoordinates(mapped_units, {
-            cloneClass: "cloned-amenity",
-            additionalClasses: ["marker"],
-          });
-          break;
+  try {
+    const result = await assetTracker.watchAssetsLoading({
+      checkVisibility: true,
+    });
+  
+    if (result.ok) {
+      console.log(message);
+      if (parsedSVGs.length) {
+        switch (type) {
+          case "unit":
+            setSvgCoordinates(mapped_units, {
+              cloneClass: type === "cloned-unit",
+              additionalClasses: ["marker"],
+              updateStyles: true,
+            });
+            break;
+          case "amenity":
+            setSvgCoordinates(mapped_units, {
+              cloneClass: "cloned-amenity",
+              additionalClasses: ["marker"],
+            });
+            break;
+        }
       }
+    } else {
+      console.error(result.message);
     }
-  } else {
+  } catch (error) {
     console.error(error);
   }
 

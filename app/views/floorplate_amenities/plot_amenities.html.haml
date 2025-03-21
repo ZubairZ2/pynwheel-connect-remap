@@ -60,16 +60,8 @@
       activateZoomPan($imageZoomPan[0]);
       const image = $imageZoomPan.find('img#viewArea')[0]
       if (image) {
-        const asset = { node: image, url: image.src, type: "img", completed: false };
+        const asset = { id: `plot-image-1`,node: image, url: image.src, type: "img", completed: false };
         assetTracker.addOrUpdateAsset(asset, true);
-
-        if (image.complete) {
-          asset.completed = true;
-        } else {
-          $(image).on("load", function () {
-            asset.completed = true;
-          });
-        }
       }
     }
 

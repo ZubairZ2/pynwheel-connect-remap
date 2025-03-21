@@ -1,34 +1,65 @@
 class AssetLoadingTracker {
-  constructor({ loaderSelector = null, retry = 100, timeout = 60000 }) {
-    this.recheckTime = retry || 100;
-    this.timeoutTime = timeout || 60000;
+  timeoutTime = 60000;
+  recheckTime = 300;
+  loader = null;
+  isWatching = false;
+  assetsList = [];
+  visibleAssetsList = [];
+  visibleAssetsTypes = ["img", "svg"];
+
+  constructor({ loaderSelector = null, retry = null, timeout = null }) {
+    this.recheckTime = retry || this.recheckTime;
+    this.timeoutTime = timeout === 0 ? Infinity : timeout || this.timeoutTime;
     this.loader = loaderSelector ? $(loaderSelector) : null;
-    this.isWatching = false;
-    this.assetsList = [];
-    this.visibleAssetsList = [];
     if (this.loader) {
       this.loader.removeClass("hidden");
     }
   }
 
   /**
+   * Sets an error message for an asset and marks it as incomplete.
+   * @param {Object} asset - The asset object to update.
+   * @param {string} errorMessage - The error message to associate with the asset.
+   */
+  setAssetError(asset, errorMessage) {
+    if (asset) {
+      asset.error = errorMessage;
+      asset.completed = false;
+    }
+  }
+
+  /**
    * Check if all registered assets have been loaded.
    * If a loader was provided, it will hide it once all assets are loaded.
+   * If any asset has an error, it will throw an error with the error message.
    * @param {boolean} checkVisibility - Checks if asset is loaded and visible in DOM.
+   * @returns {boolean} - Returns true if the asset is fully loaded, otherwise throws an error if an asset has an error, or returns false.
+   * @throws {Error} - Throws an error if any asset has an associated error (e.g., failed to load).
    */
   checkAssetsLoaded(checkVisibility = false) {
-    return this.assetsList.every(({ node, url, type, completed }) => {
+    return this.assetsList.every(({ id, node, url, type, completed, error }) => {
+      const nodeCheck = id && node;
+      const urlCheck = id && url;
+
+      // If an asset has an error, throw the error message
+      if (error) throw new Error(error);
+
       if (checkVisibility && this.visibleAssetsList.length) {
-        const visibleAsset = this.findDOMAssetByNode(node, true);
-        completed = completed && visibleAsset.completed;
+        const visibleAsset = nodeCheck
+          ? this.findDOMAssetByNodeAndIndex(node, id, true)
+          : urlCheck
+          ? this.findDOMAssetByUrlAndIndex(url, id, true)
+          : id
+          ? this.findDOMAssetByIndex(id, true)
+          : null;
+        completed = completed && visibleAsset?.completed;
       }
 
+      const nodeURLCheck = nodeCheck || urlCheck;
       return (
         completed ||
-        (node
-          ? this.isAssetLoaded(node, type, checkVisibility)
-          : url
-          ? this.isAssetLoaded(url, type, checkVisibility)
+        (nodeURLCheck
+          ? this.isAssetLoaded(nodeURLCheck, id, type, checkVisibility)
           : false)
       );
     });
@@ -36,34 +67,14 @@ class AssetLoadingTracker {
 
   /**
    * Checks if an asset is fully loaded.
-   * @param {SVGElement | HTMLImageElement | HTMLElement} node - The asset node (DOM element).
-   * @returns {object} - Returns asset object { node: HTMLElement, url: string, type: string, conmpleted: boolean }.
-   */
-  findDOMAssetByNode(assetNode, inVisibleAssetsList = false) {
-    if (!assetNode) return null;
-
-    if (inVisibleAssetsList) {
-      const index = this.assetsList.findIndex(({ node }) =>
-        assetNode.isSameNode(node)
-      );
-      if (index > -1) return this.assetsList[index];
-      else null;
-    }
-
-    const index = this.assetsList.findIndex(({ node }) =>
-      assetNode.isSameNode(node)
-    );
-    if (index > -1) return this.assetsList[index];
-  }
-
-  /**
-   * Checks if an asset is fully loaded.
-   * @param {HTMLElement | string} asset - The asset node (DOM element) o'r URL.
+   * @param {HTMLElement | string} asset - The asset node (DOM element) or URL.
+   * @param {string} assetId - The asset id (Unique identifier).
    * @param {type} type - The asset type (img, svg, script, style, css).
-   * @returns {boolean} - Returns true if the asset is fully loaded.
+   * @param {boolean} checkVisibility - Checks if asset is loaded and visible in DOM.
+   * @returns {boolean} - Returns true if the asset is fully loaded, otherwise logs an error and returns false.
    */
-  isAssetLoaded(asset, type, checkVisibility = false) {
-    if (!asset) return false;
+  isAssetLoaded(asset, assetId, type, checkVisibility = false) {
+    if (!asset || !assetId) return false;
 
     let assetNode = null;
     let assetUrl = null;
@@ -76,30 +87,56 @@ class AssetLoadingTracker {
     } else if (asset instanceof HTMLImageElement) {
       assetNode = asset;
       assetUrl = asset.src;
+
+      // Error handling for image loading
+      assetNode.onerror = () => {
+        this.setAssetError(this.findDOMAssetByNodeAndIndex(assetNode, assetId), "Image failed to load.");
+      };
     } else if (asset instanceof HTMLElement) {
       assetNode = asset;
       assetUrl = asset.src || asset.href;
     }
 
-    if (!assetNode && !assetUrl) return false;
-    const listAsset = this.findDOMAssetByNode(assetNode);
-    const visibleAsset = this.findDOMAssetByNode(
-      checkVisibility && ["img", "svg"].includes(listAsset.type) && assetNode,
-      true
-    );
+    const nodeCheck = assetId && assetNode;
+    const urlCheck = assetId && assetUrl;
 
-    if (assetNode) {
-      if (!listAsset) return false;
+    if (!nodeCheck && !urlCheck) return false;
+    const listAsset = nodeCheck
+      ? this.findDOMAssetByNodeAndIndex(nodeCheck, assetId)
+      : urlCheck
+      ? this.findDOMAssetByUrlAndIndex(urlCheck, assetId)
+      : null;
 
-      if (checkVisibility) {
-        if (!visibleAsset) return false;
+    if (listAsset) {
+      if (listAsset.completed) return true;
+    } else return false;
 
-        if (visibleAsset.completed) return true;
-      } else {
-        if (listAsset.completed) return true;
-      }
+    const isVisibleAssetType = this.visibleAssetsTypes.includes(listAsset.type);
+    if (isVisibleAssetType) {
+      if (!assetNode) return false;
     }
 
+    const visibleAsset =
+      checkVisibility && isVisibleAssetType
+        ? nodeCheck
+          ? this.findDOMAssetByNodeAndIndex(nodeCheck, assetId, true)
+          : urlCheck
+          ? this.findDOMAssetByUrlAndIndex(urlCheck, assetId, true)
+          : null
+        : null;
+
+    if (checkVisibility) {
+      if (visibleAsset) {
+        if (visibleAsset.completed) return true;
+      } else return false;
+    }
+
+    // If the asset has an error, throw the error message
+    if (listAsset.error) {
+      throw new Error(listAsset.error);
+    }
+
+    // Normal asset loading checks for different asset types
     switch (assetNode ? listAsset.type : type) {
       case "img":
         listAsset.completed =
@@ -129,13 +166,13 @@ class AssetLoadingTracker {
 
       case "script":
         return (listAsset.completed = assetUrl
-          ? document.querySelector(`script[src="${assetUrl}"]`) !== null
+          ? hasValue(document.querySelector(`script[src="${assetUrl}"]`))
           : false);
 
       case "style":
       case "css":
         return (listAsset.completed = assetUrl
-          ? document.querySelector(`link[href="${assetUrl}"]`) !== null
+          ? hasValue(document.querySelector(`link[href="${assetUrl}"]`))
           : false);
 
       default:
@@ -150,9 +187,13 @@ class AssetLoadingTracker {
    */
   watchAssetsLoading({
     checkVisibility = false,
-    timeout = this.timeoutTime,
-    recheck = this.recheckTime,
+    timeout = null,
+    recheck = null,
   } = {}) {
+    const timeoutDuration =
+      timeout === 0 ? Infinity : timeout || this.timeoutTime;
+    const retryIn = recheck || this.recheckTime;
+
     return new Promise((resolve, reject) => {
       if (this.isWatching) return;
       this.isWatching = true;
@@ -160,20 +201,29 @@ class AssetLoadingTracker {
       const startTime = Date.now();
 
       const checkLoadingStatus = () => {
-        if (this.checkAssetsLoaded(checkVisibility)) {
-          this.isWatching = false;
-          resolve({
-            ok: true,
-            message: "All assets have been successfully loaded!",
-          });
-        } else if (Date.now() - startTime >= timeout) {
+        try {
+          if (this.checkAssetsLoaded(checkVisibility)) {
+            this.isWatching = false;
+            resolve({
+              ok: true,
+              message: "All assets have been successfully loaded!",
+            });
+          } else if (Date.now() - startTime >= timeoutDuration) {
+            this.isWatching = false;
+            reject({
+              ok: false,
+              message:
+                "Timeout: Some assets did not load within the given time.",
+            });
+          } else {
+            setTimeout(checkLoadingStatus, retryIn);
+          }
+        } catch (error) {
           this.isWatching = false;
           reject({
             ok: false,
-            message: "Timeout: Some assets did not load within the given time.",
+            message: error.message,
           });
-        } else {
-          setTimeout(checkLoadingStatus, recheck);
         }
       };
 
@@ -185,15 +235,25 @@ class AssetLoadingTracker {
    * Check if an asset is already in assetsList list.
    * @param {HTMLElement} assetNode - The DOM node of the asset.
    * @param {string} assetUrl - The URL of the asset.
+   * @param {string} assetId - The asset id (Unique identifier).
    * @param {string} assetType - The type of the asset.
+   * @param {boolean} inVisibleAssetsList - find in visible assets list.
    * @returns {Object} { exists: Boolean, index: Number }
    */
-  existsInAssets(assetNode, assetUrl, assetType, inVisibleAssetsList = false) {
+  existsInAssets(
+    assetNode,
+    assetUrl,
+    assetId,
+    assetType,
+    inVisibleAssetsList = false
+  ) {
     const index = (
       inVisibleAssetsList ? this.visibleAssetsList : this.assetsList
     ).findIndex(
-      ({ node, url, type }) =>
-        type === assetType && (node?.isSameNode(assetNode) || url === assetUrl)
+      ({ id, node, url, type }) =>
+        id === assetId &&
+        type === assetType &&
+        (node?.isSameNode(assetNode) || url === assetUrl)
     );
     return { exists: index > -1, index };
   }
@@ -204,25 +264,33 @@ class AssetLoadingTracker {
    * @returns {boolean} return boolean status for added or not
    */
   addOrUpdateAsset(asset, inVisibleAssetsList = false) {
-    const { node, url, type, completed } = asset;
-    const { exists, index } = this.existsInAssets(node, url, type);
+    const { id, node, url, type, completed } = asset;
+    if (!id || !node & !url) return false;
+    const { exists, index: assetIndex } = this.existsInAssets(
+      node,
+      url,
+      id,
+      type
+    );
 
     if (inVisibleAssetsList) {
       if (exists) {
         const {
           exists: existsInVisisbleAssets,
           index: visibleAssetsListIndex,
-        } = this.existsInAssets(node, url, type, true);
+        } = this.existsInAssets(node, url, id, type, true);
 
         if (existsInVisisbleAssets) {
           const existingAsset = this.visibleAssetsList[visibleAssetsListIndex];
           if (url) existingAsset.url = url;
           if (node) existingAsset.node = node;
-          if (type) existingAsset.type = type;
           if (completed || completed === false)
             existingAsset.completed = completed;
         } else {
-          this.visibleAssetsList.push({...this.assetsList[index], completed: false});
+          this.visibleAssetsList.push({
+            ...this.assetsList[assetIndex],
+            completed: false,
+          });
         }
       } else {
         this.assetsList.push(asset);
@@ -230,14 +298,42 @@ class AssetLoadingTracker {
       }
     } else {
       if (exists) {
-        const existingAsset = this.assetsList[index];
+        const existingAsset = this.assetsList[assetIndex];
         if (url) existingAsset.url = url;
         if (node) existingAsset.node = node;
-        if (type) existingAsset.type = type;
         if (completed || completed === false)
           existingAsset.completed = completed;
       } else {
         this.assetsList.push(asset);
+      }
+    }
+  }
+
+  /**
+   * Add an asset to the assetsList list.
+   * @param {Object} asset - { node: HTMLElement, url: string, type: string }
+   * @returns {boolean} return boolean status for added or not
+   */
+  deleteAsset(asset, inVisibleAssetListOnly = false) {
+    const { id, node, url, type } = asset;
+    if (!id || !node & !url) return false;
+    const { exists, index: assetIndex } = this.existsInAssets(
+      node,
+      url,
+      id,
+      type
+    );
+
+    if (exists) {
+      if (inVisibleAssetListOnly) {
+        const {
+          exists: existsInVisisbleAssets,
+          index: visibleAssetsListIndex,
+        } = this.existsInAssets(node, url, id, type, true);
+        if (existsInVisisbleAssets)
+          this.visibleAssetsList.splice(visibleAssetsListIndex, 1);
+      } else {
+        this.assetsList.splice(assetIndex, 1);
       }
     }
   }
