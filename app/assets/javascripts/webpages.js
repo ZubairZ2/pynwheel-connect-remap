@@ -151,7 +151,7 @@ $(document).ready(function () {
   trackingMapHoverEvents();
   // Analytics End
 
-  if (!(assetTracker && assetTracker.isWatching && assetTracker.loader))
+  if (!(definedAndHasValue(assetTracker) && assetTracker.isWatching && assetTracker.loader))
     $(".webPageLoader").addClass("hidden");
 });
 
