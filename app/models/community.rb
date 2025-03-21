@@ -1563,7 +1563,11 @@ class Community < ApplicationRecord
   end
 
   def svg_src
-    sitemap.svg_image.present? ? sitemap.svg_image.url : "/assets/default.jpeg"
+    if sitemap.svg_image.present?
+      sitemap.svg_image.url
+    else
+      "/assets/default.jpeg"
+    end
   end
 
   def creator
