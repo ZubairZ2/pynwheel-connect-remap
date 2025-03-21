@@ -17,6 +17,70 @@ class AssetLoadingTracker {
   }
 
   /**
+   * Checks if an asset exists in assets list.
+   * @param {string} assetId - The asset id (Unique identifier).
+   * @returns {object} - Returns asset object { node: HTMLElement, url: string, type: string, conmpleted: boolean } or null if not found.
+   */
+  findDOMAssetById(assetId, inVisibleAssetsList = false) {
+    if (!assetId) return null;
+
+    if (inVisibleAssetsList) {
+      const nodeIndex = this.assetsList.findIndex(({ id }) => assetId === id);
+      if (nodeIndex > -1) return this.assetsList[nodeIndex];
+      else null;
+    }
+
+    const nodeIndex = this.assetsList.findIndex(({ id }) => assetId === id);
+    if (nodeIndex > -1) return this.assetsList[nodeIndex];
+  }
+
+  /**
+   * Checks if an asset exists in assets list.
+   * @param {SVGElement | HTMLImageElement | HTMLElement} assetNode - The asset node (DOM element).
+   * @param {string} assetId - The asset id (Unique identifier).
+   * @returns {object} - Returns asset object { node: HTMLElement, url: string, type: string, conmpleted: boolean } or null if not found.
+   */
+  findDOMAssetByNodeAndId(assetNode, assetId, inVisibleAssetsList = false) {
+    if (!assetNode || !assetId) return null;
+
+    if (inVisibleAssetsList) {
+      const nodeIndex = this.assetsList.findIndex(
+        ({ node, id }) => assetNode.isSameNode(node) && assetId === id
+      );
+      if (nodeIndex > -1) return this.assetsList[nodeIndex];
+      else null;
+    }
+
+    const nodeIndex = this.assetsList.findIndex(
+      ({ node, id }) => assetNode.isSameNode(node) && assetId === id
+    );
+    if (nodeIndex > -1) return this.assetsList[nodeIndex];
+  }
+
+  /**
+   * Checks if an asset exists in assets list.
+   * @param {string} assetUrl - The asset url.
+   * @param {string} assetId - The asset id (Unique identifier).
+   * @returns {object} - Returns asset object { node: HTMLElement, url: string, type: string, conmpleted: boolean } or null if not found.
+   */
+  findDOMAssetByUrlAndId(assetUrl, assetId, inVisibleAssetsList = false) {
+    if (!assetUrl || !assetId) return null;
+
+    if (inVisibleAssetsList) {
+      const nodeIndex = this.assetsList.findIndex(
+        ({ url, id }) => assetUrl === url && assetId === id
+      );
+      if (nodeIndex > -1) return this.assetsList[nodeIndex];
+      else null;
+    }
+
+    const nodeIndex = this.assetsList.findIndex(
+      ({ url, id }) => assetUrl === url && assetId === id
+    );
+    if (nodeIndex > -1) return this.assetsList[nodeIndex];
+  }
+
+  /**
    * Sets an error message for an asset and marks it as incomplete.
    * @param {Object} asset - The asset object to update.
    * @param {string} errorMessage - The error message to associate with the asset.
@@ -46,11 +110,11 @@ class AssetLoadingTracker {
 
       if (checkVisibility && this.visibleAssetsList.length) {
         const visibleAsset = nodeCheck
-          ? this.findDOMAssetByNodeAndIndex(node, id, true)
+          ? this.findDOMAssetByNodeAndId(node, id, true)
           : urlCheck
-          ? this.findDOMAssetByUrlAndIndex(url, id, true)
+          ? this.findDOMAssetByUrlAndId(url, id, true)
           : id
-          ? this.findDOMAssetByIndex(id, true)
+          ? this.findDOMAssetById(id, true)
           : null;
         completed = completed && visibleAsset?.completed;
       }
@@ -90,7 +154,7 @@ class AssetLoadingTracker {
 
       // Error handling for image loading
       assetNode.onerror = () => {
-        this.setAssetError(this.findDOMAssetByNodeAndIndex(assetNode, assetId), "Image failed to load.");
+        this.setAssetError(this.findDOMAssetByNodeAndId(assetNode, assetId), "Image failed to load.");
       };
     } else if (asset instanceof HTMLElement) {
       assetNode = asset;
@@ -102,9 +166,9 @@ class AssetLoadingTracker {
 
     if (!nodeCheck && !urlCheck) return false;
     const listAsset = nodeCheck
-      ? this.findDOMAssetByNodeAndIndex(nodeCheck, assetId)
+      ? this.findDOMAssetByNodeAndId(nodeCheck, assetId)
       : urlCheck
-      ? this.findDOMAssetByUrlAndIndex(urlCheck, assetId)
+      ? this.findDOMAssetByUrlAndId(urlCheck, assetId)
       : null;
 
     if (listAsset) {
@@ -119,9 +183,9 @@ class AssetLoadingTracker {
     const visibleAsset =
       checkVisibility && isVisibleAssetType
         ? nodeCheck
-          ? this.findDOMAssetByNodeAndIndex(nodeCheck, assetId, true)
+          ? this.findDOMAssetByNodeAndId(nodeCheck, assetId, true)
           : urlCheck
-          ? this.findDOMAssetByUrlAndIndex(urlCheck, assetId, true)
+          ? this.findDOMAssetByUrlAndId(urlCheck, assetId, true)
           : null
         : null;
 

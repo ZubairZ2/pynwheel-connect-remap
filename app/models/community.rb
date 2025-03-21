@@ -1561,13 +1561,11 @@ class Community < ApplicationRecord
       "/assets/default.jpeg"
     end
   end
+
   def svg_src
-    if sitemap.svg_image.present?
-      sitemap.svg_image.url
-    else
-      "/assets/default.jpeg"
-    end
+    sitemap.svg_image.present? ? sitemap.svg_image.url : "/assets/default.jpeg"
   end
+
   def creator
     User.find_by(id: self.creator_id)
   end
