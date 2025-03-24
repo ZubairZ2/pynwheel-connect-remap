@@ -3,7 +3,7 @@
 - units.each do |unit|
   - coordinates_array.push([unit.x_plot, unit.y_plot])
 
-- unless svg_mode
+- unless svg_enabled
   - units.each do |unit|
     - coords = [unit.x_plot, unit.y_plot].map(&:to_i)
     - x_plot, y_plot = coords

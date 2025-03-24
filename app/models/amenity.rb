@@ -214,6 +214,10 @@ class Amenity < ApplicationRecord
     end
   end
 
+  def svg_coordinates
+    pointer_data.is_a?(Hash) ? pointer_data.values_at('x_plot', 'y_plot').map(&:to_i) : [0, 0]
+  end
+
   private
 
   def sort_associated_unit_amenities

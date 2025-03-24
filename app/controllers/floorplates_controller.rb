@@ -58,6 +58,10 @@ class FloorplatesController < ApplicationController
 
     if @floorplate.save
       flash[:notice] = "Floorplate created successfully."
+      if floorplate_params[:svg_image].present? && @floorplate.svg_image.changed?
+        @community.clear_svg_plotted_units_and_amenities(@floorplate)
+      end
+
       PaperTrail::Version.create(item_type: "Floorplate", item_id: @floorplate.id, event: "create", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
       redirect_to community_floorplates_path(current_community)
       PaperTrail::Version.create(item_type: "Floorplate", item_id: @floorplate.id, event: "create", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
@@ -231,7 +235,7 @@ class FloorplatesController < ApplicationController
     @mapped_units = normalized_units_for_svg
     
     @map_ocr_data = @floorplate.is_ocr_enabled ? @floorplate.map_ocr_data : []
-    @dimensions = @floorplate.is_ocr_enabled ? s3_img_dimensions(floorplate_image_url(@floorplate)) : {}
+    @dimensions = @floorplate.is_ocr_enabled ? image_original_dimensions(@floorplate) : {}
     
     @test_units = @floorplate_units.to_json
 
@@ -281,25 +285,6 @@ class FloorplatesController < ApplicationController
     @floorplate_units.map do |unit|
       fetch_unit_info_struct_for_ploting(unit, @floorplans_map[unit.floorplan_id])
     end
-  end
-
-  def s3_img_dimensions url
-    img = MiniMagick::Image.open(url)
-
-    {
-      width: img[:width],
-      height: img[:height],
-    }
-  end
-
-  def floorplate_image_url floorplate
-    if !Rails.env.development?
-      floorplate.image_url if floorplate.image.url.present?
-    else
-      "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1149/1578332903-floorplates_1.png"
-    end
-    # "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1149/1578332903-floorplates_1.png"
-    # "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1148/1577209294-floorplates_2.png"
   end
 
   def floorplate_params

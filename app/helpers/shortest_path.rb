@@ -791,7 +791,7 @@ module ShortestPath
       @access_points = @sitemap.access_points
       planned_to_visit_units_ids     = tour_stops.where(stop_type: "unit", display_stop: true).pluck(:stop_id) rescue []
       planned_to_visit_amenities_ids = tour_stops.where(stop_type: "amenity",display_stop: true).pluck(:stop_id) rescue []
-      @community_units = @community.units.are_ploted_units(@community.enable_svg_mode?).where(floorplate_id: nil).order(:building, :unit_type).includes(:door) # only plotted units
+      @community_units = @community.units.are_plotted_units(@community.enable_svg_mode?).where(floorplate_id: nil).order(:building, :unit_type).includes(:door) # only plotted units
       @unit_with_door = @community_units.map do |unit| 
         if planned_to_visit_units_ids.include?(unit.id)
           if unit.door.present?
@@ -837,7 +837,7 @@ module ShortestPath
         @access_points = @sitemap.access_points
         planned_to_visit_units_ids     = tour_stops.where(stop_type: "unit", display_stop: true).pluck(:stop_id) rescue []
         planned_to_visit_amenities_ids = tour_stops.where(stop_type: "amenity",display_stop: true).pluck(:stop_id) rescue []
-        @community_units = @community.units.are_ploted_units(@community.enable_svg_mode?).where(floorplate_id: nil).order(:building, :unit_type).includes(:door) # only plotted units
+        @community_units = @community.units.are_plotted_units(@community.enable_svg_mode?).where(floorplate_id: nil).order(:building, :unit_type).includes(:door) # only plotted units
         @unit_with_door = @community_units.map do |unit| 
           if planned_to_visit_units_ids.include?(unit.id) 
             if unit.door.present?
@@ -895,7 +895,7 @@ module ShortestPath
       @original_presendece_arr = fetch_unit_and_amenity_in_floor_by_floor_sorted_way(tour_stops, @floors_specific_units, @floors_specific_amenities, @floors_ids)
       @precedence_according_to_floors = @original_presendece_arr.deep_dup
       # update precedence array according to floor in below code 
-      @community_units = @community.units.are_ploted_units(@community.enable_svg_mode?).where.not(floorplate_id: nil).order(:building, :unit_type).includes(:door) # only plotted units
+      @community_units = @community.units.are_plotted_units(@community.enable_svg_mode?).where.not(floorplate_id: nil).order(:building, :unit_type).includes(:door) # only plotted units
       @unit_with_door = {}
       @community_units.each do |unit| 
         if planned_to_visit_units_ids.include?(unit.id)
@@ -956,7 +956,7 @@ module ShortestPath
       floors_specific_amenities = fetch_amenities_according_to_floor(planned_to_visit_amenities_ids)
       @precedence_according_to_floors = fetch_unit_and_amenity_in_floor_by_floor_sorted_way(tour_stops, floors_specific_units, floors_specific_amenities, @floors_ids)
       # update precedence array according to floor in below code 
-      @community_units = @community.units.are_ploted_units(@community.enable_svg_mode?).where.not(floorplate_id: nil).order(:building, :unit_type).includes(:door) # only plotted units
+      @community_units = @community.units.are_plotted_units(@community.enable_svg_mode?).where.not(floorplate_id: nil).order(:building, :unit_type).includes(:door) # only plotted units
       @unit_with_door = {}
       @community_units.each do |unit| 
         if planned_to_visit_units_ids.include?(unit.id)
@@ -1021,7 +1021,7 @@ module ShortestPath
       building_floors_specific_amenities = fetch_amenities_according_to_building_to_floor(planned_to_visit_amenities_ids, building_list)
       @precedence_according_to_building_to_floors = fetch_unit_and_amenity_in_floor_by_floor_sorted_way_for_building(tour_stops, building_floors_specific_units, building_floors_specific_amenities, @floors_ids, building_list)
       # update precedence array according to floor in below code 
-      @community_units = @community.units.are_ploted_units(@community.enable_svg_mode?).where.not(floorplate_id: nil, building: ["", nil]).order(:building, :unit_type).includes(:door) # only plotted units
+      @community_units = @community.units.are_plotted_units(@community.enable_svg_mode?).where.not(floorplate_id: nil, building: ["", nil]).order(:building, :unit_type).includes(:door) # only plotted units
       @unit_with_door = {}
       building_list.each {|building| @unit_with_door[building] = {}}
 
@@ -1094,7 +1094,7 @@ module ShortestPath
       @original_presendece_arr = fetch_unit_and_amenity_in_floor_by_floor_sorted_way_for_building(tour_stops, building_floors_specific_units, building_floors_specific_amenities, @floors_ids, building_list)      
       @precedence_according_to_building_to_floors = @original_presendece_arr.deep_dup
       # update precedence array according to floor in below code 
-      @community_units = @community.units.are_ploted_units(@community.enable_svg_mode?).where.not(floorplate_id: nil, building: ["", nil]).order(:building, :unit_type).includes(:door) # only plotted units
+      @community_units = @community.units.are_plotted_units(@community.enable_svg_mode?).where.not(floorplate_id: nil, building: ["", nil]).order(:building, :unit_type).includes(:door) # only plotted units
       @unit_with_door = {}
       building_list.each {|building| @unit_with_door[building] = {}}
       @community_units.each do |unit| 
@@ -1138,7 +1138,7 @@ module ShortestPath
     def fetch_units_according_to_building_to_floor(planned_to_visit_units_ids, building_list)
       building_to_floor_to_units = {}
       building_list.each {|building| building_to_floor_to_units[building] = {}}
-      building_floor_and_unit = Unit.where(id: planned_to_visit_units_ids).where.not(building: ["", nil]).are_ploted_units(@community.enable_svg_mode?).pluck(:building, :floor, :id)
+      building_floor_and_unit = Unit.where(id: planned_to_visit_units_ids).where.not(building: ["", nil]).are_plotted_units(@community.enable_svg_mode?).pluck(:building, :floor, :id)
       building_floor_and_unit.each do |f_u|
         building_to_floor_to_units[f_u[0]][f_u[1]] = building_to_floor_to_units[f_u[0]]&.keys&.include?(f_u[1]) ? (building_to_floor_to_units[f_u[0]][f_u[1]] + [f_u[2]]) : ([f_u[2]])
       end
@@ -1147,7 +1147,7 @@ module ShortestPath
     end
     def fetch_units_according_to_floor(planned_to_visit_units_ids)
       floor_units = {}
-      floor_and_unit = Unit.where(id: planned_to_visit_units_ids).are_ploted_units(@community.enable_svg_mode?).pluck(:floor, :id)
+      floor_and_unit = Unit.where(id: planned_to_visit_units_ids).are_plotted_units(@community.enable_svg_mode?).pluck(:floor, :id)
       floor_and_unit.each do |f_u|
         floor_units[f_u[0]] = floor_units.keys.include?(f_u[0]) ? (floor_units[f_u[0]] + [f_u[1]]) : ([f_u[1]])
       end

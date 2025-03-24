@@ -225,7 +225,7 @@ class Community < ApplicationRecord
   end
 
   def plotted_units
-    # self&.units&.are_ploted_units(enable_svg_mode?)
+    # self&.units&.are_plotted_units(enable_svg_mode?)
     self&.units - self&.community_tour&.unit_tour_stops rescue []
   end
 
@@ -1562,14 +1562,6 @@ class Community < ApplicationRecord
     end
   end
 
-  def svg_src
-    if sitemap.svg_image.present?
-      sitemap.svg_image.url
-    else
-      "/assets/default.jpeg"
-    end
-  end
-
   def creator
     User.find_by(id: self.creator_id)
   end
@@ -2189,6 +2181,17 @@ class Community < ApplicationRecord
 
   def map_link partner = nil
     "#{ENV['HOST_URL']}/communities/#{self.id}/webpages#{partner.present? ? "?partner=#{partner}" : ""}"
+  end
+
+  def clear_svg_plotted_units_and_amenities(floorplate = nil)
+    (if floorplate
+      [Unit.where(community_id: params[:community_id], floorplate_id: floorplate.id),
+       Amenity.where(community_id: params[:community_id], amenityable: floorplate)]
+    else
+      [Unit.where(community_id: id), Amenity.where(community_id: id)]
+    end).each do |model|
+      model.svg_pointed.update_all(pointer_data: {})
+    end
   end
 
   private

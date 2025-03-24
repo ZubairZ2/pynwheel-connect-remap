@@ -137,7 +137,6 @@ $(document).ready(function () {
       } else {
         setImageHeight();
       }
-      adjustSitmapMarkerPositions();
     }
 
     activateWebpageZoom();
@@ -3496,7 +3495,11 @@ async function fetchWebpageSVGAndSetCoordinates() {
     });
 
     if (result.ok) {
-      calculateMarkerAttributes();
+      if (!svgMode) {
+        adjustSitmapMarkerPositions();
+        calculateMarkerAttributes();
+      }
+
       handleMapControl();
       showMarkers();
     } else {

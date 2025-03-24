@@ -570,7 +570,7 @@ class CommunitiesController < ApplicationController
 
       if sitemap.present? && sitemap.image.present? && sitemap.image.url.present?
         unless sitemap.map_ocr_data.present?
-          aws_ocr_detected_units = AwsTextract.aws_texract_ocr_service(sitemap_image_url(sitemap))
+          aws_ocr_detected_units = AwsTextract.aws_texract_ocr_service(sitemap.validated_image_url)
           sitemap.update(map_ocr_data: aws_ocr_detected_units)
         end
       end
@@ -589,7 +589,7 @@ class CommunitiesController < ApplicationController
 
       if floorplate.present? && floorplate.image.present? && floorplate.image.url.present? && floorplate.is_ocr_enabled
         unless floorplate.map_ocr_data.present? 
-          aws_ocr_detected_units = AwsTextract.aws_texract_ocr_service(floorplate_image_url(floorplate))
+          aws_ocr_detected_units = AwsTextract.aws_texract_ocr_service(floorplate.validated_image_url)
           floorplate.update(map_ocr_data: aws_ocr_detected_units)
         end
       end
@@ -612,11 +612,11 @@ class CommunitiesController < ApplicationController
         if sitemap.map_ocr_data.present? 
           aws_ocr_detected_units = sitemap.map_ocr_data
         else
-          aws_ocr_detected_units = AwsTextract.aws_texract_ocr_service(sitemap_image_url(sitemap))
+          aws_ocr_detected_units = AwsTextract.aws_texract_ocr_service(sitemap.validated_image_url)
           sitemap.update(map_ocr_data: aws_ocr_detected_units)
         end
 
-        dimensions = s3_img_dimensions(sitemap_image_url(sitemap))
+        dimensions = image_original_dimensions(sitemap)
         set_sitemap_markers_on_map(units, aws_ocr_detected_units, dimensions)
       else
 
@@ -640,12 +640,12 @@ class CommunitiesController < ApplicationController
         if floorplate.map_ocr_data.present? 
           aws_ocr_detected_units = floorplate.map_ocr_data
         else
-          aws_ocr_detected_units = AwsTextract.aws_texract_ocr_service(floorplate_image_url(floorplate))
+          aws_ocr_detected_units = AwsTextract.aws_texract_ocr_service(floorplate.validated_image_url)
           floorplate.update(map_ocr_data: aws_ocr_detected_units)
         end
 
         units = floorplate.fetch_units
-        dimensions = s3_img_dimensions(floorplate_image_url(floorplate))
+        dimensions = image_original_dimensions(floorplate)
         set_floorplate_markers_on_map(units, aws_ocr_detected_units, dimensions, floorplate.id)
       else
 

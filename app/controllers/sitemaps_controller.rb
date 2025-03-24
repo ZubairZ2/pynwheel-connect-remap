@@ -79,7 +79,7 @@ class SitemapsController < ApplicationController
       flash[:error] = "Please import unit data first"
     end
 
-    @dimensions = @sitemap.is_ocr_enabled ? s3_img_dimensions(sitemap_image_url(@sitemap)) : {}
+    @dimensions = @sitemap.is_ocr_enabled ? image_original_dimensions(@sitemap) : {}
     @map_ocr_data = @sitemap.is_ocr_enabled ? @sitemap.map_ocr_data : []
 
     @all_locks              =   all_locks(@community_info)
@@ -183,6 +183,10 @@ class SitemapsController < ApplicationController
         sitemap.is_ocr_enabled = false
   
         if sitemap.save
+          if sitemap.svg_image.changed?
+            @community.clear_svg_plotted_units_and_amenities
+          end
+
           render :json=>{"status"=>"success"}
         else
           render :json=>{"status"=>"fail"}
@@ -207,22 +211,6 @@ class SitemapsController < ApplicationController
     end
   end
 
-  def s3_img_dimensions url
-    img = MiniMagick::Image.open(url)
-    {
-      width: img[:width],
-      height: img[:height],
-    }
-  end
-
-  def sitemap_image_url sitemap
-    if !Rails.env.development?
-      sitemap.image.url if sitemap.image.url.present?
-    else
-      "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1127/1575971020-floorplate_image.png"
-    end
-  end
-
   def set_community
     @community = Community.find(params[:community_id])
   end
@@ -232,4 +220,3 @@ class SitemapsController < ApplicationController
   end
 
 end
-

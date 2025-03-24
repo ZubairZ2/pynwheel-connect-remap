@@ -667,4 +667,52 @@ module ApplicationHelper
     }
   end
 
+  def image_original_dimensions(resource = nil, svg_url = false)
+    if resource.present? && (svg_url ? resource.svg_image.present? : resource.image.present?)
+      result = begin
+                 if svg_url
+                   {
+                     width: resource.svg_metadata["width"].to_i,
+                     height: resource.svg_metadata["height"].to_i
+                   }
+                 else
+                   {
+                     width: resource.image.width.to_i,
+                     height: resource.image.height.to_i
+                   }
+                 end
+               rescue TypeError
+                 { width: 0, height: 0 }
+               end
+
+      if result.values.sum.zero?
+        result = begin
+                   url = svg_url ? resource.svg_image.url : resource.validated_image_url
+                   if url.present?
+                     image = MiniMagick::Image.open(url)
+
+                     {
+                       width: image.width.to_i,
+                       height: image.height.to_i
+                     }
+                   end
+                 rescue OpenURI::HTTPError
+                   { width: 0, height: 0 }
+                 end
+      end
+    else
+      result = { width: 0, height: 0 }
+    end
+
+    result
+  end
+
+  def svg_image_url_and_dimensions(resource)
+    dimensions = image_original_dimensions(resource, true)
+    if dimensions.values.sum.positive?
+      { svg_url: resource.svg_image.url }.merge(dimensions)
+    else
+      { svg_url: "/assets/default.jpeg", width: 0, height: 0 }
+    end
+  end
 end

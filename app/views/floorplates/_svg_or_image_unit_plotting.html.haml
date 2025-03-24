@@ -116,8 +116,8 @@
               - floorplate_units = floorplate_units.sort_by {|obj| obj.marketing_name.to_i}
               - floorplate_units = floorplate_units.sort_by {|obj| obj.building.to_i}
             - floorplate_units.each do |unit|
-              - x_plot, y_plot = (is_svg ? (unit.pointer_data.is_a?(Hash) ? unit.pointer_data.values_at('x_plot', 'y_plot') : [0, 0]) : [unit.x_plot, unit.y_plot]).map(&:to_i)
-              - if (x_plot + y_plot) == 0 && unit.provider_unit_id.present?
+              - x_plot, y_plot = coords = (is_svg ? (unit.pointer_data.is_a?(Hash) ? unit.pointer_data.values_at('x_plot', 'y_plot') : [0, 0]) : [unit.x_plot, unit.y_plot]).map(&:to_i)
+              - if coords.sum.zero? && unit.provider_unit_id.present?
                 - if unit.building != nil && unit.building != ""
                   %option{:value => "#{unit.provider_unit_id}"}= "#{unit.building}-#{unit.marketing_name}"
                 - elsif community.data_provider == "yardi"
@@ -137,26 +137,27 @@
           .mapLoading.hidden
           .map-block{ style: "position: relative;" }
             .assetLoader.hidden
-            .plot-image{data: (is_svg && floorplate.svg_image.present? ? { svg_url: floorplate.svg_image.url, height: floorplate.svg_metadata['height'] || 0, width: floorplate.svg_metadata['width'] || 0 } : {}), id: is_svg ? 'svg_map' : 'map', style: "position: relative" }
+            - svg_data = svg_image_url_and_dimensions(floorplate)
+            .plot-image{data: (is_svg && svg_data), id: is_svg ? 'svg_map' : 'map', style: "position: relative" }
               .grid-graph.hidden
               - if is_svg
                 - unless floorplate.svg_image.present?
                   = image_tag "default.jpeg", name: "viewArea", id: "viewArea", draggable: "false", class: 'viewArea', data: { 'map_id' => "map" }
                 - units_by_plotted_doors_order.each do |unit|
                   - if unit.pointer_data.present?
-                    - x_plot, y_plot = unit.pointer_data.is_a?(Hash) ? unit.pointer_data.values_at('x_plot', 'y_plot').map(&:to_i) : [0, 0]
-                    - if x_plot + y_plot > 0
+                    - x_plot, y_plot = coords = unit.svg_coordinates
+                    - if coords.sum.positive?
                       .hidden{ class: "svg-h-#{x_plot}-#{y_plot}", id: "h-#{unit.provider_unit_id}", **(fetch_unit_info_struct_for_ploting(unit, @floorplans_map[unit.floorplan_id])[:data_attributes].except(%i[data-target data-toggle])), "data-href" => "/communities/#{community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}#{is_svg ? '&svg_deletion=true' : ''}" }
               - else
-                - width, height = [floorplate.floorplate_image_width(), floorplate.floorplate_image_height()]
-                = image_tag floorplate.image.present? ? (floorplate.standard_image_url.present? ? floorplate.standard_image_url : floorplate.image.url) : "default.jpeg", name: "viewArea", id: "viewArea", draggable: "false", class: 'viewArea', data: { map_id: "map", height: height, width: width }
-                - if community.community_tour.x_plot.to_i + community.community_tour.y_plot.to_i > 0
-                  = link_to image_tag("/assets/star.png", style: 'width:15px;'), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "m_", :style => "left:#{community.community_tour.x_plot}px; top:#{community.community_tour.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{community.id}/tours/#{community.community_tour.id}/resetStartingPoint"
+                - width, height = image_original_dimensions(floorplate).values
+                = image_tag (floorplate.validated_image_url || "default.jpeg"), name: "viewArea", id: "viewArea", draggable: "false", class: 'viewArea', data: { map_id: "map", height: height, width: width }
+                - x_plot, y_plot = coords = [community.community_tour.x_plot, community.community_tour.y_plot].map(&:to_i)
+                - if coords.sum.positive?
+                  = link_to image_tag("/assets/star.png", style: 'width:15px;'), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "m_", :style => "left:#{x_plot}px; top:#{y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{community.id}/tours/#{community.community_tour.id}/resetStartingPoint"
               
                 - units_by_plotted_doors_order.each do |unit|
-                  - coords = [unit.x_plot, unit.y_plot].map(&:to_i)
-                  - x_plot, y_plot = coords
-                  - if coords.sum > 0
+                  - x_plot, y_plot = coords = [unit.x_plot, unit.y_plot].map(&:to_i)
+                  - if coords.sum.positive?
                     - unless coordinates_array.include?(coords)
                       - coordinates_array.push(coords)
                       - unit_door_exists = unit.door.present? ? true : false
@@ -182,8 +183,7 @@
                 - if community.enable_locks and community.self_tour and community.auto_wayfinding
                   - coordinates_array = []
                   - access_points.each do |access_point|
-                    - coords = [access_point.x_plot, access_point.y_plot].map(&:to_i)
-                    - x_plot, y_plot = coords
+                    - x_plot, y_plot = coords = [access_point.x_plot, access_point.y_plot].map(&:to_i)
                     - unless coordinates_array.include?(coords)
                       - coordinates_array.push(coords)
 

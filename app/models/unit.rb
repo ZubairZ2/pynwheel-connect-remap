@@ -122,10 +122,10 @@ class Unit < ApplicationRecord
       available_units_query.where("y_plot > ?", 0)
     end
    }
-  scope :ploted_units, ->(svg_enabled = false) {
+  scope :plotted_units, ->(svg_enabled = false) {
     has_x_plot(svg_enabled).or(has_y_plot(svg_enabled))
   }
-  scope :are_ploted_units, ->(svg_enabled = false) { 
+  scope :are_plotted_units, ->(svg_enabled = false) { 
     if svg_enabled
       svg_pointed
     else
@@ -137,9 +137,9 @@ class Unit < ApplicationRecord
   }
   scope :available_units, ->(svg_enabled = false, availability_over_120_days = false) { 
     if availability_over_120_days
-      ploted_units(svg_enabled).or(past_available_units(svg_enabled)).where.not(sold: true)
+      plotted_units(svg_enabled).or(past_available_units(svg_enabled)).where.not(sold: true)
     else
-      ploted_units(svg_enabled).or(past_available_units(svg_enabled))
+      plotted_units(svg_enabled).or(past_available_units(svg_enabled))
                                .where.not(sold: true)
                                .where("available_date <= ?", Date.today + 120.days)
     end
@@ -422,5 +422,8 @@ class Unit < ApplicationRecord
     end
     unit_type_name
   end
-  
+
+  def svg_coordinates
+    pointer_data.is_a?(Hash) ? pointer_data.values_at('x_plot', 'y_plot').map(&:to_i) : [0, 0]
+  end
 end

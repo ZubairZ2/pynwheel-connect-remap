@@ -137,6 +137,16 @@ class Floorplate < ApplicationRecord
     end
   end
 
+  def validated_image_url
+    if image.present?
+      if standard_image_url.present?
+        standard_image_url
+      else
+        image.url if image.url.present?
+      end
+    end
+  end
+
   def floorplate_image_width
     self.width > 0 ? self.width : self.image.width rescue 0
   end

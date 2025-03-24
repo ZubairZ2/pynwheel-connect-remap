@@ -632,31 +632,6 @@ module DweloDevicesHelper
     end
   end
 
-  def s3_img_dimensions url
-    img = MiniMagick::Image.open(url)
-
-    {
-      width: img[:width],
-      height: img[:height],
-    }
-  end
-
-  def sitemap_image_url sitemap
-    if !Rails.env.development?
-      sitemap.image.url if sitemap.image.url.present?
-    else
-      "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1127/1575971020-floorplate_image.png"
-    end
-  end
-
-  def floorplate_image_url floorplate
-    if !Rails.env.development?
-      floorplate.image_url if floorplate.image.url.present?
-    else
-      "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1149/1578332903-floorplates_1.png"
-    end
-  end
-
   def create_zerv_user(community, tour_user)
     locks_thread = Thread.new do
       begin
