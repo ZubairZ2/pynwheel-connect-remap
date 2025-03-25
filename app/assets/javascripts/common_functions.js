@@ -1,4 +1,5 @@
 var has_floorplate = definedAndHasValue(has_floorplate) ? has_floorplate : false;
+var assetTracker = definedAndHasValue(assetTracker) ? assetTracker : null;
 
 function mobileCheck() {
   let check = false;

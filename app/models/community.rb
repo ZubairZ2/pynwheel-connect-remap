@@ -1555,11 +1555,9 @@ class Community < ApplicationRecord
   end
 
   def image_src
-    if sitemap.image.present?
-      sitemap.image.url
-    else
-      "/assets/default.jpeg"
-    end
+    return "/assets/default.jpeg" unless sitemap&.image&.url.present?
+
+    sitemap.image.url
   end
 
   def creator
@@ -2185,8 +2183,8 @@ class Community < ApplicationRecord
 
   def clear_svg_plotted_units_and_amenities(floorplate = nil)
     (if floorplate
-      [Unit.where(community_id: params[:community_id], floorplate_id: floorplate.id),
-       Amenity.where(community_id: params[:community_id], amenityable: floorplate)]
+      [Unit.where(community_id: id, floorplate_id: floorplate.id),
+       Amenity.where(community_id: id, amenityable: floorplate)]
     else
       [Unit.where(community_id: id), Amenity.where(community_id: id)]
     end).each do |model|

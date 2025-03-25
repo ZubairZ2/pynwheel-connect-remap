@@ -1221,7 +1221,6 @@ function renderChangedUnits() {
   floorUnits = getFilteredUnits(filtered_units, sortType.value);
   document.getElementById("unit-title-count").innerHTML =
     floorUnits.length + " " + "Units Found";
-
   filtered_units.forEach((unit) => {
     var unit_details_div = `
       <div
@@ -1995,7 +1994,7 @@ function hideFees() {
   $(".show-fees").show();
 }
 
-function adjustHeightForContentArea() {
+function adjustHeightForContentArea () {
   if ($(".m-filters").css("display") === "none") {
     $("#overall-scroller").css({
       height: "25em",
@@ -3048,6 +3047,8 @@ function get_unit_availability(unit) {
   const todayDate = moment();
   let availableDateString = "";
 
+  console.log("unitAvailableDate: ", unit.available_date);
+
   if (unit.sold) {
     availableDateString = "Unavailable:";
   } else if (unit.available && unit.available_date) {
@@ -3071,6 +3072,7 @@ function get_unit_availability(unit) {
     availableDateString = "Unavailable:";
   }
 
+  console.log("availableDateString: ", availableDateString);
   return availableDateString;
 }
 

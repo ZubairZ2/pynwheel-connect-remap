@@ -58,10 +58,6 @@ class FloorplatesController < ApplicationController
 
     if @floorplate.save
       flash[:notice] = "Floorplate created successfully."
-      if floorplate_params[:svg_image].present? && @floorplate.svg_image.changed?
-        @community.clear_svg_plotted_units_and_amenities(@floorplate)
-      end
-
       PaperTrail::Version.create(item_type: "Floorplate", item_id: @floorplate.id, event: "create", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
       redirect_to community_floorplates_path(current_community)
       PaperTrail::Version.create(item_type: "Floorplate", item_id: @floorplate.id, event: "create", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
@@ -109,6 +105,8 @@ class FloorplatesController < ApplicationController
   end
 
   def update
+    original_svg_image_checksum = nil
+
     if floorplate_params[:name] != @floorplate.name
       @floorplate.name_is_updated = true
     end
@@ -117,6 +115,7 @@ class FloorplatesController < ApplicationController
     end
 
     if floorplate_params[:svg_image].present?
+      
       image = MiniMagick::Image.open(floorplate_params[:svg_image].path)
       if image.type != "SVG"
         flash[:error] = "SVG section image must be of SVG type."
@@ -125,6 +124,8 @@ class FloorplatesController < ApplicationController
         flash[:error] = "Too small property map image"
         render :new and return
       else
+        original_svg_image_checksum = Digest::MD5.hexdigest(File.read(@floorplate.svg_image.path)) if @floorplate.svg_image.present?
+
         width = (image.width rescue 0)
         height = (image.height rescue 0)
         @floorplate.svg_metadata = { width: width, height: height}
@@ -145,8 +146,15 @@ class FloorplatesController < ApplicationController
     @floorplate.map_ocr_data = nil
     @floorplate.is_ocr_enabled = false
     
+
+    
     if floorplate_params[:manual_override] == "true"
       if @floorplate.update(floorplate_params)
+        new_svg_image_checksum = Digest::MD5.hexdigest(File.read(@floorplate.reload.svg_image.path)) if @floorplate.svg_image.present?
+        if original_svg_image_checksum != new_svg_image_checksum
+          @community.clear_svg_plotted_units_and_amenities(@floorplate)
+        end
+
         flash[:notice] = "Floorplate updated successfully."
         PaperTrail::Version.create(item_type: "Floorplate", item_id: @floorplate.id, event: "update", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
 
@@ -160,6 +168,11 @@ class FloorplatesController < ApplicationController
     else
       unless (floorplate_params[:name] != @floorplate.name) || (floorplate_params[:building] != @floorplate.building)
         if @floorplate.update(floorplate_params)
+          new_svg_image_checksum = Digest::MD5.hexdigest(File.read(@floorplate.reload.svg_image.path)) if @floorplate.svg_image.present?
+          if original_svg_image_checksum != new_svg_image_checksum
+            @community.clear_svg_plotted_units_and_amenities(@floorplate)
+          end
+  
           flash[:notice] = "Floorplate updated successfully."
           PaperTrail::Version.create(item_type: "Floorplate", item_id: @floorplate.id, event: "update", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
 

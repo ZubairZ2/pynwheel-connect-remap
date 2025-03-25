@@ -151,11 +151,6 @@ class AssetLoadingTracker {
     } else if (asset instanceof HTMLImageElement) {
       assetNode = asset;
       assetUrl = asset.src;
-
-      // Error handling for image loading
-      assetNode.onerror = () => {
-        this.setAssetError(this.findDOMAssetByNodeAndId(assetNode, assetId), "Image failed to load.");
-      };
     } else if (asset instanceof HTMLElement) {
       assetNode = asset;
       assetUrl = asset.src || asset.href;
@@ -357,6 +352,11 @@ class AssetLoadingTracker {
           });
         }
       } else {
+        if (node instanceof HTMLImageElement) {
+          node.onerror = () => {
+            this.setAssetError(this.findDOMAssetByNodeAndId(node, id), "Image failed to load.");
+          };
+        }
         this.assetsList.push(asset);
         this.visibleAssetsList.push(asset);
       }
@@ -368,6 +368,11 @@ class AssetLoadingTracker {
         if (completed || completed === false)
           existingAsset.completed = completed;
       } else {
+        if (node instanceof HTMLImageElement) {
+          node.onerror = () => {
+            this.setAssetError(this.findDOMAssetByNodeAndId(node, id), "Image failed to load.");
+          };
+        }
         this.assetsList.push(asset);
       }
     }

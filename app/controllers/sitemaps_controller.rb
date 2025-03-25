@@ -177,13 +177,14 @@ class SitemapsController < ApplicationController
     else
       sitemap = Sitemap.where(community_id: params[:community_id], id: params[:sitemap_id]).first
       if sitemap
-        sitemap.svg_image = file # Assign the uploaded file to the uploader
+        original_svg_image_checksum = Digest::MD5.hexdigest(File.read(sitemap.svg_image.path)) if sitemap.svg_image.present?
+        sitemap.svg_image = file
         sitemap.svg_metadata = { height: image.height, width: image.width }
-        # sitemap.map_ocr_data = nil
         sitemap.is_ocr_enabled = false
   
         if sitemap.save
-          if sitemap.svg_image.changed?
+          new_svg_image_checksum = Digest::MD5.hexdigest(File.read(sitemap.svg_image.path)) if sitemap.svg_image.present?
+          if original_svg_image_checksum != new_svg_image_checksum
             @community.clear_svg_plotted_units_and_amenities
           end
 

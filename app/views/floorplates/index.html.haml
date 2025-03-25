@@ -383,7 +383,7 @@
                               Click the edit icon to view or change the details associated with each floorplate such as name, image, building number, and floors.
                     %tbody
                       - @floorplates.each_with_index  do |f,index|
-                        - f_image = (f.image.present? ? (f.standard_image_url.present? ? f.standard_image_url : f.image.url) : f.svg_image.present? ? f.svg_image.url : asset_path("default.jpeg")) rescue asset_path("default.jpeg")
+                        - f_image = f.validated_image_url || asset_path("default.jpeg")
 
                         %tr{:style => "color: #{f.manual_override ? "#dd4a39": ""}"}
                           %td
