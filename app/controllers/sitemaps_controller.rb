@@ -159,8 +159,11 @@ class SitemapsController < ApplicationController
 
   def save_sitemap_svg
     file = params[:file]
+    file_checksum = nil
+
     begin
       image = MiniMagick::Image.open(file.path)
+      file_checksum = Digest::MD5.hexdigest(image.to_blob)
     rescue
       image = nil
       flash[:error] = "SVG wan unable to process. Please upload a valid SVG file."
@@ -177,16 +180,14 @@ class SitemapsController < ApplicationController
     else
       sitemap = Sitemap.where(community_id: params[:community_id], id: params[:sitemap_id]).first
       if sitemap
-        original_svg_image_checksum = Digest::MD5.hexdigest(File.read(sitemap.svg_image.path)) if sitemap.svg_image.present?
+        original_file = get_convertable_blob_for_svg_file(sitemap)
+        original_svg_image_checksum = Digest::MD5.hexdigest(original_file.to_blob) if original_file.present?
         sitemap.svg_image = file
         sitemap.svg_metadata = { height: image.height, width: image.width }
         sitemap.is_ocr_enabled = false
   
         if sitemap.save
-          new_svg_image_checksum = Digest::MD5.hexdigest(File.read(sitemap.svg_image.path)) if sitemap.svg_image.present?
-          if original_svg_image_checksum != new_svg_image_checksum
-            @community.clear_svg_plotted_units_and_amenities
-          end
+          clear_svg_plotted_units_and_amenities(sitemap, file_checksum, original_svg_image_checksum) if original_svg_image_checksum.present?
 
           render :json=>{"status"=>"success"}
         else
@@ -219,5 +220,4 @@ class SitemapsController < ApplicationController
   def sitemap_params
     params.require(:sitemap).permit!
   end
-
 end

@@ -137,6 +137,10 @@ class Floorplate < ApplicationRecord
     end
   end
 
+  def validated_svg_image_url
+    svg_image.url if svg_image.present? && svg_image.url.present?
+  end
+
   def validated_image_url
     if image.present?
       if standard_image_url.present?

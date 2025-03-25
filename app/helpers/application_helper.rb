@@ -715,4 +715,22 @@ module ApplicationHelper
       { svg_url: "/assets/default.jpeg", width: 0, height: 0 }
     end
   end
+
+  def get_convertable_blob_for_svg_file(resource)
+    image = if Rails.env.development?
+              os = OpenStruct.new
+              os.to_blob = File.read(resource.svg_image.path)
+              os
+            else
+              MiniMagick::Image.open(resource.svg_image.url)
+            end
+  rescue 
+    nil
+  end
+
+  def clear_svg_plotted_units_and_amenities(resource, new_checksum, old_checksum)
+    if new_checksum != old_checksum
+      @community.clear_svg_plotted_units_and_amenities(resource.is_a?(Floorplate) ? resource : nil)
+    end
+  end
 end

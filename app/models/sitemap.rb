@@ -56,6 +56,10 @@ class Sitemap < ApplicationRecord
     image.url if image.present? && image.url.present?
   end
 
+  def validated_svg_image_url
+    svg_image.url if svg_image.present? && svg_image.url.present?
+  end
+
   def sitemap_image_width
     self.width > 0 ? self.width : self.image.width
   end
