@@ -404,8 +404,8 @@ function calculateDiffs(container, stretched) {
 }
 
 function getExtraDiffs(selector = "") {
-  const isMobileView = mobileCheck();
   const width = $(window).width();
+  const isMobileView = mobileCheck() || width <= 993;
   const ratio = Math.max(Math.log10(width) * 0.45, 1);
 
   let [extra_left_diff, extra_top_diff] = [
