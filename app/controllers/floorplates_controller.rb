@@ -115,7 +115,6 @@ class FloorplatesController < ApplicationController
     end
 
     if floorplate_params[:svg_image].present?
-      
       image = MiniMagick::Image.open(floorplate_params[:svg_image].path)
       if image.type != "SVG"
         flash[:error] = "SVG section image must be of SVG type."

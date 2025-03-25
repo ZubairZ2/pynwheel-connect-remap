@@ -388,6 +388,8 @@ module CommunitiesHelper
 
   def fetch_unit_data_attributes_for_plotting(unit, struct)
     title = (unit.building.present? ? unit.building + '-' : '') + unit.marketing_name
+    current_data_scope = instance_variable_defined?(:@sitemap) ? 'sitemap' : 'floorplate'
+    floorplate_id = instance_variable_get("@#{current_data_scope}").id if current_data_scope == 'floorplate'
 
     { 
       "toggle": "modal",
@@ -396,7 +398,7 @@ module CommunitiesHelper
       "provider": @community_info.data_provider,
       "provider-unit-id": unit.provider_unit_id,
       "title": title,
-      "href": "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot",
+      "href": "/communities/#{@community.id}/units/#{unit.provider_unit_id}/#{ floorplate_id.present? ? 'remove_plot_from_floorplate?floorplate_id=' + floorplate_id.to_s : 'remove_plot'}",
       "horizontal": unit.pointer_data.is_a?(Hash) ? unit.pointer_data['x_plot'] : 0,
       "vertical": unit.pointer_data.is_a?(Hash) ? unit.pointer_data['y_plot'] : 0,
       "pointer-data": unit.pointer_data.to_json,

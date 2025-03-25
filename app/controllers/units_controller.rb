@@ -486,8 +486,9 @@ class UnitsController < ApplicationController
     end
 
     if @unit.save(validate: false)
-      if params[:floorplate].present?
-        redirect_to community_floorplate_plotexp_path(current_community, @floorplate), notice: "The plot has been deleted successfully."
+      if params[:floorplate_id].present?
+        @floorplate = Floorplate.find params[:floorplate_id]
+        redirect_to community_floorplate_plotexp_path(@community, @floorplate), notice: "The plot has been deleted successfully."
       else
         redirect_to plotexp_community_sitemaps_path(@community), notice: "The plot has been deleted successfully."
       end

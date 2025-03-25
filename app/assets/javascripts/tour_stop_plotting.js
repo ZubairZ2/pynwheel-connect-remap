@@ -300,6 +300,9 @@ function getDeletionUrl (options = { forSvg: false }) {
     if (typeof floorplan_id !== 'undefined'){
         result = '/communities/'+community_id+'/floorplans/'+floorplan_id+'/amenities/'+selected[0][0]+'/remove_amenity';
     }
+    else if (typeof floorplate_id !== 'undefined'){
+        result = '/communities/'+community_id+'/units/'+selected[0][0]+'/remove_plot_from_floorplate?floorplate_id='+floorplate_id
+    }
     else if (typeof sitemap_id !== 'undefined'){
         result = '/communities/'+community_id+'/units/'+selected[0][0]+'/remove_plot'
     }
@@ -314,9 +317,6 @@ function getDeletionUrl (options = { forSvg: false }) {
     }
     else if (typeof tour_id_for_stop !== 'undefined'){
         result = '/communities/'+community_id+'/tours/'+community_tour_id+'/tour_stops/'+selected[0][0]+'/resetTourStopPoint'
-    }
-    else if (typeof floorplate_id !== 'undefined'){
-        result = '/communities/'+community_id+'/units/'+selected[0][0]+'/remove_plot_from_floorplate?floorplate_id='+floorplate_id
     }
     else if (typeof unit_id_for_unit_amenities !== 'undefined'){
         result = '/communities/'+community_id+'/units/'+unit_id_for_unit_amenities+'/amenities/'+selected[0][0]+'/remove_amenity'
