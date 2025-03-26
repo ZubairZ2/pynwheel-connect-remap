@@ -367,12 +367,10 @@ class UnitsController < ApplicationController
         unit.x_plot = params[:x_plot]
         unit.y_plot = params[:y_plot]
       end
-      unit.pointer_data = if params[:pointer].present?
-                            x_plot, y_plot, tag, id, selector = params[:pointer].values_at(:x_plot, :y_plot, :tag, :id, :selector)
-                            { x_plot: x_plot, y_plot: y_plot, tag: tag, id: id, selector: selector }
-                          else
-                            {}
-                          end
+      if params[:pointer].present?
+        x_plot, y_plot, tag, id, selector = params[:pointer].values_at(:x_plot, :y_plot, :tag, :id, :selector)
+        unit.pointer_data = { x_plot: x_plot, y_plot: y_plot, tag: tag, id: id, selector: selector }
+      end
       unit.save(validate: false)
       TourStop.where(stop_id: unit.id).update_all(latitude: unit.x_plot, longitude: unit.y_plot)
       # if ts.present?
@@ -396,12 +394,10 @@ class UnitsController < ApplicationController
         unit.x_plot = params[:x_plot]
         unit.y_plot = params[:y_plot]
       end
-      unit.pointer_data = if params[:pointer].present?
-                            x_plot, y_plot, tag, id, selector = params[:pointer].values_at(:x_plot, :y_plot, :tag, :id, :selector)
-                            { x_plot: x_plot, y_plot: y_plot, tag: tag, id: id, selector: selector }
-                          else
-                            {}
-                          end
+      if params[:pointer].present?
+        x_plot, y_plot, tag, id, selector = params[:pointer].values_at(:x_plot, :y_plot, :tag, :id, :selector)
+        unit.pointer_data = { x_plot: x_plot, y_plot: y_plot, tag: tag, id: id, selector: selector }
+      end
       unit.floorplate_id = params[:floorplate_id]
       unit.save(validate: false)
       

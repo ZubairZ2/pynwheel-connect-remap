@@ -63,12 +63,10 @@ class FloorplateAmenitiesController < ApplicationController
 			@amenity.x_plot = params[:x_plot]
 			@amenity.y_plot = params[:y_plot]
 		end
-		@amenity.pointer_data = if params[:pointer].present?
-															x_plot, y_plot, tag, id, selector = params[:pointer].values_at(:x_plot, :y_plot, :tag, :id, :selector)
-															{ x_plot: x_plot, y_plot: y_plot, tag: tag, id: id, selector: selector }
-														else
-															{}
-														end
+    if params[:pointer].present?
+      x_plot, y_plot, tag, id, selector = params[:pointer].values_at(:x_plot, :y_plot, :tag, :id, :selector)
+			@amenity.pointer_data = { x_plot: x_plot, y_plot: y_plot, tag: tag, id: id, selector: selector }
+    end
     # ts = TourStop.find_by(stop_id: @amenity.id)
     # if ts.present?
     #   ts.latitude = @amenity.x_plot

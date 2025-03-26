@@ -64,9 +64,9 @@
 
   / form start
   = render partial: 'shared/hidden_locks_data', locals: { community: community, all_locks: all_locks, locks_present_hash: current_locks_provider }
-  puts "*"*100
-  puts "map_marker_color: #{map_marker_color}"
-  puts "*"*100
+  - puts "*"*100
+  - puts "map_marker_color: #{map_marker_color}"
+  - puts "*"*100
 
   %form.form-horizontal
     .box-body.map-body-top

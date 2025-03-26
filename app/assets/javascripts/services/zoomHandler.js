@@ -1,4 +1,3 @@
-
 function getZoomPanKey(element) {
   return `${element.tagName.toLowerCase()}-${element.id}`;
 }
