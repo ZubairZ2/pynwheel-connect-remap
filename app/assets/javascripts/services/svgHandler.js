@@ -856,7 +856,7 @@ function moveSvgTextGroupsToEnd(parentElement) {
 function setSvgPointersCoordinates() {
   setSvgCoordinates(units, {
     cloneClass: "cloned-unit",
-    additionalClasses: ["marker"],
+    additionalClasses: ["marker", "cloned"],
     onmouseenter: markerHoverEffect,
     onmouseleave: markerHoverEffectEnd,
     updateStyles: true,
@@ -866,7 +866,7 @@ function setSvgPointersCoordinates() {
 function setSvgAmenitiesCoordinates() {
   setSvgCoordinates(amenities, {
     cloneClass: "cloned-amenity",
-    additionalClasses: ["slider-amenity", "amenityTooltip"],
+    additionalClasses: ["slider-amenity", "amenityTooltip", "cloned"],
     fillAmenityOnHoverOnly: true,
     tooltip: true,
     onClickAmenityModal: true,

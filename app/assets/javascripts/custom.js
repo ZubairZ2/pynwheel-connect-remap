@@ -1275,14 +1275,14 @@ async function fetchSVGAndSetPlotCoordinates(type, assetIdForTracker = 1) {
           case "unit":
             setSvgCoordinates(mapped_units, {
               cloneClass: type === "cloned-unit",
-              additionalClasses: ["marker"],
+              additionalClasses: ["marker", "cloned"],
               updateStyles: true,
             });
             break;
           case "amenity":
             setSvgCoordinates(mapped_units, {
               cloneClass: "cloned-amenity",
-              additionalClasses: ["marker"],
+              additionalClasses: ["marker", "cloned"],
             });
             break;
         }

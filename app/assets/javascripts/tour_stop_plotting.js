@@ -404,7 +404,7 @@ function fillThePlot(unitData, dataSet, deletionUrl) {
         unit,
         {
             cloneClass: 'cloned-plot',
-            additionalClasses: ["marker"]
+            additionalClasses: ["marker", "cloned"]
         },
         dataSet
     )
