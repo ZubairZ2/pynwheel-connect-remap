@@ -126,8 +126,8 @@ class FloorplatesController < ApplicationController
         flash[:error] = "Too small property map image"
         render :new and return
       else
-        original_file = get_convertable_blob_for_svg_file(@floorplate)
-        original_svg_image_checksum = Digest::MD5.hexdigest(original_file.to_blob) if original_file.present?
+        original_file = fetch_svg_by_url(get_environment_based_svg_url(@floorplate))
+        original_svg_image_checksum = Digest::MD5.hexdigest(original_file) if original_file.present?
 
         width = (image.width rescue 0)
         height = (image.height rescue 0)

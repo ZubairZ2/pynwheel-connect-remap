@@ -112,6 +112,12 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :images, only: [] do
+    collection do
+      get :fetch_svg_image
+    end
+  end
+
   resources :communities do
     member do
       delete :remove_plots

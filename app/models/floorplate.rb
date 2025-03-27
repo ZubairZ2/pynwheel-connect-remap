@@ -25,6 +25,8 @@
 class Floorplate < ApplicationRecord
   # has_paper_trail
   include StandardUrl
+  include ::S3Acceleration
+
   serialize :map_ocr_data, Array
 
   mount_uploader :image, SiteMapUploader
@@ -138,15 +140,15 @@ class Floorplate < ApplicationRecord
   end
 
   def validated_svg_image_url
-    svg_image.url if svg_image.present? && svg_image.url.present?
+    convert_to_s3_accelerate_url(svg_image.url) if svg_image.present? && svg_image.url.present?
   end
 
   def validated_image_url
     if image.present?
       if standard_image_url.present?
-        standard_image_url
-      else
-        image.url if image.url.present?
+        convert_to_s3_accelerate_url(standard_image_url)
+      elsif image.url.present?
+        convert_to_s3_accelerate_url(image.url) 
       end
     end
   end

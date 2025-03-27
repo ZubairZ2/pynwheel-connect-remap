@@ -180,8 +180,8 @@ class SitemapsController < ApplicationController
     else
       sitemap = Sitemap.where(community_id: params[:community_id], id: params[:sitemap_id]).first
       if sitemap
-        original_file = get_convertable_blob_for_svg_file(sitemap)
-        original_svg_image_checksum = Digest::MD5.hexdigest(original_file.to_blob) if original_file.present?
+        original_file = fetch_svg_by_url(get_environment_based_svg_url(sitemap))
+        original_svg_image_checksum = Digest::MD5.hexdigest(original_file) if original_file.present?
         sitemap.svg_image = file
         sitemap.svg_metadata = { height: image.height, width: image.width }
         sitemap.is_ocr_enabled = false

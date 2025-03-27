@@ -1,3 +1,5 @@
+require 'open-uri'
+
 module ApplicationHelper
   
   def currencies
@@ -682,55 +684,79 @@ module ApplicationHelper
                    }
                  end
                rescue TypeError
-                 { width: 0, height: 0 }
+                nil
                end
 
-      if result.values.sum.zero?
+      if result&.values&.sum.to_i.zero?
         result = begin
-                   url = svg_url ? resource.svg_image.url : resource.validated_image_url
-                   if url.present?
-                     image = MiniMagick::Image.open(url)
+                   if (svg_url)
+                     if (svg_data = fetch_svg_by_url(url = get_environment_based_svg_url(resource)))
+                       doc = Nokogiri::XML(svg_data)
 
+                       svg_tag = doc.at('svg')
+                       return unless svg_tag
+
+                       width = svg_tag['width']&.gsub(/[^0-9.]/, '').to_i
+                       height = svg_tag['height']&.gsub(/[^0-9.]/, '').to_i
+
+                       if (width + height).zero?
+                         if (viewbox = svg_tag['viewBox'])
+                           parts = viewbox.split.map(&:to_i)
+                           width = parts[2]
+                           height = parts[3]
+                         end
+                       end
+
+                       { width: width.to_i, height: height.to_i }
+                     end
+                   else
+                     url = resource.validated_image_url
+
+                     image = MiniMagick::Image.read(URI.open(url).read)
                      {
                        width: image.width.to_i,
                        height: image.height.to_i
                      }
                    end
-                 rescue OpenURI::HTTPError
-                   { width: 0, height: 0 }
+                 rescue
+                   nil
                  end
       end
-    else
-      result = { width: 0, height: 0 }
     end
 
-    result
+    result || { width: 0, height: 0 }
   end
 
   def svg_image_url_and_dimensions(resource)
     dimensions = image_original_dimensions(resource, true)
     if dimensions.values.sum.positive?
-      { svg_url: resource.svg_image.url }.merge(dimensions)
+      { svg_url: get_environment_based_svg_url(resource) }.merge(dimensions)
     else
       { svg_url: "/assets/default.jpeg", width: 0, height: 0 }
     end
-  end
-
-  def get_convertable_blob_for_svg_file(resource)
-    image = if Rails.env.development?
-              os = OpenStruct.new
-              os.to_blob = File.read(resource.svg_image.path)
-              os
-            else
-              MiniMagick::Image.open(resource.svg_image.url)
-            end
-  rescue 
-    nil
   end
 
   def clear_svg_plotted_units_and_amenities(resource, new_checksum, old_checksum)
     if new_checksum != old_checksum
       @community.clear_svg_plotted_units_and_amenities(resource.is_a?(Floorplate) ? resource : nil)
     end
+  end
+  
+  def fetch_svg_by_url(url)
+    return unless url
+
+    if Rails.env.development?
+      File.read(url)
+    else
+      URI.open(url).read
+    end
+  rescue 
+    nil
+  end
+
+  def get_environment_based_svg_url(resource)
+    return unless resource
+
+    Rails.env.development? ? resource.svg_image.path : resource.validated_svg_image_url
   end
 end

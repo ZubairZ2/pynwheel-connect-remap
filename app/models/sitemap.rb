@@ -10,6 +10,7 @@
 #
 
 class Sitemap < ApplicationRecord
+  include ::S3Acceleration
   # has_paper_trail
   serialize :map_ocr_data, Array
   mount_uploader :image, SiteMapUploader
@@ -53,11 +54,11 @@ class Sitemap < ApplicationRecord
   end
 
   def validated_image_url
-    image.url if image.present? && image.url.present?
+    convert_to_s3_accelerate_url(image.url) if image.present? && image.url.present?
   end
 
   def validated_svg_image_url
-    svg_image.url if svg_image.present? && svg_image.url.present?
+    convert_to_s3_accelerate_url(svg_image.url) if svg_image.present? && svg_image.url.present?
   end
 
   def sitemap_image_width
