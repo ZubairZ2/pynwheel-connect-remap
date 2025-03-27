@@ -1433,9 +1433,8 @@ function unitListHover() {
 function markerHoverEffect(event) {
   let $this = $(event.currentTarget);
   if (svgMode && event.currentTarget.tagName.toLowerCase() === "g") {
-    $this = $(
-      event.currentTarget.children[event.currentTarget.children.length - 2]
-    );
+    $this = getLastClonedJQueryElement(event.currentTarget);
+    if (!$this) return;
   }
 
   if ($this.data("is-fav") || favoritesArr.includes($this.data("unit-id"))) {
@@ -1519,9 +1518,8 @@ function markerHoverEffect(event) {
 function markerHoverEffectEnd(event) {
   let $this = $(event.currentTarget);
   if (svgMode && event.currentTarget.tagName.toLowerCase() === "g") {
-    $this = $(
-      event.currentTarget.children[event.currentTarget.children.length - 2]
-    );
+    $this = getLastClonedJQueryElement(event.currentTarget);
+    if (!$this) return;
   }
 
   $("#marker-popover").addClass("hidden");
@@ -1561,11 +1559,12 @@ function setUnitModalButtons(event) {
 
   const relatedTarget = event.relatedTarget;
   const $relatedTarget = $(relatedTarget);
+  const relatedTargetSelector = relatedTarget.id.replace("_cloned", "")
 
   if (svgMode) {
     const filteredUnits = units.filter(
-      (unit) =>
-        unit.pointer_data["id"] == relatedTarget.id.replace("_cloned", "")
+      ({ pointer_data: { id, selector } = {} }) =>
+        id === relatedTargetSelector || selector === relatedTargetSelector
     );
 
     if (filteredUnits.length > 1) {

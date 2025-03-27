@@ -278,11 +278,8 @@ function applyDataAttributes(duplicateBlock, dataAttributes) {
   });
 }
 
-function clickSecondLastChildOfGroup(blockParent) {
-  const $secondLastChild = $(
-    blockParent.children[blockParent.children.length - 2]
-  );
-  $secondLastChild.click();
+function clickLastClonedElement(blockParent) {
+  getLastClonedJQueryElement(blockParent).click();
 }
 
 function positionTooltip(e, tooltip) {
@@ -481,7 +478,7 @@ function processSvgBlock(svgElement, item, options, dataset = null) {
       duplicateBlock.getAttribute("data-target") &&
       (isMobileView || e.target.tagName !== duplicateBlock.tagName)
     )
-      return clickSecondLastChildOfGroup(blockParent);
+      return clickLastClonedElement(blockParent);
   };
 
   switch (cloneClass) {
@@ -888,4 +885,19 @@ function addSvgDeletionParamInURL(url) {
   }
 
   return `${mainUrl}?${queryParams}`;
+}
+
+function getLastClonedJQueryElement(parentGroupElement) {
+  const children = Array.from(parentGroupElement.children);
+
+  const lastClonedEl = [...children].reverse().find(child =>
+    Array.from(child.classList).some(cls => cls.includes("cloned"))
+  );
+
+  if (lastClonedEl) {
+    return $(lastClonedEl);
+  } else {
+    console.warn("No cloned element found");
+    return;
+  }
 }
