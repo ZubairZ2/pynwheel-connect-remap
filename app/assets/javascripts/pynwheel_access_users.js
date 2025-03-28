@@ -12,9 +12,12 @@ $(document).ready(function() {
     dateFormat: "yy-mm-dd"
   });
 
-  ITIObject = intlTelInput(document.querySelector("#pynwheelAccessUserPhone"), {
-    separateDialCode: true
-  });
+  const userPhone = document.querySelector("#pynwheelAccessUserPhone")
+  if (userPhone) {
+    ITIObject = intlTelInput(userPhone, {
+      separateDialCode: true
+    });
+  }
 
   community = $("#pynwheelAccessUsersData").data("community");
 });

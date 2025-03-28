@@ -356,6 +356,8 @@
   var img_width = "#{@community.sitemap.present? && @community.sitemap.image.present? ? (@community.sitemap.width || @community.sitemap.image.width) : nil}"
   var img_height = "#{@community.sitemap.present? && @community.sitemap.image.present? ? (@community.sitemap.height || @community.sitemap.image.height) : nil}"
   var current_floor = "#{@floors.present? and @floors.size > 0 ? min_unit_floor : 'null'}";
+  var communityInactivated = #{@community.locked}
+
   if (current_floor === "null") {
     current_floor = null;
   }
@@ -380,6 +382,8 @@
   var initial_start;
 
   $(document).ready(function () {
+    if (communityInactivated) return;
+
     assetTracker = new AssetLoadingTracker({ loaderSelector: ".webPageLoader" });
 
     if (!units) units = $("#communityWebpagesData").data("units");
@@ -536,7 +540,7 @@
       calculateMarkerAttributes();
     });
 
-    document.getElementById('filter').addEventListener('change', () => {
+    $('#filter').on('change', () => {
       var units = $("#communityWebpagesData").data("units");
       var has_floorplate = "#{@community_info.has_floorplates?}"
       var community_name = "#{@community_info.name}"

@@ -32,12 +32,18 @@ var timeoutId = null;
 var units = null;
 var total_units = null;
 var amenities = null;
+var communityInactivated = definedAndHasValue(communityInactivated) ? communityInactivated : false;
 
 $(document).ready(function () {
   if (!units) {
     const webPageUnits = $("#communityWebpagesData").data("units");
     if (webPageUnits) units = webPageUnits;
     if (!total_units && webPageUnits) total_units = webPageUnits;
+  }
+
+  if (!amenities) {
+    const webPageAmenities = $("#communityWebpagesData").data("amenitiesData");
+    if (webPageAmenities) amenities = webPageAmenities;
   }
 
   if (!amenities) {
@@ -2717,9 +2723,7 @@ function handleMapControl() {
   if (selectMap === "3d-map" && enable3DMaps) {
     display3DMap();
     displayOverlayText();
-  } else {
-    display2DMap();
-  }
+  } else if (!communityInactivated) display2DMap();
 }
 
 function display3DMap() {
@@ -3059,8 +3063,6 @@ function get_unit_availability(unit) {
   const todayDate = moment();
   let availableDateString = "";
 
-  console.log("unitAvailableDate: ", unit.available_date);
-
   if (unit.sold) {
     availableDateString = "Unavailable:";
   } else if (unit.available && unit.available_date) {
@@ -3084,7 +3086,6 @@ function get_unit_availability(unit) {
     availableDateString = "Unavailable:";
   }
 
-  console.log("availableDateString: ", availableDateString);
   return availableDateString;
 }
 
