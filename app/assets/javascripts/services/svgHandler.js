@@ -279,7 +279,8 @@ function applyDataAttributes(duplicateBlock, dataAttributes) {
 }
 
 function clickLastClonedElement(blockParent) {
-  getLastClonedJQueryElement(blockParent).click();
+  const lastClonedEl = getLastClonedJQueryElement(blockParent);
+  if (lastClonedEl) $(lastClonedEl).click();
 }
 
 function positionTooltip(e, tooltip) {
@@ -429,6 +430,13 @@ function processSvgBlock(svgElement, item, options, dataset = null) {
   if (!block) return;
 
   const { cloneClass } = options;
+  const blockParent = block.parentElement;
+  const $blockParent = $(blockParent);
+  $blockParent.css({
+    "pointer-events": "all",
+    cursor: "pointer",
+  });
+
   try {
     const existingDuplicate = getDuplicateBlock(
       svgElement,
@@ -438,17 +446,10 @@ function processSvgBlock(svgElement, item, options, dataset = null) {
     );
     if (existingDuplicate) return;
   } catch (e) {
-    console.error("Duplicate not found.", e);
+    console.warn("Duplicate not found.", e);
   }
 
   block.style.fill = "";
-  const blockParent = block.parentElement;
-  const $blockParent = $(blockParent);
-  $blockParent.css({
-    "pointer-events": "all",
-    cursor: "pointer",
-  });
-
   const duplicateBlock = block.cloneNode(true);
   const $duplicateBlock = $(duplicateBlock);
 
@@ -853,7 +854,7 @@ function moveSvgTextGroupsToEnd(parentElement) {
   );
 }
 
-function setSvgPointersCoordinates() {
+function setSvgUnitsCoordinates() {
   setSvgCoordinates(units, {
     cloneClass: "cloned-unit",
     additionalClasses: ["marker", "cloned"],
@@ -890,12 +891,13 @@ function addSvgDeletionParamInURL(url) {
 function getLastClonedJQueryElement(parentGroupElement) {
   const children = Array.from(parentGroupElement.children);
 
-  const lastClonedEl = [...children].reverse().find(child =>
-    Array.from(child.classList).some(cls => cls.includes("cloned"))
-  );
+  const lastClonedEl = [...children].reverse().find((child) => {
+    const classes = child.classList;
+    return classes.contains("cloned") && !classes.contains("hidden");
+  });
 
   if (lastClonedEl) {
-    return $(lastClonedEl);
+    return lastClonedEl;
   } else {
     console.warn("No cloned element found");
     return;

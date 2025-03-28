@@ -987,8 +987,7 @@ function showMarkers() {
   units_to_display = filterUnitsBasedOnCommunityType(units);
 
   if (svgMode) {
-    setSvgPointersCoordinates();
-    setSvgAmenitiesCoordinates();
+    setSVGUnitsAmenitiesCoordinates();
   }
   renderChangedUnits();
 
@@ -1433,8 +1432,14 @@ function unitListHover() {
 function markerHoverEffect(event) {
   let $this = $(event.currentTarget);
   if (svgMode && event.currentTarget.tagName.toLowerCase() === "g") {
-    $this = getLastClonedJQueryElement(event.currentTarget);
-    if (!$this) return;
+    const lastClonedElement = getLastClonedJQueryElement(event.currentTarget);
+    if (
+      !lastClonedElement ||
+      lastClonedElement.classList.contains("cloned-amenity")
+    )
+      return;
+
+    $this = $(lastClonedElement);
   }
 
   if ($this.data("is-fav") || favoritesArr.includes($this.data("unit-id"))) {
@@ -1518,8 +1523,14 @@ function markerHoverEffect(event) {
 function markerHoverEffectEnd(event) {
   let $this = $(event.currentTarget);
   if (svgMode && event.currentTarget.tagName.toLowerCase() === "g") {
-    $this = getLastClonedJQueryElement(event.currentTarget);
-    if (!$this) return;
+    const lastClonedElement = getLastClonedJQueryElement(event.currentTarget);
+    if (
+      !lastClonedElement ||
+      lastClonedElement.classList.contains("cloned-amenity")
+    )
+      return;
+
+    $this = $(lastClonedElement);
   }
 
   $("#marker-popover").addClass("hidden");
@@ -1563,8 +1574,9 @@ function setUnitModalButtons(event) {
 
   if (svgMode) {
     const filteredUnits = units.filter(
-      ({ pointer_data: { id, selector } = {} }) =>
-        id === relatedTargetSelector || selector === relatedTargetSelector
+      ({ floor, pointer_data: { id, selector } = {} }) =>
+        (id === relatedTargetSelector || selector === relatedTargetSelector) &&
+        (!hasFloorplate() || parseInt(current_floor) === floor)
     );
 
     if (filteredUnits.length > 1) {
@@ -2832,8 +2844,9 @@ function display2DMap() {
 
     $(".custom-select").change(() => {
       renderChangedUnits();
-      setSvgPointersCoordinates();
-      setSvgAmenitiesCoordinates();
+      if (svgMode) {
+        setSVGUnitsAmenitiesCoordinates();
+      }
     });
   }
 }
@@ -3513,4 +3526,10 @@ async function fetchWebpageSVGAndSetCoordinates() {
   assetTracker.clearAllAssetsLists();
   assetTracker.turnoffLoader();
   $(".webPageLoader").addClass("hidden");
+}
+
+function setSVGUnitsAmenitiesCoordinates() {
+  $(".cloned").parent("g").css({ cursor: "default" });
+  setSvgUnitsCoordinates();
+  setSvgAmenitiesCoordinates();
 }

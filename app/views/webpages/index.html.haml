@@ -541,7 +541,9 @@
       var has_floorplate = "#{@community_info.has_floorplates?}"
       var community_name = "#{@community_info.name}"
       renderChangedUnits();
-      setSvgPointersCoordinates();
+      if (svgMode) {
+        setSVGUnitsAmenitiesCoordinates();
+      }
     });
 
     $("#show-more-price").click(function(){
