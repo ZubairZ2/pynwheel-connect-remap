@@ -96,7 +96,7 @@ class ProvidersDataUpdationService
     Unit.transaction do
       Unit.import existing_units, on_duplicate_key_update: {
         conflict_target: [:id],
-        columns: Unit.column_names.map(&:to_sym)
+        columns: Unit.column_names.map(&:to_sym) - [:pointer_data]
       }, validate: false, batch_size: 100
     end
   end
