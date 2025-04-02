@@ -8,7 +8,7 @@ class RentCafeDataSwapWorker
     
     if community&.credential&.rentcafe_api_version === "RentCafe V2"
       rentcafe_swap_service = YardiRentCafeV2SwapService.new(community.credential)
-    else 
+    else
       rentcafe_swap_service = YardiRentCafeSwapService.new(community.credential)
     end
 

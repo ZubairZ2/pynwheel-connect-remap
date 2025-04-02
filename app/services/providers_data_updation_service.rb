@@ -86,18 +86,37 @@ class ProvidersDataUpdationService
     new_units = set_default_timestamps(new_units)
 
     Unit.transaction do
-      Unit.import new_units, validate: false
+      result = Unit.import new_units, validate: false
+
+      Unit.where(id: result.ids).find_each do |u|
+        unless u.pointer_data.is_a?(Hash) || !u.pointer_data.is_a?(String)
+          u.update_column(:pointer_data, JSON.parse(u.pointer_data))
+        end
+      rescue
+        u.update_column(:pointer_data, {})
+      end
     end
   end
 
   def update_existing_units_records(existing_units)
     return unless existing_units.present?
-  
+
+    excluded_columns = [:pointer_data]
+    update_columns = Unit.column_names.map(&:to_sym) - excluded_columns
+
     Unit.transaction do
-      Unit.import existing_units, on_duplicate_key_update: {
-        conflict_target: [:id],
-        columns: Unit.column_names.map(&:to_sym) - [:pointer_data]
-      }, validate: false, batch_size: 100
+      result = Unit.import existing_units, on_duplicate_key_update: {
+                 conflict_target: [:id],
+                 columns: update_columns
+               }, validate: false, batch_size: 100
+
+      Unit.where(id: result.ids).find_each do |u|
+        unless u.pointer_data.is_a?(Hash) || !u.pointer_data.is_a?(String)
+          u.update_column(:pointer_data, JSON.parse(u.pointer_data))
+        end
+      rescue
+        u.update_column(:pointer_data, {})
+      end
     end
   end
 end

@@ -1,4 +1,9 @@
 class YardiRentCafeSwapService < BaseService
+  attr_reader :credentials
+
+  def initialize(credentials)
+    @credentials = credentials
+  end
 
   def perform
 
