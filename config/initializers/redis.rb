@@ -1,5 +1,5 @@
 $redis = Redis.new(
-  url: ENV["REDIS_TLS_URL"],
+  url: ENV["REDIS_URL"],
   ssl_params: { verify_mode: OpenSSL::SSL::VERIFY_NONE }
 )
 
@@ -8,7 +8,7 @@ $redis = Redis.new(
 # require 'redis'
 
 # if Rails.env.production?
-#   uri = URI.parse(ENV["REDIS_TLS_URL"])
+#   uri = URI.parse(ENV["REDIS_URL"])
 
 #   Resque.redis = Redis.new(
 #     host:     uri.host,
@@ -19,7 +19,7 @@ $redis = Redis.new(
 #   )
   
 # elsif Rails.env.development?
-#   uri = URI.parse(ENV["REDIS_TLS_URL"])
+#   uri = URI.parse(ENV["REDIS_URL"])
 
 #   Resque.redis = Redis.new(
 #     host: uri.host,

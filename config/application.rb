@@ -26,7 +26,7 @@ module PynwheelCms
     config.session_store :redis_store, {
       servers: [
         {
-          url: ENV["REDIS_TLS_URL"],
+          url: ENV["REDIS_URL"],
           ssl_params: { verify_mode: OpenSSL::SSL::VERIFY_NONE }
         }
       ],
