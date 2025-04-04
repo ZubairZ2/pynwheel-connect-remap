@@ -29,22 +29,31 @@ class ResmanService < BaseService
         if response["ResMan"]["Status"] == "Success"
           units = []
           floorplans = []
+          property_data = response.dig("ResMan", "Response", "PhysicalProperty", "Property")
 
-          response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["ILS_Unit"].each do |pro|
-            units << pro
+          if property_data.present?
+            property_data["ILS_Unit"]&.each do |pro|
+              units << pro
+            end
+
+            if property_data["Floorplan"].present?
+              case property_data["Floorplan"]
+              when Hash
+                floorplans << property_data["Floorplan"]
+              when Array
+                property_data["Floorplan"]&.each do |pro|
+                  floorplans << pro
+                end
+              end
+            end
+
+            $units_availability_url = property_data.dig("Information", "UnitApplicationBaseURL")
+
+            save_resman_units(units, property_id)
+            save_resman_floorplans(floorplans, property_id)
+            update_additional_fee_and_pricing(community, response)
           end
-
-          response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["Floorplan"].each do |pro|
-            floorplans << pro
-          end
-
-          $units_availability_url = response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["Information"]["UnitApplicationBaseURL"]
-          
-          save_resman_units(units,property_id)
-          save_resman_floorplans(floorplans,property_id)
-          update_additional_fee_and_pricing(community, response)
         end
-      
       rescue => e
         raise e
       end

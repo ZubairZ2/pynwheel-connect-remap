@@ -19,18 +19,28 @@ class Resman4SwapService < BaseService
         if response["ResMan"]["Status"] == "Success"
           units = []
           floorplans = []
-          response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["ILS_Unit"].each do |pro|
-            units << pro
-          end
+          property_data = response.dig("ResMan", "Response", "PhysicalProperty", "Property")
 
-          response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["Floorplan"].each do |pro|
-            floorplans << pro
-          end
+          if property_data.present?
+            property_data["ILS_Unit"]&.each do |pro|
+              units << pro
+            end
 
-          save_resman_units(units,property_id)
-          save_resman_floorplans(floorplans,property_id)
-          rename_provider
-          # save_website_column_of_community(response)
+            if property_data["Floorplan"].present?
+              case property_data["Floorplan"]
+              when Hash
+                floorplans << property_data["Floorplan"]
+              when Array
+                property_data["Floorplan"]&.each do |pro|
+                  floorplans << pro
+                end
+              end
+            end
+
+            save_resman_units(units, property_id)
+            save_resman_floorplans(floorplans, property_id)
+            rename_provider
+          end
         else
           ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
         end

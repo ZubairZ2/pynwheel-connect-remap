@@ -18,21 +18,30 @@ class ResmanStaticService < BaseService
         if response["ResMan"]["Status"] == "Success"
           units = []
           floorplans = []
-          property = response["ResMan"]["Response"]["PhysicalProperty"]["Property"]
+          property_data = response.dig("ResMan", "Response", "PhysicalProperty", "Property")
 
-          property["ILS_Unit"].each do |pro|
-            units << pro
+          if property_data.present?
+            property_data["ILS_Unit"]&.each do |pro|
+              units << pro
+            end
+
+            if property_data["Floorplan"].present?
+              case property_data["Floorplan"]
+              when Hash
+                floorplans << property_data["Floorplan"]
+              when Array
+                property_data["Floorplan"]&.each do |pro|
+                  floorplans << pro
+                end
+              end
+            end
+
+            $units_availability_url = property_data.dig("Information", "UnitApplicationBaseURL")
+
+            save_resman_property_details(property)
+            save_resman_units(units, property_id)
+            save_resman_floorplans(floorplans, property_id)
           end
-
-          property["Floorplan"].each do |pro|
-            floorplans << pro
-          end
-
-          $units_availability_url = property["Information"]["UnitApplicationBaseURL"]
-          
-          save_resman_property_details(property)
-          save_resman_units(units, property_id)
-          save_resman_floorplans(floorplans, property_id)
         end
       rescue => error
         raise error
