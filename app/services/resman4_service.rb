@@ -38,8 +38,15 @@ class Resman4Service < BaseService
               units << pro
             end
 
-            property_data["Floorplan"]&.each do |pro|
-              floorplans << pro
+            if property_data["Floorplan"].present?
+              case property_data["Floorplan"]
+              when Hash
+                floorplans << property_data["Floorplan"]
+              when Array
+                property_data["Floorplan"]&.each do |pro|
+                  floorplans << pro
+                end
+              end
             end
 
             $units_availability_url = property_data.dig("Information", "UnitApplicationBaseURL")
@@ -362,7 +369,9 @@ class Resman4Service < BaseService
   
   def format_pet_fee_list(pet_fees)
     return "" unless pet_fees
-  
+
+    pet_fees = [pet_fees] if pet_fees.is_a?(Hash)
+
     pet_fees.filter_map do |pet_fee|
       pet_type = pet_fee.dig("Pets", "PetType")
       [
@@ -374,7 +383,9 @@ class Resman4Service < BaseService
 
   def format_parking_fee_list(parking_fees)
     return "" unless parking_fees
-  
+
+    parking_fees = [parking_fees] if parking_fees.is_a?(Hash)
+
     parking_fees.filter_map do |parking_fee|
       space_fee = parking_fee["SpaceFee"].to_i
       next if space_fee.zero?
