@@ -31,19 +31,23 @@ class Resman4Service < BaseService
         if response["ResMan"]["Status"] == "Success"
           units = []
           floorplans = []
-          response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["ILS_Unit"].each do |pro|
-            units << pro
+          property_data = response.dig("ResMan", "Response", "PhysicalProperty", "Property")
+
+          if property_data.present?
+            property_data["ILS_Unit"]&.each do |pro|
+              units << pro
+            end
+
+            property_data["Floorplan"]&.each do |pro|
+              floorplans << pro
+            end
+
+            $units_availability_url = property_data.dig("Information", "UnitApplicationBaseURL")
+
+            save_resman_units(units, property_id)
+            save_resman_floorplans(floorplans, property_id)
+            update_additional_fee_and_pricing(community, response)
           end
-
-          response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["Floorplan"].each do |pro|
-            floorplans << pro
-          end
-
-          $units_availability_url = response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["Information"]["UnitApplicationBaseURL"]
-
-          save_resman_units(units,property_id)
-          save_resman_floorplans(floorplans,property_id)
-          update_additional_fee_and_pricing(community, response)
         end
 
       rescue => e

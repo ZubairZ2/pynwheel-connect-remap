@@ -42,8 +42,15 @@ class PsiService < BaseService
                                     }
                                 }.to_json,
                                 :headers => { 'Content-Type' => 'application/json' } )
-        response =  JSON.parse(response.body)
-        
+
+        begin
+          response =  JSON.parse(response.body)
+        rescue JSON::ParserError => e
+          puts "Error parsing JSON response: #{e.message}"
+          puts "Response body: #{response.body}"
+          next
+        end
+
         if response["response"]["code"] == 200
           units = []
           floorplans = []
