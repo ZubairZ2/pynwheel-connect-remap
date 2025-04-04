@@ -5,8 +5,8 @@ class PsiSwapService < BaseService
   def initialize(credentials)
     @credentials = credentials
     @unit_record = []
-    @all_units_hash = []
-    @all_floorplans_hash = []
+    @all_units_hash = {}
+    @all_floorplans_hash = {}
   end
 
   def perform
