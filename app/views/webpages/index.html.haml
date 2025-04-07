@@ -356,7 +356,7 @@
   var img_width = "#{@community.sitemap.present? && @community.sitemap.image.present? ? (@community.sitemap.width || @community.sitemap.image.width) : nil}"
   var img_height = "#{@community.sitemap.present? && @community.sitemap.image.present? ? (@community.sitemap.height || @community.sitemap.image.height) : nil}"
   var current_floor = "#{@floors.present? and @floors.size > 0 ? min_unit_floor : 'null'}";
-  var communityInactivated = #{@community.locked}
+  var communityInactivated = "#{@community.locked}" === "true"
 
   if (current_floor === "null") {
     current_floor = null;

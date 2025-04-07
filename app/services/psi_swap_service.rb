@@ -394,7 +394,7 @@ class PsiSwapService < BaseService
     import_units = []
 
     if response.dig("response", "code") == 200
-      psi_units = response.dig("response", "result", "ILS_Units", "Unit")
+      psi_units = response.dig("response", "result", "ILS_Units", "Unit") rescue []
 
       if psi_units.present?
         psi_units.each do |u|

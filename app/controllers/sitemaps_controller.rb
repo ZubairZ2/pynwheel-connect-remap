@@ -69,7 +69,7 @@ class SitemapsController < ApplicationController
     @units = @community_info.units.visible_units.where(floorplate_id: nil).includes(:door)
     @units = @community_info.sorted_units_by_marketing_name(@units)
 
-    @units = @units.sort_by {|obj| obj.building}
+    @units = @units.sort_by {|obj| obj.building || "" }
     @units_by_plotted_doors_order = @units.sort_by {|obj| obj.door.present? ? obj.door.id : obj.id}
     @floorplans = @community_info.floorplans
     @floorplans_map = @floorplans.index_by(&:provider_floorplan_id)
