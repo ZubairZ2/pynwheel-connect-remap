@@ -58,19 +58,10 @@ class FloorplansController < ApplicationController
     @community = Community.find params[:community_id]
     @floorplan = Floorplan.find params[:id]
   end
+
   def crop_image
-    # com = Community.find 2140
-    #
     @community = Community.find params["community_id"]
     @floorplan = Floorplan.find params["id"]
-    # byebug
-    # com.logo = @floorplan.image
-    # @floorplan.image = Amenity.last.image
-    # @floorplan.save
-    # @floorplan.image = com.logo
-    # @floorplan.save
-    # @community = Community.find params["community_id"]
-    # @floorplan = Floorplan.find params["id"]
     if @floorplan.crop_x == params[:floorplan][:crop_x].to_f
       @floorplan.do_crop = false
     else
@@ -88,12 +79,13 @@ class FloorplansController < ApplicationController
     PaperTrail::Version.create(item_type: "Floorplan",item_id: @floorplan.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@floorplan.name} community_id: '#{@floorplan.community_id}'")
 
     redirect_to edit_community_floorplan_path(@community,@floorplan)
-    # render :json=> {:success=>false}
   end
+
   def show_floorplan_secondary_image_in_modal
     @community = Community.find params[:community_id]
     @floorplan = Floorplan.find params[:id]
   end
+  
   def crop_secondary_image
     @community = Community.find params["community_id"]
     @floorplan = Floorplan.find params["id"]

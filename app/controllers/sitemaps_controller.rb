@@ -107,9 +107,8 @@ class SitemapsController < ApplicationController
     @hallways = make_sure_one_selected_hallway(@sitemap.hallways.order("id ASC"))
     @all_locks = all_locks(@community)
 
-    if !@sitemap.image.blank? && !@sitemap.svg_image.present?
+    if @sitemap.image.blank? && @sitemap.svg_image.blank?
       flash[:error] = "Kindly add Sitemap image/svg first"
-      # redirect_to plotexp_community_sitemaps(@community)
       redirect_to plotexp_community_sitemaps_path(@community)
     end
 
