@@ -1374,7 +1374,7 @@ json.community_group @communities do |co|
 
       end
 
-      json.sitemap_amenities @community.sitemap.amenities do |amenity|
+      json.sitemap_amenities @community&.sitemap&.amenities&.plotted_amenities(svg_enabled) do |amenity|
         json.image amenity.image.present? ? (Rails.env.development? ? local_assets_base_url+amenity.image.url : amenity.image.url) : nil
         json.name amenity.name
         json.x_plot amenity.x_plot
