@@ -42,8 +42,15 @@ class PsiService < BaseService
                                     }
                                 }.to_json,
                                 :headers => { 'Content-Type' => 'application/json' } )
-        response =  JSON.parse(response.body)
-        
+
+        begin
+          response =  JSON.parse(response.body)
+        rescue JSON::ParserError => e
+          puts "Error parsing JSON response: #{e.message}"
+          puts "Response body: #{response.body}"
+          next
+        end
+
         if response["response"]["code"] == 200
           units = []
           floorplans = []
@@ -351,6 +358,8 @@ class PsiService < BaseService
 
       move_in_dates.compact.uniq.each do |move_in_date|
         response = get_units_pricing(property_id, move_in_date)
+        next unless response.present?
+
         is_unit_space_enabled ? unit_space_enabled_pricing_update(response) : unit_space_disabled_pricing_update(response)
       end
     end
@@ -385,7 +394,7 @@ class PsiService < BaseService
     import_units = []
 
     if response.dig("response", "code") == 200
-      psi_units = response.dig("response", "result", "ILS_Units", "Unit")
+      psi_units = response.dig("response", "result", "ILS_Units", "Unit") rescue []
 
       if psi_units.present?
         psi_units.each do |u|
@@ -528,8 +537,14 @@ class PsiService < BaseService
         }
       }.to_json,
       :headers => { 'Content-Type' => 'application/json' } )
-    
-    JSON.parse(response.body)
+
+    begin
+      JSON.parse(response.body)
+    rescue JSON::ParserError => e
+      puts "Error parsing JSON response: #{e.message}"
+      puts "Response body: #{response.body}"
+      nil
+    end
   end
 
   def get_units_pricing property_id, move_in_date
@@ -547,7 +562,13 @@ class PsiService < BaseService
       }.to_json,
       :headers => { 'Content-Type' => 'application/json' } )
 
-    JSON.parse(response.body)
+      begin
+        JSON.parse(response.body)
+      rescue JSON::ParserError => e
+        puts "Error parsing JSON response: #{e.message}"
+        puts "Response body: #{response.body}"
+        nil
+      end
   end
 
   def get_pricing_params property_id, move_in_date

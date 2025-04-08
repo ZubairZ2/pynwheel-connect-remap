@@ -5,8 +5,8 @@ class PsiSwapService < BaseService
   def initialize(credentials)
     @credentials = credentials
     @unit_record = []
-    @all_units_hash = []
-    @all_floorplans_hash = []
+    @all_units_hash = {}
+    @all_floorplans_hash = {}
   end
 
   def perform
@@ -394,7 +394,7 @@ class PsiSwapService < BaseService
     import_units = []
 
     if response.dig("response", "code") == 200
-      psi_units = response.dig("response", "result", "ILS_Units", "Unit")
+      psi_units = response.dig("response", "result", "ILS_Units", "Unit") rescue []
 
       if psi_units.present?
         psi_units.each do |u|

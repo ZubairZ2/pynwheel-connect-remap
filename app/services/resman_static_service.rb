@@ -18,21 +18,30 @@ class ResmanStaticService < BaseService
         if response["ResMan"]["Status"] == "Success"
           units = []
           floorplans = []
-          property = response["ResMan"]["Response"]["PhysicalProperty"]["Property"]
+          property_data = response.dig("ResMan", "Response", "PhysicalProperty", "Property")
 
-          property["ILS_Unit"].each do |pro|
-            units << pro
+          if property_data.present?
+            property_data["ILS_Unit"]&.each do |pro|
+              units << pro
+            end
+
+            if property_data["Floorplan"].present?
+              case property_data["Floorplan"]
+              when Hash
+                floorplans << property_data["Floorplan"]
+              when Array
+                property_data["Floorplan"]&.each do |pro|
+                  floorplans << pro
+                end
+              end
+            end
+
+            $units_availability_url = property_data.dig("Information", "UnitApplicationBaseURL")
+
+            save_resman_property_details(property)
+            save_resman_units(units, property_id)
+            save_resman_floorplans(floorplans, property_id)
           end
-
-          property["Floorplan"].each do |pro|
-            floorplans << pro
-          end
-
-          $units_availability_url = property["Information"]["UnitApplicationBaseURL"]
-          
-          save_resman_property_details(property)
-          save_resman_units(units, property_id)
-          save_resman_floorplans(floorplans, property_id)
         end
       rescue => error
         raise error
@@ -187,16 +196,6 @@ class ResmanStaticService < BaseService
   def fetch_floorplan_image_url image_urls
     return unless image_urls.present?
     image_urls['Src'] rescue nil
-  end
-
-  def image_base64(image_url)
-    return unless image_url.present?
-    encoded_url = URI.encode(image_url)
-    uri = URI.parse(encoded_url)
-    file = uri.open
-    image_data = file.read
-    encoded_image = Base64.strict_encode64(image_data)
-    "data:image/png;base64,#{encoded_image}"
   end
 
   def unit_status_update(unit, u)

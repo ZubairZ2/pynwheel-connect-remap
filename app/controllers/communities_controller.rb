@@ -842,7 +842,17 @@ class CommunitiesController < ApplicationController
     redirect_to community_amenities_path(@community)
   end
 
-private
+  private
+
+  def store_map_ocr_data model_object, aws_ocr_detected_units
+    if model_object.present? && model_object.image.present? && model_object.image.url.present?
+      model_object.update(map_ocr_data: aws_ocr_detected_units)
+    end
+  end
+
+  def fetch_aws_detected_units image_url
+    AwsTextract.aws_texract_ocr_service(image_url)
+  end
 
   def show_chat_modal(tour_user_id, tour_id)
     @chatroom = Chatroom.find_by(tour_user_id: tour_user_id, tour_id: tour_id)

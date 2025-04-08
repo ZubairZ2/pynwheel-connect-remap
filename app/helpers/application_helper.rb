@@ -683,7 +683,7 @@ module ApplicationHelper
                      height: resource.image.height.to_i
                    }
                  end
-               rescue TypeError
+               rescue StandardError
                 nil
                end
 

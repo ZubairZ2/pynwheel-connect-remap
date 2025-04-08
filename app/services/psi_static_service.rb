@@ -5,8 +5,8 @@ class PsiStaticService < BaseService
   def initialize(credentials)
     @credentials = credentials
     @unit_record = []
-    @all_units_hash = []
-    @all_floorplans_hash = []
+    @all_units_hash = {}
+    @all_floorplans_hash = {}
   end
 
   def perform
@@ -391,7 +391,7 @@ class PsiStaticService < BaseService
       import_units = []
 
       if response.dig("response", "code") == 200
-        psi_units = response.dig("response", "result", "ILS_Units", "Unit")
+        psi_units = response.dig("response", "result", "ILS_Units", "Unit") rescue []
 
         if psi_units.present?
           psi_units.each do |u|
@@ -563,16 +563,6 @@ class PsiStaticService < BaseService
     def fetch_floorplan_image_url image_urls, index
       return unless image_urls.present?
       image_urls[index]['Src'] rescue nil
-    end
-
-    def image_base64(image_url)
-      return unless image_url.present?
-      encoded_url = URI.encode(image_url)
-      uri = URI.parse(encoded_url)
-      file = uri.open
-      image_data = file.read
-      encoded_image = Base64.strict_encode64(image_data)
-      "data:image/png;base64,#{encoded_image}"
     end
 
     def move_in_date_param move_in_date
