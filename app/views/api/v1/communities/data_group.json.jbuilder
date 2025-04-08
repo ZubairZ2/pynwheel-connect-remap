@@ -1458,8 +1458,8 @@ json.community_group @communities do |co|
         json.floorplan_image floorplan.present? ? (floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil) : nil
         # json.floorplate_number unit.floorplate.present? ? unit.floorplate.number : 0
         json.floorplate_number unit.floor.present? ? unit.floor : 0
-        if unit.amenities.plotted_amenities(svg_enabled).size > 0
-          json.unit_amenities unit.amenities.plotted_amenities(svg_enabled) do |amenity|
+        if unit&.amenities&.plotted_amenities(svg_enabled).size > 0
+          json.unit_amenities unit&.amenities&.plotted_amenities(svg_enabled) do |amenity|
             json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
             json.name amenity.name
             json.x_plot amenity.x_plot
@@ -1478,7 +1478,7 @@ json.community_group @communities do |co|
           end
         elsif !unit.standard_image_url.present?
           #If unit amenities are not present then send floorplan amenities
-          json.unit_amenities floorplan.amenities.plotted_amenities(svg_enabled) do |amenity|
+          json.unit_amenities floorplan&.amenities&.plotted_amenities(svg_enabled) do |amenity|
             json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
             json.name amenity.name
             json.x_plot amenity.x_plot
@@ -1516,7 +1516,7 @@ json.community_group @communities do |co|
       json.virtual_tour_button_label floorplan.virtual_tour_button_label.present? ? floorplan.virtual_tour_button_label : "3D Tour"
       json.virtual_tour floorplan.get_floorplan_virtual_tour_url()
 
-      json.floorplan_amenities floorplan.amenities.plotted_amenities(svg_enabled) do |amenity|
+      json.floorplan_amenities floorplan&.amenities&.plotted_amenities(svg_enabled) do |amenity|
         json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
         json.name amenity.name
         json.x_plot amenity.x_plot
@@ -1539,7 +1539,7 @@ json.community_group @communities do |co|
         json.floor_name floorplate.floor_name_added ? floorplate.floor_name : floor
         json.image floorplate.image_url.present? ? (Rails.env.development? ? local_assets_base_url+image_url : image_url) : nil
 
-        json.floorplate_amenities floorplate.amenities do |amenity|
+        json.floorplate_amenities floorplate&.amenities&.plotted_amenities(svg_enabled) do |amenity|
           if (amenity.x_plot.present? && amenity.y_plot.present?) && (amenity.x_plot > 0 || amenity.y_plot > 0)
             json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
             json.name amenity.name
