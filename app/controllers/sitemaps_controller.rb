@@ -109,7 +109,8 @@ class SitemapsController < ApplicationController
 
     if !@sitemap.image.blank? && !@sitemap.svg_image.present?
       flash[:error] = "Kindly add Sitemap image/svg first"
-      redirect_to plotexp_community_sitemaps(@community)
+      # redirect_to plotexp_community_sitemaps(@community)
+      redirect_to plotexp_community_sitemaps_path(@community)
     end
 
     @amenity_with_doors = []
