@@ -46,7 +46,7 @@ class BaseService
     image_data = file.read
     encoded_image = Base64.strict_encode64(image_data)
     "data:image/png;base64,#{encoded_image}"
-  rescue OpenHTTP::Error => e
+  rescue ::OpenURI::HTTPError => e
     Rails.logger.error("Error fetching image from URL: #{e.message}")
     nil
   rescue StandardError => e
