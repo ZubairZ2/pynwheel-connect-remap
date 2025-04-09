@@ -26,7 +26,6 @@ class WebpagesController < ActionController::Base
       if @community_info.has_floorplates?
         @floorplates = @community_info.floorplates
         @floors = @floorplates.map {|f| f.floors }.flatten.sort_by { |f| -f }
-        community_units = community_units.where(floorplate_id: @floorplates.ids).includes(:floorplate)
         @amenities = @amenities.where(amenityable: @floorplates).includes(:amenity_galleries)
       end
 
