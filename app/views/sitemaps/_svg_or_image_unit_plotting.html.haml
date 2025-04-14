@@ -125,12 +125,7 @@
             - community_units.each do |unit|
               - x_plot, y_plot = coords = (is_svg ? (unit.svg_coordinates) : [unit.x_plot, unit.y_plot].map(&:to_i))
               - if coords.sum.zero? && unit.provider_unit_id.present?
-                - if unit.building != nil && unit.building != ""
-                  %option{:value=>unit.provider_unit_id}= "#{unit.building}-#{unit.marketing_name}"
-                - elsif community.data_provider == "yardi"
-                  %option{:value => "#{unit.provider_unit_id}"}= unit.provider_unit_id
-                - else
-                  %option{:value=>unit.provider_unit_id}= "#{unit.marketing_name}"
+                %option{:value => "#{unit.provider_unit_id}"}= unit.fetch_unit_plotting_name()
 
               - units_arr.push({ providerId: unit.provider_unit_id, xPlot: x_plot, yPlot: y_plot, name: unit.id.to_s, svgPoint: is_svg })
 

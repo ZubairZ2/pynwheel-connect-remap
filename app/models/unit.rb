@@ -174,6 +174,16 @@ class Unit < ApplicationRecord
     api_unit_marketing_name()
   end
 
+  def fetch_unit_plotting_name
+    if building != nil && building != ""
+      "#{building}-#{marketing_name}"
+    elsif community.data_provider == "yardi"
+      provider_unit_id
+    else 
+      marketing_name
+    end
+  end
+
   def stop_description_formatting stop_description
     return "" unless stop_description.present?
 
