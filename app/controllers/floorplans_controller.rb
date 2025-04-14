@@ -64,6 +64,10 @@ class FloorplansController < ApplicationController
   def crop_image
     @community = Community.find params["community_id"]
     @floorplan = Floorplan.find params["id"]
+<<<<<<< HEAD
+=======
+
+>>>>>>> fd3f6badb04b4fdf2b33270b31fff134987bdb11
     if @floorplan.crop_x == params[:floorplan][:crop_x].to_f
       @floorplan.do_crop = false
     else
