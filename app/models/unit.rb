@@ -174,13 +174,31 @@ class Unit < ApplicationRecord
     api_unit_marketing_name()
   end
 
-  def fetch_unit_plotting_name
+  def fetch_unit_plotting_name have_multi_property_ids
+    if have_multi_property_ids
+      multi_property_id_unit_name_display
+    else
+      single_property_id_unit_name_display
+    end
+  end
+
+  def single_property_id_unit_name_display
     if building != nil && building != ""
       "#{building}-#{marketing_name}"
     elsif community.data_provider == "yardi"
       provider_unit_id
     else 
       marketing_name
+    end
+  end
+
+  def multi_property_id_unit_name_display
+    if building != nil && building != ""
+      "#{building}-#{marketing_name}-#{property_id}"
+    elsif community.data_provider == "yardi"
+      provider_unit_id
+    else 
+      "#{marketing_name}-#{property_id}"
     end
   end
 
