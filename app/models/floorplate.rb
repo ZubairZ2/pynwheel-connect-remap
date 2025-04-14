@@ -25,7 +25,6 @@
 class Floorplate < ApplicationRecord
   include StandardUrl
   include ::S3Acceleration
-  serialize :map_ocr_data
 
   mount_uploader :image, SiteMapUploader
   mount_uploader :svg_image, SiteMapUploader
