@@ -52,9 +52,9 @@
                         - if @tour_user.image.url.include? "default-user128x128.jpg"
                           Removed at Consumer Request
                         - else
-                          = image_tag (@tour_user.image.present? ? @tour_user.image : "default-user128x128.jpg"), :class => "user_id_image1", :style => "height: 100%; width: 100px; margin-left: -48px; #{@tour_user.image.present? ? "" : ""}"
+                          = image_tag (@tour_user&.image&.url.present? ? @tour_user&.image&.url : "default-user128x128.jpg"), :class => "user_id_image1", :style => "height: 100%; width: 100px; margin-left: -48px; #{@tour_user.image.present? ? "" : ""}"
                       - else
-                        = image_tag (@tour_user.image.present? ? @tour_user.image : "default-user128x128.jpg"), :class => "user_id_image1", :style => "height: 100%; width: 100px; margin-left: -48px; #{@tour_user.image.present? ? "" : ""}"
+                        = image_tag (@tour_user&.image&.url.present? ? @tour_user&.image&.url : "default-user128x128.jpg"), :class => "user_id_image1", :style => "height: 100%; width: 100px; margin-left: -48px; #{@tour_user.image.present? ? "" : ""}"
                     .col-lg-3.col-md-3.col-sm-3.col-xs-12.email_div{:style => " "}
                       %strong
                         #{(@tour_user.last_name.present? ? @tour_user.last_name + ", " : "") + (@tour_user.first_name.present? ? @tour_user.first_name : @tour_user.name)}
@@ -73,9 +73,9 @@
                         - if @tour_user.id_card.url.include? "default_id_card.jpg"
                           Removed at Consumer Request
                         - else
-                          = image_tag  (@tour_user.id_card.present? ? @tour_user.id_card : "default id card.jpg"), :class => "user_id_image2", :style => " width: 115px;  margin-left: 99px; #{@tour_user.id_card.present? ? "" : ""}"
+                          = image_tag  (@tour_user&.id_card&.url.present? ? @tour_user&.id_card&.url : "default id card.jpg"), :class => "user_id_image2", :style => " width: 115px;  margin-left: 99px; #{@tour_user.id_card.present? ? "" : ""}"
                       - else
-                        = image_tag  (@tour_user.id_card.present? ? @tour_user.id_card : "default id card.jpg"), :class => "user_id_image2", :style => " width: 115px;  margin-left: 99px; #{@tour_user.id_card.present? ? "" : ""}"
+                        = image_tag  (@tour_user&.id_card&.url.present? ? @tour_user&.id_card&.url : "default id card.jpg"), :class => "user_id_image2", :style => " width: 115px;  margin-left: 99px; #{@tour_user.id_card.present? ? "" : ""}"
 
                   - if @tour_user.desired_bedroom.present?
                     .col-lg-12
@@ -88,8 +88,8 @@
                         %span#propertyDetailNameText
                           This section will show the time the tour began, how long the tour lasted, and when the tour ended.
                   .col-lg-12{:style => "background: #efefef; margin: 30px"}
-                    - if @alerts.last.history == false
-                      - @alerts.order("id DESC").each_with_index do |alert,index|
+                    - if @alerts&.last&.history == false
+                      - @alerts&.order("id DESC").each_with_index do |alert,index|
                         - end_time = alert.left.present? ? alert.left : alert.lengthy_stay
                         .col-lg-6{:style => "#{index == 0 ? "margin-top: 5px" : "margin-top: 13px"}"}
                           .alert-div1{:style => "margin-top: 10px"}
@@ -136,14 +136,14 @@
                     -#= select :floorplates , :images , @community.floorplates.all.order("id ASC").collect{|f| [ f.name, f.id ] },{:prompt => 'Select the Floorplate'}, class: "form-control"
                     .col-sm-12.col-lg-12.col-md-12.col-xs-12{style: "padding-right: 0;"}
                       - begin
-                        - if @alerts.last.history == false
-                          = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| f.my_time_zone.present? ? [f.arrived.in_time_zone(f.my_time_zone).strftime("%m-%d-%Y %I:%M %p"), f.id ]  : [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
-                        - elsif @alerts.last.history == true
+                        - if @alerts&.last&.history == false
+                          = select :tour_histories , :dates , @alerts&.order("id DESC").collect{|f| f.my_time_zone.present? ? [f.arrived.in_time_zone(f.my_time_zone).strftime("%m-%d-%Y %I:%M %p"), f.id ]  : [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                        - elsif @alerts&.last&.history == true
                           Removed at Consumer Request
                       - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
-                        - if @alerts.present? && @alerts.last.history == false
-                          = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] if  f.arrived.present? } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
-                        - elsif @alerts.last.history == true
+                        - if @alerts&.present? && @alerts&.last&.history == false
+                          = select :tour_histories , :dates , @alerts&.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] if  f.arrived.present? } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                        - elsif @alerts&.last.history == true
                           Removed at Consumer Request
 
 
@@ -175,7 +175,7 @@
                     -# - left_margin = ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i
                     -# - right_margin = ((20.0 / 25.0).to_f * (@community.design.property_map_size_integer)).to_i
                     .div#mapp
-                      = image_tag @sitemap.image, :class => "my_class hiddens", :id => "floorplane_img", :style => "height: 100%; width: 100%; display: none"
+                      = image_tag @sitemap&.image&.url, :class => "my_class hiddens", :id => "floorplane_img", :style => "height: 100%; width: 100%; display: none"
                     %canvas#myCanvas{:height => "725", :style => "border:1px solid #d3d3d3;", :width => "725"}
 
                       
@@ -244,14 +244,17 @@
                                     = stop_image.event_date.present? ? (stop_image.event_date).strftime("%Y-%m-%d") : (stop_image.created_at.in_time_zone(time_zone)).strftime("%Y-%m-%d")
                                     = stop_image.event_time.present? ? (stop_image.event_time).strftime("%I:%M %p") : (stop_image.created_at.in_time_zone(time_zone)).strftime("%I:%M %p")
                             - stop[1].each do |stop_image|
-                              - if stop_image.image.url.present?
+                              - if stop_image&.image&.url.present?
                                 - is_data_loaded = true
-                                = image_tag  @stop.image, :class => "my_class", id: "#{@stop.id}", :style => " display: none; height: 72px; width: 100px; margin-top: 10px;"
-                                = " "
+
+                                - if @stop&.image&.url.present?
+                                  = image_tag  @stop&.image&.url, :class => "my_class", id: "#{@stop&.id}", :style => " display: none; height: 72px; width: 100px; margin-top: 10px;"
+
                                 - if stop_image.is_rotated == true
                                   = image_tag  stop_image.image.url, :class => "", :style => "height: 200px; width: auto; margin-top: -4px; margin-left: 28px; transform: rotate(90deg);"
                                 - else
                                   = image_tag  stop_image.image.url, :class => "", :style => "height: 148px; width: auto; margin-top: 8px; margin-left: 15px; "
+                            
                             - stop[1].each do |stop_decription|
                               - if stop_decription.description.present?
                                 - is_data_loaded = true

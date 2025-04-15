@@ -43,7 +43,7 @@ class TourUser < ApplicationRecord
   validates :phone_number, presence: true
   # validates :desired_bedroom, :numericality => { greater_than_or_equal_to: 0, less_than: 10 }
 
-  after_update :crop_user_image
+  after_update :crop_user_image, if: ->(obj) { obj.image_changed? }
   after_update :set_tour_user_name, if: ->(obj){ obj.first_name_changed? ||  obj.last_name_changed? }
 
   mount_base64_uploader :image, AvatarUploader
@@ -217,7 +217,6 @@ class TourUser < ApplicationRecord
 
       zev_mac_ids&.compact&.uniq&.count > 1 ? zev_mac_ids&.compact&.uniq : []
     rescue => error
-      puts "\n\n------------------------------------------ Multiple Zerver Response: \n #{error.inspect} -----------------------------\n\n"
       []
     end
   end

@@ -52,9 +52,10 @@
                               - if user.image.url.include? "default-user128x128.jpg"
                                 Removed at Consumer Request
                               - else
-                                = image_tag  user.image.present? ? user.image :  "default-user128x128.jpg", :class => "user_id_image", :style => "width: 100px; #{user.image.present? ? "" : ""}"
+                                = image_tag  user&.image&.url.present? ? user&.image&.url :  "default-user128x128.jpg", :class => "user_id_image", :style => "width: 100px; #{user&.image&.url.present? ? "" : ""}"
                             - else
-                              = image_tag  user.image.present? ? user.image :  "default-user128x128.jpg", :class => "user_id_image", :style => "width: 100px; #{user.image.present? ? "" : ""}"
+                              = image_tag  user&.image&.url.present? ? user&.image&.url :  "default-user128x128.jpg", :class => "user_id_image", :style => "width: 100px; #{user&.image&.url.present? ? "" : ""}"
+                          
                           .col-lg-1{style: "float: right;"}
                             - if user.image.present?
                               - unless user.image.url.include? "default-user128x128.jpg"

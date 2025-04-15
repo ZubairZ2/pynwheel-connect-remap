@@ -17,8 +17,6 @@ class HomeController < ApplicationController
       @communities = current_user.communities.active_properties
     end
 
-    puts "\n\n\n -------------- Home 1 Community ID: #{session[:community_id]}--------------- \n\n\n"
-
     handle_code_grant_authorization(request&.headers['referer']) if params["code"].present?
   end
 

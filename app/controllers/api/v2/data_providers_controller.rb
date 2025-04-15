@@ -89,7 +89,7 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
 
   def update_data_provider
     data_provider = params[:data_provider]
-    @community.update_attributes(data_provider: data_provider)
+    @community.update(data_provider: data_provider)
   end
 
   def update_data_provider_credentials
@@ -190,7 +190,7 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
      company_credentials = company.create_credential(company_credential_params)
     end
     if provider == 'yardi'
-      company.credential.update_attributes(yardi_username:  params["credential"]["username"], yardi_password: params["credential"]["password"])
+      company.credential.update(yardi_username:  params["credential"]["username"], yardi_password: params["credential"]["password"])
     end
     company_credentials
   end

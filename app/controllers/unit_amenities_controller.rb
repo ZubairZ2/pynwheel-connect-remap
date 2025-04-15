@@ -22,7 +22,7 @@ class UnitAmenitiesController < ApplicationController
 
   def update
     @amenity = @unit.amenities.find(params[:id])
-    if @amenity.update_attributes(amenity_params)
+    if @amenity.update(amenity_params)
       Amenity.where('id != ? AND mass_upload_id = ?', @amenity.id, @amenity.mass_upload_id).update_all(name: amenity_params[:name], description: amenity_params[:description]) if @amenity.mass_upload_id.present?
       redirect_to edit_community_unit_path(@community,@unit), notice: "Unit amenity updated successfully"
     else

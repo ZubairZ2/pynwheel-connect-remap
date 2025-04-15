@@ -78,7 +78,7 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
     parsed_products = params["product_options"]
     self_tour = parsed_products["product_options"]["self_tour"]["is_enabled"]
     pynwheel_touch = parsed_products["product_options"]["pynwheel_touch"]["is_enabled"]
-    if @community.update_attributes(product_options: product_attributes, self_tour: self_tour, touchscreen_app: pynwheel_touch)
+    if @community.update(product_options: product_attributes, self_tour: self_tour, touchscreen_app: pynwheel_touch)
       @product_json = JSON.parse(@community.product_options)
       render :json => { data: @product_json }
     else

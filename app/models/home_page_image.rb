@@ -24,13 +24,13 @@ class HomePageImage < ApplicationRecord
   include StandardUrl
   include RailsSortable::Model
   set_sortable :sort
-  #mount_base64_uploader :image, ImageUploader
-  mount_uploader :image, ImageUploader
+  mount_base64_uploader :image, ImageUploader
+  # mount_uploader :image, ImageUploader
   process_in_background :image
   belongs_to :design
   has_one :status, as: :statusable
   before_create :set_image_name
-  after_update :crop_image
+  after_update :crop_image, if: ->(obj) { obj.image_changed? }
   after_commit :populate_image_urls, on: [:create, :update]
 
   def crop_image

@@ -24,7 +24,7 @@ class FloorplansController < ApplicationController
       @floorplan.provider = "manually"
       if @floorplan.save
         flash[:notice] = "Floor plan created successfully."
-        PaperTrail::Version.create(item_type: "Floorplan",item_id: @floorplan.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@floorplan.name} community_id: '#{@floorplan.community_id}'")
+        #PaperTrail::Version.create(item_type: "Floorplan",item_id: @floorplan.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@floorplan.name} community_id: '#{@floorplan.community_id}'")
 
         redirect_to community_floorplans_path(:community_id=>@community.id)
       else
@@ -51,7 +51,9 @@ class FloorplansController < ApplicationController
       @floorplan.remove_secondary_image!
       @floorplan.save
     end
-    redirect_to :back, notice: "Image removed successfully."
+
+    flash[:notice] = "Image removed successfully."
+    redirect_back(fallback_location: root_path)
   end
 
   def show_floorplan_image_in_modal
@@ -62,21 +64,27 @@ class FloorplansController < ApplicationController
   def crop_image
     @community = Community.find params["community_id"]
     @floorplan = Floorplan.find params["id"]
+<<<<<<< HEAD
+=======
+
+>>>>>>> fd3f6badb04b4fdf2b33270b31fff134987bdb11
     if @floorplan.crop_x == params[:floorplan][:crop_x].to_f
       @floorplan.do_crop = false
     else
       @floorplan.do_crop = true
     end
+
     if params[:floorplan][:crop_h].to_f == 0 && params[:floorplan][:crop_w].to_f == 0
       @floorplan.do_crop = false
     end
+
     @floorplan.crop_x = params[:floorplan][:crop_x]
     @floorplan.crop_y = params[:floorplan][:crop_y]
     @floorplan.crop_w = params[:floorplan][:crop_w]
     @floorplan.crop_h = params[:floorplan][:crop_h]
     @floorplan.image_bit = true
     @floorplan.save
-    PaperTrail::Version.create(item_type: "Floorplan",item_id: @floorplan.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@floorplan.name} community_id: '#{@floorplan.community_id}'")
+    #PaperTrail::Version.create(item_type: "Floorplan",item_id: @floorplan.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@floorplan.name} community_id: '#{@floorplan.community_id}'")
 
     redirect_to edit_community_floorplan_path(@community,@floorplan)
   end
@@ -96,9 +104,11 @@ class FloorplansController < ApplicationController
     else
       @floorplan.do_crop_secondary = true
     end
+
     if params[:floorplan][:crop_h].to_f == 0 && params[:floorplan][:crop_w].to_f == 0
       @floorplan.do_crop_secondary = false
     end
+
     @floorplan.crop_x_secondary = params[:floorplan][:crop_x]
     @floorplan.crop_y_secondary = params[:floorplan][:crop_y]
     @floorplan.crop_w_secondary = params[:floorplan][:crop_w]
@@ -106,10 +116,9 @@ class FloorplansController < ApplicationController
     @floorplan.image_bit = false
 
     @floorplan.save
-    PaperTrail::Version.create(item_type: "Floorplan",item_id: @floorplan.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@floorplan.name} community_id: '#{@floorplan.community_id}'")
+    #PaperTrail::Version.create(item_type: "Floorplan",item_id: @floorplan.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@floorplan.name} community_id: '#{@floorplan.community_id}'")
 
     redirect_to edit_community_floorplan_path(@community,@floorplan)
-    # render :json=> {:success=>false}
   end
 
   def update
@@ -146,7 +155,7 @@ class FloorplansController < ApplicationController
           @floorplan.market_rent_is_updated = true
         end
         if @floorplan.update(floorplan_params)
-          PaperTrail::Version.create(item_type: "Floorplan",item_id: @floorplan.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@floorplan.name} community_id: '#{@floorplan.community_id}'")
+          #PaperTrail::Version.create(item_type: "Floorplan",item_id: @floorplan.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@floorplan.name} community_id: '#{@floorplan.community_id}'")
 
           format.html { redirect_to community_floorplans_path(:community_id=>@community.id), notice: 'Floor plan updated successfully.' }
           message = '<div class="alert alert-success">'+@floorplan.name+' image uploaded successfully.</div>'
@@ -174,7 +183,7 @@ class FloorplansController < ApplicationController
   end
   def destroy
     @floorplan.destroy
-    PaperTrail::Version.create(item_type: "Floorplan",item_id: @floorplan.id,event: "destroy",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@floorplan.name} community_id: '#{@floorplan.community_id}'")
+    #PaperTrail::Version.create(item_type: "Floorplan",item_id: @floorplan.id,event: "destroy",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@floorplan.name} community_id: '#{@floorplan.community_id}'")
 
     flash[:notice] = "Floor plan deleted successfully."
     redirect_to community_floorplans_path(:community_id=>@community.id)
@@ -186,7 +195,7 @@ class FloorplansController < ApplicationController
     str2 = add_padding_description desc
     @community.floorplans.where(id: params[:floorplan_ids]).update_all(description:  str2)
     flash[:notice] = "Description is updated for units successfully."
-    redirect_to :back
+    redirect_back(fallback_location: root_path)
   end
 
   def add_padding_description(desc)

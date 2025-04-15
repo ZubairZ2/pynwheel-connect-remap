@@ -60,7 +60,7 @@ class ElevatorsController < ApplicationController
         update_enable_locks()
         ts = TourStop.find_by(stop_type: "elevator", stop_id: @elevator.id)
         if ts.present?
-          ts.update_attributes(name: @elevator.name)
+          ts.update(name: @elevator.name)
         end
         format.html { redirect_back(fallback_location: community_elevators_path, notice: 'Elevator was successfully updated.') }
         format.js { render :show, status: :ok, location: @elevator }
@@ -77,7 +77,7 @@ class ElevatorsController < ApplicationController
   end
 
   def remove_elevator_plotting
-    current_community.elevators.find_by_id(params[:id]).update_attributes(x_plot: 0, y_plot: 0)
+    current_community.elevators.find_by_id(params[:id]).update(x_plot: 0, y_plot: 0)
     redirect_to plot_elevators_community_sitemaps_path(current_community), notice: "Plotting have been deleted successfully."
   end
 

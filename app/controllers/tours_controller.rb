@@ -263,7 +263,7 @@ class ToursController < ApplicationController
 
   def save_schedule_widget_btn_setting
     @schedule_widget_setting = @community.community_tour.scheduler_widget_setting
-    @schedule_widget_setting.update_attributes(btn_text: params[:btn_text], btn_font: params[:btn_font], btn_font_size: params[:btn_font_size], btn_color: params[:btn_color], btn_width: params[:btn_width].to_i, btn_height: params[:btn_height].to_i)
+    @schedule_widget_setting.update(btn_text: params[:btn_text], btn_font: params[:btn_font], btn_font_size: params[:btn_font_size], btn_color: params[:btn_color], btn_width: params[:btn_width].to_i, btn_height: params[:btn_height].to_i)
     flash[:notice] = "Tour settings updated successfully."
     redirect_to settings_community_tours_path(@community)
   end
@@ -272,7 +272,7 @@ class ToursController < ApplicationController
     tour = Tour.find params[:tour_id]
     if tour.present?
       Tour.where(community_id: tour.community_id).update_all(x_plot: params[:x_plot], y_plot: params[:y_plot])
-      PaperTrail::Version.create(item_type: "TourStopStartingPoint",item_id: tour.id,event: "update",whodunnit: current_user.id,community_id: tour.community_id, company_id: current_company.id,object: "name: '#{tour.name}' community_id: '#{tour.community_id}'") rescue nil
+      #PaperTrail::Version.create(item_type: "TourStopStartingPoint",item_id: tour.id,event: "update",whodunnit: current_user.id,community_id: tour.community_id, company_id: current_company.id,object: "name: '#{tour.name}' community_id: '#{tour.community_id}'") rescue nil
 
       render json: {tour: tour}, status: 200
     else
@@ -286,7 +286,7 @@ class ToursController < ApplicationController
     @community = Community.find params[:community_id]
     if tour.present?
       Tour.where(community_id: @community.id).update_all(x_plot: 0, y_plot: 0)
-      PaperTrail::Version.create(item_type: "TourStopStartingPoint",item_id: tour.id,event: "create",whodunnit: current_user.id,community_id: tour.community_id, company_id: current_company.id,object: "name: '#{tour.name}' community_id: '#{tour.community_id}'") rescue nil
+      #PaperTrail::Version.create(item_type: "TourStopStartingPoint",item_id: tour.id,event: "create",whodunnit: current_user.id,community_id: tour.community_id, company_id: current_company.id,object: "name: '#{tour.name}' community_id: '#{tour.community_id}'") rescue nil
 
       redirect_to starting_point_community_tours_path(@community)
     end
@@ -323,7 +323,7 @@ class ToursController < ApplicationController
         stName = st.marketing_name
       end
       ts = TourStop.create(stop_type: stop_type, stop_id: tour_stop,latitude: st.x_plot,longitude: st.y_plot,tour_id: current_community.community_tour.id,name: stName)
-      PaperTrail::Version.create(item_type: "TourStop",item_id: st.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: '#{stName}' community_id: '#{current_community.id}'")
+      #PaperTrail::Version.create(item_type: "TourStop",item_id: st.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: '#{stName}' community_id: '#{current_community.id}'")
     end
 
     render json: {community: @community}, status: 200
@@ -386,7 +386,7 @@ class ToursController < ApplicationController
           stop = Amenity.find path.map_path_id
           stName = stop.name
         end
-        PaperTrail::Version.create(item_type: "TourPath",item_id: stop.id,event: "create",whodunnit: current_user.id,community_id: stop.community_id, company_id: current_company.id,object: "name: '#{stName}' community_id: '#{stop.community_id}'")
+        #PaperTrail::Version.create(item_type: "TourPath",item_id: stop.id,event: "create",whodunnit: current_user.id,community_id: stop.community_id, company_id: current_company.id,object: "name: '#{stName}' community_id: '#{stop.community_id}'")
 
       rescue => e
         puts "exception *************"
@@ -419,7 +419,7 @@ class ToursController < ApplicationController
     @building_starting_point = BuildingStartingPoint.find_by_id params[:bsp_id]
     @tour_stop = TourStop.find_by(stop_id: @building_starting_point, stop_type: "building_starting_point")
     respond_to do |format|
-      if @building_starting_point.update_attributes(x_plot: params[:x_plot], y_plot: params[:y_plot]) && @tour_stop.update_attributes(latitude: params[:x_plot], longitude: params[:y_plot])
+      if @building_starting_point.update(x_plot: params[:x_plot], y_plot: params[:y_plot]) && @tour_stop.update(latitude: params[:x_plot], longitude: params[:y_plot])
         format.json { render json: @building_starting_point, status: :ok }
       else
         format.json { render json: @building_starting_point.errors, status: :unprocessable_entity }
@@ -483,7 +483,7 @@ class ToursController < ApplicationController
 
   def point_update
     path_point = PathPoint.find(params[:point_id])
-    path_point.update_attributes(x_plot: params[:x_plot], y_plot: params[:y_plot])
+    path_point.update(x_plot: params[:x_plot], y_plot: params[:y_plot])
     path_point.neighbour_units.destroy_all
     NeighbourUnit.create path_point: path_point, unit_id: params[:unit_ids].join(',') if params[:unit_ids].present?
     begin
@@ -494,7 +494,7 @@ class ToursController < ApplicationController
     else
       stop =  Amenity.find stop.map_path_id
     end
-    PaperTrail::Version.create(item_type: "PathPoint",item_id: stop.id,event: "update",whodunnit: current_user.id,community_id: stop.community_id, company_id: current_company.id,object: "name: '#{stop.is_a?(Unit) ? stop.marketing_name : stop.name}' community_id: '#{stop.community_id}'")
+    #PaperTrail::Version.create(item_type: "PathPoint",item_id: stop.id,event: "update",whodunnit: current_user.id,community_id: stop.community_id, company_id: current_company.id,object: "name: '#{stop.is_a?(Unit) ? stop.marketing_name : stop.name}' community_id: '#{stop.community_id}'")
     rescue => e
       puts "exception *************"
     end
@@ -511,7 +511,7 @@ class ToursController < ApplicationController
       else
         stop =  Amenity.find stop.map_path_id
       end
-      PaperTrail::Version.create(item_type: "PathPoint",item_id: stop.id,event: "delete",whodunnit: current_user.id,community_id: stop.community_id, company_id: current_company.id,object: "name: '#{stop.is_a?(Unit) ? stop.marketing_name : stop.name}' community_id: '#{stop.community_id}'")
+      #PaperTrail::Version.create(item_type: "PathPoint",item_id: stop.id,event: "delete",whodunnit: current_user.id,community_id: stop.community_id, company_id: current_company.id,object: "name: '#{stop.is_a?(Unit) ? stop.marketing_name : stop.name}' community_id: '#{stop.community_id}'")
     rescue => e
       puts "exception *************"
     end

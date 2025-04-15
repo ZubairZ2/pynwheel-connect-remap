@@ -26,7 +26,7 @@ class IgloohomeV1AccountsController < ApplicationController
   end
 
   def update_community_lock_provider
-    current_community.update_columns(multiple_locks_provider: current_community.multiple_locks_provider.concat(["Igloohome"]).uniq)
+    current_community.update(multiple_locks_provider: current_community.multiple_locks_provider.concat(["Igloohome"]).uniq)
   end
 
   def handle_single_lock_import

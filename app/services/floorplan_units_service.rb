@@ -35,9 +35,11 @@ class FloorplanUnitsService < BaseService
       @floorplates = @community.floorplates
       @floors = fetch_floors()
       floorplates = []
+      
       @floors.each do |floor|
         floorplates << @floorplates.select{|f| f.floors.include?(floor)}
       end
+
       floorplates.flatten
     end
   end

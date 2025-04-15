@@ -348,7 +348,7 @@ module ApplicationHelper
   end
 
   def delete_logs(item_type, item_id)
-    f = PaperTrail::Version.find_by(item_id: item_id, item_type: item_type,event: "destroy")
+    f = nil #PaperTrail::Version.find_by(item_id: item_id, item_type: item_type,event: "destroy")
     if f.present?
       if item_type == "Unit"
         return f.object.split("marketing_name:")[1].split("'")[1]
@@ -379,7 +379,7 @@ module ApplicationHelper
 
   def delete_community_name(item_type, item_id)
     begin
-      f = PaperTrail::Version.find_by(item_id: item_id, item_type: item_type,event: "destroy")
+      f = nil #PaperTrail::Version.find_by(item_id: item_id, item_type: item_type,event: "destroy")
       if f.present?
         if item_type == "Unit"
           return (Community.find f.object.split("community_id:")[1].split("'")[1].to_i).name

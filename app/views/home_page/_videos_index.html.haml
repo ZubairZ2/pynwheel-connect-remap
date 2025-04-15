@@ -7,7 +7,7 @@
       .slide-image
         .image-box.video-box
           .images.height-200
-            = video_tag current_community.design.home_page_video.video.url.present? ? current_community.design.home_page_video.video : "", :controls => true, :autobuffer => true,:type => "video/mp4"
+            = video_tag current_community.design.home_page_video.video.url.present? ? current_community.design.home_page_video.video.url : "", :controls => true, :autobuffer => true,:type => "video/mp4"
           .icons
             %a.text-danger{"data-name"=>"Video","data-href" => "/communities/#{current_community.id}/home_page/delete_home_page_video?home_page_video_id=#{current_community.design.home_page_video.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "##"} 
               %i.fa.fa-close

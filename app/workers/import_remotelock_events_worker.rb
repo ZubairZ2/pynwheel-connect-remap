@@ -1,4 +1,4 @@
-# class ImportRemotelockEventsWorker
+class ImportRemotelockEventsWorker
 #     include Sidekiq::Worker
 
 #     def perform(tour_userid, tour_history_id, assigned_pin)
@@ -67,4 +67,4 @@
 #         return (event["type"] == "access_person_synced_event" and event["attributes"]["source"] == "user" and event["attributes"]["status"] == "succeeded" and event["attributes"]["associated_resource_id"].present? and event["attributes"]["associated_resource_id"] == guest_id)
 #     end
 
-# end
+end

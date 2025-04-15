@@ -166,12 +166,12 @@ class KnockService < BaseService
     available_time_slots
   end
 
-  def add_knock_appointment_id scheduled_tour, appointment_id
-    scheduled_tour.update_attributes(knock_appointment_id: appointment_id)
+  def add_knock_appointment_id appointment_id
+    @scheduled_tour.update(knock_appointment_id: appointment_id)
   end
 
-  def add_knock_prospect_id scheduled_tour, prospect_id
-    scheduled_tour.update_attributes(knock_prospect_id: prospect_id)
+  def add_knock_prospect_id prospect_id
+    @scheduled_tour.update(knock_prospect_id: prospect_id)
   end
 
   def is_knock_crm

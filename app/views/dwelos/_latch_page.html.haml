@@ -39,10 +39,10 @@
                 .select-logo-logo.logo-container.logo-upload-container
 
                   - rn =  rand(9999999999999999999999999)
-                  - amenity_lock_image = @community.latch.present? ? @community.latch.amenity_lock_image : ""
+                  - amenity_lock_image = @community&.latch&.amenity_lock_image&.url
 
-                  %a.preview-image{:href=> amenity_lock_image.present? ? amenity_lock_image  : asset_path("latch-lock-image-amenity.png"), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
-                    = image_tag amenity_lock_image.present? ? amenity_lock_image : "latch-lock-image-amenity.png",:height=>"100%",:width=>"100%",:id=>"amenity-latch-preview-image"
+                  %a.preview-image{:href=> (amenity_lock_image  || asset_path("latch-lock-image-amenity.png")), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
+                    = image_tag (amenity_lock_image || "latch-lock-image-amenity.png"),:height=>"100%",:width=>"100%",:id=>"amenity-latch-preview-image"
 
           -# Unit Door Lock Instruction & Image Uploader
           .lock-box-shadow
@@ -69,10 +69,10 @@
                 .select-logo-logo.logo-container.logo-upload-container
 
                   - rn =  rand(9999999999999999999999999)
-                  - lock_image = @community.latch.present? ? @community.latch.lock_image : ""
+                  - lock_image = @community&.latch&.lock_image&.url
 
-                  %a.preview-image{:href=> lock_image.present? ? lock_image  : asset_path("latch-lock-image-unit.png"), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
-                    = image_tag lock_image.present? ? lock_image : "latch-lock-image-unit.png",:height=>"100%",:width=>"100%",:id=>"latch-preview-image"
+                  %a.preview-image{:href=> (lock_image  || asset_path("latch-lock-image-unit.png")), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
+                    = image_tag (lock_image || "latch-lock-image-unit.png"),:height=>"100%",:width=>"100%",:id=>"latch-preview-image"
 
     
     .box-footer

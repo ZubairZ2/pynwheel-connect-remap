@@ -11,8 +11,7 @@
 
 class Sitemap < ApplicationRecord
   include ::S3Acceleration
-  # has_paper_trail
-  serialize :map_ocr_data, Array
+
   mount_uploader :image, SiteMapUploader
   mount_uploader :svg_image, SiteMapUploader
   mount_uploader :label_image, SiteMapUploader
@@ -120,7 +119,5 @@ class Sitemap < ApplicationRecord
       floorplate_units: sitemap_stops
     }
   end
-
-
 
 end

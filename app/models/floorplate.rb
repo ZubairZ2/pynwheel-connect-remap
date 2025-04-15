@@ -23,11 +23,8 @@
 #
 
 class Floorplate < ApplicationRecord
-  # has_paper_trail
   include StandardUrl
   include ::S3Acceleration
-
-  serialize :map_ocr_data, Array
 
   mount_uploader :image, SiteMapUploader
   mount_uploader :svg_image, SiteMapUploader
@@ -160,7 +157,6 @@ class Floorplate < ApplicationRecord
   def floorplate_image_height
     self.height > 0 ? self.height : self.image.height rescue 0
   end
-
 
   private
 

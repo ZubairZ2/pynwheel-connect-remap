@@ -48,57 +48,54 @@ class SchedulerWidgetService < BaseService
         available_time_slots << time
       end
     end
-    # available_time_slots.each {|value_arr| value_arr.uniq}
+
     available_time_slots
   end 
 
-  # def return_2_hrs_time_interval_slots(opening_time, closing_time)
-  # end
-
   def return_time_slots(opening_time, closing_time, steps)
     slots = []
-    # if steps == 120
-    #   slots = return_2_hrs_time_interval_slots(opening_time, closing_time)
-    # else
-      start_minute = opening_time
-      opening_hour = opening_time.split(":")[0].to_i
-      opening_minute = opening_time.split(":")[1].to_i
-      open_minute = opening_minute
-      closing_hour = closing_time.split(":")[0].to_i
-      closing_minute = closing_time.split(":")[1].to_i == 0 ? 60 : closing_time.split(":")[1].to_i
-      same_hour = (opening_hour == closing_hour)
-      close_minute = same_hour ? closing_minute : 60
-      while opening_minute < close_minute
+    start_minute = opening_time
+    opening_hour = opening_time.split(":")[0].to_i
+    opening_minute = opening_time.split(":")[1].to_i
+    open_minute = opening_minute
+    closing_hour = closing_time.split(":")[0].to_i
+    closing_minute = closing_time.split(":")[1].to_i == 0 ? 60 : closing_time.split(":")[1].to_i
+    same_hour = (opening_hour == closing_hour)
+    close_minute = same_hour ? closing_minute : 60
+
+    while opening_minute < close_minute
+      hour, am_pm = return_hour_and_meridiem(opening_hour)
+      slots << (hour  + ":" + ((opening_minute < 10) ? "0" + opening_minute.to_s : opening_minute.to_s) + " " + am_pm)
+      opening_minute += steps
+    end
+
+    opening_minute = same_hour ? 0 : (opening_minute - 60)
+    opening_hour += 1
+
+    if opening_hour != closing_hour
+      while opening_hour <= (closing_hour - 1) do
         hour, am_pm = return_hour_and_meridiem(opening_hour)
         slots << (hour  + ":" + ((opening_minute < 10) ? "0" + opening_minute.to_s : opening_minute.to_s) + " " + am_pm)
-        opening_minute += steps
+          if (opening_minute + steps) < 60
+            opening_minute += steps
+          else
+            opening_hour = opening_hour + 1
+            opening_minute = (opening_minute + steps) - 60
+          end
       end
-      opening_minute = same_hour ? 0 : (opening_minute - 60)
-      opening_hour += 1
-      if opening_hour != closing_hour
-        while opening_hour <= (closing_hour - 1) do
-          hour, am_pm = return_hour_and_meridiem(opening_hour)
-          slots << (hour  + ":" + ((opening_minute < 10) ? "0" + opening_minute.to_s : opening_minute.to_s) + " " + am_pm)
-            if (opening_minute + steps) < 60
-              opening_minute += steps
-            else
-              opening_hour = opening_hour + 1
-              opening_minute = (opening_minute + steps) - 60
-            end
-        end # while end
+    end
+    
+    if !same_hour && closing_minute != 60
+      open_minute = 0 if open_minute >= closing_minute
+      while open_minute < closing_minute
+        hour, am_pm = return_hour_and_meridiem(opening_hour)
+        slots << (hour  + ":" + ((open_minute < 10) ? "0" + open_minute.to_s : open_minute.to_s) + " " + am_pm)
+        open_minute += steps
       end
-      if !same_hour && closing_minute != 60 # means greater than zero
-        open_minute = 0 if open_minute >= closing_minute
-        while open_minute < closing_minute
-          hour, am_pm = return_hour_and_meridiem(opening_hour)
-          slots << (hour  + ":" + ((open_minute < 10) ? "0" + open_minute.to_s : open_minute.to_s) + " " + am_pm)
-          open_minute += steps
-        end
-      end
-    # end
+    end
     
     slots
-  end # method end
+  end
 
   def return_hour_and_meridiem(hour)
     if hour == 0

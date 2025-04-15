@@ -37,15 +37,15 @@ CarrierWave.configure do |config|
   # config.asset_host = ActionController::Base.asset_host
 
   config.max_file_size     = 500.megabytes
-  config.fog_provider = 'fog/aws'                         # required
+  config.fog_provider = 'fog/aws'                        # required
   config.fog_credentials = {
-    provider:                'AWS',                         # required
-    aws_access_key_id:       ENV['AWS_ACCESS_KEY_ID'],      # required
-    aws_secret_access_key:   ENV['AWS_SECRET_ACCESS_KEY'],  # required
-    region:                  'us-west-2',                   # optional, defaults to 'us-east-1'
-    use_accelerate_endpoint: true
+    provider:              'AWS',                        # required
+    aws_access_key_id:     ENV['AWS_ACCESS_KEY_ID'],                        # required
+    aws_secret_access_key: ENV['AWS_SECRET_ACCESS_KEY'],                       # required
+    region:                'us-west-2'                 # optional, defaults to 'us-east-1'
   }
-  config.fog_directory  = ENV['S3_BUCKET_NAME'] 
+  config.fog_directory  = ENV['S3_BUCKET_NAME']
+  config.fog_public = true
   config.cache_dir = "#{Rails.root}/public/uploads/tmp"
 end
 module CarrierWave

@@ -306,11 +306,12 @@
 
           .slide-imgage-boxs
             #videos-index
-            = render 'group_design/homepage_video'
-
-      = direct_upload_form_for @uploader, :id => "direct_form" do |f|
-        = f.file_field :avatar, :id => "video_field",:class => "hidden"
-        = f.submit "Upload Directly!", :id => "video_submit",:class => "hidden"
+            = render 'group_design/homepage_video'    
+      
+      = form_for @uploader, url: upload_video_direct_community_group_group_design_path(@community_group, @group_design), html: { multipart: true } do |f|
+        = f.file_field :video, id: "video_field", class: "hidden"
+        = f.submit "Upload Video", id: "video_submit", class: "hidden"
+      
 #edit-group-image.modal.fade.edit-image
 :javascript
   var community_group_id = "#{@community_group.id}"

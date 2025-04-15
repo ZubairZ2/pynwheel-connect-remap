@@ -9,7 +9,7 @@ class PropertyAccessCode
   def restrict_property_access_with_code
 
     if @tour_type != "virtual_tour" && @tour_user.check_code_expiry(@community)
-      @tour_user.update_attributes(property_access_code: generate_six_digit_random_pin, property_access_code_generated_at: Time.now, restricted_property_access: true)
+      @tour_user.update(property_access_code: generate_six_digit_random_pin, property_access_code_generated_at: Time.now, restricted_property_access: true)
       # create_tour_history()
       property_access_code_content()
     end
@@ -35,9 +35,9 @@ class PropertyAccessCode
 
   def create_tour_history
     tour_history = TourHistory.find_or_create_by(tour_user_id: @tour_user.id) rescue TourHistory.new
-    tour_history.update_columns(community_id: @community.id, tour_type: @tour_type, tour_user_id: @tour_user.id, tour_id: @community.community_tour.id)
+    tour_history.update(community_id: @community.id, tour_type: @tour_type, tour_user_id: @tour_user.id, tour_id: @community.community_tour.id)
     last_arrival = @tour_user.tour_histories.where(tour_id: @community.community_tour.id).last rescue nil
-    last_arrival.update_columns(arrived: Time.now) if last_arrival.present?
+    last_arrival.update(arrived: Time.now) if last_arrival.present?
   end
 
   def send_access_code_email subj, body

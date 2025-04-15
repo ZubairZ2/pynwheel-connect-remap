@@ -14,8 +14,8 @@ class Floorplan < ApplicationRecord
   after_commit :populate_image_urls, on: [:create, :update]
   validates :market_rent, :numericality => { greater_than_or_equal_to: -1 }, if: -> { market_rent.present? }
   # before_create :set_image_name
-  after_update :crop_image
-  after_update :crop_secondary_image
+  after_update :crop_image, if: ->(obj) { obj.image_changed? }
+  after_update :crop_secondary_image, if: ->(obj) { obj.secondary_image_changed? }
 
   after_update :update_floorplan_units_description, if: :description_changed?
 
@@ -53,7 +53,7 @@ class Floorplan < ApplicationRecord
 
   def crop_secondary_image
     secondary_image.recreate_versions! if (crop_x_secondary.present? && !image_bit && do_crop_secondary)
-    self.update_columns(do_crop_secondary: false)
+    self.update(do_crop_secondary: false)
   end
 
   def crop_image

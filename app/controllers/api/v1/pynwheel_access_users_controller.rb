@@ -1,6 +1,6 @@
 module Api
   module V1
-    class AynwheelAccessUsersController < BaseController
+    class PynwheelAccessUsersController < BaseController
       before_action :get_pynwheel_access_user_by_phone_number, only: [:generate_otp, :verify_otp]
       before_action :get_apple_store_test_number, only: [:generate_otp, :verify_otp]
       before_action :get_pynwheel_access_user_by_id, only: [:check_lock_access, :pynwheel_access_user_authentication,:resident_accesses_list, :dwelo_device_lock_or_unlock, :lock_access_time, :resident_accesses_history]
@@ -311,7 +311,7 @@ module Api
           else
             RemoteLockService.new(@community).delete_access_guest(access_token, prev_data.last.guest_id)
             response = RemoteLockService.new(@community).create_access_guest(access_token,  @pynwheel_access_user, current_time)
-            prev_data.last.update_attributes(edgestate_pin: response["data"]["attributes"]["pin"], guest_id: response["data"]["id"])
+            prev_data.last.update(edgestate_pin: response["data"]["attributes"]["pin"], guest_id: response["data"]["id"])
           end
 
           # ------------ creating guest and granting access for igloo lock -------------------------------- #

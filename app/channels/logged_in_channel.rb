@@ -1,4 +1,4 @@
-# class LoggedInChannel < ApplicationCable::Channel
+class LoggedInChannel < ApplicationCable::Channel
 #     def subscribed
 #         user_activated
 
@@ -21,7 +21,7 @@
 #         Community.joins(:users).where(users: {id: current_user.id}).where(community_users: {chat_enable: true}).update_all(is_chat_login: true) if logged_in_user.logged_in_count == 0
 
 #         logged_in_user.with_lock do
-#             logged_in_user.update_columns(logged_in_count: logged_in_user.logged_in_count+1)
+#             logged_in_user.update(logged_in_count: logged_in_user.logged_in_count+1)
 #             # all_users_count = LoggedInUser.where(community_id: params[:community_id].to_i).map{|u| u.logged_in_count}.sum
 
 #             # subscribers = "total subscribers are " + all_users_count.to_s
@@ -45,7 +45,7 @@
 #         if logged_in_user.present?
 #             logged_in_user.with_lock do
 #                 begin
-#                     logged_in_user.update_columns(logged_in_count: logged_in_user.logged_in_count-1) if logged_in_user.logged_in_count > 0
+#                     logged_in_user.update(logged_in_count: logged_in_user.logged_in_count-1) if logged_in_user.logged_in_count > 0
 
 #                     chat_enabled_communities_for_current_user = CommunityUser.where(user_id: current_user.id, chat_enable: true).pluck(:community_id).uniq   # current user's chat enabled communities
 #                     chat_enabled_communities_for_current_user = [0] if chat_enabled_communities_for_current_user.length == 0
@@ -61,7 +61,7 @@
 #                     end
 
 #                     # all_users_count = LoggedInUser.where(community_id: params[:community_id].to_i).map{|u| u.logged_in_count}.sum
-#                     # Community.find_by(id: params[:community_id].to_i).update_columns(is_chat_login: false) if all_users_count == 0
+#                     # Community.find_by(id: params[:community_id].to_i).update(is_chat_login: false) if all_users_count == 0
 
 #                     # subscribers = "remaing subscribers are " + all_users_count.to_s
 #                     # puts '***********************'
@@ -74,4 +74,4 @@
 #         end
 #     end
     
-# end
+end

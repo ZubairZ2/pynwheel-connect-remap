@@ -1,12 +1,11 @@
 class CompaniesController < ApplicationController
-  # include Error::ErrorHandler
   load_and_authorize_resource
+  
   add_breadcrumb "Home", :root_path
   add_breadcrumb "Companies", :root_path
   before_action :set_company , only: [:edit,:update,:destroy]
   before_action :check_community
   
-  #before_action :check_current_company , except: [:new,:create]
   def index
     if current_user.is_super_admin?
       @companies = alphabetical_sort(Company.all)

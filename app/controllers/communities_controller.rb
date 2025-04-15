@@ -7,8 +7,11 @@ class CommunitiesController < ApplicationController
   before_action :check_community
   before_action :set_community , only: [:edit,:update,:destroy,:remove_plots, :sitemap_auto_plot_units, :floorplate_auto_plot_units, :suggest_sitemap_units, :suggest_floorplate_units]
   add_breadcrumb "Home", :root_path
-  add_breadcrumb "Companies", :companies_path, except: [:import_page, :settings_page,:logs]
-  add_breadcrumb "Communities", :company_communities_path, except: [:import_page,:settings_page,:logs]
+  add_breadcrumb "Companies", :companies_path, except: [:import_page, :settings_page]
+  add_breadcrumb "Communities", :company_communities_path, except: [:import_page,:settings_page]
+
+  # add_breadcrumb "Companies", :companies_path, except: [:import_page, :settings_page,:logs]
+  # add_breadcrumb "Communities", :company_communities_path, except: [:import_page,:settings_page,:logs]
 
   def index
     #@communities = Community.page(params[:page]).per(10)
@@ -61,10 +64,11 @@ class CommunitiesController < ApplicationController
       render :new
     end
   end
-  def logs
-    @community = Community.find params[:community_id]
-    @logs = PaperTrail::Version.where.not(whodunnit: nil).order(created_at: :desc).paginate(page: params[:page], per_page: 20)
-  end
+  
+  # def logs
+  #   @community = Community.find params[:community_id]
+  #   @logs = #PaperTrail::Version.where.not(whodunnit: nil).order(created_at: :desc).paginate(page: params[:page], per_page: 20)
+  # end
 
   def edit
     @com_id = current_community.id
@@ -109,7 +113,7 @@ class CommunitiesController < ApplicationController
     end
 
     unless @community.data_provider.present?
-      @community.update_columns(data_provider: "psi" )
+      @community.update(data_provider: "psi" )
     end
 
     @all_regions = current_company.regions.order(:name).collect {|p| [ p.name, p.id ] } rescue []
@@ -117,7 +121,7 @@ class CommunitiesController < ApplicationController
       @community.crop_x = nil
     end
     if params["community"]["latitude"].present?
-      @community.neighborhood.update_attributes(latitude: params["community"]["latitude"], longitude: params["community"]["longitude"]) rescue ""
+      @community.neighborhood.update(latitude: params["community"]["latitude"], longitude: params["community"]["longitude"]) rescue ""
     end
 
     if params["verification_type"].present?
@@ -278,8 +282,8 @@ class CommunitiesController < ApplicationController
     end
   end
   def make_cordinate    
-    @community.update_attributes(latitude: params[:lat], longitude: params[:long]) rescue ""
-    @community.neighborhood.update_attributes(latitude: address[0], longitude: address[1]) rescue ""
+    @community.update(latitude: params[:lat], longitude: params[:long]) rescue ""
+    @community.neighborhood.update(latitude: address[0], longitude: address[1]) rescue ""
     render :json=>{"cord"=> "ok" }
   end
 
@@ -298,7 +302,7 @@ class CommunitiesController < ApplicationController
     if @community.credentials_are_present? && @community.check_credentials
       if @community.data_is_imported and Thread.current[:errors].empty?
         flash[:notice] = "Good job! You have successfully imported this property's data."
-        PaperTrail::Version.create(item_type: "ImportData",item_id: @community.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@community.name} community_id: '#{@community.id}'")
+        #PaperTrail::Version.create(item_type: "ImportData",item_id: @community.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@community.name} community_id: '#{@community.id}'")
         redirect_to community_settings_path(:community_id=>@community.id)
       else
         flash[:error] = Thread.current[:errors].join(',')
@@ -316,7 +320,7 @@ class CommunitiesController < ApplicationController
     if @community.credentials_are_present? && @community.check_credentials
       if @community.pynwheel_access_users_data and Thread.current[:errors].empty?
         flash[:notice] = "Good job! You have successfully imported this property's residents data."
-        PaperTrail::Version.create(item_type: "FetchResidentsData",item_id: @community.id,event: "Fetch Residents Data",whodunnit: @community.id,community_id: @community.id, company_id: @community.id,object: "name: #{@community.name} community_id: '#{@community.id}'")
+        #PaperTrail::Version.create(item_type: "FetchResidentsData",item_id: @community.id,event: "Fetch Residents Data",whodunnit: @community.id,community_id: @community.id, company_id: @community.id,object: "name: #{@community.name} community_id: '#{@community.id}'")
         redirect_to community_settings_path(:community_id=>@community.id)
       else
         flash[:error] = Thread.current[:errors].join(',')
@@ -450,7 +454,7 @@ class CommunitiesController < ApplicationController
     if @community.credentials_are_present? && @community.check_credentials
       if @community.data_is_swaped and Thread.current[:errors].empty?
         flash[:notice] = "Good job! You have successfully imported this property's data."
-        PaperTrail::Version.create(item_type: "SwapData",item_id: @community.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@community.name} community_id: '#{@community.id}'")
+        #PaperTrail::Version.create(item_type: "SwapData",item_id: @community.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@community.name} community_id: '#{@community.id}'")
 
         redirect_to community_settings_path(:community_id=>@community.id)
       else
@@ -470,7 +474,7 @@ class CommunitiesController < ApplicationController
       if @community.credentials_are_present? && @community.check_credentials
         if @community.update_community_provider_data and Thread.current[:errors].empty?
           flash[:notice] = "Good job! You have successfully updated property's data."
-          PaperTrail::Version.create(item_type: "UpdateCommunityData",item_id: @community.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@community.name} community_id: '#{@community.id}'")
+          #PaperTrail::Version.create(item_type: "UpdateCommunityData",item_id: @community.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@community.name} community_id: '#{@community.id}'")
 
           redirect_to community_settings_path(:community_id=>@community.id)
         else
@@ -540,7 +544,7 @@ class CommunitiesController < ApplicationController
     if @community.credentials_are_present?
       if current_community.data_is_imported and Thread.current[:errors].empty?
         flash[:notice] = "Good job! You have successfully imported this property's data."
-        PaperTrail::Version.create(item_type: "ReplaceData",item_id: @community.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@community.name} community_id: '#{@community.id}'")
+        #PaperTrail::Version.create(item_type: "ReplaceData",item_id: @community.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@community.name} community_id: '#{@community.id}'")
 
         redirect_to community_settings_path(:community_id=>@community.id)
       else
@@ -599,7 +603,6 @@ class CommunitiesController < ApplicationController
 
       if sitemap.present? && sitemap.image.present? && sitemap.image.url.present?
         units = @community.units.where(floorplate_id: nil)
-        aws_ocr_detected_units = []
 
         aws_ocr_detected_units = fetch_aws_detected_units(sitemap.validated_image_url)
         store_map_ocr_data(sitemap, aws_ocr_detected_units)
@@ -843,6 +846,26 @@ class CommunitiesController < ApplicationController
   end
 
   private
+
+  def store_map_ocr_data model_object, aws_ocr_detected_units
+    if model_object.present? && model_object.image.present? && model_object.image.url.present?
+      model_object.update(map_ocr_data: aws_ocr_detected_units)
+    end
+  end
+
+  def fetch_aws_detected_units image_url
+    AwsTextract.aws_texract_ocr_service(image_url)
+  end
+
+  def store_map_ocr_data model_object, aws_ocr_detected_units
+    if model_object.present? && model_object.image.present? && model_object.image.url.present?
+      model_object.update(map_ocr_data: aws_ocr_detected_units)
+    end
+  end
+
+  def fetch_aws_detected_units image_url
+    AwsTextract.aws_texract_ocr_service(image_url)
+  end
 
   def store_map_ocr_data model_object, aws_ocr_detected_units
     if model_object.present? && model_object.image.present? && model_object.image.url.present?

@@ -38,7 +38,7 @@ module Api
 
       def schedule_salesforce_tour schedual_tour, tour_is_in_future, stops_list, tour_date
         if schedual_tour.present? && !schedual_tour.is_tour_completed && tour_is_in_future
-          schedual_tour.update_attributes(salesforce_tour_booking_name: params[:tourBookingName], salesforce_tour_booking_id: params[:tourBookingId], stops_list: stops_list, community_id: @community&.id, tour_user_id: @tour_user.id ,user_time_zone: @community.get_time_zone(), tour_date: tour_date, tour_time: params[:tourTime] , tour_type: params[:tourType], created_by: "salesforce", created_at: Time.now)
+          schedual_tour.update(salesforce_tour_booking_name: params[:tourBookingName], salesforce_tour_booking_id: params[:tourBookingId], stops_list: stops_list, community_id: @community&.id, tour_user_id: @tour_user.id ,user_time_zone: @community.get_time_zone(), tour_date: tour_date, tour_time: params[:tourTime] , tour_type: params[:tourType], created_by: "salesforce", created_at: Time.now)
         else
           schedual_tour = SchedualTour.create!(salesforce_tour_booking_name: params[:tourBookingName], salesforce_tour_booking_id: params[:tourBookingId], stops_list: stops_list, community_id: @community&.id, tour_user_id: @tour_user.id ,user_time_zone: @community.get_time_zone(), tour_date: tour_date, tour_time: params[:tourTime], tour_type: params[:tourType] , created_by: "salesforce")
         end
@@ -50,7 +50,7 @@ module Api
         if !@tour_user.present?
           @tour_user =  TourUser.create!(first_name: params[:neighborFirstName], last_name: params[:neighborLastName], name: (params[:neighborFirstName] + " " + params[:neighborLastName]), email: params[:neighborEmail].downcase, phone_number: make_phone_number)
         else
-          @tour_user.update_attributes(first_name: params[:neighborFirstName], last_name: params[:neighborLastName], name: params[:neighborFirstName] + " " + params[:neighborLastName], email: params[:neighborEmail].downcase, phone_number: (make_phone_number).present? ? make_phone_number : @tour_user.phone_number) 
+          @tour_user.update(first_name: params[:neighborFirstName], last_name: params[:neighborLastName], name: params[:neighborFirstName] + " " + params[:neighborLastName], email: params[:neighborEmail].downcase, phone_number: (make_phone_number).present? ? make_phone_number : @tour_user.phone_number) 
         end
 
         @tour_user

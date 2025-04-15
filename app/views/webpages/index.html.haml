@@ -331,7 +331,15 @@
 = render partial: "virtual_tour_modal"
 = render partial: "amenity_virtual_tour_modal"
 
-#communityWebpagesData{data: { currency: @community.get_currency_symbol(), community: @community.to_json, amenities: @amenities.to_json, map_configurations: @community&.three_d_maps_configuration.to_json, units: @units_with_floorplan_info, amenities_data: @amenities_data } }
+#communityWebpagesData{data: {
+  currency: @community.get_currency_symbol(), 
+  community: @community.to_json,
+  amenities: @amenities.to_json, 
+  map_configurations: @community&.three_d_maps_configuration.to_json, 
+  units: @units_with_floorplan_info, 
+  amenities_data: @amenities_data
+  } 
+}
 
 :javascript
   var assetTracker;

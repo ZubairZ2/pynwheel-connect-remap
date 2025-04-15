@@ -190,8 +190,8 @@ module Api
 
         def update_verification_attributes
           if (params[:verfied_by_provider] && params[:verified_at]).present? && @community.community_tour.visual_id_verification
-            @tour_user.update_attributes(authentiq_verified_at: params[:verified_at].to_datetime, is_authentiq_verified: true) if @community.community_tour.verification_type == "authenteq" && params[:verfied_by_provider] == "authenteq"
-            @tour_user.update_attributes(checkpoint_verified_at: params[:verified_at].to_datetime, is_checkpoint_verified: true) if @community.community_tour.verification_type == "check_point_id" && params[:verfied_by_provider] == "check_point_id"
+            @tour_user.update(authentiq_verified_at: params[:verified_at].to_datetime, is_authentiq_verified: true) if @community.community_tour.verification_type == "authenteq" && params[:verfied_by_provider] == "authenteq"
+            @tour_user.update(checkpoint_verified_at: params[:verified_at].to_datetime, is_checkpoint_verified: true) if @community.community_tour.verification_type == "check_point_id" && params[:verfied_by_provider] == "check_point_id"
           end
         end
 

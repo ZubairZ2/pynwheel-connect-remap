@@ -96,7 +96,7 @@
                   .select-logo-logo
                     %a.preview-image{:href=>current_community.design.expressionist.home_page_background_image.present? ? current_community.design.expressionist.home_page_background_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Home page background image"}
                       = image_tag current_community.design.expressionist.home_page_background_image.present? ? current_community.design.expressionist.home_page_background_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"home-page-background-image-preview"
-                      = image_tag "exclamation-mark.png", class: "exal_home_page_background_image #{(current_community.design.expressionist.home_page_background_image.present? ? (current_community.design.expressionist.home_page_background_image.width < 400 && current_community.design.expressionist.home_page_background_image.height < 400) ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
+                      = image_tag "exclamation-mark.png", class: "exal_home_page_background_image #{(current_community.design.expressionist.home_page_background_image.present? ? ( (current_community.design.expressionist.home_page_background_image.width < 400 && current_community.design.expressionist.home_page_background_image.height < 400) rescue "hidden")? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
 
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -162,7 +162,7 @@
                   .select-logo-logo
                     %a.preview-image{:href=>current_community.design.expressionist.home_page_button_image.present? ? current_community.design.expressionist.home_page_button_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Home page button image"}
                       = image_tag current_community.design.expressionist.home_page_button_image.present? ? current_community.design.expressionist.home_page_button_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"home-page-button-image-preview"
-                      = image_tag "exclamation-mark.png", class: "exal_home_page_button_image #{(current_community.design.expressionist.home_page_button_image.present? ? (current_community.design.expressionist.home_page_button_image.width < 400 && current_community.design.expressionist.home_page_button_image.height < 400) ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
+                      = image_tag "exclamation-mark.png", class: "exal_home_page_button_image #{(current_community.design.expressionist.home_page_button_image.present? ? ( (current_community.design.expressionist.home_page_button_image.width < 400 && current_community.design.expressionist.home_page_button_image.height < 400) rescue "hidden") ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
 
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               .col-sm-12.col-lg-9.col-md-9.col-xs-12

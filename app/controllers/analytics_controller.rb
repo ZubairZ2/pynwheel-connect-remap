@@ -460,11 +460,12 @@ class AnalyticsController < ApplicationController
         .where("#{start_attr_name} >= ? AND #{start_attr_name} <= ?", start_date, start_date + days_count.days)
         .group("DATE(#{start_attr_name})")
         .pluck(
-          "DATE(#{start_attr_name})", 
-          'SUM(apply_click_counter)', 
-          'COUNT(*)', 
-          'SUM(CASE WHEN apply_click_counter > 0 THEN 1 ELSE 0 END)'
+          Arel.sql("DATE(#{start_attr_name})"),
+          Arel.sql('SUM(apply_click_counter)'),
+          Arel.sql('COUNT(*)'),
+          Arel.sql('SUM(CASE WHEN apply_click_counter > 0 THEN 1 ELSE 0 END)')
         )
+
     
       # Initialize hash to track sessions each day
       sessions_each_day_hash = return_empty_hash(days_count, start_date)
@@ -529,11 +530,12 @@ class AnalyticsController < ApplicationController
         .where('start_datetime >= ? AND start_datetime <= ?', start_date, start_date + days_count.days)
         .group('DATE(start_datetime)')
         .pluck(
-          'DATE(start_datetime)', 
-          'SUM(favorite_saved_counter)', 
-          'COUNT(*)', 
-          'SUM(CASE WHEN favorite_saved_counter > 0 THEN 1 ELSE 0 END)'
+          Arel.sql('DATE(start_datetime)'), 
+          Arel.sql('SUM(favorite_saved_counter)'), 
+          Arel.sql('COUNT(*)'), 
+          Arel.sql('SUM(CASE WHEN favorite_saved_counter > 0 THEN 1 ELSE 0 END)')
         )
+
     
       # Initialize the sessions_each_day_hash
       sessions_each_day_hash = return_empty_hash(days_count, start_date)
@@ -595,11 +597,12 @@ class AnalyticsController < ApplicationController
         .where('start_datetime >= ? AND start_datetime <= ?', start_date, start_date + days_count.days)
         .group('DATE(start_datetime)')
         .pluck(
-          'DATE(start_datetime)', 
-          'SUM(favorite_sent_counter)', 
-          'COUNT(*)', 
-          'SUM(CASE WHEN favorite_sent_counter > 0 THEN 1 ELSE 0 END)'
+          Arel.sql('DATE(start_datetime)'), 
+          Arel.sql('SUM(favorite_sent_counter)'), 
+          Arel.sql('COUNT(*)'), 
+          Arel.sql('SUM(CASE WHEN favorite_sent_counter > 0 THEN 1 ELSE 0 END)')
         )
+
     
       # Initialize the sessions_each_day_hash
       sessions_each_day_hash = return_empty_hash(days_count, start_date)
@@ -731,7 +734,6 @@ class AnalyticsController < ApplicationController
     end
 
     def tour_site_or_tour_state_session(start_date, days_count, total_records, tour_site_or_tour_state_attr, for_device_type) 
-      
       sessions_each_day_hash_onsite_completed = return_empty_hash(days_count,start_date)
       sessions_each_day_hash_offsite_abandoned = return_empty_hash(days_count,start_date)
       records = total_records.order(:arrived).pluck(:arrived, tour_site_or_tour_state_attr)
@@ -842,7 +844,7 @@ class AnalyticsController < ApplicationController
     def stops_per_tour(start_date, days_count, total_records, for_device_type)
       tour_keys = total_records.where.not(tour_key: nil).pluck(:tour_key)
       visited_stops = VisitedStop.where(tour_key: tour_keys)
-      @average_number_of_stops_per_session = visited_stops.uniq.size / (tour_keys.size rescue 1)
+      @average_number_of_stops_per_session = visited_stops.distinct.size / (tour_keys.size rescue 1)
       sessions_each_day_hourly_hash = return_empty_hash_hourly
       records_start_date_hours = visited_stops.pluck(:created_at).map {|dt| dt.strftime("%H").to_i }
       uniq_hours = records_start_date_hours.uniq
@@ -875,7 +877,7 @@ class AnalyticsController < ApplicationController
       visites_stops_hash = {}
       tour_keys = total_records.where.not(tour_key: nil).pluck(:tour_key)
       visited_stops = VisitedStop.where(tour_key: tour_keys)
-      @average_number_of_stops_per_session_tour_stop = visited_stops.uniq.size / tour_keys.size
+      @average_number_of_stops_per_session_tour_stop = visited_stops.distinct.size / tour_keys.size
       tour_stop_ids = visited_stops.pluck(:tour_stop_id)
       tour_stops = TourStop.where(id: tour_stop_ids)
       stops = tour_stops.where.not(stop_id: nil).pluck(:stop_type, :stop_id)

@@ -2,7 +2,7 @@ class BuildingStartingPointsController < ApplicationController
   # include Error::ErrorHandler
   include AssignLocksHelper
   before_action :check_community
-  after_filter "previous_url", only: [:edit]
+  after_action :previous_url, only: [:edit]
 
 	def edit
 		@community = Community.find params[:community_id]
@@ -18,7 +18,7 @@ class BuildingStartingPointsController < ApplicationController
         update_enable_locks()
         ts = TourStop.find_by(stop_type: "building_starting_point", stop_id: @building_starting_point.id)
         if ts.present?
-          ts.update_attributes(name: @building_starting_point.name)
+          ts.update(name: @building_starting_point.name)
         end
         if params[:done_action] == "true"
           format.html { redirect_to( session[:go_back] , notice: "Building starting point was successfully updated.")}

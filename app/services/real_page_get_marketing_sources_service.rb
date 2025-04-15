@@ -48,7 +48,7 @@ class RealPageGetMarketingSourcesService < BaseService
     end
 
     def update_credential(marketing_sources)
-      @credential.update_attributes(realpage_marketing_sources: marketing_sources)
+      @credential.update(realpage_marketing_sources: marketing_sources)
     end
 
 end

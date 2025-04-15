@@ -31,7 +31,7 @@ class LocationsController < ApplicationController
 
   def update
     @location = @community.neighborhood.locations.find(params[:id])
-    if @location.update_attributes(location_params)
+    if @location.update(location_params)
       flash[:notice] = "Location updated successfully."
     else
       flash[:error] = @location.errors.full_messages.join(',')

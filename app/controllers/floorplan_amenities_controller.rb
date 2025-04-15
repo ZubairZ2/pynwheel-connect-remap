@@ -37,7 +37,7 @@ class FloorplanAmenitiesController < ApplicationController
 
   def update
     @amenity = @floorplan.amenities.find(params[:id])
-    if @amenity.update_attributes(amenity_params)
+    if @amenity.update(amenity_params)
       FloorplanAmenitiesService.new(@floorplan, @amenity, current_community).update_description_and_name()
       redirect_to community_floorplan_amenities_path(@community, @floorplan), notice: "Amenity updated successfully"
     else

@@ -148,12 +148,12 @@ class FunnelService < BaseService
 
   def is_appointment_created response
     if ( response && response["prospect"] && response["appointment"] && response["prospect"]["id"] && response["appointment"]["id"] ).present?
-      @scheduled_tour.update_attributes(funnel_prospect_id: response["prospect"]["id"], funnel_appointment_id: response["appointment"]["id"])
+      @scheduled_tour.update(funnel_prospect_id: response["prospect"]["id"], funnel_appointment_id: response["appointment"]["id"])
     end
   end
 
   def is_appointment_cancelled
-    @scheduled_tour.update_attributes(funnel_prospect_id: nil, funnel_appointment_id: nil)
+    @scheduled_tour.update(funnel_prospect_id: nil, funnel_appointment_id: nil)
   end
 
   def get_filtered_discovery_sources response

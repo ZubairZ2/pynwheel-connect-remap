@@ -35,13 +35,13 @@ class TourUsersController < ApplicationController
     # ------------ locks ploting on the map ---------------- #
 
     if @community.dwelo.present?
-      @visited_amenities_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "amenity", event: "unlocked_event")
-      @visited_units_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "unit", event: "app_unlock")
+      @visited_amenities_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts&.last&.id, stop_type: "amenity", event: "unlocked_event")
+      @visited_units_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts&.last&.id, stop_type: "unit", event: "app_unlock")
 
-      @visited_amenities_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "amenity", event: "app_unlock")
+      @visited_amenities_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts&.last&.id, stop_type: "amenity", event: "app_unlock")
     else
-      @visited_units_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "unit", event: "unlocked_event")
-      @visited_amenities_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts.last.id, stop_type: "amenity", event: "unlocked_event")
+      @visited_units_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts&.last&.id, stop_type: "unit", event: "unlocked_event")
+      @visited_amenities_history = LockHistory.where(tour_user_id: @tour_user.id, tour_history_id: @alerts&.last&.id, stop_type: "amenity", event: "unlocked_event")
     end
 
     unit_ids = @visited_units_history.map{|x| x.stop_id}.uniq
@@ -356,11 +356,11 @@ class TourUsersController < ApplicationController
     end
     
     if params[:authentiq_verified_at] == "true"
-      tour_user.update_attributes(authentiq_verified_at: nil, is_authentiq_verified: false) if community.community_tour.verification_type == "authenteq"
+      tour_user.update(authentiq_verified_at: nil, is_authentiq_verified: false) if community.community_tour.verification_type == "authenteq"
     end
 
     if params[:checkpoint_verified_at] == "true"
-      tour_user.update_attributes(checkpoint_verified_at: nil, is_checkpoint_verified: false) if community.community_tour.verification_type == "check_point_id"
+      tour_user.update(checkpoint_verified_at: nil, is_checkpoint_verified: false) if community.community_tour.verification_type == "check_point_id"
     end
   end
 

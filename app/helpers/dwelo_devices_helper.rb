@@ -47,7 +47,7 @@ module DweloDevicesHelper
         if remote_lock.nil?
           remote_lock = RemoteLock.create(device_id: device_id, remote_lock_type: type, name: name, dwelo_id: dwelo_user.id)
         elsif remote_lock.remote_lock_type != type or remote_lock.name != name
-          remote_lock.update_attributes(remote_lock_type: type, name: name)
+          remote_lock.update(remote_lock_type: type, name: name)
         end
 
         available_ids << remote_lock.id
@@ -267,7 +267,7 @@ module DweloDevicesHelper
       else
         RemoteLockService.new(community).delete_access_guest(access_token,prev_data.last.guest_id)
         response = RemoteLockService.new(community).create_access_guest(access_token,tour_user,current_time)
-        prev_data.last.update_attributes(edgestate_pin: response["data"]["attributes"]["pin"], guest_id: response["data"]["id"])
+        prev_data.last.update(edgestate_pin: response["data"]["attributes"]["pin"], guest_id: response["data"]["id"])
       end
      
       allowed_stops = locks_with_same_type("EdgeState", community, tour_user)
@@ -597,8 +597,8 @@ module DweloDevicesHelper
   def set_sitemap_markers_on_map(units, detected_units, img_dimensions)
     units = units.where(x_plot: [0, "0", nil], y_plot: [0, "0", nil])
 
-    if units.present?
-      detected_units.each do |detected_unit|
+    if units.present? && detected_units.present?
+      detected_units&.each do |detected_unit|
         if detected_unit[:text].present? && detected_unit[:text].length > 2
 
           units.each do |unit|  
@@ -616,7 +616,7 @@ module DweloDevicesHelper
   def set_floorplate_markers_on_map(units, detected_units, img_dimensions, floorplate_id)
     units = units.where(x_plot: [0, "0", nil], y_plot: [0, "0", nil])
 
-    if units.present?
+    if units.present? && detected_units.present?
       detected_units.each do |detected_unit|
         if detected_unit[:text].present? && detected_unit[:text].length > 2
 

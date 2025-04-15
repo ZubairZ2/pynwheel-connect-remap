@@ -18,7 +18,11 @@ class Api::V2::HardwareSpecsController < Api::V2::ApiApplicationController
       hardware_spec = ""
       if hardware["id"].present?
         hardware_spec = HardwareSpec.find hardware["id"]
-        hardware_spec.update_attributes(name: hardware["name"], phone: hardware["phone"], image: hardware["image"])
+        # hardware_spec.update(name: hardware["name"], phone: hardware["phone"], image: hardware["image"])
+        hardware_spec.name = hardware["name"]
+        hardware_spec.phone = hardware["phone"]
+        hardware_spec.image = hardware["image"]
+        hardware_spec.save(validate: false)
       else
         hardware_spec = @community.create_hardware_spec(name: hardware["name"], phone: hardware["phone"], image: hardware["image"])
       end

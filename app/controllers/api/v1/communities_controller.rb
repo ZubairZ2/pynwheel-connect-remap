@@ -106,7 +106,7 @@ module Api
       def update_version
         app_version = AppVersion.first
         if app_version.version != params[:version]
-          app_version.update_attribute(:version,params[:version])
+          app_version.update_column(:version,params[:version])
         end
         render :json=> {:success=>true, :message => "success", :operation => "update version"}
       end
@@ -170,20 +170,20 @@ module Api
           restrict_property_access_with_code(@community,@tour_user,@tour_type)
           time_zone = @community.get_time_zone()
           if (params[:verfied_by_provider] && params[:verified_at]).present? && @community.community_tour.visual_id_verification #TODO:: change to 1 month after testing
-            @tour_user.update_attributes(authentiq_verified_at: params[:verified_at].to_datetime,is_authentiq_verified: true) if @community.community_tour.verification_type == "authenteq" && params[:verfied_by_provider] == "authenteq"
-            @tour_user.update_attributes(checkpoint_verified_at: params[:verified_at].to_datetime,is_checkpoint_verified: true) if @community.community_tour.verification_type == "check_point_id" && params[:verfied_by_provider] == "check_point_id"
+            @tour_user.update(authentiq_verified_at: params[:verified_at].to_datetime,is_authentiq_verified: true) if @community.community_tour.verification_type == "authenteq" && params[:verfied_by_provider] == "authenteq"
+            @tour_user.update(checkpoint_verified_at: params[:verified_at].to_datetime,is_checkpoint_verified: true) if @community.community_tour.verification_type == "check_point_id" && params[:verfied_by_provider] == "check_point_id"
           end
           all_floorplans = FloorplanUnitsService.new(@community).get_floorplans
-          @floorplans = all_floorplans.sort_by {|f| f.bedrooms}.uniq { |b| b.bedrooms }
+          @floorplans = all_floorplans.sort_by {|f| f.bedrooms}.distinct { |b| b.bedrooms }
     
           unless @tour_user.email == "Removed at Consumer Request"
             #####
-            @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
-            @building_list = @building_list.compact.reject { |c| c.empty? }.uniq.sort
+            @building_list = @community.units.map{|x| x.building rescue next}.distinct.compact + @community.amenities.map{|x| x.building rescue next}.distinct.compact
+            @building_list = @building_list.compact.reject { |c| c.empty? }.distinct.sort
             @building_list = @building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@building_list).sort.map{|x,y| y}
             @community.community_tour.building_order.present? ? (@building_list =  @community.community_tour.building_order) : ""
     
-            @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue []
+            @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.distinct.sort rescue []
             @floor_list_temp = (@floor_list - [@community.community_tour.starting_floor]).unshift(@community.community_tour.starting_floor) if @community.community_tour.starting_floor.present? rescue []
             #####
             current_time = current_community_time(@community, params)
@@ -218,9 +218,9 @@ module Api
       #TODO:: Incase if you need to create tourhistory here otherwise remove it later.
       def create_tour_history(tour_user,tour_type,community)
         tour_history = TourHistory.find_or_create_by(community_id: community.id, tour_user_id: tour_user.id) rescue TourHistory.new
-        tour_history.update_columns(community_id: community.id, tour_type: tour_type, tour_user_id: tour_user.id, tour_id: community.community_tour.id)
+        tour_history.update(community_id: community.id, tour_type: tour_type, tour_user_id: tour_user.id, tour_id: community.community_tour.id)
         last_arrival = tour_user.tour_histories.where(tour_id: community.community_tour.id).last rescue nil
-        last_arrival.update_columns(arrived: Time.now) if last_arrival.present?
+        last_arrival.update(arrived: Time.now) if last_arrival.present?
       end
     
       def send_access_code_email subj, body, community
@@ -244,12 +244,12 @@ module Api
     
         @building_list = @floor_list = []
     
-        @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
-        @building_list = @building_list.compact.reject { |c| c.empty? }.uniq.sort
+        @building_list = @community.units.map{|x| x.building rescue next}.distinct.compact + @community.amenities.map{|x| x.building rescue next}.distinct.compact
+        @building_list = @building_list.compact.reject { |c| c.empty? }.distinct.sort
         @building_list = @building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@building_list).sort.map{|x,y| y}
         @community.community_tour.building_order.present? ? (@building_list =  @community.community_tour.building_order) : ""
     
-        @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue nil
+        @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.distinct.sort rescue nil
         current_time = current_community_time(@community, params)
     
         edge_state = EdgeState.find_by(community_id: params[:id])
@@ -288,12 +288,12 @@ module Api
     
             @building_list = @floor_list = []
     
-            @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
-            @building_list = @building_list.compact.reject { |c| c.empty? }.uniq.sort
+            @building_list = @community.units.map{|x| x.building rescue next}.distinct.compact + @community.amenities.map{|x| x.building rescue next}.distinct.compact
+            @building_list = @building_list.compact.reject { |c| c.empty? }.distinct.sort
             @building_list = @building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@building_list).sort.map{|x,y| y}
             @community.community_tour.building_order.present? ? (@building_list =  @community.community_tour.building_order) : ""
             
-            @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue nil
+            @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.distinct.sort rescue nil
     
             chatroom = Chatroom.find_by(tour_user_id: @tour_user.id, tour_id: @community.community_tour.id)
             @chat_count = Chat.where("name = ? AND chatroom_id = ?", "Support Team", chatroom.id).last.id rescue 0
@@ -365,15 +365,15 @@ module Api
             end
           end
           
-          stops_arr = stops_arr.compact.map{|x| x.id}.uniq
+          stops_arr = stops_arr.compact&.map{|x| x.id}&.uniq
     
-          un_ordered_visited_stops = VisitedStop.where(tour_user_id: @tour_user.id ,tour_id: @tour.id ).map{|x| x.tour_stop_id}.uniq
+          un_ordered_visited_stops = VisitedStop.where(tour_user_id: @tour_user.id ,tour_id: @tour.id ).map{|x| x.tour_stop_id}&.uniq
           
-          # @visited_stops = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: @tour.id).order(created_at: :desc).map{|x| x.tour_stop_id}.uniq
+          # @visited_stops = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: @tour.id).order(created_at: :desc).map{|x| x.tour_stop_id}.distinct
 
           @visited_stops = []
           
-          stops_arr.each do |val|
+          stops_arr&.each do |val|
             if un_ordered_visited_stops.include?(val)
               @visited_stops << val
             end
@@ -462,7 +462,7 @@ module Api
               community_visited << stop.tour.community
             end
             @scheduled_tours = @tour_user.schedual_tours
-            data = {visited_history: @visited_history, tour_user: @tour_user, scheduled: @scheduled_tours.count, visited: community_visited.uniq}
+            data = {visited_history: @visited_history, tour_user: @tour_user, scheduled: @scheduled_tours.count, visited: community_visited.distinct}
             render :json=> {data: data, :status=>true, :message => "data retuned succesfully", code: 200}
           else
             render :json=> {data: data, :status=>false, :message => "Invalid or Missing comunity_id/tour_user_id", code: 400}
@@ -556,7 +556,7 @@ module Api
               @tour_user.is_virtual_tour = ( (@in_visiting_hours ? false : true)  || @limit_exceeded)
               @tour_user.latitude = params[:latitude]
               @tour_user.longitude = params[:longitude]
-              # @tour_user.update_attributes(is_virtual_tour: ((@in_visiting_hours.present? ? (@in_visiting_hours ? false : true) : false) || @limit_exceeded), latitude: params[:latitude], longitude: params[:longitude])
+              # @tour_user.update(is_virtual_tour: ((@in_visiting_hours.present? ? (@in_visiting_hours ? false : true) : false) || @limit_exceeded), latitude: params[:latitude], longitude: params[:longitude])
     
               if @community.credential.present? and @community.credential.use_different_crm_provider and @community.crm_credential.present? and @community.crm_credential.crm_provider == "salesforce"
                 response = SalesforceServices::GetBookingByNeighbor.call(community: @community, tour_user: @tour_user)
@@ -583,7 +583,7 @@ module Api
               else
     
                 @scheduled_tours = get_scheduled_tours(@community.id, @tour_user.id, current_time)
-                @tour_user.update_attributes(is_virtual_tour: ((@in_visiting_hours ? false : true ) || @limit_exceeded), latitude: params[:latitude], longitude: params[:longitude])
+                @tour_user.update(is_virtual_tour: ((@in_visiting_hours ? false : true ) || @limit_exceeded), latitude: params[:latitude], longitude: params[:longitude])
     
                 if @scheduled_tours.present?
                   @is_tour_ontime = is_tour_on_time(current_time, @scheduled_tours, @tour.grace_period)

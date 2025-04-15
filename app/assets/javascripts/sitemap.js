@@ -6,6 +6,9 @@ $(document).ready(function () {
     $("#map, #svg_map").css('cursor', 'default');
     imageOCRResponse = $("#ocrData").data("ocrData");
     ocrImageDimensions = $("#ocrData").data("imageDimensions");
+    console.log("imageOCRResponse:", imageOCRResponse );
+    console.log("ocrImageDimensions:", ocrImageDimensions );
+
 
     doDraggable();
 
@@ -26,7 +29,7 @@ function saveSiteMapImage() {
   Dropzone.options.siteMapImageDropzone = {
     uploadMultiple: true
   };
-
+  
   siteMapImageDropzone.on("complete", function (file) {
     console.log(file);
     location.reload();

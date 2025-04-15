@@ -70,7 +70,7 @@ class CredentialsValid < BaseService
         domain = credentials.xml_domain.split(',')[0]
         url = "http://pynwheel.com/swoop/datafeeds/#{filename.include?(".xml") ? filename : "#{filename}.xml"}"
 
-        response = HTTParty.get(URI.encode(url))
+        response = HTTParty.get(URI::DEFAULT_PARSER.escape(url))
         result = ""
 
         if response['PhysicalProperty']['Property'].class == Array

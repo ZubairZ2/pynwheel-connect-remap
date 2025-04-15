@@ -55,12 +55,15 @@
                     .box-footer
                     = f.submit "SAVE CHANGES", :class=>"btn btn-success pull-right mr-10 "      
       
-                  
-                  
-    = direct_upload_form_for @uploader, :id => "direct_form" do |f|
-      = f.file_field :avatar, :id => "video_field",:class => "hidden"
+    -# = direct_upload_form_for @uploader, :id => "direct_form" do |f|
+    -#   = f.file_field :avatar, :id => "video_field",:class => "hidden"
+    -#   = f.hidden_field :filename, :id => "filename"
+    -#   = f.submit "Upload Directly!", :id => "video_submit",:class => "hidden"
+
+    = form_for @uploader, url: upload_video_direct_community_tutorial_path(@community, @tutorial), html: { multipart: true } do |f|
+      = f.file_field :video, id: "video_field", class: "hidden"
       = f.hidden_field :filename, :id => "filename"
-      = f.submit "Upload Directly!", :id => "video_submit",:class => "hidden"            
+      = f.submit "Upload Video", id: "video_submit", class: "hidden"        
 
 :javascript
   $("#file-load").on('click', function(e) {

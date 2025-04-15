@@ -214,7 +214,7 @@ module AnalyticsHelper
         xAxes: [{
             ticks: {
                 beginAtZero: true,
-                beginAtZero: true
+                precision: 0
             }
         }]
       }

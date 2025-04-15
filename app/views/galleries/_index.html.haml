@@ -9,12 +9,13 @@
         .image-box.video-box
           .images.height-200
             - if gallery_image.is_video? || gallery_image.video.present?
-              = video_tag (gallery_image.video.present? ? gallery_image.standard_image_url : gallery_image.image.url rescue asset_path("default.jpeg")), :controls => true, :autobuffer => true
+              = video_tag (gallery_image.video.present? && gallery_image.standard_image_url.present? ? gallery_image.standard_image_url : asset_path("default.jpeg")), controls: true, autobuffer: true
 
             - else
               - rn =  rand(9999)
-              %a.preview-image{:href=> (gallery_image.image? ? (gallery_image.crop_x.present? ? gallery_image.image.url(:large) + "?timestamp=#{rn}" : gallery_image.image.url(:large) + "?timestamp=#{rn}") : asset_path("default.jpeg") rescue asset_path("default.jpeg") ) ,"data-toggle"=>"lightbox","data-title"=>gallery_image.name}
-                = image_tag (gallery_image.crop_x.present? ? gallery_image.image.url(:large) + "?timestamp=#{rn}" : gallery_image.image.url(:large) + "?timestamp=#{rn}"), :class => "#{"image_"+gallery_image.id.to_s}"
+              %a.preview-image{ href: gallery_image.image&.url(:large).present? ? "#{gallery_image.image.url(:large)}?timestamp=#{rn}" : asset_path("default.jpeg"), "data-toggle": "lightbox", "data-title": gallery_image.name }
+                = image_tag( gallery_image.image&.url(:large).present? ? "#{gallery_image.image.url(:large)}?timestamp=#{rn}" : asset_path("default.jpeg"), class: "image_#{gallery_image.id}" )
+
           - unless gallery_image.is_video? || gallery_image.video.present?
             = image_tag "exclamation-mark.png", class: "waring_exal hidden #{"image_warning_"+gallery_image.id.to_s}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
         .icons

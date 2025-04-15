@@ -297,9 +297,6 @@ module Api
             success = false
             message = 'Please provide unit_id'
           end
-          # unless params[:stringFormat].present? && params[:stringFormat] == "true"
-          #   render :json => { :success => success, :message => message, :data => @units ||= {}, :floorplate_image => floorplate_image }
-          # end
         end
       end
     
@@ -331,8 +328,6 @@ module Api
             @units.each do |u|
               if u.community.is_sitemap?
                 u.sitemap_image_url = u&.community&.sitemap&.image&.url rescue ""
-                # u.sitemap_image_url = u.community.sitemap.image.url(:svg_for_metro).present? ? u.community.sitemap.
-                #   image.url(:svg_for_metro) : u.community.sitemap.image.url rescue ""
                 @sitemap_image_url = u.sitemap_image_url
     
               else

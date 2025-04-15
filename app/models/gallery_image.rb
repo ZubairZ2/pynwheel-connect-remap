@@ -27,14 +27,14 @@ class GalleryImage < ApplicationRecord
   belongs_to :gallery
   has_one :status, as: :statusable
   set_sortable :sort  
-	#mount_base64_uploader :image, GalleryUploader
-	mount_uploader :image, GalleryUploader
+	mount_base64_uploader :image, GalleryUploader
+	# mount_uploader :image, GalleryUploader
 	mount_uploader :video, VideoUploader
 	process_in_background :video
 	process_in_background :image
 	before_create :set_image_name
 	# before_save :populate_image_urls
-	after_update :crop_image
+	after_update :crop_image, if: ->(obj) { obj.image_changed? }
   after_commit :populate_image_urls, on: :create
 
 

@@ -79,7 +79,7 @@ class Api::V2::PynwheelTouchHomepageController < Api::V2::ApiApplicationControll
     @design = @community.design
     value = params["changeType"]
     if  value.present?
-      if @design.update_attributes(loop_type: value)
+      if @design.update(loop_type: value)
         render :json => {success: true, message: "Default design changed"}
       else
         render :json => {success: false, message: "Failed to change default design"}

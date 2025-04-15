@@ -106,7 +106,7 @@ Rails.application.routes.draw do
         put :update_home_page_images
         delete :delete_home_page_image
         delete :delete_home_page_video
-        get :upload_video_direct
+        post :upload_video_direct
         post :set_loop_type
       end
     end
@@ -240,7 +240,7 @@ Rails.application.routes.draw do
     get :experimental_import
     get :credentials
     get :settings_page
-    get :logs
+    # get :logs
     get :clone_community
     get :change_expressionist_default
     get :test_connection
@@ -428,11 +428,13 @@ Rails.application.routes.draw do
         post :plot_multiple_units_door_for_floorplate
       end
     end
+
     resources :tutorials do
-      collection do
-        get :upload_video_direct
+      member do
+        patch :upload_video_direct
       end
     end
+
     resources :sitemaps do
       resources :amenities, controller: "sitemap_amenities" do
         post :plot_amenity
@@ -480,7 +482,7 @@ Rails.application.routes.draw do
     end
     resources :home_page do
       collection do
-        get :upload_video_direct
+        post :upload_video_direct
         get :show_image_in_modal
         post :save_home_page_image
         put :update_home_page_image
@@ -570,7 +572,7 @@ Rails.application.routes.draw do
       member do
         get :show_image_in_modal
         post :save_gallery_image
-        get :upload_video_direct
+        post :upload_video_direct
         put :update_gallery_image
         delete :delete_gallery_image
         get :show_images

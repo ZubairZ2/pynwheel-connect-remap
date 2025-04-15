@@ -1,6 +1,5 @@
 class Api::V2::CompaniesController < Api::V2::ApiApplicationController
-  require_relative 'helpers/credentials_manager'
-  include CredentialsManager
+  include Api::V2::Helpers::CredentialsManager
 
   before_action :doorkeeper_authorize!
   before_action :check_required_credentials, only: :import_data_credentials
@@ -103,7 +102,7 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
 
     def set_property_and_community_user
       begin
-        @community.update_attributes(use_company_level_data_settings: true, pynwheel_launch_access: true)
+        @community.update(use_company_level_data_settings: true, pynwheel_launch_access: true)
         CommunityUser.find_or_create_by(user_id: current_pynwheel_user.id, community_id: @community.id)
       rescue => error
         render_response(error.message, false)
