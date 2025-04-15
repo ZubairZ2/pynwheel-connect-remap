@@ -131,6 +131,10 @@ class Community < ApplicationRecord
     end
   end
 
+  def have_multi_property_ids?
+    units&.pluck(:property_id)&.compact&.uniq&.count > 1
+  end
+
   def sorted_units_by_marketing_name(selected_units)
     return selected_units unless selected_units.present?
 
