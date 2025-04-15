@@ -5,6 +5,7 @@ Rails.application.configure do
   config.action_controller.perform_caching = false
   config.public_file_server.enabled = ENV['RAILS_SERVE_STATIC_FILES'].present?
   config.assets.compile = true
+  config.assets.css_compressor = nil
   config.action_controller.asset_host = ENV['HOST_URL']
   config.force_ssl = true
   config.log_level = :error
