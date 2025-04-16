@@ -112,7 +112,9 @@
                       %span.fix-text
                         %span.c-m-total-price{id: "#{unit.id}-total-price"}= "#{@community.get_currency_symbol}#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
                         %span.per-month-price-text.text-p /month
-                    = link_to "Apply Now", "##",:onclick=>"set_psi_url_on_favorite(this);",:id=>"psi-anchor-tag","data-community-property-id"=>@community.credential.property_id,"data-availability-url"=>(unit.get_availability_url()),"data-website"=>@community.website,"data-uri"=>uri(@community.website),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id, class: "apply-now apply_now"
+                    
+                    - if unit.get_availability_url()
+                      = link_to "Apply Now", "##",:onclick=>"set_psi_url_on_favorite(this);",:id=>"psi-anchor-tag","data-community-property-id"=>@community.credential.property_id,"data-availability-url"=>(unit.get_availability_url()),"data-website"=>@community.website,"data-uri"=>uri(@community.website),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id, class: "apply-now apply_now"
                   - elsif @community.data_provider == "yardirentcafe"
                     - if @community.display_rent
                       %span.fix-text

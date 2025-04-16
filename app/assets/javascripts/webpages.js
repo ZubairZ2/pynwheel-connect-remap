@@ -2270,7 +2270,20 @@ function setModalAttributes(element) {
     $(".m-filters").hide();
   }
 
+  handleApplyNowButtonVisibility(element)
   adjustHeightForContentArea();
+}
+
+function handleApplyNowButtonVisibility(element) {
+  const url = element.getAttribute("data-availability-url");
+  const dataProvider = $(element).data("provider");
+
+  if(dataProvider === "psi") {
+    if(url)
+      $("#psi-anchor-tag").show();
+    else
+      $("#psi-anchor-tag").hide();
+  }
 }
 
 function setApplyNowURLDate(element) {
