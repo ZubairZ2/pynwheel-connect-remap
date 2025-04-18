@@ -149,7 +149,7 @@
                 = image_tag (floorplate.validated_image_url || "default.jpeg"), name: "viewArea", id: "viewArea", draggable: "false", class: 'viewArea', data: { map_id: "map", height: height, width: width }
                 - x_plot, y_plot = coords = [community.community_tour.x_plot, community.community_tour.y_plot].map(&:to_i)
                 - if coords.sum.positive?
-                  = link_to image_tag("/assets/star.png", style: 'width:15px;'), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "m_", :style => "left:#{x_plot}px; top:#{y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{community.id}/tours/#{community.community_tour.id}/resetStartingPoint"
+                  = link_to image_tag("/assets/star.png", style: 'width:15px;'), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "m_#{community.community_tour.id}", :style => "left:#{x_plot}px; top:#{y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{community.id}/tours/#{community.community_tour.id}/resetStartingPoint"
               
                 - units_by_plotted_doors_order.each do |unit|
                   - x_plot, y_plot = coords = [unit.x_plot, unit.y_plot].map(&:to_i)

@@ -1,6 +1,12 @@
 -#%link{:crossorigin => "anonymous", :href => "https://use.fontawesome.com/releases/v5.7.2/css/all.css", :integrity => "sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr", :rel => "stylesheet"}/
 = render '/font_awesome_v5'
 
+- left_margin       = 13
+- top_margin        = 13
+
+%span.hidden#left_margin        #{left_margin}
+%span.hidden#top_margin         #{top_margin}
+
 - content_for :title, "Add Starting Point - Pynwheel"
 %section.is-amenity
   .content
@@ -174,7 +180,7 @@
           .row
             .col-lg-9#image-container.p-0
               = render partial: 'shared/zoom_control_buttons'
-              .map-block{:style=>"position: relative;"}
+              .map-block{style: "position: relative; #{ @sitemap.validated_image_url ? '' : 'display: flex; justify-content: center; align-items: center;' }"}
                 #map.plot-image
   
                   -#:javascript
@@ -192,9 +198,9 @@
                   -#%a{:href => "https://maps.google.com/maps?f=q&source=embed&hl=en&geocode=&q=199+Chambers+Street,+New+York,+NY&aq=0&oq=199+ch&sll=31.497488,74.479681&sspn=0.720496,0.896759&ie=UTF8&hq=&hnear=199+Chambers+St,+New+York,+10007&ll=31.717367,74.412178&spn=0.011254,0.021307&t=m&z=14", :style => "color:#0000FF;text-align:left"}
                   -#%iframe{:frameborder => "0",:width => "100%", :height => "100%", :marginheight => "0", :marginwidth => "0", :scrolling => "no", :src => "https://maps.google.com/maps?f=q&source=s_q&hl=en&geocode=&q=199+Chambers+Street,+New+York,+NY&aq=0&oq=199+ch&sll=31.484567,74.409473&sspn=0.720496,0.896759&ie=UTF8&hq=&hnear=199+Chambers+St,+New+York,+10007&ll=31.484567,74.409473&spn=0.011254,0.021307&t=m&z=17&output=embed"}
                   -#= image_tag "https://maps.googleapis.com/maps/api/staticmap?zoom=17&size=400x300&center=31.411,74.4714&key=AIzaSyCOUsWrubjWjFSmsTs68dJT7u9ah7hDGMI", alt: "Map"
-                  = image_tag @sitemap.image.present? ? @sitemap.image.url : "default.jpeg",name:"viewArea", id:"viewArea",draggable:"false", class: 'viewArea', data: {'map_id' => "map"} rescue  "default.jpeg"
+                  = image_tag @sitemap.validated_image_url || "default.jpeg",name:"viewArea", id:"viewArea",draggable:"false", class: 'viewArea', data: {'map_id' => "map"} rescue  "default.jpeg"
                   - if @tours.x_plot.to_i + @tours.y_plot.to_i > 0
-                    = link_to image_tag("/assets/star.png", style: 'width:15px;'), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "m_", :style => "left:#{@tours.x_plot}px; top:#{@tours.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/resetStartingPoint"
+                    = link_to image_tag("/assets/star.png", style: 'width:15px;'), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "m_#{@tours.id}", :style => "left:#{@tours.x_plot}px; top:#{@tours.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/resetStartingPoint"
             .col-lg-3
               %h5.mt-40.mb-20 SELECT STARTING POINT TO PLOT
               -#.imageselect
@@ -233,62 +239,20 @@
                 Cancel
 
 :javascript
+  var left_margin = #{raw left_margin}
+  var top_margin = #{raw top_margin}
+
   $(document).ready(function () {
-    document.addEventListener("touchstart", touchHandler, true);
-    document.addEventListener("touchmove", touchHandler, true);
-    document.addEventListener("touchend", touchHandler, true);
-    document.addEventListener("touchcancel", touchHandler, true);
     let elem = document.querySelector('#map');
-    const key = getZoomPanKey(elem);
-    if (window.mapPanZoom) {
-      window.mapPanZoom[key] = panzoom(elem, {
-        minZoom: 0.5,
-        maxZoom: 1.0,
-        bounds: true,
-        boundsPadding: 0.3
-      })
-    } else {
-      window.mapPanZoom = {
-        [key]: panzoom(elem, {
-          minZoom: 0.5,
-          maxZoom: 1.0,
-          bounds: true,
-          boundsPadding: 0.3
-        }),
-      };
+
+    const $imageZoomPan = $('#map.plot-image');
+    if ($imageZoomPan[0]) {
+      activateZoomPan($imageZoomPan[0]);
     }
 
-    var transform = mapPanZoom?.[key] ? mapPanZoom[key].getTransform() : {};
-    var scaleFactor = (1 / (transform.scale || 1));
-    var previous_scale = 0;
-    while ($('#map').width() / scaleFactor > $('.map-block').width() || $('#map').height() / scaleFactor > $('.map-block').height()) {
-        mapPanZoom[key].zoomInOut(189);
-        transform = mapPanZoom[key] ? mapPanZoom[key].getTransform() : {};
-        scaleFactor = (1 / (transform.scale || 1));
-        if (scaleFactor === previous_scale) {
-            break;
-        }
-        previous_scale = scaleFactor
-    }
-    mapPanZoom[key].moveTo(0, 0);
-    })
-  
-  function touchHandler(event) {
-    var touch = event.changedTouches[0];
+    bindPlottingEvents();
+  })
 
-    var simulatedEvent = document.createEvent("MouseEvent");
-        simulatedEvent.initMouseEvent({
-        touchstart: "mousedown",
-        touchmove: "mousemove",
-        touchend: "mouseup"
-    }[event.type], true, true, window, 1,
-        touch.screenX, touch.screenY,
-        touch.clientX, touch.clientY, false,
-        false, false, false, 0, null);
-
-    touch.target.dispatchEvent(simulatedEvent);
-    // event.preventDefault();
-  }
   var floor = null;
   var locks_input, locks_list, param_name;
   $('#lock_provider').find('option:first').addClass('hide_it')

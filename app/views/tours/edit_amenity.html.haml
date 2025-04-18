@@ -61,10 +61,10 @@
         .box-body.map-body-top
           .row
             .col-lg-9#image-container.p-0{:style => "float: right;"}
-              .map-block{:style=>"position: relative;"}
+              .map-block{style: "position: relative; #{ @sitemap.present? && @sitemap.validated_image_url ? '' : 'display: flex; justify-content: center; align-items: center;' }"}
                 #map.plot-image
                   .grid-graph.hidden
-                  = image_tag @amenity.present? && @amenity.image.present? ? @amenity.image.url : "default.jpeg"
+                  = image_tag (@amenity.present? && @amenity.validated_image_url) || "default.jpeg"
 
 
         #map-marker{"data-toggle" => "tooltip", :onclick => "selMarker()", :title => "new marker"}

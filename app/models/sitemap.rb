@@ -52,14 +52,6 @@ class Sitemap < ApplicationRecord
     sitemap_amenities.present? ? sitemap_amenities_info(sitemap_amenities) : nil
   end
 
-  def validated_image_url
-    convert_to_s3_accelerate_url(image.url) if image.present? && image.url.present?
-  end
-
-  def validated_svg_image_url
-    convert_to_s3_accelerate_url(svg_image.url) if svg_image.present? && svg_image.url.present?
-  end
-
   def sitemap_image_width
     self.width > 0 ? self.width : self.image.width
   end

@@ -380,7 +380,7 @@ function getTagToPlot (url) {
                 </p>`
     }
     else {
-        tag = "<a class='marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy + "px; position:absolute;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
+        tag = "<a class='marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + (dx - (definedAndHasValue(left_margin) ? left_margin : 0)) + "px; top:" + (dy - (definedAndHasValue(top_margin) ? top_margin : 0)) + "px; position:absolute;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
         tag += "<i class='custom-icon' style='width: " + marker_font_size + "px; height: " + marker_font_size + "px; border: 2px solid " + marker_color + "; '><i class='fas fa-camera-retro' style='color: " + marker_color + "; font-size: " + (parseInt(marker_font_size) / 2) + "px; margin-top:" + camera_margin + "px;'></i></i>";
         tag += "</a>"
     }

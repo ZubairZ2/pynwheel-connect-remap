@@ -18,4 +18,20 @@ module S3Acceleration
   rescue URI::InvalidURIError
     original_url
   end
+
+  def validated_svg_image_url
+    if respond_to?(:svg_image) && svg_image.present? && svg_image.url.present?
+      convert_to_s3_accelerate_url(svg_image.url)
+    end
+  end
+
+  def validated_image_url
+    if respond_to?(:image) && image.present?
+      if respond_to?(:standard_image_url) && standard_image_url.present?
+        convert_to_s3_accelerate_url(standard_image_url)
+      elsif image.url.present?
+        convert_to_s3_accelerate_url(image.url) 
+      end
+    end
+  end
 end

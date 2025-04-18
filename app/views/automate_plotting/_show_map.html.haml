@@ -20,7 +20,7 @@
               -# building_starting_check = defined?(building) ? hide_floor_or_not_against_building_starting_point(@building_list, building, @floors, floor) : hide_floor_or_not_against_floor(@floors, floor)
               - building_starting_check = hide_floor_or_not_against_floor(@floors, floor)
               - if building_starting_check && @community.community_tour.x_plot.to_i + @community.community_tour.y_plot.to_i > 0
-                = link_to image_tag("/assets/star.png", style: 'width:15px;'), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "m_", :style => "left:#{@community.community_tour.x_plot}px; top:#{@community.community_tour.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/tours/#{@community.community_tour.id}/resetStartingPoint"
+                = link_to image_tag("/assets/star.png", style: 'width:15px;'), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "m_#{@community.community_tour.id}", :style => "left:#{@community.community_tour.x_plot}px; top:#{@community.community_tour.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/tours/#{@community.community_tour.id}/resetStartingPoint"
             - community_units = defined?(building) ? @community_units[building][floor] : @community_units[floor]
             - units_by_plotted_doors_order = community_units.sort_by {|obj| obj.door.present? ? obj.door.id : obj.id}
             - coordinates_array = []
