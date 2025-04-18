@@ -207,19 +207,18 @@ class YardiRentCafeService < BaseService
                         end
                       end
 
-                      min_term_rent = lease_prices_array&.min
-                      max_term_rent = lease_prices_array&.max
+                      # min_term_rent = lease_prices_array&.min
+                      # max_term_rent = lease_prices_array&.max
 
-                      if min_term_rent.present?
-                        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
-                          unit.effective_rent = min_term_rent
-                          unit.market_rent = min_term_rent
-                        end
-                      end
+                      # if min_term_rent.present?
+                      #   unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
+                      #     unit.effective_rent = min_term_rent
+                      #     unit.market_rent = min_term_rent
+                      #   end
+                      # end
               
-                      unit.min_effective_rent = min_term_rent if min_term_rent.present?
-                      unit.max_effective_rent = max_term_rent if max_term_rent.present?
-
+                      # unit.min_effective_rent = min_term_rent if min_term_rent.present?
+                      # unit.max_effective_rent = max_term_rent if max_term_rent.present?
                     end
                   end
 
