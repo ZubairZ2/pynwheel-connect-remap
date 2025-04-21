@@ -69,22 +69,23 @@
                       = link_to "<i class='custom-icon' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{marker_color};'  ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{marker_color}; margin-top:#{camera_margin}px;'  ></i></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => amenity.name, :id => "m_#{amenity.id}", :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/floorplans/#{@sitemap.id}/amenities/#{amenity.id}/remove_amenity"
               .pull-right
                 -#= link_to "Done!", community_floorplans_path(@community), class: "btn btn-primary mt-15"
-            .col-lg-3
+            .col-lg-3.multi-select-units{ class: "select-units-on-page" }
               %h5.mt-40.mb-20 SELECT IMAGES TO PLOT
               .imageselect
                 .show-categories
                   = "-- select image --"
-                %ul#imageselect{:style => "display: none;"}
+                %ul#imageselect.disabled{:style => "display: none;"}
                   - amenity_arr = []
                   - @amenities.each do |amenity|
-                    - if amenity.x_plot.to_i + amenity.y_plot.to_i == 0
+                    - x_plot, y_plot = coords = [amenity.x_plot, amenity.y_plot].map(&:to_i)
+                    - if coords.sum.zero?
                       %li{"data-id" => "#{amenity.id}","data-name" => "#{amenity.name}"}
                         %a
                           = image_tag amenity.image.present? ? amenity.image.url : "upload-image.png"
                           %span.ml-5
                             = amenity.name
-                    - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0        
-                      - amenity_arr.push({providerId: amenity.id.to_s, xPlot: amenity.x_plot.to_i, yPlot: amenity.y_plot.to_i, name: amenity.name})
+                    - amenity_arr.push({ providerId: amenity.id.to_s, xPlot: x_plot, yPlot: y_plot, name: amenity.name })
+
               %h5.mt-40 SELECTED IMAGES
               .add-plan.mt-10.mb-20
                 %ul#selected-units
