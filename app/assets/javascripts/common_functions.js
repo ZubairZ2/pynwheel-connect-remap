@@ -17,6 +17,12 @@ function mobileCheck() {
   return check;
 }
 
+function iOSversion() {
+  if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream)
+    return true;
+  else return false;
+}
+
 function isElementVisibleOnScreen(element) {
   if (!element) return false;
 

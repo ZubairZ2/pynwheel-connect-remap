@@ -197,6 +197,9 @@ function setSvgOrImageHeight($image) {
     $imageContainer.height(height);
   }
 
+  if (!isElementVisibleOnScreen(image)) {
+    return;
+  }
   const ratio =
     width > height
       ? height / (imageOriginalHeight || 1)
@@ -204,6 +207,8 @@ function setSvgOrImageHeight($image) {
 
   $imageParent.width(imageOriginalWidth * ratio);
   $imageParent.height(imageOriginalHeight * ratio);
+  $image.width(imageOriginalWidth * ratio);
+  $image.height(imageOriginalHeight * ratio);
 }
 
 function floorBasedData(data = []) {
