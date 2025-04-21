@@ -1,6 +1,6 @@
 To: <%= @to_email %>
 Date: <%= Time.now.to_s.split(' ')[0] %>
-Time: <%= Time.now.to_formatted_s(:time) %>
+Time: <%= Time.now.strftime("%I:%M %p") %>
 <% (0..(@favorites.count-1)).each_with_index do |f,index | %>
   <% if @favorites[index].is_a?(Unit) %>
     Unit:
