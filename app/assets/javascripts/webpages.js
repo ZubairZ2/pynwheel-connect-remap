@@ -283,6 +283,12 @@ function bindWebpageEvents() {
     var floor_for_showing_image = $(this).attr("id");
     const $currentImageBox = $("#f_" + floor_for_showing_image);
 
+      if (!svgMode && hasFloorplate()) {
+        $(".floorplate-image").each(function () {
+          setSvgOrImageHeight($(this));
+        });
+      }
+
     if (floor_for_showing_image != current_floor) {
       $(".alert").hide();
 
@@ -1123,19 +1129,38 @@ function performHardRefresh() {
   }
 }
 
-function setImageHeight() {
-  if (current_width >= 993) {
-    const mainContainerHeight = $(".c-body").height() - $(".c-footer").height();
-    const imageContainerHeight = mainContainerHeight - largeImageHeight;
-    $(".floorplate-image").attr("height", imageContainerHeight);
-    const imageContainer = $("#image-container")[0];
-    if (imageContainerHeight && imageContainer)
-      imageContainer.style.setProperty(
-        "height",
-        `${imageContainerHeight}px`,
-        "important"
-      );
+function setImageHeight () {
+  if (mobileCheck()) {
+    $('.c-footer.desktop-content').remove()
+  } else {
+    $('.c-footer.mobile-footer').remove()
   }
+
+  // if (current_width >= 993) {
+  //   const $containerBody = $(".c-body");
+  //   const $containerFooter = $(".c-footer");
+  //   // const $appHeader = $(".app-header");
+  //   const $container = $(".right-side.parent.tabcontent");
+  //   const footerHeight = ($containerFooter.height() + 20 /* padding */);
+
+  //   debugger
+  //   const availableHeight = $container.height() -footerHeight;
+  //   $containerBody.find('.map-body')[0]?.style.setProperty(
+  //     "height",
+  //     `${availableHeight}px`,
+  //     "important"
+  //   );
+
+  //   $(".floorplate-image").attr("height", availableHeight);
+  //   const imageContainer = $("#image-container")[0];
+  //   debugger
+  //   if (imageContainer.offsetHeight && imageContainer)
+  //     imageContainer.style.setProperty(
+  //       "height",
+  //       `${availableHeight}px`,
+  //       "important"
+  //     );
+  // }
 }
 
 function populate_current_units() {
@@ -2641,9 +2666,8 @@ function getElementHeight(element) {
 function adjustMarkerPosition(marker) {
   // performHardRefresh()
   /*adjusting markers according to screen size*/
-  if (!svgMode) {
-    setImageHeight();
-  }
+  if (!svgMode && !hasFloorplate()) setImageHeight();
+
   var in_browser_height = 0;
   var in_browser_width = 0;
   var left_diff = 0;
@@ -3127,19 +3151,13 @@ function get_unit_availability(unit) {
 }
 
 function adjustBottomOfImageMap(x) {
-  let rightSide = document.getElementsByClassName("right-side")[0];
-  rightSide.style.height = "50%";
+  // let rightSide = document.getElementsByClassName("right-side")[0];
+  // rightSide.style.height = "50%";
 
-  if (x.matches && hasFloorplate()) {
-    rightSide.style.bottom = "60px";
-    rightSide.style.height = "25%";
-  }
-}
-
-function iOSversion() {
-  if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream)
-    return true;
-  else return false;
+  // if (x.matches && hasFloorplate()) {
+  //   rightSide.style.bottom = "60px";
+  //   rightSide.style.height = "25%";
+  // }
 }
 
 /* --------------------------- Start-Webpages Analytics track Activities Section ---------------------------------------------*/
@@ -3522,7 +3540,7 @@ async function fetchWebpageSVGAndSetCoordinates() {
           svgPosition: 0,
           activateZoom: true,
           tracker: assetTracker,
-          setSVGImageHeight: true,
+          setSVGImageHeight: false,
           trackerAssetId: `svg-floorplate-${floor}`,
           trackerVisibilityCheck: parseInt(current_floor) === floor,
         })
@@ -3535,7 +3553,7 @@ async function fetchWebpageSVGAndSetCoordinates() {
       svgPosition: 1,
       activateZoom: true,
       tracker: assetTracker,
-      setSVGImageHeight: true,
+      setSVGImageHeight:  true,
       trackerVisibilityCheck: true,
       trackerAssetId: `svg-sitemap-1`,
     });

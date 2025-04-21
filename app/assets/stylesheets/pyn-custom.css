@@ -3952,6 +3952,7 @@ a#favoriteclickme {
     }
     .image-map img {
         object-fit: contain;
+        object-position: center;
     }
     .custom-icon {
         width: 20px;
