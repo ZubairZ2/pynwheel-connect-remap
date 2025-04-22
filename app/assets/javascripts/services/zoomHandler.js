@@ -2,7 +2,7 @@ function getZoomPanKey(element) {
   return `${element.tagName.toLowerCase()}-${element.id}`;
 }
 
-function activateZoomPan(elem, options = {}, centralizeElement = true) {
+function activateZoomPan(elem, options = {}, setViewAreaImageHeight = false, centralizeElement = true) {
   const key = getZoomPanKey(elem);
 
   if (!window.mapPanZoom) window.mapPanZoom = {};

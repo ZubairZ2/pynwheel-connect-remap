@@ -101,7 +101,8 @@ async function fetchSVG(
 
   if (!imageUrl?.endsWith(".svg")) return;
 
-  const { tracker, activateZoom, trackerAssetId, trackerVisibilityCheck } = options;
+  const { tracker, activateZoom, trackerAssetId, trackerVisibilityCheck } =
+    options;
 
   const asset = {
     id: trackerAssetId || `svg-${hasFloorplate() ? "floorplate" : "sitemap"}`,
@@ -160,29 +161,39 @@ function setSvgOrImageHeight($image) {
   const $imageParent = $image.parent();
   const $imageContainer = $("div#image-container");
   const imageContainer = $imageContainer[0];
-  const webpageMainContainer = $(
+  const $webpageMainContainer = $(
     "div.map-body.map-container-center-align > .right-side"
-  )[0];
+  );
+  const webpageMainContainer = $webpageMainContainer[0];
   const $svgContainer = $("div#svg-container");
 
   let comparableContainerDimensions = { width: 0, height: 0 };
 
-  if (isSVG && imageContainer) {
-    const { width: parallelContainerWidth, height: parallelContainerHeight } =
-      imageContainer.getBoundingClientRect();
-
-    comparableContainerDimensions.width = parallelContainerWidth;
-    comparableContainerDimensions.height = parallelContainerHeight;
-  } else if (webpageMainContainer) {
+  if (webpageMainContainer) {
     comparableContainerDimensions.width =
       webpageMainContainer.getBoundingClientRect().width;
 
     const footerHeight = Array.from($(".c-footer"))
       .find((footerElement) => isElementVisibleOnScreen(footerElement))
       ?.getBoundingClientRect().height;
+
+    const tabHEaderHeight =
+      (smallScreen() && $(".c-body").find("#tab").height()) || 0;
     comparableContainerDimensions.height =
       webpageMainContainer.parentElement.getBoundingClientRect().height -
-      (footerHeight || 0);
+      ((footerHeight || 0) + (tabHEaderHeight || 0));
+
+    if (smallScreen() && isSVG) {
+      const $zoomableImage = $webpageMainContainer.find("#zoomable");
+      $zoomableImage.width(comparableContainerDimensions.width);
+      $zoomableImage.height(comparableContainerDimensions.height);
+    }
+  } else if (imageContainer) {
+    const { width: parallelContainerWidth, height: parallelContainerHeight } =
+      imageContainer.getBoundingClientRect();
+
+    comparableContainerDimensions.width = parallelContainerWidth;
+    comparableContainerDimensions.height = parallelContainerHeight;
   } else {
     return;
   }
@@ -197,18 +208,27 @@ function setSvgOrImageHeight($image) {
     $imageContainer.height(height);
   }
 
-  if (!isElementVisibleOnScreen(image)) {
-    return;
-  }
   const ratio =
     width > height
       ? height / (imageOriginalHeight || 1)
       : width / (imageOriginalWidth || 1);
+  const ratiodWidth = imageOriginalWidth * ratio;
+  const ratiodHeight = imageOriginalHeight * ratio;
 
-  $imageParent.width(imageOriginalWidth * ratio);
-  $imageParent.height(imageOriginalHeight * ratio);
-  $image.width(imageOriginalWidth * ratio);
-  $image.height(imageOriginalHeight * ratio);
+  $imageParent.width(ratiodWidth);
+  $imageParent.height(ratiodHeight);
+
+  if (isSVG) {
+    image.setAttribute("width", ratiodWidth);
+    image.setAttribute("height", ratiodHeight);
+    image.setAttribute(
+      "viewBox",
+      `0 0 ${imageOriginalWidth} ${imageOriginalHeight}`
+    );
+  } else {
+    $image.width(ratiodWidth);
+    $image.height(ratiodHeight);
+  }
 }
 
 function floorBasedData(data = []) {

@@ -234,14 +234,22 @@
                       - floorplate = @floorplates.select{ |f| f.floors.include?(floor) }.first
                       - if @svg_enabled
                         - svg_data = svg_image_url_and_dimensions(floorplate)
-                        %div{ data: svg_data, style: "position: relative;", class: "map-image-align floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}", id: "f_#{floor}" }
+                        - svg_exists = svg_data && svg_data.values_at(:width, :height).sum.positive?
+                        - if svg_exists
+                          %div{ data: svg_data, style: "position: relative;", class: "map-image-align floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}", id: "f_#{floor}" }
+                        - else
+                          = image_tag "/assets/default.jpeg", class: "map-image-align sitemap-image floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}", id: "f_#{floor}"
                       - else
                         - width, height = image_original_dimensions(floorplate).values
                         = image_tag (floorplate.validated_image_url || "/assets/default.jpeg"), class: "map-image-align sitemap-image floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}", id: "f_#{floor}", data: { height: height, width: width }
                   - else
                     - if @svg_enabled
                       - svg_data = svg_image_url_and_dimensions(@community_info&.sitemap)
-                      %div#property-map-image-container.floorplate-image.sitemap-image.map-image-align{ data: svg_data }
+                      - svg_exists = svg_data && svg_data.values_at(:width, :height).sum.positive?
+                      - if svg_exists
+                        %div#property-map-image-container.floorplate-image.sitemap-image.map-image-align{ data: svg_data }
+                      - else
+                        = image_tag "/assets/default.jpeg", class: "floorplate-image sitemap-image map-image-align", id: "property-map-image"
                     - else
                       - width, height = image_original_dimensions(@community_info.sitemap).values
                       %img.floorplate-image.sitemap-image.map-image-align{alt: "", src: (@community.sitemap.validated_image_url || "/assets/default.jpeg"), id: "property-map-image", title: "", data: { height: height, width: width } }

@@ -1,4 +1,6 @@
-var has_floorplate = definedAndHasValue(has_floorplate) ? has_floorplate : false;
+var has_floorplate = definedAndHasValue(has_floorplate)
+  ? has_floorplate
+  : false;
 var assetTracker = definedAndHasValue(assetTracker) ? assetTracker : null;
 
 function mobileCheck() {
@@ -132,4 +134,8 @@ function hasValue(value) {
 
 function definedAndHasValue(value) {
   return isDefined(value) && value !== null;
+}
+
+function smallScreen() {
+  return mobileCheck() || window.innerWidth <= 993;
 }
