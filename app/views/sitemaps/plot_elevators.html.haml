@@ -1,6 +1,13 @@
 -#%link{:crossorigin => "anonymous", :href => "https://use.fontawesome.com/releases/v5.7.2/css/all.css", :integrity => "sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr", :rel => "stylesheet"}/
 = render '/font_awesome_v5'
 - content_for :title, "Plot Elevators - Pynwheel"
+
+- left_margin       = 13
+- top_margin        = 13
+
+%span.hidden#left_margin        #{left_margin}
+%span.hidden#top_margin         #{top_margin}
+
 %section.is-amenity
   .content
     .title-heading.mb-25
@@ -74,9 +81,9 @@
         .box-body.map-body-top
           .row
             .col-lg-9#image-container.p-0
-              .map-block{:style=>"position: relative;"}
+              .map-block{style: "position: relative; #{ @sitemap.present? && @sitemap.validated_image_url ? '' : 'display: flex; justify-content: center; align-items: center;' }"}
                 .plot-image#map
-                  = image_tag @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"
+                  = image_tag @sitemap.present? ? @sitemap.validated_image_url : "/assets/default.jpeg", id: "viewArea"
                   - marker_color = '#d37474'
                   - @elevators.each do |elevator|
                     - if elevator.x_plot.to_i + elevator.y_plot.to_i > 0
@@ -109,62 +116,21 @@
         #map-marker{"data-toggle" => "tooltip", :onclick => "selMarker()", :title => "new marker"}
           %i.icon-screenshot
 :javascript
+  var assetTracker;
+  var left_margin = #{raw left_margin}
+  var top_margin = #{raw top_margin}
+
   $(document).ready(function () {
-    document.addEventListener("touchstart", touchHandler, true);
-    document.addEventListener("touchmove", touchHandler, true);
-    document.addEventListener("touchend", touchHandler, true);
-    document.addEventListener("touchcancel", touchHandler, true);
     let elem = document.querySelector('#map');
-    const key = getZoomPanKey(elem);
-    if (window.mapPanZoom) {
-      window.mapPanZoom[key] = panzoom(elem, {
-        minZoom: 0.5,
-        maxZoom: 1.0,
-        bounds: true,
-        boundsPadding: 0.3
-      })
-    } else {
-      window.mapPanZoom = {
-        [key]: panzoom(elem, {
-          minZoom: 0.5,
-          maxZoom: 1.0,
-          bounds: true,
-          boundsPadding: 0.3
-        }),
-      };
+
+    const $imageZoomPan = $('#map.plot-image');
+    if ($imageZoomPan[0]) {
+      activateZoomPan($imageZoomPan[0]);
     }
 
-    var transform = mapPanZoom?.[key] ? mapPanZoom[key].getTransform() : {};
-    var scaleFactor = (1 / (transform.scale || 1));
-    var previous_scale = 0;
-    while ($('#map').width() / scaleFactor > $('.map-block').width() || $('#map').height() / scaleFactor > $('.map-block').height()) {
-        mapPanZoom[key].zoomInOut(189);
-        transform = mapPanZoom[key] ? mapPanZoom[key].getTransform() : {};
-        scaleFactor = (1 / (transform.scale || 1));
-        if (scaleFactor === previous_scale) {
-            break;
-        }
-        previous_scale = scaleFactor
-    }
-    mapPanZoom[key].moveTo(0, 0);
-    })
+    bindPlottingEvents();
+  })
   
-  function touchHandler(event) {
-    var touch = event.changedTouches[0];
-
-    var simulatedEvent = document.createEvent("MouseEvent");
-        simulatedEvent.initMouseEvent({
-        touchstart: "mousedown",
-        touchmove: "mousemove",
-        touchend: "mouseup"
-    }[event.type], true, true, window, 1,
-        touch.screenX, touch.screenY,
-        touch.clientX, touch.clientY, false,
-        false, false, false, 0, null);
-
-    touch.target.dispatchEvent(simulatedEvent);
-    // event.preventDefault();
-  }
   var unitsArr = #{raw elevator_arr.to_json}
   var lmargin = 0
   var rmargin = 0

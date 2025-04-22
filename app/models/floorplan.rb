@@ -1,5 +1,7 @@
 class Floorplan < ApplicationRecord
   include StandardUrl
+  include ::S3Acceleration
+
   mount_base64_uploader :image, AvatarUploader
   mount_base64_uploader :secondary_image, AvatarUploader
   mount_base64_uploader :file, DesignUploader

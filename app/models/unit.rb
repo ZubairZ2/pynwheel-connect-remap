@@ -53,6 +53,8 @@
 
 class Unit < ApplicationRecord
   include StandardUrl
+  include ::S3Acceleration
+
   mount_uploader :image, AvatarUploader
   mount_uploader :secondary_image, AvatarUploader
   belongs_to :community

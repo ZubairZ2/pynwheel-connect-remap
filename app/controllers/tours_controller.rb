@@ -274,7 +274,7 @@ class ToursController < ApplicationController
       Tour.where(community_id: tour.community_id).update_all(x_plot: params[:x_plot], y_plot: params[:y_plot])
       #PaperTrail::Version.create(item_type: "TourStopStartingPoint",item_id: tour.id,event: "update",whodunnit: current_user.id,community_id: tour.community_id, company_id: current_company.id,object: "name: '#{tour.name}' community_id: '#{tour.community_id}'") rescue nil
 
-      render json: {tour: tour}, status: 200
+      render json: {tour: tour.reload.attributes}, status: 200
     else
       render json: {}, status: 404
     end
@@ -454,7 +454,7 @@ class ToursController < ApplicationController
   def update_elevator
     elevator = Elevator.find_by_id(params[:elevator_id])
     if elevator.present?
-      elevator.update_attributes x_plot: params[:x_plot], y_plot: params[:y_plot]
+      elevator.update x_plot: params[:x_plot], y_plot: params[:y_plot]
       status = 200
       message = 'updated successfully'
     else

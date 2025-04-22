@@ -1,6 +1,13 @@
 -#%link{:crossorigin => "anonymous", :href => "https://use.fontawesome.com/releases/v5.7.2/css/all.css", :integrity => "sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr", :rel => "stylesheet"}/
 = render '/font_awesome_v5'
 - content_for :title, "Plot Unit Images - Pynwheel"
+
+- left_margin       = 13
+- top_margin        = 13
+
+%span.hidden#left_margin        #{left_margin}
+%span.hidden#top_margin         #{top_margin}
+
 %section.is-amenity
   .content
     .title-heading.mb-25
@@ -48,7 +55,6 @@
           %span.hidden#marker_color #{marker_color}
           %span.hidden#camera_margin #{camera_margin}
 
-
         .pull-right.btn-btn-danger
           = link_to "Back",community_unit_amenities_path(@community,@sitemap), :class=>"btn btn-primary mr-5 hidden"
           -# Might to do svg_deletion
@@ -59,34 +65,37 @@
         .box-body.map-body-top
           .row
             .col-lg-9#image-container.p-0{:style => "float: right;"}
-              .map-block{:style=>"position: relative;"}
+              .map-block{style: "position: relative; #{ @unit.validated_image_url || (@floorplan.present? && @floorplan.validated_image_url) ? '' : 'display: flex; justify-content: center; align-items: center;' }"}
+                .assetLoader.hidden
                 .plot-image#map
-                  = image_tag @unit.standard_image_url.present? ? @unit.standard_image_url : (@floorplan.present? && @floorplan.standard_image_url.present? ? @floorplan.standard_image_url : "/assets/default.jpeg")
+                  = image_tag @unit.validated_image_url || (@floorplan.present? && @floorplan.validated_image_url) || "/assets/default.jpeg", id: "viewArea"
                   - @sitemap.amenities.each do |amenity|
-                    - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
-                      = link_to "<i class='custom-icon' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{marker_color};' ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{marker_color}; margin-top: #{camera_margin}px;'  ></i></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => amenity.name, :id => "m_#{amenity.id}", :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;", "data-name" => "#{amenity.description}", "data-target" => "#confirm-delete_amenity", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/units/#{@sitemap.id}/amenities/#{amenity.id}"
-            .col-lg-3
-              %h5.mt-40.mb-20 SELECT IMAGES TO PLOT
+                    - x_plot, y_plot = coords = [amenity.x_plot, amenity.y_plot].map(&:to_i)
+                    - if coords.sum.positive?
+                      = link_to "<i class='custom-icon' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{marker_color};' ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{marker_color}; margin-top: #{camera_margin}px;'  ></i></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => amenity.name, :id => "m_#{amenity.id}", :style => "left:#{x_plot - left_margin}px; top:#{y_plot - top_margin}px; position:absolute;", "data-name" => "#{amenity.description}", "data-target" => "#confirm-delete_amenity", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/units/#{@sitemap.id}/amenities/#{amenity.id}"
+            .col-lg-3.multi-select-units{ class: "select-units-on-page" }
+              %h5.mt-40.mb-20 SELECT AMENITIES TO PLOT
               .imageselect
                 .show-categories
                   = "-- select image --"
-                %ul#imageselect{:style => "display: none;"}
+                %ul#imageselect.disabled{:style => "display: none;"}
                   - amenity_arr = []
                   - @tour_amenity_array = [] if @tour_amenity_array.nil?
                   - @amenities.each do |amenity|
-                    - if amenity.x_plot.to_i + amenity.y_plot.to_i == 0 && !(@tour_amenity_array.include?(amenity.id))
+                    - x_plot, y_plot = coords = [amenity.x_plot, amenity.y_plot].map(&:to_i)
+                    - if coords.sum.zero? && !(@tour_amenity_array.include?(amenity.id))
                       %li{"data-id" => "#{amenity.id}","data-name" => "#{amenity.name}"}
                         %a
                           = image_tag amenity.image.present? ? amenity.image.url : "upload-image.png"
                           %span.ml-5
                             = amenity.name
-                    - amenity_arr.push({ providerId: amenity.id.to_s, xPlot: amenity.x_plot.to_i, yPlot: amenity.y_plot.to_i, name: amenity.name })
+                    - amenity_arr.push({ providerId: amenity.id.to_s, xPlot: x_plot, yPlot: y_plot, name: amenity.name })
 
-              %h5.mt-40 SELECTED IMAGES
+              %h5.mt-40 SELECTED IMAGE
               .add-plan.mt-10.mb-20
                 %ul#selected-units
               / %button.btn.btn-success#new{:type => "button"} PLOT NOW
-              %label#newmsg Place marker for selected amenities on Map
+              %label#newmsg Place marker for selected amenity on Map
         #map-marker{"data-toggle" => "tooltip", :onclick => "selMarker()", :title => "new marker"}
           %i.icon-screenshot
     ////////////// Amenity Grid
@@ -101,11 +110,13 @@
             %tbody.amenity_sortable_list
               - orderVar = 0
               - if @sitemap.amenities.present?
-                - sortable_fetch(@sitemap.amenities.order(:sort)) do |amenity,index|
-                  - unless amenity.x_plot.to_i + amenity.y_plot.to_i == 0
+                - sortable_fetch(@sitemap.amenities.order(:sort)) do |amenity, index|
+                  - coords = [amenity.x_plot, amenity.y_plot].map(&:to_i)
+                  - unless coords.sum.zero?
                     %tr{:id=> index}
                       - orderVar = orderVar + 1
-                      %td= orderVar
+                      %td
+                        = orderVar
                       %td
                         = amenity.name
 .row
@@ -143,45 +154,26 @@
 -#                = f.submit "Save", :class=>"btn btn-primary"
 
 :javascript
+  var assetTracker;
+  var left_margin = #{raw left_margin}
+  var top_margin = #{raw top_margin}
+
   $(document).ready(function () {
-    document.addEventListener("touchstart", touchHandler, true);
-    document.addEventListener("touchmove", touchHandler, true);
-    document.addEventListener("touchend", touchHandler, true);
-    document.addEventListener("touchcancel", touchHandler, true);
-    let elem = document.querySelector('#map');
-    const key = getZoomPanKey(elem);
-    if (window.mapPanZoom) {
-      window.mapPanZoom[key] = panzoom(elem, {
-        minZoom: 0.5,
-        maxZoom: 1.0,
-        bounds: true,
-        boundsPadding: 0.3
-      })
-    } else {
-      window.mapPanZoom = {
-        [key]: panzoom(elem, {
-          minZoom: 0.5,
-          maxZoom: 1.0,
-          bounds: true,
-          boundsPadding: 0.3
-        }),
-      };
+    $(".divLoading").removeClass("hidden");
+    assetTracker = new AssetLoadingTracker({ loaderSelector: ".assetLoader" });
+
+    const $imageZoomPan = $('#map.plot-image');
+    if ($imageZoomPan[0]) {
+      activateZoomPan($imageZoomPan[0]);
+      const image = $imageZoomPan.find('img#viewArea')[0]
+      if (image) {
+        const asset = { id: "plot-image-1", node: image, url: image.src, type: "img", completed: false };
+        assetTracker.addOrUpdateAsset(asset, true);
+      }
     }
 
-    var transform = mapPanZoom?.[key] ? mapPanZoom[key].getTransform() : {};
-    var scaleFactor = (1 / (transform.scale || 1));
-    var previous_scale = 0;
-    while($('#map').width()/scaleFactor > $('.map-block').width()  || $('#map').height()/scaleFactor > $('.map-block').height()){
-       mapPanZoom[key].zoomInOut(189);
-           transform = mapPanZoom[key] ? mapPanZoom[key].getTransform() : {};
-           scaleFactor = (1 / (transform.scale || 1));
-           if(scaleFactor === previous_scale)
-           {
-            break;
-           }
-           previous_scale = scaleFactor
-    }
-    mapPanZoom[key].moveTo(0,0);
+    bindPlottingEvents();
+    fetchSVGAndSetPlotCoordinates("amenity");
   })
 
   function touchHandler(event) {
