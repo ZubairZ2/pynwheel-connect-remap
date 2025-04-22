@@ -138,7 +138,9 @@ $(document).ready(function () {
     if (!svgMode) {
       if (hasFloorplate()) {
         $(".floorplate-image").each(function () {
-          setSvgOrImageHeight($(this));
+          if (isElementVisibleOnScreen(this)) {
+            setSvgOrImageHeight($(this));
+          }
         });
       } else {
         setImageHeight();
@@ -285,7 +287,9 @@ function bindWebpageEvents() {
 
       if (!svgMode && hasFloorplate()) {
         $(".floorplate-image").each(function () {
-          setSvgOrImageHeight($(this));
+          if (isElementVisibleOnScreen(this)) {
+            setSvgOrImageHeight($(this));
+          }
         });
       }
 
@@ -1136,31 +1140,26 @@ function setImageHeight () {
     $('.c-footer.mobile-footer').remove()
   }
 
-  // if (current_width >= 993) {
-  //   const $containerBody = $(".c-body");
-  //   const $containerFooter = $(".c-footer");
-  //   // const $appHeader = $(".app-header");
-  //   const $container = $(".right-side.parent.tabcontent");
-  //   const footerHeight = ($containerFooter.height() + 20 /* padding */);
-
-  //   debugger
-  //   const availableHeight = $container.height() -footerHeight;
-  //   $containerBody.find('.map-body')[0]?.style.setProperty(
-  //     "height",
-  //     `${availableHeight}px`,
-  //     "important"
-  //   );
-
-  //   $(".floorplate-image").attr("height", availableHeight);
-  //   const imageContainer = $("#image-container")[0];
-  //   debugger
-  //   if (imageContainer.offsetHeight && imageContainer)
-  //     imageContainer.style.setProperty(
-  //       "height",
-  //       `${availableHeight}px`,
-  //       "important"
-  //     );
-  // }
+  if (svgMode) {
+    const $containerBody = $(".c-body");
+    const $containerFooter = $(".c-footer");
+    const $zoomableContainer = $(".right-side.parent.tabcontent").find(
+      ".zoomable-map-container"
+    );
+    const footerHeight = $containerFooter.height() + 20 /* padding */;
+    const availableHeight =
+      $containerBody.height() -
+      (footerHeight +
+        (mobileCheck() || current_width <= 993
+          ? $(".right-side.parent.tabcontent").find("#tab").height() || 0
+          : 0));
+    
+    $zoomableContainer[0]?.style.setProperty(
+      "height",
+      `${availableHeight}px`,
+      "important"
+    );
+  }
 }
 
 function populate_current_units() {
@@ -3540,7 +3539,7 @@ async function fetchWebpageSVGAndSetCoordinates() {
           svgPosition: 0,
           activateZoom: true,
           tracker: assetTracker,
-          setSVGImageHeight: false,
+          setSVGImageHeight: true,
           trackerAssetId: `svg-floorplate-${floor}`,
           trackerVisibilityCheck: parseInt(current_floor) === floor,
         })
