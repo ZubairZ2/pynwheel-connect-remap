@@ -141,7 +141,7 @@ namespace :delayed_email_notifications do
       if email_to.present? && email_from.present?
         NotificationMailer.tour_history_mail(subj, body, email_to, email_from, community, false, nil).deliver
       else
-        Rails.logger.warn("No recipient email found for tour history mail. Emails: #{emails.inspect}")
+        Rails.logger.warn("No recipient email found")
       end
     end
 
