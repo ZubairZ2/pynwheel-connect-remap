@@ -2,7 +2,7 @@ class NotificationMailer < ApplicationMailer
   # default from: 'info@pynwheel.com'
   layout 'mailer'
 
-  def tour_history_mail(subject, msg, to,email_from = "info@pynwheel.com",community,show_html,schedule_tour)
+  def tour_history_mail(subject, msg, to, email_from = "info@pynwheel.com", community, show_html, schedule_tour)
     @community = community
     company_name = community.company.name.downcase
 
