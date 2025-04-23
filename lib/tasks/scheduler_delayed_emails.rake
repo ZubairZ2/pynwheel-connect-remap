@@ -6,7 +6,7 @@ namespace :delayed_email_notifications do
   task :one_day_before => :environment do
     schedule_tours = SchedualTour.scheduled_tours
     coming_from = "on_day_before"
-    get_follow_up_tours(schedule_tours,coming_from)
+    get_follow_up_tours(schedule_tours, coming_from)
   end
 
   desc "This delayed email task is called every 10 mins by the Heroku scheduler add-on"
@@ -24,9 +24,9 @@ namespace :delayed_email_notifications do
 
   private
 
-    def get_follow_up_tours(schedule_tours,coming_from)
+    def get_follow_up_tours(schedule_tours, coming_from)
       schedule_tours.each do |schedule_tour|
-        if schedule_tour.tour_date.present? && schedual_tour.tour_time.present?
+        if schedule_tour.tour_date.present? && schedule_tour.tour_time.present?
           community = schedule_tour.community
           timezone = community.get_time_zone()
           current_day = Time.now.in_time_zone(timezone).to_date
