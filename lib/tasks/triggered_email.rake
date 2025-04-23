@@ -9,8 +9,13 @@ namespace :triggered_email do
       schedule_tour = SchedualTour.find_by community_id: community.id
       tu = TourUser.find tour.tour_user_id
       timezone = community.get_time_zone()
+      
+      # current_time = Time.now.in_time_zone(timezone)
+      # diff = current_time.to_s(:time).to_time - tour.tour_time.to_s(:time).to_time 
+      
       current_time = Time.now.in_time_zone(timezone)
-      diff = current_time.to_s(:time).to_time - tour.tour_time.to_s(:time).to_time 
+      diff = current_time.strftime("%H:%M").to_time - tour.tour_time.strftime("%H:%M").to_time
+
       th = TourHistory.where(arrived: [(current_time - 7200)..current_time], tour_id: community.community_tour.id, tour_user_id: tu.id)
       
       if diff > 7200 && !th.present? && !tour.missed_email_sent && current_time.to_date == tour.tour_date
