@@ -49,7 +49,7 @@ class UnitAmenitiesController < ApplicationController
     end
 
     if @amenity.save(validate: false)
-      render json: {amenity: @amenity}, status: 200
+      render json: {amenity: @amenity.attributes}, status: 200
       Amenity.where('id != ? AND mass_upload_id = ?', @amenity.id, @amenity.mass_upload_id).update_all(x_plot: params[:x_plot], y_plot: params[:y_plot]) if @amenity.mass_upload_id.present?
     else
       render json: {}, status: 404

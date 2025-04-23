@@ -1,6 +1,13 @@
 %link{:crossorigin => "anonymous", :href => "https://use.fontawesome.com/releases/v5.7.2/css/all.css", :integrity => "sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr", :rel => "stylesheet"}/
 = render '/font_awesome_v5'
 - content_for :title, "Plot Images - Pynwheel"
+
+- left_margin       = 13
+- top_margin        = 13
+
+%span.hidden#left_margin        #{left_margin}
+%span.hidden#top_margin         #{top_margin}
+
 %section.is-amenity
   .content
     .title-heading.mb-25
@@ -47,37 +54,38 @@
 
         .pull-right.btn-btn-danger
           = link_to "Back", community_floorplan_amenities_path(@community,@sitemap), class: "btn btn-primary"
-          %a.btn.btn-danger{"data-name" => "floorplan's images plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/floorplans/#{@sitemap.id}/amenities/remove_amenities_plot#{is_svg ? '?svg_deletion=true' : ''}"} Reset all plots
+          %a.btn.btn-danger{"data-name" => "floorplan's images plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/floorplans/#{@sitemap.id}/amenities/remove_amenities_plot"} Reset all plots
       / /.box-header
       / form start
       %form.form-horizontal
         .box-body.map-body-top
           .row
             .col-lg-9#image-container{:style => "float: right;"}
-              .map-block{:style=>"position: relative;"}
+              .map-block{style: "position: relative; #{ @sitemap.present? && @sitemap.validated_image_url ? '' : 'display: flex; justify-content: center; align-items: center;' }"}
                 #map.plot-image
-                  = image_tag @sitemap.present? ? @sitemap.image.url : ""
+                  = image_tag (@sitemap.present? && @sitemap.validated_image_url) || "/assets/default.jpeg", id: "viewArea"
                   - @amenities.each do |amenity|
                     - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
                       = link_to "<i class='custom-icon' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{marker_color};'  ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{marker_color}; margin-top:#{camera_margin}px;'  ></i></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => amenity.name, :id => "m_#{amenity.id}", :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/floorplans/#{@sitemap.id}/amenities/#{amenity.id}/remove_amenity"
               .pull-right
                 -#= link_to "Done!", community_floorplans_path(@community), class: "btn btn-primary mt-15"
-            .col-lg-3
+            .col-lg-3.multi-select-units{ class: "select-units-on-page" }
               %h5.mt-40.mb-20 SELECT IMAGES TO PLOT
               .imageselect
                 .show-categories
                   = "-- select image --"
-                %ul#imageselect{:style => "display: none;"}
+                %ul#imageselect.disabled{:style => "display: none;"}
                   - amenity_arr = []
                   - @amenities.each do |amenity|
-                    - if amenity.x_plot.to_i + amenity.y_plot.to_i == 0
+                    - x_plot, y_plot = coords = [amenity.x_plot, amenity.y_plot].map(&:to_i)
+                    - if coords.sum.zero?
                       %li{"data-id" => "#{amenity.id}","data-name" => "#{amenity.name}"}
                         %a
                           = image_tag amenity.image.present? ? amenity.image.url : "upload-image.png"
                           %span.ml-5
                             = amenity.name
-                    - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0        
-                      - amenity_arr.push({providerId: amenity.id.to_s, xPlot: amenity.x_plot.to_i, yPlot: amenity.y_plot.to_i, name: amenity.name})
+                    - amenity_arr.push({ providerId: amenity.id.to_s, xPlot: x_plot, yPlot: y_plot, name: amenity.name })
+
               %h5.mt-40 SELECTED IMAGES
               .add-plan.mt-10.mb-20
                 %ul#selected-units
@@ -115,63 +123,21 @@
               %button.btn-primary.done_btn.mb-20{:onclick => "floorplan_plotting_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
                 DONE
 :javascript
+  var assetTracker;
+  var left_margin = #{raw left_margin}
+  var top_margin = #{raw top_margin}
+
   $(document).ready(function () {
-    document.addEventListener("touchstart", touchHandler, true);
-    document.addEventListener("touchmove", touchHandler, true);
-    document.addEventListener("touchend", touchHandler, true);
-    document.addEventListener("touchcancel", touchHandler, true);
     let elem = document.querySelector('#map');
-    const key = getZoomPanKey(elem)
-    if (window.mapPanZoom) {
-      window.mapPanZoom[key] = panzoom(elem, {
-        minZoom: 0.5,
-        maxZoom: 1.0,
-        bounds: true,
-        boundsPadding: 0.3
-      })
-    } else {
-      window.mapPanZoom = {
-        [key]: panzoom(elem, {
-          minZoom: 0.5,
-          maxZoom: 1.0,
-          bounds: true,
-          boundsPadding: 0.3
-        }),
-      };
+
+    const $imageZoomPan = $('#map.plot-image');
+    if ($imageZoomPan[0]) {
+      activateZoomPan($imageZoomPan[0]);
     }
 
-    var transform = mapPanZoom?.[key] ? mapPanZoom[key].getTransform() : {};
-    var scaleFactor = (1 / (transform.scale || 1));
-    var previous_scale = 0;
-    while($('#map').width()/scaleFactor > $('.map-block').width()  || $('#map').height()/scaleFactor > $('.map-block').height()){
-       mapPanZoom[key].zoomInOut(189);
-           transform = mapPanZoom[key] ? mapPanZoom[key].getTransform() : {};
-           scaleFactor = (1 / (transform.scale || 1));
-           if(scaleFactor === previous_scale)
-           {
-            break;
-           }
-           previous_scale = scaleFactor
-    }
-    mapPanZoom[key].moveTo(0,0);
+    bindPlottingEvents();
   })
 
-  function touchHandler(event) {
-    var touch = event.changedTouches[0];
-
-    var simulatedEvent = document.createEvent("MouseEvent");
-        simulatedEvent.initMouseEvent({
-        touchstart: "mousedown",
-        touchmove: "mousemove",
-        touchend: "mouseup"
-    }[event.type], true, true, window, 1,
-        touch.screenX, touch.screenY,
-        touch.clientX, touch.clientY, false,
-        false, false, false, 0, null);
-
-    touch.target.dispatchEvent(simulatedEvent);
-    // event.preventDefault();
-  }
   var floor = null;
   var unitsArr = #{raw amenity_arr.to_json}
   var lmargin = 0

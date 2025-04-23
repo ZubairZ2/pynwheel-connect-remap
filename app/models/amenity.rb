@@ -27,6 +27,8 @@ class Amenity < ApplicationRecord
   include RailsSortable::Model
   set_sortable :sort
   include StandardUrl
+  include ::S3Acceleration
+
   mount_base64_uploader :image, AvatarUploader
   belongs_to :amenityable, polymorphic: true
   belongs_to :community

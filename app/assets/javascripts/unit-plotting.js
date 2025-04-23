@@ -95,6 +95,21 @@ function saveTourStaringPoint(id, dx, dy) {
             "tour_id": tour_id
         },
         function (data, status, xhr) {
+            console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
+
+            const index = unitsArr.findIndex(
+                ({ providerId }) => providerId == data.tour.id
+            );
+            const oldUnit = unitsArr[index];
+            unitsArr.splice(index, 1)
+
+            unitsArr.push({
+                providerId: data.tour.id,
+                xPlot: data.tour.x_plot,
+                yPlot: data.tour.y_plot,
+                svgPoint: oldUnit.svgPoint,
+                name: oldUnit.name || data.tour.name,
+            });
             doDraggable();
         });
 }
@@ -230,7 +245,12 @@ function saveElevatorPlotForFloorplate(id, dx, dy) {
         });
 }
 
-function saveAmenityPlotForUnit(id, dx, dy) {
+function saveAmenityPlotForUnit (id, dx, dy) {
+    if (!addmode){
+        dx = dx + left_margin;
+        dy = dy + top_margin;
+    }
+ 
     $.post("/communities/" + community_id + "/units/" + unit_id_for_amenity + "/amenities/" + id + "/plot_amenity",
         {
             "x_plot": dx,
@@ -238,12 +258,20 @@ function saveAmenityPlotForUnit(id, dx, dy) {
         },
         function (data, status, xhr) {
             console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
+            const index = unitsArr.findIndex(
+                ({ providerId }) => providerId == data.amenity.id
+            );
+            const oldUnit = unitsArr[index];
+            unitsArr.splice(index, 1);
+
             unitsArr.push({
                 providerId: data.amenity.id,
                 xPlot: data.amenity.x_plot,
                 yPlot: data.amenity.y_plot,
                 name: data.amenity.name,
+                svgPoint: oldUnit.svgPoint
             });
+            // arr.push([data.amenity.id, data.amenity.x_plot, data.amenity.y_plot, true, data.amenity.name]);
             doDraggable();
             // delete from unused list
             $('.amenities-list option').each(function () {
@@ -442,17 +470,22 @@ function start__original_work(event, ui, scale) {
     const marginedXpos = Math.round(xpos + left_margin);
     const marginedYpos = Math.round(ypos + top_margin);
 
+    const lessMarginedXpos = Math.round(xpos - left_margin);
+    const lessMarginedYpos = Math.round(ypos - top_margin);
+
     temp = [];
     if (unitsArr) {
         temp = unitsArr
             .filter(
                 ({ xPlot, yPlot }) =>
                     (xPlot === xpos && yPlot === ypos) ||
-                    (xPlot === marginedXpos && yPlot === marginedYpos)
+                    (xPlot === marginedXpos && yPlot === marginedYpos) ||
+                    (xPlot === lessMarginedXpos && yPlot === lessMarginedYpos)
                 )
             .map(({ providerId }) => providerId.toString());
     }
 
+    console.log(temp, unitsArr, xpos, ypos, marginedXpos, marginedYpos, lessMarginedXpos, lessMarginedYpos);
     pointerOffset.x = left_margin * scale;
     pointerOffset.y = top_margin * scale;
 }
@@ -460,6 +493,7 @@ function start__original_work(event, ui, scale) {
 function drag__original_work(event, ui) {
     const left = Math.round(ui.position.left);
     const top = Math.round(ui.position.top);
+    console.log(temp, left, top);
   
     if (temp) {
       temp.forEach((markerId) => {

@@ -154,7 +154,7 @@
                       = link_to 'Manage Images' , community_unit_amenities_path(@community,u),:class=>"btn btn-default black-button"
                     %td
                       .drop-img
-                        = image_tag u.standard_image_url.present? ? u.standard_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.standard_image_url : "/assets/default.jpeg")
+                        = image_tag u.validated_image_url || (floorplan.present? && floorplan.validated_image_url) || "/assets/default.jpeg"
                     %td
                       %a.text-success{:href => "#{edit_community_unit_path(@community,u)}"}
                         %i.fa.fa-edit.icon_size

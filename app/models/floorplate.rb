@@ -136,20 +136,6 @@ class Floorplate < ApplicationRecord
     end
   end
 
-  def validated_svg_image_url
-    convert_to_s3_accelerate_url(svg_image.url) if svg_image.present? && svg_image.url.present?
-  end
-
-  def validated_image_url
-    if image.present?
-      if standard_image_url.present?
-        convert_to_s3_accelerate_url(standard_image_url)
-      elsif image.url.present?
-        convert_to_s3_accelerate_url(image.url) 
-      end
-    end
-  end
-
   def floorplate_image_width
     self.width > 0 ? self.width : self.image.width rescue 0
   end
