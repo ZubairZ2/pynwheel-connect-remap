@@ -173,17 +173,18 @@ function setSvgOrImageHeight($image) {
     comparableContainerDimensions.width =
       webpageMainContainer.getBoundingClientRect().width;
 
-    const footerHeight = Array.from($(".c-footer"))
-      .find((footerElement) => isElementVisibleOnScreen(footerElement))
-      ?.getBoundingClientRect().height;
+    const $containerFooter = $(".c-footer");
+    const footerHeight = ($containerFooter.height() ? $containerFooter.height() + 20 /* padding */ : 0)
 
-    const tabHEaderHeight =
-      (smallScreen() && $(".c-body").find("#tab").height()) || 0;
+    const tabHeaderHeight = smallScreen()
+      ? ($(".c-body").find("#tab").height() || 0) +
+        ($(".c-body").find("header-buttons-groups").height() || 0)
+      : 0;
     comparableContainerDimensions.height =
       webpageMainContainer.parentElement.getBoundingClientRect().height -
-      ((footerHeight || 0) + (tabHEaderHeight || 0));
+      (footerHeight + tabHeaderHeight);
 
-    if (smallScreen() && isSVG) {
+    if ((smallScreen() && isSVG) || !hasFloorplate()) {
       const $zoomableImage = $webpageMainContainer.find("#zoomable");
       $zoomableImage.width(comparableContainerDimensions.width);
       $zoomableImage.height(comparableContainerDimensions.height);
@@ -208,10 +209,12 @@ function setSvgOrImageHeight($image) {
     $imageContainer.height(height);
   }
 
-  const ratio =
-    width > height
-      ? height / (imageOriginalHeight || 1)
-      : width / (imageOriginalWidth || 1);
+  const ratio = getStretchRatio(
+    width,
+    height,
+    imageOriginalWidth,
+    imageOriginalHeight
+  );
   const ratiodWidth = imageOriginalWidth * ratio;
   const ratiodHeight = imageOriginalHeight * ratio;
 
