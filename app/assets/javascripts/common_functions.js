@@ -140,6 +140,11 @@ function smallScreen() {
   return mobileCheck() || window.innerWidth <= 993;
 }
 
+function tabletCheck() {
+  const ua = navigator.userAgent.toLowerCase();
+  return /ipad|android(?!.*mobile)/i.test(ua);
+}
+
 function getStretchRatio(
   currentWidth,
   currentHeight,
