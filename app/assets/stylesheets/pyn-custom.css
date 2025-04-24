@@ -36,9 +36,7 @@ textarea {
 
 .map-instruction-text {
     position: relative;
-    margin: 0 auto;
     top: 21px;
-    width: 928px;
     text-align: center;
 }
 
@@ -5470,7 +5468,7 @@ body {
     background: black;
     color: white;
 }
-.custom-iframe-modeule .c-wrapper {
+.custom-iframe-modeule .c-wrapper.floorplate {
     margin-left: 90px;
 }
 .floorplate_image {
@@ -5551,15 +5549,9 @@ body {
 .c-footer .location-items {
     padding-left: 0;
     list-style: unset;
-    float: left;
-    width: 60%;
     text-align: center;
     margin: 0;
     padding: 8px 0 8px 0px;
-}
-.footer-logo {
-    float: left;
-    width: 20%;
 }
 .footer-logo img {
     width: 136px;
@@ -5589,7 +5581,6 @@ ul.location-items span {
     text-align: right;
 }
 .inner-footer {
-    width: 100%;
     display: flex;
     justify-content: space-between;
 }
@@ -5611,9 +5602,7 @@ ul.location-items span {
 }
 footer.c-footer {
     position: fixed;
-    left: 0px;
-    right: 0;
-    width: 100%;
+    width: inherit !important;
     background: white;
     bottom: 0;
     padding: 10px;
@@ -5771,7 +5760,6 @@ html, .add-fav-body {
 
 @media only screen and (min-width: 1350px){
     footer.c-footer{
-        width: 75%;
         bottom: 0;
     }
     .custom-iframe-modeule .app-logo-mobile {
@@ -5785,7 +5773,6 @@ html, .add-fav-body {
 
 @media only screen and (min-width: 993px) and (max-width: 1350px){
     footer.c-footer{
-        width: 70%;
         bottom: 0;
     }
 
@@ -5850,13 +5837,10 @@ html, .add-fav-body {
     .custom-iframe-modeule .header-buttons-groups {
         width: 50%;
     }
-  .footer-logo {
-      width: 15%;
-  }
   .custom-iframe-modeule .c-sidebar {
       max-width: 72px;
   }
-  .custom-iframe-modeule .c-wrapper {
+  .custom-iframe-modeule .c-wrapper.floorplate {
       margin-left: 72px !important;
   }
 }
@@ -6198,7 +6182,6 @@ ul.add-fav-options {
 
     .map-container-center-align {
         align-items: center;
-        top: 3rem;
     }
     
     .map-image-align {
@@ -6290,9 +6273,6 @@ ul.add-fav-options {
     max-height: 80%;
 }
 
-  .footer-logo {
-      width: 50%;
-  }
   .zooming-content {
       width: auto;
   }
@@ -6843,7 +6823,7 @@ ul.add-fav-options {
     bottom: 0px;
     padding: 50px 0px 0px 0px;
 }
-.sitemap .c-wrapper {
+.c-wrapper.no-floorplate {
     margin-left: 0 !important;
 }
 

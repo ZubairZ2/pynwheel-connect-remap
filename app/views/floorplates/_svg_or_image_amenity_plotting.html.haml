@@ -91,7 +91,7 @@
                     - unless coordinates_array.include?(coords)
                       - coordinates_array.push(coords)
 
-                      %p{class: "marker", style: "left:#{x_plot - left_margin}px; top:#{y_plot - top_margin}px; position:absolute"}
+                      %p{class: "marker", style: "left:#{x_plot}px; top:#{y_plot}px; position:absolute"}
                         = link_to "javascript:void(0);", :id => "m_#{amenity.id}", :title => amenity.name, data: {toggle: "tooltip", name: "plot", target: "#confirm-delete", toggle: "modal", href: "/communities/#{community.id}/floorplates/#{floorplate.id}/amenities/#{amenity.id}/remove_amenity?floor=#{current_floor}", plotted_category: "amenity"} do
                           %i{class: "custom-icon", style: "height:#{fontsize}px; width: #{fontsize}px; border: 2px solid  #{map_marker_color};"}
                             %i{class: "fas fa-camera-retro", style: "font-size:#{camera_font_size}px; color: #{map_marker_color}; margin-top: #{camera_margin}px;"}

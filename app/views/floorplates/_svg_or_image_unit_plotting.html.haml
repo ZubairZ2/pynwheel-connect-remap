@@ -158,7 +158,7 @@
                       - coordinates_array.push(coords)
                       - unit_door_exists = unit.door.present? ? true : false
 
-                      %p{class: "marker", style: "left:#{x_plot - left_margin }px; top:#{y_plot - top_margin}px; position:absolute"}
+                      %p{class: "marker", style: "left:#{x_plot }px; top:#{y_plot}px; position:absolute"}
                         = link_to "javascript:void(0);", { id: "m_#{unit.provider_unit_id}", style: "font-size: #{fontsize}px", data_provider: community.data_provider, provider_unit_id: unit.provider_unit_id, title: (unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, data: {toggle: "tooltip", toggle: "modal", name: "plot", target: "#markers-modal", provider_unit_id: unit.provider_unit_id, href: "/communities/#{community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}#{is_svg ? '&svg_deletion=true' : ''}", horizontal: x_plot, vertical: y_plot, pointer_data: unit.pointer_data.to_json, unit_form_url: "/communities/#{current_community.id}/units/#{unit.id}/adjust_position", plotted_category: "unit"}} do
                           %i{class: "fas fa-map-marker-alt", style: "color: #{map_marker_color};"}
 

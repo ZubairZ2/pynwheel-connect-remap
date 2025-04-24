@@ -1,3 +1,6 @@
+var left_margin = definedAndHasValue(left_margin) ? left_margin : 0;
+var top_margin = definedAndHasValue(top_margin) ? top_margin : 0;
+
 $(document).ready(function () {
     selected = [];
     var temp = [];
@@ -218,9 +221,9 @@ $(document).ready(function () {
                 dx = e.offsetX;
                 dy = e.offsetY;
             }
-      
-            dx = Math.round(dx);
-            dy = Math.round(dy);
+
+            dx = Math.round(dx - left_margin);
+            dy = Math.round(dy - top_margin);
       
             camera_margin = $('#camera_margin').html();
             door_marker_color = $('#door_marker_color').html();
@@ -328,7 +331,7 @@ function getDeletionUrl (options = { forSvg: false }) {
     return forSvg ? addSvgDeletionParamInURL(result) : result
 }
 
-function getTagToPlot (url) {
+function getTagToPlot(url){
     if (typeof tour_id_for_stop !== 'undefined') {
         tag = "<a class='marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy + "px; position:absolute;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
         tag += "<i class='custom-icon' style='width: " + marker_font_size + "px; height: " + marker_font_size + "px; border: 2px solid " + marker_color + "; '><i class='fa fa-star' style='color: " + marker_color + "; font-size: " + (parseInt(marker_font_size) / 2) + "px; margin-top:" + camera_margin + "px;'></i></i>";
@@ -350,7 +353,7 @@ function getTagToPlot (url) {
         else
             plus_icon = ''
 
-        tag =   `<p class="marker ui-draggable ui-draggable-handle" style="left:${dx - left_margin}px; top:${dy - top_margin}px; position:absolute">
+        tag =   `<p class="marker ui-draggable ui-draggable-handle" style="left:${dx}px; top:${dy}px; position:absolute">
                     <a id="m_${selected[0][0]}" style="font-size: ${marker_font_size}px" title="${selected[0][1]}" data-toggle="modal" data-name="plot" data-target="#confirm-delete" data-href="${url}" data-plotted-category="unit" href="javascript:void(0)">
                         <i class="fas fa-map-marker-alt" style="color: ${marker_color};"></i> </a>
                     ${plus_icon}
@@ -370,7 +373,7 @@ function getTagToPlot (url) {
         else
             plus_icon = ''
 
-        tag =   `<p class="marker ui-draggable ui-draggable-handle" style="left:${dx - left_margin}px; top:${dy - top_margin}px; position:absolute">
+        tag =   `<p class="marker ui-draggable ui-draggable-handle" style="left:${dx}px; top:${dy}px; position:absolute">
                     <a id="m_${selected[0][0]}" data-toggle="modal" title="${selected[0][1]}" data-name="plot" data-target="#confirm-delete" data-href="${url}" data-plotted-category="amenity">
                         <i class="custom-icon" style="width: ${marker_font_size}px; height: ${marker_font_size}px; border: 2px solid; color: ${marker_color}" >
                             <i class="fas fa-camera-retro" style="color: ${marker_color}; font-size: ${parseInt(marker_font_size) /2}px; margin-top:${camera_margin}px;"></i>
@@ -380,7 +383,7 @@ function getTagToPlot (url) {
                 </p>`
     }
     else {
-        tag = "<a class='marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + (dx - (definedAndHasValue(left_margin) ? left_margin : 0)) + "px; top:" + (dy - (definedAndHasValue(top_margin) ? top_margin : 0)) + "px; position:absolute;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
+        tag = "<a class='marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + (dx) + "px; top:" + (dy) + "px; position:absolute;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
         tag += "<i class='custom-icon' style='width: " + marker_font_size + "px; height: " + marker_font_size + "px; border: 2px solid " + marker_color + "; '><i class='fas fa-camera-retro' style='color: " + marker_color + "; font-size: " + (parseInt(marker_font_size) / 2) + "px; margin-top:" + camera_margin + "px;'></i></i>";
         tag += "</a>"
     }

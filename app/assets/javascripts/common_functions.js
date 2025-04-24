@@ -139,3 +139,14 @@ function definedAndHasValue(value) {
 function smallScreen() {
   return mobileCheck() || window.innerWidth <= 993;
 }
+
+function getStretchRatio(
+  currentWidth,
+  currentHeight,
+  originalWidth,
+  originalHeight,
+) {
+  return currentWidth > currentHeight
+    ? currentWidth / (originalWidth || 1)
+    : currentHeight / (originalHeight || 1);
+}
