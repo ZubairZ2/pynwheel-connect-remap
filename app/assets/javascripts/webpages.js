@@ -1794,20 +1794,36 @@ function mobileFooterAlignment() {
 
 function change_units_view(evt, type) {
   if (type === "list_view") {
-    document.getElementsByClassName(
+    const plusIcon = document.getElementsByClassName(
       "zoom-controls zooming-content-h"
-    )[0].style.visibility = "hidden";
-    document.getElementsByClassName(
+    )?.[0]
+    if (plusIcon) {
+      plusIcon.style.visibility = "hidden";
+    }
+
+    const minusIcon = document.getElementsByClassName(
       "zoom-controls zooming-content-h"
-    )[1].style.visibility = "hidden";
+    )?.[1];
+    if (minusIcon) {
+      minusIcon.style.visibility = "hidden";
+    }
+
     $(".c-footer").hide();
   } else {
-    document.getElementsByClassName(
+    const plusIcon = document.getElementsByClassName(
       "zoom-controls zooming-content-h"
-    )[0].style.visibility = "visible";
-    document.getElementsByClassName(
+    )?.[0]
+    if (plusIcon) {
+      plusIcon.style.visibility = "visible";
+    }
+
+    const minusIcon = document.getElementsByClassName(
       "zoom-controls zooming-content-h"
-    )[1].style.visibility = "visible";
+    )?.[1];
+    if (minusIcon) {
+      minusIcon.style.visibility = "visible";
+    }
+
     $(".c-footer").show();
     mobileFooterAlignment();
   }
@@ -2631,21 +2647,21 @@ function adjustMarkerPosition($marker) {
   const screenSize = window.innerWidth;
   const rotatedScreen = window.innerHeight < window.innerWidth;
   let fontSizeAdjustment = 1;
-  if (tabletCheck()) {
+  if (screenSize >= 1440) {
+    console.log("1440");
+    fontSizeAdjustment = 1;
+  } else if (mobileCheck()) {
+    console.log("mobileCheck");
+    fontSizeAdjustment = rotatedScreen ? 0.5 : 0.55;
+  } else if (tabletCheck()) {
     console.log("tabletCheck");
     fontSizeAdjustment = rotatedScreen ? 0.7 : 1.2;
-  } else if (screenSize >= 1440) {
-    console.log("1440");
-    fontSizeAdjustment = ratio > 1 ? ratio : 1;
   } else if (screenSize >= 993) {
     console.log("993");
     fontSizeAdjustment = rotatedScreen ? 0.7 : 1.2;
   } else if (screenSize >= 568) {
     console.log("568");
     fontSizeAdjustment = rotatedScreen ? 0.5 : 1.25;
-  } else if (mobileCheck()) {
-    console.log("mobileCheck");
-    fontSizeAdjustment = rotatedScreen ? 0.5 : 0.55;
   }
 
   console.log("fontSizeAdjustment", fontSizeAdjustment);
