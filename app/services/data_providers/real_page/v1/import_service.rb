@@ -50,7 +50,7 @@ module DataProviders
 
           def update_unit_attributes(unit, u, site_id)
             begin
-              unit.property_id = get_unit_site_id(u)
+              unit.property_id = site_id #get_unit_site_id(u)
               unit.provider_unit_id = get_provider_unit_id(u, site_id)
               unit.unit_type = get_unit_number(u)
               unit.unit_status = get_unit_status(u)

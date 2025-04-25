@@ -51,7 +51,7 @@ class XmlStaticService < BaseService
       end
     end
   end
-  def save_xml_units(units,property_id)
+  def save_xml_units(units, property_id)
     units.each do |u|
       vacateDate = ""
       unit = Unit.where(provider: "xml",community_id: credentials.community_id,provider_unit_id: u["Id"]).first_or_initialize

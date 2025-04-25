@@ -41,7 +41,7 @@ class YardiRentCafeSwapService < BaseService
                 # puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", unit.provider
                 unit.provider = "yardirentcafe_new"
                 unit.provider_unit_id = r["ApartmentId"]
-                unit.property_id = r["PropertyId"]
+                unit.property_id = property_code
                 unit.unit_type = r["ApartmentName"]
                 unit.floor = evaluate_floor(unit.marketing_name) rescue nil
                 unit.floorplan_id = r["FloorplanId"]
@@ -86,7 +86,7 @@ class YardiRentCafeSwapService < BaseService
                 unit = Unit.new
                 unit.community_id = credentials.community_id
                 unit.provider = "yardirentcafe_new"
-                unit.property_id = r["PropertyId"]
+                unit.property_id = property_code
                 unit.provider_unit_id = r["ApartmentId"]
                 unit.unit_type = r["ApartmentName"]
                 unit.marketing_name = r["ApartmentName"]

@@ -95,7 +95,7 @@ class ZarembaService < BaseService
     end
 
   end
-  def save_zaremba_units(units,property_id)
+  def save_zaremba_units(units, property_id)
 
     unit_present =  Unit.where("community_id = ? AND provider IN (?)", @credentials.community_id, ["zaremba"]).map{|x| x.provider_unit_id}
     units.each do |u|

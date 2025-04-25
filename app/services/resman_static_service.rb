@@ -66,7 +66,7 @@ class ResmanStaticService < BaseService
     end
   end
 
-  def save_resman_units(units,property_id)
+  def save_resman_units(units, property_id)
     units.each do |u|
       vacateDate = ""
       unit = Unit.where(provider: "resman",community_id: credentials.community_id,provider_unit_id: u["Id"].gsub('*','-')).first_or_initialize

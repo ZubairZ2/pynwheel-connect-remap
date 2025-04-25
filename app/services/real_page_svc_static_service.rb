@@ -95,7 +95,7 @@ class RealPageSvcStaticService < BaseService
               provider_unit_id = "#{u[:UnitID]}-#{site_id.to_s}"
               unit = Unit.where(provider: "realpagesvc",community_id: community_id, provider_unit_id: provider_unit_id).first_or_initialize
               unless unit.manual_override
-                unit.property_id = u[:SiteID]
+                unit.property_id = site_id
                 unit.provider_unit_id = provider_unit_id
                 unit.unit_type = u[:UnitNumber]
 
@@ -470,7 +470,7 @@ class RealPageSvcStaticService < BaseService
             unit = Unit.where(provider: "realpagesvc",community_id: community_id,provider_unit_id: provider_unit_id).first_or_initialize
             @array_of_units  << u[:Address][:UnitID] unless @array_of_units.include?(u[:Address][:UnitID])
             unless unit.manual_override
-              unit.property_id = u[:SiteID]
+              unit.property_id = site_id
               unit.unit_type = u[:Address][:UnitNumber]
               if u[:Address][:BuildingNumber].present?
                 unit.building = u[:Address][:BuildingNumber] unless u[:Address][:BuildingNumber] == "N/A"

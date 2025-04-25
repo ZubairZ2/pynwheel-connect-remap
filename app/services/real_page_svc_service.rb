@@ -264,7 +264,7 @@ class RealPageSvcService < BaseService
 
               else
                 unless unit.manual_override
-                  unit.property_id = u[:SiteID]
+                  unit.property_id = site_id
                   unit.provider_unit_id = provider_unit_id
                   unit.unit_type = u[:UnitNumber]
 
@@ -510,7 +510,7 @@ class RealPageSvcService < BaseService
               @array_of_units << u[:Address][:UnitID]
 
               unless unit.manual_override
-                unit.property_id = u[:SiteID]
+                unit.property_id = site_id
                 unit.unit_type = u[:Address][:UnitNumber]
 
                 if u[:Address][:BuildingNumber].present?

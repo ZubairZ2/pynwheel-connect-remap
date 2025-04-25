@@ -50,7 +50,7 @@ class ResmanSwapService < BaseService
       end
     end
   end
-  def save_resman_units(units,property_id)
+  def save_resman_units(units, property_id)
     units.each do |u|
       vacateDate = ""
 

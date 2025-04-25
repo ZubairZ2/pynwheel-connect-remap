@@ -60,7 +60,7 @@ class ZarembaSwapService < BaseService
       end
     end
   end
-  def save_zaremba_units(units,property_id)
+  def save_zaremba_units(units, property_id)
     units.each do |u|
       puts u
       flag = 0

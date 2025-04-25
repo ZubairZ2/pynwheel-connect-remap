@@ -54,18 +54,20 @@ class PsiSwapService < BaseService
             end
           end
           
-          save_psi_floorplans(floorplans,property_id)
-          save_psi_units(units,property_id)
+          save_psi_floorplans(floorplans, property_id)
+          save_psi_units(units, property_id)
 
-          end
+        end
+
       rescue => e
       end
     end
+    
     fill_psi_pricing_details
     rename_provider
   end
 
-  def save_psi_units(units,property_id)
+  def save_psi_units(units, property_id)
     units.each do |u|
 
       vacateDate = ""

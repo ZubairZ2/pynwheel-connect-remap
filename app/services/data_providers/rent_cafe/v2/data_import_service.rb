@@ -89,7 +89,7 @@ module DataProviders
               unit.availability_url = r["applyOnlineURL"] if r["applyOnlineURL"].present?
               unit.lease_pricing = calculate_lease_pricing(property_code, r["apartmentName"], available_date_convertor(r["availableDate"]))
               unit.description = unit_description(r["amenities"]) if r["amenities"].present?
-              unit.property_id = r["propertyId"]
+              unit.property_id = property_code
               unit.unit_type = r["apartmentName"]
               unit.market_rent = r["minimumRent"]
               unit.square_feet = r["sqft"] if r["sqft"].present?

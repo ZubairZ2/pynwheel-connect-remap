@@ -64,7 +64,7 @@ class ResmanService < BaseService
 
   private
 
-  def save_resman_units(units,property_id)
+  def save_resman_units(units, property_id)
     import_units = []
     unit_record = []
     unit_present =  Unit.where("community_id = ? AND provider IN (?)",  @credentials.community_id,  ["resman"]).map{|x| x.provider_unit_id.gsub('*','-')}

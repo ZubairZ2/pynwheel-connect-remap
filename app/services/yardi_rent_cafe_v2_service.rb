@@ -126,7 +126,7 @@ class YardiRentCafeV2Service < BaseService
                   unit = Unit.where(provider: "yardirentcafe", community_id: @credentials.community_id, provider_unit_id: r["apartmentId"]).first_or_initialize
                   
                   unless unit.manual_override
-                    unit.property_id = r["propertyId"]
+                    unit.property_id = property_code
                     unit.unit_type = r["apartmentName"]
                     unless unit.name_is_updated.present? && unit.name_is_updated
                       unit.marketing_name = r["apartmentName"]

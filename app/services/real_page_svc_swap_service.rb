@@ -147,7 +147,7 @@ class RealPageSvcSwapService < BaseService
                 unit = unit.first
                 unit.provider = "realpagesvc_new"
                 unit.provider_unit_id = "#{u[:UnitID]}-#{site_id}"
-                unit.property_id = u[:SiteID]
+                unit.property_id = site_id
                 unit.unit_type = u[:UnitNumber]
                 
                 if u[:MadeReadyBit] == "true"
@@ -220,7 +220,7 @@ class RealPageSvcSwapService < BaseService
                 unit = Unit.new
                 unit.community_id = community_id
                 unit.provider = "realpagesvc_new"
-                unit.property_id = u[:SiteID]
+                unit.property_id = site_id
                 unit.provider_unit_id = "#{u[:UnitID]}-#{site_id}"
                 unit.unit_type = u[:UnitNumber]
                 unit_status_update(unit, u)
@@ -740,7 +740,7 @@ class RealPageSvcSwapService < BaseService
               unit.community_id = community_id
               unit.provider = "realpagesvc_new"
               unit.provider_unit_id = "#{u[:Address][:UnitID]}-#{site_id}"
-              unit.property_id = u[:SiteID]
+              unit.property_id = site_id
               unit.unit_type = u[:Address][:UnitNumber]
               unit_status_update(unit, u)
               

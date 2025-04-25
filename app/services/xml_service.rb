@@ -61,7 +61,7 @@ class XmlService < BaseService
     end
   end
 
-  def save_xml_units(units,property_id)
+  def save_xml_units(units, property_id)
 
     unit_present =  Unit.where("community_id = ? AND provider IN (?)", @credentials.community_id,  ["xml"]).map{|x| x.provider_unit_id}
     units.each do |u|

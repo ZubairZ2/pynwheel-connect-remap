@@ -101,7 +101,7 @@ class Yardi4StaticService < BaseService
   end
 
 
-  def save_yardi4_units(ils_units,property_id)
+  def save_yardi4_units(ils_units, property_id)
     ils_units.lazy.each do |api_unit|
       u = api_unit[1]
 
