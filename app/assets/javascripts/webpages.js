@@ -143,19 +143,6 @@ $(document).ready(function () {
     unitMarkerHover();
     populate_current_units();
 
-    if (!svgMode) {
-      if (hasFloorplate()) {
-        $(".floorplate-image").each(function () {
-          if (isElementVisibleOnScreen(this)) {
-            setSvgOrImageHeight($(this));
-          }
-        });
-      } else {
-        setImageHeight();
-        setSvgOrImageHeight($('img.floorplate-image.sitemap-image.map-image-align'));
-      }
-    }
-
     activateWebpageZoom();
     activateModalImageZoom();
     activateResponsiveImageModalZoom();
@@ -376,7 +363,7 @@ function adjustSitmapMarkerPositions() {
     "unit-x-plot",
     "unit-y-plot",
     stretchedImage,
-    actualImage,
+    actualImage
   );
   positionAllMarkers(
     ".amenity-marker",
@@ -438,23 +425,11 @@ function positionAllMarkers(
       show = show && current_floor == marker.data("floor");
     }
     if (show) marker.removeClass("hidden");
-    setMarkerPosition(
-      marker,
-      x_plot,
-      y_plot,
-      stretched,
-      actual,
-    );
+    setMarkerPosition(marker, x_plot, y_plot, stretched, actual);
   });
 }
 
-function setMarkerPosition(
-  marker,
-  x_plot,
-  y_plot,
-  stretched,
-  actual,
-) {
+function setMarkerPosition(marker, x_plot, y_plot, stretched, actual) {
   const ratio = getStretchRatio(
     stretched.width,
     stretched.height,
@@ -1054,6 +1029,8 @@ function showMarkers() {
   adjustAmenitiesPosition();
   disabled_enabled_anchors();
   //mobileFooterAlignment();
+
+  setMarkersMargin();
 }
 
 function handleResize() {
@@ -1077,36 +1054,35 @@ function performHardRefresh() {
 }
 
 function setImageHeight() {
-  const $wrapperBody = $(".c-wrapper")
-  const $wrapperHeader = $wrapperBody.find(".app-header");
-  const $containerBody = $(".c-body");
-  const $parentContainer = $(".right-side.parent.tabcontent")
-  const $zoomableContainer = $parentContainer.find(
-    "#zoomable"
-  );
-  const headerHeight = $wrapperHeader.height() || 0;
-  const tabHeaderHeight = smallScreen()
-    ? ($(".c-body").find("#tab").height() || 0) +
-      ($(".c-body").find("header-buttons-groups").height() || 0)
-    : 0;
-  const $containerFooter = $(".c-footer");
-  const footerHeight = ($containerFooter.height() ? $containerFooter.height() + 20 /* padding */ : 0)
-
-  $containerBody.height($wrapperBody.height() - headerHeight);
-  const availableHeight =
-    $containerBody.height() - (tabHeaderHeight + footerHeight);
-  if (svgMode || !hasFloorplate()) {
-    $parentContainer[0]?.style.setProperty(
-      "height",
-      `${availableHeight}px`,
-      "important"
-    );
-    $zoomableContainer[0]?.style.setProperty(
-      "height",
-      `${availableHeight}px`,
-      "important"
-    );
-  }
+  // const $wrapperBody = $(".c-wrapper")
+  // const $wrapperHeader = $wrapperBody.find(".app-header");
+  // const $containerBody = $(".c-body");
+  // const $parentContainer = $(".right-side.parent.tabcontent")
+  // const $zoomableContainer = $parentContainer.find(
+  //   "#zoomable"
+  // );
+  // const headerHeight = $wrapperHeader.height() || 0;
+  // const tabHeaderHeight = smallScreen()
+  //   ? ($(".c-body").find("#tab").height() || 0) +
+  //     ($(".c-body").find("header-buttons-groups").height() || 0)
+  //   : 0;
+  // const $containerFooter = $(".c-footer");
+  // const footerHeight = ($containerFooter.height() ? $containerFooter.height() + 20 /* padding */ : 0)
+  // $containerBody.height($wrapperBody.height() - headerHeight);
+  // const availableHeight =
+  //   $containerBody.height() - (tabHeaderHeight + footerHeight);
+  // if (svgMode || !hasFloorplate()) {
+  //   $parentContainer[0]?.style.setProperty(
+  //     "height",
+  //     `${availableHeight}px`,
+  //     "important"
+  //   );
+  //   $zoomableContainer[0]?.style.setProperty(
+  //     "height",
+  //     `${availableHeight}px`,
+  //     "important"
+  //   );
+  // }
 }
 
 function populate_current_units() {
@@ -1796,7 +1772,7 @@ function change_units_view(evt, type) {
   if (type === "list_view") {
     const plusIcon = document.getElementsByClassName(
       "zoom-controls zooming-content-h"
-    )?.[0]
+    )?.[0];
     if (plusIcon) {
       plusIcon.style.visibility = "hidden";
     }
@@ -1812,7 +1788,7 @@ function change_units_view(evt, type) {
   } else {
     const plusIcon = document.getElementsByClassName(
       "zoom-controls zooming-content-h"
-    )?.[0]
+    )?.[0];
     if (plusIcon) {
       plusIcon.style.visibility = "visible";
     }
@@ -2615,17 +2591,17 @@ function adjustMarkerPosition($marker) {
   /*adjusting markers according to screen size*/
   if (svgMode) return;
 
-  $sitemapImage = $('img.floorplate-image.sitemap-image.map-image-align');
-  if (!hasFloorplate()) {
-    setImageHeight();
-    setSvgOrImageHeight($sitemapImage);
-  }
+  $sitemapImage = $("img.floorplate-image.sitemap-image.map-image-align");
+  // if (!hasFloorplate()) {
+  //   setImageHeight();
+  //   setSvgOrImageHeight($sitemapImage);
+  // }
 
   let $image = null;
   unit_id = $marker.data("unit-id");
 
   if (hasFloorplate()) {
-    $image = $("#f_" + current_floor)
+    $image = $("#f_" + current_floor);
   } else {
     $image = $sitemapImage;
   }
@@ -2636,38 +2612,33 @@ function adjustMarkerPosition($marker) {
   var x_plot = parseFloat($marker.data("unit-x-plot"));
   var y_plot = parseFloat($marker.data("unit-y-plot"));
 
-  const ratio = getStretchRatio(stretched_image_width, stretched_image_height, actual_image_width, actual_image_height);
+  const ratio = getStretchRatio(
+    stretched_image_width,
+    stretched_image_height,
+    actual_image_width,
+    actual_image_height
+  );
   console.log("ratio", ratio);
   $marker.css({
     left: x_plot * ratio,
-    top: (y_plot * ratio) + (smallScreen() ? 4 : 0),
+    top: y_plot * ratio + (smallScreen() ? 4 : 0),
   });
-  const $markerIcon = $marker.find(`#s_${unit_id}`)
+  const $markerIcon = $marker.find(`#s_${unit_id}`);
 
-  const screenSize = window.innerWidth;
-  const rotatedScreen = window.innerHeight < window.innerWidth;
-  let fontSizeAdjustment = 1;
-  if (screenSize >= 1440) {
-    console.log("1440");
-    fontSizeAdjustment = 1;
-  } else if (mobileCheck()) {
-    console.log("mobileCheck");
-    fontSizeAdjustment = rotatedScreen ? 0.5 : 0.55;
-  } else if (tabletCheck()) {
-    console.log("tabletCheck");
-    fontSizeAdjustment = rotatedScreen ? 0.7 : 1.2;
-  } else if (screenSize >= 993) {
-    console.log("993");
-    fontSizeAdjustment = rotatedScreen ? 0.7 : 1.2;
-  } else if (screenSize >= 568) {
-    console.log("568");
-    fontSizeAdjustment = rotatedScreen ? 0.5 : 1.25;
-  }
+  const imageRatio = getStretchRatio(
+    stretched_image_width,
+    stretched_image_height,
+    1412,
+    932
+  );
 
-  console.log("fontSizeAdjustment", fontSizeAdjustment);
+  let newFontSize = markerFontSize * imageRatio;
+  newFontSize = newFontSize <= 30 ? newFontSize : 30;
+
+  console.log("newFontSize", newFontSize);
   if ($markerIcon.length > 0) {
     $markerIcon.css({
-      fontSize: markerFontSize * fontSizeAdjustment,
+      fontSize: newFontSize,
     });
   }
 }
@@ -2676,21 +2647,19 @@ function adjustAmenitiesPosition() {
   /*adjusting markers according to screen size*/
   if (svgMode) return;
 
-  $('.amenity-marker').each(function () {
+  $(".amenity-marker").each(function () {
     const $amenityMarker = $(this);
-    amenity_id = $amenityMarker.data("amenity-id");
 
-    $sitemapImage = $('img.floorplate-image.sitemap-image.map-image-align');
-    if (!hasFloorplate()) {
-      setImageHeight();
-      setSvgOrImageHeight($sitemapImage);
-    }
+    $sitemapImage = $("img.floorplate-image.sitemap-image.map-image-align");
+    // if (!hasFloorplate()) {
+    //   setImageHeight();
+    //   setSvgOrImageHeight($sitemapImage);
+    // }
 
     let $image = null;
-    unit_id = $amenityMarker.data("unit-id");
 
     if (hasFloorplate()) {
-      $image = $("#f_" + current_floor)
+      $image = $("#f_" + current_floor);
     } else {
       $image = $sitemapImage;
     }
@@ -2699,9 +2668,6 @@ function adjustAmenitiesPosition() {
     actual_image_width = parseInt($image.data("width"));
     stretched_image_width = $image.width();
     stretched_image_height = $image.height();
-
-    amenity_width = $("#a_" + amenity_id).width();
-    amenity_height = $("#a_" + amenity_id).height();
 
     // adjusting amenity markers
     var x_plot = parseFloat($amenityMarker.data("amenity-x-plot"));
@@ -2713,7 +2679,7 @@ function adjustAmenitiesPosition() {
       actual_image_width,
       actual_image_height
     );
-  
+
     const left = x_plot * ratio;
     const top = y_plot * ratio;
 
@@ -2721,12 +2687,23 @@ function adjustAmenitiesPosition() {
       left,
       top,
     });
-    // const $markerIcon = $amenityMarker.find(`i.fa-camera-retro`)
-    // if ($markerIcon.length > 0) {
-    //   $markerIcon.css({
-    //     fontSize: parseFloat(getComputedStyle($markerIcon[0]).fontSize) * ratio / 0.23,
-    //   });
-    // }
+
+    const imageRatio = getStretchRatio(
+      stretched_image_width,
+      stretched_image_height,
+      1412,
+      932
+    );
+
+    let newSpanSize = markerFontSize * 0.6667 * imageRatio;
+    newSpanSize = (newSpanSize <= 20 ? newSpanSize : 20) / 2;
+
+    console.log("newSpanSize", newSpanSize);
+    if ($amenityMarker.length > 0) {
+      $amenityMarker.css({
+        fontSize: newSpanSize,
+      });
+    }
   });
 }
 
@@ -2813,7 +2790,6 @@ function display2DMap() {
   $(".image-map").show();
   $(".zoom-in-webpage").show();
   $(".zoom-out-webpage").show();
-  $("#image-container").css("width", "");
   $(".c-sidebar").show();
   $(".desktop-content").show();
   $(".satelite-view-icon").addClass("hidden");
@@ -2823,33 +2799,24 @@ function display2DMap() {
   if (defaultMapType == "3d-map") {
     showMarkers();
   }
-  let sidebarDiv = document.getElementsByClassName("c-sidebar")[0];
-  let leftSideWidth = document.getElementsByClassName("left-side")[0];
-  let rightSideWidth = document.getElementsByClassName("right-side")[0];
-  let title = document.getElementsByClassName(
-    "webpage-left-list-view-title"
-  )[0];
-  title.style.width = `${leftSideWidth.offsetWidth - 12}px`;
-  // let inner_footer = $(".inner-footer")[0];
-  // let footerWidth = document.getElementById("footer");
+
   var windowWidth = $(window).width();
-  // footerWidth.style.width = `${windowWidth - leftSideWidth.offsetWidth}px`;
   if (selectMap !== "3d-map") {
     // if (sidebarDiv) {
-    //   leftSideWidth.style.width = `${
+    //   leftSide.style.width = `${
     //     windowWidth - (sidebarDiv.offsetWidth + rightSideWidth.offsetWidth)
     //   }px`;
-    //   title.style.width = `${leftSideWidth.offsetWidth}px`;
+    //   title.style.width = `${leftSide.offsetWidth}px`;
     //   let footerWidth = document.getElementById("footer");
     //   if (windowWidth >= 567 && windowWidth <= 991) {
     //     title.style.width = `Calc(100% - ${sidebarDiv.offsetWidth}px)`;
     //     inner_footer.style.width = `Calc(100% - ${sidebarDiv.offsetWidth}px)`;
     //     footerWidth.style.width = `${windowWidth - sidebarDiv.offsetWidth}px`;
     //   } else if (windowWidth >= 991) {
-    //     title.style.width = `${leftSideWidth.offsetWidth - 12}px`;
+    //     title.style.width = `${leftSide.offsetWidth - 12}px`;
     //     inner_footer.style.width = "100%";
     //     footerWidth.style.width = `${
-    //       windowWidth - (sidebarDiv.offsetWidth + leftSideWidth.offsetWidth)
+    //       windowWidth - (sidebarDiv.offsetWidth + leftSide.offsetWidth)
     //     }px`;
     //   } else {
     //     inner_footer.style.width = "100%";
@@ -3567,4 +3534,187 @@ function setSVGUnitsAmenitiesCoordinates() {
   $(".cloned").parent("g").css({ cursor: "default" });
   setSvgUnitsCoordinates();
   setSvgAmenitiesCoordinates();
+}
+
+function setWebpageContainerSize() {
+  const $wrapperBody = $(".c-wrapper");
+  if ($wrapperBody.length === 0) return;
+  $wrapperBody.css({
+    width: "100%",
+  });
+
+  const totalWidth = parseFloat(
+    getComputedStyle($wrapperBody[0].parentElement).width
+  );
+
+  const $mainBody = $wrapperBody.find(".c-body");
+  const $webpageMainContainer = $("div.map-body.map-container-center-align");
+  const $mapContainer = $webpageMainContainer.find(".right-side");
+  const $unitsListContainer = $webpageMainContainer.find(".left-side");
+  const mapContainer = $mapContainer[0];
+  const result = { width: 0, height: 0 };
+
+  if (mapContainer) {
+    result.width = mapContainer.getBoundingClientRect().width;
+
+    const $containerHeader = $(".app-header");
+    const headerHeight = $containerHeader.height() || 0;
+
+    const $containerFooter = $(".c-footer");
+    const footerHeight = $containerFooter.height()
+      ? $containerFooter.height() + 20 /* padding */
+      : 0;
+
+    const tabHeaderHeight = smallScreen()
+      ? $mainBody.find("#tab").height() || 0
+      : 0;
+
+    const $buttonsGroup = $wrapperBody.find(".header-buttons-groups");
+    const tabButtonsGroupHeight =
+      smallScreen() && !extraSmallScreen() && $buttonsGroup[0]
+        ? $buttonsGroup.height() + 17 /* padding */
+        : 0;
+
+    const $sidebar = $wrapperBody.find(".c-sidebar");
+
+    const sidebar = hasFloorplate() && $sidebar[0];
+    const sidebarHeight =
+      sidebar && extraSmallScreen() ? $sidebar.height() || 0 : 0;
+    const sidebarWidth =
+      sidebar && !extraSmallScreen()
+        ? ($sidebar.width() || 0) + 4 /* padding */
+        : 0;
+
+    $containerHeader.css({
+      width: totalWidth - sidebarWidth,
+      left: sidebarWidth,
+    });
+
+    const mainBodyHeight = $wrapperBody.height() - headerHeight;
+    const mainBodyWidth = totalWidth - sidebarWidth;
+
+    $mainBody.height(mainBodyHeight);
+    $mainBody.width(mainBodyWidth);
+
+    const smallScreenElementsHeight =
+      tabHeaderHeight + sidebarHeight + tabButtonsGroupHeight;
+    const mainContainerHeight = mainBodyHeight - smallScreenElementsHeight;
+
+    $webpageMainContainer.css({
+      width: mainBodyWidth,
+      height: mainContainerHeight,
+      top: sidebarHeight,
+    });
+
+    result.height = mainContainerHeight - footerHeight;
+
+    $mainBody.css({
+      bottom: 0,
+      right: 0,
+      left: sidebarWidth,
+    });
+    $webpageMainContainer.children().css({
+      height: result.height,
+    });
+
+    $containerFooter.css({
+      width: result.width,
+    });
+
+    if (smallScreen()) {
+      $buttonsGroup.css({
+        width: mainBodyWidth,
+        left: sidebarWidth,
+      });
+      mapContainer.style.alignSelf = "flex-start";
+    } else {
+      mapContainer.style.alignSelf = "center";
+    }
+
+    const unitListContainerWidth = $unitsListContainer
+      .find(".left-side-title")
+      .width();
+    const $unitListHeader = $unitsListContainer.find(
+      ".webpage-left-list-view-title.webpage-header"
+    );
+
+    $unitListHeader.css({
+      width: unitListContainerWidth,
+    });
+    $unitListHeader.find("select").css({
+      maxWidth: `${unitListContainerWidth - 30 /* padding */}px`,
+    });
+    $unitsListContainer.css({
+      height: mainContainerHeight,
+    });
+
+    if ((smallScreen() && svgMode) || !hasFloorplate()) {
+      const $zoomableImage = $mapContainer.find("#zoomable");
+      $zoomableImage.width(result.width);
+      $zoomableImage.height(result.height);
+    }
+  }
+}
+
+function setMarkersMargin() {
+  const $marker = $(".unit_marker");
+  const $markerSpans = $marker.children();
+  const visibleMarker = Array.from($marker).find((m) =>
+    isElementVisibleOnScreen(m)
+  );
+  if (visibleMarker) {
+    $markerSpans.css({
+      fontSize: parseFloat(getComputedStyle(visibleMarker).fontSize) / 4,
+    });
+    const visibleSpan = Array.from($markerSpans).find((s) =>
+      isElementVisibleOnScreen(s)
+    );
+
+    // const { width, height } = { width: 0, height: 0 };
+    const { width, height } = visibleMarker.getBoundingClientRect();
+    left_margin = width;
+    top_margin = height;
+    $marker.css({
+      marginLeft: -left_margin,
+      marginTop: -top_margin,
+    });
+
+    if (visibleSpan) {
+      const { width: spanWidth, height: spanHeight } =
+        visibleSpan.getBoundingClientRect();
+
+      $markerSpans.css({
+        left: width ? -(width + spanWidth) / 2 : spanWidth * 2.5,
+        top: height
+          ? -(height + spanHeight) /
+            (extraSmallScreen() ? 1.5 : smallScreen() ? 1.6 : 1.7)
+          : spanHeight,
+      });
+    }
+  }
+
+  const $amenityMarker = $(".amenity-marker");
+  const $amenityMarkerSpans = $amenityMarker.find("span");
+  const $amenityMarkerIcons = $amenityMarkerSpans.find("i");
+  const visibleAmenityMarker = Array.from($amenityMarker).find((m) =>
+    isElementVisibleOnScreen(m)
+  );
+  if (visibleAmenityMarker) {
+    const spanSize = parseFloat(getComputedStyle(visibleMarker).fontSize);
+    $amenityMarkerSpans.css({
+      height: spanSize,
+      width: spanSize,
+    });
+
+    $amenityMarkerIcons.css({
+      fontSize: spanSize / (smallScreen() ? 3 : 2),
+    });
+
+    const { width, height } = visibleAmenityMarker.getBoundingClientRect();
+
+    $amenityMarker.css({
+      marginLeft: -width,
+      marginTop: -height,
+    });
+  }
 }

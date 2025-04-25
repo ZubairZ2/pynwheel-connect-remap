@@ -130,7 +130,6 @@
     = render partial: "amenities_slider", locals: { amenity: amenity, galleries: amenity.amenity_galleries, show_amenity_name: @community.show_amenity_name }
 
 = render partial: "unit_information_popup"
-= render partial: "unit_num_popup"
 = render partial: "3d_amenity_modal"
 = render partial: "virtual_tour_modal"
 = render partial: "amenity_virtual_tour_modal"
@@ -222,6 +221,22 @@
         }
       }
     });
+    setWebpageContainerSize();
+
+    if (!svgMode) {
+      if (hasFloorplate()) {
+        $(".floorplate-image").each(function () {
+          if (isElementVisibleOnScreen(this)) {
+            setSvgOrImageHeight($(this));
+          }
+        });
+      } else {
+        setImageHeight();
+        setSvgOrImageHeight(
+          $("img.floorplate-image.sitemap-image.map-image-align")
+        );
+      }
+    }
 
     $(window).on( "orientationchange", function( event ) {
       window.location.reload();

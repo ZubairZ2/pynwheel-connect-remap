@@ -1,7 +1,7 @@
 - unless @community_info.locked
   = hidden_field_tag :maps_community_id, @community_info.id
-  %section.is-webpage.maps-analytics-container{ style: "max-height: 100%;" }
-    .c-wrapper{class: "#{@community_info.has_floorplates? ? 'floorplate' : 'no-floorplate'}", style: "max-height: 100%;" }
+  %section.is-webpage.maps-analytics-container{ style: "max-height: 100%; overflow: hidden;" }
+    .c-wrapper{class: "#{@community_info.has_floorplates? ? 'floorplate' : 'no-floorplate'}", style: "max-height: 100%; overflow: hidden;" }
       %header.app-header
         .header-inner
           .app-logo-mobile
@@ -97,7 +97,7 @@
       .w-100.d-flex-justify-content-center.beans-map-container
         .beanswidget#beanswidget.some{:style => "width:100%; height:100%"}
 
-      .c-body{style: "overflow: hidden", position: "fixed"}
+      .c-body{style: "overflow: hidden; position: relative;", position: "fixed"}
         %div#tab
           %div.tablinks.active_unit_view
             = button_tag :onClick => "change_units_view(event, 'map_view')" do
@@ -109,16 +109,15 @@
               %i.fa.fa-list
               %strong List View
 
-
-        %div.map-body.map-container-center-align
+        %div.map-body.map-container-center-align{ style: "position: relative;" }
           .right-side.parent.tabcontent.map_view{ id: "image-container", style: "position: relative;" }
-            .alert.alert-danger.units-alert.fade.in{:style => "display:none;position:absolute;top:0%;width:100%;"}
+            .alert.alert-danger.units-alert.fade.in{:style => "display:none;position:absolute;top:0%;width:100%;z-index:1"}
               - if @community_info.has_floorplates?
                 There are currently no available unit options on this floor.
               - else 
                 There are currently no available unit options on this property.
 
-            .image-map#zoomable.zoomable-map-container{style: "text-align: center"}
+            .image-map#zoomable.zoomable-map-container{style: "text-align: center; position: fixed;"}
               - if @community_info.has_floorplates?
                 - @floors.each do |floor|
                   - floorplate = @floorplates.select{|f| f.floors.include?(floor)}.first

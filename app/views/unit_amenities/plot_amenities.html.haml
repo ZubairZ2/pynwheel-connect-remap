@@ -72,7 +72,7 @@
                   - @sitemap.amenities.each do |amenity|
                     - x_plot, y_plot = coords = [amenity.x_plot, amenity.y_plot].map(&:to_i)
                     - if coords.sum.positive?
-                      = link_to "<i class='custom-icon' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{marker_color};' ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{marker_color}; margin-top: #{camera_margin}px;'  ></i></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => amenity.name, :id => "m_#{amenity.id}", :style => "left:#{x_plot}px; top:#{y_plot}px; position:absolute;", "data-name" => "#{amenity.description}", "data-target" => "#confirm-delete_amenity", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/units/#{@sitemap.id}/amenities/#{amenity.id}"
+                      = link_to "<i class='custom-icon' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{marker_color};' ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{marker_color}; margin-top: #{camera_margin}px;'  ></i></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => amenity.name, :id => "m_#{amenity.id}", :style => "left:#{x_plot - left_margin}px; top:#{y_plot - top_margin}px; position:absolute;", "data-name" => "#{amenity.description}", "data-target" => "#confirm-delete_amenity", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/units/#{@sitemap.id}/amenities/#{amenity.id}"
             .col-lg-3.multi-select-units{ class: "select-units-on-page" }
               %h5.mt-40.mb-20 SELECT AMENITIES TO PLOT
               .imageselect

@@ -140,6 +140,10 @@ function smallScreen() {
   return mobileCheck() || window.innerWidth <= 993;
 }
 
+function extraSmallScreen() {
+  return mobileCheck() || window.innerWidth <= 568;
+}
+
 function tabletCheck() {
   const ua = navigator.userAgent.toLowerCase();
   return /ipad|android(?!.*mobile)/i.test(ua);
@@ -151,7 +155,8 @@ function getStretchRatio(
   originalWidth,
   originalHeight,
 ) {
-  return currentWidth > currentHeight
-    ? currentWidth / (originalWidth || 1)
-    : currentHeight / (originalHeight || 1);
+  const widthRatio = currentWidth / (originalWidth || 1);
+  const heightRatio = currentHeight / (originalHeight || 1);
+
+  return Math.min(widthRatio, heightRatio);
 }

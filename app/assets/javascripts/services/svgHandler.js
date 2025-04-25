@@ -158,34 +158,24 @@ function setSvgOrImageHeight($image) {
         height: parseInt(image.dataset.height || 0),
       };
 
+  const $webpageMainContainer = $("div.map-body.map-container-center-align");
+  const $mapContainer = $webpageMainContainer.find(".right-side");
+  const mapContainer = $mapContainer[0];
   const $imageParent = $image.parent();
   const $imageContainer = $("div#image-container");
-  const imageContainer = $imageContainer[0];
-  const $webpageMainContainer = $(
-    "div.map-body.map-container-center-align > .right-side"
-  );
-  const webpageMainContainer = $webpageMainContainer[0];
   const $svgContainer = $("div#svg-container");
+  const imageContainer = $imageContainer[0];
 
   let comparableContainerDimensions = { width: 0, height: 0 };
 
-  if (webpageMainContainer) {
-    comparableContainerDimensions.width =
-      webpageMainContainer.getBoundingClientRect().width;
+  if (mapContainer) {
+    const { width: mapContainerWidth, height: mapContainerHeight } =
+      mapContainer.getBoundingClientRect();
 
-    const $containerFooter = $(".c-footer");
-    const footerHeight = ($containerFooter.height() ? $containerFooter.height() + 20 /* padding */ : 0)
-
-    const tabHeaderHeight = smallScreen()
-      ? ($(".c-body").find("#tab").height() || 0) +
-        ($(".c-body").find("header-buttons-groups").height() || 0)
-      : 0;
-    comparableContainerDimensions.height =
-      webpageMainContainer.parentElement.getBoundingClientRect().height -
-      (footerHeight + tabHeaderHeight);
-
+      comparableContainerDimensions.width = mapContainerWidth;
+      comparableContainerDimensions.height = mapContainerHeight;
     if ((smallScreen() && isSVG) || !hasFloorplate()) {
-      const $zoomableImage = $webpageMainContainer.find("#zoomable");
+      const $zoomableImage = $mapContainer.find("#zoomable");
       $zoomableImage.width(comparableContainerDimensions.width);
       $zoomableImage.height(comparableContainerDimensions.height);
     }
