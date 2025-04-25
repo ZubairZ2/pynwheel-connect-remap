@@ -109,12 +109,12 @@
               %i.fa.fa-list
               %strong List View
 
-        %div.map-body.map-container-center-align
-          .right-side.parent.tabcontent.map_view{ id: @svg_enabled ? "svg-container" : "image-container", style: "position: relative;" }
-            .alert.alert-danger.units-alert.fade.in{:style => "display:none;position:absolute;top:0%;width:100%;"}
+        %div.map-body.map-container-center-align{ style: "position: relative;" }
+          .right-side.parent.tabcontent.map_view{ id: @svg_enabled ? "svg-container" : "image-container", style: "position: relative; display: flex; justify-content: center; align-items: center;" }
+            .alert.alert-danger.units-alert.fade.in{:style => "display:none;position:absolute;top:0%;width:100%;z-index:1"}
               - if @community_info.has_floorplates?
                 There are currently no available unit options on this floor.
-              -else 
+              - else 
                 There are currently no available unit options on this property.
 
             .image-map#zoomable.zoomable-map-container{style: "text-align: center; display: flex; position: unset #{@svg_enabled ? '!important;' : ''}"}

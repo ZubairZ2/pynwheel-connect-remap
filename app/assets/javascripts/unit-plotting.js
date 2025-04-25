@@ -36,6 +36,11 @@ function savePlot (id, dx, dy, door_id = 0, pointerData = {}) {
 function saveFloorplateUnit (id, dx, dy, pointerData = {}) {
     console.log("ready to ajaxsave FloorplateUnit", addmode, parsedSVGs.length, left_margin, top_margin, id, dx, dy);
 
+    if (!addmode){
+        dx = dx + left_margin;
+        dy = dy + top_margin;
+    }
+
     const payload = svgMode ? {
         "pointer": pointerData
     } : {
@@ -175,6 +180,11 @@ function saveFloorplanPlot(id, dx, dy) {
 function saveAmenityPlotForFloorplate (id, dx, dy, pointerData = {}) {
     console.log("ready to ajaxsave AmenityPlotForFloorplate", addmode, parsedSVGs.length, left_margin, top_margin, id, dx, dy);
 
+    if (!addmode){
+        dx = dx + left_margin;
+        dy = dy + top_margin;
+    }
+
     const payload = svgMode ? {
         "pointer": pointerData
     } : {
@@ -237,6 +247,11 @@ function saveElevatorPlotForFloorplate(id, dx, dy) {
 }
 
 function saveAmenityPlotForUnit (id, dx, dy) {
+    if (!addmode){
+        dx = dx + left_margin;
+        dy = dy + top_margin;
+    }
+
     $.post("/communities/" + community_id + "/units/" + unit_id_for_amenity + "/amenities/" + id + "/plot_amenity",
         {
             "x_plot": dx,
@@ -270,6 +285,12 @@ function saveAmenityPlotForUnit (id, dx, dy) {
 
 function saveSiteMapUnit (id, dx, dy, pointerData = {}) {
     console.log("ready to ajaxsave SiteMapUnit", addmode, parsedSVGs.length, left_margin, top_margin, id, dx, dy);
+
+    if (!addmode){
+        dx = dx + left_margin;
+        dy = dy + top_margin;
+    }
+
     const payload = svgMode ? {
         "pointer": pointerData
     } : {
