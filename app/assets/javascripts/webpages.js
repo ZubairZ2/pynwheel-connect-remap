@@ -978,7 +978,7 @@ function showMarkers() {
     adjustSitmapMarkerPositions();
   }
 
-  setMarkersMargin();
+  setMarkersSizeAndMargin();
   disabled_enabled_anchors();
 }
 
@@ -3400,28 +3400,48 @@ function setWebpageContainerSize() {
     $unitListHeader.find("select").css({
       maxWidth: `${unitListContainerWidth - 30 /* padding */}px`,
     });
+
+    if (extraSmallScreen()) {
+      $(".units-alert").css({
+        top: sidebarHeight - 14 /* margin */,
+      });
+    }
   }
 }
 
-function setMarkersMargin() {
+function setMarkersSizeAndMargin() {
   if (svgMode) return;
+
+  const currentVisibleImage = currentVisibleMapImage();
+  if (!currentVisibleImage) return;
+
+  const scale = currentVisibleMapImageScale();
+  const mainMarkerSize = extraSmallScreen()
+    ? markerFontSize * 0.33
+    : smallScreen()
+    ? markerFontSize * 0.66
+    : markerFontSize;
 
   const $marker = $(".unit_marker");
   const $markerSpans = $marker.children();
   const visibleMarker = Array.from($marker).find((m) =>
     isElementVisibleOnScreen(m)
   );
-  const scale = currentVisibleMapImageScale();
+
+  $marker.css({
+    fontSize: mainMarkerSize,
+  });
 
   if (visibleMarker) {
     $markerSpans.css({
-      fontSize: parseFloat(getComputedStyle(visibleMarker).fontSize) / 4,
+      fontSize: mainMarkerSize / 4,
     });
     const visibleSpan = Array.from($markerSpans).find((s) =>
       isElementVisibleOnScreen(s)
     );
 
     const { width, height } = visibleMarker.getBoundingClientRect();
+
     left_margin = width / 2 / scale;
     top_margin = height / scale;
 
@@ -3437,13 +3457,13 @@ function setMarkersMargin() {
 
       if (number > 9) {
         $markerSpans.css({
-          left: -((spanWidth / 2) / scale),
-          top: -((spanHeight * 2.8) / scale),
+          left: -(spanWidth / 2 / scale),
+          top: -((spanHeight * 3) / scale),
         });
       } else {
         $markerSpans.css({
-          left: -((spanWidth / 1.75) / scale),
-          top: -((spanHeight * 2.8) / scale),
+          left: -(spanWidth / 1.75 / scale),
+          top: -((spanHeight * 3) / scale),
         });
       }
     }
@@ -3456,22 +3476,29 @@ function setMarkersMargin() {
     isElementVisibleOnScreen(m)
   );
   if (visibleAmenityMarker) {
-    const spanSize = parseFloat(
-      getComputedStyle(visibleAmenityMarker).fontSize
-    );
+    const spanSize =
+      (extraSmallScreen() ? 0.25 : smallScreen() ? 0.5 : 0.75) * markerFontSize;
     $amenityMarkerSpans.css({
-      height: spanSize,
-      width: spanSize,
+      maxWidth: spanSize,
+      maxHeight: spanSize,
+      border: `${
+        extraSmallScreen() ? 1 : smallScreen() ? 1.5 : 2
+      }px solid ${amenity_marker_color}`,
     });
+
+    const cameraIconSpanSize = spanSize * 0.5;
 
     $amenityMarkerIcons.css({
-      fontSize: spanSize / (smallScreen() ? 3 : 2),
+      fontSize: cameraIconSpanSize,
     });
 
-    const { width, height } = visibleAmenityMarker.getBoundingClientRect();
-
-    amenity_left_margin = width / 2 / scale;
-    amenity_top_margin = height / 2 / scale;
+    const visibleSpan = Array.from($amenityMarkerSpans).find((s) =>
+      isElementVisibleOnScreen(s)
+    );
+    const { width: spanWidth, height: spanHeight } =
+      visibleSpan.getBoundingClientRect();
+    amenity_left_margin = spanWidth / 2 / scale;
+    amenity_top_margin = spanHeight / 2 / scale;
     $amenityMarker.css({
       marginLeft: -amenity_left_margin,
       marginTop: -amenity_top_margin,
