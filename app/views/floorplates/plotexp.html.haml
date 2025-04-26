@@ -106,7 +106,7 @@
 
     const $imageZoomPan = $('#map.plot-image');
     if ($imageZoomPan[0]) {
-      activateZoomPan($imageZoomPan[0], {}, true);
+      activateZoomPan($imageZoomPan[0]);
       const image = $imageZoomPan.find('img#viewArea')[0]
       if (image) {
         const asset = { id: "plot-image-1", node: image, url: image.src, type: "img", completed: false };
