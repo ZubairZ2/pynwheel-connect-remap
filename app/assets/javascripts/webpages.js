@@ -258,6 +258,10 @@ function bindWebpageEvents() {
     availabilityFilterChanged();
   });
 
+  $("#multi_communities, #responsive_multi_communities").change(function () {
+    multiPropertiesFilterChanged();
+  });
+
   $("#lease_term").change(function () {
     var select = document.getElementById("lease_term");
     var option = select.options[select.selectedIndex];
@@ -606,6 +610,11 @@ function Toggle_maps(e) {
   beansWidget.toggleMap();
 }
 
+function multiPropertiesFilterChanged() {
+  filterUnitsBasedOnMultiCommunity();
+}
+
+
 function bedroomFilterChanged() {
   filterUnitsBasedOnBedroom();
   updateDropdownListValues();
@@ -717,6 +726,24 @@ function filterUnitsBasedOnBedroom() {
 
   if (unitBedroom || unitBedroom === 0)
     units = units.filter((unit) => unit.bedrooms == unitBedroom);
+}
+
+function filterMultiCommunityBasedOnScreen(filterTag) {
+  const webFilterId = "#".concat(filterTag); //works on web view
+  const mobileFilterId = "#responsive_".concat(filterTag); //works on mobile view
+  if (current_width <= 993) {
+    return $(mobileFilterId).val();
+  } else return $(webFilterId).val();
+}
+
+function filterUnitsBasedOnMultiCommunity() {
+  const propertyId = filterMultiCommunityBasedOnScreen("multi_communities");
+
+  if(propertyId)
+    units = total_units.filter((unit) => unit.property_id == propertyId)
+  else 
+    units = total_units
+
 }
 
 function updateAvailabilitFilterDropdownList() {
