@@ -1,7 +1,7 @@
 - unless @community_info.locked
   = hidden_field_tag :maps_community_id, @community_info.id
-  %section.is-webpage.maps-analytics-container{ style: "max-height: 100%;" }
-    .c-wrapper{class: "#{@community_info.has_floorplates? ? 'floorplate' : 'no-floorplate'}", style: "max-height: 100%;" }
+  %section.is-webpage.maps-analytics-container{ style: "max-height: 100%; overflow: hidden;" }
+    .c-wrapper{class: "#{@community_info.has_floorplates? ? 'floorplate' : 'no-floorplate'}", style: "max-height: 100%; overflow: hidden;" }
       %header.app-header
         .header-inner
           .app-logo-mobile
@@ -97,7 +97,7 @@
       .w-100.d-flex-justify-content-center.beans-map-container
         .beanswidget#beanswidget.some{:style => "width:100%; height:100%"}
 
-      .c-body{style: "overflow: hidden", position: "fixed"}
+      .c-body{style: "overflow: hidden; position: relative;"}
         %div#tab
           %div.tablinks.active_unit_view
             = button_tag :onClick => "change_units_view(event, 'map_view')" do
@@ -110,7 +110,7 @@
               %strong List View
 
         %div.map-body.map-container-center-align{ style: "position: relative;" }
-          .right-side.parent.tabcontent.map_view{ id: @svg_enabled ? "svg-container" : "image-container", style: "position: relative; display: flex; justify-content: center; align-items: center;" }
+          .right-side.parent.tabcontent.map_view{ id: "svg-container", style: "position: relative; display: flex; justify-content: center; align-items: center;" }
             .alert.alert-danger.units-alert.fade.in{:style => "display:none;position:absolute;top:0%;width:100%;z-index:1"}
               - if @community_info.has_floorplates?
                 There are currently no available unit options on this floor.
@@ -123,33 +123,25 @@
               - if @community_info.has_floorplates?
                 - @floors.each do |floor|
                   - floorplate = @floorplates.select{ |f| f.floors.include?(floor) }.first
-                  - if @svg_enabled
-                    - svg_data = svg_image_url_and_dimensions(floorplate)
-                    - svg_exists = svg_data && svg_data.values_at(:width, :height).sum.positive?
-                    - if svg_exists
-                      %div{ data: svg_data, style: "position: relative;", class: "map-image-align floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}", id: "f_#{floor}" }
-                    - else
-                      %div{ style: 'height: -webkit-fill-available' }
-                        = image_tag "/assets/default.jpeg", class: "map-image-align sitemap-image floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}", id: "f_#{floor}"
-                  - else
-                    - width, height = image_original_dimensions(floorplate).values
-                    = image_tag (floorplate.validated_image_url || "/assets/default.jpeg"), class: "map-image-align sitemap-image floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}", id: "f_#{floor}", data: { height: height, width: width }
-              - else
-                - if @svg_enabled
-                  - svg_data = svg_image_url_and_dimensions(@community_info&.sitemap)
+                  - svg_data = svg_image_url_and_dimensions(floorplate)
                   - svg_exists = svg_data && svg_data.values_at(:width, :height).sum.positive?
                   - if svg_exists
-                    %div#property-map-image-container.floorplate-image.sitemap-image.map-image-align{ data: svg_data }
+                    %div{ data: svg_data, id: "floorplate_#{floor}", class: floor == min_unit_floor ? '' : 'hidden',  style: "position: relative; flex: 1;" }
                   - else
-                    %div{ style: 'height: -webkit-fill-available' }
-                      = image_tag "/assets/default.jpeg", class: "floorplate-image sitemap-image map-image-align", id: "property-map-image"
+                    %div{ id: "floorplate_#{floor}", style: 'margin: auto; flex: 1;', class: floor == min_unit_floor ? '' : 'hidden' }
+                      = image_tag "/assets/default.jpeg", class: "map-image-align sitemap-image floorplate-image", id: "f_#{floor}"
+              - else
+                - svg_data = svg_image_url_and_dimensions(@community_info&.sitemap)
+                - svg_exists = svg_data && svg_data.values_at(:width, :height).sum.positive?
+                - if svg_exists
+                  %div#property-map{ data: svg_data, style: "position: relative; flex: 1;" }
                 - else
-                  - width, height = image_original_dimensions(@community_info.sitemap).values
-                  %img.floorplate-image.sitemap-image.map-image-align{alt: "", src: (@community.sitemap.validated_image_url || "/assets/default.jpeg"), id: "property-map-image", title: "", data: { height: height, width: width } }
+                  %div{ id: "property-map", style: 'margin: auto; flex: 1;' }
+                    = image_tag "/assets/default.jpeg", class: "floorplate-image sitemap-image map-image-align", id: "property-map-image"
 
               = render partial: 'webpages/units_and_amenity_markers', locals: locals_for_markers
 
-            %footer.c-footer#footer.responsive-content.mobile-footer
+            %footer.c-footer#footer.responsive-content.mobile-footer{ style: "display: flex; justify-content: space-around;" }
               %ul.location-items.location-responsive.responsive-content.responsive-legends.align-home-buttons
                 - if @community.enable_home_legend
                   %li

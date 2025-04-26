@@ -198,17 +198,10 @@
     amenityEle = document.getElementsByClassName('camera-icon-responsive');
     $slider = $("#slider");
 
-    if (!svgMode) {
-      setImageHeight();
-      if (!hasFloorplate()) 
-        setSvgOrImageHeight($('img.floorplate-image.sitemap-image.map-image-align'));
-    }
-
-    if (mobileCheck()) {
+    if (extraSmallScreen()) {
       $(".right-side.parent.tabcontent.map_view").addClass("mobile_map_view")
     } else {
-      if (current_width >= 568)
-        $(".c-sidebar").css({ "min-height": "100%" })
+      $(".c-sidebar").css({ "min-height": "100%" })
     }
 
     $("embed").ready(function(){
@@ -221,22 +214,6 @@
         }
       }
     });
-    setWebpageContainerSize();
-
-    if (!svgMode) {
-      if (hasFloorplate()) {
-        $(".floorplate-image").each(function () {
-          if (isElementVisibleOnScreen(this)) {
-            setSvgOrImageHeight($(this));
-          }
-        });
-      } else {
-        setImageHeight();
-        setSvgOrImageHeight(
-          $("img.floorplate-image.sitemap-image.map-image-align")
-        );
-      }
-    }
 
     $(window).on( "orientationchange", function( event ) {
       window.location.reload();
@@ -361,7 +338,6 @@
       var anchorTag = $(this).find('a.floorplate-anchor');
       _3dFilterByFloor(anchorTag);
       anchorTag.click();
-      calculateMarkerAttributes();
     });
 
     $('#filter').on('change', () => {
@@ -390,90 +366,24 @@
       $(".mobile-trigger").addClass("pt");
     }
 
+    setWebpageContainerSize();
+    if (!svgMode) {
+      if (hasFloorplate()) {
+        $(".floorplate-image").each(function () {
+          setSvgOrImageHeight($(this));
+          activateZoomPan(this.parentElement, false);
+        });
+      } else {
+        const $image = $("img.floorplate-image.sitemap-image.map-image-align")
+        if ($image.length) {
+          setSvgOrImageHeight($image);
+          activateZoomPan($image[0].parentElement, false);
+        }
+      }
+
+      setMarkersMargin();
+    }
+
     parsedSVGs = [];
     fetchWebpageSVGAndSetCoordinates();
   });
-
-  function calculateMarkerAttributes() {
-    if (svgMode) {
-      if (current_width < 993) {
-          const calculatedFontSize = (current_width * .76) / 30 + ((#{fontsize} - 25) / 5);
-          const childFontSize = calculatedFontSize / 2
-        
-          for (var i = 0; i < ele.length; i++ ) {
-            ele[i].style.fontSize = calculatedFontSize
-            factor = 0
-
-            if ($(window).height() > 800) {
-              factor = (($(window).height() ) / 800)
-            }
-
-            ele[i].children[0].style.fontSize = childFontSize
-            ele[i].children[0].style.top = childFontSize
-          }
-      
-
-        for (var i = 0; i < amenityEle.length; i++ ) {
-          amenityEle[i].style.height = (#{marker_font_size} / (1100 / current_width)  )
-          amenityEle[i].style.width = (#{marker_font_size} / (1100 / current_width)  )
-          amenityEle[i].children[0].style.marginTop = 1 * ( current_width / 250)
-          amenityEle[i].children[0].style.fontSize = (#{marker_font_size} / (2800 / current_width)  )
-        }
-      } else {
-        for (var i = 0; i < ele.length; i++ ) {
-          ele[i].style.fontSize = 20
-          ele[i].children[0].style.left = 6
-          ele[i].children[0].style.top = 4
-          ele[i].children[0].style.fontSize = 6
-        }
-
-        for (var i = 0; i < amenityEle.length; i++ ) {
-          amenityEle[i].style.height = 20
-          amenityEle[i].style.width = 20
-          amenityEle[i].children[0].style.marginTop = 3
-          amenityEle[i].children[0].style.fontSize = 10
-        }
-      }
-    //} else {
-    //  if (current_width < 993) {
-    //    for (var i = 0; i < ele.length; i++ ) {
-    //      ele[i].style.fontSize = (current_width * .76) / 30 + ((#{fontsize} - 25) / 5)
-    //      ele[i].style.marginTop = diff - 3
-    //      ele[i].style.marginLeft = diffL + 1
-    //      ele[i].children[0].style.marginTop = -3
-    //      ele[i].children[0].style.marginLeft = 1
-    //      ele[i].children[0].style.left = (current_width * .20) / 30 + ((#{fontsize} - 25) / 9)
-    //      factor = 0
-
-    //      if ($(window).height() > 800) {
-    //        factor = (($(window).height() ) / 800)
-    //      }
-
-    //      ele[i].children[0].style.top = ( (current_width * .15) / 30 + factor + ((#{fontsize} - 25) / 5) -1)
-    //      ele[i].children[0].style.fontSize = (current_width * .20) / 30 + ((#{fontsize} - 25) / 10)
-    //    }
-
-    //    for (var i = 0; i < amenityEle.length; i++ ) {
-    //      amenityEle[i].style.height = (#{marker_font_size} / (1100 / current_width)  )
-    //      amenityEle[i].style.width = (#{marker_font_size} / (1100 / current_width)  )
-    //      amenityEle[i].children[0].style.marginTop = 1 * ( current_width / 250)
-    //      amenityEle[i].children[0].style.fontSize = (#{marker_font_size} / (2800 / current_width)  )
-    //    }
-    //  } else {
-    //  //else if(current_width > 993 && current_width < 1500) {
-    //    for (var i = 0; i < ele.length; i++ ) {
-    //      ele[i].style.fontSize = 20
-    //      ele[i].children[0].style.left = 6
-    //      ele[i].children[0].style.top = 4
-    //      ele[i].children[0].style.fontSize = 6
-    //    }
-
-    //    for (var i = 0; i < amenityEle.length; i++ ) {
-    //      amenityEle[i].style.height = 20
-    //      amenityEle[i].style.width = 20
-    //      amenityEle[i].children[0].style.marginTop = 3
-    //      amenityEle[i].children[0].style.fontSize = 10
-    //    }
-    //  }
-    }
-  }

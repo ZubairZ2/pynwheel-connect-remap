@@ -14,7 +14,7 @@ function setSVG(container, svgElement, options) {
     const attributes = {
       id: hasFloorplate() ? `viewArea-${floor}` : "viewArea",
       draggable: false,
-      class: "viewArea",
+      class: "viewArea floorplate-image sitemap-image map-image-align",
       "data-map_id": "map",
       name: "viewArea",
       position: "relative",
@@ -163,7 +163,6 @@ function setSvgOrImageHeight($image) {
   const mapContainer = $mapContainer[0];
   const $imageParent = $image.parent();
   const $imageContainer = $("div#image-container");
-  const $svgContainer = $("div#svg-container");
   const imageContainer = $imageContainer[0];
 
   let comparableContainerDimensions = { width: 0, height: 0 };
@@ -174,11 +173,6 @@ function setSvgOrImageHeight($image) {
 
       comparableContainerDimensions.width = mapContainerWidth;
       comparableContainerDimensions.height = mapContainerHeight;
-    if ((smallScreen() && isSVG) || !hasFloorplate()) {
-      const $zoomableImage = $mapContainer.find("#zoomable");
-      $zoomableImage.width(comparableContainerDimensions.width);
-      $zoomableImage.height(comparableContainerDimensions.height);
-    }
   } else if (imageContainer) {
     const { width: parallelContainerWidth, height: parallelContainerHeight } =
       imageContainer.getBoundingClientRect();
@@ -190,14 +184,6 @@ function setSvgOrImageHeight($image) {
   }
 
   const { width, height } = comparableContainerDimensions;
-
-  if (isSVG && $svgContainer[0]) {
-    $svgContainer.width(width);
-    $svgContainer.height(height);
-  } else {
-    $imageContainer.width(width);
-    $imageContainer.height(height);
-  }
 
   const ratio = getStretchRatio(
     width,

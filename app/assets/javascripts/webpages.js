@@ -37,7 +37,7 @@ var communityInactivated = definedAndHasValue(communityInactivated)
   : false;
 
 $(document).ready(function () {
-  if (mobileCheck()) {
+  if (smallScreen()) {
     $(".c-footer.desktop-content").remove();
   } else {
     $(".c-footer.mobile-footer").remove();
@@ -285,23 +285,16 @@ function bindWebpageEvents() {
     e.stopPropagation();
 
     var floor_for_showing_image = $(this).attr("id");
-    const $currentImageBox = $("#f_" + floor_for_showing_image);
+    const $currentImageBox = $("#floorplate_" + floor_for_showing_image);
 
-    if (!svgMode && hasFloorplate()) {
-      $(".floorplate-image").each(function () {
-        if (isElementVisibleOnScreen(this)) {
-          setSvgOrImageHeight($(this));
-        }
-      });
-    }
+    $(".floorplate-image").parent().addClass("hidden");
+    $currentImageBox.removeClass("hidden");
 
     if (floor_for_showing_image != current_floor) {
       $(".alert").hide();
-
-      $(".floorplate-image").addClass("hidden");
-      $currentImageBox.removeClass("hidden");
       $("#" + floor_for_showing_image).addClass("selected");
-
+      
+      $currentImageBox.parent().removeClass("hidden");
       $(".digits-list-item").removeClass("selected");
       $(this).parent().addClass("selected");
 
@@ -321,7 +314,8 @@ function bindWebpageEvents() {
     } else {
       showMarkers();
     }
-    if (svgMode) moveZoomableImageToCenter($currentImageBox[0], false);
+
+    if (!svgMode) adjustSitmapMarkerPositions();
   });
 
   $(".filter-label").click(function () {
@@ -397,11 +391,7 @@ function getStretchedImageDimensions() {
   Array.from($images).forEach((image) => {
     if (isElementVisibleOnScreen(image)) {
       const rect = image.getBoundingClientRect();
-      const imageWidth =
-        parseFloat(image.dataset.width) /
-        (parseFloat(image.dataset.height) / rect.height);
-      image.setAttribute("width", imageWidth);
-      result = { width: imageWidth, height: rect.height };
+      result = { width: rect.width, height: rect.height };
     }
   });
 
@@ -444,11 +434,6 @@ function setMarkerPosition(marker, x_plot, y_plot, stretched, actual) {
 }
 
 function activateWebpageZoom() {
-  const zoomableElement = document.getElementById("zoomable");
-  if (!svgMode) {
-    activateZoomPan(zoomableElement);
-  }
-
   $(".reset-webpage").on("click", function (e) {
     $(".webPageLoader").removeClass("hidden");
     window.location.reload(true);
@@ -456,40 +441,30 @@ function activateWebpageZoom() {
 
   $(".zoom-in-webpage").on("click", function (e) {
     let zoomElement = null;
-    if (svgMode) {
-      const $images = $(".floorplate-image");
-      const images = Array.from($images);
+    const $images = $(".floorplate-image");
+    const images = Array.from($images);
 
-      for (const image of images) {
-        if (isElementVisibleOnScreen(image)) {
-          const key = getZoomPanKey(image);
-          zoomElement = window.mapPanZoom[key];
-          break;
-        }
+    for (const image of images) {
+      if (isElementVisibleOnScreen(image)) {
+        const key = getZoomPanKey(image.parentElement);
+        zoomElement = window.mapPanZoom[key];
+        break;
       }
-    } else {
-      const key = getZoomPanKey(zoomableElement);
-      zoomElement = window.mapPanZoom[key];
     }
     zoomElement?.zoomInOut(187);
   });
 
   $(".zoom-out-webpage").on("click", function (e) {
     let zoomElement = null;
-    if (svgMode) {
-      const $images = $(".floorplate-image");
-      const images = Array.from($images);
+    const $images = $(".floorplate-image");
+    const images = Array.from($images);
 
-      for (const image of images) {
-        if (isElementVisibleOnScreen(image)) {
-          const key = getZoomPanKey(image);
-          zoomElement = window.mapPanZoom[key];
-          break;
-        }
+    for (const image of images) {
+      if (isElementVisibleOnScreen(image)) {
+        const key = getZoomPanKey(image.parentElement);
+        zoomElement = window.mapPanZoom[key];
+        break;
       }
-    } else {
-      const key = getZoomPanKey(zoomableElement);
-      zoomElement = window.mapPanZoom[key];
     }
     zoomElement?.zoomInOut(189);
   });
@@ -1009,8 +984,6 @@ function showMarkers() {
     } else {
       jquerEl.removeClass("hidden");
     }
-
-    adjustMarkerPosition(jquerEl);
   }
 
   for (var key in json_object) {
@@ -1020,17 +993,11 @@ function showMarkers() {
     $("span", jquerEl).html(
       units_from_json.length > 1 ? units_from_json.length : ""
     );
-    if (hasFloorplate()) {
-      adjustMarkerPosition(jquerEl);
-    }
     jquerEl.removeClass("hidden");
   }
 
-  adjustAmenitiesPosition();
   disabled_enabled_anchors();
   //mobileFooterAlignment();
-
-  setMarkersMargin();
 }
 
 function handleResize() {
@@ -1821,10 +1788,26 @@ function change_units_view(evt, type) {
   document.getElementsByClassName(type)[0].style.display = "block";
   evt.target.parentElement.className += " active_unit_view";
 
-  if (svgMode && type === "map_view") {
+  if (type === "list_view") {
+    const $webpageMainContainer = $("div.map-body.map-container-center-align");
+    const $unitsListContainer = $webpageMainContainer.find(".left-side");
+    const unitListContainerWidth = $unitsListContainer
+      .find(".left-side-title")
+      .width();
+    const $unitListHeader = $unitsListContainer.find(
+      ".webpage-left-list-view-title.webpage-header"
+    );
+
+    $unitListHeader.css({
+      width: unitListContainerWidth,
+    });
+    $unitListHeader.find("select").css({
+      maxWidth: `${unitListContainerWidth - 30 /* padding */}px`,
+    });
+  } else {
     const $currentImageBox = $("#f_" + current_floor);
     const imageElem = $currentImageBox[0];
-    moveZoomableImageToCenter(imageElem, false);
+    moveZoomableImageToCenter(imageElem);
   }
 
   populate_current_units();
@@ -2696,7 +2679,7 @@ function adjustAmenitiesPosition() {
     );
 
     let newSpanSize = markerFontSize * 0.6667 * imageRatio;
-    newSpanSize = (newSpanSize <= 20 ? newSpanSize : 20) / 2;
+    newSpanSize = newSpanSize <= 20 ? newSpanSize : 20;
 
     console.log("newSpanSize", newSpanSize);
     if ($amenityMarker.length > 0) {
@@ -3480,7 +3463,7 @@ async function fetchWebpageSVGAndSetCoordinates() {
     const array = [];
     for (const floor of floors) {
       array.push(
-        fetchSVG(`#f_${floor}`, {
+        fetchSVG(`#floorplate_${floor}`, {
           floor,
           loader: true,
           svgPosition: 0,
@@ -3494,7 +3477,7 @@ async function fetchWebpageSVGAndSetCoordinates() {
     }
     await Promise.all(array);
   } else {
-    await fetchSVG("#property-map-image-container", {
+    await fetchSVG("#property-map", {
       loader: true,
       svgPosition: 1,
       activateZoom: true,
@@ -3511,10 +3494,7 @@ async function fetchWebpageSVGAndSetCoordinates() {
     });
 
     if (result.ok) {
-      if (!svgMode) {
-        adjustSitmapMarkerPositions();
-        calculateMarkerAttributes();
-      }
+      if (!svgMode) adjustSitmapMarkerPositions();
 
       handleMapControl();
       showMarkers();
@@ -3555,8 +3535,6 @@ function setWebpageContainerSize() {
   const result = { width: 0, height: 0 };
 
   if (mapContainer) {
-    result.width = mapContainer.getBoundingClientRect().width;
-
     const $containerHeader = $(".app-header");
     const headerHeight = $containerHeader.height() || 0;
 
@@ -3571,7 +3549,7 @@ function setWebpageContainerSize() {
 
     const $buttonsGroup = $wrapperBody.find(".header-buttons-groups");
     const tabButtonsGroupHeight =
-      smallScreen() && !extraSmallScreen() && $buttonsGroup[0]
+      smallScreen() && $buttonsGroup[0]
         ? $buttonsGroup.height() + 17 /* padding */
         : 0;
 
@@ -3592,9 +3570,11 @@ function setWebpageContainerSize() {
 
     const mainBodyHeight = $wrapperBody.height() - headerHeight;
     const mainBodyWidth = totalWidth - sidebarWidth;
-
-    $mainBody.height(mainBodyHeight);
-    $mainBody.width(mainBodyWidth);
+    $mainBody.css({
+      width: mainBodyWidth,
+      height: mainBodyHeight,
+      left: sidebarWidth,
+    });
 
     const smallScreenElementsHeight =
       tabHeaderHeight + sidebarHeight + tabButtonsGroupHeight;
@@ -3607,18 +3587,22 @@ function setWebpageContainerSize() {
     });
 
     result.height = mainContainerHeight - footerHeight;
-
-    $mainBody.css({
-      bottom: 0,
-      right: 0,
-      left: sidebarWidth,
-    });
-    $webpageMainContainer.children().css({
+    $mapContainer.css({
       height: result.height,
     });
+    $unitsListContainer.css({
+      height: mainContainerHeight,
+    });
 
+    result.width = $mapContainer.width();
     $containerFooter.css({
       width: result.width,
+      bottom: smallScreen() ? tabButtonsGroupHeight : 0,
+    });
+
+    $mapContainer.find("#zoomable").css({
+      width: result.width,
+      height: result.height,
     });
 
     if (smallScreen()) {
@@ -3626,11 +3610,7 @@ function setWebpageContainerSize() {
         width: mainBodyWidth,
         left: sidebarWidth,
       });
-      mapContainer.style.alignSelf = "flex-start";
-    } else {
-      mapContainer.style.alignSelf = "center";
     }
-
     const unitListContainerWidth = $unitsListContainer
       .find(".left-side-title")
       .width();
@@ -3644,15 +3624,6 @@ function setWebpageContainerSize() {
     $unitListHeader.find("select").css({
       maxWidth: `${unitListContainerWidth - 30 /* padding */}px`,
     });
-    $unitsListContainer.css({
-      height: mainContainerHeight,
-    });
-
-    if ((smallScreen() && svgMode) || !hasFloorplate()) {
-      const $zoomableImage = $mapContainer.find("#zoomable");
-      $zoomableImage.width(result.width);
-      $zoomableImage.height(result.height);
-    }
   }
 }
 
@@ -3662,6 +3633,9 @@ function setMarkersMargin() {
   const visibleMarker = Array.from($marker).find((m) =>
     isElementVisibleOnScreen(m)
   );
+
+  const leftMarginAdjustment = innerWidth * 0.005;
+
   if (visibleMarker) {
     $markerSpans.css({
       fontSize: parseFloat(getComputedStyle(visibleMarker).fontSize) / 4,
@@ -3674,8 +3648,9 @@ function setMarkersMargin() {
     const { width, height } = visibleMarker.getBoundingClientRect();
     left_margin = width;
     top_margin = height;
+
     $marker.css({
-      marginLeft: -left_margin,
+      marginLeft: -(left_margin - leftMarginAdjustment),
       marginTop: -top_margin,
     });
 
@@ -3684,9 +3659,11 @@ function setMarkersMargin() {
         visibleSpan.getBoundingClientRect();
 
       $markerSpans.css({
-        left: width ? -(width + spanWidth) / 2 : spanWidth * 2.5,
-        top: height
-          ? -(height + spanHeight) /
+        left:
+          (left_margin ? -(left_margin + spanWidth) / 2 : spanWidth * 2.5) +
+          leftMarginAdjustment,
+        top: top_margin
+          ? -(top_margin + spanHeight) /
             (extraSmallScreen() ? 1.5 : smallScreen() ? 1.6 : 1.7)
           : spanHeight,
       });
@@ -3700,7 +3677,9 @@ function setMarkersMargin() {
     isElementVisibleOnScreen(m)
   );
   if (visibleAmenityMarker) {
-    const spanSize = parseFloat(getComputedStyle(visibleMarker).fontSize);
+    const spanSize = parseFloat(
+      getComputedStyle(visibleAmenityMarker).fontSize
+    );
     $amenityMarkerSpans.css({
       height: spanSize,
       width: spanSize,

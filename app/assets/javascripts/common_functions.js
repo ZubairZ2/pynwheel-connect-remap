@@ -137,7 +137,7 @@ function definedAndHasValue(value) {
 }
 
 function smallScreen() {
-  return mobileCheck() || window.innerWidth <= 993;
+  return mobileCheck() || tabletCheck() || window.innerWidth <= 993;
 }
 
 function extraSmallScreen() {
