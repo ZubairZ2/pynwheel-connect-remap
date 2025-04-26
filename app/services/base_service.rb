@@ -51,4 +51,13 @@ class BaseService
   rescue StandardError => e
     raise e
   end
+
+  def add_or_update_sub_communities community, property_name, property_code
+    sub = community.sub_communities.find_or_initialize_by(property_id: property_code)
+    sub.assign_attributes(name: property_name)
+    sub.save!
+    
+  rescue StandardError => e
+    raise e
+  end
 end
