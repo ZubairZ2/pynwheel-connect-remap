@@ -1236,11 +1236,13 @@ function unitListHover() {
     function (e) {
       const { id, pointerData, unitMarketingName } = getUnitData(e.target);
       const markersSelector = svgMode ? "cloned-unit" : "marker";
-      const all_markers = document.getElementsByClassName(markersSelector);
+      const $scope = $(currentVisibleMapImage()?.parentElement);
+      const $allMarkers = $scope.find(`.${markersSelector}`);
+      const markersArray = Array.from($allMarkers);
 
       e.currentTarget.style.border = `3px solid ${map_marker_color}`;
 
-      Array.from(all_markers).forEach((marker) => {
+      markersArray.forEach((marker) => {
         const matchCondition =
           id === `unit_${marker.dataset.unitId}` ||
           `${pointerData.id}_cloned` === marker.id ||
@@ -1252,7 +1254,7 @@ function unitListHover() {
         ) {
           let selectedMarker = marker;
           if (selectedMarker.classList.contains("overlapping-unit")) {
-            Array.from(all_markers).forEach((findOverlappedMarker) => {
+            markersArray.forEach((findOverlappedMarker) => {
               if (
                 selectedMarker.dataset.unitXPlot ===
                   findOverlappedMarker.dataset.unitXPlot &&
@@ -1269,29 +1271,46 @@ function unitListHover() {
           $("#popover-marketing-unit").html(unitMarketingName);
 
           const position = selectedMarker.getBoundingClientRect();
-          let [left, top] = [position.left - 92, position.top - 53];
-          const markerPopover = $("#marker-popover-unit");
+          let [left, top] = [position.left, position.top];
+          const $markerPopover = $("#marker-popover-unit");
+          $markerPopover.removeClass("hidden");
+          $markerPopover.css({
+            visibility: "none",
+          });
+
+          const [popoverWidth, popoverHeight] = [
+            $markerPopover.width(),
+            $markerPopover.height(),
+          ];
+
+          let leftAdjustment = popoverWidth / 2;
+          let topAdjustment = popoverHeight;
+
           if (svgMode) {
-            left = left + 10;
-            top = top + 10;
+            const { screenX, screenY } = findRealTopCenter(selectedMarker);
+            left = screenX;
+            top = screenY;
+          } else {
+            const markerIcon = selectedMarker.firstChild;
+            const rect = markerIcon.getBoundingClientRect();
+            leftAdjustment += 0;
+            topAdjustment += rect.height;
           }
 
-          markerPopover.css({
-            height: "100px",
-            background: "transparent",
-            margin: "0px",
-            padding: "0px",
+          left = left - leftAdjustment;
+          top = top - topAdjustment;
+
+          $markerPopover.css({
+            visibility: "visible",
             left: `${left}px`,
             top: `${top}px`,
           });
-          markerPopover.removeClass("hidden");
         }
       });
     },
     function (e) {
       e.currentTarget.style.border = "none";
       if (focused_marker) {
-        // focused_marker.childNodes[0].style.fontSize = "20px";
         $("#marker-popover-unit").addClass("hidden");
       }
     }
@@ -1300,6 +1319,7 @@ function unitListHover() {
 
 function markerHoverEffect(event) {
   let $this = $(event.currentTarget);
+
   if (svgMode && event.currentTarget.tagName.toLowerCase() === "g") {
     const lastClonedElement = getLastClonedJQueryElement(event.currentTarget);
     if (
@@ -1360,7 +1380,7 @@ function markerHoverEffect(event) {
 
   $("#popover-price").html(currency + $this.data("market-rent"));
 
-  const unitElement = document.getElementById("unit_" + $(this).data("unitId"));
+  const unitElement = document.getElementById("unit_" + $this.data("unitId"));
   const scrollableParent = document.querySelector(".left-side");
 
   if (unitElement && scrollableParent) {
@@ -3470,7 +3490,7 @@ function setMarkersSizeAndMargin() {
   }
 
   const $amenityMarker = $(".amenity-marker");
-  const $amenityMarkerSpans = $amenityMarker.find("span");
+  const $amenityMarkerSpans = $amenityMarker.find("span.camera-icon.camera-icon-responsive");
   const $amenityMarkerIcons = $amenityMarkerSpans.find("i");
   const visibleAmenityMarker = Array.from($amenityMarker).find((m) =>
     isElementVisibleOnScreen(m)
