@@ -117,8 +117,9 @@
               - else 
                 There are currently no available unit options on this property.
 
-            .image-map#zoomable.zoomable-map-container{style: "text-align: center; display: flex; position: unset #{@svg_enabled ? '!important;' : ''}"}
-              - locals_for_markers = { svg_enabled: @svg_enabled, community_info: @community_info, units: units, amenities: @amenities, floors: @floors, floorplates: @floorplates, floorplans_map: @floorplans_map, spanSize_y: spanSize_y, spanSize_x: spanSize_x, spanSize_size: spanSize_size, fontsize: fontsize, map_marker_color: map_marker_color, amenity_marker_color: amenity_marker_color, top_margin: top_margin, left_margin: left_margin, amenity_top_margin: amenity_top_margin, amenity_left_margin: amenity_left_margin }
+            .image-map#zoomable.zoomable-map-container{style: "text-align: center; display: flex; position: unset !important;"}
+              - locals_for_markers = { svg_enabled: true, community_info: @community_info, units: units, amenities: @amenities, floors: @floors, floorplates: @floorplates, floorplans_map: @floorplans_map, spanSize_y: spanSize_y, spanSize_x: spanSize_x, spanSize_size: spanSize_size, fontsize: fontsize, map_marker_color: map_marker_color, amenity_marker_color: amenity_marker_color, top_margin: top_margin, left_margin: left_margin, amenity_top_margin: amenity_top_margin, amenity_left_margin: amenity_left_margin }
+              .hidden-units
 
               - if @community_info.has_floorplates?
                 - @floors.each do |floor|
