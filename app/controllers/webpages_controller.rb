@@ -21,6 +21,8 @@ class WebpagesController < ActionController::Base
     @svg_enabled = @community_info.enable_svg_mode?
     community_units = @community_info.units
     @amenities = @community_info.amenities.plotted_amenities(@svg_enabled)
+    @have_multi_property_ids = @community_info.have_multi_property_ids?()
+    @multi_properties = @community_info.fetch_multi_properties()
 
     unless @community_info.locked
       if @community_info.has_floorplates?
@@ -47,6 +49,7 @@ class WebpagesController < ActionController::Base
 
     response.headers.delete "X-Frame-Options"  
   end
+
   def get_scheduler_link
     community_code = get_community_code @community
     # base_url =  Rails.env.development? ? "http://localhost:3000/" : (ENV["RAILS_ENV"] == "staging" ? "https://pynwheel-staging.herokuapp.com/" : "https://pynwheelapp.com/")

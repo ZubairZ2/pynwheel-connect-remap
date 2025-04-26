@@ -133,7 +133,13 @@ class Community < ApplicationRecord
   end
 
   def have_multi_property_ids?
-    units&.pluck(:property_id)&.compact&.uniq&.count > 1
+    property_codes = credential.p_code.to_s.split(',')
+    property_codes.many? && sub_communities.many?
+  end
+
+  def fetch_multi_properties
+    return [] unless have_multi_property_ids?
+    sub_communities.pluck(:name, :property_id).map { |name, property_id| [name, property_id.strip] }
   end
   def sorted_units_by_marketing_name(selected_units)
     return selected_units unless selected_units.present?

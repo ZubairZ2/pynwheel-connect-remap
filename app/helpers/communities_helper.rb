@@ -286,6 +286,7 @@ module CommunitiesHelper
                    end,
       display_rent: unit&.community&.display_rent,
       additional_fees: @community.get_additional_fees(unit),
+      property_id: unit.property_id
     }
     struct[:data_attributes] = fetch_unit_data_attributes(unit, struct)
 
