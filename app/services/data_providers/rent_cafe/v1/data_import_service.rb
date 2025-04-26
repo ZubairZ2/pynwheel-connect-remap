@@ -25,8 +25,11 @@ module DataProviders
 
           def import_property_details property_code
             response = get_property_details(property_code)
+            
             return unless response.present?
+            
             update_property_details(response)
+            add_or_update_sub_communities(response["name"], property_code)
           end
 
           def import_property_floorplans property_code

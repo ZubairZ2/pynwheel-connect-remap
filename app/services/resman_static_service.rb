@@ -38,7 +38,7 @@ class ResmanStaticService < BaseService
 
             $units_availability_url = property_data.dig("Information", "UnitApplicationBaseURL")
 
-            save_resman_property_details(property_data)
+            save_property_details(property_data, property_id)
             save_resman_units(units, property_id)
             save_resman_floorplans(floorplans, property_id)
           end
@@ -49,9 +49,12 @@ class ResmanStaticService < BaseService
     end
   end
 
-  def save_resman_property_details property
+  def save_property_details property, property_id
     begin
       @community = Community.find credentials.community_id
+      
+      # add_or_update_sub_communities(@community, property["PropertyID"]["MITS:Identification"]["MITS:MarketingName"], property_id)
+
       @community.update!(
         name: property["PropertyID"]["MITS:Identification"]["MITS:MarketingName"],
         address: property["PropertyID"]["MITS:Address"]["MITS:Address1"],

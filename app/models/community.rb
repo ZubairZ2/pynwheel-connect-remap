@@ -42,6 +42,7 @@ class Community < ApplicationRecord
   has_many :other_locks, dependent: :destroy
   has_many :track_sessions, dependent: :destroy
   has_many :map_partners, dependent: :destroy
+  has_many :sub_communities, dependent: :destroy
 
   has_one :credential, dependent: :destroy
   has_one :crm_credential, dependent: :destroy

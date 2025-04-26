@@ -56,9 +56,9 @@ class PsiStaticService < BaseService
             end
           end
 
-          save_property_details(response['response'])
-          save_psi_floorplans(floorplans,property_id)
-          save_psi_units(units,property_id)
+          save_property_details(response['response'], property_id)
+          save_psi_floorplans(floorplans, property_id)
+          save_psi_units(units, property_id)
 
           begin
             cred = Credential.find @credentials.id
@@ -109,7 +109,7 @@ class PsiStaticService < BaseService
       end
     end
 
-    def save_property_details response
+    def save_property_details response, property_id
       property = response&.dig('result', 'PhysicalProperty', 'Property', 0)
       prperty_details = property&.dig('PropertyID')
       zone_details = property&.dig('ILS_Identification')
@@ -129,6 +129,8 @@ class PsiStaticService < BaseService
 
       community = Community.find @credentials.community_id
 
+      # add_or_update_sub_communities(community, name, property_id)
+
       community.update!(
         name: name,
         website: website,
@@ -142,6 +144,8 @@ class PsiStaticService < BaseService
         longitude: longitude,
       )
 
+    rescue StandardError => e
+      raise e
     end
 
     def save_psi_units(units,property_id)
