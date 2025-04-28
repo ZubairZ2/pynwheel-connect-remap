@@ -98,7 +98,7 @@
     - amenity_top_margin = 13
 
     - units = @available_units_and_sold_units
-    - min_unit_floor = @community_info.has_floorplates? ? (JSON.parse(@units_with_floorplan_info).map{ |x| x["floor"] }.min rescue @floors.first) : nil
+    - min_unit_floor = @community_info.has_floorplates? ? (JSON.parse(@units_with_floorplan_info).map{ |x| x["floor"] }.min rescue @floors&.first) : nil
 
     - webpage_locals = { units: @available_units_and_sold_units, min_unit_floor: min_unit_floor, map_marker_color: map_marker_color, fontsize: fontsize, amenity_marker_color: amenity_marker_color, spanSize_x: spanSize_x, spanSize_y: spanSize_y, spanSize_size: spanSize_size, camera_margin: camera_margin, marker_font_size: marker_font_size, camera_font_size: camera_font_size, amenity_left_margin: amenity_left_margin, amenity_top_margin: amenity_top_margin }
 
