@@ -1060,14 +1060,23 @@ function resetToDefaultZoom() {
 }
 
 function click_marker_tag(unitId, { pointerId, selector } = {}) {
-  const markersSelector = svgMode ? "cloned-unit" : "unit_marker";
+  const markersSelector = svgMode ? ".cloned-unit" : ".unit_marker";
+
   if (svgMode) {
     unitId = parseInt(unitId.replace("unit_", ""));
   } else {
     unitId = unitId.replace("unit_", "s_");
   }
-  var marker_tags = document.getElementsByClassName(markersSelector);
-  for (const item of Array.from(marker_tags)) {
+
+  let image =
+    currentVisibleMapImage()?.parentElement ||
+    document.querySelectorAll(
+      hasFloorplate() ? `div#floorplate_${current_floor}` : `div#property-map`
+    );
+  const $scope = $(image);
+  const $markers = $scope.find(markersSelector);
+
+  for (const item of Array.from($markers)) {
     if (
       svgMode ? parseInt(item.dataset.unitId) === unitId : item.id === unitId
     ) {
@@ -3490,7 +3499,9 @@ function setMarkersSizeAndMargin() {
   }
 
   const $amenityMarker = $(".amenity-marker");
-  const $amenityMarkerSpans = $amenityMarker.find("span.camera-icon.camera-icon-responsive");
+  const $amenityMarkerSpans = $amenityMarker.find(
+    "span.camera-icon.camera-icon-responsive"
+  );
   const $amenityMarkerIcons = $amenityMarkerSpans.find("i");
   const visibleAmenityMarker = Array.from($amenityMarker).find((m) =>
     isElementVisibleOnScreen(m)
