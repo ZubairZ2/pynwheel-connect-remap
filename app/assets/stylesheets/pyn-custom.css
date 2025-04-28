@@ -3481,10 +3481,10 @@ a#favoriteclickme {
 }
 
 .active_unit_view {
-    border-bottom: 2px solid black;
-    border-top: 0;
-    border-left: 0;
-    border-right: 0;
+    border-bottom: 2px solid black !important;
+    border-top: 0 !important;
+    border-left: 0 !important;
+    border-right: 0 !important;
 }
 
 .set-floor-modal-body {
