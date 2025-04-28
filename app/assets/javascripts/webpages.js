@@ -303,7 +303,6 @@ function bindWebpageEvents() {
         clearTimeout(timeoutId);
         clearTimeout(timer);
       } else $(".alert").hide();
-    } else {
     }
 
     showMarkers();
@@ -339,7 +338,7 @@ function getUnitsToBeSelected() {
   return _3dUnitsToBeSelected.map((a) => a.marketing_name);
 }
 
-function adjustSitmapMarkerPositions() {
+function adjustImageMapMarkersPosition() {
   const actualImage = getActualImageDimensions();
   const stretchedImage = getStretchedImageDimensions();
 
@@ -366,7 +365,7 @@ function getContainerDimensions() {
 }
 
 function getActualImageDimensions() {
-  const { width = 0, height = 0 } = currentVisibleMapImage()?.dataset || {
+  const { width = 0, height = 0 } = currentMapImage()?.dataset || {
     width: 0,
     height: 0,
   };
@@ -884,7 +883,7 @@ function showMarkers() {
   const unitsToDisplay = filterUnitsBasedOnCommunityType(units);
 
   renderChangedUnits();
-  const scope = currentVisibleMapImage()?.parentElement;
+  const scope = currentMapImage()?.parentElement;
   if (!scope) return;
 
   const jsonObject = {};
@@ -975,7 +974,7 @@ function showMarkers() {
   if (svgMode) {
     setSVGUnitsAmenitiesCoordinates();
   } else {
-    adjustSitmapMarkerPositions();
+    adjustImageMapMarkersPosition();
   }
 
   setMarkersSizeAndMargin();
@@ -1068,11 +1067,7 @@ function click_marker_tag(unitId, { pointerId, selector } = {}) {
     unitId = unitId.replace("unit_", "s_");
   }
 
-  let image =
-    currentVisibleMapImage()?.parentElement ||
-    document.querySelectorAll(
-      hasFloorplate() ? `div#floorplate_${current_floor}` : `div#property-map`
-    );
+  let image = currentMapImage()?.parentElement;
   const $scope = $(image);
   const $markers = $scope.find(markersSelector);
 
@@ -1747,16 +1742,11 @@ function change_units_view(evt, type) {
     tabcontent[i].style.display = "none";
   }
 
-  tablinks = document.getElementsByClassName("tablinks");
-  for (i = 0; i < tablinks.length; i++) {
-    tablinks[i].className = tablinks[i].className.replace(
-      " active_unit_view",
-      ""
-    );
-  }
+  const $tabNavLinks = $(".tablinks");
+  $tabNavLinks.removeClass("active_unit_view");
 
   document.getElementsByClassName(type)[0].style.display = "block";
-  evt.target.parentElement.className += " active_unit_view";
+  $(evt.currentTarget.parentElement).addClass("active_unit_view");
 
   if (type === "list_view") {
     const $webpageMainContainer = $("div.map-body.map-container-center-align");
@@ -1775,9 +1765,8 @@ function change_units_view(evt, type) {
       maxWidth: `${unitListContainerWidth - 30 /* padding */}px`,
     });
   } else {
-    const $currentImageBox = $("#f_" + current_floor);
-    const imageElem = $currentImageBox[0];
-    moveZoomableImageToCenter(imageElem);
+    moveZoomableImageToCenter(currentMapImage());
+    adjustImageMapMarkersPosition()
   }
 }
 
@@ -3537,10 +3526,24 @@ function setMarkersSizeAndMargin() {
   }
 }
 
+function currentMapImage() {
+  const parentSelector = hasFloorplate()
+    ? `div#floorplate_${current_floor}`
+    : `div#property-map`;
+  const currentVisibleImage = Array.from(
+    document.querySelectorAll(
+      `${parentSelector} > img, ${parentSelector} > svg`
+    )
+  )[0];
+
+  return currentVisibleImage;
+}
+
 function currentVisibleMapImage() {
-  const currentVisibleImage = Array.from($(".floorplate-image")).find((image) =>
-    isElementVisibleOnScreen(image)
-  );
+  const mapIMage = currentMapImage();
+  const currentVisibleImage = isElementVisibleOnScreen(mapIMage)
+    ? mapIMage
+    : null;
 
   return currentVisibleImage;
 }
