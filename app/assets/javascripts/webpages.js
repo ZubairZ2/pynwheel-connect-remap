@@ -612,10 +612,20 @@ function Toggle_maps(e) {
 
 function multiPropertiesFilterChanged() {
   filterUnitsBasedOnMultiCommunity();
+  
+  if(multiCommunity)
+    updateBedroomFilterDropDownList(units);
+  
+  updateMaxPriceFilterDropDownList(units);
+  updateSquareFootageFilterDropdownList(units);
+  updateAvailabilitFilterDropdownList(units);
+
+  showMarkers();
 }
 
 
 function bedroomFilterChanged() {
+  filterUnitsBasedOnMultiCommunity();
   filterUnitsBasedOnBedroom();
   updateDropdownListValues();
   showMarkers();
@@ -627,6 +637,7 @@ function maxPriceFilterFilterChanged() {
 }
 
 function squareFootageFilterChanged() {
+  filterUnitsBasedOnMultiCommunity();
   filterUnitsBasedOnBedroom();
   filterUnitsBasedOnSqfeet();
 
@@ -636,6 +647,7 @@ function squareFootageFilterChanged() {
 }
 
 function availabilityFilterChanged() {
+  filterUnitsBasedOnMultiCommunity();
   filterUnitsBasedOnBedroom();
   filterUnitsBasedOnAvailability();
 
@@ -654,6 +666,7 @@ function updateDropdownListValues() {
 }
 
 function filterUnitsBasedOnSelectedFilters() {
+  filterUnitsBasedOnMultiCommunity();
   filterUnitsBasedOnBedroom();
   filterUnitsBasedOnSqfeet();
   filterUnitsBasedOnMarketRent();
@@ -721,7 +734,9 @@ function filterUnitsBasedOnMarketRent() {
 function filterUnitsBasedOnBedroom() {
   $(".alert").hide();
 
-  units = total_units;
+  if(!multiCommunity)
+    units = total_units;
+
   const unitBedroom = filterBasedOnScreen("unit_bedroom");
 
   if (unitBedroom || unitBedroom === 0)
@@ -2879,8 +2894,8 @@ function apply3DFilters() {
 
 function resetFilters() {
   units = current_units;
-    resetBasedOnBedroom();
-  
+  resetBasedOnBedroom();
+
   showMarkers();
 }
 

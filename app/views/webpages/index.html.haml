@@ -328,7 +328,7 @@
 = render partial: "virtual_tour_modal"
 = render partial: "amenity_virtual_tour_modal"
 
-#communityWebpagesData{data: { currency: @community.get_currency_symbol(), community: @community.to_json, amenities: @amenities.to_json, map_configurations: @community&.three_d_maps_configuration.to_json, units: @units_with_floorplan_info, amenities_data: @amenities_data } }
+#communityWebpagesData{data: { currency: @community.get_currency_symbol(), community: @community.to_json, amenities: @amenities.to_json, map_configurations: @community&.three_d_maps_configuration.to_json, units: @units_with_floorplan_info, amenities_data: @amenities_data, multi_community: @have_multi_property_ids.to_json } }
 
 :javascript
   var assetTracker;
@@ -355,6 +355,7 @@
   var img_height = "#{@community.sitemap.present? && @community.sitemap.image.present? ? (@community.sitemap.height || @community.sitemap.image.height) : nil}"
   var current_floor = "#{@floors.present? and @floors.size > 0 ? min_unit_floor : 'null'}";
   var communityInactivated = "#{@community.locked}" === "true"
+  var multiCommunity = $("#communityWebpagesData").data("multiCommunity")
 
   if (current_floor === "null") {
     current_floor = null;
