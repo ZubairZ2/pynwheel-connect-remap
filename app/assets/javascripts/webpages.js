@@ -80,52 +80,46 @@ $(document).ready(function () {
       _3dUnitsToBeSelected = filterUnitsBasedOnCommunityType(units); //select_units_according_to_filters(units)
       selected_units = _3dMapViewMarker();
 
-      beansWidget.initMap(
-        formattedAddress(webCommunity),
-        _beansApiKey,
-        {
-          "click-popup-listener": polygonClickPopup,
-          "default-polygon-color":
-            _3dConfigurations && _3dConfigurations.default_polygon_color
-              ? _3dConfigurations.default_polygon_color
-              : "#3ca832",
-          "selected-polygon-color":
-            _3dConfigurations && _3dConfigurations.selected_polygon_color
-              ? _3dConfigurations.selected_polygon_color
-              : "#5ca904",
-          "selected-unit-color":
-            _3dConfigurations && _3dConfigurations.selected_unit_color
-              ? _3dConfigurations.selected_unit_color
-              : "#5ca904",
-          "default-polygon-opacity":
-            _3dConfigurations && _3dConfigurations.default_polygon_opacity
-              ? _3dConfigurations.default_polygon_opacity
-              : 0.5,
-          "selected-polygon-opacity":
-            _3dConfigurations && _3dConfigurations.selected_polygon_opacity
-              ? _3dConfigurations.selected_polygon_opacity
-              : 0.8,
-          "unit-color":
-            _3dConfigurations && _3dConfigurations.unit_color
-              ? _3dConfigurations.unit_color
-              : "#202",
-          "poi-color":
-            _3dConfigurations && _3dConfigurations.poi_color
-              ? _3dConfigurations.poi_color
-              : "#008000",
-          "selected-units": selected_units,
-          "faded-polygon-opacity":
-            _3dConfigurations && _3dConfigurations.faded_polygon_opacity
-              ? _3dConfigurations.faded_polygon_opacity
-              : 0.3,
-          "show-unit-numbers": _3dConfigurations
-            ? _3dConfigurations.show_unit_numbers
-            : true,
-          "hide-floors": _3dConfigurations
-            ? _3dConfigurations.hide_floors
-            : true,
-        }
-      );
+      beansWidget.initMap(formattedAddress(webCommunity), _beansApiKey, {
+        "click-popup-listener": polygonClickPopup,
+        "default-polygon-color":
+          _3dConfigurations && _3dConfigurations.default_polygon_color
+            ? _3dConfigurations.default_polygon_color
+            : "#3ca832",
+        "selected-polygon-color":
+          _3dConfigurations && _3dConfigurations.selected_polygon_color
+            ? _3dConfigurations.selected_polygon_color
+            : "#5ca904",
+        "selected-unit-color":
+          _3dConfigurations && _3dConfigurations.selected_unit_color
+            ? _3dConfigurations.selected_unit_color
+            : "#5ca904",
+        "default-polygon-opacity":
+          _3dConfigurations && _3dConfigurations.default_polygon_opacity
+            ? _3dConfigurations.default_polygon_opacity
+            : 0.5,
+        "selected-polygon-opacity":
+          _3dConfigurations && _3dConfigurations.selected_polygon_opacity
+            ? _3dConfigurations.selected_polygon_opacity
+            : 0.8,
+        "unit-color":
+          _3dConfigurations && _3dConfigurations.unit_color
+            ? _3dConfigurations.unit_color
+            : "#202",
+        "poi-color":
+          _3dConfigurations && _3dConfigurations.poi_color
+            ? _3dConfigurations.poi_color
+            : "#008000",
+        "selected-units": selected_units,
+        "faded-polygon-opacity":
+          _3dConfigurations && _3dConfigurations.faded_polygon_opacity
+            ? _3dConfigurations.faded_polygon_opacity
+            : 0.3,
+        "show-unit-numbers": _3dConfigurations
+          ? _3dConfigurations.show_unit_numbers
+          : true,
+        "hide-floors": _3dConfigurations ? _3dConfigurations.hide_floors : true,
+      });
     }
     renderChangedUnits();
     handleMapControl();
@@ -617,17 +611,15 @@ function Toggle_maps(e) {
 
 function multiPropertiesFilterChanged() {
   filterUnitsBasedOnMultiCommunity();
-  
-  if(multiCommunity)
-    updateBedroomFilterDropDownList(units);
-  
+
+  if (multiCommunity) updateBedroomFilterDropDownList(units);
+
   updateMaxPriceFilterDropDownList(units);
   updateSquareFootageFilterDropdownList(units);
   updateAvailabilitFilterDropdownList(units);
 
   showMarkers();
 }
-
 
 function bedroomFilterChanged() {
   filterUnitsBasedOnMultiCommunity();
@@ -739,8 +731,7 @@ function filterUnitsBasedOnMarketRent() {
 function filterUnitsBasedOnBedroom() {
   $(".alert").hide();
 
-  if(!multiCommunity)
-    units = total_units;
+  if (!multiCommunity) units = total_units;
 
   const unitBedroom = filterBasedOnScreen("unit_bedroom");
 
@@ -759,11 +750,9 @@ function filterMultiCommunityBasedOnScreen(filterTag) {
 function filterUnitsBasedOnMultiCommunity() {
   const propertyId = filterMultiCommunityBasedOnScreen("multi_communities");
 
-  if(propertyId)
-    units = total_units.filter((unit) => unit.property_id == propertyId)
-  else 
-    units = total_units
-
+  if (propertyId)
+    units = total_units.filter((unit) => unit.property_id == propertyId);
+  else units = total_units;
 }
 
 function updateAvailabilitFilterDropdownList() {
@@ -879,8 +868,7 @@ function updateMaxPriceFilterDropDownList(floorplateUnits) {
 }
 
 function getUniqueUnitBedrooms(floorplateUnits) {
-  if (!floorplateUnits || floorplateUnits.length === 0) 
-    return [];
+  if (!floorplateUnits || floorplateUnits.length === 0) return [];
 
   const unitBedrooms = [];
 
@@ -902,15 +890,13 @@ function getUniqueUnitBedrooms(floorplateUnits) {
   });
 
   const uniqueList = Array.from(
-    new Set(unitBedrooms.map(item => JSON.stringify(item)))
-  ).map(item => JSON.parse(item));
+    new Set(unitBedrooms.map((item) => JSON.stringify(item)))
+  ).map((item) => JSON.parse(item));
 
   uniqueList.sort((a, b) => a[2] - b[2]);
 
   return uniqueList.map(([label, value]) => [label, value]);
 }
-
-
 
 function updateBedroomFilterDropDownList(floorplateUnits) {
   reInitializeDropDownList("unit_bedroom");
@@ -929,7 +915,6 @@ function updateBedroomFilterDropDownList(floorplateUnits) {
 
   disableBedroomOptions();
 }
-
 
 function disableBedroomOptions() {
   if ($("#unit_bedroom option").length === 0) {
@@ -2900,33 +2885,35 @@ function apply3DFilters() {
 function resetFilters() {
   units = current_units;
 
-  if(multiCommunity)
-    resetBasedOnMultiCommunities();
-  else
-    resetBasedOnBedroom();
-  
+  if (multiCommunity) resetBasedOnMultiCommunities();
+  else resetBasedOnBedroom();
+
   showMarkers();
 }
 
 function resetBasedOnMultiCommunities() {
-  $("#responsive_multi_communities").val( $("#responsive_multi_communities option:first").val() );
+  $("#responsive_multi_communities").val(
+    $("#responsive_multi_communities option:first").val()
+  );
   $("#multi_communities").val($("#multi_communities option:first").val());
 
-  if (smallScreen()) $(".mobile-filter-mega-menu").slideToggle();
+  if ($(window).width() <= 993) $(".mobile-filter-mega-menu").slideToggle();
 
   multiPropertiesFilterChanged();
 }
 
 function resetBasedOnBedroom() {
-  $("#responsive_unit_bedroom").val( $("#responsive_unit_bedroom option:first").val() );
+  $("#responsive_unit_bedroom").val(
+    $("#responsive_unit_bedroom option:first").val()
+  );
   $("#unit_bedroom").val($("#unit_bedroom option:first").val());
 
-  if (smallScreen()) $(".mobile-filter-mega-menu").slideToggle();
+  if ($(window).width() <= 993) $(".mobile-filter-mega-menu").slideToggle();
 
   bedroomFilterChanged();
 }
 
-function applyFilters () {
+function applyFilters() {
   filterUnitsBasedOnSelectedFilters();
   if (selectMap === "3d-map" && enable3DMaps) {
     _3dMapViewMarkers();
