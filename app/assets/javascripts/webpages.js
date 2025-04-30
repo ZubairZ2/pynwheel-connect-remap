@@ -755,7 +755,7 @@ function filterUnitsBasedOnMultiCommunity() {
   const propertyId = filterMultiCommunityBasedOnScreen("multi_communities");
 
   if(propertyId)
-    units = total_units.filter((unit) => unit.property_id == propertyId)
+    units = total_units.filter((unit) => unit.property_id.trim() == propertyId.trim())
   else 
     units = total_units
 

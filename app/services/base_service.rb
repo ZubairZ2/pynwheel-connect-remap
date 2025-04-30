@@ -53,7 +53,7 @@ class BaseService
   end
 
   def add_or_update_sub_communities community, property_name, property_code
-    sub = community.sub_communities.find_or_initialize_by(property_id: property_code)
+    sub = community.sub_communities.find_or_initialize_by(property_id: property_code&.strip)
     sub.assign_attributes(name: property_name)
     sub.save!
     
