@@ -260,6 +260,7 @@ function bindWebpageEvents() {
 
   $("#multi_communities, #responsive_multi_communities").change(function () {
     multiPropertiesFilterChanged();
+    reDrawBeansWidget();
   });
 
   $("#lease_term").change(function () {
