@@ -134,7 +134,7 @@ class Community < ApplicationRecord
 
   def have_multi_property_ids?
     property_codes = credential.p_code.to_s.split(',')
-    property_codes.many? && sub_communities.many?
+    property_codes.many? && sub_communities.many? && credential&.allow_sub_communities
   end
 
   def fetch_multi_properties
