@@ -39,6 +39,7 @@ var communityInactivated = definedAndHasValue(communityInactivated)
 $(document).ready(function () {
   if (smallScreen()) {
     $(".c-footer.desktop-content").remove();
+    if (extraSmallScreen()) $(".c-sidebar").addClass("sidebar-header-bar");
   } else {
     $(".c-footer.mobile-footer").remove();
   }
@@ -1766,7 +1767,7 @@ function change_units_view(evt, type) {
     });
   } else {
     moveZoomableImageToCenter(currentMapImage());
-    adjustImageMapMarkersPosition()
+    adjustImageMapMarkersPosition();
   }
 }
 
@@ -3324,6 +3325,9 @@ function setWebpageContainerSize() {
   const $mainBody = $wrapperBody.find(".c-body");
   const $webpageMainContainer = $("div.map-body.map-container-center-align");
   const $mapContainer = $webpageMainContainer.find(".right-side");
+  const $zoomableContainer = $mapContainer.find(
+    ".image-map.zoomable-map-container"
+  );
   const $unitsListContainer = $webpageMainContainer.find(".left-side");
   const mapContainer = $mapContainer[0];
   const result = { width: 0, height: 0 };
@@ -3332,19 +3336,20 @@ function setWebpageContainerSize() {
     const $containerHeader = $(".app-header");
     const headerHeight = $containerHeader.height() || 0;
 
-    const $containerFooter = $(".c-footer");
-    const footerHeight = $containerFooter.height()
-      ? $containerFooter.height() + 20 /* padding */
+    const $mapContainerFooter = $(".c-footer");
+    const footerHeight = $mapContainerFooter.height()
+      ? $mapContainerFooter.height() + (10 + 10) /* padding */
       : 0;
 
+    const $tabHeader = $mainBody.find("#tab");
     const tabHeaderHeight = smallScreen()
-      ? $mainBody.find("#tab").height() || 0
+      ? ($tabHeader.height() || 0) + 1 /* border-bottom */
       : 0;
 
     const $buttonsGroup = $wrapperBody.find(".header-buttons-groups");
     const tabButtonsGroupHeight =
       smallScreen() && $buttonsGroup[0]
-        ? $buttonsGroup.height() + 17 /* padding */
+        ? $buttonsGroup.height() + (10 + 7) /* padding */
         : 0;
 
     const $sidebar = $wrapperBody.find(".c-sidebar");
@@ -3354,7 +3359,7 @@ function setWebpageContainerSize() {
       sidebar && extraSmallScreen() ? $sidebar.height() || 0 : 0;
     const sidebarWidth =
       sidebar && !extraSmallScreen()
-        ? ($sidebar.width() || 0) + 4 /* padding */
+        ? ($sidebar.width() || 0) + (2 + 2) /* padding */
         : 0;
 
     $containerHeader.css({
@@ -3362,16 +3367,23 @@ function setWebpageContainerSize() {
       left: sidebarWidth,
     });
 
-    const mainBodyHeight = $wrapperBody.height() - headerHeight;
+    if (extraSmallScreen()) {
+      $sidebar.css({
+        top: headerHeight + tabHeaderHeight,
+      });
+    }
+
+    const mainBodyHeight =
+      $wrapperBody.height() - (headerHeight + tabButtonsGroupHeight);
     const mainBodyWidth = totalWidth - sidebarWidth;
     $mainBody.css({
       width: mainBodyWidth,
       height: mainBodyHeight,
       left: sidebarWidth,
+      top: 0,
     });
 
-    const smallScreenElementsHeight =
-      tabHeaderHeight + sidebarHeight + tabButtonsGroupHeight;
+    const smallScreenElementsHeight = tabHeaderHeight + sidebarHeight;
     const mainContainerHeight = mainBodyHeight - smallScreenElementsHeight;
 
     $webpageMainContainer.css({
@@ -3380,22 +3392,23 @@ function setWebpageContainerSize() {
       top: sidebarHeight,
     });
 
-    result.height = mainContainerHeight - footerHeight;
+    result.height = mainContainerHeight;
+    result.width = $mapContainer.width();
+
     $mapContainer.css({
       height: result.height,
+      width: result.width,
     });
-    $unitsListContainer.css({
-      height: mainContainerHeight,
+    $zoomableContainer.css({
+      height: result.height - footerHeight,
+      top: 0,
     });
-
-    result.width = $mapContainer.width();
-    $containerFooter.css({
+    $mapContainerFooter.css({
       width: result.width,
       bottom: smallScreen() ? tabButtonsGroupHeight : 0,
     });
 
-    $mapContainer.find("#zoomable").css({
-      width: result.width,
+    $unitsListContainer.css({
       height: result.height,
     });
 
@@ -3405,6 +3418,7 @@ function setWebpageContainerSize() {
         left: sidebarWidth,
       });
     }
+
     const unitListContainerWidth = $unitsListContainer
       .find(".left-side-title")
       .width();
@@ -3421,7 +3435,7 @@ function setWebpageContainerSize() {
 
     if (extraSmallScreen()) {
       $(".units-alert").css({
-        top: sidebarHeight - 14 /* margin */,
+        top: 0,
       });
     }
   }

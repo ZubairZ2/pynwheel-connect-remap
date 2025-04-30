@@ -1,7 +1,7 @@
 - unless @community_info.locked
   = hidden_field_tag :maps_community_id, @community_info.id
-  %section.is-webpage.maps-analytics-container{ style: "max-height: 100%; overflow: hidden;" }
-    .c-wrapper{class: "#{@community_info.has_floorplates? ? 'floorplate' : 'no-floorplate'}", style: "max-height: 100%; overflow: hidden;" }
+  %section.is-webpage.maps-analytics-container{ style: "min-height: 100%; max-height: 100%; overflow: hidden;" }
+    .c-wrapper{class: "#{@community_info.has_floorplates? ? 'floorplate' : 'no-floorplate'}", style: "min-height: 100%; max-height: 100%; overflow: hidden;" }
       %header.app-header
         .header-inner
           .app-logo-mobile
