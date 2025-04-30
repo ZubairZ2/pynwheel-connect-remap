@@ -2590,7 +2590,7 @@ img-responsive {
     height: 100%;
     position: relative;
     overflow: scroll;
-    z-index: 5;
+    z-index: 4;
 }
 
 .right-side {
@@ -3451,10 +3451,6 @@ a#favoriteclickme {
 
 .is-favorites .right-side {
     position: relative;
-}
-
-.mobile_map_view, .mobile_map_view > #zoomable {
-    height: 100% !important;
 }
 
 .mobile_map_view > #zoomable {
@@ -5359,6 +5355,10 @@ body {
     text-align: center;
     padding: 0 2px;
 }
+.c-sidebar.sidebar-header-bar {
+    min-height: 69px;
+    max-height: 69px;
+}
 .selectable-field label {
     display: block;
     font-family: 'Raleway', sans-serif;
@@ -5403,7 +5403,7 @@ body {
     /* width: 42%; */
     width: 20%;
     display: flex;
-    justify-content: end;
+    justify-content: space-around;
 
 
 }
