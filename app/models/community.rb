@@ -1,6 +1,6 @@
 class Community < ApplicationRecord
   include LockedTourStopHelper
-
+  
   mount_base64_uploader :logo, AvatarUploader
   mount_base64_uploader :email_logo, AvatarUploader
   mount_base64_uploader :secondary_logo, AvatarUploader
@@ -139,8 +139,13 @@ class Community < ApplicationRecord
 
   def fetch_multi_properties
     return [] unless have_multi_property_ids?
-    sub_communities.pluck(:name, :property_id).map { |name, property_id| [name, property_id.strip] }
-  end
+  
+    sub_communities
+      .pluck(:name, :property_id)
+      .map { |name, property_id| [name, property_id.strip] }
+      .uniq
+  end  
+
   def sorted_units_by_marketing_name(selected_units)
     return selected_units unless selected_units.present?
 
