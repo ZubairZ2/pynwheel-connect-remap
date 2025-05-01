@@ -41,7 +41,7 @@ end
 
 json.community_group @communities do |co|
   @community = co
-  svg_enabled = @community.enable_svg_mode?
+  svg_enabled = false #@community.enable_svg_mode?
 
   json.menu_button_shade @community.menu_button_shade
   if @community.id == @community_master.id

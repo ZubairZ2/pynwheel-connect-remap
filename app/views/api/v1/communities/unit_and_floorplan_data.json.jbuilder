@@ -1,5 +1,5 @@
 local_assets_base_url = "http://192.168.101.77:3000"
-svg_enabled = @community.enable_svg_mode?
+svg_enabled = false #@community.enable_svg_mode?
 
 json.apartments do
   if @community.has_floorplates?
