@@ -3674,3 +3674,45 @@ function currentVisibleMapImageScale() {
 
   return scale;
 }
+
+function tbdMode () {
+  webCommunity.display_tbd_legend === true
+}
+
+function getUnitMarkerColor(unit) {
+  let result = map_marker_color;
+  if (tbdMode) {
+    switch (unit.unit_status.toLowerCase()) {
+      case "occupied":
+      case "occupied no notice":
+      case "notice rented":
+        // Occupied color
+        break;
+      case "occupied on notice":
+      case "notice unrented":
+        // occupied on notice color
+        break;
+      case "vacant":
+      case "available":
+      case "unoccupied":
+      case "vacant unrented not ready":
+        // vacant color
+        break;
+      case "vacant lease":
+      case "vacant rented ready":
+      case "vacant rented not ready":
+      case "vacant unrented ready":
+        // vacant leased color
+        break;
+      default:
+        result = map_marker_color
+        break;
+    }
+  }
+
+  if (unit.modalUnit) {
+    result = // model color
+  }
+
+  return result;
+}

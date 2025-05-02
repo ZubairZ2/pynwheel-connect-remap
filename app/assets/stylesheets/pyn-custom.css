@@ -7670,3 +7670,46 @@ span.to-input {
         max-height: 464px !important;
     }
 }
+
+.legend {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+        padding: 10px 0;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-family: Arial, sans-serif;
+    color: #f0f0f0;
+}
+
+.color-box {
+    width: 40px;
+    height: 12px;
+    border-radius: 2px;
+}
+
+.color-box.occupied {
+    background-color: #f2f2f2;
+}
+
+.color-box.occupied-notice {
+    background-color: #8545a1;
+}
+
+.color-box.vacant {
+    background-color: #9dd765;
+}
+
+.color-box.vacant-leased {
+    background-color: #f9d648;
+}
+
+.color-box.model {
+    background-color: #f57396;
+}

@@ -181,6 +181,20 @@
 
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                        TBD
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            Toggle to display units related to their availablity statuses having the respective marker colors.
+                      
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .TriSea-technologies-Switch
+                          %span.pr-15 No
+                          = check_box_tag :display_tbd_legend, true, @community.display_tbd_legend, class: "apartment-setting-field"
+                          %label.label-primary{:for => "display_tbd_legend"}
+                          %span.pl-15 Yes
+              
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                         Show property map key
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         .TriSea-technologies-Switch
@@ -320,6 +334,20 @@
                           %label.label-primary{:for => "units_availability_over_120_days"}
                           %span.pl-15 Yes
                     
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                        TBD
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            Toggle to display units related to their availablity statuses having the respective marker colors.
+                      
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .TriSea-technologies-Switch
+                          %span.pr-15 No
+                          = check_box_tag :display_tbd_legend, true, @community.display_tbd_legend, class: "apartment-setting-field"
+                          %label.label-primary{:for => "display_tbd_legend"}
+                          %span.pl-15 Yes
+              
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                         Show amenity key
