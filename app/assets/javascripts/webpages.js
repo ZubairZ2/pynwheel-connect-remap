@@ -3498,7 +3498,7 @@ function setWebpageContainerSize() {
       width: result.width,
     });
     $mapContainerFooter.css({
-      width: $mapContainer.width(),
+      width: result.width,
       bottom: smallScreen() ? tabButtonsGroupHeight : 0,
     });
 
