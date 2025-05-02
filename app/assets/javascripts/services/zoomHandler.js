@@ -1,3 +1,5 @@
+var zoomablePans = definedAndHasValue(zoomablePans) ? zoomablePans : {};
+
 function getZoomPanKey(element) {
   return `${element.tagName.toLowerCase()}-${element.id}`;
 }
@@ -5,12 +7,12 @@ function getZoomPanKey(element) {
 function activateZoomPan(elem, centralizeElement = true, options = {}) {
   const key = getZoomPanKey(elem);
 
-  if (!window.mapPanZoom) window.mapPanZoom = {};
-  if (window.mapPanZoom[key]) return;
+  if (!zoomablePans) zoomablePans = {};
+  if (zoomablePans[key]) return;
 
-  window.mapPanZoom[key] = panzoom(elem, {
+  zoomablePans[key] = panzoom(elem, {
     minZoom: 0.5,
-    maxZoom: (mobileCheck() || $(window).width() <= 568) ? 10.0 : 5.0,
+    maxZoom: mobileCheck() || $(window).width() <= 568 ? 10.0 : 5.0,
     bounds: true,
     boundsPadding: 0.3,
     ...options,
@@ -32,7 +34,7 @@ function moveZoomableImageToCenter(
   if (!elem) return;
   const key = getZoomPanKey(elem);
 
-  const panInstance = window.mapPanZoom[key];
+  const panInstance = zoomablePans[key];
   if (!panInstance) return;
 
   const $elem = $(elem);

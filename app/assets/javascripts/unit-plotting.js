@@ -376,8 +376,6 @@ var temp = [];
 var pointerOffset = { x: 0, y: 0 };
 
 function doDraggable () {
-    console.log("called do draggable")
-
     $('.marker').draggable({
         containment: 'parent',
         stack: ".marker",
@@ -389,7 +387,7 @@ function doDraggable () {
                 const key = getZoomPanKey(zoomContainer);
     
                 svgMode = zoomContainer.id === "svg_map";
-                const { x, y, scale } = mapPanZoom?.[key] ? mapPanZoom[key].getTransform() : { scale: 1, x: 0, y: 0 };
+                const { x, y, scale } = zoomablePans?.[key] ? zoomablePans[key].getTransform() : { scale: 1, x: 0, y: 0 };
                 currentScale = scale;
     
                 ui.position.left = (ui.position.left - x) / scale;
@@ -420,7 +418,7 @@ function doDraggable () {
                 const canvasWidth = $zoomElement.width();
                 
     
-                const {scale} = mapPanZoom?.[key] ? mapPanZoom[key].getTransform() : { scale: 1, x: 0, y: 0 };
+                const {scale} = zoomablePans?.[key] ? zoomablePans[key].getTransform() : { scale: 1, x: 0, y: 0 };
     
                 const calculatedUiTop = (event.pageY - canvasTop - pointerOffset.y) / scale;
                 const calculatedUiLeft = (event.pageX - canvasLeft - pointerOffset.x) / scale;

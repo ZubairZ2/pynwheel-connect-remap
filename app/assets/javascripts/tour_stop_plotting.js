@@ -208,7 +208,7 @@ $(document).ready(function () {
             const zoomContainer = document.querySelector('div.plot-image');
             const key = getZoomPanKey(zoomContainer);
       
-            const transform = mapPanZoom?.[key] ? mapPanZoom[key].getTransform() : {};
+            const transform = zoomablePans?.[key] ? zoomablePans[key].getTransform() : {};
             const scaleFactor = (1 / (transform.scale || 1));
       
             marker_color = $('#marker_color').html();
@@ -279,8 +279,8 @@ $(document).ready(function () {
         const zoomContainer = $(e.currentTarget).closest('.buttons').siblings().find('.plot-image')[0];
         const key = getZoomPanKey(zoomContainer);
 
-        if (mapPanZoom?.[key])
-            mapPanZoom[key].zoomInOut(187);
+        if (zoomablePans?.[key])
+            zoomablePans[key].zoomInOut(187);
     });
 
 
@@ -288,8 +288,8 @@ $(document).ready(function () {
         const zoomContainer = $(e.currentTarget).closest('.buttons').siblings().find('.plot-image')[0];
         const key = getZoomPanKey(zoomContainer);
 
-        if (mapPanZoom?.[key])
-            mapPanZoom[key].zoomInOut(189);
+        if (zoomablePans?.[key])
+            zoomablePans[key].zoomInOut(189);
     });
 
 });

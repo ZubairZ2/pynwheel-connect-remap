@@ -80,6 +80,16 @@ function trim(str) {
   else return str;
 }
 
+function toKebabCase(str) {
+  return str
+    .replace(/([a-z])([A-Z])/g, "$1-$2")          // Handle camelCase
+    .replace(/([A-Z]{2,})(?=[A-Z][a-z])/g, "$1-") // Split multi-letter acronyms followed by mixed case
+    .replace(/[\s_]+/g, "-")                      // Replace spaces and underscores with hyphens
+    .toLowerCase()                                // Convert to lowercase
+    .replace(/-+/g, "-")                          // Collapse multiple hyphens
+    .replace(/^-|-$/g, "");                       // Trim hyphens
+}
+
 function isColorWhite(color) {
   return (
     color === "#ffffff" ||
@@ -124,6 +134,20 @@ function rgbaToHex(rgba) {
   }
 }
 
+function toHexColor(color) {
+  const rgb = toRgbColor(color);
+  if (!rgb) return null;
+
+  const parts = rgb.match(/\d+/g); // Extract numeric RGB parts
+  if (!parts || parts.length < 3) return null;
+
+  const r = parseInt(parts[0], 10).toString(16).padStart(2, "0");
+  const g = parseInt(parts[1], 10).toString(16).padStart(2, "0");
+  const b = parseInt(parts[2], 10).toString(16).padStart(2, "0");
+
+  return `#${r}${g}${b}`;
+}
+
 function isDefined(value) {
   return typeof value !== "undefined";
 }
@@ -159,4 +183,29 @@ function getStretchRatio(
   const heightRatio = currentHeight / (originalHeight || 1);
 
   return Math.min(widthRatio, heightRatio);
+}
+
+function transformKeys(obj, transformKey = null, deepTransform = false) {
+  if (typeof obj !== "object" || obj === null) return obj;
+
+  if (Array.isArray(obj)) {
+    return obj.map((item) => transformKeys(item, transformKey));
+  }
+
+  return Object.entries(obj).reduce((acc, [key, value]) => {
+    const newKey = typeof transformKey === "function" ? transformKey(key) : key;
+    acc[newKey] = deepTransform ? transformKeys(value, transformKey) : value;
+    return acc;
+  }, {});
+}
+
+function formattedAddress(obj) {
+  if (!obj) return "";
+
+  const { address, city, state } = obj;
+
+  return [address, city, state]
+    .filter((part) => part && part.trim() !== "")
+    .map((part) => part.trim())
+    .join(", ");
 }

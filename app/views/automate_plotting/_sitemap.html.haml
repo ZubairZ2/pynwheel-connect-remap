@@ -112,15 +112,15 @@
     document.addEventListener("touchcancel", touchHandler, true);
     let elem = document.querySelector('#map');
     const key = getZoomPanKey(elem);
-    if (window.mapPanZoom) {
-      window.mapPanZoom[key] = panzoom(elem, {
+    if (zoomablePans) {
+      zoomablePans[key] = panzoom(elem, {
         minZoom: 0.5,
         maxZoom: 1.0,
         bounds: true,
         boundsPadding: 0.3
       })
     } else {
-      window.mapPanZoom = {
+      zoomablePans = {
         [key]: panzoom(elem, {
           minZoom: 0.5,
           maxZoom: 1.0,
@@ -130,19 +130,19 @@
       };
     }
 
-    var transform = mapPanZoom?.[key] ? mapPanZoom[key].getTransform() : {};
+    var transform = zoomablePans?.[key] ? zoomablePans[key].getTransform() : {};
     var scaleFactor = (1 / (transform.scale || 1));
     var previous_scale = 0;
     while ($('#map').width() / scaleFactor > $('.map-block').width() || $('#map').height() / scaleFactor > $('.map-block').height()) {
-        mapPanZoom[key].zoomInOut(189);
-        transform = mapPanZoom[key] ? mapPanZoom[key].getTransform() : {};
+        zoomablePans[key].zoomInOut(189);
+        transform = zoomablePans[key] ? zoomablePans[key].getTransform() : {};
         scaleFactor = (1 / (transform.scale || 1));
         if (scaleFactor === previous_scale) {
             break;
         }
         previous_scale = scaleFactor
     }
-    mapPanZoom[key].moveTo(0, 0);
+    zoomablePans[key].moveTo(0, 0);
     })
 
   function touchHandler(event) {
