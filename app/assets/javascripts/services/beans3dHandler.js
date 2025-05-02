@@ -43,6 +43,12 @@ function initializeBeans3DMap() {
   });
 
   beansWidget = new BeansMap();
+  
+  // -----
+  let displayOptions = beans3DMapDisplayOptions();
+  displayOptions.filteredRows = filterBeansUnitsIndices();
+  // -----
+
   beansWidget.render(
     "beanswidget",
     _beansApiKey,
@@ -52,7 +58,7 @@ function initializeBeans3DMap() {
       hideNavigateButton: false,
       hideMyLocationButton: false,
     },
-    beans3DMapDisplayOptions(),
+    displayOptions,
     {
       onSelect: (data) => onUnitClick(data),
     }
@@ -67,6 +73,7 @@ function beans3DMapDisplayOptions() {
     filteredRows: null,
     initialMap: "3D",
     hideBeansCard: true,
+    hideFloorSelector: true,
     modernBeansCard: false,
     showUnitList: false,
     hideFilters: true,
@@ -101,7 +108,7 @@ function beans3DMapDisplayOptions() {
 }
 
 function getFormattedBeansUnits() {
-  return filterUnitsBasedOnCommunityType(units).map((a) => ({
+  return total_units.map((a) => ({
     unitId: a.id,
     dataProviderId: a.data_attributes["data-unit-provider-id"],
     unit: a.marketing_name,
@@ -129,6 +136,7 @@ function generateCameraView() {
 function reDrawBeansWidget() {
   if (_3dMapMode()) {
     renderChangedUnits();
+
     if (beansWidget?.workingInstance) {
       let displayOptions = beans3DMapDisplayOptions();
       displayOptions.filteredRows = filterBeansUnitsIndices();
@@ -144,6 +152,7 @@ function filterBeansUnitsIndices() {
   const filteredUnitIds = filterUnitsBasedOnCommunityType(units).map(
     ({ id }) => id
   );
+
   const filteredUnitsIndices = _3dConvertedArr.map(
     ({ options: { onClickData: { unitId } } = {} }, index) =>
       filteredUnitIds.includes(unitId) ? index : null

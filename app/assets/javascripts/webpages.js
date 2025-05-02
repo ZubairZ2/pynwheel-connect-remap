@@ -261,7 +261,7 @@ function bindWebpageEvents() {
       $(".alert").hide();
       $("#" + changedFloor).addClass("selected");
 
-      $currentImageBox.parent().removeClass("hidden");
+      // $currentImageBox.parent().removeClass("hidden");
       $(".digits-list-item").removeClass("selected");
       $(this).parent().addClass("selected");
 
