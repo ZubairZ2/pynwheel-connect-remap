@@ -161,15 +161,16 @@ function setSvgOrImageHeight($image) {
   const $webpageMainContainer = $("div.map-body.map-container-center-align");
   const $mapContainer = $webpageMainContainer.find(".right-side");
   const mapContainer = $mapContainer[0];
+  const mapContainerZoomable = $mapContainer.find("#zoomable")[0];
   const $imageParent = $image.parent();
   const $imageContainer = $("div#image-container");
   const imageContainer = $imageContainer[0];
 
   let comparableContainerDimensions = { width: 0, height: 0 };
 
-  if (mapContainer) {
+  if (mapContainer && mapContainerZoomable) {
     const { width: mapContainerWidth, height: mapContainerHeight } =
-      mapContainer.getBoundingClientRect();
+    mapContainerZoomable.getBoundingClientRect();
 
     comparableContainerDimensions.width = mapContainerWidth;
     comparableContainerDimensions.height = mapContainerHeight;
