@@ -21,10 +21,13 @@ var enable3DMaps;
 var image_width_2d;
 var maxSelectedPrice;
 var timer;
+var modalPanZoom;
+var responsiveModalPanZoom;
 var currency = "$";
 var real_page_provider_unit_id = null;
 var currentUnitSelected = null;
 var parsedSVGs = [];
+var tries = 1;
 
 var isMouseMoving = false;
 var intervalId = null;
@@ -434,7 +437,7 @@ function activateWebpageZoom() {
     for (const image of images) {
       if (isElementVisibleOnScreen(image)) {
         const key = getZoomPanKey(image.parentElement);
-        zoomElement = window.mapPanZoom[key];
+        zoomElement = zoomablePans[key];
         break;
       }
     }
@@ -449,7 +452,7 @@ function activateWebpageZoom() {
     for (const image of images) {
       if (isElementVisibleOnScreen(image)) {
         const key = getZoomPanKey(image.parentElement);
-        zoomElement = window.mapPanZoom[key];
+        zoomElement = zoomablePans[key];
         break;
       }
     }
@@ -3398,7 +3401,10 @@ function setWebpageContainerSize() {
     $mapContainer.css({
       height: result.height,
       width: result.width,
+      width: $mapContainer.width(),
     });
+    result.width = $mapContainer.width();
+
     $zoomableContainer.css({
       height: result.height - footerHeight,
       top: 0,
@@ -3567,7 +3573,7 @@ function currentVisibleMapImageScale() {
   const currentVisibleImage = currentVisibleMapImage();
   if (currentVisibleImage) {
     const zoomPanKey = getZoomPanKey(currentVisibleImage.parentElement);
-    const zoomPanInstance = window.mapPanZoom[zoomPanKey];
+    const zoomPanInstance = zoomablePans[zoomPanKey];
     if (zoomPanInstance) {
       scale = zoomPanInstance.getTransform().scale;
     }

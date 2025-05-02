@@ -109,7 +109,7 @@
       - webpage_locals[:left_margin] = left_margin
       - webpage_locals[:top_margin] = top_margin 
 
-      = render partial: 'webpages/new_index', locals: webpage_locals
+      = render partial: 'webpages/svg_map', locals: webpage_locals
     - else
       - left_margin = ((fontsize.to_f - 35) / 5).to_i
       - top_margin = ((13.0 / 25.0).to_f * (fontsize.to_f)).to_i
@@ -117,7 +117,7 @@
       - webpage_locals[:left_margin] = left_margin
       - webpage_locals[:top_margin] = top_margin
 
-      = render partial: 'webpages/old_index', locals: webpage_locals
+      = render partial: 'webpages/image_map', locals: webpage_locals
 
     %span.hidden#left_margin #{left_margin}
     %span.hidden#top_margin #{top_margin}
@@ -170,8 +170,8 @@
   floors = JSON.parse(floors);
   var current_width = $(window).width();
   var current_units = [];
-  _beansApiKey = "#{ENV['BEANS_API_KEY']}"
-
+  var _beansApiKey = "#{ENV['BEANS_API_KEY']}"
+  
   var community_logo = "#{@community.logo.present? ? true : false}"
 
   var left_margin = #{raw left_margin}

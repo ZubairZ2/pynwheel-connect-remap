@@ -5347,7 +5347,7 @@ body {
 .c-sidebar {
     position: fixed;
     top: 0;
-    z-index: 1;
+    z-index: 4;
     left: 0;
     background: #1d2425;
     width: 100%;
@@ -5520,6 +5520,10 @@ body {
     display: block;
     /* width: 100%; */
 }
+#zoomable.image-map.zoomable-map-container {
+    position: absolute;
+    top: 0;
+}
 .c-sidebar-nav {
     padding-left: 0;
     list-style: none;
@@ -5586,23 +5590,22 @@ ul.location-items span {
 .inner-footer {
     display: flex;
     justify-content: space-between;
+    align-items: center;
 }
 .zooming-content .zooming-action {
     background: #e8e9e9;
-    margin-left: 9px;
     vertical-align: middle;
     width: 46px;
-    height: 38px;
+    height: 46px;
     text-align: center;
-    line-height: 48px;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
  }
-.zooming-content-h{
+/* .zooming-content-h{
     height: 46px !important;
-}
+} */
 footer.c-footer {
     position: fixed;
     background: white;
@@ -5727,17 +5730,10 @@ html, .add-fav-body {
 	margin-left: 290px;
 }
 
-@media screen and (max-width:1500px){
-  .zooming-content .zooming-action {
-    margin-left: 10px;
-  }
-}
-
 @media screen and (max-width:1300px){
   .zooming-content .zooming-action {
       width: 32px;
       height: 32px;
-      line-height: 39px;
   }
   .zooming-content .minus-action {
       line-height: 27px;
@@ -5806,7 +5802,7 @@ html, .add-fav-body {
       text-align: unset !important;
   }
   .custom-iframe-modeule .header-buttons-groups {
-      width: 100% !important;
+      width: 100%;
       text-align: center;
       position: fixed;
       left: 25%;
@@ -6169,6 +6165,7 @@ ul.add-fav-options {
         font-size: small;
         height: 6rem;
         z-index: 999;
+        top: 0;
     }
     .left-side {
         /* top: 6rem; */
@@ -7416,3 +7413,9 @@ span.to-input {
       font-size: 5px;
     }
   }
+
+.beans-map-container {
+    width: 100%;
+    position: absolute;
+    top: 0;
+}
