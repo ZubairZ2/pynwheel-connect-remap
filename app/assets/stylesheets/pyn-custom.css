@@ -2589,7 +2589,7 @@ img-responsive {
 	width: 25%;
     height: 100%;
     position: relative;
-    overflow: scroll;
+    overflow-y: scroll;
     z-index: 4;
 }
 

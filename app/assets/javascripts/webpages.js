@@ -3328,6 +3328,7 @@ function setWebpageContainerSize() {
   const $mainBody = $wrapperBody.find(".c-body");
   const $webpageMainContainer = $("div.map-body.map-container-center-align");
   const $mapContainer = $webpageMainContainer.find(".right-side");
+  const $beansMapContainer = $mapContainer.find(".beans-map-container");
   const $zoomableContainer = $mapContainer.find(
     ".image-map.zoomable-map-container"
   );
@@ -3358,16 +3359,18 @@ function setWebpageContainerSize() {
     const $sidebar = $wrapperBody.find(".c-sidebar");
 
     const sidebar = hasFloorplate() && $sidebar[0];
-    const sidebarHeight =
-      sidebar && extraSmallScreen() ? $sidebar.height() || 0 : 0;
-    const sidebarWidth =
-      sidebar && !extraSmallScreen()
-        ? ($sidebar.width() || 0) + (2 + 2) /* padding */
-        : 0;
+    const sidebarExactHeight = $sidebar.height() || 0;
+    const sidebarExactWidth = ($sidebar.width() || 0) + (2 + 2); /* padding */
+    const sidebarHeightCondition = sidebar && extraSmallScreen();
+    const sidebarWidthCondition = sidebar && !extraSmallScreen();
+    const sidebarSize = {
+      width: sidebarWidthCondition ? sidebarExactWidth : 0,
+      height: sidebarHeightCondition ? sidebarExactHeight : 0,
+    };
 
     $containerHeader.css({
-      width: totalWidth - sidebarWidth,
-      left: sidebarWidth,
+      width: totalWidth - sidebarSize.width,
+      left: sidebarSize.width,
     });
 
     if (extraSmallScreen()) {
@@ -3378,21 +3381,22 @@ function setWebpageContainerSize() {
 
     const mainBodyHeight =
       $wrapperBody.height() - (headerHeight + tabButtonsGroupHeight);
-    const mainBodyWidth = totalWidth - sidebarWidth;
+    const mainBodyWidth = totalWidth - sidebarSize.width;
     $mainBody.css({
       width: mainBodyWidth,
       height: mainBodyHeight,
-      left: sidebarWidth,
+      left: sidebarSize.width,
       top: 0,
     });
 
-    const smallScreenElementsHeight = tabHeaderHeight + sidebarHeight;
+    const smallScreenElementsHeight = tabHeaderHeight + sidebarSize.height;
+
     const mainContainerHeight = mainBodyHeight - smallScreenElementsHeight;
 
     $webpageMainContainer.css({
       width: mainBodyWidth,
       height: mainContainerHeight,
-      top: sidebarHeight,
+      top: sidebarSize.height,
     });
 
     result.height = mainContainerHeight;
@@ -3401,13 +3405,18 @@ function setWebpageContainerSize() {
     $mapContainer.css({
       height: result.height,
       width: result.width,
-      width: $mapContainer.width(),
     });
+
     result.width = $mapContainer.width();
 
     $zoomableContainer.css({
       height: result.height - footerHeight,
+      width: result.width,
       top: 0,
+    });
+    $beansMapContainer.css({
+      height: result.height - footerHeight,
+      width: result.width,
     });
     $mapContainerFooter.css({
       width: result.width,
@@ -3421,7 +3430,7 @@ function setWebpageContainerSize() {
     if (smallScreen()) {
       $buttonsGroup.css({
         width: mainBodyWidth,
-        left: sidebarWidth,
+        left: sidebarSize.width,
       });
     }
 
