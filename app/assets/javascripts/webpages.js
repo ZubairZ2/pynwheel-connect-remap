@@ -751,7 +751,9 @@ function filterUnitsBasedOnMultiCommunity() {
   const propertyId = filterMultiCommunityBasedOnScreen("multi_communities");
 
   if (propertyId)
-    units = total_units.filter((unit) => unit.property_id == propertyId);
+    units = total_units.filter(
+      (unit) => unit.property_id.trim() == propertyId.trim()
+    );
   else units = total_units;
 }
 
@@ -1387,7 +1389,10 @@ function unitListHover() {
               }
             });
           }
-          markerColor = getUnitMarkerColor(selectedMarker.dataset.unitStatus);
+          markerColor = getUnitMarkerColor(
+            selectedMarker.dataset.unitStatus,
+            selectedMarker.dataset.modelUnit
+          );
           e.currentTarget.style.border = `3px solid ${markerColor}`;
 
           focused_marker = document.getElementById(selectedMarker.id);
@@ -1432,7 +1437,7 @@ function unitListHover() {
 
           // if (matchCondition) break; // Turn it on if you want the exact match and not the top 1 in multiple units
         }
-      };
+      }
     },
     function (e) {
       e.currentTarget.style.border = "none";
@@ -1457,7 +1462,10 @@ function markerHoverEffect(event) {
     $this = $(lastClonedElement);
   }
 
-  const markerColor = getUnitMarkerColor($this.data().unitStatus);
+  const markerColor = getUnitMarkerColor(
+    $this.data().unitStatus,
+    $this.data().modelUnit
+  );
   if ($this.data("is-fav") || favoritesArr.includes($this.data("unit-id"))) {
     $(".fav-heart").removeClass("hidden");
   } else {
@@ -3676,36 +3684,42 @@ function currentVisibleMapImageScale() {
 function getUnitMarkerColor(unitStatus, modelUnit = false) {
   let result = map_marker_color;
   if (tbdMarkersEnabled) {
-    switch (unitStatus.toLowerCase()) {
-      case "occupied":
-      case "occupied no notice":
-      case "notice rented":
-        result = mapMarkerColors.occupied || "#f2f2f2";
-        break;
-      case "occupied on notice":
-      case "notice unrented":
-        result = mapMarkerColors.occupied_on_notice || "#8545a1";
-        break;
-      case "vacant":
-      case "available":
-      case "unoccupied":
-      case "vacant unrented not ready":
-        result = mapMarkerColors.vacant || "#d37474";
-        break;
-      case "vacant lease":
-      case "vacant rented ready":
-      case "vacant rented not ready":
-      case "vacant unrented ready":
-        result = mapMarkerColors.vacant_leased || "#f9d648";
-        break;
-      default:
-        result = map_marker_color;
-        break;
+    const isModelUnit =
+      typeof modelUnit === "boolean"
+        ? modelUnit
+        : typeof modelUnit === "string"
+        ? modelUnit === "true"
+        : false;
+    if (isModelUnit) {
+      result = mapMarkerColors.model || "#f57396";
+    } else {
+      switch (unitStatus.toLowerCase()) {
+        case "occupied":
+        case "occupied no notice":
+        case "notice rented":
+          result = mapMarkerColors.occupied || "#f2f2f2";
+          break;
+        case "occupied on notice":
+        case "notice unrented":
+          result = mapMarkerColors.occupied_on_notice || "#8545a1";
+          break;
+        case "vacant":
+        case "available":
+        case "unoccupied":
+        case "vacant unrented not ready":
+          result = mapMarkerColors.vacant || "#d37474";
+          break;
+        case "vacant lease":
+        case "vacant rented ready":
+        case "vacant rented not ready":
+        case "vacant unrented ready":
+          result = mapMarkerColors.vacant_leased || "#f9d648";
+          break;
+        default:
+          result = map_marker_color;
+          break;
+      }
     }
-  }
-
-  if (modelUnit) {
-    result = mapMarkerColors.model || "#f57396";
   }
 
   return result;
