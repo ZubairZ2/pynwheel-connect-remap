@@ -200,7 +200,7 @@
                 - @floors.each do |floor|
                   - floorplate = @floorplates.select{|f| f.floors.include?(floor)}.first
                   %li.digits-list-item#digits-list-item{:class => "#{floor == min_unit_floor ? 'selected' : ''}"}
-                    = link_to (floorplate.floor_name_added ? (floorplate.floor_name.present? ? floorplate.floor_name : "Nil") : floor),'javascript:;;',"data-interest" => "", :style => "margin: 0;color: white;font-size: 28pt;font-weight: 600", :class=>"floorplate-anchor #{floor == min_unit_floor ? 'selected' : ''}",:id=>floor, "onclick": "_3dFilterByFloor(this)"
+                    = link_to (floorplate.floor_name_added ? (floorplate.floor_name.present? ? floorplate.floor_name : "Nil") : floor),'javascript:;;',"data-interest" => "", :style => "margin: 0;color: white;font-size: 28pt;font-weight: 600", :class=>"floorplate-anchor #{floor == min_unit_floor ? 'selected' : ''}",:id=>floor
                     %div.units-no{style: "margin-top: 11px"}
                       %span.teg-line{:id => "u_#{floor}"}
 
@@ -332,8 +332,6 @@
   var $images = [];
   var largeImageHeight = 166;
   var map_marker_color = toRgbColor("#{raw map_marker_color}");
-  var tbdMarkersEnabled = #{@community.display_tbd_legend}
-  var mapMarkerColors = #{raw marker_colors.to_json}
   var markerFontSize = "#{raw fontsize}";
   var amenity_marker_color = toRgbColor("#{raw amenity_marker_color}");
   var units_availability_over_120_days = "#{@community.units_availability_over_120_days}";
@@ -467,7 +465,7 @@
       $(this).next('.mobile-filter-mega-menu').slideToggle();
     });
 
-    if (current_width <= 767){
+    if (smallScreen()){
       $('.modal-wrapper-mobile').removeClass("hidden");
       $('.c-modal-wrapper').addClass("hidden");
     }

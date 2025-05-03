@@ -2165,7 +2165,7 @@ function setModalAttributes(element) {
   }
 
   handleApplyNowButtonVisibility(element);
-  adjustHeightForContentArea();
+  // adjustHeightForContentArea();
 }
 
 function handleApplyNowButtonVisibility(element) {
@@ -2561,14 +2561,11 @@ function handleMapControl() {
 function display3DMap() {
   $("._3d-apply-filter-button").css("display", "block");
   $(".beans-map-container").show();
-  $(".zooming-content").css("float", "right");
   image_width_2d = parseInt($(".floorplate-image").width());
   $(".image-map").hide();
   $(".zoom-in-webpage").hide();
   $(".zoom-out-webpage").hide();
-  $("#image-container").css("width", "100%");
   // $(".location-items").hide();
-  $(".c-footer").css("margin-left", "0px");
   $(".desktop-content").hide();
   $(".2d-map-option").removeClass("hidden");
   $(".3d-map-option").addClass("hidden");
@@ -2622,9 +2619,9 @@ function display2DMap() {
     showMarkers();
   }
 
-  var windowWidth = $(window).width();
+  // var windowWidth = $(window).width();
   if (selectMap !== "3d-map") {
-    handleViewportChange(windowWidth);
+    // handleViewportChange(windowWidth);
     const markerColor = isColorWhite(map_marker_color)
       ? "grey"
       : map_marker_color;
@@ -3368,6 +3365,7 @@ function setWebpageContainerSize() {
       height: sidebarHeightCondition ? sidebarExactHeight : 0,
     };
 
+    debugger
     $containerHeader.css({
       width: totalWidth - sidebarSize.width,
       left: sidebarSize.width,
@@ -3428,6 +3426,7 @@ function setWebpageContainerSize() {
     });
 
     if (smallScreen()) {
+      debugger
       $buttonsGroup.css({
         width: mainBodyWidth,
         left: sidebarSize.width,
@@ -3453,6 +3452,7 @@ function setWebpageContainerSize() {
         top: 0,
       });
     }
+    debugger
   }
 }
 
