@@ -358,7 +358,8 @@
   var $images = [];
   var largeImageHeight = 166;
   var map_marker_color = toRgbColor("#{raw map_marker_color}");
-  var tbdMarkersEnabled = #{@community.display_tbd_legend}
+  var tbdMarkersEnabled = "#{@community.display_tbd_legend?}"
+  tbdMarkersEnabled = tbdMarkersEnabled === "true"
   var mapMarkerColors = #{raw marker_colors.to_json}
   var markerFontSize = "#{raw fontsize}";
   var amenity_marker_color = toRgbColor("#{raw amenity_marker_color}");
