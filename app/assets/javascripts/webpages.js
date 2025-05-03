@@ -72,9 +72,9 @@ $(document).ready(function () {
   currency = $("#communityWebpagesData").data("currency");
 
   if (isDefined(webCommunity)) {
-    selectMap = "2d-map";
+    selectMap = '2d-map';
     enable3DMaps = webCommunity.enable_three_d_maps;
-    defaultMapType = "2d-map";
+    defaultMapType = '2d-map';
 
     if (selectMap === "3d-map" && enable3DMaps) {
       _3dUnitsToBeSelected = filterUnitsBasedOnCommunityType(units); //select_units_according_to_filters(units)
@@ -2659,11 +2659,11 @@ function getElementHeight(element) {
 }
 
 function _3dMapViewMarkers() {
-  let _3dUnitsMarketingNames = getUnitsMarketingNames();
-  let cleanedNames = clean3DMarkers(_3dUnitsMarketingNames);
-  if (cleanedNames.length > 0)
-    _3dFilterByUnits(cleanedNames + "," + _3dSampleAmenities.join());
-  else _3dFilterByUnits(cleanedNames);
+  // let _3dUnitsMarketingNames = getUnitsMarketingNames();
+  // let cleanedNames = clean3DMarkers(_3dUnitsMarketingNames);
+  // if (cleanedNames.length > 0)
+  //   _3dFilterByUnits(cleanedNames + "," + _3dSampleAmenities.join());
+  // else _3dFilterByUnits(cleanedNames);
 }
 
 function clean3DMarkers(unit_names) {
