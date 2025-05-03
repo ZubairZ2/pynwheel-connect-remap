@@ -30,8 +30,14 @@ class WebpagesController < ActionController::Base
         @floors = @floorplates.map {|f| f.floors }.flatten.sort_by { |f| -f }
         @amenities = @amenities.where(amenityable: @floorplates).includes(:amenity_galleries)
       end
+      
+      @available_units_and_sold_units = if @community_info.display_tbd_legend?
+                                          community_units.status_scoped
+                                        else
+                                          community_units.available_units(@svg_enabled, @community.units_availability_over_120_days)
+                                        end
 
-      @available_units_and_sold_units = community_units.statusScoped.available_units(@svg_enabled, @community.units_availability_over_120_days) #+ @community_info.units.are_sold(@svg_enabled)
+       #+ @community_info.units.are_sold(@svg_enabled)
       if @available_units_and_sold_units.length > 0
         normalize_units
         if @units_with_floorplan_info.present?
