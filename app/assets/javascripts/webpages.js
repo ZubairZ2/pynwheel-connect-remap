@@ -1685,6 +1685,7 @@ function disabled_enabled_anchors() {
       }
     }
 
+    debugger
     const unitToDisplay = filterUnitsBasedOnCommunityType(units);
     if (unitToDisplay.length == 0 && floorplate_amenities.length != 0) {
       $("#" + floors[i]).addClass("only-amenity");
