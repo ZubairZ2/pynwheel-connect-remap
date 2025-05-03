@@ -5,6 +5,8 @@
     - svg_exists = svg_data && svg_data.values_at(:width, :height).sum.positive?
     - if svg_exists
       %div{ data: svg_data, id: "floorplate_#{floor}", class: floor == min_unit_floor ? '' : 'hidden',  style: "position: relative; flex: 1;" }
+        - if @community_info.display_tbd_legend?
+          = render partial: 'webpages/marker_colors_legend', locals: { marker_colors: }
     - else
       %div{ id: "floorplate_#{floor}", style: 'margin: auto; flex: 1;', class: floor == min_unit_floor ? '' : 'hidden' }
         = image_tag "/assets/default.jpeg", class: "map-image-align sitemap-image floorplate-image", id: "f_#{floor}"
@@ -13,6 +15,8 @@
   - svg_exists = svg_data && svg_data.values_at(:width, :height).sum.positive?
   - if svg_exists
     %div#property-map{ data: svg_data, style: "position: relative; flex: 1;" }
+      - if @community_info.display_tbd_legend?
+        = render partial: 'webpages/marker_colors_legend'
   - else
     %div{ id: "property-map", style: 'margin: auto; flex: 1;' }
       = image_tag "/assets/default.jpeg", class: "floorplate-image sitemap-image map-image-align", id: "property-map-image"

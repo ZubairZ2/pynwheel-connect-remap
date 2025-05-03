@@ -359,7 +359,7 @@
   var largeImageHeight = 166;
   var map_marker_color = toRgbColor("#{raw map_marker_color}");
   var tbdMarkersEnabled = #{@community.display_tbd_legend}
-  var map_marker_colors = "#{raw marker_colors.to_json}"
+  var mapMarkerColors = #{raw marker_colors.to_json}
   var markerFontSize = "#{raw fontsize}";
   var amenity_marker_color = toRgbColor("#{raw amenity_marker_color}");
   var units_availability_over_120_days = "#{@community.units_availability_over_120_days}";
