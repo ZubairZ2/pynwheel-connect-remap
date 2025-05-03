@@ -122,7 +122,8 @@
                 - if @have_multi_property_ids
                   .selectable-field
                     %label Community
-                    = select_tag :multi_communities, options_for_select(@multi_properties.present? ? @multi_properties : []),{:class=>"custom-select", :include_blank => "All "}
+                    %label.short Community
+                    = select_tag :multi_communities, options_for_select(@multi_properties.present? ? @multi_properties : []),{ :class=>"custom-select", style: "min-width: max-content;", :include_blank => "All "}
 
                 .selectable-field
                   %label Bedrooms
