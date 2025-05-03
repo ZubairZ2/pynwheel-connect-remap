@@ -273,13 +273,6 @@
                           %i.fas.fa-camera-retro{:style => "color: #{amenity_marker_color}; font-size: #{camera_font_size}px; margin-top:#{camera_margin}px;"}
                         %span Amenity image
 
-                  - if @community.enable_three_d_maps
-                    .zooming-content.zoomable-map-container
-                      %a.refresh-action.zooming-action.zoom-controls.map-options.3d-map-option{:href => "#", "data-current-map-type"=>"3d-current-map"}
-                        %img{:src => "/assets/3D_modeling.svg"}/
-                      %a.refresh-action.zooming-action.zoom-controls.map-options.2d-map-option.hidden{:href => "#", "data-current-map-type"=>"2d-current-map"}
-                        %img{:src => "/assets/2D_modeling.svg"}/
-
                 %footer.c-footer#footer.desktop-content
                   .inner-footer
                     .footer-logo.desktop-content{:style=> "visibility: #{@community.powered_by_btn ? "" : "hidden" }"}
@@ -307,11 +300,6 @@
                         %img{:src => "/assets/plus.png"}/
                       %a.minus-action.zooming-action.zoom-out-webpage.zoom-controls{:href => "#"}
                         %img{:src => "/assets/minus.png"}/
-                      - if @community.enable_three_d_maps
-                        %a.refresh-action.zooming-action.zoom-controls.map-options.3d-map-option{:href => "#", "data-current-map-type"=>"3d-current-map"}
-                          %img{:src => "/assets/3D_modeling.svg"}/
-                        %a.refresh-action.zooming-action.zoom-controls.map-options.2d-map-option.hidden{:href => "#", "data-current-map-type"=>"2d-current-map"}
-                          %img{:src => "/assets/2D_modeling.svg"}/
 
               .left-side.tabcontent.list_view
                 -all_details = @units_with_floorplan_info.present? ? JSON.parse(@units_with_floorplan_info) : []

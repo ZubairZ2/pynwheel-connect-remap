@@ -5450,6 +5450,12 @@ body {
     }
 }
 
+@media screen and (max-width: 1366px) {
+    .header-inner .header-action-btn.view-saved-btn {
+        min-width: 5rem !important;
+    }
+}
+
 @media screen and (min-width: 1252px) {
     .header-inner .header-action-btn.schedule-tour-btn span.hidable {
         display: inline-block;
@@ -7726,7 +7732,18 @@ span.to-input {
     background-color: #f57396;
 }
 
-@media (max-width:1024px) {
+@media (max-width:1252px) {
+    .legend-item {
+        font-size: 1rem;
+    }
+
+    .color-box {
+        width: 100px;
+        height: 15px;
+    }
+}
+
+@media (max-width:992px) {
     .legend-item {
         font-size: 0.7rem;
     }
