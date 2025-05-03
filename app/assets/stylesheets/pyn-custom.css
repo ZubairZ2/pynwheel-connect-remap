@@ -7681,7 +7681,7 @@ span.to-input {
     align-items: center;
     gap: 5px;
     padding: 10px 0;
-    bottom: 8%;
+    bottom: 0;
     left: 50%;
     transform: translateX(-50%);
 }
@@ -7694,6 +7694,10 @@ span.to-input {
     font-size: 1.5rem;
     font-weight: bold;
     font-family: Arial, sans-serif;
+}
+
+.legend-item > span.label {
+    color: #000000;
 }
 
 .color-box {
@@ -7723,10 +7727,6 @@ span.to-input {
 }
 
 @media (max-width:1024px) {
-    .legend {
-        bottom: 0;
-    }
-
     .legend-item {
         font-size: 0.7rem;
     }
@@ -7734,9 +7734,5 @@ span.to-input {
     .color-box {
         width: 50px;
         height: 10px;
-    }
-
-    .legend-item > span.label {
-        color: #000;
     }
 }
