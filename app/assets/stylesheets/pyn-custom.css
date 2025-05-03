@@ -5397,6 +5397,45 @@ body {
     margin: auto;
 }
 
+@media screen and (min-width: 994px) and (max-width: 1400px){
+    .header-inner .header-action-btn:not(.schedule-tour-btn), .header-inner .web-reset-button {  
+        display: flex !important;
+        max-width: 7rem !important;
+        min-width: 5rem !important;
+    }
+    .header-inner .header-action-btn i, .header-inner .web-reset-button i { 
+        margin: auto;
+        font-size: large;
+    }
+    .app-header .selection-fields .selectable-field label:not(.short),
+    .header-inner .header-action-btn span.hidable,
+    .header-inner .web-reset-button span.hidable { 
+        display: none;
+    }
+    .app-header .selection-fields .selectable-field label.short {
+        display: block;
+    }
+    .header-buttons-groups {
+        justify-content: space-between !important;
+        margin-left: 1.5rem;
+        gap: 1rem;
+    }
+}
+
+@media screen and (min-width: 1401px) and (max-width: 1624px){
+    .header-action-btn.view-saved-btn {
+        display: flex !important;
+        max-width: 7rem !important;
+    }
+    .header-action-btn.view-saved-btn i { 
+        margin: auto;
+        font-size: large;
+    }
+    .header-action-btn.view-saved-btn span.hidable { 
+        display: none;
+    }
+}
+
 .custom-iframe-modeule .app-logo-mobile {
     width: 25%;
     text-align: center;

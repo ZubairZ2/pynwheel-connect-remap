@@ -260,7 +260,6 @@ function bindWebpageEvents() {
 
   $("#multi_communities, #responsive_multi_communities").change(function () {
     multiPropertiesFilterChanged();
-    reDrawBeansWidget();
   });
 
   $("#lease_term").change(function () {
@@ -756,7 +755,7 @@ function filterUnitsBasedOnMultiCommunity() {
   const propertyId = filterMultiCommunityBasedOnScreen("multi_communities");
 
   if(propertyId)
-    units = total_units.filter((unit) => unit.property_id.trim() == propertyId.trim())
+    units = total_units.filter((unit) => unit.property_id == propertyId)
   else 
     units = total_units
 
@@ -2895,12 +2894,32 @@ function apply3DFilters() {
 
 function resetFilters() {
   units = current_units;
-  resetBasedOnBedroom();
 
+  if(multiCommunity)
+    resetBasedOnMultiCommunities();
+  else
+    resetBasedOnBedroom();
+  
   showMarkers();
 }
 
+function resetBasedOnMultiCommunities() {
+  $("#responsive_multi_communities").val( $("#responsive_multi_communities option:first").val() );
+  $("#multi_communities").val($("#multi_communities option:first").val());
 
+  if ($(window).width() <= 993) $(".mobile-filter-mega-menu").slideToggle();
+  
+  multiPropertiesFilterChanged(); 
+}
+
+function resetBasedOnBedroom() {
+  $("#responsive_unit_bedroom").val( $("#responsive_unit_bedroom option:first").val() );
+  $("#unit_bedroom").val($("#unit_bedroom option:first").val());
+
+  if ($(window).width() <= 993) $(".mobile-filter-mega-menu").slideToggle();
+  
+  bedroomFilterChanged(); 
+}
 
 function resetBasedOnBedroom() {
   $("#responsive_unit_bedroom").val( $("#responsive_unit_bedroom option:first").val() );
