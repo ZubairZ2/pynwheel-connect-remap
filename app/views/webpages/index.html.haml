@@ -260,6 +260,9 @@
                 .d-flex-justify-content-center.beans-map-container.hidden
                   .beanswidget#beanswidget.some{ style: "width: 100%; height: 100%;" }
 
+                  - if @community_info.display_tbd_legend?
+                    = render partial: 'webpages/marker_colors_legend', locals: { marker_colors: }
+
                 .image-map#zoomable.zoomable-map-container{style: "text-align: center; display: flex;"}
                   .hidden-units
                   = render partial: @svg_enabled ? 'webpages/svg_map' : 'webpages/image_map', locals: svg_and_image_locals
