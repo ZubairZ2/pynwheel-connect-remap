@@ -162,7 +162,7 @@ class Unit < ApplicationRecord
                                .where("available_date <= ?", Date.today + 120.days)
     end
   }
-  scope :statusScoped, -> {
+  scope :status_scoped, -> {
     where("LOWER(unit_status) IN (?) OR modal_unit = ?", AVAILABILITY_SCOPED_STATUSES.map(&:downcase), true)
   }
 
