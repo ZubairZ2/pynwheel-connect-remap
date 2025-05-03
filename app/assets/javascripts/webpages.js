@@ -3724,3 +3724,7 @@ function getUnitMarkerColor(unitStatus, modelUnit = false) {
 
   return result;
 }
+
+function resetUnits() {
+  units = total_units;
+}
