@@ -50,6 +50,7 @@ function setSVG(container, svgElement, options) {
         ":not(.cloned-unit):not(.cloned-amenity)"
     );
 
+    const defaultFillAttributeKey = "default-fill-color";
     $shapes.on("mouseenter", function (e) {
       if (addmode) {
         const { shape, valid } = getTheValidSVGShape(this);
@@ -329,6 +330,7 @@ function setupAmenityToolTip(block, data, svgElement) {
 
 function setupAmenityFillHandlers(duplicateBlock, fillOnHover = false) {
   const amenityFillColor = amenity_marker_color || map_marker_color;
+  const defaultFillAttributeKey = "default-fill-color";
 
   if (fillOnHover) {
     return {

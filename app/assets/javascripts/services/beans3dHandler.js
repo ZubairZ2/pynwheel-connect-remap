@@ -30,24 +30,11 @@ var map_marker_color = definedAndHasValue(map_marker_color)
 
 function initializeBeans3DMap() {
   beansAddress = formattedAddress(webCommunity);
-  const formattedUnits = getFormattedBeansUnits();
-  _3dConvertedArr = convertUnitsArr(
-    { address: beansAddress },
-    formattedUnits,
-    true,
-    true
-  ).map((data, index) => {
-    data.options.markers.display = true;
-    data.options.onClickData = formattedUnits[index];
-    return data;
-  });
-
   beansWidget = new BeansMap();
-  
-  // -----
+
+  _3dConvertedArr = setup3dArray();
   let displayOptions = beans3DMapDisplayOptions();
   displayOptions.filteredRows = filterBeansUnitsIndices();
-  // -----
 
   beansWidget.render(
     "beanswidget",
@@ -77,7 +64,6 @@ function beans3DMapDisplayOptions() {
     modernBeansCard: false,
     showUnitList: false,
     hideFilters: true,
-    // forceHideFilters: true,
     showUnitShape: true,
     showUnitList: false,
     hideShadow: true,
@@ -91,14 +77,14 @@ function beans3DMapDisplayOptions() {
       fillOpacity: 0.5,
     },
     selectableUnitShape: {
-      fillColor: toHexColor(map_marker_color),
+      fillColor: toRgbColor(rgba(244, 244, 244, 0)),
       fillOpacity: 1.0,
       strokeWeight: 1.0,
       strokeOpacity: 1.0,
       strokeColor: "#ffffff",
     },
     selectedUnitShape: {
-      fillColor: toHexColor(map_marker_color),
+      fillColor: toRgbColor(rgba(244, 244, 244, 0)),
       fillOpacity: 1.0,
       strokeWeight: 1.0,
       strokeOpacity: 1.0,
@@ -111,6 +97,8 @@ function getFormattedBeansUnits() {
   return total_units.map((a) => ({
     unitId: a.id,
     dataProviderId: a.data_attributes["data-unit-provider-id"],
+    status: a.unit_status,
+    modelUnit: a.model_unit,
     unit: a.marketing_name,
     name: a.marketing_name,
     floor: a.floor,
@@ -121,10 +109,38 @@ function getFormattedBeansUnits() {
   }));
 }
 
+function setup3dArray () {
+  const formattedUnits = getFormattedBeansUnits();
+
+  const _3dArray = convertUnitsArr(
+    { address: beansAddress },
+    formattedUnits,
+    true,
+    true
+  );
+
+  return _3dArray.map((data, index) => {
+    const unitData = formattedUnits[index];
+    data.options.markers.display = true;
+    data.options.onClickData = unitData;
+    data.options.onPreviewTitle = unitData.name;
+    data.options.onPreviewContent = unitData.dataProviderId;
+    const unitFillColor = getUnitMarkerColor(unitData.status, unitData.modelUnit)
+    data.options.unitShape = {
+      fillColor: unitFillColor,
+      fillOpacity: 0.5,
+      strokeColor: unitFillColor,
+      strokeOpacity: 0.5,
+      strokeWeight: 2
+    }
+    return data;
+  });
+}
+
 function generateCameraView() {
   return {
     tilt: 65,
-    heading: 265,
+    heading: 0,
     position: {
       x: parseFloat(webCommunity.longitude),
       y: parseFloat(webCommunity.latitude),
@@ -136,6 +152,7 @@ function generateCameraView() {
 function reDrawBeansWidget() {
   if (_3dMapMode()) {
     renderChangedUnits();
+    disabled_enabled_anchors();
 
     if (beansWidget?.workingInstance) {
       let displayOptions = beans3DMapDisplayOptions();
@@ -148,7 +165,7 @@ function reDrawBeansWidget() {
   }
 }
 
-function filterBeansUnitsIndices() {
+function filterBeansUnitsIndices () {
   const filteredUnitIds = filterUnitsBasedOnCommunityType(units).map(
     ({ id }) => id
   );

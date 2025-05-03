@@ -119,20 +119,20 @@ class FloorplatesController < ApplicationController
       image = MiniMagick::Image.open(floorplate_params[:svg_image].path)
       file_checksum = Digest::MD5.hexdigest(image.to_blob)
 
-      if image.type != "SVG"
-        flash[:error] = "SVG section image must be of SVG type."
-        render :new and return
-      elsif image.width < 1000 && image.height < 700
-        flash[:error] = "Too small property map image"
-        render :new and return
-      else
+      # if image.type != "SVG"
+      #   flash[:error] = "SVG section image must be of SVG type."
+      #   render :new and return
+      # elsif image.width < 1000 && image.height < 700
+      #   flash[:error] = "Too small property map image"
+      #   render :new and return
+      # else
         original_file = fetch_svg_by_url(get_environment_based_svg_url(@floorplate))
         original_svg_image_checksum = Digest::MD5.hexdigest(original_file) if original_file.present?
 
         width = (image.width rescue 0)
         height = (image.height rescue 0)
         @floorplate.svg_metadata = { width: width, height: height}
-      end
+      # end
     end
 
     if floorplate_params[:image].present?

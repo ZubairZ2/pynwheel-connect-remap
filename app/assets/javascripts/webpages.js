@@ -175,16 +175,12 @@ function bindWebpageEvents() {
 
   $(".3d-map-option").click(function () {
     selectMap = "3d-map";
-    setUnitsOnModeBase();
     display3DMap();
-    setWebpageContainerSize();
   });
 
   $(".2d-map-option").click(function () {
     selectMap = "2d-map";
-    setUnitsOnModeBase();
     display2DMap();
-    setWebpageContainerSize();
   });
 
   $("#market_rent, #responsive_market_rent").change(function () {
@@ -283,10 +279,8 @@ function bindWebpageEvents() {
         populate_current_units();
       }
     }
-    if(_3dMapMode())
-      reDrawBeansWidget();
-    else 
-      showMarkers();
+    if (_3dMapMode()) reDrawBeansWidget();
+    else showMarkers();
   });
 
   $(".filter-label").click(function () {
@@ -650,7 +644,6 @@ function filterUnitsBasedOnBedroom() {
   $(".alert").hide();
 
   if (!multiCommunity) resetUnits();
-
   const unitBedroom = filterBasedOnScreen("unit_bedroom");
 
   if (unitBedroom || unitBedroom === 0)
@@ -1124,7 +1117,7 @@ function renderChangedUnits() {
   if (element == null) return;
   element.innerHTML = "";
 
-  filtered_units = _3dMapMode() ? units : filterUnitsBasedOnCommunityType(units);
+  filtered_units = filterUnitsBasedOnCommunityType(units);
 
   sortType = document.getElementById("filter");
   floorUnits = getFilteredUnits(filtered_units, sortType.value);
@@ -1667,7 +1660,6 @@ function hasTouch() {
 }
 
 function disabled_enabled_anchors() {
-  if (_3dMapMode()) return;
   var min_market_rent = 100000;
   var max_area = 0;
   const $alert = $(".alert");
@@ -2388,18 +2380,17 @@ function setUnitAttributes(element, event = null) {
   event?.stopImmediatePropagation();
 }
 
-function getElementHeight(element) {
-  var height = $(element).outerHeight();
-
-  return height;
-}
-
 function handleMapControl() {
   if (communityInactivated) return;
-  renderChangedUnits();
   if (_3dMapMode()) {
     display3DMap();
   } else display2DMap();
+}
+
+function resetMapData() {
+  setWebpageContainerSize();
+  // resetUnits();
+  // resetFilters();
 }
 
 function display3DMap() {
@@ -2429,202 +2420,8 @@ function display2DMap() {
   showMarkers();
 }
 
-function isColorWhite(color) {
-  const normalizedColor = color.toLowerCase();
-
-  return (
-    normalizedColor === "#ffffff" ||
-    normalizedColor === "#fff" ||
-    normalizedColor === "white" ||
-    normalizedColor === "rgb(255, 255, 255)" ||
-    normalizedColor === "rgba(255, 255, 255, 1)"
-  );
-}
-
-function handleViewportChange() {
-  const viewportWidth = window.innerWidth;
-  let filters_width = "65%";
-  let buttons_width = "15%";
-  // let logo_width = "25%";
-
-  if (viewportWidth <= 567) {
-    filters_width = "100%";
-    buttons_width = "100%";
-  } else if (viewportWidth >= 567 && viewportWidth <= 768) {
-    filters_width = "100%";
-    buttons_width = "50%";
-  } else if (viewportWidth >= 768 && viewportWidth <= 993) {
-    if (webCommunity["is_sitemap"]) {
-      filters_width = "100%";
-      buttons_width = "50%";
-    } else {
-      filters_width = "100%";
-      buttons_width = "50%";
-    }
-  } else if (viewportWidth >= 993 && viewportWidth <= 1050) {
-    if (webCommunity["is_sitemap"]) {
-      if ($(".colourd-btn").is(":visible")) {
-        filters_width = "55%";
-        buttons_width = "25%";
-      } else {
-        filters_width = "60%";
-        buttons_width = "13%";
-      }
-    } else {
-      if ($(".colourd-btn").is(":visible")) {
-        filters_width = "100%";
-        buttons_width = "43%";
-      } else {
-        filters_width = "100%";
-        buttons_width = "20%";
-      }
-    }
-  } else if (viewportWidth >= 1050 && viewportWidth <= 1120) {
-    if (webCommunity["is_sitemap"]) {
-      if ($(".colourd-btn").is(":visible")) {
-        filters_width = "52%";
-        buttons_width = "22%";
-      } else {
-        filters_width = "57%";
-        buttons_width = "14%";
-      }
-    } else {
-      if ($(".colourd-btn").is(":visible")) {
-        filters_width = "65%";
-        buttons_width = "27%";
-      } else {
-        filters_width = "60%";
-        buttons_width = "17%";
-      }
-    }
-  } else if (viewportWidth >= 1120 && viewportWidth <= 1180) {
-    if (webCommunity["is_sitemap"]) {
-      if ($(".colourd-btn").is(":visible")) {
-        filters_width = "52%";
-        buttons_width = "22%";
-      } else {
-        filters_width = "55%";
-        buttons_width = "16%";
-      }
-    } else {
-      if ($(".colourd-btn").is(":visible")) {
-        filters_width = "53%";
-        buttons_width = "24%";
-      } else {
-        filters_width = "60%";
-        buttons_width = "17%";
-      }
-    }
-  } else if (viewportWidth >= 1180 && viewportWidth <= 1300) {
-    if (webCommunity["is_sitemap"]) {
-      if ($(".colourd-btn").is(":visible")) {
-        filters_width = "47%";
-        buttons_width = "24%";
-      } else {
-        filters_width = "57%";
-        buttons_width = "14%";
-      }
-    } else {
-      if ($(".colourd-btn").is(":visible")) {
-        filters_width = "51%";
-        buttons_width = "25%";
-      } else {
-        filters_width = "60%";
-        buttons_width = "16%";
-      }
-    }
-  } else if (viewportWidth >= 1300 && viewportWidth <= 1370) {
-    if (webCommunity["is_sitemap"]) {
-      if ($(".colourd-btn").is(":visible")) {
-        filters_width = "45%";
-        buttons_width = "26%";
-      } else {
-        filters_width = "55%";
-        buttons_width = "15%";
-      }
-    } else {
-      if ($(".colourd-btn").is(":visible")) {
-        filters_width = "49%";
-        buttons_width = "28%";
-      } else {
-        filters_width = "60%";
-        buttons_width = "16%";
-      }
-    }
-  } else if (viewportWidth >= 1370 && viewportWidth <= 1470) {
-    if (webCommunity["is_sitemap"]) {
-      filters_width = "50%";
-      buttons_width = "27%";
-    } else {
-      filters_width = "70%";
-      buttons_width = "35%";
-    }
-  } else if (viewportWidth >= 1470 && viewportWidth <= 1520) {
-    if (webCommunity["is_sitemap"]) {
-      filters_width = "52%";
-      buttons_width = "25%";
-    } else {
-      filters_width = "70%";
-      buttons_width = "35%";
-    }
-  } else if (viewportWidth >= 1520) {
-    if (webCommunity["is_sitemap"]) {
-      filters_width = "51%";
-      buttons_width = "25%";
-    } else {
-      filters_width = "61%";
-      buttons_width = "35%";
-    }
-  }
-
-  setCSSForElements(".custom-iframe-modeule .selection-fields", filters_width);
-  setCSSForElements(
-    ".custom-iframe-modeule .header-buttons-groups",
-    buttons_width
-  );
-  // setCSSForElements(".custom-iframe-modeule .app-logo", logo_width);
-}
-
-function setCSSForElements(element, percentage) {
-  $(`${element}`).css("width", percentage);
-}
-
-function _3dFilterByFloor(floor) {
-  floorNumber = floor.id; //parseInt(floor.id)
-  // if (selectMap === "3d-map") {
-  //   beansWidget.filterByFloor(floorNumber);
-  // }
-}
-
-// function _3dFilterByUnits(_3dUnits) {
-//   beansWidget.filterByUnit(_3dUnits);
-// }
-
-// function apply3DFilters() {
-//   if (_3dMapMode()) {
-//     _3dMapViewMarkers();
-//   }
-// }
-
-function changeMap() {
-  const button = $('.map-switch-button');
-
-  if (selectMap === "3d-map") {
-    selectMap = "2d-map";
-    defaultMapType = "2d-map";
-    button.html('3D Map <i class="fa fa-refresh"></i>');
-  } else {
-    selectMap = "3d-map";
-    defaultMapType = "3d-map";
-    button.html('2D Map <i class="fa fa-refresh"></i>');
-  }
-
-  handleMapControl();
-  showMarkers();
-  reDrawBeansWidget();
-}
-
 function resetFilters() {
+  debugger;
   units = current_units;
 
   if (multiCommunity) resetBasedOnMultiCommunities();
@@ -3115,7 +2912,6 @@ async function fetchWebpageSVGAndSetCoordinates() {
 
     if (result.ok) {
       handleMapControl();
-      disabled_enabled_anchors();
       showMarkers();
     } else {
       console.error(result.message);
@@ -3418,15 +3214,15 @@ function currentVisibleMapImageScale() {
   return scale;
 }
 
-function getUnitMarkerColor(unitStatus, modelUnit = false) {
+function getUnitMarkerColor (unitStatus, modelUnit = false) {
   let result = map_marker_color;
   if (tbdMarkersEnabled) {
     const isModelUnit =
       typeof modelUnit === "boolean"
         ? modelUnit
         : typeof modelUnit === "string"
-        ? modelUnit === "true"
-        : false;
+          ? modelUnit === "true"
+          : false;
     if (isModelUnit) {
       result = mapMarkerColors.model || "#f57396";
     } else {
