@@ -1,3 +1,5 @@
+- markers_locals = locals_for_markers.merge({ marker_colors: })
+
 - if @community_info.has_floorplates?
   - @floors.each do |floor|
     - floorplate = @floorplates.select{|f| f.floors.include?(floor)}.first
@@ -5,10 +7,14 @@
     - image_exists = floorplate.validated_image_url.present?
     %div{ id: "floorplate_#{floor}", class: floor == min_unit_floor ? '' : 'hidden', style: image_exists ? 'position: relative; margin: auto;' : 'height: -webkit-fill-available; margin: auto;' }
       = image_tag (floorplate.validated_image_url || "/assets/default.jpeg"), class: "map-image-align sitemap-image floorplate-image", id: "f_#{floor}", data: { height: height, width: width }
-      = render partial: 'webpages/units_and_amenity_markers', locals: locals_for_markers
+      - if @community_info.display_tbd_legend?
+        = render partial: 'webpages/marker_colors_legend', locals: { marker_colors: }
+      = render partial: 'webpages/units_and_amenity_markers', locals: markers_locals
 - else
   - width, height = image_original_dimensions(@community_info.sitemap).values
   - image_exists = @community.sitemap.validated_image_url.present?
   %div{ style: image_exists ? 'position: relative; margin: auto;' : 'height: -webkit-fill-available; margin: auto;', id: 'property-map' }
     %img.floorplate-image.sitemap-image.map-image-align{alt: "", src: (@community.sitemap.validated_image_url || "/assets/default.jpeg"), id: "property-map-image", title: "", data: { height: height, width: width } }
-    = render partial: 'webpages/units_and_amenity_markers', locals: locals_for_markers
+    - if @community_info.display_tbd_legend?
+      = render partial: 'webpages/marker_colors_legend', locals: { marker_colors: }
+    = render partial: 'webpages/units_and_amenity_markers', locals: markers_locals

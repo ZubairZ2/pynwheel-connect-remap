@@ -286,7 +286,9 @@ module CommunitiesHelper
                    end,
       display_rent: unit&.community&.display_rent,
       additional_fees: @community.get_additional_fees(unit),
-      property_id: unit.property_id
+      property_id: unit.property_id,
+      unit_status: unit&.unit_status,
+      model_unit: unit&.modal_unit
     }
     struct[:data_attributes] = fetch_unit_data_attributes(unit, struct)
 
@@ -380,6 +382,8 @@ module CommunitiesHelper
       "unit-lease-pricing": struct[:lease_pricing],
       "unit-additional-fees": struct[:additional_fees],
       "unit-description": struct[:description],
+      "unit-status": struct[:unit_status],
+      "model-unit": struct[:model_unit]
     }.transform_keys { |key| "data-#{key}".to_sym }.merge(
       DATA_ATTRIBUTES_SAME_KEYS.each_with_object({}) do |key, result|
         result["data-#{key}".to_sym] = struct[key.underscore.to_sym]
@@ -421,6 +425,30 @@ module CommunitiesHelper
       "plotted-category": "amenity"
     }.transform_keys { |key| "data-#{key}".to_sym }.merge(title: title)
 
+  end
+
+  def get_unit_marker_color(community, unit, marker_colors, default_marker_color)
+    result = default_marker_color || "#d37474";
+    if community&.display_tbd_legend?
+      case unit.unit_status&.downcase
+      when "occupied", "occupied no notice", "notice rented"
+        result = marker_colors[:occupied] || "#f2f2f2";
+      when "occupied on notice", "notice unrented"
+        result = marker_colors[:occupied_on_notice] || "#8545a1";
+      when "vacant", "available", "unoccupied", "vacant unrented not ready"
+        result = marker_colors[:vacant] || "#d37474";
+      when "vacant lease", "vacant rented ready", "vacant rented not ready", "vacant unrented ready"
+        result = marker_colors[:vacant_leased] || "#f9d648";
+      else
+        result = default_marker_color;
+      end
+
+      if unit.modal_unit
+        result = marker_colors[:model] || "#f57396";
+      end
+    end
+
+    return result;
   end
 
   def create_work_sheet2 workbook

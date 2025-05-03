@@ -1353,16 +1353,18 @@ function unitListHover() {
 
   $("div.left-side-30-units").hover(
     function (e) {
-      const { id, pointerData, unitMarketingName } = getUnitData(e.target);
+      let markerColor = map_marker_color;
+      const { id, unitId, pointerData, unitMarketingName } = getUnitData(
+        e.target
+      );
       const markersSelector = svgMode ? "cloned-unit" : "marker";
       const $scope = $(currentVisibleMapImage()?.parentElement);
       const $allMarkers = $scope.find(`.${markersSelector}`);
       const markersArray = Array.from($allMarkers);
 
-      e.currentTarget.style.border = `3px solid ${map_marker_color}`;
-
-      markersArray.forEach((marker) => {
+      for (const marker of markersArray) {
         const matchCondition =
+          unitId === marker.dataset.unitId ||
           id === `unit_${marker.dataset.unitId}` ||
           `${pointerData.id}_cloned` === marker.id ||
           pointerData.selector === marker.id;
@@ -1385,8 +1387,11 @@ function unitListHover() {
               }
             });
           }
+          markerColor = getUnitMarkerColor(selectedMarker.dataset.unitStatus);
+          e.currentTarget.style.border = `3px solid ${markerColor}`;
 
           focused_marker = document.getElementById(selectedMarker.id);
+          $(".popup-title, .popup-arrow").css("background-color", markerColor);
           $("#popover-marketing-unit").html(unitMarketingName);
 
           const position = selectedMarker.getBoundingClientRect();
@@ -1424,8 +1429,10 @@ function unitListHover() {
             left: `${left}px`,
             top: `${top}px`,
           });
+
+          // if (matchCondition) break; // Turn it on if you want the exact match and not the top 1 in multiple units
         }
-      });
+      };
     },
     function (e) {
       e.currentTarget.style.border = "none";
@@ -1450,6 +1457,7 @@ function markerHoverEffect(event) {
     $this = $(lastClonedElement);
   }
 
+  const markerColor = getUnitMarkerColor($this.data().unitStatus);
   if ($this.data("is-fav") || favoritesArr.includes($this.data("unit-id"))) {
     $(".fav-heart").removeClass("hidden");
   } else {
@@ -1537,7 +1545,7 @@ function markerHoverEffect(event) {
   }
   $($("#unit_" + $this.data("unitId"))).css(
     "border",
-    `5px solid ${map_marker_color}`
+    `5px solid ${markerColor}`
   );
 }
 
@@ -1567,6 +1575,7 @@ function getUnitData(targetElement) {
   if (targetElement.classList.contains("left-side-30-units")) {
     return {
       id: targetElement.id,
+      unitId: targetElement.dataset.unitId,
       pointerData: JSON.parse(targetElement.dataset.pointerData) || {},
       unitMarketingName: targetElement.dataset.unitMarketingName,
     };
@@ -1576,6 +1585,7 @@ function getUnitData(targetElement) {
     if (closestUnit.length > 0) {
       return {
         id: closestUnit[0].id,
+        unitId: targetElement.dataset.unitId,
         pointerData: JSON.parse(closestUnit[0].dataset.pointerData) || {},
         unitMarketingName: closestUnit[0].dataset.unitMarketingName,
       };
@@ -2701,18 +2711,6 @@ function display2DMap() {
   showMarkers();
 }
 
-function isColorWhite(color) {
-  const normalizedColor = color.toLowerCase();
-
-  return (
-    normalizedColor === "#ffffff" ||
-    normalizedColor === "#fff" ||
-    normalizedColor === "white" ||
-    normalizedColor === "rgb(255, 255, 255)" ||
-    normalizedColor === "rgba(255, 255, 255, 1)"
-  );
-}
-
 function handleViewportChange() {
   const viewportWidth = window.innerWidth;
   let filters_width = "65%";
@@ -3675,43 +3673,39 @@ function currentVisibleMapImageScale() {
   return scale;
 }
 
-function tbdMode () {
-  webCommunity.display_tbd_legend === true
-}
-
-function getUnitMarkerColor(unit) {
+function getUnitMarkerColor(unitStatus, modelUnit = false) {
   let result = map_marker_color;
-  if (tbdMode) {
-    switch (unit.unit_status.toLowerCase()) {
+  if (tbdMarkersEnabled) {
+    switch (unitStatus.toLowerCase()) {
       case "occupied":
       case "occupied no notice":
       case "notice rented":
-        // Occupied color
+        result = mapMarkerColors.occupied || "#f2f2f2";
         break;
       case "occupied on notice":
       case "notice unrented":
-        // occupied on notice color
+        result = mapMarkerColors.occupied_on_notice || "#8545a1";
         break;
       case "vacant":
       case "available":
       case "unoccupied":
       case "vacant unrented not ready":
-        // vacant color
+        result = mapMarkerColors.vacant || "#d37474";
         break;
       case "vacant lease":
       case "vacant rented ready":
       case "vacant rented not ready":
       case "vacant unrented ready":
-        // vacant leased color
+        result = mapMarkerColors.vacant_leased || "#f9d648";
         break;
       default:
-        result = map_marker_color
+        result = map_marker_color;
         break;
     }
   }
 
-  if (unit.modalUnit) {
-    result = // model color
+  if (modelUnit) {
+    result = mapMarkerColors.model || "#f57396";
   }
 
   return result;

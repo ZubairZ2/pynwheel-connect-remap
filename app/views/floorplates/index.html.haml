@@ -192,7 +192,10 @@
                           = check_box_tag :display_tbd_legend, true, @community.display_tbd_legend, class: "apartment-setting-field"
                           %label.label-primary{:for => "display_tbd_legend"}
                           %span.pl-15 Yes
-              
+
+                          - if @community.display_tbd_legend?
+                            = link_to "Markers Colors Configurations".html_safe, "#", :class => "btn mr-5", 'data-toggle' => "tooltip", :title => "Markers Colors Configurations", :style => "margin-left: 5rem;background: #138fd4;color:white;height: 38px;padding-top: 7px;border-radius: 4px;", "data-name" => "config", "data-target" => "#tbd-colors-modal", "data-toggle" => "modal", "data-href" => "/"
+
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                         Show property map key
@@ -347,7 +350,10 @@
                           = check_box_tag :display_tbd_legend, true, @community.display_tbd_legend, class: "apartment-setting-field"
                           %label.label-primary{:for => "display_tbd_legend"}
                           %span.pl-15 Yes
-              
+
+                          - if @community.display_tbd_legend?
+                            = link_to "Markers Colors Configurations".html_safe, "#", :class => "btn mr-5", 'data-toggle' => "tooltip", :title => "Markers Colors Configurations", :style => "margin-left: 5rem;background: #138fd4;color:white;height: 38px;padding-top: 7px;border-radius: 4px;", "data-name" => "config", "data-target" => "#tbd-colors-modal", "data-toggle" => "modal", "data-href" => "/"
+
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                         Show amenity key
@@ -458,6 +464,8 @@
           .row
             .col-md-12
   #select_floor.modal.fade.select_floor
+
+  = render partial: 'communities/tbd_legend_colors_configuration'
 
 :javascript
   $('.wysihtml5').each(function(i, elem) {

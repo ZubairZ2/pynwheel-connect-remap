@@ -31,7 +31,7 @@ class WebpagesController < ActionController::Base
         @amenities = @amenities.where(amenityable: @floorplates).includes(:amenity_galleries)
       end
 
-      @available_units_and_sold_units = community_units.available_units(@svg_enabled, @community.units_availability_over_120_days) #+ @community_info.units.are_sold(@svg_enabled)
+      @available_units_and_sold_units = community_units.statusScoped.available_units(@svg_enabled, @community.units_availability_over_120_days) #+ @community_info.units.are_sold(@svg_enabled)
       if @available_units_and_sold_units.length > 0
         normalize_units
         if @units_with_floorplan_info.present?

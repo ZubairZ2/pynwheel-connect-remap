@@ -1,6 +1,6 @@
-- occupied_color, occupied_on_notice_color, vacant_color, vacant_leased_color, model_color = marker_color.values_at(:occupied, :occupied_on_notice, :vacant, :vacant_leased, :model)
+- occupied_color, occupied_on_notice_color, vacant_color, vacant_leased_color, model_color = marker_colors.values_at(:occupied, :occupied_on_notice, :vacant, :vacant_leased, :model)
 
-.legend.hidden
+.legend
   .legend-item
     .color-box.occupied{ style: occupied_color ? "background: #{occupied_color}" : "" }
     %span.label OCCUPIED
