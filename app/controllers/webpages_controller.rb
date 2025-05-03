@@ -32,7 +32,7 @@ class WebpagesController < ActionController::Base
       end
       
       @available_units_and_sold_units = if @community_info.display_tbd_legend?
-                                          community_units.status_scoped
+                                          community_units.are_plotted_units(@svg_enabled).status_scoped
                                         else
                                           community_units.available_units(@svg_enabled, @community.units_availability_over_120_days)
                                         end
