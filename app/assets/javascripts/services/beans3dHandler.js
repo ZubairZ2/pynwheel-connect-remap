@@ -77,14 +77,14 @@ function beans3DMapDisplayOptions() {
       fillOpacity: 0.5,
     },
     selectableUnitShape: {
-      fillColor: toHexColor("rgba(244, 244, 244, 0)"),
+      fillColor: toHexColor("rgb(156, 13, 13)"),
       fillOpacity: 1.0,
       strokeWeight: 1.0,
       strokeOpacity: 1.0,
       strokeColor: "#ffffff",
     },
     selectedUnitShape: {
-      fillColor: toHexColor("rgba(244, 244, 244, 0)"),
+      fillColor: toHexColor("rgb(141, 16, 16)"),
       fillOpacity: 1.0,
       strokeWeight: 1.0,
       strokeOpacity: 1.0,
