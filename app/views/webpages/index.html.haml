@@ -5,10 +5,16 @@
     %meta{:content => "IE=edge", "http-equiv" => "X-UA-Compatible"}/
     %title Pynwheel | Dashboard
     %meta{:content => "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no", :name => "viewport"}/
+
+    -# Requirement: Beans Maps CSS
+    %link{:href => "https://js.arcgis.com/4.27/esri/themes/light/main.css", :rel => "stylesheet"}/
+    -# Requirement: Beans Maps Widget CSS
+    %link{:href => "https://www.beans.ai/mapswidget/css/mapswidget-1.0.4.css", :rel => "stylesheet"}/ 
+
     %script{:src => "https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"}
     %script{:src => "https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"}
+
     = csrf_meta_tags
-    -# = stylesheet_link_tag 'mapswidget.css'
     = stylesheet_link_tag 'jquery.mCustomScrollbar.css'
     = stylesheet_link_tag 'slick.css'
     = stylesheet_link_tag    'application', media: 'all'
@@ -21,11 +27,9 @@
 
     -# Requirement: Arcgis for Beans
     %script{type: "text/javascript", src: "https://js.arcgis.com/4.23/"}  
-    -# Requirement: Beans
+    -# Requirement: Beans Maps Widget
     %script{type: "text/javascript", src: "https://www.beans.ai/mapswidget/js/mapswidget-1.0.4-speed.js"}
     %script{type: "text/javascript", src: "https://www.beans.ai/mapswidget/client/utils.js"}
-
-    %link{:href => "https://js.arcgis.com/4.27/esri/themes/light/main.css", :rel => "stylesheet"}/
 
     %link{:href => "https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css", :rel => "stylesheet"}/
     %link{:href => "https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css", :rel => "stylesheet"}/
