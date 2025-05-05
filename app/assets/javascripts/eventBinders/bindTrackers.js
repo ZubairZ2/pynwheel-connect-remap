@@ -5,10 +5,10 @@ function bindTrackers () {
   mouseTracker = new MouseTracker();
 
   /* Exposiing Argis geometry point */
-  require(["esri/geometry/Point"], function(Point) {
-    window.__esri = window.__esri || {};
-    window.__esri.geometry = { Point };
-  });
+  // require(["esri/geometry/Point"], function(Point) {
+  //   window.__esri = window.__esri || {};
+  //   window.__esri.geometry = { Point };
+  // });
   
 }
 
