@@ -1740,6 +1740,7 @@ function hasTouch() {
 function disabled_enabled_anchors() {
   var min_market_rent = 100000;
   var max_area = 0;
+  const $alert = $(".alert");
   for (var i = 0; i < floors.length; i++) {
     var floorplate_units = [];
 
@@ -1766,18 +1767,21 @@ function disabled_enabled_anchors() {
     if (unitToDisplay.length == 0 && floorplate_amenities.length != 0) {
       $("#" + floors[i]).addClass("only-amenity");
       if ($("#" + floors[i]).hasClass("selected")) {
-        $(".alert").show();
+        $alert.show();
         timer = setTimeout(function () {
-          $(".alert").fadeOut("slow");
+          $alert.fadeOut("slow");
         }, 2000);
       }
     } else if (unitToDisplay.length == 0 && floorplate_amenities.length == 0) {
       $("#" + floors[i]).addClass("no-units");
       if ($("#" + floors[i]).hasClass("selected")) {
-        $(".alert").show();
-        clearTimeout(timeoutId);
+        $alert.show();
+        clearTimeout(timer);
       }
     } else {
+      clearTimeout(timer);
+      $alert.hide();
+
       $("#" + floors[i]).removeClass("no-units");
       $("#" + floors[i]).removeClass("only-amenity");
       var min_rent_floorplate = Math.min.apply(
@@ -1815,15 +1819,15 @@ function disabled_enabled_anchors() {
   } else {
     $(".custom-iframe-modeule").addClass("sitemap");
     if (units.length == 0 && amenities.length != 0) {
-      $(".alert").show();
+      $alert.show();
       timer = setTimeout(function () {
-        $(".alert").fadeOut("slow");
+        $alert.fadeOut("slow");
       }, 2000);
     } else if (units.length == 0 && amenities.length == 0) {
-      $(".alert").show();
-      clearTimeout(timeoutId);
+      $alert.show();
+      clearTimeout(timer);
     } else {
-      $(".alert").hide();
+      $alert.hide();
     }
   }
 }
