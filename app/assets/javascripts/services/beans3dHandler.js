@@ -103,9 +103,15 @@ function beans3DMapDisplayOptions() {
 }
 
 function getFormattedBeansUnits() {
-  return total_units.map((a) => ({
+  return total_units.map((a) => {
+    const transformedObject = getExecutableDataFunctionForObject(a.data_attributes);
+    const transformedData = transformedObject.data();
+    return ({
     unitId: a.id,
-    dataProviderId: a.data_attributes["data-unit-provider-id"],
+    unitProviderId: transformedData.unitProviderId,
+    providerUnitId: transformedData.unitProviderId,
+    availabilityUrl: transformedData.availabilityUrl,
+    leaseTerm: transformedData.leaseTerm,
     status: a.unit_status,
     modelUnit: a.model_unit,
     unit: a.marketing_name,
@@ -115,7 +121,7 @@ function getFormattedBeansUnits() {
     bath: a.bathrooms,
     sqft: a.square_feet,
     rent: a.market_rent,
-  }));
+  })});
 }
 
 function setup3dArray() {
@@ -134,7 +140,7 @@ function setup3dArray() {
     data.options.onClickData = unitData;
     data.options.onPreviewData = null;
     // data.options.onPreviewTitle = unitData.name;
-    // data.options.onPreviewContent = unitData.dataProviderId;
+    // data.options.onPreviewContent = unitData.providerUnitId;
     const unitFillColor = getUnitMarkerColor(unitData.status, unitData.modelUnit)
     data.options.unitShape = {
       fillColor: unitFillColor,
@@ -223,3 +229,11 @@ function beansWorkingMapInstance() {
 
   return result;
 }
+
+function get3dSelectedUnitData() {
+  if (_3dSelectedUnit) {
+    const { options: { onClickData } = {} } = _3dSelectedUnit;
+    return onClickData;
+  }
+}
+

@@ -1508,7 +1508,11 @@ function unitMarkerHover() {
   $(".cloned-unit").hover(markerHoverEffect, markerHoverEffectEnd);
 }
 
-function showUnitPopoverAndHighlightListUnit($dataElement, event = null, _3dData = null) {
+function showUnitPopoverAndHighlightListUnit(
+  $dataElement,
+  event = null,
+  _3dData = null
+) {
   const markerColor = getUnitMarkerColor(
     $dataElement.data().unitStatus,
     $dataElement.data().modelUnit
@@ -1537,7 +1541,6 @@ function showUnitPopoverAndHighlightListUnit($dataElement, event = null, _3dData
   const $markerPopup = $("#marker-popover");
   if (_3dMapMode()) {
     const { x, y } = mouseTracker.getPosition();
-    debugger;
     const $beansMarkerPopover = $(
       "div.esri-ui-inner-container.esri-ui-manual-container > div.esri-component[role='presentation']"
     );
@@ -1748,7 +1751,6 @@ function disabled_enabled_anchors() {
       }
     }
 
-    debugger;
     const unitToDisplay = filterUnitsBasedOnCommunityType(units);
     if (unitToDisplay.length == 0 && floorplate_amenities.length != 0) {
       $("#" + floors[i]).addClass("only-amenity");
@@ -1864,7 +1866,7 @@ function set_yardirentcafe_url(element) {
   if (!url) url = $(element).data("availability-url");
 
   if (_3dMapMode()) {
-    url = _3dSelectedUnit.availability_url;
+    url = get3dSelectedUnitData().availabilityUrl;
   }
 
   window.open(url, "_blank");
@@ -1874,7 +1876,7 @@ function set_psi_url(element) {
   let url = element.getAttribute("data-availability-url");
 
   if (_3dMapMode()) {
-    url = _3dSelectedUnit.availability_url;
+    url = get3dSelectedUnitData().availabilityUrl;
   }
 
   window.open(url, "_blank");
@@ -1894,9 +1896,9 @@ function set_resman_url(element) {
   if (_3dMapMode()) {
     date = new Date();
     url =
-      _3dSelectedUnit.availability_url +
+      get3dSelectedUnitData().availabilityUrl +
       "&leaseTerm=" +
-      _3dSelectedUnit.lease_term +
+      get3dSelectedUnitData().leaseTerm +
       "&moveInDate=" +
       date.toISOString().split("T")[0];
   }
@@ -1923,7 +1925,7 @@ function set_realpagesvc_url(element) {
     redirect_url = `/communities/${webCommunity.id}/webpages`;
     date = new Date();
     real_page_provider_unit_id = parseInt(
-      _3dSelectedUnit.provider_unit_id.split("-")[0]
+      get3dSelectedUnitData().providerUnitId.split("-")[0]
     );
     url = url =
       apply_now_url +
@@ -2485,7 +2487,6 @@ function display2DMap() {
 }
 
 function resetFilters() {
-  debugger;
   units = current_units;
 
   if (multiCommunity) resetBasedOnMultiCommunities();
