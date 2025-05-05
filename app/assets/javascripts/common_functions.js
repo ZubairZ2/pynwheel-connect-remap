@@ -483,4 +483,3 @@ function getExecutableDataFunctionForObject(obj) {
 
   return { data: dataFunction };
 }
-
