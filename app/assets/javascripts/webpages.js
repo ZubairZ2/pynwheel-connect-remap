@@ -30,6 +30,8 @@ var _3dConvertedArr = definedAndHasValue(_3dConvertedArr)
   : [];
 var beansWidget = null;
 
+var currentHoveredUnit = null;
+
 $(document).ready(function () {
   if (smallScreen()) {
     $(".c-footer.desktop-content").remove();
@@ -60,11 +62,12 @@ $(document).ready(function () {
   currency = $("#communityWebpagesData").data("currency");
 
   if (isDefined(webCommunity)) {
-    selectMap = "2d-map"; //webCommunity.web_map_type;
+    selectMap = "3d-map"; //webCommunity.web_map_type;
     enable3DMaps = webCommunity.enable_three_d_maps;
 
     renderChangedUnits();
     handleMapControl();
+    if (enable3DMaps) initializeBeans3DMap();
   } else {
     console.error("webCommunity not loaded properly");
   }
@@ -394,7 +397,7 @@ function showUnitModal(event) {
 function activateWebpageZoom() {
   $(".reset-webpage").on("click", function (e) {
     $(".webPageLoader").removeClass("hidden");
-    window.location.reload(true);
+    // window.location.reload(true);
   });
 
   $(".zoom-in-webpage").on("click", function (e) {
@@ -1378,10 +1381,15 @@ function unitListHover() {
   );
 }
 
-function markerHoverEffect(event) {
-  let $this = $(event.currentTarget);
+function markerHoverEffect(event, _3dData = null) {
+  let $this;
+  $(".left-side-30-units").css("border", "none");
 
-  if (svgMode && event.currentTarget.tagName.toLowerCase() === "g") {
+  if (_3dMapMode() && _3dData) {
+    const unitData = units.find(({ id }) => id === _3dData.unitId);
+    currentHoveredUnit = unitData.id;
+    $this = getExecutableDataFunctionForObject(unitData.data_attributes);
+  } else if (svgMode && event.currentTarget.tagName.toLowerCase() === "g") {
     const lastClonedElement = getLastClonedJQueryElement(event.currentTarget);
     if (
       !lastClonedElement ||
@@ -1390,12 +1398,17 @@ function markerHoverEffect(event) {
       return;
 
     $this = $(lastClonedElement);
+  } else {
+    $this = $(event.currentTarget);
   }
 
-  const markerColor = getUnitMarkerColor(
-    $this.data().unitStatus,
-    $this.data().modelUnit
-  );
+  if (!$this) {
+    console.error("No hovered element found.");
+    return;
+  }
+
+  showUnitPopoverAndHighlightListUnit($this, event, _3dData);
+
   if ($this.data("is-fav") || favoritesArr.includes($this.data("unit-id"))) {
     $(".fav-heart").removeClass("hidden");
   } else {
@@ -1444,8 +1457,65 @@ function markerHoverEffect(event) {
   }
 
   $("#popover-price").html(currency + $this.data("market-rent"));
+}
 
-  const unitElement = document.getElementById("unit_" + $this.data("unitId"));
+function markerHoverEffectEnd(event, $3dDataElement = null) {
+  let $this;
+
+  const $markerPopup = $("#marker-popover");
+  if (_3dMapMode() && $3dDataElement) {
+    // const unitData = units.find(({ id }) => id === $3dDataElement.unitId);
+    // $this = getExecutableDataFunctionForObject(unitData.data_attributes);
+
+    mouseTracker.onChange(() => {
+      const $beansMarkerPopover = $(
+        "div.esri-ui-inner-container.esri-ui-manual-container > div.esri-component[role='presentation']"
+      );
+      if ($beansMarkerPopover.hasClass("esri-popup")) return;
+
+      if ($markerPopup.hasClass("hidden")) return;
+
+      $markerPopup.addClass("hidden");
+      $($("#unit_" + $3dDataElement.data("unitId"))).css("border", "none");
+    });
+
+    return;
+  } else if (svgMode && event.currentTarget.tagName.toLowerCase() === "g") {
+    const lastClonedElement = getLastClonedJQueryElement(event.currentTarget);
+    if (
+      !lastClonedElement ||
+      lastClonedElement.classList.contains("cloned-amenity")
+    )
+      return;
+
+    $this = $(lastClonedElement);
+  } else {
+    $this = $(event.currentTarget);
+  }
+
+  if (!$this) {
+    console.error("No hovered element found.");
+    return;
+  }
+
+  $markerPopup.addClass("hidden");
+  $($("#unit_" + $this.data("unitId"))).css("border", "none");
+}
+
+function unitMarkerHover() {
+  $(".marker").hover(markerHoverEffect, markerHoverEffectEnd);
+  $(".cloned-unit").hover(markerHoverEffect, markerHoverEffectEnd);
+}
+
+function showUnitPopoverAndHighlightListUnit($dataElement, event = null, _3dData = null) {
+  const markerColor = getUnitMarkerColor(
+    $dataElement.data().unitStatus,
+    $dataElement.data().modelUnit
+  );
+
+  const unitElement = document.getElementById(
+    "unit_" + $dataElement.data("unitId")
+  );
   const scrollableParent = document.querySelector(".left-side");
 
   if (unitElement && scrollableParent) {
@@ -1463,54 +1533,46 @@ function markerHoverEffect(event) {
     });
   }
 
-  const $container = svgMode ? $("#svg-container") : $("#image-container");
-  var new_dx =
-    parseInt(event.pageX) -
-    parseInt($container.offset().left) +
-    parseInt($container.scrollLeft());
-  var new_dy =
-    parseInt(event.pageY) -
-    parseInt($container.offset().top) +
-    parseInt($container.scrollTop());
+  const $markerPopup = $("#marker-popover");
+  if (_3dMapMode()) {
+    const { x, y } = mouseTracker.getPosition();
+    debugger;
+    const $beansMarkerPopover = $(
+      "div.esri-ui-inner-container.esri-ui-manual-container > div.esri-component[role='presentation']"
+    );
 
-  const diffLeft = webCommunity["is_sitemap"] ? 25 : 115;
-  $("#marker-popover").css({
-    left: new_dx + diffLeft + "px",
-    top: new_dy - 100 + "px",
-  });
-  if (window.innerWidth >= 768) {
-    $("#marker-popover").removeClass("hidden");
+    $markerPopup.css({
+      left: x + 20 + "px",
+      top: y - $markerPopup.height() + "px",
+    });
+
+    $beansMarkerPopover.addClass("hidden");
+    markerHoverEffectEnd(event, $dataElement, _3dData);
+  } else {
+    const $container = svgMode ? $("#svg-container") : $("#image-container");
+    const left =
+      parseInt(event.pageX) -
+      parseInt($container.offset().left) +
+      parseInt($container.scrollLeft());
+    const top =
+      parseInt(event.pageY) -
+      parseInt($container.offset().top) +
+      parseInt($container.scrollTop());
+
+    const diffLeft = webCommunity["is_sitemap"] ? 25 : 115;
+    $markerPopup.css({
+      left: left + diffLeft + "px",
+      top: top - 100 + "px",
+    });
   }
-  $($("#unit_" + $this.data("unitId"))).css(
+
+  if (!smallScreen()) {
+    $markerPopup.removeClass("hidden");
+  }
+  $($("#unit_" + $dataElement.data("unitId"))).css(
     "border",
     `5px solid ${markerColor}`
   );
-}
-
-function markerHoverEffectEnd(event) {
-  let $this = $(event.currentTarget);
-  if (svgMode && event.currentTarget.tagName.toLowerCase() === "g") {
-    const lastClonedElement = getLastClonedJQueryElement(event.currentTarget);
-    if (
-      !lastClonedElement ||
-      lastClonedElement.classList.contains("cloned-amenity")
-    )
-      return;
-
-    $this = $(lastClonedElement);
-  }
-
-  $("#marker-popover").addClass("hidden");
-  $($("#unit_" + $this.data("unitId"))).css("border", "none");
-}
-
-function unitMarkerHover () {
-  if (!desktopCheck()) {
-    return;
-  }
-
-  $(".marker").hover(markerHoverEffect, markerHoverEffectEnd);
-  $(".cloned-unit").hover(markerHoverEffect, markerHoverEffectEnd);
 }
 
 function getUnitData(targetElement) {
@@ -1685,7 +1747,7 @@ function disabled_enabled_anchors() {
       }
     }
 
-    debugger
+    debugger;
     const unitToDisplay = filterUnitsBasedOnCommunityType(units);
     if (unitToDisplay.length == 0 && floorplate_amenities.length != 0) {
       $("#" + floors[i]).addClass("only-amenity");
@@ -3215,15 +3277,15 @@ function currentVisibleMapImageScale() {
   return scale;
 }
 
-function getUnitMarkerColor (unitStatus, modelUnit = false) {
+function getUnitMarkerColor(unitStatus, modelUnit = false) {
   let result = map_marker_color;
   if (tbdMarkersEnabled) {
     const isModelUnit =
       typeof modelUnit === "boolean"
         ? modelUnit
         : typeof modelUnit === "string"
-          ? modelUnit === "true"
-          : false;
+        ? modelUnit === "true"
+        : false;
     if (isModelUnit) {
       result = mapMarkerColors.model || "#f57396";
     } else {

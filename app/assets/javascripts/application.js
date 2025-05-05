@@ -77,6 +77,8 @@
 //= require bootstrap-wysihtml5/locales
 //= require automate_plotting
 
+/* Keep this file at the end as a must to bind global events after all above services and other files are loaded. */
+//= require eventBinders/bindTrackers
 
 $(document).ready(function(){
   new Clipboard('.clipboard-btn');

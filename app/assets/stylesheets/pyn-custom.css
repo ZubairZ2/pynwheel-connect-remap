@@ -7712,6 +7712,23 @@ span.to-input {
     background-color: #f57396;
 }
 
+#sidebar-for-responsive {
+    text-align: center;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 15px 0 10px;
+}
+
+.is-favorites.maps-analytics-container {
+    margin: 5%;
+}
+
+div.esri-ui-inner-container.esri-ui-manual-container > div.esri-component.esri-attribution.esri-widget {
+    display: none !important;
+}
+
 @media (max-width:1252px) {
     .legend-item {
         font-size: 1rem;
@@ -7731,5 +7748,51 @@ span.to-input {
     .color-box {
         width: 50px;
         height: 10px;
+    }
+
+    .c-modal-dialog {
+        overflow: hidden !important;
+    }
+
+    #zoomable-modal-image-responsive {
+        min-height: 464px !important;
+        max-height: 464px !important;
+    }
+
+    .c-modal-dialog > aside.c-modal-sidebar {
+        max-height: 605;
+        overflow-y: auto !important;
+    }
+    
+    .c-modal-dialog.modal-xl > .c-modal-sidebar {
+        min-width: 100%;
+        max-width: 100%;
+        z-index: 1030;
+        overflow-y: auto;
+    }
+
+    div.c-modal-footer.zooming-content.zoomable-map-container {
+        float: right;
+        position: unset;
+        width: max-content;
+    }
+}
+
+@media (max-width:568px) {
+    .is-favorites.maps-analytics-container {
+        margin: 0;
+    }
+
+    .c-connect-map-wrapper {
+        padding: 0
+    }
+
+    #sidebar-for-responsive {
+        padding: 0 !important;
+    }
+
+    #zoomable-modal-image-responsive {
+        min-height: auto !important;
+        max-height: 464px !important;
     }
 }

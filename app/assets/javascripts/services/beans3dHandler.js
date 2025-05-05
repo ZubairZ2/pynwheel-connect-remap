@@ -48,6 +48,7 @@ function initializeBeans3DMap() {
     displayOptions,
     {
       onSelect: (data) => onUnitClick(data),
+      onHover: (data, event) => markerHoverEffect(event, data),
     }
   );
 
@@ -69,26 +70,32 @@ function beans3DMapDisplayOptions() {
     hideShadow: true,
     showCompass: true,
     showUnitShape: true,
-    camera: generateCameraView(),
+    // camera: generateCameraView(),
     initialPosition: {
       address: beansAddress,
     },
+    initialZ: 180,
+    initialTilt: 65,
+    initialHeading: 0,
     unitShape: {
       fillOpacity: 0.5,
     },
     selectableUnitShape: {
-      fillColor: toHexColor("rgb(156, 13, 13)"),
+      fillColor: toHexColor(map_marker_color),
       fillOpacity: 1.0,
       strokeWeight: 1.0,
       strokeOpacity: 1.0,
-      strokeColor: "#ffffff",
     },
     selectedUnitShape: {
-      fillColor: toHexColor("rgb(141, 16, 16)"),
+      fillColor: toHexColor("rgb(45, 141, 16)"),
       fillOpacity: 1.0,
       strokeWeight: 1.0,
       strokeOpacity: 1.0,
-      strokeColor: "#ffffff",
+    },
+    hightlightOptions: {
+      color: toHexColor("rgba(91, 255, 8, 0.2)"),
+      haloOpacity: 0.9,
+      fillOpacity: 0.2,
     },
   };
 }
@@ -109,7 +116,7 @@ function getFormattedBeansUnits() {
   }));
 }
 
-function setup3dArray () {
+function setup3dArray() {
   const formattedUnits = getFormattedBeansUnits();
 
   const _3dArray = convertUnitsArr(
@@ -123,31 +130,32 @@ function setup3dArray () {
     const unitData = formattedUnits[index];
     data.options.markers.display = true;
     data.options.onClickData = unitData;
-    data.options.onPreviewTitle = unitData.name;
-    data.options.onPreviewContent = unitData.dataProviderId;
-    const unitFillColor = getUnitMarkerColor(unitData.status, unitData.modelUnit)
-    data.options.unitShape = {
-      fillColor: unitFillColor,
-      fillOpacity: 0.5,
-      strokeColor: unitFillColor,
-      strokeOpacity: 0.5,
-      strokeWeight: 2
-    }
+    data.options.onPreviewData = null;
+    // data.options.onPreviewTitle = unitData.name;
+    // data.options.onPreviewContent = unitData.dataProviderId;
+    // const unitFillColor = getUnitMarkerColor(unitData.status, unitData.modelUnit)
+    // data.options.unitShape = {
+    //   fillColor: unitFillColor,
+    //   fillOpacity: 0.9,
+    //   strokeColor: unitFillColor,
+    //   strokeOpacity: 0.9,
+    //   strokeWeight: 2
+    // }
     return data;
   });
 }
 
-function generateCameraView() {
-  return {
-    tilt: 65,
-    heading: 0,
-    position: {
-      x: parseFloat(webCommunity.longitude),
-      y: parseFloat(webCommunity.latitude),
-      z: 120,
-    },
-  };
-}
+// function generateCameraView() {
+//   return {
+//     tilt: 65,
+//     heading: 0,
+//     position: {
+//       // x: parseFloat(webCommunity.longitude),
+//       // y: parseFloat(webCommunity.latitude),
+//       // z: 0,
+//     },
+//   };
+// }
 
 function reDrawBeansWidget() {
   if (_3dMapMode()) {
@@ -165,7 +173,7 @@ function reDrawBeansWidget() {
   }
 }
 
-function filterBeansUnitsIndices () {
+function filterBeansUnitsIndices() {
   const filteredUnitIds = filterUnitsBasedOnCommunityType(units).map(
     ({ id }) => id
   );
