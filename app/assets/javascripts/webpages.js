@@ -2164,22 +2164,22 @@ function setModalAttributes(element) {
         )
       );
     } else {
+      const availability = $(element).data("availability") == "Unoccupied";
       $("#unitModal")
         .find("#availability")
-        .html(
-          $(element).data("availability") == "Unoccupied"
-            ? "Available"
-            : "Occupied"
-        );
+        .html(availability ? "Available" : "Occupied");
+
       $("#unitModal").find("#available-text").html("Available");
 
       // $('#unitModal').find('#available-date').html($(element).data('available-date'));
       $("#unitModal").find(
         $("#available-date").html(
-          formattedDateByRegion(
-            webCommunity.country_code,
-            $(element).data("available-date")
-          )
+          availability
+            ? formattedDateByRegion(
+                webCommunity.country_code,
+                $(element).data("available-date")
+              )
+            : "Unavailable"
         )
       );
     }
