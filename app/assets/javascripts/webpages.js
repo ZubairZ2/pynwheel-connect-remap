@@ -62,7 +62,7 @@ $(document).ready(function () {
   currency = $("#communityWebpagesData").data("currency");
 
   if (isDefined(webCommunity)) {
-    selectMap = "3d-map"; //webCommunity.web_map_type;
+    selectMap = "2d-map"; //webCommunity.web_map_type;
     enable3DMaps = webCommunity.enable_three_d_maps;
 
     renderChangedUnits();
@@ -1476,6 +1476,7 @@ function markerHoverEffectEnd(event, $3dDataElement = null) {
       if ($markerPopup.hasClass("hidden")) return;
 
       $markerPopup.addClass("hidden");
+      $beansMarkerPopover.removeClass("hidden");
       $($("#unit_" + $3dDataElement.data("unitId"))).css("border", "none");
     });
 

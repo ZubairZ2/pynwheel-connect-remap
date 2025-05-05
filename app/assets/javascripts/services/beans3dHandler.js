@@ -82,20 +82,22 @@ function beans3DMapDisplayOptions() {
     },
     selectableUnitShape: {
       fillColor: toHexColor(map_marker_color),
-      fillOpacity: 1.0,
-      strokeWeight: 1.0,
-      strokeOpacity: 1.0,
+      fillOpacity: 0.85,
+      strokeColor: toHexColor(map_marker_color),
+      strokeWeight: 0,
+      strokeOpacity: 0,
     },
     selectedUnitShape: {
-      fillColor: toHexColor("rgb(45, 141, 16)"),
+      fillColor: toHexColor(map_marker_color),
       fillOpacity: 1.0,
-      strokeWeight: 1.0,
-      strokeOpacity: 1.0,
+      strokeColor: toHexColor(map_marker_color),
+      strokeWeight: 1,
+      strokeOpacity: 1,
     },
     hightlightOptions: {
-      color: toHexColor("rgba(91, 255, 8, 0.2)"),
+      color: toHexColor(map_marker_color),
       haloOpacity: 0.9,
-      fillOpacity: 0.2,
+      fillOpacity: 1,
     },
   };
 }
@@ -133,14 +135,14 @@ function setup3dArray() {
     data.options.onPreviewData = null;
     // data.options.onPreviewTitle = unitData.name;
     // data.options.onPreviewContent = unitData.dataProviderId;
-    // const unitFillColor = getUnitMarkerColor(unitData.status, unitData.modelUnit)
-    // data.options.unitShape = {
-    //   fillColor: unitFillColor,
-    //   fillOpacity: 0.9,
-    //   strokeColor: unitFillColor,
-    //   strokeOpacity: 0.9,
-    //   strokeWeight: 2
-    // }
+    const unitFillColor = getUnitMarkerColor(unitData.status, unitData.modelUnit)
+    data.options.unitShape = {
+      fillColor: unitFillColor,
+      fillOpacity: 0.85,
+      strokeColor: unitFillColor,
+      strokeOpacity: 0.9,
+      strokeWeight: 2
+    }
     return data;
   });
 }
