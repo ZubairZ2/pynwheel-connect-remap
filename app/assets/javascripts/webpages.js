@@ -2897,7 +2897,7 @@ function resetBasedOnMultiCommunities() {
   );
   $("#multi_communities").val($("#multi_communities option:first").val());
 
-  if ($(window).width() <= 993) $(".mobile-filter-mega-menu").slideToggle();
+  if (smallScreen()) $(".mobile-filter-mega-menu").slideToggle();
 
   multiPropertiesFilterChanged();
 }
@@ -2908,7 +2908,7 @@ function resetBasedOnBedroom() {
   );
   $("#unit_bedroom").val($("#unit_bedroom option:first").val());
 
-  if ($(window).width() <= 993) $(".mobile-filter-mega-menu").slideToggle();
+  if (smallScreen()) $(".mobile-filter-mega-menu").slideToggle();
 
   bedroomFilterChanged();
 }
