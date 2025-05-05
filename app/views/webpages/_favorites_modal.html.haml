@@ -46,10 +46,9 @@
                     %b= floorplan.present? ? hide_decimals(floorplan.square_feet) : nil 
                   Sq Feet
             .availabilty-container-start
-              %span.available-heading= unit.availability == "Unoccupied" ? "Available" : ""
+              - available_date = unit.availability == "Unoccupied" ? (unit.available_date.present? ? determine_available_date(unit.available_date) : nil) : "Unavailable"
+              %span.available-heading= available_date.present? ? "Available" : ""
               %b
-                - available_date = unit.available_date.present? ? determine_available_date(unit.available_date) : nil
-
                 %span{style: "margin-left: 4%"}= DateFormatter.formatted_date_by_region(@community.country_code, available_date)
             
             %div{style: "overflow-y: auto; height: max-content; max-height: 28em;"}
