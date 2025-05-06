@@ -3711,12 +3711,12 @@ function getUnitMarkerColor(unitStatus, modelUnit = false) {
         case "available":
         case "unoccupied":
         case "vacant unrented not ready":
+        case "vacant unrented ready":
           result = mapMarkerColors.vacant || "#d37474";
           break;
         case "vacant lease":
         case "vacant rented ready":
         case "vacant rented not ready":
-        case "vacant unrented ready":
           result = mapMarkerColors.vacant_leased || "#f9d648";
           break;
         default:

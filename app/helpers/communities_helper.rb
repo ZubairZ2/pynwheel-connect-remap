@@ -435,9 +435,9 @@ module CommunitiesHelper
         result = marker_colors[:occupied] || "#f2f2f2";
       when "occupied on notice", "notice unrented"
         result = marker_colors[:occupied_on_notice] || "#8545a1";
-      when "vacant", "available", "unoccupied", "vacant unrented not ready"
+      when "vacant", "available", "unoccupied", "vacant unrented not ready", "vacant unrented ready"
         result = marker_colors[:vacant] || "#d37474";
-      when "vacant lease", "vacant rented ready", "vacant rented not ready", "vacant unrented ready"
+      when "vacant lease", "vacant rented ready", "vacant rented not ready"
         result = marker_colors[:vacant_leased] || "#f9d648";
       else
         result = default_marker_color;

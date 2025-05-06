@@ -4363,6 +4363,7 @@ a#favoriteclickme {
     font-size: 13px !important;
 }
 
+
 .propertyDetailName,
 .pyn-toolTip,
 .mapConfigurationToolTip, 
@@ -5399,35 +5400,11 @@ body {
     margin: auto;
 }
 
-.custom-iframe-modeule .app-logo-mobile {
-    width: 25%;
-    text-align: center;
-    padding-bottom: inherit;
-    display: none;
-    /* margin: auto; */
-
-}
-.custom-iframe-modeule .header-buttons-groups {
-    text-align: left;
-    /* width: 42%; */
-    width: 20%;
-    display: flex;
-    justify-content: space-around;
-    gap: 1rem;
-}
-.header-inner .header-action-btn {
-    min-width: max-content !important;
-}
-
-.header-inner .web-reset-button {
-    max-width: 140px;
-}
-
-@media screen and (min-width: 994px) and (max-width: 1624px){
-    .header-inner .header-action-btn:not(.schedule-tour-btn), .header-inner .web-reset-button {
+@media screen and (min-width: 994px) and (max-width: 1400px){
+    .header-inner .header-action-btn:not(.schedule-tour-btn), .header-inner .web-reset-button {  
         display: flex !important;
-        gap: 3px;
-        max-width: 5rem !important;
+        max-width: 7rem !important;
+        min-width: 5rem !important;
     }
     .header-inner .header-action-btn i, .header-inner .web-reset-button i { 
         margin: auto;
@@ -5439,33 +5416,36 @@ body {
         display: none;
     }
     .app-header .selection-fields .selectable-field label.short {
-        display: inline-block;
+        display: block;
     }
     .header-buttons-groups {
-        margin: auto 1.5rem;
+        justify-content: space-between !important;
+        margin-left: 1.5rem;
         gap: 1rem;
     }
-    .app-header .app-logo {
-        margin-left: 2rem;
+}
+
+@media screen and (min-width: 1401px) and (max-width: 1624px){
+    .header-action-btn.view-saved-btn {
+        display: flex !important;
+        max-width: 7rem !important;
+    }
+    .header-action-btn.view-saved-btn i { 
+        margin: auto;
+        font-size: large;
+    }
+    .header-action-btn.view-saved-btn span.hidable { 
+        display: none;
     }
 }
 
-@media screen and (max-width: 1366px) {
-    .header-inner .header-action-btn.view-saved-btn {
-        min-width: 5rem !important;
-    }
-}
+.custom-iframe-modeule .app-logo-mobile {
+    width: 25%;
+    text-align: center;
+    padding-bottom: inherit;
+    display: none;
+    /* margin: auto; */
 
-@media screen and (min-width: 1252px) {
-    .header-inner .header-action-btn.schedule-tour-btn span.hidable {
-        display: inline-block;
-    }
-}
-
-@media screen and (min-width: 1420px) {
-    .header-inner .header-action-btn.view-saved-btn span.hidable {
-        display: inline-block;
-    }
 }
 .custom-iframe-modeule .header-buttons-groups {
     text-align: left;
