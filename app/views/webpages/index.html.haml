@@ -121,31 +121,37 @@
               .selection-fields
                 .selectable-field
                   %label Bedrooms
+                  %label.short Bedrooms
                   = select_tag :unit_bedroom, options_for_select(@unit_bedrooms.present? ? @unit_bedrooms : []),{:class=>"custom-select", :include_blank => "All "}
 
                 .selectable-field{ class: !@community_info.display_rent ? "pricing_filter_visibility" : nil }
                   %label Max Price
+                  %label.short Max Price
                   = select_tag :market_rent, options_for_select(@market_rent.present? ? @market_rent : []), { class: "custom-select" }
 
                 .selectable-field
                   %label Min Square Footage
+                  %label.short Min Sq. Ft.
                   = select_tag :square_feet, options_for_select(@square_feet.present? ? @square_feet : []),{:class=>"custom-select"}
                 .selectable-field
                   %label Availability
+                  %label.short Availability
                   = select_tag :available_unit, options_for_select(@available_units.present? ? @available_units : []),{:class=>"custom-select", :include_blank => "All "}
                 
                 -# %button._3d-apply-filter-button{:type => "button", :onclick => "apply3DFilters();"}
                 -#   Apply
                 -#   %i.fa.fa-filter
 
-                %button.reset-filter-button.web-reset-button{:type => "button", :onclick => "resetFilters();"}
-                  Reset
+                %button.reset-filter-button.web-reset-button.header-action-btn{:type => "button", :onclick => "resetFilters();", style: "margin-right: 2rem"}
+                  %span.hidable
+                    Reset
                   %i.fa.fa-refresh
                     
               .header-buttons-groups
                 - if @square_feet.present?
                   %a.transparent-btn.header-action-btn.view-saved-btn{:href => "#{favorites_community_webpages_path(@community)}",:target=>"_parent"}
-                    View Saved
+                    %span.hidable
+                      View Saved
                     %i.fa.fa-heart
                     
                 - crm_provider = @community&.crm_credential&.crm_provider
@@ -153,7 +159,10 @@
 
                 - if @community.self_tour && @community.scheduler_widget && (data_provider != "yardirentcafe" || data_provider != "yardi") && crm_provider != "yardirentcafe" 
                   %a.colourd-btn.header-action-btn.schedule-tour-btn{:href => "#{@scheduler_widget_link}",:target=>"_blank"}
-                    Schedule Tour
+                    %span
+                      Schedule
+                    %span.hidable
+                      Tour
 
                 .footer-logo.responsive-content{:style=> "visibility: #{@community.powered_by_btn ? "" : "hidden" }"}
                   %img{:src => "/assets/powered_by_logo.png"}/
@@ -409,23 +418,9 @@
     $(window).on('resize', function(){
       var win = $(this);
       window.location.reload();
+      // window.location.reload();
       $(".webPageLoader").removeClass("hidden");
-      if (win.width() >= 568) {
-        $('#slider').slick('unslick');
-        $slider.on('init', () => {
-          mouseWheel($slider);
-        }).slick({
-          infinite: false,
-          slidesToShow: 4,
-          slidesToScroll: 1,
-          vertical: true,
-          initialSlide: initial_start,
-          prevArrow:
-            "<div class='product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
-          nextArrow:
-            "<div class='product-single__thumb-arrow product-single__thumb-arrow_right'><i class='fa fa-angle-right'></i></div>",
-        });
-      } else if (win.width() <= 567) {
+      if (extraSmallScreen()) {
         $('#slider').slick('unslick');
         $slider.on('init', () => {mouseWheel($slider)}).slick({
           infinite: false,
@@ -441,18 +436,33 @@
         });
 
         $('.slick-track').css("width", "235px")
+      } else {
+        $('#slider').slick('unslick');
+        $slider.on('init', () => {
+          mouseWheel($slider);
+        }).slick({
+          infinite: false,
+          slidesToShow: 4,
+          slidesToScroll: 1,
+          vertical: true,
+          initialSlide: initial_start,
+          prevArrow:
+            "<div class='product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
+          nextArrow:
+            "<div class='product-single__thumb-arrow product-single__thumb-arrow_right'><i class='fa fa-angle-right'></i></div>",
+        });
       }
     });
 
-    if ((current_width > 767 && current_width < 993) && (window.matchMedia("(orientation: landscape)").matches)) {
-      $(".c-modal-dialog").css("margin-top", "12%")
-    } else if (current_width < 767 && (window.matchMedia("(orientation: landscape)").matches)) {
+    if (extraSmallScreen() && (window.matchMedia("(orientation: landscape)").matches)) {
       $(".c-modal-dialog").css("margin-top", "27%")
       $("#responsive-floorplan-image").css("max-height", '300px')
+    } else if ((smallScreen()) && (window.matchMedia("(orientation: landscape)").matches)) {
+      $(".c-modal-dialog").css("margin-top", "12%")
     }
     
-    if(current_width <= 993){
-      $("._3d-apply-filter-button").hide();
+    if(smallScreen()){
+      //$("._3d-apply-filter-button").hide();
       $(".web-reset-button").hide();
     }
     

@@ -24,7 +24,7 @@
     = favicon_link_tag 'logo-small.png'
     / Google Font
     %link{:href => "https://fonts.googleapis.com/css?family=Raleway:100,200,300,400,500,600,700,800,900", :rel => "stylesheet"}/
-  %body.floor-plan{style: "background-color:#303a3c;"}
+  %body.floor-plan{style: "background-color:#303a3c; overflow: hidden"}
     .divLoading.hidden
     / Main content
     %div.alert_message
@@ -60,21 +60,22 @@
           = render partial: "empty_favorites_page"
         - else
           = render partial: "favorites_modal"
-        
-        .secondary-sidebar-color#sidebar-for-responsive{style: "text-align: center"}
-          %ul.add-fav-options.res-fav-footer
-            %li
-              %a{:href => "#{community_webpages_path}",:target => "pynwheel_iframe"}
-                %img{:src => "/assets/map-icon.png"}/
-                %span.fav-option-icon-text View Map
-            %li
-              %a.share-favorite{"data-toggle"=>"modal","data-target"=>"#share-favorites"}
-                %img{:src => "/assets/share-icon.png"}/
-                %span.fav-option-icon-text Share Map
-            %li
-              %a{"data-toggle"=>"modal","data-target"=>"#confirm-favorites-delete"}
-                %img{:src => "/assets/clear-all.png"}/
-                %span.fav-option-icon-text Clear all
+
+    .secondary-sidebar-color#sidebar-for-responsive{style: "text-align: center"}
+      %ul.add-fav-options.res-fav-footer
+        %li
+          %a{:href => "#{community_webpages_path}",:target => "pynwheel_iframe"}
+            %img{:src => "/assets/map-icon.png"}/
+            %span.fav-option-icon-text View Map
+        %li
+          %a.share-favorite{"data-toggle"=>"modal","data-target"=>"#share-favorites"}
+            %img{:src => "/assets/share-icon.png"}/
+            %span.fav-option-icon-text Share Map
+        %li
+          %a{"data-toggle"=>"modal","data-target"=>"#confirm-favorites-delete"}
+            %img{:src => "/assets/clear-all.png"}/
+            %span.fav-option-icon-text Clear all
+
 #confirm-favorites-delete.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog
     .modal-content

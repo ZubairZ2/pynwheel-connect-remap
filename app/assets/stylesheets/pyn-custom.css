@@ -5343,6 +5343,7 @@ body {
     padding: 10px;
     display: flex;
     align-items: center;
+    justify-content: space-between;
 }
 .c-sidebar {
     position: fixed;
@@ -5359,6 +5360,9 @@ body {
     min-height: 69px;
     max-height: 69px;
 }
+.selection-fields {
+    width: 60%;
+}
 .selectable-field label {
     display: block;
     font-family: 'Raleway', sans-serif;
@@ -5366,10 +5370,15 @@ body {
     padding-bottom: 4px;
     white-space: nowrap;
 }
+.app-header .selection-fields .selectable-field label:not(.short) {
+    display: block;
+}
+.app-header .selection-fields .selectable-field label.short {
+    display: none;
+}
 .custom-iframe-modeule .selection-fields {
-    padding: 0 0px 0 10px;
-    width: 50%;
     display: flex;
+    gap: 1rem;
 }
 .selectable-field .custom-select {
     width: 100%;
@@ -5380,8 +5389,14 @@ body {
 }
 .custom-iframe-modeule .selection-fields .selectable-field {
     width: 100%;
-    padding: 0 15px 0 15px;
 }
+.custom-iframe-modeule .app-logo {
+    /* width: 7%; */
+    text-align: center;
+    padding-bottom: inherit;
+    margin: auto;
+}
+
 .custom-iframe-modeule .app-logo-mobile {
     width: 25%;
     text-align: center;
@@ -5390,22 +5405,65 @@ body {
     /* margin: auto; */
 
 }
-.custom-iframe-modeule .app-logo {
-    /* width: 7%; */
-    width: 25%;
-    text-align: center;
-    padding-bottom: inherit;
-    margin: auto;
-    padding: 0px 20px 0px 20px;
-}
 .custom-iframe-modeule .header-buttons-groups {
     text-align: left;
     /* width: 42%; */
     width: 20%;
     display: flex;
     justify-content: space-around;
+    gap: 1rem;
+}
+.header-inner .header-action-btn {
+    min-width: max-content !important;
+}
 
+.header-inner .web-reset-button {
+    max-width: 140px;
+}
 
+@media screen and (min-width: 994px) and (max-width: 1624px){
+    .header-inner .header-action-btn:not(.schedule-tour-btn), .header-inner .web-reset-button {
+        display: flex !important;
+        gap: 3px;
+        max-width: 5rem !important;
+    }
+    .header-inner .header-action-btn i, .header-inner .web-reset-button i { 
+        margin: auto;
+        font-size: large;
+    }
+    .app-header .selection-fields .selectable-field label:not(.short),
+    .header-inner .header-action-btn span.hidable,
+    .header-inner .web-reset-button span.hidable { 
+        display: none;
+    }
+    .app-header .selection-fields .selectable-field label.short {
+        display: inline-block;
+    }
+    .header-buttons-groups {
+        margin: auto 1.5rem;
+        gap: 1rem;
+    }
+    .app-header .app-logo {
+        margin-left: 2rem;
+    }
+}
+
+@media screen and (min-width: 1252px) {
+    .header-inner .header-action-btn.schedule-tour-btn span.hidable {
+        display: inline-block;
+    }
+}
+
+@media screen and (min-width: 1420px) {
+    .header-inner .header-action-btn.view-saved-btn span.hidable {
+        display: inline-block;
+    }
+}
+
+@media screen and (min-width: 1500px) {
+    .header-inner .web-reset-button span.hidable {
+        display: inline-block;
+    }
 }
 
 .virtual-tour-modal-height {
@@ -5460,8 +5518,18 @@ body {
     font-weight: 400;
     text-transform: uppercase;
     padding: 0 6px;
-    margin-left: 15px;
 }
+
+@media (max-width:1366px) {
+    .header-buttons-groups .header-action-btn {
+        display: inline-block;
+        width: fit-content;
+        line-height: auto;
+        border-radius: 110px;
+        font-size: 13px;
+    }
+}
+
 .header-buttons-groups .transparent-btn {
     background: transparent;
     color: black;
@@ -5788,10 +5856,6 @@ html, .add-fav-body {
     .custom-iframe-modeule .header-buttons-groups {
         width: 21%;
     }
-
-    .custom-iframe-modeule .selection-fields {
-        width: 100%;
-    }
 }
 @media screen and (min-width:568px) and (max-width:993px){
 
@@ -5924,6 +5988,7 @@ html, .add-fav-body {
         bottom: unset !important;
     }
     .header-inner{
+        gap: 1rem;
         padding: 10px;
     }
 	.map-slide-item {
@@ -5973,7 +6038,6 @@ html, .add-fav-body {
     width: 18px;
   }
   .custom-iframe-modeule .selection-fields {
-    width: 60%;
     padding: 0 0px 0 21px;
   }
   .selected-data-mobile li {
@@ -6125,6 +6189,7 @@ ul.add-fav-options {
     }
 
     .c-modal-wrapper modal-image-fav {
+        display: none;
         max-height: 350px !important;
     }
 
@@ -6318,7 +6383,6 @@ ul.add-fav-options {
       border-right: 1px solid #cccccc1c;
   }
   .custom-iframe-modeule .selection-fields {
-      width: 100%;
       padding: 0 0px 0 1px;
   }
   .mobile-trigger {
@@ -6329,7 +6393,7 @@ ul.add-fav-options {
       z-index: 999;
   }
   .header-inner {
-      display: block;
+      display: flex;
       padding: 10px;
       height: 65px;
   }
@@ -6687,7 +6751,7 @@ ul.add-fav-options {
     font-weight: 400;
     text-transform: uppercase;
     padding: 0 6px;
-    margin: 17px 10px 14px 10px;
+    margin: auto;
 }
 
 .reset-filter-button:hover,
@@ -7418,4 +7482,137 @@ span.to-input {
     width: 100%;
     position: absolute;
     top: 0;
+}
+
+#sidebar-for-responsive {
+    text-align: center;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 15px 0 10px;
+}
+
+.is-favorites.maps-analytics-container {
+    margin: 5%;
+}
+
+@media (max-width:1680px) {
+    .map-slide-item > .c-modal-sidebar {
+        width: 40%;
+    }
+
+    .map-slide-item > .c-modal-wrapper {
+        width: 60%;
+    }
+}
+
+@media (max-width:1300px) {
+    .map-slide-item {
+        display: flex !important;
+        flex-direction: column;
+    }
+
+    .map-slide-item > .c-modal-header {
+        justify-self: flex-start;
+    }
+
+    .map-slide-item > .c-modal-sidebar {
+        width: 100%;
+    }
+
+    .map-slide-item > .c-modal-wrapper.modal-image-fav, .map-slide-item > .c-modal-sidebar > .c-modal-sidebar-inner > .c-modal-wrapper.modal-image-fav {
+        display: flex !important;
+        flex-direction: column;
+        width: 100% !important;
+    }
+
+    .map-slide-item > .c-modal-sidebar > .c-modal-sidebar-inner > .c-modal-wrapper.modal-image-fav > .c-modal-body {
+        margin: auto;
+    }
+
+    .map-slide-item > .c-modal-sidebar > .c-modal-sidebar-inner > .c-modal-wrapper.modal-image-fav > .c-modal-footer-fav {
+        position: unset;
+    }
+
+    .map-slide-item > .c-modal-wrapper.h-class {
+        display: none !important;
+    }
+
+    .map-slide-item > .c-modal-sidebar > .c-modal-sidebar-filters.sidebar-footer {
+        position: unset !important;
+    }
+
+    .map-slide-item > .c-modal-sidebar > .c-modal-sidebar-filters.sidebar-footer > .c-modal-sidebar-filters.sidebar-footer {
+        position: unset !important;
+    }
+
+    .c-connect-map-wrapper .c-modal-wrapper {
+        min-height: 427px;
+        max-height: 427px;
+    }
+
+    .c-connect-map-wrapper .c-m-iframe-content img {
+        width: auto;
+        max-height: 375px;
+    }
+}
+
+@media (max-width:992px) {
+    .c-modal-dialog {
+        overflow: hidden !important;
+        max-width: 660px;
+    }
+
+    #zoomable-modal-image-responsive {
+        min-height: 375px !important;
+        max-height: 375px !important;
+    }
+
+    .c-modal-dialog > aside.c-modal-sidebar {
+        max-height: 605;
+        overflow-y: auto !important;
+    }
+    
+    .c-modal-dialog.modal-xl > .c-modal-sidebar {
+        min-width: 100%;
+        max-width: 100%;
+        z-index: 1030;
+        overflow-y: auto;
+    }
+
+    .c-popup .c-m-iframe-content img {
+        width: auto;
+        max-height: 375px;
+    }
+
+    div.c-modal-footer.zooming-content.zoomable-map-container {
+        float: right;
+        position: unset;
+        width: max-content;
+    }
+}
+
+@media (max-width:568px) {
+    div.c-connect-map-wrapper > div.c-modal-body-content > div.slick-list.draggable > div.slick-track {
+        overflow-y: scroll;
+        max-height: 80vh;
+    }
+
+    .is-favorites.maps-analytics-container {
+        margin: 0;
+    }
+
+    .c-connect-map-wrapper {
+        padding: 0
+    }
+
+    #sidebar-for-responsive {
+        padding: 0 !important;
+    }
+
+    #zoomable-modal-image-responsive {
+        min-height: auto !important;
+        max-height: 464px !important;
+    }
 }

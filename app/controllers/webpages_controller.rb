@@ -83,19 +83,27 @@ class WebpagesController < ActionController::Base
   end
 
   def unit_bedrooms_for_webpages
-    units = @units_with_floorplan_info.pluck(:bedrooms).sort_by(&:to_i) rescue ""
-    @unit_bedrooms = []
-    units.present? && units.each do |unit|
-      bedroom_number = unit.to_i
-      if bedroom_number == 0 
-        @unit_bedrooms << ["Studio", "0_bedrooms"] 
-      elsif bedroom_number == 1 
-        @unit_bedrooms << ["#{bedroom_number} Bedroom", "1_bedroom"] 
+    bedroom_values = @units_with_floorplan_info.map do |unit|
+      bedrooms = unit.try(:[], :bedrooms).to_s.strip.downcase rescue ""
+      if bedrooms.blank? || bedrooms == "studio" || bedrooms == "0"
+        0
       else
-        @unit_bedrooms << ["#{bedroom_number} Bedrooms", "#{bedroom_number}_bedrooms"]
+        bedrooms.to_i
       end
     end
-    @unit_bedrooms = @unit_bedrooms.uniq
+
+    sorted_unique_bedrooms = bedroom_values.uniq.sort
+
+    @unit_bedrooms = sorted_unique_bedrooms.map do |bedroom_count|
+      if bedroom_count == 0
+        ["Studio", "0_bedrooms"]
+      elsif bedroom_count == 1
+        ["1 Bedroom", "1_bedroom"]
+      else
+        ["#{bedroom_count} Bedrooms", "#{bedroom_count}_bedrooms"]
+      end
+    end
+
     @unit_bedrooms
   end
 
