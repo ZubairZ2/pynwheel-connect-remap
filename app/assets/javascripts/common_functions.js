@@ -3,6 +3,205 @@ var has_floorplate = definedAndHasValue(has_floorplate)
   : false;
 var assetTracker = definedAndHasValue(assetTracker) ? assetTracker : null;
 
+function isPointNearLineSegment(point, p1, p2) {
+  const x1 = p1.x,
+    y1 = p1.y;
+  const x2 = p2.x,
+    y2 = p2.y;
+  const px = point.x,
+    py = point.y;
+
+  const lineLengthSquared = (x2 - x1) ** 2 + (y2 - y1) ** 2;
+  if (lineLengthSquared === 0) return false;
+
+  const t = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / lineLengthSquared;
+  const closestX = x1 + t * (x2 - x1);
+  const closestY = y1 + t * (y2 - y1);
+
+  if (t < 0 || t > 1) return false;
+
+  const dx = px - closestX;
+  const dy = py - closestY;
+  const distanceSquared = dx * dx + dy * dy;
+
+  const tolerance = 2;
+  return distanceSquared <= tolerance * tolerance;
+}
+
+function isPointInPolyline(point, polyline) {
+  const polylinePoints = polyline.points;
+  const n = polylinePoints.numberOfItems;
+
+  for (let i = 0; i < n - 1; i++) {
+    const p1 = polylinePoints.getItem(i);
+    const p2 = polylinePoints.getItem(i + 1);
+
+    if (isPointNearLineSegment(point, p1, p2)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function isPointInPolygon(point, polygon) {
+  const polygonPoints = polygon.points;
+  let inside = false;
+  const n = polygonPoints.numberOfItems;
+
+  for (let i = 0, j = n - 1; i < n; j = i++) {
+    const xi = polygonPoints.getItem(i).x,
+      yi = polygonPoints.getItem(i).y;
+    const xj = polygonPoints.getItem(j).x,
+      yj = polygonPoints.getItem(j).y;
+    const intersect =
+      yi > point.y !== yj > point.y &&
+      point.x < ((xj - xi) * (point.y - yi)) / (yj - yi) + xi;
+    if (intersect) inside = !inside;
+  }
+
+  return inside;
+}
+
+function isPointInRect(point, rect) {
+  const rectX = parseFloat(rect.getAttribute("x"));
+  const rectY = parseFloat(rect.getAttribute("y"));
+  const rectWidth = parseFloat(rect.getAttribute("width"));
+  const rectHeight = parseFloat(rect.getAttribute("height"));
+
+  return (
+    point.x >= rectX &&
+    point.x <= rectX + rectWidth &&
+    point.y >= rectY &&
+    point.y <= rectY + rectHeight
+  );
+}
+
+function isPointInCircle(point, circle) {
+  const cx = parseFloat(circle.getAttribute("cx"));
+  const cy = parseFloat(circle.getAttribute("cy"));
+  const r = parseFloat(circle.getAttribute("r"));
+
+  const dx = point.x - cx;
+  const dy = point.y - cy;
+
+  return dx * dx + dy * dy <= r * r;
+}
+
+function isPointInEllipse(point, ellipse) {
+  const cx = parseFloat(ellipse.getAttribute("cx"));
+  const cy = parseFloat(ellipse.getAttribute("cy"));
+  const rx = parseFloat(ellipse.getAttribute("rx"));
+  const ry = parseFloat(ellipse.getAttribute("ry"));
+
+  const dx = point.x - cx;
+  const dy = point.y - cy;
+
+  return (dx * dx) / (rx * rx) + (dy * dy) / (ry * ry) <= 1;
+}
+
+function getPolygonArea(polygon) {
+  const polygonPoints = polygon.points;
+  let area = 0;
+  const n = polygonPoints.numberOfItems;
+
+  for (let i = 0, j = n - 1; i < n; j = i++) {
+    const xi = polygonPoints.getItem(i).x,
+      yi = polygonPoints.getItem(i).y;
+    const xj = polygonPoints.getItem(j).x,
+      yj = polygonPoints.getItem(j).y;
+    area += xi * yj - xj * yi;
+  }
+
+  return Math.abs(area) / 2;
+}
+
+function findRealTopCenter(svgShape) {
+  const tag = svgShape.tagName.toLowerCase();
+  let points = [];
+
+  if (["polygon", "polyline"].includes(tag)) {
+    const pointsString = svgShape.getAttribute("points");
+    points = pointsString
+      .trim()
+      .split(/\s+/)
+      .map((p) => {
+        const [x, y] = p.split(",").map(Number);
+        return { x, y };
+      });
+  } else if (tag === "rect") {
+    const x = parseFloat(svgShape.getAttribute("x"));
+    const y = parseFloat(svgShape.getAttribute("y"));
+    const width = parseFloat(svgShape.getAttribute("width"));
+    const height = parseFloat(svgShape.getAttribute("height"));
+    points = [
+      { x: x, y: y },
+      { x: x + width, y: y },
+      { x: x + width, y: y + height },
+      { x: x, y: y + height },
+    ];
+  } else if (tag === "circle") {
+    const cx = parseFloat(svgShape.getAttribute("cx"));
+    const cy = parseFloat(svgShape.getAttribute("cy"));
+    const r = parseFloat(svgShape.getAttribute("r"));
+    points = [
+      { x: cx - r, y: cy },
+      { x: cx + r, y: cy },
+      { x: cx, y: cy - r },
+      { x: cx, y: cy + r },
+    ];
+  } else if (tag === "ellipse") {
+    const cx = parseFloat(svgShape.getAttribute("cx"));
+    const cy = parseFloat(svgShape.getAttribute("cy"));
+    const rx = parseFloat(svgShape.getAttribute("rx"));
+    const ry = parseFloat(svgShape.getAttribute("ry"));
+    points = [
+      { x: cx - rx, y: cy },
+      { x: cx + rx, y: cy },
+      { x: cx, y: cy - ry },
+      { x: cx, y: cy + ry },
+    ];
+  } else {
+    throw new Error("Unsupported shape for top center calculation");
+  }
+
+  points.sort((a, b) => a.y - b.y);
+
+  const first = points[0];
+  const second = points[1];
+
+  const midX = (first.x + second.x) / 2;
+  const midY = (first.y + second.y) / 2;
+
+  const svg = svgShape.ownerSVGElement || svgShape;
+  const ctm = svgShape.getScreenCTM();
+
+  const point = svg.createSVGPoint();
+  point.x = midX;
+  point.y = midY;
+
+  const screenPoint = point.matrixTransform(ctm);
+
+  return {
+    screenX: screenPoint.x,
+    screenY: screenPoint.y,
+  };
+}
+
+function getPolygonCenter(coordinates) {
+  let x = 0,
+    y = 0,
+    totalPoints = 0;
+
+  coordinates[0].forEach(([lng, lat]) => {
+    x += lng;
+    y += lat;
+    totalPoints++;
+  });
+
+  return { lng: x / totalPoints, lat: y / totalPoints };
+}
+
 function mobileCheck() {
   let check = false;
   (function (a) {
@@ -88,6 +287,13 @@ function toKebabCase(str) {
     .toLowerCase()                                // Convert to lowercase
     .replace(/-+/g, "-")                          // Collapse multiple hyphens
     .replace(/^-|-$/g, "");                       // Trim hyphens
+}
+
+function toCamelCase(str) {
+  return toKebabCase(str)
+    .split("-")
+    .map((word, index) => (index === 0 ? word : capitalize(word)))
+    .join("");
 }
 
 function isColorWhite(color) {
@@ -177,7 +383,7 @@ function getStretchRatio(
   currentWidth,
   currentHeight,
   originalWidth,
-  originalHeight,
+  originalHeight
 ) {
   const widthRatio = currentWidth / (originalWidth || 1);
   const heightRatio = currentHeight / (originalHeight || 1);
@@ -208,4 +414,19 @@ function formattedAddress(obj) {
     .filter((part) => part && part.trim() !== "")
     .map((part) => part.trim())
     .join(", ");
+}
+
+function getExecutableDataFunctionForObject(obj) {
+  const transformedObject = transformKeys(obj, (key) => {
+    return key.startsWith("data-") ? key.slice(5) : key;
+  });
+
+  const camelCasedObject = transformKeys(transformedObject, toCamelCase);
+  const dataFunction = (key = "") => {
+    if (key) {
+      return transformedObject[key] || camelCasedObject[toCamelCase(key)];
+    } else return camelCasedObject;
+  };
+
+  return { data: dataFunction };
 }

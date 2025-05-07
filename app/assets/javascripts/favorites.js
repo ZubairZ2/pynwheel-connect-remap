@@ -23,9 +23,10 @@ $(document).ready(function() {
 
 $(document).ready(function(){
 	if ($('.is-favorites')[0]){
-    if($(window).width() > 993 && $(".c-connect-map-wrapper").data("action") == "favorites_share_link"){
+    if(!smallScreen() && $(".c-connect-map-wrapper").data("action") == "favorites_share_link"){
       $(".c-connect-map-wrapper").addClass("favorites_share_link_css")
     }
+    $(".c-sidebar").addClass("hidden")
     $('#sidebar-for-responsive').addClass("hidden");
     addAttributes();
     $('#favoriteclickme').click(function() {
@@ -59,13 +60,12 @@ $(document).ready(function(){
 });
 
 function addAttributes(){
-  if ($(window).width() <= 993){
+  if (smallScreen()){
     $('#sidebar-for-responsive').removeClass("hidden");
     $('.select-list-fav').addClass("hidden");
     $('.modal-image-fav').removeClass("hidden");
     $('.h-class').addClass('hidden');
-  }
-  else{
+  } else{
     $('.select-list-fav').removeClass("hidden");
     $('.disabaled-apply-now').addClass("disabaled-apply-now-for-bigger-screen")
   }

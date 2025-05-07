@@ -69,16 +69,16 @@ $(document).ready(function () {
   currency = $("#communityWebpagesData").data("currency");
 
   if (isDefined(webCommunity)) {
-    selectMap = webCommunity.web_map_type;
+    selectMap = "2d-map";
     enable3DMaps = webCommunity.enable_three_d_maps;
-    defaultMapType = webCommunity.web_map_type;
+    defaultMapType = "2d-map";
 
     if (selectMap === "3d-map" && enable3DMaps) {
       _3dUnitsToBeSelected = filterUnitsBasedOnCommunityType(units); //select_units_according_to_filters(units)
       selected_units = _3dMapViewMarker();
 
       beansWidget.initMap(
-        `${webCommunity.address}, ${webCommunity.city}, ${webCommunity.state}`,
+        formattedAddress(webCommunity),
         _beansApiKey,
         {
           "click-popup-listener": polygonClickPopup,
@@ -235,18 +235,26 @@ function bindWebpageEvents() {
   });
 
   $("#market_rent, #responsive_market_rent").change(function () {
+    if (smallScreen()) return;
+
     maxPriceFilterFilterChanged();
   });
 
   $("#square_feet, #responsive_square_feet").change(function () {
+    if (smallScreen()) return;
+
     squareFootageFilterChanged();
   });
 
   $("#unit_bedroom, #responsive_unit_bedroom").change(function () {
+    if (smallScreen()) return;
+
     bedroomFilterChanged();
   });
 
   $("#available_unit, #responsive_available_unit").change(function () {
+    if (smallScreen()) return;
+
     availabilityFilterChanged();
   });
 
@@ -683,7 +691,7 @@ function filterBasedOnScreen(filterTag) {
   const webFilterId = "#".concat(filterTag); //works on web view
   const mobileFilterId = "#responsive_".concat(filterTag); //works on mobile view
 
-  if (current_width <= 993) {
+  if (smallScreen()) {
     return parseInt($(mobileFilterId).val());
   } else return parseInt($(webFilterId).val());
 }
@@ -821,6 +829,77 @@ function updateMaxPriceFilterDropDownList(floorplateUnits) {
   }
 
   disablePriceRentOptions();
+}
+
+function getUniqueUnitBedrooms(floorplateUnits) {
+  if (!floorplateUnits || floorplateUnits.length === 0) 
+    return [];
+
+  const unitBedrooms = [];
+
+  floorplateUnits.forEach((unit) => {
+    let bedroomNumber = parseInt(unit.bedrooms);
+    if (isNaN(bedroomNumber)) return;
+
+    if (bedroomNumber === 0) {
+      unitBedrooms.push(["Studio", "0_bedrooms", 0]);
+    } else if (bedroomNumber === 1) {
+      unitBedrooms.push(["1 Bedroom", "1_bedroom", 1]);
+    } else {
+      unitBedrooms.push([
+        `${bedroomNumber} Bedrooms`,
+        `${bedroomNumber}_bedrooms`,
+        bedroomNumber,
+      ]);
+    }
+  });
+
+  const uniqueList = Array.from(
+    new Set(unitBedrooms.map(item => JSON.stringify(item)))
+  ).map(item => JSON.parse(item));
+
+  uniqueList.sort((a, b) => a[2] - b[2]);
+
+  return uniqueList.map(([label, value]) => [label, value]);
+}
+
+
+
+function updateBedroomFilterDropDownList(floorplateUnits) {
+  reInitializeDropDownList("unit_bedroom");
+
+  const dropDownList = getUniqueUnitBedrooms(floorplateUnits);
+
+  for (var i = 0; i < dropDownList.length; i++) {
+    $("#unit_bedroom").append(
+      `<option value="${dropDownList[i][1]}"> ${dropDownList[i][0]} </option>`
+    ); //works on web view
+
+    $("#responsive_unit_bedroom").append(
+      `<option value="${dropDownList[i][1]}"> ${dropDownList[i][0]} </option>`
+    ); //works on mobile view
+  }
+
+  disableBedroomOptions();
+}
+
+
+function disableBedroomOptions() {
+  if ($("#unit_bedroom option").length === 0) {
+    $("#unit_bedroom")
+      .prop("disabled", true)
+      .append('<option value="">No option available</option>');
+  } else {
+    $("#unit_bedroom").prop("disabled", false);
+  }
+
+  if ($("#responsive_unit_bedroom option").length === 0) {
+    $("#responsive_unit_bedroom")
+      .prop("disabled", true)
+      .append('<option value="">No option available</option>');
+  } else {
+    $("#responsive_unit_bedroom").prop("disabled", false);
+  }
 }
 
 function disablePriceRentOptions() {
@@ -1680,7 +1759,7 @@ function disabled_enabled_anchors() {
   if (floors.length > 0) {
     disable_rent_filter_options(min_market_rent);
     disable_area_filter_options(max_area);
-    if ($(window).width() <= 993 && $(window).width() >= 568) {
+    if (smallScreen() && !extraSmallScreen()) {
       $(".mobile-filter-mega-menu").addClass("filters-alignment");
     }
   } else {
@@ -1775,8 +1854,8 @@ function change_units_view(evt, type) {
 }
 
 function set_yardirentcafe_url(element) {
-  // var url = $(element).data('availability-url');
   let url = element.getAttribute("data-availability-url");
+  if (!url) url = $(element).data("availability-url");
 
   if (selectMap === "3d-map" && enable3DMaps) {
     url = _3dSelectedUnit.availability_url;
@@ -1915,19 +1994,19 @@ function hideFees() {
 }
 
 function adjustHeightForContentArea() {
-  if ($(".m-filters").css("display") === "none") {
-    $("#overall-scroller").css({
-      height: "25em",
-      "max-height": "25em",
-      "overflow-y": "auto",
-    });
-  } else {
-    $("#overall-scroller").css({
-      height: "18em",
-      "max-height": "25em",
-      "overflow-y": "auto",
-    });
-  }
+  // if ($(".m-filters").css("display") === "none") {
+  $("#overall-scroller").css({
+    height: "max-content",
+    "max-height": "25em",
+    "overflow-y": "auto",
+  });
+  // } else {
+  // $("#overall-scroller").css({
+  //   height: "18em",
+  //   "max-height": "25em",
+  //   "overflow-y": "auto",
+  // });
+  // }
 }
 
 function setModalAttributes(element) {
@@ -2111,7 +2190,7 @@ function setModalAttributes(element) {
       .find("#responsive-floorplan-image")
       .attr("src", $(element).data("floorplan-image"));
     if (
-      current_width > 767 &&
+      !smallScreen() &&
       $(element).data("floorplan-image") != "/assets/default.jpeg"
     ) {
       $(".c-modal-sidebar-filters").addClass("c-modal-sidebar-filters-bottom");
@@ -2552,90 +2631,42 @@ function set3DSelectedUnit(unitName, floor) {
 }
 
 function handleMapControl() {
+  if (communityInactivated) return;
   if (selectMap === "3d-map" && enable3DMaps) {
     display3DMap();
-    displayOverlayText();
-  } else if (!communityInactivated) display2DMap();
+  } else display2DMap();
+}
+
+function resetMapData() {
+  setWebpageContainerSize();
+  // resetUnits();
+  // resetFilters();
 }
 
 function display3DMap() {
-  $("._3d-apply-filter-button").css("display", "block");
-  $(".beans-map-container").show();
-  image_width_2d = parseInt($(".floorplate-image").width());
-  $(".image-map").hide();
-  $(".zoom-in-webpage").hide();
-  $(".zoom-out-webpage").hide();
-  // $(".location-items").hide();
-  $(".desktop-content").hide();
-  $(".2d-map-option").removeClass("hidden");
   $(".3d-map-option").addClass("hidden");
-  $(".satelite-view-icon").removeClass("hidden");
+  $(".location-items").addClass("hidden");
+  $(".image-map").addClass("hidden");
+  $(".beans-map-container").removeClass("hidden");
+  $("._3d-apply-filter-button").removeClass("hidden");
   $(".div.map-instruction-text").removeClass("hidden");
-  // display3DMapInstructions();
-  // let windowWidth = window.innerWidth;
-  // let footerWidth = document.getElementById("footer");
-  // let sideBarWidth = $(".c-sidebar").innerWidth();
-  // if ($(window).width() <= 567) {
-  //   footerWidth.style.bottom = "140px";
-  //   $(".map-instruction-text").hide();
-  //   $(".beans-map-container").css("width", windowWidth);
-  //   footerWidth.style.width = windowWidth;
-  // } else if (windowWidth >= 567 && windowWidth <= 991) {
-  //   $(".map-instruction-text").hide();
-  //   let mapWidth = windowWidth - sideBarWidth;
-  //   footerWidth.style.width = mapWidth;
-  // } else {
-  //   let mapWidth;
-  //   if (sideBarWidth) {
-  //     mapWidth = windowWidth - sideBarWidth;
-  //   } else {
-  //     mapWidth = windowWidth;
-  //   }
-  //   $(".beans-map-container").css("width", mapWidth);
-  //   footerWidth.style.width = mapWidth;
-  // }
-  if (defaultMapType != "3d-map") {
-    $(".c-sidebar").hide();
-    let w1 = $(".digits-list-item").width();
-    let w2 = $(".c-sidebar").width();
-    // $(".digits-list-item").css("width", w1+w2);
-    _3dMapViewMarkers();
-  }
+  $(".satelite-view-icon").removeClass("hidden");
+  $(".2d-map-option").removeClass("hidden");
+  resetMapData();
 }
 
 function display2DMap() {
-  $("._3d-apply-filter-button").css("display", "none");
-  $(".beans-map-container").hide();
-  $(".image-map").show();
-  $(".zoom-in-webpage").show();
-  $(".zoom-out-webpage").show();
-  $(".c-sidebar").show();
-  $(".desktop-content").show();
-  $(".satelite-view-icon").addClass("hidden");
-  $(".3d-map-option").removeClass("hidden");
-  $(".2d-map-option").addClass("hidden");
   $(".div.map-instruction-text").addClass("hidden");
-  if (defaultMapType == "3d-map") {
-    showMarkers();
-  }
-
-  // var windowWidth = $(window).width();
-  if (selectMap !== "3d-map") {
-    // handleViewportChange(windowWidth);
-    const markerColor = isColorWhite(map_marker_color)
-      ? "grey"
-      : map_marker_color;
-
-    $(".popup-title").css("background-color", markerColor);
-    $(".popup-arrow").css("background-color", markerColor);
-
-    $(".custom-select").change(() => {
-      renderChangedUnits();
-      if (svgMode) {
-        setSVGUnitsAmenitiesCoordinates();
-      }
-    });
-  }
+  $("._3d-apply-filter-button").addClass("hidden");
+  $(".beans-map-container").addClass("hidden");
+  $(".satelite-view-icon").addClass("hidden");
+  $(".2d-map-option").addClass("hidden");
+  $(".satelite-view-icon").addClass("hidden");
+  $(".image-map").removeClass("hidden");
+  $(".location-items").removeClass("hidden");
+  $(".3d-map-option").removeClass("hidden");
+  resetMapData();
+  showMarkers();
 }
 
 function isColorWhite(color) {
@@ -2806,7 +2837,7 @@ function _3dFilterByFloor(floor) {
 }
 
 function _3dFilterByUnits(_3dUnits) {
-  beansWidget.filterByUnit(_3dUnits);
+  // beansWidget.filterByUnit(_3dUnits);
 }
 
 function toggleToSateliteView() {
@@ -2821,18 +2852,24 @@ function apply3DFilters() {
 
 function resetFilters() {
   units = current_units;
-  $("#responsive_unit_bedroom").val(
-    $("#responsive_unit_bedroom option:first").val()
-  );
-  $("#unit_bedroom").val($("#unit_bedroom option:first").val());
-
-  if ($(window).width() <= 993) $(".mobile-filter-mega-menu").slideToggle();
-
-  bedroomFilterChanged();
+    resetBasedOnBedroom();
+  
   showMarkers();
 }
 
-function applyFilters() {
+
+
+function resetBasedOnBedroom() {
+  $("#responsive_unit_bedroom").val( $("#responsive_unit_bedroom option:first").val() );
+  $("#unit_bedroom").val($("#unit_bedroom option:first").val());
+
+  if (smallScreen()) $(".mobile-filter-mega-menu").slideToggle();
+
+  bedroomFilterChanged();
+}
+
+function applyFilters () {
+  filterUnitsBasedOnSelectedFilters();
   if (selectMap === "3d-map" && enable3DMaps) {
     _3dMapViewMarkers();
   } else {
@@ -3365,7 +3402,6 @@ function setWebpageContainerSize() {
       height: sidebarHeightCondition ? sidebarExactHeight : 0,
     };
 
-    debugger
     $containerHeader.css({
       width: totalWidth - sidebarSize.width,
       left: sidebarSize.width,
@@ -3426,7 +3462,6 @@ function setWebpageContainerSize() {
     });
 
     if (smallScreen()) {
-      debugger
       $buttonsGroup.css({
         width: mainBodyWidth,
         left: sidebarSize.width,
@@ -3452,7 +3487,11 @@ function setWebpageContainerSize() {
         top: 0,
       });
     }
-    debugger
+    if (!smallScreen()) {
+      $containerHeader.find(".app-logo").css({
+        width: unitListContainerWidth + 22 /* padding */,
+      });
+    }
   }
 }
 
