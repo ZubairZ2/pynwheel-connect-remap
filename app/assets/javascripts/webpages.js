@@ -1387,7 +1387,7 @@ function markerHoverEffect(event, _3dData = null) {
 
   if (_3dMapMode() && _3dData) {
     const unitData = units.find(({ id }) => id === _3dData.unitId);
-    currentHoveredUnit = unitData.id;
+    currentHoveredUnit = _3dData
     $this = getExecutableDataFunctionForObject(unitData.data_attributes);
   } else if (svgMode && event.currentTarget.tagName.toLowerCase() === "g") {
     const lastClonedElement = getLastClonedJQueryElement(event.currentTarget);
@@ -1464,20 +1464,45 @@ function markerHoverEffectEnd(event, $3dDataElement = null) {
 
   const $markerPopup = $("#marker-popover");
   if (_3dMapMode() && $3dDataElement) {
+    const clearPopup = ($beansMarkerPopover = null) => {
+      if (!currentHoveredUnit) return;
+      currentHoveredUnit = null;
+
+      $markerPopup.addClass("hidden");
+      if ($beansMarkerPopover)
+      $beansMarkerPopover.removeClass("hidden");
+      $($("#unit_" + $3dDataElement.data("unitId"))).css("border", "none");
+    };
     // const unitData = units.find(({ id }) => id === $3dDataElement.unitId);
     // $this = getExecutableDataFunctionForObject(unitData.data_attributes);
 
-    mouseTracker.onChange(() => {
+    mouseTracker.onChange(({x, y, event}) => {
       const $beansMarkerPopover = $(
-        "div.esri-ui-inner-container.esri-ui-manual-container > div.esri-component[role='presentation']"
+      "div.esri-ui-inner-container.esri-ui-manual-container > div.esri-component[role='presentation']"
       );
-      if ($beansMarkerPopover.hasClass("esri-popup")) return;
 
-      if ($markerPopup.hasClass("hidden")) return;
+      const convertedUnitIndex = getUnitIndexById(currentHoveredUnit?.unitId);
+      if (convertedUnitIndex < 0) {
+        clearPopup($beansMarkerPopover);
+        return;
+      }
 
-      $markerPopup.addClass("hidden");
-      $beansMarkerPopover.removeClass("hidden");
-      $($("#unit_" + $3dDataElement.data("unitId"))).css("border", "none");
+      const { geojson } =
+        beansWidget.workingInstance.unitPolygonsToExclude[convertedUnitIndex] ||
+        {};
+
+      if (
+        geojson &&
+        isMouseInsideGeoShape(
+          event,
+          geojson,
+          beansWidget.workingInstance.mapView
+        )
+      ) {
+        return;
+      } else {
+        clearPopup();
+      }
     });
 
     return;

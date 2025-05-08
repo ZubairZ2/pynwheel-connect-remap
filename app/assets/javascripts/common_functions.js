@@ -3,7 +3,7 @@ var has_floorplate = definedAndHasValue(has_floorplate)
   : false;
 var assetTracker = definedAndHasValue(assetTracker) ? assetTracker : null;
 
-function isPointNearLineSegment(point, p1, p2) {
+function isPointNearLineSegment(point, p1, p2, tolerance = 2) {
   const x1 = p1.x,
     y1 = p1.y;
   const x2 = p2.x,
@@ -15,28 +15,34 @@ function isPointNearLineSegment(point, p1, p2) {
   if (lineLengthSquared === 0) return false;
 
   const t = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / lineLengthSquared;
+  if (t < 0 || t > 1) return false;
+
   const closestX = x1 + t * (x2 - x1);
   const closestY = y1 + t * (y2 - y1);
-
-  if (t < 0 || t > 1) return false;
 
   const dx = px - closestX;
   const dy = py - closestY;
   const distanceSquared = dx * dx + dy * dy;
 
-  const tolerance = 2;
   return distanceSquared <= tolerance * tolerance;
 }
 
-function isPointInPolyline(point, polyline) {
-  const polylinePoints = polyline.points;
-  const n = polylinePoints.numberOfItems;
+function isPointInPolyline(point, polyline, tolerance = 2) {
+  let points;
 
-  for (let i = 0; i < n - 1; i++) {
-    const p1 = polylinePoints.getItem(i);
-    const p2 = polylinePoints.getItem(i + 1);
+  if (polyline.points && typeof polyline.points.numberOfItems === "number") {
+    points = [];
+    for (let i = 0; i < polyline.points.numberOfItems; i++) {
+      points.push(polyline.points.getItem(i));
+    }
+  } else if (Array.isArray(polyline)) {
+    points = polyline;
+  } else {
+    return false;
+  }
 
-    if (isPointNearLineSegment(point, p1, p2)) {
+  for (let i = 0; i < points.length - 1; i++) {
+    if (isPointNearLineSegment(point, points[i], points[i + 1], tolerance)) {
       return true;
     }
   }
@@ -45,18 +51,33 @@ function isPointInPolyline(point, polyline) {
 }
 
 function isPointInPolygon(point, polygon) {
-  const polygonPoints = polygon.points;
-  let inside = false;
-  const n = polygonPoints.numberOfItems;
+  let points;
 
-  for (let i = 0, j = n - 1; i < n; j = i++) {
-    const xi = polygonPoints.getItem(i).x,
-      yi = polygonPoints.getItem(i).y;
-    const xj = polygonPoints.getItem(j).x,
-      yj = polygonPoints.getItem(j).y;
+  // Allow either SVG element or array of points
+  if (polygon.points && typeof polygon.points.numberOfItems === "number") {
+    // SVG polygon
+    points = [];
+    for (let i = 0; i < polygon.points.numberOfItems; i++) {
+      const p = polygon.points.getItem(i);
+      points.push({ x: p.x, y: p.y });
+    }
+  } else if (Array.isArray(polygon)) {
+    points = polygon;
+  } else {
+    return false;
+  }
+
+  let inside = false;
+  for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+    const xi = points[i].x,
+      yi = points[i].y;
+    const xj = points[j].x,
+      yj = points[j].y;
+
     const intersect =
       yi > point.y !== yj > point.y &&
       point.x < ((xj - xi) * (point.y - yi)) / (yj - yi) + xi;
+
     if (intersect) inside = !inside;
   }
 
@@ -64,23 +85,46 @@ function isPointInPolygon(point, polygon) {
 }
 
 function isPointInRect(point, rect) {
-  const rectX = parseFloat(rect.getAttribute("x"));
-  const rectY = parseFloat(rect.getAttribute("y"));
-  const rectWidth = parseFloat(rect.getAttribute("width"));
-  const rectHeight = parseFloat(rect.getAttribute("height"));
+  let x, y, width, height;
+
+  if (
+    rect instanceof SVGRectElement ||
+    typeof rect.getAttribute === "function"
+  ) {
+    x = parseFloat(rect.getAttribute("x"));
+    y = parseFloat(rect.getAttribute("y"));
+    width = parseFloat(rect.getAttribute("width"));
+    height = parseFloat(rect.getAttribute("height"));
+  } else {
+    x = rect.x;
+    y = rect.y;
+    width = rect.width;
+    height = rect.height;
+  }
 
   return (
-    point.x >= rectX &&
-    point.x <= rectX + rectWidth &&
-    point.y >= rectY &&
-    point.y <= rectY + rectHeight
+    point.x >= x &&
+    point.x <= x + width &&
+    point.y >= y &&
+    point.y <= y + height
   );
 }
 
 function isPointInCircle(point, circle) {
-  const cx = parseFloat(circle.getAttribute("cx"));
-  const cy = parseFloat(circle.getAttribute("cy"));
-  const r = parseFloat(circle.getAttribute("r"));
+  let cx, cy, r;
+
+  if (
+    circle instanceof SVGCircleElement ||
+    typeof circle.getAttribute === "function"
+  ) {
+    cx = parseFloat(circle.getAttribute("cx"));
+    cy = parseFloat(circle.getAttribute("cy"));
+    r = parseFloat(circle.getAttribute("r"));
+  } else {
+    cx = circle.cx;
+    cy = circle.cy;
+    r = circle.r;
+  }
 
   const dx = point.x - cx;
   const dy = point.y - cy;
@@ -89,10 +133,22 @@ function isPointInCircle(point, circle) {
 }
 
 function isPointInEllipse(point, ellipse) {
-  const cx = parseFloat(ellipse.getAttribute("cx"));
-  const cy = parseFloat(ellipse.getAttribute("cy"));
-  const rx = parseFloat(ellipse.getAttribute("rx"));
-  const ry = parseFloat(ellipse.getAttribute("ry"));
+  let cx, cy, rx, ry;
+
+  if (
+    ellipse instanceof SVGEllipseElement ||
+    typeof ellipse.getAttribute === "function"
+  ) {
+    cx = parseFloat(ellipse.getAttribute("cx"));
+    cy = parseFloat(ellipse.getAttribute("cy"));
+    rx = parseFloat(ellipse.getAttribute("rx"));
+    ry = parseFloat(ellipse.getAttribute("ry"));
+  } else {
+    cx = ellipse.cx;
+    cy = ellipse.cy;
+    rx = ellipse.rx;
+    ry = ellipse.ry;
+  }
 
   const dx = point.x - cx;
   const dy = point.y - cy;
@@ -101,15 +157,26 @@ function isPointInEllipse(point, ellipse) {
 }
 
 function getPolygonArea(polygon) {
-  const polygonPoints = polygon.points;
-  let area = 0;
-  const n = polygonPoints.numberOfItems;
+  let points;
 
-  for (let i = 0, j = n - 1; i < n; j = i++) {
-    const xi = polygonPoints.getItem(i).x,
-      yi = polygonPoints.getItem(i).y;
-    const xj = polygonPoints.getItem(j).x,
-      yj = polygonPoints.getItem(j).y;
+  if (polygon.points && typeof polygon.points.numberOfItems === "number") {
+    points = [];
+    for (let i = 0; i < polygon.points.numberOfItems; i++) {
+      const p = polygon.points.getItem(i);
+      points.push({ x: p.x, y: p.y });
+    }
+  } else if (Array.isArray(polygon)) {
+    points = polygon;
+  } else {
+    return 0;
+  }
+
+  let area = 0;
+  for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+    const xi = points[i].x,
+      yi = points[i].y;
+    const xj = points[j].x,
+      yj = points[j].y;
     area += xi * yj - xj * yi;
   }
 
@@ -202,7 +269,15 @@ function getPolygonCenter(coordinates) {
   return { lng: x / totalPoints, lat: y / totalPoints };
 }
 
-function getDeviceType() {
+function getMapRelativeCoords (event, view) {
+  const rect = view.container.getBoundingClientRect();
+  return {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top,
+  };
+}
+
+function getDeviceType () {
   var ua = navigator.userAgent || navigator.vendor || window.opera;
   if (navigator.userAgentData) {
     var platform = navigator.userAgentData.platform || "";
