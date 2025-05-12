@@ -63,10 +63,7 @@ function setSVG(container, svgElement, options) {
 
           if (markable) {
             if (!svgShape.getAttribute(DEFAULT_FILL_COLOR)) {
-              svgShape.setAttribute(
-                DEFAULT_FILL_COLOR,
-                svgShape.style.fill
-              );
+              svgShape.setAttribute(DEFAULT_FILL_COLOR, svgShape.style.fill);
             }
             svgShape.style.fill = map_marker_color;
           }
@@ -345,9 +342,8 @@ function setupAmenityFillHandlers(duplicateBlock, fillOnHover = false) {
         duplicateBlock.style.fill = amenityFillColor;
       },
       removeAmenityBlockFill: () => {
-        duplicateBlock.style.fill = duplicateBlock.getAttribute(
-          DEFAULT_FILL_COLOR
-        );
+        duplicateBlock.style.fill =
+          duplicateBlock.getAttribute(DEFAULT_FILL_COLOR);
       },
     };
   }
@@ -394,9 +390,14 @@ function setupMouseEvents(
     });
 
     $blockParent.on("mouseup touchend", function (e) {
-      if (isMobileOrTabletView && e.type === "mouseup") {
+      if (
+        (isMobileOrTabletView && e.type === "mouseup") ||
+        (!isMobileOrTabletView && e.type === "touchend")
+      ) {
         e.preventDefault();
+        return;
       }
+
       if (e.isDefaultPrevented()) {
         return;
       }
@@ -473,7 +474,7 @@ function processSvgBlock(svgElement, item, options, dataset = null) {
 
   const duplicateBlock = block.cloneNode(true);
   const $duplicateBlock = $(duplicateBlock);
-  duplicateBlock.style.fill = ""
+  duplicateBlock.style.fill = "";
 
   if (data_attributes) {
     applyDataAttributes(duplicateBlock, data_attributes);
@@ -497,12 +498,13 @@ function processSvgBlock(svgElement, item, options, dataset = null) {
   let mouseupEvent, mouseenterEvent, mouseleaveEvent;
 
   const showModalOnClick = (e) => {
+    e.preventDefault();
     if (
-      duplicateBlock.getAttribute("data-target") &&
-      (isMobileOrTabletView || e.target.tagName !== duplicateBlock.tagName)
-    ) {
-      return clickLastClonedElement(blockParent);
-    }
+      getDeviceType() === "desktop" &&
+      e.target.tagName === duplicateBlock.tagName
+    )
+      return;
+    return clickLastClonedElement(blockParent);
   };
 
   switch (cloneClass) {

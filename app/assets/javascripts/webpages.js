@@ -1175,8 +1175,14 @@ function resetToDefaultZoom() {
   responsiveModalPanZoom.moveTo(0, 0);
 }
 
-function click_marker_tag(unitId, { pointerId, selector } = {}) {
+function unitMarkerClick(unitId, event) {
   const markersSelector = svgMode ? ".cloned-unit" : ".unit_marker";
+
+  if (event?.currentTarget) {
+    event.preventDefault()
+    $("#unitModal").show();
+    return;
+  }
 
   if (svgMode) {
     unitId = parseInt(unitId.replace("unit_", ""));
@@ -1343,7 +1349,7 @@ function closeAmenityViewerModal(amenityID) {
 
 function onUnitClick(e) {
   const { id } = getUnitData(e.target);
-  click_marker_tag(id);
+  unitMarkerClick(id);
 }
 
 function unitMarketRent(unit) {
@@ -1574,7 +1580,11 @@ function markerHoverEffectEnd(event) {
   $($("#unit_" + $this.data("unitId"))).css("border", "none");
 }
 
-function unitMarkerHover() {
+function unitMarkerHover () {
+  if (!desktopCheck()) {
+    return;
+  }
+
   $(".marker").hover(markerHoverEffect, markerHoverEffectEnd);
   $(".cloned-unit").hover(markerHoverEffect, markerHoverEffectEnd);
 }
@@ -2949,8 +2959,6 @@ function get_unit_availability(unit) {
   const todayDate = moment();
   let availableDateString = "";
 
-  console.log("unitAvailableDate: ", unit.available_date);
-
   if (unit.sold) {
     availableDateString = "Unavailable:";
   } else if (unit.available && unit.available_date) {
@@ -2974,7 +2982,6 @@ function get_unit_availability(unit) {
     availableDateString = "Unavailable:";
   }
 
-  console.log("availableDateString: ", availableDateString);
   return availableDateString;
 }
 

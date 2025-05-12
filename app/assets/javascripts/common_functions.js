@@ -289,6 +289,10 @@ function tabletCheck() {
   return getDeviceType() === "tablet";
 }
 
+function desktopCheck() {
+  return getDeviceType() === "desktop";
+}
+
 function isMobileOrTablet() {
   return ["phone", "tablet"].includes(getDeviceType());
 }
