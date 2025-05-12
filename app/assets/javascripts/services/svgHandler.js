@@ -378,7 +378,7 @@ function setupMouseEvents(
   blockParent,
   { events: { mouseupEvent, mouseenterEvent, mouseleaveEvent } = {} } = {}
 ) {
-  const isMobileOrTablet = smallScreen();
+  const isMobileOrTablet = isMobileOrTablet();
   const $blockParent = $(blockParent);
 
   if (mouseupEvent) {
@@ -492,7 +492,7 @@ function processSvgBlock(svgElement, item, options, dataset = null) {
   } = options;
   duplicateBlock.classList.add(cloneClass, ...(additionalClasses || []));
 
-  const isMobileOrTablet = smallScreen();
+  const isMobileOrTablet = isMobileOrTablet();
   const { onclick, onmouseenter, onmouseleave } = options;
   let mouseupEvent, mouseenterEvent, mouseleaveEvent;
 

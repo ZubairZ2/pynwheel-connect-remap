@@ -237,14 +237,23 @@ function getDeviceType() {
   if (ua.indexOf("windows phone") > -1 || ua.indexOf("iemobile") > -1) {
     return "phone";
   }
-  if (ua.indexOf("windows") > -1 && ua.indexOf("touch") > -1 && ua.indexOf("phone") === -1) {
-    var touchPoints = navigator.maxTouchPoints || navigator.msMaxTouchPoints || 0;
+  if (
+    ua.indexOf("windows") > -1 &&
+    ua.indexOf("touch") > -1 &&
+    ua.indexOf("phone") === -1
+  ) {
+    var touchPoints =
+      navigator.maxTouchPoints || navigator.msMaxTouchPoints || 0;
     if (touchPoints > 1) {
       return "tablet";
     }
   }
 
-  if (ua.indexOf("blackberry") > -1 || ua.indexOf("bb10") > -1 || ua.indexOf("rim tablet") > -1) {
+  if (
+    ua.indexOf("blackberry") > -1 ||
+    ua.indexOf("bb10") > -1 ||
+    ua.indexOf("rim tablet") > -1
+  ) {
     if (ua.indexOf("playbook") > -1 || ua.indexOf("rim tablet") > -1) {
       return "tablet";
     } else {
@@ -254,7 +263,12 @@ function getDeviceType() {
   if (ua.indexOf("tablet") > -1 && ua.indexOf("android") == -1) {
     return "tablet";
   }
-  if (ua.indexOf("symbian") > -1 || ua.indexOf("series40") > -1 || ua.indexOf("s60") > -1 || ua.indexOf("windows ce") > -1) {
+  if (
+    ua.indexOf("symbian") > -1 ||
+    ua.indexOf("series40") > -1 ||
+    ua.indexOf("s60") > -1 ||
+    ua.indexOf("windows ce") > -1
+  ) {
     return "phone";
   }
   if (ua.indexOf("webos") > -1 && ua.indexOf("tablet") === -1) {
@@ -267,13 +281,16 @@ function getDeviceType() {
   return "desktop";
 }
 
-
 function mobileCheck() {
   return getDeviceType() === "phone";
 }
 
 function tabletCheck() {
   return getDeviceType() === "tablet";
+}
+
+function isMobileOrTablet() {
+  return ["phone", "tablet"].includes(getDeviceType());
 }
 
 function iOSversion() {
@@ -283,11 +300,11 @@ function iOSversion() {
 }
 
 function smallScreen() {
-  return mobileCheck() || tabletCheck() || window.innerWidth <= 993;
+  return window.innerWidth <= 993;
 }
 
 function extraSmallScreen() {
-  return mobileCheck() || window.innerWidth <= 568;
+  return window.innerWidth <= 568;
 }
 
 function isElementVisibleOnScreen(element) {
@@ -347,12 +364,12 @@ function trim(str) {
 
 function toKebabCase(str) {
   return str
-    .replace(/([a-z])([A-Z])/g, "$1-$2")          // Handle camelCase
+    .replace(/([a-z])([A-Z])/g, "$1-$2") // Handle camelCase
     .replace(/([A-Z]{2,})(?=[A-Z][a-z])/g, "$1-") // Split multi-letter acronyms followed by mixed case
-    .replace(/[\s_]+/g, "-")                      // Replace spaces and underscores with hyphens
-    .toLowerCase()                                // Convert to lowercase
-    .replace(/-+/g, "-")                          // Collapse multiple hyphens
-    .replace(/^-|-$/g, "");                       // Trim hyphens
+    .replace(/[\s_]+/g, "-") // Replace spaces and underscores with hyphens
+    .toLowerCase() // Convert to lowercase
+    .replace(/-+/g, "-") // Collapse multiple hyphens
+    .replace(/^-|-$/g, ""); // Trim hyphens
 }
 
 function toCamelCase(str) {
