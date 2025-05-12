@@ -170,7 +170,7 @@ function setSvgOrImageHeight($image) {
 
   if (mapContainer && mapContainerZoomable) {
     const { width: mapContainerWidth, height: mapContainerHeight } =
-    mapContainerZoomable.getBoundingClientRect();
+      mapContainerZoomable.getBoundingClientRect();
 
     comparableContainerDimensions.width = mapContainerWidth;
     comparableContainerDimensions.height = mapContainerHeight;
@@ -361,7 +361,7 @@ function setupMouseEvents(
   blockParent,
   { events: { mouseupEvent, mouseenterEvent, mouseleaveEvent } = {} } = {}
 ) {
-  const isMobileView = mobileCheck();
+  const isMobileOrTablet = smallScreen();
   const $blockParent = $(blockParent);
 
   if (mouseupEvent) {
@@ -377,7 +377,7 @@ function setupMouseEvents(
     });
 
     $blockParent.on("mouseup touchend", function (e) {
-      if (isMobileView && e.type === "mouseup") {
+      if (isMobileOrTablet && e.type === "mouseup") {
         e.preventDefault();
       }
       if (e.isDefaultPrevented()) {
@@ -409,7 +409,7 @@ function setupMouseEvents(
     });
   }
 
-  if (isMobileView) return;
+  if (isMobileOrTablet) return;
 
   if (mouseenterEvent)
     $blockParent.on("mouseenter", function (e) {
@@ -475,16 +475,17 @@ function processSvgBlock(svgElement, item, options, dataset = null) {
   } = options;
   duplicateBlock.classList.add(cloneClass, ...(additionalClasses || []));
 
-  const isMobileView = mobileCheck();
+  const isMobileOrTablet = smallScreen();
   const { onclick, onmouseenter, onmouseleave } = options;
   let mouseupEvent, mouseenterEvent, mouseleaveEvent;
 
   const showModalOnClick = (e) => {
     if (
       duplicateBlock.getAttribute("data-target") &&
-      (isMobileView || e.target.tagName !== duplicateBlock.tagName)
-    )
+      (isMobileOrTablet || e.target.tagName !== duplicateBlock.tagName)
+    ) {
       return clickLastClonedElement(blockParent);
+    }
   };
 
   switch (cloneClass) {
@@ -504,7 +505,7 @@ function processSvgBlock(svgElement, item, options, dataset = null) {
       const { fillAmenityBlock, removeAmenityBlockFill } =
         setupAmenityFillHandlers(
           duplicateBlock,
-          !isMobileView && fillAmenityOnHoverOnly
+          !isMobileOrTablet && fillAmenityOnHoverOnly
         );
 
       const amenityEventHandlers = createMouseEventHandlers({
@@ -519,7 +520,13 @@ function processSvgBlock(svgElement, item, options, dataset = null) {
 
       break;
     default:
-      duplicateBlock.setAttribute("fill", getUnitMarkerColor(duplicateBlock.dataset.unitStatus, duplicateBlock.dataset.modelUnit));
+      duplicateBlock.setAttribute(
+        "fill",
+        getUnitMarkerColor(
+          duplicateBlock.dataset.unitStatus,
+          duplicateBlock.dataset.modelUnit
+        )
+      );
 
       const eventHandlers = createMouseEventHandlers({
         onmouseUp: [showModalOnClick, onclick],
@@ -570,8 +577,7 @@ function setSvgCoordinates(data, options) {
 function getNormalizedMouseCoordinates(e, svgElement) {
   const rect = svgElement.getBoundingClientRect();
   const scale =
-    zoomablePans[getZoomPanKey(svgElement.parentElement)].getTransform()
-      .scale;
+    zoomablePans[getZoomPanKey(svgElement.parentElement)].getTransform().scale;
 
   const mouseX = (e.clientX - rect.left) / scale;
   const mouseY = (e.clientY - rect.top) / scale;

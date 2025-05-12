@@ -1084,7 +1084,7 @@ function saveHomePageVideo(){
   };
 
   homePageVideoDropzone.on("complete", function(file) {
-      if (file.size > 500000001)
+      if (file.size > 524288000)
       {
           $('#video-size-warning').modal('show');
       }
@@ -1098,7 +1098,7 @@ function saveHomePageVideo(){
   });
 
   homePageVideoDropzone.on("addedfile", function(file) {
-      if (file.size < 500000001)
+      if (file.size < 524288000)
       {
           if (!(file.type == "video/mp4")) {
                 $(".divLoading").addClass("hidden");
@@ -1131,7 +1131,7 @@ function saveHomePageVideo(){
           // $('#video-size-warning').modal('show');
       }
     // console.log(file.type);
-    // if (file.size <  500000001)
+    // if (file.size <  524288000)
     // {
     //     $(".divLoading").removeClass("hidden");
     //     if (!(file.type == "video/mp4")) {
