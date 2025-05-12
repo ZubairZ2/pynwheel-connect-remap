@@ -80,52 +80,46 @@ $(document).ready(function () {
       _3dUnitsToBeSelected = filterUnitsBasedOnCommunityType(units); //select_units_according_to_filters(units)
       selected_units = _3dMapViewMarker();
 
-      beansWidget.initMap(
-        formattedAddress(webCommunity),
-        _beansApiKey,
-        {
-          "click-popup-listener": polygonClickPopup,
-          "default-polygon-color":
-            _3dConfigurations && _3dConfigurations.default_polygon_color
-              ? _3dConfigurations.default_polygon_color
-              : "#3ca832",
-          "selected-polygon-color":
-            _3dConfigurations && _3dConfigurations.selected_polygon_color
-              ? _3dConfigurations.selected_polygon_color
-              : "#5ca904",
-          "selected-unit-color":
-            _3dConfigurations && _3dConfigurations.selected_unit_color
-              ? _3dConfigurations.selected_unit_color
-              : "#5ca904",
-          "default-polygon-opacity":
-            _3dConfigurations && _3dConfigurations.default_polygon_opacity
-              ? _3dConfigurations.default_polygon_opacity
-              : 0.5,
-          "selected-polygon-opacity":
-            _3dConfigurations && _3dConfigurations.selected_polygon_opacity
-              ? _3dConfigurations.selected_polygon_opacity
-              : 0.8,
-          "unit-color":
-            _3dConfigurations && _3dConfigurations.unit_color
-              ? _3dConfigurations.unit_color
-              : "#202",
-          "poi-color":
-            _3dConfigurations && _3dConfigurations.poi_color
-              ? _3dConfigurations.poi_color
-              : "#008000",
-          "selected-units": selected_units,
-          "faded-polygon-opacity":
-            _3dConfigurations && _3dConfigurations.faded_polygon_opacity
-              ? _3dConfigurations.faded_polygon_opacity
-              : 0.3,
-          "show-unit-numbers": _3dConfigurations
-            ? _3dConfigurations.show_unit_numbers
-            : true,
-          "hide-floors": _3dConfigurations
-            ? _3dConfigurations.hide_floors
-            : true,
-        }
-      );
+      beansWidget.initMap(formattedAddress(webCommunity), _beansApiKey, {
+        "click-popup-listener": polygonClickPopup,
+        "default-polygon-color":
+          _3dConfigurations && _3dConfigurations.default_polygon_color
+            ? _3dConfigurations.default_polygon_color
+            : "#3ca832",
+        "selected-polygon-color":
+          _3dConfigurations && _3dConfigurations.selected_polygon_color
+            ? _3dConfigurations.selected_polygon_color
+            : "#5ca904",
+        "selected-unit-color":
+          _3dConfigurations && _3dConfigurations.selected_unit_color
+            ? _3dConfigurations.selected_unit_color
+            : "#5ca904",
+        "default-polygon-opacity":
+          _3dConfigurations && _3dConfigurations.default_polygon_opacity
+            ? _3dConfigurations.default_polygon_opacity
+            : 0.5,
+        "selected-polygon-opacity":
+          _3dConfigurations && _3dConfigurations.selected_polygon_opacity
+            ? _3dConfigurations.selected_polygon_opacity
+            : 0.8,
+        "unit-color":
+          _3dConfigurations && _3dConfigurations.unit_color
+            ? _3dConfigurations.unit_color
+            : "#202",
+        "poi-color":
+          _3dConfigurations && _3dConfigurations.poi_color
+            ? _3dConfigurations.poi_color
+            : "#008000",
+        "selected-units": selected_units,
+        "faded-polygon-opacity":
+          _3dConfigurations && _3dConfigurations.faded_polygon_opacity
+            ? _3dConfigurations.faded_polygon_opacity
+            : 0.3,
+        "show-unit-numbers": _3dConfigurations
+          ? _3dConfigurations.show_unit_numbers
+          : true,
+        "hide-floors": _3dConfigurations ? _3dConfigurations.hide_floors : true,
+      });
     }
     renderChangedUnits();
     handleMapControl();
@@ -617,17 +611,15 @@ function Toggle_maps(e) {
 
 function multiPropertiesFilterChanged() {
   filterUnitsBasedOnMultiCommunity();
-  
-  if(multiCommunity)
-    updateBedroomFilterDropDownList(units);
-  
+
+  if (multiCommunity) updateBedroomFilterDropDownList(units);
+
   updateMaxPriceFilterDropDownList(units);
   updateSquareFootageFilterDropdownList(units);
   updateAvailabilitFilterDropdownList(units);
 
   showMarkers();
 }
-
 
 function bedroomFilterChanged() {
   filterUnitsBasedOnMultiCommunity();
@@ -739,8 +731,7 @@ function filterUnitsBasedOnMarketRent() {
 function filterUnitsBasedOnBedroom() {
   $(".alert").hide();
 
-  if(!multiCommunity)
-    units = total_units;
+  if (!multiCommunity) resetUnits();
 
   const unitBedroom = filterBasedOnScreen("unit_bedroom");
 
@@ -751,7 +742,7 @@ function filterUnitsBasedOnBedroom() {
 function filterMultiCommunityBasedOnScreen(filterTag) {
   const webFilterId = "#".concat(filterTag); //works on web view
   const mobileFilterId = "#responsive_".concat(filterTag); //works on mobile view
-  if (current_width <= 993) {
+  if (smallScreen()) {
     return $(mobileFilterId).val();
   } else return $(webFilterId).val();
 }
@@ -759,11 +750,11 @@ function filterMultiCommunityBasedOnScreen(filterTag) {
 function filterUnitsBasedOnMultiCommunity() {
   const propertyId = filterMultiCommunityBasedOnScreen("multi_communities");
 
-  if(propertyId)
-    units = total_units.filter((unit) => unit.property_id == propertyId)
-  else 
-    units = total_units
-
+  if (propertyId)
+    units = total_units.filter(
+      (unit) => unit.property_id.trim() == propertyId.trim()
+    );
+  else resetUnits();
 }
 
 function updateAvailabilitFilterDropdownList() {
@@ -879,8 +870,7 @@ function updateMaxPriceFilterDropDownList(floorplateUnits) {
 }
 
 function getUniqueUnitBedrooms(floorplateUnits) {
-  if (!floorplateUnits || floorplateUnits.length === 0) 
-    return [];
+  if (!floorplateUnits || floorplateUnits.length === 0) return [];
 
   const unitBedrooms = [];
 
@@ -902,15 +892,13 @@ function getUniqueUnitBedrooms(floorplateUnits) {
   });
 
   const uniqueList = Array.from(
-    new Set(unitBedrooms.map(item => JSON.stringify(item)))
-  ).map(item => JSON.parse(item));
+    new Set(unitBedrooms.map((item) => JSON.stringify(item)))
+  ).map((item) => JSON.parse(item));
 
   uniqueList.sort((a, b) => a[2] - b[2]);
 
   return uniqueList.map(([label, value]) => [label, value]);
 }
-
-
 
 function updateBedroomFilterDropDownList(floorplateUnits) {
   reInitializeDropDownList("unit_bedroom");
@@ -929,7 +917,6 @@ function updateBedroomFilterDropDownList(floorplateUnits) {
 
   disableBedroomOptions();
 }
-
 
 function disableBedroomOptions() {
   if ($("#unit_bedroom option").length === 0) {
@@ -1368,16 +1355,18 @@ function unitListHover() {
 
   $("div.left-side-30-units").hover(
     function (e) {
-      const { id, pointerData, unitMarketingName } = getUnitData(e.target);
+      let markerColor = map_marker_color;
+      const { id, unitId, pointerData, unitMarketingName } = getUnitData(
+        e.target
+      );
       const markersSelector = svgMode ? "cloned-unit" : "marker";
       const $scope = $(currentVisibleMapImage()?.parentElement);
       const $allMarkers = $scope.find(`.${markersSelector}`);
       const markersArray = Array.from($allMarkers);
 
-      e.currentTarget.style.border = `3px solid ${map_marker_color}`;
-
-      markersArray.forEach((marker) => {
+      for (const marker of markersArray) {
         const matchCondition =
+          unitId === marker.dataset.unitId ||
           id === `unit_${marker.dataset.unitId}` ||
           `${pointerData.id}_cloned` === marker.id ||
           pointerData.selector === marker.id;
@@ -1400,8 +1389,14 @@ function unitListHover() {
               }
             });
           }
+          markerColor = getUnitMarkerColor(
+            selectedMarker.dataset.unitStatus,
+            selectedMarker.dataset.modelUnit
+          );
+          e.currentTarget.style.border = `3px solid ${markerColor}`;
 
           focused_marker = document.getElementById(selectedMarker.id);
+          $(".popup-title, .popup-arrow").css("background-color", markerColor);
           $("#popover-marketing-unit").html(unitMarketingName);
 
           const position = selectedMarker.getBoundingClientRect();
@@ -1439,8 +1434,10 @@ function unitListHover() {
             left: `${left}px`,
             top: `${top}px`,
           });
+
+          // if (matchCondition) break; // Turn it on if you want the exact match and not the top 1 in multiple units
         }
-      });
+      }
     },
     function (e) {
       e.currentTarget.style.border = "none";
@@ -1465,6 +1462,10 @@ function markerHoverEffect(event) {
     $this = $(lastClonedElement);
   }
 
+  const markerColor = getUnitMarkerColor(
+    $this.data().unitStatus,
+    $this.data().modelUnit
+  );
   if ($this.data("is-fav") || favoritesArr.includes($this.data("unit-id"))) {
     $(".fav-heart").removeClass("hidden");
   } else {
@@ -1552,7 +1553,7 @@ function markerHoverEffect(event) {
   }
   $($("#unit_" + $this.data("unitId"))).css(
     "border",
-    `5px solid ${map_marker_color}`
+    `5px solid ${markerColor}`
   );
 }
 
@@ -1582,6 +1583,7 @@ function getUnitData(targetElement) {
   if (targetElement.classList.contains("left-side-30-units")) {
     return {
       id: targetElement.id,
+      unitId: targetElement.dataset.unitId,
       pointerData: JSON.parse(targetElement.dataset.pointerData) || {},
       unitMarketingName: targetElement.dataset.unitMarketingName,
     };
@@ -1591,6 +1593,7 @@ function getUnitData(targetElement) {
     if (closestUnit.length > 0) {
       return {
         id: closestUnit[0].id,
+        unitId: targetElement.dataset.unitId,
         pointerData: JSON.parse(closestUnit[0].dataset.pointerData) || {},
         unitMarketingName: closestUnit[0].dataset.unitMarketingName,
       };
@@ -1737,6 +1740,7 @@ function hasTouch() {
 function disabled_enabled_anchors() {
   var min_market_rent = 100000;
   var max_area = 0;
+  const $alert = $(".alert");
   for (var i = 0; i < floors.length; i++) {
     var floorplate_units = [];
 
@@ -1763,18 +1767,21 @@ function disabled_enabled_anchors() {
     if (unitToDisplay.length == 0 && floorplate_amenities.length != 0) {
       $("#" + floors[i]).addClass("only-amenity");
       if ($("#" + floors[i]).hasClass("selected")) {
-        $(".alert").show();
+        $alert.show();
         timer = setTimeout(function () {
-          $(".alert").fadeOut("slow");
+          $alert.fadeOut("slow");
         }, 2000);
       }
     } else if (unitToDisplay.length == 0 && floorplate_amenities.length == 0) {
       $("#" + floors[i]).addClass("no-units");
       if ($("#" + floors[i]).hasClass("selected")) {
-        $(".alert").show();
-        clearTimeout(timeoutId);
+        $alert.show();
+        clearTimeout(timer);
       }
     } else {
+      clearTimeout(timer);
+      $alert.hide();
+
       $("#" + floors[i]).removeClass("no-units");
       $("#" + floors[i]).removeClass("only-amenity");
       var min_rent_floorplate = Math.min.apply(
@@ -1812,15 +1819,15 @@ function disabled_enabled_anchors() {
   } else {
     $(".custom-iframe-modeule").addClass("sitemap");
     if (units.length == 0 && amenities.length != 0) {
-      $(".alert").show();
+      $alert.show();
       timer = setTimeout(function () {
-        $(".alert").fadeOut("slow");
+        $alert.fadeOut("slow");
       }, 2000);
     } else if (units.length == 0 && amenities.length == 0) {
-      $(".alert").show();
-      clearTimeout(timeoutId);
+      $alert.show();
+      clearTimeout(timer);
     } else {
-      $(".alert").hide();
+      $alert.hide();
     }
   }
 }
@@ -2157,22 +2164,22 @@ function setModalAttributes(element) {
         )
       );
     } else {
+      const availability = $(element).data("availability") == "Unoccupied";
       $("#unitModal")
         .find("#availability")
-        .html(
-          $(element).data("availability") == "Unoccupied"
-            ? "Available"
-            : "Occupied"
-        );
+        .html(availability ? "Available" : "Occupied");
+
       $("#unitModal").find("#available-text").html("Available");
 
       // $('#unitModal').find('#available-date').html($(element).data('available-date'));
       $("#unitModal").find(
         $("#available-date").html(
-          formattedDateByRegion(
-            webCommunity.country_code,
-            $(element).data("available-date")
-          )
+          availability
+            ? formattedDateByRegion(
+                webCommunity.country_code,
+                $(element).data("available-date")
+              )
+            : "Unavailable"
         )
       );
     }
@@ -2656,11 +2663,11 @@ function getElementHeight(element) {
 }
 
 function _3dMapViewMarkers() {
-  let _3dUnitsMarketingNames = getUnitsMarketingNames();
-  let cleanedNames = clean3DMarkers(_3dUnitsMarketingNames);
-  if (cleanedNames.length > 0)
-    _3dFilterByUnits(cleanedNames + "," + _3dSampleAmenities.join());
-  else _3dFilterByUnits(cleanedNames);
+  // let _3dUnitsMarketingNames = getUnitsMarketingNames();
+  // let cleanedNames = clean3DMarkers(_3dUnitsMarketingNames);
+  // if (cleanedNames.length > 0)
+  //   _3dFilterByUnits(cleanedNames + "," + _3dSampleAmenities.join());
+  // else _3dFilterByUnits(cleanedNames);
 }
 
 function clean3DMarkers(unit_names) {
@@ -2714,18 +2721,6 @@ function display2DMap() {
   $(".3d-map-option").removeClass("hidden");
   resetMapData();
   showMarkers();
-}
-
-function isColorWhite(color) {
-  const normalizedColor = color.toLowerCase();
-
-  return (
-    normalizedColor === "#ffffff" ||
-    normalizedColor === "#fff" ||
-    normalizedColor === "white" ||
-    normalizedColor === "rgb(255, 255, 255)" ||
-    normalizedColor === "rgba(255, 255, 255, 1)"
-  );
 }
 
 function handleViewportChange() {
@@ -2900,16 +2895,16 @@ function apply3DFilters() {
 function resetFilters() {
   units = current_units;
 
-  if(multiCommunity)
-    resetBasedOnMultiCommunities();
-  else
-    resetBasedOnBedroom();
-  
+  if (multiCommunity) resetBasedOnMultiCommunities();
+  else resetBasedOnBedroom();
+
   showMarkers();
 }
 
 function resetBasedOnMultiCommunities() {
-  $("#responsive_multi_communities").val( $("#responsive_multi_communities option:first").val() );
+  $("#responsive_multi_communities").val(
+    $("#responsive_multi_communities option:first").val()
+  );
   $("#multi_communities").val($("#multi_communities option:first").val());
 
   if (smallScreen()) $(".mobile-filter-mega-menu").slideToggle();
@@ -2918,7 +2913,9 @@ function resetBasedOnMultiCommunities() {
 }
 
 function resetBasedOnBedroom() {
-  $("#responsive_unit_bedroom").val( $("#responsive_unit_bedroom option:first").val() );
+  $("#responsive_unit_bedroom").val(
+    $("#responsive_unit_bedroom option:first").val()
+  );
   $("#unit_bedroom").val($("#unit_bedroom option:first").val());
 
   if (smallScreen()) $(".mobile-filter-mega-menu").slideToggle();
@@ -2926,7 +2923,7 @@ function resetBasedOnBedroom() {
   bedroomFilterChanged();
 }
 
-function applyFilters () {
+function applyFilters() {
   filterUnitsBasedOnSelectedFilters();
   if (selectMap === "3d-map" && enable3DMaps) {
     _3dMapViewMarkers();
@@ -3686,4 +3683,52 @@ function currentVisibleMapImageScale() {
   }
 
   return scale;
+}
+
+function getUnitMarkerColor(unitStatus, modelUnit = false) {
+  let result = map_marker_color;
+  if (tbdMarkersEnabled) {
+    const isModelUnit =
+      typeof modelUnit === "boolean"
+        ? modelUnit
+        : typeof modelUnit === "string"
+        ? modelUnit === "true"
+        : false;
+    if (isModelUnit) {
+      result = mapMarkerColors.model || "#f57396";
+    } else {
+      switch (unitStatus.toLowerCase()) {
+        case "occupied":
+        case "occupied no notice":
+        case "notice rented":
+          result = mapMarkerColors.occupied || "#f2f2f2";
+          break;
+        case "occupied on notice":
+        case "notice unrented":
+          result = mapMarkerColors.occupied_on_notice || "#8545a1";
+          break;
+        case "vacant":
+        case "available":
+        case "unoccupied":
+        case "vacant unrented not ready":
+        case "vacant unrented ready":
+          result = mapMarkerColors.vacant || "#d37474";
+          break;
+        case "vacant lease":
+        case "vacant rented ready":
+        case "vacant rented not ready":
+          result = mapMarkerColors.vacant_leased || "#f9d648";
+          break;
+        default:
+          result = map_marker_color;
+          break;
+      }
+    }
+  }
+
+  return result;
+}
+
+function resetUnits() {
+  units = total_units;
 }

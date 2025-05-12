@@ -61,6 +61,11 @@
     - else
       - map_marker_color = 'rgba(247, 0, 0, 0.61)'
 
+    - map_marker_occupied_color = @community&.design&.property_map_occupied_color || "#f2f2f2"
+    - map_marker_occupied_on_notice_color = @community&.design&.property_map_occupied_on_notice_color || "#8545a1"
+    - map_marker_vacant_leased_color = @community&.design&.property_map_vacant_leased_color || "#f9d648"
+    - map_marker_model_color = @community&.design&.property_map_model_color || "#f57396"
+
     - if @community.theme_name.include?('gables')
       - marker_font_size = @community&.design&.amenity_map_marker_size_integer || 30
     - elsif @community.theme_name == 'modernist'
@@ -104,9 +109,11 @@
 
 
     - units = @available_units_and_sold_units
-    - min_unit_floor = @community_info.has_floorplates? ? (JSON.parse(@units_with_floorplan_info).map{ |x| x["floor"] }.min rescue @floors&.first) : nil
+    - min_unit_floor = @community_info.has_floorplates? ? (JSON.parse(@units_with_floorplan_info).map{ |x| x["floor"] }.min rescue @floors&.min) : nil
+    - min_unit_floor = @floors.min if @floors.present? && @floors.exclude?(min_unit_floor)
+    - marker_colors = { vacant: map_marker_color, occupied: map_marker_occupied_color, occupied_on_notice: map_marker_occupied_on_notice_color, vacant_leased: map_marker_vacant_leased_color, model: map_marker_model_color }
     - locals_for_markers = { svg_enabled: @svg_enabled, community_info: @community_info, units: units, amenities: @amenities, floors: @floors, floorplates: @floorplates, floorplans_map: @floorplans_map, spanSize_y: spanSize_y, spanSize_x: spanSize_x, spanSize_size: spanSize_size, fontsize: fontsize, map_marker_color: map_marker_color, amenity_marker_color: amenity_marker_color, top_margin: top_margin, left_margin: left_margin, amenity_top_margin: amenity_top_margin, amenity_left_margin: amenity_left_margin }
-    - svg_and_image_locals = { min_unit_floor: min_unit_floor, locals_for_markers: locals_for_markers }
+    - svg_and_image_locals = { min_unit_floor: min_unit_floor, marker_colors: marker_colors, locals_for_markers: locals_for_markers }
 
     - unless @community_info.locked
       = hidden_field_tag :maps_community_id, @community_info.id
@@ -251,6 +258,9 @@
                   .hidden-units
                   = render partial: @svg_enabled ? 'webpages/svg_map' : 'webpages/image_map', locals: svg_and_image_locals
 
+                  - if @community_info.display_tbd_legend?
+                    = render partial: 'webpages/marker_colors_legend', locals: { marker_colors: }
+
                 %footer.c-footer#footer.responsive-content.mobile-footer{ style: "display: flex; justify-content: space-around; align-item: center;" }
                   %ul.location-items.location-responsive.responsive-content.responsive-legends.align-home-buttons
                     - if @community.enable_home_legend
@@ -263,18 +273,10 @@
                           %i.fas.fa-camera-retro{:style => "color: #{amenity_marker_color}; font-size: #{camera_font_size}px; margin-top:#{camera_margin}px;"}
                         %span Amenity image
 
-                  - if @community.enable_three_d_maps
-                    .zooming-content.zoomable-map-container
-                      %a.refresh-action.zooming-action.zoom-controls.map-options.3d-map-option{:href => "#", "data-current-map-type"=>"3d-current-map"}
-                        %img{:src => "/assets/3D_modeling.svg"}/
-                      %a.refresh-action.zooming-action.zoom-controls.map-options.2d-map-option.hidden{:href => "#", "data-current-map-type"=>"2d-current-map"}
-                        %img{:src => "/assets/2D_modeling.svg"}/
-
                 %footer.c-footer#footer.desktop-content
                   .inner-footer
                     .footer-logo.desktop-content{:style=> "visibility: #{@community.powered_by_btn ? "" : "hidden" }"}
                       %img{:src => "/assets/powered_by_logo.png"}/
-                      
                     %ul.location-items
                       - if @community.enable_home_legend
                         %li
@@ -297,11 +299,6 @@
                         %img{:src => "/assets/plus.png"}/
                       %a.minus-action.zooming-action.zoom-out-webpage.zoom-controls{:href => "#"}
                         %img{:src => "/assets/minus.png"}/
-                      - if @community.enable_three_d_maps
-                        %a.refresh-action.zooming-action.zoom-controls.map-options.3d-map-option{:href => "#", "data-current-map-type"=>"3d-current-map"}
-                          %img{:src => "/assets/3D_modeling.svg"}/
-                        %a.refresh-action.zooming-action.zoom-controls.map-options.2d-map-option.hidden{:href => "#", "data-current-map-type"=>"2d-current-map"}
-                          %img{:src => "/assets/2D_modeling.svg"}/
 
               .left-side.tabcontent.list_view
                 -all_details = @units_with_floorplan_info.present? ? JSON.parse(@units_with_floorplan_info) : []
@@ -352,6 +349,9 @@
   var $images = [];
   var largeImageHeight = 166;
   var map_marker_color = toRgbColor("#{raw map_marker_color}");
+  var tbdMarkersEnabled = "#{@community.display_tbd_legend?}"
+  tbdMarkersEnabled = tbdMarkersEnabled === "true"
+  var mapMarkerColors = #{raw marker_colors.to_json}
   var markerFontSize = "#{raw fontsize}";
   var amenity_marker_color = toRgbColor("#{raw amenity_marker_color}");
   var units_availability_over_120_days = "#{@community.units_availability_over_120_days}";

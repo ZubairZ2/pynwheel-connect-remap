@@ -1,0 +1,18 @@
+- occupied_color, occupied_on_notice_color, vacant_color, vacant_leased_color, model_color = marker_colors.values_at(:occupied, :occupied_on_notice, :vacant, :vacant_leased, :model)
+
+.legend
+  .legend-item
+    .color-box.occupied{ style: occupied_color ? "background: #{occupied_color}" : "" }
+    %span.label OCCUPIED
+  .legend-item
+    .color-box.occupied-notice{ style: occupied_on_notice_color ? "background: #{occupied_on_notice_color}" : "" }
+    %span.label OCCUPIED ON NOTICE
+  .legend-item
+    .color-box.vacant{ style: vacant_color ? "background: #{vacant_color}" : "" }
+    %span.label VACANT
+  .legend-item
+    .color-box.vacant-leased{ style: vacant_leased_color ? "background: #{vacant_leased_color}" : "" }
+    %span.label VACANT LEASED
+  .legend-item
+    .color-box.model{ style: model_color ? "background: #{model_color}" : "" }
+    %span.label MODEL

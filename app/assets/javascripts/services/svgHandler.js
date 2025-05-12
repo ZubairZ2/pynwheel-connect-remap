@@ -519,7 +519,7 @@ function processSvgBlock(svgElement, item, options, dataset = null) {
 
       break;
     default:
-      duplicateBlock.setAttribute("fill", map_marker_color);
+      duplicateBlock.setAttribute("fill", getUnitMarkerColor(duplicateBlock.dataset.unitStatus, duplicateBlock.dataset.modelUnit));
 
       const eventHandlers = createMouseEventHandlers({
         onmouseUp: [showModalOnClick, onclick],
@@ -565,10 +565,6 @@ function setSvgCoordinates(data, options) {
       processSvgBlock(svgElement, item, options);
     });
   });
-
-  if (updateStyles) {
-    $(".popup-title, .popup-arrow").css("background-color", map_marker_color);
-  }
 }
 
 function getNormalizedMouseCoordinates(e, svgElement) {

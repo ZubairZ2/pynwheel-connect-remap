@@ -1,6 +1,10 @@
 module DateFormatter
   def self.formatted_date_by_region(country_code, date)
-    return date if (date === "Now" || !date.present?)
+    return date if date.blank?
+
+    # If it's a string and not a valid date, return it as-is
+    return date if date.is_a?(String) && !date.match(/\d{1,4}[-\/]\d{1,2}[-\/]\d{1,4}/)
+
     date =  convert_to_date(date)
 
     case country_code

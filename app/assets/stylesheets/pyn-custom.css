@@ -4363,6 +4363,7 @@ a#favoriteclickme {
     font-size: 13px !important;
 }
 
+
 .propertyDetailName,
 .pyn-toolTip,
 .mapConfigurationToolTip, 
@@ -4373,6 +4374,8 @@ a#favoriteclickme {
     white-space: initial;
     z-index: 1000;
 }
+
+.pyn-toolTip #markerColorsToolTipText,
 .propertyDetailName #propertyDetailNameText,
 .analyticsToolTip #analyticsToolTipText,
 .elevatorPositionToolTip #elevatorPositionToolTipText {
@@ -7113,6 +7116,7 @@ ul.add-fav-options {
     line-height: 1.3;
 }
 
+.pyn-toolTip #markerColorsToolTipText::after,
 .mapConfigurationToolTip #configDetailNameText::after {
     content: "";
     position: absolute;
@@ -7124,6 +7128,7 @@ ul.add-fav-options {
     border-color: black transparent transparent transparent;
 }
 
+.pyn-toolTip:hover #markerColorsToolTipText
 .mapConfigurationToolTip:hover #configDetailNameText {
     visibility: visible;
 }
@@ -7653,5 +7658,78 @@ span.to-input {
     #zoomable-modal-image-responsive {
         min-height: auto !important;
         max-height: 464px !important;
+    }
+}
+
+.legend {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 10px 0;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.legend-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    font-family: Arial, sans-serif;
+}
+
+.legend-item > span.label {
+    color: #000000;
+}
+
+.color-box {
+    width: 150px;
+    height: 20px;
+    border: 1px solid #f0f0f0;
+}
+
+.color-box.occupied {
+    background-color: #f2f2f2;
+}
+
+.color-box.occupied-notice {
+    background-color: #8545a1;
+}
+
+.color-box.vacant {
+    background-color: #d37474;
+}
+
+.color-box.vacant-leased {
+    background-color: #f9d648;
+}
+
+.color-box.model {
+    background-color: #f57396;
+}
+
+@media (max-width:1252px) {
+    .legend-item {
+        font-size: 1rem;
+    }
+
+    .color-box {
+        width: 100px;
+        height: 15px;
+    }
+}
+
+@media (max-width:992px) {
+    .legend-item {
+        font-size: 0.7rem;
+    }
+
+    .color-box {
+        width: 50px;
+        height: 10px;
     }
 }

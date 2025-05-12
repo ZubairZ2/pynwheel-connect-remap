@@ -61,6 +61,22 @@ class Unit < ApplicationRecord
   belongs_to :floorplan
   belongs_to :floorplate
 
+  AVAILABILITY_SCOPED_STATUSES = [
+    "occupied",
+    "occupied no notice",
+    "notice rented",
+    "occupied on notice",
+    "notice unrented",
+    "vacant",
+    "available",
+    "unoccupied",
+    "vacant unrented not ready",
+    "vacant lease",
+    "vacant rented ready",
+    "vacant rented not ready",
+    "vacant unrented ready"
+  ]
+
   validates :effective_rent, :numericality => { :greater_than => 0, :less_than => 100000001 }, :length => { :maximum => 11}
   validates_uniqueness_of :provider_unit_id, scope: :community_id
   # validates_uniqueness_of :marketing_name, scope: :community_id
@@ -146,6 +162,10 @@ class Unit < ApplicationRecord
                                .where("available_date <= ?", Date.today + 120.days)
     end
   }
+  scope :status_scoped, -> {
+    where("LOWER(unit_status) IN (?) OR modal_unit = ?", AVAILABILITY_SCOPED_STATUSES.map(&:downcase), true)
+  }
+
   after_commit :populate_image_urls, on: [:create,:update]
   after_update :crop_unit_image, if: ->(obj) { obj.image_changed? }
   after_update :crop_unit_secondary_image, if: ->(obj) { obj.secondary_image_changed? }
