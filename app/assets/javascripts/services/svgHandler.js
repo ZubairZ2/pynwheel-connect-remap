@@ -378,7 +378,7 @@ function setupMouseEvents(
   blockParent,
   { events: { mouseupEvent, mouseenterEvent, mouseleaveEvent } = {} } = {}
 ) {
-  const isMobileOrTablet = isMobileOrTablet();
+  const isMobileOrTabletView = isMobileOrTablet();
   const $blockParent = $(blockParent);
 
   if (mouseupEvent) {
@@ -394,7 +394,7 @@ function setupMouseEvents(
     });
 
     $blockParent.on("mouseup touchend", function (e) {
-      if (isMobileOrTablet && e.type === "mouseup") {
+      if (isMobileOrTabletView && e.type === "mouseup") {
         e.preventDefault();
       }
       if (e.isDefaultPrevented()) {
@@ -426,7 +426,7 @@ function setupMouseEvents(
     });
   }
 
-  if (isMobileOrTablet) return;
+  if (isMobileOrTabletView) return;
 
   if (mouseenterEvent)
     $blockParent.on("mouseenter", function (e) {
@@ -492,14 +492,14 @@ function processSvgBlock(svgElement, item, options, dataset = null) {
   } = options;
   duplicateBlock.classList.add(cloneClass, ...(additionalClasses || []));
 
-  const isMobileOrTablet = isMobileOrTablet();
+  const isMobileOrTabletView = isMobileOrTablet();
   const { onclick, onmouseenter, onmouseleave } = options;
   let mouseupEvent, mouseenterEvent, mouseleaveEvent;
 
   const showModalOnClick = (e) => {
     if (
       duplicateBlock.getAttribute("data-target") &&
-      (isMobileOrTablet || e.target.tagName !== duplicateBlock.tagName)
+      (isMobileOrTabletView || e.target.tagName !== duplicateBlock.tagName)
     ) {
       return clickLastClonedElement(blockParent);
     }
@@ -522,7 +522,7 @@ function processSvgBlock(svgElement, item, options, dataset = null) {
       const { fillAmenityBlock, removeAmenityBlockFill } =
         setupAmenityFillHandlers(
           duplicateBlock,
-          !isMobileOrTablet && fillAmenityOnHoverOnly
+          !isMobileOrTabletView && fillAmenityOnHoverOnly
         );
 
       const amenityEventHandlers = createMouseEventHandlers({
