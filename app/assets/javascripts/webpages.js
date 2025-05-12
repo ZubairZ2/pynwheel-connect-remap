@@ -3311,7 +3311,7 @@ function getUnitMarkerColor(unitStatus, modelUnit = false) {
     }
   }
 
-  return result;
+  return toHexColor(result);
 }
 
 function resetUnits() {
