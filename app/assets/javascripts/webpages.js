@@ -731,7 +731,7 @@ function filterUnitsBasedOnMarketRent() {
 function filterUnitsBasedOnBedroom() {
   $(".alert").hide();
 
-  if (!multiCommunity) units = total_units;
+  if (!multiCommunity) resetUnits();
 
   const unitBedroom = filterBasedOnScreen("unit_bedroom");
 
@@ -742,7 +742,7 @@ function filterUnitsBasedOnBedroom() {
 function filterMultiCommunityBasedOnScreen(filterTag) {
   const webFilterId = "#".concat(filterTag); //works on web view
   const mobileFilterId = "#responsive_".concat(filterTag); //works on mobile view
-  if (current_width <= 993) {
+  if (smallScreen()) {
     return $(mobileFilterId).val();
   } else return $(webFilterId).val();
 }
@@ -754,7 +754,7 @@ function filterUnitsBasedOnMultiCommunity() {
     units = total_units.filter(
       (unit) => unit.property_id.trim() == propertyId.trim()
     );
-  else units = total_units;
+  else resetUnits();
 }
 
 function updateAvailabilitFilterDropdownList() {
