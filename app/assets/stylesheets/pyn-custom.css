@@ -6517,7 +6517,7 @@ ul.add-fav-options {
     transform: translate(50%,-50%);
     width: 100%;
     max-width: 1000px;
-    max-height: 675px;
+    max-height: 750px;
     overflow: hidden;
     background: white;
 }
@@ -7609,7 +7609,7 @@ span.to-input {
     }
 
     .c-modal-dialog > aside.c-modal-sidebar {
-        max-height: 605;
+        max-height: 663px;
         overflow-y: auto !important;
     }
     

@@ -66,6 +66,7 @@ function addAttributes(){
     $('.modal-image-fav').removeClass("hidden");
     $('.h-class').addClass('hidden');
   } else{
+    $('.modal-image-fav').addClass("hidden");
     $('.select-list-fav').removeClass("hidden");
     $('.disabaled-apply-now').addClass("disabaled-apply-now-for-bigger-screen")
   }
