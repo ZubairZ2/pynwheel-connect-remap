@@ -64,8 +64,11 @@ function isPointInPolygon(point, polygon) {
   } else if (Array.isArray(polygon)) {
     points = polygon;
   } else {
+    console.warn("Invalid polygon format");
     return false;
   }
+
+  if (points.length < 3) return false;
 
   let inside = false;
   for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
@@ -74,9 +77,10 @@ function isPointInPolygon(point, polygon) {
     const xj = points[j].x,
       yj = points[j].y;
 
+    const denom = yj - yi || 1e-10;
     const intersect =
       yi > point.y !== yj > point.y &&
-      point.x < ((xj - xi) * (point.y - yi)) / (yj - yi) + xi;
+      point.x < ((xj - xi) * (point.y - yi)) / denom + xi;
 
     if (intersect) inside = !inside;
   }
@@ -269,7 +273,7 @@ function getPolygonCenter(coordinates) {
   return { lng: x / totalPoints, lat: y / totalPoints };
 }
 
-function getMapRelativeCoords (event, view) {
+function getMapRelativeCoords(event, view) {
   const rect = view.container.getBoundingClientRect();
   return {
     x: event.clientX - rect.left,

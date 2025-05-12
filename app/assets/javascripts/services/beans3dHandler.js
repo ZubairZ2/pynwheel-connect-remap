@@ -1,14 +1,8 @@
 var enable3DMaps = definedAndHasValue(enable3DMaps) ? enable3DMaps : false;
-var _3dFilteredUnits = definedAndHasValue(_3dFilteredUnits)
-  ? _3dFilteredUnits
-  : [];
-var _3dAmenities = definedAndHasValue(_3dAmenities) ? _3dAmenities : [];
 var _3dSelectedUnit = definedAndHasValue(_3dSelectedUnit)
   ? _3dSelectedUnit
-  : [];
-var _3dFilteredAmenity = definedAndHasValue(_3dFilteredAmenity)
-  ? _3dFilteredAmenity
-  : [];
+  : null;
+
 var beansWidget = null;
 var _3dSampleAmenities = [
   "SWIMMINGPOOL",
@@ -20,13 +14,27 @@ var _3dSampleAmenities = [
   "EL",
   "EN",
 ];
+var _3dConvertedUnitsArr = definedAndHasValue(_3dConvertedUnitsArr)
+  ? _3dConvertedUnitsArr
+  : [];
+var _3dConvertedAmenitiesArr = definedAndHasValue(_3dConvertedAmenitiesArr)
+  ? _3dConvertedAmenitiesArr
+  : [];
+
 var _3dConvertedArr = definedAndHasValue(_3dConvertedArr)
   ? _3dConvertedArr
   : [];
+
 var beansAddress = "";
 var map_marker_color = definedAndHasValue(map_marker_color)
   ? map_marker_color
   : "rgba(247, 0, 0, 0.61)";
+var amenity_marker_color = definedAndHasValue(amenity_marker_color)
+  ? amenity_marker_color
+  : "#00bcd4";
+
+var lastMouseInside = false;
+var isMouseTrackerInitialized = false;
 
 function initializeBeans3DMap() {
   beansAddress = formattedAddress(webCommunity);
@@ -36,21 +44,36 @@ function initializeBeans3DMap() {
   let displayOptions = beans3DMapDisplayOptions();
   displayOptions.filteredRows = filterBeansUnitsIndices();
 
-  beansWidget.render(
-    "beanswidget",
-    _beansApiKey,
-    _3dConvertedArr,
-    {
-      userLocation: "MANUAL",
-      hideNavigateButton: false,
-      hideMyLocationButton: false,
-    },
-    displayOptions,
-    {
-      onSelect: (data) => onUnitClick(data),
-      onHover: (data, event) => markerHoverEffect(event, data),
-    }
-  );
+  try {
+    beansWidget.render(
+      "beanswidget",
+      _beansApiKey,
+      _3dConvertedArr,
+      {
+        userLocation: "MANUAL",
+        hideNavigateButton: false,
+        hideMyLocationButton: false,
+      },
+      displayOptions,
+      {
+        onSelect: (data) => {
+          if (data?.type === "UNIT") {
+            onUnitClick(data);
+          } else if (data?.type === "AMENITY") {
+            openAmenityViewerModal(data, data.galleries);
+          }
+        },
+        onHover: (data, event, isAmenity) => {
+          if (isAmenity) {
+            amenityMarkerHoverEvent();
+          }
+          markerHoverEffect(event, data);
+        },
+      }
+    );
+  } catch (e) {
+    console.error(e);
+  }
 
   beansWidget.workingInstance = beansWorkingMapInstance();
 }
@@ -94,7 +117,7 @@ function beans3DMapDisplayOptions() {
       strokeWeight: 1,
       strokeOpacity: 1,
     },
-    hightlightOptions: {
+    highlightOptions: {
       color: toHexColor(map_marker_color),
       haloOpacity: 0.9,
       fillOpacity: 1,
@@ -103,56 +126,97 @@ function beans3DMapDisplayOptions() {
 }
 
 function getFormattedBeansUnits() {
-  return total_units.map((a) => {
+  return total_units.map((unit) => {
     const transformedObject = getExecutableDataFunctionForObject(
-      a.data_attributes
+      unit.data_attributes
     );
     const transformedData = transformedObject.data();
     return {
-      unitId: a.id,
+      unitId: unit.id,
       unitProviderId: transformedData.unitProviderId,
       providerUnitId: transformedData.unitProviderId,
       availabilityUrl: transformedData.availabilityUrl,
       leaseTerm: transformedData.leaseTerm,
-      status: a.unit_status,
-      modelUnit: a.model_unit,
-      unit: a.marketing_name,
-      name: a.marketing_name,
-      floor: a.floor,
-      bed: a.bedrooms,
-      bath: a.bathrooms,
-      sqft: a.square_feet,
-      rent: a.market_rent,
+      status: unit.unit_status,
+      modelUnit: unit.model_unit,
+      unit: unit.marketing_name,
+      name: unit.marketing_name,
+      type: "UNIT",
+      floor: unit.floor,
+      bed: unit.bedrooms,
+      bath: unit.bathrooms,
+      sqft: unit.square_feet,
+      rent: unit.market_rent,
+    };
+  });
+}
+
+function getFormattedBeansAmenities() {
+  if (!Array.isArray(amenities)) return [];
+
+  return amenities.map((amenity) => {
+    const { tooltip, eventHandlers } = setup3dAmenityToolTip(amenity);
+    return {
+      unitId: amenity.id,
+      unit: amenity.name,
+      name: amenity.name,
+      type: "AMENITY",
+      galleries: amenity.galleries,
+      showName: amenity.show_name,
+      imageUrl: amenity.image_url,
+      floor: amenity.floor,
+      tooltip,
+      eventHandlers,
     };
   });
 }
 
 function setup3dArray() {
   const formattedUnits = getFormattedBeansUnits();
+  const formattedAmenities = getFormattedBeansAmenities();
+  const combinedArr = [...formattedUnits, ...formattedAmenities];
 
   const _3dArray = convertUnitsArr(
     { address: beansAddress },
-    formattedUnits,
+    combinedArr,
     true,
     true
   );
 
+  _3dConvertedUnitsArr = [];
+  _3dConvertedAmenitiesArr = [];
+
   return _3dArray.map((data, index) => {
-    const unitData = formattedUnits[index];
+    const unitData = combinedArr[index];
     data.options.markers.display = true;
     data.options.onClickData = unitData;
     data.options.onPreviewData = null;
     // data.options.onPreviewTitle = unitData.name;
     // data.options.onPreviewContent = unitData.providerUnitId;
-    const unitFillColor = getUnitMarkerColor(
-      unitData.status,
-      unitData.modelUnit
-    );
+    let fillColor = toHexColor(map_marker_color);
+
+    switch (unitData.type) {
+      case "UNIT":
+        fillColor = getUnitMarkerColor(unitData.status, unitData.modelUnit);
+        _3dConvertedUnitsArr.push(data);
+        break;
+      case "AMENITY":
+        if (amenity_marker_color) fillColor = toHexColor(amenity_marker_color);
+        _3dConvertedAmenitiesArr.push(data);
+    }
+
     data.options.unitShape = {
-      fillColor: unitFillColor,
+      fillColor: fillColor,
       fillOpacity: 0.85,
-      strokeColor: unitFillColor,
+      strokeColor: fillColor,
       strokeOpacity: 0.9,
+      strokeWeight: 1,
+    };
+    data.options.selectedUnitShape = {
+      fillColor: fillColor,
+      fillOpacity: 1,
+      strokeColor: fillColor,
+      strokeOpacity: 1,
       strokeWeight: 2,
     };
     return data;
@@ -192,7 +256,7 @@ function filterBeansUnitsIndices() {
     ({ id }) => id
   );
 
-  const filteredUnitsIndices = _3dConvertedArr.map(
+  const filteredUnitsIndices = _3dConvertedUnitsArr.map(
     ({ options: { onClickData: { unitId } } = {} }, index) =>
       filteredUnitIds.includes(unitId) ? index : null
   );
@@ -204,7 +268,7 @@ function filterBeansUnits() {
   const filteredUnitIds = filterUnitsBasedOnCommunityType(units).map(
     ({ id }) => id
   );
-  const filteredUnits = _3dConvertedArr.filter(
+  const filteredUnits = _3dConvertedUnitsArr.filter(
     ({ options: { onClickData: { unitId } } = {} }) =>
       filteredUnitIds.includes(unitId)
   );
@@ -246,7 +310,7 @@ function get3dSelectedUnitData() {
 function getUnitIndexById(unitID) {
   if (!unitID) return -1;
 
-  return _3dConvertedArr.findIndex(
+  return _3dConvertedUnitsArr.findIndex(
     ({ options: { onClickData: { unitId } = {} } = {} }) => unitId === unitID
   );
 }
@@ -347,8 +411,6 @@ function isMouseInsideGeoShape(mouseEvent, geojson, view) {
     (pt, i, arr) => i === 0 || pt.x !== arr[i - 1].x || pt.y !== arr[i - 1].y
   );
 
-  if (dedupedScreenRings.length < 3) return false;
-
   // Determine shape and logic
   switch (type) {
     case "Polygon":
@@ -382,4 +444,85 @@ function isMouseInsideGeoShape(mouseEvent, geojson, view) {
     default:
       return false;
   }
+}
+
+function initializeMouseTrackerFor3DHoverExit() {
+  if (isMouseTrackerInitialized || !mouseTracker) return;
+  isMouseTrackerInitialized = true;
+
+  mouseTracker.onChange(({ x, y, event }) => {
+    if (!currentHoveredUnit) return;
+
+    const $beansMarkerPopover = $(
+      "div.esri-ui-inner-container.esri-ui-manual-container > div.esri-component[role='presentation']"
+    );
+
+    const convertedUnitIndex = getUnitIndexById(currentHoveredUnit?.unitId);
+    if (convertedUnitIndex < 0) {
+      console.log("Not found");
+      clear3DPopup($beansMarkerPopover);
+      return;
+    }
+
+    const { geojson } =
+      beansWidget.workingInstance.unitPolygonsToExclude[convertedUnitIndex] ||
+      {};
+
+    if (
+      geojson &&
+      isMouseInsideGeoShape(event, geojson, beansWidget.workingInstance.mapView)
+    ) {
+      if (!lastMouseInside) {
+        console.log("Mouse entered shape");
+        lastMouseInside = true;
+      }
+    } else {
+      console.log("Mouse exited shape");
+      lastMouseInside = false;
+      clear3DPopup($beansMarkerPopover);
+    }
+  });
+}
+
+function clear3DPopup($beansMarkerPopover = null) {
+  if (!currentHoveredUnit) return;
+  $("#marker-popover").addClass("hidden");
+  // if ($beansMarkerPopover) $beansMarkerPopover.removeClass("hidden");
+  $(`#unit_${currentHoveredUnit.unitId}`).css("border", "none");
+  currentHoveredUnit = null;
+}
+
+function _3dPositionTooltip(e, tooltip) {
+  tooltip.style.position = "absolute";
+  tooltip.style.left = `${e.offsetX + 10}px`;
+  tooltip.style.top = `${e.offsetY + 20}px`;
+  tooltip.style.visibility = "visible";
+}
+
+function setup3dAmenityToolTip(data) {
+  const toolTipSpan = document.createElement("span");
+
+  toolTipSpan.classList.add("amenityTooltipText");
+  toolTipSpan.innerHTML = `
+    <h2 style="display: ${data.show_name ? "block" : "none"}">
+      ${data.name}
+    </h2>
+    <img src="${data.image_url}" alt="Image Title">
+  `;
+
+  document
+    .getElementById("beanswidget")
+    .insertAdjacentElement("afterend", toolTipSpan);
+
+  return {
+    tooltip: toolTipSpan,
+    eventHandlers: {
+      showTooltip: (e) => {
+        _3dPositionTooltip(e, toolTipSpan);
+      },
+      hideTooltip: () => {
+        toolTipSpan.style.visibility = "hidden";
+      },
+    },
+  };
 }

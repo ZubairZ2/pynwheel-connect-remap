@@ -28,8 +28,14 @@ var tbdMarkersEnabled = definedAndHasValue(tbdMarkersEnabled)
 var _3dConvertedArr = definedAndHasValue(_3dConvertedArr)
   ? _3dConvertedArr
   : [];
-var beansWidget = null;
+var _3dConvertedUnitsArr = definedAndHasValue(_3dConvertedUnitsArr)
+  ? _3dConvertedUnitsArr
+  : [];
+var _3dConvertedAmenitiesArr = definedAndHasValue(_3dConvertedAmenitiesArr)
+  ? _3dConvertedAmenitiesArr
+  : [];
 
+var beansWidget = null;
 var currentHoveredUnit = null;
 
 $(document).ready(function () {
@@ -1089,7 +1095,7 @@ function unitMarkerClick(unitId, event) {
   const markersSelector = svgMode ? ".cloned-unit" : ".unit_marker";
 
   if (event?.currentTarget) {
-    event.preventDefault()
+    event.preventDefault();
     $("#unitModal").show();
     return;
   }
@@ -1387,7 +1393,7 @@ function markerHoverEffect(event, _3dData = null) {
 
   if (_3dMapMode() && _3dData) {
     const unitData = units.find(({ id }) => id === _3dData.unitId);
-    currentHoveredUnit = _3dData
+    currentHoveredUnit = _3dData;
     $this = getExecutableDataFunctionForObject(unitData.data_attributes);
   } else if (svgMode && event.currentTarget.tagName.toLowerCase() === "g") {
     const lastClonedElement = getLastClonedJQueryElement(event.currentTarget);
@@ -1464,47 +1470,7 @@ function markerHoverEffectEnd(event, $3dDataElement = null) {
 
   const $markerPopup = $("#marker-popover");
   if (_3dMapMode() && $3dDataElement) {
-    const clearPopup = ($beansMarkerPopover = null) => {
-      if (!currentHoveredUnit) return;
-      currentHoveredUnit = null;
-
-      $markerPopup.addClass("hidden");
-      if ($beansMarkerPopover)
-      $beansMarkerPopover.removeClass("hidden");
-      $($("#unit_" + $3dDataElement.data("unitId"))).css("border", "none");
-    };
-    // const unitData = units.find(({ id }) => id === $3dDataElement.unitId);
-    // $this = getExecutableDataFunctionForObject(unitData.data_attributes);
-
-    mouseTracker.onChange(({x, y, event}) => {
-      const $beansMarkerPopover = $(
-      "div.esri-ui-inner-container.esri-ui-manual-container > div.esri-component[role='presentation']"
-      );
-
-      const convertedUnitIndex = getUnitIndexById(currentHoveredUnit?.unitId);
-      if (convertedUnitIndex < 0) {
-        clearPopup($beansMarkerPopover);
-        return;
-      }
-
-      const { geojson } =
-        beansWidget.workingInstance.unitPolygonsToExclude[convertedUnitIndex] ||
-        {};
-
-      if (
-        geojson &&
-        isMouseInsideGeoShape(
-          event,
-          geojson,
-          beansWidget.workingInstance.mapView
-        )
-      ) {
-        return;
-      } else {
-        clearPopup();
-      }
-    });
-
+    initializeMouseTrackerFor3DHoverExit();
     return;
   } else if (svgMode && event.currentTarget.tagName.toLowerCase() === "g") {
     const lastClonedElement = getLastClonedJQueryElement(event.currentTarget);
