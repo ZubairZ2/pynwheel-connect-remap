@@ -178,7 +178,7 @@
 
                 - if community.enable_locks and community.self_tour and community.auto_wayfinding
                   - coordinates_array = []
-                  - access_points.each do |access_point|
+                  - (access_points || []).each do |access_point|
                     - x_plot, y_plot = coords = [access_point.x_plot, access_point.y_plot].map(&:to_i)
                     - unless coordinates_array.include?(coords)
                       - coordinates_array.push(coords)
