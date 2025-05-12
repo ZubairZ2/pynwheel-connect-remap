@@ -38,6 +38,9 @@ var amenities = null;
 var communityInactivated = definedAndHasValue(communityInactivated)
   ? communityInactivated
   : false;
+var tbdMarkersEnabled = definedAndHasValue(tbdMarkersEnabled)
+  ? tbdMarkersEnabled
+  : false;
 
 $(document).ready(function () {
   if (smallScreen()) {
@@ -259,6 +262,8 @@ function bindWebpageEvents() {
   });
 
   $("#multi_communities, #responsive_multi_communities").change(function () {
+    if (smallScreen()) return;
+
     multiPropertiesFilterChanged();
   });
 
@@ -2907,18 +2912,9 @@ function resetBasedOnMultiCommunities() {
   $("#responsive_multi_communities").val( $("#responsive_multi_communities option:first").val() );
   $("#multi_communities").val($("#multi_communities option:first").val());
 
-  if ($(window).width() <= 993) $(".mobile-filter-mega-menu").slideToggle();
-  
-  multiPropertiesFilterChanged(); 
-}
+  if (smallScreen()) $(".mobile-filter-mega-menu").slideToggle();
 
-function resetBasedOnBedroom() {
-  $("#responsive_unit_bedroom").val( $("#responsive_unit_bedroom option:first").val() );
-  $("#unit_bedroom").val($("#unit_bedroom option:first").val());
-
-  if ($(window).width() <= 993) $(".mobile-filter-mega-menu").slideToggle();
-  
-  bedroomFilterChanged(); 
+  multiPropertiesFilterChanged();
 }
 
 function resetBasedOnBedroom() {
