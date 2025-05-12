@@ -1,4 +1,5 @@
 var VALID_SVG_SHAPES = ["polyline", "rect", "polygon", "ellipse", "circle"];
+var DEFAULT_FILL_COLOR = "default-fill-color";
 var svgMode = definedAndHasValue(svgMode) ? svgMode : false;
 var map_marker_color = definedAndHasValue(map_marker_color) ? "brown" : null;
 var amenity_marker_color = definedAndHasValue(amenity_marker_color)
@@ -60,7 +61,15 @@ function setSVG(container, svgElement, options) {
             true
           );
 
-          if (markable) svgShape.style.fill = map_marker_color;
+          if (markable) {
+            if (!svgShape.getAttribute(DEFAULT_FILL_COLOR)) {
+              svgShape.setAttribute(
+                DEFAULT_FILL_COLOR,
+                svgShape.style.fill
+              );
+            }
+            svgShape.style.fill = map_marker_color;
+          }
         }
       }
     });
@@ -68,7 +77,7 @@ function setSVG(container, svgElement, options) {
     $shapes.on("mouseleave", function () {
       $shapes.each(function () {
         if (toRgbColor(this.style.fill) === toRgbColor(map_marker_color)) {
-          this.style.fill = "";
+          this.style.fill = this.getAttribute(DEFAULT_FILL_COLOR);
         }
       });
     });
@@ -327,10 +336,18 @@ function setupAmenityFillHandlers(duplicateBlock, fillOnHover = false) {
   if (fillOnHover) {
     return {
       fillAmenityBlock: () => {
+        if (!duplicateBlock.getAttribute(DEFAULT_FILL_COLOR)) {
+          duplicateBlock.setAttribute(
+            DEFAULT_FILL_COLOR,
+            duplicateBlock.style.fill
+          );
+        }
         duplicateBlock.style.fill = amenityFillColor;
       },
       removeAmenityBlockFill: () => {
-        duplicateBlock.style.fill = "";
+        duplicateBlock.style.fill = duplicateBlock.getAttribute(
+          DEFAULT_FILL_COLOR
+        );
       },
     };
   }
@@ -454,9 +471,9 @@ function processSvgBlock(svgElement, item, options, dataset = null) {
     console.warn("Duplicate not found.", e);
   }
 
-  block.style.fill = "";
   const duplicateBlock = block.cloneNode(true);
   const $duplicateBlock = $(duplicateBlock);
+  duplicateBlock.style.fill = ""
 
   if (data_attributes) {
     applyDataAttributes(duplicateBlock, data_attributes);
