@@ -1540,13 +1540,17 @@ function markerHoverEffect(event, _3dData = null) {
     $("#popover-available-date").html("");
     $("#hover-available-text").html("Sold");
   } else {
-    $("#hover-available-text").html("Available");
+    const availability = $this.data("availability") == "Unoccupied";
+
+    $("#hover-available-text").html(availability ? "Available" : "");
     // $('#popover-available-date').html($this.data('available-date'));
     $("#popover-available-date").html(
-      formattedDateByRegion(
-        webCommunity.country_code,
-        $this.data("available-date")
-      )
+      availability
+        ? formattedDateByRegion(
+            webCommunity.country_code,
+            $this.data("available-date")
+          )
+        : "Unavailable"
     );
   }
 
