@@ -7724,8 +7724,8 @@ span.to-input {
 .is-favorites.maps-analytics-container {
     margin: 5%;
 }
-
-div.esri-ui-inner-container.esri-ui-manual-container > div.esri-component.esri-attribution.esri-widget {
+div.esri-ui-inner-container.esri-ui-manual-container>div.esri-component[role='presentation'],
+div.esri-ui-inner-container.esri-ui-manual-container>div.esri-component.esri-attribution.esri-widget {
     display: none !important;
 }
 

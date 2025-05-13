@@ -1,7 +1,8 @@
 var enable3DMaps = definedAndHasValue(enable3DMaps) ? enable3DMaps : false;
-var _3dSelectedUnit = definedAndHasValue(_3dSelectedUnit)
-  ? _3dSelectedUnit
+var _3dSelectedItem = definedAndHasValue(_3dSelectedItem)
+  ? _3dSelectedItem
   : null;
+var _3dHoveredItem = definedAndHasValue(_3dHoveredItem) ? _3dHoveredItem : null;
 
 var beansWidget = null;
 var _3dSampleAmenities = [
@@ -42,7 +43,7 @@ function initializeBeans3DMap() {
 
   _3dConvertedArr = setup3dArray();
   let displayOptions = beans3DMapDisplayOptions();
-  displayOptions.filteredRows = filterBeansUnitsIndices();
+  displayOptions.filteredRows = filterBeansItemsIndices();
 
   try {
     beansWidget.render(
@@ -65,8 +66,29 @@ function initializeBeans3DMap() {
         },
         onHover: (data, event, isAmenity) => {
           if (isAmenity) {
-            amenityMarkerHoverEvent();
+            const amenity = _3dConvertedAmenitiesArr.find(
+              ({ options: { onClickData } = {} } = {}) =>
+                onClickData.type === "AMENITY" &&
+                onClickData.name.toLowerCase() === data.toLowerCase()
+            );
+
+            const { options: { onClickData } = {} } = amenity || {};
+            if (!onClickData) return;
+
+            if (_3dHoveredItem?.unitId === onClickData.unitId) return;
+            clear3DPopup();
+
+            _3dHoveredItem = onClickData;
+            const { eventHandlers: { showTooltip } = {} } = onClickData;
+
+            if (showTooltip) showTooltip(event);
+            initializeMouseTrackerFor3DHoverExit();
+            return;
           }
+
+          if (_3dHoveredItem?.unitId === data.unitId) return;
+          clear3DPopup();
+
           markerHoverEffect(event, data);
         },
       }
@@ -242,7 +264,7 @@ function reDrawBeansWidget() {
 
     if (beansWidget?.workingInstance) {
       let displayOptions = beans3DMapDisplayOptions();
-      displayOptions.filteredRows = filterBeansUnitsIndices();
+      displayOptions.filteredRows = filterBeansItemsIndices();
       beansWidget.setDisplayOptions(displayOptions);
       beansWidget.redraw();
     } else {
@@ -251,17 +273,25 @@ function reDrawBeansWidget() {
   }
 }
 
-function filterBeansUnitsIndices() {
+function filterBeansItemsIndices() {
   const filteredUnitIds = filterUnitsBasedOnCommunityType(units).map(
     ({ id }) => id
   );
+  const filteredAmenitiesIds = filterAmenitiesBasedOnCommunityType(
+    amenities
+  ).map(({ id }) => id);
 
-  const filteredUnitsIndices = _3dConvertedUnitsArr.map(
-    ({ options: { onClickData: { unitId } } = {} }, index) =>
-      filteredUnitIds.includes(unitId) ? index : null
+  const matchedData = (unitId, isAmenity = false) =>
+    isAmenity
+      ? filteredAmenitiesIds.includes(unitId)
+      : filteredUnitIds.includes(unitId);
+
+  const filteredItemsIndices = _3dConvertedArr.map(
+    ({ options: { onClickData: { unitId, type } } = {} }, index) =>
+      matchedData(unitId, type === "AMENITY") ? index : null
   );
 
-  return filteredUnitsIndices.filter((index) => index);
+  return filteredItemsIndices.filter((index) => index);
 }
 
 function filterBeansUnits() {
@@ -273,6 +303,18 @@ function filterBeansUnits() {
       filteredUnitIds.includes(unitId)
   );
   return filteredUnits;
+}
+
+function filterBeansAmenities() {
+  const filteredAmenitiesIds = filterAmenitiesBasedOnCommunityType(
+    amenities
+  ).map(({ id }) => id);
+
+  const filteredAmenities = _3dConvertedAmenitiesArr.filter(
+    ({ options: { onClickData: { unitId } } = {} }) =>
+      filteredAmenitiesIds.includes(unitId)
+  );
+  return filteredAmenities;
 }
 
 function _3dMapMode() {
@@ -300,24 +342,28 @@ function beansWorkingMapInstance() {
   return result;
 }
 
-function get3dSelectedUnitData() {
-  if (_3dSelectedUnit) {
-    const { options: { onClickData } = {} } = _3dSelectedUnit;
+function get3dSelectedData() {
+  if (_3dSelectedItem) {
+    const { options: { onClickData } = {} } = _3dSelectedItem;
     return onClickData;
   }
 }
 
-function getUnitIndexById(unitID) {
+function get3dElementIndexById(unitID, isAmenity = false) {
   if (!unitID) return -1;
 
-  return _3dConvertedUnitsArr.findIndex(
-    ({ options: { onClickData: { unitId } = {} } = {} }) => unitId === unitID
+  const matchType = isAmenity ? "AMENITY" : "UNIT";
+
+  return _3dConvertedArr.findIndex(
+    ({ options: { onClickData: { unitId, type } = {} } = {} }) =>
+      type === matchType && unitId === unitID
   );
 }
 
 function createPolygon() {
   var pathArr = new Array();
   var pbounds = so.createBounds();
+
   if (
     so.unitPolygonsToExclude[ix].coordinates &&
     so.unitPolygonsToExclude[ix].coordinates.length > 0
@@ -395,7 +441,6 @@ function isMouseInsideGeoShape(mouseEvent, geojson, view) {
   const properties = geojson.properties || {};
   const point = getMapRelativeCoords(mouseEvent, view);
 
-  // Project coordinates to screen
   const screenRings = coordinates[0]
     .map(([lng, lat]) => {
       const pt = new window.__esri.geometry.Point({
@@ -407,11 +452,6 @@ function isMouseInsideGeoShape(mouseEvent, geojson, view) {
     })
     .filter((pt) => pt && typeof pt.x === "number" && typeof pt.y === "number");
 
-  const dedupedScreenRings = screenRings.filter(
-    (pt, i, arr) => i === 0 || pt.x !== arr[i - 1].x || pt.y !== arr[i - 1].y
-  );
-
-  // Determine shape and logic
   switch (type) {
     case "Polygon":
       return isPointInPolygon(point, screenRings);
@@ -451,27 +491,32 @@ function initializeMouseTrackerFor3DHoverExit() {
   isMouseTrackerInitialized = true;
 
   mouseTracker.onChange(({ x, y, event }) => {
-    if (!currentHoveredUnit) return;
+    if (!_3dHoveredItem) return;
 
-    const $beansMarkerPopover = $(
-      "div.esri-ui-inner-container.esri-ui-manual-container > div.esri-component[role='presentation']"
+    const isAmenity = _3dHoveredItem?.type === "AMENITY";
+    const convertedIndex = get3dElementIndexById(
+      _3dHoveredItem?.unitId,
+      isAmenity
     );
 
-    const convertedUnitIndex = getUnitIndexById(currentHoveredUnit?.unitId);
-    if (convertedUnitIndex < 0) {
-      console.log("Not found");
-      clear3DPopup($beansMarkerPopover);
+    if (convertedIndex < 0) {
+      clear3DPopup();
       return;
     }
 
     const { geojson } =
-      beansWidget.workingInstance.unitPolygonsToExclude[convertedUnitIndex] ||
-      {};
+      beansWidget.workingInstance.unitPolygonsToExclude[convertedIndex] || {};
 
-    if (
-      geojson &&
-      isMouseInsideGeoShape(event, geojson, beansWidget.workingInstance.mapView)
-    ) {
+    const inside =
+      (isAmenity && !isDefined(geojson)) ||
+      (geojson &&
+        isMouseInsideGeoShape(
+          event,
+          geojson,
+          beansWidget.workingInstance.mapView
+        ));
+
+    if (inside) {
       if (!lastMouseInside) {
         console.log("Mouse entered shape");
         lastMouseInside = true;
@@ -479,23 +524,40 @@ function initializeMouseTrackerFor3DHoverExit() {
     } else {
       console.log("Mouse exited shape");
       lastMouseInside = false;
-      clear3DPopup($beansMarkerPopover);
+
+      if (isAmenity && _3dHoveredItem?.eventHandlers?.hideTooltip) {
+        _3dHoveredItem.eventHandlers.hideTooltip();
+      }
+
+      clear3DPopup();
     }
   });
 }
 
-function clear3DPopup($beansMarkerPopover = null) {
-  if (!currentHoveredUnit) return;
-  $("#marker-popover").addClass("hidden");
+function clear3DPopup() {
+  if (!_3dHoveredItem) return;
+  if (_3dHoveredItem.type === "AMENITY") {
+    _3dHoveredItem.eventHandlers.hideTooltip();
+  } else {
+    $("#marker-popover").addClass("hidden");
+    $(`#unit_${_3dHoveredItem.unitId}`).css("border", "none");
+  }
   // if ($beansMarkerPopover) $beansMarkerPopover.removeClass("hidden");
-  $(`#unit_${currentHoveredUnit.unitId}`).css("border", "none");
-  currentHoveredUnit = null;
+  _3dHoveredItem = null;
+}
+
+function getMapRelativeCoords(event, view) {
+  const rect = view.container.getBoundingClientRect();
+  return {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top,
+  };
 }
 
 function _3dPositionTooltip(e, tooltip) {
   tooltip.style.position = "absolute";
-  tooltip.style.left = `${e.offsetX + 10}px`;
-  tooltip.style.top = `${e.offsetY + 20}px`;
+  tooltip.style.left = `${e.x + 10}px`;
+  tooltip.style.top = `${e.y + 20}px`;
   tooltip.style.visibility = "visible";
 }
 
@@ -518,6 +580,11 @@ function setup3dAmenityToolTip(data) {
     tooltip: toolTipSpan,
     eventHandlers: {
       showTooltip: (e) => {
+        const $beansMarkerPopover = $(
+          "div.esri-ui-inner-container.esri-ui-manual-container > div.esri-component[role='presentation']"
+        );
+
+        $beansMarkerPopover.addClass("hidden");
         _3dPositionTooltip(e, toolTipSpan);
       },
       hideTooltip: () => {

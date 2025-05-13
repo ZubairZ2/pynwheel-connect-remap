@@ -34,9 +34,9 @@ var _3dConvertedUnitsArr = definedAndHasValue(_3dConvertedUnitsArr)
 var _3dConvertedAmenitiesArr = definedAndHasValue(_3dConvertedAmenitiesArr)
   ? _3dConvertedAmenitiesArr
   : [];
+var _3dHoveredItem = definedAndHasValue(_3dHoveredItem) ? _3dHoveredItem : null;
 
 var beansWidget = null;
-var currentHoveredUnit = null;
 
 $(document).ready(function () {
   if (smallScreen()) {
@@ -884,6 +884,17 @@ function filterUnitsBasedOnCommunityType(floorplateUnits) {
   return floorplateUnits;
 }
 
+function filterAmenitiesBasedOnCommunityType(floorplateAmenities) {
+  if (hasFloorplate()) {
+    floorplateAmenities = floorplateAmenities.filter(
+      (amenity) =>
+        amenity.floor == current_floor || !definedAndHasValue(amenity.floor)
+    );
+  }
+
+  return floorplateAmenities;
+}
+
 function getUniqueAndSortedListSquareFeet(list) {
   return list
     .filter((x, i, a) => a.indexOf(x) === i)
@@ -1271,7 +1282,7 @@ function onUnitClick(e) {
       setUnitModalButtons(e.unitId);
     }
 
-    if (_3dSelectedUnit) {
+    if (_3dSelectedItem) {
       $("#unitModal").modal("show");
       return true;
     } else {
@@ -1298,24 +1309,49 @@ function unitListHover() {
       const { id, unitId, pointerData, unitMarketingName } = getUnitData(
         e.target
       );
-      const markersSelector = svgMode ? "cloned-unit" : "marker";
-      const $scope = $(currentVisibleMapImage()?.parentElement);
-      const $allMarkers = $scope.find(`.${markersSelector}`);
-      const markersArray = Array.from($allMarkers);
+      const _3dMode = _3dMapMode();
+
+      let markersArray = [];
+      if (_3dMode) {
+        markersArray = _3dConvertedUnitsArr;
+      } else {
+        const markersSelector = svgMode ? "cloned-unit" : "marker";
+        const $scope = $(currentVisibleMapImage()?.parentElement);
+        const $allMarkers = $scope.find(`.${markersSelector}`);
+        markersArray = Array.from($allMarkers);
+      }
 
       for (const marker of markersArray) {
-        const matchCondition =
-          unitId === marker.dataset.unitId ||
-          id === `unit_${marker.dataset.unitId}` ||
-          `${pointerData.id}_cloned` === marker.id ||
-          pointerData.selector === marker.id;
+        let matchCondition = false;
+        let _3dData = null;
+
+        if (_3dMode) {
+          const {
+            options: { onClickData },
+          } = marker;
+
+          matchCondition =
+            unitId === onClickData.unitId ||
+            id === `unit_${onClickData.unitId}`;
+          _3dData = onClickData;
+        } else {
+          matchCondition =
+            unitId === marker.dataset.unitId ||
+            id === `unit_${marker.dataset.unitId}` ||
+            `${pointerData.id}_cloned` === marker.id ||
+            pointerData.selector === marker.id;
+        }
         if (
-          svgMode
+          svgMode && !_3dMode
             ? isVisibleSVGElement(marker) && matchCondition
             : matchCondition
         ) {
           let selectedMarker = marker;
-          if (selectedMarker.classList.contains("overlapping-unit")) {
+
+          if (
+            !_3dMode &&
+            selectedMarker.classList.contains("overlapping-unit")
+          ) {
             markersArray.forEach((findOverlappedMarker) => {
               if (
                 selectedMarker.dataset.unitXPlot ===
@@ -1328,11 +1364,63 @@ function unitListHover() {
               }
             });
           }
-          markerColor = getUnitMarkerColor(
-            selectedMarker.dataset.unitStatus,
-            selectedMarker.dataset.modelUnit
-          );
+
+          if (_3dMode) {
+            markerColor = getUnitMarkerColor(_3dData.status, _3dData.modelUnit);
+          } else {
+            markerColor = getUnitMarkerColor(
+              selectedMarker.dataset.unitStatus,
+              selectedMarker.dataset.modelUnit
+            );
+          }
+
           e.currentTarget.style.border = `3px solid ${markerColor}`;
+
+          if (_3dMode) {
+            return;
+
+            // const unitIndex = get3dElementIndexById(_3dData.unitId);
+            // const { geojson } =
+            //   beansWidget.workingInstance.unitPolygonsToExclude[unitIndex] ||
+            //   {};
+
+            // if (geojson && geojson.geometry?.coordinates?.[0]?.length) {
+            //   const coords = geojson.geometry.coordinates[0];
+            //   const screenPoints = [];
+
+            //   for (const [lng, lat] of coords) {
+            //     const pt = new window.__esri.geometry.Point({
+            //       longitude: lng,
+            //       latitude: lat,
+            //       spatialReference:
+            //         beansWidget.workingInstance.mapView.spatialReference,
+            //     });
+
+            //     const screenPt =
+            //       beansWidget.workingInstance.mapView.toScreen(pt);
+
+            //     if (
+            //       screenPt &&
+            //       typeof screenPt.x === "number" &&
+            //       typeof screenPt.y === "number"
+            //     ) {
+            //       screenPoints.push(screenPt);
+            //     }
+            //   }
+
+            //   if (screenPoints.length) {
+            //     const centerX =
+            //       screenPoints.reduce((sum, pt) => sum + pt.x, 0) /
+            //       screenPoints.length;
+            //     const centerY =
+            //       screenPoints.reduce((sum, pt) => sum + pt.y, 0) /
+            //       screenPoints.length;
+
+            //     left = centerX;
+            //     top = centerY;
+            //   }
+            // } else return;
+          }
 
           focused_marker = document.getElementById(selectedMarker.id);
           $(".popup-title, .popup-arrow").css("background-color", markerColor);
@@ -1393,7 +1481,7 @@ function markerHoverEffect(event, _3dData = null) {
 
   if (_3dMapMode() && _3dData) {
     const unitData = units.find(({ id }) => id === _3dData.unitId);
-    currentHoveredUnit = _3dData;
+    _3dHoveredItem = _3dData;
     $this = getExecutableDataFunctionForObject(unitData.data_attributes);
   } else if (svgMode && event.currentTarget.tagName.toLowerCase() === "g") {
     const lastClonedElement = getLastClonedJQueryElement(event.currentTarget);
@@ -1629,7 +1717,7 @@ function setUnitModalButtons(e) {
       ({ options: { onClickData: { unitId } } = {} }) => unitId === e
     );
 
-    _3dSelectedUnit = clickedUnit;
+    _3dSelectedItem = clickedUnit;
     if (!clickedUnit) return;
 
     const filteredUnit = filterUnitsBasedOnCommunityType(units).find(
@@ -1857,7 +1945,8 @@ function set_yardirentcafe_url(element) {
   if (!url) url = $(element).data("availability-url");
 
   if (_3dMapMode()) {
-    url = get3dSelectedUnitData().availabilityUrl;
+    const _3dData = get3dSelectedData();
+    url = _3dData.availabilityUrl;
   }
 
   window.open(url, "_blank");
@@ -1867,7 +1956,8 @@ function set_psi_url(element) {
   let url = element.getAttribute("data-availability-url");
 
   if (_3dMapMode()) {
-    url = get3dSelectedUnitData().availabilityUrl;
+    const _3dData = get3dSelectedData();
+    url = _3dData.availabilityUrl;
   }
 
   window.open(url, "_blank");
@@ -1886,10 +1976,11 @@ function set_resman_url(element) {
 
   if (_3dMapMode()) {
     date = new Date();
+    const _3dData = get3dSelectedData();
     url =
-      get3dSelectedUnitData().availabilityUrl +
+      _3dData.availabilityUrl +
       "&leaseTerm=" +
-      get3dSelectedUnitData().leaseTerm +
+      _3dData.leaseTerm +
       "&moveInDate=" +
       date.toISOString().split("T")[0];
   }
@@ -1915,9 +2006,8 @@ function set_realpagesvc_url(element) {
     apply_now_url = `/communities/${webCommunity.id}/webpages/apply_now`;
     redirect_url = `/communities/${webCommunity.id}/webpages`;
     date = new Date();
-    real_page_provider_unit_id = parseInt(
-      get3dSelectedUnitData().providerUnitId.split("-")[0]
-    );
+    const _3dData = get3dSelectedData();
+    real_page_provider_unit_id = parseInt(_3dData.providerUnitId.split("-")[0]);
     url = url =
       apply_now_url +
       "?MoveInDate=" +

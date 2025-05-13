@@ -160,6 +160,34 @@ function isPointInEllipse(point, ellipse) {
   return (dx * dx) / (rx * rx) + (dy * dy) / (ry * ry) <= 1;
 }
 
+function isPointInAnyShape(event, shape, view = null) {
+  if (_3dMapMode()) {
+    if (shape?.geometry?.type && shape?.geometry?.coordinates) {
+      return isMouseInsideGeoShape(event, shape, view);
+    }
+  } else {
+    const tag = shape?.tagName?.toLowerCase();
+
+    if (["polygon", "polyline", "rect", "circle", "ellipse"].includes(tag)) {
+      switch (tag) {
+        case "polygon":
+          return isPointInPolygon(event, shape);
+        case "polyline":
+          return isPointInPolyline(event, shape);
+        case "rect":
+          return isPointInRect(event, shape);
+        case "circle":
+          return isPointInCircle(event, shape);
+        case "ellipse":
+          return isPointInEllipse(event, shape);
+      }
+    }
+  }
+
+  console.warn("Unsupported shape format");
+  return false;
+}
+
 function getPolygonArea(polygon) {
   let points;
 
@@ -271,14 +299,6 @@ function getPolygonCenter(coordinates) {
   });
 
   return { lng: x / totalPoints, lat: y / totalPoints };
-}
-
-function getMapRelativeCoords(event, view) {
-  const rect = view.container.getBoundingClientRect();
-  return {
-    x: event.clientX - rect.left,
-    y: event.clientY - rect.top,
-  };
 }
 
 function getDeviceType () {
