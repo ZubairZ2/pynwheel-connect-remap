@@ -21,7 +21,7 @@ class WebpagesController < ActionController::Base
     @svg_enabled = @community_info.enable_svg_mode?
     community_units = @community_info.units
     @amenities = @community_info.amenities.plotted_amenities(@svg_enabled)
-    @have_multi_property_ids = @community_info.have_multi_property_ids?()
+    @have_multi_property_ids = @community_info.credential&.allow_sub_communities?
     @multi_properties = @community_info.fetch_multi_properties()
 
     unless @community_info.locked
