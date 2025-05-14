@@ -127,6 +127,7 @@ class YardiRentCafeV2Service < BaseService
                   
                   unless unit.manual_override
                     unit.property_id = property_code
+                    unit.voyager_property_code = r["voyagerPropertyCode"]
                     unit.unit_type = r["apartmentName"]
                     unless unit.name_is_updated.present? && unit.name_is_updated
                       unit.marketing_name = r["apartmentName"]

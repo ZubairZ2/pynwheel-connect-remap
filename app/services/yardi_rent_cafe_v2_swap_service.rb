@@ -28,6 +28,7 @@ class YardiRentCafeV2SwapService < BaseService
                   unit.provider = "yardirentcafe_new"
                   unit.provider_unit_id = r["apartmentId"]
                   unit.property_id = property_code
+                  unit.voyager_property_code = r["voyagerPropertyCode"]
                   unit.unit_type = r["apartmentName"]
                   unit.floor = evaluate_floor(unit.marketing_name) rescue nil
                   unit.floorplan_id = r["floorplanId"]
@@ -70,6 +71,7 @@ class YardiRentCafeV2SwapService < BaseService
                   unit.community_id = @credentials.community_id
                   unit.provider = "yardirentcafe_new"
                   unit.property_id = property_code
+                  unit.voyager_property_code = r["voyagerPropertyCode"]
                   unit.provider_unit_id = r["apartmentId"]
                   unit.unit_type = r["apartmentName"]
                   unit.marketing_name = r["apartmentName"]

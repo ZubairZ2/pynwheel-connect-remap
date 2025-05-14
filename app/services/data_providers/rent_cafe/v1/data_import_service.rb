@@ -93,6 +93,7 @@ module DataProviders
               unit.lease_pricing = calculate_lease_pricing(property_code, r["ApartmentName"], available_date_convertor(r["AvailableDate"]))
               unit.description = unit_description(r["Amenities"]) if r["Amenities"].present?
               unit.property_id = property_code&.strip
+              unit.voyager_property_code = r["VoyagerPropertyCode"]
               unit.unit_type = r["ApartmentName"]
               unit.market_rent = r["MinimumRent"]
               unit.square_feet = r["SQFT"] if r["SQFT"].present?

@@ -215,12 +215,13 @@ class Unit < ApplicationRecord
   end
 
   def multi_property_id_unit_name_display
+    append_property_code = voyager_property_code.present? ? "#{voyager_property_code}-" : (property_id.present? ? "#{property_id}-" : "")
     if building != nil && building != ""
-      "#{building}-#{marketing_name}-#{property_id}"
+      "#{append_property_code}#{building}-#{marketing_name}"
     elsif community.data_provider == "yardi"
       provider_unit_id
     else 
-      "#{marketing_name}-#{property_id}"
+      "#{append_property_code}#{marketing_name}"
     end
   end
 

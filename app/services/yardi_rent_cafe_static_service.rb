@@ -34,6 +34,7 @@ class YardiRentCafeStaticService < BaseService
               unit = Unit.where(provider: "yardirentcafe",community_id: credentials.community_id,provider_unit_id: r["ApartmentId"]).first_or_initialize
               unless unit.manual_override
                 unit.property_id = property_code
+                unit.voyager_property_code = r["VoyagerPropertyCode"]
                 unit.unit_type = r["ApartmentName"]
                 unless unit.name_is_updated.present? && unit.name_is_updated
                   unit.marketing_name = r["ApartmentName"]

@@ -144,22 +144,25 @@ class Community < ApplicationRecord
       .pluck(:name, :property_id)
       .map { |name, property_id| [name, property_id.strip] }
       .uniq
-  end  
+  end
 
-  def sorted_units_by_marketing_name(selected_units)
-    return selected_units unless selected_units.present?
+  def sorted_units_by_marketing_name(units)
+    return units unless units.present?
 
-    selected_units.sort_by do |unit|
-      name = unit.marketing_name.strip
-  
-      if name.match?(/^\d+$/)  # Purely numeric
-        ["", name.to_i]
-      elsif name.match(/^([A-Za-z]+)-?(\d+)$/)  # Matches `A-101` or `A101`
+    units.sort_by do |unit|
+      plotting_name = unit.fetch_unit_plotting_name(true).strip
+      name_parts = plotting_name.split('-')
+
+      marketing_name = name_parts.last.strip.gsub(/\s+/, '')
+      case marketing_name
+      when /^\d+$/ # Purely numeric
+        ['', marketing_name.to_i]
+      when /^([A-Za-z]+)(\d+)$/ # Matches `A-101` or `A101`
         [$1.downcase, $2.to_i]
-      elsif name.match(/^(\d+)-?([A-Za-z]+)$/)  # Matches `101-A` or `101A`
+      when /^(\d+)([A-Za-z]+)$/ # Matches `101-A` or `101A`
         [$2.downcase, $1.to_i]
       else
-        [name.downcase, 0]  # For unrecognized formats
+        [marketing_name.downcase, Float::INFINITY]
       end
     end
   end
