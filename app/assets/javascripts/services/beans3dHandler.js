@@ -125,25 +125,11 @@ function beans3DMapDisplayOptions() {
     unitShape: {
       fillOpacity: 0.5,
     },
-    selectableUnitShape: {
-      fillColor: toHexColor(map_marker_color),
-      fillOpacity: 0.85,
-      strokeColor: toHexColor(map_marker_color),
-      strokeWeight: 0,
-      strokeOpacity: 0,
-    },
-    selectedUnitShape: {
-      fillColor: toHexColor(map_marker_color),
-      fillOpacity: 1.0,
-      strokeColor: toHexColor(map_marker_color),
-      strokeWeight: 1,
-      strokeOpacity: 1,
-    },
-    highlightOptions: {
-      color: toHexColor(map_marker_color),
-      haloOpacity: 0.9,
-      fillOpacity: 1,
-    },
+    // highlightOptions: {
+    //   color: toHexColor(map_marker_color),
+    //   haloOpacity: 0.9,
+    //   fillOpacity: 1,
+    // },
   };
 }
 

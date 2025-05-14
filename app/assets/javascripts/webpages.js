@@ -1630,7 +1630,7 @@ function showUnitPopoverAndHighlightListUnit(
 
     $markerPopup.css({
       left: x + 20 + "px",
-      top: y - $markerPopup.height() + "px",
+      top: y - 315 + "px",
     });
 
     $beansMarkerPopover.addClass("hidden");
