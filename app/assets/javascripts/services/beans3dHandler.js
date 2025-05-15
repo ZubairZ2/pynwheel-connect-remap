@@ -277,7 +277,7 @@ function filterBeansItemsIndices() {
       matchedData(unitId, type === "AMENITY") ? index : null
   );
 
-  return filteredItemsIndices.filter((index) => index);
+  return filteredItemsIndices.filter((index) => definedAndHasValue(index));
 }
 
 function filterBeansUnits() {
