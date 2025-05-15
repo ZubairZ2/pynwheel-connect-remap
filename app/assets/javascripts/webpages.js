@@ -606,6 +606,8 @@ function filterUnitsBasedOnAvailability() {
 }
 
 function setAvailabilityFilterToNow() {
+  if (!showCurrentAvailabilityEnabled) return;
+
   $("#available_unit").val("now").change();
   $("#responsive_available_unit").val("now").change();
 }
@@ -738,7 +740,7 @@ function updateAvailabilitFilterDropdownList() {
     }
   }
 
-  if (showCurrentAvailabilityEnabled) setAvailabilityFilterToNow();
+  setAvailabilityFilterToNow();
 }
 
 function updateSquareFootageFilterDropdownList(floorplateUnits) {
@@ -2588,7 +2590,7 @@ function resetFilters() {
 
   if (multiCommunity) resetBasedOnMultiCommunities();
   else resetBasedOnBedroom();
-  if (showCurrentAvailabilityEnabled) setAvailabilityFilterToNow();
+  setAvailabilityFilterToNow();
 
   showMarkers();
 }
