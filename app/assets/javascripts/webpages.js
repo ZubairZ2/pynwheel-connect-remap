@@ -20,6 +20,12 @@ var timeoutId = null;
 var units = null;
 var total_units = null;
 var amenities = null;
+var availabilityFilterResetTriggered = definedAndHasValue(
+  availabilityFilterResetTriggered
+)
+  ? availabilityFilterResetTriggered
+  : false;
+
 var communityInactivated = definedAndHasValue(communityInactivated)
   ? communityInactivated
   : false;
@@ -216,7 +222,8 @@ function bindWebpageEvents() {
   });
 
   $("#available_unit, #responsive_available_unit").change(function () {
-    if (smallScreen()) return;
+    if (smallScreen() && availabilityFilterResetTriggered) return;
+    triggeredForInitialisation = true;
 
     availabilityFilterChanged();
     reDrawBeansWidget();
@@ -740,6 +747,7 @@ function updateAvailabilitFilterDropdownList() {
     }
   }
 
+  availabilityFilterResetTriggered = false
   setAvailabilityFilterToNow();
 }
 
@@ -1066,7 +1074,7 @@ function populate_current_units() {
   if (hasFloorplate()) {
     $(".amenity-marker").addClass("hidden"); // first hidding all amenity markers
     $(".a_" + current_floor).removeClass("hidden"); // showing amenity markers on current floorplate
-    updateDropdownListValues();
+    // updateDropdownListValues();
 
     for (var i = 0; i < units.length; i++) {
       if (units[i]["floor"] == current_floor) {
@@ -2590,6 +2598,8 @@ function resetFilters() {
 
   if (multiCommunity) resetBasedOnMultiCommunities();
   else resetBasedOnBedroom();
+
+  availabilityFilterResetTriggered = false
   setAvailabilityFilterToNow();
 
   showMarkers();
