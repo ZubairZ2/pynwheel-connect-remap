@@ -215,7 +215,7 @@
                   = select_tag :responsive_square_feet, options_for_select(@square_feet.present? ? @square_feet : []),{:class=>"custom-select"}
                 .selectable-field
                   %label Availability
-                  = select_tag :responsive_available_unit, options_for_select(@available_units.present? ? @available_units : []),{:class=>"custom-select", :include_blank => "All "}
+                  = select_tag :responsive_available_unit, options_for_select(@available_units.present? ? @available_units : []),{:class=>"custom-select", :include_blank => "All ", default: @community.show_current_availability? ? 'now' : '' }
                 
                 %div{:style => "text-align: center; padding-bottom: 9px;display: flex;justify-content: center;"}
                   %button.apply-now-responsive{:type => "button", :onclick => "applyFilters();"}
@@ -378,12 +378,10 @@
   var largeImageHeight = 166;
   var subCommunities = $("#communityWebpagesData").data("subCommunities");
   var map_marker_color = toRgbColor("#{raw map_marker_color}");
-  var communityInactivated = "#{@community.locked}"
-  communityInactivated = communityInactivated === "true"
-  var tbdMarkersEnabled = "#{@community.display_tbd_legend?}"
-  tbdMarkersEnabled = tbdMarkersEnabled === "true"
-  var multiCommunity = "#{@have_multi_property_ids}"
-  multiCommunity = multiCommunity === "true"
+  var communityInactivated = "#{@community.locked}" === "true"
+  var tbdMarkersEnabled = "#{@community.display_tbd_legend?}" === "true"
+  var multiCommunity = "#{@have_multi_property_ids}" === "true"
+  var showCurrentAvailabilityEnabled = "#{@community.show_current_availability?}" === "true"
   var mapMarkerColors = #{raw marker_colors.to_json}
   var markerFontSize = "#{raw fontsize}";
   var amenity_marker_color = toRgbColor("#{raw amenity_marker_color}");

@@ -605,6 +605,11 @@ function filterUnitsBasedOnAvailability() {
   }
 }
 
+function setAvailabilityFilterToNow() {
+  $("#available_unit").val("now").change();
+  $("#responsive_available_unit").val("now").change();
+}
+
 function filterUnitsBasedOnDate(floorplateUnits, startIndex, endIndex) {
   const today = new Date();
   const currentDay = new Date(today).setDate(today.getDate() + 0);
@@ -691,7 +696,10 @@ function updateAvailabilitFilterDropdownList() {
   const webFilterId = "#".concat("available_unit"); //works on web view
   const mobileFilterId = "#responsive_".concat("available_unit"); //works on mobile view
 
-  if (unitsAvailableNow && unitsAvailableNow.length > 0) {
+  if (
+    showCurrentAvailabilityEnabled ||
+    (unitsAvailableNow && unitsAvailableNow.length > 0)
+  ) {
     $(webFilterId).append(`<option value="now"> Now </option>`);
     $(mobileFilterId).append(`<option value="now"> Now </option>`);
   }
@@ -729,6 +737,8 @@ function updateAvailabilitFilterDropdownList() {
       $(mobileFilterId).append(`<option value="121-"> In 121+ days </option>`);
     }
   }
+
+  if (showCurrentAvailabilityEnabled) setAvailabilityFilterToNow();
 }
 
 function updateSquareFootageFilterDropdownList(floorplateUnits) {
@@ -2578,6 +2588,7 @@ function resetFilters() {
 
   if (multiCommunity) resetBasedOnMultiCommunities();
   else resetBasedOnBedroom();
+  if (showCurrentAvailabilityEnabled) setAvailabilityFilterToNow();
 
   showMarkers();
 }
