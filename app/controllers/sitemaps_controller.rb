@@ -67,9 +67,11 @@ class SitemapsController < ApplicationController
     @community_info.units.where(building: nil).update_all(building: "")
 
     @units = @community_info.units.visible_units.where(floorplate_id: nil).includes(:door)
-    @units = @community_info.sorted_units_by_marketing_name(@units)
+    @units = @community_info.sorted_units_by_field_key(@units, 'marketing_name')
+    @units = @community_info.sorted_units_by_field_key(@units, 'floor')
+    @units = @community_info.sorted_units_by_field_key(@units, 'building')
+    @units = @community_info.sorted_units_by_field_key(@units, 'voyager_property_code', 'property_id')
 
-    @units = @units.sort_by {|obj| obj.building || "" }
     @units_by_plotted_doors_order = @units.sort_by {|obj| obj.door.present? ? obj.door.id : obj.id}
     @floorplans = @community_info.floorplans
     @floorplans_map = @floorplans.index_by(&:provider_floorplan_id)

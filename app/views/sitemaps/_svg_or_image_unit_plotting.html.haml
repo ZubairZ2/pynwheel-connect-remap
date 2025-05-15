@@ -1,4 +1,4 @@
-- community_units = units.sort_by{|u| u.marketing_name}
+- community_units = units
 - have_multi_property_ids = community.have_multi_property_ids?
 - coordinates_array = []
 
@@ -118,11 +118,6 @@
                 You can select one or multiple units to plot in one position (with one marker) on the map. If no units appear in the list, that means that all units that have been imported or entered have already been plotted on the map.
 
           %select.amenities-list.form-control{:multiple=>"multiple"}
-            - if community_units.present?
-              - community_units.each do |u|
-                - u.building = "" if u.building == nil
-              - community_units = community_units.sort_by {|obj| obj.marketing_name.to_i}
-              - community_units = community_units.sort_by {|obj| obj.building.to_i}
             - community_units.each do |unit|
               - x_plot, y_plot = coords = (is_svg ? (unit.svg_coordinates) : [unit.x_plot, unit.y_plot].map(&:to_i))
               - if coords.sum.zero? && unit.provider_unit_id.present?

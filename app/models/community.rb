@@ -146,27 +146,21 @@ class Community < ApplicationRecord
       .uniq
   end
 
-  def sorted_units_by_marketing_name(units)
-    return units unless units.present?
+  def sorted_units_by_field_key(selected_units, key, alternate_key = nil)
+    return selected_units unless selected_units.present?
 
-    units.sort_by do |unit|
-      plotting_name = unit.fetch_unit_plotting_name(true).strip
-      name_parts = plotting_name.split('-')
-
-      # Determine where the marketing_name actually is
-      marketing_name = if name_parts.size >= 3
-        name_parts[2..].join('-') # join all parts after the building in case marketing_name has hyphens
-      else
-        name_parts[1] || name_parts[0] # fallback: either "propertyID-name" or just "name"
+    selected_units.sort_by do |unit|
+      field_value = unit.try(key).to_s
+      if field_value.blank? && alternate_key.present?
+        field_value = unit.try(alternate_key).to_s
       end
+      field_value = field_value.strip.gsub(/\s+/, '')
 
-      marketing_name = marketing_name.strip.gsub(/\s+/, '')
-
-      case marketing_name
-      when /^\d+$/                    then ['', marketing_name.to_i]
+      case field_value
+      when /^\d+$/                    then ['', field_value.to_i]
       when /^([A-Za-z]+)(\d+)$/       then [$1.downcase, $2.to_i]
       when /^(\d+)([A-Za-z]+)$/       then [$2.downcase, $1.to_i]
-      else [marketing_name.downcase, Float::INFINITY]
+      else [field_value.downcase, Float::INFINITY]
       end
     end
   end

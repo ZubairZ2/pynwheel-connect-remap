@@ -235,9 +235,11 @@ class FloorplatesController < ApplicationController
     @community_info.units.where(building: nil).update_all(building: "")
 
     @floorplate_units = @floorplate.fetch_units.includes(:door)
-    @floorplate_units = @community_info.sorted_units_by_marketing_name(@floorplate_units)
+    @floorplate_units = @community_info.sorted_units_by_field_key(@floorplate_units, 'marketing_name')
+    @floorplate_units = @community_info.sorted_units_by_field_key(@floorplate_units, 'floor')
+    @floorplate_units = @community_info.sorted_units_by_field_key(@floorplate_units, 'building')
+    @floorplate_units = @community_info.sorted_units_by_field_key(@floorplate_units, 'voyager_property_code', 'property_id')
 
-    @floorplate_units = @floorplate_units.sort_by {|obj| obj.building}
     @floorplate_units_by_plotted_doors_order = @floorplate_units.sort_by {|obj| obj.door.present? ? obj.door.id : obj.id}
 
     @floorplans = @community_info.floorplans
