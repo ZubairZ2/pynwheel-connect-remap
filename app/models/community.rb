@@ -153,16 +153,20 @@ class Community < ApplicationRecord
       plotting_name = unit.fetch_unit_plotting_name(true).strip
       name_parts = plotting_name.split('-')
 
-      marketing_name = name_parts.last.strip.gsub(/\s+/, '')
-      case marketing_name
-      when /^\d+$/ # Purely numeric
-        ['', marketing_name.to_i]
-      when /^([A-Za-z]+)(\d+)$/ # Matches `A-101` or `A101`
-        [$1.downcase, $2.to_i]
-      when /^(\d+)([A-Za-z]+)$/ # Matches `101-A` or `101A`
-        [$2.downcase, $1.to_i]
+      # Determine where the marketing_name actually is
+      marketing_name = if name_parts.size >= 3
+        name_parts[2..].join('-') # join all parts after the building in case marketing_name has hyphens
       else
-        [marketing_name.downcase, Float::INFINITY]
+        name_parts[1] || name_parts[0] # fallback: either "propertyID-name" or just "name"
+      end
+
+      marketing_name = marketing_name.strip.gsub(/\s+/, '')
+
+      case marketing_name
+      when /^\d+$/                    then ['', marketing_name.to_i]
+      when /^([A-Za-z]+)(\d+)$/       then [$1.downcase, $2.to_i]
+      when /^(\d+)([A-Za-z]+)$/       then [$2.downcase, $1.to_i]
+      else [marketing_name.downcase, Float::INFINITY]
       end
     end
   end
