@@ -294,6 +294,7 @@ function bindWebpageEvents() {
 
       if (!_3dMapMode()) {
         $currentImageBox.parent().removeClass("hidden");
+        updateDropdownListValues({ skipAvailabilityFilter: true });
         populate_current_units();
       }
     }
@@ -586,10 +587,10 @@ function availabilityFilterChanged() {
   showMarkers();
 }
 
-function updateDropdownListValues() {
+function updateDropdownListValues(options = {}) {
   updateMaxPriceFilterDropDownList(units);
   updateSquareFootageFilterDropdownList(units);
-  updateAvailabilitFilterDropdownList(units);
+  if (!options.skipAvailabilityFilter) updateAvailabilitFilterDropdownList(units);
 }
 
 function filterUnitsBasedOnSelectedFilters() {
