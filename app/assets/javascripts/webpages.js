@@ -592,8 +592,9 @@ function filterUnitsBasedOnSelectedFilters() {
 }
 
 function filterUnitsBasedOnAvailability() {
-  unitAvailabilityValue =
-    $("#available_unit").val() || $("#responsive_available_unit").val();
+  const unitAvailabilityValue = smallScreen()
+    ? $("#responsive_available_unit").val()
+    : $("#available_unit").val();
 
   if (unitAvailabilityValue) {
     const startingIndex = parseInt(unitAvailabilityValue.split("-")[0]);
@@ -607,21 +608,20 @@ function filterUnitsBasedOnDate(floorplateUnits, startIndex, endIndex) {
   const currentDay = new Date(today).setDate(today.getDate() + 0);
   const startDay = new Date(today).setDate(today.getDate() + startIndex);
   const endDay = new Date(today).setDate(today.getDate() + endIndex);
-  floorplateUnits = filterUnitsBasedOnCommunityType(floorplateUnits);
 
-  if (!startDay && !startDay)
+  if (!startDay && !endDay)
     floorplateUnits = floorplateUnits.filter(
-      (unit) => new Date(unit.available_date) <= currentDay
+      (unit) => unit.available && new Date(unit.available_date) <= currentDay
     );
 
   if (startDay)
     floorplateUnits = floorplateUnits.filter(
-      (unit) => new Date(unit.available_date) >= startDay
+      (unit) => unit.available && new Date(unit.available_date) >= startDay
     );
 
   if (endDay)
     floorplateUnits = floorplateUnits.filter(
-      (unit) => new Date(unit.available_date) <= endDay
+      (unit) => unit.available && new Date(unit.available_date) <= endDay
     );
 
   return floorplateUnits;
