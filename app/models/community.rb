@@ -154,13 +154,19 @@ class Community < ApplicationRecord
       if field_value.blank? && alternate_key.present?
         field_value = unit.try(alternate_key).to_s
       end
-      field_value = field_value.strip.gsub(/\s+/, '')
 
-      case field_value
-      when /^\d+$/                    then ['', field_value.to_i]
-      when /^([A-Za-z]+)(\d+)$/       then [$1.downcase, $2.to_i]
-      when /^(\d+)([A-Za-z]+)$/       then [$2.downcase, $1.to_i]
-      else [field_value.downcase, Float::INFINITY]
+      if field_value.blank?
+        # Push blank or nil field values to the bottom
+        ["~", Float::INFINITY]
+      else
+        field_value = field_value.strip.gsub(/\s+/, '')
+
+        case field_value
+        when /^\d+$/                    then ['', field_value.to_i]
+        when /^([A-Za-z]+)(\d+)$/       then [$1.downcase, $2.to_i]
+        when /^(\d+)([A-Za-z]+)$/       then [$2.downcase, $1.to_i]
+        else [field_value.downcase, Float::INFINITY]
+        end
       end
     end
   end
