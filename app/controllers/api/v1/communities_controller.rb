@@ -854,34 +854,22 @@ module Api
         property_ids.each do |property_id|
           begin
             @@floorplanHash = {}
-            if @credentials.entrata_url.include?('https://') || @credentials.entrata_url.include?('http://')
-              url = @credentials.entrata_url
-            else
-              url = "https://"+@credentials.entrata_url+".entrata.com/api/v1/propertyunits"
-            end
-    
-    
-            password = @credentials.password
-            username = @credentials.username
-            #property_id = credentials.property_id
-    
-            response = HTTParty.post(url,
-                                      :body => {
-                                          "auth": {
-                                              "type": "basic",
-                                              "password": password,
-                                              "username": username
-                                          },
-                                          "method": {
-                                              "name": "getMitsPropertyUnits",
-                                              "params": {
-                                                  "propertyIds": property_id,
-                                                  "availableUnitsOnly": credentials&.entrata_available_units_only,
-                                                  "showUnitSpaces": credentials&.entrata_show_unit_spaces
-                                              }
-                                          }
-                                      }.to_json,
-                                      :headers => { 'Content-Type' => 'application/json' } )
+            response = PsiService.call_entrata_api(
+              subdomain: credentials.entrata_url,
+              endpoint: "propertyunits",
+              method: :post,
+              payload: {
+                method: {
+                  name: "getMitsPropertyUnits",
+                  params: {
+                    propertyIds: property_id,
+                    availableUnitsOnly: credentials&.entrata_available_units_only,
+                    showUnitSpaces: credentials&.entrata_show_unit_spaces
+                  }
+                }
+              }
+            )
+
             response =  JSON.parse(response.body)
             # if com_test.id == 458
             #   com_test.entrata_exception_logs = com_test.entrata_exception_logs + "3 "
@@ -1003,58 +991,29 @@ module Api
           ########################################## Space configuration
           move_in_dates.each do |move_in_date|
             begin
-              if @credentials.entrata_url.include?('https://') || @credentials.entrata_url.include?('http://')
-                url = @credentials.entrata_url
-              else
-                url = "https://"+@credentials.entrata_url+".entrata.com/api/v1/propertyunits"
-              end
-              password = @credentials.password
-              username = @credentials.username
-              #property_id = credentials.property_id
-              if move_in_date == "0"
-                response = HTTParty.post(url,
-                                          :body => {
-                                              "auth": {
-                                                  "type": "basic",
-                                                  "password": password,
-                                                  "username": username
-                                              },
-                                              "method": {
-                                                  "name": "getUnitsAvailabilityAndPricing",
-                                                  "params": {
-                                                      "propertyId": property_id,
-                                                      "availableUnitsOnly": credentials&.entrata_available_units_only,
-                                                      "showUnitSpaces": credentials&.entrata_show_unit_spaces,
-                                                      "useSpaceConfiguration": credentials&.entrata_use_space_configuration
-                                                  }
-                                              }
-                                          }.to_json,
-                                          :headers => { 'Content-Type' => 'application/json' } )
-                response =  JSON.parse(response.body)
-              else
-                response = HTTParty.post(url,
-                                          :body => {
-                                              "auth": {
-                                                  "type": "basic",
-                                                  "password": password,
-                                                  "username": username
-                                              },
-                                              "method": {
-                                                  "name": "getUnitsAvailabilityAndPricing",
-                                                  "params": {
-                                                      "propertyId": property_id,
-                                                      "availableUnitsOnly": credentials&.entrata_available_units_only,
-                                                      "showUnitSpaces": credentials&.entrata_show_unit_spaces,
-                                                      "useSpaceConfiguration": credentials&.entrata_use_space_configuration,
-                                                      "moveInStartDate": move_in_date
-                                                  }
-                                              }
-                                          }.to_json,
-                                          :headers => { 'Content-Type' => 'application/json' } )
-                response =  JSON.parse(response.body)
-              end
+              payload_method = {
+                name: "getUnitsAvailabilityAndPricing"
+                params: {
+                  propertyId: property_id,
+                  availableUnitsOnly: @credentials&.entrata_available_units_only,
+                  showUnitSpaces: @credentials&.entrata_show_unit_spaces
+                  useSpaceConfiguration: @credentials&.entrata_use_space_configuration
+                }
+              }
+              payload_method[:moveInStartDate] = move_in_date unless move_in_date == "0"
+
+              response = PsiService.call_entrata_api(
+                subdomain: @credentials&.entrata_url,
+                endpoint: "propertyunits",
+                method: :post,
+                payload: {
+                  method: payload_method
+                }
+              )
+              response =  JSON.parse(response.body)
+
               sleep 3
-    
+
               if response["response"]["code"] == 200
                 unless response["response"]["result"].include?('No records found')
                   psi_units = response["response"]["result"]["PropertyUnits"]["PropertyUnit"]
@@ -1142,31 +1101,21 @@ module Api
                 else
                   #################################### with unit space pricing
                   begin
-                    if @credentials.entrata_url.include?('https://') || @credentials.entrata_url.include?('http://')
-                      url = @credentials.entrata_url
-                    else
-                      url = "https://"+@credentials.entrata_url+".entrata.com/api/v1/propertyunits"
-                    end
-                    password = @credentials.password
-                    username = @credentials.username
-                    #property_id = credentials.property_id
-                    response = HTTParty.post(url,
-                                              :body => {
-                                                  "auth": {
-                                                      "type": "basic",
-                                                      "password": password,
-                                                      "username": username
-                                                  },
-                                                  "method": {
-                                                      "name": "getUnitsAvailabilityAndPricing",
-                                                      "params": {
-                                                          "propertyId": property_id,
-                                                          "availableUnitsOnly": credentials&.entrata_available_units_only,
-                                                          "showUnitSpaces": credentials&.entrata_show_unit_spaces
-                                                      }
-                                                  }
-                                              }.to_json,
-                                              :headers => { 'Content-Type' => 'application/json' } )
+                    response = PsiService.call_entrata_api(
+                      subdomain: @credentials&.entrata_url,
+                      endpoint: "propertyunits",
+                      method: :post,
+                      payload: {
+                        method: {
+                          name: "getUnitsAvailabilityAndPricing"
+                          params: {
+                            propertyId: property_id,
+                            availableUnitsOnly: @credentials&.entrata_available_units_only,
+                            showUnitSpaces: @credentials&.entrata_show_unit_spaces
+                          }
+                        }
+                      }
+                    )
                     response =  JSON.parse(response.body)
                     sleep 3
                     if response["response"]["code"] == 200
@@ -1337,33 +1286,22 @@ module Api
       end
     
       def getMoveInDate(property_id)
-        if @credentials.entrata_url.include?('https://') || @credentials.entrata_url.include?('http://')
-          url = @credentials.entrata_url
-        else
-          url = "https://#{@credentials.entrata_url}.entrata.com/api/v1/properties"
-        end
-    
-        password = @credentials.password
-        username = @credentials.username
-        #property_id = credentials.property_id
         begin
-          response = HTTParty.post(url,
-                                    :body => {
-                                        "auth": {
-                                            "type": "basic",
-                                            "password": password,
-                                            "username": username
-                                        },
-                                        "requestId": 15,
-                                        "method": {
-                                            "name": "getPropertyPickLists",
-                                            "version":"r1",
-                                            "params": {
-                                                "propertyIds": property_id
-                                            }
-                                        }
-                                    }.to_json,
-                                    :headers => { 'Content-Type' => 'application/json' } )
+          response = PsiService.call_entrata_api(
+            subdomain: @credentials.entrata_url,
+            endpoint: "properties",
+            method: :post,
+            payload: {
+              requestId: 15,
+              method: {
+                name: "getPropertyPickLists",
+                version:"r1",
+                params: {
+                  propertyIds: property_id,
+                }
+              }
+            }
+          )
           response =  JSON.parse(response.body)
           moveIn_dates = []
           response['response']['result']['Property'][0]['leasePeriods']['leasePeriod'].each do |dates|

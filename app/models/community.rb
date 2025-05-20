@@ -613,7 +613,7 @@ class Community < ApplicationRecord
 
     case crm_credential.crm_provider
       when "psi"
-        crm_credential.entrata_domain.present? && crm_credential.entrata_username.present? && crm_credential.entrata_password.present? && crm_credential.entrata_property_id.present?
+        crm_credential.entrata_domain.present? && crm_credential.entrata_property_id.present?
       when "yardirentcafe"
         check_rent_cafe_crm_credentials()
       when "realpagesvc"

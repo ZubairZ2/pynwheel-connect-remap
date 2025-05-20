@@ -4,11 +4,6 @@ class PsiSendMitsLeadsService < BaseService
       property_ids = (use_crm_credentials ? community.crm_credential.entrata_property_id.split(',') : credentials.property_id.split(',')) rescue []
       property_ids.each do |property_id|
         entrata_domain = (use_crm_credentials ? community.crm_credential.entrata_domain : credentials.entrata_url)
-        if entrata_domain.include?('https://') || entrata_domain.include?('http://')
-            url = credentials.entrata_url
-        else
-            url = "https://"+entrata_domain+".entrata.com/api/leads"
-        end
 
         password = use_crm_credentials ? community.crm_credential.entrata_password : credentials.password
         username = use_crm_credentials ? community.crm_credential.entrata_username : credentials.username
@@ -21,67 +16,65 @@ class PsiSendMitsLeadsService < BaseService
         desired_bedroom = tour_data.desired_bedroom.present? ? tour_data.desired_bedroom : "" rescue ""
         desired_move_in_date = tour_data.desired_move_in_date.present? ? tour_data.desired_move_in_date.strftime("%m/%d/%Y") : "" rescue ""
 
-        response = HTTParty.post(url,
-                                :body => {
-                                    "auth": {
-                                        "type": "basic",
-                                        "password": password,
-                                        "username": username
-                                    },
-                                    "method": {
-                                        "name": "sendMitsLeads",
-                                        "params": {
-                                          "propertyId": property_id,
-                                          "doNotSendConfirmationEmail": "1",
-                                          "isWaitList": "0",
-                                          "Prospects": {
-                                            "Prospect": [
-                                              {
-                                                "TransactionData": {
-                                                    "OriginatingLeadSource": "Phone Book",
-                                                    "InternetListingService": "Pynwheel"
-                                                },
-                                                "LastUpdateDate": end_time.strftime("%Y-%m-%dT%H:%M:%S"),
-                                                "LeasingAgentId": "",
-                                                "Customers": {
-                                                  "Customer": {
-                                                    "Name": {
-                                                      "FirstName": first_name,
-                                                      "LastName": last_name
-                                                    },
-                                                    "Phone": [
-                                                      {
-                                                        "PhoneNumber": phone_number,
-                                                        "@attributes": { "PhoneType": "personal" }
-                                                      }
-                                                    ],
-                                                    "Email": tour_user.email
-                                                  }
-                                                },
-                                                "customerPreferences": {
-                                                    "desiredMoveInDate": desired_move_in_date,
-                                                    "DesiredNumBedrooms": {
-                                                      "@attributes": {"Exact": desired_bedroom}
-                                                    }
-                                                },
-                                                "events": {
-                                                  "event": [
-                                                    {
-                                                      "type": "Self Tour",
-                                                      "date": tour_time.strftime("%m/%d/%Y"),
-                                                      "timeFrom": tour_time.strftime("%I:%M %P"),
-                                                      "timeTo": end_time.strftime("%I:%M %P"),
-                                                      "TourVisitedStops": visited_stops
-                                                    }
-                                                  ]
-                                                }
-                                              }
-                                            ]
-                                          }
-                                        }
-                                      }
-                                }.to_json,
-                                :headers => { 'Content-Type' => 'application/json' } )
+        response = PsiService.call_entrata_api(
+          subdomain: entrata_domain,
+          endpoint: "leads",
+          method: :post,
+          payload: {
+            method: {
+              name: "sendMitsLeads"
+              params: {
+                propertyId: property_id,
+                doNotSendConfirmationEmail: "1",
+                isWaitList: "0",
+                Prospects: {
+                  Prospect: [
+                    {
+                      TransactionData: {
+                          OriginatingLeadSource: "Phone Book",
+                          InternetListingService: "Pynwheel"
+                      },
+                      LastUpdateDate: end_time.strftime("%Y-%m-%dT%H:%M:%S"),
+                      LeasingAgentId: "",
+                      Customers: {
+                        Customer: {
+                          Name: {
+                            FirstName: first_name,
+                            LastName: last_name
+                          },
+                          Phone: [
+                            {
+                              PhoneNumber: phone_number,
+                              "@attributes".to_sym => { PhoneType: "personal" }
+                            }
+                          ],
+                          Email: tour_user.email
+                        }
+                      },
+                      customerPreferences: {
+                          desiredMoveInDate: desired_move_in_date,
+                          DesiredNumBedrooms: {
+                            "@attributes".to_sym => {Exact: desired_bedroom}
+                          }
+                      },
+                      events: {
+                        event: [
+                          {
+                            type: "Self Tour",
+                            date: tour_time.strftime("%m/%d/%Y"),
+                            timeFrom: tour_time.strftime("%I:%M %P"),
+                            timeTo: end_time.strftime("%I:%M %P"),
+                            TourVisitedStops: visited_stops
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        )
         
         response =  JSON.parse(response.body)
         

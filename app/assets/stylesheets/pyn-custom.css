@@ -4108,13 +4108,13 @@ a#favoriteclickme {
 .logo-container a img {}
 
 .entrata_label {
-    padding-top: 15px;
+    padding: 15px;
     font-size: 16px;
     font-family: Brown Light, sans-serif;
 }
 
 .entrata_input {
-    margin-right: -15px;
+    float: right;
 }
 
 #logo_header {

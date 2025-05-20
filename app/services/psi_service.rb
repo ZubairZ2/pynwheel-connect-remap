@@ -2,6 +2,47 @@ class PsiService < BaseService
   @@floorplanHash = Hash.new
   attr_reader :credentials
 
+  class << self
+    def call_entrata_api(subdomain:, endpoint:, method:, payload:)
+      validated_subdomain = get_validated_entrata_subdomain(subdomain)
+      
+      base_url = "https://apis.entrata.com/ext/orgs/#{validated_subdomain}/v1"
+      url = URI.join(base_url, endpoint).to_s
+
+      body = {
+        auth: { type: "apikey" },
+        **payload
+      }.to_json
+
+      headers = {
+        'Content-Type' => 'application/json',
+        'X-Api-Key' => ENV.fetch('ENTRATA_API_KEY')
+      }
+
+      HTTParty.send(method, url, body: body, headers: headers)
+    rescue URI::InvalidURIError => e
+      raise ArgumentError, "Invalid API endpoint: #{e.message}"
+    end
+
+    def get_validated_entrata_subdomain(subdomain)
+      adjusted_url = subdomain.include?('://') ? subdomain : "http://#{subdomain}"
+      begin
+        uri = URI.parse(adjusted_url)
+        host = uri.host.downcase
+      rescue URI::InvalidURIError
+        host = subdomain.downcase.split(/[\/:]/).first
+      end
+
+      parts = host.split('.')
+      if parts.last(2) == %w[entrata com]
+        subdomain = parts[0...-2].join('.')
+        return subdomain.presence || ""
+      else
+        return host
+      end
+    end
+  end
+
   def initialize(credentials)
     @credentials = credentials
     @unit_record = []
@@ -15,33 +56,21 @@ class PsiService < BaseService
       property_ids = @credentials.property_id.split(',') rescue []
 
       property_ids.each do |property_id|
-
-        if @credentials.entrata_url.include?('https://') || @credentials.entrata_url.include?('http://')
-          url = @credentials.entrata_url
-        else
-          url = "https://"+@credentials.entrata_url+".entrata.com/api/v1/propertyunits"
-        end
-
-        password = @credentials.password
-        username = @credentials.username
-
-        response = HTTParty.post(url,
-                                :body => {
-                                    "auth": {
-                                        "type": "basic",
-                                        "password": password,
-                                        "username": username
-                                    },
-                                    "method": {
-                                        "name": "getMitsPropertyUnits",
-                                        "params": {
-                                            "propertyIds": property_id,
-                                            "availableUnitsOnly": @credentials&.entrata_available_units_only,
-                                            "showUnitSpaces": @credentials&.entrata_show_unit_spaces
-                                        }
-                                    }
-                                }.to_json,
-                                :headers => { 'Content-Type' => 'application/json' } )
+        response = self.class.call_entrata_api(
+          subdomain: @credentials.entrata_url,
+          endpoint: "propertyunits",
+          method: :post,
+          payload: {
+            method: {
+              name: "getMitsPropertyUnits",
+              params: {
+                propertyIds: property_id,
+                availableUnitsOnly: @credentials&.entrata_available_units_only,
+                showUnitSpaces: @credentials&.entrata_show_unit_spaces
+              }
+            }
+          }
+        )
 
         begin
           response =  JSON.parse(response.body)
@@ -520,23 +549,21 @@ class PsiService < BaseService
   end
 
   def get_move_in_dates property_id
-    response = HTTParty.post(get_move_in_dates_endpoint(),
-      :body => {
-        "auth": {
-          "type": "basic",
-          "password": @credentials.password,
-          "username": @credentials.username
-        },
-        "requestId": 15,
-        "method": {
-          "name": "getPropertyPickLists",
-          "version":"r1",
-          "params": {
-            "propertyIds": property_id
+    response = self.class.call_entrata_api(
+      subdomain: @credentials.entrata_url,
+      endpoint: "properties",
+      method: :post,
+      payload: {
+        requestId: 15,
+        method: {
+          name: "getPropertyPickLists",
+          version:"r1",
+          params: {
+            propertyIds: property_id,
           }
         }
-      }.to_json,
-      :headers => { 'Content-Type' => 'application/json' } )
+      }
+    )
 
     begin
       JSON.parse(response.body)
@@ -548,20 +575,17 @@ class PsiService < BaseService
   end
 
   def get_units_pricing property_id, move_in_date
-    response = HTTParty.post(get_units_pricing_endpoint(),
-      :body => {
-        "auth": {
-          "type": "basic",
-          "password": @credentials.password,
-          "username": @credentials.username
-        },
-        "method": {
-          "name": "getUnitsAvailabilityAndPricing",
-          "params": get_pricing_params(property_id, move_in_date)
+    response = self.class.call_entrata_api(
+      subdomain: @credentials.entrata_url,
+      endpoint: "propertyunits",
+      method: :post,
+      payload: {
+        method: {
+          name: "getUnitsAvailabilityAndPricing",
+          params: get_pricing_params(property_id, move_in_date)
         }
-      }.to_json,
-      :headers => { 'Content-Type' => 'application/json' } )
-
+      }
+    )
       begin
         JSON.parse(response.body)
       rescue JSON::ParserError => e
@@ -573,10 +597,10 @@ class PsiService < BaseService
 
   def get_pricing_params property_id, move_in_date
     {
-      "propertyId": property_id,
-      "availableUnitsOnly": @credentials&.entrata_available_units_only,
-      "showUnitSpaces": @credentials&.entrata_show_unit_spaces,
-      "useSpaceConfiguration": @credentials&.entrata_use_space_configuration,
+      propertyId: property_id,
+      availableUnitsOnly: @credentials&.entrata_available_units_only,
+      showUnitSpaces: @credentials&.entrata_show_unit_spaces,
+      useSpaceConfiguration: @credentials&.entrata_use_space_configuration,
     }.merge(move_in_date_param(move_in_date))
   end
 
@@ -591,28 +615,8 @@ class PsiService < BaseService
     end
   end
 
-  def get_units_pricing_endpoint
-    if @credentials.entrata_url.include?('https://') || @credentials.entrata_url.include?('http://')
-      url = @credentials.entrata_url
-    else
-      url = "https://"+@credentials.entrata_url+".entrata.com/api/v1/propertyunits"
-    end
-
-    url
-  end
-
-  def get_move_in_dates_endpoint
-    if @credentials.entrata_url.include?('https://') || @credentials.entrata_url.include?('http://')
-      url = @credentials.entrata_url
-    else
-      url = "https://#{@credentials.entrata_url}.entrata.com/api/v1/properties"
-    end
-
-    url
-  end
-
   def move_in_date_param move_in_date
-    h_move_in_date = (move_in_date.present? && move_in_date != "0") ? { "moveInStartDate": move_in_date } : {}
+    h_move_in_date = (move_in_date.present? && move_in_date != "0") ? { moveInStartDate: move_in_date } : {}
   end
 
   def set_availability_url(unit, u)

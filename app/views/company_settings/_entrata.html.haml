@@ -14,28 +14,14 @@
                 Domain
 
               .row
-                .col-sm-12.col-lg-2.col-md-9.col-xs-12.entrata_input
-                  = c.text_field :entrata_url, :class=>"form-control settings-field", :placeholder=>"Domain"
-                  %div.error-message{id: "entrata-url-error", style: "color: red;"}
-
-                %span.col-sm-12.col-lg-4.col-md-9.col-xs-12.entrata_label
-                  \.entrata.com/api/v1/propertyunits
-
-            .form-group.credential_fields#username
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                Username
-
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12.field-to-hide
-                = c.text_field :username, :class=>"form-control settings-field", :placeholder=>"username"
-                %div.error-message{id: "username-error", style: "color: red;"}
-
-            .form-group.credential_fields#password
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                Password
-
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12.field-to-hide
-                = c.text_field :password, :class=>"form-control settings-field", :placeholder=>"Password",:value=>c.object.password,:autocomplete=>"OFF"
-                %div.error-message{id: "password-error", style: "color: red;"}
+                %div{ style: "display: inline-flex; align-items: center;" }
+                  %span.entrata_label
+                    \https://apis.entrata.com/ext/orgs/
+                  .entrata_input
+                    = c.text_field :entrata_url, :class=>"form-control settings-field", :placeholder=>"Domain"
+                    %div.error-message{id: "entrata-url-error", style: "color: red;"}
+                  %span.entrata_label
+                    \/v1
 
 
             .box-footer
