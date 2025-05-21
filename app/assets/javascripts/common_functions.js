@@ -3,6 +3,32 @@ var has_floorplate = definedAndHasValue(has_floorplate)
   : false;
 var assetTracker = definedAndHasValue(assetTracker) ? assetTracker : null;
 
+function isPointInPath(point, pathElement, tolerance = 2) {
+  if (!(pathElement instanceof SVGPathElement)) {
+    console.warn("Provided element is not an SVGPathElement.");
+    return false;
+  }
+
+  const totalLength = pathElement.getTotalLength();
+  const numSamples = Math.ceil(totalLength / tolerance);
+  const sampleInterval = totalLength / numSamples;
+
+  for (let i = 0; i <= numSamples; i++) {
+    const currentLength = i * sampleInterval;
+    const currentPoint = pathElement.getPointAtLength(currentLength);
+
+    const dx = point.x - currentPoint.x;
+    const dy = point.y - currentPoint.y;
+    const distanceSquared = dx * dx + dy * dy;
+
+    if (distanceSquared <= tolerance * tolerance) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function isPointNearLineSegment(point, p1, p2, tolerance = 2) {
   const x1 = p1.x,
     y1 = p1.y;
@@ -168,18 +194,20 @@ function isPointInAnyShape(event, shape, view = null) {
   } else {
     const tag = shape?.tagName?.toLowerCase();
 
-    if (["polygon", "polyline", "rect", "circle", "ellipse"].includes(tag)) {
+    if (VALID_SVG_SHAPES.includes(tag)) {
       switch (tag) {
-        case "polygon":
-          return isPointInPolygon(event, shape);
+        case "path":
+          return isPointInPath(event, shape);
         case "polyline":
           return isPointInPolyline(event, shape);
         case "rect":
           return isPointInRect(event, shape);
-        case "circle":
-          return isPointInCircle(event, shape);
+        case "polygon":
+          return isPointInPolygon(event, shape);
         case "ellipse":
           return isPointInEllipse(event, shape);
+        case "circle":
+          return isPointInCircle(event, shape);
       }
     }
   }
@@ -301,7 +329,7 @@ function getPolygonCenter(coordinates) {
   return { lng: x / totalPoints, lat: y / totalPoints };
 }
 
-function getDeviceType () {
+function getDeviceType() {
   var ua = navigator.userAgent || navigator.vendor || window.opera;
   if (navigator.userAgentData) {
     var platform = navigator.userAgentData.platform || "";

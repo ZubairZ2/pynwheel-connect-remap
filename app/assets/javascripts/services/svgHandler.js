@@ -1,4 +1,4 @@
-var VALID_SVG_SHAPES = ["polyline", "rect", "polygon", "ellipse", "circle"];
+var VALID_SVG_SHAPES = ["path", "polyline", "rect", "polygon", "ellipse", "circle"];
 var DEFAULT_FILL_COLOR = "default-fill-color";
 var svgMode = definedAndHasValue(svgMode) ? svgMode : false;
 var map_marker_color = definedAndHasValue(map_marker_color) ? "brown" : null;
@@ -50,7 +50,6 @@ function setSVG(container, svgElement, options) {
         ":not(.cloned-unit):not(.cloned-amenity)"
     );
 
-    const defaultFillAttributeKey = "default-fill-color";
     $shapes.on("mouseenter", function (e) {
       if (addmode) {
         const { shape, valid } = getTheValidSVGShape(this);
