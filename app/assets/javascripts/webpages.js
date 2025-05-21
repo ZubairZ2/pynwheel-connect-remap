@@ -20,18 +20,11 @@ var timeoutId = null;
 var units = null;
 var total_units = null;
 var amenities = null;
-var availabilityFilterResetTriggered = definedAndHasValue(
-  availabilityFilterResetTriggered
-)
-  ? availabilityFilterResetTriggered
-  : false;
+var availabilityFilterResetTriggered;
+var showCurrentAvailabilityEnabled;
+var communityInactivated;
+var tbdMarkersEnabled;
 
-var communityInactivated = definedAndHasValue(communityInactivated)
-  ? communityInactivated
-  : false;
-var tbdMarkersEnabled = definedAndHasValue(tbdMarkersEnabled)
-  ? tbdMarkersEnabled
-  : false;
 var _3dConvertedArr = definedAndHasValue(_3dConvertedArr)
   ? _3dConvertedArr
   : [];
@@ -590,7 +583,8 @@ function availabilityFilterChanged() {
 function updateDropdownListValues(options = {}) {
   updateMaxPriceFilterDropDownList(units);
   updateSquareFootageFilterDropdownList(units);
-  if (!options.skipAvailabilityFilter) updateAvailabilitFilterDropdownList(units);
+  if (!options.skipAvailabilityFilter)
+    updateAvailabilitFilterDropdownList(units);
 }
 
 function filterUnitsBasedOnSelectedFilters() {
@@ -615,9 +609,16 @@ function filterUnitsBasedOnAvailability() {
 
 function setAvailabilityFilterToNow() {
   if (!showCurrentAvailabilityEnabled) return;
-
-  $("#available_unit").val("now").change();
-  $("#responsive_available_unit").val("now").change();
+  if ($("#available_unit").find("option[value=now]").length) {
+    $("#available_unit").find("option[value=now]").prop("selected", true);
+    $("#available_unit").val("now").change();
+  }
+  if ($("#responsive_available_unit").find("option[value=now]").length) {
+    $("#responsive_available_unit")
+      .find("option[value=now]")
+      .prop("selected", true);
+    $("#responsive_available_unit").val("now").change();
+  }
 }
 
 function filterUnitsBasedOnDate(floorplateUnits, startIndex, endIndex) {
@@ -706,10 +707,7 @@ function updateAvailabilitFilterDropdownList() {
   const webFilterId = "#".concat("available_unit"); //works on web view
   const mobileFilterId = "#responsive_".concat("available_unit"); //works on mobile view
 
-  if (
-    showCurrentAvailabilityEnabled ||
-    (unitsAvailableNow && unitsAvailableNow.length > 0)
-  ) {
+  if (unitsAvailableNow && unitsAvailableNow.length > 0) {
     $(webFilterId).append(`<option value="now"> Now </option>`);
     $(mobileFilterId).append(`<option value="now"> Now </option>`);
   }
@@ -748,7 +746,7 @@ function updateAvailabilitFilterDropdownList() {
     }
   }
 
-  availabilityFilterResetTriggered = false
+  availabilityFilterResetTriggered = false;
   setAvailabilityFilterToNow();
 }
 
@@ -2600,7 +2598,7 @@ function resetFilters() {
   if (multiCommunity) resetBasedOnMultiCommunities();
   else resetBasedOnBedroom();
 
-  availabilityFilterResetTriggered = false
+  availabilityFilterResetTriggered = false;
   setAvailabilityFilterToNow();
 
   showMarkers();
