@@ -22,7 +22,7 @@ class PsiSendMitsLeadsService < BaseService
           method: :post,
           payload: {
             method: {
-              name: "sendMitsLeads"
+              name: "sendMitsLeads",
               params: {
                 propertyId: property_id,
                 doNotSendConfirmationEmail: "1",

@@ -992,11 +992,11 @@ module Api
           move_in_dates.each do |move_in_date|
             begin
               payload_method = {
-                name: "getUnitsAvailabilityAndPricing"
+                name: "getUnitsAvailabilityAndPricing",
                 params: {
                   propertyId: property_id,
                   availableUnitsOnly: @credentials&.entrata_available_units_only,
-                  showUnitSpaces: @credentials&.entrata_show_unit_spaces
+                  showUnitSpaces: @credentials&.entrata_show_unit_spaces,
                   useSpaceConfiguration: @credentials&.entrata_use_space_configuration
                 }
               }
@@ -1107,7 +1107,7 @@ module Api
                       method: :post,
                       payload: {
                         method: {
-                          name: "getUnitsAvailabilityAndPricing"
+                          name: "getUnitsAvailabilityAndPricing",
                           params: {
                             propertyId: property_id,
                             availableUnitsOnly: @credentials&.entrata_available_units_only,
