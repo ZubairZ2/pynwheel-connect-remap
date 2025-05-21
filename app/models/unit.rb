@@ -196,25 +196,12 @@ class Unit < ApplicationRecord
     api_unit_marketing_name()
   end
 
-  def fetch_unit_plotting_name have_multi_property_ids
-    if have_multi_property_ids
-      multi_property_id_unit_name_display
-    else
-      single_property_id_unit_name_display
-    end
-  end
-
-  def single_property_id_unit_name_display
-    if building != nil && building != ""
-      "#{building}-#{marketing_name}"
-    elsif community.data_provider == "yardi"
-      provider_unit_id
-    else 
-      marketing_name
-    end
-  end
-
-  def multi_property_id_unit_name_display
+  def fetch_unit_plotting_name # have_multi_property_ids
+    # if have_multi_property_ids
+    #   multi_property_id_unit_name_display
+    # else
+    #   single_property_id_unit_name_display
+    # end
     append_property_code = voyager_property_code.present? ? "#{voyager_property_code}-" : (property_id.present? ? "#{property_id}-" : "")
     if building != nil && building != ""
       "#{append_property_code}#{building}-#{marketing_name}"
@@ -224,6 +211,27 @@ class Unit < ApplicationRecord
       "#{append_property_code}#{marketing_name}"
     end
   end
+
+  # def single_property_id_unit_name_display
+  #   if building != nil && building != ""
+  #     "#{building}-#{marketing_name}"
+  #   elsif community.data_provider == "yardi"
+  #     provider_unit_id
+  #   else 
+  #     marketing_name
+  #   end
+  # end
+
+  # def multi_property_id_unit_name_display
+  #   append_property_code = voyager_property_code.present? ? "#{voyager_property_code}-" : (property_id.present? ? "#{property_id}-" : "")
+  #   if building != nil && building != ""
+  #     "#{append_property_code}#{building}-#{marketing_name}"
+  #   elsif community.data_provider == "yardi"
+  #     provider_unit_id
+  #   else 
+  #     "#{append_property_code}#{marketing_name}"
+  #   end
+  # end
 
   def stop_description_formatting stop_description
     return "" unless stop_description.present?
