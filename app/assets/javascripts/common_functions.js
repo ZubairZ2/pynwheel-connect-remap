@@ -4,9 +4,41 @@ var has_floorplate = definedAndHasValue(has_floorplate)
 var assetTracker = definedAndHasValue(assetTracker) ? assetTracker : null;
 
 function isPointInPath(point, pathElement, tolerance = 2) {
-  if (!(pathElement instanceof SVGPathElement)) {
-    console.warn("Provided element is not an SVGPathElement.");
+  if (!(pathElement instanceof SVGGeometryElement)) {
+    console.warn("Provided element is not an SVGGeometryElement.");
     return false;
+  }
+
+  const svg = pathElement.ownerSVGElement;
+  if (!svg) {
+    console.warn("SVG element not found.");
+    return false;
+  }
+
+  const svgPoint = svg.createSVGPoint();
+  svgPoint.x = point.x;
+  svgPoint.y = point.y;
+
+  try {
+    if (
+      typeof pathElement.isPointInFill === "function" &&
+      pathElement.isPointInFill(svgPoint)
+    ) {
+      return true;
+    }
+  } catch (e) {
+    console.warn("isPointInFill failed, proceeding to stroke check.", e);
+  }
+
+  try {
+    if (
+      typeof pathElement.isPointInStroke === "function" &&
+      pathElement.isPointInStroke(svgPoint)
+    ) {
+      return true;
+    }
+  } catch (e) {
+    console.warn("isPointInStroke failed, proceeding to sampling method.", e);
   }
 
   const totalLength = pathElement.getTotalLength();

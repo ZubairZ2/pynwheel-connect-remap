@@ -1,4 +1,11 @@
-var VALID_SVG_SHAPES = ["path", "polyline", "rect", "polygon", "ellipse", "circle"];
+var VALID_SVG_SHAPES = [
+  "path",
+  "polyline",
+  "rect",
+  "polygon",
+  "ellipse",
+  "circle",
+];
 var DEFAULT_FILL_COLOR = "default-fill-color";
 var svgMode = definedAndHasValue(svgMode) ? svgMode : false;
 var map_marker_color = definedAndHasValue(map_marker_color) ? "brown" : null;
@@ -329,7 +336,6 @@ function setupAmenityToolTip(block, data, svgElement) {
 
 function setupAmenityFillHandlers(duplicateBlock, fillOnHover = false) {
   const amenityFillColor = amenity_marker_color || map_marker_color;
-  const defaultFillAttributeKey = "default-fill-color";
 
   if (fillOnHover) {
     return {
@@ -540,13 +546,17 @@ function processSvgBlock(svgElement, item, options, dataset = null) {
 
       break;
     default:
-      duplicateBlock.setAttribute(
-        "fill",
-        getUnitMarkerColor(
-          duplicateBlock.dataset.unitStatus,
-          duplicateBlock.dataset.modelUnit
-        )
-      );
+      if (definedAndHasValue(isWebpage) && isWebpage) {
+        duplicateBlock.setAttribute(
+          "fill",
+          getUnitMarkerColor(
+            duplicateBlock.dataset.unitStatus,
+            duplicateBlock.dataset.modelUnit
+          )
+        );
+      } else {
+        duplicateBlock.setAttribute("fill", map_marker_color);
+      }
 
       const eventHandlers = createMouseEventHandlers({
         onmouseUp: [showModalOnClick, onclick],

@@ -1,3 +1,4 @@
+var isWebpage;
 var selectMap;
 var webCommunity;
 var favoritesArr = [];
@@ -83,6 +84,7 @@ $(document).ready(function () {
   });
 
   if ($(".is-webpage")[0]) {
+    isWebpage = true;
     bindWebpageEvents();
     activateWebpageZoom();
     activateModalImageZoom();
