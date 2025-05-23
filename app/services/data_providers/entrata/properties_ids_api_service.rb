@@ -3,8 +3,6 @@ module DataProviders
     class PropertiesIdsApiService
       def initialize(params)
         @params = params
-        @password = @params[:password]
-        @username = @params[:username]
         @entrata_url = @params[:domain]
       end
 
@@ -19,35 +17,18 @@ module DataProviders
       private
 
         def fetch_properties_response
-          HTTParty.post(
-            get_property_ids_endpoint,
-            body: get_properties_body_params,
-            headers: { 'Content-Type' => 'application/json' }
-          )
-        end
-
-        def get_properties_body_params
-          {
-            "auth": {
-              "type": "basic",
-              "password": @password,
-              "username": @username
-            },
-            "requestId": 15,
-            "method": {
-              "name": "getProperties",
-              "version": "r1"
+          PsiService.call_entrata_api(
+            subdomain: @entrata_url,
+            endpoint: "properties",
+            method: :post,
+            payload: {
+              requestId: 15,
+              method: {
+                name: "getProperties",
+                version: "r1"
+              }
             }
-          }.to_json
-        end
-
-        def get_property_ids_endpoint
-          if  @entrata_url&.include?('https://') || @entrata_url.include?('http://')
-            url = @entrata_url
-          else
-            url = "https://#{@entrata_url}.entrata.com/api/v1/properties"
-          end
-          url
+          )
         end
 
         def parse_properties_response response
