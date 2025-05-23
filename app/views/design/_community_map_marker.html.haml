@@ -1,7 +1,7 @@
 - content_for :title, "Map Marker - Pynwheel"
 
 
-= render partial: 'design/sub_communitie_marker_color_selection_form', locals: {community: @community }
+= render partial: 'design/sub_communities_marker_color_selection_form', locals: {community: @community }
 
 = form_for @community,:method=>"PUT",:html=>{:id=>"property-map-marker-form"},:remote=>true  do |f|
 
