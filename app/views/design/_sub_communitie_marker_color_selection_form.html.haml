@@ -1,0 +1,35 @@
+- if community.sub_communities.any?
+  .row.mb-3
+    .col-md-12
+      %button.btn.btn-primary.pl-3{ type: "button", data: { toggle: "modal", target: "#subCommunityColorModal" }, style: "margin:15px"}
+        Multi-Property Map Marker Color Settings
+
+  = form_with(url: update_marker_colors_sub_communities_path, method: :patch, local: true) do |f|
+    .modal.fade#subCommunityColorModal{ tabindex: "-1", role: "dialog", aria: { labelledby: "subCommunityColorModalLabel", hidden: "true" } }
+      .modal-dialog.modal-lg{ role: "document" }
+        .modal-content
+          .modal-header
+            %h5.modal-title.font-weight-bold.h4#subCommunityColorModalLabel Customize Multi-Property Map Marker Colors
+            %button.close{ type: "button", data: { dismiss: "modal" }, aria: { label: "Close" } }
+              %span{ aria: { hidden: "true" } } &times;
+
+          .modal-body
+            - community.sub_communities.each_with_index do |sub_community, i|
+              = f.fields_for "sub_communities[]", sub_community, child_index: i do |sc|
+                = sc.hidden_field :id
+                .row.sub_community_map_color_field{style: "margin-bottom:15px"}
+                  .col-lg-12
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      = sc.object.name.presence || "Sub-Community"
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .input-group.colorpicker-style.hex-format-colorpicker
+                        .input-group-addon
+                          %i
+                          = sc.text_field :map_marker_color,
+                            class: "form-control sub-community-map-marker-field w-100",
+                            autocomplete: true,
+                            value: sc.object.map_marker_color
+
+          .modal-footer
+            %button.btn.btn-secondary{ type: "button", data: { dismiss: "modal" } } Close
+            %button.btn.btn-primary{ type: "submit" } Save Changes

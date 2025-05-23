@@ -118,6 +118,12 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :sub_communities do
+    collection do
+      patch :update_marker_colors
+    end
+  end
+
   resources :communities do
     member do
       delete :remove_plots

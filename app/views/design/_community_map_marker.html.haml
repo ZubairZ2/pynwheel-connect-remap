@@ -1,17 +1,17 @@
 - content_for :title, "Map Marker - Pynwheel"
 
 
+= render partial: 'design/sub_communitie_marker_color_selection_form', locals: {community: @community }
 
 = form_for @community,:method=>"PUT",:html=>{:id=>"property-map-marker-form"},:remote=>true  do |f|
+
   = hidden_field_tag "map_marker_tab", true
   = f.fields_for :design do |d|
-    .row
-      .col-md-12
-        %p.title-box Customize Community Map Marker
     .row
       .col-lg-12
         %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
           Community Map Marker Options
+          
     .row.hidden.property_map_color_field
       .col-lg-10
         .form-group.mt-30
@@ -22,6 +22,7 @@
               .input-group-addon
                 %i
                 = d.text_field :property_map_color , class: "form-control property-map-marker-field",autocomplete: true,:value=>d.object.property_map_color
+    
     .row.hidden.mordernist_property_map_color_field
       .col-lg-10
         .form-group.mt-30
@@ -65,8 +66,6 @@
               .input-group-addon
                 %i
                 = d.text_field :panther_property_map_marker_color , class: "form-control property-map-marker-field",autocomplete: true,:value=>d.object.panther_property_map_marker_color.present? ? d.object.panther_property_map_marker_color : "#d37474"
-
-
 
     .row.hidden.gables_property_map_size_field
       .col-lg-10
