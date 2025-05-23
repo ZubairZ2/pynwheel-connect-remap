@@ -1,4 +1,4 @@
-- if community.sub_communities.any?
+- if community.have_multi_property_ids?
   .row.mb-3
     .col-md-12
       %button.btn.btn-primary.pl-3{ type: "button", data: { toggle: "modal", target: "#subCommunityColorModal" }, style: "margin:15px"}
