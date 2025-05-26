@@ -143,18 +143,19 @@ function getFormattedBeansUnits() {
       unitId: unit.id,
       unitProviderId: transformedData.unitProviderId,
       providerUnitId: transformedData.unitProviderId,
+      propertyId: transformedData.propertyId,
       availabilityUrl: transformedData.availabilityUrl,
       leaseTerm: transformedData.leaseTerm,
-      status: unit.unit_status,
-      modelUnit: unit.model_unit,
-      unit: unit.marketing_name,
-      name: unit.marketing_name,
+      status: transformedData.unitStatus,
+      modelUnit: transformedData.modalUnit || transformedData.modelUnit,
+      unit: transformedData.marketingName,
+      name: transformedData.marketingName,
       type: "UNIT",
-      floor: unit.floor,
-      bed: unit.bedrooms,
-      bath: unit.bathrooms,
-      sqft: unit.square_feet,
-      rent: unit.market_rent,
+      floor: transformedData.floor,
+      bed: transformedData.bedrooms,
+      bath: transformedData.bathrooms,
+      sqft: transformedData.squareFeet,
+      rent: transformedData.marketRent,
     };
   });
 }
@@ -205,7 +206,7 @@ function setup3dArray() {
 
     switch (unitData.type) {
       case "UNIT":
-        fillColor = getUnitMarkerColor(unitData.status, unitData.modelUnit);
+        fillColor = getUnitMarkerColor(unitData);
         _3dConvertedUnitsArr.push(data);
         break;
       case "AMENITY":

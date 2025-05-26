@@ -429,7 +429,7 @@ module CommunitiesHelper
   end
 
   def get_unit_marker_color(community, unit, marker_colors, default_marker_color)
-    result = get_multi_property_unit_marker_color(community, unit, marker_colors, default_marker_color)
+    result = get_multi_property_unit_marker_color(community, unit, default_marker_color)
 
     if community&.display_tbd_legend?
       case unit.unit_status&.downcase
@@ -453,8 +453,8 @@ module CommunitiesHelper
     return result;
   end
 
-  def get_multi_property_unit_marker_color(community, unit, marker_colors, default_marker_color)
-    return default_marker_color || "#d37474" unless community.have_multi_property_ids?
+  def get_multi_property_unit_marker_color(community, unit, default_marker_color)
+    return default_marker_color || "#d37474" unless @have_multi_property_ids
 
     sub_community = community.sub_communities.find { |s_com| s_com&.property_id&.strip == unit&.property_id&.strip }
     sub_community&.map_marker_color

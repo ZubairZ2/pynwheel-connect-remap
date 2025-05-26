@@ -22,6 +22,7 @@ var total_units = null;
 var amenities = null;
 var availabilityFilterResetTriggered;
 var showCurrentAvailabilityEnabled;
+var multiCommunity;
 var communityInactivated;
 var tbdMarkersEnabled;
 
@@ -34,9 +35,9 @@ var _3dConvertedUnitsArr = definedAndHasValue(_3dConvertedUnitsArr)
 var _3dConvertedAmenitiesArr = definedAndHasValue(_3dConvertedAmenitiesArr)
   ? _3dConvertedAmenitiesArr
   : [];
-var _3dHoveredItem = definedAndHasValue(_3dHoveredItem) ? _3dHoveredItem : null;
 
-var beansWidget = null;
+var _3dHoveredItem;
+var beansWidget;
 
 $(document).ready(function () {
   if (smallScreen()) {
@@ -1387,12 +1388,9 @@ function unitListHover() {
           }
 
           if (_3dMode) {
-            markerColor = getUnitMarkerColor(_3dData.status, _3dData.modelUnit);
+            markerColor = getUnitMarkerColor(_3dData);
           } else {
-            markerColor = getUnitMarkerColor(
-              selectedMarker.dataset.unitStatus,
-              selectedMarker.dataset.modelUnit
-            );
+            markerColor = getUnitMarkerColor(selectedMarker.dataset);
           }
 
           e.currentTarget.style.border = `3px solid ${markerColor}`;
@@ -1617,10 +1615,7 @@ function showUnitPopoverAndHighlightListUnit(
   event = null,
   _3dData = null
 ) {
-  const markerColor = getUnitMarkerColor(
-    $dataElement.data().unitStatus,
-    $dataElement.data().modelUnit
-  );
+  const markerColor = getUnitMarkerColor($dataElement.data());
 
   const unitElement = document.getElementById(
     "unit_" + $dataElement.data("unitId")
@@ -3388,8 +3383,12 @@ function currentVisibleMapImageScale() {
   return scale;
 }
 
-function getUnitMarkerColor(unitStatus, modelUnit = false) {
-  let result = map_marker_color;
+function getUnitMarkerColor(unit) {
+  const unitCommunityId = unit.property_id || unit.propertyId || "";
+  const unitStatus = unit.unit_status || unit.unitStatus || unit.status || "";
+  const modelUnit = unit.model_unit || unit.modelUnit || false;
+  let result = getCommunityBasedMarkerColor(unitCommunityId);
+
   if (tbdMarkersEnabled) {
     const isModelUnit =
       typeof modelUnit === "boolean"
@@ -3430,6 +3429,22 @@ function getUnitMarkerColor(unitStatus, modelUnit = false) {
   }
 
   return toHexColor(result);
+}
+
+function getCommunityBasedMarkerColor(unitCommunityId) {
+  if (!multiCommunity) {
+    return map_marker_color || "#d37474";
+  }
+
+  const subCommunity = subCommunities.find((subCom) => {
+    return (
+      subCom &&
+      subCom.property_id &&
+      subCom.property_id.trim() === unitCommunityId.trim()
+    );
+  });
+
+  return subCommunity ? subCommunity.map_marker_color : map_marker_color;
 }
 
 function resetUnits() {
