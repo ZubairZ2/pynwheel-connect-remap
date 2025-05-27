@@ -46,7 +46,6 @@ class CleanPsiDataService < BaseService
       m_units = []
       u_ids = []
 
-      # binding.pry
       if f_units.present? && f_units.count > 0 
         if f_units.count == 1
           if new_units.present? && new_units.count > 0
@@ -83,7 +82,6 @@ class CleanPsiDataService < BaseService
             if m_units.present? && m_units.count > 0 
               puts "----------------------------"*20
               puts "****************** Multiple units clean data*******************"
-              # binding.pry
               unit = m_units.first
               u_ids << unit.id
               if unit.present?

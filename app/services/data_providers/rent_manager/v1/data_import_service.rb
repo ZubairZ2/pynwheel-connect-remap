@@ -134,7 +134,6 @@ module DataProviders
               update_attribute_if_blank(unit, :effective_rent, get_market_rent(r))
               update_attribute_if_blank(unit, :availability, unit_availability_status(r))
               update_attribute_if_blank(unit, :available_date, set_availabilty_date(r))
-              # binding.pry
               # update_attribute_if_blank(unit, :available, unit_availability_status(r) == "Unoccupied")
               unit.available = r["IsVacant"]
               unit.property_id = property_code

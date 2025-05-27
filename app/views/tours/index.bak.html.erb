@@ -254,8 +254,6 @@
                     <i class="fa fa-map-marker stops" id="stop_<%= stop.id %>" style="font-size: 35px; position: absolute; top: <%= stop.y_plot - right_margin %>px; left: <%= stop.x_plot - left_margin %>px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "></i>
                   <% end %>
                 <% end %>
-                <!--- binding.pry
-                -->
                 <% @existing_path_points.each_with_index do |point, index| %>
                   <div class="path_point" id="point_<%= point.id %>" style="position: absolute; top: <%= point.y_plot - 3 %>px; left: <%= point.x_plot - 3 %>px;" title="Drag to change, double click to remove"></div>
                 <% end %>

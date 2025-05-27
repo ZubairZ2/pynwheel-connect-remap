@@ -334,7 +334,6 @@ class Api::V1::CommunitiesController < ActionController::Base
       current_time = get_community_time(@community) rescue nil
       current_time = params[:current_time].present? ? params[:current_time].to_datetime : DateTime.now if current_time.nil?
       @in_visiting_hours = is_tour_in_visiting_hours(current_time, @community) if @community.present?
-      # binding.pry
       if @in_visiting_hours == true
         if @tours.first.only_scheduled_tour
           scheduled_tours = get_scheduled_tours(current_time, @community.id, @tour_user.id)

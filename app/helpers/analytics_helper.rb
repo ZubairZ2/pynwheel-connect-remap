@@ -9,7 +9,6 @@ module AnalyticsHelper
   end
 
   def return_time_in_seconds(start_datetime,end_datetime)
-    # binding.pry
     # start_datetime = Time.parse(start_datetime)
     # end_datetime = Time.parse(end_datetime)
     # start_datetime = Time.new(start_datetime.strftime("%Y"), start_datetime.strftime("%m"), start_datetime.strftime("%d"),start_datetime.strftime("%H"), start_datetime.strftime("%M"), start_datetime.strftime("%S"))

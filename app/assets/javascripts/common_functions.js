@@ -320,6 +320,16 @@ function findRealTopCenter(svgShape) {
       { x: cx, y: cy - ry },
       { x: cx, y: cy + ry },
     ];
+  } else if (tag === "path") {
+    const totalLength = svgShape.getTotalLength();
+    const numSamples = 100;
+    const sampleInterval = totalLength / numSamples;
+
+    for (let i = 0; i <= numSamples; i++) {
+      const length = i * sampleInterval;
+      const point = svgShape.getPointAtLength(length);
+      points.push({ x: point.x, y: point.y });
+    }
   } else {
     throw new Error("Unsupported shape for top center calculation");
   }

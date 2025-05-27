@@ -12,7 +12,6 @@ class OccupiedTourTimeSlotsService
     return {} if ( !max_limit_enabled || @community.schedual_tours.empty? )
 
     future_tours = community_scheduled_tours()
-    # binding.pry/
 
     create_occupied_slots_hash(future_tours)
   end
@@ -23,7 +22,6 @@ class OccupiedTourTimeSlotsService
      return [] if future_tours.empty?
 
     future_tours&.each do |tour|
-      # binding.pry
       if is_slot_occupied(tour)
         if limit_exceeded(tour)
           key = tour_date_time(tour).strftime("%Y/%m/%d")

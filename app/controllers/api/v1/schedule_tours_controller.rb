@@ -78,7 +78,6 @@ module Api
       def time_slots
         @stepping = @community.community_tour.tour_setting.time_intervel == '15 min' ? 15 : (@community.community_tour.tour_setting.time_intervel == '30 min' ? 30 : (@community.community_tour.tour_setting.time_intervel == '1 hr') ? 60 : (@community.community_tour.tour_setting.time_intervel == '2 hrs') ? 120 : 15) rescue 15
         @tour_type = params['tour_type']
-        # binding.pry
         @tour_date = params['tour_date']
         @requested_day = DateTime.strptime(@tour_date, "%d/%m/%Y").strftime("%A")
         @available_time_slots = SchedulerWidgetService.new(@community).time_slots_for_appartments(@stepping,@tour_type,@requested_day,@tour_date)
@@ -126,7 +125,6 @@ module Api
           rescue Exception => e
             puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{e.message} ---"
           end
-          # binding.pry
           desired_move_in_date = params[:desired_move_in_date].to_datetime.strftime("%m/%d/%y") if params[:desired_move_in_date].present?
           if desired_move_in_date.present?
             date = desired_move_in_date.split('/')

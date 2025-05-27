@@ -397,7 +397,6 @@
                       - next if (stop.y_plot.to_i + stop.x_plot.to_i) < 1
                       %i.fa.fa-map-marker.stops{:id => "stop_#{stop.id}", :style => "font-size: 35px; position: absolute; top: #{stop.y_plot.to_i - right_margin + 6}px; left: #{stop.x_plot.to_i - left_margin + 3}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
 
-                  /- binding.pry
                   - @existing_path_points.each_with_index do |point, index|
                     .path_point{:id => "point_#{point.id}", :data => "#{point.path.map_path_to ? point.path.map_path_to&.id : @tours.id}", :value => "#{point.path.map_path_from ? point.path.map_path_from&.id : @tours.id }", title: "Drag to change, double click to remove", :style => "position: absolute; top: #{point.y_plot.to_i - 3}px; left: #{point.x_plot.to_i - 3}px;"}
   #select_status.modal.fade.select_status                    
