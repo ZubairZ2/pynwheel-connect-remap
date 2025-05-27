@@ -379,6 +379,7 @@ module CommunitiesHelper
       "title": unit.api_unit_marketing_name,
       "unit-virtual-tour-label": unit.get_virtual_tour_label,
       "unit-virtual-tour-url": unit.get_virtual_tour_url,
+      "unit-lease-term": struct[:lease_term],
       "unit-lease-pricing": struct[:lease_pricing],
       "unit-additional-fees": struct[:additional_fees],
       "unit-description": struct[:description],
