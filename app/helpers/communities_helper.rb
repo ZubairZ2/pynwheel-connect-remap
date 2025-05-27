@@ -382,6 +382,7 @@ module CommunitiesHelper
       "unit-lease-pricing": struct[:lease_pricing],
       "unit-additional-fees": struct[:additional_fees],
       "unit-description": struct[:description],
+      "property-id": struct[:property_id],
       "unit-status": struct[:unit_status],
       "model-unit": struct[:model_unit]
     }.transform_keys { |key| "data-#{key}".to_sym }.merge(

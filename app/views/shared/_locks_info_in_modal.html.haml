@@ -4,23 +4,23 @@
             %label.col-sm-12.col-lg-4.col-md-3.col-xs-12.control-label{style: "margin-top: 8px;"}
                 Select Lock Providers
             .col-sm-12.col-lg-8.col-md-9.col-xs-12
-                = select_tag :lock_provider , options_for_select(community.lock_options(locks_present_hash), door.lock_provider),{:name => "lock_provider" ,:class=>"form-control"}
+                = select_tag :lock_provider , options_for_select(community.lock_options(locks_present_hash), door&.lock_provider),{:name => "lock_provider" ,:class=>"form-control"}
 
         .form-group.hidden.mt-30#access_code_field
             %label.col-sm-12.col-lg-4.col-md-3.col-xs-12.control-label{style: "margin-top: 8px;"}
                 Access Code
             .col-sm-12.col-lg-8.col-md-9.col-xs-12
-                = text_field_tag :access_code, door.access_code ,:name => "access_code" , :oninput => "this.value = this.value.replace(/[^0-9#*]/g, '')", :class=>"form-control", :placeholder=>"Access Code",:maxLength => "6"
+                = text_field_tag :access_code, door&.access_code ,:name => "access_code" , :oninput => "this.value = this.value.replace(/[^0-9#*]/g, '')", :class=>"form-control", :placeholder=>"Access Code",:maxLength => "6"
 
         .form-group.mt-30#digital_lock_field
             %label.col-sm-12.col-lg-4.col-md-3.col-xs-12.control-label{style: "margin-top: 8px;"}
                 Select the lock
             .col-sm-12.col-lg-8.col-md-9.col-xs-12
-                = hidden_field_tag "dwelo_lock_name"     , door.dwelo_lock.present?     ?  door.dwelo_lock.name + " (" + door.dwelo_lock.remote_lock_type + ")" : ''
-                = hidden_field_tag "edgestate_lock_name" , door.edgestate_lock.present? ?  door.edgestate_lock.name + " (" + door.edgestate_lock.remote_lock_type + ")" : ''
-                = hidden_field_tag "latch_lock_name"     , door.latch_lock.present?     ?  door.latch_lock.lock_name : ''
-                = hidden_field_tag "zerv_lock_name"      , door.zerv_lock.present?      ?  door.zerv_lock.sub_location_name + " (" + door.zerv_lock.sub_location_friendly_name + ")" : ''
-                = hidden_field_tag "igloohome_lock_name"      , door.igloohome_lock.present?      ?  door.igloohome_lock.device_name : ''
+                = hidden_field_tag "dwelo_lock_name"     , door&.dwelo_lock.present?     ?  door.dwelo_lock.name + " (" + door&.dwelo_lock.remote_lock_type + ")" : ''
+                = hidden_field_tag "edgestate_lock_name" , door&.edgestate_lock.present? ?  door.edgestate_lock.name + " (" + door&.edgestate_lock.remote_lock_type + ")" : ''
+                = hidden_field_tag "latch_lock_name"     , door&.latch_lock.present?     ?  door.latch_lock.lock_name : ''
+                = hidden_field_tag "zerv_lock_name"      , door&.zerv_lock.present?      ?  door.zerv_lock.sub_location_name + " (" + door&.zerv_lock.sub_location_friendly_name + ")" : ''
+                = hidden_field_tag "igloohome_lock_name"      , door&.igloohome_lock.present?      ?  door.igloohome_lock.device_name : ''
                 = hidden_field_tag "door_id"             , door.present?                ?  door.id : ''
                 = text_field_tag :lock_name, '', :placeholder => "Search by lock name", :list => "locks_list", :autocomplete=> "off", :type => "text", :class => "form-control"
                 %datalist#locks_list

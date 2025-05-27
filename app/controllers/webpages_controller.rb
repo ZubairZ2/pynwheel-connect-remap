@@ -15,13 +15,13 @@ class WebpagesController < ActionController::Base
     Favorite.create(session_id: cookies[:webpages_session_id],unit_ids: []) if cookies[:webpages_session_id].nil?
     @scheduler_widget_link = get_scheduler_link
     @units_with_floorplan_info = []
-    @community_info = Community.includes(:credential, :sitemap, :floorplates, :floorplans, amenities: [:amenityable, :amenity_galleries], units: [:floorplate]).find(params[:community_id])
+    @community_info = Community.includes(:credential, :sitemap, :floorplates, :floorplans, :sub_communities, amenities: [:amenityable, :amenity_galleries], units: [:floorplate]).find(params[:community_id])
     @floorplans = @community_info.floorplans
     @floorplans_map = @floorplans.index_by(&:provider_floorplan_id)
     @svg_enabled = @community_info.enable_svg_mode?
     community_units = @community_info.units
     @amenities = @community_info.amenities.plotted_amenities(@svg_enabled)
-    @have_multi_property_ids = @community_info.credential&.allow_sub_communities?
+    @have_multi_property_ids = @community_info.have_multi_property_ids? && @community_info.credential&.allow_sub_communities?
     @multi_properties = @community_info.fetch_multi_properties()
 
     unless @community_info.locked
@@ -30,11 +30,12 @@ class WebpagesController < ActionController::Base
         @floors = @floorplates.map {|f| f.floors }.flatten.sort_by { |f| -f }
         @amenities = @amenities.where(amenityable: @floorplates).includes(:amenity_galleries)
       end
-      
+
+      @total_available_units = community_units.available_units(@svg_enabled, @community.units_availability_over_120_days)
       @available_units_and_sold_units = if @community_info.display_tbd_legend?
                                           community_units.are_plotted_units(@svg_enabled).status_scoped
                                         else
-                                          community_units.available_units(@svg_enabled, @community.units_availability_over_120_days)
+                                          @total_available_units
                                         end
 
        #+ @community_info.units.are_sold(@svg_enabled)
@@ -124,7 +125,11 @@ class WebpagesController < ActionController::Base
     ninty_days = today + 90.days;
     one_twenty_days = today + 120.days;
 
+    total_available_units_ids = @total_available_units.ids
     @units_with_floorplan_info.each do |available_unit|
+      unit_id = available_unit[:id]
+      next unless total_available_units_ids.include?(unit_id)
+
       available_date = available_unit[:available_date] || Date.new(0)
       if (available_date <= today)
         @available_units << ["Now", "now"]

@@ -3,6 +3,7 @@ class PsiConnectionService < BaseService
     begin
       property_ids = credentials.property_id.split(',') rescue []
       property_id = property_ids[0]
+      puts "Property ID: #{property_id}"
       response = PsiService.call_entrata_api(
         subdomain: credentials.entrata_url,
         endpoint: "propertyunits",
@@ -19,6 +20,7 @@ class PsiConnectionService < BaseService
         }
       )
       response =  response.body.gsub('@','')
+      puts "Response: #{response}"
       hash = JSON.parse(response)
       
       hash.to_xml
