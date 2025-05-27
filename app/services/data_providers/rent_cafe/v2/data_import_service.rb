@@ -68,18 +68,20 @@ module DataProviders
 
           def build_units(response, property_code)
             units = []
+            rentStrsHash = yardi_rent_cafe_property_rent_matrix(property_code)
 
             response.each do |r|
               unit = Unit.find_or_initialize_by(provider: "yardirentcafe", community_id: @community_id, provider_unit_id: r["apartmentId"])
               next if unit.manual_override
-              update_unit_attributes(unit, r, property_code)
+              rentStrs = rentStrsHash[r["apartmentId"]] || []
+              update_unit_attributes(unit, r, property_code, rentStrs)
               units << unit
             end
 
             units
           end
 
-          def update_unit_attributes(unit, r, property_code)
+          def update_unit_attributes(unit, r, property_code, rentStrs = [])
             begin
               update_attribute_if_blank(unit, :marketing_name, r["apartmentName"], 'name')
               update_attribute_if_blank(unit, :floor, evaluate_floor(unit.marketing_name))
@@ -90,7 +92,7 @@ module DataProviders
               update_attribute_if_blank(unit, :available, unit_availability(r["availableDate"]) == "Unoccupied")
               unit.effective_rent = 1.0 if unit.effective_rent <= 0
               unit.availability_url = r["applyOnlineURL"] if r["applyOnlineURL"].present?
-              unit.lease_pricing = calculate_lease_pricing(property_code, r["apartmentName"], available_date_convertor(r["availableDate"]))
+              unit.lease_pricing = calculate_lease_pricing(rentStrs)
               unit.description = unit_description(r["amenities"]) if r["amenities"].present?
               unit.property_id = property_code&.strip
               unit.voyager_property_code = r["voyagerPropertyCode"]
@@ -137,8 +139,7 @@ module DataProviders
             end
           end
 
-          def calculate_lease_pricing(property_code, apartment_name, available_date)
-            rentStrs = yardi_rent_cafe_rent_matrix(property_code, apartment_name, available_date)
+          def calculate_lease_pricing(rentStrs)
             leasing = ""
 
             if rentStrs.present?
@@ -150,22 +151,6 @@ module DataProviders
             end
 
             leasing
-          end
-
-          def yardi_rent_cafe_rent_matrix(property_code, apartment_name, available_date)
-            begin
-              rent_matrix = get_apartment_pricing_details(property_code, apartment_name, available_date)
-
-              if rent_matrix.present?
-                uniq_terms = rent_matrix.map{|x| x["term"].to_i }.uniq
-                distinct_data = uniq_terms.map{|term| rent_matrix.map{|data| data if data["term"] == term.to_s}.compact}.compact
-                return distinct_data.map{|data| data.map{|r| [r["rent"].to_i, r["term"], r["start_Date"], r["end_Date"]]}.min}
-              else
-                return nil
-              end
-            rescue => exception
-              raise exception
-            end
           end
 
           def process_floorplans_response(response)

@@ -1,4 +1,4 @@
-class YardiRentCafeV2Service < BaseService
+class YardiRentCafeV2Service < ::BaseService
   attr_reader :credentials
 
   def initialize(credentials)
@@ -35,10 +35,12 @@ class YardiRentCafeV2Service < BaseService
           if response.present?
             community = Community.find @credentials.community_id
             community&.community_data_updated_on()
+            rentStrsHash = yardi_rent_cafe_property_rent_matrix(property_code)
 
             response.each do |r|
               begin
-                unit = @all_units_hash[r["apartmentId"].to_s]
+                apartment_id = r["apartmentId"]
+                unit = @all_units_hash[apartment_id.to_s]
 
                 if unit.present?
                   unit.market_rent = r["minimumRent"]
@@ -90,8 +92,8 @@ class YardiRentCafeV2Service < BaseService
                   lease_prices_array = []
 
                   if unit.available
-                    rentStrs = yardi_rent_cafe_rent_matrix(property_code, r["apartmentName"], available_date_convertor(r["availableDate"]))
-                    
+                    rentStrs = rentStrsHash[apartment_id]
+
                     if rentStrs.present?
                       rentStrs.each do |rentStr|
                         if rentStr[0].to_i > 0
@@ -123,7 +125,7 @@ class YardiRentCafeV2Service < BaseService
                   import_units << unit
 
                 else
-                  unit = Unit.where(provider: "yardirentcafe", community_id: @credentials.community_id, provider_unit_id: r["apartmentId"]).first_or_initialize
+                  unit = Unit.where(provider: "yardirentcafe", community_id: @credentials.community_id, provider_unit_id: apartment_id).first_or_initialize
                   
                   unless unit.manual_override
                     unit.property_id = property_code
@@ -189,8 +191,9 @@ class YardiRentCafeV2Service < BaseService
                     leasing = ""
                     lease_prices_array = []
 
-                    if  unit.available
-                      rentStrs = yardi_rent_cafe_rent_matrix(property_code, r["apartmentName"], available_date_convertor(r["availableDate"]))
+                    if unit.available
+                      rentStrs = rentStrsHash[apartment_id]
+
                       if rentStrs.present?
                         rentStrs.each do |rentStr|
                           if rentStr[0].to_i > 0
@@ -359,23 +362,6 @@ class YardiRentCafeV2Service < BaseService
       end
     end    
 
-    def yardi_rent_cafe_rent_matrix(property_code, apartment_name, available_date)
-      begin
-        rent_matrix = get_apartment_pricing_details(property_code, apartment_name, available_date)
-        if rent_matrix.present?
-          uniq_terms = rent_matrix.map{|x| x["term"].to_i }.uniq
-          distinct_data = uniq_terms.map{|term| rent_matrix.map{|data| data if data["term"] == term.to_s}.compact}.compact
-          
-          return distinct_data.map{|data| data.map{|r| [r["rent"].to_i, r["term"], r["start_Date"], r["end_Date"]]}.min}
-        else
-          return nil
-        end
-
-      rescue => ex
-        raise ex
-      end
-    end
-
     def update_additional_fees
       begin
         return unless @all_units_hash.present?
@@ -473,10 +459,6 @@ class YardiRentCafeV2Service < BaseService
 
     def get_appartments_availability property_code
       DataProviders::RentCafe::V2ApisService.new(@credentials.community_id).get_apartment_availability(property_code)
-    end
-
-    def get_apartment_pricing_details property_code, apartment_name, available_date
-      DataProviders::RentCafe::V2ApisService.new(@credentials.community_id).get_apartment_pricing_matrix(apartment_name, property_code, available_date)
     end
 
     def get_floorplan_details property_code

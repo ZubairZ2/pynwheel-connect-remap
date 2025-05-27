@@ -60,4 +60,40 @@ class BaseService
   rescue StandardError => e
     raise e
   end
+  
+  def get_property_configurations property_code
+    DataProviders::RentCafe::V2ApisService.new(credentials.community_id).get_discovery_sources(property_code)
+  end
+
+  def yardi_rent_cafe_property_rent_matrix(property_code)
+    begin
+      rent_matrix = get_property_pricing_details(property_code)
+      if rent_matrix.present?
+        grouped = rent_matrix.group_by { |u| u["apartmentId"] }
+
+        result = {}
+
+        grouped.each do |apartment_id, listings|
+          best_per_term = listings
+            .group_by { |u| u["term"] }
+            .values
+            .map { |term_listings| term_listings.min_by { |u| u["rent"] } }
+
+          result[apartment_id] = best_per_term.map do |u|
+            [u["rent"], u["term"], u["start_Date"], u["end_Date"]]
+          end
+        end
+
+        return result
+      else
+        return {}
+      end
+    rescue => ex
+      raise ex
+    end
+  end
+  
+  def get_property_pricing_details property_code
+    DataProviders::RentCafe::V2ApisService.new(@credentials.community_id).get_apartment_pricing_matrix(property_code)
+  end
 end

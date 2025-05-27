@@ -1,7 +1,7 @@
 module DataProviders
   module RentCafe
     module V2
-      class BaseService
+      class BaseService < ::BaseService
 
         def initialize(community_id)
           return unless community_id.present?
@@ -35,10 +35,6 @@ module DataProviders
             DataProviders::RentCafe::V2ApisService.new(@community_id).get_apartment_availability(property_code)
           end
 
-          def get_apartment_pricing_details property_code, apartment_name, available_date
-            DataProviders::RentCafe::V2ApisService.new(@community_id).get_apartment_pricing_matrix(apartment_name, property_code, available_date)
-          end
-
           def get_floorplan_details property_code
             DataProviders::RentCafe::V2ApisService.new(@community_id).get_floorplans(property_code)
           end
@@ -56,42 +52,6 @@ module DataProviders
           def import_units(units)
             return if units.empty?
             ProvidersDataUpdationService.new().update_or_create_units_records(units)
-          end
-
-          def evaluate_floor(marketing_name)
-            marketing_name = marketing_name.gsub('-','')
-            floor = 1
-            
-            if marketing_name.size == 3
-              floor = marketing_name.first(1)
-            elsif marketing_name.size > 3
-              floor = marketing_name.first(2)
-            end
-
-            return floor 
-          end
-
-          def image_base64(image_url)
-            return unless image_url.present?
-            encoded_url = URI::DEFAULT_PARSER.escape(image_url) #URI.encode(image_url)
-            uri = URI.parse(encoded_url)
-            file = uri.open
-            image_data = file.read
-            encoded_image = Base64.strict_encode64(image_data)
-            "data:image/png;base64,#{encoded_image}"
-          rescue ::OpenURI::HTTPError => e
-            raise e
-          rescue StandardError => e
-            raise e
-          end
-
-          def add_or_update_sub_communities property_name, property_code
-            sub = @community.sub_communities.find_or_initialize_by(property_id: property_code&.strip)
-            sub.assign_attributes(name: property_name)
-            sub.save!
-            
-          rescue StandardError => e
-            raise e
           end
       end
     end
