@@ -568,7 +568,7 @@ function squareFootageFilterChanged() {
   showMarkers();
 }
 
-function availabilityFilterChanged() {
+function availabilityFilterChanged () {
   filterUnitsBasedOnMultiCommunity();
   filterUnitsBasedOnBedroom();
   filterUnitsBasedOnAvailability();
@@ -658,20 +658,24 @@ function filterBasedOnScreen(filterTag) {
 function filterUnitsBasedOnSqfeet() {
   const sqFeet = filterBasedOnScreen("square_feet");
 
-  if (sqFeet) units = units.filter((unit) => unit.square_feet >= sqFeet);
+  if (sqFeet)
+    units = units.filter(
+      (unit) => !(unit.floor == current_floor) || unit.square_feet >= sqFeet
+    );
 }
 
 function filterUnitsBasedOnMarketRent() {
   const marketRent = filterBasedOnScreen("market_rent");
 
   if (marketRent)
-    units = units.filter((unit) => unit.market_rent <= marketRent);
+    units = units.filter(
+      (unit) => !(unit.floor == current_floor) || unit.market_rent <= marketRent
+    );
 }
 
 function filterUnitsBasedOnBedroom() {
   $(".alert").hide();
 
-  if (!multiCommunity) resetUnits();
   const unitBedroom = filterBasedOnScreen("unit_bedroom");
 
   if (unitBedroom || unitBedroom === 0)
@@ -696,14 +700,14 @@ function filterUnitsBasedOnMultiCommunity() {
   else resetUnits();
 }
 
-function updateAvailabilitFilterDropdownList() {
+function updateAvailabilitFilterDropdownList(availableUnits) {
   reInitializeDropDownList("available_unit");
 
-  const unitsAvailableNow = filterUnitsBasedOnDate(units, NaN, NaN);
-  const unitsAvailableUnder30Days = filterUnitsBasedOnDate(units, 0, 30);
-  const unitsAvailableUnder60Days = filterUnitsBasedOnDate(units, 31, 60);
-  const unitsAvailableUnder90Days = filterUnitsBasedOnDate(units, 61, 90);
-  const unitsAvailableUnder120Days = filterUnitsBasedOnDate(units, 91, 120);
+  const unitsAvailableNow = filterUnitsBasedOnDate(availableUnits, NaN, NaN);
+  const unitsAvailableUnder30Days = filterUnitsBasedOnDate(availableUnits, 0, 30);
+  const unitsAvailableUnder60Days = filterUnitsBasedOnDate(availableUnits, 31, 60);
+  const unitsAvailableUnder90Days = filterUnitsBasedOnDate(availableUnits, 61, 90);
+  const unitsAvailableUnder120Days = filterUnitsBasedOnDate(availableUnits, 91, 120);
 
   const unitGroups = [
     unitsAvailableNow,
@@ -713,12 +717,12 @@ function updateAvailabilitFilterDropdownList() {
     unitsAvailableUnder120Days,
   ];
 
-  const groupsWithUnits = unitGroups.filter(group => group.length > 0);
+  const groupsWithUnits = unitGroups.filter((group) => group.length > 0);
 
   const webFilterId = "#".concat("available_unit"); //works on web view
   const mobileFilterId = "#responsive_".concat("available_unit"); //works on mobile view
 
-  if (groupsWithUnits.length >= 2) {
+  if (tbdMarkersEnabled || groupsWithUnits.length >= 2) {
     $(webFilterId).append(`<option value=""> All </option>`);
     $(mobileFilterId).append(`<option value=""> All </option>`);
   }
@@ -755,7 +759,7 @@ function updateAvailabilitFilterDropdownList() {
   }
 
   if (units_availability_over_120_days === "true") {
-    const unitsAvailableAbove121Days = filterUnitsBasedOnDate(units, 121, NaN);
+    const unitsAvailableAbove121Days = filterUnitsBasedOnDate(availableUnits, 121, NaN);
     if (unitsAvailableAbove121Days && unitsAvailableAbove121Days.length > 0) {
       $(webFilterId).append(`<option value="121-"> In 121+ days </option>`);
       $(mobileFilterId).append(`<option value="121-"> In 121+ days </option>`);
@@ -865,16 +869,28 @@ function getUniqueUnitBedrooms(floorplateUnits) {
 function updateBedroomFilterDropDownList(floorplateUnits) {
   reInitializeDropDownList("unit_bedroom");
 
+  const webFilterId = "#".concat("unit_bedroom"); //works on web view
+  const mobileFilterId = "#responsive_".concat("unit_bedroom"); //works on mobile view
+
   const dropDownList = getUniqueUnitBedrooms(floorplateUnits);
 
-  for (var i = 0; i < dropDownList.length; i++) {
-    $("#unit_bedroom").append(
-      `<option value="${dropDownList[i][1]}"> ${dropDownList[i][0]} </option>`
-    ); //works on web view
+  if (dropDownList.length >= 2) {
+    $(webFilterId).append(`<option value=""> All </option>`);
+    $(mobileFilterId).append(`<option value=""> All </option>`);
+  }
 
-    $("#responsive_unit_bedroom").append(
+  for (var i = 0; i < dropDownList.length; i++) {
+    $(webFilterId).append(
       `<option value="${dropDownList[i][1]}"> ${dropDownList[i][0]} </option>`
-    ); //works on mobile view
+    );
+
+    $(mobileFilterId).append(
+      `<option value="${dropDownList[i][1]}"> ${dropDownList[i][0]} </option>`
+    );
+  }
+  if (dropDownList.length >= 2) {
+    $(webFilterId).val("").change();
+    $(mobileFilterId).val("").change();
   }
 
   disableBedroomOptions();
@@ -916,21 +932,24 @@ function disablePriceRentOptions() {
   }
 }
 
-function filterUnitsBasedOnCommunityType(floorplateUnits, floor = current_floor) {
+function filterUnitsBasedOnCommunityType(
+  floorplateUnits,
+  floor = current_floor
+) {
   if (hasFloorplate()) {
-    floorplateUnits = floorplateUnits.filter(
-      (unit) => unit.floor == floor
-    );
+    floorplateUnits = floorplateUnits.filter((unit) => unit.floor == floor);
   }
 
   return floorplateUnits;
 }
 
-function filterAmenitiesBasedOnCommunityType(floorplateAmenities, floor = current_floor) {
+function filterAmenitiesBasedOnCommunityType(
+  floorplateAmenities,
+  floor = current_floor
+) {
   if (hasFloorplate()) {
     floorplateAmenities = floorplateAmenities.filter(
-      (amenity) =>
-        amenity.floor == floor || !definedAndHasValue(amenity.floor)
+      (amenity) => amenity.floor == floor || !definedAndHasValue(amenity.floor)
     );
   }
 
@@ -959,11 +978,6 @@ function reInitializeDropDownList(filter) {
 
   $(webFilterId).children().remove(); //works on web view
   $(mobileFilterId).children().remove(); //works on mobile view
-
-  if (!(filter == "square_feet" || filter == "market_rent" || filter == "available_unit")) {
-    $(webFilterId).append(`<option value=""> All </option>`); //works on web view
-    $(mobileFilterId).append(`<option value=""> All </option>`); //works on mobile view
-  }
 }
 
 function showMarkers() {
@@ -1911,9 +1925,7 @@ function disabled_enabled_anchors() {
     if (floorplate_units.length == 1) var str = " unit";
     else var str = " units";
     filtered_floorplate_units = floorplate_units; //overall_filtered_units(floorplate_units);
-    $("#u_" + floor).html(
-      filtered_floorplate_units.length.toString() + str
-    );
+    $("#u_" + floor).html(filtered_floorplate_units.length.toString() + str);
   }
   $("#" + floors[0])
     .parent()
@@ -3461,7 +3473,7 @@ function getCommunityBasedMarkerColor(unitCommunityId) {
     return (
       subCom &&
       subCom.property_id &&
-      subCom.property_id.trim() === unitCommunityId.trim()
+      subCom.property_id.trim() === unitCommunityId.toString().trim()
     );
   });
 
