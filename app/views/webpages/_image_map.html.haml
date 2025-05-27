@@ -10,7 +10,7 @@
       = render partial: 'webpages/units_and_amenity_markers', locals: markers_locals
 - else
   - width, height = image_original_dimensions(@community_info.sitemap).values
-  - image_exists = @community.sitemap.validated_image_url.present?
+  - image_exists = @community.sitemap&.validated_image_url.present?
   %div{ style: image_exists ? 'position: relative; margin: auto;' : 'height: -webkit-fill-available; margin: auto;', id: 'property-map' }
-    %img.floorplate-image.sitemap-image.map-image-align{alt: "", src: (@community.sitemap.validated_image_url || "/assets/default.jpeg"), id: "property-map-image", title: "", data: { height: height, width: width } }
+    %img.floorplate-image.sitemap-image.map-image-align{alt: "", src: (@community.sitemap&.validated_image_url || "/assets/default.jpeg"), id: "property-map-image", title: "", data: { height: height, width: width } }
     = render partial: 'webpages/units_and_amenity_markers', locals: markers_locals
