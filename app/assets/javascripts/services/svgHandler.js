@@ -550,8 +550,7 @@ function processSvgBlock(svgElement, item, options, dataset = null) {
         duplicateBlock.setAttribute(
           "fill",
           getUnitMarkerColor(
-            duplicateBlock.dataset.unitStatus,
-            duplicateBlock.dataset.modelUnit
+            duplicateBlock.dataset
           )
         );
       } else {
