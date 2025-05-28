@@ -13,6 +13,17 @@
 
           .form-group.mt-30
             %label.col-sm-12.col-lg-5.col-md-5.col-xs-12.control-label.font-size-15
+              Missing Units Marker Color
+              %i.pyn-toolTip.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
+                %span#markerColorsToolTipText
+                  Missing Units Map Marker Color
+            .col-sm-12.col-lg-7.col-md-7.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i.addon-i
+                  = d.text_field :property_map_missing_color, class: "form-control property-map-marker-field", autocomplete: true, value: d.object&.property_map_missing_color.present? ? d.object&.property_map_missing_color : "#eecea5" 
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-5.col-md-5.col-xs-12.control-label.font-size-15
               Occupied Units Marker Color
               %i.pyn-toolTip.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
                 %span#markerColorsToolTipText

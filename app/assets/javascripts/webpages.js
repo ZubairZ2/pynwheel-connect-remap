@@ -2650,6 +2650,10 @@ function display3DMap() {
   $(".plus-action").addClass("hidden");
   $(".minus-action").addClass("hidden");
   $(".image-map").addClass("hidden");
+  const $missingItem = $(".legend-item").filter(function () {
+    return $(this).find("span.label").text().trim().toUpperCase() === "MISSING";
+  });
+  $missingItem.addClass("hidden");
   $(".beans-map-container").removeClass("hidden");
   $("._3d-apply-filter-button").removeClass("hidden");
   $(".satelite-view-icon").removeClass("hidden");
@@ -2664,6 +2668,10 @@ function display2DMap() {
   $(".satelite-view-icon").addClass("hidden");
   $(".2d-map-option").addClass("hidden");
   $(".satelite-view-icon").addClass("hidden");
+  const $missingItem = $(".legend-item").filter(function () {
+    return $(this).find("span.label").text().trim().toUpperCase() === "MISSING";
+  });
+  $missingItem.removeClass("hidden");
   $(".image-map").removeClass("hidden");
   $(".location-items").removeClass("hidden");
   $(".plus-action").removeClass("hidden");
@@ -3471,6 +3479,13 @@ function currentVisibleMapImageScale() {
 }
 
 function getUnitMarkerColor(unit) {
+  if (!unit) {
+    if (svgMode && !_3dMapMode()) {
+      return mapMarkerColors.missing || "#eecea5";
+    }
+    return map_marker_color || "#d37474";
+  }
+
   const unitCommunityId = unit.property_id || unit.propertyId || "";
   const unitStatus = unit.unit_status || unit.unitStatus || unit.status || "";
   const modelUnit = unit.model_unit || unit.modelUnit || false;

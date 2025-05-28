@@ -69,7 +69,7 @@ function setSVG(container, svgElement, options) {
           );
 
           if (markable) {
-            if (!svgShape.getAttribute(DEFAULT_FILL_COLOR)) {
+            if (!svgShape.hasAttribute(DEFAULT_FILL_COLOR)) {
               svgShape.setAttribute(DEFAULT_FILL_COLOR, svgShape.style.fill);
             }
             svgShape.style.fill = map_marker_color;
@@ -340,7 +340,7 @@ function setupAmenityFillHandlers(duplicateBlock, fillOnHover = false) {
   if (fillOnHover) {
     return {
       fillAmenityBlock: () => {
-        if (!duplicateBlock.getAttribute(DEFAULT_FILL_COLOR)) {
+        if (!duplicateBlock.hasAttribute(DEFAULT_FILL_COLOR)) {
           duplicateBlock.setAttribute(
             DEFAULT_FILL_COLOR,
             duplicateBlock.style.fill
@@ -474,12 +474,21 @@ function processSvgBlock(svgElement, item, options, dataset = null) {
       cloneClass,
       item.id
     );
-    if (existingDuplicate) return;
+    if (existingDuplicate) {
+      if (block.hasAttribute(DEFAULT_FILL_COLOR)) {
+        block.style.fill = block.getAttribute(DEFAULT_FILL_COLOR);
+      }
+      return;
+    }
   } catch (e) {
     console.warn("Duplicate not found.", e);
   }
 
   const duplicateBlock = block.cloneNode(true);
+  if (block.hasAttribute(DEFAULT_FILL_COLOR)) {
+    block.style.fill = block.getAttribute(DEFAULT_FILL_COLOR);
+  }
+
   const $duplicateBlock = $(duplicateBlock);
   duplicateBlock.style.fill = "";
 
@@ -549,9 +558,7 @@ function processSvgBlock(svgElement, item, options, dataset = null) {
       if (definedAndHasValue(isWebpage) && isWebpage) {
         duplicateBlock.setAttribute(
           "fill",
-          getUnitMarkerColor(
-            duplicateBlock.dataset
-          )
+          getUnitMarkerColor(duplicateBlock.dataset)
         );
       } else {
         duplicateBlock.setAttribute("fill", map_marker_color);
@@ -588,7 +595,7 @@ function processSvgBlock(svgElement, item, options, dataset = null) {
 
 function setSvgCoordinates(data, options) {
   if (!parsedSVGs.length) return;
-  const { cloneClass, updateStyles } = options;
+  const { cloneClass } = options;
 
   const floorData = floorBasedData(data);
 
@@ -596,6 +603,25 @@ function setSvgCoordinates(data, options) {
     $(`.${cloneClass}`, svgElement).addClass("hidden");
 
     if (!isCurrentFloorsSVG(svgElement)) return;
+
+    if (isWebpage) {
+      const $shapes = $(svgElement).find(
+        [...VALID_SVG_SHAPES, "text"].join(", ") +
+          ":not(.cloned-unit):not(.cloned-amenity)"
+      );
+
+      $shapes.each(function () {
+        const { shape, valid } = getTheValidVisibleSVGShape(this);
+        if (valid) {
+          if (getValidShapeCategory(shape) !== "unit") return;
+
+          if (!shape.hasAttribute(DEFAULT_FILL_COLOR)) {
+            shape.setAttribute(DEFAULT_FILL_COLOR, shape.style.fill);
+            shape.style.fill = getUnitMarkerColor(null);
+          }
+        }
+      });
+    }
 
     floorData.forEach((item) => {
       processSvgBlock(svgElement, item, options);
@@ -661,6 +687,36 @@ function isValidShape(shape, parent = false) {
   return false;
 }
 
+function getValidShapeCategory(shape, parent = false) {
+  const shapeTag = shape.tagName.toLowerCase();
+  if (VALID_SVG_SHAPES.includes(shapeTag) || parent) {
+    const parentElement = shape.parentElement;
+    const parentTag = parentElement.tagName.toLowerCase();
+    const parentId = parentElement.id?.toLowerCase();
+
+    if (parentTag === "g") {
+      if (parentId?.startsWith("units")) return "unit";
+      else if (
+        parentId?.startsWith("amenities") ||
+        parentId?.endsWith("amenities") ||
+        parentId?.startsWith("amenity_outlines")
+      )
+        return "amenity";
+      else if (
+        parentId?.includes("outlines") ||
+        parentId?.includes("label") ||
+        parentId?.includes("text") ||
+        parentId?.includes("icon")
+      )
+        return null;
+
+      return getValidShapeCategory(parentElement, true);
+    }
+  }
+
+  return null;
+}
+
 function isVisibleSVGElement(svgElement) {
   return (
     svgElement.getAttribute("display") !== "none" &&
@@ -701,9 +757,13 @@ function getTheValidSVGShape(svgShape) {
 }
 
 function getTheMarkabeSVGShape(svgShape, svgPoint, validated = false) {
-  const { shape, valid } = validated
-    ? { shape: svgShape, valid: true }
-    : getTheValidSVGShape(svgShape);
+  const { shape, valid } = getTheValidVisibleSVGShape(svgShape, validated);
+  if (!valid) {
+    return {
+      svgShape: null,
+      markable: false,
+    };
+  }
 
   const pointVerifierFunction =
     window[`isPointIn${capitalize(shape.tagName.toLowerCase())}`];
@@ -715,6 +775,17 @@ function getTheMarkabeSVGShape(svgShape, svgPoint, validated = false) {
       pointVerifierFunction(svgPoint, shape) &&
       isVisibleSVGElement(shape) &&
       allSVGParentsVisible(shape),
+  };
+}
+
+function getTheValidVisibleSVGShape(svgShape, validated = false) {
+  const { shape, valid } = validated
+    ? { shape: svgShape, valid: true }
+    : getTheValidSVGShape(svgShape);
+
+  return {
+    shape,
+    valid: valid && isVisibleSVGElement(shape) && allSVGParentsVisible(shape),
   };
 }
 
