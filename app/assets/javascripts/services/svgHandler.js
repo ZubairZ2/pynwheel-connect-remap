@@ -617,7 +617,8 @@ function setSvgCoordinates(data, options) {
 
           if (!shape.hasAttribute(DEFAULT_FILL_COLOR)) {
             shape.setAttribute(DEFAULT_FILL_COLOR, shape.style.fill);
-            shape.style.fill = getUnitMarkerColor(null);
+            const missingColor = getUnitMarkerColor(null);
+            if (missingColor) shape.style.fill = missingColor;
           }
         }
       });

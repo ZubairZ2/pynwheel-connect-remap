@@ -3480,10 +3480,10 @@ function currentVisibleMapImageScale() {
 
 function getUnitMarkerColor(unit) {
   if (!unit) {
-    if (svgMode && !_3dMapMode()) {
+    if (svgMode && !_3dMapMode() && tbdMarkersEnabled) {
       return mapMarkerColors.missing || "#eecea5";
     }
-    return map_marker_color || "#d37474";
+    return '';
   }
 
   const unitCommunityId = unit.property_id || unit.propertyId || "";
