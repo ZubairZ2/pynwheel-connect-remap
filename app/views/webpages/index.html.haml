@@ -39,11 +39,6 @@
     %link{:href => "https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&display=swap", :rel => "stylesheet"}/
     = favicon_link_tag 'logo-small.png'
     = render '/font_awesome_v5'
-
-    -# #webpages-overlay
-    -#   #webpages-overlay-text Press the Control (or Ctrl ⌃) key before you move your mouse and while you navigate
-    -#   %button{onclick: "hideOverlayText()", id: "webpages-overlay-button"} Got it
-
     
   %body.custom-iframe-modeule
     .webPageLoader.hidden
@@ -163,10 +158,6 @@
                   %label Availability
                   %label.short Availability
                   = select_tag :available_unit, options_for_select(@available_units.present? ? @available_units : []),{:class=>"custom-select", :include_blank => "All "}
-                
-                -# %button._3d-apply-filter-button{:type => "button", :onclick => "apply3DFilters();"}
-                -#   Apply
-                -#   %i.fa.fa-filter
 
                 %button.reset-filter-button.web-reset-button.header-action-btn{:type => "button", :onclick => "resetFilters();", style: "margin-right: 2rem"}
                   %span.hidable
@@ -310,12 +301,6 @@
                           .custom-icon{:style => "height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};"}
                             %i.fas.fa-camera-retro{:style => "color: #{amenity_marker_color}; font-size: #{camera_font_size}px; margin-top:#{camera_margin}px;"}
                           %span Amenity image
-
-                    - if @community.enable_three_d_maps
-                      .div.map-instruction-text.hidden
-                        %span
-                          %strong Note:
-                          Press the Control (or Ctrl ⌃) key before you move your mouse and while you navigate
 
                     .zooming-content.zoomable-map-container
                       %a.plus-action.zooming-action.zoom-in-webpage.zoom-controls{:href => "#"}
