@@ -551,7 +551,6 @@ function availabilityFilterChanged() {
 
 function squareFootageFilterChanged() {
   applyCommunityLevelFilter();
-  debugger;
   applyFloorLevelFilter({ skipMarketRent: true });
   updateAndApplyFloorLevelFilter({ skipSqFeet: true });
 
@@ -560,8 +559,6 @@ function squareFootageFilterChanged() {
 
 function maxPriceFilterChanged() {
   applyCommunityLevelFilter();
-  debugger;
-
   applyFloorLevelFilter();
 
   showMarkers();
@@ -809,9 +806,6 @@ function updateAvailabilityFilterDropdownList(availableUnits) {
     $(webFilterId).append(`<option value="121-"> In 121+ days </option>`);
     $(mobileFilterId).append(`<option value="121-"> In 121+ days </option>`);
   }
-
-  availabilityFilterResetTriggered = false;
-  setAvailabilityFilterToNow();
 
   disableAvailabilityOptions();
   showMarkers();

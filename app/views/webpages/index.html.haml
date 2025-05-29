@@ -591,10 +591,13 @@
       $(".mobile-trigger").addClass("pt");
     }
 
-    availabilityFilterResetTriggered = false;
-    updateBedroomFilterDropDownList(units);
-    updateAvailabilityFilterDropdownList(units);
-    setAvailabilityFilterToNow();
+    if (showCurrentAvailabilityEnabled) {
+      $("#available_unit").val("now");
+      $("#responsive_available_unit").val("now");
+    } else {
+      $("#available_unit").val("");
+      $("#responsive_available_unit").val("");
+    }
     setWebpageContainerSize();
 
     if (!svgMode) {
