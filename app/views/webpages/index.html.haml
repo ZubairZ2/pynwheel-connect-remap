@@ -270,15 +270,17 @@
 
                 %footer.c-footer#footer.responsive-content.mobile-footer{ style: "display: flex; justify-content: space-around; align-item: center;" }
                   %ul.location-items.location-responsive.responsive-content.responsive-legends.align-home-buttons
-                    - if @community.enable_home_legend && !@have_multi_property_ids
-                      %li
-                        %i.fas.fa-map-marker-alt{:style => "color: #{map_marker_color};"}
-                        %span Available home
-                    - if @community.enable_amenity_legend
-                      %li
-                        .custom-icon{:style => "height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};"}
-                          %i.fas.fa-camera-retro{:style => "color: #{amenity_marker_color}; font-size: #{camera_font_size}px; margin-top:#{camera_margin}px;"}
-                        %span Amenity image
+
+                    - unless (@community_info.display_tbd_legend? || @have_multi_property_ids)
+                      - if @community.enable_home_legend
+                        %li
+                          %i.fas.fa-map-marker-alt{:style => "color: #{map_marker_color};"}
+                          %span Available home
+                      - if @community.enable_amenity_legend
+                        %li
+                          .custom-icon{:style => "height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};"}
+                            %i.fas.fa-camera-retro{:style => "color: #{amenity_marker_color}; font-size: #{camera_font_size}px; margin-top:#{camera_margin}px;"}
+                          %span Amenity image
 
                   - if @community.enable_three_d_maps
                     .zooming-content.zoomable-map-container
@@ -292,15 +294,16 @@
                     .footer-logo.desktop-content{:style=> "visibility: #{@community.powered_by_btn ? "" : "hidden" }"}
                       %img{:src => "/assets/powered_by_logo.png"}/
                     %ul.location-items
-                      - if @community.enable_home_legend && !@have_multi_property_ids
-                        %li
-                          %i.fas.fa-map-marker-alt{:style => "color: #{map_marker_color};"}
-                          %span Available home
-                      - if @community.enable_amenity_legend && @community.show_amenity_key
-                        %li
-                          .custom-icon{:style => "height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};"}
-                            %i.fas.fa-camera-retro{:style => "color: #{amenity_marker_color}; font-size: #{camera_font_size}px; margin-top:#{camera_margin}px;"}
-                          %span Amenity image
+                      - unless (@community_info.display_tbd_legend? || @have_multi_property_ids)
+                        - if @community.enable_home_legend && !@have_multi_property_ids
+                          %li
+                            %i.fas.fa-map-marker-alt{:style => "color: #{map_marker_color};"}
+                            %span Available home
+                        - if @community.enable_amenity_legend && @community.show_amenity_key
+                          %li
+                            .custom-icon{:style => "height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};"}
+                              %i.fas.fa-camera-retro{:style => "color: #{amenity_marker_color}; font-size: #{camera_font_size}px; margin-top:#{camera_margin}px;"}
+                            %span Amenity image
 
                     .zooming-content.zoomable-map-container
                       %a.plus-action.zooming-action.zoom-in-webpage.zoom-controls{:href => "#"}
