@@ -2589,17 +2589,16 @@ function handleMapControl() {
 
 function resetMapData() {
   setWebpageContainerSize();
-  // resetUnits();
-  // resetFilters();
 }
 
 function display3DMap() {
   $(".3d-map-option").addClass("hidden");
   $(".location-items").addClass("hidden");
+  $(".plus-action").addClass("hidden");
+  $(".minus-action").addClass("hidden");
   $(".image-map").addClass("hidden");
   $(".beans-map-container").removeClass("hidden");
   $("._3d-apply-filter-button").removeClass("hidden");
-  $(".div.map-instruction-text").removeClass("hidden");
   $(".satelite-view-icon").removeClass("hidden");
   $(".2d-map-option").removeClass("hidden");
   resetMapData();
@@ -2607,7 +2606,6 @@ function display3DMap() {
 }
 
 function display2DMap() {
-  $(".div.map-instruction-text").addClass("hidden");
   $("._3d-apply-filter-button").addClass("hidden");
   $(".beans-map-container").addClass("hidden");
   $(".satelite-view-icon").addClass("hidden");
@@ -2615,6 +2613,8 @@ function display2DMap() {
   $(".satelite-view-icon").addClass("hidden");
   $(".image-map").removeClass("hidden");
   $(".location-items").removeClass("hidden");
+  $(".plus-action").removeClass("hidden");
+  $(".minus-action").removeClass("hidden");
   $(".3d-map-option").removeClass("hidden");
   resetMapData();
   showMarkers();
