@@ -83,34 +83,35 @@ class ApplicationController < ActionController::Base
   def check_community
     return if params[:controller] == "tour_users" && params[:action]== "show"
     return if params[:controller] == "tour_users" &&(params[:action]== "checkpoint_verification" || params[:action]== "show")
-    if current_user.is_dwelo_admin?
+    return unless params[:community_id].present?
 
-      assigned_communities_ids = current_user.communities.ids # all assinged communities
+    community_id = params[:community_id].to_i
+    assigned_communities_ids = current_user.communities.ids # all assinged communities
+
+    if current_user.is_dwelo_admin?
       dwelo_communities_ids = Community.where(creator_id: User.where(role: "Dwelo admin").ids).ids # all communities created by any dwelo admin
       dwelo_companies_communities = Community.joins(:company).where(companies: {creator_id: User.where(role: "Dwelo admin").ids}).ids # all communities under dwelo_companies (either created by dwelo_admin or super_admin)
       ids = (assigned_communities_ids + dwelo_communities_ids + dwelo_companies_communities).uniq
       communities = Community.where(id: ids)
 
-      if params[:community_id].present?
-        if communities.ids.include? params[:community_id].to_i
-          return
-        else
-          redirect_to root_path and return
-        end
+      if communities.ids.include?(community_id)
+        return
+      else
+        redirect_to root_path and return
+      end
+    end
+
+    if current_user.is_company_admin?
+      if current_user.company.communities.ids.include?(community_id) || assigned_communities_ids.include?(community_id)
+        return
+      else
+        redirect_to root_path and return
       end
     end
 
     unless current_user.is_super_admin?
-      if params[:community_id].present?
-        all_ids = []
-        current_user.communities.each do |c|
-          all_ids << c.id
-        end
-        if all_ids.include? params[:community_id].to_i
-
-        else
-          redirect_to root_path
-        end
+      unless assigned_communities_ids.include?(community_id)
+        redirect_to root_path
       end
     end
   end
