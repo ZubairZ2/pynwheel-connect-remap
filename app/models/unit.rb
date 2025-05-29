@@ -162,8 +162,12 @@ class Unit < ApplicationRecord
                                .where("available_date <= ?", Date.today + 120.days)
     end
   }
-  scope :status_scoped, -> {
-    where("LOWER(unit_status) IN (?) OR modal_unit = ?", AVAILABILITY_SCOPED_STATUSES.map(&:downcase), true)
+  scope :status_scoped, ->(availability_over_120_days = false) {
+    result = where("LOWER(unit_status) IN (?) OR modal_unit = ?", AVAILABILITY_SCOPED_STATUSES.map(&:downcase), true)
+    unless availability_over_120_days
+      result = result.where(available_date: [nil, '']).or(where.not("available_date > ?", Date.today + 120.days))
+    end
+    result
   }
 
   after_commit :populate_image_urls, on: [:create,:update]
