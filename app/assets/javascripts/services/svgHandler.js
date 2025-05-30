@@ -773,9 +773,7 @@ function getTheMarkabeSVGShape(svgShape, svgPoint, validated = false) {
     markable:
       valid &&
       pointVerifierFunction &&
-      pointVerifierFunction(svgPoint, shape) &&
-      isVisibleSVGElement(shape) &&
-      allSVGParentsVisible(shape),
+      pointVerifierFunction(svgPoint, shape)
   };
 }
 

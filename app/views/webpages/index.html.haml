@@ -122,7 +122,7 @@
     - min_unit_floor = @floors.min if @floors.present? && @floors.exclude?(min_unit_floor)
     - marker_colors = { vacant: map_marker_color, occupied: map_marker_occupied_color, occupied_on_notice: map_marker_occupied_on_notice_color, vacant_leased: map_marker_vacant_leased_color, model: map_marker_model_color }.merge( @svg_enabled ? { missing: map_marker_missing_color } : {} )
     - colors = marker_colors.values_at(:missing_floorplan, :missing, :occupied, :occupied_on_notice, :vacant, :vacant_leased, :model)
-    - labels = ["Missing Floorplan", "Missing", "Occupied", "Occupied on Notice", "Vacant", "Vacant Leased", "Model"]
+    - labels = ["Missing Floorplan", "Missing Data", "Occupied", "Occupied on Notice", "Vacant", "Vacant Leased", "Model"]
     - legend_items = colors.map.with_index { |color, index| color ? { label: labels[index], color: color } : nil }.compact
     - locals_for_markers = { svg_enabled: @svg_enabled, community_info: @community_info, units: units, amenities: @amenities, floors: @floors, floorplates: @floorplates, floorplans_map: @floorplans_map, spanSize_y: spanSize_y, spanSize_x: spanSize_x, spanSize_size: spanSize_size, fontsize: fontsize, map_marker_color: map_marker_color, amenity_marker_color: amenity_marker_color, top_margin: top_margin, left_margin: left_margin, amenity_top_margin: amenity_top_margin, amenity_left_margin: amenity_left_margin }
     - svg_and_image_locals = { min_unit_floor: min_unit_floor, marker_colors: marker_colors, locals_for_markers: locals_for_markers }
