@@ -5,9 +5,9 @@ module DataProviders
         return unless community_id.present?
         begin
           @community = Community.find community_id
-          @credential = @community.credential
+          @credentials = @community.credential
           
-          return unless @credential.present?
+          return unless @credentials.present?
           return unless is_user_authorized?
 
         rescue
@@ -61,14 +61,14 @@ module DataProviders
       private
 
         def token_expired?
-          @credential&.rentcafe_v2_auth_token.nil? || Time.now >= @credential&.rentcafe_v2_token_expires_at
+          @credentials&.rentcafe_v2_auth_token.nil? || Time.now >= @credentials&.rentcafe_v2_token_expires_at
         end
 
         def renew_token
           response = get_token()
           return false unless response['access_token'].present?
           
-          @credential.update(
+          @credentials.update(
             rentcafe_v2_auth_token: response['access_token'], 
             rentcafe_v2_token_expires_at: (Time.now + response['expires_in'])
           )
@@ -91,7 +91,7 @@ module DataProviders
             body: get_property_details_params(property_code),
             headers: { 
               'Content-Type' => 'application/json',
-              'Authorization' => "Bearer #{@credential&.rentcafe_v2_auth_token}",
+              'Authorization' => "Bearer #{@credentials&.rentcafe_v2_auth_token}",
               'vendor' => ENV['RENT_CAFE_V2_USERNAME']
             }
           )
@@ -104,7 +104,7 @@ module DataProviders
             body: get_additional_fees_params(property_code),
             headers: { 
               'Content-Type' => 'application/json',
-              'Authorization' => "Bearer #{@credential&.rentcafe_v2_auth_token}",
+              'Authorization' => "Bearer #{@credentials&.rentcafe_v2_auth_token}",
               'vendor' => ENV['RENT_CAFE_V2_USERNAME']
             }
           )
@@ -117,7 +117,7 @@ module DataProviders
             body: get_apartment_availability_params(property_code),
             headers: { 
               'Content-Type' => 'application/json',
-              'Authorization' => "Bearer #{@credential&.rentcafe_v2_auth_token}",
+              'Authorization' => "Bearer #{@credentials&.rentcafe_v2_auth_token}",
               'vendor' => ENV['RENT_CAFE_V2_USERNAME']
             }
           )
@@ -129,7 +129,7 @@ module DataProviders
             body: get_unit_pricing_params(property_code),
             headers: { 
               'Content-Type' => 'application/json',
-              'Authorization' => "Bearer #{@credential&.rentcafe_v2_auth_token}",
+              'Authorization' => "Bearer #{@credentials&.rentcafe_v2_auth_token}",
               'vendor' => ENV['RENT_CAFE_V2_USERNAME']
             }
           )
@@ -142,7 +142,7 @@ module DataProviders
             body: get_floorplan_params(property_code),
             headers: { 
               'Content-Type' => 'application/json',
-              'Authorization' => "Bearer #{@credential&.rentcafe_v2_auth_token}",
+              'Authorization' => "Bearer #{@credentials&.rentcafe_v2_auth_token}",
               'vendor' => ENV['RENT_CAFE_V2_USERNAME']
             }
           )
@@ -155,7 +155,7 @@ module DataProviders
             body: get_property_sources_params(property_code),
             headers: { 
               'Content-Type' => 'application/json',
-              'Authorization' => "Bearer #{@credential&.rentcafe_v2_auth_token}",
+              'Authorization' => "Bearer #{@credentials&.rentcafe_v2_auth_token}",
               'vendor' => ENV['RENT_CAFE_V2_USERNAME']
             }
           )
@@ -169,7 +169,7 @@ module DataProviders
             body: available_slots_body_params(property_code),
             headers: { 
               'Content-Type' => 'application/json',
-              'Authorization' => "Bearer #{@credential&.rentcafe_v2_auth_token}",
+              'Authorization' => "Bearer #{@credentials&.rentcafe_v2_auth_token}",
               'vendor' => ENV['RENT_CAFE_V2_USERNAME']
             }
           )
@@ -189,7 +189,7 @@ module DataProviders
             apiToken: api_token, #required
             companyCode: company_code, #required
             propertyCode: property_code&.strip, #required
-            showAllUnit: !@credential&.limit_result
+            showAllUnit: !@credentials&.limit_result
           }.to_json
         end
 
@@ -206,7 +206,7 @@ module DataProviders
             apiToken: api_token, #required
             companyCode: company_code, #required
             propertyCode: property_code&.strip, #required
-            showAllUnit: !@credential&.limit_result,
+            showAllUnit: !@credentials&.limit_result,
           }.to_json
         end
 
@@ -243,11 +243,11 @@ module DataProviders
         end
 
         def api_token
-          @credential&.api_token&.strip
+          @credentials&.api_token&.strip
         end
 
         def company_code
-          @credential&.c_code&.strip
+          @credentials&.c_code&.strip
         end
     end
   end

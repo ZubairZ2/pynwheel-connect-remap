@@ -4,7 +4,7 @@ module DataProviders
       class DataImportService < DataProviders::RentCafe::V2::BaseService
 
         def perform
-          property_codes = @credential.p_code.split(',') rescue []
+          property_codes = @credentials.p_code.split(',') rescue []
           property_codes.each do |property_code|
             begin
 
@@ -29,7 +29,7 @@ module DataProviders
             return unless response.present?
 
             update_property_details(response)
-            add_or_update_sub_communities(response["name"], property_code)
+            add_or_update_sub_communities(@community, response["name"], property_code)
           end
 
           def import_property_floorplans property_code
@@ -60,20 +60,45 @@ module DataProviders
           end
 
           def process_units_response(response, property_code)
+            incoming_ids = response.map { |r| r['ApartmentId'] }
+
+            existing_units = Unit.where(
+              provider: 'yardirentcafe',
+              community_id: @community_id,
+              provider_unit_id: incoming_ids
+            )
+
+            existing_units_by_id = existing_units.index_by(&:provider_unit_id)
+            rentStrsHash = yardi_rent_cafe_property_rent_matrix(property_code)
+
             response.each_slice(@batch_size) do |batch|
-              units = build_units(batch, property_code)
+              units = build_units(batch, property_code, rentStrsHash, existing_units_by_id)
               import_units(units)
             end
           end
 
-          def build_units(response, property_code)
+          def build_units(response, property_code, rentStrsHash, existing_units_by_id)
             units = []
-            rentStrsHash = yardi_rent_cafe_property_rent_matrix(property_code)
 
             response.each do |r|
-              unit = Unit.find_or_initialize_by(provider: "yardirentcafe", community_id: @community_id, provider_unit_id: r["apartmentId"])
-              next if unit.manual_override
-              rentStrs = rentStrsHash[r["apartmentId"]] || []
+              provider_unit_id = r['ApartmentId']
+              existing = existing_units_by_id[provider_unit_id]
+
+              if existing && existing.manual_override
+                next
+              end
+
+              unit = if existing
+                       existing
+                     else
+                       Unit.new(
+                         provider: 'yardirentcafe',
+                         community_id: @community_id,
+                         provider_unit_id:
+                       )
+                     end
+
+              rentStrs = rentStrsHash[provider_unit_id] || []
               update_unit_attributes(unit, r, property_code, rentStrs)
               units << unit
             end
@@ -154,18 +179,43 @@ module DataProviders
           end
 
           def process_floorplans_response(response)
+            incoming_ids = response.map { |r| r['FloorplanId'] }
+
+            existing_floorplans = Floorplan.where(
+              provider: 'yardirentcafe',
+              community_id: @community_id,
+              provider_floorplan_id: incoming_ids
+            )
+
+            existing_floorplans_by_id = existing_floorplans.index_by(&:provider_floorplan_id)
+
             response.each_slice(@batch_size) do |batch|
-              floorplans = build_floorplans(batch)
+              floorplans = build_floorplans(batch, existing_floorplans_by_id)
               # import_floorplans(floorplans)
             end
           end
 
-          def build_floorplans(response)
+          def build_floorplans(response, existing_floorplans_by_id)
             floorplans = []
             begin
               response.each do |r|
-                fp = Floorplan.find_or_initialize_by(provider: 'yardirentcafe', community_id: @community_id, provider_floorplan_id: r['floorplanId'])
-                next if fp.manual_override
+                floorplan_id = r['FloorplanId']
+                existing = existing_floorplans_by_id[floorplan_id]
+
+                if existing && existing.manual_override
+                  next
+                end
+
+                fp = if existing
+                              existing
+                            else
+                              Floorplan.new(
+                                provider: 'yardirentcafe',
+                                community_id: @community_id,
+                                provider_floorplan_id: floorplan_id
+                              )
+                            end
+
                 update_floorplan_attributes(fp, r)
                 floorplans << fp
               end

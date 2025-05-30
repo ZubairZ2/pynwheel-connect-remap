@@ -4,7 +4,7 @@ module YardiRentCafeV2Services
       @scheduled_tour = scheduled_tour
       @tour_user = @scheduled_tour.tour_user
       @community = @scheduled_tour.community
-      @credential = @community.credential
+      @credentials = @community.credential
       @c_time_zone = @community.get_time_zone()
       return unless is_user_authorized?
     end
@@ -13,7 +13,7 @@ module YardiRentCafeV2Services
 
       def is_user_authorized?
         if (@community.use_yardi_as_lead? && DataProviders::RentCafe::V2ApisService.new(@community.id).is_user_authorized?)
-          @credential = Credential.where(community_id: @community.id).last
+          @credentials = Credential.where(community_id: @community.id).last
           true
         else
           false
@@ -21,15 +21,15 @@ module YardiRentCafeV2Services
       end
 
       def api_token
-        @credential&.api_token&.strip
+        @credentials&.api_token&.strip
       end
 
       def company_code
-        @credential&.c_code&.strip
+        @credentials&.c_code&.strip
       end
 
       def property_code
-        property_code = @credential&.p_code&.split(',')[0] rescue nil
+        property_code = @credentials&.p_code&.split(',')[0] rescue nil
         property_code&.strip
       end
 

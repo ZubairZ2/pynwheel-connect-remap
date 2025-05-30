@@ -60,10 +60,6 @@ class BaseService
   rescue StandardError => e
     raise e
   end
-  
-  def get_property_configurations property_code
-    DataProviders::RentCafe::V2ApisService.new(credentials.community_id).get_discovery_sources(property_code)
-  end
 
   def yardi_rent_cafe_property_rent_matrix(property_code)
     begin

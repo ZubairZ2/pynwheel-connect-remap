@@ -14,7 +14,7 @@ module YardiRentCafeV2Services
           body: lead_body_params(visited_stops, tour_history, is_tour_abandoned),
           headers: { 
             'Content-Type' => 'application/json',
-            'Authorization' => "Bearer #{@credential&.rentcafe_v2_auth_token}",
+            'Authorization' => "Bearer #{@credentials&.rentcafe_v2_auth_token}",
             'vendor' => ENV['RENT_CAFE_V2_USERNAME']
           }
         )

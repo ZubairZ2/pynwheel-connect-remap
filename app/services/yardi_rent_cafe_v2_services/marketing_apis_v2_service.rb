@@ -36,7 +36,7 @@ module YardiRentCafeV2Services
     def api_headers
       {
         'Content-Type' => 'application/json',
-        'Authorization' => "Bearer #{@credential&.rentcafe_v2_auth_token}",
+        'Authorization' => "Bearer #{@credentials&.rentcafe_v2_auth_token}",
         'vendor' => ENV['RENT_CAFE_V2_USERNAME']
       }
     end

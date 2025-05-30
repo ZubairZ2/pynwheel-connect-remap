@@ -21,8 +21,22 @@ Rails.application.configure do
   config.active_record.migration_error = :page_load
   config.assets.debug = true
   config.assets.quiet = true
+
+  config.log_level = :debug
+  if ENV["RAILS_LOG_TO_STDOUT"].present?
+    logger           = ActiveSupport::Logger.new(STDOUT)
+    logger.formatter = config.log_formatter # this uses Rails default
+    config.logger    = ActiveSupport::TaggedLogging.new(logger)
+  end
+  config.active_record.verbose_query_logs = true
+
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker
   config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
   config.action_mailer.perform_deliveries = true 
   config.action_mailer.delivery_method = :letter_opener  
+
+  require Rails.root.join('lib', 'middleware', 'host_whitelist')
+  config.middleware.insert_before(0, ::HostWhitelist)
+
+  config.hosts << "haweris-is.tunn.dev"
 end

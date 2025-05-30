@@ -154,7 +154,7 @@ class PynwheelLaunch::Communities::FollowUpEmails
       end
     end
 
-    detail_forms << floorplan_form if @community&.floorplans&.count > 0
+    detail_forms << floorplan_form if @community.floorplans.exists?
     # detail_forms << hardware_spec_form if hardware_spec_form_require
     # detail_forms << design_direction_form if design_direction_form_require
     # detail_forms << amenity_images_form if amenity_images_form_require
@@ -173,7 +173,7 @@ class PynwheelLaunch::Communities::FollowUpEmails
       sitemap = @community.sitemap
       sitemap&.status&.status
     elsif @community.has_floorplates?
-      floorplates = @community.floorplates
+      floorplates = @community.floorplates.includes(:status)
       floorplate_status = floorplates.map {|floorplate| floorplate&.status&.status rescue nil}
       status = status_check(floorplate_status)
       status
@@ -181,10 +181,10 @@ class PynwheelLaunch::Communities::FollowUpEmails
   end
 
   def floorplan_status
-    return nil if @community.floorplans.blank?
-    floorplans = @community.floorplans
-    floorplan_status = floorplans.map {|floorplan| floorplan&.status&.status rescue nil}
-    status = status_check(floorplan_status)
+    return nil unless @community.floorplans.exists?
+    floorplans = @community.floorplans.includes(:status)
+    fp_status = floorplans.map {|floorplan| floorplan&.status&.status rescue nil}
+    status = status_check(fp_status)
     status
   end
 
@@ -203,7 +203,7 @@ class PynwheelLaunch::Communities::FollowUpEmails
 
   def touch_gallery_media_status
     return nil if @community.galleries.blank?
-    galleries = @community.galleries
+    galleries = @community.galleries.includes(:status)
     gallery_media_status = galleries.map {|gallery| gallery&.status&.status rescue nil} if galleries.present?
     status = status_check(gallery_media_status.compact)
     status
@@ -267,8 +267,8 @@ class PynwheelLaunch::Communities::FollowUpEmails
     return nil if @community.opening_hours.blank? && @community.guided_opening_hours.blank?
     self_visiting_hours_status = []
     guided_visiting_hours_status = []
-    self_visiting_hours = @community.opening_hours
-    guided_visiting_hours = @community.guided_opening_hours
+    self_visiting_hours = @community.opening_hours.includes(:status)
+    guided_visiting_hours = @community.guided_opening_hours.includes(:status)
     self_visiting_hours.map {|oh| self_visiting_hours_status << oh&.status&.status} if self_visiting_hours.present?
     guided_visiting_hours.map {|gh| guided_visiting_hours_status << gh&.status&.status} if guided_visiting_hours.present?
     visiting_hours_status = guided_visiting_hours_status.compact + self_visiting_hours_status.compact

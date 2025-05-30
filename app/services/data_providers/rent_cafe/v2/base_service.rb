@@ -7,10 +7,10 @@ module DataProviders
           return unless community_id.present?
           @community_id = community_id
           @community = Community.find_by_id community_id
-          @credential = @community&.credential if @community.present?
-          @batch_size = 10
+          @credentials = @community&.credential if @community.present?
+          @batch_size = 20
           
-          return nil unless (@community.present? && @credential.present?)
+          return nil unless (@community.present? && @credentials.present?)
         end
 
         protected

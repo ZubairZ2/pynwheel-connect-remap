@@ -2,7 +2,7 @@ module CrmProviders
   class RentCafeService < CrmProviders::BaseService
 
     def update_property_crm_data
-      property_code = @credential.p_code.split(',')[0]
+      property_code = @credentials.p_code.split(',')[0]
       fetch_discovery_sources(property_code)
       fetch_time_slots(property_code)
     end

@@ -5,14 +5,14 @@ module DataProviders
         return unless community_id.present?
 
         @community = Community.find_by_id(community_id)
-        @credential = @community&.credential if @community.present?
+        @credentials = @community&.credential if @community.present?
 
-        return unless @credential.present?
+        return unless @credentials.present?
 
       end
 
       def get_apartment_availability(property_code)
-        handle_api_response(fetch_data("apartmentavailability", property_code, "&showallunit=#{@credential.limit_result ? "0" : "-1"}"))
+        handle_api_response(fetch_data("apartmentavailability", property_code, "&showallunit=#{@credentials.limit_result ? "0" : "-1"}"))
       end
 
       def get_apartment_pricing_matrix(property_code)
@@ -38,9 +38,9 @@ module DataProviders
 
         def api_base_url(request_type)
           if api_token.present?
-            "#{@credential&.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}"
+            "#{@credentials&.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}"
           else
-            "#{@credential&.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}"
+            "#{@credentials&.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}"
           end
         end
 
@@ -53,11 +53,11 @@ module DataProviders
         end
 
         def api_token
-          @credential&.api_token&.strip
+          @credentials&.api_token&.strip
         end
 
         def company_code
-          @credential&.c_code&.strip
+          @credentials&.c_code&.strip
         end
     end
   end
