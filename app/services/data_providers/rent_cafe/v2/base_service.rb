@@ -40,8 +40,14 @@ module DataProviders
           end
 
           def update_attribute_if_blank(object, attribute, value, diff_name = nil)
-            updatedColumn = diff_name.present? ? diff_name : attribute
-            object.send("#{attribute}=", value) if value.present? && !object.send("#{updatedColumn}_is_updated")
+            updated_column = diff_name.presence || attribute
+            should_update = value.present?
+
+            if object.respond_to?("#{updated_column}_is_updated")
+              should_update &&= !object.send("#{updated_column}_is_updated")
+            end
+
+            object.send("#{attribute}=", value) if should_update
           end
 
           def import_floorplans(floorplans)

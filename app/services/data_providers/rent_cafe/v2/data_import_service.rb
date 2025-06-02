@@ -9,8 +9,9 @@ module DataProviders
             begin
 
               import_property_details(property_code)
-              import_property_floorplans(property_code)
-              import_property_units(property_code)
+              floorplans = get_floorplan_details(property_code)
+              indexed_floorplans = import_property_floorplans(floorplans, property_code)
+              import_property_units(indexed_floorplans, property_code)
 
             rescue => exception
               raise exception
@@ -32,16 +33,16 @@ module DataProviders
             add_or_update_sub_communities(@community, response["name"], property_code)
           end
 
-          def import_property_floorplans property_code
-            response = get_floorplan_details(property_code)
-            return unless response.present?
-            process_floorplans_response(response)
+          def import_property_floorplans(floorplans, property_code)
+            
+            return unless floorplans.present?
+            process_floorplans_response(floorplans)
           end
 
-          def import_property_units property_code
+          def import_property_units(indexed_floorplans, property_code)
             response = get_appartments_availability(property_code)
             return unless response.present?
-            process_units_response(response, property_code)
+            process_units_response(response, property_code, indexed_floorplans)
           end
 
           def update_property_details details
@@ -59,7 +60,7 @@ module DataProviders
             )
           end
 
-          def process_units_response(response, property_code)
+          def process_units_response(response, property_code, indexed_floorplans)
             incoming_ids = response.map { |r| r['ApartmentId'] }
 
             existing_units = Unit.where(
@@ -72,12 +73,12 @@ module DataProviders
             rentStrsHash = yardi_rent_cafe_property_rent_matrix(property_code)
 
             response.each_slice(@batch_size) do |batch|
-              units = build_units(batch, property_code, rentStrsHash, existing_units_by_id)
+              units = build_units(batch, property_code, rentStrsHash, existing_units_by_id, indexed_floorplans)
               import_units(units)
             end
           end
 
-          def build_units(response, property_code, rentStrsHash, existing_units_by_id)
+          def build_units(response, property_code, rentStrsHash, existing_units_by_id, indexed_floorplans)
             units = []
 
             response.each do |r|
@@ -99,18 +100,21 @@ module DataProviders
                      end
 
               rentStrs = rentStrsHash[provider_unit_id] || []
-              update_unit_attributes(unit, r, property_code, rentStrs)
+              update_unit_attributes(unit, r, property_code, indexed_floorplans, rentStrs)
               units << unit
             end
 
             units
           end
 
-          def update_unit_attributes(unit, r, property_code, rentStrs = [])
+          def update_unit_attributes(unit, r, property_code, indexed_floorplans, rentStrs = [])
             begin
+              floorplan = indexed_floorplans[r["floorplanId"]]
               update_attribute_if_blank(unit, :marketing_name, r["apartmentName"], 'name')
               update_attribute_if_blank(unit, :floor, evaluate_floor(unit.marketing_name))
-              update_attribute_if_blank(unit, :floorplan_id, r["floorplanId"])
+              if floorplan.present?
+                update_attribute_if_blank(unit, :floorplan_id, floorplan.provider_floorplan_id)
+              end
               update_attribute_if_blank(unit, :effective_rent, r["minimumRent"])
               update_attribute_if_blank(unit, :availability, unit_availability(r["availableDate"]))
               update_attribute_if_blank(unit, :available_date, set_availabilty_date(r["availableDate"]))
@@ -179,7 +183,7 @@ module DataProviders
           end
 
           def process_floorplans_response(response)
-            incoming_ids = response.map { |r| r['FloorplanId'] }
+            incoming_ids = response.map { |r| r['floorplanId'] }
 
             existing_floorplans = Floorplan.where(
               provider: 'yardirentcafe',
@@ -193,13 +197,14 @@ module DataProviders
               floorplans = build_floorplans(batch, existing_floorplans_by_id)
               # import_floorplans(floorplans)
             end
+            existing_floorplans_by_id
           end
 
           def build_floorplans(response, existing_floorplans_by_id)
             floorplans = []
             begin
               response.each do |r|
-                floorplan_id = r['FloorplanId']
+                floorplan_id = r['floorplanId']
                 existing = existing_floorplans_by_id[floorplan_id]
 
                 if existing && existing.manual_override
@@ -217,6 +222,7 @@ module DataProviders
                             end
 
                 update_floorplan_attributes(fp, r)
+                existing_floorplans_by_id[floorplan_id] = fp.reload
                 floorplans << fp
               end
             rescue => exception
@@ -233,6 +239,7 @@ module DataProviders
               update_attribute_if_blank(fp, :bathrooms, r['baths'], 'bathroom')
               update_floorplan_square_feet(fp, r['minimumSQFT'], r['sqft'])
               update_attribute_if_blank(fp, :market_rent, r['minimumRent'])
+              update_attribute_if_blank(fp, :provider_floorplan_id, r['minimumRent'])
               fp.property_id = r['propertyId']
               fp.unit_count = r['']
               fp.units_available = r['']
