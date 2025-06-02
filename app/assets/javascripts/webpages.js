@@ -2651,7 +2651,7 @@ function display3DMap() {
   $(".minus-action").addClass("hidden");
   $(".image-map").addClass("hidden");
   const $missingItem = $(".legend-item").filter(function () {
-    return $(this).find("span.label").text().trim().toUpperCase() === "MISSING";
+    return $(this).find("span.label").text().trim().toUpperCase() === "MISSING DATA";
   });
   $missingItem.addClass("hidden");
   $(".beans-map-container").removeClass("hidden");
@@ -2669,7 +2669,7 @@ function display2DMap() {
   $(".2d-map-option").addClass("hidden");
   $(".satelite-view-icon").addClass("hidden");
   const $missingItem = $(".legend-item").filter(function () {
-    return $(this).find("span.label").text().trim().toUpperCase() === "MISSING";
+    return $(this).find("span.label").text().trim().toUpperCase() === "MISSING DATA";
   });
   $missingItem.removeClass("hidden");
   $(".image-map").removeClass("hidden");
