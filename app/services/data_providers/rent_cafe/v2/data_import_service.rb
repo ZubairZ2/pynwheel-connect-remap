@@ -61,7 +61,7 @@ module DataProviders
           end
 
           def process_units_response(response, property_code, indexed_floorplans)
-            incoming_ids = response.map { |r| r['ApartmentId'] }
+            incoming_ids = response.map { |r| r['apartmentId'] }
 
             existing_units = Unit.where(
               provider: 'yardirentcafe',
@@ -82,7 +82,7 @@ module DataProviders
             units = []
 
             response.each do |r|
-              provider_unit_id = r['ApartmentId']
+              provider_unit_id = r['apartmentId']
               existing = existing_units_by_id[provider_unit_id]
 
               if existing && existing.manual_override
