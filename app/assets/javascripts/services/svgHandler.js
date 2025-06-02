@@ -228,7 +228,7 @@ function floorBasedData(data = []) {
   return hasFloorplate()
     ? data.filter(
         ({ floor }) =>
-          floor === parseInt(current_floor) ||
+          validFloor(floor) ||
           (!floor && ["object", "undefined"].includes(typeof floor))
       )
     : data;
@@ -236,10 +236,12 @@ function floorBasedData(data = []) {
 
 function isCurrentFloorsSVG(svgElement) {
   if (hasFloorplate() && svgElement.parentElement) {
-    const floorNum = parseInt(svgElement.parentElement.id.split("_").pop());
+    const floor = svgElement.parentElement.id.split("_").pop();
+
     return (
-      (svgElement.id === `viewArea-${floorNum}` &&
-        floorNum === parseInt(current_floor)) ||
+      (svgElement.id ===
+        `viewArea-${floor === "all" ? defaultSelectedFloor : floor}` &&
+        validFloor(floor)) ||
       (parsedSVGs.length === 1 && svgElement.parentElement.id === "svg_map")
     );
   } else if (svgElement.id === "viewArea") {

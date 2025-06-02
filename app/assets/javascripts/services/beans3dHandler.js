@@ -38,12 +38,14 @@ var lastMouseInside = false;
 var isMouseTrackerInitialized = false;
 
 function initializeBeans3DMap() {
+  if (beansWidget) return;
+
   beansAddress = formattedAddress(webCommunity);
   beansWidget = new BeansMap();
 
   _3dConvertedArr = setup3dArray();
-  let displayOptions = beans3DMapDisplayOptions();
-  displayOptions.filteredRows = filterBeansItemsIndices();
+  const allIndices = filterBeansItemsIndices(true);
+  let displayOptions = beans3DMapDisplayOptions(allIndices);
 
   try {
     beansWidget.render(
@@ -100,10 +102,11 @@ function initializeBeans3DMap() {
   beansWidget.workingInstance = beansWorkingMapInstance();
 }
 
-function beans3DMapDisplayOptions() {
+function beans3DMapDisplayOptions(filteredRows = null) {
   return {
     propertyAddress: beansAddress,
-    filteredRows: null,
+    filteredRows: filteredRows || filterBeansItemsIndices(),
+    customConfigs: {},
     initialMap: "3D",
     hideBeansCard: true,
     hideFloorSelector: true,
@@ -122,9 +125,6 @@ function beans3DMapDisplayOptions() {
     initialZ: 180,
     initialTilt: 65,
     initialHeading: 0,
-    unitShape: {
-      fillOpacity: 0.5,
-    },
     // highlightOptions: {
     //   color: toHexColor(map_marker_color),
     //   haloOpacity: 0.9,
@@ -200,8 +200,7 @@ function setup3dArray() {
     data.options.markers.display = true;
     data.options.onClickData = unitData;
     data.options.onPreviewData = null;
-    // data.options.onPreviewTitle = unitData.name;
-    // data.options.onPreviewContent = unitData.providerUnitId;
+
     let fillColor = toHexColor(map_marker_color);
 
     switch (unitData.type) {
@@ -232,40 +231,24 @@ function setup3dArray() {
   });
 }
 
-// function generateCameraView() {
-//   return {
-//     tilt: 65,
-//     heading: 0,
-//     position: {
-//       // x: parseFloat(webCommunity.longitude),
-//       // y: parseFloat(webCommunity.latitude),
-//       // z: 0,
-//     },
-//   };
-// }
-
 function reDrawBeansWidget() {
-  if (_3dMapMode()) {
-    renderChangedUnits();
-    disabled_enabled_anchors();
+  if (!_3dMapMode()) return;
 
-    if (beansWidget?.workingInstance) {
-      let displayOptions = beans3DMapDisplayOptions();
-      displayOptions.filteredRows = filterBeansItemsIndices();
-      beansWidget.setDisplayOptions(displayOptions);
-      beansWidget.redraw();
-    } else {
-      initializeBeans3DMap();
-    }
+  if (beansWidget?.workingInstance) {
+    let displayOptions = beans3DMapDisplayOptions();
+    beansWidget.setDisplayOptions(displayOptions);
+    beansWidget.redraw();
+  } else {
+    initializeBeans3DMap();
   }
 }
 
-function filterBeansItemsIndices() {
-  const filteredUnitIds = filterUnitsBasedOnCommunityType(units).map(
-    ({ id }) => id
-  );
-  const filteredAmenitiesIds = filterAmenitiesBasedOnCommunityType(
-    amenities
+function filterBeansItemsIndices(initialization = false) {
+  const filteredUnitIds = (
+    initialization ? total_units : filterUnitsBasedOnCommunityType(units)
+  ).map(({ id }) => id);
+  const filteredAmenitiesIds = (
+    initialization ? amenities : filterAmenitiesBasedOnCommunityType(amenities)
   ).map(({ id }) => id);
 
   const matchedData = (unitId, isAmenity = false) =>

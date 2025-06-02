@@ -673,3 +673,17 @@ function getExecutableDataFunctionForObject(obj) {
 
   return { data: dataFunction };
 }
+
+function waitForProp(obj, prop, conditionToCheck = null, interval = 50, timeout = 5000) {
+  return new Promise((resolve, reject) => {
+    const start = Date.now();
+
+    (function check() {
+      const value = obj[prop];
+      if (conditionToCheck ? conditionToCheck(value) : value != null) return resolve(value);
+      if (Date.now() - start > timeout)
+        return reject(new Error("Timeout waiting for " + prop));
+      setTimeout(check, interval);
+    })();
+  });
+}

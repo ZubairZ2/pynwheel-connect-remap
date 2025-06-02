@@ -25,6 +25,7 @@ var showCurrentAvailabilityEnabled;
 var multiCommunity;
 var communityInactivated;
 var tbdMarkersEnabled;
+var defaultSelectedFloor;
 
 var _3dConvertedArr = definedAndHasValue(_3dConvertedArr)
   ? _3dConvertedArr
@@ -72,9 +73,7 @@ $(document).ready(function () {
     selectMap = "2d-map"; //webCommunity.web_map_type;
     enable3DMaps = webCommunity.enable_three_d_maps;
 
-    renderChangedUnits();
-    handleMapControl();
-    if (enable3DMaps) initializeBeans3DMap();
+    initializeBeans3DMap();
   } else {
     console.error("webCommunity not loaded properly");
   }
@@ -139,9 +138,7 @@ function bindWebpageEvents() {
 
     $(".custom-select").change(() => {
       renderChangedUnits();
-      if (svgMode) {
-        setSVGUnitsAmenitiesCoordinates();
-      }
+      setSVGUnitsAmenitiesCoordinates();
     });
   }
 
@@ -198,21 +195,18 @@ function bindWebpageEvents() {
     if (smallScreen()) return;
 
     maxPriceFilterChanged();
-    reDrawBeansWidget();
   });
 
   $("#square_feet, #responsive_square_feet").change(function () {
     if (smallScreen()) return;
 
     squareFootageFilterChanged();
-    reDrawBeansWidget();
   });
 
   $("#unit_bedroom, #responsive_unit_bedroom").change(function () {
     if (smallScreen()) return;
 
     bedroomFilterChanged();
-    reDrawBeansWidget();
   });
 
   $("#available_unit, #responsive_available_unit").change(function () {
@@ -220,7 +214,6 @@ function bindWebpageEvents() {
     triggeredForInitialisation = true;
 
     availabilityFilterChanged();
-    reDrawBeansWidget();
   });
 
   $("#multi_communities, #responsive_multi_communities").change(function () {
@@ -258,33 +251,27 @@ function bindWebpageEvents() {
   ///////////////////////////////////////////
   $(".floorplate-anchor").click(function (e) {
     e.stopPropagation();
+    $selectedFloorElement = $(this);
 
-    const changedFloor = $(this).attr("id");
+    const changedFloor = $selectedFloorElement.attr("id");
     const $currentImageBox = $("#floorplate_" + changedFloor);
 
     $(".floorplate-image").parent().addClass("hidden");
     $currentImageBox.removeClass("hidden");
+    const floorIsChanged = changeFloorNumber(
+      $selectedFloorElement,
+      changedFloor
+    );
 
-    if (changedFloor != current_floor) {
-      $("#" + changedFloor).addClass("selected");
-
-      // $currentImageBox.parent().removeClass("hidden");
-      $(".digits-list-item").removeClass("selected");
-      $(this).parent().addClass("selected");
-
-      current_floor = changedFloor;
-
-      if (!_3dMapMode()) {
-        $currentImageBox.parent().removeClass("hidden");
-        populate_current_units();
+    if (floorIsChanged) {
+      if (!smallScreen()) {
+        applyCommunityLevelFilter();
+        updateAndApplyFloorLevelFilter();
       }
+      populate_current_units();
+      if (!_3dMapMode()) $currentImageBox.parent().removeClass("hidden");
+      return;
     }
-    if (!smallScreen()) {
-      applyCommunityLevelFilter();
-      updateAndApplyFloorLevelFilter();
-    }
-    if (_3dMapMode()) reDrawBeansWidget();
-    else showMarkers();
   });
 
   $(".filter-label").click(function () {
@@ -292,23 +279,23 @@ function bindWebpageEvents() {
   });
 }
 
-// function displayOverlayText() {
-//   let instruction = localStorage.getItem(
-//     `webpagesInstruction${webCommunity.id}`
-//   );
+function changeFloorNumber($selectedFloorElement, changedFloor) {
+  if (changedFloor != current_floor) {
+    $("#" + changedFloor).addClass("selected");
 
-//   if (!instruction) {
-//     $("#webpages-overlay").show();
-//   }
-// }
+    // $currentImageBox.parent().removeClass("hidden");
+    $(".digits-list-item").removeClass("selected");
+    $selectedFloorElement.parent().addClass("selected");
 
-// function hideOverlayText() {
-//   $("#webpages-overlay").hide();
-//   localStorage.setItem(`webpagesInstruction${webCommunity.id}`, true);
-// }
+    current_floor = changedFloor;
+    return true;
+  } else {
+    return false;
+  }
+}
 
 function adjustImageMapMarkersPosition() {
-  if (svgMode) return;
+  if (svgMode || _3dMapMode()) return;
 
   const actualImage = getActualImageDimensions();
   const stretchedImage = getStretchedImageDimensions();
@@ -368,7 +355,7 @@ function positionAllMarkers(
     const y_plot = parseFloat(marker.data(yAttr));
 
     if (hasFloorplate()) {
-      show = show && current_floor == marker.data("floor");
+      show = show && validFloor(marker.data("floor"));
     }
     if (show) marker.removeClass("hidden");
     setMarkerPosition(marker, x_plot, y_plot, stretched, actual);
@@ -666,9 +653,7 @@ function filterUnitsBasedOnSqfeet() {
 
   if (sqFeet)
     units = units.filter(
-      (unit) =>
-        !(!hasFloorplate() || unit.floor == current_floor) ||
-        unit.square_feet >= sqFeet
+      (unit) => !validFloor(unit.floor) || unit.square_feet >= sqFeet
     );
 }
 
@@ -677,9 +662,7 @@ function filterUnitsBasedOnMarketRent() {
 
   if (marketRent)
     units = units.filter(
-      (unit) =>
-        !(!hasFloorplate() || unit.floor == current_floor) ||
-        unit.market_rent <= marketRent
+      (unit) => !validFloor(unit.floor) || unit.market_rent <= marketRent
     );
 }
 
@@ -700,12 +683,12 @@ function filterMultiCommunityBasedOnScreen(filterTag) {
 
 function filterUnitsBasedOnMultiCommunity() {
   const propertyId = filterMultiCommunityBasedOnScreen("multi_communities");
+  resetUnits();
 
   if (propertyId)
-    units = total_units.filter(
+    units = units.filter(
       (unit) => unit.property_id.trim() == propertyId.trim()
     );
-  else resetUnits();
 }
 
 function updateAvailabilityFilterDropdownList(availableUnits) {
@@ -808,7 +791,6 @@ function updateAvailabilityFilterDropdownList(availableUnits) {
   }
 
   disableAvailabilityOptions();
-  showMarkers();
 }
 
 function updateSquareFootageFilterDropdownList(floorplateUnits) {
@@ -994,7 +976,9 @@ function filterUnitsBasedOnCommunityType(
   floor = current_floor
 ) {
   if (hasFloorplate()) {
-    floorplateUnits = floorplateUnits.filter((unit) => unit.floor == floor);
+    floorplateUnits = floorplateUnits.filter((unit) =>
+      validFloor(unit.floor, floor)
+    );
   }
 
   return floorplateUnits;
@@ -1006,7 +990,8 @@ function filterAmenitiesBasedOnCommunityType(
 ) {
   if (hasFloorplate()) {
     floorplateAmenities = floorplateAmenities.filter(
-      (amenity) => amenity.floor == floor || !definedAndHasValue(amenity.floor)
+      (amenity) =>
+        validFloor(amenity.floor, floor) || !definedAndHasValue(amenity.floor)
     );
   }
 
@@ -1044,98 +1029,101 @@ function showMarkers() {
   const unitsToDisplay = filterUnitsBasedOnCommunityType(units);
 
   renderChangedUnits();
-  const scope = currentMapImage()?.parentElement;
-  if (!scope) return;
+  if (!_3dMapMode() && !svgMode) {
+    const scope = currentMapImage()?.parentElement;
+    if (!scope) return;
 
-  const jsonObject = {};
-  for (let i = 0; i < unitsToDisplay.length; i++) {
-    const { id, x_plot, y_plot } = unitsToDisplay[i];
-    const $markerEl = $("#m_" + id, scope);
-    if ($markerEl.hasClass("overlapping-unit")) {
-      $(".hidden-units").append(
-        '<div class="hidden h-' +
-          $markerEl.data("unit-x-plot") +
-          "-" +
-          $markerEl.data("unit-y-plot") +
-          '" id="h-' +
-          $markerEl.data("title") +
-          '" data-title="' +
-          $markerEl.data("title") +
-          '" data-community-id="' +
-          $markerEl.data("community-id") +
-          '" data-unit-id="' +
-          $markerEl.data("unit-id") +
-          '" data-is-fav="' +
-          $markerEl.data("is-fav") +
-          '" data-provider="' +
-          $markerEl.data("provider") +
-          '" data-website="' +
-          $markerEl.data("website") +
-          '" data-community-property-id="' +
-          $markerEl.data("community-property-id") +
-          '" data-unit-provider-id="' +
-          $markerEl.data("unit-provider-id") +
-          '" data-floorplan-provider-id="' +
-          $markerEl.data("floorplan-provider-id") +
-          '" data-floorplan-name="' +
-          $markerEl.data("floorplan-name") +
-          '" data-unit-description="' +
-          $markerEl.data("unit-description") +
-          '" data-unit-lease-pricing="' +
-          $markerEl.data("unit-lease-pricing") +
-          '" data-unit-marketing-name="' +
-          $markerEl.data("unit-marketing-name") +
-          '" data-market-rent="' +
-          $markerEl.data("market-rent") +
-          '" data-square-feet="' +
-          $markerEl.data("square-feet") +
-          '" data-availability="' +
-          $markerEl.data("availability") +
-          '" data-available-date="' +
-          $markerEl.data("available-date") +
-          '" data-bedrooms="' +
-          $markerEl.data("bedrooms") +
-          '" data-bathrooms="' +
-          $markerEl.data("bathrooms") +
-          '" data-floorplan-image="' +
-          $markerEl.data("floorplan-image") +
-          '" data-availability-url="' +
-          $markerEl.data("availability-url") +
-          '" data-lease-term="' +
-          $markerEl.data("lease-term") +
-          '" data-unit-additional-fees="' +
-          $markerEl.data("unit-additional-fees") +
-          '"></div>'
-      );
+    const jsonObject = {};
+    for (let i = 0; i < unitsToDisplay.length; i++) {
+      const { id, x_plot, y_plot } = unitsToDisplay[i];
+      const $markerEl = $("#m_" + id, scope);
+      if ($markerEl.hasClass("overlapping-unit")) {
+        $(".hidden-units").append(
+          '<div class="hidden h-' +
+            $markerEl.data("unit-x-plot") +
+            "-" +
+            $markerEl.data("unit-y-plot") +
+            '" id="h-' +
+            $markerEl.data("title") +
+            '" data-title="' +
+            $markerEl.data("title") +
+            '" data-community-id="' +
+            $markerEl.data("community-id") +
+            '" data-unit-id="' +
+            $markerEl.data("unit-id") +
+            '" data-is-fav="' +
+            $markerEl.data("is-fav") +
+            '" data-provider="' +
+            $markerEl.data("provider") +
+            '" data-website="' +
+            $markerEl.data("website") +
+            '" data-community-property-id="' +
+            $markerEl.data("community-property-id") +
+            '" data-unit-provider-id="' +
+            $markerEl.data("unit-provider-id") +
+            '" data-floorplan-provider-id="' +
+            $markerEl.data("floorplan-provider-id") +
+            '" data-floorplan-name="' +
+            $markerEl.data("floorplan-name") +
+            '" data-unit-description="' +
+            $markerEl.data("unit-description") +
+            '" data-unit-lease-pricing="' +
+            $markerEl.data("unit-lease-pricing") +
+            '" data-unit-marketing-name="' +
+            $markerEl.data("unit-marketing-name") +
+            '" data-market-rent="' +
+            $markerEl.data("market-rent") +
+            '" data-square-feet="' +
+            $markerEl.data("square-feet") +
+            '" data-availability="' +
+            $markerEl.data("availability") +
+            '" data-available-date="' +
+            $markerEl.data("available-date") +
+            '" data-bedrooms="' +
+            $markerEl.data("bedrooms") +
+            '" data-bathrooms="' +
+            $markerEl.data("bathrooms") +
+            '" data-floorplan-image="' +
+            $markerEl.data("floorplan-image") +
+            '" data-availability-url="' +
+            $markerEl.data("availability-url") +
+            '" data-lease-term="' +
+            $markerEl.data("lease-term") +
+            '" data-unit-additional-fees="' +
+            $markerEl.data("unit-additional-fees") +
+            '"></div>'
+        );
 
-      const jsonObjectKey = `${x_plot}-${y_plot}`;
+        const jsonObjectKey = `${x_plot}-${y_plot}`;
 
-      if (jsonObject[jsonObjectKey]) {
-        const overlappingUnits = jsonObject[jsonObjectKey];
-        overlappingUnits.push(unitsToDisplay[i]);
-        jsonObject[jsonObjectKey] = overlappingUnits;
+        if (jsonObject[jsonObjectKey]) {
+          const overlappingUnits = jsonObject[jsonObjectKey];
+          overlappingUnits.push(unitsToDisplay[i]);
+          jsonObject[jsonObjectKey] = overlappingUnits;
+        } else {
+          jsonObject[jsonObjectKey] = [unitsToDisplay[i]];
+        }
       } else {
-        jsonObject[jsonObjectKey] = [unitsToDisplay[i]];
+        $markerEl.removeClass("hidden");
       }
-    } else {
+    }
+
+    for (const key in jsonObject) {
+      const overlappingUnits = jsonObject[key];
+      const $markerEl = $("#m_" + overlappingUnits[0]["id"], scope);
+
+      $("span", $markerEl).html(
+        overlappingUnits.length > 1 ? overlappingUnits.length : ""
+      );
       $markerEl.removeClass("hidden");
     }
   }
 
-  for (const key in jsonObject) {
-    const overlappingUnits = jsonObject[key];
-    const $markerEl = $("#m_" + overlappingUnits[0]["id"], scope);
-
-    $("span", $markerEl).html(
-      overlappingUnits.length > 1 ? overlappingUnits.length : ""
-    );
-    $markerEl.removeClass("hidden");
-  }
-
-  setSVGUnitsAmenitiesCoordinates();
-  adjustImageMapMarkersPosition();
-  setMarkersSizeAndMargin();
   disabled_enabled_anchors();
+  setMarkersSizeAndMargin();
+  adjustImageMapMarkersPosition();
+  setSVGUnitsAmenitiesCoordinates();
+  reDrawBeansWidget();
 }
 
 function handleResize() {
@@ -1163,11 +1151,15 @@ function populate_current_units() {
   current_units = [];
 
   if (hasFloorplate()) {
-    $(".amenity-marker").addClass("hidden"); // first hidding all amenity markers
-    $(".a_" + current_floor).removeClass("hidden"); // showing amenity markers on current floorplate
+    if (current_floor !== "all") {
+      $(".amenity-marker").addClass("hidden"); // first hidding all amenity markers
+      $(".a_" + current_floor).removeClass("hidden"); // showing amenity markers on current floorplate
+    } else {
+      $(".amenity-marker").removeClass("hidden"); // showing all amenity markers
+    }
 
     for (var i = 0; i < units.length; i++) {
-      if (units[i]["floor"] == current_floor) {
+      if (validFloor(units[i]["floor"])) {
         current_units.push(units[i]);
       }
     }
@@ -1590,6 +1582,11 @@ function markerHoverEffect(event, _3dData = null) {
 
   if (_3dMapMode() && _3dData) {
     const unitData = units.find(({ id }) => id === _3dData.unitId);
+    if (!unitData) {
+      _3dHoveredItem = null;
+      return;
+    }
+
     _3dHoveredItem = _3dData;
     $this = getExecutableDataFunctionForObject(unitData.data_attributes);
   } else if (svgMode && event.currentTarget.tagName.toLowerCase() === "g") {
@@ -1842,7 +1839,7 @@ function setUnitModalButtons(e) {
     filteredUnits = units.filter(
       ({ floor, pointer_data: { id, selector } = {} }) =>
         (id === relatedTargetSelector || selector === relatedTargetSelector) &&
-        (!hasFloorplate() || parseInt(current_floor) === floor)
+        validFloor(floor)
     );
   } else {
     clickedUnit = units.find(
@@ -1855,9 +1852,7 @@ function setUnitModalButtons(e) {
 
     filteredUnits = units.filter(
       ({ floor, x_plot, y_plot }) =>
-        unitXPlot === x_plot &&
-        unitYPlot === y_plot &&
-        (!hasFloorplate() || parseInt(current_floor) === floor)
+        unitXPlot === x_plot && unitYPlot === y_plot && validFloor(floor)
     );
   }
 
@@ -1869,9 +1864,7 @@ function setUnitModalButtons(e) {
   }
 
   filteredUnits.forEach((unit) => {
-    if (hasFloorplate() && unit && unit.floor != parseInt(current_floor)) {
-      return;
-    }
+    if (unit && !validFloor(unit.floor)) return;
 
     setModalButton(unit.id === parseInt(clickedUnit.id), unit.data_attributes);
   });
@@ -1922,21 +1915,21 @@ function disabled_enabled_anchors() {
     var floorplate_units = [];
     const floor = floors[i];
 
-    if (floor == current_floor) {
+    if (validFloor(floor)) {
       $("#" + floor).addClass("selected");
     } else {
       $("#" + floor).removeClass("selected");
     }
 
     for (let j = 0; j < units.length; j++) {
-      if (units[j]["floor"] == floor) {
+      if (validFloor(units[j]["floor"], floor)) {
         floorplate_units.push(units[j]);
       }
     }
 
     var floorplate_amenities = [];
     for (let j = 0; j < amenities.length; j++) {
-      if (amenities[j]["floor"] == floor) {
+      if (validFloor(amenities[j]["floor"], floor)) {
         floorplate_amenities.push(amenities[j]);
       }
     }
@@ -1983,11 +1976,8 @@ function disabled_enabled_anchors() {
 
 function toggleAlert() {
   const $alert = $(".alert");
-  let currentFloorUnits = filterUnitsBasedOnCommunityType(units, current_floor);
-  let currentFloorAmenities = filterAmenitiesBasedOnCommunityType(
-    amenities,
-    current_floor
-  );
+  let currentFloorUnits = filterUnitsBasedOnCommunityType(units);
+  let currentFloorAmenities = filterAmenitiesBasedOnCommunityType(amenities);
 
   if (currentFloorUnits.length == 0 && currentFloorAmenities.length != 0) {
     $alert.show();
@@ -2042,8 +2032,8 @@ function change_units_view(evt, type) {
     });
   } else if (!_3dMapMode()) {
     moveZoomableImageToCenter(currentMapImage());
-    adjustImageMapMarkersPosition();
   }
+  adjustImageMapMarkersPosition();
 }
 
 function set_yardirentcafe_url(element) {
@@ -2635,13 +2625,18 @@ function setUnitAttributes(element, event = null) {
 
 function handleMapControl() {
   if (communityInactivated) return;
+
   if (_3dMapMode()) {
     display3DMap();
   } else display2DMap();
 }
 
 function resetMapData() {
+  // $("a.floorplate-anchor#" + defaultSelectedFloor).click();
+  resetUnits();
   setWebpageContainerSize();
+  filterUnitsBasedOnSelectedFilters();
+  showMarkers();
 }
 
 function display3DMap() {
@@ -2650,16 +2645,25 @@ function display3DMap() {
   $(".plus-action").addClass("hidden");
   $(".minus-action").addClass("hidden");
   $(".image-map").addClass("hidden");
-  const $missingItem = $(".legend-item").filter(function () {
-    return $(this).find("span.label").text().trim().toUpperCase() === "MISSING DATA";
-  });
-  $missingItem.addClass("hidden");
+  $(".legend-item")
+    .filter(function () {
+      return (
+        $(this).find("span.label").text().trim().toUpperCase() ===
+        "MISSING DATA"
+      );
+    })
+    .addClass("hidden");
+  $("li.digits-list-item")
+    .filter(function () {
+      return $(this).find("#all").length;
+    })
+    .removeClass("hidden");
   $(".beans-map-container").removeClass("hidden");
   $("._3d-apply-filter-button").removeClass("hidden");
   $(".satelite-view-icon").removeClass("hidden");
   $(".2d-map-option").removeClass("hidden");
+  $("a.floorplate-anchor#all").click();
   resetMapData();
-  reDrawBeansWidget();
 }
 
 function display2DMap() {
@@ -2668,17 +2672,26 @@ function display2DMap() {
   $(".satelite-view-icon").addClass("hidden");
   $(".2d-map-option").addClass("hidden");
   $(".satelite-view-icon").addClass("hidden");
-  const $missingItem = $(".legend-item").filter(function () {
-    return $(this).find("span.label").text().trim().toUpperCase() === "MISSING DATA";
-  });
-  $missingItem.removeClass("hidden");
+  $("li.digits-list-item")
+    .filter(function () {
+      return $(this).find("#all").length;
+    })
+    .addClass("hidden");
+  $(".legend-item")
+    .filter(function () {
+      return (
+        $(this).find("span.label").text().trim().toUpperCase() ===
+        "MISSING DATA"
+      );
+    })
+    .removeClass("hidden");
   $(".image-map").removeClass("hidden");
   $(".location-items").removeClass("hidden");
   $(".plus-action").removeClass("hidden");
   $(".minus-action").removeClass("hidden");
   $(".3d-map-option").removeClass("hidden");
+  $("a.floorplate-anchor#" + defaultSelectedFloor).click();
   resetMapData();
-  showMarkers();
 }
 
 function resetFilters() {
@@ -2714,16 +2727,11 @@ function resetBasedOnBedroom() {
 
   bedroomFilterChanged();
   showMarkers();
-  reDrawBeansWidget();
 }
 
 function applyFilters() {
   filterUnitsBasedOnSelectedFilters();
-  if (_3dMapMode()) {
-    reDrawBeansWidget();
-  } else {
-    showMarkers();
-  }
+  showMarkers();
 
   selected_market_rent = $("#responsive_market_rent option:selected").text();
   selected_square_feet = $("#responsive_square_feet option:selected").text();
@@ -3117,6 +3125,10 @@ function hasFloorplate() {
   return has_floorplate === "true";
 }
 
+function validFloor(floor, matchingFloor = current_floor) {
+  return !hasFloorplate() || matchingFloor == floor || matchingFloor === "all";
+}
+
 async function fetchWebpageSVGAndSetCoordinates() {
   $(".webPageLoader").removeClass("hidden");
 
@@ -3124,7 +3136,8 @@ async function fetchWebpageSVGAndSetCoordinates() {
   $images.each((_, img) => {
     const isFloorplate = hasFloorplate();
     const visibleCheck = isFloorplate
-      ? img.id === `f_${current_floor}`
+      ? img.id ===
+        `f_${current_floor === "all" ? defaultSelectedFloor : current_floor}`
       : img.id === "property-map-image";
 
     const asset = {
@@ -3142,6 +3155,7 @@ async function fetchWebpageSVGAndSetCoordinates() {
   if (hasFloorplate()) {
     const array = [];
     for (const floor of floors) {
+      if (floor === "all") continue; // Skip 'all' floor
       array.push(
         fetchSVG(`#floorplate_${floor}`, {
           floor,
@@ -3151,7 +3165,7 @@ async function fetchWebpageSVGAndSetCoordinates() {
           tracker: assetTracker,
           setSVGImageHeight: true,
           trackerAssetId: `svg-floorplate-${floor}`,
-          trackerVisibilityCheck: parseInt(current_floor) === floor,
+          trackerVisibilityCheck: validFloor(floor),
         })
       );
     }
@@ -3190,7 +3204,8 @@ async function fetchWebpageSVGAndSetCoordinates() {
 }
 
 function setSVGUnitsAmenitiesCoordinates() {
-  if (!svgMode) return;
+  if (_3dMapMode() || !svgMode) return;
+
   $(".cloned").parent("g").css({ cursor: "default" });
   setSvgUnitsCoordinates();
   setSvgAmenitiesCoordinates();
@@ -3344,7 +3359,7 @@ function setWebpageContainerSize() {
 }
 
 function setMarkersSizeAndMargin() {
-  if (svgMode) return;
+  if (svgMode || _3dMapMode()) return;
 
   const currentVisibleImage = currentVisibleMapImage();
   if (!currentVisibleImage) return;
@@ -3444,7 +3459,9 @@ function setMarkersSizeAndMargin() {
 
 function currentMapImage() {
   const parentSelector = hasFloorplate()
-    ? `div#floorplate_${current_floor}`
+    ? `div#floorplate_${
+        current_floor === "all" ? defaultSelectedFloor : current_floor
+      }`
     : `div#property-map`;
   const currentVisibleImage = Array.from(
     document.querySelectorAll(
@@ -3483,7 +3500,7 @@ function getUnitMarkerColor(unit) {
     if (svgMode && !_3dMapMode() && tbdMarkersEnabled) {
       return mapMarkerColors.missing || "#eecea5";
     }
-    return '';
+    return "";
   }
 
   const unitCommunityId = unit.property_id || unit.propertyId || "";
