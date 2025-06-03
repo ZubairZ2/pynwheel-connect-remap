@@ -11,7 +11,7 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
     begin
       return wrong_provider_alert unless params[:data_provider].present?
 
-      set_data_provider
+      update_community_attributes
       set_credentials
       import_providers_data
 
@@ -34,7 +34,7 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
     def import_providers_data
       if valid_credentials? && @community.data_is_imported
         update_credentials(params[:data_provider], :company)
-        set_property_and_community_user
+        set_community_user
         render_response('Success! Property has been set up.', true)
       else
         begin 
@@ -100,9 +100,8 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
       end
     end
 
-    def set_property_and_community_user
+    def set_community_user
       begin
-        @community.update(use_company_level_data_settings: true, pynwheel_launch_access: true)
         CommunityUser.find_or_create_by(user_id: current_pynwheel_user.id, community_id: @community.id)
       rescue => error
         render_response(error.message, false)
@@ -133,8 +132,8 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
       propery_id_or_name_required unless params[:property_name].present? && params[credential_criteria[:column].to_sym].present?
     end
 
-    def set_data_provider
-      @community.update(data_provider: params[:data_provider]) if params[:data_provider].present?
+    def update_community_attributes
+      @community.update(data_provider: params[:data_provider], use_company_level_data_settings: true, pynwheel_launch_access: true) if params[:data_provider].present?
     end
 
     def render_response(message, status)
