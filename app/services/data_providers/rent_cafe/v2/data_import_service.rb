@@ -222,7 +222,7 @@ module DataProviders
                             end
 
                 update_floorplan_attributes(fp, r)
-                existing_floorplans_by_id[floorplan_id] = fp.reload
+                existing_floorplans_by_id[floorplan_id] = fp
                 floorplans << fp
               end
             rescue => exception
