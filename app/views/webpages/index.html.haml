@@ -43,89 +43,44 @@
   %body.custom-iframe-modeule
     .webPageLoader.hidden
 
-    - if @community.theme_name.include?('gables')
-      - fontsize = @community&.design&.property_map_size_integer || 30
-    - elsif @community.theme_name == 'modernist'
-      - fontsize = @community&.design&.modernist_property_map_size || 30
-    - elsif @community.theme_name == 'futurist'
-      - fontsize = @community&.design&.futurist_property_map_size || 30
-    - elsif @community.theme_name == 'expressionist'
-      - fontsize = @community&.design&.expressionist_property_map_size || 30
-    - elsif @community.theme_name == 'panther'
-      - fontsize = @community&.design&.panther_property_map_size || 30
-    - else
-      - fontsize = 30
-
-    - if @community.display_tbd_legend? || @community.theme_name.include?('gables')
-      - map_marker_color = @community&.design&.property_map_color || "#d37474"
-    - elsif @community.theme_name == 'modernist'
-      - map_marker_color = ( ['no color', ''].include?(@community&.design&.modernist_map_marker_color) ) ? (@community&.design&.primary_color || '#cf492f') : (@community&.design&.modernist_map_marker_color || '#cf492f')
-    - elsif @community.theme_name == 'futurist'
-      - map_marker_color = @community&.design&.futurist_property_map_marker_color || "#d37474"
-    - elsif @community.theme_name == 'expressionist'
-      - map_marker_color = @community&.design&.expressionist_property_map_marker_color || "#d37474"
-    - elsif @community.theme_name == 'panther'
-      - map_marker_color = @community&.design&.panther_property_map_marker_color || "#d37474"
-    - else
-      - map_marker_color = 'rgba(247, 0, 0, 0.61)'
-
-    - map_marker_missing_color = @community&.design&.property_map_missing_color || "#eecea5"
-    - map_marker_occupied_color = @community&.design&.property_map_occupied_color || "#f2f2f2"
-    - map_marker_occupied_on_notice_color = @community&.design&.property_map_occupied_on_notice_color || "#8545a1"
-    - map_marker_vacant_leased_color = @community&.design&.property_map_vacant_leased_color || "#f9d648"
-    - map_marker_model_color = @community&.design&.property_map_model_color || "#f57396"
-
-    - if @community.theme_name.include?('gables')
-      - marker_font_size = @community&.design&.amenity_map_marker_size_integer || 30
-    - elsif @community.theme_name == 'modernist'
-      - marker_font_size = @community&.design&.modernist_amenity_map_size || 30
-    - elsif @community.theme_name == 'futurist'
-      - marker_font_size = @community&.design&.futurist_amenity_map_size || 30
-    - elsif @community.theme_name == 'expressionist'
-      - marker_font_size = @community&.design&.expressionist_amenity_map_size || 30
-    - elsif @community.theme_name == 'panther'
-      - marker_font_size = @community&.design&.panther_amenity_map_size || 30
-    - else
-      - fontsize = 30
-
-    - if @community.theme_name.include?('gables')
-      - amenity_marker_color = @community&.design&.amenity_map_marker_color || "#d37474"
-    - elsif @community.theme_name == 'modernist'
-      - amenity_marker_color = ( ['no color', ''].include?(@community.design.modernists_amenity_map_marker_color) ) ? (@community&.design&.primary_color || '#cf492f') : (@community&.design&.modernists_amenity_map_marker_color || '#cf492f')
-    - elsif @community.theme_name == 'futurist'
-      - amenity_marker_color = @community&.design&.futurist_amenity_map_marker_color || "#d37474"
-    - elsif @community.theme_name == 'expressionist'
-      - amenity_marker_color = @community&.design&.expressionist__amenity_map_marker_color || "#d37474"
-    - elsif @community.theme_name == 'panther'
-      - amenity_marker_color = @community&.design&.panther_amenity_map_marker_color || "#d37474"
-    - else
-      - amenity_marker_color = 'rgba(247, 0, 0, 0.61)'
-
-    - left_margin = ((fontsize.to_f - 35) / 5).to_i
-    - top_margin = ((13.0 / 25.0).to_f * (fontsize.to_f)).to_i
-    - spanSize_x = ((5 / 25.0).to_f * (fontsize.to_f)).to_f
-    - spanSize_y = ((7 / 25.0).to_f * (fontsize.to_f)).to_f
-    - spanSize_size = ((9 / 25.0).to_f * (fontsize.to_f)).to_f
-    - camera_margin = (marker_font_size.to_i <= 27 ? 3 : (marker_font_size.to_i <= 30 ? 4 : (marker_font_size.to_i <= 33 ? 5 : (marker_font_size.to_i <= 35 ? 6 : 6))))
+    -# Marker fond & color settings 
+    - fontsize = @map_config[:unit_marker_font_size]
+    - map_marker_color = @map_config[:unit_marker_color]
+    - marker_font_size = @map_config[:amenity_marker_font_size]
     - marker_font_size = (marker_font_size.to_i) -5
-    - camera_font_size = (marker_font_size.to_i) / 2
-    - amenity_left_margin = 13
-    - amenity_top_margin = 13
+    - amenity_marker_color = @map_config[:amenity_marker_color]
 
-    - if @svg_enabled
-      - left_margin = 13
-      - top_margin = 34
+    -# TBD colors settings 
+    - map_marker_missing_color = @map_config[:tbd_colors][:missing]
+    - map_marker_occupied_color = @map_config[:tbd_colors][:occupied]
+    - map_marker_occupied_on_notice_color = @map_config[:tbd_colors][:occupied_on_notice]
+    - map_marker_vacant_leased_color = @map_config[:tbd_colors][:vacant_leased]
+    - map_marker_model_color = @map_config[:tbd_colors][:model]
+
+    -# margins settings 
+    - left_margin = @map_config[:margins][:left_margin]
+    - top_margin = @map_config[:margins][:top_margin]
+    - span_size_x = @map_config[:margins][:span_size_x]
+    - span_size_y = @map_config[:margins][:span_size_y]
+    - span_size = @map_config[:margins][:span_size]
+    - camera_margin = @map_config[:margins][:camera_margin]
+    - camera_font_size = @map_config[:margins][:camera_font_size]
+    - amenity_left_margin = @map_config[:margins][:amenity_left_margin]
+    - amenity_top_margin = @map_config[:margins][:amenity_top_margin]
 
 
     - units = @available_units_and_sold_units
     - min_unit_floor = @community_info.has_floorplates? ? (JSON.parse(@units_with_floorplan_info).map{ |x| x["floor"] }.min rescue @floors&.min) : nil
     - min_unit_floor = @floors.min if @floors.present? && @floors.exclude?(min_unit_floor)
+
     - marker_colors = { vacant: map_marker_color, occupied: map_marker_occupied_color, occupied_on_notice: map_marker_occupied_on_notice_color, vacant_leased: map_marker_vacant_leased_color, model: map_marker_model_color }.merge( @svg_enabled ? { missing: map_marker_missing_color } : {} )
     - colors = marker_colors.values_at(:missing_floorplan, :missing, :occupied, :occupied_on_notice, :vacant, :vacant_leased, :model)
     - labels = ["Missing Floorplan", "Missing Data", "Occupied", "Occupied on Notice", "Vacant", "Vacant Leased", "Model"]
     - legend_items = colors.map.with_index { |color, index| color ? { label: labels[index], color: color } : nil }.compact
-    - locals_for_markers = { svg_enabled: @svg_enabled, community_info: @community_info, units: units, amenities: @amenities, floors: @floors, floorplates: @floorplates, floorplans_map: @floorplans_map, spanSize_y: spanSize_y, spanSize_x: spanSize_x, spanSize_size: spanSize_size, fontsize: fontsize, map_marker_color: map_marker_color, amenity_marker_color: amenity_marker_color, top_margin: top_margin, left_margin: left_margin, amenity_top_margin: amenity_top_margin, amenity_left_margin: amenity_left_margin }
+    
+    - locals_for_markers = { svg_enabled: @svg_enabled, community_info: @community_info, units: units, amenities: @amenities, floors: @floors, floorplates: @floorplates, floorplans_map: @floorplans_map, spanSize_y: span_size_y, spanSize_x: span_size_x, spanSize_size: span_size, fontsize: fontsize, map_marker_color: map_marker_color, amenity_marker_color: amenity_marker_color, top_margin: top_margin, left_margin: left_margin, amenity_top_margin: amenity_top_margin, amenity_left_margin: amenity_left_margin }
     - svg_and_image_locals = { min_unit_floor: min_unit_floor, marker_colors: marker_colors, locals_for_markers: locals_for_markers }
+    
     - _3d_enabled = @community.enable_three_d_maps
 
     - unless @community_info.locked
