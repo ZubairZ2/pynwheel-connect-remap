@@ -553,6 +553,35 @@ module CommunitiesHelper
     }
   end
 
+  def get_min_floor(community_info:, units_with_floorplan_info_json:, floors:)
+    return nil unless community_info.has_floorplates?
+
+    begin
+      parsed_floors = JSON.parse(units_with_floorplan_info_json).map { |u| u["floor"] }.compact
+      min_floor = parsed_floors.min
+    rescue JSON::ParserError, TypeError
+      min_floor = floors&.min
+    end
+
+    if floors.present? && !floors.include?(min_floor)
+      min_floor = floors.min
+    end
+
+    min_floor
+  end
+
+  def amenity_coordinates(amenity, svg_enabled:)
+    if svg_enabled
+      coords = amenity.pointer_data.is_a?(Hash) ? amenity.pointer_data.values_at('x_plot', 'y_plot') : [0, 0]
+    else
+      coords = [amenity.x_plot, amenity.y_plot]
+    end
+    
+    coords.map(&:to_i)
+  end
+
+
+
   private
 
   def fetch_unit_data_attributes(unit, struct)

@@ -21,7 +21,8 @@ class WebpagesController < ActionController::Base
     @svg_enabled = @community_info.enable_svg_mode?
 
     community_units = @community_info.units
-    @amenities = @community_info.amenities.plotted_amenities(@svg_enabled)
+    @amenities = @community_info.amenities.plotted_amenities(@svg_enabled).includes(:amenityable, :amenity_galleries)
+
     @have_multi_property_ids = @community_info.have_multi_property_ids? && @community_info.credential&.allow_sub_communities?
     @multi_properties = @community_info.fetch_multi_properties()
 
@@ -39,7 +40,6 @@ class WebpagesController < ActionController::Base
                                           @total_available_units
                                         end
 
-       #+ @community_info.units.are_sold(@svg_enabled)
       if @available_units_and_sold_units.length > 0
         normalize_units
         if @units_with_floorplan_info.present?
@@ -50,6 +50,10 @@ class WebpagesController < ActionController::Base
           @units_with_floorplan_info = @units_with_floorplan_info.to_json
         end
       end
+
+      @min_floor = get_min_floor( community_info: @community_info, units_with_floorplan_info_json: @units_with_floorplan_info, floors: @floors )
+
+
       @amenities_data = []
       normalize_amenities
       @amenities_data = @amenities_data.to_json
