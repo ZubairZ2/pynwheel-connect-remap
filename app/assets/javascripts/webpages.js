@@ -2059,16 +2059,23 @@ function set_psi_url(element) {
   window.open(url, "_blank");
 }
 
+function formatDateLocal(date) {
+  const offsetDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return offsetDate.toISOString().split("T")[0];
+}
+
+
 function set_resman_url(element) {
   setApplyNowURLDate(currentUnitSelected);
   leaseTerm = $("#unitModal").find("#lease_term").val().split(" months")[0];
   date = new Date($("#leasing-start-date").val());
+
   var url =
     element.getAttribute("data-availability-url") +
     "&leaseTerm=" +
     leaseTerm +
     "&moveInDate=" +
-    date.toISOString().split("T")[0];
+    formatDateLocal(date);
 
   if (_3dMapMode()) {
     date = new Date();
@@ -2078,7 +2085,7 @@ function set_resman_url(element) {
       "&leaseTerm=" +
       _3dData.leaseTerm +
       "&moveInDate=" +
-      date.toISOString().split("T")[0];
+      formatDateLocal(date);
   }
 
   window.open(url, "_blank");
@@ -2447,17 +2454,16 @@ function handleApplyNowButtonVisibility(element) {
 }
 
 function setApplyNowURLDate(element) {
+  const availableDate = ($(element).data("available-date") == "Now") ? new Date() : (new Date($(element).data("available-date")))
+
   $("#leasing-start-date").datepicker(
     "setDate",
-    new Date($(element).data("available-date"))
+    availableDate
   );
-  // $('#leasing-start-date').datepicker('option', {dateFormat: 'mm/dd/yy', minDate: new Date(), maxDate: new Date() })
+
   $("#leasing-start-date").datepicker("option", {
     dateFormat: "mm/dd/yy",
-    minDate:
-      $(element).data("available-date") == "Now"
-        ? new Date()
-        : new Date($(element).data("available-date")),
+    minDate: availableDate,
   });
 }
 
