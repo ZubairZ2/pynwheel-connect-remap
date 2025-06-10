@@ -267,7 +267,7 @@ function bindWebpageEvents() {
         updateAndApplyFloorLevelFilter();
       }
 
-      populate_current_units();
+      populateCurrentUnits();
 
       if (!_3dMapMode()) $currentImageBox.parent().removeClass("hidden");
       return;
@@ -566,6 +566,7 @@ function filterUnitsBasedOnSelectedFilters(options = {}) {
 function applyCommunityLevelFilter(options = {}) {
   filterUnitsBasedOnMultiCommunity();
   filterUnitsBasedOnBedroom();
+
   if (!options.skipAvailabilityFilter) filterUnitsBasedOnAvailability();
 }
 
@@ -1121,11 +1122,11 @@ function showMarkers() {
     }
   }
 
-  disabled_enabled_anchors();
-  setMarkersSizeAndMargin();
-  adjustImageMapMarkersPosition();
-  setSVGUnitsAmenitiesCoordinates();
-  reDrawBeansWidget();
+  disabledEnabledAnchors();
+  setMarkersSizeAndMargin(); //image mode only
+  adjustImageMapMarkersPosition(); //image mode only
+  setSVGUnitsAmenitiesCoordinates(); //svg mode only
+  reDrawBeansWidget(); //beans mode only
 }
 
 function handleResize() {
@@ -1148,7 +1149,7 @@ function performHardRefresh() {
   }
 }
 
-function populate_current_units() {
+function showFloorLevelUnits() {
   $(".marker").addClass("hidden");
   current_units = [];
 
@@ -1170,7 +1171,10 @@ function populate_current_units() {
       current_units.push(units[i]);
     }
   }
+}
 
+function populateCurrentUnits() {
+  showFloorLevelUnits()
   showMarkers();
 }
 
@@ -1849,7 +1853,7 @@ function hasTouch() {
   );
 }
 
-function disabled_enabled_anchors() {
+function disabledEnabledAnchors() {
   var min_market_rent = 100000;
   var max_area = 0;
 

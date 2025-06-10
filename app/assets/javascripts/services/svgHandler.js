@@ -124,11 +124,14 @@ async function fetchSVG(
     type: "svg",
     completed: false,
   };
+  
   tracker?.addOrUpdateAsset(asset, trackerVisibilityCheck);
 
   try {
-    // const response = await fetch(imageUrl);
-    const response = await fetch(`/images/fetch_svg_image?svg_url=${imageUrl}`);
+    // const surl = "https://staging-pynwheel.s3-accelerate.amazonaws.com/uploads/floorplate/svg_image/3680/1749119801-black22.svg"
+    const response = await fetch(imageUrl);
+    debugger;
+    // const response = await fetch(`/images/fetch_svg_image?svg_url=${imageUrl}`);
 
     if (!response.ok)
       throw new Error(`Failed to fetch SVG: ${response.statusText}`);
