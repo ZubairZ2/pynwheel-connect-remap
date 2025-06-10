@@ -110,7 +110,7 @@ async function fetchSVG(
   }
 ) {
   const container = document.querySelector(dataSetSelector);
-  const imageUrl = container?.dataset.svgUrl;
+  let imageUrl = container?.dataset.svgUrl;
 
   if (!imageUrl?.endsWith(".svg")) return;
 
@@ -124,11 +124,11 @@ async function fetchSVG(
     type: "svg",
     completed: false,
   };
-  
+
   tracker?.addOrUpdateAsset(asset, trackerVisibilityCheck);
 
   try {
-    // const surl = "https://staging-pynwheel.s3-accelerate.amazonaws.com/uploads/floorplate/svg_image/3680/1749119801-black22.svg"
+    // imageUrl = "https://staging-pynwheel.s3-accelerate.amazonaws.com/uploads/floorplate/svg_image/3680/1749119801-black22.svg"
     const response = await fetch(imageUrl);
     debugger;
     // const response = await fetch(`/images/fetch_svg_image?svg_url=${imageUrl}`);
