@@ -1,5 +1,4 @@
 class ResmanStaticService < BaseService
-  $units_availability_url = ""
   def perform
     property_ids = credentials.resman_property_id.split(',') rescue []
     property_ids.each do |property_id|
@@ -36,8 +35,6 @@ class ResmanStaticService < BaseService
               end
             end
 
-            $units_availability_url = property_data.dig("Information", "UnitApplicationBaseURL")
-
             save_property_details(property_data, property_id)
             save_resman_units(units, property_id)
             save_resman_floorplans(floorplans, property_id)
@@ -52,9 +49,7 @@ class ResmanStaticService < BaseService
   def save_property_details property, property_id
     begin
       @community = Community.find credentials.community_id
-      
-      # add_or_update_sub_communities(@community, property["PropertyID"]["MITS:Identification"]["MITS:MarketingName"], property_id)
-
+    
       @community.update!(
         name: property["PropertyID"]["MITS:Identification"]["MITS:MarketingName"],
         address: property["PropertyID"]["MITS:Address"]["MITS:Address1"],
@@ -126,11 +121,10 @@ class ResmanStaticService < BaseService
         
         unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
           unit.available_date = vacateDate
+        end
+        
+        unit.availability_url = u.dig("Availability", "UnitAvailabilityURL").presence || ""
 
-        end
-        if $units_availability_url.present?
-          unit.availability_url = $units_availability_url + "&unitNumber=#{u['Id']}"
-        end
         unless unit.building_is_updated.present? && unit.building_is_updated
           building = u["Unit"]["MITS:Information"]["MITS:BuildingID"]
           unit.building = building.present? ? building.gsub("Building ", "") : ""

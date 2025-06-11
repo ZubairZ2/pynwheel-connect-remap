@@ -47,8 +47,6 @@ class ResmanService < BaseService
               end
             end
 
-            $units_availability_url = property_data.dig("Information", "UnitApplicationBaseURL")
-
             save_resman_units(units, property_id)
             save_resman_floorplans(floorplans, property_id)
             update_additional_fee_and_pricing(community, response)
@@ -116,12 +114,9 @@ class ResmanService < BaseService
           unit.available_date = vacateDate
         end
 
-        if $units_availability_url.present?
-          unit.availability_url = $units_availability_url + "&unitNumber=#{u['Id']}"
-        end
+        unit.availability_url = u.dig("Availability", "UnitAvailabilityURL").presence || ""
 
         unit_record << unit.provider_unit_id.gsub('*','-')
-        # unit.save(validate: false)
         import_units << unit
 
       else
@@ -182,12 +177,10 @@ class ResmanService < BaseService
             building = u["Unit"]["MITS:Information"]["MITS:BuildingID"]
             unit.building = building.present? ? building.gsub("Building ", "") : ""
           end
-          if $units_availability_url.present?
-            unit.availability_url = $units_availability_url + "&unitNumber=#{u['Id']}"
-          end
+
+          unit.availability_url = u.dig("Availability", "UnitAvailabilityURL").presence || ""
 
           unit.manually_updated = false
-          # unit.save(validate: false)
           import_units << unit
         end
       end

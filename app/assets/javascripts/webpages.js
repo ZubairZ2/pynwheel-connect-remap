@@ -2066,26 +2066,10 @@ function formatDateLocal(date) {
 
 
 function set_resman_url(element) {
-  setApplyNowURLDate(currentUnitSelected);
-  leaseTerm = $("#unitModal").find("#lease_term").val().split(" months")[0];
-  date = new Date($("#leasing-start-date").val());
-
-  var url =
-    element.getAttribute("data-availability-url") +
-    "&leaseTerm=" +
-    leaseTerm +
-    "&moveInDate=" +
-    formatDateLocal(date);
+  var url = element.getAttribute("data-availability-url") 
 
   if (_3dMapMode()) {
-    date = new Date();
-    const _3dData = get3dSelectedData();
-    url =
-      _3dData.availabilityUrl +
-      "&leaseTerm=" +
-      _3dData.leaseTerm +
-      "&moveInDate=" +
-      formatDateLocal(date);
+    url =  _3dData.availabilityUrl
   }
 
   window.open(url, "_blank");

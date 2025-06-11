@@ -230,17 +230,12 @@ function set_yardirentcafe_url_on_favrite(element){
 }
 
 function set_psi_url_on_favorite(element){
-	var date = $(element).parent().parent().find('input').val();
-	// var url = $(element).data('website')+"/Apartments/module/application_authentication/http_referer/"+$(element).data('uri')+"/popup/false/kill_session/1/property[id]/"+$(element).data('community-property-id')+"/property_floorplan[id]/"+$(element).data('floorplan-provider-id')+"/unit_space[id]/"+$(element).data('unit-provider-id')+"/show_in_popup/false/from_check_availability/1/term_month/"+$(element).data('lease-term')+"/?lease_start_date="+date;
   var url = $(element).data('availability-url');
   window.open(url, '_blank');
 }
 
-function set_resman_url_on_favorites(element)
-{
-  leaseTerm = $('.c-connect-map-wrapper').find('#'+$(element).data('unit-id')+'-lease_term').val().split(" months")[0]
-  date = new Date($('#'+$(element).data('unit-id')+'-leasing-start-date').val())
-  var url = $(element).data('availability-url') + "&leaseTerm=" + leaseTerm + "&moveInDate=" + date.toISOString().split('T')[0]
+function set_resman_url_on_favorites(element) {
+  var url = $(element).data('availability-url');
   window.open(url, '_blank');
 }
 

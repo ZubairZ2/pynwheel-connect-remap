@@ -36,8 +36,6 @@ class ResmanSwapService < BaseService
               end
             end
 
-            $units_availability_url = property_data.dig("Information", "UnitApplicationBaseURL")
-
             save_resman_units(units, property_id)
             save_resman_floorplans(floorplans, property_id)
             rename_provider
@@ -46,7 +44,7 @@ class ResmanSwapService < BaseService
           ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
         end
       rescue => e
-        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
+        raise e
       end
     end
   end

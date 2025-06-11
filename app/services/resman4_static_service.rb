@@ -1,5 +1,4 @@
 class Resman4StaticService < BaseService
-  $units_availability_url = ""
   def perform
     property_ids = credentials.resman_property_id.split(',') rescue []
     property_ids.each do |property_id|
@@ -35,8 +34,6 @@ class Resman4StaticService < BaseService
                 end
               end
             end
-
-            $units_availability_url = property_data.dig("Information", "UnitApplicationBaseURL")
 
             save_property_details(property_data, property_id)
             save_resman_units(units, property_id)
@@ -159,10 +156,8 @@ class Resman4StaticService < BaseService
           unit.available_date = vacateDate
 
         end
-
-        if $units_availability_url.present?
-          unit.availability_url = $units_availability_url + "&unitNumber=#{u["IDValue"]}"
-        end
+        
+        unit.availability_url = u.dig("Availability", "UnitAvailabilityURL").presence || ""
 
         unless unit.building_is_updated.present? && unit.building_is_updated
           building = u["Units"]["Unit"]["BuildingName"]
