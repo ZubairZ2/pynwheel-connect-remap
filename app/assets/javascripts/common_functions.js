@@ -651,9 +651,9 @@ function transformKeys(obj, transformKey = null, deepTransform = false) {
 function formattedAddress(obj) {
   if (!obj) return "";
 
-  const { address, city, state } = obj;
+  const { address, city, state, zip } = obj;
 
-  return [address, city, state]
+  return [address, city, state, zip]
     .filter((part) => part && part.trim() !== "")
     .map((part) => part.trim())
     .join(", ");
