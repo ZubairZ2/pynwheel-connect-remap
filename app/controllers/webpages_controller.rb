@@ -67,7 +67,7 @@ class WebpagesController < ActionController::Base
       struct = {
         id: amenity.id,
         name: amenity.name,
-        image_url: amenity.standard_image_url,
+        image_url: amenity.validated_image_url,
         floor: amenity.floor,
         floorplate_id: amenity.amenityable_id,
         x_plot: amenity.x_plot,
