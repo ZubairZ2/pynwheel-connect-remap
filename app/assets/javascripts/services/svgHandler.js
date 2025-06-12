@@ -130,7 +130,6 @@ async function fetchSVG(
   try {
     // imageUrl = "https://staging-pynwheel.s3-accelerate.amazonaws.com/uploads/floorplate/svg_image/3680/1749119801-black22.svg"
     const response = await fetch(imageUrl);
-    debugger;
     // const response = await fetch(`/images/fetch_svg_image?svg_url=${imageUrl}`);
 
     if (!response.ok)

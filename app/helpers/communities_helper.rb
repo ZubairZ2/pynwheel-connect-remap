@@ -295,13 +295,7 @@ module CommunitiesHelper
                              end,
       lease_term: unit.lease_term,
       availability_url: unit.get_availability_url(),
-      floorplan_image: if unit.standard_image_url.present?
-                         unit.standard_image_url
-                       elsif floorplan.present? && floorplan.standard_image_url.present?
-                         floorplan.standard_image_url
-                       else
-                         "/assets/default.jpeg"
-                       end,
+      floorplan_image: fetch_image_url(floorplan, unit),
       is_fav: unit&.community&.favorite_stop&.favorite_unit&.include?(unit.id.to_s) || unit_id_is_in_cookies?(cookies[:favorite_unit_ids], unit.id),
       floorplan_name: if floorplan.present?
                         floorplan.name
@@ -353,13 +347,7 @@ module CommunitiesHelper
                                0
                              end,
       availability_url: unit.get_availability_url(),
-      floorplan_image: if unit.standard_image_url.present?
-                         unit.standard_image_url
-                       elsif floorplan.present? && floorplan.standard_image_url.present?
-                         floorplan.standard_image_url
-                       else
-                         "/assets/default.jpeg"
-                       end,
+      floorplan_image: fetch_image_url(floorplan, unit),
       floorplan_name: if floorplan.present?
                         floorplan.name
                       else
@@ -375,7 +363,7 @@ module CommunitiesHelper
     struct = {
       id: amenity.id,
       name: amenity.name,
-      image_url: amenity.standard_image_url,
+      image_url: amenity.validated_image_url,
       floor: amenity.floor,
       floorplate_id: amenity.amenityable_id,
       x_plot: amenity.x_plot,
@@ -580,9 +568,11 @@ module CommunitiesHelper
     coords.map(&:to_i)
   end
 
-
-
   private
+
+  def fetch_image_url floorplan, unit
+    unit.validated_image_url || floorplan.validated_image_url || "/assets/default.jpeg"
+  end
 
   def fetch_unit_data_attributes(unit, struct)
     { 

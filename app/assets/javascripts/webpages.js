@@ -1024,7 +1024,6 @@ function reInitializeDropDownList(filter) {
 }
 
 function showMarkers() {
-  debugger;
   $(".marker").addClass("hidden");
   $(".hidden-units").empty();
 
