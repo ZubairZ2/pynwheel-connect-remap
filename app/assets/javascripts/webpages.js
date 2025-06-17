@@ -3128,7 +3128,7 @@ async function fetchWebpageSVGAndSetCoordinates() {
     console.error(error);
   }
 
-  // resetFilters();
+  resetFilters();
   assetTracker.clearAllAssetsLists();
   assetTracker.turnoffLoader();
   $(".webPageLoader").addClass("hidden");
