@@ -182,9 +182,9 @@ function getFormattedBeansAmenities() {
 
 function setup3dArray() {
   const formattedUnits = getFormattedBeansUnits();
-  const formattedAmenities = getFormattedBeansAmenities();
-  const combinedArr = [...formattedUnits, ...formattedAmenities];
-
+  // const formattedAmenities = getFormattedBeansAmenities();
+  const combinedArr = [...formattedUnits/*, ...formattedAmenities*/];
+  debugger;
   const _3dArray = convertUnitsArr(
     { address: beansAddress },
     combinedArr,
