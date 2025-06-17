@@ -401,19 +401,19 @@ module CommunitiesHelper
     theme_name = community&.theme_name
     design = community&.design
 
-    if community.display_tbd_legend? || theme_name.include?('gables')
-      design.property_map_color || DEFAULT_MARKER_CODE
+    if community&.display_tbd_legend? || theme_name&.include?('gables')
+      design&.property_map_color || DEFAULT_MARKER_CODE
     else
       case theme_name
       when 'modernist'
-        colors = [design.modernist_map_marker_color, 'no color', '']
-        colors.include?(design.modernist_map_marker_color) ? (design.primary_color || DEFAULT_MARKER_PRIMARY_CODE) : (design.modernist_map_marker_color || DEFAULT_MARKER_PRIMARY_CODE)
+        colors = [design&.modernist_map_marker_color, 'no color', '']
+        colors.include?(design&.modernist_map_marker_color) ? (design&.primary_color || DEFAULT_MARKER_PRIMARY_CODE) : (design&.modernist_map_marker_color || DEFAULT_MARKER_PRIMARY_CODE)
       when 'futurist'
-        design.futurist_property_map_marker_color || DEFAULT_MARKER_CODE
+        design&.futurist_property_map_marker_color || DEFAULT_MARKER_CODE
       when 'expressionist'
-        design.expressionist_property_map_marker_color || DEFAULT_MARKER_CODE
+        design&.expressionist_property_map_marker_color || DEFAULT_MARKER_CODE
       when 'panther'
-        design.panther_property_map_marker_color || DEFAULT_MARKER_CODE
+        design&.panther_property_map_marker_color || DEFAULT_MARKER_CODE
       else
         'rgba(247, 0, 0, 0.61)'
       end
@@ -426,15 +426,15 @@ module CommunitiesHelper
 
     case theme_name
     when /gables/
-      design.amenity_map_marker_size_integer || DEFAULT_FONT_SIZE
+      design&.amenity_map_marker_size_integer || DEFAULT_FONT_SIZE
     when 'modernist'
-      design.modernist_amenity_map_size || DEFAULT_FONT_SIZE
+      design&.modernist_amenity_map_size || DEFAULT_FONT_SIZE
     when 'futurist'
-      design.futurist_amenity_map_size || DEFAULT_FONT_SIZE
+      design&.futurist_amenity_map_size || DEFAULT_FONT_SIZE
     when 'expressionist'
-      design.expressionist_amenity_map_size || DEFAULT_FONT_SIZE
+      design&.expressionist_amenity_map_size || DEFAULT_FONT_SIZE
     when 'panther'
-      design.panther_amenity_map_size || DEFAULT_FONT_SIZE
+      design&.panther_amenity_map_size || DEFAULT_FONT_SIZE
     else
       DEFAULT_FONT_SIZE
     end
@@ -446,16 +446,16 @@ module CommunitiesHelper
 
     case theme_name
     when /gables/
-      design.amenity_map_marker_color || DEFAULT_MARKER_CODE
+      design&.amenity_map_marker_color || DEFAULT_MARKER_CODE
     when 'modernist'
-      colors = [design.modernists_amenity_map_marker_color, 'no color', '']
-      colors.include?(design.modernists_amenity_map_marker_color) ? (design.primary_color || DEFAULT_MARKER_PRIMARY_CODE) : (design.modernists_amenity_map_marker_color || DEFAULT_MARKER_PRIMARY_CODE)
+      colors = [design&.modernists_amenity_map_marker_color, 'no color', '']
+      colors&.include?(design&.modernists_amenity_map_marker_color) ? (design&.primary_color || DEFAULT_MARKER_PRIMARY_CODE) : (design&.modernists_amenity_map_marker_color || DEFAULT_MARKER_PRIMARY_CODE)
     when 'futurist'
-      design.futurist_amenity_map_marker_color || DEFAULT_MARKER_CODE
+      design&.futurist_amenity_map_marker_color || DEFAULT_MARKER_CODE
     when 'expressionist'
-      design.expressionist_amenity_map_marker_color || DEFAULT_MARKER_CODE
+      design&.expressionist__amenity_map_marker_color || DEFAULT_MARKER_CODE
     when 'panther'
-      design.panther_amenity_map_marker_color || DEFAULT_MARKER_CODE
+      design&.panther_amenity_map_marker_color || DEFAULT_MARKER_CODE
     else
       'rgba(247, 0, 0, 0.61)'
     end
