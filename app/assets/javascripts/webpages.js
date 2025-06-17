@@ -554,6 +554,7 @@ function maxPriceFilterChanged() {
 function updateDropdownListValues(options = {}) {
   updateSquareFootageFilterDropdownList(units);
   updateMaxPriceFilterDropDownList(units);
+  
   if (!options.skipAvailabilityFilter)
     updateAvailabilityFilterDropdownList(units);
 }
@@ -3128,7 +3129,8 @@ async function fetchWebpageSVGAndSetCoordinates() {
     console.error(error);
   }
 
-  resetFilters();
+  // resetFilters();
+  updateAvailabilityFilterDropdownList(units)
   assetTracker.clearAllAssetsLists();
   assetTracker.turnoffLoader();
   $(".webPageLoader").addClass("hidden");
