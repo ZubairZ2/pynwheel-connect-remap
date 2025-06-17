@@ -72,8 +72,9 @@ $(document).ready(function () {
   if (isDefined(webCommunity)) {
     selectMap = "2d-map"; //webCommunity.web_map_type;
     enable3DMaps = webCommunity.enable_three_d_maps;
-
-    initializeBeans3DMap();
+    
+    if(enable3DMaps)
+      initializeBeans3DMap();
   } else {
     console.error("webCommunity not loaded properly");
   }
@@ -121,10 +122,6 @@ function bindWebpageEvents() {
       event.preventDefault();
     }
   });
-
-  if (_3dMapMode()) {
-    // _3dMapViewMarkers();
-  }
 
   // var windowWidth = $(window).width();
   if (selectMap !== "3d-map") {
@@ -177,7 +174,6 @@ function bindWebpageEvents() {
       $("#select-all-filters-checkbox").prop("checked", false);
       $("#select-all-filters-checkbox").removeClass("active");
     }
-
     showMarkers();
   });
   /////////////////////////////////////////
@@ -242,7 +238,6 @@ function bindWebpageEvents() {
         $(this).parent().removeClass("active");
       });
     }
-
     showMarkers();
   });
 
@@ -517,7 +512,6 @@ function multiPropertiesFilterChanged() {
 
   if (multiCommunity) updateCommunityLevelFilter();
   updateAndApplyFloorLevelFilter();
-
   showMarkers();
 }
 
@@ -525,14 +519,12 @@ function bedroomFilterChanged() {
   applyCommunityLevelFilter({ skipAvailabilityFilter: true });
   updateCommunityLevelFilter({ skipBedroom: true });
   updateAndApplyFloorLevelFilter();
-
   showMarkers();
 }
 
 function availabilityFilterChanged() {
   applyCommunityLevelFilter();
   updateAndApplyFloorLevelFilter();
-
   showMarkers();
 }
 
@@ -540,14 +532,12 @@ function squareFootageFilterChanged() {
   applyCommunityLevelFilter();
   applyFloorLevelFilter({ skipMarketRent: true });
   updateAndApplyFloorLevelFilter({ skipSqFeet: true });
-
   showMarkers();
 }
 
 function maxPriceFilterChanged() {
   applyCommunityLevelFilter();
   applyFloorLevelFilter();
-
   showMarkers();
 }
 
@@ -1174,7 +1164,7 @@ function showFloorLevelUnits() {
 }
 
 function populateCurrentUnits() {
-  showFloorLevelUnits()
+  showFloorLevelUnits();
   showMarkers();
 }
 
@@ -1403,6 +1393,7 @@ function unitListHover() {
       const { id, unitId, pointerData, unitMarketingName } = getUnitData(
         e.target
       );
+
       const _3dMode = _3dMapMode();
 
       let markersArray = [];
@@ -3121,7 +3112,7 @@ async function fetchWebpageSVGAndSetCoordinates() {
 
     if (result.ok) {
       handleMapControl();
-      showMarkers();
+      // showMarkers();
     } else {
       console.error(result.message);
     }

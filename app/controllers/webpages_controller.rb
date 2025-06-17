@@ -11,7 +11,6 @@ class WebpagesController < ActionController::Base
   def index
     units_ids_not_present = (cookies[:favorite_unit_ids] == nil || cookies[:favorite_unit_ids] == "[]")
     set_favorites_unit_ids_cookies(JSON.generate([]))  if units_ids_not_present
-
     Favorite.create(session_id: cookies[:webpages_session_id],unit_ids: []) if cookies[:webpages_session_id].nil?
     @scheduler_widget_link = @community.schedule_tour_url
     @units_with_floorplan_info = []
@@ -19,10 +18,9 @@ class WebpagesController < ActionController::Base
     @floorplans = @community_info.floorplans
     @floorplans_map = @floorplans.index_by(&:provider_floorplan_id)
     @svg_enabled = @community_info.enable_svg_mode?
-
+    @beans_enabled = @community_info.enable_three_d_maps
     community_units = @community_info.units
     @amenities = @community_info.amenities.plotted_amenities(@svg_enabled).includes(:amenityable, :amenity_galleries)
-
     @have_multi_property_ids = @community_info.have_multi_property_ids? && @community_info.credential&.allow_sub_communities?
     @multi_properties = @community_info.fetch_multi_properties()
 
@@ -32,7 +30,7 @@ class WebpagesController < ActionController::Base
         @floors = @floorplates.map {|f| f.floors }.flatten.sort_by { |f| -f }
         @amenities = @amenities.where(amenityable: @floorplates).includes(:amenity_galleries)
       end
-
+      
       @total_available_units = community_units.available_units(@svg_enabled, @community.units_availability_over_120_days)
       @available_units_and_sold_units = if @community_info.display_tbd_legend?
                                           community_units.are_plotted_units(@svg_enabled).status_scoped(@community.units_availability_over_120_days)
@@ -42,6 +40,7 @@ class WebpagesController < ActionController::Base
 
       if @available_units_and_sold_units.length > 0
         normalize_units
+
         if @units_with_floorplan_info.present?
           build_square_feet_range
           build_market_rent_range
@@ -52,14 +51,12 @@ class WebpagesController < ActionController::Base
       end
 
       @min_floor = get_min_floor( community_info: @community_info, units_with_floorplan_info_json: @units_with_floorplan_info, floors: @floors )
-
-
       @amenities_data = []
       normalize_amenities
       @amenities_data = @amenities_data.to_json
     end
-
-    response.headers.delete "X-Frame-Options"  
+    
+    response.headers.delete "X-Frame-Options"
   end
 
   def normalize_amenities
