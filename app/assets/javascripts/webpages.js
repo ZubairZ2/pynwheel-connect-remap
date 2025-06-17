@@ -177,6 +177,7 @@ function bindWebpageEvents() {
       $("#select-all-filters-checkbox").prop("checked", false);
       $("#select-all-filters-checkbox").removeClass("active");
     }
+
     showMarkers();
   });
   /////////////////////////////////////////
@@ -205,20 +206,17 @@ function bindWebpageEvents() {
 
   $("#unit_bedroom, #responsive_unit_bedroom").change(function () {
     if (smallScreen()) return;
-
     bedroomFilterChanged();
   });
 
   $("#available_unit, #responsive_available_unit").change(function () {
     if (smallScreen() && availabilityFilterResetTriggered) return;
     triggeredForInitialisation = true;
-
     availabilityFilterChanged();
   });
 
   $("#multi_communities, #responsive_multi_communities").change(function () {
     if (smallScreen()) return;
-
     multiPropertiesFilterChanged();
   });
 
@@ -268,7 +266,9 @@ function bindWebpageEvents() {
         applyCommunityLevelFilter();
         updateAndApplyFloorLevelFilter();
       }
-      populate_current_units();
+
+      populateCurrentUnits();
+
       if (!_3dMapMode()) $currentImageBox.parent().removeClass("hidden");
       return;
     }
@@ -566,6 +566,7 @@ function filterUnitsBasedOnSelectedFilters(options = {}) {
 function applyCommunityLevelFilter(options = {}) {
   filterUnitsBasedOnMultiCommunity();
   filterUnitsBasedOnBedroom();
+
   if (!options.skipAvailabilityFilter) filterUnitsBasedOnAvailability();
 }
 
@@ -1029,6 +1030,7 @@ function showMarkers() {
   const unitsToDisplay = filterUnitsBasedOnCommunityType(units);
 
   renderChangedUnits();
+
   if (!_3dMapMode() && !svgMode) {
     const scope = currentMapImage()?.parentElement;
     if (!scope) return;
@@ -1119,11 +1121,11 @@ function showMarkers() {
     }
   }
 
-  disabled_enabled_anchors();
-  setMarkersSizeAndMargin();
-  adjustImageMapMarkersPosition();
-  setSVGUnitsAmenitiesCoordinates();
-  reDrawBeansWidget();
+  disabledEnabledAnchors();
+  setMarkersSizeAndMargin(); //image mode only
+  adjustImageMapMarkersPosition(); //image mode only
+  setSVGUnitsAmenitiesCoordinates(); //svg mode only
+  reDrawBeansWidget(); //beans mode only
 }
 
 function handleResize() {
@@ -1146,7 +1148,7 @@ function performHardRefresh() {
   }
 }
 
-function populate_current_units() {
+function showFloorLevelUnits() {
   $(".marker").addClass("hidden");
   current_units = [];
 
@@ -1168,7 +1170,10 @@ function populate_current_units() {
       current_units.push(units[i]);
     }
   }
+}
 
+function populateCurrentUnits() {
+  showFloorLevelUnits()
   showMarkers();
 }
 
@@ -1236,75 +1241,59 @@ function unitMarkerClick(unitId, event) {
 }
 
 function renderChangedUnits() {
-  var element = document.getElementById("units-body");
+  const element = document.getElementById("units-body");
+  if (!element) return;
 
-  if (element == null) return;
   element.innerHTML = "";
 
-  filtered_units = filterUnitsBasedOnCommunityType(units);
+  const filteredUnits = filterUnitsBasedOnCommunityType(units);
+  const sortType = document.getElementById("filter");
+  const floorUnits = getFilteredUnits(filteredUnits, sortType.value);
 
-  sortType = document.getElementById("filter");
-  floorUnits = getFilteredUnits(filtered_units, sortType.value);
-  document.getElementById("unit-title-count").innerHTML =
-    floorUnits.length + " " + "Units Found";
-  filtered_units.forEach((unit) => {
-    var unit_details_div = `
-      <div
-        class='left-side-30-units'
-        id='unit_${unit["id"]}'
-        data-pointer-data='${JSON.stringify(unit["pointer_data"])}'
-        data-unit-marketing-name='${
-          unit["data_attributes"]["data-unit-marketing-name"]
-        }'
-      >
-        <div class='image-styles'>
-          <a class='image_link'
-            href='#'
-            id="s_${unit["id"]}"
-            onClick=onUnitClick(event)
-          >
-            <img src=${unit["floorplan_image"]} class='image-image-styles' />
-          </a>
-        </div>
-        <div class='unit-details-section'>
-          <p id='unit-detail-market-title'>
-            Unit # ${
-              webCommunity &&
-              webCommunity["is_sitemap"] &&
-              !webCommunity["display_building"]
-                ? unit["marketing_name"]
-                : unit["building"]
-                ? unit["building"] + "-" + unit["marketing_name"]
-                : unit["marketing_name"]
-            }
-          </p>
-        </div>
-        <div class='unit-details-section'>
-          <p>
-            <i class='fa.fa-bed'> &nbsp ${unit["bedrooms"]} Bed </i>
-          </p>
-          <p>
-            <i class='fa.fa-bath'> &nbsp ${unit["bathrooms"]} Bath </i>
-          </p>
-          <p>
-            <i class='fa.fa-building'> &nbsp ${unit["square_feet"]} Sq Ft </i>
-          </p>
-        </div>
-        <div class='unit-details-section'>
-          <p id='right-bar-unit-availability'>
-            ${get_unit_availability(unit)}
-          </p>
-          <p>
-            ${unitMarketRent(unit)}
-          </p>
-        </div>
-      </div>
-    `;
+  document.getElementById("unit-title-count").innerText = `${floorUnits.length} Units Found`;
 
-    element.innerHTML += unit_details_div;
-  });
+  const html = floorUnits.map((unit) => buildUnitHTML(unit)).join("");
+  element.innerHTML = html;
 
   unitListHover();
+}
+
+function buildUnitHTML(unit) {
+  const unitName =
+    webCommunity?.is_sitemap && !webCommunity?.display_building
+      ? unit["marketing_name"]
+      : unit["building"]
+      ? `${unit["building"]}-${unit["marketing_name"]}`
+      : unit["marketing_name"];
+
+  return `
+    <div
+      class='left-side-30-units'
+      id='unit_${unit["id"]}'
+      data-pointer-data='${JSON.stringify(unit["pointer_data"])}'
+      data-unit-marketing-name='${unit["data_attributes"]["data-unit-marketing-name"]}'
+    >
+      <div class='image-styles'>
+        <a class='image_link' href='#' id="s_${unit["id"]}" onClick="onUnitClick(event)">
+          <img src='${unit["floorplan_image"]}' class='image-image-styles' />
+        </a>
+      </div>
+      <div class='unit-details-section'>
+        <p id='unit-detail-market-title'>
+          Unit # ${unitName}
+        </p>
+      </div>
+      <div class='unit-details-section'>
+        <p><i class='fa fa-bed'> &nbsp ${unit["bedrooms"]} Bed </i></p>
+        <p><i class='fa fa-bath'> &nbsp ${unit["bathrooms"]} Bath </i></p>
+        <p><i class='fa fa-building'> &nbsp ${unit["square_feet"]} Sq Ft </i></p>
+      </div>
+      <div class='unit-details-section'>
+        <p id='right-bar-unit-availability'>${get_unit_availability(unit)}</p>
+        <p>${unitMarketRent(unit)}</p>
+      </div>
+    </div>
+  `;
 }
 
 function calculateActiveSlide() {
@@ -1477,51 +1466,7 @@ function unitListHover() {
 
           e.currentTarget.style.border = `3px solid ${markerColor}`;
 
-          if (_3dMode) {
-            return;
-
-            // const unitIndex = get3dElementIndexById(_3dData.unitId);
-            // const { geojson } =
-            //   beansWidget.workingInstance.unitPolygonsToExclude[unitIndex] ||
-            //   {};
-
-            // if (geojson && geojson.geometry?.coordinates?.[0]?.length) {
-            //   const coords = geojson.geometry.coordinates[0];
-            //   const screenPoints = [];
-
-            //   for (const [lng, lat] of coords) {
-            //     const pt = new window.__esri.geometry.Point({
-            //       longitude: lng,
-            //       latitude: lat,
-            //       spatialReference:
-            //         beansWidget.workingInstance.mapView.spatialReference,
-            //     });
-
-            //     const screenPt =
-            //       beansWidget.workingInstance.mapView.toScreen(pt);
-
-            //     if (
-            //       screenPt &&
-            //       typeof screenPt.x === "number" &&
-            //       typeof screenPt.y === "number"
-            //     ) {
-            //       screenPoints.push(screenPt);
-            //     }
-            //   }
-
-            //   if (screenPoints.length) {
-            //     const centerX =
-            //       screenPoints.reduce((sum, pt) => sum + pt.x, 0) /
-            //       screenPoints.length;
-            //     const centerY =
-            //       screenPoints.reduce((sum, pt) => sum + pt.y, 0) /
-            //       screenPoints.length;
-
-            //     left = centerX;
-            //     top = centerY;
-            //   }
-            // } else return;
-          }
+          if (_3dMode) return;
 
           focused_marker = document.getElementById(selectedMarker.id);
           $(".popup-title, .popup-arrow").css("background-color", markerColor);
@@ -1907,7 +1852,7 @@ function hasTouch() {
   );
 }
 
-function disabled_enabled_anchors() {
+function disabledEnabledAnchors() {
   var min_market_rent = 100000;
   var max_area = 0;
 
@@ -2622,11 +2567,9 @@ function handleMapControl() {
 }
 
 function resetMapData() {
-  // $("a.floorplate-anchor#" + defaultSelectedFloor).click();
   resetUnits();
   setWebpageContainerSize();
   filterUnitsBasedOnSelectedFilters();
-  showMarkers();
 }
 
 function display3DMap() {
@@ -2693,7 +2636,6 @@ function resetFilters() {
   availabilityFilterResetTriggered = false;
   setAvailabilityFilterToNow();
 
-  showMarkers();
 }
 
 function resetBasedOnMultiCommunities() {
@@ -2716,7 +2658,6 @@ function resetBasedOnBedroom() {
   if (smallScreen()) $(".mobile-filter-mega-menu").slideToggle();
 
   bedroomFilterChanged();
-  showMarkers();
 }
 
 function applyFilters() {
@@ -3187,7 +3128,7 @@ async function fetchWebpageSVGAndSetCoordinates() {
     console.error(error);
   }
 
-  resetFilters();
+  // resetFilters();
   assetTracker.clearAllAssetsLists();
   assetTracker.turnoffLoader();
   $(".webPageLoader").addClass("hidden");

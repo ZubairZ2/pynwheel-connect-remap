@@ -7,6 +7,38 @@ module CommunitiesHelper
     bathrooms floorplan-image floor sold available
   ].freeze
 
+  DEFAULT_FONT_SIZE = 30
+  DEFAULT_MARKER_CODE = "#d37474"
+  DEFAULT_MARKER_PRIMARY_CODE = "cf492f"
+
+  STATUS_BASE_DEFAULT_COLORS = {
+    occupied: "#f2f2f2",
+    occupied_on_notice: "#8545a1",
+    vacant_leased: "#f9d648",
+    model: "#f57396",
+    missing: "#eecea5"
+  }
+
+  STATUS_KEYS = %i[
+    missing
+    occupied
+    occupied_on_notice
+    vacant
+    vacant_leased
+    model
+  ].freeze
+
+  STATUS_LABELS = [
+    "Missing Floorplan",
+    "Occupied",
+    "Occupied on Notice",
+    "Vacant",
+    "Vacant Leased",
+    "Model"
+  ].unshift("Missing Data") # for :missing
+  .freeze
+
+
   def write_account_report(workbook)
     update_units_count
 
@@ -263,13 +295,7 @@ module CommunitiesHelper
                              end,
       lease_term: unit.lease_term,
       availability_url: unit.get_availability_url(),
-      floorplan_image: if unit.standard_image_url.present?
-                         unit.standard_image_url
-                       elsif floorplan.present? && floorplan.standard_image_url.present?
-                         floorplan.standard_image_url
-                       else
-                         "/assets/default.jpeg"
-                       end,
+      floorplan_image: fetch_image_url(floorplan, unit),
       is_fav: unit&.community&.favorite_stop&.favorite_unit&.include?(unit.id.to_s) || unit_id_is_in_cookies?(cookies[:favorite_unit_ids], unit.id),
       floorplan_name: if floorplan.present?
                         floorplan.name
@@ -321,13 +347,7 @@ module CommunitiesHelper
                                0
                              end,
       availability_url: unit.get_availability_url(),
-      floorplan_image: if unit.standard_image_url.present?
-                         unit.standard_image_url
-                       elsif floorplan.present? && floorplan.standard_image_url.present?
-                         floorplan.standard_image_url
-                       else
-                         "/assets/default.jpeg"
-                       end,
+      floorplan_image: fetch_image_url(floorplan, unit),
       floorplan_name: if floorplan.present?
                         floorplan.name
                       else
@@ -343,7 +363,7 @@ module CommunitiesHelper
     struct = {
       id: amenity.id,
       name: amenity.name,
-      image_url: amenity.standard_image_url,
+      image_url: amenity.validated_image_url,
       floor: amenity.floor,
       floorplate_id: amenity.amenityable_id,
       x_plot: amenity.x_plot,
@@ -357,7 +377,202 @@ module CommunitiesHelper
     struct
   end
 
+  def default_unit_marker_font_size(community)
+    theme_name = community&.theme_name
+    design = community&.design
+
+    case theme_name
+    when /gables/
+      design&.property_map_size_integer || DEFAULT_FONT_SIZE
+    when 'modernist'
+      design&.modernist_property_map_size || DEFAULT_FONT_SIZE
+    when 'futurist'
+      design&.futurist_property_map_size || DEFAULT_FONT_SIZE
+    when 'expressionist'
+      design&.expressionist_property_map_size || DEFAULT_FONT_SIZE
+    when 'panther'
+      design&.panther_property_map_size || DEFAULT_FONT_SIZE
+    else
+      DEFAULT_FONT_SIZE
+    end
+  end
+
+  def default_unit_marker_color(community)
+    theme_name = community&.theme_name
+    design = community&.design
+
+    if community.display_tbd_legend? || theme_name.include?('gables')
+      design.property_map_color || DEFAULT_MARKER_CODE
+    else
+      case theme_name
+      when 'modernist'
+        colors = [design.modernist_map_marker_color, 'no color', '']
+        colors.include?(design.modernist_map_marker_color) ? (design.primary_color || DEFAULT_MARKER_PRIMARY_CODE) : (design.modernist_map_marker_color || DEFAULT_MARKER_PRIMARY_CODE)
+      when 'futurist'
+        design.futurist_property_map_marker_color || DEFAULT_MARKER_CODE
+      when 'expressionist'
+        design.expressionist_property_map_marker_color || DEFAULT_MARKER_CODE
+      when 'panther'
+        design.panther_property_map_marker_color || DEFAULT_MARKER_CODE
+      else
+        'rgba(247, 0, 0, 0.61)'
+      end
+    end
+  end
+
+  def default_amenity_marker_font_size(community)
+    theme_name = community&.theme_name
+    design = community&.design
+
+    case theme_name
+    when /gables/
+      design.amenity_map_marker_size_integer || DEFAULT_FONT_SIZE
+    when 'modernist'
+      design.modernist_amenity_map_size || DEFAULT_FONT_SIZE
+    when 'futurist'
+      design.futurist_amenity_map_size || DEFAULT_FONT_SIZE
+    when 'expressionist'
+      design.expressionist_amenity_map_size || DEFAULT_FONT_SIZE
+    when 'panther'
+      design.panther_amenity_map_size || DEFAULT_FONT_SIZE
+    else
+      DEFAULT_FONT_SIZE
+    end
+  end
+
+  def default_amenity_marker_color(community)
+    theme_name = community&.theme_name
+    design = community&.design
+
+    case theme_name
+    when /gables/
+      design.amenity_map_marker_color || DEFAULT_MARKER_CODE
+    when 'modernist'
+      colors = [design.modernists_amenity_map_marker_color, 'no color', '']
+      colors.include?(design.modernists_amenity_map_marker_color) ? (design.primary_color || DEFAULT_MARKER_PRIMARY_CODE) : (design.modernists_amenity_map_marker_color || DEFAULT_MARKER_PRIMARY_CODE)
+    when 'futurist'
+      design.futurist_amenity_map_marker_color || DEFAULT_MARKER_CODE
+    when 'expressionist'
+      design.expressionist_amenity_map_marker_color || DEFAULT_MARKER_CODE
+    when 'panther'
+      design.panther_amenity_map_marker_color || DEFAULT_MARKER_CODE
+    else
+      'rgba(247, 0, 0, 0.61)'
+    end
+  end
+
+  def default_margins(community)
+    unit_font_size = default_unit_marker_font_size(community)
+    amenity_marker_font_size = default_amenity_marker_font_size(community)
+
+    left_margin = ((unit_font_size.to_f - 35) / 5).to_i
+    top_margin = ((13.0 / 25.0) * unit_font_size.to_f).to_i
+    span_size_x = (5 / 25.0) * unit_font_size.to_f
+    span_size_y = (7 / 25.0) * unit_font_size.to_f
+    span_size = (9 / 25.0) * unit_font_size.to_f
+
+    camera_margin = case amenity_marker_font_size.to_i
+                    when 0..27 then 3
+                    when 28..30 then 4
+                    when 31..33 then 5
+                    when 34..35 then 6
+                    else 6
+                    end
+
+    amenity_marker_font_size_adj = amenity_marker_font_size.to_i - 5
+    camera_font_size = amenity_marker_font_size_adj / 2
+
+    if community.enable_svg_mode?
+      left_margin = 13
+      top_margin = 34
+    end
+
+    {
+      left_margin: left_margin,
+      top_margin: top_margin,
+      span_size_x: span_size_x,
+      span_size_y: span_size_y,
+      span_size: span_size,
+      camera_margin: camera_margin,
+      camera_font_size: camera_font_size,
+      amenity_left_margin: 13,
+      amenity_top_margin: 13
+    }
+  end
+
+  def status_based_default_colors(community)
+    design = community&.design
+
+    STATUS_KEYS.index_with do |status|
+      custom_color = case status
+                    when :occupied then design&.property_map_occupied_color
+                    when :occupied_on_notice then design&.property_map_occupied_on_notice_color
+                    when :vacant then nil # ensure vacant exists for completeness
+                    when :vacant_leased then design&.property_map_vacant_leased_color
+                    when :model then design&.property_map_model_color
+                    when :missing then design&.property_map_missing_color
+                    end
+      custom_color || STATUS_BASE_DEFAULT_COLORS[status]
+    end
+  end
+
+  def build_legend_items(community)
+    marker_colors = status_based_default_colors(community)
+
+    # Exclude :missing if SVG is disabled
+    filtered_keys = community.enable_svg_mode? ? STATUS_KEYS : STATUS_KEYS - [:missing]
+
+    filtered_keys.map.with_index do |key, idx|
+      color = marker_colors[key]
+      label = STATUS_LABELS[idx]
+      color ? { label:, color: } : nil
+    end.compact
+  end
+
+  def map_configuration(community)
+    {
+      unit_marker_font_size: default_unit_marker_font_size(community),
+      unit_marker_color: default_unit_marker_color(community),
+      amenity_marker_font_size: default_amenity_marker_font_size(community) - 5,
+      amenity_marker_color: default_amenity_marker_color(community),
+      margins: default_margins(community),
+      tbd_colors: status_based_default_colors(community),
+      legend_items: build_legend_items(community)
+    }
+  end
+
+  def get_min_floor(community_info:, units_with_floorplan_info_json:, floors:)
+    return nil unless community_info.has_floorplates?
+
+    begin
+      parsed_floors = JSON.parse(units_with_floorplan_info_json).map { |u| u["floor"] }.compact
+      min_floor = parsed_floors.min
+    rescue JSON::ParserError, TypeError
+      min_floor = floors&.min
+    end
+
+    if floors.present? && !floors.include?(min_floor)
+      min_floor = floors.min
+    end
+
+    min_floor
+  end
+
+  def amenity_coordinates(amenity, svg_enabled:)
+    if svg_enabled
+      coords = amenity.pointer_data.is_a?(Hash) ? amenity.pointer_data.values_at('x_plot', 'y_plot') : [0, 0]
+    else
+      coords = [amenity.x_plot, amenity.y_plot]
+    end
+    
+    coords.map(&:to_i)
+  end
+
   private
+
+  def fetch_image_url floorplan, unit
+    unit.validated_image_url || floorplan.validated_image_url || "/assets/default.jpeg"
+  end
 
   def fetch_unit_data_attributes(unit, struct)
     { 

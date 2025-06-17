@@ -15,11 +15,11 @@
       .modal-body
         - if galleries.length > 0
           .amenity-carousel{id: "amenity-carousel-#{amenity.id}"}
-            = image_tag amenity&.standard_image_url, class: "amenity-modal-image"
+            = image_tag amenity&.validated_image_url, class: "amenity-modal-image"
             - galleries.each do |gallery_image|
               = image_tag gallery_image&.image&.url, class: "amenity-modal-image"
         - else 
-          = image_tag amenity&.standard_image_url, class: "amenity-modal-image"
+          = image_tag amenity&.validated_image_url, class: "amenity-modal-image"
 
 
 :javascript

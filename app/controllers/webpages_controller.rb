@@ -3,9 +3,9 @@ class WebpagesController < ActionController::Base
 
   before_action :set_community, except: [:update_session]
   before_action :set_webpages_session_id_cookies, only: [:index]
-
   after_action :maintain_session, except: [:update_session]
   before_action :set_timezone, except: [:update_session]
+  before_action :set_map_configuration, only: [:index]
   protect_from_forgery :except => [:update_session]
 
   def index
@@ -13,14 +13,16 @@ class WebpagesController < ActionController::Base
     set_favorites_unit_ids_cookies(JSON.generate([]))  if units_ids_not_present
 
     Favorite.create(session_id: cookies[:webpages_session_id],unit_ids: []) if cookies[:webpages_session_id].nil?
-    @scheduler_widget_link = get_scheduler_link
+    @scheduler_widget_link = @community.schedule_tour_url
     @units_with_floorplan_info = []
     @community_info = Community.includes(:credential, :sitemap, :floorplates, :floorplans, :sub_communities, amenities: [:amenityable, :amenity_galleries], units: [:floorplate]).find(params[:community_id])
     @floorplans = @community_info.floorplans
     @floorplans_map = @floorplans.index_by(&:provider_floorplan_id)
     @svg_enabled = @community_info.enable_svg_mode?
+
     community_units = @community_info.units
-    @amenities = @community_info.amenities.plotted_amenities(@svg_enabled)
+    @amenities = @community_info.amenities.plotted_amenities(@svg_enabled).includes(:amenityable, :amenity_galleries)
+
     @have_multi_property_ids = @community_info.have_multi_property_ids? && @community_info.credential&.allow_sub_communities?
     @multi_properties = @community_info.fetch_multi_properties()
 
@@ -38,7 +40,6 @@ class WebpagesController < ActionController::Base
                                           @total_available_units
                                         end
 
-       #+ @community_info.units.are_sold(@svg_enabled)
       if @available_units_and_sold_units.length > 0
         normalize_units
         if @units_with_floorplan_info.present?
@@ -49,6 +50,10 @@ class WebpagesController < ActionController::Base
           @units_with_floorplan_info = @units_with_floorplan_info.to_json
         end
       end
+
+      @min_floor = get_min_floor( community_info: @community_info, units_with_floorplan_info_json: @units_with_floorplan_info, floors: @floors )
+
+
       @amenities_data = []
       normalize_amenities
       @amenities_data = @amenities_data.to_json
@@ -57,18 +62,12 @@ class WebpagesController < ActionController::Base
     response.headers.delete "X-Frame-Options"  
   end
 
-  def get_scheduler_link
-    community_code = get_community_code @community
-    # base_url =  Rails.env.development? ? "http://localhost:3000/" : (ENV["RAILS_ENV"] == "staging" ? "https://pynwheel-staging.herokuapp.com/" : "https://pynwheelapp.com/")
-    return "#{root_url}scheduler_widget/test_widget?community_id=#{@community.id}&community_code=#{community_code}&direct=true"
-  end
-
   def normalize_amenities
     @amenities.find_each do |amenity|
       struct = {
         id: amenity.id,
         name: amenity.name,
-        image_url: amenity.standard_image_url,
+        image_url: amenity.validated_image_url,
         floor: amenity.floor,
         floorplate_id: amenity.amenityable_id,
         x_plot: amenity.x_plot,
@@ -165,7 +164,6 @@ class WebpagesController < ActionController::Base
   end
 
   def apply_now
-    
   end
 
   def activity_tracking
@@ -214,7 +212,7 @@ class WebpagesController < ActionController::Base
   end
 
   def favorites
-    @scheduler_widget_link = get_scheduler_link
+    @scheduler_widget_link = @community.schedule_tour_url
     @favorite = Favorite.find_by_session_id(cookies[:webpages_session_id])
     @units = Unit.where(id: JSON.parse(cookies[:favorite_unit_ids]),community_id: params[:community_id]).where.not(available_date: nil)
     @fav_units_info = @units.to_json 
@@ -259,6 +257,10 @@ class WebpagesController < ActionController::Base
 
   private
 
+    def set_map_configuration
+      @map_config = map_configuration(@community)
+    end
+
     def set_webpages_session_id_cookies
       if cookies[:webpages_session_id].blank?
         cookies[:webpages_session_id] = { 
@@ -278,13 +280,13 @@ class WebpagesController < ActionController::Base
         secure: true
       }
     end
-  
-    def get_community_code community
-      (JWT.encode ({"community_id" => community.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256')
-    end
 
     def set_community
       @community = Community.find(params[:community_id])
+
+    rescue ActiveRecord::RecordNotFound
+      flash[:alert] = "Community not found."
+      redirect_to root_path
     end
 
     def maintain_session
