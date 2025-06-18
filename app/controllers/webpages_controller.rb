@@ -14,7 +14,19 @@ class WebpagesController < ActionController::Base
     Favorite.create(session_id: cookies[:webpages_session_id],unit_ids: []) if cookies[:webpages_session_id].nil?
     @scheduler_widget_link = @community.schedule_tour_url
     @units_with_floorplan_info = []
-    @community_info = Community.includes(:credential, :sitemap, :floorplates, :floorplans, :sub_communities, amenities: [:amenityable, :amenity_galleries], units: [:floorplate]).find(params[:community_id])
+    @community_info = Community.includes(
+                                          :credential,
+                                          :sub_communities,
+                                          :floorplans,
+                                          {
+                                            sitemap: [:amenities],
+                                            floorplates: [:amenities, :units],
+                                            amenities: [:amenityable, :amenity_galleries],
+                                            units: [:floorplan, :floorplate]
+                                          }
+                                        ).find(params[:community_id])
+
+
     @floorplans = @community_info.floorplans
     @floorplans_map = @floorplans.index_by(&:provider_floorplan_id)
     @svg_enabled = @community_info.enable_svg_mode?
@@ -29,8 +41,18 @@ class WebpagesController < ActionController::Base
         @floorplates = @community_info.floorplates
         @floors = @floorplates.map {|f| f.floors }.flatten.sort_by { |f| -f }
         @amenities = @amenities.where(amenityable: @floorplates).includes(:amenity_galleries)
+
+        @floorplate_by_floor = {}
+        @floorplates.each do |fp|
+          fp.floors.each { |floor| @floorplate_by_floor[floor] = fp }
+        end
+
+        @dimensions_by_floorplate = {}
+        @floorplate_by_floor.each do |floor, fp|
+          @dimensions_by_floorplate[fp.id] = image_original_dimensions(fp)
+        end
       end
-      
+
       @total_available_units = community_units.available_units(@svg_enabled, @community.units_availability_over_120_days)
       @available_units_and_sold_units = if @community_info.display_tbd_legend?
                                           community_units.are_plotted_units(@svg_enabled).status_scoped(@community.units_availability_over_120_days)
@@ -54,6 +76,8 @@ class WebpagesController < ActionController::Base
       @amenities_data = []
       normalize_amenities
       @amenities_data = @amenities_data.to_json
+
+      
     end
     
     response.headers.delete "X-Frame-Options"

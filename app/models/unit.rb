@@ -402,7 +402,6 @@ class Unit < ApplicationRecord
     end
   end
 
-
   def floorplan
     Floorplan.find_by(provider_floorplan_id: self.floorplan_id, community_id: self.community_id)
   end
