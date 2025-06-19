@@ -1373,7 +1373,7 @@ function buildUnitMarkerHTML(unit) {
       data-sold="${unitDataAttributes["data-sold"]}"
       data-available="${unitDataAttributes["data-available"]}"
       onclick="unitMarkerClick(${unit.id}, event)"
-      href="##"
+      href="javascript:void(0)"
     >
       <div
         id="s_${unit.id}"
@@ -1401,7 +1401,7 @@ function buildAmenityMarkerHTML(amenity) {
       data-amenity-y-plot="${amenity.y_plot}"
       data-floor=${amenityDataAttributes["data-amenity-id"]}
       onclick='openAmenityViewerModal(${amenityJsonString})'
-      href="#"
+      href="javascript:void(0)"
     >
       <span
         class="camera-icon camera-icon-responsive"
