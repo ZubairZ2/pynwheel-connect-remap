@@ -1203,6 +1203,7 @@ function resetToDefaultZoom() {
 }
 
 function unitMarkerClick(unitId, event) {
+  
   const markersSelector = svgMode ? ".cloned-unit" : ".unit_marker";
 
   if (event?.currentTarget) {
@@ -1211,11 +1212,16 @@ function unitMarkerClick(unitId, event) {
     return;
   }
 
-  if (svgMode) {
-    unitId = parseInt(unitId.replace("unit_", ""));
-  } else {
-    unitId = unitId.replace("unit_", "s_");
+  try {
+    if (svgMode) {
+      unitId = parseInt(unitId.replace("unit_", ""));
+    } else {
+      unitId = unitId.replace("unit_", "s_");
+    }
+  } catch (error) {
+    unitId = unitId;
   }
+
 
   let image = currentMapImage()?.parentElement;
   const $scope = $(image);
@@ -1232,24 +1238,50 @@ function unitMarkerClick(unitId, event) {
 }
 
 function renderChangedUnits() {
+  const filteredUnits = filterUnitsBasedOnCommunityType(units);
+  const sortType = document.getElementById("filter");
+  const floorUnits = getFilteredUnits(filteredUnits, sortType.value);
+
+  renderUnitMarkers(floorUnits);
+  renderUnitBoxes(floorUnits);
+}
+
+function renderUnitBoxes(floorUnits) {
   const element = document.getElementById("units-body");
   if (!element) return;
 
   element.innerHTML = "";
 
-  const filteredUnits = filterUnitsBasedOnCommunityType(units);
-  const sortType = document.getElementById("filter");
-  const floorUnits = getFilteredUnits(filteredUnits, sortType.value);
-
   document.getElementById("unit-title-count").innerText = `${floorUnits.length} Units Found`;
 
-  const html = floorUnits.map((unit) => buildUnitHTML(unit)).join("");
+  const html = floorUnits.map((unit) => buildUnitBoxHTML(unit)).join("");
   element.innerHTML = html;
 
-  unitListHover();
+  unitBoxListHover();
 }
 
-function buildUnitHTML(unit) {
+function renderUnitMarkers(floorUnits) {
+  let parent = null;
+
+  if(hasFloorplate){
+    parent = document.getElementById(`floorplate_${current_floor}`);
+  } else {
+    parent = document.getElementById(`property-map-image`);
+  }
+
+  const element = parent?.querySelector('.unit-markers-container');
+
+  if(!parent || !element) return;
+
+  element.innerHTML = "";
+
+  const html = floorUnits.map((unit) => buildUnitMarkerHTML(unit)).join("");
+  element.innerHTML = html;
+
+  unitMarkerHover();
+}
+
+function buildUnitBoxHTML(unit) {
   const unitName =
     webCommunity?.is_sitemap && !webCommunity?.display_building
       ? unit["marketing_name"]
@@ -1286,6 +1318,67 @@ function buildUnitHTML(unit) {
     </div>
   `;
 }
+
+function buildUnitMarkerHTML(unit) {
+  unitDataAttributes = unit.data_attributes;
+  unitConfig = unitDataAttributes["data-config"]
+  unitMargins = unitConfig["margins"]
+
+  return `
+    <a
+      class="marker ui-draggable ui-draggable-handle"
+      id="m_${unit.id}"
+      style="font-size: ${unitConfig["unit_marker_font_size"]}; position: absolute; left: ${unitDataAttributes["data-unit-x-plot"]}; top: ${unitDataAttributes["data-unit-y-plot"]};"
+      data-target="#unitModal"
+      data-toggle="modal"
+      data-unit-id="${unit.id}"
+      data-floorplan-provider-id="${unitDataAttributes["data-floorplan-provider-id"]}"
+      data-unit-x-plot="${unitDataAttributes["data-unit-x-plot"]}"
+      data-unit-y-plot="${unitDataAttributes["data-unit-y-plot"]}"
+      data-pointer-data="${unit.pointer_data}"
+      data-community-id="${unitDataAttributes["data-community-id"]}"
+      data-website="${unitDataAttributes["data-website"]}"
+      data-provider="${unitDataAttributes["data-provider"]}"
+      data-unit-provider-id="${unitDataAttributes["data-unit-provider-id"]}"
+      data-unit-marketing-name="${unitDataAttributes["data-unit-marketing-name"]}"
+      data-available-date="${unitDataAttributes["data-available-date"]}"
+      data-market-rent="${unitDataAttributes["data-market-rent"]}"
+      data-total-market-rent="${unitDataAttributes["data-total-market-rent"]}"
+      data-title="${unitDataAttributes["data-title"]}"
+      data-unit-virtual-tour-label="${unitDataAttributes["data-unit-virtual-tour-label"]}"
+      data-unit-virtual-tour-url="${unitDataAttributes["data-unit-virtual-tour-url"]}"
+      data-unit-lease-term="${unitDataAttributes["data-unit-lease-term"]}"
+      data-unit-lease-pricing="${unitDataAttributes["data-unit-lease-pricing"]}"
+      data-unit-additional-fees="${unitDataAttributes["data-unit-additional-fees"]}"
+      data-unit-description="${unitDataAttributes["data-unit-description"]}"
+      data-property-id="${unitDataAttributes["data-property-id"]}"
+      data-unit-status="${unitDataAttributes["data-unit-status"]}"
+      data-model-unit="${unitDataAttributes["data-model-unit"]}"
+      data-is-fav="${unitDataAttributes["data-is-fav"]}"
+      data-community-property-id="${unitDataAttributes["data-community-property-id"]}"
+      data-floorplan-name="${unitDataAttributes["data-floorplan-name"]}"
+      data-square-feet="${unitDataAttributes["data-square-feet"]}"
+      data-availability="${unitDataAttributes["data-availability"]}"
+      data-bedrooms="${unitDataAttributes["data-bedrooms"]}"
+      data-bathrooms="${unitDataAttributes["data-bathrooms"]}"
+      data-floorplan-image="${unitDataAttributes["data-floorplan-image"]}"
+      data-floor="${unitDataAttributes["data-floor"]}"
+      data-sold="${unitDataAttributes["data-sold"]}"
+      data-available="${unitDataAttributes["data-available"]}"
+      onclick="unitMarkerClick(${unit.id}, event)"
+      href="##"
+    >
+      <div
+        id="s_${unit.id}"
+        class="fas fa-map-marker-alt fa-map-marker-alt-responsive unit_marker"
+        style="font-size: 30px; color: ${getUnitMarkerColor(unit)}; margin-left: -11.25px; margin-top: -30px;"
+      >
+        <span style="position: absolute; left: ${unitMargins["span_size_y"]}; top: ${unitMargins["span_size_x"]}; font-size: ${unitMargins["span_size_x"]}"></span>
+      </div>
+    </a>
+  `;
+}
+
 
 function calculateActiveSlide() {
   const activeIndex = $(
@@ -1384,7 +1477,7 @@ function unitMarketRent(unit) {
   return unit["display_rent"] ? `${currency + unit["market_rent"]}/month` : "";
 }
 
-function unitListHover() {
+function unitBoxListHover() {
   let focused_marker;
 
   $("div.left-side-30-units").hover(
@@ -1485,8 +1578,9 @@ function unitListHover() {
             left = screenX;
             top = screenY;
           } else {
-            const markerIcon = selectedMarker.firstChild;
-            const rect = markerIcon.getBoundingClientRect();
+            // debugger
+            // const markerIcon = selectedMarker.firstChild;
+            const rect = selectedMarker.getBoundingClientRect();
             leftAdjustment += 0;
             topAdjustment += rect.height;
           }
@@ -2562,6 +2656,7 @@ function resetMapData() {
   resetUnits();
   setWebpageContainerSize();
   filterUnitsBasedOnSelectedFilters();
+  // showMarkers();
 }
 
 function display3DMap() {

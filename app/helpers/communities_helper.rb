@@ -600,7 +600,8 @@ module CommunitiesHelper
       "unit-description": struct[:description],
       "property-id": struct[:property_id],
       "unit-status": struct[:unit_status],
-      "model-unit": struct[:model_unit]
+      "model-unit": struct[:model_unit],
+      "config": map_configuration(@community),
     }.transform_keys { |key| "data-#{key}".to_sym }.merge(
       DATA_ATTRIBUTES_SAME_KEYS.each_with_object({}) do |key, result|
         result["data-#{key}".to_sym] = struct[key.underscore.to_sym]

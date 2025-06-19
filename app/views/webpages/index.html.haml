@@ -41,7 +41,7 @@
     = render '/font_awesome_v5'
     
   %body.custom-iframe-modeule
-    .webPageLoader.hidden
+    -# .webPageLoader.hidden
 
     -# Marker fond & color settings 
     - fontsize = @map_config[:unit_marker_font_size]
@@ -316,7 +316,16 @@
 = render partial: "virtual_tour_modal"
 = render partial: "amenity_virtual_tour_modal"
 
-#communityWebpagesData{data: { currency: @community.get_currency_symbol(), community: @community.to_json, amenities: @amenities.to_json, map_configurations: @community&.three_d_maps_configuration.to_json, units: @units_with_floorplan_info, amenities_data: @amenities_data, sub_communities: @community_info.sub_communities.to_json } }
+#communityWebpagesData{data: { 
+    currency: @community.get_currency_symbol(), 
+    community: @community.to_json, 
+    amenities: @amenities.to_json, 
+    map_configurations: @community&.three_d_maps_configuration.to_json, 
+    units: @units_with_floorplan_info, 
+    amenities_data: @amenities_data, 
+    sub_communities: @community_info.sub_communities.to_json
+  }
+}
 
 :javascript
   var assetTracker;
@@ -565,6 +574,7 @@
       $("#available_unit").val("");
       $("#responsive_available_unit").val("");
     }
+    
     setWebpageContainerSize();
 
     if (!svgMode) {
@@ -580,8 +590,6 @@
           activateZoomPan($image[0].parentElement, false);
         }
       }
-
-      unitMarkerHover();
       populateCurrentUnits();
     }
 
