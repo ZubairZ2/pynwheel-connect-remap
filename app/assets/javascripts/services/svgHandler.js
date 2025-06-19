@@ -128,7 +128,7 @@ async function fetchSVG(
   tracker?.addOrUpdateAsset(asset, trackerVisibilityCheck);
 
   try {
-    // imageUrl = "https://staging-pynwheel.s3-accelerate.amazonaws.com/uploads/floorplate/svg_image/3680/1749119801-black22.svg"
+    imageUrl = "https://staging-pynwheel.s3-accelerate.amazonaws.com/uploads/floorplate/svg_image/3680/1749119801-black22.svg"
     const response = await fetch(imageUrl);
     // const response = await fetch(`/images/fetch_svg_image?svg_url=${imageUrl}`);
 
@@ -532,7 +532,7 @@ function processSvgBlock(svgElement, item, options, dataset = null) {
       let showTooltip, hideTooltip;
 
       const showAmenityModal = onClickAmenityModal
-        ? () => openAmenityViewerModal(rest, rest.galleries)
+        ? () => openAmenityViewerModal(rest)
         : null;
 
       if (tooltip) {

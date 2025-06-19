@@ -63,7 +63,7 @@ function initializeBeans3DMap() {
           if (data?.type === "UNIT") {
             onUnitClick(data);
           } else if (data?.type === "AMENITY") {
-            openAmenityViewerModal(data, data.galleries);
+            openAmenityViewerModal(data);
           }
         },
         onHover: (data, event, isAmenity) => {

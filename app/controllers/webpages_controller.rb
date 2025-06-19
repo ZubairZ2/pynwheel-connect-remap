@@ -96,7 +96,8 @@ class WebpagesController < ActionController::Base
         pointer_data: amenity.pointer_data,
         galleries: amenity.amenity_galleries,
         show_name: @community.show_amenity_name,
-        data_attributes: { "data-amenity-id": amenity.id, "data-floor": amenity.floor }
+        data_attributes: { "data-amenity-id": amenity.id, "data-floor": amenity.floor },
+        config: @map_config
       }
 
       @amenities_data << struct

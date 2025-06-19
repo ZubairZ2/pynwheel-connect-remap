@@ -13,14 +13,17 @@
               %i.fa.fa-close
     
       .modal-body
+        - amenity_url = amenity&.validated_image_url
         - if galleries.length > 0
           .amenity-carousel{id: "amenity-carousel-#{amenity.id}"}
-            = image_tag amenity&.validated_image_url, class: "amenity-modal-image"
+            - if amenity_url.present?
+              = image_tag amenity&.validated_image_url, class: "amenity-modal-image"
+
             - galleries.each do |gallery_image|
               = image_tag gallery_image&.image&.url, class: "amenity-modal-image"
         - else 
-          = image_tag amenity&.validated_image_url, class: "amenity-modal-image"
-
+          - if amenity_url.present?
+            = image_tag amenity&.validated_image_url, class: "amenity-modal-image"
 
 :javascript
   var selectedAmenity = null

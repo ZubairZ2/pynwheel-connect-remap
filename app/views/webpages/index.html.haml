@@ -41,7 +41,8 @@
     = render '/font_awesome_v5'
     
   %body.custom-iframe-modeule
-    -# .webPageLoader.hidden
+    - if @svg_enabled
+      .webPageLoader.hidden
 
     -# Marker fond & color settings 
     - fontsize = @map_config[:unit_marker_font_size]
