@@ -1268,6 +1268,7 @@ function renderUnitBoxes(floorUnits) {
 
   unitBoxListHover();
   bindUnitMarkerEvents();
+  bindAmenityMarkerEvents();
 }
 
 function bindUnitMarkerEvents() {
@@ -1291,6 +1292,31 @@ function getUnitIdFromElement(element, event) {
 
   const parentMarker = element.closest('.unit-marker, .unit_marker');
   return parentMarker?.dataset?.unitId || parentMarker?.getAttribute?.('data-unit-id');
+}
+
+function bindAmenityMarkerEvents() {
+  function handleAmenityClick(event) {
+    event.stopPropagation();
+    event.preventDefault();
+
+    const el = event.currentTarget;
+    const amenityJson = el.getAttribute('data-amenity-json');
+    if (!amenityJson) return;
+
+    try {
+      const amenity = JSON.parse(amenityJson);
+      openAmenityViewerModal(amenity);
+    } catch (e) {
+      console.error('Invalid amenity JSON:', e);
+    }
+  }
+
+  function bindEventsTo(el) {
+    el.addEventListener('click', handleAmenityClick);
+    el.addEventListener('touchend', handleAmenityClick);
+  }
+
+  document.querySelectorAll('.amenity-marker').forEach(bindEventsTo);
 }
 
 
@@ -1432,7 +1458,7 @@ function buildAmenityMarkerHTML(amenity) {
       data-amenity-x-plot="${amenity.x_plot}"
       data-amenity-y-plot="${amenity.y_plot}"
       data-floor=${amenityDataAttributes["data-amenity-id"]}
-      onclick='openAmenityViewerModal(${amenityJsonString})'
+      data-amenity-json='${amenityJsonString}'
       href="javascript:void(0)"
     >
       <span
