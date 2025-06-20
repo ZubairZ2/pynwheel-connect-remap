@@ -1,12 +1,12 @@
 - if @community_info.has_floorplates?
   - @floors.each do |floor|
-    - floorplate = @floorplates.select{ |f| f.floors.include?(floor) }.first
+    - floorplate = @floorplate_by_floor[floor]
     - svg_data = svg_image_url_and_dimensions(floorplate)
     - svg_exists = svg_data && svg_data.values_at(:width, :height).sum.positive?
     - if svg_exists
-      %div{ data: svg_data, id: "floorplate_#{floor}", class: floor == min_unit_floor ? '' : 'hidden',  style: "position: relative; flex: 1;" }
+      %div{ data: svg_data, id: "floorplate_#{floor}", class: floor == @min_floor ? '' : 'hidden',  style: "position: relative; flex: 1;" }
     - else
-      %div{ id: "floorplate_#{floor}", style: 'margin: auto; flex: 1;', class: floor == min_unit_floor ? '' : 'hidden' }
+      %div{ id: "floorplate_#{floor}", style: 'margin: auto; flex: 1;', class: floor == @min_floor ? '' : 'hidden' }
         = image_tag "/assets/default.jpeg", class: "map-image-align sitemap-image floorplate-image", id: "f_#{floor}"
 - else
   - svg_data = svg_image_url_and_dimensions(@community_info&.sitemap)

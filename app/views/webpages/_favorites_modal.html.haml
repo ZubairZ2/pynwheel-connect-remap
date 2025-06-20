@@ -2,7 +2,7 @@
   .c-modal-body-content
     - @units = [] if @units.nil?
     - @units.each do |unit|
-      - floorplan = @floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
+      - floorplan = unit.floorplan #@floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
       .map-slide-item
         .c-modal-header
           %h5.c-modal-title 

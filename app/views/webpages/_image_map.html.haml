@@ -1,11 +1,11 @@
-- markers_locals = locals_for_markers.merge({ marker_colors: })
+-# - markers_locals = locals_for_markers.merge({ marker_colors: })
 
 - if @community_info.has_floorplates?
   - @floors.each do |floor|
     - floorplate = @floorplate_by_floor[floor]
     - width, height = @dimensions_by_floorplate[floorplate.id].values
     - image_exists = floorplate.validated_image_url.present?
-    %div{ id: "floorplate_#{floor}", class: floor == min_unit_floor ? '' : 'hidden', style: image_exists ? 'position: relative; margin: auto;' : 'height: -webkit-fill-available; margin: auto;' }
+    %div{ id: "floorplate_#{floor}", class: floor == @min_floor ? '' : 'hidden', style: image_exists ? 'position: relative; margin: auto;' : 'height: -webkit-fill-available; margin: auto;' }
       = image_tag (floorplate.validated_image_url || "/assets/default.jpeg"), class: "map-image-align sitemap-image floorplate-image", id: "f_#{floor}", data: { height: height, width: width }, loading: "lazy"
       %div.markers-container
         -# = render partial: 'webpages/units_and_amenity_markers', locals: markers_locals

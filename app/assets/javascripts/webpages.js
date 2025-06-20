@@ -97,14 +97,16 @@ $(document).ready(function () {
   trackingMapHoverEvents();
   // Analytics End
 
-  if (
-    !(
-      definedAndHasValue(assetTracker) &&
-      assetTracker.isWatching &&
-      assetTracker.loader
+  if(svgMode) {
+    if (
+      !(
+        definedAndHasValue(assetTracker) &&
+        assetTracker.isWatching &&
+        assetTracker.loader
+      )
     )
-  )
-    $(".webPageLoader").addClass("hidden");
+      $(".webPageLoader").addClass("hidden");
+    }
 });
 
 function bindWebpageEvents() {
@@ -1018,7 +1020,7 @@ function showMarkers() {
   $(".marker").addClass("hidden");
   $(".hidden-units").empty();
 
-  const unitsToDisplay = filterUnitsBasedOnCommunityType(units);
+  // const unitsToDisplay = filterUnitsBasedOnCommunityType(units);
 
   renderMapData();
 
@@ -1170,6 +1172,7 @@ function populateCurrentUnits() {
 
 function getFilteredUnits(units, type) {
   var new_units = [];
+
   if (type === "Price: Low to High" && display_rent === "true") {
     new_units = units.sort((a, b) => a["market_rent"] - b["market_rent"]);
   } else if (type === "Price: High to Low" && display_rent === "true") {
@@ -1189,6 +1192,7 @@ function getFilteredUnits(units, type) {
   } else {
     new_units = units;
   }
+
   return new_units;
 }
 
@@ -1266,6 +1270,8 @@ function renderUnitBoxes(floorUnits) {
 }
 
 function renderUnitMarkers(floorUnits) {
+  if (svgMode || _3dMapMode()) return;
+
   let parent = null;
 
   if(hasFloorplate()){
@@ -1378,7 +1384,7 @@ function buildUnitMarkerHTML(unit) {
       <div
         id="s_${unit.id}"
         class="fas fa-map-marker-alt fa-map-marker-alt-responsive unit_marker"
-        style="font-size: 30px; color: ${getUnitMarkerColor(unit)}; margin-left: -11.25px; margin-top: -30px;"
+        style="font-size: 30px; color: ${getUnitMarkerColor(unit)}; margin-left: -3px; margin-top: -9px;"
       >
         <span style="position: absolute; left: ${unitMargins["span_size_y"]}; top: ${unitMargins["span_size_x"]}; font-size: ${unitMargins["span_size_x"]}"></span>
       </div>
