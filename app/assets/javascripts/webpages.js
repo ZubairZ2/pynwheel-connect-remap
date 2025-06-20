@@ -1286,15 +1286,13 @@ function bindUnitMarkerEvents() {
 }
 
 function getUnitIdFromElement(element, event) {
-  let unitId = element.dataset.unitId || element.getAttribute('data-unit-id');
-  if (!unitId && event) {
-    let parentMarker = element.closest('.unit-marker');
-    if (parentMarker) {
-      unitId = parentMarker.dataset.unitId || parentMarker.getAttribute('data-unit-id');
-    }
-  }
-  return unitId;
+  const id = element?.dataset?.unitId || element?.getAttribute?.('data-unit-id');
+  if (id) return id;
+
+  const parentMarker = element.closest('.unit-marker, .unit_marker');
+  return parentMarker?.dataset?.unitId || parentMarker?.getAttribute?.('data-unit-id');
 }
+
 
 function renderUnitMarkers(floorUnits) {
   if (svgMode || _3dMapMode()) return;
@@ -2732,10 +2730,11 @@ function handleMapControl() {
 }
 
 function resetMapData() {
-  resetUnits();
-  setWebpageContainerSize();
-  filterUnitsBasedOnSelectedFilters();
+  // resetUnits();
+  // setWebpageContainerSize();
+  // filterUnitsBasedOnSelectedFilters();
   // showMarkers();
+  resetFilters();
 }
 
 function display3DMap() {
