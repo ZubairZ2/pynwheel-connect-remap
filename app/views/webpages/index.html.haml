@@ -600,4 +600,9 @@
     parsedSVGs = [];
     if(svgMode)
       fetchWebpageSVGAndSetCoordinates();
+
+
+    $("#close-modal").on("click", function() {
+      $("#unitModal").hide();
+    });
   });

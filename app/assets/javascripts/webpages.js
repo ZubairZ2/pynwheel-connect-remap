@@ -1230,7 +1230,7 @@ function unitMarkerClick(unitId, event) {
   let image = currentMapImage()?.parentElement;
   const $scope = $(image);
   const $markers = $scope.find(markersSelector);
-
+  
   for (const item of Array.from($markers)) {
     if (
       svgMode ? parseInt(item.dataset.unitId) === unitId : item.id === unitId
@@ -1267,6 +1267,33 @@ function renderUnitBoxes(floorUnits) {
   element.innerHTML = html;
 
   unitBoxListHover();
+  bindUnitMarkerEvents();
+}
+
+function bindUnitMarkerEvents() {
+  function bindEventsTo(el) {
+    el.parentElement.addEventListener('touchend', function(event) {
+      event.stopPropagation();
+      event.preventDefault();
+      const unitId = getUnitIdFromElement(el.parentElement, event);
+      setUnitAttributes(el.parentElement, event )
+      unitMarkerClick(unitId, event);
+    });
+  }
+
+  document.querySelectorAll('.unit-marker').forEach(bindEventsTo);
+  document.querySelectorAll('.unit_marker').forEach(bindEventsTo);
+}
+
+function getUnitIdFromElement(element, event) {
+  let unitId = element.dataset.unitId || element.getAttribute('data-unit-id');
+  if (!unitId && event) {
+    let parentMarker = element.closest('.unit-marker');
+    if (parentMarker) {
+      unitId = parentMarker.dataset.unitId || parentMarker.getAttribute('data-unit-id');
+    }
+  }
+  return unitId;
 }
 
 function renderUnitMarkers(floorUnits) {
@@ -1339,9 +1366,9 @@ function buildUnitMarkerHTML(unit) {
 
   return `
     <a
-      class="marker ui-draggable ui-draggable-handle"
+      class="marker ui-draggable ui-draggable-handle unit-marker"
       id="m_${unit.id}"
-      style="font-size: ${unitConfig["unit_marker_font_size"]}; position: absolute; left: ${unitDataAttributes["data-unit-x-plot"]}; top: ${unitDataAttributes["data-unit-y-plot"]};"
+      style="font-size: ${unitConfig["unit_marker_font_size"]}; position: absolute; left: ${unitDataAttributes["data-unit-x-plot"]}; top: ${unitDataAttributes["data-unit-y-plot"]}; cursor:pointer;"
       data-target="#unitModal"
       data-toggle="modal"
       data-unit-id="${unit.id}"
@@ -1378,11 +1405,12 @@ function buildUnitMarkerHTML(unit) {
       data-floor="${unitDataAttributes["data-floor"]}"
       data-sold="${unitDataAttributes["data-sold"]}"
       data-available="${unitDataAttributes["data-available"]}"
-      onclick="unitMarkerClick(${unit.id}, event)"
       href="javascript:void(0)"
+      tabindex="0"
     >
       <div
         id="s_${unit.id}"
+        data-unit-id="${unit.id}"
         class="fas fa-map-marker-alt fa-map-marker-alt-responsive unit_marker"
         style="font-size: 30px; color: ${getUnitMarkerColor(unit)}; margin-left: -3px; margin-top: -9px;"
       >
