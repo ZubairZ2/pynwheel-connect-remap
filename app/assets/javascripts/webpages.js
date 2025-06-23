@@ -1277,8 +1277,9 @@ function bindUnitMarkerEvents() {
       event.stopPropagation();
       event.preventDefault();
       const unitId = getUnitIdFromElement(el.parentElement, event);
-      setUnitAttributes(el.parentElement, event )
-      unitMarkerClick(unitId, event);
+      // setUnitAttributes(el.parentElement, event )
+      // unitMarkerClick(unitId, event);
+      $(`#s_${unitId}`).click()
     });
   }
 
@@ -1381,6 +1382,38 @@ function buildUnitBoxHTML(unit) {
   `;
 }
 
+  // data-floorplan-provider-id="${unitDataAttributes["data-floorplan-provider-id"]}"
+  // data-pointer-data="${unit.pointer_data}"
+  // data-community-id="${unitDataAttributes["data-community-id"]}"
+  // data-website="${unitDataAttributes["data-website"]}"
+  // data-provider="${unitDataAttributes["data-provider"]}"
+  // data-unit-provider-id="${unitDataAttributes["data-unit-provider-id"]}"
+  // data-unit-marketing-name="${unitDataAttributes["data-unit-marketing-name"]}"
+  // data-available-date="${unitDataAttributes["data-available-date"]}"
+  // data-market-rent="${unitDataAttributes["data-market-rent"]}"
+  // data-total-market-rent="${unitDataAttributes["data-total-market-rent"]}"
+  // data-title="${unitDataAttributes["data-title"]}"
+  // data-unit-virtual-tour-label="${unitDataAttributes["data-unit-virtual-tour-label"]}"
+  // data-unit-virtual-tour-url="${unitDataAttributes["data-unit-virtual-tour-url"]}"
+  // data-unit-lease-term="${unitDataAttributes["data-unit-lease-term"]}"
+  // data-unit-lease-pricing="${unitDataAttributes["data-unit-lease-pricing"]}"
+  // data-unit-additional-fees="${unitDataAttributes["data-unit-additional-fees"]}"
+  // data-unit-description="${unitDataAttributes["data-unit-description"]}"
+  // data-property-id="${unitDataAttributes["data-property-id"]}"
+  // data-unit-status="${unitDataAttributes["data-unit-status"]}"
+  // data-model-unit="${unitDataAttributes["data-model-unit"]}"
+  // data-is-fav="${unitDataAttributes["data-is-fav"]}"
+  // data-community-property-id="${unitDataAttributes["data-community-property-id"]}"
+  // data-floorplan-name="${unitDataAttributes["data-floorplan-name"]}"
+  // data-square-feet="${unitDataAttributes["data-square-feet"]}"
+  // data-availability="${unitDataAttributes["data-availability"]}"
+  // data-bedrooms="${unitDataAttributes["data-bedrooms"]}"
+  // data-bathrooms="${unitDataAttributes["data-bathrooms"]}"
+  // data-floorplan-image="${unitDataAttributes["data-floorplan-image"]}"
+  // data-floor="${unitDataAttributes["data-floor"]}"
+  // data-sold="${unitDataAttributes["data-sold"]}"
+  // data-available="${unitDataAttributes["data-available"]}"
+
 function buildUnitMarkerHTML(unit) {
   unitDataAttributes = unit.data_attributes;
   unitConfig = unitDataAttributes["data-config"]
@@ -1394,39 +1427,8 @@ function buildUnitMarkerHTML(unit) {
       data-target="#unitModal"
       data-toggle="modal"
       data-unit-id="${unit.id}"
-      data-floorplan-provider-id="${unitDataAttributes["data-floorplan-provider-id"]}"
       data-unit-x-plot="${unitDataAttributes["data-unit-x-plot"]}"
       data-unit-y-plot="${unitDataAttributes["data-unit-y-plot"]}"
-      data-pointer-data="${unit.pointer_data}"
-      data-community-id="${unitDataAttributes["data-community-id"]}"
-      data-website="${unitDataAttributes["data-website"]}"
-      data-provider="${unitDataAttributes["data-provider"]}"
-      data-unit-provider-id="${unitDataAttributes["data-unit-provider-id"]}"
-      data-unit-marketing-name="${unitDataAttributes["data-unit-marketing-name"]}"
-      data-available-date="${unitDataAttributes["data-available-date"]}"
-      data-market-rent="${unitDataAttributes["data-market-rent"]}"
-      data-total-market-rent="${unitDataAttributes["data-total-market-rent"]}"
-      data-title="${unitDataAttributes["data-title"]}"
-      data-unit-virtual-tour-label="${unitDataAttributes["data-unit-virtual-tour-label"]}"
-      data-unit-virtual-tour-url="${unitDataAttributes["data-unit-virtual-tour-url"]}"
-      data-unit-lease-term="${unitDataAttributes["data-unit-lease-term"]}"
-      data-unit-lease-pricing="${unitDataAttributes["data-unit-lease-pricing"]}"
-      data-unit-additional-fees="${unitDataAttributes["data-unit-additional-fees"]}"
-      data-unit-description="${unitDataAttributes["data-unit-description"]}"
-      data-property-id="${unitDataAttributes["data-property-id"]}"
-      data-unit-status="${unitDataAttributes["data-unit-status"]}"
-      data-model-unit="${unitDataAttributes["data-model-unit"]}"
-      data-is-fav="${unitDataAttributes["data-is-fav"]}"
-      data-community-property-id="${unitDataAttributes["data-community-property-id"]}"
-      data-floorplan-name="${unitDataAttributes["data-floorplan-name"]}"
-      data-square-feet="${unitDataAttributes["data-square-feet"]}"
-      data-availability="${unitDataAttributes["data-availability"]}"
-      data-bedrooms="${unitDataAttributes["data-bedrooms"]}"
-      data-bathrooms="${unitDataAttributes["data-bathrooms"]}"
-      data-floorplan-image="${unitDataAttributes["data-floorplan-image"]}"
-      data-floor="${unitDataAttributes["data-floor"]}"
-      data-sold="${unitDataAttributes["data-sold"]}"
-      data-available="${unitDataAttributes["data-available"]}"
       href="javascript:void(0)"
       tabindex="0"
     >
