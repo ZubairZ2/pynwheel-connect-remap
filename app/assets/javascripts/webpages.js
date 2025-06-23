@@ -1243,24 +1243,16 @@ function unitMarkerClick(unitId, event) {
 }
 
 function renderUnitsAmenitiesMarkers() {
+  if (svgMode || _3dMapMode()) return;
   const filteredUnits = filterUnitsBasedOnCommunityType(units);
-
-  if(filteredUnits.length > 0) {
-    renderUnitMarkers(filteredUnits);
-  }
+  renderUnitMarkers(filteredUnits);
 }
 
 function renderMapData() {
   const filteredUnits = filterUnitsBasedOnCommunityType(units);
-
-  if(filteredUnits.length > 0) {
-    const sortType = document.getElementById("filter");
-    const floorUnits = getFilteredUnits(filteredUnits, sortType.value);
-
-    if(floorUnits.length > 0) {
-      renderUnitBoxes(floorUnits);
-    }
-  }
+  const sortType = document.getElementById("filter");
+  const floorUnits = getFilteredUnits(filteredUnits, sortType.value);
+  renderUnitBoxes(floorUnits);
 }
 
 function renderUnitBoxes(floorUnits) {
@@ -1329,8 +1321,6 @@ function bindAmenityMarkerEvents() {
 
 
 function renderUnitMarkers(floorUnits) {
-  if (svgMode || _3dMapMode()) return;
-
   let parent = null;
 
   if(hasFloorplate()){
