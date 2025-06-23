@@ -1023,6 +1023,7 @@ function showMarkers() {
   // const unitsToDisplay = filterUnitsBasedOnCommunityType(units);
 
   renderMapData();
+  renderUnitsAmenitiesMarkers();
 
   // if (!_3dMapMode() && !svgMode) {
   //   const scope = currentMapImage()?.parentElement;
@@ -1241,6 +1242,14 @@ function unitMarkerClick(unitId, event) {
   }
 }
 
+function renderUnitsAmenitiesMarkers() {
+  const filteredUnits = filterUnitsBasedOnCommunityType(units);
+
+  if(filteredUnits.length > 0) {
+    renderUnitMarkers(filteredUnits);
+  }
+}
+
 function renderMapData() {
   const filteredUnits = filterUnitsBasedOnCommunityType(units);
 
@@ -1249,7 +1258,6 @@ function renderMapData() {
     const floorUnits = getFilteredUnits(filteredUnits, sortType.value);
 
     if(floorUnits.length > 0) {
-      renderUnitMarkers(floorUnits);
       renderUnitBoxes(floorUnits);
     }
   }
