@@ -1246,6 +1246,8 @@ function renderUnitsAmenitiesMarkers() {
   if (svgMode || _3dMapMode()) return;
   const filteredUnits = filterUnitsBasedOnCommunityType(units);
   renderUnitMarkers(filteredUnits);
+  bindUnitMarkerEvents();
+  bindAmenityMarkerEvents();
 }
 
 function renderMapData() {
@@ -1267,8 +1269,6 @@ function renderUnitBoxes(floorUnits) {
   element.innerHTML = html;
 
   unitBoxListHover();
-  bindUnitMarkerEvents();
-  bindAmenityMarkerEvents();
 }
 
 function bindUnitMarkerEvents() {
