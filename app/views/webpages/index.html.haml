@@ -601,6 +601,9 @@
     parsedSVGs = [];
     if(svgMode)
       fetchWebpageSVGAndSetCoordinates();
+    else {
+      setImageMapMarkers();
+    }
 
     $("#close-modal").on("click", function() {
       $("#unitModal").hide();
