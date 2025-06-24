@@ -1168,6 +1168,7 @@ function showFloorLevelUnits() {
 
 function populateCurrentUnits() {
   showFloorLevelUnits();
+  updateAvailabilityFilterDropdownList(units);
   showMarkers();
 }
 
