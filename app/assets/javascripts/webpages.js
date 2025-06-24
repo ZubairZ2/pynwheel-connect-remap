@@ -1437,9 +1437,9 @@ function buildUnitMarkerHTML(unit) {
         id="s_${unit.id}"
         data-unit-id="${unit.id}"
         class="fas fa-map-marker-alt fa-map-marker-alt-responsive unit_marker"
-        style="font-size: 30px; color: ${getUnitMarkerColor(unit)}; margin-left: -3px; margin-top: -9px;"
+        style="color: ${getUnitMarkerColor(unit)};"
       >
-        <span style="position: absolute; left: ${unitMargins["span_size_y"]}; top: ${unitMargins["span_size_x"]}; font-size: ${unitMargins["span_size_x"]}"></span>
+        <span style="position: absolute; left: ${unitMargins["span_size_y"] - 1}; top: ${unitMargins["span_size_x"] + 2}; font-size: ${unitMargins["span_size_x"] - 4}"></span>
       </div>
     </a>
   `;
@@ -1464,11 +1464,11 @@ function buildAmenityMarkerHTML(amenity) {
     >
       <span
         class="camera-icon camera-icon-responsive"
-        style="border: 2px solid ${amenityConfig.amenity_marker_color}; max-width: 22.5px; max-height: 22.5px;"
+        style="border: 2px solid ${amenityConfig.amenity_marker_color};"
       >
         <i
           class="fas fa-camera-retro"
-          style="color: ${amenityConfig.amenity_marker_color}; font-size: 11.25px;"
+          style="color: ${amenityConfig.amenity_marker_color};"
         ></i>
       </span>
       <span class="amenitytooltiptext">
@@ -2166,9 +2166,10 @@ function change_units_view(evt, type) {
       maxWidth: `${unitListContainerWidth - 30 /* padding */}px`,
     });
   } else if (!_3dMapMode()) {
-    moveZoomableImageToCenter(currentMapImage());
+    showMarkers();
+    // moveZoomableImageToCenter(currentMapImage());
   }
-  adjustImageMapMarkersPosition();
+  // adjustImageMapMarkersPosition();
 }
 
 function set_yardirentcafe_url(element) {
