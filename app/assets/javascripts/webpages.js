@@ -263,6 +263,7 @@ function bindWebpageEvents() {
         applyCommunityLevelFilter();
         updateAndApplyFloorLevelFilter();
       }
+
       populateCurrentUnits();
 
       if (!_3dMapMode()) $currentImageBox.parent().removeClass("hidden");
@@ -1244,28 +1245,53 @@ function unitMarkerClick(unitId, event) {
 function setImageMapMarkers() {
   if (svgMode || _3dMapMode()) return;
 
-  if(hasFloorplate()) {
+  if (hasFloorplate()) {
     for (var i = 0; i < floors.length; i++) {
       const parent = document.getElementById(`floorplate_${floors[i]}`);
-      const element = parent?.querySelector('.markers-container');
+      const image = parent?.querySelector('img');
+      const loader = parent?.querySelector('.map-loader');
 
-      renderUnitsAmenitiesMarkers(element, floors[i]);
+      loader?.style.setProperty('display', 'block');
 
-      disabledEnabledAnchors();
-      setMarkersSizeAndMargin();
-      adjustImageMapMarkersPosition();
+      if (image && !image.complete) {
+        image.addEventListener('load', () => {
+          renderMarkersForFloor(parent, floors[i]);
+          loader?.style.setProperty('display', 'none');
+        });
+      } else {
+        renderMarkersForFloor(parent, floors[i]);
+        loader?.style.setProperty('display', 'none');
+      }
     }
   } else {
-    const parent = document.getElementById(`property-map`);
-    const element = parent?.querySelector('.markers-container');
+    const parent = document.getElementById('property-map');
+    const image = parent?.querySelector('img');
+    const loader = parent?.querySelector('.map-loader');
 
-    renderUnitsAmenitiesMarkers(element, current_floor);
+    loader?.style.setProperty('display', 'block');
 
-    disabledEnabledAnchors();
-    setMarkersSizeAndMargin();
-    adjustImageMapMarkersPosition();
+    if (image && !image.complete) {
+      image.addEventListener('load', () => {
+        renderMarkersForFloor(parent, current_floor);
+        loader?.style.setProperty('display', 'none');
+      });
+    } else {
+      renderMarkersForFloor(parent, current_floor);
+      loader?.style.setProperty('display', 'none');
+    }
   }
 }
+
+function renderMarkersForFloor(parent, floor) {
+  const element = parent?.querySelector('.markers-container');
+
+  renderUnitsAmenitiesMarkers(element, floor);
+  disabledEnabledAnchors();
+  setMarkersSizeAndMargin();
+  adjustImageMapMarkersPosition();
+}
+
+
 
 function renderUnitsAmenitiesMarkers(element, f) {
   renderUnitMarkers(element, f);
