@@ -1437,7 +1437,7 @@ function buildUnitMarkerHTML(unit) {
         id="s_${unit.id}"
         data-unit-id="${unit.id}"
         class="fas fa-map-marker-alt fa-map-marker-alt-responsive unit_marker"
-        style="color: ${getUnitMarkerColor(unit)};"
+        style="color: ${getUnitMarkerColor(unit)}; font-size: 22px; margin-left: -10px; margin-top: -20px;}"
       >
         <span style="position: absolute; left: ${unitMargins["span_size_y"] - 1}; top: ${unitMargins["span_size_x"] + 2}; font-size: ${unitMargins["span_size_x"] - 4}"></span>
       </div>
