@@ -263,7 +263,6 @@ function bindWebpageEvents() {
         applyCommunityLevelFilter();
         updateAndApplyFloorLevelFilter();
       }
-
       populateCurrentUnits();
 
       if (!_3dMapMode()) $currentImageBox.parent().removeClass("hidden");
@@ -1018,7 +1017,7 @@ function reInitializeDropDownList(filter) {
 
 function showMarkers() {
   $(".marker").addClass("hidden");
-  $(".hidden-units").empty();
+  // $(".hidden-units").empty();
 
   // const unitsToDisplay = filterUnitsBasedOnCommunityType(units);
 
@@ -1114,7 +1113,7 @@ function showMarkers() {
   //     $markerEl.removeClass("hidden");
   //   }
   // }
-
+  moveZoomableImageToCenter(currentMapImage());
   disabledEnabledAnchors();
   setMarkersSizeAndMargin(); //image mode only
   adjustImageMapMarkersPosition(); //image mode only
