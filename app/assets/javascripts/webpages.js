@@ -2760,11 +2760,9 @@ function handleMapControl() {
 }
 
 function resetMapData() {
-  // resetUnits();
-  // setWebpageContainerSize();
-  // filterUnitsBasedOnSelectedFilters();
-  // showMarkers();
-  resetFilters();
+  resetUnits();
+  setWebpageContainerSize();
+  filterUnitsBasedOnSelectedFilters();
 }
 
 function display3DMap() {
