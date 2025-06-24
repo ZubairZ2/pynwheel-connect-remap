@@ -227,7 +227,7 @@
                     = render partial: 'webpages/marker_colors_legend', locals: { legend_items: }
 
                 .image-map#zoomable.zoomable-map-container{style: "text-align: center; display: flex;"}
-                  .hidden-units
+                  -# .hidden-units
                   = render partial: @svg_enabled ? 'webpages/svg_map' : 'webpages/image_map' #, locals: svg_and_image_locals
 
                   - if @community_info.display_tbd_legend?
@@ -258,6 +258,7 @@
                   .inner-footer
                     .footer-logo.desktop-content{:style=> "visibility: #{@community.powered_by_btn ? "" : "hidden" }"}
                       %img{:src => "/assets/powered_by_logo.png"}/
+
                     %ul.location-items
                       - unless (@community_info.display_tbd_legend? || @have_multi_property_ids)
                         - if @community.enable_home_legend && !@have_multi_property_ids
