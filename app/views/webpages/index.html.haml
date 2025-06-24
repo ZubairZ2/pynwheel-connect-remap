@@ -601,11 +601,6 @@
     parsedSVGs = [];
     if(svgMode)
       fetchWebpageSVGAndSetCoordinates();
-    else {
-      renderUnitsAmenitiesMarkers();
-      setMarkersSizeAndMargin(); //image mode only
-      adjustImageMapMarkersPosition(); //image mode only
-    }
 
     $("#close-modal").on("click", function() {
       $("#unitModal").hide();

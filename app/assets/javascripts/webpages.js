@@ -1017,101 +1017,102 @@ function reInitializeDropDownList(filter) {
 
 function showMarkers() {
   $(".marker").addClass("hidden");
-  $(".hidden-units").empty();
+  // $(".hidden-units").empty();
 
-  const unitsToDisplay = filterUnitsBasedOnCommunityType(units);
+  // const unitsToDisplay = filterUnitsBasedOnCommunityType(units);
 
   renderMapData();
+  renderUnitsAmenitiesMarkers();
 
-  if (!_3dMapMode() && !svgMode) {
-    const scope = currentMapImage()?.parentElement;
-    if (!scope) return;
+  // if (!_3dMapMode() && !svgMode) {
+  //   const scope = currentMapImage()?.parentElement;
+  //   if (!scope) return;
 
-    const jsonObject = {};
-    for (let i = 0; i < unitsToDisplay.length; i++) {
-      const { id, x_plot, y_plot } = unitsToDisplay[i];
-      const $markerEl = $("#m_" + id, scope);
-      if ($markerEl.hasClass("overlapping-unit")) {
-        $(".hidden-units").append(
-          '<div class="hidden h-' +
-            $markerEl.data("unit-x-plot") +
-            "-" +
-            $markerEl.data("unit-y-plot") +
-            '" id="h-' +
-            $markerEl.data("title") +
-            '" data-title="' +
-            $markerEl.data("title") +
-            '" data-community-id="' +
-            $markerEl.data("community-id") +
-            '" data-unit-id="' +
-            $markerEl.data("unit-id") +
-            '" data-is-fav="' +
-            $markerEl.data("is-fav") +
-            '" data-provider="' +
-            $markerEl.data("provider") +
-            '" data-website="' +
-            $markerEl.data("website") +
-            '" data-community-property-id="' +
-            $markerEl.data("community-property-id") +
-            '" data-unit-provider-id="' +
-            $markerEl.data("unit-provider-id") +
-            '" data-floorplan-provider-id="' +
-            $markerEl.data("floorplan-provider-id") +
-            '" data-floorplan-name="' +
-            $markerEl.data("floorplan-name") +
-            '" data-unit-description="' +
-            $markerEl.data("unit-description") +
-            '" data-unit-lease-pricing="' +
-            $markerEl.data("unit-lease-pricing") +
-            '" data-unit-marketing-name="' +
-            $markerEl.data("unit-marketing-name") +
-            '" data-market-rent="' +
-            $markerEl.data("market-rent") +
-            '" data-square-feet="' +
-            $markerEl.data("square-feet") +
-            '" data-availability="' +
-            $markerEl.data("availability") +
-            '" data-available-date="' +
-            $markerEl.data("available-date") +
-            '" data-bedrooms="' +
-            $markerEl.data("bedrooms") +
-            '" data-bathrooms="' +
-            $markerEl.data("bathrooms") +
-            '" data-floorplan-image="' +
-            $markerEl.data("floorplan-image") +
-            '" data-availability-url="' +
-            $markerEl.data("availability-url") +
-            '" data-lease-term="' +
-            $markerEl.data("lease-term") +
-            '" data-unit-additional-fees="' +
-            $markerEl.data("unit-additional-fees") +
-            '"></div>'
-        );
+  //   const jsonObject = {};
+  //   for (let i = 0; i < unitsToDisplay.length; i++) {
+  //     const { id, x_plot, y_plot } = unitsToDisplay[i];
+  //     const $markerEl = $("#m_" + id, scope);
+  //     if ($markerEl.hasClass("overlapping-unit")) {
+  //       $(".hidden-units").append(
+  //         '<div class="hidden h-' +
+  //           $markerEl.data("unit-x-plot") +
+  //           "-" +
+  //           $markerEl.data("unit-y-plot") +
+  //           '" id="h-' +
+  //           $markerEl.data("title") +
+  //           '" data-title="' +
+  //           $markerEl.data("title") +
+  //           '" data-community-id="' +
+  //           $markerEl.data("community-id") +
+  //           '" data-unit-id="' +
+  //           $markerEl.data("unit-id") +
+  //           '" data-is-fav="' +
+  //           $markerEl.data("is-fav") +
+  //           '" data-provider="' +
+  //           $markerEl.data("provider") +
+  //           '" data-website="' +
+  //           $markerEl.data("website") +
+  //           '" data-community-property-id="' +
+  //           $markerEl.data("community-property-id") +
+  //           '" data-unit-provider-id="' +
+  //           $markerEl.data("unit-provider-id") +
+  //           '" data-floorplan-provider-id="' +
+  //           $markerEl.data("floorplan-provider-id") +
+  //           '" data-floorplan-name="' +
+  //           $markerEl.data("floorplan-name") +
+  //           '" data-unit-description="' +
+  //           $markerEl.data("unit-description") +
+  //           '" data-unit-lease-pricing="' +
+  //           $markerEl.data("unit-lease-pricing") +
+  //           '" data-unit-marketing-name="' +
+  //           $markerEl.data("unit-marketing-name") +
+  //           '" data-market-rent="' +
+  //           $markerEl.data("market-rent") +
+  //           '" data-square-feet="' +
+  //           $markerEl.data("square-feet") +
+  //           '" data-availability="' +
+  //           $markerEl.data("availability") +
+  //           '" data-available-date="' +
+  //           $markerEl.data("available-date") +
+  //           '" data-bedrooms="' +
+  //           $markerEl.data("bedrooms") +
+  //           '" data-bathrooms="' +
+  //           $markerEl.data("bathrooms") +
+  //           '" data-floorplan-image="' +
+  //           $markerEl.data("floorplan-image") +
+  //           '" data-availability-url="' +
+  //           $markerEl.data("availability-url") +
+  //           '" data-lease-term="' +
+  //           $markerEl.data("lease-term") +
+  //           '" data-unit-additional-fees="' +
+  //           $markerEl.data("unit-additional-fees") +
+  //           '"></div>'
+  //       );
 
-        const jsonObjectKey = `${x_plot}-${y_plot}`;
+  //       const jsonObjectKey = `${x_plot}-${y_plot}`;
 
-        if (jsonObject[jsonObjectKey]) {
-          const overlappingUnits = jsonObject[jsonObjectKey];
-          overlappingUnits.push(unitsToDisplay[i]);
-          jsonObject[jsonObjectKey] = overlappingUnits;
-        } else {
-          jsonObject[jsonObjectKey] = [unitsToDisplay[i]];
-        }
-      } else {
-        $markerEl.removeClass("hidden");
-      }
-    }
+  //       if (jsonObject[jsonObjectKey]) {
+  //         const overlappingUnits = jsonObject[jsonObjectKey];
+  //         overlappingUnits.push(unitsToDisplay[i]);
+  //         jsonObject[jsonObjectKey] = overlappingUnits;
+  //       } else {
+  //         jsonObject[jsonObjectKey] = [unitsToDisplay[i]];
+  //       }
+  //     } else {
+  //       $markerEl.removeClass("hidden");
+  //     }
+  //   }
 
-    for (const key in jsonObject) {
-      const overlappingUnits = jsonObject[key];
-      const $markerEl = $("#m_" + overlappingUnits[0]["id"], scope);
+  //   for (const key in jsonObject) {
+  //     const overlappingUnits = jsonObject[key];
+  //     const $markerEl = $("#m_" + overlappingUnits[0]["id"], scope);
 
-      $("span", $markerEl).html(
-        overlappingUnits.length > 1 ? overlappingUnits.length : ""
-      );
-      $markerEl.removeClass("hidden");
-    }
-  }
+  //     $("span", $markerEl).html(
+  //       overlappingUnits.length > 1 ? overlappingUnits.length : ""
+  //     );
+  //     $markerEl.removeClass("hidden");
+  //   }
+  // }
 
   disabledEnabledAnchors();
   setMarkersSizeAndMargin(); //image mode only
