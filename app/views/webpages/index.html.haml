@@ -227,7 +227,7 @@
                     = render partial: 'webpages/marker_colors_legend', locals: { legend_items: }
 
                 .image-map#zoomable.zoomable-map-container{style: "text-align: center; display: flex;"}
-                  -# .hidden-units
+                  .hidden-units
                   = render partial: @svg_enabled ? 'webpages/svg_map' : 'webpages/image_map' #, locals: svg_and_image_locals
 
                   - if @community_info.display_tbd_legend?
@@ -601,7 +601,11 @@
     parsedSVGs = [];
     if(svgMode)
       fetchWebpageSVGAndSetCoordinates();
-
+    else {
+      renderUnitsAmenitiesMarkers();
+      setMarkersSizeAndMargin(); //image mode only
+      adjustImageMapMarkersPosition(); //image mode only
+    }
 
     $("#close-modal").on("click", function() {
       $("#unitModal").hide();
