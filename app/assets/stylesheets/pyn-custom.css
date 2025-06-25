@@ -7791,3 +7791,21 @@ div.esri-ui-inner-container.esri-ui-manual-container>div.esri-component.esri-att
   font-weight: bold;
   display: none;
 }
+
+.map-global-loader {
+    display: block;
+}
+
+.map-global-loader {
+  position: absolute;
+  z-index: 100000;
+  background-image: url('dots_loader.gif');
+  background-color: #66666669;
+  opacity: 1;
+  background-repeat: no-repeat;
+  background-position: center;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  top: 0;
+}

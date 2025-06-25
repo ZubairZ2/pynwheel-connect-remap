@@ -1245,49 +1245,58 @@ function unitMarkerClick(unitId, event) {
 function setImageMapMarkers() {
   if (svgMode || _3dMapMode()) return;
 
-  if (hasFloorplate()) {
-    for (var i = 0; i < floors.length; i++) {
-      if(floors[i] !== 'all') {
-        const parent = document.getElementById(`floorplate_${floors[i]}`);
-        const image = parent?.querySelector('img');
-        const loader = parent?.querySelector('.map-loader');
+  $(".map-global-loader").removeClass("hidden");
 
-        loader?.style.setProperty('display', 'block');
-        debugger;
-        if (image && !image.complete) {
-          image.addEventListener('load', () => {
-            debugger
-            renderMarkersForFloor(parent, floors[i]);
-            loader?.style.setProperty('display', 'none');
-          });
-        } else {
-          renderMarkersForFloor(parent, floors[i]);
-          loader?.style.setProperty('display', 'none');
-        }
-      }
-    }
-  } else {
-    const parent = document.getElementById('property-map');
-    const image = parent?.querySelector('img');
-    const loader = parent?.querySelector('.map-loader');
+  const floorsToLoad = hasFloorplate()
+    ? floors.filter(f => f !== 'all')
+    : [current_floor];
 
-    loader?.style.setProperty('display', 'block');
-      debugger;
+  let completedFloors = 0;
 
-    if (image && !image.complete) {
-      image.addEventListener('load', () => {
-        renderMarkersForFloor(parent, current_floor);
-        loader?.style.setProperty('display', 'none');
-      });
-    } else {
-      renderMarkersForFloor(parent, current_floor);
-      loader?.style.setProperty('display', 'none');
+  function floorDone() {
+    completedFloors++;
+    if (completedFloors === floorsToLoad.length) {
+      $(".map-global-loader").addClass("hidden");
     }
   }
+
+  floorsToLoad.forEach(floor => {
+    const parent = document.getElementById(`floorplate_${floor}`) || document.getElementById('property-map');
+    const imageEl = parent?.querySelector('img');
+    const loader = parent?.querySelector('.map-loader');
+
+    if (!imageEl) {
+      floorDone(); // no image found, skip
+      return;
+    }
+
+    loader?.style.setProperty('display', 'block');
+
+    // Preload the image
+    const preload = new Image();
+    preload.src = imageEl.src;
+
+    preload.onload = () => {
+      renderMarkersForFloor(parent, floor);
+      loader?.style.setProperty('display', 'none');
+      floorDone();
+    };
+
+    preload.onerror = () => {
+      console.warn(`Image failed to load: ${imageEl.src}`);
+      loader?.style.setProperty('display', 'none');
+      floorDone(); // proceed even on error
+    };
+
+    // If already cached
+    if (preload.complete) {
+      preload.onload(); // trigger manually
+    }
+  });
 }
 
+
 function renderMarkersForFloor(parent, floor) {
-  debugger;
   const element = parent?.querySelector('.markers-container');
 
   renderUnitsAmenitiesMarkers(element, floor);
