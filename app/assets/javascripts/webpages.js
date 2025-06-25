@@ -1254,10 +1254,19 @@ function setImageMapMarkers() {
 
   function floorDone() {
     completedFloors++;
+
+    console.log("completedFloors: ", completedFloors)
+    console.log("loorsToLoad.length: ", floorsToLoad.length)
+
     if (completedFloors === floorsToLoad.length) {
-      bindUnitMarkerEvents();
-      bindAmenityMarkerEvents();
-      $(".map-global-loader").addClass("hidden");
+      // Wait for next event loop + repaint
+      setTimeout(() => {
+        requestAnimationFrame(() => {
+          bindUnitMarkerEvents();
+          bindAmenityMarkerEvents();
+          $(".map-global-loader").addClass("hidden");
+        });
+      }, 0);
     }
   }
 
@@ -1327,6 +1336,7 @@ function bindUnitMarkerEvents() {
       event.stopPropagation();
       event.preventDefault();
       const unitId = getUnitIdFromElement(el.parentElement, event);
+      console.log("unitId:", unitId)
       unitMarkerClick(`unit_${unitId}`)
     });
   }
