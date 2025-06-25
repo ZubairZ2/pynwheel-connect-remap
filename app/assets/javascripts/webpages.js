@@ -1247,20 +1247,23 @@ function setImageMapMarkers() {
 
   if (hasFloorplate()) {
     for (var i = 0; i < floors.length; i++) {
-      const parent = document.getElementById(`floorplate_${floors[i]}`);
-      const image = parent?.querySelector('img');
-      const loader = parent?.querySelector('.map-loader');
+      if(floors[i] !== 'all') {
+        const parent = document.getElementById(`floorplate_${floors[i]}`);
+        const image = parent?.querySelector('img');
+        const loader = parent?.querySelector('.map-loader');
 
-      loader?.style.setProperty('display', 'block');
-
-      if (image && !image.complete) {
-        image.addEventListener('load', () => {
+        loader?.style.setProperty('display', 'block');
+        debugger;
+        if (image && !image.complete) {
+          image.addEventListener('load', () => {
+            debugger
+            renderMarkersForFloor(parent, floors[i]);
+            loader?.style.setProperty('display', 'none');
+          });
+        } else {
           renderMarkersForFloor(parent, floors[i]);
           loader?.style.setProperty('display', 'none');
-        });
-      } else {
-        renderMarkersForFloor(parent, floors[i]);
-        loader?.style.setProperty('display', 'none');
+        }
       }
     }
   } else {
@@ -1269,6 +1272,7 @@ function setImageMapMarkers() {
     const loader = parent?.querySelector('.map-loader');
 
     loader?.style.setProperty('display', 'block');
+      debugger;
 
     if (image && !image.complete) {
       image.addEventListener('load', () => {
@@ -1283,6 +1287,7 @@ function setImageMapMarkers() {
 }
 
 function renderMarkersForFloor(parent, floor) {
+  debugger;
   const element = parent?.querySelector('.markers-container');
 
   renderUnitsAmenitiesMarkers(element, floor);
