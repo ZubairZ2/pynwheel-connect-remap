@@ -2804,6 +2804,7 @@ function resetMapData() {
   resetUnits();
   setWebpageContainerSize();
   filterUnitsBasedOnSelectedFilters();
+  showMarkers();
 }
 
 function display3DMap() {
