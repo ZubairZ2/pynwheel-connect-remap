@@ -1290,7 +1290,6 @@ function setImageMapMarkers() {
   });
 }
 
-
 function renderMarkersForFloor(parent, floor) {
   const element = parent?.querySelector('.markers-container');
 
@@ -1299,8 +1298,6 @@ function renderMarkersForFloor(parent, floor) {
   setMarkersSizeAndMargin();
   adjustImageMapMarkersPosition();
 }
-
-
 
 function renderUnitsAmenitiesMarkers(element, f) {
   renderUnitMarkers(element, f);
@@ -1335,7 +1332,9 @@ function bindUnitMarkerEvents() {
       event.stopPropagation();
       event.preventDefault();
       const unitId = getUnitIdFromElement(el.parentElement, event);
-      $(`#s_${unitId}`).click()
+      setTimeout(() => {
+        $(`#s_${unitId}`).click();
+      }, 1);
     });
   }
 
