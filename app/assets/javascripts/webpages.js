@@ -1264,6 +1264,7 @@ function setImageMapMarkers() {
         requestAnimationFrame(() => {
           bindUnitMarkerEvents();
           bindAmenityMarkerEvents();
+          resetMapData();
           $(".map-global-loader").addClass("hidden");
         });
       }, 0);
