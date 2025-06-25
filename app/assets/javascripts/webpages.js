@@ -1208,7 +1208,6 @@ function resetToDefaultZoom() {
 }
 
 function unitMarkerClick(unitId, event) {
-  
   const markersSelector = svgMode ? ".cloned-unit" : ".unit_marker";
 
   if (event?.currentTarget) {
@@ -1256,6 +1255,8 @@ function setImageMapMarkers() {
   function floorDone() {
     completedFloors++;
     if (completedFloors === floorsToLoad.length) {
+      bindUnitMarkerEvents();
+      bindAmenityMarkerEvents();
       $(".map-global-loader").addClass("hidden");
     }
   }
@@ -1299,12 +1300,6 @@ function renderMarkersForFloor(parent, floor) {
   adjustImageMapMarkersPosition();
 }
 
-function renderUnitsAmenitiesMarkers(element, f) {
-  renderUnitMarkers(element, f);
-  bindUnitMarkerEvents();
-  bindAmenityMarkerEvents();
-}
-
 function renderMapData() {
   const filteredUnits = filterUnitsBasedOnCommunityType(units);
   const sortType = document.getElementById("filter");
@@ -1332,9 +1327,7 @@ function bindUnitMarkerEvents() {
       event.stopPropagation();
       event.preventDefault();
       const unitId = getUnitIdFromElement(el.parentElement, event);
-      setTimeout(() => {
-        $(`#s_${unitId}`).click();
-      }, 1);
+      unitMarkerClick(`unit_${unitId}`)
     });
   }
 
@@ -1376,9 +1369,7 @@ function bindAmenityMarkerEvents() {
 }
 
 
-function renderUnitMarkers(element, f) {
-  // element.innerHTML = "";
-
+function renderUnitsAmenitiesMarkers(element, f) {
   const filteredUnits = filterUnitsBasedOnCommunityType(units, f);
   const unitsHtml = filteredUnits.map((unit) => buildUnitMarkerHTML(unit, f)).join("");
 
