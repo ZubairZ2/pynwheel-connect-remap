@@ -1263,14 +1263,11 @@ function setImageMapMarkers() {
   floorsToLoad.forEach(floor => {
     const parent = document.getElementById(`floorplate_${floor}`) || document.getElementById('property-map');
     const imageEl = parent?.querySelector('img');
-    const loader = parent?.querySelector('.map-loader');
 
     if (!imageEl) {
       floorDone(); // no image found, skip
       return;
     }
-
-    loader?.style.setProperty('display', 'block');
 
     // Preload the image
     const preload = new Image();
@@ -1278,13 +1275,11 @@ function setImageMapMarkers() {
 
     preload.onload = () => {
       renderMarkersForFloor(parent, floor);
-      loader?.style.setProperty('display', 'none');
       floorDone();
     };
 
     preload.onerror = () => {
       console.warn(`Image failed to load: ${imageEl.src}`);
-      loader?.style.setProperty('display', 'none');
       floorDone(); // proceed even on error
     };
 
