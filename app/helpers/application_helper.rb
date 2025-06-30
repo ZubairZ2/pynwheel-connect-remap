@@ -18,6 +18,7 @@ module ApplicationHelper
       ]
     else
       [
+        ["App Folio", "appfolio"],
         ["Entrata", "psi"],
         ["RealPage", "realpagesvc"],
         ["YardiRentCafe", "yardirentcafe"],
