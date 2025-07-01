@@ -605,7 +605,9 @@
       fetchWebpageSVGAndSetCoordinates();
     else {
       setImageMapMarkers();
-      resetFilters();
+      availabilityFilterResetTriggered = false;
+      setAvailabilityFilterToNow();
+      //updateAvailabilityFilterDropdownList(units);
     }
 
     $("#close-modal").on("click", function() {
