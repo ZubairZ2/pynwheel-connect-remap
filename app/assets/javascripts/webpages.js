@@ -1166,8 +1166,8 @@ function showFloorLevelUnits() {
 }
 
 function populateCurrentUnits() {
-  showFloorLevelUnits();
-  updateAvailabilityFilterDropdownList(units);
+  // showFloorLevelUnits();
+  // updateAvailabilityFilterDropdownList(units);
   showMarkers();
 }
 
