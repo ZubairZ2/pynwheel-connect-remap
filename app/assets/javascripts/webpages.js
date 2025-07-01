@@ -600,13 +600,13 @@ function setAvailabilityFilterToNow() {
   
   if ($("#available_unit").find("option[value=now]").length) {
     $("#available_unit").find("option[value=now]").prop("selected", true);
-    // $("#available_unit").val("now").change();
+    $("#available_unit").val("now").change();
   }
   if ($("#responsive_available_unit").find("option[value=now]").length) {
     $("#responsive_available_unit")
       .find("option[value=now]")
       .prop("selected", true);
-    // $("#responsive_available_unit").val("now").change(); 
+    $("#responsive_available_unit").val("now").change(); 
   }
 }
 
