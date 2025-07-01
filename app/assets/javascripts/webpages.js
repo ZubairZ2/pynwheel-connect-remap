@@ -3368,8 +3368,7 @@ async function fetchWebpageSVGAndSetCoordinates() {
     console.error(error);
   }
 
-  // resetFilters();
-  updateAvailabilityFilterDropdownList(units)
+  resetFilters();
   assetTracker.clearAllAssetsLists();
   assetTracker.turnoffLoader();
   $(".webPageLoader").addClass("hidden");
