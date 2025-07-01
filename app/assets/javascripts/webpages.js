@@ -24,6 +24,7 @@ var multiCommunity;
 var communityInactivated;
 var tbdMarkersEnabled;
 var defaultSelectedFloor;
+var debouncedShowMarkers;
 
 var _3dConvertedArr = definedAndHasValue(_3dConvertedArr)
   ? _3dConvertedArr
@@ -66,6 +67,8 @@ $(document).ready(function () {
   _3dAmenities = $("#communityWebpagesData").data("amenities");
   _3dConfigurations = $("#communityWebpagesData").data("mapConfigurations");
   currency = $("#communityWebpagesData").data("currency");
+  debouncedShowMarkers = debounce(showMarkers, 100);
+
 
   if (isDefined(webCommunity)) {
     selectMap = "2d-map"; //webCommunity.web_map_type;
@@ -174,7 +177,7 @@ function bindWebpageEvents() {
       $("#select-all-filters-checkbox").prop("checked", false);
       $("#select-all-filters-checkbox").removeClass("active");
     }
-    showMarkers();
+    debouncedShowMarkers();
   });
   /////////////////////////////////////////
 
@@ -237,7 +240,7 @@ function bindWebpageEvents() {
         $(this).parent().removeClass("active");
       });
     }
-    showMarkers();
+    debouncedShowMarkers();
   });
 
   ///////////////////////////////////////////
@@ -256,7 +259,7 @@ function bindWebpageEvents() {
     );
 
     if (floorIsChanged) {
-      populateCurrentUnits();
+      debouncedShowMarkers();
 
       if (!_3dMapMode()) $currentImageBox.parent().removeClass("hidden");
       return;
@@ -501,6 +504,14 @@ function Toggle_maps(e) {
   beansWidget.toggleMap();
 }
 
+function debounce(func, delay) {
+  let timeout;
+  return function (...args) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), delay);
+  };
+}
+
 function multiPropertiesFilterChanged() {
   filterUnitsBasedOnMultiCommunity();
   
@@ -511,16 +522,18 @@ function multiPropertiesFilterChanged() {
   updateSquareFootageFilterDropdownList();
   updateAvailabilityFilterDropdownList();
 
-  showMarkers();
+  debouncedShowMarkers();
 }
 
 function bedroomFilterChanged() {
+  filterUnitsBasedOnMultiCommunity();
   filterUnitsBasedOnBedroom();
   updateDropdownListValues();
-  showMarkers();
+  debouncedShowMarkers();
 }
 
 function availabilityFilterChanged() {
+  filterUnitsBasedOnMultiCommunity();
   filterUnitsBasedOnBedroom();
   filterUnitsBasedOnAvailability();
   
@@ -530,22 +543,23 @@ function availabilityFilterChanged() {
   updateMaxPriceFilterDropDownList();
   filterUnitsBasedOnMarketRent();
 
-  showMarkers();
+  debouncedShowMarkers();
 }
 
 function squareFootageFilterChanged() {
+  filterUnitsBasedOnMultiCommunity();
   filterUnitsBasedOnBedroom();
   filterUnitsBasedOnSqfeet();
 
   updateMaxPriceFilterDropDownList();
   filterUnitsBasedOnMarketRent();
 
-  showMarkers();
+  debouncedShowMarkers();
 }
 
 function maxPriceFilterChanged() {
   filterUnitsBasedOnSelectedFilters();
-  showMarkers();
+  debouncedShowMarkers();
 }
 
 function updateDropdownListValues() {
@@ -555,6 +569,7 @@ function updateDropdownListValues() {
 }
 
 function filterUnitsBasedOnSelectedFilters() {
+  filterUnitsBasedOnMultiCommunity();
   filterUnitsBasedOnBedroom();
   filterUnitsBasedOnSqfeet();
   filterUnitsBasedOnMarketRent();
@@ -623,8 +638,11 @@ function filterUnitsBasedOnMarketRent() {
 function filterUnitsBasedOnBedroom() {
   const unitBedroom = filterBasedOnScreen("unit_bedroom");
 
+  if(!multiCommunity)
+    units = total_units;
+
   if (unitBedroom || unitBedroom === 0)
-    units = total_units.filter((unit) => unit.bedrooms == unitBedroom);
+    units = units.filter((unit) => unit.bedrooms == unitBedroom);
 }
 
 function filterMultiCommunityBasedOnScreen(filterTag) {
@@ -637,12 +655,11 @@ function filterMultiCommunityBasedOnScreen(filterTag) {
 
 function filterUnitsBasedOnMultiCommunity() {
   const propertyId = filterMultiCommunityBasedOnScreen("multi_communities");
-  resetUnits();
 
-  if (propertyId)
-    units = units.filter(
-      (unit) => unit.property_id.trim() == propertyId.trim()
-    );
+  if(propertyId)
+    units = total_units.filter((unit) => unit.property_id.trim() == propertyId.trim())
+  else 
+    units = total_units
 }
 
 function updateAvailabilityFilterDropdownList() {
@@ -867,8 +884,8 @@ function updateBedroomFilterDropDownList() {
     );
   }
   if (dropDownList.length >= 2) {
-    $(webFilterId).val("").change();
-    $(mobileFilterId).val("").change();
+    $(webFilterId).val("");
+    $(mobileFilterId).val("");
   }
 
   disableBedroomOptions();
@@ -980,6 +997,7 @@ function reInitializeDropDownList(filter) {
 }
 
 function showMarkers() {
+  console.log("Show Markers Called");
   $(".marker").addClass("hidden");
   $(".hidden-units").empty();
 
@@ -1102,10 +1120,6 @@ function performHardRefresh() {
   if (performance.navigation.type === 0) {
     window.location.reload(true);
   }
-}
-
-function populateCurrentUnits() {
-  showMarkers();
 }
 
 function getFilteredUnits(units, type) {
@@ -2742,7 +2756,7 @@ function resetMapData() {
   resetUnits();
   setWebpageContainerSize();
   filterUnitsBasedOnSelectedFilters();
-  showMarkers();
+  debouncedShowMarkers();
 }
 
 function display3DMap() {
@@ -2831,7 +2845,7 @@ function resetBasedOnBedroom() {
 
 function applyFilters() {
   filterUnitsBasedOnSelectedFilters();
-  showMarkers();
+  debouncedShowMarkers();
 
   selected_market_rent = $("#responsive_market_rent option:selected").text();
   selected_square_feet = $("#responsive_square_feet option:selected").text();
@@ -3253,7 +3267,7 @@ async function fetchWebpageSVGAndSetCoordinates() {
 
     if (result.ok) {
       handleMapControl();
-      showMarkers();
+      debouncedShowMarkers();
     } else {
       console.error(result.message);
     }
