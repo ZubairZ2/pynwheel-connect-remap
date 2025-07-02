@@ -589,6 +589,12 @@ function filterUnitsBasedOnAvailability() {
   }
 }
 
+function toDateOnly(date) {
+  const d = new Date(date); // ensure it's a Date object
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+
 function filterUnitsBasedOnDate(floorplateUnits, startIndex, endIndex) {
   const today = new Date();
   const currentDay = new Date(today).setDate(today.getDate() + 0);
@@ -597,17 +603,17 @@ function filterUnitsBasedOnDate(floorplateUnits, startIndex, endIndex) {
 
   if (!startDay && !endDay)
     floorplateUnits = floorplateUnits.filter(
-      (unit) => unit.available && new Date(unit.available_date) <= currentDay
+      (unit) => unit.available && toDateOnly(unit.available_date) <= toDateOnly(currentDay)
     );
 
   if (startDay)
     floorplateUnits = floorplateUnits.filter(
-      (unit) => unit.available && new Date(unit.available_date) >= startDay
+      (unit) => unit.available && toDateOnly(unit.available_date) >= toDateOnly(startDay)
     );
 
   if (endDay)
     floorplateUnits = floorplateUnits.filter(
-      (unit) => unit.available && new Date(unit.available_date) <= endDay
+      (unit) => unit.available && toDateOnly(unit.available_date) <= toDateOnly(endDay)
     );
 
   return floorplateUnits;

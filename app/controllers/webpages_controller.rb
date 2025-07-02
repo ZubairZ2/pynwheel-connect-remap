@@ -158,13 +158,13 @@ class WebpagesController < ActionController::Base
       if (available_date > today && available_date <= thirty_days) 
         @available_units << ["In the next 30 days","0-30"]
       end
-      if (available_date > thirty_days && available_date <= sixty_days)
+      if (available_date >= thirty_days && available_date <= sixty_days)
         @available_units << ["In 31-60 days","31-60"]
       end
-      if (available_date > sixty_days && available_date <= ninty_days)
+      if (available_date >= sixty_days && available_date <= ninty_days)
         @available_units << ["In 61-90 days","61-90"]
       end
-      if (available_date > ninty_days && available_date <= one_twenty_days)
+      if (available_date >= ninty_days && available_date <= one_twenty_days)
         @available_units << ["In 91-120 days","91-120"]
       end
       if (available_date > one_twenty_days) && @community.units_availability_over_120_days
