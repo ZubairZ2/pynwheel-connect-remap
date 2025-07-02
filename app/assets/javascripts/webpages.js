@@ -20,6 +20,7 @@ var timeoutId = null;
 var units = null;
 var total_units = null;
 var amenities = null;
+var showCurrentAvailabilityEnabled;
 var multiCommunity;
 var communityInactivated;
 var tbdMarkersEnabled;
@@ -589,11 +590,24 @@ function filterUnitsBasedOnAvailability() {
   }
 }
 
+function setAvailabilityFilterToNow() {
+  if (!showCurrentAvailabilityEnabled) return;
+  if ($("#available_unit").find("option[value=now]").length) {
+    $("#available_unit").find("option[value=now]").prop("selected", true);
+    $("#available_unit").val("now");
+  }
+  if ($("#responsive_available_unit").find("option[value=now]").length) {
+    $("#responsive_available_unit")
+      .find("option[value=now]")
+      .prop("selected", true);
+    $("#responsive_available_unit").val("now");
+  }
+}
+
 function toDateOnly(date) {
   const d = new Date(date); // ensure it's a Date object
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
-
 
 function filterUnitsBasedOnDate(floorplateUnits, startIndex, endIndex) {
   const today = new Date();
@@ -2826,6 +2840,8 @@ function resetFilters() {
 
   if (multiCommunity) resetBasedOnMultiCommunities();
   else resetBasedOnBedroom();
+
+  setAvailabilityFilterToNow();
 }
 
 function resetBasedOnMultiCommunities() {
