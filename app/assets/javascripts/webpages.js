@@ -549,6 +549,7 @@ function availabilityFilterChanged() {
 function squareFootageFilterChanged() {
   filterUnitsBasedOnMultiCommunity();
   filterUnitsBasedOnBedroom();
+  filterUnitsBasedOnAvailability();
   filterUnitsBasedOnSqfeet();
 
   updateMaxPriceFilterDropDownList();
