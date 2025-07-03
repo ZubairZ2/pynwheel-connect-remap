@@ -594,13 +594,13 @@ function setAvailabilityFilterToNow() {
   if (!showCurrentAvailabilityEnabled) return;
   if ($("#available_unit").find("option[value=now]").length) {
     $("#available_unit").find("option[value=now]").prop("selected", true);
-    $("#available_unit").val("now");
+    $("#available_unit").val("now").change();
   }
   if ($("#responsive_available_unit").find("option[value=now]").length) {
     $("#responsive_available_unit")
       .find("option[value=now]")
       .prop("selected", true);
-    $("#responsive_available_unit").val("now");
+    $("#responsive_available_unit").val("now").change();
   }
 }
 
