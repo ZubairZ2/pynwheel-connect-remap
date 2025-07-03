@@ -1233,7 +1233,8 @@ function setImageMapMarkers() {
         requestAnimationFrame(() => {
           bindUnitMarkerEvents();
           bindAmenityMarkerEvents();
-          resetMapData();
+          // resetMapData();
+          resetFilters();
           $(".map-global-loader").addClass("hidden");
         });
       }, 0);
@@ -3298,6 +3299,7 @@ async function fetchWebpageSVGAndSetCoordinates() {
     console.error(error);
   }
 
+  resetFilters();
   assetTracker.clearAllAssetsLists();
   assetTracker.turnoffLoader();
   $(".webPageLoader").addClass("hidden");
