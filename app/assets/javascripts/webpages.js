@@ -1712,7 +1712,7 @@ function unitBoxListHover() {
           $markerPopover.css({
             visibility: "visible",
             left: `${left}px`,
-            top: `${top - 30}px`,
+            top: `${top - (svgMode ? 0 : 30)}px`,
           });
 
           // if (matchCondition) break; // Turn it on if you want the exact match and not the top 1 in multiple units
