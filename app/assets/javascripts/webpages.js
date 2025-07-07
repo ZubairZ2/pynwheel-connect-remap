@@ -20,12 +20,12 @@ var timeoutId = null;
 var units = null;
 var total_units = null;
 var amenities = null;
-var availabilityFilterResetTriggered;
 var showCurrentAvailabilityEnabled;
 var multiCommunity;
 var communityInactivated;
 var tbdMarkersEnabled;
 var defaultSelectedFloor;
+var debouncedShowMarkers;
 
 var _3dConvertedArr = definedAndHasValue(_3dConvertedArr)
   ? _3dConvertedArr
@@ -68,6 +68,8 @@ $(document).ready(function () {
   _3dAmenities = $("#communityWebpagesData").data("amenities");
   _3dConfigurations = $("#communityWebpagesData").data("mapConfigurations");
   currency = $("#communityWebpagesData").data("currency");
+  debouncedShowMarkers = debounce(showMarkers, 100);
+
 
   if (isDefined(webCommunity)) {
     selectMap = "2d-map"; //webCommunity.web_map_type;
@@ -176,7 +178,7 @@ function bindWebpageEvents() {
       $("#select-all-filters-checkbox").prop("checked", false);
       $("#select-all-filters-checkbox").removeClass("active");
     }
-    showMarkers();
+    debouncedShowMarkers();
   });
   /////////////////////////////////////////
 
@@ -208,8 +210,7 @@ function bindWebpageEvents() {
   });
 
   $("#available_unit, #responsive_available_unit").change(function () {
-    if (smallScreen() && availabilityFilterResetTriggered) return;
-    triggeredForInitialisation = true;
+    if (smallScreen()) return;
     availabilityFilterChanged();
   });
 
@@ -240,7 +241,7 @@ function bindWebpageEvents() {
         $(this).parent().removeClass("active");
       });
     }
-    showMarkers();
+    debouncedShowMarkers();
   });
 
   ///////////////////////////////////////////
@@ -259,12 +260,7 @@ function bindWebpageEvents() {
     );
 
     if (floorIsChanged) {
-      if (!smallScreen()) {
-        applyCommunityLevelFilter();
-        updateAndApplyFloorLevelFilter();
-      }
-
-      populateCurrentUnits();
+      debouncedShowMarkers();
 
       if (!_3dMapMode()) $currentImageBox.parent().removeClass("hidden");
       return;
@@ -509,78 +505,77 @@ function Toggle_maps(e) {
   beansWidget.toggleMap();
 }
 
+function debounce(func, delay) {
+  let timeout;
+  return function (...args) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), delay);
+  };
+}
+
 function multiPropertiesFilterChanged() {
   filterUnitsBasedOnMultiCommunity();
+  
+  if(multiCommunity)
+    updateBedroomFilterDropDownList();
+  
+  updateMaxPriceFilterDropDownList();
+  updateSquareFootageFilterDropdownList();
+  updateAvailabilityFilterDropdownList();
 
-  if (multiCommunity) updateCommunityLevelFilter();
-  updateAndApplyFloorLevelFilter();
-  showMarkers();
+  debouncedShowMarkers();
 }
 
 function bedroomFilterChanged() {
-  applyCommunityLevelFilter({ skipAvailabilityFilter: true });
-  updateCommunityLevelFilter({ skipBedroom: true });
-  updateAndApplyFloorLevelFilter();
-  showMarkers();
+  filterUnitsBasedOnMultiCommunity();
+  filterUnitsBasedOnBedroom();
+  updateDropdownListValues();
+  debouncedShowMarkers();
 }
 
 function availabilityFilterChanged() {
-  applyCommunityLevelFilter();
-  updateAndApplyFloorLevelFilter();
-  showMarkers();
+  filterUnitsBasedOnMultiCommunity();
+  filterUnitsBasedOnBedroom();
+  filterUnitsBasedOnAvailability();
+  
+  updateSquareFootageFilterDropdownList();
+  filterUnitsBasedOnSqfeet();
+
+  updateMaxPriceFilterDropDownList();
+  filterUnitsBasedOnMarketRent();
+
+  debouncedShowMarkers();
 }
 
 function squareFootageFilterChanged() {
-  applyCommunityLevelFilter();
-  applyFloorLevelFilter({ skipMarketRent: true });
-  updateAndApplyFloorLevelFilter({ skipSqFeet: true });
-  showMarkers();
+  filterUnitsBasedOnMultiCommunity();
+  filterUnitsBasedOnBedroom();
+  filterUnitsBasedOnAvailability();
+  filterUnitsBasedOnSqfeet();
+
+  updateMaxPriceFilterDropDownList();
+  filterUnitsBasedOnMarketRent();
+
+  debouncedShowMarkers();
 }
 
 function maxPriceFilterChanged() {
-  applyCommunityLevelFilter();
-  applyFloorLevelFilter();
-  showMarkers();
+  filterUnitsBasedOnSelectedFilters();
+  debouncedShowMarkers();
 }
 
-function updateDropdownListValues(options = {}) {
-  updateSquareFootageFilterDropdownList(units);
-  updateMaxPriceFilterDropDownList(units);
-  
-  if (!options.skipAvailabilityFilter)
-    updateAvailabilityFilterDropdownList(units);
+function updateDropdownListValues() {
+  updateSquareFootageFilterDropdownList();
+  updateMaxPriceFilterDropDownList();
+  updateAvailabilityFilterDropdownList();
 }
 
-function filterUnitsBasedOnSelectedFilters(options = {}) {
-  applyCommunityLevelFilter();
-  applyFloorLevelFilter();
-}
-
-function applyCommunityLevelFilter(options = {}) {
+function filterUnitsBasedOnSelectedFilters() {
   filterUnitsBasedOnMultiCommunity();
   filterUnitsBasedOnBedroom();
-
-  if (!options.skipAvailabilityFilter) filterUnitsBasedOnAvailability();
-}
-
-function updateCommunityLevelFilter(options = {}) {
-  if (!options.skipBedroom) updateBedroomFilterDropDownList(units);
-  updateAvailabilityFilterDropdownList(units);
-}
-
-function applyFloorLevelFilter(options = {}) {
   filterUnitsBasedOnSqfeet();
-  if (!options.skipMarketRent) filterUnitsBasedOnMarketRent();
-}
-
-function updateAndApplyFloorLevelFilter(options = {}) {
-  if (!options.skipSqFeet) {
-    updateSquareFootageFilterDropdownList(units);
-    filterUnitsBasedOnSqfeet();
-  }
-
-  updateMaxPriceFilterDropDownList(units);
   filterUnitsBasedOnMarketRent();
+  filterUnitsBasedOnAvailability();
 }
 
 function filterUnitsBasedOnAvailability() {
@@ -609,6 +604,11 @@ function setAvailabilityFilterToNow() {
   }
 }
 
+function toDateOnly(date) {
+  const d = new Date(date); // ensure it's a Date object
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
 function filterUnitsBasedOnDate(floorplateUnits, startIndex, endIndex) {
   const today = new Date();
   const currentDay = new Date(today).setDate(today.getDate() + 0);
@@ -617,17 +617,17 @@ function filterUnitsBasedOnDate(floorplateUnits, startIndex, endIndex) {
 
   if (!startDay && !endDay)
     floorplateUnits = floorplateUnits.filter(
-      (unit) => unit.available && new Date(unit.available_date) <= currentDay
+      (unit) => unit.available && toDateOnly(unit.available_date) <= toDateOnly(currentDay)
     );
 
   if (startDay)
     floorplateUnits = floorplateUnits.filter(
-      (unit) => unit.available && new Date(unit.available_date) >= startDay
+      (unit) => unit.available && toDateOnly(unit.available_date) >= toDateOnly(startDay)
     );
 
   if (endDay)
     floorplateUnits = floorplateUnits.filter(
-      (unit) => unit.available && new Date(unit.available_date) <= endDay
+      (unit) => unit.available && toDateOnly(unit.available_date) <= toDateOnly(endDay)
     );
 
   return floorplateUnits;
@@ -646,22 +646,21 @@ function filterUnitsBasedOnSqfeet() {
   const sqFeet = filterBasedOnScreen("square_feet");
 
   if (sqFeet)
-    units = units.filter(
-      (unit) => !validFloor(unit.floor) || unit.square_feet >= sqFeet
-    );
+    units = units.filter((unit) => unit.square_feet >= sqFeet);
 }
 
 function filterUnitsBasedOnMarketRent() {
   const marketRent = filterBasedOnScreen("market_rent");
 
   if (marketRent)
-    units = units.filter(
-      (unit) => !validFloor(unit.floor) || unit.market_rent <= marketRent
-    );
+    units = units.filter( (unit) => unit.market_rent <= marketRent);
 }
 
 function filterUnitsBasedOnBedroom() {
   const unitBedroom = filterBasedOnScreen("unit_bedroom");
+
+  if(!multiCommunity)
+    units = total_units;
 
   if (unitBedroom || unitBedroom === 0)
     units = units.filter((unit) => unit.bedrooms == unitBedroom);
@@ -677,41 +676,40 @@ function filterMultiCommunityBasedOnScreen(filterTag) {
 
 function filterUnitsBasedOnMultiCommunity() {
   const propertyId = filterMultiCommunityBasedOnScreen("multi_communities");
-  resetUnits();
 
-  if (propertyId)
-    units = units.filter(
-      (unit) => unit.property_id.trim() == propertyId.trim()
-    );
+  if(propertyId)
+    units = total_units.filter((unit) => unit.property_id.trim() == propertyId.trim())
+  else 
+    units = total_units
 }
 
-function updateAvailabilityFilterDropdownList(availableUnits) {
+function updateAvailabilityFilterDropdownList() {
   reInitializeDropDownList("available_unit");
 
-  const unavailableUnits = availableUnits.filter((unit) => !unit.available);
-  const unitsAvailableNow = filterUnitsBasedOnDate(availableUnits, NaN, NaN);
+  const unavailableUnits = units.filter((unit) => !unit.available);
+  const unitsAvailableNow = filterUnitsBasedOnDate(units, NaN, NaN);
   const unitsAvailableUnder30Days = filterUnitsBasedOnDate(
-    availableUnits,
+    units,
     0,
     30
   );
   const unitsAvailableUnder60Days = filterUnitsBasedOnDate(
-    availableUnits,
+    units,
     31,
     60
   );
   const unitsAvailableUnder90Days = filterUnitsBasedOnDate(
-    availableUnits,
+    units,
     61,
     90
   );
   const unitsAvailableUnder120Days = filterUnitsBasedOnDate(
-    availableUnits,
+    units,
     91,
     120
   );
   const unitsAvailableAbove121Days = filterUnitsBasedOnDate(
-    availableUnits,
+    units,
     121,
     NaN
   );
@@ -787,9 +785,10 @@ function updateAvailabilityFilterDropdownList(availableUnits) {
   disableAvailabilityOptions();
 }
 
-function updateSquareFootageFilterDropdownList(floorplateUnits) {
-  floorplateUnits = filterUnitsBasedOnCommunityType(floorplateUnits);
-  var unitsSqFeet = floorplateUnits.map((unit) => unit.square_feet);
+function updateSquareFootageFilterDropdownList() {
+  // floorplateUnits = filterUnitsBasedOnCommunityType(floorplateUnits);
+  // var unitsSqFeet = floorplateUnits.map((unit) => unit.square_feet);
+  var unitsSqFeet = units.map((unit) => unit.square_feet);
   var uniqueList = getUniqueAndSortedListSquareFeet(unitsSqFeet);
   // var maxValue = Math.max(...uniqueList);
 
@@ -828,13 +827,15 @@ function disableSquareFeetOptions() {
   }
 }
 
-function updateMaxPriceFilterDropDownList(floorplateUnits) {
+function updateMaxPriceFilterDropDownList() {
   if (display_rent === "false") return;
 
-  floorplateUnits = filterUnitsBasedOnCommunityType(floorplateUnits);
-  var unitsMarketRent = floorplateUnits.map((unit) => unit.market_rent);
+  // floorplateUnits = filterUnitsBasedOnCommunityType(floorplateUnits);
+  // var unitsMarketRent = floorplateUnits.map((unit) => unit.market_rent);
+  var unitsMarketRent = units.map((unit) => unit.market_rent);
+
   var uniqueList = getUniqueAndSortedListMarketRent(unitsMarketRent);
-  var minValue = Math.min(...uniqueList);
+  // var minValue = Math.min(...uniqueList);
 
   reInitializeDropDownList("market_rent");
 
@@ -881,13 +882,13 @@ function getUniqueUnitBedrooms(floorplateUnits) {
   return uniqueList.map(([label, value]) => [label, value]);
 }
 
-function updateBedroomFilterDropDownList(floorplateUnits) {
+function updateBedroomFilterDropDownList() {
   reInitializeDropDownList("unit_bedroom");
 
   const webFilterId = "#".concat("unit_bedroom"); //works on web view
   const mobileFilterId = "#responsive_".concat("unit_bedroom"); //works on mobile view
 
-  const dropDownList = getUniqueUnitBedrooms(floorplateUnits);
+  const dropDownList = getUniqueUnitBedrooms(units);
 
   if (dropDownList.length >= 2) {
     $(webFilterId).append(`<option value=""> All </option>`);
@@ -904,8 +905,8 @@ function updateBedroomFilterDropDownList(floorplateUnits) {
     );
   }
   if (dropDownList.length >= 2) {
-    $(webFilterId).val("").change();
-    $(mobileFilterId).val("").change();
+    $(webFilterId).val("");
+    $(mobileFilterId).val("");
   }
 
   disableBedroomOptions();
@@ -1017,6 +1018,7 @@ function reInitializeDropDownList(filter) {
 }
 
 function showMarkers() {
+  console.log("Show Markers Called");
   $(".marker").addClass("hidden");
   $(".hidden-units").empty();
 
@@ -1141,36 +1143,6 @@ function performHardRefresh() {
   }
 }
 
-function showFloorLevelUnits() {
-  $(".marker").addClass("hidden");
-  current_units = [];
-
-  if (hasFloorplate()) {
-    if (current_floor !== "all") {
-      $(".amenity-marker").addClass("hidden"); // first hidding all amenity markers
-      $(".a_" + current_floor).removeClass("hidden"); // showing amenity markers on current floorplate
-    } else {
-      $(".amenity-marker").removeClass("hidden"); // showing all amenity markers
-    }
-
-    for (var i = 0; i < units.length; i++) {
-      if (validFloor(units[i]["floor"])) {
-        current_units.push(units[i]);
-      }
-    }
-  } else {
-    for (var i = 0; i < units.length; i++) {
-      current_units.push(units[i]);
-    }
-  }
-}
-
-function populateCurrentUnits() {
-  showFloorLevelUnits();
-  updateAvailabilityFilterDropdownList(units);
-  showMarkers();
-}
-
 function getFilteredUnits(units, type) {
   var new_units = [];
 
@@ -1255,16 +1227,14 @@ function setImageMapMarkers() {
   function floorDone() {
     completedFloors++;
 
-    console.log("completedFloors: ", completedFloors)
-    console.log("loorsToLoad.length: ", floorsToLoad.length)
-
     if (completedFloors === floorsToLoad.length) {
       // Wait for next event loop + repaint
       setTimeout(() => {
         requestAnimationFrame(() => {
           bindUnitMarkerEvents();
           bindAmenityMarkerEvents();
-          resetMapData();
+          // resetMapData();
+          resetFilters();
           $(".map-global-loader").addClass("hidden");
         });
       }, 0);
@@ -1337,7 +1307,6 @@ function bindUnitMarkerEvents() {
       event.stopPropagation();
       event.preventDefault();
       const unitId = getUnitIdFromElement(el.parentElement, event);
-      console.log("unitId:", unitId)
       unitMarkerClick(`unit_${unitId}`)
     });
   }
@@ -1743,7 +1712,7 @@ function unitBoxListHover() {
           $markerPopover.css({
             visibility: "visible",
             left: `${left}px`,
-            top: `${top - 30}px`,
+            top: `${top - (svgMode ? 0 : 30)}px`,
           });
 
           // if (matchCondition) break; // Turn it on if you want the exact match and not the top 1 in multiple units
@@ -2809,7 +2778,7 @@ function resetMapData() {
   resetUnits();
   setWebpageContainerSize();
   filterUnitsBasedOnSelectedFilters();
-  showMarkers();
+  debouncedShowMarkers();
 }
 
 function display3DMap() {
@@ -2868,14 +2837,12 @@ function display2DMap() {
 }
 
 function resetFilters() {
-  units = current_units;
+  units = total_units;
 
   if (multiCommunity) resetBasedOnMultiCommunities();
   else resetBasedOnBedroom();
 
-  availabilityFilterResetTriggered = false;
   setAvailabilityFilterToNow();
-
 }
 
 function resetBasedOnMultiCommunities() {
@@ -2902,7 +2869,7 @@ function resetBasedOnBedroom() {
 
 function applyFilters() {
   filterUnitsBasedOnSelectedFilters();
-  showMarkers();
+  debouncedShowMarkers();
 
   selected_market_rent = $("#responsive_market_rent option:selected").text();
   selected_square_feet = $("#responsive_square_feet option:selected").text();
@@ -2982,7 +2949,6 @@ function amenityMarkerHoverEvent() {
   $(`.${markerSelector}`)
     .off("mouseenter")
     .on("mouseenter", function () {
-      console.log("Amenity Marker hovered");
       updateActivityData(markerSelector, "hover");
     });
 }
@@ -2992,7 +2958,6 @@ function unitMarkerHoverEvent() {
   $(`.${markerSelector}`)
     .off("mouseenter")
     .on("mouseenter", function () {
-      console.log("Unit Marker hovered");
       updateActivityData(markerSelector, "hover");
     });
 }
@@ -3002,7 +2967,6 @@ function unitsListHoverEvent() {
   $(document)
     .off("mouseenter", ".left-side-30-units")
     .on("mouseenter", ".left-side-30-units", function () {
-      console.log("Unit Box hovered");
       updateActivityData(markerSelector, "hover");
     });
 }
@@ -3039,7 +3003,6 @@ function amenityMarkerClickEvent() {
   $(markerSelector)
     .off("click")
     .on("click", function () {
-      console.log("Amenity Marker Clicked");
       updateActivityData("amenity_marker", "click");
     });
 }
@@ -3049,7 +3012,6 @@ function unitMarkerClickEvent() {
   $(`.${markerSelector}`)
     .off("click")
     .on("click", function () {
-      console.log("Unit Marker Clicked");
       updateActivityData(markerSelector, "click");
     });
 }
@@ -3058,7 +3020,6 @@ function sortingFilterClickEvent() {
   $(document)
     .off("mousedown", "#filter")
     .on("mousedown", "#filter", function () {
-      console.log("Unit Box Clicked");
       updateActivityData("sorting_filter", "click");
     });
 }
@@ -3067,14 +3028,12 @@ function bedroomFilterClickEvent() {
   $(document)
     .off("mousedown", "#unit_bedroom")
     .on("mousedown", "#unit_bedroom", function () {
-      console.log("Bedroom filter Clicked");
       updateActivityData("bedroom_filter", "click");
     });
 
   $(document)
     .off("mousedown", "#responsive_unit_bedroom")
     .on("mousedown", "#responsive_unit_bedroom", function () {
-      console.log("Bedroom filter Clicked");
       updateActivityData("bedroom_filter", "click");
     });
 }
@@ -3083,14 +3042,12 @@ function pricingFilterClickEvent() {
   $(document)
     .off("mousedown", "#market_rent")
     .on("mousedown", "#market_rent", function () {
-      console.log("Pricing filter Clicked");
       updateActivityData("pricing_filter", "click");
     });
 
   $(document)
     .off("mousedown", "#responsive_market_rent")
     .on("mousedown", "#responsive_market_rent", function () {
-      console.log("Pricing filter Clicked");
       updateActivityData("pricing_filter", "click");
     });
 }
@@ -3099,14 +3056,12 @@ function squareFootageFilterClickEvent() {
   $(document)
     .off("mousedown", "#square_feet")
     .on("mousedown", "#square_feet", function () {
-      console.log("Square Feet filter Clicked");
       updateActivityData("square_feet_filter", "click");
     });
 
   $(document)
     .off("mousedown", "#responsive_square_feet")
     .on("mousedown", "#responsive_square_feet", function () {
-      console.log("Square Feet filter Clicked");
       updateActivityData("square_feet_filter", "click");
     });
 }
@@ -3115,14 +3070,12 @@ function availabilityFilterClickEvent() {
   $(document)
     .off("mousedown", "#available_unit")
     .on("mousedown", "#available_unit", function () {
-      console.log("Available date filter Clicked");
       updateActivityData("availability_filter", "click");
     });
 
   $(document)
     .off("mousedown", "#responsive_available_unit")
     .on("mousedown", "#responsive_available_unit", function () {
-      console.log("Available date filter Clicked");
       updateActivityData("availability_filter", "click");
     });
 }
@@ -3131,7 +3084,6 @@ function resetFilterClickEvent() {
   $(document)
     .off("click", ".reset-filter-button")
     .on("click", ".reset-filter-button", function () {
-      console.log("Reset filter Clicked");
       updateActivityData("reset_filter", "click");
     });
 }
@@ -3140,7 +3092,6 @@ function view3DTourClickEvent() {
   $(document)
     .off("click", ".virtual-tour-btn")
     .on("click", ".virtual-tour-btn", function () {
-      console.log("View 3D Clicked");
       updateActivityData("virtual_tour", "click");
     });
 }
@@ -3149,7 +3100,6 @@ function modalUnitButtonsClickEvent() {
   $(document)
     .off("click", ".modal-unit-button")
     .on("click", ".modal-unit-button", function () {
-      console.log("Unit Modal Button Clicked");
       updateActivityData("unit_modal_buttons", "click");
     });
 }
@@ -3158,21 +3108,14 @@ function pricingMatrixClickEvents() {
   $(document)
     .off("click", ".show-more")
     .on("click", ".show-more", function () {
-      console.log("Show more pricing Clicked");
       updateActivityData("open_pricing_matrix", "click");
     });
-
-  // $(document).off("click", ".hide-more-price").on("click", ".hide-more-price", function () {
-  //   console.log("Hide more pricing Clicked");
-  //   updateActivityData("hide_pricing_matrix", "click");
-  // });
 }
 
 function viewSavedButtonClickEvent() {
   $(document)
     .off("click", ".view-saved-btn")
     .on("click", ".view-saved-btn", function () {
-      console.log("View Saved Clicked");
       updateActivityData("view_saved", "click");
     });
 }
@@ -3181,7 +3124,6 @@ function scheduleTourButtonClickEvent() {
   $(document)
     .off("click", ".schedule-tour-btn")
     .on("click", ".schedule-tour-btn", function () {
-      console.log("Schedule tour Clicked");
       updateActivityData("schedule_tour", "click");
     });
 }
@@ -3190,7 +3132,6 @@ function logoIconClickEvent() {
   $(document)
     .off("click", ".app-logo")
     .on("click", ".app-logo", function () {
-      console.log("App Logo Clicked");
       updateActivityData("logo", "click");
     });
 }
@@ -3199,7 +3140,6 @@ function floorNumberClickEvent() {
   $(document)
     .off("click", ".slick-slide")
     .on("click", ".slick-slide", function () {
-      console.log("Floor Number Clicked");
       updateActivityData("floor_number", "click");
     });
 }
@@ -3208,7 +3148,6 @@ function zoomInClickEvent() {
   $(document)
     .off("click", ".plus-action")
     .on("click", ".plus-action", function () {
-      console.log("Zoom In Clicked");
       updateActivityData("zoom_in", "click");
     });
 }
@@ -3217,7 +3156,6 @@ function zoomOutClickEvent() {
   $(document)
     .off("click", ".minus-action")
     .on("click", ".minus-action", function () {
-      console.log("Zoom out Clicked");
       updateActivityData("zoom_out", "click");
     });
 }
@@ -3226,7 +3164,6 @@ function zoomRefreshClickEvent() {
   $(document)
     .off("click", ".refresh-action")
     .on("click", ".refresh-action", function () {
-      console.log("Zoom Refresh Clicked");
       updateActivityData("zoom_refresh", "click");
     });
 }
@@ -3235,7 +3172,6 @@ function clearAllFavoritesClickEvent() {
   $(document)
     .off("click", ".clear-all")
     .on("click", ".clear-all", function () {
-      console.log("Clear Favorite Clicked");
       updateActivityData("clear_favorites", "click");
     });
 }
@@ -3244,8 +3180,6 @@ function shareFavoritesButtonClickEvent() {
   $(document)
     .off("click", ".share-favorite")
     .on("click", ".share-favorite", function () {
-      console.log("Share Favorite Clicked");
-
       updateActivityData("sent_favorite", "click");
     });
 }
@@ -3254,7 +3188,6 @@ function applyNowClickEvent() {
   $(document)
     .off("click", ".apply_now")
     .on("click", ".apply_now", function () {
-      console.log("Apply now Clicked");
       updateActivityData("apply_now_count", "click");
     });
 }
@@ -3263,7 +3196,6 @@ function mapContainerClickEvents() {
   $(".maps-analytics-container")
     .off("click")
     .on("click", function (event) {
-      console.log("Container Clicked");
       updateActivityData("other", "click");
     });
 
@@ -3276,7 +3208,6 @@ function mapContainerClickEvents() {
 
         // Log every 3 seconds while the mouse is moving
         intervalId = setInterval(() => {
-          console.log("Container Hovered");
           updateActivityData("other", "hover");
         }, 3000);
       }
@@ -3360,7 +3291,7 @@ async function fetchWebpageSVGAndSetCoordinates() {
 
     if (result.ok) {
       handleMapControl();
-      showMarkers();
+      debouncedShowMarkers();
     } else {
       console.error(result.message);
     }
@@ -3368,8 +3299,7 @@ async function fetchWebpageSVGAndSetCoordinates() {
     console.error(error);
   }
 
-  // resetFilters();
-  updateAvailabilityFilterDropdownList(units)
+  resetFilters();
   assetTracker.clearAllAssetsLists();
   assetTracker.turnoffLoader();
   $(".webPageLoader").addClass("hidden");

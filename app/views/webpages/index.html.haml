@@ -341,7 +341,6 @@
   var $slider;
   var $images = [];
   var largeImageHeight = 166;
-  var availabilityFilterResetTriggered;
   var subCommunities = $("#communityWebpagesData").data("subCommunities");
   var map_marker_color = toRgbColor("#{raw map_marker_color}");
   var communityInactivated = "#{@community.locked}" === "true"
@@ -374,7 +373,6 @@
   if (enabled3dMaps) floors = ["all", ...(floors || [])];
 
   var current_width = $(window).width();
-  var current_units = [];
   var _beansApiKey = "#{ENV['BEANS_API_KEY']}"
   
   var community_logo = "#{@community.logo.present? ? true : false}"
@@ -597,7 +595,6 @@
           activateZoomPan($image[0].parentElement, false);
         }
       }
-      populateCurrentUnits();
     }
 
     parsedSVGs = [];
