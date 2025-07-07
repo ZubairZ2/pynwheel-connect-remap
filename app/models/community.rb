@@ -589,6 +589,8 @@ class Community < ApplicationRecord
         credential.entrata_url.present? && credential.username.present? && credential.password.present? && credential.property_id.present?
       when "yardirentcafe"
         (credential.c_code.present? || credential.api_token.present?) && credential.p_code.present?
+      when "appfolio"
+        credential.app_folio_property_id.present?
       when "rentmanager"
         (credential.rentmanager_username.present? && credential.rentmanager_password.present? && credential.rentmanager_property_id.present? && credential.rentmanager_base_url.present?)
       when "realpagesvc"
@@ -1116,6 +1118,8 @@ class Community < ApplicationRecord
       EntrataDataUpdateWorker.perform_async self.id
     when "yardirentcafe"
       YardirentcafeDataUpdateWorker.perform_async self.id
+    when "appfolio"
+      AppfolioDataImportWorker.perform_async self.id
     when "rentmanager"
       RentManagerDataImportWorker.perform_async self.id
     when "realpagesvc"

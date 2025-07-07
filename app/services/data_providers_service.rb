@@ -12,6 +12,8 @@ class DataProvidersService
         RealPageDataUpdateWorker.perform_async community.id
       when "yardirentcafe"
         YardirentcafeDataUpdateWorker.perform_async community.id
+      when "appfolio"
+        AppfolioDataImportWorker.perform_async community.id
       when "rentmanager"
         RentManagerDataImportWorker.perform_async community.id
       when "psi"

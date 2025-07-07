@@ -16,7 +16,7 @@ module DataProviders
 
       def get_resource(property_id, resource)
         # ensure_valid_token
-        url = "#{api_base_url}/#{resource}?filters[Id]=#{property_id}"
+        url = "#{api_base_url}/#{resource}?filters[LastUpdatedAtFrom]=#{last_updated_at_from}&filters[propertyId]=#{property_id}"
         
         headers = {
           'Authorization' => "Basic #{basic_base64_credentials}",
@@ -93,6 +93,10 @@ module DataProviders
 
       def database_id
         ENV.fetch("APP_FOLIO_DATABASE_ID")
+      end
+
+      def last_updated_at_from
+        "1970-01-01T00:00:00Z"
       end
     end
   end
