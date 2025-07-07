@@ -155,6 +155,9 @@ class CredentialsValid < BaseService
     elsif community.data_provider == "yardirentcafe"
       verify_rent_cafe_credentials(community, credentials)
 
+    elsif community.data_provider == "appfolio"
+      verify_appfolio_credentials(community, credentials)
+
     elsif community.data_provider == "rentmanager"
       verify_rent_manager_credentials(community, credentials)
 
@@ -212,6 +215,19 @@ class CredentialsValid < BaseService
         
         return response.success?
 
+      rescue => e
+        return false
+      end
+    end
+
+    def verify_appfolio_credentials community, credentials
+      begin
+        property_code = credentials&.app_folio_property_id&.split(",")[0] rescue ""
+        property_code = property_code&.strip
+        app_folio_service = DataProviders::AppFolio::V0::BaseService.new(community.id)
+        response = app_folio_service.get_resource(property_code, "properties")
+
+        return response.success?
       rescue => e
         return false
       end

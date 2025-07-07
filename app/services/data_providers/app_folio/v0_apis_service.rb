@@ -5,18 +5,22 @@ module DataProviders
       TOKEN_EXPIRY_KEY = "appfolio_api_token_expires_at"
       TOKEN_BUFFER_SECONDS = 10 # refresh slightly before real expiry
 
-      def initialize(_community_id = nil)
-        # No per-community setup needed
+       def initialize(community_id)
+        return unless community_id.present?
+        @community = Community.find_by_id(community_id)
+        @credential = @community&.credential if @community.present?
+        @company = @community.company if @community.present?
+
+        return unless @credential.present?
       end
 
-      def get_resource(resource_path)
-        ensure_valid_token
-
-        url = "#{api_base_url}/api/v0#{resource_path}"
+      def get_resource(property_id, resource)
+        # ensure_valid_token
+        url = "#{api_base_url}/#{resource}?filters[Id]=#{property_id}"
+        
         headers = {
-          'Authorization' => "Bearer #{Rails.cache.read(TOKEN_CACHE_KEY)}",
-          'X-AppFolio-Developer-ID' => developer_id,
-          'X-AppFolio-Database-ID' => database_id
+          'Authorization' => "Basic #{basic_base64_credentials}",
+          'X-AppFolio-Developer-ID' => developer_id
         }
 
         HTTParty.get(url, headers: headers)
@@ -77,6 +81,10 @@ module DataProviders
 
       def client_secret
         ENV.fetch("APP_FOLIO_CLIENT_SECRET")
+      end
+
+      def basic_base64_credentials
+        ENV.fetch("AUTH_BASIC_BASE64_Credentials")
       end
 
       def developer_id
