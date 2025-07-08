@@ -2862,7 +2862,7 @@ function resetBasedOnBedroom() {
   );
   $("#unit_bedroom").val($("#unit_bedroom option:first").val());
 
-  if (smallScreen()) $(".mobile-filter-mega-menu").slideToggle();
+  // if (smallScreen()) $(".mobile-filter-mega-menu").slideToggle();
 
   bedroomFilterChanged();
 }
