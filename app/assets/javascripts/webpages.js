@@ -261,7 +261,7 @@ function bindWebpageEvents() {
 
     if (floorIsChanged) {
       debouncedShowMarkers();
-
+      if (svgMode) moveZoomableImageToCenter($currentImageBox[0], false);
       if (!_3dMapMode()) $currentImageBox.parent().removeClass("hidden");
       return;
     }
