@@ -2836,13 +2836,14 @@ function display2DMap() {
   resetMapData();
 }
 
-function resetFilters() {
+function resetFilters(mobileTriggered = false) {
   units = total_units;
 
   if (multiCommunity) resetBasedOnMultiCommunities();
   else resetBasedOnBedroom();
 
   setAvailabilityFilterToNow();
+  if (mobileTriggered && smallScreen()) $(".mobile-filter-mega-menu").slideToggle(); 
 }
 
 function resetBasedOnMultiCommunities() {
