@@ -120,7 +120,7 @@
                   %label.short Availability
                   = select_tag :available_unit, options_for_select(@available_units.present? ? @available_units : []),{:class=>"custom-select", :include_blank => "All "}
 
-                %button.reset-filter-button.web-reset-button.header-action-btn{:type => "button", :onclick => "resetFilters();", style: "margin-right: 2rem"}
+                %button.reset-filter-button.web-reset-button.header-action-btn{:type => "button", :onclick => "resetFilters(true);", style: "margin-right: 2rem"}
                   %span.hidable
                     Reset
                   %i.fa.fa-refresh
