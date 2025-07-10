@@ -17,7 +17,7 @@ module DataProviders
       def get_resource(property_id, resource)
         return unless @credential.present?
 
-        filter_key = resource == "properties" ? "Id" : "propertyId"
+        filter_key = resource == "properties" ? "Id" : "PropertyId"
         url = "#{api_base_url}/#{resource}?filters[LastUpdatedAtFrom]=#{DEFAULT_LAST_UPDATED_AT}&filters[#{filter_key}]=#{property_id}"
 
         HTTParty.get(url, headers: request_headers)

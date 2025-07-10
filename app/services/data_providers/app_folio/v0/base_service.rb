@@ -21,12 +21,18 @@ module DataProviders
           @app_folio_service.get_resource(property_code, resource)            
         end
 
-
-        private
+        protected
         
+        def update_attribute_if_blank(object, attribute, value, diff_name = nil)
+          updated_column = diff_name.present? ? diff_name : attribute
+          object.send("#{attribute}=", value) if value.present? && !object.send("#{updated_column}_is_updated")
+        end
 
+        def import_units(units)
+          return if units.empty?
 
-
+          ProvidersDataUpdationService.new.update_or_create_units_records(units)
+        end
 
       end
     end

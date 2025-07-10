@@ -1119,7 +1119,7 @@ class Community < ApplicationRecord
     when "yardirentcafe"
       YardirentcafeDataUpdateWorker.perform_async self.id
     when "appfolio"
-      AppfolioDataImportWorker.perform_async self.id
+      import_appfolio_data
     when "rentmanager"
       RentManagerDataImportWorker.perform_async self.id
     when "realpagesvc"

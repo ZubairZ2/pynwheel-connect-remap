@@ -2218,6 +2218,17 @@ function formatDateLocal(date) {
 }
 
 
+function setAppFolioUrl(element) {
+  var url = element.getAttribute("data-availability-url") 
+  if (_3dMapMode()) {
+    url =  _3dData.availabilityUrl
+  }
+
+  window.open(url, "_blank");
+}
+
+
+
 function set_resman_url(element) {
   var url = element.getAttribute("data-availability-url") 
 

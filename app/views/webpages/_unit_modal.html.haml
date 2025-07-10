@@ -125,6 +125,14 @@
                         %span.c-m-total-price#total-market-rent
                         %span.per-month-price-text /month
                     = link_to "Apply Now", "##",:onclick=>"set_yardirentcafe_url(this);",:id=>"psi-anchor-tag", class: "apply-now apply_now"
+                  
+                  - elsif @community_info.data_provider == "appfolio"
+                    - if @community.display_rent
+                      %span.fix-text
+                        %span.c-m-total-price#total-market-rent
+                        %span.per-month-price-text /month
+                    = link_to "Apply Now", "##", :onclick=>"setAppFolioUrl(this);", :id=>"psi-anchor-tag", class: "apply-now apply_now"
+
                   - else
                     .unit-total-pricing{style: 'text-align: center'}
                       - if @community.display_rent
