@@ -138,8 +138,8 @@ module DataProviders
             update_attribute_if_blank(unit, :effective_rent, unit_market_rent(r))
             update_attribute_if_blank(unit, :availability, unit_availability(r))
             update_attribute_if_blank(unit, :available_date, set_availability_date(r))
-            update_attribute_if_blank(unit, :available, unit_availability(r) == "Unoccupied")
-            unit.available = is_available?(r)
+            update_attribute_if_blank(unit, :available, is_available?(r))
+            # unit.available = is_available?(r)
             unit.property_id = property_code
             unit.unit_type = r["UnitType"]
             unit.square_feet = (r["SquareFeet"].to_f > 0) ? r["SquareFeet"] : 1.0

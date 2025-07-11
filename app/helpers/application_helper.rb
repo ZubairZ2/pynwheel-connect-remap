@@ -316,6 +316,8 @@ module ApplicationHelper
     else
       return x
     end
+  rescue
+    0
   end
 
   def bathroom_text(floorplan)

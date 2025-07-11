@@ -17,7 +17,7 @@
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     .row
       .col-sm-6.col-lg-4.col-md-3.col-xs-12
-        = f.select :floorplan_id, @community.floorplans.collect{|f| [f.name,f.provider_floorplan_id]},{},{ :class=>"form-control"}
+        = f.select :floorplan_id, [['', nil]] + @community.floorplans.collect{|f| [f.name,f.provider_floorplan_id]},{},{ :class=>"form-control"}
         %small Floor plan (Manual Override Required)
       .col-sm-6.col-lg-4.col-md-3.col-xs-12
         = f.select :availability, [['No', 'Occupied'], ['Yes', 'Unoccupied']],{},{ :class=>"form-control"}
