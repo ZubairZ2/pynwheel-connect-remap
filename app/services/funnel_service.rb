@@ -33,6 +33,7 @@ class FunnelService < BaseService
       'Authorization' => "Bearer #{get_api_key}"
       }
     )
+
     response["available_days"]
   end
 
@@ -255,12 +256,23 @@ class FunnelService < BaseService
   end
 
   def tour_type
-    case @scheduled_tour.tour_type
-    when "guided_tour"
-      "guided"
-    when "self_tour"
-      "self-guided"
-    end  
+    return "" unless @community.is_any_tour_type_selected
+    tour_setting = @community&.community_tour.tour_setting
+
+    if(tour_setting.allow_self_tour && tour_setting.allow_guided_tour)
+      case @scheduled_tour.tour_type
+      when "guided_tour"
+        "guided"
+      when "self_tour"
+        "self-guided"
+      end
+    else
+      if(tour_setting.allow_guided_tour)
+        "self-guided"
+      else
+        "guided"
+      end
+    end
   end
 
   def tour_user_data
