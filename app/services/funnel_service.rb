@@ -267,7 +267,7 @@ class FunnelService < BaseService
         "self-guided"
       end
     else
-      if(tour_setting.allow_guided_tour)
+      if(tour_setting.allow_self_tour)
         "self-guided"
       else
         "guided"
