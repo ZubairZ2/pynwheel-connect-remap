@@ -142,10 +142,6 @@ class FunnelService < BaseService
 
   private
 
-  def tour_type
-    'self-guided'
-  end
-
   def is_appointment_created response
     if ( response && response["prospect"] && response["appointment"] && response["prospect"]["id"] && response["appointment"]["id"] ).present?
       @scheduled_tour.update(funnel_prospect_id: response["prospect"]["id"], funnel_appointment_id: response["appointment"]["id"])
