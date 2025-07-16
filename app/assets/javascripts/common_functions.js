@@ -687,3 +687,119 @@ function waitForProp(obj, prop, conditionToCheck = null, interval = 50, timeout 
     })();
   });
 }
+
+function communityTourTypesEnabled(tour_settings, tour = null) {
+  if (tour) return scheduledTourType(tour);
+
+  const {
+    allow_self_tour,
+    allow_guided_tour,
+  } = tour_settings;
+
+  if (!allow_self_tour && !allow_guided_tour) return "";
+  if (allow_self_tour && allow_guided_tour) return "";
+
+  if (allow_self_tour) return "self-guided";
+  if (allow_guided_tour) return "guided";
+
+  return "";
+}
+
+function scheduledTourType(tour) {
+  switch (tour.tour_type) {
+    case "guided_tour": return "guided";
+    case "self_tour": return "self-guided"
+    default: return "";
+  }
+}
+
+function getTypes(settings, tour) {
+  const type = communityTourTypesEnabled(settings, tour);
+  const types = type ? [type] : ["guided", "self-guided"];
+  return types;
+}
+
+function getUniqueSortedDates(availability, types) {
+  const dates = new Set();
+  types.forEach(type =>
+    Object.keys(availability[type] || {}).forEach(date => dates.add(date))
+  );
+
+  return [...dates].sort();
+}
+
+function getMinimumDate(dates) {
+  return dates.length ? dates.reduce((min, d) => new Date(d) < new Date(min) ? d : min) : null;
+}
+
+function getFunnelTourAvailabilityData(availability, settings, tour = null) {
+  const types = getTypes(settings, tour);
+  const dates = getUniqueSortedDates(availability, types);
+  console.log("Available dates:", dates);
+  console.log("Types:", types);
+  return { available_dates: dates, minimum_date: getMinimumDate(dates) };
+}
+
+function formatTo12Hour(timeStr) {
+  const [hour, minute] = timeStr.split(":").map(Number);
+  const period = hour >= 12 ? "PM" : "AM";
+  const hour12 = hour % 12 || 12; // 0 or 12 becomes 12
+  const paddedMinute = minute.toString().padStart(2, "0");
+  return `${hour12.toString().padStart(2, "0")}:${paddedMinute} ${period}`;
+}
+
+function getTimesAndTypesForDate(date, availability, settings, tour = null) {
+  const types = getTypes(settings, tour);
+  const timeSet = new Set();
+
+  types.forEach(type => {
+    const slots = availability[type]?.[date];
+    if (slots && slots.length) {
+      slots.forEach(time => timeSet.add(time));
+    }
+  });
+
+  const formattedTimes = [...timeSet]
+    .map(formatTo12Hour)
+    .sort((a, b) => new Date(`1970/01/01 ${a}`) - new Date(`1970/01/01 ${b}`));
+
+  return { times: formattedTimes };
+}
+
+function formatDateToISO(dateStr) {
+  const [month, day, year] = dateStr.split("/");
+  return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+}
+
+function formatTimeTo24Hour(timeStr) {
+  const [time, modifier] = timeStr.split(" ");
+  let [hour, minute] = time.split(":").map(Number);
+
+  if (modifier.toUpperCase() === "PM" && hour !== 12) hour += 12;
+  if (modifier.toUpperCase() === "AM" && hour === 12) hour = 0;
+
+  return `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
+}
+
+function getTypesForSelectedDateAndTime(date, time, availability, settings, tour = null) {
+  const isoDate = formatDateToISO(date);
+  const time24 = formatTimeTo24Hour(time);
+
+  const types = getTypes(settings, tour);
+  const availableTypes = [];
+  
+  console.log("Availability data:", availability);
+
+  types.forEach(type => {
+    if (availability[type]?.[isoDate]?.includes(time24)) {
+      console.log(`Available type: ${type} for date: ${isoDate} and time: ${time24}`);
+      availableTypes.push(type);
+    }
+  });
+
+  return availableTypes.map(type =>
+    type === "self-guided"
+      ? ["self_tour", "App Guided Tour"]
+      : ["guided_tour", "Person Guided Tour"]
+  );
+}

@@ -204,9 +204,10 @@
   
   <body>
     <div class="divLoading hidden"></div>
+    <%= content_tag(:div, "", id: 'widget-data', data: {scheduled_tour: @schedule_tour.to_json, community: @community.to_json, tour_settings: @tour_settings} )%>
     <%= content_tag(:div, "", id: 'occupied_slots', data: {occupied_slots: @occupied_slots.to_json, occupied_dates: @occupied_dates} )%>
     <%= content_tag(:div, "", id: 'knock-data', data: { available_time_slots: @knock_available_slots.to_json, is_knock_community: @is_knock_community })%>
-    <%= content_tag(:div, "", id: 'funnel-data', data: { funnel_available_days: @funnel_available_days.to_json, is_funnel_community: @is_funnel_community })%>
+    <%= content_tag(:div, "", id: 'funnel-data', data: { available_time_slots: @funnel_available_slots.to_json, is_funnel_community: @is_funnel_community })%>
 
     <%= link_to("#{@scheduler_widget_setting.btn_text}", "url",id: "schedule_btn", style: "width: #{@scheduler_widget_setting.btn_width}; height: #{@scheduler_widget_setting.btn_height}; font-size: #{@scheduler_widget_setting.btn_font_size}; background-color: #{@scheduler_widget_setting.btn_color}; border-color: #{@scheduler_widget_setting.btn_color}; font-family: #{@scheduler_widget_setting.btn_font}; align-items: center; display: inline-grid; margin: 10px; padding: 0px;",class: "btn btn-success btn-lg hidden", data: { toggle: "modal", target: "#modalLoginForm", backdrop: "static"}) %>
      
@@ -582,16 +583,22 @@
       var show_self_tour_option = false;
       var show_guided_tour_option = false;
       var hidden_tour_type_value;
+      var funnelAvailabilityData = {};
+      var funnelSelectedDateTimesList = [];
+      var scheduledTour = null;
+      
       var knock_available_time_slots;
+      var funnel_available_time_slots;
+      
       var is_knock_community = false;
-
-      var funnel_available_days;
       var is_funnel_community = false;
+
       var selected_day_slots = [];
 
       var knock_tour_types = []
       var schedule_tour_only = "<%= @community.community_tour.only_scheduled_tour %>";
       var community_id = <%= raw @community.id %>;
+      var community = null;
       var form_for_reschedule_tour = "<%= @reschedule_tour %>";
       var property_tour_type = "<%= @schedule_tour.property_tour_type %>"
       var tour_is_completed = "<%= @schedule_tour&.is_tour_completed %>"
@@ -635,18 +642,26 @@
       }
 
       $(document).ready(function(){
+        community = $("#widget-data").data("community");
+        tourSettings = $("#widget-data").data("tourSettings");
+        scheduledTour = $("#widget-data").data("scheduledTour");
+        scheduledTour = form_for_reschedule_tour ? scheduledTour : null;
+        console.log("community", community);
+        console.log("tourSettings", tourSettings);
+
         existing_tour_users = JSON.parse($("#existing_tour_user_phone_arr").val()).phone_numbers;
         countries_data = JSON.parse($("#countries_data").val());
         setCountryDialingCode();
 
         knock_available_time_slots = $("#knock-data").data("availableTimeSlots");
-        is_knock_community = $("#knock-data").data("isKnockCommunity");
+        funnel_available_time_slots = $("#funnel-data").data("availableTimeSlots");
 
-        funnel_available_days = $("#funnel-data").data("funnelAvailableDays");
+        is_knock_community = $("#knock-data").data("isKnockCommunity");
         is_funnel_community = $("#funnel-data").data("isFunnelCommunity");
 
         occupiedSlots = $("#occupied_slots").data("occupiedSlots");
         occupiedDates = $("#occupied_slots").data("occupiedDates");
+
         if(form_for_reschedule_tour){
           $("#desired_move_in_date").val(move_in_date).attr('selected', true)
           $("#desired_bedroom").val(desired_bedroom).attr('selected', true)
@@ -882,8 +897,7 @@
 
           if(is_knock_community && !isEmpty(knock_available_time_slots)) {
             selected_day_slots = getKnockAvailableTimeSlots(knock_available_time_slots, moment($(this).val()).format("MM-DD-YYYY"))
-          }
-          else if (use_yardi_as_lead && !is_virtual_on){
+          } else if (use_yardi_as_lead && !is_virtual_on){
             date_for_yardi = moment($(this).val()).format("M/D/YYYY");
             for (const key in time_slots) {
               if(Date.parse(key) == Date.parse(date_for_yardi))
@@ -894,8 +908,8 @@
             selected_day_slots = time_slots[day]
           }        
 
-          if(is_funnel_community && !isEmpty(funnel_available_days)) {
-            getFunnelTimes(schedule_tour_id, selected_date, community_id);            
+          if(is_funnel_community && !isEmpty(funnel_available_time_slots)) {
+            getFunnelTimes(schedule_tour_id, selected_date, community_id);
           } 
           else {
             selected_day_slots = get_time_slots(selected_day_slots);
@@ -930,6 +944,10 @@
                 success: function(data){
                   $("#tour_type").attr("disabled", false);
                   tour_types = data["tour_types"]
+
+                  if(is_funnel_community){
+                    tour_types = getTypesForSelectedDateAndTime(date, time, funnel_available_time_slots, tourSettings, scheduledTour);
+                  }
                   options = '<option value="">Select Tour Type</option>'
                   tour_id = data["schedual_tour_id"];
                   $('#sched_tour_id').val(tour_id)
@@ -1025,16 +1043,16 @@
         if(form_for_reschedule_tour)
           datePickerTag = '.reschedule_datepicker'
         
-        if(is_funnel_community && !isEmpty(funnel_available_days)) {
-
+        if(is_funnel_community && !isEmpty(funnel_available_time_slots)) {
           let minimumDate = moment();
-          if (funnel_available_days.length > 0) {
-            minimumDate = funnel_available_days[0];
+
+          if (funnel_available_time_slots) {
+            funnelAvailabilityData = getFunnelTourAvailabilityData(funnel_available_time_slots, tourSettings, scheduledTour);
+            minimumDate = funnelAvailabilityData.minimum_date
             minimumDate = minimumDate.replaceAll("-", "/");
           }
 
-          initializeDatePicker(datePickerTag, steps, [], funnel_available_days, minimumDate);
-
+          initializeDatePicker(datePickerTag, steps, [], funnelAvailabilityData.available_dates, minimumDate);
         }
         // Knock Date Picker
         else if(is_knock_community && !isEmpty(knock_available_time_slots)) {
@@ -1209,8 +1227,9 @@
       }
 
       async function getFunnelTimes(schedule_tour_id, date, community_id) {
-        let f_response =  await getFunnelAvailableTimes(schedule_tour_id, date, community_id);
-        let funnel_selected_day_slots = f_response.data;
+        const funnelSelectedDate = selected_date.replaceAll("/", "-");
+        funnelSelectedDateTimesList = getTimesAndTypesForDate(funnelSelectedDate, funnel_available_time_slots, tourSettings, scheduledTour);
+        funnel_selected_day_slots = funnelSelectedDateTimesList.times
 
         funnel_selected_day_slots = get_time_slots(funnel_selected_day_slots);
         funnel_selected_day_slots = remove_occupied_day_slots(date, funnel_selected_day_slots)
@@ -1233,21 +1252,6 @@
           return daySlots.filter(n => !occupiedSlots[selectedDate].includes(n));
         else
           return daySlots;
-      }
-
-      function getFunnelAvailableTimes(schedule_tour_id, date, community_id) {
-        return new Promise(function(resolve, reject) {
-          $.ajax({
-            url: '/schedual_tours/get_funnel_available_times',
-            data: {schedule_tour_id, schedule_tour_id, date: date, community_id: community_id},
-            success: function(data) {
-              resolve(data)
-            },
-            error: function(err) {
-              reject(err)
-            }
-          });
-        });
       }
 
       function getKnockAvailableTimeSlots(knockData, selectedDate) {

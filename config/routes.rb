@@ -30,8 +30,6 @@ Rails.application.routes.draw do
 
   resources :schedual_tours do
     get :get_tour_type, on: :collection
-    get :get_funnel_available_times, on: :collection
-
   end
 
   post :map_dwelo_locks, to: 'dwelos#map_dwelo_locks'

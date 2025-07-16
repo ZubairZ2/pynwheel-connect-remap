@@ -86,7 +86,7 @@ class SchedualTour < ApplicationRecord
   end  
 
   def cancel_funnel_appointment
-    FunnelService.new(self).cancel_funnel_appointment
+    FunnelService.new(self.community).cancel_funnel_appointment(self)
   end
 
   def cancel_knock_appointment

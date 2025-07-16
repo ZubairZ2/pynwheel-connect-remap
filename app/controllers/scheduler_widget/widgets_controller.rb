@@ -26,6 +26,7 @@ class SchedulerWidget::WidgetsController < ApplicationController
   def test_widget
     @community_id = params[:community_id]
     @community = Community.find params[:community_id]
+    @tour_settings = @community.community_tour.tour_setting
     @tour_user = params[:tour_user_id].present? ? TourUser.find_by_id(params[:tour_user_id]) : TourUser.new
     @reschedule_tour = params[:reschedule_tour] if params[:reschedule_tour].present?
     @scheduled_tour_id = params[:schedule_tour_id] if params[:schedule_tour_id].present?
@@ -71,8 +72,13 @@ class SchedulerWidget::WidgetsController < ApplicationController
     @knock_selected_discovery_source = @is_knock_community ? (@schedule_tour&.knock_prospect_discover_source.present? ? @knock_discovery_sources.map{|s| s if s == @schedule_tour&.knock_prospect_discover_source }&.compact&.uniq[0] : "Select an option" ) : ""
     
     @is_funnel_community = @schedule_tour.community.is_funnel_community?
-    @funnel_available_days =  @is_funnel_community ? FunnelService.new(@schedule_tour).get_available_days : {}
-    @funnel_discovery_sources = @is_funnel_community ? FunnelService.new(@schedule_tour).get_discovery_sources : []
+    
+    # @funnel_available_days =  @is_funnel_community ? FunnelService.new(@schedule_tour).get_available_days : {}
+    @funnel_available_slots =  @is_funnel_community ? @schedule_tour&.community&.crm_time_slot&.slots : {}
+
+    # @funnel_discovery_sources = @is_funnel_community ? FunnelService.new(@schedule_tour).get_discovery_sources : []
+    @funnel_discovery_sources = @is_funnel_community ? @schedule_tour&.community&.crm_discovery_source&.sources : []
+
     @selected_discovery_source = @is_funnel_community ? (@schedule_tour&.funnel_prospect_discover_source.present? ? @funnel_discovery_sources.map{|s| s[0] if s[1] == @schedule_tour&.funnel_prospect_discover_source.to_i }&.compact&.uniq[0] : "Select an option" ) : ""
     
     @rentcafe_discovery_sources = @use_yardi_as_lead ? @community&.crm_discovery_source&.sources.map { |source| source["name"] } : []

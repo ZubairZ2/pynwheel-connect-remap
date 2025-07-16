@@ -19,7 +19,7 @@ namespace :triggered_email do
       th = TourHistory.where(arrived: [(current_time - 7200)..current_time], tour_id: community.community_tour.id, tour_user_id: tu.id)
       
       if diff > 7200 && !th.present? && !tour.missed_email_sent && current_time.to_date == tour.tour_date
-        FunnelService.new(tour).update_appointment_status("no-show") if community.is_funnel_community?
+        FunnelService.new(community).update_appointment_status(tour, "no-show") if community.is_funnel_community?
         
         base_url =  Rails.env.development? ? "localhost:3000/" : (ENV["RAILS_ENV"] == "staging" ? "https://pynwheel-staging.herokuapp.com/" : "https://pynwheelconnect.com/") #"https://pynwheelapp.com/"
         email_msg = "#{tu.name.titleize} missed a scheduled tour!<br><br>Tour scheduled: #{tour.tour_date.strftime('%Y-%m-%d')}/#{tour.tour_time.strftime('%I:%M %p')}<br><br>We have sent them a message asking if they would like to reschedule. Here is their contact information in case you want to follow up: <br><br><a href='mailto:#{tu.email}'>#{tu.email}</a><br><a href='tel:#{tu.phone_number}'>#{tu.phone_number}</a><br><Link to user’s profile>"

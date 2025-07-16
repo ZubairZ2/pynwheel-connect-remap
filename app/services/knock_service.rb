@@ -236,8 +236,6 @@ class KnockService < BaseService
     end
   end
 
-  
-
   def knock_message scheduled_tour
     case scheduled_tour.property_tour_type
     when "scheduled_tour"

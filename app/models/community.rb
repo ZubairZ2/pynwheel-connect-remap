@@ -1692,8 +1692,8 @@ class Community < ApplicationRecord
 
   def is_any_tour_type_selected
     if self&.community_tour&.tour_setting.present?
-      toue_setting = self&.community_tour.tour_setting
-      return toue_setting.allow_virtual_tour || toue_setting.allow_self_tour || toue_setting.allow_guided_tour
+      tour_setting = self&.community_tour.tour_setting
+      return tour_setting.allow_virtual_tour || tour_setting.allow_self_tour || tour_setting.allow_guided_tour
     else
       return false
     end
