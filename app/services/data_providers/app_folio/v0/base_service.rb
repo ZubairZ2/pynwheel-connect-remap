@@ -17,8 +17,8 @@ module DataProviders
           end
         end
 
-        def get_resource(property_code, resource)
-          @app_folio_service.get_resource(property_code, resource)            
+        def get_resource(property_code, resource, filter_key)
+          @app_folio_service.get_resource(property_code, resource, filter_key)            
         end
 
         protected

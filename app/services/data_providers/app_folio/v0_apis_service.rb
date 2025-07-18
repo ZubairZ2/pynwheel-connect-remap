@@ -14,14 +14,15 @@ module DataProviders
         @company    = @community&.company
       end
 
-      def get_resource(property_id, resource)
+      def get_resource(property_id, resource, filter_key)
         return unless @credential.present?
 
-        filter_key = resource == "properties" ? "Id" : "PropertyId"
-        url = "#{api_base_url}/#{resource}?filters[LastUpdatedAtFrom]=#{DEFAULT_LAST_UPDATED_AT}&filters[#{filter_key}]=#{property_id}"
+        url = "#{api_base_url}/#{resource}?filters[LastUpdatedAtFrom]=#{DEFAULT_LAST_UPDATED_AT}"
+        url += "&filters[#{filter_key}]=#{property_id}" if filter_key.present?
 
         HTTParty.get(url, headers: request_headers)
       end
+
 
       private
 
