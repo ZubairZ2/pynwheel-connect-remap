@@ -45,6 +45,7 @@ class Credential < ApplicationRecord
   has_one :status, as: :statusable
   
   after_update :change_to_scheduled_tours_for_sf
+  after_update :fetch_crm_data
 
   def as_json(data_provider = "")
     data = super(
@@ -66,6 +67,16 @@ class Credential < ApplicationRecord
 
   def crm_provider
     self.community.crm_credential.crm_provider rescue ""
+  end
+
+  def fetch_crm_data
+    if self&.community&.is_funnel_community?
+      FunnelCrmWorker.perform_async self&.community&.id
+    elsif self&.community&.is_knock_community?
+      KnockCrmWorker.perform_async self&.community&.id
+    elsif self&.community&.use_yardi_as_lead?
+      RentCafeCrmWorker.perform_async self&.community&.id
+    end
   end
 
   def data_providers_credentials(data_provider)

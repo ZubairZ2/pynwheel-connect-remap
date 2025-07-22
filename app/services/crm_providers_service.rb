@@ -10,6 +10,8 @@ class CrmProvidersService
         RentCafeCrmWorker.perform_async community.id
       elsif community.is_knock_community?
         KnockCrmWorker.perform_async community.id
+      elsif community.is_funnel_community?
+        FunnelCrmWorker.perform_async community.id
       end
     end
   end

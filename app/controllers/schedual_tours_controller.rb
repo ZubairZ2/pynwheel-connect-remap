@@ -134,11 +134,10 @@ class SchedualToursController < ApplicationController
 
       if schedual_tour&.property_tour_type === "scheduled_tour"
         book_yardi_appointment(schedual_tour, previous_tour)
-        FunnelService.new(schedual_tour).funnel_crm(is_rescheduled)
       end
 
+      book_funnel_appointment(schedual_tour, is_rescheduled)
       book_knock_appointment(schedual_tour, is_rescheduled)
-
 
       appointment_time = (schedual_tour.tour_date.to_s +  " " + schedual_tour.tour_time.to_s.split(' ')[1]).to_datetime if schedual_tour.tour_date.present? and schedual_tour.tour_time.present?
       marketing_source = params[:marketing_source].present? ? params[:marketing_source] : "" rescue  ""
@@ -201,15 +200,6 @@ class SchedualToursController < ApplicationController
     end
   end
 
-  def get_funnel_available_times
-    day = params[:date].gsub("/", "-")
-    scheduled_tour = SchedualTour.find_by_id(params[:schedule_tour_id])
-    response = FunnelService.new(scheduled_tour).get_available_times(day)
-    response = response.map { |date| date.to_datetime.strftime("%I:%M %P")  }
-
-    render json: {data: response, status: :OK, code: 200}, layout: false
-  end
-
   def get_tour_type
     community = Community.find params[:community_id]
     @stepping = community.community_tour.tour_setting.time_intervel == '15 min' ? 15 : (@community.community_tour.tour_setting.time_intervel == '30 min' ? 30 : (@community.community_tour.tour_setting.time_intervel == '1 hr') ? 60 : (@community.community_tour.tour_setting.time_intervel == '2 hrs') ? 120 : 15) rescue 15
@@ -217,6 +207,8 @@ class SchedualToursController < ApplicationController
 
     @use_yardi_as_lead = @community.use_yardi_as_lead?
     @is_knock_community = @community.is_knock_community?
+    @is_funnel_community = @community.is_funnel_community?
+
 
     date_time = params[:date] + " " +params[:time]
     date = DateTime.strptime(date_time, '%m/%d/%Y %l:%M %p')
@@ -245,7 +237,7 @@ class SchedualToursController < ApplicationController
 
     tour_types = []
 
-    unless community.is_funnel_community?
+    unless @community.is_funnel_community?
       if @is_knock_community 
         tour_types = KnockService.new(community).knock_available_tour_types(params[:date], params[:day], params[:time])
       elsif @use_yardi_as_lead
@@ -279,7 +271,6 @@ class SchedualToursController < ApplicationController
   end
 
   def show_tour_type_modal(show_self_tour_option, show_guided_tour_option, in_limit, community, limit_type, error)
-    
     if(show_self_tour_option == "false" && show_guided_tour_option == "false")
       return false , remove_array( [["Virtual Tour","virtual_tour"]] ,community,limit_type), error
     elsif (show_self_tour_option == "true" && show_guided_tour_option == "false")
@@ -361,9 +352,9 @@ class SchedualToursController < ApplicationController
 
     if @schedual_tour&.property_tour_type === "scheduled_tour"
       book_yardi_appointment(@schedual_tour, previous_tour)
-      FunnelService.new(@schedual_tour).funnel_crm(true)
     end
-    
+
+    book_funnel_appointment(@schedual_tour, true)
     book_knock_appointment(@schedual_tour, true)
     
     @schedual_tour.update(tour_date: date, tour_time: tour_time, day_diff: day_diff)
@@ -424,7 +415,13 @@ class SchedualToursController < ApplicationController
     end
 
     def book_knock_appointment schedual_tour, is_rescheduled
+      return unless schedual_tour&.community&.is_knock_community?
       KnockService.new(schedual_tour.community).knock_crm(schedual_tour, is_rescheduled)
+    end
+
+    def book_funnel_appointment schedual_tour, is_rescheduled
+      return unless schedual_tour&.community&.is_funnel_community?
+      FunnelService.new(schedual_tour.community).funnel_crm(schedual_tour, is_rescheduled)
     end
 
     def community_allowed_tour_types community
