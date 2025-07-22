@@ -851,9 +851,9 @@ function showPsiFields(){
     $('#url').hide();
     $('.entrata_url').show();
     //$('#community_credential_attributes_url').addClass("validate[required]");
-    $('#password').show();
+    //$('#password').show();
     //$('#community_credential_attributes_password').addClass("validate[required]");
-    $('#username').show();
+    //$('#username').show();
     //$('#community_credential_attributes_username').addClass("validate[required]");
     $('#property_id').show();
     //$('#community_credential_attributes_property_id').addClass("validate[required]");
