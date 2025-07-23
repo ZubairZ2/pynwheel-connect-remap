@@ -86,6 +86,7 @@ class Community < ApplicationRecord
   after_update :crop_image, if: ->(obj) { obj.logo_changed? }
   after_update :crop_secondary_image, if: ->(obj) { obj.secondary_logo_changed? }
   after_create :create_tour_also
+  after_create :assign_community_user
   after_create :change_touchscreen_app_for_dwelo
   before_save :turn_off_chat, if: Proc.new { chat_control == false }
   after_save :set_community_time_zone, if: ->(obj) { obj.latitude_changed? || obj.longitude_changed? }
@@ -900,6 +901,10 @@ class Community < ApplicationRecord
   def create_tour_also
     tour = self.create_tour if self&.community_tour.nil?
     tour.create_tour_setting if tour.present? and tour.tour_setting.nil?
+  end
+
+  def assign_community_user
+    CommunityUserAssignmentService.new(self).assign_admin_users
   end
 
   def change_touchscreen_app_for_dwelo
