@@ -48,19 +48,6 @@ class PsiStaticService < BaseService
           save_property_details(response['response'], property_id)
           save_psi_floorplans(floorplans, property_id)
           save_psi_units(units, property_id)
-
-          begin
-            cred = Credential.find @credentials.id
-            cred.data_error_message = nil
-            cred.save
-          rescue => err
-          end
-          
-          # save_website_column_of_community(response)
-          #else
-          #puts '-----------------------------' , response["response"]["error"]["message"]
-          #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: @credentials.community_id})
-        else
         end
       rescue => e
         raise e
@@ -426,8 +413,8 @@ class PsiStaticService < BaseService
       end
 
       rentStr = ""
+      
       begin
-
         if us[1]["Rent"]["TermRent"].count > 1
           us[1]["Rent"]["TermRent"].each do |tr|
             rentStr = rentStr + tr["@attributes"]["LeaseTerm"].split(" ")[0] +":"+ tr["@attributes"]["Rent"].gsub(/[\s,]/ ,"") +"::\;"

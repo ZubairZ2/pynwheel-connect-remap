@@ -71,7 +71,7 @@ class Community < ApplicationRecord
   accepts_nested_attributes_for :credential
   accepts_nested_attributes_for :design
 
-  validates_uniqueness_of :name, scope: :company_id
+  # validates_uniqueness_of :name, scope: :company_id
   validate :apartment_page_name_length_validate
   validate :gallery_page_name_length_validate
   validate :validate_page_position
