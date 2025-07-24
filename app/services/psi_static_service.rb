@@ -61,21 +61,9 @@ class PsiStaticService < BaseService
           #puts '-----------------------------' , response["response"]["error"]["message"]
           #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: @credentials.community_id})
         else
-          begin
-            cred = Credential.find @credentials.id
-            cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
-            cred.save
-          rescue => err
-          end
         end
       rescue => e
-        begin
-          cred = Credential.find @credentials.id
-          cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
-          cred.save
-        rescue => err
-        end
-        #ExceptionNotifier.notify_exception(e,data: {community_id: @credentials.community_id})
+        raise e
       end
     end
 
