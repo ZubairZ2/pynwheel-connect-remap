@@ -85,6 +85,8 @@ class Credential < ApplicationRecord
         psi_credentials
       when "yardirentcafe"
         yardirentcafe_credentials
+      when "appfolio"
+        appfolio_credentials
       when "rentmanager"
         rentmanager_credentials
       when "realpagesvc"
@@ -114,6 +116,12 @@ class Credential < ApplicationRecord
       rentmanager_password: self.rentmanager_password,
       rentmanager_property_id: self.rentmanager_property_id,
       rentmanager_base_url: self.rentmanager_base_url
+    }
+  end
+
+  def appfolio_credentials
+    {
+      app_folio_property_id: self.app_folio_property_id,
     }
   end
   

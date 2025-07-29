@@ -18,6 +18,7 @@ module ApplicationHelper
       ]
     else
       [
+        ["App Folio", "appfolio"],
         ["Entrata", "psi"],
         ["RealPage", "realpagesvc"],
         ["YardiRentCafe", "yardirentcafe"],
@@ -315,6 +316,8 @@ module ApplicationHelper
     else
       return x
     end
+  rescue
+    0
   end
 
   def bathroom_text(floorplan)

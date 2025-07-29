@@ -590,6 +590,8 @@ class Community < ApplicationRecord
         credential.entrata_url.present? && credential.username.present? && credential.password.present? && credential.property_id.present?
       when "yardirentcafe"
         (credential.c_code.present? || credential.api_token.present?) && credential.p_code.present?
+      when "appfolio"
+        credential.app_folio_property_id.present?
       when "rentmanager"
         (credential.rentmanager_username.present? && credential.rentmanager_password.present? && credential.rentmanager_property_id.present? && credential.rentmanager_base_url.present?)
       when "realpagesvc"
@@ -1062,6 +1064,8 @@ class Community < ApplicationRecord
         import_psi_data
       when "yardirentcafe"
         import_yardirentcafe_data
+      when "appfolio"
+        import_appfolio_data
       when "rentmanager"
         import_rentmanager_data
       when "realpagesvc"
@@ -1119,6 +1123,8 @@ class Community < ApplicationRecord
       EntrataDataUpdateWorker.perform_async self.id
     when "yardirentcafe"
       YardirentcafeDataUpdateWorker.perform_async self.id
+    when "appfolio"
+      import_appfolio_data
     when "rentmanager"
       RentManagerDataImportWorker.perform_async self.id
     when "realpagesvc"
@@ -1275,6 +1281,10 @@ class Community < ApplicationRecord
     RentCafeDataImportWorker.perform_async self.id
   end
 
+  def import_appfolio_data
+    AppFolioDataImportWorker.perform_async self.id
+  end
+
   def import_rentmanager_data
     RentManagerDataImportWorker.perform_async self.id
   end
@@ -1381,6 +1391,8 @@ class Community < ApplicationRecord
         connect_to_psi
       when "yardirentcafe"
         connect_to_yardirentcafe
+      when "appfolio"
+        connect_to_appfolio
       when "rentmanager"
         connect_to_rentmanager
       when "realpagesvc"
@@ -1411,6 +1423,11 @@ class Community < ApplicationRecord
       connect_space_configuration_psi
     end
 
+  end
+
+  def connect_to_appfolio
+    app_folio_connection_service = DataProviders::AppFolio::V0::TestConnectionService.new(self.id)
+    app_folio_connection_service.perform
   end
 
   def connect_to_rentmanager
