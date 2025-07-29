@@ -225,7 +225,7 @@ class CredentialsValid < BaseService
         property_code = credentials&.app_folio_property_id&.split(",")[0] rescue ""
         property_code = property_code&.strip
         app_folio_service = DataProviders::AppFolio::V0::BaseService.new(community.id)
-        response = app_folio_service.get_resource(property_code, "properties")
+        response = app_folio_service.get_resource(property_code, "properties", "Id")
 
         return response.success?
       rescue => e
