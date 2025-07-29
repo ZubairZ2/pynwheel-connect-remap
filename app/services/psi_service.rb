@@ -177,6 +177,8 @@ class PsiService < BaseService
             unit.available_date = vacateDate
           end
 
+          static_building_name_update(unit, u)
+          
           # unit.availability_url = u['Availability']['UnitAvailabilityURL'] if u['Availability'].present?
           # unit_floorplan = @all_floorplans_hash[unit.floorplan_id]
           # unit.availability_url = unit_floorplan&.availability_url unless unit.availability_url
@@ -271,6 +273,8 @@ class PsiService < BaseService
           unless unit.building_is_updated.present? && unit.building_is_updated
             unit.building = building.present? ? building.gsub("Building ", "") : ""
           end
+
+          static_building_name_update(unit, u)
 
           # unit.availability_url = u['Availability']['UnitAvailabilityURL'] if u['Availability'].present?
           # unit_floorplan = @all_floorplans_hash[unit.floorplan_id]
@@ -725,6 +729,18 @@ class PsiService < BaseService
       amount = app_fee.dig("@attributes", "Amount").to_i
       "<li>#{type}: $#{amount}</li>"
     end.join
-  end  
-  
+  end
+
+  # Updates the building name for a unit if the building_id falls within a static range
+  def static_building_name_update(unit, u)
+    return unless @credentials&.community_id == 447
+
+    unit_data = u.dig("Units", "Unit") || {}
+    building_id = unit_data.dig("@attributes", "BuildingId")&.to_i
+
+    return unless (21918..21926).cover?(building_id)
+
+    building_name = unit_data["BuildingName"].to_s
+    unit.building = "#{building_name}*"
+  end
 end
