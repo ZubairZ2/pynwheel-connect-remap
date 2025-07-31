@@ -27,12 +27,14 @@ var _3dConvertedArr = definedAndHasValue(_3dConvertedArr)
   : [];
 
 var beansAddress = "";
+
 var map_marker_color = definedAndHasValue(map_marker_color)
   ? map_marker_color
-  : "rgba(247, 0, 0, 0.61)";
+  : "#d37474";
+
 var amenity_marker_color = definedAndHasValue(amenity_marker_color)
   ? amenity_marker_color
-  : "#00bcd4";
+  : "#d37474";
 
 var lastMouseInside = false;
 var isMouseTrackerInitialized = false;

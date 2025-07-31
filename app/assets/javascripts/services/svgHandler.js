@@ -8,10 +8,14 @@ var VALID_SVG_SHAPES = [
 ];
 var DEFAULT_FILL_COLOR = "default-fill-color";
 var svgMode = definedAndHasValue(svgMode) ? svgMode : false;
-var map_marker_color = definedAndHasValue(map_marker_color) ? "brown" : null;
+
+var map_marker_color = definedAndHasValue(map_marker_color)
+  ? map_marker_color 
+  : "#d37474";
+
 var amenity_marker_color = definedAndHasValue(amenity_marker_color)
   ? amenity_marker_color
-  : null;
+  : "#d37474";
 
 function setSVG(container, svgElement, options) {
   const $svgElement = $(svgElement);
@@ -338,27 +342,27 @@ function setupAmenityToolTip(block, data, svgElement) {
 }
 
 function setupAmenityFillHandlers(duplicateBlock, fillOnHover = false) {
-  const amenityFillColor = amenity_marker_color || map_marker_color;
+  // const amenityFillColor = amenity_marker_color;
 
-  if (fillOnHover) {
-    return {
-      fillAmenityBlock: () => {
-        if (!duplicateBlock.hasAttribute(DEFAULT_FILL_COLOR)) {
-          duplicateBlock.setAttribute(
-            DEFAULT_FILL_COLOR,
-            duplicateBlock.style.fill
-          );
-        }
-        duplicateBlock.style.fill = amenityFillColor;
-      },
-      removeAmenityBlockFill: () => {
-        duplicateBlock.style.fill =
-          duplicateBlock.getAttribute(DEFAULT_FILL_COLOR);
-      },
-    };
-  }
+  // if (fillOnHover) {
+  //   return {
+  //     fillAmenityBlock: () => {
+  //       if (!duplicateBlock.hasAttribute(DEFAULT_FILL_COLOR)) {
+  //         duplicateBlock.setAttribute(
+  //           DEFAULT_FILL_COLOR,
+  //           duplicateBlock.style.fill
+  //         );
+  //       }
+  //       duplicateBlock.style.fill = amenityFillColor;
+  //     },
+  //     removeAmenityBlockFill: () => {
+  //       duplicateBlock.style.fill =
+  //         duplicateBlock.getAttribute(DEFAULT_FILL_COLOR);
+  //     },
+  //   };
+  // }
 
-  duplicateBlock.setAttribute("fill", amenityFillColor);
+  duplicateBlock.setAttribute("fill", amenity_marker_color);
   return {};
 }
 
