@@ -232,7 +232,11 @@ module DataProviders
           return "" unless is_available?(r)
 
           available_on = r["AvailableOn"]
-          Date.parse(available_on) rescue Date.today
+          if is_available?(r) && available_on.present?
+            Date.parse(available_on) rescue Date.today
+          else
+            Date.today
+          end
         end
 
         def update_floorplan_square_footage
