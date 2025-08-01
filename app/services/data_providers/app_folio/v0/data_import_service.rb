@@ -132,14 +132,19 @@ module DataProviders
           begin
             # binding.pry
 
-            update_attribute_if_blank(unit, :marketing_name, r["Name"], 'name')
+            # update_attribute_if_blank(unit, :marketing_name, r["Name"], 'name')
             # update_attribute_if_blank(unit, :floor, get_floor(r))
-            update_attribute_if_blank(unit, :floorplan_id, r["UnitTypeId"])
-            update_attribute_if_blank(unit, :effective_rent, unit_market_rent(r))
-            update_attribute_if_blank(unit, :availability, unit_availability(r))
-            update_attribute_if_blank(unit, :available_date, set_availability_date(r))
-            update_attribute_if_blank(unit, :available, is_available?(r))
-            # unit.available = is_available?(r)
+            # update_attribute_if_blank(unit, :floorplan_id, r["UnitTypeId"])
+            # update_attribute_if_blank(unit, :effective_rent, unit_market_rent(r))
+            # update_attribute_if_blank(unit, :availability, unit_availability(r))
+            # update_attribute_if_blank(unit, :available_date, set_availability_date(r))
+            # update_attribute_if_blank(unit, :available, is_available?(r))
+            unit.marketing_name = r["Name"]
+            unit.floorplan_id = r["UnitTypeId"]
+            unit.effective_rent = unit_market_rent(r)
+            unit.availability = unit_availability(r)
+            unit.available_date = set_availability_date(r)
+            unit.available = is_available?(r)
             unit.property_id = property_code
             unit.unit_type = r["UnitType"]
             unit.square_feet = unit_sqft(r)
@@ -158,47 +163,47 @@ module DataProviders
           end
         end
 
-        def update_price_and_availability property_code
-          response = get_resource(property_code, "listings", "PropertyId")
-          return unless response.present?
-          response = response["data"]
-          process_listings_response(response, property_code) if response.present? && response.is_a?(Array)
-        end
+        # def update_price_and_availability property_code
+        #   response = get_resource(property_code, "listings", "PropertyId")
+        #   return unless response.present?
+        #   response = response["data"]
+        #   process_listings_response(response, property_code) if response.present? && response.is_a?(Array)
+        # end
 
-        def process_listings_response response, property_code
-          property_units = get_property_based_units_data(response, property_code)
+        # def process_listings_response response, property_code
+        #   property_units = get_property_based_units_data(response, property_code)
 
-          property_units.each do |r|
-            unit = Unit.find_by(provider: "appfolio", community_id: @community_id, provider_unit_id: r["UnitId"])
+        #   property_units.each do |r|
+        #     unit = Unit.find_by(provider: "appfolio", community_id: @community_id, provider_unit_id: r["UnitId"])
             
-            next unless unit.present?
-            next if unit.manual_override
+        #     next unless unit.present?
+        #     next if unit.manual_override
 
-            available_on = r["AvailableOn"]
-            available_on = Date.parse(available_on) rescue Date.today
+        #     available_on = r["AvailableOn"]
+        #     available_on = Date.parse(available_on) rescue Date.today
 
-            update_attribute_if_blank(unit, :effective_rent, unit_market_rent(r))
-            # update_attribute_if_blank(unit, :availability, "Unoccupied")
-            update_attribute_if_blank(unit, :available_date, available_on)
-            # update_attribute_if_blank(unit, :available, true)
+        #     update_attribute_if_blank(unit, :effective_rent, unit_market_rent(r))
+        #     # update_attribute_if_blank(unit, :availability, "Unoccupied")
+        #     update_attribute_if_blank(unit, :available_date, available_on)
+        #     # update_attribute_if_blank(unit, :available, true)
 
-            unit.property_id = property_code
-            # unit.unit_status = "Vacant"
-            unit.square_feet = unit_sqft(r)
-            unit.min_effective_rent = unit_min_rent(r)
-            unit.max_effective_rent = unit_max_rent(r)
+        #     unit.property_id = property_code
+        #     # unit.unit_status = "Vacant"
+        #     unit.square_feet = unit_sqft(r)
+        #     unit.min_effective_rent = unit_min_rent(r)
+        #     unit.max_effective_rent = unit_max_rent(r)
             
-            unit.save
-          end
-        end
+        #     unit.save
+        #   end
+        # end
        
-        def get_property_based_units_data(data, property_code)
-          data.select do |unit|
-            unit["PropertyId"] == property_code && unit["PostedToWebsite"] == true
-          end
-        rescue
-          []
-        end
+        # def get_property_based_units_data(data, property_code)
+        #   data.select do |unit|
+        #     unit["PropertyId"] == property_code && unit["PostedToWebsite"] == true
+        #   end
+        # rescue
+        #   []
+        # end
 
         def unit_sqft r
           return 1.0 unless r["SquareFeet"].present?
