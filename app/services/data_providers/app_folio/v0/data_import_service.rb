@@ -225,18 +225,20 @@ module DataProviders
         end
 
         def unit_availability r
-          (r["Status"] === "Vacant") ? "Unoccupied" : "Occupied"
+          available_on = r["AvailableOn"]
+
+          if available_on.present?
+            (r["Status"] === "Vacant") ? "Unoccupied" : "Occupied"
+          else
+            "Occupied"
+          end
         end
 
         def set_availability_date(r)
           return "" unless is_available?(r)
 
           available_on = r["AvailableOn"]
-          if is_available?(r) && available_on.present?
-            Date.parse(available_on) rescue Date.today
-          else
-            Date.today
-          end
+          Date.parse(available_on) rescue Date.today
         end
 
         def update_floorplan_square_footage
