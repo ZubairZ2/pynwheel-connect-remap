@@ -2,18 +2,19 @@
   .c-popup
     .c-modal
       .c-modal-dialog.modal-xl
-        .c-modal-header.virtual-tour-unit-modal-header
-          %h5.c-modal-title#unit-marketing-name
+        .div.c-modal-header.virtual-tour-unit-modal-header
+          .header-left
+            %h5.c-modal-title#unit-marketing-name
+            %i.propertyDetailName{style: "display: block"}
+              %span#propertyDetailNameText Added to Favorites.
 
-          %i.propertyDetailName{style: "display: block"}
-            %span#propertyDetailNameText
-              Added to Favorites.
+          .header-right
+            %a.additional-btn{ href: "", target: "_blank", rel: "noopener noreferrer" } Additional Button
+            %a.virtual-tour-btn{ href: "", data: { toggle: "modal", target: "#unitVirtualTourModal" } } 3D Tour
 
-          %a.virtual-tour-btn{:href => "", "data-toggle" => "modal", "data-target" => "#unitVirtualTourModal"}
-            3D Tour
-
-          %button#close-modal.c-close{"data-dismiss" => "modal", :type => "button"}
+          %button.c-close{ type: "button", data: { dismiss: "modal" }, id: "close-modal" }
             %span ×
+            
         %aside.c-modal-sidebar
           .c-modal-sidebar-inner
             .modal-sidebar-title

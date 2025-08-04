@@ -54,23 +54,13 @@
         = f.text_field :market_rent, :class=>"form-control validate[required]", :placeholder=>"0.00",:maxlength=>"10", :value => f.object.market_rent.to_i
         %small Base Price (Manual Override Required)
 
--#.form-group
--#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
--#    Display Virtual Tour Button Label
--#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
--#    .TriSea-technologies-Switch
--#      %span.pr-15 No
--#      = f.check_box :display_virtual_tour_button_label,:class=>"form-control"
--#      %label.label-primary{:for => "floorplan_display_virtual_tour_button_label"}
--#      %span.pl-15 Yes
-
 .form-group#virtual_tour_button_label_field
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Virtual Tour Button Label
 
     %span Specify virtual tour button label here
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :virtual_tour_button_label, :class=>"form-control", :placeholder=>"Virtual Tour Button Label",:maxlength=>"15"
+    = f.text_field :virtual_tour_button_label, :class=>"form-control", :placeholder=>"Virtual Tour Button Label"
 
 
 .form-group
@@ -84,17 +74,36 @@
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :virtual_tour_url, :class=>"form-control", :placeholder=>"Virtual Tour URL"
 
+/Additional Button
+.form-group#virtual_tour_button_label_field
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Additional Button Label
+
+    %span Specify Additional button label here
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :additional_button, :class=>"form-control", :placeholder=>"Additional Button Label"
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Additional Button URL
+    %i.tooltip1.fa.fa-question-circle{ "data-toggle" => "floorplanAdditionalButtonUrlPopover","data-content" => " "}
+      %span#tooltiptext1
+        Add a URL to add a Additional details specific to this floor plan which will appear on the interactive map and in the floor plan gallery.
+
+    %span Specify URL here
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :additional_url, :class=>"form-control", :placeholder=>"Additional Button URL"
 
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Additional Details
-    %i.tooltip1.fa.fa-question-circle{ "data-toggle" => "floorplanEditAdditionalDetailsPopover","data-content" => " "}
+    %i.tooltip1.fa.fa-question-circle{ "data-toggle" => "floorplanAdditionalUrlDetailsPopover","data-content" => " "}
       %span#tooltiptext1
         Add details such as finishes and floor-plan specific features and they will appear in the "Additional Details" tab for this floor plan.
 
-
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_area :description,:class=>"form-control mb-20  wysihtml5",:placeholder=>"Enter Description"
+
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Upload Primary Image

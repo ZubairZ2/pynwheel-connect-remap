@@ -1429,6 +1429,9 @@ function buildUnitMarkerHTML(unit, f) {
       data-title="${unitDataAttributes["data-title"]}"
       data-unit-virtual-tour-label="${unitDataAttributes["data-unit-virtual-tour-label"]}"
       data-unit-virtual-tour-url="${unitDataAttributes["data-unit-virtual-tour-url"]}"
+      data-additional-button-label="${unitDataAttributes["data-additional-button-label"]}"
+      data-additional-button-url="${unitDataAttributes["data-additional-button-url"]}"
+      data-availability-url="${unitDataAttributes["data-availability-url"]}"
       data-unit-lease-term="${unitDataAttributes["data-unit-lease-term"]}"
       data-unit-lease-pricing="${unitDataAttributes["data-unit-lease-pricing"]}"
       data-unit-additional-fees="${unitDataAttributes["data-unit-additional-fees"]}"
@@ -2399,6 +2402,7 @@ function setModalAttributes(element) {
 
   unitAdditionalFees($(element).data("unit-additional-fees"));
   addVirtualTour(element);
+  addAdditionalButtonURL(element);
 
   $("#unitModal")
     .find("#unit-marketing-name")
@@ -2646,6 +2650,27 @@ function amenityAddFrame(src) {
   ifrm.style.border = 0;
 
   $("#amenity-virtual-tour-ifram-container").append(ifrm);
+}
+
+function addAdditionalButtonURL(element) {
+  let label = $(element).data("additional-button-label");
+  let unit_id = $(element).data("unit-id");
+  let url =
+    $(element).data("additional-button-url") ||
+    $(element)
+      .parents()
+      .find("#unitModal")
+      .parents()
+      .find("#m_" + unit_id)
+      .data("additional-button-url");
+  if (url != null && url != "") {
+    $(".additional-btn").css("display", "block");
+    $(".additional-btn").html(label);
+    $(".additional-btn").attr("href", url);
+  } else {
+    $(".additional-btn").css("display", "none");
+  }
+
 }
 
 function addVirtualTour(element) {
