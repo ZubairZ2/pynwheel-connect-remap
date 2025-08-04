@@ -1429,6 +1429,9 @@ function buildUnitMarkerHTML(unit, f) {
       data-title="${unitDataAttributes["data-title"]}"
       data-unit-virtual-tour-label="${unitDataAttributes["data-unit-virtual-tour-label"]}"
       data-unit-virtual-tour-url="${unitDataAttributes["data-unit-virtual-tour-url"]}"
+      data-additional-button-label="${unitDataAttributes["data-additional-button-label"]}"
+      data-additional-button-url="${unitDataAttributes["data-additional-button-url"]}"
+      data-availability-url="${unitDataAttributes["data-availability-url"]}"
       data-unit-lease-term="${unitDataAttributes["data-unit-lease-term"]}"
       data-unit-lease-pricing="${unitDataAttributes["data-unit-lease-pricing"]}"
       data-unit-additional-fees="${unitDataAttributes["data-unit-additional-fees"]}"
@@ -2399,6 +2402,7 @@ function setModalAttributes(element) {
 
   unitAdditionalFees($(element).data("unit-additional-fees"));
   addVirtualTour(element);
+  addAdditionalButtonURL(element);
 
   $("#unitModal")
     .find("#unit-marketing-name")
@@ -2648,6 +2652,31 @@ function amenityAddFrame(src) {
   $("#amenity-virtual-tour-ifram-container").append(ifrm);
 }
 
+function addAdditionalButtonURL(element) {
+  removeAdditionalButtonFrame();
+  let label = $(element).data("additional-button-label");
+  let unit_id = $(element).data("unit-id");
+  let url =
+    $(element).data("additional-button-url") ||
+    $(element)
+      .parents()
+      .find("#unitModal")
+      .parents()
+      .find("#m_" + unit_id)
+      .data("additional-button-url");
+  if (url != null && url != "") {
+    $(".additional-btn").css("display", "block");
+    $(".additional-btn").html(label);
+    $("#unitVirtualTourModal")
+      .find("#unitName")
+      .html($(element).data("unit-marketing-name"));
+    addAdditionalButtonFrame(url);
+  } else {
+    $(".additional-btn").css("display", "none");
+  }
+
+}
+
 function addVirtualTour(element) {
   removeFrame();
   let label = $(element).data("unit-virtual-tour-label");
@@ -2676,6 +2705,10 @@ function removeFrame() {
   $("#virtual-tour-ifram-container").empty();
 }
 
+function removeAdditionalButtonFrame() {
+  $("#additional-button-ifram-container").empty();
+}
+
 function addFrame(src) {
   var ifrm = document.createElement("iframe");
   ifrm.setAttribute("src", src);
@@ -2688,6 +2721,20 @@ function addFrame(src) {
   ifrm.style.border = 0;
 
   $("#virtual-tour-ifram-container").append(ifrm);
+}
+
+function addAdditionalButtonFrame(src) {
+  var ifrm = document.createElement("iframe");
+  ifrm.setAttribute("src", src);
+  ifrm.style.position = "absolute";
+  ifrm.style.top = 0;
+  ifrm.style.bottom = 0;
+  ifrm.style.left = 0;
+  ifrm.style.width = "100%";
+  ifrm.style.height = "100%";
+  ifrm.style.border = 0;
+
+  $("#additional-button-ifram-container").append(ifrm);
 }
 
 function leaseTermPricingOptions(ss) {

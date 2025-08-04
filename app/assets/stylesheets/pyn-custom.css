@@ -5517,24 +5517,8 @@ body {
     justify-content: space-between;
 }
 
-.virtual-tour-unit-modal-header .virtual-tour-btn {
-    width: 100%;
-    max-width: 150px;
-    height: 39px;
-    border: 1px solid black;
-    text-align: center;
-    text-decoration: none;
-    line-height: 38px;
-    border-radius: 110px;
-    font-size: 16px;
-    font-family: sans-serif;
-    text-transform: uppercase;
-    margin-right: 5rem;
-    color: black;
-    font-weight: 900;
-}
-
-.virtual-tour-unit-modal-header .virtual-tour-btn:hover {
+.virtual-tour-unit-modal-header .virtual-tour-btn:hover,
+.virtual-tour-unit-modal-header .additional-btn:hover {
     background: black;
     color: white;
 }
@@ -6518,29 +6502,77 @@ ul.add-fav-options {
     overflow: hidden;
     background: white;
 }
+
 .c-modal-header {
-    background: #e8e9e9;
-    position: relative;
-    min-height: 70px;
-    display: flex;
-    align-items: center;
-    padding: 0 20px;
+  background: #e8e9e9;
+  position: relative;
+  min-height: 70px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  flex-wrap: wrap;
 }
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+}
+
+.propertyDetailName {
+  display: block;
+  font-style: normal;
+  font-size: 14px;
+  color: #333;
+  margin-top: 4px;
+}
+
+.header-right {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-left: auto;
+  margin-right: 30px;
+}
+
+.virtual-tour-unit-modal-header .virtual-tour-btn,
+.virtual-tour-unit-modal-header .additional-btn {
+  /* max-width: 150px; */
+  height: 38px;
+  border: 2px solid black;
+  text-align: center;
+  text-decoration: none;
+  line-height: 38px;
+  border-radius: 110px;
+  font-size: 16px;
+  font-family: sans-serif;
+  text-transform: uppercase;
+  color: black;
+  font-weight: 900;
+  padding: 0 15px;
+}
+
 .c-modal-header .c-modal-title {
     margin: 0;
     font-weight: 600;
     font-size: 24px;
 }
+
 .c-modal-header .c-close {
     position: absolute;
-    right: 20px;
+    right: 10px;
     border: 0;
     background: transparent;
     cursor: pointer;
 }
- .c-modal-header .c-close span {
+
+.c-modal-header .c-close span {
     font-size: 30px;
 }
+
 .modal-sidebar-title {
     display: flex;
     align-items: center;
@@ -7195,40 +7227,7 @@ ul.add-fav-options {
     display: inline-block;
     font-size: 11px;
 }
-/* #webpages-overlay {
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0,0,0,0.5);
-    z-index: 1000000;
-    display: none;
-  }
 
-  #webpages-overlay-text{
-    position: absolute;
-    padding: 15px;
-    top: 47%;
-    left: 50%;
-    font-weight: 500;
-    font-size: 22px;
-    color: white;
-    transform: translate(-50%,-50%);
-    -ms-transform: translate(-50%,-50%);
-  }
-
-  #webpages-overlay-button{
-    position: absolute;
-    top: 52%;
-    left: 50%;
-    font-weight: 500;
-    font-size: 22px;
-    padding: 5px 10px 5px 10px;
-    transform: translate(-50%,-50%);
-  } */
 span.email-ids {
     float: left;
     /* padding: 4px; */
@@ -7776,6 +7775,38 @@ div.esri-ui-inner-container.esri-ui-manual-container>div.esri-component.esri-att
     #zoomable-modal-image-responsive {
         min-height: auto !important;
         max-height: 464px !important;
+    }
+}
+
+@media (max-width: 600px) {
+    .c-modal-header .c-modal-title {
+        padding-top: 10px;
+    }
+    
+    .c-modal-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .header-right {
+        justify-content: left;
+        width: 100%;
+        margin-top: 8px;
+        margin-bottom: 8px;
+        flex-wrap: nowrap; /* Ensure buttons stay in a row */
+    }
+
+    .virtual-tour-unit-modal-header .virtual-tour-btn,
+    .virtual-tour-unit-modal-header .additional-btn {
+        width: auto; /* Don't stretch full width */
+        flex-shrink: 0; /* Prevent shrinking if overflow occurs */
+        font-size: 14px;
+        line-height: 30px;
+        height: 32px;
+    }
+
+    .c-close {
+        top: 0
     }
 }
 

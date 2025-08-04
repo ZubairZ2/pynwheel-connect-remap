@@ -274,7 +274,6 @@ class Unit < ApplicationRecord
     else
       ""
     end
-    # "https://3dplans.com/apps/hosting/buckingham_companies/aertson_midtown/?plan=Studio-S2"
   end
 
   def get_unit_leasing_price
