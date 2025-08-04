@@ -6541,8 +6541,8 @@ ul.add-fav-options {
 .virtual-tour-unit-modal-header .virtual-tour-btn,
 .virtual-tour-unit-modal-header .additional-btn {
   /* max-width: 150px; */
-  height: 39px;
-  border: 1px solid black;
+  height: 38px;
+  border: 2px solid black;
   text-align: center;
   text-decoration: none;
   line-height: 38px;
@@ -7789,18 +7789,20 @@ div.esri-ui-inner-container.esri-ui-manual-container>div.esri-component.esri-att
     }
 
     .header-right {
-        justify-content: center;
+        justify-content: left;
         width: 100%;
-        margin-top: 10px;
-        margin-bottom: 10px;
+        margin-top: 8px;
+        margin-bottom: 8px;
         flex-wrap: nowrap; /* Ensure buttons stay in a row */
-        overflow-x: auto;  /* Allow scrolling if buttons overflow */
     }
 
     .virtual-tour-unit-modal-header .virtual-tour-btn,
     .virtual-tour-unit-modal-header .additional-btn {
         width: auto; /* Don't stretch full width */
         flex-shrink: 0; /* Prevent shrinking if overflow occurs */
+        font-size: 14px;
+        line-height: 30px;
+        height: 32px;
     }
 
     .c-close {
