@@ -9,7 +9,7 @@
               %span#propertyDetailNameText Added to Favorites.
 
           .header-right
-            %a.additional-btn{ href: "", target: "_blank", rel: "noopener noreferrer" } Additional Button
+            %a.additional-btn{ href: "", data: { toggle: "modal", target: "#additionalButtonModal" } } Additional Button
             %a.virtual-tour-btn{ href: "", data: { toggle: "modal", target: "#unitVirtualTourModal" } } 3D Tour
 
           %button.c-close{ type: "button", data: { dismiss: "modal" }, id: "close-modal" }

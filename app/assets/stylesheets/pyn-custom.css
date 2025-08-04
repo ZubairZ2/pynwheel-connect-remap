@@ -7801,7 +7801,6 @@ div.esri-ui-inner-container.esri-ui-manual-container>div.esri-component.esri-att
     .virtual-tour-unit-modal-header .additional-btn {
         width: auto; /* Don't stretch full width */
         flex-shrink: 0; /* Prevent shrinking if overflow occurs */
-        font-size: 9px;
     }
 
     .c-close {

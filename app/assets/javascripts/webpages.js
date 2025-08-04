@@ -2653,6 +2653,7 @@ function amenityAddFrame(src) {
 }
 
 function addAdditionalButtonURL(element) {
+  removeAdditionalButtonFrame();
   let label = $(element).data("additional-button-label");
   let unit_id = $(element).data("unit-id");
   let url =
@@ -2666,7 +2667,10 @@ function addAdditionalButtonURL(element) {
   if (url != null && url != "") {
     $(".additional-btn").css("display", "block");
     $(".additional-btn").html(label);
-    $(".additional-btn").attr("href", url);
+    $("#unitVirtualTourModal")
+      .find("#unitName")
+      .html($(element).data("unit-marketing-name"));
+    addAdditionalButtonFrame(url);
   } else {
     $(".additional-btn").css("display", "none");
   }
@@ -2701,6 +2705,10 @@ function removeFrame() {
   $("#virtual-tour-ifram-container").empty();
 }
 
+function removeAdditionalButtonFrame() {
+  $("#additional-button-ifram-container").empty();
+}
+
 function addFrame(src) {
   var ifrm = document.createElement("iframe");
   ifrm.setAttribute("src", src);
@@ -2713,6 +2721,20 @@ function addFrame(src) {
   ifrm.style.border = 0;
 
   $("#virtual-tour-ifram-container").append(ifrm);
+}
+
+function addAdditionalButtonFrame(src) {
+  var ifrm = document.createElement("iframe");
+  ifrm.setAttribute("src", src);
+  ifrm.style.position = "absolute";
+  ifrm.style.top = 0;
+  ifrm.style.bottom = 0;
+  ifrm.style.left = 0;
+  ifrm.style.width = "100%";
+  ifrm.style.height = "100%";
+  ifrm.style.border = 0;
+
+  $("#additional-button-ifram-container").append(ifrm);
 }
 
 function leaseTermPricingOptions(ss) {

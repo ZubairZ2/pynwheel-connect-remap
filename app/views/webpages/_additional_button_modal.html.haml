@@ -1,0 +1,12 @@
+.modal{:role => "dialog", :id => "additionalButtonModal", :tabindex => "-1", "aria-hidden" => "true"}
+  .modal-dialog.modal-xl.virtual-tour-modal-height{:role => "document"}
+    .modal-content
+      .modal-header
+        %h5.modal-title 
+          %strong#unitlName Unit Name
+
+        %button.close.unit-virtual-tour-modal-close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button", :style=>"margin-top: -30px;font-size: 30px;"}
+          %span{"aria-hidden" => "true"} ×
+      
+      .modal-body
+        .embed-container.virtual-tour-modal-height#additional-button-ifram-container
