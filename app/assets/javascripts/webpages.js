@@ -26,6 +26,7 @@ var communityInactivated;
 var tbdMarkersEnabled;
 var defaultSelectedFloor;
 var debouncedShowMarkers;
+var modalButtonsCounter = 0;
 
 var _3dConvertedArr = definedAndHasValue(_3dConvertedArr)
   ? _3dConvertedArr
@@ -1431,6 +1432,8 @@ function buildUnitMarkerHTML(unit, f) {
       data-unit-virtual-tour-url="${unitDataAttributes["data-unit-virtual-tour-url"]}"
       data-additional-button-label="${unitDataAttributes["data-additional-button-label"]}"
       data-additional-button-url="${unitDataAttributes["data-additional-button-url"]}"
+      data-schedule-tour-label="${unitDataAttributes["data-schedule-tour-label"]}"
+      data-schedule-tour-url="${unitDataAttributes["data-schedule-tour-url"]}"
       data-availability-url="${unitDataAttributes["data-availability-url"]}"
       data-unit-lease-term="${unitDataAttributes["data-unit-lease-term"]}"
       data-unit-lease-pricing="${unitDataAttributes["data-unit-lease-pricing"]}"
@@ -2401,8 +2404,14 @@ function setModalAttributes(element) {
   }
 
   unitAdditionalFees($(element).data("unit-additional-fees"));
+  modalButtonsCounter = 0;
+
   addVirtualTour(element);
   addAdditionalButtonURL(element);
+  addScheduledTourURL(element);
+
+  if(modalButtonsCounter > 2 && smallScreen())
+    adjustButtonFontSize();
 
   $("#unitModal")
     .find("#unit-marketing-name")
@@ -2652,6 +2661,31 @@ function amenityAddFrame(src) {
   $("#amenity-virtual-tour-ifram-container").append(ifrm);
 }
 
+function addScheduledTourURL(element) {
+  removeScheduledTourFrame();
+  let label = $(element).data("schedule-tour-label");
+  let unit_id = $(element).data("unit-id");
+  let url =
+    $(element).data("schedule-tour-url") ||
+    $(element)
+      .parents()
+      .find("#unitModal")
+      .parents()
+      .find("#m_" + unit_id)
+      .data("schedule-tour-url");
+  if (url != null && url != "") {
+    $(".scheduled-tour-btn").css("display", "block");
+    $(".scheduled-tour-btn").html(label);
+    $("#scheduledTourModal")
+      .find("#unitName")
+      .html($(element).data("unit-marketing-name"));
+    addScheduledTourFrame(url);
+    modalButtonsCounter += 1;
+  } else {
+    $(".scheduled-tour-btn").css("display", "none");
+  }
+}
+
 function addAdditionalButtonURL(element) {
   removeAdditionalButtonFrame();
   let label = $(element).data("additional-button-label");
@@ -2671,10 +2705,10 @@ function addAdditionalButtonURL(element) {
       .find("#unitName")
       .html($(element).data("unit-marketing-name"));
     addAdditionalButtonFrame(url);
+    modalButtonsCounter += 1;
   } else {
     $(".additional-btn").css("display", "none");
   }
-
 }
 
 function addVirtualTour(element) {
@@ -2696,10 +2730,16 @@ function addVirtualTour(element) {
       .find("#unitVirtualName")
       .html($(element).data("unit-marketing-name"));
     addFrame(url);
+    modalButtonsCounter += 1;
   } else {
     $(".virtual-tour-btn").css("display", "none");
   }
 }
+
+function adjustButtonFontSize() {
+  $(".scheduled-tour-btn, .additional-btn, .virtual-tour-btn").css("font-size", "10px");
+}
+
 
 function removeFrame() {
   $("#virtual-tour-ifram-container").empty();
@@ -2707,6 +2747,10 @@ function removeFrame() {
 
 function removeAdditionalButtonFrame() {
   $("#additional-button-ifram-container").empty();
+}
+
+function removeScheduledTourFrame() {
+  $("#scheduled-tour-ifram-container").empty();
 }
 
 function addFrame(src) {
@@ -2735,6 +2779,20 @@ function addAdditionalButtonFrame(src) {
   ifrm.style.border = 0;
 
   $("#additional-button-ifram-container").append(ifrm);
+}
+
+function addScheduledTourFrame(src) {
+  var ifrm = document.createElement("iframe");
+  ifrm.setAttribute("src", src);
+  ifrm.style.position = "absolute";
+  ifrm.style.top = 0;
+  ifrm.style.bottom = 0;
+  ifrm.style.left = 0;
+  ifrm.style.width = "100%";
+  ifrm.style.height = "100%";
+  ifrm.style.border = 0;
+
+  $("#scheduled-tour-ifram-container").append(ifrm);
 }
 
 function leaseTermPricingOptions(ss) {

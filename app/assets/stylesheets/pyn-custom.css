@@ -5518,7 +5518,8 @@ body {
 }
 
 .virtual-tour-unit-modal-header .virtual-tour-btn:hover,
-.virtual-tour-unit-modal-header .additional-btn:hover {
+.virtual-tour-unit-modal-header .additional-btn:hover,
+.virtual-tour-unit-modal-header .scheduled-tour-btn:hover {
     background: black;
     color: white;
 }
@@ -6539,7 +6540,8 @@ ul.add-fav-options {
 }
 
 .virtual-tour-unit-modal-header .virtual-tour-btn,
-.virtual-tour-unit-modal-header .additional-btn {
+.virtual-tour-unit-modal-header .additional-btn,
+.virtual-tour-unit-modal-header .scheduled-tour-btn {
   /* max-width: 150px; */
   height: 38px;
   border: 2px solid black;
@@ -7794,10 +7796,12 @@ div.esri-ui-inner-container.esri-ui-manual-container>div.esri-component.esri-att
         margin-top: 8px;
         margin-bottom: 8px;
         flex-wrap: nowrap; /* Ensure buttons stay in a row */
+        overflow-x: auto;
     }
 
     .virtual-tour-unit-modal-header .virtual-tour-btn,
-    .virtual-tour-unit-modal-header .additional-btn {
+    .virtual-tour-unit-modal-header .additional-btn,
+    .virtual-tour-unit-modal-header .scheduled-tour-btn {
         width: auto; /* Don't stretch full width */
         flex-shrink: 0; /* Prevent shrinking if overflow occurs */
         font-size: 14px;

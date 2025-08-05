@@ -256,6 +256,46 @@ class Unit < ApplicationRecord
     end
   end
 
+  def get_schedule_tour_label
+    if self&.scheduler_label.present?
+      self.scheduler_label
+    elsif self&.floorplan&.scheduler_label.present?
+      self.floorplan.scheduler_label
+    else
+      "Scheduled Tour"
+    end
+  end
+
+  def get_schedule_tour_url
+    if self&.scheduler_url.present?
+      self.scheduler_url
+    elsif self&.floorplan&.scheduler_url.present?
+      self.floorplan.scheduler_url
+    else
+      ""
+    end
+  end
+
+  def get_additional_button_label
+    if self&.additional_button.present?
+      self.additional_button
+    elsif self&.floorplan&.additional_button.present?
+      self.floorplan.additional_button
+    else
+      "Additional Button"
+    end
+  end
+
+  def get_additional_button_url
+    if self&.additional_url.present?
+      self.additional_url
+    elsif self&.floorplan&.additional_url.present?
+      self.floorplan.additional_url
+    else
+      ""
+    end
+  end
+
   def get_virtual_tour_label
     if self&.virtual_tour_button_label.present?
       self.virtual_tour_button_label
