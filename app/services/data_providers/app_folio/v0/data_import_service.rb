@@ -81,21 +81,14 @@ module DataProviders
 
         def update_floorplan_attributes(fp, r)
           begin
-
             update_attribute_if_blank(fp, :name, r["Name"])
             update_attribute_if_blank(fp, :bedrooms, r["Bedrooms"], 'bedroom')
             update_attribute_if_blank(fp, :bathrooms, r["Bathrooms"], 'bathroom')
             update_attribute_if_blank(fp, :square_feet, r['SquareFeet'])
             update_attribute_if_blank(fp, :market_rent, r['MarketRent'])
             fp.property_id = r['PropertyId']
-
-            # fp.unit_count = r['']
-            # fp.units_available = r['']
-            # fp.deposit = r['minimumDeposit']
-            # add_floorplan_images(fp, r['floorplanImageURL'])
-            # add_floorplan_virtual_url(fp, r["fpVideoEmbedCode"])
-
             fp.save
+
           rescue => exception
             raise exception
           end
@@ -130,21 +123,13 @@ module DataProviders
 
         def update_unit_attributes(unit, r, property_code)
           begin
-            # binding.pry
+            update_attribute_if_blank(unit, :marketing_name, r["Name"], 'name')
+            update_attribute_if_blank(unit, :floorplan_id, r["UnitTypeId"])
+            update_attribute_if_blank(unit, :effective_rent, unit_market_rent(r))
+            update_attribute_if_blank(unit, :availability, unit_availability(r))
+            update_attribute_if_blank(unit, :available_date, set_availability_date(r))
+            update_attribute_if_blank(unit, :available, is_available?(r))
 
-            # update_attribute_if_blank(unit, :marketing_name, r["Name"], 'name')
-            # update_attribute_if_blank(unit, :floor, get_floor(r))
-            # update_attribute_if_blank(unit, :floorplan_id, r["UnitTypeId"])
-            # update_attribute_if_blank(unit, :effective_rent, unit_market_rent(r))
-            # update_attribute_if_blank(unit, :availability, unit_availability(r))
-            # update_attribute_if_blank(unit, :available_date, set_availability_date(r))
-            # update_attribute_if_blank(unit, :available, is_available?(r))
-            unit.marketing_name = r["Name"]
-            unit.floorplan_id = r["UnitTypeId"]
-            unit.effective_rent = unit_market_rent(r)
-            unit.availability = unit_availability(r)
-            unit.available_date = set_availability_date(r)
-            unit.available = is_available?(r)
             unit.property_id = property_code
             unit.unit_type = r["UnitType"]
             unit.square_feet = unit_sqft(r)
@@ -153,10 +138,6 @@ module DataProviders
             unit.max_effective_rent = unit_max_rent(r)
             unit.unit_status = r["Status"]
             unit.availability_url = r["ApplicationURL"] if r["ApplicationURL"].present?
-
-            # unit.lease_pricing = calculate_lease_pricing(property_code, r["apartmentName"])
-            # unit.description = unit_description(r["amenities"]) if r["amenities"].present?
-            # binding.pry
 
           rescue => exception
             exception
@@ -233,7 +214,7 @@ module DataProviders
           available_on = r["AvailableOn"]
 
           if available_on.present?
-            (r["Status"] === "Vacant") ? "Unoccupied" : "Occupied"
+            (r["Status"] === "Vacant" && r["PostedToWebsite"]) ? "Unoccupied" : "Occupied"
           else
             "Occupied"
           end
