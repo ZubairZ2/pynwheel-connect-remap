@@ -694,28 +694,30 @@ class RealPageSvcService < BaseService
           rentStr = ""
           unitLeaseTerm = []
 
-          unit_no = u[1][:Rows][:Row][0][:Unit]
-          unit_add = u[1][:Rows][:Row][0][:Building]
-          
-          unit_min_rent = u[1][:Rows][:Row][0][:MinRent]
-          unit_max_rent = u[1][:Rows][:Row][0][:MaxRent]
-          best_price = nil
+          if u[1] && u[1][:Rows] && u[1][:Rows][:Row].is_a?(Array) && u[1][:Rows][:Row][0]
+            unit_no = u[1][:Rows][:Row][0][:Unit]
+            unit_add = u[1][:Rows][:Row][0][:Building]
+            
+            unit_min_rent = u[1][:Rows][:Row][0][:MinRent]
+            unit_max_rent = u[1][:Rows][:Row][0][:MaxRent]
+            best_price = nil
 
-          begin
-            u[1][:Rows][:Row][1][:Options].each_with_index do |opts, index|
-              next if index == 0
+            begin
+              u[1][:Rows][:Row][1][:Options].each_with_index do |opts, index|
+                next if index == 0
 
-              startdate = u[1][:Rows][:Row][1][:Options][0][:LeaseStartDate]
+                startdate = u[1][:Rows][:Row][1][:Options][0][:LeaseStartDate]
 
-              unless unitLeaseTerm.include?(opts[:Option][0][:LeaseTerm].to_s)
-                rentStr = rentStr + (opts[:Option][0][:LeaseTerm].to_s) + ":" + opts[:Option][0][:Rent] + "::" + startdate + ":" + opts[:Option][0][:LeaseEndDate].to_s + "\;"
+                unless unitLeaseTerm.include?(opts[:Option][0][:LeaseTerm].to_s)
+                  rentStr = rentStr + (opts[:Option][0][:LeaseTerm].to_s) + ":" + opts[:Option][0][:Rent] + "::" + startdate + ":" + opts[:Option][0][:LeaseEndDate].to_s + "\;"
+                end
+                
               end
-              
-            end
 
-          rescue => ex
-            raise ex
-            unitHash = nil
+            rescue => ex
+              raise ex
+              unitHash = nil
+            end
           end
 
           if unit_min_rent.present?
