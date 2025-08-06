@@ -6521,14 +6521,6 @@ ul.add-fav-options {
   flex: 1 1 auto;
 }
 
-.propertyDetailName {
-  display: block;
-  font-style: normal;
-  font-size: 14px;
-  color: #333;
-  margin-top: 4px;
-}
-
 .header-right {
   display: flex;
   flex: 0 0 auto;
