@@ -68,7 +68,7 @@
     Virtual Tour URL
     %i.tooltip1.fa.fa-question-circle{ "data-toggle" => "floorplanEditTourUrlPopover","data-content" => " "}
       %span#tooltiptext1
-        Add a URL to add a virtual tour specific to this floor plan which will appear on the interactive map and in the floor plan gallery.
+        = VIRTUAL_TOUR_BUBBLE_TEXT
 
     %span Specify URL here
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -87,7 +87,7 @@
     Additional Button URL
     %i.tooltip1.fa.fa-question-circle{ "data-toggle" => "floorplanAdditionalButtonUrlPopover","data-content" => " "}
       %span#tooltiptext1
-        Add a URL to add a Additional details specific to this floor plan which will appear on the interactive map and in the floor plan gallery.
+        = ADDITIONAL_BUTTON_BUBBLE_TEXT
 
     %span Specify additional button URL here
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -106,8 +106,8 @@
     Scheduled Tour URL
     %i.tooltip1.fa.fa-question-circle{ "data-toggle" => "floorplanScheduledTourUrlPopover","data-content" => " "}
       %span#tooltiptext1
-        Add a Scheduled Tour URL to this floor plan which will appear on the interactive map and in the floor plan gallery.
-
+        = SCHEDULED_TOUR_BUBBLE_TEXT
+        
     %span Specify scheduled tour URL here
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :scheduler_url, :class=>"form-control", :placeholder=>"Scheduled Tour URL"
