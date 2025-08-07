@@ -123,7 +123,7 @@ module DataProviders
 
         def update_unit_attributes(unit, r, property_code)
           begin
-            update_attribute_if_blank(unit, :marketing_name, r["Name"], 'name')
+            update_attribute_if_blank(unit, :marketing_name, r["Address2"], 'name')
             update_attribute_if_blank(unit, :floorplan_id, r["UnitTypeId"])
             update_attribute_if_blank(unit, :effective_rent, unit_market_rent(r))
             update_attribute_if_blank(unit, :availability, unit_availability(r))
