@@ -98,16 +98,18 @@ module DataProviders
         end
 
         def fetch_additional_fees property_code
-          url = "#{ENV["RENT_CAFE_V2_BASE_URL"]}/UnitPricingData/getunitleasefeesdetails"
+          # url = "#{ENV["RENT_CAFE_V2_BASE_URL"]}/UnitPricingData/getunitleasefeesdetails"
 
-          HTTParty.post(url,
-            body: get_additional_fees_params(property_code),
-            headers: { 
-              'Content-Type' => 'application/json',
-              'Authorization' => "Bearer #{@credentials&.rentcafe_v2_auth_token}",
-              'vendor' => ENV['RENT_CAFE_V2_USERNAME']
-            }
-          )
+          # HTTParty.post(url,
+          #   body: get_additional_fees_params(property_code),
+          #   headers: { 
+          #     'Content-Type' => 'application/json',
+          #     'Authorization' => "Bearer #{@credentials&.rentcafe_v2_auth_token}",
+          #     'vendor' => ENV['RENT_CAFE_V2_USERNAME']
+          #   }
+          # )
+
+          return nil
         end
 
         def fetch_apartment_availability_data property_code
