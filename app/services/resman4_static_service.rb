@@ -253,19 +253,20 @@ class Resman4StaticService < BaseService
     leasing
   end
 
-  def unit_status_update unit, u
+  def unit_status_update(unit, u)
     begin
-      vacancy_class = u["Availability"]["VacancyClass"]
-      unit_occupancy_status =  u["Units"]["Unit"]["UnitOccupancyStatus"]
+      vacancy_class        = u.dig("Availability", "VacancyClass")
+      occupancy_status     = u.dig("Units", "Unit", "UnitOccupancyStatus")
+      leased_status        = u.dig("Units", "Unit", "UnitLeasedStatus")
 
-      if (vacancy_class == "Unoccupied") && (unit_occupancy_status == "vacant")
-        unit.unit_status = "Unoccupied"
-      else
-        unit.unit_status = "Occupied"
-      end
-    rescue => error
+      unit.unit_status =
+        if vacancy_class == "Unoccupied" && occupancy_status == "vacant" && leased_status == "available"
+          "Unoccupied"
+        else
+          "Occupied"
+        end
+    rescue StandardError
       unit.unit_status = "Occupied"
     end
   end
-
 end
