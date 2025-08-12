@@ -20,6 +20,7 @@ class WebpagesController < ActionController::Base
                                           :floorplans,
                                           {
                                             sitemap: [:amenities],
+                                            floorplates: [:amenities, :units],
                                             amenities: [:amenityable, :amenity_galleries],
                                             units: [:floorplan, :floorplate]
                                           }
@@ -29,6 +30,7 @@ class WebpagesController < ActionController::Base
     @floorplans = @community_info.floorplans
     @floorplans_map = @floorplans.index_by(&:provider_floorplan_id)
     @svg_enabled = @community_info.enable_svg_mode?
+    # @beans_enabled = @community_info.enable_three_d_maps
     community_units = @community_info.units
     @amenities = @community_info.amenities.plotted_amenities(@svg_enabled).includes(:amenityable, :amenity_galleries)
     @have_multi_property_ids = @community_info.have_multi_property_ids? && @community_info.credential&.allow_sub_communities?
