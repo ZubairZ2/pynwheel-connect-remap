@@ -733,11 +733,13 @@ module ApplicationHelper
 
     #--------------------
     begin
-      if svg_url {
+      if svg_url 
+        {
           width: resource&.svg_metadata["width"].to_i,
           height: resource&.svg_metadata["height"].to_i
         }
-      else {
+      else 
+        {
           width: resource&.width.to_i,
           height: resource&.height.to_i
         }
