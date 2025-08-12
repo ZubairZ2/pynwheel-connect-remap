@@ -47,11 +47,24 @@ class Credential < ApplicationRecord
   after_update :change_to_scheduled_tours_for_sf
   after_update :fetch_crm_data
 
+    UNIT_NAME_FIELD_MAP = {
+    'Marketing Title' => 'MarketingTitle',
+    'Name'            => 'Name',
+    'Address2'        => 'Address2',
+    'Address1'        => 'Address1'
+  }.freeze
+
+  validates :unit_name_key, inclusion: { in: UNIT_NAME_FIELD_MAP.values }
+
   def as_json(data_provider = "")
     data = super(
       :only => [:community_id, :id],include: { community: {only: [:use_company_level_data_settings]}}
     )
     data.merge!(data_provider: data_provider,credentials: data_providers_credentials(data_provider),use_different_crm_provider: use_different_crm,crm_provider: crm_provider,crm_credentials: crm_credential_provider)
+  end
+
+  def resolved_unit_name(unit_data)
+    unit_data[unit_name_key]
   end
 
   def crm_credential_provider
