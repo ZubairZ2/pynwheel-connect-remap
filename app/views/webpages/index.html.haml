@@ -182,7 +182,7 @@
                   %a.logo{:href => @community.community_website}
                     %img{:alt => "", :class => "webpage_logo", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel-connect-logo.png'}", :title => ""}
           
-          - if @community_info.has_floorplates?
+          - if @show_floors_panel
             .c-sidebar#sidebar
               %a.c-sidebar-brand{:href => "#"}
                 .sidebar-logo

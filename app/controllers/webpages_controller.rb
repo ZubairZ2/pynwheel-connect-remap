@@ -40,11 +40,22 @@ class WebpagesController < ActionController::Base
       if @community_info.has_floorplates?
         @floorplates = @community_info.floorplates
         @floors = @floorplates.map {|f| f.floors }.flatten.sort_by { |f| -f }
+        @show_floors_panel =  @community_info.show_floors_panel_on_map?(params[:floor].to_i, @floors)
         @amenities = @amenities.where(amenityable: @floorplates).includes(:amenity_galleries)
 
         @floorplate_by_floor = {}
         @floorplates.each do |fp|
           fp.floors.each { |floor| @floorplate_by_floor[floor] = fp }
+        end
+
+        # For Floor Level Map
+        if params[:floor].present? && @floors.include?(params[:floor].to_i)
+          selected_floor = params[:floor].to_i
+          selected_fp    = @floorplate_by_floor[selected_floor]
+
+          @floorplates = [selected_fp]
+          @floors      = [selected_floor]
+          @floorplate_by_floor = { selected_floor => selected_fp }
         end
 
         @dimensions_by_floorplate = {}
@@ -76,8 +87,6 @@ class WebpagesController < ActionController::Base
       @amenities_data = []
       normalize_amenities
       @amenities_data = @amenities_data.to_json
-
-      
     end
     
     response.headers.delete "X-Frame-Options"

@@ -138,6 +138,14 @@ class Community < ApplicationRecord
     property_codes&.many? && sub_communities&.many?
   end
 
+  def show_floors_panel_on_map?(floor, existing_floors)
+    return false unless has_floorplates?
+    return false if floor.present? && existing_floors.map(&:to_i).include?(floor.to_i)
+    true
+  end
+
+
+
   def fetch_multi_properties
     return [] unless have_multi_property_ids?
   
