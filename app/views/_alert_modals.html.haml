@@ -76,33 +76,75 @@
       .modal-content
         .modal-header
           Copy and paste the Pynwheel Map iframe embed code or page url below and share it with your web developer to add the interactive map to your website.
+        
         .modal-body
-          %strong Pynwheel map page url:
-          .input-group.mb-2
-            %input.form-control#web-url{:value => current_community.map_link()}
-            %span.input-group-btn
-              %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#web-url"} Copy
-
+          %strong Pynwheel Map URL:
           %br
-
-          %strong Pynwheel map iframe embed code:
-          .input-group.mb-2
-            %input.form-control#embed-url{:value => current_community.map_embed_code()}
-            %span.input-group-btn
-              %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#embed-url"} Copy
+          .btn-toolbar.mb-3{:style => "margin-top: 10px; margin-bottom: 20px;"}
+            .btn-group{:style => "margin-right:10px;"}
+              %button.btn.btn-default.clipboard-btn{"data-url" => current_community.map_link()}
+                %i.fa.fa-copy.text-primary{:style => "margin-right:5px;"}
+                Copy Map URL
+            .btn-group{:style => "margin-right:10px;"}
+              %button.btn.btn-default.clipboard-btn{"data-url" => current_community.map_embed_code()}
+                %i.fa.fa-code.text-info{:style => "margin-right:5px;"}
+                Copy Embed Code
+            .btn-group
+              %a.btn.btn-default{"href" => current_community.map_link(), "target" => "_blank"}
+                %i.fa.fa-external-link.text-success{:style => "margin-right:5px;"}
+                Open Map
 
           - if current_community.is_floor_level_map
-            %br
             %div{:style => "border-top: 1px solid #ccc; margin-top: 10px; margin-bottom: 10px;"}
               %br
               %strong Floor Level Map URLs:
             - current_community.property_floor_numbers.each do |floor|
-              .input-group{:style => "margin-bottom: 5px;"}
-                %span.input-group-addon 
-                  %strong Level #{floor}
-                %input.form-control{:id => "map_floor_#{floor}", :value => current_community.map_link(nil, floor)}
-                %span.input-group-btn
-                  %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#map_floor_#{floor}"} Copy
+              .mb-3{:style => "margin-bottom:10px;"}
+                %span{:style => "display:inline-block; width: 90px; font-weight:bold; margin-right:15px;"}
+                  Level #{floor}:
+                .btn-group{:style => "margin-right:10px;"}
+                  %button.btn.btn-default.clipboard-btn{"data-url" => current_community.map_link(nil, floor)}
+                    %i.fa.fa-copy.text-primary{:style => "margin-right:5px;"}
+                    Copy Map URL
+                .btn-group{:style => "margin-right:10px;"}
+                  %button.btn.btn-default.clipboard-btn{"data-url" => current_community.map_embed_code(nil, floor)}
+                    %i.fa.fa-code.text-info{:style => "margin-right:5px;"}
+                    Copy Embed Code
+                .btn-group
+                  %a.btn.btn-default{"href" => current_community.map_link(nil, floor), "target" => "_blank"}
+                    %i.fa.fa-external-link.text-success{:style => "margin-right:5px;"}
+                    Open Map
+
+
+
+
+        -# .modal-body
+        -#   %strong Pynwheel map page url:
+        -#   .input-group.mb-2
+        -#     %input.form-control#web-url{:value => current_community.map_link()}
+        -#     %span.input-group-btn
+        -#       %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#web-url"} Copy
+
+        -#   %br
+
+        -#   %strong Pynwheel map iframe embed code:
+        -#   .input-group.mb-2
+        -#     %input.form-control#embed-url{:value => current_community.map_embed_code()}
+        -#     %span.input-group-btn
+        -#       %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#embed-url"} Copy
+
+        -#   - if current_community.is_floor_level_map
+        -#     %br
+        -#     %div{:style => "border-top: 1px solid #ccc; margin-top: 10px; margin-bottom: 10px;"}
+        -#       %br
+        -#       %strong Floor Level Map URLs:
+        -#     - current_community.property_floor_numbers.each do |floor|
+        -#       .input-group{:style => "margin-bottom: 5px;"}
+        -#         %span.input-group-addon 
+        -#           %strong Level #{floor}
+        -#         %input.form-control{:id => "map_floor_#{floor}", :value => current_community.map_link(nil, floor)}
+        -#         %span.input-group-btn
+        -#           %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#map_floor_#{floor}"} Copy
           
         .modal-footer
           %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Close
@@ -246,6 +288,24 @@
 
 -# document.getElementById("community_name").scrollIntoView( {behavior: "smooth" })
 :javascript
+
+  document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll('.clipboard-btn').forEach(function(button) {
+      button.addEventListener('click', function() {
+        const url = button.getAttribute('data-url');
+        const icon = button.querySelector('i');
+        const originalClass = icon.className;
+
+        navigator.clipboard.writeText(url).then(function() {
+          icon.className = "fa fa-check text-success";
+          setTimeout(() => { icon.className = originalClass; }, 1200);
+        }).catch(err => console.error('Copy failed', err));
+      });
+    });
+  });
+
+
+
   $(".welcome_prompt_btn2").click(function(){
     $('[data-toggle="propertyDetailNamePopover1"]').popover({
         html: true,
@@ -255,6 +315,7 @@
     #{current_user.welcome_prompt = true}
     #{current_user.save unless (params["controller"] == "home" && params["action"] == "index") || (params["controller"] == "users" && params["action"] == "profile")}
   });
+
   $(".welcome_prompt_btn1").on("click",function(e){
     if(#{current_community.present? && current_community.touchscreen_app})
     {$('#welcome-prompt-modal3').modal('show');}
@@ -262,6 +323,8 @@
     {$('#welcome-prompt-modal2').modal('show');}
     
   });
+
   $(".welcome_prompt_btn3").on("click",function(e){
       $('#welcome-prompt-modal2').modal('show');
   });
+

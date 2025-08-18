@@ -144,8 +144,6 @@ class Community < ApplicationRecord
     true
   end
 
-
-
   def fetch_multi_properties
     return [] unless have_multi_property_ids?
   
