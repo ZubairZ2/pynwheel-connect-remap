@@ -77,9 +77,8 @@
         .modal-header
           Copy and paste the Pynwheel Map iframe embed code or page url below and share it with your web developer to add the interactive map to your website.
         .modal-body
-          
           %strong Pynwheel map page url:
-          .input-group
+          .input-group.mb-2
             %input.form-control#web-url{:value => current_community.map_link()}
             %span.input-group-btn
               %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#web-url"} Copy
@@ -87,10 +86,23 @@
           %br
 
           %strong Pynwheel map iframe embed code:
-          .input-group
-            %input.form-control#embed-url{:value => current_community.map_embed_code()}/
+          .input-group.mb-2
+            %input.form-control#embed-url{:value => current_community.map_embed_code()}
             %span.input-group-btn
               %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#embed-url"} Copy
+
+          - if current_community.is_floor_level_map
+            %br
+            %div{:style => "border-top: 1px solid #ccc; margin-top: 10px; margin-bottom: 10px;"}
+              %br
+              %strong Floor Level Map URLs:
+            - current_community.property_floor_numbers.each do |floor|
+              .input-group{:style => "margin-bottom: 5px;"}
+                %span.input-group-addon 
+                  %strong Level #{floor}
+                %input.form-control{:id => "map_floor_#{floor}", :value => current_community.map_link(nil, floor)}
+                %span.input-group-btn
+                  %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#map_floor_#{floor}"} Copy
           
         .modal-footer
           %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Close

@@ -1021,6 +1021,11 @@ class Community < ApplicationRecord
   def has_floorplates?
     !is_sitemap
   end
+
+  def property_floor_numbers
+    floorplates.flat_map(&:floors).map(&:to_i).sort
+  end
+
   #Below method is temporary. Don't forget to remove it.
   def temporary_theme_name
     if theme_name == "gables_custom"

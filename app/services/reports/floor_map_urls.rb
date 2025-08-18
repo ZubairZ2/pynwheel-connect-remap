@@ -8,7 +8,7 @@ module Reports
 
     def get_report
       communities = fetch_communities
-      all_floors  = communities.flat_map { |c| floor_numbers(c) }.uniq.sort
+      all_floors  = communities.flat_map { |c| c.property_floor_numbers() }.uniq.sort
 
       CSV.generate(headers: true) do |csv|
         csv << build_headers(all_floors)
@@ -20,10 +20,6 @@ module Reports
 
     def fetch_communities
       Community.where(is_sitemap: false, is_floor_level_map: true).includes(:floorplates)
-    end
-
-    def floor_numbers(community)
-      community.floorplates.flat_map(&:floors).map(&:to_i).sort
     end
 
     def build_headers(all_floors)
