@@ -35,14 +35,9 @@ class WebpagesReportService < BaseService
       community.property_manager_name&.strip, 
       community.property_manager_email&.strip, 
       community.property_manager_phone&.strip, 
-      community.website&.strip, 
-      community_webpages_url(community), 
+      community.website&.strip,
+      community.map_link(),
       !community.locked
     ]
   end
-
-  def community_webpages_url community
-    "https://pynwheelconnect.com/communities/#{community.id}/webpages"
-  end
-
 end

@@ -2221,11 +2221,11 @@ class Community < ApplicationRecord
     self.touchscreen_app
   end
   
-  def map_embed_code partner = nil
+  def map_embed_code partner = nil, floor = nil, tbd = nil
     <<-HTML.strip.gsub(/\n\s*/, "")
       <embed onload='window.parent.$("body").animate({scrollTop:0}, "slow");' 
         style='margin-top: 0px; overflow:scroll;' 
-        src='#{map_link(partner)}' 
+        src='#{map_link(partner, floor, tbd)}' 
         width='100%' 
         height='750px' />
       <script type='text/javascript'>
@@ -2236,8 +2236,18 @@ class Community < ApplicationRecord
     HTML
   end
 
-  def map_link partner = nil
-    "#{ENV['HOST_URL']}/communities/#{self.id}/webpages#{partner.present? ? "?partner=#{partner}" : ""}"
+  def map_link(partner = nil, floor = nil, tbd = nil)
+    base_url = "#{ENV['HOST_URL']}/communities/#{id}/webpages"
+    query = map_query_params(partner: partner, floor: floor, tbd: tbd)
+    query.present? ? "#{base_url}?#{query}" : base_url
+  end
+
+  def map_query_params(partner: nil, floor: nil, tbd: nil)
+    params = {}
+    params[:partner] = partner if partner.present?
+    params[:floor]   = floor if floor.present?
+    params[:tbd]     = tbd if tbd.present?
+    params.to_query
   end
 
   def clear_svg_plotted_units_and_amenities(floorplate = nil)
