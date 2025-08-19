@@ -673,81 +673,62 @@ module ApplicationHelper
   end
 
   def image_original_dimensions(resource = nil, svg_url = false)
-    # if resource.present? && (svg_url ? resource.svg_image.present? : resource.image.present?)
-    #   result = begin
-    #              if svg_url
-    #                {
-    #                  width: resource.svg_metadata["width"].to_i,
-    #                  height: resource.svg_metadata["height"].to_i
-    #                }
-    #              else
-    #                {
-    #                  width: resource.image.width.to_i,
-    #                  height: resource.image.height.to_i
-    #                }
-    #              end
-    #            rescue StandardError
-    #             nil
-    #            end
+    return { width: 0, height: 0 } unless resource.present?
 
-    #   if result&.values&.sum.to_i.zero?
-    #     result = begin
-    #                if (svg_url)
-    #                  if (svg_data = fetch_svg_by_url(url = get_environment_based_svg_url(resource)))
-    #                    doc = Nokogiri::XML(svg_data)
-
-    #                    svg_tag = doc.at('svg')
-    #                    return unless svg_tag
-
-    #                    width = svg_tag['width']&.gsub(/[^0-9.]/, '').to_i
-    #                    height = svg_tag['height']&.gsub(/[^0-9.]/, '').to_i
-
-    #                    if (width + height).zero?
-    #                      if (viewbox = svg_tag['viewBox'])
-    #                        parts = viewbox.split.map(&:to_i)
-    #                        width = parts[2]
-    #                        height = parts[3]
-    #                      end
-    #                    end
-
-    #                    { width: width.to_i, height: height.to_i }
-    #                  end
-    #                else
-    #                  url = resource.validated_image_url
-
-    #                  image = MiniMagick::Image.read(URI.open(url).read)
-    #                  {
-    #                    width: image.width.to_i,
-    #                    height: image.height.to_i
-    #                  }
-    #                end
-    #              rescue
-    #                nil
-    #              end
-    #   end
-    # end
-
-    # result || { width: 0, height: 0 }
-
-
-
-    #--------------------
     begin
-      if svg_url 
-        {
-          width: resource&.svg_metadata["width"].to_i,
-          height: resource&.svg_metadata["height"].to_i
-        }
-      else 
-        {
-          width: resource&.width.to_i,
-          height: resource&.height.to_i
-        }
+      # 1. First check DB attributes
+      if svg_url
+        width  = resource.svg_metadata["width"].to_i rescue 0
+        height = resource.svg_metadata["height"].to_i rescue 0
+      else
+        width  = resource.width.to_i
+        height = resource.height.to_i
       end
-    rescue StandardError
+
+      # 2. If DB values are valid (non-zero), return them
+      return { width: width, height: height } if width.positive? && height.positive?
+
+      # 3. Otherwise, fallback to heavy methods
+      result =
+        if svg_url
+          if (svg_data = fetch_svg_by_url(url = get_environment_based_svg_url(resource)))
+            doc = Nokogiri::XML(svg_data)
+            svg_tag = doc.at("svg")
+            return { width: 0, height: 0 } unless svg_tag
+
+            width  = svg_tag["width"]&.gsub(/[^0-9.]/, "").to_i
+            height = svg_tag["height"]&.gsub(/[^0-9.]/, "").to_i
+
+            if (width + height).zero? && (viewbox = svg_tag["viewBox"])
+              parts  = viewbox.split.map(&:to_i)
+              width  = parts[2]
+              height = parts[3]
+            end
+
+            { width: width.to_i, height: height.to_i }
+          end
+        else
+          url = resource.validated_image_url
+          image = MiniMagick::Image.read(URI.open(url).read)
+          { width: image.width.to_i, height: image.height.to_i }
+        end
+
+      # 4. Save results back to DB for next time
+      if result.present?
+        if svg_url
+          resource.svg_metadata["width"]  = result[:width]
+          resource.svg_metadata["height"] = result[:height]
+          resource.save(validate: false)
+        else
+          resource.update_columns(width: result[:width], height: result[:height])
+        end
+      end
+
+      result || { width: 0, height: 0 }
+    rescue => e
+      Rails.logger.error("Error fetching image dimensions: #{e.message}")
       { width: 0, height: 0 }
     end
-    #--------------------
   end
 
   def svg_image_url_and_dimensions(resource)
