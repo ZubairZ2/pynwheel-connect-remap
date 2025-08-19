@@ -40,7 +40,7 @@ class WebpagesController < ActionController::Base
       if @community_info.has_floorplates?
         @floorplates = @community_info.floorplates
         @floors = @floorplates.map {|f| f.floors }.flatten.sort_by { |f| -f }
-        @show_floors_panel =  @community_info.show_floors_panel_on_map?(params[:floor].to_i, @floors)
+        @show_floors_panel =  @community_info.show_floors_panel_on_map?(params[:floor]&.to_i, @floors)
         @amenities = @amenities.where(amenityable: @floorplates).includes(:amenity_galleries)
 
         @floorplate_by_floor = {}
