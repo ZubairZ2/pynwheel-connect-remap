@@ -94,7 +94,7 @@
                 %i.fa.fa-external-link.text-success{:style => "margin-right:5px;"}
                 Open Map
 
-          - if current_community.is_floor_level_map
+          - if current_community.has_floorplates?
             %div{:style => "border-top: 1px solid #ccc; margin-top: 10px; margin-bottom: 10px;"}
               %br
               %strong Floor Level Map URLs:
