@@ -29,6 +29,15 @@ class ReportsController < ApplicationController
     send_data(UnplottedUnitsReportService.new().get_report() , :type => 'application/xlsx', :filename => "pynwheel-unplotted-units-report.csv")
   end
 
+  def export_floor_map_urls
+    send_data(
+      Reports::FloorMapUrls.new().get_report,
+      type: 'application/xlsx',
+      filename: "Properties-Floor-Level-Map-Urls-List.csv"
+    )
+  end
+
+
   def account_report
     @community = Community.find(params[:community_id])
     workbook = WriteXLSX.new("public/AccountReport/AccountReport.xlsx")

@@ -271,6 +271,7 @@ Rails.application.routes.draw do
         get :tour_feedback_report
         get :partner_analytics_report
         get :maps_no_session_report
+        get :export_floor_map_urls
       end
     end
     
