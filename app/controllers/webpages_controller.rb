@@ -5,6 +5,7 @@ class WebpagesController < ActionController::Base
   before_action :set_webpages_session_id_cookies, only: [:index]
   after_action :maintain_session, except: [:update_session]
   before_action :set_timezone, except: [:update_session]
+  before_action :set_map_type, only: [:index]
   before_action :set_map_configuration, only: [:index]
   protect_from_forgery :except => [:update_session]
 
@@ -65,7 +66,7 @@ class WebpagesController < ActionController::Base
       end
 
       @total_available_units = community_units.available_units(@svg_enabled, @community.units_availability_over_120_days)
-      @available_units_and_sold_units = if @community_info.display_tbd_legend?
+      @available_units_and_sold_units = if @show_ops_map
                                           community_units.are_plotted_units(@svg_enabled).status_scoped(@community.units_availability_over_120_days)
                                         else
                                           @total_available_units
@@ -117,7 +118,7 @@ class WebpagesController < ActionController::Base
     @available_units_and_sold_units.find_each do |unit|
       floorplan = @floorplans_map[unit.floorplan_id]
       if unit.effective_rent.present? && unit.effective_rent >= 1  && floorplan.present?
-        @units_with_floorplan_info << fetch_unit_info_struct_for_webpage(unit, floorplan)
+        @units_with_floorplan_info << fetch_unit_info_struct_for_webpage(unit, floorplan, @show_ops_map)
       end
     end
   end
@@ -289,7 +290,11 @@ class WebpagesController < ActionController::Base
   private
 
     def set_map_configuration
-      @map_config = map_configuration(@community)
+      @map_config = map_configuration(@community, @show_ops_map)
+    end
+
+    def  set_map_type
+      @show_ops_map = params[:tbd] == "true"
     end
 
     def set_webpages_session_id_cookies
