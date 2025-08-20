@@ -252,7 +252,7 @@ module CommunitiesHelper
     end
   end
 
-  def fetch_unit_info_struct_for_webpage(unit, floorplan)
+  def fetch_unit_info_struct_for_webpage(unit, floorplan, show_ops_map = false)
     struct = {
       id: unit.id,
       marketing_name: unit.marketing_name,
@@ -316,7 +316,7 @@ module CommunitiesHelper
       unit_status: unit&.unit_status,
       model_unit: unit&.modal_unit
     }
-    struct[:data_attributes] = fetch_unit_data_attributes(unit, struct)
+    struct[:data_attributes] = fetch_unit_data_attributes(unit, struct, show_ops_map)
 
     struct
   end
@@ -397,11 +397,11 @@ module CommunitiesHelper
     end
   end
 
-  def default_unit_marker_color(community)
+  def default_unit_marker_color(community, show_ops_map = false)
     theme_name = community&.theme_name
     design = community&.design
 
-    if community&.display_tbd_legend? || theme_name&.include?('gables')
+    if show_ops_map || theme_name&.include?('gables')
       design&.property_map_color || DEFAULT_MARKER_CODE
     else
       case theme_name
@@ -529,10 +529,10 @@ module CommunitiesHelper
     end.compact
   end
 
-  def map_configuration(community)
+  def map_configuration(community, show_ops_map = false)
     {
       unit_marker_font_size: default_unit_marker_font_size(community),
-      unit_marker_color: default_unit_marker_color(community),
+      unit_marker_color: default_unit_marker_color(community, show_ops_map),
       amenity_marker_font_size: default_amenity_marker_font_size(community) - 5,
       amenity_marker_color: default_amenity_marker_color(community),
       margins: default_margins(community),
@@ -574,7 +574,7 @@ module CommunitiesHelper
     unit&.validated_image_url || floorplan&.validated_image_url || "/assets/default.jpeg"
   end
 
-  def fetch_unit_data_attributes(unit, struct)
+  def fetch_unit_data_attributes(unit, struct, show_ops_map = false)
     { 
       "target": "#unitModal",
       "toggle": "modal",
@@ -605,7 +605,7 @@ module CommunitiesHelper
       "property-id": struct[:property_id],
       "unit-status": struct[:unit_status],
       "model-unit": struct[:model_unit],
-      "config": map_configuration(@community),
+      "config": map_configuration(@community, show_ops_map),
     }.transform_keys { |key| "data-#{key}".to_sym }.merge(
       DATA_ATTRIBUTES_SAME_KEYS.each_with_object({}) do |key, result|
         result["data-#{key}".to_sym] = struct[key.underscore.to_sym]
@@ -646,32 +646,6 @@ module CommunitiesHelper
       "href": "/communities/#{@community.id}/#{current_data_scope.pluralize}/#{instance_variable_get("@#{current_data_scope}").id}/amenities/#{amenity.id}/remove_amenity",
       "plotted-category": "amenity"
     }.transform_keys { |key| "data-#{key}".to_sym }.merge(title: title)
-
-  end
-
-  def get_unit_marker_color(community, unit, marker_colors, default_marker_color)
-    result = get_multi_property_unit_marker_color(community, unit, default_marker_color)
-
-    if community&.display_tbd_legend?
-      case unit.unit_status&.downcase
-      when "occupied", "occupied no notice", "notice rented"
-        result = marker_colors[:occupied] || "#f2f2f2";
-      when "occupied on notice", "notice unrented"
-        result = marker_colors[:occupied_on_notice] || "#8545a1";
-      when "vacant", "available", "unoccupied", "vacant unrented not ready", "vacant unrented ready"
-        result = marker_colors[:vacant] || "#d37474";
-      when "vacant lease", "vacant rented ready", "vacant rented not ready"
-        result = marker_colors[:vacant_leased] || "#f9d648";
-      else
-        result = default_marker_color;
-      end
-
-      if unit.modal_unit
-        result = marker_colors[:model] || "#f57396";
-      end
-    end
-
-    return result;
   end
 
   def get_multi_property_unit_marker_color(community, unit, default_marker_color)

@@ -38,7 +38,11 @@
             %li.hidden{:role => "presentation"}
               %a#gables-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-gables", :role => "tab"} Gables Settings                
             %li{:role => "presentation"}
-              %a#community-map-marker-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#community-map-marker", :role => "tab"} Community Map Marker
+              %a#marketing-map-marker-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#marketing-map-marker", :role => "tab"} Marketing Map Markers
+            
+            %li{:role => "presentation"}
+              %a#ops-map-marker-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#ops-map-marker", :role => "tab"} Ops Map Markers
+            
             %li{:role => "presentation"}
               %a#ebrochure-settings{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#ebrochure-settings-tab", :role => "tab"} Ebrochure Settings
             %li.hidden.dropdown{:role => "presentation"}
@@ -78,8 +82,10 @@
               = render 'custom_style'
             #u-button.tab-pane.fade{:role => "tabpanel"}
               = render 'button'
-            #community-map-marker.tab-pane.fade{:role => "tabpanel"}
-              = render 'community_map_marker'
+            #marketing-map-marker.tab-pane.fade{:role => "tabpanel"}
+              = render 'marketing_map_marker_colors'
+            #ops-map-marker.tab-pane.fade{:role => "tabpanel"}
+              = render 'ops_map_marker_colors'
             #ebrochure-settings-tab.tab-pane.fade{:role => "tabpanel"}
               = render 'ebrochure_settings'
 :javascript 

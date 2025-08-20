@@ -401,6 +401,7 @@ $(document).ready(function (e) {
   $("#configurations-modal").on("show.bs.modal", function (e) {
     $(this).find("#modal-title").html($(e.relatedTarget).attr("title"));
   });
+  
   $(".submit-click").click(function () {
     $(".map-configurations-alert").removeClass("hidden");
     setTimeout(() => {

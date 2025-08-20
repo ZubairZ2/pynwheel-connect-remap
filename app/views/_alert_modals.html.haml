@@ -78,7 +78,7 @@
           Copy and paste the Pynwheel Map iframe embed code or page url below and share it with your web developer to add the interactive map to your website.
         
         .modal-body
-          %strong Pynwheel Map URL:
+          %strong Marketing Map:
           %br
           .btn-toolbar.mb-3{:style => "margin-top: 10px; margin-bottom: 20px;"}
             .btn-group{:style => "margin-right:10px;"}
@@ -93,11 +93,28 @@
               %a.btn.btn-default{"href" => current_community.map_link(), "target" => "_blank"}
                 %i.fa.fa-external-link.text-success{:style => "margin-right:5px;"}
                 Open Map
+          
+          %div{:style => "border-top: 1px solid #ccc; margin-top: 10px; margin-bottom: 10px;"}
+            %br
+            %strong Ops Map:
+            .btn-toolbar.mb-3{:style => "margin-top: 10px; margin-bottom: 20px;"}
+              .btn-group{:style => "margin-right:10px;"}
+                %button.btn.btn-default.clipboard-btn{"data-url" => current_community.map_link(nil, nil, true)}
+                  %i.fa.fa-copy.text-primary{:style => "margin-right:5px;"}
+                  Copy Map URL
+              .btn-group{:style => "margin-right:10px;"}
+                %button.btn.btn-default.clipboard-btn{"data-url" => current_community.map_embed_code(nil, nil, true)}
+                  %i.fa.fa-code.text-info{:style => "margin-right:5px;"}
+                  Copy Embed Code
+              .btn-group
+                %a.btn.btn-default{"href" => current_community.map_link(nil, nil, true), "target" => "_blank"}
+                  %i.fa.fa-external-link.text-success{:style => "margin-right:5px;"}
+                  Open Map
 
           - if current_community.has_floorplates?
             %div{:style => "border-top: 1px solid #ccc; margin-top: 10px; margin-bottom: 10px;"}
               %br
-              %strong Floor Level Map URLs:
+              %strong Floor Level Map:
             - current_community.property_floor_numbers.each do |floor|
               .mb-3{:style => "margin-bottom:10px;"}
                 %span{:style => "display:inline-block; width: 90px; font-weight:bold; margin-right:15px;"}
