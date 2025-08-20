@@ -646,33 +646,7 @@ module CommunitiesHelper
       "href": "/communities/#{@community.id}/#{current_data_scope.pluralize}/#{instance_variable_get("@#{current_data_scope}").id}/amenities/#{amenity.id}/remove_amenity",
       "plotted-category": "amenity"
     }.transform_keys { |key| "data-#{key}".to_sym }.merge(title: title)
-
   end
-
-  # def get_unit_marker_color(community, unit, marker_colors, default_marker_color)
-  #   result = get_multi_property_unit_marker_color(community, unit, default_marker_color)
-
-  #   if community&.display_tbd_legend?
-  #     case unit.unit_status&.downcase
-  #     when "occupied", "occupied no notice", "notice rented"
-  #       result = marker_colors[:occupied] || "#f2f2f2";
-  #     when "occupied on notice", "notice unrented"
-  #       result = marker_colors[:occupied_on_notice] || "#8545a1";
-  #     when "vacant", "available", "unoccupied", "vacant unrented not ready", "vacant unrented ready"
-  #       result = marker_colors[:vacant] || "#d37474";
-  #     when "vacant lease", "vacant rented ready", "vacant rented not ready"
-  #       result = marker_colors[:vacant_leased] || "#f9d648";
-  #     else
-  #       result = default_marker_color;
-  #     end
-
-  #     if unit.modal_unit
-  #       result = marker_colors[:model] || "#f57396";
-  #     end
-  #   end
-
-  #   return result;
-  # end
 
   def get_multi_property_unit_marker_color(community, unit, default_marker_color)
     return default_marker_color || "#d37474" unless @have_multi_property_ids

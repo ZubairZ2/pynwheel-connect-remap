@@ -38,7 +38,7 @@
             %li.hidden{:role => "presentation"}
               %a#gables-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-gables", :role => "tab"} Gables Settings                
             %li{:role => "presentation"}
-              %a#marketing-map-marker-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#marketing-map-marker", :role => "tab"} Marketing Map Marker
+              %a#marketing-map-marker-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#marketing-map-marker", :role => "tab"} Marketing Map Markers
             
             %li{:role => "presentation"}
               %a#ops-map-marker-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#ops-map-marker", :role => "tab"} Ops Map Markers
@@ -84,6 +84,8 @@
               = render 'button'
             #marketing-map-marker.tab-pane.fade{:role => "tabpanel"}
               = render 'marketing_map_marker_colors'
+            #ops-map-marker.tab-pane.fade{:role => "tabpanel"}
+              = render 'ops_map_marker_colors'
             #ebrochure-settings-tab.tab-pane.fade{:role => "tabpanel"}
               = render 'ebrochure_settings'
 :javascript 

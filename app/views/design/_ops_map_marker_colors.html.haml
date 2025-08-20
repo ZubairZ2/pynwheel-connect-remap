@@ -1,0 +1,81 @@
+- content_for :title, "Map Marker - Pynwheel"
+
+= form_for @community,:method=>"PUT",:html=>{:id=>"ops-map-marker-form"},:remote=>true  do |f|
+  = f.fields_for :design do |d|
+    .form-group.mt-30
+      %label.col-sm-12.col-lg-5.col-md-5.col-xs-12.control-label.font-size-15
+        Missing Units Marker Color
+        %i.pyn-toolTip.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
+          %span#markerColorsToolTipText
+            Missing Units Map Marker Color
+      .col-sm-12.col-lg-7.col-md-7.col-xs-12
+        .input-group.colorpicker-style.hex-format-colorpicker
+          .input-group-addon
+            %i.addon-i
+            = d.text_field :property_map_missing_color, class: "form-control property-map-marker-field", autocomplete: true, value: d.object&.property_map_missing_color.present? ? d.object&.property_map_missing_color : "#eecea5" 
+    
+    .form-group.mt-30
+      %label.col-sm-12.col-lg-5.col-md-5.col-xs-12.control-label.font-size-15
+        Occupied Units Marker Color
+        %i.pyn-toolTip.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
+          %span#markerColorsToolTipText
+            Occupied Units Map Marker Color
+      .col-sm-12.col-lg-7.col-md-7.col-xs-12
+        .input-group.colorpicker-style.hex-format-colorpicker
+          .input-group-addon
+            %i.addon-i
+            = d.text_field :property_map_occupied_color, class: "form-control property-map-marker-field", autocomplete: true, value: d.object&.property_map_occupied_color.present? ? d.object&.property_map_occupied_color : "#f2f2f2" 
+    
+    .form-group.mt-30
+      %label.col-sm-12.col-lg-5.col-md-5.col-xs-12.control-label.font-size-15
+        Occupied On Notic Units Marker Color
+        %i.pyn-toolTip.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
+          %span#markerColorsToolTipText
+            Occupied On Notic Units Map Marker Color
+      .col-sm-12.col-lg-7.col-md-7.col-xs-12
+        .input-group.colorpicker-style.hex-format-colorpicker
+          .input-group-addon
+            %i.addon-i
+            = d.text_field :property_map_occupied_on_notice_color, class: "form-control property-map-marker-field", autocomplete: true, value: d.object&.property_map_occupied_on_notice_color.present? ? d.object&.property_map_occupied_on_notice_color : "#8545a1" 
+    
+    .form-group.mt-30
+      %label.col-sm-12.col-lg-5.col-md-5.col-xs-12.control-label.font-size-15
+        Vacant Units Marker Color
+        %i.pyn-toolTip.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
+          %span#markerColorsToolTipText
+            Vacant Units Map Marker Color
+      .col-sm-12.col-lg-7.col-md-7.col-xs-12
+        .input-group.colorpicker-style.hex-format-colorpicker
+          .input-group-addon
+            %i.addon-i
+            = d.text_field :property_map_color, class: "form-control property-map-marker-field", autocomplete: true, value: d.object&.property_map_color.present? ? d.object&.property_map_color : "#d37474" 
+    
+    .form-group.mt-30
+      %label.col-sm-12.col-lg-5.col-md-5.col-xs-12.control-label.font-size-15
+        Vacant Leased Units Marker Color
+        %i.pyn-toolTip.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
+          %span#markerColorsToolTipText
+            Vacant Leased Units Map Marker Color
+      .col-sm-12.col-lg-7.col-md-7.col-xs-12
+        .input-group.colorpicker-style.hex-format-colorpicker
+          .input-group-addon
+            %i.addon-i
+            = d.text_field :property_map_vacant_leased_color, class: "form-control property-map-marker-field", autocomplete: true, value: d.object&.property_map_vacant_leased_color.present? ? d.object&.property_map_vacant_leased_color : "#f9d648" 
+    
+    .form-group.mt-30
+      %label.col-sm-12.col-lg-5.col-md-5.col-xs-12.control-label.font-size-15
+        Model Units Marker Color
+        %i.pyn-toolTip.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
+          %span#markerColorsToolTipText
+            Model Units Map Marker Color
+      .col-sm-12.col-lg-7.col-md-7.col-xs-12
+        .input-group.colorpicker-style.hex-format-colorpicker
+          .input-group-addon
+            %i.addon-i
+            = d.text_field :property_map_model_color, class: "form-control property-map-marker-field", autocomplete: true, value: d.object&.property_map_model_color.present? ? d.object&.property_map_model_color : "#f57396" 
+    .row
+      .col-lg-10
+        .form-group
+          .col-lg-12.col-md-12
+            %button.btn-primary.done_btn{:onclick => "community_map_marker_goBack()",:style => "margin-top: 35px;"}
+              DONE

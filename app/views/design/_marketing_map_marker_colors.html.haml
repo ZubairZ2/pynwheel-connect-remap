@@ -7,10 +7,6 @@
 
   = hidden_field_tag "map_marker_tab", true
   = f.fields_for :design do |d|
-    .row
-      .col-lg-12
-        %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
-          Marketing Map Marker Options
           
     .row.hidden.property_map_color_field
       .col-lg-10
@@ -167,8 +163,6 @@
                 %i
                 = d.text_field :panther_amenity_map_marker_color , class: "form-control property-map-marker-field",autocomplete: true,:value=>d.object.panther_amenity_map_marker_color.present? ? d.object.panther_amenity_map_marker_color : "#d37474"
 
-
-
     .row.hidden.gables_amenity_map_marker_size
       .col-lg-10
         .form-group.mt-30
@@ -308,8 +302,6 @@
      window.location.reload();
   }
 
-
-
   $('#amenity_map_marker_size_integer_field').keypress(
     function(event){
       if (!(event.which >= '48' && event.which <= '57')) {
@@ -340,7 +332,6 @@
         event.preventDefault();
       }
   });
-
 
   $('#property_map_size_integer_field').on('change', function() {
   if ($('#property_map_size_integer_field').val() > 35)

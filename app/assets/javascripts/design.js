@@ -789,20 +789,25 @@ $(document).ready(function () {
   });
 
     $('.property-map-marker-field').change(function () {
-        $('#property-map-marker-form').submit();
+      $('#property-map-marker-form').submit();
+      $('#ops-map-marker-form').submit();
     });
+
     $('.ebrochure-setting-field').change(function () {
-        $('#ebrochure-settings-form').submit();
+      $('#ebrochure-settings-form').submit();
     });
+
     $('.ebrochure-setting-field-mordernist').change(function () {
-        $('#ebrochure-settings-form-for-mordernist').submit();
+      $('#ebrochure-settings-form-for-mordernist').submit();
     });
+
     $('.ebrochure-setting-field-for-message').change(function () {
-        $('#ebrochure-settings-form-for-message').submit();
+      $('#ebrochure-settings-form-for-message').submit();
     });
-  $('.floorplan-unit-popup-field').change(function () {
-    $('#floorplan-unit-popup-form').submit();
-  });
+
+    $('.floorplan-unit-popup-field').change(function () {
+      $('#floorplan-unit-popup-form').submit();
+    });
 
   $('.gables-field').change(function () {
     $('#gables-form').submit();
