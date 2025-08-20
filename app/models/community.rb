@@ -2224,11 +2224,11 @@ class Community < ApplicationRecord
     self.touchscreen_app
   end
   
-  def map_embed_code partner = nil, floor = nil, tbd = nil
+  def map_embed_code partner = nil, floor = nil, ops_map = nil
     <<-HTML.strip.gsub(/\n\s*/, "")
       <embed onload='window.parent.$("body").animate({scrollTop:0}, "slow");' 
         style='margin-top: 0px; overflow:scroll;' 
-        src='#{map_link(partner, floor, tbd)}' 
+        src='#{map_link(partner, floor, ops_map)}' 
         width='100%' 
         height='750px' />
       <script type='text/javascript'>
@@ -2239,17 +2239,17 @@ class Community < ApplicationRecord
     HTML
   end
 
-  def map_link(partner = nil, floor = nil, tbd = nil)
+  def map_link(partner = nil, floor = nil, ops_map = nil)
     base_url = "#{ENV['HOST_URL']}/communities/#{id}/webpages"
-    query = map_query_params(partner: partner, floor: floor, tbd: tbd)
+    query = map_query_params(partner: partner, floor: floor, ops_map: ops_map)
     query.present? ? "#{base_url}?#{query}" : base_url
   end
 
-  def map_query_params(partner: nil, floor: nil, tbd: nil)
+  def map_query_params(partner: nil, floor: nil, ops_map: nil)
     params = {}
     params[:partner] = partner if partner.present?
     params[:floor]   = floor if floor.present?
-    params[:tbd]     = tbd if tbd.present?
+    params[:ops_map]     = ops_map if ops_map.present?
     params.to_query
   end
 
