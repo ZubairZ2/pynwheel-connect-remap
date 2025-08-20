@@ -536,7 +536,7 @@ module CommunitiesHelper
       amenity_marker_font_size: default_amenity_marker_font_size(community) - 5,
       amenity_marker_color: default_amenity_marker_color(community),
       margins: default_margins(community),
-      tbd_colors: status_based_default_colors(community),
+      ops_map_colors: status_based_default_colors(community),
       legend_items: build_legend_items(community)
     }
   end

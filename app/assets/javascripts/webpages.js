@@ -23,7 +23,7 @@ var amenities = null;
 var showCurrentAvailabilityEnabled;
 var multiCommunity;
 var communityInactivated;
-var tbdMarkersEnabled;
+var opsMapMarkersEnabled;
 var defaultSelectedFloor;
 var debouncedShowMarkers;
 var modalButtonsCounter = 0;
@@ -722,10 +722,10 @@ function updateAvailabilityFilterDropdownList() {
     unitsAvailableUnder90Days,
     unitsAvailableUnder120Days,
   ];
-  if (tbdMarkersEnabled) {
+  if (opsMapMarkersEnabled) {
     unitGroups.push(unavailableUnits);
   }
-  if (units_availability_over_120_days || tbdMarkersEnabled) {
+  if (units_availability_over_120_days || opsMapMarkersEnabled) {
     unitGroups.push(unitsAvailableAbove121Days);
   }
 
@@ -736,7 +736,7 @@ function updateAvailabilityFilterDropdownList() {
 
   if (
     groupsWithUnits.length >= 2 ||
-    (tbdMarkersEnabled &&
+    (opsMapMarkersEnabled &&
       (unavailableUnits.length > 0 || unitsAvailableAbove121Days.length > 0))
   ) {
     $(webFilterId).append(`<option value=""> All </option>`);
@@ -3716,7 +3716,7 @@ function currentVisibleMapImageScale() {
 
 function getUnitMarkerColor(unit) {
   if (!unit) {
-    if (svgMode && !_3dMapMode() && tbdMarkersEnabled) {
+    if (svgMode && !_3dMapMode() && opsMapMarkersEnabled) {
       return mapMarkerColors.missing || "#eecea5";
     }
     return "";
@@ -3727,7 +3727,7 @@ function getUnitMarkerColor(unit) {
   const modelUnit = unit.model_unit || unit.modelUnit || false;
   let result = getCommunityBasedMarkerColor(unitCommunityId);
 
-  if (tbdMarkersEnabled) {
+  if (opsMapMarkersEnabled) {
     const isModelUnit =
       typeof modelUnit === "boolean"
         ? modelUnit

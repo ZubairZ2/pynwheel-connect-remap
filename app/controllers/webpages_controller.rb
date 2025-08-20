@@ -294,7 +294,7 @@ class WebpagesController < ActionController::Base
     end
 
     def  set_map_type
-      @show_ops_map = params[:tbd] == "true"
+      @show_ops_map = params[:ops_map] == "true"
     end
 
     def set_webpages_session_id_cookies

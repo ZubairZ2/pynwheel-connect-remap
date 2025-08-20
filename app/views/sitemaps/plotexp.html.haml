@@ -400,8 +400,6 @@
     - locals[:is_svg] = true
     = render partial: 'sitemaps/svg_or_image_unit_plotting', locals: locals
 
-  = render partial: 'communities/tbd_legend_colors_configuration'
-
 #ocrData{data: {ocr_data: @map_ocr_data.to_json, image_dimensions: @dimensions.to_json}}
 
 :javascript
