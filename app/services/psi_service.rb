@@ -129,7 +129,6 @@ class PsiService < BaseService
           unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
           unit.provider = "psi"
           unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s
-          unit.available_date = vacateDate
           unit_status_update(unit, u)
 
           unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
@@ -196,7 +195,6 @@ class PsiService < BaseService
           unit.community_id = @credentials.community_id
           unit.unit_type = u["Units"]["Unit"]["UnitType"]
           unit_status_update(unit, u)
-          unit.available_date = vacateDate
 
           unless unit.name_is_updated.present? && unit.name_is_updated
             unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
@@ -462,6 +460,7 @@ class PsiService < BaseService
       day = dateSplit[0]
       month = dateSplit[1]
       year = dateSplit[2]
+
       unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
         unit.available_date = Date.parse("#{month}-#{day}-#{year}")
       end
