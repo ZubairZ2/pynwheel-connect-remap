@@ -978,6 +978,7 @@ function selectDataProvider(data_provider) {
 function showAppFolioFields() {
   $(".credential_fields").hide();
   $("#app_folio_property_id").show();
+  $("#app_folio_database_id").show();
   $("#app_folio_unit_key").show();
 }
 

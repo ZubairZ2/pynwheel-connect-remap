@@ -135,6 +135,7 @@ class Credential < ApplicationRecord
   def appfolio_credentials
     {
       app_folio_property_id: self.app_folio_property_id,
+      app_folio_database_id: self.app_folio_database_id
     }
   end
   
