@@ -206,7 +206,7 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
       :property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:rentcafe_api_version,:c_code,:api_token,:p_code,:apply_now,
       :allow_separate_link,:separate_link,:use_different_crm_provider,:limit_result,:file,:resman_apikey, :resman_partner_id,
       :resman_account_id, :xml_filename, :xml_domain, :resman_api_version, :resman_property_id,:zaremba_filename,
-      :zaremba_property_id,:zaremba_username,:zaremba_password,:new_requested_data_provider, :rentmanager_username, :rentmanager_password, :rentmanager_property_id, :app_folio_property_id, :rentmanager_base_url)
+      :zaremba_property_id,:zaremba_username,:zaremba_password,:new_requested_data_provider, :rentmanager_username, :rentmanager_password, :rentmanager_property_id, :app_folio_property_id, :app_folio_database_id, :rentmanager_base_url)
   end
 
   def crm_credential_params
