@@ -56,23 +56,28 @@ module CommunitiesHelper
     worksheet.write(0, 4, "City", format)
     worksheet.write(0, 5, "State", format)
     worksheet.write(0, 6, "Zip", format)
-    worksheet.write(0, 7, "Property Email Address", format)
-    worksheet.write(0, 8, "eBrochure 'From' Email Address", format)
-    worksheet.write(0, 9, "eBrochure 'BCC' Email Address ", format)
-    worksheet.write(0, 10, "Phone", format)
-    worksheet.write(0, 11, "Map Type", format)
-    worksheet.write(0, 12, "Design Style", format)
-    worksheet.write(0, 13, "Data Provider", format)
-    worksheet.write(0, 14, "Pynwheel Touch (Yes/No)", format)
-    worksheet.write(0, 15, "Pynwheel Tour (Yes/No)", format)
-    worksheet.write(0, 16, "Map URL", format)
-    worksheet.write(0, 17, "Map Embed Code", format)
-    worksheet.write(0, 18, "Active/Inactive", format)
-    worksheet.write(0, 19, "Subscription Start Date", format)
-    worksheet.write(0, 20, "Date Inactivated", format)
-    worksheet.write(0, 21, "Billing Month", format)
-    worksheet.write(0, 22, "Annual Billing Rate ($)", format)
-    worksheet.write(0, 23, "Monthly Billing Rate ($)", format)
+
+    worksheet.write(0, 7, "Property Manager Name", format)
+    worksheet.write(0, 8, "Property Manager Phone", format)
+    worksheet.write(0, 9, "Property Manager Email Address", format)
+
+    worksheet.write(0, 10, "Property Email Address", format)
+    worksheet.write(0, 11, "eBrochure 'From' Email Address", format)
+    worksheet.write(0, 12, "eBrochure 'BCC' Email Address ", format)
+    worksheet.write(0, 13, "Phone", format)
+    worksheet.write(0, 14, "Map Type", format)
+    worksheet.write(0, 15, "Design Style", format)
+    worksheet.write(0, 16, "Data Provider", format)
+    worksheet.write(0, 17, "Pynwheel Touch (Yes/No)", format)
+    worksheet.write(0, 18, "Pynwheel Tour (Yes/No)", format)
+    worksheet.write(0, 19, "Map URL", format)
+    worksheet.write(0, 20, "Map Embed Code", format)
+    worksheet.write(0, 21, "Active/Inactive", format)
+    worksheet.write(0, 22, "Subscription Start Date", format)
+    worksheet.write(0, 23, "Date Inactivated", format)
+    worksheet.write(0, 24, "Billing Month", format)
+    worksheet.write(0, 25, "Annual Billing Rate ($)", format)
+    worksheet.write(0, 26, "Monthly Billing Rate ($)", format)
 
     Community.without_test_properties.each do |community|
       if community.present?
@@ -83,12 +88,18 @@ module CommunitiesHelper
         worksheet.write(row, 4, community.city, format1)
         worksheet.write(row, 5, community.state, format1)
         worksheet.write(row, 6, community.zip, format1)
-        worksheet.write(row, 7, community.email, format1)
-        worksheet.write(row, 8, community.favorite_setting.email_from, format1) if community.favorite_setting.present?
-        worksheet.write(row, 9, community.favorite_setting.email_bcc, format1) if community.favorite_setting.present?
-        worksheet.write(row, 10, community.phone, format1)
-        worksheet.write(row, 11, map_type(community), format1)
-        worksheet.write(row, 12, (community.touchscreen_app == true ? community.theme_name.capitalize : "N/A"), format1) if community.theme_name.present?
+
+        worksheet.write(row, 7, community.property_manager_name, format1)
+        worksheet.write(row, 8, community.property_manager_phone, format1)
+        worksheet.write(row, 9, community.property_manager_email, format1)
+
+
+        worksheet.write(row, 10, community.email, format1)
+        worksheet.write(row, 11, community.favorite_setting.email_from, format1) if community.favorite_setting.present?
+        worksheet.write(row, 12, community.favorite_setting.email_bcc, format1) if community.favorite_setting.present?
+        worksheet.write(row, 13, community.phone, format1)
+        worksheet.write(row, 14, map_type(community), format1)
+        worksheet.write(row, 15, (community.touchscreen_app == true ? community.theme_name.capitalize : "N/A"), format1) if community.theme_name.present?
 
         if community.data_provider == "psi"
           data_provider = "Entrata"
@@ -101,44 +112,44 @@ module CommunitiesHelper
         else
           data_provider = "Nill"
         end
-        worksheet.write(row, 13, data_provider, format1)
-        worksheet.write(row, 14, community.touchscreen_app == true ? "Yes" : "No", format1)
-        worksheet.write(row, 15, community.self_tour == true ? "Yes" : "No", format1)
-        worksheet.write(row, 16, community.map_link, format1)
-        worksheet.write(row, 17, community.map_embed_code, format1)
-        worksheet.write(row, 18, community.locked.present? ? (community.locked ? "Inactive" : "Active") : "Active", format1)
-        worksheet.write(row, 19, community.date_activated, format1)
-        worksheet.write(row, 20, community.date_inactivated, format1)
-        worksheet.write(row, 21, community.billing_type == "annual" ? "#{community.billing_month.present? ? community.billing_month : "Annually"}" : "Monthly", format1)
+        worksheet.write(row, 16, data_provider, format1)
+        worksheet.write(row, 17, community.touchscreen_app == true ? "Yes" : "No", format1)
+        worksheet.write(row, 18, community.self_tour == true ? "Yes" : "No", format1)
+        worksheet.write(row, 19, community.map_link, format1)
+        worksheet.write(row, 20, community.map_embed_code, format1)
+        worksheet.write(row, 21, community.locked.present? ? (community.locked ? "Inactive" : "Active") : "Active", format1)
+        worksheet.write(row, 22, community.date_activated, format1)
+        worksheet.write(row, 23, community.date_inactivated, format1)
+        worksheet.write(row, 24, community.billing_type == "annual" ? "#{community.billing_month.present? ? community.billing_month : "Annually"}" : "Monthly", format1)
         
         if community.touchscreen_app == true
-          worksheet.write(row, 22, billing_rate_convertion(community.billing_rate_touch), format1)
-          worksheet.write(row, 23, billing_rate_convertion(community.billing_rate_touch)/12, format1)
+          worksheet.write(row, 25, billing_rate_convertion(community.billing_rate_touch), format1)
+          worksheet.write(row, 26, billing_rate_convertion(community.billing_rate_touch)/12, format1)
         end
 
         if community.company.name.downcase == "lincoln"
-          worksheet.write(row, 22, billing_rate_convertion(community.lincoln_billing_rate)*12, format1)
-          worksheet.write(row, 23, billing_rate_convertion(community.lincoln_billing_rate), format1)
+          worksheet.write(row, 25, billing_rate_convertion(community.lincoln_billing_rate)*12, format1)
+          worksheet.write(row, 26, billing_rate_convertion(community.lincoln_billing_rate), format1)
 
         elsif community.creator_id.present? and community.creator.present? and community.creator.role == "Dwelo admin"
-          worksheet.write(row, 22, billing_rate_convertion(community.dwelo_billing_rate)*12, format1)
-          worksheet.write(row, 23, billing_rate_convertion(community.dwelo_billing_rate), format1)
+          worksheet.write(row, 25, billing_rate_convertion(community.dwelo_billing_rate)*12, format1)
+          worksheet.write(row, 26, billing_rate_convertion(community.dwelo_billing_rate), format1)
 
         elsif community.self_tour == true and community.touchscreen_app == true and community.company.name.downcase != "lincoln" and ((community.creator_id.present? and community.creator.present? and community.creator.role != "Dwelo admin") or community.creator_id.nil?)
-          worksheet.write(row, 22, billing_rate_convertion(community.billing_rate_selftour)*12, format1)
-          worksheet.write(row, 23, billing_rate_convertion(community.billing_rate_selftour), format1)
+          worksheet.write(row, 25, billing_rate_convertion(community.billing_rate_selftour)*12, format1)
+          worksheet.write(row, 26, billing_rate_convertion(community.billing_rate_selftour), format1)
 
         elsif community.self_tour == false and community.touchscreen_app == false
-          worksheet.write(row, 22, billing_rate_convertion(community.billing_rate_maps)*12, format1)
-          worksheet.write(row, 23, billing_rate_convertion(community.billing_rate_maps), format1)
+          worksheet.write(row, 25, billing_rate_convertion(community.billing_rate_maps)*12, format1)
+          worksheet.write(row, 26, billing_rate_convertion(community.billing_rate_maps), format1)
 
         elsif community.self_tour == true and community.touchscreen_app == true
-          worksheet.write(row, 22, billing_rate_convertion(community.billing_rate_for_both)*12, format1)
-          worksheet.write(row, 23, billing_rate_convertion(community.billing_rate_for_both), format1)
+          worksheet.write(row, 25, billing_rate_convertion(community.billing_rate_for_both)*12, format1)
+          worksheet.write(row, 26, billing_rate_convertion(community.billing_rate_for_both), format1)
 
         elsif community.self_tour == true and community.touchscreen_app == false
-          worksheet.write(row, 22, billing_rate_convertion(community.billing_rate_selftour)*12, format1)
-          worksheet.write(row, 23, billing_rate_convertion(community.billing_rate_selftour), format1)
+          worksheet.write(row, 25, billing_rate_convertion(community.billing_rate_selftour)*12, format1)
+          worksheet.write(row, 26, billing_rate_convertion(community.billing_rate_selftour), format1)
         end
 
         row = row + 1
