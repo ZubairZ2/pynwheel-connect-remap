@@ -73,7 +73,7 @@ $(document).ready(function () {
 
 
   if (isDefined(webCommunity)) {
-    selectMap = "2d-map"; //webCommunity.web_map_type;
+    selectMap = opsMapMarkersEnabled ? "3d-map" : "2d-map"; //webCommunity.web_map_type;
     enable3DMaps = webCommunity.enable_three_d_maps;
     
     if(enable3DMaps)
