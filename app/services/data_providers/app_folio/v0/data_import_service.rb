@@ -49,12 +49,21 @@ module DataProviders
           )
         end
 
-        def import_property_floorplans property_code
-          response = get_resource(property_code, "unit_types", "PropertyId")
+        def import_property_floorplans(property_code)
+          response = get_resource(property_code, "unit_types")
           return unless response.present?
-          response = response["data"]
-          process_floorplans_response(response) if response.present? && response.is_a?(Array)
+
+          unit_types = response["data"]
+
+          if unit_types.present? && unit_types.is_a?(Array)
+            filtered_unit_types = unit_types.select do |unit_type|
+              unit_type["PropertyId"] == property_code
+            end
+
+            process_floorplans_response(filtered_unit_types) if filtered_unit_types.any?
+          end
         end
+
 
         def process_floorplans_response response
           response.each_slice(@batch_size) do |batch|

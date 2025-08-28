@@ -11,7 +11,7 @@ module DataProviders
         @company    = @community&.company
       end
 
-      def get_resource(property_id, resource, filter_key)
+      def get_resource(property_id, resource, filter_key = nil)
         return unless @credential.present?
 
         url = "#{base_url}/api/v0/#{resource}?filters[LastUpdatedAtFrom]=#{DEFAULT_LAST_UPDATED_AT}"

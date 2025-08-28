@@ -14,7 +14,7 @@ module DataProviders
           end
         end
 
-        def get_resource(property_code, resource, filter_key)
+        def get_resource(property_code, resource, filter_key = nil)
           @app_folio_service.get_resource(property_code, resource, filter_key)            
         end
 
