@@ -1117,7 +1117,9 @@ function showMarkers() {
     }
   }
 
-  disabledEnabledAnchors();
+  if(!isFloorplanMapEnabled())
+    disabledEnabledAnchors();
+
   setMarkersSizeAndMargin(); //image mode only
   adjustImageMapMarkersPosition(); //image mode only
   setSVGUnitsAmenitiesCoordinates(); //svg mode only
@@ -1276,7 +1278,10 @@ function renderMarkersForFloor(parent, floor) {
   const element = parent?.querySelector('.markers-container');
 
   renderUnitsAmenitiesMarkers(element, floor);
-  disabledEnabledAnchors();
+  
+  if(!isFloorplanMapEnabled())
+    disabledEnabledAnchors();
+
   setMarkersSizeAndMargin();
   adjustImageMapMarkersPosition();
 }
@@ -1285,21 +1290,36 @@ function renderMapData() {
   const filteredUnits = filterUnitsBasedOnCommunityType(units);
   const sortType = document.getElementById("filter");
   const floorUnits = getFilteredUnits(filteredUnits, sortType.value);
+
   renderUnitBoxes(floorUnits);
 }
 
 function renderUnitBoxes(floorUnits) {
   const element = document.getElementById("units-body");
+
   if (!element) return;
 
   element.innerHTML = "";
 
   document.getElementById("unit-title-count").innerText = `${floorUnits.length} Units Found`;
 
+  if(isFloorplanMapEnabled())
+    floorUnits = filterUniqueFloorplanList(floorUnits);
+
   const html = floorUnits.map((unit) => buildUnitBoxHTML(unit)).join("");
   element.innerHTML = html;
 
   unitBoxListHover();
+}
+
+function filterUniqueFloorplanList(floorUnits) {
+  return [
+    ...new Map(
+      floorUnits
+        .filter(unit => unit.provider_floorplan_id) // keep only those with id
+        .map(unit => [unit.provider_floorplan_id, unit]) // key by provider_floorplan_id
+    ).values()
+  ]
 }
 
 function bindUnitMarkerEvents() {
@@ -1349,7 +1369,6 @@ function bindAmenityMarkerEvents() {
   document.querySelectorAll('.amenity-marker').forEach(bindEventsTo);
 }
 
-
 function renderUnitsAmenitiesMarkers(element, f) {
   const filteredUnits = filterUnitsBasedOnCommunityType(units, f);
   const unitsHtml = filteredUnits.map((unit) => buildUnitMarkerHTML(unit, f)).join("");
@@ -1363,12 +1382,15 @@ function renderUnitsAmenitiesMarkers(element, f) {
 }
 
 function buildUnitBoxHTML(unit) {
-  const unitName =
-    webCommunity?.is_sitemap && !webCommunity?.display_building
-      ? unit["marketing_name"]
-      : unit["building"]
-      ? `${unit["building"]}-${unit["marketing_name"]}`
-      : unit["marketing_name"];
+  let unitName = `Unit # ${ (webCommunity?.is_sitemap && !webCommunity?.display_building
+                            ? unit["marketing_name"]
+                            : unit["building"]
+                            ? `${unit["building"]}-${unit["marketing_name"]}`
+                            : unit["marketing_name"])
+                          }`;
+  
+  if(isFloorplanMapEnabled())
+    unitName = unit["floorplan_name"];
 
   return `
     <div
@@ -1384,7 +1406,9 @@ function buildUnitBoxHTML(unit) {
       </div>
       <div class='unit-details-section'>
         <p id='unit-detail-market-title'>
-          Unit # ${unitName}
+          <strong>
+            ${unitName}
+          </strong>
         </p>
       </div>
       <div class='unit-details-section'>
@@ -1392,15 +1416,15 @@ function buildUnitBoxHTML(unit) {
         <p><i class='fa fa-bath'> &nbsp ${unit["bathrooms"]} Bath </i></p>
         <p><i class='fa fa-building'> &nbsp ${unit["square_feet"]} Sq Ft </i></p>
       </div>
-      <div class='unit-details-section'>
-        <p id='right-bar-unit-availability'>${get_unit_availability(unit)}</p>
-        <p>${unitMarketRent(unit)}</p>
-      </div>
+      ${
+        !isFloorplanMapEnabled() ? `<div class='unit-details-section'>
+          <p id='right-bar-unit-availability'>${get_unit_availability(unit)}</p>
+          <p>${unitMarketRent(unit)}</p>
+        </div>` : ``
+      }
     </div>
   `;
 }
-
-
 
 function buildUnitMarkerHTML(unit, f) {
   unitDataAttributes = unit.data_attributes;
@@ -2416,6 +2440,7 @@ function setModalAttributes(element) {
   $("#unitModal")
     .find("#unit-marketing-name")
     .html($(element).data("unit-marketing-name"));
+  
   $("#unitModal")
     .find("#floorplan-name")
     .html($(element).data("floorplan-name"));
@@ -3787,4 +3812,10 @@ function getCommunityBasedMarkerColor(unitCommunityId) {
 
 function resetUnits() {
   units = total_units;
+}
+
+function isFloorplanMapEnabled() {
+  return (
+    turnAvailabilityOn && !opsMapMarkersEnabled
+  );
 }

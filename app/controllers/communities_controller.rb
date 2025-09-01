@@ -818,6 +818,7 @@ class CommunitiesController < ApplicationController
     @community.units_availability_over_120_days = params[:units_availability_over_120_days]
     @community.show_current_availability = params[:show_current_availability]
     @community.is_floor_level_map = params[:is_floor_level_map]
+    @community.turn_availability_on = params[:turn_availability_on]
     @community.display_additional_fee = params[:display_additional_fee]
     @community.display_manual_additional_fee = params[:display_manual_additional_fee]
     @community.additional_fee = params[:additional_fee]
