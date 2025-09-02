@@ -2612,6 +2612,7 @@ img-responsive {
     justify-content: center;
     background-color: white;
     margin-bottom: 10px;
+    position: relative;
 }
 
 .fa-map-marker-alt {
@@ -7822,4 +7823,16 @@ div.esri-ui-inner-container.esri-ui-manual-container>div.esri-component.esri-att
   bottom: 0;
   right: 0;
   top: 0;
+}
+
+.floorplan-color-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 16px;
+  height: 100%;
+}
+
+.floorplan-marker-form label {
+  font-weight: normal !important;
 }

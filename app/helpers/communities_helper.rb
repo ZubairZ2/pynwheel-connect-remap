@@ -540,6 +540,15 @@ module CommunitiesHelper
     end.compact
   end
 
+  def floorplan_map_config unit
+    {
+      available_units_color: unit&.floorplan&.available_units_color || '#00FF00',
+      model_units_color: unit&.floorplan&.model_units_color || '#FF0000',
+      available_units_opacity: unit&.floorplan&.available_units_opacity || 1.0,
+      model_units_opacity: unit&.floorplan&.model_units_opacity || 1.0
+    }
+  end
+
   def map_configuration(community, show_ops_map = false)
     {
       unit_marker_font_size: default_unit_marker_font_size(community),
@@ -617,6 +626,7 @@ module CommunitiesHelper
       "unit-status": struct[:unit_status],
       "model-unit": struct[:model_unit],
       "config": map_configuration(@community, show_ops_map),
+      "floorplan-map-config": floorplan_map_config(unit).to_json,
     }.transform_keys { |key| "data-#{key}".to_sym }.merge(
       DATA_ATTRIBUTES_SAME_KEYS.each_with_object({}) do |key, result|
         result["data-#{key}".to_sym] = struct[key.underscore.to_sym]

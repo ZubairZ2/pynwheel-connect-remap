@@ -1089,6 +1089,8 @@ function showMarkers() {
             $markerEl.data("lease-term") +
             '" data-unit-additional-fees="' +
             $markerEl.data("unit-additional-fees") +
+            '" data-hello="' +
+            $markerEl.data("unit-additional-fees") +
             '"></div>'
         );
 
@@ -1382,14 +1384,15 @@ function renderUnitsAmenitiesMarkers(element, f) {
 }
 
 function buildUnitBoxHTML(unit) {
-  let unitName = `Unit # ${ (webCommunity?.is_sitemap && !webCommunity?.display_building
-                            ? unit["marketing_name"]
-                            : unit["building"]
-                            ? `${unit["building"]}-${unit["marketing_name"]}`
-                            : unit["marketing_name"])
-                          }`;
-  
-  if(isFloorplanMapEnabled())
+  let unitName = `Unit # ${
+    (webCommunity?.is_sitemap && !webCommunity?.display_building
+      ? unit["marketing_name"]
+      : unit["building"]
+      ? `${unit["building"]}-${unit["marketing_name"]}`
+      : unit["marketing_name"])
+  }`;
+
+  if (isFloorplanMapEnabled())
     unitName = unit["floorplan_name"];
 
   return `
@@ -1400,31 +1403,41 @@ function buildUnitBoxHTML(unit) {
       data-unit-marketing-name='${unit["data_attributes"]["data-unit-marketing-name"]}'
     >
       <div class='image-styles'>
+        ${floorplanColorBarHTML(unit)}
         <a class='image_link' href='#' id="s_${unit["id"]}" onClick="onUnitClick(event)">
           <img src='${unit["floorplan_image"]}' class='image-image-styles' />
         </a>
       </div>
-      <div class='unit-details-section'>
-        <p id='unit-detail-market-title'>
-          <strong>
-            ${unitName}
-          </strong>
-        </p>
+      <div class="unit-content">
+        <div class='unit-details-section'>
+          <p id='unit-detail-market-title'>
+            <strong>${unitName}</strong>
+          </p>
+        </div>
+        <div class='unit-details-section'>
+          <p><i class='fa fa-bed'> &nbsp ${unit["bedrooms"]} Bed </i></p>
+          <p><i class='fa fa-bath'> &nbsp ${unit["bathrooms"]} Bath </i></p>
+          <p><i class='fa fa-building'> &nbsp ${unit["square_feet"]} Sq Ft </i></p>
+        </div>
+        ${
+          !isFloorplanMapEnabled()
+            ? `<div class='unit-details-section'>
+                <p id='right-bar-unit-availability'>${get_unit_availability(unit)}</p>
+                <p>${unitMarketRent(unit)}</p>
+              </div>`
+            : ``
+        }
       </div>
-      <div class='unit-details-section'>
-        <p><i class='fa fa-bed'> &nbsp ${unit["bedrooms"]} Bed </i></p>
-        <p><i class='fa fa-bath'> &nbsp ${unit["bathrooms"]} Bath </i></p>
-        <p><i class='fa fa-building'> &nbsp ${unit["square_feet"]} Sq Ft </i></p>
-      </div>
-      ${
-        !isFloorplanMapEnabled() ? `<div class='unit-details-section'>
-          <p id='right-bar-unit-availability'>${get_unit_availability(unit)}</p>
-          <p>${unitMarketRent(unit)}</p>
-        </div>` : ``
-      }
     </div>
   `;
 }
+
+function floorplanColorBarHTML(unit) {
+  if (isFloorplanMapEnabled())
+    return `<div class="floorplan-color-bar" style="background-color: ${getFloorplanLevelMarkerColor(unit)};"></div>`;
+  else return ``;
+}
+
 
 function buildUnitMarkerHTML(unit, f) {
   unitDataAttributes = unit.data_attributes;
@@ -3791,7 +3804,30 @@ function getUnitMarkerColor(unit) {
     }
   }
 
+  if(isFloorplanMapEnabled())
+    result = getFloorplanLevelMarkerColor(unit);
+
   return toHexColor(result);
+}
+
+function getFloorplanLevelMarkerColor(unit) {
+  const DEFAULT_COLOR = "#d37474";
+
+  const parseConfig = (config) => {
+    if (!config) return null;
+    if (typeof config === "object") return config;
+    try {
+      return JSON.parse(config);
+    } catch {
+      return null;
+    }
+  };
+
+  const floorplanColors =
+    parseConfig(unit.floorplanMapConfig) ||
+    parseConfig(unit.data_attributes?.["data-floorplan-map-config"]);
+
+  return floorplanColors?.available_units_color || DEFAULT_COLOR;
 }
 
 function getCommunityBasedMarkerColor(unitCommunityId) {
