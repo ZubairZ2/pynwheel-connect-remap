@@ -2650,6 +2650,7 @@ img-responsive {
     height: 70px;
     padding: 10px 15px;
     background-color: #E8E9E9;
+    z-index: 10000;
     /* display: flex; */
     align-items: center;
     /* justify-content: space-between; */
@@ -6579,6 +6580,7 @@ ul.add-fav-options {
     color: white;
     font-size: 20px;
     font-weight: 500;
+    margin: 0px !important;
 }
 .c-popup img {
     max-width: 100%;
