@@ -1,67 +1,63 @@
-%table.table.table-bordered.table-striped
-  %thead
-    %tr
-      %th Floorplan Name
-      %th Vacant Units
-      %th Model Units
+= form_with url: update_marker_colors_community_floorplans_path(@community),
+            method: :patch,
+            local: true,
+            html: { class: "floorplan-marker-form" } do |form|
 
-  %tbody
-    - @floorplans.each do |floorplan|
+  %table.table.table-bordered.table-striped
+    %thead
       %tr
-        %td{ style: "vertical-align: middle;" }
-          = floorplan.name
-        %td
-          = form_for floorplan,
-                     url: update_marker_colors_community_floorplan_path(@community, floorplan),
-                     method: :patch,
-                     remote: true,
-                     html: { class: "floorplan-marker-form form-inline" } do |f|
-            .form-group{ style: "margin-bottom: 0px;padding-bottom: 0px;" }
-              %label{ style: "font-weight: normal; margin-right: 5px;" } color:
-              .input-group.colorpicker-style.hex-format-colorpicker.mr-10
-                .input-group-addon
-                  %i.addon-i
-                  = f.text_field :available_units_color,
-                                  class: "form-control input-sm",
-                                  style: "width: 125px,padding-bottom: 0px",
-                                  autocomplete: true,
-                                  value: floorplan.available_units_color || "#f9d648",
-                                  onchange: "this.form.requestSubmit()"
-            .form-group{ style: "margin-bottom: 0px;padding-bottom: 0px;" }
-              %label{ style: "font-weight: normal; margin-right: 5px;" } opacity:
-              = f.number_field :available_units_opacity,
-                                class: "form-control input-sm",
-                                style: "width:70px",
-                                min: 0,
-                                max: 1,
-                                step: 0.1,
-                                value: floorplan.available_units_opacity || 1,
-                                onchange: "this.form.requestSubmit()"
+        %th Floorplan Name
+        %th Vacant Units
+        %th Model Units
 
+    %tbody
+      - @floorplans.each do |floorplan|
+        = form.fields_for :floorplans, floorplan, index: floorplan.id do |fp_form|
+          %tr
+            %td{ style: "vertical-align: middle;" }
+              = floorplan.name
+
+            %td
+              .form-inline
+                .form-group{ style: "margin-right: 10px; margin-bottom: 0px; padding-bottom: 0px;" }
+                  %label{ style: "font-weight: normal; margin-right: 5px;" } color:
+                  .input-group.colorpicker-style.hex-format-colorpicker
+                    .input-group-addon
+                      %i.addon-i
+                      = fp_form.text_field :available_units_color,
+                                           class: "form-control input-sm",
+                                           style: "width: 125px;",
+                                           value: floorplan.available_units_color || "#f9d648"
+
+                .form-group{ style: "margin-bottom: 0px; padding-bottom: 0px;" }
+                  %label{ style: "font-weight: normal; margin-right: 5px;" } opacity:
+                  = fp_form.number_field :available_units_opacity,
+                                          class: "form-control input-sm",
+                                          style: "width: 70px;",
+                                          min: 0, max: 1, step: 0.1,
+                                          value: floorplan.available_units_opacity || 1
+
+            %td
+              .form-inline
+                .form-group{ style: "margin-right: 10px; margin-bottom: 0px; padding-bottom: 0px;" }
+                  %label{ style: "font-weight: normal; margin-right: 5px;" } color:
+                  .input-group.colorpicker-style.hex-format-colorpicker
+                    .input-group-addon
+                      %i.addon-i
+                      = fp_form.text_field :model_units_color,
+                                           class: "form-control input-sm",
+                                           style: "width: 125px;",
+                                           value: floorplan.model_units_color || "#f57396"
+
+                .form-group{ style: "margin-bottom: 0px; padding-bottom: 0px;" }
+                  %label{ style: "font-weight: normal; margin-right: 5px;" } opacity:
+                  = fp_form.number_field :model_units_opacity,
+                                          class: "form-control input-sm",
+                                          style: "width: 70px;",
+                                          min: 0, max: 1, step: 0.1,
+                                          value: floorplan.model_units_opacity || 1
+
+    %tfoot
+      %tr
         %td
-          = form_for floorplan,
-                     url: update_marker_colors_community_floorplan_path(@community, floorplan),
-                     method: :patch,
-                     remote: true,
-                     html: { class: "floorplan-marker-form form-inline" } do |f|
-            .form-group{ style: "margin-bottom: 0px;padding-bottom: 0px;" }
-              %label{ style: "font-weight: normal; margin-right: 5px;" } color:
-              .input-group.colorpicker-style.hex-format-colorpicker.mr-10
-                .input-group-addon
-                  %i.addon-i
-                  = f.text_field :model_units_color,
-                                  class: "form-control input-sm",
-                                  style: "width:125px,padding-bottom: 0px",
-                                  autocomplete: true,
-                                  value: floorplan.model_units_color || "#f57396",
-                                  onchange: "this.form.requestSubmit()"
-            .form-group{ style: "margin-bottom: 0px;padding-bottom: 0px;" }
-              %label{ style: "font-weight: normal; margin-right: 5px;" } opacity:
-              = f.number_field :model_units_opacity,
-                                class: "form-control input-sm",
-                                style: "width:70px",
-                                min: 0,
-                                max: 1,
-                                step: 0.1,
-                                value: floorplan.model_units_opacity || 1,
-                                onchange: "this.form.requestSubmit()"
+          = form.submit "Save", class: "btn btn-primary"

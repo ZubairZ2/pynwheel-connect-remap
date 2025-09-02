@@ -3,7 +3,7 @@ class FloorplansController < ApplicationController
   add_breadcrumb "Home", :root_path
   before_action :set_community
   before_action :check_community
-  before_action :set_floorplan, only: [:edit,:update,:destroy, :remove_pri_scnd_image, :update_marker_colors]
+  before_action :set_floorplan, only: [:edit,:update,:destroy, :remove_pri_scnd_image]
 
   def index
     @floorplans = @community.floorplans.order(id: :desc)
@@ -43,15 +43,22 @@ class FloorplansController < ApplicationController
   end
 
   def update_marker_colors
-    if @floorplan.update(marker_color_params)
-      respond_to do |format|
-        format.json { render json: { success: true, floorplan: @floorplan } }
-        format.js { render js: "$('#flash-message').html('<div class=\"alert alert-success\">Floorplan colors configuration saved successfully.</div>'); setTimeout(function(){$('.alert').fadeOut('slow');}, 2000);" }
+    success, errors = true, []
+    params[:floorplans].each do |id, attrs|
+      floorplan = @community.floorplans.find(id)
+      unless floorplan.update(attrs.permit(:available_units_color, :available_units_opacity, :model_units_color, :model_units_opacity))
+        success = false
+        errors << "Floorplan #{floorplan.name}: #{floorplan.errors.full_messages.join(', ')}"
       end
-    else
-      respond_to do |format|
-        format.json { render json: { success: false, errors: @floorplan.errors.full_messages }, status: :unprocessable_entity }
-        format.js { render js: "$('#flash-message').html('<div class=\"alert alert-danger\">Error: #{@floorplan.errors.full_messages.join(', ')}</div>'); setTimeout(function(){$('.alert').fadeOut('slow');}, 2000);" }
+    end
+
+    respond_to do |format|
+      if success
+        format.html { redirect_to community_design_index_path(@community), notice: "All floorplan colors saved successfully." }
+        format.json { render json: { success: true } }
+      else
+        format.html { redirect_to community_design_index_path(@community), alert: errors.join(", ") }
+        format.json { render json: { success: false, errors: errors }, status: :unprocessable_entity }
       end
     end
   end
@@ -245,15 +252,6 @@ class FloorplansController < ApplicationController
   end
 
   private
-
-  def marker_color_params
-    params.require(:floorplan).permit(
-      :available_units_color,
-      :available_units_color_opacity,
-      :model_units_color,
-      :model_units_color_opacity,
-    )
-  end
 
   def set_floorplan
     @floorplan = Floorplan.find params[:id]
