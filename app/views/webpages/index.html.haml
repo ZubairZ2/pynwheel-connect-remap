@@ -71,7 +71,7 @@
     - amenity_left_margin = @map_config[:margins][:amenity_left_margin]
     - amenity_top_margin = @map_config[:margins][:amenity_top_margin]
 
-    - units = @available_units_and_sold_units
+    - units = @units
     - min_unit_floor = @min_floor
 
     - marker_colors = { vacant: map_marker_color, occupied: map_marker_occupied_color, occupied_on_notice: map_marker_occupied_on_notice_color, vacant_leased: map_marker_vacant_leased_color, model: map_marker_model_color }.merge( @svg_enabled ? { missing: map_marker_missing_color } : {} )
@@ -296,9 +296,6 @@
                     - else
                       = select_tag :filter,  options_for_select([["Sort by"], ["Availability: Soonest to Latest"], ["Availability: Latest to Soonest"], ["Sq Ft: More to Less"], ["Sq Ft: Less to More"]])
                 
-                -# - if @community_info.turn_availability_on && !@show_ops_map
-                -#   %div#floorplans-body
-                -# - else
                 %div#units-body
 
       // Trigger the modal with a button

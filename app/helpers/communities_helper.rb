@@ -545,7 +545,8 @@ module CommunitiesHelper
       available_units_color: unit&.floorplan&.available_units_color || '#00FF00',
       model_units_color: unit&.floorplan&.model_units_color || '#FF0000',
       available_units_opacity: unit&.floorplan&.available_units_opacity || 1.0,
-      model_units_opacity: unit&.floorplan&.model_units_opacity || 1.0
+      model_units_opacity: unit&.floorplan&.model_units_opacity || 1.0,
+      availability_status: unit&.floorplan&.availability_status
     }
   end
 

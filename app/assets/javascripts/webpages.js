@@ -1402,6 +1402,7 @@ function buildUnitBoxHTML(unit) {
     >
       <div class='image-styles'>
         ${floorplanColorBarHTML(unit)}
+        ${floorplanAvailabilityBannerHTML(unit)}
         <a class='image_link' href='#' id="s_${unit["id"]}" onClick="onUnitClick(event)">
           <img src='${unit["floorplan_image"]}' class='image-image-styles' />
         </a>
@@ -1431,11 +1432,39 @@ function buildUnitBoxHTML(unit) {
 }
 
 function floorplanColorBarHTML(unit) {
+  if(!isFloorplanMapEnabled()) return '';
+  
   const floorplanColors = getFloorplanLevelMarkerColor(unit);
+  return `<div class="floorplan-color-bar" style="background-color: ${floorplanColors};"></div>`;
+}
 
-  if (isFloorplanMapEnabled())
-    return `<div class="floorplan-color-bar" style="background-color: ${floorplanColors};"></div>`;
-  else return ``;
+function floorplanAvailabilityBannerHTML(unit) {
+  if(!isFloorplanMapEnabled()) return '';
+  const config = getFloorplanConfigObject(unit);
+  let bannerText = "";
+  let bannerColor = "";
+
+  switch (config.availability_status) {
+    case "limited_availability":
+    case 1:
+      bannerText = "Limited Availability";
+      bannerColor = "#faa9a3ff";
+      break;
+    case "almost_gone":
+    case 2:
+      bannerText = "Almost Gone";
+      bannerColor = "#f56b66ff";
+      break;
+    case "sold_out":
+    case 3:
+      bannerText = "Sold Out";
+      bannerColor = "#aa2218ff";
+      break;
+    default:
+      return ""; 
+  }
+
+  return `<div class="floorplan-banner" style="background-color: ${bannerColor};">${bannerText}</div>`;
 }
 
 
@@ -3866,33 +3895,39 @@ function isModelUnit(unit) {
 
 function getFloorplanLevelMarkerColor(unit) {
   const DEFAULT_COLOR = "#d37474";
+  const config = getFloorplanConfigObject(unit);
 
+  if (!config) return hexToRgba(DEFAULT_COLOR, 1);
+
+  const isModel = isModelUnit(unit);
+  const colorKey = isModel ? "model_units_color" : "available_units_color";
+  const opacityKey = isModel ? "model_units_opacity" : "available_units_opacity";
+
+  const color = config[colorKey] || DEFAULT_COLOR;
+  const opacity = config[opacityKey] ?? 1; // using nullish coalescing for 0 handling
+
+  return hexToRgba(color, opacity);
+}
+
+function getFloorplanConfigObject(unit) {
   const parseConfig = (config) => {
     if (!config) return null;
-    if (typeof config === "object") return config;
-    try {
-      return JSON.parse(config);
-    } catch {
-      return null;
-    }
+    return typeof config === "object" ? config : safeJsonParse(config);
   };
 
-  const floorplanColors =
+  return (
     parseConfig(unit.floorplanMapConfig) ||
-    parseConfig(unit.data_attributes?.["data-floorplan-map-config"]);
+    parseConfig(unit.data_attributes?.["data-floorplan-map-config"])
+  );
+}
 
-  let color = DEFAULT_COLOR;
-  let opacity = 1;
-
-  if(isModelUnit(unit)){
-    color = floorplanColors?.model_units_color || DEFAULT_COLOR
-    opacity = floorplanColors?.model_units_opacity || 1
-  } else {
-    color = floorplanColors?.available_units_color || DEFAULT_COLOR,
-    opacity = floorplanColors?.available_units_opacity || 1
+// Helper for safe JSON parsing
+function safeJsonParse(str) {
+  try {
+    return JSON.parse(str);
+  } catch {
+    return null;
   }
-
-  return hexToRgba(color, opacity)
 }
 
 function getCommunityBasedMarkerColor(unitCommunityId) {

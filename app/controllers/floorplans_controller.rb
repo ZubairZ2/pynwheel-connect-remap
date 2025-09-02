@@ -3,7 +3,7 @@ class FloorplansController < ApplicationController
   add_breadcrumb "Home", :root_path
   before_action :set_community
   before_action :check_community
-  before_action :set_floorplan, only: [:edit,:update,:destroy, :remove_pri_scnd_image]
+  before_action :set_floorplan, only: [:edit,:update,:destroy, :remove_pri_scnd_image, :update_availability_status]
 
   def index
     @floorplans = @community.floorplans.order(id: :desc)
@@ -63,6 +63,13 @@ class FloorplansController < ApplicationController
     end
   end
 
+  def update_availability_status
+  if @floorplan.update(floorplan_availability_status_params)
+    redirect_back(fallback_location: community_floorplans_path(@community), notice: "Floorplan availability status updated!")
+  else
+    redirect_back(fallback_location: community_floorplans_path(@community), alert: "Could not update floorplan availability status.")
+  end
+end
   def remove_pri_scnd_image
     if params[:image] == "primary"
       @floorplan.remove_image!
@@ -255,6 +262,10 @@ class FloorplansController < ApplicationController
 
   def set_floorplan
     @floorplan = Floorplan.find params[:id]
+  end
+
+  def floorplan_availability_status_params
+    params.require(:floorplan).permit(:availability_status)
   end
 
   def floorplan_params
