@@ -21,6 +21,12 @@ class Floorplan < ApplicationRecord
 
   after_update :update_floorplan_units_description, if: :description_changed?
 
+  enum availability_status: { 
+    available: 0,
+    limited_availability: 1,
+    almost_gone: 2,
+    sold_out: 3
+  }
 
   def as_json options = {}
     super(

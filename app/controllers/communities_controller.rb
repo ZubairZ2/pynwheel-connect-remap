@@ -238,7 +238,6 @@ class CommunitiesController < ApplicationController
   end
 
   def alert_message
-
     if params[:community][:data_provider].present? and params[:community][:data_provider] != 'spreadsheet'
       '<div class="alert alert-success">Credentials added successfully.</div>'
     elsif params[:community][:data_provider].present? and params[:community][:data_provider] == 'spreadsheet'
@@ -281,6 +280,7 @@ class CommunitiesController < ApplicationController
       '<div class="alert alert-success">Landing page button uploaded successfully.</div>'
     end
   end
+  
   def make_cordinate    
     @community.update(latitude: params[:lat], longitude: params[:long]) rescue ""
     @community.neighborhood.update(latitude: address[0], longitude: address[1]) rescue ""
@@ -818,6 +818,7 @@ class CommunitiesController < ApplicationController
     @community.units_availability_over_120_days = params[:units_availability_over_120_days]
     @community.show_current_availability = params[:show_current_availability]
     @community.is_floor_level_map = params[:is_floor_level_map]
+    @community.turn_availability_on = params[:turn_availability_on]
     @community.display_additional_fee = params[:display_additional_fee]
     @community.display_manual_additional_fee = params[:display_manual_additional_fee]
     @community.additional_fee = params[:additional_fee]

@@ -4816,7 +4816,7 @@ function showTabsAccordingToTheme(theme) {
   // }
   if (theme == 'gables_organic' || theme == 'gables_refined' || theme == 'gables_energetic' || theme == 'gables_natural' || theme == 'gables_custom') {
     $('#font-tab').parent().addClass('hidden');
-    $('#marketing-map-marker-tab').removeClass('hidden');
+    $('#community-map-marker-tab').removeClass('hidden');
     $('#menu-tab').parent().addClass('hidden');
     //$('#custom-style-tab').parent().parent().parent().addClass('hidden');
     //$('#overlay-tab').parent().addClass('hidden');
@@ -4863,7 +4863,7 @@ function showTabsAccordingToTheme(theme) {
       $('.modernist_unit_floorplan_map_marker_color').addClass('hidden');
   }
   else if (theme == 'modernist') {
-      $('#marketing-map-marker-tab').removeClass('hidden');
+      $('#community-map-marker-tab').removeClass('hidden');
       $('#font-tab').parent().removeClass('hidden');
       $('#menu-tab').parent().removeClass('hidden');
       //$('#custom-style-tab').parent().parent().parent().addClass('hidden');
@@ -4910,11 +4910,11 @@ function showTabsAccordingToTheme(theme) {
   }
   else if (theme == 'cubist')
   {
-      $('#marketing-map-marker-tab').addClass('hidden');
+      $('#community-map-marker-tab').addClass('hidden');
   }
   else if (theme == 'expressionist')
   {
-      $('#marketing-map-marker-tab').removeClass('hidden');
+      $('#community-map-marker-tab').removeClass('hidden');
       $('#font-tab').parent().addClass('hidden');
       $('#menu-tab').parent().addClass('hidden');
       //$('#custom-style-tab').parent().parent().parent().addClass('hidden');
@@ -4960,7 +4960,7 @@ function showTabsAccordingToTheme(theme) {
   }
   else
   {
-      $('#marketing-map-marker-tab').removeClass('hidden');
+      $('#community-map-marker-tab').removeClass('hidden');
       $('#font-tab').parent().addClass('hidden');
       $('#menu-tab').parent().addClass('hidden');
       $('#gables-tab').parent().addClass('hidden');

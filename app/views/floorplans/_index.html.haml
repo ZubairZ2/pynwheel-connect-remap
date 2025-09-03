@@ -61,7 +61,13 @@
               - @floorplans.map {|i| i.name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@floorplans).sort.map{|x,y| y}.each_with_index  do |f,index|
                 %tr{style: "color: #{f.manual_override ? "#dd4a39" : ""};"}
                   %td= index+1
-                  %td{style: "color: #{f.name_is_updated ? "#dd4a39" : ""}; "}= f.name
+                  -# %td{style: "color: #{f.name_is_updated ? "#dd4a39" : ""}; "}= f.name
+                  %td{ style: "color: #{f.name_is_updated ? '#dd4a39' : ''};" }
+                    = f.name
+                    - if current_community.turn_availability_on
+                      = form_with model: f, url: update_availability_status_community_floorplan_path(current_community, f), method: :patch, local: true do |form|
+                        = form.select :availability_status, Floorplan.availability_statuses.keys.map { |s| [s.humanize, s] }, {}, { onchange: 'this.form.submit();', style: "margin-top: 10px;" }
+
                   %td{style: "color: #{f.square_feet_is_updated ? "#dd4a39" : ""}; "}= f.square_feet.to_i
                   %td{style: "color: #{f.bedroom_is_updated ? "#dd4a39" : ""}; "}= f.bedrooms.to_i
                   %td{style: "color: #{f.bathroom_is_updated ? "#dd4a39" : ""}; "}= f.bathrooms

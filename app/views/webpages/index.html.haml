@@ -71,7 +71,7 @@
     - amenity_left_margin = @map_config[:margins][:amenity_left_margin]
     - amenity_top_margin = @map_config[:margins][:amenity_top_margin]
 
-    - units = @available_units_and_sold_units
+    - units = @units
     - min_unit_floor = @min_floor
 
     - marker_colors = { vacant: map_marker_color, occupied: map_marker_occupied_color, occupied_on_notice: map_marker_occupied_on_notice_color, vacant_leased: map_marker_vacant_leased_color, model: map_marker_model_color }.merge( @svg_enabled ? { missing: map_marker_missing_color } : {} )
@@ -83,7 +83,7 @@
     -# - svg_and_image_locals = { min_unit_floor: min_unit_floor, marker_colors: marker_colors, locals_for_markers: locals_for_markers }
     
     - _3d_enabled = @community.enable_three_d_maps
-
+    
     - unless @community_info.locked
       = hidden_field_tag :maps_community_id, @community_info.id
       %section.is-webpage.maps-analytics-container{ style: "min-height: 100%; max-height: 100%; overflow: hidden;" }
@@ -94,31 +94,38 @@
                 - if @community.community_logo
                   %a.logo{:href => @community.community_website}
                     %img{:alt => "", :class => "webpage_logo", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel-connect-logo.png'}", :title => ""}
+              
               .selection-fields
                 - if @have_multi_property_ids
+                  - if @map_filter[:show_properties_filter]
+                    .selectable-field
+                      %label Community
+                      %label.short Community
+                      = select_tag :multi_communities, options_for_select(@multi_properties.present? ? @multi_properties : []),{ :class=>"custom-select", style: "min-width: max-content;", :include_blank => "All "}
+
+                - if @map_filter[:show_bedroom_filter]
                   .selectable-field
-                    %label Community
-                    %label.short Community
-                    = select_tag :multi_communities, options_for_select(@multi_properties.present? ? @multi_properties : []),{ :class=>"custom-select", style: "min-width: max-content;", :include_blank => "All "}
+                    %label Bedrooms
+                    %label.short Bedrooms
+                    = select_tag :unit_bedroom, options_for_select(@unit_bedrooms.present? ? @unit_bedrooms : []),{:class=>"custom-select", :include_blank => "All "}
+                
+                - if @map_filter[:show_pricing_filter]
+                  .selectable-field{ class: !@community_info.display_rent ? "pricing_filter_visibility" : nil }
+                    %label Max Price
+                    %label.short Max Price
+                    = select_tag :market_rent, options_for_select(@market_rent.present? ? @market_rent : []), { class: "custom-select" }
 
-                .selectable-field
-                  %label Bedrooms
-                  %label.short Bedrooms
-                  = select_tag :unit_bedroom, options_for_select(@unit_bedrooms.present? ? @unit_bedrooms : []),{:class=>"custom-select", :include_blank => "All "}
-
-                .selectable-field{ class: !@community_info.display_rent ? "pricing_filter_visibility" : nil }
-                  %label Max Price
-                  %label.short Max Price
-                  = select_tag :market_rent, options_for_select(@market_rent.present? ? @market_rent : []), { class: "custom-select" }
-
-                .selectable-field
-                  %label Min Square Footage
-                  %label.short Min Sq. Ft.
-                  = select_tag :square_feet, options_for_select(@square_feet.present? ? @square_feet : []),{:class=>"custom-select"}
-                .selectable-field
-                  %label Availability
-                  %label.short Availability
-                  = select_tag :available_unit, options_for_select(@available_units.present? ? @available_units : []),{:class=>"custom-select", :include_blank => "All "}
+                - if @map_filter[:show_square_feet_filter]
+                  .selectable-field
+                    %label Min Square Footage
+                    %label.short Min Sq. Ft.
+                    = select_tag :square_feet, options_for_select(@square_feet.present? ? @square_feet : []),{:class=>"custom-select"}
+               
+                - if @map_filter[:show_availability_filter]
+                  .selectable-field
+                    %label Availability
+                    %label.short Availability
+                    = select_tag :available_unit, options_for_select(@available_units.present? ? @available_units : []),{:class=>"custom-select", :include_blank => "All "}
 
                 %button.reset-filter-button.web-reset-button.header-action-btn{:type => "button", :onclick => "resetFilters(true);", style: "margin-right: 2rem"}
                   %span.hidable
@@ -150,24 +157,30 @@
                 %img{:src => "/assets/menu-icon.png"}/
               .mobile-filter-mega-menu.responsive-content
                 - if @have_multi_property_ids
+                  - if @map_filter[:show_properties_filter]
+                    .selectable-field
+                      %label Community
+                      = select_tag :responsive_multi_communities, options_for_select(@multi_properties.present? ? @multi_properties : []),{:class=>"custom-select", :include_blank => "All "}
+
+                - if @map_filter[:show_bedroom_filter]
                   .selectable-field
-                    %label Community
-                    = select_tag :responsive_multi_communities, options_for_select(@multi_properties.present? ? @multi_properties : []),{:class=>"custom-select", :include_blank => "All "}
-
-                .selectable-field
-                  %label Bedrooms
-                  = select_tag :responsive_unit_bedroom, options_for_select(@unit_bedrooms.present? ? @unit_bedrooms : []),{:class=>"custom-select", :include_blank => "All "}
+                    %label Bedrooms
+                    = select_tag :responsive_unit_bedroom, options_for_select(@unit_bedrooms.present? ? @unit_bedrooms : []),{:class=>"custom-select", :include_blank => "All "}
                 
-                .selectable-field{ class: !@community_info.display_rent ? "pricing_filter_visibility" : nil }
-                  %label  Maximum Price
-                  = select_tag :responsive_market_rent, options_for_select(@market_rent.present? ? @market_rent : []), { class: "custom-select" }
+                - if @map_filter[:show_pricing_filter]
+                  .selectable-field{ class: !@community_info.display_rent ? "pricing_filter_visibility" : nil }
+                    %label  Maximum Price
+                    = select_tag :responsive_market_rent, options_for_select(@market_rent.present? ? @market_rent : []), { class: "custom-select" }
 
-                .selectable-field
-                  %label Min Square Footage
-                  = select_tag :responsive_square_feet, options_for_select(@square_feet.present? ? @square_feet : []),{:class=>"custom-select"}
-                .selectable-field
-                  %label Availability
-                  = select_tag :responsive_available_unit, options_for_select(@available_units.present? ? @available_units : []), { class: "custom-select" }
+                - if @map_filter[:show_square_feet_filter]
+                  .selectable-field
+                    %label Min Square Footage
+                    = select_tag :responsive_square_feet, options_for_select(@square_feet.present? ? @square_feet : []),{:class=>"custom-select"}
+                
+                - if @map_filter[:show_availability_filter]
+                  .selectable-field
+                    %label Availability
+                    = select_tag :responsive_available_unit, options_for_select(@available_units.present? ? @available_units : []), { class: "custom-select" }
 
                 %div{:style => "text-align: center; padding-bottom: 9px;display: flex;justify-content: center;"}
                   %button.apply-now-responsive{:type => "button", :onclick => "applyFilters();"}
@@ -295,6 +308,7 @@
                       = select_tag :filter,  options_for_select([["Sort by"],["Price: Low to High"], ["Price: High to Low"], ["Availability: Soonest to Latest"], ["Availability: Latest to Soonest"], ["Sq Ft: More to Less"], ["Sq Ft: Less to More"]])
                     - else
                       = select_tag :filter,  options_for_select([["Sort by"], ["Availability: Soonest to Latest"], ["Availability: Latest to Soonest"], ["Sq Ft: More to Less"], ["Sq Ft: Less to More"]])
+                
                 %div#units-body
 
       // Trigger the modal with a button
@@ -329,7 +343,8 @@
     map_configurations: @community&.three_d_maps_configuration.to_json, 
     units: @units_with_floorplan_info, 
     amenities_data: @amenities_data,
-    sub_communities: @community_info.sub_communities.to_json
+    sub_communities: @community_info.sub_communities.to_json,
+    floorplans: @floorplans.to_json
   }
 }
 
@@ -343,6 +358,8 @@
   var $slider;
   var $images = [];
   var largeImageHeight = 166;
+  var turnAvailabilityOn = "#{@community.turn_availability_on?}" === "true"
+  var floorplans = $("#communityWebpagesData").data("floorplans");
   var subCommunities = $("#communityWebpagesData").data("subCommunities");
   var map_marker_color = toRgbColor("#{raw map_marker_color}");
   var communityInactivated = "#{@community.locked}" === "true"

@@ -38,6 +38,9 @@
             %li.hidden{:role => "presentation"}
               %a#gables-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-gables", :role => "tab"} Gables Settings                
             %li{:role => "presentation"}
+              %a#community-map-marker-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#community-map-marker", :role => "tab"} Community Map Markers
+            
+            %li{:role => "presentation"}
               %a#marketing-map-marker-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#marketing-map-marker", :role => "tab"} Marketing Map Markers
             
             %li{:role => "presentation"}
@@ -82,7 +85,9 @@
               = render 'custom_style'
             #u-button.tab-pane.fade{:role => "tabpanel"}
               = render 'button'
-            #marketing-map-marker.tab-pane.fade{:role => "tabpanel"}
+            #community-map-marker.tab-pane.fade{:role => "tabpanel"}
+              = render 'community_map_marker_colors'
+            #marketing-map-marker.tab-pane.fade{:role => "tabpanel", :style => "padding: 20px;"}
               = render 'marketing_map_marker_colors'
             #ops-map-marker.tab-pane.fade{:role => "tabpanel"}
               = render 'ops_map_marker_colors'

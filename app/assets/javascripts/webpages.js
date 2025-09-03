@@ -1117,7 +1117,9 @@ function showMarkers() {
     }
   }
 
-  disabledEnabledAnchors();
+  if(!isFloorplanMapEnabled())
+    disabledEnabledAnchors();
+
   setMarkersSizeAndMargin(); //image mode only
   adjustImageMapMarkersPosition(); //image mode only
   setSVGUnitsAmenitiesCoordinates(); //svg mode only
@@ -1276,7 +1278,10 @@ function renderMarkersForFloor(parent, floor) {
   const element = parent?.querySelector('.markers-container');
 
   renderUnitsAmenitiesMarkers(element, floor);
-  disabledEnabledAnchors();
+  
+  if(!isFloorplanMapEnabled())
+    disabledEnabledAnchors();
+
   setMarkersSizeAndMargin();
   adjustImageMapMarkersPosition();
 }
@@ -1285,21 +1290,37 @@ function renderMapData() {
   const filteredUnits = filterUnitsBasedOnCommunityType(units);
   const sortType = document.getElementById("filter");
   const floorUnits = getFilteredUnits(filteredUnits, sortType.value);
+
   renderUnitBoxes(floorUnits);
 }
 
 function renderUnitBoxes(floorUnits) {
   const element = document.getElementById("units-body");
+
   if (!element) return;
 
   element.innerHTML = "";
 
   document.getElementById("unit-title-count").innerText = `${floorUnits.length} Units Found`;
 
+  if(isFloorplanMapEnabled())
+    floorUnits = filterUniqueFloorplanList(floorUnits);
+
   const html = floorUnits.map((unit) => buildUnitBoxHTML(unit)).join("");
   element.innerHTML = html;
 
-  unitBoxListHover();
+  if(!isFloorplanMapEnabled())
+    unitBoxListHover();
+}
+
+function filterUniqueFloorplanList(floorUnits) {
+  return [
+    ...new Map(
+      floorUnits
+        .filter(unit => unit.provider_floorplan_id) // keep only those with id
+        .map(unit => [unit.provider_floorplan_id, unit]) // key by provider_floorplan_id
+    ).values()
+  ]
 }
 
 function bindUnitMarkerEvents() {
@@ -1349,7 +1370,6 @@ function bindAmenityMarkerEvents() {
   document.querySelectorAll('.amenity-marker').forEach(bindEventsTo);
 }
 
-
 function renderUnitsAmenitiesMarkers(element, f) {
   const filteredUnits = filterUnitsBasedOnCommunityType(units, f);
   const unitsHtml = filteredUnits.map((unit) => buildUnitMarkerHTML(unit, f)).join("");
@@ -1363,12 +1383,16 @@ function renderUnitsAmenitiesMarkers(element, f) {
 }
 
 function buildUnitBoxHTML(unit) {
-  const unitName =
-    webCommunity?.is_sitemap && !webCommunity?.display_building
+  let unitName = `Unit # ${
+    (webCommunity?.is_sitemap && !webCommunity?.display_building
       ? unit["marketing_name"]
       : unit["building"]
       ? `${unit["building"]}-${unit["marketing_name"]}`
-      : unit["marketing_name"];
+      : unit["marketing_name"])
+  }`;
+
+  if (isFloorplanMapEnabled())
+    unitName = unit["floorplan_name"];
 
   return `
     <div
@@ -1378,28 +1402,71 @@ function buildUnitBoxHTML(unit) {
       data-unit-marketing-name='${unit["data_attributes"]["data-unit-marketing-name"]}'
     >
       <div class='image-styles'>
+        ${floorplanColorBarHTML(unit)}
+        ${floorplanAvailabilityBannerHTML(unit)}
         <a class='image_link' href='#' id="s_${unit["id"]}" onClick="onUnitClick(event)">
           <img src='${unit["floorplan_image"]}' class='image-image-styles' />
         </a>
       </div>
-      <div class='unit-details-section'>
-        <p id='unit-detail-market-title'>
-          Unit # ${unitName}
-        </p>
-      </div>
-      <div class='unit-details-section'>
-        <p><i class='fa fa-bed'> &nbsp ${unit["bedrooms"]} Bed </i></p>
-        <p><i class='fa fa-bath'> &nbsp ${unit["bathrooms"]} Bath </i></p>
-        <p><i class='fa fa-building'> &nbsp ${unit["square_feet"]} Sq Ft </i></p>
-      </div>
-      <div class='unit-details-section'>
-        <p id='right-bar-unit-availability'>${get_unit_availability(unit)}</p>
-        <p>${unitMarketRent(unit)}</p>
+      <div class="unit-content">
+        <div class='unit-details-section'>
+          <p id='unit-detail-market-title'>
+            <strong>${unitName}</strong>
+          </p>
+        </div>
+        <div class='unit-details-section'>
+          <p><i class='fa fa-bed'> &nbsp ${unit["bedrooms"]} Bed </i></p>
+          <p><i class='fa fa-bath'> &nbsp ${unit["bathrooms"]} Bath </i></p>
+          <p><i class='fa fa-building'> &nbsp ${unit["square_feet"]} Sq Ft </i></p>
+        </div>
+        ${
+          !isFloorplanMapEnabled()
+            ? `<div class='unit-details-section'>
+                <p id='right-bar-unit-availability'>${get_unit_availability(unit)}</p>
+                <p>${unitMarketRent(unit)}</p>
+              </div>`
+            : ``
+        }
       </div>
     </div>
   `;
 }
 
+function floorplanColorBarHTML(unit) {
+  if(!isFloorplanMapEnabled()) return '';
+  
+  const floorplanColors = getFloorplanLevelMarkerColor(unit);
+  return `<div class="floorplan-color-bar" style="background-color: ${floorplanColors};"></div>`;
+}
+
+function floorplanAvailabilityBannerHTML(unit) {
+  if(!isFloorplanMapEnabled()) return '';
+  const config = getFloorplanConfigObject(unit);
+  let bannerText = "";
+  let bannerColor = "";
+
+  switch (config.availability_status) {
+    case "limited_availability":
+    case 1:
+      bannerText = "Limited Availability";
+      bannerColor = "#faa9a3ff";
+      break;
+    case "almost_gone":
+    case 2:
+      bannerText = "Almost Gone";
+      bannerColor = "#f56b66ff";
+      break;
+    case "sold_out":
+    case 3:
+      bannerText = "Sold Out";
+      bannerColor = "#aa2218ff";
+      break;
+    default:
+      return ""; 
+  }
+
+  return `<div class="floorplan-banner" style="background-color: ${bannerColor};">${bannerText}</div>`;
+}
 
 
 function buildUnitMarkerHTML(unit, f) {
@@ -1772,7 +1839,9 @@ function markerHoverEffect(event, _3dData = null) {
   } else {
     $(".fav-heart").addClass("hidden");
   }
-  $("#popover-marketing-name").html($this.data("unit-marketing-name") + "</b>");
+  if(!isFloorplanMapEnabled())
+    $("#popover-marketing-name").html($this.data("unit-marketing-name") + "</b>");
+  
   $("#popover-floorplan").html($this.data("unit-description"));
 
   if (!canShowAdditionalFees($this.data("unit-additional-fees"))) {
@@ -1788,6 +1857,7 @@ function markerHoverEffect(event, _3dData = null) {
   }
   $("#popover-square-feet").html($this.data("square-feet"));
   $("#popover-bathrooms").html($this.data("bathrooms"));
+  
   if ($("#popover-bathrooms").html() == "1") {
     $("#popover-bathrooms").siblings("small").html("Bathroom");
   } else {
@@ -1800,26 +1870,37 @@ function markerHoverEffect(event, _3dData = null) {
     $("#popover-bedrooms").siblings("small").html("Bedrooms");
   }
 
-  if ($this.data("sold")) {
-    $("#popover-available-date").html("");
-    $("#hover-available-text").html("Sold");
-  } else {
-    const availability = $this.data("availability") == "Unoccupied";
+  setUnitHoverAvailability($this)
 
-    $("#hover-available-text").html(availability ? "Available" : "");
-    // $('#popover-available-date').html($this.data('available-date'));
-    $("#popover-available-date").html(
-      availability
-        ? formattedDateByRegion(
-            webCommunity.country_code,
-            $this.data("available-date")
-          )
-        : "Unavailable"
-    );
+  if(!isFloorplanMapEnabled())
+    $("#popover-price").html(currency + $this.data("market-rent"));
+}
+
+function setUnitHoverAvailability($this) {
+  if(isFloorplanMapEnabled()) {
+    $("#hover-available-text").hide();
+    return;
   }
 
-  $("#popover-price").html(currency + $this.data("market-rent"));
+  const $date = $("#popover-available-date");
+  const $text = $("#hover-available-text");
+
+  if ($this.data("sold")) {
+    $date.html("");
+    $text.html("Sold");
+    return;
+  }
+
+  const isUnoccupied = $this.data("availability") === "Unoccupied";
+
+  $text.html(isUnoccupied ? "Available" : "");
+  $date.html(
+    isUnoccupied
+      ? formattedDateByRegion(webCommunity.country_code, $this.data("available-date"))
+      : "Unavailable"
+  );
 }
+
 
 function markerHoverEffectEnd(event, $3dDataElement = null) {
   let $this;
@@ -1865,6 +1946,7 @@ function showUnitPopoverAndHighlightListUnit(
   const unitElement = document.getElementById(
     "unit_" + $dataElement.data("unitId")
   );
+
   const scrollableParent = document.querySelector(".left-side");
 
   if (unitElement && scrollableParent) {
@@ -1919,7 +2001,7 @@ function showUnitPopoverAndHighlightListUnit(
   }
   $($("#unit_" + $dataElement.data("unitId"))).css(
     "border",
-    `5px solid ${markerColor}`
+    `3px solid ${markerColor}`
   );
 }
 
@@ -2355,6 +2437,65 @@ function adjustHeightForContentArea() {
   // }
 }
 
+function setAvailabilityStatus(element) {
+  if(isFloorplanMapEnabled()) {
+    $('.availabilty-container-start').hide()
+    return;
+  }
+  
+  const $el = $(element);
+  const $modal = $("#unitModal");
+
+  const $availability = $modal.find("#availability");
+  const $availableDate = $modal.find("#available-date");
+  const $availableText = $modal.find("#available-text");
+
+  if ($el.data("sold")) {
+    $availability.html("Sold");
+    $availableText.html("Unavailable");
+    $availableDate.html("");
+    return;
+  }
+
+  if ($el.data("available")) {
+    $availability.html("Available");
+    $availableText.html("Available");
+    $availableDate.html(
+      formattedDateByRegion(webCommunity.country_code, $el.data("available-date"))
+    );
+    return;
+  }
+
+  const isUnoccupied = $el.data("availability") === "Unoccupied";
+
+  $availability.html(isUnoccupied ? "Available" : "Occupied");
+  $availableText.html("Available");
+  $availableDate.html(
+    isUnoccupied
+      ? formattedDateByRegion(webCommunity.country_code, $el.data("available-date"))
+      : "Unavailable"
+  );
+}
+
+function setFloorplanName(element) {
+  const $el = $(element);
+  const $modal = $("#unitModal");
+
+  const $unitMarketingName = $modal.find("#unit-marketing-name");
+  const $floorplanName = $modal.find("#floorplan-name");
+
+  const floorplanName = $el.data("floorplan-name");
+  const unitMarketingName = $el.data("unit-marketing-name");
+
+  if (isFloorplanMapEnabled()) {
+    $unitMarketingName.html(floorplanName);
+    $floorplanName.html(unitMarketingName);
+  } else {
+    $unitMarketingName.html(unitMarketingName);
+    $floorplanName.html(floorplanName);
+  }
+}
+
 function setModalAttributes(element) {
   if (!element) {
     return;
@@ -2412,13 +2553,9 @@ function setModalAttributes(element) {
 
   if(modalButtonsCounter > 2 && smallScreen())
     adjustButtonFontSize();
+  
+  setFloorplanName(element);
 
-  $("#unitModal")
-    .find("#unit-marketing-name")
-    .html($(element).data("unit-marketing-name"));
-  $("#unitModal")
-    .find("#floorplan-name")
-    .html($(element).data("floorplan-name"));
   $("#unitModal").find("#square-feet").html($(element).data("square-feet"));
   $("#unitModal").find("#bathrooms").html($(element).data("bathrooms"));
   if ($("#unitModal").find("#bathrooms").html() == "1") {
@@ -2449,43 +2586,7 @@ function setModalAttributes(element) {
       .html("Bedrooms");
   }
 
-  if ($(element).data("sold")) {
-    $("#unitModal").find("#availability").html("Sold");
-    $("#unitModal").find("#available-date").html("");
-    $("#unitModal").find("#available-text").html("Unavailable");
-  } else {
-    if ($(element).data("available")) {
-      $("#unitModal").find("#availability").html("Available");
-      $("#unitModal").find("#available-text").html("Available");
-
-      // $('#unitModal').find('#available-date').html($(element).data('available-date'));
-      $("#available-date").html(
-        formattedDateByRegion(
-          webCommunity.country_code,
-          $(element).data("available-date")
-        )
-      );
-    } else {
-      const availability = $(element).data("availability") == "Unoccupied";
-      $("#unitModal")
-        .find("#availability")
-        .html(availability ? "Available" : "Occupied");
-
-      $("#unitModal").find("#available-text").html("Available");
-
-      // $('#unitModal').find('#available-date').html($(element).data('available-date'));
-      $("#unitModal").find(
-        $("#available-date").html(
-          availability
-            ? formattedDateByRegion(
-                webCommunity.country_code,
-                $(element).data("available-date")
-              )
-            : "Unavailable"
-        )
-      );
-    }
-  }
+  setAvailabilityStatus(element);
 
   $("#unitModal")
     .find("#market-rent")
@@ -2608,10 +2709,27 @@ function handleApplyNowButtonVisibility(element) {
   const url = element.getAttribute("data-availability-url");
   const dataProvider = $(element).data("provider");
 
+
+
   if (dataProvider === "psi") {
-    if (url) $("#psi-anchor-tag").show();
+    if (url) {
+      $("#psi-anchor-tag").show();
+      // handleFloorplanApplyNowVisibility(element);
+    }
     else $("#psi-anchor-tag").hide();
   }
+}
+
+function handleFloorplanApplyNowVisibility(element) {
+  const $el = $(element);
+  if(!isFloorplanMapEnabled()) return;
+
+  const config = getFloorplanConfigObject(currentUnitSelected.dataset);
+
+  if(config.availability_status ===  "sold_out")
+    $("#psi-anchor-tag").hide();
+  else
+    $("#psi-anchor-tag").show();
 }
 
 function setApplyNowURLDate(element) {
@@ -3724,17 +3842,10 @@ function getUnitMarkerColor(unit) {
 
   const unitCommunityId = unit.property_id || unit.propertyId || "";
   const unitStatus = unit.unit_status || unit.unitStatus || unit.status || "";
-  const modelUnit = unit.model_unit || unit.modelUnit || false;
   let result = getCommunityBasedMarkerColor(unitCommunityId);
 
   if (opsMapMarkersEnabled) {
-    const isModelUnit =
-      typeof modelUnit === "boolean"
-        ? modelUnit
-        : typeof modelUnit === "string"
-        ? modelUnit === "true"
-        : false;
-    if (isModelUnit) {
+    if (isModelUnit(unit)) {
       result = mapMarkerColors.model || "#f57396";
     } else {
       switch (unitStatus.toLowerCase()) {
@@ -3766,7 +3877,75 @@ function getUnitMarkerColor(unit) {
     }
   }
 
+  if(isFloorplanMapEnabled()) {
+    result = getFloorplanLevelMarkerColor(unit);
+    return result;
+  }
+
   return toHexColor(result);
+}
+
+function hexToRgba(hex, opacity = 1) {
+  hex = hex.replace(/^#/, '');
+
+  if (hex.length === 3) {
+    hex = hex.split('').map(char => char + char).join('');
+  }
+
+  const bigint = parseInt(hex, 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+}
+
+
+function isModelUnit(unit) {
+  const modelUnit = unit.model_unit || unit.modelUnit || false;
+  
+  return typeof modelUnit === "boolean"
+    ? modelUnit
+    : typeof modelUnit === "string"
+    ? modelUnit === "true"
+    : false;
+}
+
+function getFloorplanLevelMarkerColor(unit) {
+  const DEFAULT_COLOR = "#d37474";
+  const config = getFloorplanConfigObject(unit);
+
+  if (!config) return hexToRgba(DEFAULT_COLOR, 1);
+
+  const isModel = isModelUnit(unit);
+  const colorKey = isModel ? "model_units_color" : "available_units_color";
+  const opacityKey = isModel ? "model_units_opacity" : "available_units_opacity";
+
+  const color = config[colorKey] || DEFAULT_COLOR;
+  const opacity = config[opacityKey] ?? 1; // using nullish coalescing for 0 handling
+
+  return hexToRgba(color, opacity);
+}
+
+function getFloorplanConfigObject(unit) {
+  const parseConfig = (config) => {
+    if (!config) return null;
+    return typeof config === "object" ? config : safeJsonParse(config);
+  };
+
+  return (
+    parseConfig(unit.floorplanMapConfig) ||
+    parseConfig(unit.data_attributes?.["data-floorplan-map-config"])
+  );
+}
+
+// Helper for safe JSON parsing
+function safeJsonParse(str) {
+  try {
+    return JSON.parse(str);
+  } catch {
+    return null;
+  }
 }
 
 function getCommunityBasedMarkerColor(unitCommunityId) {
@@ -3787,4 +3966,10 @@ function getCommunityBasedMarkerColor(unitCommunityId) {
 
 function resetUnits() {
   units = total_units;
+}
+
+function isFloorplanMapEnabled() {
+  return (
+    turnAvailabilityOn && !opsMapMarkersEnabled
+  );
 }

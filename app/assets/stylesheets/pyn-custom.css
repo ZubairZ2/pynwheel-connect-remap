@@ -2612,6 +2612,7 @@ img-responsive {
     justify-content: center;
     background-color: white;
     margin-bottom: 10px;
+    position: relative;
 }
 
 .fa-map-marker-alt {
@@ -2649,6 +2650,7 @@ img-responsive {
     height: 70px;
     padding: 10px 15px;
     background-color: #E8E9E9;
+    z-index: 10000;
     /* display: flex; */
     align-items: center;
     /* justify-content: space-between; */
@@ -6578,6 +6580,7 @@ ul.add-fav-options {
     color: white;
     font-size: 20px;
     font-weight: 500;
+    margin: 0px !important;
 }
 .c-popup img {
     max-width: 100%;
@@ -7822,4 +7825,28 @@ div.esri-ui-inner-container.esri-ui-manual-container>div.esri-component.esri-att
   bottom: 0;
   right: 0;
   top: 0;
+}
+
+.floorplan-color-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2.5rem;
+  height: 100%;
+}
+
+.floorplan-banner {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 4px 8px;
+  color: #fff;
+  font-weight: bold;
+  /* font-size: 0.8rem; */
+  border-bottom-left-radius: 4px;
+}
+
+
+.floorplan-marker-form label {
+  font-weight: normal !important;
 }

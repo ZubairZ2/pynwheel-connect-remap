@@ -143,7 +143,8 @@ Rails.application.routes.draw do
       get :authenteq_result
       get :web_cam_test
     end
-
+    
+    resources :map_filters, only: [:update]
     resources :building_starting_points
     resources :crm_providers
     resources :remote_locks do
@@ -301,11 +302,13 @@ Rails.application.routes.draw do
         get :show_floorplan_secondary_image_in_modal
         delete :remove_pri_scnd_image
         put :crop_secondary_image
+        patch :update_availability_status
       end
 
       collection do
         post :add_description
         post :save_floorplan_name_order
+        patch :update_marker_colors
       end
     end
 

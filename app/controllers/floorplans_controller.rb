@@ -3,7 +3,7 @@ class FloorplansController < ApplicationController
   add_breadcrumb "Home", :root_path
   before_action :set_community
   before_action :check_community
-  before_action :set_floorplan, only: [:edit,:update,:destroy, :remove_pri_scnd_image]
+  before_action :set_floorplan, only: [:edit,:update,:destroy, :remove_pri_scnd_image, :update_availability_status]
 
   def index
     @floorplans = @community.floorplans.order(id: :desc)
@@ -42,6 +42,34 @@ class FloorplansController < ApplicationController
     add_breadcrumb "Floor plan Details", edit_community_floorplan_path(@community,@floorplan)
   end
 
+  def update_marker_colors
+    success, errors = true, []
+    params[:floorplans].each do |id, attrs|
+      floorplan = @community.floorplans.find(id)
+      unless floorplan.update(attrs.permit(:available_units_color, :available_units_opacity, :model_units_color, :model_units_opacity))
+        success = false
+        errors << "Floorplan #{floorplan.name}: #{floorplan.errors.full_messages.join(', ')}"
+      end
+    end
+
+    respond_to do |format|
+      if success
+        format.html { redirect_to community_design_index_path(@community), notice: "All floorplan colors saved successfully." }
+        format.json { render json: { success: true } }
+      else
+        format.html { redirect_to community_design_index_path(@community), alert: errors.join(", ") }
+        format.json { render json: { success: false, errors: errors }, status: :unprocessable_entity }
+      end
+    end
+  end
+
+  def update_availability_status
+  if @floorplan.update(floorplan_availability_status_params)
+    redirect_back(fallback_location: community_floorplans_path(@community), notice: "Floorplan availability status updated!")
+  else
+    redirect_back(fallback_location: community_floorplans_path(@community), alert: "Could not update floorplan availability status.")
+  end
+end
   def remove_pri_scnd_image
     if params[:image] == "primary"
       @floorplan.remove_image!
@@ -234,6 +262,10 @@ class FloorplansController < ApplicationController
 
   def set_floorplan
     @floorplan = Floorplan.find params[:id]
+  end
+
+  def floorplan_availability_status_params
+    params.require(:floorplan).permit(:availability_status)
   end
 
   def floorplan_params

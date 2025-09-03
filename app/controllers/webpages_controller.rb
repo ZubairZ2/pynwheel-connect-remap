@@ -31,11 +31,11 @@ class WebpagesController < ActionController::Base
     @floorplans = @community_info.floorplans
     @floorplans_map = @floorplans.index_by(&:provider_floorplan_id)
     @svg_enabled = @community_info.enable_svg_mode?
-    # @beans_enabled = @community_info.enable_three_d_maps
     community_units = @community_info.units
     @amenities = @community_info.amenities.plotted_amenities(@svg_enabled).includes(:amenityable, :amenity_galleries)
     @have_multi_property_ids = @community_info.have_multi_property_ids? && @community_info.credential&.allow_sub_communities?
     @multi_properties = @community_info.fetch_multi_properties()
+    @map_filter = @community_info&.map_filter&.get_filter_list(@show_ops_map)
 
     unless @community_info.locked
       if @community_info.has_floorplates?
@@ -65,14 +65,15 @@ class WebpagesController < ActionController::Base
         end
       end
 
-      @total_available_units = community_units.available_units(@svg_enabled, @community.units_availability_over_120_days)
-      @available_units_and_sold_units = if @show_ops_map
-                                          community_units.are_plotted_units(@svg_enabled).status_scoped(@community.units_availability_over_120_days)
-                                        else
-                                          @total_available_units
-                                        end
+      @units = if @community.turn_availability_on && !@show_ops_map # for studen housing properties.
+        community_units.are_plotted_units(@svg_enabled)
+      elsif @show_ops_map
+        community_units.are_plotted_units(@svg_enabled).status_scoped(@community.units_availability_over_120_days)
+      else
+        community_units.available_units(@svg_enabled, @community.units_availability_over_120_days)
+      end
 
-      if @available_units_and_sold_units.length > 0
+      if @units.length > 0
         normalize_units
 
         if @units_with_floorplan_info.present?
@@ -115,7 +116,7 @@ class WebpagesController < ActionController::Base
   end
 
   def normalize_units
-    @available_units_and_sold_units.find_each do |unit|
+    @units.find_each do |unit|
       floorplan = @floorplans_map[unit.floorplan_id]
       if unit.effective_rent.present? && unit.effective_rent >= 1  && floorplan.present?
         @units_with_floorplan_info << fetch_unit_info_struct_for_webpage(unit, floorplan, @show_ops_map)
@@ -156,10 +157,10 @@ class WebpagesController < ActionController::Base
     ninty_days = today + 90.days;
     one_twenty_days = today + 120.days;
 
-    total_available_units_ids = @total_available_units.ids
+    units_ids = @units.ids
     @units_with_floorplan_info.each do |available_unit|
       unit_id = available_unit[:id]
-      next unless total_available_units_ids.include?(unit_id)
+      next unless units_ids.include?(unit_id)
 
       available_date = available_unit[:available_date] || Date.new(0)
       if (available_date <= today)

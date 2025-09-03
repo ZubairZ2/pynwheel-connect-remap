@@ -1,0 +1,29 @@
+#map-filter-configuration-modal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header#modal-title.config-modal-title
+        Control Map Filters Visibility Configuration from Below Options
+
+      = form_for [community, map_filter], url: community_map_filter_path(community, map_filter), method: :patch, html: { id: "map_filters_form" } do |f|
+        .modal-body
+          %table.table
+            %thead
+              %tr
+                %th Filter Name
+                %th Marketing Map
+                %th Ops Map
+            %tbody
+              - filter_list.each do |filter|
+                %tr
+                  %td= filter[:name]
+                  %td
+                    .TriSea-technologies-Switch
+                      = f.check_box filter[:marketing], checked: map_filter.send(filter[:marketing])
+                      %label.label-primary{ for: "map_filter_#{filter[:marketing]}" }
+                  %td
+                    .TriSea-technologies-Switch
+                      = f.check_box filter[:ops], checked: map_filter.send(filter[:ops])
+                      %label.label-primary{ for: "map_filter_#{filter[:ops]}" }
+        .modal-footer
+          = f.submit "Save Filters", class: "btn btn-primary submit-click"
+          %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel

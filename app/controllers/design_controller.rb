@@ -15,7 +15,8 @@ class DesignController < ApplicationController
     @home_screen = @design.home_screen ||  @design.create_home_screen 
     @gable = @design.gable ||  @design.create_gable 
     @expressionist = @design.expressionist ||  @design.create_expressionist 
-    @expressionist = @design.filter_panel ||  @design.create_filter_panel 
+    @expressionist = @design.filter_panel ||  @design.create_filter_panel
+    @floorplans = current_community.floorplans || []
   end
 
   def logo
