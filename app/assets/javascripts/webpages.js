@@ -1309,7 +1309,8 @@ function renderUnitBoxes(floorUnits) {
   const html = floorUnits.map((unit) => buildUnitBoxHTML(unit)).join("");
   element.innerHTML = html;
 
-  unitBoxListHover();
+  if(!isFloorplanMapEnabled())
+    unitBoxListHover();
 }
 
 function filterUniqueFloorplanList(floorUnits) {
