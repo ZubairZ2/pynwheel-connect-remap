@@ -143,7 +143,8 @@ Rails.application.routes.draw do
       get :authenteq_result
       get :web_cam_test
     end
-
+    
+    resources :map_filters, only: [:update]
     resources :building_starting_points
     resources :crm_providers
     resources :remote_locks do

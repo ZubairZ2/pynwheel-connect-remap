@@ -44,6 +44,7 @@ class Community < ApplicationRecord
   has_many :map_partners, dependent: :destroy
   has_many :sub_communities, dependent: :destroy
 
+  has_one :map_filter, dependent: :destroy
   has_one :credential, dependent: :destroy
   has_one :crm_credential, dependent: :destroy
   has_one :design, dependent: :destroy

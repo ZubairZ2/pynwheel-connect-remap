@@ -2708,10 +2708,27 @@ function handleApplyNowButtonVisibility(element) {
   const url = element.getAttribute("data-availability-url");
   const dataProvider = $(element).data("provider");
 
+
+
   if (dataProvider === "psi") {
-    if (url) $("#psi-anchor-tag").show();
+    if (url) {
+      $("#psi-anchor-tag").show();
+      // handleFloorplanApplyNowVisibility(element);
+    }
     else $("#psi-anchor-tag").hide();
   }
+}
+
+function handleFloorplanApplyNowVisibility(element) {
+  const $el = $(element);
+  if(!isFloorplanMapEnabled()) return;
+
+  const config = getFloorplanConfigObject(currentUnitSelected.dataset);
+
+  if(config.availability_status ===  "sold_out")
+    $("#psi-anchor-tag").hide();
+  else
+    $("#psi-anchor-tag").show();
 }
 
 function setApplyNowURLDate(element) {

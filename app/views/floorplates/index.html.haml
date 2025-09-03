@@ -207,6 +207,10 @@
                           %label.label-primary{:for => "turn_availability_on"}
                           %span.pl-15 Yes
 
+                          - if @community.turn_availability_on
+                            = link_to "Control Map Filters Visibility".html_safe, "#", :class => "btn mr-5 map-design-configurations-btn map_type", 'data-toggle' => "tooltip", :title => "Control Map Filters Visibility", :style => "margin-left: 5rem;background: #138fd4;color:white;height: 38px;padding-top: 7px;border-radius: 4px;", "data-name" => "plot", "data-target" => "#map-filter-configuration-modal", "data-toggle" => "modal", "data-href" => "/"
+
+                  
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                         Generate Floor URLs for Partner
@@ -389,6 +393,9 @@
                           = check_box_tag :turn_availability_on, true, @community.turn_availability_on, class: "apartment-setting-field"
                           %label.label-primary{:for => "turn_availability_on"}
                           %span.pl-15 Yes
+                        
+                          - if @community.turn_availability_on
+                            = link_to "Control Map Filters Visibility".html_safe, "#", :class => "btn mr-5 map-design-configurations-btn map_type", 'data-toggle' => "tooltip", :title => "Control Map Filters Visibility", :style => "margin-left: 5rem;background: #138fd4;color:white;height: 38px;padding-top: 7px;border-radius: 4px;", "data-name" => "plot", "data-target" => "#map-filter-configuration-modal", "data-toggle" => "modal", "data-href" => "/"
 
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
@@ -514,6 +521,8 @@
           .row
             .col-md-12
   #select_floor.modal.fade.select_floor
+  = render partial: "shared/map_filters_configuration_modal", locals: { community: @community, map_filter: @community.map_filter, filter_list: @community.map_filter.get_filters_list()}
+
 
 :javascript
   $('.wysihtml5').each(function(i, elem) {
