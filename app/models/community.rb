@@ -1076,7 +1076,7 @@ class Community < ApplicationRecord
       when "yardirentcafe"
         import_yardirentcafe_data
       when "appfolio"
-        import_appfolio_data
+        import_appfolio_data(true)
       when "rentmanager"
         import_rentmanager_data
       when "realpagesvc"
@@ -1292,8 +1292,8 @@ class Community < ApplicationRecord
     RentCafeDataImportWorker.perform_async self.id
   end
 
-  def import_appfolio_data
-    AppFolioDataImportWorker.perform_async self.id
+  def import_appfolio_data update_property_info = false
+    AppFolioDataImportWorker.perform_async(self.id, update_property_info)
   end
 
   def import_rentmanager_data
