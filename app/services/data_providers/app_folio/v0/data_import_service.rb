@@ -14,7 +14,6 @@ module DataProviders
               import_property_floorplans(property_code)
               import_property_units(property_code)
               update_floorplan_square_footage()
-              # update_price_and_availability(property_code)
 
             rescue => exception
               raise exception
@@ -44,8 +43,6 @@ module DataProviders
             state: details["State"],
             zip: details["Zip"],
             website: details["Link"],
-            # email: details["Email"],
-            # phone: details["PhoneNumber"]
           )
         end
 
@@ -154,48 +151,6 @@ module DataProviders
           end
         end
 
-        # def update_price_and_availability property_code
-        #   response = get_resource(property_code, "listings", "PropertyId")
-        #   return unless response.present?
-        #   response = response["data"]
-        #   process_listings_response(response, property_code) if response.present? && response.is_a?(Array)
-        # end
-
-        # def process_listings_response response, property_code
-        #   property_units = get_property_based_units_data(response, property_code)
-
-        #   property_units.each do |r|
-        #     unit = Unit.find_by(provider: "appfolio", community_id: @community_id, provider_unit_id: r["UnitId"])
-            
-        #     next unless unit.present?
-        #     next if unit.manual_override
-
-        #     available_on = r["AvailableOn"]
-        #     available_on = Date.parse(available_on) rescue Date.today
-
-        #     update_attribute_if_blank(unit, :effective_rent, unit_market_rent(r))
-        #     # update_attribute_if_blank(unit, :availability, "Unoccupied")
-        #     update_attribute_if_blank(unit, :available_date, available_on)
-        #     # update_attribute_if_blank(unit, :available, true)
-
-        #     unit.property_id = property_code
-        #     # unit.unit_status = "Vacant"
-        #     unit.square_feet = unit_sqft(r)
-        #     unit.min_effective_rent = unit_min_rent(r)
-        #     unit.max_effective_rent = unit_max_rent(r)
-            
-        #     unit.save
-        #   end
-        # end
-       
-        # def get_property_based_units_data(data, property_code)
-        #   data.select do |unit|
-        #     unit["PropertyId"] == property_code && unit["PostedToWebsite"] == true
-        #   end
-        # rescue
-        #   []
-        # end
-
         def unit_sqft r
           return 1.0 unless r["SquareFeet"].present?
           r["SquareFeet"].to_f > 0 ? r["SquareFeet"].to_f : 1.0
@@ -216,15 +171,21 @@ module DataProviders
           market_rent.to_f > 0 ? market_rent : 1.0
         end
 
-        def is_available? r
-          unit_availability(r) === "Unoccupied"
+        def is_available?(r)
+          unit_availability(r) == "Unoccupied"
         end
 
-        def unit_availability r
+        def unit_availability(r)
+          status       = r["Status"]
           available_on = r["AvailableOn"]
+          posted       = r["PostedToWebsite"]
 
-          if available_on.present?
-            (r["Status"] === "Vacant" && r["PostedToWebsite"]) ? "Unoccupied" : "Occupied"
+          return "Occupied" unless posted
+
+          if status == "Vacant"
+            "Unoccupied"
+          elsif status == "Notice" && available_on.present?
+            "Unoccupied"
           else
             "Occupied"
           end
@@ -234,7 +195,7 @@ module DataProviders
           return "" unless is_available?(r)
 
           available_on = r["AvailableOn"]
-          Date.parse(available_on) rescue Date.today
+          available_on.present? ? (Date.parse(available_on) rescue Date.today) : Date.today
         end
 
         def update_floorplan_square_footage
