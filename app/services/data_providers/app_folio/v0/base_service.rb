@@ -2,9 +2,10 @@ module DataProviders
   module AppFolio
     module V0
       class BaseService
-        def initialize(community_id)
+        def initialize(community_id, update_property_info = false)
           begin
             @batch_size = 10
+            @update_property_info = update_property_info
             @community_id = community_id
             @community = Community.find_by_id(community_id)
             @credential = @community&.credential if @community
