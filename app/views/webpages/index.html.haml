@@ -299,15 +299,17 @@
 
               .left-side.tabcontent.list_view
                 -all_details = @units_with_floorplan_info.present? ? JSON.parse(@units_with_floorplan_info) : []
-                %div.left-side-title
-                  %div.webpage-left-list-view-title.webpage-header
-                    %p#unit-title-count
-                      #{all_details.count} Units Found
 
-                    - if @community_info.display_rent
-                      = select_tag :filter,  options_for_select([["Sort by"],["Price: Low to High"], ["Price: High to Low"], ["Availability: Soonest to Latest"], ["Availability: Latest to Soonest"], ["Sq Ft: More to Less"], ["Sq Ft: Less to More"]])
-                    - else
-                      = select_tag :filter,  options_for_select([["Sort by"], ["Availability: Soonest to Latest"], ["Availability: Latest to Soonest"], ["Sq Ft: More to Less"], ["Sq Ft: Less to More"]])
+                - unless @community.turn_availability_on && !@show_ops_map
+                  %div.left-side-title
+                    %div.webpage-left-list-view-title.webpage-header
+                      %p#unit-title-count
+                        #{all_details.count} Units Found
+
+                      - if @community_info.display_rent
+                        = select_tag :filter,  options_for_select([["Sort by"],["Price: Low to High"], ["Price: High to Low"], ["Availability: Soonest to Latest"], ["Availability: Latest to Soonest"], ["Sq Ft: More to Less"], ["Sq Ft: Less to More"]])
+                      - else
+                        = select_tag :filter,  options_for_select([["Sort by"], ["Availability: Soonest to Latest"], ["Availability: Latest to Soonest"], ["Sq Ft: More to Less"], ["Sq Ft: Less to More"]])
                 
                 %div#units-body
 

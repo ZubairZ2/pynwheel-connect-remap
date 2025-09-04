@@ -113,6 +113,7 @@ class Community < ApplicationRecord
   scope :active_touch_properties, -> {active_client_properties&.where(touchscreen_app: true)}
   scope :launch_properties, -> {real_properties.where(pynwheel_launch_access: true).where.not(company_id: [44, 783])}
   scope :touch_and_launch_properties, -> { active_touch_properties | launch_properties }
+  after_update :turn_off_marketing_availability_filter, if: :saved_change_to_turn_availability_on?
   
   scope :test_properties, -> { 
     joins(:company)
@@ -2266,6 +2267,11 @@ class Community < ApplicationRecord
   end
 
   private
+
+  def turn_off_marketing_availability_filter
+    return unless map_filter.present?
+    map_filter.update!(marketing_availability_enabled: !turn_availability_on)
+  end
 
   def sanitize_content(content)
     return nil unless content.present?
