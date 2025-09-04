@@ -1317,7 +1317,6 @@ function renderUnitBoxes(floorUnits) {
     document.getElementById("unit-title-count").innerText = `${floorUnits.length} Units Found`;
   } else {
     document.querySelector(".left-side-30-units:first-child").style.marginTop = "0px";
-    document.querySelector(".left-side-30-units:first-child").style.padding = "0px 15px";
   }
 }
 
@@ -2714,17 +2713,24 @@ function setModalAttributes(element) {
 }
 
 function setFloorplanBanner(element) {
-  if(!isFloorplanMapEnabled()) return;
+  if (!isFloorplanMapEnabled()) return;
 
-  const unit_id = $(element).data("unit-id");
-  const unit = units.find(u => u.id === unit_id);
+  const unitId = $(element).data("unit-id");
+  const unit = units.find(u => u.id === unitId);
+  if (!unit) return;
 
-  if(unit) {
-    $("#zoomable-modal-image .floorplan-banner").remove();
-    const banner = floorplanAvailabilityBannerHTML(unit);
-    $("#zoomable-modal-image").prepend(banner);
-  }
+  const isMobile = smallScreen();
+  const wrapperSelector = isMobile ? ".modal-wrapper-mobile" : ".c-modal-wrapper";
+
+  // Remove existing banners
+  $(`${wrapperSelector} .floorplan-banner`).remove();
+
+  // Prepend new banner
+  const banner = floorplanAvailabilityBannerHTML(unit);
+  
+  $(wrapperSelector).prepend(banner);
 }
+
 
 function handleApplyNowButtonVisibility(element) {
   const url = element.getAttribute("data-availability-url");

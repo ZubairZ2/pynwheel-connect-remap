@@ -7835,8 +7835,7 @@ div.esri-ui-inner-container.esri-ui-manual-container>div.esri-component.esri-att
   height: 100%;
 }
 
-.floorplan-banner,
-.modal-floorplan-banner {
+.floorplan-banner {
   position: absolute;
   /* top: 0; */
   right: 0;
@@ -7845,6 +7844,7 @@ div.esri-ui-inner-container.esri-ui-manual-container>div.esri-component.esri-att
   font-weight: bold;
   /* font-size: 0.8rem; */
   border-bottom-left-radius: 4px;
+  z-index: 99;
 }
 
 
