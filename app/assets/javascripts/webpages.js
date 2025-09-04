@@ -71,7 +71,6 @@ $(document).ready(function () {
   currency = $("#communityWebpagesData").data("currency");
   debouncedShowMarkers = debounce(showMarkers, 100);
 
-
   if (isDefined(webCommunity)) {
     selectMap = opsMapMarkersEnabled ? "3d-map" : "2d-map"; //webCommunity.web_map_type;
     enable3DMaps = webCommunity.enable_three_d_maps;
@@ -1289,7 +1288,12 @@ function renderMarkersForFloor(parent, floor) {
 function renderMapData() {
   const filteredUnits = filterUnitsBasedOnCommunityType(units);
   const sortType = document.getElementById("filter");
-  const floorUnits = getFilteredUnits(filteredUnits, sortType.value);
+  let floorUnits = [];
+
+  if(sortType)
+    floorUnits = getFilteredUnits(filteredUnits, sortType?.value);
+  else
+    floorUnits = filteredUnits;
 
   renderUnitBoxes(floorUnits);
 }
@@ -1301,16 +1305,20 @@ function renderUnitBoxes(floorUnits) {
 
   element.innerHTML = "";
 
-  document.getElementById("unit-title-count").innerText = `${floorUnits.length} Units Found`;
-
   if(isFloorplanMapEnabled())
     floorUnits = filterUniqueFloorplanList(floorUnits);
 
   const html = floorUnits.map((unit) => buildUnitBoxHTML(unit)).join("");
   element.innerHTML = html;
 
-  if(!isFloorplanMapEnabled())
-    unitBoxListHover();
+  unitBoxListHover();
+
+  if(!isFloorplanMapEnabled) {
+    document.getElementById("unit-title-count").innerText = `${floorUnits.length} Units Found`;
+  } else {
+    document.querySelector(".left-side-30-units:first-child").style.marginTop = "0px";
+    document.querySelector(".left-side-30-units:first-child").style.padding = "0px 15px";
+  }
 }
 
 function filterUniqueFloorplanList(floorUnits) {
@@ -1449,17 +1457,17 @@ function floorplanAvailabilityBannerHTML(unit) {
     case "limited_availability":
     case 1:
       bannerText = "Limited Availability";
-      bannerColor = "#faa9a3ff";
+      bannerColor = "#b5b5b5";
       break;
     case "almost_gone":
     case 2:
       bannerText = "Almost Gone";
-      bannerColor = "#f56b66ff";
+      bannerColor = "#555555";
       break;
     case "sold_out":
     case 3:
       bannerText = "Sold Out";
-      bannerColor = "#aa2218ff";
+      bannerColor = "#000000";
       break;
     default:
       return ""; 
@@ -1467,7 +1475,6 @@ function floorplanAvailabilityBannerHTML(unit) {
 
   return `<div class="floorplan-banner" style="background-color: ${bannerColor};">${bannerText}</div>`;
 }
-
 
 function buildUnitMarkerHTML(unit, f) {
   unitDataAttributes = unit.data_attributes;
@@ -1572,7 +1579,6 @@ function buildAmenityMarkerHTML(amenity, f) {
 
   `;
 }
-
 
 function calculateActiveSlide() {
   const activeIndex = $(
@@ -1900,7 +1906,6 @@ function setUnitHoverAvailability($this) {
       : "Unavailable"
   );
 }
-
 
 function markerHoverEffectEnd(event, $3dDataElement = null) {
   let $this;
@@ -2377,13 +2382,15 @@ function disable_rent_filter_options(min_rent) {
 
 function disable_area_filter_options(max_area) {
   var select = document.getElementById("square_feet");
-  for (var i = 1; i < select.length; i++) {
-    var option = select.options[i];
-    var option_area = option.value.split("-");
-    var minimum_option_rent = parseFloat(option_area[0]);
-    if (max_area <= minimum_option_rent)
-      $("#square_feet option[value=" + option.value + "]").show();
-    else $("#square_feet option[value=" + option.value + "]").show();
+  if(select) {
+    for (var i = 1; i < select.length; i++) {
+      var option = select.options[i];
+      var option_area = option.value.split("-");
+      var minimum_option_rent = parseFloat(option_area[0]);
+      if (max_area <= minimum_option_rent)
+        $("#square_feet option[value=" + option.value + "]").show();
+      else $("#square_feet option[value=" + option.value + "]").show();
+    }
   }
 }
 
@@ -2555,6 +2562,7 @@ function setModalAttributes(element) {
     adjustButtonFontSize();
   
   setFloorplanName(element);
+  setFloorplanBanner(element);
 
   $("#unitModal").find("#square-feet").html($(element).data("square-feet"));
   $("#unitModal").find("#bathrooms").html($(element).data("bathrooms"));
@@ -2705,11 +2713,22 @@ function setModalAttributes(element) {
   resetToDefaultZoom();
 }
 
+function setFloorplanBanner(element) {
+  if(!isFloorplanMapEnabled()) return;
+
+  const unit_id = $(element).data("unit-id");
+  const unit = units.find(u => u.id === unit_id);
+
+  if(unit) {
+    $("#zoomable-modal-image .floorplan-banner").remove();
+    const banner = floorplanAvailabilityBannerHTML(unit);
+    $("#zoomable-modal-image").prepend(banner);
+  }
+}
+
 function handleApplyNowButtonVisibility(element) {
   const url = element.getAttribute("data-availability-url");
   const dataProvider = $(element).data("provider");
-
-
 
   if (dataProvider === "psi") {
     if (url) {

@@ -2647,8 +2647,8 @@ img-responsive {
 
 .webpage-left-list-view-title {
     position: fixed;
-    height: 70px;
-    padding: 10px 15px;
+    height: 60px;
+    padding: 0px 0px 0px 15px;
     background-color: #E8E9E9;
     z-index: 10000;
     /* display: flex; */
@@ -7457,9 +7457,9 @@ span.to-input {
     margin-left: 9px;
     margin-top: 30px;
 }
-.webpage-header{
+/* .webpage-header{
     padding: 15px;
-}
+} */
 .elevator-title {
     font-weight: bold;
     margin-bottom: 10px;
@@ -7835,9 +7835,10 @@ div.esri-ui-inner-container.esri-ui-manual-container>div.esri-component.esri-att
   height: 100%;
 }
 
-.floorplan-banner {
+.floorplan-banner,
+.modal-floorplan-banner {
   position: absolute;
-  top: 0;
+  /* top: 0; */
   right: 0;
   padding: 4px 8px;
   color: #fff;
