@@ -127,10 +127,11 @@
                     %label.short Availability
                     = select_tag :available_unit, options_for_select(@available_units.present? ? @available_units : []),{:class=>"custom-select", :include_blank => "All "}
 
-                %button.reset-filter-button.web-reset-button.header-action-btn{:type => "button", :onclick => "resetFilters(true);", style: "margin-right: 2rem"}
-                  %span.hidable
-                    Reset
-                  %i.fa.fa-refresh
+                - unless @all_filters_disabled
+                  %button.reset-filter-button.web-reset-button.header-action-btn{:type => "button", :onclick => "resetFilters(true);", style: "margin-right: 2rem"}
+                    %span.hidable
+                      Reset
+                    %i.fa.fa-refresh
                     
               .header-buttons-groups
                 - if @square_feet.present?
@@ -151,38 +152,38 @@
 
                 .footer-logo.responsive-content{:style=> "visibility: #{@community.powered_by_btn ? "" : "hidden" }"}
                   %img{:src => "/assets/powered_by_logo.png"}/
-                  
-              .mobile-trigger.responsive-content
-                %span.filter-btn Filters
-                %img{:src => "/assets/menu-icon.png"}/
-              .mobile-filter-mega-menu.responsive-content
-                - if @have_multi_property_ids
-                  - if @map_filter[:show_properties_filter]
+              - unless @all_filters_disabled
+                .mobile-trigger.responsive-content
+                  %span.filter-btn Filters
+                  %img{:src => "/assets/menu-icon.png"}/
+                .mobile-filter-mega-menu.responsive-content
+                  - if @have_multi_property_ids
+                    - if @map_filter[:show_properties_filter]
+                      .selectable-field
+                        %label Community
+                        = select_tag :responsive_multi_communities, options_for_select(@multi_properties.present? ? @multi_properties : []),{:class=>"custom-select", :include_blank => "All "}
+
+                  - if @map_filter[:show_bedroom_filter]
                     .selectable-field
-                      %label Community
-                      = select_tag :responsive_multi_communities, options_for_select(@multi_properties.present? ? @multi_properties : []),{:class=>"custom-select", :include_blank => "All "}
+                      %label Bedrooms
+                      = select_tag :responsive_unit_bedroom, options_for_select(@unit_bedrooms.present? ? @unit_bedrooms : []),{:class=>"custom-select", :include_blank => "All "}
+                  
+                  - if @map_filter[:show_pricing_filter]
+                    .selectable-field{ class: !@community_info.display_rent ? "pricing_filter_visibility" : nil }
+                      %label  Maximum Price
+                      = select_tag :responsive_market_rent, options_for_select(@market_rent.present? ? @market_rent : []), { class: "custom-select" }
 
-                - if @map_filter[:show_bedroom_filter]
-                  .selectable-field
-                    %label Bedrooms
-                    = select_tag :responsive_unit_bedroom, options_for_select(@unit_bedrooms.present? ? @unit_bedrooms : []),{:class=>"custom-select", :include_blank => "All "}
-                
-                - if @map_filter[:show_pricing_filter]
-                  .selectable-field{ class: !@community_info.display_rent ? "pricing_filter_visibility" : nil }
-                    %label  Maximum Price
-                    = select_tag :responsive_market_rent, options_for_select(@market_rent.present? ? @market_rent : []), { class: "custom-select" }
+                  - if @map_filter[:show_square_feet_filter]
+                    .selectable-field
+                      %label Min Square Footage
+                      = select_tag :responsive_square_feet, options_for_select(@square_feet.present? ? @square_feet : []),{:class=>"custom-select"}
+                  
+                  - if @map_filter[:show_availability_filter]
+                    .selectable-field
+                      %label Availability
+                      = select_tag :responsive_available_unit, options_for_select(@available_units.present? ? @available_units : []), { class: "custom-select" }
 
-                - if @map_filter[:show_square_feet_filter]
-                  .selectable-field
-                    %label Min Square Footage
-                    = select_tag :responsive_square_feet, options_for_select(@square_feet.present? ? @square_feet : []),{:class=>"custom-select"}
-                
-                - if @map_filter[:show_availability_filter]
-                  .selectable-field
-                    %label Availability
-                    = select_tag :responsive_available_unit, options_for_select(@available_units.present? ? @available_units : []), { class: "custom-select" }
-
-                %div{:style => "text-align: center; padding-bottom: 9px;display: flex;justify-content: center;"}
+                  %div{:style => "text-align: center; padding-bottom: 9px;display: flex;justify-content: center;"}
                   %button.apply-now-responsive{:type => "button", :onclick => "applyFilters();"}
                     Apply
                     %i.fa.fa-filter
@@ -190,6 +191,7 @@
                   %button.reset-filter-button{:type => "button", :onclick => "resetFilters(true);"}
                     Reset
                     %i.fa.fa-refresh
+              
               .app-logo
                 - if @community.community_logo
                   %a.logo{:href => @community.community_website}
@@ -298,9 +300,9 @@
                           %img{:src => "/assets/2D_modeling.svg"}/
 
               .left-side.tabcontent.list_view
-                -all_details = @units_with_floorplan_info.present? ? JSON.parse(@units_with_floorplan_info) : []
 
                 - unless @community.turn_availability_on && !@show_ops_map
+                  - all_details = @units_with_floorplan_info.present? ? JSON.parse(@units_with_floorplan_info) : []
                   %div.left-side-title
                     %div.webpage-left-list-view-title.webpage-header
                       %p#unit-title-count

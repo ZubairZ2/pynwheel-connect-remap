@@ -74,4 +74,8 @@ class MapFilter < ApplicationRecord
     return true unless community.turn_availability_on
     ops_availability_enabled
   end
+
+  def all_filters_disabled?(ops_map = false)
+    get_filter_list(ops_map).values.all?(false)
+  end
 end

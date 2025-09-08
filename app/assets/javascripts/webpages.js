@@ -1313,7 +1313,7 @@ function renderUnitBoxes(floorUnits) {
 
   unitBoxListHover();
 
-  if(!isFloorplanMapEnabled) {
+  if(!isFloorplanMapEnabled()) {
     document.getElementById("unit-title-count").innerText = `${floorUnits.length} Units Found`;
   } else {
     document.querySelector(".left-side-30-units:first-child").style.marginTop = "0px";
@@ -2379,6 +2379,9 @@ function set_realpagesvc_url(element) {
 function disable_rent_filter_options(min_rent) {
   min_rent = parseInt(min_rent);
   var select = document.getElementById("market_rent");
+  
+  if(!select) return;
+
   for (var i = 1; i < select.length; i++) {
     var option = select.options[i];
     var option_rent = option.value.split("-");
