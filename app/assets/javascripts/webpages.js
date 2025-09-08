@@ -1480,6 +1480,8 @@ function buildUnitMarkerHTML(unit, f) {
   unitConfig = unitDataAttributes["data-config"]
   unitMargins = unitConfig["margins"]
 
+  const floorplanConfig = getFloorplanConfigObject(unit);
+
   return `
     <a
       class="marker ui-draggable ui-draggable-handle unit-marker"
@@ -1492,6 +1494,7 @@ function buildUnitMarkerHTML(unit, f) {
       data-unit-y-plot="${unitDataAttributes["data-unit-y-plot"]}"
       data-floorplan-provider-id="${unitDataAttributes["data-floorplan-provider-id"]}"
       data-pointer-data="${unit.pointer_data}"
+      data-floorplan-config=${floorplanConfig ? JSON.stringify(floorplanConfig) : ''}
       data-community-id="${unitDataAttributes["data-community-id"]}"
       data-website="${unitDataAttributes["data-website"]}"
       data-provider="${unitDataAttributes["data-provider"]}"
@@ -1746,9 +1749,13 @@ function unitBoxListHover() {
           if (_3dMode) {
             markerColor = getUnitMarkerColor(_3dData);
           } else {
-            markerColor = getUnitMarkerColor(selectedMarker.dataset);
+            if(isFloorplanMapEnabled()) {
+              markerColor = getFloorplanLevelMarkerColor(selectedMarker.dataset);
+            } else {
+              markerColor = getUnitMarkerColor(selectedMarker.dataset);
+            }
           }
-
+            
           e.currentTarget.style.border = `3px solid ${markerColor}`;
 
           if (_3dMode) return;
@@ -1759,6 +1766,7 @@ function unitBoxListHover() {
 
           const position = selectedMarker.getBoundingClientRect();
           let [left, top] = [position.left, position.top];
+          
           const $markerPopover = $("#marker-popover-unit");
           $markerPopover.removeClass("hidden");
           $markerPopover.css({
@@ -1787,11 +1795,15 @@ function unitBoxListHover() {
           left = left - leftAdjustment;
           top = top - topAdjustment;
 
-          $markerPopover.css({
-            visibility: "visible",
-            left: `${left}px`,
-            top: `${top - (svgMode ? 0 : 30)}px`,
-          });
+          if(!isFloorplanMapEnabled()) {
+            $markerPopover.css({
+              visibility: "visible",
+              left: `${left}px`,
+              top: `${top - (svgMode ? 0 : 30)}px`,
+            });
+          } else {
+            // TODO: Hover effect for floorplans here
+          }
 
           // if (matchCondition) break; // Turn it on if you want the exact match and not the top 1 in multiple units
         }
@@ -3938,6 +3950,7 @@ function isModelUnit(unit) {
 
 function getFloorplanLevelMarkerColor(unit) {
   const DEFAULT_COLOR = "#d37474";
+  
   const config = getFloorplanConfigObject(unit);
 
   if (!config) return hexToRgba(DEFAULT_COLOR, 1);
@@ -3951,7 +3964,6 @@ function getFloorplanLevelMarkerColor(unit) {
 
   return hexToRgba(color, opacity);
 }
-
 function getFloorplanConfigObject(unit) {
   const parseConfig = (config) => {
     if (!config) return null;
@@ -3959,12 +3971,14 @@ function getFloorplanConfigObject(unit) {
   };
 
   return (
-    parseConfig(unit.floorplanMapConfig) ||
-    parseConfig(unit.data_attributes?.["data-floorplan-map-config"])
+    parseConfig(unit.floorplanMapConfig) ||                                // case 1: existing key
+    parseConfig(unit.floorplanConfig) ||                                   // case 2: matches your DOMStringMap
+    parseConfig(unit.data_attributes?.["data-floorplan-map-config"]) ||    // case 3: dataset attribute
+    null
   );
 }
 
-// Helper for safe JSON parsing
+// Safe JSON parsing
 function safeJsonParse(str) {
   try {
     return JSON.parse(str);
@@ -3972,6 +3986,7 @@ function safeJsonParse(str) {
     return null;
   }
 }
+
 
 function getCommunityBasedMarkerColor(unitCommunityId) {
   if (!multiCommunity) {
