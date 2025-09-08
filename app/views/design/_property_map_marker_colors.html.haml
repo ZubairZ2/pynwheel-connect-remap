@@ -1,1 +1,78 @@
-Coming Soon!
+= form_with model: @community,
+            url: update_marketing_map_colors_community_path(@community),
+            method: :patch,
+            local: true,
+            html: { class: "community-marker-form" } do |form|
+
+  %table.table.table-bordered.table-striped
+    %thead
+      %tr
+        %th Available Units
+        %th Model Units
+        %th Amenities
+
+    %tbody
+      %tr
+        %td
+          .form-inline
+            .form-group{ style: "margin-right: 10px; margin-bottom: 0px;" }
+              %label{ style: "font-weight: normal; margin-right: 5px;" } color:
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i.addon-i
+                  = form.text_field :available_units_color,
+                                     class: "form-control input-sm",
+                                     style: "width: 125px;",
+                                     value: @community.available_units_color
+
+            .form-group{ style: "margin-bottom: 0px;" }
+              %label{ style: "font-weight: normal; margin-right: 5px;" } opacity:
+              = form.number_field :available_units_opacity,
+                                   class: "form-control input-sm",
+                                   style: "width: 70px;",
+                                   min: 0, max: 1, step: 0.1,
+                                   value: @community.available_units_opacity
+
+        %td
+          .form-inline
+            .form-group{ style: "margin-right: 10px; margin-bottom: 0px;" }
+              %label{ style: "font-weight: normal; margin-right: 5px;" } color:
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i.addon-i
+                  = form.text_field :model_units_color,
+                                     class: "form-control input-sm",
+                                     style: "width: 125px;",
+                                     value: @community.model_units_color
+
+            .form-group{ style: "margin-bottom: 0px;" }
+              %label{ style: "font-weight: normal; margin-right: 5px;" } opacity:
+              = form.number_field :model_units_opacity,
+                                   class: "form-control input-sm",
+                                   style: "width: 70px;",
+                                   min: 0, max: 1, step: 0.1,
+                                   value: @community.model_units_opacity
+        %td
+          .form-inline
+            .form-group{ style: "margin-right: 10px; margin-bottom: 0px;" }
+              %label{ style: "font-weight: normal; margin-right: 5px;" } color:
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i.addon-i
+                  = form.text_field :amenities_color,
+                                     class: "form-control input-sm",
+                                     style: "width: 125px;",
+                                     value: @community.amenities_color
+
+            .form-group{ style: "margin-bottom: 0px;" }
+              %label{ style: "font-weight: normal; margin-right: 5px;" } opacity:
+              = form.number_field :amenities_opacity,
+                                   class: "form-control input-sm",
+                                   style: "width: 70px;",
+                                   min: 0, max: 1, step: 0.1,
+                                   value: @community.amenities_opacity
+
+    %tfoot
+      %tr
+        %td{ colspan: 4 }
+          = form.submit "Save", class: "btn btn-primary"

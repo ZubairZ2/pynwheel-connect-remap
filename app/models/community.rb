@@ -86,6 +86,7 @@ class Community < ApplicationRecord
   attr_accessor :default_community_id
   after_update :crop_image, if: ->(obj) { obj.logo_changed? }
   after_update :crop_secondary_image, if: ->(obj) { obj.secondary_logo_changed? }
+  after_update :turn_off_marketing_availability_filter, if: :saved_change_to_turn_availability_on?
   after_create :create_tour_also
   after_create :assign_community_user
   after_create :change_touchscreen_app_for_dwelo
@@ -113,11 +114,15 @@ class Community < ApplicationRecord
   scope :active_touch_properties, -> {active_client_properties&.where(touchscreen_app: true)}
   scope :launch_properties, -> {real_properties.where(pynwheel_launch_access: true).where.not(company_id: [44, 783])}
   scope :touch_and_launch_properties, -> { active_touch_properties | launch_properties }
-  after_update :turn_off_marketing_availability_filter, if: :saved_change_to_turn_availability_on?
   
   scope :test_properties, -> { 
     joins(:company)
       .where("companies.name IN (?)", ['Test Company 123']) 
+  }
+
+  enum coloring_mode: {
+    by_property: 0,
+    by_floorplan: 1
   }
 
   amoeba do

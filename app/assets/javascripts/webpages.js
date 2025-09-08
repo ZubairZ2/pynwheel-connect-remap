@@ -1313,11 +1313,10 @@ function renderUnitBoxes(floorUnits) {
 
   unitBoxListHover();
 
-  if(!isFloorplanMapEnabled) {
+  if(!isFloorplanMapEnabled()) {
     document.getElementById("unit-title-count").innerText = `${floorUnits.length} Units Found`;
   } else {
     document.querySelector(".left-side-30-units:first-child").style.marginTop = "0px";
-    document.querySelector(".left-side-30-units:first-child").style.padding = "0px 15px";
   }
 }
 
@@ -1481,6 +1480,9 @@ function buildUnitMarkerHTML(unit, f) {
   unitConfig = unitDataAttributes["data-config"]
   unitMargins = unitConfig["margins"]
 
+  const floorplanColorsConfig = getFloorplanConfigObject(unit);
+  const propertyColorsConfig = getPropertyConfigObject(unit);
+
   return `
     <a
       class="marker ui-draggable ui-draggable-handle unit-marker"
@@ -1493,6 +1495,9 @@ function buildUnitMarkerHTML(unit, f) {
       data-unit-y-plot="${unitDataAttributes["data-unit-y-plot"]}"
       data-floorplan-provider-id="${unitDataAttributes["data-floorplan-provider-id"]}"
       data-pointer-data="${unit.pointer_data}"
+      data-floorplan-config=${floorplanColorsConfig ? JSON.stringify(floorplanColorsConfig) : ''}
+      data-by-property-colors=${propertyColorsConfig ? JSON.stringify(propertyColorsConfig) : ''}
+      data-color-by=${unitDataAttributes["data-color-by"]}
       data-community-id="${unitDataAttributes["data-community-id"]}"
       data-website="${unitDataAttributes["data-website"]}"
       data-provider="${unitDataAttributes["data-provider"]}"
@@ -1747,9 +1752,13 @@ function unitBoxListHover() {
           if (_3dMode) {
             markerColor = getUnitMarkerColor(_3dData);
           } else {
-            markerColor = getUnitMarkerColor(selectedMarker.dataset);
+            if(isFloorplanMapEnabled()) {
+              markerColor = getFloorplanLevelMarkerColor(selectedMarker.dataset);
+            } else {
+              markerColor = getUnitMarkerColor(selectedMarker.dataset);
+            }
           }
-
+            
           e.currentTarget.style.border = `3px solid ${markerColor}`;
 
           if (_3dMode) return;
@@ -1760,6 +1769,7 @@ function unitBoxListHover() {
 
           const position = selectedMarker.getBoundingClientRect();
           let [left, top] = [position.left, position.top];
+          
           const $markerPopover = $("#marker-popover-unit");
           $markerPopover.removeClass("hidden");
           $markerPopover.css({
@@ -1788,11 +1798,15 @@ function unitBoxListHover() {
           left = left - leftAdjustment;
           top = top - topAdjustment;
 
-          $markerPopover.css({
-            visibility: "visible",
-            left: `${left}px`,
-            top: `${top - (svgMode ? 0 : 30)}px`,
-          });
+          if(!isFloorplanMapEnabled()) {
+            $markerPopover.css({
+              visibility: "visible",
+              left: `${left}px`,
+              top: `${top - (svgMode ? 0 : 30)}px`,
+            });
+          } else {
+            // TODO: Hover effect for floorplans here
+          }
 
           // if (matchCondition) break; // Turn it on if you want the exact match and not the top 1 in multiple units
         }
@@ -1957,16 +1971,19 @@ function showUnitPopoverAndHighlightListUnit(
   if (unitElement && scrollableParent) {
     const parentHeight = scrollableParent.clientHeight;
     const elementHeight = unitElement.clientHeight;
+
     const scrollTop =
       unitElement.offsetTop -
       scrollableParent.offsetTop -
       parentHeight / 2 +
       elementHeight / 2;
 
-    scrollableParent.scrollTo({
-      top: scrollTop,
-      behavior: "smooth",
-    });
+    if(!isFloorplanMapEnabled()) {
+      scrollableParent.scrollTo({
+        top: scrollTop,
+        behavior: "smooth",
+      });
+    }
   }
 
   const $markerPopup = $("#marker-popover");
@@ -2004,10 +2021,13 @@ function showUnitPopoverAndHighlightListUnit(
   if (!smallScreen()) {
     $markerPopup.removeClass("hidden");
   }
-  $($("#unit_" + $dataElement.data("unitId"))).css(
-    "border",
-    `3px solid ${markerColor}`
-  );
+
+  if(!isFloorplanMapEnabled()) {
+    $($("#unit_" + $dataElement.data("unitId"))).css(
+      "border",
+      `3px solid ${markerColor}`
+    );
+  }
 }
 
 function getUnitData(targetElement) {
@@ -2368,6 +2388,9 @@ function set_realpagesvc_url(element) {
 function disable_rent_filter_options(min_rent) {
   min_rent = parseInt(min_rent);
   var select = document.getElementById("market_rent");
+  
+  if(!select) return;
+
   for (var i = 1; i < select.length; i++) {
     var option = select.options[i];
     var option_rent = option.value.split("-");
@@ -2714,17 +2737,24 @@ function setModalAttributes(element) {
 }
 
 function setFloorplanBanner(element) {
-  if(!isFloorplanMapEnabled()) return;
+  if (!isFloorplanMapEnabled()) return;
 
-  const unit_id = $(element).data("unit-id");
-  const unit = units.find(u => u.id === unit_id);
+  const unitId = $(element).data("unit-id");
+  const unit = units.find(u => u.id === unitId);
+  if (!unit) return;
 
-  if(unit) {
-    $("#zoomable-modal-image .floorplan-banner").remove();
-    const banner = floorplanAvailabilityBannerHTML(unit);
-    $("#zoomable-modal-image").prepend(banner);
-  }
+  const isMobile = smallScreen();
+  const wrapperSelector = isMobile ? ".modal-wrapper-mobile" : ".c-modal-wrapper";
+
+  // Remove existing banners
+  $(`${wrapperSelector} .floorplan-banner`).remove();
+
+  // Prepend new banner
+  const banner = floorplanAvailabilityBannerHTML(unit);
+  
+  $(wrapperSelector).prepend(banner);
 }
+
 
 function handleApplyNowButtonVisibility(element) {
   const url = element.getAttribute("data-availability-url");
@@ -3931,7 +3961,21 @@ function isModelUnit(unit) {
 }
 
 function getFloorplanLevelMarkerColor(unit) {
+  const colorBy = unit.colorBy || unit.data_attributes['data-color-by'] || "by_floorplan";
+
+  switch (colorBy) {
+    case "by_floorplan":
+      return getColorByFloorplan(unit);
+    case "by_property":
+      return getColorByProperty(unit);
+    default:
+      return getUnitMarkerColor(unit);
+  }
+}
+
+function getColorByFloorplan(unit) {
   const DEFAULT_COLOR = "#d37474";
+  
   const config = getFloorplanConfigObject(unit);
 
   if (!config) return hexToRgba(DEFAULT_COLOR, 1);
@@ -3946,6 +3990,35 @@ function getFloorplanLevelMarkerColor(unit) {
   return hexToRgba(color, opacity);
 }
 
+function getColorByProperty(unit) {
+  const DEFAULT_COLOR = "#d37474";
+  const config = getPropertyConfigObject(unit);
+
+  if (!config) return hexToRgba(DEFAULT_COLOR, 1);
+
+  const isModel = isModelUnit(unit);
+  const colorKey = isModel ? "model_units_color" : "available_units_color";
+  const opacityKey = isModel ? "model_units_opacity" : "available_units_opacity";
+
+  const color = config[colorKey] || DEFAULT_COLOR;
+  const opacity = config[opacityKey] ?? 1; // using nullish coalescing for 0 handling
+
+  return hexToRgba(color, opacity);
+}
+
+function getPropertyConfigObject(unit) {
+  const parseConfig = (config) => {
+    if (!config) return null;
+    return typeof config === "object" ? config : safeJsonParse(config);
+  };
+
+  return (
+    parseConfig(unit.byPropertyColors) ||  
+    parseConfig(unit.data_attributes?.["data-by-property-colors"]) ||
+    null
+  );
+}
+
 function getFloorplanConfigObject(unit) {
   const parseConfig = (config) => {
     if (!config) return null;
@@ -3953,12 +4026,14 @@ function getFloorplanConfigObject(unit) {
   };
 
   return (
-    parseConfig(unit.floorplanMapConfig) ||
-    parseConfig(unit.data_attributes?.["data-floorplan-map-config"])
+    parseConfig(unit.floorplanMapConfig) ||                                // case 1: existing key
+    parseConfig(unit.floorplanConfig) ||                                   // case 2: matches your DOMStringMap
+    parseConfig(unit.data_attributes?.["data-floorplan-map-config"]) ||    // case 3: dataset attribute
+    null
   );
 }
 
-// Helper for safe JSON parsing
+// Safe JSON parsing
 function safeJsonParse(str) {
   try {
     return JSON.parse(str);
@@ -3966,6 +4041,7 @@ function safeJsonParse(str) {
     return null;
   }
 }
+
 
 function getCommunityBasedMarkerColor(unitCommunityId) {
   if (!multiCommunity) {

@@ -1,24 +1,38 @@
-%div{style: "margin-bottom: 20px;"}
-  %label
-    = radio_button_tag :map_type, "property", false, class: "map-type-radio"
-    By Property
-  %label
-    = radio_button_tag :map_type, "floorplan", true, class: "map-type-radio"
-    By Floor Plan
+= form_with model: @community,
+            url: update_coloring_mode_community_path(@community),
+            method: :patch,
+            local: false,
+            html: { id: "community-coloring-mode-form" } do |form|
 
+  %div{ style: "margin-bottom: 20px;" }
+    %label{ style: "margin-right: 15px;" }
+      = form.radio_button :coloring_mode, "by_property",
+                          checked: @community.by_property?,
+                          class: "map-type-radio"
+      By Property
+
+    %label
+      = form.radio_button :coloring_mode, "by_floorplan",
+                          checked: @community.by_floorplan?,
+                          class: "map-type-radio"
+      By Floor Plan
 
 %div#map-type-container
-  %div#floorplan-map
+  %div#floorplan-map{ style: (@community.by_floorplan? ? "" : "display:none;") }
     = render 'floorplan_map_marker_colors'
 
-  %div#property-map{ style: "display:none;" }
+  %div#property-map{ style: (@community.by_property? ? "" : "display:none;") }
     = render 'property_map_marker_colors'
 
 :javascript
   document.addEventListener("DOMContentLoaded", function() {
     document.querySelectorAll(".map-type-radio").forEach(function(radio) {
       radio.addEventListener("change", function() {
-        if (this.value === "floorplan") {
+        // Auto-submit form via Rails UJS or Turbo
+        document.getElementById("community-coloring-mode-form").requestSubmit();
+
+        // Show/hide containers instantly on change
+        if (this.value === "by_floorplan") {
           document.getElementById("floorplan-map").style.display = "block";
           document.getElementById("property-map").style.display = "none";
         } else {

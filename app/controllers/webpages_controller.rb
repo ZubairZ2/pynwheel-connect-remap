@@ -36,6 +36,7 @@ class WebpagesController < ActionController::Base
     @have_multi_property_ids = @community_info.have_multi_property_ids? && @community_info.credential&.allow_sub_communities?
     @multi_properties = @community_info.fetch_multi_properties()
     @map_filter = @community_info&.map_filter&.get_filter_list(@show_ops_map)
+    @all_filters_disabled = @community_info&.map_filter&.all_filters_disabled?(@show_ops_map)
 
     unless @community_info.locked
       if @community_info.has_floorplates?

@@ -5,7 +5,7 @@ class CommunitiesController < ApplicationController
   include FeedbacksHelper
   #load_and_authorize_resource
   before_action :check_community
-  before_action :set_community , only: [:edit,:update,:destroy,:remove_plots, :sitemap_auto_plot_units, :floorplate_auto_plot_units, :suggest_sitemap_units, :suggest_floorplate_units]
+  before_action :set_community , only: [:update_coloring_mode, :update_marketing_map_colors, :edit,:update,:destroy,:remove_plots, :sitemap_auto_plot_units, :floorplate_auto_plot_units, :suggest_sitemap_units, :suggest_floorplate_units]
   add_breadcrumb "Home", :root_path
   add_breadcrumb "Companies", :companies_path, except: [:import_page, :settings_page]
   add_breadcrumb "Communities", :company_communities_path, except: [:import_page,:settings_page]
@@ -228,6 +228,26 @@ class CommunitiesController < ApplicationController
       
     else
       community.update(web_map_type: "2d-map")
+    end
+  end
+
+  def update_marketing_map_colors
+    if @community.update(community_marker_colors_params)
+      redirect_to community_design_index_path(@community),
+                  notice: "Marketing map colors updated successfully."
+    else
+      redirect_to community_design_index_path(@community),
+                  alert: "There was a problem updating marketing map colors."
+    end
+  end
+
+  def update_coloring_mode
+    if @community.update(community_coloring_mode_params)
+      redirect_to community_design_index_path(@community),
+                  notice: "Coloring mode updated successfully."
+    else
+      redirect_to community_design_index_path(@community),
+                  alert: "There was a problem updating coloring mode."
     end
   end
 
@@ -785,6 +805,7 @@ class CommunitiesController < ApplicationController
       redirect_back(fallback_location: root_path)
     end
   end
+
   def save_floor_plan_button
     @community = Community.find params[:community_id]
     @community.display_floorplan_gallery = params[:display_floorplan_gallery].present? ? params[:display_floorplan_gallery] : false
@@ -891,7 +912,6 @@ class CommunitiesController < ApplicationController
   end
  
   def community_params
-
     params.require(:community).permit(:use_company_level_data_settings, :show_amenity_name,:property_manager_name,:property_manager_phone,:property_manager_email, :enable_three_d_maps,:web_map_type,:enable_amenity_legend,:enable_home_legend,:community_logo,:pynwheel_access,:name,:creator_id,:default_community_id, :region_id,:billing_rate_touch,:billing_rate_for_both, :lincoln_billing_rate,:dwelo_billing_rate , :billing_rate_selftour, :billing_rate_maps,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description, :manual_lat_long,:latitude,:longitude,:company_id,:logo,:secondary_logo,:self_tour_logo, :email_logo, :restrict_access,:scheduler_widget,:pynwheel_touch,
       :auto_wayfinding, :data_provider,:theme_name,:code,:is_sitemap,:menu_button_shade,:enable_locks,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn,:tour_setup_visible, :chat_control, :self_tour, :pynwheel_launch_access, :show_map, :mdu, :touchscreen_app,:apply_now_pynwheel_touch_and_go,:apply_now_pynwheel_touch,:apply_now_self_tour, :show_gesture_icons,:billing_type,:billing_rate,:date_installed,:billing_month,:is_vertical_app,:enable_svg_mode,
       :credential_attributes=>[:unit_name_key, :currency, :yardi_rent_cafe_api_url, :entrata_available_units_only, :entrata_show_unit_spaces, :entrata_use_space_configuration,:id,:url,:entrata_url,:rentmanager_username,:rentmanager_password,:rentmanager_property_id, :rentmanager_base_url, :username,:password, :perq_property_id, :is_perq_allowed, :property_id, :app_folio_property_id, :app_folio_database_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,
@@ -946,6 +966,21 @@ class CommunitiesController < ApplicationController
   def maps_configuration_params
     params.require(:community).permit(:default_polygon_color,:selected_polygon_color,:default_polygon_opacity,:selected_polygon_opacity,:unit_color,:selected_unit_color,:poi_color,
     :faded_ploygon_opacity,:show_unit_numbers,:hide_floors)
+  end
+
+  def community_marker_colors_params
+    params.require(:community).permit(
+      :available_units_color,
+      :available_units_opacity,
+      :model_units_color,
+      :model_units_opacity,
+      :amenities_color,
+      :amenities_opacity
+    )
+  end
+
+  def community_coloring_mode_params
+    params.require(:community).permit(:coloring_mode)
   end
 
 end

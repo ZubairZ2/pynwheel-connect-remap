@@ -542,11 +542,22 @@ module CommunitiesHelper
 
   def floorplan_map_config unit
     {
-      available_units_color: unit&.floorplan&.available_units_color || '#00FF00',
-      model_units_color: unit&.floorplan&.model_units_color || '#FF0000',
-      available_units_opacity: unit&.floorplan&.available_units_opacity || 1.0,
-      model_units_opacity: unit&.floorplan&.model_units_opacity || 1.0,
+      available_units_color: unit&.floorplan&.available_units_color,
+      model_units_color: unit&.floorplan&.model_units_color,
+      available_units_opacity: unit&.floorplan&.available_units_opacity,
+      model_units_opacity: unit&.floorplan&.model_units_opacity,
       availability_status: unit&.floorplan&.availability_status
+    }
+  end
+
+  def by_property_colors community
+    {
+      available_units_color: community.available_units_color,
+      available_units_opacity: community.available_units_opacity,
+      model_units_color: community.model_units_color,
+      model_units_opacity: community.model_units_opacity,
+      amenities_color: community.amenities_color,
+      amenities_opacity: community.amenities_opacity
     }
   end
 
@@ -626,8 +637,10 @@ module CommunitiesHelper
       "property-id": struct[:property_id],
       "unit-status": struct[:unit_status],
       "model-unit": struct[:model_unit],
+      "color-by": @community.coloring_mode,
       "config": map_configuration(@community, show_ops_map),
       "floorplan-map-config": floorplan_map_config(unit).to_json,
+      "by-property-colors": by_property_colors(@community).to_json
     }.transform_keys { |key| "data-#{key}".to_sym }.merge(
       DATA_ATTRIBUTES_SAME_KEYS.each_with_object({}) do |key, result|
         result["data-#{key}".to_sym] = struct[key.underscore.to_sym]
@@ -639,7 +652,7 @@ module CommunitiesHelper
     title = (unit.building.present? ? unit.building + '-' : '') + unit.marketing_name
     current_data_scope = instance_variable_defined?(:@sitemap) ? 'sitemap' : 'floorplate'
     floorplate_id = instance_variable_get("@#{current_data_scope}").id if current_data_scope == 'floorplate'
-
+    
     { 
       "toggle": "modal",
       "name": "plot",
