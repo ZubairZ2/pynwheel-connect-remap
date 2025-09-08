@@ -1480,7 +1480,8 @@ function buildUnitMarkerHTML(unit, f) {
   unitConfig = unitDataAttributes["data-config"]
   unitMargins = unitConfig["margins"]
 
-  const floorplanConfig = getFloorplanConfigObject(unit);
+  const floorplanColorsConfig = getFloorplanConfigObject(unit);
+  const propertyColorsConfig = getPropertyConfigObject(unit);
 
   return `
     <a
@@ -1494,7 +1495,9 @@ function buildUnitMarkerHTML(unit, f) {
       data-unit-y-plot="${unitDataAttributes["data-unit-y-plot"]}"
       data-floorplan-provider-id="${unitDataAttributes["data-floorplan-provider-id"]}"
       data-pointer-data="${unit.pointer_data}"
-      data-floorplan-config=${floorplanConfig ? JSON.stringify(floorplanConfig) : ''}
+      data-floorplan-config=${floorplanColorsConfig ? JSON.stringify(floorplanColorsConfig) : ''}
+      data-by-property-colors=${propertyColorsConfig ? JSON.stringify(propertyColorsConfig) : ''}
+      data-color-by=${unitDataAttributes["data-color-by"]}
       data-community-id="${unitDataAttributes["data-community-id"]}"
       data-website="${unitDataAttributes["data-website"]}"
       data-provider="${unitDataAttributes["data-provider"]}"
@@ -3952,6 +3955,19 @@ function isModelUnit(unit) {
 }
 
 function getFloorplanLevelMarkerColor(unit) {
+  const colorBy = unit.colorBy || unit.data_attributes['data-color-by'] || "by_floorplan";
+
+  switch (colorBy) {
+    case "by_floorplan":
+      return getColorByFloorplan(unit);
+    case "by_property":
+      return getColorByProperty(unit);
+    default:
+      return getUnitMarkerColor(unit);
+  }
+}
+
+function getColorByFloorplan(unit) {
   const DEFAULT_COLOR = "#d37474";
   
   const config = getFloorplanConfigObject(unit);
@@ -3967,6 +3983,36 @@ function getFloorplanLevelMarkerColor(unit) {
 
   return hexToRgba(color, opacity);
 }
+
+function getColorByProperty(unit) {
+  const DEFAULT_COLOR = "#d37474";
+  const config = getPropertyConfigObject(unit);
+
+  if (!config) return hexToRgba(DEFAULT_COLOR, 1);
+
+  const isModel = isModelUnit(unit);
+  const colorKey = isModel ? "model_units_color" : "available_units_color";
+  const opacityKey = isModel ? "model_units_opacity" : "available_units_opacity";
+
+  const color = config[colorKey] || DEFAULT_COLOR;
+  const opacity = config[opacityKey] ?? 1; // using nullish coalescing for 0 handling
+
+  return hexToRgba(color, opacity);
+}
+
+function getPropertyConfigObject(unit) {
+  const parseConfig = (config) => {
+    if (!config) return null;
+    return typeof config === "object" ? config : safeJsonParse(config);
+  };
+
+  return (
+    parseConfig(unit.byPropertyColors) ||  
+    parseConfig(unit.data_attributes?.["data-by-property-colors"]) ||
+    null
+  );
+}
+
 function getFloorplanConfigObject(unit) {
   const parseConfig = (config) => {
     if (!config) return null;

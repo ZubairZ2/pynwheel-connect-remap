@@ -133,6 +133,8 @@ Rails.application.routes.draw do
       get :sitemap_auto_plot_units
       get :floorplate_auto_plot_units
       patch :update_amenity_toggle
+      patch :update_marketing_map_colors
+      patch :update_coloring_mode
     end
     
     collection do
