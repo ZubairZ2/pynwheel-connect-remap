@@ -1971,16 +1971,19 @@ function showUnitPopoverAndHighlightListUnit(
   if (unitElement && scrollableParent) {
     const parentHeight = scrollableParent.clientHeight;
     const elementHeight = unitElement.clientHeight;
+
     const scrollTop =
       unitElement.offsetTop -
       scrollableParent.offsetTop -
       parentHeight / 2 +
       elementHeight / 2;
 
-    scrollableParent.scrollTo({
-      top: scrollTop,
-      behavior: "smooth",
-    });
+    if(!isFloorplanMapEnabled()) {
+      scrollableParent.scrollTo({
+        top: scrollTop,
+        behavior: "smooth",
+      });
+    }
   }
 
   const $markerPopup = $("#marker-popover");
@@ -2018,10 +2021,13 @@ function showUnitPopoverAndHighlightListUnit(
   if (!smallScreen()) {
     $markerPopup.removeClass("hidden");
   }
-  $($("#unit_" + $dataElement.data("unitId"))).css(
-    "border",
-    `3px solid ${markerColor}`
-  );
+
+  if(!isFloorplanMapEnabled()) {
+    $($("#unit_" + $dataElement.data("unitId"))).css(
+      "border",
+      `3px solid ${markerColor}`
+    );
+  }
 }
 
 function getUnitData(targetElement) {
