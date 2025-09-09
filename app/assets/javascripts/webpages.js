@@ -1750,7 +1750,11 @@ function unitBoxListHover() {
           }
 
           if (_3dMode) {
-            markerColor = getUnitMarkerColor(_3dData);
+            if(isFloorplanMapEnabled()) {
+              markerColor = getFloorplanLevelMarkerColor(_3dData);
+            } else {
+              markerColor = getUnitMarkerColor(_3dData);
+            }
           } else {
             if(isFloorplanMapEnabled()) {
               markerColor = getFloorplanLevelMarkerColor(selectedMarker.dataset);
@@ -3969,7 +3973,7 @@ function getFloorplanLevelMarkerColor(unit) {
     case "by_property":
       return getColorByProperty(unit);
     default:
-      return getUnitMarkerColor(unit);
+      return map_marker_color || "#d37474";
   }
 }
 
