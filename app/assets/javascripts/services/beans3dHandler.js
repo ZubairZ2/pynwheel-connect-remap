@@ -140,6 +140,7 @@ function getFormattedBeansUnits() {
     const transformedObject = getExecutableDataFunctionForObject(
       unit.data_attributes
     );
+
     const transformedData = transformedObject.data();
     return {
       unitId: unit.id,
@@ -158,6 +159,8 @@ function getFormattedBeansUnits() {
       bath: transformedData.bathrooms,
       sqft: transformedData.squareFeet,
       rent: transformedData.marketRent,
+      floorplanMapConfig: transformedData.floorplanMapConfig,
+      colorBy: transformedData.byPropertyColors
     };
   });
 }
