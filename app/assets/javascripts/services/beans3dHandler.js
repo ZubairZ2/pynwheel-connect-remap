@@ -160,7 +160,7 @@ function getFormattedBeansUnits() {
       sqft: transformedData.squareFeet,
       rent: transformedData.marketRent,
       floorplanMapConfig: transformedData.floorplanMapConfig,
-      byPropertyColors: transformedData.byPropertyColors
+      colorBy: transformedData.byPropertyColors
     };
   });
 }
