@@ -3,6 +3,7 @@ require "zip"
 
 class CommunityImagesWorker
   include Sidekiq::Worker
+  sidekiq_options queue: 'general', retry: 3
 
   def perform
     base_dir = Rails.root.join("tmp", "images")
