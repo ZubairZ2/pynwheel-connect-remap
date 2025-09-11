@@ -17,9 +17,11 @@ port        ENV.fetch("PORT") { 3000 }
 environment ENV.fetch("RAILS_ENV") { Rails.env.production? ? "production" : "staging" }
 
 # SETTING WORKERS TO 1 BY INTAGLEO
-workers ENV.fetch("WEB_CONCURRENCY") { 2 }.to_i
 
-preload_app!
+if ENV.fetch("RAILS_ENV", "development") == "production"
+  workers ENV.fetch("WEB_CONCURRENCY") { 2 }.to_i
+  preload_app!
+end
 
 # Specifies the number of `workers` to boot in clustered mode.
 # Workers are forked webserver processes. If using threads and workers together
