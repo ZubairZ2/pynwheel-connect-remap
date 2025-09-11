@@ -1,3 +1,4 @@
+# app/workers/community_images_worker.rb
 require "open-uri"
 require "zip"
 
@@ -14,10 +15,19 @@ class CommunityImagesWorker
       FileUtils.mkdir_p(community_dir)
 
       if community.is_sitemap?
-        download_from_url(community.sitemap.image.url, community_dir)
+        # Guard against missing sitemap or image
+        if community.sitemap&.image&.url.present?
+          download_from_url(community.sitemap.image.url, community_dir)
+        else
+          Rails.logger.warn "Skipping sitemap for community #{community.id} (no image)"
+        end
       else
         community.floorplates.each do |floorplate|
-          download_from_url(floorplate.image.url, community_dir)
+          if floorplate&.image&.url.present?
+            download_from_url(floorplate.image.url, community_dir)
+          else
+            Rails.logger.warn "Skipping floorplate for community #{community.id} (no image)"
+          end
         end
       end
     end
