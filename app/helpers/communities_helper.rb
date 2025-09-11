@@ -267,7 +267,7 @@ module CommunitiesHelper
     struct = {
       id: unit.id,
       marketing_name: unit.marketing_name,
-      market_rent: unit.effective_rent,
+      market_rent: unit.get_market_rent(),
       building: unit.building,
       bedrooms: if floorplan.present?
                   hide_decimals(floorplan.bedrooms)

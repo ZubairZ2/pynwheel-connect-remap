@@ -1680,7 +1680,9 @@ function onUnitClick(e) {
 }
 
 function unitMarketRent(unit) {
-  return unit["display_rent"] ? `${currency + unit["market_rent"]}/month` : "";
+  if (!unit.display_rent) return "";
+
+  return `${currency}${ unit.market_rent}/month`;
 }
 
 function unitBoxListHover() {
@@ -1895,10 +1897,14 @@ function markerHoverEffect(event, _3dData = null) {
   }
 
   setUnitHoverAvailability($this)
-
-  if(!isFloorplanMapEnabled())
-    $("#popover-price").html(currency + $this.data("market-rent"));
+  setHoverMarketRent($this);
 }
+
+function setHoverMarketRent($this) {
+  if(isFloorplanMapEnabled()) return;
+  $("#popover-price").html(currency + $this.data("marketRent"));
+}
+
 
 function setUnitHoverAvailability($this) {
   if(isFloorplanMapEnabled()) {
@@ -2429,8 +2435,10 @@ function canShowAdditionalFees(additional_fees) {
   );
 }
 
-function unitAdditionalFees(additional_fees) {
+function unitAdditionalFees(element) {
+  const additional_fees = $(element).data("unit-additional-fees")
   hideFees();
+  
   try {
     if (canShowAdditionalFees(additional_fees)) {
       $("#unitModal").find(".c-modal-sidebar-fees").hide();
@@ -2530,12 +2538,12 @@ function setFloorplanName(element) {
   }
 }
 
-function setModalAttributes(element) {
-  if (!element) {
-    return;
-  }
-  currentUnitSelected = element;
+function setUnitMarketRent(element) {
+  $("#unitModal #market-rent, #unitModal #total-market-rent")
+    .html(currency + $(element).data("market-rent"));
+}
 
+function setUnitLeasePricing(element) {
   try {
     if (
       $(element).data("unit-lease-pricing") == "" ||
@@ -2559,6 +2567,10 @@ function setModalAttributes(element) {
       .find("#unit-lease-pricing")
       .html("No more prices are available");
   }
+}
+
+
+function setUnitDescription(element) {
   try {
     scroller = document.getElementById("overall-scroller");
     if ($(element).data("unit-description") == "") {
@@ -2577,36 +2589,11 @@ function setModalAttributes(element) {
     $("#unit-description-text-li").hide();
     $("#unitModal").find(".c-modal-sidebar-description").hide();
   }
+}
 
-  unitAdditionalFees($(element).data("unit-additional-fees"));
-  modalButtonsCounter = 0;
-
-  addVirtualTour(element);
-  addAdditionalButtonURL(element);
-  addScheduledTourURL(element);
-
-  if(modalButtonsCounter > 2 && smallScreen())
-    adjustButtonFontSize();
-  
-  setFloorplanName(element);
-  setFloorplanBanner(element);
-
-  $("#unitModal").find("#square-feet").html($(element).data("square-feet"));
-  $("#unitModal").find("#bathrooms").html($(element).data("bathrooms"));
-  if ($("#unitModal").find("#bathrooms").html() == "1") {
-    $("#unitModal")
-      .find("#bathrooms")
-      .parents()
-      .siblings(".bathrooms")
-      .html("Bathroom");
-  } else {
-    $("#unitModal")
-      .find("#bathrooms")
-      .parents()
-      .siblings(".bathrooms")
-      .html("Bathrooms");
-  }
+function setUnitBedrooms(element) {
   $("#unitModal").find("#bedrooms").html($(element).data("bedrooms"));
+
   if ($("#unitModal").find("#bedrooms").html() == "1") {
     $("#unitModal")
       .find("#bedrooms")
@@ -2620,15 +2607,58 @@ function setModalAttributes(element) {
       .siblings(".bedrooms")
       .html("Bedrooms");
   }
+}
 
+function setUnitBathrooms(element) {
+  $("#unitModal").find("#bathrooms").html($(element).data("bathrooms"));
+  
+  if ($("#unitModal").find("#bathrooms").html() == "1") {
+    $("#unitModal")
+      .find("#bathrooms")
+      .parents()
+      .siblings(".bathrooms")
+      .html("Bathroom");
+  } else {
+    $("#unitModal")
+      .find("#bathrooms")
+      .parents()
+      .siblings(".bathrooms")
+      .html("Bathrooms");
+  }
+}
+
+function setUnitSquareFeet(element) {
+  $("#unitModal").find("#square-feet").html($(element).data("square-feet"));
+}
+
+function setModalAttributes(element) {
+  if (!element) {
+    return;
+  }
+
+  currentUnitSelected = element;
+
+  setUnitLeasePricing(element);
+  setUnitDescription(element);
+  unitAdditionalFees(element);
+
+  modalButtonsCounter = 0;
+
+  addVirtualTour(element);
+  addAdditionalButtonURL(element);
+  addScheduledTourURL(element);
+
+  if(modalButtonsCounter > 2 && smallScreen())
+    adjustButtonFontSize();
+  
+  setFloorplanName(element);
+  setFloorplanBanner(element);
+
+  setUnitSquareFeet(element);
+  setUnitBathrooms(element);
+  setUnitBedrooms(element);
   setAvailabilityStatus(element);
-
-  $("#unitModal")
-    .find("#market-rent")
-    .html(currency + $(element).data("market-rent"));
-  $("#unitModal")
-    .find("#total-market-rent")
-    .html(currency + $(element).data("market-rent"));
+  setUnitMarketRent(element);
 
   ///////////////////////////////////////////
   real_page_provider_unit_id = $(element).data("unit-provider-id");
@@ -2969,7 +2999,6 @@ function addScheduledTourFrame(src) {
 function leaseTermPricingOptions(ss) {
   var lease = [];
   let first_lease_item = "";
-  let smallest_lease_month = "";
   var lease_price_arr = [];
   var lease_months_arr = [];
 
@@ -2977,7 +3006,9 @@ function leaseTermPricingOptions(ss) {
     numeric: true,
     sensitivity: "base",
   });
+
   ss = ss.sort(collator.compare).reverse();
+
   for (var i = 0; i < ss.length - 1; i++) {
     var s = ss[i].split(":");
     var sp;
