@@ -6569,13 +6569,18 @@ ul.add-fav-options {
     font-size: 30px;
 }
 
+.mydiv-fav .modal-sidebar-title {
+    padding: 20px;
+}
+
 .modal-sidebar-title {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 20px;
+    padding: 0px 20px;
     background: #1d2425;
 }
+
 .modal-sidebar-title .section-title {
     color: white;
     font-size: 20px;

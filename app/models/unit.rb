@@ -380,6 +380,20 @@ class Unit < ApplicationRecord
     lease_pricing
   end
 
+  def get_market_rent
+    if self.lease_pricing.present? && self.community.display_pricing_options
+      parts = self.lease_pricing.split(";").reject(&:empty?)
+      prices = parts.map do |item|
+        segments = item.split(":")
+        segments[1].to_f
+      end
+
+      prices.min
+    else
+      self.effective_rent
+    end
+  end
+
   def get_availability_url fp = nil, url = ""
     fp = fp.present? ? fp : floorplan
     
