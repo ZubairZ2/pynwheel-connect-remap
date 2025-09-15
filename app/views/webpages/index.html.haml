@@ -184,13 +184,13 @@
                       = select_tag :responsive_available_unit, options_for_select(@available_units.present? ? @available_units : []), { class: "custom-select" }
 
                   %div{:style => "text-align: center; padding-bottom: 9px;display: flex;justify-content: center;"}
-                  %button.apply-now-responsive{:type => "button", :onclick => "applyFilters();"}
-                    Apply
-                    %i.fa.fa-filter
+                    %button.apply-now-responsive{:type => "button", :onclick => "applyFilters();"}
+                      Apply
+                      %i.fa.fa-filter
 
-                  %button.reset-filter-button{:type => "button", :onclick => "resetFilters(true);"}
-                    Reset
-                    %i.fa.fa-refresh
+                    %button.reset-filter-button{:type => "button", :onclick => "resetFilters(true);"}
+                      Reset
+                      %i.fa.fa-refresh
               
               .app-logo
                 - if @community.community_logo
@@ -290,9 +290,10 @@
 
                     .zooming-content.zoomable-map-container
                       - if @show_ops_map
-                        = link_to "/communities/#{@community.id}/update_community_data", class: "btn btn-success", style: "margin: 10px;" do
+                        = link_to "#", class: "btn btn-success show-update-popup", style: "margin: 10px;", data: { url: "/communities/#{@community.id}/update_community_data" } do
                           %i.fa.fa-refresh
                           Refresh Data
+
                           
                       %a.plus-action.zooming-action.zoom-in-webpage.zoom-controls{:href => "#"}
                         %img{:src => "/assets/plus.png"}/
@@ -345,6 +346,8 @@
 = render partial: "additional_button_modal"
 = render partial: "scheduled_tour_modal"
 = render partial: "amenity_virtual_tour_modal"
+= render partial: "data_refresh_modal"
+
 
 #communityWebpagesData{data: { 
     currency: @community.get_currency_symbol(), 
@@ -642,3 +645,4 @@
       $("#unitModal").hide();
     });
   });
+
