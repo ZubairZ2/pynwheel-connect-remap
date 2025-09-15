@@ -12,51 +12,54 @@ class PsiSwapService < BaseService
   def perform
     com_test = Community.find @credentials.community_id
     property_ids = @credentials.property_id.split(',') rescue []
-    property_ids.each do |property_id|
-      begin
-        @@floorplanHash = {}
-        response = PsiService.call_entrata_api(
-          subdomain: @credentials.entrata_url,
-          endpoint: "propertyunits",
-          method: :post,
-          payload: {
-            method: {
-              name: "getMitsPropertyUnits",
-              params: {
-                propertyIds: property_id,
-                availableUnitsOnly: credentials&.entrata_available_units_only,
-                showUnitSpaces: credentials&.entrata_show_unit_spaces
+    @credentials&.get_limit_result_availability()&.each do |limit_result|
+      property_ids.each do |property_id|
+        begin
+          @@floorplanHash = {}
+          response = PsiService.call_entrata_api(
+            subdomain: @credentials.entrata_url,
+            endpoint: "propertyunits",
+            method: :post,
+            payload: {
+              method: {
+                name: "getMitsPropertyUnits",
+                params: {
+                  propertyIds: property_id,
+                  availableUnitsOnly: limit_result, #credentials&.entrata_available_units_only,
+                  showUnitSpaces: credentials&.entrata_show_unit_spaces
+                }
               }
             }
-          }
-        )
-        response =  JSON.parse(response.body)
-        if response["response"]["code"] == 200
-          units = []
-          floorplans = []
-          response['response']['result']["PhysicalProperty"]["Property"].each do |pro|
-            pro["ILS_Unit"].each do |ils|
-              units << ils
+          )
+          response =  JSON.parse(response.body)
+          if response["response"]["code"] == 200
+            units = []
+            floorplans = []
+            response['response']['result']["PhysicalProperty"]["Property"].each do |pro|
+              pro["ILS_Unit"].each do |ils|
+                units << ils
+              end
+              pro["Floorplan"].each do |f|
+                floorplans << f
+              end
             end
-            pro["Floorplan"].each do |f|
-              floorplans << f
-            end
+            
+            save_psi_floorplans(floorplans, property_id)
+            save_psi_units(units, property_id, limit_result)
+
           end
-          
-          save_psi_floorplans(floorplans, property_id)
-          save_psi_units(units, property_id)
 
+        rescue => e
+          raise e
         end
-
-      rescue => e
       end
-    end
     
-    fill_psi_pricing_details
-    rename_provider
+      fill_psi_pricing_details(limit_result)
+      rename_provider()
+    end
   end
 
-  def save_psi_units(units, property_id)
+  def save_psi_units(units, property_id, limit_result)
     units.each do |u|
 
       vacateDate = ""
@@ -72,13 +75,13 @@ class PsiSwapService < BaseService
       end
 
       if unit.present?
-        # unit = unit.first
         unit.provider = "psi_new"
         unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s
         unit.property_id = property_id
         unit.unit_type = u["Units"]["Unit"]["UnitType"]
         unit_status_update(unit, u)
         unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
+
         if u["Units"]["Unit"]["MinSquareFeet"].present?
           if u["Units"]["Unit"]["MinSquareFeet"].to_f > 1
             unit.square_feet = u["Units"]["Unit"]["MinSquareFeet"].to_f
@@ -86,8 +89,8 @@ class PsiSwapService < BaseService
             unit.square_feet = u["Units"]["Unit"]["MaxSquareFeet"].to_f
           end
         end
+
         unit.floorplan_id = u["Units"]["Unit"]["@attributes"]["FloorPlanId"]
-        # unit.effective_rent = 1.0 #Setting rent to avoid validation issues
 
         if u["EffectiveRent"].present?
           unit.market_rent = u["EffectiveRent"]
@@ -125,13 +128,9 @@ class PsiSwapService < BaseService
         unit.available_date = vacateDate
 
         building = u["Units"]["Unit"]["BuildingName"]
-        # unit.availability_url = unit.floorplan.availability_url unless unit.availability_url
-        # url_split =  u['Availability']['UnitAvailabilityURL'].split('/') if u['Availability'].present? &&  u['Availability']['UnitAvailabilityURL'].present?
-      
-        # unit.availability_url_deep_linking = url_split[0]+"//"+url_split[2]+"/Apartments/module/application_authentication/http_referer/"+url_split[2]+"/popup/false/kill_session/1/property[id]/ "+property_id.to_s+"/property_floorplan[id]/"+u["Units"]["Unit"]["@attributes"]["FloorPlanId"].to_s+"/unit_space[id]/"+u["Identification"]["IDValue"].to_s+"/show_in_popup/false/from_check_availability/1/" if url_split.present? rescue ""
-      
         unit.building = building.present? ? building.gsub("Building ", "") : ""
         set_availability_url(unit, u)
+        unit.show_on_map = limit_result
         
         unit.save(validate: false)
       else
@@ -186,16 +185,12 @@ class PsiSwapService < BaseService
           end
         end
 
-        # unit.availability_url = unit.floorplan.availability_url unless unit.availability_url
-        # url_split =  u['Availability']['UnitAvailabilityURL'].split('/') if u['Availability'].present? &&  u['Availability']['UnitAvailabilityURL'].present?
-      
-        # unit.availability_url_deep_linking = url_split[0]+"//"+url_split[2]+"/Apartments/module/application_authentication/http_referer/"+url_split[2]+"/popup/false/kill_session/1/property[id]/ "+property_id.to_s+"/property_floorplan[id]/"+u["Units"]["Unit"]["@attributes"]["FloorPlanId"].to_s+"/unit_space[id]/"+u["Identification"]["IDValue"].to_s+"/show_in_popup/false/from_check_availability/1/" if url_split.present? rescue ""
-
         unit.available_date = vacateDate
         building = u["Units"]["Unit"]["BuildingName"]
         unit.building = building.present? ? building.gsub("Building ", "") : ""
 
         set_availability_url(unit, u)
+        unit.show_on_map = limit_result
 
         unit.save(validate: false)
       end
@@ -297,7 +292,7 @@ class PsiSwapService < BaseService
 
   end
 
-  def fill_psi_pricing_details()
+  def fill_psi_pricing_details limit_result
     floorplanHash = Hash.new
     property_ids = @credentials.property_id.split(',') rescue []
     set_units_hash()
@@ -307,7 +302,7 @@ class PsiSwapService < BaseService
       move_in_dates << "0" unless move_in_dates.present?
 
       move_in_dates.compact.uniq.each do |move_in_date|
-        response = get_units_pricing(property_id, move_in_date)
+        response = get_units_pricing(property_id, move_in_date, limit_result)
         is_unit_space_enabled ? unit_space_enabled_pricing_update(response) : unit_space_disabled_pricing_update(response)
       end
     end
@@ -495,7 +490,7 @@ class PsiSwapService < BaseService
       payload: {
         method: {
           name: "getUnitsAvailabilityAndPricing",
-          params: get_pricing_params(property_id, move_in_date)
+          params: get_pricing_params(property_id, move_in_date, limit_result)
         }
       }
     )
@@ -506,7 +501,7 @@ class PsiSwapService < BaseService
   def get_pricing_params property_id, move_in_date
     {
       propertyId: property_id,
-      availableUnitsOnly: @credentials&.entrata_available_units_only,
+      availableUnitsOnly: limit_result, #@credentials&.entrata_available_units_only,
       showUnitSpaces: @credentials&.entrata_show_unit_spaces,
       useSpaceConfiguration: @credentials&.entrata_use_space_configuration,
     }.merge(move_in_date_param(move_in_date))

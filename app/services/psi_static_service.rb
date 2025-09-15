@@ -12,50 +12,52 @@ class PsiStaticService < BaseService
   def perform
     com_test = Community.find @credentials.community_id
     property_ids = @credentials.property_id.split(',') rescue []
-    property_ids.each do |property_id|
-      begin
-        @@floorplanHash = {}
-        response = PsiService.call_entrata_api(
-          subdomain: @credentials.entrata_url,
-          endpoint: "propertyunits",
-          method: :post,
-          payload: {
-            method: {
-              name: "getMitsPropertyUnits",
-              params: {
-                propertyIds: property_id,
-                availableUnitsOnly: credentials&.entrata_available_units_only,
-                showUnitSpaces: credentials&.entrata_show_unit_spaces
+    @credentials&.get_limit_result_availability()&.each do |limit_result|
+      property_ids.each do |property_id|
+        begin
+          @@floorplanHash = {}
+          response = PsiService.call_entrata_api(
+            subdomain: @credentials.entrata_url,
+            endpoint: "propertyunits",
+            method: :post,
+            payload: {
+              method: {
+                name: "getMitsPropertyUnits",
+                params: {
+                  propertyIds: property_id,
+                  availableUnitsOnly: limit_result, #credentials&.entrata_available_units_only,
+                  showUnitSpaces: credentials&.entrata_show_unit_spaces
+                }
               }
             }
-          }
-        )
-        response =  JSON.parse(response.body)
+          )
+          response =  JSON.parse(response.body)
 
-        if response["response"]["code"] == 200
-          units = []
-          floorplans = []
+          if response["response"]["code"] == 200
+            units = []
+            floorplans = []
 
-          response['response']['result']["PhysicalProperty"]["Property"].each do |pro|
-            pro["ILS_Unit"].each do |ils|
-              units << ils
+            response['response']['result']["PhysicalProperty"]["Property"].each do |pro|
+              pro["ILS_Unit"].each do |ils|
+                units << ils
+              end
+              pro["Floorplan"].each do |f|
+                floorplans << f
+              end
             end
-            pro["Floorplan"].each do |f|
-              floorplans << f
-            end
+
+            save_property_details(response['response'], property_id)
+            save_psi_floorplans(floorplans, property_id)
+            save_psi_units(units, property_id, limit_result)
           end
-
-          save_property_details(response['response'], property_id)
-          save_psi_floorplans(floorplans, property_id)
-          save_psi_units(units, property_id)
+        rescue => e
+          raise e
         end
-      rescue => e
-        raise e
       end
-    end
 
-    update_launch_forms_status()
-    fill_psi_pricing_details()
+      update_launch_forms_status()
+      fill_psi_pricing_details(limit_result)
+    end
   end
 
   private
@@ -112,7 +114,7 @@ class PsiStaticService < BaseService
       raise e
     end
 
-    def save_psi_units(units,property_id)
+    def save_psi_units(units, property_id, limit_result)
       units.each do |u|
         vacateDate = ""
         unit = Unit.where(community_id: @credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"]).first
@@ -202,18 +204,11 @@ class PsiStaticService < BaseService
           unit.building = building.present? ? building.gsub("Building ", "") : ""
         end
 
-        # unit.availability_url = u['Availability']['UnitAvailabilityURL'] if u['Availability'].present?
-        # unit.availability_url = unit.floorplan.availability_url unless unit.availability_url
-        # url_split =  u['Availability']['UnitAvailabilityURL'].split('/') if u['Availability'].present? &&  u['Availability']['UnitAvailabilityURL'].present?
-        
-        # unit.availability_url_deep_linking = url_split[0]+"//"+url_split[2]+"/Apartments/module/application_authentication/http_referer/"+url_split[2]+"/popup/false/kill_session/1/property[id]/ "+property_id.to_s+"/property_floorplan[id]/"+u["Units"]["Unit"]["@attributes"]["FloorPlanId"].to_s+"/unit_space[id]/"+u["Identification"]["IDValue"].to_s+"/show_in_popup/false/from_check_availability/1/" if url_split.present? rescue ""
-        
         set_availability_url(unit, u)
-
         unit.manually_updated = false
-        unit.save(validate: false)
-        puts "---------------------------- #{unit.marketing_name} ---------------------- \n"
+        unit.show_on_map = limit_result
 
+        unit.save(validate: false)
       end
     end
 
@@ -272,7 +267,7 @@ class PsiStaticService < BaseService
       end
     end
 
-    def fill_psi_pricing_details()
+    def fill_psi_pricing_details(limit_result)
       floorplanHash = Hash.new
       property_ids = @credentials.property_id.split(',') rescue []
       set_units_hash()
@@ -282,7 +277,7 @@ class PsiStaticService < BaseService
         move_in_dates << "0" unless move_in_dates.present?
 
         move_in_dates.compact.uniq.each do |move_in_date|
-          response = get_units_pricing(property_id, move_in_date)
+          response = get_units_pricing(property_id, move_in_date, limit_result)
           is_unit_space_enabled ? unit_space_enabled_pricing_update(response) : unit_space_disabled_pricing_update(response)
         end
       end
@@ -461,7 +456,7 @@ class PsiStaticService < BaseService
       ActiveRecord::Type::Boolean.new.cast(@credentials&.entrata_show_unit_spaces)
     end
 
-    def get_units_pricing property_id, move_in_date
+    def get_units_pricing property_id, move_in_date, limit_result
       response = PsiService.call_entrata_api(
         subdomain: @credentials.entrata_url,
         endpoint: "propertyunits",
@@ -469,7 +464,7 @@ class PsiStaticService < BaseService
         payload: {
           method: {
             name: "getUnitsAvailabilityAndPricing",
-            params: get_pricing_params(property_id, move_in_date)
+            params: get_pricing_params(property_id, move_in_date, limit_result)
           }
         }
       )
@@ -477,10 +472,10 @@ class PsiStaticService < BaseService
       JSON.parse(response.body)
     end
 
-    def get_pricing_params property_id, move_in_date
+    def get_pricing_params property_id, move_in_date, limit_result
       {
         propertyId: property_id,
-        availableUnitsOnly: @credentials&.entrata_available_units_only,
+        availableUnitsOnly: limit_result, #@credentials&.entrata_available_units_only,
         showUnitSpaces: @credentials&.entrata_show_unit_spaces,
         useSpaceConfiguration: @credentials&.entrata_use_space_configuration,
       }.merge(move_in_date_param(move_in_date))

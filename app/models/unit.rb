@@ -171,7 +171,7 @@ class Unit < ApplicationRecord
   }
   
   scope :visible_on_map_for, ->(community, ops_map_enabled) {
-    if !ops_map_enabled && ["yardirentcafe"].include?(community.data_provider)
+    if !ops_map_enabled && ["yardirentcafe", "psi"].include?(community.data_provider)
       where(show_on_map: true)
     else
       all
