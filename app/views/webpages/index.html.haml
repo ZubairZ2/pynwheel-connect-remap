@@ -289,10 +289,16 @@
                             %span Amenity image
 
                     .zooming-content.zoomable-map-container
+                      - if @show_ops_map
+                        = link_to "/communities/#{@community.id}/update_community_data", class: "btn btn-success", style: "margin: 10px;" do
+                          %i.fa.fa-refresh
+                          Refresh Data
+                          
                       %a.plus-action.zooming-action.zoom-in-webpage.zoom-controls{:href => "#"}
                         %img{:src => "/assets/plus.png"}/
                       %a.minus-action.zooming-action.zoom-out-webpage.zoom-controls{:href => "#"}
                         %img{:src => "/assets/minus.png"}/
+                     
                       - if _3d_enabled
                         %a.refresh-action.zooming-action.zoom-controls.map-options.3d-map-option{:href => "#", "data-current-map-type"=>"3d-current-map"}
                           %img{:src => "/assets/3D_modeling.svg"}/
