@@ -28,17 +28,17 @@ class YardiRentCafeV2Service < ::BaseService
       property_codes = @credentials.p_code.split(',') rescue []
       property_codes.each do |property_code|
         begin
-          import_units = []
-          response = get_appartments_availability(property_code)
-          unit_present = @all_units_hash.keys
+          @credentials.get_limit_result_availability()&.each do |limit_result|
+            import_units = []
+            response = get_appartments_availability(property_code, limit_result)
+            unit_present = @all_units_hash.keys
 
-          if response.present?
-            community = Community.find @credentials.community_id
-            community&.community_data_updated_on()
-            rentStrsHash = yardi_rent_cafe_property_rent_matrix(property_code)
+            if response.present?
+              community = Community.find @credentials.community_id
+              community&.community_data_updated_on()
+              rentStrsHash = yardi_rent_cafe_property_rent_matrix(property_code, limit_result)
 
-            response.each do |r|
-              begin
+              response.each do |r|
                 apartment_id = r["apartmentId"]
                 unit = @all_units_hash[apartment_id.to_s]
 
@@ -101,19 +101,6 @@ class YardiRentCafeV2Service < ::BaseService
                           leasing = leasing + rentStr[1] + ":" + rentStr[0].to_s + "::" +  rentStr[2].split(" ")[0] + ":" + rentStr[3].split(" ")[0] + ';' rescue ""
                         end
                       end
-
-                      # min_term_rent = lease_prices_array&.min
-                      # max_term_rent = lease_prices_array&.max
-
-                      # if min_term_rent.present?
-                      #   unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
-                      #     unit.effective_rent = min_term_rent
-                      #     unit.market_rent = min_term_rent
-                      #   end
-                      # end
-              
-                      # unit.min_effective_rent = min_term_rent if min_term_rent.present?
-                      # unit.max_effective_rent = max_term_rent if max_term_rent.present?
                     end
                   end
 
@@ -122,6 +109,8 @@ class YardiRentCafeV2Service < ::BaseService
                   end
 
                   unit.lease_pricing = leasing
+                  unit.show_on_map = limit_result
+
                   import_units << unit
 
                 else
@@ -219,54 +208,22 @@ class YardiRentCafeV2Service < ::BaseService
                     end
 
                     unit.lease_pricing = leasing
+                    unit.show_on_map = limit_result
 
                     import_units << unit
 
                   end
                 end
-
-              rescue => e
-                raise e
               end
+
+              ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
             end
 
-            ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
-
-            begin
-              cred = Credential.find @credentials.id
-              cred.data_error_message = nil
-              PaperTrail.enabled = false
-              cred.save
-              PaperTrail.enabled = true
-            rescue => err
-              raise err
-            end
-
-          else
-            begin
-              cred = Credential.find @credentials.id
-              cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
-              PaperTrail.enabled = false
-              cred.save
-              PaperTrail.enabled = true
-            rescue => err
-              raise err
-            end
+            ProvidersDataUpdationService.new().update_availability_of_units(@credentials.community_id, (unit_present - @unit_record))
           end
-
-          ProvidersDataUpdationService.new().update_availability_of_units(@credentials.community_id, (unit_present - @unit_record))
           
         rescue => e
           raise e
-          begin
-            cred = Credential.find @credentials.id
-            cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
-            PaperTrail.enabled = false
-            cred.save
-            PaperTrail.enabled = true
-          rescue => err
-            raise err
-          end
         end
       end
     end
@@ -457,8 +414,8 @@ class YardiRentCafeV2Service < ::BaseService
       DataProviders::RentCafe::V2ApisService.new(@credentials.community_id).get_additional_fees(property_code)
     end
 
-    def get_appartments_availability property_code
-      DataProviders::RentCafe::V2ApisService.new(@credentials.community_id).get_apartment_availability(property_code)
+    def get_appartments_availability property_code, limit_result
+      DataProviders::RentCafe::V2ApisService.new(@credentials.community_id).get_apartment_availability(property_code, limit_result)
     end
 
     def get_floorplan_details property_code

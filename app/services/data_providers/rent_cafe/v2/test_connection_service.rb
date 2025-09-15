@@ -8,7 +8,7 @@ module DataProviders
             property_code = property_code&.strip
             rent_cafe_v2_service = DataProviders::RentCafe::V2ApisService.new(@community_id)
             floorplans = rent_cafe_v2_service.get_floorplans(property_code) if property_code.present?
-            units = rent_cafe_v2_service.get_apartment_availability(property_code) if property_code.present?
+            units = rent_cafe_v2_service.get_apartment_availability(property_code, @credentials.limit_result) if property_code.present?
             {floorplans: floorplans, units: units}
           rescue
             false

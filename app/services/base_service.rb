@@ -61,9 +61,9 @@ class BaseService
     raise e
   end
 
-  def yardi_rent_cafe_property_rent_matrix(property_code)
+  def yardi_rent_cafe_property_rent_matrix(property_code, limit_result)
     begin
-      rent_matrix = get_property_pricing_details(property_code)
+      rent_matrix = get_property_pricing_details(property_code, limit_result)
       if rent_matrix.present?
         grouped = rent_matrix.group_by { |u| u["apartmentId"] }
 
@@ -89,7 +89,7 @@ class BaseService
     end
   end
   
-  def get_property_pricing_details property_code
-    DataProviders::RentCafe::V2ApisService.new(@credentials.community_id).get_apartment_pricing_matrix(property_code)
+  def get_property_pricing_details property_code, limit_result
+    DataProviders::RentCafe::V2ApisService.new(@credentials.community_id).get_apartment_pricing_matrix(property_code, limit_result)
   end
 end

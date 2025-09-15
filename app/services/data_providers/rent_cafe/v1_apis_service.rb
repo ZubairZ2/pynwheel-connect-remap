@@ -11,12 +11,12 @@ module DataProviders
 
       end
 
-      def get_apartment_availability(property_code)
-        handle_api_response(fetch_data("apartmentavailability", property_code, "&showallunit=#{@credentials.limit_result ? "0" : "-1"}"))
+      def get_apartment_availability(property_code, limit_result = false)
+        handle_api_response(fetch_data("apartmentavailability", property_code, show_all_units(limit_result)))
       end
 
-      def get_apartment_pricing_matrix(property_code)
-        handle_api_response(fetch_data("pricingmatrix", property_code))
+      def get_apartment_pricing_matrix(property_code, limit_resul = false)
+        handle_api_response(fetch_data("pricingmatrix", property_code, show_all_units(limit_result)))
       end
 
       def get_floorplans(property_code)
@@ -58,6 +58,10 @@ module DataProviders
 
         def company_code
           @credentials&.c_code&.strip
+        end
+
+        def show_all_units limit_result
+          "&showallunit=#{limit_result ? "0" : "-1"}"
         end
     end
   end
