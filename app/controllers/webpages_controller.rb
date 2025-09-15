@@ -69,7 +69,7 @@ class WebpagesController < ActionController::Base
       @units = if @community.turn_availability_on && !@show_ops_map # for studen housing properties.
         community_units.are_plotted_units(@svg_enabled)
       elsif @show_ops_map
-        community_units.are_plotted_units(@svg_enabled).status_scoped(@community.units_availability_over_120_days)
+        community_units.are_plotted_units(@svg_enabled).status_scoped(true)
       else
         community_units.available_units(@svg_enabled, @community.units_availability_over_120_days)
       end.visible_on_map_for(@community, @show_ops_map)
