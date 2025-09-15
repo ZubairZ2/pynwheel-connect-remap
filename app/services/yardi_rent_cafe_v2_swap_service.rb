@@ -17,20 +17,20 @@ class YardiRentCafeV2SwapService < ::BaseService
       property_codes = @credentials.p_code.split(',') rescue []
       property_codes.each do |property_code|
         begin
-          response = get_appartments_availability(property_code)
-          rentStrsHash = yardi_rent_cafe_property_rent_matrix(property_code)
+          @credentials&.get_limit_result_availability()&.each do |limit_result|
+            response = get_appartments_availability(property_code, limit_result)
+            rentStrsHash = yardi_rent_cafe_property_rent_matrix(property_code, limit_result)
 
-          if response.present?
-            response.each do |r|
-              begin
+            if response.present?
+              response.each do |r|
                 unit = fetch_unit_record(r)
-                puts "\n#{unit&.marketing_name}\n"
 
                 unless unit.present?
                   unit = Unit.new
                   unit.community_id = @credentials.community_id
                   unit.marketing_name = r["apartmentName"]
                 end
+
                 apartment_id = r["apartmentId"]
 
                 unit.voyager_property_code = r["voyagerPropertyCode"]
@@ -70,17 +70,16 @@ class YardiRentCafeV2SwapService < ::BaseService
                     end
                   end
                 end
+
                 unit.lease_pricing = leasing
+                unit.show_on_map = limit_result
 
                 unit.save
-              rescue => e
-                puts "\n\n\n #{e.message} \n\n\n"
-                ExceptionNotifier.notify_exception(e, data: {community_id: @credentials.community_id})
               end
             end
-          else
           end
         rescue => e
+          raise e
         end
       end
     end
@@ -139,7 +138,9 @@ class YardiRentCafeV2SwapService < ::BaseService
               end
             end
           end
+
         rescue => e
+          raise e
         end
       end
     end
@@ -215,8 +216,8 @@ class YardiRentCafeV2SwapService < ::BaseService
       nil
     end
 
-    def get_appartments_availability property_code
-      DataProviders::RentCafe::V2ApisService.new(@credentials.community_id).get_apartment_availability(property_code)
+    def get_appartments_availability property_code, limit_result
+      DataProviders::RentCafe::V2ApisService.new(@credentials.community_id).get_apartment_availability(property_code, limit_result)
     end
 
     def get_floorplan_details property_code

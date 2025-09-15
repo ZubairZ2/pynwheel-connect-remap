@@ -128,6 +128,7 @@ SOFIA_ID = 2919
 MANUAL_SORTING_FLOORS = [2, 3]
 
 PROPERTIES_LIST = [2919]
+SHOW_ON_MAP = ["yardirentcafe", "psi"]
 
 REPORTS = [
   {

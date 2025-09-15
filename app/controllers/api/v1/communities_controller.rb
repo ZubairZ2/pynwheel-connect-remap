@@ -871,11 +871,8 @@ module Api
             )
 
             response =  JSON.parse(response.body)
-            # if com_test.id == 458
-            #   com_test.entrata_exception_logs = com_test.entrata_exception_logs + "3 "
-            #   com_test.save
-            # end
             sleep 2
+            
             if response["response"]["code"] == 200
               units = []
               floorplans = []

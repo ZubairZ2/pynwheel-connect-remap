@@ -10,7 +10,10 @@ module DataProviders
 
               import_property_details(property_code)
               import_property_floorplans(property_code)
-              import_property_units(property_code)
+
+              @credentials&.get_limit_result_availability()&.each do |limit_result|
+                import_property_units(property_code, limit_result)
+              end
 
             rescue => exception
               raise exception
@@ -38,10 +41,10 @@ module DataProviders
             process_floorplans_response(response)
           end
 
-          def import_property_units property_code
-            response = get_appartments_availability(property_code)
+          def import_property_units property_code, limit_result
+            response = get_appartments_availability(property_code, limit_result)
             return unless response.present?
-            process_units_response(response, property_code)
+            process_units_response(response, property_code, limit_result)
           end
 
           def update_property_details details
@@ -59,7 +62,7 @@ module DataProviders
             )
           end
 
-          def process_units_response(response, property_code)
+          def process_units_response(response, property_code, limit_result)
             incoming_ids = response.map { |r| r['ApartmentId'] }
 
             existing_units = Unit.where(
@@ -69,15 +72,15 @@ module DataProviders
             )
 
             existing_units_by_id = existing_units.index_by(&:provider_unit_id)
-            rentStrsHash = yardi_rent_cafe_property_rent_matrix(property_code)
+            rentStrsHash = yardi_rent_cafe_property_rent_matrix(property_code, limit_result)
 
             response.each_slice(@batch_size) do |batch|
-              units = build_units(batch, property_code, rentStrsHash, existing_units_by_id)
+              units = build_units(batch, property_code, rentStrsHash, existing_units_by_id, limit_result)
               import_units(units)
             end
           end
 
-          def build_units(response, property_code, rentStrsHash, existing_units_by_id)
+          def build_units(response, property_code, rentStrsHash, existing_units_by_id, limit_result)
             units = []
 
             response.each do |r|
@@ -99,14 +102,14 @@ module DataProviders
                      end
 
               rentStrs = rentStrsHash[provider_unit_id] || []
-              update_unit_attributes(unit, r, property_code, rentStrs)
+              update_unit_attributes(unit, r, property_code, rentStrs, limit_result)
               units << unit
             end
 
             units
           end
 
-          def update_unit_attributes(unit, r, property_code, rentStrs = [])
+          def update_unit_attributes(unit, r, property_code, rentStrs = [], limit_result)
             begin
               update_attribute_if_blank(unit, :marketing_name, r["ApartmentName"], 'name')
               update_attribute_if_blank(unit, :floor, evaluate_floor(unit.marketing_name))
@@ -127,6 +130,8 @@ module DataProviders
               unit.min_effective_rent = r["MinimumRent"] if r["MinimumRent"].present?
               unit.max_effective_rent = r["MinimumRent"] if r["MinimumRent"].present?
               unit.unit_status = r["UnitStatus"] rescue ""
+              unit.show_on_map = limit_result
+
             rescue => exception
               exception
             end
@@ -241,6 +246,7 @@ module DataProviders
               add_floorplan_images(fp, r['FloorplanImageURL'])
               add_floorplan_virtual_url(fp, r["FpVideoEmbedCode"])
               fp.save
+
             rescue => exception
               raise exception
             end

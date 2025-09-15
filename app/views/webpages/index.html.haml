@@ -184,13 +184,13 @@
                       = select_tag :responsive_available_unit, options_for_select(@available_units.present? ? @available_units : []), { class: "custom-select" }
 
                   %div{:style => "text-align: center; padding-bottom: 9px;display: flex;justify-content: center;"}
-                  %button.apply-now-responsive{:type => "button", :onclick => "applyFilters();"}
-                    Apply
-                    %i.fa.fa-filter
+                    %button.apply-now-responsive{:type => "button", :onclick => "applyFilters();"}
+                      Apply
+                      %i.fa.fa-filter
 
-                  %button.reset-filter-button{:type => "button", :onclick => "resetFilters(true);"}
-                    Reset
-                    %i.fa.fa-refresh
+                    %button.reset-filter-button{:type => "button", :onclick => "resetFilters(true);"}
+                      Reset
+                      %i.fa.fa-refresh
               
               .app-logo
                 - if @community.community_logo
@@ -289,10 +289,17 @@
                             %span Amenity image
 
                     .zooming-content.zoomable-map-container
+                      - if @show_ops_map
+                        = link_to "#", class: "btn btn-success show-update-popup", style: "margin: 10px;", data: { url: "/communities/#{@community.id}/update_community_data" } do
+                          %i.fa.fa-refresh
+                          Refresh Data
+
+                          
                       %a.plus-action.zooming-action.zoom-in-webpage.zoom-controls{:href => "#"}
                         %img{:src => "/assets/plus.png"}/
                       %a.minus-action.zooming-action.zoom-out-webpage.zoom-controls{:href => "#"}
                         %img{:src => "/assets/minus.png"}/
+                     
                       - if _3d_enabled
                         %a.refresh-action.zooming-action.zoom-controls.map-options.3d-map-option{:href => "#", "data-current-map-type"=>"3d-current-map"}
                           %img{:src => "/assets/3D_modeling.svg"}/
@@ -339,6 +346,8 @@
 = render partial: "additional_button_modal"
 = render partial: "scheduled_tour_modal"
 = render partial: "amenity_virtual_tour_modal"
+= render partial: "data_refresh_modal"
+
 
 #communityWebpagesData{data: { 
     currency: @community.get_currency_symbol(), 
@@ -385,6 +394,11 @@
   var img_width = "#{@community.sitemap.present? && @community.sitemap.image.present? ? (@community.sitemap.width || @community.sitemap.image.width) : nil}"
   var img_height = "#{@community.sitemap.present? && @community.sitemap.image.present? ? (@community.sitemap.height || @community.sitemap.image.height) : nil}"
   var current_floor = "#{@floors.present? and @floors.size > 0 ? min_unit_floor : 'null'}";
+
+  if(opsMapMarkersEnabled) {
+    showCurrentAvailabilityEnabled = false;
+    units_availability_over_120_days = true;
+  }
 
   if (current_floor === "null") {
     current_floor = null;
@@ -631,3 +645,4 @@
       $("#unitModal").hide();
     });
   });
+

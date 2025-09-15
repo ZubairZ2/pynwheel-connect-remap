@@ -490,26 +490,25 @@ class CommunitiesController < ApplicationController
   def update_community_data
     Thread.current[:errors] = []
     @community = Community.find params[:community_id]
+
     unless (@community.locked.present? && @community.locked)
       if @community.credentials_are_present? && @community.check_credentials
-        if @community.update_community_provider_data and Thread.current[:errors].empty?
+        if @community.update_community_provider_data && Thread.current[:errors].empty?
           flash[:notice] = "Good job! You have successfully updated property's data."
-          #PaperTrail::Version.create(item_type: "UpdateCommunityData",item_id: @community.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@community.name} community_id: '#{@community.id}'")
-
-          redirect_to community_settings_path(:community_id=>@community.id)
         else
           flash[:error] = Thread.current[:errors].join(',')
-          redirect_to community_settings_path(:community_id=>@community.id)
         end
       else
         flash[:error] = "Please enter credentials in settings before importing data."
-        redirect_to community_settings_path(:community_id=>@community.id)
       end
     else
-      flash[:error] = "Commuity is locked! Can't update"
-      redirect_to community_settings_path(:community_id=>@community.id)
+      flash[:error] = "Community is locked! Can't update"
     end
+
+    # 👇 Redirect to where the request came from
+    redirect_back fallback_location: community_settings_path(community_id: @community.id)
   end
+
 
   def invitation_communities
     if params[:user_communities].present?

@@ -169,6 +169,14 @@ class Unit < ApplicationRecord
     end
     result
   }
+  
+  scope :visible_on_map_for, ->(community, ops_map_enabled) {
+    if !ops_map_enabled && SHOW_ON_MAP.include?(community.data_provider)
+      where(show_on_map: true)
+    else
+      all
+    end
+  }
 
   after_commit :populate_image_urls, on: [:create,:update]
   after_update :crop_unit_image, if: ->(obj) { obj.image_changed? }

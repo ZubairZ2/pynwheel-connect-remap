@@ -31,8 +31,8 @@ module DataProviders
             DataProviders::RentCafe::V2ApisService.new(@community_id).get_property_details(property_code)            
           end
 
-          def get_appartments_availability property_code
-            DataProviders::RentCafe::V2ApisService.new(@community_id).get_apartment_availability(property_code)
+          def get_appartments_availability property_code, limit_result
+            DataProviders::RentCafe::V2ApisService.new(@community_id).get_apartment_availability(property_code, limit_result)
           end
 
           def get_floorplan_details property_code

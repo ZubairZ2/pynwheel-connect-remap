@@ -15,13 +15,13 @@ module DataProviders
         end
       end
 
-      def get_apartment_availability property_code
-        response = fetch_apartment_availability_data(property_code)
+      def get_apartment_availability property_code, limit_result = false
+        response = fetch_apartment_availability_data(property_code, limit_result)
         response["apartmentAvailabilities"] rescue []
       end
 
-      def get_apartment_pricing_matrix property_code
-        response = fetch_apartment_pricing_data(property_code)
+      def get_apartment_pricing_matrix property_code, limit_result = false
+        response = fetch_apartment_pricing_data(property_code, limit_result)
         response["pricingDetails"] rescue []
       end
 
@@ -110,11 +110,11 @@ module DataProviders
           )
         end
 
-        def fetch_apartment_availability_data property_code
+        def fetch_apartment_availability_data property_code, limit_result
           url = "#{ENV["RENT_CAFE_V2_BASE_URL"]}/apartmentavailability/getapartmentavailability"
 
           HTTParty.post(url,
-            body: get_apartment_availability_params(property_code),
+            body: get_apartment_availability_params(property_code, limit_result),
             headers: { 
               'Content-Type' => 'application/json',
               'Authorization' => "Bearer #{@credentials&.rentcafe_v2_auth_token}",
@@ -123,10 +123,10 @@ module DataProviders
           )
         end
 
-        def fetch_apartment_pricing_data property_code
+        def fetch_apartment_pricing_data property_code, limit_result
           url = "#{ENV["RENT_CAFE_V2_BASE_URL"]}/UnitPricingData/getunitpricingdetails"
           HTTParty.post(url,
-            body: get_unit_pricing_params(property_code),
+            body: get_unit_pricing_params(property_code, limit_result),
             headers: { 
               'Content-Type' => 'application/json',
               'Authorization' => "Bearer #{@credentials&.rentcafe_v2_auth_token}",
@@ -184,12 +184,12 @@ module DataProviders
           }
         end
 
-        def get_apartment_availability_params property_code
+        def get_apartment_availability_params property_code, limit_result
           {
             apiToken: api_token, #required
             companyCode: company_code, #required
             propertyCode: property_code&.strip, #required
-            showAllUnit: !@credentials&.limit_result
+            showAllUnit: !limit_result #!@credentials&.limit_result
           }.to_json
         end
 
@@ -201,12 +201,12 @@ module DataProviders
           }.to_json
         end
 
-        def get_unit_pricing_params property_code
+        def get_unit_pricing_params property_code, limit_result
           {
             apiToken: api_token, #required
             companyCode: company_code, #required
             propertyCode: property_code&.strip, #required
-            showAllUnit: !@credentials&.limit_result,
+            showAllUnit: !limit_result #!@credentials&.limit_result,
           }.to_json
         end
 

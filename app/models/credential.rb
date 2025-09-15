@@ -67,6 +67,10 @@ class Credential < ApplicationRecord
     unit_data[unit_name_key]
   end
 
+  def get_limit_result_availability
+    [false, true]
+  end
+
   def crm_credential_provider
     community = self.community
     return {} unless community&.crm_credential&.crm_provider.present?

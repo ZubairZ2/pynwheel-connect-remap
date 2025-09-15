@@ -83,6 +83,14 @@
                     %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "unitGridAvailablePopover","data-content" => " "}
                       %span#propertyDetailNameText
                         Changing Available to "No" will exclude this unit from appearing as available in the app, regardless of the date that is set.
+                  
+                  - if SHOW_ON_MAP.include?(@community.data_provider)
+                    %th
+                      Show on Map
+                      %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "unitGridAvailablePopover","data-content" => " "}
+                        %span#propertyDetailNameText
+                          On the Marketing Map, units appear only if ‘Show on Map’ is true and the unit is both available and plotted. On the Ops Map, all plotted units are displayed, regardless of availability or ‘Show on Map’ status.                 
+                  
                   - if PROPERTIES_LIST.include?(@community.id)
                     %th
                       Tour Order
@@ -138,7 +146,9 @@
                     %td= best_in_place u, :effective_rent, :as => :input, :url => community_unit_path(@community,u),:display_as => :show_integer_rent, :data => {:rent => u.effective_rent },:style => u.effective_rent_is_updated? ? "color: #dd4a39;" : ""
                     %td= best_in_place u, :available_date,:as => :date, :url => community_unit_path(@community,u), :place_holder => (u.sold  ? "Never Available" : "-"), :data => {:available_date => u.available_date },:style => u.available_date_is_updated? ? "color: #dd4a39;" : ""
                     %td= best_in_place u, :available, :as => :checkbox, collection: {false: "No", true: "Yes"}, :url => community_unit_path(@community,u), :data => {:available => u.available },:style => u.available_is_updated? ? "color: #dd4a39;" : ""
-                    
+                    - if SHOW_ON_MAP.include?(@community.data_provider)
+                      %td= best_in_place u, :show_on_map, :as => :checkbox, collection: {false: "No", true: "Yes"}, :url => community_unit_path(@community,u), :data => {:show_on_map => u.show_on_map }
+
                     - if PROPERTIES_LIST.include?(@community.id)
                       %td= best_in_place u, :tour_visiting_order_number, :as => :input, :url => community_unit_path(@community,u), :data => {:tour_visiting_order_number => u.tour_visiting_order_number}
                     

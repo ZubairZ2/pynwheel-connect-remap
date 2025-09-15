@@ -1,0 +1,36 @@
+#update-popup.hidden{:style => "position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+  background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; 
+  z-index: 9999;"}
+  .popup-content{:style => "background: rgba(255,255,255,0.95); padding: 20px 30px; 
+    border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); text-align: center; max-width: 400px;"}
+    %p{:style => "font-size: 16px; font-weight: 500; color: #333; margin-bottom: 20px;"}
+      Data update in progress. Please refresh the page after a short while to view the latest information.
+    %button.close-popup{:style => "padding: 8px 16px; background: #28a745; color: white; 
+      border: none; border-radius: 6px; cursor: pointer;"}
+      Close
+
+:javascript
+  document.addEventListener("DOMContentLoaded", function() {
+    const refreshBtn = document.querySelector(".show-update-popup");
+    const popup = document.getElementById("update-popup");
+    const closeBtn = document.querySelector(".close-popup");
+
+    if (refreshBtn && popup) {
+      refreshBtn.addEventListener("click", function(e) {
+        e.preventDefault();
+
+        // Show popup modal
+        popup.classList.remove("hidden");
+
+        // Send background request (no reload)
+        fetch(refreshBtn.dataset.url, { method: "GET" })
+          .catch(err => console.error("Error updating:", err));
+      });
+    }
+
+    if (closeBtn && popup) {
+      closeBtn.addEventListener("click", function() {
+        popup.classList.add("hidden");
+      });
+    }
+  });
