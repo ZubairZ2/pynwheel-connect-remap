@@ -127,7 +127,6 @@ class UnitsController < ApplicationController
   end
 
   def update
-    binding.pry
     previous_floorplan_id = @unit.floorplan_id
     if params[:unit].present? and params[:unit][:image]
       @unit.crop_x = nil
