@@ -615,8 +615,19 @@ class UnitsController < ApplicationController
   end
 
   def set_image
-    UploadImageForUnit.perform_async(@community, params[:unit_ids], params[:image_file])
-    flash[:notice] = "Image is uploaded for units successfully."
+    uploaded_file = params[:image_file]
+    tmp_dir = Rails.root.join("tmp", "uploads")
+    FileUtils.mkdir_p(tmp_dir)
+
+    # Generate unique filename to avoid clashes
+    tmp_path = tmp_dir.join("#{SecureRandom.uuid}_#{uploaded_file.original_filename}")
+
+    # Copy the uploaded file into safe tmp folder
+    FileUtils.cp(uploaded_file.tempfile.path, tmp_path)
+
+    UploadImageForUnit.perform_async(@community.id, params[:unit_ids], tmp_path.to_s)
+
+    flash[:notice] = "Image is being uploaded for units."
     redirect_back(fallback_location: root_path)
   end
 
