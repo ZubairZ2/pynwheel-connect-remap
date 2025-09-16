@@ -127,6 +127,7 @@ class UnitsController < ApplicationController
   end
 
   def update
+    binding.pry
     previous_floorplan_id = @unit.floorplan_id
     if params[:unit].present? and params[:unit][:image]
       @unit.crop_x = nil
@@ -615,7 +616,7 @@ class UnitsController < ApplicationController
   end
 
   def set_image
-    UploadImageForUnitWorker.perform_async(@community.id, params[:unit_ids], params[:image_file])
+    UploadImageForUnit.perform_async(@community, params[:unit_ids], params[:image_file])
     flash[:notice] = "Image is uploaded for units successfully."
     redirect_back(fallback_location: root_path)
   end
