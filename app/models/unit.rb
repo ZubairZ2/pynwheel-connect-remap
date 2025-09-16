@@ -183,11 +183,6 @@ class Unit < ApplicationRecord
   after_update :crop_unit_secondary_image, if: ->(obj) { obj.secondary_image_changed? }
   after_update :remove_doors_plotting, if: Proc.new { x_plot == 0 and y_plot == 0 }
   before_destroy :destroy_associated_stops
-  # before_save :auto_hide_wait_units
-
-  # def auto_hide_wait_units
-  #   self.visible = false if marketing_name.downcase.include?(HIDE_UNIT_PATTERN)
-  # end
 
   scope :sorted_by_marketing_name, -> {
     order(
@@ -208,13 +203,9 @@ class Unit < ApplicationRecord
     api_unit_marketing_name()
   end
 
-  def fetch_unit_plotting_name # have_multi_property_ids
-    # if have_multi_property_ids
-    #   multi_property_id_unit_name_display
-    # else
-    #   single_property_id_unit_name_display
-    # end
+  def fetch_unit_plotting_name
     append_property_code = voyager_property_code.present? ? "#{voyager_property_code}-" : (property_id.present? ? "#{property_id}-" : "")
+    
     if building != nil && building != ""
       "#{append_property_code}#{building}-#{marketing_name}"
     elsif community.data_provider == "yardi"
@@ -223,27 +214,6 @@ class Unit < ApplicationRecord
       "#{append_property_code}#{marketing_name}"
     end
   end
-
-  # def single_property_id_unit_name_display
-  #   if building != nil && building != ""
-  #     "#{building}-#{marketing_name}"
-  #   elsif community.data_provider == "yardi"
-  #     provider_unit_id
-  #   else 
-  #     marketing_name
-  #   end
-  # end
-
-  # def multi_property_id_unit_name_display
-  #   append_property_code = voyager_property_code.present? ? "#{voyager_property_code}-" : (property_id.present? ? "#{property_id}-" : "")
-  #   if building != nil && building != ""
-  #     "#{append_property_code}#{building}-#{marketing_name}"
-  #   elsif community.data_provider == "yardi"
-  #     provider_unit_id
-  #   else 
-  #     "#{append_property_code}#{marketing_name}"
-  #   end
-  # end
 
   def stop_description_formatting stop_description
     return "" unless stop_description.present?
