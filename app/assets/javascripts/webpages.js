@@ -3099,7 +3099,26 @@ function resetMapData() {
   debouncedShowMarkers();
 }
 
+function toggleFloorDirection(is3d) {
+  const track = document.querySelector(".floor-counts .slick-list .slick-track");
+  if (!track) return;
+
+  const allItem = track.querySelector('li.digits-list-item.hidden'); // "All" item
+  if (!allItem) return;
+
+  if (is3d) {
+    // Bring last item ("All") to top
+    track.insertBefore(allItem, track.firstElementChild);
+  } else {
+    // Move "All" back to end
+    track.appendChild(allItem);
+  }
+}
+
 function display3DMap() {
+  if(!extraSmallScreen())
+    toggleFloorDirection(true);
+
   $(".3d-map-option").addClass("hidden");
   $(".location-items").addClass("hidden");
   $(".plus-action").addClass("hidden");
@@ -3127,6 +3146,9 @@ function display3DMap() {
 }
 
 function display2DMap() {
+  if(!extraSmallScreen())
+    toggleFloorDirection(false);
+  
   $("._3d-apply-filter-button").addClass("hidden");
   $(".beans-map-container").addClass("hidden");
   $(".satelite-view-icon").addClass("hidden");
