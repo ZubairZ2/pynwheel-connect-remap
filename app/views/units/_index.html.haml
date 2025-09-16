@@ -328,6 +328,7 @@
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
                 = check_box_tag 'unit_ids[]', unit.id,false,class: 'sold-checkbox mass-override'
+
                 - if @community.data_provider == "yardi"
                   = h unit.provider_unit_id
                 - else
@@ -373,12 +374,12 @@
  
           .row
             .col-md-4
-              = check_box_tag 'select_all_units_for_image'
+              = check_box_tag 'select_all_units_additional_fees'
               %label Select all
           .row
             - units.each do |unit|
               .col-md-3.pt-5.pb-5
-                = check_box_tag 'unit_ids[]', unit.id,false,class: 'image-checkbox mass-override'
+                = check_box_tag 'unit_ids[]', unit.id,false,class: 'additional_fees mass-override'
                 - if @community.data_provider == "yardi"
                   = h unit.provider_unit_id
                 - else
@@ -395,7 +396,7 @@
       = form_tag set_image_community_units_path(@community), multipart: true do
         .modal-body.set-floor-modal-body
           = file_field_tag 'image_file', :accept => 'image/*',:required=>true, :id => "size_limit"
-          .row
+          .row{:style => "margin-top: 15px;"}
             .col-md-4
               = check_box_tag 'select_all_units_for_image'
               %label Select all
@@ -490,6 +491,7 @@
           "paging": false
       });
     }
+
     $('#select_all_units_for_manual_override').change(function(){
       if($(this).is(':checked')){
         $('.manual-override-checkbox').prop('checked',true)
@@ -498,6 +500,16 @@
         $('.manual-override-checkbox').prop('checked',false)
       }
     });
+
+    $('#select_all_units_additional_fees').change(function(){
+      if($(this).is(':checked')){
+        $('.additional_fees').prop('checked', true)
+      }
+      else{
+        $('.additional_fees').prop('checked', false)
+      }
+    });
+
     $('#select_all_units_for_description').change(function(){
       if($(this).is(':checked')){
         $('.description-checkbox').prop('checked',true)
@@ -506,6 +518,7 @@
         $('.description-checkbox').prop('checked',false)
       }
     });
+
     $('#select_all_units_for_sold').change(function(){
       if($(this).is(':checked')){
         $('.sold-checkbox').prop('checked',true)

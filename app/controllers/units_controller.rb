@@ -615,7 +615,7 @@ class UnitsController < ApplicationController
   end
 
   def set_image
-    UploadImageForUnit.perform_async @community, params[:unit_ids], params[:image_file]
+    UploadImageForUnitWorker.perform_async(@community.id, params[:unit_ids], params[:image_file])
     flash[:notice] = "Image is uploaded for units successfully."
     redirect_back(fallback_location: root_path)
   end
