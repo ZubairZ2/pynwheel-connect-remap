@@ -113,6 +113,7 @@ class Unit < ApplicationRecord
       sold_units_query.where("x_plot > ? or y_plot > ?", 0, 0)
     end
   }
+
   scope :past_available_units, ->(svg_enabled = false) { 
     available_units_query = where("availability = ? and available_date <= ?", "Unoccupied", Date.today)
 
@@ -122,6 +123,7 @@ class Unit < ApplicationRecord
       available_units_query.where("x_plot > ? or y_plot > ?", 0, 0)
     end
   }
+
   scope :has_x_plot, ->(svg_enabled = false) {
     available_units_query = where("available_date > ? and available_date < ? and available = ?", Date.today, Date.today + 2.year,true)
 
@@ -131,6 +133,7 @@ class Unit < ApplicationRecord
       available_units_query.where("x_plot > ?", 0)
     end
   }
+
   scope :has_y_plot, ->(svg_enabled = false) {
     available_units_query = where("available_date > ? and available_date < ? and available = ?", Date.today, Date.today + 2.year,true)
 
@@ -143,6 +146,7 @@ class Unit < ApplicationRecord
   scope :plotted_units, ->(svg_enabled = false) {
     has_x_plot(svg_enabled).or(has_y_plot(svg_enabled))
   }
+
   scope :are_plotted_units, ->(svg_enabled = false) { 
     if svg_enabled
       svg_pointed
@@ -150,9 +154,11 @@ class Unit < ApplicationRecord
       where("x_plot > ? or y_plot > ?", 0, 0)
     end
   }
+
   scope :vacant_and_available, ->(svg_enabled = false) {
     past_available_units(svg_enabled).where("LOWER(unit_status) IN (?)", UNIT_STATUSES)
   }
+
   scope :available_units, ->(svg_enabled = false, availability_over_120_days = false) { 
     if availability_over_120_days
       plotted_units(svg_enabled).or(past_available_units(svg_enabled)).where.not(sold: true)
@@ -162,6 +168,7 @@ class Unit < ApplicationRecord
                                .where("available_date <= ?", Date.today + 120.days)
     end
   }
+
   scope :status_scoped, ->(availability_over_120_days = false) {
     result = where("LOWER(unit_status) IN (?) OR modal_unit = ?", AVAILABILITY_SCOPED_STATUSES.map(&:downcase), true)
     unless availability_over_120_days
@@ -171,18 +178,21 @@ class Unit < ApplicationRecord
   }
   
   scope :visible_on_map_for, ->(community, ops_map_enabled) {
-    if !ops_map_enabled && SHOW_ON_MAP.include?(community.data_provider)
-      where(show_on_map: true)
-    else
+    begin
+      return all if ops_map_enabled || !SHOW_ON_MAP.include?(community.data_provider)
+
+      case community.data_provider
+      when "psi"
+        community.credential&.entrata_available_units_only ? where(show_on_map: true) : all
+      when "yardirentcafe"
+        community.credential&.limit_result ? where(show_on_map: true) : all
+      else
+        all
+      end
+    rescue
       all
     end
   }
-
-  after_commit :populate_image_urls, on: [:create,:update]
-  after_update :crop_unit_image, if: ->(obj) { obj.image_changed? }
-  after_update :crop_unit_secondary_image, if: ->(obj) { obj.secondary_image_changed? }
-  after_update :remove_doors_plotting, if: Proc.new { x_plot == 0 and y_plot == 0 }
-  before_destroy :destroy_associated_stops
 
   scope :sorted_by_marketing_name, -> {
     order(
@@ -190,6 +200,12 @@ class Unit < ApplicationRecord
       Arel.sql("CASE WHEN REGEXP_REPLACE(marketing_name, '[^0-9]', '') = '' THEN 0 ELSE REGEXP_REPLACE(marketing_name, '[^0-9]', '')::integer END")  # Then by numeric part, fallback to 0 if no numeric part
     )
   }
+
+  after_commit :populate_image_urls, on: [:create,:update]
+  after_update :crop_unit_image, if: ->(obj) { obj.image_changed? }
+  after_update :crop_unit_secondary_image, if: ->(obj) { obj.secondary_image_changed? }
+  after_update :remove_doors_plotting, if: Proc.new { x_plot == 0 and y_plot == 0 }
+  before_destroy :destroy_associated_stops
 
   def stop_description_text
     description
