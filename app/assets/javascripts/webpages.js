@@ -1316,7 +1316,10 @@ function renderUnitBoxes(floorUnits) {
   if(!isFloorplanMapEnabled()) {
     document.getElementById("unit-title-count").innerText = `${floorUnits.length} Units Found`;
   } else {
-    document.querySelector(".left-side-30-units:first-child").style.marginTop = "0px";
+    const el = document.querySelector(".left-side-30-units:first-child");
+    if (el) {
+      el.style.marginTop = "0px";
+    }
   }
 }
 
