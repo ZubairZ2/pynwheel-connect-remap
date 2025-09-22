@@ -30,38 +30,57 @@ class FloorplatesController < ApplicationController
       render :new and return
     end
 
+    # Handle SVG upload
     if floorplate_params[:svg_image].present?
-      image = MiniMagick::Image.open(floorplate_params[:svg_image].path)
-      if image.type != "SVG"
+      svg_file = floorplate_params[:svg_image]
+
+      unless svg_file.content_type == "image/svg+xml"
         flash[:error] = "SVG section image must be of SVG type."
         render :new and return
-      elsif image.width < 1000 && image.height < 700
-        flash[:error] = "Too small property map image"
+      end
+
+      begin
+        # Parse with Nokogiri (not MiniMagick) since MiniMagick chokes on <pattern>
+        doc = Nokogiri::XML(File.read(svg_file.path))
+        width  = doc.root["width"]&.to_i || 0
+        height = doc.root["height"]&.to_i || 0
+
+        if width < 1000 && height < 700
+          flash[:error] = "Too small property map image"
+          render :new and return
+        else
+          @floorplate.svg_metadata = { width: width, height: height }
+        end
+      rescue => e
+        Rails.logger.error "SVG parse failed: #{e.message}"
+        flash[:error] = "Invalid SVG file."
         render :new and return
-      else
-        width = (image.width rescue 0)
-        height = (image.height rescue 0)
-        @floorplate.svg_metadata = { width: width, height: height}
       end
     end
 
+    # Handle raster images (PNG, JPG, etc)
     if floorplate_params[:image].present?
-      image = MiniMagick::Image.open(floorplate_params[:image].path)
-      if image.width < 1000 && image.height < 700 && image.type != "SVG"
-        flash[:error] = "Too small property map image"
+      image_file = floorplate_params[:image]
+      begin
+        image = MiniMagick::Image.open(image_file.path)
+
+        if image.width < 1000 && image.height < 700 && image.type != "SVG"
+          flash[:error] = "Too small property map image"
+          render :new and return
+        else
+          @floorplate.width  = (image.width  rescue 0)
+          @floorplate.height = (image.height rescue 0)
+        end
+      rescue MiniMagick::Error => e
+        Rails.logger.error "MiniMagick failed: #{e.message}"
+        flash[:error] = "Invalid image file."
         render :new and return
-      else
-        @floorplate.width = (image.width rescue 0)
-        @floorplate.height = (image.height rescue 0)
       end
     end
 
     if @floorplate.save
       flash[:notice] = "Floorplate created successfully."
-      # PaperTrail::Version.create(item_type: "Floorplate", item_id: @floorplate.id, event: "create", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
       redirect_to community_floorplates_path(current_community)
-      # PaperTrail::Version.create(item_type: "Floorplate", item_id: @floorplate.id, event: "create", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
-      return
     else
       add_breadcrumb "Floor plates", community_floorplates_path(current_community)
       add_breadcrumb "Add Floor plate", new_community_floorplate_path(current_community)
@@ -69,6 +88,7 @@ class FloorplatesController < ApplicationController
       render :new and return
     end
   end
+
 
   def plot_elevator
 

@@ -3598,6 +3598,7 @@ async function fetchWebpageSVGAndSetCoordinates() {
   if (hasFloorplate()) {
     const array = [];
     for (const floor of floors) {
+
       if (floor === "all") continue; // Skip 'all' floor
       array.push(
         fetchSVG(`#floorplate_${floor}`, {
