@@ -202,7 +202,8 @@
               %a.c-sidebar-brand{:href => "#"}
                 .sidebar-logo
                   %h6 Floor
-                  %small Vacant Unit
+                  - unless @community.turn_availability_on && !@show_ops_map
+                    %small Vacant Unit
               %ul.floor-counts.c-sidebar-nav.slider_class#slider
                 - @floors.each do |floor|
                   - floorplate = @floorplate_by_floor[floor]
@@ -255,15 +256,17 @@
                   %ul.location-items.location-responsive.responsive-content.responsive-legends.align-home-buttons
 
                     - unless (@show_ops_map || @have_multi_property_ids)
-                      - if @community.enable_home_legend
+                      - if @community.show_property_map_key
                         %li
                           %i.fas.fa-map-marker-alt{:style => "color: #{map_marker_color};"}
-                          %span Available home
-                      - if @community.enable_amenity_legend
+                          %span 
+                            = @community.show_property_map_key_text
+                      - if @community.show_amenity_key
                         %li
                           .custom-icon{:style => "height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};"}
                             %i.fas.fa-camera-retro{:style => "color: #{amenity_marker_color}; font-size: #{camera_font_size}px; margin-top:#{camera_margin}px;"}
-                          %span Amenity image
+                          %span 
+                            = @community.show_amenity_key_text
 
                   - if _3d_enabled
                     .zooming-content.zoomable-map-container
@@ -279,15 +282,17 @@
 
                     %ul.location-items
                       - unless (@show_ops_map || @have_multi_property_ids)
-                        - if @community.enable_home_legend && !@have_multi_property_ids
+                        - if @community.show_property_map_key && !@have_multi_property_ids
                           %li
                             %i.fas.fa-map-marker-alt{:style => "color: #{map_marker_color};"}
-                            %span Available home
-                        - if @community.enable_amenity_legend && @community.show_amenity_key
+                            %span 
+                              = @community.show_property_map_key_text
+                        - if @community.show_amenity_key
                           %li
                             .custom-icon{:style => "height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};"}
                               %i.fas.fa-camera-retro{:style => "color: #{amenity_marker_color}; font-size: #{camera_font_size}px; margin-top:#{camera_margin}px;"}
-                            %span Amenity image
+                            %span 
+                              = @community.show_amenity_key_text
 
                     .zooming-content.zoomable-map-container
                       - if @show_ops_map
