@@ -3603,6 +3603,7 @@ async function fetchWebpageSVGAndSetCoordinates() {
     for (const floor of floors) {
 
       if (floor === "all") continue; // Skip 'all' floor
+      debugger;
       array.push(
         fetchSVG(`#floorplate_${floor}`, {
           floor,
@@ -3613,6 +3614,7 @@ async function fetchWebpageSVGAndSetCoordinates() {
           setSVGImageHeight: true,
           trackerAssetId: `svg-floorplate-${floor}`,
           trackerVisibilityCheck: validFloor(floor),
+          isBeansFormatSvg: webCommunity.is_beans_svg
         })
       );
     }
@@ -3626,6 +3628,7 @@ async function fetchWebpageSVGAndSetCoordinates() {
       setSVGImageHeight: true,
       trackerVisibilityCheck: true,
       trackerAssetId: `svg-sitemap-1`,
+      isBeansFormatSvg: webCommunity.is_beans_svg
     });
   }
 

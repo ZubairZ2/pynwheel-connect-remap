@@ -164,6 +164,7 @@ async function fetchSVG(
     setSVGImageHeight: false,
     activateHoverEffect: false,
     trackerVisibilityCheck: false,
+    isBeansFormatSvg: false
   }
 ) {
   const container = document.querySelector(dataSetSelector);
@@ -196,7 +197,8 @@ async function fetchSVG(
 
     if (!svgElement) throw new Error("No <svg> element found in the response.");
 
-    const { floor = null } = options;
+    const { floor = null, isBeansFormatSvg = false } = options;
+    
     if(isBeansFormatSvg && hasFloorplate() && floor)
       uniquifySVGIds(svgElement, `f${floor}`);
 
