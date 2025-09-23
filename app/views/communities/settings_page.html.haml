@@ -221,6 +221,7 @@
                     = f.check_box :restrict_access
                     %label.label-primary{:for => "community_restrict_access"}
                     %span.pl-15 Yes
+              
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Enable SVG Mode (for webpages)
@@ -230,6 +231,18 @@
                     = f.check_box :enable_svg_mode
                     %label.label-primary{:for => "community_enable_svg_mode"}
                     %span.pl-15 Yes
+              
+              - if !@community.is_sitemap
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Beans Generated SVG
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    .TriSea-technologies-Switch
+                      %span.pr-15 No
+                      = f.check_box :is_beans_svg
+                      %label.label-primary{:for => "community_is_beans_svg"}
+                      %span.pl-15 Yes
+            
               / .form-group#access_restrictions
               /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
               /     Scheduler Widget
@@ -1373,3 +1386,27 @@
       })
 
     })
+  
+    $(document).ready(function () {
+      const $enableSvgCheckbox = $("#community_enable_svg_mode");
+      const $beansSvgCheckbox = $("#community_is_beans_svg");
+      const $beansSvgGroup = $beansSvgCheckbox.closest(".form-group");
+
+      function toggleBeansSvg() {
+        if ($enableSvgCheckbox.is(":checked")) {
+          $beansSvgGroup.show();
+          $beansSvgCheckbox.prop("disabled", false);
+        } else {
+          $beansSvgGroup.hide();
+          $beansSvgCheckbox.prop("checked", false);  // turn it off
+          $beansSvgCheckbox.prop("disabled", true);  // disable it
+        }
+      }
+
+      // Run on page load
+      toggleBeansSvg();
+
+      // Run on change
+      $enableSvgCheckbox.on("change", toggleBeansSvg);
+    });
+
