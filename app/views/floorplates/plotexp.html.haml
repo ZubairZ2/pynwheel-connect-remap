@@ -42,7 +42,6 @@
 
   var self_tour = #{@community.self_tour}
   var enable_locks = #{@community.enable_locks}
-  var isBeansSvg = #{@community.is_beans_svg}
   var automate_wayfinding = #{@community.auto_wayfinding}
 
   var addmode = false;
@@ -116,7 +115,7 @@
     }
 
     bindPlottingEvents();
-    fetchSVGAndSetPlotCoordinates("unit", isBeansSvg);
+    fetchSVGAndSetPlotCoordinates("unit");
     draw_initial_hallways(hallways_coordinates);
   })
 
