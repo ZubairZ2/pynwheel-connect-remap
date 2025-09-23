@@ -1426,7 +1426,7 @@ function setHrefAndFormUrl(element) {
   $scope.find("form").attr("action", $element.data("unit-form-url"));
 }
 
-async function fetchSVGAndSetPlotCoordinates(type, assetIdForTracker = 1) {
+async function fetchSVGAndSetPlotCoordinates(type, isBeansSVG, assetIdForTracker = 1) {
   await fetchSVG("#svg_map.plot-image", {
     svgPosition: 1,
     activateZoom: true,
@@ -1435,6 +1435,7 @@ async function fetchSVGAndSetPlotCoordinates(type, assetIdForTracker = 1) {
     activateHoverEffect: true,
     trackerVisibilityCheck: true,
     trackerAssetId: `plot-svg-${assetIdForTracker}`,
+    isBeansFormatSvg: isBeansSVG
   });
 
   $(".divLoading").addClass("hidden");

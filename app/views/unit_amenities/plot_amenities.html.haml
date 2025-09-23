@@ -157,6 +157,7 @@
   var assetTracker;
   var left_margin = #{raw left_margin}
   var top_margin = #{raw top_margin}
+  var isBeansSvg = #{@community.is_beans_svg}
 
   $(document).ready(function () {
     $(".divLoading").removeClass("hidden");
@@ -173,7 +174,7 @@
     }
 
     bindPlottingEvents();
-    fetchSVGAndSetPlotCoordinates("amenity");
+    fetchSVGAndSetPlotCoordinates("amenity", isBeansSvg);
   })
 
   function touchHandler(event) {
