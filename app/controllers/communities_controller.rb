@@ -241,6 +241,16 @@ class CommunitiesController < ApplicationController
     end
   end
 
+  def update_amenities_color
+    if @community.update(community_amenities_color_params)
+      redirect_to community_design_index_path(@community),
+                  notice: "Marketing map amenities marker colors updated successfully."
+    else
+      redirect_to community_design_index_path(@community),
+                  alert: "There was a problem updating marketing map amenities marker colors."
+    end
+  end
+
   def update_coloring_mode
     if @community.update(community_coloring_mode_params)
       redirect_to community_design_index_path(@community),
@@ -973,6 +983,13 @@ class CommunitiesController < ApplicationController
       :available_units_opacity,
       :model_units_color,
       :model_units_opacity,
+      :amenities_color,
+      :amenities_opacity
+    )
+  end
+
+  def community_amenities_color_params
+    params.require(:community).permit(
       :amenities_color,
       :amenities_opacity
     )

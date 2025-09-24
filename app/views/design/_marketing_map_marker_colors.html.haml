@@ -1,4 +1,36 @@
 = form_with model: @community,
+            url: update_amenities_color_community_path(@community),
+            method: :patch,
+            local: true,
+            html: { class: "community-amenities-form" } do |form|
+
+  %div{ style: "margin-bottom: 20px;" }
+    %strong Amenity Color:
+    .form-inline{ style: "margin-top: 20px;" }
+      .form-group{ style: "margin-right: 10px; margin-bottom: 0px;" }
+        %label{ style: "font-weight: normal; margin-right: 5px;" } color:
+        .input-group.colorpicker-style.hex-format-colorpicker
+          .input-group-addon
+            %i.addon-i
+            = form.text_field :amenities_color,
+                               class: "form-control input-sm",
+                               style: "width: 125px;",
+                               value: @community.amenities_color
+
+      .form-group{ style: "margin-bottom: 0px;" }
+        %label{ style: "font-weight: normal; margin-right: 5px;" } opacity:
+        = form.number_field :amenities_opacity,
+                             class: "form-control input-sm",
+                             style: "width: 70px;",
+                             min: 0, max: 1, step: 0.1,
+                             value: @community.amenities_opacity
+
+      .form-group{ style: "margin-bottom: 0px; margin-left: 15px;" }
+        = form.submit "Save", class: "btn btn-primary"
+
+
+/ --- Coloring Mode Toggle ---
+= form_with model: @community,
             url: update_coloring_mode_community_path(@community),
             method: :patch,
             local: false,
@@ -28,10 +60,8 @@
   document.addEventListener("DOMContentLoaded", function() {
     document.querySelectorAll(".map-type-radio").forEach(function(radio) {
       radio.addEventListener("change", function() {
-        // Auto-submit form via Rails UJS or Turbo
         document.getElementById("community-coloring-mode-form").requestSubmit();
 
-        // Show/hide containers instantly on change
         if (this.value === "by_floorplan") {
           document.getElementById("floorplan-map").style.display = "block";
           document.getElementById("property-map").style.display = "none";
@@ -42,3 +72,49 @@
       });
     });
   });
+
+
+-# = form_with model: @community,
+-#             url: update_coloring_mode_community_path(@community),
+-#             method: :patch,
+-#             local: false,
+-#             html: { id: "community-coloring-mode-form" } do |form|
+
+-#   %div{ style: "margin-bottom: 20px;" }
+-#     %label{ style: "margin-right: 15px;" }
+-#       = form.radio_button :coloring_mode, "by_property",
+-#                           checked: @community.by_property?,
+-#                           class: "map-type-radio"
+-#       By Property
+
+-#     %label
+-#       = form.radio_button :coloring_mode, "by_floorplan",
+-#                           checked: @community.by_floorplan?,
+-#                           class: "map-type-radio"
+-#       By Floor Plan
+
+-# %div#map-type-container
+-#   %div#floorplan-map{ style: (@community.by_floorplan? ? "" : "display:none;") }
+-#     = render 'floorplan_map_marker_colors'
+
+-#   %div#property-map{ style: (@community.by_property? ? "" : "display:none;") }
+-#     = render 'property_map_marker_colors'
+
+-# :javascript
+-#   document.addEventListener("DOMContentLoaded", function() {
+-#     document.querySelectorAll(".map-type-radio").forEach(function(radio) {
+-#       radio.addEventListener("change", function() {
+-#         // Auto-submit form via Rails UJS or Turbo
+-#         document.getElementById("community-coloring-mode-form").requestSubmit();
+
+-#         // Show/hide containers instantly on change
+-#         if (this.value === "by_floorplan") {
+-#           document.getElementById("floorplan-map").style.display = "block";
+-#           document.getElementById("property-map").style.display = "none";
+-#         } else {
+-#           document.getElementById("floorplan-map").style.display = "none";
+-#           document.getElementById("property-map").style.display = "block";
+-#         }
+-#       });
+-#     });
+-#   });

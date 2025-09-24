@@ -1552,8 +1552,9 @@ function buildUnitMarkerHTML(unit, f) {
 
 function buildAmenityMarkerHTML(amenity, f) {
   const amenityDataAttributes = amenity.data_attributes;
-  const amenityConfig = amenity.config
+  const amenityConfig = amenity?.config?.amenity
   const amenityJsonString = JSON.stringify(amenity).replace(/'/g, "\\'");
+  const amenityColor = hexToRgba(amenityConfig.color, amenityConfig.opacity)
 
   return`
     <a
@@ -1569,11 +1570,11 @@ function buildAmenityMarkerHTML(amenity, f) {
     >
       <span
         class="camera-icon camera-icon-responsive"
-        style="border: 2px solid ${amenityConfig.amenity_marker_color};"
+        style="border: 2px solid ${amenityColor};"
       >
         <i
           class="fas fa-camera-retro"
-          style="color: ${amenityConfig.amenity_marker_color};"
+          style="color: ${amenityColor};"
         ></i>
       </span>
       <span class="amenitytooltiptext">
@@ -3603,7 +3604,6 @@ async function fetchWebpageSVGAndSetCoordinates() {
     for (const floor of floors) {
 
       if (floor === "all") continue; // Skip 'all' floor
-      debugger;
       array.push(
         fetchSVG(`#floorplate_${floor}`, {
           floor,
