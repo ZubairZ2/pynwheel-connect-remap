@@ -472,6 +472,23 @@ module CommunitiesHelper
     end
   end
 
+  def amenity_marker_config community, show_ops_map = false
+    amenity_font_size = default_amenity_marker_font_size(community) - 5
+    if community.turn_availability_on && !show_ops_map 
+      {
+        color: community.amenities_color,
+        opacity: community.amenities_opacity,
+        font_size: amenity_font_size
+      }
+    else
+      {
+        color: default_amenity_marker_color(community),
+        opacity: 1,
+        font_size: amenity_font_size
+      }
+    end
+  end
+
   def default_margins(community)
     unit_font_size = default_unit_marker_font_size(community)
     amenity_marker_font_size = default_amenity_marker_font_size(community)
@@ -556,8 +573,6 @@ module CommunitiesHelper
       available_units_opacity: community.available_units_opacity,
       model_units_color: community.model_units_color,
       model_units_opacity: community.model_units_opacity,
-      amenities_color: community.amenities_color,
-      amenities_opacity: community.amenities_opacity
     }
   end
 
@@ -565,8 +580,9 @@ module CommunitiesHelper
     {
       unit_marker_font_size: default_unit_marker_font_size(community),
       unit_marker_color: default_unit_marker_color(community, show_ops_map),
-      amenity_marker_font_size: default_amenity_marker_font_size(community) - 5,
-      amenity_marker_color: default_amenity_marker_color(community),
+      # amenity_marker_font_size: default_amenity_marker_font_size(community) - 5,
+      # amenity_marker_color: default_amenity_marker_color(community),
+      amenity: amenity_marker_config(community, show_ops_map),
       margins: default_margins(community),
       ops_map_colors: status_based_default_colors(community),
       legend_items: build_legend_items(community)

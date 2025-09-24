@@ -49,9 +49,10 @@
     -# Marker fond & color settings 
     - fontsize = @map_config[:unit_marker_font_size]
     - map_marker_color = @map_config[:unit_marker_color]
-    - marker_font_size = @map_config[:amenity_marker_font_size]
+    - marker_font_size = @map_config[:amenity][:font_size]
     - marker_font_size = (marker_font_size.to_i) -5
-    - amenity_marker_color = @map_config[:amenity_marker_color]
+    - amenity_marker_color = @map_config[:amenity][:color]
+    - amenity_marker_opacity = @map_config[:amenity][:opacity]
 
     -# Ops map colors settings 
     - map_marker_missing_color = @map_config[:ops_map_colors][:missing]
@@ -78,10 +79,6 @@
     - colors = marker_colors.values_at(:missing_floorplan, :missing, :occupied, :occupied_on_notice, :vacant, :vacant_leased, :model)
     - labels = ["Missing Floorplan", "Missing Data", "Occupied", "Occupied on Notice", "Vacant", "Vacant Leased", "Model"]
     - legend_items = colors.map.with_index { |color, index| color ? { label: labels[index], color: color } : nil }.compact
-    
-    -# - locals_for_markers = { svg_enabled: @svg_enabled, community_info: @community_info, units: units, amenities: @amenities, floors: @floors, floorplates: @floorplates, floorplans_map: @floorplans_map, spanSize_y: span_size_y, spanSize_x: span_size_x, spanSize_size: span_size, fontsize: fontsize, map_marker_color: map_marker_color, amenity_marker_color: amenity_marker_color, top_margin: top_margin, left_margin: left_margin, amenity_top_margin: amenity_top_margin, amenity_left_margin: amenity_left_margin }
-    -# - svg_and_image_locals = { min_unit_floor: min_unit_floor, marker_colors: marker_colors, locals_for_markers: locals_for_markers }
-    
     - _3d_enabled = @community.enable_three_d_maps
     
     - unless @community_info.locked
@@ -388,7 +385,10 @@
   var units_availability_over_120_days = "#{@community.units_availability_over_120_days}" === "true";
   var mapMarkerColors = #{raw marker_colors.to_json}
   var markerFontSize = "#{raw fontsize}";
-  var amenity_marker_color = toRgbColor("#{raw amenity_marker_color}");
+  var amenity_marker_color = "#{raw amenity_marker_color}";
+  var amenity_marker_opacity = "#{raw amenity_marker_opacity}"
+  amenity_marker_color = hexToRgba(amenity_marker_color, amenity_marker_opacity)
+
   var apply_now_url = "#{apply_now_community_webpages_url(@community)}"
   var redirect_url = "#{community_webpages_url(@community)}"
   var has_floorplate = "#{@community_info.has_floorplates?}";
