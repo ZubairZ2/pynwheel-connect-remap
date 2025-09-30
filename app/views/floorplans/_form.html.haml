@@ -54,63 +54,7 @@
         = f.text_field :market_rent, :class=>"form-control validate[required]", :placeholder=>"0.00",:maxlength=>"10", :value => f.object.market_rent.to_i
         %small Base Price (Manual Override Required)
 
-.form-group#virtual_tour_button_label_field
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Virtual Tour Button Label
-
-    %span Specify virtual tour button label here
-  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :virtual_tour_button_label, :class=>"form-control", :placeholder=>"Virtual Tour Button Label"
-
-
-.form-group
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Virtual Tour URL
-    %i.tooltip1.fa.fa-question-circle{ "data-toggle" => "floorplanEditTourUrlPopover","data-content" => " "}
-      %span#tooltiptext1
-        = VIRTUAL_TOUR_BUBBLE_TEXT
-
-    %span Specify URL here
-  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :virtual_tour_url, :class=>"form-control", :placeholder=>"Virtual Tour URL"
-
-.form-group#additional_label_field
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Additional Button Label
-
-    %span Specify Additional button label here
-  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :additional_button, :class=>"form-control", :placeholder=>"Additional Button Label"
-
-.form-group
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Additional Button URL
-    %i.tooltip1.fa.fa-question-circle{ "data-toggle" => "floorplanAdditionalButtonUrlPopover","data-content" => " "}
-      %span#tooltiptext1
-        = ADDITIONAL_BUTTON_BUBBLE_TEXT
-
-    %span Specify additional button URL here
-  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :additional_url, :class=>"form-control", :placeholder=>"Additional Button URL"
-
-.form-group#scheduler_label_field
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Scheduled Tour Label
-
-    %span Specify scheduled tour label here
-  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :scheduler_label, :class=>"form-control", :placeholder=>"Scheduled Tour Label"
-
-.form-group
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Scheduled Tour URL
-    %i.tooltip1.fa.fa-question-circle{ "data-toggle" => "floorplanScheduledTourUrlPopover","data-content" => " "}
-      %span#tooltiptext1
-        = SCHEDULED_TOUR_BUBBLE_TEXT
-        
-    %span Specify scheduled tour URL here
-  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :scheduler_url, :class=>"form-control", :placeholder=>"Scheduled Tour URL"
+= render "shared/additional_buttons", f: f
 
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label

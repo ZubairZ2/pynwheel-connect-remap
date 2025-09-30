@@ -6536,7 +6536,6 @@ ul.add-fav-options {
 .virtual-tour-unit-modal-header .virtual-tour-btn,
 .virtual-tour-unit-modal-header .additional-btn,
 .virtual-tour-unit-modal-header .scheduled-tour-btn {
-  /* max-width: 150px; */
   height: 38px;
   border: 2px solid black;
   text-align: center;
@@ -6549,6 +6548,7 @@ ul.add-fav-options {
   color: black;
   font-weight: 900;
   padding: 0 15px;
+  cursor: pointer;
 }
 
 .c-modal-header .c-modal-title {
