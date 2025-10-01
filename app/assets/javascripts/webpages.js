@@ -1512,10 +1512,13 @@ function buildUnitMarkerHTML(unit, f) {
       data-title="${unitDataAttributes["data-title"]}"
       data-unit-virtual-tour-label="${unitDataAttributes["data-unit-virtual-tour-label"]}"
       data-unit-virtual-tour-url="${unitDataAttributes["data-unit-virtual-tour-url"]}"
+      data-unit-link1-open-new-tab="${unitDataAttributes["data-unit-link1-open-new-tab"]}"
       data-additional-button-label="${unitDataAttributes["data-additional-button-label"]}"
       data-additional-button-url="${unitDataAttributes["data-additional-button-url"]}"
+      data-unit-link2-open-new-tab="${unitDataAttributes["data-unit-link2-open-new-tab"]}"
       data-schedule-tour-label="${unitDataAttributes["data-schedule-tour-label"]}"
       data-schedule-tour-url="${unitDataAttributes["data-schedule-tour-url"]}"
+      data-unit-link3-open-new-tab="${unitDataAttributes["data-unit-link3-open-new-tab"]}"
       data-availability-url="${unitDataAttributes["data-availability-url"]}"
       data-unit-lease-term="${unitDataAttributes["data-unit-lease-term"]}"
       data-unit-lease-pricing="${unitDataAttributes["data-unit-lease-pricing"]}"
@@ -2868,6 +2871,7 @@ function amenityAddFrame(src) {
 
 function addScheduledTourURL(element) {
   removeScheduledTourFrame();
+  const openInNewTab = $(element).data("unit-link3-open-new-tab");
   let label = $(element).data("schedule-tour-label");
   let unit_id = $(element).data("unit-id");
   let url =
@@ -2884,7 +2888,7 @@ function addScheduledTourURL(element) {
     $("#scheduledTourModal")
       .find("#unitName")
       .html($(element).data("unit-marketing-name"));
-    addScheduledTourFrame(url);
+    addScheduledTourFrame("#scheduledTourModal", ".scheduled-tour-btn", openInNewTab, url);
     modalButtonsCounter += 1;
   } else {
     $(".scheduled-tour-btn").css("display", "none");
@@ -2893,6 +2897,7 @@ function addScheduledTourURL(element) {
 
 function addAdditionalButtonURL(element) {
   removeAdditionalButtonFrame();
+  const openInNewTab = $(element).data("unit-link2-open-new-tab");
   let label = $(element).data("additional-button-label");
   let unit_id = $(element).data("unit-id");
   let url =
@@ -2909,7 +2914,7 @@ function addAdditionalButtonURL(element) {
     $("#unitVirtualTourModal")
       .find("#unitName")
       .html($(element).data("unit-marketing-name"));
-    addAdditionalButtonFrame(url);
+    addAdditionalButtonFrame("#additionalButtonModal", ".additional-btn", openInNewTab, url);
     modalButtonsCounter += 1;
   } else {
     $(".additional-btn").css("display", "none");
@@ -2918,6 +2923,7 @@ function addAdditionalButtonURL(element) {
 
 function addVirtualTour(element) {
   removeFrame();
+  const openInNewTab = $(element).data("unit-link1-open-new-tab");
   let label = $(element).data("unit-virtual-tour-label");
   let unit_id = $(element).data("unit-id");
   let url =
@@ -2934,7 +2940,7 @@ function addVirtualTour(element) {
     $("#unitVirtualTourModal")
       .find("#unitVirtualName")
       .html($(element).data("unit-marketing-name"));
-    addFrame(url);
+    addFrame("#unitVirtualTourModal", ".virtual-tour-btn", openInNewTab, url);
     modalButtonsCounter += 1;
   } else {
     $(".virtual-tour-btn").css("display", "none");
@@ -2958,7 +2964,35 @@ function removeScheduledTourFrame() {
   $("#scheduled-tour-ifram-container").empty();
 }
 
-function addFrame(src) {
+function openLinkInNewTab(targetedModal, selector, openInNewTab, src) {
+  const $el = $(selector);
+
+  if (openInNewTab) {
+    // Remove modal behavior
+    $el.removeAttr("data-toggle");
+    $el.removeAttr("data-target");
+
+    // Open in new tab
+    $el.attr("href", src);
+    $el.attr("target", "_blank");
+
+    return true; // skip iframe
+  } else {
+    // Restore modal behavior
+    $el.removeAttr("href");
+    $el.removeAttr("target");
+
+    $el.attr("data-toggle", "modal");
+    $el.attr("data-target", targetedModal); // must be data-target="#modalId"
+
+    return false; // iframe mode
+  }
+}
+
+
+
+function addFrame(targetedModal, selector, openInNewTab, src) {
+  if (openLinkInNewTab(targetedModal, selector, openInNewTab, src)) return;
   var ifrm = document.createElement("iframe");
   ifrm.setAttribute("src", src);
   ifrm.style.position = "absolute";
@@ -2972,7 +3006,8 @@ function addFrame(src) {
   $("#virtual-tour-ifram-container").append(ifrm);
 }
 
-function addAdditionalButtonFrame(src) {
+function addAdditionalButtonFrame(targetedModal, selector, openInNewTab, src) {
+  if (openLinkInNewTab(targetedModal, selector, openInNewTab, src)) return;
   var ifrm = document.createElement("iframe");
   ifrm.setAttribute("src", src);
   ifrm.style.position = "absolute";
@@ -2986,7 +3021,8 @@ function addAdditionalButtonFrame(src) {
   $("#additional-button-ifram-container").append(ifrm);
 }
 
-function addScheduledTourFrame(src) {
+function addScheduledTourFrame(targetedModal, selector, openInNewTab, src) {
+  if (openLinkInNewTab(targetedModal, selector, openInNewTab, src)) return;
   var ifrm = document.createElement("iframe");
   ifrm.setAttribute("src", src);
   ifrm.style.position = "absolute";

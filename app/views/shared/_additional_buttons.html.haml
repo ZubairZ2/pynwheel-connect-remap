@@ -1,0 +1,84 @@
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Button Label
+    %span Specify Button Label
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :virtual_tour_button_label, class: "form-control", placeholder: "Button Label", maxlength: 15
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Button URL
+    %i.tooltip1.fa.fa-question-circle{ "data-toggle" => "floorplanEditTourUrlPopover", "data-content" => " " }
+      %span#tooltiptext1
+        = VIRTUAL_TOUR_BUBBLE_TEXT
+    %span Specify URL here
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :virtual_tour_url, class: "form-control", placeholder: "URL"
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+    Open in New Tab
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .TriSea-technologies-Switch
+      %span.pr-15 No
+      = f.check_box :link1_open_new_tab, { id: "link1_open_new_tab" }
+      %label.label-primary{:for => "link1_open_new_tab"}
+      %span.pl-15 Yes
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Additional Button Label
+    %span Additional buttons only appears on Pynwheel Map
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :additional_button, class: "form-control", placeholder: "Additional Button Label"
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Additional Button URL
+    %i.tooltip1.fa.fa-question-circle{ "data-toggle" => "floorplanAdditionalButtonUrlPopover", "data-content" => " " }
+      %span#tooltiptext1
+        = ADDITIONAL_BUTTON_BUBBLE_TEXT
+    %span Specify additional button URL here
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :additional_url, class: "form-control", placeholder: "Additional Button URL"
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+    Open in New Tab
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .TriSea-technologies-Switch
+      %span.pr-15 No
+      = f.check_box :link2_open_new_tab, { id: "link2_open_new_tab" }
+      %label.label-primary{:for => "link2_open_new_tab"}
+      %span.pl-15 Yes
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Additional Button Label 2
+    %span Additional buttons only appears on Pynwheel Map
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :scheduler_label, class: "form-control", placeholder: "Additional Button Label"
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Additional Button 2 URL
+    %i.tooltip1.fa.fa-question-circle{ "data-toggle" => "floorplanScheduledTourUrlPopover", "data-content" => " " }
+      %span#tooltiptext1
+        = SCHEDULED_TOUR_BUBBLE_TEXT
+    %span Specify additional button URL here
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :scheduler_url, class: "form-control", placeholder: "Additional Button URL"
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+    Open in New Tab
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .TriSea-technologies-Switch
+      %span.pr-15 No
+      = f.check_box :link3_open_new_tab, { id: "link3_open_new_tab" }
+      %label.label-primary{:for => "link3_open_new_tab"}
+      %span.pl-15 Yes

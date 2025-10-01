@@ -310,6 +310,36 @@ class Unit < ApplicationRecord
     end
   end
 
+  def link1_open_in_new_tab?
+    if self&.virtual_tour_url.present?
+      self.link1_open_new_tab
+    elsif self&.floorplan&.virtual_tour_url.present?
+      self&.floorplan&.link1_open_new_tab
+    else
+      false
+    end
+  end
+
+  def link2_open_in_new_tab?
+    if self&.additional_url.present?
+      self.link2_open_new_tab
+    elsif self&.floorplan&.additional_url.present?
+      self&.floorplan&.link2_open_new_tab
+    else
+      false
+    end
+  end
+
+  def link3_open_in_new_tab?
+    if self&.scheduler_url.present?
+      self.link3_open_new_tab
+    elsif self&.floorplan&.scheduler_url.present?
+      self&.floorplan&.link3_open_new_tab
+    else
+      false
+    end
+  end
+
   def get_unit_leasing_price
     lease_pricing = []
 
