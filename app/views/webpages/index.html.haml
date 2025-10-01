@@ -309,11 +309,11 @@
                         %a.refresh-action.zooming-action.zoom-controls.map-options.2d-map-option.hidden{:href => "#", "data-current-map-type"=>"2d-current-map"}
                           %img{:src => "/assets/2D_modeling.svg"}/
 
-              .left-side.tabcontent.list_view
+              .right-rail.tabcontent.list_view
 
                 - unless @community.turn_availability_on && !@show_ops_map
                   - all_details = @units_with_floorplan_info.present? ? JSON.parse(@units_with_floorplan_info) : []
-                  %div.left-side-title
+                  %div.right-rail-title
                     %div.webpage-left-list-view-title.webpage-header
                       %p#unit-title-count
                         #{all_details.count} Units Found

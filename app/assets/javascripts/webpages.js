@@ -1316,7 +1316,7 @@ function renderUnitBoxes(floorUnits) {
   if(!isFloorplanMapEnabled()) {
     document.getElementById("unit-title-count").innerText = `${floorUnits.length} Units Found`;
   } else {
-    const el = document.querySelector(".left-side-30-units:first-child");
+    const el = document.querySelector(".right-rail-card:first-child");
     if (el) {
       el.style.marginTop = "0px";
     }
@@ -1406,7 +1406,7 @@ function buildUnitBoxHTML(unit) {
 
   return `
     <div
-      class='left-side-30-units'
+      class='right-rail-card'
       id='unit_${unit["id"]}'
       data-pointer-data='${JSON.stringify(unit["pointer_data"])}'
       data-unit-marketing-name='${unit["data_attributes"]["data-unit-marketing-name"]}'
@@ -1695,7 +1695,7 @@ function unitMarketRent(unit) {
 function unitBoxListHover() {
   let focused_marker;
 
-  $("div.left-side-30-units").hover(
+  $("div.right-rail-card").hover(
     function (e) {
       let markerColor = map_marker_color;
       const { id, unitId, pointerData, unitMarketingName } = getUnitData(
@@ -1836,7 +1836,7 @@ function unitBoxListHover() {
 
 function markerHoverEffect(event, _3dData = null) {
   let $this;
-  $(".left-side-30-units").css("border", "none");
+  $(".right-rail-card").css("border", "none");
 
   if (_3dMapMode() && _3dData) {
     const unitData = units.find(({ id }) => id === _3dData.unitId);
@@ -1983,7 +1983,7 @@ function showUnitPopoverAndHighlightListUnit(
     "unit_" + $dataElement.data("unitId")
   );
 
-  const scrollableParent = document.querySelector(".left-side");
+  const scrollableParent = document.querySelector(".right-rail");
 
   if (unitElement && scrollableParent) {
     const parentHeight = scrollableParent.clientHeight;
@@ -2048,7 +2048,7 @@ function showUnitPopoverAndHighlightListUnit(
 }
 
 function getUnitData(targetElement) {
-  if (targetElement.classList.contains("left-side-30-units")) {
+  if (targetElement.classList.contains("right-rail-card")) {
     return {
       id: targetElement.id,
       unitId: targetElement.dataset.unitId,
@@ -2056,7 +2056,7 @@ function getUnitData(targetElement) {
       unitMarketingName: targetElement.dataset.unitMarketingName,
     };
   } else {
-    let closestUnit = $(targetElement).closest(".left-side-30-units");
+    let closestUnit = $(targetElement).closest(".right-rail-card");
 
     if (closestUnit.length > 0) {
       return {
@@ -2091,13 +2091,13 @@ function setUnitModalButtons(e) {
   if (_3dMapMode()) {
     if (e instanceof Event) {
       let $element = null;
-      if (e.target.classList.contains(".left-side-30-units"))
+      if (e.target.classList.contains(".right-rail-card"))
         $element = $(e.target);
-      else $element = $(e.target).closest(".left-side-30-units");
+      else $element = $(e.target).closest(".right-rail-card");
 
       if ($element.length) {
         e = parseInt(
-          $(e.target).closest(".left-side-30-units")[0].id.replace("unit_", "")
+          $(e.target).closest(".right-rail-card")[0].id.replace("unit_", "")
         );
       }
     }
@@ -2298,9 +2298,9 @@ function change_units_view(evt, type) {
 
   if (type === "list_view") {
     const $webpageMainContainer = $("div.map-body.map-container-center-align");
-    const $unitsListContainer = $webpageMainContainer.find(".left-side");
+    const $unitsListContainer = $webpageMainContainer.find(".right-rail");
     const unitListContainerWidth = $unitsListContainer
-      .find(".left-side-title")
+      .find(".right-rail-title")
       .width();
     const $unitListHeader = $unitsListContainer.find(
       ".webpage-left-list-view-title.webpage-header"
@@ -3346,8 +3346,8 @@ function unitMarkerHoverEvent() {
 function unitsListHoverEvent() {
   const markerSelector = svgMode ? "cloned-unit" : "unit_marker";
   $(document)
-    .off("mouseenter", ".left-side-30-units")
-    .on("mouseenter", ".left-side-30-units", function () {
+    .off("mouseenter", ".right-rail-card")
+    .on("mouseenter", ".right-rail-card", function () {
       updateActivityData(markerSelector, "hover");
     });
 }
@@ -3715,7 +3715,7 @@ function setWebpageContainerSize() {
   const $zoomableContainer = $mapContainer.find(
     ".image-map.zoomable-map-container"
   );
-  const $unitsListContainer = $webpageMainContainer.find(".left-side");
+  const $unitsListContainer = $webpageMainContainer.find(".right-rail");
   const mapContainer = $mapContainer[0];
   const result = { width: 0, height: 0 };
 
@@ -3818,7 +3818,7 @@ function setWebpageContainerSize() {
     }
 
     const unitListContainerWidth = $unitsListContainer
-      .find(".left-side-title")
+      .find(".right-rail-title")
       .width();
     const $unitListHeader = $unitsListContainer.find(
       ".webpage-left-list-view-title.webpage-header"
