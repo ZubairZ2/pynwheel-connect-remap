@@ -27,6 +27,7 @@ var opsMapMarkersEnabled;
 var defaultSelectedFloor;
 var debouncedShowMarkers;
 var modalButtonsCounter = 0;
+var isRightRailCardClicked = false;
 
 var _3dConvertedArr = definedAndHasValue(_3dConvertedArr)
   ? _3dConvertedArr
@@ -163,6 +164,7 @@ function bindWebpageEvents() {
   ////////////////////////////////////////////////
   /* unit modal*/
   $("#unitModal").on("hidden.bs.modal", function (e) {
+    isRightRailCardClicked = false;
     resetToDefaultZoom();
   });
 
@@ -1316,7 +1318,7 @@ function renderUnitBoxes(floorUnits) {
   if(!isFloorplanMapEnabled()) {
     document.getElementById("unit-title-count").innerText = `${floorUnits.length} Units Found`;
   } else {
-    const el = document.querySelector(".left-side-30-units:first-child");
+    const el = document.querySelector(".right-rail-card:first-child");
     if (el) {
       el.style.marginTop = "0px";
     }
@@ -1401,12 +1403,13 @@ function buildUnitBoxHTML(unit) {
       : unit["marketing_name"])
   }`;
 
+
   if (isFloorplanMapEnabled())
     unitName = unit["floorplan_name"];
 
   return `
     <div
-      class='left-side-30-units'
+      class='right-rail-card'
       id='unit_${unit["id"]}'
       data-pointer-data='${JSON.stringify(unit["pointer_data"])}'
       data-unit-marketing-name='${unit["data_attributes"]["data-unit-marketing-name"]}'
@@ -1665,6 +1668,8 @@ function closeAmenityViewerModal(amenityID) {
 }
 
 function onUnitClick(e) {
+  isRightRailCardClicked = true;
+
   if (_3dMapMode()) {
     if (e instanceof Event) {
       setUnitModalButtons(e);
@@ -1695,7 +1700,7 @@ function unitMarketRent(unit) {
 function unitBoxListHover() {
   let focused_marker;
 
-  $("div.left-side-30-units").hover(
+  $("div.right-rail-card").hover(
     function (e) {
       let markerColor = map_marker_color;
       const { id, unitId, pointerData, unitMarketingName } = getUnitData(
@@ -1836,7 +1841,7 @@ function unitBoxListHover() {
 
 function markerHoverEffect(event, _3dData = null) {
   let $this;
-  $(".left-side-30-units").css("border", "none");
+  $(".right-rail-card").css("border", "none");
 
   if (_3dMapMode() && _3dData) {
     const unitData = units.find(({ id }) => id === _3dData.unitId);
@@ -1983,7 +1988,7 @@ function showUnitPopoverAndHighlightListUnit(
     "unit_" + $dataElement.data("unitId")
   );
 
-  const scrollableParent = document.querySelector(".left-side");
+  const scrollableParent = document.querySelector(".right-rail");
 
   if (unitElement && scrollableParent) {
     const parentHeight = scrollableParent.clientHeight;
@@ -2048,7 +2053,7 @@ function showUnitPopoverAndHighlightListUnit(
 }
 
 function getUnitData(targetElement) {
-  if (targetElement.classList.contains("left-side-30-units")) {
+  if (targetElement.classList.contains("right-rail-card")) {
     return {
       id: targetElement.id,
       unitId: targetElement.dataset.unitId,
@@ -2056,7 +2061,7 @@ function getUnitData(targetElement) {
       unitMarketingName: targetElement.dataset.unitMarketingName,
     };
   } else {
-    let closestUnit = $(targetElement).closest(".left-side-30-units");
+    let closestUnit = $(targetElement).closest(".right-rail-card");
 
     if (closestUnit.length > 0) {
       return {
@@ -2091,16 +2096,18 @@ function setUnitModalButtons(e) {
   if (_3dMapMode()) {
     if (e instanceof Event) {
       let $element = null;
-      if (e.target.classList.contains(".left-side-30-units"))
+      if (e.target.classList.contains(".right-rail-card"))
         $element = $(e.target);
-      else $element = $(e.target).closest(".left-side-30-units");
+      else 
+        $element = $(e.target).closest(".right-rail-card");
 
       if ($element.length) {
         e = parseInt(
-          $(e.target).closest(".left-side-30-units")[0].id.replace("unit_", "")
+          $(e.target).closest(".right-rail-card")[0].id.replace("unit_", "")
         );
       }
     }
+
     const floorbasedUnits = filterUnitsBasedOnCommunityType(units);
     clickedUnit = filterBeansUnits().find(
       ({ options: { onClickData: { unitId } } = {} }) => unitId === e
@@ -2147,7 +2154,6 @@ function setUnitModalButtons(e) {
 
   filteredUnits.forEach((unit) => {
     if (unit && !validFloor(unit.floor)) return;
-
     setModalButton(unit.id === parseInt(clickedUnit.id), unit.data_attributes);
   });
 
@@ -2298,9 +2304,9 @@ function change_units_view(evt, type) {
 
   if (type === "list_view") {
     const $webpageMainContainer = $("div.map-body.map-container-center-align");
-    const $unitsListContainer = $webpageMainContainer.find(".left-side");
+    const $unitsListContainer = $webpageMainContainer.find(".right-rail");
     const unitListContainerWidth = $unitsListContainer
-      .find(".left-side-title")
+      .find(".right-rail-title")
       .width();
     const $unitListHeader = $unitsListContainer.find(
       ".webpage-left-list-view-title.webpage-header"
@@ -2347,7 +2353,6 @@ function formatDateLocal(date) {
   return offsetDate.toISOString().split("T")[0];
 }
 
-
 function setAppFolioUrl(element) {
   var url = element.getAttribute("data-availability-url") 
   if (_3dMapMode()) {
@@ -2356,8 +2361,6 @@ function setAppFolioUrl(element) {
 
   window.open(url, "_blank");
 }
-
-
 
 function set_resman_url(element) {
   var url = element.getAttribute("data-availability-url") 
@@ -2370,6 +2373,8 @@ function set_resman_url(element) {
 }
 
 function set_realpagesvc_url(element) {
+  real_page_provider_unit_id = $(element).data("unit-provider-id");
+
   setApplyNowURLDate(currentUnitSelected);
   real_page_provider_unit_id = parseInt(
     real_page_provider_unit_id.split("-")[0]
@@ -2536,9 +2541,9 @@ function setFloorplanName(element) {
   const floorplanName = $el.data("floorplan-name");
   const unitMarketingName = $el.data("unit-marketing-name");
 
-  if (isFloorplanMapEnabled()) {
+  if (isFloorplanMapEnabled() && isRightRailCardClicked) {
     $unitMarketingName.html(floorplanName);
-    $floorplanName.html(unitMarketingName);
+    $floorplanName.html("");
   } else {
     $unitMarketingName.html(unitMarketingName);
     $floorplanName.html(floorplanName);
@@ -2575,7 +2580,6 @@ function setUnitLeasePricing(element) {
       .html("No more prices are available");
   }
 }
-
 
 function setUnitDescription(element) {
   try {
@@ -2638,6 +2642,94 @@ function setUnitSquareFeet(element) {
   $("#unitModal").find("#square-feet").html($(element).data("square-feet"));
 }
 
+function setUnitFavourite(element) {
+  const $el = $(element);
+  const unitId = $el.data("unit-id");
+  const communityId = $el.data("community-id");
+
+  // Select the unit (if needed elsewhere)
+  selectedUnit = units.find((u) => u.id === unitId);
+
+  const isFav = $el.data("is-fav") || favoritesArr.includes(unitId);
+
+  // Build URL & Icon
+  const url = `/communities/${communityId}/webpages/${isFav ? "delete" : "save"}_favorite?unit_id=${unitId}`;
+  const iconClass = isFav ? "fa fa-heart" : "far fa-heart";
+
+  // Update favorite icon HTML
+  $("#fav-icon-tag").html(
+    `<a href="${url}" data-remote="true"><i class="${iconClass}"></i></a>`
+  );
+
+  // Rebind click handler
+  $("#fav-icon-tag a")
+    .off("click")
+    .on("click", function () {
+      const index = favoritesArr.indexOf(unitId);
+      if (index === -1) {
+        favoritesArr.push(unitId);
+      } else {
+        favoritesArr.splice(index, 1);
+      }
+    });
+}
+
+function setFloorplanImage(element) {
+  const $el = $(element);
+  const imgSrc = $el.data("floorplan-image") || "";
+  const $modal = $("#unitModal");
+
+  const defaultImg = "/assets/default.jpeg";
+  const finalImg = imgSrc !== "" ? imgSrc : defaultImg;
+
+  // Set images
+  $modal.find("#floorplan-image").attr("src", finalImg);
+  $modal.find("#responsive-floorplan-image").attr("src", finalImg);
+
+  // Apply extra styles only for non-small screens and non-default image
+  if (!smallScreen() && finalImg !== defaultImg) {
+    $(".c-modal-sidebar-filters").addClass("c-modal-sidebar-filters-bottom");
+    $(".c-m-iframe-content").addClass("c-m-iframe-content-bottom");
+  }
+}
+
+function setDataProvider(element) {
+  const $el = $(element);
+  const dataProvider = $el.data("provider");
+
+  if (dataProvider !== "realpagesvc") {
+    const website = $el.data("website") || "";
+    const uri = website.replace(/^https?:\/\//, "");
+
+    $("#psi-anchor-tag").attr({
+      "data-community-property-id": $el.data("community-property-id"),
+      "data-website": website,
+      "data-uri": uri,
+      "data-unit-provider-id": $el.data("unit-provider-id"),
+      "data-floorplan-provider-id": $el.data("floorplan-provider-id"),
+      "data-lease-term": $el.data("lease-term"),
+      "data-availability-url": element.getAttribute("data-availability-url"),
+    });
+  } else {
+    $("#realpagesvc-anchor-tag").attr(
+      "data-unit-provider-id",
+      $el.data("unit-provider-id")
+    );
+  }
+
+  if (dataProvider === "yardi" || dataProvider === "yardirentcafe") {
+    $(".c-modal-footer").css({ "padding-bottom": 7 });
+    $(".m-filters").hide();
+  }
+}
+
+function handleFavIconVisibility() {
+  if(isRightRailCardClicked && isFloorplanMapEnabled())
+    $("#fav-icon-tag").css("visibility", "hidden");
+  else
+    $("#fav-icon-tag").css("visibility", "");
+}
+
 function setModalAttributes(element) {
   if (!element) {
     return;
@@ -2660,121 +2752,25 @@ function setModalAttributes(element) {
   
   setFloorplanName(element);
   setFloorplanBanner(element);
-
   setUnitSquareFeet(element);
   setUnitBathrooms(element);
   setUnitBedrooms(element);
   setAvailabilityStatus(element);
   setUnitMarketRent(element);
-
-  ///////////////////////////////////////////
-  real_page_provider_unit_id = $(element).data("unit-provider-id");
-  var unit_id = $(element).data("unit-id");
-  selectedUnit = units.filter((a) => a.id === $(element).data("unit-id"))[0];
-  if (
-    $(element).data("is-fav") ||
-    favoritesArr.includes($(element).data("unit-id"))
-  ) {
-    var community_id = $(element).data("community-id");
-    var url =
-      "/communities/" +
-      community_id +
-      "/webpages/delete_favorite?unit_id=" +
-      unit_id;
-    var html =
-      '<a href="' +
-      url +
-      '" data-remote="true"><i class="fa fa-heart"></i></a>';
-    $("#fav-icon-tag").html(html);
-  } else {
-    var community_id = $(element).data("community-id");
-    var url =
-      "/communities/" +
-      community_id +
-      "/webpages/save_favorite?unit_id=" +
-      unit_id;
-    var html =
-      '<a href="' +
-      url +
-      '" data-remote="true"><i class="far fa-heart"></i></a>';
-    $("#fav-icon-tag").html(html);
-  }
-  $("#fav-icon-tag a")
-    .unbind("click")
-    .bind("click", function (e) {
-      var unit_id = $(element).data("unit-id");
-      if (favoritesArr.indexOf(unit_id) === -1) {
-        favoritesArr.push(unit_id);
-      } else {
-        var favIndex = favoritesArr.indexOf($(element).data("unit-id"));
-        favoritesArr.splice(favIndex, 1);
-      }
-    });
-  /////////////////////////////////////////
-  if ($(element).data("floorplan-image") != "") {
-    $("#unitModal")
-      .find("#floorplan-image")
-      .attr("src", $(element).data("floorplan-image"));
-    $("#unitModal")
-      .find("#responsive-floorplan-image")
-      .attr("src", $(element).data("floorplan-image"));
-    if (
-      !smallScreen() &&
-      $(element).data("floorplan-image") != "/assets/default.jpeg"
-    ) {
-      $(".c-modal-sidebar-filters").addClass("c-modal-sidebar-filters-bottom");
-      $(".c-m-iframe-content").addClass("c-m-iframe-content-bottom");
-    }
-  } else {
-    $("#unitModal")
-      .find("#floorplan-image")
-      .attr("src", "/assets/default.jpeg");
-    $("#unitModal")
-      .find("#responsive-floorplan-image")
-      .attr("src", $(element).data("floorplan-image"));
-  }
-
+  setUnitFavourite(element);
+  setFloorplanImage(element);
   setApplyNowURLDate(element);
-  var dataProvider = $(element).data("provider");
-  //////////////////////////////////////////
-  if (dataProvider != "realpagesvc") {
-    var website = $(element).data("website");
-    var uri = website.replace(/^https?\:\/\//, "");
-    $("#psi-anchor-tag").attr(
-      "data-community-property-id",
-      $(element).data("community-property-id")
-    );
-    $("#psi-anchor-tag").attr("data-website", website);
-    $("#psi-anchor-tag").attr("data-uri", uri);
-    $("#psi-anchor-tag").attr(
-      "data-unit-provider-id",
-      $(element).data("unit-provider-id")
-    );
-    $("#psi-anchor-tag").attr(
-      "data-floorplan-provider-id",
-      $(element).data("floorplan-provider-id")
-    );
-    $("#psi-anchor-tag").attr("data-lease-term", $(element).data("lease-term"));
-    $("#psi-anchor-tag").attr(
-      "data-availability-url",
-      element.getAttribute("data-availability-url")
-    );
-  } else if (dataProvider === "realpagesvc") {
-    $("#realpagesvc-anchor-tag").attr(
-      "data-unit-provider-id",
-      $(element).data("unit-provider-id")
-    );
-  }
-
-  if (dataProvider == "yardi" || dataProvider == "yardirentcafe") {
-    // $('#floorplan-image').css({"max-width": 310});
-    $(".c-modal-footer").css({ "padding-bottom": 7 });
-    $(".m-filters").hide();
-  }
-
+  setDataProvider(element)
   handleApplyNowButtonVisibility(element);
   adjustHeightForContentArea();
   resetToDefaultZoom();
+  controlUnitButtonsVisibility();
+  handleFavIconVisibility();
+}
+
+function controlUnitButtonsVisibility() {
+  if(isRightRailCardClicked && isFloorplanMapEnabled())
+    $(".unit-buttons").addClass("hidden");
 }
 
 function setFloorplanBanner(element) {
@@ -3118,9 +3114,11 @@ function setUnitAttributes(element, event = null) {
     $(this).removeClass("btn-primary");
     $(this).addClass("btn-default");
   });
+
   $(element).removeClass("btn-default");
   $(element).addClass("btn-primary");
   setModalAttributes(element);
+
   event?.stopImmediatePropagation();
 }
 
@@ -3346,8 +3344,8 @@ function unitMarkerHoverEvent() {
 function unitsListHoverEvent() {
   const markerSelector = svgMode ? "cloned-unit" : "unit_marker";
   $(document)
-    .off("mouseenter", ".left-side-30-units")
-    .on("mouseenter", ".left-side-30-units", function () {
+    .off("mouseenter", ".right-rail-card")
+    .on("mouseenter", ".right-rail-card", function () {
       updateActivityData(markerSelector, "hover");
     });
 }
@@ -3715,7 +3713,7 @@ function setWebpageContainerSize() {
   const $zoomableContainer = $mapContainer.find(
     ".image-map.zoomable-map-container"
   );
-  const $unitsListContainer = $webpageMainContainer.find(".left-side");
+  const $unitsListContainer = $webpageMainContainer.find(".right-rail");
   const mapContainer = $mapContainer[0];
   const result = { width: 0, height: 0 };
 
@@ -3818,7 +3816,7 @@ function setWebpageContainerSize() {
     }
 
     const unitListContainerWidth = $unitsListContainer
-      .find(".left-side-title")
+      .find(".right-rail-title")
       .width();
     const $unitListHeader = $unitsListContainer.find(
       ".webpage-left-list-view-title.webpage-header"
