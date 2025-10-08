@@ -1,5 +1,6 @@
 class Community < ApplicationRecord
   include LockedTourStopHelper
+  include ::S3Acceleration
   
   mount_base64_uploader :logo, AvatarUploader
   mount_base64_uploader :email_logo, AvatarUploader
@@ -7,6 +8,7 @@ class Community < ApplicationRecord
   mount_base64_uploader :self_tour_logo, AvatarUploader
   mount_base64_uploader :brand_details_pdf , PdfUploader
   mount_base64_uploader :file, DesignUploader
+  mount_uploader :background_svg_image, SiteMapUploader
 
   belongs_to :company
   belongs_to :community_group

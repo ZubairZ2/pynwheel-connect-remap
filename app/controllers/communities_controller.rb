@@ -261,6 +261,19 @@ class CommunitiesController < ApplicationController
     end
   end
 
+  def upload_svg_background
+    file = params[:file]
+    @community.background_svg_image = file
+
+    if @community.save
+      redirect_to plotexp_community_sitemaps(@community),
+                  notice: "Pynwheel Map Background Image updated successfully."
+    else
+      redirect_to plotexp_community_sitemaps(@community),
+                  alert: "Coudn't Update Pynwheel Map Background Image."
+    end
+  end
+
   def clone_community
     @community = Community.find params[:community_id]
     @community.clone_a_community(@community)

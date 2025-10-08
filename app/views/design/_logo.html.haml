@@ -1,8 +1,3 @@
--#.row
--#  .col-md-12
--#    .form-group
--#      - if gables_theme(@community) || @community.is_panther? || @community.is_expressionist?
--#        = link_to "Home Page Logo", secondary_logo_community_design_index_path(@community), class: "btn btn-primary btn-file pull-right mr-15"
 .row
   .col-lg-12
     .form-group
@@ -40,9 +35,3 @@
           = link_to show_logo_in_modal_community_design_index_path(),:class => "", remote: true do
             %span.btn.btn-primary.btn-success.ml-15#crop_logo{"data-target" => "#edit-name", "data-toggle" => "modal"}
               Crop
--#  %i.fa.fa-pencil{"data-target" => "#edit-name", "data-toggle" => "modal"}
--#
--#%span.btn.btn-primary.btn-success.ml-15#crop_logo
--#  Crop
--#%span.btn.btn-primary.btn-success.ml-15#crop_done
--#  Done

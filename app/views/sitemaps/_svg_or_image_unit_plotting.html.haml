@@ -43,6 +43,7 @@
 %span.hidden#marker_color       #{map_marker_color}
 
 - if is_svg
+  = render partial: "sitemaps/background_svg_uploader"
   = render partial: "sitemaps/svg_uploader"
 - else
   = render partial: "sitemaps/image_uploader"
