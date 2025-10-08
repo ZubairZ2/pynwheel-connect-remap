@@ -1,0 +1,100 @@
+%h3 Upload .svg Background
+
+%div{:style => "border-top: 1px solid #ddd; padding: 15px 0; margin: 20px 0;"}
+  -# Hidden file input for Dropzone
+  = form_tag upload_svg_background_community_path(community), multipart: true, remote: true, id: "svg-upload-form", data: { community_id: community.id } do
+    = file_field_tag :file, id: "svg-background-upload-input", style: "display: none;"
+
+  %button.btn.btn-primary{:type => "button", :id => "trigger-svg-upload"}
+    %i.fa.fa-upload
+    Upload SVG
+
+  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapUploadSvgPopover", "data-content" => " " }
+    %span{:id => "propertyDetailNameText", :style => "font-weight: normal; margin-left: 5px;"}
+      Uploading an SVG will change the map background that appears in the Pynwheel Map.
+
+  %br
+
+  .text-center.image-upload.home-page-drag-box#svg-background-upload-holder{:style => "margin-top: 10px;"}
+    = image_tag "upload-image.png", :class=>"drag-image-padding-top"
+    %p Drag &amp; Drop SVG to Upload
+
+  .row
+    .col-lg-12.text-center
+      .form-group.pt-15
+        - background_svg_url = community.validated_background_svg_image_url || asset_path("default.jpeg")
+
+        %a{ :href => "#svgPreviewModal", :data => { :toggle => "modal" } }
+          = image_tag background_svg_url, :class => "img-responsive img-thumbnail", :style => "max-width: 20%; cursor: pointer;"
+
+  / ===== Modal for Preview =====
+  .modal.fade{ :id => "svgPreviewModal", :tabindex => "-1", :role => "dialog" }
+    .modal-dialog.modal-lg{ :role => "document", :style => "width: 90%; max-width: 1200px;" }
+      .modal-content
+        .modal-header
+          %button.close{ :type => "button", :data => { :dismiss => "modal" }, :aria => { :label => "Close" } }
+            %span{ :aria => { :hidden => "true" } } ×
+          %h4.modal-title.text-center Background SVG Map Preview
+        .modal-body.text-center
+          = image_tag background_svg_url, :class => "img-responsive center-block", :style => "max-height: 80vh;"
+
+:javascript
+  $(document).ready(function() {
+    $("#svg-upload-form").each(function() {
+      var form = $(this);
+      var community_id = form.data("community-id");
+
+      var triggerBtn = $("#trigger-svg-upload");
+      var dropzoneHolder = $("#svg-background-upload-holder");
+
+      if (dropzoneHolder.length) {
+        // Destroy any existing Dropzone instance first (prevents double binding)
+        if (Dropzone.instances.length > 0) {
+          Dropzone.instances.forEach(function(dz) { dz.destroy(); });
+        }
+
+        var siteMapSvgDropzone = new Dropzone(dropzoneHolder[0], {
+          url: "/communities/" + community_id + "/upload_svg_background",
+          paramName: "file",
+          maxFiles: 1,
+          acceptedFiles: ".svg",
+          clickable: triggerBtn[0],
+          createImageThumbnails: false,
+          autoProcessQueue: true
+        });
+
+        siteMapSvgDropzone.on("addedfile", function(file) {
+          if (!file || file.type !== "image/svg+xml") {
+            siteMapSvgDropzone.removeFile(file);
+            return;
+          }
+        });
+
+        // Prevent empty upload if user cancels
+        siteMapSvgDropzone.on("canceled", function(file) {
+          siteMapSvgDropzone.removeFile(file);
+        });
+
+        siteMapSvgDropzone.on("complete", function(file) {
+          // Only reload if file was successfully added
+          //if (file && file.status === "success") {
+          location.reload();
+          //}
+        });
+      }
+
+      // Trigger hidden file input click (for fallback)
+      triggerBtn.on("click", function() {
+        // Dropzone will handle the click
+        dropzoneHolder.click();
+      });
+    });
+
+    // Bootstrap 3 modal preview
+    $(document).on('click', '[data-toggle="lightbox"]', function(event) {
+      event.preventDefault();
+      if ($(this).ekkoLightbox) {
+        $(this).ekkoLightbox();
+      }
+    });
+  });

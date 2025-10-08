@@ -21,32 +21,8 @@ $(document).ready(function () {
     if ($("#sitemap-svg-upload-holder").length) {
       saveSiteMapSvg();
     }
-
-    if($("#svg-background-upload-holder").length) {
-      saveMapBackgroundSvg();
-    }
   }
 });
-
-function saveMapBackgroundSvg() {
-  const siteMapSvgDropzone = new Dropzone("#svg-background-upload-holder", {url: "/communities/" + community_id + "/upload_svg_background"});
-    Dropzone.options.siteMapSvgDropzone = {
-      uploadMultiple: true
-    };
-
-  siteMapSvgDropzone.on("complete", function (file) {
-    location.reload();
-  });
-
-  siteMapSvgDropzone.on("addedfile", function (file) {
-    $(".divLoading").removeClass("hidden");
-    if (file.type !== "image/svg+xml") {
-      $(".divLoading").addClass("hidden");
-      $('#svg-upload-warning').modal('show');
-      siteMapSvgDropzone.removeFile(file);
-    }
-  });
-}
 
 function saveSiteMapImage() {
   const siteMapImageDropzone = new Dropzone("#sitemap-image-upload-holder", {url: "/communities/" + community_id + "/sitemaps/" + sitemap_id + "/save_sitemap_image"});

@@ -1,4 +1,5 @@
 - content_for :title, "Floorplates - Pynwheel"
+
 %section
   .content
     .title-heading
@@ -447,6 +448,9 @@
 
                     = submit_tag 'Save', class: "hidden"
 
+              = render partial: "shared/background_svg_uploader", locals: { community: @community}
+                
+                  
             .col-md-6
               .mt-35
                 = link_to new_community_floorplate_path(current_community), :class=>"btn btn-success loader_class" do
@@ -535,7 +539,6 @@
             .col-md-12
   #select_floor.modal.fade.select_floor
   = render partial: "shared/map_filters_configuration_modal", locals: { community: @community, map_filter: @community.map_filter, filter_list: @community.map_filter.get_filters_list()}
-
 
 :javascript
   $('.wysihtml5').each(function(i, elem) {
