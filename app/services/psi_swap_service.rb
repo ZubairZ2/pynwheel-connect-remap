@@ -396,8 +396,9 @@ class PsiSwapService < BaseService
   end
 
   def update_unit_pricing_and_availability us, unit
+    return if unit.manual_override
 
-    unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
+    unless unit.availability_is_updated.present? && unit.availability_is_updated
       if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
         unit.availability = 'Unoccupied' if !unit.sold
         unit.available = true if !unit.sold
@@ -413,12 +414,12 @@ class PsiSwapService < BaseService
       day = dateSplit[0]
       month = dateSplit[1]
       year = dateSplit[2]
-      unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
+      unless unit.available_date_is_updated.present? && unit.available_date_is_updated
         unit.available_date = Date.parse("#{month}-#{day}-#{year}")
       end
     end
 
-    unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
+    unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
       if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
         unit.min_effective_rent = (us[1]["Rent"]["@attributes"]['MinRent'].gsub(/[\s,]/ ,"")).to_f
         unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
