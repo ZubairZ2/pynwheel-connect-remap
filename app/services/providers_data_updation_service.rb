@@ -39,7 +39,7 @@ class ProvidersDataUpdationService
 
   def update_or_create_units_records(import_units)
     return unless import_units.present?
-  
+    import_units = import_units.compact
     new_units = import_units.reject(&:id)
     existing_units = import_units.select(&:id).uniq
   

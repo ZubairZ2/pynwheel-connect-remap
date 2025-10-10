@@ -129,7 +129,8 @@ class PsiService < BaseService
       units.each do |u|
         vacateDate = ""
         unit = get_psi_matched_unit(u)
-        if unit.present? && !unit.manual_override
+        if unit.present?
+          next if unit.manual_override
           unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
           unit.provider = "psi"
           unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s
