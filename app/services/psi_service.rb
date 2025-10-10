@@ -130,12 +130,13 @@ class PsiService < BaseService
         vacateDate = ""
         unit = get_psi_matched_unit(u)
         if unit.present?
+          next if unit.manual_override
           unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
           unit.provider = "psi"
           unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s
           unit_status_update(unit, u)
 
-          unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
+          unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
             if u["EffectiveRent"].present?
               unit.market_rent = u["EffectiveRent"]
               unit.effective_rent = u["EffectiveRent"]
@@ -154,13 +155,13 @@ class PsiService < BaseService
             end
           end
 
-          unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
+          unless unit.availability_is_updated.present? && unit.availability_is_updated
             unit.availability = u["Availability"]["VacancyClass"] if !unit.sold
             unit.available = false if !unit.sold
           end
 
           if u["Availability"]["VacancyClass"] == "Unoccupied"
-            unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
+            unless unit.availability_is_updated.present? && unit.availability_is_updated
               unit.available = true if !unit.sold
             end
 
@@ -176,7 +177,7 @@ class PsiService < BaseService
 
           end
           
-          unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
+          unless unit.available_date_is_updated.present? && unit.available_date_is_updated
             unit.available_date = vacateDate
           end
 
@@ -437,8 +438,9 @@ class PsiService < BaseService
   end
 
   def update_unit_pricing_and_availability us, unit
+    return if unit.manual_override
 
-    unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
+    unless unit.availability_is_updated.present? && unit.availability_is_updated
       if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
         unit.availability = 'Unoccupied' if !unit.sold
         unit.available = true if !unit.sold
@@ -455,12 +457,12 @@ class PsiService < BaseService
       month = dateSplit[1]
       year = dateSplit[2]
 
-      unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
+      unless unit.available_date_is_updated.present? && unit.available_date_is_updated
         unit.available_date = Date.parse("#{month}-#{day}-#{year}")
       end
     end
 
-    unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
+    unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
       if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
         unit.min_effective_rent = (us[1]["Rent"]["@attributes"]['MinRent'].gsub(/[\s,]/ ,"")).to_f
         unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
