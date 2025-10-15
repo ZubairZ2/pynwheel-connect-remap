@@ -87,6 +87,7 @@
       - unless is_svg
         - if community.self_tour and community.auto_wayfinding
           %button.btn.btn-primary.grid-overlay{:type=>"button",id:"hallway_btn",:onclick=>'plotting_hallways($(this))'}Start Plotting Hallways
+        
         - if false && community.enable_locks and community.self_tour and community.auto_wayfinding
           = link_to community_floorplate_select_many_floors_path(community, floorplate), remote: true do
             %button.btn.btn-success
@@ -94,6 +95,7 @@
               %i.propertyDetailName.fa.fa-question-circle
                 %span#propertyDetailNameText{:style => "font-weight: normal;"}
                   Add Access point in hallways that are not associated with any specific unit or amenity- if community.enable_locks and community.self_tour and community.auto_wayfinding
+        
         - if false && community.self_tour and community.auto_wayfinding
           %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'automate_path()'}Automate Path
 
@@ -168,7 +170,6 @@
                           %i{class: "fa fa-sign-in fa-xs", style: "color: #{door_marker_color};"}
 
                     - else
-                      - puts "duplicated.........."
                     .hidden{:class=>"h-#{x_plot }-#{y_plot}", :id=>"h-#{unit.provider_unit_id}","data-title"=>(unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, "data-name" => "plot", "data-href" => "/communities/#{community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}#{is_svg ? '&svg_deletion=true' : ''}","data-unit-form-url"=>"/communities/#{current_community.id}/units/#{unit.id}/adjust_position"}
 
                 - if community.enable_locks and community.self_tour and community.auto_wayfinding
@@ -187,10 +188,10 @@
 - redirect_path = community_floorplate_plotexp_path(current_community, floorplate)
 = render partial: 'markers/shared/show_unit_marker_modal', locals: { is_svg: is_svg, redirect_path: redirect_path }
 = render partial: 'markers/shared/add_plots_to_marker', locals: { is_svg: is_svg, units: floorplate_units, redirect_path: redirect_path, form_tag_url: "/communities/#{community.id}/add_plots_on_floorplate" }
+
 - unless is_svg
   = render partial: 'markers/shared/add_door_marker_modal', locals: { community: community }
   = render partial: 'markers/shared/remaining_doors_modal'
-
 
 :javascript
   var left_margin = #{raw left_margin}

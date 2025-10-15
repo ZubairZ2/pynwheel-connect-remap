@@ -1,6 +1,7 @@
-- background_svg_url = @community_info&.validated_background_svg_image_url
 - style = "position: relative; flex: 1;"
-- style += " background-image: url('#{background_svg_url}'); background-size: contain; background-repeat: no-repeat; background-position: center;" if background_svg_url.present?
+- if @community_info.is_beans_svg?
+  - background_svg_url = @community_info&.validated_background_svg_image_url
+  - style += " background-image: url('#{background_svg_url}'); background-size: contain; background-repeat: no-repeat; background-position: center;" if background_svg_url.present?
 
 - if @community_info.has_floorplates?
   - @floors.each do |floor|

@@ -43,7 +43,8 @@
 %span.hidden#marker_color       #{map_marker_color}
 
 - if is_svg
-  = render partial: "shared/background_svg_uploader", locals: { community: community}
+  - if community.is_beans_svg?
+    = render partial: "shared/background_svg_uploader", locals: { community: community}
   = render partial: "sitemaps/svg_uploader"
 - else
   = render partial: "sitemaps/image_uploader"
@@ -176,7 +177,6 @@
                           %i{class: "fa fa-sign-in fa-xs", style: "color: #{door_marker_color};"}
 
                     - else
-                      - puts "duplicated.........."
                     .hidden{ class: "h-#{x_plot}-#{y_plot}", id: "h-#{unit.provider_unit_id}", **(fetch_unit_info_struct_for_ploting(unit, @floorplans_map[unit.floorplan_id])[:data_attributes].except(%i[data-target data-toggle])) }
                 
                 - if false && community.enable_locks and community.self_tour and community.auto_wayfinding
@@ -209,74 +209,82 @@
     map_marker_color = toRgbColor("#{raw map_marker_color}")
 
     $(document).on("click", "#sitemapDisplayPricePopoverClose" , function(){
-        $('html, body').animate({ scrollTop: 650 });
-        $(this).parents(".popover").popover('hide');
-        $(this).parents(".popover").addClass('hidden');
-        $('[data-toggle="sitemapUploadFilePopover"]').popover({
-          html: true,
-          template: '<div class="popover plotexp-uploading-popover" style="width: max-content;"><div class="arrow plotexp-uploading-popover-arrow"></div><div class="popover-body popover-padding">Uploading a file will change the property map image that appears in the Pynwheel app. Careful! Do not change the file unless you are sure that it is the exact same dimensions as the one already loaded, or the markers will all be in the wrong position.</div><div class="popover-footer"><a id="sitemapUploadFilePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-        }).popover('show');
+      $('html, body').animate({ scrollTop: 650 });
+      $(this).parents(".popover").popover('hide');
+      $(this).parents(".popover").addClass('hidden');
+      $('[data-toggle="sitemapUploadFilePopover"]').popover({
+        html: true,
+        template: '<div class="popover plotexp-uploading-popover" style="width: max-content;"><div class="arrow plotexp-uploading-popover-arrow"></div><div class="popover-body popover-padding">Uploading a file will change the property map image that appears in the Pynwheel app. Careful! Do not change the file unless you are sure that it is the exact same dimensions as the one already loaded, or the markers will all be in the wrong position.</div><div class="popover-footer"><a id="sitemapUploadFilePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+      }).popover('show');
     });
+
     $("#sitemapUploadFilePopoverClose").on("click" , function(){
-        $('html, body').animate({ scrollTop: 950 });
-        $(this).parents(".popover").popover('hide');
-        $(this).parents(".popover").addClass('hidden');
-        $('[data-toggle="plotUnitOnSitemapPopover"]').popover({
-          html: true,
-          template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Once you have selected unit(s) to plot, click on the correct position on the map to place the marker. You can drag and drop each marker to reposition it. You can also click on a marker to see which units are associated with it; add a unit; or delete the marker.</div><div class="popover-footer"><a id="plotUnitOnSitemapPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-        }).popover('show');
+      $('html, body').animate({ scrollTop: 950 });
+      $(this).parents(".popover").popover('hide');
+      $(this).parents(".popover").addClass('hidden');
+      $('[data-toggle="plotUnitOnSitemapPopover"]').popover({
+        html: true,
+        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Once you have selected unit(s) to plot, click on the correct position on the map to place the marker. You can drag and drop each marker to reposition it. You can also click on a marker to see which units are associated with it; add a unit; or delete the marker.</div><div class="popover-footer"><a id="plotUnitOnSitemapPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+      }).popover('show');
     });
+
     $("#plotUnitOnSitemapPopoverClose").on("click" , function(){
-        $('html, body').animate({ scrollTop: 1000 });
-        $(this).parents(".popover").popover('hide');
-        $(this).parents(".popover").addClass('hidden');
-        $('[data-toggle="sitemapManageAmenitiesPopover"]').popover({
-          html: true,
-          template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: ;">Click on "Manage Amenities" to switch from plotting units to uploading and plotting amenity images.</div><div class="popover-footer"><a id="sitemapManageAmenitiesPopoverClose" href="" class="btn btn-info btn-sm">OK</a></div></div>'
-        }).popover('show');
+      $('html, body').animate({ scrollTop: 1000 });
+      $(this).parents(".popover").popover('hide');
+      $(this).parents(".popover").addClass('hidden');
+      $('[data-toggle="sitemapManageAmenitiesPopover"]').popover({
+        html: true,
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: ;">Click on "Manage Amenities" to switch from plotting units to uploading and plotting amenity images.</div><div class="popover-footer"><a id="sitemapManageAmenitiesPopoverClose" href="" class="btn btn-info btn-sm">OK</a></div></div>'
+      }).popover('show');
     });
+
     $("#sitemapManageAmenitiesPopoverClose").on("click" , function(){
-        $('html, body').animate({ scrollTop: 1100 });
-        $(this).parents(".popover").popover('hide');
-        $(this).parents(".popover").addClass('hidden');
-        $('[data-toggle="sitemapGridOverlayPopover"]').popover({
-          html: true,
-          template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">Add a grid overlay to the map to make it easier to see if the markers are straight.</div><div class="popover-footer"><a id="sitemapGridOverlayPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-        }).popover('show');
+      $('html, body').animate({ scrollTop: 1100 });
+      $(this).parents(".popover").popover('hide');
+      $(this).parents(".popover").addClass('hidden');
+      $('[data-toggle="sitemapGridOverlayPopover"]').popover({
+        html: true,
+        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">Add a grid overlay to the map to make it easier to see if the markers are straight.</div><div class="popover-footer"><a id="sitemapGridOverlayPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+      }).popover('show');
     });
+
     $("#sitemapGridOverlayPopoverClose").on("click" , function(){
-        $('html, body').animate({ scrollTop: 1200 });
-        $(this).parents(".popover").popover('hide');
-        $(this).parents(".popover").addClass('hidden');
-        $('[data-toggle="sitemapSelectPlotToUnitsPopover"]').popover({
-          html: true,
-          template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">You can select one or multiple amenity images to plot in one position (with one marker) on the map. If no units appear in the list, that means that all units that have been imported or entered have already been plotted on the map.</div><div class="popover-footer"><a id="sitemapSelectPlotToUnitsPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-        }).popover('show');
-        showHideOverlayGrid(document.querySelector('#map.plot-image'));
+      $('html, body').animate({ scrollTop: 1200 });
+      $(this).parents(".popover").popover('hide');
+      $(this).parents(".popover").addClass('hidden');
+      $('[data-toggle="sitemapSelectPlotToUnitsPopover"]').popover({
+        html: true,
+        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">You can select one or multiple amenity images to plot in one position (with one marker) on the map. If no units appear in the list, that means that all units that have been imported or entered have already been plotted on the map.</div><div class="popover-footer"><a id="sitemapSelectPlotToUnitsPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+      }).popover('show');
+      showHideOverlayGrid(document.querySelector('#map.plot-image'));
     });
+
     $("#sitemapSelectPlotToUnitsPopoverClose").on("click" , function(){
-        $(this).parents(".popover").popover('hide');
-        $(this).parents(".popover").addClass('hidden');
-        $('[data-toggle="sitemapUploadSvgPopover"]').popover({
-          html: true,
-          template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Uploading an svg will change the property map image that appears in the Pynwheel app. Careful! Do not change the file if you are not sure about replotting all the plots.</div><div class="popover-footer"><a id="sitemapUploadSvgPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-        }).popover('show');
+      $(this).parents(".popover").popover('hide');
+      $(this).parents(".popover").addClass('hidden');
+      $('[data-toggle="sitemapUploadSvgPopover"]').popover({
+        html: true,
+        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Uploading an svg will change the property map image that appears in the Pynwheel app. Careful! Do not change the file if you are not sure about replotting all the plots.</div><div class="popover-footer"><a id="sitemapUploadSvgPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+      }).popover('show');
     });
+
     $("#sitemapUploadSvgPopoverClose").on("click" , function(){
-        $('html, body').animate({ scrollTop: 950 });
-        $(this).parents(".popover").popover('hide');
-        $(this).parents(".popover").addClass('hidden');
-        $('[data-toggle="plotUnitOnSitemapSvgPopover"]').popover({
-          html: true,
-          template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Once you have selected unit(s) to plot, click on the correct position on the map to plot it. You can also click on a plot to see which units are associated with it; add a unit; or delete the marker.</div><div class="popover-footer"><a id="plotUnitOnSitemapSvgPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-        }).popover('show');
+      $('html, body').animate({ scrollTop: 950 });
+      $(this).parents(".popover").popover('hide');
+      $(this).parents(".popover").addClass('hidden');
+      $('[data-toggle="plotUnitOnSitemapSvgPopover"]').popover({
+        html: true,
+        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Once you have selected unit(s) to plot, click on the correct position on the map to plot it. You can also click on a plot to see which units are associated with it; add a unit; or delete the marker.</div><div class="popover-footer"><a id="plotUnitOnSitemapSvgPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+      }).popover('show');
     });
+
     $("#plotUnitOnSitemapSvgPopoverClose").on("click" , function(){
-        $(this).parents(".popover").popover('hide');
-        $(this).parents(".popover").addClass('hidden');
-        #{current_user.welcome_sitemap_page = true}
-        #{current_user.save}
+      $(this).parents(".popover").popover('hide');
+      $(this).parents(".popover").addClass('hidden');
+      #{current_user.welcome_sitemap_page = true}
+      #{current_user.save}
     });
+
   });
 
 :css

@@ -215,16 +215,15 @@
                     %label.label-primary{:for => "community_enable_svg_mode"}
                     %span.pl-15 Yes
               
-              - if !@community.is_sitemap
-                .form-group
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    Beans Generated SVG
-                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    .TriSea-technologies-Switch
-                      %span.pr-15 No
-                      = f.check_box :is_beans_svg
-                      %label.label-primary{:for => "community_is_beans_svg"}
-                      %span.pl-15 Yes
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Beans Generated SVG
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = f.check_box :is_beans_svg
+                    %label.label-primary{:for => "community_is_beans_svg"}
+                    %span.pl-15 Yes
             
               / .form-group#access_restrictions
               /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label

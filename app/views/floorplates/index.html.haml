@@ -448,8 +448,8 @@
 
                     = submit_tag 'Save', class: "hidden"
 
-              = render partial: "shared/background_svg_uploader", locals: { community: @community}
-                
+              - if @community.is_beans_svg?
+                = render partial: "shared/background_svg_uploader", locals: { community: @community}
                   
             .col-md-6
               .mt-35
