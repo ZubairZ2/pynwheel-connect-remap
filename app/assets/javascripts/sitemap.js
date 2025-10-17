@@ -6,9 +6,6 @@ $(document).ready(function () {
     $("#map, #svg_map").css('cursor', 'default');
     imageOCRResponse = $("#ocrData").data("ocrData");
     ocrImageDimensions = $("#ocrData").data("imageDimensions");
-    console.log("imageOCRResponse:", imageOCRResponse );
-    console.log("ocrImageDimensions:", ocrImageDimensions );
-
 
     doDraggable();
 
@@ -18,6 +15,7 @@ $(document).ready(function () {
     if ($("#sitemap-image-upload-holder").length) {
       saveSiteMapImage();
     }
+    
     if ($("#sitemap-svg-upload-holder").length) {
       saveSiteMapSvg();
     }

@@ -91,7 +91,17 @@
       - if current_user.is_super_admin?
         - unless is_svg
           = link_to "Auto Plot <i class='propertyDetailName loader_class fa fa-question-circle' data-toggle='sitemapManageAmenitiesPopover' data-content='test' ><span id='propertyDetailNameText' style='font-weight: normal;'>Use Auto-plotting to add markers only when unit names in list and on map match exactly. All markers will be automatically added to the map.</span></i>".html_safe , "/communities/#{community.id}/sitemap_auto_plot_units" , :class=>"btn btn-success loader_class"
-
+        - else
+          %button.btn.btn-success.loader_class{ type: "button", onclick: "autoPlotUnits()" }
+            Auto Plot
+            %i.propertyDetailName.loader_class.fa.fa-question-circle{
+              "data-toggle" => "sitemapManageAmenitiesPopover",
+              "data-content" => "test"
+            }
+              %span#propertyDetailNameText{ style: "font-weight: normal;" }
+                Use Auto-plotting to add markers only when unit names in list and on map match exactly. 
+                All markers will be automatically added to the map.
+                
         %a.btn.btn-danger{"data-name" => "sitemap's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{community.id}/remove_plots#{is_svg ? "?svg_deletion=true" : ''}"} RESET ALL PLOTS
 
       - unless is_svg

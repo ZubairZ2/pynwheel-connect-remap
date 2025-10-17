@@ -137,6 +137,7 @@ Rails.application.routes.draw do
       patch :update_coloring_mode
       patch :update_amenities_color
       post :upload_svg_background
+      post :save_pointer_data
     end
     
     collection do

@@ -1446,7 +1446,6 @@ async function fetchSVGAndSetPlotCoordinates(type, assetIdForTracker = 1) {
     });
 
     if (result.ok) {
-      console.log(message);
       if (parsedSVGs.length) {
         switch (type) {
           case "unit":

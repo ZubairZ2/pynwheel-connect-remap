@@ -94,6 +94,190 @@ function setSVG(container, svgElement, options) {
   if (options.setSVGImageHeight) setSvgOrImageHeight($(container).find("svg"));
 }
 
+function autoPlotUnits() {
+  const svgElement = parsedSVGs?.[0];
+  if (!svgElement || !mapped_units?.length) return {};
+
+  const filteredUnits = normalizeFeedUnits(mapped_units);
+  const pointerData = processSvgBuildings(svgElement, filteredUnits);
+  savePointerData(pointerData);
+}
+
+function normalize(str) {
+  return String(str || "").trim().replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+}
+
+function stringSimilarity(a, b) {
+  if (!a || !b) return 0;
+  if (a === b) return 1;
+  const len = Math.min(a.length, b.length);
+  let match = 0;
+  for (let i = 0; i < len; i++) if (a[i] === b[i]) match++;
+  return match / Math.max(a.length, b.length);
+}
+
+function parsePoints(pointsStr) {
+  return (pointsStr || "")
+    .trim()
+    .split(/\s+/)
+    .map(pair => {
+      const [x, y] = pair.split(",").map(Number);
+      return { x, y };
+    })
+    .filter(p => !isNaN(p.x) && !isNaN(p.y));
+}
+
+function getPolygonCentroid(points) {
+  if (!points.length) return { x: 0, y: 0 };
+  const sum = points.reduce(
+    (acc, p) => ({ x: acc.x + p.x, y: acc.y + p.y }),
+    { x: 0, y: 0 }
+  );
+  return { x: sum.x / points.length, y: sum.y / points.length };
+}
+
+function normalizeFeedUnits(units) {
+  return units.map(u => ({
+    id: u.id,
+    baseName: normalize(u.marketing_name),
+    floor: normalize(u.floor),
+    building: normalize(u.building)
+  }));
+}
+
+function generateVariants(base, floor, building) {
+  return Array.from(
+    new Set(
+      [
+        base,
+        base.replace(floor, ""),
+        base.replace(building, ""),
+        `${building}${base}`,
+        `${base}${building}`,
+        `${floor}${base}`,
+        `${base}${floor}`
+      ].map(normalize)
+    )
+  );
+}
+
+function processSvgBuildings(svgElement, filteredUnits) {
+  const pointerData = {};
+  const buildingGroups = svgElement.querySelectorAll('#Units > g[id^="Building_"]');
+
+  buildingGroups.forEach(buildingGroup => {
+    // Handle building ID: "Building_1" or "Building_1_1" → take only first part
+    const buildingParts = buildingGroup.id.replace("Building_", "").split("_");
+    const buildingName = normalize(buildingParts[0]);
+
+    // Filter units by this building
+    const buildingUnits = filteredUnits.filter(
+      u => normalize(u.building) === buildingName
+    );
+
+    const floorGroups = buildingGroup.querySelectorAll('g[id^="Floor_"]');
+
+    floorGroups.forEach(floorGroup => {
+      // Handle floor ID: "Floor_2" or "Floor_2_3" → take only first part
+      const floorParts = floorGroup.id.replace("Floor_", "").split("_");
+      const floorName = normalize(floorParts[0]);
+
+      // Filter units for this floor and building
+      const floorUnits = buildingUnits.filter(
+        u => normalize(u.floor) === floorName
+      );
+
+      // Extract polygons from SVG and match
+      const svgUnits = extractSvgUnits(floorGroup);
+      const matched = matchUnitsToSvg(floorUnits, svgUnits);
+
+      Object.assign(pointerData, matched);
+    });
+  });
+
+  return pointerData;
+}
+
+/**
+ * Extract all <polygon> elements within a given floor group
+ */
+function extractSvgUnits(svgParent) {
+  return Array.from(svgParent.querySelectorAll("polygon")).map(polygon => {
+    const label = polygon.closest("g")?.querySelector("text")?.textContent?.trim() || "";
+    const points = parsePoints(polygon.getAttribute("points"));
+    const { x, y } = getPolygonCentroid(points);
+    return {
+      id: polygon.id || "",
+      normalized: normalize(label),
+      x_plot: x,
+      y_plot: y,
+      tag: "polygon"
+    };
+  });
+}
+
+/**
+ * Match units (feed) to SVG units within same floor/building context
+ */
+function matchUnitsToSvg(units, svgUnits) {
+  const pointerData = {};
+
+  units.forEach(unit => {
+    const variants = generateVariants(unit.baseName, unit.floor, unit.building);
+    let bestMatch = null;
+    let bestScore = 0;
+
+    svgUnits.forEach(svgUnit => {
+      variants.forEach(variant => {
+        const score = stringSimilarity(variant, svgUnit.normalized);
+        if (score > bestScore) {
+          bestScore = score;
+          bestMatch = svgUnit;
+        }
+      });
+    });
+
+    if (bestMatch && bestScore >= 0.6) {
+      pointerData[unit.id] = formatPointerData(bestMatch);
+    }
+  });
+
+  return pointerData;
+}
+
+function formatPointerData(svgUnit) {
+  return {
+    id: svgUnit.id,
+    tag: svgUnit.tag,
+    x_plot: Math.round(svgUnit.x_plot).toString(),
+    y_plot: Math.round(svgUnit.y_plot).toString(),
+    selector: ""
+  };
+}
+
+async function savePointerData(pointerData) {
+  const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
+
+  const response = await fetch(`/communities/15/save_pointer_data`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+      "X-CSRF-Token": token,
+    },
+    credentials: "include", // Required for Devise
+    body: JSON.stringify({ pointer_data: pointerData }),
+  });
+
+  const result = await response.json();
+
+  if (!response.ok)
+    throw new Error(result.error || "Failed to save pointer data");
+
+  window.location.reload();
+}
+
+
 function uniquifySVGIds(svgElement, floorId) {
   if (!svgElement) return;
 

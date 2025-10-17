@@ -36,10 +36,8 @@
   var mapped_units = #{raw @mapped_units.to_json}
   var access_points = #{@access_points.to_json.html_safe}
   var building_starting_point = {x_plot: #{@community.community_tour.x_plot.to_json.html_safe}, y_plot: #{@community.community_tour.y_plot.to_json.html_safe} };
-
   var community_id = #{params[:community_id]}
   var floorplate_id = #{params[:floorplate_id]}
-
   var self_tour = #{@community.self_tour}
   var enable_locks = #{@community.enable_locks}
   var automate_wayfinding = #{@community.auto_wayfinding}
@@ -105,6 +103,7 @@
     });
 
     const $imageZoomPan = $('#map.plot-image');
+
     if ($imageZoomPan[0]) {
       activateZoomPan($imageZoomPan[0]);
       const image = $imageZoomPan.find('img#viewArea')[0]

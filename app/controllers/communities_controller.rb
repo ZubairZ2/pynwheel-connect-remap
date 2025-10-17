@@ -1,11 +1,13 @@
 class CommunitiesController < ApplicationController
+  before_action :authenticate_user!
+
   # include Error::ErrorHandler
   include DweloDevicesHelper
   include CommunitiesHelper
   include FeedbacksHelper
   #load_and_authorize_resource
   before_action :check_community
-  before_action :set_community , only: [:update_coloring_mode, :update_marketing_map_colors, :edit,:update,:destroy,:remove_plots, :sitemap_auto_plot_units, :floorplate_auto_plot_units, :suggest_sitemap_units, :suggest_floorplate_units]
+  before_action :set_community , only: [:save_pointer_data, :update_coloring_mode, :update_marketing_map_colors, :edit,:update,:destroy,:remove_plots, :sitemap_auto_plot_units, :floorplate_auto_plot_units, :suggest_sitemap_units, :suggest_floorplate_units]
   add_breadcrumb "Home", :root_path
   add_breadcrumb "Companies", :companies_path, except: [:import_page, :settings_page]
   add_breadcrumb "Communities", :company_communities_path, except: [:import_page,:settings_page]
@@ -271,6 +273,28 @@ class CommunitiesController < ApplicationController
     else
       redirect_to plotexp_community_sitemaps(@community),
                   alert: "Coudn't Update Pynwheel Map Background Image."
+    end
+  end
+
+  def save_pointer_data
+    pointer_data = params[:pointer_data]
+  
+    return render json: { error: "No pointer data provided" }, status: :bad_request if pointer_data.blank?
+  
+    begin
+      ActiveRecord::Base.transaction do
+        pointer_data.each do |unit_id, data|
+          unit = @community.units.find_by(id: unit_id)
+          next unless unit # skip if unit not found in this community
+  
+          unit.update!(pointer_data: data)
+        end
+      end
+  
+      render json: { success: true, message: "Pointer data saved successfully" }, status: :ok
+  
+    rescue ActiveRecord::RecordInvalid => e
+      render json: { error: e.message }, status: :unprocessable_entity
     end
   end
 
