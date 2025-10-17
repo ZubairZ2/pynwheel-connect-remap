@@ -15,7 +15,7 @@ module DataProviders
         handle_api_response(fetch_data("apartmentavailability", property_code, show_all_units(limit_result)))
       end
 
-      def get_apartment_pricing_matrix(property_code, limit_resul = false)
+      def get_apartment_pricing_matrix(property_code, limit_result = false)
         handle_api_response(fetch_data("pricingmatrix", property_code, show_all_units(limit_result)))
       end
 
@@ -33,7 +33,7 @@ module DataProviders
         def fetch_data(request_type, property_code, additional_params = '')
           url = "#{api_base_url(request_type)}&propertycode=#{property_code}#{additional_params}"
           response = HTTParty.get(url)
-          JSON.parse(response.body)
+          JSON.parse(response.body) if response&.body.present?
         end
 
         def api_base_url(request_type)
@@ -45,10 +45,13 @@ module DataProviders
         end
 
         def handle_api_response(response)
+          return nil unless response.present?
+
           response[0]["Error"].nil? ? response : nil
         end
 
         def handle_property_response(response)
+          return nil unless response.present?
           response[0]["Error"].nil? ? response[0] : nil
         end
 

@@ -16,29 +16,32 @@ class YardiRentCafeSwapService < BaseService
     property_codes = credentials.p_code.split(',') rescue []
     property_codes.each do |property_code|
       begin
-        request_type = "apartmentavailability"
-        company_code = credentials.c_code
-        api_token = credentials.api_token
-        showallunit =  credentials.limit_result ? "0" : "-1"
-        #property_code = credentials.p_code
-        if api_token.present?
-          @url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&showallunit=#{showallunit}"
-        else
-          @url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=#{showallunit}"
-        end
-        response = HTTParty.get(@url)
-        response = JSON.parse(response.body)
+        @credentials&.get_limit_result_availability()&.each do |limit_result|
+          request_type = "apartmentavailability"
+          company_code = credentials.c_code
+          api_token = credentials.api_token
+          showallunit =  limit_result ? "0" : "-1"
+          #property_code = credentials.p_code
 
-        if response[0]["Error"].nil?
-          response.each do |r|
-            begin
+          if api_token.present?
+            @url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&showallunit=#{showallunit}"
+          else
+            @url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=#{showallunit}"
+          end
+
+          response = HTTParty.get(@url)
+          response = JSON.parse(response.body)
+
+          if response[0]["Error"].nil?
+            response.each do |r|
               unit = Unit.where(community_id: credentials.community_id,marketing_name: r["ApartmentName"])
+              
               if unit.count > 1
                 unit = Unit.where(community_id: credentials.community_id,marketing_name: r["ApartmentName"],floorplan_id: Floorplan.find_by(name: r["FloorplanName"]).provider_floorplan_id)
               end
+
               if unit.present?
                 unit = unit.first
-                # puts "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", unit.provider
                 unit.provider = "yardirentcafe_new"
                 unit.provider_unit_id = r["ApartmentId"]
                 unit.property_id = property_code
@@ -68,6 +71,7 @@ class YardiRentCafeSwapService < BaseService
 
                 rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"], credentials, available_date_convertor(r["AvailableDate"]))
                 leasing = ""
+
                 if rentStrs.present?
                   rentStrs.each do |rentStr|
                     if rentStr[0].to_i > 0
@@ -75,9 +79,11 @@ class YardiRentCafeSwapService < BaseService
                     end
                   end
                 end
-                unit.lease_pricing = leasing
 
+                unit.lease_pricing = leasing
+                unit.show_on_map = limit_result
                 unit.save
+
               else
                 dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: r["ApartmentId"])
                 if dup.present?
@@ -115,6 +121,7 @@ class YardiRentCafeSwapService < BaseService
 
                 rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"], credentials, available_date_convertor(r["AvailableDate"]))
                 leasing = ""
+
                 if rentStrs.present?
                   rentStrs.each do |rentStr|
                     if rentStr[0].to_i > 0
@@ -122,23 +129,20 @@ class YardiRentCafeSwapService < BaseService
                     end                  
                   end
                 end
-                unit.lease_pricing = leasing
 
+                unit.lease_pricing = leasing
+                unit.show_on_map = limit_result
                 unit.save
               end
-
-
-            rescue => e
-              ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
             end
+
+
+
+          else
           end
-
-
-
-        else
         end
       rescue => e
-        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
+        raise e
       end
     end
   end
@@ -152,19 +156,23 @@ class YardiRentCafeSwapService < BaseService
         api_token = credentials.api_token
         showallunit =  credentials.limit_result ? "0" : "-1"
         #property_code = credentials.p_code
+
         if api_token.present?
           @url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&showallunit=#{showallunit}"
         else
           @url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=#{showallunit}"
         end
+
         response = HTTParty.get(@url)
         response = JSON.parse(response.body)
+
         if response[0]["Error"].nil?
           response.each do |r|
             fp = Floorplan.where(community_id: credentials.community_id,name: r["FloorplanName"])
             if fp.count > 1
               fp = Floorplan.where(community_id: credentials.community_id,name: r["FloorplanName"],square_feet: r["MinimumSQFT"],bedrooms: r["Beds"],bathrooms: r["Baths"])
             end
+
             if fp.present?
               fp = fp.first
               fp.provider = "yardirentcafe_new"
@@ -185,6 +193,7 @@ class YardiRentCafeSwapService < BaseService
               fp.save(validate: false)
             else
               dup = Floorplan.find_by(community_id: credentials.community_id,provider_floorplan_id: r["FloorplanId"])
+              
               if dup.present?
                 dup.destroy
               end
@@ -209,16 +218,10 @@ class YardiRentCafeSwapService < BaseService
               fp.deposit = r["MinimumDeposit"]
               fp.save(validate: false)
             end
-
           end
-
-
-
-
-        else
         end
       rescue => e
-        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
+        raise e
       end
     end
   end
