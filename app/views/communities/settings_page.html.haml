@@ -1368,27 +1368,4 @@
       })
 
     })
-  
-    $(document).ready(function () {
-      const $enableSvgCheckbox = $("#community_enable_svg_mode");
-      const $beansSvgCheckbox = $("#community_is_beans_svg");
-      const $beansSvgGroup = $beansSvgCheckbox.closest(".form-group");
-
-      function toggleBeansSvg() {
-        if ($enableSvgCheckbox.is(":checked")) {
-          $beansSvgGroup.show();
-          $beansSvgCheckbox.prop("disabled", false);
-        } else {
-          $beansSvgGroup.hide();
-          $beansSvgCheckbox.prop("checked", false);  // turn it off
-          $beansSvgCheckbox.prop("disabled", true);  // disable it
-        }
-      }
-
-      // Run on page load
-      toggleBeansSvg();
-
-      // Run on change
-      $enableSvgCheckbox.on("change", toggleBeansSvg);
-    });
 

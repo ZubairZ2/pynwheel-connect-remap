@@ -1435,7 +1435,6 @@ async function fetchSVGAndSetPlotCoordinates(type, assetIdForTracker = 1) {
     activateHoverEffect: true,
     trackerVisibilityCheck: true,
     trackerAssetId: `plot-svg-${assetIdForTracker}`
-    // isBeansFormatSvg: false
   });
 
   $(".divLoading").addClass("hidden");

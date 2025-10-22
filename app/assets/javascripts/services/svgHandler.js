@@ -163,8 +163,7 @@ async function fetchSVG(
     trackerAssetId: null,
     setSVGImageHeight: false,
     activateHoverEffect: false,
-    trackerVisibilityCheck: false,
-    isBeansFormatSvg: false
+    trackerVisibilityCheck: false
   }
 ) {
   const container = document.querySelector(dataSetSelector);
@@ -197,15 +196,9 @@ async function fetchSVG(
 
     if (!svgElement) throw new Error("No <svg> element found in the response.");
 
-    // const { floor = null, isBeansFormatSvg = false } = options;
-    
-    // if(isBeansFormatSvg && hasFloorplate() && floor)
-    //   uniquifySVGIds(svgElement, `f${floor}`);
-
     parsedSVGs.push(svgElement);
     setSVG(container, svgElement, options);
     
-
     if (tracker) {
       asset.node = svgElement;
       tracker.addOrUpdateAsset(asset, trackerVisibilityCheck);
