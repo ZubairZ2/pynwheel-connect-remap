@@ -71,8 +71,8 @@ class WebpagesController < ActionController::Base
       elsif @show_ops_map
         community_units.are_plotted_units(@svg_enabled).status_scoped(true)
       else
-        community_units.available_units(@svg_enabled, @community.units_availability_over_120_days)
-      end.visible_on_map_for(@community, @show_ops_map)
+        community_units.available_units(@svg_enabled, @community.units_availability_over_120_days).visible_on_map_for(@community)
+      end
 
       if @units.length > 0
         normalize_units
