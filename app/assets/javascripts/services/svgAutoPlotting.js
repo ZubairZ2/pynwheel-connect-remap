@@ -69,14 +69,14 @@ function processSvgForAutoPlotting(svgElement, filteredUnits) {
   let pointerData = {};
 
   // Step 1 — Try building-based matching first
-  if (buildingGroups.length > 0) {
+  if (buildingGroups.length > 0 && floorGroups.length >0) {
     pointerData = processSvgByBuildings(unitsGroup, filteredUnits);
   }
 
   // Step 2 — Fallback to floor-based matching if pointerData is empty
-  if (!hasPointerData(pointerData) && floorGroups.length > 0) {
-    pointerData = processSvgByFloors(unitsGroup, filteredUnits);
-  }
+  // if (!hasPointerData(pointerData) && floorGroups.length > 0) {
+  //   pointerData = processSvgByFloors(unitsGroup, filteredUnits);
+  // }
 
   // Step 3 — Fallback to direct polygon matching if still empty
   if (!hasPointerData(pointerData)) {
