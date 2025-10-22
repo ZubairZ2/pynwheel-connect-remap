@@ -177,9 +177,9 @@ class Unit < ApplicationRecord
     result
   }
   
-  scope :visible_on_map_for, ->(community, ops_map_enabled) {
+  scope :visible_on_map_for, ->(community) {
     begin
-      return all if ops_map_enabled || !SHOW_ON_MAP.include?(community.data_provider)
+      return all unless SHOW_ON_MAP.include?(community.data_provider)
 
       case community.data_provider
       when "psi"
@@ -189,6 +189,7 @@ class Unit < ApplicationRecord
       else
         all
       end
+      
     rescue
       all
     end
