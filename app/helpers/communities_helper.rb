@@ -266,6 +266,7 @@ module CommunitiesHelper
   def fetch_unit_info_struct_for_webpage(unit, floorplan, show_ops_map = false)
     struct = {
       id: unit.id,
+      community_id: @community_info.id,
       marketing_name: unit.marketing_name,
       market_rent: unit.get_market_rent(),
       building: unit.building,
@@ -336,6 +337,7 @@ module CommunitiesHelper
   def fetch_unit_info_struct_for_ploting(unit, floorplan)
     struct = {
       id: unit.id,
+      community_id: @community_info.id,
       marketing_name: unit.marketing_name,
       market_rent: unit.effective_rent,
       building: unit.building,

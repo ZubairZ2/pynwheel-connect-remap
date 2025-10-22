@@ -99,8 +99,13 @@ function autoPlotUnits() {
   if (!svgElement || !mapped_units?.length) return {};
 
   const filteredUnits = normalizeFeedUnits(mapped_units);
+  const propertyId = getPropertyId(filteredUnits);
   const pointerData = processSvgBuildings(svgElement, filteredUnits);
-  savePointerData(pointerData);
+  savePointerData(pointerData, propertyId);
+}
+
+function getPropertyId(filteredUnits) {
+  return [...new Set(filteredUnits.map(u => u.communityId))][0];
 }
 
 function normalize(str) {
@@ -139,6 +144,7 @@ function getPolygonCentroid(points) {
 function normalizeFeedUnits(units) {
   return units.map(u => ({
     id: u.id,
+    communityId: u.community_id,
     baseName: normalize(u.marketing_name),
     floor: normalize(u.floor),
     building: normalize(u.building)
@@ -255,10 +261,9 @@ function formatPointerData(svgUnit) {
   };
 }
 
-async function savePointerData(pointerData) {
+async function savePointerData(pointerData, propertyId) {
   const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
-
-  const response = await fetch(`/communities/15/save_pointer_data`, {
+  const response = await fetch(`/communities/${propertyId}/save_pointer_data`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -381,10 +386,10 @@ async function fetchSVG(
 
     if (!svgElement) throw new Error("No <svg> element found in the response.");
 
-    const { floor = null, isBeansFormatSvg = false } = options;
+    // const { floor = null, isBeansFormatSvg = false } = options;
     
-    if(isBeansFormatSvg && hasFloorplate() && floor)
-      uniquifySVGIds(svgElement, `f${floor}`);
+    // if(isBeansFormatSvg && hasFloorplate() && floor)
+    //   uniquifySVGIds(svgElement, `f${floor}`);
 
     parsedSVGs.push(svgElement);
     setSVG(container, svgElement, options);
