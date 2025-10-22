@@ -94,247 +94,58 @@ function setSVG(container, svgElement, options) {
   if (options.setSVGImageHeight) setSvgOrImageHeight($(container).find("svg"));
 }
 
-function autoPlotUnits() {
-  const svgElement = parsedSVGs?.[0];
-  if (!svgElement || !mapped_units?.length) return {};
+// function uniquifySVGIds(svgElement, floorId) {
+//   if (!svgElement) return;
 
-  const filteredUnits = normalizeFeedUnits(mapped_units);
-  const propertyId = getPropertyId(filteredUnits);
-  const pointerData = processSvgBuildings(svgElement, filteredUnits);
-  savePointerData(pointerData, propertyId);
-}
+//   const idMap = new Map();
 
-function getPropertyId(filteredUnits) {
-  return [...new Set(filteredUnits.map(u => u.communityId))][0];
-}
+//   // Elements to skip (Units and Amenities groups + their children)
+//   const skipSelectors = ["g#Units", "g#Amenities", "#Units *", "#Amenities *"];
 
-function normalize(str) {
-  return String(str || "").trim().replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
-}
+//   // STEP 1: Find and rename all ids (except skipped ones)
+//   svgElement.querySelectorAll('[id]').forEach(el => {
+//     // Skip if inside Units or Amenities
+//     if (el.closest(skipSelectors.join(","))) return;
 
-function stringSimilarity(a, b) {
-  if (!a || !b) return 0;
-  if (a === b) return 1;
-  const len = Math.min(a.length, b.length);
-  let match = 0;
-  for (let i = 0; i < len; i++) if (a[i] === b[i]) match++;
-  return match / Math.max(a.length, b.length);
-}
+//     const oldId = el.id;
+//     const newId = `${oldId}_${floorId}`;
+//     idMap.set(oldId, newId);
+//     el.id = newId;
+//   });
 
-function parsePoints(pointsStr) {
-  return (pointsStr || "")
-    .trim()
-    .split(/\s+/)
-    .map(pair => {
-      const [x, y] = pair.split(",").map(Number);
-      return { x, y };
-    })
-    .filter(p => !isNaN(p.x) && !isNaN(p.y));
-}
+//   // STEP 2: Update all references
+//   svgElement.querySelectorAll('*').forEach(el => {
+//     // Skip updating references inside Units or Amenities
+//     if (el.closest(skipSelectors.join(","))) return;
 
-function getPolygonCentroid(points) {
-  if (!points.length) return { x: 0, y: 0 };
-  const sum = points.reduce(
-    (acc, p) => ({ x: acc.x + p.x, y: acc.y + p.y }),
-    { x: 0, y: 0 }
-  );
-  return { x: sum.x / points.length, y: sum.y / points.length };
-}
+//     // Attributes with url(#id)
+//     ["fill", "stroke", "filter", "clip-path", "mask", "style"].forEach(attr => {
+//       if (el.hasAttribute(attr)) {
+//         let val = el.getAttribute(attr);
+//         idMap.forEach((newId, oldId) => {
+//           if (val && val.includes(`url(#${oldId})`)) {
+//             val = val.replace(new RegExp(`url\\(#${oldId}\\)`, "g"), `url(#${newId})`);
+//           }
+//         });
+//         el.setAttribute(attr, val);
+//       }
+//     });
 
-function normalizeFeedUnits(units) {
-  return units.map(u => ({
-    id: u.id,
-    communityId: u.community_id,
-    baseName: normalize(u.marketing_name),
-    floor: normalize(u.floor),
-    building: normalize(u.building)
-  }));
-}
+//     // href and xlink:href
+//     idMap.forEach((newId, oldId) => {
+//       // Normal href
+//       if (el.hasAttribute("href") && el.getAttribute("href") === `#${oldId}`) {
+//         el.setAttribute("href", `#${newId}`);
+//       }
 
-function generateVariants(base, floor, building) {
-  return Array.from(
-    new Set(
-      [
-        base,
-        base.replace(floor, ""),
-        base.replace(building, ""),
-        `${building}${base}`,
-        `${base}${building}`,
-        `${floor}${base}`,
-        `${base}${floor}`
-      ].map(normalize)
-    )
-  );
-}
-
-function processSvgBuildings(svgElement, filteredUnits) {
-  const pointerData = {};
-  const buildingGroups = svgElement.querySelectorAll('#Units > g[id^="Building_"]');
-
-  buildingGroups.forEach(buildingGroup => {
-    // Handle building ID: "Building_1" or "Building_1_1" → take only first part
-    const buildingParts = buildingGroup.id.replace("Building_", "").split("_");
-    const buildingName = normalize(buildingParts[0]);
-
-    // Filter units by this building
-    const buildingUnits = filteredUnits.filter(
-      u => normalize(u.building) === buildingName
-    );
-
-    const floorGroups = buildingGroup.querySelectorAll('g[id^="Floor_"]');
-
-    floorGroups.forEach(floorGroup => {
-      // Handle floor ID: "Floor_2" or "Floor_2_3" → take only first part
-      const floorParts = floorGroup.id.replace("Floor_", "").split("_");
-      const floorName = normalize(floorParts[0]);
-
-      // Filter units for this floor and building
-      const floorUnits = buildingUnits.filter(
-        u => normalize(u.floor) === floorName
-      );
-
-      // Extract polygons from SVG and match
-      const svgUnits = extractSvgUnits(floorGroup);
-      const matched = matchUnitsToSvg(floorUnits, svgUnits);
-
-      Object.assign(pointerData, matched);
-    });
-  });
-
-  return pointerData;
-}
-
-/**
- * Extract all <polygon> elements within a given floor group
- */
-function extractSvgUnits(svgParent) {
-  return Array.from(svgParent.querySelectorAll("polygon")).map(polygon => {
-    const label = polygon.closest("g")?.querySelector("text")?.textContent?.trim() || "";
-    const points = parsePoints(polygon.getAttribute("points"));
-    const { x, y } = getPolygonCentroid(points);
-    return {
-      id: polygon.id || "",
-      normalized: normalize(label),
-      x_plot: x,
-      y_plot: y,
-      tag: "polygon"
-    };
-  });
-}
-
-/**
- * Match units (feed) to SVG units within same floor/building context
- */
-function matchUnitsToSvg(units, svgUnits) {
-  const pointerData = {};
-
-  units.forEach(unit => {
-    const variants = generateVariants(unit.baseName, unit.floor, unit.building);
-    let bestMatch = null;
-    let bestScore = 0;
-
-    svgUnits.forEach(svgUnit => {
-      variants.forEach(variant => {
-        const score = stringSimilarity(variant, svgUnit.normalized);
-        if (score > bestScore) {
-          bestScore = score;
-          bestMatch = svgUnit;
-        }
-      });
-    });
-
-    if (bestMatch && bestScore >= 0.6) {
-      pointerData[unit.id] = formatPointerData(bestMatch);
-    }
-  });
-
-  return pointerData;
-}
-
-function formatPointerData(svgUnit) {
-  return {
-    id: svgUnit.id,
-    tag: svgUnit.tag,
-    x_plot: Math.round(svgUnit.x_plot).toString(),
-    y_plot: Math.round(svgUnit.y_plot).toString(),
-    selector: ""
-  };
-}
-
-async function savePointerData(pointerData, propertyId) {
-  const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
-  const response = await fetch(`/communities/${propertyId}/save_pointer_data`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Accept": "application/json",
-      "X-CSRF-Token": token,
-    },
-    credentials: "include", // Required for Devise
-    body: JSON.stringify({ pointer_data: pointerData }),
-  });
-
-  const result = await response.json();
-
-  if (!response.ok)
-    throw new Error(result.error || "Failed to save pointer data");
-
-  window.location.reload();
-}
-
-
-function uniquifySVGIds(svgElement, floorId) {
-  if (!svgElement) return;
-
-  const idMap = new Map();
-
-  // Elements to skip (Units and Amenities groups + their children)
-  const skipSelectors = ["g#Units", "g#Amenities", "#Units *", "#Amenities *"];
-
-  // STEP 1: Find and rename all ids (except skipped ones)
-  svgElement.querySelectorAll('[id]').forEach(el => {
-    // Skip if inside Units or Amenities
-    if (el.closest(skipSelectors.join(","))) return;
-
-    const oldId = el.id;
-    const newId = `${oldId}_${floorId}`;
-    idMap.set(oldId, newId);
-    el.id = newId;
-  });
-
-  // STEP 2: Update all references
-  svgElement.querySelectorAll('*').forEach(el => {
-    // Skip updating references inside Units or Amenities
-    if (el.closest(skipSelectors.join(","))) return;
-
-    // Attributes with url(#id)
-    ["fill", "stroke", "filter", "clip-path", "mask", "style"].forEach(attr => {
-      if (el.hasAttribute(attr)) {
-        let val = el.getAttribute(attr);
-        idMap.forEach((newId, oldId) => {
-          if (val && val.includes(`url(#${oldId})`)) {
-            val = val.replace(new RegExp(`url\\(#${oldId}\\)`, "g"), `url(#${newId})`);
-          }
-        });
-        el.setAttribute(attr, val);
-      }
-    });
-
-    // href and xlink:href
-    idMap.forEach((newId, oldId) => {
-      // Normal href
-      if (el.hasAttribute("href") && el.getAttribute("href") === `#${oldId}`) {
-        el.setAttribute("href", `#${newId}`);
-      }
-
-      // xlink:href in namespace
-      const XLINK_NS = "http://www.w3.org/1999/xlink";
-      if (el.getAttributeNS(XLINK_NS, "href") === `#${oldId}`) {
-        el.setAttributeNS(XLINK_NS, "xlink:href", `#${newId}`);
-      }
-    });
-  });
-}
+//       // xlink:href in namespace
+//       const XLINK_NS = "http://www.w3.org/1999/xlink";
+//       if (el.getAttributeNS(XLINK_NS, "href") === `#${oldId}`) {
+//         el.setAttributeNS(XLINK_NS, "xlink:href", `#${newId}`);
+//       }
+//     });
+//   });
+// }
 
 function parseSVG(svgText) {
   const parser = new DOMParser();
@@ -375,8 +186,8 @@ async function fetchSVG(
   tracker?.addOrUpdateAsset(asset, trackerVisibilityCheck);
 
   try {
-    const response = await fetch(imageUrl);
-    // const response = await fetch(`/images/fetch_svg_image?svg_url=${imageUrl}`);
+    // const response = await fetch(imageUrl);
+    const response = await fetch(`/images/fetch_svg_image?svg_url=${imageUrl}`);
 
     if (!response.ok)
       throw new Error(`Failed to fetch SVG: ${response.statusText}`);
