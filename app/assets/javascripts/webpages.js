@@ -3647,8 +3647,7 @@ async function fetchWebpageSVGAndSetCoordinates() {
           tracker: assetTracker,
           setSVGImageHeight: true,
           trackerAssetId: `svg-floorplate-${floor}`,
-          trackerVisibilityCheck: validFloor(floor),
-          isBeansFormatSvg: webCommunity.is_beans_svg
+          trackerVisibilityCheck: validFloor(floor)
         })
       );
     }
@@ -3661,8 +3660,7 @@ async function fetchWebpageSVGAndSetCoordinates() {
       tracker: assetTracker,
       setSVGImageHeight: true,
       trackerVisibilityCheck: true,
-      trackerAssetId: `svg-sitemap-1`,
-      isBeansFormatSvg: webCommunity.is_beans_svg
+      trackerAssetId: `svg-sitemap-1`
     });
   }
 

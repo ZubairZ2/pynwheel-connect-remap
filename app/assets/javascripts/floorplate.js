@@ -2,25 +2,20 @@ var imageOCRResponse = [];
 var ocrImageDimensions;
 
 $(document).ready(function () {
-    if ($('.is-floorplate')[0]) {
-        imageOCRResponse = $("#ocrData").data("ocrData");
-        ocrImageDimensions = $("#ocrData").data("imageDimensions");
+  if ($('.is-floorplate')[0]) {
+    imageOCRResponse = $("#ocrData").data("ocrData");
+    ocrImageDimensions = $("#ocrData").data("imageDimensions");
 
-      console.log("imageOCRResponse:", imageOCRResponse );
-      console.log("ocrImageDimensions:", ocrImageDimensions );
+    selected = [];
+    $("#map, #svg_map").css('cursor', 'default');
 
-        selected = [];
-        $("#map, #svg_map").css('cursor', 'default');
+    doDraggable();
 
-        doDraggable();
-
-        $('.amenities-list').multiSelect();
-        $('.amenities-list-on-popup').multiSelect();
-        $('.doors-list-on-popup').multiSelect();
-    }
+    $('.amenities-list').multiSelect();
+    $('.amenities-list-on-popup').multiSelect();
+    $('.doors-list-on-popup').multiSelect();
+  }
 });
-
-
 
 function addMarkerOnFloorplate(e) {
   const x_plot = $('#horizontal_position').val();

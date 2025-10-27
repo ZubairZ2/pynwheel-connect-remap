@@ -1434,8 +1434,7 @@ async function fetchSVGAndSetPlotCoordinates(type, assetIdForTracker = 1) {
     setSVGImageHeight: true,
     activateHoverEffect: true,
     trackerVisibilityCheck: true,
-    trackerAssetId: `plot-svg-${assetIdForTracker}`,
-    isBeansFormatSvg: false
+    trackerAssetId: `plot-svg-${assetIdForTracker}`
   });
 
   $(".divLoading").addClass("hidden");
@@ -1446,7 +1445,6 @@ async function fetchSVGAndSetPlotCoordinates(type, assetIdForTracker = 1) {
     });
 
     if (result.ok) {
-      console.log(message);
       if (parsedSVGs.length) {
         switch (type) {
           case "unit":

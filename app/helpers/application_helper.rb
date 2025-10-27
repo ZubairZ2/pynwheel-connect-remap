@@ -748,7 +748,6 @@ module ApplicationHelper
   
   def fetch_svg_by_url(url)
     return unless url
-
     if Rails.env.development?
       File.read(url)
     else
@@ -760,7 +759,7 @@ module ApplicationHelper
 
   def get_environment_based_svg_url(resource)
     return unless resource
-
     Rails.env.development? ? resource.svg_image.path : resource.validated_svg_image_url
   end
+
 end
