@@ -94,59 +94,6 @@ function setSVG(container, svgElement, options) {
   if (options.setSVGImageHeight) setSvgOrImageHeight($(container).find("svg"));
 }
 
-// function uniquifySVGIds(svgElement, floorId) {
-//   if (!svgElement) return;
-
-//   const idMap = new Map();
-
-//   // Elements to skip (Units and Amenities groups + their children)
-//   const skipSelectors = ["g#Units", "g#Amenities", "#Units *", "#Amenities *"];
-
-//   // STEP 1: Find and rename all ids (except skipped ones)
-//   svgElement.querySelectorAll('[id]').forEach(el => {
-//     // Skip if inside Units or Amenities
-//     if (el.closest(skipSelectors.join(","))) return;
-
-//     const oldId = el.id;
-//     const newId = `${oldId}_${floorId}`;
-//     idMap.set(oldId, newId);
-//     el.id = newId;
-//   });
-
-//   // STEP 2: Update all references
-//   svgElement.querySelectorAll('*').forEach(el => {
-//     // Skip updating references inside Units or Amenities
-//     if (el.closest(skipSelectors.join(","))) return;
-
-//     // Attributes with url(#id)
-//     ["fill", "stroke", "filter", "clip-path", "mask", "style"].forEach(attr => {
-//       if (el.hasAttribute(attr)) {
-//         let val = el.getAttribute(attr);
-//         idMap.forEach((newId, oldId) => {
-//           if (val && val.includes(`url(#${oldId})`)) {
-//             val = val.replace(new RegExp(`url\\(#${oldId}\\)`, "g"), `url(#${newId})`);
-//           }
-//         });
-//         el.setAttribute(attr, val);
-//       }
-//     });
-
-//     // href and xlink:href
-//     idMap.forEach((newId, oldId) => {
-//       // Normal href
-//       if (el.hasAttribute("href") && el.getAttribute("href") === `#${oldId}`) {
-//         el.setAttribute("href", `#${newId}`);
-//       }
-
-//       // xlink:href in namespace
-//       const XLINK_NS = "http://www.w3.org/1999/xlink";
-//       if (el.getAttributeNS(XLINK_NS, "href") === `#${oldId}`) {
-//         el.setAttributeNS(XLINK_NS, "xlink:href", `#${newId}`);
-//       }
-//     });
-//   });
-// }
-
 function parseSVG(svgText) {
   const parser = new DOMParser();
   const doc = parser.parseFromString(svgText, "image/svg+xml");
