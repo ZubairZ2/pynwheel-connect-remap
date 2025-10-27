@@ -46,6 +46,7 @@ class Community < ApplicationRecord
   has_many :map_partners, dependent: :destroy
   has_many :sub_communities, dependent: :destroy
 
+  has_one :font_setting, dependent: :destroy
   has_one :map_filter, dependent: :destroy
   has_one :credential, dependent: :destroy
   has_one :crm_credential, dependent: :destroy
@@ -84,7 +85,7 @@ class Community < ApplicationRecord
   after_create :set_default_theme
   after_create :create_default_gallery
   after_create :create_sms_email_content
-
+  
   attr_accessor :default_community_id
   after_update :crop_image, if: ->(obj) { obj.logo_changed? }
   after_update :crop_secondary_image, if: ->(obj) { obj.secondary_logo_changed? }

@@ -40,6 +40,10 @@
             %li{:role => "presentation"}
               %a#community-map-marker-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#community-map-marker", :role => "tab"} Community Map Markers
             
+            - if @community.enable_svg_mode?
+              %li{:role => "presentation"}
+                %a#svg-font-settings-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#svg-font-settings", :role => "tab"} SVG Font Settings
+            
             %li{:role => "presentation"}
               %a#marketing-map-marker-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#marketing-map-marker", :role => "tab"} Marketing Map Markers
             
@@ -87,6 +91,8 @@
               = render 'button'
             #community-map-marker.tab-pane.fade{:role => "tabpanel"}
               = render 'community_map_marker_colors'
+            #svg-font-settings.tab-pane.fade{:role => "tabpanel"}
+              = render 'svg_font_settings'
             #marketing-map-marker.tab-pane.fade{:role => "tabpanel", :style => "padding: 20px;"}
               = render 'marketing_map_marker_colors'
             #ops-map-marker.tab-pane.fade{:role => "tabpanel"}
