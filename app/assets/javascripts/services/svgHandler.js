@@ -145,6 +145,9 @@ async function fetchSVG(
 
     parsedSVGs.push(svgElement);
     setSVG(container, svgElement, options);
+
+    if(fontFamily)
+      updateSvgTextFontFamily(svgElement, fontFamily);
     
     if (tracker) {
       asset.node = svgElement;
@@ -903,3 +906,9 @@ function getLastClonedJQueryElement(parentGroupElement) {
     return;
   }
 }
+
+function updateSvgTextFontFamily(svgElement, fontFamily) {
+  const elements = svgElement.querySelectorAll('text, tspan');
+  elements.forEach(el => el.setAttribute('font-family', fontFamily));
+}
+

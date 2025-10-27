@@ -1,0 +1,67 @@
+= form_for @community.font_setting || @community.build_font_setting,
+            url: update_font_setting_path(@community),
+            method: :post,
+            remote: true,
+            html: { id: "font-setting-form" } do |d|
+  .box-body
+    .row
+      .col-lg-12
+        .form-group.mt-30
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            Unit Label Font Family
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            = d.text_field :svg_labels_font_family,
+              class: "form-control",
+              id: "font-family-input",
+              placeholder: "Enter font family (e.g. Poppins, sans-serif)"
+
+:javascript
+  document.addEventListener("DOMContentLoaded", function() {
+    const input = document.getElementById("font-family-input");
+
+    if (input) {
+      input.addEventListener("change", function() {
+        this.form.requestSubmit(); // triggers remote form submit
+      });
+    }
+  });
+
+
+-# = form_for @community.font_setting || @community.build_font_setting,
+-#             url: update_font_setting_path(@community),
+-#             method: :post,
+-#             remote: true,
+-#             html: { id: "font-setting-form" } do |d|
+-#   .box-body
+-#     .row
+-#       .col-lg-12
+-#         .form-group.mt-30
+-#           %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+-#             Unit Label Font Family
+-#           .col-sm-12.col-lg-9.col-md-9.col-xs-12
+-#             = d.select :svg_labels_font_family,
+-#               options_for_select(font_families, d.object.svg_labels_font_family),
+-#               {},
+-#               { class: "form-control scrollable-dropdown", id: "font-family-select" }
+
+
+-# :javascript
+-#   document.addEventListener("DOMContentLoaded", function() {
+-#     const select = document.getElementById("font-family-select");
+
+-#     if (select) {
+-#       select.addEventListener("change", function() {
+-#         this.form.requestSubmit(); // triggers the remote form submit
+-#       });
+-#     }
+-#   });
+ 
+-# :css
+-#   .scrollable-dropdown {
+-#     max-width: 100%;
+-#   }
+
+-#   .scrollable-dropdown option {
+-#     max-height: 200px;
+-#     overflow-y: auto;
+-#   }

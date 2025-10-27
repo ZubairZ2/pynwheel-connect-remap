@@ -46,6 +46,7 @@ class Community < ApplicationRecord
   has_many :map_partners, dependent: :destroy
   has_many :sub_communities, dependent: :destroy
 
+  has_one :font_setting, dependent: :destroy
   has_one :map_filter, dependent: :destroy
   has_one :credential, dependent: :destroy
   has_one :crm_credential, dependent: :destroy
@@ -84,6 +85,7 @@ class Community < ApplicationRecord
   after_create :set_default_theme
   after_create :create_default_gallery
   after_create :create_sms_email_content
+  after_create :ensure_font_setting
 
   attr_accessor :default_community_id
   after_update :crop_image, if: ->(obj) { obj.logo_changed? }
@@ -141,6 +143,10 @@ class Community < ApplicationRecord
     else
       data.merge!(:brand_feature_access => false)
     end
+  end
+
+  def ensure_font_setting
+    create_font_setting if font_setting.nil?
   end
 
   def have_multi_property_ids?

@@ -121,7 +121,7 @@ module ApplicationHelper
     f_families = JSON.parse(File.read(Rails.root.join("app/assets/jsons/f_font_families.json")))
 
     f_families.each do |family|
-      options_with_style << [family[0],family[1],:style => "font-family:#{family[0]}" ]
+      options_with_style << [family[0], family[1], :style => "font-family:#{family[0]}" ]
     end
 
     options_with_style

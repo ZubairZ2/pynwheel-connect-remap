@@ -61,6 +61,7 @@ Rails.application.routes.draw do
   post 'mark_all_as_read/:chatroom_id', to: 'chats#reset_unread_messages'
   resources :analytics, only: [:index]
   get '/analytics/get_associated_communities', to: 'analytics#get_associated_communities'
+  post 'communities/:id/font_setting', to: 'font_settings#update_or_create', as: :update_font_setting
 
   resources :companies do
     resources :communities
@@ -148,7 +149,7 @@ Rails.application.routes.draw do
       get :authenteq_result
       get :web_cam_test
     end
-    
+
     resources :map_filters, only: [:update]
     resources :building_starting_points
     resources :crm_providers
