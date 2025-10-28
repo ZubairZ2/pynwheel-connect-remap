@@ -196,6 +196,7 @@
   var unitsArr = #{raw amenity_arr.to_json}
   var lmargin = 0
   var rmargin = 0
+  var fontFamily = "#{@community&.font_setting&.svg_labels_font_family}"
   var community_id = #{params[:community_id]}
   var unit_id_for_amenity = #{@unit.id}
   var unit_id_for_unit_amenities = #{@unit.id}
