@@ -373,8 +373,10 @@ function setMarkerPosition(marker, x_plot, y_plot, stretched, actual) {
 }
 
 function showUnitModal(event) {
-  setUnitModalButtons(event);
-  resetToDefaultZoom();
+  if(!_3dMapMode()) {
+    setUnitModalButtons(event);
+    resetToDefaultZoom();
+  }
 }
 
 function activateWebpageZoom() {
@@ -1674,6 +1676,7 @@ function onUnitClick(e) {
     if (e instanceof Event) {
       setUnitModalButtons(e);
     } else {
+      isRightRailCardClicked = false;
       setUnitModalButtons(e.unitId);
     }
 
@@ -2108,7 +2111,6 @@ function setUnitModalButtons(e) {
       }
     }
 
-    const floorbasedUnits = filterUnitsBasedOnCommunityType(units);
     clickedUnit = filterBeansUnits().find(
       ({ options: { onClickData: { unitId } } = {} }) => unitId === e
     );
@@ -2119,8 +2121,24 @@ function setUnitModalButtons(e) {
     const filteredUnit = filterUnitsBasedOnCommunityType(units).find(
       (unit) => unit.id === e
     );
+
     clickedUnit = filteredUnit;
-    filteredUnits = floorbasedUnits;
+    
+    if (svgMode) {
+      filteredUnits = units.filter(
+        ({ floor, pointer_data: { selector } = {} }) =>
+          (selector === clickedUnit.pointer_data.selector) &&
+          validFloor(floor)
+      );
+    } else {
+      const [unitXPlot, unitYPlot] = [clickedUnit.x_plot, clickedUnit.y_plot];
+
+      filteredUnits = units.filter(
+        ({ floor, x_plot, y_plot }) =>
+          unitXPlot === x_plot && unitYPlot === y_plot && validFloor(floor)
+      );
+    }
+
   } else if (svgMode) {
     clickedUnit = units.find(
       ({ id }) => id === parseInt(relatedTarget.dataset.unitId)
@@ -2148,8 +2166,9 @@ function setUnitModalButtons(e) {
   if (!clickedUnit) {
     return;
   }
+
   if (filteredUnits.length > 1) {
-    $(".unit-buttons").removeClass("hidden");
+    $unitButtons.removeClass("hidden");
   }
 
   filteredUnits.forEach((unit) => {
@@ -2157,7 +2176,7 @@ function setUnitModalButtons(e) {
     setModalButton(unit.id === parseInt(clickedUnit.id), unit.data_attributes);
   });
 
-  setModalAttributes($(".unit-buttons").find(".btn-primary")[0]);
+  setModalAttributes($unitButtons.find(".btn-primary")[0]);
 }
 
 function setModalButton(primaryButtonStyle, dataAttributes) {
@@ -2769,8 +2788,9 @@ function setModalAttributes(element) {
 }
 
 function controlUnitButtonsVisibility() {
-  if(isRightRailCardClicked && isFloorplanMapEnabled())
+  if(isRightRailCardClicked && isFloorplanMapEnabled()) {
     $(".unit-buttons").addClass("hidden");
+  }
 }
 
 function setFloorplanBanner(element) {
