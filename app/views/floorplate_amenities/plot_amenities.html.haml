@@ -33,6 +33,7 @@
   var unitsArr = #{raw amenity_arr.to_json}
   var mapped_units = #{raw @mapped_amenities.to_json}
   var has_floorplate = "#{@community.has_floorplates?}"
+  var fontFamily = "#{@community&.font_setting&.svg_labels_font_family}"
 
   var units_info = #{@amenity_with_doors.to_json.html_safe}
   var community_id = #{params[:community_id]}

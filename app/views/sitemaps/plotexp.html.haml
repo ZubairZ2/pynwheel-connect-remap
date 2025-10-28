@@ -464,6 +464,7 @@
   var self_tour = #{@community.self_tour || false}
   var enable_locks = #{@community.enable_locks}
   var automate_wayfinding = #{@community.auto_wayfinding}
+  var fontFamily = "#{@community&.font_setting&.svg_labels_font_family}"
 
   var sm_id = '#{@sitemap.id}';
   hallways_coordinates = #{raw @hallways.to_json}
