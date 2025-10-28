@@ -373,8 +373,10 @@ function setMarkerPosition(marker, x_plot, y_plot, stretched, actual) {
 }
 
 function showUnitModal(event) {
-  setUnitModalButtons(event);
-  resetToDefaultZoom();
+  if(!_3dMapMode()) {
+    setUnitModalButtons(event);
+    resetToDefaultZoom();
+  }
 }
 
 function activateWebpageZoom() {
@@ -1412,6 +1414,7 @@ function buildUnitBoxHTML(unit) {
       class='right-rail-card'
       id='unit_${unit["id"]}'
       data-pointer-data='${JSON.stringify(unit["pointer_data"])}'
+      data-floorplan-id='${unit["provider_floorplan_id"]}'
       data-unit-marketing-name='${unit["data_attributes"]["data-unit-marketing-name"]}'
     >
       <div class='image-styles'>
@@ -1674,6 +1677,7 @@ function onUnitClick(e) {
     if (e instanceof Event) {
       setUnitModalButtons(e);
     } else {
+      isRightRailCardClicked = false;
       setUnitModalButtons(e.unitId);
     }
 
@@ -1697,19 +1701,76 @@ function unitMarketRent(unit) {
   return `${currency}${ unit.market_rent}/month`;
 }
 
+// function highlightFloorplanMarkersData(elementsArray, floorplanId = null) {
+//   elementsArray.forEach(el => {
+//     if (!el) return;
+
+//     // Store original fill once
+//     if (!el.dataset.originalFill) {
+//       el.dataset.originalFill = el.getAttribute('fill') || '';
+//     }
+
+//     // If no floorplanId (mouse leave) → restore all original colors
+//     if (!floorplanId) {
+//       el.style.fill = el.dataset.originalFill;
+//       return;
+//     }
+
+//     // Otherwise, highlight only matching floorplan
+//     const matches = el.dataset.floorplanProviderId === String(floorplanId);
+//     el.style.fill = matches ? el.dataset.originalFill : "none";
+//   });
+// }
+
+function highlightFloorplanMarkersData(elementsArray, floorplanId = null) {
+  elementsArray.forEach(el => {
+    if (!el) return;
+
+    // Store original fill once
+    if (!el.dataset.originalFill) {
+      el.dataset.originalFill = el.getAttribute('fill') || '';
+    }
+
+    // Store original opacity once
+    if (!el.dataset.originalOpacity) {
+      el.dataset.originalOpacity = el.style.opacity || '1';
+    }
+
+    // If no floorplanId (mouse leave) → restore original styles
+    if (!floorplanId) {
+      el.style.fill = el.dataset.originalFill;
+      el.style.opacity = el.dataset.originalOpacity;
+      return;
+    }
+
+    // Check if matches current floorplan
+    const matches = el.dataset.floorplanProviderId === String(floorplanId);
+
+    if (matches) {
+      // Keep full color and opacity
+      el.style.fill = el.dataset.originalFill;
+      el.style.opacity = el.dataset.originalOpacity;
+    } else {
+      // Fade: use same color but reduce opacity (e.g., 0.2)
+      el.style.fill = el.dataset.originalFill;
+      el.style.opacity = '0.2'; // adjust fade level if needed
+    }
+  });
+}
+
 function unitBoxListHover() {
   let focused_marker;
+  let markersArray = [];
 
   $("div.right-rail-card").hover(
     function (e) {
       let markerColor = map_marker_color;
-      const { id, unitId, pointerData, unitMarketingName } = getUnitData(
+      const { id, unitId, pointerData, unitMarketingName, floorplanId } = getUnitData(
         e.target
       );
 
       const _3dMode = _3dMapMode();
 
-      let markersArray = [];
       if (_3dMode) {
         markersArray = _3dConvertedUnitsArr;
       } else {
@@ -1719,6 +1780,7 @@ function unitBoxListHover() {
         markersArray = Array.from($allMarkers);
       }
 
+      
       for (const marker of markersArray) {
         let matchCondition = false;
         let _3dData = null;
@@ -1823,6 +1885,9 @@ function unitBoxListHover() {
               top: `${top - (svgMode ? 0 : 30)}px`,
             });
           } else {
+            if (svgMode) {
+              highlightFloorplanMarkersData(markersArray, floorplanId);
+            }
             // TODO: Hover effect for floorplans here
           }
 
@@ -1834,6 +1899,11 @@ function unitBoxListHover() {
       e.currentTarget.style.border = "none";
       if (focused_marker) {
         $("#marker-popover-unit").addClass("hidden");
+      }
+
+      // 🟢 Reset all markers to their original colors when hover ends
+      if (svgMode) {
+        highlightFloorplanMarkersData(markersArray, null);
       }
     }
   );
@@ -2059,6 +2129,7 @@ function getUnitData(targetElement) {
       unitId: targetElement.dataset.unitId,
       pointerData: JSON.parse(targetElement.dataset.pointerData) || {},
       unitMarketingName: targetElement.dataset.unitMarketingName,
+      floorplanId: targetElement.dataset.floorplanId
     };
   } else {
     let closestUnit = $(targetElement).closest(".right-rail-card");
@@ -2069,6 +2140,7 @@ function getUnitData(targetElement) {
         unitId: targetElement.dataset.unitId,
         pointerData: JSON.parse(closestUnit[0].dataset.pointerData) || {},
         unitMarketingName: closestUnit[0].dataset.unitMarketingName,
+        floorplanId:closestUnit[0].dataset.floorplanId
       };
     } else {
       return { id: null, pointerData: {}, unitMarketingName: null };
@@ -2108,7 +2180,6 @@ function setUnitModalButtons(e) {
       }
     }
 
-    const floorbasedUnits = filterUnitsBasedOnCommunityType(units);
     clickedUnit = filterBeansUnits().find(
       ({ options: { onClickData: { unitId } } = {} }) => unitId === e
     );
@@ -2119,8 +2190,24 @@ function setUnitModalButtons(e) {
     const filteredUnit = filterUnitsBasedOnCommunityType(units).find(
       (unit) => unit.id === e
     );
+
     clickedUnit = filteredUnit;
-    filteredUnits = floorbasedUnits;
+    
+    if (svgMode) {
+      filteredUnits = units.filter(
+        ({ floor, pointer_data: { selector } = {} }) =>
+          (selector === clickedUnit.pointer_data.selector) &&
+          validFloor(floor)
+      );
+    } else {
+      const [unitXPlot, unitYPlot] = [clickedUnit.x_plot, clickedUnit.y_plot];
+
+      filteredUnits = units.filter(
+        ({ floor, x_plot, y_plot }) =>
+          unitXPlot === x_plot && unitYPlot === y_plot && validFloor(floor)
+      );
+    }
+
   } else if (svgMode) {
     clickedUnit = units.find(
       ({ id }) => id === parseInt(relatedTarget.dataset.unitId)
@@ -2148,8 +2235,9 @@ function setUnitModalButtons(e) {
   if (!clickedUnit) {
     return;
   }
+
   if (filteredUnits.length > 1) {
-    $(".unit-buttons").removeClass("hidden");
+    $unitButtons.removeClass("hidden");
   }
 
   filteredUnits.forEach((unit) => {
@@ -2157,7 +2245,7 @@ function setUnitModalButtons(e) {
     setModalButton(unit.id === parseInt(clickedUnit.id), unit.data_attributes);
   });
 
-  setModalAttributes($(".unit-buttons").find(".btn-primary")[0]);
+  setModalAttributes($unitButtons.find(".btn-primary")[0]);
 }
 
 function setModalButton(primaryButtonStyle, dataAttributes) {
@@ -2769,8 +2857,9 @@ function setModalAttributes(element) {
 }
 
 function controlUnitButtonsVisibility() {
-  if(isRightRailCardClicked && isFloorplanMapEnabled())
+  if(isRightRailCardClicked && isFloorplanMapEnabled()) {
     $(".unit-buttons").addClass("hidden");
+  }
 }
 
 function setFloorplanBanner(element) {
