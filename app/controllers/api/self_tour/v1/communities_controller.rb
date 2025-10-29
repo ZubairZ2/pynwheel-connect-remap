@@ -29,7 +29,6 @@ module Api
             @tour_user.tour_type = "virtual_tour"                                           # initilize by virtual tour
             @location_received = false
             @is_tour_completed = false
-            update_deleted_stops_list
 
             if params[:latitude].present? and params[:longitude].present?
               @tour_user.latitude = params[:latitude]
@@ -99,7 +98,6 @@ module Api
         end
 
         def initialize_tour
-          update_deleted_stops_list
           @floorplans = get_floorplans_with_required_filter()
           @tour_type = params[:tour_status] rescue @tour_user.tour_type
           @tour_user.update(tour_type: params[:tour_status], tour_key: @random_string, verified_by: params[:verfied_by_provider])
@@ -173,10 +171,11 @@ module Api
 
         def update_deleted_stops_list
           begin
-            puts "\n\n\n\n" 
-            puts "Deleted IDS called"
+            puts "\n\n\n\n\n"
+            puts "Deleted IDs called"
             puts @community.deleted_ids
-            puts "\n\n\n\n" 
+            puts "\n\n\n\n\n"
+
             @community.update(deleted_ids: [])
             @tour.update(copy_sort_hash: "{}") if @tour.present?
           rescue => e

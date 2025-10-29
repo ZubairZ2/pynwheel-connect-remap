@@ -398,6 +398,11 @@ json.tours @tours do |tour|
 
   new_stops_arr = new_stops_arr.map{|x| x if ((x.is_a? Tour) or (x.stop_id.present?)) }.compact if new_stops_arr.present?
   
+  puts "\n\n\n\n\n"
+  puts "Start Tour response"
+  puts @community.deleted_ids
+  puts "\n\n\n\n\n"
+
   json.tour_stop new_stops_arr.compact do |stop|
     list_of_zerv_lock_ids = []
     elevator_bank_list = []
