@@ -1753,7 +1753,7 @@ function highlightFloorplanMarkersData(elementsArray, floorplanId = null) {
     } else {
       // Fade: use same color but reduce opacity (e.g., 0.2)
       el.style.fill = el.dataset.originalFill;
-      el.style.opacity = '0.2'; // adjust fade level if needed
+      el.style.opacity = '0.15'; // adjust fade level if needed
     }
   });
 }
@@ -2179,7 +2179,7 @@ function setUnitModalButtons(e) {
         );
       }
     }
-
+    
     clickedUnit = filterBeansUnits().find(
       ({ options: { onClickData: { unitId } } = {} }) => unitId === e
     );
@@ -2187,22 +2187,19 @@ function setUnitModalButtons(e) {
     _3dSelectedItem = clickedUnit;
     if (!clickedUnit) return;
 
-    const filteredUnit = filterUnitsBasedOnCommunityType(units).find(
-      (unit) => unit.id === e
-    );
-
-    clickedUnit = filteredUnit;
+    const floorbasedUnits = filterUnitsBasedOnCommunityType(units);
+    clickedUnit = floorbasedUnits.find( (unit) => unit.id === e);
+    if (!clickedUnit) return;
     
     if (svgMode) {
-      filteredUnits = units.filter(
+      filteredUnits = floorbasedUnits.filter(
         ({ floor, pointer_data: { selector } = {} }) =>
           (selector === clickedUnit.pointer_data.selector) &&
           validFloor(floor)
       );
     } else {
       const [unitXPlot, unitYPlot] = [clickedUnit.x_plot, clickedUnit.y_plot];
-
-      filteredUnits = units.filter(
+      filteredUnits = floorbasedUnits.filter(
         ({ floor, x_plot, y_plot }) =>
           unitXPlot === x_plot && unitYPlot === y_plot && validFloor(floor)
       );
