@@ -50,7 +50,7 @@ json.tours @tours do |tour|
 
   if @community.show_map
     ts = @community.mdu ? tour.tour_stops.plotted_stops.where.not(id: @community.deleted_ids).order(:sort) : tour.tour_stops.plotted_stops.where.not(id: @community.deleted_ids, stop_type: "unit").order(:sort)
-    ts1 = tour.tour_stops.plotted_stops.where(id: @community.deleted_ids).map{|x| x.id}
+    # ts1 = tour.tour_stops.plotted_stops.where(id: @community.deleted_ids).map{|x| x.id}
 
     if @community.is_sitemap
       sp = Path.where(map_path_from_id: ts&.last&.stop_id, map_path_to_id: nil)&.first
@@ -401,6 +401,10 @@ json.tours @tours do |tour|
 
   new_stops_arr = new_stops_arr.map{|x| x if ((x.is_a? Tour) or (x.stop_id.present?)) }.compact if new_stops_arr.present?
   
+  new_stops_arr = new_stops_arr.compact.reject do |stop|
+    @community.deleted_ids.include?(stop.id)
+  end
+    
   json.tour_stop new_stops_arr.compact do |stop|
     list_of_zerv_lock_ids = []
     elevator_bank_list = []
@@ -1571,6 +1575,7 @@ json.tours @tours do |tour|
     stop.stop_details.each do |sd|
       json.stop_description sd.description
     end
+
     stop.stop_galleries.each do |sg|
       json.stop_gallery_name sg.name
       json.stop_galerry_image sg.image.present? ? sg.image.url : "no image"
