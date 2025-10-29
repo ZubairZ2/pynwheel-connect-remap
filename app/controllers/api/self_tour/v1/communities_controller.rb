@@ -137,12 +137,22 @@ module Api
 
         def start_tour
           if @community.present? && @tour_user.present?
+            puts "\n\n\n\n\n"
+            puts "start_tour ---- start"
+            puts @community.deleted_ids.inspect
+            puts "\n\n\n\n\n"
+
             @tours = [@tour]
             session["check_lock_access#{@tour_user.id.to_s}"] = 0
             current_time = current_community_time(@community, params)
             @tour_sort_hash = CustomizeTourService.new(@community, @tour_user).get_tour_sort_hash
             @all_elevators = @community.elevators.map{|x| [x,x.floors, x.building]}       
             @chat_count = chat_room_count(@tour_user, @community)
+
+            puts "\n\n\n\n\n"
+            puts "start_tour ---- end"
+            puts @community.deleted_ids.inspect
+            puts "\n\n\n\n\n"
           else
             render :json=> {:success=>false, :message => "Community or tour user not found"}
           end
