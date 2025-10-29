@@ -48,11 +48,6 @@ json.tours @tours do |tour|
     json.image_height @community.property_map_height(@floorplate)
   end
 
-  puts "\n\n\n\n\n"
-  puts "1 start_tour ---- start"
-  puts @community.deleted_ids.inspect
-  puts "\n\n\n\n\n"
-
   if @community.show_map
     ts = @community.mdu ? tour.tour_stops.plotted_stops.where.not(id: @community.deleted_ids).order(:sort) : tour.tour_stops.plotted_stops.where.not(id: @community.deleted_ids, stop_type: "unit").order(:sort)
     # ts1 = tour.tour_stops.plotted_stops.where(id: @community.deleted_ids).map{|x| x.id}
@@ -81,12 +76,6 @@ json.tours @tours do |tour|
     first_floor_elev = nil
 
     scheduled_tour_stops = @community.community_tour_available_stops(@tour_user, tour)
-
-    puts "\n\n\n\n\n"
-    puts "2 start_tour ---- start"
-    puts @community.deleted_ids.inspect
-    puts scheduled_tour_stops.inspect
-    puts "\n\n\n\n\n"
 
     if @community.is_sitemap
       if scheduled_tour_stops.present?
@@ -290,12 +279,6 @@ json.tours @tours do |tour|
         end
       end
     end
-
-    puts "\n\n\n\n\n"
-    puts "3 start_tour ---- start"
-    puts @community.deleted_ids.inspect
-    puts stops_arr.inspect
-    puts "\n\n\n\n\n"
     
     stops = @community.mdu ? tour.tour_stops.plotted_stops : tour.tour_stops.plotted_stops.where.not(stop_type: "unit")
     stops_except_deleted = []
@@ -316,11 +299,6 @@ json.tours @tours do |tour|
       last_element = x
     end
 
-    puts "\n\n\n\n\n"
-    puts "4 start_tour ---- start"
-    puts @community.deleted_ids.inspect
-    puts new_stops_arr.inspect
-    puts "\n\n\n\n\n"
   else
     stops_arr = []
 
@@ -391,12 +369,6 @@ json.tours @tours do |tour|
   once_flag = true
   counter = 0
 
-  puts "\n\n\n\n\n"
-  puts "5 start_tour ---- start"
-  puts @community.deleted_ids.inspect
-  puts new_stops_arr.inspect
-  puts "\n\n\n\n\n"
-
   new_stops_arr = @community.get_stops_with_floor_and_buildings(new_stops_arr)
 
   if new_stops_arr[0].is_a? Tour
@@ -426,12 +398,6 @@ json.tours @tours do |tour|
 
   new_stops_arr = new_stops_arr.map{|x| x if ((x.is_a? Tour) or (x.stop_id.present?)) }.compact if new_stops_arr.present?
   
-  puts "\n\n\n\n\n"
-  puts "6 start_tour ---- start"
-  puts @community.deleted_ids.inspect
-  puts new_stops_arr.inspect
-  puts "\n\n\n\n\n"
-
   json.tour_stop new_stops_arr.compact do |stop|
     list_of_zerv_lock_ids = []
     elevator_bank_list = []

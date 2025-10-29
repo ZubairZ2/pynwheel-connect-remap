@@ -11,7 +11,7 @@ module Api
         before_action :load_floors_list, only: [:customize_tour, :start_tour]
         
         before_action :copy_sort_hash_if_needed, only: :customize_tour
-        after_action :update_deleted_stops_list, except: :customize_tour
+        # after_action :update_deleted_stops_list, except: :customize_tour
         after_action :restore_sort_hash, except: :customize_tour
         before_action :sort_stops_list, only: [:customize_tour]
 
@@ -29,6 +29,7 @@ module Api
             @tour_user.tour_type = "virtual_tour"                                           # initilize by virtual tour
             @location_received = false
             @is_tour_completed = false
+            update_deleted_stops_list
 
             if params[:latitude].present? and params[:longitude].present?
               @tour_user.latitude = params[:latitude]
@@ -98,6 +99,7 @@ module Api
         end
 
         def initialize_tour
+          update_deleted_stops_list
           @floorplans = get_floorplans_with_required_filter()
           @tour_type = params[:tour_status] rescue @tour_user.tour_type
           @tour_user.update(tour_type: params[:tour_status], tour_key: @random_string, verified_by: params[:verfied_by_provider])
@@ -137,22 +139,13 @@ module Api
 
         def start_tour
           if @community.present? && @tour_user.present?
-            puts "\n\n\n\n\n"
-            puts "start_tour ---- start"
-            puts @community.deleted_ids.inspect
-            puts "\n\n\n\n\n"
-
             @tours = [@tour]
             session["check_lock_access#{@tour_user.id.to_s}"] = 0
             current_time = current_community_time(@community, params)
             @tour_sort_hash = CustomizeTourService.new(@community, @tour_user).get_tour_sort_hash
             @all_elevators = @community.elevators.map{|x| [x,x.floors, x.building]}       
             @chat_count = chat_room_count(@tour_user, @community)
-
-            puts "\n\n\n\n\n"
-            puts "start_tour ---- end"
-            puts @community.deleted_ids.inspect
-            puts "\n\n\n\n\n"
+            update_deleted_stops_list
           else
             render :json=> {:success=>false, :message => "Community or tour user not found"}
           end
@@ -180,6 +173,10 @@ module Api
 
         def update_deleted_stops_list
           begin
+            puts "\n\n\n\n" 
+            puts "Deleted IDS called"
+            puts @community.deleted_ids
+            puts "\n\n\n\n" 
             @community.update(deleted_ids: [])
             @tour.update(copy_sort_hash: "{}") if @tour.present?
           rescue => e
