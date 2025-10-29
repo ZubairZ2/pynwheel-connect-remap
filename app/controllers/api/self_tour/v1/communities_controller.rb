@@ -11,7 +11,10 @@ module Api
         before_action :load_floors_list, only: [:customize_tour, :start_tour]
         
         before_action :copy_sort_hash_if_needed, only: :customize_tour
+
         # after_action :update_deleted_stops_list, except: :customize_tour
+        after_action :update_deleted_stops_list, only: [:user_tour_status, :initialize_tour, :start_tour]
+
         after_action :restore_sort_hash, except: :customize_tour
         before_action :sort_stops_list, only: [:customize_tour]
 
@@ -143,7 +146,6 @@ module Api
             @tour_sort_hash = CustomizeTourService.new(@community, @tour_user).get_tour_sort_hash
             @all_elevators = @community.elevators.map{|x| [x,x.floors, x.building]}       
             @chat_count = chat_room_count(@tour_user, @community)
-            update_deleted_stops_list
           else
             render :json=> {:success=>false, :message => "Community or tour user not found"}
           end
