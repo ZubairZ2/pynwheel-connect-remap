@@ -1780,7 +1780,6 @@ function unitBoxListHover() {
         markersArray = Array.from($allMarkers);
       }
 
-      
       for (const marker of markersArray) {
         let matchCondition = false;
         let _3dData = null;
@@ -2187,21 +2186,22 @@ function setUnitModalButtons(e) {
     _3dSelectedItem = clickedUnit;
     if (!clickedUnit) return;
 
+
     const floorbasedUnits = filterUnitsBasedOnCommunityType(units);
     clickedUnit = floorbasedUnits.find( (unit) => unit.id === e);
+
     if (!clickedUnit) return;
     
     if (svgMode) {
       filteredUnits = floorbasedUnits.filter(
         ({ floor, pointer_data: { selector } = {} }) =>
-          (selector === clickedUnit.pointer_data.selector) &&
-          validFloor(floor)
+          selector === clickedUnit.pointer_data.selector && floor === clickedUnit.floor && validFloor(floor)
       );
     } else {
       const [unitXPlot, unitYPlot] = [clickedUnit.x_plot, clickedUnit.y_plot];
       filteredUnits = floorbasedUnits.filter(
         ({ floor, x_plot, y_plot }) =>
-          unitXPlot === x_plot && unitYPlot === y_plot && validFloor(floor)
+          unitXPlot === x_plot && unitYPlot === y_plot && floor === clickedUnit.floor && validFloor(floor)
       );
     }
 
