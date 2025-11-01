@@ -259,14 +259,34 @@ function isCurrentFloorsSVG(svgElement) {
   return false;
 }
 
+// function getPointerIdAndSelector(pointerData, dataset) {
+//   let { tag = null, id = null, selector = null } = pointerData || {};
+//   if (!tag && dataset) {
+//     tag = dataset.tag || null;
+//     id = dataset.id || null;
+//     selector = dataset.selector || null;
+//   }
+//   return { id, selector: tag && id ? `${tag}#${id}` : selector };
+// }
+
 function getPointerIdAndSelector(pointerData, dataset) {
   let { tag = null, id = null, selector = null } = pointerData || {};
+
   if (!tag && dataset) {
     tag = dataset.tag || null;
     id = dataset.id || null;
     selector = dataset.selector || null;
   }
-  return { id, selector: tag && id ? `${tag}#${id}` : selector };
+
+  if (tag && id) {
+    if (/^[0-9]/.test(id)) {
+      selector = `${tag}[id="${id}"]`;
+    } else {
+      selector = `${tag}#${id}`;
+    }
+  }
+
+  return { id, selector };
 }
 
 function getDuplicateBlock(svgElement, selector, cloneClass, itemId) {
@@ -465,7 +485,6 @@ function processSvgBlock(svgElement, item, options, dataset = null) {
   const { pointer_data = {}, data_attributes, ...rest } = item || {};
   const { id, selector } = getPointerIdAndSelector(pointer_data, dataset);
   if (!selector) return;
-
   const block = svgElement.querySelector(selector);
   if (!block) return;
 
