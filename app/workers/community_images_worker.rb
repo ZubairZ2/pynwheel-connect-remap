@@ -10,7 +10,9 @@ class CommunityImagesWorker
     base_dir = Rails.root.join("tmp", "images")
     FileUtils.mkdir_p(base_dir)
 
-    Community.active_properties.find_each do |community|
+    communities = Community.where(id: fetch_ids)
+
+    communities.find_each do |community|
       community_dir = base_dir.join(community.name.parameterize)
       FileUtils.mkdir_p(community_dir)
 
@@ -67,5 +69,14 @@ class CommunityImagesWorker
     obj = S3_BUCKET.object("exports/#{File.basename(zip_path)}")
     obj.upload_file(zip_path.to_s, acl: "private")
     Rails.logger.info "Uploaded zip to S3: #{obj.key}"
+  end
+
+  def fetch_ids
+    [ 
+      225, 230, 341, 345, 347, 348, 350, 642, 741, 744, 761, 868, 869, 870, 906, 907, 908, 909, 910, 911, 982,
+      1123, 1124, 1125, 1126, 1127, 1128, 1145, 1146, 1148, 1149, 1150, 1167, 1168, 1169, 1170, 1172, 1173, 1176,
+      1177, 1178, 1179, 1180, 1181, 1225, 1226, 1227, 1230, 1477, 1479, 1494, 1627, 1758, 1761, 1977, 1979, 1980,
+      1981, 1982, 1983, 1984, 1985, 1986, 1987, 1988, 1990, 1991, 1992, 1993, 1994, 1995, 3495, 3729, 3818, 3933, 3973
+    ]
   end
 end
