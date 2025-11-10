@@ -31,13 +31,14 @@ class WebpagesController < ActionController::Base
     @floorplans = @community_info.floorplans
     @floorplans_map = @floorplans.index_by(&:provider_floorplan_id)
     @svg_enabled = @community_info.enable_svg_mode?
-    community_units = @community_info.units
     @amenities = @community_info.amenities.plotted_amenities(@svg_enabled).includes(:amenityable, :amenity_galleries)
     @have_multi_property_ids = @community_info.have_multi_property_ids? && @community_info.credential&.allow_sub_communities?
     @multi_properties = @community_info.fetch_multi_properties()
     @map_filter = @community_info&.map_filter&.get_filter_list(@show_ops_map)
     @all_filters_disabled = @community_info&.map_filter&.all_filters_disabled?(@show_ops_map)
     @font_family = @community_info&.font_setting&.svg_labels_font_family
+    community_units = @community_info.units
+    @units = community_units.map_units(@community_info, @show_ops_map)
 
     unless @community_info.locked
       if @community_info.has_floorplates?
@@ -65,14 +66,6 @@ class WebpagesController < ActionController::Base
         @floorplate_by_floor.each do |floor, fp|
           @dimensions_by_floorplate[fp.id] = image_original_dimensions(fp)
         end
-      end
-
-      @units = if @community.turn_availability_on && !@show_ops_map # for studen housing properties.
-        community_units.are_plotted_units(@svg_enabled)
-      elsif @show_ops_map
-        community_units.are_plotted_units(@svg_enabled).status_scoped(true)
-      else
-        community_units.available_units(@svg_enabled, @community.units_availability_over_120_days).visible_on_map_for(@community)
       end
 
       if @units.length > 0

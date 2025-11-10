@@ -652,6 +652,8 @@ Rails.application.routes.draw do
 
       namespace :maps do
         get :all_maps, to: 'maps#all_maps'
+        get :properties, to: 'maps#properties'
+        get :units, to: 'maps#units'
       end
     end
 
