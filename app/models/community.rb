@@ -93,6 +93,7 @@ class Community < ApplicationRecord
   after_create :create_tour_also
   after_create :assign_community_user
   after_create :create_map_filter
+  after_create :create_property_credentials
   after_create :change_touchscreen_app_for_dwelo
   before_save :turn_off_chat, if: Proc.new { chat_control == false }
   after_save :set_community_time_zone, if: ->(obj) { obj.latitude_changed? || obj.longitude_changed? }
@@ -928,6 +929,10 @@ class Community < ApplicationRecord
 
   def create_map_filter
     MapFilter.create(community_id: self.id) if self.map_filter.nil?
+  end
+
+  def create_property_credentials
+    Credential.create(community_id: self.id) if self.credential.nil?
   end
 
   def change_touchscreen_app_for_dwelo
