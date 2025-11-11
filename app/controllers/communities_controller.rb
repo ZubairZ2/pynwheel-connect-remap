@@ -286,8 +286,8 @@ class CommunitiesController < ApplicationController
         pointer_data.each do |unit_id, data|
           unit = @community.units.find_by(id: unit_id)
           next unless unit # skip if unit not found in this community
-  
-          unit.update!(pointer_data: data)
+          unit.pointer_data = data
+          unit.save(validate: false)
         end
       end
   

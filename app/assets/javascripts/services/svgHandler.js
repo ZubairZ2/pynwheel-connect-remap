@@ -485,7 +485,17 @@ function processSvgBlock(svgElement, item, options, dataset = null) {
   const { pointer_data = {}, data_attributes, ...rest } = item || {};
   const { id, selector } = getPointerIdAndSelector(pointer_data, dataset);
   if (!selector) return;
-  const block = svgElement.querySelector(selector);
+
+  let block;
+
+  try {
+    block = svgElement.querySelector(selector);
+  } catch (e) {
+    block = null;
+    console.warn(`Invalid selector: ${selector}`, e);
+    return;
+  }
+
   if (!block) return;
 
   const { cloneClass } = options;

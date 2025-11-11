@@ -316,6 +316,10 @@ function formatPointerData(svgUnit) {
 }
 
 async function savePointerData(pointerData, propertyId) {
+  const filteredPointerData = Object.fromEntries(
+    Object.entries(pointerData).filter(([_, v]) => v.id && v.id.trim() !== "")
+  );
+
   const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
   const response = await fetch(`/communities/${propertyId}/save_pointer_data`, {
     method: "POST",
@@ -325,7 +329,7 @@ async function savePointerData(pointerData, propertyId) {
       "X-CSRF-Token": token,
     },
     credentials: "include", // Required for Devise
-    body: JSON.stringify({ pointer_data: pointerData }),
+    body: JSON.stringify({ pointer_data: filteredPointerData }),
   });
 
   const result = await response.json();
