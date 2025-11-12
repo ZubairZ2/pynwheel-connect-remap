@@ -275,65 +275,210 @@ function getPolygonArea(polygon) {
   return Math.abs(area) / 2;
 }
 
+// function findRealTopCenter(svgShape) {
+//   const tag = svgShape.tagName.toLowerCase();
+//   let points = [];
+
+//   if (["polygon", "polyline"].includes(tag)) {
+//     const pointsString = svgShape.getAttribute("points");
+//     points = pointsString
+//       .trim()
+//       .split(/\s+/)
+//       .map((p) => {
+//         const [x, y] = p.split(",").map(Number);
+//         return { x, y };
+//       });
+//   } else if (tag === "rect") {
+//     const x = parseFloat(svgShape.getAttribute("x"));
+//     const y = parseFloat(svgShape.getAttribute("y"));
+//     const width = parseFloat(svgShape.getAttribute("width"));
+//     const height = parseFloat(svgShape.getAttribute("height"));
+//     points = [
+//       { x: x, y: y },
+//       { x: x + width, y: y },
+//       { x: x + width, y: y + height },
+//       { x: x, y: y + height },
+//     ];
+//   } else if (tag === "circle") {
+//     const cx = parseFloat(svgShape.getAttribute("cx"));
+//     const cy = parseFloat(svgShape.getAttribute("cy"));
+//     const r = parseFloat(svgShape.getAttribute("r"));
+//     points = [
+//       { x: cx - r, y: cy },
+//       { x: cx + r, y: cy },
+//       { x: cx, y: cy - r },
+//       { x: cx, y: cy + r },
+//     ];
+//   } else if (tag === "ellipse") {
+//     const cx = parseFloat(svgShape.getAttribute("cx"));
+//     const cy = parseFloat(svgShape.getAttribute("cy"));
+//     const rx = parseFloat(svgShape.getAttribute("rx"));
+//     const ry = parseFloat(svgShape.getAttribute("ry"));
+//     points = [
+//       { x: cx - rx, y: cy },
+//       { x: cx + rx, y: cy },
+//       { x: cx, y: cy - ry },
+//       { x: cx, y: cy + ry },
+//     ];
+//   } else if (tag === "path") {
+//     const totalLength = svgShape.getTotalLength();
+//     const numSamples = 100;
+//     const sampleInterval = totalLength / numSamples;
+
+//     for (let i = 0; i <= numSamples; i++) {
+//       const length = i * sampleInterval;
+//       const point = svgShape.getPointAtLength(length);
+//       points.push({ x: point.x, y: point.y });
+//     }
+//   } else {
+//     throw new Error("Unsupported shape for top center calculation");
+//   }
+
+//   points.sort((a, b) => a.y - b.y);
+
+//   const first = points[0];
+//   const second = points[1];
+
+//   const midX = (first.x + second.x) / 2;
+//   const midY = (first.y + second.y) / 2;
+
+//   const svg = svgShape.ownerSVGElement || svgShape;
+//   const ctm = svgShape.getScreenCTM();
+
+//   const point = svg.createSVGPoint();
+//   point.x = midX;
+//   point.y = midY;
+
+//   const screenPoint = point.matrixTransform(ctm);
+
+//   return {
+//     screenX: screenPoint.x,
+//     screenY: screenPoint.y,
+//   };
+// }
+
 function findRealTopCenter(svgShape) {
   const tag = svgShape.tagName.toLowerCase();
   let points = [];
 
+  function isValid(n) {
+    return typeof n === "number" && !isNaN(n) && isFinite(n);
+  }
+
+  // -----------------------------
+  // Helper: fallback using BBOX
+  // -----------------------------
+  function fallbackTopCenter() {
+    const svg = svgShape.ownerSVGElement || svgShape;
+    const ctm = svgShape.getScreenCTM();
+    const bbox = svgShape.getBBox();
+
+    const point = svg.createSVGPoint();
+    point.x = bbox.x + bbox.width / 2;
+    point.y = bbox.y; // top of bounding box
+
+    const screenPoint = point.matrixTransform(ctm);
+
+    return {
+      screenX: screenPoint.x,
+      screenY: screenPoint.y,
+    };
+  }
+
+  // -----------------------------
+  // Extract points for each shape
+  // -----------------------------
   if (["polygon", "polyline"].includes(tag)) {
-    const pointsString = svgShape.getAttribute("points");
+    const pointsString = svgShape.getAttribute("points") || "";
     points = pointsString
       .trim()
       .split(/\s+/)
       .map((p) => {
         const [x, y] = p.split(",").map(Number);
         return { x, y };
-      });
-  } else if (tag === "rect") {
+      })
+      .filter((p) => isValid(p.x) && isValid(p.y));
+  } 
+  else if (tag === "rect") {
     const x = parseFloat(svgShape.getAttribute("x"));
     const y = parseFloat(svgShape.getAttribute("y"));
-    const width = parseFloat(svgShape.getAttribute("width"));
-    const height = parseFloat(svgShape.getAttribute("height"));
-    points = [
-      { x: x, y: y },
-      { x: x + width, y: y },
-      { x: x + width, y: y + height },
-      { x: x, y: y + height },
-    ];
-  } else if (tag === "circle") {
+    const w = parseFloat(svgShape.getAttribute("width"));
+    const h = parseFloat(svgShape.getAttribute("height"));
+
+    if ([x, y, w, h].every(isValid)) {
+      points = [
+        { x: x, y: y },
+        { x: x + w, y: y },
+        { x: x + w, y: y + h },
+        { x: x, y: y + h },
+      ];
+    }
+  } 
+  else if (tag === "circle") {
     const cx = parseFloat(svgShape.getAttribute("cx"));
     const cy = parseFloat(svgShape.getAttribute("cy"));
     const r = parseFloat(svgShape.getAttribute("r"));
-    points = [
-      { x: cx - r, y: cy },
-      { x: cx + r, y: cy },
-      { x: cx, y: cy - r },
-      { x: cx, y: cy + r },
-    ];
-  } else if (tag === "ellipse") {
+
+    if ([cx, cy, r].every(isValid)) {
+      points = [
+        { x: cx - r, y: cy },
+        { x: cx + r, y: cy },
+        { x: cx, y: cy - r },
+        { x: cx, y: cy + r },
+      ];
+    }
+  } 
+  else if (tag === "ellipse") {
     const cx = parseFloat(svgShape.getAttribute("cx"));
     const cy = parseFloat(svgShape.getAttribute("cy"));
     const rx = parseFloat(svgShape.getAttribute("rx"));
     const ry = parseFloat(svgShape.getAttribute("ry"));
-    points = [
-      { x: cx - rx, y: cy },
-      { x: cx + rx, y: cy },
-      { x: cx, y: cy - ry },
-      { x: cx, y: cy + ry },
-    ];
-  } else if (tag === "path") {
-    const totalLength = svgShape.getTotalLength();
+
+    if ([cx, cy, rx, ry].every(isValid)) {
+      points = [
+        { x: cx - rx, y: cy },
+        { x: cx + rx, y: cy },
+        { x: cx, y: cy - ry },
+        { x: cx, y: cy + ry },
+      ];
+    }
+  } 
+  else if (tag === "path") {
+    let totalLength;
+    try {
+      totalLength = svgShape.getTotalLength();
+    } catch {
+      return fallbackTopCenter();
+    }
+
+    if (!isValid(totalLength) || totalLength <= 0) {
+      return fallbackTopCenter();
+    }
+
     const numSamples = 100;
-    const sampleInterval = totalLength / numSamples;
+    const step = totalLength / numSamples;
 
     for (let i = 0; i <= numSamples; i++) {
-      const length = i * sampleInterval;
-      const point = svgShape.getPointAtLength(length);
-      points.push({ x: point.x, y: point.y });
+      const p = svgShape.getPointAtLength(i * step);
+      if (isValid(p.x) && isValid(p.y)) {
+        points.push({ x: p.x, y: p.y });
+      }
     }
-  } else {
-    throw new Error("Unsupported shape for top center calculation");
+  } 
+  else {
+    return fallbackTopCenter();
   }
 
+  // -----------------------------
+  // Not enough points? Fallback
+  // -----------------------------
+  if (points.length < 2) {
+    return fallbackTopCenter();
+  }
+
+  // -----------------------------
+  // Sort by top-most (min y)
+  // -----------------------------
   points.sort((a, b) => a.y - b.y);
 
   const first = points[0];
@@ -342,8 +487,19 @@ function findRealTopCenter(svgShape) {
   const midX = (first.x + second.x) / 2;
   const midY = (first.y + second.y) / 2;
 
+  if (!isValid(midX) || !isValid(midY)) {
+    return fallbackTopCenter();
+  }
+
+  // -----------------------------
+  // Convert to screen coordinates
+  // -----------------------------
   const svg = svgShape.ownerSVGElement || svgShape;
   const ctm = svgShape.getScreenCTM();
+
+  if (!ctm) {
+    return fallbackTopCenter();
+  }
 
   const point = svg.createSVGPoint();
   point.x = midX;
