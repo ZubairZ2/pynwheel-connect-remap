@@ -1,0 +1,38 @@
+.row
+  .col-lg-12
+    .form-group
+      %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
+        Upload Map Logo
+        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "mapLogoPopover", "data-content" => " " }
+          %span#propertyDetailNameText
+            Uploading a Map Logo will change the logo shown on the Pynwheel Map.
+        %span{ style: "font-size: 16px;" }
+          %p
+            Upload a logo specifically for the Pynwheel Map display.
+          %p
+            Images will appear at a size of 400 × 120 px. Small images may appear pixelated.
+
+    %span.btn.btn-primary.btn-file.ml-15
+      %i.fa.fa-upload
+      Upload File
+      = file_field_tag :map_logo, id: "map_logo"
+
+.text-center.drag-box.mt-15.image-upload#design-page-map-logo-upload-holder
+  %span.icon-upload
+    = image_tag "upload-image.png"
+    %p Drag & Drop file to Upload
+
+.row
+  .col-lg-12
+    .form-group.logo-upload-bg.pt-15
+      .select-logo.center-img.mb-20.mt-30.logo-upload-bg
+        .select-logo-logo.logo-container.logo-upload-container
+          %a.preview-image{ href: map_logo_url(current_community), "data-toggle" => "lightbox", "data-title" => "Map Logo" }
+            = image_tag map_logo_url(current_community), height: "100%", width: "100%", id: "preview-image-map"
+            = image_tag "exclamation-mark.png", class: "exal_map_logo #{ small_map_logo?(current_community) ? '' : 'hidden' }", style: "width: 25px","data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover"
+
+      - if current_community.map_logo.present?
+        .row{ style: "padding-left: 47%;" }
+          = link_to show_map_logo_in_modal_community_design_index_path(), class: "", remote: true do
+            %span.btn.btn-primary.btn-success.ml-15#crop_map_logo{ "data-target" => "#edit-name", "data-toggle" => "modal" }
+              Crop
