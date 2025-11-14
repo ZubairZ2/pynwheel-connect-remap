@@ -5,7 +5,7 @@ module CommunityHelper
   def map_logo_url(community, default_logo = false)
     logo = community.map_logo.presence
     
-    return ( design ? asset_path("default.jpeg") : asset_path("pynwheel-connect-logo.png") )if logo.blank?
+    return ( default_logo ? asset_path("default.jpeg") : asset_path("pynwheel-connect-logo.png") )if logo.blank?
     return logo.url if logo.respond_to?(:url)
 
     logo.to_s
