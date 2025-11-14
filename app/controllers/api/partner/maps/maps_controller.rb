@@ -28,15 +28,6 @@ module Api
         end
 
         def properties
-          render json: { 
-            propertiesList: properties_response,
-            message: "Properties list",
-            status: 'success',
-            code: 200
-          }
-        end
-
-        def properties
           property_id = params[:propertyId].to_s
 
           if property_id.present?

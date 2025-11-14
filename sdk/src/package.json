@@ -1,0 +1,10 @@
+{
+  "name": "pyn-map-sdk",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "rollup -c rollup.config.mjs"
+  },
+  "devDependencies": {
+    "rollup": "^3.28.0"
+  }
+}
