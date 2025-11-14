@@ -34,8 +34,9 @@
         .select-list.select-list-fav
           = hidden_field_tag :maps_community_id, @community.id
           .need-to{:style=>"text-align: center;"}
-            -if @community.logo.present?
-              = image_tag @community.logo.present? ? @community.logo.url : "default.jpeg", :style => "width: 150px; padding: 1px 0px 5px 4px"
+            -if @community.map_logo.present?
+              = image_tag map_logo_url(@community, true), :style => "width: 150px; padding: 1px 0px 5px 4px"
+              
           - if @units.present?
             .need-to
               %p{:style => "margin-bottom: 20px"} Explore available floor plans on the interactive site map.

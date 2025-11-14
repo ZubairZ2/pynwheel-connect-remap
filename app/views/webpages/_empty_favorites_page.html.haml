@@ -2,7 +2,8 @@
   .c-wrapper.secondary-wrapper
     .c-body
       .need-to.want-to-add-fav-container
-        = image_tag @community.logo.present? ? @community.logo.url : "default.jpeg", :style => "width: 150px; padding: 1px 0px 5px 4px"
+        = image_tag map_logo_url(@community, true), :style => "width: 150px; padding: 1px 0px 5px 4px"
+        
         %p.add-fav-description 
           Explore available floor plans on
           %br/

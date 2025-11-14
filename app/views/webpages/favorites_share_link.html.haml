@@ -45,7 +45,7 @@
               .col-xs-4.col-sm-4.col-md-3.custom-right-column
                 .plan-image
                   .plan-image-pop
-                    = image_tag @community.logo.present? ? @community.logo.url : "/assets/pynwheel-default-logo.png" ,class: "img-responsive"
+                    = image_tag map_logo_url(@community, true) ,class: "img-responsive"
               .clear-fix
       .container{style: "width: 100%; display: inline-block; padding: inherit;"}
         = render partial: "favorites_modal"                                                       

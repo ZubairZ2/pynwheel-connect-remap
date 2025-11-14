@@ -27,8 +27,8 @@
     .form-group.logo-upload-bg.pt-15
       .select-logo.center-img.mb-20.mt-30.logo-upload-bg
         .select-logo-logo.logo-container.logo-upload-container
-          %a.preview-image{ href: map_logo_url(current_community), "data-toggle" => "lightbox", "data-title" => "Map Logo" }
-            = image_tag map_logo_url(current_community), height: "100%", width: "100%", id: "preview-image-map"
+          %a.preview-image{ href: map_logo_url(current_community, true), "data-toggle" => "lightbox", "data-title" => "Map Logo" }
+            = image_tag map_logo_url(current_community, true), height: "100%", width: "100%", id: "preview-image-map"
             = image_tag "exclamation-mark.png", class: "exal_map_logo #{ small_map_logo?(current_community) ? '' : 'hidden' }", style: "width: 25px","data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover"
 
       - if current_community.map_logo.present?
