@@ -492,6 +492,7 @@ Rails.application.routes.draw do
         put :crop_secondary_logo
         get :show_logo_in_modal
         get :show_secondary_logo_in_modal
+        get :show_map_logo_in_modal
       end
     end
     resources :home_page do

@@ -27,7 +27,12 @@ class DesignController < ApplicationController
   def show_logo_in_modal
     @community = Community.find(params[:community_id])
   end
+
   def show_secondary_logo_in_modal
+    @community = Community.find(params[:community_id])
+  end
+
+  def show_map_logo_in_modal
     @community = Community.find(params[:community_id])
   end
 

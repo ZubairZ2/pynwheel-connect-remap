@@ -6,6 +6,7 @@ class Community < ApplicationRecord
   mount_base64_uploader :email_logo, AvatarUploader
   mount_base64_uploader :secondary_logo, AvatarUploader
   mount_base64_uploader :self_tour_logo, AvatarUploader
+  mount_base64_uploader :map_logo, AvatarUploader
   mount_base64_uploader :brand_details_pdf , PdfUploader
   mount_base64_uploader :file, DesignUploader
   mount_uploader :background_svg_image, SiteMapUploader

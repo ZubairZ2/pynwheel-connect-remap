@@ -169,6 +169,20 @@ $(document).ready(function () {
       }
     }
 
+    var design_page_map_logo_upload_holder = document.getElementById('design-page-map-logo-upload-holder');
+    if (design_page_map_logo_upload_holder) {
+      design_page_map_logo_upload_holder.ondrop = function (e) {
+        e.preventDefault();
+        files = e.dataTransfer.files;
+        if (files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") {
+            readDesignPageMapLogoSrc(files[0]);
+        } else {
+          console.log('file type is not allowed');
+          $('#image-upload-warning').modal('show');
+        }
+      }
+    }
+
     var secondary_page_background_image_upload_holder = document.getElementById('secondary-page-background-image-upload-holder');
     if (secondary_page_background_image_upload_holder) {
       secondary_page_background_image_upload_holder.ondrop = function (e) {
@@ -883,6 +897,10 @@ $(document).ready(function () {
 
   $("#secondary_logo").change(function () {
     readDesignPageSecondaryLogoSrcFromInput(this);
+  });
+
+  $("#map_logo").change(function () {
+    readDesignPageMapLogoSrcFromInput(this);
   });
 
   $("#self_tour_logo").change(function () {
@@ -1875,6 +1893,28 @@ function readDesignPageSecondaryLogoSrc(file) {
   reader.readAsDataURL(file);
 }
 
+function readDesignPageMapLogoSrc(file) {
+  $(".divLoading").removeClass("hidden");
+  var reader = new FileReader();
+    var img = getHeightWidthLimit(file);
+    img.onload = function () {
+        if (this.width < image_width && this.height < image_height)
+        {
+            $(".exal_map_logo").removeClass("hidden");
+        }
+        else
+        {
+            $(".exal_map_logo").addClass("hidden");
+        }
+    };
+  reader.onload = function (e) {
+    $('#preview-image-map').attr('src', e.target.result);
+    $('#preview-image-map').parent().attr('href', e.target.result);
+    designPageMapLogo(e.target.result);
+  }
+  reader.readAsDataURL(file);
+}
+
 function readSecondaryPageBackgroundImageSrc(file) {
   $(".divLoading").removeClass("hidden");
   var reader = new FileReader();
@@ -2755,6 +2795,22 @@ function designPageSelfTourLogo(src) {
     });
 }
 
+function designPageMapLogo(src) {
+  $(".divLoading").removeClass("hidden");
+  var url = "/communities/" + community_id;
+  $.ajax({
+    url: url,
+    type: "PUT",
+    dataType: "script",
+    data: {
+      community: {map_logo: src}
+    }
+  }).done(function () {
+    $(".divLoading").addClass("hidden");
+    console.log("success");
+  });
+}
+
 function designPageSecondaryLogo(src) {
   $(".divLoading").removeClass("hidden");
   var url = "/communities/" + community_id;
@@ -3597,6 +3653,36 @@ function readDesignPageSecondaryLogoSrcFromInput(input) {
       $(input).val('');
       $('#image-upload-warning').modal('show');
       //console.log($(input).val());
+    }
+  }
+}
+
+function readDesignPageMapLogoSrcFromInput(input) {
+  if (input.files && input.files[0]) {
+    if (["image/png", "image/jpeg", "image/jpg"].includes(input.files[0].type)) {
+      var reader = new FileReader();
+
+      reader.onload = function (e) {
+        var img = getHeightWidthLimit(input);
+        img.onload = function () {
+          if (this.width < image_width && this.height < image_height) {
+            $(".exal_map_logo").removeClass("hidden");
+          } else {
+            $(".exal_map_logo").addClass("hidden");
+          }
+        };
+
+        $("#preview-image-map").attr("src", e.target.result);
+        $("#preview-image-map").parent().attr("href", e.target.result);
+
+        designPageMapLogo(e.target.result);
+      };
+
+      reader.readAsDataURL(input.files[0]);
+
+    } else {
+      $(input).val("");
+      $("#image-upload-warning").modal("show");
     }
   }
 }
