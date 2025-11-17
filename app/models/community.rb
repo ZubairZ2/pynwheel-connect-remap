@@ -146,6 +146,23 @@ class Community < ApplicationRecord
     end
   end
 
+  def floorplate_for_floor(floor)
+    floor = floor.to_i
+
+    floorplates.each do |fp|
+      range_str = fp.range.to_s.strip
+
+      if range_str.include?("-")
+        start_floor, end_floor = range_str.split("-").map(&:to_i)
+        return fp if floor >= start_floor && floor <= end_floor
+      else
+        return fp if floor == range_str.to_i
+      end
+    end
+
+    nil
+  end
+
   def have_multi_property_ids?
     property_codes = credential&.p_code&.to_s&.split(',')
     property_codes&.many? && sub_communities&.many?

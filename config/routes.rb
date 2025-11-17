@@ -656,8 +656,10 @@ Rails.application.routes.draw do
 
       namespace :maps do
         get :all_maps, to: 'maps#all_maps'
-        get :properties, to: 'maps#properties'
-        get :units, to: 'maps#units'
+        get :properties, to: 'webhooks#properties'
+        get :units, to: 'webhooks#units'
+        get :authorized, to: 'sdk#authorized'
+        get :fetch_data, to: 'sdk#fetch_data'
       end
     end
 
