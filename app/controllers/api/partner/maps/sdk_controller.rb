@@ -83,11 +83,11 @@ module Api
             {
               unitNumber: u.marketing_name,
               mapId: map_for_unit(u),
-              assetId: u.id,
-              buildingId: u.building,
-              floorId: u.floor,
+              unitId: u.id,
+              building: u.building,
+              floor: u.floor,
               floorplanId: u.floorplan_id,
-              pointer_data: u.pointer_data
+              pointerData: u.pointer_data
             }
           end
         end
