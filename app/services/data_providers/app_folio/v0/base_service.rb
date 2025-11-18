@@ -23,7 +23,7 @@ module DataProviders
         
         def update_attribute_if_blank(object, attribute, value, diff_name = nil)
           updated_column = diff_name.present? ? diff_name : attribute
-          object.send("#{attribute}=", value) if value.present? && !object.send("#{updated_column}_is_updated")
+          object.send("#{attribute}=", value) if !object.send("#{updated_column}_is_updated")
         end
 
         def import_units(units)
