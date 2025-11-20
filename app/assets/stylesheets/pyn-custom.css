@@ -7864,7 +7864,7 @@ div.esri-ui-inner-container.esri-ui-manual-container>div.esri-component.esri-att
   align-items: flex-start;
   width: 46px;
   height: 46px;
-  background: #D25A05 !important;
+  background: #1C2425 !important;
   border-radius: 5px;
   padding: 7px;
   color: #fff;
@@ -7876,7 +7876,7 @@ div.esri-ui-inner-container.esri-ui-manual-container>div.esri-component.esri-att
 }
 
 .map-toggle-button:hover {
-  background: #D25A05; /* keep same as normal */
+  background: #1C2425; /* keep same as normal */
   color: #fff;
   text-decoration: none;
   cursor: pointer; /* or default */
