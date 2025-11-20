@@ -7856,3 +7856,28 @@ div.esri-ui-inner-container.esri-ui-manual-container>div.esri-component.esri-att
 .floorplan-marker-form label {
   font-weight: normal !important;
 }
+
+.map-toggle-button {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  width: 46px;
+  height: 46px;
+  background: #D25A05 !important;
+  border-radius: 5px;
+  padding: 7px;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 900;
+  /* font-size: 12px; */
+  line-height: 15px;
+  font-family: sans-serif;
+}
+
+.map-toggle-button:hover {
+  background: #D25A05; /* keep same as normal */
+  color: #fff;
+  text-decoration: none;
+  cursor: pointer; /* or default */
+}
