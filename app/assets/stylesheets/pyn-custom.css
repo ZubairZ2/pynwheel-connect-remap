@@ -7862,8 +7862,8 @@ div.esri-ui-inner-container.esri-ui-manual-container>div.esri-component.esri-att
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
-  width: 46px;
-  height: 46px;
+  width: 46px !important;
+  height: 46px !important;
   background: #1C2425 !important;
   border-radius: 5px;
   padding: 7px;
