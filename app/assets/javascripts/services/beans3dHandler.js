@@ -80,19 +80,15 @@ function initializeBeans3DMap() {
             if (!onClickData) return;
 
             if (_3dHoveredItem?.unitId === onClickData.unitId) return;
-            clear3DPopup();
 
             _3dHoveredItem = onClickData;
             const { eventHandlers: { showTooltip } = {} } = onClickData;
 
             if (showTooltip) showTooltip(event);
-            // initializeMouseTrackerFor3DHoverExit();
             return;
           }
 
           if (_3dHoveredItem?.unitId === data.unitId) return;
-          clear3DPopup();
-
           markerHoverEffect(event, data);
         },
       }
@@ -477,55 +473,6 @@ function isMouseInsideGeoShape(mouseEvent, geojson, view) {
   }
 }
 
-// Old version:
-// function initializeMouseTrackerFor3DHoverExit() {
-//   if (isMouseTrackerInitialized || !mouseTracker) return;
-//   isMouseTrackerInitialized = true;
-
-//   mouseTracker.onChange(({ x, y, event }) => {
-//     if (!_3dHoveredItem) return;
-
-//     const isAmenity = _3dHoveredItem?.type === "AMENITY";
-//     const convertedIndex = get3dElementIndexById(
-//       _3dHoveredItem?.unitId,
-//       isAmenity
-//     );
-
-//     if (convertedIndex < 0) {
-//       clear3DPopup();
-//       return;
-//     }
-
-//     const { geojson } =
-//       beansWidget.workingInstance.unitPolygonsToExclude[convertedIndex] || {};
-
-//     const inside =
-//       (isAmenity && !isDefined(geojson)) ||
-//       (geojson &&
-//         isMouseInsideGeoShape(
-//           event,
-//           geojson,
-//           beansWidget.workingInstance.mapView
-//         ));
-
-//     if (inside) {
-//       if (!lastMouseInside) {
-//         console.log("Mouse entered shape");
-//         lastMouseInside = true;
-//       }
-//     } else {
-//       console.log("Mouse exited shape");
-//       lastMouseInside = false;
-
-//       if (isAmenity && _3dHoveredItem?.eventHandlers?.hideTooltip) {
-//         _3dHoveredItem.eventHandlers.hideTooltip();
-//       }
-
-//       clear3DPopup();
-//     }
-//   });
-// }
-
 function initializeMouseTrackerFor3DHoverExit() {
   if (isMouseTrackerInitialized || !mouseTracker) return;
   if (!beansWidget?.workingInstance?.mapView) {
@@ -545,10 +492,7 @@ function initializeMouseTrackerFor3DHoverExit() {
       isAmenity
     );
 
-    if (convertedIndex < 0) {
-      clear3DPopup();
-      return;
-    }
+    if (convertedIndex < 0) return;
 
     const { geojson } =
       beansWidget.workingInstance.unitPolygonsToExclude[convertedIndex] || {};
@@ -585,31 +529,17 @@ function initializeMouseTrackerFor3DHoverExit() {
       return;
     }
 
-    // Mouse is no longer inside
-    // console.log("Mouse exited shape");
-    lastMouseInside = false;
+    if (lastMouseInside) {
+      lastMouseInside = false;
 
-    if (isAmenity && _3dHoveredItem?.eventHandlers?.hideTooltip) {
-      _3dHoveredItem.eventHandlers.hideTooltip();
+      if (isAmenity && _3dHoveredItem?.eventHandlers?.hideTooltip) {
+        _3dHoveredItem.eventHandlers.hideTooltip();
+      }
+
+      clear3DPopup();
     }
-
-    clear3DPopup();
   });
 }
-
-// Old version:
-// function clear3DPopup() {
-//   if (!_3dHoveredItem) return;
-
-//   if (_3dHoveredItem.type === "AMENITY") {
-//     _3dHoveredItem.eventHandlers?.hideTooltip?.();
-//   } else {
-//     $("#marker-popover").addClass("hidden");
-//     $(`#unit_${_3dHoveredItem.unitId}`).css("border", "none");
-//   }
-
-//   _3dHoveredItem = null;
-// }
 
 function clear3DPopup() {
   if (!_3dHoveredItem) return;
@@ -632,14 +562,6 @@ function getMapRelativeCoords(event, view) {
     y: event.clientY - rect.top,
   };
 }
-
-// Old version:
-// function _3dPositionTooltip(e, tooltip) {
-//   tooltip.style.position = "absolute";
-//   tooltip.style.left = `${e.x + 10}px`;
-//   tooltip.style.top = `${e.y + 20}px`;
-//   tooltip.style.visibility = "visible";
-// }
 
 function _3dPositionTooltip(e, tooltip) {
   // Normalise coords across different event types (Esri vs DOM)
