@@ -90,6 +90,7 @@ function initializeBeans3DMap() {
 
           if (_3dHoveredItem?.unitId === data.unitId) return;
           markerHoverEffect(event, data);
+          
         },
       }
     );
@@ -108,8 +109,13 @@ function initializeBeans3DMap() {
 
       beansWidget.workingInstance = inst;
       console.log("🔥 3D Map Engine Ready:", inst);
-
       initializeMouseTrackerFor3DHoverExit();
+      const container = inst.mapView?.container;
+      if (container) {
+        container.addEventListener("mouseleave", () => {
+          clear3DPopup();
+        });
+      }
     }
   }, 300);
 
@@ -523,7 +529,7 @@ function initializeMouseTrackerFor3DHoverExit() {
 
     if (inside) {
       if (!lastMouseInside) {
-        // console.log("Mouse entered shape");
+        console.log("Mouse entered shape");
         lastMouseInside = true;
       }
       return;
@@ -536,6 +542,7 @@ function initializeMouseTrackerFor3DHoverExit() {
         _3dHoveredItem.eventHandlers.hideTooltip();
       }
 
+      console.log("Mouse exited shape");
       clear3DPopup();
     }
   });
