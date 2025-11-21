@@ -86,7 +86,7 @@ function initializeBeans3DMap() {
             const { eventHandlers: { showTooltip } = {} } = onClickData;
 
             if (showTooltip) showTooltip(event);
-            initializeMouseTrackerFor3DHoverExit();
+            // initializeMouseTrackerFor3DHoverExit();
             return;
           }
 
@@ -100,6 +100,22 @@ function initializeBeans3DMap() {
   } catch (e) {
     console.error(e);
   }
+  
+  /* -----------------------------
+    FIX: WAIT FOR 3D ENGINE READY
+  ------------------------------ */
+  const waitForMapEngine = setInterval(() => {
+    const inst = beansWorkingMapInstance();
+
+    if (inst?.mapView?.ready) {
+      clearInterval(waitForMapEngine);
+
+      beansWidget.workingInstance = inst;
+      console.log("🔥 3D Map Engine Ready:", inst);
+
+      initializeMouseTrackerFor3DHoverExit();
+    }
+  }, 300);
 
   beansWidget.workingInstance = beansWorkingMapInstance();
 }
@@ -461,16 +477,71 @@ function isMouseInsideGeoShape(mouseEvent, geojson, view) {
   }
 }
 
+// Old version:
+// function initializeMouseTrackerFor3DHoverExit() {
+//   if (isMouseTrackerInitialized || !mouseTracker) return;
+//   isMouseTrackerInitialized = true;
+
+//   mouseTracker.onChange(({ x, y, event }) => {
+//     if (!_3dHoveredItem) return;
+
+//     const isAmenity = _3dHoveredItem?.type === "AMENITY";
+//     const convertedIndex = get3dElementIndexById(
+//       _3dHoveredItem?.unitId,
+//       isAmenity
+//     );
+
+//     if (convertedIndex < 0) {
+//       clear3DPopup();
+//       return;
+//     }
+
+//     const { geojson } =
+//       beansWidget.workingInstance.unitPolygonsToExclude[convertedIndex] || {};
+
+//     const inside =
+//       (isAmenity && !isDefined(geojson)) ||
+//       (geojson &&
+//         isMouseInsideGeoShape(
+//           event,
+//           geojson,
+//           beansWidget.workingInstance.mapView
+//         ));
+
+//     if (inside) {
+//       if (!lastMouseInside) {
+//         console.log("Mouse entered shape");
+//         lastMouseInside = true;
+//       }
+//     } else {
+//       console.log("Mouse exited shape");
+//       lastMouseInside = false;
+
+//       if (isAmenity && _3dHoveredItem?.eventHandlers?.hideTooltip) {
+//         _3dHoveredItem.eventHandlers.hideTooltip();
+//       }
+
+//       clear3DPopup();
+//     }
+//   });
+// }
+
 function initializeMouseTrackerFor3DHoverExit() {
   if (isMouseTrackerInitialized || !mouseTracker) return;
+  if (!beansWidget?.workingInstance?.mapView) {
+    console.warn("3D mapView not ready for mouse tracking yet");
+    return;
+  }
+
   isMouseTrackerInitialized = true;
 
   mouseTracker.onChange(({ x, y, event }) => {
     if (!_3dHoveredItem) return;
 
-    const isAmenity = _3dHoveredItem?.type === "AMENITY";
+    const isAmenity = _3dHoveredItem.type === "AMENITY";
+    const view = beansWidget.workingInstance.mapView;
     const convertedIndex = get3dElementIndexById(
-      _3dHoveredItem?.unitId,
+      _3dHoveredItem.unitId,
       isAmenity
     );
 
@@ -482,42 +553,75 @@ function initializeMouseTrackerFor3DHoverExit() {
     const { geojson } =
       beansWidget.workingInstance.unitPolygonsToExclude[convertedIndex] || {};
 
-    const inside =
-      (isAmenity && !isDefined(geojson)) ||
-      (geojson &&
-        isMouseInsideGeoShape(
-          event,
-          geojson,
-          beansWidget.workingInstance.mapView
-        ));
+    // Normalise mouse coordinates
+    const clientX = event?.clientX ?? x;
+    const clientY = event?.clientY ?? y;
+
+    let inside = false;
+
+    if (geojson) {
+      // Use polygon hit-testing for units / amenities with geometry
+      inside = isMouseInsideGeoShape(
+        { clientX, clientY },
+        geojson,
+        view
+      );
+    } else if (isAmenity) {
+      // Amenities without geometry:
+      // consider "inside" only while pointer is over the map container.
+      const rect = view.container.getBoundingClientRect();
+      inside =
+        clientX >= rect.left &&
+        clientX <= rect.right &&
+        clientY >= rect.top &&
+        clientY <= rect.bottom;
+    }
 
     if (inside) {
       if (!lastMouseInside) {
-        console.log("Mouse entered shape");
+        // console.log("Mouse entered shape");
         lastMouseInside = true;
       }
-    } else {
-      console.log("Mouse exited shape");
-      lastMouseInside = false;
-
-      if (isAmenity && _3dHoveredItem?.eventHandlers?.hideTooltip) {
-        _3dHoveredItem.eventHandlers.hideTooltip();
-      }
-
-      clear3DPopup();
+      return;
     }
+
+    // Mouse is no longer inside
+    // console.log("Mouse exited shape");
+    lastMouseInside = false;
+
+    if (isAmenity && _3dHoveredItem?.eventHandlers?.hideTooltip) {
+      _3dHoveredItem.eventHandlers.hideTooltip();
+    }
+
+    clear3DPopup();
   });
 }
 
+// Old version:
+// function clear3DPopup() {
+//   if (!_3dHoveredItem) return;
+
+//   if (_3dHoveredItem.type === "AMENITY") {
+//     _3dHoveredItem.eventHandlers?.hideTooltip?.();
+//   } else {
+//     $("#marker-popover").addClass("hidden");
+//     $(`#unit_${_3dHoveredItem.unitId}`).css("border", "none");
+//   }
+
+//   _3dHoveredItem = null;
+// }
+
 function clear3DPopup() {
   if (!_3dHoveredItem) return;
+
   if (_3dHoveredItem.type === "AMENITY") {
-    _3dHoveredItem.eventHandlers.hideTooltip();
+    _3dHoveredItem.eventHandlers?.hideTooltip?.();
   } else {
     $("#marker-popover").addClass("hidden");
     $(`#unit_${_3dHoveredItem.unitId}`).css("border", "none");
   }
-  // if ($beansMarkerPopover) $beansMarkerPopover.removeClass("hidden");
+
+  lastMouseInside = false;  // <== important reset
   _3dHoveredItem = null;
 }
 
@@ -529,10 +633,22 @@ function getMapRelativeCoords(event, view) {
   };
 }
 
+// Old version:
+// function _3dPositionTooltip(e, tooltip) {
+//   tooltip.style.position = "absolute";
+//   tooltip.style.left = `${e.x + 10}px`;
+//   tooltip.style.top = `${e.y + 20}px`;
+//   tooltip.style.visibility = "visible";
+// }
+
 function _3dPositionTooltip(e, tooltip) {
-  tooltip.style.position = "absolute";
-  tooltip.style.left = `${e.x + 10}px`;
-  tooltip.style.top = `${e.y + 20}px`;
+  // Normalise coords across different event types (Esri vs DOM)
+  const clientX = e.clientX ?? e.x;
+  const clientY = e.clientY ?? e.y;
+
+  tooltip.style.position = "fixed"; // viewport-based, not parent-based
+  tooltip.style.left = `${clientX + 10}px`;
+  tooltip.style.top = `${clientY + 20}px`;
   tooltip.style.visibility = "visible";
 }
 

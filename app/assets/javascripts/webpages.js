@@ -1724,7 +1724,7 @@ function unitMarketRent(unit) {
 
 function highlightFloorplanMarkersData(elementsArray, floorplanId = null) {
   elementsArray.forEach(el => {
-    if (!el) return;
+    if (!el || !el.dataset) return;
 
     // Store original fill once
     if (!el.dataset.originalFill) {
