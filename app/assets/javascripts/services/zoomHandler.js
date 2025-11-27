@@ -1,10 +1,19 @@
 var zoomablePans = definedAndHasValue(zoomablePans) ? zoomablePans : {};
 
+// function getZoomPanKey(element) {
+//   return `${element.tagName.toLowerCase()}-${element.id}`;
+// }
+
 function getZoomPanKey(element) {
+  if (!element) return null;
+  if (!element.tagName) return null;
+  if (!element.id) return null;
+
   return `${element.tagName.toLowerCase()}-${element.id}`;
 }
 
 function activateZoomPan(elem, centralizeElement = true, options = {}) {
+  if (!elem) return;
   const key = getZoomPanKey(elem);
 
   if (!zoomablePans) zoomablePans = {};
