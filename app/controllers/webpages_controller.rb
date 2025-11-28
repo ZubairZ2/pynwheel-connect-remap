@@ -26,8 +26,7 @@ class WebpagesController < ActionController::Base
                                             units: [:floorplan, :floorplate]
                                           }
                                         ).find(params[:community_id])
-
-
+                                        
     @floorplans = @community_info.floorplans
     @floorplans_map = @floorplans.index_by(&:provider_floorplan_id)
     @svg_enabled = @community_info.enable_svg_mode?
