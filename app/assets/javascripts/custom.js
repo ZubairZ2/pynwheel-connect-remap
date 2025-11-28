@@ -1429,7 +1429,6 @@ function setHrefAndFormUrl(element) {
 async function fetchSVGAndSetPlotCoordinates(type, assetIdForTracker = 1) {
   await fetchSVG("#svg_map.plot-image", {
     svgPosition: 1,
-    activateZoom: true,
     tracker: assetTracker,
     setSVGImageHeight: true,
     activateHoverEffect: true,

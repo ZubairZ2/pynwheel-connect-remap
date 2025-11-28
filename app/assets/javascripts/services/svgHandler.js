@@ -106,7 +106,6 @@ async function fetchSVG(
     floor: null,
     tracker: null,
     svgPosition: 0,
-    activateZoom: false,
     trackerAssetId: null,
     setSVGImageHeight: false,
     activateHoverEffect: false,
@@ -118,7 +117,7 @@ async function fetchSVG(
 
   if (!imageUrl?.endsWith(".svg")) return;
 
-  const { tracker, activateZoom, trackerAssetId, trackerVisibilityCheck } =
+  const { tracker, trackerAssetId, trackerVisibilityCheck } =
     options;
 
   const asset = {
@@ -159,76 +158,27 @@ async function fetchSVG(
     tracker.setAssetError(asset, error.message);
   }
 
-  if (activateZoom) activateZoomPan(container);
+  enableZoom();
 }
 
-function setSvgOrImageHeight($image) {
-  const image = $image[0];
-  if (!image) return;
+function setSvgOrImageHeight($svg) {
+  const svg = $svg[0];
+  if (!svg) return;
 
-  const isSVG = image.tagName.toLowerCase() === "svg";
-  const { width: imageOriginalWidth, height: imageOriginalHeight } = isSVG
-    ? image.viewBox.baseVal.width + image.viewBox.baseVal.height === 0
-      ? {
-          width: parseInt(image.parentElement.dataset.width || 0),
-          height: parseInt(image.parentElement.dataset.height || 0),
-        }
-      : image.viewBox.baseVal
-    : {
-        width: parseInt(image.dataset.width || 0),
-        height: parseInt(image.dataset.height || 0),
-      };
+  // IMPORTANT: do NOT scale relative to original dimensions
+  // We force SVG to fill its wrapper 100%
+  const wrapper = svg.parentElement;
 
-  const $webpageMainContainer = $("div.map-body.map-container-center-align");
-  const $mapContainer = $webpageMainContainer.find(".right-side");
-  const mapContainer = $mapContainer[0];
-  const mapContainerZoomable = $mapContainer.find("#zoomable")[0];
-  const $imageParent = $image.parent();
-  const $imageContainer = $("div#image-container");
-  const imageContainer = $imageContainer[0];
+  const w = wrapper.clientWidth;
+  const h = wrapper.clientHeight;
 
-  let comparableContainerDimensions = { width: 0, height: 0 };
+  svg.setAttribute("width", w);
+  svg.setAttribute("height", h);
 
-  if (mapContainer && mapContainerZoomable) {
-    const { width: mapContainerWidth, height: mapContainerHeight } =
-      mapContainerZoomable.getBoundingClientRect();
-
-    comparableContainerDimensions.width = mapContainerWidth;
-    comparableContainerDimensions.height = mapContainerHeight;
-  } else if (imageContainer) {
-    const { width: parallelContainerWidth, height: parallelContainerHeight } =
-      imageContainer.getBoundingClientRect();
-
-    comparableContainerDimensions.width = parallelContainerWidth;
-    comparableContainerDimensions.height = parallelContainerHeight;
-  } else {
-    return;
-  }
-
-  const { width, height } = comparableContainerDimensions;
-
-  const ratio = getStretchRatio(
-    width,
-    height,
-    imageOriginalWidth,
-    imageOriginalHeight
-  );
-  const ratiodWidth = imageOriginalWidth * ratio;
-  const ratiodHeight = imageOriginalHeight * ratio;
-
-  $imageParent.width(ratiodWidth);
-  $imageParent.height(ratiodHeight);
-
-  if (isSVG) {
-    image.setAttribute("width", ratiodWidth);
-    image.setAttribute("height", ratiodHeight);
-    image.setAttribute(
-      "viewBox",
-      `0 0 ${imageOriginalWidth} ${imageOriginalHeight}`
-    );
-  } else {
-    $image.width(ratiodWidth);
-    $image.height(ratiodHeight);
+  // Align coordinate system with original SVG
+  const vb = svg.viewBox.baseVal;
+  if (vb && vb.width > 0 && vb.height > 0) {
+    svg.setAttribute("viewBox", `0 0 ${vb.width} ${vb.height}`);
   }
 }
 

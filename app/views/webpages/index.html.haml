@@ -626,21 +626,6 @@
     
     setWebpageContainerSize();
 
-    if (!svgMode) {
-      if (hasFloorplate()) {
-        $(".floorplate-image").each(function () {
-          setSvgOrImageHeight($(this));
-          activateZoomPan(this.parentElement, false);
-        });
-      } else {
-        const $image = $("img.floorplate-image.sitemap-image.map-image-align")
-        if ($image.length) {
-          setSvgOrImageHeight($image);
-          activateZoomPan($image[0].parentElement, false);
-        }
-      }
-    }
-
     parsedSVGs = [];
     if(svgMode)
       fetchWebpageSVGAndSetCoordinates();

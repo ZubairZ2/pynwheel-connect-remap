@@ -1,14 +1,6 @@
 var zoomablePans = definedAndHasValue(zoomablePans) ? zoomablePans : {};
 
-// function getZoomPanKey(element) {
-//   return `${element.tagName.toLowerCase()}-${element.id}`;
-// }
-
 function getZoomPanKey(element) {
-  if (!element) return null;
-  if (!element.tagName) return null;
-  if (!element.id) return null;
-
   return `${element.tagName.toLowerCase()}-${element.id}`;
 }
 
@@ -19,60 +11,77 @@ function activateZoomPan(elem, centralizeElement = true, options = {}) {
   if (!zoomablePans) zoomablePans = {};
   if (zoomablePans[key]) return;
 
-  zoomablePans[key] = panzoom(elem, {
-    minZoom: 0.5,
-    maxZoom: mobileCheck() || $(window).width() <= 568 ? 10.0 : 5.0,
-    bounds: true,
-    boundsPadding: 0.3,
-    ...options,
-  });
+  zoomablePans[key] = {
+    instance: panzoom(elem, {
+      minZoom: 0.5,
+      maxZoom: mobileCheck() || $(window).width() <= 568 ? 10.0 : 5.0,
+      bounds: true,
+      boundsPadding: 0.3,
+      ...options,
+    }),
+    elem: elem
+  };
+
+  // ⭐ MUST BE ADDED — store initial transform after DOM settles
+  setTimeout(() => {
+    const inst = zoomablePans[key].instance.getTransform();
+    zoomablePans[key].initial = {
+      scale: inst.scale,
+      x: inst.x,
+      y: inst.y
+    };
+  }, 100);
 
   const touchEvents = ["touchstart", "touchmove", "touchend", "touchcancel"];
-  touchEvents.forEach((event) =>
-    elem.addEventListener(event, touchHandler, true)
+  touchEvents.forEach(evt =>
+    elem.addEventListener(evt, touchHandler, true)
   );
 
-  if (centralizeElement) moveZoomableImageToCenter(elem);
+  if (centralizeElement) zoomReset();
 }
 
-function moveZoomableImageToCenter(
-  elem,
-  resetScale = true,
-  resetPosition = false
-) {
+function moveZoomableImageToCenter(elem, resetScale = true, resetPosition = false) {
   if (!elem) return;
+
   const key = getZoomPanKey(elem);
+  const panObj = zoomablePans[key];
+  if (!panObj) return;
 
-  const panInstance = zoomablePans[key];
-  if (!panInstance) return;
+  const instance = panObj.instance;
 
-  const $elem = $(elem);
-  const $parentElem = $elem.parent();
-  const mapBoxWidth = $elem.width();
-  const mapBoxHeight = $elem.height();
-  const parentWidth = $parentElem.width();
-  const parentHeight = $parentElem.height();
+  // The REAL zoom target inside container
+  const inner = elem.querySelector('#viewArea') || elem.querySelector('svg');
+  if (!inner) return;
+
+  const $inner = $(inner);
+  const $parent = $(elem);
+
+  const realWidth = $inner.width();
+  const realHeight = $inner.height();
+  const parentWidth = $parent.width();
+  const parentHeight = $parent.height();
 
   let scaleFactor;
 
   if (resetScale) {
-    const scaleX = parentWidth / (mapBoxWidth || 1);
-    const scaleY = parentHeight / (mapBoxHeight || 1);
+    const scaleX = parentWidth / (realWidth || 1);
+    const scaleY = parentHeight / (realHeight || 1);
     scaleFactor = Math.min(scaleX, scaleY, 1);
-    panInstance.zoomAbs(0, 0, scaleFactor);
+    instance.zoomAbs(0, 0, scaleFactor);
   } else {
-    scaleFactor = panInstance.getTransform().scale;
+    scaleFactor = instance.getTransform().scale;
   }
 
   if (resetPosition) {
-    panInstance.moveTo(0, 0);
+    instance.moveTo(0, 0);
   } else {
-    const elemTransformedWidth = mapBoxWidth * scaleFactor;
-    const elemTransformedHeight = mapBoxHeight * scaleFactor;
-    const centerX = (parentWidth - elemTransformedWidth) / 2;
-    const centerY = (parentHeight - elemTransformedHeight) / 2;
+    const transformedWidth = realWidth * scaleFactor;
+    const transformedHeight = realHeight * scaleFactor;
 
-    panInstance.moveTo(centerX, centerY);
+    const centerX = (parentWidth - transformedWidth) / 2;
+    const centerY = (parentHeight - transformedHeight) / 2;
+
+    instance.moveTo(centerX, centerY);
   }
 }
 
@@ -95,4 +104,93 @@ function touchHandler(event) {
   });
 
   touch.target.dispatchEvent(simulatedEvent);
+}
+
+/************************************************************
+ UNIVERSAL ZOOM INITIALIZER
+ Works for:
+ - .plot-image (image-based maps)
+ - #svg_map.plot-image (SVG-based maps)
+ - #map.plot-image
+ - #zoom-group-wrapper (group SVG zoom)
+*************************************************************/
+
+function initAllZoomables() {
+  const $zoomTargets = $('.plot-image, #zoom-group-wrapper');
+
+  $zoomTargets.each(function () {
+    const container = this;
+    activateZoomPan(container);
+
+    const viewArea = container.querySelector('#viewArea');
+    if (viewArea && typeof assetTracker !== 'undefined') {
+      const asset = {
+        id: "zoomable-" + (container.id || Math.random()),
+        node: viewArea,
+        url: viewArea.src || '',
+        type: viewArea.tagName.toLowerCase(),
+        completed: true
+      };
+      assetTracker.addOrUpdateAsset(asset, true);
+    }
+  });
+}
+
+
+/************************************************************
+ GET ACTIVE ZOOM INSTANCE (used by zoom buttons)
+*************************************************************/
+function getCurrentZoomInstance() {
+  const candidates = [
+    document.getElementById("zoom-group-wrapper"),
+    document.querySelector(".plot-image"),
+    document.getElementById("map"),
+  ];
+
+  for (const elem of candidates) {
+    if (!elem) continue;
+    const key = getZoomPanKey(elem);
+    if (zoomablePans[key]) return zoomablePans[key];
+  }
+
+  return null;
+}
+
+
+/************************************************************
+ UNIFIED ZOOM BUTTONS
+*************************************************************/
+function bindGlobalZoomButtons() {
+  $(".zoom-in-webpage").on("click", function () {
+    const z = getCurrentZoomInstance();
+    z?.instance?.zoomInOut(187);
+  });
+
+  $(".zoom-out-webpage").on("click", function () {
+    const z = getCurrentZoomInstance();
+    z?.instance?.zoomInOut(189);
+  });
+}
+
+
+/************************************************************
+ UNIVERSAL ZOOM RESET
+*************************************************************/
+function zoomReset() {
+  const obj = getCurrentZoomInstance();
+  if (!obj || !obj.initial) return;
+
+  const inst = obj.instance;
+  const init = obj.initial;
+
+  inst.zoomAbs(0, 0, init.scale);
+  inst.moveTo(init.x, init.y);
+}
+
+/************************************************************
+ UNIVERSAL ZOOM ENABLER
+*************************************************************/
+function enableZoom() {
+  initAllZoomables();
+  bindGlobalZoomButtons()
 }

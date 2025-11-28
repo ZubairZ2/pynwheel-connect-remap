@@ -51,16 +51,7 @@
     assetTracker = new AssetLoadingTracker({ loaderSelector: ".assetLoader" });
     parsedSVGs = [];
 
-    const $imageZoomPan = $('#map.plot-image');
-    if ($imageZoomPan[0]) {
-      activateZoomPan($imageZoomPan[0]);
-      const image = $imageZoomPan.find('img#viewArea')[0]
-      if (image) {
-        const asset = { id: "plot-image-1", node: image, url: image.src, type: "img", completed: false };
-        assetTracker.addOrUpdateAsset(asset, true);
-      }
-    }
-
+    enableZoom();
     bindPlottingEvents();
     fetchSVGAndSetPlotCoordinates("amenity");
     draw_initial_hallways(hallways_coordinates)
