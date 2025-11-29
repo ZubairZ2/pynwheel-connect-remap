@@ -123,7 +123,13 @@ function initAllZoomables() {
     activateZoomPan(container);
 
     const viewArea = container.querySelector('#viewArea');
-    if (viewArea && typeof assetTracker !== 'undefined') {
+
+    if (
+      viewArea &&
+      typeof assetTracker !== 'undefined' &&
+      assetTracker &&
+      typeof assetTracker.addOrUpdateAsset === "function"
+    ) {
       const asset = {
         id: "zoomable-" + (container.id || Math.random()),
         node: viewArea,
