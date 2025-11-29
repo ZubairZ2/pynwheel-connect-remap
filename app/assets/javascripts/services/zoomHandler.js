@@ -161,14 +161,59 @@ function getCurrentZoomInstance() {
  UNIFIED ZOOM BUTTONS
 *************************************************************/
 function bindGlobalZoomButtons() {
-  $(".zoom-in-webpage").on("click", function () {
+
+  /***********************************************
+   * 1. GLOBAL ZOOM BUTTONS (webpage header)
+   ***********************************************/
+  $(".zoom-in-webpage").off("click").on("click", function () {
     const z = getCurrentZoomInstance();
     z?.instance?.zoomInOut(187);
   });
 
-  $(".zoom-out-webpage").on("click", function () {
+  $(".zoom-out-webpage").off("click").on("click", function () {
     const z = getCurrentZoomInstance();
     z?.instance?.zoomInOut(189);
+  });
+
+
+  /***********************************************
+   * 2. LOCAL ZOOM BUTTONS (inside .buttons div)
+   ***********************************************/
+  $(".zoom-in").off("click").on("click", function (e) {
+    const zoomContainer = $(e.currentTarget)
+      .closest('.buttons')
+      .siblings()
+      .find('.plot-image')[0];
+
+    if (!zoomContainer) return;
+
+    const key = getZoomPanKey(zoomContainer);
+    const inst = zoomablePans?.[key]?.instance;
+
+    inst?.zoomInOut(187);
+  });
+
+  $(".zoom-out").off("click").on("click", function (e) {
+    const zoomContainer = $(e.currentTarget)
+      .closest('.buttons')
+      .siblings()
+      .find('.plot-image')[0];
+
+    if (!zoomContainer) return;
+
+    const key = getZoomPanKey(zoomContainer);
+    const inst = zoomablePans?.[key]?.instance;
+
+    inst?.zoomInOut(189);
+  });
+
+
+  /***********************************************
+   * 3. RESET BUTTON (inside .buttons div)
+   ***********************************************/
+  $(".reset").off("click").on("click", function () {
+    $(".divLoading").removeClass("hidden");
+    window.location.reload();
   });
 }
 

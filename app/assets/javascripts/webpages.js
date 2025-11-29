@@ -4019,7 +4019,7 @@ function currentVisibleMapImageScale() {
     const zoomPanKey = getZoomPanKey(currentVisibleImage.parentElement);
     const zoomPanInstance = zoomablePans[zoomPanKey];
     if (zoomPanInstance) {
-      scale = zoomPanInstance.getTransform().scale;
+      scale = zoomPanInstance.instance.getTransform().scale;
     }
   }
 

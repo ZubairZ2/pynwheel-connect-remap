@@ -208,7 +208,7 @@ $(document).ready(function () {
             const zoomContainer = document.querySelector('div.plot-image');
             const key = getZoomPanKey(zoomContainer);
       
-            const transform = zoomablePans?.[key] ? zoomablePans[key].getTransform() : {};
+            const transform = zoomablePans?.[key] ? zoomablePans[key].instance.getTransform() : {};
             const scaleFactor = (1 / (transform.scale || 1));
       
             marker_color = $('#marker_color').html();
@@ -269,29 +269,6 @@ $(document).ready(function () {
             }
         }
     });
-
-    $(".reset").on('click', function (e) {
-        $(".divLoading").removeClass("hidden");
-        window.location.reload()
-    });
-
-    $(".zoom-in").on('click', function (e) {
-        const zoomContainer = $(e.currentTarget).closest('.buttons').siblings().find('.plot-image')[0];
-        const key = getZoomPanKey(zoomContainer);
-
-        if (zoomablePans?.[key])
-            zoomablePans[key].zoomInOut(187);
-    });
-
-
-    $(".zoom-out").on('click', function (e) {
-        const zoomContainer = $(e.currentTarget).closest('.buttons').siblings().find('.plot-image')[0];
-        const key = getZoomPanKey(zoomContainer);
-
-        if (zoomablePans?.[key])
-            zoomablePans[key].zoomInOut(189);
-    });
-
 });
 
 function getDeletionUrl (options = { forSvg: false }) {
