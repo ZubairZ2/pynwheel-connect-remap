@@ -622,7 +622,7 @@ function setSvgCoordinates(data, options) {
 function getNormalizedMouseCoordinates(e, svgElement) {
   const rect = svgElement.getBoundingClientRect();
   const scale =
-    zoomablePans[getZoomPanKey(svgElement.parentElement)].getTransform().scale;
+    zoomablePans[getZoomPanKey(svgElement.parentElement)].instance.getTransform().scale;
 
   const mouseX = (e.clientX - rect.left) / scale;
   const mouseY = (e.clientY - rect.top) / scale;
@@ -783,7 +783,7 @@ function getSvgClickedElementWithCenterPoint(svgParentSelector, e) {
   if (!svg) return {};
 
   const key = getZoomPanKey(svg.parentElement);
-  const transform = zoomablePans?.[key] ? zoomablePans[key].getTransform() : {};
+  const transform = zoomablePans?.[key] ? zoomablePans[key].instance.getTransform() : {};
   const scaleFactor = 1 / (transform.scale || 1);
 
   const svgPoint = getNormalizedMouseCoordinates(e, svg);
