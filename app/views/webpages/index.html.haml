@@ -244,7 +244,8 @@
 
                 .image-map#zoomable.zoomable-map-container{style: "text-align: center; display: flex;"}
                   .hidden-units
-                  = render partial: @svg_enabled ? 'webpages/svg_map' : 'webpages/image_map' #, locals: svg_and_image_locals
+                  %div#zoom-group-wrapper
+                    = render partial: @svg_enabled ? 'webpages/svg_map' : 'webpages/image_map' #, locals: svg_and_image_locals
 
                   - if @show_ops_map
                     = render partial: 'webpages/marker_colors_legend', locals: { legend_items: }

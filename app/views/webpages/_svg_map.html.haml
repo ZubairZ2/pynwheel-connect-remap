@@ -1,31 +1,30 @@
 - style = "position: relative; flex: 1;"
-%div#zoom-group-wrapper
-  - if @community_info.is_beans_svg?
-    - background_svg_url = @community_info&.validated_background_svg_image_url
-    - if background_svg_url.present?
-      %div#background-map-layer
-        %object{  data: background_svg_url,
-                  type: "image/svg+xml",
-                  class: "background-map-svg" }
+- if @community_info.is_beans_svg?
+  - background_svg_url = @community_info&.validated_background_svg_image_url
+  - if background_svg_url.present?
+    %div#background-map-layer
+      %object{  data: background_svg_url,
+                type: "image/svg+xml",
+                class: "background-map-svg" }
 
-  - if @community_info.has_floorplates?
-    - @floors.each do |floor|
-      - floorplate = @floorplate_by_floor[floor]
-      - svg_data = svg_image_url_and_dimensions(floorplate)
-      - svg_exists = svg_data && svg_data.values_at(:width, :height).sum.positive?
-      - if svg_exists
-        %div.floorplate-wrapper{ data: svg_data, id: "floorplate_#{floor}", class: floor == @min_floor ? '' : 'hidden', style: style }
-      - else
-        %div.floorplate-wrapper{ id: "floorplate_#{floor}", style: 'margin: auto; flex: 1;', class: floor == @min_floor ? '' : 'hidden' }
-          = image_tag "/assets/default.jpeg", class: "map-image-align sitemap-image floorplate-image", id: "f_#{floor}"
-  - else
-    - svg_data = svg_image_url_and_dimensions(@community_info&.sitemap)
+- if @community_info.has_floorplates?
+  - @floors.each do |floor|
+    - floorplate = @floorplate_by_floor[floor]
+    - svg_data = svg_image_url_and_dimensions(floorplate)
     - svg_exists = svg_data && svg_data.values_at(:width, :height).sum.positive?
-
     - if svg_exists
-      %div#property-map.floorplate-wrapper{ data: svg_data, style: style }
+      %div.floorplate-wrapper{ data: svg_data, id: "floorplate_#{floor}", class: floor == @min_floor ? '' : 'hidden', style: style }
     - else
-      %div.floorplate-wrapper{ id: "property-map", style: "margin: auto; flex: 1;" }
-        = image_tag "/assets/default.jpeg", class: "floorplate-image sitemap-image map-image-align", id: "property-map-image"
+      %div.floorplate-wrapper{ id: "floorplate_#{floor}", style: 'margin: auto; flex: 1;', class: floor == @min_floor ? '' : 'hidden' }
+        = image_tag "/assets/default.jpeg", class: "map-image-align sitemap-image floorplate-image", id: "f_#{floor}"
+- else
+  - svg_data = svg_image_url_and_dimensions(@community_info&.sitemap)
+  - svg_exists = svg_data && svg_data.values_at(:width, :height).sum.positive?
 
-  -# = render partial: 'webpages/units_and_amenity_markers', locals: locals_for_markers
+  - if svg_exists
+    %div#property-map.floorplate-wrapper{ data: svg_data, style: style }
+  - else
+    %div.floorplate-wrapper{ id: "property-map", style: "margin: auto; flex: 1;" }
+      = image_tag "/assets/default.jpeg", class: "floorplate-image sitemap-image map-image-align", id: "property-map-image"
+
+-# = render partial: 'webpages/units_and_amenity_markers', locals: locals_for_markers
