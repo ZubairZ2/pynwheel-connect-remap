@@ -3,9 +3,7 @@
   - background_svg_url = @community_info&.validated_background_svg_image_url
   - if background_svg_url.present?
     %div#background-map-layer
-      %object{  data: background_svg_url,
-                type: "image/svg+xml",
-                class: "background-map-svg" }
+      = inline_svg_from_url(background_svg_url, class_name: "background-map-svg")
 
 - if @community_info.has_floorplates?
   - @floors.each do |floor|
