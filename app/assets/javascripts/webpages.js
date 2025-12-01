@@ -88,8 +88,8 @@ $(document).ready(function () {
 
   if ($(".is-webpage")[0]) {
     isWebpage = true;
-    bindWebpageEvents();
     activateWebpageZoom();
+    bindWebpageEvents();
     activateModalImageZoom();
     activateResponsiveImageModalZoom();
   }
@@ -109,7 +109,7 @@ $(document).ready(function () {
       )
     )
       $(".webPageLoader").addClass("hidden");
-    }
+  }
 });
 
 function bindWebpageEvents() {
@@ -263,7 +263,7 @@ function bindWebpageEvents() {
 
     if (floorIsChanged) {
       debouncedShowMarkers();
-      if (svgMode) moveZoomableImageToCenter($currentImageBox[0], false);
+      if (svgMode) zoomReset();
       if (!_3dMapMode()) $currentImageBox.parent().removeClass("hidden");
       return;
     }
@@ -380,43 +380,10 @@ function showUnitModal(event) {
 }
 
 function activateWebpageZoom() {
+  enableZoom();
+
   $(".reset-webpage").on("click", function (e) {
     $(".webPageLoader").removeClass("hidden");
-    // window.location.reload(true);
-  });
-
-  $(".zoom-in-webpage").on("click", function (e) {
-    let zoomElement = null;
-    const $images = $(".floorplate-image");
-    const images = Array.from($images);
-
-    for (const image of images) {
-      if (isElementVisibleOnScreen(image)) {
-        const key = getZoomPanKey(image.parentElement);
-        zoomElement = zoomablePans[key];
-        break;
-      }
-    }
-    zoomElement?.zoomInOut(187);
-  });
-
-  $(".zoom-out-webpage").on("click", function (e) {
-    let zoomElement = null;
-    const $images = $(".floorplate-image");
-    const images = Array.from($images);
-
-    for (const image of images) {
-      if (isElementVisibleOnScreen(image)) {
-        const key = getZoomPanKey(image.parentElement);
-        zoomElement = zoomablePans[key];
-        break;
-      }
-    }
-    zoomElement?.zoomInOut(189);
-  });
-
-  $("#zoomable-modal-image a").on("touchstart", function (e) {
-    e.stopImmediatePropagation();
   });
 }
 
@@ -2403,9 +2370,7 @@ function change_units_view(evt, type) {
     $unitListHeader.find("select").css({
       maxWidth: `${unitListContainerWidth - 30 /* padding */}px`,
     });
-  } else if (!_3dMapMode()) {
-    moveZoomableImageToCenter(currentMapImage());
-  }
+  } else if (!_3dMapMode()) zoomReset();
   
   adjustImageMapMarkersPosition();
 }
@@ -3729,7 +3694,6 @@ async function fetchWebpageSVGAndSetCoordinates() {
           floor,
           loader: true,
           svgPosition: 0,
-          activateZoom: true,
           tracker: assetTracker,
           setSVGImageHeight: true,
           trackerAssetId: `svg-floorplate-${floor}`,
@@ -3742,7 +3706,6 @@ async function fetchWebpageSVGAndSetCoordinates() {
     await fetchSVG("#property-map", {
       loader: true,
       svgPosition: 1,
-      activateZoom: true,
       tracker: assetTracker,
       setSVGImageHeight: true,
       trackerVisibilityCheck: true,
@@ -4056,7 +4019,7 @@ function currentVisibleMapImageScale() {
     const zoomPanKey = getZoomPanKey(currentVisibleImage.parentElement);
     const zoomPanInstance = zoomablePans[zoomPanKey];
     if (zoomPanInstance) {
-      scale = zoomPanInstance.getTransform().scale;
+      scale = zoomPanInstance.instance.getTransform().scale;
     }
   }
 

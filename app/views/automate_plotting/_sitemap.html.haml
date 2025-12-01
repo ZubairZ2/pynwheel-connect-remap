@@ -130,12 +130,12 @@
       };
     }
 
-    var transform = zoomablePans?.[key] ? zoomablePans[key].getTransform() : {};
+    var transform = zoomablePans?.[key] ? zoomablePans[key].instance.getTransform() : {};
     var scaleFactor = (1 / (transform.scale || 1));
     var previous_scale = 0;
     while ($('#map').width() / scaleFactor > $('.map-block').width() || $('#map').height() / scaleFactor > $('.map-block').height()) {
         zoomablePans[key].zoomInOut(189);
-        transform = zoomablePans[key] ? zoomablePans[key].getTransform() : {};
+        transform = zoomablePans[key] ? zoomablePans[key].instance.getTransform() : {};
         scaleFactor = (1 / (transform.scale || 1));
         if (scaleFactor === previous_scale) {
             break;

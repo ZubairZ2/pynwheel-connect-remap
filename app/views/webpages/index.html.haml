@@ -88,9 +88,9 @@
           %header.app-header
             .header-inner
               .app-logo-mobile
-                - if @community.map_logo
+                - if @community.community_logo
                   %a.logo{:href => @community.community_website}
-                    %img{:alt => "", :class => "webpage_logo", :src => map_logo_url(@community, false), :title => ""}
+                    %img{:alt => "", :class => "webpage_logo", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel-connect-logo.png'}", :title => ""}
               
               .selection-fields
                 - if @have_multi_property_ids
@@ -190,9 +190,9 @@
                       %i.fa.fa-refresh
               
               .app-logo
-                - if @community.map_logo
+                - if @community.community_logo
                   %a.logo{:href => @community.community_website}
-                    %img{:alt => "", :class => "webpage_logo", :src => map_logo_url(@community, false), :title => ""}
+                    %img{:alt => "", :class => "webpage_logo", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel-connect-logo.png'}", :title => ""}
           
           - if @show_floors_panel
             .c-sidebar#sidebar
@@ -244,7 +244,8 @@
 
                 .image-map#zoomable.zoomable-map-container{style: "text-align: center; display: flex;"}
                   .hidden-units
-                  = render partial: @svg_enabled ? 'webpages/svg_map' : 'webpages/image_map' #, locals: svg_and_image_locals
+                  %div#zoom-group-wrapper
+                    = render partial: @svg_enabled ? 'webpages/svg_map' : 'webpages/image_map' #, locals: svg_and_image_locals
 
                   - if @show_ops_map
                     = render partial: 'webpages/marker_colors_legend', locals: { legend_items: }
@@ -267,11 +268,10 @@
 
                   - if _3d_enabled
                     .zooming-content.zoomable-map-container
-                    
-                      %a.zooming-action.zoom-controls.map-toggle-button.3d-map-option{:href => "#", "data-current-map-type"=>"3d-current-map"}
-                        3D view
-                      %a.zooming-action.zoom-controls.map-toggle-button.2d-map-option.hidden{:href => "#", "data-current-map-type"=>"2d-current-map"}
-                        2D view
+                      %a.refresh-action.zooming-action.zoom-controls.map-options.3d-map-option{:href => "#", "data-current-map-type"=>"3d-current-map"}
+                        %img{:src => "/assets/3D_modeling.svg"}/
+                      %a.refresh-action.zooming-action.zoom-controls.map-options.2d-map-option.hidden{:href => "#", "data-current-map-type"=>"2d-current-map"}
+                        %img{:src => "/assets/2D_modeling.svg"}/
 
                 %footer.c-footer#footer.desktop-content
                   .inner-footer
@@ -297,6 +297,7 @@
                         = link_to "#", class: "btn btn-success show-update-popup", style: "margin: 10px;", data: { url: "/communities/#{@community.id}/update_community_data" } do
                           %i.fa.fa-refresh
                           Refresh Data
+
                           
                       %a.plus-action.zooming-action.zoom-in-webpage.zoom-controls{:href => "#"}
                         %img{:src => "/assets/plus.png"}/
@@ -304,10 +305,10 @@
                         %img{:src => "/assets/minus.png"}/
                      
                       - if _3d_enabled
-                        %a.zooming-action.zoom-controls.map-toggle-button.3d-map-option{:href => "#", "data-current-map-type"=>"3d-current-map"}
-                          3D view
-                        %a.zooming-action.zoom-controls.map-toggle-button.2d-map-option.hidden{:href => "#", "data-current-map-type"=>"2d-current-map"}
-                          2D view
+                        %a.refresh-action.zooming-action.zoom-controls.map-options.3d-map-option{:href => "#", "data-current-map-type"=>"3d-current-map"}
+                          %img{:src => "/assets/3D_modeling.svg"}/
+                        %a.refresh-action.zooming-action.zoom-controls.map-options.2d-map-option.hidden{:href => "#", "data-current-map-type"=>"2d-current-map"}
+                          %img{:src => "/assets/2D_modeling.svg"}/
 
               .right-rail.tabcontent.list_view
 
@@ -419,7 +420,7 @@
   var current_width = $(window).width();
   var _beansApiKey = "#{ENV['BEANS_API_KEY']}"
   
-  var mapLogo = "#{@community.map_logo.present? ? true : false}"
+  var community_logo = "#{@community.logo.present? ? true : false}"
 
   var left_margin = #{raw left_margin}
   var top_margin = #{raw top_margin}
@@ -612,7 +613,7 @@
       $("#pricing-option").addClass('hidden')
     }); 
 
-    if(mapLogo == "false" && current_width < 567){
+    if(community_logo == "false" && current_width < 567){
       $(".mobile-trigger").addClass("pt");
     }
 
@@ -625,21 +626,6 @@
     }
     
     setWebpageContainerSize();
-
-    if (!svgMode) {
-      if (hasFloorplate()) {
-        $(".floorplate-image").each(function () {
-          setSvgOrImageHeight($(this));
-          activateZoomPan(this.parentElement, false);
-        });
-      } else {
-        const $image = $("img.floorplate-image.sitemap-image.map-image-align")
-        if ($image.length) {
-          setSvgOrImageHeight($image);
-          activateZoomPan($image[0].parentElement, false);
-        }
-      }
-    }
 
     parsedSVGs = [];
     if(svgMode)
