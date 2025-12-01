@@ -82,6 +82,7 @@ gem 'resque-scheduler'
 gem 'resque-heroku-signals'
 gem 'platform-api'
 gem 'lograge', '~> 0.11'
+gem 'inline_svg'
 
 group :production, :development do
   gem 'rack-cache', require: 'rack/cache'

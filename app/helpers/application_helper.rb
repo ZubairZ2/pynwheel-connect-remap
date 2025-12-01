@@ -762,4 +762,22 @@ module ApplicationHelper
     Rails.env.development? ? resource.svg_image.path : resource.validated_svg_image_url
   end
 
+  def inline_svg_from_url(url, class_name: nil)
+    return "" if url.blank?
+
+    url = "#{request.base_url}#{url}" if url.start_with?("/")
+
+    svg_data = URI.open(url, "r:UTF-8", &:read)
+    svg_data.force_encoding("UTF-8")
+
+    if class_name.present?
+      svg_data.sub!("<svg", "<svg class=\"#{class_name}\"")
+    end
+
+    svg_data.html_safe
+  rescue => e
+    Rails.logger.error "SVG LOAD ERROR: #{e.message}"
+    "<!-- SVG load error: #{url} -->".html_safe
+  end
+
 end
