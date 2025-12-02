@@ -1960,9 +1960,9 @@ ul.images-tabs li a span {
     height: 168px !important;
 }
 
-.plot-image {
+/* .plot-image {
     display: inline-block;
-}
+} */
 
 .map-block {
     width: 100%;
@@ -2308,8 +2308,6 @@ ul.home-tabs li:hover a {
 
 .plot-image-sitemap {
     transform: matrix(1, 0, 0, 1, 0, 0) !important;
-}
-.image-map img {
 }
 
 .building-plan {
