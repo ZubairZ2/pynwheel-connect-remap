@@ -38,6 +38,7 @@ var amenity_marker_color = definedAndHasValue(amenity_marker_color)
 
 var lastMouseInside = false;
 var isMouseTrackerInitialized = false;
+var lastAmenityHoverPoint = null;
 
 function initializeBeans3DMap() {
   if (beansWidget) return;
@@ -69,6 +70,29 @@ function initializeBeans3DMap() {
           }
         },
         onHover: (data, event, isAmenity) => {
+          const view = beansWidget?.workingInstance?.mapView;
+          if (!view) return;
+
+          /* -------------------------------------------------
+              1) EXTRACT RELIABLE MOUSE COORDINATES
+              ------------------------------------------------- */
+          let clientX = event?.clientX;
+          let clientY = event?.clientY;
+
+          // Beans3D sometimes sends hover events WITHOUT DOM coords.
+          if (clientX == null || clientY == null) {
+            // fallback to last known coords stored by mouseTracker
+            if (window.mouseTracker?.lastEvent) {
+              clientX = window.mouseTracker.lastEvent.clientX;
+              clientY = window.mouseTracker.lastEvent.clientY;
+            } else {
+              return; // no coords → cannot detect hit → skip hover
+            }
+          }
+
+          /* -------------------------------------------------
+              2) AMENITY HOVER HANDLING (NO GEOJSON)
+              ------------------------------------------------- */
           if (isAmenity) {
             const amenity = _3dConvertedAmenitiesArr.find(
               ({ options: { onClickData } = {} } = {}) =>
@@ -79,18 +103,48 @@ function initializeBeans3DMap() {
             const { options: { onClickData } = {} } = amenity || {};
             if (!onClickData) return;
 
+            // Already hovering same amenity → ignore
             if (_3dHoveredItem?.unitId === onClickData.unitId) return;
 
-            _3dHoveredItem = onClickData;
-            const { eventHandlers: { showTooltip } = {} } = onClickData;
+            // Save last hovered coordinate to detect "exit" later
+            lastAmenityHoverPoint = { x: clientX, y: clientY };
 
+            _3dHoveredItem = onClickData;
+            lastMouseInside = true;
+
+            const { eventHandlers: { showTooltip } = {} } = onClickData;
             if (showTooltip) showTooltip(event);
+
             return;
           }
 
+          /* -------------------------------------------------
+              3) UNIT HOVER HANDLING (WITH GEOJSON)
+              ------------------------------------------------- */
+          const idx = get3dElementIndexById(data.unitId, false);
+          if (idx < 0) return;
+
+          const { geojson } =
+            beansWidget.workingInstance.unitPolygonsToExclude[idx] || {};
+
+          if (!geojson) return;
+
+          // Hit-test using polygon screen geometry
+          const inside = isMouseInsideGeoShape(
+            { clientX, clientY },
+            geojson,
+            view
+          );
+
+          if (!inside) return; // ignore false hover from 3D engine
+
+          // Already hovering same unit
           if (_3dHoveredItem?.unitId === data.unitId) return;
+
+          _3dHoveredItem = data;
+          lastMouseInside = true;
+
           markerHoverEffect(event, data);
-          
         },
       }
     );
@@ -112,9 +166,7 @@ function initializeBeans3DMap() {
       initializeMouseTrackerFor3DHoverExit();
       const container = inst.mapView?.container;
       if (container) {
-        container.addEventListener("mouseleave", () => {
-          clear3DPopup();
-        });
+        container.addEventListener("mouseleave", () => clear3DPopup());
       }
     }
   }, 300);
@@ -487,46 +539,69 @@ function initializeMouseTrackerFor3DHoverExit() {
   }
 
   isMouseTrackerInitialized = true;
+    // ⭐ Capture last known DOM mouse event for reliable coordinates
+  mouseTracker.onChange((ev) => {
+    if (ev?.event) {
+      window.mouseTracker = window.mouseTracker || {};
+      window.mouseTracker.lastEvent = ev.event; // store for onHover fallback
+    }
+  });
 
   mouseTracker.onChange(({ x, y, event }) => {
     if (!_3dHoveredItem) return;
 
     const isAmenity = _3dHoveredItem.type === "AMENITY";
     const view = beansWidget.workingInstance.mapView;
-    const convertedIndex = get3dElementIndexById(
+
+    const clientX = event?.clientX ?? x;
+    const clientY = event?.clientY ?? y;
+
+    // Get index for unit geometry
+    let convertedIndex = get3dElementIndexById(
       _3dHoveredItem.unitId,
       isAmenity
     );
 
-    if (convertedIndex < 0) return;
+    // If map was redrawn / filtered → element disappeared → forced exit
+    if (convertedIndex < 0) {
+      console.warn("Hover element no longer exists → force exit");
+      clear3DPopup();
+      return;
+    }
 
     const { geojson } =
       beansWidget.workingInstance.unitPolygonsToExclude[convertedIndex] || {};
 
-    // Normalise mouse coordinates
-    const clientX = event?.clientX ?? x;
-    const clientY = event?.clientY ?? y;
-
     let inside = false;
 
-    if (geojson) {
-      // Use polygon hit-testing for units / amenities with geometry
+    /* ================
+       UNIT EXIT LOGIC
+       ================ */
+    if (geojson && !isAmenity) {
       inside = isMouseInsideGeoShape(
         { clientX, clientY },
         geojson,
         view
       );
-    } else if (isAmenity) {
-      // Amenities without geometry:
-      // consider "inside" only while pointer is over the map container.
-      const rect = view.container.getBoundingClientRect();
-      inside =
-        clientX >= rect.left &&
-        clientX <= rect.right &&
-        clientY >= rect.top &&
-        clientY <= rect.bottom;
     }
 
+    /* ==================
+       AMENITY EXIT LOGIC
+       (based on distance)
+       ================== */
+    if (isAmenity) {
+      if (lastAmenityHoverPoint) {
+        const dx = clientX - lastAmenityHoverPoint.x;
+        const dy = clientY - lastAmenityHoverPoint.y;
+        const distance = Math.hypot(dx, dy);
+
+        inside = distance <= 40; // px radius (tweakable)
+      } else {
+        inside = false;
+      }
+    }
+
+    /* ENTRANCE */
     if (inside) {
       if (!lastMouseInside) {
         console.log("Mouse entered shape");
@@ -535,14 +610,12 @@ function initializeMouseTrackerFor3DHoverExit() {
       return;
     }
 
+    /* EXIT */
     if (lastMouseInside) {
+      console.log("Mouse exited shape");
       lastMouseInside = false;
 
-      if (isAmenity && _3dHoveredItem?.eventHandlers?.hideTooltip) {
-        _3dHoveredItem.eventHandlers.hideTooltip();
-      }
-
-      console.log("Mouse exited shape");
+      _3dHoveredItem?.eventHandlers?.hideTooltip?.();
       clear3DPopup();
     }
   });
@@ -551,15 +624,13 @@ function initializeMouseTrackerFor3DHoverExit() {
 function clear3DPopup() {
   if (!_3dHoveredItem) return;
 
-  if (_3dHoveredItem.type === "AMENITY") {
-    _3dHoveredItem.eventHandlers?.hideTooltip?.();
-  } else {
-    $("#marker-popover").addClass("hidden");
-    $(`#unit_${_3dHoveredItem.unitId}`).css("border", "none");
-  }
+  _3dHoveredItem.eventHandlers?.hideTooltip?.();
+  $("#marker-popover").addClass("hidden");
+  $(`#unit_${_3dHoveredItem.unitId}`).css("border", "none");
 
-  lastMouseInside = false;  // <== important reset
+  lastMouseInside = false;
   _3dHoveredItem = null;
+  lastAmenityHoverPoint = null; // ⭐ important
 }
 
 function getMapRelativeCoords(event, view) {
