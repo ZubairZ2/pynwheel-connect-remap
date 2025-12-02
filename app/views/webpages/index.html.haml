@@ -268,10 +268,10 @@
 
                   - if _3d_enabled
                     .zooming-content.zoomable-map-container
-                      %a.refresh-action.zooming-action.zoom-controls.map-options.3d-map-option{:href => "#", "data-current-map-type"=>"3d-current-map"}
-                        %img{:src => "/assets/3D_modeling.svg"}/
-                      %a.refresh-action.zooming-action.zoom-controls.map-options.2d-map-option.hidden{:href => "#", "data-current-map-type"=>"2d-current-map"}
-                        %img{:src => "/assets/2D_modeling.svg"}/
+                      %a.zooming-action.zoom-controls.map-toggle-button.3d-map-option{:href => "#", "data-current-map-type"=>"3d-current-map"}
+                        3D view
+                      %a.zooming-action.zoom-controls.map-toggle-button.2d-map-option.hidden{:href => "#", "data-current-map-type"=>"2d-current-map"}
+                        2D view
 
                 %footer.c-footer#footer.desktop-content
                   .inner-footer
@@ -305,10 +305,10 @@
                         %img{:src => "/assets/minus.png"}/
                      
                       - if _3d_enabled
-                        %a.refresh-action.zooming-action.zoom-controls.map-options.3d-map-option{:href => "#", "data-current-map-type"=>"3d-current-map"}
-                          %img{:src => "/assets/3D_modeling.svg"}/
-                        %a.refresh-action.zooming-action.zoom-controls.map-options.2d-map-option.hidden{:href => "#", "data-current-map-type"=>"2d-current-map"}
-                          %img{:src => "/assets/2D_modeling.svg"}/
+                        %a.zooming-action.zoom-controls.map-toggle-button.3d-map-option{:href => "#", "data-current-map-type"=>"3d-current-map"}
+                          3D view
+                        %a.zooming-action.zoom-controls.map-toggle-button.2d-map-option.hidden{:href => "#", "data-current-map-type"=>"2d-current-map"}
+                          2D view
 
               .right-rail.tabcontent.list_view
 
