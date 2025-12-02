@@ -2125,6 +2125,7 @@ function setUnitModalButtons(e) {
 
   let clickedUnit = null;
   let filteredUnits = [];
+
   const relatedTarget = e.relatedTarget;
   const $relatedTarget = $(relatedTarget);
   const relatedTargetSelector = _3dMapMode()
@@ -2161,8 +2162,8 @@ function setUnitModalButtons(e) {
     
     if (svgMode) {
       filteredUnits = floorbasedUnits.filter(
-        ({ floor, pointer_data: { selector } = {} }) =>
-          selector === clickedUnit.pointer_data.selector && floor === clickedUnit.floor && validFloor(floor)
+        ({ floor, pointer_data: { selector, x_plot, y_plot } = {} }) =>
+          selector === clickedUnit.pointer_data.selector && x_plot === clickedUnit.pointer_data.x_plot && y_plot === clickedUnit.pointer_data.y_plot && floor === clickedUnit.floor && validFloor(floor)
       );
     } else {
       const [unitXPlot, unitYPlot] = [clickedUnit.x_plot, clickedUnit.y_plot];
