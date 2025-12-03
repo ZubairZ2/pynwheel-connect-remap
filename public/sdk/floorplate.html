@@ -17,7 +17,23 @@
       propertyId: "15",
       // floor: 1, // Optional
       // mapId: 21, // Optional
-      defaultHighlightColor: "#F9D648",  // Optional
+      // defaultHighlightColor: "#F9D648",  // Optional
+      styles: {
+        unitColors: {
+          available: "#61D46B",
+          leased: "#d0d0d0",
+          model: "#FF9AD5",
+          notice: "#B57BE3",
+          missing: "#EECFA6",
+          selected: "#F9D648",
+          hover: "#FFF2AA"
+        },
+        // unitLabels: {
+        //   fontFamily: "Arial, sans-serif",
+        //   fontSize: "10px",
+        //   fontColor: "#ffffff"
+        // }
+      },
       onUnitHover: (unit) => {
         console.log("Hovered unit:", unit);
       },

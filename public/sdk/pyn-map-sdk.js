@@ -22,6 +22,22 @@
     svgCache: {},                  // { [mapId]: SVGElement }
     _lastHoverPid: null,           // last hovered pointer id (for debouncing)
 
+    defaultStyles: {
+      unitColors: {
+        available: "#F9D648",
+        leased: "#cccccc",
+        model: "#F57396",
+        notice: "#040304ff",
+        missing: "#eecea5",
+        hover: "#f94865ff"
+      },
+      unitLabels: {
+        fontFamily: "Arial",
+        fontSize: "11px",
+        fontColor: "#000"
+      }
+    },
+
     // ----------------------------------------------------
     // INIT
     // ----------------------------------------------------
@@ -29,10 +45,30 @@
       if (this._initialized) return;
       this._initialized = true;
 
-      this.config = cfg;
-      this.config.defaultHighlightColor = cfg.defaultHighlightColor || "#F9D648";
-      this.config.floor = cfg.floor ? String(cfg.floor) : null;
-      this.activeMapId = cfg.mapId ? String(cfg.mapId) : null;
+      // 1) Base config first
+      this.config = { ...cfg }; // shallow clone so we don't mutate caller's object
+
+      // 2) Merge styles safely (optional)
+      const baseStyles = this.defaultStyles;
+      const cfgStyles = cfg.styles || {};
+
+      this.config.styles = {
+        ...baseStyles,
+        ...cfgStyles,
+        unitColors: {
+          ...baseStyles.unitColors,
+          ...(cfgStyles.unitColors || {})
+        },
+        unitLabels: {
+          ...baseStyles.unitLabels,
+          ...(cfgStyles.unitLabels || {})
+        }
+      };
+
+      // 3) Rest of your existing init logic
+      // this.config.defaultHighlightColor = cfg.defaultHighlightColor || "#F9D648";
+      this.config.floor = cfg.floor != null ? String(cfg.floor) : null;
+      this.activeMapId = cfg.mapId != null ? String(cfg.mapId) : null;
 
       // Callback hooks
       this.config.onUnitHover = typeof cfg.onUnitHover === "function" ? cfg.onUnitHover : null;
@@ -221,6 +257,9 @@
         clone.setAttribute("data-map-id", mapId);
         clone.style.display = mapId === this.activeMapId ? "block" : "none";
 
+        // Apply global text styles (once per SVG)
+        this._applyGlobalLabelStyles(clone, this.config.styles.unitLabels);
+
         // AUTO SCALE SVG: fit inside whatever container partner gives
         clone.removeAttribute("width");
         clone.removeAttribute("height");
@@ -363,20 +402,21 @@
 
       this._clearUnitStyles();
 
-      const color = this.config.defaultHighlightColor;
+      const styles = this.config?.styles || this.defaultStyles;
       const units = this.unitsByMap[this.activeMapId] || [];
 
-      units.forEach(u => {
-        const pid = u.pointerData?.id;
+      units.forEach(unit => {
+        const pid = unit.pointerData?.id;
         if (!pid) return;
 
-        const el = activeSvg.querySelector(`#${CSS.escape(String(pid))}`);
+        const el = activeSvg.querySelector(`#${CSS.escape(pid)}`);
         if (!el) return;
 
-        // visual fill on the actual polygon/shape
-        el.style.fill = color;
+        const status = this._unitStatus(unit);
+        el.style.fill = styles.unitColors[status] || styles.unitColors.available;
 
-        // logical highlight on the root <g> (for events)
+        // this._applyLabelTextStyles(el, styles.unitLabels);
+
         const root = el.closest("g") || el;
         root.classList.add("pyn-highlight");
       });
@@ -388,11 +428,10 @@
 
       this._clearUnitStyles();
 
+      const styles = this.config.styles;
       const units = (this.unitsByMap[this.activeMapId] || []).filter(
         u => String(u.floor) === String(floorNumber)
       );
-
-      const color = this.config.defaultHighlightColor;
 
       units.forEach(u => {
         const pid = u.pointerData?.id;
@@ -401,7 +440,8 @@
         const el = activeSvg.querySelector(`#${CSS.escape(String(pid))}`);
         if (!el) return;
 
-        el.style.fill = color;
+        const status = this._unitStatus(u);
+        el.style.fill = styles.unitColors[status];
 
         const root = el.closest("g") || el;
         root.classList.add("pyn-highlight");
@@ -426,10 +466,12 @@
 
       this._clearUnitStyles();
 
+      const styles = this.config.styles;
+
       ids.forEach(id => {
         const unit = units.find(u =>
           String(u.unitId) === id ||
-          String(u.pointerData?.id) === id   // ⭐ allow pointer id too
+          String(u.pointerData?.id) === id
         );
 
         if (!unit?.pointerData?.id) return;
@@ -438,15 +480,13 @@
         const el = activeSvg.querySelector(`#${CSS.escape(pid)}`);
         if (!el) return;
 
-        // visual fill on the shape
-        el.style.fill = this.config.defaultHighlightColor;
+        const status = this._unitStatus(unit);
+        el.style.fill = styles.unitColors[status];
 
-        // logical highlight on the root (for hover/click)
         const root = el.closest("g") || el;
         root.classList.add("pyn-highlight");
       });
     },
-
     // ----------------------------------------------------
     // FAST UNIT EVENTS (DELEGATED)
     // ----------------------------------------------------
@@ -471,6 +511,32 @@
       // 2) Attach at most ONE set of listeners per SVG
       if (svg._pynEventsBound) return;
       svg._pynEventsBound = true;
+
+      const styles = this.config?.styles || this.defaultStyles;
+
+      svg.addEventListener("mouseover", (e) => {
+        const root = e.target.closest("[data-pyn-unit-pid]");
+        if (!root) return;
+
+        const pid = root.dataset.pynUnitPid;
+        const el = root.querySelector(`#${CSS.escape(pid)}`) || root;
+
+        el.style.fill = styles.unitColors.hover;
+      });
+
+      svg.addEventListener("mouseout", (e) => {
+        const root = e.target.closest("[data-pyn-unit-pid]");
+        if (!root) return;
+
+        const pid = root.dataset.pynUnitPid;
+        const unit = byPointer[pid];
+        if (!unit) return;
+
+        const status = this._unitStatus(unit);
+        const el = root.querySelector(`#${CSS.escape(pid)}`) || root;
+
+        el.style.fill = styles.unitColors[status];
+      });
 
       // Hover (using mouseover so it bubbles from children)
       svg.addEventListener("mouseover", (e) => {
@@ -542,6 +608,16 @@
     // ----------------------------------------------------
     // HELPERS
     // ----------------------------------------------------
+
+    _unitStatus(unit) {
+      // if (unit.model_unit) return "model";
+      // if (unit.available === false && unit.sold) return "leased";
+      // if (unit.unit_status === "occupied_on_notice") return "notice";
+      // if (unit.unit_status === "occupied") return "leased";
+      // if (!unit.floorplan_name) return "missing";
+      return "available";
+    },
+
     _findFloorplateByFloor(floorNumber) {
       const fn = Number(floorNumber);
       if (isNaN(fn)) return null;
@@ -558,6 +634,33 @@
       }
 
       return null;
+    },
+
+    // _applyLabelTextStyles(el, textStyles) {
+    //   const g = el.closest("g");
+    //   if (!g) return;
+
+    //   const texts = g.querySelectorAll("text");
+    //   texts.forEach(t => {
+    //     t.style.fontFamily = textStyles.fontFamily;
+    //     t.style.fontSize = textStyles.fontSize;
+    //     t.style.fill = textStyles.fontColor;
+    //     t.style.pointerEvents = "none";
+    //   });
+    // },
+
+    _applyGlobalLabelStyles(svg, textStyles) {
+      if (!svg || svg._pynTextStyled) return;  // prevent re-running
+
+      const elements = svg.querySelectorAll("text, tspan");
+      elements.forEach(el => {
+        el.style.fontFamily = textStyles.fontFamily;
+        el.style.fontSize = textStyles.fontSize;
+        el.style.fill = textStyles.fontColor;
+        el.style.pointerEvents = "none"; // ensure labels don't block clicks
+      });
+
+      svg._pynTextStyled = true; // mark as styled
     },
 
     _getActiveSvg() {
