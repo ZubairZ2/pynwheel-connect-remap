@@ -102,7 +102,11 @@ class Yardi2StaticService < BaseService
           end
 
           unless unit.floor_is_updated.present? && unit.floor_is_updated
-            unit.floor = evaluate_floor(unit.marketing_name) rescue nil  ################
+            unit.floor = evaluate_floor(unit.marketing_name) rescue nil
+          end
+
+          unless unit.building_is_updated.present? && unit.building_is_updated
+            unit.building = evaluate_building(unit.marketing_name) rescue nil
           end
 
           is_available = false

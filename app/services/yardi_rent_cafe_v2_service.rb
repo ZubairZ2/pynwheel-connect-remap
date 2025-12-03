@@ -42,38 +42,38 @@ class YardiRentCafeV2Service < ::BaseService
                 apartment_id = r["apartmentId"]
                 unit = @all_units_hash[apartment_id.to_s]
 
-                if unit.present?
+                if unit.present? && !unit.manual_override
                   unit.market_rent = r["minimumRent"]
                   
-                  unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
+                  unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
                     unit.effective_rent = r["minimumRent"]
                   end
                   
-                  unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
+                  unless unit.availability_is_updated.present? && unit.availability_is_updated
                     unit.availability = "Unoccupied" if !unit.sold
                   end
                   
                   if ( r["availableDate"] != "" && r["availableDate"] != nil )
-                    unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
+                    unless unit.availability_is_updated.present? && unit.availability_is_updated
                       unit.availability = "Unoccupied" if !unit.sold
                     end
 
-                    unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
+                    unless unit.available_date_is_updated.present? && unit.available_date_is_updated
                       unit.available_date = Date.parse(set_availabilty_date(r["availableDate"]))
                     end
 
                   else
-                    unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
+                    unless unit.availability_is_updated.present? && unit.availability_is_updated
                       unit.availability = "Occupied"
                     end
 
-                    unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
+                    unless unit.available_date_is_updated.present? && unit.available_date_is_updated
                       unit.available_date = ""
                     end
 
                   end
 
-                  unless unit.available_is_updated.present? && unit.available_is_updated && unit.manual_override
+                  unless unit.available_is_updated.present? && unit.available_is_updated
                     if unit.availability == "Unoccupied"
                       unit.available = true if !unit.sold
                     else
@@ -87,6 +87,14 @@ class YardiRentCafeV2Service < ::BaseService
                   unit.max_effective_rent = r["maximumRent"] if r["maximumRent"].present?
                   unit.availability_url = r["applyOnlineURL"] if r["applyOnlineURL"].present?
                   unit.unit_status = r["unitStatus"] rescue ""
+
+                  unless unit.floor_is_updated.present? && unit.floor_is_updated
+                    unit.floor = evaluate_floor(unit.marketing_name) rescue nil
+                  end
+
+                  unless unit.building_is_updated.present? && unit.building_is_updated
+                    unit.building = evaluate_building(unit.marketing_name) rescue nil
+                  end
                   
                   leasing = ""
                   lease_prices_array = []
@@ -120,17 +128,25 @@ class YardiRentCafeV2Service < ::BaseService
                     unit.property_id = property_code
                     unit.voyager_property_code = r["voyagerPropertyCode"]
                     unit.unit_type = r["apartmentName"]
+                    
                     unless unit.name_is_updated.present? && unit.name_is_updated
                       unit.marketing_name = r["apartmentName"]
                     end
+
                     unless unit.floor_is_updated.present? && unit.floor_is_updated
                       unit.floor = evaluate_floor(unit.marketing_name) rescue nil
                     end
+
+                    unless unit.building_is_updated.present? && unit.building_is_updated
+                      unit.building = evaluate_building(unit.marketing_name) rescue nil
+                    end
+                    
                     unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
                       unit.floorplan_id = r["floorplanId"]
                     end
 
                     unit.market_rent = r["minimumRent"]
+                    
                     unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
                       unit.effective_rent = r["minimumRent"]
                     end

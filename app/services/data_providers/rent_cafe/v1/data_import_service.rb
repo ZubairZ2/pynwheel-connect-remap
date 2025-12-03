@@ -113,6 +113,7 @@ module DataProviders
             begin
               update_attribute_if_blank(unit, :marketing_name, r["ApartmentName"], 'name')
               update_attribute_if_blank(unit, :floor, evaluate_floor(unit.marketing_name))
+              update_attribute_if_blank(unit, :building, evaluate_building(unit.marketing_name))
               update_attribute_if_blank(unit, :floorplan_id, r["FloorplanId"])
               update_attribute_if_blank(unit, :effective_rent, r["MinimumRent"])
               update_attribute_if_blank(unit, :availability, unit_availability(r["AvailableDate"]))
