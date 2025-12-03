@@ -115,6 +115,8 @@ module DataProviders
               floorplan = indexed_floorplans[r["floorplanId"]]
               update_attribute_if_blank(unit, :marketing_name, r["apartmentName"], 'name')
               update_attribute_if_blank(unit, :floor, evaluate_floor(unit.marketing_name))
+              update_attribute_if_blank(unit, :building, evaluate_building(unit.marketing_name))
+
               if floorplan.present?
                 update_attribute_if_blank(unit, :floorplan_id, floorplan.provider_floorplan_id)
               end

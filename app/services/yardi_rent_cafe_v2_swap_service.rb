@@ -39,6 +39,7 @@ class YardiRentCafeV2SwapService < ::BaseService
                 unit.property_id = property_code
                 unit.unit_type = r["apartmentName"]
                 unit.floor = evaluate_floor(unit.marketing_name) rescue nil
+                unit.building = evaluate_building(unit.marketing_name) rescue nil
                 unit.floorplan_id = r["floorplanId"]
                 unit.market_rent = r["minimumRent"]
                 unit.effective_rent = r["minimumRent"]

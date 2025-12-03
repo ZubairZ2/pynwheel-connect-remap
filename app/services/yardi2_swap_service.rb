@@ -63,9 +63,12 @@ class Yardi2SwapService < BaseService
           unit.provider_unit_id = "#{unit_entries[0][:Id]}-#{property_id}"
           unit.property_id = property_id
           unit.unit_type = unit_entries[1][:Unit][:"MITS:Information"][:"MITS:UnitType"]
-          unit.floor = evaluate_floor(unit.marketing_name) rescue nil  ################
+          unit.floor = evaluate_floor(unit.marketing_name) rescue nil
+          unit.building = evaluate_building(unit.marketing_name) rescue nil
+
           is_available = false
           vacate_date = ""
+
           unit_entries.each do |u|
 
             if u.key?(:Unit)
@@ -121,6 +124,8 @@ class Yardi2SwapService < BaseService
           unit.unit_type = unit_entries[1][:Unit][:"MITS:Information"][:"MITS:UnitType"]
           unit.marketing_name = unit_entries[0][:Id]
           unit.floor = evaluate_floor(unit.marketing_name) rescue nil
+          unit.building = evaluate_building(unit.marketing_name) rescue nil
+
           is_available = false
           vacate_date = ""
           

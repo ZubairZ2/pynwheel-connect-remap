@@ -36,17 +36,25 @@ class YardiRentCafeStaticService < BaseService
                 unit.property_id = property_code
                 unit.voyager_property_code = r["VoyagerPropertyCode"]
                 unit.unit_type = r["ApartmentName"]
+                
                 unless unit.name_is_updated.present? && unit.name_is_updated
                   unit.marketing_name = r["ApartmentName"]
                 end
+                
                 unless unit.floor_is_updated.present? && unit.floor_is_updated
                   unit.floor = evaluate_floor(unit.marketing_name) rescue nil
                 end
+
+                unless unit.building_is_updated.present? && unit.building_is_updated
+                  unit.building = evaluate_building(unit.marketing_name) rescue nil
+                end
+                
                 unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
                   unit.floorplan_id = r["FloorplanId"]
                 end
 
                 unit.market_rent = r["MinimumRent"]
+                
                 unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
                   unit.effective_rent = r["MinimumRent"]
                 end
