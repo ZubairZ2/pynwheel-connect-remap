@@ -724,11 +724,11 @@
       init(cfg) {
         return PynMapSDK.init.call(PynMapSDK, cfg);
       },
-      highlightUnits(ids) {
-        return PynMapSDK.highlightUnits.call(PynMapSDK, ids);
+      highlightUnits(unitIds) {
+        return PynMapSDK.highlightUnits.call(PynMapSDK, unitIds);
       },
-      changeMap(id) {
-        return PynMapSDK.changeMap.call(PynMapSDK, id);
+      changeMap(mapId) {
+        return PynMapSDK.changeMap.call(PynMapSDK, mapId);
       },
       changeFloor(floorNumber) {
         return PynMapSDK.changeFloor.call(PynMapSDK, floorNumber);
