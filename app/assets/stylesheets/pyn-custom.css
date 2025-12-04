@@ -1960,9 +1960,9 @@ ul.images-tabs li a span {
     height: 168px !important;
 }
 
-/* .plot-image {
+.plot-image {
     display: inline-block;
-} */
+}
 
 .map-block {
     width: 100%;

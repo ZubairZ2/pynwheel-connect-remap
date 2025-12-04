@@ -381,7 +381,7 @@ function doDraggable () {
         stack: ".marker",
         // get the initial X and Y position when dragging starts
         start: function (event, ui) {
-            let currentScale = 0.5;
+            let currentScale = 1;
             try {
                 const zoomContainer = event.target.closest('div.plot-image');
                 const key = getZoomPanKey(zoomContainer);
