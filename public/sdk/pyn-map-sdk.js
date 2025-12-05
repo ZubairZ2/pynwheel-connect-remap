@@ -241,34 +241,36 @@
     // ----------------------------------------------------
     _renderMaps() {
       const c = this.container;
-      c.innerHTML = "";
+      c.innerHTML = "";               // remove any previous SVG + controls
       c.style.position = "relative";
 
-      Object.entries(this.svgCache).forEach(([mapId, svg]) => {
-        const clone = svg.cloneNode(true);
-        clone.setAttribute("data-map-id", mapId);
-        clone.style.display = mapId === this.activeMapId ? "block" : "none";
-        
-        // Apply global text styles (once per SVG)
-        this._applyGlobalLabelStyles(clone, this.config.styles.unitLabels);
+      if (!this.activeMapId || !this._mapExists(this.activeMapId)) return;
 
-        // AUTO SCALE SVG: fit inside whatever container partner gives
-        clone.removeAttribute("width");
-        clone.removeAttribute("height");
-        clone.setAttribute("preserveAspectRatio", "xMidYMid meet");
-        clone.style.width = "100%";
-        clone.style.height = "100%";
+      const svg = this.svgCache[this.activeMapId];
+      if (!svg) return;
 
-        c.appendChild(clone);
+      const clone = svg.cloneNode(true);
+      clone.setAttribute("data-map-id", this.activeMapId);
+      clone.style.display = "block";
 
-        if (this.config.showZoomControls) {
-          this._renderZoomControls();
-        }
+      // Apply global text styles (once per SVG)
+      this._applyGlobalLabelStyles(clone, this.config.styles.unitLabels);
 
-        if (mapId === this.activeMapId) {
-          this._enablePanZoom(clone);
-        }
-      });
+      // AUTO SCALE SVG: fit inside whatever container partner gives
+      clone.removeAttribute("width");
+      clone.removeAttribute("height");
+      clone.setAttribute("preserveAspectRatio", "xMidYMid meet");
+      clone.style.width = "100%";
+      clone.style.height = "100%";
+
+      c.appendChild(clone);
+
+      if (this.config.showZoomControls) {
+        this._renderZoomControls();
+      }
+
+      // Enable pan/zoom on the newly rendered SVG
+      this._enablePanZoom(clone);
 
       // Container should constrain the SVG
       c.style.overflow = "hidden";
@@ -416,29 +418,10 @@
       this.activeMapId = id;
       this._lastHoverPid = null; // reset hover state
 
-      // Hide all maps
-      const svgs = this.container.querySelectorAll("svg[data-map-id]");
-      svgs.forEach(svg => {
-        svg.style.display = "none";
-      });
+      // Re-render only the active map
+      this._renderMaps();
 
-      // Show new active map
-      const activeSvg = this.container.querySelector(`svg[data-map-id="${id}"]`);
-      if (!activeSvg) return;
-
-      activeSvg.style.display = "block";
-
-      // Re-enable pan/zoom fresh each time
-      this._enablePanZoom(activeSvg);
-
-      // Always fit + center new map
-      setTimeout(() => {
-        if (activeSvg._pz) {
-          activeSvg._pz.fit();
-          activeSvg._pz.center();
-        }
-      }, 20);
-
+      // Re-apply unit styles + events on the fresh SVG
       this._highlightAllUnits();
       this._bindUnitEvents();
     },
