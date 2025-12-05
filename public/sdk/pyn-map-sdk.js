@@ -25,16 +25,7 @@
     defaultStyles: {
       unitColors: {
         available: "#F9D648",
-        leased: "#cccccc",
-        model: "#F57396",
-        notice: "#040304ff",
-        missing: "#eecea5",
-        hover: "#f94865ff"
-      },
-      unitLabels: {
-        fontFamily: "Arial",
-        fontSize: "11px",
-        fontColor: "#000"
+        hover: "#d0a600ff"
       }
     },
 
@@ -65,10 +56,11 @@
         }
       };
 
+      this.config.showZoomControls = cfg.showZoomControls !== false; // default TRUE
+
       // 3) Rest of your existing init logic
       // this.config.defaultHighlightColor = cfg.defaultHighlightColor || "#F9D648";
-      this.config.floor = cfg.floor != null ? String(cfg.floor) : null;
-      this.activeMapId = cfg.mapId != null ? String(cfg.mapId) : null;
+      this.config.floor = cfg.defaultFloor != null ? String(cfg.defaultFloor) : null;
 
       // Callback hooks
       this.config.onUnitHover = typeof cfg.onUnitHover === "function" ? cfg.onUnitHover : null;
@@ -256,7 +248,7 @@
         const clone = svg.cloneNode(true);
         clone.setAttribute("data-map-id", mapId);
         clone.style.display = mapId === this.activeMapId ? "block" : "none";
-
+        
         // Apply global text styles (once per SVG)
         this._applyGlobalLabelStyles(clone, this.config.styles.unitLabels);
 
@@ -268,6 +260,10 @@
         clone.style.height = "100%";
 
         c.appendChild(clone);
+
+        if (this.config.showZoomControls) {
+          this._renderZoomControls();
+        }
 
         if (mapId === this.activeMapId) {
           this._enablePanZoom(clone);
@@ -330,6 +326,85 @@
       svgEl._pz.center();
     },
 
+        // ----------------------------------------------------
+    // MANUAL SELECT / UNSELECT (PUBLIC API)
+    // ----------------------------------------------------
+    selectUnit(unitId, colorCode) {
+      const activeSvg = this._getActiveSvg();
+      if (!activeSvg) return;
+
+      const id = String(unitId);
+      const units = this.unitsByMap[this.activeMapId] || [];
+      const unit = units.find(u =>
+        String(u.unitId) === id ||
+        String(u.id) === id ||
+        String(u.pointerData?.id) === id
+      );
+
+      if (!unit?.pointerData?.id) return;
+
+      const pid = String(unit.pointerData.id);
+      const el = activeSvg.querySelector(`#${CSS.escape(pid)}`);
+      if (!el) return;
+
+      const styles = this.config?.styles || this.defaultStyles;
+      const fillColor =
+        colorCode ||
+        styles.unitColors.hover ||
+        styles.unitColors.available;
+
+      el.style.fill = fillColor;
+
+      const root = el.closest("g") || el;
+      root.classList.add("pyn-highlight");
+    },
+
+    unselectUnit(unitId) {
+      const activeSvg = this._getActiveSvg();
+      if (!activeSvg) return;
+
+      const id = String(unitId);
+      const units = this.unitsByMap[this.activeMapId] || [];
+      const unit = units.find(u =>
+        String(u.unitId) === id ||
+        String(u.id) === id ||
+        String(u.pointerData?.id) === id
+      );
+
+      if (!unit?.pointerData?.id) return;
+
+      const pid = String(unit.pointerData.id);
+      const el = activeSvg.querySelector(`#${CSS.escape(pid)}`);
+      if (!el) return;
+
+      const styles = this.config?.styles || this.defaultStyles;
+      const status = this._unitStatus(unit);
+
+      // Restore original (status-based) color
+      el.style.fill = styles.unitColors[status] || styles.unitColors.available;
+
+      const root = el.closest("g") || el;
+      // Do NOT remove highlight, so hover + click still work
+      // If needed you can allow removing highlight here.
+    },
+
+    zoomIn() {
+      const svg = this._getActiveSvg();
+      if (!svg || !svg._pz) return;
+
+      const currentZoom = svg._pz.getZoom();
+      const newZoom = Math.min(currentZoom * 1.25, 4); // maxZoom
+      svg._pz.zoom(newZoom);
+    },
+
+    zoomOut() {
+      const svg = this._getActiveSvg();
+      if (!svg || !svg._pz) return;
+
+      const currentZoom = svg._pz.getZoom();
+      const newZoom = Math.max(currentZoom / 1.25, 0.5); // minZoom
+      svg._pz.zoom(newZoom);
+    },
 
     // ----------------------------------------------------
     // FLOOR / MAP CHANGE
@@ -609,6 +684,58 @@
     // HELPERS
     // ----------------------------------------------------
 
+    _renderZoomControls() {
+      // Remove old controls if re-rendered
+      const old = this.container.querySelector(".pyn-zoom-controls");
+      if (old) old.remove();
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "pyn-zoom-controls";
+
+      Object.assign(wrapper.style, {
+        position: "absolute",
+        right: "12px",
+        top: "12px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "6px",
+        zIndex: "999999"
+      });
+
+      const btnStyle = {
+        width: "34px",
+        height: "34px",
+        background: "#ffffff",
+        borderRadius: "6px",
+        border: "1px solid #ccc",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: "20px",
+        fontWeight: "bold",
+        cursor: "pointer",
+        boxShadow: "0 2px 5px rgba(0,0,0,0.15)",
+        userSelect: "none"
+      };
+
+      // PLUS button
+      const plus = document.createElement("div");
+      plus.innerText = "+";
+      Object.assign(plus.style, btnStyle);
+      plus.onclick = () => this.zoomIn();
+
+      // MINUS button
+      const minus = document.createElement("div");
+      minus.innerText = "−";
+      Object.assign(minus.style, btnStyle);
+      minus.onclick = () => this.zoomOut();
+
+      wrapper.appendChild(plus);
+      wrapper.appendChild(minus);
+
+      this.container.appendChild(wrapper);
+    },
+
     _unitStatus(unit) {
       // if (unit.model_unit) return "model";
       // if (unit.available === false && unit.sold) return "leased";
@@ -732,7 +859,19 @@
       },
       changeFloor(floorNumber) {
         return PynMapSDK.changeFloor.call(PynMapSDK, floorNumber);
-      }
+      },
+      selectUnit(unitId, colorCode) {
+        return PynMapSDK.selectUnit.call(PynMapSDK, unitId, colorCode);
+      },
+      unselectUnit(unitId) {
+        return PynMapSDK.unselectUnit.call(PynMapSDK, unitId);
+      },
+      zoomIn() {
+        return PynMapSDK.zoomIn.call(PynMapSDK);
+      },
+      zoomOut() {
+        return PynMapSDK.zoomOut.call(PynMapSDK);
+      },
     };
   }
 
