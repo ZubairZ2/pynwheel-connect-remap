@@ -241,9 +241,9 @@ async function fetchSVG(
 
     if (!svgElement) throw new Error("No <svg> element found in the response.");
 
-    const { floor = null } = options;
-    if(hasFloorplate() && floor)
-      uniquifySVGIds(svgElement, `f${floor}`);
+    // const { floor = null } = options;
+    // if(hasFloorplate() && floor)
+    //   uniquifySVGIds(svgElement, `f${floor}`);
 
     parsedSVGs.push(svgElement);
     setSVG(container, svgElement, options);
