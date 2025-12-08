@@ -17,7 +17,7 @@ module Api
         before_action :validate_api_key
         before_action :load_partner_name
 
-        around_action :logging_trail
+        # around_action :logging_trail
 
 
         def load_map_partners
@@ -37,15 +37,15 @@ module Api
           @partner = partner ? partner[:name] : nil
         end
 
-        def logging_trail
-          begin
-            Log::Impression.new(requester: request).request_filler
-            yield
-            Log::Impression.new(requester: response).response_filler
-          rescue Exception => ex
-            Log::Impression.new(requester: response, exception: ex).exception_filler
-          end
-        end
+        # def logging_trail
+        #   begin
+        #     Log::Impression.new(requester: request).request_filler
+        #     yield
+        #     Log::Impression.new(requester: response).response_filler
+        #   rescue Exception => ex
+        #     Log::Impression.new(requester: response, exception: ex).exception_filler
+        #   end
+        # end
       end
     end
   end
