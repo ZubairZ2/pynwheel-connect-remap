@@ -2,14 +2,19 @@ module Api
   module Partner
     module Maps
       class WebhooksController < BaseController
-        before_action :load_all_properties
-        before_action :load_property, only: [:units]
+
+        # Only load community when needed
+        before_action :load_property_for_units, only: [:units]
 
         def properties
           property_id = params[:propertyId].to_s
 
           if property_id.present?
-            community = @communities.find { |c| c.id.to_s == property_id }
+            # Load ONLY the required property — NOT all communities
+            community = Community.active_client_properties
+                                 .includes(:company)
+                                 .find_by(id: property_id)
+
             if community
               render json: {
                 propertyDetails: format_property(community),
@@ -18,11 +23,19 @@ module Api
                 code: 200
               }
             else
-              render json: { message: INVALID_PROPERTY_MESSAGE, status: 'failed', code: 404 }, status: :not_found
+              render json: {
+                message: INVALID_PROPERTY_MESSAGE,
+                status: 'failed',
+                code: 404
+              }, status: :not_found
             end
+
           else
+            # Only here do we load all — acceptable for list use-case
+            communities = Community.active_client_properties.includes(:company)
+
             render json: {
-              propertiesList: @communities.map { |x| format_property(x) },
+              propertiesList: communities.map { |c| format_property(c) },
               message: "All properties list",
               status: 'success',
               code: 200
@@ -30,12 +43,23 @@ module Api
           end
         end
 
+
+        # --------------------------
+        #        Units API
+        # --------------------------
         def units
           unit_id = params[:unitId].to_s
 
           if unit_id.present?
-            unit = @community.units.find { |u| u.id.to_s == unit_id }
-            return render json: { message: "Invalid Unit ID", status: 'failed', code: 404 }, status: :not_found unless unit
+            unit = @community.units.find_by(id: unit_id)
+
+            unless unit
+              return render json: {
+                message: "Invalid Unit ID",
+                status: 'failed',
+                code: 404
+              }, status: :not_found
+            end
 
             render json: {
               unitDetails: format_unit(unit, @community),
@@ -43,6 +67,7 @@ module Api
               status: 'success',
               code: 200
             }
+
           else
             render json: {
               unitsList: @community.units.map { |u| format_unit(u, @community) },
@@ -53,20 +78,35 @@ module Api
           end
         end
 
+
+        # --------------------------
+        #       PRIVATE HELPERS
+        # --------------------------
         private
 
-        def load_all_properties
-          @communities = Community.active_client_properties
-          @companies   = Company.where(id: @communities.pluck(:company_id))
-        end
-
-        def load_property
+        # Loads ONLY the specific propertyId
+        def load_property_for_units
           property_id = params[:propertyId].to_s
-          return render json: { message: MISSING_PROPERTY_MESSAGE, status: 'failed', code: 400 }, status: :bad_request if property_id.blank?
 
-          @community = @communities.find { |c| c.id.to_s == property_id }
-          return render json: { message: INVALID_PROPERTY_MESSAGE, status: 'failed', code: 404 }, status: :not_found unless @community
+          return render json: {
+            message: MISSING_PROPERTY_MESSAGE,
+            status: 'failed',
+            code: 400
+          }, status: :bad_request if property_id.blank?
+
+          @community = Community.active_client_properties
+                                .includes(:units)
+                                .find_by(id: property_id)
+
+          unless @community
+            return render json: {
+              message: INVALID_PROPERTY_MESSAGE,
+              status: 'failed',
+              code: 404
+            }, status: :not_found
+          end
         end
+
 
         def format_property(community)
           {
@@ -82,6 +122,7 @@ module Api
           }
         end
 
+
         def format_unit(unit, community)
           {
             unitNumber: unit.marketing_name,
@@ -92,6 +133,7 @@ module Api
             floorplanId: unit.floorplan_id
           }
         end
+
       end
     end
   end
