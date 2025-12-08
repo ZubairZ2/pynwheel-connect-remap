@@ -60,7 +60,8 @@ module Api
         end
 
         def units_json
-          @community.units.map do |unit|
+          units = @community&.units&.map_units(@community)
+          units&.map do |unit|
             floorplan = unit.floorplan
 
             {
