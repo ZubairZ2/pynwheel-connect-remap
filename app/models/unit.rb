@@ -202,6 +202,19 @@ class Unit < ApplicationRecord
     )
   }
 
+  scope :map_units, -> (community, show_ops_map = false) {
+    svg_enabled = community.enable_svg_mode?
+
+    if community.turn_availability_on && !show_ops_map
+      are_plotted_units(svg_enabled)
+    elsif show_ops_map
+      are_plotted_units(svg_enabled).status_scoped(true)
+    else
+      available_units(svg_enabled, community.units_availability_over_120_days)
+        .visible_on_map_for(community)
+    end
+  }
+
   after_commit :populate_image_urls, on: [:create,:update]
   after_update :crop_unit_image, if: ->(obj) { obj.image_changed? }
   after_update :crop_unit_secondary_image, if: ->(obj) { obj.secondary_image_changed? }

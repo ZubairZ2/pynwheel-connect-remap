@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>PynMap Test</title>
+</head>
+
+<body>
+  <script src="/sdk/pyn-map-sdk.js"></script>
+
+  <div id="pynMap" style="width:100%; height:600px;"></div>
+  <!-- Width and hight can be ajustable whatever you need. -->
+
+  <script>
+    const config = {
+      container: "#pynMap",
+      apiKey: "88ebc96efd10f0b0af44ced6031d8813",
+      propertyId: "33",
+      defaultFloor: 2, // Optional
+      showZoomControls: true, // Optional
+      styles: {
+        unitColors: {
+          available: "#61D46B",
+          hover: "#FFF2AA"
+        },
+        // unitLabels: {
+        //   fontFamily: "Arial, sans-serif",
+        //   fontSize: "10px",
+        //   fontColor: "#ffffff"
+        // }
+      }, // Optional
+      onUnitHover: (unit) => {
+        console.log("Hovered unit:", unit);
+      },
+
+      onUnitClick: (unit) => {
+        console.log("Clicked unit:", unit);
+      }
+    };
+
+    PynMapSDK.init(config);
+  </script>
+</body>
+</html>

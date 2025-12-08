@@ -146,7 +146,6 @@ class Floorplate < ApplicationRecord
 
   private
 
-
   def amenity_info amenity
     {
       id: amenity.id,

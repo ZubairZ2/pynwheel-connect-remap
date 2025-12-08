@@ -644,6 +644,10 @@ Rails.application.routes.draw do
     end
   end
 
+  namespace :sdk do
+    get "map_config/:property_id", to: "map_config#show"
+  end
+
   namespace :api, constraints: { format: 'json' } do
     namespace :partner do
       namespace :realync do
@@ -652,6 +656,10 @@ Rails.application.routes.draw do
 
       namespace :maps do
         get :all_maps, to: 'maps#all_maps'
+        get :properties, to: 'webhooks#properties'
+        get :units, to: 'webhooks#units'
+        get :authorized, to: 'sdk#authorized'
+        get :fetch_data, to: 'sdk#fetch_data'
       end
     end
 
