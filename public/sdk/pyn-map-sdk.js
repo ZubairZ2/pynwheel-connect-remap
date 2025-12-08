@@ -820,9 +820,17 @@
 
     _apiBase() {
       const host = location.hostname;
-      return host.startsWith("localhost") || host.startsWith("127")
-        ? "http://localhost:3000"
-        : "https://pynwheelconnect.com";
+
+      if (host.includes("staging")) {
+        return "https://pynwheel-staging.herokuapp.com";
+      }
+
+      if (host.includes("localhost") || host.includes("127")) {
+        return "http://localhost:3000";
+      }
+
+      // Production
+      return "https://pynwheelconnect.com";
     }
   };
 
