@@ -145,7 +145,7 @@ module Api
         def format_unit(unit, community)
           {
             unitNumber: unit.marketing_name,
-            mapId: community.floorplate_for_floor(unit.floor)&.id,
+            mapId: community.is_sitemap ? community&.sitemap&.id : community.floorplate_for_floor(unit.floor)&.id,
             assetId: unit.id,
             buildingId: unit.building,
             floorId: unit.floor,
