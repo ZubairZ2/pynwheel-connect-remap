@@ -1,15 +1,9 @@
 module Api
   module Partner
     module Maps
-      class SdkController < ApplicationController
+      class SdkController < BaseController
         include ApplicationHelper
-        before_action :verify_api_key
         before_action :load_property, only: [:authorized, :fetch_data]
-
-        PARTNERS = [
-          ENV["PARTNER_RENT_API_KEY"],
-          ENV["PARTNER_APARTMENTLIST_API_KEY"]
-        ].compact.freeze
 
         def authorized
           render json: {
@@ -31,20 +25,6 @@ module Api
 
         private
 
-        def verify_api_key
-          api_key = request.headers["X-API-Key"]
-
-          if api_key.blank?
-            return render_error("API key is missing (X-API-Key)", 401)
-          end
-
-          unless PARTNERS.include?(api_key)
-            return render_error("Invalid API key", 401)
-          end
-
-          @partner = api_key
-        end
-
         def load_property
           property_id = params[:property_id] || params[:propertyId]
 
@@ -63,7 +43,7 @@ module Api
 
           {
             mapId: sitemap.id,
-            svgUrl: sitemap.svg_image_url || sitemap.svg_image.url
+            svgUrl: sitemap.validated_svg_image_url
           }
         end
 
@@ -74,7 +54,7 @@ module Api
             {
               mapId: fp.id,
               range: fp.range,
-              svgUrl: fp.svg_image_url || fp.svg_image.url
+              svgUrl: fp.validated_svg_image_url
             }
           end
         end
