@@ -126,7 +126,7 @@ module Api
           end
 
           @community = Community
-                        .select(:id, :name, :company_id, :address, :city, :state, :zip)
+                        .select(:id, :is_sitemap)
                         .includes(:units)
                         .find_by(id: property_id)
 
