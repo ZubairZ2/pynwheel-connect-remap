@@ -57,6 +57,8 @@
       };
 
       this.config.showZoomControls = cfg.showZoomControls !== false; // default TRUE
+      this.config.environment = cfg.environment || "production";
+
 
       // 3) Rest of your existing init logic
       // this.config.defaultHighlightColor = cfg.defaultHighlightColor || "#F9D648";
@@ -819,18 +821,12 @@
     },
 
     _apiBase() {
-      const host = location.hostname;
-
-      if (host.includes("staging")) {
+      if (this.config.environment  === "staging") {
         return "https://pynwheel-staging.herokuapp.com";
       }
 
-      if (host.includes("localhost") || host.includes("127")) {
-        return "http://localhost:3000";
-      }
-
-      // Production
-      return "https://pynwheelconnect.com";
+      // return "http://localhost:3000";
+      return "https://pynwheelconnect.com"; // production
     }
   };
 
