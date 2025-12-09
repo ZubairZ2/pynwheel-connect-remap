@@ -22,7 +22,6 @@ function activateZoomPan(elem, centralizeElement = true, options = {}) {
     elem: elem
   };
 
-  // ⭐ MUST BE ADDED — store initial transform after DOM settles
   setTimeout(() => {
     const inst = zoomablePans[key].instance.getTransform();
     zoomablePans[key].initial = {
