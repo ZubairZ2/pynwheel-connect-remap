@@ -424,6 +424,22 @@
                           = check_box_tag :is_floor_level_map, true, @community.is_floor_level_map, class: "apartment-setting-field"
                           %label.label-primary{:for => "is_floor_level_map"}
                           %span.pl-15 Yes
+                    
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                        Show property map key
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .TriSea-technologies-Switch
+                          %span.pr-15 No
+                          = check_box_tag :show_property_map_key, true, @community.show_property_map_key, class: "apartment-setting-field"
+                          %label.label-primary{:for => "show_property_map_key"}
+                          %span.pl-15 Yes
+                    
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                        Property map key text
+                      .col-sm-12.col-lg-6.col-md-6.col-xs-12
+                        = text_field_tag :show_property_map_key_text, @community.show_property_map_key_text, :class=>"form-control apartment-setting-field"
 
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
