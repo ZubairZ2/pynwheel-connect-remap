@@ -7868,12 +7868,12 @@ div.esri-ui-inner-container.esri-ui-manual-container>div.esri-component.esri-att
   cursor: pointer; /* or default */
 }
 
-/* #zoom-group-wrapper {
+#zoom-group-wrapper {
   position: relative;
   width: 100%;
   height: 100%;
-  overflow: hidden;
-} */
+  /* overflow: hidden; */
+}
 
 #background-map-layer {
   position: absolute;
