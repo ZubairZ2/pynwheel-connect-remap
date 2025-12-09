@@ -7868,12 +7868,12 @@ div.esri-ui-inner-container.esri-ui-manual-container>div.esri-component.esri-att
   cursor: pointer; /* or default */
 }
 
-#zoom-group-wrapper {
+/* #zoom-group-wrapper {
   position: relative;
   width: 100%;
   height: 100%;
   overflow: hidden;
-}
+} */
 
 #background-map-layer {
   position: absolute;
@@ -7922,7 +7922,7 @@ div.esri-ui-inner-container.esri-ui-manual-container>div.esri-component.esri-att
   display: block;
 }
 
-.plot-image img.viewArea {
+/* .plot-image img.viewArea {
   width: auto !important;
   height: auto !important;
   max-width: 100%;
@@ -7930,4 +7930,4 @@ div.esri-ui-inner-container.esri-ui-manual-container>div.esri-component.esri-att
   display: block;
   pointer-events: auto;
   touch-action: none;
-}
+} */
