@@ -48,7 +48,7 @@ class YardiRentCafeSwapService < BaseService
                 unit.voyager_property_code = r["VoyagerPropertyCode"]
                 unit.unit_type = r["ApartmentName"]
                 unit.floor = evaluate_floor(unit.marketing_name) rescue nil
-                unit.building = evaluate_building(unit.marketing_name) rescue nil
+                # unit.building = evaluate_building(unit.marketing_name) rescue nil
                 unit.floorplan_id = r["FloorplanId"]
                 unit.market_rent = r["MinimumRent"]
                 unit.effective_rent = r["MinimumRent"]
@@ -100,7 +100,7 @@ class YardiRentCafeSwapService < BaseService
                 unit.unit_type = r["ApartmentName"]
                 unit.marketing_name = r["ApartmentName"]
                 unit.floor = evaluate_floor(unit.marketing_name) rescue nil
-                unit.building = evaluate_building(unit.marketing_name) rescue nil
+                # unit.building = evaluate_building(unit.marketing_name) rescue nil
                 unit.floorplan_id = r["FloorplanId"]
                 unit.square_feet = r["SQFT"] if r["SQFT"].present?
                 unit.market_rent = r["MinimumRent"]

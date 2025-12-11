@@ -93,7 +93,7 @@ class Yardi4SwapService < BaseService
         unit.effective_rent = u[:Units][:Unit][:MarketRent]
         unit.square_feet = u[:Units][:Unit][:SquareFeet]
         unit.floor = evaluate_floor(unit.marketing_name) rescue nil
-        unit.building = evaluate_building(unit.marketing_name) rescue nil
+        # unit.building = evaluate_building(unit.marketing_name) rescue nil
 
         is_available = false
         vacate_date = ""
@@ -149,7 +149,7 @@ class Yardi4SwapService < BaseService
         unit.market_rent = u[:Units][:Unit][:MarketRent] #TODO u.AvgRent = Number(o.Units.Unit.MarketRent.toString());
         unit.effective_rent = u[:Units][:Unit][:MarketRent]
         unit.floor = evaluate_floor(unit.marketing_name) rescue nil
-        unit.building = evaluate_building(unit.marketing_name) rescue nil
+        # unit.building = evaluate_building(unit.marketing_name) rescue nil
         
         if u[:Units][:Unit][:UnitLeasedStatus] == "on_notice"
           unit.availability = "Unoccupied"

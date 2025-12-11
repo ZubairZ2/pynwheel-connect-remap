@@ -45,9 +45,9 @@ class YardiRentCafeStaticService < BaseService
                   unit.floor = evaluate_floor(unit.marketing_name) rescue nil
                 end
 
-                unless unit.building_is_updated.present? && unit.building_is_updated
-                  unit.building = evaluate_building(unit.marketing_name) rescue nil
-                end
+                # unless unit.building_is_updated.present? && unit.building_is_updated
+                #   unit.building = evaluate_building(unit.marketing_name) rescue nil
+                # end
                 
                 unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
                   unit.floorplan_id = r["FloorplanId"]

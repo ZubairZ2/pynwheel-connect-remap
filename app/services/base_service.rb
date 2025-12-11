@@ -18,18 +18,18 @@ class BaseService
     return floor 
   end
 
-  def evaluate_building(marketing_name)
-    marketing_name = marketing_name.gsub('-','')
-    building = nil
+  # def evaluate_building(marketing_name)
+  #   marketing_name = marketing_name.gsub('-','')
+  #   building = nil
     
-    if marketing_name.size == 3
-      building = marketing_name.first(1)
-    elsif marketing_name.size > 3
-      building = marketing_name.first(2)
-    end
+  #   if marketing_name.size == 3
+  #     building = marketing_name.first(1)
+  #   elsif marketing_name.size > 3
+  #     building = marketing_name.first(2)
+  #   end
 
-    return building.present? ? building&.to_i : nil
-  end
+  #   return building.present? ? building&.to_i : nil
+  # end
 
 
   def sign_token_for_latch_request(request_hash, clientId, secretKey)

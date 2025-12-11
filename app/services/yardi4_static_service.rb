@@ -133,9 +133,9 @@ class Yardi4StaticService < BaseService
           unit.floor = evaluate_floor(unit.marketing_name) rescue nil
         end
 
-        unless unit.building_is_updated.present? && unit.building_is_updated
-          unit.building = evaluate_building(unit.marketing_name) rescue nil
-        end
+        # unless unit.building_is_updated.present? && unit.building_is_updated
+        #   unit.building = evaluate_building(unit.marketing_name) rescue nil
+        # end
 
         is_available = false
         vacate_date = ""
