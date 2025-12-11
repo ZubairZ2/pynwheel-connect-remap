@@ -263,7 +263,8 @@ function bindWebpageEvents() {
 
     if (floorIsChanged) {
       debouncedShowMarkers();
-      if (svgMode) zoomReset();
+      // if (svgMode) 
+      zoomReset();
       if (!_3dMapMode()) $currentImageBox.parent().removeClass("hidden");
       return;
     }

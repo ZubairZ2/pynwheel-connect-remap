@@ -7911,8 +7911,6 @@ div.esri-ui-inner-container.esri-ui-manual-container>div.esri-component.esri-att
 
 .plot-image {
     display: inline-block;
-    width: 100%;
-    height: 100%;
 }
 
 .plot-image svg {
