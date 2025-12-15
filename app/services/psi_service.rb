@@ -102,8 +102,8 @@ class PsiService < BaseService
             save_psi_floorplans(floorplans, property_id)
             save_psi_units(units, property_id, limit_result)
             update_additional_fee_and_pricing(community, response)
-
             community&.community_data_updated_on()
+            
           end
         end
 
@@ -374,7 +374,7 @@ class PsiService < BaseService
 
     floorplanHash = Hash.new
     property_ids = @credentials.property_id.split(',') rescue []
-    
+
     property_ids.each do |property_id|
       move_in_dates = getMoveInDate(property_id)
       move_in_dates << "0" unless move_in_dates.present?
@@ -462,7 +462,6 @@ class PsiService < BaseService
     value.to_s.gsub(/[, ]/, '').to_f
   end
 
-
   def build_lease_pricing_from_unit_type(unit_type)
     term_rents = unit_type.dig("rent", "termRent")
     return nil unless term_rents.present?
@@ -534,11 +533,10 @@ class PsiService < BaseService
     (date - end_date).abs
   end
 
-def normalize_rent(value)
-  return nil if value.blank?
-  value.to_s.gsub(/[, ]/, '').to_f
-end
-
+  def normalize_rent(value)
+    return nil if value.blank?
+    value.to_s.gsub(/[, ]/, '').to_f
+  end
 
   def unit_space_enabled_pricing_update response
     import_units = []
@@ -643,14 +641,6 @@ end
 
   def is_unit_space_enabled
     ActiveRecord::Type::Boolean.new.cast(@credentials&.entrata_show_unit_spaces)
-  end
-
-  def set_units_hash
-    @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(@credentials.community_id, "psi")
-  end
-
-  def set_floorplans_hash
-    @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(@credentials.community_id, "psi")
   end
 
   def getMoveInDate(property_id)

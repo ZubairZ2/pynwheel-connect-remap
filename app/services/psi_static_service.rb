@@ -5,8 +5,8 @@ class PsiStaticService < BaseService
   def initialize(credentials)
     @credentials = credentials
     @unit_record = []
-    @all_units_hash = {}
-    @all_floorplans_hash = {}
+    @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(@credentials.community_id, "psi")
+    @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(@credentials.community_id, "psi")
   end
 
   def perform
@@ -263,15 +263,13 @@ class PsiStaticService < BaseService
 
         add_floorplan_images(floorplan, f['File'])
         floorplan.save(validate: false)
-        puts "---------------------------- #{floorplan.name} ---------------------- \n"
       end
     end
 
     def fill_psi_pricing_details(limit_result)
       floorplanHash = Hash.new
       property_ids = @credentials.property_id.split(',') rescue []
-      set_units_hash()
-      set_floorplans_hash()
+
       property_ids.each do |property_id|
         move_in_dates = getMoveInDate(property_id)
         move_in_dates << "0" unless move_in_dates.present?
@@ -336,7 +334,6 @@ class PsiStaticService < BaseService
               unit = get_psi_space_matched_unit(u, us)
 
               if unit.present?
-                puts "----------------------------- Updating pricing for: #{unit.marketing_name} ------------------------\n"
                 import_units << update_unit_pricing_and_availability(us, unit)
               end
             end
@@ -359,7 +356,6 @@ class PsiStaticService < BaseService
             unit = get_psi_space_matched_unit(u[1], nil)
 
             if unit.present?
-              puts "----------------------------- Updating pricing for: #{unit.marketing_name} ------------------------\n"
               import_units << update_unit_pricing_and_availability(u, unit)
             end
           end
@@ -507,14 +503,6 @@ class PsiStaticService < BaseService
 
     def move_in_date_param move_in_date
       h_move_in_date = (move_in_date.present? && move_in_date != "0") ? { moveInStartDate: move_in_date } : {}
-    end
-
-    def set_units_hash
-      @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(@credentials.community_id, "psi")
-    end
-
-    def set_floorplans_hash
-      @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(@credentials.community_id, "psi")
     end
 
     def set_availability_url(unit, u)
