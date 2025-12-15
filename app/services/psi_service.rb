@@ -54,9 +54,9 @@ class PsiService < BaseService
     begin
       before_updation_units = NotifyManagerService.new(@credentials.community_id)
       property_ids = @credentials.property_id.split(',') rescue []
+      community = Community.find @credentials.community_id
 
       @credentials&.get_limit_result_availability()&.each do |limit_result|
-
         property_ids.each do |property_id|
           response = self.class.call_entrata_api(
             subdomain: @credentials.entrata_url,
@@ -99,8 +99,6 @@ class PsiService < BaseService
               end
             end
 
-            community = Community.find @credentials.community_id
-
             save_psi_floorplans(floorplans, property_id)
             save_psi_units(units, property_id, limit_result)
             update_additional_fee_and_pricing(community, response)
@@ -109,10 +107,11 @@ class PsiService < BaseService
           end
         end
 
-        fill_psi_pricing_details(limit_result)
-        before_updation_units.compare_status_and_notify()
+        fill_psi_pricing_details(limit_result) unless community.enable_unit_type_pricing?
       end
 
+      fill_unit_type_pricing_details() if community.enable_unit_type_pricing?
+      before_updation_units.compare_status_and_notify()
     rescue => e
       raise e
     end
@@ -296,7 +295,6 @@ class PsiService < BaseService
       floorplan = @all_floorplans_hash[f["Identification"]["IDValue"].to_s]
 
       if floorplan.present?
-        puts "----------------- #{floorplan.name} -----------------------\n"
         floorplan.availability_url = f["FloorplanAvailabilityURL"] if f["FloorplanAvailabilityURL"].present?
         floorplan.provider = "psi"
 
@@ -359,7 +357,6 @@ class PsiService < BaseService
           if f["MarketRent"]["@attributes"]["Min"].to_f > 0
             floorplan.market_rent = f["MarketRent"]["@attributes"]["Min"]
           else
-
             floorplan.market_rent = f["MarketRent"]["@attributes"]["Max"]
           end
         end
@@ -389,8 +386,159 @@ class PsiService < BaseService
         is_unit_space_enabled ? unit_space_enabled_pricing_update(response) : unit_space_disabled_pricing_update(response)
       end
     end
-
   end
+
+  def fill_unit_type_pricing_details
+    property_ids = @credentials.property_id.split(',') rescue []
+
+    property_ids.each do |property_id|
+      response = get_unit_types_pricing(property_id)
+      next unless response.dig("response", "code") == 200
+
+      unit_types = response.dig("response", "result", "unitTypes", "unitType") || []
+      process_unit_types(unit_types)
+    end
+  end
+
+  def process_unit_types(unit_types)
+    import_floorplans = []
+    import_units      = []
+
+    unit_types.each do |ut|
+      floorplan_id = ut.dig("floorplan")&.keys&.first
+      next unless floorplan_id
+
+      floorplan = @all_floorplans_hash[floorplan_id.to_s]
+      next unless floorplan
+
+      # 1️⃣ Floorplan pricing
+      update_floorplan_market_rent(floorplan, ut)
+      import_floorplans << floorplan
+
+      # 2️⃣ Lease pricing (Annual only)
+      lease_pricing = build_lease_pricing_from_unit_type(ut)
+      # next unless lease_pricing
+
+      min_rent = normalize_rent(ut["minMarketRent"]) || floorplan.market_rent
+      max_rent = normalize_rent(ut["maxMarketRent"]) || floorplan.market_rent
+
+      # 3️⃣ Update units (NO DB queries)
+      @all_units_hash.each_value do |unit|
+        next unless unit.floorplan_id == floorplan.provider_floorplan_id
+        next if unit.manual_override || unit.effective_rent_is_updated
+
+        unit.market_rent        = floorplan.market_rent
+        unit.effective_rent     = floorplan.market_rent
+        unit.min_effective_rent = min_rent
+        unit.max_effective_rent = max_rent
+        unit.lease_pricing      = lease_pricing
+
+        import_units << unit
+      end
+    end
+
+    ProvidersDataUpdationService.new.update_or_create_floorplans_records(import_floorplans)
+    ProvidersDataUpdationService.new.update_or_create_units_records(import_units)
+  end
+
+  def update_floorplan_market_rent(floorplan, unit_type)
+    return if floorplan.market_rent_is_updated
+
+    min = normalize_rent(unit_type["minMarketRent"])
+    max = normalize_rent(unit_type["maxMarketRent"])
+
+    rent =
+      if min&.positive?
+        min
+      elsif max&.positive?
+        max
+      end
+
+    floorplan.market_rent = rent if rent
+  end
+
+  def normalize_rent(value)
+    return nil if value.blank?
+    value.to_s.gsub(/[, ]/, '').to_f
+  end
+
+
+  def build_lease_pricing_from_unit_type(unit_type)
+    term_rents = unit_type.dig("rent", "termRent")
+    return nil unless term_rents.present?
+
+    today = Date.current
+    buckets = Hash.new { |h, k| h[k] = [] }
+
+    # 1️⃣ Filter + group
+    term_rents.each do |tr|
+      attrs = tr["@attributes"]
+      next unless attrs.present?
+
+      # ✅ case-sensitive Annual only
+      # next unless attrs["leaseTermName"].to_s.include?("Annual")
+
+      term = attrs["leaseTerm"].to_s.split.first.to_i
+      rent = normalize_rent(attrs["rent"])
+      next unless term.positive? && rent&.positive?
+
+      start_date = parse_mmddyyyy(attrs["startDate"])
+      end_date   = parse_mmddyyyy(attrs["endDate"] || attrs["endtDate"])
+      next unless start_date && end_date
+
+      buckets[term] << {
+        rent: rent,
+        start_date: start_date,
+        end_date: end_date
+      }
+    end
+
+    return nil if buckets.empty?
+
+    result = {}
+
+    # 2️⃣ Pick per term
+    buckets.each do |term, rows|
+      # a) lowest rent first
+      min_rent = rows.map { |r| r[:rent] }.min
+      cheapest = rows.select { |r| r[:rent] == min_rent }
+
+      # b) date relevance only as tiebreaker
+      chosen =
+        cheapest.min_by do |r|
+          distance_to_window(today, r[:start_date], r[:end_date])
+        end
+
+      result[term] = chosen[:rent]
+    end
+
+    # 3️⃣ Minimum 2 terms required
+    return nil if result.keys.size <= 1
+
+    result
+      .sort_by { |term, _| term }
+      .map { |term, rent| "#{term}:#{format('%.2f', rent)}::;" }
+      .join
+  end
+
+  def parse_mmddyyyy(str)
+    return nil if str.blank?
+    Date.strptime(str, "%m/%d/%Y")
+  rescue ArgumentError
+    nil
+  end
+
+  def distance_to_window(date, start_date, end_date)
+    return 0 if date >= start_date && date <= end_date
+    return (start_date - date).abs if date < start_date
+    (date - end_date).abs
+  end
+
+def normalize_rent(value)
+  return nil if value.blank?
+  value.to_s.gsub(/[, ]/, '').to_f
+end
+
 
   def unit_space_enabled_pricing_update response
     import_units = []
@@ -404,7 +552,6 @@ class PsiService < BaseService
             unit = get_psi_space_matched_unit(u, us)
 
             if unit.present?
-              puts "----------------------------- Updating pricing for: #{unit.marketing_name} ------------------------\n"
               import_units << update_unit_pricing_and_availability(us, unit)
             end
           end
@@ -427,7 +574,6 @@ class PsiService < BaseService
           unit = get_psi_space_matched_unit(u[1], nil)
 
           if unit.present?
-            puts "----------------------------- Updating pricing for: #{unit.marketing_name} ------------------------\n"
             import_units << update_unit_pricing_and_availability(u, unit)
           end
         end
@@ -497,6 +643,14 @@ class PsiService < BaseService
 
   def is_unit_space_enabled
     ActiveRecord::Type::Boolean.new.cast(@credentials&.entrata_show_unit_spaces)
+  end
+
+  def set_units_hash
+    @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(@credentials.community_id, "psi")
+  end
+
+  def set_floorplans_hash
+    @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(@credentials.community_id, "psi")
   end
 
   def getMoveInDate(property_id)
@@ -592,6 +746,22 @@ class PsiService < BaseService
         puts "Response body: #{response.body}"
         nil
       end
+  end
+
+  def get_unit_types_pricing(property_id)
+    response = PsiService.call_entrata_api(
+      subdomain: @credentials.entrata_url,
+      endpoint: "propertyunits",
+      method: :post,
+      payload: {
+        method: {
+          name: "getUnitTypes",
+          params: { propertyId: property_id }
+        }
+      }
+    )
+
+    JSON.parse(response.body)
   end
 
   def get_pricing_params property_id, move_in_date, limit_result
