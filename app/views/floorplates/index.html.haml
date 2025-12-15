@@ -207,6 +207,20 @@
                           = check_box_tag :turn_availability_on, true, @community.turn_availability_on, class: "apartment-setting-field"
                           %label.label-primary{:for => "turn_availability_on"}
                           %span.pl-15 Yes
+                    
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                        Use getUnitTypes Pricing
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            Enable this option to use getUnitTypes pricing for this property. This is typically required for student housing properties where pricing is set at the unit type level and conventional pricing endpoints do not provide correct data.
+
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .TriSea-technologies-Switch
+                          %span.pr-15 No
+                          = check_box_tag :enable_unit_type_pricing, true, @community.enable_unit_type_pricing, class: "apartment-setting-field"
+                          %label.label-primary{:for => "enable_unit_type_pricing"}
+                          %span.pl-15 Yes
 
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
@@ -400,7 +414,21 @@
                           = check_box_tag :turn_availability_on, true, @community.turn_availability_on, class: "apartment-setting-field"
                           %label.label-primary{:for => "turn_availability_on"}
                           %span.pl-15 Yes
-                        
+
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                        Use getUnitTypes Pricing
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            Enable this option to use getUnitTypes pricing for this property. This is typically required for student housing properties where pricing is set at the unit type level and conventional pricing endpoints do not provide correct data.
+
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .TriSea-technologies-Switch
+                          %span.pr-15 No
+                          = check_box_tag :enable_unit_type_pricing, true, @community.enable_unit_type_pricing, class: "apartment-setting-field"
+                          %label.label-primary{:for => "enable_unit_type_pricing"}
+                          %span.pl-15 Yes
+
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                         Map Filters Visibility
