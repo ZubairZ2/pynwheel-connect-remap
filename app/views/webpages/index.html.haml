@@ -376,6 +376,7 @@
   var $images = [];
   var largeImageHeight = 166;
   var turnAvailabilityOn = "#{@community.turn_availability_on?}" === "true"
+  var isFloorPlanColorEnabled = "#{@community.enable_floorplan_level_color?}" === "true"
   var fontFamily = "#{@font_family}"
   var floorplans = $("#communityWebpagesData").data("floorplans");
   var subCommunities = $("#communityWebpagesData").data("subCommunities");

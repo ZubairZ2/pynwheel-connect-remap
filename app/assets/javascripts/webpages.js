@@ -1417,9 +1417,9 @@ function buildUnitBoxHTML(unit) {
 }
 
 function floorplanColorBarHTML(unit) {
-  if(!isFloorplanMapEnabled()) return '';
+  if(!isFloorplanMapEnabled() && !checkFloorPlanColorMode()) return '';
   
-  const floorplanColors = getFloorplanLevelMarkerColor(unit);
+  const floorplanColors = getMarkerColor(unit);
   return `<div class="floorplan-color-bar" style="background-color: ${floorplanColors};"></div>`;
 }
 
@@ -1793,14 +1793,14 @@ function unitBoxListHover() {
           }
 
           if (_3dMode) {
-            if(isFloorplanMapEnabled()) {
-              markerColor = getFloorplanLevelMarkerColor(_3dData);
+            if(isFloorplanMapEnabled() || checkFloorPlanColorMode()) {
+              markerColor = getMarkerColor(_3dData);
             } else {
               markerColor = getUnitMarkerColor(_3dData);
             }
           } else {
-            if(isFloorplanMapEnabled()) {
-              markerColor = getFloorplanLevelMarkerColor(selectedMarker.dataset);
+            if(isFloorplanMapEnabled() || checkFloorPlanColorMode()) {
+              markerColor = getMarkerColor(selectedMarker.dataset);
             } else {
               markerColor = getUnitMarkerColor(selectedMarker.dataset);
             }
@@ -4073,8 +4073,8 @@ function getUnitMarkerColor(unit) {
     }
   }
 
-  if(isFloorplanMapEnabled()) {
-    result = getFloorplanLevelMarkerColor(unit);
+  if(isFloorplanMapEnabled() || checkFloorPlanColorMode()) {
+    result = getMarkerColor(unit);
     return result;
   }
 
@@ -4107,7 +4107,7 @@ function isModelUnit(unit) {
     : false;
 }
 
-function getFloorplanLevelMarkerColor(unit) {
+function getMarkerColor(unit) {
   const colorBy = unit.colorBy || unit.data_attributes['data-color-by'] || "by_floorplan";
 
   switch (colorBy) {
@@ -4212,6 +4212,12 @@ function resetUnits() {
 
 function isFloorplanMapEnabled() {
   return (
-    turnAvailabilityOn && !opsMapMarkersEnabled
+    (turnAvailabilityOn) && !opsMapMarkersEnabled
+  );
+}
+
+function checkFloorPlanColorMode() {
+  return (
+    (isFloorPlanColorEnabled) && !opsMapMarkersEnabled
   );
 }
