@@ -889,6 +889,7 @@ class CommunitiesController < ApplicationController
     @community.is_floor_level_map = params[:is_floor_level_map]
     @community.turn_availability_on = params[:turn_availability_on]
     @community.enable_unit_type_pricing = params[:enable_unit_type_pricing]
+    @community.enable_floorplan_level_color = params[:enable_floorplan_level_color]
     @community.display_additional_fee = params[:display_additional_fee]
     @community.display_manual_additional_fee = params[:display_manual_additional_fee]
     @community.additional_fee = params[:additional_fee]

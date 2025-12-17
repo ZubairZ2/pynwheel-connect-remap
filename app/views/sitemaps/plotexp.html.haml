@@ -213,6 +213,20 @@
               
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                  Display Floor Plan Colors
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
+                    %span#propertyDetailNameText
+                      Switching this to ‘Yes’ will enable color coding for floor plans on the marketing map. Each floor plan will be displayed with its designated color, regardless of unit availability settings.
+
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = check_box_tag :enable_floorplan_level_color, true, @community.enable_floorplan_level_color, class: "apartment-setting-field"
+                    %label.label-primary{:for => "enable_floorplan_level_color"}
+                    %span.pl-15 Yes
+              
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                   Turn Availability Off
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
                     %span#propertyDetailNameText
@@ -405,6 +419,20 @@
                     %label.label-primary{:for => "show_current_availability"}
                     %span.pl-15 Now
               
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                  Display Floor Plan Colors
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
+                    %span#propertyDetailNameText
+                      Switching this to ‘Yes’ will enable color coding for floor plans on the marketing map. Each floor plan will be displayed with its designated color, regardless of unit availability settings.
+
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = check_box_tag :enable_floorplan_level_color, true, @community.enable_floorplan_level_color, class: "apartment-setting-field"
+                    %label.label-primary{:for => "enable_floorplan_level_color"}
+                    %span.pl-15 Yes
+
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                   Turn Availability Off
