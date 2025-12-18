@@ -220,16 +220,23 @@ class CredentialsValid < BaseService
       end
     end
 
-    def verify_appfolio_credentials community, credentials
+    def verify_appfolio_credentials(community, credentials)
       begin
-        property_code = credentials&.app_folio_property_id&.split(",")[0] rescue ""
-        property_code = property_code&.strip
         app_folio_service = DataProviders::AppFolio::V0::BaseService.new(community.id)
-        response = app_folio_service.get_resource(property_code, "properties", "Id")
+        credentials = Credential.find credentials.id 
 
-        return response.success?
-      rescue => e
-        return false
+        property_ids = credentials.resolved_app_folio_property_ids(app_folio_service)
+        return false if property_ids.blank?
+
+        response = app_folio_service.get_resource(
+          property_ids.first,
+          "properties",
+          "Id"
+        )
+
+        response&.success?
+      rescue
+        false
       end
     end
 
