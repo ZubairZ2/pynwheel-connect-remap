@@ -88,9 +88,9 @@
           %header.app-header
             .header-inner
               .app-logo-mobile
-                - if @community.community_logo
+                - if @community.map_logo
                   %a.logo{:href => @community.community_website}
-                    %img{:alt => "", :class => "webpage_logo", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel-connect-logo.png'}", :title => ""}
+                    %img{:alt => "", :class => "webpage_logo", :src => map_logo_url(@community, false), :title => ""}
               
               .selection-fields
                 - if @have_multi_property_ids
@@ -190,9 +190,9 @@
                       %i.fa.fa-refresh
               
               .app-logo
-                - if @community.community_logo
+                - if @community.map_logo
                   %a.logo{:href => @community.community_website}
-                    %img{:alt => "", :class => "webpage_logo", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel-connect-logo.png'}", :title => ""}
+                    %img{:alt => "", :class => "webpage_logo", :src => map_logo_url(@community, false), :title => ""}
           
           - if @show_floors_panel
             .c-sidebar#sidebar
@@ -421,7 +421,7 @@
   var current_width = $(window).width();
   var _beansApiKey = "#{ENV['BEANS_API_KEY']}"
   
-  var community_logo = "#{@community.logo.present? ? true : false}"
+  var mapLogo = "#{@community.map_logo.present? ? true : false}"
 
   var left_margin = #{raw left_margin}
   var top_margin = #{raw top_margin}
@@ -614,7 +614,7 @@
       $("#pricing-option").addClass('hidden')
     }); 
 
-    if(community_logo == "false" && current_width < 567){
+    if(mapLogo == "false" && current_width < 567){
       $(".mobile-trigger").addClass("pt");
     }
 
