@@ -74,7 +74,7 @@ class Credential < ApplicationRecord
   end
 
   def resolved_app_folio_property_ids(app_folio_service)
-    if app_folio_property_id?
+    if is_app_folio_property_id?
       app_folio_property_id.to_s.split(',').map(&:strip)
     else
       resolve_property_ids_from_group(app_folio_service)
