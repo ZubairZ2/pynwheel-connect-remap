@@ -11,16 +11,28 @@ module DataProviders
         @company    = @community&.company
       end
 
-      def get_resource(property_id, resource, filter_key = nil)
+      def get_resource(property_ids, resource, filter_key = nil)
         return unless @credential.present?
 
         url = "#{base_url}/api/v0/#{resource}?filters[LastUpdatedAtFrom]=#{DEFAULT_LAST_UPDATED_AT}"
-        url += "&filters[#{filter_key}]=#{property_id}" if filter_key.present?
+
+        if filter_key.present?
+          ids = normalize_ids(property_ids)
+          url += "&filters[#{filter_key}]=#{CGI.escape(ids.join(','))}" if ids.any?
+        end
 
         HTTParty.get(url, headers: request_headers)
       end
 
       private
+
+      def normalize_ids(value)
+        Array(value)
+          .flat_map { |v| v.to_s.split(',') }
+          .map(&:strip)
+          .reject(&:blank?)
+          .uniq
+      end
 
       def request_headers
         {
