@@ -93,100 +93,55 @@ function setSVG(container, svgElement, options) {
 
   if (options.setSVGImageHeight) setSvgOrImageHeight($(container).find("svg"));
 }
-
-/**
- * Uniquify all SVG ids by appending `_<floorId>`, except:
- * - Elements whose id contains "unit", "units", "amenity", or "amenities" (any case).
- * - Any element that is inside such a group.
- *
- * It also updates url(#id), href="#id" and xlink:href="#id" references
- * for the renamed ids, but again skips unit/amenity elements.
- */
 function uniquifySVGIds(svgElement, floorId) {
-  if (!svgElement || !floorId) return;
+  if (!svgElement) return;
 
-  const idMap = new Map(); // oldId -> newId
-  const XLINK_NS = "http://www.w3.org/1999/xlink";
-  const ATTRS_WITH_URL = ["fill", "stroke", "filter", "clip-path", "mask", "style"];
+  const idMap = new Map();
 
-  const ID_KEYWORDS = ["unit", "units", "amenity", "amenities"];
+  // Elements to skip (Units and Amenities groups + their children)
+  const skipSelectors = ["g#Units", "g#Amenities", "#Units *", "#Amenities *"];
 
-  const hasUnitOrAmenityKeyword = (id) => {
-    if (!id) return false;
-    const lower = id.toLowerCase();
-    return ID_KEYWORDS.some((kw) => lower.includes(kw));
-  };
-
-  const isUnitOrAmenityElement = (el) => {
-    if (!el) return false;
-
-    // Check own id
-    if (hasUnitOrAmenityKeyword(el.id)) return true;
-
-    // Check ancestors up to <svg>
-    let current = el.parentElement;
-    while (current && current.tagName !== "SVG") {
-      if (hasUnitOrAmenityKeyword(current.id)) return true;
-      current = current.parentElement;
-    }
-
-    return false;
-  };
-
-  // ---------------------------------------------------------------------------
-  // STEP 1: Rename ids (except units/amenities and already-suffixed ones)
-  // ---------------------------------------------------------------------------
-  svgElement.querySelectorAll("[id]").forEach((el) => {
-    if (isUnitOrAmenityElement(el)) return;
+  // STEP 1: Find and rename all ids (except skipped ones)
+  svgElement.querySelectorAll('[id]').forEach(el => {
+    // Skip if inside Units or Amenities
+    if (el.closest(skipSelectors.join(","))) return;
 
     const oldId = el.id;
-    if (!oldId) return;
-
-    // Avoid double-adding the same floorId suffix
-    if (oldId.endsWith(`_${floorId}`)) return;
-
     const newId = `${oldId}_${floorId}`;
+    console.log(`Renaming id: ${oldId} → ${newId}`);
     idMap.set(oldId, newId);
     el.id = newId;
   });
 
-  if (!idMap.size) return; // nothing to update
+  // STEP 2: Update all references
+  svgElement.querySelectorAll('*').forEach(el => {
+    // Skip updating references inside Units or Amenities
+    if (el.closest(skipSelectors.join(","))) return;
 
-  // ---------------------------------------------------------------------------
-  // STEP 2: Update all references for renamed ids (except inside units/amenities)
-  // ---------------------------------------------------------------------------
-  svgElement.querySelectorAll("*").forEach((el) => {
-    if (isUnitOrAmenityElement(el)) return;
-
-    // Update attributes that can contain url(#id)
-    ATTRS_WITH_URL.forEach((attr) => {
-      if (!el.hasAttribute(attr)) return;
-
-      let val = el.getAttribute(attr);
-      if (!val) return;
-
-      idMap.forEach((newId, oldId) => {
-        const urlPattern = new RegExp(`url\$begin:math:text$\#\$\{oldId\}\\$end:math:text$`, "g");
-        if (urlPattern.test(val)) {
-          val = val.replace(urlPattern, `url(#${newId})`);
-        }
-      });
-
-      el.setAttribute(attr, val);
+    // Attributes with url(#id)
+    ["fill", "stroke", "filter", "clip-path", "mask", "style"].forEach(attr => {
+      if (el.hasAttribute(attr)) {
+        let val = el.getAttribute(attr);
+        idMap.forEach((newId, oldId) => {
+          if (val && val.includes(`url(#${oldId})`)) {
+            val = val.replace(new RegExp(`url\\(#${oldId}\\)`, "g"), `url(#${newId})`);
+          }
+        });
+        el.setAttribute(attr, val);
+      }
     });
 
-    // Update href and xlink:href
+    // href and xlink:href
     idMap.forEach((newId, oldId) => {
-      const target = `#${oldId}`;
-
       // Normal href
-      if (el.hasAttribute("href") && el.getAttribute("href") === target) {
+      if (el.hasAttribute("href") && el.getAttribute("href") === `#${oldId}`) {
         el.setAttribute("href", `#${newId}`);
       }
 
       // xlink:href in namespace
-      const xHrefVal = el.getAttributeNS(XLINK_NS, "href");
-      if (xHrefVal === target) {
+      const XLINK_NS = "http://www.w3.org/1999/xlink";
+      if (el.getAttributeNS(XLINK_NS, "href") === `#${oldId}`) {
+        console.log(`Updating xlink:href on <${el.tagName}>: #${oldId} → #${newId}`);
         el.setAttributeNS(XLINK_NS, "xlink:href", `#${newId}`);
       }
     });
@@ -241,9 +196,9 @@ async function fetchSVG(
 
     if (!svgElement) throw new Error("No <svg> element found in the response.");
 
-    // const { floor = null } = options;
-    // if(hasFloorplate() && floor)
-    //   uniquifySVGIds(svgElement, `f${floor}`);
+    const { floor = null } = options;
+    if(hasFloorplate() && floor)
+      uniquifySVGIds(svgElement, `f${floor}`);
 
     parsedSVGs.push(svgElement);
     setSVG(container, svgElement, options);
