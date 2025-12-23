@@ -75,7 +75,7 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
       update_data_provider
       data_provider = @community.data_provider
       @credential = update_data_provider_credentials
-      
+
       if @credential.present?
         @community.set_data_provider_status(current_pynwheel_user, params["status"])
         render json: {success: true, error_code: 200, message: "#{data_provider} updated successfully", data: @credential.as_json(data_provider)}
@@ -103,6 +103,7 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
     else
       credential = create_data_provider(community_credentials)
     end
+
     credential
   end
 

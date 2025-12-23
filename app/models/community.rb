@@ -628,7 +628,11 @@ class Community < ApplicationRecord
       when "yardirentcafe"
         (credential.c_code.present? || credential.api_token.present?) && credential.p_code.present?
       when "appfolio"
-        (credential.app_folio_property_id.present? || credential.app_folio_property_group_id.present?) && credential.app_folio_database_id.present?
+        if credential.app_folio_property_scope == "is_app_folio_property_id"
+          credential.app_folio_property_id.present? && credential.app_folio_database_id.present?
+        else
+          credential.app_folio_property_group_id.present? && credential.app_folio_database_id.present?
+        end
       when "rentmanager"
         (credential.rentmanager_username.present? && credential.rentmanager_password.present? && credential.rentmanager_property_id.present? && credential.rentmanager_base_url.present?)
       when "realpagesvc"
