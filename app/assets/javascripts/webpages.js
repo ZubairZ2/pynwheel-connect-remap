@@ -1189,6 +1189,7 @@ function unitMarkerClick(unitId, event) {
 
 function setImageMapMarkers() {
   if (svgMode || _3dMapMode()) return;
+  if(!floors) return;
 
   $(".map-global-loader").removeClass("hidden");
 
@@ -2205,6 +2206,14 @@ function setUnitModalButtons(e) {
   if (filteredUnits.length > 1) {
     $unitButtons.removeClass("hidden");
   }
+
+    // SORT HERE 👇
+  filteredUnits.sort((a, b) => {
+    const aTitle = a?.data_attributes?.["data-title"] || "";
+    const bTitle = b?.data_attributes?.["data-title"] || "";
+    return aTitle.localeCompare(bTitle, undefined, { numeric: true });
+  });
+
 
   filteredUnits.forEach((unit) => {
     if (unit && !validFloor(unit.floor)) return;
