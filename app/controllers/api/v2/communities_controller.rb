@@ -27,7 +27,7 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
       @community.remove_file!
       update_community = @community.update(name: community["name"] , logo: community["logo"] , address:  community["address"], city: community["city"], state: community["state"], email: community["email"], phone: community["phone"], zip: community["zip"], property_manager_name: community["property_manager_name"], property_manager_phone: community["property_manager_phone"],property_manager_email:  community["property_manager_email"], website: community["website"] , number_of_units: community["number_of_units"] , brand_details_pdf: community["brand_details_pdf"])
     else
-      @community.remove_logo!
+      # @community.remove_logo!
       update_community = @community.update(name: community["name"] , file: community["file"] , address:  community["address"], city: community["city"], state: community["state"], email: community["email"], phone: community["phone"], zip: community["zip"], property_manager_name: community["property_manager_name"], property_manager_phone: community["property_manager_phone"],property_manager_email:  community["property_manager_email"], website: community["website"] , number_of_units: community["number_of_units"] , brand_details_pdf: community["brand_details_pdf"])
     end
 
