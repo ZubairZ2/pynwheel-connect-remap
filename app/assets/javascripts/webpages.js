@@ -1189,7 +1189,6 @@ function unitMarkerClick(unitId, event) {
 
 function setImageMapMarkers() {
   if (svgMode || _3dMapMode()) return;
-  if(!floors) return;
 
   $(".map-global-loader").removeClass("hidden");
 
