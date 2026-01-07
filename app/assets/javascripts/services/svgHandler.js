@@ -93,62 +93,62 @@ function setSVG(container, svgElement, options) {
 
   if (options.setSVGImageHeight) setSvgOrImageHeight($(container).find("svg"));
 }
+
+function isInsideUnitsOrAmenities(el) {
+  let node = el;
+
+  while (node && node.nodeType === 1) {
+    if (
+      typeof node.id === "string" &&
+      /units|amenities/i.test(node.id)
+    ) {
+      return true;
+    }
+    node = node.parentElement;
+  }
+
+  return false;
+}
+
 function uniquifySVGIds(svgElement, floorId) {
   if (!svgElement) return;
 
   const idMap = new Map();
 
-  // Elements to skip (Units and Amenities groups + their children)
-  const skipSelectors = [
-    "g#Units",
-    "#Units*",
-    "#Units *",
-    "g#Amenities",
-    "#Amenities*",
-    "Amenities *",
-  ];
-
   // STEP 1: Find and rename all ids (except skipped ones)
-  svgElement.querySelectorAll('[id]').forEach(el => {
-    // Skip if inside Units or Amenities
-    if (el.closest(skipSelectors.join(","))) return;
+  svgElement.querySelectorAll("[id]").forEach(el => {
+    if (isInsideUnitsOrAmenities(el)) return;
 
     const oldId = el.id;
     const newId = `${oldId}_${floorId}`;
-    console.log(`Renaming id: ${oldId} → ${newId}`);
     idMap.set(oldId, newId);
     el.id = newId;
   });
 
   // STEP 2: Update all references
-  svgElement.querySelectorAll('*').forEach(el => {
-    // Skip updating references inside Units or Amenities
-    if (el.closest(skipSelectors.join(","))) return;
+  svgElement.querySelectorAll("*").forEach(el => {
+    if (isInsideUnitsOrAmenities(el)) return;
 
-    // Attributes with url(#id)
     ["fill", "stroke", "filter", "clip-path", "mask", "style"].forEach(attr => {
-      if (el.hasAttribute(attr)) {
-        let val = el.getAttribute(attr);
-        idMap.forEach((newId, oldId) => {
-          if (val && val.includes(`url(#${oldId})`)) {
-            val = val.replace(new RegExp(`url\\(#${oldId}\\)`, "g"), `url(#${newId})`);
-          }
-        });
-        el.setAttribute(attr, val);
-      }
+      if (!el.hasAttribute(attr)) return;
+
+      let val = el.getAttribute(attr);
+      idMap.forEach((newId, oldId) => {
+        val = val?.replace(
+          new RegExp(`url\$begin:math:text$\#\$\{oldId\}\\$end:math:text$`, "g"),
+          `url(#${newId})`
+        );
+      });
+      el.setAttribute(attr, val);
     });
 
-    // href and xlink:href
     idMap.forEach((newId, oldId) => {
-      // Normal href
-      if (el.hasAttribute("href") && el.getAttribute("href") === `#${oldId}`) {
+      if (el.getAttribute("href") === `#${oldId}`) {
         el.setAttribute("href", `#${newId}`);
       }
 
-      // xlink:href in namespace
       const XLINK_NS = "http://www.w3.org/1999/xlink";
       if (el.getAttributeNS(XLINK_NS, "href") === `#${oldId}`) {
-        console.log(`Updating xlink:href on <${el.tagName}>: #${oldId} → #${newId}`);
         el.setAttributeNS(XLINK_NS, "xlink:href", `#${newId}`);
       }
     });
