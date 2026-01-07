@@ -99,7 +99,14 @@ function uniquifySVGIds(svgElement, floorId) {
   const idMap = new Map();
 
   // Elements to skip (Units and Amenities groups + their children)
-  const skipSelectors = ["g#Units", "g#Amenities", "#Units *", "#Amenities *"];
+  const skipSelectors = [
+    "g#Units",
+    "#Units*",
+    "#Units *",
+    "g#Amenities",
+    "#Amenities*",
+    "Amenities *",
+  ];
 
   // STEP 1: Find and rename all ids (except skipped ones)
   svgElement.querySelectorAll('[id]').forEach(el => {
