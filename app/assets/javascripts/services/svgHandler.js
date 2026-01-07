@@ -94,21 +94,6 @@ function setSVG(container, svgElement, options) {
   if (options.setSVGImageHeight) setSvgOrImageHeight($(container).find("svg"));
 }
 
-function isInsideUnitsOrAmenities(el) {
-  let node = el;
-
-  while (node && node.nodeType === 1) {
-    if (
-      typeof node.id === "string" &&
-      /units|amenities/i.test(node.id)
-    ) {
-      return true;
-    }
-    node = node.parentElement;
-  }
-
-  return false;
-}
 
 function uniquifySVGIds(svgElement, floorId) {
   if (!svgElement) return;
@@ -116,7 +101,7 @@ function uniquifySVGIds(svgElement, floorId) {
   const idMap = new Map();
 
   // Elements to skip (Units and Amenities groups + their children)
-  const skipSelectors = ["g#Units", "g#Amenities", "#Units_ *", "#Units *", "#Amenities *"];
+  const skipSelectors = ["g#Units", "g#Units_", "g#Amenities", "#Units_ *", "#Units *", "#Amenities *"];
 
   // STEP 1: Find and rename all ids (except skipped ones)
   svgElement.querySelectorAll('[id]').forEach(el => {
