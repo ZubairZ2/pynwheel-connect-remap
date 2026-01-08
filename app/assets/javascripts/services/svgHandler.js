@@ -101,11 +101,20 @@ function uniquifySVGIds(svgElement, floorId) {
   const idMap = new Map();
 
   function isUnitsOrAmenities(el) {
-    const container = el.closest('g[id], [id]');
-    return Boolean(
-      container &&
-      /^(units|amenities)/i.test(container.id)
-    );
+    let node = el;
+
+    while (node && node !== el.ownerSVGElement) {
+      if (
+        node.tagName === 'g' &&
+        node.id &&
+        /^(units|amenities)/i.test(node.id)
+      ) {
+        return true;
+      }
+      node = node.parentElement;
+    }
+
+    return false;
   }
 
   // Elements to skip (Units and Amenities groups + their children)
