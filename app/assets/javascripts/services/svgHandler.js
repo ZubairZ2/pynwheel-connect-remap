@@ -100,13 +100,20 @@ function uniquifySVGIds(svgElement, floorId) {
 
   const idMap = new Map();
 
+  function isUnitsOrAmenities(el) {
+    return Boolean(
+      el.closest('[id]') &&
+      el.closest('[id]').id.match(/^(units|amenities)/i)
+    );
+  }
+
   // Elements to skip (Units and Amenities groups + their children)
-  const skipSelectors = ["g#Units", "g#Units_", "g#Amenities", "#Units_ *", "#Units *", "#Amenities *"];
+  // const skipSelectors = ["g#Units", "g#Units_", "g#Amenities", "#Units_ *", "#Units *", "#Amenities *"];
 
   // STEP 1: Find and rename all ids (except skipped ones)
   svgElement.querySelectorAll('[id]').forEach(el => {
     // Skip if inside Units or Amenities
-    if (el.closest(skipSelectors.join(","))) return;
+    if (isUnitsOrAmenities(el)) return;
 
     const oldId = el.id;
     const newId = `${oldId}_${floorId}`;
@@ -118,7 +125,7 @@ function uniquifySVGIds(svgElement, floorId) {
   // STEP 2: Update all references
   svgElement.querySelectorAll('*').forEach(el => {
     // Skip updating references inside Units or Amenities
-    if (el.closest(skipSelectors.join(","))) return;
+    if (isUnitsOrAmenities(el)) return;
 
     // Attributes with url(#id)
     ["fill", "stroke", "filter", "clip-path", "mask", "style"].forEach(attr => {
