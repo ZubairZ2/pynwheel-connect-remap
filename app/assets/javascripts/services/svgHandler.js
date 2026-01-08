@@ -101,9 +101,10 @@ function uniquifySVGIds(svgElement, floorId) {
   const idMap = new Map();
 
   function isUnitsOrAmenities(el) {
+    const container = el.closest('g[id], [id]');
     return Boolean(
-      el.closest('[id]') &&
-      el.closest('[id]').id.match(/^(units|amenities)/i)
+      container &&
+      /^(units|amenities)/i.test(container.id)
     );
   }
 
