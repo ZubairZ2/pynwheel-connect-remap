@@ -38,18 +38,28 @@ class XmlSwapService < BaseService
   end
 
   def find_property(response, domain)
-    domain = domain.to_s.strip
+    property_node = response.dig('PhysicalProperty', 'Property')
+    return nil if property_node.blank?
 
-    properties = Array(response.dig('PhysicalProperty', 'Property'))
+    # Normalize to array
+    properties = if property_node.is_a?(Array)
+                  property_node
+                elsif property_node.is_a?(Hash)
+                  [property_node]
+                else
+                  []
+                end
 
-    properties.find do |p|
-      ids = p.dig('PropertyID', 'Identification')
+    properties.find do |property|
+      ids = property.dig('PropertyID', 'Identification')
       next false unless ids
 
-      ids['SecondaryID'].to_s.strip == domain ||
-        ids['PrimaryID'].to_s.strip == domain
+      ids['SecondaryID'].to_s.strip == domain.to_s.strip ||
+        ids['PrimaryID'].to_s.strip == domain.to_s.strip
     end
   end
+
+  
 
   # ------------------------------------------------------------------
   # Units (SWAP logic)

@@ -5,9 +5,10 @@ class XmlConnectionService < BaseService
     return false if filename.blank? || domain.blank?
 
     url = build_url(filename)
+
     response = HTTParty.get(URI::DEFAULT_PARSER.escape(url))
 
-    property = find_matching_property(response, domain)
+    property = find_property(response, domain)
     return no_match_response(domain) unless property
 
     sanitize_xml(property).to_xml
@@ -22,14 +23,25 @@ class XmlConnectionService < BaseService
     "http://pynwheel.com/swoop/datafeeds/#{xml_file}"
   end
 
-  def find_matching_property(response, domain)
-    properties = Array(response.dig('PhysicalProperty', 'Property'))
+  def find_property(response, domain)
+    property_node = response.dig('PhysicalProperty', 'Property')
+    return nil if property_node.blank?
+
+    # Normalize to array
+    properties = if property_node.is_a?(Array)
+                  property_node
+                elsif property_node.is_a?(Hash)
+                  [property_node]
+                else
+                  []
+                end
 
     properties.find do |property|
       ids = property.dig('PropertyID', 'Identification')
       next false unless ids
 
-      ids['SecondaryID'] == domain || ids['PrimaryID'] == domain
+      ids['SecondaryID'].to_s.strip == domain ||
+        ids['PrimaryID'].to_s.strip == domain
     end
   end
 

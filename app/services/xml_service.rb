@@ -63,6 +63,28 @@ class XmlService < BaseService
     end
   end
 
+    def find_property(response, domain)
+    property_node = response.dig('PhysicalProperty', 'Property')
+    return nil if property_node.blank?
+
+    # Normalize to array
+    properties = if property_node.is_a?(Array)
+                  property_node
+                elsif property_node.is_a?(Hash)
+                  [property_node]
+                else
+                  []
+                end
+
+    properties.find do |property|
+      ids = property.dig('PropertyID', 'Identification')
+      next false unless ids
+
+      ids['SecondaryID'].to_s.strip == domain.to_s.strip ||
+        ids['PrimaryID'].to_s.strip == domain.to_s.strip
+    end
+  end
+
   def sanitize_xml(data)
     data.to_s.gsub('xsi:', '').yield_self { |str| eval(str) }
   end
