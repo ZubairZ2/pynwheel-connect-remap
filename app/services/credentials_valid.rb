@@ -56,33 +56,7 @@ class CredentialsValid < BaseService
       end
     elsif community.data_provider == "xml"
       begin
-        filename = credentials.xml_filename
-        domain = credentials.xml_domain.split(',')[0]
-        url = "http://pynwheel.com/swoop/datafeeds/#{filename.include?(".xml") ? filename : "#{filename}.xml"}"
-
-        response = HTTParty.get(URI::DEFAULT_PARSER.escape(url))
-        result = ""
-
-        if response['PhysicalProperty']['Property'].class == Array
-          response['PhysicalProperty']['Property'].each do |p|
-            if p['PropertyID']['Identification']['SecondaryID'].present?
-              if p['PropertyID']['Identification']['SecondaryID'] == domain
-                result = p
-              end
-            end
-          end
-        else
-          p = response['PhysicalProperty']['Property']
-
-          if p['PropertyID']['Identification']['SecondaryID'] == domain
-            result = p
-          end
-        end
-        if result.present?
-          return true
-        else
-          return false
-        end
+        return xml_property_exists?
       rescue => e
         return false
       end
@@ -206,6 +180,32 @@ class CredentialsValid < BaseService
   end
 
   private
+
+    def build_xml_url(filename)
+      xml_file = filename.end_with?('.xml') ? filename : "#{filename}.xml"
+        "http://pynwheel.com/swoop/datafeeds/#{xml_file}"
+    end
+
+    def xml_property_exists?
+      filename = credentials.xml_filename
+      domain   = credentials.xml_domain.to_s.split(',').first&.strip
+      return false if filename.blank? || domain.blank?
+
+      url = build_xml_url(filename)
+      response = HTTParty.get(URI::DEFAULT_PARSER.escape(url))
+
+      properties = Array(response.dig('PhysicalProperty', 'Property'))
+
+      properties.any? do |p|
+        ids = p.dig('PropertyID', 'Identification')
+        next false unless ids
+
+        ids['SecondaryID'].to_s.strip == domain ||
+          ids['PrimaryID'].to_s.strip == domain
+      end
+    rescue StandardError
+      false
+    end
 
     def verify_rp_credentials community, credentials
       begin

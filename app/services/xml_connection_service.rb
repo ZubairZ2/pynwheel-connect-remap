@@ -1,37 +1,43 @@
 class XmlConnectionService < BaseService
   def perform
-    begin
-      filename = credentials.xml_filename
-      domain = credentials&.xml_domain&.strip
-      url = "http://pynwheel.com/swoop/datafeeds/#{filename.include?(".xml") ? filename : "#{filename}.xml"}"
-      
-      response = HTTParty.get(URI::DEFAULT_PARSER.escape(url))
-      result = ""
+    filename = credentials.xml_filename
+    domain   = credentials&.xml_domain&.strip
+    return false if filename.blank? || domain.blank?
 
-      if response['PhysicalProperty']['Property'].class == Array
-        response['PhysicalProperty']['Property'].each do |p|
-          if p['PropertyID']['Identification']['SecondaryID'].present?
-            if p['PropertyID']['Identification']['SecondaryID'] == domain
-              result = p
-            end
-          end
-        end
-      else
-        p = response['PhysicalProperty']['Property']
+    url = build_url(filename)
+    response = HTTParty.get(URI::DEFAULT_PARSER.escape(url))
 
-        if p['PropertyID']['Identification']['SecondaryID'] == domain
-          result = p
-        else
-          result = "<data>No result match with property id "+ property_id + "</data>"
-        end
-      end
+    property = find_matching_property(response, domain)
+    return no_match_response(domain) unless property
 
-      result = result.to_s.gsub("xsi:","")
-      result = eval(result)
-      result.to_xml
-    rescue => e
-      false
+    sanitize_xml(property).to_xml
+  rescue StandardError => e
+    false
+  end
+
+  private
+
+  def build_url(filename)
+    xml_file = filename.end_with?('.xml') ? filename : "#{filename}.xml"
+    "http://pynwheel.com/swoop/datafeeds/#{xml_file}"
+  end
+
+  def find_matching_property(response, domain)
+    properties = Array(response.dig('PhysicalProperty', 'Property'))
+
+    properties.find do |property|
+      ids = property.dig('PropertyID', 'Identification')
+      next false unless ids
+
+      ids['SecondaryID'] == domain || ids['PrimaryID'] == domain
     end
   end
 
+  def sanitize_xml(data)
+    eval(data.to_s.gsub('xsi:', ''))
+  end
+
+  def no_match_response(domain)
+    { data: "No result match with property id #{domain}" }
+  end
 end
