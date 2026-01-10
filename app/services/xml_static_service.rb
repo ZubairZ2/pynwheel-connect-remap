@@ -14,11 +14,13 @@ class XmlStaticService < BaseService
         next
       end
 
+      building_map = extract_buildings(property)
+
       units      = Array(property['ILS_Unit'])
       floorplans = Array(property['Floorplan'])
 
       save_xml_floorplans(floorplans, property_id)
-      save_xml_units(units, property_id)
+      save_xml_units(units, property_id, building_map)
     end
   rescue StandardError => e
     ExceptionNotifier.notify_exception(e, data: { community_id: credentials.community_id })
@@ -61,11 +63,11 @@ class XmlStaticService < BaseService
   # Units
   # ------------------------------------------------------------------
 
-  def save_xml_units(units, property_id)
-    units.each { |u| upsert_unit(u, property_id) }
+  def save_xml_units(units, property_id, building_map)
+    units.each { |u| upsert_unit(u, property_id, building_map) }
   end
 
-  def upsert_unit(u, property_id)
+  def upsert_unit(u, property_id, building_map)
     unit = Unit.where(
       provider: 'xml',
       community_id: credentials.community_id,
@@ -83,12 +85,17 @@ class XmlStaticService < BaseService
     apply_availability(unit, u)
 
     unit.square_feet = u.dig('Unit', 'Information', 'MinSquareFeet')
-    unit.building = normalize_building(u['BuildingID']) unless unit.building_is_updated
+    unit.building = resolve_building_name(u, building_map)
 
     unit.manually_updated = false
     unit.save(validate: false)
   rescue StandardError
     nil
+  end
+
+  def resolve_building_name(u, building_map)
+    building_id = u['BuildingID']&.to_s
+    building_map[building_id]
   end
 
   def apply_rent(unit, u)
@@ -129,10 +136,6 @@ class XmlStaticService < BaseService
     Date.parse("#{date['Year']}-#{date['Month']}-#{date['Day']}")
   rescue StandardError
     nil
-  end
-
-  def normalize_building(value)
-    value.present? ? value.gsub('Building ', '') : nil
   end
 
   # ------------------------------------------------------------------
@@ -180,6 +183,19 @@ class XmlStaticService < BaseService
   # ------------------------------------------------------------------
   # Utils
   # ------------------------------------------------------------------
+
+  def extract_buildings(property)
+    building_node = property['Building']
+    return {} if building_node.blank?
+
+    buildings = building_node.is_a?(Array) ? building_node : [building_node]
+
+    buildings.each_with_object({}) do |b, map|
+      id   = b['Id']&.to_s
+      name = b['Name']&.to_s
+      map[id] = name if id.present?
+    end
+  end
 
   def file_url
     filename = credentials.xml_filename

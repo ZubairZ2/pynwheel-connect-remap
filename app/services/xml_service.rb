@@ -33,11 +33,13 @@ class XmlService < BaseService
 
     property = sanitize_xml(property)
 
+    building_map = extract_buildings(property)
+
     units      = Array(property['ILS_Unit'])
     floorplans = Array(property['Floorplan'])
 
     save_xml_floorplans(floorplans, property_id)
-    save_xml_units(units, property_id)
+    save_xml_units(units, property_id, building_map)
   rescue => e
     # Swallow per-property failure to avoid stopping the job
   end
@@ -92,19 +94,19 @@ class XmlService < BaseService
   # ----------------------------------------------------
   # Units
   # ----------------------------------------------------
-  def save_xml_units(units, property_id)
+  def save_xml_units(units, property_id, building_map)
     existing_unit_ids = Unit
       .where(community_id: credentials.community_id, provider: 'xml')
       .pluck(:provider_unit_id)
 
     units.each do |u|
-      process_unit(u, property_id)
+      process_unit(u, property_id, building_map)
     end
 
     mark_missing_units(existing_unit_ids)
   end
 
-  def process_unit(u, property_id)
+  def process_unit(u, property_id, building_map)
     unit = Unit.where(
       provider: 'xml',
       community_id: credentials.community_id,
@@ -113,7 +115,7 @@ class XmlService < BaseService
 
     return if unit.manual_override
 
-    update_unit_fields(unit, u, property_id)
+    update_unit_fields(unit, u, property_id, building_map)
 
     @unit_record << unit.provider_unit_id
     unit.manually_updated = false
@@ -121,7 +123,7 @@ class XmlService < BaseService
   rescue
   end
 
-  def update_unit_fields(unit, u, property_id)
+  def update_unit_fields(unit, u, property_id, building_map)
     unit.property_id ||= property_id
     unit.unit_type ||= u.dig('Unit', 'Information', 'UnitType')
 
@@ -130,6 +132,14 @@ class XmlService < BaseService
     set_effective_rent(unit, u)
     set_availability(unit, u)
     set_available_date(unit, u)
+    set_building(unit, u, building_map)
+  end
+
+  def set_building(unit, u, building_map)
+    return if unit.building_is_updated
+
+    building_id = u['BuildingID']&.to_s
+    unit.building = building_map[building_id]
   end
 
   def set_marketing_name(unit, u)
@@ -236,6 +246,20 @@ class XmlService < BaseService
   # ----------------------------------------------------
   # Utilities
   # ----------------------------------------------------
+
+  def extract_buildings(property)
+    building_node = property['Building']
+    return {} if building_node.blank?
+
+    buildings = building_node.is_a?(Array) ? building_node : [building_node]
+
+    buildings.each_with_object({}) do |b, map|
+      id   = b['Id']&.to_s
+      name = b['Name']&.to_s
+      map[id] = name if id.present?
+    end
+  end
+
   def file_url
     filename = credentials.xml_filename
     xml = filename.end_with?('.xml') ? filename : "#{filename}.xml"

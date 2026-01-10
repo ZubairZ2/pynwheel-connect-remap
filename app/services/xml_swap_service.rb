@@ -14,11 +14,13 @@ class XmlSwapService < BaseService
         next
       end
 
+      building_map = extract_buildings(property)
+
       units      = Array(property['ILS_Unit'])
       floorplans = Array(property['Floorplan'])
 
       save_xml_floorplans(floorplans, property_id)
-      save_xml_units(units, property_id)
+      save_xml_units(units, property_id, building_map)
     end
 
     rename_provider
@@ -65,14 +67,14 @@ class XmlSwapService < BaseService
   # Units (SWAP logic)
   # ------------------------------------------------------------------
 
-  def save_xml_units(units, property_id)
-    units.each { |u| upsert_swap_unit(u, property_id) }
+  def save_xml_units(units, property_id, building_map)
+    units.each { |u| upsert_swap_unit(u, property_id, building_map) }
   end
 
-  def upsert_swap_unit(u, property_id)
+  def upsert_swap_unit(u, property_id, building_map)
     vacate_date = parse_vacate_date(u['Availability'])
     marketing   = get_marketing_name(u)
-    building    = normalize_building(u['BuildingID'])
+    building    =  resolve_building_name(u, building_map)
 
     scope = Unit.where(community_id: credentials.community_id, marketing_name: marketing)
     scope = scope.where(building: building) if scope.count > 1
@@ -232,6 +234,11 @@ class XmlSwapService < BaseService
       f.dig('MarketRent', 'Max')
   end
 
+  def resolve_building_name(u, building_map)
+    building_id = u['BuildingID']&.to_s
+    building_map[building_id]
+  end
+
   # ------------------------------------------------------------------
   # Provider rename / cleanup
   # ------------------------------------------------------------------
@@ -256,14 +263,23 @@ class XmlSwapService < BaseService
   # Utils
   # ------------------------------------------------------------------
 
+  def extract_buildings(property)
+    building_node = property['Building']
+    return {} if building_node.blank?
+
+    buildings = building_node.is_a?(Array) ? building_node : [building_node]
+
+    buildings.each_with_object({}) do |b, map|
+      id   = b['Id']&.to_s
+      name = b['Name']&.to_s
+      map[id] = name if id.present?
+    end
+  end
+
   def file_url
     filename = credentials.xml_filename
     xml_file = filename.end_with?('.xml') ? filename : "#{filename}.xml"
     "http://pynwheel.com/swoop/datafeeds/#{xml_file}"
-  end
-
-  def normalize_building(value)
-    value.present? ? value.gsub('Building ', '') : nil
   end
 
   def get_marketing_name(u)
