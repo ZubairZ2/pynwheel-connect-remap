@@ -411,26 +411,26 @@ module CommunitiesHelper
   end
 
   def default_unit_marker_color(community, show_ops_map = false)
-    theme_name = community&.theme_name
+    # theme_name = community&.theme_name
     design = community&.design
 
-    if show_ops_map || theme_name&.include?('gables')
+    # if show_ops_map || theme_name&.include?('gables')
       design&.property_map_color || DEFAULT_MARKER_CODE
-    else
-      case theme_name
-      when 'modernist'
-        colors = [design&.modernist_map_marker_color, 'no color', '']
-        colors.include?(design&.modernist_map_marker_color) ? (design&.primary_color || DEFAULT_MARKER_PRIMARY_CODE) : (design&.modernist_map_marker_color || DEFAULT_MARKER_PRIMARY_CODE)
-      when 'futurist'
-        design&.futurist_property_map_marker_color || DEFAULT_MARKER_CODE
-      when 'expressionist'
-        design&.expressionist_property_map_marker_color || DEFAULT_MARKER_CODE
-      when 'panther'
-        design&.panther_property_map_marker_color || DEFAULT_MARKER_CODE
-      else
-        'rgba(247, 0, 0, 0.61)'
-      end
-    end
+    # else
+    #   case theme_name
+    #   when 'modernist'
+    #     colors = [design&.modernist_map_marker_color, 'no color', '']
+    #     colors.include?(design&.modernist_map_marker_color) ? (design&.primary_color || DEFAULT_MARKER_PRIMARY_CODE) : (design&.modernist_map_marker_color || DEFAULT_MARKER_PRIMARY_CODE)
+    #   when 'futurist'
+    #     design&.futurist_property_map_marker_color || DEFAULT_MARKER_CODE
+    #   when 'expressionist'
+    #     design&.expressionist_property_map_marker_color || DEFAULT_MARKER_CODE
+    #   when 'panther'
+    #     design&.panther_property_map_marker_color || DEFAULT_MARKER_CODE
+    #   else
+    #     'rgba(247, 0, 0, 0.61)'
+    #   end
+    # end
   end
 
   def default_amenity_marker_font_size(community)
