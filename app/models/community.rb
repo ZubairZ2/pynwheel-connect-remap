@@ -97,7 +97,7 @@ class Community < ApplicationRecord
   after_create :create_property_credentials
   after_create :change_touchscreen_app_for_dwelo
   before_save :turn_off_chat, if: Proc.new { chat_control == false }
-  after_update :update_availability_data, if: -> { saved_change_to_enable_unit_type_pricing? }
+  after_update :update_availability_data, if: -> { saved_change_to_enable_unit_type_pricing? || saved_change_to_turn_availability_on? }
   after_save :set_community_time_zone, if: ->(obj) { obj.latitude_changed? || obj.longitude_changed? }
   after_save :set_country_code, if: ->(obj) { obj.latitude_changed? || obj.longitude_changed? || obj.city_changed? || obj.state_changed? || obj.address_changed? || obj.zip_changed? }
 
