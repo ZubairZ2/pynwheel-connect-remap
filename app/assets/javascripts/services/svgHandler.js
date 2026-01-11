@@ -174,6 +174,22 @@ function parseSVG(svgText) {
   return doc.querySelector("svg");
 }
 
+function fitSvgToParent(svg) {
+  if (!svg) return;
+
+  // Remove hardcoded dimensions
+  svg.removeAttribute("width");
+  svg.removeAttribute("height");
+
+  // Keep aspect ratio while fitting
+  svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+
+  // Make SVG scale with parent
+  svg.style.width = "100%";
+  svg.style.height = "100%";
+  svg.style.display = "block";
+}
+
 async function fetchSVG(
   dataSetSelector,
   options = {
@@ -220,6 +236,7 @@ async function fetchSVG(
     if(hasFloorplate() && floor)
       uniquifySVGIds(svgElement, `f${floor}`);
 
+    fitSvgToParent(svgElement);
     parsedSVGs.push(svgElement);
     setSVG(container, svgElement, options);
 
