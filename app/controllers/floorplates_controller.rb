@@ -30,33 +30,7 @@ class FloorplatesController < ApplicationController
       render :new and return
     end
 
-    # Handle SVG upload
-    if floorplate_params[:svg_image].present?
-      svg_file = floorplate_params[:svg_image]
-
-      unless svg_file.content_type == "image/svg+xml"
-        flash[:error] = "SVG section image must be of SVG type."
-        render :new and return
-      end
-
-      begin
-        # Parse with Nokogiri (not MiniMagick) since MiniMagick chokes on <pattern>
-        doc = Nokogiri::XML(File.read(svg_file.path))
-        width  = doc.root["width"]&.to_i || 0
-        height = doc.root["height"]&.to_i || 0
-
-        if width < 1000 && height < 700
-          flash[:error] = "Too small property map image"
-          render :new and return
-        else
-          @floorplate.svg_metadata = { width: width, height: height }
-        end
-      rescue => e
-        Rails.logger.error "SVG parse failed: #{e.message}"
-        flash[:error] = "Invalid SVG file."
-        render :new and return
-      end
-    end
+    upload_svg_image(floorplate_params[:svg_image])
 
     # Handle raster images (PNG, JPG, etc)
     if floorplate_params[:image].present?
@@ -89,9 +63,7 @@ class FloorplatesController < ApplicationController
     end
   end
 
-
   def plot_elevator
-
     @elevator = Elevator.find_by_id(params[:elevator_id])
     @elevator.x_plot = params[:x_plot]
     @elevator.y_plot = params[:y_plot]
@@ -135,25 +107,7 @@ class FloorplatesController < ApplicationController
       @floorplate.building_is_updated = true
     end
 
-    if floorplate_params[:svg_image].present?
-      image = MiniMagick::Image.open(floorplate_params[:svg_image].path)
-      file_checksum = Digest::MD5.hexdigest(image.to_blob)
-
-      # if image.type != "SVG"
-      #   flash[:error] = "SVG section image must be of SVG type."
-      #   render :new and return
-      # elsif image.width < 1000 && image.height < 700
-      #   flash[:error] = "Too small property map image"
-      #   render :new and return
-      # else
-        original_file = fetch_svg_by_url(get_environment_based_svg_url(@floorplate))
-        original_svg_image_checksum = Digest::MD5.hexdigest(original_file) if original_file.present?
-
-        width = (image.width rescue 0)
-        height = (image.height rescue 0)
-        @floorplate.svg_metadata = { width: width, height: height}
-      # end
-    end
+    upload_svg_image(floorplate_params[:svg_image])
 
     if floorplate_params[:image].present?
       image = MiniMagick::Image.open(floorplate_params[:image].path)
@@ -168,8 +122,6 @@ class FloorplatesController < ApplicationController
 
     @floorplate.map_ocr_data = nil
     @floorplate.is_ocr_enabled = false
-    
-
     
     if floorplate_params[:manual_override] == "true"
       if @floorplate.update(floorplate_params)
@@ -312,6 +264,39 @@ class FloorplatesController < ApplicationController
   end
 
   private
+
+  def upload_svg_image(svg_file)
+    return unless svg_file.present?
+
+    unless svg_file.content_type == "image/svg+xml"
+      return render_svg_error("SVG section image must be of SVG type.")
+    end
+
+    doc = parse_svg(svg_file)
+    return unless doc
+
+    width  = doc.root["width"].to_i
+    height = doc.root["height"].to_i
+
+    # if width < 1000 && height < 700
+    #   return render_svg_error("Too small property map image")
+    # end
+
+    @floorplate.svg_metadata = { width: width, height: height }
+  end
+
+  def parse_svg(svg_file)
+    Nokogiri::XML(File.read(svg_file.path))
+  rescue => e
+    Rails.logger.error "SVG parse failed: #{e.message}"
+    render_svg_error("Invalid SVG file.")
+    nil
+  end
+
+  def render_svg_error(message)
+    flash[:error] = message
+    render :new
+  end
 
   def normalized_units_for_svg
     @floorplate_units.map do |unit|
