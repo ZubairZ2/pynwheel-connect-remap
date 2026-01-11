@@ -1,0 +1,209 @@
+# frozen_string_literal: true
+
+require 'csv'
+require 'open-uri'
+require 'digest'
+require 'set'
+
+class ImportBeansPropertiesWorker
+  include Sidekiq::Worker
+
+  sidekiq_options queue: 'import_data', retry: 3
+
+  DRIVE_CSV_URL = ENV['APARTMENT_PROPERTIES_URL'] || 'https://docs.google.com/spreadsheets/d/1C3VWUdkzKJve95JfNNBg0SBgi58FOOis-qciKFo_2wE/export?format=csv'.freeze
+  BATCH_SIZE    = 1000
+
+  STATE_MAP = {
+    'alabama' => 'AL',
+    'alaska' => 'AK',
+    'arizona' => 'AZ',
+    'arkansas' => 'AR',
+    'california' => 'CA',
+    'colorado' => 'CO',
+    'connecticut' => 'CT',
+    'delaware' => 'DE',
+    'florida' => 'FL',
+    'georgia' => 'GA',
+    'hawaii' => 'HI',
+    'idaho' => 'ID',
+    'illinois' => 'IL',
+    'indiana' => 'IN',
+    'iowa' => 'IA',
+    'kansas' => 'KS',
+    'kentucky' => 'KY',
+    'louisiana' => 'LA',
+    'maine' => 'ME',
+    'maryland' => 'MD',
+    'massachusetts' => 'MA',
+    'michigan' => 'MI',
+    'minnesota' => 'MN',
+    'mississippi' => 'MS',
+    'missouri' => 'MO',
+    'montana' => 'MT',
+    'nebraska' => 'NE',
+    'nevada' => 'NV',
+    'new hampshire' => 'NH',
+    'new jersey' => 'NJ',
+    'new mexico' => 'NM',
+    'new york' => 'NY',
+    'north carolina' => 'NC',
+    'north dakota' => 'ND',
+    'ohio' => 'OH',
+    'oklahoma' => 'OK',
+    'oregon' => 'OR',
+    'pennsylvania' => 'PA',
+    'rhode island' => 'RI',
+    'south carolina' => 'SC',
+    'south dakota' => 'SD',
+    'tennessee' => 'TN',
+    'texas' => 'TX',
+    'utah' => 'UT',
+    'vermont' => 'VT',
+    'virginia' => 'VA',
+    'washington' => 'WA',
+    'west virginia' => 'WV',
+    'wisconsin' => 'WI',
+    'wyoming' => 'WY'
+  }.freeze
+  STREET_MAP = {
+    'street'    => 'st',
+    'avenue'    => 'ave',
+    'boulevard' => 'blvd',
+    'road'      => 'rd',
+    'lane'      => 'ln',
+    'drive'     => 'dr',
+    'court'     => 'ct',
+    'place'     => 'pl',
+    'circle'    => 'cir',
+    'parkway'   => 'pkwy',
+    'way'       => 'way'
+  }.freeze
+
+  def perform
+    now = Time.current
+
+    beans_company = Company.find_or_create_by!(name: 'Beans')
+
+    # 🔹 Preload existing communities once
+    existing_fingerprints = Community
+      .pluck(:address, :city, :state, :zip)
+      .map { |a, c, s, z| fingerprint(a, c, s, z) }
+      .to_set
+
+    csv_data = URI.open(DRIVE_CSV_URL).read
+
+    if csv_data.lstrip.start_with?('<!doctype html')
+      raise 'Google returned HTML instead of CSV. Check sheet sharing permissions.'
+    end
+
+    seen_fingerprints = Set.new
+    batch = []
+
+    CSV.parse(
+      csv_data,
+      headers: true,
+      liberal_parsing: true,
+      skip_blanks: true
+    ).each do |row|
+      address = row['Address']&.strip
+      city    = row['City']&.strip
+      state   = row['State']&.strip&.upcase
+      zip     = row['Zip']&.strip
+
+      next if address.blank? || city.blank? || state.blank?
+
+      fp = fingerprint(address, city, state, zip)
+
+      next if seen_fingerprints.include?(fp)
+      next if existing_fingerprints.include?(fp)
+
+      seen_fingerprints << fp
+
+      batch << Community.new(
+        name: "#{address}, #{city}, #{state}, #{zip}".strip,
+        address: address,
+        city: city,
+        state: state,
+        zip: zip,
+        company_id: beans_company.id,
+        is_sitemap: false,
+        created_at: now,
+        updated_at: now
+      )
+
+      if batch.size >= BATCH_SIZE
+        bulk_insert!(batch)
+        batch.clear
+      end
+    end
+
+    bulk_insert!(batch) if batch.any?
+  end
+
+  private
+
+  def fingerprint(address, city, state, zip)
+    Digest::SHA1.hexdigest(
+      [
+        normalize_address(address, city),
+        normalize_city(city),
+        normalize_state(state),
+        zip.to_s.strip
+      ].join('|')
+    )
+  end
+
+  def normalize_address(address, city)
+    combined = "#{address} #{city}"
+
+    normalize(combined)
+      .gsub(/\b(lane|ln|street|st|avenue|ave|road|rd|drive|dr|circle|cir)\b/, '')
+      .squeeze(' ')
+      .strip
+  end
+
+  def normalize_city(city)
+    normalize(city)
+      .gsub(/\b(lane|ln|street|st|avenue|ave|road|rd|drive|dr|circle|cir)\b/, '')
+      .strip
+  end
+
+  def normalize_state(state)
+    return '' if state.blank?
+
+    value = state
+      .to_s
+      .downcase
+      .gsub(/[^\w\s]/, '')
+      .strip
+
+    # Full name → abbreviation
+    return STATE_MAP[value] if STATE_MAP.key?(value)
+
+    # Already abbreviated
+    value.length == 2 ? value.upcase : value.upcase
+  end
+
+  def normalize(value)
+    return '' if value.blank?
+
+    normalized = value
+      .downcase
+      .gsub(/[^\w\s]/, ' ')
+      .squeeze(' ')
+      .strip
+
+    STREET_MAP.each do |long, short|
+      normalized.gsub!(/\b#{long}\b/, short)
+    end
+
+    normalized
+  end
+
+  def bulk_insert!(records)
+    Community.import!(
+      records,
+      validate: false
+    )
+  end
+end
