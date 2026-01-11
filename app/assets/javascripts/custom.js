@@ -945,6 +945,9 @@ function selectDataProvider(data_provider) {
     case "appfolio":
       showAppFolioFields();
       break;
+    case "beans":
+      showBeansFields();
+      break;
     case "realpagesvc":
       showRealPageSVCFields();
       break;
@@ -974,6 +977,11 @@ function selectDataProvider(data_provider) {
       break;
   }
 }
+
+function showBeansFields() {
+  $(".credential_fields").hide();
+}
+
 
 function showAppFolioFields() {
   $(".credential_fields").hide();

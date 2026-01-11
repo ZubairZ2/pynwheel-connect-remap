@@ -83,6 +83,8 @@ class ImportBeansPropertiesWorker
     now = Time.current
 
     beans_company = Company.find_or_create_by!(name: 'Beans')
+    beans_company.data_providers << 'beans' unless beans_company.data_providers.include?('beans')
+    beans_company.save!
 
     # 🔹 Preload existing communities once
     existing_fingerprints = Community
@@ -126,6 +128,10 @@ class ImportBeansPropertiesWorker
         state: state,
         zip: zip,
         company_id: beans_company.id,
+        use_company_level_data_settings: true,
+        enable_three_d_maps: true,
+        touchscreen_app: false,
+        data_provider: 'beans',
         is_sitemap: false,
         created_at: now,
         updated_at: now
