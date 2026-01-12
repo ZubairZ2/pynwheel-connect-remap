@@ -65,6 +65,7 @@ class ImportBeansPropertiesWorker
     'wisconsin' => 'WI',
     'wyoming' => 'WY'
   }.freeze
+
   STREET_MAP = {
     'street'    => 'st',
     'avenue'    => 'ave',
@@ -86,7 +87,6 @@ class ImportBeansPropertiesWorker
     beans_company.data_providers << 'beans' unless beans_company.data_providers.include?('beans')
     beans_company.save!
 
-    # 🔹 Preload existing communities once
     existing_fingerprints = Community
       .pluck(:address, :city, :state, :zip)
       .map { |a, c, s, z| fingerprint(a, c, s, z) }
@@ -121,7 +121,7 @@ class ImportBeansPropertiesWorker
 
       seen_fingerprints << fp
 
-      batch << Community.new(
+      community = Community.new(
         name: "#{address}, #{city}, #{state}, #{zip}".strip,
         address: address,
         city: city,
@@ -132,10 +132,18 @@ class ImportBeansPropertiesWorker
         enable_three_d_maps: true,
         touchscreen_app: false,
         data_provider: 'beans',
-        is_sitemap: false,
+        is_sitemap: true,
         created_at: now,
         updated_at: now
       )
+
+      # ✅ Create the associated credential
+      community.build_credential(
+        created_at: now,
+        updated_at: now
+      )
+
+      batch << community
 
       if batch.size >= BATCH_SIZE
         bulk_insert!(batch)
@@ -161,7 +169,6 @@ class ImportBeansPropertiesWorker
 
   def normalize_address(address, city)
     combined = "#{address} #{city}"
-
     normalize(combined)
       .gsub(/\b(lane|ln|street|st|avenue|ave|road|rd|drive|dr|circle|cir)\b/, '')
       .squeeze(' ')
@@ -177,39 +184,27 @@ class ImportBeansPropertiesWorker
   def normalize_state(state)
     return '' if state.blank?
 
-    value = state
-      .to_s
-      .downcase
-      .gsub(/[^\w\s]/, '')
-      .strip
-
-    # Full name → abbreviation
-    return STATE_MAP[value] if STATE_MAP.key?(value)
-
-    # Already abbreviated
-    value.length == 2 ? value.upcase : value.upcase
+    value = state.to_s.downcase.gsub(/[^\w\s]/, '').strip
+    STATE_MAP[value] || (value.length == 2 ? value.upcase : value.upcase)
   end
 
   def normalize(value)
     return '' if value.blank?
 
-    normalized = value
-      .downcase
-      .gsub(/[^\w\s]/, ' ')
-      .squeeze(' ')
-      .strip
-
-    STREET_MAP.each do |long, short|
-      normalized.gsub!(/\b#{long}\b/, short)
-    end
-
+    normalized = value.downcase.gsub(/[^\w\s]/, ' ').squeeze(' ').strip
+    STREET_MAP.each { |long, short| normalized.gsub!(/\b#{long}\b/, short) }
     normalized
   end
 
   def bulk_insert!(records)
     Community.import!(
       records,
-      validate: false
+      validate: false,
+      recursive: true # ✅ ensures associated credential is inserted as well
     )
+  end
+
+  def generate_random_username(address, city)
+    "#{address.parameterize(separator: '_')}_#{city.parameterize(separator: '_')}_#{SecureRandom.hex(3)}"
   end
 end

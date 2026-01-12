@@ -994,6 +994,7 @@ class Community < ApplicationRecord
         company_credential_attributes = current_company.credential&.attributes&.keys.map(&:to_sym)
         company_credential_attributes = current_company.credential&.attributes&.slice(*credential_attributes)
         community_credential = self.credential
+        
         if self.data_provider == 'yardi'
           company_credential_attributes["username"] = current_company.credential.yardi_username
           company_credential_attributes["password"] = current_company.credential.yardi_password
@@ -1001,6 +1002,7 @@ class Community < ApplicationRecord
           company_credential_attributes["username"] = current_company.credential.username
           company_credential_attributes["password"] = current_company.credential.password
         end
+
         community_credential.update(company_credential_attributes)
       end
     end
@@ -1126,6 +1128,8 @@ class Community < ApplicationRecord
         import_yardirentcafe_data
       when "appfolio"
         import_appfolio_data(true)
+      when "beans"
+        import_beans_data
       when "rentmanager"
         import_rentmanager_data
       when "realpagesvc"
@@ -1185,6 +1189,8 @@ class Community < ApplicationRecord
       YardirentcafeDataUpdateWorker.perform_async self.id
     when "appfolio"
       import_appfolio_data
+    when "beans"
+      import_beans_data
     when "rentmanager"
       RentManagerDataImportWorker.perform_async self.id
     when "realpagesvc"
@@ -1350,6 +1356,10 @@ class Community < ApplicationRecord
     AppFolioDataImportWorker.perform_async(self.id, update_property_info)
   end
 
+  def import_beans_data
+    BeansDataImportWorker.perform_async(self.id)
+  end
+
   def import_rentmanager_data
     RentManagerDataImportWorker.perform_async self.id
   end
@@ -1458,6 +1468,8 @@ class Community < ApplicationRecord
         connect_to_yardirentcafe
       when "appfolio"
         connect_to_appfolio
+      when "beans"
+        connect_to_beans
       when "rentmanager"
         connect_to_rentmanager
       when "realpagesvc"
@@ -1493,6 +1505,11 @@ class Community < ApplicationRecord
   def connect_to_appfolio
     app_folio_connection_service = DataProviders::AppFolio::V0::TestConnectionService.new(self.id)
     app_folio_connection_service.perform
+  end
+
+  def connect_to_beans
+   beans_connection_service = DataProviders::Beans::TestConnectionService.new(self.id)
+   beans_connection_service.perform
   end
 
   def connect_to_rentmanager
