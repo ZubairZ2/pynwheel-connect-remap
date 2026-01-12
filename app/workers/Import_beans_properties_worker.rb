@@ -143,6 +143,12 @@ class ImportBeansPropertiesWorker
         updated_at: now
       )
 
+      # ✅ Create the associated map_filter
+      community.build_map_filter(
+        created_at: now,
+        updated_at: now
+      )
+
       batch << community
 
       if batch.size >= BATCH_SIZE
