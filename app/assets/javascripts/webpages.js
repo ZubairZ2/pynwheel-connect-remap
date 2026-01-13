@@ -73,9 +73,10 @@ $(document).ready(function () {
   debouncedShowMarkers = debounce(showMarkers, 100);
 
   if (isDefined(webCommunity)) {
-    selectMap = opsMapMarkersEnabled ? "3d-map" : "2d-map"; //webCommunity.web_map_type;
+    beanOnlyProperty = (webCommunity.data_provider === "beans")
+    selectMap = (opsMapMarkersEnabled || beanOnlyProperty ) ? "3d-map" : "2d-map"; //webCommunity.web_map_type;
     enable3DMaps = webCommunity.enable_three_d_maps;
-    
+
     if(enable3DMaps)
       initializeBeans3DMap();
   } else {
