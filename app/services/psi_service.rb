@@ -310,6 +310,14 @@ class PsiService < BaseService
           floorplan.market_rent = f["MarketRent"]["@attributes"]["Max"]
         end
 
+        unless floorplan.square_feet_is_updated.present? && floorplan.square_feet_is_updated
+          if f["SquareFeet"]["@attributes"]["Min"].to_f > 0
+            floorplan.square_feet = f["SquareFeet"]["@attributes"]["Min"]
+          else
+            floorplan.square_feet = f["SquareFeet"]["@attributes"]["Max"]
+          end
+        end
+
       else
         floorplan = Floorplan.where(provider: "psi", community_id: @credentials.community_id, provider_floorplan_id: f["Identification"]["IDValue"]).first_or_initialize
 
