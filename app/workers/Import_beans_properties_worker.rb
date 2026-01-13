@@ -149,6 +149,12 @@ class ImportBeansPropertiesWorker
         updated_at: now
       )
 
+      # ✅ Create the associated design
+      community.build_design(
+        created_at: now,
+        updated_at: now
+      )
+
       batch << community
 
       if batch.size >= BATCH_SIZE

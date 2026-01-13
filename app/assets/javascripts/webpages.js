@@ -77,8 +77,14 @@ $(document).ready(function () {
     selectMap = (opsMapMarkersEnabled || beanOnlyProperty ) ? "3d-map" : "2d-map"; //webCommunity.web_map_type;
     enable3DMaps = webCommunity.enable_three_d_maps;
 
-    if(enable3DMaps)
+    if(enable3DMaps) {
       initializeBeans3DMap();
+      handleMapControl();
+      
+      if(beanOnlyProperty)
+        $(".2d-map-option").hide();
+    }
+
   } else {
     console.error("webCommunity not loaded properly");
   }
