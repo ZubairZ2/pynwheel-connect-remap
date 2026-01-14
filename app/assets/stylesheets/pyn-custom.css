@@ -7908,10 +7908,11 @@ div.esri-ui-inner-container.esri-ui-manual-container>div.esri-component.esri-att
   left: 0;
 }
 
-/* 
-.plot-image {
+#map {
     display: inline-block;
 }
+
+/* 
 
 .plot-image svg {
   width: 100%;
