@@ -262,10 +262,13 @@ function bindWebpageEvents() {
     );
 
     if (floorIsChanged) {
-      debouncedShowMarkers();
-      // if (svgMode) 
-      zoomReset();
       if (!_3dMapMode()) $currentImageBox.parent().removeClass("hidden");
+      debouncedShowMarkers();
+      zoomReset();
+
+      setTimeout(() => {
+        moveZoomableImageToCenter($currentImageBox[0], true)
+      }, 0);
       return;
     }
   });

@@ -32,60 +32,17 @@ function activateZoomPan(elem, centralizeElement = true, options = {}) {
   }, 100);
 
   const touchEvents = ["touchstart", "touchmove", "touchend", "touchcancel"];
+
   touchEvents.forEach(evt =>
     elem.addEventListener(evt, touchHandler, true)
   );
 
-  if (centralizeElement) zoomReset();
+  if(centralizeElement) zoomReset();
+
   setTimeout(() => {
     moveZoomableImageToCenter(elem, true, false);
   }, 0);
 }
-
-// function moveZoomableImageToCenter(elem, resetScale = true, resetPosition = false) {
-//   if (!elem) return;
-
-//   const key = getZoomPanKey(elem);
-//   const panObj = zoomablePans[key];
-//   if (!panObj) return;
-
-//   const instance = panObj.instance;
-
-//   // The REAL zoom target inside container
-//   const inner = elem.querySelector('#viewArea') || elem.querySelector('svg') ||  elem.querySelector('img');
-//   if (!inner) return;
-
-//   const $inner = $(inner);
-//   const $parent = $(elem);
-
-//   const realWidth = $inner.width();
-//   const realHeight = $inner.height();
-//   const parentWidth = $parent.width();
-//   const parentHeight = $parent.height();
-
-//   let scaleFactor;
-
-//   if (resetScale) {
-//     const scaleX = parentWidth / (realWidth || 1);
-//     const scaleY = parentHeight / (realHeight || 1);
-//     scaleFactor = Math.min(scaleX, scaleY, 1);
-//     instance.zoomAbs(0, 0, scaleFactor);
-//   } else {
-//     scaleFactor = instance.getTransform().scale;
-//   }
-
-//   if (resetPosition) {
-//     instance.moveTo(0, 0);
-//   } else {
-//     const transformedWidth = realWidth * scaleFactor;
-//     const transformedHeight = realHeight * scaleFactor;
-
-//     const centerX = (parentWidth - transformedWidth) / 2;
-//     const centerY = (parentHeight - transformedHeight) / 2;
-
-//     instance.moveTo(centerX, centerY);
-//   }
-// }
 
 function moveZoomableImageToCenter(elem, resetScale = true) {
   const key = getZoomPanKey(elem);
@@ -93,24 +50,46 @@ function moveZoomableImageToCenter(elem, resetScale = true) {
   if (!panObj) return;
 
   const instance = panObj.instance;
-
   const parent = elem.parentElement;
   if (!parent) return;
 
-  const contentRect = elem.getBoundingClientRect();
-  const parentRect = parent.getBoundingClientRect();
+  // Use actual DOM sizes (natural for images, getBBox for SVG)
+  let contentWidth, contentHeight;
+
+  if (elem.tagName.toLowerCase() === "img") {
+    contentWidth = elem.naturalWidth || elem.width;
+    contentHeight = elem.naturalHeight || elem.height;
+  } else if (elem.tagName.toLowerCase() === "svg") {
+    const viewBox = elem.viewBox.baseVal;
+    if (viewBox && viewBox.width && viewBox.height) {
+      contentWidth = viewBox.width;
+      contentHeight = viewBox.height;
+    } else {
+      const bbox = elem.getBBox();
+      contentWidth = bbox.width;
+      contentHeight = bbox.height;
+    }
+  } else {
+    // fallback for divs or other elements
+    contentWidth = elem.offsetWidth;
+    contentHeight = elem.offsetHeight;
+  }
+
+  const parentWidth = parent.clientWidth;
+  const parentHeight = parent.clientHeight;
 
   let scale = instance.getTransform().scale;
 
   if (resetScale) {
-    const scaleX = parentRect.width / contentRect.width;
-    const scaleY = parentRect.height / contentRect.height;
+    const scaleX = parentWidth / contentWidth;
+    const scaleY = parentHeight / contentHeight;
     scale = Math.min(scaleX, scaleY, 1);
     instance.zoomAbs(0, 0, scale);
   }
 
-  const x = (parentRect.width - contentRect.width * scale) / 2;
-  const y = (parentRect.height - contentRect.height * scale) / 2;
+  // Center relative to parent
+  const x = (parentWidth - contentWidth * scale) / 2;
+  const y = (parentHeight - contentHeight * scale) / 2;
 
   instance.moveTo(x, y);
 }
@@ -135,15 +114,6 @@ function touchHandler(event) {
 
   touch.target.dispatchEvent(simulatedEvent);
 }
-
-/************************************************************
- UNIVERSAL ZOOM INITIALIZER
- Works for:
- - .plot-image (image-based maps)
- - #svg_map.plot-image (SVG-based maps)
- - #map.plot-image
- - #zoom-group-wrapper (group SVG zoom)
-*************************************************************/
 
 function initAllZoomables() {
   let $zoomTargets;
@@ -177,10 +147,6 @@ function initAllZoomables() {
   });
 }
 
-
-/************************************************************
- GET ACTIVE ZOOM INSTANCE (used by zoom buttons)
-*************************************************************/
 function getCurrentZoomInstance() {
   const candidates = [
     document.getElementById("zoom-group-wrapper"),
@@ -197,29 +163,51 @@ function getCurrentZoomInstance() {
   return null;
 }
 
+function getCurrentImageMapZoomInstance() {
+  for (const key in zoomablePans) {
+    const panObj = zoomablePans[key];
+    if (!panObj?.instance) continue;
 
-/************************************************************
- UNIFIED ZOOM BUTTONS
-*************************************************************/
+    const elem = panObj.elem;
+    if (!elem) continue;
+
+    // Check if the element is visible
+    const rect = elem.getBoundingClientRect();
+    const isVisible =
+      rect.width > 0 &&
+      rect.height > 0 &&
+      rect.bottom >= 0 &&
+      rect.right >= 0 &&
+      rect.top <= (window.innerHeight || document.documentElement.clientHeight) &&
+      rect.left <= (window.innerWidth || document.documentElement.clientWidth);
+
+    if (isVisible) {
+      return panObj;
+    }
+  }
+
+  return null;
+}
+
+function getVisibleZoomableInstance() {
+  let z = getCurrentZoomInstance();
+
+  if(!z){
+    z = getCurrentImageMapZoomInstance()
+  }
+
+  return z?.instance;
+}
+
 function bindGlobalZoomButtons() {
-
-  /***********************************************
-   * 1. GLOBAL ZOOM BUTTONS (webpage header)
-   ***********************************************/
   $(".zoom-in-webpage").off("click").on("click", function () {
-    const z = getCurrentZoomInstance();
-    z?.instance?.zoomInOut(187);
+    getVisibleZoomableInstance()?.zoomInOut(187);
   });
 
   $(".zoom-out-webpage").off("click").on("click", function () {
-    const z = getCurrentZoomInstance();
-    z?.instance?.zoomInOut(189);
+    getVisibleZoomableInstance()?.zoomInOut(189);
   });
 
-
-  /***********************************************
-   * 2. LOCAL ZOOM BUTTONS (inside .buttons div)
-   ***********************************************/
   $(".zoom-in").off("click").on("click", function (e) {
     const zoomContainer = $(e.currentTarget)
       .closest('.buttons')
@@ -248,34 +236,31 @@ function bindGlobalZoomButtons() {
     inst?.zoomInOut(189);
   });
 
-
-  /***********************************************
-   * 3. RESET BUTTON (inside .buttons div)
-   ***********************************************/
   $(".reset").off("click").on("click", function () {
     $(".divLoading").removeClass("hidden");
     window.location.reload();
   });
 }
 
-
-/************************************************************
- UNIVERSAL ZOOM RESET
-*************************************************************/
 function zoomReset() {
-  const obj = getCurrentZoomInstance();
-  if (!obj || !obj.initial) return;
+  for (const key in zoomablePans) {
+    const obj = zoomablePans[key];
+    if (!obj?.instance || !obj?.initial) continue;
 
-  const inst = obj.instance;
-  const init = obj.initial;
+    const elem = obj.elem;
+    const rect = elem.getBoundingClientRect();
+    const isVisible = rect.width > 0 && rect.height > 0;
 
-  inst.zoomAbs(0, 0, init.scale);
-  inst.moveTo(init.x, init.y);
+    if (!isVisible) continue;
+
+    const inst = obj.instance;
+    const init = obj.initial;
+
+    inst.zoomAbs(0, 0, init.scale);
+    inst.moveTo(init.x, init.y);
+  }
 }
 
-/************************************************************
- UNIVERSAL ZOOM ENABLER
-*************************************************************/
 function enableZoom() {
   initAllZoomables();
   bindGlobalZoomButtons()
