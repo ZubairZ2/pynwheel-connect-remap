@@ -34,8 +34,7 @@ module DataProviders
             address: details["Address1"] ||  details["Address2"],
             city: details["City"],
             state: details["State"],
-            zip: details["Zip"],
-            website: details["Link"],
+            zip: details["Zip"]
           )
         end
 
