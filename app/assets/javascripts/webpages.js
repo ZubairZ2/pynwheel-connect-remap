@@ -327,14 +327,24 @@ function getActualImageDimensions() {
   return { width, height };
 }
 
-function getStretchedImageDimensions() {
-  const { width = 0, height = 0 } =
-    currentVisibleMapImage()?.getBoundingClientRect() || {
-      width: 0,
-      height: 0,
-    };
+// function getStretchedImageDimensions() {
+//   const { width = 0, height = 0 } =
+//     currentVisibleMapImage()?.getBoundingClientRect() || {
+//       width: 0,
+//       height: 0,
+//     };
 
-  return { width, height };
+//   return { width, height };
+// }
+
+function getStretchedImageDimensions() {
+  const img = currentVisibleMapImage();
+  if (!img) return { width: 0, height: 0 };
+
+  return {
+    width: img.offsetWidth,
+    height: img.offsetHeight
+  };
 }
 
 function positionAllMarkers(
@@ -366,12 +376,26 @@ function setMarkerPosition(marker, x_plot, y_plot, stretched, actual) {
     actual.height
   );
 
-  const currentScale = currentVisibleMapImageScale();
-  const left = (x_plot * ratio) / currentScale;
-  const top = (y_plot * ratio) / currentScale;
-
-  marker.css({ left, top });
+  marker.css({
+    left: x_plot * ratio,
+    top: y_plot * ratio
+  });
 }
+
+// function setMarkerPosition(marker, x_plot, y_plot, stretched, actual) {
+//   const ratio = getStretchRatio(
+//     stretched.width,
+//     stretched.height,
+//     actual.width,
+//     actual.height
+//   );
+
+//   const currentScale = currentVisibleMapImageScale();
+//   const left = (x_plot * ratio) / currentScale;
+//   const top = (y_plot * ratio) / currentScale;
+
+//   marker.css({ left, top });
+// }
 
 function showUnitModal(event) {
   if(!_3dMapMode()) {
@@ -3905,7 +3929,7 @@ function setMarkersSizeAndMargin() {
   const currentVisibleImage = currentVisibleMapImage();
   if (!currentVisibleImage) return;
 
-  const scale = currentVisibleMapImageScale();
+  // const scale = currentVisibleMapImageScale();
   const mainMarkerSize = extraSmallScreen()
     ? markerFontSize * 0.33
     : smallScreen()
@@ -3932,8 +3956,11 @@ function setMarkersSizeAndMargin() {
 
     const { width, height } = visibleMarker.getBoundingClientRect();
 
-    left_margin = width / 2 / scale;
-    top_margin = height / scale;
+    // left_margin = width / 2 / scale;
+    // top_margin = height / scale;
+
+    left_margin = width / 2;
+    top_margin = height;
 
     $marker.css({
       marginLeft: -left_margin,
@@ -3945,15 +3972,26 @@ function setMarkersSizeAndMargin() {
         visibleSpan.getBoundingClientRect();
       const number = parseInt(visibleSpan.innerText);
 
+      // if (number > 9) {
+      //   $markerSpans.css({
+      //     left: -(spanWidth / 2 / scale),
+      //     top: -((spanHeight * 3) / scale),
+      //   });
+      // } else {
+      //   $markerSpans.css({
+      //     left: -(spanWidth / 1.75 / scale),
+      //     top: -((spanHeight * 3) / scale),
+      //   });
+      // }
       if (number > 9) {
         $markerSpans.css({
-          left: -(spanWidth / 2 / scale),
-          top: -((spanHeight * 3) / scale),
+          left: -(spanWidth / 2),
+          top: -((spanHeight * 3)),
         });
       } else {
         $markerSpans.css({
-          left: -(spanWidth / 1.75 / scale),
-          top: -((spanHeight * 3) / scale),
+          left: -(spanWidth / 1.75),
+          top: -((spanHeight * 3)),
         });
       }
     }
@@ -3989,8 +4027,11 @@ function setMarkersSizeAndMargin() {
     );
     const { width: spanWidth, height: spanHeight } =
       visibleSpan.getBoundingClientRect();
-    amenity_left_margin = spanWidth / 2 / scale;
-    amenity_top_margin = spanHeight / 2 / scale;
+    // amenity_left_margin = spanWidth / 2 / scale;
+    // amenity_top_margin = spanHeight / 2 / scale;
+    amenity_left_margin = spanWidth / 2;
+    amenity_top_margin = spanHeight / 2;
+
     $amenityMarker.css({
       marginLeft: -amenity_left_margin,
       marginTop: -amenity_top_margin,
@@ -4022,19 +4063,19 @@ function currentVisibleMapImage() {
   return currentVisibleImage;
 }
 
-function currentVisibleMapImageScale() {
-  let scale = 1;
-  const currentVisibleImage = currentVisibleMapImage();
-  if (currentVisibleImage) {
-    const zoomPanKey = getZoomPanKey(currentVisibleImage.parentElement);
-    const zoomPanInstance = zoomablePans[zoomPanKey];
-    if (zoomPanInstance) {
-      scale = zoomPanInstance.instance.getTransform().scale;
-    }
-  }
+// function currentVisibleMapImageScale() {
+//   let scale = 1;
+//   const currentVisibleImage = currentVisibleMapImage();
+//   if (currentVisibleImage) {
+//     const zoomPanKey = getZoomPanKey(currentVisibleImage.parentElement);
+//     const zoomPanInstance = zoomablePans[zoomPanKey];
+//     if (zoomPanInstance) {
+//       scale = zoomPanInstance.instance.getTransform().scale;
+//     }
+//   }
 
-  return scale;
-}
+//   return scale;
+// }
 
 function getUnitMarkerColor(unit) {
   if (!unit) {

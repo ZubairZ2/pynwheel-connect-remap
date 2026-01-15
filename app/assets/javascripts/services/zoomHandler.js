@@ -37,6 +37,9 @@ function activateZoomPan(elem, centralizeElement = true, options = {}) {
   );
 
   if (centralizeElement) zoomReset();
+  setTimeout(() => {
+    moveZoomableImageToCenter(elem, true, false);
+  }, 0);
 }
 
 function moveZoomableImageToCenter(elem, resetScale = true, resetPosition = false) {
@@ -49,7 +52,7 @@ function moveZoomableImageToCenter(elem, resetScale = true, resetPosition = fals
   const instance = panObj.instance;
 
   // The REAL zoom target inside container
-  const inner = elem.querySelector('#viewArea') || elem.querySelector('svg');
+  const inner = elem.querySelector('#viewArea') || elem.querySelector('svg') ||  elem.querySelector('img');
   if (!inner) return;
 
   const $inner = $(inner);
