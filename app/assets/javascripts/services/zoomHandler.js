@@ -42,49 +42,77 @@ function activateZoomPan(elem, centralizeElement = true, options = {}) {
   }, 0);
 }
 
-function moveZoomableImageToCenter(elem, resetScale = true, resetPosition = false) {
-  if (!elem) return;
+// function moveZoomableImageToCenter(elem, resetScale = true, resetPosition = false) {
+//   if (!elem) return;
 
+//   const key = getZoomPanKey(elem);
+//   const panObj = zoomablePans[key];
+//   if (!panObj) return;
+
+//   const instance = panObj.instance;
+
+//   // The REAL zoom target inside container
+//   const inner = elem.querySelector('#viewArea') || elem.querySelector('svg') ||  elem.querySelector('img');
+//   if (!inner) return;
+
+//   const $inner = $(inner);
+//   const $parent = $(elem);
+
+//   const realWidth = $inner.width();
+//   const realHeight = $inner.height();
+//   const parentWidth = $parent.width();
+//   const parentHeight = $parent.height();
+
+//   let scaleFactor;
+
+//   if (resetScale) {
+//     const scaleX = parentWidth / (realWidth || 1);
+//     const scaleY = parentHeight / (realHeight || 1);
+//     scaleFactor = Math.min(scaleX, scaleY, 1);
+//     instance.zoomAbs(0, 0, scaleFactor);
+//   } else {
+//     scaleFactor = instance.getTransform().scale;
+//   }
+
+//   if (resetPosition) {
+//     instance.moveTo(0, 0);
+//   } else {
+//     const transformedWidth = realWidth * scaleFactor;
+//     const transformedHeight = realHeight * scaleFactor;
+
+//     const centerX = (parentWidth - transformedWidth) / 2;
+//     const centerY = (parentHeight - transformedHeight) / 2;
+
+//     instance.moveTo(centerX, centerY);
+//   }
+// }
+
+function moveZoomableImageToCenter(elem, resetScale = true) {
   const key = getZoomPanKey(elem);
   const panObj = zoomablePans[key];
   if (!panObj) return;
 
   const instance = panObj.instance;
 
-  // The REAL zoom target inside container
-  const inner = elem.querySelector('#viewArea') || elem.querySelector('svg') ||  elem.querySelector('img');
-  if (!inner) return;
+  const parent = elem.parentElement;
+  if (!parent) return;
 
-  const $inner = $(inner);
-  const $parent = $(elem);
+  const contentRect = elem.getBoundingClientRect();
+  const parentRect = parent.getBoundingClientRect();
 
-  const realWidth = $inner.width();
-  const realHeight = $inner.height();
-  const parentWidth = $parent.width();
-  const parentHeight = $parent.height();
-
-  let scaleFactor;
+  let scale = instance.getTransform().scale;
 
   if (resetScale) {
-    const scaleX = parentWidth / (realWidth || 1);
-    const scaleY = parentHeight / (realHeight || 1);
-    scaleFactor = Math.min(scaleX, scaleY, 1);
-    instance.zoomAbs(0, 0, scaleFactor);
-  } else {
-    scaleFactor = instance.getTransform().scale;
+    const scaleX = parentRect.width / contentRect.width;
+    const scaleY = parentRect.height / contentRect.height;
+    scale = Math.min(scaleX, scaleY, 1);
+    instance.zoomAbs(0, 0, scale);
   }
 
-  if (resetPosition) {
-    instance.moveTo(0, 0);
-  } else {
-    const transformedWidth = realWidth * scaleFactor;
-    const transformedHeight = realHeight * scaleFactor;
+  const x = (parentRect.width - contentRect.width * scale) / 2;
+  const y = (parentRect.height - contentRect.height * scale) / 2;
 
-    const centerX = (parentWidth - transformedWidth) / 2;
-    const centerY = (parentHeight - transformedHeight) / 2;
-
-    instance.moveTo(centerX, centerY);
-  }
+  instance.moveTo(x, y);
 }
 
 function touchHandler(event) {
@@ -118,7 +146,12 @@ function touchHandler(event) {
 *************************************************************/
 
 function initAllZoomables() {
-  const $zoomTargets = $('.plot-image, #zoom-group-wrapper');
+  let $zoomTargets;
+
+  if(svgMode)
+    $zoomTargets = $('#zoom-group-wrapper, .plot-image');
+  else
+    $zoomTargets = $('#zoom-group-wrapper > div, .plot-image');
 
   $zoomTargets.each(function () {
     const container = this;
