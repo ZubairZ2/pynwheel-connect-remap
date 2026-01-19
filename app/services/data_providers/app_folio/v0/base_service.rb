@@ -4,7 +4,7 @@ module DataProviders
       class BaseService
         def initialize(community_id, update_property_info = false)
           begin
-            @batch_size = 10
+            @batch_size = 50
             @update_property_info = update_property_info
             @community_id = community_id
             @community = Community.find_by_id(community_id)
@@ -15,8 +15,8 @@ module DataProviders
           end
         end
 
-        def get_resource(property_code, resource, filter_key = nil)
-          @app_folio_service.get_resource(property_code, resource, filter_key)            
+        def get_resource(property_ids, resource, filter_key = nil)
+          @app_folio_service.get_resource(property_ids, resource, filter_key)            
         end
 
         protected
@@ -30,6 +30,14 @@ module DataProviders
           return if units.empty?
 
           ProvidersDataUpdationService.new.update_or_create_units_records(units)
+        end
+
+        def normalize_ids(value)
+          Array(value)
+            .flat_map { |v| v.to_s.split(',') }
+            .map(&:strip)
+            .reject(&:blank?)
+            .uniq
         end
 
       end

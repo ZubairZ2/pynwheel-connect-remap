@@ -47,12 +47,22 @@ class Credential < ApplicationRecord
   after_update :change_to_scheduled_tours_for_sf
   after_update :fetch_crm_data
 
-    UNIT_NAME_FIELD_MAP = {
+  enum :app_folio_property_scope, {
+    is_app_folio_property_id: "is_app_folio_property_id",
+    is_app_folio_property_group_id: "is_app_folio_property_group_id"
+  }
+
+  UNIT_NAME_FIELD_MAP = {
     'Marketing Title' => 'MarketingTitle',
     'Name'            => 'Name',
     'Address2'        => 'Address2',
     'Address1'        => 'Address1'
   }.freeze
+
+  PROPERTY_SCOP_OPTIONS = [
+    ['Property ID', 'is_app_folio_property_id'],
+    ['Property Group ID', 'is_app_folio_property_group_id']
+  ].freeze
 
   validates :unit_name_key, inclusion: { in: UNIT_NAME_FIELD_MAP.values }
 
@@ -61,6 +71,14 @@ class Credential < ApplicationRecord
       :only => [:community_id, :id],include: { community: {only: [:use_company_level_data_settings]}}
     )
     data.merge!(data_provider: data_provider,credentials: data_providers_credentials(data_provider),use_different_crm_provider: use_different_crm,crm_provider: crm_provider,crm_credentials: crm_credential_provider)
+  end
+
+  def resolved_app_folio_property_ids(app_folio_service)
+    if is_app_folio_property_id?
+      app_folio_property_id.to_s.split(',').map(&:strip)
+    else
+      resolve_property_ids_from_group(app_folio_service)
+    end
   end
 
   def resolved_unit_name(unit_data)
@@ -139,7 +157,9 @@ class Credential < ApplicationRecord
   def appfolio_credentials
     {
       app_folio_property_id: self.app_folio_property_id,
-      app_folio_database_id: self.app_folio_database_id
+      app_folio_database_id: self.app_folio_database_id,
+      app_folio_property_group_id: self.app_folio_property_group_id,
+      app_folio_property_scope: self.app_folio_property_scope
     }
   end
   
@@ -209,6 +229,18 @@ class Credential < ApplicationRecord
   end
 
   private
+
+  def resolve_property_ids_from_group(app_folio_service)
+    return [] if app_folio_property_group_id.blank?
+
+    response = app_folio_service.get_resource(nil, "property_groups")
+    return [] unless response&.success?
+
+    groups = response["data"] || []
+
+    group = groups.find { |g| g["Id"] == app_folio_property_group_id }
+    group ? group["PropertyIds"] : []
+  end
 
   def create_or_update_unit community_id, u
     provider_unit_id = [ u[0].to_s.gsub(".",""), u[0].to_s.gsub(".","").gsub(/\s+/, '-') ]&.compact&.uniq

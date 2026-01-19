@@ -110,7 +110,7 @@ class PsiService < BaseService
         fill_psi_pricing_details(limit_result) unless community.enable_unit_type_pricing?
       end
 
-      fill_unit_type_pricing_details() if community.enable_unit_type_pricing?
+      fill_unit_type_pricing_details(community) if community.enable_unit_type_pricing?
       before_updation_units.compare_status_and_notify()
     rescue => e
       raise e
@@ -310,6 +310,14 @@ class PsiService < BaseService
           floorplan.market_rent = f["MarketRent"]["@attributes"]["Max"]
         end
 
+        unless floorplan.square_feet_is_updated.present? && floorplan.square_feet_is_updated
+          if f["SquareFeet"]["@attributes"]["Min"].to_f > 0
+            floorplan.square_feet = f["SquareFeet"]["@attributes"]["Min"]
+          else
+            floorplan.square_feet = f["SquareFeet"]["@attributes"]["Max"]
+          end
+        end
+
       else
         floorplan = Floorplan.where(provider: "psi", community_id: @credentials.community_id, provider_floorplan_id: f["Identification"]["IDValue"]).first_or_initialize
 
@@ -388,7 +396,7 @@ class PsiService < BaseService
     end
   end
 
-  def fill_unit_type_pricing_details
+  def fill_unit_type_pricing_details community
     property_ids = @credentials.property_id.split(',') rescue []
 
     property_ids.each do |property_id|
@@ -396,11 +404,11 @@ class PsiService < BaseService
       next unless response.dig("response", "code") == 200
 
       unit_types = response.dig("response", "result", "unitTypes", "unitType") || []
-      process_unit_types(unit_types)
+      process_unit_types(unit_types, community)
     end
   end
 
-  def process_unit_types(unit_types)
+  def process_unit_types(unit_types, community)
     import_floorplans = []
     import_units      = []
 
@@ -416,7 +424,7 @@ class PsiService < BaseService
       import_floorplans << floorplan
 
       # 2️⃣ Lease pricing (Annual only)
-      lease_pricing = build_lease_pricing_from_unit_type(ut)
+      lease_pricing = build_lease_pricing_from_unit_type(ut, community)
       # next unless lease_pricing
 
       min_rent = normalize_rent(ut["minMarketRent"]) || floorplan.market_rent
@@ -462,7 +470,7 @@ class PsiService < BaseService
     value.to_s.gsub(/[, ]/, '').to_f
   end
 
-  def build_lease_pricing_from_unit_type(unit_type)
+  def build_lease_pricing_from_unit_type(unit_type, community)
     term_rents = unit_type.dig("rent", "termRent")
     return nil unless term_rents.present?
 
@@ -498,17 +506,13 @@ class PsiService < BaseService
 
     # 2️⃣ Pick per term
     buckets.each do |term, rows|
-      # a) lowest rent first
-      min_rent = rows.map { |r| r[:rent] }.min
-      cheapest = rows.select { |r| r[:rent] == min_rent }
+      if community.turn_availability_on
+        chosen = next_year_pricing_available?(rows, today) || current_year_pricing_available?(rows, today)
+      else
+        chosen = current_year_pricing_available?(rows, today)
+      end
 
-      # b) date relevance only as tiebreaker
-      chosen =
-        cheapest.min_by do |r|
-          distance_to_window(today, r[:start_date], r[:end_date])
-        end
-
-      result[term] = chosen[:rent]
+      result[term] = chosen[:rent] if chosen
     end
 
     # 3️⃣ Minimum 2 terms required
@@ -520,17 +524,29 @@ class PsiService < BaseService
       .join
   end
 
+  def next_year_pricing_available?(rows, today)
+    return if rows.empty?
+
+    next_year_rows = rows.select { |r| r[:start_date].year > today.year }
+    min_rent = next_year_rows.map { |r| r[:rent] }.min
+    cheapest = next_year_rows.select { |r| r[:rent] == min_rent }
+    cheapest.min_by { |r| r[:start_date] } if cheapest.any?
+  end
+
+  def current_year_pricing_available?(rows, today)
+    return if rows.empty?
+
+    current_year_rows = rows.select { |r| r[:start_date].year == today.year }
+    min_rent = current_year_rows.map { |r| r[:rent] }.min
+    cheapest = current_year_rows.select { |r| r[:rent] == min_rent }
+    cheapest.min_by { |r| r[:start_date] } if cheapest.any?
+  end
+
   def parse_mmddyyyy(str)
     return nil if str.blank?
     Date.strptime(str, "%m/%d/%Y")
   rescue ArgumentError
     nil
-  end
-
-  def distance_to_window(date, start_date, end_date)
-    return 0 if date >= start_date && date <= end_date
-    return (start_date - date).abs if date < start_date
-    (date - end_date).abs
   end
 
   def normalize_rent(value)

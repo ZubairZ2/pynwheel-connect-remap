@@ -419,8 +419,9 @@ module CommunitiesHelper
     else
       case theme_name
       when 'modernist'
-        colors = [design&.modernist_map_marker_color, 'no color', '']
-        colors.include?(design&.modernist_map_marker_color) ? (design&.primary_color || DEFAULT_MARKER_PRIMARY_CODE) : (design&.modernist_map_marker_color || DEFAULT_MARKER_PRIMARY_CODE)
+        # colors = [design&.modernist_map_marker_color, 'no color', '']
+        # colors.include?(design&.modernist_map_marker_color) ? (design&.primary_color || DEFAULT_MARKER_PRIMARY_CODE) : (design&.modernist_map_marker_color || DEFAULT_MARKER_PRIMARY_CODE)
+        design&.modernist_map_marker_color || DEFAULT_MARKER_CODE
       when 'futurist'
         design&.futurist_property_map_marker_color || DEFAULT_MARKER_CODE
       when 'expressionist'
@@ -461,8 +462,9 @@ module CommunitiesHelper
     when /gables/
       design&.amenity_map_marker_color || DEFAULT_MARKER_CODE
     when 'modernist'
-      colors = [design&.modernists_amenity_map_marker_color, 'no color', '']
-      colors&.include?(design&.modernists_amenity_map_marker_color) ? (design&.primary_color || DEFAULT_MARKER_PRIMARY_CODE) : (design&.modernists_amenity_map_marker_color || DEFAULT_MARKER_PRIMARY_CODE)
+      # colors = [design&.modernists_amenity_map_marker_color, 'no color', '']
+      # colors&.include?(design&.modernists_amenity_map_marker_color) ? (design&.primary_color || DEFAULT_MARKER_PRIMARY_CODE) : (design&.modernists_amenity_map_marker_color || DEFAULT_MARKER_PRIMARY_CODE)
+      design&.modernists_amenity_map_marker_color || DEFAULT_MARKER_CODE
     when 'futurist'
       design&.futurist_amenity_map_marker_color || DEFAULT_MARKER_CODE
     when 'expressionist'

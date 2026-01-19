@@ -75,7 +75,7 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
       update_data_provider
       data_provider = @community.data_provider
       @credential = update_data_provider_credentials
-      
+
       if @credential.present?
         @community.set_data_provider_status(current_pynwheel_user, params["status"])
         render json: {success: true, error_code: 200, message: "#{data_provider} updated successfully", data: @credential.as_json(data_provider)}
@@ -103,6 +103,7 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
     else
       credential = create_data_provider(community_credentials)
     end
+
     credential
   end
 
@@ -206,7 +207,7 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
       :property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:rentcafe_api_version,:c_code,:api_token,:p_code,:apply_now,
       :allow_separate_link,:separate_link,:use_different_crm_provider,:limit_result,:file,:resman_apikey, :resman_partner_id,
       :resman_account_id, :xml_filename, :xml_domain, :resman_api_version, :resman_property_id,:zaremba_filename,
-      :zaremba_property_id,:zaremba_username,:zaremba_password,:new_requested_data_provider, :rentmanager_username, :rentmanager_password, :rentmanager_property_id, :app_folio_property_id, :app_folio_database_id, :rentmanager_base_url)
+      :zaremba_property_id,:zaremba_username,:zaremba_password,:new_requested_data_provider, :rentmanager_username, :rentmanager_password, :rentmanager_property_id, :app_folio_property_id, :app_folio_database_id, :app_folio_property_group_id, :app_folio_property_scope, :rentmanager_base_url)
   end
 
   def crm_credential_params

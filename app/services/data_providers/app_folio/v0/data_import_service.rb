@@ -2,30 +2,22 @@ module DataProviders
   module AppFolio
     module V0
       class DataImportService < DataProviders::AppFolio::V0::BaseService
-
         def perform
-          property_codes = @credential.app_folio_property_id.split(',') rescue []
+          property_ids = @credential.resolved_app_folio_property_ids(@app_folio_service)
+          return if property_ids.blank?
 
-          property_codes.each do |property_code|
-            begin
-              property_code = property_code&.strip
+          property_ids = property_ids.map(&:strip).uniq
 
-              import_property_details(property_code) if @update_property_info
-
-              import_property_floorplans(property_code)
-              import_property_units(property_code)
-              update_floorplan_square_footage()
-
-            rescue => exception
-              raise exception
-            end
-          end
+          import_property_details(property_ids.first) if @update_property_info
+          import_property_units(property_ids)
+          import_property_floorplans(property_ids)
+          update_floorplan_square_footage
         end
 
         private
 
-        def import_property_details property_code
-          response = get_resource(property_code, "properties", "Id")
+        def import_property_details property_id
+          response = get_resource(property_id, "properties", "Id")
           return unless response.present?
           update_property_details(response)
         end
@@ -42,24 +34,23 @@ module DataProviders
             address: details["Address1"] ||  details["Address2"],
             city: details["City"],
             state: details["State"],
-            zip: details["Zip"],
-            website: details["Link"],
+            zip: details["Zip"]
           )
         end
 
-        def import_property_floorplans(property_code)
-          response = get_resource(property_code, "unit_types")
+        def import_property_floorplans(property_ids)
+          response = get_resource(property_ids, "unit_types")
           return unless response.present?
 
           unit_types = response["data"]
+          return unless unit_types.is_a?(Array)
 
-          if unit_types.present? && unit_types.is_a?(Array)
-            filtered_unit_types = unit_types.select do |unit_type|
-              unit_type["PropertyId"] == property_code
-            end
+          property_ids = normalize_ids(property_ids)
 
-            process_floorplans_response(filtered_unit_types) if filtered_unit_types.any?
-          end
+          filtered_unit_types =
+            unit_types.select { |u| property_ids.include?(u["PropertyId"]) }
+
+          process_floorplans_response(filtered_unit_types) if filtered_unit_types.any?
         end
 
 
@@ -101,34 +92,34 @@ module DataProviders
           end
         end
 
-        def import_property_units property_code
-          response = get_resource(property_code, "units", "PropertyId")
+        def import_property_units property_ids
+          response = get_resource(property_ids, "units", "PropertyId")
           return unless response.present?
           response = response["data"]
-          process_units_response(response, property_code) if response.present? && response.is_a?(Array)
+          process_units_response(response) if response.present? && response.is_a?(Array)
         end
 
-        def process_units_response(response, property_code)
+        def process_units_response(response)
           response.each_slice(@batch_size) do |batch|
-            units = build_units(batch, property_code)
+            units = build_units(batch)
             import_units(units)
           end
         end
 
-        def build_units(response, property_code)
+        def build_units(response)
           units = []
 
           response.each do |r|
             unit = Unit.find_or_initialize_by(provider: "appfolio", community_id: @community_id, provider_unit_id: r["Id"])
             next if unit.manual_override
-            update_unit_attributes(unit, r, property_code)
+            update_unit_attributes(unit, r)
             units << unit
           end
 
           units
         end
 
-        def update_unit_attributes(unit, r, property_code)
+        def update_unit_attributes(unit, r)
           begin
             
             update_attribute_if_blank(unit, :marketing_name, @credential&.resolved_unit_name(r), 'name')
@@ -138,7 +129,7 @@ module DataProviders
             update_attribute_if_blank(unit, :available_date, set_availability_date(r))
             update_attribute_if_blank(unit, :available, is_available?(r))
 
-            unit.property_id = property_code
+            unit.property_id = r["PropertyId"]
             unit.unit_type = r["UnitType"]
             unit.square_feet = unit_sqft(r)
             unit.market_rent = unit_market_rent(r)

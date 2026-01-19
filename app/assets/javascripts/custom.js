@@ -977,9 +977,27 @@ function selectDataProvider(data_provider) {
 
 function showAppFolioFields() {
   $(".credential_fields").hide();
-  $("#app_folio_property_id").show();
   $("#app_folio_database_id").show();
+  $("#app_folio_property_scope").show();
   $("#app_folio_unit_key").show();
+  const select = document.getElementById('community_credential_attributes_app_folio_property_scope');
+
+  if (select) {
+    onAppFolioPropertyScopeChange(select);
+  }
+}
+
+function onAppFolioPropertyScopeChange(selectEl) {
+  const value = selectEl.value;
+  if (!value) return;
+
+  if (value === 'is_app_folio_property_id') {
+    $("#app_folio_property_id").show();
+    $("#app_folio_property_group_id").hide();
+  } else if (value === 'is_app_folio_property_group_id') {
+    $("#app_folio_property_id").hide();
+    $("#app_folio_property_group_id").show();
+  }
 }
 
 function showPsiFields(){

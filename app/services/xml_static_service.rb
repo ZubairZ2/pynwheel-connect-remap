@@ -1,171 +1,222 @@
 class XmlStaticService < BaseService
   def perform
-    property_ids = credentials.xml_domain.split(',') rescue []
+    property_ids = credentials.xml_domain.to_s.split(',').map(&:strip)
+    return if property_ids.blank?
+
+    response = fetch_xml
+    return unless response
+
     property_ids.each do |property_id|
-      begin
+      property = find_property(response, property_id)
 
-        filename = credentials.xml_filename
-        domain = property_id
-        url = "http://pynwheel.com/swoop/datafeeds/#{filename.include?(".xml") ? filename : "#{filename}.xml"}"
-
-        response = HTTParty.get(URI::DEFAULT_PARSER.escape(url))
-
-        result = ""
-        
-        if response['PhysicalProperty']['Property'].class == Array
-          response['PhysicalProperty']['Property'].each do |p|
-            if p['PropertyID']['Identification']['SecondaryID'].present?
-              if p['PropertyID']['Identification']['SecondaryID'] == domain
-                result = p
-              end
-            end
-          end
-        else
-          p = response['PhysicalProperty']['Property']
-
-          if p['PropertyID']['Identification']['SecondaryID'] == domain
-            result = p
-          end
-        end
-        if result.present?
-          result = result.to_s.gsub("xsi:","")
-          result = eval(result)
-          units = []
-          floorplans = []
-          result["ILS_Unit"].each do |pro|
-            units << pro
-          end
-
-          result["Floorplan"].each do |pro|
-            floorplans << pro
-          end
-          save_xml_floorplans(floorplans,property_id)
-          save_xml_units(units,property_id)
-        else
-          # puts '-----------------------------' , response["response"]["error"]["message"]
-          ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
-        end
-      rescue => e
-        puts '----------------------------' , e.message
-        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
+      unless property
+        notify_error("No matching property found", property_id)
+        next
       end
+
+      building_map = extract_buildings(property)
+
+      units      = Array(property['ILS_Unit'])
+      floorplans = Array(property['Floorplan'])
+
+      save_xml_floorplans(floorplans, property_id)
+      save_xml_units(units, property_id, building_map)
     end
+  rescue StandardError => e
+    ExceptionNotifier.notify_exception(e, data: { community_id: credentials.community_id })
   end
-  def save_xml_units(units, property_id)
-    units.each do |u|
-      vacateDate = ""
-      unit = Unit.where(provider: "xml",community_id: credentials.community_id,provider_unit_id: u["Id"]).first_or_initialize
-      unless unit.manual_override
-        unit.property_id = property_id
-        unit.unit_type = u["Unit"]["Information"]["UnitType"]
-        unless unit.name_is_updated.present? && unit.name_is_updated
-          unit.marketing_name = get_marketing_name(u)
-        end
-        unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
-          unit.floorplan_id = u["FloorplanID"]
-        end
 
-        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
-          unit.effective_rent = 1.0 #Setting rent to avoid validation issues
-          if u["EffectiveRent"]["Min"].present?
-            unit.effective_rent = u["EffectiveRent"]["Min"]
-          elsif u["EffectiveRent"]["Avg"].present?
-            unit.effective_rent = u["EffectiveRent"]["Avg"]
-          end
-        end
-        unit.min_effective_rent = u["EffectiveRent"]["Min"]
-        unit.max_effective_rent = u["EffectiveRent"]["Max"]
-        unless unit.floor_is_updated.present? && unit.floor_is_updated
-          unit.floor = u["EntryFloor"]
-        end
+  # ------------------------------------------------------------------
+  # XML helpers
+  # ------------------------------------------------------------------
 
-        if u["Availability"].present?
-          unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
-            unit.availability = u["Availability"]["VacancyClass"]
-          end
+  def fetch_xml
+    HTTParty.get(URI::DEFAULT_PARSER.escape(file_url))
+  rescue StandardError => e
+    ExceptionNotifier.notify_exception(e, data: { community_id: credentials.community_id })
+    nil
+  end
 
-          if u["Availability"]["VacancyClass"] == "Unoccupied"
-            unless unit.available_is_updated.present? && unit.available_is_updated && unit.manual_override
-              unit.available = true
-            end
+  def find_property(response, domain)
+    property_node = response.dig('PhysicalProperty', 'Property')
+    return nil if property_node.blank?
 
-          end
-          if u["Availability"]["VacateDate"].present?
-            year = u["Availability"]["VacateDate"]["Year"]
-            month = u["Availability"]["VacateDate"]["Month"]
-            day = u["Availability"]["VacateDate"]["Day"]
-            vacateDate = Date.parse("#{year}-#{month}-#{day}")
-          end
+    # Normalize to array
+    properties = if property_node.is_a?(Array)
+                  property_node
+                elsif property_node.is_a?(Hash)
+                  [property_node]
+                else
+                  []
+                end
 
-        end
-        unit.availability_url = u["Availability"]["UnitAvailabilityURL"]
-        unit.square_feet = u["Unit"]["Information"]["MinSquareFeet"]
-        unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
-          unit.available_date = vacateDate
-        end
+    properties.find do |property|
+      ids = property.dig('PropertyID', 'Identification')
+      next false unless ids
 
-        building = u["BuildingID"]
-        unless unit.building_is_updated.present? && unit.building_is_updated
-          unit.building = building.present? ? building.gsub("Building ", "") : ""
-        end
-
-        unit.manually_updated = false
-        unit.save(validate: false)
-      end
+      ids['SecondaryID'].to_s.strip == domain.to_s.strip ||
+        ids['PrimaryID'].to_s.strip == domain.to_s.strip
     end
   end
 
-  def save_xml_floorplans(floorplans,property_id)
+  # ------------------------------------------------------------------
+  # Units
+  # ------------------------------------------------------------------
+
+  def save_xml_units(units, property_id, building_map)
+    units.each { |u| upsert_unit(u, property_id, building_map) }
+  end
+
+  def upsert_unit(u, property_id, building_map)
+    unit = Unit.where(
+      provider: 'xml',
+      community_id: credentials.community_id,
+      provider_unit_id: u['Id']
+    ).first_or_initialize
+
+    return if unit.manual_override
+
+    unit.property_id = property_id
+    unit.unit_type   = u.dig('Unit', 'Information', 'UnitType')
+    unit.marketing_name ||= get_marketing_name(u)
+    unit.floorplan_id ||= u['FloorplanID']
+
+    apply_rent(unit, u)
+    apply_availability(unit, u)
+
+    unit.square_feet = u.dig('Unit', 'Information', 'MinSquareFeet')
+    unit.building = resolve_building_name(u, building_map)
+
+    unit.manually_updated = false
+    unit.save(validate: false)
+  rescue StandardError
+    nil
+  end
+
+  def resolve_building_name(u, building_map)
+    building_id = u['BuildingID']&.to_s
+    building_map[building_id]
+  end
+
+  def apply_rent(unit, u)
+    return if unit.effective_rent_is_updated && unit.manual_override
+
+    unit.effective_rent =
+      u.dig('EffectiveRent', 'Min') ||
+      u.dig('EffectiveRent', 'Avg') ||
+      1.0
+
+    unit.min_effective_rent = u.dig('EffectiveRent', 'Min')
+    unit.max_effective_rent = u.dig('EffectiveRent', 'Max')
+  end
+
+  def apply_availability(unit, u)
+    availability = u['Availability']
+    return unless availability
+
+    unless unit.availability_is_updated && unit.manual_override
+      unit.availability = availability['VacancyClass']
+    end
+
+    unless unit.available_is_updated && unit.manual_override
+      unit.available = availability['VacancyClass'] == 'Unoccupied'
+    end
+
+    unless unit.available_date_is_updated && unit.manual_override
+      unit.available_date = parse_vacate_date(availability)
+    end
+
+    unit.availability_url = availability['UnitAvailabilityURL']
+  end
+
+  def parse_vacate_date(availability)
+    date = availability['VacateDate']
+    return unless date
+
+    Date.parse("#{date['Year']}-#{date['Month']}-#{date['Day']}")
+  rescue StandardError
+    nil
+  end
+
+  # ------------------------------------------------------------------
+  # Floorplans
+  # ------------------------------------------------------------------
+
+  def save_xml_floorplans(floorplans, property_id)
     floorplans.each do |f|
-      floorplan = Floorplan.where(provider: "xml",community_id: credentials.community_id,provider_floorplan_id: f["Id"]).first_or_initialize
+      floorplan = Floorplan.where(
+        provider: 'xml',
+        community_id: credentials.community_id,
+        provider_floorplan_id: f['Id']
+      ).first_or_initialize
+
       floorplan.property_id = property_id
-      unless floorplan.name_is_updated.present? && floorplan.name_is_updated
-        floorplan.name = f["Name"]
-      end
+      floorplan.name ||= f['Name']
+      floorplan.unit_count = f['UnitCount']
+      floorplan.units_available = f['DisplayedUnitsAvailable']
+      floorplan.availability_url = f['FloorplanAvailabilityURL']
 
-      floorplan.unit_count = f["UnitCount"]
-      floorplan.units_available = f["DisplayedUnitsAvailable"]
-      if f["FloorplanAvailabilityURL"].present?
-        floorplan.availability_url = f["FloorplanAvailabilityURL"]
-      end
-      unless floorplan.bedroom_is_updated.present? && floorplan.bedroom_is_updated
-        floorplan.bedrooms = f["Room"][0]["Count"]
-      end
-
-      unless floorplan.bathroom_is_updated.present? && floorplan.bathroom_is_updated
-        floorplan.bathrooms = f["Room"][1]["Count"]
-      end
-      unless floorplan.square_feet_is_updated.present? && floorplan.square_feet_is_updated
-        if f["SquareFeet"]["Min"].to_f > 0
-          floorplan.square_feet = f["SquareFeet"]["Min"]
-        else
-          floorplan.square_feet = f["SquareFeet"]["Max"]
-        end
-      end
-
-      unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated
-        if f["MarketRent"]["Min"].to_f > 0
-          floorplan.market_rent = f["MarketRent"]["Min"]
-        else
-          floorplan.market_rent = f["MarketRent"]["Max"]
-        end
-      end
-
+      apply_floorplan_details(floorplan, f)
       floorplan.save(validate: false)
-
     end
   end
 
-  private
-    def get_marketing_name u
-      if u["Unit"]["MarketingName"]["__content__"].present?
-        u["Unit"]["MarketingName"]["__content__"]
-      else
-        u["Unit"]["MarketingName"]
-      end
+  def apply_floorplan_details(fp, f)
+    fp.bedrooms ||= f.dig('Room', 0, 'Count')
+    fp.bathrooms ||= f.dig('Room', 1, 'Count')
 
-    rescue => e
-      u["Unit"]["MarketingName"]
+    unless fp.square_feet_is_updated
+      fp.square_feet =
+        f.dig('SquareFeet', 'Min').to_f.positive? ?
+          f.dig('SquareFeet', 'Min') :
+          f.dig('SquareFeet', 'Max')
     end
 
+    unless fp.market_rent_is_updated
+      fp.market_rent =
+        f.dig('MarketRent', 'Min').to_f.positive? ?
+          f.dig('MarketRent', 'Min') :
+          f.dig('MarketRent', 'Max')
+    end
+  end
+
+  # ------------------------------------------------------------------
+  # Utils
+  # ------------------------------------------------------------------
+
+  def extract_buildings(property)
+    building_node = property['Building']
+    return {} if building_node.blank?
+
+    buildings = building_node.is_a?(Array) ? building_node : [building_node]
+
+    buildings.each_with_object({}) do |b, map|
+      id   = b['Id']&.to_s
+      name = b['Name']&.to_s
+      map[id] = name if id.present?
+    end
+  end
+
+  def file_url
+    filename = credentials.xml_filename
+    xml_file = filename.end_with?('.xml') ? filename : "#{filename}.xml"
+    "http://pynwheel.com/swoop/datafeeds/#{xml_file}"
+  end
+
+  def get_marketing_name(u)
+    u.dig('Unit', 'MarketingName', '__content__') ||
+      u.dig('Unit', 'MarketingName')
+  rescue StandardError
+    nil
+  end
+
+  def notify_error(message, property_id)
+    ExceptionNotifier.notify_exception(
+      Exception.new(message),
+      data: {
+        property_id: property_id,
+        community_id: credentials.community_id
+      }
+    )
+  end
 end
