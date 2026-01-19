@@ -437,12 +437,7 @@
 
   $(document).ready(function () {
     if (communityInactivated) return;
-
-    console.log("\n\n\n\n\n\n\n");
-    console.log("window.parent.location.href: ",  window.parent.location.href);
-    console.log("document.referrer: ",  document.referrer);
-    console.log("\n\n\n\n\n\n\n");
-
+    
     if(svgMode)
       assetTracker = new AssetLoadingTracker({ loaderSelector: ".webPageLoader" });
 
