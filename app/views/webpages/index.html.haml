@@ -437,7 +437,15 @@
 
   $(document).ready(function () {
     if (communityInactivated) return;
-    
+
+    var url = (window.location != window.parent.location)
+            ? document.referrer
+            : document.location.href;
+
+    console.log("\n\n\n\n\n\n\n");
+    console.log("Apartment URL: ",  url);
+    console.log("\n\n\n\n\n\n\n");
+
     if(svgMode)
       assetTracker = new AssetLoadingTracker({ loaderSelector: ".webPageLoader" });
 
