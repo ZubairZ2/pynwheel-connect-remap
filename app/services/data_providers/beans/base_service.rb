@@ -35,9 +35,9 @@ module DataProviders
       end
 
       def beans_api_url
-        raise 'ApartmentList URL missing' if community.website.blank?
+        raise 'ApartmentList URL missing' if community&.credential&.apartmentlist_url.blank?
 
-        "https://www.beans.ai/client/pynwheel/apartmentlist?url=#{CGI.escape(community.website)}"
+        "https://www.beans.ai/client/pynwheel/apartmentlist?url=#{CGI.escape(community&.credential&.apartmentlist_url)}"
       end
 
       def parse_date(value)

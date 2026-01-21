@@ -980,8 +980,8 @@ function selectDataProvider(data_provider) {
 
 function showBeansFields() {
   $(".credential_fields").hide();
+  $("#apartmentlist_url").show();
 }
-
 
 function showAppFolioFields() {
   $(".credential_fields").hide();

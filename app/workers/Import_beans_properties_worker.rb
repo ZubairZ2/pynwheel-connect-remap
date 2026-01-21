@@ -128,7 +128,6 @@ class ImportBeansPropertiesWorker
         state: state,
         zip: zip,
         company_id: beans_company.id,
-        use_company_level_data_settings: true,
         enable_three_d_maps: true,
         touchscreen_app: false,
         data_provider: 'beans',

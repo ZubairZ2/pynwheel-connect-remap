@@ -244,7 +244,7 @@ class CredentialsValid < BaseService
     end
 
     def verify_beans_credentials community
-      community.website.present?
+      community&.credential&.apartmentlist_url.present?
     end
 
     def verify_rent_manager_credentials community, credentials
