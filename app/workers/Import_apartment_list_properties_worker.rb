@@ -5,7 +5,7 @@ require 'open-uri'
 require 'digest'
 require 'set'
 
-class ImportBeansPropertiesWorker
+class ImportApartmentListPropertiesWorker
   include Sidekiq::Worker
 
   sidekiq_options queue: 'import_data', retry: 3
