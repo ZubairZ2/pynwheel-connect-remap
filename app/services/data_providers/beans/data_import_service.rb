@@ -52,13 +52,44 @@ module DataProviders
           name: data['name'],
           bedrooms: data['bed'],
           bathrooms: data['bath'],
-          square_feet: data['sqft_max'] || data['sqft'],
-          market_rent: data['price'],
+          square_feet: data['sqft'] || data['sqft_max'],
+          market_rent: data['price'] || data['price_max'],
           unit_count: data['units']&.size,
           units_available: available_units_count(data),
           provider_floorplan_id: data['remote_listing_id']
         )
+
+        add_floorplan_images(fp, data['photos'])
         fp.save!
+      end
+
+      def add_floorplan_images(fp, photos)
+        return if photos.blank?
+      
+        image_urls = photos.first(2).map do |photo|
+          photo_id = photo.is_a?(Hash) ? photo[:id] || photo['id'] : photo&.id
+          "https://cdn.apartmentlist.com/image/upload/#{photo_id}.jpg" if photo_id.present?
+        end.compact
+      
+        fp.image = image_base64(image_urls[0]) if image_urls[0]
+        fp.secondary_image = image_base64(image_urls[1]) if image_urls[1]
+      end
+
+      def image_base64(image_url)
+        return unless image_url.present?
+    
+        encoded_url = URI::DEFAULT_PARSER.escape(image_url) #URI.encode(image_url)
+        uri = URI.parse(encoded_url)
+        file = uri.open
+        image_data = file.read
+        encoded_image = Base64.strict_encode64(image_data)
+        "data:image/png;base64,#{encoded_image}"
+      # rescue ::OpenURI::HTTPError => e
+      #   raise e
+      # rescue StandardError => e
+        # raise e
+      rescue
+        ""
       end
 
       def available_units_count(data)
