@@ -226,7 +226,8 @@
 
     async _loadSVG(url) {
       try {
-        const r = await fetch(url);
+        // const r = await fetch(url);
+        const r = await fetch(`${this._apiBase()}/images/fetch_svg_image?svg_url=${encodeURIComponent(url)}`)
         if (!r.ok) return null;
 
         const txt = await r.text();
