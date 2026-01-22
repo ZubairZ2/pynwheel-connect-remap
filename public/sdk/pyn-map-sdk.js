@@ -90,7 +90,7 @@
           if (!r?.success) return this._showError(r?.error || "Config load error");
           this._storeConfig(r.data);
           this._showLoading("Loading SVG maps...");
-          return this._loadAllSVGs();
+          return this._loadAllSVGs(cfg.apiKey);
         })
         .then(() => {
           if (!this._hasAnyMap()) return this._showError("No maps found.");
@@ -199,7 +199,7 @@
     // ----------------------------------------------------
     // SVG LOADING
     // ----------------------------------------------------
-    async _loadAllSVGs() {
+    async _loadAllSVGs(apiKey) {
       const entries = [];
 
       if (this.data.sitemap) {
@@ -217,13 +217,13 @@
       });
 
       await Promise.all(entries.map(m =>
-        this._loadSVG(m.svgUrl).then(svg => {
+        this._loadSVG(apiKey, m.svgUrl).then(svg => {
           if (svg) this.svgCache[m.mapId] = svg;
         })
       ));
     },
 
-    async _loadSVG(svgUrl) {
+    async _loadSVG(apiKey, svgUrl) {
       try {
         const requestUrl =
           `${this._apiBase()}/api/partner/maps/fetch_svg_image` +
