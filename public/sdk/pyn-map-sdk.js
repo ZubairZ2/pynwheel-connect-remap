@@ -226,16 +226,29 @@
 
     async _loadSVG(url) {
       try {
-        // const r = await fetch(url);
-        const r = await fetch(`${this._apiBase()}/images/fetch_svg_image?svg_url=${encodeURIComponent(url)}`)
-        if (!r.ok) return null;
+        // const response = await fetch(url);
+        const url = `${this._apiBase()}/api/partner/maps/fetch_svg_image?svg_url=${encodeURIComponent(url)}`;
+        const response = await fetch(url, { headers: { "X-API-Key": apiKey } });
 
-        const txt = await r.text();
-        const doc = new DOMParser().parseFromString(txt, "image/svg+xml");
-        return doc.querySelector("svg");
+        // if (!r.ok) return null;
+        if (!response.ok)
+          throw new Error(`Failed to fetch SVG: ${response.statusText}`);
+
+        const svgText = await response.text();
+        const svgElement = this._parseSVG(svgText);
+
+        if (!svgElement) throw new Error("No <svg> element found in the response.");
+
+        return svgElement;
       } catch {
         return null;
       }
+    },
+
+    _parseSVG(svgText) {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(svgText, "image/svg+xml");
+      return doc.querySelector("svg");
     },
 
 
