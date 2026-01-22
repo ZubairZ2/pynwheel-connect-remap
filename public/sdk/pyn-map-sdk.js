@@ -196,7 +196,6 @@
       });
     },
 
-
     // ----------------------------------------------------
     // SVG LOADING
     // ----------------------------------------------------
@@ -224,23 +223,32 @@
       ));
     },
 
-    async _loadSVG(url) {
+    async _loadSVG(svgUrl) {
       try {
-        // const response = await fetch(url);
-        const url = `${this._apiBase()}/api/partner/maps/fetch_svg_image?svg_url=${encodeURIComponent(url)}`;
-        const response = await fetch(url, { headers: { "X-API-Key": apiKey } });
-
-        // if (!r.ok) return null;
-        if (!response.ok)
-          throw new Error(`Failed to fetch SVG: ${response.statusText}`);
-
+        const requestUrl =
+          `${this._apiBase()}/api/partner/maps/fetch_svg_image` +
+          `?svg_url=${svgUrl}`;
+    
+        const response = await fetch(requestUrl, {
+          headers: {
+            "X-API-Key": apiKey
+          }
+        });
+    
+        if (!response.ok) {
+          throw new Error(`Failed to fetch SVG: ${response.status} ${response.statusText}`);
+        }
+    
         const svgText = await response.text();
         const svgElement = this._parseSVG(svgText);
-
-        if (!svgElement) throw new Error("No <svg> element found in the response.");
-
+    
+        if (!svgElement) {
+          throw new Error("No <svg> element found in the response.");
+        }
+    
         return svgElement;
-      } catch {
+      } catch (error) {
+        console.error("_loadSVG failed:", error);
         return null;
       }
     },
