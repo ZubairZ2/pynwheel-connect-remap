@@ -1,6 +1,8 @@
 class SitemapsController < ApplicationController
   include AssignLocksHelper
   include CommunitiesHelper
+  include SvgUploadHelper
+
   # include Error::ErrorHandler
   before_action :set_community
   before_action :check_community
@@ -161,43 +163,36 @@ class SitemapsController < ApplicationController
 
   def save_sitemap_svg
     file = params[:file]
-    file_checksum = nil
+    svg_data = process_svg(file)
 
-    begin
-      image = MiniMagick::Image.open(file.path)
-      file_checksum = Digest::MD5.hexdigest(image.to_blob)
-    rescue
-      image = nil
-      flash[:error] = "SVG wan unable to process. Please upload a valid SVG file."
+    unless svg_data
       redirect_to plotexp_community_sitemaps(@community)
       return
     end
 
-    if image.type != "SVG"
-      flash[:error] = "Image must be of SVG type"
-      redirect_to plotexp_community_sitemaps(@community)
-    elsif image.width < 1000 && image.height < 700
-      flash[:error] = "Too small property map image"
-      redirect_to plotexp_community_sitemaps(@community)
-    else
-      sitemap = Sitemap.where(community_id: params[:community_id], id: params[:sitemap_id]).first
-      if sitemap
-        original_file = fetch_svg_by_url(get_environment_based_svg_url(sitemap))
-        original_svg_image_checksum = Digest::MD5.hexdigest(original_file) if original_file.present?
-        sitemap.svg_image = file
-        sitemap.svg_metadata = { height: image.height, width: image.width }
-        sitemap.is_ocr_enabled = false
-  
-        if sitemap.save
-          clear_svg_plotted_units_and_amenities(sitemap, file_checksum, original_svg_image_checksum) if original_svg_image_checksum.present?
+    sitemap = @community.sitemap
 
-          render :json=>{"status"=>"success"}
-        else
-          render :json=>{"status"=>"fail"}
-        end
-      else
-        render json: { status: "not_found" }, status: :not_found
+    return render(json: { status: "not_found" }, status: :not_found) unless sitemap
+
+    original_svg = fetch_svg_by_url(get_environment_based_svg_url(sitemap))
+    original_checksum = Digest::MD5.hexdigest(original_svg) if original_svg.present?
+
+    sitemap.svg_image       = file
+    sitemap.svg_metadata    = svg_data.slice(:width, :height)
+    sitemap.is_ocr_enabled  = false
+
+    if sitemap.save
+      if original_checksum.present?
+        clear_svg_plotted_units_and_amenities(
+          sitemap,
+          svg_data[:checksum],
+          original_checksum
+        )
       end
+
+      render json: { status: "success" }
+    else
+      render json: { status: "fail" }
     end
   end
 
