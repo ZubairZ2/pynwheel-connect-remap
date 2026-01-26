@@ -10,7 +10,8 @@ class ImportApartmentListPropertiesWorker
 
   sidekiq_options queue: 'import_data', retry: 3
 
-  DRIVE_CSV_URL = ENV['APARTMENT_PROPERTIES_URL'] || 'https://docs.google.com/spreadsheets/d/1C3VWUdkzKJve95JfNNBg0SBgi58FOOis-qciKFo_2wE/export?format=csv'.freeze
+  APARTMENTLIST_API_KEY = ENV['PARTNER_APARTMENTLIST_API_KEY']
+  DRIVE_CSV_URL = ENV['APARTMENTLIST_PROPERTIES_URL']
   BATCH_SIZE    = 1000
 
   STATE_MAP = {
@@ -88,6 +89,7 @@ class ImportApartmentListPropertiesWorker
     beans_company.save!
 
     existing_fingerprints = Community
+      .active_client_properties
       .pluck(:address, :city, :state, :zip)
       .map { |a, c, s, z| fingerprint(a, c, s, z) }
       .to_set
@@ -111,6 +113,8 @@ class ImportApartmentListPropertiesWorker
       city    = row['City']&.strip
       state   = row['State']&.strip&.upcase
       zip     = row['Zip']&.strip
+      url     = row['Url']&.strip
+      name    = row['Name']&.strip
 
       next if address.blank? || city.blank? || state.blank?
 
@@ -122,7 +126,7 @@ class ImportApartmentListPropertiesWorker
       seen_fingerprints << fp
 
       community = Community.new(
-        name: "#{address}, #{city}, #{state}, #{zip}".strip,
+        name: name,
         address: address,
         city: city,
         state: state,
@@ -136,23 +140,19 @@ class ImportApartmentListPropertiesWorker
         updated_at: now
       )
 
-      # ✅ Create the associated credential
-      community.build_credential(
-        created_at: now,
-        updated_at: now
-      )
+      # Associated records
+      community.build_credential(created_at: now, updated_at: now, apartmentlist_url: url)
+      community.build_map_filter(created_at: now, updated_at: now)
+      community.build_design(created_at: now, updated_at: now)
 
-      # ✅ Create the associated map_filter
-      community.build_map_filter(
-        created_at: now,
-        updated_at: now
-      )
-
-      # ✅ Create the associated design
-      community.build_design(
-        created_at: now,
-        updated_at: now
-      )
+      if APARTMENTLIST_API_KEY.present?
+        community.map_partners.build(
+          partner: 'apartmentlist',
+          api_key: APARTMENTLIST_API_KEY,
+          created_at: now,
+          updated_at: now
+        )
+      end
 
       batch << community
 

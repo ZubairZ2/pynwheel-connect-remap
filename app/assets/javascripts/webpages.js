@@ -28,6 +28,7 @@ var defaultSelectedFloor;
 var debouncedShowMarkers;
 var modalButtonsCounter = 0;
 var isRightRailCardClicked = false;
+var beanOnlyProperty = false;
 
 var _3dConvertedArr = definedAndHasValue(_3dConvertedArr)
   ? _3dConvertedArr
@@ -2201,11 +2202,15 @@ function setUnitModalButtons(e) {
           selector === clickedUnit.pointer_data.selector && x_plot === clickedUnit.pointer_data.x_plot && y_plot === clickedUnit.pointer_data.y_plot && floor === clickedUnit.floor && validFloor(floor)
       );
     } else {
-      const [unitXPlot, unitYPlot] = [clickedUnit.x_plot, clickedUnit.y_plot];
-      filteredUnits = floorbasedUnits.filter(
-        ({ floor, x_plot, y_plot }) =>
-          unitXPlot === x_plot && unitYPlot === y_plot && floor === clickedUnit.floor && validFloor(floor)
-      );
+      if(!beanOnlyProperty) {
+        const [unitXPlot, unitYPlot] = [clickedUnit.x_plot, clickedUnit.y_plot];
+        filteredUnits = floorbasedUnits.filter(
+          ({ floor, x_plot, y_plot }) =>
+            unitXPlot === x_plot && unitYPlot === y_plot && floor === clickedUnit.floor && validFloor(floor)
+        );
+      } else {
+        filteredUnits = [clickedUnit]
+      }
     }
 
   } else if (svgMode) {
