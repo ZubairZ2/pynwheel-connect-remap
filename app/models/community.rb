@@ -1063,7 +1063,13 @@ class Community < ApplicationRecord
     !is_sitemap
   end
 
+  def property_floor_options
+    [['Auto (lowest available floor)', '']] +
+      property_floor_numbers.map { |floor| ["Floor #{floor}", floor] }
+  end
+
   def property_floor_numbers
+    return [] if floorplates.blank?
     floorplates.flat_map(&:floors).map(&:to_i).sort
   end
 

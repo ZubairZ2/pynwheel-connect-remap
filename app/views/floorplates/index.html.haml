@@ -23,6 +23,17 @@
               .box.box-widget.panel-box.add-plan.pt-30
                 = form_tag community_save_apartment_settings_path(@community) ,{:class => 'apartment-settings-form'} do
                   = hidden_field_tag "community_id", @community.id
+                  .form-group
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Default map to load on floor
+                      %i.fa.fa-question-circle{
+                        "data-toggle" => "popover",
+                        "data-content" => "Select the floor to load by default. If unavailable, the map will load the lowest floor with available units."
+                      }
+
+                    .col-sm-12.col-lg-6.col-md-6.col-xs-12
+                      = select_tag :default_map_floor, options_for_select(@community.property_floor_options, @community.default_map_floor), class: "form-control apartment-setting-field"
+                  
                   - if @community.pynwheel_touch_enabled?
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15

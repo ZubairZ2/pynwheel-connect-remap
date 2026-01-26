@@ -596,6 +596,11 @@ module CommunitiesHelper
   def get_min_floor(community_info:, units_with_floorplan_info_json:, floors:)
     return nil unless community_info.has_floorplates?
 
+    if community_info.default_map_floor.present?
+      selected_floor = community_info.default_map_floor.to_i
+      return selected_floor if floors.present? && floors.include?(selected_floor)
+    end
+
     begin
       parsed_floors = JSON.parse(units_with_floorplan_info_json).map { |u| u["floor"] }.compact
       min_floor = parsed_floors.min
