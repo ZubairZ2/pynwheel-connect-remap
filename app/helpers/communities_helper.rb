@@ -677,7 +677,8 @@ module CommunitiesHelper
   end
 
   def fetch_unit_data_attributes_for_plotting(unit, struct)
-    title = (unit.building.present? ? unit.building + '-' : '') + unit.marketing_name
+    # title = (unit.building.present? ? unit.building + '-' : '') + unit.marketing_name
+    title = [unit.building, unit.marketing_name].compact.join('-')
     current_data_scope = instance_variable_defined?(:@sitemap) ? 'sitemap' : 'floorplate'
     floorplate_id = instance_variable_get("@#{current_data_scope}").id if current_data_scope == 'floorplate'
     
