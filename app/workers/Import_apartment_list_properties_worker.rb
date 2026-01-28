@@ -215,6 +215,23 @@ class ImportApartmentListPropertiesWorker
     )
   end
 
+  def bulk_insert!(records)
+    result = Community.import!(
+      records,
+      validate: false,
+      recursive: true,
+      returning: %i[id] # 👈 IMPORTANT
+    )
+
+    enqueue_beans_import(result.ids)
+  end
+
+  def enqueue_beans_import(community_ids)
+    community_ids.each do |community_id|
+      BeansDataImportWorker.perform_async(community_id)
+    end
+  end
+
   def generate_random_username(address, city)
     "#{address.parameterize(separator: '_')}_#{city.parameterize(separator: '_')}_#{SecureRandom.hex(3)}"
   end
