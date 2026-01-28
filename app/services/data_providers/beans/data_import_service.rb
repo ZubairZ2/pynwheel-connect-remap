@@ -59,7 +59,9 @@ module DataProviders
           provider_floorplan_id: data['remote_listing_id']
         )
 
-        add_floorplan_images(fp, data['photos'])
+        # Only add images if main image is blank
+        add_floorplan_images(fp, data['photos']) if fp.image.blank?
+        
         fp.save!
       end
 
