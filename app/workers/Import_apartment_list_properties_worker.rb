@@ -113,10 +113,10 @@ class ImportApartmentListPropertiesWorker
       city    = row['City']&.strip
       state   = row['State']&.strip&.upcase
       zip     = row['Zip']&.strip
-      url     = row['Url']&.strip
-      name    = row['Name']&.strip
+      url     = row['Property URL']&.strip
+      name    = row['Property Name']&.strip
 
-      next if address.blank? || city.blank? || state.blank?
+      next if url.blank? || address.blank? || city.blank? || state.blank?
 
       fp = fingerprint(address, city, state, zip)
 
