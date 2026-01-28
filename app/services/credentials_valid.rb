@@ -132,6 +132,9 @@ class CredentialsValid < BaseService
     elsif community.data_provider == "appfolio"
       verify_appfolio_credentials(community, credentials)
 
+    elsif community.data_provider == "beans"
+      verify_beans_credentials(community)
+
     elsif community.data_provider == "rentmanager"
       verify_rent_manager_credentials(community, credentials)
 
@@ -238,6 +241,10 @@ class CredentialsValid < BaseService
       rescue
         false
       end
+    end
+
+    def verify_beans_credentials community
+      community&.credential&.apartmentlist_url.present?
     end
 
     def verify_rent_manager_credentials community, credentials

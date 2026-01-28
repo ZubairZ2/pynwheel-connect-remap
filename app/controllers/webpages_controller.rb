@@ -88,108 +88,6 @@ class WebpagesController < ActionController::Base
     response.headers.delete "X-Frame-Options"
   end
 
-  def normalize_amenities
-    @amenities.find_each do |amenity|
-      struct = {
-        id: amenity.id,
-        name: amenity.name,
-        image_url: amenity.validated_image_url,
-        floor: amenity.floor,
-        floorplate_id: amenity.amenityable_id,
-        x_plot: amenity.x_plot,
-        y_plot: amenity.y_plot,
-        pointer_data: amenity.pointer_data,
-        galleries: amenity.amenity_galleries,
-        show_name: @community.show_amenity_name,
-        data_attributes: { "data-amenity-id": amenity.id, "data-floor": amenity.floor },
-        config: @map_config
-      }
-
-      @amenities_data << struct
-    end
-  end
-
-  def normalize_units
-    @units.find_each do |unit|
-      floorplan = @floorplans_map[unit.floorplan_id]
-      if unit.effective_rent.present? && unit.effective_rent >= 1  && floorplan.present?
-        @units_with_floorplan_info << fetch_unit_info_struct_for_webpage(unit, floorplan, @show_ops_map)
-      end
-    end
-  end
-
-  def unit_bedrooms_for_webpages
-    bedroom_values = @units_with_floorplan_info.map do |unit|
-      bedrooms = unit.try(:[], :bedrooms).to_s.strip.downcase rescue ""
-      if bedrooms.blank? || bedrooms == "studio" || bedrooms == "0"
-        0
-      else
-        bedrooms.to_i
-      end
-    end
-
-    sorted_unique_bedrooms = bedroom_values.uniq.sort
-
-    @unit_bedrooms = sorted_unique_bedrooms.map do |bedroom_count|
-      if bedroom_count == 0
-        ["Studio", "0_bedrooms"]
-      elsif bedroom_count == 1
-        ["1 Bedroom", "1_bedroom"]
-      else
-        ["#{bedroom_count} Bedrooms", "#{bedroom_count}_bedrooms"]
-      end
-    end
-
-    @unit_bedrooms
-  end
-
-  def unit_availability_for_webpages
-    @available_units = []
-    today = DateTime.now.to_date
-    thirty_days = today + 30.days;
-    sixty_days = today + 60.days;
-    ninty_days = today + 90.days;
-    one_twenty_days = today + 120.days;
-
-    units_ids = @units.ids
-    @units_with_floorplan_info.each do |available_unit|
-      unit_id = available_unit[:id]
-      next unless units_ids.include?(unit_id)
-
-      available_date = available_unit[:available_date] || Date.new(0)
-      if (available_date <= today)
-        @available_units << ["Now", "now"]
-      end
-      if (available_date > today && available_date <= thirty_days) 
-        @available_units << ["In the next 30 days","0-30"]
-      end
-      if (available_date >= thirty_days && available_date <= sixty_days)
-        @available_units << ["In 31-60 days","31-60"]
-      end
-      if (available_date >= sixty_days && available_date <= ninty_days)
-        @available_units << ["In 61-90 days","61-90"]
-      end
-      if (available_date >= ninty_days && available_date <= one_twenty_days)
-        @available_units << ["In 91-120 days","91-120"]
-      end
-      if (available_date > one_twenty_days) && @community.units_availability_over_120_days
-        @available_units << ["In 121+ days","121-"]
-      end
-    end
-
-    @available_units = @available_units.uniq
-  end
-
-  def build_square_feet_range
-    square_feet_list = @units_with_floorplan_info.map{|obj| obj[:square_feet].to_i}.uniq.sort()
-    @square_feet =  square_feet_list.map{|sqft| [sqft, sqft]}
-  end
-
-  def build_market_rent_range
-    rent_list = @units_with_floorplan_info.map{|obj| obj[:market_rent].to_i}.uniq.sort().reverse!
-    @market_rent =  rent_list.map{|price| [price, price]}
-  end
-
   def apply_now
   end
 
@@ -283,6 +181,108 @@ class WebpagesController < ActionController::Base
   end
 
   private
+
+    def normalize_amenities
+      @amenities.find_each do |amenity|
+        struct = {
+          id: amenity.id,
+          name: amenity.name,
+          image_url: amenity.validated_image_url,
+          floor: amenity.floor,
+          floorplate_id: amenity.amenityable_id,
+          x_plot: amenity.x_plot,
+          y_plot: amenity.y_plot,
+          pointer_data: amenity.pointer_data,
+          galleries: amenity.amenity_galleries,
+          show_name: @community.show_amenity_name,
+          data_attributes: { "data-amenity-id": amenity.id, "data-floor": amenity.floor },
+          config: @map_config
+        }
+
+        @amenities_data << struct
+      end
+    end
+
+    def normalize_units
+      @units.find_each do |unit|
+        floorplan = @floorplans_map[unit.floorplan_id]
+        if unit.effective_rent.present? && unit.effective_rent >= 1  && floorplan.present?
+          @units_with_floorplan_info << fetch_unit_info_struct_for_webpage(unit, floorplan, @show_ops_map)
+        end
+      end
+    end
+
+    def unit_bedrooms_for_webpages
+      bedroom_values = @units_with_floorplan_info.map do |unit|
+        bedrooms = unit.try(:[], :bedrooms).to_s.strip.downcase rescue ""
+        if bedrooms.blank? || bedrooms == "studio" || bedrooms == "0"
+          0
+        else
+          bedrooms.to_i
+        end
+      end
+
+      sorted_unique_bedrooms = bedroom_values.uniq.sort
+
+      @unit_bedrooms = sorted_unique_bedrooms.map do |bedroom_count|
+        if bedroom_count == 0
+          ["Studio", "0_bedrooms"]
+        elsif bedroom_count == 1
+          ["1 Bedroom", "1_bedroom"]
+        else
+          ["#{bedroom_count} Bedrooms", "#{bedroom_count}_bedrooms"]
+        end
+      end
+
+      @unit_bedrooms
+    end
+
+    def unit_availability_for_webpages
+      @available_units = []
+      today = DateTime.now.to_date
+      thirty_days = today + 30.days;
+      sixty_days = today + 60.days;
+      ninty_days = today + 90.days;
+      one_twenty_days = today + 120.days;
+
+      units_ids = @units.ids
+      @units_with_floorplan_info.each do |available_unit|
+        unit_id = available_unit[:id]
+        next unless units_ids.include?(unit_id)
+
+        available_date = available_unit[:available_date] || Date.new(0)
+        if (available_date <= today)
+          @available_units << ["Now", "now"]
+        end
+        if (available_date > today && available_date <= thirty_days) 
+          @available_units << ["In the next 30 days","0-30"]
+        end
+        if (available_date >= thirty_days && available_date <= sixty_days)
+          @available_units << ["In 31-60 days","31-60"]
+        end
+        if (available_date >= sixty_days && available_date <= ninty_days)
+          @available_units << ["In 61-90 days","61-90"]
+        end
+        if (available_date >= ninty_days && available_date <= one_twenty_days)
+          @available_units << ["In 91-120 days","91-120"]
+        end
+        if (available_date > one_twenty_days) && @community.units_availability_over_120_days
+          @available_units << ["In 121+ days","121-"]
+        end
+      end
+
+      @available_units = @available_units.uniq
+    end
+
+    def build_square_feet_range
+      square_feet_list = @units_with_floorplan_info.map{|obj| obj[:square_feet].to_i}.uniq.sort()
+      @square_feet =  square_feet_list.map{|sqft| [sqft, sqft]}
+    end
+
+    def build_market_rent_range
+      rent_list = @units_with_floorplan_info.map{|obj| obj[:market_rent].to_i}.uniq.sort().reverse!
+      @market_rent =  rent_list.map{|price| [price, price]}
+    end
 
     def set_map_configuration
       @map_config = map_configuration(@community, @show_ops_map)

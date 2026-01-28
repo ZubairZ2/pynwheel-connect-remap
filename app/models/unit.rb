@@ -205,7 +205,9 @@ class Unit < ApplicationRecord
   scope :map_units, -> (community, show_ops_map = false) {
     svg_enabled = community.enable_svg_mode?
 
-    if community.turn_availability_on && !show_ops_map
+    if community.data_provider === "beans"
+      community.units
+    elsif community.turn_availability_on && !show_ops_map
       are_plotted_units(svg_enabled)
     elsif show_ops_map
       are_plotted_units(svg_enabled).status_scoped(true)

@@ -28,6 +28,7 @@ var defaultSelectedFloor;
 var debouncedShowMarkers;
 var modalButtonsCounter = 0;
 var isRightRailCardClicked = false;
+var beanOnlyProperty = false;
 
 var _3dConvertedArr = definedAndHasValue(_3dConvertedArr)
   ? _3dConvertedArr
@@ -73,11 +74,18 @@ $(document).ready(function () {
   debouncedShowMarkers = debounce(showMarkers, 100);
 
   if (isDefined(webCommunity)) {
-    selectMap = opsMapMarkersEnabled ? "3d-map" : "2d-map"; //webCommunity.web_map_type;
+    beanOnlyProperty = (webCommunity.data_provider === "beans")
+    selectMap = (opsMapMarkersEnabled || beanOnlyProperty ) ? "3d-map" : "2d-map"; //webCommunity.web_map_type;
     enable3DMaps = webCommunity.enable_three_d_maps;
-    
-    if(enable3DMaps)
+
+    if(enable3DMaps) {
       initializeBeans3DMap();
+      handleMapControl();
+      
+      if(beanOnlyProperty)
+        $(".2d-map-option").hide();
+    }
+
   } else {
     console.error("webCommunity not loaded properly");
   }
@@ -2194,11 +2202,15 @@ function setUnitModalButtons(e) {
           selector === clickedUnit.pointer_data.selector && x_plot === clickedUnit.pointer_data.x_plot && y_plot === clickedUnit.pointer_data.y_plot && floor === clickedUnit.floor && validFloor(floor)
       );
     } else {
-      const [unitXPlot, unitYPlot] = [clickedUnit.x_plot, clickedUnit.y_plot];
-      filteredUnits = floorbasedUnits.filter(
-        ({ floor, x_plot, y_plot }) =>
-          unitXPlot === x_plot && unitYPlot === y_plot && floor === clickedUnit.floor && validFloor(floor)
-      );
+      if(!beanOnlyProperty) {
+        const [unitXPlot, unitYPlot] = [clickedUnit.x_plot, clickedUnit.y_plot];
+        filteredUnits = floorbasedUnits.filter(
+          ({ floor, x_plot, y_plot }) =>
+            unitXPlot === x_plot && unitYPlot === y_plot && floor === clickedUnit.floor && validFloor(floor)
+        );
+      } else {
+        filteredUnits = [clickedUnit]
+      }
     }
 
   } else if (svgMode) {
@@ -2427,10 +2439,10 @@ function set_yardirentcafe_url(element) {
 function set_psi_url(element) {
   let url = element.getAttribute("data-availability-url");
 
-  if (_3dMapMode()) {
-    const _3dData = get3dSelectedData();
-    url = _3dData.availabilityUrl;
-  }
+  // if (_3dMapMode()) {
+  //   const _3dData = get3dSelectedData();
+  //   url = _3dData.availabilityUrl;
+  // }
 
   window.open(url, "_blank");
 }
@@ -2442,18 +2454,29 @@ function formatDateLocal(date) {
 
 function setAppFolioUrl(element) {
   var url = element.getAttribute("data-availability-url") 
-  if (_3dMapMode()) {
-    url =  _3dData.availabilityUrl
-  }
+  
+  // if (_3dMapMode()) {
+  //   url =  _3dData.availabilityUrl
+  // }
 
   window.open(url, "_blank");
 }
 
 function setXmlProviderUrl(element) {
   var url = element.getAttribute("data-availability-url") 
-  if (_3dMapMode()) {
-    url =  _3dData.availabilityUrl
-  }
+  // if (_3dMapMode()) {
+  //   url =  _3dData.availabilityUrl
+  // }
+
+  window.open(url, "_blank");
+}
+
+function setBeansProviderUrl(element) {
+  var url = element.getAttribute("data-availability-url") 
+  // debugger;
+  // if (_3dMapMode()) {
+  //   url =  _3dData.availabilityUrl
+  // }
 
   window.open(url, "_blank");
 }
@@ -2461,9 +2484,9 @@ function setXmlProviderUrl(element) {
 function set_resman_url(element) {
   var url = element.getAttribute("data-availability-url") 
 
-  if (_3dMapMode()) {
-    url =  _3dData.availabilityUrl
-  }
+  // if (_3dMapMode()) {
+  //   url =  _3dData.availabilityUrl
+  // }
 
   window.open(url, "_blank");
 }

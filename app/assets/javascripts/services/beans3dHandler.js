@@ -90,14 +90,14 @@ function initializeBeans3DMap() {
 
           if (_3dHoveredItem?.unitId === data.unitId) return;
           markerHoverEffect(event, data);
-          
+
         },
       }
     );
   } catch (e) {
     console.error(e);
   }
-  
+
   /* -----------------------------
     FIX: WAIT FOR 3D ENGINE READY
   ------------------------------ */
@@ -129,7 +129,7 @@ function beans3DMapDisplayOptions(filteredRows = null) {
     customConfigs: {},
     initialMap: "3D",
     hideBeansCard: true,
-    hideFloorSelector: true,
+    hideFloorSelector: beanOnlyProperty ? false : true,
     modernBeansCard: false,
     showUnitList: false,
     hideFilters: true,
