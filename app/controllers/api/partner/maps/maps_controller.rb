@@ -38,7 +38,11 @@ module Api
           {
             id: community.id,
             name: community.name,
-            address: community.make_address,
+            zip: community.zip,
+            city: community.city,
+            state: community.state,
+            address: community.address,
+            full_address: community.make_address,
             partner: @partner,
             map_embed_code: community.map_embed_code(@partner),
             map_link: community.map_link(@partner)
