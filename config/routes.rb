@@ -279,6 +279,7 @@ Rails.application.routes.draw do
         get :partner_analytics_report
         get :maps_no_session_report
         get :export_floor_map_urls
+        get :apartmentlist_maps_report
       end
     end
     

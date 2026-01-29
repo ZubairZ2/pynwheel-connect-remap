@@ -200,5 +200,12 @@ REPORTS = [
     has_date_range: false,
     partner: false,
     partner_list: []
+  },
+  {
+    title: "Apartmentlist Maps Report",
+    path: "apartmentlist_maps_report",
+    has_date_range: false,
+    partner: false,
+    partner_list: []
   }
 ]

@@ -36,7 +36,14 @@ class ReportsController < ApplicationController
       filename: "Properties-Floor-Level-Map-Urls-List.csv"
     )
   end
-
+  
+  def apartmentlist_maps_report
+    send_data(
+      ApartmentlistMapsReportService.new.get_report,
+      type: 'application/xlsx',
+      filename: 'apartmentlist-maps-report.csv'
+    )
+  end
 
   def account_report
     @community = Community.find(params[:community_id])
