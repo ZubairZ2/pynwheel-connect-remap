@@ -116,7 +116,7 @@ class ImportApartmentListPropertiesWorker
       url     = row['Property URL']&.strip
       name    = row['Property Name']&.strip
 
-      next if url.blank? || address.blank? || city.blank? || state.blank?
+      next if address.blank? || city.blank? || state.blank?
 
       fp = fingerprint(address, city, state, zip)
 
@@ -125,8 +125,10 @@ class ImportApartmentListPropertiesWorker
 
       seen_fingerprints << fp
 
+      property_name = name.present? ? name : "#{address}, #{city}, #{state}, #{zip}"
+
       community = Community.new(
-        name: name,
+        name: property_name,
         address: address,
         city: city,
         state: state,
@@ -141,7 +143,12 @@ class ImportApartmentListPropertiesWorker
       )
 
       # Associated records
-      community.build_credential(created_at: now, updated_at: now, apartmentlist_url: url)
+      community.build_credential(
+        created_at: now,
+        updated_at: now,
+        apartmentlist_url: url
+      )
+
       community.build_map_filter(created_at: now, updated_at: now)
       community.build_design(created_at: now, updated_at: now)
 
@@ -223,7 +230,7 @@ class ImportApartmentListPropertiesWorker
       returning: %i[id] # 👈 IMPORTANT
     )
 
-    enqueue_beans_import(result.ids)
+    # enqueue_beans_import(result.ids)
   end
 
   def enqueue_beans_import(community_ids)
