@@ -133,7 +133,6 @@ class ApartmentlistMapsReportService < BaseService
     map_link    = community&.map_link(PARTNER)
     map_embed_code    = community&.map_embed_code(PARTNER)
 
-
     row.fields + [
       property_id,
       map_link,
@@ -147,7 +146,7 @@ class ApartmentlistMapsReportService < BaseService
   def build_communities_fingerprint_map
     @communities_by_fingerprint = {}
 
-    Community.active_client_properties do |community|
+    Community.active_client_properties.find_each do |community|
       fp = fingerprint(
         community.address,
         community.city,
