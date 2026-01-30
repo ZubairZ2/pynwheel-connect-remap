@@ -2843,7 +2843,7 @@ function setDataProvider(element) {
 }
 
 function handleFavIconVisibility() {
-  if(isRightRailCardClicked && isFloorplanMapEnabled())
+  if((isRightRailCardClicked && isFloorplanMapEnabled()) || isPartnerMap)
     $("#fav-icon-tag").css("visibility", "hidden");
   else
     $("#fav-icon-tag").css("visibility", "");
