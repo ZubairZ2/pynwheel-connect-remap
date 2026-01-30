@@ -131,7 +131,7 @@
                     %i.fa.fa-refresh
                     
               .header-buttons-groups
-                - if @square_feet.present?
+                - unless @partner.present?
                   %a.transparent-btn.header-action-btn.view-saved-btn{:href => "#{favorites_community_webpages_path(@community)}",:target=>"_parent"}
                     %span.hidable
                       View Saved
