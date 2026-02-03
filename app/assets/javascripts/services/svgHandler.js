@@ -10,7 +10,7 @@ var DEFAULT_FILL_COLOR = "default-fill-color";
 var svgMode = definedAndHasValue(svgMode) ? svgMode : false;
 
 var map_marker_color = definedAndHasValue(map_marker_color)
-  ? map_marker_color 
+  ? map_marker_color
   : "#d37474";
 
 var amenity_marker_color = definedAndHasValue(amenity_marker_color)
@@ -42,15 +42,15 @@ function setSVG(container, svgElement, options) {
     const newChildren =
       svgIndex > -1
         ? [
-            ...childrenArray.slice(0, svgIndex),
-            svgElement,
-            ...childrenArray.slice(svgIndex + 1),
-          ]
+          ...childrenArray.slice(0, svgIndex),
+          svgElement,
+          ...childrenArray.slice(svgIndex + 1),
+        ]
         : [
-            ...childrenArray.slice(0, svgPosition),
-            svgElement,
-            ...childrenArray.slice(svgPosition),
-          ];
+          ...childrenArray.slice(0, svgPosition),
+          svgElement,
+          ...childrenArray.slice(svgPosition),
+        ];
     container.innerHTML = "";
     container.append(...newChildren);
   }
@@ -58,7 +58,7 @@ function setSVG(container, svgElement, options) {
   if (!mobileCheck() && options.activateHoverEffect) {
     const $shapes = $svgElement.find(
       [...VALID_SVG_SHAPES, "text"].join(", ") +
-        ":not(.cloned-unit):not(.cloned-amenity)"
+      ":not(.cloned-unit):not(.cloned-amenity)"
     );
 
     $shapes.on("mouseenter", function (e) {
@@ -233,16 +233,16 @@ async function fetchSVG(
     if (!svgElement) throw new Error("No <svg> element found in the response.");
 
     const { floor = null } = options;
-    if(hasFloorplate() && floor)
+    if (hasFloorplate() && floor)
       uniquifySVGIds(svgElement, `f${floor}`);
 
     fitSvgToParent(svgElement);
     parsedSVGs.push(svgElement);
     setSVG(container, svgElement, options);
 
-    if(fontFamily)
+    if (fontFamily)
       updateSvgTextFontFamily(svgElement, fontFamily);
-    
+
     if (tracker) {
       asset.node = svgElement;
       tracker.addOrUpdateAsset(asset, trackerVisibilityCheck);
@@ -280,10 +280,10 @@ function setSvgOrImageHeight($svg) {
 function floorBasedData(data = []) {
   return hasFloorplate()
     ? data.filter(
-        ({ floor }) =>
-          validFloor(floor) ||
-          (!floor && ["object", "undefined"].includes(typeof floor))
-      )
+      ({ floor }) =>
+        validFloor(floor) ||
+        (!floor && ["object", "undefined"].includes(typeof floor))
+    )
     : data;
 }
 
@@ -691,7 +691,7 @@ function setSvgCoordinates(data, options) {
     if (isWebpage) {
       const $shapes = $(svgElement).find(
         [...VALID_SVG_SHAPES, "text"].join(", ") +
-          ":not(.cloned-unit):not(.cloned-amenity)"
+        ":not(.cloned-unit):not(.cloned-amenity)"
       );
 
       $shapes.each(function () {
@@ -904,9 +904,8 @@ function getSvgElementSelector(element) {
   if (!element) return null;
 
   const parent = element.parentElement;
-  const nthChild = ` > ${element.tagName.toLowerCase()}:nth-child(${
-    Array.from(parent.children).indexOf(element) + 1
-  })`;
+  const nthChild = ` > ${element.tagName.toLowerCase()}:nth-child(${Array.from(parent.children).indexOf(element) + 1
+    })`;
   return parent.id
     ? `${parent.tagName.toLowerCase()}#${parent.id}${nthChild}`
     : `${getSvgElementSelector(parent)}${nthChild}`;

@@ -38,7 +38,7 @@ function activateZoomPan(elem, centralizeElement = true, options = {}) {
     elem.addEventListener(evt, touchHandler, true)
   );
 
-  if(centralizeElement) zoomReset();
+  if (centralizeElement) zoomReset();
 
   setTimeout(() => {
     moveZoomableImageToCenter(elem, true, false);
@@ -119,7 +119,7 @@ function touchHandler(event) {
 function initAllZoomables() {
   let $zoomTargets;
 
-  if(svgMode)
+  if (svgMode)
     $zoomTargets = $('#zoom-group-wrapper, .plot-image');
   else
     $zoomTargets = $('#zoom-group-wrapper > div, .plot-image');
@@ -193,7 +193,7 @@ function getCurrentImageMapZoomInstance() {
 function getVisibleZoomableInstance() {
   let z = getCurrentZoomInstance();
 
-  if(!z){
+  if (!z) {
     z = getCurrentImageMapZoomInstance()
   }
 
@@ -260,6 +260,30 @@ function zoomReset() {
     inst.zoomAbs(0, 0, init.scale);
     inst.moveTo(init.x, init.y);
   }
+}
+
+const preventZoomOutsideContainers = function (e) {
+  const isZoomableArea = $(e.target).closest(
+    '#zoom-group-wrapper, .plot-image, #zoomable, .image-map, .zoomable-map-container'
+  ).length > 0;
+
+  if (!isZoomableArea) {
+    // Prevent zoom gesture
+    if (e.ctrlKey || e.metaKey || (e.touches && e.touches.length > 1)) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+  }
+};
+
+function disableOutsideZoomContainer() {
+  document.addEventListener('wheel', preventZoomOutsideContainers, { passive: false, capture: true });
+  document.addEventListener('touchstart', preventZoomOutsideContainers, { passive: false, capture: true });
+  document.addEventListener('touchmove', preventZoomOutsideContainers, { passive: false, capture: true });
+  document.addEventListener('gesturestart', preventZoomOutsideContainers, { passive: false, capture: true });
+  document.addEventListener('gesturechange', preventZoomOutsideContainers, { passive: false, capture: true });
+  document.addEventListener('gestureend', preventZoomOutsideContainers, { passive: false, capture: true });
 }
 
 function enableZoom() {

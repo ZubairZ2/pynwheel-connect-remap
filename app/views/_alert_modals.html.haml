@@ -70,70 +70,10 @@
         Place marker for selected unit on Map
       .modal-footer
         %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Ok    
-- unless current_community.nil?       
-  #share-webpages.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
-    .modal-dialog
-      .modal-content
-        .modal-header
-          Copy and paste the Pynwheel Map iframe embed code or page url below and share it with your web developer to add the interactive map to your website.
-        
-        .modal-body
-          %strong Marketing Map:
-          %br
-          .btn-toolbar.mb-3{:style => "margin-top: 10px; margin-bottom: 20px;"}
-            .btn-group{:style => "margin-right:10px;"}
-              %button.btn.btn-default.clipboard-btn{"data-url" => current_community.map_link()}
-                %i.fa.fa-copy.text-primary{:style => "margin-right:5px;"}
-                Copy Map URL
-            .btn-group{:style => "margin-right:10px;"}
-              %button.btn.btn-default.clipboard-btn{"data-url" => current_community.map_embed_code()}
-                %i.fa.fa-code.text-info{:style => "margin-right:5px;"}
-                Copy Embed Code
-            .btn-group
-              %a.btn.btn-default{"href" => current_community.map_link(), "target" => "_blank"}
-                %i.fa.fa-external-link.text-success{:style => "margin-right:5px;"}
-                Open Map
-          
-          %div{:style => "border-top: 1px solid #ccc; margin-top: 10px; margin-bottom: 10px;"}
-            %br
-            %strong Ops Map:
-            .btn-toolbar.mb-3{:style => "margin-top: 10px; margin-bottom: 20px;"}
-              .btn-group{:style => "margin-right:10px;"}
-                %button.btn.btn-default.clipboard-btn{"data-url" => current_community.map_link(nil, nil, true)}
-                  %i.fa.fa-copy.text-primary{:style => "margin-right:5px;"}
-                  Copy Map URL
-              .btn-group{:style => "margin-right:10px;"}
-                %button.btn.btn-default.clipboard-btn{"data-url" => current_community.map_embed_code(nil, nil, true)}
-                  %i.fa.fa-code.text-info{:style => "margin-right:5px;"}
-                  Copy Embed Code
-              .btn-group
-                %a.btn.btn-default{"href" => current_community.map_link(nil, nil, true), "target" => "_blank"}
-                  %i.fa.fa-external-link.text-success{:style => "margin-right:5px;"}
-                  Open Map
+- unless current_community.nil?
+  = render partial: 'webpages/map_links_modals/web_map_links_modal'
+  = render partial: 'webpages/map_links_modals/touch_map_links_modal'
 
-          - if current_community.has_floorplates?
-            %div{:style => "border-top: 1px solid #ccc; margin-top: 10px; margin-bottom: 10px;"}
-              %br
-              %strong Floor Level Map:
-            - current_community.property_floor_numbers.each do |floor|
-              .mb-3{:style => "margin-bottom:10px;"}
-                %span{:style => "display:inline-block; width: 90px; font-weight:bold; margin-right:15px;"}
-                  Level #{floor}:
-                .btn-group{:style => "margin-right:10px;"}
-                  %button.btn.btn-default.clipboard-btn{"data-url" => current_community.map_link(nil, floor)}
-                    %i.fa.fa-copy.text-primary{:style => "margin-right:5px;"}
-                    Copy Map URL
-                .btn-group{:style => "margin-right:10px;"}
-                  %button.btn.btn-default.clipboard-btn{"data-url" => current_community.map_embed_code(nil, floor)}
-                    %i.fa.fa-code.text-info{:style => "margin-right:5px;"}
-                    Copy Embed Code
-                .btn-group
-                  %a.btn.btn-default{"href" => current_community.map_link(nil, floor), "target" => "_blank"}
-                    %i.fa.fa-external-link.text-success{:style => "margin-right:5px;"}
-                    Open Map
-          
-        .modal-footer
-          %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Close
 
 
   #share-scheduler-widget.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
@@ -272,9 +212,7 @@
             %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
   #select_remaining_floors_modal.modal.fade
 
--# document.getElementById("community_name").scrollIntoView( {behavior: "smooth" })
 :javascript
-
   document.addEventListener("DOMContentLoaded", function() {
     document.querySelectorAll('.clipboard-btn').forEach(function(button) {
       button.addEventListener('click', function() {
@@ -292,8 +230,8 @@
 
   $(".welcome_prompt_btn2").click(function(){
     $('[data-toggle="propertyDetailNamePopover1"]').popover({
-        html: true,
-        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Changing the Name will change the name of the property on the "Favorites" page.</div><div class="popover-footer"><a id="propertyDetailNameId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+      html: true,
+      template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Changing the Name will change the name of the property on the "Favorites" page.</div><div class="popover-footer"><a id="propertyDetailNameId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
     }).popover('show');
 
     #{current_user.welcome_prompt = true}
@@ -309,6 +247,6 @@
   });
 
   $(".welcome_prompt_btn3").on("click",function(e){
-      $('#welcome-prompt-modal2').modal('show');
+    $('#welcome-prompt-modal2').modal('show');
   });
 

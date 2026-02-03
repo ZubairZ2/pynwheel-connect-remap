@@ -37,7 +37,8 @@ class WebpagesController < ActionController::Base
     @all_filters_disabled = @community_info&.map_filter&.all_filters_disabled?(@show_ops_map)
     @font_family = @community_info&.font_setting&.svg_labels_font_family
     community_units = @community_info.units
-    @isPartnerMap = params[:partner]
+    @is_partner_map = params[:partner]
+    @is_touch_map = @community_info.is_touch_map(params[:src])
     @units = community_units.map_units(@community_info, @show_ops_map)
 
     unless @community_info.locked

@@ -44,6 +44,10 @@ var _3dHoveredItem;
 var beansWidget;
 
 $(document).ready(function () {
+  if(isTouchMap) {
+    disableOutsideZoomContainer();
+  }
+
   if (smallScreen()) {
     $(".c-footer.desktop-content").remove();
     if (extraSmallScreen()) $(".c-sidebar").addClass("sidebar-header-bar");
@@ -75,14 +79,14 @@ $(document).ready(function () {
 
   if (isDefined(webCommunity)) {
     beanOnlyProperty = (webCommunity.data_provider === "beans")
-    selectMap = (opsMapMarkersEnabled || beanOnlyProperty ) ? "3d-map" : "2d-map"; //webCommunity.web_map_type;
+    selectMap = (opsMapMarkersEnabled || beanOnlyProperty) ? "3d-map" : "2d-map"; //webCommunity.web_map_type;
     enable3DMaps = webCommunity.enable_three_d_maps;
 
-    if(enable3DMaps) {
+    if (enable3DMaps) {
       initializeBeans3DMap();
       handleMapControl();
-      
-      if(beanOnlyProperty)
+
+      if (beanOnlyProperty)
         $(".2d-map-option").hide();
     }
 
@@ -108,7 +112,7 @@ $(document).ready(function () {
   trackingMapHoverEvents();
   // Analytics End
 
-  if(svgMode) {
+  if (svgMode) {
     if (
       !(
         definedAndHasValue(assetTracker) &&
@@ -409,7 +413,7 @@ function setMarkerPosition(marker, x_plot, y_plot, stretched, actual) {
 // }
 
 function showUnitModal(event) {
-  if(!_3dMapMode()) {
+  if (!_3dMapMode()) {
     setUnitModalButtons(event);
     resetToDefaultZoom();
   }
@@ -522,10 +526,10 @@ function debounce(func, delay) {
 
 function multiPropertiesFilterChanged() {
   filterUnitsBasedOnMultiCommunity();
-  
-  if(multiCommunity)
+
+  if (multiCommunity)
     updateBedroomFilterDropDownList();
-  
+
   updateMaxPriceFilterDropDownList();
   updateSquareFootageFilterDropdownList();
   updateAvailabilityFilterDropdownList();
@@ -544,7 +548,7 @@ function availabilityFilterChanged() {
   filterUnitsBasedOnMultiCommunity();
   filterUnitsBasedOnBedroom();
   filterUnitsBasedOnAvailability();
-  
+
   updateSquareFootageFilterDropdownList();
   filterUnitsBasedOnSqfeet();
 
@@ -660,13 +664,13 @@ function filterUnitsBasedOnMarketRent() {
   const marketRent = filterBasedOnScreen("market_rent");
 
   if (marketRent)
-    units = units.filter( (unit) => unit.market_rent <= marketRent);
+    units = units.filter((unit) => unit.market_rent <= marketRent);
 }
 
 function filterUnitsBasedOnBedroom() {
   const unitBedroom = filterBasedOnScreen("unit_bedroom");
 
-  if(!multiCommunity)
+  if (!multiCommunity)
     units = total_units;
 
   if (unitBedroom || unitBedroom === 0)
@@ -684,9 +688,9 @@ function filterMultiCommunityBasedOnScreen(filterTag) {
 function filterUnitsBasedOnMultiCommunity() {
   const propertyId = filterMultiCommunityBasedOnScreen("multi_communities");
 
-  if(propertyId)
+  if (propertyId)
     units = total_units.filter((unit) => unit.property_id.trim() == propertyId.trim())
-  else 
+  else
     units = total_units
 }
 
@@ -1044,58 +1048,58 @@ function showMarkers() {
       if ($markerEl.hasClass("overlapping-unit")) {
         $(".hidden-units").append(
           '<div class="hidden h-' +
-            $markerEl.data("unit-x-plot") +
-            "-" +
-            $markerEl.data("unit-y-plot") +
-            '" id="h-' +
-            $markerEl.data("title") +
-            '" data-title="' +
-            $markerEl.data("title") +
-            '" data-community-id="' +
-            $markerEl.data("community-id") +
-            '" data-unit-id="' +
-            $markerEl.data("unit-id") +
-            '" data-is-fav="' +
-            $markerEl.data("is-fav") +
-            '" data-provider="' +
-            $markerEl.data("provider") +
-            '" data-website="' +
-            $markerEl.data("website") +
-            '" data-community-property-id="' +
-            $markerEl.data("community-property-id") +
-            '" data-unit-provider-id="' +
-            $markerEl.data("unit-provider-id") +
-            '" data-floorplan-provider-id="' +
-            $markerEl.data("floorplan-provider-id") +
-            '" data-floorplan-name="' +
-            $markerEl.data("floorplan-name") +
-            '" data-unit-description="' +
-            $markerEl.data("unit-description") +
-            '" data-unit-lease-pricing="' +
-            $markerEl.data("unit-lease-pricing") +
-            '" data-unit-marketing-name="' +
-            $markerEl.data("unit-marketing-name") +
-            '" data-market-rent="' +
-            $markerEl.data("market-rent") +
-            '" data-square-feet="' +
-            $markerEl.data("square-feet") +
-            '" data-availability="' +
-            $markerEl.data("availability") +
-            '" data-available-date="' +
-            $markerEl.data("available-date") +
-            '" data-bedrooms="' +
-            $markerEl.data("bedrooms") +
-            '" data-bathrooms="' +
-            $markerEl.data("bathrooms") +
-            '" data-floorplan-image="' +
-            $markerEl.data("floorplan-image") +
-            '" data-availability-url="' +
-            $markerEl.data("availability-url") +
-            '" data-lease-term="' +
-            $markerEl.data("lease-term") +
-            '" data-unit-additional-fees="' +
-            $markerEl.data("unit-additional-fees") +
-            '"></div>'
+          $markerEl.data("unit-x-plot") +
+          "-" +
+          $markerEl.data("unit-y-plot") +
+          '" id="h-' +
+          $markerEl.data("title") +
+          '" data-title="' +
+          $markerEl.data("title") +
+          '" data-community-id="' +
+          $markerEl.data("community-id") +
+          '" data-unit-id="' +
+          $markerEl.data("unit-id") +
+          '" data-is-fav="' +
+          $markerEl.data("is-fav") +
+          '" data-provider="' +
+          $markerEl.data("provider") +
+          '" data-website="' +
+          $markerEl.data("website") +
+          '" data-community-property-id="' +
+          $markerEl.data("community-property-id") +
+          '" data-unit-provider-id="' +
+          $markerEl.data("unit-provider-id") +
+          '" data-floorplan-provider-id="' +
+          $markerEl.data("floorplan-provider-id") +
+          '" data-floorplan-name="' +
+          $markerEl.data("floorplan-name") +
+          '" data-unit-description="' +
+          $markerEl.data("unit-description") +
+          '" data-unit-lease-pricing="' +
+          $markerEl.data("unit-lease-pricing") +
+          '" data-unit-marketing-name="' +
+          $markerEl.data("unit-marketing-name") +
+          '" data-market-rent="' +
+          $markerEl.data("market-rent") +
+          '" data-square-feet="' +
+          $markerEl.data("square-feet") +
+          '" data-availability="' +
+          $markerEl.data("availability") +
+          '" data-available-date="' +
+          $markerEl.data("available-date") +
+          '" data-bedrooms="' +
+          $markerEl.data("bedrooms") +
+          '" data-bathrooms="' +
+          $markerEl.data("bathrooms") +
+          '" data-floorplan-image="' +
+          $markerEl.data("floorplan-image") +
+          '" data-availability-url="' +
+          $markerEl.data("availability-url") +
+          '" data-lease-term="' +
+          $markerEl.data("lease-term") +
+          '" data-unit-additional-fees="' +
+          $markerEl.data("unit-additional-fees") +
+          '"></div>'
         );
 
         const jsonObjectKey = `${x_plot}-${y_plot}`;
@@ -1123,7 +1127,7 @@ function showMarkers() {
     }
   }
 
-  if(!isFloorplanMapEnabled())
+  if (!isFloorplanMapEnabled())
     disabledEnabledAnchors();
 
   setMarkersSizeAndMargin(); //image mode only
@@ -1211,7 +1215,7 @@ function unitMarkerClick(unitId, event) {
   let image = currentMapImage()?.parentElement;
   const $scope = $(image);
   const $markers = $scope.find(markersSelector);
-  
+
   for (const item of Array.from($markers)) {
     if (
       svgMode ? parseInt(item.dataset.unitId) === unitId : item.id === unitId
@@ -1284,8 +1288,8 @@ function renderMarkersForFloor(parent, floor) {
   const element = parent?.querySelector('.markers-container');
 
   renderUnitsAmenitiesMarkers(element, floor);
-  
-  if(!isFloorplanMapEnabled())
+
+  if (!isFloorplanMapEnabled())
     disabledEnabledAnchors();
 
   setMarkersSizeAndMargin();
@@ -1297,7 +1301,7 @@ function renderMapData() {
   const sortType = document.getElementById("filter");
   let floorUnits = [];
 
-  if(sortType)
+  if (sortType)
     floorUnits = getFilteredUnits(filteredUnits, sortType?.value);
   else
     floorUnits = filteredUnits;
@@ -1312,7 +1316,7 @@ function renderUnitBoxes(floorUnits) {
 
   element.innerHTML = "";
 
-  if(isFloorplanMapEnabled())
+  if (isFloorplanMapEnabled())
     floorUnits = filterUniqueFloorplanList(floorUnits);
 
   const html = floorUnits.map((unit) => buildUnitBoxHTML(unit)).join("");
@@ -1320,7 +1324,7 @@ function renderUnitBoxes(floorUnits) {
 
   unitBoxListHover();
 
-  if(!isFloorplanMapEnabled()) {
+  if (!isFloorplanMapEnabled()) {
     document.getElementById("unit-title-count").innerText = `${floorUnits.length} Units Found`;
   } else {
     const el = document.querySelector(".right-rail-card:first-child");
@@ -1342,7 +1346,7 @@ function filterUniqueFloorplanList(floorUnits) {
 
 function bindUnitMarkerEvents() {
   function bindEventsTo(el) {
-    el.parentElement.addEventListener('touchend', function(event) {
+    el.parentElement.addEventListener('touchend', function (event) {
       event.stopPropagation();
       event.preventDefault();
       const unitId = getUnitIdFromElement(el.parentElement, event);
@@ -1400,13 +1404,12 @@ function renderUnitsAmenitiesMarkers(element, f) {
 }
 
 function buildUnitBoxHTML(unit) {
-  let unitName = `Unit # ${
-    (webCommunity?.is_sitemap && !webCommunity?.display_building
+  let unitName = `Unit # ${(webCommunity?.is_sitemap && !webCommunity?.display_building
       ? unit["marketing_name"]
       : unit["building"]
-      ? `${unit["building"]}-${unit["marketing_name"]}`
-      : unit["marketing_name"])
-  }`;
+        ? `${unit["building"]}-${unit["marketing_name"]}`
+        : unit["marketing_name"])
+    }`;
 
 
   if (isFloorplanMapEnabled())
@@ -1438,28 +1441,27 @@ function buildUnitBoxHTML(unit) {
           <p><i class='fa fa-bath'> &nbsp ${unit["bathrooms"]} Bath </i></p>
           <p><i class='fa fa-building'> &nbsp ${unit["square_feet"]} Sq Ft </i></p>
         </div>
-        ${
-          !isFloorplanMapEnabled()
-            ? `<div class='unit-details-section'>
+        ${!isFloorplanMapEnabled()
+      ? `<div class='unit-details-section'>
                 <p id='right-bar-unit-availability'>${get_unit_availability(unit)}</p>
                 <p>${unitMarketRent(unit)}</p>
               </div>`
-            : ``
-        }
+      : ``
+    }
       </div>
     </div>
   `;
 }
 
 function floorplanColorBarHTML(unit) {
-  if(!isFloorplanMapEnabled() && !checkFloorPlanColorMode()) return '';
-  
+  if (!isFloorplanMapEnabled() && !checkFloorPlanColorMode()) return '';
+
   const floorplanColors = getMarkerColor(unit);
   return `<div class="floorplan-color-bar" style="background-color: ${floorplanColors};"></div>`;
 }
 
 function floorplanAvailabilityBannerHTML(unit) {
-  if(!isFloorplanMapEnabled()) return '';
+  if (!isFloorplanMapEnabled()) return '';
   const config = getFloorplanConfigObject(unit);
   let bannerText = "";
   let bannerColor = "";
@@ -1481,7 +1483,7 @@ function floorplanAvailabilityBannerHTML(unit) {
       bannerColor = "#000000";
       break;
     default:
-      return ""; 
+      return "";
   }
 
   return `<div class="floorplan-banner" style="background-color: ${bannerColor};">${bannerText}</div>`;
@@ -1568,7 +1570,7 @@ function buildAmenityMarkerHTML(amenity, f) {
   const amenityJsonString = JSON.stringify(amenity).replace(/'/g, "\\'");
   const amenityColor = hexToRgba(amenityConfig.color, amenityConfig.opacity)
 
-  return`
+  return `
     <a
       style="left: ${amenity.x_plot}px; top: ${amenity.y_plot}px; position: absolute;"
       class="a_${f} sitemap-amenity-marker amenity-marker slider-amenity amenityTooltip"
@@ -1590,7 +1592,7 @@ function buildAmenityMarkerHTML(amenity, f) {
         ></i>
       </span>
       <span class="amenitytooltiptext">
-        <h2 style="display: ${amenity.show_name ? "block": "none"}">${amenity.name}</h2>
+        <h2 style="display: ${amenity.show_name ? "block" : "none"}">${amenity.name}</h2>
         <img
           src="${amenity.image_url}"
           alt="${amenity.name}"
@@ -1661,7 +1663,7 @@ function carouselArrowsControl() {
 function openAmenityViewerModal(amenity) {
   selectedAmenity = amenity;
   selectedGalleries = amenity.galleries;
-  
+
   $(`#amenitySliderModal-${amenity.id || amenity.unitId}`).modal("show");
   bindCarousel(amenity.id);
 }
@@ -1701,7 +1703,7 @@ function onUnitClick(e) {
 function unitMarketRent(unit) {
   if (!unit.display_rent) return "";
 
-  return `${currency}${ unit.market_rent}/month`;
+  return `${currency}${unit.market_rent}/month`;
 }
 
 // function highlightFloorplanMarkersData(elementsArray, floorplanId = null) {
@@ -1817,9 +1819,9 @@ function unitBoxListHover() {
             markersArray.forEach((findOverlappedMarker) => {
               if (
                 selectedMarker.dataset.unitXPlot ===
-                  findOverlappedMarker.dataset.unitXPlot &&
+                findOverlappedMarker.dataset.unitXPlot &&
                 selectedMarker.dataset.unitYPlot ===
-                  findOverlappedMarker.dataset.unitYPlot &&
+                findOverlappedMarker.dataset.unitYPlot &&
                 !findOverlappedMarker.classList.contains("hidden")
               ) {
                 selectedMarker = findOverlappedMarker;
@@ -1828,19 +1830,19 @@ function unitBoxListHover() {
           }
 
           if (_3dMode) {
-            if(isFloorplanMapEnabled() || checkFloorPlanColorMode()) {
+            if (isFloorplanMapEnabled() || checkFloorPlanColorMode()) {
               markerColor = getMarkerColor(_3dData);
             } else {
               markerColor = getUnitMarkerColor(_3dData);
             }
           } else {
-            if(isFloorplanMapEnabled() || checkFloorPlanColorMode()) {
+            if (isFloorplanMapEnabled() || checkFloorPlanColorMode()) {
               markerColor = getMarkerColor(selectedMarker.dataset);
             } else {
               markerColor = getUnitMarkerColor(selectedMarker.dataset);
             }
           }
-            
+
           e.currentTarget.style.border = `3px solid ${markerColor}`;
 
           if (_3dMode) return;
@@ -1851,7 +1853,7 @@ function unitBoxListHover() {
 
           const position = selectedMarker.getBoundingClientRect();
           let [left, top] = [position.left, position.top];
-          
+
           const $markerPopover = $("#marker-popover-unit");
           $markerPopover.removeClass("hidden");
           $markerPopover.css({
@@ -1880,7 +1882,7 @@ function unitBoxListHover() {
           left = left - leftAdjustment;
           top = top - topAdjustment;
 
-          if(!isFloorplanMapEnabled()) {
+          if (!isFloorplanMapEnabled()) {
             $markerPopover.css({
               visibility: "visible",
               left: `${left}px`,
@@ -1949,9 +1951,9 @@ function markerHoverEffect(event, _3dData = null) {
   } else {
     $(".fav-heart").addClass("hidden");
   }
-  if(!isFloorplanMapEnabled())
+  if (!isFloorplanMapEnabled())
     $("#popover-marketing-name").html($this.data("unit-marketing-name") + "</b>");
-  
+
   $("#popover-floorplan").html($this.data("unit-description"));
 
   if (!canShowAdditionalFees($this.data("unit-additional-fees"))) {
@@ -1967,7 +1969,7 @@ function markerHoverEffect(event, _3dData = null) {
   }
   $("#popover-square-feet").html($this.data("square-feet"));
   $("#popover-bathrooms").html($this.data("bathrooms"));
-  
+
   if ($("#popover-bathrooms").html() == "1") {
     $("#popover-bathrooms").siblings("small").html("Bathroom");
   } else {
@@ -1985,13 +1987,13 @@ function markerHoverEffect(event, _3dData = null) {
 }
 
 function setHoverMarketRent($this) {
-  if(isFloorplanMapEnabled()) return;
+  if (isFloorplanMapEnabled()) return;
   $("#popover-price").html(currency + $this.data("marketRent"));
 }
 
 
 function setUnitHoverAvailability($this) {
-  if(isFloorplanMapEnabled()) {
+  if (isFloorplanMapEnabled()) {
     $("#hover-available-text").hide();
     return;
   }
@@ -2072,7 +2074,7 @@ function showUnitPopoverAndHighlightListUnit(
       parentHeight / 2 +
       elementHeight / 2;
 
-    if(!isFloorplanMapEnabled()) {
+    if (!isFloorplanMapEnabled()) {
       scrollableParent.scrollTo({
         top: scrollTop,
         behavior: "smooth",
@@ -2116,7 +2118,7 @@ function showUnitPopoverAndHighlightListUnit(
     $markerPopup.removeClass("hidden");
   }
 
-  if(!isFloorplanMapEnabled()) {
+  if (!isFloorplanMapEnabled()) {
     $($("#unit_" + $dataElement.data("unitId"))).css(
       "border",
       `3px solid ${markerColor}`
@@ -2142,7 +2144,7 @@ function getUnitData(targetElement) {
         unitId: targetElement.dataset.unitId,
         pointerData: JSON.parse(closestUnit[0].dataset.pointerData) || {},
         unitMarketingName: closestUnit[0].dataset.unitMarketingName,
-        floorplanId:closestUnit[0].dataset.floorplanId
+        floorplanId: closestUnit[0].dataset.floorplanId
       };
     } else {
       return { id: null, pointerData: {}, unitMarketingName: null };
@@ -2173,7 +2175,7 @@ function setUnitModalButtons(e) {
       let $element = null;
       if (e.target.classList.contains(".right-rail-card"))
         $element = $(e.target);
-      else 
+      else
         $element = $(e.target).closest(".right-rail-card");
 
       if ($element.length) {
@@ -2182,7 +2184,7 @@ function setUnitModalButtons(e) {
         );
       }
     }
-    
+
     clickedUnit = filterBeansUnits().find(
       ({ options: { onClickData: { unitId } } = {} }) => unitId === e
     );
@@ -2192,17 +2194,17 @@ function setUnitModalButtons(e) {
 
 
     const floorbasedUnits = filterUnitsBasedOnCommunityType(units);
-    clickedUnit = floorbasedUnits.find( (unit) => unit.id === e);
+    clickedUnit = floorbasedUnits.find((unit) => unit.id === e);
 
     if (!clickedUnit) return;
-    
+
     if (svgMode) {
       filteredUnits = floorbasedUnits.filter(
         ({ floor, pointer_data: { selector, x_plot, y_plot } = {} }) =>
           selector === clickedUnit.pointer_data.selector && x_plot === clickedUnit.pointer_data.x_plot && y_plot === clickedUnit.pointer_data.y_plot && floor === clickedUnit.floor && validFloor(floor)
       );
     } else {
-      if(!beanOnlyProperty) {
+      if (!beanOnlyProperty) {
         const [unitXPlot, unitYPlot] = [clickedUnit.x_plot, clickedUnit.y_plot];
         filteredUnits = floorbasedUnits.filter(
           ({ floor, x_plot, y_plot }) =>
@@ -2245,7 +2247,7 @@ function setUnitModalButtons(e) {
     $unitButtons.removeClass("hidden");
   }
 
-    // SORT HERE 👇
+  // SORT HERE 👇
   filteredUnits.sort((a, b) => {
     const aTitle = a?.data_attributes?.["data-title"] || "";
     const bTitle = b?.data_attributes?.["data-title"] || "";
@@ -2420,7 +2422,7 @@ function change_units_view(evt, type) {
       maxWidth: `${unitListContainerWidth - 30 /* padding */}px`,
     });
   } else if (!_3dMapMode()) zoomReset();
-  
+
   adjustImageMapMarkersPosition();
 }
 
@@ -2453,8 +2455,8 @@ function formatDateLocal(date) {
 }
 
 function setAppFolioUrl(element) {
-  var url = element.getAttribute("data-availability-url") 
-  
+  var url = element.getAttribute("data-availability-url")
+
   // if (_3dMapMode()) {
   //   url =  _3dData.availabilityUrl
   // }
@@ -2463,7 +2465,7 @@ function setAppFolioUrl(element) {
 }
 
 function setXmlProviderUrl(element) {
-  var url = element.getAttribute("data-availability-url") 
+  var url = element.getAttribute("data-availability-url")
   // if (_3dMapMode()) {
   //   url =  _3dData.availabilityUrl
   // }
@@ -2472,7 +2474,7 @@ function setXmlProviderUrl(element) {
 }
 
 function setBeansProviderUrl(element) {
-  var url = element.getAttribute("data-availability-url") 
+  var url = element.getAttribute("data-availability-url")
   // debugger;
   // if (_3dMapMode()) {
   //   url =  _3dData.availabilityUrl
@@ -2482,7 +2484,7 @@ function setBeansProviderUrl(element) {
 }
 
 function set_resman_url(element) {
-  var url = element.getAttribute("data-availability-url") 
+  var url = element.getAttribute("data-availability-url")
 
   // if (_3dMapMode()) {
   //   url =  _3dData.availabilityUrl
@@ -2529,8 +2531,8 @@ function set_realpagesvc_url(element) {
 function disable_rent_filter_options(min_rent) {
   min_rent = parseInt(min_rent);
   var select = document.getElementById("market_rent");
-  
-  if(!select) return;
+
+  if (!select) return;
 
   for (var i = 1; i < select.length; i++) {
     var option = select.options[i];
@@ -2546,7 +2548,7 @@ function disable_rent_filter_options(min_rent) {
 
 function disable_area_filter_options(max_area) {
   var select = document.getElementById("square_feet");
-  if(select) {
+  if (select) {
     for (var i = 1; i < select.length; i++) {
       var option = select.options[i];
       var option_area = option.value.split("-");
@@ -2569,7 +2571,7 @@ function canShowAdditionalFees(additional_fees) {
 function unitAdditionalFees(element) {
   const additional_fees = $(element).data("unit-additional-fees")
   hideFees();
-  
+
   try {
     if (canShowAdditionalFees(additional_fees)) {
       $("#unitModal").find(".c-modal-sidebar-fees").hide();
@@ -2611,11 +2613,11 @@ function adjustHeightForContentArea() {
 }
 
 function setAvailabilityStatus(element) {
-  if(isFloorplanMapEnabled()) {
+  if (isFloorplanMapEnabled()) {
     $('.availabilty-container-start').hide()
     return;
   }
-  
+
   const $el = $(element);
   const $modal = $("#unitModal");
 
@@ -2741,7 +2743,7 @@ function setUnitBedrooms(element) {
 
 function setUnitBathrooms(element) {
   $("#unitModal").find("#bathrooms").html($(element).data("bathrooms"));
-  
+
   if ($("#unitModal").find("#bathrooms").html() == "1") {
     $("#unitModal")
       .find("#bathrooms")
@@ -2843,7 +2845,7 @@ function setDataProvider(element) {
 }
 
 function handleFavIconVisibility() {
-  if((isRightRailCardClicked && isFloorplanMapEnabled()) || isPartnerMap)
+  if ((isRightRailCardClicked && isFloorplanMapEnabled()) || isPartnerMap)
     $("#fav-icon-tag").css("visibility", "hidden");
   else
     $("#fav-icon-tag").css("visibility", "");
@@ -2866,9 +2868,9 @@ function setModalAttributes(element) {
   addAdditionalButtonURL(element);
   addScheduledTourURL(element);
 
-  if(modalButtonsCounter > 2 && smallScreen())
+  if (modalButtonsCounter > 2 && smallScreen())
     adjustButtonFontSize();
-  
+
   setFloorplanName(element);
   setFloorplanBanner(element);
   setUnitSquareFeet(element);
@@ -2888,7 +2890,7 @@ function setModalAttributes(element) {
 }
 
 function controlUnitButtonsVisibility() {
-  if(isRightRailCardClicked && isFloorplanMapEnabled()) {
+  if (isRightRailCardClicked && isFloorplanMapEnabled()) {
     $(".unit-buttons").addClass("hidden");
   }
 }
@@ -2908,12 +2910,16 @@ function setFloorplanBanner(element) {
 
   // Prepend new banner
   const banner = floorplanAvailabilityBannerHTML(unit);
-  
+
   $(wrapperSelector).prepend(banner);
 }
 
-
 function handleApplyNowButtonVisibility(element) {
+  if(isTouchMap) {
+    $(".apply_now").hide();
+    return;
+  }
+
   const url = element.getAttribute("data-availability-url");
   const dataProvider = $(element).data("provider");
 
@@ -2928,11 +2934,11 @@ function handleApplyNowButtonVisibility(element) {
 
 function handleFloorplanApplyNowVisibility(element) {
   const $el = $(element);
-  if(!isFloorplanMapEnabled()) return;
+  if (!isFloorplanMapEnabled()) return;
 
   const config = getFloorplanConfigObject(currentUnitSelected.dataset);
 
-  if(config.availability_status ===  "sold_out")
+  if (config.availability_status === "sold_out")
     $("#psi-anchor-tag").hide();
   else
     $("#psi-anchor-tag").show();
@@ -3212,19 +3218,16 @@ function leaseTermPricingOptions(ss) {
   var leaseTermOptions = "";
 
   for (let i = 0; i < lease_months_arr.length; ++i) {
-    leaseTermOptions += `<option value="${
-      lease_months_arr[i] + " months"
-    }" data-lease-price="${lease_price_arr[i]}" >${
-      lease_months_arr[i] + " months"
-    }</option>`;
+    leaseTermOptions += `<option value="${lease_months_arr[i] + " months"
+      }" data-lease-price="${lease_price_arr[i]}" >${lease_months_arr[i] + " months"
+      }</option>`;
   }
 
   $("#unitModal").find("#unit-lease-pricing").html(lease);
   $("#unitModal").find("#first-unit-lease-pricing").html(first_lease_item);
   $("#unitModal").find("#lease_term").html(leaseTermOptions);
   $(
-    `#lease_term option[value="${
-      first_lease_item[0] + first_lease_item[1] + " months"
+    `#lease_term option[value="${first_lease_item[0] + first_lease_item[1] + " months"
     }"]`
   ).attr("selected", true);
 }
@@ -3274,7 +3277,7 @@ function toggleFloorDirection(is3d) {
 }
 
 function display3DMap() {
-  if(!extraSmallScreen())
+  if (!extraSmallScreen())
     toggleFloorDirection(true);
 
   $(".3d-map-option").addClass("hidden");
@@ -3304,9 +3307,9 @@ function display3DMap() {
 }
 
 function display2DMap() {
-  if(!extraSmallScreen())
+  if (!extraSmallScreen())
     toggleFloorDirection(false);
-  
+
   $("._3d-apply-filter-button").addClass("hidden");
   $(".beans-map-container").addClass("hidden");
   $(".satelite-view-icon").addClass("hidden");
@@ -3341,7 +3344,7 @@ function resetFilters(mobileTriggered = false) {
   else resetBasedOnBedroom();
 
   setAvailabilityFilterToNow();
-  if (mobileTriggered && smallScreen()) $(".mobile-filter-mega-menu").slideToggle(); 
+  if (mobileTriggered && smallScreen()) $(".mobile-filter-mega-menu").slideToggle();
 }
 
 function resetBasedOnMultiCommunities() {
@@ -3431,7 +3434,7 @@ function updateActivityData(activityName, activityEvent) {
       url: `/communities/${community_id}/webpages/activity_tracking`,
       data: JSON.stringify(payload),
       contentType: "application/json",
-      success: function (response) {},
+      success: function (response) { },
     });
   }
 }
@@ -3738,13 +3741,12 @@ async function fetchWebpageSVGAndSetCoordinates() {
     const isFloorplate = hasFloorplate();
     const visibleCheck = isFloorplate
       ? img.id ===
-        `f_${current_floor === "all" ? defaultSelectedFloor : current_floor}`
+      `f_${current_floor === "all" ? defaultSelectedFloor : current_floor}`
       : img.id === "property-map-image";
 
     const asset = {
-      id: `image-${
-        isFloorplate ? "floorplate-" + img.id.replace("f_", "") : "sitemap-1"
-      }`,
+      id: `image-${isFloorplate ? "floorplate-" + img.id.replace("f_", "") : "sitemap-1"
+        }`,
       node: img,
       url: img.src,
       type: "img",
@@ -3968,8 +3970,8 @@ function setMarkersSizeAndMargin() {
   const mainMarkerSize = extraSmallScreen()
     ? markerFontSize * 0.33
     : smallScreen()
-    ? markerFontSize * 0.66
-    : markerFontSize;
+      ? markerFontSize * 0.66
+      : markerFontSize;
 
   const $marker = $(".unit_marker");
   const $markerSpans = $marker.children();
@@ -4046,9 +4048,8 @@ function setMarkersSizeAndMargin() {
     $amenityMarkerSpans.css({
       maxWidth: spanSize,
       maxHeight: spanSize,
-      border: `${
-        extraSmallScreen() ? 1 : smallScreen() ? 1.5 : 2
-      }px solid ${amenity_marker_color}`,
+      border: `${extraSmallScreen() ? 1 : smallScreen() ? 1.5 : 2
+        }px solid ${amenity_marker_color}`,
     });
 
     const cameraIconSpanSize = spanSize * 0.5;
@@ -4076,9 +4077,8 @@ function setMarkersSizeAndMargin() {
 
 function currentMapImage() {
   const parentSelector = hasFloorplate()
-    ? `div#floorplate_${
-        current_floor === "all" ? defaultSelectedFloor : current_floor
-      }`
+    ? `div#floorplate_${current_floor === "all" ? defaultSelectedFloor : current_floor
+    }`
     : `div#property-map`;
   const currentVisibleImage = Array.from(
     document.querySelectorAll(
@@ -4157,7 +4157,7 @@ function getUnitMarkerColor(unit) {
     }
   }
 
-  if(isFloorplanMapEnabled() || checkFloorPlanColorMode()) {
+  if (isFloorplanMapEnabled() || checkFloorPlanColorMode()) {
     result = getMarkerColor(unit);
     return result;
   }
@@ -4183,12 +4183,12 @@ function hexToRgba(hex, opacity = 1) {
 
 function isModelUnit(unit) {
   const modelUnit = unit.model_unit || unit.modelUnit || false;
-  
+
   return typeof modelUnit === "boolean"
     ? modelUnit
     : typeof modelUnit === "string"
-    ? modelUnit === "true"
-    : false;
+      ? modelUnit === "true"
+      : false;
 }
 
 function getMarkerColor(unit) {
@@ -4206,7 +4206,7 @@ function getMarkerColor(unit) {
 
 function getColorByFloorplan(unit) {
   const DEFAULT_COLOR = "#d37474";
-  
+
   const config = getFloorplanConfigObject(unit);
 
   if (!config) return hexToRgba(DEFAULT_COLOR, 1);
@@ -4244,7 +4244,7 @@ function getPropertyConfigObject(unit) {
   };
 
   return (
-    parseConfig(unit.byPropertyColors) ||  
+    parseConfig(unit.byPropertyColors) ||
     parseConfig(unit.data_attributes?.["data-by-property-colors"]) ||
     null
   );
