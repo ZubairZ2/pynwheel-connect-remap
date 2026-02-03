@@ -2294,12 +2294,16 @@ class Community < ApplicationRecord
   def pynwheel_touch_enabled?
     self.touchscreen_app
   end
+
+  def is_touch_map src
+    src === "touch"
+  end
   
-  def map_embed_code partner = nil, floor = nil, ops_map = nil
+  def map_embed_code(partner = nil, floor = nil, ops_map = nil, src = nil)
     <<-HTML.strip.gsub(/\n\s*/, "")
       <embed onload='window.parent.$("body").animate({scrollTop:0}, "slow");' 
         style='margin-top: 0px; overflow:scroll;' 
-        src='#{map_link(partner, floor, ops_map)}' 
+        src='#{map_link(partner, floor, ops_map, src)}'
         width='100%' 
         height='750px' />
       <script type='text/javascript'>
@@ -2308,19 +2312,27 @@ class Community < ApplicationRecord
         });
       </script>
     HTML
-  end
+  end 
 
-  def map_link(partner = nil, floor = nil, ops_map = nil)
+  def map_link(partner = nil, floor = nil, ops_map = nil, src = nil)
     base_url = "#{ENV['HOST_URL']}/communities/#{id}/webpages"
-    query = map_query_params(partner: partner, floor: floor, ops_map: ops_map)
+
+    query = map_query_params(
+      partner: partner,
+      floor: floor,
+      ops_map: ops_map,
+      src: src
+    )
+
     query.present? ? "#{base_url}?#{query}" : base_url
   end
 
-  def map_query_params(partner: nil, floor: nil, ops_map: nil)
+  def map_query_params(partner: nil, floor: nil, ops_map: nil, src: nil)
     params = {}
     params[:partner] = partner if partner.present?
     params[:floor]   = floor if floor.present?
     params[:ops_map]     = ops_map if ops_map.present?
+    params[:src]     = src if src.present?
     params.to_query
   end
 

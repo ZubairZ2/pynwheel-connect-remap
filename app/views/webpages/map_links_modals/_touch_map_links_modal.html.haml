@@ -1,0 +1,63 @@
+#touch-map-links-modal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        Copy and paste the Pynwheel Map iframe embed code or page url below and share it with your web developer to add the interactive map to your website.
+      
+      .modal-body
+        %strong Marketing Map:
+        %br
+        .btn-toolbar.mb-3{:style => "margin-top: 10px; margin-bottom: 20px;"}
+          .btn-group{:style => "margin-right:10px;"}
+            %button.btn.btn-default.clipboard-btn{"data-url" => current_community.map_link(nil, nil, nil, "touch"), "data-base-url" => current_community.map_link(nil, nil, nil, "touch")}
+              %i.fa.fa-copy.text-primary{:style => "margin-right:5px;"}
+              Copy Map URL
+          .btn-group{:style => "margin-right:10px;"}
+            %button.btn.btn-default.clipboard-btn{"data-url" => current_community.map_embed_code(nil, nil, nil, "touch"), "data-base-url" => current_community.map_embed_code(nil, nil, nil, "touch")}
+              %i.fa.fa-code.text-info{:style => "margin-right:5px;"}
+              Copy Embed Code
+          .btn-group
+            %a.btn.btn-default.map-open-link{"href" => current_community.map_link(nil, nil, nil, "touch"), "data-base-url" => current_community.map_link(nil, nil, nil, "touch"), "target" => "_blank"}
+              %i.fa.fa-external-link.text-success{:style => "margin-right:5px;"}
+              Open Map
+        
+        %div{:style => "border-top: 1px solid #ccc; margin-top: 10px; margin-bottom: 10px;"}
+          %br
+          %strong Ops Map:
+          .btn-toolbar.mb-3{:style => "margin-top: 10px; margin-bottom: 20px;"}
+            .btn-group{:style => "margin-right:10px;"}
+              %button.btn.btn-default.clipboard-btn{"data-url" => current_community.map_link(nil, nil, true, "touch"), "data-base-url" => current_community.map_link(nil, nil, true, "touch")}
+                %i.fa.fa-copy.text-primary{:style => "margin-right:5px;"}
+                Copy Map URL
+            .btn-group{:style => "margin-right:10px;"}
+              %button.btn.btn-default.clipboard-btn{"data-url" => current_community.map_embed_code(nil, nil, true, "touch"), "data-base-url" => current_community.map_embed_code(nil, nil, true, "touch")}
+                %i.fa.fa-code.text-info{:style => "margin-right:5px;"}
+                Copy Embed Code
+            .btn-group
+              %a.btn.btn-default.map-open-link{"href" => current_community.map_link(nil, nil, true, "touch"), "data-base-url" => current_community.map_link(nil, nil, true, "touch"), "target" => "_blank"}
+                %i.fa.fa-external-link.text-success{:style => "margin-right:5px;"}
+                Open Map
+
+        - if current_community.has_floorplates?
+          %div{:style => "border-top: 1px solid #ccc; margin-top: 10px; margin-bottom: 10px;"}
+            %br
+            %strong Floor Level Map:
+          - current_community.property_floor_numbers.each do |floor|
+            .mb-3{:style => "margin-bottom:10px;"}
+              %span{:style => "display:inline-block; width: 90px; font-weight:bold; margin-right:15px;"}
+                Level #{floor}:
+              .btn-group{:style => "margin-right:10px;"}
+                %button.btn.btn-default.clipboard-btn{"data-url" => current_community.map_link(nil, floor, nil, "touch"), "data-base-url" => current_community.map_link(nil, floor, nil, "touch")}
+                  %i.fa.fa-copy.text-primary{:style => "margin-right:5px;"}
+                  Copy Map URL
+              .btn-group{:style => "margin-right:10px;"}
+                %button.btn.btn-default.clipboard-btn{"data-url" => current_community.map_embed_code(nil, floor, nil, "touch"), "data-base-url" => current_community.map_embed_code(nil, floor, nil, "touch")}
+                  %i.fa.fa-code.text-info{:style => "margin-right:5px;"}
+                  Copy Embed Code
+              .btn-group
+                %a.btn.btn-default.map-open-link{"href" => current_community.map_link(nil, floor, nil, "touch"), "data-base-url" => current_community.map_link(nil, floor, nil, "touch"), "target" => "_blank"}
+                  %i.fa.fa-external-link.text-success{:style => "margin-right:5px;"}
+                  Open Map
+        
+      .modal-footer
+        %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Close

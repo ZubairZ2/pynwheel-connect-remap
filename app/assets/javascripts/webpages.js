@@ -44,7 +44,10 @@ var _3dHoveredItem;
 var beansWidget;
 
 $(document).ready(function () {
-  disableOutsideZoomContainer();
+  if(isTouchMap) {
+    disableOutsideZoomContainer();
+  }
+
   if (smallScreen()) {
     $(".c-footer.desktop-content").remove();
     if (extraSmallScreen()) $(".c-sidebar").addClass("sidebar-header-bar");
@@ -2911,8 +2914,12 @@ function setFloorplanBanner(element) {
   $(wrapperSelector).prepend(banner);
 }
 
-
 function handleApplyNowButtonVisibility(element) {
+  if(isTouchMap) {
+    $(".apply_now").hide();
+    return;
+  }
+
   const url = element.getAttribute("data-availability-url");
   const dataProvider = $(element).data("provider");
 
