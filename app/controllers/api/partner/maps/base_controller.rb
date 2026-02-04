@@ -10,7 +10,8 @@ module Api
 
         PARTNERS = [
           { name: "rent",          key: ENV["PARTNER_RENT_API_KEY"] },
-          { name: "apartmentlist", key: ENV["PARTNER_APARTMENTLIST_API_KEY"] }
+          { name: "apartmentlist", key: ENV["PARTNER_APARTMENTLIST_API_KEY"] },
+          { name: "propexo", key: ENV["PARTNER_PROPEXO_API_KEY"] }
         ]
 
         before_action :load_map_partners
