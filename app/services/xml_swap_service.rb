@@ -99,16 +99,50 @@ class XmlSwapService < BaseService
       floorplan_id: u['FloorplanID'],
       effective_rent: effective_rent(u),
       floor: u['EntryFloor'],
-      availability: u.dig('Availability', 'VacancyClass'),
-      available: u.dig('Availability', 'VacancyClass') == 'Unoccupied',
       availability_url: u.dig('Availability', 'UnitAvailabilityURL'),
       square_feet: u.dig('Unit', 'Information', 'MinSquareFeet'),
-      available_date: vacate_date,
       building: building,
       manually_updated: false
     )
 
+    set_availability(unit, u)
+    set_available_date(unit, u)
+
     unit.save(validate: false)
+  end
+
+  def set_availability(unit, u)
+    availability = u['Availability']
+    return unless availability
+  
+    vacancy_class = availability['VacancyClass']
+    vacate_date   = u.dig('Availability', 'VacateDate')
+  
+    future_available =
+      vacate_date.present? &&
+      Date.parse("#{vacate_date['Year']}-#{vacate_date['Month']}-#{vacate_date['Day']}") >= Date.today
+  
+    unless unit.availability_is_updated && unit.manual_override
+      unit.availability = vacancy_class unless unit.sold
+    end
+  
+    unless unit.available_is_updated && unit.manual_override
+      unit.available =
+        !unit.sold &&
+        (
+          vacancy_class == 'Unoccupied' ||
+          (vacancy_class == 'Occupied' && future_available)
+        )
+    end
+  end
+
+  def set_available_date(unit, u)
+    return if unit.available_date_is_updated && unit.manual_override
+
+    date = u.dig('Availability', 'VacateDate')
+    return unless date
+
+    unit.available_date = Date.parse("#{date['Year']}-#{date['Month']}-#{date['Day']}")
   end
 
   def replace_or_create_swap_unit(u, property_id, vacate_date, building)

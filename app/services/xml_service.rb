@@ -166,13 +166,25 @@ class XmlService < BaseService
   def set_availability(unit, u)
     availability = u['Availability']
     return unless availability
-
+  
+    vacancy_class = availability['VacancyClass']
+    vacate_date   = u.dig('Availability', 'VacateDate')
+  
+    future_available =
+      vacate_date.present? &&
+      Date.parse("#{vacate_date['Year']}-#{vacate_date['Month']}-#{vacate_date['Day']}") >= Date.today
+  
     unless unit.availability_is_updated && unit.manual_override
-      unit.availability = availability['VacancyClass'] unless unit.sold
+      unit.availability = vacancy_class unless unit.sold
     end
-
+  
     unless unit.available_is_updated && unit.manual_override
-      unit.available = availability['VacancyClass'] == 'Unoccupied' && !unit.sold
+      unit.available =
+        !unit.sold &&
+        (
+          vacancy_class == 'Unoccupied' ||
+          (vacancy_class == 'Occupied' && future_available)
+        )
     end
   end
 
