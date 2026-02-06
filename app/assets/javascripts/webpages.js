@@ -1991,7 +1991,6 @@ function setHoverMarketRent($this) {
   $("#popover-price").html(currency + $this.data("marketRent"));
 }
 
-
 function setUnitHoverAvailability($this) {
   if (isFloorplanMapEnabled()) {
     $("#hover-available-text").hide();
@@ -2007,14 +2006,23 @@ function setUnitHoverAvailability($this) {
     return;
   }
 
-  const isUnoccupied = $this.data("availability") === "Unoccupied";
+  const isAvailable = $this.data("available");
+  const availability = $this.data("availability");
 
-  $text.html(isUnoccupied ? "Available" : "");
-  $date.html(
-    isUnoccupied
-      ? formattedDateByRegion(webCommunity.country_code, $this.data("available-date"))
-      : "Unavailable"
-  );
+  if (isAvailable) {
+    $text.html("Available");
+    $date.html(
+      formattedDateByRegion(
+        webCommunity.country_code,
+        $this.data("available-date")
+      )
+    );
+    return;
+  }
+
+  // fallback (occupied + no future date)
+  $text.html(availability === "Unoccupied" ? "Available" : "");
+  $date.html("Unavailable");
 }
 
 function markerHoverEffectEnd(event, $3dDataElement = null) {
