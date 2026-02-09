@@ -2853,7 +2853,7 @@ function setDataProvider(element) {
 }
 
 function handleFavIconVisibility() {
-  if ((isRightRailCardClicked && isFloorplanMapEnabled()) || isPartnerMap)
+  if ((isRightRailCardClicked && isFloorplanMapEnabled()) || isPartnerMap || isTouchMap)
     $("#fav-icon-tag").css("visibility", "hidden");
   else
     $("#fav-icon-tag").css("visibility", "");
