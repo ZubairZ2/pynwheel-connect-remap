@@ -44,7 +44,7 @@ var _3dHoveredItem;
 var beansWidget;
 
 $(document).ready(function () {
-  if(isTouchMap) {
+  if (typeof isTouchMap !== 'undefined' && isTouchMap) {
     disableOutsideZoomContainer();
   }
 
@@ -1405,10 +1405,10 @@ function renderUnitsAmenitiesMarkers(element, f) {
 
 function buildUnitBoxHTML(unit) {
   let unitName = `Unit # ${(webCommunity?.is_sitemap && !webCommunity?.display_building
-      ? unit["marketing_name"]
-      : unit["building"]
-        ? `${unit["building"]}-${unit["marketing_name"]}`
-        : unit["marketing_name"])
+    ? unit["marketing_name"]
+    : unit["building"]
+      ? `${unit["building"]}-${unit["marketing_name"]}`
+      : unit["marketing_name"])
     }`;
 
 
@@ -1437,8 +1437,8 @@ function buildUnitBoxHTML(unit) {
           </p>
         </div>
         <div class='unit-details-section'>
-          <p><i class='fa fa-bed'> &nbsp ${unit["bedrooms"]} Bed </i></p>
-          <p><i class='fa fa-bath'> &nbsp ${unit["bathrooms"]} Bath </i></p>
+          ${!hide_bedrooms_bathrooms ? `<p><i class='fa fa-bed'> &nbsp ${unit["bedrooms"]} Bed </i></p>` : ''}
+          ${!hide_bedrooms_bathrooms ? `<p><i class='fa fa-bath'> &nbsp ${unit["bathrooms"]} Bath </i></p>` : ''}
           <p><i class='fa fa-building'> &nbsp ${unit["square_feet"]} Sq Ft </i></p>
         </div>
         ${!isFloorplanMapEnabled()
@@ -1968,18 +1968,21 @@ function markerHoverEffect(event, _3dData = null) {
     $("#media-object").attr("src", "/assets/default.jpeg");
   }
   $("#popover-square-feet").html($this.data("square-feet"));
-  $("#popover-bathrooms").html($this.data("bathrooms"));
 
-  if ($("#popover-bathrooms").html() == "1") {
-    $("#popover-bathrooms").siblings("small").html("Bathroom");
-  } else {
-    $("#popover-bathrooms").siblings("small").html("Bathrooms");
-  }
-  $("#popover-bedrooms").html($this.data("bedrooms"));
-  if ($("#popover-bedrooms").html() == "1") {
-    $("#popover-bedrooms").siblings("small").html("Bedroom");
-  } else {
-    $("#popover-bedrooms").siblings("small").html("Bedrooms");
+  if (!hide_bedrooms_bathrooms) {
+    $("#popover-bathrooms").html($this.data("bathrooms"));
+
+    if ($("#popover-bathrooms").html() == "1") {
+      $("#popover-bathrooms").siblings("small").html("Bathroom");
+    } else {
+      $("#popover-bathrooms").siblings("small").html("Bathrooms");
+    }
+    $("#popover-bedrooms").html($this.data("bedrooms"));
+    if ($("#popover-bedrooms").html() == "1") {
+      $("#popover-bedrooms").siblings("small").html("Bedroom");
+    } else {
+      $("#popover-bedrooms").siblings("small").html("Bedrooms");
+    }
   }
 
   setUnitHoverAvailability($this)
@@ -2923,7 +2926,7 @@ function setFloorplanBanner(element) {
 }
 
 function handleApplyNowButtonVisibility(element) {
-  if(isTouchMap) {
+  if (isTouchMap) {
     $(".apply_now").hide();
     return;
   }

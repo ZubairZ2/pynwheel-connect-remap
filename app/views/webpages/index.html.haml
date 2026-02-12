@@ -100,11 +100,12 @@
                       %label.short Community
                       = select_tag :multi_communities, options_for_select(@multi_properties.present? ? @multi_properties : []),{ :class=>"custom-select", style: "min-width: max-content;", :include_blank => "All "}
 
-                - if @map_filter[:show_bedroom_filter]
-                  .selectable-field
-                    %label Bedrooms
-                    %label.short Bedrooms
-                    = select_tag :unit_bedroom, options_for_select(@unit_bedrooms.present? ? @unit_bedrooms : []),{:class=>"custom-select", :include_blank => "All "}
+                - unless @community.hide_bedrooms_bathrooms
+                  - if @map_filter[:show_bedroom_filter]
+                    .selectable-field
+                      %label Bedrooms
+                      %label.short Bedrooms
+                      = select_tag :unit_bedroom, options_for_select(@unit_bedrooms.present? ? @unit_bedrooms : []),{:class=>"custom-select", :include_blank => "All "}
                 
                 - if @map_filter[:show_pricing_filter]
                   .selectable-field{ class: !@community_info.display_rent ? "pricing_filter_visibility" : nil }
@@ -160,10 +161,11 @@
                         %label Community
                         = select_tag :responsive_multi_communities, options_for_select(@multi_properties.present? ? @multi_properties : []),{:class=>"custom-select", :include_blank => "All "}
 
-                  - if @map_filter[:show_bedroom_filter]
-                    .selectable-field
-                      %label Bedrooms
-                      = select_tag :responsive_unit_bedroom, options_for_select(@unit_bedrooms.present? ? @unit_bedrooms : []),{:class=>"custom-select", :include_blank => "All "}
+                  - unless @community.hide_bedrooms_bathrooms
+                    - if @map_filter[:show_bedroom_filter]
+                      .selectable-field
+                        %label Bedrooms
+                        = select_tag :responsive_unit_bedroom, options_for_select(@unit_bedrooms.present? ? @unit_bedrooms : []),{:class=>"custom-select", :include_blank => "All "}
                   
                   - if @map_filter[:show_pricing_filter]
                     .selectable-field{ class: !@community_info.display_rent ? "pricing_filter_visibility" : nil }
@@ -405,6 +407,7 @@
   var img_width = "#{@community.sitemap.present? && @community.sitemap.image.present? ? (@community.sitemap.width || @community.sitemap.image.width) : nil}"
   var img_height = "#{@community.sitemap.present? && @community.sitemap.image.present? ? (@community.sitemap.height || @community.sitemap.image.height) : nil}"
   var current_floor = "#{@floors.present? and @floors.size > 0 ? min_unit_floor : 'null'}";
+  var hide_bedrooms_bathrooms = "#{@community.hide_bedrooms_bathrooms}" === "true";
 
   if(opsMapMarkersEnabled) {
     showCurrentAvailabilityEnabled = false;
@@ -439,14 +442,6 @@
 
   $(document).ready(function () {
     if (communityInactivated) return;
-
-    var url = (window.location != window.parent.location)
-            ? document.referrer
-            : document.location.href;
-
-    console.log("\n\n\n\n\n\n\n");
-    console.log("Apartment URL: ",  url);
-    console.log("\n\n\n\n\n\n\n");
 
     if(svgMode)
       assetTracker = new AssetLoadingTracker({ loaderSelector: ".webPageLoader" });

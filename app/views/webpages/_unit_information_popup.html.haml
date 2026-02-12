@@ -9,14 +9,16 @@
       %b#popover-square-feet
       %small
         Square Feet
-    %p
-      %b#popover-bathrooms
-      %small
-        Bathrooms
-    %p
-      %b#popover-bedrooms
-      %small
-        Bedrooms
+    - unless @community.hide_bedrooms_bathrooms
+      %p
+        %b#popover-bathrooms
+        %small
+          Bathrooms
+    - unless @community.hide_bedrooms_bathrooms
+      %p
+        %b#popover-bedrooms
+        %small
+          Bedrooms
     %p
       %small#hover-available-text Available
       %b#popover-available-date

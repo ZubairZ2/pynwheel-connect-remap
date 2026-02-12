@@ -41,18 +41,20 @@
             .modal-middle-section
               .module-info
                 %ul.module-list
-                  %li
-                    %b
-                      %img{:src => "/assets/bedroom-icon.png"}/
-                      %span#bedrooms
-                    %span.bedrooms
-                      Bedrooms
-                  %li
-                    %b
-                      %img{:src => "/assets/bathroom-icon.png"}/
-                      %span#bathrooms
-                    %span.bathrooms
-                      Bathrooms
+                  - unless @community.hide_bedrooms_bathrooms
+                    %li
+                      %b
+                        %img{:src => "/assets/bedroom-icon.png"}/
+                        %span#bedrooms
+                      %span.bedrooms
+                        Bedrooms
+                  - unless @community.hide_bedrooms_bathrooms
+                    %li
+                      %b
+                        %img{:src => "/assets/bathroom-icon.png"}/
+                        %span#bathrooms
+                      %span.bathrooms
+                        Bathrooms
                   %li
                     %b
                       %img{:src => "/assets/sq-feet-icon.png"}/
