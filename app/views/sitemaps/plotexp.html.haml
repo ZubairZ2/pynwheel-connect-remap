@@ -255,6 +255,20 @@
 
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                  Hide Bedrooms & Bathrooms
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
+                    %span#propertyDetailNameText
+                      Enable this option to hide bedroom and bathroom filters on the map and remove bedroom/bathroom information from unit details.
+
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = check_box_tag :hide_bedrooms_bathrooms, true, @community.hide_bedrooms_bathrooms, class: "apartment-setting-field"
+                    %label.label-primary{:for => "hide_bedrooms_bathrooms"}
+                    %span.pl-15 Yes
+
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                   Map Filters Visibility
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
                     %span#propertyDetailNameText
@@ -459,6 +473,20 @@
                     %span.pr-15 No
                     = check_box_tag :enable_unit_type_pricing, true, @community.enable_unit_type_pricing, class: "apartment-setting-field"
                     %label.label-primary{:for => "enable_unit_type_pricing"}
+                    %span.pl-15 Yes
+
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                  Hide Bedrooms & Bathrooms
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
+                    %span#propertyDetailNameText
+                      Enable this option to hide bedroom and bathroom filters on the map and remove bedroom/bathroom information from unit details.
+
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = check_box_tag :hide_bedrooms_bathrooms, true, @community.hide_bedrooms_bathrooms, class: "apartment-setting-field"
+                    %label.label-primary{:for => "hide_bedrooms_bathrooms"}
                     %span.pl-15 Yes
 
               .form-group
