@@ -5859,6 +5859,7 @@ ul.location-items span {
 }
 
 .inner-footer {
+  padding: 0px 5px 0px 0px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -7169,10 +7170,10 @@ ul.add-fav-options {
 
 .c-modal-footer {
   position: absolute;
-  bottom: 5;
-  right: 5;
-  /* width: 100%; */
-  /* padding: 18px 10px 6px 0px; */
+  bottom: 0;
+  right: 0;
+  width: 60%;
+  padding: 18px 10px 6px 0px;
   /* padding: 20px 24px 20px 0px; */
   background: white;
 }

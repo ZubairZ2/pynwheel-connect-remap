@@ -88,7 +88,7 @@
           %header.app-header
             .header-inner
               .app-logo-mobile
-                - if @community.map_logo
+                - if @community.map_logo && !@is_touch_map
                   %a.logo{:href => @community.community_website}
                     %img{:alt => "", :class => "webpage_logo", :src => map_logo_url(@community, false), :title => ""}
               
@@ -192,7 +192,7 @@
                       %i.fa.fa-refresh
               
               .app-logo
-                - if @community.map_logo
+                - if @community.map_logo && !@is_touch_map
                   %a.logo{:href => @community.community_website}
                     %img{:alt => "", :class => "webpage_logo", :src => map_logo_url(@community, false), :title => ""}
           
