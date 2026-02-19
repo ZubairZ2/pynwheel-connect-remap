@@ -84,7 +84,7 @@ class ImportApartmentListPropertiesWorker
   def perform
     now = Time.current
 
-    beans_company = Company.find_or_create_by!(name: 'Beans')
+    beans_company = Company.find_or_create_by!(name: 'ApartmentList')
     beans_company.data_providers << 'beans' unless beans_company.data_providers.include?('beans')
     beans_company.save!
 
