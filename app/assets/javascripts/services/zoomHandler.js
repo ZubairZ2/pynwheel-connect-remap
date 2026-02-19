@@ -264,7 +264,7 @@ function zoomReset() {
 
 const preventZoomOutsideContainers = function (e) {
   const isZoomableArea = $(e.target).closest(
-    '#zoom-group-wrapper, .plot-image, #zoomable, .image-map, .zoomable-map-container'
+    '#zoom-group-wrapper, .plot-image, #zoomable, .image-map, .zoomable-map-container, #floorplan-image'
   ).length > 0;
 
   if (!isZoomableArea) {
