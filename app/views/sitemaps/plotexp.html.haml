@@ -100,6 +100,26 @@
                     %label.label-primary{:for => "display_building"}
                     %span.pl-15 Yes
 
+
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                  Enable Pricing Calculator
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "pricingCalculatorPopover","data-content" => " "}
+                    %span#propertyDetailNameText
+                      When enabled, a pricing calculator button will appear on units using the SightMap embed ID below.
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = check_box_tag :enable_pricing_calculator, true, @community.enable_pricing_calculator, class: "apartment-setting-field", id: "enable_pricing_calculator"
+                    %label.label-primary{:for => "enable_pricing_calculator"}
+                    %span.pl-15 Yes
+
+              .form-group.pricing-calculator-embed-row{ style: "display: #{@community.enable_pricing_calculator ? '' : 'none'}" }
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                  Property Pricing Calculator Embed Code
+                .col-sm-12.col-lg-6.col-md-6.col-xs-12
+                  = text_field_tag :pricing_calculator_embed_code, @community.pricing_calculator_embed_code, class: "form-control apartment-setting-field", placeholder: "e.g. d7p1qr67wkx"
+
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                   Display Price
@@ -323,6 +343,26 @@
                     = check_box_tag :display_building, true, @community.display_building, class: "apartment-setting-field"
                     %label.label-primary{:for => "display_building"}
                     %span.pl-15 Yes
+
+
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                  Enable Pricing Calculator
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "pricingCalculatorPopover","data-content" => " "}
+                    %span#propertyDetailNameText
+                      When enabled, a pricing calculator button will appear on units using the SightMap embed ID below.
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = check_box_tag :enable_pricing_calculator, true, @community.enable_pricing_calculator, class: "apartment-setting-field", id: "enable_pricing_calculator_map"
+                    %label.label-primary{:for => "enable_pricing_calculator_map"}
+                    %span.pl-15 Yes
+
+              .form-group.pricing-calculator-embed-row{ style: "display: #{@community.enable_pricing_calculator ? '' : 'none'}" }
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                  Property Pricing Calculator Embed Code
+                .col-sm-12.col-lg-6.col-md-6.col-xs-12
+                  = text_field_tag :pricing_calculator_embed_code, @community.pricing_calculator_embed_code, class: "form-control apartment-setting-field", placeholder: "e.g. d7p1qr67wkx"
 
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
@@ -628,6 +668,10 @@
 
     $('.apartment-setting-field').change(function(){
       $('.apartment-settings-form').submit();
+    });
+
+    $('#enable_pricing_calculator, #enable_pricing_calculator_map').change(function() {
+      $('.pricing-calculator-embed-row').toggle($(this).is(':checked'));
     });
 
     enableZoom();

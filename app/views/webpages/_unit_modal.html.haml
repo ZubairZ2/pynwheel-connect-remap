@@ -110,12 +110,14 @@
                       %span.fix-text
                         %span.c-m-total-price#total-market-rent
                         %span.per-month-price-text /month
+                    %a.calculate-cost-btn.hidden{ href: "javascript:void(0);", onclick: "openExpenseCalculatorFromModal();" } Calculate Cost
                     = link_to "Apply Now","##",:onclick=>"set_realpagesvc_url(this);",:id=>"realpagesvc-anchor-tag", class: "apply-now apply_now"
                   - elsif @community_info.data_provider == "resman"
                     - if @community.display_rent
                       %span.fix-text
                         %span.c-m-total-price#total-market-rent
                         %span.per-month-price-text /month
+                    %a.calculate-cost-btn.hidden{ href: "javascript:void(0);", onclick: "openExpenseCalculatorFromModal();" } Calculate Cost
                     = link_to "Apply Now", "##",:onclick=>"set_resman_url(this);",:id=>"psi-anchor-tag", class: "apply-now apply_now"
 
                   - elsif @community_info.data_provider == "psi"
@@ -123,12 +125,14 @@
                       %span.fix-text
                         %span.c-m-total-price#total-market-rent
                         %span.per-month-price-text /month
+                    %a.calculate-cost-btn.hidden{ href: "javascript:void(0);", onclick: "openExpenseCalculatorFromModal();" } Calculate Cost
                     = link_to "Apply Now", "##",:onclick=>"set_psi_url(this);",:id=>"psi-anchor-tag", class: "apply-now apply_now"
                   - elsif @community_info.data_provider == "yardirentcafe"
                     - if @community.display_rent
                       %span.fix-text
                         %span.c-m-total-price#total-market-rent
                         %span.per-month-price-text /month
+                    %a.calculate-cost-btn.hidden{ href: "javascript:void(0);", onclick: "openExpenseCalculatorFromModal();" } Calculate Cost
                     = link_to "Apply Now", "##",:onclick=>"set_yardirentcafe_url(this);",:id=>"psi-anchor-tag", class: "apply-now apply_now"
                   
                   - elsif @community_info.data_provider == "appfolio"
@@ -136,6 +140,7 @@
                       %span.fix-text
                         %span.c-m-total-price#total-market-rent
                         %span.per-month-price-text /month
+                    %a.calculate-cost-btn.hidden{ href: "javascript:void(0);", onclick: "openExpenseCalculatorFromModal();" } Calculate Cost
                     = link_to "Apply Now", "##", :onclick=>"setAppFolioUrl(this);", :id=>"psi-anchor-tag", class: "apply-now apply_now"
 
                   - elsif @community_info.data_provider == "xml"
@@ -143,6 +148,7 @@
                       %span.fix-text
                         %span.c-m-total-price#total-market-rent
                         %span.per-month-price-text /month
+                    %a.calculate-cost-btn.hidden{ href: "javascript:void(0);", onclick: "openExpenseCalculatorFromModal();" } Calculate Cost
                     = link_to "Apply Now", "##", :onclick=>"setXmlProviderUrl(this);", :id=>"psi-anchor-tag", class: "apply-now apply_now"
 
                   - elsif @community_info.data_provider == "beans"
@@ -150,6 +156,7 @@
                       %span.fix-text
                         %span.c-m-total-price#total-market-rent
                         %span.per-month-price-text /month
+                    %a.calculate-cost-btn.hidden{ href: "javascript:void(0);", onclick: "openExpenseCalculatorFromModal();" } Calculate Cost
                     = link_to "Apply Now", "##", :onclick=>"setBeansProviderUrl(this);", :id=>"psi-anchor-tag", class: "apply-now apply_now"
 
                   - else
@@ -158,6 +165,7 @@
                         %span.fix-text
                           %span.c-m-total-price#total-market-rent
                           %span{style: 'font-size: 12px'} /month
+                    %a.calculate-cost-btn.hidden{ href: "javascript:void(0);", onclick: "openExpenseCalculatorFromModal();" } Calculate Cost
 
                 - if @community.display_rent
                   %span.move-in-date-text Pricing is based on a move-in date of today. Click “apply now” for more options.
@@ -174,6 +182,7 @@
                     %span.fix-text
                       %span.c-m-total-price#total-market-rent
                       %span.per-month-price-text /month
+                  %a.calculate-cost-btn.hidden{ href: "javascript:void(0);", onclick: "openExpenseCalculatorFromModal();" } Calculate Cost
                   %a.apply-now.apply_now{:href => @community_info.credential.separate_link,:target => "_blank" } Apply Now
 
                 - if @community.display_rent
@@ -183,12 +192,13 @@
               
               - else
                 .disabaled-apply-now{style: 'text-align: center'}
+                  %a.calculate-cost-btn.hidden{ href: "javascript:void(0);", onclick: "openExpenseCalculatorFromModal();" } Calculate Cost
                   - if @community.display_rent
                     %span.fix-text
                       %span.c-m-total-price#total-market-rent
                       %span{style: 'font-size: 12px'} /month
                   - else
-                    %span.move-in-date-text{:style => "display: flex; justify-content: center; vertical-align: middle;align-items: center;"} 
+                    %span.move-in-date-text{:style => "display: flex; justify-content: center; vertical-align: middle;align-items: center;"}
                       = @community.pricing_message
         
         .c-modal-wrapper

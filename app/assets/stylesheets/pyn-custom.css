@@ -2404,7 +2404,7 @@ ul.home-tabs li:hover a {
   background-image: none;
   min-height: 100vh;
   width: 60px;
-  background: #1d2425;
+  background: #1c2425;
   padding: 0;
   margin-right: 25px;
 }
@@ -2564,7 +2564,7 @@ img-responsive {
   position: absolute;
   right: 0;
   top: 78px;
-  background: #1d2425;
+  background: #1c2425;
   z-index: 10;
   overflow: hidden;
   height: 99vh;
@@ -2686,7 +2686,7 @@ img-responsive {
   font-family: 'Raleway', sans-serif;
   color: #8f9495;
   padding: 25px 0 10px 0;
-  background: #1d2425;
+  background: #1c2425;
 }
 
 .enable-suggestions-btn {
@@ -2802,7 +2802,7 @@ img-responsive {
 }
 
 .select-floor-bg {
-  background: #1d2425;
+  background: #1c2425;
 }
 
 .select-floor-bg .mCSB_outside+.mCSB_scrollTools {
@@ -3097,7 +3097,7 @@ a#favoriteclickme {
   top: 0;
   width: 50px;
   height: 50px;
-  background: #1d2425;
+  background: #1c2425;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -5477,7 +5477,7 @@ body {
   top: 0;
   z-index: 4;
   left: 0;
-  background: #1d2425;
+  background: #1c2425;
   width: 100%;
   max-width: 90px;
   text-align: center;
@@ -6262,7 +6262,8 @@ html,
     width: 100% !important;
   }
 
-  .c-modal-sidebar-filters .filter-action .apply-now {
+  .c-modal-sidebar-filters .filter-action .apply-now,
+  .calculate-cost-btn {
     font-size: 12px !important;
   }
 
@@ -6564,7 +6565,8 @@ ul.add-fav-options {
     /*left: 95px !important;*/
   }
 
-  .c-modal-sidebar-filters .filter-action .apply-now {
+  .c-modal-sidebar-filters .filter-action .apply-now,
+  .calculate-cost-btn {
     padding: 5px !important;
   }
 
@@ -6874,7 +6876,7 @@ ul.add-fav-options {
   align-items: center;
   justify-content: space-between;
   padding: 0px 20px;
-  background: #1d2425;
+  background: #1c2425;
 }
 
 .modal-sidebar-title .section-title {
@@ -6957,7 +6959,8 @@ ul.add-fav-options {
     padding: 5px 5px 15px 5px;
   }
 
-  .c-modal-sidebar-filters .filter-action .apply-now {
+  .c-modal-sidebar-filters .filter-action .apply-now,
+  .calculate-cost-btn {
     margin-top: 8px;
     width: auto !important;
     min-width: 45%;
@@ -7002,7 +7005,7 @@ ul.add-fav-options {
 }
 
 .c-modal-sidebar-filters {
-  background: #1d2425;
+  background: #1c2425;
   padding: 15px;
   bottom: 0;
 }
@@ -7080,8 +7083,9 @@ ul.add-fav-options {
   font-size: 17px;
 }
 
-.c-modal-sidebar-filters .filter-action .apply-now {
-  border-radius: 50px;
+.c-modal-sidebar-filters .filter-action .apply-now,
+.calculate-cost-btn {
+  /* border-radius: 50px;
   padding: 8px;
   font-size: 15px;
   text-transform: uppercase;
@@ -7093,7 +7097,23 @@ ul.add-fav-options {
   color: black;
   background: white;
   display: block;
-  text-align: center;
+  text-align: center; */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  /* background-color: #e8e9e9; */
+  background-color: #ffffff;
+  color: black;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none !important;
+  /* text-transform: uppercase; */
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-left: 10px;
+  white-space: nowrap;
 }
 
 .disabaled-apply-now {
@@ -7101,7 +7121,7 @@ ul.add-fav-options {
   color: white;
   font-size: 20px;
   font-weight: 600;
-  background: #1d2425;
+  background: #1c2425;
   display: flex;
   justify-content: center;
   vertical-align: middle;
@@ -7384,7 +7404,8 @@ ul.add-fav-options {
     font-size: 12px;
   }
 
-  .c-modal-sidebar-filters .filter-action .apply-now {
+  .c-modal-sidebar-filters .filter-action .apply-now,
+  .calculate-cost-btn {
     font-size: 12px;
   }
 
@@ -7593,7 +7614,7 @@ ul.add-fav-options {
   color: white;
   font-size: 15px;
   font-weight: 600;
-  background: #1d2425;
+  background: #1c2425;
   text-align: center;
 }
 
@@ -8325,3 +8346,180 @@ div.esri-ui-inner-container.esri-ui-manual-container>div.esri-component.esri-att
 #map {
   display: inline-block;
 }
+
+/* ── Engrain SightMap Expense Calculator ────────────────────────────────────── */
+
+/* "Calculate" button in the right-rail list card */
+.calculate-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  background-color: #1c2425;
+  color: #ffffff !important;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none !important;
+  /* text-transform: uppercase; */
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border: none;
+  outline: none;
+  width: 100%;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.calculate-btn:hover {
+  background-color: #2f3d49;
+  color: #ffffff !important;
+}
+
+.calculate-btn .fa-calculator {
+  font-size: 11px;
+}
+
+.engrain-calc-section {
+  padding-top: 4px;
+}
+
+/* "Calculate Cost" button in the unit modal (alongside Apply Now) */
+/* .calculate-cost-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  background-color: #ffffff;
+  color: black;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none !important;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-right: 8px;
+  white-space: nowrap;
+} */
+
+.calculate-cost-btn:hover {
+  color: black !important;
+}
+
+/* Engrain calculator modal — same size as the unit modal */
+.engrain-calc-dialog {
+  width: 100%;
+  max-width: 1000px;
+  margin: 30px auto;
+  height: calc(100vh - 60px);
+  max-height: 750px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Mobile: allow full width with small margins */
+@media (max-width: 767px) {
+  .engrain-calc-dialog {
+    width: 96vw;
+    max-width: 96vw;
+    margin: 10px auto;
+    height: calc(100vh - 20px);
+    max-height: none;
+  }
+}
+
+.engrain-calc-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.engrain-calc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: #1c2425;
+  color: #ffffff;
+  font-family: 'Raleway', sans-serif;
+  flex-shrink: 0;
+  min-height: 48px;
+}
+
+.engrain-calc-title {
+  font-size: 15px;
+  font-weight: 600;
+  font-family: 'Raleway', sans-serif;
+  text-transform: uppercase;
+  color: #ffffff;
+  margin: 0;
+  flex: 1;
+  text-align: center;
+}
+
+.calculator-back-btn {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #ffffff;
+  padding: 4px 12px;
+  border-radius: 50px;
+  font-size: 12px;
+  font-family: 'Raleway', sans-serif;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: background-color 0.2s;
+}
+
+.calculator-back-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.calculator-back-btn.hidden {
+  display: none;
+}
+
+.engrain-calc-close {
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.engrain-calc-close:hover {
+  opacity: 1;
+}
+
+.engrain-calc-body {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.engrain-calc-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+/* Ensure the calculator modal sits above other modals */
+#engrainCalculatorModal {
+  z-index: 1060;
+}
+
+#engrainCalculatorModal .modal-dialog {
+  pointer-events: all;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
