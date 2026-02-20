@@ -89,9 +89,6 @@ $(document).ready(function () {
       if (beanOnlyProperty)
         $(".2d-map-option").hide();
     }
-
-  } else {
-    console.error("webCommunity not loaded properly");
   }
 
   $("#zoomable a").on("touchstart", function (e) {
@@ -1422,6 +1419,7 @@ function buildUnitBoxHTML(unit) {
       data-pointer-data='${JSON.stringify(unit["pointer_data"])}'
       data-floorplan-id='${unit["provider_floorplan_id"]}'
       data-unit-marketing-name='${unit["data_attributes"]["data-unit-marketing-name"]}'
+      data-pricing-calculator-url='${unit["pricing_calculator_url"] || ""}'
     >
       <div class='image-styles'>
         ${floorplanColorBarHTML(unit)}
@@ -1448,6 +1446,11 @@ function buildUnitBoxHTML(unit) {
               </div>`
       : ``
     }
+        ${unit["pricing_calculator_url"] ? `<div class='unit-details-section engrain-calc-section'>
+          <a class='calculate-btn' href='javascript:void(0);' onclick='openExpenseCalculator("${unit["pricing_calculator_url"]}", false)'>
+            <i class='fa fa-calculator'></i> Calculate
+          </a>
+        </div>` : ''}
       </div>
     </div>
   `;
@@ -2898,6 +2901,7 @@ function setModalAttributes(element) {
   resetToDefaultZoom();
   controlUnitButtonsVisibility();
   handleFavIconVisibility();
+  setEngrainCalculatorButton(element);
 }
 
 function controlUnitButtonsVisibility() {
@@ -4316,3 +4320,86 @@ function checkFloorPlanColorMode() {
     (isFloorPlanColorEnabled) && !opsMapMarkersEnabled
   );
 }
+
+// ─── Engrain SightMap Expense Calculator ──────────────────────────────────────
+
+/**
+ * Opens the Engrain SightMap expense calculator in a modal iframe.
+ * @param {string} unitNumber - The unit marketing name / number to pass to the calculator.
+ * @param {boolean} fromUnitModal - If true, shows a "Back to Unit" button in the modal.
+ */
+function openExpenseCalculator(calculatorUrl, fromUnitModal) {
+  if (!calculatorUrl) return;
+
+  // Create iframe dynamically so it doesn't affect page layout when not in use
+  var body = document.querySelector('#engrainCalculatorModal .engrain-calc-body');
+  if (body) {
+    var iframe = document.createElement('iframe');
+    iframe.id = 'engrainCalcIframe';
+    iframe.className = 'engrain-calc-iframe';
+    iframe.src = calculatorUrl;
+    iframe.frameBorder = '0';
+    iframe.allowFullscreen = true;
+    body.innerHTML = '';
+    body.appendChild(iframe);
+  }
+
+  // Show the calculator
+  $('#engrainCalculatorModal').modal('show');
+}
+
+/**
+ * Called from the "Calculate Cost" button inside the unit modal.
+ * Hides the unit modal first, then opens the calculator.
+ */
+function openExpenseCalculatorFromModal() {
+  // Get pricing_calculator_url from the button (set by setEngrainCalculatorButton)
+  var calcUrl = $('.calculate-cost-btn').data('pricing-calculator-url') || '';
+  if (!calcUrl) return;
+
+  openExpenseCalculator(calcUrl, false);
+}
+
+/**
+ * Closes the calculator modal and re-opens the unit modal.
+ * Called by the "← Back" button in the calculator modal.
+ */
+function closeCalculatorGoBackToUnit() {
+  // Destroy the iframe to stop any media/network activity
+  var body = document.querySelector('#engrainCalculatorModal .engrain-calc-body');
+  if (body) body.innerHTML = '';
+
+  $('#engrainCalculatorModal').modal('hide');
+}
+
+/**
+ * Shows or hides the "Calculate Cost" button inside the unit modal
+ * based on whether the current community has an Engrain embed ID.
+ */
+function setEngrainCalculatorButton(element) {
+  var $calcBtns = $('.calculate-cost-btn');
+  var calcUrl = '';
+
+  // Try to get URL from the element's data attribute (right-rail card)
+  if (element) {
+    calcUrl = $(element).data('pricing-calculator-url') || '';
+  }
+
+  // If not found on element, look up from the global units array by unit ID
+  if (!calcUrl && element) {
+    var unitId = $(element).data('unit-id');
+    if (unitId && typeof units !== 'undefined') {
+      var unit = units.find(function (u) { return u.id === unitId; });
+      if (unit) calcUrl = unit['pricing_calculator_url'] || '';
+    }
+  }
+
+  if (calcUrl) {
+    $calcBtns.attr('data-pricing-calculator-url', calcUrl).removeClass('hidden');
+  } else {
+    $calcBtns.removeAttr('data-pricing-calculator-url').addClass('hidden');
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+

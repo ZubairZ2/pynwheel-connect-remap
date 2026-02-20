@@ -2,7 +2,8 @@
   .c-modal-body-content
     - @units = [] if @units.nil?
     - @units.each do |unit|
-      - floorplan = unit.floorplan #@floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
+      - floorplan = unit.floorplan
+      - pricing_calculator_url = (@community.enable_pricing_calculator? && @community.pricing_calculator_embed_code.present?) ? "https://sightmap.com/embed/#{@community.pricing_calculator_embed_code}?unit_number=#{unit.marketing_name}&mode=expense_calculator" : nil
       .map-slide-item
         .c-modal-header
           %h5.c-modal-title 
@@ -92,18 +93,22 @@
                     .m-filter-1.c-m-filter{style: 'display: none;'}
                       %label= @community.data_provider == "psi" ? 'Lease Start Date' : "Move In Date"
                       %input.c-m-input-control.datepicker.leasing-start-date{:id => "#{unit.id}-leasing-start-date", :type => "text", :style => "display: block !important", :readonly => "readonly", :value=>unit.available_date.present? ? available_date == "Now" ? Date.today : available_date : nil, "data-available_date"=>unit.available_date.present? ? determine_available_date(unit.available_date) : nil}/ 
-                .filter-action
+                .filter-action{style: 'display: flex !important; align-items: center;'}
                   - if @community.data_provider == "realpagesvc"
                     - if @community.display_rent
                       %span.fix-text
                         %span.c-m-total-price{id: "#{unit.id}-total-price"}= "#{@community.get_currency_symbol}#{number_with_precision(unit.get_market_rent(), :precision => 2, :delimiter => ',', :value=>unit.available_date.present? ? available_date == "Now" ? Date.today : available_date : nil)}"
                         %span.per-month-price-text.text-p /month
+                    - if pricing_calculator_url
+                      %a.calculate-cost-btn{ href: "javascript:void(0);", onclick: "openExpenseCalculator('#{pricing_calculator_url}', false)" } Calculate Cost
                     = link_to "Apply Now", apply_now_community_webpages_path(@community), :target=> "_blank", class: "apply-now apply_now"
                   - elsif @community.data_provider == "resman"
                     - if @community.display_rent
                       %span.fix-text
                         %span.c-m-total-price{id: "#{unit.id}-total-price"}= "#{@community.get_currency_symbol}#{number_with_precision(unit.get_market_rent(), :precision => 2, :delimiter => ',')}"
                         %span.per-month-price-text.text-p /month
+                    - if pricing_calculator_url
+                      %a.calculate-cost-btn{ href: "javascript:void(0);", onclick: "openExpenseCalculator('#{pricing_calculator_url}', false)" } Calculate Cost
                     = link_to "Apply Now", "##",:onclick=>"set_resman_url_on_favorites(this);",:id=>"psi-anchor-tag","data-unit-id"=>(unit.id),"data-availability-url"=>(unit.get_availability_url()),"data-community-property-id"=>@community.credential.property_id, class: "apply-now apply_now"
                   - elsif @community.data_provider == "psi"
                     - if @community.display_rent
@@ -111,6 +116,8 @@
                         %span.c-m-total-price{id: "#{unit.id}-total-price"}= "#{@community.get_currency_symbol}#{number_with_precision(unit.get_market_rent(), :precision => 2, :delimiter => ',')}"
                         %span.per-month-price-text.text-p /month
                     
+                    - if pricing_calculator_url
+                      %a.calculate-cost-btn{ href: "javascript:void(0);", onclick: "openExpenseCalculator('#{pricing_calculator_url}', false)" } Calculate Cost
                     - if unit.get_availability_url()
                       = link_to "Apply Now", "##",:onclick=>"set_psi_url_on_favorite(this);",:id=>"psi-anchor-tag","data-community-property-id"=>@community.credential.property_id,"data-availability-url"=>(unit.get_availability_url()),"data-website"=>@community.website,"data-uri"=>uri(@community.website),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id, class: "apply-now apply_now"
                   - elsif @community.data_provider == "yardirentcafe"
@@ -118,6 +125,8 @@
                       %span.fix-text
                         %span.c-m-total-price{id: "#{unit.id}-total-price"}= "#{@community.get_currency_symbol}#{number_with_precision(unit.get_market_rent(), :precision => 2, :delimiter => ',')}"
                         %span.per-month-price-text.text-p /month
+                    - if pricing_calculator_url
+                      %a.calculate-cost-btn{ href: "javascript:void(0);", onclick: "openExpenseCalculator('#{pricing_calculator_url}', false)" } Calculate Cost
                     = link_to "Apply Now", "##",:onclick=>"set_yardirentcafe_url_on_favrite(this);",:id=>"psi-anchor-tag", "data-community-property-id"=>@community.credential.property_id,"data-availability-url"=>(unit.get_availability_url()),"data-website"=>@community.website,"data-uri"=>uri(@community.website),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id, class: "apply-now apply_now"
                   - else
                     .unit-total-pricing{style: 'text-align: center'}
@@ -125,6 +134,8 @@
                         %span.fix-text
                           %span.price{id: "#{unit.id}-total-price"}= "#{@community.get_currency_symbol}#{number_with_precision(unit.get_market_rent(), :precision => 2, :delimiter => ',')}"
                           %span.per-month /month
+                    - if pricing_calculator_url
+                      %a.calculate-cost-btn{ href: "javascript:void(0);", onclick: "openExpenseCalculator('#{pricing_calculator_url}', false)" } Calculate Cost
 
                 - if @community.display_rent
                   %span.move-in-date-text Pricing is based on a move-in date of today. Click “apply now” for more options.
@@ -136,11 +147,13 @@
                 .m-filter-1.c-m-filter{style: 'display: none;'}
                   %label= @community.data_provider == "psi" ? 'Lease Start Date' : "Move In Date"
                   %input.m-filter-1.c-m-filter.datepicker.leasing-start-date{:id => "#{unit.id}-leasing-start-date", :type => "text", :readonly => "readonly", :value=>unit.available_date.present? ? available_date == "Now" ? Date.today : available_date : nil}/
-              .filter-action
+              .filter-action{style: 'display: flex !important; align-items: center;'}
                 - if @community.display_rent
                   %span.fix-text
                     %span.c-m-total-price{id: "#{unit.id}-total-price"}= "#{@community.get_currency_symbol}#{number_with_precision(unit.get_market_rent(), :precision => 2, :delimiter => ',')}"
                     %span.per-month-price-text /month
+                - if pricing_calculator_url
+                  %a.calculate-cost-btn{ href: "javascript:void(0);", onclick: "openExpenseCalculator('#{pricing_calculator_url}', false)" } Calculate Cost
                 %a.apply-now.apply_now{:href => @community.credential.separate_link,:target => "_blank" } Apply Now
               
               - if @community.display_rent
@@ -150,12 +163,14 @@
             
             - else
               .disabaled-apply-now
+                - if pricing_calculator_url
+                  %a.calculate-cost-btn{ href: "javascript:void(0);", onclick: "openExpenseCalculator('#{pricing_calculator_url}', false)" } Calculate Cost
                 - if @community.display_rent
                   %span.fix-text
                     %span.c-m-total-price{id: "#{unit.id}-total-price"}= "#{@community.get_currency_symbol}#{number_with_precision(unit.get_market_rent(), :precision => 2, :delimiter => ',')}"
                     %span{style: 'font-size: 12px'} /month
                 - else
-                  %span.move-in-date-text{:style => "display: flex; justify-content: center; vertical-align: middle;align-items: center;"} 
+                  %span.move-in-date-text{:style => "display: flex; justify-content: center; vertical-align: middle;align-items: center;"}
                     = @community.pricing_message
 
         .c-modal-wrapper.h-class
