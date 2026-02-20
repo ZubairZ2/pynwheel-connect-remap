@@ -1,6 +1,6 @@
 class BeansDataImportWorker
   include Sidekiq::Worker
-  sidekiq_options queue: 'import_data', retry: 3
+  sidekiq_options queue: 'apartmentlist', retry: 3
 
   def perform(community_id)
     return unless community_id.present?
