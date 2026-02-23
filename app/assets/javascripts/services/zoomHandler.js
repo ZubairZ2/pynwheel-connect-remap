@@ -15,9 +15,10 @@ function activateZoomPan(elem, centralizeElement = true, options = {}) {
   zoomablePans[key] = {
     instance: panzoom(elem, {
       minZoom: 0.5,
-      maxZoom: mobileCheck() || $(window).width() <= 568 ? 10.0 : 5.0,
+      maxZoom: mobileCheck() || $(window).width() <= 568 ? 4.0 : 3.0,
+      zoomSpeed: 0.009,
       bounds: true,
-      boundsPadding: 0.3,
+      boundsPadding: 0.1,
       ...options,
     }),
     elem: elem
@@ -84,6 +85,7 @@ function moveZoomableImageToCenter(elem, resetScale = true) {
   if (resetScale) {
     const scaleX = parentWidth / contentWidth;
     const scaleY = parentHeight / contentHeight;
+    // Fit the map to fill the parent; cap at 1 so we don't over-enlarge small images
     scale = Math.min(scaleX, scaleY, 1);
     instance.zoomAbs(0, 0, scale);
   }
