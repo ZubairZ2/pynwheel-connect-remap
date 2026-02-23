@@ -113,11 +113,12 @@
                     %label.short Max Price
                     = select_tag :market_rent, options_for_select(@market_rent.present? ? @market_rent : []), { class: "custom-select" }
 
-                - if @map_filter[:show_square_feet_filter]
-                  .selectable-field
-                    %label Min Square Footage
-                    %label.short Min Sq. Ft.
-                    = select_tag :square_feet, options_for_select(@square_feet.present? ? @square_feet : []),{:class=>"custom-select"}
+                - unless @community.hide_square_feet
+                  - if @map_filter[:show_square_feet_filter]
+                    .selectable-field
+                      %label Min Square Footage
+                      %label.short Min Sq. Ft.
+                      = select_tag :square_feet, options_for_select(@square_feet.present? ? @square_feet : []),{:class=>"custom-select"}
                
                 - if @map_filter[:show_availability_filter]
                   .selectable-field
@@ -172,10 +173,11 @@
                       %label  Maximum Price
                       = select_tag :responsive_market_rent, options_for_select(@market_rent.present? ? @market_rent : []), { class: "custom-select" }
 
-                  - if @map_filter[:show_square_feet_filter]
-                    .selectable-field
-                      %label Min Square Footage
-                      = select_tag :responsive_square_feet, options_for_select(@square_feet.present? ? @square_feet : []),{:class=>"custom-select"}
+                  - unless @community.hide_square_feet
+                    - if @map_filter[:show_square_feet_filter]
+                      .selectable-field
+                        %label Min Square Footage
+                        = select_tag :responsive_square_feet, options_for_select(@square_feet.present? ? @square_feet : []),{:class=>"custom-select"}
                   
                   - if @map_filter[:show_availability_filter]
                     .selectable-field
@@ -408,6 +410,8 @@
   var img_height = "#{@community.sitemap.present? && @community.sitemap.image.present? ? (@community.sitemap.height || @community.sitemap.image.height) : nil}"
   var current_floor = "#{@floors.present? and @floors.size > 0 ? min_unit_floor : 'null'}";
   var hide_bedrooms_bathrooms = "#{@community.hide_bedrooms_bathrooms}" === "true";
+  var hide_square_feet = "#{@community.hide_square_feet}" === "true";
+
 
   if(opsMapMarkersEnabled) {
     showCurrentAvailabilityEnabled = false;

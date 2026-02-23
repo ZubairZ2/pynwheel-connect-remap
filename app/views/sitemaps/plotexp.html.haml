@@ -233,10 +233,38 @@
               
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                  Hide Bedrooms & Bathrooms
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
+                    %span#propertyDetailNameText
+                      Enable this option to hide bedroom and bathroom filters on the map and remove bedroom/bathroom information from unit details.
+
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = check_box_tag :hide_bedrooms_bathrooms, true, @community.hide_bedrooms_bathrooms, class: "apartment-setting-field"
+                    %label.label-primary{:for => "hide_bedrooms_bathrooms"}
+                    %span.pl-15 Yes
+
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                  Hide Square Feet
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
+                    %span#propertyDetailNameText
+                      Enable this option to hide square footage information from unit details on the map.
+
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = check_box_tag :hide_square_feet, true, @community.hide_square_feet, class: "apartment-setting-field"
+                    %label.label-primary{:for => "hide_square_feet"}
+                    %span.pl-15 Yes
+
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                   Display Floor Plan Colors
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
                     %span#propertyDetailNameText
-                      Switching this to ‘Yes’ will enable color coding for floor plans on the marketing map. Each floor plan will be displayed with its designated color, regardless of unit availability settings.
+                      Switching this to 'Yes' will enable color coding for floor plans on the marketing map. Each floor plan will be displayed with its designated color, regardless of unit availability settings.
 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
@@ -250,7 +278,7 @@
                   Turn Availability Off
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
                     %span#propertyDetailNameText
-                      Switching this to “Yes” will make all units on the map will be marked / shaded as if they are each available. The right rail of the map will display a list of all floor plans instead of a list of available units.
+                      Switching this to "Yes" will make all units on the map will be marked / shaded as if they are each available. The right rail of the map will display a list of all floor plans instead of a list of available units.
 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
@@ -275,21 +303,8 @@
 
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                  Hide Bedrooms & Bathrooms
-                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
-                    %span#propertyDetailNameText
-                      Enable this option to hide bedroom and bathroom filters on the map and remove bedroom/bathroom information from unit details.
-
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .TriSea-technologies-Switch
-                    %span.pr-15 No
-                    = check_box_tag :hide_bedrooms_bathrooms, true, @community.hide_bedrooms_bathrooms, class: "apartment-setting-field"
-                    %label.label-primary{:for => "hide_bedrooms_bathrooms"}
-                    %span.pl-15 Yes
-
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                   Map Filters Visibility
+
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
                     %span#propertyDetailNameText
                       This option will help us hide/show the filters on the map and by default all the filters will be visible.
@@ -475,10 +490,38 @@
               
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                  Hide Bedrooms & Bathrooms
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
+                    %span#propertyDetailNameText
+                      Enable this option to hide bedroom and bathroom filters on the map and remove bedroom/bathroom information from unit details.
+
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = check_box_tag :hide_bedrooms_bathrooms, true, @community.hide_bedrooms_bathrooms, class: "apartment-setting-field"
+                    %label.label-primary{:for => "hide_bedrooms_bathrooms"}
+                    %span.pl-15 Yes
+
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                  Hide Square Feet
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
+                    %span#propertyDetailNameText
+                      Enable this option to hide square footage information from unit details on the map.
+
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = check_box_tag :hide_square_feet, true, @community.hide_square_feet, class: "apartment-setting-field"
+                    %label.label-primary{:for => "hide_square_feet"}
+                    %span.pl-15 Yes
+
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                   Display Floor Plan Colors
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
                     %span#propertyDetailNameText
-                      Switching this to ‘Yes’ will enable color coding for floor plans on the marketing map. Each floor plan will be displayed with its designated color, regardless of unit availability settings.
+                      Switching this to 'Yes' will enable color coding for floor plans on the marketing map. Each floor plan will be displayed with its designated color, regardless of unit availability settings.
 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
@@ -492,7 +535,7 @@
                   Turn Availability Off
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
                     %span#propertyDetailNameText
-                      Switching this to “Yes” will make all units on the map will be marked / shaded as if they are each available. The right rail of the map will display a list of all floor plans instead of a list of available units.
+                      Switching this to "Yes" will make all units on the map will be marked / shaded as if they are each available. The right rail of the map will display a list of all floor plans instead of a list of available units.
 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
@@ -517,20 +560,6 @@
 
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                  Hide Bedrooms & Bathrooms
-                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
-                    %span#propertyDetailNameText
-                      Enable this option to hide bedroom and bathroom filters on the map and remove bedroom/bathroom information from unit details.
-
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .TriSea-technologies-Switch
-                    %span.pr-15 No
-                    = check_box_tag :hide_bedrooms_bathrooms, true, @community.hide_bedrooms_bathrooms, class: "apartment-setting-field"
-                    %label.label-primary{:for => "hide_bedrooms_bathrooms"}
-                    %span.pl-15 Yes
-
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                   Map Filters Visibility
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
                     %span#propertyDetailNameText
@@ -542,6 +571,7 @@
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                   Property map key text
+
                 .col-sm-12.col-lg-6.col-md-6.col-xs-12
                   = text_field_tag :show_property_map_key_text, @community.show_property_map_key_text, :class=>"form-control apartment-setting-field"
               

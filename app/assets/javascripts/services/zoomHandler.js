@@ -14,8 +14,8 @@ function activateZoomPan(elem, centralizeElement = true, options = {}) {
 
   zoomablePans[key] = {
     instance: panzoom(elem, {
-      minZoom: 0.5,
-      maxZoom: mobileCheck() || $(window).width() <= 568 ? 4.0 : 3.0,
+      minZoom: 1,
+      maxZoom: 10.0,
       zoomSpeed: 0.009,
       bounds: true,
       boundsPadding: 0.1,
