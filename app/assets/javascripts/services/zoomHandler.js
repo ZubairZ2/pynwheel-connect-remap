@@ -44,6 +44,11 @@ function activateZoomPan(elem, centralizeElement = true, options = {}) {
   setTimeout(() => {
     moveZoomableImageToCenter(elem, true, false);
   }, 0);
+
+  // Show/hide reset map button as zoom transforms happen
+  zoomablePans[key].instance.on('transform', function () {
+    updateResetMapBtn();
+  });
 }
 
 function moveZoomableImageToCenter(elem, resetScale = true) {
@@ -243,6 +248,12 @@ function bindGlobalZoomButtons() {
     $(".divLoading").removeClass("hidden");
     window.location.reload();
   });
+
+  $(".reset-map-btn").off("click").on("click", function (e) {
+    e.preventDefault();
+    zoomReset();
+    $(".reset-map-btn").css("display", "none");
+  });
 }
 
 function zoomReset() {
@@ -262,6 +273,20 @@ function zoomReset() {
     inst.zoomAbs(0, 0, init.scale);
     inst.moveTo(init.x, init.y);
   }
+}
+
+function updateResetMapBtn() {
+  const panObj = getCurrentImageMapZoomInstance();
+  if (!panObj) return;
+
+  const inst = panObj.instance;
+  const initial = panObj.initial;
+  if (!inst || !initial) return;
+
+  const currentScale = inst.getTransform().scale;
+  const isZoomed = Math.abs(currentScale - initial.scale) > 0.01;
+
+  $(".reset-map-btn").css("display", isZoomed ? "" : "none");
 }
 
 const preventZoomOutsideContainers = function (e) {

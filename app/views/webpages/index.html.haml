@@ -120,13 +120,15 @@
                       %label.short Min Sq. Ft.
                       = select_tag :square_feet, options_for_select(@square_feet.present? ? @square_feet : []),{:class=>"custom-select"}
                
-                - if @map_filter[:show_availability_filter]
-                  .selectable-field
-                    %label Availability
-                    %label.short Availability
-                    = select_tag :available_unit, options_for_select(@available_units.present? ? @available_units : []),{:class=>"custom-select", :include_blank => "All "}
+                - unless @community.hide_availability
+                  - if @map_filter[:show_availability_filter]
+                    .selectable-field
+                      %label Availability
+                      %label.short Availability
+                      = select_tag :available_unit, options_for_select(@available_units.present? ? @available_units : []),{:class=>"custom-select", :include_blank => "All "}
 
-                - unless @all_filters_disabled
+                - _all_hidden = @community.hide_bedrooms_bathrooms && @community.hide_square_feet && @community.hide_availability
+                - unless @all_filters_disabled || _all_hidden
                   %button.reset-filter-button.web-reset-button.header-action-btn{:type => "button", :onclick => "resetFilters(true);", style: "margin-right: 2rem"}
                     %span.hidable
                       Reset
@@ -151,7 +153,8 @@
 
                 .footer-logo.responsive-content{:style=> "visibility: #{@community.powered_by_btn ? "" : "hidden" }"}
                   %img{:src => "/assets/powered_by_logo.png"}/
-              - unless @all_filters_disabled
+              - _mobile_has_filters = (!@all_filters_disabled) && ((@have_multi_property_ids && @map_filter[:show_properties_filter]) || (!@community.hide_bedrooms_bathrooms && @map_filter[:show_bedroom_filter]) || @map_filter[:show_pricing_filter] || (!@community.hide_square_feet && @map_filter[:show_square_feet_filter]) || (!@community.hide_availability && @map_filter[:show_availability_filter]))
+              - if _mobile_has_filters
                 .mobile-trigger.responsive-content
                   %span.filter-btn Filters
                   %img{:src => "/assets/menu-icon.png"}/
@@ -179,10 +182,11 @@
                         %label Min Square Footage
                         = select_tag :responsive_square_feet, options_for_select(@square_feet.present? ? @square_feet : []),{:class=>"custom-select"}
                   
-                  - if @map_filter[:show_availability_filter]
-                    .selectable-field
-                      %label Availability
-                      = select_tag :responsive_available_unit, options_for_select(@available_units.present? ? @available_units : []), { class: "custom-select" }
+                  - unless @community.hide_availability
+                    - if @map_filter[:show_availability_filter]
+                      .selectable-field
+                        %label Availability
+                        = select_tag :responsive_available_unit, options_for_select(@available_units.present? ? @available_units : []), { class: "custom-select" }
 
                   %div{:style => "text-align: center; padding-bottom: 9px;display: flex;justify-content: center;"}
                     %button.apply-now-responsive{:type => "button", :onclick => "applyFilters();"}
@@ -270,6 +274,7 @@
                           %span 
                             = @community.show_amenity_key_text
 
+
                   - if _3d_enabled
                     .zooming-content.zoomable-map-container
                       %a.zooming-action.zoom-controls.map-toggle-button.3d-map-option{:href => "#", "data-current-map-type"=>"3d-current-map"}
@@ -303,6 +308,8 @@
                           Refresh Data
 
                           
+                      %a.reset-map-btn.zooming-action.zoom-controls{:href => "#", :style => "display: none;", :title => "Reset Map"}
+                        %img{:src => "/assets/refresh.png"}/
                       %a.plus-action.zooming-action.zoom-in-webpage.zoom-controls{:href => "#"}
                         %img{:src => "/assets/plus.png"}/
                       %a.minus-action.zooming-action.zoom-out-webpage.zoom-controls{:href => "#"}
@@ -323,12 +330,14 @@
                       %p#unit-title-count
                         #{all_details.count} Units Found
 
-                      - if @community_info.display_rent
-                        = select_tag :filter,  options_for_select([["Sort by"],["Price: Low to High"], ["Price: High to Low"], ["Availability: Soonest to Latest"], ["Availability: Latest to Soonest"], ["Sq Ft: More to Less"], ["Sq Ft: Less to More"]])
-                      - else
-                        = select_tag :filter,  options_for_select([["Sort by"], ["Availability: Soonest to Latest"], ["Availability: Latest to Soonest"], ["Sq Ft: More to Less"], ["Sq Ft: Less to More"]])
+                      - sort_options = [["Sort by"]]
+                      - sort_options += [["Price: Low to High"], ["Price: High to Low"]] if @community_info.display_rent
+                      - sort_options += [["Availability: Soonest to Latest"], ["Availability: Latest to Soonest"]] unless @community.hide_availability
+                      - sort_options += [["Sq Ft: More to Less"], ["Sq Ft: Less to More"]] unless @community.hide_square_feet
+                      - if sort_options.length > 1
+                        = select_tag :filter, options_for_select(sort_options)
                 
-                %div#units-body
+                %div#units-body{class: sort_options.length <= 1 ? "no-sort-filter" : nil}
 
       // Trigger the modal with a button
       = render partial: "unit_modal"
@@ -411,6 +420,7 @@
   var current_floor = "#{@floors.present? and @floors.size > 0 ? min_unit_floor : 'null'}";
   var hide_bedrooms_bathrooms = "#{@community.hide_bedrooms_bathrooms}" === "true";
   var hide_square_feet = "#{@community.hide_square_feet}" === "true";
+  var hide_availability = "#{@community.hide_availability}" === "true";
 
 
   if(opsMapMarkersEnabled) {

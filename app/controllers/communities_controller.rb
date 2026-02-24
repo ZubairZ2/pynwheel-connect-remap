@@ -892,6 +892,7 @@ class CommunitiesController < ApplicationController
     @community.enable_unit_type_pricing = params[:enable_unit_type_pricing]
     @community.hide_bedrooms_bathrooms = params[:hide_bedrooms_bathrooms]
     @community.hide_square_feet = params[:hide_square_feet]
+    @community.hide_availability = params[:hide_availability]
   @community.enable_pricing_calculator = params[:enable_pricing_calculator].present? ? params[:enable_pricing_calculator] : false
   @community.pricing_calculator_embed_code = params[:pricing_calculator_embed_code]
   @community.enable_floorplan_level_color = params[:enable_floorplan_level_color]

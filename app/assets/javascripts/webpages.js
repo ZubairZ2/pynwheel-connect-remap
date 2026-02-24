@@ -1441,7 +1441,7 @@ function buildUnitBoxHTML(unit) {
         </div>
         ${!isFloorplanMapEnabled()
       ? `<div class='unit-details-section'>
-                <p id='right-bar-unit-availability'>${get_unit_availability(unit)}</p>
+                ${!hide_availability ? `<p id='right-bar-unit-availability'>${get_unit_availability(unit)}</p>` : ''}
                 <p>${unitMarketRent(unit)}</p>
               </div>`
       : ``

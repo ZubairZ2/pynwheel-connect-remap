@@ -20,9 +20,10 @@
         %b#popover-bedrooms
         %small
           Bedrooms
-    %p
-      %small#hover-available-text Available
-      %b#popover-available-date
+    - unless @community.hide_availability
+      %p
+        %small#hover-available-text Available
+        %b#popover-available-date
     %p
       - if @community.display_rent
         %b#popover-price
