@@ -172,13 +172,17 @@ function bindWebpageEvents() {
 
   ////////////////////////////////////////////////
   /* unit modal*/
-  $("#unitModal").on("hidden.bs.modal", function (e) {
+  $("#unitModal").on("hide.bs.modal", function (e) {
     isRightRailCardClicked = false;
     resetToDefaultZoom();
   });
 
   $("#unitModal").on("show.bs.modal", function (e) {
     showUnitModal(e);
+  });
+
+  $("#unitModal").on("shown.bs.modal", function (e) {
+    resetToDefaultZoom();
   });
 
   $(".active-filter").click(function () {
@@ -431,11 +435,12 @@ function activateModalImageZoom() {
   if (modalArea) {
     modalPanZoom = panzoom(modalArea, {
       bounds: true,
-      boundsPadding: 0.4,
-      contain: "automatic",
-      smoothScroll: false,
+      boundsPadding: 0.1,
+      zoomSpeed: 0.009,
       maxZoom: 5,
       minZoom: 1,
+      contain: "automatic",
+      smoothScroll: false,
       zoomDoubleClickSpeed: 1,
       onTouch: function (e) {
         e.preventDefault();
@@ -473,11 +478,12 @@ function activateResponsiveImageModalZoom() {
   if (imageArea) {
     responsiveModalPanZoom = panzoom(imageArea, {
       bounds: true,
-      boundsPadding: 0.4,
-      contain: "automatic",
-      smoothScroll: false,
+      boundsPadding: 0.1,
+      zoomSpeed: 0.009,
       maxZoom: 5,
       minZoom: 1,
+      contain: "automatic",
+      smoothScroll: false,
       zoomDoubleClickSpeed: 1,
       onTouch: function (e) {
         e.preventDefault();
@@ -2920,7 +2926,6 @@ function setModalAttributes(element) {
   }
 
   currentUnitSelected = element;
-
   setUnitLeasePricing(element);
   setUnitDescription(element);
   unitAdditionalFees(element);
@@ -3346,8 +3351,9 @@ function display3DMap() {
 
   $(".3d-map-option").addClass("hidden");
   $(".location-items").addClass("hidden");
-  $(".plus-action").addClass("hidden");
-  $(".minus-action").addClass("hidden");
+  $(".plus-action").not(".c-modal-footer *").addClass("hidden");
+  $(".minus-action").not(".c-modal-footer *").addClass("hidden");
+  $(".reset-map-btn").not(".c-modal-footer *").addClass("hidden");
   $(".image-map").addClass("hidden");
   $(".legend-item")
     .filter(function () {
@@ -3394,8 +3400,9 @@ function display2DMap() {
     .removeClass("hidden");
   $(".image-map").removeClass("hidden");
   $(".location-items").removeClass("hidden");
-  $(".plus-action").removeClass("hidden");
-  $(".minus-action").removeClass("hidden");
+  $(".plus-action").not(".c-modal-footer *").removeClass("hidden");
+  $(".minus-action").not(".c-modal-footer *").removeClass("hidden");
+  $(".reset-modal").addClass("hidden");
   $(".3d-map-option").removeClass("hidden");
   $("a.floorplate-anchor#" + defaultSelectedFloor).click();
   resetMapData();
