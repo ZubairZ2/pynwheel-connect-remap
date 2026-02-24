@@ -1855,33 +1855,35 @@ function unitBoxListHover() {
           e.currentTarget.style.border = `3px solid ${markerColor}`;
 
           if (_3dMode) {
-            // Show the small unit-number tooltip anchored to the unit's 3D position
-            const $markerPopoverUnit = $("#marker-popover-unit");
-            $("#popover-marketing-unit").html(_3dData.unit || _3dData.name || "");
-            $(".popup-title, .popup-arrow").css("background-color", markerColor);
-
-            // Hide the full Beans popover — only show the small pill
+            // Hide the full Beans popover unconditionally in 3D
             $("#marker-popover").addClass("hidden");
 
-            const unitPos = get3DUnitScreenPosition(_3dData.unitId);
-            let px, py;
-            if (unitPos && !isNaN(unitPos.x)) {
-              // Anchor centred above the unit's projected 3D position
-              px = unitPos.x;
-              py = unitPos.y;
-            } else {
-              // Fallback: shift left of cursor so tooltip sits over the map, not the right rail
-              const cursorPos = mouseTracker.getPosition();
-              px = cursorPos.x - 140;  // shift left toward map
-              py = cursorPos.y;
-            }
+            // Only show the small unit-name pill when floorplan map mode is NOT active
+            if (!isFloorplanMapEnabled()) {
+              const $markerPopoverUnit = $("#marker-popover-unit");
+              $("#popover-marketing-unit").html(_3dData.unit || _3dData.name || "");
+              $(".popup-title, .popup-arrow").css("background-color", markerColor);
 
-            $markerPopoverUnit.removeClass("hidden");
-            $markerPopoverUnit.css({
-              visibility: "visible",
-              left: `${px - ($markerPopoverUnit.outerWidth() || 120) / 2}px`,
-              top: `${py - ($markerPopoverUnit.outerHeight() || 36) - 10}px`,
-            });
+              const unitPos = get3DUnitScreenPosition(_3dData.unitId);
+              let px, py;
+              if (unitPos && !isNaN(unitPos.x)) {
+                // Anchor centred above the unit's projected 3D position
+                px = unitPos.x;
+                py = unitPos.y;
+              } else {
+                // Fallback: shift left of cursor so tooltip sits over the map, not the right rail
+                const cursorPos = mouseTracker.getPosition();
+                px = cursorPos.x - 140;  // shift left toward map
+                py = cursorPos.y;
+              }
+
+              $markerPopoverUnit.removeClass("hidden");
+              $markerPopoverUnit.css({
+                visibility: "visible",
+                left: `${px - ($markerPopoverUnit.outerWidth() || 120) / 2}px`,
+                top: `${py - ($markerPopoverUnit.outerHeight() || 36) - 10}px`,
+              });
+            }
             break;
           }
 
