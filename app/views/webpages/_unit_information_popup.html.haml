@@ -5,10 +5,11 @@
   .popupover-image{style: "text-align: center"}
     %img#media-object{:alt => "Sample Image", :src => "/assets/default.jpeg"}/
   .media-body
-    %p
-      %b#popover-square-feet
-      %small
-        Square Feet
+    - unless @community.hide_square_feet
+      %p
+        %b#popover-square-feet
+        %small
+          Square Feet
     - unless @community.hide_bedrooms_bathrooms
       %p
         %b#popover-bathrooms
@@ -19,9 +20,10 @@
         %b#popover-bedrooms
         %small
           Bedrooms
-    %p
-      %small#hover-available-text Available
-      %b#popover-available-date
+    - unless @community.hide_availability
+      %p
+        %small#hover-available-text Available
+        %b#popover-available-date
     %p
       - if @community.display_rent
         %b#popover-price

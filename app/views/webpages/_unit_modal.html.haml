@@ -55,16 +55,19 @@
                         %span#bathrooms
                       %span.bathrooms
                         Bathrooms
-                  %li
-                    %b
-                      %img{:src => "/assets/sq-feet-icon.png"}/
-                      %span#square-feet
-                    Sq Feet
+                  - unless @community.hide_square_feet
+                    %li
+                      %b
+                        %img{:src => "/assets/sq-feet-icon.png"}/
+                        %span#square-feet
+                      Sq Feet
 
-              .availabilty-container-start
-                %span.available-heading#available-text
-                %b
-                  %span#available-date
+
+              - unless @community.hide_availability
+                .availabilty-container-start
+                  %span.available-heading#available-text
+                  %b
+                    %span#available-date
 
               %div#overall-scroller.overall-scroller.mobile_modal
                 - if @community.display_rent && @community.display_pricing_options

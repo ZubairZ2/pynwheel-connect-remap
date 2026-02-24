@@ -14,10 +14,11 @@ function activateZoomPan(elem, centralizeElement = true, options = {}) {
 
   zoomablePans[key] = {
     instance: panzoom(elem, {
-      minZoom: 0.5,
-      maxZoom: mobileCheck() || $(window).width() <= 568 ? 10.0 : 5.0,
+      minZoom: 1,
+      maxZoom: 10.0,
+      zoomSpeed: 0.009,
       bounds: true,
-      boundsPadding: 0.3,
+      boundsPadding: 0.1,
       ...options,
     }),
     elem: elem
@@ -43,6 +44,11 @@ function activateZoomPan(elem, centralizeElement = true, options = {}) {
   setTimeout(() => {
     moveZoomableImageToCenter(elem, true, false);
   }, 0);
+
+  // Show/hide reset map button as zoom transforms happen
+  zoomablePans[key].instance.on('transform', function () {
+    updateResetMapBtn();
+  });
 }
 
 function moveZoomableImageToCenter(elem, resetScale = true) {
@@ -84,6 +90,7 @@ function moveZoomableImageToCenter(elem, resetScale = true) {
   if (resetScale) {
     const scaleX = parentWidth / contentWidth;
     const scaleY = parentHeight / contentHeight;
+    // Fit the map to fill the parent; cap at 1 so we don't over-enlarge small images
     scale = Math.min(scaleX, scaleY, 1);
     instance.zoomAbs(0, 0, scale);
   }
@@ -241,6 +248,12 @@ function bindGlobalZoomButtons() {
     $(".divLoading").removeClass("hidden");
     window.location.reload();
   });
+
+  $(".reset-map-btn").off("click").on("click", function (e) {
+    e.preventDefault();
+    zoomReset();
+    $(".reset-map-btn").css("display", "none");
+  });
 }
 
 function zoomReset() {
@@ -260,6 +273,20 @@ function zoomReset() {
     inst.zoomAbs(0, 0, init.scale);
     inst.moveTo(init.x, init.y);
   }
+}
+
+function updateResetMapBtn() {
+  const panObj = getCurrentImageMapZoomInstance();
+  if (!panObj) return;
+
+  const inst = panObj.instance;
+  const initial = panObj.initial;
+  if (!inst || !initial) return;
+
+  const currentScale = inst.getTransform().scale;
+  const isZoomed = Math.abs(currentScale - initial.scale) > 0.01;
+
+  $(".reset-map-btn").css("display", isZoomed ? "" : "none");
 }
 
 const preventZoomOutsideContainers = function (e) {

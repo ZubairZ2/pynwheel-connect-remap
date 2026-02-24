@@ -31,26 +31,29 @@
                   %img{:src => "/assets/refresh.png"}/
             .module-info
               %ul.module-list
-                %li
-                  %b
-                    %img{:src => "/assets/bedroom-icon.png"}/
-                    %b= floorplan.present? ? floorplan.bedrooms : nil
-                  = "#{bedroom_text(floorplan)}" if floorplan.present?
-                %li
-                  %b
-                    %img{:src => "/assets/bathroom-icon.png"}/
-                    %b= floorplan.present? ? hide_decimals(floorplan.bathrooms) : nil
-                  = "#{bathroom_text(floorplan)}" if floorplan.present?
-                %li
-                  %b
-                    %img{:src => "/assets/sq-feet-icon.png"}/
-                    %b= floorplan.present? ? hide_decimals(floorplan.square_feet) : nil 
-                  Sq Feet
-            .availabilty-container-start
-              - available_date = unit.availability == "Unoccupied" ? (unit.available_date.present? ? determine_available_date(unit.available_date) : nil) : "Unavailable"
-              %span.available-heading= available_date.present? ? "Available" : ""
-              %b
-                %span{style: "margin-left: 4%"}= DateFormatter.formatted_date_by_region(@community.country_code, available_date)
+                - unless @community.hide_bedrooms_bathrooms
+                  %li
+                    %b
+                      %img{:src => "/assets/bedroom-icon.png"}/
+                      %b= floorplan.present? ? floorplan.bedrooms : nil
+                    = "#{bedroom_text(floorplan)}" if floorplan.present?
+                  %li
+                    %b
+                      %img{:src => "/assets/bathroom-icon.png"}/
+                      %b= floorplan.present? ? hide_decimals(floorplan.bathrooms) : nil
+                    = "#{bathroom_text(floorplan)}" if floorplan.present?
+                - unless @community.hide_square_feet
+                  %li
+                    %b
+                      %img{:src => "/assets/sq-feet-icon.png"}/
+                      %b= floorplan.present? ? hide_decimals(floorplan.square_feet) : nil 
+                    Sq Feet
+            - unless @community.hide_availability
+              .availabilty-container-start
+                - available_date = unit.availability == "Unoccupied" ? (unit.available_date.present? ? determine_available_date(unit.available_date) : nil) : "Unavailable"
+                %span.available-heading= available_date.present? ? "Available" : ""
+                %b
+                  %span{style: "margin-left: 4%"}= DateFormatter.formatted_date_by_region(@community.country_code, available_date)
             
             %div{style: "overflow-y: auto; height: max-content; max-height: 28em;"}
               .availabilty-container{:id => "#{unit.id}-unit-lease-pricing-text-li"}

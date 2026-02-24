@@ -2599,6 +2599,10 @@ img-responsive {
   margin-top: 70px;
 }
 
+#units-body.no-sort-filter .right-rail-card:first-child {
+  margin-top: 25px;
+}
+
 .right-rail-card {
   padding: 15px;
 }
@@ -2638,13 +2642,13 @@ img-responsive {
 
 .right-rail-title {
   display: flex;
-  margin-bottom: 50px;
+  /* margin-bottom: 50px; */
 }
 
 .webpage-left-list-view-title {
   position: fixed;
-  height: 60px;
-  padding: 0px 0px 0px 15px;
+  /* height: 60px; */
+  padding: 0px 0px 5px 15px;
   background-color: #E8E9E9;
   z-index: 10000;
   /* display: flex; */
