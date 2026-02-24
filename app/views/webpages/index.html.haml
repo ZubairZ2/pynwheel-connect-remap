@@ -322,6 +322,7 @@
                           2D view
 
               .right-rail.tabcontent.list_view
+                - sort_options = [["Sort by"]]
 
                 - unless @community.turn_availability_on && !@show_ops_map
                   - all_details = @units_with_floorplan_info.present? ? JSON.parse(@units_with_floorplan_info) : []
@@ -330,7 +331,6 @@
                       %p#unit-title-count
                         #{all_details.count} Units Found
 
-                      - sort_options = [["Sort by"]]
                       - sort_options += [["Price: Low to High"], ["Price: High to Low"]] if @community_info.display_rent
                       - sort_options += [["Availability: Soonest to Latest"], ["Availability: Latest to Soonest"]] unless @community.hide_availability
                       - sort_options += [["Sq Ft: More to Less"], ["Sq Ft: Less to More"]] unless @community.hide_square_feet
