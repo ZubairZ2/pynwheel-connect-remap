@@ -436,7 +436,7 @@ function activateModalImageZoom() {
     modalPanZoom = panzoom(modalArea, {
       bounds: true,
       boundsPadding: 0.1,
-      zoomSpeed: 0.009,
+      zoomSpeed: 0.065,
       maxZoom: 5,
       minZoom: 1,
       contain: "automatic",
@@ -479,7 +479,7 @@ function activateResponsiveImageModalZoom() {
     responsiveModalPanZoom = panzoom(imageArea, {
       bounds: true,
       boundsPadding: 0.1,
-      zoomSpeed: 0.009,
+      zoomSpeed: 0.065,
       maxZoom: 5,
       minZoom: 1,
       contain: "automatic",

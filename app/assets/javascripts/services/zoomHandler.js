@@ -16,7 +16,7 @@ function activateZoomPan(elem, centralizeElement = true, options = {}) {
     instance: panzoom(elem, {
       minZoom: 1,
       maxZoom: 10.0,
-      zoomSpeed: 0.009,
+      zoomSpeed: 0.065,
       bounds: true,
       boundsPadding: 0.1,
       ...options,
