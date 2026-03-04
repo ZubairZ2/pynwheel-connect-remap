@@ -428,6 +428,17 @@ function activateWebpageZoom() {
   });
 }
 
+var MODAL_BUTTON_ZOOM_STEP = 1.3; // fixed zoom step for modal +/- buttons
+
+function modalZoomStep(inst, $area, zoomIn) {
+  if (!inst) return;
+  var elem = $area[0];
+  var parent = elem && elem.parentElement;
+  var cx = parent ? parent.clientWidth / 2 : window.innerWidth / 2;
+  var cy = parent ? parent.clientHeight / 2 : window.innerHeight / 2;
+  inst.smoothZoom(cx, cy, zoomIn ? MODAL_BUTTON_ZOOM_STEP : (1 / MODAL_BUTTON_ZOOM_STEP));
+}
+
 function activateModalImageZoom() {
   const $modalArea = $("#zoomable-modal-image");
   const modalArea = $modalArea[0];
@@ -436,7 +447,7 @@ function activateModalImageZoom() {
     modalPanZoom = panzoom(modalArea, {
       bounds: true,
       boundsPadding: 0.1,
-      zoomSpeed: 0.065,
+      zoomSpeed: 0.009,
       maxZoom: 5,
       minZoom: 1,
       contain: "automatic",
@@ -450,13 +461,13 @@ function activateModalImageZoom() {
 
     $(".zoom-in-modal").on("click", function (e) {
       $modalArea.removeClass("transform-none");
-      modalPanZoom.zoomInOut(187);
+      modalZoomStep(modalPanZoom, $modalArea, true);
       $(".reset-modal").removeClass("hidden");
     });
 
     $(".zoom-out-modal").on("click", function (e) {
       $modalArea.removeClass("transform-none");
-      modalPanZoom.zoomInOut(189);
+      modalZoomStep(modalPanZoom, $modalArea, false);
     });
 
     $(".reset-modal").on("click", function (e) {
@@ -479,7 +490,7 @@ function activateResponsiveImageModalZoom() {
     responsiveModalPanZoom = panzoom(imageArea, {
       bounds: true,
       boundsPadding: 0.1,
-      zoomSpeed: 0.065,
+      zoomSpeed: 0.009,
       maxZoom: 5,
       minZoom: 1,
       contain: "automatic",
@@ -493,12 +504,12 @@ function activateResponsiveImageModalZoom() {
 
     $(".zoom-in-res-modal").on("click", function (e) {
       $imageArea.removeClass("transform-none");
-      responsiveModalPanZoom.zoomInOut(187);
+      modalZoomStep(responsiveModalPanZoom, $imageArea, true);
     });
 
     $(".zoom-out-res-modal").on("click", function (e) {
       $imageArea.removeClass("transform-none");
-      responsiveModalPanZoom.zoomInOut(189);
+      modalZoomStep(responsiveModalPanZoom, $imageArea, false);
     });
 
     $(".reset-res-modal").on("click", function (e) {

@@ -16,7 +16,7 @@ function activateZoomPan(elem, centralizeElement = true, options = {}) {
     instance: panzoom(elem, {
       minZoom: 1,
       maxZoom: 10.0,
-      zoomSpeed: 0.065,
+      zoomSpeed: 0.009,
       bounds: true,
       boundsPadding: 0.1,
       ...options,
@@ -207,13 +207,40 @@ function getVisibleZoomableInstance() {
   return z?.instance;
 }
 
+var BUTTON_ZOOM_STEP = 1.3; // fixed zoom step for +/- buttons (independent of zoomSpeed)
+
+function zoomInstanceByStep(inst, zoomIn) {
+  if (!inst) return;
+  const t = inst.getTransform();
+  const owner = inst.mousewheel && inst.mousewheel.__owner;
+  // Zoom toward the center of the visible owner element
+  var cx, cy;
+  try {
+    // Try to find the owner element's bounding rect for center calculation
+    const elem = document.querySelector('#zoom-group-wrapper, .plot-image');
+    if (elem) {
+      const rect = elem.parentElement ? elem.parentElement.getBoundingClientRect() : elem.getBoundingClientRect();
+      cx = rect.width / 2;
+      cy = rect.height / 2;
+    } else {
+      cx = window.innerWidth / 2;
+      cy = window.innerHeight / 2;
+    }
+  } catch (e) {
+    cx = window.innerWidth / 2;
+    cy = window.innerHeight / 2;
+  }
+  const multiplier = zoomIn ? BUTTON_ZOOM_STEP : (1 / BUTTON_ZOOM_STEP);
+  inst.smoothZoom(cx, cy, multiplier);
+}
+
 function bindGlobalZoomButtons() {
   $(".zoom-in-webpage").off("click").on("click", function () {
-    getVisibleZoomableInstance()?.zoomInOut(187);
+    zoomInstanceByStep(getVisibleZoomableInstance(), true);
   });
 
   $(".zoom-out-webpage").off("click").on("click", function () {
-    getVisibleZoomableInstance()?.zoomInOut(189);
+    zoomInstanceByStep(getVisibleZoomableInstance(), false);
   });
 
   $(".zoom-in").off("click").on("click", function (e) {
@@ -227,7 +254,7 @@ function bindGlobalZoomButtons() {
     const key = getZoomPanKey(zoomContainer);
     const inst = zoomablePans?.[key]?.instance;
 
-    inst?.zoomInOut(187);
+    zoomInstanceByStep(inst, true);
   });
 
   $(".zoom-out").off("click").on("click", function (e) {
@@ -241,7 +268,7 @@ function bindGlobalZoomButtons() {
     const key = getZoomPanKey(zoomContainer);
     const inst = zoomablePans?.[key]?.instance;
 
-    inst?.zoomInOut(189);
+    zoomInstanceByStep(inst, false);
   });
 
   $(".reset").off("click").on("click", function () {
