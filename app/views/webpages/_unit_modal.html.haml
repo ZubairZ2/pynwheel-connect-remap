@@ -69,7 +69,7 @@
                   %b
                     %span#available-date
 
-              %div#overall-scroller.overall-scroller.mobile_modal
+              %div#overall-scroller.overall-scroller.mobile_modal{style: "overflow-y: visible; max-height: none;"}
                 - if @community.display_rent && @community.display_pricing_options
                   #unit-lease-pricing-text-li.availabilty-container
                     %span.text-left.available-info
@@ -89,9 +89,9 @@
                   %a.show-more.hide-fees{ href: "javascript:void(0);", onclick: "hideFees()", style: "display: none;" } Hide Fees
                   %div.unit-additional-fees{style: "display: none;" }
 
-                .c-modal-sidebar-description
-                  %h4.des-heading More Details
-                  %p.c-m-description#unit-description
+                .c-modal-sidebar-description{style: "overflow-y: visible;"}
+                  %h4.des-heading Tenant Details
+                  %p.c-m-description#unit-description{style: "max-height: none; overflow-y: visible;"}
 
                 %div{style: "padding: 0px 0px 8px 7px"}
                   .unit-buttons
