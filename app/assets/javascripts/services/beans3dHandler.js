@@ -135,7 +135,7 @@ function beans3DMapDisplayOptions(filteredRows = null) {
     propertyAddress: beansAddress,
     filteredRows: filteredRows || filterBeansItemsIndices(),
     customConfigs: {},
-    initialMap: "3D",
+    initialMap: (definedAndHasValue(defaultSatelliteView) && defaultSatelliteView) ? "SATELLITE" : "3D",
     hideBeansCard: true,
     hideFloorSelector: beanOnlyProperty ? false : true,
     modernBeansCard: false,

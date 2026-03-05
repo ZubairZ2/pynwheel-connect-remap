@@ -412,6 +412,7 @@
   var has_floorplate = "#{@community_info.has_floorplates?}";
   var svgMode = #{@community.enable_svg_mode}
   var enabled3dMaps = "#{@community.enable_three_d_maps?}" === "true";
+  var defaultSatelliteView = "#{@community.default_satellite_view?}" === "true";
   var community_name = "#{@community_info.name}"
   var display_rent = "#{@community_info.display_rent}"
   var isSiteMap = "#{@community.sitemap.present?}"

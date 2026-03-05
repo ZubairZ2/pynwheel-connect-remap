@@ -55,7 +55,7 @@
                 %b
                   %span{style: "margin-left: 4%"}= DateFormatter.formatted_date_by_region(@community.country_code, available_date)
             
-            %div{style: "overflow-y: auto; height: max-content; max-height: 28em;"}
+            %div{style: "overflow-y: visible; height: max-content;"}
               .availabilty-container{:id => "#{unit.id}-unit-lease-pricing-text-li"}
                 %span.available-info{:id => "#{unit.id}-leas-price-option"}
                 
@@ -80,7 +80,7 @@
                     = additional_fees.html_safe
 
               .c-modal-sidebar-description
-                %h4.des-heading More Details
+                %h4.des-heading Tenant Details
                 .c-m-description= (unit.description.present? ? unit.description : (floorplan.description.present? ? floorplan.description : "Not Available")).html_safe
 
           .c-modal-sidebar-filters.sidebar-footer
