@@ -1,0 +1,871 @@
+- content_for :title, "#{@community.name} | Pricing Calculator CMS"
+- content_for :head do
+  %link{href: "https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined", rel: "stylesheet"}
+  %link{href: "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap", rel: "stylesheet"}
+
+:css
+  :root {
+    --primary:#0f172a;--primary-light:#1e293b;
+    --accent:#6366f1;--accent-light:#818cf8;--accent-bg:#eef2ff;
+    --surface:#fff;--surface-2:#f8fafc;--surface-3:#f1f5f9;
+    --border:#e2e8f0;--text:#0f172a;--text-2:#475569;--text-3:#94a3b8;
+    --success:#10b981;--success-bg:#f0fdf4;
+    --warning:#f59e0b;--warning-bg:#fffbeb;
+    --danger:#ef4444;--danger-bg:#fef2f2;
+    --radius:10px;--radius-lg:14px;
+    --shadow-sm:0 1px 3px rgba(0,0,0,.06);--shadow:0 4px 12px rgba(0,0,0,.06);--shadow-lg:0 12px 32px rgba(0,0,0,.08);
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  #calc-cms-root{font-family:'Inter',sans-serif;background:var(--surface-2);color:var(--text);padding:24px;font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+
+  /* Page Header */
+  .cms-page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border);}
+  .cms-breadcrumb{font-size:.75rem;color:var(--text-3);margin-bottom:4px;}
+  .cms-breadcrumb a{color:var(--accent);text-decoration:none;}
+  .cms-page-header h1{font-size:1.3rem;font-weight:700;}
+
+  /* Embed URLs */
+  .embed-urls-panel{background:var(--primary);color:#e2e8f0;border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:24px;}
+  .embed-urls-panel h3{font-size:.85rem;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+  .embed-url-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+  .embed-url-row label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#94a3b8;min-width:80px;}
+  .embed-url-row input{flex:1;background:#020617;color:#34d399;border:1px solid #1e3a5f;padding:7px 12px;font-family:monospace;font-size:.75rem;border-radius:6px;outline:none;}
+  .btn-copy-url{background:#334155;color:#e2e8f0;border:none;padding:0 12px;height:32px;border-radius:6px;cursor:pointer;font-size:.75rem;font-family:inherit;}
+  .btn-copy-url:hover{background:#475569;}
+
+  /* Tools Grid */
+  .tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px;}
+  .panel{background:var(--surface);border-radius:var(--radius-lg);padding:20px;border:1px solid var(--border);box-shadow:var(--shadow-sm);transition:box-shadow .2s;}
+  .panel:hover{box-shadow:var(--shadow);}
+  .panel-title{font-size:1rem;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px;color:var(--primary);}
+  .panel-desc{font-size:.8rem;color:var(--text-2);margin-bottom:16px;line-height:1.4;}
+  .import-section{border-left:4px solid var(--accent);}
+  .import-section textarea{background:var(--surface-2);color:var(--text);border:1px solid var(--border);height:120px;font-family:'Monaco',monospace;font-size:.75rem;padding:12px;border-radius:var(--radius);width:100%;resize:vertical;outline:none;transition:all .2s;}
+  .import-section textarea:focus{border-color:var(--accent);background:var(--surface);box-shadow:0 0 0 3px var(--accent-bg);}
+
+  /* Buttons */
+  .btn{font-family:inherit;font-size:.75rem;font-weight:600;padding:0 16px;height:36px;cursor:pointer;border:1px solid var(--border);border-radius:8px;transition:all .2s;display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--surface);color:var(--text-2);text-decoration:none;}
+  .btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-bg);}
+  .btn-primary{background:var(--accent);color:white;border-color:var(--accent);}
+  .btn-primary:hover{background:#4f46e5;color:white;}
+  .btn-success{background:var(--success);color:white;border-color:var(--success);}
+  .btn-success:hover{background:#059669;color:white;}
+  .btn-dark{background:var(--primary);color:white;border-color:var(--primary);}
+  .btn-dark:hover{background:var(--primary-light);color:white;}
+  .btn-outline-danger{color:var(--danger);border-color:var(--border);}
+  .btn-outline-danger:hover{background:var(--danger-bg);border-color:var(--danger);}
+  .btn-ghost{background:transparent;border:none;color:var(--text-3);padding:4px;border-radius:4px;}
+  .btn-ghost:hover{background:var(--surface-3);color:var(--text);}
+  .btn-save{background:var(--primary);color:white;border-color:var(--primary);}
+  .btn-save:hover{background:var(--primary-light);color:white;}
+
+  /* Drag */
+  .drag-handle{cursor:grab;color:var(--text-3);margin-right:8px;user-select:none;display:flex;align-items:center;transition:color .2s;}
+  .drag-handle:hover{color:var(--accent);}
+  .drag-handle:active{cursor:grabbing;color:var(--accent);}
+  .draggable-item{transition:transform .2s,box-shadow .2s;}
+  .drag-over{border:2px dashed var(--accent)!important;opacity:.5;transform:scale(.98);}
+
+  /* Global Disclaimers */
+  .global-disclaimer-box{margin-bottom:24px;background:var(--surface);padding:20px;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow-sm);}
+  .global-disclaimer-box label{font-weight:700;font-size:.7rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+  .global-disclaimer-box textarea{height:80px;font-size:.8rem;width:100%;padding:12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-2);transition:all .2s;outline:none;}
+  .global-disclaimer-box textarea:focus{border-color:var(--accent);background:var(--surface);}
+
+  /* Bucket */
+  .bucket-container{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:24px;box-shadow:var(--shadow);overflow:hidden;}
+  .bucket-header{background:var(--surface-3);padding:16px 20px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:12px;}
+  .bucket-header-top{display:flex;justify-content:space-between;align-items:center;width:100%;}
+  .bucket-name-input{font-size:1.1rem;font-weight:700;color:var(--text);border:1px solid transparent;background:transparent;padding:4px 8px;margin-left:-8px;width:300px;outline:none;border-radius:6px;transition:all .2s;}
+  .bucket-name-input:focus{background:var(--surface);border-color:var(--border);}
+  .inline-disclaimer-input{font-size:.75rem;color:var(--text-3);border:1px solid transparent;background:transparent;padding:3px 6px;border-radius:6px;outline:none;flex:1;transition:all .2s;}
+  .inline-disclaimer-input:focus{background:var(--surface);border-color:var(--border);color:var(--text-2);}
+  .inline-disclaimer-input::placeholder{font-style:italic;}
+  .bucket-body{padding:20px;}
+  .collapsed{display:none!important;}
+
+  /* Category */
+  .category-block{background:var(--surface-2);padding:16px;margin-bottom:16px;border-radius:var(--radius);border:1px solid var(--border);position:relative;}
+  .cat-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .cat-name-input{font-weight:600;font-size:.95rem;background:transparent;border:1px solid transparent;width:250px;padding:4px 8px;margin-left:-8px;outline:none;border-radius:6px;transition:all .2s;}
+  .cat-name-input:focus{background:var(--surface);border-color:var(--border);}
+
+  /* Fee Card */
+  .fee-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;padding:10px;position:relative;box-shadow:var(--shadow-sm);}
+  .fee-card:hover{box-shadow:var(--shadow);}
+  .fee-card-body.collapsed{display:none!important;}
+  .fee-card-header{display:flex;align-items:center;gap:6px;margin-bottom:8px;}
+
+  .card-row-core{display:grid;grid-template-columns:2fr 1.1fr .9fr .9fr 1.1fr;gap:10px;margin-bottom:10px;align-items:end;}
+  .card-row-rules{display:grid;grid-template-columns:1.5fr 1.5fr 1fr 1fr 1.5fr;gap:10px;margin-bottom:10px;align-items:end;padding-bottom:10px;border-bottom:1px dashed var(--border);}
+  .card-row-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px dashed var(--border);}
+  .card-row-unit{display:none;background:var(--surface-3);padding:12px;border-radius:var(--radius);border:1px solid var(--border);margin-bottom:10px;}
+  .bedroom-fields{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;}
+  .br-wrapper{display:none;flex:1;min-width:160px;background:var(--surface);padding:12px;border:1px solid var(--border);border-radius:var(--radius);}
+
+  .dropdown-container{position:relative;width:100%;max-width:250px;}
+  .dropdown-btn{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface);text-align:left;cursor:pointer;font-size:.8rem;display:flex;justify-content:space-between;color:var(--text-2);}
+  .dropdown-menu{position:absolute;top:100%;left:0;width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);z-index:100;padding:8px;box-shadow:var(--shadow-lg);display:none;flex-direction:column;gap:4px;margin-top:4px;}
+  .dropdown-menu label{display:flex!important;align-items:center!important;gap:10px!important;font-size:.8rem!important;cursor:pointer;padding:6px 8px!important;margin:0!important;border-radius:6px;color:var(--text-2);}
+  .dropdown-menu label:hover{background:var(--surface-3);}
+  .dropdown-menu input[type="checkbox"]{margin:0!important;width:16px!important;height:16px!important;cursor:pointer;accent-color:var(--accent);}
+
+  .card-row-text{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+  .input-group{display:flex;flex-direction:column;gap:4px;}
+  .input-group label{font-size:.6rem;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;}
+  input,select,textarea{font-size:.78rem;padding:6px 10px;border:1px solid var(--border);border-radius:8px;width:100%;color:var(--text);outline:none;background:var(--surface);transition:all .2s;}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg);}
+  input:disabled,select:disabled{background:var(--surface-3);color:var(--text-3);cursor:not-allowed;}
+  textarea{height:52px;resize:vertical;line-height:1.4;}
+  .value-container{display:flex;gap:8px;}
+  .check-group{display:flex;align-items:center;gap:8px;font-size:.8rem;font-weight:500;height:36px;cursor:pointer;color:var(--text-2);transition:color .2s;}
+  .check-group:hover{color:var(--text);}
+  .check-group input{width:18px;height:18px;margin:0;cursor:pointer;accent-color:var(--accent);}
+
+  /* Base Price toggle */
+  .base-price-toggle-label{display:flex;align-items:center;gap:5px;cursor:pointer;flex-shrink:0;}
+  .base-price-toggle-label input{display:none;}
+  .base-price-badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;border:1.5px solid var(--border);color:var(--text-3);background:var(--surface-3);transition:all .2s;white-space:nowrap;}
+  .base-price-toggle-label input:checked + .base-price-badge{background:#fef3c7;border-color:#f59e0b;color:#92400e;}
+  .fee-card.is-base-price{border-color:#f59e0b;box-shadow:0 0 0 2px #fef3c7;}
+
+  .btn-del-card{position:static;margin-left:2px;color:var(--text-3);background:var(--surface-3);border:none;border-radius:6px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;}
+  .btn-del-card:hover{background:var(--danger-bg);color:var(--danger);}
+  .fee-dropzone{min-height:4px;border-radius:var(--radius);transition:background .2s;}
+  .highlight-yellow{background-color:#fefce8;border-color:#fde047;}
+
+  /* Modal */
+  .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,.6);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:1000;}
+  .modal-content{background:var(--surface);padding:32px;border-radius:var(--radius-lg);width:900px;max-width:95vw;height:85vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);}
+  .modal-content textarea{flex:1;width:100%;font-family:'Monaco',monospace;font-size:.8rem;margin:20px 0;background:var(--surface-2);border:1px solid var(--border);padding:16px;border-radius:var(--radius);resize:none;overflow-y:auto;color:var(--text);}
+  .modal-actions{display:flex;justify-content:flex-end;gap:12px;padding-top:20px;border-top:1px solid var(--border);}
+
+  /* Toast */
+  .calc-toast{position:fixed;bottom:24px;right:24px;background:#0f172a;color:white;padding:12px 20px;border-radius:10px;font-size:.8rem;font-weight:600;box-shadow:var(--shadow-lg);z-index:9999;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none;}
+  .calc-toast.show{opacity:1;transform:translateY(0);}
+  .calc-toast.success{background:var(--success);}
+  .calc-toast.error{background:var(--danger);}
+
+#calc-cms-root
+  .cms-page-header
+    %div
+      .cms-breadcrumb
+        = link_to @community.name, "#"
+        |  / Pricing Calculator
+      %h1 Pricing Calculator CMS
+    %div{style: "display:flex;gap:8px;"}
+      = link_to "Preview", community_pricing_calculators_path(@community.id), target: "_blank", class: "btn"
+      %button.btn.btn-save{onclick: "saveToDatabase()", type: "button"}
+        %span.material-icons{style: "font-size:18px;"} save
+        Save Configuration
+
+  - property_url = community_pricing_calculators_url(@community.id)
+  - unit_url     = unit_community_pricing_calculators_url(@community.id) + "?unit_id={unit_id}"
+
+  .embed-urls-panel
+    %h3
+      %span.material-icons{style: "font-size:18px;"} link
+      Embed URLs
+    .embed-url-row
+      %label Property
+      %input{type: "text", value: property_url, readonly: true, id: "url-property"}
+      %button.btn-copy-url{onclick: "copyUrl('url-property')"} Copy
+    .embed-url-row
+      %label Unit
+      %input{type: "text", value: unit_url, readonly: true, id: "url-unit"}
+      %button.btn-copy-url{onclick: "copyUrl('url-unit')"} Copy
+
+  .tools-grid
+    .panel
+      .panel-title
+        %span.material-icons{style: "color:var(--accent);"} settings
+        Pricing Bucket Manager
+      .panel-desc Drag the handle to reorder. Visual order = customer UI order.
+      %div{style: "display:flex;gap:8px;flex-wrap:wrap;"}
+        %button.btn.btn-primary{onclick: "createNewBucket('New Pricing Bucket')", type: "button"}
+          %span.material-icons{style: "font-size:18px;"} add_circle_outline
+          Add Pricing Bucket
+        %button.btn.btn-dark{onclick: "exportJSON()", type: "button"}
+          %span.material-icons{style: "font-size:18px;"} file_download
+          Export JSON
+        %button.btn{onclick: "toggleCollapseAll()", id: "collapseAllBtn", type: "button"}
+          %span.material-icons{style: "font-size:18px;", id: "collapseAllIcon"} unfold_less
+          Collapse All
+        %button.btn{style: "background:var(--warning-bg);color:#92400e;border-color:#fcd34d;", onclick: "populateAllScenarios()", type: "button"}
+          %span.material-icons{style: "font-size:18px;"} science
+          Populate All Scenarios
+        %button.btn.btn-outline-danger{onclick: "if(confirm('Clear all data?')){document.getElementById('dynamic-fee-containers').innerHTML='';document.getElementById('globalDisclaimers').value='';}", type: "button"}
+          %span.material-icons{style: "font-size:18px;"} delete_sweep
+          Clear
+
+    .panel.import-section
+      .panel-title
+        %span.material-icons{style: "color:var(--accent);"} auto_awesome
+        Smart Bulk Import
+      .panel-desc
+        Paste raw pricing text below. Disclaimers in &lt; &gt; map globally.
+        Use the
+        %b Seed from Community Fees
+        button to pre-fill from existing property data.
+      %textarea#importString{placeholder: "Paste full text here..."}
+      %div{style: "display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"}
+        %button.btn.btn-success{onclick: "processAutoFill()", type: "button"}
+          %span.material-icons{style: "font-size:18px;"} bolt
+          Auto-Fill Intelligently
+        %button.btn{onclick: "seedFromCommunityFees()", type: "button"}
+          %span.material-icons{style: "font-size:16px;"} download
+          Seed from Community Fees
+
+  .global-disclaimer-box
+    %label
+      %span.material-icons{style: "font-size:16px;"} info_outline
+      Global Property Disclaimers (Applies to entire receipt)
+    %textarea#globalDisclaimers{placeholder: "e.g. All fees paid to property unless indicated by ‡ symbol..."}
+
+  #dynamic-fee-containers
+
+  .modal-overlay#exportModal
+    .modal-content
+      %h2{style: "display:flex;align-items:center;gap:10px;"}
+        %span.material-icons{style: "color:var(--accent);font-size:28px;"} code
+        JSON Export Payload
+      %p{style: "margin:8px 0 0;color:var(--text-2);font-size:.85rem;"} Includes explicit orderIndex values based on your custom sorting.
+      %textarea#exportResult{readonly: true}
+      .modal-actions
+        %button.btn{onclick: "document.getElementById('exportModal').style.display='none'", type: "button"} Close
+        %button.btn.btn-primary{onclick: "copyJSON()", type: "button"}
+          %span.material-icons{style: "font-size:18px;"} content_copy
+          Copy to Clipboard
+
+  .calc-toast#calcToast
+
+:javascript
+  const SAVE_URL   = "#{community_calculator_config_path(@community.id)}";
+  const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]')?.content || '';
+  const COMMUNITY_ADDITIONAL_FEE = #{raw @additional_fee_seed.to_json};
+
+  let uniqueIdCounter = 0, draggedItem = null, draggedType = null, allCollapsed = false;
+
+  // ─── Toast ────────────────────────────────────────────────────────────────
+  function showToast(msg, type='') {
+    const t = document.getElementById('calcToast');
+    t.textContent = msg;
+    t.className = 'calc-toast show' + (type?' '+type:'');
+    setTimeout(() => { t.className = 'calc-toast'; }, 3500);
+  }
+
+  // ─── Persistence ──────────────────────────────────────────────────────────
+  function saveToDatabase() {
+    fetch(SAVE_URL, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CSRF_TOKEN },
+      body: JSON.stringify(buildPayload())
+    })
+    .then(r => r.json())
+    .then(d => showToast(d.success ? 'Saved!' : 'Error: ' + d.message, d.success ? 'success' : 'error'))
+    .catch(() => showToast('Network error', 'error'));
+  }
+
+  function copyUrl(id) {
+    const el = document.getElementById(id); el.select(); document.execCommand('copy');
+    showToast('URL copied!', 'success');
+  }
+
+  function seedFromCommunityFees() {
+    if (!COMMUNITY_ADDITIONAL_FEE) return showToast('No community fees configured yet.', '');
+    document.getElementById('importString').value = COMMUNITY_ADDITIONAL_FEE;
+    processAutoFill();
+  }
+
+  // ─── Collapse All ─────────────────────────────────────────────────────────
+  function toggleCollapseAll() {
+    allCollapsed = !allCollapsed;
+    document.querySelectorAll('.bucket-body,.cat-body,.fee-card-body').forEach(el => {
+      el.classList.toggle('collapsed', allCollapsed);
+    });
+    document.querySelectorAll('.btn-toggle-icon .material-icons').forEach(ic => {
+      ic.innerText = allCollapsed ? 'expand_more' : 'expand_less';
+    });
+    document.getElementById('collapseAllIcon').innerText = allCollapsed ? 'unfold_more' : 'unfold_less';
+    const btn = document.getElementById('collapseAllBtn');
+    const txt = btn.childNodes[btn.childNodes.length-1];
+    if (txt.nodeType === 3) txt.textContent = allCollapsed ? ' Expand All' : ' Collapse All';
+  }
+
+  // ─── Drag & Drop ──────────────────────────────────────────────────────────
+  function initDragAndDrop(element, typeClass) {
+    element.setAttribute('draggable', true);
+    element.classList.add('draggable-item');
+    element.addEventListener('dragstart', function(e) {
+      draggedItem = this; draggedType = typeClass;
+      e.dataTransfer.effectAllowed = 'move';
+      setTimeout(() => this.style.opacity = '0.5', 0); e.stopPropagation();
+    });
+    element.addEventListener('dragover', function(e) {
+      if (draggedType !== typeClass) return;
+      e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+      if (this !== draggedItem && this.classList.contains(typeClass)) this.classList.add('drag-over');
+      return false;
+    });
+    element.addEventListener('dragleave', function() { this.classList.remove('drag-over'); });
+    element.addEventListener('drop', function(e) {
+      e.stopPropagation(); this.classList.remove('drag-over');
+      if (draggedItem !== this && this.classList.contains(typeClass) && draggedType === typeClass) {
+        const parent = this.parentNode;
+        if (draggedItem.parentNode !== parent) return;
+        const siblings = Array.from(parent.children);
+        const di = siblings.indexOf(draggedItem), ti = siblings.indexOf(this);
+        if (di < ti) parent.insertBefore(draggedItem, this.nextSibling);
+        else parent.insertBefore(draggedItem, this);
+      }
+      return false;
+    });
+    element.addEventListener('dragend', function() {
+      this.style.opacity = '1';
+      document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+      draggedItem = null; draggedType = null;
+    });
+  }
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.dropdown-container'))
+      document.querySelectorAll('.dropdown-menu').forEach(m => m.style.display = 'none');
+  });
+
+  function toggleDropdown(button) {
+    const menu = button.nextElementSibling;
+    const vis = menu.style.display === 'flex';
+    document.querySelectorAll('.dropdown-menu').forEach(m => m.style.display = 'none');
+    menu.style.display = vis ? 'none' : 'flex';
+  }
+
+  function toggleSection(elementId, btn) {
+    const el = document.getElementById(elementId);
+    el.classList.toggle('collapsed');
+    const icon = btn.querySelector('.material-icons');
+    if (icon) icon.innerText = el.classList.contains('collapsed') ? 'expand_more' : 'expand_less';
+  }
+
+  function toggleFeeCard(btn) {
+    const body = btn.closest('.fee-card').querySelector('.fee-card-body');
+    body.classList.toggle('collapsed');
+    const icon = btn.querySelector('.material-icons');
+    if (icon) icon.innerText = body.classList.contains('collapsed') ? 'expand_more' : 'expand_less';
+  }
+
+  // ─── Builders ─────────────────────────────────────────────────────────────
+  function createNewBucket(titleText = 'New Pricing Bucket', descText = '') {
+    uniqueIdCounter++;
+    const bId = 'bucket-' + uniqueIdCounter, bodyId = 'b-body-' + uniqueIdCounter;
+    const container = document.createElement('div');
+    container.className = 'bucket-container bucket-type'; container.id = bId;
+    container.innerHTML = `
+      <div class="bucket-header">
+        <div class="bucket-header-top">
+          <div style="display:flex;align-items:center;flex:1;gap:4px;">
+            <span class="drag-handle material-icons" title="Drag to reorder bucket" style="flex-shrink:0;">drag_indicator</span>
+            <input type="text" class="bucket-name-input" value="${titleText}" placeholder="Bucket Title">
+            <input type="text" class="inline-disclaimer-input" value="${descText}" placeholder="+ Bucket disclaimer...">
+          </div>
+          <div style="display:flex;gap:4px;flex-shrink:0;">
+            <button class="btn btn-ghost btn-toggle-icon" onclick="toggleSection('${bodyId}',this)" title="Collapse / Expand" type="button">
+              <span class="material-icons">expand_less</span>
+            </button>
+            <button class="btn btn-ghost" style="color:var(--danger);" onclick="if(confirm('Delete bucket?'))document.getElementById('${bId}').remove()" title="Delete Bucket" type="button">
+              <span class="material-icons">delete_outline</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div id="${bodyId}" class="bucket-body">
+        <div id="cat-list-${bId}" class="cat-dropzone"></div>
+        <button class="btn" style="margin-top:8px;" onclick="addCategory('${bId}','New Category')" type="button">
+          <span class="material-icons" style="font-size:16px;">add_circle_outline</span>
+          Add Category
+        </button>
+      </div>`;
+    document.getElementById('dynamic-fee-containers').prepend(container);
+    initDragAndDrop(container, 'bucket-type');
+    return bId;
+  }
+
+  function addCategory(bucketId, catName = 'New Category', catDisc = '') {
+    uniqueIdCounter++;
+    const catId = 'cat-' + uniqueIdCounter, bodyId = 'c-body-' + uniqueIdCounter;
+    const block = document.createElement('div');
+    block.className = 'category-block cat-type'; block.id = catId;
+    block.innerHTML = `
+      <div class="cat-header">
+        <div style="display:flex;align-items:center;flex:1;gap:4px;">
+          <span class="drag-handle material-icons" title="Drag to reorder" style="flex-shrink:0;">drag_indicator</span>
+          <input type="text" class="cat-name-input" value="${catName}" placeholder="Category Name">
+          <input type="text" class="inline-disclaimer-input cat-disclaimer-input" value="${catDisc}" placeholder="+ Category disclaimer...">
+        </div>
+        <div style="display:flex;gap:4px;flex-shrink:0;">
+          <button class="btn btn-ghost btn-toggle-icon" onclick="toggleSection('${bodyId}',this)" type="button"><span class="material-icons">expand_less</span></button>
+          <button class="btn btn-ghost" style="color:var(--danger);" onclick="if(confirm('Remove category?'))document.getElementById('${catId}').remove()" type="button"><span class="material-icons">delete_outline</span></button>
+        </div>
+      </div>
+      <div id="${bodyId}" class="cat-body">
+        <div id="fee-list-${catId}" class="fee-dropzone"></div>
+        <button class="btn" style="background:#fff;margin-top:8px;" onclick="addFeeRow('${catId}')" type="button">
+          <span class="material-icons" style="font-size:16px;">add</span>
+          Add Fee Card
+        </button>
+      </div>`;
+    document.getElementById('cat-list-' + bucketId).appendChild(block);
+    initDragAndDrop(block, 'cat-type');
+    return catId;
+  }
+
+  function addFeeRow(catId, data = {}) {
+    const d = {
+      name:'', logic:'Fixed', val1:'', val2:'', mndt:true, counter:false, qMin:1, qMax:2,
+      bedroom:false, bedPrices:{}, desc:'', preInfo:'', postInfo:'',
+      frequency:'Monthly', multiplier:'None', isBasePrice:false, ...data
+    };
+    const feeList = document.getElementById('fee-list-' + catId);
+    if (!feeList) return;
+
+    const brOptions = ['Studio','1 BR','2 BR','3+ BR'];
+    let brFieldsHTML = '', brCheckboxesHTML = '';
+    brOptions.forEach(br => {
+      const isChecked = d.bedPrices && d.bedPrices[br] !== undefined;
+      const priceVal = isChecked ? (typeof d.bedPrices[br]==='object' ? d.bedPrices[br].minPrice||'' : d.bedPrices[br]) : '';
+      brCheckboxesHTML += `<label><input type="checkbox" class="unit-chk" value="${br}" onchange="toggleSpecificBedroom(this)" ${isChecked?'checked':''}> ${br}</label>`;
+      brFieldsHTML += `
+        <div class="br-wrapper br-${br.replace(/\s|\+/g,'')}" style="${isChecked?'display:block':'display:none'}">
+          <div class="input-group"><label>${br} Price</label>
+            <div class="value-container">
+              <input type="text" class="br-min-val" placeholder="Min" value="${priceVal}">
+              <input type="text" class="br-max-val" placeholder="Max" style="display:none;">
+            </div>
+          </div>
+        </div>`;
+    });
+
+    const card = document.createElement('div');
+    card.className = 'fee-card fee-type';
+    card.innerHTML = `
+      <div class="fee-card-header">
+        <span class="drag-handle material-icons" style="font-size:18px;" title="Drag to reorder fee">drag_indicator</span>
+        <input type="text" class="fee-name-input" value="${d.name}" placeholder="e.g. Monthly Pet Rent" style="flex:1;font-weight:600;">
+        <label class="base-price-toggle-label" title="Mark as Base Price — only one fee can be base price">
+          <input type="checkbox" class="base-price-check" onchange="toggleBasePrice(this)" ${d.isBasePrice?'checked':''}>
+          <span class="base-price-badge">Base Price</span>
+        </label>
+        <button class="btn btn-ghost btn-toggle-icon" onclick="toggleFeeCard(this)" title="Collapse / Expand" type="button">
+          <span class="material-icons" style="font-size:18px;">expand_less</span>
+        </button>
+        <button class="btn-del-card" onclick="if(confirm('Delete fee card?'))this.closest('.fee-card').remove()" title="Delete Fee" type="button">
+          <span class="material-icons" style="font-size:16px;">close</span>
+        </button>
+      </div>
+
+      <div class="fee-card-body">
+        <div class="card-row-core">
+          <div class="input-group"><label>Pricing Logic</label>
+            <select class="logic-select" onchange="handleLogicChange(this)">
+              <option ${d.logic==='Fixed'?'selected':''}>Fixed</option>
+              <option ${d.logic==='Range'?'selected':''}>Range</option>
+              <option ${d.logic==='Percentage'?'selected':''}>Percentage</option>
+              <option ${d.logic==='Unit Type'?'selected':''}>Unit Type</option>
+              <option ${d.logic==='Varies'?'selected':''}>Varies</option>
+            </select>
+          </div>
+          <div class="input-group"><label class="val-label">Base Price / Min</label><input type="text" class="min-val-field" value="${d.val1}"></div>
+          <div class="input-group"><label>Max Price</label><input type="text" class="max-val-field" value="${d.val2}" disabled></div>
+          <div class="input-group"><label>% Target</label>
+            <select class="percent-target" disabled style="opacity:.4;">
+              <option>Base Rent</option><option>Total Monthly</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card-row-rules">
+          <div class="input-group"><label>Visibility</label>
+            <label class="check-group"><input type="checkbox" class="mndt-check" ${d.mndt?'checked':''}> Visible By Default</label>
+          </div>
+          <div class="input-group"><label>Quantity</label>
+            <label class="check-group"><input type="checkbox" class="counter-check" onchange="toggleQty(this)" ${d.counter?'checked':''}> Enable +/-</label>
+          </div>
+          <div class="input-group"><label>Min Qty</label><input type="number" class="qty-min" value="${d.qMin}" min="0" ${d.counter?'':'disabled'}></div>
+          <div class="input-group"><label>Max Qty</label><input type="number" class="qty-max" value="${d.qMax}" min="1" ${d.counter?'':'disabled'}></div>
+          <div class="input-group"><label>Unit Mapping</label>
+            <label class="check-group"><input type="checkbox" class="bed-toggle" onchange="toggleBedroomRow(this)" ${d.bedroom?'checked':''}> Varies by Bed</label>
+          </div>
+        </div>
+
+        <div class="card-row-meta">
+          <div class="input-group"><label>Fee Frequency</label>
+            <select class="freq-select" onchange="handleFreqChange(this)">
+              <option value="Monthly" ${d.frequency==='Monthly'?'selected':''}>Monthly</option>
+              <option value="One-Time" ${d.frequency==='One-Time'?'selected':''}>One-Time</option>
+              <option value="Situational" ${d.frequency==='Situational'?'selected':''}>Situational</option>
+            </select>
+          </div>
+          <div class="input-group"><label>Multiplier</label>
+            <select class="multiplier-select" onchange="handleMultiplierChange(this)">
+              <option value="None" ${d.multiplier==='None'?'selected':''}>None</option>
+              <option value="Per Applicant" ${d.multiplier==='Per Applicant'?'selected':''}>Per Applicant</option>
+              <option value="Per Pet" ${d.multiplier==='Per Pet'?'selected':''}>Per Pet</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card-row-unit" style="${d.bedroom?'display:block':'display:none'}">
+          <div class="input-group">
+            <label>Select Unit Types for Mapping</label>
+            <div class="dropdown-container">
+              <button class="dropdown-btn" onclick="toggleDropdown(this)" type="button">
+                Select Unit Types <span class="material-icons" style="font-size:16px;">expand_more</span>
+              </button>
+              <div class="dropdown-menu">${brCheckboxesHTML}</div>
+            </div>
+          </div>
+          <div class="bedroom-fields">${brFieldsHTML}</div>
+        </div>
+
+        <div class="card-row-text">
+          <div class="input-group"><label>Display Text</label>
+            <textarea class="desc-input" placeholder="Explain the fee to customer...">${d.desc}</textarea>
+          </div>
+          <div class="input-group"><label>Pre-Selection Disclaimer</label>
+            <textarea class="pre-info-input" placeholder="Shown before selection...">${d.preInfo}</textarea>
+          </div>
+          <div class="input-group"><label>Post-Selection Disclaimer</label>
+            <textarea class="post-info-input" placeholder="Shown in final receipt...">${d.postInfo}</textarea>
+          </div>
+        </div>
+      </div>`;
+
+    feeList.appendChild(card);
+    initDragAndDrop(card, 'fee-type');
+    if (d.bedroom) { toggleBedroomRow(card.querySelector('.bed-toggle')); }
+    else { handleLogicChange(card.querySelector('.logic-select')); }
+    handleFreqChange(card.querySelector('.freq-select'));
+    handleMultiplierChange(card.querySelector('.multiplier-select'));
+    if (d.isBasePrice) applyBasePriceState(card, true);
+  }
+
+  // ─── Logic handlers ───────────────────────────────────────────────────────
+  function toggleSpecificBedroom(checkbox) {
+    const card = checkbox.closest('.fee-card');
+    card.querySelector('.br-' + checkbox.value.replace(/\s|\+/g,'')).style.display = checkbox.checked ? 'block' : 'none';
+  }
+
+  function handleLogicChange(select) {
+    const card = select.closest('.fee-card');
+    const targetSelect = card.querySelector('.percent-target');
+    const minVal = card.querySelector('.min-val-field'), maxVal = card.querySelector('.max-val-field');
+    const valLabel = card.querySelector('.val-label');
+    const isBed = card.querySelector('.bed-toggle')?.checked;
+    const isRange = select.value === 'Range';
+    targetSelect.disabled = select.value !== 'Percentage';
+    targetSelect.style.opacity = select.value === 'Percentage' ? '1' : '0.4';
+    targetSelect.classList.toggle('highlight-yellow', select.value === 'Percentage');
+    if (isRange) { maxVal.disabled=false; valLabel.innerText='Min Price'; minVal.placeholder='Min'; maxVal.placeholder='Max'; }
+    else { maxVal.disabled=true; maxVal.value=''; maxVal.placeholder=''; valLabel.innerText='Base Price'; minVal.placeholder=select.value==='Percentage'?'10%':'Amount'; }
+    card.querySelectorAll('.br-max-val').forEach(f => f.style.display = isRange ? 'block' : 'none');
+    card.querySelectorAll('.br-min-val').forEach(f => f.placeholder = isRange ? 'Min' : 'Amount');
+    if (isBed) { minVal.disabled=true; minVal.placeholder='Mapped Below'; maxVal.disabled=true; }
+    else if (!card.querySelector('.base-price-check')?.checked) { minVal.disabled=false; }
+  }
+
+  function handleMultiplierChange(select) {
+    const card = select.closest('.fee-card');
+    const hasMultiplier = select.value !== 'None';
+    const counterCheck = card.querySelector('.counter-check');
+    counterCheck.disabled = hasMultiplier;
+    if (hasMultiplier) counterCheck.checked = false;
+    toggleQty(counterCheck);
+  }
+
+  function handleFreqChange(select) {
+    const card = select.closest('.fee-card');
+    const mndtCheck = card.querySelector('.mndt-check');
+    const isBase = card.querySelector('.base-price-check')?.checked;
+    if (select.value === 'Situational') { mndtCheck.checked=true; mndtCheck.disabled=true; }
+    else if (!isBase) { mndtCheck.disabled=false; }
+  }
+
+  function toggleBasePrice(checkbox) { applyBasePriceState(checkbox.closest('.fee-card'), checkbox.checked); }
+
+  function applyBasePriceState(card, isBase) {
+    const logicSel=card.querySelector('.logic-select'), mndtCheck=card.querySelector('.mndt-check');
+    const counterCheck=card.querySelector('.counter-check'), freqSel=card.querySelector('.freq-select');
+    const multSel=card.querySelector('.multiplier-select'), bedToggle=card.querySelector('.bed-toggle');
+    if (isBase) {
+      document.querySelectorAll('.base-price-check').forEach(cb => {
+        if (cb !== card.querySelector('.base-price-check') && cb.checked) {
+          cb.checked=false; applyBasePriceState(cb.closest('.fee-card'), false);
+        }
+      });
+      card.classList.add('is-base-price');
+      card.querySelector('.base-price-check').checked=true;
+      logicSel.value='Fixed'; logicSel.disabled=true;
+      mndtCheck.checked=true; mndtCheck.disabled=true;
+      counterCheck.checked=false; counterCheck.disabled=true; toggleQty(counterCheck);
+      freqSel.disabled=true; multSel.value='None'; multSel.disabled=true;
+      if (bedToggle) bedToggle.disabled=true;
+      handleLogicChange(logicSel);
+    } else {
+      card.classList.remove('is-base-price');
+      const isBed = bedToggle?.checked;
+      logicSel.disabled=isBed; mndtCheck.disabled=(freqSel.value==='Situational');
+      counterCheck.disabled=false; freqSel.disabled=false; multSel.disabled=false;
+      if (bedToggle) bedToggle.disabled=false;
+      handleLogicChange(logicSel);
+    }
+  }
+
+  function toggleQty(checkbox) {
+    const card = checkbox.closest('.fee-card');
+    card.querySelector('.qty-min').disabled = !checkbox.checked;
+    card.querySelector('.qty-max').disabled = !checkbox.checked;
+  }
+
+  function toggleBedroomRow(checkbox) {
+    const card = checkbox.closest('.fee-card');
+    card.querySelector('.card-row-unit').style.display = checkbox.checked ? 'block' : 'none';
+    const logicSel = card.querySelector('.logic-select');
+    if (checkbox.checked) { logicSel.value='Unit Type'; logicSel.disabled=true; }
+    else { if (!card.querySelector('.base-price-check')?.checked) logicSel.disabled=false; }
+    handleLogicChange(logicSel);
+  }
+
+  // ─── Smart Auto-Fill ──────────────────────────────────────────────────────
+  function processAutoFill(rawInputOverride) {
+    try {
+      let rawInput = rawInputOverride || document.getElementById('importString').value.trim();
+      if (!rawInput) return showToast('No text to import.', '');
+
+      document.getElementById('dynamic-fee-containers').innerHTML = '';
+      document.getElementById('globalDisclaimers').value = '';
+
+      const disclaimerRegex = /<([\s\S]+?)>/g;
+      let match, disclaimers = [];
+      while ((match = disclaimerRegex.exec(rawInput)) !== null) disclaimers.push(match[1].trim());
+      if (disclaimers.length) {
+        document.getElementById('globalDisclaimers').value = disclaimers.join('\n\n');
+        rawInput = rawInput.replace(/<[\s\S]+?>/g,'').trim();
+      }
+
+      const sections = rawInput.replace(/\r\n/g,'\n').split(/\n{2,}/);
+      sections.forEach(section => {
+        const lines = section.trim().split('\n').filter(l => l.trim());
+        if (!lines.length) return;
+        const bucketName = lines[0].replace(/[:\-*#]+$/,'').trim();
+        if (!bucketName) return;
+
+        const bId = createNewBucket(bucketName);
+        const bucketLower = bucketName.toLowerCase();
+        const isSituationalBucket = /incidental|late\s*fee|penalty/i.test(bucketLower);
+        const isOptionalBucket = /add-?on|optional|extra|pet\b|parking/i.test(bucketLower);
+
+        let currentCatName = bucketName + ' Fees', currentCatId = null, currentFee = null, parsedFees = [];
+
+        function flushFee() { if (currentFee) { parsedFees.push(currentFee); currentFee=null; } }
+        function flushCategory() {
+          flushFee();
+          if (!parsedFees.length) return;
+          if (!currentCatId) currentCatId = addCategory(bId, currentCatName);
+          parsedFees.forEach(fd => addFeeRow(currentCatId, fd));
+          parsedFees=[]; currentCatId=null;
+        }
+
+        for (let i=1; i<lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) continue;
+          const isSubItem = /^[•\-\*·]/.test(line);
+          if (!isSubItem) {
+            const hasDollar=/\$[\d.,]+/.test(line), hasPct=/\d+%/.test(line), hasVaries=/\bvaries\b/i.test(line);
+            if (!hasDollar && !hasPct && !hasVaries) {
+              if (line.endsWith(':') || (line.length<50 && !/\d/.test(line) && /^[A-Z]/.test(line))) {
+                flushCategory(); currentCatName = line.replace(/:$/,'').trim(); continue;
+              }
+            }
+          }
+          if (isSubItem && currentFee) {
+            const item = line.replace(/^[•\-\*·]\s*/,'');
+            if (/studio|bedroom|\bbr\b|\d\s*br/i.test(item)) {
+              currentFee.logic='Unit Type'; currentFee.bedroom=true; currentFee.val1='';
+              const pm=item.match(/\$?([\d.,]+)/); const price=pm?pm[1]:'0';
+              if (/studio/i.test(item)) currentFee.bedPrices['Studio']=price;
+              if (/one\s*bed|1\s*br/i.test(item)) currentFee.bedPrices['1 BR']=price;
+              if (/two\s*bed|2\s*br/i.test(item)) currentFee.bedPrices['2 BR']=price;
+              if (/three\s*bed|3\s*br/i.test(item)) currentFee.bedPrices['3+ BR']=price;
+            } else { currentFee.desc += ' ' + item; }
+            continue;
+          }
+          flushFee();
+          const feeLine = line.replace(/^[•\-\*]\s*/,'');
+          const feeName = feeLine.split(/\s+\$|\s+\d+%|\s+varies/i)[0].replace(/[:\-]+$/,'').trim();
+          const hasDollar=/\$/.test(feeLine), hasPercent=/\d+%/.test(feeLine), hasVaries=/\bvaries\b/i.test(feeLine);
+          const toRangeMatch=feeLine.match(/\$?([\d.,]+)\s+to\s+\$?([\d.,]+)/i);
+          const dashRangeMatch=feeLine.match(/\$?([\d.,]+)\s*[-–]\s*\$?([\d.,]+)/);
+          const pctMatch=feeLine.match(/([\d.,]+)%/);
+          const singleMatch=feeLine.match(/\$?([\d.,]+)/);
+          let logic='Fixed', val1='', val2='';
+          if (hasVaries) logic='Varies';
+          else if (toRangeMatch) { logic='Range'; val1=toRangeMatch[1]; val2=toRangeMatch[2]; }
+          else if (dashRangeMatch && dashRangeMatch[1]!==dashRangeMatch[2]) { logic='Range'; val1=dashRangeMatch[1]; val2=dashRangeMatch[2]; }
+          else if (hasPercent && !hasDollar) { logic='Percentage'; val1=pctMatch?pctMatch[1]:''; }
+          else if (singleMatch) { logic='Fixed'; val1=singleMatch[1]; }
+          let multiplier='None';
+          if (/per\s*applicant/i.test(feeLine)) multiplier='Per Applicant';
+          else if (/per\s*pet/i.test(feeLine)) multiplier='Per Pet';
+          let frequency='Monthly';
+          if (isSituationalBucket || /\bsituational\b/i.test(feeLine)) frequency='Situational';
+          else if (/\bone[-\s]?time\b/i.test(feeLine)) frequency='One-Time';
+          else if (/\bdeposit\b/i.test(feeName) && !/\bmonthly\b/i.test(feeLine)) frequency='One-Time';
+          else if (/\bapplication\b|\badmin\b|\bsetup\b/i.test(feeName) && !/\bmonthly\b/i.test(feeLine)) frequency='One-Time';
+          const mndt = !isOptionalBucket && !(/per\s*pet/i.test(feeLine));
+          const isBasePrice = /^base\s*rent$/i.test(feeName);
+          currentFee = { name:feeName, logic, val1, val2, mndt, counter:multiplier!=='None', qMin:1, qMax:multiplier!=='None'?3:2, bedroom:false, bedPrices:{}, desc:feeLine, preInfo:'', postInfo:'', frequency, multiplier, isBasePrice };
+        }
+        flushCategory();
+      });
+    } catch (err) {
+      console.error('Auto-Fill Error:', err);
+      showToast('Auto-fill error — check console.', 'error');
+    }
+  }
+
+  // ─── Build Payload ────────────────────────────────────────────────────────
+  function buildPayload() {
+    const payload = { globalPropertyDisclaimers: document.getElementById('globalDisclaimers').value, buckets: [] };
+    let bi=1;
+    document.querySelectorAll('.bucket-container').forEach(bucket => {
+      const bucketObj = {
+        orderIndex: bi++,
+        receiptBucket: bucket.querySelector('.bucket-name-input').value,
+        bucketDisclaimer: bucket.querySelector('.bucket-header .inline-disclaimer-input')?.value || '',
+        categories: []
+      };
+      let ci=1;
+      bucket.querySelectorAll('.category-block').forEach(cat => {
+        const catObj = { orderIndex:ci++, categoryName:cat.querySelector('.cat-name-input').value, categoryDisclaimer:cat.querySelector('.cat-disclaimer-input')?.value||'', fees:[] };
+        let fi=1;
+        cat.querySelectorAll('.fee-card').forEach(card => {
+          const logic=card.querySelector('.logic-select').value, isBed=card.querySelector('.bed-toggle').checked;
+          let unitPricing={};
+          if (isBed) {
+            card.querySelectorAll('.unit-chk:checked').forEach(chk => {
+              const br=chk.value, w=card.querySelector('.br-'+br.replace(/\s|\+/g,''));
+              unitPricing[br]={minPrice:w.querySelector('.br-min-val').value, maxPrice:logic==='Range'?w.querySelector('.br-max-val').value:null};
+            });
+          }
+          catObj.fees.push({
+            orderIndex:fi++,
+            feeName:card.querySelector('.fee-name-input').value,
+            pricingLogic:logic,
+            baseMinPrice:isBed?null:card.querySelector('.min-val-field').value,
+            baseMaxPrice:(logic==='Range'&&!isBed)?card.querySelector('.max-val-field').value:null,
+            percentageTarget:logic==='Percentage'?card.querySelector('.percent-target').value:null,
+            isMandatoryDefault:card.querySelector('.mndt-check').checked,
+            hasQuantityCounter:card.querySelector('.counter-check').checked,
+            qtyMinLimit:card.querySelector('.counter-check').checked?parseInt(card.querySelector('.qty-min').value):null,
+            qtyMaxLimit:card.querySelector('.counter-check').checked?parseInt(card.querySelector('.qty-max').value):null,
+            variesByBedroom:isBed,
+            bedroomPricing:isBed?unitPricing:null,
+            displayText:card.querySelector('.desc-input').value,
+            preSelectionInfo:card.querySelector('.pre-info-input').value,
+            postSelectionInfo:card.querySelector('.post-info-input').value,
+            feeFrequency:card.querySelector('.freq-select').value,
+            multiplier:card.querySelector('.multiplier-select').value,
+            isBasePrice:card.querySelector('.base-price-check')?.checked||false
+          });
+        });
+        bucketObj.categories.push(catObj);
+      });
+      payload.buckets.push(bucketObj);
+    });
+    return payload;
+  }
+
+  function exportJSON() {
+    document.getElementById('exportResult').value = JSON.stringify(buildPayload(), null, 2);
+    document.getElementById('exportModal').style.display = 'flex';
+  }
+  function copyJSON() {
+    const el=document.getElementById('exportResult'); el.select(); document.execCommand('copy');
+    showToast('JSON copied!', 'success');
+  }
+
+  // ─── Hydrate from DB on load ──────────────────────────────────────────────
+  (function hydrateFromDB() {
+    const cfg = #{raw @config_json};
+    if (!cfg || !cfg.buckets || !cfg.buckets.length) {
+      if (COMMUNITY_ADDITIONAL_FEE) {
+        document.getElementById('importString').value = COMMUNITY_ADDITIONAL_FEE;
+        setTimeout(() => processAutoFill(), 100);
+      }
+      return;
+    }
+    document.getElementById('globalDisclaimers').value = cfg.globalPropertyDisclaimers || '';
+    cfg.buckets.forEach(b => {
+      const bId = createNewBucket(b.receiptBucket, b.bucketDisclaimer||'');
+      (b.categories||[]).forEach(c => {
+        const cId = addCategory(bId, c.categoryName, c.categoryDisclaimer||'');
+        (c.fees||[]).forEach(f => {
+          const bp={};
+          if (f.bedroomPricing) Object.entries(f.bedroomPricing).forEach(([k,v]) => {
+            bp[k] = typeof v==='object' ? v : {minPrice:v, maxPrice:v};
+          });
+          // Legacy schema migration
+          let frequency = f.feeFrequency || (b.feeType==='one_time'?'One-Time':'Monthly');
+          let multiplier = f.multiplier || (f.perApplicant?'Per Applicant':f.perPet?'Per Pet':'None');
+          addFeeRow(cId, {
+            name:f.feeName, logic:f.pricingLogic, val1:f.baseMinPrice||'', val2:f.baseMaxPrice||'',
+            mndt:f.isMandatoryDefault, counter:f.hasQuantityCounter,
+            qMin:f.qtyMinLimit||1, qMax:f.qtyMaxLimit||2,
+            bedroom:f.variesByBedroom, bedPrices:bp,
+            desc:f.displayText||'', preInfo:f.preSelectionInfo||'', postInfo:f.postSelectionInfo||'',
+            frequency, multiplier, isBasePrice:!!f.isBasePrice
+          });
+        });
+      });
+    });
+  })();
+
+  // ─── Populate All Scenarios (test data) ──────────────────────────────────
+  function populateAllScenarios() {
+    if (document.getElementById('dynamic-fee-containers').innerHTML.trim()) {
+      if (!confirm('This will CLEAR current data and populate all test scenarios. Continue?')) return;
+      document.getElementById('dynamic-fee-containers').innerHTML = '';
+    }
+    document.getElementById('globalDisclaimers').value = 'All fees subject to change. Some charges payable directly to third-party providers.';
+
+    const b1=createNewBucket('Monthly Leasing Costs','Core monthly charges included in every lease.');
+    const c1=addCategory(b1,'Rent & Base Fees','Standard fixed monthly charges.');
+    addFeeRow(c1,{name:'Base Rent',logic:'Fixed',val1:'2500',mndt:true,frequency:'Monthly',multiplier:'None',isBasePrice:true,desc:'Monthly base rent for the unit as agreed in your lease.'});
+    addFeeRow(c1,{name:'Unit Maintenance Fee',logic:'Fixed',val1:'50',mndt:true,frequency:'Monthly',multiplier:'None',desc:'Covers routine in-unit maintenance.',preInfo:'Billed monthly with rent.',postInfo:'Thank you for keeping your unit in great shape.'});
+    addFeeRow(c1,{name:'Lease Concession',logic:'Fixed',val1:'-100',mndt:true,frequency:'Situational',multiplier:'None',desc:'Move-in concession applied when a qualifying promotion is active.'});
+
+    const b2=createNewBucket('Unit-Type Based Fees','Fees that vary depending on bedroom count.');
+    const c2=addCategory(b2,'Bedroom-Based Charges');
+    addFeeRow(c2,{name:'Trash Valet Service',logic:'Unit Type',mndt:true,frequency:'Monthly',multiplier:'None',bedroom:true,bedPrices:{Studio:'20','1 BR':'25','2 BR':'30','3+ BR':'35'},desc:'Doorstep trash collection priced by unit size.'});
+
+    const b3=createNewBucket('Utility & Service Fees','Variable charges billed within a set range.');
+    const c3a=addCategory(b3,'Utilities','Estimates only — actual usage billed directly.');
+    addFeeRow(c3a,{name:'Electricity',logic:'Range',val1:'60',val2:'140',mndt:true,frequency:'Monthly',multiplier:'None',desc:'Estimated monthly electricity. Varies with consumption.'});
+    addFeeRow(c3a,{name:'Water & Sewer',logic:'Range',val1:'30',val2:'70',mndt:true,frequency:'Monthly',multiplier:'None'});
+
+    const b4=createNewBucket('Optional Amenity Add-Ons','Select any add-ons you would like.');
+    const c4a=addCategory(b4,'Parking');
+    addFeeRow(c4a,{name:'Covered Parking',logic:'Fixed',val1:'100',mndt:false,frequency:'Monthly',multiplier:'None',preInfo:'Add a covered parking spot to your lease.',postInfo:'Parking pass issued at move-in.'});
+    const c4b=addCategory(b4,'Pet Fees','Pets must be registered at leasing office.');
+    addFeeRow(c4b,{name:'Monthly Pet Rent',logic:'Fixed',val1:'75',mndt:false,frequency:'Monthly',multiplier:'Per Pet',desc:'Monthly pet rent per pet.',preInfo:'Set number of pets using the Pets control.'});
+    addFeeRow(c4b,{name:'Pet Damage Waiver',logic:'Fixed',val1:'30',mndt:false,frequency:'Monthly',multiplier:'Per Pet'});
+
+    const b5=createNewBucket('Move-In / One-Time Costs');
+    const c5=addCategory(b5,'Application & Move-In Charges');
+    addFeeRow(c5,{name:'Application Fee',logic:'Fixed',val1:'75',mndt:true,frequency:'One-Time',multiplier:'Per Applicant',desc:'Non-refundable application fee per applicant.',preInfo:'Adjust number of applicants in the calculator.'});
+    addFeeRow(c5,{name:'Admin Fee',logic:'Fixed',val1:'250',mndt:true,frequency:'One-Time',multiplier:'None',desc:'One-time non-refundable administration fee.'});
+    addFeeRow(c5,{name:'Security Deposit',logic:'Varies',mndt:true,frequency:'One-Time',multiplier:'None',desc:'Refundable security deposit. Amount determined by credit screening.',preInfo:'Amount determined after application approval.'});
+    addFeeRow(c5,{name:'Move-In Fee',logic:'Fixed',val1:'500',mndt:true,frequency:'One-Time',multiplier:'None'});
+    addFeeRow(c5,{name:'Pet Deposit',logic:'Fixed',val1:'300',mndt:false,frequency:'One-Time',multiplier:'Per Pet',desc:'Refundable pet deposit per pet.'});
+
+    showToast('✓ All scenarios loaded! Click Export JSON to test in SDK.', 'success');
+  }
