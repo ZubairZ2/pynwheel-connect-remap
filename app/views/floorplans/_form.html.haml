@@ -58,7 +58,16 @@
 
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Additional Details
+    Details Title
+    %i.desc-title-tooltip.fa.fa-question-circle
+      %span#desc_title_tooltip_text
+        This label appears as the heading above the Additional Details section when a unit is opened on the map. Defaults to "More Details" if left blank.
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :description_title, class: "form-control", placeholder: "More Details"
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Details
     %i.tooltip1.fa.fa-question-circle{ "data-toggle" => "floorplanAdditionalUrlDetailsPopover","data-content" => " "}
       %span#tooltiptext1
         Add details such as finishes and floor-plan specific features and they will appear in the "Additional Details" tab for this floor plan.

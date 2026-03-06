@@ -80,7 +80,7 @@
                     = additional_fees.html_safe
 
               .c-modal-sidebar-description
-                %h4.des-heading Tenant Details
+                %h4.des-heading= unit.description_title.presence || floorplan&.description_title.presence || "More Details"
                 .c-m-description= (unit.description.present? ? unit.description : (floorplan.description.present? ? floorplan.description : "Not Available")).html_safe
 
           .c-modal-sidebar-filters.sidebar-footer

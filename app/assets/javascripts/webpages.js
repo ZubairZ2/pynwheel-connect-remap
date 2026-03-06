@@ -79,7 +79,7 @@ $(document).ready(function () {
 
   if (isDefined(webCommunity)) {
     beanOnlyProperty = (webCommunity.data_provider === "beans")
-    selectMap = (opsMapMarkersEnabled || beanOnlyProperty) ? "3d-map" : "2d-map"; //webCommunity.web_map_type;
+    selectMap = (defaultSatelliteView || opsMapMarkersEnabled || beanOnlyProperty) ? "3d-map" : "2d-map"; //webCommunity.web_map_type;
     enable3DMaps = webCommunity.enable_three_d_maps;
 
     if (enable3DMaps) {
@@ -1555,6 +1555,7 @@ function buildUnitMarkerHTML(unit, f) {
       data-unit-lease-pricing="${unitDataAttributes["data-unit-lease-pricing"]}"
       data-unit-additional-fees="${unitDataAttributes["data-unit-additional-fees"]}"
       data-unit-description="${unitDataAttributes["data-unit-description"]}"
+      data-unit-description-title="${unitDataAttributes["data-unit-description-title"]}"
       data-property-id="${unitDataAttributes["data-property-id"]}"
       data-unit-status="${unitDataAttributes["data-unit-status"]}"
       data-model-unit="${unitDataAttributes["data-model-unit"]}"
@@ -2787,6 +2788,8 @@ function setUnitLeasePricing(element) {
 function setUnitDescription(element) {
   try {
     scroller = document.getElementById("overall-scroller");
+    var descTitle = $(element).data("unit-description-title") || "More Details";
+    $("#unitModal").find(".des-heading").text(descTitle);
     if ($(element).data("unit-description") == "") {
       $("#unitModal").find("#unit-description").html("Not Available");
       $("#unitModal").find(".c-modal-sidebar-description").hide();

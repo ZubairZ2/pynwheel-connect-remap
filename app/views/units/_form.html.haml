@@ -149,6 +149,15 @@
 
   .form-group
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+      Details Title
+      %i.desc-title-tooltip.fa.fa-question-circle
+        %span#desc_title_tooltip_text
+          This label appears as the heading above the Details section when a unit is opened on the map. Defaults to "More Details" if left blank.
+    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+      = f.text_field :description_title, class: "form-control", placeholder: "More Details"
+
+  .form-group
+    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
       Details
 
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
