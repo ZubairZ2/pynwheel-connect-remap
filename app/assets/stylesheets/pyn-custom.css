@@ -4333,6 +4333,45 @@ a#favoriteclickme {
   visibility: visible;
 }
 
+.desc-title-tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.desc-title-tooltip #desc_title_tooltip_text {
+  visibility: hidden;
+  width: 320px;
+  background-color: #000000;
+  color: white;
+  text-align: left;
+  border-radius: 6px;
+  padding: 15px;
+  position: absolute;
+  z-index: 1;
+  bottom: 150%;
+  left: 50%;
+  margin-left: -67px;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.3;
+  font-weight: normal;
+}
+
+.desc-title-tooltip #desc_title_tooltip_text::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -120px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: black transparent transparent transparent;
+}
+
+.desc-title-tooltip:hover #desc_title_tooltip_text {
+  visibility: visible;
+}
+
 .unit_sold {
   position: relative;
   display: inline-block;

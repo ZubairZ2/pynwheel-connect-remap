@@ -322,6 +322,7 @@ module CommunitiesHelper
                    else
                      ""
                    end,
+      description_title: (unit.description_title.presence || floorplan&.description_title.presence || "More Details"),
       display_rent: unit&.community&.display_rent,
       additional_fees: @community.get_additional_fees(unit),
       property_id: unit.property_id,
@@ -668,6 +669,7 @@ module CommunitiesHelper
       "unit-lease-pricing": struct[:lease_pricing],
       "unit-additional-fees": struct[:additional_fees],
       "unit-description": struct[:description],
+      "unit-description-title": struct[:description_title],
       "property-id": struct[:property_id],
       "unit-status": struct[:unit_status],
       "model-unit": struct[:model_unit],
