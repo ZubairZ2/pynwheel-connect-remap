@@ -217,8 +217,12 @@ end
     description = params[:description].to_s
     desc = description[2..description.length-3]
     str2 = add_padding_description desc
-    @community.floorplans.where(id: params[:floorplan_ids]).update_all(description:  str2)
-    flash[:notice] = "Description is updated for units successfully."
+
+    update_attrs = { description: str2 }
+    update_attrs[:description_title] = params[:description_title].presence
+
+    @community.floorplans.where(id: params[:floorplan_ids]).update_all(update_attrs)
+    flash[:notice] = "Description is updated for floorplans successfully."
     redirect_back(fallback_location: root_path)
   end
 
