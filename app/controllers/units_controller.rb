@@ -572,8 +572,11 @@ class UnitsController < ApplicationController
     desc = description[2..description.length - 3]
     str2 = add_padding_description desc
 
-    @community.units.where(id: params[:unit_ids]).update_all(description: str2, manually_updated: true)
-    flash[:notice] = "description is updated for units successfully."
+    update_attrs = { description: str2, manually_updated: true }
+    update_attrs[:description_title] = params[:description_title].presence
+
+    @community.units.where(id: params[:unit_ids]).update_all(update_attrs)
+    flash[:notice] = "Description is updated for units successfully."
     redirect_back(fallback_location: root_path)
   end
 
