@@ -2,6 +2,7 @@ class WebpagesController < ActionController::Base
   include CommunitiesHelper
 
   before_action :set_community, except: [:update_session]
+  before_action :redirect_to_sdk_map_if_enabled, only: [:index]
   before_action :set_webpages_session_id_cookies, only: [:index]
   after_action :maintain_session, except: [:update_session]
   before_action :set_timezone, except: [:update_session]
@@ -312,6 +313,18 @@ class WebpagesController < ActionController::Base
         same_site: :none,
         secure: true
       }
+    end
+
+    def redirect_to_sdk_map_if_enabled
+      if @community.enable_sdk_map?
+        query_params = { propertyId: @community.id }
+        query_params[:partner]  = params[:partner]  if params[:partner].present?
+        query_params[:floor]    = params[:floor]    if params[:floor].present?
+        query_params[:ops_map]  = params[:ops_map]  if params[:ops_map].present?
+        query_params[:src]      = params[:src]      if params[:src].present?
+
+        redirect_to "#{ENV['SDK_MAP_BASE_URL']}?#{query_params.to_query}", allow_other_host: true
+      end
     end
 
     def set_community
