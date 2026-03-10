@@ -75,7 +75,7 @@
   .total-box{background:linear-gradient(135deg,var(--brand) 0%,#818cf8 100%);padding:24px 28px;border-radius:var(--radius-lg);display:flex;justify-content:space-between;align-items:flex-start;}
   .total-box-left{display:flex;flex-direction:column;flex:1;}
   .total-label{font-size:.8rem;font-weight:600;color:rgba(255,255,255,.8);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;}
-  .total-price{font-size:2.4rem;font-weight:800;color:white;letter-spacing:-.02em;line-height:1.1;}
+  .total-price{font-size:2.3rem;font-weight:800;color:white;letter-spacing:-.02em;line-height:1.1;}
   .total-price-unit{font-size:1.1rem;font-weight:600;letter-spacing:0;opacity:.85;}
   .total-base-rent{font-size:.78rem;color:rgba(255,255,255,.7);margin-top:4px;min-height:1em;}
   .total-divider{height:1px;background:rgba(255,255,255,.2);margin:12px 0 10px;}
@@ -167,6 +167,10 @@
         .left-panel-body
           - if @unit || @floorplan
             .unit-summary
+              - if @unit&.marketing_name.present?
+                .unit-summary-item
+                  %span.material-icons home
+                  %span= @unit.marketing_name
               - if bed_label
                 .unit-summary-item
                   %span.material-icons king_bed
@@ -179,13 +183,13 @@
                 .unit-summary-item
                   %span.material-icons aspect_ratio
                   %span= "#{number_with_delimiter(sqft_label.to_i)} sqft"
-              - if available_date
-                .unit-summary-item
-                  %span.material-icons event_available
-                  %span= "Avail #{available_date.strftime('%b %-d')}"
-              - if min_rent > 0 && max_rent > 0 && (max_rent - min_rent) > 1
-                .unit-summary-item
-                  %span.rent-range-badge= "$#{number_with_delimiter(min_rent.to_i)} – $#{number_with_delimiter(max_rent.to_i)}/mo"
+              -# - if available_date
+              -#   .unit-summary-item
+              -#     %span.material-icons event_available
+              -#     %span= "Available: #{available_date.strftime('%b %-d, %Y')}"
+              -# - if min_rent > 0 && max_rent > 0 && (max_rent - min_rent) > 1
+              -#   .unit-summary-item
+              -#     %span.rent-range-badge= "$#{number_with_delimiter(min_rent.to_i)} – $#{number_with_delimiter(max_rent.to_i)}/mo"
           .form-section
             .input-group
               %label Move-In Date
@@ -247,9 +251,14 @@
             .total-icon
               %span.material-icons receipt_long
         .right-panel-actions
-          %button.btn-apply
-            %span.material-icons{style: "font-size:20px;"} how_to_reg
-            Apply Now
+          - if @apply_now_url
+            %button.btn-apply{onclick: "pynCalcApplyNow(this)", "data-apply-url": @apply_now_url, "data-provider": @apply_now_provider, "data-unit-pid": @apply_now_unit_pid}
+              %span.material-icons{style: "font-size:20px;"} how_to_reg
+              Apply Now
+          - else
+            %button.btn-apply{disabled: true, style: "opacity:0.5;cursor:not-allowed;"}
+              %span.material-icons{style: "font-size:20px;"} how_to_reg
+              Apply Now
         .receipt-body
           #receipt-buckets
             .empty-state
@@ -701,5 +710,23 @@
     });
     document.addEventListener('mouseout', e => { if(e.target.closest('.info-tag')) tip.style.display='none'; });
   })();
+
+  // ─── Apply Now ────────────────────────────────────────────────────────────
+  function pynCalcApplyNow(btn) {
+    var url      = btn.getAttribute('data-apply-url');
+    var provider = btn.getAttribute('data-provider');
+    if (!url) return;
+
+    if (provider === 'realpagesvc') {
+      var moveInDate = document.getElementById('move-in-date')?.value || '';
+      var unitPid    = (btn.getAttribute('data-unit-pid') || '').split('-')[0];
+      var redirectUrl = window.location.href;
+      url = url + '?MoveInDate=' + encodeURIComponent(moveInDate) +
+                  '&UnitId='     + unitPid +
+                  '&SearchUrl='  + encodeURIComponent(redirectUrl);
+    }
+
+    window.open(url, '_blank');
+  }
 
   document.addEventListener('DOMContentLoaded', init);

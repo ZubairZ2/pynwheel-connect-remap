@@ -271,10 +271,169 @@
     showToast('URL copied!', 'success');
   }
 
+  // ─── Seed helpers ─────────────────────────────────────────────────────────
+  function _sfcHasPrice(t)   { return /\$[\d.,]+/.test(t) || /\bfree\b/i.test(t); }
+  function _sfcHasPct(t)     { return /\d+(\.\d+)?%/.test(t); }
+  function _sfcHasVaries(t)  { return /\bvaries\b/i.test(t); }
+  function _sfcIsBedLine(t)  { return /\b(studio|one\s*bed|two\s*bed|three\s*bed|four\s*bed|\d\s*(bedroom|br))\b/i.test(t) && _sfcHasPrice(t); }
+
+  function _sfcParseFee(line, feeType, defaultMandatory) {
+    const namePart = line
+      .replace(/\s*[-–:]\s*\$[\d.,].*/,'').replace(/\s+\$[\d.,].*/,'')
+      .replace(/\s+\d+%.*/,'').replace(/\s+varies.*/i,'')
+      .replace(/[:\-–]+$/,'').replace(/\s*\(.*?\)\s*$/,'').trim();
+    const hasDollar=/\$/.test(line), hasPct=/\d+%/.test(line), variesStr=/\bvaries\b/i.test(line);
+    const rangeMatch=line.match(/\$?([\d.,]+)\s*(?:to|[-–])\s*\$?([\d.,]+)/i);
+    const pctMatch=line.match(/([\d.,]+)%/);
+    const singleMatch=line.match(/\$?([\d.,]+)/);
+    let logic='Fixed', val1='', val2='';
+    if (variesStr && !hasDollar && !hasPct) { logic='Varies'; }
+    else if (rangeMatch && rangeMatch[1]!==rangeMatch[2]) { logic='Range'; val1=rangeMatch[1]; val2=rangeMatch[2]; }
+    else if (hasPct && !hasDollar) { logic='Percentage'; val1=pctMatch?pctMatch[1]:''; }
+    else if (singleMatch) { logic='Fixed'; val1=singleMatch[1]; }
+    const nm=(namePart||'').toLowerCase();
+    let frequency='Monthly';
+    if (feeType==='one_time'||/one[-\s]?time/i.test(line)||/\bdeposit\b/.test(nm)||/\bapplication\b|\badmin\b|\bsetup\b|\butility\s*service\b/.test(nm)) frequency='One-Time';
+    if (/\blate\s*fee\b|\binsufficient\b|\btransfer\b|\bpenalty\b|\bpayment\s*processing\b/i.test(nm)) frequency='Situational';
+    let multiplier='None', counter=false;
+    if (/per\s*applicant/i.test(line)) { multiplier='Per Applicant'; counter=true; }
+    else if (/per\s*pet/i.test(line))  { multiplier='Per Pet'; counter=true; }
+    else if (/per\s*vehicle/i.test(line)) { multiplier='Per Vehicle'; counter=true; }
+    let mndt = defaultMandatory!==false;
+    if (/\boptional\b/i.test(line)||multiplier!=='None'||/\bper\s*pet\b/i.test(line)||/\bparking\b/.test(nm)||/\bpet\b/.test(nm)) mndt=false;
+    return { name:namePart||line.substring(0,50), logic, val1, val2,
+             mndt, counter, qMin:1, qMax:counter?3:2,
+             bedroom:false, bedPrices:{}, desc:'', preInfo:'', postInfo:'',
+             frequency, multiplier, isBasePrice:false };
+  }
+
   function seedFromCommunityFees() {
     if (!COMMUNITY_ADDITIONAL_FEE) return showToast('No community fees configured yet.', '');
-    document.getElementById('importString').value = COMMUNITY_ADDITIONAL_FEE;
-    processAutoFill();
+
+    document.getElementById('dynamic-fee-containers').innerHTML = '';
+    document.getElementById('globalDisclaimers').value = '';
+
+    let raw = COMMUNITY_ADDITIONAL_FEE;
+
+    // Extract *footnotes at end into global disclaimers
+    const disclaimers = [];
+    raw = raw.replace(/\*{1,2}([^•*\n][^•*\n]*)/g, (_, d) => { disclaimers.push(d.trim()); return ' '; });
+    if (disclaimers.length) document.getElementById('globalDisclaimers').value = disclaimers.join('\n\n');
+
+    // Known top-level section headers with their fee type
+    const BUCKET_DEFS = [
+      { re:/^Application\s*Fees?/i,     name:'Application Fees',   feeType:'one_time',    mandatory:true  },
+      { re:/^Monthly\s*Fees?/i,         name:'Monthly Fees',       feeType:'monthly',     mandatory:true  },
+      { re:/^Recurring\s*Charges?/i,    name:'Recurring Charges',  feeType:'monthly',     mandatory:true  },
+      { re:/^Add[-\s]?Ons?$/i,          name:'Add-Ons',            feeType:'monthly',     mandatory:false },
+      { re:/^Incidentals?$/i,           name:'Incidentals',        feeType:'situational', mandatory:false },
+      { re:/^One[-\s]?Time\s*(?:Fees?|Charges?)?$/i, name:'One-Time Fees', feeType:'one_time', mandatory:false },
+      { re:/^Move[-\s]?In/i,            name:'Move-In Fees',       feeType:'one_time',    mandatory:false },
+      { re:/^(?:Security\s*)?Deposits?$/i, name:'Deposits',        feeType:'one_time',    mandatory:false },
+      { re:/^Pet\s*(?:Fees?|Policies?)?$/i, name:'Pet Fees',       feeType:'monthly',     mandatory:false },
+    ];
+
+    // Insert newline before each known section header when it appears mid-text
+    // (i.e. immediately after a word/digit char with no bullet between them).
+    // Use explicit literal patterns — no regex transformation, no greedy wildcards.
+    [
+      /([a-z0-9)])\s*(Application\s*Fees?)/gi,
+      /([a-z0-9)])\s*(Monthly\s*Fees?)/gi,
+      /([a-z0-9)])\s*(Recurring\s*Charges?)/gi,
+      /([a-z0-9)])\s*(Add[-\s]?Ons?)(?=\s*•|\s*$)/gi,
+      /([a-z0-9)])\s*(Incidentals?)(?=\s*•|\s*$)/gi,
+      /([a-z0-9)])\s*(Move[-\s]?In(?:\s*Fees?)?)/gi,
+      /([a-z0-9)])\s*(One[-\s]?Time(?:\s*Fees?)?)/gi,
+    ].forEach(re => { raw = raw.replace(re, '$1\n$2'); });
+
+    // Put each bullet on its own line
+    raw = raw.replace(/•/g, '\n•').replace(/\n{2,}/g, '\n').trim();
+
+    const lines = raw.split('\n').map(l => l.trim()).filter(l => l);
+
+    const parsedBuckets = [];
+    let curBucket = null, curCat = null, curFee = null;
+
+    function flushFee() {
+      if (!curFee) return;
+      if (!curCat) { curCat = { name:(curBucket?curBucket.name:'General')+' Fees', fees:[] }; if (curBucket) curBucket.categories.push(curCat); }
+      curCat.fees.push(curFee); curFee = null;
+    }
+
+    for (const line of lines) {
+      const isBullet = line.startsWith('•');
+      const clean = line.replace(/^[•\s]+/,'').trim();
+      if (!clean) continue;
+
+      // Bucket header?
+      if (!isBullet) {
+        const bd = BUCKET_DEFS.find(d => d.re.test(clean));
+        if (bd) {
+          flushFee();
+          curBucket = { name:bd.name, feeType:bd.feeType, mandatory:bd.mandatory, categories:[] };
+          curCat    = { name:bd.name+' Fees', fees:[] };
+          curBucket.categories.push(curCat);
+          parsedBuckets.push(curBucket);
+          // Handle any text pasted right after the header on same token
+          const remainder = clean.replace(bd.re,'').trim();
+          if (remainder && _sfcHasPrice(remainder)) { curFee = _sfcParseFee(remainder, bd.feeType, bd.mandatory); }
+          continue;
+        }
+
+        // Sub-category line (no price/%, short, title-like)
+        if (curBucket && !_sfcHasPrice(clean) && !_sfcHasPct(clean) && !_sfcHasVaries(clean) && clean.length < 70) {
+          flushFee();
+          curCat = { name:clean.replace(/:$/,'').trim(), fees:[] };
+          curBucket.categories.push(curCat);
+          continue;
+        }
+      }
+
+      // Annotation lines (Varies by …, Not required …)
+      if (/^(?:varies\s*by|not\s*required|inclusive\s*of)/i.test(clean)) {
+        if (curFee) curFee.desc += (curFee.desc?' ':'')+clean;
+        continue;
+      }
+
+      // Bedroom-price continuation (Studio: $250, One Bedroom: $350 …)
+      if (_sfcIsBedLine(clean) && curFee) {
+        curFee.logic='Unit Type'; curFee.bedroom=true;
+        const pm=clean.match(/\$?([\d.,]+)/); const price=pm?pm[1]:'0';
+        if (/studio/i.test(clean))                   curFee.bedPrices['Studio']=price;
+        if (/one\s*bed|1\s*(br|bed)/i.test(clean))   curFee.bedPrices['1 BR']=price;
+        if (/two\s*bed|2\s*(br|bed)/i.test(clean))   curFee.bedPrices['2 BR']=price;
+        if (/three\s*bed|3\s*(br|bed)/i.test(clean)) curFee.bedPrices['3+ BR']=price;
+        if (/four\s*bed|4\s*(br|bed)/i.test(clean))  curFee.bedPrices['4+ BR']=price;
+        continue;
+      }
+
+      // Default: parse as a fee line
+      if (!curBucket) {
+        curBucket = { name:'Fees', feeType:'monthly', mandatory:true, categories:[] };
+        curCat    = { name:'General Fees', fees:[] };
+        curBucket.categories.push(curCat); parsedBuckets.push(curBucket);
+      }
+      flushFee();
+      curFee = _sfcParseFee(clean, curBucket.feeType, curBucket.mandatory);
+    }
+    flushFee();
+
+    if (!parsedBuckets.length) {
+      document.getElementById('importString').value = COMMUNITY_ADDITIONAL_FEE;
+      return processAutoFill();
+    }
+
+    // Build UI (reverse so first bucket ends up at top after prepend)
+    parsedBuckets.reverse().forEach(bucket => {
+      const bId = createNewBucket(bucket.name);
+      bucket.categories.forEach(cat => {
+        if (!cat.fees.length) return;
+        const cId = addCategory(bId, cat.name);
+        cat.fees.forEach(fd => addFeeRow(cId, fd));
+      });
+    });
+
+    showToast('Seeded from community fees — review and save!', 'success');
   }
 
   // ─── Collapse All ─────────────────────────────────────────────────────────
@@ -643,6 +802,7 @@
       document.getElementById('dynamic-fee-containers').innerHTML = '';
       document.getElementById('globalDisclaimers').value = '';
 
+      // Extract <angle-bracket> disclaimers
       const disclaimerRegex = /<([\s\S]+?)>/g;
       let match, disclaimers = [];
       while ((match = disclaimerRegex.exec(rawInput)) !== null) disclaimers.push(match[1].trim());
@@ -651,81 +811,119 @@
         rawInput = rawInput.replace(/<[\s\S]+?>/g,'').trim();
       }
 
-      const sections = rawInput.replace(/\r\n/g,'\n').split(/\n{2,}/);
-      sections.forEach(section => {
-        const lines = section.trim().split('\n').filter(l => l.trim());
-        if (!lines.length) return;
-        const bucketName = lines[0].replace(/[:\-*#]+$/,'').trim();
-        if (!bucketName) return;
+      // Extract *footnotes into global disclaimers
+      const footnotes = [];
+      rawInput = rawInput.replace(/\*{1,2}([^•*\n][^•*\n]*)/g, (_, d) => { footnotes.push(d.trim()); return ' '; });
+      if (footnotes.length) {
+        const existing = document.getElementById('globalDisclaimers').value;
+        document.getElementById('globalDisclaimers').value = [existing, ...footnotes].filter(Boolean).join('\n\n');
+      }
 
-        const bId = createNewBucket(bucketName);
-        const bucketLower = bucketName.toLowerCase();
-        const isSituationalBucket = /incidental|late\s*fee|penalty/i.test(bucketLower);
-        const isOptionalBucket = /add-?on|optional|extra|pet\b|parking/i.test(bucketLower);
+      // Insert newline before each known section header appearing mid-text
+      [
+        /([a-z0-9)])\s*(Application\s*Fees?)/gi,
+        /([a-z0-9)])\s*(Monthly\s*Fees?)/gi,
+        /([a-z0-9)])\s*(Recurring\s*Charges?)/gi,
+        /([a-z0-9)])\s*(Add[-\s]?Ons?)(?=\s*•|\s*$)/gi,
+        /([a-z0-9)])\s*(Incidentals?)(?=\s*•|\s*$)/gi,
+        /([a-z0-9)])\s*(Move[-\s]?In(?:\s*Fees?)?)/gi,
+        /([a-z0-9)])\s*(One[-\s]?Time(?:\s*Fees?)?)/gi,
+      ].forEach(re => { rawInput = rawInput.replace(re, '$1\n$2'); });
 
-        let currentCatName = bucketName + ' Fees', currentCatId = null, currentFee = null, parsedFees = [];
+      // Put each bullet on its own line
+      rawInput = rawInput.replace(/•/g, '\n•').replace(/\n{2,}/g, '\n').trim();
 
-        function flushFee() { if (currentFee) { parsedFees.push(currentFee); currentFee=null; } }
-        function flushCategory() {
-          flushFee();
-          if (!parsedFees.length) return;
-          if (!currentCatId) currentCatId = addCategory(bId, currentCatName);
-          parsedFees.forEach(fd => addFeeRow(currentCatId, fd));
-          parsedFees=[]; currentCatId=null;
-        }
+      const lines = rawInput.split('\n').map(l => l.trim()).filter(l => l);
 
-        for (let i=1; i<lines.length; i++) {
-          const line = lines[i].trim();
-          if (!line) continue;
-          const isSubItem = /^[•\-\*·]/.test(line);
-          if (!isSubItem) {
-            const hasDollar=/\$[\d.,]+/.test(line), hasPct=/\d+%/.test(line), hasVaries=/\bvaries\b/i.test(line);
-            if (!hasDollar && !hasPct && !hasVaries) {
-              if (line.endsWith(':') || (line.length<50 && !/\d/.test(line) && /^[A-Z]/.test(line))) {
-                flushCategory(); currentCatName = line.replace(/:$/,'').trim(); continue;
-              }
-            }
-          }
-          if (isSubItem && currentFee) {
-            const item = line.replace(/^[•\-\*·]\s*/,'');
-            if (/studio|bedroom|\bbr\b|\d\s*br/i.test(item)) {
-              currentFee.logic='Unit Type'; currentFee.bedroom=true; currentFee.val1='';
-              const pm=item.match(/\$?([\d.,]+)/); const price=pm?pm[1]:'0';
-              if (/studio/i.test(item)) currentFee.bedPrices['Studio']=price;
-              if (/one\s*bed|1\s*br/i.test(item)) currentFee.bedPrices['1 BR']=price;
-              if (/two\s*bed|2\s*br/i.test(item)) currentFee.bedPrices['2 BR']=price;
-              if (/three\s*bed|3\s*br/i.test(item)) currentFee.bedPrices['3+ BR']=price;
-            } else { currentFee.desc += ' ' + item; }
+      const BUCKET_DEFS = [
+        { re:/^Application\s*Fees?/i,     name:'Application Fees',   feeType:'one_time',    mandatory:true  },
+        { re:/^Monthly\s*Fees?/i,         name:'Monthly Fees',       feeType:'monthly',     mandatory:true  },
+        { re:/^Recurring\s*Charges?/i,    name:'Recurring Charges',  feeType:'monthly',     mandatory:true  },
+        { re:/^Add[-\s]?Ons?$/i,          name:'Add-Ons',            feeType:'monthly',     mandatory:false },
+        { re:/^Incidentals?$/i,           name:'Incidentals',        feeType:'situational', mandatory:false },
+        { re:/^One[-\s]?Time\s*(?:Fees?|Charges?)?$/i, name:'One-Time Fees', feeType:'one_time', mandatory:false },
+        { re:/^Move[-\s]?In/i,            name:'Move-In Fees',       feeType:'one_time',    mandatory:false },
+        { re:/^(?:Security\s*)?Deposits?$/i, name:'Deposits',        feeType:'one_time',    mandatory:false },
+        { re:/^Pet\s*(?:Fees?|Policies?)?$/i, name:'Pet Fees',       feeType:'monthly',     mandatory:false },
+      ];
+
+      const parsedBuckets = [];
+      let curBucket = null, curCat = null, curFee = null;
+
+      function flushFee() {
+        if (!curFee) return;
+        if (!curCat) { curCat = { name:(curBucket?curBucket.name:'General')+' Fees', fees:[] }; if (curBucket) curBucket.categories.push(curCat); }
+        curCat.fees.push(curFee); curFee = null;
+      }
+
+      for (const line of lines) {
+        const isBullet = line.startsWith('•');
+        const clean = line.replace(/^[•\s]+/,'').trim();
+        if (!clean) continue;
+
+        // Bucket header?
+        if (!isBullet) {
+          const bd = BUCKET_DEFS.find(d => d.re.test(clean));
+          if (bd) {
+            flushFee();
+            curBucket = { name:bd.name, feeType:bd.feeType, mandatory:bd.mandatory, categories:[] };
+            curCat    = { name:bd.name+' Fees', fees:[] };
+            curBucket.categories.push(curCat);
+            parsedBuckets.push(curBucket);
+            const remainder = clean.replace(bd.re,'').trim();
+            if (remainder && _sfcHasPrice(remainder)) { curFee = _sfcParseFee(remainder, bd.feeType, bd.mandatory); }
             continue;
           }
-          flushFee();
-          const feeLine = line.replace(/^[•\-\*]\s*/,'');
-          const feeName = feeLine.split(/\s+\$|\s+\d+%|\s+varies/i)[0].replace(/[:\-]+$/,'').trim();
-          const hasDollar=/\$/.test(feeLine), hasPercent=/\d+%/.test(feeLine), hasVaries=/\bvaries\b/i.test(feeLine);
-          const toRangeMatch=feeLine.match(/\$?([\d.,]+)\s+to\s+\$?([\d.,]+)/i);
-          const dashRangeMatch=feeLine.match(/\$?([\d.,]+)\s*[-–]\s*\$?([\d.,]+)/);
-          const pctMatch=feeLine.match(/([\d.,]+)%/);
-          const singleMatch=feeLine.match(/\$?([\d.,]+)/);
-          let logic='Fixed', val1='', val2='';
-          if (hasVaries) logic='Varies';
-          else if (toRangeMatch) { logic='Range'; val1=toRangeMatch[1]; val2=toRangeMatch[2]; }
-          else if (dashRangeMatch && dashRangeMatch[1]!==dashRangeMatch[2]) { logic='Range'; val1=dashRangeMatch[1]; val2=dashRangeMatch[2]; }
-          else if (hasPercent && !hasDollar) { logic='Percentage'; val1=pctMatch?pctMatch[1]:''; }
-          else if (singleMatch) { logic='Fixed'; val1=singleMatch[1]; }
-          let multiplier='None';
-          if (/per\s*applicant/i.test(feeLine)) multiplier='Per Applicant';
-          else if (/per\s*pet/i.test(feeLine)) multiplier='Per Pet';
-          let frequency='Monthly';
-          if (isSituationalBucket || /\bsituational\b/i.test(feeLine)) frequency='Situational';
-          else if (/\bone[-\s]?time\b/i.test(feeLine)) frequency='One-Time';
-          else if (/\bdeposit\b/i.test(feeName) && !/\bmonthly\b/i.test(feeLine)) frequency='One-Time';
-          else if (/\bapplication\b|\badmin\b|\bsetup\b/i.test(feeName) && !/\bmonthly\b/i.test(feeLine)) frequency='One-Time';
-          const mndt = !isOptionalBucket && !(/per\s*pet/i.test(feeLine));
-          const isBasePrice = /^base\s*rent$/i.test(feeName);
-          currentFee = { name:feeName, logic, val1, val2, mndt, counter:multiplier!=='None', qMin:1, qMax:multiplier!=='None'?3:2, bedroom:false, bedPrices:{}, desc:feeLine, preInfo:'', postInfo:'', frequency, multiplier, isBasePrice };
+
+          // Sub-category line (no price, short, title-like)
+          if (curBucket && !_sfcHasPrice(clean) && !_sfcHasPct(clean) && !_sfcHasVaries(clean) && clean.length < 70) {
+            flushFee();
+            curCat = { name:clean.replace(/:$/,'').trim(), fees:[] };
+            curBucket.categories.push(curCat);
+            continue;
+          }
         }
-        flushCategory();
+
+        // Annotation lines
+        if (/^(?:varies\s*by|not\s*required|inclusive\s*of)/i.test(clean)) {
+          if (curFee) curFee.desc += (curFee.desc?' ':'')+clean;
+          continue;
+        }
+
+        // Bedroom-price continuation
+        if (_sfcIsBedLine(clean) && curFee) {
+          curFee.logic='Unit Type'; curFee.bedroom=true;
+          const pm=clean.match(/\$?([\d.,]+)/); const price=pm?pm[1]:'0';
+          if (/studio/i.test(clean))                   curFee.bedPrices['Studio']=price;
+          if (/one\s*bed|1\s*(br|bed)/i.test(clean))   curFee.bedPrices['1 BR']=price;
+          if (/two\s*bed|2\s*(br|bed)/i.test(clean))   curFee.bedPrices['2 BR']=price;
+          if (/three\s*bed|3\s*(br|bed)/i.test(clean)) curFee.bedPrices['3+ BR']=price;
+          if (/four\s*bed|4\s*(br|bed)/i.test(clean))  curFee.bedPrices['4+ BR']=price;
+          continue;
+        }
+
+        // Default: parse as a fee line
+        if (!curBucket) {
+          curBucket = { name:'Fees', feeType:'monthly', mandatory:true, categories:[] };
+          curCat    = { name:'General Fees', fees:[] };
+          curBucket.categories.push(curCat); parsedBuckets.push(curBucket);
+        }
+        flushFee();
+        curFee = _sfcParseFee(clean, curBucket.feeType, curBucket.mandatory);
+      }
+      flushFee();
+
+      // Build UI (reverse so first bucket ends up at top after prepend)
+      parsedBuckets.reverse().forEach(bucket => {
+        const bId = createNewBucket(bucket.name);
+        bucket.categories.forEach(cat => {
+          if (!cat.fees.length) return;
+          const cId = addCategory(bId, cat.name);
+          cat.fees.forEach(fd => addFeeRow(cId, fd));
+        });
       });
+
+      showToast('Auto-filled — review and save!', 'success');
     } catch (err) {
       console.error('Auto-Fill Error:', err);
       showToast('Auto-fill error — check console.', 'error');
@@ -798,8 +996,7 @@
     const cfg = #{raw @config_json};
     if (!cfg || !cfg.buckets || !cfg.buckets.length) {
       if (COMMUNITY_ADDITIONAL_FEE) {
-        document.getElementById('importString').value = COMMUNITY_ADDITIONAL_FEE;
-        setTimeout(() => processAutoFill(), 100);
+        setTimeout(() => seedFromCommunityFees(), 100);
       }
       return;
     }

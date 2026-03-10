@@ -1463,11 +1463,18 @@ function buildUnitBoxHTML(unit) {
               </div>`
       : ``
     }
-        ${unit["pricing_calculator_url"] ? `<div class='unit-details-section engrain-calc-section'>
-          <a class='calculate-btn' href='javascript:void(0);' onclick='openExpenseCalculator("${unit["pricing_calculator_url"]}", false)'>
-            <i class='fa fa-calculator'></i> Calculate
-          </a>
-        </div>` : ''}
+        ${(function() {
+          var calcUrl = '';
+          if (typeof enablePynwheelCalculator !== 'undefined' && enablePynwheelCalculator) {
+            calcUrl = '/communities/' + webCommunity.id + '/pricing_calculators/unit?unit_id=' + unit['id'];
+          } else if (unit["pricing_calculator_url"]) {
+            calcUrl = unit["pricing_calculator_url"];
+          }
+          if (!calcUrl) return '';
+          return '<div class=\'unit-details-section engrain-calc-section\'>' +
+            '<a class=\'calculate-btn\' href=\'javascript:void(0);\' onclick=\'openExpenseCalculator("' + calcUrl + '", false)\'>' +
+            '<i class=\'fa fa-calculator\'></i> Calculate</a></div>';
+        })()}
       </div>
     </div>
   `;
@@ -4401,7 +4408,7 @@ function openExpenseCalculator(calculatorUrl, fromUnitModal) {
   if (!calculatorUrl) return;
 
   // Create iframe dynamically so it doesn't affect page layout when not in use
-  var body = document.querySelector('#engrainCalculatorModal .engrain-calc-body');
+  var body = document.querySelector('#pricingCalculatorModal .engrain-calc-body');
   if (body) {
     var iframe = document.createElement('iframe');
     iframe.id = 'engrainCalcIframe';
@@ -4414,7 +4421,7 @@ function openExpenseCalculator(calculatorUrl, fromUnitModal) {
   }
 
   // Show the calculator
-  $('#engrainCalculatorModal').modal('show');
+  $('#pricingCalculatorModal').modal('show');
 }
 
 /**
@@ -4423,7 +4430,7 @@ function openExpenseCalculator(calculatorUrl, fromUnitModal) {
  */
 function openExpenseCalculatorFromModal() {
   // Get pricing_calculator_url from the button (set by setEngrainCalculatorButton)
-  var calcUrl = $('.calculate-cost-btn').data('pricing-calculator-url') || '';
+  var calcUrl = $('.calculate-cost-btn').attr('data-pricing-calculator-url') || '';
   if (!calcUrl) return;
 
   openExpenseCalculator(calcUrl, false);
@@ -4435,10 +4442,10 @@ function openExpenseCalculatorFromModal() {
  */
 function closeCalculatorGoBackToUnit() {
   // Destroy the iframe to stop any media/network activity
-  var body = document.querySelector('#engrainCalculatorModal .engrain-calc-body');
+  var body = document.querySelector('#pricingCalculatorModal .engrain-calc-body');
   if (body) body.innerHTML = '';
 
-  $('#engrainCalculatorModal').modal('hide');
+  $('#pricingCalculatorModal').modal('hide');
 }
 
 /**
@@ -4449,15 +4456,26 @@ function setEngrainCalculatorButton(element) {
   var $calcBtns = $('.calculate-cost-btn');
   var calcUrl = '';
 
-  // Try to get URL from the element's data attribute (right-rail card)
+  // Resolve unit ID from the element — supports data-unit-id, id="unit_XXX", id="s_XXX"
+  var unitId = null;
   if (element) {
-    calcUrl = $(element).data('pricing-calculator-url') || '';
+    unitId = $(element).data('unit-id') || null;
+    if (!unitId) {
+      var elId = element.id || '';
+      var m = elId.match(/^(?:unit_|s_)(\d+)$/) || $(element).closest('[id^="unit_"]').attr('id')?.match(/^unit_(\d+)$/);
+      if (m) unitId = parseInt(m[1]);
+    }
   }
 
-  // If not found on element, look up from the global units array by unit ID
-  if (!calcUrl && element) {
-    var unitId = $(element).data('unit-id');
-    if (unitId && typeof units !== 'undefined') {
+  // Pynwheel takes priority if enabled
+  if (typeof enablePynwheelCalculator !== 'undefined' && enablePynwheelCalculator && unitId) {
+    calcUrl = '/communities/' + webCommunity.id + '/pricing_calculators/unit?unit_id=' + unitId;
+  }
+
+  // Fall back to Engrain if Pynwheel not enabled
+  if (!calcUrl) {
+    if (element) calcUrl = $(element).data('pricing-calculator-url') || '';
+    if (!calcUrl && unitId && typeof units !== 'undefined') {
       var unit = units.find(function (u) { return u.id === unitId; });
       if (unit) calcUrl = unit['pricing_calculator_url'] || '';
     }

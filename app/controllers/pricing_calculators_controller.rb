@@ -2,6 +2,7 @@ class PricingCalculatorsController < ActionController::Base
   layout "pricing_calculator"
 
   before_action :set_community
+  before_action :check_calculator_enabled
   before_action :set_unit_context      # sets @unit + @floorplan from params[:unit_id]
   before_action :set_calculator_config # can now safely access @unit / @floorplan
 
@@ -17,6 +18,13 @@ class PricingCalculatorsController < ActionController::Base
 
   def set_community
     @community = Community.find(params[:community_id])
+  end
+
+  def check_calculator_enabled
+    unless @community.enable_pynwheel_pricing_calculator?
+      @calculator_disabled = true
+      render :disabled, status: :forbidden and return
+    end
   end
 
   def set_unit_context
@@ -48,5 +56,25 @@ class PricingCalculatorsController < ActionController::Base
 
     # Move-in / available date
     @available_date = @unit&.available_date
+
+    # Apply Now URL
+    @apply_now_url      = compute_apply_now_url
+    @apply_now_provider = @community.data_provider
+    @apply_now_unit_pid = @unit&.provider_unit_id
+  end
+
+  def compute_apply_now_url
+    return nil unless @unit
+    credential = @community.credential
+    return nil unless credential&.apply_now.to_s.in?(%w[true separate_link])
+
+    if credential.apply_now.to_s == 'separate_link'
+      credential.separate_link
+    elsif @community.data_provider == 'realpagesvc'
+      # JS will append MoveInDate + UnitId query params
+      "/communities/#{@community.id}/webpages/apply_now"
+    else
+      @unit.get_availability_url(@floorplan)
+    end
   end
 end

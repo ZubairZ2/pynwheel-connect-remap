@@ -126,7 +126,7 @@
                   %i.fa.fa-laptop
                   %span Units
 
-      - if current_user.is_admin? && current_community.mdu
+      - if current_user.is_admin? && current_community.mdu && current_community.enable_pynwheel_pricing_calculator
         %li.treeview{:class=>"#{controller_name =='calculator_configs' || controller_name =='pricing_calculators' ? 'active' : ''}"}
           %a{:href => "#"}
             %i.fa.fa-calculator

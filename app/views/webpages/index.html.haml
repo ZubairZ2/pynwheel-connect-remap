@@ -364,7 +364,7 @@
 = render partial: "scheduled_tour_modal"
 = render partial: "amenity_virtual_tour_modal"
 = render partial: "data_refresh_modal"
-= render partial: "engrain_calculator_modal"
+= render partial: "pricing_calculator_modal"
 
 #communityWebpagesData{data: { 
     currency: @community.get_currency_symbol(), 
@@ -390,6 +390,8 @@
   var largeImageHeight = 166;
   var turnAvailabilityOn = "#{@community.turn_availability_on?}" === "true"
   var isFloorPlanColorEnabled = "#{@community.enable_floorplan_level_color?}" === "true"
+  var enablePynwheelCalculator = #{@community.enable_pynwheel_pricing_calculator? ? 'true' : 'false'}
+  var enableEngrainCalculator = #{@community.enable_pricing_calculator? ? 'true' : 'false'}
   var fontFamily = "#{@font_family}"
   var isPartnerMap = "#{@is_partner_map}"
   var isTouchMap = "#{@is_touch_map}" === "true"
