@@ -21,7 +21,7 @@
             .c-modal-wrapper.modal-image-fav
               .c-modal-body
                 .c-m-iframe-content
-                  = image_tag unit.standard_image_url.present? ? unit.validated_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.validated_image_url : "/assets/default.jpeg"), :id => "#{unit.id}-res-zoomable-image"
+                  = image_tag unit.standard_image_url.present? ? unit.validated_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.validated_image_url : (floorplan.present? && floorplan.secondary_image.present? ? floorplan.secondary_image.url : "/assets/default.jpeg")), :id => "#{unit.id}-res-zoomable-image"
               .c-modal-footer-fav.zooming-content.zoomable-map-container
                 %a.plus-action.zooming-action.zoom-controls{:href => "#", :id => "#{unit.id}-res-fav-zoom-in"}
                   %img{:src => "/assets/plus.png"}/
@@ -179,7 +179,7 @@
         .c-modal-wrapper.h-class
           .c-modal-body.centered-image
             .c-m-iframe-content
-              = image_tag unit.standard_image_url.present? ? unit.validated_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.validated_image_url : "/assets/default.jpeg"), :id => "#{unit.id}-zoomable-fav-image"
+              = image_tag unit.standard_image_url.present? ? unit.validated_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.validated_image_url : (floorplan.present? && floorplan.secondary_image.present? ? floorplan.secondary_image.url : "/assets/default.jpeg")), :id => "#{unit.id}-zoomable-fav-image"
           .c-modal-footer-fav.zooming-content.zoomable-map-container
             %a.plus-action.zooming-action.zoom-in-modal.zoom-controls{:href => "#", :id => "#{unit.id}-fav-zoom-in"}
               %img{:src => "/assets/plus.png"}/

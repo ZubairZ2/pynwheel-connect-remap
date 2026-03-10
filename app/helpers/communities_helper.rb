@@ -635,7 +635,7 @@ module CommunitiesHelper
   private
 
   def fetch_image_url floorplan, unit
-    unit&.validated_image_url || floorplan&.validated_image_url || "/assets/default.jpeg"
+    unit&.validated_image_url || floorplan&.validated_image_url || floorplan&.secondary_image&.url.presence || "/assets/default.jpeg"
   end
 
   def fetch_unit_data_attributes(unit, struct, show_ops_map = false)
