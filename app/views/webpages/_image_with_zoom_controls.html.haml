@@ -1,6 +1,9 @@
-.c-modal-body#zoomable-modal-image.centered-image
-  .c-m-iframe-content
-    %img#floorplan-image{:src => "/assets/default.jpeg", :title => ""}/
+.fp-slide-wrapper{style: "position: relative;"}
+  .c-modal-body#zoomable-modal-image.centered-image
+    .c-m-iframe-content
+      %img#floorplan-image{:src => "/assets/default.jpeg", :title => ""}/
+  %button#fp-prev-btn.hidden{type: "button", onclick: "fpUnitPrev()", style: "position: absolute; left: 10px; top: 50%; transform: translateY(-50%); z-index: 20; background: rgba(255,255,255,0.92); border: none; color: #444; font-size: 22px; font-weight: 300; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; pointer-events: auto; line-height: 1; box-shadow: 0 2px 8px rgba(0,0,0,0.18); display: flex; align-items: center; justify-content: center; padding: 0;"} ❮
+  %button#fp-next-btn.hidden{type: "button", onclick: "fpUnitNext()", style: "position: absolute; right: 10px; top: 50%; transform: translateY(-50%); z-index: 20; background: rgba(255,255,255,0.92); border: none; color: #444; font-size: 22px; font-weight: 300; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; pointer-events: auto; line-height: 1; box-shadow: 0 2px 8px rgba(0,0,0,0.18); display: flex; align-items: center; justify-content: center; padding: 0;"} ❯
 .c-modal-footer.zooming-content.zoomable-map-container
   %a.plus-action.zooming-action.zoom-in-modal.zoom-controls{:href => "#"}
     %img{:src => "/assets/plus.png"}/

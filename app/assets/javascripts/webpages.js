@@ -1107,6 +1107,8 @@ function showMarkers() {
           $markerEl.data("bathrooms") +
           '" data-floorplan-image="' +
           $markerEl.data("floorplan-image") +
+          '" data-secondary-image="' +
+          $markerEl.data("secondary-image") +
           '" data-availability-url="' +
           $markerEl.data("availability-url") +
           '" data-lease-term="' +
@@ -1567,6 +1569,7 @@ function buildUnitMarkerHTML(unit, f) {
       data-bedrooms="${unitDataAttributes["data-bedrooms"]}"
       data-bathrooms="${unitDataAttributes["data-bathrooms"]}"
       data-floorplan-image="${unitDataAttributes["data-floorplan-image"]}"
+      data-secondary-image="${unitDataAttributes["data-secondary-image"]}"
       data-floor="${unitDataAttributes["data-floor"]}"
       data-sold="${unitDataAttributes["data-sold"]}"
       data-available="${unitDataAttributes["data-available"]}"
@@ -2880,24 +2883,59 @@ function setUnitFavourite(element) {
     });
 }
 
+var unitImages = null;
+var unitImageIdx = 0;
+
 function setFloorplanImage(element) {
-  const $el = $(element);
-  const imgSrc = $el.data("floorplan-image") || "";
-  const $modal = $("#unitModal");
+  var $el = $(element);
+  var imgSrc = $el.data("floorplan-image") || "";
+  var secondarySrc = $el.data("secondary-image") || "";
+  var defaultImg = "/assets/default.jpeg";
+  var finalImg = imgSrc || defaultImg;
+  var $modal = $("#unitModal");
+  var $imgs = $modal.find("#floorplan-image, #responsive-floorplan-image");
+  var $prev = $modal.find("#fp-prev-btn");
+  var $next = $modal.find("#fp-next-btn");
 
-  const defaultImg = "/assets/default.jpeg";
-  const finalImg = imgSrc !== "" ? imgSrc : defaultImg;
+  unitImages = null;
+  unitImageIdx = 0;
+  $imgs.attr("src", finalImg);
 
-  // Set images
-  $modal.find("#floorplan-image").attr("src", finalImg);
-  $modal.find("#responsive-floorplan-image").attr("src", finalImg);
+  var hasTwo = secondarySrc && secondarySrc !== finalImg && finalImg !== defaultImg;
+  if (hasTwo) {
+    unitImages = [finalImg, secondarySrc];
+    $prev.removeClass("hidden");
+    $next.removeClass("hidden");
+  } else {
+    unitImages = null;
+    $prev.addClass("hidden");
+    $next.addClass("hidden");
+  }
 
-  // Apply extra styles only for non-small screens and non-default image
   if (!smallScreen() && finalImg !== defaultImg) {
     $(".c-modal-sidebar-filters").addClass("c-modal-sidebar-filters-bottom");
     $(".c-m-iframe-content").addClass("c-m-iframe-content-bottom");
   }
 }
+
+function fpUnitPrev() {
+  if (!unitImages) { return; }
+  unitImageIdx = (unitImageIdx - 1 + unitImages.length) % unitImages.length;
+  $("#floorplan-image, #responsive-floorplan-image").attr("src", unitImages[unitImageIdx]);
+  resetToDefaultZoom();
+}
+
+function fpUnitNext() {
+  if (!unitImages) { return; }
+  unitImageIdx = (unitImageIdx + 1) % unitImages.length;
+  $("#floorplan-image, #responsive-floorplan-image").attr("src", unitImages[unitImageIdx]);
+  resetToDefaultZoom();
+}
+
+$(document).on("hidden.bs.modal", "#unitModal", function () {
+  unitImages = null;
+  unitImageIdx = 0;
+});
 
 function setDataProvider(element) {
   const $el = $(element);

@@ -4,6 +4,9 @@
     - @units.each do |unit|
       - floorplan = unit.floorplan
       - pricing_calculator_url = (@community.enable_pricing_calculator? && @community.pricing_calculator_embed_code.present?) ? "https://sightmap.com/embed/#{@community.pricing_calculator_embed_code}?unit_number=#{unit.marketing_name}&mode=expense_calculator" : nil
+      - fav_primary_img = unit.standard_image_url.present? ? unit.validated_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.validated_image_url : nil)
+      - fav_secondary_img = floorplan.present? && floorplan.secondary_image.present? ? floorplan.secondary_image.url : nil
+      - fav_display_img = fav_primary_img || fav_secondary_img || "/assets/default.jpeg"
       .map-slide-item
         .c-modal-header
           %h5.c-modal-title 
@@ -19,9 +22,17 @@
               %h1.section-title 
                 = floorplan.present? ? floorplan.name : nil
             .c-modal-wrapper.modal-image-fav
-              .c-modal-body
-                .c-m-iframe-content
-                  = image_tag unit.standard_image_url.present? ? unit.validated_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.validated_image_url : (floorplan.present? && floorplan.secondary_image.present? ? floorplan.secondary_image.url : "/assets/default.jpeg")), :id => "#{unit.id}-res-zoomable-image"
+              - if fav_primary_img.present? && fav_secondary_img.present?
+                .fp-slide-wrapper{"data-primary" => fav_primary_img, "data-secondary" => fav_secondary_img, "data-target" => "#{unit.id}-res-zoomable-image", style: "position: relative;"}
+                  .c-modal-body
+                    .c-m-iframe-content
+                      = image_tag fav_display_img, :id => "#{unit.id}-res-zoomable-image"
+                  %button.fav-prev-btn{type: "button", style: "position: absolute; left: 10px; top: 50%; transform: translateY(-50%); z-index: 20; background: rgba(255,255,255,0.92); border: none; color: #444; font-size: 22px; font-weight: 300; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; pointer-events: auto; line-height: 1; box-shadow: 0 2px 8px rgba(0,0,0,0.18); display: flex; align-items: center; justify-content: center; padding: 0;"} ❮
+                  %button.fav-next-btn{type: "button", style: "position: absolute; right: 10px; top: 50%; transform: translateY(-50%); z-index: 20; background: rgba(255,255,255,0.92); border: none; color: #444; font-size: 22px; font-weight: 300; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; pointer-events: auto; line-height: 1; box-shadow: 0 2px 8px rgba(0,0,0,0.18); display: flex; align-items: center; justify-content: center; padding: 0;"} ❯
+              - else
+                .c-modal-body
+                  .c-m-iframe-content
+                    = image_tag fav_display_img, :id => "#{unit.id}-res-zoomable-image"
               .c-modal-footer-fav.zooming-content.zoomable-map-container
                 %a.plus-action.zooming-action.zoom-controls{:href => "#", :id => "#{unit.id}-res-fav-zoom-in"}
                   %img{:src => "/assets/plus.png"}/
@@ -177,9 +188,17 @@
                     = @community.pricing_message
 
         .c-modal-wrapper.h-class
-          .c-modal-body.centered-image
-            .c-m-iframe-content
-              = image_tag unit.standard_image_url.present? ? unit.validated_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.validated_image_url : (floorplan.present? && floorplan.secondary_image.present? ? floorplan.secondary_image.url : "/assets/default.jpeg")), :id => "#{unit.id}-zoomable-fav-image"
+          - if fav_primary_img.present? && fav_secondary_img.present?
+            .fp-slide-wrapper{"data-primary" => fav_primary_img, "data-secondary" => fav_secondary_img, "data-target" => "#{unit.id}-zoomable-fav-image", style: "position: relative;"}
+              .c-modal-body.centered-image
+                .c-m-iframe-content
+                  = image_tag fav_display_img, :id => "#{unit.id}-zoomable-fav-image"
+              %button.fav-prev-btn{type: "button", style: "position: absolute; left: 10px; top: 50%; transform: translateY(-50%); z-index: 20; background: rgba(255,255,255,0.92); border: none; color: #444; font-size: 22px; font-weight: 300; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; pointer-events: auto; line-height: 1; box-shadow: 0 2px 8px rgba(0,0,0,0.18); display: flex; align-items: center; justify-content: center; padding: 0;"} ❮
+              %button.fav-next-btn{type: "button", style: "position: absolute; right: 10px; top: 50%; transform: translateY(-50%); z-index: 20; background: rgba(255,255,255,0.92); border: none; color: #444; font-size: 22px; font-weight: 300; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; pointer-events: auto; line-height: 1; box-shadow: 0 2px 8px rgba(0,0,0,0.18); display: flex; align-items: center; justify-content: center; padding: 0;"} ❯
+          - else
+            .c-modal-body.centered-image
+              .c-m-iframe-content
+                = image_tag fav_display_img, :id => "#{unit.id}-zoomable-fav-image"
           .c-modal-footer-fav.zooming-content.zoomable-map-container
             %a.plus-action.zooming-action.zoom-in-modal.zoom-controls{:href => "#", :id => "#{unit.id}-fav-zoom-in"}
               %img{:src => "/assets/plus.png"}/
@@ -207,4 +226,34 @@
     $('.hide-more-option').addClass('hidden');
     $('.show-more-option-fav').removeClass('hidden');
     $('.pricing-option-for-fav').addClass('hidden');
+  });
+
+  var favImages = {};
+  var favImageIdx = {};
+
+  $(document).ready(function () {
+    $(".fp-slide-wrapper").each(function () {
+      var $nav = $(this);
+      var targetId = $nav.data("target");
+      favImages[targetId] = [$nav.data("primary"), $nav.data("secondary")];
+      favImageIdx[targetId] = 0;
+    });
+  });
+
+  $(document).on("click", ".fav-prev-btn", function () {
+    var $nav = $(this).closest(".fp-slide-wrapper");
+    var targetId = $nav.data("target");
+    var imgs = favImages[targetId];
+    if (!imgs) { return; }
+    favImageIdx[targetId] = (favImageIdx[targetId] - 1 + imgs.length) % imgs.length;
+    $("#" + targetId).attr("src", imgs[favImageIdx[targetId]]);
+  });
+
+  $(document).on("click", ".fav-next-btn", function () {
+    var $nav = $(this).closest(".fp-slide-wrapper");
+    var targetId = $nav.data("target");
+    var imgs = favImages[targetId];
+    if (!imgs) { return; }
+    favImageIdx[targetId] = (favImageIdx[targetId] + 1) % imgs.length;
+    $("#" + targetId).attr("src", imgs[favImageIdx[targetId]]);
   });

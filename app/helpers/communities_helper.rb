@@ -4,7 +4,7 @@ module CommunitiesHelper
 
   DATA_ATTRIBUTES_SAME_KEYS = %w[
     is-fav availability-url community-property-id floorplan-name square-feet availability bedrooms
-    bathrooms floorplan-image floor sold available
+    bathrooms floorplan-image secondary-image floor sold available
   ].freeze
 
   DEFAULT_FONT_SIZE = 30
@@ -308,6 +308,7 @@ module CommunitiesHelper
       lease_term: unit.lease_term,
       availability_url: unit.get_availability_url(),
       floorplan_image: fetch_image_url(floorplan, unit),
+      secondary_image: floorplan&.secondary_image&.url.presence || "",
       is_fav: unit&.community&.favorite_stop&.favorite_unit&.include?(unit.id.to_s) || unit_id_is_in_cookies?(cookies[:favorite_unit_ids], unit.id),
       floorplan_name: if floorplan.present?
                         floorplan.name
@@ -368,6 +369,7 @@ module CommunitiesHelper
                              end,
       availability_url: unit.get_availability_url(),
       floorplan_image: fetch_image_url(floorplan, unit),
+      secondary_image: floorplan&.secondary_image&.url.presence || "",
       floorplan_name: if floorplan.present?
                         floorplan.name
                       else
