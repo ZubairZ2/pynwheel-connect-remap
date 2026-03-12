@@ -176,6 +176,7 @@ module Api
                                  hide_decimals(floorplan.square_feet)
                                end,
               floorplanId:       unit.floorplan_id,
+              floorplanName:     floorplan&.name,
               pointerData:       unit.pointer_data,
               market_rent:       unit.get_market_rent(),
               availability:      unit.availability,
