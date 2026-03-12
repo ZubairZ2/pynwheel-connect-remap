@@ -67,8 +67,8 @@
 
       this._showLoading("Verifying partner...");
 
-      if (!cfg.apiKey)     return this._showError("API Key is required.");
-      if (!cfg.propertyId) return this._showError("propertyId is required.");
+      if (!cfg.apiKey)      return this._showError("API Key is required.");
+      if (!cfg.propertyId)  return this._showError("propertyId is required.");
 
       // Pull the API key into a local variable only — it will NOT be
       // stored anywhere on the SDK object after _verifyPartner returns.
@@ -111,23 +111,20 @@
     // ----------------------------------------------------
     _bootAfterSVGLoad() {
       this._renderMaps();
-
-      // Bind events early (always!)
       this._bindUnitEvents();
 
-      // If floor given → highlight floor first
       if (this.config.floor) {
         this.changeFloor(this.config.floor);
         return;
       }
 
-      // Otherwise highlight all
       this._highlightAllUnits();
     },
 
     // ----------------------------------------------------
     // PARTNER API CALLS
     // ----------------------------------------------------
+
     /**
      * One-time call with X-API-Key.
      * Returns { success, sessionToken } on success.
@@ -189,15 +186,15 @@
     },
 
     _indexUnits() {
-      this.unitsByMap = {};
-      this.pointerIdsByMap = {};
-      this.unitsByPointerIdByMap = {};
+      this.unitsByMap             = {};
+      this.pointerIdsByMap        = {};
+      this.unitsByPointerIdByMap  = {};
 
       (this.data.units || []).forEach(u => {
         const mapId = String(u.mapId);
-        if (!this.unitsByMap[mapId]) this.unitsByMap[mapId] = [];
-        if (!this.pointerIdsByMap[mapId]) this.pointerIdsByMap[mapId] = [];
-        if (!this.unitsByPointerIdByMap[mapId]) this.unitsByPointerIdByMap[mapId] = {};
+        if (!this.unitsByMap[mapId])             this.unitsByMap[mapId]             = [];
+        if (!this.pointerIdsByMap[mapId])        this.pointerIdsByMap[mapId]        = [];
+        if (!this.unitsByPointerIdByMap[mapId])  this.unitsByPointerIdByMap[mapId]  = {};
 
         this.unitsByMap[mapId].push(u);
 
@@ -272,7 +269,7 @@
 
     _parseSVG(svgText) {
       const parser = new DOMParser();
-      const doc = parser.parseFromString(svgText, "image/svg+xml");
+      const doc    = parser.parseFromString(svgText, "image/svg+xml");
       return doc.querySelector("svg");
     },
 
@@ -282,7 +279,7 @@
     // ----------------------------------------------------
     _renderMaps() {
       const c = this.container;
-      c.innerHTML = "";               // remove any previous SVG + controls
+      c.innerHTML = "";
       c.style.position = "relative";
 
       if (!this.activeMapId || !this._mapExists(this.activeMapId)) return;
@@ -294,14 +291,12 @@
       clone.setAttribute("data-map-id", this.activeMapId);
       clone.style.display = "block";
 
-      // Apply global text styles (once per SVG)
       this._applyGlobalLabelStyles(clone, this.config.styles.unitLabels);
 
-      // AUTO SCALE SVG: fit inside whatever container partner gives
       clone.removeAttribute("width");
       clone.removeAttribute("height");
       clone.setAttribute("preserveAspectRatio", "xMidYMid meet");
-      clone.style.width = "100%";
+      clone.style.width  = "100%";
       clone.style.height = "100%";
 
       c.appendChild(clone);
@@ -310,10 +305,7 @@
         this._renderZoomControls();
       }
 
-      // Enable pan/zoom on the newly rendered SVG
       this._enablePanZoom(clone);
-
-      // Container should constrain the SVG
       c.style.overflow = "hidden";
     },
 
@@ -325,11 +317,11 @@
       return new Promise((resolve, reject) => {
         if (window.svgPanZoom) return resolve();
 
-        const s = document.createElement("script");
-        s.src = "https://cdn.jsdelivr.net/npm/svg-pan-zoom/dist/svg-pan-zoom.min.js";
-        s.async = true;
-        s.onload = resolve;
-        s.onerror = () => reject("Failed to load svg-pan-zoom");
+        const s    = document.createElement("script");
+        s.src      = "https://cdn.jsdelivr.net/npm/svg-pan-zoom/dist/svg-pan-zoom.min.js";
+        s.async    = true;
+        s.onload   = resolve;
+        s.onerror  = () => reject("Failed to load svg-pan-zoom");
         document.head.appendChild(s);
       });
     },
@@ -338,63 +330,113 @@
       if (!window.svgPanZoom) return;
 
       if (svgEl._pz) {
-        try { svgEl._pz.destroy(); } catch {}
+        try { svgEl._pz.destroy(); } catch { }
       }
 
       svgEl._pz = svgPanZoom(svgEl, {
-        zoomEnabled: true,
-        panEnabled: true,
-        controlIconsEnabled: false,
+        zoomEnabled:          true,
+        panEnabled:           true,
+        controlIconsEnabled:  false,
         mouseWheelZoomEnabled: true,
-        dblClickZoomEnabled: false,
-
-        fit: true,
-        center: true,
-
-        contain: true,                // stays inside container
-        viewportSelector: null,
-        minZoom: 0.5,
-        maxZoom: 4,
-
+        dblClickZoomEnabled:  false,
+        fit:                  true,
+        center:               true,
+        contain:              true,
+        viewportSelector:     null,
+        minZoom:              0.5,
+        maxZoom:              4,
         zoomScaleSensitivity: 0.15,
-        beforeZoom: function () { },
-        onZoom: function () {
-          // keep map roughly centered as user zooms
-          this.center();
-        }
+        beforeZoom:           function () { },
+        onZoom:               function () { this.center(); }
       });
 
-      // Ensure center on load
       svgEl._pz.fit();
       svgEl._pz.center();
     },
 
-        // ----------------------------------------------------
+    // ----------------------------------------------------
+    // FLOORS (PUBLIC API)
+    // ----------------------------------------------------
+
+    /**
+     * Returns a sorted array of floor objects derived from units.
+     * Each object: { floor: Number, mapId: String }
+     * Use with changeFloor(floor) or changeMap(mapId).
+     */
+    getFloors() {
+      const seen  = new Map(); // floor → mapId
+
+      (this.data.units || []).forEach(u => {
+        const f = Number(u.floor);
+        if (isNaN(f) || u.floor == null || u.floor === "") return;
+        if (!seen.has(f)) seen.set(f, u.mapId != null ? String(u.mapId) : null);
+      });
+
+      return [...seen.entries()]
+        .sort(([a], [b]) => a - b)
+        .map(([floor, mapId]) => ({ floor, mapId }));
+    },
+
+    /**
+     * Returns all floorplans for the property.
+     * Each object: { floorplanId, name, bedrooms, bathrooms, market_rent, square_feet,
+     *                description, availability_url, primaryImage, secondaryImage }
+     */
+    getFloorplans() {
+      return (this.data.floorplans || []).slice();
+    },
+
+    /**
+     * Returns all community amenities for the property.
+     * Each object: { amenityId, name, description, amenityType, image, directionalText, additionalImages }
+     */
+    getAmenities() {
+      return (this.data.amenities || []).slice();
+    },
+
+    /**
+     * Returns all units for the property.
+     * Pass an optional filters object to narrow results:
+     *   { floor, mapId, floorplanId, available, bedrooms, bathrooms }
+     */
+    getUnits(filters) {
+      let units = (this.data.units || []).slice();
+
+      if (!filters) return units;
+
+      if (filters.floor      != null) units = units.filter(u => String(u.floor)      === String(filters.floor));
+      if (filters.mapId      != null) units = units.filter(u => String(u.mapId)      === String(filters.mapId));
+      if (filters.floorplanId != null) units = units.filter(u => String(u.floorplanId) === String(filters.floorplanId));
+      if (filters.bedrooms   != null) units = units.filter(u => String(u.bedrooms)   === String(filters.bedrooms));
+      if (filters.bathrooms  != null) units = units.filter(u => String(u.bathrooms)  === String(filters.bathrooms));
+      if (filters.available  != null) units = units.filter(u => u.available === filters.available);
+
+      return units;
+    },
+
+    // ----------------------------------------------------
     // MANUAL SELECT / UNSELECT (PUBLIC API)
     // ----------------------------------------------------
     selectUnit(unitId, colorCode) {
       const activeSvg = this._getActiveSvg();
       if (!activeSvg) return;
 
-      const id = String(unitId);
+      const id    = String(unitId);
       const units = this.unitsByMap[this.activeMapId] || [];
-      const unit = units.find(u =>
+      const unit  = units.find(u =>
         String(u.unitId) === id ||
-        String(u.id) === id ||
+        String(u.id)     === id ||
         String(u.pointerData?.id) === id
       );
 
       if (!unit?.pointerData?.id) return;
 
       const pid = String(unit.pointerData.id);
-      const el = activeSvg.querySelector(`#${CSS.escape(pid)}`);
+      const el  = activeSvg.querySelector(`#${CSS.escape(pid)}`);
       if (!el) return;
 
-      const styles = this.config?.styles || this.defaultStyles;
-      const fillColor =
-        colorCode ||
-        styles.unitColors.hover ||
-        styles.unitColors.available;
+      const styles    = this.config?.styles || this.defaultStyles;
+      const fillColor = colorCode || styles.unitColors.hover || styles.unitColors.available;
 
       el.style.fill = fillColor;
 
@@ -406,47 +448,36 @@
       const activeSvg = this._getActiveSvg();
       if (!activeSvg) return;
 
-      const id = String(unitId);
+      const id    = String(unitId);
       const units = this.unitsByMap[this.activeMapId] || [];
-      const unit = units.find(u =>
+      const unit  = units.find(u =>
         String(u.unitId) === id ||
-        String(u.id) === id ||
+        String(u.id)     === id ||
         String(u.pointerData?.id) === id
       );
 
       if (!unit?.pointerData?.id) return;
 
-      const pid = String(unit.pointerData.id);
-      const el = activeSvg.querySelector(`#${CSS.escape(pid)}`);
+      const pid    = String(unit.pointerData.id);
+      const el     = activeSvg.querySelector(`#${CSS.escape(pid)}`);
       if (!el) return;
 
       const styles = this.config?.styles || this.defaultStyles;
       const status = this._unitStatus(unit);
 
-      // Restore original (status-based) color
       el.style.fill = styles.unitColors[status] || styles.unitColors.available;
-
-      const root = el.closest("g") || el;
-      // Do NOT remove highlight, so hover + click still work
-      // If needed you can allow removing highlight here.
     },
 
     zoomIn() {
       const svg = this._getActiveSvg();
       if (!svg || !svg._pz) return;
-
-      const currentZoom = svg._pz.getZoom();
-      const newZoom = Math.min(currentZoom * 1.25, 4); // maxZoom
-      svg._pz.zoom(newZoom);
+      svg._pz.zoom(Math.min(svg._pz.getZoom() * 1.25, 4));
     },
 
     zoomOut() {
       const svg = this._getActiveSvg();
       if (!svg || !svg._pz) return;
-
-      const currentZoom = svg._pz.getZoom();
-      const newZoom = Math.max(currentZoom / 1.25, 0.5); // minZoom
-      svg._pz.zoom(newZoom);
+      svg._pz.zoom(Math.max(svg._pz.getZoom() / 1.25, 0.5));
     },
 
     // ----------------------------------------------------
@@ -456,13 +487,10 @@
       const id = String(mapId);
       if (!this._mapExists(id)) return;
 
-      this.activeMapId = id;
-      this._lastHoverPid = null; // reset hover state
+      this.activeMapId   = id;
+      this._lastHoverPid = null;
 
-      // Re-render only the active map
       this._renderMaps();
-
-      // Re-apply unit styles + events on the fresh SVG
       this._highlightAllUnits();
       this._bindUnitEvents();
     },
@@ -471,7 +499,6 @@
       const fp = this._findFloorplateByFloor(floorNumber);
 
       if (!fp) {
-        // No specific floorplate → just highlight everything on current map
         this._highlightAllUnits();
         return;
       }
@@ -479,16 +506,12 @@
       const floorMapId = String(fp.mapId);
 
       if (this.activeMapId === floorMapId) {
-        // Same map, only change highlights
         this._highlightUnitsForFloor(floorNumber);
         return;
       }
 
-      // Change map then highlight for that floor
       this.changeMap(floorMapId);
-      setTimeout(() => {
-        this._highlightUnitsForFloor(floorNumber);
-      }, 30);
+      setTimeout(() => { this._highlightUnitsForFloor(floorNumber); }, 30);
     },
 
 
@@ -502,7 +525,7 @@
       this._clearUnitStyles();
 
       const styles = this.config?.styles || this.defaultStyles;
-      const units = this.unitsByMap[this.activeMapId] || [];
+      const units  = this.unitsByMap[this.activeMapId] || [];
 
       units.forEach(unit => {
         const pid = unit.pointerData?.id;
@@ -511,10 +534,8 @@
         const el = activeSvg.querySelector(`#${CSS.escape(pid)}`);
         if (!el) return;
 
-        const status = this._unitStatus(unit);
+        const status  = this._unitStatus(unit);
         el.style.fill = styles.unitColors[status] || styles.unitColors.available;
-
-        // this._applyLabelTextStyles(el, styles.unitLabels);
 
         const root = el.closest("g") || el;
         root.classList.add("pyn-highlight");
@@ -528,7 +549,7 @@
       this._clearUnitStyles();
 
       const styles = this.config.styles;
-      const units = (this.unitsByMap[this.activeMapId] || []).filter(
+      const units  = (this.unitsByMap[this.activeMapId] || []).filter(
         u => String(u.floor) === String(floorNumber)
       );
 
@@ -539,7 +560,7 @@
         const el = activeSvg.querySelector(`#${CSS.escape(String(pid))}`);
         if (!el) return;
 
-        const status = this._unitStatus(u);
+        const status  = this._unitStatus(u);
         el.style.fill = styles.unitColors[status];
 
         const root = el.closest("g") || el;
@@ -547,20 +568,13 @@
       });
     },
 
-    /**
-     * Public: highlight one or many units by unitId.
-     */
-
     highlightUnits(unitIds) {
       if (!unitIds) return;
 
       const activeSvg = this._getActiveSvg();
       if (!activeSvg) return;
 
-      const ids = Array.isArray(unitIds)
-        ? unitIds.map(String)
-        : [String(unitIds)];
-
+      const ids   = Array.isArray(unitIds) ? unitIds.map(String) : [String(unitIds)];
       const units = this.unitsByMap[this.activeMapId] || [];
 
       this._clearUnitStyles();
@@ -576,16 +590,17 @@
         if (!unit?.pointerData?.id) return;
 
         const pid = String(unit.pointerData.id);
-        const el = activeSvg.querySelector(`#${CSS.escape(pid)}`);
+        const el  = activeSvg.querySelector(`#${CSS.escape(pid)}`);
         if (!el) return;
 
-        const status = this._unitStatus(unit);
+        const status  = this._unitStatus(unit);
         el.style.fill = styles.unitColors[status];
 
         const root = el.closest("g") || el;
         root.classList.add("pyn-highlight");
       });
     },
+
     // ----------------------------------------------------
     // FAST UNIT EVENTS (DELEGATED)
     // ----------------------------------------------------
@@ -593,21 +608,19 @@
       const svg = this._getActiveSvg();
       if (!svg) return;
 
-      const mapId = this.activeMapId;
+      const mapId     = this.activeMapId;
       const byPointer = this.unitsByPointerIdByMap[mapId] || {};
       const pointerIds = this.pointerIdsByMap[mapId] || [];
 
-      // 1) Mark "unit roots" once: we put data-pyn-unit-pid on the group (if any) or on the element itself.
       pointerIds.forEach(pid => {
         const el = svg.querySelector(`#${CSS.escape(pid)}`);
         if (!el) return;
 
-        const root = el.closest("g") || el; // whole box area
+        const root = el.closest("g") || el;
         root.dataset.pynUnitPid = pid;
-        root.style.cursor = "pointer";
+        root.style.cursor       = "pointer";
       });
 
-      // 2) Attach at most ONE set of listeners per SVG
       if (svg._pynEventsBound) return;
       svg._pynEventsBound = true;
 
@@ -618,8 +631,7 @@
         if (!root) return;
 
         const pid = root.dataset.pynUnitPid;
-        const el = root.querySelector(`#${CSS.escape(pid)}`) || root;
-
+        const el  = root.querySelector(`#${CSS.escape(pid)}`) || root;
         el.style.fill = styles.unitColors.hover;
       });
 
@@ -627,22 +639,18 @@
         const root = e.target.closest("[data-pyn-unit-pid]");
         if (!root) return;
 
-        const pid = root.dataset.pynUnitPid;
+        const pid  = root.dataset.pynUnitPid;
         const unit = byPointer[pid];
         if (!unit) return;
 
         const status = this._unitStatus(unit);
-        const el = root.querySelector(`#${CSS.escape(pid)}`) || root;
-
+        const el     = root.querySelector(`#${CSS.escape(pid)}`) || root;
         el.style.fill = styles.unitColors[status];
       });
 
-      // Hover (using mouseover so it bubbles from children)
       svg.addEventListener("mouseover", (e) => {
         const root = e.target.closest("[data-pyn-unit-pid]");
-        if (!root) return;
-
-        if (!root.classList.contains("pyn-highlight")) return;
+        if (!root || !root.classList.contains("pyn-highlight")) return;
 
         const pid = root.dataset.pynUnitPid;
         if (!pid || this._lastHoverPid === pid) return;
@@ -657,12 +665,9 @@
         }
       });
 
-      // Click
       svg.addEventListener("click", (e) => {
         const root = e.target.closest("[data-pyn-unit-pid]");
-        if (!root) return;
-
-        if (!root.classList.contains("pyn-highlight")) return;
+        if (!root || !root.classList.contains("pyn-highlight")) return;
 
         const pid = root.dataset.pynUnitPid;
         if (!pid) return;
@@ -690,11 +695,10 @@
         const el = activeSvg.querySelector(`#${CSS.escape(pid)}`);
         if (!el) return;
 
-        el.style.fill = "";
-        el.style.stroke = "";
+        el.style.fill        = "";
+        el.style.stroke      = "";
         el.style.strokeWidth = "";
 
-        // remove highlight from polygon AND parent <g>
         const root = el.closest("g") || el;
         root.classList.remove("pyn-highlight");
 
@@ -707,9 +711,7 @@
     // ----------------------------------------------------
     // HELPERS
     // ----------------------------------------------------
-
     _renderZoomControls() {
-      // Remove old controls if re-rendered
       const old = this.container.querySelector(".pyn-zoom-controls");
       if (old) old.remove();
 
@@ -717,38 +719,36 @@
       wrapper.className = "pyn-zoom-controls";
 
       Object.assign(wrapper.style, {
-        position: "absolute",
-        right: "12px",
-        top: "12px",
-        display: "flex",
+        position:      "absolute",
+        right:         "12px",
+        top:           "12px",
+        display:       "flex",
         flexDirection: "column",
-        gap: "6px",
-        zIndex: "999999"
+        gap:           "6px",
+        zIndex:        "999999"
       });
 
       const btnStyle = {
-        width: "34px",
-        height: "34px",
-        background: "#ffffff",
-        borderRadius: "6px",
-        border: "1px solid #ccc",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontSize: "20px",
-        fontWeight: "bold",
-        cursor: "pointer",
-        boxShadow: "0 2px 5px rgba(0,0,0,0.15)",
-        userSelect: "none"
+        width:           "34px",
+        height:          "34px",
+        background:      "#ffffff",
+        borderRadius:    "6px",
+        border:          "1px solid #ccc",
+        display:         "flex",
+        alignItems:      "center",
+        justifyContent:  "center",
+        fontSize:        "20px",
+        fontWeight:      "bold",
+        cursor:          "pointer",
+        boxShadow:       "0 2px 5px rgba(0,0,0,0.15)",
+        userSelect:      "none"
       };
 
-      // PLUS button
       const plus = document.createElement("div");
       plus.innerText = "+";
       Object.assign(plus.style, btnStyle);
       plus.onclick = () => this.zoomIn();
 
-      // MINUS button
       const minus = document.createElement("div");
       minus.innerText = "−";
       Object.assign(minus.style, btnStyle);
@@ -756,16 +756,10 @@
 
       wrapper.appendChild(plus);
       wrapper.appendChild(minus);
-
       this.container.appendChild(wrapper);
     },
 
     _unitStatus(unit) {
-      // if (unit.model_unit) return "model";
-      // if (unit.available === false && unit.sold) return "leased";
-      // if (unit.unit_status === "occupied_on_notice") return "notice";
-      // if (unit.unit_status === "occupied") return "leased";
-      // if (!unit.floorplan_name) return "missing";
       return "available";
     },
 
@@ -774,7 +768,7 @@
       if (isNaN(fn)) return null;
 
       for (const fp of this.data.floorplates) {
-        const range = String(fp.range).trim(); // e.g. "1-4" or "3"
+        const range = String(fp.range).trim();
 
         if (range.includes("-")) {
           const [min, max] = range.split("-").map(Number);
@@ -787,44 +781,26 @@
       return null;
     },
 
-    // _applyLabelTextStyles(el, textStyles) {
-    //   const g = el.closest("g");
-    //   if (!g) return;
-
-    //   const texts = g.querySelectorAll("text");
-    //   texts.forEach(t => {
-    //     t.style.fontFamily = textStyles.fontFamily;
-    //     t.style.fontSize = textStyles.fontSize;
-    //     t.style.fill = textStyles.fontColor;
-    //     t.style.pointerEvents = "none";
-    //   });
-    // },
-
     _applyGlobalLabelStyles(svg, textStyles) {
-      if (!svg || svg._pynTextStyled) return;  // prevent re-running
+      if (!svg || svg._pynTextStyled) return;
 
       const elements = svg.querySelectorAll("text, tspan");
       elements.forEach(el => {
-        el.style.fontFamily = textStyles.fontFamily;
-        el.style.fontSize = textStyles.fontSize;
-        el.style.fill = textStyles.fontColor;
-        el.style.pointerEvents = "none"; // ensure labels don't block clicks
+        el.style.fontFamily   = textStyles?.fontFamily;
+        el.style.fontSize     = textStyles?.fontSize;
+        el.style.fill         = textStyles?.fontColor;
+        el.style.pointerEvents = "none";
       });
 
-      svg._pynTextStyled = true; // mark as styled
+      svg._pynTextStyled = true;
     },
 
     _getActiveSvg() {
       return this.container.querySelector(`svg[data-map-id="${this.activeMapId}"]`);
     },
 
-    _mapExists(id) {
-      return !!this.svgCache[id];
-    },
-
-    _hasAnyMap() {
-      return Object.keys(this.svgCache).length > 0;
-    },
+    _mapExists(id)  { return !!this.svgCache[id]; },
+    _hasAnyMap()    { return Object.keys(this.svgCache).length > 0; },
 
     _getDefaultMapId() {
       if (this.data.sitemap && this.svgCache[String(this.data.sitemap.mapId)])
@@ -832,38 +808,32 @@
       return Object.keys(this.svgCache)[0];
     },
 
-    _showLoading(msg) {
-      this._showStatus(msg, false);
-    },
-
-    _showError(msg) {
-      this._showStatus(msg, true);
-    },
+    _showLoading(msg)          { this._showStatus(msg, false); },
+    _showError(msg)            { this._showStatus(msg, true);  },
 
     _showStatus(text, isError) {
       this.container.innerHTML = "";
       const box = document.createElement("div");
       Object.assign(box.style, {
-        background: "#fff",
-        padding: "10px 18px",
+        background:   "#fff",
+        padding:      "10px 18px",
         borderRadius: "6px",
-        fontSize: "14px",
-        color: isError ? "#b91c1c" : "#444",
-        boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
+        fontSize:     "14px",
+        color:        isError ? "#b91c1c" : "#444",
+        boxShadow:    "0 2px 6px rgba(0,0,0,0.1)"
       });
       box.innerText = text;
 
-      this.container.style.display = "flex";
-      this.container.style.alignItems = "center";
+      this.container.style.display        = "flex";
+      this.container.style.alignItems     = "center";
       this.container.style.justifyContent = "center";
       this.container.appendChild(box);
     },
 
     _apiBase() {
-      if (this.config.environment  === "staging") {
+      if (this.config.environment === "staging") {
         return "https://pynwheel-staging.herokuapp.com";
       }
-
       // return "http://localhost:3000";
       return "https://pynwheelconnect.com"; // production
     }
@@ -871,33 +841,23 @@
 
   // ----------------------------------------------------
   // GLOBAL EXPOSED API
+  // Only public methods are on window.PynMapSDK.
+  // Internal state (including _sessionToken) is in the IIFE closure.
   // ----------------------------------------------------
   if (!global.PynMapSDK) {
     global.PynMapSDK = {
-      init(cfg) {
-        return PynMapSDK.init.call(PynMapSDK, cfg);
-      },
-      highlightUnits(unitIds) {
-        return PynMapSDK.highlightUnits.call(PynMapSDK, unitIds);
-      },
-      changeMap(mapId) {
-        return PynMapSDK.changeMap.call(PynMapSDK, mapId);
-      },
-      changeFloor(floorNumber) {
-        return PynMapSDK.changeFloor.call(PynMapSDK, floorNumber);
-      },
-      selectUnit(unitId, colorCode) {
-        return PynMapSDK.selectUnit.call(PynMapSDK, unitId, colorCode);
-      },
-      unselectUnit(unitId) {
-        return PynMapSDK.unselectUnit.call(PynMapSDK, unitId);
-      },
-      zoomIn() {
-        return PynMapSDK.zoomIn.call(PynMapSDK);
-      },
-      zoomOut() {
-        return PynMapSDK.zoomOut.call(PynMapSDK);
-      },
+      init(cfg)                    { return PynMapSDK.init.call(PynMapSDK, cfg); },
+      highlightUnits(unitIds)      { return PynMapSDK.highlightUnits.call(PynMapSDK, unitIds); },
+      changeMap(mapId)             { return PynMapSDK.changeMap.call(PynMapSDK, mapId); },
+      changeFloor(floorNumber)     { return PynMapSDK.changeFloor.call(PynMapSDK, floorNumber); },
+      getFloors()                  { return PynMapSDK.getFloors.call(PynMapSDK); },
+      getFloorplans()              { return PynMapSDK.getFloorplans.call(PynMapSDK); },
+      getAmenities()               { return PynMapSDK.getAmenities.call(PynMapSDK); },
+      getUnits(filters)            { return PynMapSDK.getUnits.call(PynMapSDK, filters); },
+      selectUnit(unitId, colorCode){ return PynMapSDK.selectUnit.call(PynMapSDK, unitId, colorCode); },
+      unselectUnit(unitId)         { return PynMapSDK.unselectUnit.call(PynMapSDK, unitId); },
+      zoomIn()                     { return PynMapSDK.zoomIn.call(PynMapSDK); },
+      zoomOut()                    { return PynMapSDK.zoomOut.call(PynMapSDK); }
     };
   }
 

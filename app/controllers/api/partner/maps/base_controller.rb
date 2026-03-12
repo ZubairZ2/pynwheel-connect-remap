@@ -42,6 +42,32 @@ module Api
           @partner = partner&.dig(:name)
         end
 
+        # Validates a short-lived session token issued by the `authorized` action.
+        # Sets @session_api_key and @session_property_id on success.
+        def validate_session_token
+          raw = request.headers['Authorization']
+          token = raw&.sub(/\ABearer\s+/i, '')
+
+          if token.blank?
+            render json: { message: 'Session token missing.', status: 'failed', code: 401 }, status: :unauthorized
+            return
+          end
+
+          begin
+            payload = Rails.application.message_verifier(:pyn_sdk_v1).verify(token)
+
+            if payload[:exp].to_i < Time.now.to_i
+              render json: { message: 'Session expired. Please reinitialize.', status: 'failed', code: 401 }, status: :unauthorized
+              return
+            end
+
+            @session_api_key  = payload[:api_key]
+            @session_property_id = payload[:property_id]
+          rescue ActiveSupport::MessageVerifier::InvalidSignature
+            render json: { message: 'Invalid session token.', status: 'failed', code: 401 }, status: :unauthorized
+          end
+        end
+
       end
     end
   end
