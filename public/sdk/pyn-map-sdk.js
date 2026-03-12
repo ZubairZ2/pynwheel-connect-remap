@@ -5,6 +5,7 @@
     // STATE
     // ----------------------------------------------------
     _initialized: false,
+    _sessionToken: null,          // short-lived token; replaces the API key after auth
     config: null,
     container: null,
     activeMapId: null,
@@ -13,7 +14,8 @@
       sitemap: null,
       floorplates: [],
       units: [],
-      floorplans: []
+      floorplans: [],
+      amenities: []
     },
 
     unitsByMap: {},                // { [mapId]: unit[] }
@@ -36,37 +38,26 @@
       if (this._initialized) return;
       this._initialized = true;
 
-      // 1) Base config first
-      this.config = { ...cfg }; // shallow clone so we don't mutate caller's object
+      // 1) Base config first — do NOT store the apiKey on this.config
+      this.config = {
+        container:        cfg.container,
+        propertyId:       cfg.propertyId,
+        environment:      cfg.environment || "production",
+        showZoomControls: cfg.showZoomControls !== false,
+        floor:            cfg.defaultFloor != null ? String(cfg.defaultFloor) : null,
+        onUnitHover:      typeof cfg.onUnitHover === "function" ? cfg.onUnitHover : null,
+        onUnitClick:      typeof cfg.onUnitClick === "function" ? cfg.onUnitClick : null
+      };
 
-      // 2) Merge styles safely (optional)
+      // 2) Merge styles safely
       const baseStyles = this.defaultStyles;
-      const cfgStyles = cfg.styles || {};
-
+      const cfgStyles  = cfg.styles || {};
       this.config.styles = {
         ...baseStyles,
         ...cfgStyles,
-        unitColors: {
-          ...baseStyles.unitColors,
-          ...(cfgStyles.unitColors || {})
-        },
-        unitLabels: {
-          ...baseStyles.unitLabels,
-          ...(cfgStyles.unitLabels || {})
-        }
+        unitColors: { ...baseStyles.unitColors, ...(cfgStyles.unitColors || {}) },
+        unitLabels:  { ...baseStyles.unitLabels,  ...(cfgStyles.unitLabels  || {}) }
       };
-
-      this.config.showZoomControls = cfg.showZoomControls !== false; // default TRUE
-      this.config.environment = cfg.environment || "production";
-
-
-      // 3) Rest of your existing init logic
-      // this.config.defaultHighlightColor = cfg.defaultHighlightColor || "#F9D648";
-      this.config.floor = cfg.defaultFloor != null ? String(cfg.defaultFloor) : null;
-
-      // Callback hooks
-      this.config.onUnitHover = typeof cfg.onUnitHover === "function" ? cfg.onUnitHover : null;
-      this.config.onUnitClick = typeof cfg.onUnitClick === "function" ? cfg.onUnitClick : null;
 
       this.container = document.querySelector(cfg.container);
       if (!this.container) {
@@ -76,21 +67,30 @@
 
       this._showLoading("Verifying partner...");
 
-      if (!cfg.apiKey) return this._showError("API Key is required.");
+      if (!cfg.apiKey)     return this._showError("API Key is required.");
       if (!cfg.propertyId) return this._showError("propertyId is required.");
 
-      // VERIFY PARTNER → FETCH CONFIG → LOAD SVGs → BOOT
-      this._verifyPartner(cfg.apiKey, cfg.propertyId)
+      // Pull the API key into a local variable only — it will NOT be
+      // stored anywhere on the SDK object after _verifyPartner returns.
+      const apiKey     = cfg.apiKey;
+      const propertyId = cfg.propertyId;
+
+      // VERIFY (one-time X-API-Key) → get session token → FETCH CONFIG → LOAD SVGs → BOOT
+      this._verifyPartner(apiKey, propertyId)
         .then(v => {
           if (!v.success) return this._showError(v.error);
+
+          // Store the short-lived token; the raw API key is now out of scope.
+          this._sessionToken = v.sessionToken;
+
           this._showLoading("Loading property map...");
-          return this._fetchConfig(cfg.propertyId, cfg.apiKey);
+          return this._fetchConfig();
         })
         .then(r => {
           if (!r?.success) return this._showError(r?.error || "Config load error");
           this._storeConfig(r.data);
           this._showLoading("Loading SVG maps...");
-          return this._loadAllSVGs(cfg.apiKey);
+          return this._loadAllSVGs();
         })
         .then(() => {
           if (!this._hasAnyMap()) return this._showError("No maps found.");
@@ -128,6 +128,11 @@
     // ----------------------------------------------------
     // PARTNER API CALLS
     // ----------------------------------------------------
+    /**
+     * One-time call with X-API-Key.
+     * Returns { success, sessionToken } on success.
+     * The session token is used for all subsequent calls.
+     */
     async _verifyPartner(apiKey, propertyId) {
       try {
         const url = `${this._apiBase()}/api/partner/maps/authorized?propertyId=${propertyId}`;
@@ -139,19 +144,26 @@
           return { success: false, error: "Partner verification failed" };
         }
 
-        return { success: true };
+        const data = await res.json();
+        return { success: true, sessionToken: data.session_token };
       } catch {
         return { success: false, error: "Network error verifying partner" };
       }
     },
 
-    async _fetchConfig(propertyId, apiKey) {
+    /**
+     * Fetch map config using the session token (no API key, no propertyId in URL).
+     * The backend resolves the property from the token.
+     */
+    async _fetchConfig() {
       try {
-        const url = `${this._apiBase()}/api/partner/maps/fetch_data?propertyId=${propertyId}`;
-        const res = await fetch(url, { headers: { "X-API-Key": apiKey } });
+        const url = `${this._apiBase()}/api/partner/maps/fetch_data`;
+        const res = await fetch(url, {
+          headers: { "Authorization": `Bearer ${this._sessionToken}` }
+        });
 
         if (!res.ok) {
-          if (res.status === 401) return { success: false, error: "Invalid API Key" };
+          if (res.status === 401) return { success: false, error: "Session invalid or expired" };
           if (res.status === 404) return { success: false, error: "Property not found" };
           return { success: false, error: `Server error (${res.status})` };
         }
@@ -167,10 +179,11 @@
     // MAP DATA STORAGE
     // ----------------------------------------------------
     _storeConfig(data) {
-      this.data.sitemap = data.sitemap || null;
+      this.data.sitemap     = data.sitemap     || null;
       this.data.floorplates = data.floorplates || [];
-      this.data.floorplans = data.floorplans || [];
-      this.data.units = data.units || [];
+      this.data.floorplans  = data.floorplans  || [];
+      this.data.units       = data.units       || [];
+      this.data.amenities   = data.amenities   || [];
 
       this._indexUnits();
     },
@@ -198,54 +211,58 @@
 
     // ----------------------------------------------------
     // SVG LOADING
+    // The real storage URL is never sent to the browser.
+    // We pass only mapId + mapType; the server resolves the URL.
     // ----------------------------------------------------
-    async _loadAllSVGs(apiKey) {
+    async _loadAllSVGs() {
       const entries = [];
 
       if (this.data.sitemap) {
         entries.push({
-          mapId: String(this.data.sitemap.mapId),
-          svgUrl: this.data.sitemap.svgUrl
+          mapId:   String(this.data.sitemap.mapId),
+          mapType: this.data.sitemap.mapType || "sitemap"
         });
       }
 
       this.data.floorplates.forEach(fp => {
         entries.push({
-          mapId: String(fp.mapId),
-          svgUrl: fp.svgUrl
+          mapId:   String(fp.mapId),
+          mapType: fp.mapType || "floorplate"
         });
       });
 
       await Promise.all(entries.map(m =>
-        this._loadSVG(apiKey, m.svgUrl).then(svg => {
+        this._loadSVG(m.mapId, m.mapType).then(svg => {
           if (svg) this.svgCache[m.mapId] = svg;
         })
       ));
     },
 
-    async _loadSVG(apiKey, svgUrl) {
+    /**
+     * Fetch an SVG using the session token.
+     * The request URL contains only opaque IDs — no storage URLs.
+     */
+    async _loadSVG(mapId, mapType) {
       try {
         const requestUrl =
           `${this._apiBase()}/api/partner/maps/fetch_svg_image` +
-          `?svg_url=${svgUrl}`;
-    
+          `?map_id=${encodeURIComponent(mapId)}&map_type=${encodeURIComponent(mapType)}`;
+
         const response = await fetch(requestUrl, {
-          headers: {
-            "X-API-Key": apiKey
-          }
+          headers: { "Authorization": `Bearer ${this._sessionToken}` }
         });
-    
+
         if (!response.ok) {
           throw new Error(`Failed to fetch SVG: ${response.status} ${response.statusText}`);
         }
-    
-        const svgText = await response.text();
+
+        const svgText    = await response.text();
         const svgElement = this._parseSVG(svgText);
-    
+
         if (!svgElement) {
           throw new Error("No <svg> element found in the response.");
         }
-    
+
         return svgElement;
       } catch (error) {
         console.error("_loadSVG failed:", error);
