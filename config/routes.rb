@@ -609,6 +609,17 @@ Rails.application.routes.draw do
       end
     end
 
+    # Pricing Calculator CMS (admin config) — auth-protected
+    resource :calculator_config, only: [:show, :update]
+
+    # Public-facing embed calculator (no auth required)
+    resources :pricing_calculators, only: [] do
+      collection do
+        get :show  # property-level: /communities/:id/pricing_calculators
+        get :unit  # unit-level:     /communities/:id/pricing_calculators/unit?unit_id=X
+      end
+    end
+
     resources :additional_pages, only: :index
     resources :contentpages
     resources :imagepages do
@@ -868,6 +879,8 @@ Rails.application.routes.draw do
 
       resources :communities, only: :index do
         member do
+          get :calculator_config,      to: 'calculator_configs#show'
+          put :save_calculator_config, to: 'calculator_configs#update'
           get :data
           get :data_group
           get :community_tours

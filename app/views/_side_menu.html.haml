@@ -126,6 +126,23 @@
                   %i.fa.fa-laptop
                   %span Units
 
+      - if current_user.is_admin? && current_community.mdu && current_community.enable_pynwheel_pricing_calculator
+        %li.treeview{:class=>"#{controller_name =='calculator_configs' || controller_name =='pricing_calculators' ? 'active' : ''}"}
+          %a{:href => "#"}
+            %i.fa.fa-calculator
+            %span Pricing Calculator
+            %span.pull-right-container
+              %i.fa.fa-angle-right.pull-right
+          %ul.treeview-menu
+            %li.loader_class{:class=>"#{controller_name =='calculator_configs' ? 'active' : ''}"}
+              %a{:href => "#{community_calculator_config_path(current_community)}"}
+                %i.fa.fa-cog
+                %span Configure Calculator
+            %li.loader_class
+              %a{:href => "#{community_pricing_calculators_path(current_community)}", :target => "_blank"}
+                %i.fa.fa-eye
+                %span Preview Calculator
+
       - if current_community.touchscreen_app && current_user.is_admin?
         %li.loader_class{:class=>"#{controller_name =='galleries' ? 'active' : ''}"}
           %a{:href => "#{community_galleries_path(current_community)}"}

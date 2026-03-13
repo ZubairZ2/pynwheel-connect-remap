@@ -103,7 +103,7 @@
 
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                  Enable Pricing Calculator
+                  Enable Engrain Pricing Calculator
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "pricingCalculatorPopover","data-content" => " "}
                     %span#propertyDetailNameText
                       When enabled, a pricing calculator button will appear on units using the SightMap embed ID below.
@@ -119,6 +119,19 @@
                   Property Pricing Calculator Embed Code
                 .col-sm-12.col-lg-6.col-md-6.col-xs-12
                   = text_field_tag :pricing_calculator_embed_code, @community.pricing_calculator_embed_code, class: "form-control apartment-setting-field", placeholder: "e.g. z6f6rr57skx"
+
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                  Enable Pynwheel Pricing Calculator
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "pynwheelPricingCalculatorPopover","data-content" => " "}
+                    %span#propertyDetailNameText
+                      When enabled, a Pynwheel Pricing Calculator link will appear in the sidebar and units will show the cost calculator.
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = check_box_tag :enable_pynwheel_pricing_calculator, true, @community.enable_pynwheel_pricing_calculator, class: "apartment-setting-field", id: "enable_pynwheel_pricing_calculator"
+                    %label.label-primary{:for => "enable_pynwheel_pricing_calculator"}
+                    %span.pl-15 Yes
 
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
@@ -376,7 +389,7 @@
 
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                  Enable Pricing Calculator
+                  Enable Engrain Pricing Calculator
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "pricingCalculatorPopover","data-content" => " "}
                     %span#propertyDetailNameText
                       When enabled, a pricing calculator button will appear on units using the SightMap embed ID below.
@@ -392,6 +405,19 @@
                   Property Pricing Calculator Embed Code
                 .col-sm-12.col-lg-6.col-md-6.col-xs-12
                   = text_field_tag :pricing_calculator_embed_code, @community.pricing_calculator_embed_code, class: "form-control apartment-setting-field", placeholder: "e.g. z6f6rr57skx"
+
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                  Enable Pynwheel Pricing Calculator
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "pynwheelPricingCalculatorPopover","data-content" => " "}
+                    %span#propertyDetailNameText
+                      When enabled, a Pynwheel Pricing Calculator link will appear in the sidebar and units will show the cost calculator.
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = check_box_tag :enable_pynwheel_pricing_calculator, true, @community.enable_pynwheel_pricing_calculator, class: "apartment-setting-field", id: "enable_pynwheel_pricing_calculator_map"
+                    %label.label-primary{:for => "enable_pynwheel_pricing_calculator_map"}
+                    %span.pl-15 Yes
 
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30

@@ -1,0 +1,22 @@
+- content_for :title, "Calculator Unavailable"
+
+:css
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Inter',sans-serif;background:#f8fafc;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;}
+  .card{background:#fff;border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.08);border:1px solid #e2e8f0;padding:48px 40px;max-width:460px;width:100%;text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px;}
+  .icon-wrap{width:80px;height:80px;border-radius:50%;background:#fff7ed;border:2px solid #fed7aa;display:flex;align-items:center;justify-content:center;margin-bottom:8px;}
+  .icon-wrap .material-icons{font-size:40px;color:#ea580c;}
+  h2{font-size:1.4rem;font-weight:800;color:#0f172a;}
+  p{font-size:.88rem;color:#475569;line-height:1.6;max-width:340px;}
+
+%link{rel: "stylesheet", href: "https://fonts.googleapis.com/icon?family=Material+Icons"}
+
+.card
+  .icon-wrap
+    %span.material-icons lock
+  %h2 Calculator Not Available
+  %p
+    The Pynwheel Pricing Calculator is not enabled for
+    %strong= @community.name
+    \.
+    Please contact the property for pricing information.
