@@ -27,6 +27,7 @@
     %link{:href => "https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800", :rel => "stylesheet"}/
     = favicon_link_tag 'logo-small.png'
     = javascript_include_tag "https://cdnjs.cloudflare.com/ajax/libs/fabric.js/1.4.0/fabric.min.js"
+    = yield(:head)
 
   %body.hold-transition.skin-blue.sidebar-mini{:id => "#{controller_name == "home"  || controller_name == "error_logs" || controller_name == "companies" || controller_name == "analytics" || (controller_name == "community_groups" &&  params[:action] == "index") || (controller_name == "regions" &&  params[:action] == "index") || (controller_name == "tours" &&  action_name == "id_selfie_matching") ? "no-sidemenu" : ""}", 'data-user-role': "#{current_user.present? ? current_user.role : "undefined"}", 'data-user-id': "#{current_user.present? ? current_user.id : "undefined"}"}
     .wrapper

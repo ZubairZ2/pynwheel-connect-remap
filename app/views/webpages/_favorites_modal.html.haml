@@ -3,7 +3,12 @@
     - @units = [] if @units.nil?
     - @units.each do |unit|
       - floorplan = unit.floorplan
-      - pricing_calculator_url = (@community.enable_pricing_calculator? && @community.pricing_calculator_embed_code.present?) ? "https://sightmap.com/embed/#{@community.pricing_calculator_embed_code}?unit_number=#{unit.marketing_name}&mode=expense_calculator" : nil
+      - if @community.enable_pynwheel_pricing_calculator?
+        - pricing_calculator_url = unit_community_pricing_calculators_path(@community.id) + "?unit_id=#{unit.id}"
+      - elsif @community.enable_pricing_calculator? && @community.pricing_calculator_embed_code.present?
+        - pricing_calculator_url = "https://sightmap.com/embed/#{@community.pricing_calculator_embed_code}?unit_number=#{unit.marketing_name}&mode=expense_calculator"
+      - else
+        - pricing_calculator_url = nil
       - fav_primary_img = unit.standard_image_url.present? ? unit.validated_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.validated_image_url : nil)
       - fav_secondary_img = floorplan.present? && floorplan.secondary_image.present? ? floorplan.secondary_image.url : nil
       - fav_display_img = fav_primary_img || fav_secondary_img || "/assets/default.jpeg"

@@ -5,15 +5,35 @@ class UsersController < ApplicationController
   before_action :set_user, only: [:edit,:update]
   protect_from_forgery :except => [:chat_service_not_available]
 
+  PER_PAGE = 25
+
   def index
+    page = params[:page]
     if current_user.is_super_admin?
       @users = User.where(role: ["Community admin","Community manager","Super admin","visitor_detail_page", "Dwelo admin","Company admin","Regional admin","Community assistant", "New Client"])
+                   .paginate(page: page, per_page: PER_PAGE)
+                   .preload(communities: :company)
     elsif current_user.is_dwelo_admin?
-      @users = User.where('id IN (?) or role IN (?)', Community.where(creator_id: User.where(role: ["Dwelo admin","Company admin","Regional admin"]).ids).collect{|c| c.users.map(&:id)}.flatten, ["Dwelo admin","Company admin","Regional admin"])
+      admin_role_ids    = User.where(role: ["Dwelo admin","Company admin","Regional admin"]).select(:id)
+      community_ids     = Community.where(creator_id: admin_role_ids).select(:id)
+      via_community_ids = CommunityUser.where(community_id: community_ids).select(:user_id)
+      @users = User.where(id: via_community_ids)
+                   .or(User.where(role: ["Dwelo admin","Company admin","Regional admin"]))
+                   .distinct
+                   .paginate(page: page, per_page: PER_PAGE)
+                   .preload(communities: :company)
     elsif current_user.is_company_admin? || current_user.is_regional_admin?
       @users = User.where(id: current_user.id)
+                   .paginate(page: page, per_page: PER_PAGE)
+                   .preload(communities: :company)
     else
-      @users = User.find current_user.communities.collect{|c| c.users.map(&:id)}.flatten
+      user_ids = CommunityUser.where(community_id: current_user.community_ids).select(:user_id)
+      @users = User.where(id: user_ids)
+                   .paginate(page: page, per_page: PER_PAGE)
+                   .preload(communities: :company)
+      @invited_users = User.where(invited_by_id: current_user.id)
+                           .paginate(page: page, per_page: PER_PAGE)
+                           .preload(communities: :company)
     end
   end
 
