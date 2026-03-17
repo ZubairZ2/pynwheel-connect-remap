@@ -22,17 +22,13 @@
                 %b 
                   =u.email
               %td
-                %b 
-                  =u.communities.map(&:name).sort.to_sentence
-              - company = []
-              - if u.communities.present?
-                - u.communities.each do |com|
-                  - unless company.include?((Company.find com.company_id).name)
-                    - company << (Company.find com.company_id).name
+                %b
+                  =u.communities.map(&:name).uniq.sort.to_sentence
+              - company_names = u.communities.filter_map { |com| com.company&.name }.uniq.sort
               %td
                 %b
-                  - if company.present?
-                    = company.sort.to_sentence
+                  - if company_names.present?
+                    = company_names.to_sentence
               %td= u.role.sub("Super","Pynwheel")
               %td
                 %a.text-success{:href => "/companies/#{current_company.id}/employees/#{u.id}/edit"}
@@ -41,8 +37,7 @@
                   %a.text-danger{"data-name"=>"User","data-href" => "/companies/#{current_company.id}/employees/#{u.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
                     %i.fa.fa-trash.icon_size
         -else
-          - s = User.where(invited_by_id: current_user.id)
-          - s.each_with_index  do |u,index|
+          - (@invited_users || []).each_with_index  do |u,index|
             %tr
               %td= index+1
               %td= u.first_name
@@ -51,17 +46,13 @@
                 %b 
                   =u.email
               %td
-                %b 
-                  =u.communities.map(&:name).to_sentence
-              - company = []
-              - if u.communities.present?
-                - u.communities.each do |com|
-                  - unless company.include?((Company.find com.company_id).name)
-                    - company << (Company.find com.company_id).name
+                %b
+                  =u.communities.map(&:name).uniq.sort.to_sentence
+              - company_names = u.communities.filter_map { |com| com.company&.name }.uniq.sort
               %td
                 %b
-                  - if company.present?
-                    = company.sort.to_sentence
+                  - if company_names.present?
+                    = company_names.to_sentence
               %td= u.role.sub("Super","Pynwheel")
               %td
                 %a.text-success{:href => "/companies/#{current_company.id}/employees/#{u.id}/edit"}
@@ -76,6 +67,6 @@
             'aTargets': [1,2,3,6,7],
         }],
         "ordering": true,
-        "stateSave": true,
+        "stateSave": false,
         "paging": false
   });

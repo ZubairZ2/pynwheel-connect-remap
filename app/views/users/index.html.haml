@@ -23,7 +23,9 @@
         .box.box-widget.panel-box
           .box-header
             #users-index
-              = render 'index'  
+              = render 'index'
+              .text-center.mt-10
+                = will_paginate @users
             
 
             
