@@ -11,11 +11,12 @@
     activeMapId: null,
 
     data: {
-      sitemap: null,
+      property:   null,
+      sitemap:    null,
       floorplates: [],
-      units: [],
-      floorplans: [],
-      amenities: []
+      units:       [],
+      floorplans:  [],
+      amenities:   []
     },
 
     unitsByMap: {},                // { [mapId]: unit[] }
@@ -176,6 +177,7 @@
     // MAP DATA STORAGE
     // ----------------------------------------------------
     _storeConfig(data) {
+      this.data.property    = data.property    || null;
       this.data.sitemap     = data.sitemap     || null;
       this.data.floorplates = data.floorplates || [];
       this.data.floorplans  = data.floorplans  || [];
@@ -398,6 +400,7 @@
      * Returns all units for the property.
      * Pass an optional filters object to narrow results:
      *   { floor, mapId, floorplanId, available, bedrooms, bathrooms }
+     * Each unit includes a `unitVariation` field (1–6) computed by the server.
      */
     getUnits(filters) {
       let units = (this.data.units || []).slice();
@@ -830,6 +833,27 @@
       this.container.appendChild(box);
     },
 
+    // ----------------------------------------------------
+    // PUBLIC DATA ACCESSORS
+    // ----------------------------------------------------
+
+    /**
+     * Returns the full property-level configuration object as received from
+     * the server. Includes branding, map mode, unit display flags, marker
+     * colours, legend settings, filter toggles, and more.
+     *
+     * Returns null if the SDK has not finished initialising yet.
+     *
+     * Example:
+     *   const cfg = PynMapSDK.getPropertyConfig();
+     *   console.log(cfg.branding.logoUrl);
+     *   console.log(cfg.unitDisplay.displayRent);
+     *   console.log(cfg.filters.showBedroomFilter);
+     */
+    getPropertyConfig() {
+      return this.data.property || null;
+    },
+
     _apiBase() {
       if (this.config.environment === "staging") {
         return "https://pynwheel-staging.herokuapp.com";
@@ -847,6 +871,7 @@
   if (!global.PynMapSDK) {
     global.PynMapSDK = {
       init(cfg)                    { return PynMapSDK.init.call(PynMapSDK, cfg); },
+      getPropertyConfig()          { return PynMapSDK.getPropertyConfig.call(PynMapSDK); },
       highlightUnits(unitIds)      { return PynMapSDK.highlightUnits.call(PynMapSDK, unitIds); },
       changeMap(mapId)             { return PynMapSDK.changeMap.call(PynMapSDK, mapId); },
       changeFloor(floorNumber)     { return PynMapSDK.changeFloor.call(PynMapSDK, floorNumber); },

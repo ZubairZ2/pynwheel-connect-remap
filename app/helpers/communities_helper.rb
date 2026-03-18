@@ -329,18 +329,12 @@ module CommunitiesHelper
       property_id: unit.property_id,
       unit_status: unit&.unit_status,
       model_unit: unit&.modal_unit,
-      pricing_calculator_url: build_pricing_calculator_url(unit)
+      pricing_calculator_url: unit.pricing_calculator_url
     }
     struct[:data_attributes] = fetch_unit_data_attributes(unit, struct, show_ops_map)
 
     struct
   end
-
-  def build_pricing_calculator_url(unit)
-    return nil unless @community_info.enable_pricing_calculator? && @community_info.pricing_calculator_embed_code.present?
-    "https://sightmap.com/embed/#{@community_info.pricing_calculator_embed_code}?unit_number=#{unit.marketing_name}&mode=expense_calculator"
-  end
-
 
   def fetch_unit_info_struct_for_ploting(unit, floorplan)
     struct = {
