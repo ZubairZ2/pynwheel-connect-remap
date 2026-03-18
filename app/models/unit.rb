@@ -266,6 +266,17 @@ class Unit < ApplicationRecord
     end
   end
 
+  def pricing_calculator_url
+    if community.enable_pynwheel_pricing_calculator?
+      base_url = Rails.env.development? ? "http://localhost:3000" : (ENV["RAILS_ENV"] == "staging" ? "https://pynwheel-staging.herokuapp.com" : "https://pynwheelconnect.com") 
+      "#{base_url}/communities/#{community.id}/pricing_calculators/unit?unit_id=#{id}"
+    elsif community.enable_pricing_calculator? && community.pricing_calculator_embed_code.present?
+      "https://sightmap.com/embed/#{community.pricing_calculator_embed_code}?unit_number=#{marketing_name}&mode=expense_calculator"
+    else
+      nil
+    end
+  end
+
   def get_schedule_tour_label
     if self&.scheduler_label.present?
       self.scheduler_label
