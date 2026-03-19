@@ -43,6 +43,7 @@ module Api
             units:       units_json,
             floorplans:  floorplans_json,
             amenities:   amenities_json,
+            filters:     filters_json,
             status: "success",
             code: 200
           }
@@ -288,7 +289,7 @@ module Api
               available_date:    unit.available_date,
               available:         unit.available,
               lease_term:        unit.lease_term,
-              lease_pricing:     (unit.lease_pricing.present? && unit.community.display_pricing_options) ? unit.lease_pricing : "",
+              lease_pricing:     unit.get_unit_leasing_price(),
               description:       unit.description.present? ? unit.description : floorplan&.description.presence || "",
               display_rent:      unit&.community&.display_rent,
               additional_fees:   fees,
@@ -479,6 +480,76 @@ module Api
               missing:          c[:missing]   # SVG mode only
             }
           end
+        end
+
+
+        # ------------------------------------------------------------------
+        # FILTER DATA — returned as part of fetch_data so the SDK has everything
+        # it needs in one round-trip. getFiltersData() reads this from this.data.filters.
+        # ------------------------------------------------------------------
+        def filters_json
+          units = @community.units.map_units(@community).includes(:floorplan)
+
+          {
+            bedrooms:      filter_bedroom_options(units),
+            availability:  filter_availability_options(units),
+            squareFootage: filter_square_footage_data(units),
+            priceRange:    filter_price_range_data(units),
+            visibility:    property_filters_json,
+            displayFlags: {
+              displayRent:      @community.display_rent,
+              hideBedrooms:     @community.hide_bedrooms_bathrooms,
+              hideSquareFeet:   @community.hide_square_feet,
+              hideAvailability: @community.hide_availability
+            }
+          }
+        end
+
+        def filter_bedroom_options(units)
+          counts = units.map do |unit|
+            raw = unit.floorplan&.bedrooms.to_s.strip.downcase
+            (raw.blank? || raw == "studio" || raw == "0") ? 0 : raw.to_i
+          end
+
+          counts.uniq.sort.map do |n|
+            if n == 0    then { label: "Studio",        value: "0" }
+            elsif n == 1 then { label: "1 Bedroom",     value: "1" }
+            else              { label: "#{n} Bedrooms", value: n.to_s }
+            end
+          end
+        end
+
+        def filter_availability_options(units)
+          today = Date.today
+          d30   = today + 30; d60 = today + 60; d90 = today + 90; d120 = today + 120
+          over120 = @community.units_availability_over_120_days
+
+          seen = []
+          units.select(&:available).each do |unit|
+            date = unit.available_date || Date.new(0)
+            seen << { label: "Now",            value: "now"    } if date <= today
+            seen << { label: "This Month",     value: "0-30"   } if date > today  && date <= d30
+            seen << { label: "In 31-60 days",  value: "31-60"  } if date >= d30   && date <= d60
+            seen << { label: "In 61-90 days",  value: "61-90"  } if date >= d60   && date <= d90
+            seen << { label: "In 91-120 days", value: "91-120" } if date >= d90   && date <= d120
+            seen << { label: "In 121+ days",   value: "121+"   } if date > d120   && over120
+          end
+
+          order = { "now" => 0, "0-30" => 1, "31-60" => 2, "61-90" => 3, "91-120" => 4, "121+" => 5 }
+          seen.uniq { |o| o[:value] }.sort_by { |o| order.fetch(o[:value], 99) }
+        end
+
+        def filter_square_footage_data(units)
+          values = units.filter_map do |u|
+            sqft = u.square_feet? ? u.square_feet.to_i : u.floorplan&.square_feet.to_i
+            sqft&.positive? ? sqft : nil
+          end.uniq.sort
+          { min: values.first, max: values.last, values: values }
+        end
+
+        def filter_price_range_data(units)
+          values = units.map { |u| u.get_market_rent.to_i }.select(&:positive?).uniq.sort
+          { min: values.first, max: values.last, values: values }
         end
 
         def render_error(message, status)

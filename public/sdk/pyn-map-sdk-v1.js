@@ -16,7 +16,8 @@
       floorplates: [],
       units:       [],
       floorplans:  [],
-      amenities:   []
+      amenities:   [],
+      filters:     null
     },
 
     unitsByMap: {},                // { [mapId]: unit[] }
@@ -183,6 +184,7 @@
       this.data.floorplans  = data.floorplans  || [];
       this.data.units       = data.units       || [];
       this.data.amenities   = data.amenities   || [];
+      this.data.filters     = data.filters     || null;
 
       this._indexUnits();
     },
@@ -399,22 +401,70 @@
     /**
      * Returns all units for the property.
      * Pass an optional filters object to narrow results:
-     *   { floor, mapId, floorplanId, available, bedrooms, bathrooms }
-     * Each unit includes a `unitVariation` field (1–6) computed by the server.
+     *
+     *   // Existing filters
+     *   floor        {number|string}  — exact floor match
+     *   mapId        {number|string}  — exact map match
+     *   floorplanId  {number|string}  — exact floorplan match
+     *   bedrooms     {number|string}  — exact bedroom count ("0" = Studio)
+     *   bathrooms    {number|string}  — exact bathroom count
+     *   available    {boolean}        — unit availability flag
+     *
+     *   // Filters matching getFiltersData() option values
+     *   availability   {string}  — window value from getFiltersData().availability
+     *                              e.g. "now" | "0-30" | "31-60" | "61-90" | "91-120" | "121+"
+     *   minSquareFeet  {number}  — keep units with square_feet >= this value
+     *   maxPrice       {number}  — keep units with market_rent <= this value
+     *
+     * Example — build a filter UI from getFiltersData() then apply it:
+     *   const units = PynMapSDK.getUnits({
+     *     bedrooms:      "2",
+     *     availability:  "0-30",
+     *     minSquareFeet: 800,
+     *     maxPrice:      1200
+     *   });
      */
     getUnits(filters) {
       let units = (this.data.units || []).slice();
 
       if (!filters) return units;
 
-      if (filters.floor      != null) units = units.filter(u => String(u.floor)      === String(filters.floor));
-      if (filters.mapId      != null) units = units.filter(u => String(u.mapId)      === String(filters.mapId));
-      if (filters.floorplanId != null) units = units.filter(u => String(u.floorplanId) === String(filters.floorplanId));
-      if (filters.bedrooms   != null) units = units.filter(u => String(u.bedrooms)   === String(filters.bedrooms));
-      if (filters.bathrooms  != null) units = units.filter(u => String(u.bathrooms)  === String(filters.bathrooms));
-      if (filters.available  != null) units = units.filter(u => u.available === filters.available);
+      if (filters.floor         != null) units = units.filter(u => String(u.floor)        === String(filters.floor));
+      if (filters.mapId         != null) units = units.filter(u => String(u.mapId)        === String(filters.mapId));
+      if (filters.floorplanId   != null) units = units.filter(u => String(u.floorplanId)  === String(filters.floorplanId));
+      if (filters.bedrooms      != null) units = units.filter(u => String(u.bedrooms)     === String(filters.bedrooms));
+      if (filters.bathrooms     != null) units = units.filter(u => String(u.bathrooms)    === String(filters.bathrooms));
+      if (filters.available     != null) units = units.filter(u => u.available            === filters.available);
+      if (filters.availability  != null) units = units.filter(u => this._unitMatchesAvailability(u, filters.availability));
+      if (filters.minSquareFeet != null) units = units.filter(u => parseInt(u.square_feet,  10) >= filters.minSquareFeet);
+      if (filters.maxPrice      != null) units = units.filter(u => parseInt(u.market_rent,  10) <= filters.maxPrice);
 
       return units;
+    },
+
+    /**
+     * Returns true when a unit's available_date falls inside the given
+     * availability window value (same ranges as getFiltersData().availability).
+     */
+    _unitMatchesAvailability(unit, value) {
+      if (!unit.available) return false;
+
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const date  = unit.available_date ? new Date(unit.available_date) : new Date(0);
+      const d30   = new Date(today); d30.setDate(today.getDate() + 30);
+      const d60   = new Date(today); d60.setDate(today.getDate() + 60);
+      const d90   = new Date(today); d90.setDate(today.getDate() + 90);
+      const d120  = new Date(today); d120.setDate(today.getDate() + 120);
+
+      switch (value) {
+        case "now":    return date <= today;
+        case "0-30":   return date > today  && date <= d30;
+        case "31-60":  return date >= d30   && date <= d60;
+        case "61-90":  return date >= d60   && date <= d90;
+        case "91-120": return date >= d90   && date <= d120;
+        case "121+":   return date > d120;
+        default:       return false;
+      }
     },
 
     // ----------------------------------------------------
@@ -854,6 +904,36 @@
       return this.data.property || null;
     },
 
+    /**
+     * Returns filter options derived from the data loaded during fetch_data.
+     * No extra network call — same pattern as getFloorplans() / getUnits().
+     * Filter data is computed server-side and bundled into the single fetch_data response.
+     *
+     *   {
+     *     bedrooms:      [{ label, value }],           // bedroom dropdown options
+     *     availability:  [{ label, value }],           // availability dropdown options
+     *     squareFootage: { min, max, values: [] },     // sq ft range slider data
+     *     priceRange:    { min, max, values: [] },     // price range slider data
+     *     visibility: {
+     *       showBedroomFilter, showPricingFilter,
+     *       showSquareFeetFilter, showAvailabilityFilter, showPropertiesFilter
+     *     },
+     *     displayFlags: { displayRent, hideBedrooms, hideSquareFeet, hideAvailability }
+     *   }
+     *
+     * Example:
+     *   const filters = PynMapSDK.getFiltersData();
+     *   if (filters.visibility.showBedroomFilter && !filters.displayFlags.hideBedrooms) {
+     *     populateBedroomDropdown(filters.bedrooms);
+     *   }
+     *   if (filters.visibility.showSquareFeetFilter && !filters.displayFlags.hideSquareFeet) {
+     *     initRangeSlider(filters.squareFootage.min, filters.squareFootage.max);
+     *   }
+     */
+    getFiltersData() {
+      return this.data.filters || null;
+    },
+
     _apiBase() {
       if (this.config.environment === "staging") {
         return "https://pynwheel-staging.herokuapp.com";
@@ -879,6 +959,7 @@
       getFloorplans()              { return PynMapSDK.getFloorplans.call(PynMapSDK); },
       getAmenities()               { return PynMapSDK.getAmenities.call(PynMapSDK); },
       getUnits(filters)            { return PynMapSDK.getUnits.call(PynMapSDK, filters); },
+      getFiltersData()             { return PynMapSDK.getFiltersData.call(PynMapSDK); },
       selectUnit(unitId, colorCode){ return PynMapSDK.selectUnit.call(PynMapSDK, unitId, colorCode); },
       unselectUnit(unitId)         { return PynMapSDK.unselectUnit.call(PynMapSDK, unitId); },
       zoomIn()                     { return PynMapSDK.zoomIn.call(PynMapSDK); },
