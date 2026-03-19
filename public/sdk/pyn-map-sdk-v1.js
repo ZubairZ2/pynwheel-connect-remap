@@ -413,15 +413,19 @@
      *   // Filters matching getFiltersData() option values
      *   availability   {string}  — window value from getFiltersData().availability
      *                              e.g. "now" | "0-30" | "31-60" | "61-90" | "91-120" | "121+"
-     *   minSquareFeet  {number}  — keep units with square_feet >= this value
+     *   minPrice       {number}  — keep units with market_rent >= this value
      *   maxPrice       {number}  — keep units with market_rent <= this value
+     *   minSquareFeet  {number}  — keep units with square_feet >= this value
+     *   maxSquareFeet  {number}  — keep units with square_feet <= this value
      *
      * Example — build a filter UI from getFiltersData() then apply it:
      *   const units = PynMapSDK.getUnits({
      *     bedrooms:      "2",
      *     availability:  "0-30",
-     *     minSquareFeet: 800,
-     *     maxPrice:      1200
+     *     minPrice:      800,
+     *     maxPrice:      1200,
+     *     minSquareFeet: 600,
+     *     maxSquareFeet: 1000
      *   });
      */
     getUnits(filters) {
@@ -436,8 +440,10 @@
       if (filters.bathrooms     != null) units = units.filter(u => String(u.bathrooms)    === String(filters.bathrooms));
       if (filters.available     != null) units = units.filter(u => u.available            === filters.available);
       if (filters.availability  != null) units = units.filter(u => this._unitMatchesAvailability(u, filters.availability));
-      if (filters.minSquareFeet != null) units = units.filter(u => parseInt(u.square_feet,  10) >= filters.minSquareFeet);
+      if (filters.minPrice      != null) units = units.filter(u => parseInt(u.market_rent,  10) >= filters.minPrice);
       if (filters.maxPrice      != null) units = units.filter(u => parseInt(u.market_rent,  10) <= filters.maxPrice);
+      if (filters.minSquareFeet != null) units = units.filter(u => parseInt(u.square_feet,  10) >= filters.minSquareFeet);
+      if (filters.maxSquareFeet != null) units = units.filter(u => parseInt(u.square_feet,  10) <= filters.maxSquareFeet);
 
       return units;
     },
