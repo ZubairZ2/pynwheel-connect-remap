@@ -508,10 +508,7 @@
         $(".webPageLoader").removeClass("hidden");
       });
   
-      var defaultFloorIdx = current_floor !== null
-        ? floors.findIndex(function(f) { return String(f) === String(current_floor); })
-        : -1;
-      initial_start = defaultFloorIdx > 0 ? defaultFloorIdx : 0;
+      floors.length < 5 ? initial_start = 0 : initial_start = 0
       $(window).on('resize', function(){
         var win = $(this);
         window.location.reload();
