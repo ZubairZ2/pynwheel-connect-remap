@@ -414,25 +414,10 @@ module CommunitiesHelper
   end
 
   def default_unit_marker_color(community, show_ops_map = false)
-    theme_name = community&.theme_name
-    design = community&.design
-
-    if show_ops_map || theme_name&.include?('gables')
-      design&.property_map_color || DEFAULT_MARKER_CODE
+    if show_ops_map
+      community&.design&.property_map_color || DEFAULT_MARKER_CODE
     else
-      case theme_name
-      when 'modernist'
-        colors = [design&.modernist_map_marker_color, 'no color', '']
-        colors.include?(design&.modernist_map_marker_color) ? (design&.primary_color || DEFAULT_MARKER_PRIMARY_CODE) : (design&.modernist_map_marker_color || DEFAULT_MARKER_PRIMARY_CODE)
-      when 'futurist'
-        design&.futurist_property_map_marker_color || DEFAULT_MARKER_CODE
-      when 'expressionist'
-        design&.expressionist_property_map_marker_color || DEFAULT_MARKER_CODE
-      when 'panther'
-        design&.panther_property_map_marker_color || DEFAULT_MARKER_CODE
-      else
-        'rgba(247, 0, 0, 0.61)'
-      end
+      community.available_units_color || DEFAULT_MARKER_CODE
     end
   end
 
@@ -479,19 +464,11 @@ module CommunitiesHelper
 
   def amenity_marker_config community, show_ops_map = false
     amenity_font_size = default_amenity_marker_font_size(community) - 5
-    if community.turn_availability_on && !show_ops_map 
-      {
-        color: community.amenities_color,
-        opacity: community.amenities_opacity,
-        font_size: amenity_font_size
-      }
-    else
-      {
-        color: default_amenity_marker_color(community),
-        opacity: 1,
-        font_size: amenity_font_size
-      }
-    end
+    {
+      color: community.amenities_color || DEFAULT_MARKER_CODE,
+      opacity: community.amenities_opacity || 1,
+      font_size: amenity_font_size
+    }
   end
 
   def default_margins(community)

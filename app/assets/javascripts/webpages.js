@@ -1861,17 +1861,9 @@ function unitBoxListHover() {
           }
 
           if (_3dMode) {
-            if (isFloorplanMapEnabled() || checkFloorPlanColorMode()) {
-              markerColor = getMarkerColor(_3dData);
-            } else {
-              markerColor = getUnitMarkerColor(_3dData);
-            }
+            markerColor = getUnitMarkerColor(_3dData);
           } else {
-            if (isFloorplanMapEnabled() || checkFloorPlanColorMode()) {
-              markerColor = getMarkerColor(selectedMarker.dataset);
-            } else {
-              markerColor = getUnitMarkerColor(selectedMarker.dataset);
-            }
+            markerColor = getUnitMarkerColor(selectedMarker.dataset);
           }
 
           e.currentTarget.style.border = `3px solid ${markerColor}`;
@@ -4276,9 +4268,9 @@ function getUnitMarkerColor(unit) {
 
   const unitCommunityId = unit.property_id || unit.propertyId || "";
   const unitStatus = unit.unit_status || unit.unitStatus || unit.status || "";
-  let result = getCommunityBasedMarkerColor(unitCommunityId);
 
   if (opsMapMarkersEnabled) {
+    let result = getCommunityBasedMarkerColor(unitCommunityId);
     if (isModelUnit(unit)) {
       result = mapMarkerColors.model || "#f57396";
     } else {
@@ -4309,14 +4301,16 @@ function getUnitMarkerColor(unit) {
           break;
       }
     }
+    return toHexColor(result);
   }
 
-  if (isFloorplanMapEnabled() || checkFloorPlanColorMode()) {
-    result = getMarkerColor(unit);
-    return result;
+  // Marketing Map: multi-community uses sub-community-specific colors
+  if (multiCommunity) {
+    return toHexColor(getCommunityBasedMarkerColor(unitCommunityId));
   }
 
-  return toHexColor(result);
+  // Marketing Map: always derive color from Marketing Map settings (by_floorplan or by_property)
+  return getMarkerColor(unit);
 }
 
 function hexToRgba(hex, opacity = 1) {
@@ -4346,7 +4340,7 @@ function isModelUnit(unit) {
 }
 
 function getMarkerColor(unit) {
-  const colorBy = unit.colorBy || unit.data_attributes['data-color-by'] || "by_floorplan";
+  const colorBy = unit.colorBy || (unit.data_attributes && unit.data_attributes['data-color-by']) || "by_floorplan";
 
   switch (colorBy) {
     case "by_floorplan":
