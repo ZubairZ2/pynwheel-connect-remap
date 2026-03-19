@@ -223,21 +223,21 @@
                     - unless @community.turn_availability_on && !@show_ops_map
                       %small Vacant Unit
                 %ul.floor-counts.c-sidebar-nav.slider_class#slider
-                  - if _3d_enabled
-                    %li.digits-list-item.hidden
-                      = link_to "All",'javascript:;;',"data-interest" => "", :style => "margin: 0;color: white;font-size: 28pt;font-weight: 600", :class=>"floorplate-anchor",:id=>'all'
-                      %div.units-no{style: "margin-top: 11px"}
-                        %span.teg-line{:id => "u_all"}
-                        
                   - @floors.each do |floor|
                     - floorplate = @floorplate_by_floor[floor]
                     %li.digits-list-item{class: "#{floor == min_unit_floor ? 'selected' : ''}"}
                       = link_to (floorplate.floor_name_added ? (floorplate.floor_name.present? ? floorplate.floor_name : "Nil") : floor),'javascript:;;',"data-interest" => "", :style => "margin: 0;color: white;font-size: 28pt;font-weight: 600", :class=>"floorplate-anchor #{floor == min_unit_floor ? 'selected' : ''}",:id=>floor
                       %div.units-no{style: "margin-top: 11px"}
                         %span.teg-line{:id => "u_#{floor}"}
-                        
-                  
-                        
+
+                  - if _3d_enabled
+                    %li.digits-list-item.hidden
+                      = link_to "All",'javascript:;;',"data-interest" => "", :style => "margin: 0;color: white;font-size: 28pt;font-weight: 600", :class=>"floorplate-anchor",:id=>'all'
+                      %div.units-no{style: "margin-top: 11px"}
+                        %span.teg-line{:id => "u_all"}
+
+
+
     
             .c-body{style: "overflow: hidden; position: relative;", position: "fixed"}
               %div#tab
