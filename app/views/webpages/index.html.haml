@@ -507,7 +507,7 @@
         window.location.reload();
         $(".webPageLoader").removeClass("hidden");
       });
-  
+
       floors.length < 5 ? initial_start = 0 : initial_start = 0
       $(window).on('resize', function(){
         var win = $(this);
@@ -620,6 +620,13 @@
             $slider.slick('slickPrev')
           }
         }
+
+        // Scroll to the active floor (set by display2DMap/display3DMap which runs before this ready block)
+        var $activeLi = $slider.find('li.digits-list-item.selected');
+        var activeFloorId = $activeLi.length
+          ? $activeLi.find('a.floorplate-anchor').attr('id')
+          : current_floor;
+        if (activeFloorId) scrollSliderToFloor(activeFloorId);
       }
       
       $(".slick-slide").on("click", function() {

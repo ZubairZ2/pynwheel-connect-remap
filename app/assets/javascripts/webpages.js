@@ -3406,6 +3406,26 @@ function toggleFloorDirection(is3d) {
   }
 }
 
+function scrollSliderToFloor(floorId) {
+  var $slider = $('#slider');
+  if (!$slider.hasClass('slick-initialized')) return;
+
+  var $slide = $slider.find('a.floorplate-anchor[id="' + floorId + '"]').closest('.slick-slide');
+
+  if (!$slide.length) {
+    // Anchor is outside a slick-slide (e.g. "All" item moved by toggleFloorDirection) — go to top
+    $slider.slick('slickGoTo', 0, true);
+    return;
+  }
+
+  var slideIndex = parseInt($slide.attr('data-slick-index'));
+  if (isNaN(slideIndex) || slideIndex < 0) return;
+
+  var slidesToShow = $slider.slick('slickGetOption', 'slidesToShow') || 4;
+  var goTo = Math.max(0, slideIndex - slidesToShow + 1);
+  $slider.slick('slickGoTo', goTo, true);
+}
+
 function display3DMap() {
   if (!extraSmallScreen())
     toggleFloorDirection(true);
@@ -3435,6 +3455,7 @@ function display3DMap() {
   $(".2d-map-option").removeClass("hidden");
   $("a.floorplate-anchor#all").click();
   resetMapData();
+  scrollSliderToFloor('all');
 }
 
 function display2DMap() {
@@ -3467,6 +3488,7 @@ function display2DMap() {
   $(".3d-map-option").removeClass("hidden");
   $("a.floorplate-anchor#" + defaultSelectedFloor).click();
   resetMapData();
+  scrollSliderToFloor(defaultSelectedFloor);
 }
 
 function resetFilters(mobileTriggered = false) {
