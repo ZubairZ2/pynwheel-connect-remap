@@ -1,6 +1,8 @@
 class PricingCalculatorsController < ActionController::Base
   layout "pricing_calculator"
 
+  after_action :allow_iframe
+
   before_action :set_community
   before_action :check_calculator_enabled
   before_action :set_unit_context      # sets @unit + @floorplan from params[:unit_id]
@@ -61,6 +63,11 @@ class PricingCalculatorsController < ActionController::Base
     @apply_now_url      = compute_apply_now_url
     @apply_now_provider = @community.data_provider
     @apply_now_unit_pid = @unit&.provider_unit_id
+  end
+
+  def allow_iframe
+    response.headers.delete("X-Frame-Options")
+    response.headers["Content-Security-Policy"] = "frame-ancestors *"
   end
 
   def compute_apply_now_url
