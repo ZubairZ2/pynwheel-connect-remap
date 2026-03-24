@@ -2531,6 +2531,7 @@ function set_psi_url(element) {
   //   url = _3dData.availabilityUrl;
   // }
 
+  if (!url || url === "null") return;
   window.open(url, "_blank");
 }
 
@@ -3046,7 +3047,7 @@ function handleApplyNowButtonVisibility(element) {
   const dataProvider = $(element).data("provider");
 
   if (dataProvider === "psi") {
-    if (url) {
+    if (url && url !== "null") {
       $("#psi-anchor-tag").show();
       // handleFloorplanApplyNowVisibility(element);
     }
