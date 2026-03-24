@@ -41,9 +41,14 @@ function activateZoomPan(elem, centralizeElement = true, options = {}) {
 
   if (centralizeElement) zoomReset();
 
-  setTimeout(() => {
-    moveZoomableImageToCenter(elem, true, false);
-  }, 0);
+  const imgEl = elem.tagName.toLowerCase() === 'img' ? elem : elem.querySelector('img');
+  if (imgEl && !imgEl.complete) {
+    imgEl.addEventListener('load', () => moveZoomableImageToCenter(elem, true, false), { once: true });
+  } else {
+    setTimeout(() => {
+      moveZoomableImageToCenter(elem, true, false);
+    }, 0);
+  }
 
   // Show/hide reset map button as zoom transforms happen
   zoomablePans[key].instance.on('transform', function () {
