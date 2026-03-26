@@ -12,7 +12,7 @@
       .col-lg-12.col-md-12
         .row
           .col-md-6
-            %h4.title USERS 
+            %h4.title USERS
           .col-md-6
             .mt-35
               - unless current_user.is_community_manager? || current_user.is_company_admin? || current_user.is_regional_admin?
@@ -24,8 +24,6 @@
           .box-header
             #users-index
               = render 'index'
-              .text-center.mt-10
-                = will_paginate @users
             
 
             
