@@ -6,6 +6,8 @@
     // ----------------------------------------------------
     _initialized: false,
     _sessionToken: null,          // short-lived token; replaces the API key after auth
+    _sdkSessionId: null,          // stable UUID persisted in localStorage; identifies this user's favorites session
+    _favorites: new Set(),        // Set of favorited unit IDs (strings)
     config: null,
     container: null,
     activeMapId: null,
@@ -47,9 +49,20 @@
         environment:      cfg.environment || "production",
         showZoomControls: cfg.showZoomControls !== false,
         floor:            cfg.defaultFloor != null ? String(cfg.defaultFloor) : null,
-        onUnitHover:      typeof cfg.onUnitHover === "function" ? cfg.onUnitHover : null,
-        onUnitClick:      typeof cfg.onUnitClick === "function" ? cfg.onUnitClick : null
+        onUnitHover:      typeof cfg.onUnitHover      === "function" ? cfg.onUnitHover      : null,
+        onUnitClick:      typeof cfg.onUnitClick      === "function" ? cfg.onUnitClick      : null,
+        onFavoriteChange: typeof cfg.onFavoriteChange === "function" ? cfg.onFavoriteChange : null
       };
+
+      // Stable session ID persisted in localStorage so favorites survive page reloads.
+      const lsKey = `pyn_sdk_session_${cfg.propertyId}`;
+      this._sdkSessionId = localStorage.getItem(lsKey) || (() => {
+        const id = (typeof crypto !== "undefined" && crypto.randomUUID)
+          ? crypto.randomUUID()
+          : Math.random().toString(36).slice(2) + Date.now().toString(36);
+        localStorage.setItem(lsKey, id);
+        return id;
+      })();
 
       // 2) Merge styles safely
       const baseStyles = this.defaultStyles;
@@ -158,7 +171,10 @@
       try {
         const url = `${this._apiBase()}/api/partner/maps/fetch_data`;
         const res = await fetch(url, {
-          headers: { "Authorization": `Bearer ${this._sessionToken}` }
+          headers: {
+            "Authorization":    `Bearer ${this._sessionToken}`,
+            "X-SDK-Session-Id": this._sdkSessionId
+          }
         });
 
         if (!res.ok) {
@@ -185,6 +201,14 @@
       this.data.units       = data.units       || [];
       this.data.amenities   = data.amenities   || [];
       this.data.filters     = data.filters     || null;
+
+      // Hydrate favorites from the server response.
+      // Each unit already has isFavorite set by the server; build the local Set from it.
+      this._favorites = new Set(
+        this.data.units
+          .filter(u => u.isFavorite)
+          .map(u => String(u.unitId))
+      );
 
       this._indexUnits();
     },
@@ -940,6 +964,167 @@
       return this.data.filters || null;
     },
 
+    // ----------------------------------------------------
+    // FAVORITES (PUBLIC API)
+    // ----------------------------------------------------
+
+    /**
+     * Returns the full unit objects for all favorited units.
+     * Populated at init time from fetch_data — no network call needed.
+     * Same shape as getUnits() results.
+     *
+     * @returns {object[]}
+     */
+    getFavorites() {
+      return (this.data.units || []).filter(u => u.isFavorite);
+    },
+
+    /**
+     * Returns the shareable URL for this session's favorites page.
+     * The URL is built server-side so the SDK stays decoupled from internal routing.
+     *
+     * @returns {Promise<{success: boolean, share_link: string|null}>}
+     */
+    async getShareFavoritesLink() {
+      try {
+        const res = await fetch(`${this._apiBase()}/api/partner/maps/get_share_favorites_link`, {
+          headers: {
+            "Authorization":    `Bearer ${this._sessionToken}`,
+            "X-SDK-Session-Id": this._sdkSessionId
+          }
+        });
+
+        if (!res.ok) return { success: false, share_link: null };
+
+        const data = await res.json();
+        return { success: true, share_link: data.share_link };
+      } catch {
+        return { success: false, share_link: null };
+      }
+    },
+
+    /**
+     * Removes all favorited units for the current session.
+     * Clears the local Set, resets isFavorite on all unit objects,
+     * and fires onFavoriteChange when the server confirms.
+     *
+     * @returns {Promise<{success: boolean}>}
+     */
+    async clearAllFavorites() {
+      try {
+        const res = await fetch(`${this._apiBase()}/api/partner/maps/clear_all_favorites`, {
+          method: "DELETE",
+          headers: {
+            "Authorization":    `Bearer ${this._sessionToken}`,
+            "X-SDK-Session-Id": this._sdkSessionId
+          }
+        });
+
+        if (!res.ok) return { success: false };
+
+        this._favorites.clear();
+        (this.data.units || []).forEach(u => { u.isFavorite = false; });
+
+        if (this.config.onFavoriteChange) {
+          this.config.onFavoriteChange([], "cleared", []);
+        }
+
+        return { success: true };
+      } catch {
+        return { success: false };
+      }
+    },
+
+    /**
+     * Save one or more units as favorites.
+     * Accepts a single unit ID or an array of unit IDs.
+     * Updates the local Set and fires onFavoriteChange when the server confirms.
+     *
+     * @param {number|string|Array<number|string>} unitIds
+     * @returns {Promise<{success: boolean, unit_ids: string[]}>}
+     */
+    async saveFavorite(unitIds) {
+      const ids = (Array.isArray(unitIds) ? unitIds : [unitIds]).map(String);
+
+      const body = new URLSearchParams();
+      ids.forEach(id => body.append("unit_ids[]", id));
+
+      try {
+        const res = await fetch(`${this._apiBase()}/api/partner/maps/save_favorites`, {
+          method: "POST",
+          headers: {
+            "Authorization":    `Bearer ${this._sessionToken}`,
+            "X-SDK-Session-Id": this._sdkSessionId,
+            "Content-Type":     "application/x-www-form-urlencoded"
+          },
+          body
+        });
+
+        if (!res.ok) return { success: false, unit_ids: [...this._favorites] };
+
+        const data = await res.json();
+
+        ids.forEach(id => {
+          this._favorites.add(id);
+          const unit = (this.data.units || []).find(u => String(u.unitId) === id);
+          if (unit) unit.isFavorite = true;
+        });
+
+        if (this.config.onFavoriteChange) {
+          this.config.onFavoriteChange(ids, "saved", [...this._favorites]);
+        }
+
+        return { success: true, unit_ids: data.unit_ids || [...this._favorites] };
+      } catch {
+        return { success: false, unit_ids: [...this._favorites] };
+      }
+    },
+
+    /**
+     * Remove one or more units from favorites.
+     * Accepts a single unit ID or an array of unit IDs.
+     * Updates the local Set and fires onFavoriteChange when the server confirms.
+     *
+     * @param {number|string|Array<number|string>} unitIds
+     * @returns {Promise<{success: boolean, unit_ids: string[]}>}
+     */
+    async deleteFavorite(unitIds) {
+      const ids = (Array.isArray(unitIds) ? unitIds : [unitIds]).map(String);
+
+      const body = new URLSearchParams();
+      ids.forEach(id => body.append("unit_ids[]", id));
+
+      try {
+        const res = await fetch(`${this._apiBase()}/api/partner/maps/delete_favorites`, {
+          method: "DELETE",
+          headers: {
+            "Authorization":    `Bearer ${this._sessionToken}`,
+            "X-SDK-Session-Id": this._sdkSessionId,
+            "Content-Type":     "application/x-www-form-urlencoded"
+          },
+          body
+        });
+
+        if (!res.ok) return { success: false, unit_ids: [...this._favorites] };
+
+        const data = await res.json();
+
+        ids.forEach(id => {
+          this._favorites.delete(id);
+          const unit = (this.data.units || []).find(u => String(u.unitId) === id);
+          if (unit) unit.isFavorite = false;
+        });
+
+        if (this.config.onFavoriteChange) {
+          this.config.onFavoriteChange(ids, "deleted", [...this._favorites]);
+        }
+
+        return { success: true, unit_ids: data.unit_ids || [...this._favorites] };
+      } catch {
+        return { success: false, unit_ids: [...this._favorites] };
+      }
+    },
+
     _apiBase() {
       if (this.config.environment === "staging") {
         return "https://pynwheel-staging.herokuapp.com";
@@ -969,7 +1154,12 @@
       selectUnit(unitId, colorCode){ return PynMapSDK.selectUnit.call(PynMapSDK, unitId, colorCode); },
       unselectUnit(unitId)         { return PynMapSDK.unselectUnit.call(PynMapSDK, unitId); },
       zoomIn()                     { return PynMapSDK.zoomIn.call(PynMapSDK); },
-      zoomOut()                    { return PynMapSDK.zoomOut.call(PynMapSDK); }
+      zoomOut()                    { return PynMapSDK.zoomOut.call(PynMapSDK); },
+      getFavorites()               { return PynMapSDK.getFavorites.call(PynMapSDK); },
+      saveFavorite(unitIds)        { return PynMapSDK.saveFavorite.call(PynMapSDK, unitIds); },
+      deleteFavorite(unitIds)      { return PynMapSDK.deleteFavorite.call(PynMapSDK, unitIds); },
+      getShareFavoritesLink()      { return PynMapSDK.getShareFavoritesLink.call(PynMapSDK); },
+      clearAllFavorites()          { return PynMapSDK.clearAllFavorites.call(PynMapSDK); }
     };
   }
 

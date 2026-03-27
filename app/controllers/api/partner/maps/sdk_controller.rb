@@ -8,12 +8,19 @@ module Api
         # `authorized` → still uses X-API-Key (one-time exchange)
         before_action :load_property, only: [:authorized]
 
-        # `fetch_data` and `fetch_svg_image` → session token only, no X-API-Key needed
-        skip_before_action :load_map_partners,  only: [:fetch_data, :fetch_svg_image]
-        skip_before_action :validate_api_key,   only: [:fetch_data, :fetch_svg_image]
-        skip_before_action :load_partner_name,  only: [:fetch_data, :fetch_svg_image]
-        before_action :validate_session_token,      only: [:fetch_data, :fetch_svg_image]
-        before_action :load_community_from_session, only: [:fetch_data, :fetch_svg_image]
+        # `fetch_data`, `fetch_svg_image`, `save_favorites`, `delete_favorites`,
+        # `clear_all_favorites`, `get_share_favorites_link` → session token only
+        SESSION_ACTIONS = [
+          :fetch_data, :fetch_svg_image,
+          :save_favorites, :delete_favorites, :clear_all_favorites,
+          :get_share_favorites_link
+        ].freeze
+
+        skip_before_action :load_map_partners,  only: SESSION_ACTIONS
+        skip_before_action :validate_api_key,   only: SESSION_ACTIONS
+        skip_before_action :load_partner_name,  only: SESSION_ACTIONS
+        before_action :validate_session_token,      only: SESSION_ACTIONS
+        before_action :load_community_from_session, only: SESSION_ACTIONS
 
         # ------------------------------------------------------------------
         # GET /api/partner/maps/authorized?propertyId=:id
@@ -36,17 +43,94 @@ module Api
         # Response intentionally omits svgUrl; callers use mapId to fetch SVGs.
         # ------------------------------------------------------------------
         def fetch_data
+          fav_ids    = favorite_unit_ids
+          all_units  = units_json(fav_ids)
+
           render json: {
-            property:    property_json,
-            sitemap:     sitemap_json,
-            floorplates: floorplates_json,
-            units:       units_json,
-            floorplans:  floorplans_json,
-            amenities:   amenities_json,
-            filters:     filters_json,
+            property:       property_json,
+            sitemap:        sitemap_json,
+            floorplates:    floorplates_json,
+            units:          all_units,
+            floorplans:     floorplans_json,
+            amenities:      amenities_json,
+            filters:        filters_json,
+            favorite_units: all_units.select { |u| u[:isFavorite] },
             status: "success",
             code: 200
           }
+        end
+
+        # ------------------------------------------------------------------
+        # POST /api/partner/maps/save_favorites
+        # Body: unit_ids[] — single ID or array of IDs
+        # Authorization: Bearer <session_token>  +  X-SDK-Session-Id header
+        # ------------------------------------------------------------------
+        def save_favorites
+          return render_error("X-SDK-Session-Id header is missing.", 400) unless sdk_session_id.present?
+
+          unit_ids = parse_unit_ids
+          return render_error("unit_ids is required.", 400) if unit_ids.empty?
+
+          valid_ids = @community.units.where(id: unit_ids).pluck(:id).map(&:to_s)
+
+          favorite = Favorite.find_or_initialize_by(session_id: sdk_session_id)
+          favorite.community_id = @community.id
+          current   = (favorite.unit_ids || []).map(&:to_s)
+          favorite.unit_ids = (current + valid_ids).uniq
+          favorite.save!
+
+          render json: { success: true, unit_ids: favorite.unit_ids, status: "success", code: 200 }
+        end
+
+        # ------------------------------------------------------------------
+        # DELETE /api/partner/maps/delete_favorites
+        # Body: unit_ids[] — single ID or array of IDs
+        # Authorization: Bearer <session_token>  +  X-SDK-Session-Id header
+        # ------------------------------------------------------------------
+        def delete_favorites
+          return render_error("X-SDK-Session-Id header is missing.", 400) unless sdk_session_id.present?
+
+          unit_ids = parse_unit_ids
+          return render_error("unit_ids is required.", 400) if unit_ids.empty?
+
+          favorite = Favorite.find_by(session_id: sdk_session_id)
+
+          if favorite
+            favorite.unit_ids = (favorite.unit_ids || []).map(&:to_s) - unit_ids
+            favorite.save!
+          end
+
+          render json: { success: true, unit_ids: favorite&.unit_ids || [], status: "success", code: 200 }
+        end
+
+        # ------------------------------------------------------------------
+        # DELETE /api/partner/maps/clear_all_favorites
+        # Authorization: Bearer <session_token>  +  X-SDK-Session-Id header
+        # Removes all favorited units for this session.
+        # ------------------------------------------------------------------
+        def clear_all_favorites
+          return render_error("X-SDK-Session-Id header is missing.", 400) unless sdk_session_id.present?
+
+          favorite = Favorite.find_by(session_id: sdk_session_id)
+
+          if favorite
+            favorite.unit_ids = []
+            favorite.save!
+          end
+
+          render json: { success: true, unit_ids: [], status: "success", code: 200 }
+        end
+
+        # ------------------------------------------------------------------
+        # GET /api/partner/maps/get_share_favorites_link
+        # Authorization: Bearer <session_token>  +  X-SDK-Session-Id header
+        # Returns the shareable URL for this session's favorites page.
+        # ------------------------------------------------------------------
+        def get_share_favorites_link
+          return render_error("X-SDK-Session-Id header is missing.", 400) unless sdk_session_id.present?
+
+          share_link = favorites_share_link_url(@community, sdk_session_id)
+          render json: { success: true, share_link: share_link, status: "success", code: 200 }
         end
 
         # ------------------------------------------------------------------
@@ -259,12 +343,12 @@ module Api
           end
         end
 
-        def units_json
+        def units_json(fav_ids = Set.new)
           units = @community&.units&.map_units(@community)
           units&.map do |unit|
-            floorplan    = unit.floorplan
-            fees    = @community.get_additional_fees(unit)
-            buttons = unit_additional_buttons(unit)
+            floorplan = unit.floorplan
+            fees      = @community.get_additional_fees(unit)
+            buttons   = unit_additional_buttons(unit)
 
             {
               unitNumber:      unit.marketing_name,
@@ -280,28 +364,29 @@ module Api
                                elsif floorplan.present?
                                  hide_decimals(floorplan.square_feet)
                                end,
-              floorplanId:       unit.floorplan_id,
-              floorplanName:     floorplan&.name,
-              pointerData:       unit.pointer_data,
-              market_rent:       unit.get_market_rent(),
-              availability:      unit.availability,
-              availability_url:  unit.get_availability_url(),
-              available_date:    unit.available_date,
-              available:         unit.available,
-              lease_term:        unit.lease_term,
-              lease_pricing:     unit.get_unit_leasing_price(),
-              description:       unit.description.present? ? unit.description : floorplan&.description.presence || "",
-              display_rent:      unit&.community&.display_rent,
-              additional_fees:   fees,
-              property_id:       unit.property_id,
-              unit_status:       unit&.unit_status,
-              model_unit:        unit&.modal_unit,
-              additionalButtons:       unit_additional_buttons(unit),
-              unit_variation:          unit_variation(unit, fees),
-              pricing_calculator_url:  unit.pricing_calculator_url,
-              image:                   unit.validated_image_url || floorplan&.validated_image_url || floorplan&.secondary_image&.url.presence,
-              color:    compute_unit_marketing_color(unit, floorplan),
-              opsColor: compute_unit_ops_color(unit)
+              floorplanId:            unit.floorplan_id,
+              floorplanName:          floorplan&.name,
+              pointerData:            unit.pointer_data,
+              market_rent:            unit.get_market_rent(),
+              availability:           unit.availability,
+              availability_url:       unit.get_availability_url(),
+              available_date:         unit.available_date,
+              available:              unit.available,
+              lease_term:             unit.lease_term,
+              lease_pricing:          unit.get_unit_leasing_price(),
+              description:            unit.description.present? ? unit.description : floorplan&.description.presence || "",
+              display_rent:           unit&.community&.display_rent,
+              additional_fees:        fees,
+              property_id:            unit.property_id,
+              unit_status:            unit&.unit_status,
+              model_unit:             unit&.modal_unit,
+              additionalButtons:      buttons,
+              unit_variation:         unit_variation(unit, fees),
+              pricing_calculator_url: unit.pricing_calculator_url,
+              image:                  unit.validated_image_url || floorplan&.validated_image_url || floorplan&.secondary_image&.url.presence,
+              color:                  compute_unit_marketing_color(unit, floorplan),
+              opsColor:               compute_unit_ops_color(unit),
+              isFavorite:             fav_ids.include?(unit.id.to_s)
             }
           end
         end
@@ -550,6 +635,32 @@ module Api
         def filter_price_range_data(units)
           values = units.map { |u| u.get_market_rent.to_i }.select(&:positive?).uniq.sort
           { min: values.first, max: values.last, values: values }
+        end
+
+        # Returns the X-SDK-Session-Id header value — stable UUID stored in the
+        # SDK client's localStorage, used as the Favorite session_id.
+        def sdk_session_id
+          @sdk_session_id ||= request.headers['X-SDK-Session-Id'].presence
+        end
+
+        # Builds the shareable favorites URL that matches the existing webpages route:
+        #   GET /communities/:community_id/webpages/favorites_share_link?session_id=:session_id
+        def favorites_share_link_url(community, session_id)
+          "#{request.base_url}/communities/#{community.id}/webpages/favorites_share_link?session_id=#{session_id}"
+        end
+
+        # Returns a Set of favorited unit IDs (as strings) for this SDK session.
+        # Returns an empty Set when no session ID header is present.
+        def favorite_unit_ids
+          return Set.new unless sdk_session_id.present?
+
+          ids = Favorite.find_by(session_id: sdk_session_id)&.unit_ids || []
+          ids.map(&:to_s).to_set
+        end
+
+        # Parses unit_ids from request params — accepts a single value or an array.
+        def parse_unit_ids
+          Array(params[:unit_ids]).map(&:to_s).map(&:strip).reject(&:empty?).uniq
         end
 
         def render_error(message, status)
