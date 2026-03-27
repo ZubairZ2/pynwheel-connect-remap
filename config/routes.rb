@@ -670,9 +670,13 @@ Rails.application.routes.draw do
         get :all_maps, to: 'maps#all_maps'
         get :properties, to: 'webhooks#properties'
         get :units, to: 'webhooks#units'
-        get :authorized, to: 'sdk#authorized'
-        get :fetch_data, to: 'sdk#fetch_data'
-        get :fetch_svg_image, to: 'sdk#fetch_svg_image'
+        get    :authorized,       to: 'sdk#authorized'
+        get    :fetch_data,       to: 'sdk#fetch_data'
+        get    :fetch_svg_image,  to: 'sdk#fetch_svg_image'
+        post   :save_favorites,           to: 'sdk#save_favorites'
+        delete :delete_favorites,         to: 'sdk#delete_favorites'
+        delete :clear_all_favorites,      to: 'sdk#clear_all_favorites'
+        get    :get_share_favorites_link, to: 'sdk#get_share_favorites_link'
       end
     end
 
