@@ -35,7 +35,7 @@ function initialize_variables(hallways_coordinates, map_id){
   map_id = map_id
 }
 
-  $('.viewArea').on('mousemove', function(event){
+  $(document).on('mousemove', '.viewArea', function(event){
     if ($(event.target).hasClass('viewArea')){
       map_id = "#" + $(event.target).data('map-id')
     }
@@ -47,8 +47,8 @@ function initialize_variables(hallways_coordinates, map_id){
       $('#active_x_plot').html(dx);
       $('#active_y_plot').html(dy);
     }
-  }); 
-$(".viewArea").on('click', function (e) {
+  });
+$(document).on('click', '.viewArea', function (e) {
     if ($(e.target).hasClass('viewArea')){
       map_id = "#" + $(e.target).data('map-id')
       marker_color = $('#marker_color').html();
@@ -56,8 +56,8 @@ $(".viewArea").on('click', function (e) {
       marker_font_size = ($('#font_size').html());
       left_margin = parseInt($('#left_margin').html());
       right_margin = parseInt($('#right_margin').html());
-      dx = parseInt(event.pageX) - parseInt($(map_id).offset().left) + parseInt($(map_id).scrollLeft());
-      dy = parseInt(event.pageY) - parseInt($(map_id).offset().top) + parseInt($(map_id).scrollTop());
+      dx = parseInt(e.pageX) - parseInt($(map_id).offset().left) + parseInt($(map_id).scrollLeft());
+      dy = parseInt(e.pageY) - parseInt($(map_id).offset().top) + parseInt($(map_id).scrollTop());
 
       if ($("#hallway_btn").html() == "Start Plotting Hallways") {
           $(this).css('cursor', 'default');
@@ -74,7 +74,7 @@ $(".viewArea").on('click', function (e) {
           dx = e.type === 'touchend' ? ((e.changedTouches[0].pageX - elemPos.left)) : dx;
           dy = e.type === 'touchend' ? ((e.changedTouches[0].pageY - elemPos.top)) : dy;
 
-          const zoomContainer = e.currentTarget.parentElement;
+          const zoomContainer = e.target.parentElement;
           const zoomPanKey = `${zoomContainer.tagName.toLowerCase()}-${zoomContainer.id}`
 
           var transform = zoomablePans[zoomPanKey] ? zoomablePans[zoomPanKey].instance.getTransform() : {};

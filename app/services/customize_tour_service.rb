@@ -11,7 +11,7 @@ class CustomizeTourService
 
   def get_user_tour
     if is_customization_enabled
-      user_customized_tour
+      user_customized_tour || @community.community_tour
     else
       @community.community_tour
     end
@@ -99,6 +99,7 @@ class CustomizeTourService
   end
 
   def user_customized_tour
+    return nil if @tour_user.nil?
     tour = @tour_user.tours.where(community_id: @community&.id).last
     # tour = TourUserCustomization.new(@community, @tour_user).customize_tour
 
