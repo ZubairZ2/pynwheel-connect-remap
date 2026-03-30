@@ -44,10 +44,10 @@ module Api
         # ------------------------------------------------------------------
         def fetch_data
           fav_ids    = favorite_unit_ids
-          all_units  = units_json(fav_ids)
+          all_units  = units_json(fav_ids, show_ops_map?)
 
           render json: {
-            property:       property_json,
+            property:       property_json(show_ops_map?),
             sitemap:        sitemap_json,
             floorplates:    floorplates_json,
             units:          all_units,
@@ -232,7 +232,7 @@ module Api
         # Organised into logical sections so the front-end can consume each
         # group independently without having to know about internal Rails details.
         # ------------------------------------------------------------------
-        def property_json
+        def property_json(show_ops_map = false)
           {
             # ── Identity ──────────────────────────────────────────────────
             propertyId:   @community.id,
@@ -282,7 +282,7 @@ module Api
             },
 
             # ── Marker & colour config (from CommunitiesHelper) ───────────
-            markerConfig: map_configuration(@community),
+            markerConfig: map_configuration(@community, show_ops_map),
 
             # ── Unit colours used in by_property colouring mode ───────────
             unitColors: {
@@ -352,8 +352,8 @@ module Api
           end
         end
 
-        def units_json(fav_ids = Set.new)
-          units = @community&.units&.map_units(@community)
+        def units_json(fav_ids = Set.new, show_ops_map = false)
+          units = @community&.units&.map_units(@community, show_ops_map)
           units&.map do |unit|
             floorplan = unit.floorplan
             fees      = @community.get_additional_fees(unit)
@@ -582,7 +582,7 @@ module Api
         # it needs in one round-trip. getFiltersData() reads this from this.data.filters.
         # ------------------------------------------------------------------
         def filters_json
-          units = @community.units.map_units(@community).includes(:floorplan)
+          units = @community.units.map_units(@community, show_ops_map?).includes(:floorplan)
 
           {
             bedrooms:      filter_bedroom_options(units),
@@ -670,6 +670,12 @@ module Api
         # Parses unit_ids from request params — accepts a single value or an array.
         def parse_unit_ids
           Array(params[:unit_ids]).map(&:to_s).map(&:strip).reject(&:empty?).uniq
+        end
+
+        # Returns true when the SDK caller passed map_type=ops in the query string.
+        # Mirrors how webpages_controller reads params[:ops_map].
+        def show_ops_map?
+          params[:map_type] == "ops"
         end
 
         def render_error(message, status)

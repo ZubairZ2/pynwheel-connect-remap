@@ -23,6 +23,12 @@
     _zoomInBtn:     null,
     _zoomOutBtn:    null,
 
+    // true when the caller explicitly passed styles.unitColors in config;
+    // false means "use per-unit colors returned by the API"
+    _userHasCustomColors: false,
+
+    _beansPopupObserver: null,   // MutationObserver that suppresses the Esri popup
+
     data: {
       property:   null,
       sitemap:    null,
@@ -64,7 +70,9 @@
         onUnitClick:      typeof cfg.onUnitClick      === "function" ? cfg.onUnitClick      : null,
         onFavoriteChange: typeof cfg.onFavoriteChange === "function" ? cfg.onFavoriteChange : null,
         enable3DMap:      cfg.enable3DMap  === true,
-        show3DMap:        cfg.show3DMap    === true
+        show3DMap:        cfg.show3DMap    === true,
+        // "marketing" (default) or "ops" — controls which server-resolved color is used
+        mapType:          cfg.mapType === "ops" ? "ops" : "marketing"
       };
 
       // Stable session ID persisted in localStorage so favorites survive page reloads.
@@ -86,6 +94,10 @@
         unitColors: { ...baseStyles.unitColors, ...(cfgStyles.unitColors || {}) },
         unitLabels:  { ...baseStyles.unitLabels,  ...(cfgStyles.unitLabels  || {}) }
       };
+
+      // Track whether caller explicitly provided unit fill colors.
+      // When false the SDK uses per-unit colors from the API response instead.
+      this._userHasCustomColors = !!(cfg.styles?.unitColors);
 
       this.container = document.querySelector(cfg.container);
       if (!this.container) {
@@ -185,7 +197,8 @@
      */
     async _fetchConfig() {
       try {
-        const url = `${this._apiBase()}/api/partner/maps/fetch_data`;
+        const mapTypeParam = this.config.mapType === "ops" ? "?map_type=ops" : "";
+        const url = `${this._apiBase()}/api/partner/maps/fetch_data${mapTypeParam}`;
         const res = await fetch(url, {
           headers: {
             "Authorization":    `Bearer ${this._sessionToken}`,
@@ -591,10 +604,7 @@
       const el     = activeSvg.querySelector(`#${CSS.escape(pid)}`);
       if (!el) return;
 
-      const styles = this.config?.styles || this.defaultStyles;
-      const status = this._unitStatus(unit);
-
-      el.style.fill = styles.unitColors[status] || styles.unitColors.available;
+      el.style.fill = this._unitColor(unit);
     },
 
     zoomIn() {
@@ -696,6 +706,7 @@
         displayOptions,
         {
           onSelect: (data) => {
+            this._hideBeansEsriPopup();
             if (data?.type !== "UNIT") return;
             const unit = (this.data.units || []).find(
               u => String(u.unitId) === String(data.unitId)
@@ -703,6 +714,7 @@
             if (unit && this.config.onUnitClick) this.config.onUnitClick(unit);
           },
           onHover: (data) => {
+            this._hideBeansEsriPopup();
             if (data?.type !== "UNIT") return;
             const unit = (this.data.units || []).find(
               u => String(u.unitId) === String(data.unitId)
@@ -714,21 +726,96 @@
 
       this._3dInitialized = true;
 
+      // Wait for the Beans map engine to be fully ready (mirrors beans3DHandler.js)
+      const waitForEngine = setInterval(() => {
+        const inst = this._beansWorkingInstance();
+        if (inst?.mapView?.ready) {
+          clearInterval(waitForEngine);
+          this._beansWidget.workingInstance = inst;
+
+          // Inject a permanent CSS rule to suppress Esri's built-in popup for the
+          // lifetime of the page. This is the SDK equivalent of the CMS's global
+          // .hidden { display: none !important } + $beansMarkerPopover.addClass("hidden")
+          this._injectBeansPopupSuppressor();
+
+          // Also watch for the popup being re-inserted by Esri after re-renders
+          this._observeBeansEsriPopup();
+
+          const container = inst.mapView?.container;
+          if (container) {
+            container.addEventListener("mouseleave", () => this._hideBeansEsriPopup());
+          }
+        }
+      }, 300);
+
       // Apply any pending floor filter
       if (this._beans3dFloor != null) {
         this._update3DFilter(this._beans3dIndicesForFloor(this._beans3dFloor));
       }
     },
 
+    /** Returns the active map engine instance (esri / mapbox / google / banvas). */
+    _beansWorkingInstance() {
+      const w = this._beansWidget;
+      if (!w) return null;
+      return w.esriObj || w.mapboxObj || w.googleObj || w.banvasObj || null;
+    },
+
+    /**
+     * Immediately hide any Esri popup Beans has rendered.
+     * Uses display:none directly — the SDK has no global .hidden CSS class
+     * unlike the CMS which defines .hidden { display:none !important }.
+     */
+    _hideBeansEsriPopup() {
+      const sel = 'div.esri-ui-inner-container.esri-ui-manual-container > div.esri-component[role="presentation"]';
+      document.querySelectorAll(sel).forEach(el => { el.style.display = "none"; });
+    },
+
+    /**
+     * Inject a one-time <style> tag that permanently suppresses Esri's popup
+     * for the lifetime of the page session. Equivalent to the CMS approach of
+     * calling $beansMarkerPopover.addClass("hidden") where .hidden is display:none !important.
+     */
+    _injectBeansPopupSuppressor() {
+      if (document.getElementById("pyn-beans-popup-suppressor")) return;
+      const style = document.createElement("style");
+      style.id = "pyn-beans-popup-suppressor";
+      style.textContent = [
+        'div.esri-ui-inner-container.esri-ui-manual-container > div.esri-component[role="presentation"]',
+        '{ display: none !important; }'
+      ].join(" ");
+      document.head.appendChild(style);
+    },
+
+    /**
+     * Watch for Esri re-inserting the popup after map re-renders and hide it
+     * immediately. Uses MutationObserver on the map container.
+     */
+    _observeBeansEsriPopup() {
+      const mapEl = document.getElementById("pyn-3d-map");
+      if (!mapEl || this._beansPopupObserver) return;
+
+      this._beansPopupObserver = new MutationObserver(() => {
+        this._hideBeansEsriPopup();
+      });
+
+      this._beansPopupObserver.observe(mapEl, { childList: true, subtree: true });
+    },
+
     _beans3dDisplayOptions(filteredIndices, initialMap, cfg3d) {
       const address = cfg3d?.propertyAddress || "";
+
+      // A "beans-only" property has no 2D SVG maps — show the floor selector
+      // so users can navigate floors. Mirrors: beanOnlyProperty in beans3DHandler.js
+      const beanOnly = !this._hasAnyMap();
+
       const opts = {
         propertyAddress:   address,
         filteredRows:      filteredIndices ?? this._beans3dArr.map((_, i) => i),
         customConfigs:     {},
         initialMap:        initialMap || "3D",
         hideBeansCard:     true,
-        hideFloorSelector: true,
+        hideFloorSelector: beanOnly ? false : true,
         modernBeansCard:   false,
         showUnitList:      false,
         hideFilters:       true,
@@ -739,32 +826,41 @@
         initialTilt:       65,
         initialHeading:    0
       };
-      // Only pass initialPosition when we have a real address.
-      // An empty string causes BeansEsri.afterSearch to crash trying to read
-      // .address on the undefined geocoder result.
+
+      // Always pass initialPosition when address is available —
+      // an empty string crashes BeansEsri.afterSearch on geocoder result.
       if (address) opts.initialPosition = { address };
       return opts;
     },
 
     _buildBeans3dArr(units, mapConfig) {
-      const mc        = mapConfig || {};
-      const fillColor = this.config.styles?.unitColors?.available
-                        || mc.default_polygon_color
-                        || "#3ca832";
+      const mc = mapConfig || {};
+
+      // Use the property's configured available color when the caller has not
+      // provided explicit config colors — this mirrors the marketing map default.
+      // For ops maps use the vacant (available) ops color from unitColors.
+      const fillColor = this._userHasCustomColors
+        ? (this.config.styles?.unitColors?.available || mc.default_polygon_color || "#3ca832")
+        : (this.data.property?.unitColors?.availableColor || mc.default_polygon_color || "#3ca832");
       const address   = this.data.property?.beans3dConfig?.propertyAddress || "";
 
-      // Raw format expected by convertUnitsArr (from utils.js)
+      // Raw format expected by convertUnitsArr (from utils.js).
+      // Fields mirror getFormattedBeansUnits() in beans3DHandler.js.
       const rawUnits = units.map(u => ({
-        unitId: u.unitId,
-        type:   "UNIT",
-        unit:   u.unitNumber,
-        name:   u.unitNumber,
-        floor:  u.floor,
-        bed:    u.bedrooms,
-        bath:   u.bathrooms,
-        sqft:   u.square_feet,
-        rent:   u.market_rent,
-        status: u.available ? "vacant" : "occupied"
+        unitId:          u.unitId,
+        type:            "UNIT",
+        unit:            u.unitNumber,
+        name:            u.unitNumber,
+        floor:           u.floor,
+        bed:             u.bedrooms,
+        bath:            u.bathrooms,
+        sqft:            u.square_feet,
+        rent:            u.market_rent,
+        status:          u.unit_status,
+        modelUnit:       u.model_unit,
+        availabilityUrl: u.availability_url,
+        leaseTerm:       u.lease_term,
+        propertyId:      u.property_id
       }));
 
       // convertUnitsArr is loaded from utils.js alongside mapswidget.
@@ -779,23 +875,37 @@
 
       return converted.map((data, i) => {
         const unitData = rawUnits[i];
-        data.options        = data.options        || {};
-        data.options.markers = data.options.markers || {};
-        data.options.markers.display  = true;
-        data.options.onClickData      = unitData;
-        data.options.onPreviewData    = null;
+
+        // Resolve per-unit fill color when dynamic colors are active.
+        // Falls back to the property-level fillColor for custom-color mode.
+        const unit = units[i];
+        let unitFill = fillColor;
+        if (!this._userHasCustomColors && unit) {
+          const isOps    = this.config.mapType === "ops";
+          const colorObj = isOps ? unit.opsColor : unit.color;
+          if (colorObj?.color) unitFill = colorObj.color;
+        }
+        data.options              = data.options         || {};
+        data.options.markers      = data.options.markers || {};
+        data.options.markers.display    = true;
+        data.options.markers.showLabel  = false;
+        data.options.markers.tooltip    = false;
+        data.options.onClickData        = unitData;
+        data.options.onPreviewData      = null;
+        data.options.hideCard           = true;
+        data.options.showTooltip        = false;
 
         data.options.unitShape = {
-          fillColor,
+          fillColor:     unitFill,
           fillOpacity:   0.85,
-          strokeColor:   fillColor,
+          strokeColor:   unitFill,
           strokeOpacity: 0.9,
           strokeWeight:  1
         };
         data.options.selectedUnitShape = {
-          fillColor,
+          fillColor:     unitFill,
           fillOpacity:   1,
-          strokeColor:   fillColor,
+          strokeColor:   unitFill,
           strokeOpacity: 1,
           strokeWeight:  2
         };
@@ -809,8 +919,13 @@
       const initialMap = cfg3d?.defaultSatelliteView ? "SATELLITE" : "3D";
       const opts       = this._beans3dDisplayOptions(indices, initialMap, cfg3d);
       try {
-        this._beansWidget.setDisplayOptions(opts);
-        this._beansWidget.redraw();
+        if (this._beansWidget.workingInstance) {
+          this._beansWidget.setDisplayOptions(opts);
+          this._beansWidget.redraw();
+        } else {
+          // Engine not ready yet — re-init mirrors reDrawBeansWidget in beans3DHandler.js
+          this._init3DMap();
+        }
       } catch (e) {
         console.warn("PynMapSDK: Could not update 3D filter", e);
       }
@@ -929,8 +1044,7 @@
 
       this._clearUnitStyles();
 
-      const styles = this.config?.styles || this.defaultStyles;
-      const units  = this.unitsByMap[this.activeMapId] || [];
+      const units = this.unitsByMap[this.activeMapId] || [];
 
       units.forEach(unit => {
         const pid = unit.pointerData?.id;
@@ -939,8 +1053,7 @@
         const el = activeSvg.querySelector(`#${CSS.escape(pid)}`);
         if (!el) return;
 
-        const status  = this._unitStatus(unit);
-        el.style.fill = styles.unitColors[status] || styles.unitColors.available;
+        el.style.fill = this._unitColor(unit);
 
         const root = el.closest("g") || el;
         root.classList.add("pyn-highlight");
@@ -953,8 +1066,7 @@
 
       this._clearUnitStyles();
 
-      const styles = this.config.styles;
-      const units  = (this.unitsByMap[this.activeMapId] || []).filter(
+      const units = (this.unitsByMap[this.activeMapId] || []).filter(
         u => String(u.floor) === String(floorNumber)
       );
 
@@ -965,8 +1077,7 @@
         const el = activeSvg.querySelector(`#${CSS.escape(String(pid))}`);
         if (!el) return;
 
-        const status  = this._unitStatus(u);
-        el.style.fill = styles.unitColors[status];
+        el.style.fill = this._unitColor(u);
 
         const root = el.closest("g") || el;
         root.classList.add("pyn-highlight");
@@ -990,8 +1101,6 @@
 
       this._clearUnitStyles();
 
-      const styles = this.config.styles;
-
       ids.forEach(id => {
         const unit = units.find(u =>
           String(u.unitId) === id ||
@@ -1004,8 +1113,7 @@
         const el  = activeSvg.querySelector(`#${CSS.escape(pid)}`);
         if (!el) return;
 
-        const status  = this._unitStatus(unit);
-        el.style.fill = styles.unitColors[status];
+        el.style.fill = this._unitColor(unit);
 
         const root = el.closest("g") || el;
         root.classList.add("pyn-highlight");
@@ -1035,15 +1143,16 @@
       if (svg._pynEventsBound) return;
       svg._pynEventsBound = true;
 
-      const styles = this.config?.styles || this.defaultStyles;
-
       svg.addEventListener("mouseover", (e) => {
         const root = e.target.closest("[data-pyn-unit-pid]");
         if (!root) return;
 
-        const pid = root.dataset.pynUnitPid;
-        const el  = root.querySelector(`#${CSS.escape(pid)}`) || root;
-        el.style.fill = styles.unitColors.hover;
+        const pid  = root.dataset.pynUnitPid;
+        const unit = byPointer[pid];
+        if (!unit) return;
+
+        const el = root.querySelector(`#${CSS.escape(pid)}`) || root;
+        el.style.fill = this._unitHoverColor(unit);
       });
 
       svg.addEventListener("mouseout", (e) => {
@@ -1054,9 +1163,8 @@
         const unit = byPointer[pid];
         if (!unit) return;
 
-        const status = this._unitStatus(unit);
-        const el     = root.querySelector(`#${CSS.escape(pid)}`) || root;
-        el.style.fill = styles.unitColors[status];
+        const el = root.querySelector(`#${CSS.escape(pid)}`) || root;
+        el.style.fill = this._unitColor(unit);
       });
 
       svg.addEventListener("mouseover", (e) => {
@@ -1201,6 +1309,71 @@
 
     _unitStatus(unit) {
       return "available";
+    },
+
+    /**
+     * Resolves the fill color for a unit.
+     *
+     * Priority:
+     *   1. Caller explicitly passed `styles.unitColors` in config → use config (backward-compat).
+     *   2. Otherwise → use the server-resolved color on the unit object:
+     *        mapType "ops"        → unit.opsColor  { color, opacity }
+     *        mapType "marketing"  → unit.color     { color, opacity }
+     *      Both are pre-computed by sdk_controller respecting coloring_mode
+     *      (by_property / by_floorplan) and unit status (model vs available).
+     *   3. Final fallback → defaultStyles.unitColors.available.
+     */
+    _unitColor(unit) {
+      if (this._userHasCustomColors) {
+        const styles = this.config.styles || this.defaultStyles;
+        const status = this._unitStatus(unit);
+        return styles.unitColors[status] || styles.unitColors.available;
+      }
+
+      const isOps    = this.config.mapType === "ops";
+      const colorObj = isOps ? unit.opsColor : unit.color;
+
+      if (colorObj?.color) {
+        const op = colorObj.opacity ?? 1;
+        return op < 1 ? this._hexToRgba(colorObj.color, op) : colorObj.color;
+      }
+
+      return (this.config.styles || this.defaultStyles).unitColors.available;
+    },
+
+    /**
+     * Hover color for a unit — the unit's own color at 0.75 opacity.
+     * Falls back to config styles.unitColors.hover when custom colors are set.
+     */
+    _unitHoverColor(unit) {
+      if (this._userHasCustomColors) {
+        return (this.config.styles || this.defaultStyles).unitColors.hover;
+      }
+      const isOps    = this.config.mapType === "ops";
+      const colorObj = isOps ? unit.opsColor : unit.color;
+      if (colorObj?.color) return this._lightenHex(colorObj.color, 0.35);
+      return (this.config.styles || this.defaultStyles).unitColors.hover;
+    },
+
+    /**
+     * Blend a hex color toward white by `factor` (0 = original, 1 = white).
+     * Used for hover — brightens the unit's own color rather than dimming it.
+     */
+    _lightenHex(hex, factor) {
+      const h  = hex.replace("#", "");
+      const r  = Math.round(parseInt(h.slice(0, 2), 16) + (255 - parseInt(h.slice(0, 2), 16)) * factor);
+      const g  = Math.round(parseInt(h.slice(2, 4), 16) + (255 - parseInt(h.slice(2, 4), 16)) * factor);
+      const b  = Math.round(parseInt(h.slice(4, 6), 16) + (255 - parseInt(h.slice(4, 6), 16)) * factor);
+      return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+    },
+
+    /** Convert a 6-digit hex + opacity float to an rgba() string. */
+    _hexToRgba(hex, opacity) {
+      const h = hex.replace("#", "");
+      const r = parseInt(h.slice(0, 2), 16);
+      const g = parseInt(h.slice(2, 4), 16);
+      const b = parseInt(h.slice(4, 6), 16);
+      return `rgba(${r},${g},${b},${opacity})`;
     },
 
     _findFloorplateByFloor(floorNumber) {
@@ -1486,8 +1659,8 @@
       if (this.config.environment === "staging") {
         return "https://pynwheel-staging.herokuapp.com";
       }
-      // return "http://localhost:3000";
-      return "https://pynwheelconnect.com"; // production
+      return "http://localhost:3000";
+      // return "https://pynwheelconnect.com"; // production
     }
   };
 
