@@ -12,6 +12,17 @@
     container: null,
     activeMapId: null,
 
+    // 3D map state
+    _3dMode:        false,
+    _3dInitialized: false,
+    _beansWidget:   null,
+    _beans3dArr:    [],
+    _beans3dFloor:  null,
+    _3dWrapper:     null,
+    _3dToggleBtn:   null,
+    _zoomInBtn:     null,
+    _zoomOutBtn:    null,
+
     data: {
       property:   null,
       sitemap:    null,
@@ -51,7 +62,9 @@
         floor:            cfg.defaultFloor != null ? String(cfg.defaultFloor) : null,
         onUnitHover:      typeof cfg.onUnitHover      === "function" ? cfg.onUnitHover      : null,
         onUnitClick:      typeof cfg.onUnitClick      === "function" ? cfg.onUnitClick      : null,
-        onFavoriteChange: typeof cfg.onFavoriteChange === "function" ? cfg.onFavoriteChange : null
+        onFavoriteChange: typeof cfg.onFavoriteChange === "function" ? cfg.onFavoriteChange : null,
+        enable3DMap:      cfg.enable3DMap  === true,
+        show3DMap:        cfg.show3DMap    === true
       };
 
       // Stable session ID persisted in localStorage so favorites survive page reloads.
@@ -130,10 +143,13 @@
 
       if (this.config.floor) {
         this.changeFloor(this.config.floor);
-        return;
+      } else {
+        this._highlightAllUnits();
       }
 
-      this._highlightAllUnits();
+      if (this.config.enable3DMap && this.config.show3DMap) {
+        this.switchTo3DMap();
+      }
     },
 
     // ----------------------------------------------------
@@ -307,6 +323,11 @@
     // ----------------------------------------------------
     _renderMaps() {
       const c = this.container;
+
+      // Preserve the 3D wrapper element across re-renders so the widget survives
+      const saved3d = this._3dWrapper;
+      if (saved3d && saved3d.parentNode === c) c.removeChild(saved3d);
+
       c.innerHTML = "";
       c.style.position = "relative";
 
@@ -317,7 +338,8 @@
 
       const clone = svg.cloneNode(true);
       clone.setAttribute("data-map-id", this.activeMapId);
-      clone.style.display = "block";
+      // Hide SVG when 3D mode is active
+      clone.style.display = this._3dMode ? "none" : "block";
 
       this._applyGlobalLabelStyles(clone, this.config.styles.unitLabels);
 
@@ -328,6 +350,30 @@
       clone.style.height = "100%";
 
       c.appendChild(clone);
+
+      // Restore or create the 3D wrapper
+      if (this.config.enable3DMap) {
+        if (saved3d) {
+          c.appendChild(saved3d);
+          this._3dWrapper = saved3d;
+        } else {
+          const wrapper3d = document.createElement("div");
+          Object.assign(wrapper3d.style, {
+            position: "absolute",
+            top: "0", left: "0", right: "0", bottom: "0",
+            display: "none"
+          });
+          const beansDiv = document.createElement("div");
+          beansDiv.id = "pyn-3d-map";
+          beansDiv.style.width  = "100%";
+          beansDiv.style.height = "100%";
+          wrapper3d.appendChild(beansDiv);
+          c.appendChild(wrapper3d);
+          this._3dWrapper = wrapper3d;
+        }
+        // Sync 3D wrapper visibility to current mode
+        this._3dWrapper.style.display = this._3dMode ? "block" : "none";
+      }
 
       if (this.config.showZoomControls) {
         this._renderZoomControls();
@@ -564,6 +610,273 @@
     },
 
     // ----------------------------------------------------
+    // 3D MAP — PUBLIC API
+    // ----------------------------------------------------
+
+    /**
+     * Switch to 3D map view (Beans.ai).
+     * Hides the SVG map, shows the 3D widget.
+     * Loads Beans.ai libraries on first call.
+     * No-op if enable3DMap was not set in config.
+     */
+    async switchTo3DMap() {
+      if (!this.config.enable3DMap) return;
+      if (this._3dMode) return;
+
+      this._3dMode = true;
+
+      // Hide SVG, show 3D wrapper
+      const activeSvg = this._getActiveSvg();
+      if (activeSvg) activeSvg.style.display = "none";
+      if (this._3dWrapper) this._3dWrapper.style.display = "block";
+
+      // Update toggle button label and hide zoom controls (irrelevant in 3D)
+      if (this._3dToggleBtn) this._3dToggleBtn.innerText = "2D";
+      if (this._zoomInBtn)   this._zoomInBtn.style.display  = "none";
+      if (this._zoomOutBtn)  this._zoomOutBtn.style.display = "none";
+
+      if (!this._3dInitialized) {
+        await this._init3DMap();
+      }
+    },
+
+    /**
+     * Switch back to the 2D SVG map.
+     * Reapplies any active floor filter.
+     */
+    switchTo2DMap() {
+      if (!this._3dMode) return;
+      this._3dMode = false;
+
+      // Show SVG, hide 3D wrapper
+      const activeSvg = this._getActiveSvg();
+      if (activeSvg) activeSvg.style.display = "block";
+      if (this._3dWrapper) this._3dWrapper.style.display = "none";
+
+      // Update toggle button label and restore zoom controls
+      if (this._3dToggleBtn) this._3dToggleBtn.innerText = "3D";
+      if (this._zoomInBtn)   this._zoomInBtn.style.display  = "flex";
+      if (this._zoomOutBtn)  this._zoomOutBtn.style.display = "flex";
+    },
+
+    // ----------------------------------------------------
+    // 3D MAP — INTERNAL
+    // ----------------------------------------------------
+
+    async _init3DMap() {
+      const cfg3d = this.data.property?.beans3dConfig;
+
+      if (!cfg3d?.enabled || !cfg3d?.beansApiKey) {
+        console.warn("PynMapSDK: 3D map not configured for this property.");
+        this.switchTo2DMap();
+        return;
+      }
+
+      await this._load3DLibraries();
+
+      if (typeof BeansMap === "undefined") {
+        console.error("PynMapSDK: BeansMap library failed to load.");
+        this.switchTo2DMap();
+        return;
+      }
+
+      this._beans3dArr = this._buildBeans3dArr(this.data.units || [], cfg3d.mapConfig);
+
+      this._beansWidget = new BeansMap();
+
+      const initialMap     = cfg3d.defaultSatelliteView ? "SATELLITE" : "3D";
+      const allIndices     = this._beans3dArr.map((_, i) => i);
+      const displayOptions = this._beans3dDisplayOptions(allIndices, initialMap, cfg3d);
+
+      this._beansWidget.render(
+        "pyn-3d-map",
+        cfg3d.beansApiKey,
+        this._beans3dArr,
+        { userLocation: "MANUAL", hideNavigateButton: false, hideMyLocationButton: false },
+        displayOptions,
+        {
+          onSelect: (data) => {
+            if (data?.type !== "UNIT") return;
+            const unit = (this.data.units || []).find(
+              u => String(u.unitId) === String(data.unitId)
+            );
+            if (unit && this.config.onUnitClick) this.config.onUnitClick(unit);
+          },
+          onHover: (data) => {
+            if (data?.type !== "UNIT") return;
+            const unit = (this.data.units || []).find(
+              u => String(u.unitId) === String(data.unitId)
+            );
+            if (unit && this.config.onUnitHover) this.config.onUnitHover(unit);
+          }
+        }
+      );
+
+      this._3dInitialized = true;
+
+      // Apply any pending floor filter
+      if (this._beans3dFloor != null) {
+        this._update3DFilter(this._beans3dIndicesForFloor(this._beans3dFloor));
+      }
+    },
+
+    _beans3dDisplayOptions(filteredIndices, initialMap, cfg3d) {
+      const address = cfg3d?.propertyAddress || "";
+      const opts = {
+        propertyAddress:   address,
+        filteredRows:      filteredIndices ?? this._beans3dArr.map((_, i) => i),
+        customConfigs:     {},
+        initialMap:        initialMap || "3D",
+        hideBeansCard:     true,
+        hideFloorSelector: true,
+        modernBeansCard:   false,
+        showUnitList:      false,
+        hideFilters:       true,
+        showUnitShape:     true,
+        hideShadow:        true,
+        showCompass:       true,
+        initialZ:          180,
+        initialTilt:       65,
+        initialHeading:    0
+      };
+      // Only pass initialPosition when we have a real address.
+      // An empty string causes BeansEsri.afterSearch to crash trying to read
+      // .address on the undefined geocoder result.
+      if (address) opts.initialPosition = { address };
+      return opts;
+    },
+
+    _buildBeans3dArr(units, mapConfig) {
+      const mc        = mapConfig || {};
+      const fillColor = this.config.styles?.unitColors?.available
+                        || mc.default_polygon_color
+                        || "#3ca832";
+      const address   = this.data.property?.beans3dConfig?.propertyAddress || "";
+
+      // Raw format expected by convertUnitsArr (from utils.js)
+      const rawUnits = units.map(u => ({
+        unitId: u.unitId,
+        type:   "UNIT",
+        unit:   u.unitNumber,
+        name:   u.unitNumber,
+        floor:  u.floor,
+        bed:    u.bedrooms,
+        bath:   u.bathrooms,
+        sqft:   u.square_feet,
+        rent:   u.market_rent,
+        status: u.available ? "vacant" : "occupied"
+      }));
+
+      // convertUnitsArr is loaded from utils.js alongside mapswidget.
+      // It wraps each unit in the Beans { options: { onClickData, markers, … } }
+      // envelope that beansWidget.render() requires.
+      if (typeof convertUnitsArr !== "function") {
+        console.warn("PynMapSDK: convertUnitsArr not available — utils.js may not have loaded.");
+        return rawUnits; // fallback: widget will likely crash, but at least we tried
+      }
+
+      const converted = convertUnitsArr({ address }, rawUnits, true, true);
+
+      return converted.map((data, i) => {
+        const unitData = rawUnits[i];
+        data.options        = data.options        || {};
+        data.options.markers = data.options.markers || {};
+        data.options.markers.display  = true;
+        data.options.onClickData      = unitData;
+        data.options.onPreviewData    = null;
+
+        data.options.unitShape = {
+          fillColor,
+          fillOpacity:   0.85,
+          strokeColor:   fillColor,
+          strokeOpacity: 0.9,
+          strokeWeight:  1
+        };
+        data.options.selectedUnitShape = {
+          fillColor,
+          fillOpacity:   1,
+          strokeColor:   fillColor,
+          strokeOpacity: 1,
+          strokeWeight:  2
+        };
+        return data;
+      });
+    },
+
+    _update3DFilter(indices) {
+      if (!this._beansWidget || !this._3dInitialized) return;
+      const cfg3d      = this.data.property?.beans3dConfig;
+      const initialMap = cfg3d?.defaultSatelliteView ? "SATELLITE" : "3D";
+      const opts       = this._beans3dDisplayOptions(indices, initialMap, cfg3d);
+      try {
+        this._beansWidget.setDisplayOptions(opts);
+        this._beansWidget.redraw();
+      } catch (e) {
+        console.warn("PynMapSDK: Could not update 3D filter", e);
+      }
+    },
+
+    // Items in _beans3dArr after convertUnitsArr have the shape
+    // { options: { onClickData: { unitId, floor, … } } }.
+    // Fall back to reading the field directly for the raw-unit fallback path.
+    _beans3dItemData(item) {
+      return item?.options?.onClickData ?? item;
+    },
+
+    _beans3dIndicesForFloor(floorNumber) {
+      return this._beans3dArr
+        .map((item, i) => {
+          const u = this._beans3dItemData(item);
+          return String(u.floor) === String(floorNumber) ? i : null;
+        })
+        .filter(i => i !== null);
+    },
+
+    _beans3dIndicesForUnitIds(unitIds) {
+      const ids = new Set(unitIds.map(String));
+      return this._beans3dArr
+        .map((item, i) => {
+          const u = this._beans3dItemData(item);
+          return ids.has(String(u.unitId)) ? i : null;
+        })
+        .filter(i => i !== null);
+    },
+
+    _load3DLibraries() {
+      return new Promise(resolve => {
+        if (typeof BeansMap !== "undefined") return resolve();
+
+        const loadStyle = (href) => {
+          if (document.querySelector(`link[href="${href}"]`)) return;
+          const l = document.createElement("link");
+          l.rel  = "stylesheet";
+          l.href = href;
+          document.head.appendChild(l);
+        };
+
+        const loadScript = (src) => new Promise((res, rej) => {
+          if (document.querySelector(`script[src="${src}"]`)) return res();
+          const s    = document.createElement("script");
+          s.src      = src;
+          s.async    = false;
+          s.onload   = res;
+          s.onerror  = rej;
+          document.head.appendChild(s);
+        });
+
+        loadStyle("https://js.arcgis.com/4.27/esri/themes/light/main.css");
+        loadStyle("https://www.beans.ai/mapswidget/css/mapswidget-1.0.4.css");
+
+        // Load order matters: ArcGIS → mapswidget → utils (provides convertUnitsArr)
+        loadScript("https://js.arcgis.com/4.23/")
+          .then(() => loadScript("https://www.beans.ai/mapswidget/js/mapswidget-1.0.4-speed.js"))
+          .then(() => loadScript("https://www.beans.ai/mapswidget/client/utils.js"))
+          .then(resolve)
+          .catch(() => resolve()); // resolve anyway; caller checks typeof BeansMap
+      });
+    },
+
+    // ----------------------------------------------------
     // FLOOR / MAP CHANGE
     // ----------------------------------------------------
     changeMap(mapId) {
@@ -579,6 +892,15 @@
     },
 
     changeFloor(floorNumber) {
+      if (this._3dMode) {
+        this._beans3dFloor = floorNumber;
+        const indices = floorNumber != null
+          ? this._beans3dIndicesForFloor(floorNumber)
+          : this._beans3dArr.map((_, i) => i);
+        this._update3DFilter(indices);
+        return;
+      }
+
       const fp = this._findFloorplateByFloor(floorNumber);
 
       if (!fp) {
@@ -654,10 +976,16 @@
     highlightUnits(unitIds) {
       if (!unitIds) return;
 
+      const ids = Array.isArray(unitIds) ? unitIds.map(String) : [String(unitIds)];
+
+      if (this._3dMode) {
+        const indices = this._beans3dIndicesForUnitIds(ids);
+        this._update3DFilter(indices);
+        return;
+      }
+
       const activeSvg = this._getActiveSvg();
       if (!activeSvg) return;
-
-      const ids   = Array.isArray(unitIds) ? unitIds.map(String) : [String(unitIds)];
       const units = this.unitsByMap[this.activeMapId] || [];
 
       this._clearUnitStyles();
@@ -804,7 +1132,7 @@
       Object.assign(wrapper.style, {
         position:      "absolute",
         right:         "12px",
-        top:           "12px",
+        top:           "22%",
         display:       "flex",
         flexDirection: "column",
         gap:           "6px",
@@ -831,14 +1159,43 @@
       plus.innerText = "+";
       Object.assign(plus.style, btnStyle);
       plus.onclick = () => this.zoomIn();
+      this._zoomInBtn = plus;
 
       const minus = document.createElement("div");
       minus.innerText = "−";
       Object.assign(minus.style, btnStyle);
       minus.onclick = () => this.zoomOut();
+      this._zoomOutBtn = minus;
+
+      // Hide zoom buttons immediately if already in 3D mode
+      if (this._3dMode) {
+        plus.style.display  = "none";
+        minus.style.display = "none";
+      }
 
       wrapper.appendChild(plus);
       wrapper.appendChild(minus);
+
+      if (this.config.enable3DMap) {
+        const toggle = document.createElement("div");
+        toggle.className = "pyn-3d-toggle";
+        toggle.innerText = this._3dMode ? "2D" : "3D";
+        Object.assign(toggle.style, {
+          ...btnStyle,
+          fontSize:        "13px",
+          letterSpacing:   "0.5px"
+        });
+        toggle.onclick = () => {
+          if (this._3dMode) {
+            this.switchTo2DMap();
+          } else {
+            this.switchTo3DMap();
+          }
+        };
+        this._3dToggleBtn = toggle;
+        wrapper.appendChild(toggle);
+      }
+
       this.container.appendChild(wrapper);
     },
 
@@ -1159,7 +1516,9 @@
       saveFavorite(unitIds)        { return PynMapSDK.saveFavorite.call(PynMapSDK, unitIds); },
       deleteFavorite(unitIds)      { return PynMapSDK.deleteFavorite.call(PynMapSDK, unitIds); },
       getShareFavoritesLink()      { return PynMapSDK.getShareFavoritesLink.call(PynMapSDK); },
-      clearAllFavorites()          { return PynMapSDK.clearAllFavorites.call(PynMapSDK); }
+      clearAllFavorites()          { return PynMapSDK.clearAllFavorites.call(PynMapSDK); },
+      switchTo3DMap()              { return PynMapSDK.switchTo3DMap.call(PynMapSDK); },
+      switchTo2DMap()              { return PynMapSDK.switchTo2DMap.call(PynMapSDK); }
     };
   }
 

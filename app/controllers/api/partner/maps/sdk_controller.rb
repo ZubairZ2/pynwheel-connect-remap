@@ -257,6 +257,15 @@ module Api
               defaultSatelliteView: @community.default_satellite_view
             },
 
+            # ── 3D map (Beans.ai) configuration ───────────────────────────
+            beans3dConfig: {
+              enabled:              @community.enable_three_d_maps,
+              beansApiKey:          ENV['BEANS_API_KEY'].to_s,
+              defaultSatelliteView: @community.default_satellite_view,
+              propertyAddress:      [@community.address, @community.city, @community.state, @community.zip].compact.join(', '),
+              mapConfig:            @community.three_d_maps_configuration&.as_json || {}
+            },
+
             # ── Unit display & pricing ─────────────────────────────────────
             unitDisplay: {
               displayRent:                  @community.display_rent,

@@ -17,8 +17,13 @@
       environment: "production",
       apiKey: "88ebc96efd10f0b0af44ced6031d8813",
       propertyId: "33",
-      defaultFloor: 1, // Optional
+      defaultFloor: 1,       // Optional
       showZoomControls: true, // Optional
+
+      // 3D map options (both default to false)
+      enable3DMap: true,  // shows 3D/2D toggle button under +/- zoom controls
+      show3DMap: false,   // set true to open in 3D mode on load
+
       styles: {
         unitColors: {
           available: "#61D46B",
@@ -30,6 +35,7 @@
         //   fontColor: "#ffffff"
         // }
       }, // Optional
+
       onUnitHover: (unit) => {
         console.log("Hovered unit:", unit);
       },
