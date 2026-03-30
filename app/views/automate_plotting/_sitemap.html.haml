@@ -112,29 +112,22 @@
     document.addEventListener("touchcancel", touchHandler, true);
     let elem = document.querySelector('#map');
     const key = getZoomPanKey(elem);
-    if (zoomablePans) {
-      zoomablePans[key] = panzoom(elem, {
+    if (!zoomablePans) zoomablePans = {};
+    zoomablePans[key] = {
+      instance: panzoom(elem, {
         minZoom: 0.5,
         maxZoom: 1.0,
         bounds: true,
         boundsPadding: 0.3
-      })
-    } else {
-      zoomablePans = {
-        [key]: panzoom(elem, {
-          minZoom: 0.5,
-          maxZoom: 1.0,
-          bounds: true,
-          boundsPadding: 0.3
-        }),
-      };
-    }
+      }),
+      elem: elem
+    };
 
     var transform = zoomablePans?.[key] ? zoomablePans[key].instance.getTransform() : {};
     var scaleFactor = (1 / (transform.scale || 1));
     var previous_scale = 0;
     while ($('#map').width() / scaleFactor > $('.map-block').width() || $('#map').height() / scaleFactor > $('.map-block').height()) {
-        zoomablePans[key].zoomInOut(189);
+        zoomablePans[key].instance.zoomInOut(189);
         transform = zoomablePans[key] ? zoomablePans[key].instance.getTransform() : {};
         scaleFactor = (1 / (transform.scale || 1));
         if (scaleFactor === previous_scale) {
@@ -142,7 +135,7 @@
         }
         previous_scale = scaleFactor
     }
-    zoomablePans[key].moveTo(0, 0);
+    zoomablePans[key].instance.moveTo(0, 0);
     })
 
   function touchHandler(event) {
