@@ -12,6 +12,23 @@
     container: null,
     activeMapId: null,
 
+    // 3D map state
+    _3dMode:        false,
+    _3dInitialized: false,
+    _beansWidget:   null,
+    _beans3dArr:    [],
+    _beans3dFloor:  null,
+    _3dWrapper:     null,
+    _3dToggleBtn:   null,
+    _zoomInBtn:     null,
+    _zoomOutBtn:    null,
+
+    // true when the caller explicitly passed styles.unitColors in config;
+    // false means "use per-unit colors returned by the API"
+    _userHasCustomColors: false,
+
+    _beansPopupObserver: null,   // MutationObserver that suppresses the Esri popup
+
     data: {
       property:   null,
       sitemap:    null,
@@ -51,7 +68,11 @@
         floor:            cfg.defaultFloor != null ? String(cfg.defaultFloor) : null,
         onUnitHover:      typeof cfg.onUnitHover      === "function" ? cfg.onUnitHover      : null,
         onUnitClick:      typeof cfg.onUnitClick      === "function" ? cfg.onUnitClick      : null,
-        onFavoriteChange: typeof cfg.onFavoriteChange === "function" ? cfg.onFavoriteChange : null
+        onFavoriteChange: typeof cfg.onFavoriteChange === "function" ? cfg.onFavoriteChange : null,
+        enable3DMap:      cfg.enable3DMap  === true,
+        show3DMap:        cfg.show3DMap    === true,
+        // "marketing" (default) or "ops" — controls which server-resolved color is used
+        mapType:          cfg.mapType === "ops" ? "ops" : "marketing"
       };
 
       // Stable session ID persisted in localStorage so favorites survive page reloads.
@@ -73,6 +94,10 @@
         unitColors: { ...baseStyles.unitColors, ...(cfgStyles.unitColors || {}) },
         unitLabels:  { ...baseStyles.unitLabels,  ...(cfgStyles.unitLabels  || {}) }
       };
+
+      // Track whether caller explicitly provided unit fill colors.
+      // When false the SDK uses per-unit colors from the API response instead.
+      this._userHasCustomColors = !!(cfg.styles?.unitColors);
 
       this.container = document.querySelector(cfg.container);
       if (!this.container) {
@@ -130,10 +155,13 @@
 
       if (this.config.floor) {
         this.changeFloor(this.config.floor);
-        return;
+      } else {
+        this._highlightAllUnits();
       }
 
-      this._highlightAllUnits();
+      if (this.config.enable3DMap && this.config.show3DMap) {
+        this.switchTo3DMap();
+      }
     },
 
     // ----------------------------------------------------
@@ -169,7 +197,8 @@
      */
     async _fetchConfig() {
       try {
-        const url = `${this._apiBase()}/api/partner/maps/fetch_data`;
+        const mapTypeParam = this.config.mapType === "ops" ? "?map_type=ops" : "";
+        const url = `${this._apiBase()}/api/partner/maps/fetch_data${mapTypeParam}`;
         const res = await fetch(url, {
           headers: {
             "Authorization":    `Bearer ${this._sessionToken}`,
@@ -307,6 +336,11 @@
     // ----------------------------------------------------
     _renderMaps() {
       const c = this.container;
+
+      // Preserve the 3D wrapper element across re-renders so the widget survives
+      const saved3d = this._3dWrapper;
+      if (saved3d && saved3d.parentNode === c) c.removeChild(saved3d);
+
       c.innerHTML = "";
       c.style.position = "relative";
 
@@ -317,7 +351,8 @@
 
       const clone = svg.cloneNode(true);
       clone.setAttribute("data-map-id", this.activeMapId);
-      clone.style.display = "block";
+      // Hide SVG when 3D mode is active
+      clone.style.display = this._3dMode ? "none" : "block";
 
       this._applyGlobalLabelStyles(clone, this.config.styles.unitLabels);
 
@@ -328,6 +363,30 @@
       clone.style.height = "100%";
 
       c.appendChild(clone);
+
+      // Restore or create the 3D wrapper
+      if (this.config.enable3DMap) {
+        if (saved3d) {
+          c.appendChild(saved3d);
+          this._3dWrapper = saved3d;
+        } else {
+          const wrapper3d = document.createElement("div");
+          Object.assign(wrapper3d.style, {
+            position: "absolute",
+            top: "0", left: "0", right: "0", bottom: "0",
+            display: "none"
+          });
+          const beansDiv = document.createElement("div");
+          beansDiv.id = "pyn-3d-map";
+          beansDiv.style.width  = "100%";
+          beansDiv.style.height = "100%";
+          wrapper3d.appendChild(beansDiv);
+          c.appendChild(wrapper3d);
+          this._3dWrapper = wrapper3d;
+        }
+        // Sync 3D wrapper visibility to current mode
+        this._3dWrapper.style.display = this._3dMode ? "block" : "none";
+      }
 
       if (this.config.showZoomControls) {
         this._renderZoomControls();
@@ -545,10 +604,7 @@
       const el     = activeSvg.querySelector(`#${CSS.escape(pid)}`);
       if (!el) return;
 
-      const styles = this.config?.styles || this.defaultStyles;
-      const status = this._unitStatus(unit);
-
-      el.style.fill = styles.unitColors[status] || styles.unitColors.available;
+      el.style.fill = this._unitColor(unit);
     },
 
     zoomIn() {
@@ -561,6 +617,378 @@
       const svg = this._getActiveSvg();
       if (!svg || !svg._pz) return;
       svg._pz.zoom(Math.max(svg._pz.getZoom() / 1.25, 0.5));
+    },
+
+    // ----------------------------------------------------
+    // 3D MAP — PUBLIC API
+    // ----------------------------------------------------
+
+    /**
+     * Switch to 3D map view (Beans.ai).
+     * Hides the SVG map, shows the 3D widget.
+     * Loads Beans.ai libraries on first call.
+     * No-op if enable3DMap was not set in config.
+     */
+    async switchTo3DMap() {
+      if (!this.config.enable3DMap) return;
+      if (this._3dMode) return;
+
+      this._3dMode = true;
+
+      // Hide SVG, show 3D wrapper
+      const activeSvg = this._getActiveSvg();
+      if (activeSvg) activeSvg.style.display = "none";
+      if (this._3dWrapper) this._3dWrapper.style.display = "block";
+
+      // Update toggle button label and hide zoom controls (irrelevant in 3D)
+      if (this._3dToggleBtn) this._3dToggleBtn.innerText = "2D";
+      if (this._zoomInBtn)   this._zoomInBtn.style.display  = "none";
+      if (this._zoomOutBtn)  this._zoomOutBtn.style.display = "none";
+
+      if (!this._3dInitialized) {
+        await this._init3DMap();
+      }
+    },
+
+    /**
+     * Switch back to the 2D SVG map.
+     * Reapplies any active floor filter.
+     */
+    switchTo2DMap() {
+      if (!this._3dMode) return;
+      this._3dMode = false;
+
+      // Show SVG, hide 3D wrapper
+      const activeSvg = this._getActiveSvg();
+      if (activeSvg) activeSvg.style.display = "block";
+      if (this._3dWrapper) this._3dWrapper.style.display = "none";
+
+      // Update toggle button label and restore zoom controls
+      if (this._3dToggleBtn) this._3dToggleBtn.innerText = "3D";
+      if (this._zoomInBtn)   this._zoomInBtn.style.display  = "flex";
+      if (this._zoomOutBtn)  this._zoomOutBtn.style.display = "flex";
+    },
+
+    // ----------------------------------------------------
+    // 3D MAP — INTERNAL
+    // ----------------------------------------------------
+
+    async _init3DMap() {
+      const cfg3d = this.data.property?.beans3dConfig;
+
+      if (!cfg3d?.enabled || !cfg3d?.beansApiKey) {
+        console.warn("PynMapSDK: 3D map not configured for this property.");
+        this.switchTo2DMap();
+        return;
+      }
+
+      await this._load3DLibraries();
+
+      if (typeof BeansMap === "undefined") {
+        console.error("PynMapSDK: BeansMap library failed to load.");
+        this.switchTo2DMap();
+        return;
+      }
+
+      this._beans3dArr = this._buildBeans3dArr(this.data.units || [], cfg3d.mapConfig);
+
+      this._beansWidget = new BeansMap();
+
+      const initialMap     = cfg3d.defaultSatelliteView ? "SATELLITE" : "3D";
+      const allIndices     = this._beans3dArr.map((_, i) => i);
+      const displayOptions = this._beans3dDisplayOptions(allIndices, initialMap, cfg3d);
+
+      this._beansWidget.render(
+        "pyn-3d-map",
+        cfg3d.beansApiKey,
+        this._beans3dArr,
+        { userLocation: "MANUAL", hideNavigateButton: false, hideMyLocationButton: false },
+        displayOptions,
+        {
+          onSelect: (data) => {
+            this._hideBeansEsriPopup();
+            if (data?.type !== "UNIT") return;
+            const unit = (this.data.units || []).find(
+              u => String(u.unitId) === String(data.unitId)
+            );
+            if (unit && this.config.onUnitClick) this.config.onUnitClick(unit);
+          },
+          onHover: (data) => {
+            this._hideBeansEsriPopup();
+            if (data?.type !== "UNIT") return;
+            const unit = (this.data.units || []).find(
+              u => String(u.unitId) === String(data.unitId)
+            );
+            if (unit && this.config.onUnitHover) this.config.onUnitHover(unit);
+          }
+        }
+      );
+
+      this._3dInitialized = true;
+
+      // Wait for the Beans map engine to be fully ready (mirrors beans3DHandler.js)
+      const waitForEngine = setInterval(() => {
+        const inst = this._beansWorkingInstance();
+        if (inst?.mapView?.ready) {
+          clearInterval(waitForEngine);
+          this._beansWidget.workingInstance = inst;
+
+          // Inject a permanent CSS rule to suppress Esri's built-in popup for the
+          // lifetime of the page. This is the SDK equivalent of the CMS's global
+          // .hidden { display: none !important } + $beansMarkerPopover.addClass("hidden")
+          this._injectBeansPopupSuppressor();
+
+          // Also watch for the popup being re-inserted by Esri after re-renders
+          this._observeBeansEsriPopup();
+
+          const container = inst.mapView?.container;
+          if (container) {
+            container.addEventListener("mouseleave", () => this._hideBeansEsriPopup());
+          }
+        }
+      }, 300);
+
+      // Apply any pending floor filter
+      if (this._beans3dFloor != null) {
+        this._update3DFilter(this._beans3dIndicesForFloor(this._beans3dFloor));
+      }
+    },
+
+    /** Returns the active map engine instance (esri / mapbox / google / banvas). */
+    _beansWorkingInstance() {
+      const w = this._beansWidget;
+      if (!w) return null;
+      return w.esriObj || w.mapboxObj || w.googleObj || w.banvasObj || null;
+    },
+
+    /**
+     * Immediately hide any Esri popup Beans has rendered.
+     * Uses display:none directly — the SDK has no global .hidden CSS class
+     * unlike the CMS which defines .hidden { display:none !important }.
+     */
+    _hideBeansEsriPopup() {
+      const sel = 'div.esri-ui-inner-container.esri-ui-manual-container > div.esri-component[role="presentation"]';
+      document.querySelectorAll(sel).forEach(el => { el.style.display = "none"; });
+    },
+
+    /**
+     * Inject a one-time <style> tag that permanently suppresses Esri's popup
+     * for the lifetime of the page session. Equivalent to the CMS approach of
+     * calling $beansMarkerPopover.addClass("hidden") where .hidden is display:none !important.
+     */
+    _injectBeansPopupSuppressor() {
+      if (document.getElementById("pyn-beans-popup-suppressor")) return;
+      const style = document.createElement("style");
+      style.id = "pyn-beans-popup-suppressor";
+      style.textContent = [
+        'div.esri-ui-inner-container.esri-ui-manual-container > div.esri-component[role="presentation"]',
+        '{ display: none !important; }'
+      ].join(" ");
+      document.head.appendChild(style);
+    },
+
+    /**
+     * Watch for Esri re-inserting the popup after map re-renders and hide it
+     * immediately. Uses MutationObserver on the map container.
+     */
+    _observeBeansEsriPopup() {
+      const mapEl = document.getElementById("pyn-3d-map");
+      if (!mapEl || this._beansPopupObserver) return;
+
+      this._beansPopupObserver = new MutationObserver(() => {
+        this._hideBeansEsriPopup();
+      });
+
+      this._beansPopupObserver.observe(mapEl, { childList: true, subtree: true });
+    },
+
+    _beans3dDisplayOptions(filteredIndices, initialMap, cfg3d) {
+      const address = cfg3d?.propertyAddress || "";
+
+      // A "beans-only" property has no 2D SVG maps — show the floor selector
+      // so users can navigate floors. Mirrors: beanOnlyProperty in beans3DHandler.js
+      const beanOnly = !this._hasAnyMap();
+
+      const opts = {
+        propertyAddress:   address,
+        filteredRows:      filteredIndices ?? this._beans3dArr.map((_, i) => i),
+        customConfigs:     {},
+        initialMap:        initialMap || "3D",
+        hideBeansCard:     true,
+        hideFloorSelector: beanOnly ? false : true,
+        modernBeansCard:   false,
+        showUnitList:      false,
+        hideFilters:       true,
+        showUnitShape:     true,
+        hideShadow:        true,
+        showCompass:       true,
+        initialZ:          180,
+        initialTilt:       65,
+        initialHeading:    0
+      };
+
+      // Always pass initialPosition when address is available —
+      // an empty string crashes BeansEsri.afterSearch on geocoder result.
+      if (address) opts.initialPosition = { address };
+      return opts;
+    },
+
+    _buildBeans3dArr(units, mapConfig) {
+      const mc = mapConfig || {};
+
+      // Use the property's configured available color when the caller has not
+      // provided explicit config colors — this mirrors the marketing map default.
+      // For ops maps use the vacant (available) ops color from unitColors.
+      const fillColor = this._userHasCustomColors
+        ? (this.config.styles?.unitColors?.available || mc.default_polygon_color || "#3ca832")
+        : (this.data.property?.unitColors?.availableColor || mc.default_polygon_color || "#3ca832");
+      const address   = this.data.property?.beans3dConfig?.propertyAddress || "";
+
+      // Raw format expected by convertUnitsArr (from utils.js).
+      // Fields mirror getFormattedBeansUnits() in beans3DHandler.js.
+      const rawUnits = units.map(u => ({
+        unitId:          u.unitId,
+        type:            "UNIT",
+        unit:            u.unitNumber,
+        name:            u.unitNumber,
+        floor:           u.floor,
+        bed:             u.bedrooms,
+        bath:            u.bathrooms,
+        sqft:            u.square_feet,
+        rent:            u.market_rent,
+        status:          u.unit_status,
+        modelUnit:       u.model_unit,
+        availabilityUrl: u.availability_url,
+        leaseTerm:       u.lease_term,
+        propertyId:      u.property_id
+      }));
+
+      // convertUnitsArr is loaded from utils.js alongside mapswidget.
+      // It wraps each unit in the Beans { options: { onClickData, markers, … } }
+      // envelope that beansWidget.render() requires.
+      if (typeof convertUnitsArr !== "function") {
+        console.warn("PynMapSDK: convertUnitsArr not available — utils.js may not have loaded.");
+        return rawUnits; // fallback: widget will likely crash, but at least we tried
+      }
+
+      const converted = convertUnitsArr({ address }, rawUnits, true, true);
+
+      return converted.map((data, i) => {
+        const unitData = rawUnits[i];
+
+        // Resolve per-unit fill color when dynamic colors are active.
+        // Falls back to the property-level fillColor for custom-color mode.
+        const unit = units[i];
+        let unitFill = fillColor;
+        if (!this._userHasCustomColors && unit) {
+          const isOps    = this.config.mapType === "ops";
+          const colorObj = isOps ? unit.opsColor : unit.color;
+          if (colorObj?.color) unitFill = colorObj.color;
+        }
+        data.options              = data.options         || {};
+        data.options.markers      = data.options.markers || {};
+        data.options.markers.display    = true;
+        data.options.markers.showLabel  = false;
+        data.options.markers.tooltip    = false;
+        data.options.onClickData        = unitData;
+        data.options.onPreviewData      = null;
+        data.options.hideCard           = true;
+        data.options.showTooltip        = false;
+
+        data.options.unitShape = {
+          fillColor:     unitFill,
+          fillOpacity:   0.85,
+          strokeColor:   unitFill,
+          strokeOpacity: 0.9,
+          strokeWeight:  1
+        };
+        data.options.selectedUnitShape = {
+          fillColor:     unitFill,
+          fillOpacity:   1,
+          strokeColor:   unitFill,
+          strokeOpacity: 1,
+          strokeWeight:  2
+        };
+        return data;
+      });
+    },
+
+    _update3DFilter(indices) {
+      if (!this._beansWidget || !this._3dInitialized) return;
+      const cfg3d      = this.data.property?.beans3dConfig;
+      const initialMap = cfg3d?.defaultSatelliteView ? "SATELLITE" : "3D";
+      const opts       = this._beans3dDisplayOptions(indices, initialMap, cfg3d);
+      try {
+        if (this._beansWidget.workingInstance) {
+          this._beansWidget.setDisplayOptions(opts);
+          this._beansWidget.redraw();
+        } else {
+          // Engine not ready yet — re-init mirrors reDrawBeansWidget in beans3DHandler.js
+          this._init3DMap();
+        }
+      } catch (e) {
+        console.warn("PynMapSDK: Could not update 3D filter", e);
+      }
+    },
+
+    // Items in _beans3dArr after convertUnitsArr have the shape
+    // { options: { onClickData: { unitId, floor, … } } }.
+    // Fall back to reading the field directly for the raw-unit fallback path.
+    _beans3dItemData(item) {
+      return item?.options?.onClickData ?? item;
+    },
+
+    _beans3dIndicesForFloor(floorNumber) {
+      return this._beans3dArr
+        .map((item, i) => {
+          const u = this._beans3dItemData(item);
+          return String(u.floor) === String(floorNumber) ? i : null;
+        })
+        .filter(i => i !== null);
+    },
+
+    _beans3dIndicesForUnitIds(unitIds) {
+      const ids = new Set(unitIds.map(String));
+      return this._beans3dArr
+        .map((item, i) => {
+          const u = this._beans3dItemData(item);
+          return ids.has(String(u.unitId)) ? i : null;
+        })
+        .filter(i => i !== null);
+    },
+
+    _load3DLibraries() {
+      return new Promise(resolve => {
+        if (typeof BeansMap !== "undefined") return resolve();
+
+        const loadStyle = (href) => {
+          if (document.querySelector(`link[href="${href}"]`)) return;
+          const l = document.createElement("link");
+          l.rel  = "stylesheet";
+          l.href = href;
+          document.head.appendChild(l);
+        };
+
+        const loadScript = (src) => new Promise((res, rej) => {
+          if (document.querySelector(`script[src="${src}"]`)) return res();
+          const s    = document.createElement("script");
+          s.src      = src;
+          s.async    = false;
+          s.onload   = res;
+          s.onerror  = rej;
+          document.head.appendChild(s);
+        });
+
+        loadStyle("https://js.arcgis.com/4.27/esri/themes/light/main.css");
+        loadStyle("https://www.beans.ai/mapswidget/css/mapswidget-1.0.4.css");
+
+        // Load order matters: ArcGIS → mapswidget → utils (provides convertUnitsArr)
+        loadScript("https://js.arcgis.com/4.23/")
+          .then(() => loadScript("https://www.beans.ai/mapswidget/js/mapswidget-1.0.4-speed.js"))
+          .then(() => loadScript("https://www.beans.ai/mapswidget/client/utils.js"))
+          .then(resolve)
+          .catch(() => resolve()); // resolve anyway; caller checks typeof BeansMap
+      });
     },
 
     // ----------------------------------------------------
@@ -579,6 +1007,15 @@
     },
 
     changeFloor(floorNumber) {
+      if (this._3dMode) {
+        this._beans3dFloor = floorNumber;
+        const indices = floorNumber != null
+          ? this._beans3dIndicesForFloor(floorNumber)
+          : this._beans3dArr.map((_, i) => i);
+        this._update3DFilter(indices);
+        return;
+      }
+
       const fp = this._findFloorplateByFloor(floorNumber);
 
       if (!fp) {
@@ -607,8 +1044,7 @@
 
       this._clearUnitStyles();
 
-      const styles = this.config?.styles || this.defaultStyles;
-      const units  = this.unitsByMap[this.activeMapId] || [];
+      const units = this.unitsByMap[this.activeMapId] || [];
 
       units.forEach(unit => {
         const pid = unit.pointerData?.id;
@@ -617,8 +1053,7 @@
         const el = activeSvg.querySelector(`#${CSS.escape(pid)}`);
         if (!el) return;
 
-        const status  = this._unitStatus(unit);
-        el.style.fill = styles.unitColors[status] || styles.unitColors.available;
+        el.style.fill = this._unitColor(unit);
 
         const root = el.closest("g") || el;
         root.classList.add("pyn-highlight");
@@ -631,8 +1066,7 @@
 
       this._clearUnitStyles();
 
-      const styles = this.config.styles;
-      const units  = (this.unitsByMap[this.activeMapId] || []).filter(
+      const units = (this.unitsByMap[this.activeMapId] || []).filter(
         u => String(u.floor) === String(floorNumber)
       );
 
@@ -643,8 +1077,7 @@
         const el = activeSvg.querySelector(`#${CSS.escape(String(pid))}`);
         if (!el) return;
 
-        const status  = this._unitStatus(u);
-        el.style.fill = styles.unitColors[status];
+        el.style.fill = this._unitColor(u);
 
         const root = el.closest("g") || el;
         root.classList.add("pyn-highlight");
@@ -654,15 +1087,19 @@
     highlightUnits(unitIds) {
       if (!unitIds) return;
 
+      const ids = Array.isArray(unitIds) ? unitIds.map(String) : [String(unitIds)];
+
+      if (this._3dMode) {
+        const indices = this._beans3dIndicesForUnitIds(ids);
+        this._update3DFilter(indices);
+        return;
+      }
+
       const activeSvg = this._getActiveSvg();
       if (!activeSvg) return;
-
-      const ids   = Array.isArray(unitIds) ? unitIds.map(String) : [String(unitIds)];
       const units = this.unitsByMap[this.activeMapId] || [];
 
       this._clearUnitStyles();
-
-      const styles = this.config.styles;
 
       ids.forEach(id => {
         const unit = units.find(u =>
@@ -676,8 +1113,7 @@
         const el  = activeSvg.querySelector(`#${CSS.escape(pid)}`);
         if (!el) return;
 
-        const status  = this._unitStatus(unit);
-        el.style.fill = styles.unitColors[status];
+        el.style.fill = this._unitColor(unit);
 
         const root = el.closest("g") || el;
         root.classList.add("pyn-highlight");
@@ -707,15 +1143,16 @@
       if (svg._pynEventsBound) return;
       svg._pynEventsBound = true;
 
-      const styles = this.config?.styles || this.defaultStyles;
-
       svg.addEventListener("mouseover", (e) => {
         const root = e.target.closest("[data-pyn-unit-pid]");
         if (!root) return;
 
-        const pid = root.dataset.pynUnitPid;
-        const el  = root.querySelector(`#${CSS.escape(pid)}`) || root;
-        el.style.fill = styles.unitColors.hover;
+        const pid  = root.dataset.pynUnitPid;
+        const unit = byPointer[pid];
+        if (!unit) return;
+
+        const el = root.querySelector(`#${CSS.escape(pid)}`) || root;
+        el.style.fill = this._unitHoverColor(unit);
       });
 
       svg.addEventListener("mouseout", (e) => {
@@ -726,9 +1163,8 @@
         const unit = byPointer[pid];
         if (!unit) return;
 
-        const status = this._unitStatus(unit);
-        const el     = root.querySelector(`#${CSS.escape(pid)}`) || root;
-        el.style.fill = styles.unitColors[status];
+        const el = root.querySelector(`#${CSS.escape(pid)}`) || root;
+        el.style.fill = this._unitColor(unit);
       });
 
       svg.addEventListener("mouseover", (e) => {
@@ -804,7 +1240,7 @@
       Object.assign(wrapper.style, {
         position:      "absolute",
         right:         "12px",
-        top:           "12px",
+        top:           "22%",
         display:       "flex",
         flexDirection: "column",
         gap:           "6px",
@@ -831,19 +1267,113 @@
       plus.innerText = "+";
       Object.assign(plus.style, btnStyle);
       plus.onclick = () => this.zoomIn();
+      this._zoomInBtn = plus;
 
       const minus = document.createElement("div");
       minus.innerText = "−";
       Object.assign(minus.style, btnStyle);
       minus.onclick = () => this.zoomOut();
+      this._zoomOutBtn = minus;
+
+      // Hide zoom buttons immediately if already in 3D mode
+      if (this._3dMode) {
+        plus.style.display  = "none";
+        minus.style.display = "none";
+      }
 
       wrapper.appendChild(plus);
       wrapper.appendChild(minus);
+
+      if (this.config.enable3DMap) {
+        const toggle = document.createElement("div");
+        toggle.className = "pyn-3d-toggle";
+        toggle.innerText = this._3dMode ? "2D" : "3D";
+        Object.assign(toggle.style, {
+          ...btnStyle,
+          fontSize:        "13px",
+          letterSpacing:   "0.5px"
+        });
+        toggle.onclick = () => {
+          if (this._3dMode) {
+            this.switchTo2DMap();
+          } else {
+            this.switchTo3DMap();
+          }
+        };
+        this._3dToggleBtn = toggle;
+        wrapper.appendChild(toggle);
+      }
+
       this.container.appendChild(wrapper);
     },
 
     _unitStatus(unit) {
       return "available";
+    },
+
+    /**
+     * Resolves the fill color for a unit.
+     *
+     * Priority:
+     *   1. Caller explicitly passed `styles.unitColors` in config → use config (backward-compat).
+     *   2. Otherwise → use the server-resolved color on the unit object:
+     *        mapType "ops"        → unit.opsColor  { color, opacity }
+     *        mapType "marketing"  → unit.color     { color, opacity }
+     *      Both are pre-computed by sdk_controller respecting coloring_mode
+     *      (by_property / by_floorplan) and unit status (model vs available).
+     *   3. Final fallback → defaultStyles.unitColors.available.
+     */
+    _unitColor(unit) {
+      if (this._userHasCustomColors) {
+        const styles = this.config.styles || this.defaultStyles;
+        const status = this._unitStatus(unit);
+        return styles.unitColors[status] || styles.unitColors.available;
+      }
+
+      const isOps    = this.config.mapType === "ops";
+      const colorObj = isOps ? unit.opsColor : unit.color;
+
+      if (colorObj?.color) {
+        const op = colorObj.opacity ?? 1;
+        return op < 1 ? this._hexToRgba(colorObj.color, op) : colorObj.color;
+      }
+
+      return (this.config.styles || this.defaultStyles).unitColors.available;
+    },
+
+    /**
+     * Hover color for a unit — the unit's own color at 0.75 opacity.
+     * Falls back to config styles.unitColors.hover when custom colors are set.
+     */
+    _unitHoverColor(unit) {
+      if (this._userHasCustomColors) {
+        return (this.config.styles || this.defaultStyles).unitColors.hover;
+      }
+      const isOps    = this.config.mapType === "ops";
+      const colorObj = isOps ? unit.opsColor : unit.color;
+      if (colorObj?.color) return this._lightenHex(colorObj.color, 0.35);
+      return (this.config.styles || this.defaultStyles).unitColors.hover;
+    },
+
+    /**
+     * Blend a hex color toward white by `factor` (0 = original, 1 = white).
+     * Used for hover — brightens the unit's own color rather than dimming it.
+     */
+    _lightenHex(hex, factor) {
+      const h  = hex.replace("#", "");
+      const r  = Math.round(parseInt(h.slice(0, 2), 16) + (255 - parseInt(h.slice(0, 2), 16)) * factor);
+      const g  = Math.round(parseInt(h.slice(2, 4), 16) + (255 - parseInt(h.slice(2, 4), 16)) * factor);
+      const b  = Math.round(parseInt(h.slice(4, 6), 16) + (255 - parseInt(h.slice(4, 6), 16)) * factor);
+      return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+    },
+
+    /** Convert a 6-digit hex + opacity float to an rgba() string. */
+    _hexToRgba(hex, opacity) {
+      const h = hex.replace("#", "");
+      const r = parseInt(h.slice(0, 2), 16);
+      const g = parseInt(h.slice(2, 4), 16);
+      const b = parseInt(h.slice(4, 6), 16);
+      return `rgba(${r},${g},${b},${opacity})`;
     },
 
     _findFloorplateByFloor(floorNumber) {
@@ -1129,8 +1659,8 @@
       if (this.config.environment === "staging") {
         return "https://pynwheel-staging.herokuapp.com";
       }
-      // return "http://localhost:3000";
-      return "https://pynwheelconnect.com"; // production
+      return "http://localhost:3000";
+      // return "https://pynwheelconnect.com"; // production
     }
   };
 
@@ -1159,7 +1689,9 @@
       saveFavorite(unitIds)        { return PynMapSDK.saveFavorite.call(PynMapSDK, unitIds); },
       deleteFavorite(unitIds)      { return PynMapSDK.deleteFavorite.call(PynMapSDK, unitIds); },
       getShareFavoritesLink()      { return PynMapSDK.getShareFavoritesLink.call(PynMapSDK); },
-      clearAllFavorites()          { return PynMapSDK.clearAllFavorites.call(PynMapSDK); }
+      clearAllFavorites()          { return PynMapSDK.clearAllFavorites.call(PynMapSDK); },
+      switchTo3DMap()              { return PynMapSDK.switchTo3DMap.call(PynMapSDK); },
+      switchTo2DMap()              { return PynMapSDK.switchTo2DMap.call(PynMapSDK); }
     };
   }
 
