@@ -1499,54 +1499,60 @@
     // ----------------------------------------------------
 
     /**
-     * Returns the full unit objects for all favorited units.
-     * Populated at init time from fetch_data — no network call needed.
-     * Same shape as getUnits() results.
+     * Returns the stable session UUID stored in localStorage for this property.
+     * Use this to build a shareable URL: append ?session_id=<value>&community_id=<id>
+     * and pass those values back into the favorites methods on the receiving page.
      *
-     * @returns {object[]}
+     * @returns {string}
      */
-    getFavorites() {
-      return (this.data.units || []).filter(u => u.isFavorite);
+    getCurrentSessionId() {
+      return this._sdkSessionId;
     },
 
     /**
-     * Returns the shareable URL for this session's favorites page.
-     * The URL is built server-side so the SDK stays decoupled from internal routing.
+     * Fetches the full unit objects for the favorited units of the given
+     * community + session.  Pass your own communityId / sessionId to see your
+     * own favorites, or a shared pair to display someone else's saved units.
      *
-     * @returns {Promise<{success: boolean, share_link: string|null}>}
+     * @param {string|number} communityId
+     * @param {string}        sessionId
+     * @returns {Promise<object[]>}
      */
-    async getShareFavoritesLink() {
+    async getFavorites(communityId, sessionId) {
       try {
-        const res = await fetch(`${this._apiBase()}/api/partner/maps/get_share_favorites_link`, {
+        const mapTypeParam = this.config.mapType === "ops" ? "?map_type=ops" : "";
+        const res = await fetch(`${this._apiBase()}/api/partner/maps/get_favorites${mapTypeParam}`, {
           headers: {
             "Authorization":    `Bearer ${this._sessionToken}`,
-            "X-SDK-Session-Id": this._sdkSessionId
+            "X-SDK-Session-Id": sessionId || this._sdkSessionId,
+            "X-Community-Id":   String(communityId)
           }
         });
-
-        if (!res.ok) return { success: false, share_link: null };
-
+        if (!res.ok) return [];
         const data = await res.json();
-        return { success: true, share_link: data.share_link };
+        return data.units || [];
       } catch {
-        return { success: false, share_link: null };
+        return [];
       }
     },
 
     /**
-     * Removes all favorited units for the current session.
+     * Removes all favorited units for the given community and session.
      * Clears the local Set, resets isFavorite on all unit objects,
      * and fires onFavoriteChange when the server confirms.
      *
+     * @param {string|number} communityId
+     * @param {string}        sessionId
      * @returns {Promise<{success: boolean}>}
      */
-    async clearAllFavorites() {
+    async clearAllFavorites(communityId, sessionId) {
       try {
         const res = await fetch(`${this._apiBase()}/api/partner/maps/clear_all_favorites`, {
           method: "DELETE",
           headers: {
             "Authorization":    `Bearer ${this._sessionToken}`,
-            "X-SDK-Session-Id": this._sdkSessionId
+            "X-SDK-Session-Id": sessionId || this._sdkSessionId,
+            "X-Community-Id":   String(communityId)
           }
         });
 
@@ -1566,14 +1572,16 @@
     },
 
     /**
-     * Save one or more units as favorites.
+     * Save one or more units as favorites for the given community and session.
      * Accepts a single unit ID or an array of unit IDs.
      * Updates the local Set and fires onFavoriteChange when the server confirms.
      *
      * @param {number|string|Array<number|string>} unitIds
+     * @param {string|number} communityId
+     * @param {string}        sessionId
      * @returns {Promise<{success: boolean, unit_ids: string[]}>}
      */
-    async saveFavorite(unitIds) {
+    async saveFavorite(unitIds, communityId, sessionId) {
       const ids = (Array.isArray(unitIds) ? unitIds : [unitIds]).map(String);
 
       const body = new URLSearchParams();
@@ -1584,7 +1592,8 @@
           method: "POST",
           headers: {
             "Authorization":    `Bearer ${this._sessionToken}`,
-            "X-SDK-Session-Id": this._sdkSessionId,
+            "X-SDK-Session-Id": sessionId || this._sdkSessionId,
+            "X-Community-Id":   String(communityId),
             "Content-Type":     "application/x-www-form-urlencoded"
           },
           body
@@ -1611,14 +1620,16 @@
     },
 
     /**
-     * Remove one or more units from favorites.
+     * Remove one or more units from favorites for the given community and session.
      * Accepts a single unit ID or an array of unit IDs.
      * Updates the local Set and fires onFavoriteChange when the server confirms.
      *
      * @param {number|string|Array<number|string>} unitIds
+     * @param {string|number} communityId
+     * @param {string}        sessionId
      * @returns {Promise<{success: boolean, unit_ids: string[]}>}
      */
-    async deleteFavorite(unitIds) {
+    async deleteFavorite(unitIds, communityId, sessionId) {
       const ids = (Array.isArray(unitIds) ? unitIds : [unitIds]).map(String);
 
       const body = new URLSearchParams();
@@ -1629,7 +1640,8 @@
           method: "DELETE",
           headers: {
             "Authorization":    `Bearer ${this._sessionToken}`,
-            "X-SDK-Session-Id": this._sdkSessionId,
+            "X-SDK-Session-Id": sessionId || this._sdkSessionId,
+            "X-Community-Id":   String(communityId),
             "Content-Type":     "application/x-www-form-urlencoded"
           },
           body
@@ -1685,11 +1697,11 @@
       unselectUnit(unitId)         { return PynMapSDK.unselectUnit.call(PynMapSDK, unitId); },
       zoomIn()                     { return PynMapSDK.zoomIn.call(PynMapSDK); },
       zoomOut()                    { return PynMapSDK.zoomOut.call(PynMapSDK); },
-      getFavorites()               { return PynMapSDK.getFavorites.call(PynMapSDK); },
-      saveFavorite(unitIds)        { return PynMapSDK.saveFavorite.call(PynMapSDK, unitIds); },
-      deleteFavorite(unitIds)      { return PynMapSDK.deleteFavorite.call(PynMapSDK, unitIds); },
-      getShareFavoritesLink()      { return PynMapSDK.getShareFavoritesLink.call(PynMapSDK); },
-      clearAllFavorites()          { return PynMapSDK.clearAllFavorites.call(PynMapSDK); },
+      getCurrentSessionId()                           { return PynMapSDK.getCurrentSessionId.call(PynMapSDK); },
+      getFavorites(communityId, sessionId)            { return PynMapSDK.getFavorites.call(PynMapSDK, communityId, sessionId); },
+      saveFavorite(unitIds, communityId, sessionId)   { return PynMapSDK.saveFavorite.call(PynMapSDK, unitIds, communityId, sessionId); },
+      deleteFavorite(unitIds, communityId, sessionId) { return PynMapSDK.deleteFavorite.call(PynMapSDK, unitIds, communityId, sessionId); },
+      clearAllFavorites(communityId, sessionId)       { return PynMapSDK.clearAllFavorites.call(PynMapSDK, communityId, sessionId); },
       switchTo3DMap()              { return PynMapSDK.switchTo3DMap.call(PynMapSDK); },
       switchTo2DMap()              { return PynMapSDK.switchTo2DMap.call(PynMapSDK); }
     };

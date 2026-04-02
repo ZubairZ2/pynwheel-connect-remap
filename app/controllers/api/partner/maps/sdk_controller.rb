@@ -9,11 +9,11 @@ module Api
         before_action :load_property, only: [:authorized]
 
         # `fetch_data`, `fetch_svg_image`, `save_favorites`, `delete_favorites`,
-        # `clear_all_favorites`, `get_share_favorites_link` → session token only
+        # `clear_all_favorites`, `get_favorites` → session token only
         SESSION_ACTIONS = [
           :fetch_data, :fetch_svg_image,
           :save_favorites, :delete_favorites, :clear_all_favorites,
-          :get_share_favorites_link
+          :get_favorites
         ].freeze
 
         skip_before_action :load_map_partners,  only: SESSION_ACTIONS
@@ -73,8 +73,7 @@ module Api
 
           valid_ids = @community.units.where(id: unit_ids).pluck(:id).map(&:to_s)
 
-          favorite = Favorite.find_or_initialize_by(session_id: sdk_session_id)
-          favorite.community_id = @community.id
+          favorite = Favorite.find_or_initialize_by(session_id: sdk_session_id, community_id: @community.id)
           current   = (favorite.unit_ids || []).map(&:to_s)
           favorite.unit_ids = (current + valid_ids).uniq
           favorite.save!
@@ -93,7 +92,7 @@ module Api
           unit_ids = parse_unit_ids
           return render_error("unit_ids is required.", 400) if unit_ids.empty?
 
-          favorite = Favorite.find_by(session_id: sdk_session_id)
+          favorite = Favorite.find_by(session_id: sdk_session_id, community_id: @community.id)
 
           if favorite
             favorite.unit_ids = (favorite.unit_ids || []).map(&:to_s) - unit_ids
@@ -111,7 +110,7 @@ module Api
         def clear_all_favorites
           return render_error("X-SDK-Session-Id header is missing.", 400) unless sdk_session_id.present?
 
-          favorite = Favorite.find_by(session_id: sdk_session_id)
+          favorite = Favorite.find_by(session_id: sdk_session_id, community_id: @community.id)
 
           if favorite
             favorite.unit_ids = []
@@ -122,15 +121,29 @@ module Api
         end
 
         # ------------------------------------------------------------------
-        # GET /api/partner/maps/get_share_favorites_link
-        # Authorization: Bearer <session_token>  +  X-SDK-Session-Id header
-        # Returns the shareable URL for this session's favorites page.
+        # GET /api/partner/maps/get_favorites
+        # Authorization: Bearer <session_token>  +  X-SDK-Session-Id  +  X-Community-Id
+        # Returns full unit objects for the favorited units of the given session.
+        # The front-end builds its own shareable URL using getCurrentSessionId() +
+        # communityId, then passes those values here to display a shared list.
         # ------------------------------------------------------------------
-        def get_share_favorites_link
+        def get_favorites
           return render_error("X-SDK-Session-Id header is missing.", 400) unless sdk_session_id.present?
 
-          share_link = favorites_share_link_url(@community, sdk_session_id)
-          render json: { success: true, share_link: share_link, status: "success", code: 200 }
+          fav_ids = Favorite.find_by(session_id: sdk_session_id, community_id: @community.id)
+                            &.unit_ids
+                            &.map(&:to_s)
+                            &.to_set || Set.new
+
+          favorite_units = units_json(fav_ids, show_ops_map?).select { |u| u[:isFavorite] }
+
+          render json: {
+            success:  true,
+            units:    favorite_units,
+            unit_ids: fav_ids.to_a,
+            status:   "success",
+            code:     200
+          }
         end
 
         # ------------------------------------------------------------------
@@ -646,24 +659,19 @@ module Api
           { min: values.first, max: values.last, values: values }
         end
 
-        # Returns the X-SDK-Session-Id header value — stable UUID stored in the
-        # SDK client's localStorage, used as the Favorite session_id.
+        # Returns the X-SDK-Session-Id header value.
+        # The front-end passes its own session ID here, or a shared session ID
+        # when displaying another user's favorites via a shareable URL.
         def sdk_session_id
           @sdk_session_id ||= request.headers['X-SDK-Session-Id'].presence
         end
 
-        # Builds the shareable favorites URL that matches the existing webpages route:
-        #   GET /communities/:community_id/webpages/favorites_share_link?session_id=:session_id
-        def favorites_share_link_url(community, session_id)
-          "#{request.base_url}/communities/#{community.id}/webpages/favorites_share_link?session_id=#{session_id}"
-        end
-
-        # Returns a Set of favorited unit IDs (as strings) for this SDK session.
+        # Returns a Set of favorited unit IDs (as strings) for this session + community.
         # Returns an empty Set when no session ID header is present.
         def favorite_unit_ids
           return Set.new unless sdk_session_id.present?
 
-          ids = Favorite.find_by(session_id: sdk_session_id)&.unit_ids || []
+          ids = Favorite.find_by(session_id: sdk_session_id, community_id: @community.id)&.unit_ids || []
           ids.map(&:to_s).to_set
         end
 
