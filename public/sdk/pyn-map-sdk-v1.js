@@ -1702,8 +1702,8 @@
       saveFavorite(unitIds, communityId, sessionId)   { return PynMapSDK.saveFavorite.call(PynMapSDK, unitIds, communityId, sessionId); },
       deleteFavorite(unitIds, communityId, sessionId) { return PynMapSDK.deleteFavorite.call(PynMapSDK, unitIds, communityId, sessionId); },
       clearAllFavorites(communityId, sessionId)       { return PynMapSDK.clearAllFavorites.call(PynMapSDK, communityId, sessionId); },
-      switchTo3DMap()              { return PynMapSDK.switchTo3DMap.call(PynMapSDK); },
-      switchTo2DMap()              { return PynMapSDK.switchTo2DMap.call(PynMapSDK); }
+      // switchTo3DMap()              { return PynMapSDK.switchTo3DMap.call(PynMapSDK); },
+      // switchTo2DMap()              { return PynMapSDK.switchTo2DMap.call(PynMapSDK); }
     };
   }
 
