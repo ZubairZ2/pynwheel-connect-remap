@@ -554,8 +554,8 @@
           let calcMin=0, calcMax=0, multBadge='';
 
           const bpEntry = fee.variesByBedroom && fee.bedroomPricing?.[appState.currentBedroom];
-          const rawMin = bpEntry ? parseFloat(bpEntry.minPrice) : parseFloat(fee.baseMinPrice);
-          const rawMax = bpEntry ? parseFloat(bpEntry.maxPrice) : parseFloat(fee.baseMaxPrice);
+          const rawMin = fee.isBasePrice ? appState.baseRent : (bpEntry ? parseFloat(bpEntry.minPrice) : parseFloat(fee.baseMinPrice));
+          const rawMax = fee.isBasePrice ? appState.baseRent : (bpEntry ? parseFloat(bpEntry.maxPrice) : parseFloat(fee.baseMaxPrice));
           const activeMin = isNaN(rawMin) ? 0 : rawMin;
           const activeMax = (fee.pricingLogic==='Range' && !isNaN(rawMax)) ? rawMax : activeMin;
 
@@ -587,7 +587,7 @@
           const isSituational = fee.feeFrequency === 'Situational';
           const isOneTime = fee.feeFrequency === 'One-Time';
 
-          if (!isSituational && !fee.isBasePrice) {
+          if (!isSituational) {
             hasBucketAmounts=true;
             if (isOneTime) { bucketOneTimeMin+=calcMin; bucketOneTimeMax+=calcMax; }
             else { bucketMonthlyMin+=calcMin; bucketMonthlyMax+=calcMax; }
@@ -666,8 +666,8 @@
     // Add DB-provided base rent and deposit
     monthlyTotal += mMin;
     oneTimeTotal += oMin;
-    const grandMMin = (hasBasePriceFee?0:appState.baseRent) + mMin;
-    const grandMMax = (hasBasePriceFee?0:appState.baseRent) + mMax;
+    const grandMMin = hasBasePriceFee ? mMin : (appState.baseRent || 0) + mMin;
+    const grandMMax = hasBasePriceFee ? mMax : (appState.baseRent || 0) + mMax;
     const grandOMin = (appState.deposit||0) + oMin;
     const grandOMax = (appState.deposit||0) + oMax;
 
