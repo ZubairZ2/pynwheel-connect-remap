@@ -240,14 +240,10 @@
               %div
                 %span#grand-monthly.total-price $0.00
               #base-rent-display.total-base-rent
-              .total-divider
-              .total-estimated-row
-                %span.total-est-label Total Estimated Cost
-                %span#grand-total.total-est-value $0.00
-              .total-breakdown
-                %span#monthly-total-display
-                %span#total-breakdown-sep{style: "display:none;"} +
-                %span#onetime-total-display
+              #one-time-row.total-divider{style: "display:none;"}
+              #one-time-row-label.total-estimated-row{style: "display:none;"}
+                %span.total-est-label One-Time
+                %span#grand-onetime.total-est-value
             .total-icon
               %span.material-icons receipt_long
         .right-panel-actions
@@ -399,16 +395,16 @@
             const bpEntry = fee.variesByBedroom && fee.bedroomPricing?.[appState.currentBedroom];
             if (bpEntry) {
               priceDisplay = (bpEntry.maxPrice && bpEntry.maxPrice !== bpEntry.minPrice)
-                ? `$${bpEntry.minPrice} – $${bpEntry.maxPrice}` : `$${bpEntry.minPrice}`;
+                ? `${fmtMoney(bpEntry.minPrice)} – ${fmtMoney(bpEntry.maxPrice)}` : fmtMoney(bpEntry.minPrice);
             } else if (fee.pricingLogic === 'Range' && fee.baseMinPrice && fee.baseMaxPrice) {
-              priceDisplay = `$${fee.baseMinPrice} – $${fee.baseMaxPrice}`;
+              priceDisplay = `${fmtMoney(fee.baseMinPrice)} – ${fmtMoney(fee.baseMaxPrice)}`;
             } else if (fee.baseMinPrice) {
-              priceDisplay = `$${fee.baseMinPrice}`;
+              priceDisplay = fmtMoney(fee.baseMinPrice);
             }
             const priceTag = priceDisplay ? `<span class="opt-price">${priceDisplay}${moSuffix}</span>` : '';
             const isSel = appState.selections[fee.feeName];
             const preInfoTag = (fee.preSelectionInfo?.trim())
-              ? `<span class="info-tag" data-tip="${esc(fee.preSelectionInfo)}">i</span>` : '';
+              ? `<span class="info-tag" data-tip="${escAttr(fee.preSelectionInfo)}">i</span>` : '';
 
             if (fee.hasQuantityCounter) {
               row.innerHTML = `
@@ -447,6 +443,8 @@
   }
 
   function esc(s) { return String(s).replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
+  // Use for data-tip and other HTML attributes — apostrophes need no escaping inside double-quoted attrs
+  function escAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
   function featureId(s) { return String(s).replace(/\s/g,''); }
 
   function updateQty(feeName, change, min, max) {
@@ -482,14 +480,16 @@
     return bucket.categories.every(c => c.fees.every(f => f.feeFrequency === 'One-Time'));
   }
 
+  function fmtMoney(v) {
+    return '$' + Number(v).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+
   function fmtRange(min, max, suffix) {
     const s = suffix || '';
-    const f = v => `$${v.toFixed(2)}`;
-    return max > min ? `${f(min)} – ${f(max)}${s}` : `${f(min)}${s}`;
+    return max > min ? `${fmtMoney(min)} – ${fmtMoney(max)}${s}` : `${fmtMoney(min)}${s}`;
   }
 
   function getBaseRentDisplay() {
-    const fmt = v => `$${v.toLocaleString('en-US', {minimumFractionDigits:2})}`;
     if (appState.data) {
       const allFees = (appState.data.buckets||[]).flatMap(b => b.categories.flatMap(c => c.fees));
       const bp = allFees.find(f => f.isBasePrice === true);
@@ -497,15 +497,15 @@
         const bpEntry = bp.variesByBedroom && bp.bedroomPricing?.[appState.currentBedroom];
         if (bpEntry) {
           const min = parseFloat(bpEntry.minPrice), max = parseFloat(bpEntry.maxPrice);
-          return !isNaN(min) ? (min !== max && !isNaN(max) ? `${bp.feeName} ${fmt(min)} – ${fmt(max)}` : `${bp.feeName} ${fmt(min)}`) : '';
+          return !isNaN(min) ? (min !== max && !isNaN(max) ? `${bp.feeName} ${fmtMoney(min)} – ${fmtMoney(max)}` : `${bp.feeName} ${fmtMoney(min)}`) : '';
         }
         if (bp.baseMinPrice) {
           const min = parseFloat(bp.baseMinPrice), max = parseFloat(bp.baseMaxPrice);
-          return `${bp.feeName} ${(!isNaN(max) && min !== max) ? `${fmt(min)} – ${fmt(max)}` : fmt(min)}`;
+          return `${bp.feeName} ${(!isNaN(max) && min !== max) ? `${fmtMoney(min)} – ${fmtMoney(max)}` : fmtMoney(min)}`;
         }
       }
     }
-    if (appState.baseRent > 0) return `Base Rent ${fmt(appState.baseRent)}`;
+    if (appState.baseRent > 0) return `Base Rent ${fmtMoney(appState.baseRent)}`;
     return '';
   }
 
@@ -546,7 +546,7 @@
       bucket.categories.sort((a,b)=>a.orderIndex-b.orderIndex).forEach(cat => {
         let catHtml='';
         const catInfoTag = cat.categoryDisclaimer?.trim()
-          ? `<span class="info-tag" data-tip="${esc(cat.categoryDisclaimer)}">i</span>` : '';
+          ? `<span class="info-tag" data-tip="${escAttr(cat.categoryDisclaimer)}">i</span>` : '';
 
         cat.fees.sort((a,b)=>a.orderIndex-b.orderIndex).forEach(fee => {
           const mult = fee.multiplier || 'None';
@@ -594,8 +594,8 @@
           }
 
           let priceDisplay;
-          if (fee.pricingLogic==='Fixed'||fee.pricingLogic==='Unit Type') priceDisplay=`$${calcMin.toFixed(2)}`;
-          else if (fee.pricingLogic==='Range') priceDisplay=calcMax>calcMin?`$${calcMin.toFixed(2)} – $${calcMax.toFixed(2)}`:`$${calcMin.toFixed(2)}`;
+          if (fee.pricingLogic==='Fixed'||fee.pricingLogic==='Unit Type') priceDisplay=fmtMoney(calcMin);
+          else if (fee.pricingLogic==='Range') priceDisplay=fmtRange(calcMin,calcMax);
           else priceDisplay=`<span style="color:var(--text-3);font-style:italic;font-size:.85em;">Varies</span>`;
 
           const removeBtn = isOptSelected
@@ -606,7 +606,7 @@
 
           const discText = isOptSelected ? (fee.postSelectionInfo||'') : (fee.preSelectionInfo||'');
           const infoTag = discText.trim()
-            ? `<span class="info-tag" data-tip="${esc(discText)}">i</span>` : '';
+            ? `<span class="info-tag" data-tip="${escAttr(discText)}">i</span>` : '';
           const sitBadge = isSituational ? `<span class="situational-badge">situational</span>` : '';
 
           catHtml += `
@@ -634,7 +634,7 @@
       details.open = isFocused || (openBuckets.size>0 ? openBuckets.has(bucket.receiptBucket) : isFirst);
 
       const bucketInfoTag = bucket.bucketDisclaimer?.trim()
-        ? `<span class="info-tag" data-tip="${esc(bucket.bucketDisclaimer)}">i</span>` : '';
+        ? `<span class="info-tag" data-tip="${escAttr(bucket.bucketDisclaimer)}">i</span>` : '';
 
       const bucketBadgeMin = bucketMonthlyMin+bucketOneTimeMin;
       const bucketBadgeMax = bucketMonthlyMax+bucketOneTimeMax;
@@ -681,15 +681,13 @@
     const baseEl = document.getElementById('base-rent-display');
     if (baseEl) baseEl.textContent = getBaseRentDisplay();
 
-    document.getElementById('grand-total').textContent = fmtRange(mMin+oMin, mMax+oMax);
-
-    const mEl=document.getElementById('monthly-total-display');
-    const oEl=document.getElementById('onetime-total-display');
-    const sep=document.getElementById('total-breakdown-sep');
-    const hasMon=mMin>0, hasOne=oMin>0;
-    if(mEl) mEl.textContent = hasMon ? fmtRange(mMin,mMax,'/mo') : '';
-    if(oEl) oEl.textContent = hasOne ? fmtRange(oMin,oMax,' one-time') : '';
-    if(sep) sep.style.display = (hasMon&&hasOne)?'':'none';
+    const hasOne = oMin > 0;
+    const dividerEl = document.getElementById('one-time-row');
+    const labelEl   = document.getElementById('one-time-row-label');
+    const oValEl    = document.getElementById('grand-onetime');
+    if (dividerEl) dividerEl.style.display = hasOne ? '' : 'none';
+    if (labelEl)   labelEl.style.display   = hasOne ? '' : 'none';
+    if (oValEl)    oValEl.textContent       = hasOne ? fmtRange(oMin, oMax) : '';
   }
 
   // ─── Tooltip ──────────────────────────────────────────────────────────────
