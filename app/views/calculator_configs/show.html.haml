@@ -1016,7 +1016,7 @@
           addFeeRow(cId, {
             name:f.feeName, logic:f.pricingLogic, val1:f.baseMinPrice||'', val2:f.baseMaxPrice||'',
             mndt:f.isMandatoryDefault, counter:f.hasQuantityCounter,
-            qMin:f.qtyMinLimit||1, qMax:f.qtyMaxLimit||2,
+            qMin:f.qtyMinLimit ?? 1, qMax:f.qtyMaxLimit ?? 2,
             bedroom:f.variesByBedroom, bedPrices:bp,
             desc:f.displayText||'', preInfo:f.preSelectionInfo||'', postInfo:f.postSelectionInfo||'',
             frequency, multiplier, isBasePrice:!!f.isBasePrice
