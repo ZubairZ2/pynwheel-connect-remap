@@ -264,7 +264,7 @@
 
         this.unitsByMap[mapId].push(u);
 
-        const pid = u.pointerData?.id ? String(u.pointerData.id) : null;
+        const pid = this._unitPid(u);
         if (pid) {
           this.pointerIdsByMap[mapId].push(pid);
           this.unitsByPointerIdByMap[mapId][pid] = u;
@@ -614,13 +614,14 @@
       const unit  = units.find(u =>
         String(u.unitId) === id ||
         String(u.id)     === id ||
-        String(u.pointerData?.id) === id
+        this._unitPid(u) === id
       );
 
-      if (!unit?.pointerData?.id) return;
+      const pid = this._unitPid(unit);
+      if (!pid) return;
 
-      const pid = String(unit.pointerData.id);
       const sel = this._pointerSelector(unit.pointerData);
+      if (!sel) return;
       const el  = activeSvg.querySelector(sel);
       if (!el) return;
 
@@ -642,14 +643,15 @@
       const unit  = units.find(u =>
         String(u.unitId) === id ||
         String(u.id)     === id ||
-        String(u.pointerData?.id) === id
+        this._unitPid(u) === id
       );
 
-      if (!unit?.pointerData?.id) return;
+      const pid = this._unitPid(unit);
+      if (!pid) return;
 
-      const pid    = String(unit.pointerData.id);
-      const sel    = this._pointerSelector(unit.pointerData);
-      const el     = activeSvg.querySelector(sel);
+      const sel = this._pointerSelector(unit.pointerData);
+      if (!sel) return;
+      const el  = activeSvg.querySelector(sel);
       if (!el) return;
 
       this._applyFill(el, this._unitColor(unit));
@@ -1102,10 +1104,11 @@
       const units = this.unitsByMap[this.activeMapId] || [];
 
       units.forEach(unit => {
-        const pid = unit.pointerData?.id;
+        const pid = this._unitPid(unit);
         if (!pid) return;
 
         const sel = this._pointerSelector(unit.pointerData);
+        if (!sel) return;
         const el  = activeSvg.querySelector(sel);
         if (!el) return;
 
@@ -1127,10 +1130,11 @@
       );
 
       units.forEach(u => {
-        const pid = u.pointerData?.id;
+        const pid = this._unitPid(u);
         if (!pid) return;
 
         const sel = this._pointerSelector(u.pointerData);
+        if (!sel) return;
         const el  = activeSvg.querySelector(sel);
         if (!el) return;
 
@@ -1161,13 +1165,14 @@
       ids.forEach(id => {
         const unit = units.find(u =>
           String(u.unitId) === id ||
-          String(u.pointerData?.id) === id
+          this._unitPid(u) === id
         );
 
-        if (!unit?.pointerData?.id) return;
+        const pid = this._unitPid(unit);
+        if (!pid) return;
 
-        const pid = String(unit.pointerData.id);
         const sel = this._pointerSelector(unit.pointerData);
+        if (!sel) return;
         const el  = activeSvg.querySelector(sel);
         if (!el) return;
 
@@ -1390,21 +1395,30 @@
      *   3. Final fallback → defaultStyles.unitColors.available.
      */
     // Applies fill to el and, when el is a <g>, to all descendant shapes.
-    // Needed for Adobe Illustrator SVGs where the pointer ID targets a group
-    // containing child paths/rects that have their own fill presentation attributes —
-    // those override inherited CSS fill, so we must set fill directly on each shape.
-    // Builds a CSS selector from pointerData using tag+id when available,
-    // matching svgHandler.js's getPointerIdAndSelector logic.
-    // Mirrors svgHandler.js getPointerIdAndSelector:
-    // Use pointerData.selector first (e.g. "g#id .nth-child(1)"), then fall back
-    // to tag+id, then bare #id. This ensures we target the actual shape element.
+    // Returns the lookup key for a unit: non-empty id, or selector as fallback.
+    // Handles pointer_data where id is "" but selector is set.
+    _unitPid(unit) {
+      const pd = unit?.pointerData;
+      if (!pd) return null;
+      const id = pd.id;
+      if (id !== undefined && id !== null && id !== '') return String(id);
+      return pd.selector || null;
+    },
+
+    // Exact mirror of svgHandler.js getPointerIdAndSelector:
+    // selector is overridden with tag#id ONLY when BOTH tag and id are truthy.
+    // When id is "" (empty), tag && id is false → original selector is kept.
     _pointerSelector(pointerData) {
-      const { tag = null, id = null, selector = null } = pointerData || {};
-      if (selector) return selector;
-      if (!id) return null;
-      const escaped = CSS.escape(id);
-      if (tag) return /^[0-9]/.test(id) ? `${tag}[id="${id}"]` : `${tag}#${escaped}`;
-      return `#${escaped}`;
+      const { tag = null, id = null, selector: raw = null } = pointerData || {};
+      let selector = raw;
+
+      if (tag && id) {
+        selector = /^[0-9]/.test(id)
+          ? `${tag}[id="${id}"]`
+          : `${tag}#${CSS.escape(id)}`;
+      }
+
+      return selector || null;
     },
 
     // Mirrors svgHandler.js: use setProperty("important") so inline !important beats
