@@ -7160,7 +7160,7 @@ ul.add-fav-options {
   min-height: 60px;
   height: auto;
   color: white;
-  font-size: 13px;
+  font-size: 20px;
   font-weight: 500;
   background: #1c2425;
   border-top: none;
@@ -8567,6 +8567,80 @@ div.esri-ui-inner-container.esri-ui-manual-container>div.esri-component.esri-att
 
 #engrainCalculatorModal .modal-dialog {
   pointer-events: all;
+}
+
+/* ── Pynwheel estimated-monthly: price + button layout (unit modal & favorites)
+   Applied via the `pyn-price-shown` class added by JS when the price is visible.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* Price element — occupies its own full-width row above the buttons */
+#pyn-total-monthly-fees,
+.pyn-fav-total-monthly {
+  flex: 0 0 100%;
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 15px !important;
+  font-weight: 600;
+  color: white;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.4;
+  margin-bottom: 8px;
+  display: none; /* JS overrides to block */
+}
+
+/* .filter-action container: wrap rows + comfortable padding */
+.filter-action.pyn-price-shown {
+  flex-wrap: wrap !important;
+  align-items: center;
+  padding: 10px 12px 14px !important;
+  gap: 0 !important;
+}
+
+/* .disabaled-apply-now container: switch to row so price + button sit side-by-side */
+.disabaled-apply-now.pyn-price-shown {
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  text-align: left !important;
+  padding: 12px 16px !important;
+  column-gap: 12px !important;
+  row-gap: 6px !important;
+}
+
+/* Price fills remaining row space; button stays its natural width */
+.disabaled-apply-now.pyn-price-shown #pyn-total-monthly-fees,
+.disabaled-apply-now.pyn-price-shown .pyn-fav-total-monthly {
+  flex: 1 1 auto !important;
+  width: auto !important;
+  margin-bottom: 0 !important;
+}
+
+/* Buttons: reset the inline left-margin, use right-margin for gap between buttons */
+.filter-action.pyn-price-shown .apply-now,
+.filter-action.pyn-price-shown .calculate-cost-btn,
+.disabaled-apply-now.pyn-price-shown .apply-now,
+.disabaled-apply-now.pyn-price-shown .calculate-cost-btn {
+  margin-left: 0 !important;
+  margin-right: 8px !important;
+  margin-top: 0 !important;
+  flex-shrink: 0;
+}
+
+.filter-action.pyn-price-shown .apply-now:last-child,
+.filter-action.pyn-price-shown .calculate-cost-btn:last-child,
+.disabaled-apply-now.pyn-price-shown .apply-now:last-child,
+.disabaled-apply-now.pyn-price-shown .calculate-cost-btn:last-child {
+  margin-right: 0 !important;
+}
+
+/* Narrow viewports: slightly smaller price text */
+@media (max-width: 480px) {
+  #pyn-total-monthly-fees,
+  .pyn-fav-total-monthly {
+    font-size: 13px !important;
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────── */

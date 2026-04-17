@@ -283,6 +283,7 @@ module Api
             unitDisplay: {
               displayRent:                  @community.display_rent,
               displayPricingOptions:        @community.display_pricing_options,
+              enablePynwheelCalculator:     @community.enable_pynwheel_pricing_calculator?,
               displayBuilding:              @community.display_building,
               displayAvailableDate:         @community.display_available_date,
               displayAdditionalFee:         @community.display_additional_fee,
@@ -404,7 +405,9 @@ module Api
               model_unit:             unit&.modal_unit,
               additionalButtons:      buttons,
               unit_variation:         unit_variation(unit, fees),
-              pricing_calculator_url: unit.pricing_calculator_url,
+              pricing_calculator_url:     unit.pricing_calculator_url,
+              estimatedMonthlyRent:       unit.pyn_estimated_monthly,
+              estimatedMonthlyRentMax:    unit.pyn_estimated_monthly_max,
               image:                  unit.validated_image_url || floorplan&.validated_image_url || floorplan&.secondary_image&.url.presence,
               color:                  compute_unit_marketing_color(unit, floorplan),
               opsColor:               compute_unit_ops_color(unit),

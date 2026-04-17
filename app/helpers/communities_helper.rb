@@ -263,6 +263,13 @@ module CommunitiesHelper
     end
   end
 
+  # Delegates to Unit#pyn_estimated_monthly — see unit.rb for the full logic.
+  # Returns base rent + mandatory monthly fees when calculator is on,
+  # or plain base rent when calculator is off.
+  def unit_pyn_estimated_monthly(unit, community = nil)
+    unit.pyn_estimated_monthly
+  end
+
   def fetch_unit_info_struct_for_webpage(unit, floorplan, show_ops_map = false)
     struct = {
       id: unit.id,
@@ -329,7 +336,9 @@ module CommunitiesHelper
       property_id: unit.property_id,
       unit_status: unit&.unit_status,
       model_unit: unit&.modal_unit,
-      pricing_calculator_url: unit.pricing_calculator_url
+      pricing_calculator_url: unit.pricing_calculator_url,
+      pyn_estimated_monthly: unit_pyn_estimated_monthly(unit, @community_info),
+      pyn_estimated_monthly_max: unit.pyn_estimated_monthly_max
     }
     struct[:data_attributes] = fetch_unit_data_attributes(unit, struct, show_ops_map)
 
@@ -626,6 +635,8 @@ module CommunitiesHelper
       "available-date": determine_available_date(struct[:available_date] || Date.new(0)),
       "market-rent": number_with_precision(struct[:market_rent] || 0, precision: 2, delimiter: ','),
       "total-market-rent": number_with_precision(struct[:market_rent] || 0, precision: 2, delimiter: ','),
+      "pyn-estimated-monthly": number_with_precision(struct[:pyn_estimated_monthly], precision: 2, delimiter: ','),
+      "pyn-estimated-monthly-max": number_with_precision(struct[:pyn_estimated_monthly_max], precision: 2, delimiter: ','),
       "title": unit.api_unit_marketing_name,
       "unit-virtual-tour-label": unit.get_virtual_tour_label,
       "unit-virtual-tour-url": unit.get_virtual_tour_url,
