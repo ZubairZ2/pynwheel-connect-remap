@@ -29,6 +29,12 @@ Rails.application.configure do
 
   config.active_record.dump_schema_after_migration = false
 
+  config.cache_store = :redis_cache_store, {
+    url:        ENV.fetch("REDIS_URL", "redis://localhost:6379/1"),
+    expires_in: 1.hour,
+    ssl_params: { verify_mode: OpenSSL::SSL::VERIFY_NONE }
+  }
+
   config.action_mailer.default_url_options = { host: ENV['HOST_URL'] }
   config.action_mailer.asset_host = ENV['HOST_URL']
   config.action_mailer.delivery_method = :smtp

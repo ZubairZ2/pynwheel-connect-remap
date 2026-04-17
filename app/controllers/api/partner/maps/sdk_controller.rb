@@ -167,14 +167,27 @@ module Api
             return
           end
 
-          svg_data = fetch_svg_by_url(svg_url)
+          cache_key  = "svg_v1_#{map_id}_#{map_type}"
+          compressed = Rails.cache.fetch(cache_key, expires_in: 1.hour) do
+            raw = fetch_svg_by_url(svg_url)
+            next nil unless raw
 
-          unless svg_data
+            buf = StringIO.new.binmode
+            gz  = Zlib::GzipWriter.new(buf)
+            gz.write(raw)
+            gz.close
+            buf.string
+          end
+
+          unless compressed
             render plain: "Failed to fetch SVG.", status: :bad_request
             return
           end
 
-          send_data svg_data, type: 'image/svg+xml', disposition: 'inline'
+          response.headers['Content-Encoding'] = 'gzip'
+          response.headers['Cache-Control']    = 'public, max-age=86400'
+          response.headers['Vary']             = 'Accept-Encoding'
+          send_data compressed, type: 'image/svg+xml', disposition: 'inline'
         rescue => e
           render plain: "Failed to fetch SVG: #{e.message}", status: :bad_request
         end
