@@ -620,7 +620,7 @@
       if (!unit?.pointerData?.id) return;
 
       const pid = String(unit.pointerData.id);
-      const sel = this._pointerSelector(pid, unit.pointerData.tag);
+      const sel = this._pointerSelector(unit.pointerData);
       const el  = activeSvg.querySelector(sel);
       if (!el) return;
 
@@ -648,7 +648,7 @@
       if (!unit?.pointerData?.id) return;
 
       const pid    = String(unit.pointerData.id);
-      const sel    = this._pointerSelector(pid, unit.pointerData.tag);
+      const sel    = this._pointerSelector(unit.pointerData);
       const el     = activeSvg.querySelector(sel);
       if (!el) return;
 
@@ -1105,7 +1105,7 @@
         const pid = unit.pointerData?.id;
         if (!pid) return;
 
-        const sel = this._pointerSelector(String(pid), unit.pointerData?.tag);
+        const sel = this._pointerSelector(unit.pointerData);
         const el  = activeSvg.querySelector(sel);
         if (!el) return;
 
@@ -1130,7 +1130,7 @@
         const pid = u.pointerData?.id;
         if (!pid) return;
 
-        const sel = this._pointerSelector(String(pid), u.pointerData?.tag);
+        const sel = this._pointerSelector(u.pointerData);
         const el  = activeSvg.querySelector(sel);
         if (!el) return;
 
@@ -1167,7 +1167,7 @@
         if (!unit?.pointerData?.id) return;
 
         const pid = String(unit.pointerData.id);
-        const sel = this._pointerSelector(pid, unit.pointerData?.tag);
+        const sel = this._pointerSelector(unit.pointerData);
         const el  = activeSvg.querySelector(sel);
         if (!el) return;
 
@@ -1191,7 +1191,7 @@
 
       pointerIds.forEach(pid => {
         const unit = byPointer[pid];
-        const sel  = this._pointerSelector(pid, unit?.pointerData?.tag);
+        const sel  = this._pointerSelector(unit?.pointerData);
         const el   = svg.querySelector(sel);
         if (!el) return;
 
@@ -1211,7 +1211,7 @@
         const unit = byPointer[pid];
         if (!unit) return;
 
-        const sel = this._pointerSelector(pid, unit.pointerData?.tag);
+        const sel = this._pointerSelector(unit.pointerData);
         const el  = root.querySelector(sel) || root;
         this._applyFill(el, this._unitHoverColor(unit));
       });
@@ -1224,7 +1224,7 @@
         const unit = byPointer[pid];
         if (!unit) return;
 
-        const sel = this._pointerSelector(pid, unit.pointerData?.tag);
+        const sel = this._pointerSelector(unit.pointerData);
         const el  = root.querySelector(sel) || root;
         this._applyFill(el, this._unitColor(unit));
       });
@@ -1276,7 +1276,7 @@
 
       ids.forEach(pid => {
         const unit = byPointer[pid];
-        const sel  = this._pointerSelector(pid, unit?.pointerData?.tag);
+        const sel  = this._pointerSelector(unit?.pointerData);
         const el   = activeSvg.querySelector(sel);
         if (!el) return;
 
@@ -1395,10 +1395,15 @@
     // those override inherited CSS fill, so we must set fill directly on each shape.
     // Builds a CSS selector from pointerData using tag+id when available,
     // matching svgHandler.js's getPointerIdAndSelector logic.
-    _pointerSelector(pid, tag) {
-      if (!pid) return null;
-      const escaped = CSS.escape(pid);
-      if (tag) return /^[0-9]/.test(pid) ? `${tag}[id="${pid}"]` : `${tag}#${escaped}`;
+    // Mirrors svgHandler.js getPointerIdAndSelector:
+    // Use pointerData.selector first (e.g. "g#id .nth-child(1)"), then fall back
+    // to tag+id, then bare #id. This ensures we target the actual shape element.
+    _pointerSelector(pointerData) {
+      const { tag = null, id = null, selector = null } = pointerData || {};
+      if (selector) return selector;
+      if (!id) return null;
+      const escaped = CSS.escape(id);
+      if (tag) return /^[0-9]/.test(id) ? `${tag}[id="${id}"]` : `${tag}#${escaped}`;
       return `#${escaped}`;
     },
 
