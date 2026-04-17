@@ -626,7 +626,7 @@
       const styles    = this.config?.styles || this.defaultStyles;
       const fillColor = colorCode || styles.unitColors.hover || styles.unitColors.available;
 
-      el.style.fill = fillColor;
+      this._applyFill(el, fillColor);
 
       const root = el.closest("g") || el;
       root.classList.add("pyn-highlight");
@@ -650,7 +650,7 @@
       const el     = activeSvg.querySelector(`#${CSS.escape(pid)}`);
       if (!el) return;
 
-      el.style.fill = this._unitColor(unit);
+      this._applyFill(el, this._unitColor(unit));
     },
 
     zoomIn() {
@@ -1106,7 +1106,7 @@
         const el = activeSvg.querySelector(`#${CSS.escape(pid)}`);
         if (!el) return;
 
-        el.style.fill = this._unitColor(unit);
+        this._applyFill(el, this._unitColor(unit));
 
         const root = el.closest("g") || el;
         root.classList.add("pyn-highlight");
@@ -1130,7 +1130,7 @@
         const el = activeSvg.querySelector(`#${CSS.escape(String(pid))}`);
         if (!el) return;
 
-        el.style.fill = this._unitColor(u);
+        this._applyFill(el, this._unitColor(u));
 
         const root = el.closest("g") || el;
         root.classList.add("pyn-highlight");
@@ -1166,7 +1166,7 @@
         const el  = activeSvg.querySelector(`#${CSS.escape(pid)}`);
         if (!el) return;
 
-        el.style.fill = this._unitColor(unit);
+        this._applyFill(el, this._unitColor(unit));
 
         const root = el.closest("g") || el;
         root.classList.add("pyn-highlight");
@@ -1205,7 +1205,7 @@
         if (!unit) return;
 
         const el = root.querySelector(`#${CSS.escape(pid)}`) || root;
-        el.style.fill = this._unitHoverColor(unit);
+        this._applyFill(el, this._unitHoverColor(unit));
       });
 
       svg.addEventListener("mouseout", (e) => {
@@ -1217,7 +1217,7 @@
         if (!unit) return;
 
         const el = root.querySelector(`#${CSS.escape(pid)}`) || root;
-        el.style.fill = this._unitColor(unit);
+        this._applyFill(el, this._unitColor(unit));
       });
 
       svg.addEventListener("mouseover", (e) => {
@@ -1267,7 +1267,7 @@
         const el = activeSvg.querySelector(`#${CSS.escape(pid)}`);
         if (!el) return;
 
-        el.style.fill        = "";
+        this._clearFill(el);
         el.style.stroke      = "";
         el.style.strokeWidth = "";
 
@@ -1376,6 +1376,28 @@
      *      (by_property / by_floorplan) and unit status (model vs available).
      *   3. Final fallback → defaultStyles.unitColors.available.
      */
+    // Applies fill to el and, when el is a <g>, to all descendant shapes.
+    // Needed for Adobe Illustrator SVGs where the pointer ID targets a group
+    // containing child paths/rects that have their own fill presentation attributes —
+    // those override inherited CSS fill, so we must set fill directly on each shape.
+    _applyFill(el, color) {
+      el.style.fill = color;
+      if (el.tagName && el.tagName.toLowerCase() === 'g') {
+        el.querySelectorAll('path, polygon, rect, ellipse, circle').forEach(s => {
+          s.style.fill = color;
+        });
+      }
+    },
+
+    _clearFill(el) {
+      el.style.fill = '';
+      if (el.tagName && el.tagName.toLowerCase() === 'g') {
+        el.querySelectorAll('path, polygon, rect, ellipse, circle').forEach(s => {
+          s.style.fill = '';
+        });
+      }
+    },
+
     _unitColor(unit) {
       if (this._userHasCustomColors) {
         const styles = this.config.styles || this.defaultStyles;
