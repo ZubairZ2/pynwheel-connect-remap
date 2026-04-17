@@ -165,21 +165,14 @@ module Api
             return
           end
 
-          if Rails.env.development?
-            svg_data = fetch_svg_by_url(svg_url)
-            unless svg_data
-              render plain: "Failed to fetch SVG.", status: :bad_request
-              return
-            end
-            send_data svg_data, type: 'image/svg+xml', disposition: 'inline'
-          else
-            signed_url = presign_svg_url(svg_url)
-            if signed_url
-              redirect_to signed_url, allow_other_host: true, status: :found
-            else
-              render plain: "Failed to generate SVG URL.", status: :bad_request
-            end
+          svg_data = fetch_svg_by_url(svg_url)
+
+          unless svg_data
+            render plain: "Failed to fetch SVG.", status: :bad_request
+            return
           end
+
+          send_data svg_data, type: 'image/svg+xml', disposition: 'inline'
         rescue => e
           render plain: "Failed to fetch SVG: #{e.message}", status: :bad_request
         end
@@ -696,21 +689,6 @@ module Api
         # Mirrors how webpages_controller reads params[:ops_map].
         def show_ops_map?
           params[:map_type] == "ops"
-        end
-
-        def presign_svg_url(url, expires_in: 300)
-          uri = URI.parse(url)
-          return nil unless uri.host =~ /^(.+?)\.s3/
-
-          bucket = $1
-          key    = uri.path.sub(%r{^/}, '')
-
-          s3_client = Aws::S3::Client.new(use_accelerate_endpoint: true)
-          presigner = Aws::S3::Presigner.new(client: s3_client)
-          presigner.presigned_url(:get_object, bucket: bucket, key: key, expires_in: expires_in)
-        rescue => e
-          Rails.logger.error "presign_svg_url failed: #{e.message}"
-          nil
         end
 
         def render_error(message, status)
