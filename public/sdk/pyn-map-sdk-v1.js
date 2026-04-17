@@ -43,6 +43,7 @@
     pointerIdsByMap: {},           // { [mapId]: string[] }
     unitsByPointerIdByMap: {},     // { [mapId]: { [pointerId]: unit } }
     svgCache: {},                  // { [mapId]: SVGElement }
+    _svgLoadingPromises: {},       // { [mapId]: Promise } — deduplicates in-flight fetches
     _lastHoverPid: null,           // last hovered pointer id (for debouncing)
 
     defaultStyles: {
@@ -130,7 +131,7 @@
           if (!r?.success) return this._showError(r?.error || "Config load error");
           this._storeConfig(r.data);
           this._showLoading("Loading SVG maps...");
-          return this._loadAllSVGs();
+          return this._loadActiveSVG();
         })
         .then(() => {
           if (!this._hasAnyMap()) return this._showError("No maps found.");
@@ -140,8 +141,16 @@
           }
 
           return this._loadPanZoom()
-            .then(() => this._bootAfterSVGLoad())
-            .catch(() => this._bootAfterSVGLoad());
+            .then(() => {
+              const boot = this._bootAfterSVGLoad();
+              this._loadRemainingSVGs();
+              return boot;
+            })
+            .catch(() => {
+              const boot = this._bootAfterSVGLoad();
+              this._loadRemainingSVGs();
+              return boot;
+            });
         })
         .catch(() => this._showError("Unexpected SDK error."));
     },
@@ -149,12 +158,12 @@
     // ----------------------------------------------------
     // BOOT AFTER SVG LOAD
     // ----------------------------------------------------
-    _bootAfterSVGLoad() {
+    async _bootAfterSVGLoad() {
       this._renderMaps();
       this._bindUnitEvents();
 
       if (this.config.floor) {
-        this.changeFloor(this.config.floor);
+        await this.changeFloor(this.config.floor);
       } else {
         this._highlightAllUnits();
       }
@@ -268,28 +277,65 @@
     // The real storage URL is never sent to the browser.
     // We pass only mapId + mapType; the server resolves the URL.
     // ----------------------------------------------------
-    async _loadAllSVGs() {
+
+    // Loads only the map that will be shown immediately, based on configured
+    // floor > server default floor > sitemap > first floorplate.
+    async _loadActiveSVG() {
+      const floor = this.config.floor ?? this.data.property?.map?.defaultFloor;
+      let primaryEntry = null;
+
+      if (floor != null) {
+        const fp = this._findFloorplateByFloor(String(floor));
+        if (fp) primaryEntry = { mapId: String(fp.mapId), mapType: fp.mapType || "floorplate" };
+      }
+
+      if (!primaryEntry && this.data.sitemap) {
+        primaryEntry = { mapId: String(this.data.sitemap.mapId), mapType: this.data.sitemap.mapType || "sitemap" };
+      }
+
+      if (!primaryEntry && this.data.floorplates.length > 0) {
+        const fp = this.data.floorplates[0];
+        primaryEntry = { mapId: String(fp.mapId), mapType: fp.mapType || "floorplate" };
+      }
+
+      if (primaryEntry) {
+        const svg = await this._loadSVGIfNeeded(primaryEntry.mapId, primaryEntry.mapType);
+        if (svg) this.svgCache[primaryEntry.mapId] = svg;
+      }
+    },
+
+    // Loads all remaining maps in the background (fire-and-forget).
+    _loadRemainingSVGs() {
       const entries = [];
 
       if (this.data.sitemap) {
-        entries.push({
-          mapId:   String(this.data.sitemap.mapId),
-          mapType: this.data.sitemap.mapType || "sitemap"
-        });
+        const id = String(this.data.sitemap.mapId);
+        if (!this.svgCache[id]) entries.push({ mapId: id, mapType: this.data.sitemap.mapType || "sitemap" });
       }
 
       this.data.floorplates.forEach(fp => {
-        entries.push({
-          mapId:   String(fp.mapId),
-          mapType: fp.mapType || "floorplate"
-        });
+        const id = String(fp.mapId);
+        if (!this.svgCache[id]) entries.push({ mapId: id, mapType: fp.mapType || "floorplate" });
       });
 
-      await Promise.all(entries.map(m =>
-        this._loadSVG(m.mapId, m.mapType).then(svg => {
-          if (svg) this.svgCache[m.mapId] = svg;
-        })
-      ));
+      entries.forEach(m => this._loadSVGIfNeeded(m.mapId, m.mapType));
+    },
+
+    // Deduplicates concurrent fetches for the same map: if a load is already
+    // in flight, callers await the same Promise instead of issuing a second request.
+    async _loadSVGIfNeeded(mapId, mapType) {
+      const id = String(mapId);
+      if (this.svgCache[id]) return this.svgCache[id];
+
+      if (!this._svgLoadingPromises[id]) {
+        this._svgLoadingPromises[id] = this._loadSVG(id, mapType).then(svg => {
+          if (svg) this.svgCache[id] = svg;
+          delete this._svgLoadingPromises[id];
+          return svg;
+        });
+      }
+
+      return this._svgLoadingPromises[id];
     },
 
     /**
@@ -994,9 +1040,16 @@
     // ----------------------------------------------------
     // FLOOR / MAP CHANGE
     // ----------------------------------------------------
-    changeMap(mapId) {
+    async changeMap(mapId) {
       const id = String(mapId);
-      if (!this._mapExists(id)) return;
+
+      if (!this._mapExists(id)) {
+        const mapType = this._getMapTypeForId(id);
+        if (!mapType) return;
+        this._showLoading("Loading floor...");
+        const svg = await this._loadSVGIfNeeded(id, mapType);
+        if (!svg) return;
+      }
 
       this.activeMapId   = id;
       this._lastHoverPid = null;
@@ -1006,7 +1059,7 @@
       this._bindUnitEvents();
     },
 
-    changeFloor(floorNumber) {
+    async changeFloor(floorNumber) {
       if (this._3dMode) {
         this._beans3dFloor = floorNumber;
         const indices = floorNumber != null
@@ -1030,8 +1083,8 @@
         return;
       }
 
-      this.changeMap(floorMapId);
-      setTimeout(() => { this._highlightUnitsForFloor(floorNumber); }, 30);
+      await this.changeMap(floorMapId);
+      this._highlightUnitsForFloor(floorNumber);
     },
 
 
@@ -1421,6 +1474,14 @@
       return Object.keys(this.svgCache)[0];
     },
 
+    _getMapTypeForId(mapId) {
+      const id = String(mapId);
+      if (this.data.sitemap && String(this.data.sitemap.mapId) === id)
+        return this.data.sitemap.mapType || "sitemap";
+      const fp = this.data.floorplates.find(f => String(f.mapId) === id);
+      return fp ? (fp.mapType || "floorplate") : null;
+    },
+
     _showLoading(msg)          { this._showStatus(msg, false); },
     _showError(msg)            { this._showStatus(msg, true);  },
 
@@ -1702,8 +1763,8 @@
       saveFavorite(unitIds, communityId, sessionId)   { return PynMapSDK.saveFavorite.call(PynMapSDK, unitIds, communityId, sessionId); },
       deleteFavorite(unitIds, communityId, sessionId) { return PynMapSDK.deleteFavorite.call(PynMapSDK, unitIds, communityId, sessionId); },
       clearAllFavorites(communityId, sessionId)       { return PynMapSDK.clearAllFavorites.call(PynMapSDK, communityId, sessionId); },
-      // switchTo3DMap()              { return PynMapSDK.switchTo3DMap.call(PynMapSDK); },
-      // switchTo2DMap()              { return PynMapSDK.switchTo2DMap.call(PynMapSDK); }
+      switchTo3DMap()              { return PynMapSDK.switchTo3DMap.call(PynMapSDK); },
+      switchTo2DMap()              { return PynMapSDK.switchTo2DMap.call(PynMapSDK); }
     };
   }
 

@@ -45,6 +45,7 @@ module Api
         def fetch_data
           fav_ids  = favorite_unit_ids
           units_ar = @community.units.map_units(@community, show_ops_map?).includes(:floorplan).to_a
+          units_ar.each { |u| u.association(:community).target = @community }
           all_units = units_json(fav_ids, show_ops_map?, units_ar)
 
           render json: {
@@ -52,7 +53,7 @@ module Api
             sitemap:        sitemap_json,
             floorplates:    floorplates_json,
             units:          all_units,
-            floorplans:     floorplans_json,
+            floorplans:     floorplans_json(units_ar),
             amenities:      amenities_json,
             filters:        filters_json(units_ar),
             favorite_units: all_units.select { |u| u[:isFavorite] },
@@ -137,6 +138,7 @@ module Api
                             &.to_set || Set.new
 
           units_ar = @community.units.where(id: fav_ids.to_a).includes(:floorplan).to_a
+          units_ar.each { |u| u.association(:community).target = @community }
           favorite_units = units_json(fav_ids, show_ops_map?, units_ar)
 
           render json: {
@@ -234,7 +236,11 @@ module Api
         # Load community for session-based endpoints (from session token).
         # ------------------------------------------------------------------
         def load_community_from_session
-          @community = Community.find_by(id: @session_property_id)
+          @community = Community
+            .includes(:sitemap, :floorplates, :floorplans, :map_filter,
+                      :font_setting, :credential, :calculator_config,
+                      :three_d_maps_configuration)
+            .find_by(id: @session_property_id)
           return render_error("Property not found.", 404) if @community.nil?
         end
 
@@ -462,8 +468,8 @@ module Api
           @community.floorplate_for_floor(unit.floor)&.id
         end
 
-        def floorplans_json
-          units_by_floorplan = (@community.units || []).group_by(&:floorplan_id)
+        def floorplans_json(units_ar = nil)
+          units_by_floorplan = (units_ar || @community.units).group_by(&:floorplan_id)
 
           @community.floorplans.map do |fp|
             fp_units   = units_by_floorplan[fp.id] || []
