@@ -277,6 +277,19 @@ class Unit < ApplicationRecord
     end
   end
 
+  # Returns the minimum estimated monthly total (base rent + min of mandatory monthly fees).
+  # When the calculator is off returns plain base rent. Use alongside pyn_estimated_monthly_max
+  # to determine whether a range should be displayed.
+  def pyn_estimated_monthly
+    _pyn_monthly_pair[:min]
+  end
+
+  # Returns the maximum estimated monthly total (base rent + max of mandatory monthly fees).
+  # Equal to pyn_estimated_monthly when no fee uses Range pricing logic.
+  def pyn_estimated_monthly_max
+    _pyn_monthly_pair[:max]
+  end
+
   def get_schedule_tour_label
     if self&.scheduler_label.present?
       self.scheduler_label
@@ -591,5 +604,42 @@ class Unit < ApplicationRecord
 
   def svg_coordinates
     pointer_data.is_a?(Hash) ? pointer_data.values_at('x_plot', 'y_plot').map(&:to_i) : [0, 0]
+  end
+
+  private
+
+  # Single pass through the calculator config, memoized per request.
+  # Returns { min: Float, max: Float }.
+  # max > min only when at least one mandatory monthly fee uses Range pricing.
+  def _pyn_monthly_pair
+    @_pyn_monthly_pair ||= _compute_pyn_monthly_pair
+  end
+
+  def _compute_pyn_monthly_pair
+    base = get_market_rent.to_f
+    return { min: base, max: base } unless community.enable_pynwheel_pricing_calculator?
+    return { min: base, max: base } if community.calculator_config.nil?
+
+    config    = community.calculator_config.config_json || {}
+    extra_min = 0.0
+    extra_max = 0.0
+
+    (config["buckets"] || []).each do |bucket|
+      fee_type = bucket["feeType"]
+      (bucket["categories"] || []).each do |category|
+        (category["fees"] || []).each do |fee|
+          next if fee["isBasePrice"]
+          freq = fee["feeFrequency"] || (fee_type == "one_time" ? "One-Time" : "Monthly")
+          next if freq == "One-Time" || freq == "Situational"
+          mult = fee["multiplier"] || (fee["perApplicant"] ? "Per Applicant" : fee["perPet"] ? "Per Pet" : "None")
+          next if !fee["isMandatoryDefault"] && mult == "None"
+          next if mult == "Per Pet"
+          extra_min += fee["baseMinPrice"].to_f
+          extra_max += fee["baseMaxPrice"].present? ? fee["baseMaxPrice"].to_f : fee["baseMinPrice"].to_f
+        end
+      end
+    end
+
+    { min: base + extra_min, max: base + extra_max }
   end
 end

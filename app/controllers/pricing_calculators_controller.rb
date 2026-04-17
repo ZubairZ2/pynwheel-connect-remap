@@ -46,7 +46,21 @@ class PricingCalculatorsController < ActionController::Base
 
     # Lease term pricing matrix — [{pricing_month: "12 Month", pricing_rent: "$1500"}, ...]
     @lease_terms_matrix = @unit ? @unit.get_lease_term_pricing_matrix : []
-    @default_lease_term = @unit&.lease_term || 12
+
+    # Mirror the unit-modal selection logic:
+    #   • all rents equal → term with fewest months
+    #   • rents differ   → term with minimum rent
+    @default_lease_term = if @lease_terms_matrix.present?
+      prices = @lease_terms_matrix.map { |t| t["pricing_rent"].to_s.gsub(/[^0-9.]/, '').to_f }
+      chosen = if prices.uniq.length == 1
+        @lease_terms_matrix.min_by { |t| t["pricing_month"].to_i }
+      else
+        @lease_terms_matrix.min_by { |t| t["pricing_rent"].to_s.gsub(/[^0-9.]/, '').to_f }
+      end
+      chosen["pricing_month"].to_i
+    else
+      @unit&.lease_term || 12
+    end
 
     # Rent values
     @base_rent = (@unit&.effective_rent || @unit&.market_rent).to_f

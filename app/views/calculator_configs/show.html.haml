@@ -423,8 +423,7 @@
       return processAutoFill();
     }
 
-    // Build UI (reverse so first bucket ends up at top after prepend)
-    parsedBuckets.reverse().forEach(bucket => {
+    parsedBuckets.forEach(bucket => {
       const bId = createNewBucket(bucket.name);
       bucket.categories.forEach(cat => {
         if (!cat.fees.length) return;
@@ -543,7 +542,7 @@
           Add Category
         </button>
       </div>`;
-    document.getElementById('dynamic-fee-containers').prepend(container);
+    document.getElementById('dynamic-fee-containers').appendChild(container);
     initDragAndDrop(container, 'bucket-type');
     return bId;
   }
@@ -913,8 +912,7 @@
       }
       flushFee();
 
-      // Build UI (reverse so first bucket ends up at top after prepend)
-      parsedBuckets.reverse().forEach(bucket => {
+      parsedBuckets.forEach(bucket => {
         const bId = createNewBucket(bucket.name);
         bucket.categories.forEach(cat => {
           if (!cat.fees.length) return;

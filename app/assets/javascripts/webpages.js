@@ -1461,7 +1461,7 @@ function buildUnitBoxHTML(unit) {
         ${!isFloorplanMapEnabled()
       ? `<div class='unit-details-section'>
                 ${!hide_availability ? `<p id='right-bar-unit-availability'>${get_unit_availability(unit)}</p>` : ''}
-                <p>${unitMarketRent(unit)}</p>
+                <p>${unitDisplayPrice(unit)}</p>
               </div>`
       : ``
     }
@@ -1735,6 +1735,28 @@ function unitMarketRent(unit) {
   if (!unit.display_rent) return "";
 
   return `${currency}${unit.market_rent}/month`;
+}
+
+/**
+ * Returns the price string to show in the right rail for a unit.
+ * When the Pynwheel calculator is enabled and a precomputed estimated monthly
+ * total is available (server-rendered via unit_pyn_estimated_monthly), that is
+ * shown instead of the raw base rent so all surfaces stay in sync.
+ */
+function unitDisplayPrice(unit) {
+  if (!unit.display_rent) return "";
+  if (typeof enablePynwheelCalculator !== 'undefined' && enablePynwheelCalculator) {
+    var min = parseFloat(String(unit["pyn_estimated_monthly"]     || '0').replace(/,/g, '')) || 0;
+    var max = parseFloat(String(unit["pyn_estimated_monthly_max"] || '0').replace(/,/g, '')) || 0;
+    if (min > 0) {
+      var minStr = currency + min.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      if (max > min) {
+        return minStr + ' \u2013 ' + currency + max.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '/month';
+      }
+      return minStr + '/month';
+    }
+  }
+  return unitMarketRent(unit);
 }
 
 // function highlightFloorplanMarkersData(elementsArray, floorplanId = null) {
@@ -2052,6 +2074,16 @@ function markerHoverEffect(event, _3dData = null) {
 
 function setHoverMarketRent($this) {
   if (isFloorplanMapEnabled()) return;
+  if (typeof enablePynwheelCalculator !== 'undefined' && enablePynwheelCalculator) {
+    var min = parseFloat(String($this.data('pyn-estimated-monthly')     || '0').replace(/,/g, '')) || 0;
+    var max = parseFloat(String($this.data('pyn-estimated-monthly-max') || '0').replace(/,/g, '')) || 0;
+    if (min > 0) {
+      var display = currency + min.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      if (max > min) display += ' \u2013 ' + currency + max.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      $("#popover-price").html(display);
+      return;
+    }
+  }
   $("#popover-price").html(currency + $this.data("marketRent"));
 }
 
@@ -4544,7 +4576,88 @@ function setEngrainCalculatorButton(element) {
   } else {
     $calcBtns.removeAttr('data-pricing-calculator-url').addClass('hidden');
   }
+
+  // Show total monthly estimate — values are always server-precomputed via Unit#pyn_estimated_monthly
+  var rawMin = element ? String($(element).data('pyn-estimated-monthly')     || '0') : '0';
+  var rawMax = element ? String($(element).data('pyn-estimated-monthly-max') || '0') : '0';
+  var precomputedMin = parseFloat(rawMin.replace(/,/g, '')) || 0;
+  var precomputedMax = parseFloat(rawMax.replace(/,/g, '')) || 0;
+  updatePynTotalMonthlyDisplay(precomputedMin, precomputedMax);
 }
+
+// ─── Pynwheel Calculator: Total Monthly Fee Display ──────────────────────────
+
+/**
+ * Shows the server-precomputed total monthly estimate in #pyn-total-monthly-fees
+ * (unit modal). The value is always provided by the backend (Unit#pyn_estimated_monthly)
+ * via the data-pyn-estimated-monthly attribute — no client-side calculation needed.
+ *
+ * Handles both credential branches:
+ *  - .filter-action  (apply_now == "true" / "separate_link" branches)
+ *  - .disabaled-apply-now  (else / no-credential branch)
+ */
+function updatePynTotalMonthlyDisplay(precomputedMin, precomputedMax) {
+  var $row = $('#pyn-total-monthly-fees');
+  if (!$row.length) return;
+
+  if (typeof enablePynwheelCalculator === 'undefined' || !enablePynwheelCalculator) {
+    $row.hide();
+    $('#unitModal .fix-text').show();
+    return;
+  }
+
+  // Resolve the footer price container — .filter-action has priority; fall back to
+  // .disabaled-apply-now for communities with no apply-now credential.
+  var $container = $('#unitModal .filter-action');
+  if (!$container.length) $container = $('#unitModal .disabaled-apply-now');
+  if (!$container.length) return;
+
+  var $baseRentDisplay = $container.find('.fix-text');
+
+  // Move #pyn-total-monthly-fees into the container (prepend = before the buttons).
+  // jQuery moves the element so no duplicate; guard prevents re-prepend on re-open.
+  if (!$container.find('#pyn-total-monthly-fees').length) {
+    $container.prepend($row);
+  }
+
+  $baseRentDisplay.hide();
+
+  if (!precomputedMin || precomputedMin <= 0) {
+    $row.hide();
+    $baseRentDisplay.show();
+    $container.removeClass('pyn-price-shown');
+    return;
+  }
+
+  var fmt = function(n) { return currency + n.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}); };
+  var label = (precomputedMax && precomputedMax > precomputedMin)
+    ? fmt(precomputedMin) + ' \u2013 ' + fmt(precomputedMax) + ' /month'
+    : fmt(precomputedMin) + ' /month';
+
+  $('#pyn-total-monthly-value').text(label);
+  $container.addClass('pyn-price-shown');
+
+  // For the no-apply-now container, force row layout inline so price + button
+  // sit side-by-side (flex-direction:column on the base class fights CSS overrides).
+  if ($container.hasClass('disabaled-apply-now')) {
+    $container.css({
+      'flexDirection': 'row',
+      'flexWrap': 'nowrap',
+      'alignItems': 'center',
+      'justifyContent': 'space-between',
+      'textAlign': 'left',
+      'padding': '12px 16px',
+      'gap': '12px'
+    });
+    // flex-basis:0% + minWidth:0 prevents the block div from sizing to container
+    // width (auto), so it shares the row with the button instead of pushing it off.
+    $row.css({ 'display': 'block', 'flex': '1 1 0%', 'minWidth': '0', 'marginBottom': '0' });
+  } else {
+    $row.css('display', 'block');
+  }
+}
+
+// Favorites modal total monthly is now server-rendered via unit_pyn_estimated_monthly helper.
 
 // ──────────────────────────────────────────────────────────────────────────────
 
