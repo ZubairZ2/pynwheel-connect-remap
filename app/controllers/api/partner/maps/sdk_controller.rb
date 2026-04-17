@@ -43,8 +43,9 @@ module Api
         # Response intentionally omits svgUrl; callers use mapId to fetch SVGs.
         # ------------------------------------------------------------------
         def fetch_data
-          fav_ids    = favorite_unit_ids
-          all_units  = units_json(fav_ids, show_ops_map?)
+          fav_ids  = favorite_unit_ids
+          units_ar = @community.units.map_units(@community, show_ops_map?).includes(:floorplan).to_a
+          all_units = units_json(fav_ids, show_ops_map?, units_ar)
 
           render json: {
             property:       property_json(show_ops_map?),
@@ -53,7 +54,7 @@ module Api
             units:          all_units,
             floorplans:     floorplans_json,
             amenities:      amenities_json,
-            filters:        filters_json,
+            filters:        filters_json(units_ar),
             favorite_units: all_units.select { |u| u[:isFavorite] },
             status: "success",
             code: 200
@@ -135,7 +136,8 @@ module Api
                             &.map(&:to_s)
                             &.to_set || Set.new
 
-          favorite_units = units_json(fav_ids, show_ops_map?).select { |u| u[:isFavorite] }
+          units_ar = @community.units.where(id: fav_ids.to_a).includes(:floorplan).to_a
+          favorite_units = units_json(fav_ids, show_ops_map?, units_ar)
 
           render json: {
             success:  true,
@@ -163,14 +165,21 @@ module Api
             return
           end
 
-          svg_data = fetch_svg_by_url(svg_url)
-
-          unless svg_data
-            render plain: "Failed to fetch SVG.", status: :bad_request
-            return
+          if Rails.env.development?
+            svg_data = fetch_svg_by_url(svg_url)
+            unless svg_data
+              render plain: "Failed to fetch SVG.", status: :bad_request
+              return
+            end
+            send_data svg_data, type: 'image/svg+xml', disposition: 'inline'
+          else
+            signed_url = presign_svg_url(svg_url)
+            if signed_url
+              redirect_to signed_url, allow_other_host: true, status: :found
+            else
+              render plain: "Failed to generate SVG URL.", status: :bad_request
+            end
           end
-
-          send_data svg_data, type: 'image/svg+xml', disposition: 'inline'
         rescue => e
           render plain: "Failed to fetch SVG: #{e.message}", status: :bad_request
         end
@@ -366,8 +375,8 @@ module Api
           end
         end
 
-        def units_json(fav_ids = Set.new, show_ops_map = false)
-          units = @community&.units&.map_units(@community, show_ops_map)
+        def units_json(fav_ids = Set.new, show_ops_map = false, units_ar = nil)
+          units = units_ar || @community&.units&.map_units(@community, show_ops_map).includes(:floorplan)
           units&.map do |unit|
             floorplan = unit.floorplan
             fees      = @community.get_additional_fees(unit)
@@ -404,7 +413,7 @@ module Api
               unit_status:            unit&.unit_status,
               model_unit:             unit&.modal_unit,
               additionalButtons:      buttons,
-              unit_variation:         unit_variation(unit, fees),
+              unit_variation:         unit_variation(unit, fees, buttons),
               pricing_calculator_url:     unit.pricing_calculator_url,
               estimatedMonthlyRent:       unit.pyn_estimated_monthly,
               estimatedMonthlyRentMax:    unit.pyn_estimated_monthly_max,
@@ -423,9 +432,9 @@ module Api
         # Variation 4 — Non-premium, 1 additional button, no lease pricing
         # Variation 5 — Premium, move-in date, fees, 1 additional button (no lease listing)
         # Variation 6 — Premium, move-in date + monthly lease listings, fees, 1 additional button
-        def unit_variation(unit, additional_fees)
+        def unit_variation(unit, additional_fees, buttons = nil)
           is_model_unit      = unit.modal_unit
-          buttons            = unit_additional_buttons(unit)
+          buttons            = buttons || unit_additional_buttons(unit)
           has_links          = buttons.any?
           has_one_link       = (buttons.count === 1)
           has_multiple_links = buttons.length > 1
@@ -597,8 +606,8 @@ module Api
         # FILTER DATA — returned as part of fetch_data so the SDK has everything
         # it needs in one round-trip. getFiltersData() reads this from this.data.filters.
         # ------------------------------------------------------------------
-        def filters_json
-          units = @community.units.map_units(@community, show_ops_map?).includes(:floorplan)
+        def filters_json(units_ar = nil)
+          units = units_ar || @community.units.map_units(@community, show_ops_map?).includes(:floorplan)
 
           {
             bedrooms:      filter_bedroom_options(units),
@@ -687,6 +696,21 @@ module Api
         # Mirrors how webpages_controller reads params[:ops_map].
         def show_ops_map?
           params[:map_type] == "ops"
+        end
+
+        def presign_svg_url(url, expires_in: 300)
+          uri = URI.parse(url)
+          return nil unless uri.host =~ /^(.+?)\.s3/
+
+          bucket = $1
+          key    = uri.path.sub(%r{^/}, '')
+
+          s3_client = Aws::S3::Client.new(use_accelerate_endpoint: true)
+          presigner = Aws::S3::Presigner.new(client: s3_client)
+          presigner.presigned_url(:get_object, bucket: bucket, key: key, expires_in: expires_in)
+        rescue => e
+          Rails.logger.error "presign_svg_url failed: #{e.message}"
+          nil
         end
 
         def render_error(message, status)
