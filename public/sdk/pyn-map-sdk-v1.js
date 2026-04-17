@@ -620,7 +620,8 @@
       if (!unit?.pointerData?.id) return;
 
       const pid = String(unit.pointerData.id);
-      const el  = activeSvg.querySelector(`#${CSS.escape(pid)}`);
+      const sel = this._pointerSelector(pid, unit.pointerData.tag);
+      const el  = activeSvg.querySelector(sel);
       if (!el) return;
 
       const styles    = this.config?.styles || this.defaultStyles;
@@ -647,7 +648,8 @@
       if (!unit?.pointerData?.id) return;
 
       const pid    = String(unit.pointerData.id);
-      const el     = activeSvg.querySelector(`#${CSS.escape(pid)}`);
+      const sel    = this._pointerSelector(pid, unit.pointerData.tag);
+      const el     = activeSvg.querySelector(sel);
       if (!el) return;
 
       this._applyFill(el, this._unitColor(unit));
@@ -1103,7 +1105,8 @@
         const pid = unit.pointerData?.id;
         if (!pid) return;
 
-        const el = activeSvg.querySelector(`#${CSS.escape(pid)}`);
+        const sel = this._pointerSelector(String(pid), unit.pointerData?.tag);
+        const el  = activeSvg.querySelector(sel);
         if (!el) return;
 
         this._applyFill(el, this._unitColor(unit));
@@ -1127,7 +1130,8 @@
         const pid = u.pointerData?.id;
         if (!pid) return;
 
-        const el = activeSvg.querySelector(`#${CSS.escape(String(pid))}`);
+        const sel = this._pointerSelector(String(pid), u.pointerData?.tag);
+        const el  = activeSvg.querySelector(sel);
         if (!el) return;
 
         this._applyFill(el, this._unitColor(u));
@@ -1163,7 +1167,8 @@
         if (!unit?.pointerData?.id) return;
 
         const pid = String(unit.pointerData.id);
-        const el  = activeSvg.querySelector(`#${CSS.escape(pid)}`);
+        const sel = this._pointerSelector(pid, unit.pointerData?.tag);
+        const el  = activeSvg.querySelector(sel);
         if (!el) return;
 
         this._applyFill(el, this._unitColor(unit));
@@ -1185,7 +1190,9 @@
       const pointerIds = this.pointerIdsByMap[mapId] || [];
 
       pointerIds.forEach(pid => {
-        const el = svg.querySelector(`#${CSS.escape(pid)}`);
+        const unit = byPointer[pid];
+        const sel  = this._pointerSelector(pid, unit?.pointerData?.tag);
+        const el   = svg.querySelector(sel);
         if (!el) return;
 
         const root = el.closest("g") || el;
@@ -1204,7 +1211,8 @@
         const unit = byPointer[pid];
         if (!unit) return;
 
-        const el = root.querySelector(`#${CSS.escape(pid)}`) || root;
+        const sel = this._pointerSelector(pid, unit.pointerData?.tag);
+        const el  = root.querySelector(sel) || root;
         this._applyFill(el, this._unitHoverColor(unit));
       });
 
@@ -1216,7 +1224,8 @@
         const unit = byPointer[pid];
         if (!unit) return;
 
-        const el = root.querySelector(`#${CSS.escape(pid)}`) || root;
+        const sel = this._pointerSelector(pid, unit.pointerData?.tag);
+        const el  = root.querySelector(sel) || root;
         this._applyFill(el, this._unitColor(unit));
       });
 
@@ -1263,8 +1272,12 @@
 
       const ids = this.pointerIdsByMap[this.activeMapId] || [];
 
+      const byPointer = this.unitsByPointerIdByMap[this.activeMapId] || {};
+
       ids.forEach(pid => {
-        const el = activeSvg.querySelector(`#${CSS.escape(pid)}`);
+        const unit = byPointer[pid];
+        const sel  = this._pointerSelector(pid, unit?.pointerData?.tag);
+        const el   = activeSvg.querySelector(sel);
         if (!el) return;
 
         this._clearFill(el);
@@ -1380,20 +1393,32 @@
     // Needed for Adobe Illustrator SVGs where the pointer ID targets a group
     // containing child paths/rects that have their own fill presentation attributes —
     // those override inherited CSS fill, so we must set fill directly on each shape.
+    // Builds a CSS selector from pointerData using tag+id when available,
+    // matching svgHandler.js's getPointerIdAndSelector logic.
+    _pointerSelector(pid, tag) {
+      if (!pid) return null;
+      const escaped = CSS.escape(pid);
+      if (tag) return /^[0-9]/.test(pid) ? `${tag}[id="${pid}"]` : `${tag}#${escaped}`;
+      return `#${escaped}`;
+    },
+
+    // Mirrors svgHandler.js: use setProperty("important") so inline !important beats
+    // any SVG-embedded <style> block rules (including #id-based !important rules).
+    // When el is a <g>, propagate to all descendant shapes too.
     _applyFill(el, color) {
-      el.style.fill = color;
+      el.style.setProperty("fill", color, "important");
       if (el.tagName && el.tagName.toLowerCase() === 'g') {
         el.querySelectorAll('path, polygon, rect, ellipse, circle').forEach(s => {
-          s.style.fill = color;
+          s.style.setProperty("fill", color, "important");
         });
       }
     },
 
     _clearFill(el) {
-      el.style.fill = '';
+      el.style.removeProperty("fill");
       if (el.tagName && el.tagName.toLowerCase() === 'g') {
         el.querySelectorAll('path, polygon, rect, ellipse, circle').forEach(s => {
-          s.style.fill = '';
+          s.style.removeProperty("fill");
         });
       }
     },
