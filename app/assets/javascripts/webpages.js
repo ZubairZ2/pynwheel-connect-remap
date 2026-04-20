@@ -1549,6 +1549,8 @@ function buildUnitMarkerHTML(unit, f) {
       data-available-date="${unitDataAttributes["data-available-date"]}"
       data-market-rent="${unitDataAttributes["data-market-rent"]}"
       data-total-market-rent="${unitDataAttributes["data-total-market-rent"]}"
+      data-pyn-estimated-monthly="${unitDataAttributes["data-pyn-estimated-monthly"]}"
+      data-pyn-estimated-monthly-max="${unitDataAttributes["data-pyn-estimated-monthly-max"]}"
       data-title="${unitDataAttributes["data-title"]}"
       data-unit-virtual-tour-label="${unitDataAttributes["data-unit-virtual-tour-label"]}"
       data-unit-virtual-tour-url="${unitDataAttributes["data-unit-virtual-tour-url"]}"
