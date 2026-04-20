@@ -1459,7 +1459,12 @@ function buildUnitBoxHTML(unit) {
           ${!hide_square_feet ? `<p><i class='fa fa-building'> &nbsp ${unit["square_feet"]} Sq Ft </i></p>` : ''}
         </div>
         ${!isFloorplanMapEnabled()
-      ? `<div class='unit-details-section'>
+      ? `<div class='unit-details-section' style='${(function() {
+                var calcEnabled = typeof enablePynwheelCalculator !== 'undefined' && enablePynwheelCalculator;
+                var min = parseFloat(String(unit["pyn_estimated_monthly"] || '0').replace(/,/g, '')) || 0;
+                var max = parseFloat(String(unit["pyn_estimated_monthly_max"] || '0').replace(/,/g, '')) || 0;
+                return (calcEnabled && max > min) ? 'flex-direction: column;' : '';
+              })()}'>
                 ${!hide_availability ? `<p id='right-bar-unit-availability'>${get_unit_availability(unit)}</p>` : ''}
                 <p>${unitDisplayPrice(unit)}</p>
               </div>`
