@@ -58,6 +58,12 @@
   .btn-ghost:hover{background:var(--surface-3);color:var(--text);}
   .btn-save{background:var(--primary);color:white;border-color:var(--primary);}
   .btn-save:hover{background:var(--primary-light);color:white;}
+  .btn-publish{background:var(--success);color:white;border-color:var(--success);}
+  .btn-publish:hover{background:#059669;color:white;}
+  .btn-publish:disabled{opacity:.5;cursor:not-allowed;}
+  .unpublished-badge{font-size:.65rem;font-weight:700;padding:3px 9px;border-radius:20px;background:var(--warning-bg);color:#92400e;border:1.5px solid var(--warning);display:none;align-items:center;gap:4px;white-space:nowrap;}
+  .unpublished-badge.visible{display:inline-flex;}
+  .published-info{font-size:.7rem;color:var(--text-3);}
 
   /* Drag */
   .drag-handle{cursor:grab;color:var(--text-3);margin-right:8px;user-select:none;display:flex;align-items:center;transition:color .2s;}
@@ -153,19 +159,30 @@
         = link_to @community.name, "#"
         |  / Pricing Calculator
       %h1 Pricing Calculator CMS
-    %div{style: "display:flex;gap:8px;"}
-      = link_to "Preview", community_pricing_calculators_path(@community.id), target: "_blank", class: "btn"
+    %div{style: "display:flex;align-items:center;gap:10px;"}
+      %span#unpublishedBadge.unpublished-badge{class: @calculator_config&.has_unpublished_changes? ? "visible" : ""}
+        %span.material-icons{style: "font-size:14px;"} warning
+        Unpublished changes
+      - if @calculator_config&.published_at
+        %span.published-info Published #{time_ago_in_words(@calculator_config.published_at)} ago
+      = link_to "Preview Draft", preview_community_pricing_calculators_path(@community.id), target: "_blank", class: "btn"
       %button.btn.btn-save{onclick: "saveToDatabase()", type: "button"}
         %span.material-icons{style: "font-size:18px;"} save
-        Save Configuration
+        Save Draft
+      %button.btn.btn-publish{onclick: "publishConfig()", type: "button", id: "publishBtn"}
+        %span.material-icons{style: "font-size:18px;"} publish
+        Publish Changes
 
-  - property_url = community_pricing_calculators_url(@community.id)
-  - unit_url     = unit_community_pricing_calculators_url(@community.id) + "?unit_id={unit_id}"
+  - property_url         = community_pricing_calculators_url(@community.id)
+  - unit_url             = unit_community_pricing_calculators_url(@community.id) + "?unit_id={unit_id}"
+  - preview_property_url = preview_community_pricing_calculators_url(@community.id)
+  - preview_unit_url     = preview_unit_community_pricing_calculators_url(@community.id) + "?unit_id={unit_id}"
 
   .embed-urls-panel
     %h3
       %span.material-icons{style: "font-size:18px;"} link
       Embed URLs
+    %p{style: "font-size:.7rem;color:#94a3b8;margin-bottom:12px;"} Live URLs (published config — for embedding on your website)
     .embed-url-row
       %label Property
       %input{type: "text", value: property_url, readonly: true, id: "url-property"}
@@ -174,6 +191,15 @@
       %label Unit
       %input{type: "text", value: unit_url, readonly: true, id: "url-unit"}
       %button.btn-copy-url{onclick: "copyUrl('url-unit')"} Copy
+    %p{style: "font-size:.7rem;color:#94a3b8;margin-top:12px;margin-bottom:12px;"} Preview URLs (draft config — for internal review only)
+    .embed-url-row
+      %label Preview
+      %input{type: "text", value: preview_property_url, readonly: true, id: "url-preview-property"}
+      %button.btn-copy-url{onclick: "copyUrl('url-preview-property')"} Copy
+    .embed-url-row
+      %label Preview Unit
+      %input{type: "text", value: preview_unit_url, readonly: true, id: "url-preview-unit"}
+      %button.btn-copy-url{onclick: "copyUrl('url-preview-unit')"} Copy
 
   .tools-grid
     .panel
@@ -240,8 +266,9 @@
   .calc-toast#calcToast
 
 :javascript
-  const SAVE_URL   = "#{community_calculator_config_path(@community.id)}";
-  const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]')?.content || '';
+  const SAVE_URL    = "#{community_calculator_config_path(@community.id)}";
+  const PUBLISH_URL = "#{publish_community_calculator_config_path(@community.id)}";
+  const CSRF_TOKEN  = document.querySelector('meta[name="csrf-token"]')?.content || '';
   const COMMUNITY_ADDITIONAL_FEE = #{raw @additional_fee_seed.to_json};
 
   let uniqueIdCounter = 0, draggedItem = null, draggedType = null, allCollapsed = false;
@@ -255,6 +282,11 @@
   }
 
   // ─── Persistence ──────────────────────────────────────────────────────────
+  function setUnpublishedBadge(hasChanges) {
+    const badge = document.getElementById('unpublishedBadge');
+    if (badge) badge.classList.toggle('visible', !!hasChanges);
+  }
+
   function saveToDatabase() {
     fetch(SAVE_URL, {
       method: 'PUT',
@@ -262,8 +294,27 @@
       body: JSON.stringify(buildPayload())
     })
     .then(r => r.json())
-    .then(d => showToast(d.success ? 'Saved!' : 'Error: ' + d.message, d.success ? 'success' : 'error'))
+    .then(d => {
+      showToast(d.success ? 'Draft saved!' : 'Error: ' + d.message, d.success ? 'success' : 'error');
+      if (d.success) setUnpublishedBadge(d.has_unpublished_changes);
+    })
     .catch(() => showToast('Network error', 'error'));
+  }
+
+  function publishConfig() {
+    const btn = document.getElementById('publishBtn');
+    if (btn) btn.disabled = true;
+    fetch(PUBLISH_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CSRF_TOKEN }
+    })
+    .then(r => r.json())
+    .then(d => {
+      showToast(d.success ? 'Published!' : 'Error: ' + d.message, d.success ? 'success' : 'error');
+      if (d.success) setUnpublishedBadge(false);
+    })
+    .catch(() => showToast('Network error', 'error'))
+    .finally(() => { if (btn) btn.disabled = false; });
   }
 
   function copyUrl(id) {

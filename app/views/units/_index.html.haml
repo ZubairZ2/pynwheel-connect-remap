@@ -164,7 +164,7 @@
                       = link_to 'Manage Images' , community_unit_amenities_path(@community,u),:class=>"btn btn-default black-button"
                       - if @community.enable_pynwheel_pricing_calculator?
                         %br
-                        = link_to 'Calculate Cost', unit_community_pricing_calculators_path(@community, unit_id: u.id), class: "btn btn-default black-button mt-5", target: "_blank"
+                        = link_to 'Calculate Cost', preview_unit_community_pricing_calculators_path(@community, unit_id: u.id), class: "btn btn-default black-button mt-5", target: "_blank"
                       - elsif @community.enable_pricing_calculator? && @community.pricing_calculator_embed_code.present?
                         %br
                         = link_to 'Calculate Cost', "https://sightmap.com/embed/#{@community.pricing_calculator_embed_code}?unit_number=#{u.marketing_name}&mode=expense_calculator", class: "btn btn-default black-button mt-5", target: "_blank"

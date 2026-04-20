@@ -7,7 +7,20 @@ class CalculatorConfig < ApplicationRecord
   #             hasQuantityCounter, qtyMinLimit, qtyMaxLimit, variesByBedroom, bedroomPricing,
   #             perApplicant, perPet, perVehicle, displayText, preSelectionInfo, postSelectionInfo
 
+  def publish!
+    update!(published_config_json: config_json, published_at: Time.current)
+  end
+
+  def has_unpublished_changes?
+    return true if published_config_json.nil?
+    config_json != published_config_json
+  end
+
+  def published_sdk_json
+    published_config_json.presence || {}
+  end
+
   def as_sdk_json
-    config_json.presence || {}
+    published_sdk_json
   end
 end

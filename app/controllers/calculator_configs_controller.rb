@@ -15,7 +15,28 @@ class CalculatorConfigsController < ApplicationController
     payload = body.present? ? JSON.parse(body) : params.to_unsafe_h
 
     @calculator_config.update!(config_json: payload, enabled: true)
-    render json: { success: true, message: "Calculator configuration saved." }
+    render json: {
+      success: true,
+      message: "Calculator configuration saved.",
+      has_unpublished_changes: @calculator_config.has_unpublished_changes?,
+      published_at: @calculator_config.published_at
+    }
+  rescue => e
+    render json: { success: false, message: e.message }, status: :unprocessable_entity
+  end
+
+  def publish
+    @calculator_config = @community.calculator_config
+    unless @calculator_config&.config_json.present?
+      render json: { success: false, message: "No configuration to publish." }, status: :unprocessable_entity and return
+    end
+
+    @calculator_config.publish!
+    render json: {
+      success: true,
+      message: "Configuration published successfully.",
+      published_at: @calculator_config.published_at
+    }
   rescue => e
     render json: { success: false, message: e.message }, status: :unprocessable_entity
   end

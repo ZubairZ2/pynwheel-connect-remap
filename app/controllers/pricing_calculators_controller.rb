@@ -8,11 +8,21 @@ class PricingCalculatorsController < ActionController::Base
   before_action :set_unit_context      # sets @unit + @floorplan from params[:unit_id]
   before_action :set_calculator_config # can now safely access @unit / @floorplan
 
-  # GET /communities/:community_id/pricing_calculators
+  # GET /communities/:community_id/pricing_calculators (live — published config)
   def show; end
 
-  # GET /communities/:community_id/pricing_calculators/unit?unit_id=:id
+  # GET /communities/:community_id/pricing_calculators/unit?unit_id=:id (live — published config)
   def unit
+    render :show
+  end
+
+  # GET /communities/:community_id/pricing_calculators/preview (admin draft preview)
+  def preview
+    render :show
+  end
+
+  # GET /communities/:community_id/pricing_calculators/preview_unit?unit_id=:id
+  def preview_unit
     render :show
   end
 
@@ -37,8 +47,9 @@ class PricingCalculatorsController < ActionController::Base
   end
 
   def set_calculator_config
-    @calculator_config  = @community.calculator_config
-    @config_json        = @calculator_config&.config_json.present? ? @calculator_config.config_json.to_json : "null"
+    @calculator_config = @community.calculator_config
+    config_source      = preview_action? ? @calculator_config&.config_json : @calculator_config&.published_config_json
+    @config_json       = config_source.present? ? config_source.to_json : "null"
 
     # Additional fee seed: respects display_additional_fee flag + unit/community priority
     raw_fee              = @community.get_additional_fees(@unit).to_s
@@ -77,6 +88,10 @@ class PricingCalculatorsController < ActionController::Base
     @apply_now_url      = compute_apply_now_url
     @apply_now_provider = @community.data_provider
     @apply_now_unit_pid = @unit&.provider_unit_id
+  end
+
+  def preview_action?
+    action_name.in?(%w[preview preview_unit])
   end
 
   def allow_iframe
