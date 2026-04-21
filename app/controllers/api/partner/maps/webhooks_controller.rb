@@ -14,7 +14,7 @@ module Api
           if property_id.present?
             # FAST: Fetch only 1 record, no scopes
             community = Community.select(:id, :name, :company_id, :address, :city, :state, :zip)
-                                 .find_by(id: property_id)
+                                 .find_by(id: property_id, enable_svg_mode: true)
 
             unless community
               return render json: {
@@ -49,6 +49,7 @@ module Api
           # LIST ALL PROPERTIES — optimized
           # --------------------------------------------------
           communities = Community.active_client_properties
+                                 .where(enable_svg_mode: true)
                                  .select(:id, :name, :company_id, :address, :city, :state, :zip)
                                  .includes(:company)
 
