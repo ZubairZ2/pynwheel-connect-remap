@@ -100,7 +100,10 @@ module Api
             }
           end
 
-          units_list = @community.units.map { |u| format_unit(u, @community) }
+          units_list = @community.units
+            .sort_by { |u| -u.created_at.to_i }
+            .uniq(&:marketing_name)
+            .map { |u| format_unit(u, @community) }
 
           render json: {
             unitsList: units_list,
