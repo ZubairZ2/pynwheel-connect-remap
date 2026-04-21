@@ -71,9 +71,9 @@
         onUnitHover:      typeof cfg.onUnitHover      === "function" ? cfg.onUnitHover      : null,
         onUnitClick:      typeof cfg.onUnitClick      === "function" ? cfg.onUnitClick      : null,
         onFavoriteChange: typeof cfg.onFavoriteChange === "function" ? cfg.onFavoriteChange : null,
-        enable3DMap:          cfg.enable3DMap  === true,
-        show3DMap:            cfg.show3DMap    === true,
-        defaultSatelliteView: cfg.defaultSatelliteView != null ? cfg.defaultSatelliteView : null,
+        enable3DMap:          cfg.enable3DMap          != null ? cfg.enable3DMap          === true : null,
+        show3DMap:            cfg.show3DMap            != null ? cfg.show3DMap            === true : null,
+        defaultSatelliteView: cfg.defaultSatelliteView != null ? cfg.defaultSatelliteView === true : null,
         // "marketing" (default) or "ops" — controls which server-resolved color is used
         mapType:          cfg.mapType === "ops" ? "ops" : "marketing"
       };
@@ -251,6 +251,14 @@
       );
 
       this._indexUnits();
+      this._resolve3DConfig();
+    },
+
+    _resolve3DConfig() {
+      const cfg3d = this.data.property?.beans3dConfig;
+      if (this.config.enable3DMap          === null) this.config.enable3DMap          = cfg3d?.enabled          === true;
+      if (this.config.show3DMap            === null) this.config.show3DMap            = cfg3d?.show3dByDefault  === true;
+      if (this.config.defaultSatelliteView === null) this.config.defaultSatelliteView = cfg3d?.defaultSatelliteView === true;
     },
 
     _indexUnits() {

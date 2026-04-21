@@ -20,22 +20,24 @@
       propertyId: "33",
       mapType: "ops", //optional default "marketing" options: "marketing", "ops"
       defaultFloor: 1,       // to load default floor of the property
-      showZoomControls: true, // ZoomIn, ZoomOut, RestZoom
-      enable3DMap: true, // enables 2d/3d controls
-      show3DMap: true,  // defaul load map 3D
-      defaultSatelliteView: true, // To load default satellite view
 
-      styles: {
-        unitColors: {
-          available: "#61D46B",
-          hover: "#FFF2AA"
-        },
-        unitLabels: {
-          fontFamily: "Arial, sans-serif",
-          fontSize: "10px",
-          fontColor: "#ffffff"
-        }
-      }, // Optional
+      showZoomControls: false, // ZoomIn, ZoomOut, RestZoom
+      // enable3DMap: true, // enables 2d/3d controls
+
+      // show3DMap: false,  // defaul load map 3D
+      // defaultSatelliteView: false, // To load default satellite view
+
+      // styles: {
+      //   unitColors: {
+      //     available: "#61D46B",
+      //     hover: "#FFF2AA"
+      //   },
+      //   unitLabels: {
+      //     fontFamily: "Arial, sans-serif",
+      //     fontSize: "10px",
+      //     fontColor: "#ffffff"
+      //   }
+      // }, // Optional
 
       onUnitHover: (unit) => {
         console.log("Hovered unit:", unit);
