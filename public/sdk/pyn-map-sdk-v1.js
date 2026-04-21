@@ -22,6 +22,7 @@
     _3dToggleBtn:   null,
     _zoomInBtn:     null,
     _zoomOutBtn:    null,
+    _resetZoomBtn:  null,
 
     // true when the caller explicitly passed styles.unitColors in config;
     // false means "use per-unit colors returned by the API"
@@ -70,8 +71,9 @@
         onUnitHover:      typeof cfg.onUnitHover      === "function" ? cfg.onUnitHover      : null,
         onUnitClick:      typeof cfg.onUnitClick      === "function" ? cfg.onUnitClick      : null,
         onFavoriteChange: typeof cfg.onFavoriteChange === "function" ? cfg.onFavoriteChange : null,
-        enable3DMap:      cfg.enable3DMap  === true,
-        show3DMap:        cfg.show3DMap    === true,
+        enable3DMap:          cfg.enable3DMap  === true,
+        show3DMap:            cfg.show3DMap    === true,
+        defaultSatelliteView: cfg.defaultSatelliteView != null ? cfg.defaultSatelliteView : null,
         // "marketing" (default) or "ops" — controls which server-resolved color is used
         mapType:          cfg.mapType === "ops" ? "ops" : "marketing"
       };
@@ -669,6 +671,13 @@
       svg._pz.zoom(Math.max(svg._pz.getZoom() / 1.25, 0.5));
     },
 
+    resetZoom() {
+      const svg = this._getActiveSvg();
+      if (!svg || !svg._pz) return;
+      svg._pz.fit();
+      svg._pz.center();
+    },
+
     // ----------------------------------------------------
     // 3D MAP — PUBLIC API
     // ----------------------------------------------------
@@ -691,9 +700,10 @@
       if (this._3dWrapper) this._3dWrapper.style.display = "block";
 
       // Update toggle button label and hide zoom controls (irrelevant in 3D)
-      if (this._3dToggleBtn) this._3dToggleBtn.innerText = "2D";
-      if (this._zoomInBtn)   this._zoomInBtn.style.display  = "none";
-      if (this._zoomOutBtn)  this._zoomOutBtn.style.display = "none";
+      if (this._3dToggleBtn)  this._3dToggleBtn.innerText = "2D";
+      if (this._zoomInBtn)    this._zoomInBtn.style.display   = "none";
+      if (this._zoomOutBtn)   this._zoomOutBtn.style.display  = "none";
+      if (this._resetZoomBtn) this._resetZoomBtn.style.display = "none";
 
       if (!this._3dInitialized) {
         await this._init3DMap();
@@ -714,9 +724,10 @@
       if (this._3dWrapper) this._3dWrapper.style.display = "none";
 
       // Update toggle button label and restore zoom controls
-      if (this._3dToggleBtn) this._3dToggleBtn.innerText = "3D";
-      if (this._zoomInBtn)   this._zoomInBtn.style.display  = "flex";
-      if (this._zoomOutBtn)  this._zoomOutBtn.style.display = "flex";
+      if (this._3dToggleBtn)  this._3dToggleBtn.innerText = "3D";
+      if (this._zoomInBtn)    this._zoomInBtn.style.display    = "flex";
+      if (this._zoomOutBtn)   this._zoomOutBtn.style.display   = "flex";
+      if (this._resetZoomBtn) this._resetZoomBtn.style.display = "flex";
     },
 
     // ----------------------------------------------------
@@ -744,7 +755,8 @@
 
       this._beansWidget = new BeansMap();
 
-      const initialMap     = cfg3d.defaultSatelliteView ? "SATELLITE" : "3D";
+      const satelliteView  = this.config.defaultSatelliteView != null ? this.config.defaultSatelliteView : cfg3d.defaultSatelliteView;
+      const initialMap     = satelliteView ? "SATELLITE" : "3D";
       const allIndices     = this._beans3dArr.map((_, i) => i);
       const displayOptions = this._beans3dDisplayOptions(allIndices, initialMap, cfg3d);
 
@@ -965,8 +977,9 @@
 
     _update3DFilter(indices) {
       if (!this._beansWidget || !this._3dInitialized) return;
-      const cfg3d      = this.data.property?.beans3dConfig;
-      const initialMap = cfg3d?.defaultSatelliteView ? "SATELLITE" : "3D";
+      const cfg3d         = this.data.property?.beans3dConfig;
+      const satelliteView = this.config.defaultSatelliteView != null ? this.config.defaultSatelliteView : cfg3d?.defaultSatelliteView;
+      const initialMap    = satelliteView ? "SATELLITE" : "3D";
       const opts       = this._beans3dDisplayOptions(indices, initialMap, cfg3d);
       try {
         if (this._beansWidget.workingInstance) {
@@ -1346,14 +1359,22 @@
       minus.onclick = () => this.zoomOut();
       this._zoomOutBtn = minus;
 
+      const reset = document.createElement("div");
+      reset.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>`;
+      Object.assign(reset.style, { ...btnStyle, fontSize: "16px" });
+      reset.onclick = () => this.resetZoom();
+      this._resetZoomBtn = reset;
+
       // Hide zoom buttons immediately if already in 3D mode
       if (this._3dMode) {
         plus.style.display  = "none";
         minus.style.display = "none";
+        reset.style.display = "none";
       }
 
       wrapper.appendChild(plus);
       wrapper.appendChild(minus);
+      wrapper.appendChild(reset);
 
       if (this.config.enable3DMap) {
         const toggle = document.createElement("div");
@@ -1824,6 +1845,7 @@
       unselectUnit(unitId)         { return PynMapSDK.unselectUnit.call(PynMapSDK, unitId); },
       zoomIn()                     { return PynMapSDK.zoomIn.call(PynMapSDK); },
       zoomOut()                    { return PynMapSDK.zoomOut.call(PynMapSDK); },
+      resetZoom()                  { return PynMapSDK.resetZoom.call(PynMapSDK); },
       getCurrentSessionId()                           { return PynMapSDK.getCurrentSessionId.call(PynMapSDK); },
       getFavorites(communityId, sessionId)            { return PynMapSDK.getFavorites.call(PynMapSDK, communityId, sessionId); },
       saveFavorite(unitIds, communityId, sessionId)   { return PynMapSDK.saveFavorite.call(PynMapSDK, unitIds, communityId, sessionId); },
