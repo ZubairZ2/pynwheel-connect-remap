@@ -3,12 +3,18 @@ class SvgCacheWarmingWorker
 
   sidekiq_options queue: 'critical', retry: 0
 
-  # Refreshes every SVG map cache for a single community.
-  # Only runs for active_client communities that have enable_svg_mode enabled.
-  # Uses SvgCacheService.refresh (force-write) so each run atomically replaces
-  # the old cached SVG with a fresh copy — old memory freed, new memory written.
+  # Warms SVG caches for a single community.
+  #
+  # force_refresh = false (default, on-demand):
+  #   Called from authorized + fetch_data. Skips maps that are already warm
+  #   to avoid redundant S3 fetches. Fills only cold/missing entries.
+  #
+  # force_refresh = true (scheduler):
+  #   Called from SvgCacheWarmAllWorker. Always overwrites — ensures active
+  #   communities always have fresh SVGs regardless of TTL state.
+  #
   # retry: 0 — retrying an OOM job makes memory worse, not better.
-  def perform(community_id)
+  def perform(community_id, force_refresh = false)
     community = Community
       .active_client_properties
       .where(enable_svg_mode: true)
@@ -21,7 +27,12 @@ class SvgCacheWarmingWorker
       svg_url = svg_url_for(map, community)
       next unless svg_url
 
-      SvgCacheService.refresh(map[:id], map[:type], svg_url)
+      if force_refresh
+        SvgCacheService.refresh(map[:id], map[:type], svg_url)
+      else
+        next if SvgCacheService.warm?(map[:id], map[:type])
+        SvgCacheService.fetch_and_cache(map[:id], map[:type], svg_url)
+      end
     end
   rescue Redis::BaseError, Errno::ECONNREFUSED => e
     Rails.logger.warn "[SvgCacheWarmingWorker] Redis error for community #{community_id}: #{e.message} — skipping"

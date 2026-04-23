@@ -29,6 +29,20 @@ module Api
         # ------------------------------------------------------------------
         def authorized
           token = generate_session_token(@api_key, @community.id)
+
+          # Kick off SVG warming immediately — this is the earliest possible moment
+          # in the SDK lifecycle. By the time the client calls fetch_data then
+          # fetch_svg_image, the Sidekiq job may have already fetched and cached the
+          # SVG from S3, making the first-time load feel instant.
+          if @community.enable_svg_mode
+            begin
+              Rails.cache.write("sdk_active_#{@community.id}", 1, expires_in: 2.hours, raw: true)
+              SvgCacheWarmingWorker.perform_async(@community.id)
+            rescue Redis::BaseError, Errno::ECONNREFUSED
+              nil
+            end
+          end
+
           render json: {
             success: true,
             session_token: token,
@@ -72,9 +86,13 @@ module Api
 
           response.headers['X-Cache'] = cache_miss ? 'MISS' : 'HIT'
 
-          # Enqueue SVG pre-warming when any map cache is cold so that by the
-          # time the SDK fires fetch_svg_image requests, Redis already has them.
           begin
+            # Track that this community has active SDK traffic so the warm_all
+            # scheduler only warms communities with real visitors (not all 400+).
+            Rails.cache.write("sdk_active_#{@community.id}", 1, expires_in: 2.hours, raw: true)
+
+            # Enqueue SVG pre-warming when any map cache is cold so that by the
+            # time the SDK fires fetch_svg_image requests, Redis already has them.
             SvgCacheWarmingWorker.perform_async(@community.id) if svg_caches_cold?
           rescue Redis::BaseError, Errno::ECONNREFUSED
             # Redis unavailable — skip warming, request still succeeds
