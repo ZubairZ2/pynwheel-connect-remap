@@ -67,6 +67,10 @@ module Api
 
           response.headers['X-Cache'] = cache_miss ? 'MISS' : 'HIT'
 
+          # Enqueue SVG pre-warming when any map cache is cold so that by the
+          # time the SDK fires fetch_svg_image requests, Redis already has them.
+          SvgCacheWarmingWorker.perform_async(@community.id) if svg_caches_cold?
+
           render json: cached.merge(
             units:          units,
             favorite_units: units.select { |u| u[:isFavorite] }
@@ -178,17 +182,7 @@ module Api
             return
           end
 
-          cache_key  = "svg_v1_#{map_id}_#{map_type}"
-          compressed = Rails.cache.fetch(cache_key, expires_in: 1.hour) do
-            raw = fetch_svg_by_url(svg_url)
-            next nil unless raw
-
-            buf = StringIO.new.binmode
-            gz  = Zlib::GzipWriter.new(buf)
-            gz.write(raw)
-            gz.close
-            buf.string
-          end
+          compressed = SvgCacheService.fetch_and_cache(map_id, map_type, svg_url)
 
           unless compressed
             render plain: "Failed to fetch SVG.", status: :bad_request
@@ -743,6 +737,18 @@ module Api
         # Mirrors how webpages_controller reads params[:ops_map].
         def show_ops_map?
           params[:map_type] == "ops"
+        end
+
+        # Returns true if any of this community's SVG map caches are missing,
+        # meaning SvgCacheWarmingWorker should be enqueued to fill them.
+        def svg_caches_cold?
+          maps = if @community.is_sitemap?
+            sitemap = @community.sitemap
+            sitemap ? [{ id: sitemap.id, type: 'sitemap' }] : []
+          else
+            @community.floorplates.map { |fp| { id: fp.id, type: 'floorplate' } }
+          end
+          maps.any? { |m| !SvgCacheService.warm?(m[:id], m[:type]) }
         end
 
         def render_error(message, status)
