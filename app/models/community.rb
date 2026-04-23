@@ -2354,6 +2354,8 @@ class Community < ApplicationRecord
   def invalidate_sdk_cache
     Rails.cache.delete("pyn_sdk_v1_#{id}_marketing")
     Rails.cache.delete("pyn_sdk_v1_#{id}_ops")
+  rescue Redis::BaseError, Errno::ECONNREFUSED
+    nil
   end
 
   def turn_off_marketing_availability_filter

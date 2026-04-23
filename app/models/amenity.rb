@@ -226,6 +226,8 @@ class Amenity < ApplicationRecord
     return unless community_id
     Rails.cache.delete("pyn_sdk_v1_#{community_id}_marketing")
     Rails.cache.delete("pyn_sdk_v1_#{community_id}_ops")
+  rescue Redis::BaseError, Errno::ECONNREFUSED
+    nil
   end
 
   def sort_associated_unit_amenities

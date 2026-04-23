@@ -53,7 +53,12 @@ module Api
           cache_key   = "pyn_sdk_v1_#{@community.id}_#{map_type}"
 
           cache_miss = false
-          cached = Rails.cache.fetch(cache_key, expires_in: 15.minutes, compress: true) do
+          cached = begin
+            Rails.cache.fetch(cache_key, expires_in: 15.minutes, compress: true) do
+              cache_miss = true
+              build_sdk_payload(show_ops_map?)
+            end
+          rescue Redis::BaseError, Errno::ECONNREFUSED
             cache_miss = true
             build_sdk_payload(show_ops_map?)
           end
@@ -69,7 +74,11 @@ module Api
 
           # Enqueue SVG pre-warming when any map cache is cold so that by the
           # time the SDK fires fetch_svg_image requests, Redis already has them.
-          SvgCacheWarmingWorker.perform_async(@community.id) if svg_caches_cold?
+          begin
+            SvgCacheWarmingWorker.perform_async(@community.id) if svg_caches_cold?
+          rescue Redis::BaseError, Errno::ECONNREFUSED
+            # Redis unavailable — skip warming, request still succeeds
+          end
 
           render json: cached.merge(
             units:          units,
@@ -182,6 +191,8 @@ module Api
             return
           end
 
+          # SvgCacheService.fetch_and_cache never raises — on Redis error it fetches
+          # directly from S3 and returns compressed bytes without caching.
           compressed = SvgCacheService.fetch_and_cache(map_id, map_type, svg_url)
 
           unless compressed
@@ -193,7 +204,7 @@ module Api
           response.headers['Cache-Control']    = 'public, max-age=86400'
           response.headers['Vary']             = 'Accept-Encoding'
           send_data compressed, type: 'image/svg+xml', disposition: 'inline'
-        rescue => e
+        rescue StandardError => e
           render plain: "Failed to fetch SVG: #{e.message}", status: :bad_request
         end
 

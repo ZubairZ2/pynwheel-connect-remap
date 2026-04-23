@@ -69,6 +69,8 @@ class Sitemap < ApplicationRecord
     Rails.cache.delete("pyn_sdk_v1_#{community_id}_marketing")
     Rails.cache.delete("pyn_sdk_v1_#{community_id}_ops")
     SvgCacheService.invalidate(id, 'sitemap')
+  rescue Redis::BaseError, Errno::ECONNREFUSED
+    nil
   end
 
   def unit_info unit
