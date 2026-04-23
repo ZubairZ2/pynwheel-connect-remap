@@ -14,6 +14,7 @@ class Floorplan < ApplicationRecord
   # validates_uniqueness_of :name, scope: :community, on: [:create, :update]
   validates_uniqueness_of :provider_floorplan_id, scope: :community, if: -> { provider_floorplan_id.present? }
   after_commit :populate_image_urls, on: [:create, :update]
+  after_commit :invalidate_sdk_cache
   validates :market_rent, :numericality => { greater_than_or_equal_to: -1 }, if: -> { market_rent.present? }
   # before_create :set_image_name
   after_update :crop_image, if: ->(obj) { obj.image_changed? }
@@ -95,6 +96,14 @@ class Floorplan < ApplicationRecord
     else
       ""
     end
+  end
+
+  private
+
+  def invalidate_sdk_cache
+    return unless community_id
+    Rails.cache.delete("pyn_sdk_v1_#{community_id}_marketing")
+    Rails.cache.delete("pyn_sdk_v1_#{community_id}_ops")
   end
 
 end

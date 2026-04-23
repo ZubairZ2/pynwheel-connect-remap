@@ -106,6 +106,7 @@ class Community < ApplicationRecord
 
   after_save :create_default_credential
   after_update :set_default_provider, if: ->(obj) { obj.data_provider_changed? }
+  after_commit :invalidate_sdk_cache
 
   enum :alert_contact, [:email, :phone, :both]
 
@@ -2349,6 +2350,11 @@ class Community < ApplicationRecord
   end
 
   private
+
+  def invalidate_sdk_cache
+    Rails.cache.delete("pyn_sdk_v1_#{id}_marketing")
+    Rails.cache.delete("pyn_sdk_v1_#{id}_ops")
+  end
 
   def turn_off_marketing_availability_filter
     return unless map_filter.present?

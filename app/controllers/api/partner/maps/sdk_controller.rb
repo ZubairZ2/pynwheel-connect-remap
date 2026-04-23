@@ -41,25 +41,36 @@ module Api
         # Authorization: Bearer <session_token>
         # Property ID is taken from the session token — NOT from query params.
         # Response intentionally omits svgUrl; callers use mapId to fetch SVGs.
+        #
+        # The bulk of the payload (property config, units, floorplans, amenities,
+        # filters) is cached in Redis and rebuilt only when underlying data changes
+        # or after 15 minutes. Favorites are merged in-memory at serve time so
+        # the cached payload never contains session-specific data.
         # ------------------------------------------------------------------
         def fetch_data
-          fav_ids  = favorite_unit_ids
-          units_ar = @community.units.map_units(@community, show_ops_map?).includes(:floorplan).to_a
-          units_ar.each { |u| u.association(:community).target = @community }
-          all_units = units_json(fav_ids, show_ops_map?, units_ar)
+          fav_ids     = favorite_unit_ids
+          map_type    = show_ops_map? ? "ops" : "marketing"
+          cache_key   = "pyn_sdk_v1_#{@community.id}_#{map_type}"
 
-          render json: {
-            property:       property_json(show_ops_map?),
-            sitemap:        sitemap_json,
-            floorplates:    floorplates_json,
-            units:          all_units,
-            floorplans:     floorplans_json(units_ar),
-            amenities:      amenities_json,
-            filters:        filters_json(units_ar),
-            favorite_units: all_units.select { |u| u[:isFavorite] },
-            status: "success",
-            code: 200
-          }
+          cache_miss = false
+          cached = Rails.cache.fetch(cache_key, expires_in: 15.minutes, compress: true) do
+            cache_miss = true
+            build_sdk_payload(show_ops_map?)
+          end
+
+          # Merge session favorites in-memory — never stored in cache
+          units = if fav_ids.any?
+            cached[:units].map { |u| fav_ids.include?(u[:unitId].to_s) ? u.merge(isFavorite: true) : u }
+          else
+            cached[:units]
+          end
+
+          response.headers['X-Cache'] = cache_miss ? 'MISS' : 'HIT'
+
+          render json: cached.merge(
+            units:          units,
+            favorite_units: units.select { |u| u[:isFavorite] }
+          )
         end
 
         # ------------------------------------------------------------------
@@ -193,6 +204,30 @@ module Api
         end
 
         private
+
+        # ------------------------------------------------------------------
+        # Builds the full cacheable SDK payload for a community.
+        # isFavorite is intentionally omitted (always false) so the cached
+        # blob contains no session-specific data; favorites are merged at
+        # serve time in fetch_data.
+        # ------------------------------------------------------------------
+        def build_sdk_payload(ops_map = false)
+          units_ar = @community.units.map_units(@community, ops_map).includes(:floorplan).to_a
+          units_ar.each { |u| u.association(:community).target = @community }
+          all_units = units_json(Set.new, ops_map, units_ar)
+
+          {
+            property:    property_json(ops_map),
+            sitemap:     sitemap_json,
+            floorplates: floorplates_json,
+            units:       all_units,
+            floorplans:  floorplans_json(units_ar),
+            amenities:   amenities_json,
+            filters:     filters_json(units_ar),
+            status:      "success",
+            code:        200
+          }
+        end
 
         # ------------------------------------------------------------------
         # SESSION TOKEN — signed with Rails' MessageVerifier (HMAC-SHA256).

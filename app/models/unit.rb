@@ -218,6 +218,7 @@ class Unit < ApplicationRecord
   }
 
   after_commit :populate_image_urls, on: [:create,:update]
+  after_commit :invalidate_sdk_cache
   after_update :crop_unit_image, if: ->(obj) { obj.image_changed? }
   after_update :crop_unit_secondary_image, if: ->(obj) { obj.secondary_image_changed? }
   after_update :remove_doors_plotting, if: Proc.new { x_plot == 0 and y_plot == 0 }
@@ -607,6 +608,12 @@ class Unit < ApplicationRecord
   end
 
   private
+
+  def invalidate_sdk_cache
+    return unless community_id
+    Rails.cache.delete("pyn_sdk_v1_#{community_id}_marketing")
+    Rails.cache.delete("pyn_sdk_v1_#{community_id}_ops")
+  end
 
   # Single pass through the calculator config, memoized per request.
   # Returns { min: Float, max: Float }.

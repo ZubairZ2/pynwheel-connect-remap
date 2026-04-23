@@ -66,6 +66,7 @@ class Amenity < ApplicationRecord
   }
   validates :image, :presence => {message: "cannot be blank. Please upload Amenity image first."}, if: -> { image.present? }
   after_commit :populate_image_urls, on: [:create,:update]
+  after_commit :invalidate_sdk_cache
   after_update :crop_amenity_image, if: ->(obj) { obj.image_changed? }
   after_update :remove_doors_plotting, if: Proc.new { x_plot == 0 and y_plot == 0 }
   after_update :sort_associated_unit_amenities, if: Proc.new { amenityable_id.present? && amenityable_type == "Floorplan" }
@@ -220,6 +221,12 @@ class Amenity < ApplicationRecord
   end
 
   private
+
+  def invalidate_sdk_cache
+    return unless community_id
+    Rails.cache.delete("pyn_sdk_v1_#{community_id}_marketing")
+    Rails.cache.delete("pyn_sdk_v1_#{community_id}_ops")
+  end
 
   def sort_associated_unit_amenities
     if sort_changed?
