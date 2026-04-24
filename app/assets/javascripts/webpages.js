@@ -4613,6 +4613,11 @@ function updatePynTotalMonthlyDisplay(precomputedMin, precomputedMax) {
     return;
   }
 
+  if (typeof display_rent !== 'undefined' && display_rent === 'false') {
+    $row.hide();
+    return;
+  }
+
   // Resolve the footer price container — .filter-action has priority; fall back to
   // .disabaled-apply-now for communities with no apply-now credential.
   var $container = $('#unitModal .filter-action');
