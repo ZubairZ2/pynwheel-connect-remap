@@ -46,6 +46,25 @@ class SvgCacheService
     false
   end
 
+  # Returns the raw (uncompressed) SVG string, reading from cache when warm
+  # or fetching from source (S3 / local file in dev) and caching on a miss.
+  # Used to inline SVGs into the fetch_data response so the SDK skips all
+  # separate fetch_svg_image round trips.
+  def self.fetch_raw_text(map_id, map_type, svg_url: nil)
+    compressed = Rails.cache.read(cache_key(map_id, map_type))
+    if compressed.nil? && svg_url
+      compressed = fetch_and_cache(map_id, map_type, svg_url)
+    end
+    return nil unless compressed
+    decompress(compressed)
+  rescue StandardError
+    nil
+  end
+
+  def self.decompress(compressed)
+    Zlib::GzipReader.new(StringIO.new(compressed)).read
+  end
+
   private_class_method def self.fetch_raw(url)
     return nil unless url
     Rails.env.development? ? File.read(url) : URI.open(url).read

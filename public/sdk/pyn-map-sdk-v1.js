@@ -241,6 +241,7 @@
       this.data.units       = data.units       || [];
       this.data.amenities   = data.amenities   || [];
       this.data.filters     = data.filters     || null;
+      this._inlineSvgs      = data.svgs        || {};
 
       // Hydrate favorites from the server response.
       // Each unit already has isFavorite set by the server; build the local Set from it.
@@ -349,11 +350,19 @@
     },
 
     /**
-     * Fetch an SVG using the session token.
-     * The request URL contains only opaque IDs — no storage URLs.
+     * Returns an SVG element for mapId.
+     * Uses inline SVG data bundled in the fetch_data response when available,
+     * falling back to a separate fetch_svg_image request only when the cache
+     * was cold at fetch_data time (first-ever load before warming worker runs).
      */
     async _loadSVG(mapId, mapType) {
       try {
+        const inline = this._inlineSvgs[String(mapId)];
+        if (inline) {
+          const svgElement = this._parseSVG(inline);
+          if (svgElement) return svgElement;
+        }
+
         const requestUrl =
           `${this._apiBase()}/api/partner/maps/fetch_svg_image` +
           `?map_id=${encodeURIComponent(mapId)}&map_type=${encodeURIComponent(mapType)}`;

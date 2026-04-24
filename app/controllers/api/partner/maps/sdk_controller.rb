@@ -75,17 +75,24 @@ module Api
 
           response.headers['X-Cache'] = cache_miss ? 'MISS' : 'HIT'
 
-          if @community.enable_sdk_map_cache && @community.enable_svg_mode
+          inline_svgs = {}
+          if @community.enable_svg_mode
             begin
-              SvgCacheWarmingWorker.perform_async(@community.id) if svg_caches_cold?
-            rescue Redis::BaseError, Errno::ECONNREFUSED
+              svg_maps_for(@community).each do |m|
+                resource = m[:type] == 'sitemap' ? @community.sitemap : @community.floorplates.find { |fp| fp.id == m[:id] }
+                svg_url  = get_environment_based_svg_url(resource)
+                raw = SvgCacheService.fetch_raw_text(m[:id], m[:type], svg_url: svg_url)
+                inline_svgs[m[:id].to_s] = raw if raw
+              end
+            rescue Redis::BaseError, Errno::ECONNREFUSED, StandardError
               nil
             end
           end
 
           render json: cached.merge(
             units:          units,
-            favorite_units: units.select { |u| u[:isFavorite] }
+            favorite_units: units.select { |u| u[:isFavorite] },
+            svgs:           inline_svgs
           )
         end
 
@@ -289,15 +296,18 @@ module Api
           return render_error("Property not found.", 404) if @community.nil?
         end
 
-        # Returns true if any of this community's SVG map caches are missing.
-        def svg_caches_cold?
-          maps = if @community.is_sitemap?
-            sitemap = @community.sitemap
+        def svg_maps_for(community)
+          if community.is_sitemap?
+            sitemap = community.sitemap
             sitemap ? [{ id: sitemap.id, type: 'sitemap' }] : []
           else
-            @community.floorplates.map { |fp| { id: fp.id, type: 'floorplate' } }
+            community.floorplates.map { |fp| { id: fp.id, type: 'floorplate' } }
           end
-          maps.any? { |m| !SvgCacheService.warm?(m[:id], m[:type]) }
+        end
+
+        # Returns true if any of this community's SVG map caches are missing.
+        def svg_caches_cold?
+          svg_maps_for(@community).any? { |m| !SvgCacheService.warm?(m[:id], m[:type]) }
         end
 
         def show_ops_map?
