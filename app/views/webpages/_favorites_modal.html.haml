@@ -191,7 +191,7 @@
                 - elsif !@community.enable_pynwheel_pricing_calculator?
                   %span.move-in-date-text{:style => "display: flex; justify-content: center; vertical-align: middle;align-items: center;"}
                     = @community.pricing_message
-            - if @community.enable_pynwheel_pricing_calculator?
+            - if @community.enable_pynwheel_pricing_calculator? && @community.display_rent
               - pyn_min = unit.pyn_estimated_monthly
               - pyn_max = unit.pyn_estimated_monthly_max
               - if pyn_min && pyn_min > 0
@@ -256,18 +256,20 @@
 
     // Move each pre-rendered Pynwheel monthly total inline with its unit's action buttons,
     // mirroring the unit-modal approach so price + buttons are on one horizontal line.
-    $(".pyn-fav-total-monthly").each(function () {
-      var $span = $(this);
-      var $slideItem = $span.closest(".map-slide-item");
-      // Prefer .filter-action (apply_now branches); fall back to .disabaled-apply-now
-      var $container = $slideItem.find(".filter-action");
-      if (!$container.length) $container = $slideItem.find(".disabaled-apply-now");
-      if (!$container.length) { $span.show(); return; }
-      $container.prepend($span);
-      $container.find(".fix-text").hide();
-      $container.addClass("pyn-price-shown");
-      $span.css("display", "block");
-    });
+    if (typeof display_rent === 'undefined' || display_rent !== 'false') {
+      $(".pyn-fav-total-monthly").each(function () {
+        var $span = $(this);
+        var $slideItem = $span.closest(".map-slide-item");
+        // Prefer .filter-action (apply_now branches); fall back to .disabaled-apply-now
+        var $container = $slideItem.find(".filter-action");
+        if (!$container.length) $container = $slideItem.find(".disabaled-apply-now");
+        if (!$container.length) { $span.show(); return; }
+        $container.prepend($span);
+        $container.find(".fix-text").hide();
+        $container.addClass("pyn-price-shown");
+        $span.css("display", "block");
+      });
+    }
   });
 
   $(document).on("click", ".fav-prev-btn", function () {
