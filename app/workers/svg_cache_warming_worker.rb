@@ -4,20 +4,16 @@ class SvgCacheWarmingWorker
   sidekiq_options queue: 'critical', retry: 0
 
   # Warms SVG caches for a single community.
+  # Only runs when both enable_sdk_map_cache AND enable_svg_mode are true.
   #
-  # force_refresh = false (default, on-demand):
-  #   Called from authorized + fetch_data. Skips maps that are already warm
-  #   to avoid redundant S3 fetches. Fills only cold/missing entries.
-  #
-  # force_refresh = true (scheduler):
-  #   Called from SvgCacheWarmAllWorker. Always overwrites — ensures active
-  #   communities always have fresh SVGs regardless of TTL state.
+  # force_refresh = false (default): fills cold/missing entries only.
+  # force_refresh = true (scheduler): always overwrites, keeping SVGs fresh.
   #
   # retry: 0 — retrying an OOM job makes memory worse, not better.
   def perform(community_id, force_refresh = false)
     community = Community
       .active_client_properties
-      .where(enable_svg_mode: true)
+      .where(enable_sdk_map_cache: true, enable_svg_mode: true)
       .includes(:sitemap, :floorplates)
       .find_by(id: community_id)
 

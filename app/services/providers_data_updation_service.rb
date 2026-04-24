@@ -25,6 +25,7 @@ class ProvidersDataUpdationService
   def update_availability_of_units community_id, no_availbale_units_provider_ids
     return unless no_availbale_units_provider_ids.present?
     Unit.where(community_id: community_id, manual_override: false, provider_unit_id: no_availbale_units_provider_ids).update_all(availability: "Occupied", available: false, available_date: nil)
+    SdkCacheService.invalidate_fetch_data(community_id)
   end
   
   def update_or_create_floorplans_records(import_floorplans)
