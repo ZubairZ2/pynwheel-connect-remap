@@ -21,7 +21,11 @@ module Api
         private
 
         def load_map_partners
-          @registered_api_keys ||= MapPartner.pluck(:api_key).uniq
+          @registered_api_keys = Rails.cache.fetch("map_partner_api_keys", expires_in: 5.minutes) do
+            MapPartner.pluck(:api_key).uniq
+          end
+        rescue Redis::BaseError, Errno::ECONNREFUSED
+          @registered_api_keys = MapPartner.pluck(:api_key).uniq
         end
 
         def validate_api_key

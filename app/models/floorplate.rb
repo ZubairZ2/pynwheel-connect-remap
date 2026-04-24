@@ -148,12 +148,7 @@ class Floorplate < ApplicationRecord
   private
 
   def invalidate_sdk_cache
-    return unless community_id
-    Rails.cache.delete("pyn_sdk_v1_#{community_id}_marketing")
-    Rails.cache.delete("pyn_sdk_v1_#{community_id}_ops")
-    SvgCacheService.invalidate(id, 'floorplate')
-  rescue Redis::BaseError, Errno::ECONNREFUSED
-    nil
+    SdkCacheService.invalidate_map(community_id, id, 'floorplate')
   end
 
   def amenity_info amenity

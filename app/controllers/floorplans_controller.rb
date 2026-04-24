@@ -222,6 +222,7 @@ end
     update_attrs[:description_title] = params[:description_title].presence
 
     @community.floorplans.where(id: params[:floorplan_ids]).update_all(update_attrs)
+    SdkCacheService.invalidate_fetch_data(@community.id)
     flash[:notice] = "Description is updated for floorplans successfully."
     redirect_back(fallback_location: root_path)
   end

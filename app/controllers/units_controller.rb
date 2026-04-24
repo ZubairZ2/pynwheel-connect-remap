@@ -512,18 +512,21 @@ class UnitsController < ApplicationController
 
   def set_floor
     @community.units.where(id: params[:unit_ids]).update_all(floor: params[:floor], manually_updated: true, floor_is_updated: true)
+    SdkCacheService.invalidate_fetch_data(@community.id)
     flash[:notice] = "Floor is updated for units successfully."
     redirect_back(fallback_location: root_path)
   end
 
   def set_building
     @community.units.where(id: params[:unit_ids]).update_all(building: params[:building], manually_updated: true)
+    SdkCacheService.invalidate_fetch_data(@community.id)
     flash[:notice] = "Building is updated for units successfully."
     redirect_back(fallback_location: root_path)
   end
 
   def set_available_date
     @community.units.where(id: params[:unit_ids]).update_all(available_date: params[:available_date], manually_updated: true, available_date_is_updated: true)
+    SdkCacheService.invalidate_fetch_data(@community.id)
     flash[:notice] = "Available date is updated for units successfully."
     redirect_back(fallback_location: root_path)
   end
@@ -534,13 +537,14 @@ class UnitsController < ApplicationController
     else
       @community.units.where(id: params[:unit_ids]).update_all(availability: "Occupied", manually_updated: true, available: false, available_is_updated: true, availability_is_updated: true)
     end
-    
+    SdkCacheService.invalidate_fetch_data(@community.id)
     flash[:notice] = "Available is updated for units successfully."
     redirect_back(fallback_location: root_path)
   end
 
   def set_manual_override
     @community.units.where(id: params[:unit_ids]).update_all(manual_override: params[:manual_override])
+    SdkCacheService.invalidate_fetch_data(@community.id)
     flash[:notice] = "Manual Override is updated for units successfully."
     redirect_back(fallback_location: root_path)
   end
@@ -551,7 +555,7 @@ class UnitsController < ApplicationController
     else
       @community.units.where(id: params[:unit_ids]).update_all(sold: params[:sold], manually_updated: true, availability_is_updated: true, available_is_updated: true)
     end
-
+    SdkCacheService.invalidate_fetch_data(@community.id)
     flash[:notice] = "Sold is updated for units successfully."
     redirect_back(fallback_location: root_path)
   end
@@ -562,7 +566,7 @@ class UnitsController < ApplicationController
     formated_fee = add_padding_description fee
 
     @community.units.where(id: params[:unit_ids]).update_all(additional_fee: formated_fee, manually_updated: true)
-    
+    SdkCacheService.invalidate_fetch_data(@community.id)
     flash[:notice] = "Additional Fees is updated for units successfully."
     redirect_back(fallback_location: root_path)
   end
@@ -576,6 +580,7 @@ class UnitsController < ApplicationController
     update_attrs[:description_title] = params[:description_title].presence
 
     @community.units.where(id: params[:unit_ids]).update_all(update_attrs)
+    SdkCacheService.invalidate_fetch_data(@community.id)
     flash[:notice] = "Description is updated for units successfully."
     redirect_back(fallback_location: root_path)
   end

@@ -31,10 +31,11 @@ class SvgCacheService
     nil
   end
 
-  # Silently ignores Redis errors — model save must never crash due to cache.
-  def self.invalidate(map_id, map_type)
-    Rails.cache.delete(cache_key(map_id, map_type))
-  rescue Redis::BaseError, Errno::ECONNREFUSED
+  # Fetches and compresses SVG directly from S3 without touching the cache.
+  # Used when enable_sdk_map_cache is off for a community.
+  def self.fetch_direct(svg_url)
+    compress(fetch_raw(svg_url))
+  rescue StandardError
     nil
   end
 
