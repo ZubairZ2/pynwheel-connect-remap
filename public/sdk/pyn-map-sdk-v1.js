@@ -381,7 +381,26 @@
       return this._svgLoadingPromises[id];
     },
 
+    // Returns a sessionStorage key versioned by updatedAt so a new SVG upload
+    // produces a different key → cache miss → fresh fetch automatically.
+    _svgCacheKey(mapId) {
+      const id = String(mapId);
+      if (this.data.sitemap && String(this.data.sitemap.mapId) === id) {
+        return `pyn_svg_${id}_${this.data.sitemap.updatedAt || ''}`;
+      }
+      const fp = (this.data.floorplates || []).find(f => String(f.mapId) === id);
+      return `pyn_svg_${id}_${fp?.updatedAt || ''}`;
+    },
+
     async _loadSVG(mapId, mapType) {
+      const cacheKey = this._svgCacheKey(mapId);
+
+      // Return from sessionStorage when the versioned key matches (SVG unchanged).
+      try {
+        const cached = sessionStorage.getItem(cacheKey);
+        if (cached) return this._parseSVG(cached);
+      } catch {}
+
       try {
         const requestUrl =
           `${this._apiBase()}/api/partner/maps/fetch_svg_image` +
@@ -402,6 +421,16 @@
         if (!svgElement) {
           throw new Error("No <svg> element found in the response.");
         }
+
+        // Cache the SVG text. Remove any stale entry for this mapId first.
+        try {
+          const prefix = `pyn_svg_${mapId}_`;
+          for (let i = sessionStorage.length - 1; i >= 0; i--) {
+            const k = sessionStorage.key(i);
+            if (k && k !== cacheKey && k.startsWith(prefix)) sessionStorage.removeItem(k);
+          }
+          sessionStorage.setItem(cacheKey, svgText);
+        } catch {}
 
         return svgElement;
       } catch (error) {

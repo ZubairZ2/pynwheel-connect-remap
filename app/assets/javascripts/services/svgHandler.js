@@ -222,7 +222,7 @@ async function fetchSVG(
 
   try {
     const response = await fetch(imageUrl);
-    // const response = await fetch(`/images/f etch_svg_image?svg_url=${imageUrl}`);
+    // const response = await fetch(`/images/fetch_svg_image?svg_url=${imageUrl}`);
 
     if (!response.ok)
       throw new Error(`Failed to fetch SVG: ${response.statusText}`);

@@ -171,13 +171,13 @@ class SdkPayloadBuilderService
     return nil unless @community&.is_sitemap?
     sitemap = @community.sitemap
     return nil unless sitemap
-    { mapId: sitemap.id, mapType: 'sitemap' }
+    { mapId: sitemap.id, mapType: 'sitemap', updatedAt: sitemap.updated_at.to_i }
   end
 
   def floorplates_json
     return [] if @community.is_sitemap?
     @community.floorplates.map do |fp|
-      { mapId: fp.id, mapType: 'floorplate', range: fp.range }
+      { mapId: fp.id, mapType: 'floorplate', range: fp.range, updatedAt: fp.updated_at.to_i }
     end
   end
 

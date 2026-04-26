@@ -261,7 +261,26 @@
      * Fetch an SVG using the session token.
      * The request URL contains only opaque IDs — no storage URLs.
      */
+    // Returns a sessionStorage key versioned by updatedAt so a new SVG upload
+    // produces a different key → cache miss → fresh fetch automatically.
+    _svgCacheKey(mapId) {
+      const id = String(mapId);
+      if (this.data.sitemap && String(this.data.sitemap.mapId) === id) {
+        return `pyn_svg_${id}_${this.data.sitemap.updatedAt || ''}`;
+      }
+      const fp = (this.data.floorplates || []).find(f => String(f.mapId) === id);
+      return `pyn_svg_${id}_${fp?.updatedAt || ''}`;
+    },
+
     async _loadSVG(mapId, mapType) {
+      const cacheKey = this._svgCacheKey(mapId);
+
+      // Return from sessionStorage when the versioned key matches (SVG unchanged).
+      try {
+        const cached = sessionStorage.getItem(cacheKey);
+        if (cached) return this._parseSVG(cached);
+      } catch {}
+
       try {
         const requestUrl =
           `${this._apiBase()}/api/partner/maps/fetch_svg_image` +
@@ -282,6 +301,16 @@
         if (!svgElement) {
           throw new Error("No <svg> element found in the response.");
         }
+
+        // Cache the SVG text. Remove any stale entry for this mapId first.
+        try {
+          const prefix = `pyn_svg_${mapId}_`;
+          for (let i = sessionStorage.length - 1; i >= 0; i--) {
+            const k = sessionStorage.key(i);
+            if (k && k !== cacheKey && k.startsWith(prefix)) sessionStorage.removeItem(k);
+          }
+          sessionStorage.setItem(cacheKey, svgText);
+        } catch {}
 
         return svgElement;
       } catch (error) {
@@ -445,10 +474,7 @@
 
       // Restore original (status-based) color
       el.style.fill = styles.unitColors[status] || styles.unitColors.available;
-
-      const root = el.closest("g") || el;
       // Do NOT remove highlight, so hover + click still work
-      // If needed you can allow removing highlight here.
     },
 
     zoomIn() {
@@ -785,7 +811,7 @@
       this.container.appendChild(wrapper);
     },
 
-    _unitStatus(unit) {
+    _unitStatus(_unit) {
       // if (unit.model_unit) return "model";
       // if (unit.available === false && unit.sold) return "leased";
       // if (unit.unit_status === "occupied_on_notice") return "notice";
