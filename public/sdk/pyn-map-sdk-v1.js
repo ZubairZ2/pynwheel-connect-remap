@@ -256,15 +256,6 @@
      * The backend resolves the property from the token.
      */
     async _fetchConfig() {
-      const ssKey = `pyn_cfg_${this.config.propertyId}_${this.config.mapType}`;
-
-      // sessionStorage cache — cleared automatically when the tab closes.
-      // Avoids the fetch_data round-trip on in-session navigations (e.g. SPA tab switches).
-      try {
-        const raw = sessionStorage.getItem(ssKey);
-        if (raw) return { success: true, data: JSON.parse(raw) };
-      } catch {}
-
       try {
         const mapTypeParam = this.config.mapType === "ops" ? "?map_type=ops" : "";
         const url = `${this._apiBase()}/api/partner/maps/fetch_data${mapTypeParam}`;
@@ -282,7 +273,6 @@
         }
 
         const data = await res.json();
-        try { sessionStorage.setItem(ssKey, JSON.stringify(data)); } catch {}
         return { success: true, data };
       } catch {
         return { success: false, error: "Network error loading config" };
@@ -415,7 +405,8 @@
           `?map_id=${encodeURIComponent(mapId)}&map_type=${encodeURIComponent(mapType)}`;
 
         const response = await fetch(requestUrl, {
-          headers: { "Authorization": `Bearer ${this._sessionToken}` }
+          headers: { "Authorization": `Bearer ${this._sessionToken}` },
+          cache: 'no-store'
         });
 
         if (!response.ok) {

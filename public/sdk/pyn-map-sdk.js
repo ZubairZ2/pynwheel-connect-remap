@@ -249,7 +249,8 @@
           `?map_id=${encodeURIComponent(mapId)}&map_type=${encodeURIComponent(mapType)}`;
 
         const response = await fetch(requestUrl, {
-          headers: { "Authorization": `Bearer ${this._sessionToken}` }
+          headers: { "Authorization": `Bearer ${this._sessionToken}` },
+          cache: 'no-store'
         });
 
         if (!response.ok) {

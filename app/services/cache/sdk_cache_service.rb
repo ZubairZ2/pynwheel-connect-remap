@@ -35,12 +35,13 @@ class SdkCacheService
   def self.invalidate_fetch_data(community_id)
     return unless community_id
     return unless Community.where(id: community_id, enable_sdk_map_cache: true).exists?
+    delete_fetch_data_keys(community_id)
     FetchDataRefreshWorker.perform_async(community_id)
   rescue Redis::BaseError, Errno::ECONNREFUSED
     nil
   end
 
-  # Refreshes fetch_data and SVG caches with new data (no deletes).
+  # Refreshes fetch_data and SVG caches with new data.
   # No-op if enable_sdk_map_cache is off.
   # One DB query reads both enable_sdk_map_cache and enable_svg_mode together.
   # Called on floorplate and sitemap changes.
@@ -51,9 +52,18 @@ class SdkCacheService
       .pick(:enable_svg_mode)
     return if svg_mode.nil?  # caching off or community not found
 
-    FetchDataRefreshWorker.perform_async(community_id)
+    delete_fetch_data_keys(community_id)
+    SvgCacheService.delete(map_id, map_type)  # always delete — fetch_svg_image caches whenever enable_sdk_map_cache is on
     SvgCacheWarmingWorker.perform_async(community_id, true) if svg_mode
+    FetchDataRefreshWorker.perform_async(community_id)
   rescue StandardError
+    nil
+  end
+
+  def self.delete_fetch_data_keys(community_id)
+    Rails.cache.delete(fetch_data_key(community_id, 'marketing'))
+    Rails.cache.delete(fetch_data_key(community_id, 'ops'))
+  rescue Redis::BaseError, Errno::ECONNREFUSED
     nil
   end
 end

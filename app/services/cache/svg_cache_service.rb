@@ -39,6 +39,14 @@ class SvgCacheService
     nil
   end
 
+  # Immediately removes a cached SVG entry. Called when a Floorplate/Sitemap
+  # is updated so the next fetch_svg_image request rebuilds from S3.
+  def self.delete(map_id, map_type)
+    Rails.cache.delete(cache_key(map_id, map_type))
+  rescue Redis::BaseError, Errno::ECONNREFUSED
+    nil
+  end
+
   # Returns false (treat as cold) if Redis is unavailable.
   def self.warm?(map_id, map_type)
     Rails.cache.exist?(cache_key(map_id, map_type))

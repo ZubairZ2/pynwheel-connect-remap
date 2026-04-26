@@ -81,7 +81,7 @@ module Api
           )
 
           response.headers['X-Cache']          = cache_miss ? 'MISS' : 'HIT'
-          response.headers['Cache-Control']    = 'private, max-age=300, stale-while-revalidate=60'
+          response.headers['Cache-Control']    = 'private, no-store'
           response.headers['Content-Encoding'] = 'gzip'
           response.headers['Vary']             = 'Accept-Encoding'
 
@@ -205,7 +205,7 @@ module Api
           end
 
           response.headers['Content-Encoding'] = 'gzip'
-          response.headers['Cache-Control']    = 'public, max-age=86400'
+          response.headers['Cache-Control']    = 'private, no-store'
           response.headers['Vary']             = 'Accept-Encoding'
           send_data compressed, type: 'image/svg+xml', disposition: 'inline'
         rescue StandardError => e
