@@ -408,7 +408,7 @@
 
         const response = await fetch(requestUrl, {
           headers: { "Authorization": `Bearer ${this._sessionToken}` },
-          cache: 'no-store'
+          cache: 'default'
         });
 
         if (!response.ok) {

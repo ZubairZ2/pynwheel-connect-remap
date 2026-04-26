@@ -194,6 +194,12 @@ module Api
             return
           end
 
+          etag = svg_etag(map_id, map_type)
+          if etag && request.headers['If-None-Match'] == etag
+            head :not_modified
+            return
+          end
+
           compressed = if @community.enable_sdk_map_cache
             SvgCacheService.fetch_and_cache(map_id, map_type, svg_url)
           else
@@ -206,7 +212,8 @@ module Api
           end
 
           response.headers['Content-Encoding'] = 'gzip'
-          response.headers['Cache-Control']    = 'private, no-store'
+          response.headers['Cache-Control']    = 'private, max-age=3600'
+          response.headers['ETag']             = etag if etag
           response.headers['Vary']             = 'Accept-Encoding'
           send_data compressed, type: 'image/svg+xml', disposition: 'inline'
         rescue StandardError => e
@@ -295,6 +302,19 @@ module Api
             .includes(:sitemap, :floorplates)
             .find_by(id: @session_property_id)
           return render_error("Property not found.", 404) if @community.nil?
+        end
+
+        def svg_etag(map_id, map_type)
+          record = case map_type
+            when 'sitemap'    then @community.sitemap
+            when 'floorplate' then @community.floorplates.detect { |fp| fp.id == map_id.to_i }
+            else
+              @community.sitemap&.id == map_id.to_i ?
+                @community.sitemap :
+                @community.floorplates.detect { |fp| fp.id == map_id.to_i }
+            end
+          return nil unless record&.updated_at
+          "\"#{map_id}-#{record.updated_at.to_i}\""
         end
 
         def load_community_for_favorites
