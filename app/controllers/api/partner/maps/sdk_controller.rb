@@ -1,3 +1,5 @@
+require 'zlib'
+
 module Api
   module Partner
     module Maps
@@ -73,27 +75,17 @@ module Api
             cached[:units]
           end
 
-          response.headers['X-Cache'] = cache_miss ? 'MISS' : 'HIT'
-
-          inline_svgs = {}
-          if @community.enable_svg_mode
-            begin
-              svg_maps_for(@community).each do |m|
-                resource = m[:type] == 'sitemap' ? @community.sitemap : @community.floorplates.find { |fp| fp.id == m[:id] }
-                svg_url  = get_environment_based_svg_url(resource)
-                raw = SvgCacheService.fetch_raw_text(m[:id], m[:type], svg_url: svg_url)
-                inline_svgs[m[:id].to_s] = raw if raw
-              end
-            rescue Redis::BaseError, Errno::ECONNREFUSED, StandardError
-              nil
-            end
-          end
-
-          render json: cached.merge(
+          payload = cached.merge(
             units:          units,
-            favorite_units: units.select { |u| u[:isFavorite] },
-            svgs:           inline_svgs
+            favorite_units: units.select { |u| u[:isFavorite] }
           )
+
+          response.headers['X-Cache']          = cache_miss ? 'MISS' : 'HIT'
+          response.headers['Cache-Control']    = 'private, max-age=300, stale-while-revalidate=60'
+          response.headers['Content-Encoding'] = 'gzip'
+          response.headers['Vary']             = 'Accept-Encoding'
+
+          send_data gzip_json(payload), type: 'application/json; charset=utf-8', disposition: 'inline'
         end
 
         # ------------------------------------------------------------------
@@ -226,6 +218,14 @@ module Api
           SdkPayloadBuilderService.new(@community).build(ops_map: ops_map)
         end
 
+        def gzip_json(payload)
+          buf = StringIO.new.binmode
+          gz  = Zlib::GzipWriter.new(buf)
+          gz.write(payload.to_json)
+          gz.close
+          buf.string
+        end
+
         # ------------------------------------------------------------------
         # SESSION TOKEN — signed with Rails' MessageVerifier (HMAC-SHA256).
         # Token is scoped to one partner + one property and expires in 1 hour.
@@ -294,20 +294,6 @@ module Api
             .includes(:sitemap, :floorplates)
             .find_by(id: @session_property_id)
           return render_error("Property not found.", 404) if @community.nil?
-        end
-
-        def svg_maps_for(community)
-          if community.is_sitemap?
-            sitemap = community.sitemap
-            sitemap ? [{ id: sitemap.id, type: 'sitemap' }] : []
-          else
-            community.floorplates.map { |fp| { id: fp.id, type: 'floorplate' } }
-          end
-        end
-
-        # Returns true if any of this community's SVG map caches are missing.
-        def svg_caches_cold?
-          svg_maps_for(@community).any? { |m| !SvgCacheService.warm?(m[:id], m[:type]) }
         end
 
         def show_ops_map?

@@ -108,51 +108,71 @@
         return;
       }
 
-      this._showLoading("Verifying partner...");
-
       if (!cfg.apiKey)      return this._showError("API Key is required.");
       if (!cfg.propertyId)  return this._showError("propertyId is required.");
 
-      // Pull the API key into a local variable only — it will NOT be
-      // stored anywhere on the SDK object after _verifyPartner returns.
+      // API key is local-only — never stored on the SDK object.
       const apiKey     = cfg.apiKey;
       const propertyId = cfg.propertyId;
 
-      // VERIFY (one-time X-API-Key) → get session token → FETCH CONFIG → LOAD SVGs → BOOT
-      this._verifyPartner(apiKey, propertyId)
+      // Start loading pan-zoom immediately — parallel with auth + data fetch.
+      const panZoomReady = this._loadPanZoom();
+
+      // Reuse a cached session token when available to skip the partner auth round-trip.
+      const cachedTok = this._readCachedToken(propertyId);
+      if (cachedTok) {
+        this._sessionToken = cachedTok;
+        this._showLoading("Loading property map...");
+      } else {
+        this._showLoading("Verifying partner...");
+      }
+
+      const doAuth = cachedTok
+        ? Promise.resolve({ success: true })
+        : this._verifyPartner(apiKey, propertyId).then(v => {
+            if (v.success) {
+              this._sessionToken = v.sessionToken;
+              this._writeCachedToken(propertyId, v.sessionToken);
+            }
+            return v;
+          });
+
+      doAuth
         .then(v => {
-          if (!v.success) return this._showError(v.error);
-
-          // Store the short-lived token; the raw API key is now out of scope.
-          this._sessionToken = v.sessionToken;
-
-          this._showLoading("Loading property map...");
+          if (!v?.success) return this._showError(v?.error || "Partner verification failed.");
           return this._fetchConfig();
+        })
+        .then(r => {
+          // Expired cached token — clear, re-authenticate once, then retry.
+          if (!r?.success && r?.error === "Session invalid or expired" && cachedTok) {
+            this._clearCachedToken(propertyId);
+            return this._verifyPartner(apiKey, propertyId).then(v => {
+              if (!v.success) return v;
+              this._sessionToken = v.sessionToken;
+              this._writeCachedToken(propertyId, v.sessionToken);
+              return this._fetchConfig();
+            });
+          }
+          return r;
         })
         .then(r => {
           if (!r?.success) return this._showError(r?.error || "Config load error");
           this._storeConfig(r.data);
           this._showLoading("Loading SVG maps...");
-          return this._loadActiveSVG();
+          // Active SVG load and pan-zoom library load run simultaneously.
+          return Promise.all([this._loadActiveSVG(), panZoomReady]);
         })
-        .then(() => {
+        .then(result => {
+          if (!result) return;
           if (!this._hasAnyMap()) return this._showError("No maps found.");
 
           if (!this._mapExists(this.activeMapId)) {
             this.activeMapId = this._getDefaultMapId();
           }
 
-          return this._loadPanZoom()
-            .then(() => {
-              const boot = this._bootAfterSVGLoad();
-              this._loadRemainingSVGs();
-              return boot;
-            })
-            .catch(() => {
-              const boot = this._bootAfterSVGLoad();
-              this._loadRemainingSVGs();
-              return boot;
-            });
+          const boot = this._bootAfterSVGLoad();
+          this._loadRemainingSVGs();
+          return boot;
         })
         .catch(() => this._showError("Unexpected SDK error."));
     },
@@ -202,11 +222,49 @@
       }
     },
 
+    // localStorage token cache — avoids the partner auth round-trip on warm loads.
+    // Token is stored for 50 min; the server-side token expires at 60 min.
+    _readCachedToken(propertyId) {
+      try {
+        const key = `pyn_tok_${propertyId}`;
+        const tok = localStorage.getItem(key);
+        const exp = parseInt(localStorage.getItem(`${key}_exp`) || '0');
+        if (tok && Date.now() < exp) return tok;
+        if (tok) { localStorage.removeItem(key); localStorage.removeItem(`${key}_exp`); }
+      } catch {}
+      return null;
+    },
+
+    _writeCachedToken(propertyId, token) {
+      try {
+        const key = `pyn_tok_${propertyId}`;
+        localStorage.setItem(key, token);
+        localStorage.setItem(`${key}_exp`, String(Date.now() + 50 * 60 * 1000));
+      } catch {}
+    },
+
+    _clearCachedToken(propertyId) {
+      try {
+        const key = `pyn_tok_${propertyId}`;
+        localStorage.removeItem(key);
+        localStorage.removeItem(`${key}_exp`);
+      } catch {}
+    },
+
     /**
      * Fetch map config using the session token (no API key, no propertyId in URL).
      * The backend resolves the property from the token.
      */
     async _fetchConfig() {
+      const ssKey = `pyn_cfg_${this.config.propertyId}_${this.config.mapType}`;
+
+      // sessionStorage cache — cleared automatically when the tab closes.
+      // Avoids the fetch_data round-trip on in-session navigations (e.g. SPA tab switches).
+      try {
+        const raw = sessionStorage.getItem(ssKey);
+        if (raw) return { success: true, data: JSON.parse(raw) };
+      } catch {}
+
       try {
         const mapTypeParam = this.config.mapType === "ops" ? "?map_type=ops" : "";
         const url = `${this._apiBase()}/api/partner/maps/fetch_data${mapTypeParam}`;
@@ -223,7 +281,9 @@
           return { success: false, error: `Server error (${res.status})` };
         }
 
-        return { success: true, data: await res.json() };
+        const data = await res.json();
+        try { sessionStorage.setItem(ssKey, JSON.stringify(data)); } catch {}
+        return { success: true, data };
       } catch {
         return { success: false, error: "Network error loading config" };
       }
@@ -241,7 +301,6 @@
       this.data.units       = data.units       || [];
       this.data.amenities   = data.amenities   || [];
       this.data.filters     = data.filters     || null;
-      this._inlineSvgs      = data.svgs        || {};
 
       // Hydrate favorites from the server response.
       // Each unit already has isFavorite set by the server; build the local Set from it.
@@ -349,20 +408,8 @@
       return this._svgLoadingPromises[id];
     },
 
-    /**
-     * Returns an SVG element for mapId.
-     * Uses inline SVG data bundled in the fetch_data response when available,
-     * falling back to a separate fetch_svg_image request only when the cache
-     * was cold at fetch_data time (first-ever load before warming worker runs).
-     */
     async _loadSVG(mapId, mapType) {
       try {
-        const inline = this._inlineSvgs[String(mapId)];
-        if (inline) {
-          const svgElement = this._parseSVG(inline);
-          if (svgElement) return svgElement;
-        }
-
         const requestUrl =
           `${this._apiBase()}/api/partner/maps/fetch_svg_image` +
           `?map_id=${encodeURIComponent(mapId)}&map_type=${encodeURIComponent(mapType)}`;
