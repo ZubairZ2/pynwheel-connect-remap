@@ -2364,8 +2364,10 @@ class Community < ApplicationRecord
   end
 
   def warm_sdk_cache_on_enable
-    return unless saved_change_to_enable_sdk_map_cache?(from: false, to: true)
-    return unless enable_svg_mode
+    cache_just_enabled = saved_change_to_enable_sdk_map_cache?(from: false, to: true)
+    svg_just_enabled   = saved_change_to_enable_svg_mode?(from: false, to: true)
+    return unless cache_just_enabled || svg_just_enabled
+    return unless enable_sdk_map_cache && enable_svg_mode
     SvgCacheWarmingWorker.perform_async(id)
   rescue Redis::BaseError, Errno::ECONNREFUSED
     nil
