@@ -171,7 +171,6 @@
           }
 
           const boot = this._bootAfterSVGLoad();
-          this._loadRemainingSVGs();
           return boot;
         })
         .catch(() => this._showError("Unexpected SDK error."));
@@ -364,22 +363,6 @@
       }
     },
 
-    // Loads all remaining maps in the background (fire-and-forget).
-    _loadRemainingSVGs() {
-      const entries = [];
-
-      if (this.data.sitemap) {
-        const id = String(this.data.sitemap.mapId);
-        if (!this.svgCache[id]) entries.push({ mapId: id, mapType: this.data.sitemap.mapType || "sitemap" });
-      }
-
-      this.data.floorplates.forEach(fp => {
-        const id = String(fp.mapId);
-        if (!this.svgCache[id]) entries.push({ mapId: id, mapType: fp.mapType || "floorplate" });
-      });
-
-      entries.forEach(m => this._loadSVGIfNeeded(m.mapId, m.mapType));
-    },
 
     // Deduplicates concurrent fetches for the same map: if a load is already
     // in flight, callers await the same Promise instead of issuing a second request.
@@ -1296,6 +1279,12 @@
         const pid  = root.dataset.pynUnitPid;
         const unit = byPointer[pid];
         if (!unit) return;
+
+        // Clear hover debounce only when truly leaving the unit group,
+        // not when moving between child elements within it.
+        if (!root.contains(e.relatedTarget) && this._lastHoverPid === pid) {
+          this._lastHoverPid = null;
+        }
 
         const sel = this._pointerSelector(unit.pointerData);
         const el  = root.querySelector(sel) || root;
