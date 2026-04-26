@@ -25,7 +25,8 @@ module Api
         # get_favorites only needs sitemap + floorplates for map_for_unit — skip the
         # 6 other heavy includes (floorplans, map_filter, font_setting, credential,
         # calculator_config, three_d_maps_configuration) that it never uses.
-        before_action :load_community_from_session, only: SESSION_ACTIONS - [:get_favorites]
+        before_action :load_community_from_session, only: SESSION_ACTIONS - [:get_favorites, :fetch_svg_image]
+        before_action :load_community_for_svg,      only: [:fetch_svg_image]
         before_action :load_community_for_favorites, only: [:get_favorites]
 
         # ------------------------------------------------------------------
@@ -285,6 +286,13 @@ module Api
             .includes(:sitemap, :floorplates, :floorplans, :map_filter,
                       :font_setting, :credential, :calculator_config,
                       :three_d_maps_configuration)
+            .find_by(id: @session_property_id)
+          return render_error("Property not found.", 404) if @community.nil?
+        end
+
+        def load_community_for_svg
+          @community = Community
+            .includes(:sitemap, :floorplates)
             .find_by(id: @session_property_id)
           return render_error("Property not found.", 404) if @community.nil?
         end
