@@ -681,6 +681,7 @@ Rails.application.routes.draw do
         delete :delete_favorites,         to: 'sdk#delete_favorites'
         delete :clear_all_favorites,      to: 'sdk#clear_all_favorites'
         get    :get_favorites,            to: 'sdk#get_favorites'
+        post   :share_favorites_email,    to: 'sdk#share_favorites_email'
       end
     end
 

@@ -894,6 +894,15 @@ class Community < ApplicationRecord
     end
   end
 
+  def logo_for_sdk_email
+    if self&.logo.present? && self&.logo&.url.present?
+      self&.logo&.url
+    else
+      base_url = Rails.env.development? ? "http://localhost:3000" : (ENV["RAILS_ENV"] == "staging" ? "https://pynwheel-staging.herokuapp.com" : "https://pynwheelapp.com")
+      "#{base_url}/assets/#{Rails.application.assets.find_asset('pynwheel-default-logo.png').try(:digest_path)}"
+    end
+  end
+
   def set_community_time_zone
     if self.latitude.present? && self.longitude.present?
       time_zone = Timezone.lookup(self.latitude, self.longitude)&.name rescue "UTC"

@@ -1917,6 +1917,40 @@
       }
     },
 
+    /**
+     * Sends a branded favorites email to the given address.
+     * The backend fills in property name, logo, address, tour / apply links
+     * from the session token — only the recipient email and favorites URL are
+     * required from the caller.
+     *
+     * @param {string} userEmail    - Recipient email address
+     * @param {string} favoritesUrl - Shareable URL pointing to the favorites list
+     * @returns {Promise<{success: boolean, message: string}>}
+     */
+    async shareFavoritesEmail(userEmail, favoritesUrl) {
+      const body = new URLSearchParams();
+      body.append("email", userEmail);
+      body.append("favorites_url", favoritesUrl);
+
+      try {
+        const res = await fetch(`${this._apiBase()}/api/partner/maps/share_favorites_email`, {
+          method: "POST",
+          headers: {
+            "Authorization":    `Bearer ${this._sessionToken}`,
+            "X-SDK-Session-Id": this._sdkSessionId,
+            "Content-Type":     "application/x-www-form-urlencoded"
+          },
+          body
+        });
+
+        const data = await res.json();
+        if (!res.ok) return { success: false, message: data.message || "Failed to send email." };
+        return { success: true, message: data.message || "Email sent successfully." };
+      } catch {
+        return { success: false, message: "Network error. Please try again." };
+      }
+    },
+
     _apiBase() {
       if (this.config.environment === "staging") {
         return "https://pynwheel-staging.herokuapp.com";
@@ -1953,6 +1987,7 @@
       saveFavorite(unitIds, communityId, sessionId)   { return PynMapSDK.saveFavorite.call(PynMapSDK, unitIds, communityId, sessionId); },
       deleteFavorite(unitIds, communityId, sessionId) { return PynMapSDK.deleteFavorite.call(PynMapSDK, unitIds, communityId, sessionId); },
       clearAllFavorites(communityId, sessionId)       { return PynMapSDK.clearAllFavorites.call(PynMapSDK, communityId, sessionId); },
+      shareFavoritesEmail(userEmail, favoritesUrl)    { return PynMapSDK.shareFavoritesEmail.call(PynMapSDK, userEmail, favoritesUrl); },
       switchTo3DMap()              { return PynMapSDK.switchTo3DMap.call(PynMapSDK); },
       switchTo2DMap()              { return PynMapSDK.switchTo2DMap.call(PynMapSDK); }
     };

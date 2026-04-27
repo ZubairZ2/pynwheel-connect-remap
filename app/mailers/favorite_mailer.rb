@@ -19,6 +19,26 @@ class FavoriteMailer < ApplicationMailer
       mail(to: email_bcc, from: email_from, subject: "Your Ebrochure Text Version")
   end
 
+  def share_favorites(email_to, community, favorites_url)
+    @community     = community
+    @favorites_url = favorites_url
+
+    @tour_url = community.community_tour.present? ? community.schedule_tour_url : nil
+
+    @apply_url = if community.credential&.apply_now.to_s == "separate_link"
+                   community.credential.separate_link.presence
+                 elsif community.credential&.apply_now.to_s == "true"
+                   community.website.presence
+                 end
+
+    mail(
+      to:      email_to,
+      from:    "info@pynwheel.com",
+      subject: "Your Saved Favorites at #{community.name}",
+      layout:  false
+    )
+  end
+
   def email_shared_tour(email_to,stops,community)
     email_from = 'info@pynwheel.com'
     # @favorites = stops
