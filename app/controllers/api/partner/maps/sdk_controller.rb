@@ -15,7 +15,7 @@ module Api
         SESSION_ACTIONS = [
           :fetch_data, :fetch_svg_image,
           :save_favorites, :delete_favorites, :clear_all_favorites,
-          :get_favorites
+          :get_favorites, :share_favorites_email
         ].freeze
 
         skip_before_action :load_map_partners,  only: SESSION_ACTIONS
@@ -25,9 +25,10 @@ module Api
         # get_favorites only needs sitemap + floorplates for map_for_unit — skip the
         # 6 other heavy includes (floorplans, map_filter, font_setting, credential,
         # calculator_config, three_d_maps_configuration) that it never uses.
-        before_action :load_community_from_session, only: SESSION_ACTIONS - [:get_favorites, :fetch_svg_image]
+        before_action :load_community_from_session, only: SESSION_ACTIONS - [:get_favorites, :fetch_svg_image, :share_favorites_email]
         before_action :load_community_for_svg,      only: [:fetch_svg_image]
         before_action :load_community_for_favorites, only: [:get_favorites]
+        before_action :load_community_for_email,     only: [:share_favorites_email]
 
         # ------------------------------------------------------------------
         # GET /api/partner/maps/authorized?propertyId=:id
@@ -178,6 +179,28 @@ module Api
         end
 
         # ------------------------------------------------------------------
+        # POST /api/partner/maps/share_favorites_email
+        # Body: email, favorites_url
+        # Authorization: Bearer <session_token>  +  X-SDK-Session-Id header
+        # Sends a branded favorites email to the supplied address using the
+        # community's logo, name, address, and tour / apply configuration.
+        # ------------------------------------------------------------------
+        def share_favorites_email
+          email        = params[:email].to_s.strip
+          favorites_url = params[:favorites_url].to_s.strip
+
+          return render_error("Email is required.", 400)         if email.blank?
+          return render_error("Invalid email address.", 400)     unless email.match?(URI::MailTo::EMAIL_REGEXP)
+          return render_error("Favorites URL is required.", 400) if favorites_url.blank?
+
+          FavoriteMailer.share_favorites(email, @community, favorites_url).deliver_now
+
+          render json: { success: true, message: "Email sent successfully.", status: "success", code: 200 }
+        rescue StandardError => e
+          render_error("Failed to send email.", 500)
+        end
+
+        # ------------------------------------------------------------------
         # GET /api/partner/maps/fetch_svg_image?map_id=:id&map_type=sitemap|floorplate
         # Authorization: Bearer <session_token>
         # Resolves the real storage URL server-side — it never reaches the client.
@@ -323,6 +346,13 @@ module Api
         def load_community_for_favorites
           @community = Community
             .includes(:sitemap, :floorplates)
+            .find_by(id: @session_property_id)
+          return render_error("Property not found.", 404) if @community.nil?
+        end
+
+        def load_community_for_email
+          @community = Community
+            .includes(:credential)
             .find_by(id: @session_property_id)
           return render_error("Property not found.", 404) if @community.nil?
         end
