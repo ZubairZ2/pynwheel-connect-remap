@@ -152,12 +152,17 @@ class SdkPayloadBuilderService
     return {} unless @community.map_filter
 
     filter_list = @community.map_filter.get_filter_list(false)
+    tab_list    = @community.map_filter.get_tab_visibility_list(false)
     {
       showBedroomFilter:      filter_list[:show_bedroom_filter],
       showPricingFilter:      filter_list[:show_pricing_filter],
       showSquareFeetFilter:   filter_list[:show_square_feet_filter],
       showAvailabilityFilter: filter_list[:show_availability_filter],
-      showPropertiesFilter:   filter_list[:show_properties_filter]
+      showPropertiesFilter:   filter_list[:show_properties_filter],
+      showUnitsTab:           tab_list[:show_units_tab],
+      showFloorPlansTab:      tab_list[:show_floorplans_tab],
+      showAmenitiesTab:       tab_list[:show_amenities_tab],
+      showFavsTab:            tab_list[:show_favorites_tab]
     }
   end
 

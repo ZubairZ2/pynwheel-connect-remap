@@ -3,11 +3,15 @@ class MapFilter < ApplicationRecord
 
   def get_filters_list
     [
-      { name: "Properties", marketing: :marketing_properties_enabled, ops: :ops_properties_enabled },
-      { name: "Bedrooms", marketing: :marketing_bedrooms_enabled, ops: :ops_bedrooms_enabled },
-      { name: "Pricing", marketing: :marketing_pricing_enabled, ops: :ops_pricing_enabled },
+      { name: "Properties",  marketing: :marketing_properties_enabled,  ops: :ops_properties_enabled },
+      { name: "Bedrooms",    marketing: :marketing_bedrooms_enabled,    ops: :ops_bedrooms_enabled },
+      { name: "Pricing",     marketing: :marketing_pricing_enabled,     ops: :ops_pricing_enabled },
       { name: "Square Feet", marketing: :marketing_square_feet_enabled, ops: :ops_square_feet_enabled },
-      { name: "Availability", marketing: :marketing_availability_enabled, ops: :ops_availability_enabled }
+      { name: "Availability",marketing: :marketing_availability_enabled,ops: :ops_availability_enabled },
+      { name: "Units",       marketing: :marketing_units_tab_enabled,      ops: :ops_units_tab_enabled },
+      { name: "Floor Plans", marketing: :marketing_floorplans_tab_enabled, ops: :ops_floorplans_tab_enabled },
+      { name: "Amenities",   marketing: :marketing_amenities_tab_enabled,  ops: :ops_amenities_tab_enabled },
+      { name: "Favs",        marketing: :marketing_favorites_tab_enabled,  ops: :ops_favorites_tab_enabled }
     ]
   end
 
@@ -77,5 +81,16 @@ class MapFilter < ApplicationRecord
 
   def all_filters_disabled?(ops_map = false)
     get_filter_list(ops_map).values.all?(false)
+  end
+
+  # --------- Tab Visibility --------- #
+
+  def get_tab_visibility_list(ops_map = false)
+    {
+      show_units_tab:      ops_map ? ops_units_tab_enabled      : marketing_units_tab_enabled,
+      show_floorplans_tab: ops_map ? ops_floorplans_tab_enabled : marketing_floorplans_tab_enabled,
+      show_amenities_tab:  ops_map ? ops_amenities_tab_enabled  : marketing_amenities_tab_enabled,
+      show_favorites_tab:  ops_map ? ops_favorites_tab_enabled  : marketing_favorites_tab_enabled
+    }
   end
 end

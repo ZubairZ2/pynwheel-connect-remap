@@ -43,7 +43,15 @@ private
       :ops_bedrooms_enabled,
       :ops_pricing_enabled,
       :ops_square_feet_enabled,
-      :ops_availability_enabled
+      :ops_availability_enabled,
+      :marketing_units_tab_enabled,
+      :marketing_floorplans_tab_enabled,
+      :marketing_amenities_tab_enabled,
+      :marketing_favorites_tab_enabled,
+      :ops_units_tab_enabled,
+      :ops_floorplans_tab_enabled,
+      :ops_amenities_tab_enabled,
+      :ops_favorites_tab_enabled
     )
   end
 end
