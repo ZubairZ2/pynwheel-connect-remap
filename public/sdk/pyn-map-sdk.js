@@ -414,6 +414,9 @@
         }
       });
 
+      // touch-action: none lets svg-pan-zoom own all touch gestures (pinch zoom, pan)
+      svgEl.style.touchAction = "none";
+
       // Ensure center on load
       svgEl._pz.fit();
       svgEl._pz.center();
@@ -709,8 +712,53 @@
         }
       });
 
-      // Click
+      // Touch support: tap to select + pinch handled by svg-pan-zoom
+      let _touch = null;
+      let _suppressNextClick = false;
+
+      svg.addEventListener("touchstart", (e) => {
+        if (e.touches.length !== 1) { _touch = null; return; }
+        const t = e.touches[0];
+        const root = t.target.closest("[data-pyn-unit-pid]");
+        _touch = { x: t.clientX, y: t.clientY, time: Date.now(), root: root || null };
+        if (root) {
+          const pid = root.dataset.pynUnitPid;
+          const el = root.querySelector(`#${CSS.escape(pid)}`) || root;
+          el.style.fill = styles.unitColors.hover;
+        }
+      }, { passive: true });
+
+      svg.addEventListener("touchend", (e) => {
+        if (!_touch) return;
+        const t = e.changedTouches[0];
+        const dx = t.clientX - _touch.x;
+        const dy = t.clientY - _touch.y;
+        const wasTap = Math.sqrt(dx * dx + dy * dy) < 8 && (Date.now() - _touch.time) < 250;
+        const root = _touch.root;
+        _touch = null;
+
+        if (!root) return;
+        const pid = root.dataset.pynUnitPid;
+        const unit = byPointer[pid];
+        if (!unit) return;
+
+        const el = root.querySelector(`#${CSS.escape(pid)}`) || root;
+        const status = this._unitStatus(unit);
+        el.style.fill = styles.unitColors[status] || styles.unitColors.available;
+
+        if (wasTap && root.classList.contains("pyn-highlight")) {
+          _suppressNextClick = true;
+          setTimeout(() => { _suppressNextClick = false; }, 500);
+          if (this.config.onUnitClick) this.config.onUnitClick(unit);
+        }
+      }, { passive: true });
+
+      svg.addEventListener("touchcancel", () => { _touch = null; }, { passive: true });
+
+      // Click (desktop) — suppressed after a touch tap to avoid double-fire
       svg.addEventListener("click", (e) => {
+        if (_suppressNextClick) return;
+
         const root = e.target.closest("[data-pyn-unit-pid]");
         if (!root) return;
 
