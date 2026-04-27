@@ -13,6 +13,7 @@
     @media screen and (max-width: 600px) {
       .email-container { width: 100% !important; margin: auto !important; }
       .mobile-padding { padding: 20px 15px !important; }
+      .hero-img { width: 100% !important; height: auto !important; }
       .mobile-button-wrap { display: block !important; width: 100% !important; margin-bottom: 15px !important; }
       .mobile-button { display: block !important; width: 100% !important; box-sizing: border-box !important; }
       .mobile-button-a { display: block !important; width: 100% !important; box-sizing: border-box !important; padding: 15px 10px !important; text-align: center !important; }
@@ -31,6 +32,13 @@
         <td bgcolor="#ffffff" style="padding: 30px 20px; text-align: center; border-bottom: 3px solid #284b31;">
           <img src="<%= @community.logo_for_sdk_email %>" width="200" alt="<%= @community.name %>"
                style="display: block; margin: auto; max-height: 60px; width: auto; font-family: -apple-system, sans-serif; color: #172a1d; font-size: 16px; border: 0;" />
+        </td>
+      </tr>
+
+      <!-- Hero Image -->
+      <tr>
+        <td bgcolor="#e2e8f0" style="text-align: center;">
+          <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=600&h=300&q=80" width="600" alt="Modern Apartment Community" class="hero-img" style="display: block; margin: auto; border: 0; width: 100%; max-width: 600px; height: auto;" />
         </td>
       </tr>
 
