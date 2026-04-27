@@ -200,6 +200,8 @@ module Api
             return
           end
 
+          svg_cache_hit = @community.enable_sdk_map_cache && SvgCacheService.warm?(map_id, map_type)
+
           compressed = if @community.enable_sdk_map_cache
             SvgCacheService.fetch_and_cache(map_id, map_type, svg_url)
           else
@@ -211,6 +213,7 @@ module Api
             return
           end
 
+          response.headers['X-Cache']          = svg_cache_hit ? 'HIT' : 'MISS'
           response.headers['Content-Encoding'] = 'gzip'
           response.headers['Cache-Control']    = 'private, max-age=3600'
           response.headers['ETag']             = etag if etag

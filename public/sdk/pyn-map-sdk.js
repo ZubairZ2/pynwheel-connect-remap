@@ -275,9 +275,10 @@
     async _loadSVG(mapId, mapType) {
       const cacheKey = this._svgCacheKey(mapId);
 
-      // Return from sessionStorage when the versioned key matches (SVG unchanged).
+      // localStorage persists across tabs and sessions — versioned key ensures
+      // a fresh fetch whenever the SVG is updated (updatedAt changes).
       try {
-        const cached = sessionStorage.getItem(cacheKey);
+        const cached = localStorage.getItem(cacheKey);
         if (cached) return this._parseSVG(cached);
       } catch {}
 
@@ -302,14 +303,14 @@
           throw new Error("No <svg> element found in the response.");
         }
 
-        // Cache the SVG text. Remove any stale entry for this mapId first.
+        // Store in localStorage. Remove any stale entry for this mapId first.
         try {
           const prefix = `pyn_svg_${mapId}_`;
-          for (let i = sessionStorage.length - 1; i >= 0; i--) {
-            const k = sessionStorage.key(i);
-            if (k && k !== cacheKey && k.startsWith(prefix)) sessionStorage.removeItem(k);
+          for (let i = localStorage.length - 1; i >= 0; i--) {
+            const k = localStorage.key(i);
+            if (k && k !== cacheKey && k.startsWith(prefix)) localStorage.removeItem(k);
           }
-          sessionStorage.setItem(cacheKey, svgText);
+          localStorage.setItem(cacheKey, svgText);
         } catch {}
 
         return svgElement;
