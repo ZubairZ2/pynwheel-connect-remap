@@ -410,10 +410,74 @@
         zoomScaleSensitivity: 0.15,
       });
 
-      // touch-action: none lets svg-pan-zoom own all touch gestures (pinch zoom, pan)
+      // touch-action:none on SVG + container stops browser from stealing gestures on any device
       svgEl.style.touchAction = "none";
-      // prevent browser from intercepting touchmove (scroll / native pinch-zoom)
-      svgEl.addEventListener("touchmove", (e) => { e.preventDefault(); }, { passive: false });
+      if (svgEl.parentNode) svgEl.parentNode.style.touchAction = "none";
+
+      // Universal touch handler — drives svg-pan-zoom directly from raw touch events.
+      // Works on iOS Safari, Android Chrome, iPad, Windows touchscreen, etc.
+      // { passive:false } allows e.preventDefault() which blocks browser scroll / viewport pinch.
+      (function attachTouchHandlers(el, pz) {
+        const MIN_ZOOM = 0.5, MAX_ZOOM = 4;
+        let touch1 = null;   // { x, y } of first finger at gesture start
+        let startPan = null; // pan position at gesture start
+        let startZoom = 1;   // zoom at gesture start
+        let startDist = 0;   // pinch distance at gesture start
+
+        function dist(a, b) {
+          const dx = a.clientX - b.clientX, dy = a.clientY - b.clientY;
+          return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        el.addEventListener("touchstart", function(e) {
+          e.preventDefault();
+          if (e.touches.length === 1) {
+            touch1   = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            startPan = pz.getPan();
+          } else if (e.touches.length === 2) {
+            touch1    = null;
+            startDist = dist(e.touches[0], e.touches[1]);
+            startZoom = pz.getZoom();
+          }
+        }, { passive: false });
+
+        el.addEventListener("touchmove", function(e) {
+          e.preventDefault();
+          if (e.touches.length === 1 && touch1 && startPan) {
+            // single-finger pan
+            pz.pan({
+              x: startPan.x + (e.touches[0].clientX - touch1.x),
+              y: startPan.y + (e.touches[0].clientY - touch1.y),
+            });
+          } else if (e.touches.length === 2 && startDist > 0) {
+            // two-finger pinch zoom
+            const newDist  = dist(e.touches[0], e.touches[1]);
+            const newZoom  = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, startZoom * (newDist / startDist)));
+            pz.zoom(newZoom);
+          }
+        }, { passive: false });
+
+        el.addEventListener("touchend", function(e) {
+          if (e.touches.length === 0) {
+            touch1 = null; startPan = null; startDist = 0;
+          } else if (e.touches.length === 1) {
+            // one finger lifted, remaining finger continues pan
+            touch1   = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            startPan = pz.getPan();
+            startDist = 0;
+          }
+        }, { passive: true });
+
+        el.addEventListener("touchcancel", function() {
+          touch1 = null; startPan = null; startDist = 0;
+        }, { passive: true });
+
+        // iOS Safari fires gesturestart/gesturechange for pinch at the browser level.
+        // Cancelling them here lets our touchmove handler above drive the zoom instead.
+        el.addEventListener("gesturestart",  function(e) { e.preventDefault(); }, { passive: false });
+        el.addEventListener("gesturechange", function(e) { e.preventDefault(); }, { passive: false });
+        el.addEventListener("gestureend",    function(e) { e.preventDefault(); }, { passive: false });
+      }(svgEl, svgEl._pz));
 
       // Ensure center on load
       svgEl._pz.fit();
