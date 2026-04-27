@@ -537,7 +537,8 @@
       }
 
       this._enablePanZoom(clone);
-      c.style.overflow = "hidden";
+      c.style.overflow   = "hidden";
+      c.style.touchAction = "none"; // let svg-pan-zoom own all touch gestures
     },
 
 
@@ -577,12 +578,12 @@
         minZoom:              0.5,
         maxZoom:              4,
         zoomScaleSensitivity: 0.15,
-        beforeZoom:           function () { },
-        onZoom:               function () { this.center(); }
       });
 
       // touch-action: none lets svg-pan-zoom own all touch gestures (pinch zoom, pan)
       svgEl.style.touchAction = "none";
+      // prevent browser from intercepting touchmove (scroll / native pinch-zoom)
+      svgEl.addEventListener("touchmove", (e) => { e.preventDefault(); }, { passive: false });
 
       svgEl._pz.fit();
       svgEl._pz.center();

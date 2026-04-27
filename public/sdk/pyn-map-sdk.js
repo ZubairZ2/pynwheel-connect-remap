@@ -364,7 +364,8 @@
       this._enablePanZoom(clone);
 
       // Container should constrain the SVG
-      c.style.overflow = "hidden";
+      c.style.overflow   = "hidden";
+      c.style.touchAction = "none"; // let svg-pan-zoom own all touch gestures
     },
 
 
@@ -407,15 +408,12 @@
         maxZoom: 4,
 
         zoomScaleSensitivity: 0.15,
-        beforeZoom: function () { },
-        onZoom: function () {
-          // keep map roughly centered as user zooms
-          this.center();
-        }
       });
 
       // touch-action: none lets svg-pan-zoom own all touch gestures (pinch zoom, pan)
       svgEl.style.touchAction = "none";
+      // prevent browser from intercepting touchmove (scroll / native pinch-zoom)
+      svgEl.addEventListener("touchmove", (e) => { e.preventDefault(); }, { passive: false });
 
       // Ensure center on load
       svgEl._pz.fit();
