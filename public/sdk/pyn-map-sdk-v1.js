@@ -1921,8 +1921,8 @@
       if (this.config.environment === "staging") {
         return "https://pynwheel-staging.herokuapp.com";
       }
-      return "http://localhost:3000";
-      // return "https://pynwheelconnect.com"; // production
+      // return "http://localhost:3000";
+      return "https://pynwheelconnect.com"; // production
     }
   };
 
