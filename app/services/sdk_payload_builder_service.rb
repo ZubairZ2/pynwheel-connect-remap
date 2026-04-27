@@ -64,8 +64,8 @@ class SdkPayloadBuilderService
         additionalButtons:      buttons,
         unit_variation:         unit_variation(unit, fees, buttons),
         pricing_calculator_url:     unit.pricing_calculator_url,
-        estimatedMonthlyRent:       unit.pyn_estimated_monthly,
-        estimatedMonthlyRentMax:    unit.pyn_estimated_monthly_max,
+        estimatedMonthlyRent:       estimated_monthly_rent(unit),
+        estimatedMonthlyRentMax:    estimated_monthly_rent_max(unit),
         image:                  unit.validated_image_url || floorplan&.validated_image_url || floorplan&.secondary_image&.url.presence,
         color:                  compute_unit_marketing_color(unit, floorplan),
         opsColor:               compute_unit_ops_color(unit),
@@ -391,5 +391,17 @@ class SdkPayloadBuilderService
   def filter_price_range_data(units)
     values = units.map { |u| u.get_market_rent.to_i }.select(&:positive?).uniq.sort
     { min: values.first, max: values.last, values: values }
+  end
+
+  def estimated_monthly_rent(unit)
+    return nil unless @community.enable_pynwheel_pricing_calculator?
+    unit.pyn_estimated_monthly
+  end
+
+  def estimated_monthly_rent_max(unit)
+    return nil unless @community.enable_pynwheel_pricing_calculator?
+    min = unit.pyn_estimated_monthly
+    max = unit.pyn_estimated_monthly_max
+    min != max ? max : nil
   end
 end
