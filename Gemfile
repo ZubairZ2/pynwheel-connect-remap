@@ -6,6 +6,7 @@ gem 'rest-client'
 gem 'browser'
 gem "aws-sdk-s3", "~> 1.145"
 gem 'rack-cors', '~> 1.1'
+gem 'rack-attack'
 gem 'rails', '~> 7.1'
 gem 'rack', '~> 2.2.2'
 gem 'stripe'
