@@ -41,6 +41,7 @@ module PynwheelCms
     end
 
     config.middleware.insert_after ActionDispatch::Static, Rack::Deflater
+    config.middleware.use Rack::Attack
     
     unless Rails.env.development?
       # ========TAIM LOGGING WITH LOGRAGGE========

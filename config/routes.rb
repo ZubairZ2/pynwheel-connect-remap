@@ -665,6 +665,8 @@ Rails.application.routes.draw do
   end
 
   namespace :api, constraints: { format: 'json' } do
+    post 'notify-email', to: 'notify_email#create'
+
     namespace :partner do
       namespace :realync do
         post :update_video_links, to: 'webhooks#update_video_links'
