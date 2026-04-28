@@ -2027,6 +2027,8 @@ GEM
     raabro (1.4.0)
     racc (1.8.1)
     rack (2.2.10)
+    rack-attack (6.8.0)
+      rack (>= 1.0, < 4)
     rack-cache (1.17.0)
       rack (>= 0.4)
     rack-cors (1.1.1)
@@ -2310,6 +2312,7 @@ DEPENDENCIES
   puma_worker_killer
   pusher
   rack (~> 2.2.2)
+  rack-attack
   rack-cache
   rack-cors (~> 1.1)
   rails (~> 7.1)
