@@ -495,8 +495,11 @@
 
       const clone = svg.cloneNode(true);
       clone.setAttribute("data-map-id", this.activeMapId);
-      // Hide SVG when 3D mode is active
-      clone.style.display = this._3dMode ? "none" : "block";
+      // In 3D mode keep the SVG in layout (visibility:hidden) so the container
+      // retains its height — display:none collapses the flex container to 0px.
+      clone.style.display        = "block";
+      clone.style.visibility     = this._3dMode ? "hidden" : "visible";
+      clone.style.pointerEvents  = this._3dMode ? "none"   : "";
 
       this._applyGlobalLabelStyles(clone, this.config.styles.unitLabels);
 
@@ -797,9 +800,25 @@
 
       this._3dMode = true;
 
-      // Hide SVG, show 3D wrapper
+      // Inject style to hide ESRI attribution/presentation widgets in 3D mode
+      if (!document.getElementById("pyn-esri-hide-style")) {
+        const s = document.createElement("style");
+        s.id = "pyn-esri-hide-style";
+        s.textContent =
+          "div.esri-ui-inner-container.esri-ui-manual-container>div.esri-component[role='presentation']," +
+          "div.esri-ui-inner-container.esri-ui-manual-container>div.esri-component.esri-attribution.esri-widget{display:none!important}";
+        document.head.appendChild(s);
+      }
+
+      // Hide SVG (keep in layout for height), show 3D wrapper
       const activeSvg = this._getActiveSvg();
-      if (activeSvg) activeSvg.style.display = "none";
+      if (activeSvg) {
+        activeSvg.style.visibility    = "hidden";
+        activeSvg.style.pointerEvents = "none";
+        // Pause panzoom so its touchstart handler stops calling preventDefault(),
+        // which would otherwise block click events on Beans 3D widget buttons.
+        if (activeSvg._pz) activeSvg._pz.pause();
+      }
       if (this._3dWrapper) this._3dWrapper.style.display = "block";
 
       // Update toggle button label and hide zoom controls (irrelevant in 3D)
@@ -821,9 +840,17 @@
       if (!this._3dMode) return;
       this._3dMode = false;
 
-      // Show SVG, hide 3D wrapper
+      // Remove ESRI hide style when leaving 3D mode
+      const esriStyle = document.getElementById("pyn-esri-hide-style");
+      if (esriStyle) esriStyle.remove();
+
+      // Restore SVG visibility, hide 3D wrapper
       const activeSvg = this._getActiveSvg();
-      if (activeSvg) activeSvg.style.display = "block";
+      if (activeSvg) {
+        activeSvg.style.visibility    = "visible";
+        activeSvg.style.pointerEvents = "";
+        if (activeSvg._pz) activeSvg._pz.resume();
+      }
       if (this._3dWrapper) this._3dWrapper.style.display = "none";
 
       // Update toggle button label and restore zoom controls
@@ -839,7 +866,7 @@
 
     async _init3DMap() {
       const cfg3d = this.data.property?.beans3dConfig;
-
+      debugger;
       if (!cfg3d?.enabled || !cfg3d?.beansApiKey) {
         console.warn("PynMapSDK: 3D map not configured for this property.");
         this.switchTo2DMap();
@@ -2013,7 +2040,7 @@
         return "https://pynwheel-staging.herokuapp.com";
       }
       // return "http://localhost:3000";
-      return "https://pynwheelconnect.com"; // production
+      return "https://pynwheelconnect.com";
     }
   };
 
