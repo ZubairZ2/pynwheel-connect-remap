@@ -18,7 +18,7 @@ private
 
   def redirect_path_to
     if @community.is_sitemap?
-      community_sitemaps_path(@community)
+      plotexp_community_sitemaps_path(@community)
     else
       community_floorplates_path(@community)
     end
