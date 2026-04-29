@@ -1006,6 +1006,8 @@ function onAppFolioPropertyScopeChange(selectEl) {
     $("#app_folio_property_id").hide();
     $("#app_folio_property_group_id").show();
   }
+
+  submitSettingFormOnChange();
 }
 
 function showPsiFields(){
