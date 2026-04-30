@@ -28,13 +28,6 @@
     _svgLoadingPromises: {},       // { [mapId]: Promise } — deduplicates in-flight fetches
     _lastHoverPid: null,           // last hovered pointer id (for debouncing)
 
-    defaultStyles: {
-      unitColors: {
-        available: "#F9D648",
-        hover: "#d0a600ff"
-      }
-    },
-
     // ----------------------------------------------------
     // INIT
     // ----------------------------------------------------
@@ -53,14 +46,12 @@
         onUnitClick:      typeof cfg.onUnitClick === "function" ? cfg.onUnitClick : null
       };
 
-      // 2) Merge styles safely
-      const baseStyles = this.defaultStyles;
-      const cfgStyles  = cfg.styles || {};
+      // 2) Store styles from config only
+      const cfgStyles = cfg.styles || {};
       this.config.styles = {
-        ...baseStyles,
         ...cfgStyles,
-        unitColors: { ...baseStyles.unitColors, ...(cfgStyles.unitColors || {}) },
-        unitLabels:  { ...baseStyles.unitLabels,  ...(cfgStyles.unitLabels  || {}) }
+        unitColors: { ...(cfgStyles.unitColors || {}) },
+        unitLabels:  { ...(cfgStyles.unitLabels  || {}) }
       };
 
       this.container = document.querySelector(cfg.container);
@@ -119,14 +110,10 @@
       // Bind events early (always!)
       this._bindUnitEvents();
 
-      // If floor given → highlight floor first
+      // If floor given → switch to that floor's map (no fill — highlight must be called explicitly)
       if (this.config.floor) {
         this.changeFloor(this.config.floor);
-        return;
       }
-
-      // Otherwise highlight all
-      this._highlightAllUnits();
     },
 
     // ----------------------------------------------------
@@ -433,7 +420,7 @@
       const el = activeSvg.querySelector(`#${CSS.escape(pid)}`);
       if (!el) return;
 
-      const styles = this.config?.styles || this.defaultStyles;
+      const styles = this.config.styles;
       const fillColor =
         colorCode ||
         styles.unitColors.hover ||
@@ -463,7 +450,7 @@
       const el = activeSvg.querySelector(`#${CSS.escape(pid)}`);
       if (!el) return;
 
-      const styles = this.config?.styles || this.defaultStyles;
+      const styles = this.config.styles;
       const status = this._unitStatus(unit);
 
       // Restore original (status-based) color
@@ -503,27 +490,19 @@
       this._lastHoverPid = null;
 
       this._renderMaps();
-      this._highlightAllUnits();
       this._bindUnitEvents();
     },
 
     async changeFloor(floorNumber) {
       const fp = this._findFloorplateByFloor(floorNumber);
 
-      if (!fp) {
-        this._highlightAllUnits();
-        return;
-      }
+      if (!fp) return;
 
       const floorMapId = String(fp.mapId);
 
-      if (this.activeMapId === floorMapId) {
-        this._highlightUnitsForFloor(floorNumber);
-        return;
+      if (this.activeMapId !== floorMapId) {
+        await this.changeMap(floorMapId);
       }
-
-      await this.changeMap(floorMapId);
-      this._highlightUnitsForFloor(floorNumber);
     },
 
 
@@ -536,7 +515,7 @@
 
       this._clearUnitStyles();
 
-      const styles = this.config?.styles || this.defaultStyles;
+      const styles = this.config.styles;
       const units = this.unitsByMap[this.activeMapId] || [];
 
       units.forEach(unit => {
@@ -646,44 +625,10 @@
       if (svg._pynEventsBound) return;
       svg._pynEventsBound = true;
 
-      const styles = this.config?.styles || this.defaultStyles;
-
+      // Hover: fire callback only — no fill change
       svg.addEventListener("mouseover", (e) => {
         const root = e.target.closest("[data-pyn-unit-pid]");
         if (!root) return;
-
-        const pid = root.dataset.pynUnitPid;
-        const el = root.querySelector(`#${CSS.escape(pid)}`) || root;
-
-        el.style.fill = styles.unitColors.hover;
-      });
-
-      svg.addEventListener("mouseout", (e) => {
-        const root = e.target.closest("[data-pyn-unit-pid]");
-        if (!root) return;
-
-        const pid = root.dataset.pynUnitPid;
-        const unit = byPointer[pid];
-        if (!unit) return;
-
-        // Clear hover debounce only when truly leaving the unit group,
-        // not when moving between child elements within it.
-        if (!root.contains(e.relatedTarget) && this._lastHoverPid === pid) {
-          this._lastHoverPid = null;
-        }
-
-        const status = this._unitStatus(unit);
-        const el = root.querySelector(`#${CSS.escape(pid)}`) || root;
-
-        el.style.fill = styles.unitColors[status];
-      });
-
-      // Hover (using mouseover so it bubbles from children)
-      svg.addEventListener("mouseover", (e) => {
-        const root = e.target.closest("[data-pyn-unit-pid]");
-        if (!root) return;
-
-        if (!root.classList.contains("pyn-highlight")) return;
 
         const pid = root.dataset.pynUnitPid;
         if (!pid || this._lastHoverPid === pid) return;
@@ -698,7 +643,18 @@
         }
       });
 
-      // Touch support: tap to select
+      // Mouseout: reset debounce only — no fill change
+      svg.addEventListener("mouseout", (e) => {
+        const root = e.target.closest("[data-pyn-unit-pid]");
+        if (!root) return;
+
+        const pid = root.dataset.pynUnitPid;
+        if (!root.contains(e.relatedTarget) && this._lastHoverPid === pid) {
+          this._lastHoverPid = null;
+        }
+      });
+
+      // Touch support: tap to select — no fill change
       let _touch = null;
       let _suppressNextClick = false;
 
@@ -707,11 +663,6 @@
         const t = e.touches[0];
         const root = t.target.closest("[data-pyn-unit-pid]");
         _touch = { x: t.clientX, y: t.clientY, time: Date.now(), root: root || null };
-        if (root) {
-          const pid = root.dataset.pynUnitPid;
-          const el = root.querySelector(`#${CSS.escape(pid)}`) || root;
-          el.style.fill = styles.unitColors.hover;
-        }
       }, { passive: true });
 
       svg.addEventListener("touchend", (e) => {
@@ -723,20 +674,14 @@
         const root = _touch.root;
         _touch = null;
 
-        if (!root) return;
+        if (!root || !wasTap) return;
         const pid = root.dataset.pynUnitPid;
         const unit = byPointer[pid];
         if (!unit) return;
 
-        const el = root.querySelector(`#${CSS.escape(pid)}`) || root;
-        const status = this._unitStatus(unit);
-        el.style.fill = styles.unitColors[status] || styles.unitColors.available;
-
-        if (wasTap && root.classList.contains("pyn-highlight")) {
-          _suppressNextClick = true;
-          setTimeout(() => { _suppressNextClick = false; }, 500);
-          if (this.config.onUnitClick) this.config.onUnitClick(unit);
-        }
+        _suppressNextClick = true;
+        setTimeout(() => { _suppressNextClick = false; }, 500);
+        if (this.config.onUnitClick) this.config.onUnitClick(unit);
       }, { passive: true });
 
       svg.addEventListener("touchcancel", () => { _touch = null; }, { passive: true });
@@ -747,8 +692,6 @@
 
         const root = e.target.closest("[data-pyn-unit-pid]");
         if (!root) return;
-
-        if (!root.classList.contains("pyn-highlight")) return;
 
         const pid = root.dataset.pynUnitPid;
         if (!pid) return;
