@@ -10,6 +10,19 @@ module DataProviders
             false
           end
         end
+
+        def test_mandatory_fees
+          begin
+            unit = @community.units.first
+            return false unless unit.present?
+
+            unit_id = unit.provider_unit_id.to_s.split("-").first
+            response = DataProviders::RealPage::V1ApisService.new(@community.id).fetch_mandatory_fees(@site_ids[0], unit_id)
+            response.body
+          rescue
+            false
+          end
+        end
       end
     end
   end

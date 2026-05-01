@@ -8,6 +8,7 @@
     // STATE
     // ----------------------------------------------------
     _initialized: false,
+    _isReady: false,
     _sessionToken: null,          // short-lived token; replaces the API key after auth
     config: null,
     container: null,
@@ -43,7 +44,8 @@
         showZoomControls: cfg.showZoomControls !== false,
         floor:            cfg.defaultFloor != null ? String(cfg.defaultFloor) : null,
         onUnitHover:      typeof cfg.onUnitHover === "function" ? cfg.onUnitHover : null,
-        onUnitClick:      typeof cfg.onUnitClick === "function" ? cfg.onUnitClick : null
+        onUnitClick:      typeof cfg.onUnitClick === "function" ? cfg.onUnitClick : null,
+        onReady:          typeof cfg.onReady      === "function" ? cfg.onReady      : null
       };
 
       // 2) Store styles from config only
@@ -114,6 +116,9 @@
       if (this.config.floor) {
         this.changeFloor(this.config.floor);
       }
+
+      this._isReady = true;
+      if (this.config.onReady) this.config.onReady();
     },
 
     // ----------------------------------------------------
@@ -601,6 +606,22 @@
       });
     },
     // ----------------------------------------------------
+    // CALLBACK REGISTRATION / REMOVAL
+    // ----------------------------------------------------
+    onReady(fn) {
+      if (typeof fn !== "function") return;
+      if (this._isReady) {
+        fn();
+      } else {
+        this.config.onReady = fn;
+      }
+    },
+
+    offUnitHover() {
+      this.config.onUnitHover = null;
+    },
+
+    // ----------------------------------------------------
     // FAST UNIT EVENTS (DELEGATED)
     // ----------------------------------------------------
     _bindUnitEvents() {
@@ -934,6 +955,12 @@
       },
       zoomOut() {
         return PynMapSDK.zoomOut.call(PynMapSDK);
+      },
+      onReady(fn) {
+        return PynMapSDK.onReady.call(PynMapSDK, fn);
+      },
+      offUnitHover() {
+        return PynMapSDK.offUnitHover.call(PynMapSDK);
       },
     };
   }

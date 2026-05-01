@@ -143,7 +143,7 @@ function beans3DMapDisplayOptions(filteredRows = null) {
     hideFilters: true,
     showUnitShape: true,
     showUnitList: false,
-    hideShadow: true,
+    hideShadow: false,
     showCompass: true,
     showUnitShape: true,
     // camera: generateCameraView(),

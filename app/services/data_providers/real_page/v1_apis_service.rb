@@ -8,7 +8,8 @@ module DataProviders
         get_units_by_property: "getunitsbyproperty",
         get_activity_types: "getactivitytypes",
         get_leasing_agents_by_property: "getleasingagentsbyproperty",
-        get_marketing_sources_by_property: "getmarketingsourcesbyproperty"
+        get_marketing_sources_by_property: "getmarketingsourcesbyproperty",
+        retrieve_mandatory_fees: "retrievemandatoryfees"
       }.freeze
 
       def initialize(community_id)
@@ -36,6 +37,10 @@ module DataProviders
 
       def fetch_marketing_sources(site_id)
         fetch_data(site_id, :get_marketing_sources_by_property)
+      end
+
+      def fetch_mandatory_fees(site_id, unit_id)
+        retrieve_mandatory_fees(site_id, unit_id)
       end
 
       private
@@ -78,6 +83,15 @@ module DataProviders
         post_request(RP_TOUR_API_URL, API_METHODS[:get_marketing_sources_by_property], site_id, ENV['RP_TOUR_API_KEY'])
       end
 
+      def retrieve_mandatory_fees(site_id, unit_id)
+        api_method = API_METHODS[:retrieve_mandatory_fees]
+        HTTParty.post(
+          RP_TOUR_API_URL,
+          headers: request_headers(api_method),
+          body: mandatory_fees_body(site_id, unit_id, api_method)
+        )
+      end
+
       def post_request(url, api_method, site_id, license_key)
         HTTParty.post(
           url,
@@ -97,6 +111,26 @@ module DataProviders
                   <tem:siteid>#{site_id}</tem:siteid>
                   <tem:licensekey>#{license_key}</tem:licensekey>
                 </tem:auth>
+              </tem:#{api_method}>
+            </soapenv:Body>
+          </soapenv:Envelope>
+        XML
+      end
+
+      def mandatory_fees_body(site_id, unit_id, api_method)
+        <<~XML
+          <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/">
+            <soapenv:Header/>
+            <soapenv:Body>
+              <tem:#{api_method}>
+                <tem:auth>
+                  <tem:pmcid>#{@pmc_id}</tem:pmcid>
+                  <tem:siteid>#{site_id}</tem:siteid>
+                  <tem:licensekey>#{ENV['RP_TOUR_API_KEY']}</tem:licensekey>
+                </tem:auth>
+                <tem:retrieveMandatoryFees>
+                  <tem:unitID>#{unit_id}</tem:unitID>
+                </tem:retrieveMandatoryFees>
               </tem:#{api_method}>
             </soapenv:Body>
           </soapenv:Envelope>

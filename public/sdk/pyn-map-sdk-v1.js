@@ -1012,7 +1012,7 @@
         showUnitList:      false,
         hideFilters:       true,
         showUnitShape:     true,
-        hideShadow:        true,
+        hideShadow:        false,
         showCompass:       true,
         initialZ:          180,
         initialTilt:       65,
