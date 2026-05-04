@@ -1,11 +1,9 @@
 module Api
   class NotifyEmailController < ActionController::Base
-    before_action :authenticate_api_key, unless: :preflight?
-    before_action :validate_params, unless: :preflight?
+    before_action :authenticate_api_key
+    before_action :validate_params
 
     def create
-      return head(:ok) if preflight?
-
       NotifyEmailMailer.send_notification(
         to:      params[:to],
         cc:      params[:cc],
@@ -20,10 +18,6 @@ module Api
     end
 
     private
-
-    def preflight?
-      request.method == 'OPTIONS'
-    end
 
     def authenticate_api_key
       provided = request.headers['X-Api-Key']
