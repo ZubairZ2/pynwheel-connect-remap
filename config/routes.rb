@@ -665,7 +665,7 @@ Rails.application.routes.draw do
   end
 
   namespace :api, constraints: { format: 'json' } do
-    post 'notify-email', to: 'notify_email#create'
+    match 'notify-email', to: 'notify_email#create', via: [:post, :options]
 
     namespace :partner do
       namespace :realync do
