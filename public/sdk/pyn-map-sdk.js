@@ -28,6 +28,7 @@
     svgCache: {},                  // { [mapId]: SVGElement }
     _svgLoadingPromises: {},       // { [mapId]: Promise } — deduplicates in-flight fetches
     _lastHoverPid: null,           // last hovered pointer id (for debouncing)
+    _selectedUnitId: null,         // unitId of the currently selected unit
 
     // ----------------------------------------------------
     // INIT
@@ -43,8 +44,9 @@
         environment:      cfg.environment || "production",
         showZoomControls: cfg.showZoomControls !== false,
         floor:            cfg.defaultFloor != null ? String(cfg.defaultFloor) : null,
-        onUnitHover:      typeof cfg.onUnitHover === "function" ? cfg.onUnitHover : null,
-        onUnitClick:      typeof cfg.onUnitClick === "function" ? cfg.onUnitClick : null,
+        onUnitHover:      typeof cfg.onUnitHover      === "function" ? cfg.onUnitHover      : null,
+        offUnitHover: typeof cfg.offUnitHover === "function" ? cfg.offUnitHover : null,
+        onUnitClick:      typeof cfg.onUnitClick      === "function" ? cfg.onUnitClick      : null,
         onReady:          typeof cfg.onReady      === "function" ? cfg.onReady      : null
       };
 
@@ -153,7 +155,7 @@
      */
     async _fetchConfig() {
       try {
-        const url = `${this._apiBase()}/api/partner/maps/fetch_data`;
+        const url = `${this._apiBase()}/api/partner/maps/fetch_data?map_type=ops`;
         const res = await fetch(url, {
           headers: { "Authorization": `Bearer ${this._sessionToken}` }
         });
@@ -432,6 +434,7 @@
         styles.unitColors.available;
 
       el.style.fill = fillColor;
+      this._selectedUnitId = unit.unitId;
 
       const root = el.closest("g") || el;
       root.classList.add("pyn-highlight");
@@ -458,9 +461,10 @@
       const styles = this.config.styles;
       const status = this._unitStatus(unit);
 
-      // Restore original (status-based) color
       el.style.fill = styles.unitColors[status] || styles.unitColors.available;
-      // Do NOT remove highlight, so hover + click still work
+      if (String(this._selectedUnitId) === String(unit.unitId)) {
+        this._selectedUnitId = null;
+      }
     },
 
     zoomIn() {
@@ -617,9 +621,6 @@
       }
     },
 
-    offUnitHover() {
-      this.config.onUnitHover = null;
-    },
 
     // ----------------------------------------------------
     // FAST UNIT EVENTS (DELEGATED)
@@ -646,7 +647,6 @@
       if (svg._pynEventsBound) return;
       svg._pynEventsBound = true;
 
-      // Hover: fire callback only — no fill change
       svg.addEventListener("mouseover", (e) => {
         const root = e.target.closest("[data-pyn-unit-pid]");
         if (!root) return;
@@ -659,12 +659,20 @@
         const unit = byPointer[pid];
         if (!unit) return;
 
+        // Apply hover color unless the unit is already selected
+        if (String(unit.unitId) !== String(this._selectedUnitId)) {
+          const el = svg.querySelector(`#${CSS.escape(pid)}`);
+          if (el) {
+            const hoverColor = this.config.styles.unitColors.hover || this.config.styles.unitColors.available;
+            el.style.fill = hoverColor;
+          }
+        }
+
         if (this.config.onUnitHover) {
           this.config.onUnitHover(unit);
         }
       });
 
-      // Mouseout: reset debounce only — no fill change
       svg.addEventListener("mouseout", (e) => {
         const root = e.target.closest("[data-pyn-unit-pid]");
         if (!root) return;
@@ -672,6 +680,20 @@
         const pid = root.dataset.pynUnitPid;
         if (!root.contains(e.relatedTarget) && this._lastHoverPid === pid) {
           this._lastHoverPid = null;
+
+          const unit = byPointer[pid];
+          if (unit) {
+            if (String(unit.unitId) !== String(this._selectedUnitId)) {
+              const el = svg.querySelector(`#${CSS.escape(pid)}`);
+              if (el) {
+                const status = this._unitStatus(unit);
+                el.style.fill = this.config.styles.unitColors[status] || this.config.styles.unitColors.available;
+              }
+            }
+            if (this.config.offUnitHover) {
+              this.config.offUnitHover(unit);
+            }
+          }
         }
       });
 
@@ -955,12 +977,6 @@
       },
       zoomOut() {
         return PynMapSDK.zoomOut.call(PynMapSDK);
-      },
-      onReady(fn) {
-        return PynMapSDK.onReady.call(PynMapSDK, fn);
-      },
-      offUnitHover() {
-        return PynMapSDK.offUnitHover.call(PynMapSDK);
       },
     };
   }
