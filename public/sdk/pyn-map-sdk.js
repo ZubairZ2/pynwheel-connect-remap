@@ -438,6 +438,7 @@
 
       const root = el.closest("g") || el;
       root.classList.add("pyn-highlight");
+      root.style.cursor = "pointer";
     },
 
     unselectUnit(unitId) {
@@ -541,6 +542,7 @@
 
         const root = el.closest("g") || el;
         root.classList.add("pyn-highlight");
+        root.style.cursor = "pointer";
       });
     },
 
@@ -567,6 +569,7 @@
 
         const root = el.closest("g") || el;
         root.classList.add("pyn-highlight");
+        root.style.cursor = "pointer";
       });
     },
 
@@ -607,6 +610,7 @@
 
         const root = el.closest("g") || el;
         root.classList.add("pyn-highlight");
+        root.style.cursor = "pointer";
       });
     },
     // ----------------------------------------------------
@@ -640,7 +644,7 @@
 
         const root = el.closest("g") || el; // whole box area
         root.dataset.pynUnitPid = pid;
-        root.style.cursor = "pointer";
+        // cursor is set only when the unit gets highlighted
       });
 
       // 2) Attach at most ONE set of listeners per SVG
@@ -649,7 +653,7 @@
 
       svg.addEventListener("mouseover", (e) => {
         const root = e.target.closest("[data-pyn-unit-pid]");
-        if (!root) return;
+        if (!root || !root.classList.contains("pyn-highlight")) return;
 
         const pid = root.dataset.pynUnitPid;
         if (!pid || this._lastHoverPid === pid) return;
@@ -717,7 +721,7 @@
         const root = _touch.root;
         _touch = null;
 
-        if (!root || !wasTap) return;
+        if (!root || !wasTap || !root.classList.contains("pyn-highlight")) return;
         const pid = root.dataset.pynUnitPid;
         const unit = byPointer[pid];
         if (!unit) return;
@@ -734,7 +738,7 @@
         if (_suppressNextClick) return;
 
         const root = e.target.closest("[data-pyn-unit-pid]");
-        if (!root) return;
+        if (!root || !root.classList.contains("pyn-highlight")) return;
 
         const pid = root.dataset.pynUnitPid;
         if (!pid) return;
@@ -769,6 +773,7 @@
         // remove highlight from polygon AND parent <g>
         const root = el.closest("g") || el;
         root.classList.remove("pyn-highlight");
+        root.style.cursor = "";
 
         el.classList.remove("pyn-selected-unit");
         el.classList.remove("pyn-highlight");
