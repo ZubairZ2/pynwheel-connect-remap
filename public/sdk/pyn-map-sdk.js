@@ -503,7 +503,7 @@
       this._bindUnitEvents();
     },
 
-    async changeFloor(floorNumber) {
+    async changeFloor(floorNumber, onReady) {
       const fp = this._findFloorplateByFloor(floorNumber);
 
       if (!fp) return;
@@ -513,6 +513,8 @@
       if (this.activeMapId !== floorMapId) {
         await this.changeMap(floorMapId);
       }
+
+      if (typeof onReady === "function") onReady();
     },
 
 
@@ -968,8 +970,8 @@
       changeMap(mapId) {
         return PynMapSDK.changeMap.call(PynMapSDK, mapId);
       },
-      changeFloor(floorNumber) {
-        return PynMapSDK.changeFloor.call(PynMapSDK, floorNumber);
+      changeFloor(floorNumber, onReady) {
+        return PynMapSDK.changeFloor.call(PynMapSDK, floorNumber, onReady);
       },
       selectUnit(unitId, colorCode) {
         return PynMapSDK.selectUnit.call(PynMapSDK, unitId, colorCode);
