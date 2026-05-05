@@ -4,19 +4,25 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="x-apple-disable-message-reformatting" />
-  <title>Your Saved Favorites</title>
+  <title>Your Property Favorites</title>
   <style type="text/css">
+    /* Client-specific Resets */
     body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
     table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
     img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
 
+    /* Mobile Resets */
     @media screen and (max-width: 600px) {
       .email-container { width: 100% !important; margin: auto !important; }
       .mobile-padding { padding: 20px 15px !important; }
       .hero-img { width: 100% !important; height: auto !important; }
+
+      /* Button Stacking for Mobile */
       .mobile-button-wrap { display: block !important; width: 100% !important; margin-bottom: 15px !important; }
       .mobile-button { display: block !important; width: 100% !important; box-sizing: border-box !important; }
       .mobile-button-a { display: block !important; width: 100% !important; box-sizing: border-box !important; padding: 15px 10px !important; text-align: center !important; }
+
+      /* Column Stacking */
       .stack-column { display: block !important; width: 100% !important; }
     }
   </style>
@@ -30,8 +36,8 @@
       <!-- Logo -->
       <tr>
         <td bgcolor="#ffffff" style="padding: 30px 20px; text-align: center; border-bottom: 3px solid #284b31;">
-          <img src="<%= @community.logo_for_sdk_email %>" width="200" alt="<%= @community.name %>"
-               style="display: block; margin: auto; max-height: 60px; width: auto; font-family: -apple-system, sans-serif; color: #172a1d; font-size: 16px; border: 0;" />
+          <img src="<%= @community.logo_for_sdk_email %>" width="200" height="60" alt="<%= @community.name %>"
+               style="display: block; margin: auto; max-width: 200px; max-height: 60px; width: auto; height: auto; font-family: -apple-system, sans-serif; color: #172a1d; font-size: 16px; border: 0;" />
         </td>
       </tr>
 
@@ -49,7 +55,7 @@
             <tr>
               <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 18px; line-height: 28px; color: #1f2937; text-align: center; padding-bottom: 30px;">
                 Thanks for exploring <strong><%= @community.name %></strong>.<br>
-                The floor plans you saved are just a click away &mdash; ready whenever you are.
+                The floor plans and amenities you saved are just a click away &mdash; ready whenever you are.
               </td>
             </tr>
             <tr>
@@ -84,7 +90,7 @@
         <td bgcolor="#faf9f7" style="padding: 30px 30px 40px 30px; text-align: center;" class="mobile-padding">
           <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
             <tr>
-              <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 16px; font-weight: 600; color: #374151; padding-bottom: 20px;">
+              <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 16px; font-weight: 600; color: #374151; text-align: center; padding-bottom: 20px;">
                 Ready to make it home?
               </td>
             </tr>
