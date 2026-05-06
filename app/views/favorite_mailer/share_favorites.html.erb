@@ -6,171 +6,206 @@
   <meta name="x-apple-disable-message-reformatting" />
   <title>Your Property Favorites</title>
   <style type="text/css">
-    /* Client-specific Resets */
     body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
-    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-collapse: collapse; }
     img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
 
-    /* Mobile Resets */
     @media screen and (max-width: 600px) {
       .email-container { width: 100% !important; margin: auto !important; }
-      .mobile-padding { padding: 20px 15px !important; }
-      .hero-img { width: 100% !important; height: auto !important; }
-
-      /* Button Stacking for Mobile */
-      .mobile-button-wrap { display: block !important; width: 100% !important; margin-bottom: 15px !important; }
-      .mobile-button { display: block !important; width: 100% !important; box-sizing: border-box !important; }
-      .mobile-button-a { display: block !important; width: 100% !important; box-sizing: border-box !important; padding: 15px 10px !important; text-align: center !important; }
-
-      /* Column Stacking */
-      .stack-column { display: block !important; width: 100% !important; margin-bottom: 12px !important; }
+      /* One class, one value — every section uses this for consistent mobile padding */
+      .sec-pad { padding: 28px 20px !important; }
+      .div-pad { padding: 0 20px !important; }
+      .hero-img { width: 100% !important; height: auto !important; display: block !important; }
     }
   </style>
 </head>
 <body width="100%" style="margin: 0; padding: 0 !important; background-color: #f5f6f4; mso-line-height-rule: exactly;">
   <center style="width: 100%; background-color: #f5f6f4;">
     <table align="center" role="presentation" cellspacing="0" cellpadding="0" border="0" width="600"
-           style="margin: auto; width: 600px; max-width: 600px; background-color: #ffffff; margin-top: 30px; margin-bottom: 30px; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05);"
+           style="margin: 30px auto; width: 600px; max-width: 600px; background-color: #ffffff;
+                  border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05);"
            class="email-container">
 
-      <!-- Logo -->
+      <!-- ============================================================
+           LOGO — same horizontal padding as every content section
+           ============================================================ -->
       <tr>
-        <td bgcolor="#ffffff" style="padding: 30px 20px; text-align: center; border-bottom: 3px solid #284b31;">
-          <img src="<%= @community.logo_for_sdk_email %>" width="200" height="60" alt="<%= @community.name %>"
-               style="display: block; margin: auto; max-width: 200px; max-height: 60px; width: auto; height: auto; font-family: -apple-system, sans-serif; color: #172a1d; font-size: 16px; border: 0;" />
+        <td bgcolor="#ffffff" class="sec-pad"
+            style="padding: 28px 30px; text-align: center; border-bottom: 3px solid #284b31;">
+          <img src="<%= @community.logo_for_sdk_email %>"
+               width="200" height="60" alt="<%= @community.name %>"
+               style="display: block; margin: 0 auto; max-width: 200px; max-height: 60px;
+                      width: auto; height: auto; border: 0;" />
         </td>
       </tr>
 
-      <!-- Hero Image -->
+      <!-- ============================================================
+           HERO IMAGE — intentionally edge-to-edge (standard hero treatment)
+           ============================================================ -->
       <tr>
-        <td bgcolor="#e2e8f0" style="text-align: center;">
-          <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=600&h=300&q=80" width="600" alt="Modern Apartment Community" class="hero-img" style="display: block; margin: auto; border: 0; width: 100%; max-width: 600px; height: auto;" />
+        <td bgcolor="#e2e8f0" style="padding: 0; font-size: 0; line-height: 0;">
+          <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=600&h=300&q=80"
+               width="600" alt="<%= @community.name %>" class="hero-img"
+               style="display: block; width: 100%; max-width: 600px; height: auto; border: 0;" />
         </td>
       </tr>
 
-      <!-- Intro -->
+      <!-- ============================================================
+           INTRO TEXT + VIEW MY FAVORITES BUTTON
+           ============================================================ -->
       <tr>
-        <td bgcolor="#ffffff" style="padding: 40px 30px 30px 30px;" class="mobile-padding">
+        <td bgcolor="#ffffff" class="sec-pad" style="padding: 40px 30px; text-align: center;">
           <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+
             <tr>
-              <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 18px; line-height: 28px; color: #1f2937; text-align: center; padding-bottom: 30px;">
-                Thanks for exploring <strong><%= @community.name %></strong>.<br>
+              <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+                          font-size: 18px; line-height: 28px; color: #1f2937;
+                          text-align: center; padding-bottom: 28px;">
+                Thanks for exploring <strong><%= @community.name %></strong>.
                 The floor plans and amenities you saved are just a click away &mdash; ready whenever you are.
               </td>
             </tr>
+
             <tr>
+              <!-- Button: <center> + align="center" + text-align:center covers every client:
+                   Gmail strips <style> but respects <center> & align attrs.
+                   iPhone Mail & Android apply all three layers.
+                   Outlook uses the table + align attr fallback. -->
               <td align="center" style="text-align: center;">
-                <table role="presentation" cellspacing="0" cellpadding="0" border="0" class="mobile-button-wrap" align="center">
-                  <tr>
-                    <td align="center" bgcolor="#284b31" style="background-color: #284b31; border-radius: 6px;">
-                      <a href="<%= @favorites_url %>" target="_blank"
-                         style="font-size: 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-weight: bold; color: #ffffff; text-decoration: none; padding: 18px 36px; border: 1px solid #284b31; border-radius: 6px; display: inline-block;"
-                         class="mobile-button-a">View My Favorites &rarr;</a>
-                    </td>
-                  </tr>
-                </table>
+                <center>
+                  <table align="center" role="presentation" cellspacing="0" cellpadding="0" border="0"
+                         style="margin: 0 auto;">
+                    <tr>
+                      <td align="center" bgcolor="#284b31"
+                          style="background-color: #284b31; border-radius: 6px; text-align: center;">
+                        <a href="<%= @favorites_url %>" target="_blank"
+                           style="display: inline-block; white-space: nowrap;
+                                  font-size: 16px; font-weight: bold; color: #ffffff;
+                                  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+                                  text-decoration: none; padding: 16px 36px; border-radius: 6px;">
+                          View My Favorites &rarr;
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
+                </center>
               </td>
             </tr>
+
           </table>
         </td>
       </tr>
 
-      <!-- Divider -->
+      <!-- ============================================================
+           DIVIDER — matches horizontal padding of surrounding sections
+           ============================================================ -->
       <tr>
-        <td bgcolor="#ffffff" style="padding: 0 30px;">
+        <td bgcolor="#ffffff" class="div-pad" style="padding: 0 30px;">
           <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-            <tr><td style="border-top: 1px solid #e5e7eb;">&nbsp;</td></tr>
+            <tr>
+              <td style="border-top: 1px solid #e5e7eb; height: 1px;
+                          font-size: 1px; line-height: 1px;">&nbsp;</td>
+            </tr>
           </table>
         </td>
       </tr>
 
       <% if @tour_url.present? || @apply_url.present? %>
-      <!-- CTA Buttons -->
+      <!-- ============================================================
+           CTA — same padding as intro section
+           ============================================================ -->
       <tr>
-        <td bgcolor="#faf9f7" style="padding: 30px 30px 40px 30px; text-align: center;" class="mobile-padding">
+        <td bgcolor="#faf9f7" class="sec-pad" style="padding: 40px 30px; text-align: center;">
           <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+
             <tr>
-              <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 16px; font-weight: 600; color: #374151; text-align: center; padding-bottom: 20px;">
+              <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+                          font-size: 16px; font-weight: 600; color: #374151;
+                          text-align: center; padding-bottom: 20px;">
                 Ready to make it home?
               </td>
             </tr>
+
             <tr>
-              <td align="center">
-                <% if @tour_url.present? && @apply_url.present? %>
-                <!-- Both buttons -->
-                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-                  <tr>
-                    <td align="center" class="stack-column" style="padding: 0 10px;">
-                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-                        <tr>
-                          <td align="center" bgcolor="#ffffff" style="background-color: #ffffff; border-radius: 6px; border: 1px solid #284b31;">
-                            <a href="<%= @tour_url %>" target="_blank"
-                               style="font-size: 15px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-weight: 600; color: #284b31; text-decoration: none; padding: 14px 20px; display: block;"
-                               class="mobile-button-a">Schedule a Tour</a>
-                          </td>
-                        </tr>
-                      </table>
-                    </td>
-                    <td width="20" class="stack-column" style="font-size: 0; line-height: 0;">&nbsp;</td>
-                    <td align="center" class="stack-column" style="padding: 0 10px;">
-                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-                        <tr>
-                          <td align="center" bgcolor="#ffffff" style="background-color: #ffffff; border-radius: 6px; border: 1px solid #284b31;">
-                            <a href="<%= @apply_url %>" target="_blank"
-                               style="font-size: 15px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-weight: 600; color: #284b31; text-decoration: none; padding: 14px 20px; display: block;"
-                               class="mobile-button-a">Apply Now</a>
-                          </td>
-                        </tr>
-                      </table>
-                    </td>
-                  </tr>
-                </table>
-                <% elsif @apply_url.present? %>
-                <!-- Apply only -->
-                <table role="presentation" cellspacing="0" cellpadding="0" border="0">
-                  <tr>
-                    <td align="center" bgcolor="#ffffff" style="background-color: #ffffff; border-radius: 6px; border: 1px solid #284b31;">
-                      <a href="<%= @apply_url %>" target="_blank"
-                         style="font-size: 15px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-weight: 600; color: #284b31; text-decoration: none; padding: 14px 40px; display: block;"
-                         class="mobile-button-a">Apply Now</a>
-                    </td>
-                  </tr>
-                </table>
-                <% elsif @tour_url.present? %>
-                <!-- Tour only -->
-                <table role="presentation" cellspacing="0" cellpadding="0" border="0">
-                  <tr>
-                    <td align="center" bgcolor="#ffffff" style="background-color: #ffffff; border-radius: 6px; border: 1px solid #284b31;">
-                      <a href="<%= @tour_url %>" target="_blank"
-                         style="font-size: 15px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-weight: 600; color: #284b31; text-decoration: none; padding: 14px 40px; display: block;"
-                         class="mobile-button-a">Schedule a Tour</a>
-                    </td>
-                  </tr>
-                </table>
-                <% end %>
+              <td align="center" style="text-align: center;">
+                <center>
+                  <!-- Single-column stacked: spacing via td padding-bottom, no media queries -->
+                  <table align="center" role="presentation" cellspacing="0" cellpadding="0" border="0"
+                         style="margin: 0 auto; width: 100%; max-width: 300px;">
+
+                    <% if @tour_url.present? %>
+                    <tr>
+                      <td style="padding-bottom: <%= @apply_url.present? ? '14px' : '0' %>;">
+                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                          <tr>
+                            <td align="center" bgcolor="#ffffff"
+                                style="background-color: #ffffff; border-radius: 6px;
+                                       border: 1px solid #284b31; text-align: center;">
+                              <a href="<%= @tour_url %>" target="_blank"
+                                 style="display: block; text-align: center; padding: 14px 20px;
+                                        font-size: 15px; font-weight: 600; color: #284b31;
+                                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+                                        text-decoration: none;">Schedule a Tour</a>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                    <% end %>
+
+                    <% if @apply_url.present? %>
+                    <tr>
+                      <td>
+                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                          <tr>
+                            <td align="center" bgcolor="#ffffff"
+                                style="background-color: #ffffff; border-radius: 6px;
+                                       border: 1px solid #284b31; text-align: center;">
+                              <a href="<%= @apply_url %>" target="_blank"
+                                 style="display: block; text-align: center; padding: 14px 20px;
+                                        font-size: 15px; font-weight: 600; color: #284b31;
+                                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+                                        text-decoration: none;">Apply Now</a>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                    <% end %>
+
+                  </table>
+                </center>
               </td>
             </tr>
+
           </table>
         </td>
       </tr>
       <% end %>
 
-      <!-- Footer -->
+      <!-- ============================================================
+           FOOTER
+           ============================================================ -->
       <tr>
-        <td bgcolor="#172a1d" style="padding: 30px; text-align: center; border-radius: 0 0 8px 8px;" class="mobile-padding">
+        <td bgcolor="#172a1d" class="sec-pad"
+            style="padding: 30px; text-align: center; border-radius: 0 0 8px 8px;">
           <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
             <tr>
-              <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; line-height: 22px; color: #d1d5db; text-align: center; padding-bottom: 15px;">
+              <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+                          font-size: 14px; line-height: 22px; color: #d1d5db;
+                          text-align: center; padding-bottom: 15px;">
                 <strong><%= @community.name %></strong><br>
                 <%= @community.address %>, <%= @community.city %>, <%= @community.state %> <%= @community.zip %><br>
                 <% if @community.phone.present? %>
-                  <a href="tel:<%= @community.phone %>" style="color: #d1d5db; text-decoration: none;"><%= @community.phone %></a>
+                  <a href="tel:<%= @community.phone %>"
+                     style="color: #d1d5db; text-decoration: none;"><%= @community.phone %></a>
                 <% end %>
               </td>
             </tr>
             <tr>
               <td style="padding-top: 15px; border-top: 1px solid #284b31; text-align: center;">
-                <span style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 12px; color: #6b7280;">Powered by Pynwheel</span>
+                <span style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+                              font-size: 12px; color: #6b7280;">Powered by Pynwheel</span>
               </td>
             </tr>
           </table>
