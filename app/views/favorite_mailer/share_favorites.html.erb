@@ -23,7 +23,7 @@
       .mobile-button-a { display: block !important; width: 100% !important; box-sizing: border-box !important; padding: 15px 10px !important; text-align: center !important; }
 
       /* Column Stacking */
-      .stack-column { display: block !important; width: 100% !important; }
+      .stack-column { display: block !important; width: 100% !important; margin-bottom: 12px !important; }
     }
   </style>
 </head>
@@ -59,8 +59,8 @@
               </td>
             </tr>
             <tr>
-              <td align="center">
-                <table role="presentation" cellspacing="0" cellpadding="0" border="0" class="mobile-button-wrap">
+              <td align="center" style="text-align: center;">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" class="mobile-button-wrap" align="center">
                   <tr>
                     <td align="center" bgcolor="#284b31" style="background-color: #284b31; border-radius: 6px;">
                       <a href="<%= @favorites_url %>" target="_blank"
