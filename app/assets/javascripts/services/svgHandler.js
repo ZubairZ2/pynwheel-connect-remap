@@ -102,6 +102,7 @@ function uniquifySVGIds(svgElement, floorId) {
 
   // Elements to skip (Units and Amenities groups + their children)
   // const skipSelectors = ["g#Units", "g#Units_", "g#Amenities", "#Units_ *", "#Units *", "#Amenities *"];
+  
   function isUnitsOrAmenities(el) {
     let node = el;
 
@@ -133,11 +134,10 @@ function uniquifySVGIds(svgElement, floorId) {
   });
 
   // STEP 2: Update all references
+  // NOTE: do NOT skip Units/Amenities here — their shapes may reference renamed
+  // <defs> IDs (e.g. fill="url(#pattern...)") and those references must be updated
+  // even though we skipped renaming the shape IDs themselves in STEP 1.
   svgElement.querySelectorAll('*').forEach(el => {
-    // Skip updating references inside Units or Amenities
-    // if (el.closest(skipSelectors.join(","))) return;
-    if (isUnitsOrAmenities(el)) return;
-
     // Attributes with url(#id)
     ["fill", "stroke", "filter", "clip-path", "mask", "style"].forEach(attr => {
       if (el.hasAttribute(attr)) {
