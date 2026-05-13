@@ -38,6 +38,8 @@ class SdkPayloadBuilderService
         building:        unit.building,
         floor:           unit.floor,
         sold:            unit.sold,
+        x_plot:          unit.x_plot.to_i,
+        y_plot:          unit.y_plot.to_i,
         bedrooms:        floorplan.present? ? hide_decimals(floorplan.bedrooms)  : nil,
         bathrooms:       floorplan.present? ? hide_decimals(floorplan.bathrooms) : nil,
         square_feet:     if unit.square_feet?
@@ -176,13 +178,28 @@ class SdkPayloadBuilderService
     return nil unless @community&.is_sitemap?
     sitemap = @community.sitemap
     return nil unless sitemap
-    { mapId: sitemap.id, mapType: 'sitemap', updatedAt: sitemap.updated_at.to_i }
+    {
+      mapId:       sitemap.id,
+      mapType:     'sitemap',
+      updatedAt:   sitemap.updated_at.to_i,
+      imageUrl:    sitemap.validated_image_url,
+      imageWidth:  sitemap.try(:width).to_i > 0 ? sitemap.width.to_i : (sitemap.image.present? ? sitemap.image.width.to_i : 0),
+      imageHeight: sitemap.try(:height).to_i > 0 ? sitemap.height.to_i : (sitemap.image.present? ? sitemap.image.height.to_i : 0)
+    }
   end
 
   def floorplates_json
     return [] if @community.is_sitemap?
     @community.floorplates.map do |fp|
-      { mapId: fp.id, mapType: 'floorplate', range: fp.range, updatedAt: fp.updated_at.to_i }
+      {
+        mapId:       fp.id,
+        mapType:     'floorplate',
+        range:       fp.range,
+        updatedAt:   fp.updated_at.to_i,
+        imageUrl:    fp.validated_image_url,
+        imageWidth:  fp.floorplate_image_width.to_i,
+        imageHeight: fp.floorplate_image_height.to_i
+      }
     end
   end
 
@@ -211,9 +228,11 @@ class SdkPayloadBuilderService
 
   def amenities_json
     amenity_color_cfg = amenity_marker_config(@community)
+    svg_enabled = @community.enable_svg_mode
 
     Amenity
       .where(community_id: @community.id)
+      .plotted_amenities(svg_enabled)
       .includes(:amenity_galleries)
       .order(:sort)
       .map do |a|
@@ -225,6 +244,11 @@ class SdkPayloadBuilderService
           image:            a.validated_image_url,
           directionalText:  a.directional_text.presence,
           colorConfig:      amenity_color_cfg,
+          x_plot:           a.x_plot.to_i,
+          y_plot:           a.y_plot.to_i,
+          floor:            a.floor,
+          floorplateId:     a.amenityable_id,
+          pointerData:      a.pointer_data,
           additionalImages: a.amenity_galleries.map { |g|
             {
               name:        g.name.presence,

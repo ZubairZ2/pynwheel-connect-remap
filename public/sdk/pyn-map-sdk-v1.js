@@ -24,6 +24,10 @@
     _zoomOutBtn:    null,
     _resetZoomBtn:  null,
 
+    // Image map state (2D raster image mode, enable_svg_mode === false)
+    _imgMapMode:    false,
+    _imgActiveMapId: null,   // mapId of the currently-visible floorplate/sitemap
+
     // true when the caller explicitly passed styles.unitColors in config;
     // false means "use per-unit colors returned by the API"
     _userHasCustomColors: false,
@@ -70,6 +74,8 @@
         floor:            cfg.defaultFloor != null ? String(cfg.defaultFloor) : null,
         onUnitHover:      typeof cfg.onUnitHover      === "function" ? cfg.onUnitHover      : null,
         onUnitClick:      typeof cfg.onUnitClick      === "function" ? cfg.onUnitClick      : null,
+        onAmenityHover:   typeof cfg.onAmenityHover   === "function" ? cfg.onAmenityHover   : null,
+        onAmenityClick:   typeof cfg.onAmenityClick   === "function" ? cfg.onAmenityClick   : null,
         onFavoriteChange: typeof cfg.onFavoriteChange === "function" ? cfg.onFavoriteChange : null,
         enable3DMap:          cfg.enable3DMap          != null ? cfg.enable3DMap          === true : null,
         show3DMap:            cfg.show3DMap            != null ? cfg.show3DMap            === true : null,
@@ -158,12 +164,22 @@
         .then(r => {
           if (!r?.success) return this._showError(r?.error || "Config load error");
           this._storeConfig(r.data);
+
+          if (this._isImageMapMode()) {
+            // Image map: no SVG to fetch — just need panzoom ready.
+            return Promise.all([this._loadFontAwesome(), panZoomReady]);
+          }
+
           this._showLoading("Loading SVG maps...");
-          // Active SVG load and pan-zoom library load run simultaneously.
           return Promise.all([this._loadActiveSVG(), panZoomReady]);
         })
         .then(result => {
           if (!result) return;
+
+          if (this._isImageMapMode()) {
+            return this._bootImageMap();
+          }
+
           if (!this._hasAnyMap()) return this._showError("No maps found.");
 
           if (!this._mapExists(this.activeMapId)) {
@@ -182,7 +198,9 @@
     // ----------------------------------------------------
     async _bootAfterSVGLoad() {
       this._renderMaps();
+      this._plotSvgAmenities();
       this._bindUnitEvents();
+      this._bindSvgAmenityEvents();
 
       if (this.config.floor) {
         await this.changeFloor(this.config.floor);
@@ -765,6 +783,13 @@
     },
 
     zoomIn() {
+      if (this._imgMapMode) {
+        const w = this._getActiveImageWrapper();
+        if (!w || !w._pz) return;
+        const r = w.parentElement ? w.parentElement.getBoundingClientRect() : w.getBoundingClientRect();
+        w._pz.smoothZoom(r.width / 2, r.height / 2, 1.25);
+        return;
+      }
       const svg = this._getActiveSvg();
       if (!svg || !svg._pz) return;
       const r = svg.parentElement ? svg.parentElement.getBoundingClientRect() : svg.getBoundingClientRect();
@@ -772,6 +797,13 @@
     },
 
     zoomOut() {
+      if (this._imgMapMode) {
+        const w = this._getActiveImageWrapper();
+        if (!w || !w._pz) return;
+        const r = w.parentElement ? w.parentElement.getBoundingClientRect() : w.getBoundingClientRect();
+        w._pz.smoothZoom(r.width / 2, r.height / 2, 1 / 1.25);
+        return;
+      }
       const svg = this._getActiveSvg();
       if (!svg || !svg._pz) return;
       const r = svg.parentElement ? svg.parentElement.getBoundingClientRect() : svg.getBoundingClientRect();
@@ -779,6 +811,13 @@
     },
 
     resetZoom() {
+      if (this._imgMapMode) {
+        const w = this._getActiveImageWrapper();
+        if (!w || !w._pz) return;
+        w._pz.zoomAbs(0, 0, 1);
+        w._pz.moveTo(0, 0);
+        return;
+      }
       const svg = this._getActiveSvg();
       if (!svg || !svg._pz) return;
       this._centerSvg(svg);
@@ -866,7 +905,6 @@
 
     async _init3DMap() {
       const cfg3d = this.data.property?.beans3dConfig;
-      debugger;
       if (!cfg3d?.enabled || !cfg3d?.beansApiKey) {
         console.warn("PynMapSDK: 3D map not configured for this property.");
         this.switchTo2DMap();
@@ -1202,8 +1240,10 @@
       this._lastHoverPid = null;
 
       this._renderMaps();
+      this._plotSvgAmenities();
       this._highlightAllUnits();
       this._bindUnitEvents();
+      this._bindSvgAmenityEvents();
     },
 
     async changeFloor(floorNumber) {
@@ -1213,6 +1253,11 @@
           ? this._beans3dIndicesForFloor(floorNumber)
           : this._beans3dArr.map((_, i) => i);
         this._update3DFilter(indices);
+        return;
+      }
+
+      if (this._imgMapMode) {
+        this._imageMapChangeFloor(floorNumber);
         return;
       }
 
@@ -1299,6 +1344,11 @@
         return;
       }
 
+      if (this._imgMapMode) {
+        this._imageMapHighlightUnits(ids);
+        return;
+      }
+
       const activeSvg = this._getActiveSvg();
       if (!activeSvg) return;
       const units = this.unitsByMap[this.activeMapId] || [];
@@ -1351,9 +1401,10 @@
       if (svg._pynEventsBound) return;
       svg._pynEventsBound = true;
 
+      // Hover — only highlighted units respond visually and fire the callback.
       svg.addEventListener("mouseover", (e) => {
         const root = e.target.closest("[data-pyn-unit-pid]");
-        if (!root) return;
+        if (!root || !root.classList.contains("pyn-highlight")) return;
 
         const pid  = root.dataset.pynUnitPid;
         const unit = byPointer[pid];
@@ -1362,18 +1413,21 @@
         const sel = this._pointerSelector(unit.pointerData);
         const el  = root.querySelector(sel) || root;
         this._applyFill(el, this._unitHoverColor(unit));
+
+        if (pid !== this._lastHoverPid) {
+          this._lastHoverPid = pid;
+          if (this.config.onUnitHover) this.config.onUnitHover(unit);
+        }
       });
 
       svg.addEventListener("mouseout", (e) => {
         const root = e.target.closest("[data-pyn-unit-pid]");
-        if (!root) return;
+        if (!root || !root.classList.contains("pyn-highlight")) return;
 
         const pid  = root.dataset.pynUnitPid;
         const unit = byPointer[pid];
         if (!unit) return;
 
-        // Clear hover debounce only when truly leaving the unit group,
-        // not when moving between child elements within it.
         if (!root.contains(e.relatedTarget) && this._lastHoverPid === pid) {
           this._lastHoverPid = null;
         }
@@ -1381,23 +1435,6 @@
         const sel = this._pointerSelector(unit.pointerData);
         const el  = root.querySelector(sel) || root;
         this._applyFill(el, this._unitColor(unit));
-      });
-
-      svg.addEventListener("mouseover", (e) => {
-        const root = e.target.closest("[data-pyn-unit-pid]");
-        if (!root || !root.classList.contains("pyn-highlight")) return;
-
-        const pid = root.dataset.pynUnitPid;
-        if (!pid || this._lastHoverPid === pid) return;
-
-        this._lastHoverPid = pid;
-
-        const unit = byPointer[pid];
-        if (!unit) return;
-
-        if (this.config.onUnitHover) {
-          this.config.onUnitHover(unit);
-        }
       });
 
       // Touch support: tap to select
@@ -1409,7 +1446,7 @@
         const t = e.touches[0];
         const root = t.target.closest("[data-pyn-unit-pid]");
         _touch = { x: t.clientX, y: t.clientY, time: Date.now(), root: root || null };
-        if (root) {
+        if (root && root.classList.contains("pyn-highlight")) {
           const pid  = root.dataset.pynUnitPid;
           const unit = byPointer[pid];
           if (unit) {
@@ -1466,6 +1503,122 @@
       });
     },
 
+
+    // ----------------------------------------------------
+    // SVG AMENITY PLOTTING
+    // Mirrors the old svgHandler.js processSvgBlock / setSvgAmenitiesCoordinates:
+    //   find the original SVG shape via pointer_data selector → clone it → fill with
+    //   amenity color → tag clone with data-pyn-amenity-id for delegated events.
+    // ----------------------------------------------------
+
+    // Returns amenities that belong to the given mapId and have valid pointer_data.
+    _svgAmenitiesForMap(mapId) {
+      return (this.data.amenities || []).filter(a =>
+        a.pointerData && String(a.floorplateId) === String(mapId)
+      );
+    },
+
+    // Clone the original SVG shape for each amenity, fill with the amenity color,
+    // and insert directly after the original element in the SVG.
+    _plotSvgAmenities() {
+      const svg = this._getActiveSvg();
+      if (!svg) return;
+
+      // Remove stale clones from a previous render.
+      svg.querySelectorAll(".pyn-svg-amenity").forEach(el => el.remove());
+
+      const amenities = this._svgAmenitiesForMap(this.activeMapId);
+
+      amenities.forEach(amenity => {
+        const sel = this._pointerSelector(amenity.pointerData);
+        if (!sel) return;
+
+        const original = svg.querySelector(sel);
+        if (!original) return;
+
+        const clone = original.cloneNode(true);
+        clone.classList.add("pyn-svg-amenity");
+        clone.setAttribute("id", `pyn_amenity_${amenity.amenityId}_cloned`);
+
+        // Apply amenity fill color — override any inline style from the SVG source.
+        const cfg   = amenity.colorConfig || {};
+        const color = this._hexToRgba(cfg.color || "#888888", cfg.opacity ?? 1);
+        clone.style.fill   = color;
+        clone.style.cursor = "pointer";
+
+        // Tag for delegated event lookup (stored as string to survive cloneNode).
+        clone.dataset.pynAmenityId   = String(amenity.amenityId);
+        clone.dataset.pynAmenityJson = JSON.stringify(amenity);
+
+        // Insert after original so the clone renders on top.
+        const next = original.nextSibling;
+        if (next) {
+          original.parentNode.insertBefore(clone, next);
+        } else {
+          original.parentNode.appendChild(clone);
+        }
+      });
+    },
+
+    // Delegated amenity events — hover, click, and touch-tap — all bound once on the SVG.
+    _bindSvgAmenityEvents() {
+      const svg = this._getActiveSvg();
+      if (!svg || svg._pynAmenityEventsBound) return;
+      svg._pynAmenityEventsBound = true;
+
+      // Hover — visual brightness + callback.
+      svg.addEventListener("mouseover", e => {
+        const el = e.target.closest(".pyn-svg-amenity[data-pyn-amenity-id]");
+        if (!el) return;
+        el.style.filter = "brightness(1.25)";
+        try {
+          const amenity = JSON.parse(el.dataset.pynAmenityJson || "null");
+          if (amenity && this.config.onAmenityHover) this.config.onAmenityHover(amenity);
+        } catch {}
+      });
+
+      svg.addEventListener("mouseout", e => {
+        const el = e.target.closest(".pyn-svg-amenity[data-pyn-amenity-id]");
+        if (!el || el.contains(e.relatedTarget)) return;
+        el.style.filter = "";
+      });
+
+      // Click (desktop).
+      svg.addEventListener("click", e => {
+        const el = e.target.closest(".pyn-svg-amenity[data-pyn-amenity-id]");
+        if (!el) return;
+        try {
+          const amenity = JSON.parse(el.dataset.pynAmenityJson || "null");
+          if (amenity && this.config.onAmenityClick) this.config.onAmenityClick(amenity);
+        } catch {}
+      });
+
+      // Touch tap (mobile).
+      let _aTouch = null;
+      svg.addEventListener("touchstart", e => {
+        if (e.touches.length !== 1) { _aTouch = null; return; }
+        const t = e.touches[0];
+        const el = t.target.closest(".pyn-svg-amenity[data-pyn-amenity-id]");
+        _aTouch = { x: t.clientX, y: t.clientY, time: Date.now(), el: el || null };
+      }, { passive: true });
+
+      svg.addEventListener("touchend", e => {
+        if (!_aTouch) return;
+        const t  = e.changedTouches[0];
+        const dx = t.clientX - _aTouch.x;
+        const dy = t.clientY - _aTouch.y;
+        const wasTap = Math.sqrt(dx * dx + dy * dy) < 8 && (Date.now() - _aTouch.time) < 300;
+        const el = _aTouch.el;
+        _aTouch = null;
+        if (!wasTap || !el) return;
+        try {
+          const amenity = JSON.parse(el.dataset.pynAmenityJson || "null");
+          if (amenity && this.config.onAmenityClick) this.config.onAmenityClick(amenity);
+        } catch {}
+      }, { passive: true });
+
+      svg.addEventListener("touchcancel", () => { _aTouch = null; }, { passive: true });
+    },
 
     // ----------------------------------------------------
     // INTERNAL CLEARING
@@ -2034,6 +2187,438 @@
         return { success: false, message: "Network error. Please try again." };
       }
     },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // IMAGE MAP SUBSYSTEM
+    // Used when data.property.map.enableSvgMode === false.
+    // Renders a raster image (PNG/JPG) and overlays absolutely-positioned
+    // pin markers at (x_plot, y_plot) coordinates stored per unit/amenity.
+    // Mirrors the behaviour of webpages.js for the old 2D image map.
+    // ─────────────────────────────────────────────────────────────────────────
+
+    _isImageMapMode() {
+      return this.data.property?.map?.enableSvgMode === false;
+    },
+
+    // Load Font Awesome 5 CSS (needed for fas fa-map-marker-alt and fas fa-camera-retro).
+    _loadFontAwesome() {
+      return new Promise(resolve => {
+        const FA = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css";
+        if (document.querySelector(`link[href="${FA}"]`)) return resolve();
+        const l = document.createElement("link");
+        l.rel  = "stylesheet";
+        l.href = FA;
+        l.onload = resolve;
+        l.onerror = resolve;
+        document.head.appendChild(l);
+      });
+    },
+
+    // Inject a single scoped <style> block for marker sizing via CSS custom properties.
+    // All size values are driven by --pyn-pin-size / --pyn-cam-size on this.container.
+    // Setting those two properties on resize is all that's needed — no per-marker DOM walk.
+    _injectMarkerStyles() {
+      if (document.getElementById("pyn-img-marker-styles")) return;
+      const s = document.createElement("style");
+      s.id = "pyn-img-marker-styles";
+      s.textContent = [
+        `.pyn-img-wrapper .pyn-unit-marker   { font-size: var(--pyn-pin-size, 28px); line-height: 1; }`,
+        `.pyn-img-wrapper .pyn-marker-badge  { font-size: calc(var(--pyn-pin-size, 28px) * 0.3); }`,
+        `.pyn-img-wrapper .pyn-camera-icon   { width: var(--pyn-cam-size, 20px); height: var(--pyn-cam-size, 20px); }`,
+        `.pyn-img-wrapper .pyn-camera-icon i { font-size: calc(var(--pyn-cam-size, 20px) * 0.48); }`,
+      ].join("\n");
+      document.head.appendChild(s);
+    },
+
+    // Compute and apply --pyn-pin-size / --pyn-cam-size to the container.
+    // Scale is a continuous function of container width against a 900px reference — no breakpoint jumps.
+    _updateMarkerSizeVars() {
+      const basePinPx  = parseFloat(this.data.property?.markerConfig?.unit_marker_font_size) || 32;
+      const baseCamPx  = Math.round(basePinPx * 0.64);        // ~20px at default 32
+      const containerW = this.container.offsetWidth || 900;
+      const scale      = Math.min(1.25, Math.max(0.4, containerW / 900));
+      const pinPx      = Math.max(14, Math.round(basePinPx * scale));
+      const camPx      = Math.max(12, Math.round(baseCamPx * scale));
+      this.container.style.setProperty("--pyn-pin-size", `${pinPx}px`);
+      this.container.style.setProperty("--pyn-cam-size", `${camPx}px`);
+    },
+
+    // Boot sequence for image map mode.
+    async _bootImageMap() {
+      this._imgMapMode = true;
+      this._injectMarkerStyles();
+      this._renderImageMaps();
+      this._bindImageMapEvents();
+
+      const defaultFloor = this.config.floor ?? this.data.property?.map?.defaultFloor;
+      if (defaultFloor != null) {
+        this._imageMapChangeFloor(String(defaultFloor));
+      } else {
+        const id = this._getDefaultImageMapId();
+        if (id) this._imageMapShowById(id);
+      }
+
+      if (this.config.enable3DMap && this.config.show3DMap) {
+        this.switchTo3DMap();
+      }
+    },
+
+    _getDefaultImageMapId() {
+      if (this.data.floorplates.length > 0) return String(this.data.floorplates[0].mapId);
+      if (this.data.sitemap) return String(this.data.sitemap.mapId);
+      return null;
+    },
+
+    // Build one wrapper div per floorplate/sitemap. All hidden; _imageMapShowById reveals one.
+    _renderImageMaps() {
+      const c = this.container;
+      c.innerHTML = "";
+      c.style.position = "relative";
+      c.style.overflow = "hidden";
+
+      const maps = this.data.sitemap
+        ? [{ mapId: String(this.data.sitemap.mapId), imageUrl: this.data.sitemap.imageUrl, imageWidth: this.data.sitemap.imageWidth, imageHeight: this.data.sitemap.imageHeight }]
+        : (this.data.floorplates || []).map(fp => ({ mapId: String(fp.mapId), imageUrl: fp.imageUrl, imageWidth: fp.imageWidth, imageHeight: fp.imageHeight }));
+
+      maps.forEach(m => {
+        const wrapper = document.createElement("div");
+        wrapper.className   = "pyn-img-wrapper";
+        wrapper.dataset.imageMapId = m.mapId;
+        Object.assign(wrapper.style, {
+          position:    "relative",
+          display:     "none",
+          width:       "100%",
+          height:      "100%",
+          userSelect:  "none",
+          touchAction: "none"
+        });
+
+        const img = document.createElement("img");
+        img.className             = "pyn-map-image";
+        img.src                   = m.imageUrl || "";
+        img.dataset.actualWidth   = m.imageWidth  || 0;
+        img.dataset.actualHeight  = m.imageHeight || 0;
+        Object.assign(img.style, {
+          display:       "block",
+          width:         "100%",
+          height:        "auto",
+          pointerEvents: "none",
+          userSelect:    "none"
+        });
+
+        const mc = document.createElement("div");
+        mc.className = "pyn-markers-container";
+        Object.assign(mc.style, {
+          position:      "absolute",
+          top:           "0",
+          left:          "0",
+          width:         "100%",
+          height:        "100%",
+          overflow:      "visible",
+          pointerEvents: "none"
+        });
+
+        wrapper.appendChild(img);
+        wrapper.appendChild(mc);
+        c.appendChild(wrapper);
+
+        // Render markers once the image dimensions are known.
+        img.addEventListener("load", () => {
+          this._renderMarkersForMapId(m.mapId);
+          this._adjustMarkersPositionForMapId(m.mapId);
+          this._enableImageMapPanZoom(wrapper);
+        });
+
+        if (img.complete && img.naturalWidth > 0) img.dispatchEvent(new Event("load"));
+      });
+
+      if (this.config.showZoomControls) this._renderZoomControls();
+    },
+
+    // Show one wrapper, hide all others; track as active.
+    _imageMapShowById(mapId) {
+      const id = String(mapId);
+      this._imgActiveMapId = id;
+      this.container.querySelectorAll(".pyn-img-wrapper").forEach(w => {
+        w.style.display = w.dataset.imageMapId === id ? "block" : "none";
+      });
+    },
+
+    // Floor switch: find the floorplate and show its wrapper.
+    _imageMapChangeFloor(floorNumber) {
+      if (!this.data.floorplates.length && this.data.sitemap) {
+        this._imageMapShowById(String(this.data.sitemap.mapId));
+        return;
+      }
+      const fp = this._findFloorplateByFloor(floorNumber);
+      if (!fp) return;
+      const id = String(fp.mapId);
+      this._imageMapShowById(id);
+      // Render markers now if they were deferred (wrapper was hidden on first load).
+      const wrapper = this.container.querySelector(`[data-image-map-id="${id}"]`);
+      if (!wrapper) return;
+      const mc = wrapper.querySelector(".pyn-markers-container");
+      if (mc && mc.children.length === 0) {
+        this._renderMarkersForMapId(id);
+        this._adjustMarkersPositionForMapId(id);
+      }
+    },
+
+    // Render unit + amenity markers into the markers-container of one map.
+    _renderMarkersForMapId(mapId) {
+      const id      = String(mapId);
+      const wrapper = this.container.querySelector(`[data-image-map-id="${id}"]`);
+      if (!wrapper) return;
+      const mc = wrapper.querySelector(".pyn-markers-container");
+      if (!mc) return;
+
+      const units     = this._imgUnitsForMap(id);
+      const amenities = this._imgAmenitiesForMap(id);
+
+      mc.innerHTML = this._buildUnitMarkersHTML(units) + this._buildAmenityMarkersHTML(amenities);
+    },
+
+    // Units belonging to a given map with a non-zero plot coordinate.
+    _imgUnitsForMap(mapId) {
+      return (this.data.units || []).filter(u =>
+        String(u.mapId) === String(mapId) && (u.x_plot > 0 || u.y_plot > 0)
+      );
+    },
+
+    // Amenities belonging to a given map.
+    _imgAmenitiesForMap(mapId) {
+      const isSitemap = !!this.data.sitemap && String(this.data.sitemap.mapId) === String(mapId);
+      return (this.data.amenities || []).filter(a => {
+        if (!(a.x_plot > 0 || a.y_plot > 0)) return false;
+        // Sitemap amenities have no floorplateId; floorplate amenities have one.
+        if (isSitemap) return !a.floorplateId;
+        return String(a.floorplateId) === String(mapId);
+      });
+    },
+
+    // Build HTML for all unit markers, grouping overlapping coords into one marker with a badge.
+    // Font-size is NOT set inline — it's driven by --pyn-pin-size CSS variable (see _injectMarkerStyles).
+    _buildUnitMarkersHTML(units) {
+      // Group by coordinate key to detect overlapping units.
+      const groups = {};
+      units.forEach(unit => {
+        const key = `${unit.x_plot}-${unit.y_plot}`;
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(unit);
+      });
+
+      return Object.values(groups).map(group => {
+        const rep      = group[0];
+        const count    = group.length;
+        const color    = this._unitColor(rep);
+        const unitIds  = group.map(u => u.unitId).join(",");
+        const dataJson = JSON.stringify(rep).replace(/'/g, "&#39;");
+
+        return `<div
+          class="pyn-unit-marker${count > 1 ? " pyn-overlapping" : ""}"
+          data-x-plot="${rep.x_plot}"
+          data-y-plot="${rep.y_plot}"
+          data-unit-id="${rep.unitId}"
+          data-unit-ids="${unitIds}"
+          data-unit-json='${dataJson}'
+          style="position:absolute;left:${rep.x_plot}px;top:${rep.y_plot}px;transform:translate(-50%,-100%);cursor:pointer;pointer-events:all;z-index:10;"
+        ><i class="fas fa-map-marker-alt" style="color:${color};pointer-events:none;"></i>${count > 1 ? `<span class="pyn-marker-badge" style="position:absolute;top:4px;left:50%;transform:translateX(-50%);color:white;font-weight:bold;pointer-events:none;">${count}</span>` : ""}</div>`;
+      }).join("");
+    },
+
+    // Build HTML for all amenity markers.
+    _buildAmenityMarkersHTML(amenities) {
+      return amenities.map(a => {
+        const cfg   = a.colorConfig || {};
+        const color = this._hexToRgba(cfg.color || "#888888", cfg.opacity ?? 1);
+        const aJson = JSON.stringify(a).replace(/'/g, "&#39;");
+
+        return `<div
+          class="pyn-amenity-marker"
+          data-amenity-id="${a.amenityId}"
+          data-x-plot="${a.x_plot}"
+          data-y-plot="${a.y_plot}"
+          data-floor="${a.floor || ""}"
+          data-amenity-json='${aJson}'
+          style="position:absolute;left:${a.x_plot}px;top:${a.y_plot}px;transform:translate(-50%,-50%);cursor:pointer;pointer-events:all;z-index:9;"
+        ><span class="pyn-camera-icon" style="display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:white;border:2px solid ${color};box-shadow:0 1px 3px rgba(0,0,0,0.3);"><i class="fas fa-camera-retro" style="color:${color};pointer-events:none;"></i></span></div>`;
+      }).join("");
+    },
+
+    // Scale all marker positions from image-pixel space to displayed-pixel space.
+    // Called after image load and on resize.
+    _adjustMarkersPositionForMapId(mapId) {
+      const id      = String(mapId);
+      const wrapper = this.container.querySelector(`[data-image-map-id="${id}"]`);
+      if (!wrapper) return;
+
+      const ratio = this._computeStretchRatio(id, wrapper);
+
+      wrapper.querySelectorAll(".pyn-unit-marker").forEach(m => {
+        m.style.left = `${parseFloat(m.dataset.xPlot) * ratio}px`;
+        m.style.top  = `${parseFloat(m.dataset.yPlot) * ratio}px`;
+      });
+
+      wrapper.querySelectorAll(".pyn-amenity-marker").forEach(m => {
+        m.style.left = `${parseFloat(m.dataset.xPlot) * ratio}px`;
+        m.style.top  = `${parseFloat(m.dataset.yPlot) * ratio}px`;
+      });
+
+      // Update CSS size variables — O(1), no per-marker DOM work needed.
+      this._updateMarkerSizeVars();
+    },
+
+    // Returns the ratio of displayed image size to actual (stored) image size.
+    // Mirrors webpages.js getStretchRatio: Math.min(widthRatio, heightRatio).
+    _computeStretchRatio(mapId, wrapper) {
+      const w   = wrapper || this.container.querySelector(`[data-image-map-id="${mapId}"]`);
+      if (!w) return 1;
+      const img = w.querySelector("img.pyn-map-image");
+      if (!img) return 1;
+
+      const dW = img.offsetWidth;
+      const dH = img.offsetHeight;
+      const aW = parseFloat(img.dataset.actualWidth)  || dW;
+      const aH = parseFloat(img.dataset.actualHeight) || dH;
+      if (!aW || !aH) return 1;
+
+      return Math.min(dW / aW, dH / aH);
+    },
+
+    // Apply panzoom to the image wrapper so the image + markers pan/zoom together.
+    _enableImageMapPanZoom(wrapperEl) {
+      if (!window.panzoom) return;
+      if (wrapperEl._pz) { try { wrapperEl._pz.dispose(); } catch {} }
+
+      wrapperEl.style.touchAction = "none";
+      wrapperEl._pz = panzoom(wrapperEl, {
+        minZoom:       0.5,
+        maxZoom:       10,
+        bounds:        true,
+        boundsPadding: 0.1,
+        filterKey:     () => false
+      });
+    },
+
+    _getActiveImageWrapper() {
+      if (!this._imgActiveMapId) return null;
+      return this.container.querySelector(`[data-image-map-id="${this._imgActiveMapId}"]`);
+    },
+
+    // Bind click, hover and touch events on the container (delegated).
+    _bindImageMapEvents() {
+      // Unit marker click
+      this.container.addEventListener("click", e => {
+        const marker = e.target.closest(".pyn-unit-marker");
+        if (!marker || marker.style.display === "none") return;
+        const unitIds = (marker.dataset.unitIds || "").split(",").filter(Boolean);
+        if (unitIds.length > 1) {
+          const units = unitIds
+            .map(id => (this.data.units || []).find(u => String(u.unitId) === id))
+            .filter(Boolean);
+          if (this.config.onUnitClick) this.config.onUnitClick(units.length === 1 ? units[0] : units);
+        } else {
+          try {
+            const unit = JSON.parse(marker.dataset.unitJson || "null");
+            if (unit && this.config.onUnitClick) this.config.onUnitClick(unit);
+          } catch {}
+        }
+      });
+
+      // Unit marker hover — visual highlight + callback
+      this.container.addEventListener("mouseover", e => {
+        const marker = e.target.closest(".pyn-unit-marker");
+        if (!marker || marker.style.display === "none") return;
+        marker.style.filter = "brightness(1.25) drop-shadow(0 2px 4px rgba(0,0,0,0.4))";
+        try {
+          const unit = JSON.parse(marker.dataset.unitJson || "null");
+          if (unit && this.config.onUnitHover) this.config.onUnitHover(unit);
+        } catch {}
+      });
+
+      this.container.addEventListener("mouseout", e => {
+        const marker = e.target.closest(".pyn-unit-marker");
+        if (!marker) return;
+        marker.style.filter = "";
+      });
+
+      // Touch tap on unit markers
+      let _imgTouch = null;
+      this.container.addEventListener("touchstart", e => {
+        if (e.touches.length !== 1) { _imgTouch = null; return; }
+        const t = e.touches[0];
+        _imgTouch = { x: t.clientX, y: t.clientY, time: Date.now(), target: t.target };
+      }, { passive: true });
+
+      // Touch tap — handles both unit markers and amenity markers in one listener
+      this.container.addEventListener("touchend", e => {
+        if (!_imgTouch) return;
+        const t  = e.changedTouches[0];
+        const dx = t.clientX - _imgTouch.x;
+        const dy = t.clientY - _imgTouch.y;
+        const wasTap = Math.sqrt(dx * dx + dy * dy) < 8 && (Date.now() - _imgTouch.time) < 300;
+        const target = _imgTouch.target;
+        _imgTouch = null;
+        if (!wasTap) return;
+        const marker = target.closest(".pyn-unit-marker");
+        if (marker && marker.style.display !== "none") {
+          try {
+            const unit = JSON.parse(marker.dataset.unitJson || "null");
+            if (unit && this.config.onUnitClick) this.config.onUnitClick(unit);
+          } catch {}
+          return;
+        }
+        const am = target.closest(".pyn-amenity-marker");
+        if (am) {
+          try {
+            const amenity = JSON.parse(am.dataset.amenityJson || "null");
+            if (amenity && this.config.onAmenityClick) this.config.onAmenityClick(amenity);
+          } catch {}
+        }
+      }, { passive: true });
+
+      // Amenity click
+      this.container.addEventListener("click", e => {
+        const am = e.target.closest(".pyn-amenity-marker");
+        if (!am) return;
+        try {
+          const amenity = JSON.parse(am.dataset.amenityJson || "null");
+          if (amenity && this.config.onAmenityClick) this.config.onAmenityClick(amenity);
+        } catch {}
+      });
+
+      // Amenity hover
+      this.container.addEventListener("mouseover", e => {
+        const am = e.target.closest(".pyn-amenity-marker");
+        if (!am) return;
+        try {
+          const amenity = JSON.parse(am.dataset.amenityJson || "null");
+          if (amenity && this.config.onAmenityHover) this.config.onAmenityHover(amenity);
+        } catch {}
+      });
+
+      // Recalculate marker positions on container resize.
+      if (typeof ResizeObserver !== "undefined") {
+        const ro = new ResizeObserver(() => {
+          if (this._imgActiveMapId) this._adjustMarkersPositionForMapId(this._imgActiveMapId);
+        });
+        ro.observe(this.container);
+      }
+    },
+
+    // Show only the supplied unit IDs; completely hide all others.
+    _imageMapHighlightUnits(unitIds) {
+      if (!this._imgActiveMapId) return;
+      const wrapper = this.container.querySelector(`[data-image-map-id="${this._imgActiveMapId}"]`);
+      if (!wrapper) return;
+      const idSet = new Set(unitIds.map(String));
+      wrapper.querySelectorAll(".pyn-unit-marker").forEach(m => {
+        const ids = (m.dataset.unitIds || m.dataset.unitId || "").split(",");
+        m.style.display = ids.some(id => idSet.has(id)) ? "" : "none";
+      });
+    },
+
+    // ─── END IMAGE MAP SUBSYSTEM ──────────────────────────────────────────────
 
     _apiBase() {
       if (this.config.environment === "staging") {
