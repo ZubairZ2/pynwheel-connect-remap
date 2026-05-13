@@ -16,6 +16,12 @@ function normalize(str) {
   return String(str || "").trim().replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
 }
 
+function extractShortName(str) {
+  if (!str) return "";
+  const parts = String(str).split(/[-_\s\/\.]+/).filter(Boolean);
+  return parts[parts.length - 1] || "";
+}
+
 function stringSimilarity(a, b) {
   if (!a || !b) return 0;
   if (a === b) return 1;
@@ -50,6 +56,7 @@ function normalizeFeedUnits(units) {
     id: u.id,
     communityId: u.community_id,
     baseName: normalize(u.marketing_name),
+    shortName: normalize(extractShortName(u.marketing_name)),
     floor: normalize(u.floor),
     building: normalize(u.building)
   }));
@@ -146,11 +153,17 @@ function processSvgUnitsOnly(unitsGroup, filteredUnits) {
 
 function extractSvgUnits(svgParent) {
   return Array.from(svgParent.querySelectorAll("polygon")).map(polygon => {
-    const label = polygon.closest("g")?.querySelector("text")?.textContent?.trim() || "";
+    const parentG = polygon.closest("g");
+    const label = parentG?.querySelector("text")?.textContent?.trim() || "";
     const points = parsePoints(polygon.getAttribute("points"));
     const { x, y } = getPolygonCentroid(points);
+    const polygonId = polygon.id || "";
+    const namedAncestorG = polygon.closest("g[id]");
+    const groupId = namedAncestorG?.id || "";
     return {
-      id: polygon.id || "",
+      id: polygonId || groupId,
+      polygonId,
+      groupId,
       normalized: normalize(label),
       x_plot: x,
       y_plot: y,
@@ -272,16 +285,24 @@ function matchUnitsToSvg(units, svgUnits) {
 
   units.forEach(unit => {
     const base = normalize(unit.baseName);
+    const short = normalize(unit.shortName || "");
 
-    // Step 1 — exact match
-    const exact = svgUnits.find(u => u.normalized === base);
-    if (exact) {
-      pointerData[unit.id] = formatPointerData(exact);
+    // Step 1 — exact match on full normalized name
+    let match = svgUnits.find(u => u.normalized === base);
+
+    // Step 1b — exact match on short name (last dash/space-separated segment)
+    if (!match && short && short !== base) {
+      match = svgUnits.find(u => u.normalized === short);
+    }
+
+    if (match) {
+      pointerData[unit.id] = formatPointerData(match);
       return;
     }
 
     // Step 2 — fallback to variant + similarity
     const variants = generateVariants(unit.baseName, unit.floor, unit.building);
+    if (short && short !== base) variants.unshift(short);
 
     let bestMatch = null;
     let bestScore = 0;
@@ -306,12 +327,14 @@ function matchUnitsToSvg(units, svgUnits) {
 }
 
 function formatPointerData(svgUnit) {
+  const id = svgUnit.polygonId || svgUnit.groupId || "";
+  const useGroupSelector = !svgUnit.polygonId && !!svgUnit.groupId;
   return {
-    id: svgUnit.id,
-    tag: svgUnit.tag,
+    id,
+    tag: useGroupSelector ? null : "polygon",
     x_plot: Math.round(svgUnit.x_plot).toString(),
     y_plot: Math.round(svgUnit.y_plot).toString(),
-    selector: ""
+    selector: useGroupSelector ? `g[id="${id}"] polygon` : ""
   };
 }
 
