@@ -1176,7 +1176,7 @@
         loadStyle("https://www.beans.ai/mapswidget/css/mapswidget-1.0.4.css");
 
         // Load order matters: ArcGIS → mapswidget → utils (provides convertUnitsArr)
-        loadScript("https://js.arcgis.com/4.23/")
+        loadScript("https://js.arcgis.com/4.27/")
           .then(() => loadScript("https://www.beans.ai/mapswidget/js/mapswidget-1.0.4-speed.js"))
           .then(() => loadScript("https://www.beans.ai/mapswidget/client/utils.js"))
           .then(resolve)
