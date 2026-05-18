@@ -337,6 +337,8 @@
       // Container should constrain the SVG
       c.style.overflow   = "hidden";
       c.style.touchAction = "none";
+
+      this._renderAllMarkersForMap();
     },
 
 
@@ -589,6 +591,186 @@
         root.style.cursor = "pointer";
       });
     },
+    // ----------------------------------------------------
+    // MARKERS (PUBLIC API)
+    // ----------------------------------------------------
+    addMarker(cfg) {
+      if (!cfg || !cfg.id) {
+        console.warn("PynMapSDK.addMarker: id is required");
+        return;
+      }
+
+      this.markers[String(cfg.id)] = {
+        id:        String(cfg.id),
+        unitId:    cfg.unitId   != null ? String(cfg.unitId)  : null,
+        floor:     cfg.floor    != null ? String(cfg.floor)   : null,
+        position:  cfg.position || null,
+        icon:      cfg.icon     || null,
+        cursor:    cfg.cursor   || "default",
+        draggable: !!cfg.draggable,
+        onClick:   typeof cfg.onClick === "function" ? cfg.onClick : null,
+        onDrag:    typeof cfg.onDrag  === "function" ? cfg.onDrag  : null,
+        _el:       null,
+      };
+
+      this._renderMarker(String(cfg.id));
+    },
+
+    removeMarker(id) {
+      const key = String(id);
+      const marker = this.markers[key];
+      if (!marker) return;
+
+      if (marker._el && marker._el.parentNode) {
+        marker._el.parentNode.removeChild(marker._el);
+      }
+      delete this.markers[key];
+    },
+
+    clearMarkers() {
+      Object.keys(this.markers).forEach(id => this.removeMarker(id));
+    },
+
+    // ----------------------------------------------------
+    // MARKERS (INTERNAL)
+    // ----------------------------------------------------
+    _getOrCreateMarkerLayer(svg) {
+      let layer = svg.querySelector(".pyn-markers-layer");
+      if (!layer) {
+        layer = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        layer.setAttribute("class", "pyn-markers-layer");
+        svg.appendChild(layer);
+      }
+      return layer;
+    },
+
+    _unitCenter(unitId, svg) {
+      const units = this.unitsByMap[this.activeMapId] || [];
+      const unit = units.find(u =>
+        String(u.unitId) === String(unitId) ||
+        String(u.id)     === String(unitId) ||
+        String(u.pointerData?.id) === String(unitId)
+      );
+      if (!unit?.pointerData?.id) return null;
+
+      const pid = String(unit.pointerData.id);
+      const el = svg.querySelector(`#${CSS.escape(pid)}`);
+      if (!el) return null;
+
+      const bbox = el.getBBox();
+      return { x: bbox.x + bbox.width / 2, y: bbox.y + bbox.height / 2 };
+    },
+
+    _renderMarker(markerId) {
+      const marker = this.markers[String(markerId)];
+      if (!marker) return;
+
+      const activeSvg = this._getActiveSvg();
+      if (!activeSvg) return;
+
+      // Only show on the matching floor if floor is specified
+      if (marker.floor != null) {
+        const fp = this._findFloorplateByFloor(marker.floor);
+        if (!fp || String(fp.mapId) !== this.activeMapId) return;
+      }
+
+      // Remove stale element if re-rendering after a floor change
+      if (marker._el && marker._el.parentNode) {
+        marker._el.parentNode.removeChild(marker._el);
+        marker._el = null;
+      }
+
+      // Resolve SVG-space position
+      let pos = marker.position ? { ...marker.position } : null;
+      if (!pos && marker.unitId) {
+        pos = this._unitCenter(marker.unitId, activeSvg);
+      }
+      if (!pos) return;
+
+      const icon   = marker.icon   || {};
+      const size   = icon.size     || [32, 32];
+      const anchor = icon.anchor   || [0.5, 0.5];
+
+      const x = pos.x - size[0] * anchor[0];
+      const y = pos.y - size[1] * anchor[1];
+
+      const ns    = "http://www.w3.org/2000/svg";
+      const imgEl = document.createElementNS(ns, "image");
+      imgEl.setAttribute("href",   icon.url || "");
+      imgEl.setAttribute("x",      x);
+      imgEl.setAttribute("y",      y);
+      imgEl.setAttribute("width",  size[0]);
+      imgEl.setAttribute("height", size[1]);
+      imgEl.style.cursor = marker.cursor || "default";
+      imgEl.setAttribute("data-pyn-marker-id", marker.id);
+
+      if (marker.onClick) {
+        imgEl.addEventListener("click", (e) => {
+          e.stopPropagation();
+          marker.onClick(marker);
+        });
+      }
+
+      if (marker.draggable) {
+        this._makeDraggableMarker(imgEl, marker, activeSvg);
+      }
+
+      this._getOrCreateMarkerLayer(activeSvg).appendChild(imgEl);
+      marker._el = imgEl;
+    },
+
+    _renderAllMarkersForMap() {
+      Object.keys(this.markers).forEach(id => {
+        const marker = this.markers[id];
+        if (marker._el && marker._el.parentNode) {
+          marker._el.parentNode.removeChild(marker._el);
+          marker._el = null;
+        }
+        this._renderMarker(id);
+      });
+    },
+
+    _makeDraggableMarker(imgEl, marker, svg) {
+      imgEl.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const startSVG    = this._screenToSVG(svg, e.clientX, e.clientY);
+        const startImgPos = {
+          x: parseFloat(imgEl.getAttribute("x")),
+          y: parseFloat(imgEl.getAttribute("y")),
+        };
+
+        const onMove = (e) => {
+          const pt = this._screenToSVG(svg, e.clientX, e.clientY);
+          imgEl.setAttribute("x", startImgPos.x + (pt.x - startSVG.x));
+          imgEl.setAttribute("y", startImgPos.y + (pt.y - startSVG.y));
+        };
+
+        const onUp = (e) => {
+          document.removeEventListener("mousemove", onMove);
+          document.removeEventListener("mouseup",   onUp);
+
+          const pt     = this._screenToSVG(svg, e.clientX, e.clientY);
+          const finalX = startImgPos.x + (pt.x - startSVG.x);
+          const finalY = startImgPos.y + (pt.y - startSVG.y);
+
+          marker.position = { x: finalX, y: finalY };
+          if (marker.onDrag) marker.onDrag(marker, { x: finalX, y: finalY });
+        };
+
+        document.addEventListener("mousemove", onMove);
+        document.addEventListener("mouseup",   onUp);
+      });
+    },
+
+    _screenToSVG(svg, clientX, clientY) {
+      const pt = svg.createSVGPoint();
+      pt.x = clientX;
+      pt.y = clientY;
+      return pt.matrixTransform(svg.getScreenCTM().inverse());
+    },
+
     // ----------------------------------------------------
     // CALLBACK REGISTRATION / REMOVAL
     // ----------------------------------------------------
@@ -949,6 +1131,7 @@
       _svgLoadingPromises: {},
       _lastHoverPid: null,
       _selectedUnitId: null,
+      markers: {},
     });
     instance.init(cfg);
     return instance;
