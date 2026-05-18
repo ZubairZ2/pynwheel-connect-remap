@@ -18,11 +18,12 @@
     _beansWidget:   null,
     _beans3dArr:    [],
     _beans3dFloor:  null,
-    _3dWrapper:     null,
-    _3dToggleBtn:   null,
-    _zoomInBtn:     null,
-    _zoomOutBtn:    null,
-    _resetZoomBtn:  null,
+    _3dWrapper:          null,
+    _3dToggleBtn:        null,
+    _zoomControlsWrapper: null,
+    _zoomInBtn:          null,
+    _zoomOutBtn:         null,
+    _resetZoomBtn:       null,
 
     // Image map state (2D raster image mode, enable_svg_mode === false)
     _imgMapMode:    false,
@@ -862,11 +863,16 @@
       this.container.style.touchAction = "auto";
       if (this._3dWrapper) this._3dWrapper.style.display = "block";
 
-      // Update toggle button label and hide zoom controls (irrelevant in 3D)
+      // Update toggle button label and hide zoom controls (irrelevant in 3D).
+      // Move wrapper to LEFT side so it doesn't overlap Beans' right-side nav buttons.
       if (this._3dToggleBtn)  this._3dToggleBtn.innerText = "2D";
       if (this._zoomInBtn)    this._zoomInBtn.style.display   = "none";
       if (this._zoomOutBtn)   this._zoomOutBtn.style.display  = "none";
       if (this._resetZoomBtn) this._resetZoomBtn.style.display = "none";
+      if (this._zoomControlsWrapper) {
+        this._zoomControlsWrapper.style.right = "auto";
+        this._zoomControlsWrapper.style.left  = "12px";
+      }
 
       if (!this._3dInitialized) {
         await this._init3DMap();
@@ -896,11 +902,16 @@
       this.container.style.touchAction = "none";
       if (this._3dWrapper) this._3dWrapper.style.display = "none";
 
-      // Update toggle button label and restore zoom controls
+      // Update toggle button label and restore zoom controls.
+      // Move wrapper back to RIGHT side for the 2D SVG controls.
       if (this._3dToggleBtn)  this._3dToggleBtn.innerText = "3D";
       if (this._zoomInBtn)    this._zoomInBtn.style.display    = "flex";
       if (this._zoomOutBtn)   this._zoomOutBtn.style.display   = "flex";
       if (this._resetZoomBtn) this._resetZoomBtn.style.display = "flex";
+      if (this._zoomControlsWrapper) {
+        this._zoomControlsWrapper.style.left  = "auto";
+        this._zoomControlsWrapper.style.right = "12px";
+      }
     },
 
     // ----------------------------------------------------
@@ -1663,6 +1674,7 @@
 
       const wrapper = document.createElement("div");
       wrapper.className = "pyn-zoom-controls";
+      this._zoomControlsWrapper = wrapper;
 
       Object.assign(wrapper.style, {
         position:      "absolute",
@@ -2635,6 +2647,7 @@
         return "https://pynwheel-staging.herokuapp.com";
       }
       // return "http://localhost:3000";
+      // return "http://192.168.1.5:3000";
       return "https://pynwheelconnect.com";
     }
   };
