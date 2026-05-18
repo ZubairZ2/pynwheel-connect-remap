@@ -558,14 +558,8 @@
       }
 
       this._enablePanZoom(clone);
-      c.style.overflow    = "hidden";
-      // In 3D mode, touch-action must remain "auto" so ESRI's PointerEvent-based
-      // navigation buttons (compass, satellite toggle, zoom) are reachable on touch.
-      c.style.touchAction = this._3dMode ? "auto" : "none";
-      // If we're re-rendering while already in 3D mode (floor change, filter update),
-      // immediately pause the fresh panzoom instance so its non-passive touchstart
-      // handler doesn't block Beans 3D navigation buttons.
-      if (this._3dMode && clone._pz) clone._pz.pause();
+      c.style.overflow   = "hidden";
+      c.style.touchAction = "none";
     },
 
 
@@ -864,10 +858,6 @@
         // which would otherwise block click events on Beans 3D widget buttons.
         if (activeSvg._pz) activeSvg._pz.pause();
       }
-      // ESRI 4.27+ uses PointerEvents for navigation buttons (compass, satellite toggle, zoom).
-      // touch-action:none on an ancestor suppresses pointer event dispatch in the browser,
-      // making those buttons unresponsive on touch devices. Clear it while in 3D mode.
-      this.container.style.touchAction = "auto";
       if (this._3dWrapper) this._3dWrapper.style.display = "block";
 
       // Update toggle button label and hide zoom controls (irrelevant in 3D)
@@ -900,8 +890,6 @@
         activeSvg.style.pointerEvents = "";
         if (activeSvg._pz) activeSvg._pz.resume();
       }
-      // Restore touch-action:none so panzoom owns touch gestures on the 2D map again.
-      this.container.style.touchAction = "none";
       if (this._3dWrapper) this._3dWrapper.style.display = "none";
 
       // Update toggle button label and restore zoom controls
@@ -1695,25 +1683,31 @@
         fontWeight:      "bold",
         cursor:          "pointer",
         boxShadow:       "0 2px 5px rgba(0,0,0,0.15)",
-        userSelect:      "none"
+        userSelect:      "none",
+        touchAction:     "manipulation"
+      };
+
+      const _bindBtn = (el, action) => {
+        el.onclick = (e) => { e.stopPropagation(); action(); };
+        el.addEventListener("touchend", (e) => { e.stopPropagation(); e.preventDefault(); action(); }, { passive: false });
       };
 
       const plus = document.createElement("div");
       plus.innerText = "+";
       Object.assign(plus.style, btnStyle);
-      plus.onclick = () => this.zoomIn();
+      _bindBtn(plus, () => this.zoomIn());
       this._zoomInBtn = plus;
 
       const minus = document.createElement("div");
       minus.innerText = "−";
       Object.assign(minus.style, btnStyle);
-      minus.onclick = () => this.zoomOut();
+      _bindBtn(minus, () => this.zoomOut());
       this._zoomOutBtn = minus;
 
       const reset = document.createElement("div");
       reset.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>`;
       Object.assign(reset.style, { ...btnStyle, fontSize: "16px" });
-      reset.onclick = () => this.resetZoom();
+      _bindBtn(reset, () => this.resetZoom());
       this._resetZoomBtn = reset;
 
       // Hide zoom buttons immediately if already in 3D mode
@@ -1736,13 +1730,13 @@
           fontSize:        "13px",
           letterSpacing:   "0.5px"
         });
-        toggle.onclick = () => {
+        _bindBtn(toggle, () => {
           if (this._3dMode) {
             this.switchTo2DMap();
           } else {
             this.switchTo3DMap();
           }
-        };
+        });
         this._3dToggleBtn = toggle;
         wrapper.appendChild(toggle);
       }
