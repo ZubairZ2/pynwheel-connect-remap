@@ -858,6 +858,8 @@
         // which would otherwise block click events on Beans 3D widget buttons.
         if (activeSvg._pz) activeSvg._pz.pause();
       }
+      // Restore touch-action so the browser synthesizes taps for Beans buttons.
+      this.container.style.touchAction = "auto";
       if (this._3dWrapper) this._3dWrapper.style.display = "block";
 
       // Update toggle button label and hide zoom controls (irrelevant in 3D)
@@ -890,6 +892,8 @@
         activeSvg.style.pointerEvents = "";
         if (activeSvg._pz) activeSvg._pz.resume();
       }
+      // Re-lock touch-action for panzoom now that we're back in 2D.
+      this.container.style.touchAction = "none";
       if (this._3dWrapper) this._3dWrapper.style.display = "none";
 
       // Update toggle button label and restore zoom controls
