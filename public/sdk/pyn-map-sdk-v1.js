@@ -558,8 +558,14 @@
       }
 
       this._enablePanZoom(clone);
-      c.style.overflow   = "hidden";
-      c.style.touchAction = "none";
+      c.style.overflow    = "hidden";
+      // In 3D mode, touch-action must remain "auto" so ESRI's PointerEvent-based
+      // navigation buttons (compass, satellite toggle, zoom) are reachable on touch.
+      c.style.touchAction = this._3dMode ? "auto" : "none";
+      // If we're re-rendering while already in 3D mode (floor change, filter update),
+      // immediately pause the fresh panzoom instance so its non-passive touchstart
+      // handler doesn't block Beans 3D navigation buttons.
+      if (this._3dMode && clone._pz) clone._pz.pause();
     },
 
 
@@ -858,6 +864,10 @@
         // which would otherwise block click events on Beans 3D widget buttons.
         if (activeSvg._pz) activeSvg._pz.pause();
       }
+      // ESRI 4.27+ uses PointerEvents for navigation buttons (compass, satellite toggle, zoom).
+      // touch-action:none on an ancestor suppresses pointer event dispatch in the browser,
+      // making those buttons unresponsive on touch devices. Clear it while in 3D mode.
+      this.container.style.touchAction = "auto";
       if (this._3dWrapper) this._3dWrapper.style.display = "block";
 
       // Update toggle button label and hide zoom controls (irrelevant in 3D)
@@ -890,6 +900,8 @@
         activeSvg.style.pointerEvents = "";
         if (activeSvg._pz) activeSvg._pz.resume();
       }
+      // Restore touch-action:none so panzoom owns touch gestures on the 2D map again.
+      this.container.style.touchAction = "none";
       if (this._3dWrapper) this._3dWrapper.style.display = "none";
 
       // Update toggle button label and restore zoom controls
