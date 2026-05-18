@@ -855,13 +855,16 @@
       if (activeSvg) {
         activeSvg.style.visibility    = "hidden";
         activeSvg.style.pointerEvents = "none";
-        // Pause panzoom so its touchstart handler stops calling preventDefault(),
-        // which would otherwise block click events on Beans 3D widget buttons.
+        // Clear panzoom's touch-action:none so iOS doesn't treat the region as non-interactive.
+        activeSvg.style.touchAction   = "auto";
         if (activeSvg._pz) activeSvg._pz.pause();
       }
       // Restore touch-action so the browser synthesizes taps for Beans buttons.
       this.container.style.touchAction = "auto";
-      if (this._3dWrapper) this._3dWrapper.style.display = "block";
+      if (this._3dWrapper) {
+        this._3dWrapper.style.display      = "block";
+        this._3dWrapper.style.touchAction  = "auto";
+      }
 
       // Update toggle button label and hide zoom controls (irrelevant in 3D).
       // Move wrapper to LEFT side so it doesn't overlap Beans' right-side nav buttons.
@@ -896,10 +899,12 @@
       if (activeSvg) {
         activeSvg.style.visibility    = "visible";
         activeSvg.style.pointerEvents = "";
+        activeSvg.style.touchAction   = "none"; // Restore for panzoom
         if (activeSvg._pz) activeSvg._pz.resume();
       }
       // Re-lock touch-action for panzoom now that we're back in 2D.
       this.container.style.touchAction = "none";
+      if (this._3dWrapper) this._3dWrapper.style.touchAction = "";
       if (this._3dWrapper) this._3dWrapper.style.display = "none";
 
       // Update toggle button label and restore zoom controls.
