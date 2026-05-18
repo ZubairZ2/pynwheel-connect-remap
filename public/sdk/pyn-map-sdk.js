@@ -51,7 +51,7 @@
       // VERIFY (one-time X-API-Key) → get session token → FETCH CONFIG → LOAD SVGs → BOOT
       this._verifyPartner(apiKey, propertyId)
         .then(v => {
-          if (!v.success) return this._showError(v.error);
+          if (!v.success) { this._showError(v.error); return Promise.reject("abort"); }
 
           // Store the short-lived token; the raw API key is now out of scope.
           this._sessionToken = v.sessionToken;
@@ -60,13 +60,13 @@
           return this._fetchConfig();
         })
         .then(r => {
-          if (!r?.success) return this._showError(r?.error || "Config load error");
+          if (!r?.success) { this._showError(r?.error || "Config load error"); return Promise.reject("abort"); }
           this._storeConfig(r.data);
           this._showLoading("Loading SVG maps...");
           return this._loadActiveSVG();
         })
         .then(() => {
-          if (!this._hasAnyMap()) return this._showError("No maps found.");
+          if (!this._hasAnyMap()) { this._showError("No maps found."); return Promise.reject("abort"); }
 
           if (!this._mapExists(this.activeMapId)) {
             this.activeMapId = this._getDefaultMapId();
@@ -76,13 +76,13 @@
             .then(() => this._bootAfterSVGLoad())
             .catch(() => this._bootAfterSVGLoad());
         })
-        .catch(() => this._showError("Unexpected SDK error."));
+        .catch(e => { if (e !== "abort") this._showError("Unexpected SDK error."); });
     },
 
     // ----------------------------------------------------
     // BOOT AFTER SVG LOAD
     // ----------------------------------------------------
-    _bootAfterSVGLoad() {
+    async _bootAfterSVGLoad() {
       this._renderMaps();
 
       // Bind events early (always!)
@@ -90,7 +90,7 @@
 
       // If floor given → switch to that floor's map (no fill — highlight must be called explicitly)
       if (this.config.floor) {
-        this.changeFloor(this.config.floor);
+        await this.changeFloor(this.config.floor);
       }
 
       this._isReady = true;
@@ -250,7 +250,12 @@
       // a fresh fetch whenever the SVG is updated (updatedAt changes).
       try {
         const cached = localStorage.getItem(cacheKey);
-        if (cached) return this._parseSVG(cached);
+        if (cached) {
+          const parsed = this._parseSVG(cached);
+          if (parsed) return parsed;
+          // Cached SVG is corrupt — evict it and fall through to network fetch
+          try { localStorage.removeItem(cacheKey); } catch {}
+        }
       } catch {}
 
       try {
@@ -467,9 +472,18 @@
       if (!this._mapExists(id)) {
         const mapType = this._getMapTypeForId(id);
         if (!mapType) return;
+        const prevMapId = this.activeMapId;
         this._showLoading("Loading floor...");
         const svg = await this._loadSVGIfNeeded(id, mapType);
-        if (!svg) return;
+        if (!svg) {
+          // Restore previous view instead of leaving container stuck on "Loading floor..."
+          if (prevMapId && this._mapExists(prevMapId)) {
+            this.activeMapId = prevMapId;
+            this._renderMaps();
+            this._bindUnitEvents();
+          }
+          return;
+        }
       }
 
       this.activeMapId = id;
