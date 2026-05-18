@@ -6,9 +6,9 @@
 </head>
 
 <body>
-  <script src="pyn-map-sdk.js"></script>
+  <script src="pyn-map-sdk-v1.js"></script>
 
-  <div id="pynMap" width="100%" height="600px"></div>
+  <div id="pynMap"></div>
   <!-- THis is SDK code -->
   <!-- Width and hight can be ajustable whatever you need. -->
 
@@ -18,10 +18,10 @@
       environment: "local",
       apiKey: "88ebc96efd10f0b0af44ced6031d8813",
       propertyId: "33",
-      // mapType: "ops", //optional default "marketing" options: "marketing", "ops"
+      mapType: "ops", //optional default "marketing" options: "marketing", "ops"
       defaultFloor: 1,       // to load default floor of the property
 
-      showZoomControls: true, // ZoomIn, ZoomOut, RestZoom
+      showZoomControls: false, // ZoomIn, ZoomOut, RestZoom
       enable3DMap: true, // enables 2d/3d controls
 
       // show3DMap: true,  // defaul load map 3D
@@ -45,7 +45,15 @@
 
       onUnitClick: (unit) => {
         console.log("Clicked unit:", unit);
-      }
+      },
+
+      onAmenityClick: (amenity) => { 
+        console.log("clicked amenity", amenity); 
+      },
+      onAmenityHover: (amenity) => { 
+        console.log("hovered unit", amenity); 
+      },
+
     };
 
     PynMapSDK.init(config);
