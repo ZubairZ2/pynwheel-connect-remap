@@ -514,11 +514,11 @@
 
       const clone = svg.cloneNode(true);
       clone.setAttribute("data-map-id", this.activeMapId);
-      // In 3D mode keep the SVG in layout (visibility:hidden) so the container
-      // retains its height — display:none collapses the flex container to 0px.
-      clone.style.display        = "block";
-      clone.style.visibility     = this._3dMode ? "hidden" : "visible";
-      clone.style.pointerEvents  = this._3dMode ? "none"   : "";
+      // In 3D mode hide the SVG completely — container height is maintained via
+      // minHeight captured in switchTo3DMap.
+      clone.style.display       = this._3dMode ? "none" : "block";
+      clone.style.visibility    = "";
+      clone.style.pointerEvents = "";
 
       this._applyGlobalLabelStyles(clone, this.config.styles.unitLabels);
 
@@ -587,9 +587,10 @@
         try { svgEl._pz.dispose(); } catch { }
       }
 
-      // touch-action:none lets panzoom own all touch gestures on every device
+      // touch-action:none on the SVG lets panzoom own touch gestures.
+      // We do NOT set it on the parent container here — container touch-action
+      // is managed per-mode in _renderMaps / switchTo3DMap / switchTo2DMap.
       svgEl.style.touchAction = "none";
-      if (svgEl.parentNode) svgEl.parentNode.style.touchAction = "none";
 
       svgEl._pz = panzoom(svgEl, {
         minZoom: 0.5,
@@ -850,21 +851,25 @@
         document.head.appendChild(s);
       }
 
-      // Hide SVG (keep in layout for height), show 3D wrapper
+      // Remove SVG from layout entirely (visibility:hidden keeps it in flow and
+      // its touch-action:none can bleed into siblings on some browsers).
+      // Capture the container height first so it doesn't collapse.
+      const capturedH = this.container.offsetHeight;
+      if (capturedH > 0) this.container.style.minHeight = capturedH + "px";
+
       const activeSvg = this._getActiveSvg();
       if (activeSvg) {
-        activeSvg.style.visibility    = "hidden";
-        activeSvg.style.pointerEvents = "none";
-        // Clear panzoom's touch-action:none so iOS doesn't treat the region as non-interactive.
-        activeSvg.style.touchAction   = "auto";
+        activeSvg.style.display = "none";
         if (activeSvg._pz) activeSvg._pz.pause();
       }
-      // Restore touch-action so the browser synthesizes taps for Beans buttons.
-      this.container.style.touchAction = "auto";
-      if (this._3dWrapper) {
-        this._3dWrapper.style.display      = "block";
-        this._3dWrapper.style.touchAction  = "auto";
-      }
+
+      // Drop overflow:hidden — it can cause pointercancel on some touch stacks.
+      // Keep touch-action:none so ESRI's pointer-event chain completes (no scroll
+      // interruption from the browser).
+      this.container.style.overflow    = "visible";
+      this.container.style.touchAction = "none";
+
+      if (this._3dWrapper) this._3dWrapper.style.display = "block";
 
       // Update toggle button label and hide zoom controls (irrelevant in 3D).
       // Move wrapper to LEFT side so it doesn't overlap Beans' right-side nav buttons.
@@ -894,18 +899,19 @@
       const esriStyle = document.getElementById("pyn-esri-hide-style");
       if (esriStyle) esriStyle.remove();
 
-      // Restore SVG visibility, hide 3D wrapper
+      // Restore SVG and container to 2D state.
+      if (this._3dWrapper) this._3dWrapper.style.display = "none";
+
       const activeSvg = this._getActiveSvg();
       if (activeSvg) {
-        activeSvg.style.visibility    = "visible";
-        activeSvg.style.pointerEvents = "";
-        activeSvg.style.touchAction   = "none"; // Restore for panzoom
+        activeSvg.style.display = "block";
         if (activeSvg._pz) activeSvg._pz.resume();
       }
-      // Re-lock touch-action for panzoom now that we're back in 2D.
+
+      // Restore container CSS that was changed for 3D mode.
+      this.container.style.minHeight   = "";
+      this.container.style.overflow    = "hidden";
       this.container.style.touchAction = "none";
-      if (this._3dWrapper) this._3dWrapper.style.touchAction = "";
-      if (this._3dWrapper) this._3dWrapper.style.display = "none";
 
       // Update toggle button label and restore zoom controls.
       // Move wrapper back to RIGHT side for the 2D SVG controls.
