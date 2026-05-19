@@ -1035,17 +1035,41 @@
     },
 
     _patchBeans3dTouchButtons() {
-      const ids = ['satellite', 'mylocation', 'beans-shadow', 'd3', 'd2', 'close', 'fullscreen'];
-      ids.forEach(id => {
-        const btn = document.getElementById(id);
-        if (!btn || btn._pynTouch) return;
-        btn._pynTouch = true;
-        btn.addEventListener('touchend', (e) => {
+      const SELECTOR = [
+        'button',
+        'input[type="checkbox"]',
+        'input[type="radio"]',
+        'input[type="range"]',
+        '[role="button"]',
+        '[role="checkbox"]',
+        '[role="radio"]',
+        '[role="slider"]',
+        '[role="switch"]',
+        '[role="menuitem"]',
+        '[role="option"]',
+        '[role="tab"]',
+      ].join(',');
+
+      const patch = (el) => {
+        if (el._pynTouch) return;
+        el._pynTouch = true;
+        el.addEventListener('touchend', (e) => {
           e.preventDefault();
           e.stopPropagation();
-          btn.click();
+          el.click();
         }, { passive: false });
+      };
+
+      const container = document.getElementById('pyn-3d-map');
+      if (!container) return;
+
+      container.querySelectorAll(SELECTOR).forEach(patch);
+
+      if (this._beans3dTouchObserver) return;
+      this._beans3dTouchObserver = new MutationObserver(() => {
+        container.querySelectorAll(SELECTOR).forEach(patch);
       });
+      this._beans3dTouchObserver.observe(container, { childList: true, subtree: true });
     },
 
     /**
