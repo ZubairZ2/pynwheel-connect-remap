@@ -982,12 +982,19 @@
 
       this._3dInitialized = true;
 
+      // Beans buttons use click events but touch→click synthesis is blocked in some
+      // host environments (ESRI's internal touch capture, React synthetic events, etc.).
+      // Bridge touchend directly to click() so taps always reach the Beans handlers.
       // Wait for the Beans map engine to be fully ready (mirrors beans3DHandler.js)
       const waitForEngine = setInterval(() => {
         const inst = this._beansWorkingInstance();
         if (inst?.mapView?.ready) {
           clearInterval(waitForEngine);
           this._beansWidget.workingInstance = inst;
+
+          // Beans buttons exist in the DOM now — bridge touchend→click so taps
+          // reach their click handlers in environments that block touch synthesis.
+          this._patchBeans3dTouchButtons();
 
           // Inject a permanent CSS rule to suppress Esri's built-in popup for the
           // lifetime of the page. This is the SDK equivalent of the CMS's global
@@ -1025,6 +1032,20 @@
     _hideBeansEsriPopup() {
       const sel = 'div.esri-ui-inner-container.esri-ui-manual-container > div.esri-component[role="presentation"]';
       document.querySelectorAll(sel).forEach(el => { el.style.display = "none"; });
+    },
+
+    _patchBeans3dTouchButtons() {
+      const ids = ['satellite', 'mylocation', 'beans-shadow', 'd3', 'd2', 'close', 'fullscreen'];
+      ids.forEach(id => {
+        const btn = document.getElementById(id);
+        if (!btn || btn._pynTouch) return;
+        btn._pynTouch = true;
+        btn.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          btn.click();
+        }, { passive: false });
+      });
     },
 
     /**
