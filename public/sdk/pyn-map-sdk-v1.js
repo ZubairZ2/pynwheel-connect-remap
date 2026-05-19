@@ -18,12 +18,11 @@
     _beansWidget:   null,
     _beans3dArr:    [],
     _beans3dFloor:  null,
-    _3dWrapper:          null,
-    _3dToggleBtn:        null,
-    _zoomControlsWrapper: null,
-    _zoomInBtn:          null,
-    _zoomOutBtn:         null,
-    _resetZoomBtn:       null,
+    _3dWrapper:     null,
+    _3dToggleBtn:   null,
+    _zoomInBtn:     null,
+    _zoomOutBtn:    null,
+    _resetZoomBtn:  null,
 
     // Image map state (2D raster image mode, enable_svg_mode === false)
     _imgMapMode:    false,
@@ -514,11 +513,11 @@
 
       const clone = svg.cloneNode(true);
       clone.setAttribute("data-map-id", this.activeMapId);
-      // In 3D mode hide the SVG completely — container height is maintained via
-      // minHeight captured in switchTo3DMap.
-      clone.style.display       = this._3dMode ? "none" : "block";
-      clone.style.visibility    = "";
-      clone.style.pointerEvents = "";
+      // In 3D mode keep the SVG in layout (visibility:hidden) so the container
+      // retains its height — display:none collapses the flex container to 0px.
+      clone.style.display        = "block";
+      clone.style.visibility     = this._3dMode ? "hidden" : "visible";
+      clone.style.pointerEvents  = this._3dMode ? "none"   : "";
 
       this._applyGlobalLabelStyles(clone, this.config.styles.unitLabels);
 
@@ -587,10 +586,9 @@
         try { svgEl._pz.dispose(); } catch { }
       }
 
-      // touch-action:none on the SVG lets panzoom own touch gestures.
-      // We do NOT set it on the parent container here — container touch-action
-      // is managed per-mode in _renderMaps / switchTo3DMap / switchTo2DMap.
+      // touch-action:none lets panzoom own all touch gestures on every device
       svgEl.style.touchAction = "none";
+      if (svgEl.parentNode) svgEl.parentNode.style.touchAction = "none";
 
       svgEl._pz = panzoom(svgEl, {
         minZoom: 0.5,
@@ -851,36 +849,22 @@
         document.head.appendChild(s);
       }
 
-      // Remove SVG from layout entirely (visibility:hidden keeps it in flow and
-      // its touch-action:none can bleed into siblings on some browsers).
-      // Capture the container height first so it doesn't collapse.
-      const capturedH = this.container.offsetHeight;
-      if (capturedH > 0) this.container.style.minHeight = capturedH + "px";
-
+      // Hide SVG (keep in layout for height), show 3D wrapper
       const activeSvg = this._getActiveSvg();
       if (activeSvg) {
-        activeSvg.style.display = "none";
+        activeSvg.style.visibility    = "hidden";
+        activeSvg.style.pointerEvents = "none";
+        // Pause panzoom so its touchstart handler stops calling preventDefault(),
+        // which would otherwise block click events on Beans 3D widget buttons.
         if (activeSvg._pz) activeSvg._pz.pause();
       }
-
-      // Drop overflow:hidden — it can cause pointercancel on some touch stacks.
-      // Keep touch-action:none so ESRI's pointer-event chain completes (no scroll
-      // interruption from the browser).
-      this.container.style.overflow    = "visible";
-      this.container.style.touchAction = "none";
-
       if (this._3dWrapper) this._3dWrapper.style.display = "block";
 
-      // Update toggle button label and hide zoom controls (irrelevant in 3D).
-      // Move wrapper to LEFT side so it doesn't overlap Beans' right-side nav buttons.
+      // Update toggle button label and hide zoom controls (irrelevant in 3D)
       if (this._3dToggleBtn)  this._3dToggleBtn.innerText = "2D";
       if (this._zoomInBtn)    this._zoomInBtn.style.display   = "none";
       if (this._zoomOutBtn)   this._zoomOutBtn.style.display  = "none";
       if (this._resetZoomBtn) this._resetZoomBtn.style.display = "none";
-      if (this._zoomControlsWrapper) {
-        this._zoomControlsWrapper.style.right = "auto";
-        this._zoomControlsWrapper.style.left  = "12px";
-      }
 
       if (!this._3dInitialized) {
         await this._init3DMap();
@@ -899,30 +883,20 @@
       const esriStyle = document.getElementById("pyn-esri-hide-style");
       if (esriStyle) esriStyle.remove();
 
-      // Restore SVG and container to 2D state.
-      if (this._3dWrapper) this._3dWrapper.style.display = "none";
-
+      // Restore SVG visibility, hide 3D wrapper
       const activeSvg = this._getActiveSvg();
       if (activeSvg) {
-        activeSvg.style.display = "block";
+        activeSvg.style.visibility    = "visible";
+        activeSvg.style.pointerEvents = "";
         if (activeSvg._pz) activeSvg._pz.resume();
       }
+      if (this._3dWrapper) this._3dWrapper.style.display = "none";
 
-      // Restore container CSS that was changed for 3D mode.
-      this.container.style.minHeight   = "";
-      this.container.style.overflow    = "hidden";
-      this.container.style.touchAction = "none";
-
-      // Update toggle button label and restore zoom controls.
-      // Move wrapper back to RIGHT side for the 2D SVG controls.
+      // Update toggle button label and restore zoom controls
       if (this._3dToggleBtn)  this._3dToggleBtn.innerText = "3D";
       if (this._zoomInBtn)    this._zoomInBtn.style.display    = "flex";
       if (this._zoomOutBtn)   this._zoomOutBtn.style.display   = "flex";
       if (this._resetZoomBtn) this._resetZoomBtn.style.display = "flex";
-      if (this._zoomControlsWrapper) {
-        this._zoomControlsWrapper.style.left  = "auto";
-        this._zoomControlsWrapper.style.right = "12px";
-      }
     },
 
     // ----------------------------------------------------
@@ -982,19 +956,12 @@
 
       this._3dInitialized = true;
 
-      // Beans buttons use click events but touch→click synthesis is blocked in some
-      // host environments (ESRI's internal touch capture, React synthetic events, etc.).
-      // Bridge touchend directly to click() so taps always reach the Beans handlers.
       // Wait for the Beans map engine to be fully ready (mirrors beans3DHandler.js)
       const waitForEngine = setInterval(() => {
         const inst = this._beansWorkingInstance();
         if (inst?.mapView?.ready) {
           clearInterval(waitForEngine);
           this._beansWidget.workingInstance = inst;
-
-          // Beans buttons exist in the DOM now — bridge touchend→click so taps
-          // reach their click handlers in environments that block touch synthesis.
-          this._patchBeans3dTouchButtons();
 
           // Inject a permanent CSS rule to suppress Esri's built-in popup for the
           // lifetime of the page. This is the SDK equivalent of the CMS's global
@@ -1032,44 +999,6 @@
     _hideBeansEsriPopup() {
       const sel = 'div.esri-ui-inner-container.esri-ui-manual-container > div.esri-component[role="presentation"]';
       document.querySelectorAll(sel).forEach(el => { el.style.display = "none"; });
-    },
-
-    _patchBeans3dTouchButtons() {
-      const SELECTOR = [
-        'button',
-        'input[type="checkbox"]',
-        'input[type="radio"]',
-        'input[type="range"]',
-        '[role="button"]',
-        '[role="checkbox"]',
-        '[role="radio"]',
-        '[role="slider"]',
-        '[role="switch"]',
-        '[role="menuitem"]',
-        '[role="option"]',
-        '[role="tab"]',
-      ].join(',');
-
-      const patch = (el) => {
-        if (el._pynTouch) return;
-        el._pynTouch = true;
-        el.addEventListener('touchend', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          el.click();
-        }, { passive: false });
-      };
-
-      const container = document.getElementById('pyn-3d-map');
-      if (!container) return;
-
-      container.querySelectorAll(SELECTOR).forEach(patch);
-
-      if (this._beans3dTouchObserver) return;
-      this._beans3dTouchObserver = new MutationObserver(() => {
-        container.querySelectorAll(SELECTOR).forEach(patch);
-      });
-      this._beans3dTouchObserver.observe(container, { childList: true, subtree: true });
     },
 
     /**
@@ -1285,7 +1214,7 @@
         loadStyle("https://www.beans.ai/mapswidget/css/mapswidget-1.0.4.css");
 
         // Load order matters: ArcGIS → mapswidget → utils (provides convertUnitsArr)
-        loadScript("https://js.arcgis.com/4.27/")
+        loadScript("https://js.arcgis.com/4.23/")
           .then(() => loadScript("https://www.beans.ai/mapswidget/js/mapswidget-1.0.4-speed.js"))
           .then(() => loadScript("https://www.beans.ai/mapswidget/client/utils.js"))
           .then(resolve)
@@ -1730,7 +1659,6 @@
 
       const wrapper = document.createElement("div");
       wrapper.className = "pyn-zoom-controls";
-      this._zoomControlsWrapper = wrapper;
 
       Object.assign(wrapper.style, {
         position:      "absolute",
@@ -1755,31 +1683,25 @@
         fontWeight:      "bold",
         cursor:          "pointer",
         boxShadow:       "0 2px 5px rgba(0,0,0,0.15)",
-        userSelect:      "none",
-        touchAction:     "manipulation"
-      };
-
-      const _bindBtn = (el, action) => {
-        el.onclick = (e) => { e.stopPropagation(); action(); };
-        el.addEventListener("touchend", (e) => { e.stopPropagation(); e.preventDefault(); action(); }, { passive: false });
+        userSelect:      "none"
       };
 
       const plus = document.createElement("div");
       plus.innerText = "+";
       Object.assign(plus.style, btnStyle);
-      _bindBtn(plus, () => this.zoomIn());
+      plus.onclick = () => this.zoomIn();
       this._zoomInBtn = plus;
 
       const minus = document.createElement("div");
       minus.innerText = "−";
       Object.assign(minus.style, btnStyle);
-      _bindBtn(minus, () => this.zoomOut());
+      minus.onclick = () => this.zoomOut();
       this._zoomOutBtn = minus;
 
       const reset = document.createElement("div");
       reset.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>`;
       Object.assign(reset.style, { ...btnStyle, fontSize: "16px" });
-      _bindBtn(reset, () => this.resetZoom());
+      reset.onclick = () => this.resetZoom();
       this._resetZoomBtn = reset;
 
       // Hide zoom buttons immediately if already in 3D mode
@@ -1802,13 +1724,13 @@
           fontSize:        "13px",
           letterSpacing:   "0.5px"
         });
-        _bindBtn(toggle, () => {
+        toggle.onclick = () => {
           if (this._3dMode) {
             this.switchTo2DMap();
           } else {
             this.switchTo3DMap();
           }
-        });
+        };
         this._3dToggleBtn = toggle;
         wrapper.appendChild(toggle);
       }
@@ -2703,7 +2625,6 @@
         return "https://pynwheel-staging.herokuapp.com";
       }
       // return "http://localhost:3000";
-      // return "http://192.168.1.5:3000";
       return "https://pynwheelconnect.com";
     }
   };
