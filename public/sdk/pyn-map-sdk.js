@@ -243,17 +243,31 @@
           `${this._apiBase()}/api/partner/maps/fetch_svg_image` +
           `?map_id=${encodeURIComponent(mapId)}&map_type=${encodeURIComponent(mapType)}`;
 
-        const response = await fetch(requestUrl, {
+        const _fetchSvg = (cacheMode) => fetch(requestUrl, {
           headers: { "Authorization": `Bearer ${this._sessionToken}` },
-          cache: 'default'
+          cache: cacheMode
         });
+
+        let response = await _fetchSvg('default');
 
         if (!response.ok) {
           throw new Error(`Failed to fetch SVG: ${response.status} ${response.statusText}`);
         }
 
-        const svgText    = await response.text();
-        const svgElement = this._parseSVG(svgText);
+        let svgText    = await response.text();
+        let svgElement = this._parseSVG(svgText);
+
+        // If parsing failed, the browser cache may have stored a truncated response
+        // (e.g. interrupted by antivirus or proxy on Windows). Force a fresh fetch
+        // and try once more before giving up.
+        if (!svgElement) {
+          console.warn(`_loadSVG: parse failed for map ${mapId}, retrying without cache`);
+          response = await _fetchSvg('reload');
+          if (response.ok) {
+            svgText    = await response.text();
+            svgElement = this._parseSVG(svgText);
+          }
+        }
 
         if (!svgElement) {
           throw new Error("No <svg> element found in the response.");
@@ -267,8 +281,14 @@
     },
 
     _parseSVG(svgText) {
+      if (!svgText || svgText.trim().length === 0) return null;
       const parser = new DOMParser();
       const doc = parser.parseFromString(svgText, "image/svg+xml");
+      // DOMParser never throws — it returns a parsererror document on failure.
+      // A truncated or malformed SVG (common when large files are cut short by
+      // antivirus/proxy on Windows) must be detected and rejected here so the
+      // caller can retry rather than rendering a broken element.
+      if (doc.querySelector("parsererror")) return null;
       return doc.querySelector("svg");
     },
 
@@ -1076,15 +1096,19 @@
     _applyGlobalLabelStyles(svg, textStyles) {
       if (!svg || svg._pynTextStyled) return;  // prevent re-running
 
+      svg._pynTextStyled = true;
+
+      if (!textStyles) return;
+
       const elements = svg.querySelectorAll("text, tspan");
       elements.forEach(el => {
-        el.style.fontFamily = textStyles.fontFamily;
-        el.style.fontSize = textStyles.fontSize;
-        el.style.fill = textStyles.fontColor;
-        el.style.pointerEvents = "none"; // ensure labels don't block clicks
+        // Only assign defined values — assigning undefined coerces to the string
+        // "undefined" in some Windows Chrome builds, corrupting SVG element fills.
+        if (textStyles.fontFamily) el.style.fontFamily = textStyles.fontFamily;
+        if (textStyles.fontSize)   el.style.fontSize   = textStyles.fontSize;
+        if (textStyles.fontColor)  el.style.fill        = textStyles.fontColor;
+        el.style.pointerEvents = "none";
       });
-
-      svg._pynTextStyled = true; // mark as styled
     },
 
     _getActiveSvg() {

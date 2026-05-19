@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PynMapSDK — Test Harness</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 13px;
+      background: #f4f5f7;
+      color: #222;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ── */
+    header {
+      background: #1a1a2e;
+      color: #fff;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    header h1 { font-size: 15px; font-weight: 600; }
+    header .sub { font-size: 11px; color: #9ca3af; }
+    .status-badge {
+      margin-left: auto;
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: #374151;
+      color: #9ca3af;
+      transition: all 0.3s;
+    }
+    .status-badge.ready { background: #166534; color: #bbf7d0; }
+    .status-badge.loading { background: #7c2d12; color: #fed7aa; }
+
+    /* ── Layout ── */
+    .layout { display: flex; flex: 1; overflow: hidden; }
+
+    /* ── Config Panel (left) ── */
+    .config-panel {
+      width: 260px;
+      background: #fff;
+      border-right: 1px solid #e5e7eb;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow-y: auto;
+    }
+    .panel-header {
+      padding: 10px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #6b7280;
+      background: #f9fafb;
+      border-bottom: 1px solid #e5e7eb;
+      flex-shrink: 0;
+    }
+    .cfg-section {
+      padding: 10px 14px;
+      border-bottom: 1px solid #f0f1f3;
+    }
+    .cfg-section-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .field {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+    .field label {
+      min-width: 78px;
+      font-size: 11px;
+      color: #6b7280;
+      flex-shrink: 0;
+    }
+    .field input[type="text"],
+    .field input[type="number"],
+    .field select {
+      flex: 1;
+      padding: 4px 7px;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      font-size: 11px;
+      min-width: 0;
+      background: #fff;
+    }
+    .field input:focus, .field select:focus {
+      outline: none;
+      border-color: #3b82f6;
+    }
+    .color-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex: 1;
+    }
+    input[type="color"] {
+      width: 28px;
+      height: 24px;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      padding: 1px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .hex-input {
+      flex: 1;
+      padding: 4px 7px;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      font-size: 11px;
+      font-family: monospace;
+      min-width: 0;
+    }
+
+    /* Toggle switch */
+    .toggle-wrap { display: flex; align-items: center; gap: 6px; }
+    .toggle { position: relative; width: 34px; height: 18px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .slider {
+      position: absolute; inset: 0;
+      background: #d1d5db;
+      border-radius: 18px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .slider:before {
+      content: '';
+      position: absolute;
+      width: 12px; height: 12px;
+      left: 3px; bottom: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: 0.2s;
+    }
+    .toggle input:checked + .slider { background: #3b82f6; }
+    .toggle input:checked + .slider:before { transform: translateX(16px); }
+    .toggle-label { font-size: 11px; color: #6b7280; }
+
+    /* Checkbox rows */
+    .cb-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 5px;
+      font-size: 11px;
+      color: #374151;
+    }
+    .cb-row input[type="checkbox"] { cursor: pointer; }
+
+    .apply-btn {
+      margin: 12px 14px;
+      padding: 8px;
+      background: #3b82f6;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      width: calc(100% - 28px);
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .apply-btn:hover { background: #2563eb; }
+
+    /* Section enable toggle */
+    .section-enable { margin-left: auto; }
+
+    /* Disabled overlay */
+    .sub-fields { padding-top: 4px; }
+    .sub-fields.off { opacity: 0.35; pointer-events: none; }
+
+    /* ── Map area ── */
+    .map-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 12px;
+      gap: 0;
+      overflow: hidden;
+    }
+    #pynMap {
+      flex: 1;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    /* ── Right panel ── */
+    .right-panel {
+      width: 310px;
+      border-left: 1px solid #e5e7eb;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      flex-shrink: 0;
+    }
+    .tab-bar {
+      display: flex;
+      border-bottom: 1px solid #e5e7eb;
+      flex-shrink: 0;
+    }
+    .tab {
+      flex: 1;
+      padding: 9px 4px;
+      text-align: center;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      color: #6b7280;
+      border-bottom: 2px solid transparent;
+      user-select: none;
+    }
+    .tab.active { color: #1d4ed8; border-bottom-color: #3b82f6; }
+
+    .tab-content { flex: 1; overflow-y: auto; display: none; flex-direction: column; }
+    .tab-content.active { display: flex; }
+
+    /* ── Methods tab ── */
+    #methods-tab { padding: 0; }
+
+    /* SDK Stats */
+    .sdk-stats {
+      background: #f0fdf4;
+      border-bottom: 1px solid #bbf7d0;
+      padding: 6px 12px;
+      font-size: 10px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+    .sdk-stats span { color: #166534; }
+    .sdk-stats strong { color: #14532d; }
+    .sdk-stats.hidden { display: none; }
+
+    /* Method groups */
+    .method-group {
+      border-bottom: 1px solid #f0f1f3;
+      padding: 8px 12px;
+    }
+    .method-group-title {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #9ca3af;
+      margin-bottom: 7px;
+    }
+    .method-row {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      margin-bottom: 5px;
+      align-items: center;
+    }
+    .method-row:last-child { margin-bottom: 0; }
+
+    /* Method inputs */
+    .m-input {
+      padding: 4px 7px;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      font-size: 11px;
+      background: #fff;
+      min-width: 0;
+    }
+    .m-input:focus { outline: none; border-color: #3b82f6; }
+    .m-input.w-sm { width: 64px; }
+    .m-input.w-md { width: 100px; }
+    .m-input.w-lg { width: 140px; }
+    .m-input.flex-1 { flex: 1; }
+    .m-input.w-color { width: 38px; height: 26px; padding: 2px; cursor: pointer; border-radius: 4px; }
+    .m-label { font-size: 10px; color: #9ca3af; margin-right: 2px; }
+    .m-cb-row { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #6b7280; }
+
+    /* Buttons */
+    .btn {
+      padding: 4px 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 5px;
+      background: #fff;
+      font-size: 11px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.1s;
+      flex-shrink: 0;
+    }
+    .btn:hover { background: #f3f4f6; }
+    .btn.primary { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+    .btn.primary:hover { background: #2563eb; }
+    .btn.danger  { background: #ef4444; color: #fff; border-color: #ef4444; }
+    .btn.danger:hover  { background: #dc2626; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── Config tab ── */
+    #config-tab { padding: 10px 12px; }
+    #config-json {
+      font-family: "SF Mono", "Fira Code", Consolas, monospace;
+      font-size: 10px;
+      line-height: 1.7;
+      color: #374151;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* ── Events tab ── */
+    #events-tab { overflow-y: auto; flex-direction: column; }
+    #event-log { flex: 1; padding: 6px 12px; overflow-y: auto; }
+    .log-entry {
+      padding: 5px 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 10px;
+      font-family: "SF Mono", Consolas, monospace;
+      line-height: 1.4;
+    }
+    .log-t { color: #9ca3af; margin-right: 5px; }
+    .log-ev { color: #7c3aed; font-weight: 700; }
+    .log-data { color: #374151; }
+    .log-error { color: #dc2626; }
+    .log-empty { color: #9ca3af; font-size: 11px; padding: 12px 0; text-align: center; }
+    .log-footer {
+      border-top: 1px solid #e5e7eb;
+      padding: 5px 12px;
+      background: #f9fafb;
+      display: flex;
+      justify-content: flex-end;
+      flex-shrink: 0;
+    }
+    .log-footer button {
+      font-size: 10px; color: #6b7280; background: none; border: none; cursor: pointer;
+    }
+    .log-footer button:hover { color: #dc2626; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>PynMapSDK</h1>
+  <span class="sub">pyn-map-sdk.js &nbsp;·&nbsp; <code>PynMapSDK.create(cfg)</code></span>
+  <span class="status-badge" id="statusBadge">Not initialised</span>
+</header>
+
+<div class="layout">
+
+  <!-- ══ LEFT: Config Builder ══ -->
+  <aside class="config-panel">
+    <div class="panel-header">Config Builder</div>
+
+    <!-- Connection -->
+    <div class="cfg-section">
+      <div class="cfg-section-title">Connection</div>
+      <div class="field">
+        <label>API Key</label>
+        <input type="text" id="c-apiKey" value="88ebc96efd10f0b0af44ced6031d8813" />
+      </div>
+      <div class="field">
+        <label>Property ID</label>
+        <input type="text" id="c-propertyId" value="3540" />
+      </div>
+      <div class="field">
+        <label>Environment</label>
+        <select id="c-environment">
+          <option value="production">production</option>
+          <option value="staging">staging</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Map Options -->
+    <div class="cfg-section">
+      <div class="cfg-section-title">Map Options</div>
+      <div class="field">
+        <label>Default Floor</label>
+        <input type="number" id="c-defaultFloor" placeholder="none (optional)" min="0" />
+      </div>
+      <div class="field">
+        <label>Zoom Controls</label>
+        <div class="toggle-wrap">
+          <label class="toggle">
+            <input type="checkbox" id="c-showZoomControls" checked />
+            <span class="slider"></span>
+          </label>
+          <span class="toggle-label">ON</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Unit Colors -->
+    <div class="cfg-section">
+      <div class="cfg-section-title">
+        Unit Colors
+        <label class="toggle section-enable">
+          <input type="checkbox" id="c-useColors" onchange="toggleSection('colors-fields', this)" />
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="sub-fields off" id="colors-fields">
+        <div class="field">
+          <label>available</label>
+          <div class="color-row">
+            <input type="color" id="c-col-available" value="#61D46B" oninput="syncHex(this,'c-hex-available')" />
+            <input type="text" id="c-hex-available" class="hex-input" value="#61D46B" maxlength="7" onchange="syncColor(this,'c-col-available')" />
+          </div>
+        </div>
+        <div class="field">
+          <label>hover</label>
+          <div class="color-row">
+            <input type="color" id="c-col-hover" value="#FFF2AA" oninput="syncHex(this,'c-hex-hover')" />
+            <input type="text" id="c-hex-hover" class="hex-input" value="#FFF2AA" maxlength="7" onchange="syncColor(this,'c-col-hover')" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Label Styles -->
+    <div class="cfg-section">
+      <div class="cfg-section-title">
+        Label Styles
+        <label class="toggle section-enable">
+          <input type="checkbox" id="c-useLabels" onchange="toggleSection('labels-fields', this)" />
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="sub-fields off" id="labels-fields">
+        <div class="field">
+          <label>fontFamily</label>
+          <input type="text" id="c-fontFamily" placeholder='Arial, sans-serif' />
+        </div>
+        <div class="field">
+          <label>fontSize</label>
+          <input type="text" id="c-fontSize" placeholder="10px" />
+        </div>
+        <div class="field">
+          <label>fontColor</label>
+          <div class="color-row">
+            <input type="color" id="c-col-fontColor" value="#ffffff" oninput="syncHex(this,'c-hex-fontColor')" />
+            <input type="text" id="c-hex-fontColor" class="hex-input" value="#ffffff" maxlength="7" onchange="syncColor(this,'c-col-fontColor')" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Callbacks -->
+    <div class="cfg-section">
+      <div class="cfg-section-title">Callbacks</div>
+      <label class="cb-row"><input type="checkbox" id="cb-onReady" checked /> onReady</label>
+      <label class="cb-row"><input type="checkbox" id="cb-onUnitHover" checked /> onUnitHover</label>
+      <label class="cb-row"><input type="checkbox" id="cb-offUnitHover" /> offUnitHover</label>
+      <label class="cb-row"><input type="checkbox" id="cb-onUnitClick" checked /> onUnitClick</label>
+    </div>
+
+    <button class="apply-btn" onclick="applyConfig()">⟳  Apply / Reinit Map</button>
+  </aside>
+
+  <!-- ══ CENTER: Map ══ -->
+  <div class="map-area">
+    <div id="pynMap"></div>
+  </div>
+
+  <!-- ══ RIGHT: Methods / Config / Events ══ -->
+  <aside class="right-panel">
+    <div class="tab-bar">
+      <div class="tab active" data-tab="methods">Methods</div>
+      <div class="tab" data-tab="config">Config</div>
+      <div class="tab" data-tab="events">Events</div>
+    </div>
+
+    <!-- Methods Tab -->
+    <div class="tab-content active" id="methods-tab">
+
+      <!-- SDK Stats (appears after onReady) -->
+      <div class="sdk-stats hidden" id="sdk-stats">
+        <span>Units: <strong id="st-units">—</strong></span>
+        <span>Floors: <strong id="st-floors">—</strong></span>
+        <span>Maps: <strong id="st-maps">—</strong></span>
+      </div>
+
+      <!-- Zoom -->
+      <div class="method-group">
+        <div class="method-group-title">Zoom / View</div>
+        <div class="method-row">
+          <button class="btn primary" onclick="call('zoomIn')">zoomIn()</button>
+          <button class="btn" onclick="call('zoomOut')">zoomOut()</button>
+          <button class="btn" onclick="call('recenter')">recenter()</button>
+        </div>
+      </div>
+
+      <!-- selectUnit / unselectUnit -->
+      <div class="method-group">
+        <div class="method-group-title">selectUnit / unselectUnit</div>
+        <div class="method-row">
+          <span class="m-label">unitId</span>
+          <input type="text" id="p-sel-unitId" class="m-input w-md" placeholder="unit ID" />
+          <span class="m-label">color</span>
+          <input type="color" id="p-sel-color" class="m-input m-input.w-color" value="#f97316" title="optional fill color" style="width:34px;height:26px;padding:2px;border-radius:4px;border:1px solid #d1d5db;cursor:pointer;" />
+        </div>
+        <div class="method-row">
+          <button class="btn primary" onclick="callSelectUnit()">Select</button>
+          <button class="btn" onclick="callUnselectUnit()">Unselect</button>
+          <span class="m-label" style="margin-left:auto;font-size:9px;color:#d1d5db">color used only for Select</span>
+        </div>
+      </div>
+
+      <!-- highlightUnits -->
+      <div class="method-group">
+        <div class="method-group-title">highlightUnits(unitIds[])</div>
+        <div class="method-row">
+          <input type="text" id="p-hl-ids" class="m-input flex-1" placeholder="101, 102, 103 …" />
+        </div>
+        <div class="method-row">
+          <button class="btn primary" onclick="callHighlight()">Highlight</button>
+          <span class="m-label" style="font-size:9px">comma-separated IDs</span>
+        </div>
+      </div>
+
+      <!-- changeFloor -->
+      <div class="method-group">
+        <div class="method-group-title">changeFloor(floor)</div>
+        <div class="method-row">
+          <span class="m-label">floor #</span>
+          <input type="number" id="p-floor" class="m-input w-sm" placeholder="1" min="0" />
+          <button class="btn primary" onclick="callChangeFloor()">Change Floor</button>
+        </div>
+      </div>
+
+      <!-- changeMap -->
+      <div class="method-group">
+        <div class="method-group-title">changeMap(mapId)</div>
+        <div class="method-row">
+          <span class="m-label">mapId</span>
+          <input type="text" id="p-mapId" class="m-input flex-1" placeholder="from data (see stats)" />
+          <button class="btn primary" onclick="callChangeMap()">Change Map</button>
+        </div>
+        <div class="method-row">
+          <button class="btn" onclick="jumpSitemap()">→ Sitemap</button>
+          <button class="btn" onclick="jumpFloor(0)">→ Floor[0]</button>
+          <button class="btn" onclick="jumpFloor(1)">→ Floor[1]</button>
+        </div>
+      </div>
+
+      <!-- Markers -->
+      <div class="method-group">
+        <div class="method-group-title">addMarker()</div>
+        <div class="method-row">
+          <span class="m-label">id</span>
+          <input type="text" id="m-id" class="m-input w-sm" placeholder="m1" value="m1" />
+          <span class="m-label">x</span>
+          <input type="number" id="m-x" class="m-input w-sm" placeholder="SVG x" />
+          <span class="m-label">y</span>
+          <input type="number" id="m-y" class="m-input w-sm" placeholder="SVG y" />
+        </div>
+        <div class="method-row">
+          <span class="m-label">unitId</span>
+          <input type="text" id="m-unitId" class="m-input w-md" placeholder="(overrides x/y)" />
+          <label class="m-cb-row">
+            <input type="checkbox" id="m-draggable" />
+            draggable
+          </label>
+        </div>
+        <div class="method-row">
+          <button class="btn primary" onclick="callAddMarker()">Add Marker</button>
+        </div>
+        <div class="method-row" style="margin-top:6px;">
+          <span class="m-label">remove id</span>
+          <input type="text" id="m-rm-id" class="m-input w-sm" placeholder="m1" />
+          <button class="btn" onclick="callRemoveMarker()">Remove</button>
+          <button class="btn danger" onclick="callClearMarkers()">Clear All</button>
+        </div>
+      </div>
+
+    </div><!-- /methods-tab -->
+
+    <!-- Config Tab -->
+    <div class="tab-content" id="config-tab">
+      <pre id="config-json">(click Apply to see config)</pre>
+    </div>
+
+    <!-- Events Tab -->
+    <div class="tab-content" id="events-tab">
+      <div id="event-log"><div class="log-empty">No events yet.</div></div>
+      <div class="log-footer"><button onclick="clearLog()">Clear log</button></div>
+    </div>
+
+  </aside>
+</div>
+
+<script src="https://pynwheelconnect.com/sdk/pyn-map-sdk.js"></script>
+<script>
+  let instance = null;
+
+  // ── Helpers ─────────────────────────────────────────────────────────────────
+  function syncHex(colorEl, hexId) {
+    document.getElementById(hexId).value = colorEl.value;
+  }
+  function syncColor(hexEl, colorId) {
+    if (/^#[0-9a-fA-F]{6}$/.test(hexEl.value))
+      document.getElementById(colorId).value = hexEl.value;
+  }
+  function toggleSection(fieldId, cb) {
+    document.getElementById(fieldId).classList.toggle("off", !cb.checked);
+  }
+
+  // Tab switching
+  document.querySelectorAll(".tab").forEach(t => {
+    t.addEventListener("click", () => {
+      document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+      document.querySelectorAll(".tab-content").forEach(x => x.classList.remove("active"));
+      t.classList.add("active");
+      document.getElementById(t.dataset.tab + "-tab").classList.add("active");
+    });
+  });
+
+  // Toggle zoom-controls label
+  document.getElementById("c-showZoomControls").addEventListener("change", function() {
+    this.closest(".field").querySelector(".toggle-label").textContent = this.checked ? "ON" : "OFF";
+  });
+
+  // ── Config Builder ───────────────────────────────────────────────────────────
+  function buildConfig() {
+    const cfg = {
+      container:        "#pynMap",
+      apiKey:           document.getElementById("c-apiKey").value.trim(),
+      propertyId:       document.getElementById("c-propertyId").value.trim(),
+      environment:      document.getElementById("c-environment").value,
+      showZoomControls: document.getElementById("c-showZoomControls").checked,
+    };
+
+    const floor = document.getElementById("c-defaultFloor").value;
+    if (floor !== "") cfg.defaultFloor = Number(floor);
+
+    // Styles
+    const useColors = document.getElementById("c-useColors").checked;
+    const useLabels = document.getElementById("c-useLabels").checked;
+    if (useColors || useLabels) {
+      cfg.styles = {};
+      if (useColors) {
+        cfg.styles.unitColors = {
+          available: document.getElementById("c-hex-available").value,
+          hover:     document.getElementById("c-hex-hover").value,
+        };
+      }
+      if (useLabels) {
+        cfg.styles.unitLabels = {
+          fontFamily: document.getElementById("c-fontFamily").value || undefined,
+          fontSize:   document.getElementById("c-fontSize").value   || undefined,
+          fontColor:  document.getElementById("c-hex-fontColor").value,
+        };
+      }
+    }
+
+    // Callbacks
+    if (document.getElementById("cb-onReady").checked)
+      cfg.onReady = () => {
+        onSDKReady();
+        logEvent("onReady", null);
+      };
+
+    if (document.getElementById("cb-onUnitHover").checked)
+      cfg.onUnitHover = (u) => logEvent("onUnitHover", { unitId: u.unitId, name: u.name, floor: u.floor });
+
+    if (document.getElementById("cb-offUnitHover").checked)
+      cfg.offUnitHover = (u) => logEvent("offUnitHover", { unitId: u.unitId });
+
+    if (document.getElementById("cb-onUnitClick").checked)
+      cfg.onUnitClick = (u) => logEvent("onUnitClick", { unitId: u.unitId, name: u.name, floor: u.floor, bedrooms: u.bedrooms });
+
+    return cfg;
+  }
+
+  function applyConfig() {
+    // Clear previous map
+    const mapEl = document.getElementById("pynMap");
+    mapEl.innerHTML = "";
+    mapEl.removeAttribute("style");
+
+    document.getElementById("sdk-stats").classList.add("hidden");
+    setStatus("loading", "Loading…");
+    clearLog();
+
+    const cfg = buildConfig();
+    showConfigJSON(cfg);
+
+    // If onReady not checked, still need to detect ready for stats
+    if (!document.getElementById("cb-onReady").checked) {
+      const origReady = cfg.onReady;
+      cfg.onReady = () => { if (origReady) origReady(); onSDKReady(); };
+    }
+
+    instance = PynMapSDK.create(cfg);
+  }
+
+  function onSDKReady() {
+    setStatus("ready", "Ready");
+    if (!instance) return;
+
+    // Populate stats
+    const units   = instance.data?.units     || [];
+    const maps    = instance.data?.floorplates || [];
+    const sitemap = instance.data?.sitemap;
+    document.getElementById("st-units").textContent  = units.length;
+    document.getElementById("st-floors").textContent = [...new Set(units.map(u => u.floor).filter(f => f != null))].sort((a,b)=>a-b).join(", ") || "—";
+    document.getElementById("st-maps").textContent   = maps.length + (sitemap ? " + sitemap" : "");
+    document.getElementById("sdk-stats").classList.remove("hidden");
+
+    // Auto-fill first unit ID into method inputs
+    if (units.length > 0) {
+      const uid = String(units[0].unitId);
+      document.getElementById("p-sel-unitId").placeholder = uid;
+      document.getElementById("p-hl-ids").placeholder     = uid;
+      document.getElementById("m-unitId").placeholder     = uid + " (optional)";
+    }
+    // Auto-fill sitemap/floorplate mapIds
+    if (sitemap) {
+      document.getElementById("p-mapId").placeholder = sitemap.mapId + " (sitemap)";
+    } else if (maps.length) {
+      document.getElementById("p-mapId").placeholder = maps[0].mapId + " (floor " + maps[0].range + ")";
+    }
+  }
+
+  function setStatus(type, label) {
+    const el = document.getElementById("statusBadge");
+    el.className = "status-badge " + (type || "");
+    el.textContent = label;
+  }
+
+  function showConfigJSON(cfg) {
+    document.getElementById("config-json").textContent =
+      JSON.stringify(cfg, (k, v) => typeof v === "function" ? "[callback]" : v, 2);
+  }
+
+  // ── Event log ────────────────────────────────────────────────────────────────
+  function logEvent(name, data, isError) {
+    const log = document.getElementById("event-log");
+    const empty = log.querySelector(".log-empty");
+    if (empty) empty.remove();
+    const t = new Date().toLocaleTimeString("en-US", { hour12: false });
+    const el = document.createElement("div");
+    el.className = "log-entry";
+    el.innerHTML =
+      `<span class="log-t">${t}</span>` +
+      `<span class="${isError ? "log-error" : "log-ev"}">${name}</span> ` +
+      (data != null ? `<span class="log-data">${JSON.stringify(data).slice(0, 200)}</span>` : "");
+    log.prepend(el);
+  }
+
+  function clearLog() {
+    document.getElementById("event-log").innerHTML = '<div class="log-empty">No events yet.</div>';
+  }
+
+  // ── Method wrappers ──────────────────────────────────────────────────────────
+  function requireInstance() {
+    if (!instance) { logEvent("error", "No instance — click Apply first", true); return false; }
+    return true;
+  }
+
+  function call(method, ...args) {
+    if (!requireInstance()) return;
+    try {
+      instance[method](...args);
+      logEvent(method + "()", args.length ? args : null);
+    } catch(e) { logEvent("error: " + method, e.message, true); }
+  }
+
+  function callSelectUnit() {
+    if (!requireInstance()) return;
+    const id    = document.getElementById("p-sel-unitId").value.trim();
+    const color = document.getElementById("p-sel-color").value;
+    if (!id) { logEvent("error", "Enter a unitId", true); return; }
+    instance.selectUnit(id, color);
+    logEvent("selectUnit()", { unitId: id, color });
+  }
+
+  function callUnselectUnit() {
+    if (!requireInstance()) return;
+    const id = document.getElementById("p-sel-unitId").value.trim();
+    if (!id) { logEvent("error", "Enter a unitId", true); return; }
+    instance.unselectUnit(id);
+    logEvent("unselectUnit()", { unitId: id });
+  }
+
+  function callHighlight() {
+    if (!requireInstance()) return;
+    const raw = document.getElementById("p-hl-ids").value.trim();
+    if (!raw) { logEvent("error", "Enter at least one unitId", true); return; }
+    const ids = raw.split(",").map(s => s.trim()).filter(Boolean);
+    instance.highlightUnits(ids);
+    logEvent("highlightUnits()", ids);
+  }
+
+  async function callChangeFloor() {
+    if (!requireInstance()) return;
+    const f = document.getElementById("p-floor").value;
+    if (f === "") { logEvent("error", "Enter a floor number", true); return; }
+    await instance.changeFloor(Number(f));
+    logEvent("changeFloor()", { floor: Number(f) });
+  }
+
+  async function callChangeMap() {
+    if (!requireInstance()) return;
+    const id = document.getElementById("p-mapId").value.trim();
+    if (!id) { logEvent("error", "Enter a mapId", true); return; }
+    await instance.changeMap(id);
+    logEvent("changeMap()", { mapId: id });
+  }
+
+  async function jumpSitemap() {
+    if (!requireInstance()) return;
+    const id = instance.data?.sitemap?.mapId;
+    if (!id) { logEvent("error", "No sitemap on this property", true); return; }
+    await instance.changeMap(id);
+    logEvent("changeMap()", { mapId: id, type: "sitemap" });
+  }
+
+  async function jumpFloor(idx) {
+    if (!requireInstance()) return;
+    const fp = instance.data?.floorplates?.[idx];
+    if (!fp) { logEvent("error", `No floorplate[${idx}]`, true); return; }
+    await instance.changeMap(fp.mapId);
+    logEvent("changeMap()", { mapId: fp.mapId, floor: fp.range });
+  }
+
+  function callAddMarker() {
+    if (!requireInstance()) return;
+    const id       = document.getElementById("m-id").value.trim() || "m1";
+    const unitId   = document.getElementById("m-unitId").value.trim() || null;
+    const x        = parseFloat(document.getElementById("m-x").value);
+    const y        = parseFloat(document.getElementById("m-y").value);
+    const drag     = document.getElementById("m-draggable").checked;
+
+    const markerCfg = {
+      id,
+      draggable: drag,
+      icon: { url: "https://cdn-icons-png.flaticon.com/32/684/684908.png", size: [28, 28], anchor: [0.5, 1] },
+      cursor: drag ? "grab" : "pointer",
+      onClick: (m) => logEvent("markerClick()", { id: m.id }),
+    };
+
+    if (unitId) {
+      markerCfg.unitId = unitId;
+    } else if (!isNaN(x) && !isNaN(y)) {
+      markerCfg.position = { x, y };
+    } else {
+      logEvent("error", "Provide either unitId OR both x and y", true);
+      return;
+    }
+
+    if (drag) markerCfg.onDrag = (m, pos) =>
+      logEvent("markerDrag()", { id: m.id, x: Math.round(pos.x), y: Math.round(pos.y) });
+
+    instance.addMarker(markerCfg);
+    logEvent("addMarker()", { id, position: unitId ? { unitId } : { x, y }, draggable: drag });
+  }
+
+  function callRemoveMarker() {
+    if (!requireInstance()) return;
+    const id = document.getElementById("m-rm-id").value.trim();
+    if (!id) { logEvent("error", "Enter marker id", true); return; }
+    instance.removeMarker(id);
+    logEvent("removeMarker()", { id });
+  }
+
+  function callClearMarkers() {
+    if (!requireInstance()) return;
+    instance.clearMarkers();
+    logEvent("clearMarkers()", null);
+  }
+
+  // ── Init on load ─────────────────────────────────────────────────────────────
+  setStatus("", "Not initialised");
+  applyConfig();
+</script>
+</body>
+</html>
