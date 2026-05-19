@@ -2222,9 +2222,9 @@
       const s = document.createElement("style");
       s.id = "pyn-img-marker-styles";
       s.textContent = [
-        `.pyn-img-wrapper .pyn-unit-marker   { font-size: var(--pyn-pin-size, 28px); line-height: 1; }`,
-        `.pyn-img-wrapper .pyn-marker-badge  { font-size: calc(var(--pyn-pin-size, 28px) * 0.3); }`,
-        `.pyn-img-wrapper .pyn-camera-icon   { width: var(--pyn-cam-size, 20px); height: var(--pyn-cam-size, 20px); }`,
+        `.pyn-img-wrapper .pyn-unit-marker   { font-size: var(--pyn-pin-size, 24px); line-height: 1; }`,
+        `.pyn-img-wrapper .pyn-marker-badge  { font-size: calc(var(--pyn-pin-size, 24px) * 0.3); }`,
+        `.pyn-img-wrapper .pyn-camera-icon   { width: var(--pyn-cam-size, 15px); height: var(--pyn-cam-size, 15px); }`,
         `.pyn-img-wrapper .pyn-camera-icon i { font-size: calc(var(--pyn-cam-size, 20px) * 0.48); }`,
       ].join("\n");
       document.head.appendChild(s);
@@ -2233,12 +2233,12 @@
     // Compute and apply --pyn-pin-size / --pyn-cam-size to the container.
     // Scale is a continuous function of container width against a 900px reference — no breakpoint jumps.
     _updateMarkerSizeVars() {
-      const basePinPx  = parseFloat(this.data.property?.markerConfig?.unit_marker_font_size) || 32;
-      const baseCamPx  = Math.round(basePinPx * 0.64);        // ~20px at default 32
+      const basePinPx  = parseFloat(this.data.property?.markerConfig?.unit_marker_font_size) || 24;
+      const baseCamPx  = Math.round(basePinPx * 0.64);        // ~15px at default 24
       const containerW = this.container.offsetWidth || 900;
-      const scale      = Math.min(1.25, Math.max(0.4, containerW / 900));
+      const scale      = Math.min(1.0, Math.max(0.5, containerW / 900));
       const pinPx      = Math.max(14, Math.round(basePinPx * scale));
-      const camPx      = Math.max(12, Math.round(baseCamPx * scale));
+      const camPx      = Math.max(11, Math.round(baseCamPx * scale));
       this.container.style.setProperty("--pyn-pin-size", `${pinPx}px`);
       this.container.style.setProperty("--pyn-cam-size", `${camPx}px`);
     },
