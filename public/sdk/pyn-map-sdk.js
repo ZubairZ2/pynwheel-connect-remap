@@ -232,32 +232,12 @@
      * Fetch an SVG using the session token.
      * The request URL contains only opaque IDs — no storage URLs.
      */
-    // Returns a sessionStorage key versioned by updatedAt so a new SVG upload
-    // produces a different key → cache miss → fresh fetch automatically.
-    _svgCacheKey(mapId) {
-      const id = String(mapId);
-      if (this.data.sitemap && String(this.data.sitemap.mapId) === id) {
-        return `pyn_svg_${id}_${this.data.sitemap.updatedAt || ''}`;
-      }
-      const fp = (this.data.floorplates || []).find(f => String(f.mapId) === id);
-      return `pyn_svg_${id}_${fp?.updatedAt || ''}`;
-    },
-
     async _loadSVG(mapId, mapType) {
-      const cacheKey = this._svgCacheKey(mapId);
-
-      // localStorage persists across tabs and sessions — versioned key ensures
-      // a fresh fetch whenever the SVG is updated (updatedAt changes).
-      try {
-        const cached = localStorage.getItem(cacheKey);
-        if (cached) {
-          const parsed = this._parseSVG(cached);
-          if (parsed) return parsed;
-          // Cached SVG is corrupt — evict it and fall through to network fetch
-          try { localStorage.removeItem(cacheKey); } catch {}
-        }
-      } catch {}
-
+      // SVG text is NOT cached in localStorage — large SVGs with embedded base64
+      // images silently truncate when the quota is exceeded, producing a valid-but-
+      // incomplete SVG that renders blank. The browser HTTP cache (cache:'default')
+      // already handles cross-session caching correctly; in-memory svgCache handles
+      // same-session floor switches.
       try {
         const requestUrl =
           `${this._apiBase()}/api/partner/maps/fetch_svg_image` +
@@ -278,16 +258,6 @@
         if (!svgElement) {
           throw new Error("No <svg> element found in the response.");
         }
-
-        // Store in localStorage. Remove any stale entry for this mapId first.
-        try {
-          const prefix = `pyn_svg_${mapId}_`;
-          for (let i = localStorage.length - 1; i >= 0; i--) {
-            const k = localStorage.key(i);
-            if (k && k !== cacheKey && k.startsWith(prefix)) localStorage.removeItem(k);
-          }
-          localStorage.setItem(cacheKey, svgText);
-        } catch {}
 
         return svgElement;
       } catch (error) {
@@ -374,6 +344,52 @@
 
       // Defer so the browser finishes layout before we read clientWidth/Height
       setTimeout(() => this._centerSvg(svgEl), 0);
+
+      // In embedded environments (e.g. .NET WebView2) the host control may not
+      // have its dimensions yet when the SDK initialises. Attach one-shot
+      // observers so we re-centre the moment the container first becomes
+      // visible/sized — without requiring any change from the integrator.
+      this._watchContainerVisibility(svgEl);
+    },
+
+    _watchContainerVisibility(svgEl) {
+      const c = svgEl && svgEl.parentNode;
+      if (!c) return;
+
+      // Already visible — nothing to watch.
+      if (c.offsetWidth > 0 || c.offsetHeight > 0) return;
+
+      const recenter = () => {
+        roClean();
+        ioClean();
+        // Re-centre whatever SVG is live at this point (the user may have
+        // switched floors between SDK init and the container becoming visible).
+        const live = this._getActiveSvg();
+        if (live) this._centerSvg(live);
+      };
+
+      let ro = null, io = null;
+      const roClean = () => { try { ro && ro.disconnect(); } catch {} ro = null; };
+      const ioClean = () => { try { io && io.disconnect(); } catch {} io = null; };
+
+      // ResizeObserver — fires when the container is sized by the host layout
+      // (e.g. WinForms assigns width/height to the WebView2 control).
+      if (window.ResizeObserver) {
+        ro = new ResizeObserver(() => {
+          if (c.offsetWidth === 0 && c.offsetHeight === 0) return;
+          recenter();
+        });
+        try { ro.observe(c); } catch { roClean(); }
+      }
+
+      // IntersectionObserver — fires when a hidden ancestor (e.g. a tab panel
+      // with display:none) becomes visible; ResizeObserver alone misses this.
+      if (window.IntersectionObserver) {
+        io = new IntersectionObserver((entries) => {
+          if (entries.some(e => e.intersectionRatio > 0)) recenter();
+        }, { threshold: 0 });
+        try { io.observe(c); } catch { ioClean(); }
+      }
     },
 
     _centerSvg(svgEl) {
@@ -385,6 +401,14 @@
       // below its container and exposes the background.
       pz.zoomAbs(0, 0, 1);
       pz.moveTo(0, 0);
+    },
+
+    // Public: re-centre and reset zoom on the active map.
+    // Useful for integrators whose host layout runs after SDK init
+    // (e.g. calling instance.recenter() after showing a hidden panel).
+    recenter() {
+      const live = this._getActiveSvg();
+      if (live) this._centerSvg(live);
     },
 
         // ----------------------------------------------------
