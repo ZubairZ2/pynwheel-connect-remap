@@ -1190,12 +1190,11 @@
     },
 
     _apiBase() {
-      if (this.config.environment  === "staging") {
+      if (this.config.environment === "staging")
         return "https://pynwheel-staging.herokuapp.com";
-      }
-
-      // return "http://localhost:3000";
-      return "https://pynwheelconnect.com"; // production
+      if (this.config.environment === "local")
+        return "http://localhost:3000";
+      return "https://pynwheelconnect.com";
     }
   };
 

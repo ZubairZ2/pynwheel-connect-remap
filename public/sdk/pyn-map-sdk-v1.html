@@ -304,16 +304,97 @@
       max-height: 120px; overflow-y: auto; margin-top: 5px;
     }
     .result-box.hidden { display: none; }
+
+    /* ── Config panel toggle button (hidden on desktop) ── */
+    .config-toggle-btn {
+      display: none;
+      background: transparent;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      align-items: center;
+      gap: 4px;
+      line-height: 1;
+    }
+    .config-toggle-btn:hover { background: #1e293b; color: #e2e8f0; }
+
+    /* ── Overlay backdrop for drawer ── */
+    .config-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      background: rgba(0,0,0,0.45);
+    }
+    .config-overlay.visible { display: block; }
+
+    /* ── Tablet & Mobile: config panel becomes a slide-in drawer ── */
+    @media (max-width: 1099px) {
+      .config-toggle-btn { display: inline-flex; }
+
+      .config-panel {
+        position: fixed;
+        top: 0; left: 0; bottom: 0;
+        z-index: 100;
+        width: 270px;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        box-shadow: 4px 0 20px rgba(0,0,0,0.2);
+        overflow-y: auto;
+      }
+      .config-panel.open { transform: translateX(0); }
+
+      .right-panel { width: 300px; }
+    }
+
+    /* ── Mobile (< 640px): stack map above right panel ── */
+    @media (max-width: 639px) {
+      body { height: auto; min-height: 100svh; }
+
+      header { padding: 8px 12px; }
+      header .sub { display: none; }
+
+      .layout {
+        flex-direction: column;
+        overflow: visible;
+        height: auto;
+      }
+
+      .map-area {
+        padding: 8px;
+        flex: none;
+        height: 56vw;
+        min-height: 260px;
+        max-height: 45vh;
+      }
+
+      #pynMap { height: 100%; flex: none; }
+
+      .right-panel {
+        width: 100%;
+        border-left: none;
+        border-top: 1px solid #e5e7eb;
+        height: 380px;
+        flex-shrink: 0;
+      }
+    }
   </style>
 </head>
 <body>
 
 <header>
+  <button class="config-toggle-btn" id="configToggleBtn" onclick="toggleConfigPanel()">&#9776;&nbsp;Config</button>
   <h1>PynMapSDK v1</h1>
   <span class="sub">pyn-map-sdk-v1.js &nbsp;·&nbsp; <code>PynMapSDK.init(cfg)</code></span>
   <span class="status-badge" id="statusBadge">Not initialised</span>
 </header>
 
+<div class="config-overlay" id="configOverlay" onclick="toggleConfigPanel()"></div>
 <div class="layout">
 
   <!-- ══ LEFT: Config Builder ══ -->
@@ -329,13 +410,15 @@
       </div>
       <div class="field">
         <label>Property ID</label>
-        <input type="text" id="c-propertyId" value="3540" />
+        <input type="text" id="c-propertyId" value="33" />
       </div>
       <div class="field">
         <label>Environment</label>
         <select id="c-environment">
-          <option value="production">production</option>
+          <option value="local">local</option>
           <option value="staging">staging</option>
+          <option value="production">production</option>
+
         </select>
       </div>
       <div class="field">
@@ -642,7 +725,7 @@
   </aside>
 </div>
 
-<script src="https://pynwheelconnect.com/sdk/pyn-map-sdk-v1.js"></script>
+<script src="pyn-map-sdk-v1.js"></script>
 <script>
   // ── Helpers ──────────────────────────────────────────────────────────────────
   function syncHex(colorEl, hexId) {
@@ -670,38 +753,15 @@
     document.getElementById("zoom-label").textContent = this.checked ? "ON" : "OFF";
   });
 
-  // ── Singleton reset ──────────────────────────────────────────────────────────
-  // Resets PynMapSDK singleton state so init() can be called again.
-  // svgCache is intentionally kept to avoid re-fetching SVGs on each Apply.
-  function resetSingleton() {
-    const S = PynMapSDK;
-    S._initialized        = false;
-    S._sessionToken       = null;
-    S._favorites          = new Set();
-    S.config              = null;
-    S.container           = null;
-    S.activeMapId         = null;
-    S._3dMode             = false;
-    S._3dInitialized      = false;
-    S._beansWidget        = null;
-    S._beans3dArr         = [];
-    S._beans3dFloor       = null;
-    S._3dWrapper          = null;
-    S._3dToggleBtn        = null;
-    S._zoomInBtn          = null;
-    S._zoomOutBtn         = null;
-    S._resetZoomBtn       = null;
-    S._imgMapMode         = false;
-    S._imgActiveMapId     = null;
-    S._userHasCustomColors= false;
-    S._beansPopupObserver = null;
-    S.data                = { property: null, sitemap: null, floorplates: [], units: [], floorplans: [], amenities: [], filters: null };
-    S.unitsByMap          = {};
-    S.pointerIdsByMap     = {};
-    S.unitsByPointerIdByMap = {};
-    S._svgLoadingPromises = {};
-    S._lastHoverPid       = null;
+  // ── SDK readiness ─────────────────────────────────────────────────────────────
+  let sdkReady = false;
 
+  // ── Singleton reset ──────────────────────────────────────────────────────────
+  // Delegates to the SDK's destroy() which properly resets the IIFE-internal state.
+  // svgCache is intentionally kept inside the SDK to avoid re-fetching SVGs.
+  function resetSingleton() {
+    sdkReady = false;
+    PynMapSDK.destroy();
     const mapEl = document.getElementById("pynMap");
     if (mapEl) { mapEl.innerHTML = ""; mapEl.removeAttribute("style"); }
   }
@@ -797,6 +857,7 @@
   }
 
   function onSDKReady() {
+    sdkReady = true;
     setStatus("ready", "Ready");
     const SDK    = PynMapSDK;
     const units  = SDK.data?.units     || [];
@@ -837,10 +898,6 @@
 
   // ── Event log ────────────────────────────────────────────────────────────────
   function logEvent(name, data, isError) {
-    // Auto-switch to Events tab on first event
-    if (!document.getElementById("events-tab").classList.contains("active")) {
-      document.querySelector("[data-tab='events']").click();
-    }
     const log = document.getElementById("event-log");
     const empty = log.querySelector(".log-empty");
     if (empty) empty.remove();
@@ -860,8 +917,8 @@
 
   // ── Method wrappers ──────────────────────────────────────────────────────────
   function requireSDK() {
-    if (!PynMapSDK._initialized) {
-      logEvent("error", "SDK not initialised — click Apply first", true);
+    if (!sdkReady) {
+      logEvent("error", "SDK not ready — wait for Ready status or click Apply", true);
       return false;
     }
     return true;
@@ -1017,6 +1074,25 @@
     document.getElementById("st-favs").textContent = "0";
     document.getElementById("favs-result").classList.add("hidden");
   }
+
+  // ── Responsive: config panel drawer ──────────────────────────────────────────
+  function toggleConfigPanel() {
+    const panel   = document.querySelector('.config-panel');
+    const overlay = document.getElementById('configOverlay');
+    const btn     = document.getElementById('configToggleBtn');
+    const isOpen  = panel.classList.toggle('open');
+    overlay.classList.toggle('visible', isOpen);
+    if (btn) btn.innerHTML = isOpen ? '&#10005;&nbsp;Config' : '&#9776;&nbsp;Config';
+  }
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth >= 1100) {
+      document.querySelector('.config-panel').classList.remove('open');
+      document.getElementById('configOverlay').classList.remove('visible');
+      const btn = document.getElementById('configToggleBtn');
+      if (btn) btn.innerHTML = '&#9776;&nbsp;Config';
+    }
+  });
 
   // ── Boot ─────────────────────────────────────────────────────────────────────
   setStatus("", "Not initialised");

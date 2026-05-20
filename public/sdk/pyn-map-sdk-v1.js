@@ -77,6 +77,7 @@
         onAmenityHover:   typeof cfg.onAmenityHover   === "function" ? cfg.onAmenityHover   : null,
         onAmenityClick:   typeof cfg.onAmenityClick   === "function" ? cfg.onAmenityClick   : null,
         onFavoriteChange: typeof cfg.onFavoriteChange === "function" ? cfg.onFavoriteChange : null,
+        onReady:          typeof cfg.onReady          === "function" ? cfg.onReady          : null,
         enable3DMap:          cfg.enable3DMap          != null ? cfg.enable3DMap          === true : null,
         show3DMap:            cfg.show3DMap            != null ? cfg.show3DMap            === true : null,
         defaultSatelliteView: cfg.defaultSatelliteView != null ? cfg.defaultSatelliteView === true : null,
@@ -211,6 +212,8 @@
       if (this.config.enable3DMap && this.config.show3DMap) {
         this.switchTo3DMap();
       }
+
+      this.config.onReady?.();
     },
 
     // ----------------------------------------------------
@@ -1214,7 +1217,7 @@
         loadStyle("https://www.beans.ai/mapswidget/css/mapswidget-1.0.4.css");
 
         // Load order matters: ArcGIS → mapswidget → utils (provides convertUnitsArr)
-        loadScript("https://js.arcgis.com/4.23/")
+        loadScript("https://js.arcgis.com/4.27/")
           .then(() => loadScript("https://www.beans.ai/mapswidget/js/mapswidget-1.0.4-speed.js"))
           .then(() => loadScript("https://www.beans.ai/mapswidget/client/utils.js"))
           .then(resolve)
@@ -1683,25 +1686,34 @@
         fontWeight:      "bold",
         cursor:          "pointer",
         boxShadow:       "0 2px 5px rgba(0,0,0,0.15)",
-        userSelect:      "none"
+        userSelect:      "none",
+        touchAction:     "manipulation"
+      };
+
+      // panzoom's touchstart handler calls preventDefault() on the SVG, which blocks
+      // click-synthesis from touch sequences for overlaid buttons. Use touchend to
+      // fire actions directly so mobile taps always work.
+      const bindBtn = (el, fn) => {
+        el.onclick = fn;
+        el.addEventListener("touchend", e => { e.preventDefault(); e.stopPropagation(); fn(); }, { passive: false });
       };
 
       const plus = document.createElement("div");
       plus.innerText = "+";
       Object.assign(plus.style, btnStyle);
-      plus.onclick = () => this.zoomIn();
+      bindBtn(plus, () => this.zoomIn());
       this._zoomInBtn = plus;
 
       const minus = document.createElement("div");
       minus.innerText = "−";
       Object.assign(minus.style, btnStyle);
-      minus.onclick = () => this.zoomOut();
+      bindBtn(minus, () => this.zoomOut());
       this._zoomOutBtn = minus;
 
       const reset = document.createElement("div");
       reset.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>`;
       Object.assign(reset.style, { ...btnStyle, fontSize: "16px" });
-      reset.onclick = () => this.resetZoom();
+      bindBtn(reset, () => this.resetZoom());
       this._resetZoomBtn = reset;
 
       // Hide zoom buttons immediately if already in 3D mode
@@ -1724,13 +1736,8 @@
           fontSize:        "13px",
           letterSpacing:   "0.5px"
         });
-        toggle.onclick = () => {
-          if (this._3dMode) {
-            this.switchTo2DMap();
-          } else {
-            this.switchTo3DMap();
-          }
-        };
+        const toggleFn = () => { if (this._3dMode) this.switchTo2DMap(); else this.switchTo3DMap(); };
+        bindBtn(toggle, toggleFn);
         this._3dToggleBtn = toggle;
         wrapper.appendChild(toggle);
       }
@@ -1906,6 +1913,39 @@
         return this.data.sitemap.mapType || "sitemap";
       const fp = this.data.floorplates.find(f => String(f.mapId) === id);
       return fp ? (fp.mapType || "floorplate") : null;
+    },
+
+    destroy() {
+      this._initialized        = false;
+      this._sessionToken       = null;
+      this._favorites          = new Set();
+      this.config              = null;
+      this.container           = null;
+      this.activeMapId         = null;
+      this._3dMode             = false;
+      this._3dInitialized      = false;
+      this._beansWidget        = null;
+      this._beans3dArr         = [];
+      this._beans3dFloor       = null;
+      this._3dWrapper          = null;
+      this._3dToggleBtn        = null;
+      this._zoomInBtn          = null;
+      this._zoomOutBtn         = null;
+      this._resetZoomBtn       = null;
+      this._imgMapMode         = false;
+      this._imgActiveMapId     = null;
+      this._userHasCustomColors= false;
+      if (this._beansPopupObserver) {
+        this._beansPopupObserver.disconnect();
+        this._beansPopupObserver = null;
+      }
+      this.data                = { property: null, sitemap: null, floorplates: [], units: [], floorplans: [], amenities: [], filters: null };
+      this.unitsByMap          = {};
+      this.pointerIdsByMap     = {};
+      this.unitsByPointerIdByMap = {};
+      this._svgLoadingPromises = {};
+      this._lastHoverPid       = null;
+      // svgCache is intentionally preserved to avoid re-fetching on reinit
     },
 
     _showLoading(msg)          { this._showStatus(msg, false); },
@@ -2261,6 +2301,8 @@
       if (this.config.enable3DMap && this.config.show3DMap) {
         this.switchTo3DMap();
       }
+
+      this.config.onReady?.();
     },
 
     _getDefaultImageMapId() {
@@ -2621,10 +2663,10 @@
     // ─── END IMAGE MAP SUBSYSTEM ──────────────────────────────────────────────
 
     _apiBase() {
-      if (this.config.environment === "staging") {
+      if (this.config.environment === "staging")
         return "https://pynwheel-staging.herokuapp.com";
-      }
-      // return "http://localhost:3000";
+      if (this.config.environment === "local")
+        return "http://localhost:3000";
       return "https://pynwheelconnect.com";
     }
   };
@@ -2658,7 +2700,10 @@
       clearAllFavorites(communityId, sessionId)       { return PynMapSDK.clearAllFavorites.call(PynMapSDK, communityId, sessionId); },
       shareFavoritesEmail(userEmail, favoritesUrl)    { return PynMapSDK.shareFavoritesEmail.call(PynMapSDK, userEmail, favoritesUrl); },
       switchTo3DMap()              { return PynMapSDK.switchTo3DMap.call(PynMapSDK); },
-      switchTo2DMap()              { return PynMapSDK.switchTo2DMap.call(PynMapSDK); }
+      switchTo2DMap()              { return PynMapSDK.switchTo2DMap.call(PynMapSDK); },
+      destroy()                    { return PynMapSDK.destroy.call(PynMapSDK); },
+      get data()                   { return PynMapSDK.data; },
+      get activeMapId()            { return PynMapSDK.activeMapId; }
     };
   }
 
