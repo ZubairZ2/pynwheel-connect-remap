@@ -55,8 +55,8 @@ class PsiSwapService < BaseService
       end
     
       fill_psi_pricing_details(limit_result)
-      rename_provider()
     end
+    rename_provider()
   end
 
   def save_psi_units(units, property_id, limit_result)
