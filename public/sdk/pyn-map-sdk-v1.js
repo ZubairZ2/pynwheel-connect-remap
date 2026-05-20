@@ -857,9 +857,11 @@
       if (activeSvg) {
         activeSvg.style.visibility    = "hidden";
         activeSvg.style.pointerEvents = "none";
-        // Pause panzoom so its touchstart handler stops calling preventDefault(),
-        // which would otherwise block click events on Beans 3D widget buttons.
-        if (activeSvg._pz) activeSvg._pz.pause();
+        // Dispose panzoom entirely so all its event listeners (including touchstart
+        // handlers that call preventDefault()) are removed. pause() alone is not
+        // reliable — some panzoom@9 builds call preventDefault() before the paused
+        // check, which silently blocks click events on Beans 3D widget buttons.
+        if (activeSvg._pz) { activeSvg._pz.dispose(); activeSvg._pz = null; }
       }
       if (this._3dWrapper) this._3dWrapper.style.display = "block";
 
@@ -891,7 +893,8 @@
       if (activeSvg) {
         activeSvg.style.visibility    = "visible";
         activeSvg.style.pointerEvents = "";
-        if (activeSvg._pz) activeSvg._pz.resume();
+        // Re-init panzoom (was disposed when entering 3D mode).
+        if (!activeSvg._pz) this._enablePanZoom(activeSvg);
       }
       if (this._3dWrapper) this._3dWrapper.style.display = "none";
 
