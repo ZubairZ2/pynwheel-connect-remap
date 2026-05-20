@@ -760,14 +760,8 @@
       imgEl.setAttribute("width",  size[0]);
       imgEl.setAttribute("height", size[1]);
       imgEl.style.cursor = marker.cursor || "default";
+      imgEl.style.pointerEvents = marker.draggable ? "all" : "none";
       imgEl.setAttribute("data-pyn-marker-id", marker.id);
-
-      if (marker.onClick) {
-        imgEl.addEventListener("click", (e) => {
-          e.stopPropagation();
-          marker.onClick(marker);
-        });
-      }
 
       if (marker.draggable) {
         this._makeDraggableMarker(imgEl, marker, activeSvg);
@@ -935,9 +929,26 @@
         const dy = t.clientY - _touch.y;
         const wasTap = Math.sqrt(dx * dx + dy * dy) < 8 && (Date.now() - _touch.time) < 250;
         const root = _touch.root;
+        const touchX = _touch.x;
+        const touchY = _touch.y;
         _touch = null;
 
-        if (!root || !wasTap || !root.classList.contains("pyn-highlight")) return;
+        if (!wasTap) return;
+
+        // Fire onClick for any marker whose bounding box contains the tap point.
+        const svgPt = this._screenToSVG(svg, touchX, touchY);
+        Object.values(this.markers).forEach(m => {
+          if (!m.onClick || !m._el) return;
+          try {
+            const b = m._el.getBBox();
+            if (svgPt.x >= b.x && svgPt.x <= b.x + b.width &&
+                svgPt.y >= b.y && svgPt.y <= b.y + b.height) {
+              m.onClick(m);
+            }
+          } catch (_) {}
+        });
+
+        if (!root || !root.classList.contains("pyn-highlight")) return;
         const pid = root.dataset.pynUnitPid;
         const unit = byPointer[pid];
         if (!unit) return;
@@ -952,6 +963,20 @@
       // Click (desktop) — suppressed after a touch tap to avoid double-fire
       svg.addEventListener("click", (e) => {
         if (_suppressNextClick) return;
+
+        // Fire onClick for any marker whose bounding box contains the click point.
+        // Runs first so both marker callback and unit selection can fire together.
+        const svgPt = this._screenToSVG(svg, e.clientX, e.clientY);
+        Object.values(this.markers).forEach(m => {
+          if (!m.onClick || !m._el) return;
+          try {
+            const b = m._el.getBBox();
+            if (svgPt.x >= b.x && svgPt.x <= b.x + b.width &&
+                svgPt.y >= b.y && svgPt.y <= b.y + b.height) {
+              m.onClick(m);
+            }
+          } catch (_) {}
+        });
 
         const root = e.target.closest("[data-pyn-unit-pid]");
         if (!root || !root.classList.contains("pyn-highlight")) return;
