@@ -66,7 +66,7 @@ class ReportsController < ApplicationController
     send_data(
       PartnersPerformanceReportService.new(params[:start_date], params[:end_date], params[:partner]).get_report,
       type: 'text/csv',
-      filename: "apartment-list-performance-report.csv"
+      filename: "partners-performance-report.csv"
     )
   end
 

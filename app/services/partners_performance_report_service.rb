@@ -9,6 +9,22 @@ class PartnersPerformanceReportService < BaseService
     'Activity Duration (In Minutes)'
   ].freeze
 
+  CLICK_COLUMNS = %w[
+    unit_marker_clicks amenity_marker_clicks sorting_filter_clicks
+    bedroom_filter_clicks pricing_filter_clicks square_feet_filter_clicks
+    availability_filter_clicks reset_filter_clicks view_saved_clicks
+    schedule_tour_clicks logo_clicks floor_number_clicks zoom_in_clicks
+    zoom_out_clicks zoom_refresh_clicks clear_favorites_clicks
+    favorite_saved_counter virtual_tour_clicks unit_modal_buttons_clicks
+    open_pricing_matrix_clicks hide_pricing_matrix_clicks
+  ].freeze
+
+  SESSION_SELECT = (%w[
+    id community_id map_interactions apply_click_counter
+    amenity_marker_hovers unit_marker_hovers other_hovers
+    updated_at start_datetime
+  ] + CLICK_COLUMNS).join(', ').freeze
+
   def initialize(start_date, end_date, partner)
     @start_date = start_date.to_date
     @end_date   = end_date.to_date
@@ -27,11 +43,17 @@ class PartnersPerformanceReportService < BaseService
 
   private
 
+  # Memoized so MapPartner is only queried once across write_partner_rows + write_benchmark_rows
+  def partner_community_ids
+    @partner_community_ids ||= MapPartner.where(partner: @partner).pluck(:community_id)
+  end
+
   def write_partner_rows(csv)
-    map_partners          = MapPartner.where(partner: @partner)
-                                      .includes(community: :company)
-                                      .joins(community: :company)
-                                      .order('companies.name, communities.name')
+    map_partners = MapPartner.where(partner: @partner)
+                             .includes(community: :company)
+                             .joins(community: :company)
+                             .order('companies.name, communities.name')
+
     sessions_by_community = fetch_partner_sessions
 
     map_partners.each do |mp|
@@ -48,12 +70,12 @@ class PartnersPerformanceReportService < BaseService
   end
 
   def fetch_partner_sessions
-    community_ids = MapPartner.where(partner: @partner).pluck(:community_id)
-    TrackSession.where(
-      track_session_type: 'maps',
-      community_id: community_ids,
-      start_datetime: @start_date.beginning_of_day..@end_date.end_of_day
-    ).group_by(&:community_id)
+    TrackSession.select(SESSION_SELECT)
+                .where(
+                  track_session_type: 'maps',
+                  community_id: partner_community_ids,
+                  start_datetime: @start_date.beginning_of_day..@end_date.end_of_day
+                ).group_by(&:community_id)
   end
 
   def build_partner_row(community, sessions, partner_since, days_live, full_period)
@@ -81,25 +103,28 @@ class PartnersPerformanceReportService < BaseService
     ]
   end
 
+  # Benchmark rows use pure SQL aggregation — no session records loaded into Ruby
   def write_benchmark_rows(csv)
-    partner_community_ids = MapPartner.where(partner: @partner).pluck(:community_id).to_set
-    communities           = live_map_apply_enabled_communities
-    sessions_by_community = fetch_all_sessions_for(communities.map(&:id))
+    partner_ids_set = partner_community_ids.to_set
+
+    aggregated = TrackSession.where(
+      track_session_type: 'maps',
+      community_id: live_map_apply_enabled_community_ids,
+      start_datetime: @start_date.beginning_of_day..@end_date.end_of_day
+    ).group(:community_id)
+     .pluck(:community_id, 'SUM(map_interactions)', 'SUM(apply_click_counter)')
 
     all_totals  = { interactions: 0, apply_clicks: 0 }
     excl_totals = { interactions: 0, apply_clicks: 0 }
 
-    communities.each do |community|
-      community_sessions = sessions_by_community[community.id] || []
-      next if community_sessions.empty?
+    aggregated.each do |cid, interactions, apply_clicks|
+      interactions = interactions.to_i
+      apply_clicks = apply_clicks.to_i
 
-      interactions = community_sessions.sum(&:map_interactions)
-      apply_clicks = community_sessions.sum(&:apply_click_counter)
+      all_totals[:interactions] += interactions
+      all_totals[:apply_clicks] += apply_clicks
 
-      all_totals[:interactions]  += interactions
-      all_totals[:apply_clicks]  += apply_clicks
-
-      unless partner_community_ids.include?(community.id)
+      unless partner_ids_set.include?(cid)
         excl_totals[:interactions] += interactions
         excl_totals[:apply_clicks] += apply_clicks
       end
@@ -119,34 +144,22 @@ class PartnersPerformanceReportService < BaseService
     (totals[:apply_clicks].to_f / totals[:interactions] * 100).round(2)
   end
 
-  def live_map_apply_enabled_communities
+  # Returns only IDs — no need for full Community objects for the benchmark query
+  def live_map_apply_enabled_community_ids
     live_ids = Webpage.where(hide_page: false)
                       .where.not(url: [nil, ''])
                       .pluck(:community_id)
                       .uniq
 
-    apply_ids = Credential.where(community_id: live_ids)
-                          .where(apply_now: ['true', 'separate_link'])
-                          .pluck(:community_id)
-
-    Community.where(id: apply_ids).includes(:company)
-  end
-
-  def fetch_all_sessions_for(community_ids)
-    return {} if community_ids.empty?
-
-    TrackSession.where(
-      track_session_type: 'maps',
-      community_id: community_ids,
-      start_datetime: @start_date.beginning_of_day..@end_date.end_of_day
-    ).group_by(&:community_id)
+    Credential.where(community_id: live_ids)
+              .where(apply_now: ['true', 'separate_link'])
+              .pluck(:community_id)
   end
 
   def filter_active_sessions(sessions)
     sessions.select do |s|
-      hover  = s.amenity_marker_hovers + s.unit_marker_hovers + s.other_hovers
-      clicks = sum_click_events([s])
-      hover > 0 || clicks > 0
+      hover = s.amenity_marker_hovers + s.unit_marker_hovers + s.other_hovers
+      hover > 0 || CLICK_COLUMNS.any? { |col| s.public_send(col) > 0 }
     end
   end
 
@@ -155,21 +168,7 @@ class PartnersPerformanceReportService < BaseService
   end
 
   def sum_click_events(sessions)
-    sessions.sum do |s|
-      [
-        s.unit_marker_clicks,         s.amenity_marker_clicks,
-        s.sorting_filter_clicks,      s.bedroom_filter_clicks,
-        s.pricing_filter_clicks,      s.square_feet_filter_clicks,
-        s.availability_filter_clicks, s.reset_filter_clicks,
-        s.view_saved_clicks,          s.schedule_tour_clicks,
-        s.logo_clicks,                s.floor_number_clicks,
-        s.zoom_in_clicks,             s.zoom_out_clicks,
-        s.zoom_refresh_clicks,        s.clear_favorites_clicks,
-        s.favorite_saved_counter,     s.virtual_tour_clicks,
-        s.unit_modal_buttons_clicks,  s.open_pricing_matrix_clicks,
-        s.hide_pricing_matrix_clicks
-      ].sum
-    end
+    sessions.sum { |s| CLICK_COLUMNS.sum { |col| s.public_send(col) } }
   end
 
   def calculate_activity_duration(sessions)
