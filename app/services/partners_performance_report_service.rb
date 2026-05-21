@@ -76,14 +76,14 @@ class PartnersPerformanceReportService < BaseService
       start_datetime: @start_date.beginning_of_day..@end_date.end_of_day
     ).group(:community_id).pluck(
       :community_id,
-      'SUM(map_interactions)',
-      'SUM(apply_click_counter)',
-      'COUNT(*)',
-      "SUM(#{HOVER_SUM_SQL})",
-      "SUM(#{CLICK_SUM_SQL})",
-      "COUNT(*) FILTER (WHERE #{ACTIVE_COND_SQL})",
-      "COALESCE(AVG(GREATEST(EXTRACT(EPOCH FROM (updated_at - start_datetime)), 0) / 60.0) " \
-        "FILTER (WHERE #{ACTIVE_COND_SQL}), 0)"
+      Arel.sql('SUM(map_interactions)'),
+      Arel.sql('SUM(apply_click_counter)'),
+      Arel.sql('COUNT(*)'),
+      Arel.sql("SUM(#{HOVER_SUM_SQL})"),
+      Arel.sql("SUM(#{CLICK_SUM_SQL})"),
+      Arel.sql("COUNT(*) FILTER (WHERE #{ACTIVE_COND_SQL})"),
+      Arel.sql("COALESCE(AVG(GREATEST(EXTRACT(EPOCH FROM (updated_at - start_datetime)), 0) / 60.0) " \
+               "FILTER (WHERE #{ACTIVE_COND_SQL}), 0)")
     )
 
     rows.each_with_object({}) do |(cid, interactions, apply_clicks, sessions, hovers, clicks, active, duration), h|
@@ -131,7 +131,7 @@ class PartnersPerformanceReportService < BaseService
       community_id: live_map_apply_enabled_community_ids,
       start_datetime: @start_date.beginning_of_day..@end_date.end_of_day
     ).group(:community_id)
-     .pluck(:community_id, 'SUM(map_interactions)', 'SUM(apply_click_counter)')
+     .pluck(:community_id, Arel.sql('SUM(map_interactions)'), Arel.sql('SUM(apply_click_counter)'))
 
     all_totals  = { interactions: 0, apply_clicks: 0 }
     excl_totals = { interactions: 0, apply_clicks: 0 }
