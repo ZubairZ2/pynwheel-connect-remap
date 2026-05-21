@@ -62,4 +62,12 @@ class ReportsController < ApplicationController
     send_data(PartnerAnalyticsReportService.new(params[:start_date], params[:end_date], params[:partner]).get_report() , :type => 'application/xlsx', :filename => "partner-analytics-report.csv")
   end
 
+  def partners_performance_report
+    send_data(
+      PartnersPerformanceReportService.new(params[:start_date], params[:end_date], params[:partner]).get_report,
+      type: 'text/csv',
+      filename: "apartment-list-performance-report.csv"
+    )
+  end
+
 end
