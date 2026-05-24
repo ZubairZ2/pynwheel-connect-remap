@@ -996,6 +996,13 @@
           if (container) {
             container.addEventListener("mouseleave", () => this._hideBeansEsriPopup());
           }
+
+          // ArcGIS SDK sets touch-action:none on its view container, which cascades
+          // to all Beans UI buttons (satellite, shadow, etc.) and blocks iOS Safari
+          // from synthesizing click events from touch sequences. Fix: listen for
+          // touchend on the Beans container and manually fire .click() for taps on
+          // Beans UI controls (not on the ESRI map canvas itself).
+          this._bindBeansContainerTouch();
         }
       }, 300);
 
@@ -1010,6 +1017,42 @@
       const w = this._beansWidget;
       if (!w) return null;
       return w.esriObj || w.mapboxObj || w.googleObj || w.banvasObj || null;
+    },
+
+    // Touch-tap synthesizer for Beans 3D UI controls.
+    // ArcGIS sets touch-action:none on its view container after mount, which
+    // cascades to sibling Beans UI elements (satellite button, shadow toggle, etc.)
+    // and prevents the browser from synthesizing click events from touch taps.
+    // We intercept touchend on the Beans container and manually dispatch .click()
+    // for any tap that lands outside the ArcGIS canvas (so 3D navigation is unaffected).
+    _bindBeansContainerTouch() {
+      const el = document.getElementById("pyn-3d-map");
+      if (!el || el._pynTouchBound) return;
+      el._pynTouchBound = true;
+
+      let _t = null;
+      el.addEventListener("touchstart", e => {
+        if (e.touches.length !== 1) { _t = null; return; }
+        const t = e.touches[0];
+        _t = { x: t.clientX, y: t.clientY, time: Date.now(), target: t.target };
+      }, { passive: true });
+
+      el.addEventListener("touchend", e => {
+        if (!_t) return;
+        const ch = e.changedTouches[0];
+        const dx = ch.clientX - _t.x;
+        const dy = ch.clientY - _t.y;
+        const wasTap = (dx * dx + dy * dy) < 100 && (Date.now() - _t.time) < 300;
+        const target = _t.target;
+        _t = null;
+        if (!wasTap) return;
+        // Don't intercept taps inside the ArcGIS SceneView canvas — those are
+        // for 3D camera navigation and Esri's own hit-testing.
+        if (target.closest(".esri-view, .BeansEsri, canvas")) return;
+        // For all other Beans UI controls, prevent browser double-click and fire manually.
+        e.preventDefault();
+        target.click();
+      }, { passive: false });
     },
 
     /**
