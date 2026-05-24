@@ -564,7 +564,6 @@
 
       this._enablePanZoom(clone);
       c.style.overflow   = "hidden";
-      c.style.touchAction = "none";
     },
 
 
@@ -591,9 +590,10 @@
         try { svgEl._pz.dispose(); } catch { }
       }
 
-      // touch-action:none lets panzoom own all touch gestures on every device
+      // touch-action:none on the SVG lets panzoom own all touch gestures.
+      // Do NOT set it on the parent container — that would cascade to the overlay
+      // buttons (zoom controls, 3D toggle) and block iOS Safari click synthesis.
       svgEl.style.touchAction = "none";
-      if (svgEl.parentNode) svgEl.parentNode.style.touchAction = "none";
 
       svgEl._pz = panzoom(svgEl, {
         minZoom: 0.5,
