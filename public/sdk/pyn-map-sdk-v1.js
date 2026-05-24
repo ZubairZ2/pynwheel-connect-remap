@@ -1046,9 +1046,10 @@
         const target = _t.target;
         _t = null;
         if (!wasTap) return;
-        // Don't intercept taps inside the ArcGIS SceneView canvas — those are
-        // for 3D camera navigation and Esri's own hit-testing.
-        if (target.closest(".esri-view, .BeansEsri, canvas")) return;
+        // Don't intercept taps on the 3D camera surface — those are for navigation.
+        // esri-view-surface is the actual WebGL canvas layer; esri-ui contains the
+        // Daylight panel, buttons, checkboxes etc. which DO need click synthesis.
+        if (target.closest(".esri-view-surface, canvas")) return;
         // For all other Beans UI controls, prevent browser double-click and fire manually.
         e.preventDefault();
         target.click();
