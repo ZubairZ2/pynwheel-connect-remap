@@ -516,9 +516,11 @@
 
       const clone = svg.cloneNode(true);
       clone.setAttribute("data-map-id", this.activeMapId);
-      // In 3D mode keep the SVG in layout (visibility:hidden) so the container
-      // retains its height — display:none collapses the flex container to 0px.
-      clone.style.display        = "block";
+      // In 3D mode the SVG is hidden. display:none removes it from the touch-event
+      // path (iOS Safari ignores pointer-events:none on large SVGs with forced CSS
+      // height, e.g. height:100vh). The container height is maintained via a
+      // minHeight lock set in switchTo3DMap() before the SVG is hidden.
+      clone.style.display        = this._3dMode ? "none"   : "block";
       clone.style.visibility     = this._3dMode ? "hidden" : "visible";
       clone.style.pointerEvents  = this._3dMode ? "none"   : "";
 
@@ -852,9 +854,19 @@
         document.head.appendChild(s);
       }
 
-      // Hide SVG (keep in layout for height), show 3D wrapper
+      // Hide SVG and show 3D wrapper.
+      // We use display:none (not just visibility:hidden) because iOS Safari does not
+      // reliably honour pointer-events:none on SVG elements when external CSS forces
+      // a large intrinsic size (e.g. height:100vh !important). display:none removes
+      // the SVG from the touch-event path entirely. We lock the container's minHeight
+      // first so it doesn't collapse after the SVG leaves the layout flow.
       const activeSvg = this._getActiveSvg();
       if (activeSvg) {
+        if (!this.container.style.minHeight) {
+          const h = this.container.offsetHeight;
+          if (h > 0) this.container.style.minHeight = h + "px";
+        }
+        activeSvg.style.display       = "none";
         activeSvg.style.visibility    = "hidden";
         activeSvg.style.pointerEvents = "none";
         // Dispose panzoom entirely so all its event listeners (including touchstart
@@ -891,8 +903,11 @@
       // Restore SVG visibility, hide 3D wrapper
       const activeSvg = this._getActiveSvg();
       if (activeSvg) {
+        activeSvg.style.display       = "";
         activeSvg.style.visibility    = "visible";
         activeSvg.style.pointerEvents = "";
+        // Release the container minHeight lock set when entering 3D mode.
+        if (this.container.style.minHeight) this.container.style.minHeight = "";
         // Re-init panzoom (was disposed when entering 3D mode).
         if (!activeSvg._pz) this._enablePanZoom(activeSvg);
       }
@@ -2669,7 +2684,8 @@
       if (this.config.environment === "staging")
         return "https://pynwheel-staging.herokuapp.com";
       if (this.config.environment === "local")
-        return "http://localhost:3000";
+        return "http://192.168.1.10:3000"
+        // return "http://localhost:3000";
       return "https://pynwheelconnect.com";
     }
   };
