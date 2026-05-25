@@ -326,7 +326,7 @@ class SdkPayloadBuilderService
     @status_colors ||= begin
       c = status_based_default_colors(@community)
       {
-        vacant:             default_unit_marker_color(@community),
+        vacant:             c[:vacant],
         occupied:           c[:occupied],
         occupied_on_notice: c[:occupied_on_notice],
         vacant_leased:      c[:vacant_leased],

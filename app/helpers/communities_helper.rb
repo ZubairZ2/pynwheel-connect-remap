@@ -14,6 +14,7 @@ module CommunitiesHelper
   STATUS_BASE_DEFAULT_COLORS = {
     occupied: "#f2f2f2",
     occupied_on_notice: "#8545a1",
+    vacant: "#d37474",
     vacant_leased: "#f9d648",
     model: "#f57396",
     missing: "#eecea5"
@@ -526,7 +527,7 @@ module CommunitiesHelper
       custom_color = case status
                     when :occupied then design&.property_map_occupied_color
                     when :occupied_on_notice then design&.property_map_occupied_on_notice_color
-                    when :vacant then nil # ensure vacant exists for completeness
+                    when :vacant then design&.property_map_color
                     when :vacant_leased then design&.property_map_vacant_leased_color
                     when :model then design&.property_map_model_color
                     when :missing then design&.property_map_missing_color
