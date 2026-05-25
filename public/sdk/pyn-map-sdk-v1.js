@@ -28,9 +28,6 @@
     _imgMapMode:    false,
     _imgActiveMapId: null,   // mapId of the currently-visible floorplate/sitemap
 
-    // When false (default), pan is disabled so the map cannot be dragged off-screen.
-    // Set to true when the host puts the map into full-screen / expanded mode.
-    _expandedMode: false,
 
     // true when the caller explicitly passed styles.unitColors in config;
     // false means "use per-unit colors returned by the API"
@@ -606,18 +603,75 @@
       svgEl.style.touchAction = "none";
 
       svgEl._pz = panzoom(svgEl, {
-        minZoom: 0.5,
+        minZoom: 1,   // can't zoom below the default view
         maxZoom: 10,
-        bounds: true,
-        boundsPadding: 0.1,
-        // Return true to block mouse-drag panning in default view; expanded mode allows it.
-        beforeMouseDown: () => !this._expandedMode,
+        // Block mouse-drag pan when at default zoom (scale ≤ 1); allow when zoomed in.
+        beforeMouseDown: () => (svgEl._pz ? svgEl._pz.getTransform().scale <= 1.01 : true),
       });
 
-      // Block single-finger touch pan in default mode while letting two-finger
-      // pinch-zoom through to panzoom. Capture phase fires before panzoom's handler.
+      // Clamp position after every pan/zoom so the map content always covers the container.
+      // We must use the *rendered content* bounds from the SVG viewBox, not the SVG element
+      // bounds — preserveAspectRatio="xMidYMid meet" letterboxes the content inside the
+      // element, so at scale=2 with tx=0 there can be blank SVG background at the top/bottom.
+      let _svgClamping = false;
+      const svgClamp = () => {
+        if (_svgClamping) return;
+        const pz = svgEl._pz;
+        if (!pz) return;
+        const t  = pz.getTransform();
+        const pr = svgEl.parentElement;
+        if (!pr) return;
+        const cw = pr.clientWidth;
+        const ch = pr.clientHeight;
+
+        // Snap to default when back at base zoom.
+        if (t.scale <= 1.01) {
+          if (Math.abs(t.x) > 0.5 || Math.abs(t.y) > 0.5) {
+            _svgClamping = true;
+            pz.moveTo(0, 0);
+            _svgClamping = false;
+          }
+          return;
+        }
+
+        // Compute rendered content rect inside the SVG element.
+        // SVG preserveAspectRatio="xMidYMid meet" scales content to fit while preserving
+        // aspect ratio, centering it — the blank margins are NOT part of the map.
+        let cofX = 0, cofY = 0, cfW = cw, cfH = ch;
+        const vb = svgEl.viewBox && svgEl.viewBox.baseVal;
+        if (vb && vb.width > 0 && vb.height > 0) {
+          const rs = Math.min(cw / vb.width, ch / vb.height);
+          cfW  = vb.width  * rs;
+          cfH  = vb.height * rs;
+          cofX = (cw - cfW) / 2;
+          cofY = (ch - cfH) / 2;
+        }
+
+        // After panzoom matrix(s,0,0,s,tx,ty) the content occupies
+        //   x: [s*cofX + tx ,  s*(cofX+cfW) + tx]
+        //   y: [s*cofY + ty ,  s*(cofY+cfH) + ty]
+        // Clamp so content always covers [0,cw]×[0,ch].
+        const maxX = -t.scale * cofX;
+        const minX =  cw - t.scale * (cofX + cfW);
+        const maxY = -t.scale * cofY;
+        const minY =  ch - t.scale * (cofY + cfH);
+
+        const x = minX > maxX ? (minX + maxX) / 2 : Math.min(maxX, Math.max(minX, t.x));
+        const y = minY > maxY ? (minY + maxY) / 2 : Math.min(maxY, Math.max(minY, t.y));
+
+        if (Math.abs(x - t.x) > 0.5 || Math.abs(y - t.y) > 0.5) {
+          _svgClamping = true;
+          pz.moveTo(x, y);
+          _svgClamping = false;
+        }
+      };
+      svgEl._pz.on("pan",  svgClamp);
+      svgEl._pz.on("zoom", svgClamp);
+
+      // Block single-finger touch pan when at default zoom; let two-finger pinch-zoom through.
       const touchBlocker = (e) => {
-        if (!this._expandedMode && e.touches.length === 1) {
+        const scale = svgEl._pz ? svgEl._pz.getTransform().scale : 1;
+        if (scale <= 1.01 && e.touches.length === 1) {
           e.stopImmediatePropagation();
         }
       };
@@ -851,18 +905,11 @@
     },
 
     /**
-     * Toggle expanded (full-screen) mode.
-     *
-     * Pass `true` when the map enters full-screen / expanded mode — panning is
-     * enabled so the user can navigate a zoomed-in map.
-     * Pass `false` (the default) for the normal embedded view — panning is
-     * disabled so the map cannot be dragged off-screen.
-     *
-     * Zoom controls are unaffected in both modes.
+     * No-op — kept for API compatibility.
+     * Pan is now automatically enabled when the map is zoomed in (scale > 1)
+     * and disabled at the default zoom level, with no external toggle needed.
      */
-    setExpandedMode(expanded) {
-      this._expandedMode = !!expanded;
-    },
+    setExpandedMode(_expanded) {},
 
     // ----------------------------------------------------
     // 3D MAP — PUBLIC API
@@ -2641,16 +2688,59 @@
 
       wrapperEl.style.touchAction = "none";
       wrapperEl._pz = panzoom(wrapperEl, {
-        minZoom:          0.5,
-        maxZoom:          10,
-        bounds:           true,
-        boundsPadding:    0.1,
-        filterKey:        () => false,
-        beforeMouseDown:  () => !this._expandedMode,
+        minZoom:         1,   // can't zoom below the default view
+        maxZoom:         10,
+        filterKey:       () => false,
+        beforeMouseDown: () => (wrapperEl._pz ? wrapperEl._pz.getTransform().scale <= 1.01 : true),
       });
 
+      // Clamp so the image content always covers the container — no background gaps.
+      let _imgClamping = false;
+      const imgClamp = () => {
+        if (_imgClamping) return;
+        const pz = wrapperEl._pz;
+        if (!pz) return;
+        const t  = pz.getTransform();
+        const pr = wrapperEl.parentElement;
+        if (!pr) return;
+        const cw = pr.clientWidth;
+        const ch = pr.clientHeight;
+
+        if (t.scale <= 1.01) {
+          if (Math.abs(t.x) > 0.5 || Math.abs(t.y) > 0.5) {
+            _imgClamping = true;
+            pz.moveTo(0, 0);
+            _imgClamping = false;
+          }
+          return;
+        }
+
+        // Image is width:100% at top of wrapper — no horizontal offset.
+        // Use the image's actual rendered height (may be less than container height).
+        const img = wrapperEl.querySelector(".pyn-map-image");
+        const cfH = img && img.clientHeight > 0 ? img.clientHeight : ch;
+        const cfW = cw;
+
+        const maxX = 0;
+        const minX = cw - t.scale * cfW;
+        const maxY = 0;
+        const minY = ch - t.scale * cfH;
+
+        const x = minX > maxX ? (minX + maxX) / 2 : Math.min(maxX, Math.max(minX, t.x));
+        const y = minY > maxY ? (minY + maxY) / 2 : Math.min(maxY, Math.max(minY, t.y));
+
+        if (Math.abs(x - t.x) > 0.5 || Math.abs(y - t.y) > 0.5) {
+          _imgClamping = true;
+          pz.moveTo(x, y);
+          _imgClamping = false;
+        }
+      };
+      wrapperEl._pz.on("pan",  imgClamp);
+      wrapperEl._pz.on("zoom", imgClamp);
+
       const touchBlocker = (e) => {
-        if (!this._expandedMode && e.touches.length === 1) {
+        const scale = wrapperEl._pz ? wrapperEl._pz.getTransform().scale : 1;
+        if (scale <= 1.01 && e.touches.length === 1) {
           e.stopImmediatePropagation();
         }
       };
