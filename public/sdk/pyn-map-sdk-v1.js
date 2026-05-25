@@ -28,6 +28,10 @@
     _imgMapMode:    false,
     _imgActiveMapId: null,   // mapId of the currently-visible floorplate/sitemap
 
+    // When false (default), pan is disabled so the map cannot be dragged off-screen.
+    // Set to true when the host puts the map into full-screen / expanded mode.
+    _expandedMode: false,
+
     // true when the caller explicitly passed styles.unitColors in config;
     // false means "use per-unit colors returned by the API"
     _userHasCustomColors: false,
@@ -590,6 +594,12 @@
         try { svgEl._pz.dispose(); } catch { }
       }
 
+      // Clean up any existing touch-move blocker before attaching a fresh one.
+      if (svgEl._pzTouchBlocker) {
+        svgEl.removeEventListener("touchmove", svgEl._pzTouchBlocker, true);
+        svgEl._pzTouchBlocker = null;
+      }
+
       // touch-action:none on the SVG lets panzoom own all touch gestures.
       // Do NOT set it on the parent container — that would cascade to the overlay
       // buttons (zoom controls, 3D toggle) and block iOS Safari click synthesis.
@@ -600,7 +610,19 @@
         maxZoom: 10,
         bounds: true,
         boundsPadding: 0.1,
+        // Return true to block mouse-drag panning in default view; expanded mode allows it.
+        beforeMouseDown: () => !this._expandedMode,
       });
+
+      // Block single-finger touch pan in default mode while letting two-finger
+      // pinch-zoom through to panzoom. Capture phase fires before panzoom's handler.
+      const touchBlocker = (e) => {
+        if (!this._expandedMode && e.touches.length === 1) {
+          e.stopImmediatePropagation();
+        }
+      };
+      svgEl.addEventListener("touchmove", touchBlocker, { capture: true, passive: false });
+      svgEl._pzTouchBlocker = touchBlocker;
 
       // Defer so the browser finishes layout before we read clientWidth/Height
       setTimeout(() => this._centerSvg(svgEl), 0);
@@ -828,6 +850,20 @@
       this._centerSvg(svg);
     },
 
+    /**
+     * Toggle expanded (full-screen) mode.
+     *
+     * Pass `true` when the map enters full-screen / expanded mode — panning is
+     * enabled so the user can navigate a zoomed-in map.
+     * Pass `false` (the default) for the normal embedded view — panning is
+     * disabled so the map cannot be dragged off-screen.
+     *
+     * Zoom controls are unaffected in both modes.
+     */
+    setExpandedMode(expanded) {
+      this._expandedMode = !!expanded;
+    },
+
     // ----------------------------------------------------
     // 3D MAP — PUBLIC API
     // ----------------------------------------------------
@@ -874,6 +910,10 @@
         // reliable — some panzoom@9 builds call preventDefault() before the paused
         // check, which silently blocks click events on Beans 3D widget buttons.
         if (activeSvg._pz) { activeSvg._pz.dispose(); activeSvg._pz = null; }
+        if (activeSvg._pzTouchBlocker) {
+          activeSvg.removeEventListener("touchmove", activeSvg._pzTouchBlocker, true);
+          activeSvg._pzTouchBlocker = null;
+        }
       }
       if (this._3dWrapper) this._3dWrapper.style.display = "block";
 
@@ -2594,14 +2634,28 @@
       if (!window.panzoom) return;
       if (wrapperEl._pz) { try { wrapperEl._pz.dispose(); } catch {} }
 
+      if (wrapperEl._pzTouchBlocker) {
+        wrapperEl.removeEventListener("touchmove", wrapperEl._pzTouchBlocker, true);
+        wrapperEl._pzTouchBlocker = null;
+      }
+
       wrapperEl.style.touchAction = "none";
       wrapperEl._pz = panzoom(wrapperEl, {
-        minZoom:       0.5,
-        maxZoom:       10,
-        bounds:        true,
-        boundsPadding: 0.1,
-        filterKey:     () => false
+        minZoom:          0.5,
+        maxZoom:          10,
+        bounds:           true,
+        boundsPadding:    0.1,
+        filterKey:        () => false,
+        beforeMouseDown:  () => !this._expandedMode,
       });
+
+      const touchBlocker = (e) => {
+        if (!this._expandedMode && e.touches.length === 1) {
+          e.stopImmediatePropagation();
+        }
+      };
+      wrapperEl.addEventListener("touchmove", touchBlocker, { capture: true, passive: false });
+      wrapperEl._pzTouchBlocker = touchBlocker;
     },
 
     _getActiveImageWrapper() {
@@ -2728,8 +2782,7 @@
       if (this.config.environment === "staging")
         return "https://pynwheel-staging.herokuapp.com";
       if (this.config.environment === "local")
-        return "http://192.168.1.10:3000"
-        // return "http://localhost:3000";
+        return "http://localhost:3000";
       return "https://pynwheelconnect.com";
     }
   };
@@ -2762,6 +2815,7 @@
       deleteFavorite(unitIds, communityId, sessionId) { return PynMapSDK.deleteFavorite.call(PynMapSDK, unitIds, communityId, sessionId); },
       clearAllFavorites(communityId, sessionId)       { return PynMapSDK.clearAllFavorites.call(PynMapSDK, communityId, sessionId); },
       shareFavoritesEmail(userEmail, favoritesUrl)    { return PynMapSDK.shareFavoritesEmail.call(PynMapSDK, userEmail, favoritesUrl); },
+      setExpandedMode(expanded)    { return PynMapSDK.setExpandedMode.call(PynMapSDK, expanded); },
       switchTo3DMap()              { return PynMapSDK.switchTo3DMap.call(PynMapSDK); },
       switchTo2DMap()              { return PynMapSDK.switchTo2DMap.call(PynMapSDK); },
       destroy()                    { return PynMapSDK.destroy.call(PynMapSDK); },
