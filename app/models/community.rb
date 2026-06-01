@@ -71,6 +71,7 @@ class Community < ApplicationRecord
   has_one :launch_remote
   has_one :design_direction
   has_one :calculator_config, dependent: :destroy
+  has_one :design_system_config, dependent: :destroy
   has_one :crm_time_slot
   has_one :crm_discovery_source
 

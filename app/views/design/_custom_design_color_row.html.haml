@@ -1,0 +1,18 @@
+- field_id = "ds_#{key_path.gsub('.', '_')}"
+- opacity_field_id = "ds_#{opacity_key_path.gsub('.', '_')}"
+.form-group{ style: "display:flex;align-items:center;gap:12px;margin-bottom:14px;" }
+  %label.control-label{ style: "width:190px;flex-shrink:0;margin:0;font-weight:600;" }= label
+  .input-group.colorpicker-style.hex-format-colorpicker{ style: "flex:0 0 auto;" }
+    .input-group-addon
+      %i.addon-i
+      %input.form-control{ type: "text", id: field_id, value: value,
+                           data: { key: key_path, community: community.id } }
+  %span{ style: "font-size:12px;color:#888;white-space:nowrap;flex-shrink:0;" } Opacity
+  %input.form-control{ type: "number", id: opacity_field_id, value: opacity_value,
+                       min: 0, max: 1, step: 0.1, style: "width:72px;flex-shrink:0;",
+                       data: { key: opacity_key_path, community: community.id } }
+  %button.btn.btn-default.ds-save-btn{
+    style: "flex-shrink:0;",
+    data: { key: key_path, source: field_id,
+            opacity_key: opacity_key_path, opacity_source: opacity_field_id,
+            community: community.id } } Save

@@ -1,0 +1,169 @@
+- cfg = (@community.design_system_config || @community.build_design_system_config).merged_config
+- colors = cfg["colors"]
+- fonts  = cfg["fonts"]
+- svg    = cfg["svg_unit_number"]
+
+.box-body{ style: "padding: 20px;" }
+
+  %h4.section-title Color system
+  %p.text-muted Configure the brand color palette for this property.
+
+  / PRIMARY COLORS
+  %p.text-uppercase.text-muted{ style: "font-size: 11px; letter-spacing: 1px; margin-top: 20px;" } Primary Colors
+
+  = render partial: "design/custom_design_color_row", locals: { label: "Primary brand color", key_path: "colors.primary", value: colors["primary"], opacity_key_path: "colors.primary_opacity", opacity_value: colors["primary_opacity"], community: @community }
+  = render partial: "design/custom_design_color_row", locals: { label: "Primary light 10%",   key_path: "colors.primary_light_10", value: colors["primary_light_10"], opacity_key_path: "colors.primary_light_10_opacity", opacity_value: colors["primary_light_10_opacity"], community: @community }
+  = render partial: "design/custom_design_color_row", locals: { label: "Primary light 20%",   key_path: "colors.primary_light_20", value: colors["primary_light_20"], opacity_key_path: "colors.primary_light_20_opacity", opacity_value: colors["primary_light_20_opacity"], community: @community }
+
+  / SECONDARY COLORS
+  %p.text-uppercase.text-muted{ style: "font-size: 11px; letter-spacing: 1px; margin-top: 30px;" } Secondary Colors
+
+  = render partial: "design/custom_design_color_row", locals: { label: "Main font color",   key_path: "colors.main_font",        value: colors["main_font"],        opacity_key_path: "colors.main_font_opacity",        opacity_value: colors["main_font_opacity"],        community: @community }
+  = render partial: "design/custom_design_color_row", locals: { label: "Subtext color",     key_path: "colors.subtext",          value: colors["subtext"],          opacity_key_path: "colors.subtext_opacity",          opacity_value: colors["subtext_opacity"],          community: @community }
+  = render partial: "design/custom_design_color_row", locals: { label: "Icon background",   key_path: "colors.icon_background",  value: colors["icon_background"],  opacity_key_path: "colors.icon_background_opacity",  opacity_value: colors["icon_background_opacity"],  community: @community }
+  = render partial: "design/custom_design_color_row", locals: { label: "Stroke & outlines", key_path: "colors.stroke_outlines",  value: colors["stroke_outlines"],  opacity_key_path: "colors.stroke_outlines_opacity",  opacity_value: colors["stroke_outlines_opacity"],  community: @community }
+  = render partial: "design/custom_design_color_row", locals: { label: "Light background",  key_path: "colors.light_background", value: colors["light_background"], opacity_key_path: "colors.light_background_opacity", opacity_value: colors["light_background_opacity"], community: @community }
+
+  / LABEL COLORS
+  %p.text-uppercase.text-muted{ style: "font-size: 11px; letter-spacing: 1px; margin-top: 30px;" } Label Colors
+
+  = render partial: "design/custom_design_color_row", locals: { label: "Label yellow", key_path: "colors.label_yellow", value: colors["label_yellow"], opacity_key_path: "colors.label_yellow_opacity", opacity_value: colors["label_yellow_opacity"], community: @community }
+  = render partial: "design/custom_design_color_row", locals: { label: "Label orange", key_path: "colors.label_orange", value: colors["label_orange"], opacity_key_path: "colors.label_orange_opacity", opacity_value: colors["label_orange_opacity"], community: @community }
+  = render partial: "design/custom_design_color_row", locals: { label: "Label coral",  key_path: "colors.label_coral",  value: colors["label_coral"],  opacity_key_path: "colors.label_coral_opacity",  opacity_value: colors["label_coral_opacity"],  community: @community }
+
+  %hr
+
+  / FONT CUSTOMIZATION
+  %h4.section-title{ style: "margin-top: 20px;" } Font customization
+  %p.text-muted Controls font family and size across both the map and calculator for a consistent, unified appearance.
+
+  .form-group{ style: "display:flex;align-items:center;gap:12px;margin-bottom:14px;margin-top:20px;" }
+    %label.control-label{ style: "width:190px;flex-shrink:0;margin:0;font-weight:600;" } Font family
+    = select_tag "ds_font_family",
+        options_for_select(font_families, fonts["family"]),
+        class: "form-control ds-font-select",
+        style: "width:220px;flex:0 0 220px;",
+        data: { key: "fonts.family", community: @community.id }
+    %button.btn.btn-default.ds-save-btn{ style: "flex-shrink:0;", data: { key: "fonts.family", source: "ds_font_family", community: @community.id } } Save
+
+  .form-group{ style: "display:flex;align-items:center;gap:12px;margin-bottom:14px;" }
+    %label.control-label{ style: "width:190px;flex-shrink:0;margin:0;font-weight:600;" } Base font size
+    = select_tag "ds_base_font_size",
+        options_for_select(font_sizes.first(15), fonts["base_size"]),
+        class: "form-control ds-font-select",
+        style: "width:120px;flex:0 0 120px;",
+        data: { key: "fonts.base_size", community: @community.id }
+    %button.btn.btn-default.ds-save-btn{ style: "flex-shrink:0;", data: { key: "fonts.base_size", source: "ds_base_font_size", community: @community.id } } Save
+
+  .form-group{ style: "display:flex;align-items:center;gap:12px;margin-bottom:14px;" }
+    %label.control-label{ style: "width:190px;flex-shrink:0;margin:0;font-weight:600;" } Heading font size
+    = select_tag "ds_heading_font_size",
+        options_for_select(font_sizes.first(15), fonts["heading_size"]),
+        class: "form-control ds-font-select",
+        style: "width:120px;flex:0 0 120px;",
+        data: { key: "fonts.heading_size", community: @community.id }
+    %button.btn.btn-default.ds-save-btn{ style: "flex-shrink:0;", data: { key: "fonts.heading_size", source: "ds_heading_font_size", community: @community.id } } Save
+
+  %hr
+
+  / SVG MAP UNIT NUMBER
+  %h4.section-title{ style: "margin-top: 20px;" } SVG map unit number font color
+  %p.text-muted Controls the color of unit number text rendered directly on the SVG map. Enable dynamic contrast to automatically switch between dark and light text based on the unit background color.
+
+  .form-group.mt-20
+    .col-sm-12
+      %label
+        = check_box_tag "ds_dynamic_contrast", "1", svg["dynamic_contrast"],
+            id: "ds-dynamic-contrast-toggle",
+            class: "ds-toggle",
+            data: { key: "svg_unit_number.dynamic_contrast", community: @community.id }
+        Dynamic contrast — auto white on dark backgrounds, auto dark on light backgrounds
+
+  .form-group.mt-20{ id: "ds-manual-color-row", style: svg["dynamic_contrast"] ? "opacity: 0.4; pointer-events: none;" : "" }
+    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label Manual override color
+    .col-sm-12.col-lg-4.col-md-4.col-xs-12
+      .input-group.colorpicker-style.hex-format-colorpicker
+        .input-group-addon
+          %i.addon-i
+          %input.form-control{ type: "text", id: "ds_manual_color", value: svg["manual_color"],
+                               data: { key: "svg_unit_number.manual_color", community: @community.id } }
+    .col-sm-12.col-lg-2.col-md-2.col-xs-12
+      %button.btn.btn-primary.ds-save-btn{ data: { key: "svg_unit_number.manual_color", source: "ds_manual_color", community: @community.id } } Save
+  - if svg["dynamic_contrast"]
+    %p.text-muted{ style: "padding-left: 15px; font-size: 12px;" }
+      When dynamic contrast is on, the manual override is disabled. Turn dynamic contrast off to set a fixed unit number color.
+
+:javascript
+  (function () {
+    var saveUrl = "/communities/#{@community.id}/design_system_config";
+    var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+
+    function buildPayload(keyPath, value) {
+      var parts = keyPath.split(".");
+      var payload = {}, node = payload;
+      parts.forEach(function (p, i) {
+        node[p] = i === parts.length - 1 ? value : {};
+        node = node[p];
+      });
+      return payload;
+    }
+
+    function mergeObj(target, source) {
+      Object.keys(source).forEach(function (k) {
+        if (source[k] !== null && typeof source[k] === "object" && !Array.isArray(source[k])) {
+          if (!target[k]) target[k] = {};
+          mergeObj(target[k], source[k]);
+        } else {
+          target[k] = source[k];
+        }
+      });
+      return target;
+    }
+
+    function saveFields(pairs) {
+      var payload = {};
+      pairs.forEach(function (pair) { mergeObj(payload, buildPayload(pair.key, pair.value)); });
+      return fetch(saveUrl, {
+        method:  "PATCH",
+        headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
+        body:    JSON.stringify(payload)
+      }).then(function (r) { return r.json(); });
+    }
+
+    function saveField(keyPath, value) {
+      return saveFields([{ key: keyPath, value: value }]);
+    }
+
+    document.querySelectorAll(".ds-save-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var pairs = [{
+          key:   btn.dataset.key,
+          value: document.getElementById(btn.dataset.source)
+                   ? document.getElementById(btn.dataset.source).value
+                   : btn.closest(".form-group").querySelector("input, select").value
+        }];
+        if (btn.dataset.opacityKey && btn.dataset.opacitySource) {
+          pairs.push({
+            key:   btn.dataset.opacityKey,
+            value: document.getElementById(btn.dataset.opacitySource).value
+          });
+        }
+        saveFields(pairs).then(function (data) {
+          if (!data.success) console.error("Design system config save failed:", data.message);
+          btn.textContent = "Saved!";
+          setTimeout(function () { btn.textContent = "Save"; }, 1500);
+        });
+      });
+    });
+
+    var toggle = document.getElementById("ds-dynamic-contrast-toggle");
+    var manualRow = document.getElementById("ds-manual-color-row");
+    if (toggle) {
+      toggle.addEventListener("change", function () {
+        var on = toggle.checked;
+        manualRow.style.opacity       = on ? "0.4" : "1";
+        manualRow.style.pointerEvents = on ? "none" : "";
+        saveField("svg_unit_number.dynamic_contrast", on);
+      });
+    }
+  })();

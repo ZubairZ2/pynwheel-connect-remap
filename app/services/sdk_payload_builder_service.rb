@@ -146,7 +146,9 @@ class SdkPayloadBuilderService
 
       filters: property_filters_json,
 
-      fontFamily: @community.font_setting&.svg_labels_font_family
+      fontFamily: @community.font_setting&.svg_labels_font_family,
+
+      themeConfig: (@community.design_system_config || DesignSystemConfig.new).to_theme_config
     }
   end
 

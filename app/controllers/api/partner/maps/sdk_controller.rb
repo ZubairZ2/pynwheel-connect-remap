@@ -318,7 +318,7 @@ module Api
           @community = Community
             .includes(:sitemap, :floorplates, :floorplans, :map_filter,
                       :font_setting, :credential, :calculator_config,
-                      :three_d_maps_configuration)
+                      :three_d_maps_configuration, :design_system_config)
             .find_by(id: @session_property_id)
           return render_error("Property not found.", 404) if @community.nil?
         end

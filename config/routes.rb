@@ -615,6 +615,9 @@ Rails.application.routes.draw do
       post :publish, on: :member
     end
 
+    # Custom Design CMS — auth-protected
+    resource :design_system_config, only: [:show, :update]
+
     # Public-facing embed calculator (no auth required) — serves published config
     resources :pricing_calculators, only: [] do
       collection do
