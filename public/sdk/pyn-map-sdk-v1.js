@@ -1569,6 +1569,63 @@
       });
     },
 
+    /**
+     * Highlight all units on the active map that belong to the given floorplan.
+     * Units from other floorplans are dimmed to 0.3 opacity so the hovered
+     * floorplan's units stand out clearly. pyn-highlight is removed from dimmed
+     * units so their hover/click callbacks do not fire while another floorplan
+     * is active.
+     *
+     * Call offFloorplanHover() to restore the default display state.
+     *
+     * @param {number|string} floorplanId
+     */
+    onFloorplanHover(floorplanId) {
+      if (this._3dMode || this._imgMapMode) return;
+      const activeSvg = this._getActiveSvg();
+      if (!activeSvg) return;
+
+      const id = String(floorplanId);
+
+      // Resolve the floorplan name so we can fall back to name-matching for units
+      // whose floorplanId is null but floorplanName is populated.
+      const fp     = (this.data.floorplans || []).find(f => String(f.floorplanId) === id);
+      const fpName = fp ? fp.name : null;
+
+      const units = this.unitsByMap[this.activeMapId] || [];
+
+      units.forEach(unit => {
+        const pid = this._unitPid(unit);
+        if (!pid) return;
+        const sel = this._pointerSelector(unit.pointerData);
+        if (!sel) return;
+        const el = activeSvg.querySelector(sel);
+        if (!el) return;
+        const root = el.closest("g") || el;
+
+        const matchById   = unit.floorplanId != null && String(unit.floorplanId) === id;
+        const matchByName = fpName != null && unit.floorplanName != null && unit.floorplanName === fpName;
+        const noData      = unit.floorplanId == null && !unit.floorplanName;
+
+        if (matchById || matchByName || noData) {
+          this._applyFill(el, this._unitColor(unit));
+          root.classList.add("pyn-highlight");
+        } else {
+          this._applyFill(el, this._unitDimColor(unit));
+          root.classList.remove("pyn-highlight");
+        }
+      });
+    },
+
+    /**
+     * Restore all units on the active map to their default display state.
+     * Call this after onFloorplanHover() when the cursor leaves the floorplan tile.
+     */
+    offFloorplanHover() {
+      if (this._3dMode || this._imgMapMode) return;
+      this._highlightAllUnits();
+    },
+
     // ----------------------------------------------------
     // FAST UNIT EVENTS (DELEGATED)
     // ----------------------------------------------------
@@ -2029,6 +2086,27 @@
       const colorObj = isOps ? unit.opsColor : unit.color;
       if (colorObj?.color) return this._lightenHex(colorObj.color, 0.35);
       return (this.config.styles || this.defaultStyles).unitColors.hover;
+    },
+
+    /**
+     * Dimmed color for a unit — same hue as its normal color but at 0.3 opacity.
+     * Used by onFloorplanHover() to de-emphasise units that don't belong to the
+     * hovered floorplan.
+     */
+    _unitDimColor(unit) {
+      if (this._userHasCustomColors) {
+        const styles = this.config.styles || this.defaultStyles;
+        const status = this._unitStatus(unit);
+        const hex = styles.unitColors[status] || styles.unitColors.available;
+        if (/^#[0-9a-fA-F]{6}$/.test(hex)) return this._hexToRgba(hex, 0.3);
+        return hex;
+      }
+      const isOps    = this.config.mapType === "ops";
+      const colorObj = isOps ? unit.opsColor : unit.color;
+      if (colorObj?.color) return this._hexToRgba(colorObj.color, 0.3);
+      const fallback = (this.config.styles || this.defaultStyles).unitColors.available;
+      if (/^#[0-9a-fA-F]{6}$/.test(fallback)) return this._hexToRgba(fallback, 0.3);
+      return fallback;
     },
 
     /**
@@ -2946,6 +3024,8 @@
       deleteFavorite(unitIds, communityId, sessionId) { return PynMapSDK.deleteFavorite.call(PynMapSDK, unitIds, communityId, sessionId); },
       clearAllFavorites(communityId, sessionId)       { return PynMapSDK.clearAllFavorites.call(PynMapSDK, communityId, sessionId); },
       shareFavoritesEmail(userEmail, favoritesUrl)    { return PynMapSDK.shareFavoritesEmail.call(PynMapSDK, userEmail, favoritesUrl); },
+      onFloorplanHover(floorplanId){ return PynMapSDK.onFloorplanHover.call(PynMapSDK, floorplanId); },
+      offFloorplanHover()          { return PynMapSDK.offFloorplanHover.call(PynMapSDK); },
       setExpandedMode(expanded)    { return PynMapSDK.setExpandedMode.call(PynMapSDK, expanded); },
       switchTo3DMap()              { return PynMapSDK.switchTo3DMap.call(PynMapSDK); },
       switchTo2DMap()              { return PynMapSDK.switchTo2DMap.call(PynMapSDK); },
