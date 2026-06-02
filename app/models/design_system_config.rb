@@ -49,17 +49,28 @@ class DesignSystemConfig < ApplicationRecord
     c   = cfg["colors"]
     {
       colors: {
-        primary:         cv(c["primary"], c["primary_opacity"]),
-        primaryLight10:  cv(c["primary_light_10"], c["primary_light_10_opacity"]),
-        primaryLight20:  cv(c["primary_light_20"], c["primary_light_20_opacity"]),
-        mainFont:        cv(c["main_font"], c["main_font_opacity"]),
-        subtext:         cv(c["subtext"], c["subtext_opacity"]),
-        iconBackground:  cv(c["icon_background"], c["icon_background_opacity"]),
-        strokeOutlines:  cv(c["stroke_outlines"], c["stroke_outlines_opacity"]),
-        lightBackground: cv(c["light_background"], c["light_background_opacity"]),
-        labelYellow:     cv(c["label_yellow"], c["label_yellow_opacity"]),
-        labelOrange:     cv(c["label_orange"], c["label_orange_opacity"]),
-        labelCoral:      cv(c["label_coral"], c["label_coral_opacity"])
+        primary:                c["primary"],
+        primaryOpacity:         c["primary_opacity"].to_f,
+        primaryLight10:         c["primary_light_10"],
+        primaryLight10Opacity:  c["primary_light_10_opacity"].to_f,
+        primaryLight20:         c["primary_light_20"],
+        primaryLight20Opacity:  c["primary_light_20_opacity"].to_f,
+        mainFont:               c["main_font"],
+        mainFontOpacity:        c["main_font_opacity"].to_f,
+        subtext:                c["subtext"],
+        subtextOpacity:         c["subtext_opacity"].to_f,
+        iconBackground:         c["icon_background"],
+        iconBackgroundOpacity:  c["icon_background_opacity"].to_f,
+        strokeOutlines:         c["stroke_outlines"],
+        strokeOutlinesOpacity:  c["stroke_outlines_opacity"].to_f,
+        lightBackground:        c["light_background"],
+        lightBackgroundOpacity: c["light_background_opacity"].to_f,
+        labelYellow:            c["label_yellow"],
+        labelYellowOpacity:     c["label_yellow_opacity"].to_f,
+        labelOrange:            c["label_orange"],
+        labelOrangeOpacity:     c["label_orange_opacity"].to_f,
+        labelCoral:             c["label_coral"],
+        labelCoralOpacity:      c["label_coral_opacity"].to_f
       },
       fonts: {
         family:      cfg["fonts"]["family"],
@@ -69,9 +80,9 @@ class DesignSystemConfig < ApplicationRecord
       svgUnitNumber: {
         dynamicContrast: cfg["svg_unit_number"]["dynamic_contrast"],
         manualColor:     cfg["svg_unit_number"]["manual_color"],
-        opacityVacant:   cfg["svg_unit_number"]["opacity_vacant"],
-        opacityModel:    cfg["svg_unit_number"]["opacity_model"],
-        opacityOccupied: cfg["svg_unit_number"]["opacity_occupied"]
+        opacityVacant:   cfg["svg_unit_number"]["opacity_vacant"].to_f,
+        opacityModel:    cfg["svg_unit_number"]["opacity_model"].to_f,
+        opacityOccupied: cfg["svg_unit_number"]["opacity_occupied"].to_f
       }
     }
   end

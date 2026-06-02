@@ -324,6 +324,47 @@
 
       this._indexUnits();
       this._resolve3DConfig();
+      this._applyThemeConfig();
+    },
+
+    _applyThemeConfig() {
+      const theme = this.data.property?.themeConfig;
+      if (!theme || !this.container) return;
+
+      const c = theme.colors || {};
+      const f = theme.fonts  || {};
+
+      const vars = {
+        "--pyn-primary":                   c.primary,
+        "--pyn-primary-opacity":           c.primaryOpacity,
+        "--pyn-primary-light-10":          c.primaryLight10,
+        "--pyn-primary-light-10-opacity":  c.primaryLight10Opacity,
+        "--pyn-primary-light-20":          c.primaryLight20,
+        "--pyn-primary-light-20-opacity":  c.primaryLight20Opacity,
+        "--pyn-main-font":                 c.mainFont,
+        "--pyn-main-font-opacity":         c.mainFontOpacity,
+        "--pyn-subtext":                   c.subtext,
+        "--pyn-subtext-opacity":           c.subtextOpacity,
+        "--pyn-icon-bg":                   c.iconBackground,
+        "--pyn-icon-bg-opacity":           c.iconBackgroundOpacity,
+        "--pyn-stroke":                    c.strokeOutlines,
+        "--pyn-stroke-opacity":            c.strokeOutlinesOpacity,
+        "--pyn-light-bg":                  c.lightBackground,
+        "--pyn-light-bg-opacity":          c.lightBackgroundOpacity,
+        "--pyn-label-yellow":              c.labelYellow,
+        "--pyn-label-yellow-opacity":      c.labelYellowOpacity,
+        "--pyn-label-orange":              c.labelOrange,
+        "--pyn-label-orange-opacity":      c.labelOrangeOpacity,
+        "--pyn-label-coral":               c.labelCoral,
+        "--pyn-label-coral-opacity":       c.labelCoralOpacity,
+        "--pyn-font-family":               f.family,
+        "--pyn-base-font-size":            f.baseSize,
+        "--pyn-heading-font-size":         f.headingSize
+      };
+
+      Object.entries(vars).forEach(([prop, val]) => {
+        if (val != null) this.container.style.setProperty(prop, String(val));
+      });
     },
 
     _resolve3DConfig() {
