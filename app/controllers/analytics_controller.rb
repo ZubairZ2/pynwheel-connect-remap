@@ -89,6 +89,23 @@ class AnalyticsController < ApplicationController
       end
     end
 
+    if @product_type == "sdk_web_map"
+      @sdk_maps_records = SdkSession.where(community_id: communities.ids)
+                                    .where('start_datetime > ? AND start_datetime < ?', start_date.beginning_of_day, end_date.end_of_day)
+      apply_filters(params)
+
+      if @sdk_maps_records.any?
+        collect_interactions_each_day_data_maps(start_date, @days_count, @sdk_maps_records, :start_datetime, "sdk_web_map")
+        collect_session_each_day_data_in_minutes(start_date, @days_count, @sdk_maps_records, :start_datetime, :end_datetime, "sdk_web_map")
+        collect_session_each_day_data_in_hours(@sdk_maps_records, :start_datetime, "sdk_web_map")
+        bounce_rate_on_pages(@sdk_maps_records, :visited_pages, "sdk_web_map")
+        sdk_events_per_session(start_date, @days_count, @sdk_maps_records, "sdk_web_map")
+        apply_clicks_sdk_session(start_date, @days_count, @sdk_maps_records, "sdk_web_map")
+        favourite_saved_sdk_session(start_date, @days_count, @sdk_maps_records, "sdk_web_map")
+        favourite_sent_sdk_session(start_date, @days_count, @sdk_maps_records, "sdk_web_map")
+      end
+    end
+
     @communities_list = params[:company].present? ? Community.where(company_id: params[:company]).pluck(:name, :id) : communities_list(current_user)
     @communities_list = params[:region].present? ? Community.where(region_id: params[:region]).pluck(:name, :id) : @communities_list
     @start_date = start_date
@@ -166,6 +183,7 @@ class AnalyticsController < ApplicationController
     def on_selected_communities(ids)
       @maps_records = (@product_type == "maps") ? @maps_records.where(community_id: ids) : []
       @metro_records = (@product_type == "touch") ? @metro_records.where(community_id: ids) : []
+      @sdk_maps_records = (@product_type == "sdk_web_map") ? @sdk_maps_records.where(community_id: ids) : []
 
       if @product_type == "pynwheel_tour"
         @self_tour_records = @self_tour_records.where(community_id: ids)
@@ -967,10 +985,187 @@ class AnalyticsController < ApplicationController
       case product_type
       when "pynwheel_tour"
         "Tours"
-      when "maps"
+      when "maps", "sdk_web_map"
         "Interactions"
       else
         "Sessions"
       end
+    end
+
+    def apply_clicks_sdk_session(start_date, days_count, total_records, for_device_type)
+      apply_expr = "COALESCE((events->>'apply_now_click')::int, 0)"
+      records = total_records
+        .where('start_datetime >= ? AND start_datetime <= ?', start_date, start_date + days_count.days)
+        .group('DATE(start_datetime)')
+        .pluck(
+          Arel.sql('DATE(start_datetime)'),
+          Arel.sql("SUM(#{apply_expr})"),
+          Arel.sql('COUNT(*)'),
+          Arel.sql("SUM(CASE WHEN #{apply_expr} > 0 THEN 1 ELSE 0 END)")
+        )
+
+      sessions_each_day_hash = return_empty_hash(days_count, start_date)
+      total_sessions_with_counts = 0
+      total_sessions = 0
+
+      records.each do |date, apply_clicks, session_count, sessions_with_clicks|
+        sessions_each_day_hash[date] = apply_clicks.to_i
+        total_sessions_with_counts += sessions_with_clicks.to_i
+        total_sessions += session_count.to_i
+      end
+
+      total_apply_clicks = sessions_each_day_hash.values.sum
+      instance_variable_set("@total_number_of_apply_clicks_#{for_device_type}", formatted_number(total_apply_clicks))
+
+      session_without_counts = total_sessions - total_sessions_with_counts
+      pct_with    = formate_percentage(total_sessions_with_counts, total_sessions)
+      pct_without = formate_percentage(session_without_counts, total_sessions)
+
+      pie_chart_hash = {
+        "#{get_name(for_device_type)} with Apply Clicks" => pct_with,
+        "#{get_name(for_device_type)} without Apply Clicks" => pct_without
+      }
+      pie_labels, pie_opts = make_pie_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total #{get_name(for_device_type)}", ["rgba(137, 199, 101, 0.7)", "rgba(255,212,0,0.5)"], ["rgba(137, 199, 101, 1)", "rgba(255,212,0,1)"])
+      line_labels, line_opts = make_line_chart(sessions_each_day_hash.keys.map { |d| d.strftime("%Y-%m-%d") }, sessions_each_day_hash.values, "Apply Clicks", "rgba(137, 199, 101, 0.5)", "rgba(137, 199, 101, 1)")
+
+      instance_variable_set("@percentage_session_with_apply_clicks_#{for_device_type}", "#{pct_with}%")
+      instance_variable_set("@percentage_session_without_apply_clicks_#{for_device_type}", "#{pct_without}%")
+      instance_variable_set("@pie_apply_click_data_labels_#{for_device_type}", pie_labels)
+      instance_variable_set("@pie_apply_click_data_options_#{for_device_type}", pie_opts)
+      instance_variable_set("@line_apply_click_data_labels_#{for_device_type}", line_labels)
+      instance_variable_set("@line_apply_click_data_options_#{for_device_type}", line_opts)
+    end
+
+    def favourite_saved_sdk_session(start_date, days_count, total_records, for_device_type)
+      fav_expr = "COALESCE((events->>'save_favorite_click')::int, 0)"
+      records = total_records
+        .where('start_datetime >= ? AND start_datetime <= ?', start_date, start_date + days_count.days)
+        .group('DATE(start_datetime)')
+        .pluck(
+          Arel.sql('DATE(start_datetime)'),
+          Arel.sql("SUM(#{fav_expr})"),
+          Arel.sql('COUNT(*)'),
+          Arel.sql("SUM(CASE WHEN #{fav_expr} > 0 THEN 1 ELSE 0 END)")
+        )
+
+      sessions_each_day_hash = return_empty_hash(days_count, start_date)
+      total_sessions_with_counts = 0
+      total_sessions = 0
+
+      records.each do |date, total_count, session_count, sessions_with_favs|
+        sessions_each_day_hash[date] = total_count.to_i
+        total_sessions_with_counts += sessions_with_favs.to_i
+        total_sessions += session_count.to_i
+      end
+
+      total_favourite_saved = sessions_each_day_hash.values.sum
+      instance_variable_set("@total_number_of_favourite_saved_#{for_device_type}", formatted_number(total_favourite_saved))
+
+      session_without_counts = total_sessions - total_sessions_with_counts
+      pct_with    = formate_percentage(total_sessions_with_counts, total_sessions)
+      pct_without = formate_percentage(session_without_counts, total_sessions)
+
+      pie_chart_hash = {
+        "#{get_name(for_device_type)} with favorite saved" => pct_with,
+        "#{get_name(for_device_type)} without favorite saved" => pct_without
+      }
+      pie_labels, pie_opts = make_pie_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total #{get_name(for_device_type)}", ["rgba(143, 73, 156, 0.5)", "rgba(255,212,0,0.5)"], ["rgba(143, 73, 156, 1)", "rgba(255,212,0,1)"])
+      bar_labels, bar_opts = make_bar_chart(sessions_each_day_hash.keys.map { |d| d.strftime("%Y-%m-%d") }, sessions_each_day_hash.values, "Favorite saved", "rgba(143, 73, 156, 0.5)", "rgba(143, 73, 156, 1)")
+
+      instance_variable_set("@percentage_session_with_favourite_saved_#{for_device_type}", "#{pct_with}%")
+      instance_variable_set("@percentage_session_without_favourite_saved_#{for_device_type}", "#{pct_without}%")
+      instance_variable_set("@pie_favourite_saved_data_labels_#{for_device_type}", pie_labels)
+      instance_variable_set("@pie_favourite_saved_data_options_#{for_device_type}", pie_opts)
+      instance_variable_set("@bar_favourite_saved_data_labels_#{for_device_type}", bar_labels)
+      instance_variable_set("@bar_favourite_saved_data_options_#{for_device_type}", bar_opts)
+    end
+
+    def favourite_sent_sdk_session(start_date, days_count, total_records, for_device_type)
+      sent_expr = "COALESCE((events->>'sent_favorite_click')::int, 0)"
+      records = total_records
+        .where('start_datetime >= ? AND start_datetime <= ?', start_date, start_date + days_count.days)
+        .group('DATE(start_datetime)')
+        .pluck(
+          Arel.sql('DATE(start_datetime)'),
+          Arel.sql("SUM(#{sent_expr})"),
+          Arel.sql('COUNT(*)'),
+          Arel.sql("SUM(CASE WHEN #{sent_expr} > 0 THEN 1 ELSE 0 END)")
+        )
+
+      sessions_each_day_hash = return_empty_hash(days_count, start_date)
+      total_sessions_with_counts = 0
+      total_sessions = 0
+
+      records.each do |date, total_count, session_count, sessions_with_sent|
+        sessions_each_day_hash[date] = total_count.to_i
+        total_sessions_with_counts += sessions_with_sent.to_i
+        total_sessions += session_count.to_i
+      end
+
+      total_favourite_sent = sessions_each_day_hash.values.sum
+      instance_variable_set("@total_number_of_favourite_sent_#{for_device_type}", formatted_number(total_favourite_sent))
+
+      session_without_counts = total_sessions - total_sessions_with_counts
+      pct_with    = formate_percentage(total_sessions_with_counts, total_sessions)
+      pct_without = formate_percentage(session_without_counts, total_sessions)
+
+      pie_chart_hash = {
+        "#{get_name(for_device_type)} with favorite emailed" => pct_with,
+        "#{get_name(for_device_type)} without favorite emailed" => pct_without
+      }
+      pie_labels, pie_opts = make_pie_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total #{get_name(for_device_type)}", ["rgba(240, 90, 142, 0.5)", "rgba(255, 212, 0, 0.8)"], ["rgba(240, 90, 142, 1)", "rgba(255, 212, 0, 1)"])
+      bar_labels, bar_opts = make_bar_chart(sessions_each_day_hash.keys.map { |d| d.strftime("%Y-%m-%d") }, sessions_each_day_hash.values, "Favorite emailed", "rgba(240, 90, 142, 0.7)", "rgba(240, 90, 142, 1)")
+
+      instance_variable_set("@percentage_session_with_favourite_sent_#{for_device_type}", "#{pct_with}%")
+      instance_variable_set("@percentage_session_without_favourite_sent_#{for_device_type}", "#{pct_without}%")
+      instance_variable_set("@pie_favourite_sent_data_labels_#{for_device_type}", pie_labels)
+      instance_variable_set("@pie_favourite_sent_data_options_#{for_device_type}", pie_opts)
+      instance_variable_set("@bar_favourite_sent_data_labels_#{for_device_type}", bar_labels)
+      instance_variable_set("@bar_favourite_sent_data_options_#{for_device_type}", bar_opts)
+    end
+
+    def sdk_events_per_session(start_date, days_count, total_records, for_device_type)
+      apply_expr  = "COALESCE((events->>'apply_now_click')::int, 0)"
+      saved_expr  = "COALESCE((events->>'save_favorite_click')::int, 0)"
+      sent_expr   = "COALESCE((events->>'sent_favorite_click')::int, 0)"
+
+      records = total_records
+        .where("start_datetime >= ? AND start_datetime <= ?", start_date, start_date + days_count.days)
+        .group('DATE(start_datetime)')
+        .pluck(
+          Arel.sql('DATE(start_datetime)'),
+          Arel.sql("SUM(#{apply_expr} + #{saved_expr} + #{sent_expr})"),
+          Arel.sql('COUNT(*)')
+        )
+
+      sessions_each_day_hash = return_empty_hash(days_count, start_date)
+      total_sessions = 0
+
+      records.each do |date, total_count, session_count|
+        sessions_each_day_hash[date] = total_count.to_i
+        total_sessions += session_count.to_i
+      end
+
+      total_events = sessions_each_day_hash.values.sum
+      instance_variable_set("@total_number_of_events_#{for_device_type}", formatted_number(total_events))
+
+      session_with_counts    = sessions_each_day_hash.values.count { |c| c > 0 }
+      session_without_counts = total_sessions - session_with_counts
+      pct_with    = formate_percentage(session_with_counts, total_sessions)
+      pct_without = formate_percentage(session_without_counts, total_sessions)
+
+      pie_chart_hash = {
+        "#{get_name(for_device_type)} with Events" => pct_with,
+        "#{get_name(for_device_type)} without Events" => pct_without
+      }
+      pie_labels, pie_opts = make_pie_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total #{get_name(for_device_type)}", ["rgba(0, 143, 212, 0.5)", "rgba(255, 212, 0, 0.5)"], ["rgba(0, 143, 212, 1)", "rgba(255, 212, 0, 1)"])
+      bar_labels, bar_opts = make_bar_chart(sessions_each_day_hash.keys.map { |d| d.strftime("%Y-%m-%d") }, sessions_each_day_hash.values, "Total Events", "rgba(0, 143, 212, 0.5)", "rgba(0, 143, 212, 1)")
+
+      instance_variable_set("@percentage_session_with_events_#{for_device_type}", "#{pct_with}%")
+      instance_variable_set("@percentage_session_without_events_#{for_device_type}", "#{pct_without}%")
+      instance_variable_set("@pie_events_data_labels_#{for_device_type}", pie_labels)
+      instance_variable_set("@pie_events_data_options_#{for_device_type}", pie_opts)
+      instance_variable_set("@bar_events_data_labels_#{for_device_type}", bar_labels)
+      instance_variable_set("@bar_events_data_options_#{for_device_type}", bar_opts)
     end
 end

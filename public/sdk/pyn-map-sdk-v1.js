@@ -1,5 +1,100 @@
 (function (global) {
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // PynAnalytics — internal analytics engine (batched, fire-and-forget)
+  // ─────────────────────────────────────────────────────────────────────────────
+  var PynAnalytics = (function () {
+
+    function create(opts) {
+      var s = {
+        token:       opts.token,
+        apiBase:     opts.apiBase,
+        clientType:  opts.clientType  || 'web_map',
+        sdkVersion:  opts.sdkVersion  || 'v1',
+        sessionId:   _uuid(),
+        queue:       [],
+        contextSent: false,
+        dead:        false,
+        timer:       null,
+        onHide:      null
+      };
+
+      s.timer  = setInterval(function () { _flush(s, false); }, 5000);
+      s.onHide = function () { if (document.visibilityState === 'hidden') { s.queue.push({ name: 'map_session_end', type: 'click', ts: Date.now() }); _flush(s, true); } };
+      document.addEventListener('visibilitychange', s.onHide);
+
+      return {
+        capture:   function (name, type, metadata) { _capture(s, name, type, metadata); },
+        sessionId: function ()                      { return s.sessionId; },
+        destroy:   function () {
+          s.dead = true;
+          clearInterval(s.timer);
+          document.removeEventListener('visibilitychange', s.onHide);
+        }
+      };
+    }
+
+    function _capture(s, name, type, metadata) {
+      if (s.dead) return;
+      s.queue.push({ name: name, type: type || 'click', metadata: _sanitize(metadata), ts: Date.now() });
+      if (s.queue.length >= 20) _flush(s, false);
+    }
+
+    function _flush(s, beacon) {
+      if (s.dead || !s.queue.length) return;
+      var events = s.queue.splice(0);
+      var body   = { session_id: s.sessionId, client_type: s.clientType, events: events };
+      if (!s.contextSent) body.device_context = _context(s);
+      var url  = s.apiBase + '/api/partner/maps/events';
+      var json = JSON.stringify(body);
+      // sendBeacon always uses credentials:'include' (spec-mandated) which conflicts
+      // with Access-Control-Allow-Origin:* and cannot send Authorization headers.
+      // fetch + keepalive:true is the correct replacement for page-unload flushes.
+      fetch(url, {
+        method:      'POST',
+        credentials: 'omit',
+        keepalive:   !!beacon,
+        headers:     { 'Authorization': 'Bearer ' + s.token, 'Content-Type': 'application/json' },
+        body:        json
+      }).then(function () { s.contextSent = true; }).catch(function () {});
+    }
+
+    function _context(s) {
+      var w = window.innerWidth;
+      return {
+        device_type:     w < 768 ? 'mobile' : w < 1024 ? 'tablet' : 'desktop',
+        viewport_width:  window.innerWidth,
+        viewport_height: window.innerHeight,
+        referrer:        document.referrer || '',
+        sdk_version:     s.sdkVersion,
+        user_agent:      (navigator.userAgent || '').slice(0, 200)
+      };
+    }
+
+    function _sanitize(meta) {
+      if (!meta || typeof meta !== 'object') return {};
+      var out = {}, n = 0;
+      for (var k in meta) {
+        if (n >= 15) break;
+        if (!/^[a-z_]{1,50}$/.test(k)) continue;
+        var v = meta[k];
+        if (typeof v === 'string')  { out[k] = v.slice(0, 300); n++; }
+        else if (typeof v === 'number' || typeof v === 'boolean') { out[k] = v; n++; }
+      }
+      return out;
+    }
+
+    function _uuid() {
+      if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = Math.random() * 16 | 0;
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+      });
+    }
+
+    return { create: create };
+  })();
+
   const PynMapSDK = {
     // ----------------------------------------------------
     // STATE
@@ -7,6 +102,7 @@
     _initialized: false,
     _sessionToken: null,          // short-lived token; replaces the API key after auth
     _sdkSessionId: null,          // stable UUID persisted in localStorage; identifies this user's favorites session
+    _analytics: null,             // PynAnalytics instance; null until auth completes
     _favorites: new Set(),        // Set of favorited unit IDs (strings)
     config: null,
     container: null,
@@ -27,6 +123,9 @@
     // Image map state (2D raster image mode, enable_svg_mode === false)
     _imgMapMode:    false,
     _imgActiveMapId: null,   // mapId of the currently-visible floorplate/sitemap
+
+    // INTERNAL: Current map rendering type for analytics (updated on every map type switch)
+    _currentMapType: 'svg',   // 'svg' | 'image' | '3d' — kept in sync with _3dMode/_imgMapMode
 
 
     // true when the caller explicitly passed styles.unitColors in config;
@@ -51,7 +150,7 @@
     svgCache: {},                  // { [mapId]: SVGElement }
     _svgLoadingPromises: {},       // { [mapId]: Promise } — deduplicates in-flight fetches
     _lastHoverPid: null,           // last hovered pointer id (for debouncing)
-
+    
     defaultStyles: {
       unitColors: {
         available: "#F9D648",
@@ -130,6 +229,7 @@
       const cachedTok = this._readCachedToken(propertyId);
       if (cachedTok) {
         this._sessionToken = cachedTok;
+        this._startAnalytics();
         this._showLoading("Loading property map...");
       } else {
         this._showLoading("Verifying partner...");
@@ -141,6 +241,7 @@
             if (v.success) {
               this._sessionToken = v.sessionToken;
               this._writeCachedToken(propertyId, v.sessionToken);
+              this._startAnalytics();
             }
             return v;
           });
@@ -214,7 +315,48 @@
         this.switchTo3DMap();
       }
 
+      if (this._analytics) this._captureWithMapType('map_load');
       this.config.onReady?.();
+    },
+
+    // ----------------------------------------------------
+    // ANALYTICS — PUBLIC + INTERNAL
+    // ----------------------------------------------------
+
+    // Return the current map rendering mode: 'svg' (2D SVG), 'image' (2D raster), '3d' (Beans).
+    getMapType() {
+      if (this._3dMode === true) return '3d';
+      if (this._imgMapMode === true) return 'image';
+      return 'svg';  // Default when both flags are false
+    },
+
+    // Update internal _currentMapType state. Called whenever map rendering type changes.
+    _updateCurrentMapType() {
+      this._currentMapType = this.getMapType();
+    },
+
+    // Internal: capture with map_type automatically injected.
+    _captureWithMapType(name, type, metadata) {
+      if (!this._analytics) return;
+      const enhanced = Object.assign({}, metadata, { map_type: this.getMapType() });
+      this._analytics.capture(name, type || 'click', enhanced);
+    },
+
+    // Called by React (or any host) to capture events that the SDK cannot
+    // intercept internally (filters, CTAs, modal interactions).
+    capture(name, type, metadata) {
+      this._captureWithMapType(name, type, metadata);
+    },
+
+    _startAnalytics() {
+      if (this._analytics) return;
+      if (!this._sessionToken) return;
+      this._analytics = PynAnalytics.create({
+        token:      this._sessionToken,
+        apiBase:    this._apiBase(),
+        clientType: (this.config && this.config.clientType) || 'web_map',
+        sdkVersion: 'v1'
+      });
     },
 
     // ----------------------------------------------------
@@ -905,6 +1047,7 @@
     },
 
     zoomIn() {
+      if (this._analytics) this._captureWithMapType('zoom_in');
       if (this._imgMapMode) {
         const w = this._getActiveImageWrapper();
         if (!w || !w._pz) return;
@@ -919,6 +1062,7 @@
     },
 
     zoomOut() {
+      if (this._analytics) this._captureWithMapType('zoom_out');
       if (this._imgMapMode) {
         const w = this._getActiveImageWrapper();
         if (!w || !w._pz) return;
@@ -933,6 +1077,7 @@
     },
 
     resetZoom() {
+      if (this._analytics) this._captureWithMapType('zoom_refresh');
       if (this._imgMapMode) {
         const w = this._getActiveImageWrapper();
         if (!w || !w._pz) return;
@@ -967,6 +1112,8 @@
       if (this._3dMode) return;
 
       this._3dMode = true;
+      this._updateCurrentMapType();
+      if (this._analytics) this._captureWithMapType('map_3d');
 
       // Inject style to hide ESRI attribution/presentation widgets in 3D mode
       if (!document.getElementById("pyn-esri-hide-style")) {
@@ -1023,6 +1170,8 @@
     switchTo2DMap() {
       if (!this._3dMode) return;
       this._3dMode = false;
+      this._updateCurrentMapType();
+      if (this._analytics) this._captureWithMapType('map_2d');
 
       // Remove ESRI hide style when leaving 3D mode
       const esriStyle = document.getElementById("pyn-esri-hide-style");
@@ -1090,7 +1239,10 @@
             const unit = (this.data.units || []).find(
               u => String(u.unitId) === String(data.unitId)
             );
-            if (unit && this.config.onUnitClick) this.config.onUnitClick(unit);
+            if (unit) {
+              if (this._analytics) this._captureWithMapType('unit_marker', 'click', { viewed_unit_id: String(unit.unitId ?? unit.id) });
+              if (this.config.onUnitClick) this.config.onUnitClick(unit);
+            }
           },
           onHover: (data) => {
             this._hideBeansEsriPopup();
@@ -1098,7 +1250,14 @@
             const unit = (this.data.units || []).find(
               u => String(u.unitId) === String(data.unitId)
             );
-            if (unit && this.config.onUnitHover) this.config.onUnitHover(unit);
+            if (unit) {
+              const unitId = String(unit.unitId ?? unit.id);
+              if (unitId !== this._lastHoverPid) {
+                this._lastHoverPid = unitId;
+                if (this._analytics) this._captureWithMapType('unit_marker', 'hover', { viewed_unit_id: unitId });
+                if (this.config.onUnitHover) this.config.onUnitHover(unit);
+              }
+            }
           }
         }
       );
@@ -1440,6 +1599,7 @@
     },
 
     async changeFloor(floorNumber) {
+      if (this._analytics) this._captureWithMapType('floor_number', 'click', { floor: String(floorNumber) });
       if (this._3dMode) {
         this._beans3dFloor = floorNumber;
         const indices = floorNumber != null
@@ -1586,6 +1746,7 @@
       if (!activeSvg) return;
 
       const id = String(floorplanId);
+      if (this._analytics) this._captureWithMapType('floorplan', 'hover', { floorplan_id: id });
 
       // Resolve the floorplan name so we can fall back to name-matching for units
       // whose floorplanId is null but floorplanName is populated.
@@ -1666,6 +1827,7 @@
 
         if (pid !== this._lastHoverPid) {
           this._lastHoverPid = pid;
+          if (this._analytics) this._captureWithMapType('unit_marker', 'hover', { viewed_unit_id: String(unit.unitId ?? unit.id ?? pid) });
           if (this.config.onUnitHover) this.config.onUnitHover(unit);
         }
       });
@@ -1728,6 +1890,7 @@
         if (wasTap && root.classList.contains("pyn-highlight")) {
           _suppressNextClick = true;
           setTimeout(() => { _suppressNextClick = false; }, 500);
+          if (this._analytics) this._captureWithMapType('unit_marker', 'click', { viewed_unit_id: String(unit.unitId ?? unit.id ?? pid) });
           if (this.config.onUnitClick) this.config.onUnitClick(unit);
         }
       }, { passive: true });
@@ -1747,6 +1910,7 @@
         const unit = byPointer[pid];
         if (!unit) return;
 
+        if (this._analytics) this._captureWithMapType('unit_marker', 'click', { viewed_unit_id: String(unit.unitId ?? unit.id ?? pid) });
         if (this.config.onUnitClick) {
           this.config.onUnitClick(unit);
         }
@@ -1823,7 +1987,10 @@
         el.style.filter = "brightness(1.25)";
         try {
           const amenity = JSON.parse(el.dataset.pynAmenityJson || "null");
-          if (amenity && this.config.onAmenityHover) this.config.onAmenityHover(amenity);
+          if (amenity) {
+            if (this._analytics) this._captureWithMapType('amenity_marker', 'hover', { marker_id: String(amenity.amenityId || '') });
+            if (this.config.onAmenityHover) this.config.onAmenityHover(amenity);
+          }
         } catch {}
       });
 
@@ -1839,7 +2006,10 @@
         if (!el) return;
         try {
           const amenity = JSON.parse(el.dataset.pynAmenityJson || "null");
-          if (amenity && this.config.onAmenityClick) this.config.onAmenityClick(amenity);
+          if (amenity) {
+            if (this._analytics) this._captureWithMapType('amenity_marker', 'click', { marker_id: String(amenity.amenityId || '') });
+            if (this.config.onAmenityClick) this.config.onAmenityClick(amenity);
+          }
         } catch {}
       });
 
@@ -1863,7 +2033,10 @@
         if (!wasTap || !el) return;
         try {
           const amenity = JSON.parse(el.dataset.pynAmenityJson || "null");
-          if (amenity && this.config.onAmenityClick) this.config.onAmenityClick(amenity);
+          if (amenity) {
+            if (this._analytics) this._captureWithMapType('amenity_marker', 'click', { marker_id: String(amenity.amenityId || '') });
+            if (this.config.onAmenityClick) this.config.onAmenityClick(amenity);
+          }
         } catch {}
       }, { passive: true });
 
@@ -2554,6 +2727,7 @@
     // Boot sequence for image map mode.
     async _bootImageMap() {
       this._imgMapMode = true;
+      this._updateCurrentMapType();
       this._injectMarkerStyles();
       this._renderImageMaps();
       this._bindImageMapEvents();
@@ -2939,7 +3113,10 @@
         if (am) {
           try {
             const amenity = JSON.parse(am.dataset.amenityJson || "null");
-            if (amenity && this.config.onAmenityClick) this.config.onAmenityClick(amenity);
+            if (amenity) {
+              if (this._analytics) this._captureWithMapType('amenity_marker', 'click', { marker_id: String(amenity.amenityId || '') });
+              if (this.config.onAmenityClick) this.config.onAmenityClick(amenity);
+            }
           } catch {}
         }
       }, { passive: true });
@@ -2950,7 +3127,10 @@
         if (!am) return;
         try {
           const amenity = JSON.parse(am.dataset.amenityJson || "null");
-          if (amenity && this.config.onAmenityClick) this.config.onAmenityClick(amenity);
+          if (amenity) {
+            if (this._analytics) this._captureWithMapType('amenity_marker', 'click', { marker_id: String(amenity.amenityId || '') });
+            if (this.config.onAmenityClick) this.config.onAmenityClick(amenity);
+          }
         } catch {}
       });
 
@@ -2960,7 +3140,10 @@
         if (!am) return;
         try {
           const amenity = JSON.parse(am.dataset.amenityJson || "null");
-          if (amenity && this.config.onAmenityHover) this.config.onAmenityHover(amenity);
+          if (amenity) {
+            if (this._analytics) this._captureWithMapType('amenity_marker', 'hover', { marker_id: String(amenity.amenityId || '') });
+            if (this.config.onAmenityHover) this.config.onAmenityHover(amenity);
+          }
         } catch {}
       });
 
@@ -3029,6 +3212,7 @@
       setExpandedMode(expanded)    { return PynMapSDK.setExpandedMode.call(PynMapSDK, expanded); },
       switchTo3DMap()              { return PynMapSDK.switchTo3DMap.call(PynMapSDK); },
       switchTo2DMap()              { return PynMapSDK.switchTo2DMap.call(PynMapSDK); },
+      capture(name, type, meta)    { return PynMapSDK.capture.call(PynMapSDK, name, type, meta); },
       destroy()                    { return PynMapSDK.destroy.call(PynMapSDK); },
       get data()                   { return PynMapSDK.data; },
       get activeMapId()            { return PynMapSDK.activeMapId; }

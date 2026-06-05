@@ -76,7 +76,8 @@ function productTypeTabSelector() {
   const tabMap = {
     pynwheel_tour: "#s-self-tour",
     maps: "#s-maps",
-    touch: "#s-touch"
+    touch: "#s-touch",
+    sdk_web_map: "#s-sdk-maps"
   };
 
   const selector = tabMap[selectedProductType]
