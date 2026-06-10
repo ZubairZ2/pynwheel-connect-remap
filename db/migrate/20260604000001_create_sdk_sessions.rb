@@ -1,10 +1,11 @@
-class CreateSdkSessions < ActiveRecord::Migration[7.1]
+class CreateSdkSessions < ActiveRecord::Migration[7.2]
   def change
     create_table :sdk_sessions do |t|
       t.integer  :community_id,                null: false
       t.string   :client_type,                 null: false
       t.string   :session_id,                  null: false
       t.string   :partner
+      t.string   :product,                     default: "web", null: false
       t.string   :sdk_version,                 default: "v1"
       t.string   :community_time_zone,         default: "UTC"
       t.datetime :start_datetime
@@ -14,6 +15,7 @@ class CreateSdkSessions < ActiveRecord::Migration[7.1]
       t.string   :visited_pages,               array: true, default: []
       t.jsonb    :events,                      default: {}, null: false
       t.jsonb    :device_context,              default: {}, null: false
+      t.jsonb    :full_event,                  default: {}, null: false
       t.timestamps
     end
 
@@ -22,5 +24,6 @@ class CreateSdkSessions < ActiveRecord::Migration[7.1]
     add_index :sdk_sessions, [:partner, :start_datetime],                    name: "idx_sdk_sessions_partner_date"
     add_index :sdk_sessions, :events,         using: :gin,                   name: "idx_sdk_sessions_events_gin"
     add_index :sdk_sessions, :device_context, using: :gin,                   name: "idx_sdk_sessions_device_context_gin"
+    add_index :sdk_sessions, :full_event,     using: :gin,                   name: "idx_sdk_sessions_full_event_gin"
   end
 end

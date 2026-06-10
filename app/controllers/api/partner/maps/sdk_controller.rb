@@ -221,13 +221,14 @@ module Api
           partner     = params[:partner].to_s.strip.presence
           product_src = params[:product_src].to_s.strip.presence || "web"
           events      = Array(params[:events]).first(100)
-          context     = params[:device_context]
+          context     = params[:device_context]&.permit!
 
           Analytics::SdkAnalyticsService.new(
             community:   @community,
             client_type: product_src,
             session_id:  session_id,
-            partner:     partner
+            partner:     partner,
+            product:     product_src
           ).process_batch(events: events, device_context: context)
 
           head :no_content

@@ -34,13 +34,14 @@ module Analytics
       "view_favorites" => "Favorites page",
     }.freeze
 
-    def initialize(community:, client_type:, session_id:, partner:, sdk_version: "v1")
+    def initialize(community:, client_type:, session_id:, partner:, sdk_version: "v1", product: "web")
       @community   = community
       @timezone    = community.get_time_zone
       @client_type = client_type
       @session_id  = session_id
       @partner     = partner
       @sdk_version = sdk_version
+      @product     = product
     end
 
     # Main entry point — called with a full batch of events from one SDK flush.
@@ -67,10 +68,12 @@ module Analytics
         merge_event_metadata(session, meta)
         update_interactions(session, key)
         update_visited_pages(session, name)
+        store_full_event(session, raw)
       end
 
-      if session && device_context.present?
-        session.device_context = sanitize_context(device_context)
+      if session
+        # Store complete device_context object from payload
+        session.device_context = merge_device_context(session.device_context, device_context)
       end
 
       session&.save
@@ -107,13 +110,15 @@ module Analytics
         client_type:                 @client_type,
         session_id:                  @session_id,
         partner:                     @partner,
+        product:                     @product,
         sdk_version:                 @sdk_version,
         community_time_zone:         @timezone,
         start_datetime:              now,
         map_interactions:            0,
-        map_interactions_last_active: nil,   # nil so the first interaction always counts
+        map_interactions_last_active: nil,
         events:                      {},
         device_context:              {},
+        full_event:                  {},
         visited_pages:               []
       )
     end
@@ -178,7 +183,32 @@ module Analytics
     end
 
     def sanitize_context(context)
-      context.to_h.slice(*ALLOWED_CONTEXT_KEYS)
+      return {} if context.blank?
+      # Handle ActionController::Parameters and regular hashes
+      context_h = context.is_a?(ActionController::Parameters) ? context.to_unsafe_hash : context.to_h
+      # Convert all keys to strings for consistent comparison
+      stringified = context_h.transform_keys { |k| k.to_s }
+      stringified.slice(*ALLOWED_CONTEXT_KEYS)
+    end
+
+    def merge_device_context(existing, incoming)
+      return existing if incoming.blank?
+      sanitized = sanitize_context(incoming)
+      (existing || {}).merge(sanitized)
+    end
+
+    def store_full_event(session, raw_event)
+      return if raw_event.blank?
+      event_name = raw_event["name"].to_s.strip
+      current = session.full_event || {}
+
+      # Initialize array for this event name if first occurrence
+      current[event_name] ||= []
+
+      # Append complete event with timestamp for chronological reference
+      current[event_name] << raw_event.merge("ts" => now.to_i)
+
+      session.full_event = current
     end
 
     def now
