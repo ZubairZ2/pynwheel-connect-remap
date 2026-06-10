@@ -89,20 +89,20 @@ class AnalyticsController < ApplicationController
       end
     end
 
-    if @product_type == "sdk_web_map"
+    if @product_type == "sdk_map"
       @sdk_maps_records = SdkSession.where(community_id: communities.ids)
                                     .where('start_datetime > ? AND start_datetime < ?', start_date.beginning_of_day, end_date.end_of_day)
       apply_filters(params)
 
       if @sdk_maps_records.any?
-        collect_interactions_each_day_data_maps(start_date, @days_count, @sdk_maps_records, :start_datetime, "sdk_web_map")
-        collect_session_each_day_data_in_minutes(start_date, @days_count, @sdk_maps_records, :start_datetime, :end_datetime, "sdk_web_map")
-        collect_session_each_day_data_in_hours(@sdk_maps_records, :start_datetime, "sdk_web_map")
-        bounce_rate_on_pages(@sdk_maps_records, :visited_pages, "sdk_web_map")
-        sdk_events_per_session(start_date, @days_count, @sdk_maps_records, "sdk_web_map")
-        apply_clicks_sdk_session(start_date, @days_count, @sdk_maps_records, "sdk_web_map")
-        favourite_saved_sdk_session(start_date, @days_count, @sdk_maps_records, "sdk_web_map")
-        favourite_sent_sdk_session(start_date, @days_count, @sdk_maps_records, "sdk_web_map")
+        collect_interactions_each_day_data_maps(start_date, @days_count, @sdk_maps_records, :start_datetime, "sdk_map")
+        collect_session_each_day_data_in_minutes(start_date, @days_count, @sdk_maps_records, :start_datetime, :end_datetime, "sdk_map")
+        collect_session_each_day_data_in_hours(@sdk_maps_records, :start_datetime, "sdk_map")
+        bounce_rate_on_pages(@sdk_maps_records, :visited_pages, "sdk_map")
+        sdk_events_per_session(start_date, @days_count, @sdk_maps_records, "sdk_map")
+        apply_clicks_sdk_session(start_date, @days_count, @sdk_maps_records, "sdk_map")
+        favourite_saved_sdk_session(start_date, @days_count, @sdk_maps_records, "sdk_map")
+        favourite_sent_sdk_session(start_date, @days_count, @sdk_maps_records, "sdk_map")
       end
     end
 
@@ -183,7 +183,7 @@ class AnalyticsController < ApplicationController
     def on_selected_communities(ids)
       @maps_records = (@product_type == "maps") ? @maps_records.where(community_id: ids) : []
       @metro_records = (@product_type == "touch") ? @metro_records.where(community_id: ids) : []
-      @sdk_maps_records = (@product_type == "sdk_web_map") ? @sdk_maps_records.where(community_id: ids) : []
+      @sdk_maps_records = (@product_type == "sdk_map") ? @sdk_maps_records.where(community_id: ids) : []
 
       if @product_type == "pynwheel_tour"
         @self_tour_records = @self_tour_records.where(community_id: ids)
@@ -985,7 +985,7 @@ class AnalyticsController < ApplicationController
       case product_type
       when "pynwheel_tour"
         "Tours"
-      when "maps", "sdk_web_map"
+      when "maps", "sdk_map"
         "Interactions"
       else
         "Sessions"

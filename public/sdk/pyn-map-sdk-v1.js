@@ -9,7 +9,8 @@
       var s = {
         token:       opts.token,
         apiBase:     opts.apiBase,
-        clientType:  opts.clientType  || 'web_map',
+        productSrc:  opts.productSrc  || 'web',
+        partner:     opts.partner     || null,
         sdkVersion:  opts.sdkVersion  || 'v1',
         sessionId:   _uuid(),
         queue:       [],
@@ -43,7 +44,8 @@
     function _flush(s, beacon) {
       if (s.dead || !s.queue.length) return;
       var events = s.queue.splice(0);
-      var body   = { session_id: s.sessionId, client_type: s.clientType, events: events };
+      var body   = { session_id: s.sessionId, product_src: s.productSrc, events: events };
+      if (s.partner) body.partner = s.partner;
       if (!s.contextSent) body.device_context = _context(s);
       var url  = s.apiBase + '/api/partner/maps/events';
       var json = JSON.stringify(body);
@@ -101,6 +103,8 @@
     // ----------------------------------------------------
     _initialized: false,
     _sessionToken: null,          // short-lived token; replaces the API key after auth
+    _productSrc: "web",           // product source from server response (src URL param); default "web"
+    _partner: null,               // partner name from server response (partner URL param)
     _sdkSessionId: null,          // stable UUID persisted in localStorage; identifies this user's favorites session
     _analytics: null,             // PynAnalytics instance; null until auth completes
     _favorites: new Set(),        // Set of favorited unit IDs (strings)
@@ -221,6 +225,11 @@
       // API key is local-only — never stored on the SDK object.
       const apiKey     = cfg.apiKey;
       const propertyId = cfg.propertyId;
+
+      // Always extract src and partner from URL params early, regardless of token caching.
+      // This ensures analytics always knows the source even on page refresh.
+      this._productSrc = this._getSrcParam() ? this._normalizeProductSrc(this._getSrcParam()) : "web";
+      this._partner = this._getPartnerParam() || null;
 
       // Start loading pan-zoom immediately — parallel with auth + data fetch.
       const panZoomReady = this._loadPanZoom();
@@ -354,7 +363,8 @@
       this._analytics = PynAnalytics.create({
         token:      this._sessionToken,
         apiBase:    this._apiBase(),
-        clientType: (this.config && this.config.clientType) || 'web_map',
+        productSrc: this._productSrc,
+        partner:    this._partner,
         sdkVersion: 'v1'
       });
     },
@@ -370,7 +380,10 @@
      */
     async _verifyPartner(apiKey, propertyId) {
       try {
-        const url = `${this._apiBase()}/api/partner/maps/authorized?propertyId=${propertyId}`;
+        const srcParam = this._getSrcParam() ? `&src=${encodeURIComponent(this._getSrcParam())}` : "";
+        const partnerParam = this._getPartnerParam() ? `&partner=${encodeURIComponent(this._getPartnerParam())}` : "";
+
+        const url = `${this._apiBase()}/api/partner/maps/authorized?propertyId=${propertyId}${srcParam}${partnerParam}`;
         const res = await fetch(url, { headers: { "X-API-Key": apiKey } });
 
         if (!res.ok) {
@@ -383,6 +396,49 @@
         return { success: true, sessionToken: data.session_token };
       } catch {
         return { success: false, error: "Network error verifying partner" };
+      }
+    },
+
+    /**
+     * Extract src URL parameter and normalize it.
+     * src=touch → "touch", src=mobile → "mobile", src=ipad → "ipad"
+     * Returns empty string if not present or invalid.
+     */
+    _getSrcParam() {
+      try {
+        const params = new URL(window.location.href).searchParams;
+        const src = params.get("src");
+        if (!src) return "";
+        const normalized = src.toLowerCase().trim();
+        const validSrcValues = ["touch", "mobile", "ipad"];
+        return validSrcValues.includes(normalized) ? normalized : "";
+      } catch {
+        return "";
+      }
+    },
+
+    /**
+     * Normalize src param to product_src value for analytics.
+     * touch → "touch_map", mobile → "mobile_app", ipad → "ipad_map"
+     */
+    _normalizeProductSrc(src) {
+      if (!src) return "web";
+      return src;
+    },
+
+    /**
+     * Extract partner URL parameter.
+     * Returns the partner name (e.g., "rent", "zillow") or empty string if not present.
+     */
+    _getPartnerParam() {
+      try {
+        const params = new URL(window.location.href).searchParams;
+        const partner = params.get("partner");
+        if (!partner) return "";
+        const normalized = partner.toLowerCase().trim();
+        return /^[a-z0-9_-]+$/.test(normalized) ? normalized : "";
+      } catch {
+        return "";
       }
     },
 

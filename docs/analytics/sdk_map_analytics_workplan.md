@@ -807,7 +807,7 @@ WHERE (events->>'floorplan_hover')::int > 0
 - [ ] Verify React-owned events (filters, CTAs) appear in DB
 
 ### Phase 6 — Analytics dashboard (1–2 hours)
-- [ ] Add `product_type = "sdk_web_map"` branch in `analytics_controller.rb`
+- [ ] Add `product_type = "sdk_map"` branch in `analytics_controller.rb`
 - [ ] Query `SdkSession` with JSONB operators for each chart metric
 - [ ] Add `_sdk_maps.html.haml` partial (or tab in `_maps.html.haml`)
 - [ ] Verify charts render
@@ -831,6 +831,6 @@ WHERE (events->>'floorplan_hover')::int > 0
 | `app/controllers/api/partner/maps/sdk_controller.rb` | Add `track_events` action + add to `SESSION_ACTIONS` |
 | `public/sdk/pyn-map-sdk.js` | Add `PynAnalytics` module + wire into `init`, `_bootAfterSVGLoad`, `_bindUnitEvents`, zoom/floor methods |
 | `app/views/analytics/_sdk_maps.html.haml` | Create |
-| `app/controllers/analytics_controller.rb` | Add `sdk_web_map` branch |
+| `app/controllers/analytics_controller.rb` | Add `sdk_map` branch |
 | `[React app]/src/components/MapContainer.jsx` | Replace `track()` calls with `sdk.capture()`, remove hook + session mgmt |
 | Everything in `track_sessions` / old analytics | No changes |

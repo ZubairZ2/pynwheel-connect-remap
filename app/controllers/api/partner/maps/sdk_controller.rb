@@ -18,8 +18,6 @@ module Api
           :get_favorites, :share_favorites_email, :track_events
         ].freeze
 
-        ALLOWED_CLIENT_TYPES = %w[web_map touch_map ipad_map mobile_app partner_embed].freeze
-
         skip_before_action :load_map_partners,  only: SESSION_ACTIONS
         skip_before_action :validate_api_key,   only: SESSION_ACTIONS
         skip_before_action :load_partner_name,  only: SESSION_ACTIONS
@@ -41,6 +39,11 @@ module Api
         # ------------------------------------------------------------------
         def authorized
           token = generate_session_token(@api_key, @community.id)
+
+          # Echo back the src and partner params unchanged (client is authoritative).
+          # This confirms the server received them and they're valid.
+          src = params[:src].to_s.strip.presence || "web"
+          partner = params[:partner].to_s.strip.presence || nil
 
           render json: {
             success: true,
@@ -207,7 +210,7 @@ module Api
         # ------------------------------------------------------------------
         # POST /api/partner/maps/events
         # Authorization: Bearer <session_token>
-        # Body: { session_id, client_type, events: [...], device_context? }
+        # Body: { session_id, product_src, events: [...], device_context? }
         # Receives a batch of analytics events from the SDK (flushed every 5s or
         # on page hide via sendBeacon). Fire-and-forget from the client — always 204.
         # ------------------------------------------------------------------
@@ -215,15 +218,16 @@ module Api
           session_id  = params[:session_id].to_s.strip
           return render_error("session_id is required.", 400) if session_id.blank?
 
-          client_type = ALLOWED_CLIENT_TYPES.include?(params[:client_type]) ? params[:client_type] : "web_map"
+          partner     = params[:partner].to_s.strip.presence
+          product_src = params[:product_src].to_s.strip.presence || "web"
           events      = Array(params[:events]).first(100)
           context     = params[:device_context]
 
           Analytics::SdkAnalyticsService.new(
             community:   @community,
-            client_type: client_type,
+            client_type: product_src,
             session_id:  session_id,
-            partner:     @session_api_key
+            partner:     partner
           ).process_batch(events: events, device_context: context)
 
           head :no_content

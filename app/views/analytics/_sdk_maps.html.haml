@@ -1,7 +1,7 @@
 .box.box-info.add-plan.mt-20
   .box-header
     %h3.box-title
-      SDK Web Map
+      SDK Map
       %span Analytics
     %h3.box-title.align-right
       Analytics
@@ -16,12 +16,12 @@
 
           .col-lg-4.numbers_div
             .center_it
-              .count_int= @track_session_count_sdk_web_map
+              .count_int= @track_session_count_sdk_map
               .count_text= 'Total Number Of Interactions'
-              .count_int= @avg_track_session_sdk_web_map
+              .count_int= @avg_track_session_sdk_map
               .count_text= 'Average Number Of Interactions Per Day'
           .col-lg-8
-            = bar_chart @session_each_day_data_sdk_web_map, @session_each_day_options_sdk_web_map
+            = bar_chart @session_each_day_data_sdk_map, @session_each_day_options_sdk_map
         .col-lg-6.col-md-12.h-500
           .chart-title
             %p.chart_heading Activity Duration
@@ -29,10 +29,10 @@
 
           .col-lg-4.numbers_div
             .center_it
-              .count_int= @average_duration_each_session_in_minutes_sdk_web_map
+              .count_int= @average_duration_each_session_in_minutes_sdk_map
               .count_text= 'Average duration of activity in minutes'
           .col-lg-8
-            = line_chart @session_each_day_minutes_data_sdk_web_map, @session_each_day_minutes_options_sdk_web_map
+            = line_chart @session_each_day_minutes_data_sdk_map, @session_each_day_minutes_options_sdk_map
 
       .row.mt-80
         .col-lg-12.col-md-12.h-500
@@ -42,11 +42,11 @@
 
           .col-lg-3.numbers_div
             .center_it
-              .count_int= @session_in_highest_hour_sdk_web_map
+              .count_int= @session_in_highest_hour_sdk_map
               .count_text= 'Maximum number of interactions at '
-              .count_text= @highest_hour_sdk_web_map
+              .count_text= @highest_hour_sdk_map
           .col-lg-9
-            = bar_chart @session_each_day_hour_data_sdk_web_map, @session_each_day_hour_options_sdk_web_map
+            = bar_chart @session_each_day_hour_data_sdk_map, @session_each_day_hour_options_sdk_map
 
       .row.mt-80
         .col-lg-12.col-md-12.h-500
@@ -56,18 +56,18 @@
 
           .col-lg-2.numbers_div
             .center_it
-              .count_int= @visits_to_favorites_page_sdk_web_map
+              .count_int= @visits_to_favorites_page_sdk_map
               .count_text= 'Total visits to favorites page'
               .pie_description
                 %span.dot.single_page
                 %span One page viewed during interaction
-                %span= @percentage_single_page_visitor_sdk_web_map
+                %span= @percentage_single_page_visitor_sdk_map
               .pie_description
                 %span.dot.multiple_page
                 %span Multiple page viewed during interaction
-                %span= @percentage_multiple_page_visitor_sdk_web_map
+                %span= @percentage_multiple_page_visitor_sdk_map
           .col-lg-5.pie_width
-            = pie_chart @bounce_data_labels_sdk_web_map, @bounce_data_options_sdk_web_map
+            = pie_chart @bounce_data_labels_sdk_map, @bounce_data_options_sdk_map
 
       - if current_user.is_super_admin?
         .row.mt-80
@@ -78,20 +78,20 @@
 
             .col-lg-2.numbers_div
               .center_it
-                .count_int= @total_number_of_events_sdk_web_map
+                .count_int= @total_number_of_events_sdk_map
                 .count_text= 'Total number of events'
                 .pie_description
                   %span.dot.events_with
                   %span Interactions with events
-                  %span= @percentage_session_with_events_sdk_web_map
+                  %span= @percentage_session_with_events_sdk_map
                 .pie_description
                   %span.dot.events_without
                   %span Interactions without events
-                  %span= @percentage_session_without_events_sdk_web_map
+                  %span= @percentage_session_without_events_sdk_map
             .col-lg-5.pie_width
-              = pie_chart @pie_events_data_labels_sdk_web_map, @pie_events_data_options_sdk_web_map
+              = pie_chart @pie_events_data_labels_sdk_map, @pie_events_data_options_sdk_map
             .col-lg-5
-              = bar_chart @bar_events_data_labels_sdk_web_map, @bar_events_data_options_sdk_web_map
+              = bar_chart @bar_events_data_labels_sdk_map, @bar_events_data_options_sdk_map
 
         .row.mt-80
           .col-lg-12.h-500
@@ -101,20 +101,20 @@
 
             .col-lg-2.numbers_div
               .center_it
-                .count_int= @total_number_of_apply_clicks_sdk_web_map
+                .count_int= @total_number_of_apply_clicks_sdk_map
                 .count_text= 'Total number of apply clicks'
                 .pie_description
                   %span.dot.apply_clicks_with
                   %span Interactions with apply clicks
-                  %span= @percentage_session_with_apply_clicks_sdk_web_map
+                  %span= @percentage_session_with_apply_clicks_sdk_map
                 .pie_description
                   %span.dot.apply_clicks_without
                   %span Interactions without apply clicks
-                  %span= @percentage_session_without_apply_clicks_sdk_web_map
+                  %span= @percentage_session_without_apply_clicks_sdk_map
             .col-lg-5.pie_width
-              = pie_chart @pie_apply_click_data_labels_sdk_web_map, @pie_apply_click_data_options_sdk_web_map
+              = pie_chart @pie_apply_click_data_labels_sdk_map, @pie_apply_click_data_options_sdk_map
             .col-lg-5
-              = line_chart @line_apply_click_data_labels_sdk_web_map, @line_apply_click_data_options_sdk_web_map
+              = line_chart @line_apply_click_data_labels_sdk_map, @line_apply_click_data_options_sdk_map
 
         .row.mt-80
           .col-lg-12.h-500
@@ -124,20 +124,20 @@
 
             .col-lg-2.numbers_div
               .center_it
-                .count_int= @total_number_of_favourite_saved_sdk_web_map
+                .count_int= @total_number_of_favourite_saved_sdk_map
                 .count_text= 'Total number of favorite saved'
                 .pie_description
                   %span.dot.favourite_saved_with
                   %span Interactions with favorite saved
-                  %span= @percentage_session_with_favourite_saved_sdk_web_map
+                  %span= @percentage_session_with_favourite_saved_sdk_map
                 .pie_description
                   %span.dot.favourite_saved_without
                   %span Interactions without favorite saved
-                  %span= @percentage_session_without_favourite_saved_sdk_web_map
+                  %span= @percentage_session_without_favourite_saved_sdk_map
             .col-lg-5.pie_width
-              = pie_chart @pie_favourite_saved_data_labels_sdk_web_map, @pie_favourite_saved_data_options_sdk_web_map
+              = pie_chart @pie_favourite_saved_data_labels_sdk_map, @pie_favourite_saved_data_options_sdk_map
             .col-lg-5
-              = bar_chart @bar_favourite_saved_data_labels_sdk_web_map, @bar_favourite_saved_data_options_sdk_web_map
+              = bar_chart @bar_favourite_saved_data_labels_sdk_map, @bar_favourite_saved_data_options_sdk_map
 
         .row.mt-80
           .col-lg-12.h-500
@@ -146,20 +146,20 @@
               = render 'title_info', {info_text: MAPS_FAVORITE_SHARED_INFO}
             .col-lg-2.numbers_div
               .center_it
-                .count_int= @total_number_of_favourite_sent_sdk_web_map
+                .count_int= @total_number_of_favourite_sent_sdk_map
                 .count_text= 'Total number of times favorite emailed'
                 .pie_description
                   %span.dot.favourite_sent_with
                   %span Interactions with favorite mailed
-                  %span= @percentage_session_with_favourite_sent_sdk_web_map
+                  %span= @percentage_session_with_favourite_sent_sdk_map
                 .pie_description
                   %span.dot.favourite_sent_without
                   %span Interactions without favorite mailed
-                  %span= @percentage_session_without_favourite_sent_sdk_web_map
+                  %span= @percentage_session_without_favourite_sent_sdk_map
             .col-lg-5.pie_width
-              = pie_chart @pie_favourite_sent_data_labels_sdk_web_map, @pie_favourite_sent_data_options_sdk_web_map
+              = pie_chart @pie_favourite_sent_data_labels_sdk_map, @pie_favourite_sent_data_options_sdk_map
             .col-lg-5
-              = bar_chart @bar_favourite_sent_data_labels_sdk_web_map, @bar_favourite_sent_data_options_sdk_web_map
+              = bar_chart @bar_favourite_sent_data_labels_sdk_map, @bar_favourite_sent_data_options_sdk_map
 
     - else
       %h3 There is no record found on selected date range

@@ -159,7 +159,7 @@ module Analytics
 
     def session_idle_at?(dt)
       return false unless dt
-      ((now.to_datetime - dt.to_datetime) * 24 * 60).to_i >= ENV.fetch("IDLE_TIME_MAPS", 30).to_i
+      ((now.to_datetime - dt.to_datetime) * 24 * 60).to_i >= ENV.fetch("IDLE_TIME_MAPS", 10).to_i
     end
 
     # Dynamic sanitizer: any snake_case key ≤ 50 chars, scalar value ≤ 300 chars.

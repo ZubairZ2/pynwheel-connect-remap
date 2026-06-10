@@ -77,7 +77,7 @@ function productTypeTabSelector() {
     pynwheel_tour: "#s-self-tour",
     maps: "#s-maps",
     touch: "#s-touch",
-    sdk_web_map: "#s-sdk-maps"
+    sdk_map: "#s-sdk-maps"
   };
 
   const selector = tabMap[selectedProductType]
