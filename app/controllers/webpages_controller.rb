@@ -209,7 +209,8 @@ class WebpagesController < ActionController::Base
     def normalize_units
       @units.find_each do |unit|
         floorplan = @floorplans_map[unit.floorplan_id]
-        if unit.effective_rent.present? && unit.effective_rent >= 1  && floorplan.present?
+        # if unit.effective_rent.present? && unit.effective_rent >= 1  && floorplan.present?
+        if floorplan.present?
           @units_with_floorplan_info << fetch_unit_info_struct_for_webpage(unit, floorplan, @show_ops_map)
         end
       end
