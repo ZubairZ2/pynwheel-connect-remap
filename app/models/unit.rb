@@ -104,55 +104,71 @@ class Unit < ApplicationRecord
   scope :has_pointer_y_plot, -> { where("pointer_data->>'y_plot' IS NOT NULL AND (pointer_data->>'y_plot')::integer > ?", 0) }
   scope :svg_pointed, -> { has_pointer_x_plot.or(has_pointer_y_plot) }
 
-  scope :are_sold, ->(svg_enabled = false) { 
+  scope :are_sold, ->(svg_enabled = false) {
     sold_units_query = where(sold: true)
 
-    if svg_enabled
-      sold_units_query.svg_pointed
-    else
-      sold_units_query.where("x_plot > ? or y_plot > ?", 0, 0)
-    end
+    # if svg_enabled
+    #   sold_units_query.svg_pointed
+    # else
+    #   sold_units_query.where("x_plot > ? or y_plot > ?", 0, 0)
+    # end
+    # Always return data regardless of plotting coordinates
+    sold_units_query
   }
 
-  scope :past_available_units, ->(svg_enabled = false) { 
+  scope :past_available_units, ->(svg_enabled = false) {
     available_units_query = where("availability = ? and available_date <= ?", "Unoccupied", Date.today)
 
-    if svg_enabled
-      available_units_query.svg_pointed
-    else
-      available_units_query.where("x_plot > ? or y_plot > ?", 0, 0)
-    end
+    # if svg_enabled
+    #   available_units_query.svg_pointed
+    # else
+    #   available_units_query.where("x_plot > ? or y_plot > ?", 0, 0)
+    # end
+    # Always return data regardless of plotting coordinates
+    available_units_query
   }
 
   scope :has_x_plot, ->(svg_enabled = false) {
-    available_units_query = where("available_date > ? and available_date < ? and available = ?", Date.today, Date.today + 2.year,true)
+    available_units_query = where("available_date > ? and available_date < ? and available = ?", Date.today, Date.today + 2.year, true)
 
-    if svg_enabled
-      available_units_query.has_pointer_x_plot
-    else
-      available_units_query.where("x_plot > ?", 0)
-    end
+    # if svg_enabled
+    #   available_units_query.has_pointer_x_plot
+    # else
+    #   available_units_query.where("x_plot > ?", 0)
+    # end
+    # Always return data regardless of x_plot coordinates
+    available_units_query
   }
 
   scope :has_y_plot, ->(svg_enabled = false) {
-    available_units_query = where("available_date > ? and available_date < ? and available = ?", Date.today, Date.today + 2.year,true)
+    available_units_query = where("available_date > ? and available_date < ? and available = ?", Date.today, Date.today + 2.year, true)
 
-    if svg_enabled
-      available_units_query.has_pointer_y_plot
-    else
-      available_units_query.where("y_plot > ?", 0)
-    end
-   }
+    # if svg_enabled
+    #   available_units_query.has_pointer_y_plot
+    # else
+    #   available_units_query.where("y_plot > ?", 0)
+    # end
+    # Always return data regardless of y_plot coordinates
+    available_units_query
+  }
   scope :plotted_units, ->(svg_enabled = false) {
+    # Always return data regardless of plotting status
+    # if svg_enabled
+    #   has_x_plot(svg_enabled).or(has_y_plot(svg_enabled))
+    # else
+    #   has_x_plot(svg_enabled).or(has_y_plot(svg_enabled))
+    # end
     has_x_plot(svg_enabled).or(has_y_plot(svg_enabled))
   }
 
-  scope :are_plotted_units, ->(svg_enabled = false) { 
-    if svg_enabled
-      svg_pointed
-    else
-      where("x_plot > ? or y_plot > ?", 0, 0)
-    end
+  scope :are_plotted_units, ->(svg_enabled = false) {
+    # if svg_enabled
+    #   svg_pointed
+    # else
+    #   where("x_plot > ? or y_plot > ?", 0, 0)
+    # end
+    # Always return all units regardless of plotting status
+    all
   }
 
   scope :vacant_and_available, ->(svg_enabled = false) {
