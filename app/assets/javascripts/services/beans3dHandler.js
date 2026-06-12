@@ -116,7 +116,6 @@ function initializeBeans3DMap() {
       clearInterval(waitForMapEngine);
 
       beansWidget.workingInstance = inst;
-      console.log("🔥 3D Map Engine Ready:", inst);
       initializeMouseTrackerFor3DHoverExit();
       const container = inst.mapView?.container;
       if (container) {
