@@ -1601,7 +1601,7 @@
         if (!sel) return;
         const el = activeSvg.querySelector(sel);
         if (!el) return;
-        const root = el.closest("g") || el;
+        const root = el.closest("[data-pyn-unit-pid]") || el.closest("g") || el;
 
         const matchById   = unit.floorplanId != null && String(unit.floorplanId) === id;
         const matchByName = fpName != null && unit.floorplanName != null && unit.floorplanName === fpName;
@@ -1609,9 +1609,11 @@
 
         if (matchById || matchByName || noData) {
           this._applyFill(el, this._unitColor(unit));
+          el.style.opacity = "1";
           root.classList.add("pyn-highlight");
         } else {
-          this._applyFill(el, this._unitDimColor(unit));
+          this._applyFill(el, this._unitColor(unit));
+          el.style.opacity = "0.15";
           root.classList.remove("pyn-highlight");
         }
       });
@@ -1891,7 +1893,8 @@
         el.style.stroke      = "";
         el.style.strokeWidth = "";
 
-        const root = el.closest("g") || el;
+        const root = el.closest("[data-pyn-unit-pid]") || el.closest("g") || el;
+        root.style.removeProperty("opacity");
         root.classList.remove("pyn-highlight");
 
         el.classList.remove("pyn-selected-unit");
