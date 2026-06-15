@@ -1892,9 +1892,9 @@
         this._clearFill(el);
         el.style.stroke      = "";
         el.style.strokeWidth = "";
+        el.style.removeProperty("opacity");
 
         const root = el.closest("[data-pyn-unit-pid]") || el.closest("g") || el;
-        root.style.removeProperty("opacity");
         root.classList.remove("pyn-highlight");
 
         el.classList.remove("pyn-selected-unit");
