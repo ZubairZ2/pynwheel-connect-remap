@@ -1,6 +1,10 @@
 class DesignSystemConfig < ApplicationRecord
   belongs_to :community
 
+  after_commit :bust_sdk_cache
+
+
+
   DEFAULT_CONFIG = {
     "colors" => {
       "primary"                  => "#E25C0A",
@@ -109,6 +113,10 @@ class DesignSystemConfig < ApplicationRecord
   end
 
   private
+
+  def bust_sdk_cache
+    SdkCacheService.invalidate_fetch_data(community_id)
+  end
 
   def cv(hex, opacity)
     return hex.to_s if opacity.nil? || opacity.to_f >= 1.0
