@@ -76,6 +76,9 @@
             %li{ role: "presentation", class: "#{params[:product_type] == 'maps' ? 'active in' : ''}" }
               %a#maps-tab{ "data-toggle" => "tab", href: "#s-maps", role: "tab", "aria-expanded" => "false" } Maps
 
+            %li{ role: "presentation", class: "#{params[:product_type] == 'sdk_map' ? 'active in' : ''}" }
+              %a#sdk-maps-tab{ "data-toggle" => "tab", href: "#s-sdk-maps", role: "tab", "aria-expanded" => "false" } SDK Map
+
           - if params[:product_type].nil? || params[:product_type] == 'touch'
             #s-touch.tab-pane.fade{ class: "active", role: "tabpanel" }
               = render 'touch'
@@ -87,6 +90,10 @@
           - if params[:product_type] == 'maps'
             #s-maps.tab-pane.fade{ class: "active", role: "tabpanel" }
               = render 'maps'
+
+          - if params[:product_type] == 'sdk_map'
+            #s-sdk-maps.tab-pane.fade{ class: "active", role: "tabpanel" }
+              = render 'sdk_maps'
 
 #productTypeData{ data: { product_type: params[:product_type] } }
 

@@ -15,7 +15,7 @@ module Api
         SESSION_ACTIONS = [
           :fetch_data, :fetch_svg_image,
           :save_favorites, :delete_favorites, :clear_all_favorites,
-          :get_favorites, :share_favorites_email
+          :get_favorites, :share_favorites_email, :track_events
         ].freeze
 
         skip_before_action :load_map_partners,  only: SESSION_ACTIONS
@@ -25,7 +25,9 @@ module Api
         # get_favorites only needs sitemap + floorplates for map_for_unit — skip the
         # 6 other heavy includes (floorplans, map_filter, font_setting, credential,
         # calculator_config, three_d_maps_configuration) that it never uses.
-        before_action :load_community_from_session, only: SESSION_ACTIONS - [:get_favorites, :fetch_svg_image, :share_favorites_email]
+        # track_events only needs community_id, timezone — use a lightweight load.
+        before_action :load_community_from_session, only: SESSION_ACTIONS - [:get_favorites, :fetch_svg_image, :share_favorites_email, :track_events]
+        before_action :load_community_for_analytics, only: [:track_events]
         before_action :load_community_for_svg,      only: [:fetch_svg_image]
         before_action :load_community_for_favorites, only: [:get_favorites]
         before_action :load_community_for_email,     only: [:share_favorites_email]
@@ -37,6 +39,11 @@ module Api
         # ------------------------------------------------------------------
         def authorized
           token = generate_session_token(@api_key, @community.id)
+
+          # Echo back the src and partner params unchanged (client is authoritative).
+          # This confirms the server received them and they're valid.
+          src = params[:src].to_s.strip.presence || "web"
+          partner = params[:partner].to_s.strip.presence || nil
 
           render json: {
             success: true,
@@ -201,6 +208,35 @@ module Api
         end
 
         # ------------------------------------------------------------------
+        # POST /api/partner/maps/events
+        # Authorization: Bearer <session_token>
+        # Body: { session_id, product_src, events: [...], device_context? }
+        # Receives a batch of analytics events from the SDK (flushed every 5s or
+        # on page hide via sendBeacon). Fire-and-forget from the client — always 204.
+        # ------------------------------------------------------------------
+        def track_events
+          session_id            = params[:session_id].to_s.strip
+          return render_error("session_id is required.", 400) if session_id.blank?
+
+          parent_sdk_session_id = params[:parent_sdk_session_id].to_s.strip.presence
+          partner               = params[:partner].to_s.strip.presence
+          product_src           = params[:product_src].to_s.strip.presence || "web"
+          events                = Array(params[:events]).first(100)
+          context               = params[:device_context]&.permit!
+
+          Analytics::SdkAnalyticsService.new(
+            community:             @community,
+            client_type:           product_src,
+            session_id:            session_id,
+            parent_sdk_session_id: parent_sdk_session_id,
+            partner:               partner,
+            product:               product_src
+          ).process_batch(events: events, device_context: context)
+
+          head :no_content
+        end
+
+        # ------------------------------------------------------------------
         # GET /api/partner/maps/fetch_svg_image?map_id=:id&map_type=sitemap|floorplate
         # Authorization: Bearer <session_token>
         # Resolves the real storage URL server-side — it never reaches the client.
@@ -341,6 +377,11 @@ module Api
             end
           return nil unless record&.updated_at
           "\"#{map_id}-#{record.updated_at.to_i}\""
+        end
+
+        def load_community_for_analytics
+          @community = Community.find_by(id: @session_property_id)
+          return render_error("Property not found.", 404) if @community.nil?
         end
 
         def load_community_for_favorites
