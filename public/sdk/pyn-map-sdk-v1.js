@@ -596,26 +596,14 @@
       const vars = {
         "--pyn-primary":                   c.primary,
         "--pyn-primary-opacity":           c.primaryOpacity,
-        "--pyn-primary-light-10":          c.primaryLight10,
-        "--pyn-primary-light-10-opacity":  c.primaryLight10Opacity,
-        "--pyn-primary-light-20":          c.primaryLight20,
-        "--pyn-primary-light-20-opacity":  c.primaryLight20Opacity,
         "--pyn-main-font":                 c.mainFont,
         "--pyn-main-font-opacity":         c.mainFontOpacity,
         "--pyn-subtext":                   c.subtext,
         "--pyn-subtext-opacity":           c.subtextOpacity,
-        "--pyn-icon-bg":                   c.iconBackground,
-        "--pyn-icon-bg-opacity":           c.iconBackgroundOpacity,
         "--pyn-stroke":                    c.strokeOutlines,
         "--pyn-stroke-opacity":            c.strokeOutlinesOpacity,
         "--pyn-light-bg":                  c.lightBackground,
         "--pyn-light-bg-opacity":          c.lightBackgroundOpacity,
-        "--pyn-label-yellow":              c.labelYellow,
-        "--pyn-label-yellow-opacity":      c.labelYellowOpacity,
-        "--pyn-label-orange":              c.labelOrange,
-        "--pyn-label-orange-opacity":      c.labelOrangeOpacity,
-        "--pyn-label-coral":               c.labelCoral,
-        "--pyn-label-coral-opacity":       c.labelCoralOpacity,
         "--pyn-font-family":               f.family,
         "--pyn-base-font-size":            f.baseSize,
         "--pyn-heading-font-size":         f.headingSize
@@ -624,6 +612,16 @@
       Object.entries(vars).forEach(([prop, val]) => {
         if (val != null) this.container.style.setProperty(prop, String(val));
       });
+
+      if (c.primary) {
+        const hex = c.primary.replace(/^#/, "");
+        const r = parseInt(hex.slice(0, 2), 16);
+        const g = parseInt(hex.slice(2, 4), 16);
+        const b = parseInt(hex.slice(4, 6), 16);
+        const blend = (channel, alpha) => Math.round(channel * alpha + 255 * (1 - alpha)).toString(16).padStart(2, "0");
+        this.container.style.setProperty("--pyn-primary-light-10", `#${blend(r, 0.1)}${blend(g, 0.1)}${blend(b, 0.1)}`);
+        this.container.style.setProperty("--pyn-primary-light-20", `#${blend(r, 0.2)}${blend(g, 0.2)}${blend(b, 0.2)}`);
+      }
     },
 
     _resolve3DConfig() {
