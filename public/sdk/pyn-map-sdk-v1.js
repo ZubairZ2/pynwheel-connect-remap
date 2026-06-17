@@ -2,49 +2,109 @@
 
   // ─────────────────────────────────────────────────────────────────────────────
   // PynAnalytics — internal analytics engine (batched, fire-and-forget)
+  //
+  // Session model:
+  //   sdkSessionId  — stable localStorage UUID (user identity / favorites).
+  //                   Never rotates. Sent as parent_sdk_session_id in every batch.
+  //   sessionId     — short-lived analytics segment UUID. Rotated after 2 min of
+  //                   inactivity so idle gaps produce clean separate DB rows.
+  //
+  // Visibility handling:
+  //   tab hidden  → map_session_background (keepalive flush, session stays open)
+  //   tab visible → map_session_active     (session continues)
+  //   destroy()   → map_session_end        (true close, keepalive flush)
   // ─────────────────────────────────────────────────────────────────────────────
   var PynAnalytics = (function () {
 
+    var IDLE_MS = 2 * 60 * 1000; // 2 minutes
+
     function create(opts) {
       var s = {
-        token:       opts.token,
-        apiBase:     opts.apiBase,
-        productSrc:  opts.productSrc  || 'web',
-        partner:     opts.partner     || null,
-        sdkVersion:  opts.sdkVersion  || 'v1',
-        sessionId:   _uuid(),
-        queue:       [],
-        contextSent: false,
-        dead:        false,
-        timer:       null,
-        onHide:      null
+        token:        opts.token,
+        apiBase:      opts.apiBase,
+        productSrc:   opts.productSrc  || 'web',
+        partner:      opts.partner     || null,
+        sdkVersion:   opts.sdkVersion  || 'v1',
+        sdkSessionId: opts.sdkSessionId || null, // stable identity UUID
+        sessionId:    _uuid(),                   // current analytics segment UUID
+        queue:        [],
+        contextSent:  false,
+        dead:         false,
+        timer:        null,
+        idleTimer:    null,
+        onHide:       null
       };
 
-      s.timer  = setInterval(function () { _flush(s, false); }, 5000);
-      s.onHide = function () { if (document.visibilityState === 'hidden') { s.queue.push({ name: 'map_session_end', type: 'click', ts: Date.now() }); _flush(s, true); } };
+      s.timer = setInterval(function () { _flush(s, false); }, 5000);
+
+      s.onHide = function () {
+        if (document.visibilityState === 'hidden') {
+          // Tab hidden — do not end session. Record background state and flush
+          // immediately with keepalive so the event survives mobile tab switches
+          // and home-button presses where the page may be frozen/killed.
+          s.queue.push({ name: 'map_session_background', type: 'state', ts: Date.now() });
+          _flush(s, true);
+        } else if (document.visibilityState === 'visible') {
+          // Tab returned — resume session and reset the idle timer.
+          s.queue.push({ name: 'map_session_active', type: 'state', ts: Date.now() });
+          _resetIdle(s);
+        }
+      };
       document.addEventListener('visibilitychange', s.onHide);
+
+      _resetIdle(s);
 
       return {
         capture:   function (name, type, metadata) { _capture(s, name, type, metadata); },
         sessionId: function ()                      { return s.sessionId; },
         destroy:   function () {
+          if (s.dead) return;
           s.dead = true;
           clearInterval(s.timer);
+          clearTimeout(s.idleTimer);
           document.removeEventListener('visibilitychange', s.onHide);
+          // True session end — map is being unmounted / closed.
+          s.queue.push({ name: 'map_session_end', type: 'state', ts: Date.now() });
+          _flush(s, true);
         }
       };
+    }
+
+    // Reset the 2-minute idle timer. Called on every captured event and on
+    // tab-visible. When the timer fires:
+    //   1. Cleanly close the current segment on the server (map_session_end).
+    //   2. Rotate to a fresh segment UUID so the next event opens a new DB row.
+    function _resetIdle(s) {
+      clearTimeout(s.idleTimer);
+      s.idleTimer = setTimeout(function () {
+        if (s.dead) return;
+        // End the current segment cleanly — server sets end_datetime on this UUID.
+        s.queue.push({ name: 'map_session_idle', type: 'state', ts: Date.now() });
+        s.queue.push({ name: 'map_session_end',  type: 'state', ts: Date.now() });
+        _flush(s, false);
+        // Rotate segment UUID — next event batch opens a fresh SdkSession row.
+        s.sessionId   = _uuid();
+        s.contextSent = false; // re-send device context with the new segment
+      }, IDLE_MS);
     }
 
     function _capture(s, name, type, metadata) {
       if (s.dead) return;
       s.queue.push({ name: name, type: type || 'click', metadata: _sanitize(metadata), ts: Date.now() });
       if (s.queue.length >= 20) _flush(s, false);
+      _resetIdle(s);
     }
 
     function _flush(s, beacon) {
-      if (s.dead || !s.queue.length) return;
+      if (s.dead && !beacon) return; // allow final beacon flush when dead
+      if (!s.queue.length) return;
       var events = s.queue.splice(0);
-      var body   = { session_id: s.sessionId, product_src: s.productSrc, events: events };
+      var body   = {
+        session_id:            s.sessionId,
+        parent_sdk_session_id: s.sdkSessionId,
+        product_src:           s.productSrc,
+        events:                events
+      };
       if (s.partner) body.partner = s.partner;
       if (!s.contextSent) body.device_context = _context(s);
       var url  = s.apiBase + '/api/partner/maps/events';
@@ -361,11 +421,12 @@
       if (this._analytics) return;
       if (!this._sessionToken) return;
       this._analytics = PynAnalytics.create({
-        token:      this._sessionToken,
-        apiBase:    this._apiBase(),
-        productSrc: this._productSrc,
-        partner:    this._partner,
-        sdkVersion: 'v1'
+        token:        this._sessionToken,
+        apiBase:      this._apiBase(),
+        productSrc:   this._productSrc,
+        partner:      this._partner,
+        sdkVersion:   'v1',
+        sdkSessionId: this._sdkSessionId  // stable localStorage UUID for journey linking
       });
     },
 

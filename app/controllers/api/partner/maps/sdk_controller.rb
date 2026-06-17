@@ -215,20 +215,22 @@ module Api
         # on page hide via sendBeacon). Fire-and-forget from the client — always 204.
         # ------------------------------------------------------------------
         def track_events
-          session_id  = params[:session_id].to_s.strip
+          session_id            = params[:session_id].to_s.strip
           return render_error("session_id is required.", 400) if session_id.blank?
 
-          partner     = params[:partner].to_s.strip.presence
-          product_src = params[:product_src].to_s.strip.presence || "web"
-          events      = Array(params[:events]).first(100)
-          context     = params[:device_context]&.permit!
+          parent_sdk_session_id = params[:parent_sdk_session_id].to_s.strip.presence
+          partner               = params[:partner].to_s.strip.presence
+          product_src           = params[:product_src].to_s.strip.presence || "web"
+          events                = Array(params[:events]).first(100)
+          context               = params[:device_context]&.permit!
 
           Analytics::SdkAnalyticsService.new(
-            community:   @community,
-            client_type: product_src,
-            session_id:  session_id,
-            partner:     partner,
-            product:     product_src
+            community:             @community,
+            client_type:           product_src,
+            session_id:            session_id,
+            parent_sdk_session_id: parent_sdk_session_id,
+            partner:               partner,
+            product:               product_src
           ).process_batch(events: events, device_context: context)
 
           head :no_content

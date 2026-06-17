@@ -1,6 +1,15 @@
 class SdkSession < ApplicationRecord
   belongs_to :community
 
+  # ── Journey scopes ────────────────────────────────────────────────────────
+  # All analytics segments that belong to the same stable user identity UUID.
+  scope :for_parent_session, ->(id) { where(parent_sdk_session_id: id) }
+
+  # ── Lifecycle state helpers ───────────────────────────────────────────────
+  def background_count = (events["map_session_background_state"] || 0)
+  def active_count     = (events["map_session_active_state"]     || 0)
+  def idle_count       = (events["map_session_idle_state"]       || 0)
+
   # ── Map interaction counters ──────────────────────────────────────────────
   def unit_marker_clicks     = (events["unit_marker_click"]    || 0)
   def amenity_marker_clicks  = (events["amenity_marker_click"] || 0)

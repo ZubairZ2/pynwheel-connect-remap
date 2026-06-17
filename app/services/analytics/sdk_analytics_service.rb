@@ -25,8 +25,15 @@ module Analytics
     }.freeze
     DEFAULT_INTERACTION_EVENTS = %w[unit_marker_click apply_now_click unit_card_click].to_set.freeze
 
-    SESSION_START_EVENT = "map_load".freeze
-    SESSION_END_EVENT   = "map_session_end".freeze
+    SESSION_START_EVENT      = "map_load".freeze
+    SESSION_END_EVENT        = "map_session_end".freeze
+
+    # Lifecycle state events — tracked as counters, never close the session.
+    SESSION_LIFECYCLE_EVENTS = %w[
+      map_session_background
+      map_session_active
+      map_session_idle
+    ].to_set.freeze
 
     VISITED_PAGES = {
       "map_load"       => "Map main page",
@@ -34,14 +41,16 @@ module Analytics
       "view_favorites" => "Favorites page",
     }.freeze
 
-    def initialize(community:, client_type:, session_id:, partner:, sdk_version: "v1", product: "web")
-      @community   = community
-      @timezone    = community.get_time_zone
-      @client_type = client_type
-      @session_id  = session_id
-      @partner     = partner
-      @sdk_version = sdk_version
-      @product     = product
+    def initialize(community:, client_type:, session_id:, partner:,
+                   parent_sdk_session_id: nil, sdk_version: "v1", product: "web")
+      @community             = community
+      @timezone              = community.get_time_zone
+      @client_type           = client_type
+      @session_id            = session_id
+      @partner               = partner
+      @parent_sdk_session_id = parent_sdk_session_id
+      @sdk_version           = sdk_version
+      @product               = product
     end
 
     # Main entry point — called with a full batch of events from one SDK flush.
@@ -60,7 +69,13 @@ module Analytics
           next
         end
 
-        session ||= name == SESSION_START_EVENT ? create_session : find_or_create_session
+        session ||= if name == SESSION_START_EVENT
+          create_session
+        elsif SESSION_LIFECYCLE_EVENTS.include?(name)
+          find_current_session  # never create a session for lifecycle events — discard if orphaned
+        else
+          find_or_create_session
+        end
         next unless session
 
         key = "#{name}_#{type}"
@@ -93,6 +108,9 @@ module Analytics
     def find_or_create_session
       last = find_current_session
       return create_session unless last
+      # Client rotates session_id UUID on idle, so reaching here with the same
+      # session_id means the session is still active. The idle check is a
+      # server-side safety net for clients that do not support UUID rotation.
       session_idle?(last) ? create_session : last.tap { |s| s.updated_at = now }
     end
 
@@ -106,20 +124,21 @@ module Analytics
 
     def create_session
       SdkSession.create!(
-        community_id:                @community.id,
-        client_type:                 @client_type,
-        session_id:                  @session_id,
-        partner:                     @partner,
-        product:                     @product,
-        sdk_version:                 @sdk_version,
-        community_time_zone:         @timezone,
-        start_datetime:              now,
-        map_interactions:            0,
+        community_id:                 @community.id,
+        client_type:                  @client_type,
+        session_id:                   @session_id,
+        parent_sdk_session_id:        @parent_sdk_session_id,
+        partner:                      @partner,
+        product:                      @product,
+        sdk_version:                  @sdk_version,
+        community_time_zone:          @timezone,
+        start_datetime:               now,
+        map_interactions:             0,
         map_interactions_last_active: nil,
-        events:                      {},
-        device_context:              {},
-        full_event:                  {},
-        visited_pages:               []
+        events:                       {},
+        device_context:               {},
+        full_event:                   {},
+        visited_pages:                []
       )
     end
 
