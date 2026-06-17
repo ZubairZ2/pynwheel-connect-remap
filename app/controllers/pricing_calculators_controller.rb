@@ -5,6 +5,7 @@ class PricingCalculatorsController < ActionController::Base
 
   before_action :set_community
   before_action :check_calculator_enabled
+  before_action :set_design_system
   before_action :set_unit_context      # sets @unit + @floorplan from params[:unit_id]
   before_action :set_calculator_config # can now safely access @unit / @floorplan
 
@@ -30,6 +31,10 @@ class PricingCalculatorsController < ActionController::Base
 
   def set_community
     @community = Community.find(params[:community_id])
+  end
+
+  def set_design_system
+    @design_system_config = @community.design_system_config || DesignSystemConfig.new
   end
 
   def check_calculator_enabled
