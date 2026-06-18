@@ -137,7 +137,8 @@ class SdkPayloadBuilderService
         propertyMapKeyText:  @community.show_property_map_key_text,
         showAmenityKey:      @community.show_amenity_key,
         amenityKeyText:      @community.show_amenity_key_text,
-        showAmenityName:     @community.show_amenity_name
+        showAmenityName:     @community.show_amenity_name,
+        bedroomColors:       bedroom_legend_colors
       },
 
       marketingMode: {
@@ -286,6 +287,15 @@ class SdkPayloadBuilderService
     if @community.by_floorplan? && floorplan.present?
       color   = is_model ? floorplan.model_units_color   : floorplan.available_units_color
       opacity = is_model ? floorplan.model_units_opacity : floorplan.available_units_opacity
+    elsif @community.by_bedroom? && floorplan.present?
+      bmc = bedroom_marker_colors_map[floorplan.bedrooms.to_i]
+      if bmc
+        color   = is_model ? bmc.model_units_color   : bmc.available_units_color
+        opacity = is_model ? bmc.model_units_opacity : bmc.available_units_opacity
+      else
+        color   = is_model ? @community.model_units_color   : @community.available_units_color
+        opacity = is_model ? @community.model_units_opacity : @community.available_units_opacity
+      end
     else
       color   = is_model ? @community.model_units_color   : @community.available_units_color
       opacity = is_model ? @community.model_units_opacity : @community.available_units_opacity
@@ -319,8 +329,32 @@ class SdkPayloadBuilderService
   def compute_floorplan_color(fp)
     if @community.by_floorplan?
       { color: fp.available_units_color, opacity: fp.available_units_opacity.to_f }
+    elsif @community.by_bedroom?
+      bmc = bedroom_marker_colors_map[fp.bedrooms.to_i]
+      bmc ? { color: bmc.available_units_color, opacity: bmc.available_units_opacity.to_f }
+          : { color: @community.available_units_color, opacity: @community.available_units_opacity.to_f }
     else
       { color: @community.available_units_color, opacity: @community.available_units_opacity.to_f }
+    end
+  end
+
+  def bedroom_marker_colors_map
+    @bedroom_marker_colors_map ||= @community.bedroom_marker_colors.index_by(&:bedroom)
+  end
+
+  def bedroom_legend_colors
+    return [] unless @community.by_bedroom?
+
+    bedroom_marker_colors_map.values.sort_by(&:bedroom).map do |bmc|
+      label = bmc.bedroom == 0 ? "Studio" : "#{bmc.bedroom} Bedroom#{'s' if bmc.bedroom > 1}"
+      {
+        bedroom:          bmc.bedroom,
+        label:            label,
+        availableColor:   bmc.available_units_color,
+        availableOpacity: bmc.available_units_opacity.to_f,
+        modelColor:       bmc.model_units_color,
+        modelOpacity:     bmc.model_units_opacity.to_f
+      }
     end
   end
 

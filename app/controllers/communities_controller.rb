@@ -7,7 +7,7 @@ class CommunitiesController < ApplicationController
   include FeedbacksHelper
   #load_and_authorize_resource
   before_action :check_community
-  before_action :set_community , only: [:save_pointer_data, :update_coloring_mode, :update_marketing_map_colors, :edit,:update,:destroy,:remove_plots, :sitemap_auto_plot_units, :floorplate_auto_plot_units, :suggest_sitemap_units, :suggest_floorplate_units]
+  before_action :set_community , only: [:save_pointer_data, :update_coloring_mode, :update_marketing_map_colors, :update_bedroom_marker_colors, :edit,:update,:destroy,:remove_plots, :sitemap_auto_plot_units, :floorplate_auto_plot_units, :suggest_sitemap_units, :suggest_floorplate_units]
   add_breadcrumb "Home", :root_path
   add_breadcrumb "Companies", :companies_path, except: [:import_page, :settings_page]
   add_breadcrumb "Communities", :company_communities_path, except: [:import_page,:settings_page]
@@ -261,6 +261,16 @@ class CommunitiesController < ApplicationController
       redirect_to community_design_index_path(@community),
                   alert: "There was a problem updating coloring mode."
     end
+  end
+
+  def update_bedroom_marker_colors
+    params[:bedroom_colors].each do |bedroom, attrs|
+      bmc = @community.bedroom_marker_colors.find_or_initialize_by(bedroom: bedroom.to_i)
+      bmc.assign_attributes(attrs.permit(:available_units_color, :available_units_opacity,
+                                         :model_units_color, :model_units_opacity))
+      bmc.save
+    end
+    redirect_to community_design_index_path(@community), notice: "Bedroom colors saved successfully."
   end
 
   def upload_svg_background

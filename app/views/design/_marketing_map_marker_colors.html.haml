@@ -43,11 +43,17 @@
                           class: "map-type-radio"
       By Property
 
-    %label
+    %label{ style: "margin-right: 15px;" }
       = form.radio_button :coloring_mode, "by_floorplan",
                           checked: @community.by_floorplan?,
                           class: "map-type-radio"
       By Floor Plan
+
+    %label
+      = form.radio_button :coloring_mode, "by_bedroom",
+                          checked: @community.by_bedroom?,
+                          class: "map-type-radio"
+      By Bedroom
 
 %div#map-type-container
   %div#floorplan-map{ style: (@community.by_floorplan? ? "" : "display:none;") }
@@ -56,17 +62,24 @@
   %div#property-map{ style: (@community.by_property? ? "" : "display:none;") }
     = render 'property_map_marker_colors'
 
+  %div#bedroom-map{ style: (@community.by_bedroom? ? "" : "display:none;") }
+    = render 'bedroom_map_marker_colors'
+
 :javascript
   document.addEventListener("DOMContentLoaded", function() {
     document.querySelectorAll(".map-type-radio").forEach(function(radio) {
       radio.addEventListener("change", function() {
         document.getElementById("community-coloring-mode-form").requestSubmit();
 
+        document.getElementById("floorplan-map").style.display = "none";
+        document.getElementById("property-map").style.display = "none";
+        document.getElementById("bedroom-map").style.display = "none";
+
         if (this.value === "by_floorplan") {
           document.getElementById("floorplan-map").style.display = "block";
-          document.getElementById("property-map").style.display = "none";
+        } else if (this.value === "by_bedroom") {
+          document.getElementById("bedroom-map").style.display = "block";
         } else {
-          document.getElementById("floorplan-map").style.display = "none";
           document.getElementById("property-map").style.display = "block";
         }
       });

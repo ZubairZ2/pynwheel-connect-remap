@@ -20,6 +20,7 @@ class Community < ApplicationRecord
   has_many :users ,through: :community_users, dependent: :destroy
   has_many :units, dependent: :destroy
   has_many :floorplans, dependent: :destroy
+  has_many :bedroom_marker_colors, dependent: :destroy
   has_many :floorplates, -> { order("number DESC") }, dependent: :destroy
   has_many :allowed_emails, dependent: :destroy
   has_many :galleries, dependent: :destroy
@@ -134,7 +135,8 @@ class Community < ApplicationRecord
 
   enum coloring_mode: {
     by_property: 0,
-    by_floorplan: 1
+    by_floorplan: 1,
+    by_bedroom: 2
   }
 
   amoeba do

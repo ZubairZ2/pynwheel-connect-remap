@@ -136,6 +136,7 @@ Rails.application.routes.draw do
       patch :update_amenity_toggle
       patch :update_marketing_map_colors
       patch :update_coloring_mode
+      patch :update_bedroom_marker_colors
       patch :update_amenities_color
       post :upload_svg_background
       post :save_pointer_data

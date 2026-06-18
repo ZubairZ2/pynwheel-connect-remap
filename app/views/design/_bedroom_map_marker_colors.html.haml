@@ -1,0 +1,68 @@
+= form_with url: update_bedroom_marker_colors_community_path(@community),
+            method: :patch,
+            local: true,
+            html: { class: "bedroom-marker-form" } do |form|
+
+  %table.table.table-bordered.table-striped
+    %thead
+      %tr
+        %th Bedroom
+        %th Available Units
+        %th Model Units
+
+    %tbody
+      - @bedroom_marker_colors.each do |bmc|
+        - bedroom = bmc.bedroom
+        - label = bedroom == 0 ? "Studio" : "#{bedroom} Bedroom#{'s' if bedroom > 1}"
+        %tr
+          %td{ style: "vertical-align: middle;" }
+            = label
+
+          %td
+            .form-inline
+              .form-group{ style: "margin-right: 10px; margin-bottom: 0px; padding-bottom: 0px;" }
+                %label{ style: "font-weight: normal; margin-right: 5px;" } color:
+                .input-group.colorpicker-style.hex-format-colorpicker
+                  .input-group-addon
+                    %i.addon-i
+                    %input{ type: "text",
+                            name: "bedroom_colors[#{bedroom}][available_units_color]",
+                            class: "form-control input-sm",
+                            style: "width: 125px;",
+                            value: bmc.available_units_color || "#f9d648" }
+
+              .form-group{ style: "margin-bottom: 0px; padding-bottom: 0px;" }
+                %label{ style: "font-weight: normal; margin-right: 5px;" } opacity:
+                %input{ type: "number",
+                        name: "bedroom_colors[#{bedroom}][available_units_opacity]",
+                        class: "form-control input-sm",
+                        style: "width: 70px;",
+                        min: 0, max: 1, step: 0.1,
+                        value: bmc.available_units_opacity || 1 }
+
+          %td
+            .form-inline
+              .form-group{ style: "margin-right: 10px; margin-bottom: 0px; padding-bottom: 0px;" }
+                %label{ style: "font-weight: normal; margin-right: 5px;" } color:
+                .input-group.colorpicker-style.hex-format-colorpicker
+                  .input-group-addon
+                    %i.addon-i
+                    %input{ type: "text",
+                            name: "bedroom_colors[#{bedroom}][model_units_color]",
+                            class: "form-control input-sm",
+                            style: "width: 125px;",
+                            value: bmc.model_units_color || "#f57396" }
+
+              .form-group{ style: "margin-bottom: 0px; padding-bottom: 0px;" }
+                %label{ style: "font-weight: normal; margin-right: 5px;" } opacity:
+                %input{ type: "number",
+                        name: "bedroom_colors[#{bedroom}][model_units_opacity]",
+                        class: "form-control input-sm",
+                        style: "width: 70px;",
+                        min: 0, max: 1, step: 0.1,
+                        value: bmc.model_units_opacity || 1 }
+
+    %tfoot
+      %tr
+        %td
+          = form.submit "Save", class: "btn btn-primary"
