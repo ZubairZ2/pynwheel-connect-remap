@@ -2328,7 +2328,7 @@ class Community < ApplicationRecord
         });
       </script>
     HTML
-  end 
+  end
 
   def map_link(partner = nil, floor = nil, ops_map = nil, src = nil)
     base_url = "#{ENV['HOST_URL']}/communities/#{id}/webpages"
@@ -2341,6 +2341,24 @@ class Community < ApplicationRecord
     )
 
     query.present? ? "#{base_url}?#{query}" : base_url
+  end
+  
+  def sdk_map_embed_code(partner = nil, floor = nil, ops_map = nil, src = nil)
+    <<-HTML.strip.gsub(/\n\s*/, "")
+      <embed
+        src='#{sdk_map_link(partner, floor, ops_map, src)}'
+        width='100%'
+        height='100%'
+      />
+    HTML
+  end
+
+  def sdk_map_link(partner = nil, floor = nil, ops_map = nil, src = nil)
+    base_url = ENV['SDK_MAP_BASE_URL']
+    extra = map_query_params(partner: partner, floor: floor, ops_map: ops_map, src: src)
+    query = "propertyId=#{id}"
+    query += "&#{extra}" if extra.present?
+    "#{base_url}?#{query}"
   end
 
   def map_query_params(partner: nil, floor: nil, ops_map: nil, src: nil)
