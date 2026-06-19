@@ -1,8 +1,8 @@
 = form_with model: @community,
             url: update_amenities_color_community_path(@community),
             method: :patch,
-            local: true,
-            html: { class: "community-amenities-form" } do |form|
+            local: false,
+            html: { class: "community-amenities-form marketing-color-form", data: { type: "json" } } do |form|
 
   %div{ style: "margin-bottom: 20px;" }
     %strong Amenity Color:
@@ -85,6 +85,53 @@
       });
     });
   });
+
+  // Marketing map color forms save over AJAX so the heavy Design page never
+  // does a full reload. A small toast confirms the result and the user stays
+  // on the Marketing Map Markers tab.
+  (function() {
+    var COLOR_FORMS = ".marketing-color-form";
+
+    function showDesignToast(message, isError) {
+      var $toast = $("#design-save-toast");
+      if (!$toast.length) {
+        $toast = $('<div id="design-save-toast"></div>').appendTo("body").css({
+          position: "fixed", top: "20px", right: "20px", zIndex: 99999,
+          padding: "12px 20px", borderRadius: "4px", color: "#fff",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.2)", fontSize: "14px", display: "none"
+        });
+      }
+      $toast.css("background", isError ? "#d9534f" : "#5cb85c")
+            .text(message).stop(true, true).fadeIn(150);
+      clearTimeout($toast.data("timer"));
+      $toast.data("timer", setTimeout(function() { $toast.fadeOut(300); }, 2500));
+    }
+
+    $(document).on("submit", COLOR_FORMS, function() {
+      var $btn = $(this).find("input[type=submit]");
+      if (!$btn.data("orig")) { $btn.data("orig", $btn.val()); }
+      $btn.prop("disabled", true).val("Saving...");
+    });
+
+    $(document).on("ajax:success", COLOR_FORMS, function(event, data) {
+      showDesignToast((data && data.message) || "Saved successfully.", false);
+    });
+
+    $(document).on("ajax:error", COLOR_FORMS, function(event, xhr) {
+      var msg = "There was a problem saving. Please try again.";
+      try {
+        var r = JSON.parse(xhr.responseText);
+        if (r.errors) { msg = r.errors.join(", "); }
+        else if (r.message) { msg = r.message; }
+      } catch (e) {}
+      showDesignToast(msg, true);
+    });
+
+    $(document).on("ajax:complete", COLOR_FORMS, function() {
+      var $btn = $(this).find("input[type=submit]");
+      $btn.prop("disabled", false).val($btn.data("orig") || "Save");
+    });
+  })();
 
 
 -# = form_with model: @community,

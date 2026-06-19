@@ -7,7 +7,7 @@ class CommunitiesController < ApplicationController
   include FeedbacksHelper
   #load_and_authorize_resource
   before_action :check_community
-  before_action :set_community , only: [:save_pointer_data, :update_coloring_mode, :update_marketing_map_colors, :update_bedroom_marker_colors, :edit,:update,:destroy,:remove_plots, :sitemap_auto_plot_units, :floorplate_auto_plot_units, :suggest_sitemap_units, :suggest_floorplate_units]
+  before_action :set_community , only: [:save_pointer_data, :update_coloring_mode, :update_marketing_map_colors, :update_amenities_color, :update_bedroom_marker_colors, :edit,:update,:destroy,:remove_plots, :sitemap_auto_plot_units, :floorplate_auto_plot_units, :suggest_sitemap_units, :suggest_floorplate_units]
   add_breadcrumb "Home", :root_path
   add_breadcrumb "Companies", :companies_path, except: [:import_page, :settings_page]
   add_breadcrumb "Communities", :company_communities_path, except: [:import_page,:settings_page]
@@ -234,22 +234,26 @@ class CommunitiesController < ApplicationController
   end
 
   def update_marketing_map_colors
-    if @community.update(community_marker_colors_params)
-      redirect_to community_design_index_path(@community),
-                  notice: "Marketing map colors updated successfully."
-    else
-      redirect_to community_design_index_path(@community),
-                  alert: "There was a problem updating marketing map colors."
+    respond_to do |format|
+      if @community.update(community_marker_colors_params)
+        format.html { redirect_to community_design_index_path(@community), notice: "Marketing map colors updated successfully." }
+        format.json { render json: { success: true, message: "Marketing map colors updated successfully." } }
+      else
+        format.html { redirect_to community_design_index_path(@community), alert: "There was a problem updating marketing map colors." }
+        format.json { render json: { success: false, message: "There was a problem updating marketing map colors." }, status: :unprocessable_entity }
+      end
     end
   end
 
   def update_amenities_color
-    if @community.update(community_amenities_color_params)
-      redirect_to community_design_index_path(@community),
-                  notice: "Marketing map amenities marker colors updated successfully."
-    else
-      redirect_to community_design_index_path(@community),
-                  alert: "There was a problem updating marketing map amenities marker colors."
+    respond_to do |format|
+      if @community.update(community_amenities_color_params)
+        format.html { redirect_to community_design_index_path(@community), notice: "Marketing map amenities marker colors updated successfully." }
+        format.json { render json: { success: true, message: "Amenity color updated successfully." } }
+      else
+        format.html { redirect_to community_design_index_path(@community), alert: "There was a problem updating marketing map amenities marker colors." }
+        format.json { render json: { success: false, message: "There was a problem updating amenity color." }, status: :unprocessable_entity }
+      end
     end
   end
 
@@ -264,13 +268,26 @@ class CommunitiesController < ApplicationController
   end
 
   def update_bedroom_marker_colors
+    success, errors = true, []
     params[:bedroom_colors].each do |bedroom, attrs|
       bmc = @community.bedroom_marker_colors.find_or_initialize_by(bedroom: bedroom.to_i)
       bmc.assign_attributes(attrs.permit(:available_units_color, :available_units_opacity,
                                          :model_units_color, :model_units_opacity))
-      bmc.save
+      unless bmc.save
+        success = false
+        errors << "Bedroom #{bedroom}: #{bmc.errors.full_messages.join(', ')}"
+      end
     end
-    redirect_to community_design_index_path(@community), notice: "Bedroom colors saved successfully."
+
+    respond_to do |format|
+      if success
+        format.html { redirect_to community_design_index_path(@community), notice: "Bedroom colors saved successfully." }
+        format.json { render json: { success: true, message: "Bedroom colors saved successfully." } }
+      else
+        format.html { redirect_to community_design_index_path(@community), alert: errors.join(", ") }
+        format.json { render json: { success: false, errors: errors }, status: :unprocessable_entity }
+      end
+    end
   end
 
   def upload_svg_background

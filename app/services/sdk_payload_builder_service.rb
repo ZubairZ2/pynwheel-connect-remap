@@ -56,7 +56,7 @@ class SdkPayloadBuilderService
         available_date:         unit.available_date,
         available:              unit.available,
         lease_term:             unit.lease_term,
-        lease_pricing:          unit.get_unit_leasing_price(),
+        lease_pricing:          unit.get_lease_term_pricing_matrix(),
         description:            unit.description.present? ? unit.description : floorplan&.description.presence || "",
         display_rent:           unit&.community&.display_rent,
         additional_fees:        fees,

@@ -1,7 +1,7 @@
 = form_with url: update_bedroom_marker_colors_community_path(@community),
             method: :patch,
-            local: true,
-            html: { class: "bedroom-marker-form" } do |form|
+            local: false,
+            html: { class: "bedroom-marker-form marketing-color-form", data: { type: "json" } } do |form|
 
   %table.table.table-bordered.table-striped
     %thead
