@@ -2923,9 +2923,18 @@
         img.src                   = m.imageUrl || "";
         img.dataset.actualWidth   = m.imageWidth  || 0;
         img.dataset.actualHeight  = m.imageHeight || 0;
+        // Contain + center: scale the image as large as it fits within the
+        // container on both axes (preserving aspect ratio) and center it, so
+        // there's no top/bottom or left/right cropping.
         Object.assign(img.style, {
           display:       "block",
-          width:         "100%",
+          position:      "absolute",
+          top:           "50%",
+          left:          "50%",
+          transform:     "translate(-50%, -50%)",
+          maxWidth:      "100%",
+          maxHeight:     "100%",
+          width:         "auto",
           height:        "auto",
           pointerEvents: "none",
           userSelect:    "none"
@@ -2933,6 +2942,9 @@
 
         const mc = document.createElement("div");
         mc.className = "pyn-markers-container";
+        // Spans the full container area; each marker is positioned in this
+        // coordinate space using the contain scale + centering offset computed
+        // in _adjustMarkersPositionForMapId, so they overlay the centered image.
         Object.assign(mc.style, {
           position:      "absolute",
           top:           "0",
@@ -3070,44 +3082,56 @@
       }).join("");
     },
 
-    // Scale all marker positions from image-pixel space to displayed-pixel space.
+    // Scale all marker positions from original-image-pixel space to the
+    // displayed (contained + centered) image, in the markers-container's
+    // coordinate space (which spans the full container area).
     // Called after image load and on resize.
+    //
+    // Plot coords were authored against the original image (actualWidth ×
+    // actualHeight). The image is rendered "contain": scaled by the smaller of
+    // the width/height ratios so it fits within the area on both axes while
+    // keeping its aspect ratio, then centered (letterbox margins on the
+    // unconstrained axis). A marker therefore lands at:
+    //   offset + plot * scale
+    // where scale and offset are derived from the original image dimensions and
+    // the rendered area — never from the image element's own box, so this stays
+    // correct even when the wrapper is momentarily hidden during init.
     _adjustMarkersPositionForMapId(mapId) {
       const id      = String(mapId);
       const wrapper = this.container.querySelector(`[data-image-map-id="${id}"]`);
       if (!wrapper) return;
 
-      const ratio = this._computeStretchRatio(id, wrapper);
+      const img = wrapper.querySelector("img.pyn-map-image");
+      if (!img) return;
 
-      wrapper.querySelectorAll(".pyn-unit-marker").forEach(m => {
-        m.style.left = `${parseFloat(m.dataset.xPlot) * ratio}px`;
-        m.style.top  = `${parseFloat(m.dataset.yPlot) * ratio}px`;
-      });
+      const actualW = parseFloat(img.dataset.actualWidth)  || img.naturalWidth  || 0;
+      const actualH = parseFloat(img.dataset.actualHeight) || img.naturalHeight || 0;
+      if (!actualW || !actualH) return;
 
-      wrapper.querySelectorAll(".pyn-amenity-marker").forEach(m => {
-        m.style.left = `${parseFloat(m.dataset.xPlot) * ratio}px`;
-        m.style.top  = `${parseFloat(m.dataset.yPlot) * ratio}px`;
-      });
+      // Rendered map area = the image's containing block (the wrapper, which is
+      // 100% × 100% of the container). Fall back to the container itself if the
+      // wrapper is hidden (clientWidth 0) at the moment this runs.
+      const areaW = wrapper.clientWidth  || this.container.clientWidth  || 0;
+      const areaH = wrapper.clientHeight || this.container.clientHeight || 0;
+      if (!areaW || !areaH) return;
+
+      // Contain scale + centering offset (matches the image's CSS sizing).
+      const scale   = Math.min(areaW / actualW, areaH / actualH);
+      const offsetX = (areaW - actualW * scale) / 2;
+      const offsetY = (areaH - actualH * scale) / 2;
+
+      const place = (m) => {
+        const xp = parseFloat(m.dataset.xPlot);
+        const yp = parseFloat(m.dataset.yPlot);
+        m.style.left = `${offsetX + xp * scale}px`;
+        m.style.top  = `${offsetY + yp * scale}px`;
+      };
+
+      wrapper.querySelectorAll(".pyn-unit-marker").forEach(place);
+      wrapper.querySelectorAll(".pyn-amenity-marker").forEach(place);
 
       // Update CSS size variables — O(1), no per-marker DOM work needed.
       this._updateMarkerSizeVars();
-    },
-
-    // Returns the ratio of displayed image size to actual (stored) image size.
-    // Mirrors webpages.js getStretchRatio: Math.min(widthRatio, heightRatio).
-    _computeStretchRatio(mapId, wrapper) {
-      const w   = wrapper || this.container.querySelector(`[data-image-map-id="${mapId}"]`);
-      if (!w) return 1;
-      const img = w.querySelector("img.pyn-map-image");
-      if (!img) return 1;
-
-      const dW = img.offsetWidth;
-      const dH = img.offsetHeight;
-      const aW = parseFloat(img.dataset.actualWidth)  || dW;
-      const aH = parseFloat(img.dataset.actualHeight) || dH;
-      if (!aW || !aH) return 1;
-
-      return Math.min(dW / aW, dH / aH);
     },
 
     // Apply panzoom to the image wrapper so the image + markers pan/zoom together.
@@ -3149,16 +3173,17 @@
           return;
         }
 
-        // Image is width:100% at top of wrapper — no horizontal offset.
-        // Use the image's actual rendered height (may be less than container height).
+        // Image is contained and centered within the wrapper. Use its actual
+        // rendered size and account for the centering offset ((container - image)/2)
+        // so the cover bounds keep the image edges flush with the container.
         const img = wrapperEl.querySelector(".pyn-map-image");
-        const cfH = img && img.clientHeight > 0 ? img.clientHeight : ch;
-        const cfW = cw;
+        const iw  = img && img.clientWidth  > 0 ? img.clientWidth  : cw;
+        const ih  = img && img.clientHeight > 0 ? img.clientHeight : ch;
 
-        const maxX = 0;
-        const minX = cw - t.scale * cfW;
-        const maxY = 0;
-        const minY = ch - t.scale * cfH;
+        const maxX = -t.scale * (cw - iw) / 2;
+        const minX = cw - t.scale * (cw + iw) / 2;
+        const maxY = -t.scale * (ch - ih) / 2;
+        const minY = ch - t.scale * (ch + ih) / 2;
 
         const x = minX > maxX ? (minX + maxX) / 2 : Math.min(maxX, Math.max(minX, t.x));
         const y = minY > maxY ? (minY + maxY) / 2 : Math.min(maxY, Math.max(minY, t.y));
