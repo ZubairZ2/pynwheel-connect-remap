@@ -1003,10 +1003,33 @@
     getFloors() {
       const seen  = new Map(); // floor → mapId
 
+      // 1) Floors that have units — mapId comes from the unit.
       (this.data.units || []).forEach(u => {
         const f = Number(u.floor);
         if (isNaN(f) || u.floor == null || u.floor === "") return;
         if (!seen.has(f)) seen.set(f, u.mapId != null ? String(u.mapId) : null);
+      });
+
+      // 2) Floors declared by floorplate ranges — includes floors with no units.
+      //    A range is a single floor ("3") or a span ("1-5"); fill any floor not
+      //    already covered by a unit, using the floorplate's mapId.
+      (this.data.floorplates || []).forEach(fp => {
+        const range = String(fp.range == null ? "" : fp.range).trim();
+        if (!range) return;
+
+        let min, max;
+        if (range.includes("-")) {
+          [min, max] = range.split("-").map(Number);
+        } else {
+          min = max = Number(range);
+        }
+        if (isNaN(min) || isNaN(max)) return;
+        if (min > max) [min, max] = [max, min];
+
+        const mapId = fp.mapId != null ? String(fp.mapId) : null;
+        for (let f = min; f <= max; f++) {
+          if (!seen.has(f)) seen.set(f, mapId);
+        }
       });
 
       return [...seen.entries()]
