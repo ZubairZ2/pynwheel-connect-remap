@@ -289,6 +289,12 @@
                           %li.map-key.map-key--tile
                             %span.map-key__swatch{ style: "background-color: #{item[:color]};" }
                             %span.map-key__label= item[:label]
+                        -# Amenity color key joins the tile legend on 2D (svg or image,
+                        -# by property or bedroom). Hidden in 3D via .amenity-key.
+                        - if @community.show_amenity_key
+                          %li.map-key.map-key--tile.amenity-key
+                            %span.map-key__swatch{ style: "background-color: #{amenity_marker_color};" }
+                            %span.map-key__label= @community.show_amenity_key_text
                       - elsif !(@show_ops_map || @have_multi_property_ids || @community.by_floorplan?)
                         - if @community.show_property_map_key
                           %li.map-key
@@ -318,6 +324,12 @@
                             %li.map-key.map-key--tile
                               %span.map-key__swatch{ style: "background-color: #{item[:color]};" }
                               %span.map-key__label= item[:label]
+                          -# Amenity color key joins the tile legend on 2D (svg or image,
+                          -# by property or bedroom). Hidden in 3D via .amenity-key.
+                          - if @community.show_amenity_key
+                            %li.map-key.map-key--tile.amenity-key
+                              %span.map-key__swatch{ style: "background-color: #{amenity_marker_color};" }
+                              %span.map-key__label= @community.show_amenity_key_text
                         - elsif !(@show_ops_map || @have_multi_property_ids || @community.by_floorplan?)
                           - if @community.show_property_map_key && !@have_multi_property_ids
                             %li.map-key

@@ -3471,6 +3471,8 @@ function display3DMap() {
   // (image + by property), which should never show in 3D.
   const hasTileLegend = $(".location-items .map-key--tile").length > 0;
   if (opsMapMarkersEnabled || !hasTileLegend) $(".location-items").addClass("hidden");
+  // The amenity color key never shows in 3D (2D svg/image only).
+  $(".location-items .amenity-key").addClass("hidden");
   $(".plus-action").not(".c-modal-footer *").addClass("hidden");
   $(".minus-action").not(".c-modal-footer *").addClass("hidden");
   $(".reset-map-btn").not(".c-modal-footer *").addClass("hidden");
@@ -3521,6 +3523,8 @@ function display2DMap() {
     .removeClass("hidden");
   $(".image-map").removeClass("hidden");
   $(".location-items").removeClass("hidden");
+  // Restore the amenity color key that is hidden in 3D.
+  $(".location-items .amenity-key").removeClass("hidden");
   $(".plus-action").not(".c-modal-footer *").removeClass("hidden");
   $(".minus-action").not(".c-modal-footer *").removeClass("hidden");
   $(".reset-modal").addClass("hidden");
