@@ -1530,6 +1530,7 @@ function buildUnitMarkerHTML(unit, f) {
 
   const floorplanColorsConfig = getFloorplanConfigObject(unit);
   const propertyColorsConfig = getPropertyConfigObject(unit);
+  const bedroomColorsConfig = getBedroomConfigObject(unit);
 
   return `
     <a
@@ -1545,6 +1546,7 @@ function buildUnitMarkerHTML(unit, f) {
       data-pointer-data="${unit.pointer_data}"
       data-floorplan-config=${floorplanColorsConfig ? JSON.stringify(floorplanColorsConfig) : ''}
       data-by-property-colors=${propertyColorsConfig ? JSON.stringify(propertyColorsConfig) : ''}
+      data-bedroom-config=${bedroomColorsConfig ? JSON.stringify(bedroomColorsConfig) : ''}
       data-color-by=${unitDataAttributes["data-color-by"]}
       data-community-id="${unitDataAttributes["data-community-id"]}"
       data-website="${unitDataAttributes["data-website"]}"
@@ -3463,7 +3465,12 @@ function display3DMap() {
     toggleFloorDirection(true);
 
   $(".3d-map-option").addClass("hidden");
-  $(".location-items").addClass("hidden");
+  // In 3D, keep the footer color key visible only when it's the box-tile legend
+  // (by bedroom / SVG by property), so it matches the 2D layout. Hide it for ops
+  // maps (they use an in-map overlay) and for the pin/camera icon legend
+  // (image + by property), which should never show in 3D.
+  const hasTileLegend = $(".location-items .map-key--tile").length > 0;
+  if (opsMapMarkersEnabled || !hasTileLegend) $(".location-items").addClass("hidden");
   $(".plus-action").not(".c-modal-footer *").addClass("hidden");
   $(".minus-action").not(".c-modal-footer *").addClass("hidden");
   $(".reset-map-btn").not(".c-modal-footer *").addClass("hidden");
@@ -4387,6 +4394,8 @@ function getMarkerColor(unit) {
       return getColorByFloorplan(unit);
     case "by_property":
       return getColorByProperty(unit);
+    case "by_bedroom":
+      return getColorByBedroom(unit);
     default:
       return map_marker_color || "#d37474";
   }
@@ -4425,6 +4434,23 @@ function getColorByProperty(unit) {
   return hexToRgba(color, opacity);
 }
 
+function getColorByBedroom(unit) {
+  const DEFAULT_COLOR = "#d37474";
+
+  const config = getBedroomConfigObject(unit);
+
+  if (!config) return hexToRgba(DEFAULT_COLOR, 1);
+
+  const isModel = isModelUnit(unit);
+  const colorKey = isModel ? "model_units_color" : "available_units_color";
+  const opacityKey = isModel ? "model_units_opacity" : "available_units_opacity";
+
+  const color = config[colorKey] || DEFAULT_COLOR;
+  const opacity = config[opacityKey] ?? 1; // using nullish coalescing for 0 handling
+
+  return hexToRgba(color, opacity);
+}
+
 function getPropertyConfigObject(unit) {
   const parseConfig = (config) => {
     if (!config) return null;
@@ -4434,6 +4460,20 @@ function getPropertyConfigObject(unit) {
   return (
     parseConfig(unit.byPropertyColors) ||
     parseConfig(unit.data_attributes?.["data-by-property-colors"]) ||
+    null
+  );
+}
+
+function getBedroomConfigObject(unit) {
+  const parseConfig = (config) => {
+    if (!config) return null;
+    return typeof config === "object" ? config : safeJsonParse(config);
+  };
+
+  return (
+    parseConfig(unit.bedroomMapConfig) ||                                 // case 1: dataset (camelCased)
+    parseConfig(unit.bedroomConfig) ||                                    // case 2: alternate key
+    parseConfig(unit.data_attributes?.["data-bedroom-map-config"]) ||     // case 3: data attribute
     null
   );
 }

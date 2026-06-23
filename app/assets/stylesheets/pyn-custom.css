@@ -8132,6 +8132,103 @@ span.to-input {
   white-space: nowrap;
 }
 
+/* Marketing map color key — shown in the footer (.location-items) for both 2D
+   and 3D map views. The .legend selectors are kept harmlessly in case the key
+   is ever rendered inside a .legend overlay. */
+.legend .map-key,
+.location-items .map-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  list-style: none;
+  padding: 0;
+  margin: 0 18px;
+  vertical-align: middle;
+}
+
+.legend .map-key__icon,
+.location-items .map-key__icon {
+  font-size: 21px;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+
+/* Tiny square color tiles (bedroom / property box legend) */
+.legend .map-key--tile,
+.location-items .map-key--tile {
+  gap: 7px;
+  margin: 0 11px;
+}
+
+.legend .map-key__swatch,
+.location-items .map-key__swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  flex: 0 0 auto;
+  display: inline-block;
+  padding: 0;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.legend .map-key__label,
+.location-items .map-key__label {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #2f3133;
+  white-space: nowrap;
+  padding: 0;
+  padding-top: 0;
+  padding-left: 0;
+  line-height: 1;
+}
+
+@media (max-width: 992px) {
+  .legend .map-key--tile,
+  .location-items .map-key--tile {
+    gap: 6px;
+    margin: 0 8px;
+  }
+
+  .legend .map-key__swatch,
+  .location-items .map-key__swatch {
+    width: 13px;
+    height: 13px;
+  }
+}
+
+@media (max-width: 568px) {
+  .legend .map-key,
+  .location-items .map-key {
+    gap: 6px;
+    margin: 0 10px;
+  }
+
+  .legend .map-key__icon,
+  .location-items .map-key__icon {
+    font-size: 17px;
+  }
+
+  .legend .map-key__label,
+  .location-items .map-key__label {
+    font-size: 11px;
+  }
+
+  .legend .map-key--tile,
+  .location-items .map-key--tile {
+    gap: 5px;
+    margin: 0 6px;
+  }
+
+  .legend .map-key__swatch,
+  .location-items .map-key__swatch {
+    width: 11px;
+    height: 11px;
+  }
+}
+
 .legend-item {
   width: 125px;
   display: inline-flex;

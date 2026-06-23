@@ -579,6 +579,45 @@ module CommunitiesHelper
     }
   end
 
+  # Resolves the per-bedroom marker colors for a unit's floorplan, falling back
+  # to the community-level colors when no bedroom override exists. Mirrors the
+  # SDK's compute_unit_marketing_color logic so the regular map matches.
+  def bedroom_map_config unit
+    bedroom = unit&.floorplan&.bedrooms.to_i
+    bmc = bedroom_marker_colors_map[bedroom]
+    {
+      available_units_color:   bmc&.available_units_color   || @community.available_units_color,
+      available_units_opacity: bmc&.available_units_opacity || @community.available_units_opacity,
+      model_units_color:       bmc&.model_units_color       || @community.model_units_color,
+      model_units_opacity:     bmc&.model_units_opacity     || @community.model_units_opacity
+    }
+  end
+
+  def bedroom_marker_colors_map
+    @bedroom_marker_colors_map ||= @community.bedroom_marker_colors.index_by(&:bedroom)
+  end
+
+  # Box-style legend items for the marketing map, derived from the community's
+  # coloring mode. Only by_bedroom and by_property produce a color box legend;
+  # by_floorplan shows no legend (same on SVG, image and 3D maps).
+  def marketing_legend_items(community)
+    case community.coloring_mode
+    when "by_bedroom"
+      community.bedroom_marker_colors.sort_by(&:bedroom).map do |bmc|
+        { label: bedroom_legend_label(bmc.bedroom), color: bmc.available_units_color }
+      end
+    when "by_property"
+      [{ label: community.show_property_map_key_text.presence || "Available Home",
+         color: community.available_units_color }]
+    else # by_floorplan -> no legend
+      []
+    end
+  end
+
+  def bedroom_legend_label(bedroom)
+    bedroom.to_i.zero? ? "Studio" : "#{bedroom} Bedroom#{'s' if bedroom.to_i > 1}"
+  end
+
   def map_configuration(community, show_ops_map = false)
     {
       unit_marker_font_size: default_unit_marker_font_size(community),
@@ -670,7 +709,8 @@ module CommunitiesHelper
       "color-by": @community.coloring_mode,
       "config": map_configuration(@community, show_ops_map),
       "floorplan-map-config": floorplan_map_config(unit).to_json,
-      "by-property-colors": by_property_colors(@community).to_json
+      "by-property-colors": by_property_colors(@community).to_json,
+      "bedroom-map-config": bedroom_map_config(unit).to_json
     }.transform_keys { |key| "data-#{key}".to_sym }.merge(
       DATA_ATTRIBUTES_SAME_KEYS.each_with_object({}) do |key, result|
         result["data-#{key}".to_sym] = struct[key.underscore.to_sym]

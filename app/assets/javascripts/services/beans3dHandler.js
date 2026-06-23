@@ -186,6 +186,7 @@ function getFormattedBeansUnits() {
       rent: transformedData.marketRent,
       floorplanMapConfig: transformedData.floorplanMapConfig,
       byPropertyColors: transformedData.byPropertyColors,
+      bedroomMapConfig: transformedData.bedroomMapConfig,
       colorBy: transformedData.colorBy,
     };
   });

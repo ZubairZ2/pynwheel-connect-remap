@@ -93,6 +93,11 @@
       - labels = ["Missing Floorplan", "Missing Data", "Occupied", "Occupied on Notice", "Vacant", "Vacant Leased", "Model"]
       - legend_items = colors.map.with_index { |color, index| color ? { label: labels[index], color: color } : nil }.compact
       - _3d_enabled = @community.enable_three_d_maps
+      -# Box-style color legend: by_bedroom on any map, and by_property on SVG.
+      -# Image maps by_property keep the pin + camera icon legend; by_floorplan
+      -# shows no legend at all (SVG or image).
+      - show_box_legend = !@show_ops_map && !@have_multi_property_ids && (@community.by_bedroom? || (@svg_enabled && @community.by_property?))
+      - marketing_legend = show_box_legend ? marketing_legend_items(@community) : []
       
       - unless @community_info.locked
         = hidden_field_tag :maps_community_id, @community_info.id
@@ -262,7 +267,10 @@
                   .d-flex-justify-content-center.beans-map-container.hidden
                     .beanswidget#beanswidget.some{ style: "width: 100%; height: 100%;" }
 
-                    - if @show_ops_map && @community.enable_three_d_maps
+                    -# Ops 3D keeps its in-map status legend. Marketing maps render
+                    -# their color key in the footer (see .location-items below) so the
+                    -# 3D view matches 2D instead of floating tiles over the map.
+                    - if @community.enable_three_d_maps && @show_ops_map
                       = render partial: 'webpages/marker_colors_legend', locals: { legend_items: }
 
                   .image-map#zoomable.zoomable-map-container{style: "text-align: center; display: flex;"}
@@ -276,18 +284,20 @@
                   %footer.c-footer#footer.responsive-content.mobile-footer{ style: "display: flex; justify-content: space-around; align-item: center;" }
                     %ul.location-items.location-responsive.responsive-content.responsive-legends.align-home-buttons
 
-                      - unless (@show_ops_map || @have_multi_property_ids)
+                      - if show_box_legend
+                        - marketing_legend.each do |item|
+                          %li.map-key.map-key--tile
+                            %span.map-key__swatch{ style: "background-color: #{item[:color]};" }
+                            %span.map-key__label= item[:label]
+                      - elsif !(@show_ops_map || @have_multi_property_ids || @community.by_floorplan?)
                         - if @community.show_property_map_key
-                          %li
-                            %i.fas.fa-map-marker-alt{:style => "color: #{map_marker_color};"}
-                            %span 
-                              = @community.show_property_map_key_text
+                          %li.map-key
+                            %i.fas.fa-map-marker-alt.map-key__icon{ style: "color: #{map_marker_color};" }
+                            %span.map-key__label= @community.show_property_map_key_text
                         - if @community.show_amenity_key
-                          %li
-                            .custom-icon{:style => "height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};"}
-                              %i.fas.fa-camera-retro{:style => "color: #{amenity_marker_color}; font-size: #{camera_font_size}px; margin-top:#{camera_margin}px;"}
-                            %span 
-                              = @community.show_amenity_key_text
+                          %li.map-key
+                            %i.fas.fa-camera-retro.map-key__icon{ style: "color: #{amenity_marker_color};" }
+                            %span.map-key__label= @community.show_amenity_key_text
 
 
                     - if _3d_enabled
@@ -303,18 +313,20 @@
                         %img{:src => "/assets/powered_by_logo.png"}/
 
                       %ul.location-items
-                        - unless (@show_ops_map || @have_multi_property_ids)
+                        - if show_box_legend
+                          - marketing_legend.each do |item|
+                            %li.map-key.map-key--tile
+                              %span.map-key__swatch{ style: "background-color: #{item[:color]};" }
+                              %span.map-key__label= item[:label]
+                        - elsif !(@show_ops_map || @have_multi_property_ids || @community.by_floorplan?)
                           - if @community.show_property_map_key && !@have_multi_property_ids
-                            %li
-                              %i.fas.fa-map-marker-alt{:style => "color: #{map_marker_color};"}
-                              %span 
-                                = @community.show_property_map_key_text
+                            %li.map-key
+                              %i.fas.fa-map-marker-alt.map-key__icon{ style: "color: #{map_marker_color};" }
+                              %span.map-key__label= @community.show_property_map_key_text
                           - if @community.show_amenity_key
-                            %li
-                              .custom-icon{:style => "height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};"}
-                                %i.fas.fa-camera-retro{:style => "color: #{amenity_marker_color}; font-size: #{camera_font_size}px; margin-top:#{camera_margin}px;"}
-                              %span 
-                                = @community.show_amenity_key_text
+                            %li.map-key
+                              %i.fas.fa-camera-retro.map-key__icon{ style: "color: #{amenity_marker_color};" }
+                              %span.map-key__label= @community.show_amenity_key_text
 
                       .zooming-content.zoomable-map-container
                         - if @show_ops_map
