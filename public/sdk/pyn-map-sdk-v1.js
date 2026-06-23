@@ -198,6 +198,10 @@
 
     _beansPopupObserver: null,   // MutationObserver that suppresses the Esri popup
 
+    // Beans-generated maps: a single static base-map image rendered as a
+    // background layer, with the interactive sitemap/floorplate SVGs overlaid.
+    _bgMapLayer:    null,        // the absolute background <img> layer in the current render
+
     data: {
       property:   null,
       sitemap:    null,
@@ -565,9 +569,10 @@
     // MAP DATA STORAGE
     // ----------------------------------------------------
     _storeConfig(data) {
-      this.data.property    = data.property    || null;
-      this.data.sitemap     = data.sitemap     || null;
-      this.data.floorplates = data.floorplates || [];
+      this.data.property      = data.property      || null;
+      this.data.sitemap       = data.sitemap       || null;
+      this.data.backgroundSvg = data.backgroundSvg || null;
+      this.data.floorplates   = data.floorplates   || [];
       this.data.floorplans  = data.floorplans  || [];
       this.data.units       = data.units       || [];
       this.data.amenities   = data.amenities   || [];
@@ -682,6 +687,14 @@
         const svg = await this._loadSVGIfNeeded(primaryEntry.mapId, primaryEntry.mapType);
         if (svg) this.svgCache[primaryEntry.mapId] = svg;
       }
+    },
+
+    // True when the property uses Beans-generated maps: a single static
+    // background image with the interactive (transparent) sitemap/floorplate
+    // SVGs overlaid on top.
+    _isBeansSvg() {
+      return this.data.property?.map?.isBeansSvg === true &&
+             !!this.data.backgroundSvg?.imageUrl;
     },
 
 
@@ -807,6 +820,7 @@
 
       c.innerHTML = "";
       c.style.position = "relative";
+      this._bgMapLayer = null;
 
       if (!this.activeMapId || !this._mapExists(this.activeMapId)) return;
 
@@ -830,6 +844,37 @@
       clone.setAttribute("preserveAspectRatio", "xMidYMid meet");
       clone.style.width  = "100%";
       clone.style.height = "100%";
+
+      // Beans maps: render the single static base-map image as an absolute layer
+      // behind the (transparent) interactive overlay. The overlay uses
+      // preserveAspectRatio="xMidYMid meet"; object-fit:contain on the image fits
+      // it identically, so — given matching aspect ratios — the two stay aligned.
+      // The overlay's panzoom transform is mirrored onto this layer in
+      // _enablePanZoom so they pan/zoom together.
+      if (this._isBeansSvg()) {
+        const bgLayer = document.createElement("img");
+        bgLayer.src = this.data.backgroundSvg.imageUrl;
+        bgLayer.alt = "";
+        bgLayer.setAttribute("draggable", "false");
+        Object.assign(bgLayer.style, {
+          position: "absolute",
+          top: "0", left: "0",
+          width: "100%", height: "100%",
+          objectFit: "contain",
+          transformOrigin: "0 0",
+          pointerEvents: "none",
+          zIndex: "0",
+          display: this._3dMode ? "none" : "block"
+        });
+
+        c.appendChild(bgLayer);
+        this._bgMapLayer = bgLayer;
+
+        // The overlay is non-positioned by default and would paint *below* the
+        // absolute background. Promote it into the same stacking context, above.
+        clone.style.position = "relative";
+        clone.style.zIndex   = "1";
+      }
 
       c.appendChild(clone);
 
@@ -965,6 +1010,16 @@
       };
       svgEl._pz.on("pan",  svgClamp);
       svgEl._pz.on("zoom", svgClamp);
+
+      // Beans SVG: keep the static background layer locked to the overlay's
+      // transform. Both elements fill the container with transform-origin 0 0,
+      // so copying the matrix verbatim keeps them pixel-aligned at any zoom/pan.
+      if (this._bgMapLayer) {
+        const bgLayer = this._bgMapLayer;
+        const syncBg = () => { bgLayer.style.transform = svgEl.style.transform; };
+        svgEl._pz.on("transform", syncBg);
+        syncBg();
+      }
 
       // Block single-finger touch pan when at default zoom; let two-finger pinch-zoom through.
       const touchBlocker = (e) => {
@@ -1288,6 +1343,7 @@
           activeSvg._pzTouchBlocker = null;
         }
       }
+      if (this._bgMapLayer) this._bgMapLayer.style.display = "none";
       if (this._3dWrapper) this._3dWrapper.style.display = "block";
 
       // Update toggle button label and hide zoom controls (irrelevant in 3D)
@@ -1326,6 +1382,7 @@
         // Re-init panzoom (was disposed when entering 3D mode).
         if (!activeSvg._pz) this._enablePanZoom(activeSvg);
       }
+      if (this._bgMapLayer) this._bgMapLayer.style.display = "block";
       if (this._3dWrapper) this._3dWrapper.style.display = "none";
 
       // Update toggle button label and restore zoom controls
@@ -2517,11 +2574,12 @@
       this._imgMapMode         = false;
       this._imgActiveMapId     = null;
       this._userHasCustomColors= false;
+      this._bgMapLayer         = null;
       if (this._beansPopupObserver) {
         this._beansPopupObserver.disconnect();
         this._beansPopupObserver = null;
       }
-      this.data                = { property: null, sitemap: null, floorplates: [], units: [], floorplans: [], amenities: [], filters: null };
+      this.data                = { property: null, sitemap: null, backgroundSvg: null, floorplates: [], units: [], floorplans: [], amenities: [], filters: null };
       this.unitsByMap          = {};
       this.pointerIdsByMap     = {};
       this.unitsByPointerIdByMap = {};

@@ -14,6 +14,7 @@ class SdkPayloadBuilderService
     {
       property:    property_json(ops_map),
       sitemap:     sitemap_json,
+      backgroundSvg: background_svg_json,
       floorplates: floorplates_json,
       units:       all_units,
       floorplans:  floorplans_json(units_ar),
@@ -94,6 +95,7 @@ class SdkPayloadBuilderService
       map: {
         type:                 @community.is_sitemap ? "sitemap" : "floorplate",
         enableSvgMode:        @community.enable_svg_mode,
+        isBeansSvg:           @community.is_beans_svg?,
         defaultFloor:         @community.default_map_floor,
         sitemapAutoZoom:      @community.sitemap_auto_zoom,
         enable3dMaps:         @community.enable_three_d_maps,
@@ -175,6 +177,21 @@ class SdkPayloadBuilderService
     logo = community.map_logo.presence || community.logo.presence
     return nil if logo.blank?
     logo.respond_to?(:url) ? logo.url : logo.to_s
+  end
+
+  # Beans-generated maps render the static base map (parking, buildings,
+  # landscaping) as a single background image, with the interactive
+  # sitemap/floorplate SVGs (units only, transparent) overlaid on top — for
+  # floorplates every floor SVG overlays this same background. The SDK renders
+  # it as an <img>, so we hand back the resolved image URL directly.
+  def background_svg_json
+    return nil unless @community&.is_beans_svg?
+    return nil unless @community.background_svg_image.present?
+
+    {
+      imageUrl:  @community.validated_background_svg_image_url,
+      updatedAt: @community.updated_at.to_i
+    }
   end
 
   def sitemap_json
