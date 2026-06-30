@@ -72,6 +72,7 @@ class PartnersPerformanceReportService < BaseService
 
     rows = TrackSession.where(
       track_session_type: 'maps',
+      partner: @partner,
       community_id: community_ids,
       start_datetime: @start_date.beginning_of_day..@end_date.end_of_day
     ).group(:community_id).pluck(
