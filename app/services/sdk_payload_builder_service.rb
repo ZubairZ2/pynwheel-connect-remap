@@ -390,7 +390,7 @@ class SdkPayloadBuilderService
   end
 
   def map_for_unit(unit)
-    return @community.sitemap.id if @community.is_sitemap?
+    return @community.sitemap&.id if @community.is_sitemap?
     @community.floorplate_for_floor(unit.floor)&.id
   end
 
