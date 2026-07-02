@@ -64,7 +64,10 @@ module Api
         # the cached payload never contains session-specific data.
         # ------------------------------------------------------------------
         def fetch_data
-          fav_ids  = favorite_unit_ids
+          fav = favorite_record
+          fav_unit_ids      = favorite_ids(fav, "unit")
+          fav_amenity_ids   = favorite_ids(fav, "amenity")
+          fav_floorplan_ids = favorite_ids(fav, "floorplan")
           map_type = show_ops_map? ? "ops" : "marketing"
 
           cache_miss = false
@@ -78,15 +81,17 @@ module Api
             build_sdk_payload(show_ops_map?)
           end
 
-          units = if fav_ids.any?
-            cached[:units].map { |u| fav_ids.include?(u[:unitId].to_s) ? u.merge(isFavorite: true) : u }
-          else
-            cached[:units]
-          end
+          units      = merge_favorites(cached[:units],      :unitId,      fav_unit_ids)
+          amenities  = merge_favorites(cached[:amenities],  :amenityId,   fav_amenity_ids)
+          floorplans = merge_favorites(cached[:floorplans], :floorplanId, fav_floorplan_ids)
 
           payload = cached.merge(
-            units:          units,
-            favorite_units: units.select { |u| u[:isFavorite] }
+            units:              units,
+            amenities:          amenities,
+            floorplans:         floorplans,
+            favorite_units:     units.select      { |u| u[:isFavorite] },
+            favorite_amenities: amenities.select  { |a| a[:isFavorite] },
+            favorite_floorplans: floorplans.select { |f| f[:isFavorite] }
           )
 
           response.headers['X-Cache']          = cache_miss ? 'MISS' : 'HIT'
@@ -99,50 +104,55 @@ module Api
 
         # ------------------------------------------------------------------
         # POST /api/partner/maps/save_favorites
-        # Body: unit_ids[] — single ID or array of IDs
+        # Body: ids[] (or legacy unit_ids[]) — single ID or array of IDs
+        #       type — "unit" (default), "amenity", or "floorplan"
         # Authorization: Bearer <session_token>  +  X-SDK-Session-Id header
         # ------------------------------------------------------------------
         def save_favorites
           return render_error("X-SDK-Session-Id header is missing.", 400) unless sdk_session_id.present?
+          return render_error("Invalid favorite type.", 400) unless Favorite.valid_type?(favorite_type)
 
-          unit_ids = parse_unit_ids
-          return render_error("unit_ids is required.", 400) if unit_ids.empty?
+          ids = parse_ids
+          return render_error("ids is required.", 400) if ids.empty?
 
-          valid_ids = @community.units.where(id: unit_ids).pluck(:id).map(&:to_s)
+          valid_ids = valid_ids_for_type(favorite_type, ids)
 
           favorite = Favorite.find_or_initialize_by(session_id: sdk_session_id, community_id: @community.id)
-          current   = (favorite.unit_ids || []).map(&:to_s)
-          favorite.unit_ids = (current + valid_ids).uniq
+          current  = favorite.ids_for(favorite_type)
+          favorite.set_ids(favorite_type, (current + valid_ids).uniq)
           favorite.save!
 
-          render json: { success: true, unit_ids: favorite.unit_ids, status: "success", code: 200 }
+          render json: favorites_response(favorite.ids_for(favorite_type))
         end
 
         # ------------------------------------------------------------------
         # DELETE /api/partner/maps/delete_favorites
-        # Body: unit_ids[] — single ID or array of IDs
+        # Body: ids[] (or legacy unit_ids[]) — single ID or array of IDs
+        #       type — "unit" (default), "amenity", or "floorplan"
         # Authorization: Bearer <session_token>  +  X-SDK-Session-Id header
         # ------------------------------------------------------------------
         def delete_favorites
           return render_error("X-SDK-Session-Id header is missing.", 400) unless sdk_session_id.present?
+          return render_error("Invalid favorite type.", 400) unless Favorite.valid_type?(favorite_type)
 
-          unit_ids = parse_unit_ids
-          return render_error("unit_ids is required.", 400) if unit_ids.empty?
+          ids = parse_ids
+          return render_error("ids is required.", 400) if ids.empty?
 
           favorite = Favorite.find_by(session_id: sdk_session_id, community_id: @community.id)
 
           if favorite
-            favorite.unit_ids = (favorite.unit_ids || []).map(&:to_s) - unit_ids
+            favorite.set_ids(favorite_type, favorite.ids_for(favorite_type) - ids)
             favorite.save!
           end
 
-          render json: { success: true, unit_ids: favorite&.unit_ids || [], status: "success", code: 200 }
+          render json: favorites_response(favorite&.ids_for(favorite_type) || [])
         end
 
         # ------------------------------------------------------------------
         # DELETE /api/partner/maps/clear_all_favorites
         # Authorization: Bearer <session_token>  +  X-SDK-Session-Id header
-        # Removes all favorited units for this session.
+        # Removes ALL favorited items — units, amenities, and floorplans — for
+        # this session in one shot.
         # ------------------------------------------------------------------
         def clear_all_favorites
           return render_error("X-SDK-Session-Id header is missing.", 400) unless sdk_session_id.present?
@@ -150,38 +160,55 @@ module Api
           favorite = Favorite.find_by(session_id: sdk_session_id, community_id: @community.id)
 
           if favorite
-            favorite.unit_ids = []
+            Favorite::TYPE_COLUMNS.each_key { |type| favorite.set_ids(type, []) }
             favorite.save!
           end
 
-          render json: { success: true, unit_ids: [], status: "success", code: 200 }
+          render json: {
+            success:       true,
+            unit_ids:      [],
+            amenity_ids:   [],
+            floorplan_ids: [],
+            status:        "success",
+            code:          200
+          }
         end
 
         # ------------------------------------------------------------------
         # GET /api/partner/maps/get_favorites
         # Authorization: Bearer <session_token>  +  X-SDK-Session-Id  +  X-Community-Id
-        # Returns full unit objects for the favorited units of the given session.
-        # The front-end builds its own shareable URL using getCurrentSessionId() +
-        # communityId, then passes those values here to display a shared list.
+        # Returns full objects for the favorited units, amenities, and floorplans
+        # of the given session. The front-end builds its own shareable URL using
+        # getCurrentSessionId() + communityId, then passes those values here to
+        # display a shared list.
         # ------------------------------------------------------------------
         def get_favorites
           return render_error("X-SDK-Session-Id header is missing.", 400) unless sdk_session_id.present?
 
-          fav_ids = Favorite.find_by(session_id: sdk_session_id, community_id: @community.id)
-                            &.unit_ids
-                            &.map(&:to_s)
-                            &.to_set || Set.new
+          fav = favorite_record
+          unit_ids      = favorite_ids(fav, "unit")
+          amenity_ids   = favorite_ids(fav, "amenity")
+          floorplan_ids = favorite_ids(fav, "floorplan")
 
-          units_ar = @community.units.where(id: fav_ids.to_a).includes(:floorplan).to_a
+          builder = SdkPayloadBuilderService.new(@community)
+
+          units_ar = @community.units.where(id: unit_ids.to_a).includes(:floorplan).to_a
           units_ar.each { |u| u.association(:community).target = @community }
-          favorite_units = SdkPayloadBuilderService.new(@community).units_json(fav_ids, show_ops_map?, units_ar)
+          favorite_units = builder.units_json(unit_ids, show_ops_map?, units_ar)
+
+          favorite_amenities  = builder.amenities_json(amenity_ids).select { |a| a[:isFavorite] }
+          favorite_floorplans = builder.floorplans_json(nil, floorplan_ids).select { |f| f[:isFavorite] }
 
           render json: {
-            success:  true,
-            units:    favorite_units,
-            unit_ids: fav_ids.to_a,
-            status:   "success",
-            code:     200
+            success:       true,
+            units:         favorite_units,
+            unit_ids:      unit_ids.to_a,
+            amenities:     favorite_amenities,
+            amenity_ids:   amenity_ids.to_a,
+            floorplans:    favorite_floorplans,
+            floorplan_ids: floorplan_ids.to_a,
+            status:        "success",
+            code:          200
           }
         end
 
@@ -402,19 +429,65 @@ module Api
           params[:map_type] == "ops"
         end
 
-        def favorite_unit_ids
-          return Set.new unless sdk_session_id.present?
+        # The single Favorite row for this session + community (may be nil).
+        # Memoised so fetch_data / get_favorites hit the DB only once.
+        def favorite_record
+          return @favorite_record if defined?(@favorite_record)
+          @favorite_record = sdk_session_id.present? ?
+            Favorite.find_by(session_id: sdk_session_id, community_id: @community.id) :
+            nil
+        end
 
-          ids = Favorite.find_by(session_id: sdk_session_id, community_id: @community.id)&.unit_ids || []
-          ids.map(&:to_s).to_set
+        # Favorited ids of the given type as a Set of strings.
+        def favorite_ids(favorite, type)
+          (favorite&.ids_for(type) || []).to_set
         end
 
         def sdk_session_id
           @sdk_session_id ||= request.headers['X-SDK-Session-Id'].presence
         end
 
-        def parse_unit_ids
-          Array(params[:unit_ids]).map(&:to_s).map(&:strip).reject(&:empty?).uniq
+        # "unit" (default), "amenity", or "floorplan".
+        def favorite_type
+          @favorite_type ||= params[:type].to_s.strip.presence || "unit"
+        end
+
+        # Accepts ids[] and falls back to the legacy unit_ids[] param.
+        def parse_ids
+          raw = params[:ids].presence || params[:unit_ids]
+          Array(raw).map(&:to_s).map(&:strip).reject(&:empty?).uniq
+        end
+
+        # Validate the submitted ids against the correct community association,
+        # returning only the ones that actually exist as strings.
+        def valid_ids_for_type(type, ids)
+          scope = case type
+            when "amenity"   then Amenity.where(community_id: @community.id)
+            when "floorplan" then @community.floorplans
+            else                  @community.units
+            end
+          scope.where(id: ids).pluck(:id).map(&:to_s)
+        end
+
+        # Standard success body. Echoes the ids under a generic `ids` key plus the
+        # resolved `type`. For unit calls it also keeps the legacy `unit_ids` key
+        # so existing integrations keep working unchanged.
+        def favorites_response(ids)
+          body = {
+            success: true,
+            type:    favorite_type,
+            ids:     ids,
+            status:  "success",
+            code:    200
+          }
+          body[:unit_ids] = ids if favorite_type == "unit"
+          body
+        end
+
+        # Merge isFavorite: true into cached payload items whose id is favorited.
+        def merge_favorites(items, id_key, fav_ids)
+          return items || [] unless fav_ids.any?
+          (items || []).map { |item| fav_ids.include?(item[id_key].to_s) ? item.merge(isFavorite: true) : item }
         end
 
         def render_error(message, status)

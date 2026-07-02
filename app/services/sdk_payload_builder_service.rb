@@ -223,7 +223,7 @@ class SdkPayloadBuilderService
     end
   end
 
-  def floorplans_json(units_ar = nil)
+  def floorplans_json(units_ar = nil, fav_ids = Set.new)
     units_by_floorplan = (units_ar || @community.units).group_by(&:floorplan_id)
 
     @community.floorplans.map do |fp|
@@ -241,12 +241,13 @@ class SdkPayloadBuilderService
         availability_url: first_unit&.get_availability_url(),
         primaryImage:     fp.image.present?           ? fp.validated_image_url                                        : nil,
         secondaryImage:   fp.secondary_image.present? ? fp.convert_to_s3_accelerate_url(fp.secondary_image.url) : nil,
-        color:            compute_floorplan_color(fp)
+        color:            compute_floorplan_color(fp),
+        isFavorite:       fav_ids.include?(fp.id.to_s)
       }
     end
   end
 
-  def amenities_json
+  def amenities_json(fav_ids = Set.new)
     amenity_color_cfg = amenity_marker_config(@community)
     svg_enabled = @community.enable_svg_mode
 
@@ -269,6 +270,7 @@ class SdkPayloadBuilderService
           floor:            a.floor,
           floorplateId:     a.amenityable_id,
           pointerData:      a.pointer_data,
+          isFavorite:       fav_ids.include?(a.id.to_s),
           additionalImages: a.amenity_galleries.map { |g|
             {
               name:        g.name.presence,
@@ -481,4 +483,8 @@ class SdkPayloadBuilderService
     max = unit.pyn_estimated_monthly_max
     min != max ? max : nil
   end
+
+  # Exposed for get_favorites, which builds favorited amenities/floorplans
+  # directly (mirrors the already-public units_json).
+  public :amenities_json, :floorplans_json
 end

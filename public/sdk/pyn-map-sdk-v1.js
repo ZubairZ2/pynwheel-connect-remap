@@ -167,7 +167,9 @@
     _partner: null,               // partner name from server response (partner URL param)
     _sdkSessionId: null,          // stable UUID persisted in localStorage; identifies this user's favorites session
     _analytics: null,             // PynAnalytics instance; null until auth completes
-    _favorites: new Set(),        // Set of favorited unit IDs (strings)
+    _favorites: new Set(),          // Set of favorited unit IDs (strings)
+    _favoriteAmenities: new Set(),  // Set of favorited amenity IDs (strings)
+    _favoriteFloorplans: new Set(), // Set of favorited floorplan IDs (strings)
     config: null,
     container: null,
     activeMapId: null,
@@ -579,11 +581,21 @@
       this.data.filters     = data.filters     || null;
 
       // Hydrate favorites from the server response.
-      // Each unit already has isFavorite set by the server; build the local Set from it.
+      // Each item already has isFavorite set by the server; build the local Sets from it.
       this._favorites = new Set(
         this.data.units
           .filter(u => u.isFavorite)
           .map(u => String(u.unitId))
+      );
+      this._favoriteAmenities = new Set(
+        this.data.amenities
+          .filter(a => a.isFavorite)
+          .map(a => String(a.amenityId))
+      );
+      this._favoriteFloorplans = new Set(
+        this.data.floorplans
+          .filter(f => f.isFavorite)
+          .map(f => String(f.floorplanId))
       );
 
       this._indexUnits();
@@ -2558,6 +2570,8 @@
       this._initialized        = false;
       this._sessionToken       = null;
       this._favorites          = new Set();
+      this._favoriteAmenities  = new Set();
+      this._favoriteFloorplans = new Set();
       this.config              = null;
       this.container           = null;
       this.activeMapId         = null;
@@ -2677,15 +2691,51 @@
     },
 
     /**
-     * Fetches the full unit objects for the favorited units of the given
+     * Internal: resolves the local Set, data array, and id key for a favorite
+     * "type" ("unit" | "amenity" | "floorplan"). Reads the Sets live so it stays
+     * correct after re-hydration.
+     */
+    _favState(type) {
+      switch (type) {
+        case "amenity":
+          return { set: this._favoriteAmenities,  list: this.data.amenities  || [], idKey: "amenityId" };
+        case "floorplan":
+          return { set: this._favoriteFloorplans, list: this.data.floorplans || [], idKey: "floorplanId" };
+        default:
+          return { set: this._favorites,          list: this.data.units      || [], idKey: "unitId" };
+      }
+    },
+
+    /**
+     * Fetches the full objects for the favorited items of the given
      * community + session.  Pass your own communityId / sessionId to see your
-     * own favorites, or a shared pair to display someone else's saved units.
+     * own favorites, or a shared pair to display someone else's saved list.
+     *
+     * By default returns favorited units. Pass type "amenity" or "floorplan"
+     * to get that collection instead.
      *
      * @param {string|number} communityId
      * @param {string}        sessionId
+     * @param {"unit"|"amenity"|"floorplan"} [type="unit"]
      * @returns {Promise<object[]>}
      */
-    async getFavorites(communityId, sessionId) {
+    async getFavorites(communityId, sessionId, type = "unit") {
+      const all = await this.getAllFavorites(communityId, sessionId);
+      if (type === "amenity")   return all.amenities;
+      if (type === "floorplan") return all.floorplans;
+      return all.units;
+    },
+
+    /**
+     * Fetches every favorited collection for the given community + session in a
+     * single request.
+     *
+     * @param {string|number} communityId
+     * @param {string}        sessionId
+     * @returns {Promise<{units: object[], amenities: object[], floorplans: object[]}>}
+     */
+    async getAllFavorites(communityId, sessionId) {
+      const empty = { units: [], amenities: [], floorplans: [] };
       try {
         const mapTypeParam = this.config.mapType === "ops" ? "?map_type=ops" : "";
         const res = await fetch(`${this._apiBase()}/api/partner/maps/get_favorites${mapTypeParam}`, {
@@ -2695,18 +2745,23 @@
             "X-Community-Id":   String(communityId)
           }
         });
-        if (!res.ok) return [];
+        if (!res.ok) return empty;
         const data = await res.json();
-        return data.units || [];
+        return {
+          units:      data.units      || [],
+          amenities:  data.amenities  || [],
+          floorplans: data.floorplans || []
+        };
       } catch {
-        return [];
+        return empty;
       }
     },
 
     /**
-     * Removes all favorited units for the given community and session.
-     * Clears the local Set, resets isFavorite on all unit objects,
-     * and fires onFavoriteChange when the server confirms.
+     * Removes ALL favorited items — units, amenities, and floorplans — for the
+     * given community + session in one shot. Clears every local Set, resets
+     * isFavorite on all objects, and fires onFavoriteChange when the server
+     * confirms (once per type that had favorites).
      *
      * @param {string|number} communityId
      * @param {string}        sessionId
@@ -2725,12 +2780,15 @@
 
         if (!res.ok) return { success: false };
 
-        this._favorites.clear();
-        (this.data.units || []).forEach(u => { u.isFavorite = false; });
-
-        if (this.config.onFavoriteChange) {
-          this.config.onFavoriteChange([], "cleared", []);
-        }
+        ["unit", "amenity", "floorplan"].forEach(type => {
+          const { set, list } = this._favState(type);
+          if (set.size === 0) return;
+          set.clear();
+          list.forEach(item => { item.isFavorite = false; });
+          if (this.config.onFavoriteChange) {
+            this.config.onFavoriteChange([], "cleared", [], type);
+          }
+        });
 
         return { success: true };
       } catch {
@@ -2739,20 +2797,23 @@
     },
 
     /**
-     * Save one or more units as favorites for the given community and session.
-     * Accepts a single unit ID or an array of unit IDs.
+     * Save one or more items as favorites for the given community and session.
+     * Accepts a single ID or an array of IDs.
      * Updates the local Set and fires onFavoriteChange when the server confirms.
      *
-     * @param {number|string|Array<number|string>} unitIds
+     * @param {number|string|Array<number|string>} itemIds
      * @param {string|number} communityId
      * @param {string}        sessionId
-     * @returns {Promise<{success: boolean, unit_ids: string[]}>}
+     * @param {"unit"|"amenity"|"floorplan"} [type="unit"]
+     * @returns {Promise<{success: boolean, ids: string[], unit_ids: string[]}>}
      */
-    async saveFavorite(unitIds, communityId, sessionId) {
-      const ids = (Array.isArray(unitIds) ? unitIds : [unitIds]).map(String);
+    async saveFavorite(itemIds, communityId, sessionId, type = "unit") {
+      const { set, list, idKey } = this._favState(type);
+      const ids = (Array.isArray(itemIds) ? itemIds : [itemIds]).map(String);
 
       const body = new URLSearchParams();
-      ids.forEach(id => body.append("unit_ids[]", id));
+      ids.forEach(id => body.append("ids[]", id));
+      body.append("type", type);
 
       try {
         const res = await fetch(`${this._apiBase()}/api/partner/maps/save_favorites`, {
@@ -2766,41 +2827,45 @@
           body
         });
 
-        if (!res.ok) return { success: false, unit_ids: [...this._favorites] };
+        if (!res.ok) return { success: false, ids: [...set], unit_ids: [...set] };
 
         const data = await res.json();
 
         ids.forEach(id => {
-          this._favorites.add(id);
-          const unit = (this.data.units || []).find(u => String(u.unitId) === id);
-          if (unit) unit.isFavorite = true;
+          set.add(id);
+          const item = list.find(x => String(x[idKey]) === id);
+          if (item) item.isFavorite = true;
         });
 
         if (this.config.onFavoriteChange) {
-          this.config.onFavoriteChange(ids, "saved", [...this._favorites]);
+          this.config.onFavoriteChange(ids, "saved", [...set], type);
         }
 
-        return { success: true, unit_ids: data.unit_ids || [...this._favorites] };
+        const resolved = data.ids || data.unit_ids || [...set];
+        return { success: true, ids: resolved, unit_ids: resolved };
       } catch {
-        return { success: false, unit_ids: [...this._favorites] };
+        return { success: false, ids: [...set], unit_ids: [...set] };
       }
     },
 
     /**
-     * Remove one or more units from favorites for the given community and session.
-     * Accepts a single unit ID or an array of unit IDs.
+     * Remove one or more items from favorites for the given community + session.
+     * Accepts a single ID or an array of IDs.
      * Updates the local Set and fires onFavoriteChange when the server confirms.
      *
-     * @param {number|string|Array<number|string>} unitIds
+     * @param {number|string|Array<number|string>} itemIds
      * @param {string|number} communityId
      * @param {string}        sessionId
-     * @returns {Promise<{success: boolean, unit_ids: string[]}>}
+     * @param {"unit"|"amenity"|"floorplan"} [type="unit"]
+     * @returns {Promise<{success: boolean, ids: string[], unit_ids: string[]}>}
      */
-    async deleteFavorite(unitIds, communityId, sessionId) {
-      const ids = (Array.isArray(unitIds) ? unitIds : [unitIds]).map(String);
+    async deleteFavorite(itemIds, communityId, sessionId, type = "unit") {
+      const { set, list, idKey } = this._favState(type);
+      const ids = (Array.isArray(itemIds) ? itemIds : [itemIds]).map(String);
 
       const body = new URLSearchParams();
-      ids.forEach(id => body.append("unit_ids[]", id));
+      ids.forEach(id => body.append("ids[]", id));
+      body.append("type", type);
 
       try {
         const res = await fetch(`${this._apiBase()}/api/partner/maps/delete_favorites`, {
@@ -2814,23 +2879,24 @@
           body
         });
 
-        if (!res.ok) return { success: false, unit_ids: [...this._favorites] };
+        if (!res.ok) return { success: false, ids: [...set], unit_ids: [...set] };
 
         const data = await res.json();
 
         ids.forEach(id => {
-          this._favorites.delete(id);
-          const unit = (this.data.units || []).find(u => String(u.unitId) === id);
-          if (unit) unit.isFavorite = false;
+          set.delete(id);
+          const item = list.find(x => String(x[idKey]) === id);
+          if (item) item.isFavorite = false;
         });
 
         if (this.config.onFavoriteChange) {
-          this.config.onFavoriteChange(ids, "deleted", [...this._favorites]);
+          this.config.onFavoriteChange(ids, "deleted", [...set], type);
         }
 
-        return { success: true, unit_ids: data.unit_ids || [...this._favorites] };
+        const resolved = data.ids || data.unit_ids || [...set];
+        return { success: true, ids: resolved, unit_ids: resolved };
       } catch {
-        return { success: false, unit_ids: [...this._favorites] };
+        return { success: false, ids: [...set], unit_ids: [...set] };
       }
     },
 
@@ -3425,12 +3491,13 @@
       zoomIn()                     { return PynMapSDK.zoomIn.call(PynMapSDK); },
       zoomOut()                    { return PynMapSDK.zoomOut.call(PynMapSDK); },
       resetZoom()                  { return PynMapSDK.resetZoom.call(PynMapSDK); },
-      getCurrentSessionId()                           { return PynMapSDK.getCurrentSessionId.call(PynMapSDK); },
-      getFavorites(communityId, sessionId)            { return PynMapSDK.getFavorites.call(PynMapSDK, communityId, sessionId); },
-      saveFavorite(unitIds, communityId, sessionId)   { return PynMapSDK.saveFavorite.call(PynMapSDK, unitIds, communityId, sessionId); },
-      deleteFavorite(unitIds, communityId, sessionId) { return PynMapSDK.deleteFavorite.call(PynMapSDK, unitIds, communityId, sessionId); },
-      clearAllFavorites(communityId, sessionId)       { return PynMapSDK.clearAllFavorites.call(PynMapSDK, communityId, sessionId); },
-      shareFavoritesEmail(userEmail, favoritesUrl)    { return PynMapSDK.shareFavoritesEmail.call(PynMapSDK, userEmail, favoritesUrl); },
+      getCurrentSessionId()                                 { return PynMapSDK.getCurrentSessionId.call(PynMapSDK); },
+      getFavorites(communityId, sessionId, type)            { return PynMapSDK.getFavorites.call(PynMapSDK, communityId, sessionId, type); },
+      getAllFavorites(communityId, sessionId)               { return PynMapSDK.getAllFavorites.call(PynMapSDK, communityId, sessionId); },
+      saveFavorite(itemIds, communityId, sessionId, type)   { return PynMapSDK.saveFavorite.call(PynMapSDK, itemIds, communityId, sessionId, type); },
+      deleteFavorite(itemIds, communityId, sessionId, type) { return PynMapSDK.deleteFavorite.call(PynMapSDK, itemIds, communityId, sessionId, type); },
+      clearAllFavorites(communityId, sessionId)             { return PynMapSDK.clearAllFavorites.call(PynMapSDK, communityId, sessionId); },
+      shareFavoritesEmail(userEmail, favoritesUrl)          { return PynMapSDK.shareFavoritesEmail.call(PynMapSDK, userEmail, favoritesUrl); },
       onFloorplanHover(floorplanId){ return PynMapSDK.onFloorplanHover.call(PynMapSDK, floorplanId); },
       offFloorplanHover()          { return PynMapSDK.offFloorplanHover.call(PynMapSDK); },
       setExpandedMode(expanded)    { return PynMapSDK.setExpandedMode.call(PynMapSDK, expanded); },
