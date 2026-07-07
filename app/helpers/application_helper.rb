@@ -771,7 +771,6 @@ module ApplicationHelper
 
     svg_data = URI.open(url, "r:UTF-8", &:read)
     svg_data.force_encoding("UTF-8")
-    svg_data = SvgSanitizer.call(svg_data)
 
     if class_name.present?
       svg_data.sub!("<svg", "<svg class=\"#{class_name}\"")

@@ -75,8 +75,7 @@ class SvgCacheService
 
   private_class_method def self.fetch_raw(url)
     return nil unless url
-    raw = Rails.env.development? ? File.read(url) : URI.open(url).read
-    SvgSanitizer.call(raw)
+    Rails.env.development? ? File.read(url) : URI.open(url).read
   rescue StandardError
     nil
   end
