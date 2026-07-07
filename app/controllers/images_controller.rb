@@ -8,8 +8,8 @@ class ImagesController < ActionController::Base
       render plain: "Failed to fetch SVG: Invalid URL", status: :bad_request
       return
     end
-  
-    send_data svg_data, type: 'image/svg+xml', disposition: 'inline'
+    # send_data svg_data, type: 'image/svg+xml', disposition: 'inline'
+    send_data SvgSanitizer.call(svg_data), type: 'image/svg+xml', disposition: 'inline'
   rescue => e
     render plain: "Failed to fetch SVG: #{e.message}", status: :bad_request
   end

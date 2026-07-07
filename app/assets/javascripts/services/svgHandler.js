@@ -128,7 +128,6 @@ function uniquifySVGIds(svgElement, floorId) {
 
     const oldId = el.id;
     const newId = `${oldId}_${floorId}`;
-    console.log(`Renaming id: ${oldId} → ${newId}`);
     idMap.set(oldId, newId);
     el.id = newId;
   });
@@ -161,7 +160,6 @@ function uniquifySVGIds(svgElement, floorId) {
       // xlink:href in namespace
       const XLINK_NS = "http://www.w3.org/1999/xlink";
       if (el.getAttributeNS(XLINK_NS, "href") === `#${oldId}`) {
-        console.log(`Updating xlink:href on <${el.tagName}>: #${oldId} → #${newId}`);
         el.setAttributeNS(XLINK_NS, "xlink:href", `#${newId}`);
       }
     });
