@@ -92,6 +92,8 @@ class SdkPayloadBuilderService
         poweredByBtn:    @community.powered_by_btn
       },
 
+      applyNow: apply_now_config,
+
       map: {
         type:                 @community.is_sitemap ? "sitemap" : "floorplate",
         enableSvgMode:        @community.enable_svg_mode,
@@ -153,6 +155,27 @@ class SdkPayloadBuilderService
 
       themeConfig: (@community.design_system_config || DesignSystemConfig.new).to_theme_config
     }
+  end
+
+  # "Apply Now" visibility + link mode, mirroring the old map's CMS toggle
+  # (credential.apply_now: "true" | "separate_link" | "false"):
+  #   - "true"          -> Apply Now shown, links to the CRM/folio apply URL
+  #                        (unit.availability_url)
+  #   - "separate_link" -> Apply Now shown, links to a fixed external URL
+  #                        (credential.separate_link) for every unit
+  #   - anything else   -> Apply Now hidden
+  # separateLink is only populated in the separate_link mode.
+  def apply_now_config
+    mode = @community.credential&.apply_now.to_s
+
+    case mode
+    when "true"
+      { enabled: true, mode: "crm", separateLink: nil }
+    when "separate_link"
+      { enabled: true, mode: "separate_link", separateLink: @community.credential&.separate_link }
+    else
+      { enabled: false, mode: "none", separateLink: nil }
+    end
   end
 
   def property_filters_json
