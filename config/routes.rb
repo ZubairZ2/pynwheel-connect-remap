@@ -271,6 +271,10 @@ Rails.application.routes.draw do
       collection do
         patch :update_property
         post  :bulk
+        get   :bulk_upload_template
+        post  :bulk_upload_match
+        post  :bulk_upload_apply
+        get   :bulk_export
       end
     end
 

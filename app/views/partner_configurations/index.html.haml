@@ -4,12 +4,20 @@
 
 %section.is-home-page
   .content
-    .title-heading.d-flex.justify-content-between.align-items-center.flex-wrap
-      %h3
-        %i.fa.fa-handshake-o.mr-10
-        Partner Configuration
-      %span.text-muted.font-size-13
-        Control which partner listing sites display each property's Pynwheel interactive map.
+    .title-heading.pc-title-heading.d-flex.justify-content-between.align-items-center
+      .pc-title-text
+        %h3
+          %i.fa.fa-handshake-o.mr-10
+          Partner Configuration
+        %span.text-muted.font-size-13
+          Control which partner listing sites display each property's Pynwheel interactive map.
+      .pc-header-actions
+        %button.btn.btn-default.pc-upload-launch#pcExportBtn{ type: "button" }
+          %i.fa.fa-download.mr-5
+          Export CSV
+        %button.btn.btn-primary.pc-upload-launch#pcUploadBtn{ type: "button" }
+          %i.fa.fa-cloud-upload.mr-5
+          Bulk Upload &amp; Assign
 
     .box.box-widget.panel-box.partner-config-box
       .box-body
@@ -99,4 +107,8 @@
 
 = render partial: "partner_configurations/modals"
 
+= render partial: "partner_configurations/bulk_upload"
+
 = render partial: "partner_configurations/script"
+
+= render partial: "partner_configurations/bulk_upload_script"

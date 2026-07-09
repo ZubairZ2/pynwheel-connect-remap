@@ -72,6 +72,85 @@ class PartnerConfigurationsController < ApplicationController
     respond_bulk(true, "Updated #{affected} #{'property'.pluralize(affected)}.")
   end
 
+  # Download a sample CSV so users know the expected upload format.
+  def bulk_upload_template
+    headers = %w[Company] + ["Property Name", "Address", "City", "State", "Zip"]
+    samples = [
+      ["JC Hart Company LLC", "East Bank", "490 Maple St", "Noblesville", "IN", "46060"],
+      ["HSL Asset Management", "Encantada Tucson National", "8323 North Shannon Road", "Tucson", "AZ", "85742"],
+      ["Cardinal Group", "Avoca Apartments", "1405 Avoca Ridge Drive", "Louisville", "KY", "40245"]
+    ]
+
+    csv = CSV.generate do |out|
+      out << headers
+      samples.each { |row| out << row }
+    end
+
+    send_data csv, filename: "partner_bulk_assign_template.csv", type: "text/csv"
+  end
+
+  # Export properties as a CSV in the same format as the upload template, so the
+  # file can be edited and re-uploaded. Multi-select partners via partner_keys[]
+  # (exports properties enabled for ANY of them). Pass export_all=1, or select
+  # nothing, to export every client property.
+  def bulk_export
+    keys  = Array(params[:partner_keys]).map(&:to_s) & Community::MAP_PARTNER_KEYS
+    scope = Community.active_client_properties.left_joins(:company)
+
+    if params[:export_all].present? || keys.empty?
+      slug = "all"
+    else
+      cond  = keys.map { |k| "partner_map_settings -> '#{k}' ->> 'enabled' = 'true'" }.join(" OR ")
+      scope = scope.where(cond)
+      slug  = keys.join("-")
+    end
+
+    rows = scope.order(Arel.sql("companies.name ASC NULLS LAST, communities.name ASC"))
+                .pluck("companies.name", "communities.name", "communities.address",
+                       "communities.city", "communities.state", "communities.zip")
+
+    csv = CSV.generate do |out|
+      out << ["Company", "Property Name", "Address", "City", "State", "Zip"]
+      rows.each { |r| out << r }
+    end
+
+    send_data csv, filename: "partner_properties_#{slug}_#{Date.current.iso8601}.csv", type: "text/csv"
+  end
+
+  # Parse an uploaded CSV/Excel file and return the match preview as JSON.
+  def bulk_upload_match
+    file = params[:file]
+    return render json: { success: false, message: "Please choose a CSV or Excel file to upload." }, status: :unprocessable_entity if file.blank?
+
+    begin
+      rows = PartnerBulkMatchService.parse_upload(file)
+    rescue => e
+      return render json: { success: false, message: e.message }, status: :unprocessable_entity
+    end
+
+    return render json: { success: false, message: "No property rows were found in that file. Use the template as a guide." }, status: :unprocessable_entity if rows.empty?
+
+    results = PartnerBulkMatchService.new.match(rows)
+    summary = { "exact" => 0, "partial" => 0, "unmatched" => 0 }
+    results.each { |r| summary[r[:status]] += 1 }
+
+    render json: { success: true, total: rows.size, summary: summary, results: results }
+  end
+
+  # Apply the chosen partners to the resolved (matched) community ids. Additive —
+  # existing partner assignments are preserved.
+  def bulk_upload_apply
+    ids  = Array(params[:community_ids]).map(&:to_i).reject(&:zero?).uniq
+    keys = Array(params[:partner_keys]).map(&:to_s) & Community::MAP_PARTNER_KEYS
+
+    return respond_bulk(false, "No matched properties were selected.") if ids.empty?
+    return respond_bulk(false, "Choose at least one partner to assign.") if keys.empty?
+
+    affected = Community.bulk_add_partners(ids, keys)
+    labels   = Community::MAP_PARTNERS.select { |p| keys.include?(p[:key]) }.map { |p| p[:label] }.join(", ")
+    respond_bulk(true, "Assigned #{labels} to #{affected} #{'property'.pluralize(affected)}.")
+  end
+
   private
 
   def require_super_admin

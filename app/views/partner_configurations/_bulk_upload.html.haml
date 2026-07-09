@@ -1,0 +1,163 @@
+-# ---------------- Export properties CSV ----------------
+#pcExportModal.modal.fade{ tabindex: "-1", role: "dialog" }
+  .modal-dialog{ role: "document" }
+    = form_tag bulk_export_community_partner_configurations_path(current_community), method: :get, id: "pcExportForm" do
+      .modal-content
+        .modal-header
+          %button.close{ type: "button", data: { dismiss: "modal" } }
+            %span &times;
+          %h4.modal-title
+            %i.fa.fa-download.mr-10
+            Export Properties to CSV
+          %p.pc-modal-sub Downloads in the same format as the upload template, so you can edit it and re-upload.
+        .modal-body
+          .pc-export-scope
+            %label.pc-radio-row
+              = radio_button_tag :scope, "all", true, class: "pc-export-scope-radio", id: "pcExportScopeAll"
+              %span
+                %strong All properties
+                %span.pc-radio-hint Every property in the CMS.
+            %label.pc-radio-row
+              = radio_button_tag :scope, "partners", false, class: "pc-export-scope-radio", id: "pcExportScopePartners"
+              %span
+                %strong Only properties with selected partners
+                %span.pc-radio-hint Exports properties that have any of the chosen partners enabled.
+          .pc-export-partners#pcExportPartners
+            .pc-partner-picker
+              - Community::MAP_PARTNERS.each do |p|
+                %label.pc-partner-chip
+                  = check_box_tag "partner_keys[]", p[:key], false, class: "pc-export-partner", disabled: true
+                  %span= p[:label]
+            %p.pc-export-warn#pcExportWarn{ style: "display:none;" }
+              %i.fa.fa-exclamation-circle.mr-5
+              Choose at least one partner.
+        .modal-footer
+          %button.btn.btn-default{ type: "button", data: { dismiss: "modal" } } Cancel
+          %button.btn.btn-primary#pcExportSubmit{ type: "submit" }
+            %i.fa.fa-download.mr-5
+            Export CSV
+
+-# ---------------- Bulk upload & assign wizard ----------------
+#pcUploadModal.modal.fade{ tabindex: "-1", role: "dialog" }
+  .modal-dialog.modal-lg{ role: "document" }
+    .modal-content
+      .modal-header
+        %button.close{ type: "button", data: { dismiss: "modal" } }
+          %span &times;
+        %h4.modal-title
+          %i.fa.fa-cloud-upload.mr-10
+          Bulk Upload &amp; Assign Partners
+        %p.pc-modal-sub Upload a list of properties, match them to the CMS, and turn on partners for all of them in one go.
+
+      .modal-body
+        -# ===== Step indicator =====
+        .pc-steps
+          .pc-step.is-active#pcStepDot1
+            %span.pc-step-num 1
+            %span.pc-step-txt Upload &amp; choose partners
+          %span.pc-step-line
+          .pc-step#pcStepDot2
+            %span.pc-step-num 2
+            %span.pc-step-txt Review &amp; apply
+
+        -# ===================== STEP 1 =====================
+        #pcStepUpload
+          .pc-upload-grid
+            .pc-upload-col
+              %h5.pc-block-title
+                %span.pc-num-badge 1
+                Choose the partners to assign
+              %p.text-muted.font-size-13 These partners will be turned on for every matched property. Existing partner assignments are kept.
+              .pc-partner-picker
+                - Community::MAP_PARTNERS.each do |p|
+                  %label.pc-partner-chip
+                    = check_box_tag "pc_upload_#{p[:key]}", true, false, class: "pc-upload-partner", data: { key: p[:key] }
+                    %span= p[:label]
+
+            .pc-upload-col
+              %h5.pc-block-title
+                %span.pc-num-badge 2
+                Upload your file
+              %p.text-muted.font-size-13
+                CSV or Excel (.csv, .xlsx, .xls). Need the format?
+                = link_to bulk_upload_template_community_partner_configurations_path(current_community), class: "pc-template-link" do
+                  %i.fa.fa-download
+                  Download template
+              .pc-dropzone#pcDropzone
+                %input#pcFileInput{ type: "file", accept: ".csv,.xlsx,.xls", hidden: true }
+                %i.fa.fa-file-excel-o.pc-dz-icon
+                %div.pc-dz-text
+                  %strong Drop your file here
+                  %span or click to browse
+                %div.pc-dz-file#pcFileName
+
+          .pc-template-hint
+            %span.pc-hint-label Expected columns
+            %div.table-responsive
+              %table.pc-template-table
+                %thead
+                  %tr
+                    %th Company
+                    %th Property Name
+                    %th Address
+                    %th City
+                    %th State
+                    %th Zip
+                %tbody
+                  %tr
+                    %td JC Hart Company LLC
+                    %td East Bank
+                    %td 490 Maple St
+                    %td Noblesville
+                    %td IN
+                    %td 46060
+                  %tr
+                    %td HSL Asset Management
+                    %td Encantada Tucson National
+                    %td 8323 North Shannon Road
+                    %td Tucson
+                    %td AZ
+                    %td 85742
+            %p.pc-hint-note
+              %i.fa.fa-info-circle
+              Company &amp; Zip are optional but improve matching. At minimum include Property Name or Address.
+
+          .pc-upload-error.alert.alert-danger#pcUploadError{ style: "display:none;" }
+
+        -# ===================== STEP 2 =====================
+        #pcStepPreview{ style: "display:none;" }
+          .pc-summary#pcSummary
+            .pc-sum-card.is-exact.pc-sum-tab{ data: { tab: "exact" } }
+              %span.pc-sum-num#pcSumExact 0
+              %span.pc-sum-lbl Exact matches
+            .pc-sum-card.is-partial.pc-sum-tab{ data: { tab: "partial" } }
+              %span.pc-sum-num#pcSumPartial 0
+              %span.pc-sum-lbl Need review
+            .pc-sum-card.is-unmatched.pc-sum-tab{ data: { tab: "unmatched" } }
+              %span.pc-sum-num#pcSumUnmatched 0
+              %span.pc-sum-lbl Not found
+            .pc-sum-recap
+              %span.pc-recap-lbl Assigning
+              %span.pc-recap-partners#pcRecapPartners
+              %button.btn.btn-link.btn-xs#pcRecapChange{ type: "button" } change
+
+          .pc-preview-body#pcPreviewBody
+            -# populated by JS
+
+      .modal-footer
+        -# Step 1 footer
+        %div#pcFooterUpload
+          %button.btn.btn-default{ type: "button", data: { dismiss: "modal" } } Cancel
+          %button.btn.btn-primary#pcScanBtn{ type: "button", disabled: true }
+            %i.fa.fa-search.mr-5
+            Scan &amp; match
+        -# Step 2 footer
+        %div#pcFooterPreview{ style: "display:none;" }
+          %button.btn.btn-default#pcBackBtn{ type: "button" }
+            %i.fa.fa-arrow-left.mr-5
+            Back
+          %button.btn.btn-success#pcApplyBtn{ type: "button", disabled: true }
+            %i.fa.fa-check.mr-5
+            Apply to
+            %span#pcApplyCount 0
+            properties

@@ -2384,6 +2384,24 @@ class Community < ApplicationRecord
     where(id: ids).update_all("partner_map_settings = jsonb_build_object(#{pairs})")
   end
 
+  # Additively ENABLE the given partners on the properties, leaving any partners
+  # they already have untouched (preserves existing enabled_at). Used by the
+  # bulk CSV/Excel upload flow. One UPDATE. Returns rows affected.
+  def self.bulk_add_partners(community_ids, partner_keys, now: Time.current)
+    ids  = Array(community_ids).map(&:to_i).reject(&:zero?).uniq
+    keys = Array(partner_keys).map(&:to_s) & MAP_PARTNER_KEYS
+    return 0 if ids.empty? || keys.empty?
+
+    payload = { "enabled" => true, "enabled_at" => now.iso8601 }.to_json
+    expr = "COALESCE(partner_map_settings, '{}'::jsonb)"
+    keys.each do |k|
+      expr = "(#{expr} || jsonb_build_object(#{connection.quote(k)}, " \
+             "COALESCE(partner_map_settings -> #{connection.quote(k)}, #{connection.quote(payload)}::jsonb)))"
+    end
+
+    where(id: ids).update_all("partner_map_settings = #{expr}")
+  end
+
   def partner_map_enabled?(partner_key)
     (partner_map_settings || {}).dig(partner_key.to_s, "enabled") == true
   end
