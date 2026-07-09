@@ -55,8 +55,7 @@ class PartnerAnalyticsReportService < BaseService
   end
 
   def fetch_partner_properties
-    community_ids = MapPartner.where(partner: @partner).pluck(:community_id)
-    Community.where(id: community_ids)
+    Community.for_partner(@partner)
              .includes(:company)
              .order('companies.name, communities.name')
   end

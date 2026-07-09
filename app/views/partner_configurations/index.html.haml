@@ -1,0 +1,102 @@
+- content_for :title, "Partner Configuration - Pynwheel"
+
+= render partial: "partner_configurations/styles"
+
+%section.is-home-page
+  .content
+    .title-heading.d-flex.justify-content-between.align-items-center.flex-wrap
+      %h3
+        %i.fa.fa-handshake-o.mr-10
+        Partner Configuration
+      %span.text-muted.font-size-13
+        Control which partner listing sites display each property's Pynwheel interactive map.
+
+    .box.box-widget.panel-box.partner-config-box
+      .box-body
+        -# ---------- Tabs ----------
+        %ul.nav.nav-tabs.partner-config-tabs
+          %li{ class: (@partner.blank? ? "active" : "") }
+            = link_to community_partner_configurations_path(current_community, sort: @sort, search: @search) do
+              All
+              %span.badge.tab-badge= @counts["all"]
+          - @partners.each do |p|
+            %li{ class: (@partner == p[:key] ? "active" : "") }
+              = link_to community_partner_configurations_path(current_community, partner: p[:key], sort: @sort, search: @search) do
+                = p[:label]
+                %span.badge.tab-badge= @counts[p[:key]]
+
+        -# ---------- Filter toolbar ----------
+        = form_tag community_partner_configurations_path(current_community), method: :get, class: "partner-config-toolbar" do
+          = hidden_field_tag :partner, @partner
+          .toolbar-left
+            .search-wrap
+              %i.fa.fa-search
+              = text_field_tag :search, @search, placeholder: "Search property, company, or code…", class: "form-control search-input"
+              - if @search.present?
+                = link_to community_partner_configurations_path(current_community, partner: @partner, sort: @sort), class: "clear-search", title: "Clear" do
+                  %i.fa.fa-times
+          .toolbar-right
+            %label.sort-label Sort
+            - sort_options = [["Company A–Z", "company_az"], ["Company Z–A", "company_za"], ["Property A–Z", "property_az"], ["Property Z–A", "property_za"], ["Newest", "newest"], ["Oldest", "oldest"]]
+            = select_tag :sort, options_for_select(sort_options, @sort), class: "form-control sort-select", onchange: "this.form.submit()"
+
+        -# ---------- Bulk action bar ----------
+        .bulk-bar#bulkBar
+          .bulk-info
+            %strong#bulkCount 0
+            selected
+          .bulk-actions
+            %button.btn.btn-sm.btn-primary#bulkSetBtn{ type: "button" }
+              %i.fa.fa-sliders
+              Set partners
+            %button.btn.btn-sm.btn-link.bulk-clear{ type: "button" } Clear selection
+
+        -# ---------- Table ----------
+        = form_tag bulk_community_partner_configurations_path(current_community), method: :post, id: "bulkForm" do
+          #bulkPartnerKeys
+          .table-responsive
+            %table.table.table-hover.partner-config-table
+              %thead
+                %tr
+                  %th.check-col
+                    = check_box_tag "select_all", "1", false, id: "selectAll"
+                  %th Property
+                  %th Company
+                  %th Enabled Partners
+                  %th.text-right Actions
+              %tbody
+                - if @communities.empty?
+                  %tr
+                    %td.text-center.text-muted{ colspan: 5, style: "padding: 40px;" }
+                      No properties found.
+                - @communities.each do |c|
+                  - enabled = @partners.select { |p| c.partner_map_enabled?(p[:key]) }
+                  %tr{ data: { id: c.id, name: c.name } }
+                    %td.check-col
+                      = check_box_tag "community_ids[]", c.id, false, class: "row-check"
+                    %td.prop-name= c.name.presence || "—"
+                    %td= c.company_name.presence || "—"
+                    %td.partners-cell
+                      - if enabled.any?
+                        - enabled.each do |p|
+                          %span.partner-badge{ data: { key: p[:key] } }= p[:label]
+                      - else
+                        %span.text-muted.font-size-12 None
+                    %td.text-right.actions-cell
+                      %button.icon-btn.edit-btn{ type: "button", title: "Edit partners",
+                        data: { id: c.id, name: c.name,
+                                enabled: enabled.map { |p| p[:key] }.to_json } }
+                        %i.fa.fa-pencil
+                      %button.icon-btn.delete-btn{ type: "button", title: "Remove all partner assignments",
+                        data: { id: c.id, name: c.name } }
+                        %i.fa.fa-trash
+
+        .partner-config-pagination
+          = will_paginate @communities, params: { partner: @partner, search: @search, sort: @sort }
+          %span.result-count
+            = @total
+            = "property".pluralize(@total)
+
+= render partial: "partner_configurations/modals"
+
+= render partial: "partner_configurations/script"

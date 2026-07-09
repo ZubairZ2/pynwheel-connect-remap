@@ -1,0 +1,75 @@
+-# ---------------- Edit property partners modal ----------------
+#pcEditModal.modal.fade{ tabindex: "-1", role: "dialog" }
+  .modal-dialog{ role: "document" }
+    .modal-content
+      .modal-header
+        %button.close{ type: "button", data: { dismiss: "modal" } }
+          %span &times;
+        %h4.modal-title
+          Edit Partners —
+          %span#pcEditPropName
+      .modal-body
+        %p.text-muted.font-size-13
+          Toggle which partner listing sites may display this property's Pynwheel interactive map.
+        - Community::MAP_PARTNERS.each do |p|
+          .pc-toggle-row
+            %span.pc-label= p[:label]
+            .TriSea-technologies-Switch
+              %span.pr-15 No
+              = check_box_tag "pc_edit_#{p[:key]}", true, false, class: "pc-edit-toggle", data: { key: p[:key] }
+              %label.label-primary{ for: "pc_edit_#{p[:key]}" }
+              %span.pl-15 Yes
+      .modal-footer
+        %button.btn.btn-default{ type: "button", data: { dismiss: "modal" } } Cancel
+        %button.btn.btn-success#pcEditSave{ type: "button" } Save changes
+
+-# ---------------- Delete (remove all) confirm modal ----------------
+#pcDeleteModal.modal.fade{ tabindex: "-1", role: "dialog" }
+  .modal-dialog.modal-sm{ role: "document" }
+    .modal-content
+      .modal-header
+        %button.close{ type: "button", data: { dismiss: "modal" } }
+          %span &times;
+        %h4.modal-title
+          %i.fa.fa-exclamation-triangle.text-danger.mr-10
+          Remove partners
+      .modal-body
+        %p
+          Remove
+          %strong all partner assignments
+          from
+          %strong#pcDeletePropName
+          ?
+        %p.text-muted.font-size-13
+          This property will no longer appear on any partner listing site's map. You can re-enable partners at any time.
+      .modal-footer
+        %button.btn.btn-default{ type: "button", data: { dismiss: "modal" } } Cancel
+        %button.btn.btn-danger#pcDeleteConfirm{ type: "button" } Remove all
+
+-# ---------------- Bulk set-partners modal ----------------
+#pcBulkModal.modal.fade{ tabindex: "-1", role: "dialog" }
+  .modal-dialog{ role: "document" }
+    .modal-content
+      .modal-header
+        %button.close{ type: "button", data: { dismiss: "modal" } }
+          %span &times;
+        %h4.modal-title
+          Set partners for
+          %span#pcBulkCount
+          selected
+      .modal-body
+        %p.text-muted.font-size-13
+          Turn partners on or off, then Apply. The selected properties will be set to
+          %strong exactly
+          these partners — replacing whatever they currently have.
+        - Community::MAP_PARTNERS.each do |p|
+          .pc-toggle-row
+            %span.pc-label= p[:label]
+            .TriSea-technologies-Switch
+              %span.pr-15 No
+              = check_box_tag "pc_bulk_#{p[:key]}", true, false, class: "pc-bulk-toggle", data: { key: p[:key] }
+              %label.label-primary{ for: "pc_bulk_#{p[:key]}" }
+              %span.pl-15 Yes
+      .modal-footer
+        %button.btn.btn-default{ type: "button", data: { dismiss: "modal" } } Cancel
+        %button.btn.btn-primary#pcBulkConfirm{ type: "button" } Apply to selected

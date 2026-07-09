@@ -1,0 +1,97 @@
+:javascript
+  (function(){
+    var updateUrl     = "#{update_property_community_partner_configurations_path(current_community)}";
+    var csrf          = $('meta[name="csrf-token"]').attr('content');
+    var partnerLabels = #{Community::MAP_PARTNERS.map { |p| [p[:key], p[:label]] }.to_h.to_json};
+
+    // ---------- selection ----------
+    function selectedCount(){ return $('.row-check:checked').length; }
+    function refreshBulkBar(){
+      var n = selectedCount();
+      $('#bulkCount').text(n);
+      $('#bulkBar').toggleClass('show', n > 0);
+      $('#selectAll').prop('checked', n > 0 && n === $('.row-check').length);
+    }
+    $(document).on('change', '.row-check', refreshBulkBar);
+    $('#selectAll').on('change', function(){
+      $('.row-check').prop('checked', $(this).is(':checked'));
+      refreshBulkBar();
+    });
+    $('.bulk-clear').on('click', function(){
+      $('.row-check, #selectAll').prop('checked', false);
+      refreshBulkBar();
+    });
+
+    // ---------- edit ----------
+    $(document).on('click', '.edit-btn', function(){
+      var enabled = $(this).data('enabled') || [];
+      $('#pcEditModal').data('id', $(this).data('id'));
+      $('#pcEditPropName').text($(this).data('name'));
+      $('.pc-edit-toggle').each(function(){
+        $(this).prop('checked', enabled.indexOf($(this).data('key')) !== -1);
+      });
+      $('#pcEditModal').modal('show');
+    });
+    $('#pcEditSave').on('click', function(){
+      var id = $('#pcEditModal').data('id');
+      var data = { _method: 'patch', authenticity_token: csrf, id: id };
+      $('.pc-edit-toggle').each(function(){
+        if ($(this).is(':checked')) { data['partner_map[' + $(this).data('key') + ']'] = '1'; }
+      });
+      saveProperty(id, data, this);
+    });
+
+    // ---------- delete (remove all) ----------
+    $(document).on('click', '.delete-btn', function(){
+      $('#pcDeleteModal').data('id', $(this).data('id'));
+      $('#pcDeletePropName').text($(this).data('name'));
+      $('#pcDeleteModal').modal('show');
+    });
+    $('#pcDeleteConfirm').on('click', function(){
+      var id = $('#pcDeleteModal').data('id');
+      saveProperty(id, { _method: 'patch', authenticity_token: csrf, id: id }, this);
+    });
+
+    function saveProperty(id, data, btn){
+      var $btn = $(btn).prop('disabled', true);
+      $.ajax({ url: updateUrl, method: 'POST', data: data, dataType: 'json' })
+        .done(function(res){
+          updateRowBadges(id, res.partners || []);
+          $('.modal').modal('hide');
+        })
+        .fail(function(){ alert('Could not save changes. Please try again.'); })
+        .always(function(){ $btn.prop('disabled', false); });
+    }
+
+    function updateRowBadges(id, keys){
+      var row  = $('tr[data-id="' + id + '"]');
+      var cell = row.find('.partners-cell');
+      if (!keys.length){
+        cell.html('<span class="text-muted font-size-12">None</span>');
+      } else {
+        cell.html(keys.map(function(k){
+          return '<span class="partner-badge" data-key="' + k + '">' + (partnerLabels[k] || k) + '</span>';
+        }).join(''));
+      }
+      row.find('.edit-btn').data('enabled', keys);
+    }
+
+    // ---------- bulk (multi-toggle applied to all selected) ----------
+    var activePartner = "#{@partner}";
+    $('#bulkSetBtn').on('click', function(){
+      if (selectedCount() === 0){ return; }
+      $('#pcBulkCount').text(selectedCount() + ' ' + (selectedCount() === 1 ? 'property' : 'properties'));
+      // Pre-seed toggles: default the active tab's partner ON, others off.
+      $('.pc-bulk-toggle').each(function(){
+        $(this).prop('checked', $(this).data('key') === activePartner);
+      });
+      $('#pcBulkModal').modal('show');
+    });
+    $('#pcBulkConfirm').on('click', function(){
+      var $wrap = $('#bulkPartnerKeys').empty();
+      $('.pc-bulk-toggle:checked').each(function(){
+        $wrap.append($('<input type="hidden" name="partner_keys[]">').val($(this).data('key')));
+      });
+      $('#bulkForm').submit();
+    });
+  })();

@@ -231,6 +231,12 @@
             %i.fa.fa-file
             %span Reports
 
+      - if current_user.is_super_admin?
+        %li.loader_class{:class=>"#{controller_name =='partner_configurations' ? 'active' : ''}"}
+          %a{:href => "#{community_partner_configurations_path(current_community)}"}
+            %i.fa.fa-handshake-o
+            %span Partner Configuration
+
       -# - if (current_user.is_super_admin? || current_user.is_view_visitor_details_page?) && current_user.is_super_admin?
       -#   %li.loader_class{:class=>"#{controller_name =='Community' && params[:action] == "logs" ? 'active' : ''}"}
       -#     %a{:href => "#{community_logs_path(current_community)}"}

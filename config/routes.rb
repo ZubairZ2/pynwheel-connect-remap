@@ -267,6 +267,13 @@ Rails.application.routes.draw do
     
     resources :impressions, :only => [:index, :show, :destroy]
 
+    resources :partner_configurations, :only => [:index] do
+      collection do
+        patch :update_property
+        post  :bulk
+      end
+    end
+
     resources :reports, :only => [:index] do
       collection do
         get :generate_webpages_report
