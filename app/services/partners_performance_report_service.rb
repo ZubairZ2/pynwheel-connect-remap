@@ -43,22 +43,19 @@ class PartnersPerformanceReportService < BaseService
   private
 
   def partner_community_ids
-    @partner_community_ids ||= MapPartner.where(partner: @partner).pluck(:community_id)
+    @partner_community_ids ||= Community.for_partner(@partner).pluck(:id)
   end
 
   def write_partner_rows(csv)
-    map_partners = MapPartner.where(partner: @partner)
-                             .includes(community: :company)
-                             .joins(community: :company)
-                             .order('companies.name, communities.name')
+    communities = Community.for_partner(@partner)
+                           .includes(:company)
+                           .joins(:company)
+                           .order('companies.name, communities.name')
 
     stats = fetch_community_stats(partner_community_ids)
 
-    map_partners.each do |mp|
-      community = mp.community
-      next unless community
-
-      partner_since = mp.created_at.to_date
+    communities.each do |community|
+      partner_since = (community.partner_map_enabled_at(@partner) || community.created_at).to_date
       days_live     = [(@end_date - [partner_since, @start_date].max).to_i + 1, 0].max
       full_period   = partner_since <= @start_date
 

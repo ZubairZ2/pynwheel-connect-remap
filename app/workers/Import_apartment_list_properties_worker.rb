@@ -153,12 +153,9 @@ class ImportApartmentListPropertiesWorker
       community.build_design(created_at: now, updated_at: now)
 
       if APARTMENTLIST_API_KEY.present?
-        community.map_partners.build(
-          partner: 'apartmentlist',
-          api_key: APARTMENTLIST_API_KEY,
-          created_at: now,
-          updated_at: now
-        )
+        community.partner_map_settings = {
+          "apartmentlist" => { "enabled" => true, "enabled_at" => now.iso8601 }
+        }
       end
 
       batch << community

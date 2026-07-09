@@ -2314,6 +2314,121 @@ class Community < ApplicationRecord
   def is_touch_map src
     src === "touch"
   end
+
+  # --------------------------------------------------------------------------
+  # Partner map integrations
+  #
+  # Which partner listing sites (Apartments.com, Rent.com, ...) may embed this
+  # property's Pynwheel map is stored per-property in the `partner_map_settings`
+  # JSONB column, e.g. { "apartments" => { "enabled" => true, "enabled_at" => ... } }.
+  #
+  # The api_key -> partner mapping lives only in ENV (single source of truth);
+  # partners register requests with the key and we authorize against the toggle.
+  # --------------------------------------------------------------------------
+  MAP_PARTNERS = [
+    { key: "rent",          env: "PARTNER_RENT_API_KEY",          label: "Rent.com" },
+    { key: "apartmentlist", env: "PARTNER_APARTMENTLIST_API_KEY", label: "Apartmentlist.com" },
+    { key: "propexo",       env: "PARTNER_PROPEXO_API_KEY",       label: "Propexo" },
+    { key: "apartments",    env: "PARTNER_APARTMENTS_API_KEY",    label: "Apartments.com" }
+  ].freeze
+
+  MAP_PARTNER_KEYS = MAP_PARTNERS.map { |p| p[:key] }.freeze
+
+  # Registry entry (with the resolved ENV api_key) for a given api_key, or nil.
+  def self.partner_registry_for_api_key(api_key)
+    return nil if api_key.blank?
+    MAP_PARTNERS.find { |p| ENV[p[:env]].present? && ENV[p[:env]] == api_key }
+  end
+
+  # Partner key ("apartments", "rent", ...) for an incoming api_key, or nil.
+  def self.partner_for_api_key(api_key)
+    partner_registry_for_api_key(api_key)&.dig(:key)
+  end
+
+  # True when the api_key matches one of the configured partner ENV keys.
+  def self.valid_partner_api_key?(api_key)
+    partner_registry_for_api_key(api_key).present?
+  end
+
+  # Communities that have enabled the given partner's map embed.
+  scope :for_partner, ->(partner_key) {
+    where("partner_map_settings -> :key ->> 'enabled' = 'true'", key: partner_key.to_s)
+  }
+
+  # Communities that have at least one partner map enabled.
+  scope :with_any_partner, -> {
+    where(
+      MAP_PARTNER_KEYS.map { |k| "partner_map_settings -> '#{k}' ->> 'enabled' = 'true'" }.join(" OR ")
+    )
+  }
+
+  # --- Efficient set-based bulk update (single UPDATE, no per-row loads) -------
+
+  # Set the given properties' enabled partners to EXACTLY `partner_keys`,
+  # replacing whatever they currently have. Preserves the existing enabled_at for
+  # partners that were already enabled. One UPDATE. Returns rows affected.
+  def self.bulk_set_partners(community_ids, partner_keys, now: Time.current)
+    ids  = Array(community_ids)
+    keys = Array(partner_keys).map(&:to_s) & MAP_PARTNER_KEYS
+    return 0 if ids.empty?
+
+    if keys.empty?
+      return where(id: ids).update_all(sanitize_sql_array(["partner_map_settings = ?::jsonb", "{}"]))
+    end
+
+    payload = { "enabled" => true, "enabled_at" => now.iso8601 }.to_json
+    pairs = keys.map do |k|
+      "#{connection.quote(k)}, COALESCE(partner_map_settings -> #{connection.quote(k)}, #{connection.quote(payload)}::jsonb)"
+    end.join(", ")
+
+    where(id: ids).update_all("partner_map_settings = jsonb_build_object(#{pairs})")
+  end
+
+  # Additively ENABLE the given partners on the properties, leaving any partners
+  # they already have untouched (preserves existing enabled_at). Used by the
+  # bulk CSV/Excel upload flow. One UPDATE. Returns rows affected.
+  def self.bulk_add_partners(community_ids, partner_keys, now: Time.current)
+    ids  = Array(community_ids).map(&:to_i).reject(&:zero?).uniq
+    keys = Array(partner_keys).map(&:to_s) & MAP_PARTNER_KEYS
+    return 0 if ids.empty? || keys.empty?
+
+    payload = { "enabled" => true, "enabled_at" => now.iso8601 }.to_json
+    expr = "COALESCE(partner_map_settings, '{}'::jsonb)"
+    keys.each do |k|
+      expr = "(#{expr} || jsonb_build_object(#{connection.quote(k)}, " \
+             "COALESCE(partner_map_settings -> #{connection.quote(k)}, #{connection.quote(payload)}::jsonb)))"
+    end
+
+    where(id: ids).update_all("partner_map_settings = #{expr}")
+  end
+
+  def partner_map_enabled?(partner_key)
+    (partner_map_settings || {}).dig(partner_key.to_s, "enabled") == true
+  end
+
+  def partner_map_enabled_at(partner_key)
+    ts = (partner_map_settings || {}).dig(partner_key.to_s, "enabled_at")
+    ts.present? ? ts.to_time : nil
+  rescue ArgumentError, TypeError
+    nil
+  end
+
+  # Enable/disable a partner's map embed for this property. Only persists a known
+  # registry key; unknown keys are ignored. Does not save.
+  def set_partner_map_enabled(partner_key, enabled)
+    key = partner_key.to_s
+    return unless MAP_PARTNER_KEYS.include?(key)
+
+    settings = (partner_map_settings || {}).deep_dup
+    if enabled
+      settings[key] ||= {}
+      settings[key]["enabled"] = true
+      settings[key]["enabled_at"] ||= Time.current.iso8601
+    else
+      settings.delete(key)
+    end
+    self.partner_map_settings = settings
+  end
   
   def map_embed_code(partner = nil, floor = nil, ops_map = nil, src = nil)
     <<-HTML.strip.gsub(/\n\s*/, "")

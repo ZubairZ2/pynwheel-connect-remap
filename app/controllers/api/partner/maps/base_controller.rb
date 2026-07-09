@@ -8,33 +8,20 @@ module Api
         MISSING_PROPERTY_MESSAGE = 'Property ID is missing.'
         INVALID_PROPERTY_MESSAGE = 'Invalid Property ID.'
 
-        PARTNERS = [
-          { name: "rent",          key: ENV["PARTNER_RENT_API_KEY"] },
-          { name: "apartmentlist", key: ENV["PARTNER_APARTMENTLIST_API_KEY"] },
-          { name: "propexo", key: ENV["PARTNER_PROPEXO_API_KEY"] }
-        ]
-
-        before_action :load_map_partners
         before_action :validate_api_key
         before_action :load_partner_name
 
         private
 
-        def load_map_partners
-          @registered_api_keys = Rails.cache.fetch("map_partner_api_keys", expires_in: 5.minutes) do
-            MapPartner.pluck(:api_key).uniq
-          end
-        rescue Redis::BaseError, Errno::ECONNREFUSED
-          @registered_api_keys = MapPartner.pluck(:api_key).uniq
-        end
-
+        # The api_key -> partner mapping is sourced from ENV via
+        # Community::MAP_PARTNERS — no database lookup and no cached key registry.
         def validate_api_key
           api_key = request.headers['X-API-Key']
           if api_key.blank?
             return render json: { message: MISSING_KEY_MESSAGE, status: 'failed', code: 401 }, status: :unauthorized
           end
 
-          unless @registered_api_keys.include?(api_key)
+          unless Community.valid_partner_api_key?(api_key)
             return render json: { message: INVALID_KEY_MESSAGE, status: 'failed', code: 401 }, status: :unauthorized
           end
 
@@ -42,8 +29,7 @@ module Api
         end
 
         def load_partner_name
-          partner = PARTNERS.find { |p| p[:key] == @api_key }
-          @partner = partner&.dig(:name)
+          @partner = Community.partner_for_api_key(@api_key)
         end
 
         # Validates a short-lived session token issued by the `authorized` action.
