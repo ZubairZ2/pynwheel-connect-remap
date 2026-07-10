@@ -21,7 +21,8 @@
         onUnitHover:      typeof cfg.onUnitHover      === "function" ? cfg.onUnitHover      : null,
         offUnitHover: typeof cfg.offUnitHover === "function" ? cfg.offUnitHover : null,
         onUnitClick:      typeof cfg.onUnitClick      === "function" ? cfg.onUnitClick      : null,
-        onReady:          typeof cfg.onReady      === "function" ? cfg.onReady      : null
+        onReady:          typeof cfg.onReady      === "function" ? cfg.onReady      : null,
+        onError:          typeof cfg.onError      === "function" ? cfg.onError      : null
       };
 
       // 2) Store styles from config only
@@ -51,7 +52,7 @@
       // VERIFY (one-time X-API-Key) → get session token → FETCH CONFIG → LOAD SVGs → BOOT
       this._verifyPartner(apiKey, propertyId)
         .then(v => {
-          if (!v.success) { this._showError(v.error); return Promise.reject("abort"); }
+          if (!v.success) { this._showError(v.error, v.code); return Promise.reject("abort"); }
 
           // Store the short-lived token; the raw API key is now out of scope.
           this._sessionToken = v.sessionToken;
@@ -60,7 +61,7 @@
           return this._fetchConfig();
         })
         .then(r => {
-          if (!r?.success) { this._showError(r?.error || "Config load error"); return Promise.reject("abort"); }
+          if (!r?.success) { this._showError(r?.error || "Config load error", r?.code); return Promise.reject("abort"); }
           this._storeConfig(r.data);
           this._showLoading("Loading SVG maps...");
           return this._loadActiveSVG();
@@ -111,15 +112,21 @@
         const res = await fetch(url, { headers: { "X-API-Key": apiKey } });
 
         if (!res.ok) {
-          if (res.status === 401) return { success: false, error: "Invalid API Key" };
-          if (res.status === 404) return { success: false, error: "Property not found" };
-          return { success: false, error: "Partner verification failed" };
+          // Surface the server-provided message when available (e.g. a 403
+          // "This property is not enabled for the partner map.").
+          let serverMsg = null;
+          try { serverMsg = (await res.json())?.message || null; } catch {}
+
+          if (res.status === 401) return { success: false, code: 401, error: serverMsg || "Invalid API Key" };
+          if (res.status === 403) return { success: false, code: 403, error: serverMsg || "This property is not enabled for the partner map." };
+          if (res.status === 404) return { success: false, code: 404, error: serverMsg || "Property not found" };
+          return { success: false, code: res.status, error: serverMsg || "Partner verification failed" };
         }
 
         const data = await res.json();
         return { success: true, sessionToken: data.session_token };
       } catch {
-        return { success: false, error: "Network error verifying partner" };
+        return { success: false, code: null, error: "Network error verifying partner" };
       }
     },
 
@@ -1166,7 +1173,19 @@
       this._showStatus(msg, false);
     },
 
-    _showError(msg) {
+    _showError(msg, code) {
+      // Notify the caller's error handler. Returning false from onError
+      // suppresses the SDK's default in-container error message so the
+      // partner can render their own UI instead.
+      let suppressDefault = false;
+      if (this.config?.onError) {
+        try {
+          suppressDefault = this.config.onError({ message: msg, code: code != null ? code : null }) === false;
+        } catch (e) {
+          console.error("PynMapSDK: onError callback threw:", e);
+        }
+      }
+      if (suppressDefault) return;
       this._showStatus(msg, true);
     },
 

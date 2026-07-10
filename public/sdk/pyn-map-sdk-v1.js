@@ -248,6 +248,7 @@
         onAmenityClick:   typeof cfg.onAmenityClick   === "function" ? cfg.onAmenityClick   : null,
         onFavoriteChange: typeof cfg.onFavoriteChange === "function" ? cfg.onFavoriteChange : null,
         onReady:          typeof cfg.onReady          === "function" ? cfg.onReady          : null,
+        onError:          typeof cfg.onError          === "function" ? cfg.onError          : null,
         enable3DMap:          cfg.enable3DMap          != null ? cfg.enable3DMap          === true : null,
         show3DMap:            cfg.show3DMap            != null ? cfg.show3DMap            === true : null,
         defaultSatelliteView: cfg.defaultSatelliteView != null ? cfg.defaultSatelliteView === true : null,
@@ -323,7 +324,7 @@
 
       doAuth
         .then(v => {
-          if (!v?.success) return this._showError(v?.error || "Partner verification failed.");
+          if (!v?.success) return this._showError(v?.error || "Partner verification failed.", v?.code);
           return this._fetchConfig();
         })
         .then(r => {
@@ -340,7 +341,7 @@
           return r;
         })
         .then(r => {
-          if (!r?.success) return this._showError(r?.error || "Config load error");
+          if (!r?.success) return this._showError(r?.error || "Config load error", r?.code);
           this._storeConfig(r.data);
 
           if (this._isImageMapMode()) {
@@ -454,15 +455,21 @@
         const res = await fetch(url, { headers: { "X-API-Key": apiKey } });
 
         if (!res.ok) {
-          if (res.status === 401) return { success: false, error: "Invalid API Key" };
-          if (res.status === 404) return { success: false, error: "Property not found" };
-          return { success: false, error: "Partner verification failed" };
+          // Surface the server-provided message when available (e.g. a 403
+          // "This property is not enabled for the partner map.").
+          let serverMsg = null;
+          try { serverMsg = (await res.json())?.message || null; } catch {}
+
+          if (res.status === 401) return { success: false, code: 401, error: serverMsg || "Invalid API Key" };
+          if (res.status === 403) return { success: false, code: 403, error: serverMsg || "This property is not enabled for the partner map." };
+          if (res.status === 404) return { success: false, code: 404, error: serverMsg || "Property not found" };
+          return { success: false, code: res.status, error: serverMsg || "Partner verification failed" };
         }
 
         const data = await res.json();
         return { success: true, sessionToken: data.session_token };
       } catch {
-        return { success: false, error: "Network error verifying partner" };
+        return { success: false, code: null, error: "Network error verifying partner" };
       }
     },
 
@@ -2603,7 +2610,20 @@
     },
 
     _showLoading(msg)          { this._showStatus(msg, false); },
-    _showError(msg)            { this._showStatus(msg, true);  },
+    _showError(msg, code)      {
+      // Notify the caller's error handler. Returning false from onError
+      // suppresses the SDK's default in-container error message so the
+      // partner can render their own UI instead.
+      let suppressDefault = false;
+      if (this.config?.onError) {
+        try {
+          suppressDefault = this.config.onError({ message: msg, code: code != null ? code : null }) === false;
+        } catch (e) {
+          console.error("PynMapSDK: onError callback threw:", e);
+        }
+      }
+      if (!suppressDefault) this._showStatus(msg, true);
+    },
 
     _showStatus(text, isError) {
       this.container.innerHTML = "";
