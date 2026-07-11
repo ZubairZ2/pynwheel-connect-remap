@@ -371,11 +371,6 @@ module Api
 
           @community = Community.find_by(id: property_id)
           return render_error("Invalid Property ID or not associated.", 404) if @community.nil?
-
-          # Enforce that this property has enabled the map for the requesting partner.
-          unless @community.partner_map_enabled?(@partner)
-            return render_error("This property is not enabled for the #{@partner} partner map.", 403)
-          end
         end
 
         # ------------------------------------------------------------------
