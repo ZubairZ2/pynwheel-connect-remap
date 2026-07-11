@@ -20,7 +20,7 @@ class PartnerConfigurationsController < ApplicationController
     @search   = params[:search].to_s.strip
     @sort     = SORTS.key?(params[:sort]) ? params[:sort] : "company_az"
 
-    scope = Community.left_joins(:company)
+    scope = Community.active_client_properties.left_joins(:company)
 
     # Tab filter. With no partner tab and no search we only show properties that
     # already have at least one partner (keeps the default list tight and fast).
@@ -168,7 +168,7 @@ class PartnerConfigurationsController < ApplicationController
 
   # Counts per tab (All + each partner) in a single query, honoring search.
   def tab_counts(search)
-    base = Community.left_joins(:company)
+    base = Community.active_client_properties.left_joins(:company)
     if search.present?
       like = "%#{Community.sanitize_sql_like(search)}%"
       base = base.where("communities.name ILIKE :q OR communities.code ILIKE :q OR companies.name ILIKE :q", q: like)
