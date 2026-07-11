@@ -12,8 +12,9 @@ module Api
           property_id = params[:propertyId].to_s
 
           if property_id.present?
-            # FAST: Fetch only 1 record, no scopes
-            community = Community.select(:id, :name, :company_id, :address, :city, :state, :zip)
+            # FAST: Fetch only 1 record, scoped to this partner's enabled properties
+            community = Community.for_partner(@partner)
+                                 .select(:id, :name, :company_id, :address, :city, :state, :zip)
                                  .find_by(id: property_id, enable_svg_mode: true)
 
             unless community
@@ -48,10 +49,21 @@ module Api
           # --------------------------------------------------
           # LIST ALL PROPERTIES — optimized
           # --------------------------------------------------
-          communities = Community.active_client_properties
+          communities = Community.for_partner(@partner)
+                                 .active_client_properties
                                  .where(enable_svg_mode: true)
                                  .select(:id, :name, :company_id, :address, :city, :state, :zip)
                                  .includes(:company)
+
+          # SAFETY: partner has no enabled properties yet
+          if communities.empty?
+            return render json: {
+              propertiesList: [],
+              message: "No properties are configured for this partner yet.",
+              status: "success",
+              code: 200
+            }
+          end
 
           properties_list = communities.map do |c|
             {
@@ -129,7 +141,7 @@ module Api
             }, status: :bad_request
           end
 
-          @community = Community
+          @community = Community.for_partner(@partner)
                         .select(:id, :is_sitemap)
                         .includes(:units)
                         .find_by(id: property_id)
