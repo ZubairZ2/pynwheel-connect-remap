@@ -15,7 +15,7 @@ module Api
             # FAST: Fetch only 1 record, scoped to this partner's enabled properties
             community = Community.for_partner(@partner)
                                  .select(:id, :name, :company_id, :address, :city, :state, :zip)
-                                 .find_by(id: property_id, enable_svg_mode: true)
+                                 .find_by(id: property_id)
 
             unless community
               return render json: {
@@ -51,7 +51,6 @@ module Api
           # --------------------------------------------------
           communities = Community.for_partner(@partner)
                                  .active_client_properties
-                                 .where(enable_svg_mode: true)
                                  .select(:id, :name, :company_id, :address, :city, :state, :zip)
                                  .includes(:company)
 
