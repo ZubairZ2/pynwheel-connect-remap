@@ -1656,7 +1656,7 @@ class Community < ApplicationRecord
       ""
     end
     
-    URI.escape(com_address, Regexp.new("[^#{URI::PATTERN::UNRESERVED}]"))
+    URI::DEFAULT_PARSER.escape(com_address, Regexp.new("[^#{URI::PATTERN::UNRESERVED}]"))
   end
 
   def submit_crm_leads email_to, favorites
