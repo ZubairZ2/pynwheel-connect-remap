@@ -2,7 +2,10 @@ module Api
   module Partner
     module Maps
       class WebhooksController < BaseController
-        
+
+        # Partner that is only allowed to see SVG-enabled properties.
+        SVG_ONLY_PARTNER = "apartments".freeze
+
         before_action :load_property_for_units, only: [:units]
 
         # --------------------------------------------------
@@ -13,7 +16,7 @@ module Api
 
           if property_id.present?
             # FAST: Fetch only 1 record, scoped to this partner's enabled properties
-            community = Community.for_partner(@partner)
+            community = partner_properties_scope
                                  .select(:id, :name, :company_id, :address, :city, :state, :zip)
                                  .find_by(id: property_id)
 
@@ -49,7 +52,7 @@ module Api
           # --------------------------------------------------
           # LIST ALL PROPERTIES — optimized
           # --------------------------------------------------
-          communities = Community.for_partner(@partner)
+          communities = partner_properties_scope
                                  .active_client_properties
                                  .select(:id, :name, :company_id, :address, :city, :state, :zip)
                                  .includes(:company)
@@ -126,6 +129,15 @@ module Api
 
         private
 
+        # Base scope of properties this partner may access.
+        # Apartments.com only receives properties with SVG mode enabled;
+        # every other partner sees all of their enabled properties.
+        def partner_properties_scope
+          scope = Community.for_partner(@partner)
+          scope = scope.where(enable_svg_mode: true) if @partner == SVG_ONLY_PARTNER
+          scope
+        end
+
         # --------------------------------------------------
         # FAST loader for property used in units API
         # --------------------------------------------------
@@ -140,7 +152,7 @@ module Api
             }, status: :bad_request
           end
 
-          @community = Community.for_partner(@partner)
+          @community = partner_properties_scope
                         .select(:id, :is_sitemap)
                         .includes(:units)
                         .find_by(id: property_id)
