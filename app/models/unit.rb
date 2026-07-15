@@ -128,6 +128,34 @@ class Unit < ApplicationRecord
     available_units_query
   }
 
+  # Single source of truth for "available now", shared by the SDK payload's
+  # available_now flag and the availability filter's "Now" option, so the label a
+  # unit renders can never disagree with the filter bucket it falls into.
+  # A missing available_date counts as now, matching the filter's Date.new(0) default.
+  def available_now?
+    return false unless available
+
+    (available_date || Date.new(0)) <= Date.today
+  end
+
+  # Which availability filter bucket this unit falls into, matching the old map's
+  # day-offset windows (webpages.js filterUnitsBasedOnDate). Assigning the bucket
+  # here — rather than re-deriving it in the browser — keeps the filter options and
+  # the units they match in agreement, and keeps "today" on the property's clock.
+  # Returns nil for unavailable units, which belong to no bucket.
+  def availability_bucket
+    return nil unless available
+    return "now" if available_now?
+
+    case (available_date - Date.today).to_i
+    when 1..30    then "0-30"
+    when 31..60   then "31-60"
+    when 61..90   then "61-90"
+    when 91..120  then "91-120"
+    else "121+"
+    end
+  end
+
   scope :has_x_plot, ->(svg_enabled = false) {
     available_units_query = where("available_date > ? and available_date < ? and available = ?", Date.today, Date.today + 2.year, true)
 

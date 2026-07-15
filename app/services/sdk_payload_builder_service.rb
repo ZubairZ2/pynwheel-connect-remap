@@ -56,6 +56,8 @@ class SdkPayloadBuilderService
         availability_url:       unit.get_availability_url(),
         available_date:         unit.available_date,
         available:              unit.available,
+        available_now:          unit.available_now?,
+        availability_bucket:    unit.availability_bucket,
         lease_term:             unit.lease_term,
         lease_pricing:          unit.get_lease_term_pricing_matrix(),
         description:            unit.description.present? ? unit.description : floorplan&.description.presence || "",
@@ -462,24 +464,24 @@ class SdkPayloadBuilderService
     end
   end
 
+  AVAILABILITY_FILTER_LABELS = {
+    "now"     => "Now",
+    "0-30"    => "This Month",
+    "31-60"   => "In 31-60 days",
+    "61-90"   => "In 61-90 days",
+    "91-120"  => "In 91-120 days",
+    "121+"    => "In 121+ days"
+  }.freeze
+
+  # Built from the same Unit#availability_bucket the units themselves carry, so an
+  # option can only appear when at least one unit actually matches it.
   def filter_availability_options(units)
-    today = Date.today
-    d30   = today + 30; d60 = today + 60; d90 = today + 90; d120 = today + 120
-    over120 = @community.units_availability_over_120_days
+    buckets = units.filter_map(&:availability_bucket).uniq
+    buckets.delete("121+") unless @community.units_availability_over_120_days
 
-    seen = []
-    units.select(&:available).each do |unit|
-      date = unit.available_date || Date.new(0)
-      seen << { label: "Now",            value: "now"    } if date <= today
-      seen << { label: "This Month",     value: "0-30"   } if date > today  && date <= d30
-      seen << { label: "In 31-60 days",  value: "31-60"  } if date >= d30   && date <= d60
-      seen << { label: "In 61-90 days",  value: "61-90"  } if date >= d60   && date <= d90
-      seen << { label: "In 91-120 days", value: "91-120" } if date >= d90   && date <= d120
-      seen << { label: "In 121+ days",   value: "121+"   } if date > d120   && over120
-    end
-
-    order = { "now" => 0, "0-30" => 1, "31-60" => 2, "61-90" => 3, "91-120" => 4, "121+" => 5 }
-    seen.uniq { |o| o[:value] }.sort_by { |o| order.fetch(o[:value], 99) }
+    order = AVAILABILITY_FILTER_LABELS.keys
+    buckets.sort_by { |bucket| order.index(bucket) || 99 }
+           .map { |bucket| { label: AVAILABILITY_FILTER_LABELS[bucket], value: bucket } }
   end
 
   def filter_square_footage_data(units)
