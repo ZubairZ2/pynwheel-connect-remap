@@ -31,6 +31,7 @@ class SdkPayloadBuilderService
       floorplan = unit.floorplan
       fees      = @community.get_additional_fees(unit)
       buttons   = unit_additional_buttons(unit)
+      description, description_title = description_fields(unit, floorplan)
 
       {
         unitNumber:      unit.marketing_name,
@@ -60,7 +61,8 @@ class SdkPayloadBuilderService
         availability_bucket:    unit.availability_bucket,
         lease_term:             unit.lease_term,
         lease_pricing:          unit.get_lease_term_pricing_matrix(),
-        description:            unit.description.present? ? unit.description : floorplan&.description.presence || "",
+        description:            description,
+        description_title:      description_title,
         display_rent:           unit&.community&.display_rent,
         additional_fees:        fees,
         property_id:            unit.property_id,
@@ -461,6 +463,22 @@ class SdkPayloadBuilderService
       elsif n == 1 then { label: "1 Bedroom",     value: "1" }
       else              { label: "#{n} Bedrooms", value: n.to_s }
       end
+    end
+  end
+
+  DEFAULT_DESCRIPTION_TITLE = "More Details".freeze
+
+  # Description and its heading, taken as a pair from whichever record supplies the
+  # description. Reading the title independently would let a unit's description_title
+  # column default ("More Details") mask the heading a floorplan-level special was
+  # given, since the column is never nil for rows created with that default.
+  def description_fields(unit, floorplan)
+    if unit.description.present?
+      [unit.description, unit.description_title.presence || DEFAULT_DESCRIPTION_TITLE]
+    elsif floorplan&.description.present?
+      [floorplan.description, floorplan.description_title.presence || DEFAULT_DESCRIPTION_TITLE]
+    else
+      ["", DEFAULT_DESCRIPTION_TITLE]
     end
   end
 
