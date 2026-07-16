@@ -1071,7 +1071,9 @@
 
     /**
      * Returns a sorted array of floor objects derived from units.
-     * Each object: { floor: Number, mapId: String }
+     * Each object: { floor: Number, mapId: String, name: String }
+     * `name` is what the floor should be labelled as: the floorplate's CMS
+     * floor name when one was entered, otherwise the floor number.
      * Use with changeFloor(floor) or changeMap(mapId).
      */
     getFloors() {
@@ -1106,9 +1108,23 @@
         }
       });
 
+      // Floor labels come from the floorplate the floor resolves to, mirroring the
+      // old map: the CMS floor name only wins when the "Add floor name" toggle is on
+      // AND a name was actually entered; otherwise the floor number is the label.
+      const floorplateByMapId = new Map(
+        (this.data.floorplates || [])
+          .filter(fp => fp.mapId != null)
+          .map(fp => [String(fp.mapId), fp])
+      );
+
       return [...seen.entries()]
         .sort(([a], [b]) => a - b)
-        .map(([floor, mapId]) => ({ floor, mapId }));
+        .map(([floor, mapId]) => {
+          const fp        = mapId != null ? floorplateByMapId.get(String(mapId)) : null;
+          const floorName = String(fp && fp.floorName != null ? fp.floorName : "").trim();
+          const name      = (fp && fp.floorNameAdded && floorName) ? floorName : String(floor);
+          return { floor, mapId, name };
+        });
     },
 
     /**

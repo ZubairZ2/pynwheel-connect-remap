@@ -96,7 +96,7 @@ module Api
           unit_id = params[:unitId].to_s
 
           if unit_id.present?
-            unit = @community.units.find_by(id: unit_id)
+            unit = partner_units_scope.find_by(id: unit_id)
 
             unless unit
               return render json: {
@@ -114,7 +114,7 @@ module Api
             }
           end
 
-          units_list = @community.units
+          units_list = partner_units_scope
             .sort_by { |u| -u.created_at.to_i }
             .uniq(&:marketing_name)
             .map { |u| format_unit(u, @community) }
@@ -128,6 +128,12 @@ module Api
         end
 
         private
+
+        # Units exposed to partners: hidden units and anything matching
+        # HIDE_UNIT_PATTERN by name are never returned.
+        def partner_units_scope
+          @community.units.visible_units.without_hidden_names
+        end
 
         # Base scope of properties this partner may access.
         # Apartments.com only receives properties with SVG mode enabled;
@@ -154,7 +160,6 @@ module Api
 
           @community = partner_properties_scope
                         .select(:id, :is_sitemap)
-                        .includes(:units)
                         .find_by(id: property_id)
 
           if @community.nil?

@@ -99,7 +99,13 @@ class Unit < ApplicationRecord
   has_one :tour_stop, as: :stop, dependent: :destroy
   
   scope :visible_units, -> {where(visible: true)}
-  
+
+  # Excludes units matching HIDE_UNIT_PATTERN by name, for units synced since the
+  # last units:hide_wait_units run that have not had `visible` flipped yet.
+  scope :without_hidden_names, -> {
+    where("marketing_name IS NULL OR LOWER(marketing_name) NOT LIKE ?", "%#{HIDE_UNIT_PATTERN}%")
+  }
+
   scope :has_pointer_x_plot, -> { where("pointer_data->>'x_plot' IS NOT NULL AND (pointer_data->>'x_plot')::integer > ?", 0) }
   scope :has_pointer_y_plot, -> { where("pointer_data->>'y_plot' IS NOT NULL AND (pointer_data->>'y_plot')::integer > ?", 0) }
   scope :svg_pointed, -> { has_pointer_x_plot.or(has_pointer_y_plot) }

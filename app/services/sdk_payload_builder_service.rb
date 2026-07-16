@@ -239,13 +239,16 @@ class SdkPayloadBuilderService
     return [] if @community.is_sitemap?
     @community.floorplates.map do |fp|
       {
-        mapId:       fp.id,
-        mapType:     'floorplate',
-        range:       fp.range,
-        updatedAt:   fp.updated_at.to_i,
-        imageUrl:    fp.validated_image_url,
-        imageWidth:  fp.floorplate_image_width.to_i,
-        imageHeight: fp.floorplate_image_height.to_i
+        mapId:          fp.id,
+        mapType:        'floorplate',
+        name:           fp.name,
+        range:          fp.range,
+        floorName:      fp.floor_name,
+        floorNameAdded: fp.floor_name_added,
+        updatedAt:      fp.updated_at.to_i,
+        imageUrl:       fp.validated_image_url,
+        imageWidth:     fp.floorplate_image_width.to_i,
+        imageHeight:    fp.floorplate_image_height.to_i
       }
     end
   end
