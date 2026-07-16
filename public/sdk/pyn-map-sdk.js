@@ -180,7 +180,7 @@
 
         this.unitsByMap[mapId].push(u);
 
-        const pid = u.pointerData?.id ? String(u.pointerData.id) : null;
+        const pid = this._unitPid(u);
         if (pid) {
           this.pointerIdsByMap[mapId].push(pid);
           this.unitsByPointerIdByMap[mapId][pid] = u;
@@ -450,13 +450,14 @@
       const unit = units.find(u =>
         String(u.unitId) === id ||
         String(u.id) === id ||
-        String(u.pointerData?.id) === id
+        this._unitPid(u) === id
       );
 
-      if (!unit?.pointerData?.id) return;
+      if (!this._unitPid(unit)) return;
 
-      const pid = String(unit.pointerData.id);
-      const el = activeSvg.querySelector(`#${CSS.escape(pid)}`);
+      const sel = this._pointerSelector(unit.pointerData);
+      if (!sel) return;
+      const el = activeSvg.querySelector(sel);
       if (!el) return;
 
       const styles = this.config.styles;
@@ -482,13 +483,14 @@
       const unit = units.find(u =>
         String(u.unitId) === id ||
         String(u.id) === id ||
-        String(u.pointerData?.id) === id
+        this._unitPid(u) === id
       );
 
-      if (!unit?.pointerData?.id) return;
+      if (!this._unitPid(unit)) return;
 
-      const pid = String(unit.pointerData.id);
-      const el = activeSvg.querySelector(`#${CSS.escape(pid)}`);
+      const sel = this._pointerSelector(unit.pointerData);
+      if (!sel) return;
+      const el = activeSvg.querySelector(sel);
       if (!el) return;
 
       const styles = this.config.styles;
@@ -572,10 +574,10 @@
       const units = this.unitsByMap[this.activeMapId] || [];
 
       units.forEach(unit => {
-        const pid = unit.pointerData?.id;
-        if (!pid) return;
+        const sel = this._pointerSelector(unit.pointerData);
+        if (!sel) return;
 
-        const el = activeSvg.querySelector(`#${CSS.escape(pid)}`);
+        const el = activeSvg.querySelector(sel);
         if (!el) return;
 
         const status = this._unitStatus(unit);
@@ -601,10 +603,10 @@
       );
 
       units.forEach(u => {
-        const pid = u.pointerData?.id;
-        if (!pid) return;
+        const sel = this._pointerSelector(u.pointerData);
+        if (!sel) return;
 
-        const el = activeSvg.querySelector(`#${CSS.escape(String(pid))}`);
+        const el = activeSvg.querySelector(sel);
         if (!el) return;
 
         const status = this._unitStatus(u);
@@ -639,13 +641,13 @@
       ids.forEach(id => {
         const unit = units.find(u =>
           String(u.unitId) === id ||
-          String(u.pointerData?.id) === id
+          this._unitPid(u) === id
         );
 
-        if (!unit?.pointerData?.id) return;
+        const sel = this._pointerSelector(unit?.pointerData);
+        if (!sel) return;
 
-        const pid = String(unit.pointerData.id);
-        const el = activeSvg.querySelector(`#${CSS.escape(pid)}`);
+        const el = activeSvg.querySelector(sel);
         if (!el) return;
 
         const status = this._unitStatus(unit);
@@ -714,12 +716,13 @@
       const unit = units.find(u =>
         String(u.unitId) === String(unitId) ||
         String(u.id)     === String(unitId) ||
-        String(u.pointerData?.id) === String(unitId)
+        this._unitPid(u) === String(unitId)
       );
-      if (!unit?.pointerData?.id) return null;
 
-      const pid = String(unit.pointerData.id);
-      const el = svg.querySelector(`#${CSS.escape(pid)}`);
+      const sel = this._pointerSelector(unit?.pointerData);
+      if (!sel) return null;
+
+      const el = svg.querySelector(sel);
       if (!el) return null;
 
       const bbox = el.getBBox();
@@ -856,7 +859,10 @@
 
       // 1) Mark "unit roots" once: we put data-pyn-unit-pid on the group (if any) or on the element itself.
       pointerIds.forEach(pid => {
-        const el = svg.querySelector(`#${CSS.escape(pid)}`);
+        const sel = this._pointerSelector(byPointer[pid]?.pointerData);
+        if (!sel) return;
+
+        const el = svg.querySelector(sel);
         if (!el) return;
 
         const root = el.closest("g") || el; // whole box area
@@ -882,11 +888,10 @@
 
         // Apply hover color unless the unit is already selected
         if (String(unit.unitId) !== String(this._selectedUnitId)) {
-          const el = svg.querySelector(`#${CSS.escape(pid)}`);
-          if (el) {
-            const hoverColor = this.config.styles.unitColors.hover || this.config.styles.unitColors.available;
-            el.style.fill = hoverColor;
-          }
+          const sel = this._pointerSelector(unit.pointerData);
+          const el = (sel && root.querySelector(sel)) || root;
+          const hoverColor = this.config.styles.unitColors.hover || this.config.styles.unitColors.available;
+          el.style.fill = hoverColor;
         }
 
         if (this.config.onUnitHover) {
@@ -905,11 +910,10 @@
           const unit = byPointer[pid];
           if (unit) {
             if (String(unit.unitId) !== String(this._selectedUnitId)) {
-              const el = svg.querySelector(`#${CSS.escape(pid)}`);
-              if (el) {
-                const status = this._unitStatus(unit);
-                el.style.fill = this.config.styles.unitColors[status] || this.config.styles.unitColors.available;
-              }
+              const sel = this._pointerSelector(unit.pointerData);
+              const el = (sel && root.querySelector(sel)) || root;
+              const status = this._unitStatus(unit);
+              el.style.fill = this.config.styles.unitColors[status] || this.config.styles.unitColors.available;
             }
             if (this.config.offUnitHover) {
               this.config.offUnitHover(unit);
@@ -1009,9 +1013,13 @@
       if (!activeSvg) return;
 
       const ids = this.pointerIdsByMap[this.activeMapId] || [];
+      const byPointer = this.unitsByPointerIdByMap[this.activeMapId] || {};
 
       ids.forEach(pid => {
-        const el = activeSvg.querySelector(`#${CSS.escape(pid)}`);
+        const sel = this._pointerSelector(byPointer[pid]?.pointerData);
+        if (!sel) return;
+
+        const el = activeSvg.querySelector(sel);
         if (!el) return;
 
         el.style.fill = "";
@@ -1092,6 +1100,32 @@
       // if (unit.unit_status === "occupied") return "leased";
       // if (!unit.floorplan_name) return "missing";
       return "available";
+    },
+
+    // Returns the lookup key for a unit: non-empty id, or selector as fallback.
+    // Handles pointer_data where id is "" but selector is set.
+    _unitPid(unit) {
+      const pd = unit?.pointerData;
+      if (!pd) return null;
+      const id = pd.id;
+      if (id !== undefined && id !== null && id !== '') return String(id);
+      return pd.selector || null;
+    },
+
+    // Exact mirror of svgHandler.js getPointerIdAndSelector:
+    // selector is overridden with tag#id ONLY when BOTH tag and id are truthy.
+    // When id is "" (empty), tag && id is false → original selector is kept.
+    _pointerSelector(pointerData) {
+      const { tag = null, id = null, selector: raw = null } = pointerData || {};
+      let selector = raw;
+
+      if (tag && id) {
+        selector = /^[0-9]/.test(id)
+          ? `${tag}[id="${id}"]`
+          : `${tag}#${CSS.escape(id)}`;
+      }
+
+      return selector || null;
     },
 
     _findFloorplateByFloor(floorNumber) {
