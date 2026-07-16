@@ -24,7 +24,7 @@ require 'set'
 class UpdateApartmentListPropertiesWorker
   include Sidekiq::Worker
 
-  sidekiq_options queue: 'import_data', retry: 3
+  sidekiq_options queue: 'import_data', retry: 1
 
   # Google Sheet URL for updating properties
   SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1C3VWUdkzKJve95JfNNBg0SBgi58FOOis-qciKFo_2wE/export?format=csv&gid=1137384592'

@@ -8,7 +8,7 @@ require 'set'
 class ImportApartmentListPropertiesWorker
   include Sidekiq::Worker
 
-  sidekiq_options queue: 'import_data', retry: 3
+  sidekiq_options queue: 'import_data', retry: 1
 
   APARTMENTLIST_API_KEY = ENV['PARTNER_APARTMENTLIST_API_KEY']
   DRIVE_CSV_URL = ENV['APARTMENTLIST_PROPERTIES_URL']
