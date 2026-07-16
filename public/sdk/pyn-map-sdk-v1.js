@@ -1077,46 +1077,53 @@
      * Use with changeFloor(floor) or changeMap(mapId).
      */
     getFloors() {
-      const seen  = new Map(); // floor → mapId
+      const seen = new Map(); // floor → floorplate mapId
 
-      // 1) Floors that have units — mapId comes from the unit.
-      (this.data.units || []).forEach(u => {
-        const f = Number(u.floor);
-        if (isNaN(f) || u.floor == null || u.floor === "") return;
-        if (!seen.has(f)) seen.set(f, u.mapId != null ? String(u.mapId) : null);
-      });
-
-      // 2) Floors declared by floorplate ranges — includes floors with no units.
-      //    A range is a single floor ("3") or a span ("1-5"); fill any floor not
-      //    already covered by a unit, using the floorplate's mapId.
-      (this.data.floorplates || []).forEach(fp => {
-        const range = String(fp.range == null ? "" : fp.range).trim();
-        if (!range) return;
-
-        let min, max;
-        if (range.includes("-")) {
-          [min, max] = range.split("-").map(Number);
+      // Floors are derived EXCLUSIVELY from floorplate ranges, mirroring the old
+      // map's `@floorplates.map { |f| f.floors }`. Units are never a source of
+      // truth for floors — a unit with a stray/blank/unplotted floor (which
+      // coerces to 0) must not conjure a phantom entry the property doesn't have.
+      //
+      // A range mirrors Floorplate#floors: a leading "-" single ("-1"), a span
+      // ("1-5"), a comma list ("1,3,5"), or a single floor ("3").
+      const floorsForRange = (raw) => {
+        const range = String(raw == null ? "" : raw).trim();
+        if (!range) return [];
+        const out = [];
+        if (range[0] === "-") {
+          out.push(parseInt(range, 10));
+        } else if (range.includes("-")) {
+          let [min, max] = range.split("-").map(s => parseInt(s, 10));
+          if (!isNaN(min) && !isNaN(max)) {
+            if (min > max) [min, max] = [max, min];
+            for (let f = min; f <= max; f++) out.push(f);
+          }
+        } else if (range.includes(",")) {
+          range.split(",").forEach(s => {
+            const f = parseInt(s, 10);
+            if (!isNaN(f)) out.push(f);
+          });
         } else {
-          min = max = Number(range);
+          const f = parseInt(range, 10);
+          if (!isNaN(f)) out.push(f);
         }
-        if (isNaN(min) || isNaN(max)) return;
-        if (min > max) [min, max] = [max, min];
+        return out;
+      };
 
+      const floorplateByMapId = new Map();
+
+      (this.data.floorplates || []).forEach(fp => {
         const mapId = fp.mapId != null ? String(fp.mapId) : null;
-        for (let f = min; f <= max; f++) {
+        if (mapId != null) floorplateByMapId.set(mapId, fp);
+        // First floorplate to declare a floor owns it.
+        floorsForRange(fp.range).forEach(f => {
           if (!seen.has(f)) seen.set(f, mapId);
-        }
+        });
       });
 
       // Floor labels come from the floorplate the floor resolves to, mirroring the
       // old map: the CMS floor name only wins when the "Add floor name" toggle is on
       // AND a name was actually entered; otherwise the floor number is the label.
-      const floorplateByMapId = new Map(
-        (this.data.floorplates || [])
-          .filter(fp => fp.mapId != null)
-          .map(fp => [String(fp.mapId), fp])
-      );
-
       return [...seen.entries()]
         .sort(([a], [b]) => a - b)
         .map(([floor, mapId]) => {
