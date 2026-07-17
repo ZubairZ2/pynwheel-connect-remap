@@ -1451,6 +1451,11 @@
     // ----------------------------------------------------
 
     async _init3DMap() {
+      // Rendering a second BeansMap into the same div leaves the first engine's
+      // controls in the DOM but bound to an orphaned view — they look fine and do
+      // nothing. Mirrors the `if (beansWidget) return` guard in beans3dHandler.js.
+      if (this._beansWidget) return;
+
       const cfg3d = this.data.property?.beans3dConfig;
       if (!cfg3d?.enabled || !cfg3d?.beansApiKey) {
         console.warn("PynMapSDK: 3D map not configured for this property.");
@@ -1506,6 +1511,11 @@
 
       this._3dInitialized = true;
 
+      // render() creates the provider engine synchronously, so claim it now even
+      // though its mapView is still geocoding. Mirrors beans3dHandler.js, which
+      // assigns workingInstance at the end of init rather than only on ready.
+      this._beansWidget.workingInstance = this._beansWorkingInstance();
+
       // Bound here rather than inside the engine-ready poll below: if that poll
       // never resolves, hover exits must still work.
       this._bind3DHoverTracker();
@@ -1540,14 +1550,15 @@
           // touchend on the Beans container and manually fire .click() for taps on
           // Beans UI controls (not on the ESRI map canvas itself).
           this._bindBeansContainerTouch();
+
+          // A floor picked while the engine was still geocoding only reaches the
+          // map here — redrawing before mapView.ready renders against a view that
+          // has no camera yet.
+          if (this._beans3dFloor != null) {
+            this._update3DFilter(this._beans3dIndicesForFloor(this._beans3dFloor));
+          }
         }
       }, 300);
-
-      // Apply any pending floor filter
-      if (this._beans3dFloor != null) {
-        this._set3DSelectedFloor(this._beans3dFloor);
-        this._update3DFilter(this._beans3dIndicesForFloor(this._beans3dFloor));
-      }
     },
 
     /** Returns the active map engine instance (esri / mapbox / google / banvas). */
@@ -1777,14 +1788,20 @@
       const satelliteView = this.config.defaultSatelliteView != null ? this.config.defaultSatelliteView : cfg3d?.defaultSatelliteView;
       const initialMap    = satelliteView ? "SATELLITE" : "3D";
       const opts       = this._beans3dDisplayOptions(indices, initialMap, cfg3d);
+
+      // Filters arriving before the engine finishes geocoding are dropped, not
+      // re-initialized: _init3DMap's ready poll replays _beans3dFloor once the
+      // view is live. Re-initializing here rendered a second map into the same
+      // div and left the first one's controls orphaned.
+      if (!this._beansWidget.workingInstance?.mapView?.ready) return;
+
       try {
-        if (this._beansWidget.workingInstance) {
-          this._beansWidget.setDisplayOptions(opts);
-          this._beansWidget.redraw();
-        } else {
-          // Engine not ready yet — re-init mirrors reDrawBeansWidget in beans3DHandler.js
-          this._init3DMap();
-        }
+        this._beansWidget.setDisplayOptions(opts);
+        // setDisplayOptions swaps the options object wholesale and redraw() does
+        // not recompute the floor, so the engine has to be told directly.
+        // Mirrors reDrawBeansWidget in beans3dHandler.js.
+        this._set3DSelectedFloor(this._beans3dFloor);
+        this._beansWidget.redraw();
       } catch (e) {
         console.warn("PynMapSDK: Could not update 3D filter", e);
       }
@@ -1927,9 +1944,20 @@
       );
     },
 
-    /** The widget's engine instance; assigned on ready, resolved directly until then. */
+    /**
+     * The engine the widget actually renders with.
+     *
+     * primaryObj first, because that is the one setDisplayOptions() and redraw()
+     * act on. The widget picks it per property (ESRI / Mapbox / Google / Banvas),
+     * so guessing at the engine objects instead lands on a different instance for
+     * some properties — writes to it are then simply ignored by the redraw.
+     */
     _beans3DInstance() {
-      return this._beansWidget?.workingInstance || this._beansWorkingInstance();
+      return (
+        this._beansWidget?.primaryObj ||
+        this._beansWidget?.workingInstance ||
+        this._beansWorkingInstance()
+      );
     },
 
     _beans3DView() {
