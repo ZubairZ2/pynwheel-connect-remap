@@ -180,6 +180,15 @@
     _beansWidget:   null,
     _beans3dArr:    [],
     _beans3dFloor:  null,
+    // 3D hover state — see the 3D HOVER section for how these fit together.
+    _3dHoveredUnit:      null,
+    _3dHoverOrigin:      null,   // where the hover began, viewport coords
+    _3dPointer:          null,   // where the pointer is now, viewport coords
+    _3dHoverMoveHandler: null,
+    // Fallback only, for units with no polygon to test against: how far the
+    // pointer may drift from where the hover began before it counts as having
+    // left. Same value the CMS map uses.
+    _3D_HOVER_EXIT_RADIUS_PX: 30,
     _3dWrapper:     null,
     _3dToggleBtn:   null,
     _zoomInBtn:     null,
@@ -1405,6 +1414,9 @@
      */
     switchTo2DMap() {
       if (!this._3dMode) return;
+      // Drop any hover before the mode flag flips, so the consumer is told the
+      // tooltip is gone and does not keep a 3D unit hovered on the 2D map.
+      this._clear3DHover();
       this._3dMode = false;
       this._updateCurrentMapType();
       if (this._analytics) this._captureWithMapType('map_2d');
@@ -1487,19 +1499,16 @@
             const unit = (this.data.units || []).find(
               u => String(u.unitId) === String(data.unitId)
             );
-            if (unit) {
-              const unitId = String(unit.unitId ?? unit.id);
-              if (unitId !== this._lastHoverPid) {
-                this._lastHoverPid = unitId;
-                if (this._analytics) this._captureWithMapType('unit_marker', 'hover', { viewed_unit_id: unitId });
-                if (this.config.onUnitHover) this.config.onUnitHover(unit);
-              }
-            }
+            if (unit) this._on3DUnitHover(unit);
           }
         }
       );
 
       this._3dInitialized = true;
+
+      // Bound here rather than inside the engine-ready poll below: if that poll
+      // never resolves, hover exits must still work.
+      this._bind3DHoverTracker();
 
       // Wait for the Beans map engine to be fully ready (mirrors beans3DHandler.js)
       const waitForEngine = setInterval(() => {
@@ -1518,7 +1527,11 @@
 
           const container = inst.mapView?.container;
           if (container) {
-            container.addEventListener("mouseleave", () => this._hideBeansEsriPopup());
+            // Leaving the map is an unambiguous end to any hover.
+            container.addEventListener("mouseleave", () => {
+              this._hideBeansEsriPopup();
+              this._clear3DHover();
+            });
           }
 
           // ArcGIS SDK sets touch-action:none on its view container, which cascades
@@ -1756,6 +1769,208 @@
     // Fall back to reading the field directly for the raw-unit fallback path.
     _beans3dItemData(item) {
       return item?.options?.onClickData ?? item;
+    },
+
+    // ----------------------------------------------------
+    // 3D HOVER
+    // ----------------------------------------------------
+    //
+    // Beans reports which unit the pointer is over, but it re-reports on nearly
+    // every pointer move — including moves over open ground, where it keeps
+    // naming the last unit — and it never reports the pointer leaving. So Beans
+    // decides *which* unit, and we decide whether the pointer is still on it:
+    // against the unit's own polygon where there is one, otherwise by distance
+    // from where the hover began. Mirrors beans3dHandler.js in the CMS map.
+
+    /** Beans says the pointer is over a unit. Start a hover unless it disagrees. */
+    _on3DUnitHover(unit) {
+      const unitId = String(unit.unitId ?? unit.id);
+
+      // Ignore Beans repeating itself: this is what pins the hover origin to
+      // where the hover began, rather than letting it follow the cursor.
+      if (this._3dHoveredUnitId() === unitId) return;
+
+      // Beans also nominates units the pointer is not over, so drop a nomination
+      // the polygon rejects — otherwise the tooltip reappears off-shape as soon
+      // as the tracker clears it.
+      if (this._is3DPointerInsideUnit(unit) === false) {
+        this._clear3DHover();
+        return;
+      }
+
+      this._3dHoveredUnit = unit;
+      this._3dHoverOrigin = this._3dPointer ? { ...this._3dPointer } : null;
+
+      this._capture3DUnitHover(unitId);
+      if (this.config?.onUnitHover) this.config.onUnitHover(unit);
+    },
+
+    /** End the current hover and tell the consumer the pointer has left. */
+    _clear3DHover() {
+      if (!this._3dHoveredUnit) return;
+
+      this._3dHoveredUnit = null;
+      this._3dHoverOrigin = null;
+      // Cleared so re-entering the same unit counts as a fresh hover.
+      this._lastHoverPid  = null;
+
+      if (this.config?.onUnitHover) this.config.onUnitHover(null);
+    },
+
+    _3dHoveredUnitId() {
+      const unit = this._3dHoveredUnit;
+      return unit ? String(unit.unitId ?? unit.id) : null;
+    },
+
+    /** Analytics fires once per unit; the hover callback must fire on every entry. */
+    _capture3DUnitHover(unitId) {
+      if (unitId === this._lastHoverPid) return;
+      this._lastHoverPid = unitId;
+      if (this._analytics) {
+        this._captureWithMapType('unit_marker', 'hover', { viewed_unit_id: unitId });
+      }
+    },
+
+    /**
+     * Track the pointer and end the hover once it leaves the unit.
+     *
+     * Keyed on mousemove only: a resting pointer fires no mousemove, so it can
+     * never expire a hover. That is what keeps the tooltip up while the cursor
+     * sits still on a shape.
+     */
+    _bind3DHoverTracker() {
+      if (this._3dHoverMoveHandler) return;
+
+      this._3dHoverMoveHandler = (event) => {
+        this._3dPointer = { x: event.clientX, y: event.clientY };
+
+        if (!this._3dHoveredUnit) return;
+
+        // Beans can nominate before any move has been seen; pin the origin now
+        // rather than leave the hover with nothing to measure against.
+        if (!this._3dHoverOrigin) {
+          this._3dHoverOrigin = { ...this._3dPointer };
+          return;
+        }
+
+        if (this._has3DPointerLeftUnit(this._3dHoveredUnit)) this._clear3DHover();
+      };
+
+      document.addEventListener("mousemove", this._3dHoverMoveHandler, { passive: true });
+    },
+
+    _unbind3DHoverTracker() {
+      if (!this._3dHoverMoveHandler) return;
+      document.removeEventListener("mousemove", this._3dHoverMoveHandler);
+      this._3dHoverMoveHandler = null;
+    },
+
+    /** The polygon decides where there is one; otherwise drift from the origin does. */
+    _has3DPointerLeftUnit(unit) {
+      const inside = this._is3DPointerInsideUnit(unit);
+      if (inside !== null) return !inside;
+
+      return this._3dPointerDrift() > this._3D_HOVER_EXIT_RADIUS_PX;
+    },
+
+    /** How far the pointer has moved from where the hover began. */
+    _3dPointerDrift() {
+      if (!this._3dPointer || !this._3dHoverOrigin) return 0;
+
+      return Math.hypot(
+        this._3dPointer.x - this._3dHoverOrigin.x,
+        this._3dPointer.y - this._3dHoverOrigin.y
+      );
+    },
+
+    /**
+     * Is the pointer inside this unit's shape?
+     * true / false, or null when the unit has no polygon to test against.
+     */
+    _is3DPointerInsideUnit(unit) {
+      const ring = this._unit3DScreenRing(unit);
+      if (!ring) return null;
+
+      // toScreen returns container-relative coordinates, so put the pointer
+      // (viewport coordinates) into that same space before testing.
+      const rect = this._beans3DView().container.getBoundingClientRect();
+
+      return this._isPointInPolygon(
+        { x: this._3dPointer.x - rect.left, y: this._3dPointer.y - rect.top },
+        ring
+      );
+    },
+
+    /** The widget's engine instance; assigned on ready, resolved directly until then. */
+    _beans3DInstance() {
+      return this._beansWidget?.workingInstance || this._beansWorkingInstance();
+    },
+
+    _beans3DView() {
+      return this._beans3DInstance()?.mapView ?? null;
+    },
+
+    /** The unit's polygon, which Beans stores positionally against _beans3dArr. */
+    _unit3DGeojson(unit) {
+      const index = this._beans3dArr.findIndex(
+        item => String(this._beans3dItemData(item)?.unitId) === String(unit?.unitId)
+      );
+      if (index < 0) return null;
+
+      return this._beans3DInstance()?.unitPolygonsToExclude?.[index]?.geojson ?? null;
+    },
+
+    /**
+     * The unit's polygon projected into screen space, or null when it cannot be
+     * projected — callers must treat null as "unknown", never as "outside".
+     * Ported from isMouseInsideGeoShape in beans3DHandler.js.
+     */
+    _unit3DScreenRing(unit) {
+      const view  = this._beans3DView();
+      const Point = window.__esri?.geometry?.Point;
+      if (!view || !Point || !this._3dPointer) return null;
+
+      const geometry = this._unit3DGeojson(unit)?.geometry;
+      // Polygon: coordinates[0] is the outer ring. MultiPolygon: coordinates[0][0].
+      const ring = geometry?.type === "Polygon"      ? geometry.coordinates?.[0]
+                 : geometry?.type === "MultiPolygon" ? geometry.coordinates?.[0]?.[0]
+                 : null;
+      if (!Array.isArray(ring) || ring.length < 3) return null;
+
+      const screenRing = [];
+      for (const [longitude, latitude] of ring) {
+        let screenPoint;
+        try {
+          screenPoint = view.toScreen(
+            new Point({ longitude, latitude, spatialReference: view.spatialReference })
+          );
+        } catch {
+          return null;
+        }
+        if (screenPoint && Number.isFinite(screenPoint.x) && Number.isFinite(screenPoint.y)) {
+          screenRing.push(screenPoint);
+        }
+      }
+
+      return screenRing.length >= 3 ? screenRing : null;
+    },
+
+    /** Ray casting; ported from isPointInPolygon in common_functions.js. */
+    _isPointInPolygon(point, ring) {
+      let inside = false;
+
+      for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+        const xi = ring[i].x, yi = ring[i].y;
+        const xj = ring[j].x, yj = ring[j].y;
+
+        const denom     = (yj - yi) || 1e-10;
+        const intersect = (yi > point.y) !== (yj > point.y) &&
+                          point.x < ((xj - xi) * (point.y - yi)) / denom + xi;
+
+        if (intersect) inside = !inside;
+      }
+
+      return inside;
     },
 
     _beans3dIndicesForFloor(floorNumber) {
@@ -2610,6 +2825,10 @@
       this._beansWidget        = null;
       this._beans3dArr         = [];
       this._beans3dFloor       = null;
+      this._unbind3DHoverTracker();
+      this._3dHoveredUnit      = null;
+      this._3dHoverOrigin      = null;
+      this._3dPointer          = null;
       this._3dWrapper          = null;
       this._3dToggleBtn        = null;
       this._zoomInBtn          = null;
