@@ -129,10 +129,29 @@ function initializeBeans3DMap() {
   beansWidget.workingInstance = beansWorkingMapInstance();
 }
 
+/**
+ * The floor whose layer the 3D map should draw, as the widget expects it.
+ *
+ * Always a string: the widget treats a falsy selectedFloor as "draw every
+ * floor", so floor 0 as a number would stack all the layers. "" is that
+ * "every floor" value, used for the All tab and for properties without
+ * floorplates.
+ */
+function beansSelectedFloor() {
+  if (!hasFloorplate()) return "";
+  if (current_floor == null || current_floor === "all") return "";
+
+  return String(current_floor);
+}
+
 function beans3DMapDisplayOptions(filteredRows = null) {
   return {
     propertyAddress: beansAddress,
     filteredRows: filteredRows || filterBeansItemsIndices(),
+    // filteredRows only picks which units show. The floor layers are drawn from
+    // selectedFloor, which the widget compares against each polygon's floor —
+    // without it every floor renders at once, stacked on top of each other.
+    selectedFloor: beansSelectedFloor(),
     customConfigs: {},
     initialMap: (definedAndHasValue(defaultSatelliteView) && defaultSatelliteView) ? "SATELLITE" : "3D",
     hideBeansCard: true,
@@ -268,6 +287,13 @@ function reDrawBeansWidget() {
   if (beansWidget?.workingInstance) {
     let displayOptions = beans3DMapDisplayOptions();
     beansWidget.setDisplayOptions(displayOptions);
+
+    // setDisplayOptions only swaps the options object, and redraw() re-renders
+    // without recomputing the floor, so the engine has to be told directly.
+    // The floor in displayOptions above only takes effect when the widget resets
+    // its state (a re-init), which a redraw does not do.
+    beansWidget.workingInstance.selectedFloor = beansSelectedFloor();
+
     beansWidget.redraw();
   } else {
     initializeBeans3DMap();

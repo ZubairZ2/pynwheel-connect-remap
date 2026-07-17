@@ -1545,6 +1545,7 @@
 
       // Apply any pending floor filter
       if (this._beans3dFloor != null) {
+        this._set3DSelectedFloor(this._beans3dFloor);
         this._update3DFilter(this._beans3dIndicesForFloor(this._beans3dFloor));
       }
     },
@@ -1644,6 +1645,10 @@
       const opts = {
         propertyAddress:   address,
         filteredRows:      filteredIndices ?? this._beans3dArr.map((_, i) => i),
+        // The engine re-reads this whenever it resets its state (a re-render or
+        // re-init), so the active floor has to live here too or the map quietly
+        // goes back to stacking every floor layer.
+        selectedFloor:     this._beans3dFloor == null ? "" : String(this._beans3dFloor),
         customConfigs:     {},
         initialMap:        initialMap || "3D",
         hideBeansCard:     true,
@@ -1743,6 +1748,27 @@
         };
         return data;
       });
+    },
+
+    /**
+     * Draw only the given floor's layer, the way Beans' own floor selector does.
+     *
+     * filteredRows only controls which units are shown; the floor layers are
+     * driven by the engine's `selectedFloor`, which the widget compares against
+     * each polygon's floor when it renders (empty string means draw every floor,
+     * which is why all layers stack up until this is set). redraw() re-renders
+     * with dontUpdateSelectedFloor, so the value set here survives.
+     *
+     * Always a string: the widget's "show all floors" test is falsy-based, so
+     * floor 0 as a number would read as "no floor selected".
+     *
+     * @param {number|string|null} floorNumber null shows every floor
+     */
+    _set3DSelectedFloor(floorNumber) {
+      const engine = this._beans3DInstance();
+      if (!engine) return;
+
+      engine.selectedFloor = floorNumber == null ? "" : String(floorNumber);
     },
 
     _update3DFilter(indices) {
@@ -2057,6 +2083,7 @@
         const indices = floorNumber != null
           ? this._beans3dIndicesForFloor(floorNumber)
           : this._beans3dArr.map((_, i) => i);
+        this._set3DSelectedFloor(floorNumber);
         this._update3DFilter(indices);
         return;
       }
