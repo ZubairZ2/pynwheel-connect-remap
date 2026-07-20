@@ -325,7 +325,7 @@ function getPointerIdAndSelector(pointerData, dataset) {
     if (/^[0-9]/.test(id)) {
       selector = `${tag}[id="${id}"]`;
     } else {
-      selector = `${tag}#${id}`;
+      selector = `${tag}#${CSS.escape(id)}`;
     }
   }
 
