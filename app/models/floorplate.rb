@@ -148,7 +148,7 @@ class Floorplate < ApplicationRecord
   private
 
   def invalidate_sdk_cache
-    SdkCacheService.invalidate_map(community_id, id, 'floorplate')
+    # SdkCacheService.invalidate_map(community_id, id, 'floorplate')
   end
 
   def amenity_info amenity

@@ -68,7 +68,7 @@ class DesignSystemConfig < ApplicationRecord
   private
 
   def bust_sdk_cache
-    SdkCacheService.invalidate_fetch_data(community_id)
+    # SdkCacheService.invalidate_fetch_data(community_id)
   end
 
   def cv(hex, opacity)

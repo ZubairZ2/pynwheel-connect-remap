@@ -69,16 +69,17 @@ module Api
           fav_floorplan_ids = favorite_ids(fav, "floorplan")
           map_type = show_ops_map? ? "ops" : "marketing"
 
-          cache_miss = false
-          cached = if @community.enable_sdk_map_cache
-            SdkCacheService.fetch_data(@community.id, map_type) do
-              cache_miss = true
-              build_sdk_payload(show_ops_map?)
-            end
-          else
-            cache_miss = true
-            build_sdk_payload(show_ops_map?)
-          end
+          cache_miss = true
+          # cached = if @community.enable_sdk_map_cache
+          #   SdkCacheService.fetch_data(@community.id, map_type) do
+          #     cache_miss = true
+          #     build_sdk_payload(show_ops_map?)
+          #   end
+          # else
+          #   cache_miss = true
+          #   build_sdk_payload(show_ops_map?)
+          # end
+          cached = build_sdk_payload(show_ops_map?)
 
           units      = merge_favorites(cached[:units],      :unitId,      fav_unit_ids)
           amenities  = merge_favorites(cached[:amenities],  :amenityId,   fav_amenity_ids)

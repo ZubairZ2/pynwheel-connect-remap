@@ -2505,7 +2505,7 @@ class Community < ApplicationRecord
   end
 
   def invalidate_sdk_cache
-    SdkCacheService.invalidate_fetch_data(id)
+    # SdkCacheService.invalidate_fetch_data(id)
   end
 
   def warm_sdk_cache_on_enable

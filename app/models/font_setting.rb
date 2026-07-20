@@ -7,6 +7,6 @@ class FontSetting < ApplicationRecord
   private
 
   def invalidate_sdk_cache
-    SdkCacheService.invalidate_fetch_data(community_id)
+    # SdkCacheService.invalidate_fetch_data(community_id)
   end
 end

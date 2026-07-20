@@ -48,7 +48,7 @@ module DataProviders
               changed = true
             end
 
-            SdkCacheService.invalidate_fetch_data(@community_id) if changed
+            # SdkCacheService.invalidate_fetch_data(@community_id) if changed
           end
 
           def import_property_details property_code

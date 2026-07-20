@@ -65,7 +65,7 @@ class Sitemap < ApplicationRecord
   private
 
   def invalidate_sdk_cache
-    SdkCacheService.invalidate_map(community_id, id, 'sitemap')
+    # SdkCacheService.invalidate_map(community_id, id, 'sitemap')
   end
 
   def unit_info unit
