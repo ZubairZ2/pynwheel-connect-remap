@@ -7,7 +7,7 @@ class SdkPayloadBuilderService
   end
 
   def build(ops_map: false)
-    units_ar = @community.units.map_units(@community, ops_map).includes(:floorplan).to_a
+    units_ar = @community.units.map_units(@community, ops_map).visible_units.without_hidden_names.includes(:floorplan).to_a
     units_ar.each { |u| u.association(:community).target = @community }
     all_units = units_json(Set.new, ops_map, units_ar)
 
@@ -26,7 +26,7 @@ class SdkPayloadBuilderService
   end
 
   def units_json(fav_ids = Set.new, ops_map = false, units_ar = nil)
-    units = units_ar || @community.units.map_units(@community, ops_map).includes(:floorplan)
+    units = units_ar || @community.units.map_units(@community, ops_map).visible_units.without_hidden_names.includes(:floorplan)
     units&.map do |unit|
       floorplan = unit.floorplan
       fees      = @community.get_additional_fees(unit)
@@ -313,7 +313,7 @@ class SdkPayloadBuilderService
   end
 
   def filters_json(units_ar = nil)
-    units = units_ar || @community.units.map_units(@community, false).includes(:floorplan)
+    units = units_ar || @community.units.map_units(@community, false).visible_units.without_hidden_names.includes(:floorplan)
 
     {
       bedrooms:      filter_bedroom_options(units),

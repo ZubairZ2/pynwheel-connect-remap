@@ -191,7 +191,7 @@ module Api
 
           builder = SdkPayloadBuilderService.new(@community)
 
-          units_ar = @community.units.where(id: unit_ids.to_a).includes(:floorplan).to_a
+          units_ar = @community.units.visible_units.without_hidden_names.where(id: unit_ids.to_a).includes(:floorplan).to_a
           units_ar.each { |u| u.association(:community).target = @community }
           favorite_units = builder.units_json(unit_ids, show_ops_map?, units_ar)
 
