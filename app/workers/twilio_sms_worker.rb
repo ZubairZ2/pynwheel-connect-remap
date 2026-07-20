@@ -1,6 +1,6 @@
 class TwilioSmsWorker
   include Sidekiq::Worker
-  sidekiq_options queue: 'message', retry: 3
+  sidekiq_options queue: 'message', retry: 1
 
   def perform(message_body, to_phone_number, tour_user_email = nil, community_id = nil)
     return unless NotificationValidatorService.new(tour_user_email, community_id).validate_recipient

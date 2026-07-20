@@ -8,6 +8,8 @@ class FetchDataRefreshWorker
   ].freeze
 
   def perform(community_id)
+    return # disabled
+
     community = Community
       .where(id: community_id, enable_sdk_map_cache: true)
       .includes(*COMMUNITY_INCLUDES)
