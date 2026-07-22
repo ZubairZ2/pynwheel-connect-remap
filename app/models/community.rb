@@ -108,9 +108,6 @@ class Community < ApplicationRecord
 
   after_save :create_default_credential
   after_update :set_default_provider, if: ->(obj) { obj.data_provider_changed? }
-  before_save :auto_enable_sdk_map_cache, if: :enable_sdk_map_changed?
-  after_commit :invalidate_sdk_cache
-  after_commit :warm_sdk_cache_on_enable, on: :update
 
   enum :alert_contact, [:email, :phone, :both]
 
@@ -2497,26 +2494,6 @@ class Community < ApplicationRecord
   end
 
   private
-
-  # When "Enable SDK Map" is turned ON, automatically enable the cache too.
-  # Turning SDK Map OFF does not touch cache — admin controls cache independently.
-  def auto_enable_sdk_map_cache
-    self.enable_sdk_map_cache = true if enable_sdk_map
-  end
-
-  def invalidate_sdk_cache
-    # SdkCacheService.invalidate_fetch_data(id)
-  end
-
-  def warm_sdk_cache_on_enable
-    cache_just_enabled = saved_change_to_enable_sdk_map_cache?(from: false, to: true)
-    svg_just_enabled   = saved_change_to_enable_svg_mode?(from: false, to: true)
-    return unless cache_just_enabled || svg_just_enabled
-    return unless enable_sdk_map_cache && enable_svg_mode
-    SvgCacheWarmingWorker.perform_async(id)
-  rescue Redis::BaseError, Errno::ECONNREFUSED
-    nil
-  end
 
   def turn_off_marketing_availability_filter
     return unless map_filter.present?

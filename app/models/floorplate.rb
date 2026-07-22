@@ -45,7 +45,6 @@ class Floorplate < ApplicationRecord
 
   before_destroy :reset_units_plots
   after_commit :populate_image_urls, on: [:create,:update]
-  after_commit :invalidate_sdk_cache
 
   def contains_floor?(floor_number)
     floor_number = floor_number.to_i
@@ -146,10 +145,6 @@ class Floorplate < ApplicationRecord
   end
 
   private
-
-  def invalidate_sdk_cache
-    # SdkCacheService.invalidate_map(community_id, id, 'floorplate')
-  end
 
   def amenity_info amenity
     {

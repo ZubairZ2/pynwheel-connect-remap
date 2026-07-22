@@ -5,7 +5,6 @@ class MapFiltersController < ApplicationController
   def update
     respond_to do |format|
       if @map_filter.update(map_filter_params)
-        # SdkCacheService.invalidate_fetch_data(@community.id)
         format.html { redirect_to redirect_path_to(), notice: "Map filters configuration updated successfully!" }
         format.json { render json: { success: true } }
       else

@@ -57,35 +57,22 @@ module Api
         # Property ID is taken from the session token — NOT from query params.
         # Response intentionally omits svgUrl; callers use mapId to fetch SVGs.
         #
-        # The bulk of the payload (property config, units, floorplans, amenities,
-        # filters) is cached in Redis and rebuilt only when underlying data changes
-        # or after 15 minutes. Favorites are merged in-memory at serve time so
-        # the cached payload never contains session-specific data.
+        # Payload is built fresh on every request — no caching layer. Favorites
+        # are merged in-memory at serve time.
         # ------------------------------------------------------------------
         def fetch_data
           fav = favorite_record
           fav_unit_ids      = favorite_ids(fav, "unit")
           fav_amenity_ids   = favorite_ids(fav, "amenity")
           fav_floorplan_ids = favorite_ids(fav, "floorplan")
-          map_type = show_ops_map? ? "ops" : "marketing"
 
-          cache_miss = true
-          # cached = if @community.enable_sdk_map_cache
-          #   SdkCacheService.fetch_data(@community.id, map_type) do
-          #     cache_miss = true
-          #     build_sdk_payload(show_ops_map?)
-          #   end
-          # else
-          #   cache_miss = true
-          #   build_sdk_payload(show_ops_map?)
-          # end
-          cached = build_sdk_payload(show_ops_map?)
+          built = build_sdk_payload(show_ops_map?)
 
-          units      = merge_favorites(cached[:units],      :unitId,      fav_unit_ids)
-          amenities  = merge_favorites(cached[:amenities],  :amenityId,   fav_amenity_ids)
-          floorplans = merge_favorites(cached[:floorplans], :floorplanId, fav_floorplan_ids)
+          units      = merge_favorites(built[:units],      :unitId,      fav_unit_ids)
+          amenities  = merge_favorites(built[:amenities],  :amenityId,   fav_amenity_ids)
+          floorplans = merge_favorites(built[:floorplans], :floorplanId, fav_floorplan_ids)
 
-          payload = cached.merge(
+          payload = built.merge(
             units:              units,
             amenities:          amenities,
             floorplans:         floorplans,
@@ -94,7 +81,6 @@ module Api
             favorite_floorplans: floorplans.select { |f| f[:isFavorite] }
           )
 
-          response.headers['X-Cache']          = cache_miss ? 'MISS' : 'HIT'
           response.headers['Cache-Control']    = 'private, no-store'
           response.headers['Content-Encoding'] = 'gzip'
           response.headers['Vary']             = 'Accept-Encoding'
@@ -286,20 +272,13 @@ module Api
             return
           end
 
-          svg_cache_hit = @community.enable_sdk_map_cache && SvgCacheService.warm?(map_id, map_type)
-
-          compressed = if @community.enable_sdk_map_cache
-            SvgCacheService.fetch_and_cache(map_id, map_type, svg_url)
-          else
-            SvgCacheService.fetch_direct(svg_url)
-          end
+          compressed = SvgFetchService.fetch(svg_url)
 
           unless compressed
             render plain: "Failed to fetch SVG.", status: :bad_request
             return
           end
 
-          response.headers['X-Cache']          = svg_cache_hit ? 'HIT' : 'MISS'
           response.headers['Content-Encoding'] = 'gzip'
           response.headers['Cache-Control']    = 'private, max-age=3600'
           response.headers['ETag']             = etag if etag

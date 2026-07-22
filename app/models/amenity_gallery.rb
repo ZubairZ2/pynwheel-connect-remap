@@ -19,21 +19,11 @@ class AmenityGallery < ApplicationRecord
   belongs_to :amenity
   mount_base64_uploader :image, AvatarUploader
 
-  after_commit :invalidate_sdk_cache
-
   def as_json options = {}
     super(
       :only => [:id, :name, :image]
     )
   end
-
-  private
-
-  def invalidate_sdk_cache
-    # SdkCacheService.invalidate_fetch_data(amenity&.community_id)
-  end
-
-  public
 
   def stop_description_formatting stop_description
     return "" unless stop_description.present?

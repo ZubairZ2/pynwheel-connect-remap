@@ -26,8 +26,6 @@ class Sitemap < ApplicationRecord
 
   validates :image, :presence => {message: "cannot be blank. Please upload site map image first."}, if: -> { image.present? }
 
-  after_commit :invalidate_sdk_cache
-
   def as_json options = {}
     super(
       :only => [:id ,:image, :svg_image, :file, :label_image]
@@ -63,10 +61,6 @@ class Sitemap < ApplicationRecord
   end
 
   private
-
-  def invalidate_sdk_cache
-    # SdkCacheService.invalidate_map(community_id, id, 'sitemap')
-  end
 
   def unit_info unit
     {
