@@ -12,7 +12,7 @@ class SvgCacheWarmAllWorker
       .where(enable_sdk_map_cache: true, enable_svg_mode: true)
       .pluck(:id)
 
-    community_ids.each { |id| SvgCacheWarmingWorker.perform_async(id, true) }
+    # community_ids.each { |id| SvgCacheWarmingWorker.perform_async(id, true) }
 
     Rails.logger.info "[SvgCacheWarmAllWorker] Enqueued #{community_ids.size} warming jobs"
   rescue Redis::BaseError, Errno::ECONNREFUSED => e

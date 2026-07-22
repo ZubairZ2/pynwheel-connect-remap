@@ -110,7 +110,7 @@ function uniquifySVGIds(svgElement, floorId) {
       if (
         node.tagName === 'g' &&
         node.id &&
-        /^(units|amenities)/i.test(node.id)
+        /uni|amen/i.test(node.id)
       ) {
         return true;
       }
@@ -749,10 +749,8 @@ function isValidShape(shape, parent = false) {
         )
           return false;
       } else if (
-        parentId?.startsWith("amenities") ||
-        parentId?.endsWith("amenities") ||
-        parentId?.startsWith("units") ||
-        parentId?.startsWith("amenity_outlines")
+        parentId?.includes("amen") ||
+        parentId?.includes("uni")
       )
         return true;
       else if (
@@ -778,13 +776,8 @@ function getValidShapeCategory(shape, parent = false) {
     const parentId = parentElement.id?.toLowerCase();
 
     if (parentTag === "g") {
-      if (parentId?.startsWith("units")) return "unit";
-      else if (
-        parentId?.startsWith("amenities") ||
-        parentId?.endsWith("amenities") ||
-        parentId?.startsWith("amenity_outlines")
-      )
-        return "amenity";
+      if (parentId?.includes("uni")) return "unit";
+      else if (parentId?.includes("amen")) return "amenity";
       else if (
         parentId?.includes("outlines") ||
         parentId?.includes("label") ||

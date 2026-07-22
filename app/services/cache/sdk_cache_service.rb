@@ -54,7 +54,7 @@ class SdkCacheService
 
     delete_fetch_data_keys(community_id)
     SvgCacheService.delete(map_id, map_type)  # always delete — fetch_svg_image caches whenever enable_sdk_map_cache is on
-    SvgCacheWarmingWorker.perform_async(community_id, true) if svg_mode
+    # SvgCacheWarmingWorker.perform_async(community_id, true) if svg_mode
     FetchDataRefreshWorker.perform_async(community_id)
   rescue StandardError
     nil
