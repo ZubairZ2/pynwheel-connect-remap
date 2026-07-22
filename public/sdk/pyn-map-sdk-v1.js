@@ -975,7 +975,7 @@
 
       svgEl._pz = panzoom(svgEl, {
         minZoom: 1,   // can't zoom below the default view
-        maxZoom: 10,
+        maxZoom: 3,
         // Block mouse-drag pan when at default zoom (scale ≤ 1); allow when zoomed in.
         beforeMouseDown: () => (svgEl._pz ? svgEl._pz.getTransform().scale <= 1.01 : true),
       });
@@ -1036,7 +1036,7 @@
           _svgClamping = false;
         }
       };
-      svgEl._pz.on("pan",  svgClamp);
+      // svgEl._pz.on("pan",  svgClamp);
       svgEl._pz.on("zoom", svgClamp);
 
       // Beans SVG: keep the static background layer locked to the overlay's
@@ -3588,7 +3588,7 @@
       wrapperEl.style.touchAction = "none";
       wrapperEl._pz = panzoom(wrapperEl, {
         minZoom:         1,   // can't zoom below the default view
-        maxZoom:         10,
+        maxZoom:         3,
         filterKey:       () => false,
         beforeMouseDown: () => (wrapperEl._pz ? wrapperEl._pz.getTransform().scale <= 1.01 : true),
       });
@@ -3635,7 +3635,7 @@
           _imgClamping = false;
         }
       };
-      wrapperEl._pz.on("pan",  imgClamp);
+      // wrapperEl._pz.on("pan",  imgClamp);
       wrapperEl._pz.on("zoom", imgClamp);
 
       const touchBlocker = (e) => {
