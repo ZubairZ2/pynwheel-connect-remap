@@ -975,7 +975,7 @@
 
       svgEl._pz = panzoom(svgEl, {
         minZoom: 1,   // can't zoom below the default view
-        maxZoom: 3,
+        maxZoom: 10,
         // Block mouse-drag pan when at default zoom (scale ≤ 1); allow when zoomed in.
         beforeMouseDown: () => (svgEl._pz ? svgEl._pz.getTransform().scale <= 1.01 : true),
       });
@@ -3588,7 +3588,7 @@
       wrapperEl.style.touchAction = "none";
       wrapperEl._pz = panzoom(wrapperEl, {
         minZoom:         1,   // can't zoom below the default view
-        maxZoom:         3,
+        maxZoom:         10,
         filterKey:       () => false,
         beforeMouseDown: () => (wrapperEl._pz ? wrapperEl._pz.getTransform().scale <= 1.01 : true),
       });
