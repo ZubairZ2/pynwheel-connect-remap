@@ -377,8 +377,8 @@
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         .select-logo.mb-20.mt-30
                           .select-logo-logo
-                            %a.preview-image{:href=>current_community.design.expressionist.apartment_btn_on_image.present? ? current_community.design.expressionist.apartment_btn_on_image : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
-                              = image_tag current_community.design.expressionist.apartment_btn_on_image.present? ? current_community.design.expressionist.apartment_btn_on_image : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"apartment-button-on-preview-image"
+                            %a.preview-image{:href=>current_community.design.expressionist.apartment_btn_on_image.present? ? current_community.design.expressionist.apartment_btn_on_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Secondary Page Background Image"}
+                              = image_tag current_community.design.expressionist.apartment_btn_on_image.present? ? current_community.design.expressionist.apartment_btn_on_image.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"apartment-button-on-preview-image"
                               = image_tag "exclamation-mark.png", class: "exal_apartment_btn_on_image #{(current_community.design.expressionist.apartment_btn_on_image.present? ? ((current_community.design.expressionist.apartment_btn_on_image.width < 200 && current_community.design.expressionist.apartment_btn_on_image.height < 200) rescue "hidden") ? "" : "hidden" : "hidden") rescue "hidden" }", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
 
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15

@@ -20,6 +20,7 @@ class Community < ApplicationRecord
   has_many :users ,through: :community_users, dependent: :destroy
   has_many :units, dependent: :destroy
   has_many :floorplans, dependent: :destroy
+  has_many :bedroom_marker_colors, dependent: :destroy
   has_many :floorplates, -> { order("number DESC") }, dependent: :destroy
   has_many :allowed_emails, dependent: :destroy
   has_many :galleries, dependent: :destroy
@@ -70,6 +71,8 @@ class Community < ApplicationRecord
   has_one :schlage
   has_one :launch_remote
   has_one :design_direction
+  has_one :calculator_config, dependent: :destroy
+  has_one :design_system_config, dependent: :destroy
   has_one :crm_time_slot
   has_one :crm_discovery_source
 
@@ -129,7 +132,8 @@ class Community < ApplicationRecord
 
   enum coloring_mode: {
     by_property: 0,
-    by_floorplan: 1
+    by_floorplan: 1,
+    by_bedroom: 2
   }
 
   amoeba do
@@ -138,7 +142,7 @@ class Community < ApplicationRecord
 
   def as_json(options = {})
     data = super(
-      :only => [:id , :name , :logo, :is_beans_svg, :file, :address , :city , :longitude, :latitude, :state , :email , :phone , :zip, :web_map_type, :is_sitemap, :display_building ,:property_manager_name,:property_manager_phone,:property_manager_email ,:enable_three_d_maps , :website , :number_of_units, :production_started_date, :released_date, :submitted_final_approval_date, :product_options, :use_company_level_data_settings, :country_code], :methods => [:schedule_tour_url, :community_code],include: { company: {except: [:created_at]}})
+      :only => [:id , :name , :logo, :is_beans_svg, :file, :address , :city, :data_provider, :longitude, :latitude, :state , :email , :phone , :zip, :web_map_type, :is_sitemap, :display_building ,:property_manager_name,:property_manager_phone,:property_manager_email ,:enable_three_d_maps , :default_satellite_view, :website , :number_of_units, :production_started_date, :released_date, :submitted_final_approval_date, :product_options, :use_company_level_data_settings, :country_code], :methods => [:schedule_tour_url, :community_code],include: { company: {except: [:created_at]}})
     check_brand_access = options[:brand_pdf_feature]
     if check_brand_access == true
       data.merge!(:brand_feature_access => true , :brand_details_pdf => brand_details())
@@ -890,6 +894,15 @@ class Community < ApplicationRecord
     end
   end
 
+  def logo_for_sdk_email
+    if self&.logo.present? && self&.logo&.url.present?
+      self&.logo&.url
+    else
+      base_url = Rails.env.development? ? "http://localhost:3000" : (ENV["RAILS_ENV"] == "staging" ? "https://pynwheel-staging.herokuapp.com" : "https://pynwheelapp.com")
+      "#{base_url}/assets/#{Rails.application.assets.find_asset('pynwheel-default-logo.png').try(:digest_path)}"
+    end
+  end
+
   def set_community_time_zone
     if self.latitude.present? && self.longitude.present?
       time_zone = Timezone.lookup(self.latitude, self.longitude)&.name rescue "UTC"
@@ -994,6 +1007,7 @@ class Community < ApplicationRecord
         company_credential_attributes = current_company.credential&.attributes&.keys.map(&:to_sym)
         company_credential_attributes = current_company.credential&.attributes&.slice(*credential_attributes)
         community_credential = self.credential
+        
         if self.data_provider == 'yardi'
           company_credential_attributes["username"] = current_company.credential.yardi_username
           company_credential_attributes["password"] = current_company.credential.yardi_password
@@ -1001,6 +1015,7 @@ class Community < ApplicationRecord
           company_credential_attributes["username"] = current_company.credential.username
           company_credential_attributes["password"] = current_company.credential.password
         end
+
         community_credential.update(company_credential_attributes)
       end
     end
@@ -1063,7 +1078,13 @@ class Community < ApplicationRecord
     !is_sitemap
   end
 
+  def property_floor_options
+    [['Auto (lowest available floor)', '']] +
+      property_floor_numbers.map { |floor| ["Floor #{floor}", floor] }
+  end
+
   def property_floor_numbers
+    return [] if floorplates.blank?
     floorplates.flat_map(&:floors).map(&:to_i).sort
   end
 
@@ -1120,6 +1141,8 @@ class Community < ApplicationRecord
         import_yardirentcafe_data
       when "appfolio"
         import_appfolio_data(true)
+      when "beans"
+        import_beans_data
       when "rentmanager"
         import_rentmanager_data
       when "realpagesvc"
@@ -1179,6 +1202,8 @@ class Community < ApplicationRecord
       YardirentcafeDataUpdateWorker.perform_async self.id
     when "appfolio"
       import_appfolio_data
+    when "beans"
+      import_beans_data
     when "rentmanager"
       RentManagerDataImportWorker.perform_async self.id
     when "realpagesvc"
@@ -1344,6 +1369,10 @@ class Community < ApplicationRecord
     AppFolioDataImportWorker.perform_async(self.id, update_property_info)
   end
 
+  def import_beans_data
+    BeansDataImportWorker.perform_async(self.id)
+  end
+
   def import_rentmanager_data
     RentManagerDataImportWorker.perform_async self.id
   end
@@ -1452,6 +1481,8 @@ class Community < ApplicationRecord
         connect_to_yardirentcafe
       when "appfolio"
         connect_to_appfolio
+      when "beans"
+        connect_to_beans
       when "rentmanager"
         connect_to_rentmanager
       when "realpagesvc"
@@ -1487,6 +1518,11 @@ class Community < ApplicationRecord
   def connect_to_appfolio
     app_folio_connection_service = DataProviders::AppFolio::V0::TestConnectionService.new(self.id)
     app_folio_connection_service.perform
+  end
+
+  def connect_to_beans
+   beans_connection_service = DataProviders::Beans::TestConnectionService.new(self.id)
+   beans_connection_service.perform
   end
 
   def connect_to_rentmanager
@@ -1617,7 +1653,7 @@ class Community < ApplicationRecord
       ""
     end
     
-    URI.escape(com_address, Regexp.new("[^#{URI::PATTERN::UNRESERVED}]"))
+    URI::DEFAULT_PARSER.escape(com_address, Regexp.new("[^#{URI::PATTERN::UNRESERVED}]"))
   end
 
   def submit_crm_leads email_to, favorites
@@ -2271,12 +2307,131 @@ class Community < ApplicationRecord
   def pynwheel_touch_enabled?
     self.touchscreen_app
   end
+
+  def is_touch_map src
+    src === "touch"
+  end
+
+  # --------------------------------------------------------------------------
+  # Partner map integrations
+  #
+  # Which partner listing sites (Apartments.com, Rent.com, ...) may embed this
+  # property's Pynwheel map is stored per-property in the `partner_map_settings`
+  # JSONB column, e.g. { "apartments" => { "enabled" => true, "enabled_at" => ... } }.
+  #
+  # The api_key -> partner mapping lives only in ENV (single source of truth);
+  # partners register requests with the key and we authorize against the toggle.
+  # --------------------------------------------------------------------------
+  MAP_PARTNERS = [
+    { key: "rent",          env: "PARTNER_RENT_API_KEY",          label: "Rent.com" },
+    { key: "apartmentlist", env: "PARTNER_APARTMENTLIST_API_KEY", label: "Apartmentlist.com" },
+    { key: "propexo",       env: "PARTNER_PROPEXO_API_KEY",       label: "Propexo" },
+    { key: "apartments",    env: "PARTNER_APARTMENTS_API_KEY",    label: "Apartments.com" }
+  ].freeze
+
+  MAP_PARTNER_KEYS = MAP_PARTNERS.map { |p| p[:key] }.freeze
+
+  # Registry entry (with the resolved ENV api_key) for a given api_key, or nil.
+  def self.partner_registry_for_api_key(api_key)
+    return nil if api_key.blank?
+    MAP_PARTNERS.find { |p| ENV[p[:env]].present? && ENV[p[:env]] == api_key }
+  end
+
+  # Partner key ("apartments", "rent", ...) for an incoming api_key, or nil.
+  def self.partner_for_api_key(api_key)
+    partner_registry_for_api_key(api_key)&.dig(:key)
+  end
+
+  # True when the api_key matches one of the configured partner ENV keys.
+  def self.valid_partner_api_key?(api_key)
+    partner_registry_for_api_key(api_key).present?
+  end
+
+  # Communities that have enabled the given partner's map embed.
+  scope :for_partner, ->(partner_key) {
+    where("partner_map_settings -> :key ->> 'enabled' = 'true'", key: partner_key.to_s)
+  }
+
+  # Communities that have at least one partner map enabled.
+  scope :with_any_partner, -> {
+    where(
+      MAP_PARTNER_KEYS.map { |k| "partner_map_settings -> '#{k}' ->> 'enabled' = 'true'" }.join(" OR ")
+    )
+  }
+
+  # --- Efficient set-based bulk update (single UPDATE, no per-row loads) -------
+
+  # Set the given properties' enabled partners to EXACTLY `partner_keys`,
+  # replacing whatever they currently have. Preserves the existing enabled_at for
+  # partners that were already enabled. One UPDATE. Returns rows affected.
+  def self.bulk_set_partners(community_ids, partner_keys, now: Time.current)
+    ids  = Array(community_ids)
+    keys = Array(partner_keys).map(&:to_s) & MAP_PARTNER_KEYS
+    return 0 if ids.empty?
+
+    if keys.empty?
+      return where(id: ids).update_all(sanitize_sql_array(["partner_map_settings = ?::jsonb", "{}"]))
+    end
+
+    payload = { "enabled" => true, "enabled_at" => now.iso8601 }.to_json
+    pairs = keys.map do |k|
+      "#{connection.quote(k)}, COALESCE(partner_map_settings -> #{connection.quote(k)}, #{connection.quote(payload)}::jsonb)"
+    end.join(", ")
+
+    where(id: ids).update_all("partner_map_settings = jsonb_build_object(#{pairs})")
+  end
+
+  # Additively ENABLE the given partners on the properties, leaving any partners
+  # they already have untouched (preserves existing enabled_at). Used by the
+  # bulk CSV/Excel upload flow. One UPDATE. Returns rows affected.
+  def self.bulk_add_partners(community_ids, partner_keys, now: Time.current)
+    ids  = Array(community_ids).map(&:to_i).reject(&:zero?).uniq
+    keys = Array(partner_keys).map(&:to_s) & MAP_PARTNER_KEYS
+    return 0 if ids.empty? || keys.empty?
+
+    payload = { "enabled" => true, "enabled_at" => now.iso8601 }.to_json
+    expr = "COALESCE(partner_map_settings, '{}'::jsonb)"
+    keys.each do |k|
+      expr = "(#{expr} || jsonb_build_object(#{connection.quote(k)}, " \
+             "COALESCE(partner_map_settings -> #{connection.quote(k)}, #{connection.quote(payload)}::jsonb)))"
+    end
+
+    where(id: ids).update_all("partner_map_settings = #{expr}")
+  end
+
+  def partner_map_enabled?(partner_key)
+    (partner_map_settings || {}).dig(partner_key.to_s, "enabled") == true
+  end
+
+  def partner_map_enabled_at(partner_key)
+    ts = (partner_map_settings || {}).dig(partner_key.to_s, "enabled_at")
+    ts.present? ? ts.to_time : nil
+  rescue ArgumentError, TypeError
+    nil
+  end
+
+  # Enable/disable a partner's map embed for this property. Only persists a known
+  # registry key; unknown keys are ignored. Does not save.
+  def set_partner_map_enabled(partner_key, enabled)
+    key = partner_key.to_s
+    return unless MAP_PARTNER_KEYS.include?(key)
+
+    settings = (partner_map_settings || {}).deep_dup
+    if enabled
+      settings[key] ||= {}
+      settings[key]["enabled"] = true
+      settings[key]["enabled_at"] ||= Time.current.iso8601
+    else
+      settings.delete(key)
+    end
+    self.partner_map_settings = settings
+  end
   
-  def map_embed_code partner = nil, floor = nil, ops_map = nil
+  def map_embed_code(partner = nil, floor = nil, ops_map = nil, src = nil)
     <<-HTML.strip.gsub(/\n\s*/, "")
       <embed onload='window.parent.$("body").animate({scrollTop:0}, "slow");' 
         style='margin-top: 0px; overflow:scroll;' 
-        src='#{map_link(partner, floor, ops_map)}' 
+        src='#{map_link(partner, floor, ops_map, src)}'
         width='100%' 
         height='750px' />
       <script type='text/javascript'>
@@ -2287,17 +2442,43 @@ class Community < ApplicationRecord
     HTML
   end
 
-  def map_link(partner = nil, floor = nil, ops_map = nil)
+  def map_link(partner = nil, floor = nil, ops_map = nil, src = nil)
     base_url = "#{ENV['HOST_URL']}/communities/#{id}/webpages"
-    query = map_query_params(partner: partner, floor: floor, ops_map: ops_map)
+
+    query = map_query_params(
+      partner: partner,
+      floor: floor,
+      ops_map: ops_map,
+      src: src
+    )
+
     query.present? ? "#{base_url}?#{query}" : base_url
   end
+  
+  def sdk_map_embed_code(partner = nil, floor = nil, ops_map = nil, src = nil)
+    <<-HTML.strip.gsub(/\n\s*/, "")
+      <embed
+        src='#{sdk_map_link(partner, floor, ops_map, src)}'
+        width='100%'
+        height='100%'
+      />
+    HTML
+  end
 
-  def map_query_params(partner: nil, floor: nil, ops_map: nil)
+  def sdk_map_link(partner = nil, floor = nil, ops_map = nil, src = nil)
+    base_url = ENV['SDK_MAP_BASE_URL']
+    extra = map_query_params(partner: partner, floor: floor, ops_map: ops_map, src: src)
+    query = "propertyId=#{id}"
+    query += "&#{extra}" if extra.present?
+    "#{base_url}?#{query}"
+  end
+
+  def map_query_params(partner: nil, floor: nil, ops_map: nil, src: nil)
     params = {}
     params[:partner] = partner if partner.present?
     params[:floor]   = floor if floor.present?
     params[:ops_map]     = ops_map if ops_map.present?
+    params[:src]     = src if src.present?
     params.to_query
   end
 

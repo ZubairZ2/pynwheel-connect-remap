@@ -1,0 +1,18 @@
+!!!
+%html{lang: "en"}
+  %head
+    %meta{charset: "UTF-8"}
+    %meta{name: "viewport", content: "width=device-width, initial-scale=1.0"}
+    %title= "#{@community&.name} | Cost Calculator"
+    - ds_cfg   = @design_system_config&.merged_config || DesignSystemConfig::DEFAULT_CONFIG
+    - font_fam = ds_cfg.dig("fonts", "family") || "Inter"
+    - font_url = font_fam.gsub(" ", "+")
+    %link{rel: "preconnect", href: "https://fonts.googleapis.com"}
+    %link{href: "https://fonts.googleapis.com/css2?family=#{font_url}:wght@300;400;500;600;700&display=swap", rel: "stylesheet"}
+    %link{href: "https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined", rel: "stylesheet"}
+    - css_vars = @design_system_config&.to_css_vars || {}
+    - unless css_vars.empty?
+      %style= ":root{#{css_vars.map { |k, v| "#{k}:#{v}" }.join(";")}}"
+    = yield :head
+  %body
+    = yield

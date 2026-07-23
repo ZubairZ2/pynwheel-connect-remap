@@ -1,0 +1,1167 @@
+{
+  "initialMap": "STREET",
+  "modernBeansCard": true,
+  "hideFloorSelector": false,
+  "hideRotateControl": true,
+  "hideSatelliteButton": true,
+  "hideShadow": true,
+  "outsideButtons": true,
+  "modernButtons": true,
+  "showNeighbors": false,
+  "showPOIButton": false,
+  "showSeparateFacilitiesCard": true,
+  "showNumbers": true,
+  "numbersConfig": {
+    "size": 0,
+    "iconSize": 0,
+    "sizeFn": null,
+    "xOffset": null,
+    "yOffset": 0,
+    "xOffsetFn": null,
+    "yOffsetFn": null,
+    "rotate": null,
+    "rotateFn": null
+  },
+  "backgroundImage": {
+    "src": "https://www.beans.ai/mapswidget/prettymaps/blank.png",
+    "width": "262.15743040685226px",
+    "height": "932px",
+    "position": {
+      "lat": 38.7452391,
+      "lng": -77.1494182,
+      "lat2": 38.6693529,
+      "lng2": -77.1215618
+    }
+  },
+  "show3DButton": true,
+  "unitsToExclude": [
+    "TRASH",
+    "TRANSFORMER",
+    "VESTIBULE",
+    "STORAGE_",
+    "CARPORT"
+  ],
+  "augmentationData": {
+    "success": true,
+    "data": {
+      "columns": [
+        {
+          "name": "unit",
+          "type": "string"
+        }
+      ],
+      "rows": []
+    }
+  },
+  "propertyAddress": "5994 12th St, Fort Belvoir, VA",
+  "offsetGroundElevation": 0,
+  "useGroundElevation": false,
+  "poiOptions": [
+    {
+      "type": "FOOD",
+      "label": "Restaurants",
+      "value": "restaurant",
+      "icon": "https://www.beans.ai/m/assets/food_0.png"
+    },
+    {
+      "type": "HOSPITAL",
+      "label": "Hospitals",
+      "value": "hospital",
+      "icon": "https://www.beans.ai/m/assets/hospital_0.png"
+    },
+    {
+      "type": "SCHOOL",
+      "label": "Schools",
+      "value": "school",
+      "icon": "https://www.beans.ai/m/assets/school_0.png"
+    },
+    {
+      "type": "COLLEGE",
+      "label": "Colleges",
+      "value": "college",
+      "icon": "https://www.beans.ai/m/assets/school_0.png"
+    }
+  ],
+  "showUnitList": true,
+  "showUnitShape": true,
+  "showDirections": false,
+  "renameAmenities": null,
+  "shadowModeUnitShape": {
+    "fillColor": "#ffffff",
+    "fillOpacity": 1
+  },
+  "neighborModeUnitShape": {
+    "fillColor": "#ffffff",
+    "fillOpacity": 1
+  },
+  "unitShape": {
+    "fillColor": "#ffffff",
+    "fillOpacity": 1,
+    "strokeWeight": 0.25
+  },
+  "selectedUnitShape": {
+    "fillOpacity": 1,
+    "strokeWeight": 0.25
+  },
+  "selectableUnitShape": {
+    "fillOpacity": 1,
+    "strokeWeight": 0.25
+  },
+  "satelliteModeUnitShape": {
+    "fillColor": "#ffffff",
+    "fillOpacity": 1
+  },
+  "poiShape": {},
+  "hoverUnitShape": null,
+  "showWideUnitCard": true,
+  "modernFilters": true,
+  "initialPosition": {
+    "lat": 38.707283718750006,
+    "lng": -77.13548997727273
+  },
+  "customConfigs": {
+    "2120 NE Thorncroft Dr, Hillsboro, OR": {
+      "initialMap": "STREET"
+    },
+    "5131 Williams Fork Trl, Boulder, CO": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ]
+      }
+    },
+    "3455 Table Mesa Dr, Boulder, CO": {
+      "parking": {
+        "floorsToShow": [
+          "1"
+        ],
+        "defaultFloor": 1
+      }
+    },
+    "401 Briar Ridge Dr, San Jose, CA": {
+      "parking": {
+        "floorsToShow": [
+          "1"
+        ],
+        "defaultFloor": 1,
+        "showFloorSelectorForParking": false
+      }
+    },
+    "1000 Peachtree Park NE Dr, Atlanta, GA": {
+      "parking": {
+        "floorsToShow": [
+          "1"
+        ],
+        "defaultFloor": 1,
+        "showFloorSelectorForParking": false
+      }
+    },
+    "10511 Strathmore Hall St, North Bethesda, MD": {
+      "parking": {
+        "defaultFloor": -1,
+        "floorsToShow": [
+          "-1",
+          "-2",
+          "-3"
+        ]
+      }
+    },
+    "8300 Wisconsin Ave, Bethesda, MD": {
+      "parking": {
+        "defaultFloor": -2
+      }
+    },
+    "380 Esplanade Ave, Pacifica, CA": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "3900 Chestnut St, Philadelphia, PA": {
+      "parking": {
+        "defaultFloor": 1
+      }
+    },
+    "5505 Cochran St, Simi Valley, CA": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "1050 Frederick St, Venice, CA": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "2 Pacific Bay Cir, San Bruno, CA": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "670 Hickey Blvd, Pacifica, CA": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "766 N Howard St, Alexandria, VA": {
+      "parking": {
+        "defaultFloor": 1
+      }
+    },
+    "1575 Tanglewood Ln, Escondido, CA": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "5250 E Cherry Creek South Dr, Denver, CO": {
+      "parking": {
+        "showBuildingShape": true,
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ]
+      },
+      "storage": {
+        "showBuildingShape": true,
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "bounds": [
+          {
+            "lat": 39.69853228234099,
+            "lng": -104.92738970772983
+          }
+        ]
+      }
+    },
+    "5812 Chase Commons Ct, Burke, VA": {
+      "parking": {
+        "defaultFloor": 1
+      }
+    },
+    "901 E Phillips Ln, Littleton, CO": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "13630 Bent Tree Cir, Centreville, VA": {
+      "parking": {
+        "defaultFloor": 1
+      }
+    },
+    "13300 Blueberry Ln, Fairfax, VA": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "8337 SW 107th Ave, Miami, FL": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "2300 Catalina Cir, Oceanside, CA": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "2300 Walnut St, Philadelphia, PA": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "-1",
+          "1"
+        ],
+        "showFloorSelectorForParking": true
+      }
+    },
+    "1200 N Rolfe St, Arlington, VA": {
+      "parking": {
+        "defaultFloor": -1,
+        "floorsToShow": [
+          "-1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "777 S Broad St, Philadelphia, PA": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "50 Rogers St, Cambridge, MA": {
+      "parking": {
+        "defaultFloor": -1,
+        "showFloorSelectorForParking": true
+      }
+    },
+    "521 S Broad St, Philadelphia, PA": {
+      "parking": {
+        "defaultFloor": -1,
+        "floorsToShow": [
+          "-1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "201 S 25th St, Philadelphia, PA": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": true
+      },
+      "storage": {
+        "defaultFloor": 2,
+        "floorsToShow": [
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8"
+        ],
+        "showFloorSelectorForParking": true
+      }
+    },
+    "4701 Willard Ave, Chevy Chase, MD": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "-2",
+          "-1",
+          "1"
+        ],
+        "showFloorSelectorForParking": true
+      }
+    },
+    "1590 Eisenhower Dr, Boulder, CO": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "13021 E 21st Ave, Aurora, CO": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1",
+          "2"
+        ],
+        "showFloorSelectorForParking": true
+      }
+    },
+    "5758 Las Virgenes Rd, Calabasas, CA": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "2150 N Bayshore Dr, Miami, FL": {
+      "parking": {
+        "defaultFloor": 2,
+        "showFloorSelectorForParking": true
+      }
+    },
+    "1 Canal St, Boston, MA": {
+      "parking": {
+        "defaultFloor": 2,
+        "floorsToShow": [
+          "2",
+          "3"
+        ],
+        "showFloorSelectorForParking": true
+      }
+    },
+    "910 Del Dios Rd, Escondido, CA": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "120 Pleasant St, Watertown, MA": {
+      "parking": {
+        "defaultFloor": -1,
+        "floorsToShow": [
+          "-1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "2900 Thomas S Ave, Minneapolis, MN": {
+      "parking": {
+        "defaultFloor": 2,
+        "floorsToShow": [
+          "2",
+          "3",
+          "4"
+        ],
+        "showFloorSelectorForParking": true
+      }
+    },
+    "348 Hauser Blvd, Los Angeles, CA": {
+      "parking": {
+        "showBuildingShape": true,
+        "defaultFloor": -1,
+        "floorsToShow": [
+          "-1",
+          "-2"
+        ],
+        "showFloorSelectorForParking": true
+      }
+    },
+    "2171 Peachtree NE Rd, Atlanta, GA": {
+      "parking": {
+        "defaultFloor": -1,
+        "floorsToShow": [
+          "-2",
+          "-1",
+          "1"
+        ],
+        "showFloorSelectorForParking": true
+      }
+    },
+    "7660 Beverly Blvd, Los Angeles, CA": {
+      "parking": {
+        "defaultFloor": 2,
+        "floorsToShow": [
+          "1",
+          "2"
+        ],
+        "showFloorSelectorForParking": true
+      }
+    },
+    "300 E Bellevue Dr, Pasadena, CA": {
+      "parking": {
+        "defaultFloor": -1,
+        "floorsToShow": [
+          "-1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "1420 Ambassador St, Los Angeles, CA": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "-1",
+          "1"
+        ],
+        "showFloorSelectorForParking": true
+      }
+    },
+    "707 Leahy St, Redwood City, CA": {
+      "parking": {
+        "defaultFloor": -1,
+        "showFloorSelectorForParking": true
+      }
+    },
+    "675 Bradford St, Redwood City, CA": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "-1",
+          "1",
+          "2"
+        ],
+        "showFloorSelectorForParking": true
+      }
+    },
+    "400 Prospect St, La Jolla, CA": {
+      "parking": {
+        "defaultFloor": -1,
+        "floorsToShow": [
+          "-1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "555 NE 8th St, Fort Lauderdale, FL": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "0",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7"
+        ],
+        "showFloorSelectorForParking": true
+      }
+    },
+    "5555 W 6th St, Los Angeles, CA": {
+      "parking": {
+        "defaultFloor": -1,
+        "floorsToShow": [
+          "-1",
+          "-2"
+        ],
+        "showFloorSelectorForParking": true
+      }
+    },
+    "3131 Walnut St, Philadelphia, PA": {
+      "parking": {
+        "defaultFloor": -1,
+        "floorsToShow": [
+          "-1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "6220 W 3rd St, Los Angeles, CA": {
+      "parking": {
+        "showBuildingShape": true,
+        "defaultFloor": -1,
+        "floorsToShow": [
+          "-1",
+          "-2"
+        ],
+        "showFloorSelectorForParking": true
+      }
+    },
+    "1325 15th NW St, Washington, DC": {
+      "parking": {
+        "defaultFloor": -1,
+        "floorsToShow": [
+          "-1",
+          "1"
+        ],
+        "showFloorSelectorForParking": true
+      }
+    },
+    "33 Rogers St, Cambridge, MA": {
+      "parking": {
+        "defaultFloor": -1,
+        "floorsToShow": [
+          "-1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "900 West Ave, Miami Beach, FL": {
+      "parking": {
+        "defaultFloor": 1,
+        "showFloorSelectorForParking": true,
+        "floorsToShow": [
+          "1",
+          "4",
+          "5",
+          "6"
+        ]
+      }
+    },
+    "350 Robin Dr, Corte Madera, CA": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "1756 N Bayshore Dr, Miami, FL": {
+      "parking": {
+        "defaultFloor": 3,
+        "floorsToShow": [
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9"
+        ],
+        "showFloorSelectorForParking": true
+      },
+      "storage": {
+        "defaultFloor": 2,
+        "floorsToShow": [
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9"
+        ],
+        "showFloorSelectorForParking": true,
+        "bounds": [
+          {
+            "lat": 25.79270866526047,
+            "lng": -80.18742719902335
+          },
+          {
+            "lat": 25.793037761381573,
+            "lng": -80.18669212700742
+          }
+        ]
+      }
+    },
+    "3645 Habersham NE Rd, Atlanta, GA": {
+      "parking": {
+        "defaultFloor": -2,
+        "floorsToShow": [
+          "-2",
+          "-1",
+          "1"
+        ],
+        "showFloorSelectorForParking": true
+      }
+    },
+    "6100 Monterey Hwy, San Jose, CA": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "-1",
+          "1"
+        ],
+        "showFloorSelectorForParking": true
+      }
+    },
+    "5982 Richmond Hwy, Alexandria, VA": {
+      "parking": {
+        "defaultFloor": 1,
+        "showFloorSelectorForParking": true
+      }
+    },
+    "35 Cricket Ave, Ardmore, PA": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "-2",
+          "-1",
+          "1"
+        ],
+        "showFloorSelectorForParking": true
+      }
+    },
+    "24 Cricket Ave, Ardmore, PA": {
+      "parking": {
+        "defaultFloor": 1,
+        "showFloorSelectorForParking": true
+      }
+    },
+    "203 Laurie Meadows Dr, San Mateo, CA": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": true
+      },
+      "storage": {
+        "defaultFloor": 2,
+        "floorsToShow": [
+          "2",
+          "3",
+          "4"
+        ],
+        "showFloorSelectorForParking": true
+      }
+    },
+    "22980 Vista Edera Cir, Estero, FL": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "3609 NE 207th St, Miami, FL": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "2100 N Ursula St, Aurora, CO": {
+      "parking": {
+        "defaultFloor": 1,
+        "showFloorSelectorForParking": true
+      }
+    },
+    "2200 Benjamin Franklin Pkwy, Philadelphia, PA": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "-2",
+          "-1",
+          "1"
+        ],
+        "showFloorSelectorForParking": true
+      }
+    },
+    "3400 Avenue of the Arts, Costa Mesa, CA": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "-2",
+          "-1",
+          "1"
+        ],
+        "showFloorSelectorForParking": true
+      },
+      "storage": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "-2",
+          "-1",
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "showFloorSelectorForParking": true
+      }
+    },
+    "5325 Westbard Ave, Bethesda, MD": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "4000 Wisconsin NW Ave, Washington, DC": {
+      "parking": {
+        "defaultFloor": -4,
+        "floorsToShow": [
+          "-4",
+          "-3",
+          "-2",
+          "-1"
+        ],
+        "showFloorSelectorForParking": true
+      }
+    },
+    "4392 W Point Loma Blvd, San Diego, CA": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "4615 N Park Ave, Chevy Chase, MD": {
+      "parking": {
+        "defaultFloor": -1,
+        "floorsToShow": [
+          "-4",
+          "-3",
+          "-2",
+          "-1"
+        ],
+        "showFloorSelectorForParking": true
+      },
+      "storage": {
+        "defaultFloor": -2,
+        "floorsToShow": [
+          "-4",
+          "-3",
+          "-2"
+        ],
+        "showFloorSelectorForParking": true
+      }
+    },
+    "17455 NW 94th Ct, Hialeah, FL": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "4710 Elm St, Bethesda, MD": {
+      "parking": {
+        "defaultFloor": 2,
+        "floorsToShow": [
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "showFloorSelectorForParking": true
+      }
+    },
+    "1504 Bay Rd, Miami Beach, FL": {
+      "parking": {
+        "defaultFloor": 2,
+        "showFloorSelectorForParking": true
+      }
+    },
+    "1500 Bay Rd, Miami Beach, FL": {
+      "parking": {
+        "defaultFloor": 2,
+        "floorsToShow": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8"
+        ],
+        "showFloorSelectorForParking": true
+      }
+    },
+    "1108 Merrion Ave, Durham, NC": {
+      "parking": {
+        "defaultFloor": 2,
+        "floorsToShow": [
+          "1",
+          "2"
+        ],
+        "showFloorSelectorForParking": true
+      }
+    },
+    "2080 California St, Denver, CO": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "-1",
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "showFloorSelectorForParking": true
+      }
+    },
+    "550 Park W Ave, Denver, CO": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "showFloorSelectorForParking": true
+      }
+    },
+    "1420 W 116th Ave, Denver, CO": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "10170 SW 7th St, Pembroke Pines, FL": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "2961 W Centennial Dr, Littleton, CO": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "2301 Ostracod Ln, Raleigh, NC": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "2421 Brightcreek Falls Trl, Raleigh, NC": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "3185 Garrity Way, San Pablo, CA": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "8225 Poplar Way, Centennial, CO": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "3707 Roswell NE Rd, Atlanta, GA": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "7700 Pine Lakes Blvd, Port Saint Lucie, FL": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "1555 Riviera Ave, Walnut Creek, CA": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1",
+          "2"
+        ],
+        "showFloorSelectorForParking": true
+      }
+    },
+    "15700 Lasselle St, Moreno Valley, CA": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "1 Leighton St, Cambridge, MA": {
+      "parking": {
+        "defaultFloor": -1,
+        "floorsToShow": [
+          "-1",
+          "-2",
+          "-3"
+        ],
+        "showFloorSelectorForParking": true
+      }
+    },
+    "25335 Alessandro Blvd, Moreno Valley, CA": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "451 Wellesley Dr, Corona, CA": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "901 NW 97th Ave, Miami, FL": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "31901 Campanula Way, Temecula, CA": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "12255 Claude Ct, Northglenn, CO": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "13601 S 44th St, Phoenix, AZ": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "1100 N Priest Dr, Chandler, AZ": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "275 W Juniper Ave, Gilbert, AZ": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "13120 Day St, Moreno Valley, CA": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "1685 Cowles Ave, Longmont, CO": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "14121 Grant St, Thornton, CO": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "100 Woodview Way, Watertown, MA": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "8800 Sierra College Blvd, Roseville, CA": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "9550 Twenty Mile Rd, Parker, CO": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "4000 Spotter Dr, Apex, NC": {
+      "parking": {
+        "defaultFloor": 1,
+        "floorsToShow": [
+          "1"
+        ],
+        "showFloorSelectorForParking": false
+      }
+    },
+    "141 Park At North Hills St, Raleigh, NC": {
+      "parking": {
+        "defaultFloor": 4,
+        "floorsToShow": [
+          "4",
+          "5"
+        ],
+        "showFloorSelectorForParking": true
+      }
+    }
+  },
+  "formattedAddress": "5994 12th St, Fort Belvoir, VA"
+}

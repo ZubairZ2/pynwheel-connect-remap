@@ -14,6 +14,8 @@ class DataProvidersService
         YardirentcafeDataUpdateWorker.perform_async community.id
       when "appfolio"
         AppFolioDataImportWorker.perform_async(community.id)
+      when "beans"
+        BeansDataImportWorker.perform_async(community.id)
       when "rentmanager"
         RentManagerDataImportWorker.perform_async community.id
       when "psi"

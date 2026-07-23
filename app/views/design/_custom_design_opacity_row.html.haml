@@ -1,0 +1,8 @@
+.form-group.mt-10
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label= label
+  .col-sm-12.col-lg-3.col-md-3.col-xs-12
+    %input.form-control{ type: "number", id: field_id, value: value,
+                         min: 0, max: 1, step: 0.1,
+                         data: { key: key, community: community.id } }
+  .col-sm-12.col-lg-2.col-md-2.col-xs-12
+    %button.btn.btn-primary.ds-save-btn{ data: { key: key, source: field_id, community: community.id } } Save

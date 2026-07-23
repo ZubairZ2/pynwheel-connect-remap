@@ -10,7 +10,7 @@ var DEFAULT_FILL_COLOR = "default-fill-color";
 var svgMode = definedAndHasValue(svgMode) ? svgMode : false;
 
 var map_marker_color = definedAndHasValue(map_marker_color)
-  ? map_marker_color 
+  ? map_marker_color
   : "#d37474";
 
 var amenity_marker_color = definedAndHasValue(amenity_marker_color)
@@ -42,15 +42,15 @@ function setSVG(container, svgElement, options) {
     const newChildren =
       svgIndex > -1
         ? [
-            ...childrenArray.slice(0, svgIndex),
-            svgElement,
-            ...childrenArray.slice(svgIndex + 1),
-          ]
+          ...childrenArray.slice(0, svgIndex),
+          svgElement,
+          ...childrenArray.slice(svgIndex + 1),
+        ]
         : [
-            ...childrenArray.slice(0, svgPosition),
-            svgElement,
-            ...childrenArray.slice(svgPosition),
-          ];
+          ...childrenArray.slice(0, svgPosition),
+          svgElement,
+          ...childrenArray.slice(svgPosition),
+        ];
     container.innerHTML = "";
     container.append(...newChildren);
   }
@@ -58,7 +58,7 @@ function setSVG(container, svgElement, options) {
   if (!mobileCheck() && options.activateHoverEffect) {
     const $shapes = $svgElement.find(
       [...VALID_SVG_SHAPES, "text"].join(", ") +
-        ":not(.cloned-unit):not(.cloned-amenity)"
+      ":not(.cloned-unit):not(.cloned-amenity)"
     );
 
     $shapes.on("mouseenter", function (e) {
@@ -102,6 +102,7 @@ function uniquifySVGIds(svgElement, floorId) {
 
   // Elements to skip (Units and Amenities groups + their children)
   // const skipSelectors = ["g#Units", "g#Units_", "g#Amenities", "#Units_ *", "#Units *", "#Amenities *"];
+  
   function isUnitsOrAmenities(el) {
     let node = el;
 
@@ -109,7 +110,7 @@ function uniquifySVGIds(svgElement, floorId) {
       if (
         node.tagName === 'g' &&
         node.id &&
-        /^(units|amenities)/i.test(node.id)
+        /uni|amen/i.test(node.id)
       ) {
         return true;
       }
@@ -127,17 +128,15 @@ function uniquifySVGIds(svgElement, floorId) {
 
     const oldId = el.id;
     const newId = `${oldId}_${floorId}`;
-    console.log(`Renaming id: ${oldId} → ${newId}`);
     idMap.set(oldId, newId);
     el.id = newId;
   });
 
   // STEP 2: Update all references
+  // NOTE: do NOT skip Units/Amenities here — their shapes may reference renamed
+  // <defs> IDs (e.g. fill="url(#pattern...)") and those references must be updated
+  // even though we skipped renaming the shape IDs themselves in STEP 1.
   svgElement.querySelectorAll('*').forEach(el => {
-    // Skip updating references inside Units or Amenities
-    // if (el.closest(skipSelectors.join(","))) return;
-    if (isUnitsOrAmenities(el)) return;
-
     // Attributes with url(#id)
     ["fill", "stroke", "filter", "clip-path", "mask", "style"].forEach(attr => {
       if (el.hasAttribute(attr)) {
@@ -161,7 +160,6 @@ function uniquifySVGIds(svgElement, floorId) {
       // xlink:href in namespace
       const XLINK_NS = "http://www.w3.org/1999/xlink";
       if (el.getAttributeNS(XLINK_NS, "href") === `#${oldId}`) {
-        console.log(`Updating xlink:href on <${el.tagName}>: #${oldId} → #${newId}`);
         el.setAttributeNS(XLINK_NS, "xlink:href", `#${newId}`);
       }
     });
@@ -233,16 +231,16 @@ async function fetchSVG(
     if (!svgElement) throw new Error("No <svg> element found in the response.");
 
     const { floor = null } = options;
-    if(hasFloorplate() && floor)
+    if (hasFloorplate() && floor)
       uniquifySVGIds(svgElement, `f${floor}`);
 
     fitSvgToParent(svgElement);
     parsedSVGs.push(svgElement);
     setSVG(container, svgElement, options);
 
-    if(fontFamily)
+    if (fontFamily)
       updateSvgTextFontFamily(svgElement, fontFamily);
-    
+
     if (tracker) {
       asset.node = svgElement;
       tracker.addOrUpdateAsset(asset, trackerVisibilityCheck);
@@ -280,10 +278,10 @@ function setSvgOrImageHeight($svg) {
 function floorBasedData(data = []) {
   return hasFloorplate()
     ? data.filter(
-        ({ floor }) =>
-          validFloor(floor) ||
-          (!floor && ["object", "undefined"].includes(typeof floor))
-      )
+      ({ floor }) =>
+        validFloor(floor) ||
+        (!floor && ["object", "undefined"].includes(typeof floor))
+    )
     : data;
 }
 
@@ -327,7 +325,7 @@ function getPointerIdAndSelector(pointerData, dataset) {
     if (/^[0-9]/.test(id)) {
       selector = `${tag}[id="${id}"]`;
     } else {
-      selector = `${tag}#${id}`;
+      selector = `${tag}#${CSS.escape(id)}`;
     }
   }
 
@@ -691,7 +689,7 @@ function setSvgCoordinates(data, options) {
     if (isWebpage) {
       const $shapes = $(svgElement).find(
         [...VALID_SVG_SHAPES, "text"].join(", ") +
-          ":not(.cloned-unit):not(.cloned-amenity)"
+        ":not(.cloned-unit):not(.cloned-amenity)"
       );
 
       $shapes.each(function () {
@@ -751,10 +749,8 @@ function isValidShape(shape, parent = false) {
         )
           return false;
       } else if (
-        parentId?.startsWith("amenities") ||
-        parentId?.endsWith("amenities") ||
-        parentId?.startsWith("units") ||
-        parentId?.startsWith("amenity_outlines")
+        parentId?.includes("amen") ||
+        parentId?.includes("uni")
       )
         return true;
       else if (
@@ -780,13 +776,8 @@ function getValidShapeCategory(shape, parent = false) {
     const parentId = parentElement.id?.toLowerCase();
 
     if (parentTag === "g") {
-      if (parentId?.startsWith("units")) return "unit";
-      else if (
-        parentId?.startsWith("amenities") ||
-        parentId?.endsWith("amenities") ||
-        parentId?.startsWith("amenity_outlines")
-      )
-        return "amenity";
+      if (parentId?.includes("uni")) return "unit";
+      else if (parentId?.includes("amen")) return "amenity";
       else if (
         parentId?.includes("outlines") ||
         parentId?.includes("label") ||
@@ -904,9 +895,8 @@ function getSvgElementSelector(element) {
   if (!element) return null;
 
   const parent = element.parentElement;
-  const nthChild = ` > ${element.tagName.toLowerCase()}:nth-child(${
-    Array.from(parent.children).indexOf(element) + 1
-  })`;
+  const nthChild = ` > ${element.tagName.toLowerCase()}:nth-child(${Array.from(parent.children).indexOf(element) + 1
+    })`;
   return parent.id
     ? `${parent.tagName.toLowerCase()}#${parent.id}${nthChild}`
     : `${getSvgElementSelector(parent)}${nthChild}`;

@@ -4,7 +4,7 @@ module CommunitiesHelper
 
   DATA_ATTRIBUTES_SAME_KEYS = %w[
     is-fav availability-url community-property-id floorplan-name square-feet availability bedrooms
-    bathrooms floorplan-image floor sold available
+    bathrooms floorplan-image secondary-image floor sold available
   ].freeze
 
   DEFAULT_FONT_SIZE = 30
@@ -14,6 +14,7 @@ module CommunitiesHelper
   STATUS_BASE_DEFAULT_COLORS = {
     occupied: "#f2f2f2",
     occupied_on_notice: "#8545a1",
+    vacant: "#d37474",
     vacant_leased: "#f9d648",
     model: "#f57396",
     missing: "#eecea5"
@@ -78,6 +79,11 @@ module CommunitiesHelper
     worksheet.write(0, 24, "Billing Month", format)
     worksheet.write(0, 25, "Annual Billing Rate ($)", format)
     worksheet.write(0, 26, "Monthly Billing Rate ($)", format)
+    worksheet.write(0, 27, "SDK Map Enabled", format)
+    worksheet.write(0, 28, "Map Type (SVG / Image)", format)
+    worksheet.write(0, 29, "Beans 3D Map", format)
+    worksheet.write(0, 30, "Map SDK URL", format)
+    worksheet.write(0, 31, "Map SDK Embed Code", format)
 
     Community.without_test_properties.each do |community|
       if community.present?
@@ -151,6 +157,12 @@ module CommunitiesHelper
           worksheet.write(row, 25, billing_rate_convertion(community.billing_rate_selftour)*12, format1)
           worksheet.write(row, 26, billing_rate_convertion(community.billing_rate_selftour), format1)
         end
+
+        worksheet.write(row, 27, community.enable_sdk_map ? "Yes" : "No", format1)
+        worksheet.write(row, 28, community.enable_svg_mode ? "SVG" : "Image", format1)
+        worksheet.write(row, 29, community.enable_three_d_maps ? "Yes" : "No", format1)
+        worksheet.write(row, 30, community.sdk_map_link, format1)
+        worksheet.write(row, 31, community.sdk_map_embed_code, format1)
 
         row = row + 1
       end
@@ -263,6 +275,13 @@ module CommunitiesHelper
     end
   end
 
+  # Delegates to Unit#pyn_estimated_monthly — see unit.rb for the full logic.
+  # Returns base rent + mandatory monthly fees when calculator is on,
+  # or plain base rent when calculator is off.
+  def unit_pyn_estimated_monthly(unit, community = nil)
+    unit.pyn_estimated_monthly
+  end
+
   def fetch_unit_info_struct_for_webpage(unit, floorplan, show_ops_map = false)
     struct = {
       id: unit.id,
@@ -308,6 +327,7 @@ module CommunitiesHelper
       lease_term: unit.lease_term,
       availability_url: unit.get_availability_url(),
       floorplan_image: fetch_image_url(floorplan, unit),
+      secondary_image: floorplan&.secondary_image&.url.presence || "",
       is_fav: unit&.community&.favorite_stop&.favorite_unit&.include?(unit.id.to_s) || unit_id_is_in_cookies?(cookies[:favorite_unit_ids], unit.id),
       floorplan_name: if floorplan.present?
                         floorplan.name
@@ -322,17 +342,20 @@ module CommunitiesHelper
                    else
                      ""
                    end,
+      description_title: (unit.description_title.presence || floorplan&.description_title.presence || "More Details"),
       display_rent: unit&.community&.display_rent,
       additional_fees: @community.get_additional_fees(unit),
       property_id: unit.property_id,
       unit_status: unit&.unit_status,
-      model_unit: unit&.modal_unit
+      model_unit: unit&.modal_unit,
+      pricing_calculator_url: unit.pricing_calculator_url,
+      pyn_estimated_monthly: unit_pyn_estimated_monthly(unit, @community_info),
+      pyn_estimated_monthly_max: unit.pyn_estimated_monthly_max
     }
     struct[:data_attributes] = fetch_unit_data_attributes(unit, struct, show_ops_map)
 
     struct
   end
-
 
   def fetch_unit_info_struct_for_ploting(unit, floorplan)
     struct = {
@@ -361,6 +384,7 @@ module CommunitiesHelper
                              end,
       availability_url: unit.get_availability_url(),
       floorplan_image: fetch_image_url(floorplan, unit),
+      secondary_image: floorplan&.secondary_image&.url.presence || "",
       floorplan_name: if floorplan.present?
                         floorplan.name
                       else
@@ -411,26 +435,10 @@ module CommunitiesHelper
   end
 
   def default_unit_marker_color(community, show_ops_map = false)
-    theme_name = community&.theme_name
-    design = community&.design
-
-    if show_ops_map || theme_name&.include?('gables')
-      design&.property_map_color || DEFAULT_MARKER_CODE
+    if show_ops_map
+      community&.design&.property_map_color || DEFAULT_MARKER_CODE
     else
-      case theme_name
-      when 'modernist'
-        # colors = [design&.modernist_map_marker_color, 'no color', '']
-        # colors.include?(design&.modernist_map_marker_color) ? (design&.primary_color || DEFAULT_MARKER_PRIMARY_CODE) : (design&.modernist_map_marker_color || DEFAULT_MARKER_PRIMARY_CODE)
-        design&.modernist_map_marker_color || DEFAULT_MARKER_CODE
-      when 'futurist'
-        design&.futurist_property_map_marker_color || DEFAULT_MARKER_CODE
-      when 'expressionist'
-        design&.expressionist_property_map_marker_color || DEFAULT_MARKER_CODE
-      when 'panther'
-        design&.panther_property_map_marker_color || DEFAULT_MARKER_CODE
-      else
-        'rgba(247, 0, 0, 0.61)'
-      end
+      community.available_units_color || DEFAULT_MARKER_CODE
     end
   end
 
@@ -462,9 +470,8 @@ module CommunitiesHelper
     when /gables/
       design&.amenity_map_marker_color || DEFAULT_MARKER_CODE
     when 'modernist'
-      # colors = [design&.modernists_amenity_map_marker_color, 'no color', '']
-      # colors&.include?(design&.modernists_amenity_map_marker_color) ? (design&.primary_color || DEFAULT_MARKER_PRIMARY_CODE) : (design&.modernists_amenity_map_marker_color || DEFAULT_MARKER_PRIMARY_CODE)
-      design&.modernists_amenity_map_marker_color || DEFAULT_MARKER_CODE
+      colors = [design&.modernists_amenity_map_marker_color, 'no color', '']
+      colors&.include?(design&.modernists_amenity_map_marker_color) ? (design&.primary_color || DEFAULT_MARKER_PRIMARY_CODE) : (design&.modernists_amenity_map_marker_color || DEFAULT_MARKER_PRIMARY_CODE)
     when 'futurist'
       design&.futurist_amenity_map_marker_color || DEFAULT_MARKER_CODE
     when 'expressionist'
@@ -478,19 +485,11 @@ module CommunitiesHelper
 
   def amenity_marker_config community, show_ops_map = false
     amenity_font_size = default_amenity_marker_font_size(community) - 5
-    if community.turn_availability_on && !show_ops_map 
-      {
-        color: community.amenities_color,
-        opacity: community.amenities_opacity,
-        font_size: amenity_font_size
-      }
-    else
-      {
-        color: default_amenity_marker_color(community),
-        opacity: 1,
-        font_size: amenity_font_size
-      }
-    end
+    {
+      color: community.amenities_color || DEFAULT_MARKER_CODE,
+      opacity: community.amenities_opacity || 1,
+      font_size: amenity_font_size
+    }
   end
 
   def default_margins(community)
@@ -539,7 +538,7 @@ module CommunitiesHelper
       custom_color = case status
                     when :occupied then design&.property_map_occupied_color
                     when :occupied_on_notice then design&.property_map_occupied_on_notice_color
-                    when :vacant then nil # ensure vacant exists for completeness
+                    when :vacant then design&.property_map_color
                     when :vacant_leased then design&.property_map_vacant_leased_color
                     when :model then design&.property_map_model_color
                     when :missing then design&.property_map_missing_color
@@ -580,6 +579,45 @@ module CommunitiesHelper
     }
   end
 
+  # Resolves the per-bedroom marker colors for a unit's floorplan, falling back
+  # to the community-level colors when no bedroom override exists. Mirrors the
+  # SDK's compute_unit_marketing_color logic so the regular map matches.
+  def bedroom_map_config unit
+    bedroom = unit&.floorplan&.bedrooms.to_i
+    bmc = bedroom_marker_colors_map[bedroom]
+    {
+      available_units_color:   bmc&.available_units_color   || @community.available_units_color,
+      available_units_opacity: bmc&.available_units_opacity || @community.available_units_opacity,
+      model_units_color:       bmc&.model_units_color       || @community.model_units_color,
+      model_units_opacity:     bmc&.model_units_opacity     || @community.model_units_opacity
+    }
+  end
+
+  def bedroom_marker_colors_map
+    @bedroom_marker_colors_map ||= @community.bedroom_marker_colors.index_by(&:bedroom)
+  end
+
+  # Box-style legend items for the marketing map, derived from the community's
+  # coloring mode. Only by_bedroom and by_property produce a color box legend;
+  # by_floorplan shows no legend (same on SVG, image and 3D maps).
+  def marketing_legend_items(community)
+    case community.coloring_mode
+    when "by_bedroom"
+      community.bedroom_marker_colors.sort_by(&:bedroom).map do |bmc|
+        { label: bedroom_legend_label(bmc.bedroom), color: bmc.available_units_color }
+      end
+    when "by_property"
+      [{ label: community.show_property_map_key_text.presence || "Available Home",
+         color: community.available_units_color }]
+    else # by_floorplan -> no legend
+      []
+    end
+  end
+
+  def bedroom_legend_label(bedroom)
+    bedroom.to_i.zero? ? "Studio" : "#{bedroom} Bedroom#{'s' if bedroom.to_i > 1}"
+  end
+
   def map_configuration(community, show_ops_map = false)
     {
       unit_marker_font_size: default_unit_marker_font_size(community),
@@ -595,6 +633,11 @@ module CommunitiesHelper
 
   def get_min_floor(community_info:, units_with_floorplan_info_json:, floors:)
     return nil unless community_info.has_floorplates?
+
+    if community_info.default_map_floor.present?
+      selected_floor = community_info.default_map_floor.to_i
+      return selected_floor if floors.present? && floors.include?(selected_floor)
+    end
 
     begin
       parsed_floors = JSON.parse(units_with_floorplan_info_json).map { |u| u["floor"] }.compact
@@ -623,7 +666,7 @@ module CommunitiesHelper
   private
 
   def fetch_image_url floorplan, unit
-    unit&.validated_image_url || floorplan&.validated_image_url || "/assets/default.jpeg"
+    unit&.validated_image_url || floorplan&.validated_image_url || floorplan&.secondary_image&.url.presence || "/assets/default.jpeg"
   end
 
   def fetch_unit_data_attributes(unit, struct, show_ops_map = false)
@@ -643,6 +686,8 @@ module CommunitiesHelper
       "available-date": determine_available_date(struct[:available_date] || Date.new(0)),
       "market-rent": number_with_precision(struct[:market_rent] || 0, precision: 2, delimiter: ','),
       "total-market-rent": number_with_precision(struct[:market_rent] || 0, precision: 2, delimiter: ','),
+      "pyn-estimated-monthly": number_with_precision(struct[:pyn_estimated_monthly], precision: 2, delimiter: ','),
+      "pyn-estimated-monthly-max": number_with_precision(struct[:pyn_estimated_monthly_max], precision: 2, delimiter: ','),
       "title": unit.api_unit_marketing_name,
       "unit-virtual-tour-label": unit.get_virtual_tour_label,
       "unit-virtual-tour-url": unit.get_virtual_tour_url,
@@ -657,13 +702,15 @@ module CommunitiesHelper
       "unit-lease-pricing": struct[:lease_pricing],
       "unit-additional-fees": struct[:additional_fees],
       "unit-description": struct[:description],
+      "unit-description-title": struct[:description_title],
       "property-id": struct[:property_id],
       "unit-status": struct[:unit_status],
       "model-unit": struct[:model_unit],
       "color-by": @community.coloring_mode,
       "config": map_configuration(@community, show_ops_map),
       "floorplan-map-config": floorplan_map_config(unit).to_json,
-      "by-property-colors": by_property_colors(@community).to_json
+      "by-property-colors": by_property_colors(@community).to_json,
+      "bedroom-map-config": bedroom_map_config(unit).to_json
     }.transform_keys { |key| "data-#{key}".to_sym }.merge(
       DATA_ATTRIBUTES_SAME_KEYS.each_with_object({}) do |key, result|
         result["data-#{key}".to_sym] = struct[key.underscore.to_sym]
@@ -672,7 +719,8 @@ module CommunitiesHelper
   end
 
   def fetch_unit_data_attributes_for_plotting(unit, struct)
-    title = (unit.building.present? ? unit.building + '-' : '') + unit.marketing_name
+    # title = (unit.building.present? ? unit.building + '-' : '') + unit.marketing_name
+    title = [unit.building, unit.marketing_name].compact.join('-')
     current_data_scope = instance_variable_defined?(:@sitemap) ? 'sitemap' : 'floorplate'
     floorplate_id = instance_variable_get("@#{current_data_scope}").id if current_data_scope == 'floorplate'
     

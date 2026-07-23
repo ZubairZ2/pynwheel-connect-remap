@@ -52,6 +52,10 @@
             
             %li{:role => "presentation"}
               %a#ebrochure-settings{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#ebrochure-settings-tab", :role => "tab"} Ebrochure Settings
+            %li{:role => "presentation"}
+              %a#custom-design-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#custom-design", :role => "tab"}
+                Custom Design
+                %span.label.label-primary{ style: "font-size: 10px; vertical-align: middle; margin-left: 4px;" } New
             %li.hidden.dropdown{:role => "presentation"}
               %a.dropdown-toggle{"aria-expanded" => "false", "data-toggle" => "dropdown", :href => "#"}
                 Style
@@ -99,6 +103,8 @@
               = render 'ops_map_marker_colors'
             #ebrochure-settings-tab.tab-pane.fade{:role => "tabpanel"}
               = render 'ebrochure_settings'
+            #custom-design.tab-pane.fade{:role => "tabpanel"}
+              = render 'custom_design'
 :javascript 
   var community_id = #{params[:community_id]};
   var selected_theme = '#{@community.theme_name}';

@@ -1,0 +1,269 @@
+:javascript
+  (function(){
+    var matchUrl      = "#{bulk_upload_match_community_partner_configurations_path(current_community)}";
+    var applyUrl      = "#{bulk_upload_apply_community_partner_configurations_path(current_community)}";
+    var csrf          = $('meta[name="csrf-token"]').attr('content');
+    var partnerLabels = #{Community::MAP_PARTNERS.map { |p| [p[:key], p[:label]] }.to_h.to_json};
+
+    var selectedFile = null;
+
+    function esc(s){ return $('<div>').text(s == null ? '' : s).html(); }
+
+    function chosenPartnerKeys(){
+      return $('.pc-upload-partner:checked').map(function(){ return $(this).data('key'); }).get();
+    }
+
+    function refreshScanState(){
+      var ready = !!selectedFile && chosenPartnerKeys().length > 0;
+      $('#pcScanBtn').prop('disabled', !ready);
+    }
+
+    // ---------- export ----------
+    $('#pcExportBtn').on('click', function(){
+      $('#pcExportScopeAll').prop('checked', true);
+      $('.pc-export-partner').prop('checked', false).prop('disabled', true);
+      $('#pcExportPartners').removeClass('is-active');
+      $('#pcExportWarn').hide();
+      $('#pcExportModal').modal('show');
+    });
+    $('.pc-export-scope-radio').on('change', function(){
+      var byPartner = $('#pcExportScopePartners').is(':checked');
+      $('.pc-export-partner').prop('disabled', !byPartner);
+      $('#pcExportPartners').toggleClass('is-active', byPartner);
+      if (!byPartner){ $('#pcExportWarn').hide(); }
+    });
+    $('#pcExportForm').on('submit', function(e){
+      if ($('#pcExportScopePartners').is(':checked') && $('.pc-export-partner:checked').length === 0){
+        e.preventDefault();
+        $('#pcExportWarn').show();
+        return;
+      }
+      $('#pcExportModal').modal('hide');
+    });
+
+    // ---------- open / reset ----------
+    $('#pcUploadBtn').on('click', function(){ resetWizard(); $('#pcUploadModal').modal('show'); });
+
+    function resetWizard(){
+      selectedFile = null;
+      $('#pcFileInput').val('');
+      $('#pcFileName').removeClass('has-file').empty();
+      $('.pc-upload-partner').prop('checked', false);
+      $('#pcUploadError').hide().empty();
+      showStep(1);
+      refreshScanState();
+    }
+
+    function showStep(n){
+      $('#pcStepUpload').toggle(n === 1);
+      $('#pcStepPreview').toggle(n === 2);
+      $('#pcFooterUpload').toggle(n === 1);
+      $('#pcFooterPreview').toggle(n === 2);
+      $('#pcStepDot1').toggleClass('is-active', n === 1).toggleClass('is-done', n === 2);
+      $('#pcStepDot2').toggleClass('is-active', n === 2);
+    }
+
+    // ---------- file selection ----------
+    $('#pcDropzone').on('click', function(){ $('#pcFileInput').click(); });
+    $('#pcFileInput').on('change', function(){ setFile(this.files[0]); });
+
+    $('#pcDropzone')
+      .on('dragover dragenter', function(e){ e.preventDefault(); e.stopPropagation(); $(this).addClass('is-drag'); })
+      .on('dragleave dragend drop', function(e){ e.preventDefault(); e.stopPropagation(); $(this).removeClass('is-drag'); })
+      .on('drop', function(e){
+        var files = e.originalEvent.dataTransfer && e.originalEvent.dataTransfer.files;
+        if (files && files.length){ setFile(files[0]); }
+      });
+
+    function setFile(file){
+      if (!file){ return; }
+      selectedFile = file;
+      $('#pcFileName').addClass('has-file').html('<i class="fa fa-file-o"></i> ' + esc(file.name));
+      $('#pcUploadError').hide().empty();
+      refreshScanState();
+    }
+
+    $(document).on('change', '.pc-upload-partner', refreshScanState);
+
+    // ---------- scan & match ----------
+    $('#pcScanBtn').on('click', function(){
+      if (!selectedFile){ return; }
+      var fd = new FormData();
+      fd.append('file', selectedFile);
+      fd.append('authenticity_token', csrf);
+
+      var $btn = $(this).prop('disabled', true).data('label', $(this).html())
+                        .html('<i class="fa fa-spinner fa-spin mr-5"></i> Scanning…');
+      $('#pcUploadError').hide().empty();
+
+      $.ajax({ url: matchUrl, method: 'POST', data: fd, processData: false, contentType: false, dataType: 'json' })
+        .done(function(res){ renderPreview(res); showStep(2); })
+        .fail(function(xhr){
+          var msg = (xhr.responseJSON && xhr.responseJSON.message) || 'Could not read that file. Please try again.';
+          $('#pcUploadError').html('<i class="fa fa-exclamation-triangle mr-5"></i>' + esc(msg)).show();
+        })
+        .always(function(){ $btn.prop('disabled', false).html($btn.data('label')); });
+    });
+
+    // ---------- render preview ----------
+    function renderPreview(res){
+      $('#pcSumExact').text(res.summary.exact || 0);
+      $('#pcSumPartial').text(res.summary.partial || 0);
+      $('#pcSumUnmatched').text(res.summary.unmatched || 0);
+
+      var keys = chosenPartnerKeys();
+      $('#pcRecapPartners').html(keys.map(function(k){
+        return '<span class="pc-recap-pill">' + esc(partnerLabels[k] || k) + '</span>';
+      }).join(''));
+
+      var exact = [], partial = [], unmatched = [];
+      (res.results || []).forEach(function(r){
+        if (r.status === 'exact'){ exact.push(r); }
+        else if (r.status === 'partial'){ partial.push(r); }
+        else { unmatched.push(r); }
+      });
+
+      // mark empty tabs (not clickable) and remember counts
+      $('.pc-sum-tab[data-tab="exact"]').toggleClass('is-empty', exact.length === 0);
+      $('.pc-sum-tab[data-tab="partial"]').toggleClass('is-empty', partial.length === 0);
+      $('.pc-sum-tab[data-tab="unmatched"]').toggleClass('is-empty', unmatched.length === 0);
+
+      var panes =
+        pane('exact', exact.length ? sectionExact(exact) : emptyPane('No exact matches in this file.')) +
+        pane('partial', partial.length ? sectionPartial(partial) : emptyPane('Nothing needs review — everything resolved automatically.')) +
+        pane('unmatched', unmatched.length ? sectionUnmatched(unmatched) : emptyPane('Every row was matched to a property.'));
+
+      $('#pcPreviewBody').html(panes);
+
+      // default to the first tab that has rows
+      var def = exact.length ? 'exact' : (partial.length ? 'partial' : 'unmatched');
+      setActiveTab(def);
+      refreshApplyCount();
+    }
+
+    function pane(name, inner){
+      return '<div class="pc-pane" data-pane="' + name + '">' + inner + '</div>';
+    }
+
+    function emptyPane(msg){
+      return '<p class="pc-empty-pane">' + esc(msg) + '</p>';
+    }
+
+    function setActiveTab(tab){
+      $('.pc-sum-tab').removeClass('is-selected');
+      $('.pc-sum-tab[data-tab="' + tab + '"]').addClass('is-selected');
+      $('.pc-pane').hide();
+      $('.pc-pane[data-pane="' + tab + '"]').show();
+    }
+
+    $(document).on('click', '.pc-sum-tab', function(){
+      if ($(this).hasClass('is-empty')){ return; }
+      setActiveTab($(this).data('tab'));
+    });
+
+    function uploadedCell(input){
+      var line1 = esc(input.name || input.address || '—');
+      var loc = [input.city, input.state].filter(Boolean).join(', ');
+      var line2 = [input.address && input.name ? input.address : null, loc].filter(Boolean).join(' • ');
+      return '<div class="pc-up-name">' + line1 + '</div>' +
+             (line2 ? '<div class="pc-up-meta">' + esc(line2) + '</div>' : '');
+    }
+
+    function matchCell(m){
+      return '<div class="pc-up-name">' + esc(m.name || '—') + '</div>' +
+             '<div class="pc-up-meta">' + esc([m.company, m.location].filter(Boolean).join(' • ')) + '</div>';
+    }
+
+    function sectionExact(rows){
+      var body = rows.map(function(r){
+        return '<tr class="pc-row-exact" data-cid="' + r.match.id + '">' +
+          '<td class="pc-inc-col"><input type="checkbox" class="pc-inc" checked></td>' +
+          '<td>' + uploadedCell(r.input) + '</td>' +
+          '<td class="pc-arrow"><i class="fa fa-long-arrow-right"></i></td>' +
+          '<td>' + matchCell(r.match) + '</td>' +
+        '</tr>';
+      }).join('');
+      return sectionWrap('exact', 'fa-check-circle', 'Exact matches', rows.length,
+        'These resolved to a single property and are ready to assign.',
+        '<table class="pc-preview-table"><thead><tr><th class="pc-inc-col"></th><th>From your file</th><th></th><th>Matched property</th></tr></thead><tbody>' + body + '</tbody></table>');
+    }
+
+    function sectionPartial(rows){
+      var body = rows.map(function(r){
+        var opts = '<option value="">— Skip this row —</option>' + r.candidates.map(function(c){
+          return '<option value="' + c.id + '">' + esc(c.name + ' — ' + [c.company, c.location].filter(Boolean).join(', ')) + '</option>';
+        }).join('');
+        return '<tr class="pc-row-partial">' +
+          '<td>' + uploadedCell(r.input) + '</td>' +
+          '<td class="pc-arrow"><i class="fa fa-long-arrow-right"></i></td>' +
+          '<td><select class="form-control input-sm pc-cand">' + opts + '</select></td>' +
+        '</tr>';
+      }).join('');
+      return sectionWrap('partial', 'fa-question-circle', 'Need review', rows.length,
+        'We found more than one possible match. Pick the right property (or skip).',
+        '<table class="pc-preview-table"><thead><tr><th>From your file</th><th></th><th>Choose the matching property</th></tr></thead><tbody>' + body + '</tbody></table>');
+    }
+
+    function sectionUnmatched(rows){
+      var body = rows.map(function(r){
+        return '<tr class="pc-row-unmatched"><td>' + uploadedCell(r.input) + '</td></tr>';
+      }).join('');
+      return sectionWrap('unmatched', 'fa-times-circle', 'Not found in CMS', rows.length,
+        'No property matched these rows, so they will be skipped.',
+        '<table class="pc-preview-table"><tbody>' + body + '</tbody></table>');
+    }
+
+    function sectionWrap(kind, icon, title, count, hint, inner){
+      return '<div class="pc-section pc-section-' + kind + '">' +
+        '<div class="pc-section-head"><i class="fa ' + icon + '"></i> ' + esc(title) +
+        '<span class="pc-section-count">' + count + '</span>' +
+        '<span class="pc-section-hint">' + esc(hint) + '</span></div>' +
+        '<div class="table-responsive">' + inner + '</div></div>';
+    }
+
+    // ---------- apply ----------
+    function collectIds(){
+      var ids = [];
+      $('.pc-row-exact').each(function(){
+        if ($(this).find('.pc-inc').is(':checked')){ ids.push($(this).data('cid')); }
+      });
+      $('.pc-row-partial').each(function(){
+        var v = $(this).find('.pc-cand').val();
+        if (v){ ids.push(parseInt(v, 10)); }
+      });
+      // de-dupe
+      return ids.filter(function(v, i){ return ids.indexOf(v) === i; });
+    }
+
+    function refreshApplyCount(){
+      var n = collectIds().length;
+      $('#pcApplyCount').text(n);
+      $('#pcApplyBtn').prop('disabled', n === 0);
+    }
+    $(document).on('change', '.pc-inc, .pc-cand', refreshApplyCount);
+
+    $('#pcBackBtn, #pcRecapChange').on('click', function(){ showStep(1); });
+
+    $('#pcApplyBtn').on('click', function(){
+      var ids  = collectIds();
+      var keys = chosenPartnerKeys();
+      if (!ids.length || !keys.length){ return; }
+
+      var $btn = $(this).prop('disabled', true).data('label', $(this).html())
+                        .html('<i class="fa fa-spinner fa-spin mr-5"></i> Applying…');
+
+      $.ajax({
+        url: applyUrl, method: 'POST', dataType: 'json',
+        data: { authenticity_token: csrf, community_ids: ids, partner_keys: keys }
+      })
+      .done(function(res){
+        $('#pcUploadModal').modal('hide');
+        location.reload();
+      })
+      .fail(function(xhr){
+        var msg = (xhr.responseJSON && xhr.responseJSON.message) || 'Could not apply. Please try again.';
+        alert(msg);
+        $btn.prop('disabled', false).html($btn.data('label'));
+      });
+    });
+  })();

@@ -57,29 +57,22 @@
 :javascript
   function apply_zoom_functionality_against_floor(map_id_for_zoom ,elem){
     const key = getZoomPanKey(elem)
-    if (zoomablePans) {
-      zoomablePans[key] = panzoom(elem, {
+    if (!zoomablePans) zoomablePans = {};
+    zoomablePans[key] = {
+      instance: panzoom(elem, {
         minZoom: 0.5,
         maxZoom: 1.0,
         bounds: true,
         boundsPadding: 0.3
-      })
-    } else {
-      zoomablePans = {
-        [key]: panzoom(elem, {
-          minZoom: 0.5,
-          maxZoom: 1.0,
-          bounds: true,
-          boundsPadding: 0.3
-        }),
-      };
-    }
+      }),
+      elem: elem
+    };
 
     var transform = zoomablePans?.[key] ? zoomablePans[key].instance.getTransform() : {};
     var scaleFactor = (1 / (transform.scale || 1));
     var previous_scale = 0;
     while ($(map_id_for_zoom).width() / scaleFactor > $('.map-block').width() || $(map_id_for_zoom).height() / scaleFactor > $('.map-block').height()) {
-        zoomablePans[key].zoomInOut(189);
+        zoomablePans[key].instance.zoomInOut(189);
         transform = zoomablePans[key] ? zoomablePans[key].instance.getTransform() : {};
         scaleFactor = (1 / (transform.scale || 1));
         if (scaleFactor === previous_scale) {
@@ -87,7 +80,7 @@
         }
         previous_scale = scaleFactor
     }
-    zoomablePans[key].moveTo(0, 0);
+    zoomablePans[key].instance.moveTo(0, 0);
   }
 
   function touchHandler(event) {

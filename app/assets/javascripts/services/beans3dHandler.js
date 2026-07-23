@@ -3,6 +3,7 @@ var _3dSelectedItem = definedAndHasValue(_3dSelectedItem)
   ? _3dSelectedItem
   : null;
 var _3dHoveredItem = definedAndHasValue(_3dHoveredItem) ? _3dHoveredItem : null;
+var _3dHoverOrigin = null; // viewport {x,y} where the last Beans onHover fired
 
 var beansWidget = null;
 var _3dSampleAmenities = [
@@ -89,15 +90,22 @@ function initializeBeans3DMap() {
           }
 
           if (_3dHoveredItem?.unitId === data.unitId) return;
+
+          // Record where the hover started so we can detect mouse-leave
+          // even when the unit has no geojson polygon
+          _3dHoverOrigin = {
+            x: event?.clientX ?? event?.x ?? 0,
+            y: event?.clientY ?? event?.y ?? 0,
+          };
           markerHoverEffect(event, data);
-          
+
         },
       }
     );
   } catch (e) {
     console.error(e);
   }
-  
+
   /* -----------------------------
     FIX: WAIT FOR 3D ENGINE READY
   ------------------------------ */
@@ -108,7 +116,6 @@ function initializeBeans3DMap() {
       clearInterval(waitForMapEngine);
 
       beansWidget.workingInstance = inst;
-      console.log("🔥 3D Map Engine Ready:", inst);
       initializeMouseTrackerFor3DHoverExit();
       const container = inst.mapView?.container;
       if (container) {
@@ -122,20 +129,39 @@ function initializeBeans3DMap() {
   beansWidget.workingInstance = beansWorkingMapInstance();
 }
 
+/**
+ * The floor whose layer the 3D map should draw, as the widget expects it.
+ *
+ * Always a string: the widget treats a falsy selectedFloor as "draw every
+ * floor", so floor 0 as a number would stack all the layers. "" is that
+ * "every floor" value, used for the All tab and for properties without
+ * floorplates.
+ */
+function beansSelectedFloor() {
+  if (!hasFloorplate()) return "";
+  if (current_floor == null || current_floor === "all") return "";
+
+  return String(current_floor);
+}
+
 function beans3DMapDisplayOptions(filteredRows = null) {
   return {
     propertyAddress: beansAddress,
     filteredRows: filteredRows || filterBeansItemsIndices(),
+    // filteredRows only picks which units show. The floor layers are drawn from
+    // selectedFloor, which the widget compares against each polygon's floor —
+    // without it every floor renders at once, stacked on top of each other.
+    selectedFloor: beansSelectedFloor(),
     customConfigs: {},
-    initialMap: "3D",
+    initialMap: (definedAndHasValue(defaultSatelliteView) && defaultSatelliteView) ? "SATELLITE" : "3D",
     hideBeansCard: true,
-    hideFloorSelector: true,
+    hideFloorSelector: beanOnlyProperty ? false : true,
     modernBeansCard: false,
     showUnitList: false,
     hideFilters: true,
     showUnitShape: true,
     showUnitList: false,
-    hideShadow: true,
+    hideShadow: false,
     showCompass: true,
     showUnitShape: true,
     // camera: generateCameraView(),
@@ -179,6 +205,7 @@ function getFormattedBeansUnits() {
       rent: transformedData.marketRent,
       floorplanMapConfig: transformedData.floorplanMapConfig,
       byPropertyColors: transformedData.byPropertyColors,
+      bedroomMapConfig: transformedData.bedroomMapConfig,
       colorBy: transformedData.colorBy,
     };
   });
@@ -260,6 +287,13 @@ function reDrawBeansWidget() {
   if (beansWidget?.workingInstance) {
     let displayOptions = beans3DMapDisplayOptions();
     beansWidget.setDisplayOptions(displayOptions);
+
+    // setDisplayOptions only swaps the options object, and redraw() re-renders
+    // without recomputing the floor, so the engine has to be told directly.
+    // The floor in displayOptions above only takes effect when the widget resets
+    // its state (a re-init), which a redraw does not do.
+    beansWidget.workingInstance.selectedFloor = beansSelectedFloor();
+
     beansWidget.redraw();
   } else {
     initializeBeans3DMap();
@@ -525,6 +559,11 @@ function initializeMouseTrackerFor3DHoverExit() {
         clientX <= rect.right &&
         clientY >= rect.top &&
         clientY <= rect.bottom;
+    } else if (_3dHoverOrigin) {
+      // Unit without geojson: use distance from where onHover originally fired.
+      // Within 100 px of the hover origin → still "inside"; beyond → exited.
+      const dist = Math.hypot(clientX - _3dHoverOrigin.x, clientY - _3dHoverOrigin.y);
+      inside = dist < 100;
     }
 
     if (inside) {
@@ -559,6 +598,7 @@ function clear3DPopup() {
   }
 
   lastMouseInside = false;  // <== important reset
+  _3dHoverOrigin = null;
   _3dHoveredItem = null;
 }
 
@@ -612,4 +652,85 @@ function setup3dAmenityToolTip(data) {
       },
     },
   };
+}
+
+/* ─────────────────────────────────────────────────────────
+   3D MAP – RIGHT-RAIL HOVER HIGHLIGHT HELPERS
+───────────────────────────────────────────────────────── */
+
+/**
+ * Temporarily highlight a single unit on the 3D map.
+ * Saves the original unitShape so it can be restored later.
+ */
+function highlight3DUnit(unitId) {
+  // NOTE: beansWidget.redraw() resets all per-unit fill colors to the global
+  // palette, so we intentionally skip shape mutation here.
+  // Unit highlight is communicated via the right-rail card border + tooltip.
+}
+
+/**
+ * Restore all unit shapes to their original state.
+ */
+function unhighlight3DUnit() {
+  // No-op: shape was never mutated so no restoration needed.
+}
+
+/**
+ * Returns the viewport { x, y } pixel position of a unit's polygon centroid
+ * via the Esri SceneView.toScreen() projection.
+ * Returns null if the view or geojson is unavailable.
+ */
+function get3DUnitScreenPosition(unitId) {
+  const inst = beansWidget?.workingInstance;
+  if (!inst?.mapView?.ready) return _get3DFallbackPosition();
+
+  const index = get3dElementIndexById(unitId);
+  if (index >= 0) {
+    const entry = inst.unitPolygonsToExclude?.[index];
+    const coords = entry?.geojson?.geometry?.coordinates?.[0];
+
+    if (coords && coords.length > 0) {
+      // Compute centroid then project to screen
+      let sumLng = 0, sumLat = 0;
+      for (const [lng, lat] of coords) { sumLng += lng; sumLat += lat; }
+      const centerLng = sumLng / coords.length;
+      const centerLat = sumLat / coords.length;
+
+      try {
+        const Point = window.__esri?.geometry?.Point;
+        if (Point) {
+          const view = inst.mapView;
+          const pt = new Point({
+            longitude: centerLng,
+            latitude: centerLat,
+            spatialReference: view.spatialReference,
+          });
+          const screenPt = view.toScreen(pt);
+          if (screenPt && !isNaN(screenPt.x) && !isNaN(screenPt.y)) {
+            const rect = view.container.getBoundingClientRect();
+            return { x: screenPt.x + rect.left, y: screenPt.y + rect.top };
+          }
+        }
+      } catch (_) { /* fall through */ }
+    }
+  }
+
+  // Secondary: try finding the Beans marker DOM element for this unit
+  const markerEl = document.querySelector(
+    `[data-unit-id="${unitId}"], [id*="unit_${unitId}"], [class*="beans-marker-${unitId}"]`
+  );
+  if (markerEl) {
+    const r = markerEl.getBoundingClientRect();
+    if (r.width > 0) return { x: r.left + r.width / 2, y: r.top };
+  }
+
+  return _get3DFallbackPosition();
+}
+
+/** Returns the center of the 3D map container as a position fallback. */
+function _get3DFallbackPosition() {
+  const beansEl = document.getElementById("beanswidget");
+  if (!beansEl) return null;
+  const r = beansEl.getBoundingClientRect();
+  return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
 }

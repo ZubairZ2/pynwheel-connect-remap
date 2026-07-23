@@ -78,7 +78,10 @@
                     - if f.standard_image_url.present?
                       .drop-img{style: "color: #{f.manual_override ? "black" : ""};"}
                         = image_tag f.standard_image_url
-                    - else  
+                    - elsif f.secondary_image.present?
+                      .drop-img{style: "color: #{f.manual_override ? "black" : ""};"}
+                        = image_tag f.secondary_image.url
+                    - else
                       .drop-img.drop-img-left.image-holder{:ondrop => "drop(event)",:id=>f.id,style: "color: #{f.manual_override ? "black" : ""};"}
                   %td
                     %a.text-success{:href => "/communities/#{@community.id}/floorplans/#{f.id}/edit"}
@@ -103,3 +106,4 @@
         window.location.reload();
 
     }
+

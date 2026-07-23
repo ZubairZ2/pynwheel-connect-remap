@@ -1,7 +1,8 @@
 var zoomablePans = definedAndHasValue(zoomablePans) ? zoomablePans : {};
 
 function getZoomPanKey(element) {
-  return `${element.tagName.toLowerCase()}-${element.id}`;
+  if (!element || !element.tagName) return null;
+  return `${element.tagName.toLowerCase()}-${element.id || 'no-id'}`;
 }
 
 function activateZoomPan(elem, centralizeElement = true, options = {}) {
@@ -14,9 +15,10 @@ function activateZoomPan(elem, centralizeElement = true, options = {}) {
   zoomablePans[key] = {
     instance: panzoom(elem, {
       minZoom: 0.5,
-      maxZoom: mobileCheck() || $(window).width() <= 568 ? 10.0 : 5.0,
+      maxZoom: 10.0,
+      zoomSpeed: 0.009,
       bounds: true,
-      boundsPadding: 0.3,
+      boundsPadding: 0.1,
       ...options,
     }),
     elem: elem
@@ -37,11 +39,21 @@ function activateZoomPan(elem, centralizeElement = true, options = {}) {
     elem.addEventListener(evt, touchHandler, true)
   );
 
-  if(centralizeElement) zoomReset();
+  if (centralizeElement) zoomReset();
 
-  setTimeout(() => {
-    moveZoomableImageToCenter(elem, true, false);
-  }, 0);
+  const imgEl = elem.tagName.toLowerCase() === 'img' ? elem : elem.querySelector('img');
+  if (imgEl && !imgEl.complete) {
+    imgEl.addEventListener('load', () => moveZoomableImageToCenter(elem, true, false), { once: true });
+  } else {
+    setTimeout(() => {
+      moveZoomableImageToCenter(elem, true, false);
+    }, 0);
+  }
+
+  // Show/hide reset map button as zoom transforms happen
+  zoomablePans[key].instance.on('transform', function () {
+    updateResetMapBtn();
+  });
 }
 
 function moveZoomableImageToCenter(elem, resetScale = true) {
@@ -83,6 +95,7 @@ function moveZoomableImageToCenter(elem, resetScale = true) {
   if (resetScale) {
     const scaleX = parentWidth / contentWidth;
     const scaleY = parentHeight / contentHeight;
+    // Fit the map to fill the parent; cap at 1 so we don't over-enlarge small images
     scale = Math.min(scaleX, scaleY, 1);
     instance.zoomAbs(0, 0, scale);
   }
@@ -118,7 +131,7 @@ function touchHandler(event) {
 function initAllZoomables() {
   let $zoomTargets;
 
-  if(svgMode)
+  if (svgMode)
     $zoomTargets = $('#zoom-group-wrapper, .plot-image');
   else
     $zoomTargets = $('#zoom-group-wrapper > div, .plot-image');
@@ -192,20 +205,47 @@ function getCurrentImageMapZoomInstance() {
 function getVisibleZoomableInstance() {
   let z = getCurrentZoomInstance();
 
-  if(!z){
+  if (!z) {
     z = getCurrentImageMapZoomInstance()
   }
 
   return z?.instance;
 }
 
+var BUTTON_ZOOM_STEP = 1.3; // fixed zoom step for +/- buttons (independent of zoomSpeed)
+
+function zoomInstanceByStep(inst, zoomIn) {
+  if (!inst) return;
+  const t = inst.getTransform();
+  const owner = inst.mousewheel && inst.mousewheel.__owner;
+  // Zoom toward the center of the visible owner element
+  var cx, cy;
+  try {
+    // Try to find the owner element's bounding rect for center calculation
+    const elem = document.querySelector('#zoom-group-wrapper, .plot-image');
+    if (elem) {
+      const rect = elem.parentElement ? elem.parentElement.getBoundingClientRect() : elem.getBoundingClientRect();
+      cx = rect.width / 2;
+      cy = rect.height / 2;
+    } else {
+      cx = window.innerWidth / 2;
+      cy = window.innerHeight / 2;
+    }
+  } catch (e) {
+    cx = window.innerWidth / 2;
+    cy = window.innerHeight / 2;
+  }
+  const multiplier = zoomIn ? BUTTON_ZOOM_STEP : (1 / BUTTON_ZOOM_STEP);
+  inst.smoothZoom(cx, cy, multiplier);
+}
+
 function bindGlobalZoomButtons() {
   $(".zoom-in-webpage").off("click").on("click", function () {
-    getVisibleZoomableInstance()?.zoomInOut(187);
+    zoomInstanceByStep(getVisibleZoomableInstance(), true);
   });
 
   $(".zoom-out-webpage").off("click").on("click", function () {
-    getVisibleZoomableInstance()?.zoomInOut(189);
+    zoomInstanceByStep(getVisibleZoomableInstance(), false);
   });
 
   $(".zoom-in").off("click").on("click", function (e) {
@@ -219,7 +259,7 @@ function bindGlobalZoomButtons() {
     const key = getZoomPanKey(zoomContainer);
     const inst = zoomablePans?.[key]?.instance;
 
-    inst?.zoomInOut(187);
+    zoomInstanceByStep(inst, true);
   });
 
   $(".zoom-out").off("click").on("click", function (e) {
@@ -233,12 +273,18 @@ function bindGlobalZoomButtons() {
     const key = getZoomPanKey(zoomContainer);
     const inst = zoomablePans?.[key]?.instance;
 
-    inst?.zoomInOut(189);
+    zoomInstanceByStep(inst, false);
   });
 
   $(".reset").off("click").on("click", function () {
     $(".divLoading").removeClass("hidden");
     window.location.reload();
+  });
+
+  $(".reset-map-btn").off("click").on("click", function (e) {
+    e.preventDefault();
+    zoomReset();
+    $(".reset-map-btn").css("display", "none");
   });
 }
 
@@ -259,6 +305,44 @@ function zoomReset() {
     inst.zoomAbs(0, 0, init.scale);
     inst.moveTo(init.x, init.y);
   }
+}
+
+function updateResetMapBtn() {
+  const panObj = getCurrentImageMapZoomInstance();
+  if (!panObj) return;
+
+  const inst = panObj.instance;
+  const initial = panObj.initial;
+  if (!inst || !initial) return;
+
+  const currentScale = inst.getTransform().scale;
+  const isZoomed = Math.abs(currentScale - initial.scale) > 0.01;
+
+  $(".reset-map-btn").css("display", isZoomed ? "" : "none");
+}
+
+const preventZoomOutsideContainers = function (e) {
+  const isZoomableArea = $(e.target).closest(
+    '#zoom-group-wrapper, .plot-image, #zoomable, .image-map, .zoomable-map-container, #floorplan-image'
+  ).length > 0;
+
+  if (!isZoomableArea) {
+    // Prevent zoom gesture
+    if (e.ctrlKey || e.metaKey || (e.touches && e.touches.length > 1)) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+  }
+};
+
+function disableOutsideZoomContainer() {
+  document.addEventListener('wheel', preventZoomOutsideContainers, { passive: false, capture: true });
+  document.addEventListener('touchstart', preventZoomOutsideContainers, { passive: false, capture: true });
+  document.addEventListener('touchmove', preventZoomOutsideContainers, { passive: false, capture: true });
+  document.addEventListener('gesturestart', preventZoomOutsideContainers, { passive: false, capture: true });
+  document.addEventListener('gesturechange', preventZoomOutsideContainers, { passive: false, capture: true });
+  document.addEventListener('gestureend', preventZoomOutsideContainers, { passive: false, capture: true });
 }
 
 function enableZoom() {

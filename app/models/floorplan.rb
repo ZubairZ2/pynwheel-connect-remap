@@ -97,4 +97,6 @@ class Floorplan < ApplicationRecord
     end
   end
 
+  private
+
 end

@@ -162,9 +162,15 @@
                     
                     %td
                       = link_to 'Manage Images' , community_unit_amenities_path(@community,u),:class=>"btn btn-default black-button"
+                      - if @community.enable_pynwheel_pricing_calculator?
+                        %br
+                        = link_to 'Calculate Cost', preview_unit_community_pricing_calculators_path(@community, unit_id: u.id), class: "btn btn-default black-button mt-5", target: "_blank"
+                      - elsif @community.enable_pricing_calculator? && @community.pricing_calculator_embed_code.present?
+                        %br
+                        = link_to 'Calculate Cost', "https://sightmap.com/embed/#{@community.pricing_calculator_embed_code}?unit_number=#{u.marketing_name}&mode=expense_calculator", class: "btn btn-default black-button mt-5", target: "_blank"
                     %td
                       .drop-img
-                        = image_tag u.validated_image_url || (floorplan.present? && floorplan.validated_image_url) || "/assets/default.jpeg"
+                        = image_tag u.validated_image_url || (floorplan.present? && floorplan.validated_image_url) || (floorplan.present? && floorplan.secondary_image.present? && floorplan.secondary_image.url) || "/assets/default.jpeg"
                     %td
                       %a.text-success{:href => "#{edit_community_unit_path(@community,u)}"}
                         %i.fa.fa-edit.icon_size
@@ -345,6 +351,7 @@
         Add Description
       = form_tag add_description_community_units_path(@community) do
         .modal-body.set-floor-modal-body.set-description-modal-body
+          = text_field_tag :description_title, nil, :class=>"form-control mb-20", :placeholder=>"Enter Title"
           = text_area :description, nil,:class=>"form-control mb-20 validate[required] wysihtml5",:placeholder=>"Enter Description"
           .row
             .col-md-4
@@ -437,6 +444,7 @@
           });
         });
       });
+
 
     function unit_goBack() {
       window.location.reload();

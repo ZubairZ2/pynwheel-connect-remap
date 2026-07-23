@@ -534,7 +534,6 @@ class UnitsController < ApplicationController
     else
       @community.units.where(id: params[:unit_ids]).update_all(availability: "Occupied", manually_updated: true, available: false, available_is_updated: true, availability_is_updated: true)
     end
-    
     flash[:notice] = "Available is updated for units successfully."
     redirect_back(fallback_location: root_path)
   end
@@ -551,7 +550,6 @@ class UnitsController < ApplicationController
     else
       @community.units.where(id: params[:unit_ids]).update_all(sold: params[:sold], manually_updated: true, availability_is_updated: true, available_is_updated: true)
     end
-
     flash[:notice] = "Sold is updated for units successfully."
     redirect_back(fallback_location: root_path)
   end
@@ -562,7 +560,6 @@ class UnitsController < ApplicationController
     formated_fee = add_padding_description fee
 
     @community.units.where(id: params[:unit_ids]).update_all(additional_fee: formated_fee, manually_updated: true)
-    
     flash[:notice] = "Additional Fees is updated for units successfully."
     redirect_back(fallback_location: root_path)
   end
@@ -572,8 +569,11 @@ class UnitsController < ApplicationController
     desc = description[2..description.length - 3]
     str2 = add_padding_description desc
 
-    @community.units.where(id: params[:unit_ids]).update_all(description: str2, manually_updated: true)
-    flash[:notice] = "description is updated for units successfully."
+    update_attrs = { description: str2, manually_updated: true }
+    update_attrs[:description_title] = params[:description_title].presence
+
+    @community.units.where(id: params[:unit_ids]).update_all(update_attrs)
+    flash[:notice] = "Description is updated for units successfully."
     redirect_back(fallback_location: root_path)
   end
 

@@ -36,7 +36,14 @@ class ReportsController < ApplicationController
       filename: "Properties-Floor-Level-Map-Urls-List.csv"
     )
   end
-
+  
+  def apartmentlist_maps_report
+    send_data(
+      ApartmentlistMapsReportService.new.get_report,
+      type: 'application/xlsx',
+      filename: 'apartmentlist-maps-report.csv'
+    )
+  end
 
   def account_report
     @community = Community.find(params[:community_id])
@@ -53,6 +60,14 @@ class ReportsController < ApplicationController
 
   def partner_analytics_report
     send_data(PartnerAnalyticsReportService.new(params[:start_date], params[:end_date], params[:partner]).get_report() , :type => 'application/xlsx', :filename => "partner-analytics-report.csv")
+  end
+
+  def partners_performance_report
+    send_data(
+      PartnersPerformanceReportService.new(params[:start_date], params[:end_date], params[:partner]).get_report,
+      type: 'text/csv',
+      filename: "partners-performance-report.csv"
+    )
   end
 
 end

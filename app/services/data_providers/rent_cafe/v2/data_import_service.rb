@@ -22,10 +22,32 @@ module DataProviders
           end
 
           update_launch_forms_status()
+          update_floorplan_unit_counts()
 
         end
 
         private
+
+          # Recomputes each floorplan's unit_count from the units actually imported.
+          # Units store the floorplan's provider_floorplan_id in units.floorplan_id
+          # (indexed), so a single grouped COUNT gives every floorplan's total at once
+          # instead of one query per floorplan. We only write the rows whose count
+          # changed, and via update_columns to skip validations/callbacks.
+          def update_floorplan_unit_counts
+            counts = Unit.where(community_id: @community_id, provider: 'yardirentcafe')
+                         .where.not(floorplan_id: nil)
+                         .group(:floorplan_id)
+                         .count
+
+            changed = false
+            Floorplan.where(community_id: @community_id, provider: 'yardirentcafe').find_each do |fp|
+              new_count = counts[fp.provider_floorplan_id].to_i
+              next if fp.unit_count == new_count
+
+              fp.update_columns(unit_count: new_count)
+              changed = true
+            end
+          end
 
           def import_property_details property_code
             response = get_property_details(property_code)
@@ -79,6 +101,55 @@ module DataProviders
               units = build_units(batch, property_code, rentStrsHash, existing_units_by_id, indexed_floorplans, limit_result)
               import_units(units)
             end
+
+            assign_unit_images(response)
+          end
+
+          # Units are persisted via bulk `Unit.import`, which bypasses CarrierWave
+          # callbacks, so unit images can't be stored during `build_units`. Instead we
+          # download and store them here (post-import) via an individual save so the
+          # `mount_uploader :image` upload/versioning actually runs.
+          def assign_unit_images(response)
+            image_urls_by_unit_id = response.each_with_object({}) do |r, memo|
+              image_url = fetch_unit_image_url(r["unitImageURLs"])
+              provider_unit_id = r['apartmentId']&.to_s&.strip
+              memo[provider_unit_id] = image_url if provider_unit_id.present? && image_url.present?
+            end
+
+            return if image_urls_by_unit_id.blank?
+
+            # Only load the columns we need to decide eligibility; the slow work
+            # (download + RMagick + S3 upload) is fanned out to Sidekiq so the sync
+            # thread returns immediately and images process in parallel.
+            Unit.where(
+              provider: 'yardirentcafe',
+              community_id: @community_id,
+              provider_unit_id: image_urls_by_unit_id.keys
+            ).select(:id, :provider_unit_id, :manual_override, :image).find_each do |unit|
+              next if unit.manual_override
+              # Only download the first time so we don't re-fetch every unit image on
+              # each sync; a manual override / existing image is left untouched.
+              next if unit.image.present?
+
+              image_url = image_urls_by_unit_id[unit.provider_unit_id]
+              next unless image_url.present?
+
+              AssignUnitImageJob.perform_later(unit.id, image_url)
+            end
+          end
+
+          def fetch_unit_image_url(image_urls)
+            return unless image_urls.present?
+            image_urls.to_s.split(",").map(&:strip).reject(&:blank?).find { |url| valid_image_url?(url) }
+          end
+
+          # Guards against handing junk to CarrierWave's `remote_image_url=`, which would
+          # otherwise attempt (and fail) to download non-HTTP or malformed strings.
+          def valid_image_url?(url)
+            uri = URI.parse(url)
+            uri.is_a?(URI::HTTP) && uri.host.present?
+          rescue URI::InvalidURIError
+            false
           end
 
           def build_units(response, property_code, rentStrsHash, existing_units_by_id, indexed_floorplans, limit_result)
@@ -112,7 +183,7 @@ module DataProviders
 
           def update_unit_attributes(unit, r, property_code, indexed_floorplans, rentStrs = [], limit_result)
             begin
-              floorplan = indexed_floorplans[r["floorplanId"]]
+              floorplan = indexed_floorplans[r["floorplanId"].to_s]
               update_attribute_if_blank(unit, :marketing_name, r["apartmentName"], 'name')
               update_attribute_if_blank(unit, :floor, evaluate_floor(unit.marketing_name))
               # update_attribute_if_blank(unit, :building, evaluate_building(unit.marketing_name))
@@ -211,7 +282,11 @@ module DataProviders
             floorplans = []
             begin
               response.each do |r|
-                floorplan_id = r['floorplanId']
+                # provider_floorplan_id is a string column, so existing_floorplans_by_id
+                # is keyed by strings. RentCafe returns floorplanId as an integer, so we
+                # must normalize or the lookup misses, a duplicate Floorplan is built, and
+                # the uniqueness validation silently rolls the save back.
+                floorplan_id = r['floorplanId'].to_s
                 existing = existing_floorplans_by_id[floorplan_id]
 
                 if existing && existing.manual_override
@@ -247,8 +322,9 @@ module DataProviders
               update_floorplan_square_feet(fp, r['minimumSQFT'], r['sqft'])
               update_attribute_if_blank(fp, :market_rent, r['minimumRent'])
               fp.property_id = r['propertyId']
-              fp.unit_count = r['']
-              fp.units_available = r['']
+              # RentCafe only reports available units, not a total unit count, so we
+              # leave unit_count untouched rather than nil it out on every sync.
+              fp.units_available = r['availableUnitsCount']
               fp.deposit = r['minimumDeposit']
               add_floorplan_images(fp, r['floorplanImageURL'])
               add_floorplan_virtual_url(fp, r["fpVideoEmbedCode"])

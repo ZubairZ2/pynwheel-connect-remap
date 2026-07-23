@@ -17,6 +17,10 @@ class DesignController < ApplicationController
     @expressionist = @design.expressionist ||  @design.create_expressionist 
     @expressionist = @design.filter_panel ||  @design.create_filter_panel
     @floorplans = current_community.floorplans || []
+    @unique_bedrooms = @floorplans.map { |f| f.bedrooms.to_i }.uniq.sort
+    @bedroom_marker_colors = @unique_bedrooms.map do |br|
+      @community.bedroom_marker_colors.find_or_initialize_by(bedroom: br)
+    end
   end
 
   def logo

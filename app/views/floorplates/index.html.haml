@@ -23,6 +23,17 @@
               .box.box-widget.panel-box.add-plan.pt-30
                 = form_tag community_save_apartment_settings_path(@community) ,{:class => 'apartment-settings-form'} do
                   = hidden_field_tag "community_id", @community.id
+                  .form-group
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Default map to load on floor
+                      %i.fa.fa-question-circle{
+                        "data-toggle" => "popover",
+                        "data-content" => "Select the floor to load by default. If unavailable, the map will load the lowest floor with available units."
+                      }
+
+                    .col-sm-12.col-lg-6.col-md-6.col-xs-12
+                      = select_tag :default_map_floor, options_for_select(@community.property_floor_options, @community.default_map_floor), class: "form-control apartment-setting-field"
+                  
                   - if @community.pynwheel_touch_enabled?
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -70,6 +81,39 @@
                           %span.pr-15 No
                           = check_box_tag :display_unit_on_homepage, true, @community.display_unit_on_homepage, class: "apartment-setting"
                           %label.label-primary{:for => "display_unit_on_homepage"}
+                          %span.pl-15 Yes
+
+
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                        Enable Engrain Pricing Calculator
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "pricingCalculatorPopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            When enabled, a pricing calculator button will appear on units using the SightMap embed ID below.
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .TriSea-technologies-Switch
+                          %span.pr-15 No
+                          = check_box_tag :enable_pricing_calculator, true, @community.enable_pricing_calculator, class: "apartment-setting-field", id: "enable_pricing_calculator"
+                          %label.label-primary{:for => "enable_pricing_calculator"}
+                          %span.pl-15 Yes
+
+                    .form-group.pricing-calculator-embed-row{ style: "display: #{@community.enable_pricing_calculator ? '' : 'none'}" }
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                        Property Pricing Calculator Embed Code
+                      .col-sm-12.col-lg-6.col-md-6.col-xs-12
+                        = text_field_tag :pricing_calculator_embed_code, @community.pricing_calculator_embed_code, class: "form-control apartment-setting-field", placeholder: "e.g. d7p1qr67wkx"
+
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                        Enable Pynwheel Pricing Calculator
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "pynwheelPricingCalculatorPopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            When enabled, a Pynwheel Pricing Calculator link will appear in the sidebar and units will show the cost calculator.
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .TriSea-technologies-Switch
+                          %span.pr-15 No
+                          = check_box_tag :enable_pynwheel_pricing_calculator, true, @community.enable_pynwheel_pricing_calculator, class: "apartment-setting-field", id: "enable_pynwheel_pricing_calculator"
+                          %label.label-primary{:for => "enable_pynwheel_pricing_calculator"}
                           %span.pl-15 Yes
 
                     .form-group
@@ -196,10 +240,52 @@
                     
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                        Hide Bedrooms & Bathrooms
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            Enable this option to hide bedroom and bathroom filters on the map and remove bedroom/bathroom information from unit details.
+
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .TriSea-technologies-Switch
+                          %span.pr-15 No
+                          = check_box_tag :hide_bedrooms_bathrooms, true, @community.hide_bedrooms_bathrooms, class: "apartment-setting-field"
+                          %label.label-primary{:for => "hide_bedrooms_bathrooms"}
+                          %span.pl-15 Yes
+
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                        Hide Square Feet
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            Enable this option to hide square footage information from unit details on the map.
+
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .TriSea-technologies-Switch
+                          %span.pr-15 No
+                          = check_box_tag :hide_square_feet, true, @community.hide_square_feet, class: "apartment-setting-field"
+                          %label.label-primary{:for => "hide_square_feet"}
+                          %span.pl-15 Yes
+
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                        Hide Availability
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            Enable this option to hide the availability filter and availability information from the map.
+
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .TriSea-technologies-Switch
+                          %span.pr-15 No
+                          = check_box_tag :hide_availability, true, @community.hide_availability, class: "apartment-setting-field"
+                          %label.label-primary{:for => "hide_availability"}
+                          %span.pl-15 Yes
+
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                         Display Floor Plan Colors
                         %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
                           %span#propertyDetailNameText
-                            Switching this to ‘Yes’ will enable color coding for floor plans on the marketing map. Each floor plan will be displayed with its designated color, regardless of unit availability settings.
+                            Switching this to 'Yes' will enable color coding for floor plans on the marketing map. Each floor plan will be displayed with its designated color, regardless of unit availability settings.
 
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         .TriSea-technologies-Switch
@@ -213,7 +299,7 @@
                         Turn Availability Off
                         %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
                           %span#propertyDetailNameText
-                            Switching this to “Yes” will make all units on the map will be marked / shaded as if they are each available. The right rail of the map will display a list of all floor plans instead of a list of available units.
+                            Switching this to "Yes" will make all units on the map will be marked / shaded as if they are each available. The right rail of the map will display a list of all floor plans instead of a list of available units.
 
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         .TriSea-technologies-Switch
@@ -293,6 +379,38 @@
                         = text_field_tag :show_amenity_key_text, @community.show_amenity_key_text, :class=>"form-control apartment-setting-field"
 
                   - elsif (@community.pynwheel_map_enabled? || @community.pynwheel_tour_enabled?)
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                        Enable Engrain Pricing Calculator
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "pricingCalculatorPopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            When enabled, a pricing calculator button will appear on units using the SightMap embed ID below.
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .TriSea-technologies-Switch
+                          %span.pr-15 No
+                          = check_box_tag :enable_pricing_calculator, true, @community.enable_pricing_calculator, class: "apartment-setting-field", id: "enable_pricing_calculator_map"
+                          %label.label-primary{:for => "enable_pricing_calculator_map"}
+                          %span.pl-15 Yes
+
+                    .form-group.pricing-calculator-embed-row{ style: "display: #{@community.enable_pricing_calculator ? '' : 'none'}" }
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                        Property Pricing Calculator Embed Code
+                      .col-sm-12.col-lg-6.col-md-6.col-xs-12
+                        = text_field_tag :pricing_calculator_embed_code, @community.pricing_calculator_embed_code, class: "form-control apartment-setting-field", placeholder: "e.g. d7p1qr67wkx"
+
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                        Enable Pynwheel Pricing Calculator
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "pynwheelPricingCalculatorPopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            When enabled, a Pynwheel Pricing Calculator link will appear in the sidebar and units will show the cost calculator.
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .TriSea-technologies-Switch
+                          %span.pr-15 No
+                          = check_box_tag :enable_pynwheel_pricing_calculator, true, @community.enable_pynwheel_pricing_calculator, class: "apartment-setting-field", id: "enable_pynwheel_pricing_calculator_map"
+                          %label.label-primary{:for => "enable_pynwheel_pricing_calculator_map"}
+                          %span.pl-15 Yes
+
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                         Display Price
@@ -417,10 +535,52 @@
                     
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                        Hide Bedrooms & Bathrooms
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            Enable this option to hide bedroom and bathroom filters on the map and remove bedroom/bathroom information from unit details.
+
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .TriSea-technologies-Switch
+                          %span.pr-15 No
+                          = check_box_tag :hide_bedrooms_bathrooms, true, @community.hide_bedrooms_bathrooms, class: "apartment-setting-field"
+                          %label.label-primary{:for => "hide_bedrooms_bathrooms"}
+                          %span.pl-15 Yes
+
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                        Hide Square Feet
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            Enable this option to hide square footage information from unit details on the map.
+
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .TriSea-technologies-Switch
+                          %span.pr-15 No
+                          = check_box_tag :hide_square_feet, true, @community.hide_square_feet, class: "apartment-setting-field"
+                          %label.label-primary{:for => "hide_square_feet"}
+                          %span.pl-15 Yes
+
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                        Hide Availability
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            Enable this option to hide the availability filter and availability information from the map.
+
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .TriSea-technologies-Switch
+                          %span.pr-15 No
+                          = check_box_tag :hide_availability, true, @community.hide_availability, class: "apartment-setting-field"
+                          %label.label-primary{:for => "hide_availability"}
+                          %span.pl-15 Yes
+
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                         Display Floor Plan Colors
                         %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
                           %span#propertyDetailNameText
-                            Switching this to ‘Yes’ will enable color coding for floor plans on the marketing map. Each floor plan will be displayed with its designated color, regardless of unit availability settings.
+                            Switching this to 'Yes' will enable color coding for floor plans on the marketing map. Each floor plan will be displayed with its designated color, regardless of unit availability settings.
 
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         .TriSea-technologies-Switch
@@ -434,7 +594,7 @@
                         Turn Availability Off
                         %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
                           %span#propertyDetailNameText
-                            Switching this to “Yes” will make all units on the map will be marked / shaded as if they are each available. The right rail of the map will display a list of all floor plans instead of a list of available units.
+                            Switching this to "Yes" will make all units on the map will be marked / shaded as if they are each available. The right rail of the map will display a list of all floor plans instead of a list of available units.
 
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         .TriSea-technologies-Switch
@@ -470,6 +630,7 @@
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                         Generate Floor URLs for Partner
+
                         %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
                           %span#propertyDetailNameText
                             Enabling this toggle will generate a unique URL for each floor that can be shared with partners.
@@ -512,7 +673,7 @@
                         Amenity key text
                       .col-sm-12.col-lg-6.col-md-6.col-xs-12
                         = text_field_tag :show_amenity_key_text, @community.show_amenity_key_text, :class=>"form-control apartment-setting-field"
-                  
+
                   .form-group
                     .col-lg-12.col-md-12
                       %button.btn-success.done_btn.mb-20{:onclick => "floorplate_goBack()"}
@@ -619,6 +780,10 @@
 
   $('.apartment-setting-field').change(function(){
     $('.apartment-settings-form').submit();
+  });
+
+  $('#enable_pricing_calculator, #enable_pricing_calculator_map').change(function() {
+    $('.pricing-calculator-embed-row').toggle($(this).is(':checked'));
   });
   
   function floorplate_goBack() {

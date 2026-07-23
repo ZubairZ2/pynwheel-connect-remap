@@ -1,6 +1,6 @@
 class YardirentcafeDataUpdateWorker
   include Sidekiq::Worker
-  sidekiq_options queue: 'yardi_rent_cafe', retry: 3
+  sidekiq_options queue: 'yardi_rent_cafe', retry: 1
 
   def perform(community_id)
     community = Community.find_by_id community_id

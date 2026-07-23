@@ -135,6 +135,14 @@ class PsiService < BaseService
           unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s
           unit_status_update(unit, u)
 
+          if u["Units"]["Unit"]["MinSquareFeet"].present?
+            if u["Units"]["Unit"]["MinSquareFeet"].to_f > 1
+              unit.square_feet = u["Units"]["Unit"]["MinSquareFeet"].to_f
+            else
+              unit.square_feet = u["Units"]["Unit"]["MaxSquareFeet"].to_f
+            end
+          end
+
           unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
             if u["EffectiveRent"].present?
               unit.market_rent = u["EffectiveRent"]

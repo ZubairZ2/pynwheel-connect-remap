@@ -1,6 +1,6 @@
 class RealPageMarketingSourcesWorker
   include Sidekiq::Worker
-  sidekiq_options queue: 'marketing_sources', retry: 3
+  sidekiq_options queue: 'marketing_sources', retry: 1
 
   def perform(community_id)
     return unless community_id.present?

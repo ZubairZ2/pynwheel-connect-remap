@@ -38,6 +38,15 @@
                     %span.pl-15 Yes
 
                     = link_to "3D Map Design Configurations".html_safe, "#", :class => "btn mr-5 map-design-configurations-btn map_type", 'data-toggle' => "tooltip", :title => "3D Maps Configuration", :style => "margin-left: 5rem;background: #138fd4;color:white;height: 38px;padding-top: 7px;border-radius: 4px;", "data-name" => "plot", "data-target" => "#configurations-modal", "data-toggle" => "modal", "data-href" => "/"
+              .form-group.map_type
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Default Satellite View
+                .col-sm-6.col-lg-6.col-md-6.col-xs-6
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = f.check_box :default_satellite_view
+                    %label.label-primary{:for => "community_default_satellite_view"}
+                    %span.pl-15 Yes
               -#.form-group#chat_control_row
               -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
               -#    Chat Control
@@ -224,7 +233,17 @@
                     = f.check_box :is_beans_svg
                     %label.label-primary{:for => "community_is_beans_svg"}
                     %span.pl-15 Yes
-            
+
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Enable SDK Map
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = f.check_box :enable_sdk_map
+                    %label.label-primary{:for => "community_enable_sdk_map"}
+                    %span.pl-15 Yes
+
               / .form-group#access_restrictions
               /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
               /     Scheduler Widget

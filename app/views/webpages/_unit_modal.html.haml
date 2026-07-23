@@ -41,31 +41,36 @@
             .modal-middle-section
               .module-info
                 %ul.module-list
-                  %li
-                    %b
-                      %img{:src => "/assets/bedroom-icon.png"}/
-                      %span#bedrooms
-                    %span.bedrooms
-                      Bedrooms
-                  %li
-                    %b
-                      %img{:src => "/assets/bathroom-icon.png"}/
-                      %span#bathrooms
-                    %span.bathrooms
-                      Bathrooms
-                  %li
-                    %b
-                      %img{:src => "/assets/sq-feet-icon.png"}/
-                      %span#square-feet
-                    Sq Feet
+                  - unless @community.hide_bedrooms_bathrooms
+                    %li
+                      %b
+                        %img{:src => "/assets/bedroom-icon.png"}/
+                        %span#bedrooms
+                      %span.bedrooms
+                        Bedrooms
+                  - unless @community.hide_bedrooms_bathrooms
+                    %li
+                      %b
+                        %img{:src => "/assets/bathroom-icon.png"}/
+                        %span#bathrooms
+                      %span.bathrooms
+                        Bathrooms
+                  - unless @community.hide_square_feet
+                    %li
+                      %b
+                        %img{:src => "/assets/sq-feet-icon.png"}/
+                        %span#square-feet
+                      Sq Feet
 
-              .availabilty-container-start
-                %span.available-heading#available-text
-                %b
-                  %span#available-date
 
-              %div#overall-scroller.overall-scroller.mobile_modal
-                - if @community.display_rent && @community.display_pricing_options
+              - unless @community.hide_availability
+                .availabilty-container-start
+                  %span.available-heading#available-text
+                  %b
+                    %span#available-date
+
+              %div#overall-scroller.overall-scroller.mobile_modal{style: "overflow-y: visible; max-height: none;"}
+                - if @community.display_rent && @community.display_pricing_options && !@community.enable_pynwheel_pricing_calculator?
                   #unit-lease-pricing-text-li.availabilty-container
                     %span.text-left.available-info
 
@@ -75,7 +80,8 @@
 
                     %span#first-unit-lease-pricing
                     #pricing-option.hidden
-                      %div{style: "max-height: 6em; overflow-y: auto;"}
+                      -# %div{style: "max-height: 6em; overflow-y: auto;"}
+                      %div
                         %span#unit-lease-pricing
 
                 .c-modal-sidebar-fees.availabilty-container{style: "font-size: 13px;"}
@@ -83,9 +89,9 @@
                   %a.show-more.hide-fees{ href: "javascript:void(0);", onclick: "hideFees()", style: "display: none;" } Hide Fees
                   %div.unit-additional-fees{style: "display: none;" }
 
-                .c-modal-sidebar-description
+                .c-modal-sidebar-description{style: "overflow-y: visible;"}
                   %h4.des-heading More Details
-                  %p.c-m-description#unit-description
+                  %p.c-m-description#unit-description{style: "max-height: none; overflow-y: visible;"}
 
                 %div{style: "padding: 0px 0px 8px 7px"}
                   .unit-buttons
@@ -107,12 +113,14 @@
                       %span.fix-text
                         %span.c-m-total-price#total-market-rent
                         %span.per-month-price-text /month
+                    %a.calculate-cost-btn.hidden{ href: "javascript:void(0);", onclick: "openExpenseCalculatorFromModal();" } Calculate Cost
                     = link_to "Apply Now","##",:onclick=>"set_realpagesvc_url(this);",:id=>"realpagesvc-anchor-tag", class: "apply-now apply_now"
                   - elsif @community_info.data_provider == "resman"
                     - if @community.display_rent
                       %span.fix-text
                         %span.c-m-total-price#total-market-rent
                         %span.per-month-price-text /month
+                    %a.calculate-cost-btn.hidden{ href: "javascript:void(0);", onclick: "openExpenseCalculatorFromModal();" } Calculate Cost
                     = link_to "Apply Now", "##",:onclick=>"set_resman_url(this);",:id=>"psi-anchor-tag", class: "apply-now apply_now"
 
                   - elsif @community_info.data_provider == "psi"
@@ -120,12 +128,14 @@
                       %span.fix-text
                         %span.c-m-total-price#total-market-rent
                         %span.per-month-price-text /month
+                    %a.calculate-cost-btn.hidden{ href: "javascript:void(0);", onclick: "openExpenseCalculatorFromModal();" } Calculate Cost
                     = link_to "Apply Now", "##",:onclick=>"set_psi_url(this);",:id=>"psi-anchor-tag", class: "apply-now apply_now"
                   - elsif @community_info.data_provider == "yardirentcafe"
                     - if @community.display_rent
                       %span.fix-text
                         %span.c-m-total-price#total-market-rent
                         %span.per-month-price-text /month
+                    %a.calculate-cost-btn.hidden{ href: "javascript:void(0);", onclick: "openExpenseCalculatorFromModal();" } Calculate Cost
                     = link_to "Apply Now", "##",:onclick=>"set_yardirentcafe_url(this);",:id=>"psi-anchor-tag", class: "apply-now apply_now"
                   
                   - elsif @community_info.data_provider == "appfolio"
@@ -133,7 +143,24 @@
                       %span.fix-text
                         %span.c-m-total-price#total-market-rent
                         %span.per-month-price-text /month
+                    %a.calculate-cost-btn.hidden{ href: "javascript:void(0);", onclick: "openExpenseCalculatorFromModal();" } Calculate Cost
                     = link_to "Apply Now", "##", :onclick=>"setAppFolioUrl(this);", :id=>"psi-anchor-tag", class: "apply-now apply_now"
+
+                  - elsif @community_info.data_provider == "xml"
+                    - if @community.display_rent
+                      %span.fix-text
+                        %span.c-m-total-price#total-market-rent
+                        %span.per-month-price-text /month
+                    %a.calculate-cost-btn.hidden{ href: "javascript:void(0);", onclick: "openExpenseCalculatorFromModal();" } Calculate Cost
+                    = link_to "Apply Now", "##", :onclick=>"setXmlProviderUrl(this);", :id=>"psi-anchor-tag", class: "apply-now apply_now"
+
+                  - elsif @community_info.data_provider == "beans"
+                    - if @community.display_rent
+                      %span.fix-text
+                        %span.c-m-total-price#total-market-rent
+                        %span.per-month-price-text /month
+                    %a.calculate-cost-btn.hidden{ href: "javascript:void(0);", onclick: "openExpenseCalculatorFromModal();" } Calculate Cost
+                    = link_to "Apply Now", "##", :onclick=>"setBeansProviderUrl(this);", :id=>"psi-anchor-tag", class: "apply-now apply_now"
 
                   - else
                     .unit-total-pricing{style: 'text-align: center'}
@@ -141,6 +168,7 @@
                         %span.fix-text
                           %span.c-m-total-price#total-market-rent
                           %span{style: 'font-size: 12px'} /month
+                    %a.calculate-cost-btn.hidden{ href: "javascript:void(0);", onclick: "openExpenseCalculatorFromModal();" } Calculate Cost
 
                 - if @community.display_rent
                   %span.move-in-date-text Pricing is based on a move-in date of today. Click “apply now” for more options.
@@ -157,6 +185,7 @@
                     %span.fix-text
                       %span.c-m-total-price#total-market-rent
                       %span.per-month-price-text /month
+                  %a.calculate-cost-btn.hidden{ href: "javascript:void(0);", onclick: "openExpenseCalculatorFromModal();" } Calculate Cost
                   %a.apply-now.apply_now{:href => @community_info.credential.separate_link,:target => "_blank" } Apply Now
 
                 - if @community.display_rent
@@ -166,13 +195,16 @@
               
               - else
                 .disabaled-apply-now{style: 'text-align: center'}
+                  %a.calculate-cost-btn.hidden{ href: "javascript:void(0);", onclick: "openExpenseCalculatorFromModal();" } Calculate Cost
                   - if @community.display_rent
                     %span.fix-text
                       %span.c-m-total-price#total-market-rent
                       %span{style: 'font-size: 12px'} /month
                   - else
-                    %span.move-in-date-text{:style => "display: flex; justify-content: center; vertical-align: middle;align-items: center;"} 
+                    %span.move-in-date-text{:style => "display: flex; justify-content: center; vertical-align: middle;align-items: center;"}
                       = @community.pricing_message
-        
+              #pyn-total-monthly-fees{style: "display:none;"}
+                %span#pyn-total-monthly-value
+
         .c-modal-wrapper
           = render partial: "image_with_zoom_controls"

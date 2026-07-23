@@ -2,7 +2,16 @@
   .c-modal-body-content
     - @units = [] if @units.nil?
     - @units.each do |unit|
-      - floorplan = unit.floorplan #@floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
+      - floorplan = unit.floorplan
+      - if @community.enable_pynwheel_pricing_calculator?
+        - pricing_calculator_url = unit_community_pricing_calculators_path(@community.id) + "?unit_id=#{unit.id}"
+      - elsif @community.enable_pricing_calculator? && @community.pricing_calculator_embed_code.present?
+        - pricing_calculator_url = "https://sightmap.com/embed/#{@community.pricing_calculator_embed_code}?unit_number=#{unit.marketing_name}&mode=expense_calculator"
+      - else
+        - pricing_calculator_url = nil
+      - fav_primary_img = unit.standard_image_url.present? ? unit.validated_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.validated_image_url : nil)
+      - fav_secondary_img = floorplan.present? && floorplan.secondary_image.present? ? floorplan.secondary_image.url : nil
+      - fav_display_img = fav_primary_img || fav_secondary_img || "/assets/default.jpeg"
       .map-slide-item
         .c-modal-header
           %h5.c-modal-title 
@@ -18,9 +27,17 @@
               %h1.section-title 
                 = floorplan.present? ? floorplan.name : nil
             .c-modal-wrapper.modal-image-fav
-              .c-modal-body
-                .c-m-iframe-content
-                  = image_tag unit.standard_image_url.present? ? unit.validated_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.validated_image_url : "/assets/default.jpeg"), :id => "#{unit.id}-res-zoomable-image"
+              - if fav_primary_img.present? && fav_secondary_img.present?
+                .fp-slide-wrapper{"data-primary" => fav_primary_img, "data-secondary" => fav_secondary_img, "data-target" => "#{unit.id}-res-zoomable-image", style: "position: relative;"}
+                  .c-modal-body
+                    .c-m-iframe-content
+                      = image_tag fav_display_img, :id => "#{unit.id}-res-zoomable-image"
+                  %button.fav-prev-btn{type: "button", style: "position: absolute; left: 10px; top: 50%; transform: translateY(-50%); z-index: 20; background: rgba(255,255,255,0.92); border: none; color: #444; font-size: 22px; font-weight: 300; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; pointer-events: auto; line-height: 1; box-shadow: 0 2px 8px rgba(0,0,0,0.18); display: flex; align-items: center; justify-content: center; padding: 0;"} ❮
+                  %button.fav-next-btn{type: "button", style: "position: absolute; right: 10px; top: 50%; transform: translateY(-50%); z-index: 20; background: rgba(255,255,255,0.92); border: none; color: #444; font-size: 22px; font-weight: 300; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; pointer-events: auto; line-height: 1; box-shadow: 0 2px 8px rgba(0,0,0,0.18); display: flex; align-items: center; justify-content: center; padding: 0;"} ❯
+              - else
+                .c-modal-body
+                  .c-m-iframe-content
+                    = image_tag fav_display_img, :id => "#{unit.id}-res-zoomable-image"
               .c-modal-footer-fav.zooming-content.zoomable-map-container
                 %a.plus-action.zooming-action.zoom-controls{:href => "#", :id => "#{unit.id}-res-fav-zoom-in"}
                   %img{:src => "/assets/plus.png"}/
@@ -30,32 +47,35 @@
                   %img{:src => "/assets/refresh.png"}/
             .module-info
               %ul.module-list
-                %li
-                  %b
-                    %img{:src => "/assets/bedroom-icon.png"}/
-                    %b= floorplan.present? ? floorplan.bedrooms : nil
-                  = "#{bedroom_text(floorplan)}" if floorplan.present?
-                %li
-                  %b
-                    %img{:src => "/assets/bathroom-icon.png"}/
-                    %b= floorplan.present? ? hide_decimals(floorplan.bathrooms) : nil
-                  = "#{bathroom_text(floorplan)}" if floorplan.present?
-                %li
-                  %b
-                    %img{:src => "/assets/sq-feet-icon.png"}/
-                    %b= floorplan.present? ? hide_decimals(floorplan.square_feet) : nil 
-                  Sq Feet
-            .availabilty-container-start
-              - available_date = unit.availability == "Unoccupied" ? (unit.available_date.present? ? determine_available_date(unit.available_date) : nil) : "Unavailable"
-              %span.available-heading= available_date.present? ? "Available" : ""
-              %b
-                %span{style: "margin-left: 4%"}= DateFormatter.formatted_date_by_region(@community.country_code, available_date)
+                - unless @community.hide_bedrooms_bathrooms
+                  %li
+                    %b
+                      %img{:src => "/assets/bedroom-icon.png"}/
+                      %b= floorplan.present? ? floorplan.bedrooms : nil
+                    = "#{bedroom_text(floorplan)}" if floorplan.present?
+                  %li
+                    %b
+                      %img{:src => "/assets/bathroom-icon.png"}/
+                      %b= floorplan.present? ? hide_decimals(floorplan.bathrooms) : nil
+                    = "#{bathroom_text(floorplan)}" if floorplan.present?
+                - unless @community.hide_square_feet
+                  %li
+                    %b
+                      %img{:src => "/assets/sq-feet-icon.png"}/
+                      %b= floorplan.present? ? hide_decimals(floorplan.square_feet) : nil 
+                    Sq Feet
+            - unless @community.hide_availability
+              .availabilty-container-start
+                - available_date = unit.availability == "Unoccupied" ? (unit.available_date.present? ? determine_available_date(unit.available_date) : nil) : "Unavailable"
+                %span.available-heading= available_date.present? ? "Available" : ""
+                %b
+                  %span{style: "margin-left: 4%"}= DateFormatter.formatted_date_by_region(@community.country_code, available_date)
             
-            %div{style: "overflow-y: auto; height: max-content; max-height: 28em;"}
+            %div{style: "overflow-y: visible; height: max-content;"}
               .availabilty-container{:id => "#{unit.id}-unit-lease-pricing-text-li"}
                 %span.available-info{:id => "#{unit.id}-leas-price-option"}
                 
-                - if @community.display_rent && @community.display_pricing_options
+                - if @community.display_rent && @community.display_pricing_options && !@community.enable_pynwheel_pricing_calculator?
                   %div.show-pricing-options
                     %span.available-info
                       %a.show-more.show-more-option-fav{:id => "#{unit.id}-show-more-option-fav"} Show more prices
@@ -76,7 +96,7 @@
                     = additional_fees.html_safe
 
               .c-modal-sidebar-description
-                %h4.des-heading More Details
+                %h4.des-heading= unit.description_title.presence || floorplan&.description_title.presence || "More Details"
                 .c-m-description= (unit.description.present? ? unit.description : (floorplan.description.present? ? floorplan.description : "Not Available")).html_safe
 
           .c-modal-sidebar-filters.sidebar-footer
@@ -92,39 +112,49 @@
                     .m-filter-1.c-m-filter{style: 'display: none;'}
                       %label= @community.data_provider == "psi" ? 'Lease Start Date' : "Move In Date"
                       %input.c-m-input-control.datepicker.leasing-start-date{:id => "#{unit.id}-leasing-start-date", :type => "text", :style => "display: block !important", :readonly => "readonly", :value=>unit.available_date.present? ? available_date == "Now" ? Date.today : available_date : nil, "data-available_date"=>unit.available_date.present? ? determine_available_date(unit.available_date) : nil}/ 
-                .filter-action
+                .filter-action{style: 'display: flex !important; align-items: center;'}
                   - if @community.data_provider == "realpagesvc"
-                    - if @community.display_rent
+                    - if @community.display_rent && !@community.enable_pynwheel_pricing_calculator?
                       %span.fix-text
                         %span.c-m-total-price{id: "#{unit.id}-total-price"}= "#{@community.get_currency_symbol}#{number_with_precision(unit.get_market_rent(), :precision => 2, :delimiter => ',', :value=>unit.available_date.present? ? available_date == "Now" ? Date.today : available_date : nil)}"
                         %span.per-month-price-text.text-p /month
+                    - if pricing_calculator_url
+                      %a.calculate-cost-btn{ href: "javascript:void(0);", onclick: "openExpenseCalculator('#{pricing_calculator_url}', false)" } Calculate Cost
                     = link_to "Apply Now", apply_now_community_webpages_path(@community), :target=> "_blank", class: "apply-now apply_now"
                   - elsif @community.data_provider == "resman"
-                    - if @community.display_rent
+                    - if @community.display_rent && !@community.enable_pynwheel_pricing_calculator?
                       %span.fix-text
                         %span.c-m-total-price{id: "#{unit.id}-total-price"}= "#{@community.get_currency_symbol}#{number_with_precision(unit.get_market_rent(), :precision => 2, :delimiter => ',')}"
                         %span.per-month-price-text.text-p /month
+                    - if pricing_calculator_url
+                      %a.calculate-cost-btn{ href: "javascript:void(0);", onclick: "openExpenseCalculator('#{pricing_calculator_url}', false)" } Calculate Cost
                     = link_to "Apply Now", "##",:onclick=>"set_resman_url_on_favorites(this);",:id=>"psi-anchor-tag","data-unit-id"=>(unit.id),"data-availability-url"=>(unit.get_availability_url()),"data-community-property-id"=>@community.credential.property_id, class: "apply-now apply_now"
                   - elsif @community.data_provider == "psi"
-                    - if @community.display_rent
+                    - if @community.display_rent && !@community.enable_pynwheel_pricing_calculator?
                       %span.fix-text
                         %span.c-m-total-price{id: "#{unit.id}-total-price"}= "#{@community.get_currency_symbol}#{number_with_precision(unit.get_market_rent(), :precision => 2, :delimiter => ',')}"
                         %span.per-month-price-text.text-p /month
                     
+                    - if pricing_calculator_url
+                      %a.calculate-cost-btn{ href: "javascript:void(0);", onclick: "openExpenseCalculator('#{pricing_calculator_url}', false)" } Calculate Cost
                     - if unit.get_availability_url()
                       = link_to "Apply Now", "##",:onclick=>"set_psi_url_on_favorite(this);",:id=>"psi-anchor-tag","data-community-property-id"=>@community.credential.property_id,"data-availability-url"=>(unit.get_availability_url()),"data-website"=>@community.website,"data-uri"=>uri(@community.website),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id, class: "apply-now apply_now"
                   - elsif @community.data_provider == "yardirentcafe"
-                    - if @community.display_rent
+                    - if @community.display_rent && !@community.enable_pynwheel_pricing_calculator?
                       %span.fix-text
                         %span.c-m-total-price{id: "#{unit.id}-total-price"}= "#{@community.get_currency_symbol}#{number_with_precision(unit.get_market_rent(), :precision => 2, :delimiter => ',')}"
                         %span.per-month-price-text.text-p /month
+                    - if pricing_calculator_url
+                      %a.calculate-cost-btn{ href: "javascript:void(0);", onclick: "openExpenseCalculator('#{pricing_calculator_url}', false)" } Calculate Cost
                     = link_to "Apply Now", "##",:onclick=>"set_yardirentcafe_url_on_favrite(this);",:id=>"psi-anchor-tag", "data-community-property-id"=>@community.credential.property_id,"data-availability-url"=>(unit.get_availability_url()),"data-website"=>@community.website,"data-uri"=>uri(@community.website),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id, class: "apply-now apply_now"
                   - else
                     .unit-total-pricing{style: 'text-align: center'}
-                      - if @community.display_rent
+                      - if @community.display_rent && !@community.enable_pynwheel_pricing_calculator?
                         %span.fix-text
                           %span.price{id: "#{unit.id}-total-price"}= "#{@community.get_currency_symbol}#{number_with_precision(unit.get_market_rent(), :precision => 2, :delimiter => ',')}"
                           %span.per-month /month
+                    - if pricing_calculator_url
+                      %a.calculate-cost-btn{ href: "javascript:void(0);", onclick: "openExpenseCalculator('#{pricing_calculator_url}', false)" } Calculate Cost
 
                 - if @community.display_rent
                   %span.move-in-date-text Pricing is based on a move-in date of today. Click “apply now” for more options.
@@ -136,11 +166,13 @@
                 .m-filter-1.c-m-filter{style: 'display: none;'}
                   %label= @community.data_provider == "psi" ? 'Lease Start Date' : "Move In Date"
                   %input.m-filter-1.c-m-filter.datepicker.leasing-start-date{:id => "#{unit.id}-leasing-start-date", :type => "text", :readonly => "readonly", :value=>unit.available_date.present? ? available_date == "Now" ? Date.today : available_date : nil}/
-              .filter-action
-                - if @community.display_rent
+              .filter-action{style: 'display: flex !important; align-items: center;'}
+                - if @community.display_rent && !@community.enable_pynwheel_pricing_calculator?
                   %span.fix-text
                     %span.c-m-total-price{id: "#{unit.id}-total-price"}= "#{@community.get_currency_symbol}#{number_with_precision(unit.get_market_rent(), :precision => 2, :delimiter => ',')}"
                     %span.per-month-price-text /month
+                - if pricing_calculator_url
+                  %a.calculate-cost-btn{ href: "javascript:void(0);", onclick: "openExpenseCalculator('#{pricing_calculator_url}', false)" } Calculate Cost
                 %a.apply-now.apply_now{:href => @community.credential.separate_link,:target => "_blank" } Apply Now
               
               - if @community.display_rent
@@ -150,18 +182,38 @@
             
             - else
               .disabaled-apply-now
-                - if @community.display_rent
+                - if pricing_calculator_url
+                  %a.calculate-cost-btn{ href: "javascript:void(0);", onclick: "openExpenseCalculator('#{pricing_calculator_url}', false)" } Calculate Cost
+                - if @community.display_rent && !@community.enable_pynwheel_pricing_calculator?
                   %span.fix-text
                     %span.c-m-total-price{id: "#{unit.id}-total-price"}= "#{@community.get_currency_symbol}#{number_with_precision(unit.get_market_rent(), :precision => 2, :delimiter => ',')}"
                     %span{style: 'font-size: 12px'} /month
-                - else
-                  %span.move-in-date-text{:style => "display: flex; justify-content: center; vertical-align: middle;align-items: center;"} 
+                - elsif !@community.enable_pynwheel_pricing_calculator?
+                  %span.move-in-date-text{:style => "display: flex; justify-content: center; vertical-align: middle;align-items: center;"}
                     = @community.pricing_message
+            - if @community.enable_pynwheel_pricing_calculator? && @community.display_rent
+              - pyn_min = unit.pyn_estimated_monthly
+              - pyn_max = unit.pyn_estimated_monthly_max
+              - if pyn_min && pyn_min > 0
+                %span.pyn-fav-total-monthly{style: "display:none;"}
+                  - sym = @community.get_currency_symbol
+                  - if pyn_max > pyn_min
+                    = "#{sym}#{number_with_precision(pyn_min, :precision => 2, :delimiter => ',')} \u2013 #{sym}#{number_with_precision(pyn_max, :precision => 2, :delimiter => ',')} /month"
+                  - else
+                    = "#{sym}#{number_with_precision(pyn_min, :precision => 2, :delimiter => ',')} /month"
 
         .c-modal-wrapper.h-class
-          .c-modal-body.centered-image
-            .c-m-iframe-content
-              = image_tag unit.standard_image_url.present? ? unit.validated_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.validated_image_url : "/assets/default.jpeg"), :id => "#{unit.id}-zoomable-fav-image"
+          - if fav_primary_img.present? && fav_secondary_img.present?
+            .fp-slide-wrapper{"data-primary" => fav_primary_img, "data-secondary" => fav_secondary_img, "data-target" => "#{unit.id}-zoomable-fav-image", style: "position: relative;"}
+              .c-modal-body.centered-image
+                .c-m-iframe-content
+                  = image_tag fav_display_img, :id => "#{unit.id}-zoomable-fav-image"
+              %button.fav-prev-btn{type: "button", style: "position: absolute; left: 10px; top: 50%; transform: translateY(-50%); z-index: 20; background: rgba(255,255,255,0.92); border: none; color: #444; font-size: 22px; font-weight: 300; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; pointer-events: auto; line-height: 1; box-shadow: 0 2px 8px rgba(0,0,0,0.18); display: flex; align-items: center; justify-content: center; padding: 0;"} ❮
+              %button.fav-next-btn{type: "button", style: "position: absolute; right: 10px; top: 50%; transform: translateY(-50%); z-index: 20; background: rgba(255,255,255,0.92); border: none; color: #444; font-size: 22px; font-weight: 300; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; pointer-events: auto; line-height: 1; box-shadow: 0 2px 8px rgba(0,0,0,0.18); display: flex; align-items: center; justify-content: center; padding: 0;"} ❯
+          - else
+            .c-modal-body.centered-image
+              .c-m-iframe-content
+                = image_tag fav_display_img, :id => "#{unit.id}-zoomable-fav-image"
           .c-modal-footer-fav.zooming-content.zoomable-map-container
             %a.plus-action.zooming-action.zoom-in-modal.zoom-controls{:href => "#", :id => "#{unit.id}-fav-zoom-in"}
               %img{:src => "/assets/plus.png"}/
@@ -189,4 +241,51 @@
     $('.hide-more-option').addClass('hidden');
     $('.show-more-option-fav').removeClass('hidden');
     $('.pricing-option-for-fav').addClass('hidden');
+  });
+
+  var favImages = {};
+  var favImageIdx = {};
+
+  $(document).ready(function () {
+    $(".fp-slide-wrapper").each(function () {
+      var $nav = $(this);
+      var targetId = $nav.data("target");
+      favImages[targetId] = [$nav.data("primary"), $nav.data("secondary")];
+      favImageIdx[targetId] = 0;
+    });
+
+    // Move each pre-rendered Pynwheel monthly total inline with its unit's action buttons,
+    // mirroring the unit-modal approach so price + buttons are on one horizontal line.
+    if (typeof display_rent === 'undefined' || display_rent !== 'false') {
+      $(".pyn-fav-total-monthly").each(function () {
+        var $span = $(this);
+        var $slideItem = $span.closest(".map-slide-item");
+        // Prefer .filter-action (apply_now branches); fall back to .disabaled-apply-now
+        var $container = $slideItem.find(".filter-action");
+        if (!$container.length) $container = $slideItem.find(".disabaled-apply-now");
+        if (!$container.length) { $span.show(); return; }
+        $container.prepend($span);
+        $container.find(".fix-text").hide();
+        $container.addClass("pyn-price-shown");
+        $span.css("display", "block");
+      });
+    }
+  });
+
+  $(document).on("click", ".fav-prev-btn", function () {
+    var $nav = $(this).closest(".fp-slide-wrapper");
+    var targetId = $nav.data("target");
+    var imgs = favImages[targetId];
+    if (!imgs) { return; }
+    favImageIdx[targetId] = (favImageIdx[targetId] - 1 + imgs.length) % imgs.length;
+    $("#" + targetId).attr("src", imgs[favImageIdx[targetId]]);
+  });
+
+  $(document).on("click", ".fav-next-btn", function () {
+    var $nav = $(this).closest(".fp-slide-wrapper");
+    var targetId = $nav.data("target");
+    var imgs = favImages[targetId];
+    if (!imgs) { return; }
+    favImageIdx[targetId] = (favImageIdx[targetId] + 1) % imgs.length;
+    $("#" + targetId).attr("src", imgs[favImageIdx[targetId]]);
   });

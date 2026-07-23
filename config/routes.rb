@@ -136,6 +136,7 @@ Rails.application.routes.draw do
       patch :update_amenity_toggle
       patch :update_marketing_map_colors
       patch :update_coloring_mode
+      patch :update_bedroom_marker_colors
       patch :update_amenities_color
       post :upload_svg_background
       post :save_pointer_data
@@ -266,6 +267,17 @@ Rails.application.routes.draw do
     
     resources :impressions, :only => [:index, :show, :destroy]
 
+    resources :partner_configurations, :only => [:index] do
+      collection do
+        patch :update_property
+        post  :bulk
+        get   :bulk_upload_template
+        post  :bulk_upload_match
+        post  :bulk_upload_apply
+        get   :bulk_export
+      end
+    end
+
     resources :reports, :only => [:index] do
       collection do
         get :generate_webpages_report
@@ -277,8 +289,10 @@ Rails.application.routes.draw do
         get :account_report
         get :tour_feedback_report
         get :partner_analytics_report
+        get :partners_performance_report
         get :maps_no_session_report
         get :export_floor_map_urls
+        get :apartmentlist_maps_report
       end
     end
     
@@ -608,6 +622,24 @@ Rails.application.routes.draw do
       end
     end
 
+    # Pricing Calculator CMS (admin config) — auth-protected
+    resource :calculator_config, only: [:show, :update] do
+      post :publish, on: :member
+    end
+
+    # Custom Design CMS — auth-protected
+    resource :design_system_config, only: [:show, :update]
+
+    # Public-facing embed calculator (no auth required) — serves published config
+    resources :pricing_calculators, only: [] do
+      collection do
+        get :show         # property-level: /communities/:id/pricing_calculators
+        get :unit         # unit-level:     /communities/:id/pricing_calculators/unit?unit_id=X
+        get :preview      # admin draft preview: /communities/:id/pricing_calculators/preview
+        get :preview_unit # admin draft preview with unit: /communities/:id/pricing_calculators/preview_unit?unit_id=X
+      end
+    end
+
     resources :additional_pages, only: :index
     resources :contentpages
     resources :imagepages do
@@ -649,6 +681,8 @@ Rails.application.routes.draw do
   end
 
   namespace :api, constraints: { format: 'json' } do
+    post 'notify-email', to: 'notify_email#create'
+
     namespace :partner do
       namespace :realync do
         post :update_video_links, to: 'webhooks#update_video_links'
@@ -658,8 +692,15 @@ Rails.application.routes.draw do
         get :all_maps, to: 'maps#all_maps'
         get :properties, to: 'webhooks#properties'
         get :units, to: 'webhooks#units'
-        get :authorized, to: 'sdk#authorized'
-        get :fetch_data, to: 'sdk#fetch_data'
+        get    :authorized,       to: 'sdk#authorized'
+        get    :fetch_data,       to: 'sdk#fetch_data'
+        get    :fetch_svg_image,  to: 'sdk#fetch_svg_image'
+        post   :save_favorites,           to: 'sdk#save_favorites'
+        delete :delete_favorites,         to: 'sdk#delete_favorites'
+        delete :clear_all_favorites,      to: 'sdk#clear_all_favorites'
+        get    :get_favorites,            to: 'sdk#get_favorites'
+        post   :share_favorites_email,    to: 'sdk#share_favorites_email'
+        post   :events,                   to: 'sdk#track_events'
       end
     end
 
@@ -866,6 +907,8 @@ Rails.application.routes.draw do
 
       resources :communities, only: :index do
         member do
+          get :calculator_config,      to: 'calculator_configs#show'
+          put :save_calculator_config, to: 'calculator_configs#update'
           get :data
           get :data_group
           get :community_tours

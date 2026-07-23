@@ -1,6 +1,6 @@
 class RentManagerDataImportWorker
   include Sidekiq::Worker
-  sidekiq_options queue: 'import_data', retry: 3
+  sidekiq_options queue: 'import_data', retry: 1
 
   def perform(community_id)
     return unless community_id.present?

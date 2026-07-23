@@ -15,10 +15,12 @@ module ApplicationHelper
         (["YardiRentCafe", "yardirentcafe"] if company.data_providers.include?("yardirentcafe") ),
         (["Yardi", "yardi"] if company.data_providers.include?("yardi") ),
         (["ResMan", "resman"] if company.data_providers.include?("resman") ),
+        (["Beans", "beans"] if company.data_providers.include?("beans") ),
       ]
     else
       [
         ["App Folio", "appfolio"],
+        ["Beans", "beans"],
         ["Entrata", "psi"],
         ["RealPage", "realpagesvc"],
         ["YardiRentCafe", "yardirentcafe"],

@@ -82,7 +82,8 @@ class XmlStaticService < BaseService
     unit.floorplan_id ||= u['FloorplanID']
 
     apply_rent(unit, u)
-    apply_availability(unit, u)
+    set_availability(unit, u)
+    set_available_date(unit, u)
 
     unit.square_feet = u.dig('Unit', 'Information', 'MinSquareFeet')
     unit.building = resolve_building_name(u, building_map)
@@ -110,32 +111,38 @@ class XmlStaticService < BaseService
     unit.max_effective_rent = u.dig('EffectiveRent', 'Max')
   end
 
-  def apply_availability(unit, u)
+  def set_availability(unit, u)
     availability = u['Availability']
     return unless availability
-
+  
+    vacancy_class = availability['VacancyClass']
+    vacate_date   = u.dig('Availability', 'VacateDate')
+  
+    future_available =
+      vacate_date.present? &&
+      Date.parse("#{vacate_date['Year']}-#{vacate_date['Month']}-#{vacate_date['Day']}") >= Date.today
+  
     unless unit.availability_is_updated && unit.manual_override
-      unit.availability = availability['VacancyClass']
+      unit.availability = vacancy_class unless unit.sold
     end
-
+  
     unless unit.available_is_updated && unit.manual_override
-      unit.available = availability['VacancyClass'] == 'Unoccupied'
+      unit.available =
+        !unit.sold &&
+        (
+          vacancy_class == 'Unoccupied' ||
+          (vacancy_class == 'Occupied' && future_available)
+        )
     end
-
-    unless unit.available_date_is_updated && unit.manual_override
-      unit.available_date = parse_vacate_date(availability)
-    end
-
-    unit.availability_url = availability['UnitAvailabilityURL']
   end
 
-  def parse_vacate_date(availability)
-    date = availability['VacateDate']
+  def set_available_date(unit, u)
+    return if unit.available_date_is_updated && unit.manual_override
+
+    date = u.dig('Availability', 'VacateDate')
     return unless date
 
-    Date.parse("#{date['Year']}-#{date['Month']}-#{date['Day']}")
-  rescue StandardError
-    nil
+    unit.available_date = Date.parse("#{date['Year']}-#{date['Month']}-#{date['Day']}")
   end
 
   # ------------------------------------------------------------------

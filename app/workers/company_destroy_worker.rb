@@ -1,6 +1,6 @@
 class CompanyDestroyWorker
   include Sidekiq::Worker
-  sidekiq_options queue: 'delete_data', retry: 3
+  sidekiq_options queue: 'delete_data', retry: 1
 
   def perform(company_id)
     return unless company_id.present?

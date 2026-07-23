@@ -126,6 +126,23 @@
                   %i.fa.fa-laptop
                   %span Units
 
+      - if current_user.is_admin? && current_community.mdu && current_community.enable_pynwheel_pricing_calculator
+        %li.treeview{:class=>"#{controller_name =='calculator_configs' || controller_name =='pricing_calculators' ? 'active' : ''}"}
+          %a{:href => "#"}
+            %i.fa.fa-calculator
+            %span Pricing Calculator
+            %span.pull-right-container
+              %i.fa.fa-angle-right.pull-right
+          %ul.treeview-menu
+            %li.loader_class{:class=>"#{controller_name =='calculator_configs' ? 'active' : ''}"}
+              %a{:href => "#{community_calculator_config_path(current_community)}"}
+                %i.fa.fa-cog
+                %span Configure Calculator
+            %li.loader_class
+              %a{:href => "#{preview_community_pricing_calculators_path(current_community)}", :target => "_blank"}
+                %i.fa.fa-eye
+                %span Preview Calculator
+
       - if current_community.touchscreen_app && current_user.is_admin?
         %li.loader_class{:class=>"#{controller_name =='galleries' ? 'active' : ''}"}
           %a{:href => "#{community_galleries_path(current_community)}"}
@@ -147,10 +164,21 @@
               %i.fa.fa-star
               %span Additional Pages
       - if (current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_company_admin? || current_user.is_regional_admin? )
-        %li
-          %a{"data-toggle"=>"modal","data-target"=>"#share-webpages",:href => "##"}
+        %li.treeview
+          %a{:href => "#", :class => "pynwheel-map-toggle"}
             %i.fa.fa-share
             %span Pynwheel Map
+            %span.pull-right-container
+              %i.fa.fa-angle-right.pull-right
+          %ul.treeview-menu.maps-treeview
+            %li.loader_class
+              %a{ "data-toggle" => "modal", "data-target" => "#web-map-links-modal", href: "#" }
+                %i.fa.fa-globe
+                %span Web Map
+            %li.loader_class
+              %a{ "data-toggle" => "modal", "data-target" => "#touch-map-links-modal", href: "#" }
+                %i.fa.fa-hand-pointer-o
+                %span Touch Map
 
       - if (current_user.is_admin? || current_user.is_community_assistant?) and current_community.self_tour
         %li.treeview{:class=>"#{controller_name =='tours' ? 'active' : 'active'}"}
@@ -203,6 +231,12 @@
             %i.fa.fa-file
             %span Reports
 
+      - if current_user.is_super_admin?
+        %li.loader_class{:class=>"#{controller_name =='partner_configurations' ? 'active' : ''}"}
+          %a{:href => "#{community_partner_configurations_path(current_community)}"}
+            %i.fa.fa-handshake-o
+            %span Partner Configuration
+
       -# - if (current_user.is_super_admin? || current_user.is_view_visitor_details_page?) && current_user.is_super_admin?
       -#   %li.loader_class{:class=>"#{controller_name =='Community' && params[:action] == "logs" ? 'active' : ''}"}
       -#     %a{:href => "#{community_logs_path(current_community)}"}
@@ -220,3 +254,9 @@
           %a{:href => "#{community_tutorials_path(current_community)}"}
             %i.fa.fa-video-camera
             %span Tutorials
+
+:javascript
+  $(document).on("click", ".maps-treeview li a", function(e) {
+    e.preventDefault(); // stop default navigation
+    $(".divLoading").hide();
+  });

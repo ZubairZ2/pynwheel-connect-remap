@@ -1,5 +1,7 @@
 :concurrency: 3
+:strict: true
 :queues:
+  - critical
   - restarts
   - message
   - latch_lock
@@ -10,6 +12,7 @@
   - entrata
   - yardi
   - resman
+  - apartmentlist
   - xml
   - zaremba
   - marketing_sources

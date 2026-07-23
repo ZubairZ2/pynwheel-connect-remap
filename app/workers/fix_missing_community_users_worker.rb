@@ -1,7 +1,7 @@
 # app/workers/fix_missing_community_users_worker.rb
 class FixMissingCommunityUsersWorker
   include Sidekiq::Worker
-  sidekiq_options queue: 'general', retry: 3
+  sidekiq_options queue: 'general', retry: 1
 
   def perform
     Community.find_each do |community|

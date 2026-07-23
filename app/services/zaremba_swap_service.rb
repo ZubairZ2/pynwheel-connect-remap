@@ -48,8 +48,6 @@ class ZarembaSwapService < BaseService
           else
             save_zaremba_floorplans(floorplans,property_id)
           end
-      
-          rename_provider
 
           # save_website_column_of_community(response)
         else
@@ -59,6 +57,7 @@ class ZarembaSwapService < BaseService
         puts '----------------------------' , e.message
       end
     end
+    rename_provider
   end
   def save_zaremba_units(units, property_id)
     units.each do |u|

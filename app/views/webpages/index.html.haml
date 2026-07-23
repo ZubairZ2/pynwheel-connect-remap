@@ -1,642 +1,710 @@
-%html{:style=>"height: auto;min-height: 100%;overflow: hidden;"}
-  %head
-    %meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
-    %meta{:charset => "utf-8"}/
-    %meta{:content => "IE=edge", "http-equiv" => "X-UA-Compatible"}/
-    %title Pynwheel | Dashboard
-    %meta{:content => "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no", :name => "viewport"}/
+- if @community_info.locked
+  %html{:style=>"height: auto;min-height: 100%;overflow: hidden;"}
+    %head
+      %meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
+      %meta{:charset => "utf-8"}/
+      %meta{:content => "IE=edge", "http-equiv" => "X-UA-Compatible"}/
+      %title Pynwheel | Dashboard
+      %meta{:content => "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no", :name => "viewport"}/
+      = stylesheet_link_tag 'application', media: 'all'
+    %body
+      .alert.alert-danger Community is Inactivated.
 
-    
-    - if @community.enable_three_d_maps
-      %link{:href => "https://js.arcgis.com/4.27/esri/themes/light/main.css", :rel => "stylesheet"}/
-      %link{:href => "https://www.beans.ai/mapswidget/css/mapswidget-1.0.4.css", :rel => "stylesheet"}/ 
+- else
+  %html{:style=>"height: auto;min-height: 100%;overflow: hidden;"}
+    %head
+      %meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
+      %meta{:charset => "utf-8"}/
+      %meta{:content => "IE=edge", "http-equiv" => "X-UA-Compatible"}/
+      %title Pynwheel | Dashboard
+      %meta{:content => "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no", :name => "viewport"}/
 
-    %script{:src => "https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"}
-    %script{:src => "https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"}
+      
+      - if @community.enable_three_d_maps
+        %link{:href => "https://js.arcgis.com/4.27/esri/themes/light/main.css", :rel => "stylesheet"}/
+        %link{:href => "https://www.beans.ai/mapswidget/css/mapswidget-1.0.4.css", :rel => "stylesheet"}/ 
 
-    = csrf_meta_tags
-    = stylesheet_link_tag 'jquery.mCustomScrollbar.css'
-    = stylesheet_link_tag 'slick.css'
-    = stylesheet_link_tag    'application', media: 'all'
-    = javascript_include_tag 'application', 'data-turbolinks-track': 'reload'
-    = javascript_include_tag 'jquery.arrayUtilities'
-    = javascript_include_tag 'slick'
-    = javascript_include_tag "update_session"
-    = javascript_include_tag "moment"
-    = javascript_include_tag 'webpages', v: javascript_version
+      %script{:src => "https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"}
+      %script{:src => "https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"}
 
-    - if @community.enable_three_d_maps
-      %script{type: "text/javascript", src: "https://js.arcgis.com/4.23/"}  
-      %script{type: "text/javascript", src: "https://www.beans.ai/mapswidget/js/mapswidget-1.0.4-speed.js"}
-      %script{type: "text/javascript", src: "https://www.beans.ai/mapswidget/client/utils.js"}
+      = csrf_meta_tags
+      = stylesheet_link_tag 'jquery.mCustomScrollbar.css'
+      = stylesheet_link_tag 'slick.css'
+      = stylesheet_link_tag    'application', media: 'all'
+      = javascript_include_tag 'application', 'data-turbolinks-track': 'reload'
+      = javascript_include_tag 'jquery.arrayUtilities'
+      = javascript_include_tag 'slick'
+      = javascript_include_tag "update_session"
+      = javascript_include_tag "moment"
+      = javascript_include_tag 'webpages', v: javascript_version
 
-    %link{:href => "https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css", :rel => "stylesheet"}/
-    %link{:href => "https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css", :rel => "stylesheet"}/
-    %link{:href => "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css", :rel => "stylesheet"}/
-    %link{:href => "https://fonts.googleapis.com", :rel => "preconnect"}/
-    %link{:crossorigin => "", :href => "https://fonts.gstatic.com", :rel => "preconnect"}/
-    %link{:href => "https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&display=swap", :rel => "stylesheet"}/
-    
-    = favicon_link_tag 'logo-small.png'
-    = render '/font_awesome_v5'
-    
-  %body.custom-iframe-modeule
-    - if (@svg_enabled)
-      .webPageLoader.hidden
-    - else
-      .map-global-loader.hidden
+      - if @community.enable_three_d_maps
+        %script{type: "text/javascript", src: "https://js.arcgis.com/4.27/"}  
+        %script{type: "text/javascript", src: "https://www.beans.ai/mapswidget/js/mapswidget-1.0.4-speed.js"}
+        %script{type: "text/javascript", src: "https://www.beans.ai/mapswidget/client/utils.js"}
 
-    -# Marker fond & color settings 
-    - fontsize = @map_config[:unit_marker_font_size]
-    - map_marker_color = @map_config[:unit_marker_color]
-    - marker_font_size = @map_config[:amenity][:font_size]
-    - marker_font_size = (marker_font_size.to_i) -5
-    - amenity_marker_color = @map_config[:amenity][:color]
-    - amenity_marker_opacity = @map_config[:amenity][:opacity]
+      %link{:href => "https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css", :rel => "stylesheet"}/
+      %link{:href => "https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css", :rel => "stylesheet"}/
+      %link{:href => "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css", :rel => "stylesheet"}/
+      %link{:href => "https://fonts.googleapis.com", :rel => "preconnect"}/
+      %link{:crossorigin => "", :href => "https://fonts.gstatic.com", :rel => "preconnect"}/
+      %link{:href => "https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&display=swap", :rel => "stylesheet"}/
+      
+      = favicon_link_tag 'logo-small.png'
+      = render '/font_awesome_v5'
+      
+    %body.custom-iframe-modeule
+      - if (@svg_enabled)
+        .webPageLoader.hidden
+      - else
+        .map-global-loader.hidden
 
-    -# Ops map colors settings 
-    - map_marker_missing_color = @map_config[:ops_map_colors][:missing]
-    - map_marker_occupied_color = @map_config[:ops_map_colors][:occupied]
-    - map_marker_occupied_on_notice_color = @map_config[:ops_map_colors][:occupied_on_notice]
-    - map_marker_vacant_leased_color = @map_config[:ops_map_colors][:vacant_leased]
-    - map_marker_model_color = @map_config[:ops_map_colors][:model]
+      -# Marker fond & color settings 
+      - fontsize = @map_config[:unit_marker_font_size]
+      - map_marker_color = @map_config[:unit_marker_color]
+      - marker_font_size = @map_config[:amenity][:font_size]
+      - marker_font_size = (marker_font_size.to_i) -5
+      - amenity_marker_color = @map_config[:amenity][:color]
+      - amenity_marker_opacity = @map_config[:amenity][:opacity]
 
-    -# margins settings 
-    - left_margin = @map_config[:margins][:left_margin]
-    - top_margin = @map_config[:margins][:top_margin]
-    - span_size_x = @map_config[:margins][:span_size_x]
-    - span_size_y = @map_config[:margins][:span_size_y]
-    - span_size = @map_config[:margins][:span_size]
-    - camera_margin = @map_config[:margins][:camera_margin]
-    - camera_font_size = @map_config[:margins][:camera_font_size]
-    - amenity_left_margin = @map_config[:margins][:amenity_left_margin]
-    - amenity_top_margin = @map_config[:margins][:amenity_top_margin]
+      -# Ops map colors settings 
+      - map_marker_missing_color = @map_config[:ops_map_colors][:missing]
+      - map_marker_occupied_color = @map_config[:ops_map_colors][:occupied]
+      - map_marker_occupied_on_notice_color = @map_config[:ops_map_colors][:occupied_on_notice]
+      - map_marker_vacant_leased_color = @map_config[:ops_map_colors][:vacant_leased]
+      - map_marker_model_color = @map_config[:ops_map_colors][:model]
 
-    - units = @units
-    - min_unit_floor = @min_floor
+      -# margins settings 
+      - left_margin = @map_config[:margins][:left_margin]
+      - top_margin = @map_config[:margins][:top_margin]
+      - span_size_x = @map_config[:margins][:span_size_x]
+      - span_size_y = @map_config[:margins][:span_size_y]
+      - span_size = @map_config[:margins][:span_size]
+      - camera_margin = @map_config[:margins][:camera_margin]
+      - camera_font_size = @map_config[:margins][:camera_font_size]
+      - amenity_left_margin = @map_config[:margins][:amenity_left_margin]
+      - amenity_top_margin = @map_config[:margins][:amenity_top_margin]
 
-    - marker_colors = { vacant: map_marker_color, occupied: map_marker_occupied_color, occupied_on_notice: map_marker_occupied_on_notice_color, vacant_leased: map_marker_vacant_leased_color, model: map_marker_model_color }.merge( @svg_enabled ? { missing: map_marker_missing_color } : {} )
-    - colors = marker_colors.values_at(:missing_floorplan, :missing, :occupied, :occupied_on_notice, :vacant, :vacant_leased, :model)
-    - labels = ["Missing Floorplan", "Missing Data", "Occupied", "Occupied on Notice", "Vacant", "Vacant Leased", "Model"]
-    - legend_items = colors.map.with_index { |color, index| color ? { label: labels[index], color: color } : nil }.compact
-    - _3d_enabled = @community.enable_three_d_maps
-    
-    - unless @community_info.locked
-      = hidden_field_tag :maps_community_id, @community_info.id
-      %section.is-webpage.maps-analytics-container{ style: "min-height: 100%; max-height: 100%; overflow: hidden;" }
-        .c-wrapper{class: "#{@community_info.has_floorplates? ? 'floorplate' : 'no-floorplate'}", style: "min-height: 100%; max-height: 100%; overflow: hidden;" }
-          %header.app-header
-            .header-inner
-              .app-logo-mobile
-                - if @community.map_logo
-                  %a.logo{:href => @community.community_website}
-                    %img{:alt => "", :class => "webpage_logo", :src => map_logo_url(@community, false), :title => ""}
-              
-              .selection-fields
-                - if @have_multi_property_ids
-                  - if @map_filter[:show_properties_filter]
-                    .selectable-field
-                      %label Community
-                      %label.short Community
-                      = select_tag :multi_communities, options_for_select(@multi_properties.present? ? @multi_properties : []),{ :class=>"custom-select", style: "min-width: max-content;", :include_blank => "All "}
+      - units = @units
+      - min_unit_floor = @min_floor
 
-                - if @map_filter[:show_bedroom_filter]
-                  .selectable-field
-                    %label Bedrooms
-                    %label.short Bedrooms
-                    = select_tag :unit_bedroom, options_for_select(@unit_bedrooms.present? ? @unit_bedrooms : []),{:class=>"custom-select", :include_blank => "All "}
+      - marker_colors = { vacant: map_marker_color, occupied: map_marker_occupied_color, occupied_on_notice: map_marker_occupied_on_notice_color, vacant_leased: map_marker_vacant_leased_color, model: map_marker_model_color }.merge( @svg_enabled ? { missing: map_marker_missing_color } : {} )
+      - colors = marker_colors.values_at(:missing_floorplan, :missing, :occupied, :occupied_on_notice, :vacant, :vacant_leased, :model)
+      - labels = ["Missing Floorplan", "Missing Data", "Occupied", "Occupied on Notice", "Vacant", "Vacant Leased", "Model"]
+      - legend_items = colors.map.with_index { |color, index| color ? { label: labels[index], color: color } : nil }.compact
+      - _3d_enabled = @community.enable_three_d_maps
+      -# Box-style color legend: by_bedroom on any map, and by_property on SVG.
+      -# Image maps by_property keep the pin + camera icon legend; by_floorplan
+      -# shows no legend at all (SVG or image).
+      - show_box_legend = !@show_ops_map && !@have_multi_property_ids && (@community.by_bedroom? || (@svg_enabled && @community.by_property?))
+      - marketing_legend = show_box_legend ? marketing_legend_items(@community) : []
+      
+      - unless @community_info.locked
+        = hidden_field_tag :maps_community_id, @community_info.id
+        %section.is-webpage.maps-analytics-container{ style: "min-height: 100%; max-height: 100%; overflow: hidden;" }
+          .c-wrapper{class: "#{@community_info.has_floorplates? ? 'floorplate' : 'no-floorplate'}", style: "min-height: 100%; max-height: 100%; overflow: hidden;" }
+            %header.app-header
+              .header-inner
+                .app-logo-mobile
+                  - if @community.map_logo && !@is_touch_map
+                    %a.logo{:href => @community.community_website}
+                      %img{:alt => "", :class => "webpage_logo", :src => map_logo_url(@community, false), :title => ""}
                 
-                - if @map_filter[:show_pricing_filter]
-                  .selectable-field{ class: !@community_info.display_rent ? "pricing_filter_visibility" : nil }
-                    %label Max Price
-                    %label.short Max Price
-                    = select_tag :market_rent, options_for_select(@market_rent.present? ? @market_rent : []), { class: "custom-select" }
-
-                - if @map_filter[:show_square_feet_filter]
-                  .selectable-field
-                    %label Min Square Footage
-                    %label.short Min Sq. Ft.
-                    = select_tag :square_feet, options_for_select(@square_feet.present? ? @square_feet : []),{:class=>"custom-select"}
-               
-                - if @map_filter[:show_availability_filter]
-                  .selectable-field
-                    %label Availability
-                    %label.short Availability
-                    = select_tag :available_unit, options_for_select(@available_units.present? ? @available_units : []),{:class=>"custom-select", :include_blank => "All "}
-
-                - unless @all_filters_disabled
-                  %button.reset-filter-button.web-reset-button.header-action-btn{:type => "button", :onclick => "resetFilters(true);", style: "margin-right: 2rem"}
-                    %span.hidable
-                      Reset
-                    %i.fa.fa-refresh
-                    
-              .header-buttons-groups
-                - if @square_feet.present?
-                  %a.transparent-btn.header-action-btn.view-saved-btn{:href => "#{favorites_community_webpages_path(@community)}",:target=>"_parent"}
-                    %span.hidable
-                      View Saved
-                    %i.fa.fa-heart
-                    
-                - crm_provider = @community&.crm_credential&.crm_provider
-                - data_provider = @community&.data_provider
-
-                - if @community.self_tour && (@community.scheduler_widget || @community.scheduler_widget.nil?)
-                  %a.colourd-btn.header-action-btn.schedule-tour-btn{:href => "#{@scheduler_widget_link}",:target=>"_blank"}
-                    %span
-                      Schedule
-                    %span.hidable
-                      Tour
-
-                .footer-logo.responsive-content{:style=> "visibility: #{@community.powered_by_btn ? "" : "hidden" }"}
-                  %img{:src => "/assets/powered_by_logo.png"}/
-              - unless @all_filters_disabled
-                .mobile-trigger.responsive-content
-                  %span.filter-btn Filters
-                  %img{:src => "/assets/menu-icon.png"}/
-                .mobile-filter-mega-menu.responsive-content
+                .selection-fields
                   - if @have_multi_property_ids
                     - if @map_filter[:show_properties_filter]
                       .selectable-field
                         %label Community
-                        = select_tag :responsive_multi_communities, options_for_select(@multi_properties.present? ? @multi_properties : []),{:class=>"custom-select", :include_blank => "All "}
+                        %label.short Community
+                        = select_tag :multi_communities, options_for_select(@multi_properties.present? ? @multi_properties : []),{ :class=>"custom-select", style: "min-width: max-content;", :include_blank => "All "}
 
-                  - if @map_filter[:show_bedroom_filter]
-                    .selectable-field
-                      %label Bedrooms
-                      = select_tag :responsive_unit_bedroom, options_for_select(@unit_bedrooms.present? ? @unit_bedrooms : []),{:class=>"custom-select", :include_blank => "All "}
+                  - unless @community.hide_bedrooms_bathrooms
+                    - if @map_filter[:show_bedroom_filter]
+                      .selectable-field
+                        %label Bedrooms
+                        %label.short Bedrooms
+                        = select_tag :unit_bedroom, options_for_select(@unit_bedrooms.present? ? @unit_bedrooms : []),{:class=>"custom-select", :include_blank => "All "}
                   
                   - if @map_filter[:show_pricing_filter]
                     .selectable-field{ class: !@community_info.display_rent ? "pricing_filter_visibility" : nil }
-                      %label  Maximum Price
-                      = select_tag :responsive_market_rent, options_for_select(@market_rent.present? ? @market_rent : []), { class: "custom-select" }
+                      %label Max Price
+                      %label.short Max Price
+                      = select_tag :market_rent, options_for_select(@market_rent.present? ? @market_rent : []), { class: "custom-select" }
 
-                  - if @map_filter[:show_square_feet_filter]
-                    .selectable-field
-                      %label Min Square Footage
-                      = select_tag :responsive_square_feet, options_for_select(@square_feet.present? ? @square_feet : []),{:class=>"custom-select"}
-                  
-                  - if @map_filter[:show_availability_filter]
-                    .selectable-field
-                      %label Availability
-                      = select_tag :responsive_available_unit, options_for_select(@available_units.present? ? @available_units : []), { class: "custom-select" }
+                  - unless @community.hide_square_feet
+                    - if @map_filter[:show_square_feet_filter]
+                      .selectable-field
+                        %label Min Square Footage
+                        %label.short Min Sq. Ft.
+                        = select_tag :square_feet, options_for_select(@square_feet.present? ? @square_feet : []),{:class=>"custom-select"}
+                
+                  - unless @community.hide_availability
+                    - if @map_filter[:show_availability_filter]
+                      .selectable-field
+                        %label Availability
+                        %label.short Availability
+                        = select_tag :available_unit, options_for_select(@available_units.present? ? @available_units : []),{:class=>"custom-select", :include_blank => "All "}
 
-                  %div{:style => "text-align: center; padding-bottom: 9px;display: flex;justify-content: center;"}
-                    %button.apply-now-responsive{:type => "button", :onclick => "applyFilters();"}
-                      Apply
-                      %i.fa.fa-filter
-
-                    %button.reset-filter-button{:type => "button", :onclick => "resetFilters(true);"}
-                      Reset
+                  - _all_hidden = @community.hide_bedrooms_bathrooms && @community.hide_square_feet && @community.hide_availability
+                  - unless @all_filters_disabled || _all_hidden
+                    %button.reset-filter-button.web-reset-button.header-action-btn{:type => "button", :onclick => "resetFilters(true);", style: "margin-right: 2rem"}
+                      %span.hidable
+                        Reset
                       %i.fa.fa-refresh
-              
-              .app-logo
-                - if @community.map_logo
-                  %a.logo{:href => @community.community_website}
-                    %img{:alt => "", :class => "webpage_logo", :src => map_logo_url(@community, false), :title => ""}
-          
-          - if @show_floors_panel
-            .c-sidebar#sidebar
-              %a.c-sidebar-brand{:href => "#"}
-                .sidebar-logo
-                  %h6 Floor
-                  - unless @community.turn_availability_on && !@show_ops_map
-                    %small Vacant Unit
-              %ul.floor-counts.c-sidebar-nav.slider_class#slider
-                - @floors.each do |floor|
-                  - floorplate = @floorplate_by_floor[floor]
-                  %li.digits-list-item{class: "#{floor == min_unit_floor ? 'selected' : ''}"}
-                    = link_to (floorplate.floor_name_added ? (floorplate.floor_name.present? ? floorplate.floor_name : "Nil") : floor),'javascript:;;',"data-interest" => "", :style => "margin: 0;color: white;font-size: 28pt;font-weight: 600", :class=>"floorplate-anchor #{floor == min_unit_floor ? 'selected' : ''}",:id=>floor
-                    %div.units-no{style: "margin-top: 11px"}
-                      %span.teg-line{:id => "u_#{floor}"}
                       
-                - if _3d_enabled
-                  %li.digits-list-item.hidden
-                    = link_to "All",'javascript:;;',"data-interest" => "", :style => "margin: 0;color: white;font-size: 28pt;font-weight: 600", :class=>"floorplate-anchor",:id=>'all'
-                    %div.units-no{style: "margin-top: 11px"}
-                      %span.teg-line{:id => "u_all"}
+                .header-buttons-groups
+                  - unless (@is_partner_map.present? || @is_touch_map)
+                    %a.transparent-btn.header-action-btn.view-saved-btn{:href => "#{favorites_community_webpages_path(@community)}",:target=>"_parent"}
+                      %span.hidable
+                        View Saved
+                      %i.fa.fa-heart
                       
-  
-          .c-body{style: "overflow: hidden; position: relative;", position: "fixed"}
-            %div#tab
-              %div.tablinks.active_unit_view
-                = button_tag :onClick => "change_units_view(event, 'map_view')" do
-                  %i.fa.fa-map-marker
-                  %strong Map View
+                  - crm_provider = @community&.crm_credential&.crm_provider
+                  - data_provider = @community&.data_provider
 
-              %div.tablinks
-                = button_tag :onClick => "change_units_view(event, 'list_view')" do
-                  %i.fa.fa-list
-                  %strong List View
+                  - if @community.self_tour && (@community.scheduler_widget || @community.scheduler_widget.nil?)
+                    %a.colourd-btn.header-action-btn.schedule-tour-btn{:href => "#{@scheduler_widget_link}",:target=>"_blank"}
+                      %span
+                        Schedule
+                      %span.hidable
+                        Tour
 
-            %div.map-body.map-container-center-align{ style: "position: relative;" }
-              .right-side.parent.tabcontent.map_view{ id: @svg_enabled ? "svg-container" : "image-container", style: "position: relative;" }
-                .alert.alert-danger.units-alert.fade.in{:style => "display:none;position:absolute;top:0%;width:100%;z-index:1"}
-                  - if @community_info.has_floorplates?
-                    There are currently no units available on this floor matching your selected criteria.
-                  - else 
-                    There are currently no units available on this property matching your selected criteria.
+                  .footer-logo.responsive-content{:style=> "visibility: #{@community.powered_by_btn ? "" : "hidden" }"}
+                    %img{:src => "/assets/powered_by_logo.png"}/
+                - _mobile_has_filters = (!@all_filters_disabled) && ((@have_multi_property_ids && @map_filter[:show_properties_filter]) || (!@community.hide_bedrooms_bathrooms && @map_filter[:show_bedroom_filter]) || @map_filter[:show_pricing_filter] || (!@community.hide_square_feet && @map_filter[:show_square_feet_filter]) || (!@community.hide_availability && @map_filter[:show_availability_filter]))
+                - if _mobile_has_filters
+                  .mobile-trigger.responsive-content
+                    %span.filter-btn Filters
+                    %img{:src => "/assets/menu-icon.png"}/
+                  .mobile-filter-mega-menu.responsive-content
+                    - if @have_multi_property_ids
+                      - if @map_filter[:show_properties_filter]
+                        .selectable-field
+                          %label Community
+                          = select_tag :responsive_multi_communities, options_for_select(@multi_properties.present? ? @multi_properties : []),{:class=>"custom-select", :include_blank => "All "}
 
-                .d-flex-justify-content-center.beans-map-container.hidden
-                  .beanswidget#beanswidget.some{ style: "width: 100%; height: 100%;" }
+                    - unless @community.hide_bedrooms_bathrooms
+                      - if @map_filter[:show_bedroom_filter]
+                        .selectable-field
+                          %label Bedrooms
+                          = select_tag :responsive_unit_bedroom, options_for_select(@unit_bedrooms.present? ? @unit_bedrooms : []),{:class=>"custom-select", :include_blank => "All "}
+                    
+                    - if @map_filter[:show_pricing_filter]
+                      .selectable-field{ class: !@community_info.display_rent ? "pricing_filter_visibility" : nil }
+                        %label  Maximum Price
+                        = select_tag :responsive_market_rent, options_for_select(@market_rent.present? ? @market_rent : []), { class: "custom-select" }
 
-                  - if @show_ops_map && @community.enable_three_d_maps
-                    = render partial: 'webpages/marker_colors_legend', locals: { legend_items: }
+                    - unless @community.hide_square_feet
+                      - if @map_filter[:show_square_feet_filter]
+                        .selectable-field
+                          %label Min Square Footage
+                          = select_tag :responsive_square_feet, options_for_select(@square_feet.present? ? @square_feet : []),{:class=>"custom-select"}
+                    
+                    - unless @community.hide_availability
+                      - if @map_filter[:show_availability_filter]
+                        .selectable-field
+                          %label Availability
+                          = select_tag :responsive_available_unit, options_for_select(@available_units.present? ? @available_units : []), { class: "custom-select" }
 
-                .image-map#zoomable.zoomable-map-container{style: "text-align: center; display: flex;"}
-                  .hidden-units
-                  %div#zoom-group-wrapper
-                    = render partial: @svg_enabled ? 'webpages/svg_map' : 'webpages/image_map' #, locals: svg_and_image_locals
+                    %div{:style => "text-align: center; padding-bottom: 9px;display: flex;justify-content: center;"}
+                      %button.apply-now-responsive{:type => "button", :onclick => "applyFilters();"}
+                        Apply
+                        %i.fa.fa-filter
 
-                  - if @show_ops_map
-                    = render partial: 'webpages/marker_colors_legend', locals: { legend_items: }
-
-                %footer.c-footer#footer.responsive-content.mobile-footer{ style: "display: flex; justify-content: space-around; align-item: center;" }
-                  %ul.location-items.location-responsive.responsive-content.responsive-legends.align-home-buttons
-
-                    - unless (@show_ops_map || @have_multi_property_ids)
-                      - if @community.show_property_map_key
-                        %li
-                          %i.fas.fa-map-marker-alt{:style => "color: #{map_marker_color};"}
-                          %span 
-                            = @community.show_property_map_key_text
-                      - if @community.show_amenity_key
-                        %li
-                          .custom-icon{:style => "height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};"}
-                            %i.fas.fa-camera-retro{:style => "color: #{amenity_marker_color}; font-size: #{camera_font_size}px; margin-top:#{camera_margin}px;"}
-                          %span 
-                            = @community.show_amenity_key_text
+                      %button.reset-filter-button{:type => "button", :onclick => "resetFilters(true);"}
+                        Reset
+                        %i.fa.fa-refresh
+                
+                .app-logo
+                  - if @community.map_logo && !@is_touch_map
+                    %a.logo{:href => @community.community_website}
+                      %img{:alt => "", :class => "webpage_logo", :src => map_logo_url(@community, false), :title => ""}
+            
+            - if @show_floors_panel
+              .c-sidebar#sidebar
+                %a.c-sidebar-brand{:href => "#"}
+                  .sidebar-logo
+                    %h6 Floor
+                    - unless @community.turn_availability_on && !@show_ops_map
+                      %small Vacant Unit
+                %ul.floor-counts.c-sidebar-nav.slider_class#slider
+                  - @floors.each do |floor|
+                    - floorplate = @floorplate_by_floor[floor]
+                    %li.digits-list-item{class: "#{floor == min_unit_floor ? 'selected' : ''}"}
+                      = link_to (floorplate.floor_name_added ? (floorplate.floor_name.present? ? floorplate.floor_name : "Nil") : floor),'javascript:;;',"data-interest" => "", :style => "margin: 0;color: white;font-size: 28pt;font-weight: 600", :class=>"floorplate-anchor #{floor == min_unit_floor ? 'selected' : ''}",:id=>floor
+                      %div.units-no{style: "margin-top: 11px"}
+                        %span.teg-line{:id => "u_#{floor}"}
 
                   - if _3d_enabled
-                    .zooming-content.zoomable-map-container
-                      %a.zooming-action.zoom-controls.map-toggle-button.3d-map-option{:href => "#", "data-current-map-type"=>"3d-current-map"}
-                        3D view
-                      %a.zooming-action.zoom-controls.map-toggle-button.2d-map-option.hidden{:href => "#", "data-current-map-type"=>"2d-current-map"}
-                        2D view
+                    %li.digits-list-item.hidden
+                      = link_to "All",'javascript:;;',"data-interest" => "", :style => "margin: 0;color: white;font-size: 28pt;font-weight: 600", :class=>"floorplate-anchor",:id=>'all'
+                      %div.units-no{style: "margin-top: 11px"}
+                        %span.teg-line{:id => "u_all"}
 
-                %footer.c-footer#footer.desktop-content
-                  .inner-footer
-                    .footer-logo.desktop-content{:style=> "visibility: #{@community.powered_by_btn ? "" : "hidden" }"}
-                      %img{:src => "/assets/powered_by_logo.png"}/
 
-                    %ul.location-items
-                      - unless (@show_ops_map || @have_multi_property_ids)
-                        - if @community.show_property_map_key && !@have_multi_property_ids
-                          %li
-                            %i.fas.fa-map-marker-alt{:style => "color: #{map_marker_color};"}
-                            %span 
-                              = @community.show_property_map_key_text
+
+    
+            .c-body{style: "overflow: hidden; position: relative;", position: "fixed"}
+              %div#tab
+                %div.tablinks.active_unit_view
+                  = button_tag :onClick => "change_units_view(event, 'map_view')" do
+                    %i.fa.fa-map-marker
+                    %strong Map View
+
+                %div.tablinks
+                  = button_tag :onClick => "change_units_view(event, 'list_view')" do
+                    %i.fa.fa-list
+                    %strong List View
+
+              %div.map-body.map-container-center-align{ style: "position: relative;" }
+                .right-side.parent.tabcontent.map_view{ id: @svg_enabled ? "svg-container" : "image-container", style: "position: relative;" }
+                  .alert.alert-danger.units-alert.fade.in{:style => "display:none;position:absolute;top:0%;width:100%;z-index:1"}
+                    - if @community_info.has_floorplates?
+                      There are currently no units available on this floor matching your selected criteria.
+                    - else 
+                      There are currently no units available on this property matching your selected criteria.
+
+                  .d-flex-justify-content-center.beans-map-container.hidden
+                    .beanswidget#beanswidget.some{ style: "width: 100%; height: 100%;" }
+
+                    -# Ops 3D keeps its in-map status legend. Marketing maps render
+                    -# their color key in the footer (see .location-items below) so the
+                    -# 3D view matches 2D instead of floating tiles over the map.
+                    - if @community.enable_three_d_maps && @show_ops_map
+                      = render partial: 'webpages/marker_colors_legend', locals: { legend_items: }
+
+                  .image-map#zoomable.zoomable-map-container{style: "text-align: center; display: flex;"}
+                    .hidden-units
+                    %div#zoom-group-wrapper
+                      = render partial: @svg_enabled ? 'webpages/svg_map' : 'webpages/image_map' #, locals: svg_and_image_locals
+
+                    - if @show_ops_map
+                      = render partial: 'webpages/marker_colors_legend', locals: { legend_items: }
+
+                  %footer.c-footer#footer.responsive-content.mobile-footer{ style: "display: flex; justify-content: space-around; align-item: center;" }
+                    %ul.location-items.location-responsive.responsive-content.responsive-legends.align-home-buttons
+
+                      - if show_box_legend
+                        - marketing_legend.each do |item|
+                          %li.map-key.map-key--tile
+                            %span.map-key__swatch{ style: "background-color: #{item[:color]};" }
+                            %span.map-key__label= item[:label]
+                        -# Amenity color key joins the tile legend on 2D (svg or image,
+                        -# by property or bedroom). Hidden in 3D via .amenity-key.
                         - if @community.show_amenity_key
-                          %li
-                            .custom-icon{:style => "height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};"}
-                              %i.fas.fa-camera-retro{:style => "color: #{amenity_marker_color}; font-size: #{camera_font_size}px; margin-top:#{camera_margin}px;"}
-                            %span 
-                              = @community.show_amenity_key_text
+                          %li.map-key.map-key--tile.amenity-key
+                            %span.map-key__swatch{ style: "background-color: #{amenity_marker_color};" }
+                            %span.map-key__label= @community.show_amenity_key_text
+                      - elsif !(@show_ops_map || @have_multi_property_ids || @community.by_floorplan?)
+                        - if @community.show_property_map_key
+                          %li.map-key
+                            %i.fas.fa-map-marker-alt.map-key__icon{ style: "color: #{map_marker_color};" }
+                            %span.map-key__label= @community.show_property_map_key_text
+                        - if @community.show_amenity_key
+                          %li.map-key
+                            %i.fas.fa-camera-retro.map-key__icon{ style: "color: #{amenity_marker_color};" }
+                            %span.map-key__label= @community.show_amenity_key_text
 
-                    .zooming-content.zoomable-map-container
-                      - if @show_ops_map
-                        = link_to "#", class: "btn btn-success show-update-popup", style: "margin: 10px;", data: { url: "/communities/#{@community.id}/update_community_data" } do
-                          %i.fa.fa-refresh
-                          Refresh Data
 
-                          
-                      %a.plus-action.zooming-action.zoom-in-webpage.zoom-controls{:href => "#"}
-                        %img{:src => "/assets/plus.png"}/
-                      %a.minus-action.zooming-action.zoom-out-webpage.zoom-controls{:href => "#"}
-                        %img{:src => "/assets/minus.png"}/
-                     
-                      - if _3d_enabled
+                    - if _3d_enabled
+                      .zooming-content.zoomable-map-container
                         %a.zooming-action.zoom-controls.map-toggle-button.3d-map-option{:href => "#", "data-current-map-type"=>"3d-current-map"}
                           3D view
                         %a.zooming-action.zoom-controls.map-toggle-button.2d-map-option.hidden{:href => "#", "data-current-map-type"=>"2d-current-map"}
                           2D view
 
-              .right-rail.tabcontent.list_view
+                  %footer.c-footer#footer.desktop-content
+                    .inner-footer
+                      .footer-logo.desktop-content{:style=> "visibility: #{@community.powered_by_btn ? "" : "hidden" }"}
+                        %img{:src => "/assets/powered_by_logo.png"}/
 
-                - unless @community.turn_availability_on && !@show_ops_map
-                  - all_details = @units_with_floorplan_info.present? ? JSON.parse(@units_with_floorplan_info) : []
-                  %div.right-rail-title
-                    %div.webpage-left-list-view-title.webpage-header
-                      %p#unit-title-count
-                        #{all_details.count} Units Found
+                      %ul.location-items
+                        - if show_box_legend
+                          - marketing_legend.each do |item|
+                            %li.map-key.map-key--tile
+                              %span.map-key__swatch{ style: "background-color: #{item[:color]};" }
+                              %span.map-key__label= item[:label]
+                          -# Amenity color key joins the tile legend on 2D (svg or image,
+                          -# by property or bedroom). Hidden in 3D via .amenity-key.
+                          - if @community.show_amenity_key
+                            %li.map-key.map-key--tile.amenity-key
+                              %span.map-key__swatch{ style: "background-color: #{amenity_marker_color};" }
+                              %span.map-key__label= @community.show_amenity_key_text
+                        - elsif !(@show_ops_map || @have_multi_property_ids || @community.by_floorplan?)
+                          - if @community.show_property_map_key && !@have_multi_property_ids
+                            %li.map-key
+                              %i.fas.fa-map-marker-alt.map-key__icon{ style: "color: #{map_marker_color};" }
+                              %span.map-key__label= @community.show_property_map_key_text
+                          - if @community.show_amenity_key
+                            %li.map-key
+                              %i.fas.fa-camera-retro.map-key__icon{ style: "color: #{amenity_marker_color};" }
+                              %span.map-key__label= @community.show_amenity_key_text
 
-                      - if @community_info.display_rent
-                        = select_tag :filter,  options_for_select([["Sort by"],["Price: Low to High"], ["Price: High to Low"], ["Availability: Soonest to Latest"], ["Availability: Latest to Soonest"], ["Sq Ft: More to Less"], ["Sq Ft: Less to More"]])
-                      - else
-                        = select_tag :filter,  options_for_select([["Sort by"], ["Availability: Soonest to Latest"], ["Availability: Latest to Soonest"], ["Sq Ft: More to Less"], ["Sq Ft: Less to More"]])
-                
-                %div#units-body
+                      .zooming-content.zoomable-map-container
+                        - if @show_ops_map
+                          = link_to "#", class: "btn btn-success show-update-popup", style: "margin: 10px;", data: { url: "/communities/#{@community.id}/update_community_data" } do
+                            %i.fa.fa-refresh
+                            Refresh Data
 
-      // Trigger the modal with a button
-      = render partial: "unit_modal"
+                            
+                        %a.reset-map-btn.zooming-action.zoom-controls{:href => "#", :style => "display: none;", :title => "Reset Map"}
+                          %img{:src => "/assets/refresh.png"}/
+                        %a.plus-action.zooming-action.zoom-in-webpage.zoom-controls{:href => "#"}
+                          %img{:src => "/assets/plus.png"}/
+                        %a.minus-action.zooming-action.zoom-out-webpage.zoom-controls{:href => "#"}
+                          %img{:src => "/assets/minus.png"}/
+                      
+                        - if _3d_enabled
+                          %a.zooming-action.zoom-controls.map-toggle-button.3d-map-option{:href => "#", "data-current-map-type"=>"3d-current-map"}
+                            3D view
+                          %a.zooming-action.zoom-controls.map-toggle-button.2d-map-option.hidden{:href => "#", "data-current-map-type"=>"2d-current-map"}
+                            2D view
 
-    - else
-      .alert.alert-danger Community is Inactivated.
+                .right-rail.tabcontent.list_view
+                  - sort_options = [["Sort by"]]
+
+                  - unless @community.turn_availability_on && !@show_ops_map
+                    - all_details = @units_with_floorplan_info.present? ? JSON.parse(@units_with_floorplan_info) : []
+                    %div.right-rail-title
+                      %div.webpage-left-list-view-title.webpage-header
+                        %p#unit-title-count
+                          #{all_details.count} Units Found
+
+                        - sort_options += [["Price: Low to High"], ["Price: High to Low"]] if @community_info.display_rent
+                        - sort_options += [["Availability: Soonest to Latest"], ["Availability: Latest to Soonest"]] unless @community.hide_availability
+                        - sort_options += [["Sq Ft: More to Less"], ["Sq Ft: Less to More"]] unless @community.hide_square_feet
+                        - if sort_options.length > 1
+                          = select_tag :filter, options_for_select(sort_options)
+                  
+                  %div#units-body{class: sort_options.length <= 1 ? "no-sort-filter" : nil}
+
+        // Trigger the modal with a button
+        = render partial: "unit_modal"
+
+      - else
+        .alert.alert-danger Community is Inactivated.
 
 
-    %span.hidden#left_margin #{left_margin}
-    %span.hidden#top_margin #{top_margin}
-    %span.hidden#amenity_left_margin #{amenity_left_margin}
-    %span.hidden#amenity_top_margin #{amenity_top_margin}
+      %span.hidden#left_margin #{left_margin}
+      %span.hidden#top_margin #{top_margin}
+      %span.hidden#amenity_left_margin #{amenity_left_margin}
+      %span.hidden#amenity_top_margin #{amenity_top_margin}
 
-- @amenities&.each do |amenity|
-  - x_plot, y_plot = amenity_coordinates(amenity, svg_enabled: @svg_enabled)
-  - next unless x_plot + y_plot > 0
-  = render partial: "amenities_slider", locals: { amenity: amenity, galleries: amenity.amenity_galleries, show_amenity_name: @community.show_amenity_name }
+  - @amenities&.each do |amenity|
+    - x_plot, y_plot = amenity_coordinates(amenity, svg_enabled: @svg_enabled)
+    - next unless x_plot + y_plot > 0
+    = render partial: "amenities_slider", locals: { amenity: amenity, galleries: amenity.amenity_galleries, show_amenity_name: @community.show_amenity_name }
 
-= render partial: "unit_information_popup"
-= render partial: "unit_num_popup"
-= render partial: "3d_amenity_modal"
-= render partial: "virtual_tour_modal"
-= render partial: "additional_button_modal"
-= render partial: "scheduled_tour_modal"
-= render partial: "amenity_virtual_tour_modal"
-= render partial: "data_refresh_modal"
+  = render partial: "unit_information_popup"
+  = render partial: "unit_num_popup"
+  = render partial: "3d_amenity_modal"
+  = render partial: "virtual_tour_modal"
+  = render partial: "additional_button_modal"
+  = render partial: "scheduled_tour_modal"
+  = render partial: "amenity_virtual_tour_modal"
+  = render partial: "data_refresh_modal"
+  = render partial: "pricing_calculator_modal"
 
-
-#communityWebpagesData{data: { 
-    currency: @community.get_currency_symbol(), 
-    community: @community.to_json, 
-    amenities: @amenities.to_json, 
-    map_configurations: @community&.three_d_maps_configuration.to_json, 
-    units: @units_with_floorplan_info, 
-    amenities_data: @amenities_data,
-    sub_communities: @community_info.sub_communities.to_json,
-    floorplans: @floorplans.to_json
+  #communityWebpagesData{data: {
+      currency: @community.get_currency_symbol(),
+      community: @community.to_json,
+      amenities: @amenities.to_json,
+      map_configurations: @community&.three_d_maps_configuration.to_json,
+      units: @units_with_floorplan_info,
+      amenities_data: @amenities_data,
+      sub_communities: @community_info.sub_communities.to_json,
+      floorplans: @floorplans.to_json
+    }
   }
-}
 
-:javascript
-  var assetTracker;
-  var units;
-  var amenities;
-  var total_units;
-  var ele;
-  var amenityEle;
-  var $slider;
-  var $images = [];
-  var largeImageHeight = 166;
-  var turnAvailabilityOn = "#{@community.turn_availability_on?}" === "true"
-  var isFloorPlanColorEnabled = "#{@community.enable_floorplan_level_color?}" === "true"
-  var fontFamily = "#{@font_family}"
-  var floorplans = $("#communityWebpagesData").data("floorplans");
-  var subCommunities = $("#communityWebpagesData").data("subCommunities");
-  var map_marker_color = toRgbColor("#{raw map_marker_color}");
-  var communityInactivated = "#{@community.locked}" === "true"
-  var opsMapMarkersEnabled = "#{@show_ops_map}" === "true"
-  var multiCommunity = "#{@have_multi_property_ids}" === "true"
-  var showCurrentAvailabilityEnabled = "#{@community.show_current_availability?}" === "true"
-  var units_availability_over_120_days = "#{@community.units_availability_over_120_days}" === "true";
-  var mapMarkerColors = #{raw marker_colors.to_json}
-  var markerFontSize = "#{raw fontsize}";
-  var amenity_marker_color = "#{raw amenity_marker_color}";
-  var amenity_marker_opacity = "#{raw amenity_marker_opacity}"
-  amenity_marker_color = hexToRgba(amenity_marker_color, amenity_marker_opacity)
-
-  var apply_now_url = "#{apply_now_community_webpages_url(@community)}"
-  var redirect_url = "#{community_webpages_url(@community)}"
-  var has_floorplate = "#{@community_info.has_floorplates?}";
-  var svgMode = #{@community.enable_svg_mode}
-  var enabled3dMaps = "#{@community.enable_three_d_maps?}" === "true";
-  var community_name = "#{@community_info.name}"
-  var display_rent = "#{@community_info.display_rent}"
-  var isSiteMap = "#{@community.sitemap.present?}"
-  var img_width = "#{@community.sitemap.present? && @community.sitemap.image.present? ? (@community.sitemap.width || @community.sitemap.image.width) : nil}"
-  var img_height = "#{@community.sitemap.present? && @community.sitemap.image.present? ? (@community.sitemap.height || @community.sitemap.image.height) : nil}"
-  var current_floor = "#{@floors.present? and @floors.size > 0 ? min_unit_floor : 'null'}";
-
-  if(opsMapMarkersEnabled) {
-    showCurrentAvailabilityEnabled = false;
-    units_availability_over_120_days = true;
-  }
-
-  if (current_floor === "null") {
-    current_floor = null;
-  }
-  var defaultSelectedFloor = current_floor;
-
-  var floors = "#{@floors.present? and @floors.size > 0 ? @floors : []}";
-  floors = JSON.parse(floors);
-  if (enabled3dMaps) floors = ["all", ...(floors || [])];
-
-  var current_width = $(window).width();
-  var _beansApiKey = "#{ENV['BEANS_API_KEY']}"
+  :javascript
+    var assetTracker;
+    var units;
+    var amenities;
+    var total_units;
+    var ele;
+    var amenityEle;
+    var $slider;
+    var $images = [];
+    var largeImageHeight = 166;
+    var turnAvailabilityOn = "#{@community.turn_availability_on?}" === "true"
+    var isFloorPlanColorEnabled = "#{@community.enable_floorplan_level_color?}" === "true"
+    var enablePynwheelCalculator = #{@community.enable_pynwheel_pricing_calculator? ? 'true' : 'false'}
+    var enableEngrainCalculator = #{@community.enable_pricing_calculator? ? 'true' : 'false'}
+    var fontFamily = "#{@font_family}"
+    var isPartnerMap = "#{@is_partner_map}"
+    var isTouchMap = "#{@is_touch_map}" === "true"
+    var floorplans = $("#communityWebpagesData").data("floorplans");
+    var subCommunities = $("#communityWebpagesData").data("subCommunities");
+    var map_marker_color = toRgbColor("#{raw map_marker_color}");
+    var communityInactivated = "#{@community.locked}" === "true"
+    var opsMapMarkersEnabled = "#{@show_ops_map}" === "true"
+    var multiCommunity = "#{@have_multi_property_ids}" === "true"
+    var showCurrentAvailabilityEnabled = "#{@community.show_current_availability?}" === "true"
+    var units_availability_over_120_days = "#{@community.units_availability_over_120_days}" === "true";
+    var mapMarkerColors = #{raw marker_colors.to_json}
+    var markerFontSize = "#{raw fontsize}";
+    var amenity_marker_color = "#{raw amenity_marker_color}";
+    var amenity_marker_opacity = "#{raw amenity_marker_opacity}"
+    amenity_marker_color = hexToRgba(amenity_marker_color, amenity_marker_opacity)
   
-  var mapLogo = "#{@community.map_logo.present? ? true : false}"
-
-  var left_margin = #{raw left_margin}
-  var top_margin = #{raw top_margin}
-  var amenity_left_margin = #{raw amenity_left_margin}
-  var amenity_top_margin = #{raw amenity_top_margin}
-
-  var window_height = window.innerHeight;
-  var diff = 0
-  var diffL = 0
-  var slides_to_show = 4;
-  var slides_to_scroll = 1;
-  var initial_start;
-
-  $(document).ready(function () {
-    if (communityInactivated) return;
-
-    if(svgMode)
-      assetTracker = new AssetLoadingTracker({ loaderSelector: ".webPageLoader" });
-
-    if (!units) units = $("#communityWebpagesData").data("units");
-    if (!total_units) total_units = units
-    if (!amenities) amenities = $("#communityWebpagesData").data("amenitiesData");
-
-    ele = document.getElementsByClassName('fa-map-marker-alt-responsive');
-    amenityEle = document.getElementsByClassName('camera-icon-responsive');
-    $slider = $("#slider");
-
-    if (extraSmallScreen()) {
-      $(".right-side.parent.tabcontent.map_view").addClass("mobile_map_view")
-    } else {
-      $(".c-sidebar").css({ "min-height": "100%" })
+    var apply_now_url = "#{apply_now_community_webpages_url(@community)}"
+    var redirect_url = "#{community_webpages_url(@community)}"
+    var has_floorplate = "#{@community_info.has_floorplates?}";
+    var svgMode = #{@community.enable_svg_mode}
+    var enabled3dMaps = "#{@community.enable_three_d_maps?}" === "true";
+    var defaultSatelliteView = "#{@community.default_satellite_view?}" === "true";
+    var community_name = "#{@community_info.name}"
+    var display_rent = "#{@community_info.display_rent}"
+    var isSiteMap = "#{@community.sitemap.present?}"
+    var img_width = "#{@community.sitemap.present? && @community.sitemap.image.present? ? (@community.sitemap.width || @community.sitemap.image.width) : nil}"
+    var img_height = "#{@community.sitemap.present? && @community.sitemap.image.present? ? (@community.sitemap.height || @community.sitemap.image.height) : nil}"
+    var current_floor = "#{@floors.present? and @floors.size > 0 ? min_unit_floor : 'null'}";
+    var hide_bedrooms_bathrooms = "#{@community.hide_bedrooms_bathrooms}" === "true";
+    var hide_square_feet = "#{@community.hide_square_feet}" === "true";
+    var hide_availability = "#{@community.hide_availability}" === "true";
+  
+  
+    if(opsMapMarkersEnabled) {
+      showCurrentAvailabilityEnabled = false;
+      units_availability_over_120_days = true;
     }
-
-    $("embed").ready(function(){
-      if(iOSversion()){
-        var target = $('#clickme');
-        if (target.length) {
-          $('html, body').animate({
-            scrollTop: target.offset().top
-          }, 500);
-        }
-      }
-    });
-
-    $(window).on( "orientationchange", function( event ) {
-      window.location.reload();
-      $(".webPageLoader").removeClass("hidden");
-    });
-
-    floors.length < 5 ? initial_start = 0 : initial_start = 0
-    $(window).on('resize', function(){
-      var win = $(this);
-      window.location.reload();
-      $(".webPageLoader").removeClass("hidden");
+  
+    if (current_floor === "null") {
+      current_floor = null;
+    }
+    var defaultSelectedFloor = current_floor;
+  
+    var floors = "#{@floors.present? and @floors.size > 0 ? @floors : []}";
+    floors = JSON.parse(floors);
+    if (enabled3dMaps) floors = ["all", ...(floors || [])];
+  
+    var current_width = $(window).width();
+    var _beansApiKey = "#{ENV['BEANS_API_KEY']}"
+    
+    var mapLogo = "#{@community.map_logo.present? ? true : false}"
+  
+    var left_margin = #{raw left_margin}
+    var top_margin = #{raw top_margin}
+    var amenity_left_margin = #{raw amenity_left_margin}
+    var amenity_top_margin = #{raw amenity_top_margin}
+  
+    var window_height = window.innerHeight;
+    var diff = 0
+    var diffL = 0
+    var slides_to_show = 4;
+    var slides_to_scroll = 1;
+    var initial_start;
+  
+    $(document).ready(function () {
+      if (communityInactivated) return;
+  
+      if(svgMode)
+        assetTracker = new AssetLoadingTracker({ loaderSelector: ".webPageLoader" });
+  
+      if (!units) units = $("#communityWebpagesData").data("units");
+      if (!total_units) total_units = units
+      if (!amenities) amenities = $("#communityWebpagesData").data("amenitiesData");
+  
+      ele = document.getElementsByClassName('fa-map-marker-alt-responsive');
+      amenityEle = document.getElementsByClassName('camera-icon-responsive');
+      $slider = $("#slider");
+  
       if (extraSmallScreen()) {
-        $('#slider').slick('unslick');
-        $slider.on('init', () => {mouseWheel($slider)}).slick({
-          infinite: false,
-          slidesToShow: 3,
-          slidesToScroll: 1,
-          vertical: false,
-          speed: 6,
-          initialSlide: floors.length < 4 ? 0 : 0,
-          prevArrow:
-            "<div class='product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
-          nextArrow:
-            "<div class='product-single__thumb-arrow product-single__thumb-arrow_right'><i class='fa fa-angle-right'></i></div>",
-        });
-
-        $('.slick-track').css("width", "235px")
+        $(".right-side.parent.tabcontent.map_view").addClass("mobile_map_view")
       } else {
-        $('#slider').slick('unslick');
-        $slider.on('init', () => {
-          mouseWheel($slider);
-        }).slick({
-          infinite: false,
-          slidesToShow: 4,
-          slidesToScroll: 1,
-          vertical: true,
-          initialSlide: initial_start,
-          prevArrow:
-            "<div class='product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
-          nextArrow:
-            "<div class='product-single__thumb-arrow product-single__thumb-arrow_right'><i class='fa fa-angle-right'></i></div>",
-        });
+        $(".c-sidebar").css({ "min-height": "100%" })
       }
-    });
+  
+      $("embed").ready(function(){
+        if(iOSversion()){
+          var target = $('#clickme');
+          if (target.length) {
+            $('html, body').animate({
+              scrollTop: target.offset().top
+            }, 500);
+          }
+        }
+      });
+  
+      $(window).on( "orientationchange", function( event ) {
+        window.location.reload();
+        $(".webPageLoader").removeClass("hidden");
+      });
 
-    if (extraSmallScreen() && (window.matchMedia("(orientation: landscape)").matches)) {
-      $(".c-modal-dialog").css("margin-top", "27%")
-      $("#responsive-floorplan-image").css("max-height", '300px')
-    } else if ((smallScreen()) && (window.matchMedia("(orientation: landscape)").matches)) {
-      $(".c-modal-dialog").css("margin-top", "12%")
-    }
-    
-    if(smallScreen()){
-      //$("._3d-apply-filter-button").hide();
-      $(".web-reset-button").hide();
-    }
-    
-    $("#max_price_responsive").html("Max Price");
-    $("#sq_feet_responsive").html("Min Sq Feet");
-    $("#unit_availability").html("All");
-    $("#bedroom_responsive").html("All");
-    
-    $(".mobile-trigger").click(function(){
-      $(this).next('.mobile-filter-mega-menu').slideToggle();
-    });
+      floors.length < 5 ? initial_start = 0 : initial_start = 0
+      $(window).on('resize', function(){
+        var win = $(this);
+        window.location.reload();
+        $(".webPageLoader").removeClass("hidden");
+        if (extraSmallScreen()) {
+          $('#slider').slick('unslick');
+          $slider.on('init', () => {mouseWheel($slider)}).slick({
+            infinite: false,
+            slidesToShow: 3,
+            slidesToScroll: 1,
+            vertical: false,
+            speed: 6,
+            initialSlide: floors.length < 4 ? 0 : 0,
+            prevArrow:
+              "<div class='product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
+            nextArrow:
+              "<div class='product-single__thumb-arrow product-single__thumb-arrow_right'><i class='fa fa-angle-right'></i></div>",
+          });
+  
+          $('.slick-track').css("width", "235px")
+        } else {
+          $('#slider').slick('unslick');
+          $slider.on('init', () => {
+            mouseWheel($slider);
+          }).slick({
+            infinite: false,
+            slidesToShow: 4,
+            slidesToScroll: 1,
+            vertical: true,
+            initialSlide: initial_start,
+            prevArrow:
+              "<div class='product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
+            nextArrow:
+              "<div class='product-single__thumb-arrow product-single__thumb-arrow_right'><i class='fa fa-angle-right'></i></div>",
+          });
+        }
+      });
+  
+      if (extraSmallScreen() && (window.matchMedia("(orientation: landscape)").matches)) {
+        $(".c-modal-dialog").css("margin-top", "27%")
+        $("#responsive-floorplan-image").css("max-height", '300px')
+      } else if ((smallScreen()) && (window.matchMedia("(orientation: landscape)").matches)) {
+        $(".c-modal-dialog").css("margin-top", "12%")
+      }
+      
+      if(smallScreen()){
+        //$("._3d-apply-filter-button").hide();
+        $(".web-reset-button").hide();
+      }
+      
+      $("#max_price_responsive").html("Max Price");
+      $("#sq_feet_responsive").html("Min Sq Feet");
+      $("#unit_availability").html("All");
+      $("#bedroom_responsive").html("All");
+      
+      $(".mobile-trigger").click(function(){
+        $(this).next('.mobile-filter-mega-menu').slideToggle();
+      });
+  
+      if (smallScreen()){
+        $('.modal-wrapper-mobile').removeClass("hidden");
+        $('.c-modal-wrapper').addClass("hidden");
+      }
+  
+      if ($slider[0]){
+        if (current_width >= 568) {
+          $slider.on('init', () => {mouseWheel($slider)}).slick({
+            infinite: false,
+            slidesToShow: 4,
+            slidesToScroll: 1,
+            vertical: true,
+            speed: 6,
+            initialSlide: initial_start,
+            prevArrow:
+              "<div class='product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
+            nextArrow:
+              "<div class='product-single__thumb-arrow product-single__thumb-arrow_right'><i class='fa fa-angle-right'></i></div>",
+          });
+        } else {
+          $slider.on('init', () => {
+            mouseWheel($slider)
+          }).slick({
+            infinite: false,
+            slidesToShow: 3,
+            slidesToScroll: 1,
+            vertical: false,
+            speed: 6,
+            initialSlide: floors.length < 4 ? 0 : 0,
+            prevArrow:
+              "<div class='product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
+            nextArrow:
+              "<div class='product-single__thumb-arrow product-single__thumb-arrow_right'><i class='fa fa-angle-right'></i></div>",
+          });
+          $('.slick-track').css("width", "235px")
+        }
+  
+        function mouseWheel($slider) {
+          $slider.on('wheel', { $slider: $slider }, mouseWheelHandler)
+        }
+  
+        function mouseWheelHandler(event) {
+          event.preventDefault()
+          const $slider = event.data.$slider
+          const delta = event.originalEvent.deltaY
+          if(delta > 0) {
+            $slider.slick('slickNext')
+          }
+          else {
+            $slider.slick('slickPrev')
+          }
+        }
 
-    if (smallScreen()){
-      $('.modal-wrapper-mobile').removeClass("hidden");
-      $('.c-modal-wrapper').addClass("hidden");
-    }
-
-    if ($slider[0]){
-      if (current_width >= 568) {
-        $slider.on('init', () => {mouseWheel($slider)}).slick({
-          infinite: false,
-          slidesToShow: 4,
-          slidesToScroll: 1,
-          vertical: true,
-          speed: 6,
-          initialSlide: initial_start,
-          prevArrow:
-            "<div class='product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
-          nextArrow:
-            "<div class='product-single__thumb-arrow product-single__thumb-arrow_right'><i class='fa fa-angle-right'></i></div>",
-        });
+        // Scroll to the active floor (set by display2DMap/display3DMap which runs before this ready block)
+        var $activeLi = $slider.find('li.digits-list-item.selected');
+        var activeFloorId = $activeLi.length
+          ? $activeLi.find('a.floorplate-anchor').attr('id')
+          : current_floor;
+        if (activeFloorId) scrollSliderToFloor(activeFloorId);
+      }
+      
+      $(".slick-slide").on("click", function() {
+        var anchorTag = $(this).find('a.floorplate-anchor');
+        anchorTag.click();
+      });
+  
+      $('#filter').on('change', () => {
+        var units = $("#communityWebpagesData").data("units");
+        var has_floorplate = "#{@community_info.has_floorplates?}"
+        var community_name = "#{@community_info.name}"
+  
+        renderMapData();
+  
+        if (svgMode) {
+          setSVGUnitsAmenitiesCoordinates();
+        }
+      });
+  
+      $("#show-more-price").click(function(){
+        $('#show-more-price').addClass('hidden');
+        $('#hide-more-price').removeClass('hidden');
+        $("#pricing-option").removeClass('hidden')
+      });
+  
+      $("#hide-more-price").click(function(){
+        $('#hide-more-price').addClass('hidden');
+        $('#show-more-price').removeClass('hidden');
+        $("#pricing-option").addClass('hidden')
+      }); 
+  
+      if(mapLogo == "false" && current_width < 567){
+        $(".mobile-trigger").addClass("pt");
+      }
+  
+      if (showCurrentAvailabilityEnabled) {
+        $("#available_unit").val("now");
+        $("#responsive_available_unit").val("now");
       } else {
-        $slider.on('init', () => {
-          mouseWheel($slider)
-        }).slick({
-          infinite: false,
-          slidesToShow: 3,
-          slidesToScroll: 1,
-          vertical: false,
-          speed: 6,
-          initialSlide: floors.length < 4 ? 0 : 0,
-          prevArrow:
-            "<div class='product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
-          nextArrow:
-            "<div class='product-single__thumb-arrow product-single__thumb-arrow_right'><i class='fa fa-angle-right'></i></div>",
-        });
-        $('.slick-track').css("width", "235px")
+        $("#available_unit").val("");
+        $("#responsive_available_unit").val("");
       }
-
-      function mouseWheel($slider) {
-        $slider.on('wheel', { $slider: $slider }, mouseWheelHandler)
+      
+      setWebpageContainerSize();
+  
+      parsedSVGs = [];
+      if(svgMode)
+        fetchWebpageSVGAndSetCoordinates();
+      else {
+        setImageMapMarkers();
       }
-
-      function mouseWheelHandler(event) {
-        event.preventDefault()
-        const $slider = event.data.$slider
-        const delta = event.originalEvent.deltaY
-        if(delta > 0) {
-          $slider.slick('slickNext')
-        }
-        else {
-          $slider.slick('slickPrev')
-        }
-      }
-    }
-    
-    $(".slick-slide").on("click", function() {
-      var anchorTag = $(this).find('a.floorplate-anchor');
-      anchorTag.click();
+  
+      $("#close-modal").on("click", function() {
+        $("#unitModal").hide();
+      });
     });
-
-    $('#filter').on('change', () => {
-      var units = $("#communityWebpagesData").data("units");
-      var has_floorplate = "#{@community_info.has_floorplates?}"
-      var community_name = "#{@community_info.name}"
-
-      renderMapData();
-
-      if (svgMode) {
-        setSVGUnitsAmenitiesCoordinates();
-      }
-    });
-
-    $("#show-more-price").click(function(){
-      $('#show-more-price').addClass('hidden');
-      $('#hide-more-price').removeClass('hidden');
-      $("#pricing-option").removeClass('hidden')
-    });
-
-    $("#hide-more-price").click(function(){
-      $('#hide-more-price').addClass('hidden');
-      $('#show-more-price').removeClass('hidden');
-      $("#pricing-option").addClass('hidden')
-    }); 
-
-    if(mapLogo == "false" && current_width < 567){
-      $(".mobile-trigger").addClass("pt");
-    }
-
-    if (showCurrentAvailabilityEnabled) {
-      $("#available_unit").val("now");
-      $("#responsive_available_unit").val("now");
-    } else {
-      $("#available_unit").val("");
-      $("#responsive_available_unit").val("");
-    }
-    
-    setWebpageContainerSize();
-
-    parsedSVGs = [];
-    if(svgMode)
-      fetchWebpageSVGAndSetCoordinates();
-    else {
-      setImageMapMarkers();
-    }
-
-    $("#close-modal").on("click", function() {
-      $("#unitModal").hide();
-    });
-  });
-
+  

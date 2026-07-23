@@ -1,6 +1,6 @@
 class KnockCrmWorker
   include Sidekiq::Worker
-  sidekiq_options queue: 'crm', retry: 3
+  sidekiq_options queue: 'crm', retry: 1
 
   def perform(community_id)
     return unless community_id.present?

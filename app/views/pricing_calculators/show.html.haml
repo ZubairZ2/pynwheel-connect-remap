@@ -1,0 +1,737 @@
+- bed_label      = @floorplan ? (@floorplan.bedrooms.to_i == 0 ? 'Studio' : "#{@floorplan.bedrooms.to_i} BR") : nil
+- bath_label     = @floorplan&.bathrooms
+- sqft_label     = @unit&.square_feet || @floorplan&.square_feet
+- base_rent      = @base_rent
+- min_rent       = @min_rent
+- max_rent       = @max_rent
+- deposit        = @deposit
+- available_date = @available_date
+- lease_matrix   = @lease_terms_matrix
+- default_term   = @default_lease_term
+- move_in_val    = (available_date || Date.today).strftime("%m/%d/%y")
+
+:css
+  :root {
+    --brand:var(--pyn-primary,#6366f1);
+    --brand-hover:color-mix(in srgb,var(--pyn-primary,#6366f1) 82%,black);
+    --brand-bg:color-mix(in srgb,var(--pyn-primary,#6366f1) 12%,white);
+    --primary:#0f172a;--primary-light:#1e293b;
+    --surface:color-mix(in srgb,var(--pyn-light-bg,#f5f5f5) 10%,white);
+    --surface-2:color-mix(in srgb,var(--pyn-light-bg,#f5f5f5) 20%,white);
+    --surface-3:#f1f5f9;
+    --border:var(--pyn-stroke,#e2e8f0);
+    --text:var(--pyn-main-font,#0f172a);
+    --text-2:var(--pyn-subtext,#475569);
+    --text-3:#94a3b8;
+    --success:#10b981;--danger:#ef4444;
+    --radius:10px;--radius-lg:14px;
+    --shadow-sm:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+    --shadow:0 4px 12px rgba(0,0,0,.06),0 2px 4px rgba(0,0,0,.04);
+    --shadow-lg:0 12px 32px rgba(0,0,0,.08),0 4px 8px rgba(0,0,0,.04);
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:"Manrope", sans-serif;background:var(--surface-2);color:var(--text);padding:24px;font-size:var(--pyn-base-font-size,14px);line-height:1.5;-webkit-font-smoothing:antialiased;}
+
+  .calc-wrapper{max-width:1080px;margin:0 auto;}
+  .calc-container{display:grid;grid-template-columns:360px 1fr;background:var(--surface);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);border:1px solid var(--border);}
+
+  /* Left Panel */
+  .left-panel{display:flex;flex-direction:column;border-right:1px solid var(--border);background:var(--surface-2);border-radius:var(--radius-lg) 0 0 var(--radius-lg);}
+  .left-panel-header{padding:24px 24px 16px;border-bottom:1px solid var(--border);background:var(--pyn-light-bg,#f5f5f5);border-radius:var(--radius-lg) 0 0 0;}
+  .left-panel-title{font-size:var(--pyn-heading-font-size,1rem);font-weight:700;color:var(--text);margin-bottom:2px;}
+  .left-panel-subtitle{font-size:.75rem;color:var(--text-2);}
+  .left-panel-body{display:flex;flex-direction:column;flex:1;}
+
+  .unit-summary{display:flex;justify-content:space-around;background:var(--surface);padding:16px 20px;border-bottom:1px solid var(--border);gap:8px;flex-wrap:wrap;}
+  .unit-summary-item{display:flex;align-items:center;gap:8px;font-size:.8rem;font-weight:600;color:var(--text);}
+  .unit-summary-item .material-icons{font-size:18px;color:var(--brand);}
+  .rent-range-badge{font-size:.68rem;font-weight:700;background:var(--brand-bg);color:var(--brand);padding:3px 8px;border-radius:20px;}
+
+  .form-section{padding:20px 24px;display:flex;flex-direction:column;gap:16px;border-bottom:1px solid var(--border);}
+  .input-group{display:flex;flex-direction:column;gap:6px;}
+  .input-group label{font-size:.7rem;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;}
+  .input-group input[type="text"],.input-group select{padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:.85rem;color:var(--text);outline:none;font-family:inherit;background:var(--surface);transition:all .2s;}
+  .input-group input:focus,.input-group select:focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-bg);}
+
+  /* Applicants & Pets */
+  .applicants-pets-section{display:none;padding:16px 24px;border-bottom:1px solid var(--border);flex-direction:column;gap:12px;}
+  .applicants-pets-section.active{display:flex;}
+  .stepper-row{display:flex;justify-content:space-between;align-items:center;}
+  .stepper-label{font-size:.8rem;font-weight:600;color:var(--text-2);display:flex;align-items:center;gap:6px;}
+  .stepper-label .material-icons{font-size:17px;color:var(--brand);}
+
+  .qty-controls{display:flex;align-items:center;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--surface);}
+  .qty-btn{background:var(--surface);border:none;padding:6px 12px;font-weight:700;cursor:pointer;font-size:1rem;color:var(--text-2);transition:all .15s;line-height:1;}
+  .qty-btn:hover{background:var(--brand-bg);color:var(--brand);}
+  .qty-val{min-width:36px;text-align:center;font-size:.85rem;font-weight:700;color:var(--text);border-left:1px solid var(--border);border-right:1px solid var(--border);padding:6px 4px;}
+
+  /* Options */
+  .options-section{padding:20px 24px;display:flex;flex-direction:column;gap:4px;flex:1;}
+  .options-header{font-size:.7rem;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;}
+  #dynamic-options{display:flex;flex-direction:column;gap:2px;}
+  .opt-row{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:var(--radius);transition:background .15s;cursor:pointer;}
+  .opt-row:hover{background:var(--surface);}
+  .opt-label{font-size:.85rem;font-weight:500;color:var(--text-2);display:flex;align-items:center;gap:10px;}
+  .opt-label input[type="checkbox"]{width:16px;height:16px;cursor:pointer;accent-color:var(--brand);flex-shrink:0;}
+  .opt-price{font-size:.72rem;color:var(--text-3);background:var(--surface-3);padding:2px 8px;border-radius:20px;font-weight:500;}
+  .opt-pre-disc{font-size:.72rem;color:var(--text-3);font-style:italic;padding:2px 0 4px 28px;line-height:1.4;}
+
+  /* Right Panel */
+  .right-panel{display:flex;flex-direction:column;background:var(--surface);border-radius:0 var(--radius-lg) var(--radius-lg) 0;}
+  .right-panel-header{padding:24px 28px 20px;border-bottom:1px solid var(--border);}
+  .total-box{background:var(--brand);padding:24px 28px;border-radius:var(--radius-lg);display:flex;justify-content:space-between;align-items:flex-start;}
+  .total-box-left{display:flex;flex-direction:column;flex:1;}
+  .total-label{font-size:.8rem;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;}
+  .total-price{font-size:2.3rem;font-weight:800;color:var(--text);letter-spacing:-.02em;line-height:1.1;}
+  .total-price-unit{font-size:1.1rem;font-weight:600;letter-spacing:0;color:var(--text);}
+  .total-base-rent{font-size:.78rem;color:var(--text-2);margin-top:4px;min-height:1em;}
+  .total-divider{height:1px;background:var(--border);margin:12px 0 10px;}
+  .total-estimated-row{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .total-est-label{font-size:.78rem;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em;}
+  .total-est-value{font-size:1.05rem;font-weight:700;color:var(--text);}
+  .total-breakdown{font-size:.72rem;color:var(--text-2);margin-top:5px;display:flex;gap:5px;align-items:center;flex-wrap:wrap;}
+  .total-icon{background:var(--surface);border:1px solid color-mix(in srgb,var(--brand) 30%,white);border-radius:12px;width:56px;height:56px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-left:16px;}
+  .total-icon .material-icons{color:var(--brand);font-size:28px;}
+
+  .right-panel-actions{padding:20px 28px;border-bottom:1px solid var(--border);}
+  .btn-apply{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--brand);color:var(--text);border:none;padding:14px;border-radius:var(--radius);font-weight:700;font-size:.95rem;cursor:pointer;width:100%;font-family:inherit;transition:all .2s;}
+  .btn-apply:hover{background:var(--brand-hover);transform:translateY(-1px);}
+
+  /* Receipt */
+  .receipt-body{padding:8px 28px 24px;flex:1;overflow-y:auto;}
+  .bucket-details{border-bottom:1px solid var(--border);}
+  .bucket-details summary{display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:.9rem;cursor:pointer;list-style:none;color:var(--text);padding:14px 0;transition:color .15s;}
+  .bucket-details summary:hover{color:var(--brand);}
+  .bucket-details summary::-webkit-details-marker{display:none;}
+  .bucket-chevron{font-size:1.1rem;color:var(--text-3);transition:transform .2s;}
+  .bucket-details[open] .bucket-chevron{transform:rotate(90deg);}
+  .bucket-summary-left{display:flex;align-items:center;gap:8px;}
+  .bucket-total-badge{font-size:.78rem;font-weight:700;color:var(--brand);background:var(--brand-bg);padding:3px 10px;border-radius:20px;}
+  .cat-group{padding:4px 0 12px 16px;}
+  .cat-title{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:10px;padding-bottom:6px;border-bottom:1px dashed var(--border);display:flex;align-items:center;gap:4px;}
+  .fee-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:.83rem;}
+  .fee-name{display:flex;align-items:center;gap:6px;color:var(--text-2);flex:1;}
+  .fee-price{font-weight:600;color:var(--text);}
+  .fee-mult-badge{font-size:.65rem;color:var(--brand);background:var(--brand-bg);padding:1px 6px;border-radius:10px;font-weight:600;margin-left:2px;flex-shrink:0;}
+  .situational-badge{font-size:.58rem;color:#92600a;background:#fef9ee;border:1px solid #f5c842;padding:1px 5px;border-radius:8px;font-weight:700;flex-shrink:0;letter-spacing:.04em;text-transform:uppercase;}
+  .fee-row.fee-optional{background:var(--brand-bg);border-radius:6px;padding:5px 8px;margin:2px -8px;}
+  .fee-row.fee-situational .fee-price{color:var(--text-3);font-style:italic;}
+  .fee-row-remove{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:14px;padding:0 2px;line-height:1;transition:color .15s;flex-shrink:0;}
+  .fee-row-remove:hover{color:var(--danger);}
+
+  .info-tag{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:var(--border);color:var(--text-2);font-size:9px;font-style:italic;font-weight:700;font-family:Georgia,serif;cursor:help;vertical-align:middle;margin-left:4px;flex-shrink:0;text-transform:none;transition:background .15s;}
+  .info-tag:hover{background:var(--primary);color:#fff;}
+
+  /* Disclaimers */
+  .global-disclaimers{padding:14px 22px;font-size:.72rem;color:#92400e;white-space:pre-wrap;line-height:1.6;border-top:1px solid #fcd34d;background:#fffbeb;display:none;gap:10px;align-items:flex-start;}
+  .global-disclaimers.active{display:flex;}
+  .global-disclaimers .material-icons{font-size:15px;flex-shrink:0;margin-top:2px;color:#d97706;}
+  .bucket-disclaimer{font-size:.7rem;color:#b45309;background:#fffbeb;border:1px solid #fde68a;padding:5px 10px;border-radius:6px;margin:0 0 8px;display:flex;align-items:flex-start;gap:5px;}
+  .bucket-disclaimer .material-icons{font-size:13px;color:#d97706;margin-top:1px;flex-shrink:0;}
+
+  /* Unit not found full-page */
+  .unit-not-found-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+  .unit-not-found-card{background:var(--surface);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);border:1px solid var(--border);padding:48px 40px;max-width:480px;width:100%;text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px;}
+  .unit-not-found-icon-wrap{width:80px;height:80px;border-radius:50%;background:#fff7ed;border:2px solid #fed7aa;display:flex;align-items:center;justify-content:center;margin-bottom:8px;}
+  .unit-not-found-icon-wrap .material-icons{font-size:40px;color:#ea580c;}
+  .unit-not-found-card h2{font-size:1.4rem;font-weight:800;color:var(--text);margin:0;}
+  .unit-not-found-card p{font-size:.88rem;color:var(--text-2);line-height:1.6;max-width:340px;}
+  .unit-not-found-card code{display:inline-block;background:#f1f5f9;border:1px solid var(--border);padding:2px 10px;border-radius:6px;font-size:.82rem;color:#6366f1;font-family:monospace;margin:2px 0;}
+  .unit-not-found-card .btn-back{margin-top:8px;display:inline-flex;align-items:center;gap:8px;background:var(--text);color:#fff;border:none;padding:12px 24px;border-radius:var(--radius);font-size:.88rem;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;transition:opacity .2s;}
+  .unit-not-found-card .btn-back:hover{opacity:.85;}
+
+  /* Empty state */
+  .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 24px;gap:12px;color:var(--text-3);text-align:center;}
+  .empty-state .material-icons{font-size:48px;opacity:.4;}
+  .empty-state-title{font-size:.9rem;font-weight:600;color:var(--text-2);}
+  .empty-state-sub{font-size:.8rem;}
+
+  /* JS tooltip */
+  #sdk-tooltip{display:none;position:fixed;background:#1e293b;color:#f1f5f9;border-radius:7px;padding:7px 11px;font-size:.7rem;line-height:1.5;white-space:normal;width:210px;pointer-events:none;z-index:9999;box-shadow:0 6px 20px rgba(0,0,0,.25);}
+
+  @media(max-width:860px){.calc-container{grid-template-columns:1fr;}.right-panel{border-radius:0 0 var(--radius-lg) var(--radius-lg);}.left-panel{border-right:none;border-bottom:1px solid var(--border);border-radius:var(--radius-lg) var(--radius-lg) 0 0;}}
+
+- if @unit_not_found
+  .unit-not-found-page
+    .unit-not-found-card
+      .unit-not-found-icon-wrap
+        %span.material-icons search_off
+      %h2 Unit Not Found
+      %p
+        The unit ID
+        %code= params[:unit_id]
+        does not exist for
+        = @community.name
+        \. Please check the link or contact the property for accurate pricing.
+- unless @unit_not_found
+  .calc-wrapper
+    .calc-container
+      / ─── Left Panel ───
+      .left-panel
+        .left-panel-header
+          .left-panel-title Cost Calculator
+          .left-panel-subtitle= @community.name
+        .left-panel-body
+          - if @unit || @floorplan
+            .unit-summary
+              - if @unit&.marketing_name.present?
+                .unit-summary-item
+                  %span.material-icons home
+                  %span= @unit.marketing_name
+              - if bed_label
+                .unit-summary-item
+                  %span.material-icons king_bed
+                  %span= bed_label
+              - if bath_label
+                .unit-summary-item
+                  %span.material-icons bathtub
+                  %span= "#{bath_label.to_i} Bath"
+              - if sqft_label
+                .unit-summary-item
+                  %span.material-icons aspect_ratio
+                  %span= "#{number_with_delimiter(sqft_label.to_i)} sqft"
+              -# - if available_date
+              -#   .unit-summary-item
+              -#     %span.material-icons event_available
+              -#     %span= "Available: #{available_date.strftime('%b %-d, %Y')}"
+              -# - if min_rent > 0 && max_rent > 0 && (max_rent - min_rent) > 1
+              -#   .unit-summary-item
+              -#     %span.rent-range-badge= "$#{number_with_delimiter(min_rent.to_i)} – $#{number_with_delimiter(max_rent.to_i)}/mo"
+          .form-section
+            .input-group
+              %label Move-In Date
+              %input{type: "text", id: "move-in-date", value: move_in_val, readonly: true}
+            .input-group
+              %label Lease Term
+              - if lease_matrix.any?
+                %select#lease-term{onchange: "handleLeaseTermChange(this)"}
+                  - lease_matrix.each do |term|
+                    - rent_val = term["pricing_rent"].to_s.gsub(/[^0-9.]/, '')
+                    - is_default = term["pricing_month"].to_s.start_with?(default_term.to_s)
+                    %option{value: term["pricing_month"], "data-rent": rent_val, selected: is_default}
+                      = "#{term['pricing_month']} — #{term['pricing_rent']}"
+              - else
+                %select#lease-term{onchange: "updateReceipt()"}
+                  - ([default_term] + [12, 13, 15]).uniq.each do |t|
+                    %option{value: t.to_s, selected: t == default_term}= "#{t} months"
+          #applicants-pets-section.applicants-pets-section
+            #applicants-row.stepper-row
+              .stepper-label
+                %span.material-icons people
+                Number of Applicants
+              .qty-controls
+                %button.qty-btn{onclick: "updateApplicantCount(-1)", type: "button"} −
+                .qty-val#applicant-count-display 1
+                %button.qty-btn{onclick: "updateApplicantCount(1)", type: "button"} +
+            #pets-row.stepper-row{style: "display:none;"}
+              .stepper-label
+                %span.material-icons pets
+                Number of Pets
+              .qty-controls
+                %button.qty-btn{onclick: "updatePetCount(-1)", type: "button"} −
+                .qty-val#pet-count-display 0
+                %button.qty-btn{onclick: "updatePetCount(1)", type: "button"} +
+          .options-section
+            .options-header Additional Options
+            #dynamic-options
+              .empty-state
+                %span.material-icons tune
+                .empty-state-title No add-ons configured
+                .empty-state-sub Optional fees will appear here.
+      / ─── Right Panel ───
+      .right-panel
+        .right-panel-header
+          .total-box
+            .total-box-left
+              .total-label Total Monthly
+              %div
+                %span#grand-monthly.total-price $0.00
+              #base-rent-display.total-base-rent
+              #one-time-row.total-divider{style: "display:none;"}
+              #one-time-row-label.total-estimated-row{style: "display:none;"}
+                %span.total-est-label One-Time
+                %span#grand-onetime.total-est-value
+            .total-icon
+              %span.material-icons receipt_long
+        .right-panel-actions
+          - if @apply_now_url
+            %button.btn-apply{onclick: "pynCalcApplyNow(this)", "data-apply-url": @apply_now_url, "data-provider": @apply_now_provider, "data-unit-pid": @apply_now_unit_pid}
+              %span.material-icons{style: "font-size:20px;"} how_to_reg
+              Apply Now
+          - else
+            %button.btn-apply{disabled: true, style: "opacity:0.5;cursor:not-allowed;"}
+              %span.material-icons{style: "font-size:20px;"} how_to_reg
+              Apply Now
+        .receipt-body
+          #receipt-buckets
+            .empty-state
+              %span.material-icons receipt
+              .empty-state-title Your receipt is empty
+              .empty-state-sub No pricing configuration found for this property.
+        #global-footer.global-disclaimers
+          %span.material-icons warning_amber
+          %span#global-footer-text
+
+#sdk-tooltip
+
+:javascript
+  // ─── Data from Rails ──────────────────────────────────────────────────────
+  const LEASE_MATRIX   = #{raw @lease_terms_matrix.to_json};
+  const DEFAULT_TERM   = #{@default_lease_term || 12};
+  const BASE_RENT_DB   = #{base_rent.to_s};
+  const DEPOSIT_DB     = #{deposit.to_s};
+
+  let appState = {
+    data:          #{raw @config_json},
+    selections:    {},
+    currentBedroom: #{raw bed_label.to_s.inspect},
+    applicantCount: 1,
+    petCount:       0,
+    baseRent:       #{base_rent.to_s},
+    deposit:        #{deposit.to_s}
+  };
+
+  // ─── Init ─────────────────────────────────────────────────────────────────
+  function init() {
+    // Apply lease matrix base rent if available
+    if (LEASE_MATRIX.length > 0) {
+      const match = LEASE_MATRIX.find(t => t.pricing_month.startsWith(String(DEFAULT_TERM))) || LEASE_MATRIX[0];
+      if (match) {
+        const r = parseFloat(match.pricing_rent.replace(/[^0-9.]/g, ''));
+        if (r > 0) appState.baseRent = r;
+      }
+      // Pre-select correct term
+      const sel = document.getElementById('lease-term');
+      if (sel) Array.from(sel.options).forEach((opt, i) => {
+        if (opt.value.startsWith(String(DEFAULT_TERM))) sel.selectedIndex = i;
+      });
+    }
+
+    if (!appState.data || !appState.data.buckets) {
+      updateReceipt();
+      return;
+    }
+
+    // Normalise legacy schema (feeType on bucket → feeFrequency on fee)
+    appState.data.buckets.forEach(b => {
+      b.categories.forEach(c => {
+        c.fees.forEach(f => {
+          if (!f.feeFrequency) {
+            if (f.perApplicant)  { f.multiplier = 'Per Applicant'; f.feeFrequency = 'Monthly'; }
+            else if (f.perPet)   { f.multiplier = 'Per Pet';       f.feeFrequency = 'Monthly'; }
+            else { f.multiplier = 'None'; f.feeFrequency = (b.feeType === 'one_time') ? 'One-Time' : 'Monthly'; }
+          }
+          if (!f.multiplier) f.multiplier = 'None';
+        });
+      });
+    });
+
+    // Detect multipliers
+    let hasPerApplicant = false, hasPerPet = false;
+    appState.data.buckets.forEach(b => b.categories.forEach(c => c.fees.forEach(f => {
+      if (f.multiplier === 'Per Applicant') hasPerApplicant = true;
+      if (f.multiplier === 'Per Pet')       hasPerPet = true;
+    })));
+
+    const apSection = document.getElementById('applicants-pets-section');
+    if (hasPerApplicant || hasPerPet) {
+      apSection.classList.add('active');
+      document.getElementById('pets-row').style.display = hasPerPet ? 'flex' : 'none';
+    }
+
+    // Init optional selections
+    appState.data.buckets.forEach(b => b.categories.forEach(c => c.fees.forEach(f => {
+      if (!f.isMandatoryDefault && (f.multiplier || 'None') === 'None') {
+        appState.selections[f.feeName] = { selected: false, qty: f.qtyMinLimit || 0 };
+      }
+    })));
+
+    // Global disclaimers
+    const disc = appState.data.globalPropertyDisclaimers || '';
+    if (disc.trim()) {
+      document.getElementById('global-footer-text').innerText = disc;
+      document.getElementById('global-footer').classList.add('active');
+    }
+
+    buildLeftPanel();
+    updateReceipt();
+  }
+
+  // ─── Lease term change ────────────────────────────────────────────────────
+  function handleLeaseTermChange(select) {
+    const opt = select.options[select.selectedIndex];
+    const r = parseFloat((opt.dataset.rent || '').replace(/[^0-9.]/g, ''));
+    if (r > 0) appState.baseRent = r;
+    updateReceipt();
+  }
+
+  // ─── Applicants & Pets ────────────────────────────────────────────────────
+  function updateApplicantCount(change) {
+    appState.applicantCount = Math.max(1, appState.applicantCount + change);
+    document.getElementById('applicant-count-display').innerText = appState.applicantCount;
+    updateReceipt();
+  }
+
+  function updatePetCount(change) {
+    appState.petCount = Math.max(0, appState.petCount + change);
+    document.getElementById('pet-count-display').innerText = appState.petCount;
+    updateReceipt();
+  }
+
+  // ─── Left Panel (optional add-ons) ───────────────────────────────────────
+  function buildLeftPanel() {
+    const container = document.getElementById('dynamic-options');
+    container.innerHTML = '';
+    let hasOptions = false;
+
+    (appState.data?.buckets || []).sort((a,b) => a.orderIndex - b.orderIndex).forEach(bucket => {
+      bucket.categories.sort((a,b) => a.orderIndex - b.orderIndex).forEach(cat => {
+        cat.fees.sort((a,b) => a.orderIndex - b.orderIndex).forEach(fee => {
+          const mult = fee.multiplier || 'None';
+          if (!fee.isMandatoryDefault && mult === 'None') {
+            hasOptions = true;
+            const wrapper = document.createElement('div');
+            wrapper.style.borderBottom = '1px solid var(--border)';
+            wrapper.style.paddingBottom = '4px';
+
+            const row = document.createElement('div');
+            row.className = 'opt-row';
+
+            let priceDisplay = '';
+            const moSuffix = fee.feeFrequency === 'Monthly' ? '/mo' : '';
+            const bpEntry = fee.variesByBedroom && fee.bedroomPricing?.[appState.currentBedroom];
+            if (bpEntry) {
+              priceDisplay = (bpEntry.maxPrice && bpEntry.maxPrice !== bpEntry.minPrice)
+                ? `${fmtMoney(bpEntry.minPrice)} – ${fmtMoney(bpEntry.maxPrice)}` : fmtMoney(bpEntry.minPrice);
+            } else if (fee.pricingLogic === 'Range' && fee.baseMinPrice && fee.baseMaxPrice) {
+              priceDisplay = `${fmtMoney(fee.baseMinPrice)} – ${fmtMoney(fee.baseMaxPrice)}`;
+            } else if (fee.baseMinPrice) {
+              priceDisplay = fmtMoney(fee.baseMinPrice);
+            }
+            const priceTag = priceDisplay ? `<span class="opt-price">${priceDisplay}${moSuffix}</span>` : '';
+            const isSel = appState.selections[fee.feeName];
+            const preInfoTag = (fee.preSelectionInfo?.trim())
+              ? `<span class="info-tag" data-tip="${escAttr(fee.preSelectionInfo)}">i</span>` : '';
+
+            if (fee.hasQuantityCounter) {
+              row.innerHTML = `
+                <div class="opt-label">${fee.feeName} ${priceTag} ${preInfoTag}</div>
+                <div class="qty-controls">
+                  <button class="qty-btn" onclick="updateQty('${esc(fee.feeName)}',-1,${fee.qtyMinLimit||0},${fee.qtyMaxLimit||10})" type="button">−</button>
+                  <div class="qty-val" id="qty-${featureId(fee.feeName)}">${isSel ? isSel.qty : 0}</div>
+                  <button class="qty-btn" onclick="updateQty('${esc(fee.feeName)}',1,${fee.qtyMinLimit||0},${fee.qtyMaxLimit||10})" type="button">+</button>
+                </div>`;
+            } else {
+              const isChecked = isSel?.selected;
+              row.innerHTML = `
+                <label class="opt-label" style="cursor:pointer;width:100%;gap:6px;display:flex;align-items:center;">
+                  <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleCheckbox('${esc(fee.feeName)}',this.checked)" style="flex-shrink:0;">
+                  <span style="flex:1;">${fee.feeName} ${priceTag}</span>
+                  ${preInfoTag}
+                </label>`;
+            }
+            wrapper.appendChild(row);
+
+            if (fee.displayText?.trim() && fee.displayText !== fee.feeName) {
+              const descEl = document.createElement('div');
+              descEl.style.cssText = 'font-size:.7rem;color:var(--text-3);padding:2px 0 2px 28px;line-height:1.4;';
+              descEl.textContent = fee.displayText;
+              wrapper.appendChild(descEl);
+            }
+            container.appendChild(wrapper);
+          }
+        });
+      });
+    });
+
+    if (!hasOptions) {
+      container.innerHTML = `<div style="padding:16px 12px;font-size:.8rem;color:var(--text-3);text-align:center;">No optional add-ons for this unit.</div>`;
+    }
+  }
+
+  function esc(s) { return String(s).replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
+  // Use for data-tip and other HTML attributes — apostrophes need no escaping inside double-quoted attrs
+  function escAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+  function featureId(s) { return String(s).replace(/\s/g,''); }
+
+  function updateQty(feeName, change, min, max) {
+    const sel = appState.selections[feeName];
+    const next = sel.qty + change;
+    if (next >= min && next <= max) {
+      sel.qty = next;
+      const el = document.getElementById('qty-' + featureId(feeName));
+      if (el) el.innerText = next;
+      updateReceipt(feeName);
+    }
+  }
+
+  function toggleCheckbox(feeName, isChecked) {
+    appState.selections[feeName].selected = isChecked;
+    updateReceipt(feeName);
+  }
+
+  function deselectFee(feeName) {
+    if (appState.selections[feeName]) appState.selections[feeName].selected = false;
+    buildLeftPanel();
+    updateReceipt();
+  }
+
+  function resetQtyFee(feeName) {
+    if (appState.selections[feeName]) appState.selections[feeName].qty = 0;
+    buildLeftPanel();
+    updateReceipt();
+  }
+
+  // ─── Helpers ──────────────────────────────────────────────────────────────
+  function isBucketOneTime(bucket) {
+    return bucket.categories.every(c => c.fees.every(f => f.feeFrequency === 'One-Time'));
+  }
+
+  function fmtMoney(v) {
+    return '$' + Number(v).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+
+  function fmtRange(min, max, suffix) {
+    const s = suffix || '';
+    return max > min ? `${fmtMoney(min)} – ${fmtMoney(max)}${s}` : `${fmtMoney(min)}${s}`;
+  }
+
+  function getBaseRentDisplay() {
+    if (appState.data) {
+      const allFees = (appState.data.buckets||[]).flatMap(b => b.categories.flatMap(c => c.fees));
+      const bp = allFees.find(f => f.isBasePrice === true);
+      if (bp) {
+        const bpEntry = bp.variesByBedroom && bp.bedroomPricing?.[appState.currentBedroom];
+        if (bpEntry) {
+          const min = parseFloat(bpEntry.minPrice), max = parseFloat(bpEntry.maxPrice);
+          return !isNaN(min) ? (min !== max && !isNaN(max) ? `${bp.feeName} ${fmtMoney(min)} – ${fmtMoney(max)}` : `${bp.feeName} ${fmtMoney(min)}`) : '';
+        }
+        if (bp.baseMinPrice) {
+          const min = parseFloat(bp.baseMinPrice), max = parseFloat(bp.baseMaxPrice);
+          return `${bp.feeName} ${(!isNaN(max) && min !== max) ? `${fmtMoney(min)} – ${fmtMoney(max)}` : fmtMoney(min)}`;
+        }
+      }
+    }
+    if (appState.baseRent > 0) return `Base Rent ${fmtMoney(appState.baseRent)}`;
+    return '';
+  }
+
+  // ─── Receipt ──────────────────────────────────────────────────────────────
+  function updateReceipt(focusFee = null) {
+    const container = document.getElementById('receipt-buckets');
+
+    const openBuckets = new Set();
+    container.querySelectorAll('details.bucket-details').forEach(d => {
+      if (d.open) openBuckets.add(d.dataset.bucketName);
+    });
+
+    container.innerHTML = '';
+
+    // Check if any fee has isBasePrice — if so, don't double-count appState.baseRent
+    const allFees = (appState.data?.buckets||[]).flatMap(b => b.categories.flatMap(c => c.fees));
+    const hasBasePriceFee = allFees.some(f => f.isBasePrice === true);
+
+    let monthlyTotal = hasBasePriceFee ? 0 : (appState.baseRent || 0);
+    let oneTimeTotal = appState.deposit || 0;
+
+    if (!appState.data?.buckets) {
+      updateTotals(monthlyTotal, oneTimeTotal, monthlyTotal, monthlyTotal, oneTimeTotal, oneTimeTotal);
+      return;
+    }
+
+    const sorted = [...appState.data.buckets].sort((a,b) => a.orderIndex - b.orderIndex);
+    const oneTimeBuckets = sorted.filter(b => isBucketOneTime(b));
+    const monthlyBuckets = sorted.filter(b => !isBucketOneTime(b));
+
+    let firstBucket = true;
+
+    function buildBucketElement(bucket) {
+      let bucketMonthlyMin=0,bucketMonthlyMax=0,bucketOneTimeMin=0,bucketOneTimeMax=0;
+      let hasBucketAmounts=false;
+      let bucketHtml='';
+
+      bucket.categories.sort((a,b)=>a.orderIndex-b.orderIndex).forEach(cat => {
+        let catHtml='';
+        const catInfoTag = cat.categoryDisclaimer?.trim()
+          ? `<span class="info-tag" data-tip="${escAttr(cat.categoryDisclaimer)}">i</span>` : '';
+
+        cat.fees.sort((a,b)=>a.orderIndex-b.orderIndex).forEach(fee => {
+          const mult = fee.multiplier || 'None';
+          let shouldRender=false, isOptSelected=false;
+          let calcMin=0, calcMax=0, multBadge='';
+
+          const bpEntry = fee.variesByBedroom && fee.bedroomPricing?.[appState.currentBedroom];
+          const rawMin = fee.isBasePrice ? appState.baseRent : (bpEntry ? parseFloat(bpEntry.minPrice) : parseFloat(fee.baseMinPrice));
+          const rawMax = fee.isBasePrice ? appState.baseRent : (bpEntry ? parseFloat(bpEntry.maxPrice) : parseFloat(fee.baseMaxPrice));
+          const activeMin = isNaN(rawMin) ? 0 : rawMin;
+          const activeMax = (fee.pricingLogic==='Range' && !isNaN(rawMax)) ? rawMax : activeMin;
+
+          if (mult === 'Per Applicant') {
+            shouldRender = true;
+            calcMin = calcMax = activeMin * appState.applicantCount;
+            if (appState.applicantCount > 1) multBadge = `<span class="fee-mult-badge">×${appState.applicantCount}</span>`;
+          } else if (mult === 'Per Pet') {
+            shouldRender = appState.petCount > 0;
+            calcMin = calcMax = activeMin * appState.petCount;
+            if (appState.petCount > 1) multBadge = `<span class="fee-mult-badge">×${appState.petCount}</span>`;
+          } else if (!fee.isMandatoryDefault) {
+            const sel = appState.selections[fee.feeName];
+            if (sel) {
+              if (fee.hasQuantityCounter && sel.qty > 0) {
+                shouldRender=true; isOptSelected=true;
+                calcMin=activeMin*sel.qty; calcMax=activeMax*sel.qty;
+                if (sel.qty>1) multBadge=`<span class="fee-mult-badge">×${sel.qty}</span>`;
+              } else if (!fee.hasQuantityCounter && sel.selected) {
+                shouldRender=true; isOptSelected=true; calcMin=activeMin; calcMax=activeMax;
+              }
+            }
+          } else {
+            shouldRender = true; calcMin=activeMin; calcMax=activeMax;
+          }
+
+          if (!shouldRender) return;
+
+          const isSituational = fee.feeFrequency === 'Situational';
+          const isOneTime = fee.feeFrequency === 'One-Time';
+
+          if (!isSituational) {
+            hasBucketAmounts=true;
+            if (isOneTime) { bucketOneTimeMin+=calcMin; bucketOneTimeMax+=calcMax; }
+            else { bucketMonthlyMin+=calcMin; bucketMonthlyMax+=calcMax; }
+          }
+
+          let priceDisplay;
+          if (fee.pricingLogic==='Fixed'||fee.pricingLogic==='Unit Type') priceDisplay=fmtMoney(calcMin);
+          else if (fee.pricingLogic==='Range') priceDisplay=fmtRange(calcMin,calcMax);
+          else priceDisplay=`<span style="color:var(--text-3);font-style:italic;font-size:.85em;">Varies</span>`;
+
+          const removeBtn = isOptSelected
+            ? (fee.hasQuantityCounter
+                ? `<button class="fee-row-remove" onclick="resetQtyFee('${esc(fee.feeName)}')" title="Remove">✕</button>`
+                : `<button class="fee-row-remove" onclick="deselectFee('${esc(fee.feeName)}')" title="Remove">✕</button>`)
+            : '';
+
+          const discText = isOptSelected ? (fee.postSelectionInfo||'') : (fee.preSelectionInfo||'');
+          const infoTag = discText.trim()
+            ? `<span class="info-tag" data-tip="${escAttr(discText)}">i</span>` : '';
+          const sitBadge = isSituational ? `<span class="situational-badge">situational</span>` : '';
+
+          catHtml += `
+            <div class="fee-row${isOptSelected?' fee-optional':''}${isSituational?' fee-situational':''}">
+              <div class="fee-name" style="display:flex;align-items:center;gap:4px;flex:1;">${fee.feeName}${multBadge} ${infoTag} ${sitBadge}</div>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <div class="fee-price">${priceDisplay}</div>${removeBtn}
+              </div>
+            </div>`;
+        });
+
+        if (catHtml) {
+          bucketHtml += `<div class="cat-group"><div class="cat-title">${cat.categoryName.replace(' Fees','')} ${catInfoTag}</div>${catHtml}</div>`;
+        }
+      });
+
+      if (!bucketHtml) return null;
+
+      const details = document.createElement('details');
+      details.className = 'bucket-details';
+      details.dataset.bucketName = bucket.receiptBucket;
+
+      const isFirst = firstBucket; firstBucket=false;
+      const isFocused = focusFee && bucket.categories.some(c=>c.fees.some(f=>f.feeName===focusFee));
+      details.open = isFocused || (openBuckets.size>0 ? openBuckets.has(bucket.receiptBucket) : isFirst);
+
+      const bucketInfoTag = bucket.bucketDisclaimer?.trim()
+        ? `<span class="info-tag" data-tip="${escAttr(bucket.bucketDisclaimer)}">i</span>` : '';
+
+      const bucketBadgeMin = bucketMonthlyMin+bucketOneTimeMin;
+      const bucketBadgeMax = bucketMonthlyMax+bucketOneTimeMax;
+      details.innerHTML = `
+        <summary>
+          <div class="bucket-summary-left">
+            <span class="material-icons bucket-chevron" style="font-size:20px;">chevron_right</span>
+            <span>${bucket.receiptBucket}</span>${bucketInfoTag}
+          </div>
+          ${hasBucketAmounts?`<span class="bucket-total-badge">${fmtRange(bucketBadgeMin,bucketBadgeMax)}</span>`:''}
+        </summary>
+        ${bucket.bucketDisclaimer?.trim()?`<div class="bucket-disclaimer"><span class="material-icons">info_outline</span>${bucket.bucketDisclaimer}</div>`:''}
+        ${bucketHtml}`;
+
+      return { el:details, monthlyMin:bucketMonthlyMin, monthlyMax:bucketMonthlyMax, oneTimeMin:bucketOneTimeMin, oneTimeMax:bucketOneTimeMax };
+    }
+
+    let mMin=0,mMax=0,oMin=0,oMax=0;
+
+    [...oneTimeBuckets,...monthlyBuckets].forEach(bucket => {
+      const result = buildBucketElement(bucket);
+      if (result) {
+        container.appendChild(result.el);
+        mMin+=result.monthlyMin; mMax+=result.monthlyMax;
+        oMin+=result.oneTimeMin; oMax+=result.oneTimeMax;
+      }
+    });
+
+    // Add DB-provided base rent and deposit
+    monthlyTotal += mMin;
+    oneTimeTotal += oMin;
+    const grandMMin = hasBasePriceFee ? mMin : (appState.baseRent || 0) + mMin;
+    const grandMMax = hasBasePriceFee ? mMax : (appState.baseRent || 0) + mMax;
+    const grandOMin = (appState.deposit||0) + oMin;
+    const grandOMax = (appState.deposit||0) + oMax;
+
+    updateTotals(monthlyTotal, oneTimeTotal, grandMMin, grandMMax, grandOMin, grandOMax);
+  }
+
+  function updateTotals(mTotal, oTotal, mMin, mMax, oMin, oMax) {
+    const grandMEl = document.getElementById('grand-monthly');
+    if (grandMEl) grandMEl.innerHTML = `${fmtRange(mMin,mMax)}<span class="total-price-unit">/mo</span>`;
+
+    const baseEl = document.getElementById('base-rent-display');
+    if (baseEl) baseEl.textContent = getBaseRentDisplay();
+
+    const hasOne = oMin > 0;
+    const dividerEl = document.getElementById('one-time-row');
+    const labelEl   = document.getElementById('one-time-row-label');
+    const oValEl    = document.getElementById('grand-onetime');
+    if (dividerEl) dividerEl.style.display = hasOne ? '' : 'none';
+    if (labelEl)   labelEl.style.display   = hasOne ? '' : 'none';
+    if (oValEl)    oValEl.textContent       = hasOne ? fmtRange(oMin, oMax) : '';
+  }
+
+  // ─── Tooltip ──────────────────────────────────────────────────────────────
+  (function(){
+    const tip = document.getElementById('sdk-tooltip');
+    document.addEventListener('mouseover', e => {
+      const tag = e.target.closest('.info-tag');
+      if (!tag||!tag.dataset.tip) return;
+      tip.textContent = tag.dataset.tip;
+      tip.style.display='block';
+      const r=tag.getBoundingClientRect();
+      const tw=tip.offsetWidth, th=tip.offsetHeight;
+      let left=r.left+r.width/2-tw/2, top=r.top-th-8;
+      if(left<8) left=8;
+      if(left+tw>window.innerWidth-8) left=window.innerWidth-tw-8;
+      if(top<8) top=r.bottom+8;
+      tip.style.left=left+'px'; tip.style.top=top+'px';
+    });
+    document.addEventListener('mouseout', e => { if(e.target.closest('.info-tag')) tip.style.display='none'; });
+  })();
+
+  // ─── Apply Now ────────────────────────────────────────────────────────────
+  function pynCalcApplyNow(btn) {
+    var url      = btn.getAttribute('data-apply-url');
+    var provider = btn.getAttribute('data-provider');
+    if (!url) return;
+
+    if (provider === 'realpagesvc') {
+      var moveInDate = document.getElementById('move-in-date')?.value || '';
+      var unitPid    = (btn.getAttribute('data-unit-pid') || '').split('-')[0];
+      var redirectUrl = window.location.href;
+      url = url + '?MoveInDate=' + encodeURIComponent(moveInDate) +
+                  '&UnitId='     + unitPid +
+                  '&SearchUrl='  + encodeURIComponent(redirectUrl);
+    }
+
+    window.open(url, '_blank');
+  }
+
+  document.addEventListener('DOMContentLoaded', init);

@@ -28,6 +28,7 @@ var defaultSelectedFloor;
 var debouncedShowMarkers;
 var modalButtonsCounter = 0;
 var isRightRailCardClicked = false;
+var beanOnlyProperty = false;
 
 var _3dConvertedArr = definedAndHasValue(_3dConvertedArr)
   ? _3dConvertedArr
@@ -43,6 +44,10 @@ var _3dHoveredItem;
 var beansWidget;
 
 $(document).ready(function () {
+  if (typeof isTouchMap !== 'undefined' && isTouchMap) {
+    disableOutsideZoomContainer();
+  }
+
   if (smallScreen()) {
     $(".c-footer.desktop-content").remove();
     if (extraSmallScreen()) $(".c-sidebar").addClass("sidebar-header-bar");
@@ -73,13 +78,17 @@ $(document).ready(function () {
   debouncedShowMarkers = debounce(showMarkers, 100);
 
   if (isDefined(webCommunity)) {
-    selectMap = opsMapMarkersEnabled ? "3d-map" : "2d-map"; //webCommunity.web_map_type;
+    beanOnlyProperty = (webCommunity.data_provider === "beans")
+    selectMap = (defaultSatelliteView || opsMapMarkersEnabled || beanOnlyProperty) ? "3d-map" : "2d-map"; //webCommunity.web_map_type;
     enable3DMaps = webCommunity.enable_three_d_maps;
-    
-    if(enable3DMaps)
+
+    if (enable3DMaps) {
       initializeBeans3DMap();
-  } else {
-    console.error("webCommunity not loaded properly");
+      handleMapControl();
+
+      if (beanOnlyProperty)
+        $(".2d-map-option").hide();
+    }
   }
 
   $("#zoomable a").on("touchstart", function (e) {
@@ -100,7 +109,7 @@ $(document).ready(function () {
   trackingMapHoverEvents();
   // Analytics End
 
-  if(svgMode) {
+  if (svgMode) {
     if (
       !(
         definedAndHasValue(assetTracker) &&
@@ -163,13 +172,17 @@ function bindWebpageEvents() {
 
   ////////////////////////////////////////////////
   /* unit modal*/
-  $("#unitModal").on("hidden.bs.modal", function (e) {
+  $("#unitModal").on("hide.bs.modal", function (e) {
     isRightRailCardClicked = false;
     resetToDefaultZoom();
   });
 
   $("#unitModal").on("show.bs.modal", function (e) {
     showUnitModal(e);
+  });
+
+  $("#unitModal").on("shown.bs.modal", function (e) {
+    resetToDefaultZoom();
   });
 
   $(".active-filter").click(function () {
@@ -401,7 +414,7 @@ function setMarkerPosition(marker, x_plot, y_plot, stretched, actual) {
 // }
 
 function showUnitModal(event) {
-  if(!_3dMapMode()) {
+  if (!_3dMapMode()) {
     setUnitModalButtons(event);
     resetToDefaultZoom();
   }
@@ -415,6 +428,17 @@ function activateWebpageZoom() {
   });
 }
 
+var MODAL_BUTTON_ZOOM_STEP = 1.3; // fixed zoom step for modal +/- buttons
+
+function modalZoomStep(inst, $area, zoomIn) {
+  if (!inst) return;
+  var elem = $area[0];
+  var parent = elem && elem.parentElement;
+  var cx = parent ? parent.clientWidth / 2 : window.innerWidth / 2;
+  var cy = parent ? parent.clientHeight / 2 : window.innerHeight / 2;
+  inst.smoothZoom(cx, cy, zoomIn ? MODAL_BUTTON_ZOOM_STEP : (1 / MODAL_BUTTON_ZOOM_STEP));
+}
+
 function activateModalImageZoom() {
   const $modalArea = $("#zoomable-modal-image");
   const modalArea = $modalArea[0];
@@ -422,11 +446,12 @@ function activateModalImageZoom() {
   if (modalArea) {
     modalPanZoom = panzoom(modalArea, {
       bounds: true,
-      boundsPadding: 0.4,
-      contain: "automatic",
-      smoothScroll: false,
+      boundsPadding: 0.1,
+      zoomSpeed: 0.009,
       maxZoom: 5,
       minZoom: 1,
+      contain: "automatic",
+      smoothScroll: false,
       zoomDoubleClickSpeed: 1,
       onTouch: function (e) {
         e.preventDefault();
@@ -436,13 +461,13 @@ function activateModalImageZoom() {
 
     $(".zoom-in-modal").on("click", function (e) {
       $modalArea.removeClass("transform-none");
-      modalPanZoom.zoomInOut(187);
+      modalZoomStep(modalPanZoom, $modalArea, true);
       $(".reset-modal").removeClass("hidden");
     });
 
     $(".zoom-out-modal").on("click", function (e) {
       $modalArea.removeClass("transform-none");
-      modalPanZoom.zoomInOut(189);
+      modalZoomStep(modalPanZoom, $modalArea, false);
     });
 
     $(".reset-modal").on("click", function (e) {
@@ -464,11 +489,12 @@ function activateResponsiveImageModalZoom() {
   if (imageArea) {
     responsiveModalPanZoom = panzoom(imageArea, {
       bounds: true,
-      boundsPadding: 0.4,
-      contain: "automatic",
-      smoothScroll: false,
+      boundsPadding: 0.1,
+      zoomSpeed: 0.009,
       maxZoom: 5,
       minZoom: 1,
+      contain: "automatic",
+      smoothScroll: false,
       zoomDoubleClickSpeed: 1,
       onTouch: function (e) {
         e.preventDefault();
@@ -478,12 +504,12 @@ function activateResponsiveImageModalZoom() {
 
     $(".zoom-in-res-modal").on("click", function (e) {
       $imageArea.removeClass("transform-none");
-      responsiveModalPanZoom.zoomInOut(187);
+      modalZoomStep(responsiveModalPanZoom, $imageArea, true);
     });
 
     $(".zoom-out-res-modal").on("click", function (e) {
       $imageArea.removeClass("transform-none");
-      responsiveModalPanZoom.zoomInOut(189);
+      modalZoomStep(responsiveModalPanZoom, $imageArea, false);
     });
 
     $(".reset-res-modal").on("click", function (e) {
@@ -514,10 +540,10 @@ function debounce(func, delay) {
 
 function multiPropertiesFilterChanged() {
   filterUnitsBasedOnMultiCommunity();
-  
-  if(multiCommunity)
+
+  if (multiCommunity)
     updateBedroomFilterDropDownList();
-  
+
   updateMaxPriceFilterDropDownList();
   updateSquareFootageFilterDropdownList();
   updateAvailabilityFilterDropdownList();
@@ -536,7 +562,7 @@ function availabilityFilterChanged() {
   filterUnitsBasedOnMultiCommunity();
   filterUnitsBasedOnBedroom();
   filterUnitsBasedOnAvailability();
-  
+
   updateSquareFootageFilterDropdownList();
   filterUnitsBasedOnSqfeet();
 
@@ -652,13 +678,13 @@ function filterUnitsBasedOnMarketRent() {
   const marketRent = filterBasedOnScreen("market_rent");
 
   if (marketRent)
-    units = units.filter( (unit) => unit.market_rent <= marketRent);
+    units = units.filter((unit) => unit.market_rent <= marketRent);
 }
 
 function filterUnitsBasedOnBedroom() {
   const unitBedroom = filterBasedOnScreen("unit_bedroom");
 
-  if(!multiCommunity)
+  if (!multiCommunity)
     units = total_units;
 
   if (unitBedroom || unitBedroom === 0)
@@ -676,9 +702,9 @@ function filterMultiCommunityBasedOnScreen(filterTag) {
 function filterUnitsBasedOnMultiCommunity() {
   const propertyId = filterMultiCommunityBasedOnScreen("multi_communities");
 
-  if(propertyId)
+  if (propertyId)
     units = total_units.filter((unit) => unit.property_id.trim() == propertyId.trim())
-  else 
+  else
     units = total_units
 }
 
@@ -1036,58 +1062,60 @@ function showMarkers() {
       if ($markerEl.hasClass("overlapping-unit")) {
         $(".hidden-units").append(
           '<div class="hidden h-' +
-            $markerEl.data("unit-x-plot") +
-            "-" +
-            $markerEl.data("unit-y-plot") +
-            '" id="h-' +
-            $markerEl.data("title") +
-            '" data-title="' +
-            $markerEl.data("title") +
-            '" data-community-id="' +
-            $markerEl.data("community-id") +
-            '" data-unit-id="' +
-            $markerEl.data("unit-id") +
-            '" data-is-fav="' +
-            $markerEl.data("is-fav") +
-            '" data-provider="' +
-            $markerEl.data("provider") +
-            '" data-website="' +
-            $markerEl.data("website") +
-            '" data-community-property-id="' +
-            $markerEl.data("community-property-id") +
-            '" data-unit-provider-id="' +
-            $markerEl.data("unit-provider-id") +
-            '" data-floorplan-provider-id="' +
-            $markerEl.data("floorplan-provider-id") +
-            '" data-floorplan-name="' +
-            $markerEl.data("floorplan-name") +
-            '" data-unit-description="' +
-            $markerEl.data("unit-description") +
-            '" data-unit-lease-pricing="' +
-            $markerEl.data("unit-lease-pricing") +
-            '" data-unit-marketing-name="' +
-            $markerEl.data("unit-marketing-name") +
-            '" data-market-rent="' +
-            $markerEl.data("market-rent") +
-            '" data-square-feet="' +
-            $markerEl.data("square-feet") +
-            '" data-availability="' +
-            $markerEl.data("availability") +
-            '" data-available-date="' +
-            $markerEl.data("available-date") +
-            '" data-bedrooms="' +
-            $markerEl.data("bedrooms") +
-            '" data-bathrooms="' +
-            $markerEl.data("bathrooms") +
-            '" data-floorplan-image="' +
-            $markerEl.data("floorplan-image") +
-            '" data-availability-url="' +
-            $markerEl.data("availability-url") +
-            '" data-lease-term="' +
-            $markerEl.data("lease-term") +
-            '" data-unit-additional-fees="' +
-            $markerEl.data("unit-additional-fees") +
-            '"></div>'
+          $markerEl.data("unit-x-plot") +
+          "-" +
+          $markerEl.data("unit-y-plot") +
+          '" id="h-' +
+          $markerEl.data("title") +
+          '" data-title="' +
+          $markerEl.data("title") +
+          '" data-community-id="' +
+          $markerEl.data("community-id") +
+          '" data-unit-id="' +
+          $markerEl.data("unit-id") +
+          '" data-is-fav="' +
+          $markerEl.data("is-fav") +
+          '" data-provider="' +
+          $markerEl.data("provider") +
+          '" data-website="' +
+          $markerEl.data("website") +
+          '" data-community-property-id="' +
+          $markerEl.data("community-property-id") +
+          '" data-unit-provider-id="' +
+          $markerEl.data("unit-provider-id") +
+          '" data-floorplan-provider-id="' +
+          $markerEl.data("floorplan-provider-id") +
+          '" data-floorplan-name="' +
+          $markerEl.data("floorplan-name") +
+          '" data-unit-description="' +
+          $markerEl.data("unit-description") +
+          '" data-unit-lease-pricing="' +
+          $markerEl.data("unit-lease-pricing") +
+          '" data-unit-marketing-name="' +
+          $markerEl.data("unit-marketing-name") +
+          '" data-market-rent="' +
+          $markerEl.data("market-rent") +
+          '" data-square-feet="' +
+          $markerEl.data("square-feet") +
+          '" data-availability="' +
+          $markerEl.data("availability") +
+          '" data-available-date="' +
+          $markerEl.data("available-date") +
+          '" data-bedrooms="' +
+          $markerEl.data("bedrooms") +
+          '" data-bathrooms="' +
+          $markerEl.data("bathrooms") +
+          '" data-floorplan-image="' +
+          $markerEl.data("floorplan-image") +
+          '" data-secondary-image="' +
+          $markerEl.data("secondary-image") +
+          '" data-availability-url="' +
+          $markerEl.data("availability-url") +
+          '" data-lease-term="' +
+          $markerEl.data("lease-term") +
+          '" data-unit-additional-fees="' +
+          $markerEl.data("unit-additional-fees") +
+          '"></div>'
         );
 
         const jsonObjectKey = `${x_plot}-${y_plot}`;
@@ -1115,7 +1143,7 @@ function showMarkers() {
     }
   }
 
-  if(!isFloorplanMapEnabled())
+  if (!isFloorplanMapEnabled())
     disabledEnabledAnchors();
 
   setMarkersSizeAndMargin(); //image mode only
@@ -1203,7 +1231,7 @@ function unitMarkerClick(unitId, event) {
   let image = currentMapImage()?.parentElement;
   const $scope = $(image);
   const $markers = $scope.find(markersSelector);
-  
+
   for (const item of Array.from($markers)) {
     if (
       svgMode ? parseInt(item.dataset.unitId) === unitId : item.id === unitId
@@ -1276,8 +1304,8 @@ function renderMarkersForFloor(parent, floor) {
   const element = parent?.querySelector('.markers-container');
 
   renderUnitsAmenitiesMarkers(element, floor);
-  
-  if(!isFloorplanMapEnabled())
+
+  if (!isFloorplanMapEnabled())
     disabledEnabledAnchors();
 
   setMarkersSizeAndMargin();
@@ -1289,7 +1317,7 @@ function renderMapData() {
   const sortType = document.getElementById("filter");
   let floorUnits = [];
 
-  if(sortType)
+  if (sortType)
     floorUnits = getFilteredUnits(filteredUnits, sortType?.value);
   else
     floorUnits = filteredUnits;
@@ -1304,7 +1332,7 @@ function renderUnitBoxes(floorUnits) {
 
   element.innerHTML = "";
 
-  if(isFloorplanMapEnabled())
+  if (isFloorplanMapEnabled())
     floorUnits = filterUniqueFloorplanList(floorUnits);
 
   const html = floorUnits.map((unit) => buildUnitBoxHTML(unit)).join("");
@@ -1312,7 +1340,7 @@ function renderUnitBoxes(floorUnits) {
 
   unitBoxListHover();
 
-  if(!isFloorplanMapEnabled()) {
+  if (!isFloorplanMapEnabled()) {
     document.getElementById("unit-title-count").innerText = `${floorUnits.length} Units Found`;
   } else {
     const el = document.querySelector(".right-rail-card:first-child");
@@ -1334,7 +1362,7 @@ function filterUniqueFloorplanList(floorUnits) {
 
 function bindUnitMarkerEvents() {
   function bindEventsTo(el) {
-    el.parentElement.addEventListener('touchend', function(event) {
+    el.parentElement.addEventListener('touchend', function (event) {
       event.stopPropagation();
       event.preventDefault();
       const unitId = getUnitIdFromElement(el.parentElement, event);
@@ -1392,13 +1420,12 @@ function renderUnitsAmenitiesMarkers(element, f) {
 }
 
 function buildUnitBoxHTML(unit) {
-  let unitName = `Unit # ${
-    (webCommunity?.is_sitemap && !webCommunity?.display_building
-      ? unit["marketing_name"]
-      : unit["building"]
+  let unitName = `Unit # ${(webCommunity?.is_sitemap && !webCommunity?.display_building
+    ? unit["marketing_name"]
+    : unit["building"]
       ? `${unit["building"]}-${unit["marketing_name"]}`
       : unit["marketing_name"])
-  }`;
+    }`;
 
 
   if (isFloorplanMapEnabled())
@@ -1411,6 +1438,7 @@ function buildUnitBoxHTML(unit) {
       data-pointer-data='${JSON.stringify(unit["pointer_data"])}'
       data-floorplan-id='${unit["provider_floorplan_id"]}'
       data-unit-marketing-name='${unit["data_attributes"]["data-unit-marketing-name"]}'
+      data-pricing-calculator-url='${unit["pricing_calculator_url"] || ""}'
     >
       <div class='image-styles'>
         ${floorplanColorBarHTML(unit)}
@@ -1426,32 +1454,48 @@ function buildUnitBoxHTML(unit) {
           </p>
         </div>
         <div class='unit-details-section'>
-          <p><i class='fa fa-bed'> &nbsp ${unit["bedrooms"]} Bed </i></p>
-          <p><i class='fa fa-bath'> &nbsp ${unit["bathrooms"]} Bath </i></p>
-          <p><i class='fa fa-building'> &nbsp ${unit["square_feet"]} Sq Ft </i></p>
+          ${!hide_bedrooms_bathrooms ? `<p><i class='fa fa-bed'> &nbsp ${unit["bedrooms"]} Bed </i></p>` : ''}
+          ${!hide_bedrooms_bathrooms ? `<p><i class='fa fa-bath'> &nbsp ${unit["bathrooms"]} Bath </i></p>` : ''}
+          ${!hide_square_feet ? `<p><i class='fa fa-building'> &nbsp ${unit["square_feet"]} Sq Ft </i></p>` : ''}
         </div>
-        ${
-          !isFloorplanMapEnabled()
-            ? `<div class='unit-details-section'>
-                <p id='right-bar-unit-availability'>${get_unit_availability(unit)}</p>
-                <p>${unitMarketRent(unit)}</p>
+        ${!isFloorplanMapEnabled()
+      ? `<div class='unit-details-section' style='${(function() {
+                var calcEnabled = typeof enablePynwheelCalculator !== 'undefined' && enablePynwheelCalculator;
+                var min = parseFloat(String(unit["pyn_estimated_monthly"] || '0').replace(/,/g, '')) || 0;
+                var max = parseFloat(String(unit["pyn_estimated_monthly_max"] || '0').replace(/,/g, '')) || 0;
+                return (calcEnabled && max > min) ? 'flex-direction: column;' : '';
+              })()}'>
+                ${!hide_availability ? `<p id='right-bar-unit-availability'>${get_unit_availability(unit)}</p>` : ''}
+                <p>${unitDisplayPrice(unit)}</p>
               </div>`
-            : ``
-        }
+      : ``
+    }
+        ${(function() {
+          var calcUrl = '';
+          if (typeof enablePynwheelCalculator !== 'undefined' && enablePynwheelCalculator) {
+            calcUrl = '/communities/' + webCommunity.id + '/pricing_calculators/unit?unit_id=' + unit['id'];
+          } else if (unit["pricing_calculator_url"]) {
+            calcUrl = unit["pricing_calculator_url"];
+          }
+          if (!calcUrl) return '';
+          return '<div class=\'unit-details-section engrain-calc-section\'>' +
+            '<a class=\'calculate-btn\' href=\'javascript:void(0);\' onclick=\'openExpenseCalculator("' + calcUrl + '", false)\'>' +
+            '<i class=\'fa fa-calculator\'></i> Calculate</a></div>';
+        })()}
       </div>
     </div>
   `;
 }
 
 function floorplanColorBarHTML(unit) {
-  if(!isFloorplanMapEnabled() && !checkFloorPlanColorMode()) return '';
-  
+  if (!isFloorplanMapEnabled() && !checkFloorPlanColorMode()) return '';
+
   const floorplanColors = getMarkerColor(unit);
   return `<div class="floorplan-color-bar" style="background-color: ${floorplanColors};"></div>`;
 }
 
 function floorplanAvailabilityBannerHTML(unit) {
-  if(!isFloorplanMapEnabled()) return '';
+  if (!isFloorplanMapEnabled()) return '';
   const config = getFloorplanConfigObject(unit);
   let bannerText = "";
   let bannerColor = "";
@@ -1473,7 +1517,7 @@ function floorplanAvailabilityBannerHTML(unit) {
       bannerColor = "#000000";
       break;
     default:
-      return ""; 
+      return "";
   }
 
   return `<div class="floorplan-banner" style="background-color: ${bannerColor};">${bannerText}</div>`;
@@ -1486,6 +1530,7 @@ function buildUnitMarkerHTML(unit, f) {
 
   const floorplanColorsConfig = getFloorplanConfigObject(unit);
   const propertyColorsConfig = getPropertyConfigObject(unit);
+  const bedroomColorsConfig = getBedroomConfigObject(unit);
 
   return `
     <a
@@ -1501,6 +1546,7 @@ function buildUnitMarkerHTML(unit, f) {
       data-pointer-data="${unit.pointer_data}"
       data-floorplan-config=${floorplanColorsConfig ? JSON.stringify(floorplanColorsConfig) : ''}
       data-by-property-colors=${propertyColorsConfig ? JSON.stringify(propertyColorsConfig) : ''}
+      data-bedroom-config=${bedroomColorsConfig ? JSON.stringify(bedroomColorsConfig) : ''}
       data-color-by=${unitDataAttributes["data-color-by"]}
       data-community-id="${unitDataAttributes["data-community-id"]}"
       data-website="${unitDataAttributes["data-website"]}"
@@ -1510,6 +1556,8 @@ function buildUnitMarkerHTML(unit, f) {
       data-available-date="${unitDataAttributes["data-available-date"]}"
       data-market-rent="${unitDataAttributes["data-market-rent"]}"
       data-total-market-rent="${unitDataAttributes["data-total-market-rent"]}"
+      data-pyn-estimated-monthly="${unitDataAttributes["data-pyn-estimated-monthly"]}"
+      data-pyn-estimated-monthly-max="${unitDataAttributes["data-pyn-estimated-monthly-max"]}"
       data-title="${unitDataAttributes["data-title"]}"
       data-unit-virtual-tour-label="${unitDataAttributes["data-unit-virtual-tour-label"]}"
       data-unit-virtual-tour-url="${unitDataAttributes["data-unit-virtual-tour-url"]}"
@@ -1525,6 +1573,7 @@ function buildUnitMarkerHTML(unit, f) {
       data-unit-lease-pricing="${unitDataAttributes["data-unit-lease-pricing"]}"
       data-unit-additional-fees="${unitDataAttributes["data-unit-additional-fees"]}"
       data-unit-description="${unitDataAttributes["data-unit-description"]}"
+      data-unit-description-title="${unitDataAttributes["data-unit-description-title"]}"
       data-property-id="${unitDataAttributes["data-property-id"]}"
       data-unit-status="${unitDataAttributes["data-unit-status"]}"
       data-model-unit="${unitDataAttributes["data-model-unit"]}"
@@ -1536,6 +1585,7 @@ function buildUnitMarkerHTML(unit, f) {
       data-bedrooms="${unitDataAttributes["data-bedrooms"]}"
       data-bathrooms="${unitDataAttributes["data-bathrooms"]}"
       data-floorplan-image="${unitDataAttributes["data-floorplan-image"]}"
+      data-secondary-image="${unitDataAttributes["data-secondary-image"]}"
       data-floor="${unitDataAttributes["data-floor"]}"
       data-sold="${unitDataAttributes["data-sold"]}"
       data-available="${unitDataAttributes["data-available"]}"
@@ -1560,7 +1610,7 @@ function buildAmenityMarkerHTML(amenity, f) {
   const amenityJsonString = JSON.stringify(amenity).replace(/'/g, "\\'");
   const amenityColor = hexToRgba(amenityConfig.color, amenityConfig.opacity)
 
-  return`
+  return `
     <a
       style="left: ${amenity.x_plot}px; top: ${amenity.y_plot}px; position: absolute;"
       class="a_${f} sitemap-amenity-marker amenity-marker slider-amenity amenityTooltip"
@@ -1582,7 +1632,7 @@ function buildAmenityMarkerHTML(amenity, f) {
         ></i>
       </span>
       <span class="amenitytooltiptext">
-        <h2 style="display: ${amenity.show_name ? "block": "none"}">${amenity.name}</h2>
+        <h2 style="display: ${amenity.show_name ? "block" : "none"}">${amenity.name}</h2>
         <img
           src="${amenity.image_url}"
           alt="${amenity.name}"
@@ -1653,7 +1703,7 @@ function carouselArrowsControl() {
 function openAmenityViewerModal(amenity) {
   selectedAmenity = amenity;
   selectedGalleries = amenity.galleries;
-  
+
   $(`#amenitySliderModal-${amenity.id || amenity.unitId}`).modal("show");
   bindCarousel(amenity.id);
 }
@@ -1693,7 +1743,29 @@ function onUnitClick(e) {
 function unitMarketRent(unit) {
   if (!unit.display_rent) return "";
 
-  return `${currency}${ unit.market_rent}/month`;
+  return `${currency}${unit.market_rent}/month`;
+}
+
+/**
+ * Returns the price string to show in the right rail for a unit.
+ * When the Pynwheel calculator is enabled and a precomputed estimated monthly
+ * total is available (server-rendered via unit_pyn_estimated_monthly), that is
+ * shown instead of the raw base rent so all surfaces stay in sync.
+ */
+function unitDisplayPrice(unit) {
+  if (!unit.display_rent) return "";
+  if (typeof enablePynwheelCalculator !== 'undefined' && enablePynwheelCalculator) {
+    var min = parseFloat(String(unit["pyn_estimated_monthly"]     || '0').replace(/,/g, '')) || 0;
+    var max = parseFloat(String(unit["pyn_estimated_monthly_max"] || '0').replace(/,/g, '')) || 0;
+    if (min > 0) {
+      var minStr = currency + min.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      if (max > min) {
+        return minStr + ' \u2013 ' + currency + max.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '/month';
+      }
+      return minStr + '/month';
+    }
+  }
+  return unitMarketRent(unit);
 }
 
 // function highlightFloorplanMarkersData(elementsArray, floorplanId = null) {
@@ -1809,9 +1881,9 @@ function unitBoxListHover() {
             markersArray.forEach((findOverlappedMarker) => {
               if (
                 selectedMarker.dataset.unitXPlot ===
-                  findOverlappedMarker.dataset.unitXPlot &&
+                findOverlappedMarker.dataset.unitXPlot &&
                 selectedMarker.dataset.unitYPlot ===
-                  findOverlappedMarker.dataset.unitYPlot &&
+                findOverlappedMarker.dataset.unitYPlot &&
                 !findOverlappedMarker.classList.contains("hidden")
               ) {
                 selectedMarker = findOverlappedMarker;
@@ -1820,22 +1892,45 @@ function unitBoxListHover() {
           }
 
           if (_3dMode) {
-            if(isFloorplanMapEnabled() || checkFloorPlanColorMode()) {
-              markerColor = getMarkerColor(_3dData);
-            } else {
-              markerColor = getUnitMarkerColor(_3dData);
-            }
+            markerColor = getUnitMarkerColor(_3dData);
           } else {
-            if(isFloorplanMapEnabled() || checkFloorPlanColorMode()) {
-              markerColor = getMarkerColor(selectedMarker.dataset);
-            } else {
-              markerColor = getUnitMarkerColor(selectedMarker.dataset);
-            }
+            markerColor = getUnitMarkerColor(selectedMarker.dataset);
           }
-            
+
           e.currentTarget.style.border = `3px solid ${markerColor}`;
 
-          if (_3dMode) return;
+          if (_3dMode) {
+            // Hide the full Beans popover unconditionally in 3D
+            $("#marker-popover").addClass("hidden");
+
+            // Only show the small unit-name pill when floorplan map mode is NOT active
+            if (!isFloorplanMapEnabled()) {
+              const $markerPopoverUnit = $("#marker-popover-unit");
+              $("#popover-marketing-unit").html(_3dData.unit || _3dData.name || "");
+              $(".popup-title, .popup-arrow").css("background-color", markerColor);
+
+              const unitPos = get3DUnitScreenPosition(_3dData.unitId);
+              let px, py;
+              if (unitPos && !isNaN(unitPos.x)) {
+                // Anchor centred above the unit's projected 3D position
+                px = unitPos.x;
+                py = unitPos.y;
+              } else {
+                // Fallback: shift left of cursor so tooltip sits over the map, not the right rail
+                const cursorPos = mouseTracker.getPosition();
+                px = cursorPos.x - 140;  // shift left toward map
+                py = cursorPos.y;
+              }
+
+              $markerPopoverUnit.removeClass("hidden");
+              $markerPopoverUnit.css({
+                visibility: "visible",
+                left: `${px - ($markerPopoverUnit.outerWidth() || 120) / 2}px`,
+                top: `${py - ($markerPopoverUnit.outerHeight() || 36) - 10}px`,
+              });
+            }
+            break;
+          }
 
           focused_marker = document.getElementById(selectedMarker.id);
           $(".popup-title, .popup-arrow").css("background-color", markerColor);
@@ -1843,7 +1938,7 @@ function unitBoxListHover() {
 
           const position = selectedMarker.getBoundingClientRect();
           let [left, top] = [position.left, position.top];
-          
+
           const $markerPopover = $("#marker-popover-unit");
           $markerPopover.removeClass("hidden");
           $markerPopover.css({
@@ -1872,7 +1967,7 @@ function unitBoxListHover() {
           left = left - leftAdjustment;
           top = top - topAdjustment;
 
-          if(!isFloorplanMapEnabled()) {
+          if (!isFloorplanMapEnabled()) {
             $markerPopover.css({
               visibility: "visible",
               left: `${left}px`,
@@ -1898,6 +1993,13 @@ function unitBoxListHover() {
       // 🟢 Reset all markers to their original colors when hover ends
       if (svgMode) {
         highlightFloorplanMarkersData(markersArray, null);
+      }
+
+      // 🔷 Restore 3D unit shape and hide tooltip
+      if (_3dMapMode()) {
+        unhighlight3DUnit();
+        $("#marker-popover-unit").addClass("hidden");
+        _3dHoveredItem = null;
       }
     }
   );
@@ -1941,9 +2043,9 @@ function markerHoverEffect(event, _3dData = null) {
   } else {
     $(".fav-heart").addClass("hidden");
   }
-  if(!isFloorplanMapEnabled())
+  if (!isFloorplanMapEnabled())
     $("#popover-marketing-name").html($this.data("unit-marketing-name") + "</b>");
-  
+
   $("#popover-floorplan").html($this.data("unit-description"));
 
   if (!canShowAdditionalFees($this.data("unit-additional-fees"))) {
@@ -1958,18 +2060,21 @@ function markerHoverEffect(event, _3dData = null) {
     $("#media-object").attr("src", "/assets/default.jpeg");
   }
   $("#popover-square-feet").html($this.data("square-feet"));
-  $("#popover-bathrooms").html($this.data("bathrooms"));
-  
-  if ($("#popover-bathrooms").html() == "1") {
-    $("#popover-bathrooms").siblings("small").html("Bathroom");
-  } else {
-    $("#popover-bathrooms").siblings("small").html("Bathrooms");
-  }
-  $("#popover-bedrooms").html($this.data("bedrooms"));
-  if ($("#popover-bedrooms").html() == "1") {
-    $("#popover-bedrooms").siblings("small").html("Bedroom");
-  } else {
-    $("#popover-bedrooms").siblings("small").html("Bedrooms");
+
+  if (!hide_bedrooms_bathrooms) {
+    $("#popover-bathrooms").html($this.data("bathrooms"));
+
+    if ($("#popover-bathrooms").html() == "1") {
+      $("#popover-bathrooms").siblings("small").html("Bathroom");
+    } else {
+      $("#popover-bathrooms").siblings("small").html("Bathrooms");
+    }
+    $("#popover-bedrooms").html($this.data("bedrooms"));
+    if ($("#popover-bedrooms").html() == "1") {
+      $("#popover-bedrooms").siblings("small").html("Bedroom");
+    } else {
+      $("#popover-bedrooms").siblings("small").html("Bedrooms");
+    }
   }
 
   setUnitHoverAvailability($this)
@@ -1977,13 +2082,22 @@ function markerHoverEffect(event, _3dData = null) {
 }
 
 function setHoverMarketRent($this) {
-  if(isFloorplanMapEnabled()) return;
+  if (isFloorplanMapEnabled()) return;
+  if (typeof enablePynwheelCalculator !== 'undefined' && enablePynwheelCalculator) {
+    var min = parseFloat(String($this.data('pyn-estimated-monthly')     || '0').replace(/,/g, '')) || 0;
+    var max = parseFloat(String($this.data('pyn-estimated-monthly-max') || '0').replace(/,/g, '')) || 0;
+    if (min > 0) {
+      var display = currency + min.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      if (max > min) display += ' \u2013 ' + currency + max.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      $("#popover-price").html(display);
+      return;
+    }
+  }
   $("#popover-price").html(currency + $this.data("marketRent"));
 }
 
-
 function setUnitHoverAvailability($this) {
-  if(isFloorplanMapEnabled()) {
+  if (isFloorplanMapEnabled()) {
     $("#hover-available-text").hide();
     return;
   }
@@ -1997,14 +2111,23 @@ function setUnitHoverAvailability($this) {
     return;
   }
 
-  const isUnoccupied = $this.data("availability") === "Unoccupied";
+  const isAvailable = $this.data("available");
+  const availability = $this.data("availability");
 
-  $text.html(isUnoccupied ? "Available" : "");
-  $date.html(
-    isUnoccupied
-      ? formattedDateByRegion(webCommunity.country_code, $this.data("available-date"))
-      : "Unavailable"
-  );
+  if (isAvailable) {
+    $text.html("Available");
+    $date.html(
+      formattedDateByRegion(
+        webCommunity.country_code,
+        $this.data("available-date")
+      )
+    );
+    return;
+  }
+
+  // fallback (occupied + no future date)
+  $text.html(availability === "Unoccupied" ? "Available" : "");
+  $date.html("Unavailable");
 }
 
 function markerHoverEffectEnd(event, $3dDataElement = null) {
@@ -2064,7 +2187,7 @@ function showUnitPopoverAndHighlightListUnit(
       parentHeight / 2 +
       elementHeight / 2;
 
-    if(!isFloorplanMapEnabled()) {
+    if (!isFloorplanMapEnabled()) {
       scrollableParent.scrollTo({
         top: scrollTop,
         behavior: "smooth",
@@ -2074,14 +2197,25 @@ function showUnitPopoverAndHighlightListUnit(
 
   const $markerPopup = $("#marker-popover");
   if (_3dMapMode()) {
-    const { x, y } = mouseTracker.getPosition();
+    // Try to anchor to the unit's actual 3D screen position; fall back to cursor
+    let x, y;
+    const unitPos = _3dData?.unitId ? get3DUnitScreenPosition(_3dData.unitId) : null;
+    if (unitPos && !isNaN(unitPos.x)) {
+      x = unitPos.x;
+      y = unitPos.y;
+    } else {
+      const cursorPos = mouseTracker.getPosition();
+      x = cursorPos.x;
+      y = cursorPos.y;
+    }
+
     const $beansMarkerPopover = $(
       "div.esri-ui-inner-container.esri-ui-manual-container > div.esri-component[role='presentation']"
     );
 
     $markerPopup.css({
-      left: x + 20 + "px",
-      top: y - 315 + "px",
+      left: x + 15 + "px",
+      top: y - 280 + "px",
     });
 
     $beansMarkerPopover.addClass("hidden");
@@ -2108,11 +2242,13 @@ function showUnitPopoverAndHighlightListUnit(
     $markerPopup.removeClass("hidden");
   }
 
-  if(!isFloorplanMapEnabled()) {
+  if (!isFloorplanMapEnabled()) {
     $($("#unit_" + $dataElement.data("unitId"))).css(
       "border",
       `3px solid ${markerColor}`
     );
+
+    $(".popup-title, .popup-arrow").css("background-color", markerColor);
   }
 }
 
@@ -2134,7 +2270,7 @@ function getUnitData(targetElement) {
         unitId: targetElement.dataset.unitId,
         pointerData: JSON.parse(closestUnit[0].dataset.pointerData) || {},
         unitMarketingName: closestUnit[0].dataset.unitMarketingName,
-        floorplanId:closestUnit[0].dataset.floorplanId
+        floorplanId: closestUnit[0].dataset.floorplanId
       };
     } else {
       return { id: null, pointerData: {}, unitMarketingName: null };
@@ -2165,7 +2301,7 @@ function setUnitModalButtons(e) {
       let $element = null;
       if (e.target.classList.contains(".right-rail-card"))
         $element = $(e.target);
-      else 
+      else
         $element = $(e.target).closest(".right-rail-card");
 
       if ($element.length) {
@@ -2174,7 +2310,7 @@ function setUnitModalButtons(e) {
         );
       }
     }
-    
+
     clickedUnit = filterBeansUnits().find(
       ({ options: { onClickData: { unitId } } = {} }) => unitId === e
     );
@@ -2184,21 +2320,25 @@ function setUnitModalButtons(e) {
 
 
     const floorbasedUnits = filterUnitsBasedOnCommunityType(units);
-    clickedUnit = floorbasedUnits.find( (unit) => unit.id === e);
+    clickedUnit = floorbasedUnits.find((unit) => unit.id === e);
 
     if (!clickedUnit) return;
-    
+
     if (svgMode) {
       filteredUnits = floorbasedUnits.filter(
         ({ floor, pointer_data: { selector, x_plot, y_plot } = {} }) =>
           selector === clickedUnit.pointer_data.selector && x_plot === clickedUnit.pointer_data.x_plot && y_plot === clickedUnit.pointer_data.y_plot && floor === clickedUnit.floor && validFloor(floor)
       );
     } else {
-      const [unitXPlot, unitYPlot] = [clickedUnit.x_plot, clickedUnit.y_plot];
-      filteredUnits = floorbasedUnits.filter(
-        ({ floor, x_plot, y_plot }) =>
-          unitXPlot === x_plot && unitYPlot === y_plot && floor === clickedUnit.floor && validFloor(floor)
-      );
+      if (!beanOnlyProperty) {
+        const [unitXPlot, unitYPlot] = [clickedUnit.x_plot, clickedUnit.y_plot];
+        filteredUnits = floorbasedUnits.filter(
+          ({ floor, x_plot, y_plot }) =>
+            unitXPlot === x_plot && unitYPlot === y_plot && floor === clickedUnit.floor && validFloor(floor)
+        );
+      } else {
+        filteredUnits = [clickedUnit]
+      }
     }
 
   } else if (svgMode) {
@@ -2233,7 +2373,7 @@ function setUnitModalButtons(e) {
     $unitButtons.removeClass("hidden");
   }
 
-    // SORT HERE 👇
+  // SORT HERE 👇
   filteredUnits.sort((a, b) => {
     const aTitle = a?.data_attributes?.["data-title"] || "";
     const bTitle = b?.data_attributes?.["data-title"] || "";
@@ -2408,7 +2548,7 @@ function change_units_view(evt, type) {
       maxWidth: `${unitListContainerWidth - 30 /* padding */}px`,
     });
   } else if (!_3dMapMode()) zoomReset();
-  
+
   adjustImageMapMarkersPosition();
 }
 
@@ -2427,11 +2567,12 @@ function set_yardirentcafe_url(element) {
 function set_psi_url(element) {
   let url = element.getAttribute("data-availability-url");
 
-  if (_3dMapMode()) {
-    const _3dData = get3dSelectedData();
-    url = _3dData.availabilityUrl;
-  }
+  // if (_3dMapMode()) {
+  //   const _3dData = get3dSelectedData();
+  //   url = _3dData.availabilityUrl;
+  // }
 
+  if (!url || url === "null") return;
   window.open(url, "_blank");
 }
 
@@ -2441,20 +2582,40 @@ function formatDateLocal(date) {
 }
 
 function setAppFolioUrl(element) {
-  var url = element.getAttribute("data-availability-url") 
-  if (_3dMapMode()) {
-    url =  _3dData.availabilityUrl
-  }
+  var url = element.getAttribute("data-availability-url")
+
+  // if (_3dMapMode()) {
+  //   url =  _3dData.availabilityUrl
+  // }
+
+  window.open(url, "_blank");
+}
+
+function setXmlProviderUrl(element) {
+  var url = element.getAttribute("data-availability-url")
+  // if (_3dMapMode()) {
+  //   url =  _3dData.availabilityUrl
+  // }
+
+  window.open(url, "_blank");
+}
+
+function setBeansProviderUrl(element) {
+  var url = element.getAttribute("data-availability-url")
+  // debugger;
+  // if (_3dMapMode()) {
+  //   url =  _3dData.availabilityUrl
+  // }
 
   window.open(url, "_blank");
 }
 
 function set_resman_url(element) {
-  var url = element.getAttribute("data-availability-url") 
+  var url = element.getAttribute("data-availability-url")
 
-  if (_3dMapMode()) {
-    url =  _3dData.availabilityUrl
-  }
+  // if (_3dMapMode()) {
+  //   url =  _3dData.availabilityUrl
+  // }
 
   window.open(url, "_blank");
 }
@@ -2497,8 +2658,8 @@ function set_realpagesvc_url(element) {
 function disable_rent_filter_options(min_rent) {
   min_rent = parseInt(min_rent);
   var select = document.getElementById("market_rent");
-  
-  if(!select) return;
+
+  if (!select) return;
 
   for (var i = 1; i < select.length; i++) {
     var option = select.options[i];
@@ -2514,7 +2675,7 @@ function disable_rent_filter_options(min_rent) {
 
 function disable_area_filter_options(max_area) {
   var select = document.getElementById("square_feet");
-  if(select) {
+  if (select) {
     for (var i = 1; i < select.length; i++) {
       var option = select.options[i];
       var option_area = option.value.split("-");
@@ -2537,7 +2698,7 @@ function canShowAdditionalFees(additional_fees) {
 function unitAdditionalFees(element) {
   const additional_fees = $(element).data("unit-additional-fees")
   hideFees();
-  
+
   try {
     if (canShowAdditionalFees(additional_fees)) {
       $("#unitModal").find(".c-modal-sidebar-fees").hide();
@@ -2579,11 +2740,11 @@ function adjustHeightForContentArea() {
 }
 
 function setAvailabilityStatus(element) {
-  if(isFloorplanMapEnabled()) {
+  if (isFloorplanMapEnabled()) {
     $('.availabilty-container-start').hide()
     return;
   }
-  
+
   const $el = $(element);
   const $modal = $("#unitModal");
 
@@ -2671,6 +2832,8 @@ function setUnitLeasePricing(element) {
 function setUnitDescription(element) {
   try {
     scroller = document.getElementById("overall-scroller");
+    var descTitle = $(element).data("unit-description-title") || "More Details";
+    $("#unitModal").find(".des-heading").text(descTitle);
     if ($(element).data("unit-description") == "") {
       $("#unitModal").find("#unit-description").html("Not Available");
       $("#unitModal").find(".c-modal-sidebar-description").hide();
@@ -2709,7 +2872,7 @@ function setUnitBedrooms(element) {
 
 function setUnitBathrooms(element) {
   $("#unitModal").find("#bathrooms").html($(element).data("bathrooms"));
-  
+
   if ($("#unitModal").find("#bathrooms").html() == "1") {
     $("#unitModal")
       .find("#bathrooms")
@@ -2761,24 +2924,59 @@ function setUnitFavourite(element) {
     });
 }
 
+var unitImages = null;
+var unitImageIdx = 0;
+
 function setFloorplanImage(element) {
-  const $el = $(element);
-  const imgSrc = $el.data("floorplan-image") || "";
-  const $modal = $("#unitModal");
+  var $el = $(element);
+  var imgSrc = $el.data("floorplan-image") || "";
+  var secondarySrc = $el.data("secondary-image") || "";
+  var defaultImg = "/assets/default.jpeg";
+  var finalImg = imgSrc || defaultImg;
+  var $modal = $("#unitModal");
+  var $imgs = $modal.find("#floorplan-image, #responsive-floorplan-image");
+  var $prev = $modal.find("#fp-prev-btn");
+  var $next = $modal.find("#fp-next-btn");
 
-  const defaultImg = "/assets/default.jpeg";
-  const finalImg = imgSrc !== "" ? imgSrc : defaultImg;
+  unitImages = null;
+  unitImageIdx = 0;
+  $imgs.attr("src", finalImg);
 
-  // Set images
-  $modal.find("#floorplan-image").attr("src", finalImg);
-  $modal.find("#responsive-floorplan-image").attr("src", finalImg);
+  var hasTwo = secondarySrc && secondarySrc !== finalImg && finalImg !== defaultImg;
+  if (hasTwo) {
+    unitImages = [finalImg, secondarySrc];
+    $prev.removeClass("hidden");
+    $next.removeClass("hidden");
+  } else {
+    unitImages = null;
+    $prev.addClass("hidden");
+    $next.addClass("hidden");
+  }
 
-  // Apply extra styles only for non-small screens and non-default image
   if (!smallScreen() && finalImg !== defaultImg) {
     $(".c-modal-sidebar-filters").addClass("c-modal-sidebar-filters-bottom");
     $(".c-m-iframe-content").addClass("c-m-iframe-content-bottom");
   }
 }
+
+function fpUnitPrev() {
+  if (!unitImages) { return; }
+  unitImageIdx = (unitImageIdx - 1 + unitImages.length) % unitImages.length;
+  $("#floorplan-image, #responsive-floorplan-image").attr("src", unitImages[unitImageIdx]);
+  resetToDefaultZoom();
+}
+
+function fpUnitNext() {
+  if (!unitImages) { return; }
+  unitImageIdx = (unitImageIdx + 1) % unitImages.length;
+  $("#floorplan-image, #responsive-floorplan-image").attr("src", unitImages[unitImageIdx]);
+  resetToDefaultZoom();
+}
+
+$(document).on("hidden.bs.modal", "#unitModal", function () {
+  unitImages = null;
+  unitImageIdx = 0;
+});
 
 function setDataProvider(element) {
   const $el = $(element);
@@ -2811,7 +3009,7 @@ function setDataProvider(element) {
 }
 
 function handleFavIconVisibility() {
-  if(isRightRailCardClicked && isFloorplanMapEnabled())
+  if ((isRightRailCardClicked && isFloorplanMapEnabled()) || isPartnerMap || isTouchMap)
     $("#fav-icon-tag").css("visibility", "hidden");
   else
     $("#fav-icon-tag").css("visibility", "");
@@ -2823,7 +3021,6 @@ function setModalAttributes(element) {
   }
 
   currentUnitSelected = element;
-
   setUnitLeasePricing(element);
   setUnitDescription(element);
   unitAdditionalFees(element);
@@ -2834,9 +3031,9 @@ function setModalAttributes(element) {
   addAdditionalButtonURL(element);
   addScheduledTourURL(element);
 
-  if(modalButtonsCounter > 2 && smallScreen())
+  if (modalButtonsCounter > 2 && smallScreen())
     adjustButtonFontSize();
-  
+
   setFloorplanName(element);
   setFloorplanBanner(element);
   setUnitSquareFeet(element);
@@ -2853,10 +3050,11 @@ function setModalAttributes(element) {
   resetToDefaultZoom();
   controlUnitButtonsVisibility();
   handleFavIconVisibility();
+  setEngrainCalculatorButton(element);
 }
 
 function controlUnitButtonsVisibility() {
-  if(isRightRailCardClicked && isFloorplanMapEnabled()) {
+  if (isRightRailCardClicked && isFloorplanMapEnabled()) {
     $(".unit-buttons").addClass("hidden");
   }
 }
@@ -2876,17 +3074,21 @@ function setFloorplanBanner(element) {
 
   // Prepend new banner
   const banner = floorplanAvailabilityBannerHTML(unit);
-  
+
   $(wrapperSelector).prepend(banner);
 }
 
-
 function handleApplyNowButtonVisibility(element) {
+  if (isTouchMap) {
+    $(".apply_now").hide();
+    return;
+  }
+
   const url = element.getAttribute("data-availability-url");
   const dataProvider = $(element).data("provider");
 
   if (dataProvider === "psi") {
-    if (url) {
+    if (url && url !== "null") {
       $("#psi-anchor-tag").show();
       // handleFloorplanApplyNowVisibility(element);
     }
@@ -2896,11 +3098,11 @@ function handleApplyNowButtonVisibility(element) {
 
 function handleFloorplanApplyNowVisibility(element) {
   const $el = $(element);
-  if(!isFloorplanMapEnabled()) return;
+  if (!isFloorplanMapEnabled()) return;
 
   const config = getFloorplanConfigObject(currentUnitSelected.dataset);
 
-  if(config.availability_status ===  "sold_out")
+  if (config.availability_status === "sold_out")
     $("#psi-anchor-tag").hide();
   else
     $("#psi-anchor-tag").show();
@@ -3180,19 +3382,16 @@ function leaseTermPricingOptions(ss) {
   var leaseTermOptions = "";
 
   for (let i = 0; i < lease_months_arr.length; ++i) {
-    leaseTermOptions += `<option value="${
-      lease_months_arr[i] + " months"
-    }" data-lease-price="${lease_price_arr[i]}" >${
-      lease_months_arr[i] + " months"
-    }</option>`;
+    leaseTermOptions += `<option value="${lease_months_arr[i] + " months"
+      }" data-lease-price="${lease_price_arr[i]}" >${lease_months_arr[i] + " months"
+      }</option>`;
   }
 
   $("#unitModal").find("#unit-lease-pricing").html(lease);
   $("#unitModal").find("#first-unit-lease-pricing").html(first_lease_item);
   $("#unitModal").find("#lease_term").html(leaseTermOptions);
   $(
-    `#lease_term option[value="${
-      first_lease_item[0] + first_lease_item[1] + " months"
+    `#lease_term option[value="${first_lease_item[0] + first_lease_item[1] + " months"
     }"]`
   ).attr("selected", true);
 }
@@ -3241,14 +3440,42 @@ function toggleFloorDirection(is3d) {
   }
 }
 
+function scrollSliderToFloor(floorId) {
+  var $slider = $('#slider');
+  if (!$slider.hasClass('slick-initialized')) return;
+
+  var $slide = $slider.find('a.floorplate-anchor[id="' + floorId + '"]').closest('.slick-slide');
+
+  if (!$slide.length) {
+    // Anchor is outside a slick-slide (e.g. "All" item moved by toggleFloorDirection) — go to top
+    $slider.slick('slickGoTo', 0, true);
+    return;
+  }
+
+  var slideIndex = parseInt($slide.attr('data-slick-index'));
+  if (isNaN(slideIndex) || slideIndex < 0) return;
+
+  var slidesToShow = $slider.slick('slickGetOption', 'slidesToShow') || 4;
+  var goTo = Math.max(0, slideIndex - slidesToShow + 1);
+  $slider.slick('slickGoTo', goTo, true);
+}
+
 function display3DMap() {
-  if(!extraSmallScreen())
+  if (!extraSmallScreen())
     toggleFloorDirection(true);
 
   $(".3d-map-option").addClass("hidden");
-  $(".location-items").addClass("hidden");
-  $(".plus-action").addClass("hidden");
-  $(".minus-action").addClass("hidden");
+  // In 3D, keep the footer color key visible only when it's the box-tile legend
+  // (by bedroom / SVG by property), so it matches the 2D layout. Hide it for ops
+  // maps (they use an in-map overlay) and for the pin/camera icon legend
+  // (image + by property), which should never show in 3D.
+  const hasTileLegend = $(".location-items .map-key--tile").length > 0;
+  if (opsMapMarkersEnabled || !hasTileLegend) $(".location-items").addClass("hidden");
+  // The amenity color key never shows in 3D (2D svg/image only).
+  $(".location-items .amenity-key").addClass("hidden");
+  $(".plus-action").not(".c-modal-footer *").addClass("hidden");
+  $(".minus-action").not(".c-modal-footer *").addClass("hidden");
+  $(".reset-map-btn").not(".c-modal-footer *").addClass("hidden");
   $(".image-map").addClass("hidden");
   $(".legend-item")
     .filter(function () {
@@ -3269,12 +3496,13 @@ function display3DMap() {
   $(".2d-map-option").removeClass("hidden");
   $("a.floorplate-anchor#all").click();
   resetMapData();
+  scrollSliderToFloor('all');
 }
 
 function display2DMap() {
-  if(!extraSmallScreen())
+  if (!extraSmallScreen())
     toggleFloorDirection(false);
-  
+
   $("._3d-apply-filter-button").addClass("hidden");
   $(".beans-map-container").addClass("hidden");
   $(".satelite-view-icon").addClass("hidden");
@@ -3295,11 +3523,15 @@ function display2DMap() {
     .removeClass("hidden");
   $(".image-map").removeClass("hidden");
   $(".location-items").removeClass("hidden");
-  $(".plus-action").removeClass("hidden");
-  $(".minus-action").removeClass("hidden");
+  // Restore the amenity color key that is hidden in 3D.
+  $(".location-items .amenity-key").removeClass("hidden");
+  $(".plus-action").not(".c-modal-footer *").removeClass("hidden");
+  $(".minus-action").not(".c-modal-footer *").removeClass("hidden");
+  $(".reset-modal").addClass("hidden");
   $(".3d-map-option").removeClass("hidden");
   $("a.floorplate-anchor#" + defaultSelectedFloor).click();
   resetMapData();
+  scrollSliderToFloor(defaultSelectedFloor);
 }
 
 function resetFilters(mobileTriggered = false) {
@@ -3309,7 +3541,7 @@ function resetFilters(mobileTriggered = false) {
   else resetBasedOnBedroom();
 
   setAvailabilityFilterToNow();
-  if (mobileTriggered && smallScreen()) $(".mobile-filter-mega-menu").slideToggle(); 
+  if (mobileTriggered && smallScreen()) $(".mobile-filter-mega-menu").slideToggle();
 }
 
 function resetBasedOnMultiCommunities() {
@@ -3399,7 +3631,7 @@ function updateActivityData(activityName, activityEvent) {
       url: `/communities/${community_id}/webpages/activity_tracking`,
       data: JSON.stringify(payload),
       contentType: "application/json",
-      success: function (response) {},
+      success: function (response) { },
     });
   }
 }
@@ -3706,13 +3938,12 @@ async function fetchWebpageSVGAndSetCoordinates() {
     const isFloorplate = hasFloorplate();
     const visibleCheck = isFloorplate
       ? img.id ===
-        `f_${current_floor === "all" ? defaultSelectedFloor : current_floor}`
+      `f_${current_floor === "all" ? defaultSelectedFloor : current_floor}`
       : img.id === "property-map-image";
 
     const asset = {
-      id: `image-${
-        isFloorplate ? "floorplate-" + img.id.replace("f_", "") : "sitemap-1"
-      }`,
+      id: `image-${isFloorplate ? "floorplate-" + img.id.replace("f_", "") : "sitemap-1"
+        }`,
       node: img,
       url: img.src,
       type: "img",
@@ -3936,8 +4167,8 @@ function setMarkersSizeAndMargin() {
   const mainMarkerSize = extraSmallScreen()
     ? markerFontSize * 0.33
     : smallScreen()
-    ? markerFontSize * 0.66
-    : markerFontSize;
+      ? markerFontSize * 0.66
+      : markerFontSize;
 
   const $marker = $(".unit_marker");
   const $markerSpans = $marker.children();
@@ -4014,9 +4245,8 @@ function setMarkersSizeAndMargin() {
     $amenityMarkerSpans.css({
       maxWidth: spanSize,
       maxHeight: spanSize,
-      border: `${
-        extraSmallScreen() ? 1 : smallScreen() ? 1.5 : 2
-      }px solid ${amenity_marker_color}`,
+      border: `${extraSmallScreen() ? 1 : smallScreen() ? 1.5 : 2
+        }px solid ${amenity_marker_color}`,
     });
 
     const cameraIconSpanSize = spanSize * 0.5;
@@ -4044,9 +4274,8 @@ function setMarkersSizeAndMargin() {
 
 function currentMapImage() {
   const parentSelector = hasFloorplate()
-    ? `div#floorplate_${
-        current_floor === "all" ? defaultSelectedFloor : current_floor
-      }`
+    ? `div#floorplate_${current_floor === "all" ? defaultSelectedFloor : current_floor
+    }`
     : `div#property-map`;
   const currentVisibleImage = Array.from(
     document.querySelectorAll(
@@ -4090,9 +4319,9 @@ function getUnitMarkerColor(unit) {
 
   const unitCommunityId = unit.property_id || unit.propertyId || "";
   const unitStatus = unit.unit_status || unit.unitStatus || unit.status || "";
-  let result = getCommunityBasedMarkerColor(unitCommunityId);
 
   if (opsMapMarkersEnabled) {
+    let result = getCommunityBasedMarkerColor(unitCommunityId);
     if (isModelUnit(unit)) {
       result = mapMarkerColors.model || "#f57396";
     } else {
@@ -4123,14 +4352,16 @@ function getUnitMarkerColor(unit) {
           break;
       }
     }
+    return toHexColor(result);
   }
 
-  if(isFloorplanMapEnabled() || checkFloorPlanColorMode()) {
-    result = getMarkerColor(unit);
-    return result;
+  // Marketing Map: multi-community uses sub-community-specific colors
+  if (multiCommunity) {
+    return toHexColor(getCommunityBasedMarkerColor(unitCommunityId));
   }
 
-  return toHexColor(result);
+  // Marketing Map: always derive color from Marketing Map settings (by_floorplan or by_property)
+  return getMarkerColor(unit);
 }
 
 function hexToRgba(hex, opacity = 1) {
@@ -4151,22 +4382,24 @@ function hexToRgba(hex, opacity = 1) {
 
 function isModelUnit(unit) {
   const modelUnit = unit.model_unit || unit.modelUnit || false;
-  
+
   return typeof modelUnit === "boolean"
     ? modelUnit
     : typeof modelUnit === "string"
-    ? modelUnit === "true"
-    : false;
+      ? modelUnit === "true"
+      : false;
 }
 
 function getMarkerColor(unit) {
-  const colorBy = unit.colorBy || unit.data_attributes['data-color-by'] || "by_floorplan";
+  const colorBy = unit.colorBy || (unit.data_attributes && unit.data_attributes['data-color-by']) || "by_floorplan";
 
   switch (colorBy) {
     case "by_floorplan":
       return getColorByFloorplan(unit);
     case "by_property":
       return getColorByProperty(unit);
+    case "by_bedroom":
+      return getColorByBedroom(unit);
     default:
       return map_marker_color || "#d37474";
   }
@@ -4174,7 +4407,7 @@ function getMarkerColor(unit) {
 
 function getColorByFloorplan(unit) {
   const DEFAULT_COLOR = "#d37474";
-  
+
   const config = getFloorplanConfigObject(unit);
 
   if (!config) return hexToRgba(DEFAULT_COLOR, 1);
@@ -4205,6 +4438,23 @@ function getColorByProperty(unit) {
   return hexToRgba(color, opacity);
 }
 
+function getColorByBedroom(unit) {
+  const DEFAULT_COLOR = "#d37474";
+
+  const config = getBedroomConfigObject(unit);
+
+  if (!config) return hexToRgba(DEFAULT_COLOR, 1);
+
+  const isModel = isModelUnit(unit);
+  const colorKey = isModel ? "model_units_color" : "available_units_color";
+  const opacityKey = isModel ? "model_units_opacity" : "available_units_opacity";
+
+  const color = config[colorKey] || DEFAULT_COLOR;
+  const opacity = config[opacityKey] ?? 1; // using nullish coalescing for 0 handling
+
+  return hexToRgba(color, opacity);
+}
+
 function getPropertyConfigObject(unit) {
   const parseConfig = (config) => {
     if (!config) return null;
@@ -4212,8 +4462,22 @@ function getPropertyConfigObject(unit) {
   };
 
   return (
-    parseConfig(unit.byPropertyColors) ||  
+    parseConfig(unit.byPropertyColors) ||
     parseConfig(unit.data_attributes?.["data-by-property-colors"]) ||
+    null
+  );
+}
+
+function getBedroomConfigObject(unit) {
+  const parseConfig = (config) => {
+    if (!config) return null;
+    return typeof config === "object" ? config : safeJsonParse(config);
+  };
+
+  return (
+    parseConfig(unit.bedroomMapConfig) ||                                 // case 1: dataset (camelCased)
+    parseConfig(unit.bedroomConfig) ||                                    // case 2: alternate key
+    parseConfig(unit.data_attributes?.["data-bedroom-map-config"]) ||     // case 3: data attribute
     null
   );
 }
@@ -4273,3 +4537,183 @@ function checkFloorPlanColorMode() {
     (isFloorPlanColorEnabled) && !opsMapMarkersEnabled
   );
 }
+
+// ─── Engrain SightMap Expense Calculator ──────────────────────────────────────
+
+/**
+ * Opens the Engrain SightMap expense calculator in a modal iframe.
+ * @param {string} unitNumber - The unit marketing name / number to pass to the calculator.
+ * @param {boolean} fromUnitModal - If true, shows a "Back to Unit" button in the modal.
+ */
+function openExpenseCalculator(calculatorUrl, fromUnitModal) {
+  if (!calculatorUrl) return;
+
+  // Create iframe dynamically so it doesn't affect page layout when not in use
+  var body = document.querySelector('#pricingCalculatorModal .engrain-calc-body');
+  if (body) {
+    var iframe = document.createElement('iframe');
+    iframe.id = 'engrainCalcIframe';
+    iframe.className = 'engrain-calc-iframe';
+    iframe.src = calculatorUrl;
+    iframe.frameBorder = '0';
+    iframe.allowFullscreen = true;
+    body.innerHTML = '';
+    body.appendChild(iframe);
+  }
+
+  // Show the calculator
+  $('#pricingCalculatorModal').modal('show');
+}
+
+/**
+ * Called from the "Calculate Cost" button inside the unit modal.
+ * Hides the unit modal first, then opens the calculator.
+ */
+function openExpenseCalculatorFromModal() {
+  // Get pricing_calculator_url from the button (set by setEngrainCalculatorButton)
+  var calcUrl = $('.calculate-cost-btn').attr('data-pricing-calculator-url') || '';
+  if (!calcUrl) return;
+
+  openExpenseCalculator(calcUrl, false);
+}
+
+/**
+ * Closes the calculator modal and re-opens the unit modal.
+ * Called by the "← Back" button in the calculator modal.
+ */
+function closeCalculatorGoBackToUnit() {
+  // Destroy the iframe to stop any media/network activity
+  var body = document.querySelector('#pricingCalculatorModal .engrain-calc-body');
+  if (body) body.innerHTML = '';
+
+  $('#pricingCalculatorModal').modal('hide');
+}
+
+/**
+ * Shows or hides the "Calculate Cost" button inside the unit modal
+ * based on whether the current community has an Engrain embed ID.
+ */
+function setEngrainCalculatorButton(element) {
+  var $calcBtns = $('.calculate-cost-btn');
+  var calcUrl = '';
+
+  // Resolve unit ID from the element — supports data-unit-id, id="unit_XXX", id="s_XXX"
+  var unitId = null;
+  if (element) {
+    unitId = $(element).data('unit-id') || null;
+    if (!unitId) {
+      var elId = element.id || '';
+      var m = elId.match(/^(?:unit_|s_)(\d+)$/) || $(element).closest('[id^="unit_"]').attr('id')?.match(/^unit_(\d+)$/);
+      if (m) unitId = parseInt(m[1]);
+    }
+  }
+
+  // Pynwheel takes priority if enabled
+  if (typeof enablePynwheelCalculator !== 'undefined' && enablePynwheelCalculator && unitId) {
+    calcUrl = '/communities/' + webCommunity.id + '/pricing_calculators/unit?unit_id=' + unitId;
+  }
+
+  // Fall back to Engrain if Pynwheel not enabled
+  if (!calcUrl) {
+    if (element) calcUrl = $(element).data('pricing-calculator-url') || '';
+    if (!calcUrl && unitId && typeof units !== 'undefined') {
+      var unit = units.find(function (u) { return u.id === unitId; });
+      if (unit) calcUrl = unit['pricing_calculator_url'] || '';
+    }
+  }
+
+  if (calcUrl) {
+    $calcBtns.attr('data-pricing-calculator-url', calcUrl).removeClass('hidden');
+  } else {
+    $calcBtns.removeAttr('data-pricing-calculator-url').addClass('hidden');
+  }
+
+  // Show total monthly estimate — values are always server-precomputed via Unit#pyn_estimated_monthly
+  var rawMin = element ? String($(element).data('pyn-estimated-monthly')     || '0') : '0';
+  var rawMax = element ? String($(element).data('pyn-estimated-monthly-max') || '0') : '0';
+  var precomputedMin = parseFloat(rawMin.replace(/,/g, '')) || 0;
+  var precomputedMax = parseFloat(rawMax.replace(/,/g, '')) || 0;
+  updatePynTotalMonthlyDisplay(precomputedMin, precomputedMax);
+}
+
+// ─── Pynwheel Calculator: Total Monthly Fee Display ──────────────────────────
+
+/**
+ * Shows the server-precomputed total monthly estimate in #pyn-total-monthly-fees
+ * (unit modal). The value is always provided by the backend (Unit#pyn_estimated_monthly)
+ * via the data-pyn-estimated-monthly attribute — no client-side calculation needed.
+ *
+ * Handles both credential branches:
+ *  - .filter-action  (apply_now == "true" / "separate_link" branches)
+ *  - .disabaled-apply-now  (else / no-credential branch)
+ */
+function updatePynTotalMonthlyDisplay(precomputedMin, precomputedMax) {
+  var $row = $('#pyn-total-monthly-fees');
+  if (!$row.length) return;
+
+  if (typeof enablePynwheelCalculator === 'undefined' || !enablePynwheelCalculator) {
+    $row.hide();
+    $('#unitModal .fix-text').show();
+    return;
+  }
+
+  if (typeof display_rent !== 'undefined' && display_rent === 'false') {
+    $row.hide();
+    return;
+  }
+
+  // Resolve the footer price container — .filter-action has priority; fall back to
+  // .disabaled-apply-now for communities with no apply-now credential.
+  var $container = $('#unitModal .filter-action');
+  if (!$container.length) $container = $('#unitModal .disabaled-apply-now');
+  if (!$container.length) return;
+
+  var $baseRentDisplay = $container.find('.fix-text');
+
+  // Move #pyn-total-monthly-fees into the container (prepend = before the buttons).
+  // jQuery moves the element so no duplicate; guard prevents re-prepend on re-open.
+  if (!$container.find('#pyn-total-monthly-fees').length) {
+    $container.prepend($row);
+  }
+
+  $baseRentDisplay.hide();
+
+  if (!precomputedMin || precomputedMin <= 0) {
+    $row.hide();
+    $baseRentDisplay.show();
+    $container.removeClass('pyn-price-shown');
+    return;
+  }
+
+  var fmt = function(n) { return currency + n.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}); };
+  var label = (precomputedMax && precomputedMax > precomputedMin)
+    ? fmt(precomputedMin) + ' \u2013 ' + fmt(precomputedMax) + ' /month'
+    : fmt(precomputedMin) + ' /month';
+
+  $('#pyn-total-monthly-value').text(label);
+  $container.addClass('pyn-price-shown');
+
+  // For the no-apply-now container, force row layout inline so price + button
+  // sit side-by-side (flex-direction:column on the base class fights CSS overrides).
+  if ($container.hasClass('disabaled-apply-now')) {
+    $container.css({
+      'flexDirection': 'row',
+      'flexWrap': 'nowrap',
+      'alignItems': 'center',
+      'justifyContent': 'space-between',
+      'textAlign': 'left',
+      'padding': '12px 16px',
+      'gap': '12px'
+    });
+    // flex-basis:0% + minWidth:0 prevents the block div from sizing to container
+    // width (auto), so it shares the row with the button instead of pushing it off.
+    $row.css({ 'display': 'block', 'flex': '1 1 0%', 'minWidth': '0', 'marginBottom': '0' });
+  } else {
+    $row.css('display', 'block');
+  }
+}
+
+// Favorites modal total monthly is now server-rendered via unit_pyn_estimated_monthly helper.
+
+// ──────────────────────────────────────────────────────────────────────────────
+

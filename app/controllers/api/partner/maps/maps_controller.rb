@@ -17,9 +17,8 @@ module Api
         private
 
         def load_registered_data
-          @map_partners = MapPartner.where(api_key: @api_key)
-          @communities  = Community.where(id: @map_partners.pluck(:community_id).compact.uniq)
-          @companies    = Company.where(id: @communities.pluck(:company_id).compact.uniq)
+          @communities = Community.for_partner(@partner)
+          @companies   = Company.where(id: @communities.pluck(:company_id).compact.uniq)
         end
 
         def formatted_response
@@ -38,7 +37,11 @@ module Api
           {
             id: community.id,
             name: community.name,
-            address: community.make_address,
+            zip: community.zip,
+            city: community.city,
+            state: community.state,
+            address: community.address,
+            full_address: community.make_address,
             partner: @partner,
             map_embed_code: community.map_embed_code(@partner),
             map_link: community.map_link(@partner)

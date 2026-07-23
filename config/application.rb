@@ -33,9 +33,15 @@ module PynwheelCms
     config.middleware.insert_before 0, Rack::Cors do
       allow do
         origins '*'
-        resource '*', headers: :any, methods: [:get, :post, :options , :patch, :put , :delete]
+        resource '*',
+          headers: :any,
+          methods: [:get, :post, :options, :patch, :put, :delete],
+          max_age:  7200
       end
     end
+
+    config.middleware.insert_after ActionDispatch::Static, Rack::Deflater
+    config.middleware.use Rack::Attack
     
     unless Rails.env.development?
       # ========TAIM LOGGING WITH LOGRAGGE========

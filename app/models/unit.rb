@@ -77,7 +77,7 @@ class Unit < ApplicationRecord
     "vacant unrented ready"
   ]
 
-  validates :effective_rent, :numericality => { :greater_than => 0, :less_than => 100000001 }, :length => { :maximum => 11}
+  # validates :effective_rent, :numericality => { :greater_than => 0, :less_than => 100000001 }, :length => { :maximum => 11}
   validates_uniqueness_of :provider_unit_id, scope: :community_id
   # validates_uniqueness_of :marketing_name, scope: :community_id
   has_many :amenities, as: :amenityable
@@ -99,60 +99,110 @@ class Unit < ApplicationRecord
   has_one :tour_stop, as: :stop, dependent: :destroy
   
   scope :visible_units, -> {where(visible: true)}
-  
+
+  # Excludes units matching HIDE_UNIT_PATTERN by name, for units synced since the
+  # last units:hide_wait_units run that have not had `visible` flipped yet.
+  scope :without_hidden_names, -> {
+    where("marketing_name IS NULL OR LOWER(marketing_name) NOT LIKE ?", "%#{HIDE_UNIT_PATTERN}%")
+  }
+
   scope :has_pointer_x_plot, -> { where("pointer_data->>'x_plot' IS NOT NULL AND (pointer_data->>'x_plot')::integer > ?", 0) }
   scope :has_pointer_y_plot, -> { where("pointer_data->>'y_plot' IS NOT NULL AND (pointer_data->>'y_plot')::integer > ?", 0) }
   scope :svg_pointed, -> { has_pointer_x_plot.or(has_pointer_y_plot) }
 
-  scope :are_sold, ->(svg_enabled = false) { 
+  scope :are_sold, ->(svg_enabled = false) {
     sold_units_query = where(sold: true)
 
-    if svg_enabled
-      sold_units_query.svg_pointed
-    else
-      sold_units_query.where("x_plot > ? or y_plot > ?", 0, 0)
-    end
+    # if svg_enabled
+    #   sold_units_query.svg_pointed
+    # else
+    #   sold_units_query.where("x_plot > ? or y_plot > ?", 0, 0)
+    # end
+    # Always return data regardless of plotting coordinates
+    sold_units_query
   }
 
-  scope :past_available_units, ->(svg_enabled = false) { 
+  scope :past_available_units, ->(svg_enabled = false) {
     available_units_query = where("availability = ? and available_date <= ?", "Unoccupied", Date.today)
 
-    if svg_enabled
-      available_units_query.svg_pointed
-    else
-      available_units_query.where("x_plot > ? or y_plot > ?", 0, 0)
-    end
+    # if svg_enabled
+    #   available_units_query.svg_pointed
+    # else
+    #   available_units_query.where("x_plot > ? or y_plot > ?", 0, 0)
+    # end
+    # Always return data regardless of plotting coordinates
+    available_units_query
   }
 
-  scope :has_x_plot, ->(svg_enabled = false) {
-    available_units_query = where("available_date > ? and available_date < ? and available = ?", Date.today, Date.today + 2.year,true)
+  # Single source of truth for "available now", shared by the SDK payload's
+  # available_now flag and the availability filter's "Now" option, so the label a
+  # unit renders can never disagree with the filter bucket it falls into.
+  # A missing available_date counts as now, matching the filter's Date.new(0) default.
+  def available_now?
+    return false unless available
 
-    if svg_enabled
-      available_units_query.has_pointer_x_plot
-    else
-      available_units_query.where("x_plot > ?", 0)
+    (available_date || Date.new(0)) <= Date.today
+  end
+
+  # Which availability filter bucket this unit falls into, matching the old map's
+  # day-offset windows (webpages.js filterUnitsBasedOnDate). Assigning the bucket
+  # here — rather than re-deriving it in the browser — keeps the filter options and
+  # the units they match in agreement, and keeps "today" on the property's clock.
+  # Returns nil for unavailable units, which belong to no bucket.
+  def availability_bucket
+    return nil unless available
+    return "now" if available_now?
+
+    case (available_date - Date.today).to_i
+    when 1..30    then "0-30"
+    when 31..60   then "31-60"
+    when 61..90   then "61-90"
+    when 91..120  then "91-120"
+    else "121+"
     end
+  end
+
+  scope :has_x_plot, ->(svg_enabled = false) {
+    available_units_query = where("available_date > ? and available_date < ? and available = ?", Date.today, Date.today + 2.year, true)
+
+    # if svg_enabled
+    #   available_units_query.has_pointer_x_plot
+    # else
+    #   available_units_query.where("x_plot > ?", 0)
+    # end
+    # Always return data regardless of x_plot coordinates
+    available_units_query
   }
 
   scope :has_y_plot, ->(svg_enabled = false) {
-    available_units_query = where("available_date > ? and available_date < ? and available = ?", Date.today, Date.today + 2.year,true)
+    available_units_query = where("available_date > ? and available_date < ? and available = ?", Date.today, Date.today + 2.year, true)
 
-    if svg_enabled
-      available_units_query.has_pointer_y_plot
-    else
-      available_units_query.where("y_plot > ?", 0)
-    end
-   }
+    # if svg_enabled
+    #   available_units_query.has_pointer_y_plot
+    # else
+    #   available_units_query.where("y_plot > ?", 0)
+    # end
+    # Always return data regardless of y_plot coordinates
+    available_units_query
+  }
   scope :plotted_units, ->(svg_enabled = false) {
+    # Always return data regardless of plotting status
+    # if svg_enabled
+    #   has_x_plot(svg_enabled).or(has_y_plot(svg_enabled))
+    # else
+    #   has_x_plot(svg_enabled).or(has_y_plot(svg_enabled))
+    # end
     has_x_plot(svg_enabled).or(has_y_plot(svg_enabled))
   }
 
-  scope :are_plotted_units, ->(svg_enabled = false) { 
-    if svg_enabled
-      svg_pointed
-    else
-      where("x_plot > ? or y_plot > ?", 0, 0)
-    end
+  scope :are_plotted_units, ->(svg_enabled = false) {
+    # if svg_enabled
+    #   svg_pointed
+    # else
+    #   where("x_plot > ? or y_plot > ?", 0, 0)
+    # end
+    # Always return all units regardless of plotting status
+    all
   }
 
   scope :vacant_and_available, ->(svg_enabled = false) {
@@ -205,7 +255,9 @@ class Unit < ApplicationRecord
   scope :map_units, -> (community, show_ops_map = false) {
     svg_enabled = community.enable_svg_mode?
 
-    if community.turn_availability_on && !show_ops_map
+    if community.data_provider === "beans"
+      community.units
+    elsif community.turn_availability_on && !show_ops_map
       are_plotted_units(svg_enabled)
     elsif show_ops_map
       are_plotted_units(svg_enabled).status_scoped(true)
@@ -262,6 +314,30 @@ class Unit < ApplicationRecord
     rescue
       ActionView::Base.full_sanitizer.sanitize(stop_description)
     end
+  end
+
+  def pricing_calculator_url
+    if community.enable_pynwheel_pricing_calculator?
+      base_url = Rails.env.development? ? "http://localhost:3000" : (ENV["RAILS_ENV"] == "staging" ? "https://pynwheel-staging.herokuapp.com" : "https://pynwheelconnect.com") 
+      "#{base_url}/communities/#{community.id}/pricing_calculators/unit?unit_id=#{id}"
+    elsif community.enable_pricing_calculator? && community.pricing_calculator_embed_code.present?
+      "https://sightmap.com/embed/#{community.pricing_calculator_embed_code}?unit_number=#{marketing_name}&mode=expense_calculator"
+    else
+      nil
+    end
+  end
+
+  # Returns the minimum estimated monthly total (base rent + min of mandatory monthly fees).
+  # When the calculator is off returns plain base rent. Use alongside pyn_estimated_monthly_max
+  # to determine whether a range should be displayed.
+  def pyn_estimated_monthly
+    _pyn_monthly_pair[:min]
+  end
+
+  # Returns the maximum estimated monthly total (base rent + max of mandatory monthly fees).
+  # Equal to pyn_estimated_monthly when no fee uses Range pricing logic.
+  def pyn_estimated_monthly_max
+    _pyn_monthly_pair[:max]
   end
 
   def get_schedule_tour_label
@@ -578,5 +654,42 @@ class Unit < ApplicationRecord
 
   def svg_coordinates
     pointer_data.is_a?(Hash) ? pointer_data.values_at('x_plot', 'y_plot').map(&:to_i) : [0, 0]
+  end
+
+  private
+
+  # Single pass through the calculator config, memoized per request.
+  # Returns { min: Float, max: Float }.
+  # max > min only when at least one mandatory monthly fee uses Range pricing.
+  def _pyn_monthly_pair
+    @_pyn_monthly_pair ||= _compute_pyn_monthly_pair
+  end
+
+  def _compute_pyn_monthly_pair
+    base = get_market_rent.to_f
+    return { min: base, max: base } unless community.enable_pynwheel_pricing_calculator?
+    return { min: base, max: base } if community.calculator_config.nil?
+
+    config    = community.calculator_config.config_json || {}
+    extra_min = 0.0
+    extra_max = 0.0
+
+    (config["buckets"] || []).each do |bucket|
+      fee_type = bucket["feeType"]
+      (bucket["categories"] || []).each do |category|
+        (category["fees"] || []).each do |fee|
+          next if fee["isBasePrice"]
+          freq = fee["feeFrequency"] || (fee_type == "one_time" ? "One-Time" : "Monthly")
+          next if freq == "One-Time" || freq == "Situational"
+          mult = fee["multiplier"] || (fee["perApplicant"] ? "Per Applicant" : fee["perPet"] ? "Per Pet" : "None")
+          next if !fee["isMandatoryDefault"] && mult == "None"
+          next if mult == "Per Pet"
+          extra_min += fee["baseMinPrice"].to_f
+          extra_max += fee["baseMaxPrice"].present? ? fee["baseMaxPrice"].to_f : fee["baseMinPrice"].to_f
+        end
+      end
+    end
+
+    { min: base + extra_min, max: base + extra_max }
   end
 end

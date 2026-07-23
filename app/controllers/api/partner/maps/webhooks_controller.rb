@@ -2,7 +2,10 @@ module Api
   module Partner
     module Maps
       class WebhooksController < BaseController
-        
+
+        # Partner that is only allowed to see SVG-enabled properties.
+        SVG_ONLY_PARTNER = "apartments".freeze
+
         before_action :load_property_for_units, only: [:units]
 
         # --------------------------------------------------
@@ -12,8 +15,9 @@ module Api
           property_id = params[:propertyId].to_s
 
           if property_id.present?
-            # FAST: Fetch only 1 record, no scopes
-            community = Community.select(:id, :name, :company_id, :address, :city, :state, :zip)
+            # FAST: Fetch only 1 record, scoped to this partner's enabled properties
+            community = partner_properties_scope
+                                 .select(:id, :name, :company_id, :address, :city, :state, :zip)
                                  .find_by(id: property_id)
 
             unless community
@@ -48,9 +52,20 @@ module Api
           # --------------------------------------------------
           # LIST ALL PROPERTIES — optimized
           # --------------------------------------------------
-          communities = Community.active_client_properties
+          communities = partner_properties_scope
+                                 .active_client_properties
                                  .select(:id, :name, :company_id, :address, :city, :state, :zip)
                                  .includes(:company)
+
+          # SAFETY: partner has no enabled properties yet
+          if communities.empty?
+            return render json: {
+              propertiesList: [],
+              message: "No properties are configured for this partner yet.",
+              status: "success",
+              code: 200
+            }
+          end
 
           properties_list = communities.map do |c|
             {
@@ -81,7 +96,7 @@ module Api
           unit_id = params[:unitId].to_s
 
           if unit_id.present?
-            unit = @community.units.find_by(id: unit_id)
+            unit = partner_units_scope.find_by(id: unit_id)
 
             unless unit
               return render json: {
@@ -99,7 +114,10 @@ module Api
             }
           end
 
-          units_list = @community.units.map { |u| format_unit(u, @community) }
+          units_list = partner_units_scope
+            .sort_by { |u| -u.created_at.to_i }
+            .uniq(&:marketing_name)
+            .map { |u| format_unit(u, @community) }
 
           render json: {
             unitsList: units_list,
@@ -110,6 +128,21 @@ module Api
         end
 
         private
+
+        # Units exposed to partners: hidden units and anything matching
+        # HIDE_UNIT_PATTERN by name are never returned.
+        def partner_units_scope
+          @community.units.visible_units.without_hidden_names
+        end
+
+        # Base scope of properties this partner may access.
+        # Apartments.com only receives properties with SVG mode enabled;
+        # every other partner sees all of their enabled properties.
+        def partner_properties_scope
+          scope = Community.for_partner(@partner)
+          scope = scope.where(enable_svg_mode: true) if @partner == SVG_ONLY_PARTNER
+          scope
+        end
 
         # --------------------------------------------------
         # FAST loader for property used in units API
@@ -125,9 +158,8 @@ module Api
             }, status: :bad_request
           end
 
-          @community = Community
+          @community = partner_properties_scope
                         .select(:id, :is_sitemap)
-                        .includes(:units)
                         .find_by(id: property_id)
 
           if @community.nil?

@@ -945,6 +945,9 @@ function selectDataProvider(data_provider) {
     case "appfolio":
       showAppFolioFields();
       break;
+    case "beans":
+      showBeansFields();
+      break;
     case "realpagesvc":
       showRealPageSVCFields();
       break;
@@ -975,6 +978,11 @@ function selectDataProvider(data_provider) {
   }
 }
 
+function showBeansFields() {
+  $(".credential_fields").hide();
+  $("#apartmentlist_url").show();
+}
+
 function showAppFolioFields() {
   $(".credential_fields").hide();
   $("#app_folio_database_id").show();
@@ -998,6 +1006,8 @@ function onAppFolioPropertyScopeChange(selectEl) {
     $("#app_folio_property_id").hide();
     $("#app_folio_property_group_id").show();
   }
+
+  submitSettingFormOnChange();
 }
 
 function showPsiFields(){

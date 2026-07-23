@@ -55,8 +55,8 @@ class PsiSwapService < BaseService
       end
     
       fill_psi_pricing_details(limit_result)
-      rename_provider()
     end
+    rename_provider()
   end
 
   def save_psi_units(units, property_id, limit_result)
@@ -64,14 +64,19 @@ class PsiSwapService < BaseService
 
       vacateDate = ""
 
-      unit = Unit.find_by(community_id: @credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"])#.first_or_initialize
-      
+      unit = Unit.find_by(community_id: @credentials.community_id, provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"])
+
       unless unit.present?
-        unit = Unit.find_by(community_id: @credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s)#.first_or_initialize
+        unit = Unit.find_by(community_id: @credentials.community_id, provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s)
       end
 
       unless unit.present?
-        unit = Unit.find_by(community_id: @credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s)#.first_or_initialize
+        unit = Unit.find_by(community_id: @credentials.community_id, provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s)
+      end
+
+      # Fallback: match by unit number when Entrata internal IDs have changed (e.g. switching Entrata systems)
+      unless unit.present?
+        unit = Unit.find_by(community_id: @credentials.community_id, marketing_name: u["Units"]["Unit"]["MarketingName"], provider: "psi")
       end
 
       if unit.present?
@@ -245,6 +250,7 @@ class PsiSwapService < BaseService
 
           floorplan.market_rent = f["MarketRent"]["@attributes"]["Max"]
         end
+        add_floorplan_images(floorplan, f['File'])
         floorplan.save
       else
         floorplan = Floorplan.new
@@ -285,11 +291,24 @@ class PsiSwapService < BaseService
           floorplan.market_rent = f["MarketRent"]["@attributes"]["Max"]
         end
 
+        add_floorplan_images(floorplan, f['File'])
         floorplan.save
       end
     end
 
 
+  end
+
+  def add_floorplan_images fp, image_urls
+    primary_image = fetch_floorplan_image_url(image_urls, 0)
+    secondary_image = fetch_floorplan_image_url(image_urls, 1)
+    fp.image = image_base64(primary_image) if primary_image.present?
+    fp.secondary_image = image_base64(secondary_image) if secondary_image.present?
+  end
+
+  def fetch_floorplan_image_url image_urls, index
+    return unless image_urls.present?
+    image_urls[index]['Src'] rescue nil
   end
 
   def fill_psi_pricing_details limit_result
@@ -480,7 +499,7 @@ class PsiSwapService < BaseService
     ActiveRecord::Type::Boolean.new.cast(@credentials&.entrata_show_unit_spaces)
   end
 
-  def get_units_pricing property_id, move_in_datemove_in_date
+  def get_units_pricing property_id, move_in_date, limit_result
     response = PsiService.call_entrata_api(
       subdomain: @credentials.entrata_url,
       endpoint: "propertyunits",
@@ -496,10 +515,10 @@ class PsiSwapService < BaseService
     JSON.parse(response.body)
   end
 
-  def get_pricing_params property_id, move_in_date
+  def get_pricing_params property_id, move_in_date, limit_result
     {
       propertyId: property_id,
-      availableUnitsOnly: limit_result, #@credentials&.entrata_available_units_only,
+      availableUnitsOnly: limit_result,
       showUnitSpaces: @credentials&.entrata_show_unit_spaces,
       useSpaceConfiguration: @credentials&.entrata_use_space_configuration,
     }.merge(move_in_date_param(move_in_date))

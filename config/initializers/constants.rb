@@ -188,6 +188,13 @@ REPORTS = [
     partner_list: ["apartmentlist", "rent"]
   },
   {
+    title: "Partners Performance Report",
+    path: "partners_performance_report",
+    has_date_range: true,
+    partner: true,
+    partner_list: ["apartmentlist", "rent"]
+  },
+  {
     title: "Partner Floor Level Map URLs Report",
     path: "export_floor_map_urls",
     has_date_range: false,
@@ -197,6 +204,13 @@ REPORTS = [
   {
     title: "Properties Without Map Sessions Last 30 Days",
     path: "maps_no_session_report",
+    has_date_range: false,
+    partner: false,
+    partner_list: []
+  },
+  {
+    title: "Apartmentlist Maps Report",
+    path: "apartmentlist_maps_report",
     has_date_range: false,
     partner: false,
     partner_list: []
