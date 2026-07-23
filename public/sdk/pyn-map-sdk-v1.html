@@ -571,7 +571,7 @@
         <span>Units: <strong id="st-units">—</strong></span>
         <span>Floors: <strong id="st-floors">—</strong></span>
         <span>Amenities: <strong id="st-amenities">—</strong></span>
-        <span>Favs: <strong id="st-favs">—</strong></span>
+        <span>Favorites: <strong id="st-favorites">—</strong></span>
       </div>
 
       <!-- Zoom -->
@@ -706,7 +706,7 @@
           <button class="btn" onclick="callGetFavorites()">getFavorites()</button>
           <button class="btn danger" onclick="callClearFavorites()">clearFavorites()</button>
         </div>
-        <div class="result-box hidden" id="favs-result"></div>
+        <div class="result-box hidden" id="favorites-result"></div>
       </div>
 
     </div><!-- /methods-tab -->
@@ -829,7 +829,7 @@
     if (document.getElementById("cb-onFavoriteChange").checked)
       cfg.onFavoriteChange = (id, isFav) => {
         logEvent("onFavoriteChange", { unitId: id, isFavorite: isFav });
-        document.getElementById("st-favs").textContent = (PynMapSDK.getFavorites?.() || []).length;
+        document.getElementById("st-favorites").textContent = (PynMapSDK.getFavorites?.() || []).length;
       };
 
     return cfg;
@@ -839,7 +839,7 @@
     resetSingleton();
     document.getElementById("sdk-stats").classList.add("hidden");
     document.getElementById("units-result").classList.add("hidden");
-    document.getElementById("favs-result").classList.add("hidden");
+    document.getElementById("favorites-result").classList.add("hidden");
     setStatus("loading", "Loading…");
     clearLog();
 
@@ -867,7 +867,7 @@
     document.getElementById("st-units").textContent    = units.length;
     document.getElementById("st-floors").textContent   = floors.join(", ") || "—";
     document.getElementById("st-amenities").textContent= amenities.length;
-    document.getElementById("st-favs").textContent     = (SDK.getFavorites?.() || []).length;
+    document.getElementById("st-favorites").textContent     = (SDK.getFavorites?.() || []).length;
     document.getElementById("sdk-stats").classList.remove("hidden");
 
     // Auto-fill hints
@@ -1055,15 +1055,15 @@
     if (!id) { logEvent("error", "Enter a unitId", true); return; }
     PynMapSDK.toggleFavorite(id);
     logEvent("toggleFavorite()", { unitId: id });
-    document.getElementById("st-favs").textContent = (PynMapSDK.getFavorites?.() || []).length;
+    document.getElementById("st-favorites").textContent = (PynMapSDK.getFavorites?.() || []).length;
   }
 
   function callGetFavorites() {
     if (!requireSDK()) return;
-    const favs = PynMapSDK.getFavorites?.() || [];
-    logEvent("getFavorites()", favs);
-    const box = document.getElementById("favs-result");
-    box.textContent = `${favs.length} favorite(s): ${favs.join(", ") || "none"}`;
+    const favorites = PynMapSDK.getFavorites?.() || [];
+    logEvent("getFavorites()", favorites);
+    const box = document.getElementById("favorites-result");
+    box.textContent = `${favorites.length} favorite(s): ${favorites.join(", ") || "none"}`;
     box.classList.remove("hidden");
   }
 
@@ -1071,8 +1071,8 @@
     if (!requireSDK()) return;
     PynMapSDK.clearFavorites?.();
     logEvent("clearFavorites()", null);
-    document.getElementById("st-favs").textContent = "0";
-    document.getElementById("favs-result").classList.add("hidden");
+    document.getElementById("st-favorites").textContent = "0";
+    document.getElementById("favorites-result").classList.add("hidden");
   }
 
   // ── Responsive: config panel drawer ──────────────────────────────────────────

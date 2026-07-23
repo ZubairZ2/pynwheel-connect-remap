@@ -3,15 +3,15 @@ class MapFilter < ApplicationRecord
 
   def get_filters_list
     [
-      { name: "Properties",  marketing: :marketing_properties_enabled,  ops: :ops_properties_enabled },
-      { name: "Bedrooms",    marketing: :marketing_bedrooms_enabled,    ops: :ops_bedrooms_enabled },
-      { name: "Pricing",     marketing: :marketing_pricing_enabled,     ops: :ops_pricing_enabled },
-      { name: "Square Feet", marketing: :marketing_square_feet_enabled, ops: :ops_square_feet_enabled },
-      { name: "Availability",marketing: :marketing_availability_enabled,ops: :ops_availability_enabled },
-      { name: "Units",       marketing: :marketing_units_tab_enabled,      ops: :ops_units_tab_enabled },
-      { name: "Floor Plans", marketing: :marketing_floorplans_tab_enabled, ops: :ops_floorplans_tab_enabled },
-      { name: "Amenities",   marketing: :marketing_amenities_tab_enabled,  ops: :ops_amenities_tab_enabled },
-      { name: "Favs",        marketing: :marketing_favorites_tab_enabled,  ops: :ops_favorites_tab_enabled }
+      { name: "Properties",   marketing: :marketing_properties_enabled,  ops: :ops_properties_enabled },
+      { name: "Bedrooms",     marketing: :marketing_bedrooms_enabled,    ops: :ops_bedrooms_enabled },
+      { name: "Pricing",      marketing: :marketing_pricing_enabled,     ops: :ops_pricing_enabled },
+      { name: "Square Feet",  marketing: :marketing_square_feet_enabled, ops: :ops_square_feet_enabled },
+      { name: "Availability", marketing: :marketing_availability_enabled,ops: :ops_availability_enabled },
+      { name: "Units",        marketing: :marketing_units_tab_enabled,      ops: :ops_units_tab_enabled },
+      { name: "Floor Plans",  marketing: :marketing_floorplans_tab_enabled, ops: :ops_floorplans_tab_enabled },
+      { name: "Amenities",    marketing: :marketing_amenities_tab_enabled,  ops: :ops_amenities_tab_enabled },
+      { name: "Favorites",    marketing: :marketing_favorites_tab_enabled,  ops: :ops_favorites_tab_enabled }
     ]
   end
 
