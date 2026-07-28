@@ -1,0 +1,158 @@
+- content_for :title, "SVG Optimizer — Properties"
+
+- state_labels = { "not_started" => "Not optimized", "in_progress" => "Optimizing…", "done" => "Optimized", "partial" => "Partly optimized", "done_with_errors" => "Done with errors", "not_applicable" => "No targets" }
+
+:css
+  .svgopt-p { max-width: 1180px; margin: 0 auto; padding: 30px 20px 80px; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #2b2f36; }
+  .svgopt-p h1 { font-size: 26px; font-weight: 600; margin: 0 0 6px; }
+  .svgopt-p .lede { color: #6b7280; font-size: 14px; line-height: 1.6; max-width: 820px; margin: 0 0 22px; }
+
+  .svgopt-p .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+  .svgopt-p .toolbar input[type="text"] { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; min-width: 200px; }
+  .svgopt-p .toolbar select { padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; background: #fff; }
+  .svgopt-p .muted { color: #6b7280; font-size: 13px; }
+
+  .svgopt-p .btn { display: inline-block; border: none; border-radius: 6px; padding: 8px 15px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; white-space: nowrap; }
+  .svgopt-p .btn-primary { background: #3558e8; color: #fff; }
+  .svgopt-p .btn-primary:hover { background: #2946c4; color: #fff; }
+  .svgopt-p .btn-ghost { background: #f1f5f9; color: #334155; }
+  .svgopt-p .btn-ghost:hover { background: #e2e8f0; }
+
+  .svgopt-p .table-wrap { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); overflow-x: auto; }
+  .svgopt-p table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .svgopt-p thead th { text-align: left; background: #f9fafb; color: #6b7280; font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; padding: 11px 16px; border-bottom: 1px solid #eef0f3; white-space: nowrap; }
+  .svgopt-p tbody td { padding: 13px 16px; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
+  .svgopt-p tbody tr:last-child td { border-bottom: none; }
+  .svgopt-p tbody tr:hover { background: #fafbfc; }
+  .svgopt-p .p-name { font-weight: 600; color: #111827; }
+  .svgopt-p .p-id { color: #9ca3af; font-size: 12px; margin-left: 6px; font-weight: 400; }
+  .svgopt-p .p-company { color: #374151; }
+  .svgopt-p .type-tag { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 6px; background: #f1f5f9; color: #475569; }
+  .svgopt-p td.right { text-align: right; }
+
+  .svgopt-p .pill { display: inline-block; padding: 3px 11px; border-radius: 20px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .svgopt-p .pill.not_started, .svgopt-p .pill.not_applicable { background: #f1f5f9; color: #64748b; }
+  .svgopt-p .pill.in_progress { background: #fef3c7; color: #92400e; }
+  .svgopt-p .pill.done { background: #dcfce7; color: #15803d; }
+  .svgopt-p .pill.partial { background: #e0e7ff; color: #3730a3; }
+  .svgopt-p .pill.done_with_errors { background: #fee2e2; color: #b91c1c; }
+  .svgopt-p .pill .cnt { opacity: 0.75; font-weight: 500; margin-left: 4px; }
+
+  .svgopt-p .empty { text-align: center; color: #9ca3af; padding: 60px 20px; }
+
+.svgopt-p
+  %h1 SVG Background Optimizer — Properties
+  %p.lede
+    Bulk-optimize the live floorplate/sitemap SVGs real renters' maps load. Open a property to
+    review a full before/after breakdown and visual preview of every map, then commit the write —
+    each preceded by a byte-verified backup, so anything can be reverted.
+
+  %form.toolbar{method: "get", action: svg_optimizer_properties_path}
+    %input{type: "text", name: "q", value: params[:q], placeholder: "Property name…"}
+    %input{type: "text", name: "company", value: params[:company], placeholder: "Company…"}
+    %select{name: "type"}
+      %option{value: ""} All types
+      %option{value: "floorplate", selected: params[:type] == "floorplate"} Floorplates
+      %option{value: "sitemap", selected: params[:type] == "sitemap"} Site map
+    %select{name: "state"}
+      %option{value: ""} All statuses
+      - %w[not_started partial done in_progress done_with_errors].each do |st|
+        %option{value: st, selected: params[:state] == st}= state_labels[st]
+    %button.btn.btn-ghost{type: "submit"} Filter
+    - if params[:q].present? || params[:company].present? || params[:type].present? || params[:state].present?
+      %a.btn.btn-ghost{href: svg_optimizer_properties_path} Clear
+
+  - if @properties.empty?
+    .empty No eligible properties found.
+  - else
+    %p.muted= "#{@properties.size} propert#{@properties.size == 1 ? 'y' : 'ies'}"
+
+    .table-wrap
+      %table
+        %thead
+          %tr
+            %th Property
+            %th Company
+            %th Type
+            %th Maps
+            %th Status
+            %th
+        %tbody
+          - @properties.each do |row|
+            - community = row[:community]
+            - rollup = row[:rollup]
+            - has_targets = rollup[:total].to_i > 0
+            %tr{"data-community-id" => community.id, "data-status-url" => svg_optimizer_status_path(community.id)}
+              %td
+                %span.p-name= community.name.presence || "Community ##{community.id}"
+              %td.p-company= community.company&.name.presence || "—"
+              %td
+                %span.type-tag= community.is_sitemap? ? "Site map" : "Floorplates"
+              %td= rollup[:total]
+              %td.js-status
+                - if rollup[:state] == "in_progress"
+                  %span.pill.in_progress
+                    Optimizing…
+                    %span.cnt= "#{rollup[:done]}/#{rollup[:total]}"
+                - elsif rollup[:state] == "partial"
+                  %span.pill.partial
+                    Partly optimized
+                    %span.cnt= "#{rollup[:done]}/#{rollup[:total]}"
+                - elsif rollup[:state] == "done_with_errors"
+                  %span.pill.done_with_errors
+                    Done with errors
+                    %span.cnt= "#{rollup[:failed]} failed"
+                - else
+                  %span.pill{class: rollup[:state]}= state_labels[rollup[:state]] || rollup[:state]
+              %td.right
+                - if has_targets
+                  = link_to "Review & Optimize", svg_optimizer_review_path(community.id), class: "btn btn-primary"
+
+:javascript
+  (function () {
+    var polling = {};      // communityId -> interval id
+    var pollStart = {};
+    var MAX_POLL_MS = 10 * 60 * 1000;
+
+    var STATE_LABELS = {
+      not_started: "Not optimized", in_progress: "Optimizing…", done: "Optimized",
+      partial: "Partly optimized", done_with_errors: "Done with errors", not_applicable: "No targets"
+    };
+
+    function statusHtml(r) {
+      if (r.state === "in_progress") return "<span class='pill in_progress'>Optimizing…<span class='cnt'>" + r.done + "/" + r.total + "</span></span>";
+      if (r.state === "partial") return "<span class='pill partial'>Partly optimized<span class='cnt'>" + r.done + "/" + r.total + "</span></span>";
+      if (r.state === "done_with_errors") return "<span class='pill done_with_errors'>Done with errors<span class='cnt'>" + r.failed + " failed</span></span>";
+      return "<span class='pill " + r.state + "'>" + (STATE_LABELS[r.state] || r.state) + "</span>";
+    }
+
+    function refresh(rowEl) {
+      return fetch(rowEl.getAttribute("data-status-url"))
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (!data.success) return;
+          rowEl.querySelector(".js-status").innerHTML = statusHtml(data.rollup);
+          if (data.rollup.state !== "in_progress") stopPolling(rowEl);
+        })
+        .catch(function () {});
+    }
+
+    function startPolling(rowEl) {
+      var id = rowEl.getAttribute("data-community-id");
+      if (polling[id]) return;
+      pollStart[id] = Date.now();
+      polling[id] = setInterval(function () {
+        if (Date.now() - pollStart[id] > MAX_POLL_MS) { stopPolling(rowEl); return; }
+        refresh(rowEl);
+      }, 3500);
+    }
+    function stopPolling(rowEl) {
+      var id = rowEl.getAttribute("data-community-id");
+      if (polling[id]) { clearInterval(polling[id]); delete polling[id]; }
+    }
+
+    // Keep any in-progress rows live without a manual refresh.
+    document.querySelectorAll("tr[data-community-id]").forEach(function (rowEl) {
+      if (rowEl.querySelector(".pill.in_progress")) startPolling(rowEl);
+    });
+  })();

@@ -20,6 +20,17 @@ Rails.application.routes.draw do
   get 'tour_users/index'
   get '/error', to: 'error_logs#generate_error', as: 'error_logs_generate'
   get '/error_page', to: 'error_logs#error_page', as: 'error_page'
+  get '/tools/svg_optimizer', to: 'svg_optimizer#show', as: 'svg_optimizer'
+  post '/tools/svg_optimizer/optimize', to: 'svg_optimizer#optimize', as: 'svg_optimizer_optimize'
+  # Phase 2 — production bulk optimize + revert
+  get  '/tools/svg_optimizer/properties', to: 'svg_optimizer#properties', as: 'svg_optimizer_properties'
+  get  '/tools/svg_optimizer/properties/:community_id/review', to: 'svg_optimizer#review', as: 'svg_optimizer_review'
+  get  '/tools/svg_optimizer/properties/:community_id/analyze', to: 'svg_optimizer#analyze', as: 'svg_optimizer_analyze'
+  post '/tools/svg_optimizer/properties/:community_id/optimize', to: 'svg_optimizer#run_optimize', as: 'svg_optimizer_run_optimize'
+  post '/tools/svg_optimizer/properties/:community_id/revert_all', to: 'svg_optimizer#run_revert_all', as: 'svg_optimizer_revert_all'
+  get  '/tools/svg_optimizer/properties/:community_id/status', to: 'svg_optimizer#status', as: 'svg_optimizer_status'
+  post '/tools/svg_optimizer/runs/:id/revert', to: 'svg_optimizer#revert', as: 'svg_optimizer_revert'
+  post '/tools/svg_optimizer/runs/:id/requeue', to: 'svg_optimizer#requeue', as: 'svg_optimizer_requeue'
   post :create_tour_user_from, to: 'schedual_tours#create_tour_user_from'
   get :community_custom_tour, to: 'schedual_tours#community_custom_tour'
 

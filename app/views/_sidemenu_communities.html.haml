@@ -47,6 +47,15 @@
                   %span.pull-right-container
       - if (current_user.is_super_admin? || current_user.is_dwelo_admin? || current_user.is_company_admin? || current_user.is_regional_admin?)
         %li{:class=>"#{controller_name =='users' ? 'active' : ''}"}
-          = link_to company_employees_path(current_company) do 
+          = link_to company_employees_path(current_company) do
             %i.fa.fa-user
             %span Users
+      - if current_user.is_super_admin?
+        %li{:class=>"#{controller_name =='svg_optimizer' && action_name == 'show' ? 'active' : ''}"}
+          = link_to svg_optimizer_path do
+            %i.fa.fa-compress
+            %span SVG Optimizer
+        %li{:class=>"#{controller_name =='svg_optimizer' && action_name != 'show' ? 'active' : ''}"}
+          = link_to svg_optimizer_properties_path do
+            %i.fa.fa-bolt
+            %span SVG Optimize (Live)

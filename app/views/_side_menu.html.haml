@@ -61,6 +61,16 @@
             %i.fa.fa-tv
             %span Design
 
+      - if current_user.is_super_admin?
+        %li.loader_class{:class=>"#{controller_name =='svg_optimizer' && action_name == 'show' ? 'active' : ''}"}
+          = link_to svg_optimizer_path do
+            %i.fa.fa-compress
+            %span SVG Optimizer
+        %li.loader_class{:class=>"#{controller_name =='svg_optimizer' && action_name != 'show' ? 'active' : ''}"}
+          = link_to svg_optimizer_properties_path do
+            %i.fa.fa-bolt
+            %span SVG Optimize (Live)
+
       - if (current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_company_admin? || current_user.is_regional_admin? ) && current_community.mdu
         %li.loader_class{:class=>"#{controller_name =='settings' ? 'active' : ''}"}
           %a{:href => "#{community_settings_path(current_community)}"}

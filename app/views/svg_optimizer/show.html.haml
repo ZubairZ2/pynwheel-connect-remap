@@ -1,0 +1,357 @@
+- content_for :title, "SVG Optimizer"
+
+:css
+  .svgopt { max-width: 1000px; margin: 0 auto; padding: 30px 20px 60px; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #2b2f36; }
+  .svgopt h1 { font-size: 26px; font-weight: 600; margin: 0 0 6px; }
+  .svgopt .lede { color: #6b7280; font-size: 14px; line-height: 1.6; max-width: 720px; margin: 0 0 28px; }
+
+  .svgopt .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); padding: 24px; margin-bottom: 24px; }
+  .svgopt .card h3, .svgopt .card h4 { margin-top: 0; font-weight: 600; }
+  .svgopt .card h4 { font-size: 15px; color: #374151; margin: 28px 0 12px; }
+  .svgopt .card h4:first-child { margin-top: 0; }
+
+  .svgopt .field { margin-bottom: 18px; }
+  .svgopt label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+  .svgopt input[type="text"], .svgopt input[type="file"] { width: 100%; max-width: 480px; padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box; }
+  .svgopt input[type="text"]:focus { outline: none; border-color: #4f7cff; box-shadow: 0 0 0 3px rgba(79,124,255,0.15); }
+  .svgopt .or-divider { display: flex; align-items: center; color: #9ca3af; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; margin: 4px 0 18px; max-width: 480px; }
+  .svgopt .or-divider::before, .svgopt .or-divider::after { content: ""; flex: 1; border-top: 1px solid #e5e7eb; }
+  .svgopt .or-divider span { padding: 0 10px; }
+
+  .svgopt .btn-primary { background: #3558e8; color: #fff; border: none; padding: 10px 22px; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .svgopt .btn-primary:hover { background: #2946c4; }
+  .svgopt .btn-primary:disabled { background: #9ca3af; cursor: not-allowed; }
+  .svgopt .btn-success { background: #16a34a; color: #fff; border: none; padding: 10px 22px; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .svgopt .btn-success:hover { background: #128a3e; }
+  .svgopt .spinner-text { margin-left: 12px; color: #6b7280; font-size: 13px; }
+
+  .svgopt .error-box { display: none; background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; padding: 14px 16px; border-radius: 8px; font-size: 14px; margin-bottom: 24px; }
+
+  .svgopt .stat-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+  .svgopt .stat-card { flex: 1; min-width: 160px; border-radius: 8px; padding: 16px 18px; }
+  .svgopt .stat-card.stat-original { background: #f3f4f6; }
+  .svgopt .stat-card.stat-optimized { background: #eef2ff; }
+  .svgopt .stat-card.stat-reduction { background: #ecfdf5; }
+  .svgopt .stat-label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: #6b7280; font-weight: 600; margin-bottom: 6px; }
+  .svgopt .stat-value { display: block; font-size: 26px; font-weight: 700; color: #111827; }
+  .svgopt .stat-card.stat-reduction .stat-value { color: #16a34a; }
+
+  .svgopt table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .svgopt table th { text-align: left; background: #f9fafb; color: #374151; font-weight: 600; padding: 9px 12px; border-bottom: 2px solid #e5e7eb; }
+  .svgopt table td { padding: 9px 12px; border-bottom: 1px solid #f0f1f3; }
+  .svgopt table tbody tr:hover { background: #fafbfc; }
+
+  .svgopt .notes-list { list-style: none; padding: 0; margin: 0; }
+  .svgopt .notes-list li { background: #f8fafc; border-left: 3px solid #94a3b8; padding: 10px 14px; border-radius: 4px; font-size: 13.5px; color: #334155; margin-bottom: 8px; line-height: 1.5; }
+
+  .svgopt .badge { display: inline-block; padding: 2px 9px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+  .svgopt .badge-optimized { background: #dcfce7; color: #15803d; }
+  .svgopt .badge-skipped { background: #f1f5f9; color: #64748b; }
+  .svgopt .badge-failed { background: #fee2e2; color: #b91c1c; }
+
+  .svgopt .preview-hint { font-size: 13px; color: #6b7280; margin: -4px 0 16px; }
+  .svgopt .preview-row { display: flex; gap: 16px; flex-wrap: wrap; }
+  .svgopt .preview-pane { flex: 1; min-width: 300px; }
+  .svgopt .preview-label { display: block; font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+  .svgopt .preview-frame {
+    background-image: linear-gradient(45deg, #eee 25%, transparent 25%), linear-gradient(-45deg, #eee 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #eee 75%), linear-gradient(-45deg, transparent 75%, #eee 75%);
+    background-size: 16px 16px;
+    background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+    border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px; height: 340px;
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+  }
+  .svgopt .preview-frame img { max-width: 100%; max-height: 100%; object-fit: contain; cursor: zoom-in; }
+  .svgopt .preview-frame { position: relative; }
+  .svgopt .expand-hint {
+    position: absolute; top: 8px; right: 8px; background: rgba(17,24,39,0.65); color: #fff;
+    width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center;
+    font-size: 14px; pointer-events: none; opacity: 0; transition: opacity 0.15s;
+  }
+  .svgopt .preview-frame:hover .expand-hint { opacity: 1; }
+
+  .svgopt .download-row { margin-top: 24px; text-align: right; }
+
+  .svgopt .lightbox-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(15,17,21,0.9); z-index: 9999;
+    align-items: center; justify-content: center; cursor: zoom-out; padding: 30px;
+  }
+  .svgopt .lightbox-overlay.open { display: flex; }
+  .svgopt .lightbox-overlay img { max-width: 95vw; max-height: 95vh; object-fit: contain; box-shadow: 0 10px 40px rgba(0,0,0,0.5); background: #fff; }
+  .svgopt .lightbox-close {
+    position: absolute; top: 20px; right: 28px; color: #fff; font-size: 32px; line-height: 1;
+    cursor: pointer; opacity: 0.8;
+  }
+  .svgopt .lightbox-close:hover { opacity: 1; }
+
+.svgopt
+  .content-header
+    %h1 SVG Background Optimizer
+    %p.lede
+      Upload a floorplate or sitemap SVG to see how much its embedded background image(s)
+      can be shrunk, with an estimated load-time improvement. Nothing is uploaded to S3 or
+      saved anywhere — this runs entirely in memory for this request, and the only output
+      is a downloadable optimized copy.
+
+  .card
+    %form#svg-optimizer-form
+      .field
+        %label{for: "svg_file"} SVG file
+        %input#svg_file{type: "file", name: "svg_file", accept: ".svg,image/svg+xml"}
+      .or-divider
+        %span or
+      .field
+        %label{for: "svg_url"} Paste a URL to an SVG (e.g. an S3 link)
+        %input#svg_url{type: "text", name: "svg_url", placeholder: "https://.../floorplate.svg"}
+      %button#optimize-btn.btn-primary{type: "button"} Optimize
+      %span#optimize-spinner.spinner-text{style: "display:none;"}
+        Processing…
+
+  #error-box.error-box
+
+  #results-box{style: "display:none;"}
+    .card
+      %h3 Result
+
+      .stat-row
+        .stat-card.stat-original
+          %span.stat-label Original size
+          %span#stat-original.stat-value —
+        .stat-card.stat-optimized
+          %span.stat-label Optimized size
+          %span#stat-optimized.stat-value —
+        .stat-card.stat-reduction
+          %span.stat-label Reduction
+          %span#stat-reduction.stat-value —
+
+      %h4 Estimated download time
+      %table
+        %thead
+          %tr
+            %th Connection
+            %th Before
+            %th After
+            %th Saved
+        %tbody#transfer-table
+
+      %h4 What improved / what didn't
+      %ul#notes-list.notes-list
+
+      %h4 Embedded images found
+      %table
+        %thead
+          %tr
+            %th #
+            %th Name
+            %th Dimensions
+            %th Format
+            %th Decoded size
+            %th Result
+        %tbody#images-table
+
+      %h4 Visual preview — original vs. optimized
+      %p.preview-hint
+        Layout, positions, and unit polygons should look pixel-identical. Some softening in the
+        background photo is expected (that's the WebP re-encode); anything else looking different
+        is a bug.
+      .preview-row
+        .preview-pane
+          %span.preview-label Original
+          .preview-frame
+            %img#preview-original
+            %span.expand-hint ⤢
+        .preview-pane
+          %span.preview-label Optimized
+          .preview-frame
+            %img#preview-optimized
+            %span.expand-hint ⤢
+
+      .download-row
+        %button#download-btn.btn-success{type: "button"} Download optimized SVG
+
+  #lightbox-overlay.lightbox-overlay
+    %span.lightbox-close ×
+    %img#lightbox-img
+
+:javascript
+  (function () {
+    var fileInput = document.getElementById("svg_file");
+    var urlInput = document.getElementById("svg_url");
+    var optimizeBtn = document.getElementById("optimize-btn");
+    var spinner = document.getElementById("optimize-spinner");
+    var errorBox = document.getElementById("error-box");
+    var resultsBox = document.getElementById("results-box");
+    var downloadBtn = document.getElementById("download-btn");
+    var lastResult = null;
+    var lastFilename = "optimized.svg";
+
+    function formatKb(bytes) {
+      return (bytes / 1024).toFixed(1) + " KB";
+    }
+
+    function formatMs(ms) {
+      if (ms >= 1000) return (ms / 1000).toFixed(2) + " s";
+      return ms + " ms";
+    }
+
+    function svgToDataUri(svgText) {
+      // Loaded via <img>, not innerHTML — browsers render <img>-sourced SVG
+      // in a non-scripting context, so this is safe even though the SVG
+      // content itself comes from an arbitrary upload/URL.
+      var base64 = btoa(unescape(encodeURIComponent(svgText)));
+      return "data:image/svg+xml;base64," + base64;
+    }
+
+    function escapeHtml(str) {
+      var div = document.createElement("div");
+      div.textContent = str == null ? "" : String(str);
+      return div.innerHTML;
+    }
+
+    function showError(message) {
+      errorBox.textContent = message;
+      errorBox.style.display = "block";
+      resultsBox.style.display = "none";
+    }
+
+    function badgeFor(img) {
+      if (img.action === "optimized") {
+        return "<span class='badge badge-optimized'>WebP " + img.webp_kb + "KB (-" + img.reduction_pct + "%)</span>";
+      }
+      if (img.action === "skipped_below_threshold") {
+        return "<span class='badge badge-skipped'>Skipped (already small)</span>";
+      }
+      return "<span class='badge badge-failed'>Failed: " + escapeHtml(img.error || "unknown error") + "</span>";
+    }
+
+    function renderResults(result) {
+      errorBox.style.display = "none";
+      lastResult = result;
+
+      document.getElementById("stat-original").textContent = formatKb(result.original_bytes);
+      document.getElementById("stat-optimized").textContent = formatKb(result.optimized_bytes);
+      document.getElementById("stat-reduction").textContent = result.reduction_pct + "%";
+
+      var transferBody = document.getElementById("transfer-table");
+      transferBody.innerHTML = "";
+      Object.keys(result.transfer_estimates).forEach(function (label) {
+        var row = result.transfer_estimates[label];
+        var tr = document.createElement("tr");
+        tr.innerHTML = "<td>" + escapeHtml(label) + "</td><td>" + formatMs(row.before_ms) + "</td>" +
+          "<td>" + formatMs(row.after_ms) + "</td><td>" + formatMs(row.saved_ms) + "</td>";
+        transferBody.appendChild(tr);
+      });
+
+      var notesList = document.getElementById("notes-list");
+      notesList.innerHTML = "";
+      (result.notes || []).forEach(function (note) {
+        var li = document.createElement("li");
+        li.textContent = note;
+        notesList.appendChild(li);
+      });
+      if ((result.notes || []).length === 0) {
+        notesList.innerHTML = "<li>No notes.</li>";
+      }
+
+      var imagesBody = document.getElementById("images-table");
+      imagesBody.innerHTML = "";
+      if (!result.images || result.images.length === 0) {
+        imagesBody.innerHTML = "<tr><td colspan='6'>No embedded raster images found.</td></tr>";
+      } else {
+        result.images.forEach(function (img) {
+          var tr = document.createElement("tr");
+          tr.innerHTML = "<td>" + img.index + "</td><td>" + escapeHtml(img.data_name || "—") + "</td>" +
+            "<td>" + escapeHtml(img.declared_width || "?") + "×" + escapeHtml(img.declared_height || "?") + "</td>" +
+            "<td>" + escapeHtml(img.mime) + "</td><td>" + img.decoded_kb + " KB</td><td>" + badgeFor(img) + "</td>";
+          imagesBody.appendChild(tr);
+        });
+      }
+
+      document.getElementById("preview-original").src = svgToDataUri(result.original_svg);
+      document.getElementById("preview-optimized").src = svgToDataUri(result.optimized_svg);
+
+      resultsBox.style.display = "block";
+    }
+
+    optimizeBtn.addEventListener("click", function () {
+      var file = fileInput.files[0];
+      var url = urlInput.value.trim();
+
+      if (!file && !url) {
+        showError("Please choose an SVG file or paste a URL first.");
+        return;
+      }
+
+      var formData = new FormData();
+      if (url) {
+        formData.append("svg_url", url);
+        var urlBasename = url.split("/").pop().split("?")[0].replace(/\.svg$/i, "") || "optimized";
+        lastFilename = urlBasename + "_optimized.svg";
+      } else {
+        formData.append("svg_file", file);
+        lastFilename = file.name.replace(/\.svg$/i, "") + "_optimized.svg";
+      }
+
+      optimizeBtn.disabled = true;
+      spinner.style.display = "inline";
+      errorBox.style.display = "none";
+      resultsBox.style.display = "none";
+
+      fetch("#{svg_optimizer_optimize_path}", {
+        method: "POST",
+        headers: { "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').content },
+        body: formData
+      })
+        .then(function (res) { return res.json().then(function (body) { return { status: res.status, body: body }; }); })
+        .then(function (result) {
+          if (result.status !== 200 || !result.body.success) {
+            showError(result.body.message || "Something went wrong.");
+            return;
+          }
+          renderResults(result.body);
+        })
+        .catch(function (err) {
+          showError("Request failed: " + err.message);
+        })
+        .finally(function () {
+          optimizeBtn.disabled = false;
+          spinner.style.display = "none";
+        });
+    });
+
+    downloadBtn.addEventListener("click", function () {
+      if (!lastResult) return;
+      var blob = new Blob([lastResult.optimized_svg], { type: "image/svg+xml" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = lastFilename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+
+    var lightbox = document.getElementById("lightbox-overlay");
+    var lightboxImg = document.getElementById("lightbox-img");
+
+    function openLightbox(src) {
+      lightboxImg.src = src;
+      lightbox.classList.add("open");
+    }
+
+    function closeLightbox() {
+      lightbox.classList.remove("open");
+      lightboxImg.src = "";
+    }
+
+    ["preview-original", "preview-optimized"].forEach(function (id) {
+      document.getElementById(id).addEventListener("click", function () {
+        if (this.src) openLightbox(this.src);
+      });
+    });
+
+    lightbox.addEventListener("click", closeLightbox);
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") closeLightbox();
+    });
+  })();
