@@ -232,54 +232,55 @@
              !!this.data.backgroundSvg?.imageUrl;
     },
 
-    // Draws the Beans base map as the bottom-most child of the overlay SVG,
-    // stretched across the viewBox. Returns the <image> node, or null.
+    // Wraps the Beans base map and the interactive overlay in one pan/zoom group,
+    // the way the CMS map does it (#zoom-group-wrapper in webpages/_svg_map).
+    // Returns the wrapper for the caller to append.
     //
-    // It deliberately lives *inside* the SVG rather than beside it as an absolute
-    // <img>. A sibling has to be fitted to the container by its own rule
-    // (object-fit:contain) and only lands on the same pixels as the overlay's
-    // preserveAspectRatio="xMidYMid meet" when both element boxes and both aspect
-    // ratios agree. They don't on mobile: the in-flow SVG resolves height:100%
-    // against the container's *specified* height while an absolute sibling resolves
-    // against its *used* height, so on an auto-height/flex container the two layers
-    // start out on different rects — and mirroring the panzoom matrix onto the
-    // sibling then faithfully mirrors that offset, widening it as you zoom. As a
-    // child of the SVG the base map shares the viewBox mapping and the panzoom
-    // transform by construction, so it cannot drift at any container size.
-    _injectBackgroundLayer(svgEl) {
-      const url = this.data.backgroundSvg?.imageUrl;
-      if (!url) return null;
+    // The two layers must never be fitted or transformed independently. Both are
+    // absolute at inset 0, so they resolve against the same containing block and
+    // get the identical box on every viewport — an in-flow overlay would instead
+    // resolve height:100% against the container's *specified* height while an
+    // absolute background resolves against its *used* height, which is how the
+    // layers ended up on different rects on mobile. Panzoom is then attached to
+    // the wrapper (see _enablePanZoom), not the SVG, so one transform moves both
+    // and there is no matrix to mirror. The base map and the floorplate/sitemap
+    // SVGs are exported with the same viewBox, so object-fit:contain and
+    // preserveAspectRatio="xMidYMid meet" land on exactly the same rect.
+    _buildBeansZoomGroup(svgEl) {
+      const wrapper = document.createElement("div");
+      Object.assign(wrapper.style, {
+        position: "relative",
+        width: "100%", height: "100%",
+        transformOrigin: "0 0"
+      });
 
-      const img = document.createElementNS("http://www.w3.org/2000/svg", "image");
+      const bgLayer = document.createElement("img");
+      bgLayer.src = this.data.backgroundSvg.imageUrl;
+      bgLayer.alt = "";
+      bgLayer.setAttribute("draggable", "false");
+      Object.assign(bgLayer.style, {
+        position: "absolute",
+        top: "0", left: "0",
+        width: "100%", height: "100%",
+        objectFit: "contain",
+        pointerEvents: "none",
+        zIndex: "0"
+      });
 
-      // Cover the whole user-coordinate box. Without a viewBox there is no user
-      // space to speak of, so fall back to the element box.
-      const vb = this._viewBoxRect(svgEl);
-      img.setAttribute("x",      vb ? vb.x      : 0);
-      img.setAttribute("y",      vb ? vb.y      : 0);
-      img.setAttribute("width",  vb ? vb.width  : "100%");
-      img.setAttribute("height", vb ? vb.height : "100%");
+      // Match the background: absolute, so both layers share one containing block.
+      Object.assign(svgEl.style, {
+        position: "absolute",
+        top: "0", left: "0",
+        width: "100%", height: "100%",
+        zIndex: "1"
+      });
 
-      // Same fitting rule as the overlay, so a base map whose aspect ratio doesn't
-      // exactly match the viewBox letterboxes instead of stretching.
-      img.setAttribute("preserveAspectRatio", "xMidYMid meet");
-      img.setAttribute("href", url);
-      // xlink form for older WebKit/WebView builds that ignore the SVG2 attribute.
-      img.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", url);
-      img.style.pointerEvents = "none";
+      wrapper.appendChild(bgLayer);
+      wrapper.appendChild(svgEl);
 
-      svgEl.insertBefore(img, svgEl.firstChild);
-      return img;
-    },
-
-    // Parses "minX minY width height" into a rect; null when absent or degenerate.
-    _viewBoxRect(svgEl) {
-      const raw = svgEl.getAttribute("viewBox");
-      if (!raw) return null;
-      const p = raw.trim().split(/[\s,]+/).map(Number);
-      if (p.length !== 4 || p.some(n => !isFinite(n))) return null;
-      if (!(p[2] > 0) || !(p[3] > 0)) return null;
-      return { x: p[0], y: p[1], width: p[2], height: p[3] };
+      this._bgMapLayer  = bgLayer;
+      this._zoomWrapper = wrapper;
+      return wrapper;
     },
 
     // Deduplicates concurrent fetches for the same map.
@@ -369,7 +370,8 @@
     _renderMaps() {
       const c = this.container;
       c.innerHTML = "";               // remove any previous SVG + controls
-      this._bgMapLayer = null;        // the old layer just went with it
+      this._bgMapLayer = null;        // the old layers just went with it
+      this._zoomWrapper = null;
       c.style.position = "relative";
 
       if (!this.activeMapId || !this._mapExists(this.activeMapId)) return;
@@ -391,14 +393,13 @@
       clone.style.width = "100%";
       clone.style.height = "100%";
 
-      // Beans maps: draw the single static base-map image INSIDE the overlay SVG,
-      // pinned to the viewBox. See _injectBackgroundLayer for why it can't be a
-      // sibling <img>.
+      // Beans maps get the base map + overlay wrapped in a single pan/zoom group,
+      // mirroring the CMS map's #zoom-group-wrapper. See _buildBeansZoomGroup.
       if (this._isBeansSvg()) {
-        this._bgMapLayer = this._injectBackgroundLayer(clone);
+        c.appendChild(this._buildBeansZoomGroup(clone));
+      } else {
+        c.appendChild(clone);
       }
-
-      c.appendChild(clone);
 
       if (this.config.showZoomControls) {
         this._renderZoomControls();
@@ -433,12 +434,24 @@
       svgEl.style.touchAction = "none";
       if (svgEl.parentNode) svgEl.parentNode.style.touchAction = "none";
 
-      svgEl._pz = panzoom(svgEl, {
+      // Beans maps: drive the wrapper holding *both* layers rather than the SVG,
+      // so the base map is moved by the same transform instead of a copied one.
+      // panzoom binds its listeners to target.parentElement, which is the
+      // container either way, so gesture handling is unchanged.
+      const target = this._zoomWrapper && svgEl.parentElement === this._zoomWrapper
+        ? this._zoomWrapper
+        : svgEl;
+
+      const pz = panzoom(target, {
         minZoom: 0.5,
         maxZoom: 10,
         bounds: true,
         boundsPadding: 0.1,
       });
+
+      // Everything else reaches the instance through the SVG, so alias it there.
+      svgEl._pz  = pz;
+      target._pz = pz;
 
       // Defer so the browser finishes layout before we read clientWidth/Height
       setTimeout(() => this._centerSvg(svgEl), 0);
@@ -451,7 +464,9 @@
     },
 
     _watchContainerVisibility(svgEl) {
-      const c = svgEl && svgEl.parentNode;
+      // Watch the container itself — on Beans maps svgEl.parentNode is the
+      // pan/zoom wrapper, which is sized off the container anyway.
+      const c = this.container || (svgEl && svgEl.parentNode);
       if (!c) return;
 
       // Already visible — nothing to watch.
@@ -1335,7 +1350,8 @@
       activeMapId: null,
       data: { sitemap: null, backgroundSvg: null, floorplates: [], units: [], floorplans: [], amenities: [] },
       _isBeansSvgMap: false,
-      _bgMapLayer: null,      // the base-map <image> inside the current overlay SVG
+      _bgMapLayer: null,      // Beans base-map <img> in the current render
+      _zoomWrapper: null,     // div holding base map + overlay; the panzoom target
       unitsByMap: {},
       pointerIdsByMap: {},
       unitsByPointerIdByMap: {},
