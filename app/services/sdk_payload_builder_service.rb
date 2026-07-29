@@ -35,6 +35,7 @@ class SdkPayloadBuilderService
 
       {
         unitNumber:      unit.marketing_name,
+        unitMarketingName: unit.api_unit_marketing_name,
         mapId:           map_for_unit(unit),
         unitId:          unit.id,
         building:        unit.building,
