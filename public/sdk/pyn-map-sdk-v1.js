@@ -211,7 +211,7 @@
 
     // Beans-generated maps: a single static base-map image rendered as a
     // background layer, with the interactive sitemap/floorplate SVGs overlaid.
-    _bgMapLayer:    null,        // the absolute background <img> layer in the current render
+    _bgMapLayer:    null,        // the base-map <image> inside the current overlay SVG
 
     data: {
       property:   null,
@@ -725,6 +725,56 @@
              !!this.data.backgroundSvg?.imageUrl;
     },
 
+    // Draws the Beans base map as the bottom-most child of the overlay SVG,
+    // stretched across the viewBox. Returns the <image> node, or null.
+    //
+    // It deliberately lives *inside* the SVG rather than beside it as an absolute
+    // <img>. A sibling has to be fitted to the container by its own rule
+    // (object-fit:contain) and only lands on the same pixels as the overlay's
+    // preserveAspectRatio="xMidYMid meet" when both element boxes and both aspect
+    // ratios agree. They don't on mobile: the in-flow SVG resolves height:100%
+    // against the container's *specified* height while an absolute sibling resolves
+    // against its *used* height, so on an auto-height/flex container the two layers
+    // start out on different rects — and mirroring the panzoom matrix onto the
+    // sibling then faithfully mirrors that offset, widening it as you zoom. As a
+    // child of the SVG the base map shares the viewBox mapping and the panzoom
+    // transform by construction, so it cannot drift at any container size.
+    _injectBackgroundLayer(svgEl) {
+      const url = this.data.backgroundSvg?.imageUrl;
+      if (!url) return null;
+
+      const img = document.createElementNS("http://www.w3.org/2000/svg", "image");
+
+      // Cover the whole user-coordinate box. Without a viewBox there is no user
+      // space to speak of, so fall back to the element box.
+      const vb = this._viewBoxRect(svgEl);
+      img.setAttribute("x",      vb ? vb.x      : 0);
+      img.setAttribute("y",      vb ? vb.y      : 0);
+      img.setAttribute("width",  vb ? vb.width  : "100%");
+      img.setAttribute("height", vb ? vb.height : "100%");
+
+      // Same fitting rule as the overlay, so a base map whose aspect ratio doesn't
+      // exactly match the viewBox letterboxes instead of stretching.
+      img.setAttribute("preserveAspectRatio", "xMidYMid meet");
+      img.setAttribute("href", url);
+      // xlink form for older WebKit/WebView builds that ignore the SVG2 attribute.
+      img.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", url);
+      img.style.pointerEvents = "none";
+
+      svgEl.insertBefore(img, svgEl.firstChild);
+      return img;
+    },
+
+    // Parses "minX minY width height" into a rect; null when absent or degenerate.
+    _viewBoxRect(svgEl) {
+      const raw = svgEl.getAttribute("viewBox");
+      if (!raw) return null;
+      const p = raw.trim().split(/[\s,]+/).map(Number);
+      if (p.length !== 4 || p.some(n => !isFinite(n))) return null;
+      if (!(p[2] > 0) || !(p[3] > 0)) return null;
+      return { x: p[0], y: p[1], width: p[2], height: p[3] };
+    },
+
 
     // Deduplicates concurrent fetches for the same map: if a load is already
     // in flight, callers await the same Promise instead of issuing a second request.
@@ -873,35 +923,12 @@
       clone.style.width  = "100%";
       clone.style.height = "100%";
 
-      // Beans maps: render the single static base-map image as an absolute layer
-      // behind the (transparent) interactive overlay. The overlay uses
-      // preserveAspectRatio="xMidYMid meet"; object-fit:contain on the image fits
-      // it identically, so — given matching aspect ratios — the two stay aligned.
-      // The overlay's panzoom transform is mirrored onto this layer in
-      // _enablePanZoom so they pan/zoom together.
+      // Beans maps: draw the single static base-map image INSIDE the overlay SVG,
+      // pinned to the viewBox. See _injectBackgroundLayer for why it can't be a
+      // sibling <img>. No 3D-mode display juggling is needed here — the base map
+      // rides along with the clone, which is already hidden above when _3dMode.
       if (this._isBeansSvg()) {
-        const bgLayer = document.createElement("img");
-        bgLayer.src = this.data.backgroundSvg.imageUrl;
-        bgLayer.alt = "";
-        bgLayer.setAttribute("draggable", "false");
-        Object.assign(bgLayer.style, {
-          position: "absolute",
-          top: "0", left: "0",
-          width: "100%", height: "100%",
-          objectFit: "contain",
-          transformOrigin: "0 0",
-          pointerEvents: "none",
-          zIndex: "0",
-          display: this._3dMode ? "none" : "block"
-        });
-
-        c.appendChild(bgLayer);
-        this._bgMapLayer = bgLayer;
-
-        // The overlay is non-positioned by default and would paint *below* the
-        // absolute background. Promote it into the same stacking context, above.
-        clone.style.position = "relative";
-        clone.style.zIndex   = "1";
+        this._bgMapLayer = this._injectBackgroundLayer(clone);
       }
 
       c.appendChild(clone);
@@ -1038,16 +1065,6 @@
       };
       // svgEl._pz.on("pan",  svgClamp);
       svgEl._pz.on("zoom", svgClamp);
-
-      // Beans SVG: keep the static background layer locked to the overlay's
-      // transform. Both elements fill the container with transform-origin 0 0,
-      // so copying the matrix verbatim keeps them pixel-aligned at any zoom/pan.
-      if (this._bgMapLayer) {
-        const bgLayer = this._bgMapLayer;
-        const syncBg = () => { bgLayer.style.transform = svgEl.style.transform; };
-        svgEl._pz.on("transform", syncBg);
-        syncBg();
-      }
 
       // Block single-finger touch pan when at default zoom; let two-finger pinch-zoom through.
       const touchBlocker = (e) => {
@@ -1394,7 +1411,8 @@
           activeSvg._pzTouchBlocker = null;
         }
       }
-      if (this._bgMapLayer) this._bgMapLayer.style.display = "none";
+      // The Beans base map is a child of the SVG just hidden above, so it needs no
+      // separate toggle.
       if (this._3dWrapper) this._3dWrapper.style.display = "block";
 
       // Update toggle button label and hide zoom controls (irrelevant in 3D)
@@ -1436,7 +1454,6 @@
         // Re-init panzoom (was disposed when entering 3D mode).
         if (!activeSvg._pz) this._enablePanZoom(activeSvg);
       }
-      if (this._bgMapLayer) this._bgMapLayer.style.display = "block";
       if (this._3dWrapper) this._3dWrapper.style.display = "none";
 
       // Update toggle button label and restore zoom controls
