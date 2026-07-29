@@ -379,7 +379,12 @@
           boot.then(() => this._prefetchRemainingMaps()).catch(() => {});
           return boot;
         })
-        .catch(() => this._showError("Unexpected SDK error."));
+        .catch((err) => {
+          // Log the cause — the generic message alone makes boot failures
+          // undiagnosable, especially on mobile where there's no console to open.
+          console.error("PynMapSDK: init failed:", err);
+          this._showError("Unexpected SDK error.");
+        });
     },
 
     // ----------------------------------------------------
@@ -730,16 +735,22 @@
     // the way the CMS map does it (#zoom-group-wrapper in webpages/_svg_map).
     // Returns the wrapper for the caller to append.
     //
-    // The two layers must never be fitted or transformed independently. Both are
-    // absolute at inset 0, so they resolve against the same containing block and
-    // get the identical box on every viewport — an in-flow overlay would instead
-    // resolve height:100% against the container's *specified* height while an
-    // absolute background resolves against its *used* height, which is how the
-    // layers ended up on different rects on mobile. Panzoom is then attached to
-    // the wrapper (see _enablePanZoom), not the SVG, so one transform moves both
-    // and there is no matrix to mirror. The base map and the floorplate/sitemap
-    // SVGs are exported with the same viewBox, so object-fit:contain and
-    // preserveAspectRatio="xMidYMid meet" land on exactly the same rect.
+    // The two layers must never be fitted or transformed independently.
+    //
+    // The overlay stays IN FLOW and the base map is absolute inside the wrapper —
+    // the same split the CMS map uses. That is what makes them agree without any
+    // ancestor needing a definite height: the in-flow overlay gives the wrapper its
+    // height, and the absolute base map resolves height:100% against that same
+    // wrapper, so the two boxes are equal by construction. (Making both absolute
+    // leaves the wrapper with no in-flow content, so it collapses to zero height on
+    // an auto-height container and the map goes blank. Making both in-flow puts the
+    // base map back on the container's height, which is the original mobile bug.)
+    //
+    // Panzoom is attached to the wrapper (see _enablePanZoom), not the SVG, so one
+    // transform moves both layers and there is no matrix to mirror. The base map
+    // and the floorplate/sitemap SVGs are exported with the same viewBox, so
+    // object-fit:contain and preserveAspectRatio="xMidYMid meet" land on exactly
+    // the same rect.
     _buildBeansZoomGroup(svgEl) {
       const wrapper = document.createElement("div");
       Object.assign(wrapper.style, {
@@ -761,10 +772,10 @@
         zIndex: "0"
       });
 
-      // Match the background: absolute, so both layers share one containing block.
+      // In flow, so it sizes the wrapper; positioned only to sit above the base map.
       Object.assign(svgEl.style, {
-        position: "absolute",
-        top: "0", left: "0",
+        position: "relative",
+        display: this._3dMode ? "none" : "block",
         width: "100%", height: "100%",
         zIndex: "1"
       });
@@ -1465,7 +1476,9 @@
       // Restore SVG visibility, hide 3D wrapper
       const activeSvg = this._getActiveSvg();
       if (activeSvg) {
-        activeSvg.style.display       = "";
+        // "block", not "" — the UA default for <svg> is inline, which would stop it
+        // sizing the Beans pan/zoom wrapper and collapse the map to zero height.
+        activeSvg.style.display       = "block";
         activeSvg.style.visibility    = "visible";
         activeSvg.style.pointerEvents = "";
         // Release the container minHeight lock set when entering 3D mode.
