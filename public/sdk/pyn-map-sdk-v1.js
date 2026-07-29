@@ -213,7 +213,6 @@
     // background layer, with the interactive sitemap/floorplate SVGs overlaid.
     _bgMapLayer:    null,        // Beans base-map <img> in the current render
     _zoomWrapper:   null,        // div holding base map + overlay; the panzoom target
-    _pzResizeObs:   null,        // re-centres the active map when the container resizes
 
     data: {
       property:   null,
@@ -789,44 +788,6 @@
       return wrapper;
     },
 
-    // Pins the base map onto the overlay's *rendered viewBox rect* — the exact screen
-    // rect the unit polygons are drawn into.
-    //
-    // Letting the base map fit itself to the container (object-fit:contain) only lands
-    // on that rect when its aspect ratio equals the overlay's viewBox. When the two
-    // differ at all, container-limited fitting flips between width- and height-limited
-    // as the viewport changes, so the layers agree on a wide desktop box and drift
-    // apart on a narrow phone box. Measuring the overlay and stretching the base map
-    // to match removes the aspect ratio from the equation: the layers coincide at any
-    // screen size, which is what the CMS map gets for free by giving both layers the
-    // same viewBox.
-    _syncBeansBgToOverlay() {
-      const bg    = this._bgMapLayer;
-      const svgEl = this._getActiveSvg();
-      if (!bg || !svgEl) return;
-
-      const vb = svgEl.viewBox && svgEl.viewBox.baseVal;
-      const cw = svgEl.clientWidth;
-      const ch = svgEl.clientHeight;
-      if (!vb || !(vb.width > 0) || !(vb.height > 0) || !cw || !ch) return;
-
-      // preserveAspectRatio="xMidYMid meet": scale to fit, then centre.
-      const s = Math.min(cw / vb.width, ch / vb.height);
-      const w = vb.width  * s;
-      const h = vb.height * s;
-
-      Object.assign(bg.style, {
-        left:   `${(cw - w) / 2}px`,
-        top:    `${(ch - h) / 2}px`,
-        width:  `${w}px`,
-        height: `${h}px`,
-        // The box *is* the map extent now, so fill it. Identical to contain when the
-        // aspect ratios match, and a slight stretch beats a growing offset when they
-        // don't.
-        objectFit: "fill"
-      });
-    },
-
 
     // Deduplicates concurrent fetches for the same map: if a load is already
     // in flight, callers await the same Promise instead of issuing a second request.
@@ -983,9 +944,6 @@
         // The group is what 3D mode hides, so it carries the SVG's display state.
         group.style.display = this._3dMode ? "none" : "block";
         c.appendChild(group);
-        // Pin the base map now that the overlay is in the document and measurable,
-        // so the first painted frame is already aligned.
-        this._syncBeansBgToOverlay();
       } else {
         c.appendChild(clone);
       }
@@ -1044,13 +1002,6 @@
 
       if (svgEl._pz) {
         try { svgEl._pz.dispose(); } catch { }
-      }
-
-      // The observer below watches the container, which outlives the SVG clone, so it
-      // has to be dropped explicitly on every re-render (floor/map switch).
-      if (this._pzResizeObs) {
-        try { this._pzResizeObs.disconnect(); } catch { }
-        this._pzResizeObs = null;
       }
 
       // Clean up any existing touch-move blocker before attaching a fresh one.
@@ -1155,31 +1106,6 @@
 
       // Defer so the browser finishes layout before we read clientWidth/Height
       setTimeout(() => this._centerSvg(svgEl), 0);
-
-      // That single deferred measurement can still be stale on first paint: the base
-      // map <img> decodes asynchronously (the CMS map has no such step — it inlines
-      // the background SVG), and a host like the React map may size the container
-      // after mount. Re-centre when the image lands and on container resize, the way
-      // activateZoomPan() does. Guarded to base zoom so a zoomed-in user is never
-      // yanked back by an orientation change or the mobile URL bar collapsing.
-      const resettle = () => {
-        // The base map is pinned in pixels, so it must be re-measured on every size
-        // change — before re-centring, which reads the same box.
-        this._syncBeansBgToOverlay();
-        const pz = svgEl._pz;
-        if (pz && pz.getTransform().scale <= 1.01) this._centerSvg(svgEl);
-      };
-
-      setTimeout(resettle, 0);
-
-      const bg = this._bgMapLayer;
-      if (bg && !bg.complete) bg.addEventListener("load", resettle, { once: true });
-
-      if (typeof ResizeObserver !== "undefined") {
-        const ro = new ResizeObserver(resettle);
-        ro.observe(this.container);
-        this._pzResizeObs = ro;
-      }
     },
 
     _centerSvg(svgEl) {
@@ -1450,7 +1376,6 @@
       }
       const svg = this._getActiveSvg();
       if (!svg || !svg._pz) return;
-      this._syncBeansBgToOverlay();
       this._centerSvg(svg);
     },
 
@@ -3019,10 +2944,6 @@
       this._userHasCustomColors= false;
       this._bgMapLayer         = null;
       this._zoomWrapper        = null;
-      if (this._pzResizeObs) {
-        try { this._pzResizeObs.disconnect(); } catch { }
-        this._pzResizeObs = null;
-      }
       if (this._beansPopupObserver) {
         this._beansPopupObserver.disconnect();
         this._beansPopupObserver = null;
