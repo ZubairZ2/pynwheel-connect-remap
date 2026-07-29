@@ -159,6 +159,11 @@
     // ----------------------------------------------------
     _storeConfig(data) {
       this.data.sitemap     = data.sitemap     || null;
+      // Beans-generated maps: one static base-map image shared by every
+      // sitemap/floorplate SVG, rendered as a background layer under the
+      // (transparent) interactive overlay.
+      this.data.backgroundSvg = data.backgroundSvg || null;
+      this._isBeansSvgMap     = data.property?.map?.isBeansSvg === true;
       this.data.floorplates = data.floorplates || [];
       this.data.floorplans  = data.floorplans  || [];
       this.data.units       = data.units       || [];
@@ -217,6 +222,14 @@
         const svg = await this._loadSVGIfNeeded(primaryEntry.mapId, primaryEntry.mapType);
         if (svg) this.svgCache[primaryEntry.mapId] = svg;
       }
+    },
+
+    // True when the property uses Beans-generated maps: a single static
+    // background image with the interactive (transparent) sitemap/floorplate
+    // SVGs overlaid on top.
+    _isBeansSvg() {
+      return this._isBeansSvgMap === true &&
+             !!this.data.backgroundSvg?.imageUrl;
     },
 
     // Deduplicates concurrent fetches for the same map.
@@ -306,6 +319,7 @@
     _renderMaps() {
       const c = this.container;
       c.innerHTML = "";               // remove any previous SVG + controls
+      this._bgMapLayer = null;        // the old layer just went with it
       c.style.position = "relative";
 
       if (!this.activeMapId || !this._mapExists(this.activeMapId)) return;
@@ -326,6 +340,36 @@
       clone.setAttribute("preserveAspectRatio", "xMidYMid meet");
       clone.style.width = "100%";
       clone.style.height = "100%";
+
+      // Beans maps: render the single static base-map image as an absolute layer
+      // behind the (transparent) interactive overlay. The overlay uses
+      // preserveAspectRatio="xMidYMid meet"; object-fit:contain on the image fits
+      // it identically, so — given matching aspect ratios — the two stay aligned.
+      // The overlay's panzoom transform is mirrored onto this layer in
+      // _enablePanZoom so they pan/zoom together.
+      if (this._isBeansSvg()) {
+        const bgLayer = document.createElement("img");
+        bgLayer.src = this.data.backgroundSvg.imageUrl;
+        bgLayer.alt = "";
+        bgLayer.setAttribute("draggable", "false");
+        Object.assign(bgLayer.style, {
+          position: "absolute",
+          top: "0", left: "0",
+          width: "100%", height: "100%",
+          objectFit: "contain",
+          transformOrigin: "0 0",
+          pointerEvents: "none",
+          zIndex: "0"
+        });
+
+        c.appendChild(bgLayer);
+        this._bgMapLayer = bgLayer;
+
+        // The overlay is non-positioned by default and would paint *below* the
+        // absolute background. Promote it into the same stacking context, above.
+        clone.style.position = "relative";
+        clone.style.zIndex   = "1";
+      }
 
       c.appendChild(clone);
 
@@ -368,6 +412,16 @@
         bounds: true,
         boundsPadding: 0.1,
       });
+
+      // Beans SVG: keep the static background layer locked to the overlay's
+      // transform. Both elements fill the container with transform-origin 0 0,
+      // so copying the matrix verbatim keeps them pixel-aligned at any zoom/pan.
+      if (this._bgMapLayer) {
+        const bgLayer = this._bgMapLayer;
+        const syncBg = () => { bgLayer.style.transform = svgEl.style.transform; };
+        svgEl._pz.on("transform", syncBg);
+        syncBg();
+      }
 
       // Defer so the browser finishes layout before we read clientWidth/Height
       setTimeout(() => this._centerSvg(svgEl), 0);
@@ -1262,7 +1316,9 @@
       config: null,
       container: null,
       activeMapId: null,
-      data: { sitemap: null, floorplates: [], units: [], floorplans: [], amenities: [] },
+      data: { sitemap: null, backgroundSvg: null, floorplates: [], units: [], floorplans: [], amenities: [] },
+      _isBeansSvgMap: false,
+      _bgMapLayer: null,      // the absolute background <img> layer in the current render
       unitsByMap: {},
       pointerIdsByMap: {},
       unitsByPointerIdByMap: {},
