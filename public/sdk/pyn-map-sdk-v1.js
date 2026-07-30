@@ -683,8 +683,14 @@
 
         this.unitsByMap[mapId].push(u);
 
+        // Several units can be plotted on one SVG shape. The first one becomes that
+        // shape's representative — it owns the fill color, the hover tooltip and the
+        // click payload — and its pointer id is registered once, so the shape is not
+        // bound and re-filled once per co-plotted unit. Consumers that need the whole
+        // co-plotted set resolve it from getUnits() by pointer id, mirroring the old
+        // map's setUnitModalButtons.
         const pid = this._unitPid(u);
-        if (pid) {
+        if (pid && !this.unitsByPointerIdByMap[mapId][pid]) {
           this.pointerIdsByMap[mapId].push(pid);
           this.unitsByPointerIdByMap[mapId][pid] = u;
         }
@@ -3706,22 +3712,18 @@
 
     // Bind click, hover and touch events on the container (delegated).
     _bindImageMapEvents() {
-      // Unit marker click
+      // Unit marker click. A badged marker stands for several co-plotted units, but
+      // onUnitClick always reports exactly one unit — its representative, the same one
+      // hover and touch report. Consumers resolve the rest of the group from
+      // getUnits() by plot coordinate; handing them an array here instead would make
+      // the callback's payload depend on how many units happen to share a pixel.
       this.container.addEventListener("click", e => {
         const marker = e.target.closest(".pyn-unit-marker");
         if (!marker || marker.style.display === "none") return;
-        const unitIds = (marker.dataset.unitIds || "").split(",").filter(Boolean);
-        if (unitIds.length > 1) {
-          const units = unitIds
-            .map(id => (this.data.units || []).find(u => String(u.unitId) === id))
-            .filter(Boolean);
-          if (this.config.onUnitClick) this.config.onUnitClick(units.length === 1 ? units[0] : units);
-        } else {
-          try {
-            const unit = JSON.parse(marker.dataset.unitJson || "null");
-            if (unit && this.config.onUnitClick) this.config.onUnitClick(unit);
-          } catch {}
-        }
+        try {
+          const unit = JSON.parse(marker.dataset.unitJson || "null");
+          if (unit && this.config.onUnitClick) this.config.onUnitClick(unit);
+        } catch {}
       });
 
       // Unit marker hover — visual highlight + callback
