@@ -355,7 +355,7 @@ module Api
           payload = {
             api_key:     api_key,
             property_id: property_id.to_s,
-            exp:         1.hour.from_now.to_i
+            exp:         24.hour.from_now.to_i
           }
           Rails.application.message_verifier(:pyn_sdk_v1).generate(payload)
         end
