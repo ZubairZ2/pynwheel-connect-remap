@@ -170,6 +170,9 @@
     _favorites: new Set(),          // Set of favorited unit IDs (strings)
     _favoriteAmenities: new Set(),  // Set of favorited amenity IDs (strings)
     _favoriteFloorplans: new Set(), // Set of favorited floorplan IDs (strings)
+    _favoriteGalleryImages: new Set(), // Set of favorited gallery image IDs (strings)
+    _galleriesPromise: null,        // in-flight getGalleries() request; deduplicates concurrent calls
+    _galleriesLoaded: false,        // true once fetched, so an empty gallery is not refetched forever
     config: null,
     container: null,
     activeMapId: null,
@@ -221,7 +224,8 @@
       units:       [],
       floorplans:  [],
       amenities:   [],
-      filters:     null
+      filters:     null,
+      galleries:   []     // populated by getGalleries(); empty until the panel is opened
     },
 
     unitsByMap: {},                // { [mapId]: unit[] }
@@ -588,6 +592,32 @@
       }
     },
 
+    /**
+     * Fetch the property galleries using the session token. Same auth shape as
+     * _fetchConfig; the backend resolves the property from the token.
+     *
+     * A 404 here means the property has Pynwheel Touch or its gallery switch
+     * turned off — a normal state, not an error, so it resolves to an empty
+     * array rather than rejecting.
+     */
+    async _fetchGalleries() {
+      try {
+        const res = await fetch(`${this._apiBase()}/api/partner/maps/fetch_gallery`, {
+          headers: {
+            "Authorization":    `Bearer ${this._sessionToken}`,
+            "X-SDK-Session-Id": this._sdkSessionId
+          }
+        });
+
+        if (!res.ok) return [];
+
+        const data = await res.json();
+        return data.galleries || [];
+      } catch {
+        return [];
+      }
+    },
+
 
     // ----------------------------------------------------
     // MAP DATA STORAGE
@@ -602,23 +632,11 @@
       this.data.amenities   = data.amenities   || [];
       this.data.filters     = data.filters     || null;
 
-      // Hydrate favorites from the server response.
-      // Each item already has isFavorite set by the server; build the local Sets from it.
-      this._favorites = new Set(
-        this.data.units
-          .filter(u => u.isFavorite)
-          .map(u => String(u.unitId))
-      );
-      this._favoriteAmenities = new Set(
-        this.data.amenities
-          .filter(a => a.isFavorite)
-          .map(a => String(a.amenityId))
-      );
-      this._favoriteFloorplans = new Set(
-        this.data.floorplans
-          .filter(f => f.isFavorite)
-          .map(f => String(f.floorplanId))
-      );
+      // Hydrate favorites from the server response. Each item already has
+      // isFavorite set by the server; build the local Sets from it.
+      // gallery_image is skipped — its collection loads on demand, and
+      // getGalleries() hydrates it the same way once it arrives.
+      ["unit", "amenity", "floorplan"].forEach(type => this._hydrateFavorites(type));
 
       this._indexUnits();
       this._resolve3DConfig();
@@ -2928,6 +2946,7 @@
       this._favorites          = new Set();
       this._favoriteAmenities  = new Set();
       this._favoriteFloorplans = new Set();
+      this._favoriteGalleryImages = new Set();
       this.config              = null;
       this.container           = null;
       this.activeMapId         = null;
@@ -2954,7 +2973,9 @@
         this._beansPopupObserver.disconnect();
         this._beansPopupObserver = null;
       }
-      this.data                = { property: null, sitemap: null, backgroundSvg: null, floorplates: [], units: [], floorplans: [], amenities: [], filters: null };
+      this._galleriesPromise   = null;
+      this._galleriesLoaded    = false;
+      this.data                = { property: null, sitemap: null, backgroundSvg: null, floorplates: [], units: [], floorplans: [], amenities: [], filters: null, galleries: [] };
       this.unitsByMap          = {};
       this.pointerIdsByMap     = {};
       this.unitsByPointerIdByMap = {};
@@ -3050,6 +3071,74 @@
     },
 
     // ----------------------------------------------------
+    // GALLERY (PUBLIC API)
+    //
+    // The gallery is the one collection not bundled into fetch_data: a property
+    // can carry hundreds of images, and most visitors never open the panel.
+    //
+    // Whether to show a Gallery entry point at all comes from the map payload,
+    // free of any network call:
+    //
+    //   const { gallery } = PynMapSDK.getPropertyConfig();
+    //   // { enabled, pageName, displayOnHomepage, imageCount }
+    //   if (gallery.enabled && gallery.imageCount > 0) showGalleryTab(gallery.pageName);
+    //
+    // `enabled` is true only when the property has Pynwheel Touch on AND its own
+    // gallery switch on. Once it is, getGalleries() fetches the content.
+    // ----------------------------------------------------
+
+    /**
+     * Every gallery, with its images nested underneath. Call it from the Gallery
+     * button's click handler.
+     *
+     * Memoised for the life of the page — later calls resolve instantly from
+     * memory — and concurrent calls share one request, so an impatient
+     * double-click still hits the network once. Pass { force: true } to refetch.
+     *
+     * Never throws: any failure (offline, expired session, gallery turned off)
+     * resolves to an empty array.
+     *
+     *   [{
+     *     id, title, count,
+     *     coverUrl,            // first image's thumb — for the gallery list
+     *     images: [{
+     *       id, categoryId, type, name,
+     *       url,               // full resolution — use in the lightbox
+     *       thumbUrl,          // 640x360 — use in the grid (null for videos)
+     *       posterUrl,         // video poster; may 404 on older uploads
+     *       posterFallbackUrl, // swap to this on posterUrl's error event
+     *       isVideo,
+     *       isFavorite         // toggle with saveFavorite/deleteFavorite,
+     *                          // passing type "gallery_image"
+     *     }]
+     *   }]
+     *
+     * @param {{ force?: boolean }} [opts]
+     * @returns {Promise<object[]>}
+     */
+    async getGalleries({ force = false } = {}) {
+      if (!force && this._galleriesLoaded) return this.data.galleries;
+      if (this._galleriesPromise) return this._galleriesPromise;
+
+      // Fired here rather than on every call: reaching the network is what marks
+      // a real visit, so re-renders reading the memo cost nothing. 'gallery_view'
+      // is the name the server maps to the "Gallery view" visited page, so it has
+      // to match exactly.
+      if (this._analytics) this._captureWithMapType('gallery_view');
+
+      this._galleriesPromise = this._fetchGalleries()
+        .then((galleries) => {
+          this.data.galleries   = galleries;
+          this._galleriesLoaded = true;
+          this._hydrateFavorites("gallery_image");
+          return galleries;
+        })
+        .finally(() => { this._galleriesPromise = null; });
+
+      return this._galleriesPromise;
+    },
+
+    // ----------------------------------------------------
     // FAVORITES (PUBLIC API)
     // ----------------------------------------------------
 
@@ -3066,8 +3155,8 @@
 
     /**
      * Internal: resolves the local Set, data array, and id key for a favorite
-     * "type" ("unit" | "amenity" | "floorplan"). Reads the Sets live so it stays
-     * correct after re-hydration.
+     * "type" ("unit" | "amenity" | "floorplan" | "gallery_image"). Reads the Sets
+     * live so it stays correct after re-hydration.
      */
     _favState(type) {
       switch (type) {
@@ -3075,9 +3164,56 @@
           return { set: this._favoriteAmenities,  list: this.data.amenities  || [], idKey: "amenityId" };
         case "floorplan":
           return { set: this._favoriteFloorplans, list: this.data.floorplans || [], idKey: "floorplanId" };
+        case "gallery_image":
+          // Images live nested under their gallery, and the whole collection
+          // loads on demand — so this is empty until getGalleries() runs.
+          return {
+            set:   this._favoriteGalleryImages,
+            list:  (this.data.galleries || []).flatMap(g => g.images || []),
+            idKey: "id"
+          };
         default:
           return { set: this._favorites,          list: this.data.units      || [], idKey: "unitId" };
       }
+    },
+
+    // Every favouritable collection, in the order the favorites screen lists them.
+    _FAVORITE_TYPES: ["unit", "amenity", "floorplan", "gallery_image"],
+
+    /**
+     * Internal: rebuild one favorite Set from the isFavorite flags the server
+     * already stamped on each item, so local state matches the payload without a
+     * second request. Mutates the existing Set rather than replacing it, since
+     * _favState hands out live references.
+     */
+    _hydrateFavorites(type) {
+      const { set, list, idKey } = this._favState(type);
+      set.clear();
+      list.forEach(item => { if (item.isFavorite) set.add(String(item[idKey])); });
+    },
+
+    /**
+     * Internal: emit a favorites analytics event.
+     *
+     * The names below are ones the server already recognises — 'save_favorite'
+     * becomes the save_favorite_click key that INTERACTION_EVENTS counts, and
+     * 'view_favorites' maps to the "Favorites page" visited-page entry — so they
+     * must stay exactly as written.
+     *
+     * Metadata is scalars only: the analytics sanitiser silently drops arrays,
+     * which is why the ids go over as a joined string.
+     */
+    _captureFavorite(name, favoriteType, ids) {
+      if (!this._analytics) return;
+
+      const meta = {};
+      if (favoriteType) meta.favorite_type = favoriteType;
+      if (ids?.length) {
+        meta.favorite_ids   = ids.join(",");
+        meta.favorite_count = ids.length;
+      }
+
+      this._captureWithMapType(name, "click", meta);
     },
 
     /**
@@ -3090,13 +3226,14 @@
      *
      * @param {string|number} communityId
      * @param {string}        sessionId
-     * @param {"unit"|"amenity"|"floorplan"} [type="unit"]
+     * @param {"unit"|"amenity"|"floorplan"|"gallery_image"} [type="unit"]
      * @returns {Promise<object[]>}
      */
     async getFavorites(communityId, sessionId, type = "unit") {
       const all = await this.getAllFavorites(communityId, sessionId);
-      if (type === "amenity")   return all.amenities;
-      if (type === "floorplan") return all.floorplans;
+      if (type === "amenity")       return all.amenities;
+      if (type === "floorplan")     return all.floorplans;
+      if (type === "gallery_image") return all.galleryImages;
       return all.units;
     },
 
@@ -3106,10 +3243,15 @@
      *
      * @param {string|number} communityId
      * @param {string}        sessionId
-     * @returns {Promise<{units: object[], amenities: object[], floorplans: object[]}>}
+     * @returns {Promise<{units: object[], amenities: object[], floorplans: object[], galleryImages: object[]}>}
      */
     async getAllFavorites(communityId, sessionId) {
-      const empty = { units: [], amenities: [], floorplans: [] };
+      const empty = { units: [], amenities: [], floorplans: [], galleryImages: [] };
+
+      // Fired up front: opening the favorites screen is the visit, whether or
+      // not the request behind it succeeds.
+      this._captureFavorite("view_favorites");
+
       try {
         const mapTypeParam = this.config.mapType === "ops" ? "?map_type=ops" : "";
         const res = await fetch(`${this._apiBase()}/api/partner/maps/get_favorites${mapTypeParam}`, {
@@ -3122,9 +3264,10 @@
         if (!res.ok) return empty;
         const data = await res.json();
         return {
-          units:      data.units      || [],
-          amenities:  data.amenities  || [],
-          floorplans: data.floorplans || []
+          units:         data.units          || [],
+          amenities:     data.amenities      || [],
+          floorplans:    data.floorplans     || [],
+          galleryImages: data.gallery_images || []
         };
       } catch {
         return empty;
@@ -3132,8 +3275,8 @@
     },
 
     /**
-     * Removes ALL favorited items — units, amenities, and floorplans — for the
-     * given community + session in one shot. Clears every local Set, resets
+     * Removes ALL favorited items — units, amenities, floorplans, and gallery
+     * images — for the given community + session in one shot. Clears every local Set, resets
      * isFavorite on all objects, and fires onFavoriteChange when the server
      * confirms (once per type that had favorites).
      *
@@ -3154,7 +3297,9 @@
 
         if (!res.ok) return { success: false };
 
-        ["unit", "amenity", "floorplan"].forEach(type => {
+        this._captureFavorite("clear_favorites");
+
+        this._FAVORITE_TYPES.forEach(type => {
           const { set, list } = this._favState(type);
           if (set.size === 0) return;
           set.clear();
@@ -3178,7 +3323,7 @@
      * @param {number|string|Array<number|string>} itemIds
      * @param {string|number} communityId
      * @param {string}        sessionId
-     * @param {"unit"|"amenity"|"floorplan"} [type="unit"]
+     * @param {"unit"|"amenity"|"floorplan"|"gallery_image"} [type="unit"]
      * @returns {Promise<{success: boolean, ids: string[], unit_ids: string[]}>}
      */
     async saveFavorite(itemIds, communityId, sessionId, type = "unit") {
@@ -3211,6 +3356,8 @@
           if (item) item.isFavorite = true;
         });
 
+        this._captureFavorite("save_favorite", type, ids);
+
         if (this.config.onFavoriteChange) {
           this.config.onFavoriteChange(ids, "saved", [...set], type);
         }
@@ -3230,7 +3377,7 @@
      * @param {number|string|Array<number|string>} itemIds
      * @param {string|number} communityId
      * @param {string}        sessionId
-     * @param {"unit"|"amenity"|"floorplan"} [type="unit"]
+     * @param {"unit"|"amenity"|"floorplan"|"gallery_image"} [type="unit"]
      * @returns {Promise<{success: boolean, ids: string[], unit_ids: string[]}>}
      */
     async deleteFavorite(itemIds, communityId, sessionId, type = "unit") {
@@ -3262,6 +3409,8 @@
           const item = list.find(x => String(x[idKey]) === id);
           if (item) item.isFavorite = false;
         });
+
+        this._captureFavorite("remove_favorite", type, ids);
 
         if (this.config.onFavoriteChange) {
           this.config.onFavoriteChange(ids, "deleted", [...set], type);
@@ -3302,6 +3451,9 @@
 
         const data = await res.json();
         if (!res.ok) return { success: false, message: data.message || "Failed to send email." };
+
+        this._captureFavorite("share_email");
+
         return { success: true, message: data.message || "Email sent successfully." };
       } catch {
         return { success: false, message: "Network error. Please try again." };
@@ -3856,6 +4008,7 @@
       getAmenities()               { return PynMapSDK.getAmenities.call(PynMapSDK); },
       getUnits(filters)            { return PynMapSDK.getUnits.call(PynMapSDK, filters); },
       getFiltersData()             { return PynMapSDK.getFiltersData.call(PynMapSDK); },
+      getGalleries(opts)           { return PynMapSDK.getGalleries.call(PynMapSDK, opts); },
       selectUnit(unitId, colorCode){ return PynMapSDK.selectUnit.call(PynMapSDK, unitId, colorCode); },
       unselectUnit(unitId)         { return PynMapSDK.unselectUnit.call(PynMapSDK, unitId); },
       zoomIn()                     { return PynMapSDK.zoomIn.call(PynMapSDK); },

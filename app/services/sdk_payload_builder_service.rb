@@ -154,6 +154,8 @@ class SdkPayloadBuilderService
         turnAvailabilityOn: @community.turn_availability_on
       },
 
+      gallery: gallery_discovery_json,
+
       filters: property_filters_json,
 
       fontFamily: @community.font_setting&.svg_labels_font_family,
@@ -181,6 +183,21 @@ class SdkPayloadBuilderService
     else
       { enabled: false, mode: "none", separateLink: nil }
     end
+  end
+
+  # Enough for the host to decide whether to render a Gallery entry point, and
+  # nothing more — the images themselves come from fetch_gallery, only once the
+  # visitor opens the panel. imageCount lets the host hide the button for a
+  # property that has the feature on but has uploaded nothing.
+  def gallery_discovery_json
+    builder = SdkGalleryBuilderService.new(@community)
+
+    {
+      enabled:           builder.enabled?,
+      pageName:          @community.gallery_page_name.presence || SdkGalleryBuilderService::DEFAULT_PAGE_NAME,
+      displayOnHomepage: @community.display_gallery_on_homepage,
+      imageCount:        builder.image_count
+    }
   end
 
   def property_filters_json

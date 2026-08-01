@@ -695,6 +695,7 @@ Rails.application.routes.draw do
         get    :authorized,       to: 'sdk#authorized'
         get    :fetch_data,       to: 'sdk#fetch_data'
         get    :fetch_svg_image,  to: 'sdk#fetch_svg_image'
+        get    :fetch_gallery,    to: 'sdk#fetch_gallery'
         post   :save_favorites,           to: 'sdk#save_favorites'
         delete :delete_favorites,         to: 'sdk#delete_favorites'
         delete :clear_all_favorites,      to: 'sdk#clear_all_favorites'
