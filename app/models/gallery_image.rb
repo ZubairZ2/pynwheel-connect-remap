@@ -24,6 +24,7 @@
 
 class GalleryImage < ApplicationRecord
 	include RailsSortable::Model
+  include ::S3Acceleration
   belongs_to :gallery
   has_one :status, as: :statusable
   set_sortable :sort  

@@ -2,23 +2,25 @@
 #
 # Table name: favorites
 #
-#  id            :integer          not null, primary key
-#  community_id  :integer
-#  session_id    :string
-#  unit_ids      :jsonb
-#  amenity_ids   :jsonb
-#  floorplan_ids :jsonb
-#  created_at    :datetime         not null
-#  updated_at    :datetime         not null
+#  id                :integer          not null, primary key
+#  community_id      :integer
+#  session_id        :string
+#  unit_ids          :jsonb
+#  amenity_ids       :jsonb
+#  floorplan_ids     :jsonb
+#  gallery_image_ids :jsonb
+#  created_at        :datetime         not null
+#  updated_at        :datetime         not null
 #
 
 class Favorite < ApplicationRecord
   # Maps a favorite "type" (as sent by the SDK) to the jsonb column that
   # stores its favorited ids. "unit" is the historical default.
   TYPE_COLUMNS = {
-    "unit"      => :unit_ids,
-    "amenity"   => :amenity_ids,
-    "floorplan" => :floorplan_ids
+    "unit"          => :unit_ids,
+    "amenity"       => :amenity_ids,
+    "floorplan"     => :floorplan_ids,
+    "gallery_image" => :gallery_image_ids
   }.freeze
 
   def self.column_for_type(type)

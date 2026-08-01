@@ -13,7 +13,7 @@ module Api
         # `fetch_data`, `fetch_svg_image`, `save_favorites`, `delete_favorites`,
         # `clear_all_favorites`, `get_favorites` → session token only
         SESSION_ACTIONS = [
-          :fetch_data, :fetch_svg_image,
+          :fetch_data, :fetch_svg_image, :fetch_gallery,
           :save_favorites, :delete_favorites, :clear_all_favorites,
           :get_favorites, :share_favorites_email, :track_events
         ].freeze
@@ -25,11 +25,12 @@ module Api
         # 6 other heavy includes (floorplans, map_filter, font_setting, credential,
         # calculator_config, three_d_maps_configuration) that it never uses.
         # track_events only needs community_id, timezone — use a lightweight load.
-        before_action :load_community_from_session, only: SESSION_ACTIONS - [:get_favorites, :fetch_svg_image, :share_favorites_email, :track_events]
+        before_action :load_community_from_session, only: SESSION_ACTIONS - [:get_favorites, :fetch_svg_image, :fetch_gallery, :share_favorites_email, :track_events]
         before_action :load_community_for_analytics, only: [:track_events]
         before_action :load_community_for_svg,      only: [:fetch_svg_image]
         before_action :load_community_for_favorites, only: [:get_favorites]
         before_action :load_community_for_email,     only: [:share_favorites_email]
+        before_action :load_community_for_gallery,   only: [:fetch_gallery]
 
         # ------------------------------------------------------------------
         # GET /api/partner/maps/authorized?propertyId=:id
@@ -80,6 +81,41 @@ module Api
             favorite_amenities: amenities.select  { |a| a[:isFavorite] },
             favorite_floorplans: floorplans.select { |f| f[:isFavorite] }
           )
+
+          response.headers['Cache-Control']    = 'private, no-store'
+          response.headers['Content-Encoding'] = 'gzip'
+          response.headers['Vary']             = 'Accept-Encoding'
+
+          send_data gzip_json(payload), type: 'application/json; charset=utf-8', disposition: 'inline'
+        end
+
+        # ------------------------------------------------------------------
+        # GET /api/partner/maps/fetch_gallery
+        # Authorization: Bearer <session_token>
+        # Property ID is taken from the session token — NOT from query params.
+        #
+        # Deliberately not part of fetch_data: this is fetched only when a visitor
+        # opens the gallery panel, which most never do. The map payload carries the
+        # `property.gallery` config block (enabled / pageName / imageCount) so the
+        # host can decide whether to show the entry point without paying for the
+        # images — everything here is the images themselves, nested under the
+        # gallery they belong to.
+        #
+        # Payload is built fresh on every request — no caching layer, same as
+        # fetch_data. The SDK memoises the result for the life of the page.
+        # ------------------------------------------------------------------
+        def fetch_gallery
+          builder = SdkGalleryBuilderService.new(@community)
+
+          # Should be unreachable: the config block already told the host not to
+          # offer a gallery for this property.
+          return render_error("Gallery is not available for this property.", 404) unless builder.enabled?
+
+          payload = {
+            galleries: builder.build(favorite_ids(favorite_record, "gallery_image")),
+            status:    "success",
+            code:      200
+          }
 
           response.headers['Cache-Control']    = 'private, no-store'
           response.headers['Content-Encoding'] = 'gzip'
@@ -151,12 +187,13 @@ module Api
           end
 
           render json: {
-            success:       true,
-            unit_ids:      [],
-            amenity_ids:   [],
-            floorplan_ids: [],
-            status:        "success",
-            code:          200
+            success:           true,
+            unit_ids:          [],
+            amenity_ids:       [],
+            floorplan_ids:     [],
+            gallery_image_ids: [],
+            status:            "success",
+            code:              200
           }
         end
 
@@ -172,9 +209,10 @@ module Api
           return render_error("X-SDK-Session-Id header is missing.", 400) unless sdk_session_id.present?
 
           fav = favorite_record
-          unit_ids      = favorite_ids(fav, "unit")
-          amenity_ids   = favorite_ids(fav, "amenity")
-          floorplan_ids = favorite_ids(fav, "floorplan")
+          unit_ids          = favorite_ids(fav, "unit")
+          amenity_ids       = favorite_ids(fav, "amenity")
+          floorplan_ids     = favorite_ids(fav, "floorplan")
+          gallery_image_ids = favorite_ids(fav, "gallery_image")
 
           builder = SdkPayloadBuilderService.new(@community)
 
@@ -185,16 +223,23 @@ module Api
           favorite_amenities  = builder.amenities_json(amenity_ids).select { |a| a[:isFavorite] }
           favorite_floorplans = builder.floorplans_json(nil, floorplan_ids).select { |f| f[:isFavorite] }
 
+          # Only walk the galleries when something in them is actually favorited,
+          # so favorites views on gallery-less properties cost nothing.
+          favorite_gallery_images = gallery_image_ids.any? ?
+            SdkGalleryBuilderService.new(@community).favorites_json(gallery_image_ids) : []
+
           render json: {
-            success:       true,
-            units:         favorite_units,
-            unit_ids:      unit_ids.to_a,
-            amenities:     favorite_amenities,
-            amenity_ids:   amenity_ids.to_a,
-            floorplans:    favorite_floorplans,
-            floorplan_ids: floorplan_ids.to_a,
-            status:        "success",
-            code:          200
+            success:           true,
+            units:             favorite_units,
+            unit_ids:          unit_ids.to_a,
+            amenities:         favorite_amenities,
+            amenity_ids:       amenity_ids.to_a,
+            floorplans:        favorite_floorplans,
+            floorplan_ids:     floorplan_ids.to_a,
+            gallery_images:    favorite_gallery_images,
+            gallery_image_ids: gallery_image_ids.to_a,
+            status:            "success",
+            code:              200
           }
         end
 
@@ -404,6 +449,14 @@ module Api
           return render_error("Property not found.", 404) if @community.nil?
         end
 
+        # No includes: SdkGalleryBuilderService eager-loads galleries with their
+        # images under its own ordering, so anything preloaded here would be
+        # queried again anyway.
+        def load_community_for_gallery
+          @community = Community.find_by(id: @session_property_id)
+          return render_error("Property not found.", 404) if @community.nil?
+        end
+
         def show_ops_map?
           params[:map_type] == "ops"
         end
@@ -441,9 +494,10 @@ module Api
         # returning only the ones that actually exist as strings.
         def valid_ids_for_type(type, ids)
           scope = case type
-            when "amenity"   then Amenity.where(community_id: @community.id)
-            when "floorplan" then @community.floorplans
-            else                  @community.units
+            when "amenity"       then Amenity.where(community_id: @community.id)
+            when "floorplan"     then @community.floorplans
+            when "gallery_image" then GalleryImage.where(gallery_id: @community.galleries.select(:id))
+            else                      @community.units
             end
           scope.where(id: ids).pluck(:id).map(&:to_s)
         end
