@@ -21,6 +21,7 @@
 class Location < ApplicationRecord
   has_paper_trail
   include StandardUrl
+  include ::S3Acceleration
   mount_uploader :image, AvatarUploader
   belongs_to :neighborhood
   validates_presence_of :latitude, :longitude, :title

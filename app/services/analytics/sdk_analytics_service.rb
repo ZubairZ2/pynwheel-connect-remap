@@ -36,9 +36,14 @@ module Analytics
     ].to_set.freeze
 
     VISITED_PAGES = {
-      "map_load"       => "Map main page",
-      "gallery_view"   => "Gallery view",
-      "view_favorites" => "Favorites page",
+      "map_load"            => "Map main page",
+      "gallery_view"        => "Gallery view",
+      "view_favorites"      => "Favorites page",
+      # Matches the string MetroAnalyticsService and IpadAnalyticsService already
+      # write, so SDK sessions land in the same reporting bucket as the Windows
+      # and iPad apps. (Those two upcase it — a pre-existing inconsistency across
+      # visited_pages, not introduced here.)
+      "neighborhood_view"   => "Neighborhood Page",
     }.freeze
 
     def initialize(community:, client_type:, session_id:, partner:,

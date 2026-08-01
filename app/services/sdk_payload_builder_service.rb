@@ -156,6 +156,8 @@ class SdkPayloadBuilderService
 
       gallery: gallery_discovery_json,
 
+      neighborhood: neighborhood_discovery_json,
+
       filters: property_filters_json,
 
       fontFamily: @community.font_setting&.svg_labels_font_family,
@@ -198,6 +200,14 @@ class SdkPayloadBuilderService
       displayOnHomepage: @community.display_gallery_on_homepage,
       imageCount:        builder.image_count
     }
+  end
+
+  # Same contract as gallery_discovery_json: enough to render the entry point
+  # and draw the map, nothing that costs a query per row. The curated pins come
+  # from fetch_neighborhood and the live places from fetch_neighborhood_places,
+  # both only once the visitor opens the panel.
+  def neighborhood_discovery_json
+    SdkNeighborhoodBuilderService.new(@community).discovery_json
   end
 
   def property_filters_json

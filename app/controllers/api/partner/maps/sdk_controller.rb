@@ -14,23 +14,31 @@ module Api
         # `clear_all_favorites`, `get_favorites` → session token only
         SESSION_ACTIONS = [
           :fetch_data, :fetch_svg_image, :fetch_gallery,
+          :fetch_neighborhood, :fetch_neighborhood_places,
           :save_favorites, :delete_favorites, :clear_all_favorites,
           :get_favorites, :share_favorites_email, :track_events
         ].freeze
 
-        skip_before_action :validate_api_key,   only: SESSION_ACTIONS
-        skip_before_action :load_partner_name,  only: SESSION_ACTIONS
+        # `neighborhood_photo` is loaded by the browser as an <img src>, which
+        # cannot carry an Authorization header. It authenticates on the signed,
+        # expiring token in its own query string instead — see
+        # SdkNeighborhoodPhotoService — and touches no property data.
+        PUBLIC_ACTIONS = [:neighborhood_photo].freeze
+
+        skip_before_action :validate_api_key,   only: SESSION_ACTIONS + PUBLIC_ACTIONS
+        skip_before_action :load_partner_name,  only: SESSION_ACTIONS + PUBLIC_ACTIONS
         before_action :validate_session_token,      only: SESSION_ACTIONS
         # get_favorites only needs sitemap + floorplates for map_for_unit — skip the
         # 6 other heavy includes (floorplans, map_filter, font_setting, credential,
         # calculator_config, three_d_maps_configuration) that it never uses.
         # track_events only needs community_id, timezone — use a lightweight load.
-        before_action :load_community_from_session, only: SESSION_ACTIONS - [:get_favorites, :fetch_svg_image, :fetch_gallery, :share_favorites_email, :track_events]
+        before_action :load_community_from_session, only: SESSION_ACTIONS - [:get_favorites, :fetch_svg_image, :fetch_gallery, :fetch_neighborhood, :fetch_neighborhood_places, :share_favorites_email, :track_events]
         before_action :load_community_for_analytics, only: [:track_events]
         before_action :load_community_for_svg,      only: [:fetch_svg_image]
         before_action :load_community_for_favorites, only: [:get_favorites]
         before_action :load_community_for_email,     only: [:share_favorites_email]
         before_action :load_community_for_gallery,   only: [:fetch_gallery]
+        before_action :load_community_for_neighborhood, only: [:fetch_neighborhood, :fetch_neighborhood_places]
 
         # ------------------------------------------------------------------
         # GET /api/partner/maps/authorized?propertyId=:id
@@ -122,6 +130,93 @@ module Api
           response.headers['Vary']             = 'Accept-Encoding'
 
           send_data gzip_json(payload), type: 'application/json; charset=utf-8', disposition: 'inline'
+        end
+
+        # ------------------------------------------------------------------
+        # GET /api/partner/maps/fetch_neighborhood
+        # Authorization: Bearer <session_token>
+        # Property ID is taken from the session token — NOT from query params.
+        #
+        # The property's own curated pins, as entered in the CMS. Cheap enough
+        # to serve on panel open: one indexed query, no external calls. The
+        # config the host needs to draw the map (centre, zoom, radius,
+        # categories) already arrived in `property.neighborhood` on fetch_data.
+        # ------------------------------------------------------------------
+        def fetch_neighborhood
+          builder = neighborhood_builder
+
+          return render_error("Neighborhood is not available for this property.", 404) unless builder.enabled?
+
+          payload = { locations: builder.build, status: "success", code: 200 }
+
+          response.headers['Cache-Control']    = 'private, no-store'
+          response.headers['Content-Encoding'] = 'gzip'
+          response.headers['Vary']             = 'Accept-Encoding'
+
+          send_data gzip_json(payload), type: 'application/json; charset=utf-8', disposition: 'inline'
+        end
+
+        # ------------------------------------------------------------------
+        # GET /api/partner/maps/fetch_neighborhood_places[?category=dining]
+        # Authorization: Bearer <session_token>
+        #
+        # Live Google Places results. Without `category`, every category the
+        # property enabled comes back in one response — that is what lets the
+        # host draw the category rail with its counts and then switch tabs
+        # without touching the network again. With `category`, just that one.
+        #
+        # Either way each category is cached server-side for a day, so this is
+        # cheap to call and effectively free to call twice.
+        # ------------------------------------------------------------------
+        def fetch_neighborhood_places
+          builder = neighborhood_builder
+
+          return render_error("Neighborhood is not available for this property.", 404) unless builder.enabled?
+          return render_error("Neighborhood places are not configured for this property.", 404) unless builder.places_enabled?
+
+          service  = SdkNeighborhoodPlacesService.new(@community, builder: builder)
+          raw      = params[:category].to_s.strip
+          slug     = raw.presence && SdkNeighborhoodCategories.slug_for(raw)
+
+          if raw.present?
+            # Fail loudly on a typo rather than returning an empty 200 that
+            # looks like "nothing nearby".
+            return render_error("Unknown neighborhood category.", 400) unless SdkNeighborhoodCategories.known?(slug)
+
+            categories = [service.fetch(slug)].compact
+          else
+            categories = service.fetch_all
+          end
+
+          render json: {
+            categories: categories,
+            category:   slug,
+            limited:    service.limited?,
+            status:     "success",
+            code:       200
+          }
+        end
+
+        # ------------------------------------------------------------------
+        # GET /api/partner/maps/neighborhood_photo?p=<handle>&w=<200|800>
+        # No Authorization header — this is loaded straight into an <img src>,
+        # which cannot send one. The handle is an opaque, expiring pointer to a
+        # Google photo reference held server-side, and it guards nothing more
+        # sensitive than a public photo of a business.
+        #
+        # We resolve where Google actually keeps the image and redirect there.
+        # The bytes never pass through this process, and the Google API key
+        # never reaches the browser.
+        # ------------------------------------------------------------------
+        def neighborhood_photo
+          url = SdkNeighborhoodPhotoService.resolve(params[:p], params[:w])
+
+          return head :not_found if url.blank?
+
+          # The redirect target is content-addressed and immutable; the token
+          # guarding it expires long before this does.
+          response.headers['Cache-Control'] = 'public, max-age=86400'
+          redirect_to url, allow_other_host: true, status: :found
         end
 
         # ------------------------------------------------------------------
@@ -405,7 +500,10 @@ module Api
           @community = Community
             .includes(:sitemap, :floorplates, :floorplans, :map_filter,
                       :font_setting, :credential, :calculator_config,
-                      :three_d_maps_configuration, :design_system_config)
+                      :three_d_maps_configuration, :design_system_config,
+                      # discovery block only — the pins themselves are never
+                      # loaded here, just counted
+                      :neighborhood)
             .find_by(id: @session_property_id)
           return render_error("Property not found.", 404) if @community.nil?
         end
@@ -455,6 +553,22 @@ module Api
         def load_community_for_gallery
           @community = Community.find_by(id: @session_property_id)
           return render_error("Property not found.", 404) if @community.nil?
+        end
+
+        # Only the neighborhood row and its pins. None of the six heavy includes
+        # on the boot loader are touched by either neighborhood action.
+        def load_community_for_neighborhood
+          @community = Community
+            .includes(neighborhood: :locations)
+            .find_by(id: @session_property_id)
+          return render_error("Property not found.", 404) if @community.nil?
+        end
+
+        # Both neighborhood actions need it, and the places service takes it as
+        # a collaborator so the two never disagree about what is enabled or how
+        # wide the search radius is.
+        def neighborhood_builder
+          @neighborhood_builder ||= SdkNeighborhoodBuilderService.new(@community)
         end
 
         def show_ops_map?
