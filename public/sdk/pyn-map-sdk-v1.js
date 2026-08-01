@@ -173,6 +173,12 @@
     _favoriteGalleryImages: new Set(), // Set of favorited gallery image IDs (strings)
     _galleriesPromise: null,        // in-flight getGalleries() request; deduplicates concurrent calls
     _galleriesLoaded: false,        // true once fetched, so an empty gallery is not refetched forever
+    _neighborhoodPromise: null,     // in-flight getNeighborhood() request; deduplicates concurrent calls
+    _neighborhoodLoaded: false,     // true once fetched, so a property with no pins is not refetched forever
+    _placesPromises: {},            // { [slug]: Promise } — one in-flight request per category
+    _placesLoaded: new Set(),       // slugs already fetched; a Set, not a flag, so an empty
+                                    // category is not refetched on every tab switch
+    _neighborhoodLimited: false,    // last places request was cut short by the daily Google budget
     config: null,
     container: null,
     activeMapId: null,
@@ -225,7 +231,9 @@
       floorplans:  [],
       amenities:   [],
       filters:     null,
-      galleries:   []     // populated by getGalleries(); empty until the panel is opened
+      galleries:   [],    // populated by getGalleries(); empty until the panel is opened
+      neighborhood: [],   // curated pins; populated by getNeighborhood()
+      neighborhoodPlaces: {}  // { [slug]: category } — live Google results, per category
     },
 
     unitsByMap: {},                // { [mapId]: unit[] }
@@ -616,6 +624,96 @@
       } catch {
         return [];
       }
+    },
+
+    /**
+     * Fetch the property's curated neighborhood pins. Same auth shape and same
+     * 404-is-normal handling as _fetchGalleries.
+     */
+    async _fetchNeighborhood() {
+      try {
+        const res = await fetch(`${this._apiBase()}/api/partner/maps/fetch_neighborhood`, {
+          headers: {
+            "Authorization":    `Bearer ${this._sessionToken}`,
+            "X-SDK-Session-Id": this._sdkSessionId
+          }
+        });
+
+        if (!res.ok) return [];
+
+        const data = await res.json();
+        return data.locations || [];
+      } catch {
+        return [];
+      }
+    },
+
+    /**
+     * Fetch live Google places. Pass a slug for one category, or nothing for
+     * every category the property enabled.
+     *
+     * Resolves to { categories, limited }. `limited` true means the property
+     * spent its daily Google budget — the host should keep showing curated
+     * pins rather than treating it as an error.
+     */
+    async _fetchNeighborhoodPlaces(slug) {
+      const empty = { categories: [], limited: false };
+
+      try {
+        const query = slug ? `?category=${encodeURIComponent(slug)}` : "";
+        const res = await fetch(`${this._apiBase()}/api/partner/maps/fetch_neighborhood_places${query}`, {
+          headers: {
+            "Authorization":    `Bearer ${this._sessionToken}`,
+            "X-SDK-Session-Id": this._sdkSessionId
+          }
+        });
+
+        if (!res.ok) return empty;
+
+        const data = await res.json();
+        return { categories: data.categories || [], limited: !!data.limited };
+      } catch {
+        return empty;
+      }
+    },
+
+    /**
+     * Internal: normalise a category argument so hosts can pass "Dining",
+     * "dining" or " Dining " interchangeably. Mirrors the server's slug rules.
+     */
+    _neighborhoodSlug(category) {
+      return String(category || "")
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "_")
+        .replace(/^_+|_+$/g, "");
+    },
+
+    /**
+     * Internal: file a fetched category into data.neighborhoodPlaces and mark
+     * it loaded, so later reads are served from memory.
+     *
+     * Photo paths arrive relative, so one server-cached payload stays correct on
+     * any environment. They are absolutised here because the host page is
+     * normally on a different origin from the API — a relative path would
+     * resolve against the partner's own domain and 404. Every other image URL
+     * the SDK hands out is absolute; these should be no different.
+     */
+    _storeNeighborhoodPlaces(categories) {
+      const base = this._apiBase();
+      const absolutise = (url) => (url && url.charAt(0) === "/" ? base + url : url);
+
+      (categories || []).forEach(category => {
+        if (!category || !category.id) return;
+
+        (category.places || []).forEach(place => {
+          place.imageUrl = absolutise(place.imageUrl);
+          place.thumbUrl = absolutise(place.thumbUrl);
+        });
+
+        this.data.neighborhoodPlaces[category.id] = category;
+        this._placesLoaded.add(category.id);
+      });
     },
 
 
@@ -2975,7 +3073,12 @@
       }
       this._galleriesPromise   = null;
       this._galleriesLoaded    = false;
-      this.data                = { property: null, sitemap: null, backgroundSvg: null, floorplates: [], units: [], floorplans: [], amenities: [], filters: null, galleries: [] };
+      this._neighborhoodPromise = null;
+      this._neighborhoodLoaded  = false;
+      this._placesPromises      = {};
+      this._placesLoaded        = new Set();
+      this._neighborhoodLimited = false;
+      this.data                = { property: null, sitemap: null, backgroundSvg: null, floorplates: [], units: [], floorplans: [], amenities: [], filters: null, galleries: [], neighborhood: [], neighborhoodPlaces: {} };
       this.unitsByMap          = {};
       this.pointerIdsByMap     = {};
       this.unitsByPointerIdByMap = {};
@@ -3136,6 +3239,149 @@
         .finally(() => { this._galleriesPromise = null; });
 
       return this._galleriesPromise;
+    },
+
+    // ----------------------------------------------------
+    // NEIGHBORHOOD (PUBLIC API)
+    //
+    // Config arrives free with the map payload, so the host can render the tab,
+    // centre the map and draw the category rail before any of this is called:
+    //
+    //   const { neighborhood } = PynMapSDK.getPropertyConfig();
+    //   // { enabled, pageName, displayOnHomepage, center, radius, zoom,
+    //   //   address, listing, categories, locationCount, placesEnabled }
+    //
+    // Content comes from two independent sources, deliberately kept apart:
+    //
+    //   getNeighborhood()       curated pins the property entered in the CMS.
+    //                           One indexed query — effectively instant.
+    //   getNeighborhoodPlaces() live Google results. Server-cached for a day,
+    //                           so this is cheap even on a cold page.
+    //
+    // Both item shapes are identical apart from `source` ("curated" | "google"),
+    // so they can be concatenated and rendered by one component.
+    // ----------------------------------------------------
+
+    /**
+     * The property's curated neighborhood pins.
+     *
+     * Memoised for the life of the page, concurrent calls share one request,
+     * and it never throws — any failure resolves to an empty array.
+     *
+     *   [{
+     *     id, title, address, lat, lng,
+     *     category,        // stable slug, e.g. "dining" — filter on this
+     *     categoryLabel,   // display string, e.g. "Dining"
+     *     imageUrl,        // full size; null when the CMS has no photo
+     *     thumbUrl,        // list-tile size
+     *     distance,        // miles from the property
+     *     travelTime,      // CMS free text ("8 min walk"), or null
+     *     rating,          // or null — never a misleading 0
+     *     source           // "curated"
+     *   }]
+     *
+     * @param {{ force?: boolean }} [opts]
+     * @returns {Promise<object[]>}
+     */
+    async getNeighborhood({ force = false } = {}) {
+      if (!force && this._neighborhoodLoaded) return this.data.neighborhood;
+      if (this._neighborhoodPromise) return this._neighborhoodPromise;
+
+      // Fired here rather than on every call: reaching the network is what
+      // marks a real visit, so re-renders reading the memo cost nothing.
+      // 'neighborhood_view' is the name the server maps to the "Neighborhood
+      // Page" visited page, so it has to match exactly.
+      if (this._analytics) this._captureWithMapType('neighborhood_view');
+
+      this._neighborhoodPromise = this._fetchNeighborhood()
+        .then((locations) => {
+          this.data.neighborhood   = locations;
+          this._neighborhoodLoaded = true;
+          return locations;
+        })
+        .finally(() => { this._neighborhoodPromise = null; });
+
+      return this._neighborhoodPromise;
+    },
+
+    /**
+     * Live Google places near the property.
+     *
+     * Called with no argument it returns every category the property enabled,
+     * each with its `count` and `places` — one round trip, enough to render the
+     * category rail with its badges and then switch tabs with no further
+     * network use. Called with a category it returns just that one, fetching it
+     * alone if the bulk call has not run.
+     *
+     * Memoised per category, so switching tabs back and forth is free, and a
+     * category that genuinely has nothing nearby is not refetched every time.
+     * Never throws.
+     *
+     *   {
+     *     id, title, count,
+     *     places: [{ ...same shape as getNeighborhood(), source: "google",
+     *                userRatingsTotal, isOpenNow, priceLevel }]
+     *   }
+     *
+     * Place photos come back as URLs on our own host — the Google key stays
+     * server-side — and can be used directly as an <img src>.
+     *
+     * @param {string} [category] slug or CMS label; omit for all categories
+     * @param {{ force?: boolean }} [opts]
+     * @returns {Promise<object[]|object|null>} all categories, or the one asked for
+     */
+    async getNeighborhoodPlaces(category, { force = false } = {}) {
+      const slug = this._neighborhoodSlug(category);
+
+      return slug ? this._getPlacesCategory(slug, force) : this._getAllPlaces(force);
+    },
+
+    /**
+     * True when the last places request came back short because the property
+     * spent its daily Google budget. Curated pins are unaffected — the host
+     * should keep showing them rather than reporting an error.
+     *
+     * @returns {boolean}
+     */
+    isNeighborhoodLimited() {
+      return this._neighborhoodLimited;
+    },
+
+    /** Internal: every category, memoised under the shared "*" promise key. */
+    async _getAllPlaces(force) {
+      const configured = (this.data.property?.neighborhood?.categories || []).map(c => c.id);
+      const allLoaded  = configured.length > 0 && configured.every(id => this._placesLoaded.has(id));
+
+      if (!force && allLoaded) return configured.map(id => this.data.neighborhoodPlaces[id]);
+      if (this._placesPromises["*"]) return this._placesPromises["*"];
+
+      this._placesPromises["*"] = this._fetchNeighborhoodPlaces()
+        .then(({ categories, limited }) => {
+          this._storeNeighborhoodPlaces(categories);
+          this._neighborhoodLimited = limited;
+          return categories;
+        })
+        .finally(() => { delete this._placesPromises["*"]; });
+
+      return this._placesPromises["*"];
+    },
+
+    /** Internal: one category, memoised under its own slug. */
+    async _getPlacesCategory(slug, force) {
+      if (!force && this._placesLoaded.has(slug)) return this.data.neighborhoodPlaces[slug] || null;
+      if (this._placesPromises[slug]) return this._placesPromises[slug];
+
+      if (this._analytics) this._captureWithMapType('neighborhood_category_view', 'click', { category: slug });
+
+      this._placesPromises[slug] = this._fetchNeighborhoodPlaces(slug)
+        .then(({ categories, limited }) => {
+          this._storeNeighborhoodPlaces(categories);
+          this._neighborhoodLimited = limited;
+          return this.data.neighborhoodPlaces[slug] || null;
+        })
+        .finally(() => { delete this._placesPromises[slug]; });
+
+      return this._placesPromises[slug];
     },
 
     // ----------------------------------------------------
@@ -4009,6 +4255,9 @@
       getUnits(filters)            { return PynMapSDK.getUnits.call(PynMapSDK, filters); },
       getFiltersData()             { return PynMapSDK.getFiltersData.call(PynMapSDK); },
       getGalleries(opts)           { return PynMapSDK.getGalleries.call(PynMapSDK, opts); },
+      getNeighborhood(opts)                 { return PynMapSDK.getNeighborhood.call(PynMapSDK, opts); },
+      getNeighborhoodPlaces(category, opts) { return PynMapSDK.getNeighborhoodPlaces.call(PynMapSDK, category, opts); },
+      isNeighborhoodLimited()               { return PynMapSDK.isNeighborhoodLimited.call(PynMapSDK); },
       selectUnit(unitId, colorCode){ return PynMapSDK.selectUnit.call(PynMapSDK, unitId, colorCode); },
       unselectUnit(unitId)         { return PynMapSDK.unselectUnit.call(PynMapSDK, unitId); },
       zoomIn()                     { return PynMapSDK.zoomIn.call(PynMapSDK); },
