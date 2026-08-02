@@ -20,9 +20,8 @@ Rails.application.routes.draw do
   get 'tour_users/index'
   get '/error', to: 'error_logs#generate_error', as: 'error_logs_generate'
   get '/error_page', to: 'error_logs#error_page', as: 'error_page'
-  get '/tools/svg_optimizer', to: 'svg_optimizer#show', as: 'svg_optimizer'
-  post '/tools/svg_optimizer/optimize', to: 'svg_optimizer#optimize', as: 'svg_optimizer_optimize'
-  # Phase 2 — production bulk optimize + revert
+  # SVG Maps Optimizer — bulk optimize + revert of the live map SVGs
+  get  '/tools/svg_optimizer', to: redirect('/tools/svg_optimizer/properties')
   get  '/tools/svg_optimizer/properties', to: 'svg_optimizer#properties', as: 'svg_optimizer_properties'
   get  '/tools/svg_optimizer/properties/:community_id/review', to: 'svg_optimizer#review', as: 'svg_optimizer_review'
   get  '/tools/svg_optimizer/properties/:community_id/analyze', to: 'svg_optimizer#analyze', as: 'svg_optimizer_analyze'

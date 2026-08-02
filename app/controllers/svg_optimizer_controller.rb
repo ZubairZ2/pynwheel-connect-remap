@@ -1,26 +1,16 @@
-# Internal staff diagnostic tool — upload a floorplate/sitemap SVG (or point
-# it at a URL) and see how much its embedded background image(s) can be
-# shrunk, with a before/after performance estimate. Nothing is ever
-# persisted: the SVG is read into memory for the duration of the request
-# only, never written to S3, the database, or any model. The optimized SVG
-# is returned to the browser for client-side download; nothing is kept
-# server-side afterward.
-require "net/http"
-require "ipaddr"
-require "resolv"
-
+# SVG Maps Optimizer — internal staff tool that shrinks the embedded raster
+# backgrounds inside the live floorplate/sitemap/Beans-background SVGs real
+# renters' maps load.
+#
+# Read-only endpoints (properties, review, analyze, status) never write
+# anything: they read the live file storage-agnostically and optimize in
+# memory purely to show a before/after breakdown and visual preview. Only
+# run_optimize / revert / requeue mutate anything, and they do it by queueing
+# an SvgOptimizationWorker, never inline in the web thread.
 class SvgOptimizerController < ApplicationController
   before_action :require_super_admin
 
-  MAX_FETCH_BYTES = 20.megabytes
-  FETCH_OPEN_TIMEOUT = 5
-  FETCH_READ_TIMEOUT = 15
-  MAX_REDIRECTS = 3
-
-  def show
-  end
-
-  # Phase 2 — production bulk optimize. Lists every community eligible to be
+  # Lists every community eligible to be
   # touched (enable_svg_mode AND at least one real SVG — a Floorplate/Sitemap
   # svg_image, or a Beans property's background_svg_image), each with a
   # rolled-up optimization status.
@@ -222,123 +212,7 @@ class SvgOptimizerController < ApplicationController
     render_error("Property not found.", status: :not_found)
   end
 
-  def optimize
-    raw_text = resolve_raw_text
-    return if performed?
-
-    unless raw_text.present? && raw_text.include?("<svg")
-      return render_error("That doesn't look like a valid SVG file.")
-    end
-
-    result = SvgBackgroundOptimizerService.call(raw_text)
-    render json: { success: true }.merge(result)
-  rescue StandardError => e
-    Rails.logger.error("[SvgOptimizerController] #{e.class}: #{e.message}")
-    render_error("Something went wrong while processing that file: #{e.message}")
-  end
-
   private
-
-  def resolve_raw_text
-    if params[:svg_url].present?
-      fetch_from_url(params[:svg_url].to_s.strip)
-    elsif params[:svg_file].present?
-      read_upload(params[:svg_file])
-    else
-      render_error("Please choose an SVG file or enter a URL.")
-      nil
-    end
-  end
-
-  def read_upload(file)
-    unless file.respond_to?(:read)
-      render_error("Upload was not received correctly. Please try again.")
-      return nil
-    end
-
-    if file.size.to_i > MAX_FETCH_BYTES
-      render_error("File is too large (#{(file.size / 1.megabyte.to_f).round(1)}MB). Max is #{MAX_FETCH_BYTES / 1.megabyte}MB.")
-      return nil
-    end
-
-    file.read.force_encoding("UTF-8")
-  end
-
-  # Fetches a remote SVG with basic SSRF hardening (http/https only, no
-  # private/loopback/link-local targets, bounded redirects, size-capped
-  # streaming read) since this endpoint lets a signed-in user make the
-  # server issue an outbound request to an arbitrary URL.
-  def fetch_from_url(url, redirects_left = MAX_REDIRECTS)
-    uri = safe_parse_uri(url)
-    return nil unless uri
-
-    response_body = nil
-    Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == "https",
-                    open_timeout: FETCH_OPEN_TIMEOUT, read_timeout: FETCH_READ_TIMEOUT) do |http|
-      request = Net::HTTP::Get.new(uri)
-      http.request(request) do |res|
-        case res
-        when Net::HTTPRedirection
-          if redirects_left <= 0
-            render_error("Too many redirects fetching that URL.")
-            next
-          end
-          location = res["location"]
-          return fetch_from_url(location, redirects_left - 1)
-        when Net::HTTPSuccess
-          body = +""
-          res.read_body do |chunk|
-            body << chunk
-            if body.bytesize > MAX_FETCH_BYTES
-              render_error("Fetched file exceeds max size (#{MAX_FETCH_BYTES / 1.megabyte}MB).")
-              return nil
-            end
-          end
-          response_body = body
-        else
-          render_error("Failed to fetch URL (HTTP #{res.code}).")
-        end
-      end
-    end
-    response_body&.force_encoding("UTF-8")
-  rescue StandardError => e
-    render_error("Failed to fetch URL: #{e.message}")
-    nil
-  end
-
-  def safe_parse_uri(url)
-    uri = URI.parse(url)
-
-    unless uri.is_a?(URI::HTTP) && uri.host.present? # covers both http and https
-      render_error("URL must start with http:// or https://")
-      return nil
-    end
-
-    resolved_ips = Resolv.getaddresses(uri.host)
-    if resolved_ips.empty?
-      render_error("Could not resolve host: #{uri.host}")
-      return nil
-    end
-
-    if resolved_ips.any? { |ip| unsafe_ip?(ip) }
-      render_error("That URL points to a non-public address and can't be fetched.")
-      return nil
-    end
-
-    uri
-  rescue URI::InvalidURIError
-    render_error("That's not a valid URL.")
-    nil
-  end
-
-  def unsafe_ip?(ip_string)
-    ip = IPAddr.new(ip_string)
-    ip.loopback? || ip.private? || ip.link_local?
-  rescue IPAddr::Error
-    true
-  end
-
-  # ---- Phase 2 helpers -------------------------------------------------------
 
   # Communities that could have a real embedded background to optimize:
   # enable_svg_mode on, AND at least one target with a non-blank SVG.

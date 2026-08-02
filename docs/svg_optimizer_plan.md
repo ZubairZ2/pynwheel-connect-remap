@@ -1,9 +1,10 @@
-# SVG Background Optimizer — Work Plan
+# SVG Maps Optimizer — Work Plan
 
 Internal staff tool for fixing slow map load times caused by oversized SVG
-files. This document covers what's already built and verified (Phase 1),
-what's being built now (Phase 2), the property-level eligibility rules, and
-every safety mechanism protecting production data.
+files. This document covers the optimization engine and its validation
+(Phase 1), the production bulk optimize/revert tool built on it (Phase 2),
+the property-level eligibility rules, and every safety mechanism protecting
+production data.
 
 ## 1. Problem & root cause
 
@@ -20,10 +21,11 @@ the original export was.
 The fix: extract the embedded raster, re-encode it more efficiently, and
 put it back — without touching anything else in the file.
 
-## 2. Phase 1 — diagnostic tool (built, tested, live)
+## 2. Phase 1 — the optimization engine (built, tested)
 
-**Not connected to production data.** Runs entirely in memory per request;
-nothing is written to S3, the database, or any model.
+The engine itself is permanent and is what Phase 2 runs on every map. The
+standalone upload/paste-a-URL **diagnostic page has been removed** — see the
+note at the end of this section.
 
 - **`SvgBackgroundOptimizerService`** (`app/services/`) — the core engine.
   Detects every `<image>` element anywhere in an SVG document (direct
@@ -38,14 +40,14 @@ nothing is written to S3, the database, or any model.
   masks, unit polygons, `pointerData`) is provably untouched.
 - **`script/svg_background_optimizer.rb`** — CLI wrapper around the same
   service, for batch-testing files from the command line.
-- **`/tools/svg_optimizer`** (super-admin only) — upload a file or paste a
-  URL, see before/after size, an estimated download-time improvement at a
-  few connection speeds, a per-image breakdown, a side-by-side visual
-  preview (original vs. optimized, both loaded via `<img>` — not
-  `innerHTML` — so untrusted SVG content can't execute embedded
-  scripting), and a download button. URL fetches are SSRF-hardened
-  (http/https only, private/loopback/link-local IPs rejected, bounded
-  redirects, size-capped streaming read).
+**Removed:** the standalone `/tools/svg_optimizer` diagnostic page (upload a
+file or paste a URL, get a before/after breakdown and download) — along with
+`SvgOptimizerController#show`/`#optimize`, its view, its two routes and the
+SSRF-hardened URL-fetch helpers that only it used. Phase 2's review page does
+the same in-memory analysis against the real live files, so the standalone
+page was a second, weaker way in. `/tools/svg_optimizer` now redirects to the
+properties list. The engine and the `script/svg_background_optimizer.rb` CLI
+wrapper are untouched.
 
 **Validation performed:** ran against 11 genuinely different real files (4
 production S3 URLs + 7 deduplicated local samples) — zero crashes, and a
