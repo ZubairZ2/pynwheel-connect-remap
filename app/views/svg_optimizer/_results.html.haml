@@ -1,0 +1,61 @@
+-# The filterable half of the list page. Rendered standalone (no layout) for
+-# the live toolbar's XHR, so filtering as you type doesn't re-render the whole
+-# page chrome on every keystroke.
+- if properties.empty?
+  .empty No eligible properties found.
+- else
+  %p.muted
+    = "#{properties.total_entries} propert#{properties.total_entries == 1 ? 'y' : 'ies'}"
+    - if properties.total_pages > 1
+      = "· page #{properties.current_page} of #{properties.total_pages}"
+
+  .table-wrap
+    %table
+      %thead
+        %tr
+          %th Property
+          %th Company
+          %th Type
+          %th Beans SVG
+          %th Maps
+          %th Status
+          %th
+      %tbody
+        - properties.each do |row|
+          - community = row[:community]
+          - rollup = row[:rollup]
+          - has_targets = rollup[:total].to_i > 0
+          %tr{"data-community-id" => community.id, "data-status-url" => svg_optimizer_status_path(community.id)}
+            %td
+              %span.p-name= community.name.presence || "Community ##{community.id}"
+            %td.p-company= community.company&.name.presence || "—"
+            %td
+              %span.type-tag= community.is_sitemap? ? "Site map" : "Floorplates"
+            %td
+              - if community.is_beans_svg?
+                %span.flag.yes{title: "\"Beans Generated SVG\" is on for this property"} True
+              - else
+                %span.flag.no{title: "\"Beans Generated SVG\" is off for this property"} False
+            %td= rollup[:total]
+            %td.js-status
+              - if rollup[:state] == "in_progress"
+                %span.pill.in_progress
+                  Optimizing…
+                  %span.cnt= "#{rollup[:done]}/#{rollup[:total]}"
+              - elsif rollup[:state] == "partial"
+                %span.pill.partial
+                  Partly optimized
+                  %span.cnt= "#{rollup[:done]}/#{rollup[:total]}"
+              - elsif rollup[:state] == "done_with_errors"
+                %span.pill.done_with_errors
+                  Done with errors
+                  %span.cnt= "#{rollup[:failed]} failed"
+              - else
+                %span.pill{class: rollup[:state]}= svg_state_label(rollup[:state])
+            %td.right
+              - if has_targets
+                = link_to "Review & Optimize", svg_optimizer_review_path(community.id), class: "btn btn-primary"
+
+  - if properties.total_pages > 1
+    .pager
+      = will_paginate properties, params: { q: params[:q], company: params[:company], type: params[:type], beans: params[:beans], state: params[:state] }

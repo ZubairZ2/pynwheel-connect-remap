@@ -1,7 +1,5 @@
 - content_for :title, "SVG Maps Optimizer"
 
-- state_labels = { "not_started" => "Not optimized", "in_progress" => "Optimizing…", "done" => "Optimized", "partial" => "Partly optimized", "done_with_errors" => "Done with errors", "not_applicable" => "No targets" }
-
 :css
   .svgopt-p { max-width: 1180px; margin: 0 auto; padding: 30px 20px 80px; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #2b2f36; }
   .svgopt-p h1 { font-size: 26px; font-weight: 600; margin: 0 0 6px; }
@@ -28,7 +26,9 @@
   .svgopt-p .p-id { color: #9ca3af; font-size: 12px; margin-left: 6px; font-weight: 400; }
   .svgopt-p .p-company { color: #374151; }
   .svgopt-p .type-tag { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 6px; background: #f1f5f9; color: #475569; }
-  .svgopt-p .type-tag.t-beans { background: #eef2ff; color: #4338ca; margin-left: 4px; }
+  .svgopt-p .flag { font-weight: 600; font-size: 13px; }
+  .svgopt-p .flag.yes { color: #4338ca; }
+  .svgopt-p .flag.no { color: #b0b7c3; }
   .svgopt-p td.right { text-align: right; }
 
   .svgopt-p .pill { display: inline-block; padding: 3px 11px; border-radius: 20px; font-size: 12px; font-weight: 600; white-space: nowrap; }
@@ -41,6 +41,29 @@
 
   .svgopt-p .empty { text-align: center; color: #9ca3af; padding: 60px 20px; }
 
+  .svgopt-p .spin { width: 15px; height: 15px; border: 2px solid #e5e7eb; border-top-color: #3558e8; border-radius: 50%; opacity: 0; transition: opacity 0.15s; }
+  .svgopt-p .spin.on { opacity: 1; animation: svgoptpspin 0.7s linear infinite; }
+  @keyframes svgoptpspin { to { transform: rotate(360deg); } }
+
+  /* will_paginate emits the current page as <em>, prev/next as <a> or a disabled
+     <span>, and gaps as <span class="gap"> — all three need the same box, or the
+     current page renders as bare italic text. */
+  .svgopt-p .pager { margin-top: 20px; display: flex; justify-content: center; }
+  .svgopt-p .pagination { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .svgopt-p .pagination a,
+  .svgopt-p .pagination em,
+  .svgopt-p .pagination span {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 36px; height: 34px; padding: 0 11px; box-sizing: border-box;
+    border: 1px solid #e5e7eb; border-radius: 8px; background: #fff;
+    font-size: 13px; font-weight: 600; font-style: normal; line-height: 1;
+    color: #475569; text-decoration: none; transition: background 0.12s, border-color 0.12s, color 0.12s;
+  }
+  .svgopt-p .pagination a:hover { background: #f1f5f9; border-color: #d7dde5; color: #1f2937; }
+  .svgopt-p .pagination em.current { background: #3558e8; border-color: #3558e8; color: #fff; cursor: default; }
+  .svgopt-p .pagination .disabled { color: #c3cad4; background: #fafbfc; border-color: #eef0f3; cursor: default; }
+  .svgopt-p .pagination .gap { border: none; background: none; min-width: 0; padding: 0 2px; color: #9ca3af; letter-spacing: 1px; }
+
 .svgopt-p
   %h1 SVG Maps Optimizer
   %p.lede
@@ -49,68 +72,28 @@
     breakdown and visual preview of every map, then commit the write — each preceded by a
     byte-verified backup, so anything can be reverted.
 
-  %form.toolbar{method: "get", action: svg_optimizer_properties_path}
-    %input{type: "text", name: "q", value: params[:q], placeholder: "Property name…"}
-    %input{type: "text", name: "company", value: params[:company], placeholder: "Company…"}
+  %form.toolbar#filters{method: "get", action: svg_optimizer_properties_path}
+    %input{type: "text", name: "q", value: params[:q], placeholder: "Property name…", autocomplete: "off"}
+    %input{type: "text", name: "company", value: params[:company], placeholder: "Company…", autocomplete: "off"}
     %select{name: "type"}
       %option{value: ""} All types
       %option{value: "floorplate", selected: params[:type] == "floorplate"} Floorplates
       %option{value: "sitemap", selected: params[:type] == "sitemap"} Site map
+    %select{name: "beans"}
+      %option{value: ""} All Beans SVG
+      %option{value: "true", selected: params[:beans] == "true"} Beans SVG: True
+      %option{value: "false", selected: params[:beans] == "false"} Beans SVG: False
     %select{name: "state"}
       %option{value: ""} All statuses
       - %w[not_started partial done in_progress done_with_errors].each do |st|
-        %option{value: st, selected: params[:state] == st}= state_labels[st]
-    %button.btn.btn-ghost{type: "submit"} Filter
-    - if params[:q].present? || params[:company].present? || params[:type].present? || params[:state].present?
-      %a.btn.btn-ghost{href: svg_optimizer_properties_path} Clear
+        %option{value: st, selected: params[:state] == st}= svg_state_label(st)
+    %span.spin#filter-spin
+    -# Always rendered so the live toolbar can show/hide it without a reload.
+    - filtering = params[:q].present? || params[:company].present? || params[:type].present? || params[:beans].present? || params[:state].present?
+    %a.btn.btn-ghost#clear-filters{href: svg_optimizer_properties_path, style: ("display:none" unless filtering)} Clear
 
-  - if @properties.empty?
-    .empty No eligible properties found.
-  - else
-    %p.muted= "#{@properties.size} propert#{@properties.size == 1 ? 'y' : 'ies'}"
-
-    .table-wrap
-      %table
-        %thead
-          %tr
-            %th Property
-            %th Company
-            %th Type
-            %th Maps
-            %th Status
-            %th
-        %tbody
-          - @properties.each do |row|
-            - community = row[:community]
-            - rollup = row[:rollup]
-            - has_targets = rollup[:total].to_i > 0
-            %tr{"data-community-id" => community.id, "data-status-url" => svg_optimizer_status_path(community.id)}
-              %td
-                %span.p-name= community.name.presence || "Community ##{community.id}"
-              %td.p-company= community.company&.name.presence || "—"
-              %td
-                %span.type-tag= community.is_sitemap? ? "Site map" : "Floorplates"
-                - if row[:targets].any? { |t| t[:record].is_a?(Community) }
-                  %span.type-tag.t-beans{title: "This property's maps sit on one shared Beans background SVG, which is optimized too"} + Background
-              %td= rollup[:total]
-              %td.js-status
-                - if rollup[:state] == "in_progress"
-                  %span.pill.in_progress
-                    Optimizing…
-                    %span.cnt= "#{rollup[:done]}/#{rollup[:total]}"
-                - elsif rollup[:state] == "partial"
-                  %span.pill.partial
-                    Partly optimized
-                    %span.cnt= "#{rollup[:done]}/#{rollup[:total]}"
-                - elsif rollup[:state] == "done_with_errors"
-                  %span.pill.done_with_errors
-                    Done with errors
-                    %span.cnt= "#{rollup[:failed]} failed"
-                - else
-                  %span.pill{class: rollup[:state]}= state_labels[rollup[:state]] || rollup[:state]
-              %td.right
-                - if has_targets
-                  = link_to "Review & Optimize", svg_optimizer_review_path(community.id), class: "btn btn-primary"
+  #results
+    = render partial: "results", locals: { properties: @properties }
 
 :javascript
   (function () {
@@ -154,9 +137,82 @@
       var id = rowEl.getAttribute("data-community-id");
       if (polling[id]) { clearInterval(polling[id]); delete polling[id]; }
     }
+    function stopAllPolling() {
+      Object.keys(polling).forEach(function (id) { clearInterval(polling[id]); delete polling[id]; });
+    }
 
-    // Keep any in-progress rows live without a manual refresh.
-    document.querySelectorAll("tr[data-community-id]").forEach(function (rowEl) {
-      if (rowEl.querySelector(".pill.in_progress")) startPolling(rowEl);
+    // Keep any in-progress rows live without a manual refresh. Re-run after
+    // every results swap, since those rows are new elements.
+    function watchInProgressRows() {
+      document.querySelectorAll("tr[data-community-id]").forEach(function (rowEl) {
+        if (rowEl.querySelector(".pill.in_progress")) startPolling(rowEl);
+      });
+    }
+
+    // ---- live filtering --------------------------------------------------
+    // The toolbar filters as you type. Each change re-requests this action as
+    // an XHR, which returns just the results fragment (same partial the full
+    // page renders, so markup can't drift), and swaps it in. The URL is kept in
+    // sync so a filtered view is still refreshable and shareable.
+    var form = document.getElementById("filters");
+    var results = document.getElementById("results");
+    var spinner = document.getElementById("filter-spin");
+    var DEBOUNCE_MS = 250;
+    var timer = null, inFlight = null, lastQuery = window.location.search;
+
+    function currentQuery() {
+      var params = new URLSearchParams(new FormData(form));
+      Array.from(params.keys()).forEach(function (k) { if (!params.get(k)) params.delete(k); });
+      var qs = params.toString();
+      return qs ? "?" + qs : "";
+    }
+
+    function applyFilters(push) {
+      var query = currentQuery();
+      if (query === lastQuery) return;
+      lastQuery = query;
+
+      if (inFlight) inFlight.abort();
+      inFlight = new AbortController();
+      spinner.classList.add("on");
+
+      fetch(form.action + query, { signal: inFlight.signal, headers: { "X-Requested-With": "XMLHttpRequest" } })
+        .then(function (res) { return res.text(); })
+        .then(function (html) {
+          stopAllPolling();
+          results.innerHTML = html;
+          watchInProgressRows();
+          syncClearButton();
+          if (push) history.replaceState(null, "", query || window.location.pathname);
+        })
+        .catch(function (e) { if (e.name !== "AbortError") window.location.search = query; })
+        .finally(function () { spinner.classList.remove("on"); inFlight = null; });
+    }
+
+    function syncClearButton() {
+      var clear = document.getElementById("clear-filters");
+      if (!clear) return;
+      clear.style.display = currentQuery() ? "" : "none";
+    }
+
+    form.addEventListener("submit", function (e) { e.preventDefault(); applyFilters(true); });
+    form.addEventListener("input", function () {
+      clearTimeout(timer);
+      timer = setTimeout(function () { applyFilters(true); }, DEBOUNCE_MS);
     });
+    form.addEventListener("change", function () { clearTimeout(timer); applyFilters(true); });
+
+    var clearBtn = document.getElementById("clear-filters");
+    if (clearBtn) {
+      clearBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        form.reset();
+        form.querySelectorAll("input[type=text]").forEach(function (i) { i.value = ""; });
+        form.querySelectorAll("select").forEach(function (s) { s.value = ""; });
+        applyFilters(true);
+      });
+    }
+
+    watchInProgressRows();
+    syncClearButton();
   })();

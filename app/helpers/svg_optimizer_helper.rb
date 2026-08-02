@@ -1,4 +1,20 @@
 module SvgOptimizerHelper
+  # Display names for a property's rolled-up state. Shared by the list view and
+  # its results partial (which renders standalone for the live filter), and
+  # mirrored in the page's JS `STATE_LABELS` for poll updates.
+  SVG_STATE_LABELS = {
+    "not_started"      => "Not optimized",
+    "in_progress"      => "Optimizing…",
+    "done"             => "Optimized",
+    "partial"          => "Partly optimized",
+    "done_with_errors" => "Done with errors",
+    "not_applicable"   => "No targets"
+  }.freeze
+
+  def svg_state_label(state)
+    SVG_STATE_LABELS[state] || state
+  end
+
   # Human name for one optimization target. Shared by the review page, the
   # JSON endpoints and the confirm modal so a map is called the same thing
   # everywhere. A Community target is the Beans shared background map.

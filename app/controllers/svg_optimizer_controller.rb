@@ -7,32 +7,22 @@
 # memory purely to show a before/after breakdown and visual preview. Only
 # run_optimize / revert / requeue mutate anything, and they do it by queueing
 # an SvgOptimizationWorker, never inline in the web thread.
+require "will_paginate/array"
+
 class SvgOptimizerController < ApplicationController
   before_action :require_super_admin
 
-  # Lists every community eligible to be
-  # touched (enable_svg_mode AND at least one real SVG — a Floorplate/Sitemap
-  # svg_image, or a Beans property's background_svg_image), each with a
-  # rolled-up optimization status.
+  PER_PAGE = 50
+
+  # Lists every community eligible to be touched (enable_svg_mode AND at least
+  # one real SVG — a Floorplate/Sitemap svg_image, or a Beans property's
+  # background_svg_image), each with a rolled-up optimization status.
   def properties
-    communities = eligible_communities.includes(:company)
+    @properties = paginated_property_rows(filtered_communities)
 
-    if params[:q].present?
-      communities = communities.where("LOWER(communities.name) LIKE ?", "%#{params[:q].to_s.strip.downcase}%")
-    end
-    if params[:company].present?
-      communities = communities.joins(:company).where("LOWER(companies.name) LIKE ?", "%#{params[:company].to_s.strip.downcase}%")
-    end
-    case params[:type]
-    when "sitemap"    then communities = communities.where(is_sitemap: true)
-    when "floorplate" then communities = communities.where(is_sitemap: false)
-    end
-
-    @properties = communities.order(:name).map { |c| build_property_row(c) }
-
-    if params[:state].present?
-      @properties = @properties.select { |row| row[:rollup][:state] == params[:state] }
-    end
+    # The live toolbar re-requests this action on every keystroke; sending back
+    # just the results fragment keeps it off the page chrome (layout + sidebar).
+    render partial: "results", locals: { properties: @properties }, layout: false if request.xhr?
   end
 
   # Per-property review page: shows full diagnostic detail + a visual
@@ -219,26 +209,84 @@ class SvgOptimizerController < ApplicationController
   # is_sitemap properties are matched via their sitemap; the rest via their
   # floorplates; Beans properties also via their own shared background map,
   # which alone makes a property worth listing.
+  #
+  # Written as EXISTS subqueries rather than three id plucks so the database
+  # does the filtering: this stays one query, and the result is a relation the
+  # caller can still filter, order and paginate instead of a materialised id
+  # list that grows with the property count.
   def eligible_communities
-    sitemap_ids = Community
-      .where(enable_svg_mode: true, is_sitemap: true)
-      .joins(:sitemap)
-      .where.not(sitemaps: { svg_image: [nil, ""] })
-      .pluck(:id)
+    Community.where(enable_svg_mode: true).where(<<~SQL.squish)
+      (
+        communities.is_sitemap = TRUE AND EXISTS (
+          SELECT 1 FROM sitemaps
+          WHERE sitemaps.community_id = communities.id
+            AND COALESCE(sitemaps.svg_image, '') <> ''
+        )
+      ) OR (
+        communities.is_sitemap = FALSE AND EXISTS (
+          SELECT 1 FROM floorplates
+          WHERE floorplates.community_id = communities.id
+            AND COALESCE(floorplates.svg_image, '') <> ''
+        )
+      ) OR (
+        communities.is_beans_svg = TRUE
+          AND COALESCE(communities.background_svg_image, '') <> ''
+      )
+    SQL
+  end
 
-    floorplate_ids = Community
-      .where(enable_svg_mode: true, is_sitemap: false)
-      .joins(:floorplates)
-      .where.not(floorplates: { svg_image: [nil, ""] })
-      .distinct
-      .pluck(:id)
+  # The eligible set narrowed by the toolbar's SQL-side filters, ordered
+  # deterministically (name alone isn't unique, and ties would shuffle rows
+  # between pages). The status filter is deliberately NOT here — see
+  # paginated_property_rows.
+  def filtered_communities
+    scope = eligible_communities.includes(:company, :sitemap, :floorplates)
 
-    beans_background_ids = Community
-      .where(enable_svg_mode: true, is_beans_svg: true)
-      .where.not(background_svg_image: [nil, ""])
-      .pluck(:id)
+    if params[:q].present?
+      scope = scope.where("LOWER(communities.name) LIKE ?", "%#{params[:q].to_s.strip.downcase}%")
+    end
+    if params[:company].present?
+      scope = scope.joins(:company).where("LOWER(companies.name) LIKE ?", "%#{params[:company].to_s.strip.downcase}%")
+    end
+    case params[:type]
+    when "sitemap"    then scope = scope.where(is_sitemap: true)
+    when "floorplate" then scope = scope.where(is_sitemap: false)
+    end
+    case params[:beans]
+    when "true"  then scope = scope.where(is_beans_svg: true)
+    when "false" then scope = scope.where(is_beans_svg: [false, nil]) # column is nullable on older rows
+    end
 
-    Community.where(id: (sitemap_ids + floorplate_ids + beans_background_ids).uniq)
+    scope.order(:name, :id)
+  end
+
+  # One page of rows, as a will_paginate collection the view can both render
+  # and page through.
+  #
+  # A property's rollup state is computed in Ruby (it compares each map's live
+  # file URL against its last run's result), so it can't be a WHERE clause.
+  # When the status filter is in play we therefore have to build every matching
+  # property before paging; without it — the common case, and the one that has
+  # to stay fast as the property count grows — we page in SQL first and only
+  # ever build one page's worth of rows.
+  def paginated_property_rows(scope)
+    if params[:state].present?
+      build_property_rows(scope.to_a)
+        .select { |row| row[:rollup][:state] == params[:state] }
+        .paginate(page: params[:page], per_page: PER_PAGE)
+    else
+      page = scope.paginate(page: params[:page], per_page: PER_PAGE)
+      WillPaginate::Collection.create(page.current_page, page.per_page, page.total_entries) do |pager|
+        pager.replace(build_property_rows(page))
+      end
+    end
+  end
+
+  # Builds every row for a set of communities using ONE runs query for the
+  # whole set, instead of one per property.
+  def build_property_rows(communities)
+    latest = latest_by_targets(communities)
+    communities.map { |community| build_property_row(community, latest) }
   end
 
   # One map (when target params are present) or all of the property's maps.
@@ -293,13 +341,17 @@ class SvgOptimizerController < ApplicationController
   # Every record whose SVG this property's live map is assembled from: the
   # Beans background map (the shared base layer, when the property has one)
   # first, then the interactive sitemap/floorplate overlay(s) on top.
+  # Filters the floorplates in Ruby rather than SQL so a preloaded association
+  # (the list page loads them all in one query) isn't thrown away by a fresh
+  # per-property WHERE. `read_attribute` matches the old SQL exactly: the
+  # column is set and non-empty.
   def resolve_targets(community)
     overlays =
       if community.is_sitemap?
         sm = community.sitemap
         sm && sm.svg_image.present? ? [sm] : []
       else
-        community.floorplates.where.not(svg_image: [nil, ""]).to_a
+        community.floorplates.select { |fp| fp.read_attribute(:svg_image).present? }
       end
 
     [beans_background_target(community), *overlays].compact
@@ -311,9 +363,8 @@ class SvgOptimizerController < ApplicationController
     community if community.is_beans_svg? && community.background_svg_image.present?
   end
 
-  def build_property_row(community)
+  def build_property_row(community, latest = latest_by_target(community))
     targets = resolve_targets(community)
-    latest = latest_by_target(community)
     {
       community: community,
       targets: targets.map { |t| { record: t, latest: latest[[t.class.name, t.id]] } },
@@ -357,8 +408,19 @@ class SvgOptimizerController < ApplicationController
   end
 
   def latest_by_target(community)
+    latest_by_targets([community])
+  end
+
+  # Latest run per target across MANY communities in one query. A target is
+  # identified globally by [target_type, target_id], so one map keyed that way
+  # serves every property on the page — which is what keeps the list from
+  # issuing a runs query per property.
+  def latest_by_targets(communities)
+    community_ids = communities.map(&:id)
+    return {} if community_ids.empty?
+
     SvgOptimizationRun
-      .latest_per_target(SvgOptimizationRun.for_community(community))
+      .latest_per_target(SvgOptimizationRun.where(community_id: community_ids))
       .index_by { |r| [r.target_type, r.target_id] }
   end
 
