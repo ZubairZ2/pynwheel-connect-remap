@@ -11,6 +11,7 @@
 
 class Sitemap < ApplicationRecord
   include ::S3Acceleration
+  include SvgOptimizableMap
 
   mount_uploader :image, SiteMapUploader
   mount_uploader :svg_image, SiteMapUploader

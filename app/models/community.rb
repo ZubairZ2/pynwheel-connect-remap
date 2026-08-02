@@ -1,7 +1,11 @@
 class Community < ApplicationRecord
   include LockedTourStopHelper
   include ::S3Acceleration
-  
+  # A Beans property's shared background map is an SVG optimizer target in its
+  # own right, and the one whose file hangs off the community itself.
+  include SvgOptimizableMap
+  self.svg_optimizer_column = :background_svg_image
+
   mount_base64_uploader :logo, AvatarUploader
   mount_base64_uploader :email_logo, AvatarUploader
   mount_base64_uploader :secondary_logo, AvatarUploader

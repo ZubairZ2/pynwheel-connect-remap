@@ -20,7 +20,12 @@
 
     function create(opts) {
       var s = {
-        token:        opts.token,
+        // Reads the SDK's live session token on every flush, so a silent
+        // re-auth is picked up automatically with no token to keep in sync.
+        getToken:       opts.getToken,
+        // Called when a flush is rejected (401) so the SDK can re-authenticate.
+        onUnauthorized: opts.onUnauthorized,
+        reauthInFlight: false,
         apiBase:      opts.apiBase,
         productSrc:   opts.productSrc  || 'web',
         partner:      opts.partner     || null,
@@ -116,9 +121,24 @@
         method:      'POST',
         credentials: 'omit',
         keepalive:   !!beacon,
-        headers:     { 'Authorization': 'Bearer ' + s.token, 'Content-Type': 'application/json' },
+        headers:     { 'Authorization': 'Bearer ' + s.getToken(), 'Content-Type': 'application/json' },
         body:        json
-      }).then(function () { s.contextSent = true; }).catch(function () {});
+      }).then(function (res) {
+        // Token expired mid-session: trigger a re-auth. Analytics is best-effort,
+        // so this batch is dropped — the next flush reads the fresh token via
+        // getToken() and succeeds.
+        if (res && res.status === 401) { _reauth(s); return; }
+        s.contextSent = true;
+      }).catch(function () {});
+    }
+
+    // Kick off a single re-auth; concurrent flushes share it via reauthInFlight.
+    function _reauth(s) {
+      if (s.reauthInFlight || !s.onUnauthorized) return;
+      s.reauthInFlight = true;
+      Promise.resolve(s.onUnauthorized())
+        .catch(function () {})
+        .then(function () { s.reauthInFlight = false; });
     }
 
     function _context(s) {
@@ -163,6 +183,9 @@
     // ----------------------------------------------------
     _initialized: false,
     _sessionToken: null,          // short-lived token; replaces the API key after auth
+    _apiKey: null,                // partner API key; kept in the closure-private object only, for silent re-auth
+    _propertyId: null,            // property id; paired with _apiKey to re-verify when the token expires
+    _reauthPromise: null,         // in-flight re-auth promise; dedupes concurrent 401 recoveries
     _productSrc: "web",           // product source from server response (src URL param); default "web"
     _partner: null,               // partner name from server response (partner URL param)
     _sdkSessionId: null,          // stable UUID persisted in localStorage; identifies this user's favorites session
@@ -311,9 +334,15 @@
       if (!cfg.apiKey)      return this._showError("API Key is required.");
       if (!cfg.propertyId)  return this._showError("propertyId is required.");
 
-      // API key is local-only — never stored on the SDK object.
       const apiKey     = cfg.apiKey;
       const propertyId = cfg.propertyId;
+
+      // Retain the credentials on the closure-private internal object (never on
+      // the public window.PynMapSDK facade) so the SDK can silently re-verify
+      // when a session token expires mid-session — e.g. a kiosk/lobby tab left
+      // open past the 1-hour token life.
+      this._apiKey     = apiKey;
+      this._propertyId = propertyId;
 
       // Always extract src and partner from URL params early, regardless of token caching.
       // This ensures analytics always knows the source even on page refresh.
@@ -337,8 +366,7 @@
         ? Promise.resolve({ success: true })
         : this._verifyPartner(apiKey, propertyId).then(v => {
             if (v.success) {
-              this._sessionToken = v.sessionToken;
-              this._writeCachedToken(propertyId, v.sessionToken);
+              this._applySession(v.sessionToken);
               this._startAnalytics();
             }
             return v;
@@ -350,15 +378,13 @@
           return this._fetchConfig();
         })
         .then(r => {
-          // Expired cached token — clear, re-authenticate once, then retry.
-          if (!r?.success && r?.error === "Session invalid or expired" && cachedTok) {
-            this._clearCachedToken(propertyId);
-            return this._verifyPartner(apiKey, propertyId).then(v => {
-              if (!v.success) return v;
-              this._sessionToken = v.sessionToken;
-              this._writeCachedToken(propertyId, v.sessionToken);
-              return this._fetchConfig();
-            });
+          // A rejected session token must never surface to the user — the map
+          // should silently start a fresh session instead. This covers both a
+          // warm load with an expired cached token AND a cold load whose
+          // freshly-issued token is rejected (e.g. the signing server rotated
+          // its secret mid-deploy). Re-authenticate once, then retry the fetch.
+          if (!r?.success && r?.error === "Session invalid or expired") {
+            return this._reauthenticate().then(token => token ? this._fetchConfig() : r);
           }
           return r;
         })
@@ -455,7 +481,8 @@
       if (this._analytics) return;
       if (!this._sessionToken) return;
       this._analytics = PynAnalytics.create({
-        token:        this._sessionToken,
+        getToken:       () => this._sessionToken,      // always the live token
+        onUnauthorized: () => this._reauthenticate(),  // recover on an expired-token flush
         apiBase:      this._apiBase(),
         productSrc:   this._productSrc,
         partner:      this._partner,
@@ -498,6 +525,60 @@
       } catch {
         return { success: false, code: null, error: "Network error verifying partner" };
       }
+    },
+
+    /**
+     * Silently re-verify the partner and swap in a fresh session token.
+     * Used to recover from an expired/invalid token WITHOUT any user action —
+     * e.g. a kiosk tab left open past the 1-hour token life.
+     *
+     * Concurrent callers (several runtime requests 401-ing at once) share a
+     * single in-flight re-auth via _reauthPromise, so we never fire a burst of
+     * duplicate /authorized calls. Resolves to the new token, or null if
+     * re-auth is impossible or fails.
+     */
+    async _reauthenticate() {
+      if (this._reauthPromise) return this._reauthPromise;
+      if (!this._apiKey || !this._propertyId) return null;
+
+      this._reauthPromise = (async () => {
+        const v = await this._verifyPartner(this._apiKey, this._propertyId);
+        if (!v.success) return null;
+        this._applySession(v.sessionToken);
+        return v.sessionToken;
+      })();
+
+      try {
+        return await this._reauthPromise;
+      } finally {
+        this._reauthPromise = null;
+      }
+    },
+
+    /**
+     * fetch() wrapper for session-authenticated endpoints that transparently
+     * recovers from an expired token. It injects the Authorization header, and
+     * on a 401 it re-authenticates once and retries the request a single time
+     * with the fresh token. The user never sees an expired-session failure.
+     *
+     * Callers pass every header EXCEPT Authorization (added here) and handle
+     * the returned Response exactly as they would a normal fetch() result.
+     */
+    async _authorizedFetch(url, options = {}, _retried = false) {
+      const opts = Object.assign({}, options);
+      opts.headers = Object.assign({}, options.headers, {
+        "Authorization": `Bearer ${this._sessionToken}`
+      });
+
+      const res = await fetch(url, opts);
+
+      if (res.status === 401 && !_retried) {
+        const newToken = await this._reauthenticate();
+        // Re-run with the original options so the fresh token is re-injected.
+        if (newToken) return this._authorizedFetch(url, options, true);
+      }
+
+      return res;
     },
 
     /**
@@ -564,12 +645,11 @@
       } catch {}
     },
 
-    _clearCachedToken(propertyId) {
-      try {
-        const key = `pyn_tok_${propertyId}`;
-        localStorage.removeItem(key);
-        localStorage.removeItem(`${key}_exp`);
-      } catch {}
+    // Adopt a freshly-issued session token: hold it in memory and persist it to
+    // the local cache. The single place session state is updated after auth.
+    _applySession(token) {
+      this._sessionToken = token;
+      this._writeCachedToken(this._propertyId, token);
     },
 
     /**
@@ -954,8 +1034,7 @@
           `${this._apiBase()}/api/partner/maps/fetch_svg_image` +
           `?map_id=${encodeURIComponent(mapId)}&map_type=${encodeURIComponent(mapType)}`;
 
-        const response = await fetch(requestUrl, {
-          headers: { "Authorization": `Bearer ${this._sessionToken}` },
+        const response = await this._authorizedFetch(requestUrl, {
           cache: 'default'
         });
 
@@ -2944,27 +3023,6 @@
     },
 
     /**
-     * Dimmed color for a unit — same hue as its normal color but at 0.3 opacity.
-     * Used by onFloorplanHover() to de-emphasise units that don't belong to the
-     * hovered floorplan.
-     */
-    _unitDimColor(unit) {
-      if (this._userHasCustomColors) {
-        const styles = this.config.styles || this.defaultStyles;
-        const status = this._unitStatus(unit);
-        const hex = styles.unitColors[status] || styles.unitColors.available;
-        if (/^#[0-9a-fA-F]{6}$/.test(hex)) return this._hexToRgba(hex, 0.3);
-        return hex;
-      }
-      const isOps    = this.config.mapType === "ops";
-      const colorObj = isOps ? unit.opsColor : unit.color;
-      if (colorObj?.color) return this._hexToRgba(colorObj.color, 0.3);
-      const fallback = (this.config.styles || this.defaultStyles).unitColors.available;
-      if (/^#[0-9a-fA-F]{6}$/.test(fallback)) return this._hexToRgba(fallback, 0.3);
-      return fallback;
-    },
-
-    /**
      * Blend a hex color toward white by `factor` (0 = original, 1 = white).
      * Used for hover — brightens the unit's own color rather than dimming it.
      */
@@ -3041,6 +3099,9 @@
     destroy() {
       this._initialized        = false;
       this._sessionToken       = null;
+      this._apiKey             = null;
+      this._propertyId         = null;
+      this._reauthPromise      = null;
       this._favorites          = new Set();
       this._favoriteAmenities  = new Set();
       this._favoriteFloorplans = new Set();
@@ -3500,9 +3561,8 @@
 
       try {
         const mapTypeParam = this.config.mapType === "ops" ? "?map_type=ops" : "";
-        const res = await fetch(`${this._apiBase()}/api/partner/maps/get_favorites${mapTypeParam}`, {
+        const res = await this._authorizedFetch(`${this._apiBase()}/api/partner/maps/get_favorites${mapTypeParam}`, {
           headers: {
-            "Authorization":    `Bearer ${this._sessionToken}`,
             "X-SDK-Session-Id": sessionId || this._sdkSessionId,
             "X-Community-Id":   String(communityId)
           }
@@ -3532,10 +3592,9 @@
      */
     async clearAllFavorites(communityId, sessionId) {
       try {
-        const res = await fetch(`${this._apiBase()}/api/partner/maps/clear_all_favorites`, {
+        const res = await this._authorizedFetch(`${this._apiBase()}/api/partner/maps/clear_all_favorites`, {
           method: "DELETE",
           headers: {
-            "Authorization":    `Bearer ${this._sessionToken}`,
             "X-SDK-Session-Id": sessionId || this._sdkSessionId,
             "X-Community-Id":   String(communityId)
           }
@@ -3581,10 +3640,9 @@
       body.append("type", type);
 
       try {
-        const res = await fetch(`${this._apiBase()}/api/partner/maps/save_favorites`, {
+        const res = await this._authorizedFetch(`${this._apiBase()}/api/partner/maps/save_favorites`, {
           method: "POST",
           headers: {
-            "Authorization":    `Bearer ${this._sessionToken}`,
             "X-SDK-Session-Id": sessionId || this._sdkSessionId,
             "X-Community-Id":   String(communityId),
             "Content-Type":     "application/x-www-form-urlencoded"
@@ -3635,10 +3693,9 @@
       body.append("type", type);
 
       try {
-        const res = await fetch(`${this._apiBase()}/api/partner/maps/delete_favorites`, {
+        const res = await this._authorizedFetch(`${this._apiBase()}/api/partner/maps/delete_favorites`, {
           method: "DELETE",
           headers: {
-            "Authorization":    `Bearer ${this._sessionToken}`,
             "X-SDK-Session-Id": sessionId || this._sdkSessionId,
             "X-Community-Id":   String(communityId),
             "Content-Type":     "application/x-www-form-urlencoded"
@@ -3685,10 +3742,9 @@
       body.append("favorites_url", favoritesUrl);
 
       try {
-        const res = await fetch(`${this._apiBase()}/api/partner/maps/share_favorites_email`, {
+        const res = await this._authorizedFetch(`${this._apiBase()}/api/partner/maps/share_favorites_email`, {
           method: "POST",
           headers: {
-            "Authorization":    `Bearer ${this._sessionToken}`,
             "X-SDK-Session-Id": this._sdkSessionId,
             "Content-Type":     "application/x-www-form-urlencoded"
           },

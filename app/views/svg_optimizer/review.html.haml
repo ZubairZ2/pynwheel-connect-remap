@@ -1,0 +1,758 @@
+- content_for :title, "Review & Optimize — #{@community.name}"
+
+:css
+  .svgopt-rv { max-width: 1120px; margin: 0 auto; padding: 26px 20px 30px; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #2b2f36; }
+  .svgopt-rv a.back { display: inline-block; color: #3558e8; text-decoration: none; font-size: 13px; margin-bottom: 14px; }
+  .svgopt-rv a.back:hover { text-decoration: underline; }
+  .svgopt-rv h1 { font-size: 24px; font-weight: 600; margin: 0 0 4px; }
+  .svgopt-rv .sub { color: #9ca3af; font-size: 13px; margin: 0 0 22px; }
+  .svgopt-rv .hidden { display: none !important; }
+
+  .svgopt-rv .btn { display: inline-block; border: none; border-radius: 6px; padding: 9px 18px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; }
+  .svgopt-rv .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .svgopt-rv .btn-primary { background: #3558e8; color: #fff; }
+  .svgopt-rv .btn-primary:hover:not(:disabled) { background: #2946c4; }
+  .svgopt-rv .btn-ghost { background: #f1f5f9; color: #334155; }
+  .svgopt-rv .btn-ghost:hover:not(:disabled) { background: #e2e8f0; }
+  .svgopt-rv .btn-danger { background: #dc2626; color: #fff; }
+  .svgopt-rv .btn-danger:hover:not(:disabled) { background: #b91c1c; }
+  .svgopt-rv .btn-sm { padding: 6px 12px; font-size: 12.5px; }
+  .svgopt-rv .btn-primary-ghost { background: #eef2ff; color: #3558e8; }
+  .svgopt-rv .btn-primary-ghost:hover:not(:disabled) { background: #e0e7ff; }
+  .svgopt-rv .btn-danger-ghost { background: #fff; color: #b91c1c; border: 1px solid #fecaca; }
+  .svgopt-rv .btn-danger-ghost:hover:not(:disabled) { background: #fef2f2; }
+  .svgopt-rv .btn-dl { background: #f8fafc; color: #475569; border: 1px solid #e5e7eb; display: inline-flex; align-items: center; }
+  .svgopt-rv .btn-dl:hover:not(:disabled) { background: #eef2f7; }
+  .svgopt-rv .btn-dl svg { flex: none; }
+  .svgopt-rv .dl-size { color: #94a3b8; font-weight: 600; margin-left: 5px; }
+  .svgopt-rv .muted { color: #6b7280; font-size: 13px; }
+
+  .svgopt-rv .summary { background: linear-gradient(180deg,#fff,#fafbff); border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px 22px; margin-bottom: 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .svgopt-rv .summary .s-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .svgopt-rv .summary .s-head .ttl { font-weight: 600; font-size: 15px; }
+  .svgopt-rv .sum-grid { display: flex; gap: 14px; flex-wrap: wrap; }
+  .svgopt-rv .sum-card { flex: 1; min-width: 150px; background: #fff; border: 1px solid #eef0f3; border-radius: 8px; padding: 13px 16px; }
+  .svgopt-rv .sum-card .l { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #9ca3af; font-weight: 600; margin-bottom: 5px; }
+  .svgopt-rv .sum-card .v { display: block; font-size: 22px; font-weight: 700; color: #111827; }
+  .svgopt-rv .sum-card.hl .v { color: #16a34a; }
+
+  .svgopt-rv .banner { border-radius: 8px; padding: 12px 15px; font-size: 13.5px; margin-bottom: 18px; line-height: 1.5; }
+  .svgopt-rv .banner.warn { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+
+  .svgopt-rv .maps-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 4px 2px 12px; }
+  .svgopt-rv .maps-head-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+  .svgopt-rv .maps-head .toggle-all { color: #3558e8; text-decoration: none; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .svgopt-rv .maps-head .toggle-all:hover { text-decoration: underline; }
+
+  .svgopt-rv .tcard { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; margin-bottom: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .svgopt-rv .tcard-head { display: flex; align-items: center; gap: 10px; padding: 14px 18px; cursor: pointer; user-select: none; flex-wrap: wrap; }
+  .svgopt-rv .tcard-head:hover { background: #fafbff; }
+  .svgopt-rv .tcard.open .tcard-head { border-bottom: 1px solid #f0f1f3; }
+  .svgopt-rv .tcard-head .chev { color: #9ca3af; font-size: 12px; transition: transform 0.15s; width: 12px; }
+  .svgopt-rv .tcard.open .tcard-head .chev { transform: rotate(90deg); }
+  .svgopt-rv .tcard-head .name { font-weight: 600; font-size: 15px; }
+  .svgopt-rv .tcard-head .tag-base { font-size: 11px; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; padding: 2px 8px; border-radius: 5px; background: #eef2ff; color: #4338ca; }
+  .svgopt-rv .tcard-head .spacer { flex: 1; }
+  .svgopt-rv .tcard-head .dl-group { display: flex; gap: 6px; }
+  .svgopt-rv .tcard-head .js-live-actions { display: flex; gap: 6px; }
+  .svgopt-rv .hverdict { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+  .svgopt-rv .hverdict.save { background: #ecfdf5; color: #047857; }
+  .svgopt-rv .hverdict.none { background: #eef2ff; color: #4338ca; }
+  .svgopt-rv .hverdict.fail { background: #fee2e2; color: #b91c1c; }
+  .svgopt-rv .hverdict.pending { background: #f1f5f9; color: #94a3b8; }
+  .svgopt-rv .tcard-body { padding: 18px 20px; display: none; }
+  .svgopt-rv .tcard.open .tcard-body { display: block; }
+
+  .svgopt-rv .verdict { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; padding: 5px 12px; border-radius: 20px; }
+  .svgopt-rv .verdict.save { background: #ecfdf5; color: #047857; }
+  .svgopt-rv .verdict.none { background: #eef2ff; color: #4338ca; }
+  .svgopt-rv .verdict.fail { background: #fee2e2; color: #b91c1c; }
+
+  .svgopt-rv .badge { display: inline-block; padding: 2px 9px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+  .svgopt-rv .badge.b-none { background: #f1f5f9; color: #64748b; }
+  .svgopt-rv .badge.b-progress { background: #fef3c7; color: #92400e; }
+  .svgopt-rv .badge.b-done { background: #dcfce7; color: #15803d; }
+  .svgopt-rv .badge.b-skipped { background: #eef2ff; color: #4338ca; }
+  .svgopt-rv .badge.b-failed { background: #fee2e2; color: #b91c1c; }
+
+  .svgopt-rv .stat-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 4px 0 16px; }
+  .svgopt-rv .stat { flex: 1; min-width: 120px; border-radius: 8px; padding: 12px 14px; background: #f8fafc; }
+  .svgopt-rv .stat.opt { background: #eef2ff; }
+  .svgopt-rv .stat.red { background: #ecfdf5; }
+  .svgopt-rv .stat .l { display: block; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; font-weight: 600; margin-bottom: 4px; }
+  .svgopt-rv .stat .v { display: block; font-size: 19px; font-weight: 700; color: #111827; }
+  .svgopt-rv .stat.red .v { color: #16a34a; }
+
+  .svgopt-rv table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 6px; }
+  .svgopt-rv th { text-align: left; background: #f9fafb; color: #374151; font-weight: 600; padding: 7px 10px; border-bottom: 2px solid #eef0f3; }
+  .svgopt-rv td { padding: 7px 10px; border-bottom: 1px solid #f3f4f6; }
+
+  .svgopt-rv h5 { font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin: 20px 0 9px; }
+  .svgopt-rv .notes { list-style: none; padding: 0; margin: 0; }
+  .svgopt-rv .notes li { background: #f8fafc; border-left: 3px solid #94a3b8; padding: 9px 12px; border-radius: 4px; font-size: 13px; color: #334155; margin-bottom: 7px; line-height: 1.5; }
+
+  .svgopt-rv .preview-row { display: flex; gap: 14px; flex-wrap: wrap; }
+  .svgopt-rv .preview-pane { flex: 1; min-width: 280px; }
+  .svgopt-rv .preview-pane .pl { display: block; font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 7px; }
+  .svgopt-rv .preview-frame {
+    background-image: linear-gradient(45deg,#eee 25%,transparent 25%),linear-gradient(-45deg,#eee 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#eee 75%),linear-gradient(-45deg,transparent 75%,#eee 75%);
+    background-size: 16px 16px; background-position: 0 0,0 8px,8px -8px,-8px 0;
+    border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px; height: 300px;
+    display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;
+  }
+  .svgopt-rv .preview-frame img { max-width: 100%; max-height: 100%; object-fit: contain; cursor: zoom-in; }
+
+  .svgopt-rv .loading { display: flex; align-items: center; gap: 10px; color: #6b7280; font-size: 13.5px; padding: 8px 0; }
+  .svgopt-rv .spinner { width: 16px; height: 16px; border: 2px solid #e5e7eb; border-top-color: #3558e8; border-radius: 50%; animation: svgoptspin 0.7s linear infinite; }
+  @keyframes svgoptspin { to { transform: rotate(360deg); } }
+  .svgopt-rv .analysis-error { color: #b91c1c; font-size: 13.5px; }
+
+  .svgopt-rv .actionbar {
+    position: sticky; bottom: 12px; margin-top: 24px; background: #fff; border: 1px solid #e5e7eb;
+    border-radius: 12px; box-shadow: 0 6px 24px rgba(0,0,0,0.10); z-index: 50; padding: 16px 20px;
+  }
+  .svgopt-rv .actionbar-inner { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+  .svgopt-rv .ack { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: #374151; cursor: pointer; flex: 1; min-width: 260px; line-height: 1.45; }
+  .svgopt-rv .ack input { width: 18px; height: 18px; margin-top: 1px; flex: none; cursor: pointer; }
+  .svgopt-rv .ab-summary { font-size: 13px; color: #6b7280; }
+
+  .svgopt-rv .svgopt-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,17,21,0.55); z-index: 9998; align-items: flex-start; justify-content: center; padding: 60px 20px; overflow-y: auto; }
+  .svgopt-rv .svgopt-modal-overlay.open { display: flex; }
+  .svgopt-rv .svgopt-dialog { background: #fff; border-radius: 12px; max-width: 560px; width: 100%; padding: 26px 28px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+  .svgopt-rv .svgopt-dialog h3 { margin: 0 0 6px; font-size: 19px; }
+  .svgopt-rv .svgopt-dialog .warn { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; border-radius: 8px; padding: 12px 14px; font-size: 13px; line-height: 1.55; margin: 14px 0; }
+  .svgopt-rv .svgopt-dialog ul.tlist { list-style: none; padding: 0; margin: 12px 0; border: 1px solid #eef0f2; border-radius: 8px; max-height: 220px; overflow-y: auto; }
+  .svgopt-rv .svgopt-dialog ul.tlist li { display: flex; justify-content: space-between; gap: 10px; padding: 9px 12px; border-bottom: 1px solid #f4f5f6; font-size: 13px; }
+  .svgopt-rv .svgopt-dialog ul.tlist li:last-child { border-bottom: none; }
+  .svgopt-rv .svgopt-dialog ul.tlist a { color: #3558e8; text-decoration: none; }
+  .svgopt-rv .svgopt-dialog .actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+
+  .svgopt-rv .lightbox { display: none; position: fixed; inset: 0; background: rgba(15,17,21,0.9); z-index: 9999; align-items: center; justify-content: center; cursor: zoom-out; padding: 30px; }
+  .svgopt-rv .lightbox.open { display: flex; }
+  .svgopt-rv .lightbox img { max-width: 95vw; max-height: 95vh; object-fit: contain; background: #fff; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+
+.svgopt-rv{"data-analyze-url" => svg_optimizer_analyze_path(@community.id), "data-optimize-url" => svg_optimizer_run_optimize_path(@community.id), "data-revert-all-url" => svg_optimizer_revert_all_path(@community.id), "data-status-url" => svg_optimizer_status_path(@community.id)}
+  = link_to "← Back to properties", svg_optimizer_properties_path, class: "back"
+  %h1= @community.name.presence || "Community ##{@community.id}"
+  - kind = @community.is_sitemap? ? "Site map" : "Floorplates"
+  - kind += " + Beans background" if @targets.any? { |t| t.is_a?(Community) }
+  %p.sub= "#{@community.company&.name.present? ? "#{@community.company.name} · " : ''}#{kind} · #{pluralize(@targets.size, 'map')} to review"
+
+  - if @busy
+    .banner.warn
+      An optimize or revert is already running for this property. The live status is shown below;
+      you can't start another until it finishes.
+
+  .summary
+    .s-head
+      %span.ttl Combined result
+      %span.muted#sum-state (analyzing…)
+    .sum-grid
+      .sum-card{title: "Total size of all maps at their original (unoptimized) size"}
+        %span.l Original total
+        %span.v#sum-original —
+      .sum-card{title: "Total size of all maps once optimized"}
+        %span.l Optimized total
+        %span.v#sum-optimized —
+      .sum-card.hl{title: "Total size saved across all maps, as a percentage"}
+        %span.l Reduction
+        %span.v#sum-reduction —
+      .sum-card{title: "How many maps have a background worth optimizing"}
+        %span.l Maps that will change
+        %span.v#sum-count —
+
+  .maps-head
+    %span.muted= pluralize(@targets.size, "map")
+    .maps-head-actions
+      %button.btn.btn-danger-ghost.btn-sm#revert-all-btn{type: "button", title: "Restore every optimized map on this property back to its original", class: (@any_revertable ? "" : "hidden")} Revert all
+      %button.btn.btn-dl.btn-sm#dl-all-original{type: "button", disabled: true, title: "Download every map's original (unoptimized) SVG as one archive"} Download all originals
+      %button.btn.btn-dl.btn-sm#dl-all-optimized{type: "button", disabled: true, title: "Download every map's optimized SVG as one archive"} Download all optimized
+      %a.toggle-all#toggle-all{title: "Expand or collapse every map's details"} Expand all
+
+  #tcards
+    - @targets.each do |record|
+      - run = @latest_by_target[[record.class.name, record.id]]
+      .tcard{"data-target-type" => record.class.name, "data-target-id" => record.id, "data-run-id" => run&.id, "data-run-status" => run&.status, "data-run-action" => run&.action, "data-run-revertable" => (@revertable[[record.class.name, record.id]] ? "true" : "false")}
+        .tcard-head.js-toggle
+          %span.chev ▶
+          %span.name= svg_map_label(record)
+          - if record.is_a?(Community)
+            %span.tag-base{title: "The shared Beans base map every floor overlays — usually the heaviest file on the property"} Base layer
+          %span.spacer
+          %span.hverdict.pending.js-verdict Analyzing…
+          .dl-group
+            %button.btn.btn-dl.btn-sm.js-dl-original{type: "button", disabled: true, title: "Download the original (unoptimized) SVG"} Download original
+            %button.btn.btn-dl.btn-sm.js-dl-optimized{type: "button", disabled: true, title: "Download the optimized SVG"} Download optimized
+          %span.js-live-status
+            = render_target_badge(run)
+          %span.js-live-actions
+        .tcard-body
+          .js-analysis
+            .loading
+              .spinner
+              Analyzing current file in memory…
+
+  .actionbar
+    .actionbar-inner
+      %label.ack
+        %input{type: "checkbox", id: "ack"}
+        %span I understand this replaces the live SVG files renters' maps load, and that each file is byte-verified-backed-up first so it can be reverted.
+      %span.ab-summary#ab-summary Analyzing…
+      %button.btn.btn-primary{type: "button", id: "optimize-btn", disabled: true} Optimize
+
+  .svgopt-modal-overlay#confirm-modal
+    .svgopt-dialog
+      %h3 Optimize live SVG maps?
+      %p.muted This is the final step. It runs in the background and rewrites the live files immediately.
+      .warn
+        This replaces the <strong>live</strong> SVG files renters' maps load. The moment each new file
+        saves, CarrierWave deletes the previous one — but this tool backs up every original first and
+        verifies the backup before writing, so a Revert is always available afterward.
+      %p.muted The following map(s) will be rewritten:
+      %ul.tlist#modal-target-list
+      .actions
+        %button.btn.btn-ghost{type: "button", id: "modal-cancel"} Cancel
+        %button.btn.btn-primary{type: "button", id: "modal-confirm"} Yes, optimize
+
+  / Reusable confirm/alert popup (replaces native confirm()/alert()).
+  .svgopt-modal-overlay#generic-modal
+    .svgopt-dialog
+      %h3#gm-title Are you sure?
+      %p.muted#gm-message
+      .actions
+        %button.btn.btn-ghost{type: "button", id: "gm-cancel"} Cancel
+        %button.btn.btn-primary{type: "button", id: "gm-confirm"} Confirm
+
+  .lightbox#lightbox
+    %img#lightbox-img
+
+:javascript
+  (function () {
+    var root = document.querySelector(".svgopt-rv");
+    var csrf = document.querySelector('meta[name="csrf-token"]').content;
+    var analyzeUrl = root.getAttribute("data-analyze-url");
+    var optimizeUrl = root.getAttribute("data-optimize-url");
+    var revertAllUrl = root.getAttribute("data-revert-all-url");
+    var statusUrl = root.getAttribute("data-status-url");
+    var propertyName = #{(@community.name.presence || "map").to_json};
+    var companyName = #{@community.company&.name.to_s.to_json};
+    var busy = #{@busy ? 'true' : 'false'};
+
+    var ackBox = document.getElementById("ack");
+    var optimizeBtn = document.getElementById("optimize-btn");
+    var abSummary = document.getElementById("ab-summary");
+    var revertAllBtn = document.getElementById("revert-all-btn");
+    var dlAllBtns = [
+      { el: document.getElementById("dl-all-original"), optimized: false, label: "Download all originals" },
+      { el: document.getElementById("dl-all-optimized"), optimized: true, label: "Download all optimized" }
+    ];
+    var results = {};        // "type:id" -> analysis result
+    var settled = {};        // "type:id" -> analyzed (or errored) at least once
+    var cards = Array.prototype.slice.call(document.querySelectorAll(".tcard"));
+    var willChange = 0;
+    var polling = null, pollStart = 0;
+    var MAX_POLL_MS = 10 * 60 * 1000;
+    var triggered = false;
+
+    function fmtKb(b) { return b == null ? "—" : (b / 1024).toFixed(0) + " KB"; }
+    function fmtMs(ms) { return ms >= 1000 ? (ms / 1000).toFixed(2) + " s" : ms + " ms"; }
+    function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+    function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; }
+    function svgToDataUri(svg) { return "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svg))); }
+    function cardKey(card) { return card.getAttribute("data-target-type") + ":" + card.getAttribute("data-target-id"); }
+    function isInProgress(run) { return run && ["queued", "running", "verified"].indexOf(run.status) >= 0; }
+
+    function revertUrl(runId) { return "#{svg_optimizer_revert_path(0)}".replace(/0(?!.*0)/, runId); }
+    function requeueUrl(runId) { return "#{svg_optimizer_requeue_path(0)}".replace(/0(?!.*0)/, runId); }
+
+    var DL_ICON = "<svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' style='margin-right:5px'><path d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'/><polyline points='7 10 12 15 17 10'/><line x1='12' y1='15' x2='12' y2='3'/></svg>";
+
+    // ---- reusable confirm / alert popup (no native alert()/confirm()) ----
+    var gm = document.getElementById("generic-modal");
+    var gmTitle = document.getElementById("gm-title"), gmMsg = document.getElementById("gm-message");
+    var gmCancel = document.getElementById("gm-cancel"), gmConfirm = document.getElementById("gm-confirm");
+    var gmCb = null;
+    function closeGeneric() { gm.classList.remove("open"); gmCb = null; }
+    function showConfirm(o) {
+      gmTitle.textContent = o.title || "Are you sure?";
+      gmMsg.textContent = o.message || "";
+      gmConfirm.textContent = o.confirmLabel || "Confirm";
+      gmConfirm.className = "btn " + (o.danger ? "btn-danger" : "btn-primary");
+      gmCancel.style.display = "";
+      gmCb = o.onConfirm || null;
+      gm.classList.add("open");
+    }
+    function showAlert(o) {
+      gmTitle.textContent = o.title || "Notice";
+      gmMsg.textContent = o.message || "";
+      gmConfirm.textContent = "OK";
+      gmConfirm.className = "btn btn-primary";
+      gmCancel.style.display = "none";
+      gmCb = null;
+      gm.classList.add("open");
+    }
+    gmConfirm.addEventListener("click", function () { var cb = gmCb; closeGeneric(); if (cb) cb(); });
+    gmCancel.addEventListener("click", closeGeneric);
+    gm.addEventListener("click", function (e) { if (e.target === gm) closeGeneric(); });
+
+    // ---- per-card run state + action rendering ----
+    function initRun(card) {
+      var st = card.getAttribute("data-run-status");
+      if (!st) return null;
+      return { id: card.getAttribute("data-run-id"), status: st, action: card.getAttribute("data-run-action"),
+               revertable: card.getAttribute("data-run-revertable") === "true" };
+    }
+    function cardWillChange(card) { return computeVerdict(card).change; }
+
+    // The verdict reflects CURRENT state: a map whose live file is still our
+    // optimized output (run.revertable) reads "Optimized" and won't re-optimize;
+    // a reverted / fresh map is judged purely by its (re-)analysis, so it
+    // becomes optimizable again.
+    function computeVerdict(card) {
+      var run = card.__run;
+      if (run && run.revertable) return { klass: "none", text: "Optimized", change: false };
+      var r = results[cardKey(card)];
+      if (!r) return { klass: "pending", text: "Analyzing…", change: false };
+      var opt = (r.images || []).filter(function (i) { return i.action === "optimized"; });
+      var failed = (r.images || []).filter(function (i) { return i.action === "failed"; });
+      if (opt.length && r.optimized_bytes < r.original_bytes) return { klass: "save", text: "Will optimize −" + r.reduction_pct + "%", change: true };
+      if (failed.length) return { klass: "fail", text: "Could not optimize safely — will be skipped", change: false };
+      return { klass: "none", text: "Nothing to optimize (already lean)", change: false };
+    }
+    function verdictShort(v, card) {
+      if (v.klass === "pending") return "Analyzing…";
+      if (v.klass === "save") return "−" + results[cardKey(card)].reduction_pct + "%";
+      if (v.klass === "fail") return "Will skip";
+      return (card.__run && card.__run.revertable) ? "Optimized" : "Lean";
+    }
+
+    function badgeHtml(run) {
+      if (!run) return "<span class='badge b-none'>Not optimized</span>";
+      switch (run.status) {
+        case "uploaded":
+          if (run.action === "revert") return "<span class='badge b-done'>Reverted to original</span>";
+          return "<span class='badge b-done'>Optimized −" + (run.reduction_pct || 0) + "%</span>";
+        case "skipped": return "<span class='badge b-skipped'>Nothing to optimize</span>";
+        case "failed": return "<span class='badge b-failed'>Failed</span>";
+        default: return "<span class='badge b-progress'>" + escapeHtml(cap(run.status)) + "…</span>";
+      }
+    }
+
+    function renderCard(card) {
+      var run = card.__run;
+      var v = computeVerdict(card);
+      var hv = card.querySelector(".js-verdict");
+      hv.className = "hverdict js-verdict " + v.klass;
+      hv.textContent = verdictShort(v, card);
+      card.querySelector(".js-live-status").innerHTML = badgeHtml(run);
+      var actions = card.querySelector(".js-live-actions");
+      if (isInProgress(run)) {
+        actions.innerHTML = '<button class="btn btn-ghost btn-sm js-requeue" type="button" title="This job looks stuck — mark it failed and enqueue a fresh one" data-requeue-url="' + requeueUrl(run.id) + '">Re-run</button>';
+      } else if (run && run.revertable) {
+        actions.innerHTML = '<button class="btn btn-danger-ghost btn-sm js-revert" type="button" title="Restore the original that was live before this map was optimized" data-revert-url="' + revertUrl(run.id) + '">Revert</button>';
+      } else if (cardWillChange(card) && !busy) {
+        actions.innerHTML = '<button class="btn btn-primary-ghost btn-sm js-optimize-one" type="button" title="Optimize just this map">Optimize</button>';
+      } else {
+        actions.innerHTML = "";
+      }
+    }
+
+    // ---- analysis rendering ----
+    function imagesTable(images) {
+      if (!images || !images.length) return "<p class='muted'>No embedded raster images found.</p>";
+      var rows = images.map(function (img) {
+        var res = img.action === "optimized"
+          ? "<span class='badge b-done'>WebP " + img.webp_kb + "KB (−" + img.reduction_pct + "%)</span>"
+          : img.action === "skipped_below_threshold"
+            ? "<span class='badge b-skipped'>Skipped (small)</span>"
+            : "<span class='badge b-failed'>Failed</span>";
+        return "<tr><td>" + escapeHtml(img.data_name || "—") + "</td><td>" +
+          escapeHtml(img.declared_width || "?") + "×" + escapeHtml(img.declared_height || "?") + "</td><td>" +
+          escapeHtml(img.mime) + "</td><td>" + img.decoded_kb + " KB</td><td>" + res + "</td></tr>";
+      }).join("");
+      return "<table><thead><tr><th>Name</th><th>Dimensions</th><th>Format</th><th>Decoded</th><th>Result</th></tr></thead><tbody>" + rows + "</tbody></table>";
+    }
+
+    function renderAnalysis(card, r) {
+      var v = computeVerdict(card);
+
+      var transfer = Object.keys(r.transfer_estimates || {}).map(function (label) {
+        var t = r.transfer_estimates[label];
+        return "<tr><td>" + escapeHtml(label) + "</td><td>" + fmtMs(t.before_ms) + "</td><td>" + fmtMs(t.after_ms) + "</td><td>" + fmtMs(t.saved_ms) + "</td></tr>";
+      }).join("");
+      var notes = (r.notes || []).map(function (n) { return "<li>" + escapeHtml(n) + "</li>"; }).join("");
+
+      card.querySelector(".js-analysis").innerHTML =
+        "<div style='margin-bottom:14px'><span class='verdict " + v.klass + "'>" + v.text + "</span></div>" +
+        "<div class='stat-row'>" +
+          "<div class='stat'><span class='l'>Current</span><span class='v'>" + fmtKb(r.original_bytes) + "</span></div>" +
+          "<div class='stat opt'><span class='l'>After</span><span class='v'>" + fmtKb(r.optimized_bytes) + "</span></div>" +
+          "<div class='stat red'><span class='l'>Reduction</span><span class='v'>" + r.reduction_pct + "%</span></div>" +
+        "</div>" +
+        "<h5>Estimated download time</h5>" +
+        "<table><thead><tr><th>Connection</th><th>Before</th><th>After</th><th>Saved</th></tr></thead><tbody>" + transfer + "</tbody></table>" +
+        "<h5>Embedded images</h5>" + imagesTable(r.images) +
+        (notes ? "<h5>Notes</h5><ul class='notes'>" + notes + "</ul>" : "") +
+        "<h5>Visual preview — original vs. optimized</h5>" +
+        "<p class='muted' style='margin-top:-2px'>Layout, positions and unit polygons must look identical; only the background photo may soften slightly (the WebP re-encode).</p>" +
+        "<div class='preview-row'>" +
+          "<div class='preview-pane'><span class='pl'>Original</span><div class='preview-frame'><img class='js-prev' data-src='orig'></div></div>" +
+          "<div class='preview-pane'><span class='pl'>Optimized</span><div class='preview-frame'><img class='js-prev' data-src='opt'></div></div>" +
+        "</div>";
+
+      card.__svgs = { original: r.original_svg, optimized: r.optimized_svg };
+      card.__prev = { orig: svgToDataUri(r.original_svg), opt: svgToDataUri(r.optimized_svg) };
+
+      var dlo = card.querySelector(".js-dl-original"), dlp = card.querySelector(".js-dl-optimized");
+      dlo.disabled = false; dlp.disabled = false;
+      dlo.innerHTML = DL_ICON + "Download original <span class='dl-size'>" + fmtKb(r.original_bytes) + "</span>";
+      dlp.innerHTML = DL_ICON + "Download optimized <span class='dl-size'>" + fmtKb(r.optimized_bytes) + "</span>";
+      dlo.title = "Download the original (unoptimized) SVG (" + fmtKb(r.original_bytes) + ")";
+      dlp.title = "Download the optimized SVG (" + fmtKb(r.optimized_bytes) + ")";
+      if (card.classList.contains("open")) hydrate(card);
+
+      renderCard(card); // sets the header verdict + action button from current state
+    }
+
+    function hydrate(card) {
+      if (!card.__prev || card.__hydrated) return;
+      var o = card.querySelector("[data-src='orig']"), p = card.querySelector("[data-src='opt']");
+      if (o) o.src = card.__prev.orig;
+      if (p) p.src = card.__prev.opt;
+      card.__hydrated = true;
+    }
+    function renderError(card, msg) { card.querySelector(".js-analysis").innerHTML = "<p class='analysis-error'>" + escapeHtml(msg) + "</p>"; }
+
+    function allAnalyzed() { return Object.keys(settled).length >= cards.length; }
+
+    function updateSummary() {
+      var totOrig = 0, totOpt = 0;
+      Object.keys(results).forEach(function (k) { totOrig += results[k].original_bytes; totOpt += results[k].optimized_bytes; });
+      var pct = totOrig ? ((1 - totOpt / totOrig) * 100).toFixed(1) : 0;
+      document.getElementById("sum-original").textContent = fmtKb(totOrig);
+      document.getElementById("sum-optimized").textContent = fmtKb(totOpt);
+      document.getElementById("sum-reduction").textContent = pct + "%";
+      willChange = cards.reduce(function (n, c) { return n + (cardWillChange(c) ? 1 : 0); }, 0);
+      document.getElementById("sum-count").textContent = willChange + " / " + cards.length;
+    }
+
+    function refreshActionBar() {
+      if (busy) { ackBox.disabled = true; abSummary.textContent = "A run is in progress — see live status above."; optimizeBtn.textContent = "Optimization running…"; optimizeBtn.disabled = true; return; }
+      ackBox.disabled = false;
+      if (!allAnalyzed()) { abSummary.textContent = "Analyzing…"; optimizeBtn.textContent = "Optimize"; optimizeBtn.disabled = true; return; }
+      if (willChange === 0) { abSummary.textContent = "Nothing to optimize on this property."; optimizeBtn.textContent = "Nothing to optimize"; optimizeBtn.disabled = true; return; }
+      abSummary.textContent = willChange + " of " + cards.length + " map(s) will be rewritten.";
+      optimizeBtn.textContent = "Optimize " + willChange + " map(s)";
+      syncOptimizeBtn();
+    }
+    function syncOptimizeBtn() {
+      optimizeBtn.disabled = !(ackBox.checked && willChange > 0 && !busy && allAnalyzed() && !triggered);
+    }
+
+    // Analyzes (or re-analyzes) one card against its CURRENT live file, then
+    // refreshes the summary + action bar. Safe to call again after a state
+    // change (optimize/revert) so a reverted map shows it can be optimized.
+    function analyzeCard(card) {
+      var type = card.getAttribute("data-target-type"), id = card.getAttribute("data-target-id");
+      var hv = card.querySelector(".js-verdict");
+      hv.className = "hverdict js-verdict pending"; hv.textContent = "Analyzing…";
+      return fetch(analyzeUrl + "?target_type=" + encodeURIComponent(type) + "&target_id=" + encodeURIComponent(id))
+        .then(function (res) { return res.json().then(function (b) { return { ok: res.ok, body: b }; }); })
+        .then(function (out) {
+          if (!out.ok || !out.body.success) { renderError(card, out.body.message || "Analysis failed."); return; }
+          results[type + ":" + id] = out.body;
+          renderAnalysis(card, out.body);
+        })
+        .catch(function (e) { renderError(card, "Analysis request failed: " + e.message); })
+        .finally(function () {
+          settled[type + ":" + id] = true;
+          document.getElementById("sum-state").textContent = busy ? "(in progress)" : (allAnalyzed() ? "(ready)" : "(analyzing…)");
+          updateSummary();
+          refreshActionBar();
+          refreshBulkDownloads();
+        });
+    }
+
+    // ---- live status polling ----
+    function refreshStatus() {
+      return fetch(statusUrl).then(function (r) { return r.json(); }).then(function (data) {
+        if (!data.success) return;
+        var done = data.rollup.state !== "in_progress";
+        if (done) { busy = false; triggered = false; }
+        document.getElementById("sum-state").textContent = "(" + data.rollup.state.replace(/_/g, " ") + ")";
+        data.targets.forEach(function (t) {
+          var card = document.querySelector('.tcard[data-target-type="' + t.target_type + '"][data-target-id="' + t.target_id + '"]');
+          if (card) card.__run = t.run;
+        });
+        cards.forEach(renderCard);
+        revertAllBtn.classList.toggle("hidden", !data.any_revertable);
+        if (done) {
+          stopPolling();
+          // The live files changed — re-analyze so verdicts/optimize buttons
+          // reflect the new state (e.g. a reverted map is optimizable again).
+          cards.forEach(analyzeCard);
+        }
+      }).catch(function () {});
+    }
+    function startPolling() {
+      if (polling) return;
+      pollStart = Date.now();
+      refreshStatus();
+      polling = setInterval(function () {
+        if (Date.now() - pollStart > MAX_POLL_MS) { stopPolling(); return; }
+        refreshStatus();
+      }, 3000);
+    }
+    function stopPolling() { if (polling) { clearInterval(polling); polling = null; } }
+
+    // ---- collapse / expand (all cards start collapsed) ----
+    var toggleAll = document.getElementById("toggle-all");
+    function syncToggleAllLabel() {
+      var anyClosed = cards.some(function (c) { return !c.classList.contains("open"); });
+      toggleAll.textContent = anyClosed ? "Expand all" : "Collapse all";
+    }
+    document.addEventListener("click", function (e) {
+      var head = e.target.closest(".js-toggle");
+      if (!head) return;
+      if (e.target.closest("a") || e.target.closest("button")) return; // let links/buttons act
+      var card = head.closest(".tcard");
+      card.classList.toggle("open");
+      if (card.classList.contains("open")) hydrate(card);
+      syncToggleAllLabel();
+    });
+    toggleAll.addEventListener("click", function (e) {
+      e.preventDefault();
+      var anyClosed = cards.some(function (c) { return !c.classList.contains("open"); });
+      cards.forEach(function (c) { if (anyClosed) { c.classList.add("open"); hydrate(c); } else { c.classList.remove("open"); } });
+      syncToggleAllLabel();
+    });
+
+    // ---- generic POST helper ----
+    function postAction(url, body, onOk, onFail) {
+      fetch(url, { method: "POST", headers: { "X-CSRF-Token": csrf, "Content-Type": "application/json" }, body: JSON.stringify(body || {}) })
+        .then(function (res) { return res.json().then(function (b) { return { ok: res.ok, body: b }; }); })
+        .then(function (out) {
+          if (!out.ok || !out.body.success) { showAlert({ title: "Something went wrong", message: out.body.message || "Please try again." }); if (onFail) onFail(); return; }
+          onOk(out.body);
+        })
+        .catch(function (e) { showAlert({ title: "Request failed", message: e.message }); if (onFail) onFail(); });
+    }
+
+    // ---- optimize ALL (action bar) — two-step: enabled button -> confirm popup ----
+    ackBox.addEventListener("change", syncOptimizeBtn);
+    var confirmModal = document.getElementById("confirm-modal");
+    var modalList = document.getElementById("modal-target-list");
+    var modalConfirm = document.getElementById("modal-confirm"), modalCancel = document.getElementById("modal-cancel");
+    function closeConfirmModal() { confirmModal.classList.remove("open"); }
+
+    optimizeBtn.addEventListener("click", function () {
+      if (optimizeBtn.disabled) return;
+      modalList.innerHTML = "";
+      cards.forEach(function (card) {
+        var r = results[cardKey(card)];
+        if (!r || !computeVerdict(card).change) return;
+        var label = card.querySelector(".name").textContent.trim();
+        var li = document.createElement("li");
+        li.innerHTML = "<span>" + escapeHtml(label) + " <span class='muted'>−" + r.reduction_pct + "%</span></span>" +
+          (r.live_url ? "<a href='" + r.live_url + "' target='_blank' rel='noopener'>current file</a>" : "");
+        modalList.appendChild(li);
+      });
+      confirmModal.classList.add("open");
+    });
+    modalCancel.addEventListener("click", closeConfirmModal);
+    confirmModal.addEventListener("click", function (e) { if (e.target === confirmModal) closeConfirmModal(); });
+    modalConfirm.addEventListener("click", function () {
+      modalConfirm.disabled = true; optimizeBtn.disabled = true; triggered = true;
+      postAction(optimizeUrl, { confirmed: true },
+        function () {
+          closeConfirmModal(); modalConfirm.disabled = false;
+          busy = true; ackBox.disabled = true;
+          abSummary.textContent = "Optimization started — rewriting live files. Watch the status on each map above.";
+          optimizeBtn.textContent = "Optimization running…";
+          startPolling();
+        },
+        function () { closeConfirmModal(); modalConfirm.disabled = false; triggered = false; syncOptimizeBtn(); });
+    });
+
+    // ---- delegated actions: single optimize / revert / re-run / revert-all / downloads ----
+    document.addEventListener("click", function (e) {
+      var one = e.target.closest(".js-optimize-one");
+      if (one) {
+        var card = one.closest(".tcard");
+        var label = card.querySelector(".name").textContent.trim();
+        showConfirm({
+          title: "Optimize " + label + "?",
+          message: "Rewrites this live map file now. The original is byte-verified-backed-up first, so it can be reverted.",
+          confirmLabel: "Optimize",
+          onConfirm: function () {
+            one.disabled = true;
+            postAction(optimizeUrl, { confirmed: true, target_type: card.getAttribute("data-target-type"), target_id: card.getAttribute("data-target-id") },
+              function () { busy = true; startPolling(); }, function () { one.disabled = false; });
+          }
+        });
+        return;
+      }
+      var revertBtn = e.target.closest(".js-revert");
+      if (revertBtn) {
+        showConfirm({
+          title: "Revert this map?",
+          message: "Restores the original that was live before this map was optimized.",
+          confirmLabel: "Revert", danger: true,
+          onConfirm: function () { revertBtn.disabled = true; postAction(revertBtn.getAttribute("data-revert-url"), {}, function () { busy = true; startPolling(); }, function () { revertBtn.disabled = false; }); }
+        });
+        return;
+      }
+      var requeueBtn = e.target.closest(".js-requeue");
+      if (requeueBtn) {
+        showConfirm({
+          title: "Re-run this map?",
+          message: "This map's job hasn't progressed — it may be stuck (worker down or interrupted). The stuck attempt is marked failed and a fresh job is enqueued. No file is touched until a backup is verified.",
+          confirmLabel: "Re-run",
+          onConfirm: function () { requeueBtn.disabled = true; postAction(requeueBtn.getAttribute("data-requeue-url"), {}, function () { busy = true; startPolling(); }, function () { requeueBtn.disabled = false; }); }
+        });
+        return;
+      }
+      var od = e.target.closest(".js-dl-original"), pd = e.target.closest(".js-dl-optimized");
+      if (od || pd) {
+        var c = (od || pd).closest(".tcard");
+        if (!c.__svgs) return;
+        var base = (propertyName + " " + c.querySelector(".name").textContent.trim()).replace(/[^\w.-]+/g, "_");
+        downloadSvg(base + (od ? "_original.svg" : "_optimized.svg"), od ? c.__svgs.original : c.__svgs.optimized);
+      }
+    });
+
+    revertAllBtn.addEventListener("click", function () {
+      showConfirm({
+        title: "Revert all optimized maps?",
+        message: "Restores every optimized map on this property back to its original.",
+        confirmLabel: "Revert all", danger: true,
+        onConfirm: function () { revertAllBtn.disabled = true; postAction(revertAllUrl, {}, function () { revertAllBtn.disabled = false; busy = true; startPolling(); }, function () { revertAllBtn.disabled = false; }); }
+      });
+    });
+
+    function downloadBlob(filename, blob) {
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url; a.download = filename; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+    function downloadSvg(filename, text) { downloadBlob(filename, new Blob([text], { type: "image/svg+xml" })); }
+
+    // ---- download all (one archive per property) -------------------------------
+    // Every analyzed card already holds both its original and optimized SVG text,
+    // so bundling them needs no extra server round-trip. We emit a real .tar.gz —
+    // ustar entries piped through the browser's own CompressionStream — rather
+    // than pulling in a zip library: same "one folder per property" result, no
+    // dependency. Browsers without CompressionStream get the plain .tar.
+    var TAR_BLOCK = 512;
+    var encoder = new TextEncoder();
+
+    // Trims a label down to something safe as a path segment on any OS.
+    function safeName(name) {
+      return String(name || "").replace(/[\/\\:*?"<>|\x00-\x1f]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 80);
+    }
+
+    function tarHeader(path, size, isDir) {
+      var block = new Uint8Array(TAR_BLOCK);
+      function put(str, offset, len) { block.set(encoder.encode(str).slice(0, len), offset); }
+      function putOctal(num, offset, len) { put(num.toString(8).padStart(len - 1, "0"), offset, len); } // NUL-terminated
+
+      put(path, 0, 100);
+      put(isDir ? "0000755" : "0000644", 100, 8);
+      putOctal(0, 108, 8);                              // uid
+      putOctal(0, 116, 8);                              // gid
+      putOctal(size, 124, 12);
+      putOctal(Math.floor(Date.now() / 1000), 136, 12); // mtime
+      put("        ", 148, 8);                          // checksum field counts as spaces while summing
+      put(isDir ? "5" : "0", 156, 1);                   // typeflag
+      put("ustar", 257, 6);                             // magic (NUL-terminated) + version
+      put("00", 263, 2);
+
+      var checksum = block.reduce(function (sum, byte) { return sum + byte; }, 0);
+      put(checksum.toString(8).padStart(6, "0") + "\0 ", 148, 8);
+      return block;
+    }
+
+    // entries: [{ name, text }] — all placed inside a single `folder/` directory.
+    function tarball(folder, entries) {
+      var parts = [tarHeader(folder + "/", 0, true)];
+      entries.forEach(function (entry) {
+        var data = encoder.encode(entry.text);
+        var padding = (TAR_BLOCK - (data.length % TAR_BLOCK)) % TAR_BLOCK;
+        parts.push(tarHeader(folder + "/" + entry.name, data.length, false), data);
+        if (padding) parts.push(new Uint8Array(padding));
+      });
+      parts.push(new Uint8Array(TAR_BLOCK * 2)); // end-of-archive marker
+      return new Blob(parts, { type: "application/x-tar" });
+    }
+
+    function gzip(blob) {
+      if (!window.CompressionStream) return Promise.resolve(null);
+      return new Response(blob.stream().pipeThrough(new CompressionStream("gzip"))).blob();
+    }
+
+    // "HSL - 5 Central" / "HSL - 5 Central - optimized"
+    function archiveFolder(optimized) {
+      var name = [safeName(companyName), safeName(propertyName)].filter(Boolean).join(" - ") || "svg-maps";
+      return optimized ? name + " - optimized" : name;
+    }
+
+    function archiveEntries(optimized) {
+      var used = {};
+      return cards.reduce(function (entries, card) {
+        if (!card.__svgs) return entries; // never analyzed, or analysis errored
+        var base = safeName(card.querySelector(".name").textContent) || "map";
+        if (optimized) base += " - optimized";
+        var name = base;
+        for (var n = 2; used[name]; n++) name = base + " (" + n + ")";
+        used[name] = true;
+        entries.push({ name: name + ".svg", text: optimized ? card.__svgs.optimized : card.__svgs.original });
+        return entries;
+      }, []);
+    }
+
+    function downloadAll(btn, optimized, label) {
+      var entries = archiveEntries(optimized);
+      if (!entries.length) {
+        showAlert({ title: "Nothing to download", message: "No map has finished analyzing yet." });
+        return;
+      }
+      var folder = archiveFolder(optimized);
+      btn.disabled = true;
+      btn.innerHTML = DL_ICON + "Preparing…";
+      var tar = tarball(folder, entries);
+      gzip(tar)
+        .then(function (gz) { downloadBlob(folder + (gz ? ".tar.gz" : ".tar"), gz || tar); })
+        .catch(function (e) { showAlert({ title: "Could not build the archive", message: e.message }); })
+        .finally(function () { btn.disabled = false; btn.innerHTML = DL_ICON + label; });
+    }
+
+    // Enabled once every card has settled, so an archive is never half a property.
+    function refreshBulkDownloads() {
+      var ready = allAnalyzed() && cards.some(function (c) { return !!c.__svgs; });
+      dlAllBtns.forEach(function (b) { b.el.disabled = !ready; });
+    }
+    dlAllBtns.forEach(function (b) {
+      b.el.innerHTML = DL_ICON + b.label;
+      b.el.addEventListener("click", function () { downloadAll(b.el, b.optimized, b.label); });
+    });
+
+    // ---- lightbox ----
+    var lightbox = document.getElementById("lightbox"), lightboxImg = document.getElementById("lightbox-img");
+    document.addEventListener("click", function (e) {
+      var img = e.target.closest(".js-prev");
+      if (img && img.src) { lightboxImg.src = img.src; lightbox.classList.add("open"); }
+      else if (e.target === lightbox) { lightbox.classList.remove("open"); lightboxImg.src = ""; }
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "Escape") return;
+      lightbox.classList.remove("open"); lightboxImg.src = "";
+      closeConfirmModal(); closeGeneric();
+    });
+
+    // ---- kick off ----
+    cards.forEach(function (card) { card.__run = initRun(card); renderCard(card); });
+    if (cards.length === 0) { abSummary.textContent = "No maps to optimize."; document.getElementById("sum-state").textContent = "(none)"; }
+    cards.forEach(analyzeCard);
+    if (busy) startPolling();
+  })();

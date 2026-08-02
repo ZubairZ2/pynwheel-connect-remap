@@ -226,6 +226,12 @@
             %span Pynwheel Access Users
 
       - if current_user.is_super_admin?
+        %li.loader_class{:class=>"#{controller_name =='svg_optimizer' ? 'active' : ''}"}
+          = link_to svg_optimizer_properties_path do
+            %i.fa.fa-bolt
+            %span SVG Maps Optimizer
+
+      - if current_user.is_super_admin?
         %li.loader_class{:class=>"#{controller_name =='Community' && params[:action] == "reports" ? 'active' : ''}"}
           %a{:href => "#{community_reports_path(current_community)}"}
             %i.fa.fa-file

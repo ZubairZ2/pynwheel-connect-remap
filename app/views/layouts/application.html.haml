@@ -38,6 +38,8 @@
           = render partial: "/sidemenu_communities"
         - elsif controller_name == "users"  &&  user_signed_in? || (controller_name == "company_settings" && !params[:community_id].present?)
           = render partial: "/sidemenu_communities"
+        - elsif controller_name == "svg_optimizer" && user_signed_in?
+          = render partial: "/sidemenu_communities"
         - elsif user_signed_in?
           = render partial: "/side_menu"
       .content-wrapper
