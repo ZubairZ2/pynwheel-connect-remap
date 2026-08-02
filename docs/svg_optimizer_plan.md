@@ -61,13 +61,14 @@ a verified backup existing first.**
 
 ### 3.1 Data model — `SvgOptimizationRun` (migrated)
 
-One row per write this tool ever makes to a Floorplate's or Sitemap's
-`svg_image`. Key fields:
+One row per write this tool ever makes to a map file — a Floorplate's or
+Sitemap's `svg_image`, or a Beans property's shared
+`Community#background_svg_image`. Key fields:
 
 | Field | Meaning |
 |---|---|
 | `community_id` | which property |
-| `target_type` / `target_id` | polymorphic — the `Floorplate` or `Sitemap` written to |
+| `target_type` / `target_id` | polymorphic — the `Floorplate`, `Sitemap` or (Beans background) `Community` written to |
 | `action` | `"optimize"` or `"revert"` |
 | `reverts_run_id` | set when `action == "revert"`; points at the run being undone |
 | `status` | `queued → running → verified → uploaded`, or `failed` / `skipped` |
@@ -159,24 +160,39 @@ creates a clean new row rather than mutating the failed one.
 ### 3.4 Property-level checks (controller, built)
 
 **Eligibility to appear in the properties list at all:**
-`enable_svg_mode: true` **and** at least one Floorplate/Sitemap with a
-non-blank `svg_image`. Communities without real SVG maps (the vast
-majority) are excluded — listing thousands of irrelevant properties would
+`enable_svg_mode: true` **and** at least one non-blank SVG — a
+Floorplate/Sitemap `svg_image`, or (for `is_beans_svg?` properties) the
+community's own `background_svg_image`. Communities without real SVG maps (the
+vast majority) are excluded — listing thousands of irrelevant properties would
 make the list useless.
 
-**Per-property target resolution:**
+**Per-property target resolution** (`resolve_targets`, background first, then
+the overlays that sit on top of it):
+- `is_beans_svg?` and `background_svg_image` present → the community itself is
+  a target (see below).
 - `is_sitemap?` → target = `community.sitemap`, only if present.
 - otherwise → targets = `community.floorplates.where.not(svg_image: nil)`.
 - Floorplates with only a legacy raster `image` and no `svg_image` are
   excluded from the target list, not treated as errors.
 
-**`is_beans_svg?` properties**: still listed (not hidden — hiding them
-would be confusing), but always resolve to "skipped — nothing to
-optimize," since their floorplate/sitemap SVGs are transparent unit-only
-overlays with no embedded background to begin with. No special-case code
-branches on this flag anywhere; it falls out naturally from the
-content-based detection. (Their separate `background_svg_image` field is a
-different column entirely and is **out of scope** for this phase.)
+**`is_beans_svg?` properties**: their floorplate/sitemap SVGs are transparent
+unit-only overlays with no embedded background, so those targets resolve to
+"nothing to optimize" on their own — the weight all sits in the ONE shared
+background map every floor overlays, `Community#background_svg_image`. That
+background is therefore a target in its own right, with the community itself as
+the polymorphic target (`target_type: "Community"`), shown first on the review
+page (labelled **Background map**, tagged "Base layer") and analyzed, optimized,
+backed up and reverted through exactly the same pipeline as every other map. It
+also makes a property eligible on its own — a Beans property whose only
+optimizable file is the background still appears in the list.
+
+Nothing downstream branches on the target's class: every target answers
+`optimizable_svg` / `optimizable_svg=` (the `SvgOptimizableMap` concern, whose
+`svg_optimizer_column` is `svg_image` on Floorplate/Sitemap and
+`background_svg_image` on Community), and the controller and worker only ever
+speak that. Community writes go through `save!` — the same path
+`CommunitiesController#upload_svg_background` already uses for a manual CMS
+re-upload.
 
 **Duplicate-trigger guard**: before enqueueing, check whether any of a
 property's targets already have a `queued`/`running`/`verified` run. If

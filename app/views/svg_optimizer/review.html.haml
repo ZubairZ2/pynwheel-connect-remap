@@ -40,7 +40,7 @@
   .svgopt-rv .banner.warn { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
 
   .svgopt-rv .maps-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 4px 2px 12px; }
-  .svgopt-rv .maps-head-actions { display: flex; align-items: center; gap: 14px; }
+  .svgopt-rv .maps-head-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
   .svgopt-rv .maps-head .toggle-all { color: #3558e8; text-decoration: none; font-size: 13px; font-weight: 600; cursor: pointer; }
   .svgopt-rv .maps-head .toggle-all:hover { text-decoration: underline; }
 
@@ -51,6 +51,7 @@
   .svgopt-rv .tcard-head .chev { color: #9ca3af; font-size: 12px; transition: transform 0.15s; width: 12px; }
   .svgopt-rv .tcard.open .tcard-head .chev { transform: rotate(90deg); }
   .svgopt-rv .tcard-head .name { font-weight: 600; font-size: 15px; }
+  .svgopt-rv .tcard-head .tag-base { font-size: 11px; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; padding: 2px 8px; border-radius: 5px; background: #eef2ff; color: #4338ca; }
   .svgopt-rv .tcard-head .spacer { flex: 1; }
   .svgopt-rv .tcard-head .dl-group { display: flex; gap: 6px; }
   .svgopt-rv .tcard-head .js-live-actions { display: flex; gap: 6px; }
@@ -133,7 +134,9 @@
 .svgopt-rv{"data-analyze-url" => svg_optimizer_analyze_path(@community.id), "data-optimize-url" => svg_optimizer_run_optimize_path(@community.id), "data-revert-all-url" => svg_optimizer_revert_all_path(@community.id), "data-status-url" => svg_optimizer_status_path(@community.id)}
   = link_to "← Back to properties", svg_optimizer_properties_path, class: "back"
   %h1= @community.name.presence || "Community ##{@community.id}"
-  %p.sub= "#{@community.company&.name.present? ? "#{@community.company.name} · " : ''}#{@community.is_sitemap? ? 'Site map' : 'Floorplates'} · #{pluralize(@targets.size, 'map')} to review"
+  - kind = @community.is_sitemap? ? "Site map" : "Floorplates"
+  - kind += " + Beans background" if @targets.any? { |t| t.is_a?(Community) }
+  %p.sub= "#{@community.company&.name.present? ? "#{@community.company.name} · " : ''}#{kind} · #{pluralize(@targets.size, 'map')} to review"
 
   - if @busy
     .banner.warn
@@ -162,16 +165,19 @@
     %span.muted= pluralize(@targets.size, "map")
     .maps-head-actions
       %button.btn.btn-danger-ghost.btn-sm#revert-all-btn{type: "button", title: "Restore every optimized map on this property back to its original", class: (@any_revertable ? "" : "hidden")} Revert all
+      %button.btn.btn-dl.btn-sm#dl-all-original{type: "button", disabled: true, title: "Download every map's original (unoptimized) SVG as one archive"} Download all originals
+      %button.btn.btn-dl.btn-sm#dl-all-optimized{type: "button", disabled: true, title: "Download every map's optimized SVG as one archive"} Download all optimized
       %a.toggle-all#toggle-all{title: "Expand or collapse every map's details"} Expand all
 
   #tcards
     - @targets.each do |record|
       - run = @latest_by_target[[record.class.name, record.id]]
-      - label = record.is_a?(Sitemap) ? "Site map" : (record.name.presence || record.range.presence ? "Floor #{record.name.presence || record.range}" : "Floorplate ##{record.id}")
       .tcard{"data-target-type" => record.class.name, "data-target-id" => record.id, "data-run-id" => run&.id, "data-run-status" => run&.status, "data-run-action" => run&.action, "data-run-revertable" => (@revertable[[record.class.name, record.id]] ? "true" : "false")}
         .tcard-head.js-toggle
           %span.chev ▶
-          %span.name= label
+          %span.name= svg_map_label(record)
+          - if record.is_a?(Community)
+            %span.tag-base{title: "The shared Beans base map every floor overlays — usually the heaviest file on the property"} Base layer
           %span.spacer
           %span.hverdict.pending.js-verdict Analyzing…
           .dl-group
@@ -229,12 +235,17 @@
     var revertAllUrl = root.getAttribute("data-revert-all-url");
     var statusUrl = root.getAttribute("data-status-url");
     var propertyName = #{(@community.name.presence || "map").to_json};
+    var companyName = #{@community.company&.name.to_s.to_json};
     var busy = #{@busy ? 'true' : 'false'};
 
     var ackBox = document.getElementById("ack");
     var optimizeBtn = document.getElementById("optimize-btn");
     var abSummary = document.getElementById("ab-summary");
     var revertAllBtn = document.getElementById("revert-all-btn");
+    var dlAllBtns = [
+      { el: document.getElementById("dl-all-original"), optimized: false, label: "Download all originals" },
+      { el: document.getElementById("dl-all-optimized"), optimized: true, label: "Download all optimized" }
+    ];
     var results = {};        // "type:id" -> analysis result
     var settled = {};        // "type:id" -> analyzed (or errored) at least once
     var cards = Array.prototype.slice.call(document.querySelectorAll(".tcard"));
@@ -458,6 +469,7 @@
           document.getElementById("sum-state").textContent = busy ? "(in progress)" : (allAnalyzed() ? "(ready)" : "(analyzing…)");
           updateSummary();
           refreshActionBar();
+          refreshBulkDownloads();
         });
     }
 
@@ -618,13 +630,112 @@
       });
     });
 
-    function downloadSvg(filename, text) {
-      var blob = new Blob([text], { type: "image/svg+xml" });
+    function downloadBlob(filename, blob) {
       var url = URL.createObjectURL(blob);
       var a = document.createElement("a");
       a.href = url; a.download = filename; document.body.appendChild(a); a.click(); document.body.removeChild(a);
       URL.revokeObjectURL(url);
     }
+    function downloadSvg(filename, text) { downloadBlob(filename, new Blob([text], { type: "image/svg+xml" })); }
+
+    // ---- download all (one archive per property) -------------------------------
+    // Every analyzed card already holds both its original and optimized SVG text,
+    // so bundling them needs no extra server round-trip. We emit a real .tar.gz —
+    // ustar entries piped through the browser's own CompressionStream — rather
+    // than pulling in a zip library: same "one folder per property" result, no
+    // dependency. Browsers without CompressionStream get the plain .tar.
+    var TAR_BLOCK = 512;
+    var encoder = new TextEncoder();
+
+    // Trims a label down to something safe as a path segment on any OS.
+    function safeName(name) {
+      return String(name || "").replace(/[\/\\:*?"<>|\x00-\x1f]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 80);
+    }
+
+    function tarHeader(path, size, isDir) {
+      var block = new Uint8Array(TAR_BLOCK);
+      function put(str, offset, len) { block.set(encoder.encode(str).slice(0, len), offset); }
+      function putOctal(num, offset, len) { put(num.toString(8).padStart(len - 1, "0"), offset, len); } // NUL-terminated
+
+      put(path, 0, 100);
+      put(isDir ? "0000755" : "0000644", 100, 8);
+      putOctal(0, 108, 8);                              // uid
+      putOctal(0, 116, 8);                              // gid
+      putOctal(size, 124, 12);
+      putOctal(Math.floor(Date.now() / 1000), 136, 12); // mtime
+      put("        ", 148, 8);                          // checksum field counts as spaces while summing
+      put(isDir ? "5" : "0", 156, 1);                   // typeflag
+      put("ustar", 257, 6);                             // magic (NUL-terminated) + version
+      put("00", 263, 2);
+
+      var checksum = block.reduce(function (sum, byte) { return sum + byte; }, 0);
+      put(checksum.toString(8).padStart(6, "0") + "\0 ", 148, 8);
+      return block;
+    }
+
+    // entries: [{ name, text }] — all placed inside a single `folder/` directory.
+    function tarball(folder, entries) {
+      var parts = [tarHeader(folder + "/", 0, true)];
+      entries.forEach(function (entry) {
+        var data = encoder.encode(entry.text);
+        var padding = (TAR_BLOCK - (data.length % TAR_BLOCK)) % TAR_BLOCK;
+        parts.push(tarHeader(folder + "/" + entry.name, data.length, false), data);
+        if (padding) parts.push(new Uint8Array(padding));
+      });
+      parts.push(new Uint8Array(TAR_BLOCK * 2)); // end-of-archive marker
+      return new Blob(parts, { type: "application/x-tar" });
+    }
+
+    function gzip(blob) {
+      if (!window.CompressionStream) return Promise.resolve(null);
+      return new Response(blob.stream().pipeThrough(new CompressionStream("gzip"))).blob();
+    }
+
+    // "HSL - 5 Central" / "HSL - 5 Central - optimized"
+    function archiveFolder(optimized) {
+      var name = [safeName(companyName), safeName(propertyName)].filter(Boolean).join(" - ") || "svg-maps";
+      return optimized ? name + " - optimized" : name;
+    }
+
+    function archiveEntries(optimized) {
+      var used = {};
+      return cards.reduce(function (entries, card) {
+        if (!card.__svgs) return entries; // never analyzed, or analysis errored
+        var base = safeName(card.querySelector(".name").textContent) || "map";
+        if (optimized) base += " - optimized";
+        var name = base;
+        for (var n = 2; used[name]; n++) name = base + " (" + n + ")";
+        used[name] = true;
+        entries.push({ name: name + ".svg", text: optimized ? card.__svgs.optimized : card.__svgs.original });
+        return entries;
+      }, []);
+    }
+
+    function downloadAll(btn, optimized, label) {
+      var entries = archiveEntries(optimized);
+      if (!entries.length) {
+        showAlert({ title: "Nothing to download", message: "No map has finished analyzing yet." });
+        return;
+      }
+      var folder = archiveFolder(optimized);
+      btn.disabled = true;
+      btn.innerHTML = DL_ICON + "Preparing…";
+      var tar = tarball(folder, entries);
+      gzip(tar)
+        .then(function (gz) { downloadBlob(folder + (gz ? ".tar.gz" : ".tar"), gz || tar); })
+        .catch(function (e) { showAlert({ title: "Could not build the archive", message: e.message }); })
+        .finally(function () { btn.disabled = false; btn.innerHTML = DL_ICON + label; });
+    }
+
+    // Enabled once every card has settled, so an archive is never half a property.
+    function refreshBulkDownloads() {
+      var ready = allAnalyzed() && cards.some(function (c) { return !!c.__svgs; });
+      dlAllBtns.forEach(function (b) { b.el.disabled = !ready; });
+    }
+    dlAllBtns.forEach(function (b) {
+      b.el.innerHTML = DL_ICON + b.label;
+      b.el.addEventListener("click", function () { downloadAll(b.el, b.optimized, b.label); });
+    });
 
     // ---- lightbox ----
     var lightbox = document.getElementById("lightbox"), lightboxImg = document.getElementById("lightbox-img");

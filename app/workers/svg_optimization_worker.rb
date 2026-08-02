@@ -1,6 +1,8 @@
-# Runs the actual production write for one SvgOptimizationRun (one Floorplate
-# or Sitemap svg_image). The web thread never does any of this — the
-# controller only creates a `queued` row and enqueues this job.
+# Runs the actual production write for one SvgOptimizationRun (one map file:
+# a Floorplate/Sitemap svg_image, or a Beans property's shared
+# Community#background_svg_image — see SvgOptimizableMap). The web thread never
+# does any of this — the controller only creates a `queued` row and enqueues
+# this job.
 #
 # The ordering below IS the safety design: each numbered step is a hard gate
 # the next one depends on. The single invariant everything protects is:
@@ -19,8 +21,13 @@
 #   * The only DB write is `target.save!`. Floorplate's sole commit callback
 #     (populate_image_urls) fires only when the legacy raster `image` is
 #     present and uses update_column, which bypasses callbacks — so it can't
-#     recurse or enqueue anything. Sitemap has no commit callbacks. Nothing
-#     here fans out into other jobs.
+#     recurse or enqueue anything. Sitemap has no commit callbacks. Community
+#     (the Beans background target) is saved through exactly the path the CMS
+#     background upload already uses (CommunitiesController#upload_svg_background),
+#     so it runs the same callbacks a staff member's property save does and
+#     nothing extra — its map-related callbacks are all after_create or guarded
+#     by other attributes changing, so writing background_svg_image trips none
+#     of them.
 class SvgOptimizationWorker
   include Sidekiq::Worker
   include SvgStorageReader
@@ -39,8 +46,8 @@ class SvgOptimizationWorker
     target = @run.target
 
     # 1. Fetch what's live right now.
-    original_bytes = read_uploader(target.svg_image)
-    raise "Live svg_image has no readable content." if original_bytes.blank?
+    original_bytes = read_uploader(target.optimizable_svg)
+    raise "Live SVG has no readable content." if original_bytes.blank?
 
     # 2. Optimistic concurrency baseline — anything else touching this record
     #    (e.g. a manual CMS re-upload) between now and the write aborts us.
@@ -88,13 +95,13 @@ class SvgOptimizationWorker
     #    mechanism a manual CMS re-upload uses. CarrierWave deletes the
     #    previous live file once the new one stores, which is exactly why
     #    step 5 had to succeed first.
-    target.svg_image = wrap_upload(candidate_bytes)
+    target.optimizable_svg = wrap_upload(candidate_bytes)
     target.save!
 
     # 8. Done.
     @run.update!(
       status: "uploaded",
-      resulting_url: target.svg_image.url,
+      resulting_url: target.optimizable_svg.url,
       finished_at: Time.current
     )
   rescue StandardError => e

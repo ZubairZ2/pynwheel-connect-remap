@@ -1,4 +1,6 @@
-# One row per write this tool makes to a Floorplate/Sitemap's svg_image.
+# One row per write this tool makes to a map file — a Floorplate/Sitemap's
+# svg_image, or a Beans property's shared Community#background_svg_image. The
+# target is polymorphic and always addressed through SvgOptimizableMap.
 # Model rules (see SvgOptimizationWorker for the pipeline):
 #   * Optimize backs up the TRUE ORIGINAL (backup_url) and records the
 #     original→optimized size win (original_bytes, optimized_bytes,
@@ -9,7 +11,7 @@
 #   * A map is optimizable only while it's on its original/fresh file and
 #     revertable only while its live file is still the optimized output; both
 #     are decided by SvgOptimizerController#optimized_now?, which compares the
-#     live svg_image.url to a run's resulting_url (so reverts and fresh CMS
+#     live optimizable_svg.url to a run's resulting_url (so reverts and fresh CMS
 #     re-uploads are detected). This model just records runs; the current-state
 #     logic lives in the controller.
 class SvgOptimizationRun < ApplicationRecord

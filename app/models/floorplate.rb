@@ -25,6 +25,7 @@
 class Floorplate < ApplicationRecord
   include StandardUrl
   include ::S3Acceleration
+  include SvgOptimizableMap
 
   mount_uploader :image, SiteMapUploader
   mount_uploader :svg_image, SiteMapUploader

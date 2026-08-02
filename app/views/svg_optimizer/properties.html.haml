@@ -28,6 +28,7 @@
   .svgopt-p .p-id { color: #9ca3af; font-size: 12px; margin-left: 6px; font-weight: 400; }
   .svgopt-p .p-company { color: #374151; }
   .svgopt-p .type-tag { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 6px; background: #f1f5f9; color: #475569; }
+  .svgopt-p .type-tag.t-beans { background: #eef2ff; color: #4338ca; margin-left: 4px; }
   .svgopt-p td.right { text-align: right; }
 
   .svgopt-p .pill { display: inline-block; padding: 3px 11px; border-radius: 20px; font-size: 12px; font-weight: 600; white-space: nowrap; }
@@ -43,9 +44,10 @@
 .svgopt-p
   %h1 SVG Background Optimizer — Properties
   %p.lede
-    Bulk-optimize the live floorplate/sitemap SVGs real renters' maps load. Open a property to
-    review a full before/after breakdown and visual preview of every map, then commit the write —
-    each preceded by a byte-verified backup, so anything can be reverted.
+    Bulk-optimize the live floorplate/sitemap SVGs real renters' maps load — plus the shared
+    background SVG on Beans-generated properties. Open a property to review a full before/after
+    breakdown and visual preview of every map, then commit the write — each preceded by a
+    byte-verified backup, so anything can be reverted.
 
   %form.toolbar{method: "get", action: svg_optimizer_properties_path}
     %input{type: "text", name: "q", value: params[:q], placeholder: "Property name…"}
@@ -88,6 +90,8 @@
               %td.p-company= community.company&.name.presence || "—"
               %td
                 %span.type-tag= community.is_sitemap? ? "Site map" : "Floorplates"
+                - if row[:targets].any? { |t| t[:record].is_a?(Community) }
+                  %span.type-tag.t-beans{title: "This property's maps sit on one shared Beans background SVG, which is optimized too"} + Background
               %td= rollup[:total]
               %td.js-status
                 - if rollup[:state] == "in_progress"

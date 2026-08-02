@@ -1,4 +1,17 @@
 module SvgOptimizerHelper
+  # Human name for one optimization target. Shared by the review page, the
+  # JSON endpoints and the confirm modal so a map is called the same thing
+  # everywhere. A Community target is the Beans shared background map.
+  def svg_map_label(target)
+    case target
+    when Community then "Background map"
+    when Sitemap   then "Site map"
+    else
+      name = target.name.presence || target.range.presence
+      name ? "Floor #{name}" : "Floorplate ##{target.id}"
+    end
+  end
+
   # Server-side twin of the properties view's JS `badgeHtml` — renders the
   # initial per-target status badge so the page is correct before any polling.
   def render_target_badge(run)

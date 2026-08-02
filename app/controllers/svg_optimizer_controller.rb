@@ -21,8 +21,9 @@ class SvgOptimizerController < ApplicationController
   end
 
   # Phase 2 — production bulk optimize. Lists every community eligible to be
-  # touched (enable_svg_mode AND at least one Floorplate/Sitemap with a real
-  # svg_image), each with a rolled-up optimization status.
+  # touched (enable_svg_mode AND at least one real SVG — a Floorplate/Sitemap
+  # svg_image, or a Beans property's background_svg_image), each with a
+  # rolled-up optimization status.
   def properties
     communities = eligible_communities.includes(:company)
 
@@ -78,7 +79,7 @@ class SvgOptimizerController < ApplicationController
     # optimized output — read the original from its backup instead, so we don't
     # mislabel the optimized file as "original" or re-encode an already-WebP file.
     raw_text = SvgStorageReader.read_url(latest.backup_url) if optimized_state && latest&.backup_url.present?
-    raw_text = SvgStorageReader.read_uploader(target.svg_image) if raw_text.blank?
+    raw_text = SvgStorageReader.read_uploader(target.optimizable_svg) if raw_text.blank?
     unless raw_text.present? && raw_text.include?("<svg")
       return render_error("Live file could not be read or isn't a valid SVG.")
     end
@@ -88,8 +89,8 @@ class SvgOptimizerController < ApplicationController
       success: true,
       target_type: target.class.name,
       target_id: target.id,
-      label: target_label(target),
-      live_url: target.svg_image.url,
+      label: helpers.svg_map_label(target),
+      live_url: target.optimizable_svg.url,
       optimized_state: optimized_state
     }.merge(result)
   rescue ActiveRecord::RecordNotFound
@@ -340,9 +341,10 @@ class SvgOptimizerController < ApplicationController
   # ---- Phase 2 helpers -------------------------------------------------------
 
   # Communities that could have a real embedded background to optimize:
-  # enable_svg_mode on, AND at least one target with a non-blank svg_image.
+  # enable_svg_mode on, AND at least one target with a non-blank SVG.
   # is_sitemap properties are matched via their sitemap; the rest via their
-  # floorplates.
+  # floorplates; Beans properties also via their own shared background map,
+  # which alone makes a property worth listing.
   def eligible_communities
     sitemap_ids = Community
       .where(enable_svg_mode: true, is_sitemap: true)
@@ -357,7 +359,12 @@ class SvgOptimizerController < ApplicationController
       .distinct
       .pluck(:id)
 
-    Community.where(id: (sitemap_ids + floorplate_ids).uniq)
+    beans_background_ids = Community
+      .where(enable_svg_mode: true, is_beans_svg: true)
+      .where.not(background_svg_image: [nil, ""])
+      .pluck(:id)
+
+    Community.where(id: (sitemap_ids + floorplate_ids + beans_background_ids).uniq)
   end
 
   # One map (when target params are present) or all of the property's maps.
@@ -396,7 +403,7 @@ class SvgOptimizerController < ApplicationController
   # over a new CMS file is correctly refused).
   def optimized_now?(run, target)
     return false unless run && run.action == "optimize" && run.status == "uploaded" && run.backup_url.present?
-    run.resulting_url.blank? || target.svg_image.url == run.resulting_url
+    run.resulting_url.blank? || target.optimizable_svg.url == run.resulting_url
   end
 
   # Resolves a single target from request params, scoped to the community so
@@ -405,17 +412,29 @@ class SvgOptimizerController < ApplicationController
     case type
     when "Floorplate" then community.floorplates.find_by(id: id)
     when "Sitemap"    then community.sitemap&.id.to_s == id.to_s ? community.sitemap : nil
+    when "Community"  then community.id.to_s == id.to_s ? beans_background_target(community) : nil
     end
   end
 
-  # The concrete Floorplate/Sitemap record(s) this property's map lives in.
+  # Every record whose SVG this property's live map is assembled from: the
+  # Beans background map (the shared base layer, when the property has one)
+  # first, then the interactive sitemap/floorplate overlay(s) on top.
   def resolve_targets(community)
-    if community.is_sitemap?
-      sm = community.sitemap
-      sm && sm.svg_image.present? ? [sm] : []
-    else
-      community.floorplates.where.not(svg_image: [nil, ""]).to_a
-    end
+    overlays =
+      if community.is_sitemap?
+        sm = community.sitemap
+        sm && sm.svg_image.present? ? [sm] : []
+      else
+        community.floorplates.where.not(svg_image: [nil, ""]).to_a
+      end
+
+    [beans_background_target(community), *overlays].compact
+  end
+
+  # The community itself is the target for a Beans property's background map —
+  # the file lives on Community#background_svg_image (see SvgOptimizableMap).
+  def beans_background_target(community)
+    community if community.is_beans_svg? && community.background_svg_image.present?
   end
 
   def build_property_row(community)
@@ -485,8 +504,8 @@ class SvgOptimizerController < ApplicationController
     {
       target_type: target.class.name,
       target_id: target.id,
-      label: target_label(target),
-      live_url: target.svg_image.url,
+      label: helpers.svg_map_label(target),
+      live_url: target.optimizable_svg.url,
       run: run && {
         id: run.id,
         action: run.action,
@@ -500,15 +519,6 @@ class SvgOptimizerController < ApplicationController
         finished_at: run.finished_at
       }
     }
-  end
-
-  def target_label(target)
-    if target.is_a?(Sitemap)
-      "Site map"
-    else
-      name = target.name.presence || target.range.presence
-      name ? "Floor #{name}" : "Floorplate ##{target.id}"
-    end
   end
 
   def truthy?(val)
