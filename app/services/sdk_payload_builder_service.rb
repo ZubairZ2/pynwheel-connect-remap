@@ -289,13 +289,15 @@ class SdkPayloadBuilderService
       first_unit = fp_units.find(&:available) || fp_units.first
 
       {
-        floorplanId:      fp.id,
-        name:             fp.name,
-        bedrooms:         fp.bedrooms,
-        bathrooms:        fp.bathrooms,
-        market_rent:      fp.market_rent,
-        square_feet:      fp.square_feet,
-        description:      fp.description.presence,
+        floorplanId:       fp.id,
+        name:              fp.name,
+        bedrooms:          fp.bedrooms,
+        bathrooms:         fp.bathrooms,
+        market_rent:       fp.market_rent,
+        square_feet:       fp.square_feet,
+        description:       fp.description.presence,
+        description_title: floorplan_description_title(fp),
+        additionalButtons: floorplan_additional_buttons(fp),
         availability_url: first_unit&.get_availability_url(),
         primaryImage:     fp.image.present?           ? fp.validated_image_url                                        : nil,
         secondaryImage:   fp.secondary_image.present? ? fp.convert_to_s3_accelerate_url(fp.secondary_image.url) : nil,
@@ -462,6 +464,22 @@ class SdkPayloadBuilderService
     ].select { |btn| btn[:url].present? }
   end
 
+  # Same three links the unit modal gets, read straight off the floorplan. Unit#get_*
+  # falls back to its floorplan, so a floorplan-level link already reaches the unit
+  # modal; this is that same data for the floorplan card, which has no unit to inherit
+  # from. Note the column is link1_open_new_tab here — the "_in_" spelling is the
+  # Unit predicate method, not a floorplan column.
+  def floorplan_additional_buttons(fp)
+    [
+      { label: fp.virtual_tour_button_label.presence || "3D Tour",
+        url: fp.virtual_tour_url, openInNewTab: fp.virtual_tour_url.present? && fp.link1_open_new_tab },
+      { label: fp.additional_button.presence || "Additional Button",
+        url: fp.additional_url,   openInNewTab: fp.additional_url.present?   && fp.link2_open_new_tab },
+      { label: fp.scheduler_label.presence || "Scheduled Tour",
+        url: fp.scheduler_url,    openInNewTab: fp.scheduler_url.present?    && fp.link3_open_new_tab }
+    ].select { |btn| btn[:url].present? }
+  end
+
   def unit_variation(unit, additional_fees, buttons = nil)
     is_model_unit      = unit.modal_unit
     buttons            = buttons || unit_additional_buttons(unit)
@@ -511,6 +529,14 @@ class SdkPayloadBuilderService
     else
       ["", DEFAULT_DESCRIPTION_TITLE]
     end
+  end
+
+  # Only meaningful next to a description, so it stays nil when there is none —
+  # otherwise the column default ("More Details") would hand the SDK a heading for
+  # an empty body.
+  def floorplan_description_title(fp)
+    return nil if fp.description.blank?
+    fp.description_title.presence || DEFAULT_DESCRIPTION_TITLE
   end
 
   AVAILABILITY_FILTER_LABELS = {

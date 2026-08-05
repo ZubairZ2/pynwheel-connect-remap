@@ -3148,7 +3148,35 @@
       // svgCache is intentionally preserved to avoid re-fetching on reinit
     },
 
-    _showLoading(msg)          { this._showStatus(msg, false); },
+    // Loading state is icon-only — the message is kept for assistive tech
+    // (aria-label) but never rendered as visible text.
+    _showLoading(msg) {
+      this._injectSpinnerStyles();
+
+      this.container.innerHTML = "";
+      const spinner = document.createElement("div");
+      spinner.className = "pyn-map-sdk-spinner";
+      spinner.setAttribute("role", "status");
+      spinner.setAttribute("aria-label", msg || "Loading");
+
+      this.container.style.display        = "flex";
+      this.container.style.alignItems     = "center";
+      this.container.style.justifyContent = "center";
+      this.container.appendChild(spinner);
+    },
+
+    _injectSpinnerStyles() {
+      if (document.getElementById("pyn-map-sdk-spinner-styles")) return;
+      const style = document.createElement("style");
+      style.id = "pyn-map-sdk-spinner-styles";
+      style.textContent =
+        ".pyn-map-sdk-spinner{width:34px;height:34px;border:3px solid rgba(0,0,0,0.12);" +
+        "border-top-color:#444;border-radius:50%;animation:pyn-map-sdk-spin .8s linear infinite;box-sizing:border-box}" +
+        "@keyframes pyn-map-sdk-spin{to{transform:rotate(360deg)}}" +
+        "@media (prefers-reduced-motion:reduce){.pyn-map-sdk-spinner{animation-duration:2.4s}}";
+      document.head.appendChild(style);
+    },
+
     _showError(msg, code)      {
       // Notify the caller's error handler. Returning false from onError
       // suppresses the SDK's default in-container error message so the
