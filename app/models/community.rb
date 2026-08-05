@@ -70,7 +70,8 @@ class Community < ApplicationRecord
   has_one :three_d_maps_configuration, dependent: :destroy
   has_many :comments , as: :commentable
   has_one :hardware_spec
-  has_one :status, as: :statusable
+  include LaunchStatusable
+
   has_one :yale
   has_one :schlage
   has_one :launch_remote
@@ -389,25 +390,19 @@ class Community < ApplicationRecord
   end
 
   def update_floorplans_form_status current_pynwheel_user = nil, form_status = ""
-    previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(self).check_status_of_specific_form(FLOORPLAN_IMAGES)
-    self.set_floorplan_status(current_pynwheel_user, form_status)
-    FollowUpMailer.send_email_after_form_submission(self, FLOORPLAN_IMAGES, previous_status)
+    submit_launch_form(FLOORPLAN_IMAGES, current_pynwheel_user, form_status)
   end
 
   def check_all_floorplans_form_status_is_submitted
-    self.floorplans.all? { |f| f&.status&.status == SUBMITTED }
+    self.floorplans.all? { |f| f&.launch_status_and_remarks_obj&.dig(:name) == SUBMITTED }
   end
 
   def update_property_management_form_status current_pynwheel_user = nil, form_status = nil
-    previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(self).check_status_of_specific_form(PROPERTY_MANAGEMENT_SYSTEM)
-    self.set_data_provider_status(current_pynwheel_user, form_status)
-    FollowUpMailer.send_email_after_form_submission(self, PROPERTY_MANAGEMENT_SYSTEM, previous_status)
+    submit_launch_form(PROPERTY_MANAGEMENT_SYSTEM, current_pynwheel_user, form_status)
   end
 
   def update_community_details_form_status current_pynwheel_user = nil, form_status = nil
-    previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(self).check_status_of_specific_form(COMMUNITY_DETAILS)
-    self.set_community_details_status(current_pynwheel_user, form_status)
-    FollowUpMailer.send_email_after_form_submission(self, COMMUNITY_DETAILS, previous_status)
+    submit_launch_form(COMMUNITY_DETAILS, current_pynwheel_user, form_status)
   end
 
   def update_status_and_remarks form_type, form_status, form_remarks = ""
@@ -430,201 +425,88 @@ class Community < ApplicationRecord
     ([ADDITIONAL_PAGES, EBROCHURE, HARDWARE_SPECS, AMENITY_IMAGES, DESIGN_DIRECTION, COMPANY_DETAILS].include?(form_type))
   end
 
-  def set_community_status(current_user)
-    return if self.blank?
+  # ---------------------------------------------------------------------------
+  # Launch form statuses
+  #
+  # Every form works the same way: take the records behind it and give each one
+  # the requested status, or -- when none was requested -- the status its own
+  # `derive_launch_status` says it has earned. PynwheelLaunch::Forms knows which
+  # records those are.
+  #
+  # The named wrappers below are the API the Launch controllers and the data
+  # importers call.
+  # ---------------------------------------------------------------------------
 
-    # set_community_details_status(current_user)
-    # set_property_map_status(current_user)
-    # set_floorplan_status(current_user)
-    # set_gallery_images_status(current_user)
-    # set_touch_vidoes_status(current_user)
-    # set_data_provider_status(current_user)
-    # touch_installation_specification(current_user)
-    # set_lock_providers_status(current_user)
-    # set_tour_stops_status(current_user)
-    # set_visiting_hours_status(current_user)
+  def set_form_status(form, current_user = nil, status = nil)
+    PynwheelLaunch::Forms.records_for(self, form).each do |record|
+      set_status_for_all(record, status.presence || record.derive_launch_status, current_user)
+    end
   end
 
-  def set_community_details_status(current_user, status)
-    return if self.blank?
-    if status.nil?
-      community_status = status_string(check_community_requirments(self))
-    else
-      community_status = status
-    end
+  # Records the new status and lets Pynwheel know the client submitted a form.
+  def submit_launch_form(form, current_user = nil, status = nil)
+    previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(self).check_status_of_specific_form(form)
+    set_form_status(form, current_user, status)
+    FollowUpMailer.send_email_after_form_submission(self, form, previous_status)
+  end
 
-    set_status_for_all(self,community_status,current_user)
+  # Statuses are created with the record now, so there is nothing to catch up on.
+  def set_community_status(current_user = nil); end
+
+  def set_community_details_status(current_user, status)
+    set_form_status(COMMUNITY_DETAILS, current_user, status)
   end
 
   def set_property_map_status(current_user, status)
-    return if self.sitemap.blank? && self.floorplates.blank?
-
-    if self.is_sitemap
-      sitemap = self.sitemap
-      unless status.present?
-        property_sitemap_status = status_string(self.sitemap&.image&.url.present? || self.sitemap&.file&.url.present?)
-      else
-        property_sitemap_status = "in_progress"
-      end
-      set_status_for_all(sitemap,property_sitemap_status,current_user)
-    elsif self.floorplates.any?
-      floorplates = self.floorplates
-      floorplates.each do |floorplate|
-        unless status.present?
-          property_floorplate_status = status_string(floorplate&.image&.url.present? || floorplate&.file&.url.present?)
-        else
-          property_floorplate_status = "in_progress"
-        end
-        set_status_for_all(floorplate,property_floorplate_status,current_user)
-      end
-    end
+    set_form_status(PROPERTY_MAP_IMAGES, current_user, status)
   end
 
   def set_floorplan_status(current_user, status)
-    return if self.floorplans.blank?
-    self.floorplans.each do |floorplan|
-      unless status.present?
-        floorplan_status = status_string(floorplan&.image&.url.present? || floorplan&.file&.url.present?)
-      else
-        floorplan_status = status
-      end
-    
-      set_status_for_all(floorplan,floorplan_status,current_user)
-    end
-    
+    set_form_status(FLOORPLAN_IMAGES, current_user, status)
   end
 
   def set_gallery_images_status(current_user, status)
-    return if self.galleries.blank?
-
-    self.galleries.each do |gallery|
-      unless status.present?
-        gallery_images_status = status_string(gallery.name.present? && gallery&.gallery_images.present?)
-      else
-        gallery_images_status = status
-      end
-      set_status_for_all(gallery,gallery_images_status,current_user)
-    end
+    set_form_status(TOUCH_GALLERY_MEDIA, current_user, status)
   end
 
   def set_touch_vidoes_status(current_user, status)
-    return if self.design.blank?
-    design = self.design
-    home_page_image_status(design,current_user, status)
-    home_page_video_status(design,current_user, status)
-  end
-
-  def home_page_image_status(design,current_user, status)
-    return if design.home_page_images.blank?
-
-    design.home_page_images.each do |touch_img|
-      unless status.present?
-        touch_img_status = status_string(touch_img.name.present? & touch_img.image&.url.present?)
-      else
-        touch_img_status = status
-      end
-      set_status_for_all(touch_img,touch_img_status,current_user)
-    end
-  end
-
-  def home_page_video_status(design,current_user, status)
-    return if design.home_page_video.blank?
-
-    hp_video = design.home_page_video
-    unless status.present?
-      touch_video_status = status_string(hp_video.video.url.present?)
-    else
-      touch_video_status = status
-    end
-    set_status_for_all(hp_video,touch_video_status,current_user)
+    set_form_status(TOUCH_HOME_PAGE_MEDIA, current_user, status)
   end
 
   def set_data_provider_status(current_user, status)
-    return if self.data_provider.blank? || self.credential.blank?
-    
-    provider_credential = self.credential
-    required_fields = check_required_fields_for_providers
-
-    unless status.present?
-      status_attr = status_string(required_fields)
-    else
-      status_attr = status
-    end
-    set_status_for_all(provider_credential,status_attr,current_user)
-    if self&.credential&.use_different_crm_provider
-      set_crm_status(current_user)
-    end
+    set_form_status(PROPERTY_MANAGEMENT_SYSTEM, current_user, status)
   end
 
   def set_design_direction_status(current_user, status)
-    return if self&.design_direction&.blank?
-    unless status.present?
-      design_direction = status_string(self&.design_direction&.image&.url.present? || self&.design_direction&.file&.url.present?)
-    else
-      design_direction = status
-    end
-    set_status_for_all(self&.design_direction,design_direction,current_user)
+    set_form_status(DESIGN_DIRECTION, current_user, status)
   end
 
   def set_community_amenity_status(current_user, status)
-    return if self.amenities.blank?
-
-    self.amenities.each do |amenity|
-      unless status.present?
-        amenity_status = status_string(amenity&.image&.url.present?)
-      else
-        amenity_status = status
-      end
-      set_status_for_all(amenity,amenity_status,current_user)
-    end
+    set_form_status(AMENITY_IMAGES, current_user, status)
   end
 
   def set_additional_pages_status(current_user, status)
-    return if self.webpages.blank? && self.imagepages.blank?
-    webpages = self.webpages
-    webpages.each do |webpage|
-      unless status.present?
-        webpage_status = status_string(webpage&.name.present? && webpage&.url.present?)
-      else
-        webpage_status = status
-      end
-      set_status_for_all(webpage,webpage_status,current_user)
-    end
-    imagepages = self.imagepages
-    imagepages.each do |imagepage|
-      unless status.present?
-        imagepage_status = status_string(imagepage&.name.present?)
-      else
-        imagepage_status = status
-      end
-      set_status_for_all(imagepage,imagepage_status,current_user)
-    end
+    set_form_status(ADDITIONAL_PAGES, current_user, status)
   end
 
   def set_ebrochure_status(current_user, status)
-    return if self.favorite_setting.blank?
-    weblinks = self.favorite_setting.ebrochure_menu_buttons
-    if weblinks.present?
-      weblinks.each do |weblink|
-        unless status.present?
-          weblink_status = status_string(weblink&.name.present? && weblink&.url.present?)
-        else
-          weblink_status = status
-        end
-        set_status_for_all(weblink,weblink_status,current_user)
-      end
-    end
-    images = self.favorite_setting.favorite_images
-    if images.present?
-      images.each do |image|
-        unless status.present?
-          image_status = status_string(image&.image&.url.present?)
-        else
-          image_status = status
-        end
-        set_status_for_all(image,image_status,current_user)
-      end
-    end
+    set_form_status(EBROCHURE, current_user, status)
+  end
+
+  def set_visiting_hours_status(current_user, status)
+    set_form_status(VISITING_HOURS, current_user, status)
+  end
+
+  def set_tour_stops_status(current_user, status)
+    set_form_status(TOUR_STOPS, current_user, status)
+  end
+
+  def set_lock_providers_status(current_user, status)
+    set_form_status(LOCK_PROVIDER, current_user, status)
+  end
+
+  def touch_installation_specification(current_user, status)
+    set_form_status(HARDWARE_SPECS, current_user, status)
   end
 
   def check_required_fields_for_providers
@@ -658,14 +540,6 @@ class Community < ApplicationRecord
     end
   end
 
-  def set_crm_status(current_user)
-    return if self.crm_credential.blank?
-    crm_credential = self.crm_credential
-    required_fields = check_crm_required_fields
-    status_attr = status_string(required_fields)
-    set_status_for_all(crm_credential,status_attr,current_user)
-  end
-
   def check_crm_required_fields
     return if self.crm_credential.crm_provider.blank?
     crm_credential = self.crm_credential
@@ -694,52 +568,6 @@ class Community < ApplicationRecord
     end
   end
 
-  def set_visiting_hours_status(current_user, status)
-    @tour = self.community_tour
-    return unless self.self_tour
-    # self_tour_visiting_hours(current_user) if @tour&.tour_setting&.allow_self_tour # commented this code so that the status shold be changed based on Pynwheel Tour in community setting
-    # guided_visiting_hours(current_user) if @tour&.tour_setting&.allow_guided_tour # commented this code so that the status shold be changed based on Pynwheel Tour in community setting
-    self_tour_visiting_hours(current_user, status)
-    guided_visiting_hours(current_user, status)
-  end
-
-  def self_tour_visiting_hours(current_user, status)
-    return if self.opening_hours.blank?
-    self_visiting_hours = self.opening_hours
-    self_visiting_hours.each do |oh|
-      unless status.present?
-        status_attr = status_string(oh.day.present? && oh.opening_time.present? && oh.closing_time.present?)
-      else
-        status_attr = status
-      end
-      set_status_for_all(oh,status_attr,current_user)
-    end
-  end
-
-  def guided_visiting_hours(current_user, status)
-    return if self.guided_opening_hours.blank?
-    guided_visiting_hours = self.guided_opening_hours
-    guided_visiting_hours.each do |gh|
-      unless status.present?
-        status_attr = status_string(gh.day.present? && gh.opening_time.present? && gh.closing_time.present? )
-      else
-        status_attr = status
-      end
-      set_status_for_all(gh,status_attr,current_user)
-    end
-  end
-
-  def touch_installation_specification(current_user, status)
-    return if self.hardware_spec.nil?
-    hardware_spec = self.hardware_spec
-    unless status.present?
-      status_attr = status_string(hardware_spec&.name.present? && hardware_spec&.phone.present? && hardware_spec&.image.present? )
-    else
-      status_attr = status
-    end
-    set_status_for_all(self.hardware_spec, status_attr, current_user)
-  end
-
   def check_community_requirments(community)
     (community.name && community.email && community.phone && community.address && community.city && community.state && community.zip).present?
   end
@@ -747,126 +575,6 @@ class Community < ApplicationRecord
   def check_required_hardware(product_options)
     products_json = JSON.parse product_options
     products_json['product_options']['pynwheel_touch']['options']['hardware'].present?
-  end
-
-  def set_tour_stops_status(current_user, status)
-    return if self.community_tour&.tour_stops.blank?
-    tour_stops = self.community_tour.tour_stops.compact
-    tour_stops.each do |ts|
-      unless status.present?
-        status_attr = status_string(ts.name.present?)
-      else
-        status_attr = status
-      end
-      set_status_for_all(ts,status_attr,current_user)
-    end
-  end
-
-  def set_lock_providers_status(current_user, status)
-    if self.zerv.blank? && self.latch.blank? && self.dwelo.blank? && self.edge_state.blank? && self&.launch_remote.blank?  && self&.yale.blank? && self.other_locks.nil?
-      return
-    else
-      pynwheel_access_status(current_user, status)
-      latch_locks_status(current_user, status)
-      dwelo_locks_status(current_user, status)
-      remote_lock_status(current_user, status)
-      yale_lock_status(current_user, status)
-      set_other_lock_status(current_user, status)
-      schlage_lock_status(current_user, status)
-      igloohome_lock_status(current_user, status)
-    end
-  end
-
-  def igloohome_lock_status(current_user, status)
-    return if igloohome.blank?
-    
-    unless status.present?
-      if igloohome.version === "igloohome"
-        if igloohome.is_auth_code
-          status_attr = status_string(igloohome.home_name && (igloohome.refresh_token.present? || igloohome.is_authorized_with_pynwheel) )
-        elsif igloohome.is_client_auth
-          status_attr = status_string(igloohome.home_name && igloohome.client_id.present? && igloohome.client_secret.present?)
-        else
-          status_attr = status
-        end
-      elsif igloohome.version === "iglooworks"
-        status_attr = status_string(igloohome.iglooworks_api_key.present? && igloohome.iglooworks_department_id.present?)
-      else
-        status_attr = status
-      end
-    else
-      status_attr = status
-    end
-
-    set_status_for_all(igloohome,status_attr,current_user)
-  end
-
-  def yale_lock_status(current_user, status)
-    return if self.yale.blank?
-    yale_locks = self.yale
-    status_attr = status.present? ? status : status_string(yale_locks.present?)
-    set_status_for_all(yale_locks,status_attr,current_user)
-  end
-
-  def schlage_lock_status(current_user, status)
-    return if self.schlage.blank?
-    schlage_locks = self&.schlage
-    status_attr = status.present? ? status : status_string(schlage_locks.present?)
-    set_status_for_all(schlage_locks,status_attr,current_user)
-  end
-
-  def set_other_lock_status(current_user, status)
-    return unless self.other_locks.present?
-    other_locks = self.other_locks
-    other_locks.each do |lock|
-      unless status.present?
-        status_attr = status_string(lock.description.present?)
-      else
-        status_attr = status
-      end
-      set_status_for_all(lock,status_attr,current_user)
-    end
-  end
-
-  def pynwheel_access_status(current_user, status)
-    return if self.zerv.blank?
-    zerv_lock = self.zerv
-    unless status.present?
-      status_attr = status_string(zerv_lock.facility_id.present? && zerv_lock.badge_id.present? && zerv_lock.card_format.present?)
-    else
-      status_attr = status
-    end
-    set_status_for_all(zerv_lock,status_attr,current_user)
-  end
-
-  def latch_locks_status(current_user, status)
-    return if self.latch.blank?
-    latch = self.latch
-
-    unless status.present?
-      status_attr = status_string(latch.latch_property_name.present? && latch.is_building_name_added && latch.is_integration_submitted && latch.is_mission_control_setup)
-    else
-      status_attr = status
-    end
-    set_status_for_all(latch,status_attr,current_user)
-  end
-
-  def dwelo_locks_status(current_user, status)
-    return if self.dwelo.blank?
-    dwelo = self.dwelo
-    unless status.present?
-      status_attr = status_string(dwelo.community_id.present? && dwelo.client_id.present? && dwelo.client_secret.present?)
-    else
-      status_attr = status
-    end
-    set_status_for_all(dwelo,status_attr,current_user)
-  end
-
-  def remote_lock_status(current_user, status)
-    return if self.launch_remote.blank?
-    remote_locks = self.launch_remote
-    status_attr = status.present? ? status : status_string(remote_locks.present?)
-    set_status_for_all(remote_locks,status_attr,current_user)
   end
 
   def status_string(present_required_fields)
@@ -2495,6 +2203,11 @@ class Community < ApplicationRecord
     end).each do |model|
       model.svg_pointed.update_all(pointer_data: {})
     end
+  end
+
+  # Launch: the community details form is complete once the property can be contacted and located.
+  def derive_launch_status
+    launch_status_from(check_community_requirments(self))
   end
 
   private

@@ -30,8 +30,8 @@ class TourStop < ApplicationRecord
   has_one :path, as: :map_path
   has_many :path_points, through: :paths
   belongs_to :unit, dependent: :destroy
-  has_one :status, as: :statusable
-  
+  include LaunchStatusable
+
   before_destroy :remove_associated_stops
 
   scope :visible, -> { where(display_stop: true) }
@@ -141,6 +141,11 @@ class TourStop < ApplicationRecord
 
   def stop_floor_name actual_stop
     handle_floor_display(actual_stop, false)
+  end
+
+  # Launch: a tour stop is complete once it is named.
+  def derive_launch_status
+    launch_status_from(name.present?)
   end
 
   private

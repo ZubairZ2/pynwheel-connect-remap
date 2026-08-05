@@ -15,7 +15,8 @@
 
 class Webpage < ApplicationRecord
   belongs_to :community
-  has_one :status, as: :statusable
+  include LaunchStatusable
+
   validates_uniqueness_of :name, scope: :community_id
   validates_presence_of :url, :name
   validates_length_of :name, :maximum => 50
@@ -56,5 +57,10 @@ class Webpage < ApplicationRecord
     else
       ""
     end
+  end
+
+  # Launch: an additional web page is complete once it is named and linked.
+  def derive_launch_status
+    launch_status_from(name.present? && url.present?)
   end
 end

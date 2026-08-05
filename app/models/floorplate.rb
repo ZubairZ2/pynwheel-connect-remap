@@ -38,7 +38,7 @@ class Floorplate < ApplicationRecord
   has_many :elevators, dependent: :destroy
   has_many :hallways, as: :parent
   has_many :access_points, class_name: 'Door', as: :attached_with, dependent: :destroy
-  has_one :status, as: :statusable
+  include LaunchStatusable
 
   validates_uniqueness_of :name, scope: :community_id, if: -> { name.present? }
   validates :image, :presence => {message: "cannot be blank. Please upload Floor Plate image first."}, if: -> { image.present? }
@@ -143,6 +143,11 @@ class Floorplate < ApplicationRecord
 
   def floorplate_image_height
     self.height > 0 ? self.height : self.image.height rescue 0
+  end
+
+  # Launch: the property map form is complete once the floorplate artwork is in.
+  def derive_launch_status
+    launch_status_from(image&.url.present? || file&.url.present?)
   end
 
   private

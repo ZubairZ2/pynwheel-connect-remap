@@ -23,7 +23,7 @@ class Sitemap < ApplicationRecord
   has_many :elevators, dependent: :destroy
   has_many :hallways, as: :parent
   has_many :access_points, class_name: 'Door', as: :attached_with, dependent: :destroy
-  has_one :status, as: :statusable
+  include LaunchStatusable
 
   validates :image, :presence => {message: "cannot be blank. Please upload site map image first."}, if: -> { image.present? }
 
@@ -59,6 +59,11 @@ class Sitemap < ApplicationRecord
 
   def sitemap_image_height
     self.height > 0 ? self.height : self.image.height
+  end
+
+  # Launch: the property map form is complete once the map artwork is in.
+  def derive_launch_status
+    launch_status_from(image&.url.present? || file&.url.present?)
   end
 
   private

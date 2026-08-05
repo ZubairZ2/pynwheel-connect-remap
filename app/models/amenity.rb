@@ -34,8 +34,8 @@ class Amenity < ApplicationRecord
   belongs_to :community
   
   has_many :amenity_galleries, dependent: :destroy
-  has_one :status, as: :statusable
-  
+  include LaunchStatusable
+
   has_many :paths, as: :map_path
   has_many :path_points, through: :paths
   # has_many :remote_locks,  -> { for_amenties }, class_name: 'RemoteLock', foreign_key: 'stop_id', dependent: :destroy  # was being handled manually
@@ -217,6 +217,11 @@ class Amenity < ApplicationRecord
 
   def svg_coordinates
     pointer_data.is_a?(Hash) ? pointer_data.values_at('x_plot', 'y_plot').map(&:to_i) : [0, 0]
+  end
+
+  # Launch: an amenity is complete once it has an image.
+  def derive_launch_status
+    launch_status_from(image&.url.present?)
   end
 
   private

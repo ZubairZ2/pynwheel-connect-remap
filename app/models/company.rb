@@ -23,7 +23,8 @@ class Company < ApplicationRecord
   has_many :users, dependent: :destroy
   has_many :community_groups, dependent: :destroy
   has_many :regions, dependent: :destroy
-  has_one :status, as: :statusable
+  include LaunchStatusable
+
   has_one :company_setting, dependent: :destroy
   has_one :credential, dependent: :destroy
   validates_uniqueness_of :name
@@ -52,9 +53,15 @@ class Company < ApplicationRecord
     status_entity.status.update(status: status_attribute, whodunnit: current_user.id)
   end
 
+  # Launch: the company details form is complete once the company can be
+  # contacted and located.
+  def derive_launch_status
+    launch_status_from(check_company_requirement(self))
+  end
+
   def company_status
     return [] if self.blank?
-    [self&.status&.status_and_remarks_obj]
+    [launch_status_and_remarks_obj]
   end
 
   def delete_company

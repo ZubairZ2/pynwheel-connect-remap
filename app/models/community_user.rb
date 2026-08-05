@@ -51,85 +51,27 @@ class CommunityUser < ApplicationRecord
   end
 
   def community_products
-    if self.community.product_options.nil?
-      selected_products = old_community_products
-    else
-      selected_products = get_client_products
-    end
-  end
-
-  def old_community_products
-    available_products = {:touchscreen_app => "pynwheel_touch" , :self_tour => "self_tour"}
-
-    selected_products = []
-    community = self.community
-    available_products.each do |key , value|
-      if community[key] == true
-        selected_products.push(value)
-      end
-    end
-    selected_products
-  end
-
-  def get_client_products
-    available_products = ["self_tour" , "pynwheel_touch" , "pynwheel_maps" , "graphic_design_services" , "additional_options"]
-    selected_products = []
-    product_options = JSON.parse(self.community.product_options)
-    available_products.each do |product|
-      if product == "pynwheel_maps"
-        product_status = nested_hash_value(product_options , "pynwheel_maps")
-        if product_status == true
-          selected_products.push(product)
-        end
-      end
-      
-      product_hash = nested_hash_value(product_options , product)
-      product_status = nested_hash_value(product_hash , "is_enabled")
-
-      if product_status == true
-        selected_products.push(product)
-      end
-    end
-    selected_products
-  end
-
-  def nested_hash_value(obj,key)
-    if obj.respond_to?(:key?) && obj.key?(key)
-      obj[key]
-    elsif obj.respond_to?(:each)
-      r = nil
-      obj.find{ |*a| r=nested_hash_value(a.last,key) }
-      r
-    end
+    PynwheelLaunch::Forms.products_for(self.community)
   end
 
   def community_detail_forms
-    @community = self.community
-    products = community_products
-    community_detail_forms = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).get_community_detail_forms(products)
-    community_detail_forms.each do |form|
-      { name: form[:name], status: form[:status] }
-    end
+    PynwheelLaunch::Communities::CommunityDetailForms.new(self.community).get_community_detail_forms(community_products)
   end
 
+  # The two rings on the dashboard. They count records rather than forms, so a
+  # community with fifty floorplans and one credential is mostly floorplans --
+  # which is what makes the ring move as a client works through them.
   def status_in_percentage
-    community_detail_sections = community_detail_forms
-    new_statuses = []
-    all_sections_with_status = community_detail_sections.map do |status|
-      statuses = status[:status]
-      statuses.each do |x|
-        if !x.nil?
-          new_statuses << x[:name] if x[:name].present?
-        end
-      end
-    end
-    total_number_of_sections = all_sections_with_status.count
-    number_of_submitted_sections = new_statuses.pluck("submitted").compact.count rescue 0
-    number_of_approved_sections = new_statuses.pluck("approved").compact.count rescue 0
-    submitted_percentage = number_of_submitted_sections > 0 && new_statuses.length > 0 ? percent_of(number_of_submitted_sections, new_statuses.length).to_i : 0
-    approved_percentage = number_of_approved_sections > 0  && new_statuses.length > 0 ? percent_of(number_of_approved_sections, new_statuses.length).to_i : 0
-    status_percentage = {submitted: submitted_percentage, approved: approved_percentage}
-    status_percentage
+    statuses = community_detail_forms.flat_map { |form| Array(form[:status]) }
+                                     .filter_map { |status| status&.dig(:name).presence }
+    return { submitted: 0, approved: 0 } if statuses.empty?
+
+    # `include?` so re_submitted counts as submitted and form_approved as
+    # approved, as these rings have always done.
+    {
+      submitted: percent_of(statuses.count { |s| s.include?(SUBMITTED) }, statuses.length).to_i,
+      approved: percent_of(statuses.count { |s| s.include?(APPROVED) }, statuses.length).to_i
+    }
   end
 
   def percent_of(v,n)

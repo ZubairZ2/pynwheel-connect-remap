@@ -30,9 +30,7 @@ class Api::V2::CommunityFloorPlansController < Api::V2::ApiApplicationController
         end
       end
       
-      previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(FLOORPLAN_IMAGES)
-      @community.set_floorplan_status(current_pynwheel_user, @status)
-      FollowUpMailer.send_email_after_form_submission(@community, FLOORPLAN_IMAGES, previous_status)
+      @community.submit_launch_form(FLOORPLAN_IMAGES, current_pynwheel_user, @status)
       floorplans = @community.floorplans.order(created_at: :desc)
       render json: { success: true, message: "floorplan has been updated successfully.", data: floorplans.as_json }
     rescue => ex

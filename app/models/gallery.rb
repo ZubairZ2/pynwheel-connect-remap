@@ -16,7 +16,8 @@ class Gallery < ApplicationRecord
 
 	has_many :gallery_images, dependent: :destroy
 	belongs_to :community
-	has_one :status, as: :statusable
+	include LaunchStatusable
+
 	validates :name, presence: true, uniqueness: {scope: :community}
 
 	def delete_gallery
@@ -40,5 +41,10 @@ class Gallery < ApplicationRecord
     rescue
       ActionView::Base.full_sanitizer.sanitize(stop_description)
     end
+  end
+
+  # Launch: a gallery is complete once it is named and has media in it.
+  def derive_launch_status
+    launch_status_from(name.present? && gallery_images.present?)
   end
 end

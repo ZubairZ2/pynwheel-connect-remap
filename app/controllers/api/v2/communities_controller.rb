@@ -130,21 +130,14 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
   end
 
   def check_brand_access
-    community_user = params[:community_user_id]
-    @brand_pdf_feature = check_brand_feature_access(community_user)
+    @brand_pdf_feature = check_brand_feature_access
   end
 
-  def check_brand_feature_access(user_id)
-    community_user = CommunityUser.find_by_id(user_id)
-    product_json = @community&.product_options rescue ""
-    return {:brand_pdf_feature => false} if product_json.nil?
-    desing_style = community_user.nested_hash_value(JSON.parse(product_json) , "desing_style")
-    if desing_style.eql?(EXPRESSIONIST)
-      brand_pdf_feature = true
-    else
-      brand_pdf_feature = false
-    end
-    return {:brand_pdf_feature => brand_pdf_feature}
+  # Expressionist properties get to upload their brand guidelines PDF.
+  def check_brand_feature_access
+    design_style = PynwheelLaunch::Forms.option(@community, "pynwheel_touch", "options", "design_style")
+
+    { :brand_pdf_feature => design_style.eql?(EXPRESSIONIST) }
   end
 
   def page_number

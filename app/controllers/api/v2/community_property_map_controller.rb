@@ -37,9 +37,7 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
       type = FLOORPLATE
     end
     if @errors.blank?
-      previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(PROPERTY_MAP_IMAGES)
-      @community.set_property_map_status(current_pynwheel_user, @status)
-      FollowUpMailer.send_email_after_form_submission(@community, PROPERTY_MAP_IMAGES, previous_status)
+      @community.submit_launch_form(PROPERTY_MAP_IMAGES, current_pynwheel_user, @status)
       render json: {:success =>  true , data: render_property_maps(type , property_map)}
     else
       render json: {:success =>  false , data: @errors}

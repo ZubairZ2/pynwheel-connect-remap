@@ -1,7 +1,8 @@
 class OpeningHour < ApplicationRecord
   include RailsSortable::Model
   belongs_to :community
-  has_one :status, as: :statusable
+  include LaunchStatusable
+
   set_sortable :sort
 
   def as_json options = {}
@@ -16,5 +17,10 @@ class OpeningHour < ApplicationRecord
 
   def change_time(opening)
     Time.strptime(opening, "%H:%M").strftime("%I:%M %p")
+  end
+
+  # Launch: a visiting hour is complete once the day and both times are set.
+  def derive_launch_status
+    launch_status_from(day.present? && opening_time.present? && closing_time.present?)
   end
 end

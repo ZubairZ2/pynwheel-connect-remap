@@ -20,7 +20,8 @@ class Imagepage < ApplicationRecord
   include RailsSortable::Model
   set_sortable :sort
 
-  has_one :status, as: :statusable
+  include LaunchStatusable
+
   has_many :additional_images, dependent: :destroy
   has_many :additional_files, dependent: :destroy
   validates_uniqueness_of :name, scope: :community_id
@@ -58,5 +59,10 @@ class Imagepage < ApplicationRecord
       }
     end
     file_arr
+  end
+
+  # Launch: an additional image page is complete once it is named.
+  def derive_launch_status
+    launch_status_from(name.present?)
   end
 end

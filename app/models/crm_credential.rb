@@ -1,6 +1,6 @@
 class CrmCredential < ApplicationRecord
   belongs_to :community
-  has_one :status, as: :statusable
+  include LaunchStatusable
 
   def crm_provider_credentials
     crm_credential_provider = self.crm_provider
@@ -57,5 +57,10 @@ class CrmCredential < ApplicationRecord
   	else
   		(false)
   	end
+  end
+
+  # Launch: mirrors the data provider rule, against the CRM fields.
+  def derive_launch_status
+    launch_status_from(community.present? && community.check_crm_required_fields)
   end
 end

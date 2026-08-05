@@ -19,9 +19,7 @@ class Api::V2::EbrochuresController < Api::V2::ApiApplicationController
         add_favorite_image(ebrochure_params['images']) if ebrochure_params['images'].present?
         add_ebrochure_weblink(ebrochure_params['weblink']) if ebrochure_params['weblink'].present?
       end
-      previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(EBROCHURE)
-      @community.set_ebrochure_status(current_pynwheel_user, @status)
-      FollowUpMailer.send_email_after_form_submission(@community, EBROCHURE, previous_status)
+      @community.submit_launch_form(EBROCHURE, current_pynwheel_user, @status)
       render json: { success: true, data: @favorite_setting.as_json }
     rescue => e
       render json: { success: false, message: e.message }

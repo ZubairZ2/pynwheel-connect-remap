@@ -642,7 +642,7 @@ module ApplicationHelper
         "pynwheel_touch": {
           "is_enabled": false,
           "options": {
-            "desing_style": "Futurnist",
+            "design_style": "Futurist",
             "hardware": "No Touchscreen",
             "installation": "No",
             "stand": "Chief"

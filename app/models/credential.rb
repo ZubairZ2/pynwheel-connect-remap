@@ -38,12 +38,14 @@
 #
 
 class Credential < ApplicationRecord
+  include LaunchStatusable
+
   has_paper_trail
   belongs_to :community
   belongs_to :company
   before_save :set_https_in_url
-  has_one :status, as: :statusable
-  
+  # `has_one :status` comes from LaunchStatusable
+
   after_update :change_to_scheduled_tours_for_sf
   after_update :fetch_crm_data
 
@@ -71,6 +73,14 @@ class Credential < ApplicationRecord
       :only => [:community_id, :id],include: { community: {only: [:use_company_level_data_settings]}}
     )
     data.merge!(data_provider: data_provider,credentials: data_providers_credentials(data_provider),use_different_crm_provider: use_different_crm,crm_provider: crm_provider,crm_credentials: crm_credential_provider)
+  end
+
+  # Same rule Community#set_data_provider_status applies: credentials complete
+  # enough for the provider to connect are ready for Launch to review.
+  def derive_launch_status
+    community.present? && community.check_required_fields_for_providers ? SUBMITTED : IN_PROGRESS
+  rescue StandardError
+    IN_PROGRESS
   end
 
   def resolved_app_folio_property_ids(app_folio_service)

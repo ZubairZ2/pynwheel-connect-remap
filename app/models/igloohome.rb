@@ -4,7 +4,8 @@ class Igloohome < ApplicationRecord
   belongs_to :community
   has_many :igloohome_locks, dependent: :destroy
   mount_uploader :file, CsvfileUploader
-  has_one :status, as: :statusable
+  include LaunchStatusable
+
   mount_base64_uploader :lock_image, AvatarUploader
   mount_base64_uploader :amenity_lock_image, AvatarUploader
 
@@ -70,5 +71,23 @@ class Igloohome < ApplicationRecord
 
   def map_locks_with_stops
     MapLocksJob.perform_async community, "Igloohome"
+  end
+
+  # Launch: what counts as complete depends on how this account authenticates.
+  def derive_launch_status
+    case version
+    when "igloohome"
+      if is_auth_code
+        launch_status_from(home_name.present? && (refresh_token.present? || is_authorized_with_pynwheel))
+      elsif is_client_auth
+        launch_status_from(home_name.present? && client_id.present? && client_secret.present?)
+      else
+        IN_PROGRESS
+      end
+    when "iglooworks"
+      launch_status_from(iglooworks_api_key.present? && iglooworks_department_id.present?)
+    else
+      IN_PROGRESS
+    end
   end
 end

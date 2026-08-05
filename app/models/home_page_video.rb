@@ -20,9 +20,14 @@ class HomePageVideo < ApplicationRecord
   mount_uploader :video, VideoUploader
   process_in_background :video
   belongs_to :design
-  has_one :status, as: :statusable
+  include LaunchStatusable
 
   def as_json options = {}
     super(:only => [:id, :name, :video])
+  end
+
+  # Launch: the home page video is complete once the file is uploaded.
+  def derive_launch_status
+    launch_status_from(video&.url.present?)
   end
 end

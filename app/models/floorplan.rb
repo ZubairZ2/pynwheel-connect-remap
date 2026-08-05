@@ -1,6 +1,7 @@
 class Floorplan < ApplicationRecord
   include StandardUrl
   include ::S3Acceleration
+  include LaunchStatusable
 
   mount_base64_uploader :image, AvatarUploader
   mount_base64_uploader :secondary_image, AvatarUploader
@@ -10,7 +11,7 @@ class Floorplan < ApplicationRecord
   # process_in_background :secondary_image
   belongs_to :community
   has_many :amenities, as: :amenityable
-  has_one :status, as: :statusable
+  # `has_one :status` comes from LaunchStatusable
   # validates_uniqueness_of :name, scope: :community, on: [:create, :update]
   validates_uniqueness_of :provider_floorplan_id, scope: :community, if: -> { provider_floorplan_id.present? }
   after_commit :populate_image_urls, on: [:create, :update]
@@ -43,6 +44,13 @@ class Floorplan < ApplicationRecord
 
   def floorplan_image
     image&.url.present? ? image : nil
+  end
+
+  # Same rule Community#set_floorplan_status applies: a floorplan that already
+  # carries artwork is content Launch can review, one without is still being
+  # worked on.
+  def derive_launch_status
+    (image&.url.present? || file&.url.present?) ? SUBMITTED : IN_PROGRESS
   end
 
   def update_floorplan_units_description

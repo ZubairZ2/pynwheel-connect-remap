@@ -143,45 +143,13 @@ attr_reader :user , :params
     communities = CommunityUser.where(id:selected_communities.pluck(:id))
   end
 
+  # The dashboard status filter judges a community on the same forms, and with
+  # the same roll-up, that Launch shows the client inside the community.
   def get_communities_statuses(community, status, selected_communities)
-    statuses = []
-    # statuses << company_status(community)
-
-    statuses << community_status(community)
-    
-    statuses << property_map_status(community)
-    
-    statuses << floorplan_status(community) if community.floorplans.count.positive?
-    
-    statuses << data_provider_status(community)
-    if community.product_options.nil?
-      self_tour = community.self_tour
-      pynwheel_touch = community.touchscreen_app
-    else
-      product_options = JSON.parse(community.product_options)
-      self_tour = product_options["product_options"]["self_tour"]["is_enabled"]
-      pynwheel_touch = product_options["product_options"]["pynwheel_touch"]["is_enabled"]
+    statuses = PynwheelLaunch::Forms.core_for(community).map do |form|
+      PynwheelLaunch::Forms.rolled_up_status(community, form)
     end
-    statuses << visiting_hours_status(community) if self_tour
 
-      
-    statuses << touch_gallery_media_status(community) if pynwheel_touch
-
-    statuses << tour_stops_status(community) if self_tour
-    
-    statuses << lock_providers_status(community) if self_tour
-
-    statuses << home_page_media_status(community) if pynwheel_touch
-
-    # statuses << design_direction_status(community)  if design_direction_form_require(community)
-
-    # statuses << amenity_images_status(community)  if amenity_images_form_require(community)
-
-    # statuses << additional_pages_status(community)  if additional_pages_form_require(community)
-
-    # statuses << ebrochure_status(community)
-
-    # detail_forms << hardware_spec_form # if hardware_spec_form_require
     if status.eql?(IN_PROGRESS)
       received_status = status_value_check(status)
       if statuses.any?{|x| x.eql?(received_status) || x.nil?} && !statuses.all?{|x| x.eql?(received_status) || x.nil?}
@@ -226,44 +194,6 @@ attr_reader :user , :params
     selected_communities
   end
 
-  def ebrochure_status(community)
-    return nil if community.favorite_setting.blank?
-    status = []
-    weblinks = community.favorite_setting.ebrochure_menu_buttons
-    weblinks.map { |weblink| status << weblink&.status&.status } if weblinks.present?
-
-    favorite_images = community.favorite_setting.favorite_images
-    favorite_images.map { |image| status << image&.status&.status } if favorite_images.present?
-
-    return status_check(status)
-  end
-
-  def additional_pages_status(community)
-    return nil if community.webpages.blank? && community.imagepages.blank?
-
-    status = []
-    webpages = community.webpages
-    webpages.map {|webpage| status << webpage&.status&.status} if webpages.present?
-
-    imagepages = community.imagepages
-    imagepages.map {|imagepage| status << imagepage&.status&.status} if imagepages.present?
-
-    return status_check(status)
-  end
-
-  def design_direction_status(community)
-    return nil if community&.design_direction&.status.blank?
-    return community&.design_direction&.status&.status
-  end
-
-  def amenity_images_status(community)
-    return nil if community.amenities.blank?
-    status = []
-      amenities = community.amenities
-      amenities.map {|amenity| status << amenity&.status&.status}
-    return status_check(status)
-  end
-
   def status_value_check(status)
     if status.eql?(PARAM_NOT_STARTED) || status.eql?(IN_PROGRESS)
       return "in_progress"
@@ -281,159 +211,5 @@ attr_reader :user , :params
       return APPLICATION_IN_QA
     end
   end
-
-  def company_status(community)
-    return nil if community&.company.status.blank?
-    return community&.company&.status&.status
-  end
-
-  def community_status(community)
-    return nil if community.status.blank?
-    return community&.status&.status
-  end
-
-  def property_map_status(community)
-    return nil if community.sitemap.blank? && community.floorplates.blank?
-    status = []
-    if community.is_sitemap
-      sitemap = community.sitemap
-      status << sitemap&.status&.status
-    elsif community.has_floorplates?
-      floorplates = community.floorplates
-      floorplates.map {|floorplate| status << floorplate&.status&.status}
-    end
-    return status_check(status)
-  end
-
-  def floorplan_status(community)
-    return nil if community.floorplans.blank?
-    floorplans = community.floorplans
-    floorplan_status = floorplans.map {|floorplan| floorplan&.status&.status rescue nil}
-    return status_check(floorplan_status)
-  end
-
-  def data_provider_status(community)
-    return nil if community.data_provider.blank? && community.credential.blank?
-    data_provider_status = []
-    credential = Credential.where(community_id: community.id).order(updated_at: :desc).first
-    data_provider_status << credential&.status&.status
-    if community.credential&.use_different_crm_provider
-      data_provider_status << community.crm_credential&.status&.status
-    end
-    return status_check(data_provider_status)
-  end
-
-  def visiting_hours_status(community)
-    return nil if community.opening_hours.blank? && community.guided_opening_hours.blank?
-    self_visiting_hours_status = []
-    guided_visiting_hours_status = []
-    self_visiting_hours = community.opening_hours
-    guided_visiting_hours = community.guided_opening_hours
-    self_visiting_hours.map {|oh| self_visiting_hours_status << oh&.status&.status} if self_visiting_hours.present?
-    guided_visiting_hours.map {|gh| guided_visiting_hours_status << gh&.status&.status} if guided_visiting_hours.present?
-    visiting_hours_status = guided_visiting_hours_status.compact + self_visiting_hours_status.compact
-    status_check(visiting_hours_status)
-  end
-
-  def touch_gallery_media_status(community)
-    return nil if community.galleries.blank?
-    galleries = community.galleries
-    gallery_media_status = galleries.map { |gallery| gallery&.status&.status rescue nil } if galleries.present?
-    return status_check(gallery_media_status)
-  end
-
-  def hardware_specs_status(community)
-    return nil if community.design.blank?
-    hardware_spec = community.design.pynwheel_touch_hardware_spec
-    hardware_status = hardware_spec.present? ? community&.design&.status&.status : nil
-    hardware_status
-  end
-
-  def tour_stops_status(community)
-    return nil if community.community_tour&.tour_stops.blank?
-    tour_stops = community.community_tour&.tour_stops
-    
-    tour_stops_status = tour_stops.map {|ts| ts&.status&.status rescue nil}
-    status = status_check(tour_stops_status)
-    status
-  end
-
-  def home_page_media_status(community)
-    return nil if community.design.blank? && community.design&.home_page_images.blank? && community.design&.home_page_video.blank?
-    home_page_images = community.design.home_page_images
-    home_page_video = community.design.home_page_video
-    home_page_medias_status = []
-    home_page_images.each {|hp_img| home_page_medias_status << hp_img&.status&.status rescue nil} if home_page_images.present?
-    home_page_medias_status << home_page_video&.status&.status rescue nil if home_page_video.present?
-    status = status_check(home_page_medias_status)
-    status
-  end
-
-  def lock_providers_status(community)
-    return nil if community.zerv.blank? && community.latch.blank? && community.dwelo.blank? && community.edge_state.blank? && community&.launch_remote.blank? && community&.yale.blank? && community&.schlage.blank? && community.other_locks.blank? && community.igloohome.blank?
-    locks_status = []
-    zerv = community.zerv
-    latch = community.latch
-    dwelo = community.dwelo
-    remote_locks = community.launch_remote
-    yale_locks = community&.yale
-    schlage_locks = community&.schlage
-    igloohome_lock = community.igloohome
-    other_locks = community.other_locks
-
-    locks_status << zerv&.status&.status if zerv.present?
-    locks_status << latch&.status&.status if latch.present?
-    locks_status << dwelo&.status&.status if dwelo.present?
-    locks_status << igloohome_lock&.status&.status if igloohome_lock.present?
-    locks_status << schlage_locks&.status&.status if schlage_locks.present?
-    locks_status << yale_locks&.status&.status if yale_locks.present?
-    other_locks.each { |lock| locks_status << lock&.status&.status } if other_locks.present?
-    locks_status << remote_locks&.status&.status unless remote_locks.nil?
-    status = status_check(locks_status)
-    status
-  end
-
-  def status_check(statuses)
-    if !statuses.empty?
-      return REJECTED if statuses.any?{|x| x.eql?(REJECTED)}
-      return SUBMITTED if statuses.all?{|x| x.eql?(SUBMITTED)}
-      return APPROVED if statuses.all?{|x| x.eql?(APPROVED)}
-      return IN_PROGRESS if statuses.any? {|x| x.eql?(IN_PROGRESS) || x.eql?(nil)}
-      return RELEASED if statuses.all?{|x| x.eql?(RELEASED)}
-      return FORM_APPROVED if statuses.all?{|x| x.eql?(FORM_APPROVED)}
-      return APPLICATION_IN_REVIEW if statuses.all?{|x| x.eql?(APPLICATION_IN_REVIEW)}
-    else
-      return nil
-    end
-  end
-
-  def design_direction_form_require(community)
-    return false if community.product_options.nil?
-    products = JSON.parse(community.product_options)
-    return true if products["product_options"]["pynwheel_touch"]["is_enabled"] && (products["product_options"]["pynwheel_touch"]["options"]["design_style"].eql?("Modernist Horizontal") || products["product_options"]["pynwheel_touch"]["options"]["design_style"].eql?("Modernist Vertical") || products["product_options"]["pynwheel_touch"]["options"]["design_style"].eql?("Expressionist"))
-    false
-  end
-
-  def amenity_images_form_require(community)
-    return false if community.product_options.nil?
-    products = JSON.parse(community.product_options)
-    return true if !products["product_options"]["self_tour"]["is_enabled"] && (products["product_options"]["pynwheel_touch"]["is_enabled"] || products["product_options"]["pynwheel_maps"])
-    false
-  end
-
-  def additional_pages_form_require(community)
-    return false if community.product_options.nil?
-    products = JSON.parse(community.product_options)
-    return true if !products["product_options"]["self_tour"]["is_enabled"] && products["product_options"]["pynwheel_touch"]["is_enabled"] && !products["product_options"]["pynwheel_maps"]
-    false
-  end
-
-  def hardware_spec_form_require(community)
-    return false if community.product_options.nil?
-    products = JSON.parse(community.product_options)
-    return true if products["product_options"]["pynwheel_touch"]["options"]["installation"].eql?("Yes")
-    false
-  end
-
 
 end

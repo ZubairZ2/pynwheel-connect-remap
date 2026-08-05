@@ -4,7 +4,7 @@ class Zerv < ApplicationRecord
 
   belongs_to :community
   has_many :zerv_locks, dependent: :destroy
-  has_one :status, as: :statusable
+  include LaunchStatusable
 
   # after_update :crop_image
 
@@ -22,4 +22,8 @@ class Zerv < ApplicationRecord
   #   image.recreate_versions! if crop_x.present?
   # end
 
+  # Launch: Zerv is complete once the reader is identified.
+  def derive_launch_status
+    launch_status_from(facility_id.present? && badge_id.present? && card_format.present?)
+  end
 end

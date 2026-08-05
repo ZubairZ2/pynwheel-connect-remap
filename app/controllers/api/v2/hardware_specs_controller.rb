@@ -26,9 +26,7 @@ class Api::V2::HardwareSpecsController < Api::V2::ApiApplicationController
       else
         hardware_spec = @community.create_hardware_spec(name: hardware["name"], phone: hardware["phone"], image: hardware["image"])
       end
-      previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(HARDWARE_SPECS)
-      @community.touch_installation_specification(current_pynwheel_user, @status)
-      FollowUpMailer.send_email_after_form_submission(@community, HARDWARE_SPECS, previous_status)
+      @community.submit_launch_form(HARDWARE_SPECS, current_pynwheel_user, @status)
       render :json => {success: true, data: hardware_spec.as_json}
     else
       render json: {success: false, message: "Unable to add hardsware spec image"}

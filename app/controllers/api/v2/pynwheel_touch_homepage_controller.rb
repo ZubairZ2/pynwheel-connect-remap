@@ -35,9 +35,7 @@ class Api::V2::PynwheelTouchHomepageController < Api::V2::ApiApplicationControll
       end
     end
     media = all_design
-    previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(TOUCH_HOME_PAGE_MEDIA)
-    @community.set_touch_vidoes_status(current_pynwheel_user, @status)
-    FollowUpMailer.send_email_after_form_submission(@community, TOUCH_HOME_PAGE_MEDIA, previous_status)
+    @community.submit_launch_form(TOUCH_HOME_PAGE_MEDIA, current_pynwheel_user, @status)
     render json: { success: true, data: media.as_json }
   rescue StandardError => e
     render json: { success: false, message: e.message }

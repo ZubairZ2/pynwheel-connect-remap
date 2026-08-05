@@ -28,7 +28,8 @@ class HomePageImage < ApplicationRecord
   # mount_uploader :image, ImageUploader
   process_in_background :image
   belongs_to :design
-  has_one :status, as: :statusable
+  include LaunchStatusable
+
   before_create :set_image_name
   after_update :crop_image, if: ->(obj) { obj.image_changed? }
   after_commit :populate_image_urls, on: [:create, :update]
@@ -49,5 +50,10 @@ class HomePageImage < ApplicationRecord
 
   def as_json options = {}
     super(:only => [:id, :name, :image])
+  end
+
+  # Launch: a home page slide is complete once it is named and has artwork.
+  def derive_launch_status
+    launch_status_from(name.present? && image&.url.present?)
   end
 end
