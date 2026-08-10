@@ -572,6 +572,7 @@
         <span>Floors: <strong id="st-floors">—</strong></span>
         <span>Amenities: <strong id="st-amenities">—</strong></span>
         <span>Favorites: <strong id="st-favorites">—</strong></span>
+        <span>Favorites page: <strong id="st-favorites-page">—</strong></span>
       </div>
 
       <!-- Zoom -->
@@ -698,13 +699,22 @@
       <div class="method-group">
         <div class="method-group-title">Favorites</div>
         <div class="method-row">
-          <span class="m-label">unitId</span>
+          <span class="m-label">id</span>
           <input type="text" id="p-fav-id" class="m-input w-md" placeholder="unit ID" />
-          <button class="btn primary" onclick="callToggleFavorite()">toggleFavorite()</button>
+          <select id="p-fav-type" class="m-input w-md">
+            <option value="unit">unit</option>
+            <option value="amenity">amenity</option>
+            <option value="floorplan">floorplan</option>
+            <option value="gallery_image">gallery_image</option>
+          </select>
+          <button class="btn primary" onclick="callSaveFavorite()">saveFavorite()</button>
+          <button class="btn" onclick="callDeleteFavorite()">deleteFavorite()</button>
         </div>
         <div class="method-row">
-          <button class="btn" onclick="callGetFavorites()">getFavorites()</button>
-          <button class="btn danger" onclick="callClearFavorites()">clearFavorites()</button>
+          <button class="btn" onclick="callGetAllFavorites()">getAllFavorites()</button>
+          <button class="btn" onclick="callGetFavoritesConfig()">getFavoritesConfig()</button>
+          <button class="btn" onclick="callGetFavoritesCount()">getFavoritesCount()</button>
+          <button class="btn danger" onclick="callClearAllFavorites()">clearAllFavorites()</button>
         </div>
         <div class="result-box hidden" id="favorites-result"></div>
       </div>
@@ -827,9 +837,9 @@
       cfg.onAmenityClick = (a) => logEvent("onAmenityClick", { amenityId: a.amenityId, name: a.name, type: a.amenityType });
 
     if (document.getElementById("cb-onFavoriteChange").checked)
-      cfg.onFavoriteChange = (id, isFav) => {
-        logEvent("onFavoriteChange", { unitId: id, isFavorite: isFav });
-        document.getElementById("st-favorites").textContent = (PynMapSDK.getFavorites?.() || []).length;
+      cfg.onFavoriteChange = (ids, action, allIds, type) => {
+        logEvent("onFavoriteChange", { ids, action, type, total: allIds.length });
+        refreshFavCount();
       };
 
     return cfg;
@@ -867,7 +877,12 @@
     document.getElementById("st-units").textContent    = units.length;
     document.getElementById("st-floors").textContent   = floors.join(", ") || "—";
     document.getElementById("st-amenities").textContent= amenities.length;
-    document.getElementById("st-favorites").textContent     = (SDK.getFavorites?.() || []).length;
+    document.getElementById("st-favorites").textContent = SDK.getFavoritesCount?.() ?? "—";
+
+    const favCfg = SDK.getFavoritesConfig?.() || {};
+    document.getElementById("st-favorites-page").textContent =
+      favCfg.enabled === false ? "hidden" : `"${favCfg.pageName}"`;
+
     document.getElementById("sdk-stats").classList.remove("hidden");
 
     // Auto-fill hints
@@ -1049,30 +1064,86 @@
     document.getElementById("units-result").classList.add("hidden");
   }
 
-  function callToggleFavorite() {
-    if (!requireSDK()) return;
-    const id = document.getElementById("p-fav-id").value.trim();
-    if (!id) { logEvent("error", "Enter a unitId", true); return; }
-    PynMapSDK.toggleFavorite(id);
-    logEvent("toggleFavorite()", { unitId: id });
-    document.getElementById("st-favorites").textContent = (PynMapSDK.getFavorites?.() || []).length;
+  // The favorites methods are all async and all scoped to a community + session.
+  // communityId is the property being previewed; sessionId is the stable UUID the
+  // SDK persists in localStorage.
+  function favScope() {
+    return {
+      communityId: document.getElementById("c-propertyId").value.trim(),
+      sessionId:   PynMapSDK.getCurrentSessionId()
+    };
   }
 
-  function callGetFavorites() {
-    if (!requireSDK()) return;
-    const favorites = PynMapSDK.getFavorites?.() || [];
-    logEvent("getFavorites()", favorites);
+  function showFavResult(text) {
     const box = document.getElementById("favorites-result");
-    box.textContent = `${favorites.length} favorite(s): ${favorites.join(", ") || "none"}`;
+    box.textContent = text;
     box.classList.remove("hidden");
   }
 
-  function callClearFavorites() {
+  // getFavoritesCount() is read on demand — re-read it after every mutation,
+  // which is exactly what a host does to refresh its badge.
+  function refreshFavCount() {
+    document.getElementById("st-favorites").textContent = PynMapSDK.getFavoritesCount();
+  }
+
+  async function callSaveFavorite() {
     if (!requireSDK()) return;
-    PynMapSDK.clearFavorites?.();
-    logEvent("clearFavorites()", null);
-    document.getElementById("st-favorites").textContent = "0";
-    document.getElementById("favorites-result").classList.add("hidden");
+    const id   = document.getElementById("p-fav-id").value.trim();
+    const type = document.getElementById("p-fav-type").value;
+    if (!id) { logEvent("error", "Enter an id", true); return; }
+
+    const { communityId, sessionId } = favScope();
+    const res = await PynMapSDK.saveFavorite(id, communityId, sessionId, type);
+    logEvent("saveFavorite()", { id, type, ...res });
+    refreshFavCount();
+    showFavResult(`${res.success ? "Saved" : "Failed to save"} ${type} ${id} — ${PynMapSDK.getFavoritesCount()} favorite(s) total`);
+  }
+
+  async function callDeleteFavorite() {
+    if (!requireSDK()) return;
+    const id   = document.getElementById("p-fav-id").value.trim();
+    const type = document.getElementById("p-fav-type").value;
+    if (!id) { logEvent("error", "Enter an id", true); return; }
+
+    const { communityId, sessionId } = favScope();
+    const res = await PynMapSDK.deleteFavorite(id, communityId, sessionId, type);
+    logEvent("deleteFavorite()", { id, type, ...res });
+    refreshFavCount();
+    showFavResult(`${res.success ? "Removed" : "Failed to remove"} ${type} ${id} — ${PynMapSDK.getFavoritesCount()} favorite(s) total`);
+  }
+
+  async function callGetAllFavorites() {
+    if (!requireSDK()) return;
+    const { communityId, sessionId } = favScope();
+    const all = await PynMapSDK.getAllFavorites(communityId, sessionId);
+    logEvent("getAllFavorites()", all);
+    showFavResult(
+      `units: ${all.units.length}, amenities: ${all.amenities.length}, ` +
+      `floorplans: ${all.floorplans.length}, gallery images: ${all.galleryImages.length}`
+    );
+  }
+
+  function callGetFavoritesConfig() {
+    if (!requireSDK()) return;
+    const cfg = PynMapSDK.getFavoritesConfig();
+    logEvent("getFavoritesConfig()", cfg);
+    showFavResult(`enabled: ${cfg.enabled} — pageName: "${cfg.pageName}" (CMS: Favorites settings)`);
+  }
+
+  function callGetFavoritesCount() {
+    if (!requireSDK()) return;
+    const count = PynMapSDK.getFavoritesCount();
+    logEvent("getFavoritesCount()", count);
+    showFavResult(`${count} favorite(s) total — gallery images only counted after getGalleries()`);
+  }
+
+  async function callClearAllFavorites() {
+    if (!requireSDK()) return;
+    const { communityId, sessionId } = favScope();
+    const res = await PynMapSDK.clearAllFavorites(communityId, sessionId);
+    logEvent("clearAllFavorites()", res);
+    refreshFavCount();
+    showFavResult(res.success ? "Cleared all favorites" : "Failed to clear favorites");
   }
 
   // ── Responsive: config panel drawer ──────────────────────────────────────────

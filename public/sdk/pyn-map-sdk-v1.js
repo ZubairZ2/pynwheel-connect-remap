@@ -3475,7 +3475,61 @@
 
     // ----------------------------------------------------
     // FAVORITES (PUBLIC API)
+    //
+    // Config arrives free with the map payload, so the host can label and gate
+    // its Favorites entry point before anything is fetched:
+    //
+    //   const { enabled, pageName } = PynMapSDK.getFavoritesConfig();
+    //   if (enabled) renderFavoritesTab(pageName);
+    //
+    // The count for a nav badge is held locally and needs no request:
+    //
+    //   setBadge(PynMapSDK.getFavoritesCount());
+    //
+    // The favorited items themselves come from getAllFavorites().
     // ----------------------------------------------------
+
+    /**
+     * The property's Favorites page configuration, as set in the CMS
+     * (Favorites settings → "Page Name" / "Show this page").
+     *
+     *   {
+     *     enabled,   // false hides the Favorites page and its nav tab entirely
+     *     pageName   // tab label, rendered verbatim — "MY PICKS" stays "MY PICKS"
+     *   }
+     *
+     * Both are CMS-driven and take effect on reload, with no deploy.
+     *
+     * Falls back to { enabled: true, pageName: "Favorites" } before the payload
+     * lands, and on a server old enough not to send the block — matching the
+     * server's own default for a property that never opened the CMS page, so a
+     * host never loses its tab to a missing config.
+     */
+    getFavoritesConfig() {
+      const cfg = this.data.property?.favorites;
+      return {
+        enabled:  cfg ? cfg.enabled !== false : true,
+        pageName: cfg?.pageName || "Favorites"
+      };
+    },
+
+    /**
+     * How many items are currently favorited, across units, amenities, floor
+     * plans, and gallery images — the number a nav badge shows.
+     *
+     * Reads local state, so it costs nothing and is safe to call on every
+     * render. Already correct on first paint for a returning visitor: the Sets
+     * are hydrated from the map payload before onReady fires. Re-read it after
+     * saveFavorite / deleteFavorite / clearAllFavorites to refresh the badge.
+     *
+     * Gallery image favorites are only included once getGalleries() has run,
+     * since that collection loads on demand.
+     *
+     * @returns {number}
+     */
+    getFavoritesCount() {
+      return this._FAVORITE_TYPES.reduce((sum, t) => sum + this._favState(t).set.size, 0);
+    },
 
     /**
      * Returns the stable session UUID stored in localStorage for this property.
@@ -4347,6 +4401,8 @@
       zoomIn()                     { return PynMapSDK.zoomIn.call(PynMapSDK); },
       zoomOut()                    { return PynMapSDK.zoomOut.call(PynMapSDK); },
       resetZoom()                  { return PynMapSDK.resetZoom.call(PynMapSDK); },
+      getFavoritesConfig()                                  { return PynMapSDK.getFavoritesConfig.call(PynMapSDK); },
+      getFavoritesCount()                                   { return PynMapSDK.getFavoritesCount.call(PynMapSDK); },
       getCurrentSessionId()                                 { return PynMapSDK.getCurrentSessionId.call(PynMapSDK); },
       getFavorites(communityId, sessionId, type)            { return PynMapSDK.getFavorites.call(PynMapSDK, communityId, sessionId, type); },
       getAllFavorites(communityId, sessionId)               { return PynMapSDK.getAllFavorites.call(PynMapSDK, communityId, sessionId); },

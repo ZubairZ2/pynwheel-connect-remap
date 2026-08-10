@@ -501,6 +501,8 @@ module Api
             .includes(:sitemap, :floorplates, :floorplans, :map_filter,
                       :font_setting, :credential, :calculator_config,
                       :three_d_maps_configuration, :design_system_config,
+                      # discovery block only — page name + show/hide toggle
+                      :favorite_setting,
                       # discovery block only — the pins themselves are never
                       # loaded here, just counted
                       :neighborhood)
