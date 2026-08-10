@@ -713,7 +713,6 @@
         <div class="method-row">
           <button class="btn" onclick="callGetAllFavorites()">getAllFavorites()</button>
           <button class="btn" onclick="callGetFavoritesConfig()">getFavoritesConfig()</button>
-          <button class="btn" onclick="callGetFavoritesCount()">getFavoritesCount()</button>
           <button class="btn danger" onclick="callClearAllFavorites()">clearAllFavorites()</button>
         </div>
         <div class="result-box hidden" id="favorites-result"></div>
@@ -877,9 +876,8 @@
     document.getElementById("st-units").textContent    = units.length;
     document.getElementById("st-floors").textContent   = floors.join(", ") || "—";
     document.getElementById("st-amenities").textContent= amenities.length;
-    document.getElementById("st-favorites").textContent = SDK.getFavoritesCount?.() ?? "—";
-
     const favCfg = SDK.getFavoritesConfig?.() || {};
+    document.getElementById("st-favorites").textContent = favCfg.count ?? "—";
     document.getElementById("st-favorites-page").textContent =
       favCfg.enabled === false ? "hidden" : `"${favCfg.pageName}"`;
 
@@ -1080,10 +1078,10 @@
     box.classList.remove("hidden");
   }
 
-  // getFavoritesCount() is read on demand — re-read it after every mutation,
-  // which is exactly what a host does to refresh its badge.
+  // The count rides on getFavoritesConfig() and is read on demand — re-read it
+  // after every mutation, which is exactly what a host does for its badge.
   function refreshFavCount() {
-    document.getElementById("st-favorites").textContent = PynMapSDK.getFavoritesCount();
+    document.getElementById("st-favorites").textContent = PynMapSDK.getFavoritesConfig().count;
   }
 
   async function callSaveFavorite() {
@@ -1096,7 +1094,7 @@
     const res = await PynMapSDK.saveFavorite(id, communityId, sessionId, type);
     logEvent("saveFavorite()", { id, type, ...res });
     refreshFavCount();
-    showFavResult(`${res.success ? "Saved" : "Failed to save"} ${type} ${id} — ${PynMapSDK.getFavoritesCount()} favorite(s) total`);
+    showFavResult(`${res.success ? "Saved" : "Failed to save"} ${type} ${id} — ${PynMapSDK.getFavoritesConfig().count} favorite(s) total`);
   }
 
   async function callDeleteFavorite() {
@@ -1109,7 +1107,7 @@
     const res = await PynMapSDK.deleteFavorite(id, communityId, sessionId, type);
     logEvent("deleteFavorite()", { id, type, ...res });
     refreshFavCount();
-    showFavResult(`${res.success ? "Removed" : "Failed to remove"} ${type} ${id} — ${PynMapSDK.getFavoritesCount()} favorite(s) total`);
+    showFavResult(`${res.success ? "Removed" : "Failed to remove"} ${type} ${id} — ${PynMapSDK.getFavoritesConfig().count} favorite(s) total`);
   }
 
   async function callGetAllFavorites() {
@@ -1127,14 +1125,10 @@
     if (!requireSDK()) return;
     const cfg = PynMapSDK.getFavoritesConfig();
     logEvent("getFavoritesConfig()", cfg);
-    showFavResult(`enabled: ${cfg.enabled} — pageName: "${cfg.pageName}" (CMS: Favorites settings)`);
-  }
-
-  function callGetFavoritesCount() {
-    if (!requireSDK()) return;
-    const count = PynMapSDK.getFavoritesCount();
-    logEvent("getFavoritesCount()", count);
-    showFavResult(`${count} favorite(s) total — gallery images only counted after getGalleries()`);
+    showFavResult(
+      `enabled: ${cfg.enabled} — pageName: "${cfg.pageName}" (CMS: Favorites settings) — ` +
+      `count: ${cfg.count} (gallery images only counted after getGalleries())`
+    );
   }
 
   async function callClearAllFavorites() {

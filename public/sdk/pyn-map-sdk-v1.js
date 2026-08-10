@@ -3271,9 +3271,8 @@
     // Whether to show a Gallery entry point at all comes from the map payload,
     // free of any network call:
     //
-    //   const { gallery } = PynMapSDK.getPropertyConfig();
-    //   // { enabled, pageName, displayOnHomepage, imageCount }
-    //   if (gallery.enabled && gallery.imageCount > 0) showGalleryTab(gallery.pageName);
+    //   const { enabled, pageName, imageCount } = PynMapSDK.getGalleryConfig();
+    //   if (enabled && imageCount > 0) showGalleryTab(pageName);
     //
     // `enabled` is true only when the property has Pynwheel Touch on AND its own
     // gallery switch on. Once it is, getGalleries() fetches the content.
@@ -3336,9 +3335,9 @@
     // Config arrives free with the map payload, so the host can render the tab,
     // centre the map and draw the category rail before any of this is called:
     //
-    //   const { neighborhood } = PynMapSDK.getPropertyConfig();
-    //   // { enabled, pageName, displayOnHomepage, center, radius, zoom,
-    //   //   address, listing, categories, locationCount, placesEnabled }
+    //   const { enabled, pageName, center, zoom, categories } =
+    //     PynMapSDK.getNeighborhoodConfig();
+    //   if (enabled) showNeighborhoodTab(pageName);
     //
     // Content comes from two independent sources, deliberately kept apart:
     //
@@ -3474,62 +3473,123 @@
     },
 
     // ----------------------------------------------------
-    // FAVORITES (PUBLIC API)
+    // PAGE CONFIG (PUBLIC API)
     //
-    // Config arrives free with the map payload, so the host can label and gate
-    // its Favorites entry point before anything is fetched:
+    // One getter per optional page — Favorites, Gallery, Neighborhood — so a
+    // host asks for what it is about to render instead of reaching into
+    // getPropertyConfig() and knowing where each block lives:
     //
-    //   const { enabled, pageName } = PynMapSDK.getFavoritesConfig();
-    //   if (enabled) renderFavoritesTab(pageName);
+    //   const { enabled, pageName, count } = PynMapSDK.getFavoritesConfig();
+    //   if (enabled) renderFavoritesTab(pageName, count);
     //
-    // The count for a nav badge is held locally and needs no request:
-    //
-    //   setBadge(PynMapSDK.getFavoritesCount());
-    //
-    // The favorited items themselves come from getAllFavorites().
+    // All three read the map payload, so they are synchronous, cost nothing,
+    // and are safe to call on every render. The pages' contents come from
+    // getAllFavorites(), getGalleries(), and getNeighborhood() respectively.
     // ----------------------------------------------------
 
     /**
-     * The property's Favorites page configuration, as set in the CMS
-     * (Favorites settings → "Page Name" / "Show this page").
+     * Internal: one page's config block off the map payload, with defaults
+     * filled in.
+     *
+     * Two things every caller would otherwise repeat: an object rather than
+     * undefined before the payload lands (or against a server old enough not to
+     * send the block), and `enabled` as a real boolean rather than whatever the
+     * block happens to carry. Everything else the server sends passes straight
+     * through, so a new field on a block reaches hosts without a change here.
+     */
+    _pageConfig(key, defaults) {
+      const cfg = this.data.property?.[key];
+      if (!cfg) return { ...defaults };
+      return { ...defaults, ...cfg, enabled: cfg.enabled !== false };
+    },
+
+    /**
+     * The Favorites page: its CMS label and visibility, plus how many items are
+     * currently favorited.
      *
      *   {
-     *     enabled,   // false hides the Favorites page and its nav tab entirely
-     *     pageName   // tab label, rendered verbatim — "MY PICKS" stays "MY PICKS"
+     *     enabled,   // CMS "Show this page" — false hides the page and its tab
+     *     pageName,  // CMS "Page Name", verbatim — "MY PICKS" stays "MY PICKS"
+     *     count      // badge number: units + amenities + floor plans + images
      *   }
      *
-     * Both are CMS-driven and take effect on reload, with no deploy.
+     * enabled/pageName are CMS-driven and change on reload with no deploy.
      *
-     * Falls back to { enabled: true, pageName: "Favorites" } before the payload
-     * lands, and on a server old enough not to send the block — matching the
-     * server's own default for a property that never opened the CMS page, so a
-     * host never loses its tab to a missing config.
+     * `count` is live, not config — re-call this after saveFavorite /
+     * deleteFavorite / clearAllFavorites to refresh a badge. It is already
+     * correct on the first read for a returning visitor, since the payload
+     * hydrates the favorites before onReady fires. Favorited gallery images
+     * join the count only once getGalleries() has run, as that collection
+     * loads on demand.
+     *
+     * Defaults to enabled with the label "Favorites" — the same thing the
+     * server returns for a property whose CMS page was never opened, so a
+     * missing block never costs a host its tab.
      */
     getFavoritesConfig() {
-      const cfg = this.data.property?.favorites;
       return {
-        enabled:  cfg ? cfg.enabled !== false : true,
-        pageName: cfg?.pageName || "Favorites"
+        ...this._pageConfig("favorites", { enabled: true, pageName: "Favorites" }),
+        count: this._FAVORITE_TYPES.reduce((sum, t) => sum + this._favState(t).set.size, 0)
       };
     },
 
     /**
-     * How many items are currently favorited, across units, amenities, floor
-     * plans, and gallery images — the number a nav badge shows.
+     * The Gallery page.
      *
-     * Reads local state, so it costs nothing and is safe to call on every
-     * render. Already correct on first paint for a returning visitor: the Sets
-     * are hydrated from the map payload before onReady fires. Re-read it after
-     * saveFavorite / deleteFavorite / clearAllFavorites to refresh the badge.
+     *   {
+     *     enabled,           // CMS gallery switch AND the Pynwheel Touch product toggle
+     *     pageName,          // CMS label for the tab
+     *     displayOnHomepage,
+     *     imageCount         // 0 means the feature is on but nothing is uploaded —
+     *                        // check it before offering the entry point
+     *   }
      *
-     * Gallery image favorites are only included once getGalleries() has run,
-     * since that collection loads on demand.
-     *
-     * @returns {number}
+     * Defaults to disabled: unlike Favorites, a gallery a host cannot confirm
+     * is one it should not advertise. Images come from getGalleries().
      */
-    getFavoritesCount() {
-      return this._FAVORITE_TYPES.reduce((sum, t) => sum + this._favState(t).set.size, 0);
+    getGalleryConfig() {
+      return this._pageConfig("gallery", {
+        enabled:           false,
+        pageName:          "Gallery",
+        displayOnHomepage: false,
+        imageCount:        0
+      });
     },
+
+    /**
+     * The Neighborhood page — everything needed to draw the map and its
+     * category rail before any content is fetched.
+     *
+     *   {
+     *     enabled, pageName, displayOnHomepage,
+     *     center: { lat, lng }, radius, zoom, address,
+     *     listing, categories, locationCount,
+     *     placesEnabled      // false when live Google results are off for this
+     *                        // property; curated pins may still exist
+     *   }
+     *
+     * Defaults to disabled, for the same reason as the gallery. Curated pins
+     * come from getNeighborhood(), live results from getNeighborhoodPlaces().
+     */
+    getNeighborhoodConfig() {
+      return this._pageConfig("neighborhood", {
+        enabled:           false,
+        pageName:          "Neighborhood",
+        displayOnHomepage: false,
+        center:            null,
+        radius:            null,
+        zoom:              null,
+        address:           null,
+        listing:           null,
+        categories:        [],
+        locationCount:     0,
+        placesEnabled:     false
+      });
+    },
+
+    // ----------------------------------------------------
+    // FAVORITES (PUBLIC API)
+    // ----------------------------------------------------
 
     /**
      * Returns the stable session UUID stored in localStorage for this property.
@@ -4402,7 +4462,8 @@
       zoomOut()                    { return PynMapSDK.zoomOut.call(PynMapSDK); },
       resetZoom()                  { return PynMapSDK.resetZoom.call(PynMapSDK); },
       getFavoritesConfig()                                  { return PynMapSDK.getFavoritesConfig.call(PynMapSDK); },
-      getFavoritesCount()                                   { return PynMapSDK.getFavoritesCount.call(PynMapSDK); },
+      getGalleryConfig()                                    { return PynMapSDK.getGalleryConfig.call(PynMapSDK); },
+      getNeighborhoodConfig()                               { return PynMapSDK.getNeighborhoodConfig.call(PynMapSDK); },
       getCurrentSessionId()                                 { return PynMapSDK.getCurrentSessionId.call(PynMapSDK); },
       getFavorites(communityId, sessionId, type)            { return PynMapSDK.getFavorites.call(PynMapSDK, communityId, sessionId, type); },
       getAllFavorites(communityId, sessionId)               { return PynMapSDK.getAllFavorites.call(PynMapSDK, communityId, sessionId); },
