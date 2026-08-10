@@ -3590,9 +3590,21 @@ function get_unit_availability(unit) {
 
   if (unit.sold) {
     availableDateString = "Unavailable:";
-  } else if (unit.available && unit.available_date) {
+  } else if (unit.available) {
     const availableDate = moment(unit.available_date, "YYYY-MM-DD");
-    if (availableDate.isSameOrBefore(todayDate, "day")) {
+    // A missing or unparseable available_date means "ready now", not
+    // "unavailable". Requiring a date here is what made an available unit with
+    // no date read "Unavailable:" in the rail while the Now filter matched it
+    // and the map painted it as an available home. The rest of the map already
+    // defaults a blank date this way: filterUnitsBasedOnDate leans on
+    // new Date(null) landing on the epoch, the unit popup gets its date from
+    // determine_available_date(available_date || Date.new(0)), and the server's
+    // Unit#available_now? uses the same Date.new(0) default.
+    if (
+      !unit.available_date ||
+      !availableDate.isValid() ||
+      availableDate.isSameOrBefore(todayDate, "day")
+    ) {
       availableDateString = "Available: Now";
     } else {
       if (isDefined(webCommunity) && webCommunity.country_code) {
