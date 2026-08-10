@@ -17,6 +17,10 @@ class SdkPayloadBuilderService
 
     {
       property:    property_json(ops_map),
+      # Top level, not nested under `property`: the gallery is its own feature
+      # with its own endpoints, and the SDK serves it through getGalleryConfig()
+      # rather than making hosts dig through the property blob.
+      gallery:     gallery_discovery_json,
       sitemap:     sitemap_json,
       backgroundSvg: background_svg_json,
       floorplates: floorplates_json,
@@ -157,8 +161,6 @@ class SdkPayloadBuilderService
       marketingMode: {
         turnAvailabilityOn: @community.turn_availability_on
       },
-
-      gallery: gallery_discovery_json,
 
       neighborhood: neighborhood_discovery_json,
 

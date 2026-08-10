@@ -194,8 +194,11 @@
     _favoriteAmenities: new Set(),  // Set of favorited amenity IDs (strings)
     _favoriteFloorplans: new Set(), // Set of favorited floorplan IDs (strings)
     _favoriteGalleryImages: new Set(), // Set of favorited gallery image IDs (strings)
-    _galleriesPromise: null,        // in-flight getGalleries() request; deduplicates concurrent calls
-    _galleriesLoaded: false,        // true once fetched, so an empty gallery is not refetched forever
+    _galleryListPromise: null,      // in-flight getGalleryList() request
+    _galleryListLoaded: false,      // true once fetched, so a property with no galleries is not refetched
+    _galleryImagePromises: {},      // { [galleryId]: Promise } — one in-flight request per gallery
+    _galleryImagesLoaded: new Set(),// gallery ids already fetched; a Set, not a flag, so a gallery whose
+                                    // rows are all unrenderable is not refetched on every reopen
     _neighborhoodPromise: null,     // in-flight getNeighborhood() request; deduplicates concurrent calls
     _neighborhoodLoaded: false,     // true once fetched, so a property with no pins is not refetched forever
     _placesPromises: {},            // { [slug]: Promise } — one in-flight request per category
@@ -254,7 +257,9 @@
       floorplans:  [],
       amenities:   [],
       filters:     null,
-      galleries:   [],    // populated by getGalleries(); empty until the panel is opened
+      gallery:     null,  // gallery config block from the map payload; see getGalleryConfig()
+      galleryList: [],    // gallery summaries without images; populated by getGalleryList()
+      galleryImages: {},  // { [galleryId]: image[] } — populated per gallery by getGalleryImages()
       neighborhood: [],   // curated pins; populated by getNeighborhood()
       neighborhoodPlaces: {}  // { [slug]: category } — live Google results, per category
     },
@@ -681,16 +686,12 @@
     },
 
     /**
-     * Fetch the property galleries using the session token. Same auth shape as
-     * _fetchConfig; the backend resolves the property from the token.
-     *
-     * A 404 here means the property has Pynwheel Touch or its gallery switch
-     * turned off — a normal state, not an error, so it resolves to an empty
-     * array rather than rejecting.
+     * Fetch the gallery list without images — names, counts, cover thumbs.
+     * Same auth shape and same 404-is-normal handling as the other fetchers.
      */
-    async _fetchGalleries() {
+    async _fetchGalleryList() {
       try {
-        const res = await fetch(`${this._apiBase()}/api/partner/maps/fetch_gallery`, {
+        const res = await fetch(`${this._apiBase()}/api/partner/maps/fetch_gallery_list`, {
           headers: {
             "Authorization":    `Bearer ${this._sessionToken}`,
             "X-SDK-Session-Id": this._sdkSessionId
@@ -707,8 +708,32 @@
     },
 
     /**
+     * Fetch one gallery's images. A 404 means the id is not this property's, or
+     * the gallery feature is off — both resolve to an empty list rather than
+     * rejecting, same as every other content fetcher here.
+     */
+    async _fetchGalleryImages(galleryId) {
+      try {
+        const query = `?gallery_id=${encodeURIComponent(galleryId)}`;
+        const res = await fetch(`${this._apiBase()}/api/partner/maps/fetch_gallery_images${query}`, {
+          headers: {
+            "Authorization":    `Bearer ${this._sessionToken}`,
+            "X-SDK-Session-Id": this._sdkSessionId
+          }
+        });
+
+        if (!res.ok) return [];
+
+        const data = await res.json();
+        return data.images || [];
+      } catch {
+        return [];
+      }
+    },
+
+    /**
      * Fetch the property's curated neighborhood pins. Same auth shape and same
-     * 404-is-normal handling as _fetchGalleries.
+     * 404-is-normal handling as the other content fetchers.
      */
     async _fetchNeighborhood() {
       try {
@@ -809,11 +834,13 @@
       this.data.units       = data.units       || [];
       this.data.amenities   = data.amenities   || [];
       this.data.filters     = data.filters     || null;
+      // Top-level block, not nested under property — see getGalleryConfig().
+      this.data.gallery     = data.gallery     || null;
 
       // Hydrate favorites from the server response. Each item already has
       // isFavorite set by the server; build the local Sets from it.
       // gallery_image is skipped — its collection loads on demand, and
-      // getGalleries() hydrates it the same way once it arrives.
+      // getGalleryImages() hydrates it the same way once it arrives.
       ["unit", "amenity", "floorplan"].forEach(type => this._hydrateFavorites(type));
 
       this._indexUnits();
@@ -3132,14 +3159,16 @@
         this._beansPopupObserver.disconnect();
         this._beansPopupObserver = null;
       }
-      this._galleriesPromise   = null;
-      this._galleriesLoaded    = false;
+      this._galleryListPromise  = null;
+      this._galleryListLoaded   = false;
+      this._galleryImagePromises = {};
+      this._galleryImagesLoaded  = new Set();
       this._neighborhoodPromise = null;
       this._neighborhoodLoaded  = false;
       this._placesPromises      = {};
       this._placesLoaded        = new Set();
       this._neighborhoodLimited = false;
-      this.data                = { property: null, sitemap: null, backgroundSvg: null, floorplates: [], units: [], floorplans: [], amenities: [], filters: null, galleries: [], neighborhood: [], neighborhoodPlaces: {} };
+      this.data                = { property: null, sitemap: null, backgroundSvg: null, floorplates: [], units: [], floorplans: [], amenities: [], filters: null, gallery: null, galleryList: [], galleryImages: {}, neighborhood: [], neighborhoodPlaces: {} };
       this.unitsByMap          = {};
       this.pointerIdsByMap     = {};
       this.unitsByPointerIdByMap = {};
@@ -3275,58 +3304,104 @@
     //   if (enabled && imageCount > 0) showGalleryTab(pageName);
     //
     // `enabled` is true only when the property has Pynwheel Touch on AND its own
-    // gallery switch on. Once it is, getGalleries() fetches the content.
+    // gallery switch on.
+    //
+    // Content then comes in two steps, deliberately kept apart — the same shape
+    // as the neighborhood's category rail and its per-category places:
+    //
+    //   getGalleryList()            names, photo counts, cover thumbs. A few
+    //                               hundred bytes; draws the sidebar.
+    //   getGalleryImages(galleryId) one gallery's images, memoised per id, so a
+    //                               visitor who opens one gallery of five never
+    //                               downloads the other four.
+    //
+    // Nothing fetches every image at once: a property can carry hundreds, and a
+    // visitor opens one gallery at a time.
     // ----------------------------------------------------
 
     /**
-     * Every gallery, with its images nested underneath. Call it from the Gallery
-     * button's click handler.
+     * The gallery list without any images: name, photo count, cover thumbnail.
+     * Call it when the Gallery panel opens, then getGalleryImages() for whichever
+     * gallery the visitor selects.
      *
-     * Memoised for the life of the page — later calls resolve instantly from
-     * memory — and concurrent calls share one request, so an impatient
-     * double-click still hits the network once. Pass { force: true } to refetch.
+     * `count` is exact — it comes from the same filter that drops unrenderable
+     * rows, so the number beside a gallery always matches how many tiles
+     * getGalleryImages() will return for it.
      *
-     * Never throws: any failure (offline, expired session, gallery turned off)
-     * resolves to an empty array.
+     * Memoised for the life of the page, concurrent calls share one request, and
+     * it never throws — any failure resolves to an empty array.
      *
-     *   [{
-     *     id, title, count,
-     *     coverUrl,            // first image's thumb — for the gallery list
-     *     images: [{
-     *       id, categoryId, type, name,
-     *       url,               // full resolution — use in the lightbox
-     *       thumbUrl,          // 640x360 — use in the grid (null for videos)
-     *       posterUrl,         // video poster; may 404 on older uploads
-     *       posterFallbackUrl, // swap to this on posterUrl's error event
-     *       isVideo,
-     *       isFavorite         // toggle with saveFavorite/deleteFavorite,
-     *                          // passing type "gallery_image"
-     *     }]
-     *   }]
+     *   [{ id, title, count, coverUrl }]
      *
      * @param {{ force?: boolean }} [opts]
      * @returns {Promise<object[]>}
      */
-    async getGalleries({ force = false } = {}) {
-      if (!force && this._galleriesLoaded) return this.data.galleries;
-      if (this._galleriesPromise) return this._galleriesPromise;
+    async getGalleryList({ force = false } = {}) {
+      if (!force && this._galleryListLoaded) return this.data.galleryList;
+      if (this._galleryListPromise) return this._galleryListPromise;
 
-      // Fired here rather than on every call: reaching the network is what marks
-      // a real visit, so re-renders reading the memo cost nothing. 'gallery_view'
-      // is the name the server maps to the "Gallery view" visited page, so it has
-      // to match exactly.
+      // Fired here rather than on every call: reaching the network is what
+      // marks a real visit, so re-renders reading the memo cost nothing.
+      // 'gallery_view' is the name the server maps to the "Gallery view"
+      // visited page, so it has to match exactly.
       if (this._analytics) this._captureWithMapType('gallery_view');
 
-      this._galleriesPromise = this._fetchGalleries()
+      this._galleryListPromise = this._fetchGalleryList()
         .then((galleries) => {
-          this.data.galleries   = galleries;
-          this._galleriesLoaded = true;
-          this._hydrateFavorites("gallery_image");
+          this.data.galleryList   = galleries;
+          this._galleryListLoaded = true;
           return galleries;
         })
-        .finally(() => { this._galleriesPromise = null; });
+        .finally(() => { this._galleryListPromise = null; });
 
-      return this._galleriesPromise;
+      return this._galleryListPromise;
+    },
+
+    /**
+     * One gallery's images, by the id getGalleryList() returned.
+     *
+     * Memoised per gallery, so switching back to a gallery already opened is
+     * free, and concurrent calls for the same id share one request. Pass
+     * { force: true } to refetch that gallery.
+     *
+     * Never throws: an unknown id, a gallery belonging to another property, or
+     * any network failure all resolve to an empty array.
+     *
+     *   [{
+     *     id, categoryId, type, name,
+     *     url,               // full resolution — use in the lightbox
+     *     thumbUrl,          // 640x360 — use in the grid (null for videos)
+     *     posterUrl,         // video poster; may 404 on older uploads
+     *     posterFallbackUrl, // swap to this on posterUrl's error event
+     *     isVideo,
+     *     isFavorite         // toggle with saveFavorite/deleteFavorite,
+     *                        // passing type "gallery_image"
+     *   }]
+     *
+     * @param {string|number} galleryId
+     * @param {{ force?: boolean }} [opts]
+     * @returns {Promise<object[]>}
+     */
+    async getGalleryImages(galleryId, { force = false } = {}) {
+      const key = String(galleryId ?? "");
+      if (!key) return [];
+
+      if (!force && this._galleryImagesLoaded.has(key)) return this.data.galleryImages[key] || [];
+      if (this._galleryImagePromises[key]) return this._galleryImagePromises[key];
+
+      this._galleryImagePromises[key] = this._fetchGalleryImages(key)
+        .then((images) => {
+          this.data.galleryImages[key] = images;
+          this._galleryImagesLoaded.add(key);
+          // Favorited images arrive flagged by the server; fold them into the
+          // local Set so isFavorite and the favorites count agree with the
+          // rest of the SDK.
+          this._hydrateFavorites("gallery_image");
+          return images;
+        })
+        .finally(() => { delete this._galleryImagePromises[key]; });
+
+      return this._galleryImagePromises[key];
     },
 
     // ----------------------------------------------------
@@ -3484,7 +3559,7 @@
     //
     // All three read the map payload, so they are synchronous, cost nothing,
     // and are safe to call on every render. The pages' contents come from
-    // getAllFavorites(), getGalleries(), and getNeighborhood() respectively.
+    // getGalleryImages(), getAllFavorites(), and getNeighborhood() respectively.
     // ----------------------------------------------------
 
     /**
@@ -3497,8 +3572,7 @@
      * block happens to carry. Everything else the server sends passes straight
      * through, so a new field on a block reaches hosts without a change here.
      */
-    _pageConfig(key, defaults) {
-      const cfg = this.data.property?.[key];
+    _pageConfig(cfg, defaults) {
       if (!cfg) return { ...defaults };
       return { ...defaults, ...cfg, enabled: cfg.enabled !== false };
     },
@@ -3519,7 +3593,7 @@
      * deleteFavorite / clearAllFavorites to refresh a badge. It is already
      * correct on the first read for a returning visitor, since the payload
      * hydrates the favorites before onReady fires. Favorited gallery images
-     * join the count only once getGalleries() has run, as that collection
+     * join the count only once getGalleryImages() has run, as that collection
      * loads on demand.
      *
      * Defaults to enabled with the label "Favorites" — the same thing the
@@ -3528,7 +3602,7 @@
      */
     getFavoritesConfig() {
       return {
-        ...this._pageConfig("favorites", { enabled: true, pageName: "Favorites" }),
+        ...this._pageConfig(this.data.property?.favorites, { enabled: true, pageName: "Favorites" }),
         count: this._FAVORITE_TYPES.reduce((sum, t) => sum + this._favState(t).set.size, 0)
       };
     },
@@ -3545,10 +3619,11 @@
      *   }
      *
      * Defaults to disabled: unlike Favorites, a gallery a host cannot confirm
-     * is one it should not advertise. Images come from getGalleries().
+     * is one it should not advertise. Content comes from getGalleryList()
+     * and getGalleryImages().
      */
     getGalleryConfig() {
-      return this._pageConfig("gallery", {
+      return this._pageConfig(this.data.gallery, {
         enabled:           false,
         pageName:          "Gallery",
         displayOnHomepage: false,
@@ -3572,7 +3647,7 @@
      * come from getNeighborhood(), live results from getNeighborhoodPlaces().
      */
     getNeighborhoodConfig() {
-      return this._pageConfig("neighborhood", {
+      return this._pageConfig(this.data.property?.neighborhood, {
         enabled:           false,
         pageName:          "Neighborhood",
         displayOnHomepage: false,
@@ -3614,11 +3689,11 @@
         case "floorplan":
           return { set: this._favoriteFloorplans, list: this.data.floorplans || [], idKey: "floorplanId" };
         case "gallery_image":
-          // Images live nested under their gallery, and the whole collection
-          // loads on demand — so this is empty until getGalleries() runs.
+          // Images load one gallery at a time, so this covers every gallery the
+          // visitor has opened so far and is empty until the first one arrives.
           return {
             set:   this._favoriteGalleryImages,
-            list:  (this.data.galleries || []).flatMap(g => g.images || []),
+            list:  Object.values(this.data.galleryImages || {}).flat(),
             idKey: "id"
           };
         default:
@@ -4452,7 +4527,8 @@
       getAmenities()               { return PynMapSDK.getAmenities.call(PynMapSDK); },
       getUnits(filters)            { return PynMapSDK.getUnits.call(PynMapSDK, filters); },
       getFiltersData()             { return PynMapSDK.getFiltersData.call(PynMapSDK); },
-      getGalleries(opts)           { return PynMapSDK.getGalleries.call(PynMapSDK, opts); },
+      getGalleryList(opts)                  { return PynMapSDK.getGalleryList.call(PynMapSDK, opts); },
+      getGalleryImages(galleryId, opts)     { return PynMapSDK.getGalleryImages.call(PynMapSDK, galleryId, opts); },
       getNeighborhood(opts)                 { return PynMapSDK.getNeighborhood.call(PynMapSDK, opts); },
       getNeighborhoodPlaces(category, opts) { return PynMapSDK.getNeighborhoodPlaces.call(PynMapSDK, category, opts); },
       isNeighborhoodLimited()               { return PynMapSDK.isNeighborhoodLimited.call(PynMapSDK); },

@@ -13,7 +13,8 @@ module Api
         # `fetch_data`, `fetch_svg_image`, `save_favorites`, `delete_favorites`,
         # `clear_all_favorites`, `get_favorites` → session token only
         SESSION_ACTIONS = [
-          :fetch_data, :fetch_svg_image, :fetch_gallery,
+          :fetch_data, :fetch_svg_image,
+          :fetch_gallery_list, :fetch_gallery_images,
           :fetch_neighborhood, :fetch_neighborhood_places,
           :save_favorites, :delete_favorites, :clear_all_favorites,
           :get_favorites, :share_favorites_email, :track_events
@@ -32,12 +33,12 @@ module Api
         # 6 other heavy includes (floorplans, map_filter, font_setting, credential,
         # calculator_config, three_d_maps_configuration) that it never uses.
         # track_events only needs community_id, timezone — use a lightweight load.
-        before_action :load_community_from_session, only: SESSION_ACTIONS - [:get_favorites, :fetch_svg_image, :fetch_gallery, :fetch_neighborhood, :fetch_neighborhood_places, :share_favorites_email, :track_events]
+        before_action :load_community_from_session, only: SESSION_ACTIONS - [:get_favorites, :fetch_svg_image, :fetch_gallery_list, :fetch_gallery_images, :fetch_neighborhood, :fetch_neighborhood_places, :share_favorites_email, :track_events]
         before_action :load_community_for_analytics, only: [:track_events]
         before_action :load_community_for_svg,      only: [:fetch_svg_image]
         before_action :load_community_for_favorites, only: [:get_favorites]
         before_action :load_community_for_email,     only: [:share_favorites_email]
-        before_action :load_community_for_gallery,   only: [:fetch_gallery]
+        before_action :load_community_for_gallery,   only: [:fetch_gallery_list, :fetch_gallery_images]
         before_action :load_community_for_neighborhood, only: [:fetch_neighborhood, :fetch_neighborhood_places]
 
         # ------------------------------------------------------------------
@@ -98,32 +99,59 @@ module Api
         end
 
         # ------------------------------------------------------------------
-        # GET /api/partner/maps/fetch_gallery
+        # GET /api/partner/maps/fetch_gallery_list
         # Authorization: Bearer <session_token>
         # Property ID is taken from the session token — NOT from query params.
         #
-        # Deliberately not part of fetch_data: this is fetched only when a visitor
-        # opens the gallery panel, which most never do. The map payload carries the
-        # `property.gallery` config block (enabled / pageName / imageCount) so the
-        # host can decide whether to show the entry point without paying for the
-        # images — everything here is the images themselves, nested under the
-        # gallery they belong to.
+        # The gallery list without any images: name, photo count, cover
+        # thumbnail. This is what the gallery sidebar draws, and it answers in a
+        # few hundred bytes however many photos the property holds.
         #
-        # Payload is built fresh on every request — no caching layer, same as
-        # fetch_data. The SDK memoises the result for the life of the page.
+        # Deliberately not part of fetch_data: this is fetched only when a
+        # visitor opens the gallery panel, which most never do. The map payload
+        # carries only the small `gallery` config block (enabled / pageName /
+        # imageCount) so the host can decide whether to show the entry point.
+        #
+        # Pairs with fetch_gallery_images, mirroring how the neighborhood splits
+        # its category rail from the places inside each category.
+        #
+        # Built fresh on every request — no caching layer, same as fetch_data.
+        # The SDK memoises the result for the life of the page.
         # ------------------------------------------------------------------
-        def fetch_gallery
+        def fetch_gallery_list
           builder = SdkGalleryBuilderService.new(@community)
 
-          # Should be unreachable: the config block already told the host not to
-          # offer a gallery for this property.
           return render_error("Gallery is not available for this property.", 404) unless builder.enabled?
 
-          payload = {
-            galleries: builder.build(favorite_ids(favorite_record, "gallery_image")),
-            status:    "success",
-            code:      200
-          }
+          render json: { galleries: builder.list, status: "success", code: 200 }
+        end
+
+        # ------------------------------------------------------------------
+        # GET /api/partner/maps/fetch_gallery_images?gallery_id=:id
+        # Authorization: Bearer <session_token>
+        #
+        # One gallery's images. Opening a second gallery costs only that
+        # gallery, so a visitor who looks at one of five never downloads the
+        # other four.
+        #
+        # Ownership is enforced in the builder: an id belonging to another
+        # property resolves to nothing rather than leaking its photos.
+        # ------------------------------------------------------------------
+        def fetch_gallery_images
+          builder = SdkGalleryBuilderService.new(@community)
+
+          return render_error("Gallery is not available for this property.", 404) unless builder.enabled?
+
+          gallery_id = params[:gallery_id] || params[:galleryId]
+          return render_error("gallery_id is required.", 400) if gallery_id.blank?
+
+          images = builder.images_for(gallery_id, favorite_ids(favorite_record, "gallery_image"))
+
+          # An empty list for a real gallery is legitimate (every row
+          # unrenderable); an unknown id is the caller's mistake and says so.
+          return render_error("Gallery not found.", 404) unless @community.galleries.exists?(id: gallery_id)
+
+          payload = { galleryId: gallery_id.to_i, images: images, status: "success", code: 200 }
 
           response.headers['Cache-Control']    = 'private, no-store'
           response.headers['Content-Encoding'] = 'gzip'

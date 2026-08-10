@@ -35,36 +35,68 @@ class SdkGalleryBuilderService
     gallery_images_scope.count
   end
 
-  # Every gallery with its images nested underneath, ordered by the CMS sort.
-  # Galleries with nothing renderable are omitted entirely.
+  # The gallery list — what the sidebar renders: name, photo count, cover
+  # thumbnail. No `images` array, so a property with hundreds of photos answers
+  # the panel-open request with a few hundred bytes instead of megabytes. The
+  # images for whichever gallery the visitor actually opens come from
+  # #images_for.
   #
-  # fav_ids: Set of favorited gallery image ids as strings, as held by the
-  # controller for every other favouritable collection.
-  def build(fav_ids = Set.new)
+  # Counts here are exact rather than a COUNT(*): they come from the same
+  # filter that drops unrenderable rows, so the sidebar's "9 Photos" always
+  # matches the number of tiles #images_for returns.
+  def list
     return [] unless enabled?
 
+    each_gallery(Set.new).map { |gallery, images| summary_json(gallery, images) }
+  end
+
+  # One gallery's images. Scoped to a single gallery, so opening a second
+  # gallery costs only that gallery.
+  #
+  # Returns [] for an id that is not this community's — ownership is enforced
+  # here rather than trusted from the query string.
+  def images_for(gallery_id, fav_ids = Set.new)
+    return [] unless enabled?
+
+    gallery = @community.galleries.includes(:gallery_images).find_by(id: gallery_id)
+    return [] if gallery.nil?
+
+    sorted_images(gallery).filter_map { |row| image_json(row, gallery, fav_ids) }
+  end
+
+  # Favorited images as one flat list, for the favorites screen. Goes through
+  # the same #each_gallery walk as #list and #images_for, so URL, video and
+  # ordering rules live in exactly one place — the same way floorplans_json /
+  # amenities_json are reused in get_favorites.
+  def favorites_json(fav_ids)
+    return [] unless enabled?
+
+    each_gallery(fav_ids).flat_map { |_gallery, images| images }.select { |image| image[:isFavorite] }
+  end
+
+  private
+
+  # The one definition of "a gallery worth showing": CMS sort order, images
+  # built through the same filter, and galleries left with nothing renderable
+  # dropped. #build, #list and the favorites flat list all read from here so
+  # they can never disagree about what exists.
+  def each_gallery(fav_ids)
     @community.galleries.order(:sort).includes(:gallery_images).filter_map do |gallery|
       images = sorted_images(gallery).filter_map { |row| image_json(row, gallery, fav_ids) }
       next if images.empty?
 
-      {
-        id:       gallery.id,
-        title:    gallery.name,
-        count:    images.size,
-        coverUrl: cover_url(images),
-        images:   images
-      }
+      [gallery, images]
     end
   end
 
-  # Favorited images as one flat list, for the favorites screen. Reuses #build so
-  # URL, video and ordering rules live in exactly one place — the same way
-  # floorplans_json / amenities_json are reused in get_favorites.
-  def favorites_json(fav_ids)
-    build(fav_ids).flat_map { |gallery| gallery[:images] }.select { |image| image[:isFavorite] }
+  def summary_json(gallery, images)
+    {
+      id:       gallery.id,
+      title:    gallery.name,
+      count:    images.size,
+      coverUrl: cover_url(images)
+    }
   end
-
-  private
 
   def gallery_images_scope
     GalleryImage.where(gallery_id: @community.galleries.select(:id))
