@@ -2,6 +2,12 @@ class FollowUpMailer < ApplicationMailer
   default from: ENV["FOLLOW_UP_EMAIL_FROM"]
   layout 'mailer'
 
+  # Turned off 2026-08-12. Gates the two client-facing launch emails:
+  # `application_approved` and `released_application_email` (which also copy
+  # the support inbox). The mailer methods and views are left intact -- flip
+  # this back to true to resume sending.
+  SEND_CLIENT_LAUNCH_EMAILS = false
+
   def preview_application_not_started(forms, community)
     @community = community
     @forms = forms
@@ -93,6 +99,8 @@ class FollowUpMailer < ApplicationMailer
   end
 
   def self.application_approved(community)
+    return unless SEND_CLIENT_LAUNCH_EMAILS
+
     unless community&.company&.name.include?("Dwelo")
       users = community.users.pluck(:email)
       users.each do |user|
@@ -108,6 +116,8 @@ class FollowUpMailer < ApplicationMailer
   end
 
   def self.released_application_email(community)
+    return unless SEND_CLIENT_LAUNCH_EMAILS
+
     @community = community
     @users = @community.users.pluck(:email)
 
