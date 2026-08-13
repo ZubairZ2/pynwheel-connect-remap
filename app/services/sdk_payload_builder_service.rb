@@ -370,6 +370,7 @@ class SdkPayloadBuilderService
           floorplateId:     a.amenityable_id,
           pointerData:      a.pointer_data,
           isFavorite:       fav_ids.include?(a.id.to_s),
+          additionalButtons: amenity_additional_buttons(a),
           additionalImages: a.amenity_galleries.map { |g|
             {
               name:        g.name.presence,
@@ -517,6 +518,21 @@ class SdkPayloadBuilderService
       { label: fp.scheduler_label.presence || "Scheduled Tour",
         url: fp.scheduler_url,    openInNewTab: fp.scheduler_url.present?    && fp.link3_open_new_tab }
     ].select { |btn| btn[:url].present? }
+  end
+
+  # The amenity's virtual tour link, in the same {label, url, openInNewTab} shape
+  # units and floor plans use, so the host renders it with the same component.
+  # Label falls back to "3D Tour" exactly as the old map does
+  # (webpages/_amenities_slider.html.haml), and the tour always opens in-page:
+  # the old map only ever showed it inside its own modal.
+  def amenity_additional_buttons(amenity)
+    return [] if amenity.video_link.blank?
+
+    [{
+      label:        amenity.video_link_button_label.presence || "3D Tour",
+      url:          amenity.video_link,
+      openInNewTab: false
+    }]
   end
 
   def unit_variation(unit, additional_fees, buttons = nil)

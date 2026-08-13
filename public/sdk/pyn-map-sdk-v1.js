@@ -1427,7 +1427,11 @@
 
     /**
      * Returns all community amenities for the property.
-     * Each object: { amenityId, name, description, amenityType, image, directionalText, additionalImages }
+     * Each object: { amenityId, name, description, amenityType, image, directionalText,
+     *                additionalImages, additionalButtons }
+     * additionalButtons carries the CMS "Video Link" / "Video Link Button Label" pair as
+     * [{ label, url, openInNewTab }] — the same shape units and floorplans use — and is
+     * an empty array when the amenity has no tour link.
      */
     getAmenities() {
       return (this.data.amenities || []).slice();
