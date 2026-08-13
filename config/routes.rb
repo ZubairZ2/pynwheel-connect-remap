@@ -854,7 +854,9 @@ Rails.application.routes.draw do
         post :send_follow_up_emails, to: 'follow_up_emails#send_follow_up_emails'
         get :preview_follow_up_email, to: 'follow_up_emails#preview_follow_up_email'
         get :preview_submit_for_review_email, to: 'follow_up_emails#preview_submit_for_review_email'
-        
+        get :launch_email_recipients, to: 'follow_up_emails#launch_email_recipients'
+        post :send_launch_email, to: 'follow_up_emails#send_launch_email'
+
         resources :community_floor_plans do
           member do
             delete :delete_floorplan_amenity

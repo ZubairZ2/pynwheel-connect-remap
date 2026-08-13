@@ -1,4 +1,6 @@
 class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
+  LAUNCH_EMAIL = PynwheelLaunch::Communities::LaunchEmail
+
   before_action :doorkeeper_authorize!
   before_action :load_community , :except => [:index]
   before_action :check_brand_access , :only => [:show , :update]
@@ -103,7 +105,7 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
       @community.released_date = DateTime.now if params[:status].eql?(RELEASED)
       @community.save
       send_emails(@community, params["status"])
-      render :json => {:success => true , data: @community_user.as_json}
+      render :json => {:success => true , data: @community_user.as_json, launch_email: launch_email_offer(params[:status])}
     else
       render :json => {:success => false , :message=> "Community or community user not found"}
     end
@@ -111,6 +113,28 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
 
   private
 
+  # The client-facing launch email a press of the dashboard's own button has
+  # earned, for Launch to confirm recipients on before anything goes out.
+  #
+  # Both emails are offered here and only here. That button is the single
+  # manual action behind them -- approving an individual form never offers
+  # one, because the importers approve forms too and no client should hear
+  # about it from a data sync.
+  #
+  # Nil when there is nothing to offer, and Launch then just carries on: the
+  # status change stands either way.
+  def launch_email_offer(status)
+    kind =
+      case status
+      when APPLICATION_IN_REVIEW then LAUNCH_EMAIL::APPROVED_KIND
+      when RELEASED then LAUNCH_EMAIL::RELEASED_KIND
+      end
+    return nil if kind.blank?
+
+    email = LAUNCH_EMAIL.new(@community, kind)
+
+    email.due? ? email.as_json : nil
+  end
 
   def disregard_forms
     ([ADDITIONAL_PAGES, EBROCHURE, HARDWARE_SPECS, AMENITY_IMAGES, DESIGN_DIRECTION, COMPANY_DETAILS].include?(params[:detail_type]))
@@ -124,7 +148,8 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
         # FollowUpMailer.marketing_email(community).deliver
         FollowUpMailer.customer_success_email(community).deliver
         FollowUpMailer.accounting_email(community).deliver
-        FollowUpMailer.released_application_email(community)
+        # The client-facing release email is not sent here -- Launch offers it
+        # to the admin with an editable recipient list. These two are internal.
       end
     end
   end

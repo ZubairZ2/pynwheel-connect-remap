@@ -2,12 +2,6 @@ class FollowUpMailer < ApplicationMailer
   default from: ENV["FOLLOW_UP_EMAIL_FROM"]
   layout 'mailer'
 
-  # Turned off 2026-08-12. Gates the two client-facing launch emails:
-  # `application_approved` and `released_application_email` (which also copy
-  # the support inbox). The mailer methods and views are left intact -- flip
-  # this back to true to resume sending.
-  SEND_CLIENT_LAUNCH_EMAILS = false
-
   def preview_application_not_started(forms, community)
     @community = community
     @forms = forms
@@ -98,45 +92,17 @@ class FollowUpMailer < ApplicationMailer
     mail(to: user, subject: "Your Application for #{@community.company.name} - #{@community.name}")
   end
 
-  def self.application_approved(community)
-    return unless SEND_CLIENT_LAUNCH_EMAILS
-
-    unless community&.company&.name.include?("Dwelo")
-      users = community.users.pluck(:email)
-      users.each do |user|
-        send_application_approved_email(community, user).deliver if is_user_not_dwelo(user)
-      end
-    end
-  end
-
   def send_application_approved_email(community, user)
     @user = user
     @community = community
     mail(to: @user, cc: ENV["FOLLOW_UP_EMAIL"], subject: "#{@community.name} - Your Application is Going into Production")
   end
 
-  def self.released_application_email(community)
-    return unless SEND_CLIENT_LAUNCH_EMAILS
-
-    @community = community
-    @users = @community.users.pluck(:email)
-
-    @users.push(ENV["FOLLOW_UP_EMAIL"])
-    if community.touchscreen_app && !community.self_tour
-      @users.each do |user|
-        released_app_touch(user, community).deliver if is_user_not_dwelo(user)
-      end
-    elsif !community.touchscreen_app && community.self_tour
-      @users.each do |user|
-        released_app_self_tour(user, community).deliver if is_user_not_dwelo(user)
-      end
-    elsif community.touchscreen_app && community.self_tour
-      @users.each do |user|
-        released_app_self_tour_touch(user, community).deliver if is_user_not_dwelo(user)
-      end
-    end
-  end
-
+  # The client-facing launch emails below take one address at a time, and are
+  # only ever called by PynwheelLaunch::Communities::LaunchEmail with the
+  # recipients an admin confirmed in Launch. There is deliberately no method
+  # here that mails a whole community at once -- form approvals arrive from the
+  # data importers too, and those must not reach a client's inbox on their own.
   def released_app_self_tour(user, community)
     @app_text = get_apps_text(community)
     @community = community

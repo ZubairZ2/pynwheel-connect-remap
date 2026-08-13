@@ -1,6 +1,8 @@
 class Api::V2::FollowUpEmailsController < Api::V2::ApiApplicationController
+  LAUNCH_EMAIL = PynwheelLaunch::Communities::LaunchEmail
+
   before_action :doorkeeper_authorize!
-  before_action :set_community, only: [:preview_follow_up_email, :send_follow_up_emails, :preview_submit_for_review_email]
+  before_action :set_community, only: [:preview_follow_up_email, :send_follow_up_emails, :preview_submit_for_review_email, :launch_email_recipients, :send_launch_email]
   before_action :set_user, only: [:preview_follow_up_email, :send_follow_up_emails]
 
   def preview_follow_up_email
@@ -30,7 +32,44 @@ class Api::V2::FollowUpEmailsController < Api::V2::ApiApplicationController
     end
   end
 
+  # The recipient list Launch shows before a client-facing launch email goes
+  # out. Never sends anything, so it is safe to call on any community.
+  def launch_email_recipients
+    email = launch_email
+    return render_unknown_launch_email if email.blank?
+
+    render json: {success: true, launch_email: email.due? ? email.as_json : nil}
+  end
+
+  # Sends a launch email to exactly the addresses the admin confirmed. An empty
+  # list is a legitimate answer -- it means they chose to send to nobody -- and
+  # succeeds without mailing anyone.
+  def send_launch_email
+    email = launch_email
+    return render_unknown_launch_email if email.blank?
+
+    sent = email.deliver(requested_recipients)
+    render json: {success: true, sent: sent, sent_count: sent.length}
+  end
+
   private
+
+  def launch_email
+    kind = params[:kind].to_s
+    return nil unless LAUNCH_EMAIL::KINDS.include?(kind)
+
+    LAUNCH_EMAIL.new(@community, kind)
+  end
+
+  def requested_recipients
+    emails = params[:emails]
+
+    emails.is_a?(String) ? emails.split(",") : Array(emails)
+  end
+
+  def render_unknown_launch_email
+    render json: {success: false, message: "Unknown launch email"}, status: :bad_request
+  end
 
   def preview_email(email)
     case email[:type]

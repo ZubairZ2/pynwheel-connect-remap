@@ -411,11 +411,15 @@ class Community < ApplicationRecord
     unless disregard_forms(form_type)
       if form_status.eql?(APPROVED)
         application_approved = PynwheelLaunch::Communities::FollowUpEmails.new(self).move_to_production_auto_email
-        
+
         if application_approved
           self.production_started_date = DateTime.now
           self.save
-          FollowUpMailer.application_approved(self)
+          # No email goes out here, by design. Completing the forms only marks
+          # the date -- the client-facing email is offered when an admin
+          # presses the button on the Launch dashboard, which is also the only
+          # place the recipients get confirmed. The importers reach this line
+          # too, and must never mail a client on their own.
         end
       end
     end
