@@ -68,6 +68,10 @@ class SdkPayloadBuilderService
         available:              unit.available,
         available_now:          unit.available_now?,
         availability_bucket:    unit.availability_bucket,
+        # Floorplan-level enum (available|limited_availability|almost_gone|sold_out),
+        # repeated on the unit so the host can render the banner from a unit alone —
+        # the same thing the old map does through floorplan_map_config.
+        availability_status:    floorplan&.availability_status,
         lease_term:             unit.lease_term,
         lease_pricing:          unit.get_lease_term_pricing_matrix(),
         description:            description,
@@ -338,6 +342,7 @@ class SdkPayloadBuilderService
         description_title: floorplan_description_title(fp),
         additionalButtons: floorplan_additional_buttons(fp),
         availability_url: first_unit&.get_availability_url(),
+        availability_status: fp.availability_status,
         primaryImage:     fp.image.present?           ? fp.validated_image_url                                        : nil,
         secondaryImage:   fp.secondary_image.present? ? fp.convert_to_s3_accelerate_url(fp.secondary_image.url) : nil,
         color:            compute_floorplan_color(fp),
