@@ -917,6 +917,7 @@ class CommunitiesController < ApplicationController
     @community.is_floor_level_map = params[:is_floor_level_map]
     @community.turn_availability_on = params[:turn_availability_on]
     @community.enable_unit_type_pricing = params[:enable_unit_type_pricing]
+    @community.student_housing_property = params[:student_housing_property].present? ? params[:student_housing_property] : false
     @community.hide_bedrooms_bathrooms = params[:hide_bedrooms_bathrooms]
     @community.hide_square_feet = params[:hide_square_feet]
     @community.hide_availability = params[:hide_availability]

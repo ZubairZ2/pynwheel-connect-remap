@@ -296,7 +296,7 @@
                     
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                        Turn Availability Off
+                        Show all as available
                         %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
                           %span#propertyDetailNameText
                             Switching this to "Yes" will make all units on the map will be marked / shaded as if they are each available. The right rail of the map will display a list of all floor plans instead of a list of available units.
@@ -307,7 +307,21 @@
                           = check_box_tag :turn_availability_on, true, @community.turn_availability_on, class: "apartment-setting-field"
                           %label.label-primary{:for => "turn_availability_on"}
                           %span.pl-15 Yes
-                    
+
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                        Student Housing Property
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            This toggle organizes unit space data, as well as switches the 'display pricing' to 'no' and switches the 'show all as available' toggle to 'yes'. These two toggles can be adjusted on the Property Map page.
+
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .TriSea-technologies-Switch
+                          %span.pr-15 No
+                          = check_box_tag :student_housing_property, true, @community.student_housing_property, class: "student-housing-toggle", id: "student_housing_property"
+                          %label.label-primary{:for => "student_housing_property"}
+                          %span.pl-15 Yes
+
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                         Use getUnitTypes Pricing
@@ -591,7 +605,7 @@
                     
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                        Turn Availability Off
+                        Show all as available
                         %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
                           %span#propertyDetailNameText
                             Switching this to "Yes" will make all units on the map will be marked / shaded as if they are each available. The right rail of the map will display a list of all floor plans instead of a list of available units.
@@ -601,6 +615,20 @@
                           %span.pr-15 No
                           = check_box_tag :turn_availability_on, true, @community.turn_availability_on, class: "apartment-setting-field"
                           %label.label-primary{:for => "turn_availability_on"}
+                          %span.pl-15 Yes
+
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                        Student Housing Property
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            This toggle organizes unit space data, as well as switches the 'display pricing' to 'no' and switches the 'show all as available' toggle to 'yes'. These two toggles can be adjusted on the Property Map page.
+
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .TriSea-technologies-Switch
+                          %span.pr-15 No
+                          = check_box_tag :student_housing_property, true, @community.student_housing_property, class: "student-housing-toggle", id: "student_housing_property"
+                          %label.label-primary{:for => "student_housing_property"}
                           %span.pl-15 Yes
 
                     .form-group
@@ -779,6 +807,16 @@
   });
 
   $('.apartment-setting-field').change(function(){
+    $('.apartment-settings-form').submit();
+  });
+
+  // Student Housing Property: force pricing off and availability on.
+  // Both toggles stay individually adjustable afterwards.
+  $('.student-housing-toggle').change(function(){
+    if ($(this).is(':checked')) {
+      $('#display_rent').prop('checked', false);
+      $('#turn_availability_on').prop('checked', true);
+    }
     $('.apartment-settings-form').submit();
   });
 
