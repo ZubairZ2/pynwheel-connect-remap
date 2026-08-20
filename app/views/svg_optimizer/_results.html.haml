@@ -9,14 +9,21 @@
     - if properties.total_pages > 1
       = "· page #{properties.current_page} of #{properties.total_pages}"
 
+  -# Only rows with at least one map are selectable, so the count the bulk bar
+  -# shows can never promise work that has no target to act on.
+  - selectable = properties.count { |row| row[:rollup][:total].to_i > 0 }
+
   .table-wrap
     %table
       %thead
         %tr
+          %th.cb
+            %input#select-page{type: "checkbox", title: "Select every selectable property on this page", disabled: selectable.zero?}
           %th Property
           %th Company
           %th Type
           %th Beans SVG
+          %th Partners
           %th Maps
           %th Status
           %th
@@ -26,6 +33,9 @@
           - rollup = row[:rollup]
           - has_targets = rollup[:total].to_i > 0
           %tr{"data-community-id" => community.id, "data-status-url" => svg_optimizer_status_path(community.id)}
+            %td.cb
+              - if has_targets
+                %input.js-row-cb{type: "checkbox", value: community.id, "data-name" => community.name}
             %td
               %span.p-name= community.name.presence || "Community ##{community.id}"
             %td.p-company= community.company&.name.presence || "—"
@@ -36,6 +46,13 @@
                 %span.flag.yes{title: "\"Beans Generated SVG\" is on for this property"} True
               - else
                 %span.flag.no{title: "\"Beans Generated SVG\" is off for this property"} False
+            %td.p-partners
+              - enabled = Community::MAP_PARTNERS.select { |p| community.partner_map_enabled?(p[:key]) }
+              - if enabled.any?
+                - enabled.each do |p|
+                  %span.ptag= p[:label]
+              - else
+                %span.muted —
             %td= rollup[:total]
             %td.js-status
               - if rollup[:state] == "in_progress"
@@ -56,6 +73,16 @@
               - if has_targets
                 = link_to "Review & Optimize", svg_optimizer_review_path(community.id), class: "btn btn-primary"
 
+  -# Selection is per-page (paging is a normal navigation, so checkboxes don't
+  -# survive it). This banner is the cross-page escape hatch: it switches the
+  -# bulk request from "these checked ids" to "everything matching the current
+  -# filters", which the server re-resolves itself.
+  - if properties.total_pages > 1
+    #select-all-banner{style: "display:none", "data-total" => properties.total_entries}
+      %span#sab-text
+      %a{href: "#", id: "sab-all"}= "Select all #{properties.total_entries} properties matching these filters"
+      %a{href: "#", id: "sab-clear", style: "display:none"} Clear selection
+
   - if properties.total_pages > 1
     .pager
-      = will_paginate properties, params: { q: params[:q], company: params[:company], type: params[:type], beans: params[:beans], state: params[:state] }
+      = will_paginate properties, params: { q: params[:q], company: params[:company], type: params[:type], beans: params[:beans], state: params[:state], partner: params[:partner] }

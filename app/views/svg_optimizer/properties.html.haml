@@ -64,6 +64,37 @@
   .svgopt-p .pagination .disabled { color: #c3cad4; background: #fafbfc; border-color: #eef0f3; cursor: default; }
   .svgopt-p .pagination .gap { border: none; background: none; min-width: 0; padding: 0 2px; color: #9ca3af; letter-spacing: 1px; }
 
+  /* selection + bulk */
+  .svgopt-p th.cb, .svgopt-p td.cb { width: 34px; padding-left: 16px; padding-right: 0; }
+  .svgopt-p th.cb input, .svgopt-p td.cb input { width: 16px; height: 16px; cursor: pointer; margin: 0; display: block; }
+  .svgopt-p tbody tr.sel { background: #f5f8ff; }
+  .svgopt-p tbody tr.sel:hover { background: #eef3ff; }
+  .svgopt-p .ptag { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: #eef2ff; color: #3730a3; margin: 1px 3px 1px 0; white-space: nowrap; }
+
+  .svgopt-p #select-all-banner { background: #f8fafc; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px; padding: 10px 16px; font-size: 13px; color: #475569; text-align: center; }
+  .svgopt-p #select-all-banner a { color: #3558e8; font-weight: 600; text-decoration: none; margin-left: 6px; }
+  .svgopt-p #select-all-banner a:hover { text-decoration: underline; }
+
+  .svgopt-p .bulkbar { display: none; position: sticky; top: 10px; z-index: 60; margin: 0 0 16px; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 6px 24px rgba(0,0,0,0.12); padding: 14px 18px; }
+  .svgopt-p .bulkbar.on { display: block; }
+  .svgopt-p .bulkbar-inner { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .svgopt-p .bulkbar .bb-count { font-size: 13.5px; font-weight: 600; color: #111827; flex: 1; min-width: 220px; }
+  .svgopt-p .btn-danger { background: #fff; color: #b91c1c; border: 1px solid #fca5a5; }
+  .svgopt-p .btn-danger:hover { background: #fef2f2; }
+  .svgopt-p .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .svgopt-p .flash { display: none; margin: 0 0 16px; border-radius: 8px; padding: 12px 15px; font-size: 13.5px; line-height: 1.5; }
+  .svgopt-p .flash.on { display: block; }
+  .svgopt-p .flash.ok { background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; }
+  .svgopt-p .flash.err { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+
+  .svgopt-p .svgopt-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,17,21,0.55); z-index: 9998; align-items: flex-start; justify-content: center; padding: 60px 20px; overflow-y: auto; }
+  .svgopt-p .svgopt-modal-overlay.open { display: flex; }
+  .svgopt-p .svgopt-dialog { background: #fff; border-radius: 12px; max-width: 560px; width: 100%; padding: 26px 28px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+  .svgopt-p .svgopt-dialog h3 { margin: 0 0 6px; font-size: 19px; }
+  .svgopt-p .svgopt-dialog .warn { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; border-radius: 8px; padding: 12px 14px; font-size: 13px; line-height: 1.55; margin: 14px 0; }
+  .svgopt-p .svgopt-dialog .actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+
 .svgopt-p
   %h1 SVG Maps Optimizer
   %p.lede
@@ -83,20 +114,52 @@
       %option{value: ""} All Beans SVG
       %option{value: "true", selected: params[:beans] == "true"} Beans SVG: True
       %option{value: "false", selected: params[:beans] == "false"} Beans SVG: False
+    %select{name: "partner"}
+      %option{value: ""} All partners
+      %option{value: "any", selected: params[:partner] == "any"} Any partner
+      %option{value: "none", selected: params[:partner] == "none"} No partner
+      - Community::MAP_PARTNERS.each do |mp|
+        %option{value: mp[:key], selected: params[:partner] == mp[:key]}= mp[:label]
     %select{name: "state"}
       %option{value: ""} All statuses
       - %w[not_started partial done in_progress done_with_errors].each do |st|
         %option{value: st, selected: params[:state] == st}= svg_state_label(st)
     %span.spin#filter-spin
     -# Always rendered so the live toolbar can show/hide it without a reload.
-    - filtering = params[:q].present? || params[:company].present? || params[:type].present? || params[:beans].present? || params[:state].present?
+    - filtering = params[:q].present? || params[:company].present? || params[:type].present? || params[:beans].present? || params[:state].present? || params[:partner].present?
     %a.btn.btn-ghost#clear-filters{href: svg_optimizer_properties_path, style: ("display:none" unless filtering)} Clear
 
-  #results
+  .flash#bulk-flash
+
+  -# Bulk action bar — sticks to the top of the viewport as soon as anything is
+  -# selected, so the controls stay reachable while scrolling a long list.
+  .bulkbar#bulkbar
+    .bulkbar-inner
+      %span.bb-count#bb-count
+      %button.btn.btn-ghost{type: "button", id: "bb-clear"} Clear
+      %button.btn.btn-danger{type: "button", id: "bb-revert"} Revert selected
+      %button.btn.btn-primary{type: "button", id: "bb-optimize"} Optimize selected
+
+  #results{"data-bulk-url" => svg_optimizer_bulk_path}
     = render partial: "results", locals: { properties: @properties }
+
+  .svgopt-modal-overlay#bulk-modal
+    .svgopt-dialog
+      %h3#bm-title Optimize live SVG maps?
+      %p.muted#bm-scope
+      .warn#bm-warn
+        This replaces the <strong>live</strong> SVG files renters' maps load, across every selected
+        property. Each map is byte-verified-backed-up before it is written, so a Revert stays
+        available afterward. Properties already optimized, or with a run in progress, are skipped
+        automatically.
+      %p.muted It runs in the background — statuses on this page update as each map finishes.
+      .actions
+        %button.btn.btn-ghost{type: "button", id: "bm-cancel"} Cancel
+        %button.btn.btn-primary{type: "button", id: "bm-confirm"} Yes, optimize
 
 :javascript
   (function () {
+    var selectAllMatching = false;   // "every property matching the filters", not just this page
     var polling = {};      // communityId -> interval id
     var pollStart = {};
     var MAX_POLL_MS = 10 * 60 * 1000;
@@ -167,27 +230,39 @@
       return qs ? "?" + qs : "";
     }
 
-    function applyFilters(push) {
-      var query = currentQuery();
-      if (query === lastQuery) return;
-      lastQuery = query;
-
+    function fetchResults(query, push) {
       if (inFlight) inFlight.abort();
       inFlight = new AbortController();
       spinner.classList.add("on");
 
-      fetch(form.action + query, { signal: inFlight.signal, headers: { "X-Requested-With": "XMLHttpRequest" } })
+      return fetch(form.action + query, { signal: inFlight.signal, headers: { "X-Requested-With": "XMLHttpRequest" } })
         .then(function (res) { return res.text(); })
         .then(function (html) {
           stopAllPolling();
           results.innerHTML = html;
           watchInProgressRows();
           syncClearButton();
+          // The rows are new elements, so every checkbox is gone — the
+          // "all matching" flag has to drop with them or it would silently
+          // outlive the filter set it was chosen against.
+          selectAllMatching = false;
+          syncSelection();
           if (push) history.replaceState(null, "", query || window.location.pathname);
         })
         .catch(function (e) { if (e.name !== "AbortError") window.location.search = query; })
         .finally(function () { spinner.classList.remove("on"); inFlight = null; });
     }
+
+    function applyFilters(push) {
+      var query = currentQuery();
+      if (query === lastQuery) return;
+      lastQuery = query;
+      fetchResults(query, push);
+    }
+
+    // Unconditional re-fetch — used after a bulk trigger, where the query is
+    // unchanged but the statuses behind it are not.
+    function reloadResults() { fetchResults(currentQuery(), false); }
 
     function syncClearButton() {
       var clear = document.getElementById("clear-filters");
@@ -213,6 +288,182 @@
       });
     }
 
+    // ---- bulk selection --------------------------------------------------
+    // Selection itself lives in the DOM (which boxes are checked), so it resets
+    // naturally whenever the results fragment is swapped. selectAllMatching is
+    // the only piece of selection state that spans pages: rather than shipping
+    // thousands of ids the page never rendered, it tells the server to
+    // re-resolve the whole filtered set from the same filter params.
+    var bulkBar = document.getElementById("bulkbar");
+    var bbCount = document.getElementById("bb-count");
+    var flash = document.getElementById("bulk-flash");
+    var bulkUrl = results.getAttribute("data-bulk-url");
+    var csrf = document.querySelector('meta[name="csrf-token"]').content;
+
+    function rowBoxes() { return Array.prototype.slice.call(results.querySelectorAll(".js-row-cb")); }
+    function checkedIds() {
+      return rowBoxes().filter(function (b) { return b.checked; })
+                       .map(function (b) { return parseInt(b.value, 10); });
+    }
+    function bannerTotal() {
+      var b = document.getElementById("select-all-banner");
+      return b ? parseInt(b.getAttribute("data-total"), 10) : rowBoxes().length;
+    }
+
+    function syncSelection() {
+      var boxes = rowBoxes();
+      var n = boxes.filter(function (b) { return b.checked; }).length;
+
+      boxes.forEach(function (b) { b.closest("tr").classList.toggle("sel", b.checked); });
+
+      var page = document.getElementById("select-page");
+      if (page) {
+        page.checked = boxes.length > 0 && n === boxes.length;
+        page.indeterminate = n > 0 && n < boxes.length;
+      }
+
+      var banner = document.getElementById("select-all-banner");
+      if (banner) {
+        var allOnPage = boxes.length > 0 && n === boxes.length;
+        banner.style.display = (allOnPage || selectAllMatching) ? "" : "none";
+        var text = document.getElementById("sab-text");
+        var all = document.getElementById("sab-all");
+        var clear = document.getElementById("sab-clear");
+        if (selectAllMatching) {
+          text.textContent = "All " + bannerTotal() + " properties matching these filters are selected.";
+          all.style.display = "none";
+          clear.style.display = "";
+        } else {
+          text.textContent = "All " + n + " properties on this page are selected.";
+          all.style.display = "";
+          clear.style.display = "none";
+        }
+      }
+
+      var total = selectAllMatching ? bannerTotal() : n;
+      if (total > 0) {
+        bulkBar.classList.add("on");
+        bbCount.textContent = selectAllMatching
+          ? "All " + total + " properties matching these filters selected"
+          : total + (total === 1 ? " property selected" : " properties selected");
+      } else {
+        bulkBar.classList.remove("on");
+      }
+    }
+
+    function clearSelection() {
+      selectAllMatching = false;
+      rowBoxes().forEach(function (b) { b.checked = false; });
+      syncSelection();
+    }
+
+    // Delegated, because every row is replaced on each filter keystroke.
+    results.addEventListener("change", function (e) {
+      if (e.target.id === "select-page") {
+        var on = e.target.checked;
+        rowBoxes().forEach(function (b) { b.checked = on; });
+        selectAllMatching = false;
+        syncSelection();
+      } else if (e.target.classList.contains("js-row-cb")) {
+        selectAllMatching = false;
+        syncSelection();
+      }
+    });
+
+    results.addEventListener("click", function (e) {
+      if (e.target.id === "sab-all") {
+        e.preventDefault();
+        selectAllMatching = true;
+        syncSelection();
+      } else if (e.target.id === "sab-clear") {
+        e.preventDefault();
+        clearSelection();
+      }
+    });
+
+    document.getElementById("bb-clear").addEventListener("click", clearSelection);
+
+    // ---- bulk confirm + trigger ------------------------------------------
+    var modal = document.getElementById("bulk-modal");
+    var bmTitle = document.getElementById("bm-title");
+    var bmScope = document.getElementById("bm-scope");
+    var bmConfirm = document.getElementById("bm-confirm");
+    var bmCancel = document.getElementById("bm-cancel");
+    var pendingAction = null;
+
+    function openModal(action) {
+      pendingAction = action;
+      var n = selectAllMatching ? bannerTotal() : checkedIds().length;
+      if (n === 0) return;
+      var noun = n === 1 ? "property" : "properties";
+
+      if (action === "optimize") {
+        bmTitle.textContent = "Optimize live SVG maps?";
+        bmConfirm.textContent = "Yes, optimize";
+        bmConfirm.className = "btn btn-primary";
+        bmScope.textContent = "Every map still on its original file, across " + n + " " + noun + ", will be rewritten.";
+      } else {
+        bmTitle.textContent = "Revert these properties to their originals?";
+        bmConfirm.textContent = "Yes, revert";
+        bmConfirm.className = "btn btn-danger";
+        bmScope.textContent = "Every currently-optimized map across " + n + " " + noun + " will be restored from its backup.";
+      }
+      modal.classList.add("open");
+    }
+    function closeModal() { modal.classList.remove("open"); }
+
+    bmCancel.addEventListener("click", closeModal);
+    modal.addEventListener("click", function (e) { if (e.target === modal) closeModal(); });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeModal(); });
+
+    document.getElementById("bb-optimize").addEventListener("click", function () { openModal("optimize"); });
+    document.getElementById("bb-revert").addEventListener("click", function () { openModal("revert"); });
+
+    function showFlash(kind, msg) {
+      flash.className = "flash on " + kind;
+      flash.textContent = msg;
+    }
+
+    // The current filter state, sent verbatim so the server resolves exactly
+    // the set the operator is looking at.
+    function filterParams() {
+      var out = {};
+      new URLSearchParams(new FormData(form)).forEach(function (v, k) { if (v) out[k] = v; });
+      return out;
+    }
+
+    bmConfirm.addEventListener("click", function () {
+      var body = { bulk_action: pendingAction, confirmed: true };
+      if (selectAllMatching) {
+        body.select_all_matching = true;
+        Object.keys(filterParams()).forEach(function (k) { body[k] = filterParams()[k]; });
+      } else {
+        body.community_ids = checkedIds();
+        if (body.community_ids.length === 0) { closeModal(); return; }
+      }
+
+      bmConfirm.disabled = true;
+      fetch(bulkUrl, {
+        method: "POST",
+        headers: { "X-CSRF-Token": csrf, "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          closeModal();
+          if (data.success) {
+            showFlash("ok", data.message);
+            clearSelection();
+            reloadResults();
+          } else {
+            showFlash("err", data.message || "Could not start the bulk run.");
+          }
+        })
+        .catch(function () { closeModal(); showFlash("err", "Could not reach the server."); })
+        .finally(function () { bmConfirm.disabled = false; });
+    });
+
     watchInProgressRows();
     syncClearButton();
+    syncSelection();
   })();

@@ -14,6 +14,14 @@ class SvgOptimizerController < ApplicationController
 
   PER_PAGE = 50
 
+  # A bulk trigger fans out to one SvgOptimizationWorker per MAP, and a property
+  # can hold many maps — so the community list is chunked into several
+  # SvgBulkOptimizationWorker jobs instead of one job looping thousands of
+  # properties, and capped outright. Past the cap the honest answer is "narrow
+  # the filter", not "silently enqueue an unbounded batch".
+  BULK_CHUNK = 100
+  MAX_BULK_COMMUNITIES = 1000
+
   # Lists every community eligible to be touched (enable_svg_mode AND at least
   # one real SVG — a Floorplate/Sitemap svg_image, or a Beans property's
   # background_svg_image), each with a rolled-up optimization status.
@@ -202,37 +210,56 @@ class SvgOptimizerController < ApplicationController
     render_error("Property not found.", status: :not_found)
   end
 
+  # Bulk trigger for MANY properties at once — the list-page counterpart of the
+  # per-property review screen. Takes either an explicit set of checked
+  # community ids, or select_all_matching + the current filter params (so
+  # "filter by partner, select all, optimize" works across every page of
+  # results, not just the 50 rows on screen).
+  #
+  # Like the per-property trigger this only enqueues: SvgBulkOptimizationWorker
+  # re-applies every eligibility guard per community, then SvgOptimizationWorker
+  # does the actual backup/verify/write for each map. Nothing here writes.
+  def bulk
+    bulk_action = params[:bulk_action].presence || "optimize"
+    unless SvgBulkOptimizationWorker::ACTIONS.include?(bulk_action)
+      return render_error("Unknown bulk action.")
+    end
+    unless truthy?(params[:confirmed])
+      return render_error("Please confirm you understand this replaces the live SVG files.")
+    end
+
+    ids = bulk_community_ids
+    if ids.empty?
+      return render_error(
+        truthy?(params[:select_all_matching]) ? "No eligible properties match the current filters." : "No properties selected."
+      )
+    end
+    if ids.size > MAX_BULK_COMMUNITIES
+      return render_error("That's #{ids.size} properties — more than the #{MAX_BULK_COMMUNITIES} limit for one batch. Narrow the filter and run it in stages.")
+    end
+
+    batches = ids.each_slice(BULK_CHUNK).map do |chunk|
+      SvgBulkOptimizationWorker.perform_async(chunk, bulk_action, current_user.id)
+    end
+
+    verb = bulk_action == "optimize" ? "Optimizing" : "Reverting"
+    render json: {
+      success: true,
+      communities: ids.size,
+      batches: batches.size,
+      message: "#{verb} #{ids.size} #{'property'.pluralize(ids.size)} in the background. Statuses update here as each map finishes."
+    }
+  end
+
   private
 
-  # Communities that could have a real embedded background to optimize:
-  # enable_svg_mode on, AND at least one target with a non-blank SVG.
-  # is_sitemap properties are matched via their sitemap; the rest via their
-  # floorplates; Beans properties also via their own shared background map,
-  # which alone makes a property worth listing.
-  #
-  # Written as EXISTS subqueries rather than three id plucks so the database
-  # does the filtering: this stays one query, and the result is a relation the
-  # caller can still filter, order and paginate instead of a materialised id
-  # list that grows with the property count.
+  # Which properties are in scope, which maps a property has, what may be done
+  # to each right now, and how runs get created — all live in
+  # SvgOptimizerTargets, shared verbatim with SvgBulkOptimizationWorker. These
+  # thin delegations exist so there is never a second copy of a guard that
+  # could let a bulk run write where this screen correctly refuses to.
   def eligible_communities
-    Community.where(enable_svg_mode: true).where(<<~SQL.squish)
-      (
-        communities.is_sitemap = TRUE AND EXISTS (
-          SELECT 1 FROM sitemaps
-          WHERE sitemaps.community_id = communities.id
-            AND COALESCE(sitemaps.svg_image, '') <> ''
-        )
-      ) OR (
-        communities.is_sitemap = FALSE AND EXISTS (
-          SELECT 1 FROM floorplates
-          WHERE floorplates.community_id = communities.id
-            AND COALESCE(floorplates.svg_image, '') <> ''
-        )
-      ) OR (
-        communities.is_beans_svg = TRUE
-          AND COALESCE(communities.background_svg_image, '') <> ''
-      )
-    SQL
+    SvgOptimizerTargets.eligible_communities
   end
 
   # The eligible set narrowed by the toolbar's SQL-side filters, ordered
@@ -256,6 +283,7 @@ class SvgOptimizerController < ApplicationController
     when "true"  then scope = scope.where(is_beans_svg: true)
     when "false" then scope = scope.where(is_beans_svg: [false, nil]) # column is nullable on older rows
     end
+    scope = apply_partner_filter(scope)
 
     scope.order(:name, :id)
   end
@@ -299,33 +327,12 @@ class SvgOptimizerController < ApplicationController
     end
   end
 
-  # Creates a queued run + enqueues a worker for each spec
-  # ({ target:, action:, reverts_run: }). Returns the created run ids.
   def enqueue_runs(community, specs)
-    specs.map do |spec|
-      run = SvgOptimizationRun.create!(
-        community: community,
-        target: spec[:target],
-        action: spec[:action],
-        status: "queued",
-        reverts_run: spec[:reverts_run],
-        triggered_by_user_id: current_user.id
-      )
-      SvgOptimizationWorker.perform_async(run.id)
-      run.id
-    end
+    SvgOptimizerTargets.enqueue_runs(community, specs, triggered_by_user_id: current_user.id)
   end
 
-  # True only when the live file is STILL the optimized output `run` produced —
-  # i.e. the map is currently in an OPTIMIZED state, so it can be reverted and
-  # must NOT be re-optimized. It becomes false the moment the live file stops
-  # matching that run's resulting_url, which happens on a revert OR on a fresh
-  # CMS re-upload of the floorplate/sitemap — either way the map is back on an
-  # original/fresh file and is optimizable again (and reverting an old backup
-  # over a new CMS file is correctly refused).
   def optimized_now?(run, target)
-    return false unless run && run.action == "optimize" && run.status == "uploaded" && run.backup_url.present?
-    run.resulting_url.blank? || target.optimizable_svg.url == run.resulting_url
+    SvgOptimizerTargets.optimized_now?(run, target)
   end
 
   # Resolves a single target from request params, scoped to the community so
@@ -338,29 +345,12 @@ class SvgOptimizerController < ApplicationController
     end
   end
 
-  # Every record whose SVG this property's live map is assembled from: the
-  # Beans background map (the shared base layer, when the property has one)
-  # first, then the interactive sitemap/floorplate overlay(s) on top.
-  # Filters the floorplates in Ruby rather than SQL so a preloaded association
-  # (the list page loads them all in one query) isn't thrown away by a fresh
-  # per-property WHERE. `read_attribute` matches the old SQL exactly: the
-  # column is set and non-empty.
   def resolve_targets(community)
-    overlays =
-      if community.is_sitemap?
-        sm = community.sitemap
-        sm && sm.svg_image.present? ? [sm] : []
-      else
-        community.floorplates.select { |fp| fp.read_attribute(:svg_image).present? }
-      end
-
-    [beans_background_target(community), *overlays].compact
+    SvgOptimizerTargets.resolve_targets(community)
   end
 
-  # The community itself is the target for a Beans property's background map —
-  # the file lives on Community#background_svg_image (see SvgOptimizableMap).
   def beans_background_target(community)
-    community if community.is_beans_svg? && community.background_svg_image.present?
+    SvgOptimizerTargets.beans_background_target(community)
   end
 
   def build_property_row(community, latest = latest_by_target(community))
@@ -408,32 +398,15 @@ class SvgOptimizerController < ApplicationController
   end
 
   def latest_by_target(community)
-    latest_by_targets([community])
+    SvgOptimizerTargets.latest_by_target(community)
   end
 
-  # Latest run per target across MANY communities in one query. A target is
-  # identified globally by [target_type, target_id], so one map keyed that way
-  # serves every property on the page — which is what keeps the list from
-  # issuing a runs query per property.
   def latest_by_targets(communities)
-    community_ids = communities.map(&:id)
-    return {} if community_ids.empty?
-
-    SvgOptimizationRun
-      .latest_per_target(SvgOptimizationRun.where(community_id: community_ids))
-      .index_by { |r| [r.target_type, r.target_id] }
+    SvgOptimizerTargets.latest_by_targets(communities)
   end
 
-  # Any queued/running/verified run on one of these targets means a worker may
-  # be mid-write — block a second trigger to prevent two workers racing.
   def targets_busy?(community, targets)
-    return false if targets.empty?
-    keys = targets.map { |t| [t.class.name, t.id] }
-    SvgOptimizationRun
-      .for_community(community)
-      .where(status: SvgOptimizationRun::IN_PROGRESS_STATUSES)
-      .where(target_type: keys.map(&:first), target_id: keys.map(&:last))
-      .exists?
+    SvgOptimizerTargets.targets_busy?(community, targets)
   end
 
   def target_status_json(target, run)
@@ -473,4 +446,58 @@ class SvgOptimizerController < ApplicationController
       end
     end
   end
+
+  # Partner filter — "any" means enrolled with at least one partner, otherwise
+  # a specific partner key. Partner enrollment lives in
+  # communities.partner_map_settings (see Community::MAP_PARTNERS), the same
+  # source the Partner Configuration screen reads.
+  def apply_partner_filter(scope)
+    case params[:partner]
+    when nil, "" then scope
+    when "any"   then scope.with_any_partner
+    when "none"  then scope.where.not(id: Community.with_any_partner.select(:id))
+    else
+      Community::MAP_PARTNER_KEYS.include?(params[:partner]) ? scope.for_partner(params[:partner]) : scope
+    end
+  end
+
+  # The community ids a bulk trigger should act on. Explicit ids are always
+  # re-scoped through eligible_communities, so a hand-crafted request can't
+  # aim the tool at a property the list would never show.
+  def bulk_community_ids
+    if truthy?(params[:select_all_matching])
+      matching_community_ids
+    else
+      explicit = Array(params[:community_ids]).map(&:to_i).reject(&:zero?).uniq
+      return [] if explicit.empty?
+      eligible_communities.where(id: explicit).pluck(:id)
+    end
+  end
+
+  # Every community matching the CURRENT filters, across all pages. The status
+  # filter is computed in Ruby (see paginated_property_rows), so it can only be
+  # applied after the rows are built.
+  #
+  # filtered_communities carries `includes(:company, :sitemap, :floorplates)`,
+  # and because its WHERE references those tables Rails eager-loads them as a
+  # LEFT JOIN — so plucking ids straight off it returns one row PER FLOORPLATE,
+  # not per property. `.to_a` de-duplicates records but `.pluck` does not, so
+  # the joins are dropped here and the ids de-duplicated explicitly. Getting
+  # this wrong silently inflates both the count shown to the operator and the
+  # MAX_BULK_COMMUNITIES check.
+  def matching_community_ids
+    if params[:state].present?
+      build_property_rows(filtered_communities.to_a)
+        .select { |row| row[:rollup][:state] == params[:state] }
+        .map { |row| row[:community].id }
+        .uniq
+    else
+      filtered_communities
+        .except(:includes, :eager_load, :preload)
+        .reorder(:id)
+        .distinct
+        .pluck(:id)
+    end
+  end
+
 end
