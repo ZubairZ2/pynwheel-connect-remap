@@ -26,11 +26,20 @@ class SvgOptimizerController < ApplicationController
   # as finished-with-nothing-to-do rather than still starting up.
   BULK_STATUS_GRACE = 2.minutes
 
+  # A batch marker older than this is abandoned. Without it a batch whose runs
+  # never settle (Sidekiq down, rows stuck `queued`) would leave every page
+  # load polling forever.
+  BULK_STATUS_MAX_AGE = 1.hour
+
   # Lists every community eligible to be touched (enable_svg_mode AND at least
   # one real SVG — a Floorplate/Sitemap svg_image, or a Beans property's
   # background_svg_image), each with a rolled-up optimization status.
   def properties
     @properties = paginated_property_rows(filtered_communities)
+    # Drives whether the page polls at all. With no batch in the session it
+    # never issues a single status request — the list page must cost exactly
+    # one request, as it did before bulk existed.
+    @bulk_batch_active = session[:svg_bulk_started_at].present?
 
     # The live toolbar re-requests this action on every keystroke; sending back
     # just the results fragment keeps it off the page chrome (layout + sidebar).
@@ -289,7 +298,7 @@ class SvgOptimizerController < ApplicationController
     rescue StandardError
       nil
     end
-    if t0.nil?
+    if t0.nil? || t0 < BULK_STATUS_MAX_AGE.ago
       session.delete(:svg_bulk_started_at)
       return render json: { success: true, active: false }
     end
@@ -319,7 +328,8 @@ class SvgOptimizerController < ApplicationController
       uploaded: counts["uploaded"].to_i,
       skipped: counts["skipped"].to_i,
       failed: counts["failed"].to_i,
-      finished: in_progress.zero?
+      finished: in_progress.zero?,
+      rows: visible_rollups
     }
   end
 
@@ -569,6 +579,29 @@ class SvgOptimizerController < ApplicationController
         .reorder(:id)
         .distinct
         .pluck(:id)
+    end
+  end
+
+
+  # Rollups for the rows currently on screen, returned inside the batch poll.
+  #
+  # This exists so a live batch costs ONE request per tick. Refreshing rows by
+  # calling the per-property status endpoint once per row meant up to PER_PAGE
+  # authenticated requests every few seconds, which saturates a dyno's thread
+  # pool and queues every other request behind it — including the next page
+  # load. The client sends the ids it is displaying; the count is capped here
+  # regardless of what it sends.
+  def visible_rollups
+    ids = params[:ids].to_s.split(",").map(&:to_i).reject(&:zero?).uniq.first(PER_PAGE)
+    return {} if ids.empty?
+
+    communities = eligible_communities.where(id: ids).includes(:sitemap, :floorplates).to_a
+    return {} if communities.empty?
+
+    latest = SvgOptimizerTargets.latest_by_targets(communities)
+    communities.each_with_object({}) do |community, out|
+      targets = SvgOptimizerTargets.resolve_targets(community)
+      out[community.id] = property_rollup(community, targets, latest)
     end
   end
 

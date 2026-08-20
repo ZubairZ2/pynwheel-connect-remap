@@ -145,7 +145,7 @@
   .flash#bulk-flash
 
   -# Batch progress, aggregated out of svg_optimization_runs — no batch table.
-  .bulkprog#bulk-progress{"data-url" => svg_optimizer_bulk_status_path}
+  .bulkprog#bulk-progress{"data-url" => svg_optimizer_bulk_status_path, "data-active" => (@bulk_batch_active ? "true" : "false")}
     .bp-head
       %span.bp-title#bp-title
       %button.bp-dismiss#bp-dismiss{type: "button", title: "Dismiss"} ×
@@ -503,10 +503,27 @@
     var bpMeta = document.getElementById("bp-meta");
     var bulkStatusUrl = progress.getAttribute("data-url");
     var batchTimer = null;
+    var batchStart = 0;
     var BATCH_TICK_MS = 3000;
+    var MAX_BATCH_WATCH_MS = 10 * 60 * 1000;
 
-    function refreshAllRows() {
-      document.querySelectorAll("tr[data-community-id]").forEach(function (rowEl) { refresh(rowEl); });
+    // The ids currently on screen. Sent with the batch poll so ONE response can
+    // update every row — never one request per row, which floods the server.
+    function visibleIds() {
+      return Array.prototype.slice
+        .call(document.querySelectorAll("tr[data-community-id]"))
+        .map(function (r) { return r.getAttribute("data-community-id"); });
+    }
+
+    // Applies the rollups that came back with the batch poll. No extra fetches.
+    function applyRowRollups(rows) {
+      if (!rows) return;
+      Object.keys(rows).forEach(function (id) {
+        var rowEl = document.querySelector("tr[data-community-id='" + id + "']");
+        if (!rowEl) return;
+        var cell = rowEl.querySelector(".js-status");
+        if (cell) cell.innerHTML = statusHtml(rows[id]);
+      });
     }
 
     function renderProgress(d) {
@@ -539,23 +556,29 @@
     }
 
     function pollBatch() {
-      return fetch(bulkStatusUrl, { headers: { "X-Requested-With": "XMLHttpRequest" } })
+      var url = bulkStatusUrl + "?ids=" + encodeURIComponent(visibleIds().join(","));
+      return fetch(url, { headers: { "X-Requested-With": "XMLHttpRequest" } })
         .then(function (res) { return res.json(); })
         .then(function (d) {
           if (!d.success) return;
           if (!d.active) { stopBatchWatch(); progress.classList.remove("on"); return; }
 
           renderProgress(d);
-          refreshAllRows();
+          applyRowRollups(d.rows);
           if (d.finished) stopBatchWatch();   // panel stays until dismissed
         })
-        .catch(function () {});
+        .catch(function () { stopBatchWatch(); });
     }
 
     function startBatchWatch() {
       if (batchTimer) return;
+      batchStart = Date.now();
       pollBatch();
-      batchTimer = setInterval(pollBatch, BATCH_TICK_MS);
+      batchTimer = setInterval(function () {
+        // Hard stop, so a batch whose runs never settle can't poll forever.
+        if (Date.now() - batchStart > MAX_BATCH_WATCH_MS) { stopBatchWatch(); return; }
+        pollBatch();
+      }, BATCH_TICK_MS);
     }
     function stopBatchWatch() {
       if (batchTimer) { clearInterval(batchTimer); batchTimer = null; }
@@ -570,6 +593,8 @@
     watchInProgressRows();
     syncClearButton();
     syncSelection();
-    // Resume a batch that is still running from a previous page load / refresh.
-    pollBatch().then(function () { if (progress.classList.contains("on")) startBatchWatch(); });
+    // Resume a running batch after a reload — but ONLY when the server already
+    // told us one exists. With no batch this page issues no status requests at
+    // all, so an ordinary load or a pagination click costs exactly one request.
+    if (progress.getAttribute("data-active") === "true") startBatchWatch();
   })();

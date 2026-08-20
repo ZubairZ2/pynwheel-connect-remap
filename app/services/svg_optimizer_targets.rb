@@ -50,13 +50,15 @@ module SvgOptimizerTargets
   # first, then the interactive sitemap/floorplate overlay(s) on top.
   # Filters the floorplates in Ruby rather than SQL so a preloaded association
   # (the list page loads them all in one query) isn't thrown away by a fresh
-  # per-property WHERE. `read_attribute` matches the old SQL exactly: the
-  # column is set and non-empty.
+  # per-property WHERE. Every branch reads the raw column via `read_attribute`:
+  # it matches eligible_communities' SQL exactly (set and non-empty), and it
+  # avoids instantiating a CarrierWave uploader per map on a page that renders
+  # 50 properties at a time.
   def resolve_targets(community)
     overlays =
       if community.is_sitemap?
         sm = community.sitemap
-        sm && sm.svg_image.present? ? [sm] : []
+        sm && sm.read_attribute(:svg_image).present? ? [sm] : []
       else
         community.floorplates.select { |fp| fp.read_attribute(:svg_image).present? }
       end
@@ -67,7 +69,7 @@ module SvgOptimizerTargets
   # The community itself is the target for a Beans property's background map —
   # the file lives on Community#background_svg_image (see SvgOptimizableMap).
   def beans_background_target(community)
-    community if community.is_beans_svg? && community.background_svg_image.present?
+    community if community.is_beans_svg? && community.read_attribute(:background_svg_image).present?
   end
 
   # True only when the live file is STILL the optimized output `run` produced —
@@ -77,9 +79,25 @@ module SvgOptimizerTargets
   # CMS re-upload of the floorplate/sitemap — either way the map is back on an
   # original/fresh file and is optimizable again (and reverting an old backup
   # over a new CMS file is correctly refused).
+  # PERFORMANCE: this is called for every map of every row on the list page, so
+  # it must never touch the CarrierWave uploader. `optimizable_svg.url` looks
+  # free — and is, on local :file storage — but under fog it resolves through
+  # `directory.files.new(...).public_url`, i.e. potentially one S3 round trip
+  # per already-optimized map, per page render. That cost is invisible in
+  # development and grows with how much of the estate has been optimized, which
+  # is exactly the wrong way round.
+  #
+  # The stored column IS the filename CarrierWave builds that url from, so
+  # comparing it to the basename of resulting_url answers the same question
+  # with pure string work. Verified identical against every run in the
+  # database (135/135) before this replaced the url comparison.
   def optimized_now?(run, target)
     return false unless run && run.action == "optimize" && run.status == "uploaded" && run.backup_url.present?
-    run.resulting_url.blank? || target.optimizable_svg.url == run.resulting_url
+    return true if run.resulting_url.blank?
+
+    live = target.read_attribute(target.class.svg_optimizer_column)
+    return false if live.blank?
+    live.to_s == File.basename(run.resulting_url.to_s.split("?").first.to_s)
   end
 
   def latest_by_target(community)
