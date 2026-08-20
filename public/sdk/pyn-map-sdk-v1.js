@@ -898,14 +898,10 @@
       if (this.config.defaultSatelliteView === null) this.config.defaultSatelliteView = cfg3d?.defaultSatelliteView === true;
     },
 
-    // Fields the server adds to a base unit so it can answer for its whole
-    // apartment (SdkPayloadBuilderService::ROLLUP_KEYS). They describe the group,
-    // so they are stripped when a single bedroom is lifted back out of it.
-    _ROLLUP_KEYS: [
-      "spaceCount", "availableSpaceCount", "availabilityBuckets",
-      "priceMin", "priceMax", "sqftMin", "sqftMax",
-      "unitStatuses", "mixedStatus", "hasFavoriteSpace"
-    ],
+    // The position a space does not carry, because it belongs to the door it is
+    // drawn on (SdkPayloadBuilderService::SPACE_NEVER_KEYS). getUnitSpaces puts
+    // these back so a caller still receives a complete unit.
+    _POSITION_KEYS: ["x_plot", "y_plot", "pointerData", "mapId", "floor"],
 
     _indexUnits() {
       this.unitsByMap             = {};
@@ -913,37 +909,29 @@
       this.unitsByPointerIdByMap  = {};
 
       // Student housing (property.unitGrouping.mode === "spaces"): data.units
-      // holds one base unit per plotted position, and the leasable bedrooms ride
-      // inside it under `spaces`. A space carries only the fields that differ
-      // between bedrooms, so it is merged onto its base HERE — once, at index
-      // time — and every consumer above the SDK receives a complete unit object,
-      // never learning that a space was a partial record.
+      // holds one unit per plotted position — a door — and the leasable bedrooms
+      // ride inside it under `spaces`, each already a whole unit bar the position.
       //
-      // Merging eagerly rather than per call is deliberate: the modal's bedroom
-      // switcher, the favorites scan and the units list all read this on the hot
-      // path and would otherwise re-merge the same apartment repeatedly.
-      this.spacesByBaseId  = {};   // base unit id -> [complete unit, ...]
-      this.baseIdBySpaceId = {};   // any unit id  -> id of the unit actually drawn
+      // The two tables below copy nothing: ids map to ids, and ids map to objects
+      // already living in this.data.units. An earlier version eagerly merged
+      // every space into a second array, which held the units payload twice in
+      // memory for the sake of five position keys.
+      this.unitById        = {};   // any unit id -> the door object in data.units
+      this.baseIdBySpaceId = {};   // any unit id -> id of the unit actually drawn
 
       (this.data.units || []).forEach(u => {
         const baseId = String(u.unitId);
+        this.unitById[baseId]        = u;
         this.baseIdBySpaceId[baseId] = baseId;
 
-        const spaces = Array.isArray(u.spaces) ? u.spaces : null;
-        if (!spaces || spaces.length < 2) return;
+        if (Array.isArray(u.spaces)) {
+          u.spaces.forEach(space => {
+            const spaceId = String(space.unitId);
+            this.unitById[spaceId]        = u;
+            this.baseIdBySpaceId[spaceId] = baseId;
+          });
+        }
 
-        this.spacesByBaseId[baseId] = spaces.map(space => {
-          this.baseIdBySpaceId[String(space.unitId)] = baseId;
-          // `spaces` and the group-level rollups describe the apartment, not the
-          // bedroom, so they are dropped rather than carried onto every space.
-          const merged = Object.assign({}, u, space);
-          delete merged.spaces;
-          this._ROLLUP_KEYS.forEach(k => delete merged[k]);
-          return merged;
-        });
-      });
-
-      (this.data.units || []).forEach(u => {
         const mapId = String(u.mapId);
         if (!this.unitsByMap[mapId])             this.unitsByMap[mapId]             = [];
         if (!this.pointerIdsByMap[mapId])        this.pointerIdsByMap[mapId]        = [];
@@ -1578,23 +1566,31 @@
      * so callers can render a switcher on a plain truthy check.
      */
     getUnitSpaces(unitId) {
-      if (unitId == null) return [];
-      const baseId = this.baseIdBySpaceId?.[String(unitId)];
-      return (baseId && this.spacesByBaseId?.[baseId]) || [];
+      const door   = this.getBaseUnit(unitId);
+      const spaces = door && Array.isArray(door.spaces) ? door.spaces : null;
+      if (!spaces) return [];
+
+      // No network call and no second copy of the payload: the bedrooms are
+      // already in `door.spaces`, whole but for the position they share with the
+      // door. That position is put back here, on demand, for the one apartment
+      // being asked about.
+      const position = {};
+      this._POSITION_KEYS.forEach(key => { position[key] = door[key]; });
+
+      return spaces.map(space => Object.assign({}, space, position));
     },
 
     /**
      * The unit actually drawn on the map for the given id — itself for a
-     * conventional unit, the apartment's base unit for a bedroom id.
+     * conventional unit, the door for a bedroom id.
      *
      * Anything that has to reach the map from an id that came back from outside
      * the SDK (a deep link, a saved favorite, an analytics event) goes through
-     * here; a bedroom has no plot data of its own and would resolve to nothing.
+     * here; a bedroom has no position of its own and would resolve to nothing.
      */
     getBaseUnit(unitId) {
       if (unitId == null) return null;
-      const baseId = this.baseIdBySpaceId?.[String(unitId)] ?? String(unitId);
-      return (this.data.units || []).find(u => String(u.unitId) === baseId) || null;
+      return this.unitById?.[String(unitId)] || null;
     },
 
     /**
@@ -3842,7 +3838,14 @@
       const units = this.data.units || [];
       if (!this.isGroupedProperty()) return units;
 
-      return units.reduce((out, u) => out.concat(this._spacesOrSelf(u)), []);
+      // Reads `spaces` straight off each door rather than going through
+      // getUnitSpaces: hydration only looks at unitId and isFavorite, so
+      // rebuilding every bedroom with its door's position would allocate a copy
+      // of the whole payload to read two fields.
+      return units.reduce(
+        (out, u) => out.concat(Array.isArray(u.spaces) ? u.spaces : [u]),
+        []
+      );
     },
 
     // A unit's bedrooms, or the unit itself when it has none. Note the explicit
