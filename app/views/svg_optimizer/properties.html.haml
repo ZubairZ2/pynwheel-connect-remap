@@ -88,6 +88,19 @@
   .svgopt-p .flash.ok { background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; }
   .svgopt-p .flash.err { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
 
+  .svgopt-p .bulkprog { display: none; margin: 0 0 16px; background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .svgopt-p .bulkprog.on { display: block; }
+  .svgopt-p .bp-head { display: flex; align-items: center; gap: 12px; }
+  .svgopt-p .bp-title { font-size: 13.5px; font-weight: 600; color: #111827; flex: 1; }
+  .svgopt-p .bp-dismiss { border: none; background: none; color: #9ca3af; font-size: 20px; line-height: 1; cursor: pointer; padding: 0 4px; }
+  .svgopt-p .bp-dismiss:hover { color: #4b5563; }
+  .svgopt-p .bp-bar { height: 6px; background: #eef1f5; border-radius: 4px; overflow: hidden; margin: 10px 0 8px; }
+  .svgopt-p .bp-fill { height: 100%; width: 0; background: #3558e8; border-radius: 4px; transition: width 0.35s ease; }
+  .svgopt-p .bulkprog.done .bp-fill { background: #16a34a; }
+  .svgopt-p .bp-meta { font-size: 12.5px; color: #6b7280; }
+  .svgopt-p .bp-meta .warnct { color: #b45309; font-weight: 600; }
+  .svgopt-p .bp-meta .failct { color: #b91c1c; font-weight: 600; }
+
   .svgopt-p .svgopt-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,17,21,0.55); z-index: 9998; align-items: flex-start; justify-content: center; padding: 60px 20px; overflow-y: auto; }
   .svgopt-p .svgopt-modal-overlay.open { display: flex; }
   .svgopt-p .svgopt-dialog { background: #fff; border-radius: 12px; max-width: 560px; width: 100%; padding: 26px 28px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
@@ -130,6 +143,15 @@
     %a.btn.btn-ghost#clear-filters{href: svg_optimizer_properties_path, style: ("display:none" unless filtering)} Clear
 
   .flash#bulk-flash
+
+  -# Batch progress, aggregated out of svg_optimization_runs — no batch table.
+  .bulkprog#bulk-progress{"data-url" => svg_optimizer_bulk_status_path}
+    .bp-head
+      %span.bp-title#bp-title
+      %button.bp-dismiss#bp-dismiss{type: "button", title: "Dismiss"} ×
+    .bp-bar
+      .bp-fill#bp-fill
+    .bp-meta#bp-meta
 
   -# Bulk action bar — sticks to the top of the viewport as soon as anything is
   -# selected, so the controls stay reachable while scrolling a long list.
@@ -436,7 +458,8 @@
       var body = { bulk_action: pendingAction, confirmed: true };
       if (selectAllMatching) {
         body.select_all_matching = true;
-        Object.keys(filterParams()).forEach(function (k) { body[k] = filterParams()[k]; });
+        var fp = filterParams();
+        Object.keys(fp).forEach(function (k) { body[k] = fp[k]; });
       } else {
         body.community_ids = checkedIds();
         if (body.community_ids.length === 0) { closeModal(); return; }
@@ -452,9 +475,12 @@
         .then(function (data) {
           closeModal();
           if (data.success) {
-            showFlash("ok", data.message);
+            flash.className = "flash";        // the progress panel replaces it
             clearSelection();
+            // Re-render rows, then watch the batch through to completion. The
+            // reload alone is not enough: the runs may not exist yet.
             reloadResults();
+            startBatchWatch();
           } else {
             showFlash("err", data.message || "Could not start the bulk run.");
           }
@@ -463,7 +489,87 @@
         .finally(function () { bmConfirm.disabled = false; });
     });
 
+    // ---- batch watch ------------------------------------------------------
+    // A bulk trigger returns BEFORE its Sidekiq jobs have created any run rows,
+    // so the rows still render "Not optimized" at that instant. Row-level
+    // polling alone would therefore never start (it only watches rows that are
+    // ALREADY in progress). While a batch is live we instead refresh every
+    // visible row on a tick, so each property shows its own exact status —
+    // "Optimizing… 3/7", "Optimized", "Done with errors" — the whole way
+    // through, for optimize and revert alike.
+    var progress = document.getElementById("bulk-progress");
+    var bpTitle = document.getElementById("bp-title");
+    var bpFill = document.getElementById("bp-fill");
+    var bpMeta = document.getElementById("bp-meta");
+    var bulkStatusUrl = progress.getAttribute("data-url");
+    var batchTimer = null;
+    var BATCH_TICK_MS = 3000;
+
+    function refreshAllRows() {
+      document.querySelectorAll("tr[data-community-id]").forEach(function (rowEl) { refresh(rowEl); });
+    }
+
+    function renderProgress(d) {
+      progress.classList.add("on");
+      if (d.starting) {
+        progress.classList.remove("done");
+        bpTitle.textContent = "Starting…";
+        bpFill.style.width = "0%";
+        bpMeta.textContent = "Queueing maps.";
+        return;
+      }
+
+      var settled = d.uploaded + d.skipped + d.failed;
+      var pct = d.total > 0 ? Math.round((settled / d.total) * 100) : 0;
+      var verb = (d.action || []).indexOf("revert") !== -1 ? "Revert" : "Optimize";
+      var props = d.properties + (d.properties === 1 ? " property" : " properties");
+
+      progress.classList.toggle("done", !!d.finished);
+      bpTitle.textContent = d.finished
+        ? ("Bulk " + verb.toLowerCase() + " finished — " + settled + " of " + d.total + " maps across " + props)
+        : ("Bulk " + verb.toLowerCase() + "… " + settled + " of " + d.total + " maps across " + props);
+      bpFill.style.width = pct + "%";
+
+      var bits = [];
+      if (d.uploaded) bits.push(d.uploaded + " written");
+      if (d.skipped) bits.push("<span class='warnct'>" + d.skipped + " skipped (nothing to change)</span>");
+      if (d.failed) bits.push("<span class='failct'>" + d.failed + " failed</span>");
+      if (d.in_progress) bits.push(d.in_progress + " still running");
+      bpMeta.innerHTML = bits.length ? bits.join(" · ") : "No maps needed changing.";
+    }
+
+    function pollBatch() {
+      return fetch(bulkStatusUrl, { headers: { "X-Requested-With": "XMLHttpRequest" } })
+        .then(function (res) { return res.json(); })
+        .then(function (d) {
+          if (!d.success) return;
+          if (!d.active) { stopBatchWatch(); progress.classList.remove("on"); return; }
+
+          renderProgress(d);
+          refreshAllRows();
+          if (d.finished) stopBatchWatch();   // panel stays until dismissed
+        })
+        .catch(function () {});
+    }
+
+    function startBatchWatch() {
+      if (batchTimer) return;
+      pollBatch();
+      batchTimer = setInterval(pollBatch, BATCH_TICK_MS);
+    }
+    function stopBatchWatch() {
+      if (batchTimer) { clearInterval(batchTimer); batchTimer = null; }
+    }
+
+    document.getElementById("bp-dismiss").addEventListener("click", function () {
+      stopBatchWatch();
+      progress.classList.remove("on");
+      fetch(bulkStatusUrl + "?dismiss=1", { headers: { "X-Requested-With": "XMLHttpRequest" } }).catch(function () {});
+    });
+
     watchInProgressRows();
     syncClearButton();
     syncSelection();
+    // Resume a batch that is still running from a previous page load / refresh.
+    pollBatch().then(function () { if (progress.classList.contains("on")) startBatchWatch(); });
   })();

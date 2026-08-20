@@ -22,6 +22,10 @@ class SvgOptimizerController < ApplicationController
   BULK_CHUNK = 100
   MAX_BULK_COMMUNITIES = 1000
 
+  # How long a just-triggered batch may report zero runs before it is treated
+  # as finished-with-nothing-to-do rather than still starting up.
+  BULK_STATUS_GRACE = 2.minutes
+
   # Lists every community eligible to be touched (enable_svg_mode AND at least
   # one real SVG — a Floorplate/Sitemap svg_image, or a Beans property's
   # background_svg_image), each with a rolled-up optimization status.
@@ -238,16 +242,84 @@ class SvgOptimizerController < ApplicationController
       return render_error("That's #{ids.size} properties — more than the #{MAX_BULK_COMMUNITIES} limit for one batch. Narrow the filter and run it in stages.")
     end
 
+    # Marks where THIS batch begins. Stamped before a single job is enqueued so
+    # no run can be created ahead of the marker and fall outside the batch.
+    # A timestamp is the whole record: a batch is "the runs you triggered since
+    # you last hit a bulk button", which svg_optimization_runs can already
+    # answer via triggered_by_user_id + created_at. Nothing else is stored
+    # (the cookie session is 4KB — an id list would not fit anyway), and no new
+    # table or column is needed to aggregate it.
+    session[:svg_bulk_started_at] = Time.current.iso8601
+
     batches = ids.each_slice(BULK_CHUNK).map do |chunk|
       SvgBulkOptimizationWorker.perform_async(chunk, bulk_action, current_user.id)
     end
 
-    verb = bulk_action == "optimize" ? "Optimizing" : "Reverting"
+    # Deliberately says "queued", not "optimizing N": whether a map actually
+    # changes is only knowable by running the optimizer on it, which happens in
+    # the worker. A property whose maps are already lean enqueues runs that all
+    # come back `skipped` with nothing written — promising "Optimizing" here
+    # would be a claim this endpoint cannot make.
+    verb = bulk_action == "optimize" ? "optimize" : "revert"
     render json: {
       success: true,
       communities: ids.size,
       batches: batches.size,
-      message: "#{verb} #{ids.size} #{'property'.pluralize(ids.size)} in the background. Statuses update here as each map finishes."
+      message: "Queued #{ids.size} #{'property'.pluralize(ids.size)} to #{verb} in the background. " \
+               "Maps already #{bulk_action == 'optimize' ? 'optimized, or with nothing to gain,' : 'on their original'} are skipped automatically. " \
+               "Statuses update here as each map finishes."
+    }
+  end
+
+  # Aggregate progress for the caller's current bulk batch, rolled up straight
+  # out of svg_optimization_runs — the same rows the per-property screens read.
+  # Bulk is only ever per-property runs underneath, so no separate batch record
+  # exists or is needed; a batch is just a time-slice of this user's runs.
+  def bulk_status
+    if truthy?(params[:dismiss])
+      session.delete(:svg_bulk_started_at)
+      return render json: { success: true, active: false }
+    end
+
+    started_at = session[:svg_bulk_started_at]
+    return render json: { success: true, active: false } if started_at.blank?
+
+    t0 = begin
+      Time.zone.parse(started_at)
+    rescue StandardError
+      nil
+    end
+    if t0.nil?
+      session.delete(:svg_bulk_started_at)
+      return render json: { success: true, active: false }
+    end
+
+    runs = SvgOptimizationRun.where(triggered_by_user_id: current_user.id).where(created_at: t0..)
+    counts = runs.group(:status).count
+    total = counts.values.sum
+    in_progress = SvgOptimizationRun::IN_PROGRESS_STATUSES.sum { |st| counts[st].to_i }
+
+    # The chunked bulk jobs create their rows asynchronously, so an empty result
+    # right after the trigger means "not started yet", not "done". Past the
+    # grace window it means the batch produced no runs at all (every property
+    # skipped by a guard) — otherwise this would poll forever.
+    if total.zero?
+      return render json: { success: true, active: t0 > BULK_STATUS_GRACE.ago, starting: true, total: 0 }
+    end
+
+    render json: {
+      success: true,
+      active: true,
+      starting: false,
+      action: runs.distinct.pluck(:action),
+      started_at: t0.iso8601,
+      properties: runs.distinct.count(:community_id),
+      total: total,
+      in_progress: in_progress,
+      uploaded: counts["uploaded"].to_i,
+      skipped: counts["skipped"].to_i,
+      failed: counts["failed"].to_i,
+      finished: in_progress.zero?
     }
   end
 

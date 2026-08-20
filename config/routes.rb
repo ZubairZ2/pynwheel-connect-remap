@@ -31,6 +31,7 @@ Rails.application.routes.draw do
   post '/tools/svg_optimizer/runs/:id/revert', to: 'svg_optimizer#revert', as: 'svg_optimizer_revert'
   post '/tools/svg_optimizer/runs/:id/requeue', to: 'svg_optimizer#requeue', as: 'svg_optimizer_requeue'
   post '/tools/svg_optimizer/bulk', to: 'svg_optimizer#bulk', as: 'svg_optimizer_bulk'
+  get  '/tools/svg_optimizer/bulk_status', to: 'svg_optimizer#bulk_status', as: 'svg_optimizer_bulk_status'
   post :create_tour_user_from, to: 'schedual_tours#create_tour_user_from'
   get :community_custom_tour, to: 'schedual_tours#community_custom_tour'
 
