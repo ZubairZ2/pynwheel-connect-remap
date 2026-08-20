@@ -284,54 +284,26 @@ class SvgOptimizerController < ApplicationController
   # out of svg_optimization_runs — the same rows the per-property screens read.
   # Bulk is only ever per-property runs underneath, so no separate batch record
   # exists or is needed; a batch is just a time-slice of this user's runs.
+  # ONE endpoint that serves the whole list page's live updates: the rollups for
+  # the rows on screen, plus (when one is running) the aggregate for the
+  # caller's bulk batch.
+  #
+  # It is deliberately one request for the entire page. The page previously
+  # polled the per-property status endpoint once per in-progress row; with a
+  # single property optimising that was two or three requests, but a bulk run
+  # puts every visible row in progress at once, turning it into ~50 requests
+  # every few seconds. That saturates the dyno's thread pool and the whole app
+  # starts returning 503s. Rollups are returned whether or not a batch is
+  # active, so organic in-progress rows never need per-row polling either.
   def bulk_status
     if truthy?(params[:dismiss])
       session.delete(:svg_bulk_started_at)
-      return render json: { success: true, active: false }
+      return render json: { success: true, active: false, rows: visible_rollups }
     end
 
-    started_at = session[:svg_bulk_started_at]
-    return render json: { success: true, active: false } if started_at.blank?
-
-    t0 = begin
-      Time.zone.parse(started_at)
-    rescue StandardError
-      nil
-    end
-    if t0.nil? || t0 < BULK_STATUS_MAX_AGE.ago
-      session.delete(:svg_bulk_started_at)
-      return render json: { success: true, active: false }
-    end
-
-    runs = SvgOptimizationRun.where(triggered_by_user_id: current_user.id).where(created_at: t0..)
-    counts = runs.group(:status).count
-    total = counts.values.sum
-    in_progress = SvgOptimizationRun::IN_PROGRESS_STATUSES.sum { |st| counts[st].to_i }
-
-    # The chunked bulk jobs create their rows asynchronously, so an empty result
-    # right after the trigger means "not started yet", not "done". Past the
-    # grace window it means the batch produced no runs at all (every property
-    # skipped by a guard) — otherwise this would poll forever.
-    if total.zero?
-      return render json: { success: true, active: t0 > BULK_STATUS_GRACE.ago, starting: true, total: 0 }
-    end
-
-    render json: {
-      success: true,
-      active: true,
-      starting: false,
-      action: runs.distinct.pluck(:action),
-      started_at: t0.iso8601,
-      properties: runs.distinct.count(:community_id),
-      total: total,
-      in_progress: in_progress,
-      uploaded: counts["uploaded"].to_i,
-      skipped: counts["skipped"].to_i,
-      failed: counts["failed"].to_i,
-      finished: in_progress.zero?,
-      rows: visible_rollups
-    }
+    render json: { success: true, rows: visible_rollups }.merge(batch_progress)
   end
+
 
   private
 
@@ -603,6 +575,50 @@ class SvgOptimizerController < ApplicationController
       targets = SvgOptimizerTargets.resolve_targets(community)
       out[community.id] = property_rollup(community, targets, latest)
     end
+  end
+
+
+  # Aggregate for the caller's current bulk batch, or { active: false }. Split
+  # out of bulk_status so the endpoint can always answer with row rollups even
+  # when no batch is running.
+  def batch_progress
+    started_at = session[:svg_bulk_started_at]
+    return { active: false } if started_at.blank?
+
+    t0 = begin
+      Time.zone.parse(started_at)
+    rescue StandardError
+      nil
+    end
+    if t0.nil? || t0 < BULK_STATUS_MAX_AGE.ago
+      session.delete(:svg_bulk_started_at)
+      return { active: false }
+    end
+
+    runs = SvgOptimizationRun.where(triggered_by_user_id: current_user.id).where(created_at: t0..)
+    counts = runs.group(:status).count
+    total = counts.values.sum
+    in_progress = SvgOptimizationRun::IN_PROGRESS_STATUSES.sum { |st| counts[st].to_i }
+
+    # The chunked bulk jobs create their rows asynchronously, so an empty result
+    # right after the trigger means "not started yet", not "done". Past the
+    # grace window it means the batch produced no runs at all (every property
+    # skipped by a guard) — otherwise this would poll forever.
+    return { active: t0 > BULK_STATUS_GRACE.ago, starting: true, total: 0 } if total.zero?
+
+    {
+      active: true,
+      starting: false,
+      action: runs.distinct.pluck(:action),
+      started_at: t0.iso8601,
+      properties: runs.distinct.count(:community_id),
+      total: total,
+      in_progress: in_progress,
+      uploaded: counts["uploaded"].to_i,
+      skipped: counts["skipped"].to_i,
+      failed: counts["failed"].to_i,
+      finished: in_progress.zero?
+    }
   end
 
 end

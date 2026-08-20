@@ -182,9 +182,6 @@
 :javascript
   (function () {
     var selectAllMatching = false;   // "every property matching the filters", not just this page
-    var polling = {};      // communityId -> interval id
-    var pollStart = {};
-    var MAX_POLL_MS = 10 * 60 * 1000;
 
     var STATE_LABELS = {
       not_started: "Not optimized", in_progress: "Optimizing…", done: "Optimized",
@@ -198,41 +195,13 @@
       return "<span class='pill " + r.state + "'>" + (STATE_LABELS[r.state] || r.state) + "</span>";
     }
 
-    function refresh(rowEl) {
-      return fetch(rowEl.getAttribute("data-status-url"))
-        .then(function (res) { return res.json(); })
-        .then(function (data) {
-          if (!data.success) return;
-          rowEl.querySelector(".js-status").innerHTML = statusHtml(data.rollup);
-          if (data.rollup.state !== "in_progress") stopPolling(rowEl);
-        })
-        .catch(function () {});
-    }
-
-    function startPolling(rowEl) {
-      var id = rowEl.getAttribute("data-community-id");
-      if (polling[id]) return;
-      pollStart[id] = Date.now();
-      polling[id] = setInterval(function () {
-        if (Date.now() - pollStart[id] > MAX_POLL_MS) { stopPolling(rowEl); return; }
-        refresh(rowEl);
-      }, 3500);
-    }
-    function stopPolling(rowEl) {
-      var id = rowEl.getAttribute("data-community-id");
-      if (polling[id]) { clearInterval(polling[id]); delete polling[id]; }
-    }
-    function stopAllPolling() {
-      Object.keys(polling).forEach(function (id) { clearInterval(polling[id]); delete polling[id]; });
-    }
-
-    // Keep any in-progress rows live without a manual refresh. Re-run after
-    // every results swap, since those rows are new elements.
-    function watchInProgressRows() {
-      document.querySelectorAll("tr[data-community-id]").forEach(function (rowEl) {
-        if (rowEl.querySelector(".pill.in_progress")) startPolling(rowEl);
-      });
-    }
+    // NOTE: there is deliberately NO per-row polling on this page. Every live
+    // update — organic in-progress rows and bulk batches alike — is served by
+    // the single ticker further down, which makes exactly one request per tick
+    // no matter how many rows are on screen. One interval per in-progress row
+    // is what took production down: a bulk run puts every visible row in
+    // progress simultaneously, so per-row polling became ~50 requests every
+    // 3.5s and the app answered 503.
 
     // ---- live filtering --------------------------------------------------
     // The toolbar filters as you type. Each change re-requests this action as
@@ -260,9 +229,8 @@
       return fetch(form.action + query, { signal: inFlight.signal, headers: { "X-Requested-With": "XMLHttpRequest" } })
         .then(function (res) { return res.text(); })
         .then(function (html) {
-          stopAllPolling();
           results.innerHTML = html;
-          watchInProgressRows();
+          syncTicker();
           syncClearButton();
           // The rows are new elements, so every checkbox is gone — the
           // "all matching" flag has to drop with them or it would silently
@@ -480,6 +448,7 @@
             // Re-render rows, then watch the batch through to completion. The
             // reload alone is not enough: the runs may not exist yet.
             reloadResults();
+            progress.setAttribute("data-active", "true");
             startBatchWatch();
           } else {
             showFlash("err", data.message || "Could not start the bulk run.");
@@ -561,11 +530,15 @@
         .then(function (res) { return res.json(); })
         .then(function (d) {
           if (!d.success) return;
-          if (!d.active) { stopBatchWatch(); progress.classList.remove("on"); return; }
+          if (!d.active) { progress.setAttribute("data-active", "false"); }
 
-          renderProgress(d);
+          if (d.active) renderProgress(d);
           applyRowRollups(d.rows);
-          if (d.finished) stopBatchWatch();   // panel stays until dismissed
+          // Stop once the batch is done AND nothing else is mid-run; the panel
+          // itself stays on screen until dismissed.
+          if ((!d.active || d.finished) && !results.querySelector(".pill.in_progress")) {
+            stopBatchWatch();
+          }
         })
         .catch(function () { stopBatchWatch(); });
     }
@@ -584,17 +557,25 @@
       if (batchTimer) { clearInterval(batchTimer); batchTimer = null; }
     }
 
+    // The single decision point for whether this page polls at all: a live bulk
+    // batch, or any row currently mid-run. If neither, the page is completely
+    // silent — an ordinary load or a pagination click costs one request, full
+    // stop. Called again after every results swap, since the rows are new.
+    function syncTicker() {
+      var live = progress.getAttribute("data-active") === "true" ||
+                 !!results.querySelector(".pill.in_progress");
+      if (live) { startBatchWatch(); } else { stopBatchWatch(); }
+    }
+
     document.getElementById("bp-dismiss").addEventListener("click", function () {
       stopBatchWatch();
       progress.classList.remove("on");
       fetch(bulkStatusUrl + "?dismiss=1", { headers: { "X-Requested-With": "XMLHttpRequest" } }).catch(function () {});
     });
 
-    watchInProgressRows();
     syncClearButton();
     syncSelection();
-    // Resume a running batch after a reload — but ONLY when the server already
-    // told us one exists. With no batch this page issues no status requests at
-    // all, so an ordinary load or a pagination click costs exactly one request.
-    if (progress.getAttribute("data-active") === "true") startBatchWatch();
+    // Resumes a batch after a reload, and keeps organic in-progress rows live —
+    // both through the same one-request-per-tick ticker.
+    syncTicker();
   })();
