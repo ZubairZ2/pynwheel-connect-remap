@@ -10,10 +10,21 @@ class SdkPayloadBuilderService
     @community = community
   end
 
-  def build(ops_map: false)
+  # group_units: the caller asks for the student-housing rollup. Opt-in rather
+  # than implied by the property's toggle, because fetch_data serves both SDKs:
+  # pyn-map-sdk.js (v0) has no concept of a unit space, so it must keep getting
+  # the flat payload whatever the property is configured as.
+  def build(ops_map: false, group_units: false)
+    @group_units = group_units
     units_ar = @community.units.map_units(@community, ops_map).visible_units.without_hidden_names.includes(:floorplan).to_a
     units_ar.each { |u| u.association(:community).target = @community }
-    all_units = units_json(Set.new, ops_map, units_ar)
+
+    # Only `units` is grouped. floorplans_json and filters_json keep reading the
+    # flat list: a floor plan's unit count and a filter's option list must both
+    # describe what a resident can actually lease, so a price band or an
+    # availability window that exists on only one bedroom still has to appear.
+    all_units = grouped_units? ? grouped_units_json(units_ar, Set.new, ops_map)
+                               : units_json(Set.new, ops_map, units_ar)
 
     {
       property:    property_json(ops_map),
@@ -35,66 +46,234 @@ class SdkPayloadBuilderService
 
   def units_json(fav_ids = Set.new, ops_map = false, units_ar = nil)
     units = units_ar || @community.units.map_units(@community, ops_map).visible_units.without_hidden_names.includes(:floorplan)
-    units&.map do |unit|
-      floorplan = unit.floorplan
-      fees      = @community.get_additional_fees(unit)
-      buttons   = unit_additional_buttons(unit)
-      description, description_title = description_fields(unit, floorplan)
+    units&.map { |unit| unit_json(unit, fav_ids) }
+  end
 
-      {
-        unitNumber:      unit.marketing_name,
-        unitMarketingName: unit.api_unit_marketing_name,
-        mapId:           map_for_unit(unit),
-        unitId:          unit.id,
-        building:        unit.building,
-        floor:           unit.floor,
-        sold:            unit.sold,
-        x_plot:          unit.x_plot.to_i,
-        y_plot:          unit.y_plot.to_i,
-        bedrooms:        floorplan.present? ? hide_decimals(floorplan.bedrooms)  : nil,
-        bathrooms:       floorplan.present? ? hide_decimals(floorplan.bathrooms) : nil,
-        square_feet:     if unit.square_feet?
-                           hide_decimals(unit.square_feet)
-                         elsif floorplan.present?
-                           hide_decimals(floorplan.square_feet)
-                         end,
-        floorplanId:            unit.floorplan_id,
-        floorplanName:          floorplan&.name,
-        pointerData:            unit.pointer_data,
-        market_rent:            unit.get_market_rent(),
-        availability:           unit.availability,
-        availability_url:       unit.get_availability_url(),
-        available_date:         unit.available_date,
-        available:              unit.available,
-        available_now:          unit.available_now?,
-        availability_bucket:    unit.availability_bucket,
-        # Floorplan-level enum (available|limited_availability|almost_gone|sold_out),
-        # repeated on the unit so the host can render the banner from a unit alone —
-        # the same thing the old map does through floorplan_map_config.
-        availability_status:    floorplan&.availability_status,
-        lease_term:             unit.lease_term,
-        lease_pricing:          unit.get_lease_term_pricing_matrix(),
-        description:            description,
-        description_title:      description_title,
-        display_rent:           unit&.community&.display_rent,
-        additional_fees:        fees,
-        property_id:            unit.property_id,
-        unit_status:            unit&.unit_status,
-        model_unit:             unit&.modal_unit,
-        additionalButtons:      buttons,
-        unit_variation:         unit_variation(unit, fees, buttons),
-        pricing_calculator_url:     unit.pricing_calculator_url,
-        estimatedMonthlyRent:       estimated_monthly_rent(unit),
-        estimatedMonthlyRentMax:    estimated_monthly_rent_max(unit),
-        image:                  unit.validated_image_url || floorplan&.validated_image_url || floorplan&.secondary_image&.url.presence,
-        color:                  compute_unit_marketing_color(unit, floorplan),
-        opsColor:               compute_unit_ops_color(unit),
-        isFavorite:             fav_ids.include?(unit.id.to_s)
-      }
+  # The same units, rolled up to one entry per plotted position — see
+  # SdkUnitSpaceGrouper for why the plot is the grouping key.
+  #
+  # A position holding one unit serializes exactly as it does on the flat path,
+  # so the common shape is untouched. A position holding several emits its base
+  # unit, the roll-up fields the map and the filters read, and the bedrooms
+  # themselves under `spaces`.
+  #
+  # Every door is labelled with its apartment number, whether or not more than
+  # one bedroom happens to be plotted on it — a units list that reads
+  # "100-A, 103, 105" mixes bedroom names with apartment names and looks broken.
+  # See SdkUnitSpaceGrouper.apartment_number for how a lone bedroom is resolved.
+  def grouped_units_json(units_ar, fav_ids = Set.new, ops_map = false)
+    SdkUnitSpaceGrouper.new(@community).call(units_ar).map do |group|
+      # Each unit in the group is serialized exactly once — the base is
+      # group.spaces.first, so rendering it again for the door would double the
+      # per-unit work on every apartment.
+      rendered = group.spaces.map { |unit| unit_json(unit, fav_ids) }
+      base     = rendered.first
+      name     = SdkUnitSpaceGrouper.door_name(group.spaces.map(&:marketing_name))
+      base     = base.merge(unitNumber: name, unitMarketingName: name) if name
+
+      next base.merge(spaceCount: 1) if group.single?
+
+      base = base.merge(space_rollup(group.spaces, ops_map))
+      base.merge(spaces: rendered.map { |unit| space_json(unit) })
     end
   end
 
+  # Keys the rollup adds to a base unit so it can speak for its whole apartment.
+  # Named as a set so a single bedroom can be lifted back out of a group without
+  # dragging the group's aggregates along — see #space_as_unit.
+  ROLLUP_KEYS = %i[
+    spaceCount availableSpaceCount availabilityBuckets
+    priceMin priceMax sqftMin sqftMax
+    unitStatuses mixedStatus
+  ].freeze
+
+  # One space, lifted back out to a complete standalone unit: the base unit's
+  # shared fields, minus everything that only describes the group, plus the
+  # space's own values. The space's rent and availability win on merge, which is
+  # what turns an apartment-level "from $1,200" back into that bedroom's price.
+  #
+  # This is the server-side twin of the merge the SDK does client-side, for the
+  # places a response has to hand back single bedrooms rather than doors.
+  def self.space_as_unit(grouped_unit, space)
+    grouped_unit.except(:spaces, :hasFavoriteSpace, *ROLLUP_KEYS).merge(space)
+  end
+
+  # One unit, in the full map-facing shape. Extracted from units_json so the
+  # grouped student-housing path serializes its base units through exactly the
+  # same code — the two paths must never drift apart on what a unit looks like.
+  def unit_json(unit, fav_ids = Set.new)
+    floorplan = unit.floorplan
+    fees      = @community.get_additional_fees(unit)
+    buttons   = unit_additional_buttons(unit)
+    description, description_title = description_fields(unit, floorplan)
+
+    {
+      unitNumber:      unit.marketing_name,
+      unitMarketingName: unit.api_unit_marketing_name,
+      mapId:           map_for_unit(unit),
+      unitId:          unit.id,
+      building:        unit.building,
+      floor:           unit.floor,
+      sold:            unit.sold,
+      x_plot:          unit.x_plot.to_i,
+      y_plot:          unit.y_plot.to_i,
+      bedrooms:        floorplan.present? ? hide_decimals(floorplan.bedrooms)  : nil,
+      bathrooms:       floorplan.present? ? hide_decimals(floorplan.bathrooms) : nil,
+      square_feet:     if unit.square_feet?
+                         hide_decimals(unit.square_feet)
+                       elsif floorplan.present?
+                         hide_decimals(floorplan.square_feet)
+                       end,
+      floorplanId:            unit.floorplan_id,
+      floorplanName:          floorplan&.name,
+      pointerData:            unit.pointer_data,
+      market_rent:            unit.get_market_rent(),
+      availability:           unit.availability,
+      availability_url:       unit.get_availability_url(),
+      available_date:         unit.available_date,
+      available:              unit.available,
+      available_now:          unit.available_now?,
+      availability_bucket:    unit.availability_bucket,
+      # Floorplan-level enum (available|limited_availability|almost_gone|sold_out),
+      # repeated on the unit so the host can render the banner from a unit alone —
+      # the same thing the old map does through floorplan_map_config.
+      availability_status:    floorplan&.availability_status,
+      lease_term:             unit.lease_term,
+      lease_pricing:          unit.get_lease_term_pricing_matrix(),
+      description:            description,
+      description_title:      description_title,
+      display_rent:           unit&.community&.display_rent,
+      additional_fees:        fees,
+      property_id:            unit.property_id,
+      unit_status:            unit&.unit_status,
+      model_unit:             unit&.modal_unit,
+      additionalButtons:      buttons,
+      unit_variation:         unit_variation(unit, fees, buttons),
+      pricing_calculator_url:     unit.pricing_calculator_url,
+      estimatedMonthlyRent:       estimated_monthly_rent(unit),
+      estimatedMonthlyRentMax:    estimated_monthly_rent_max(unit),
+      image:                  unit.validated_image_url || floorplan&.validated_image_url || floorplan&.secondary_image&.url.presence,
+      color:                  compute_unit_marketing_color(unit, floorplan),
+      opsColor:               compute_unit_ops_color(unit),
+      isFavorite:             fav_ids.include?(unit.id.to_s)
+    }
+  end
+
   private
+
+  # Whether this payload's `units` are rolled up by plot position: the property
+  # is configured for it AND the client asked. Both are required — see #build.
+  def grouped_units?
+    @group_units && @community.student_housing_property?
+  end
+
+  # Ops rollup: which bedroom's status the apartment's single polygon shows when
+  # its bedrooms disagree.
+  #
+  # An ops map colours each unit by its own unit_status, so one polygon per
+  # apartment can only show one of them. Picking the base bedroom's would be
+  # arbitrary — leasing state has nothing to do with which bedroom sorts first —
+  # so the most actionable status wins instead: something needing a turn or a
+  # lease outranks something already handled.
+  #
+  # Nothing is hidden by this. Every bedroom keeps its own unit_status and
+  # opsColor under `spaces`, and the base carries `unitStatuses` and
+  # `mixedStatus` so a door whose bedrooms disagree can be rendered as such.
+  #
+  # Reorder this list to change what the map emphasises; it is the only place
+  # the ranking is expressed.
+  OPS_STATUS_PRIORITY = %i[vacant occupied_on_notice vacant_leased occupied model].freeze
+
+  # The only fields a space does not carry: the position, which belongs to the
+  # door it is drawn on.
+  #
+  # Co-plotted units share a position by definition, but not always these exact
+  # values — on an SVG map the shape is the anchor, and the legacy x_plot/y_plot
+  # columns can still disagree between units drawn on it. Dropping them keeps
+  # "only a door can be plotted" a structural guarantee rather than a
+  # convention, and the SDK puts the door's position back when it hands a space
+  # to a caller.
+  SPACE_NEVER_KEYS = %i[x_plot y_plot pointerData mapId floor].freeze
+
+  # A space is its unit's whole record, minus the position. Every space in a
+  # group therefore has exactly the same keys as every other, and each one is
+  # already the complete unit — nothing to reconstruct, nothing to look up.
+  #
+  # Two earlier attempts were both too clever. A hand-picked field list ("just
+  # the fields that differ between bedrooms") assumed which fields those were,
+  # and the assumption was wrong: co-plotted units carry different floor plans
+  # in real data, so bedrooms inherited a neighbour's layout and price. A diff
+  # against the door fixed the correctness but made every space a different
+  # shape — one with three keys, the next with ten — which is unreadable in a
+  # console and forces the reader to hold the merge rule in their head.
+  #
+  # The repetition this costs is the point: a space you can read on its own is
+  # worth more than the bytes gzip was already collapsing.
+  #
+  # Takes the unit's already-serialized record so a group renders each of its
+  # units exactly once, the base included.
+  def space_json(unit_json)
+    unit_json.except(*SPACE_NEVER_KEYS)
+  end
+
+  # What the base unit has to answer on behalf of the whole apartment: the map
+  # colours it, the filters test it, and the units list shows it as a "from"
+  # price. Precomputed here rather than derived in the browser so client-side
+  # filtering stays O(1) per position instead of walking every bedroom.
+  #
+  # These overwrite the base unit's own values — the base is one bedroom, and its
+  # rent or availability alone would misreport the apartment.
+  def space_rollup(spaces, ops_map = false)
+    available = spaces.select(&:available)
+    rents     = spaces.filter_map { |u| u.get_market_rent()&.to_f }.select(&:positive?)
+    sqfts     = spaces.filter_map { |u| unit_square_feet(u)&.to_i }.select(&:positive?)
+
+    # Earliest move-in among the bedrooms a visitor could actually lease. Falls
+    # back to the earliest date overall so a fully-leased apartment still shows
+    # when it frees up rather than showing nothing.
+    soonest = available.filter_map(&:available_date).min || spaces.filter_map(&:available_date).min
+    soonest_space = (available.presence || spaces).find { |u| u.available_date == soonest }
+
+    {
+      spaceCount:           spaces.size,
+      availableSpaceCount:  available.size,
+      available:            available.any?,
+      available_now:        available.any?(&:available_now?),
+      available_date:       soonest,
+      availability_bucket:  soonest_space&.availability_bucket,
+      availabilityBuckets:  spaces.filter_map(&:availability_bucket).uniq,
+      market_rent:          rents.min,
+      priceMin:             rents.min,
+      priceMax:             rents.max,
+      sqftMin:              sqfts.min,
+      sqftMax:              sqfts.max
+    }.merge(ops_map ? ops_rollup(spaces) : {})
+  end
+
+  # What an apartment's single polygon shows on an ops map, plus enough for the
+  # client to tell that the polygon is speaking for bedrooms that disagree.
+  #
+  # The winning bedroom decides both the colour and the status label, so the two
+  # can never contradict each other. See OPS_STATUS_PRIORITY for the ranking.
+  def ops_rollup(spaces)
+    ranked = spaces.min_by { |unit| OPS_STATUS_PRIORITY.index(ops_status_key(unit)) || OPS_STATUS_PRIORITY.size }
+    statuses = spaces.map { |unit| ops_status_key(unit) }.uniq
+
+    {
+      unit_status:  ranked.unit_status,
+      opsColor:     compute_unit_ops_color(ranked),
+      model_unit:   ranked.modal_unit,
+      unitStatuses: statuses,
+      mixedStatus:  statuses.size > 1
+    }
+  end
+
+  # Square footage the same way unit_json resolves it: the unit's own value when
+  # set, otherwise the floor plan's.
+  def unit_square_feet(unit)
+    return unit.square_feet if unit.square_feet?
+    unit.floorplan&.square_feet
+  end
 
   def property_json(show_ops_map = false)
     {
@@ -110,6 +289,21 @@ class SdkPayloadBuilderService
       },
 
       applyNow: apply_now_config,
+
+      # How to read `units`. "flat" is every property today: one entry per unit.
+      # "spaces" means the entries are one-per-plotted-position, each carrying its
+      # leasable bedrooms under `spaces`.
+      #
+      # A capability, not a vertical — deliberately not a `studentHousing`
+      # boolean. Clients branch on the shape they have to parse, so a
+      # conventional property with co-plotted units can opt into the same rollup
+      # later without a second client code path, and `key` leaves room for
+      # grouping on something other than the plot once unit spaces become real
+      # rows (UC 08 / PYN-1638).
+      unitGrouping: {
+        mode: grouped_units? ? "spaces" : "flat",
+        key:  "plot"
+      },
 
       map: {
         type:                 @community.is_sitemap ? "sitemap" : "floorplate",
@@ -428,26 +622,29 @@ class SdkPayloadBuilderService
     { color: color, opacity: opacity.to_f }
   end
 
+  # Which colour bucket a unit's raw PMS status falls into. Extracted from
+  # compute_unit_ops_color so the ops rollup can rank a group's bedrooms by
+  # status without re-deriving the mapping and letting the two drift.
+  def ops_status_key(unit)
+    return :model if unit.modal_unit
+
+    case unit.unit_status.to_s.downcase.strip
+    when "occupied", "occupied no notice", "notice rented"
+      :occupied
+    when "occupied on notice", "notice unrented"
+      :occupied_on_notice
+    when "vacant", "available", "unoccupied",
+         "vacant unrented not ready", "vacant unrented ready"
+      :vacant
+    when "vacant lease", "vacant rented ready", "vacant rented not ready"
+      :vacant_leased
+    else
+      :vacant
+    end
+  end
+
   def compute_unit_ops_color(unit)
-    sc = status_colors
-
-    return { color: sc[:model], opacity: 1.0 } if unit.modal_unit
-
-    hex = case unit.unit_status.to_s.downcase.strip
-          when "occupied", "occupied no notice", "notice rented"
-            sc[:occupied]
-          when "occupied on notice", "notice unrented"
-            sc[:occupied_on_notice]
-          when "vacant", "available", "unoccupied",
-               "vacant unrented not ready", "vacant unrented ready"
-            sc[:vacant]
-          when "vacant lease", "vacant rented ready", "vacant rented not ready"
-            sc[:vacant_leased]
-          else
-            sc[:vacant]
-          end
-
-    { color: hex, opacity: 1.0 }
+    { color: status_colors[ops_status_key(unit)], opacity: 1.0 }
   end
 
   def compute_floorplan_color(fp)

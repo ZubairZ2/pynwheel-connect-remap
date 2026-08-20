@@ -78,7 +78,7 @@ module Api
 
           built = build_sdk_payload(show_ops_map?)
 
-          units      = merge_favorites(built[:units],      :unitId,      fav_unit_ids)
+          units      = merge_unit_favorites(built[:units], fav_unit_ids)
           amenities  = merge_favorites(built[:amenities],  :amenityId,   fav_amenity_ids)
           floorplans = merge_favorites(built[:floorplans], :floorplanId, fav_floorplan_ids)
 
@@ -86,7 +86,7 @@ module Api
             units:              units,
             amenities:          amenities,
             floorplans:         floorplans,
-            favorite_units:     units.select      { |u| u[:isFavorite] },
+            favorite_units:     favorited_units(units),
             favorite_amenities: amenities.select  { |a| a[:isFavorite] },
             favorite_floorplans: floorplans.select { |f| f[:isFavorite] }
           )
@@ -459,7 +459,14 @@ module Api
         private
 
         def build_sdk_payload(ops_map = false)
-          SdkPayloadBuilderService.new(@community).build(ops_map: ops_map)
+          SdkPayloadBuilderService.new(@community).build(ops_map: ops_map, group_units: group_units?)
+        end
+
+        # The student-housing rollup is opt-in per request. pyn-map-sdk-v1.js asks
+        # for it; pyn-map-sdk.js (v0) does not and cannot read it, so v0 keeps
+        # receiving the flat payload no matter how the property is configured.
+        def group_units?
+          params[:unit_grouping].to_s == "spaces"
         end
 
         def gzip_json(payload)
@@ -665,6 +672,44 @@ module Api
         def merge_favorites(items, id_key, fav_ids)
           return items || [] unless fav_ids.any?
           (items || []).map { |item| fav_ids.include?(item[id_key].to_s) ? item.merge(isFavorite: true) : item }
+        end
+
+        # Units need their own merge because a student-housing payload nests the
+        # leasable bedrooms under `spaces`, and favorites are saved per bedroom,
+        # not per door. A favorited bedroom's id never appears at the top level,
+        # so the generic merge_favorites above would silently stop matching the
+        # moment a property is grouped.
+        #
+        # `hasFavoriteSpace` is what the map should read: isFavorite on a base
+        # unit means only that this one bedroom is favorited, which would leave
+        # the door unmarked whenever the favorited bedroom is not the base.
+        def merge_unit_favorites(units, fav_ids)
+          return units || [] unless fav_ids.any?
+
+          (units || []).map do |unit|
+            marked = fav_ids.include?(unit[:unitId].to_s) ? unit.merge(isFavorite: true) : unit
+            spaces = unit[:spaces]
+            next marked unless spaces
+
+            spaces = spaces.map { |s| fav_ids.include?(s[:unitId].to_s) ? s.merge(isFavorite: true) : s }
+            marked.merge(spaces: spaces, hasFavoriteSpace: spaces.any? { |s| s[:isFavorite] })
+          end
+        end
+
+        # The favorited entries as complete, standalone unit objects.
+        #
+        # On a grouped property the favorited thing is a bedroom, so each one is
+        # lifted back out of its apartment — the base unit's shared fields plus
+        # that bedroom's own rent and availability — and the favorites list stays
+        # renderable by the same card component the flat payload feeds.
+        def favorited_units(units)
+          (units || []).flat_map do |unit|
+            spaces = unit[:spaces]
+            next(unit[:isFavorite] ? [unit] : []) unless spaces
+
+            spaces.select { |s| s[:isFavorite] }
+                  .map    { |s| SdkPayloadBuilderService.space_as_unit(unit, s) }
+          end
         end
 
         def render_error(message, status)

@@ -663,8 +663,13 @@
      */
     async _fetchConfig() {
       try {
-        const mapTypeParam = this.config.mapType === "ops" ? "?map_type=ops" : "";
-        const url = `${this._apiBase()}/api/partner/maps/fetch_data${mapTypeParam}`;
+        // unit_grouping=spaces opts THIS SDK in to the student-housing rollup.
+        // The server groups only when the property's toggle is on *and* a client
+        // asks, so pyn-map-sdk.js (v0), which never sends it and has no concept
+        // of a unit space, keeps receiving the flat payload it always did.
+        const params = new URLSearchParams({ unit_grouping: "spaces" });
+        if (this.config.mapType === "ops") params.set("map_type", "ops");
+        const url = `${this._apiBase()}/api/partner/maps/fetch_data?${params}`;
         const res = await fetch(url, {
           headers: {
             "Authorization":    `Bearer ${this._sessionToken}`,
@@ -893,10 +898,50 @@
       if (this.config.defaultSatelliteView === null) this.config.defaultSatelliteView = cfg3d?.defaultSatelliteView === true;
     },
 
+    // Fields the server adds to a base unit so it can answer for its whole
+    // apartment (SdkPayloadBuilderService::ROLLUP_KEYS). They describe the group,
+    // so they are stripped when a single bedroom is lifted back out of it.
+    _ROLLUP_KEYS: [
+      "spaceCount", "availableSpaceCount", "availabilityBuckets",
+      "priceMin", "priceMax", "sqftMin", "sqftMax",
+      "unitStatuses", "mixedStatus", "hasFavoriteSpace"
+    ],
+
     _indexUnits() {
       this.unitsByMap             = {};
       this.pointerIdsByMap        = {};
       this.unitsByPointerIdByMap  = {};
+
+      // Student housing (property.unitGrouping.mode === "spaces"): data.units
+      // holds one base unit per plotted position, and the leasable bedrooms ride
+      // inside it under `spaces`. A space carries only the fields that differ
+      // between bedrooms, so it is merged onto its base HERE — once, at index
+      // time — and every consumer above the SDK receives a complete unit object,
+      // never learning that a space was a partial record.
+      //
+      // Merging eagerly rather than per call is deliberate: the modal's bedroom
+      // switcher, the favorites scan and the units list all read this on the hot
+      // path and would otherwise re-merge the same apartment repeatedly.
+      this.spacesByBaseId  = {};   // base unit id -> [complete unit, ...]
+      this.baseIdBySpaceId = {};   // any unit id  -> id of the unit actually drawn
+
+      (this.data.units || []).forEach(u => {
+        const baseId = String(u.unitId);
+        this.baseIdBySpaceId[baseId] = baseId;
+
+        const spaces = Array.isArray(u.spaces) ? u.spaces : null;
+        if (!spaces || spaces.length < 2) return;
+
+        this.spacesByBaseId[baseId] = spaces.map(space => {
+          this.baseIdBySpaceId[String(space.unitId)] = baseId;
+          // `spaces` and the group-level rollups describe the apartment, not the
+          // bedroom, so they are dropped rather than carried onto every space.
+          const merged = Object.assign({}, u, space);
+          delete merged.spaces;
+          this._ROLLUP_KEYS.forEach(k => delete merged[k]);
+          return merged;
+        });
+      });
 
       (this.data.units || []).forEach(u => {
         const mapId = String(u.mapId);
@@ -1466,25 +1511,90 @@
      *     minSquareFeet: 600,
      *     maxSquareFeet: 1000
      *   });
+     *
+     * On a grouped (student-housing) property each entry is one plotted position
+     * standing for a whole apartment. Pass `{ includeSpaces: true }` as the
+     * second argument to get every leasable bedroom instead:
+     *   const beds = PynMapSDK.getUnits({ bedrooms: "4" }, { includeSpaces: true });
      */
-    getUnits(filters) {
+    getUnits(filters, options) {
       let units = (this.data.units || []).slice();
 
-      if (!filters) return units;
+      if (filters) {
+        // On a grouped property a base unit stands for a whole apartment, so it
+        // passes when ANY of its bedrooms would. The server precomputes that as
+        // rollup fields (priceMin/priceMax, availabilityBuckets, …), so this
+        // stays one comparison per position instead of a walk over every bed.
+        if (filters.floor         != null) units = units.filter(u => String(u.floor)        === String(filters.floor));
+        if (filters.mapId         != null) units = units.filter(u => String(u.mapId)        === String(filters.mapId));
+        if (filters.floorplanId   != null) units = units.filter(u => String(u.floorplanId)  === String(filters.floorplanId));
+        if (filters.bedrooms      != null) units = units.filter(u => String(u.bedrooms)     === String(filters.bedrooms));
+        if (filters.bathrooms     != null) units = units.filter(u => String(u.bathrooms)    === String(filters.bathrooms));
+        if (filters.available     != null) units = units.filter(u => u.available            === filters.available);
+        if (filters.availability  != null) units = units.filter(u => this._unitMatchesAvailability(u, filters.availability));
+        if (filters.minPrice      != null) units = units.filter(u => parseInt(this._unitPriceMax(u),  10) >= filters.minPrice);
+        if (filters.maxPrice      != null) units = units.filter(u => parseInt(this._unitPriceMin(u),  10) <= filters.maxPrice);
+        if (filters.minSquareFeet != null) units = units.filter(u => parseInt(this._unitSqftMax(u),   10) >= filters.minSquareFeet);
+        if (filters.maxSquareFeet != null) units = units.filter(u => parseInt(this._unitSqftMin(u),   10) <= filters.maxSquareFeet);
+      }
 
-      if (filters.floor         != null) units = units.filter(u => String(u.floor)        === String(filters.floor));
-      if (filters.mapId         != null) units = units.filter(u => String(u.mapId)        === String(filters.mapId));
-      if (filters.floorplanId   != null) units = units.filter(u => String(u.floorplanId)  === String(filters.floorplanId));
-      if (filters.bedrooms      != null) units = units.filter(u => String(u.bedrooms)     === String(filters.bedrooms));
-      if (filters.bathrooms     != null) units = units.filter(u => String(u.bathrooms)    === String(filters.bathrooms));
-      if (filters.available     != null) units = units.filter(u => u.available            === filters.available);
-      if (filters.availability  != null) units = units.filter(u => this._unitMatchesAvailability(u, filters.availability));
-      if (filters.minPrice      != null) units = units.filter(u => parseInt(u.market_rent,  10) >= filters.minPrice);
-      if (filters.maxPrice      != null) units = units.filter(u => parseInt(u.market_rent,  10) <= filters.maxPrice);
-      if (filters.minSquareFeet != null) units = units.filter(u => parseInt(u.square_feet,  10) >= filters.minSquareFeet);
-      if (filters.maxSquareFeet != null) units = units.filter(u => parseInt(u.square_feet,  10) <= filters.maxSquareFeet);
+      // The map draws doors; a units list sells beds. Opt in to expand each
+      // matching position into its individual bedrooms — complete unit objects,
+      // ready to render through the same card a flat payload feeds.
+      if (options && options.includeSpaces) {
+        return units.reduce((out, u) => out.concat(this._spacesOrSelf(u)), []);
+      }
 
       return units;
+    },
+
+    // Price and square-footage bounds for a unit. On a grouped property these are
+    // the apartment's range, so a band that exists on a single bedroom still
+    // matches; on a flat one they collapse to the unit's own single value.
+    _unitPriceMin(u) { return u.priceMin != null ? u.priceMin : u.market_rent; },
+    _unitPriceMax(u) { return u.priceMax != null ? u.priceMax : u.market_rent; },
+    _unitSqftMin(u)  { return u.sqftMin  != null ? u.sqftMin  : u.square_feet; },
+    _unitSqftMax(u)  { return u.sqftMax  != null ? u.sqftMax  : u.square_feet; },
+
+    /**
+     * True when `units` is rolled up by plotted position — one entry per door,
+     * each carrying its leasable bedrooms under `spaces`. Student housing today.
+     *
+     * Branch on this rather than on any student-housing flag: it describes the
+     * shape you have to read, so a conventional property that opts into the same
+     * rollup later needs no second code path.
+     */
+    isGroupedProperty() {
+      return this.data?.property?.unitGrouping?.mode === "spaces";
+    },
+
+    /**
+     * The leasable bedrooms inside a unit, as complete unit objects, ordered by
+     * marketing name the way the map's modal lists them.
+     *
+     * Accepts a base unit id or any space id, so a caller holding the bedroom a
+     * visitor clicked gets the same group as one holding the door. Returns an
+     * empty array for a conventional unit or an apartment with a single bedroom,
+     * so callers can render a switcher on a plain truthy check.
+     */
+    getUnitSpaces(unitId) {
+      if (unitId == null) return [];
+      const baseId = this.baseIdBySpaceId?.[String(unitId)];
+      return (baseId && this.spacesByBaseId?.[baseId]) || [];
+    },
+
+    /**
+     * The unit actually drawn on the map for the given id — itself for a
+     * conventional unit, the apartment's base unit for a bedroom id.
+     *
+     * Anything that has to reach the map from an id that came back from outside
+     * the SDK (a deep link, a saved favorite, an analytics event) goes through
+     * here; a bedroom has no plot data of its own and would resolve to nothing.
+     */
+    getBaseUnit(unitId) {
+      if (unitId == null) return null;
+      const baseId = this.baseIdBySpaceId?.[String(unitId)] ?? String(unitId);
+      return (this.data.units || []).find(u => String(u.unitId) === baseId) || null;
     },
 
     /**
@@ -1512,6 +1622,33 @@
       }
     },
 
+    // The unit drawn on the active map for an id that may be a unit id, a
+    // bedroom id from a grouped property, or a raw SVG pointer id.
+    //
+    // The bedroom case is why this exists: a space carries no plot data, so an id
+    // arriving from outside the SDK — a deep link, a saved favorite, an analytics
+    // event — would match nothing on the map without being resolved to its base
+    // unit first.
+    _findUnitOnActiveMap(unitId) {
+      const id     = String(unitId);
+      const baseId = this.baseIdBySpaceId?.[id] ?? id;
+      const units  = this.unitsByMap[this.activeMapId] || [];
+
+      return units.find(u =>
+        String(u.unitId) === baseId ||
+        String(u.id)     === baseId ||
+        this._unitPid(u) === id
+      );
+    },
+
+    // Ids as the map knows them: every bedroom id replaced by the id of the door
+    // it is drawn on, de-duplicated so one apartment is painted once.
+    _toBaseIds(ids) {
+      const seen = new Set();
+      ids.forEach(id => seen.add(this.baseIdBySpaceId?.[String(id)] ?? String(id)));
+      return [...seen];
+    },
+
     // ----------------------------------------------------
     // MANUAL SELECT / UNSELECT (PUBLIC API)
     // ----------------------------------------------------
@@ -1519,13 +1656,7 @@
       const activeSvg = this._getActiveSvg();
       if (!activeSvg) return;
 
-      const id    = String(unitId);
-      const units = this.unitsByMap[this.activeMapId] || [];
-      const unit  = units.find(u =>
-        String(u.unitId) === id ||
-        String(u.id)     === id ||
-        this._unitPid(u) === id
-      );
+      const unit = this._findUnitOnActiveMap(unitId);
 
       const pid = this._unitPid(unit);
       if (!pid) return;
@@ -1548,13 +1679,7 @@
       const activeSvg = this._getActiveSvg();
       if (!activeSvg) return;
 
-      const id    = String(unitId);
-      const units = this.unitsByMap[this.activeMapId] || [];
-      const unit  = units.find(u =>
-        String(u.unitId) === id ||
-        String(u.id)     === id ||
-        this._unitPid(u) === id
-      );
+      const unit = this._findUnitOnActiveMap(unitId);
 
       const pid = this._unitPid(unit);
       if (!pid) return;
@@ -1772,9 +1897,7 @@
           onSelect: (data) => {
             this._hideBeansEsriPopup();
             if (data?.type !== "UNIT") return;
-            const unit = (this.data.units || []).find(
-              u => String(u.unitId) === String(data.unitId)
-            );
+            const unit = this.getBaseUnit(data.unitId);
             if (unit) {
               if (this._analytics) this._captureWithMapType('unit_marker', 'click', { viewed_unit_id: String(unit.unitId ?? unit.id) });
               if (this.config.onUnitClick) this.config.onUnitClick(unit);
@@ -1783,9 +1906,7 @@
           onHover: (data) => {
             this._hideBeansEsriPopup();
             if (data?.type !== "UNIT") return;
-            const unit = (this.data.units || []).find(
-              u => String(u.unitId) === String(data.unitId)
-            );
+            const unit = this.getBaseUnit(data.unitId);
             if (unit) this._on3DUnitHover(unit);
           }
         }
@@ -2478,7 +2599,13 @@
     highlightUnits(unitIds) {
       if (!unitIds) return;
 
-      const ids = Array.isArray(unitIds) ? unitIds.map(String) : [String(unitIds)];
+      // Callers filter at bedroom granularity on a grouped property, so the ids
+      // arriving here can be spaces. Resolve them to the doors that are actually
+      // drawn before any of the three render modes sees them — an apartment with
+      // three matching bedrooms must still be painted once.
+      const ids = this._toBaseIds(
+        Array.isArray(unitIds) ? unitIds.map(String) : [String(unitIds)]
+      );
 
       if (this._3dMode) {
         const indices = this._beans3dIndicesForUnitIds(ids);
@@ -3701,8 +3828,29 @@
             idKey: "id"
           };
         default:
-          return { set: this._favorites,          list: this.data.units      || [], idKey: "unitId" };
+          // Favorites are saved per leasable bedroom, never per door, so on a
+          // grouped property this has to be the flat space list — a base unit's
+          // id covers only its own bedroom, and hydrating from data.units would
+          // drop every favorite saved on one of the others.
+          return { set: this._favorites,          list: this._favouritableUnits(), idKey: "unitId" };
       }
+    },
+
+    // Every unit a visitor can favorite: the plotted units on a flat property,
+    // the individual bedrooms on a grouped one.
+    _favouritableUnits() {
+      const units = this.data.units || [];
+      if (!this.isGroupedProperty()) return units;
+
+      return units.reduce((out, u) => out.concat(this._spacesOrSelf(u)), []);
+    },
+
+    // A unit's bedrooms, or the unit itself when it has none. Note the explicit
+    // length check: getUnitSpaces returns [] for an ungrouped unit, and [] is
+    // truthy, so a `||` fallback here would silently drop the unit entirely.
+    _spacesOrSelf(unit) {
+      const spaces = this.getUnitSpaces(unit.unitId);
+      return spaces.length ? spaces : [unit];
     },
 
     // Every favouritable collection, in the order the favorites screen lists them.
@@ -4219,7 +4367,12 @@
 
       return Object.values(groups).map(group => {
         const rep      = group[0];
-        const count    = group.length;
+        // The badge says how many leasable things sit under this pin. On a
+        // grouped property the co-plotted bedrooms have already been rolled into
+        // one entry server-side, so the coordinate collision is gone and the
+        // apartment's own spaceCount is what the number has to come from —
+        // otherwise every student-housing pin would silently lose its badge.
+        const count    = group.length > 1 ? group.length : (rep.spaceCount || 1);
         const color    = this._unitColor(rep);
         const unitIds  = group.map(u => u.unitId).join(",");
         const dataJson = JSON.stringify(rep).replace(/'/g, "&#39;");
@@ -4529,7 +4682,10 @@
       getFloors()                  { return PynMapSDK.getFloors.call(PynMapSDK); },
       getFloorplans()              { return PynMapSDK.getFloorplans.call(PynMapSDK); },
       getAmenities()               { return PynMapSDK.getAmenities.call(PynMapSDK); },
-      getUnits(filters)            { return PynMapSDK.getUnits.call(PynMapSDK, filters); },
+      getUnits(filters, options)   { return PynMapSDK.getUnits.call(PynMapSDK, filters, options); },
+      isGroupedProperty()          { return PynMapSDK.isGroupedProperty.call(PynMapSDK); },
+      getUnitSpaces(unitId)        { return PynMapSDK.getUnitSpaces.call(PynMapSDK, unitId); },
+      getBaseUnit(unitId)          { return PynMapSDK.getBaseUnit.call(PynMapSDK, unitId); },
       getFiltersData()             { return PynMapSDK.getFiltersData.call(PynMapSDK); },
       getGalleryList(opts)                  { return PynMapSDK.getGalleryList.call(PynMapSDK, opts); },
       getGalleryImages(galleryId, opts)     { return PynMapSDK.getGalleryImages.call(PynMapSDK, galleryId, opts); },
