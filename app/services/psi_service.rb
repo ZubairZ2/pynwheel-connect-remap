@@ -189,7 +189,7 @@ class PsiService < BaseService
           end
 
           static_building_name_update(unit, u)
-          set_availability_url(unit, u)
+          set_availability_url(unit, u, property_id)
           unit.show_on_map = limit_result
 
           @unit_record << unit.provider_unit_id
@@ -280,7 +280,7 @@ class PsiService < BaseService
           end
 
           static_building_name_update(unit, u)
-          set_availability_url(unit, u)
+          set_availability_url(unit, u, property_id)
           unit.manually_updated = false
           unit.show_on_map = limit_result
 
@@ -802,7 +802,7 @@ class PsiService < BaseService
     h_move_in_date = (move_in_date.present? && move_in_date != "0") ? { moveInStartDate: move_in_date } : {}
   end
 
-  def set_availability_url(unit, u)
+  def set_availability_url(unit, u, property_id = nil)
     availability = u['Availability']
     unit.availability_url = availability['UnitAvailabilityURL'] if availability.present?
   
@@ -811,7 +811,7 @@ class PsiService < BaseService
   
     if availability.present? && availability['UnitAvailabilityURL'].present?
       url_split = availability['UnitAvailabilityURL'].split('/')
-      property_id = u.dig('Identification', 'IDValue')
+      property_id = entrata_property_id(unit, u, property_id)
       floor_plan_id = u.dig('Units', 'Unit', '@attributes', 'FloorPlanId')
       unit_id = u.dig('Identification', 'IDValue')
       lease_month = lease_month(unit)
@@ -824,6 +824,20 @@ class PsiService < BaseService
   rescue StandardError => e
     unit.availability_url_deep_linking = ''
     puts "Error occurred: #{e.message}"
+  end
+
+  # The Entrata property the deep link belongs to.
+  #
+  # This used to read ILS_Unit/Identification/IDValue, which is the *UnitSpaceID* — so
+  # every link ever generated carried property[id]/<space id>. That id is correct for
+  # unit_space[id], which is why the links still resolved to the right space, but it
+  # names no property. Prefer the id the sync was actually run for; fall back to the one
+  # stored on the unit, then to the first segment of OrganizationName
+  # ("100152889~..~4455543~..~a"), which carries it in-record.
+  def entrata_property_id(unit, u, sync_property_id)
+    sync_property_id.presence ||
+      unit.property_id.presence ||
+      u.dig('Identification', 'OrganizationName').to_s.split('~..~').first.presence
   end
 
   def lease_start_date unit
