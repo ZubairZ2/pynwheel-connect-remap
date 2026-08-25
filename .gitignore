@@ -35,3 +35,6 @@ config/application.yml
 config/database.yml
 config/environments/development.rb
 db/schema.rb
+
+# Claude Code local tooling
+.claude/
