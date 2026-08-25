@@ -3400,7 +3400,8 @@
      *     priceRange:    { min, max, values: [] },     // price range slider data
      *     visibility: {
      *       showBedroomFilter, showPricingFilter,
-     *       showSquareFeetFilter, showAvailabilityFilter, showPropertiesFilter
+     *       showSquareFeetFilter, showAvailabilityFilter, showPropertiesFilter,
+     *       showSortOptions
      *     },
      *     displayFlags: { displayRent, hideBedrooms, hideSquareFeet, hideAvailability }
      *   }

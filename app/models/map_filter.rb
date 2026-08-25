@@ -1,6 +1,10 @@
 class MapFilter < ApplicationRecord
   belongs_to :community
 
+  SORT_TOOLTIP = "This toggle controls the 'Sort by' option on the map for units & floor plans. " \
+                 "When set to No, the sort control is hidden from the right rail; " \
+                 "when Yes, users can sort units/floorplans.".freeze
+
   def get_filters_list
     [
       { name: "Properties",   marketing: :marketing_properties_enabled,  ops: :ops_properties_enabled },
@@ -11,7 +15,13 @@ class MapFilter < ApplicationRecord
       { name: "Units",        marketing: :marketing_units_tab_enabled,      ops: :ops_units_tab_enabled },
       { name: "Floor Plans",  marketing: :marketing_floorplans_tab_enabled, ops: :ops_floorplans_tab_enabled },
       { name: "Amenities",    marketing: :marketing_amenities_tab_enabled,  ops: :ops_amenities_tab_enabled },
-      { name: "Favorites",    marketing: :marketing_favorites_tab_enabled,  ops: :ops_favorites_tab_enabled }
+      { name: "Favorites",    marketing: :marketing_favorites_tab_enabled,  ops: :ops_favorites_tab_enabled },
+      {
+        name:      "Show sort options",
+        marketing: :marketing_sort_enabled,
+        ops:       :ops_sort_enabled,
+        tooltip:   SORT_TOOLTIP
+      }
     ]
   end
 
@@ -81,6 +91,16 @@ class MapFilter < ApplicationRecord
 
   def all_filters_disabled?(ops_map = false)
     get_filter_list(ops_map).values.all?(false)
+  end
+
+  # --------- Sort Visibility --------- #
+
+  # Unlike the filter toggles above, this is NOT short-circuited by
+  # `community.turn_availability_on`. The sort control is a right-rail UI
+  # affordance, not an availability-derived filter, so the CMS toggle is the
+  # only thing that decides it — same as the tab toggles below.
+  def show_sort_options?(ops_map = false)
+    ops_map ? ops_sort_enabled : marketing_sort_enabled
   end
 
   # --------- Tab Visibility --------- #

@@ -461,7 +461,12 @@ class SdkPayloadBuilderService
       showUnitsTab:           tab_list[:show_units_tab],
       showFloorPlansTab:      tab_list[:show_floorplans_tab],
       showAmenitiesTab:       tab_list[:show_amenities_tab],
-      showFavsTab:            tab_list[:show_favorites_tab]
+      showFavsTab:            tab_list[:show_favorites_tab],
+      # "Show sort options" CMS toggle. Hides the right-rail "Sort By" control on
+      # the units & floor-plans lists; the lists then fall back to their default
+      # order. Independent of the pricing/availability display toggles, which only
+      # decide WHICH sort options are offered when the control is shown.
+      showSortOptions:        @community.map_filter.show_sort_options?(false)
     }
   end
 
