@@ -55,6 +55,7 @@ class PsiService < BaseService
       before_updation_units = NotifyManagerService.new(@credentials.community_id)
       property_ids = @credentials.property_id.split(',') rescue []
       community = Community.find @credentials.community_id
+      @space_details = UnitSpaceDetails::Collector.new(community, @credentials)
 
       @credentials&.get_limit_result_availability()&.each do |limit_result|
         property_ids.each do |property_id|
@@ -101,6 +102,10 @@ class PsiService < BaseService
 
             save_psi_floorplans(floorplans, property_id)
             save_psi_units(units, property_id, limit_result)
+
+            # Both feeds already carry per-space letters, amenities and lease terms; the
+            # collector keeps whatever is there and writes once, after the units commit.
+            @space_details&.absorb(response, feed: :catalog)
             update_additional_fee_and_pricing(community, response)
             community&.community_data_updated_on()
             
@@ -111,6 +116,7 @@ class PsiService < BaseService
       end
 
       fill_unit_type_pricing_details(community) if community.enable_unit_type_pricing?
+      @space_details.flush!
       before_updation_units.compare_status_and_notify()
     rescue => e
       raise e
@@ -398,6 +404,8 @@ class PsiService < BaseService
       move_in_dates.compact.uniq.each do |move_in_date|
         response = get_units_pricing(property_id, move_in_date, limit_result)
         next unless response.present?
+
+        @space_details&.absorb(response, feed: :pricing)
 
         is_unit_space_enabled ? unit_space_enabled_pricing_update(response) : unit_space_disabled_pricing_update(response)
       end
