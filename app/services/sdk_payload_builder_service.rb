@@ -615,7 +615,20 @@ class SdkPayloadBuilderService
 
     details.group_by { |detail| detail.unit&.floorplan_id }
            .except(nil)
-           .transform_values { |rows| { letters: letters_json(rows, payload_units) } }
+           .map { |provider_id, rows|
+             [provider_id,
+              {
+                # The payload carries two different floor-plan id spaces, and a
+                # client holding a unit only has the second one:
+                #   floorplans[].floorplanId -> our Floorplan primary key
+                #   units[].floorplanId      -> the PMS's own id (provider_floorplan_id)
+                # Carrying it here lets the SDK index this block under both, so a
+                # unit resolves its tab set without falling back to name matching
+                # the way floorPlanUtils has to.
+                providerFloorplanId: provider_id,
+                letters: letters_json(rows, payload_units)
+              }]
+           }.to_h
   end
 
   def letters_json(rows, payload_units)

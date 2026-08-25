@@ -914,9 +914,19 @@
     _indexSpaceConfig() {
       this.spaceConfigByFloorplanId = {};
 
+      // Indexed under both floor-plan id spaces the payload carries:
+      //   floorplans[].floorplanId -> our primary key
+      //   units[].floorplanId      -> the PMS's own id
+      // A caller holding a unit only has the second one, so indexing on the
+      // first alone silently resolved nothing.
       (this.data.floorplans || []).forEach(fp => {
-        if (fp && fp.spaceConfig) {
-          this.spaceConfigByFloorplanId[String(fp.floorplanId)] = fp.spaceConfig;
+        if (!fp || !fp.spaceConfig) return;
+
+        this.spaceConfigByFloorplanId[String(fp.floorplanId)] = fp.spaceConfig;
+
+        const providerId = fp.spaceConfig.providerFloorplanId;
+        if (providerId != null && providerId !== "") {
+          this.spaceConfigByFloorplanId[String(providerId)] = fp.spaceConfig;
         }
       });
     },
