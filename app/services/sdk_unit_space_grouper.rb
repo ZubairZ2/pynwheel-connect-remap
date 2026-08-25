@@ -107,6 +107,19 @@ class SdkUnitSpaceGrouper
     stripped.presence
   end
 
+  # The bedroom letter a unit name ends in: "115-A" -> "A", "12b" -> "B".
+  #
+  # Deliberately the exact inverse of apartment_number, sharing its regex: that
+  # method strips this suffix to name the door, this one returns it to name the
+  # space. If the two ever disagreed, a door labelled "115" would show a tab set
+  # that did not correspond to its own bedrooms.
+  #
+  # nil when there is no suffix to take ("103"), or when the suffix is numeric
+  # ("2-101"), which names a unit rather than a bedroom.
+  def self.space_letter(name)
+    name.to_s[/\A.*\d[^A-Za-z0-9]?([A-Za-z]{1,2})\z/, 1]&.upcase
+  end
+
   # The apartment number the given unit names share, or nil when they do not
   # name one apartment — "105-A".."105-D" gives "105", and the caller labels the
   # door with that instead of borrowing one bedroom's name.
