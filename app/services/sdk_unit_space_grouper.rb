@@ -143,6 +143,18 @@ class SdkUnitSpaceGrouper
     stem
   end
 
+  # Sort key that orders "3-1-2" before "3-1-10" — every digit run is left-padded
+  # to a fixed width, so plain string comparison becomes numeric-aware. Returning
+  # a padded String rather than the usual alternating [text, number, ...] array
+  # keeps every key mutually comparable, which an array of mixed types is not.
+  #
+  # Public because anything electing a stable representative from a set of units
+  # has to order them the same way this class elects a base unit; two orderings
+  # would let a floor plan's tab point at one unit and its door at another.
+  def self.natural_key(name)
+    name.to_s.downcase.gsub(/\d+/) { |digits| digits.rjust(DIGIT_PAD, "0") }
+  end
+
   def self.common_prefix(a, b)
     length = [a.length, b.length].min
     cut    = (0...length).find { |i| a[i] != b[i] } || length
@@ -215,11 +227,7 @@ class SdkUnitSpaceGrouper
     [natural_key(unit.marketing_name), unit.id.to_i]
   end
 
-  # Sort key that orders "3-1-2" before "3-1-10" — every digit run is left-padded
-  # to a fixed width, so plain string comparison becomes numeric-aware. Returning
-  # a padded String rather than the usual alternating [text, number, ...] array
-  # keeps every key mutually comparable, which an array of mixed types is not.
   def natural_key(name)
-    name.to_s.downcase.gsub(/\d+/) { |digits| digits.rjust(DIGIT_PAD, "0") }
+    self.class.natural_key(name)
   end
 end

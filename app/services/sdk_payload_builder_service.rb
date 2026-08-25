@@ -524,13 +524,15 @@ class SdkPayloadBuilderService
   end
 
   def floorplans_json(units_ar = nil, fav_ids = Set.new)
-    units_by_floorplan = (units_ar || @community.units).group_by(&:floorplan_id)
+    units              = units_ar || @community.units
+    units_by_floorplan = units.group_by(&:floorplan_id)
+    space_configs      = space_configs_by_floorplan(units)
 
     @community.floorplans.map do |fp|
       fp_units   = units_by_floorplan[fp.id] || []
       first_unit = fp_units.find(&:available) || fp_units.first
 
-      {
+      json = {
         floorplanId:       fp.id,
         name:              fp.name,
         bedrooms:          fp.bedrooms,
@@ -547,7 +549,95 @@ class SdkPayloadBuilderService
         color:            compute_floorplan_color(fp),
         isFavorite:       fav_ids.include?(fp.id.to_s)
       }
+
+      config = space_configs[fp.provider_floorplan_id]
+      config ? json.merge(spaceConfig: config) : json
     end
+  end
+
+  # The floor-plan-scoped tab set the student-housing pop-up renders: one entry
+  # per space letter, each carrying its own availability, premium chips, rent and
+  # lease dates.
+  #
+  # Returns {} for every property but a student-housing one whose feed named
+  # letters. This is the single place the toggle is checked -- the import never
+  # asks about it, and the clients branch on whether spaceConfig is present.
+  #
+  # Floor-plan-scoped rather than unit-scoped because a room type is a property of
+  # the floor plan: the specific apartment is assigned at signing, so the pop-up
+  # never names a unit. Precomputed here rather than derived in the browser so
+  # opening the modal costs an array index, not a scan over a thousand units.
+  def space_configs_by_floorplan(units)
+    return {} unless @community.student_housing_property?
+
+    details = UnitSpaceDetail.for_community(@community.id).lettered.includes(:unit).to_a
+    return {} if details.empty?
+
+    # The units this payload actually carries. Deliberately NOT the same source as
+    # the tab set: map_units narrows to available units whenever
+    # turn_availability_on is false, so a letter whose spaces are all leased is
+    # absent here -- and deriving tabs from it would make a 4-bed apartment show
+    # three room types. Tabs come from the detail rows; only the counts and the
+    # actionable unit id come from the payload.
+    payload_units = units.index_by(&:id)
+
+    details.group_by { |detail| detail.unit&.floorplan_id }
+           .except(nil)
+           .transform_values { |rows| { letters: letters_json(rows, payload_units) } }
+  end
+
+  def letters_json(rows, payload_units)
+    rows.group_by(&:space_letter).sort_by(&:first).map do |letter, group|
+      # Stable across syncs: ordered by the same natural key SdkUnitSpaceGrouper
+      # elects a base unit with. Deliberately not "first available" -- availability
+      # flips as leases are signed, and this id is what favourites, deep links and
+      # analytics are keyed on.
+      ordered = group.sort_by { |d| [SdkUnitSpaceGrouper.natural_key(d.unit&.marketing_name), d.unit_id.to_i] }
+      display = ordered.first
+      present = ordered.filter_map { |d| payload_units[d.unit_id] }
+
+      # The unit a tab acts on. The display representative when the payload carries
+      # it, otherwise any of that letter's units that it does carry, otherwise nil
+      # -- an id outside units[] resolves to nothing in the browser, and a dangling
+      # id is worse than an absent one. A nil here still renders a "0 spaces
+      # available" tab; it just falls back to the floor plan's apply URL.
+      actionable = payload_units[display.unit_id] || present.first
+
+      {
+        letter:           letter,
+        # The only aggregate, and the only field read from the payload's units:
+        # `available` already honours sold, manual_override and the CMS's
+        # availability_is_updated, where raw VacancyClass would not.
+        availableCount:   present.count(&:available),
+        totalCount:       group.size,
+        isPremium:        display.premium?,
+        premiumAmenities: display.premium_amenities,
+        rent:             display.space_rent&.to_f,
+        leaseStartDate:   display.lease_start_date,
+        leaseEndDate:     display.lease_end_date,
+        academicYear:     display.academic_year_label,
+        applyUrl:         apply_url_for(actionable),
+        representativeUnitId: actionable&.id
+      }
+    end
+  end
+
+  # get_availability_url already resolves space URL -> floor plan URL and honours
+  # the separate_link credential mode, so the fallback lives there rather than
+  # here. The floorplan is passed in to keep it from re-querying: Unit#floorplan
+  # is an override that hits the database on every call.
+  def apply_url_for(unit)
+    return nil unless unit
+
+    # Both assignments exist to keep this off the database: Unit#floorplan is an
+    # override that queries on every call, and get_availability_url reaches for
+    # unit.community.credential.
+    unit.association(:community).target = @community
+    unit.get_availability_url(floorplans_by_provider_id[unit.floorplan_id])
+  end
+
+  def floorplans_by_provider_id
+    @floorplans_by_provider_id ||= @community.floorplans.index_by(&:provider_floorplan_id)
   end
 
   def amenities_json(fav_ids = Set.new)
