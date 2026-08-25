@@ -849,6 +849,7 @@
       ["unit", "amenity", "floorplan"].forEach(type => this._hydrateFavorites(type));
 
       this._indexUnits();
+      this._indexSpaceConfig();
       this._resolve3DConfig();
       this._applyThemeConfig();
     },
@@ -902,6 +903,23 @@
     // drawn on (SdkPayloadBuilderService::SPACE_NEVER_KEYS). getUnitSpaces puts
     // these back so a caller still receives a complete unit.
     _POSITION_KEYS: ["x_plot", "y_plot", "pointerData", "mapId", "floor"],
+
+    // Student housing: floorplans[].spaceConfig carries a finished tab set for the
+    // pop-up -- one entry per space letter, each with its own availability count,
+    // premium chips, rent and lease dates. Indexed once at load rather than looked
+    // up per call, because the modal re-reads it on every tab click.
+    //
+    // Keyed by floorplanId as a String: the payload's floorplanId is a number and
+    // callers routinely hold it as a string from a DOM attribute.
+    _indexSpaceConfig() {
+      this.spaceConfigByFloorplanId = {};
+
+      (this.data.floorplans || []).forEach(fp => {
+        if (fp && fp.spaceConfig) {
+          this.spaceConfigByFloorplanId[String(fp.floorplanId)] = fp.spaceConfig;
+        }
+      });
+    },
 
     _indexUnits() {
       this.unitsByMap             = {};
@@ -1591,6 +1609,46 @@
     getBaseUnit(unitId) {
       if (unitId == null) return null;
       return this.unitById?.[String(unitId)] || null;
+    },
+
+    /**
+     * The space-letter tab set for a floor plan, or null when it has none.
+     *
+     * Each entry is a whole tab, already computed server-side:
+     *   { letter, availableCount, totalCount, isPremium, premiumAmenities,
+     *     rent, leaseStartDate, leaseEndDate, academicYear, applyUrl,
+     *     representativeUnitId }
+     *
+     * Entries are objects so new fields can be added without a client release --
+     * read the keys you know and ignore the rest.
+     *
+     * `representativeUnitId` may be null when every unit of that letter is leased
+     * or hidden, so the payload carries none of them. The tab is still renderable;
+     * it just has no unit to act on, and applyUrl falls back to the floor plan's.
+     */
+    getFloorplanSpaceConfig(floorplanId) {
+      if (floorplanId == null) return null;
+      return this.spaceConfigByFloorplanId?.[String(floorplanId)] || null;
+    },
+
+    /** Just the letters, e.g. ["A","B","C","D"]. Empty when there is no tab set. */
+    getSpaceLetters(floorplanId) {
+      const config = this.getFloorplanSpaceConfig(floorplanId);
+      return config ? config.letters.map(entry => entry.letter) : [];
+    },
+
+    /**
+     * Whether this property has any floor-plan tab set at all.
+     *
+     * The signal to route on: a host branches on the shape it has to render, never
+     * on a vertical or a PMS. Distinct from isGroupedProperty(), which answers a
+     * different question -- how to parse units[]. They are both true on a student
+     * property today, and they diverge when the feed named no letters: the payload
+     * is still rolled up, but there is no tab set, and the host falls back to its
+     * ordinary unit detail view.
+     */
+    hasSpaceConfig() {
+      return Object.keys(this.spaceConfigByFloorplanId || {}).length > 0;
     },
 
     /**
@@ -4690,6 +4748,9 @@
       isGroupedProperty()          { return PynMapSDK.isGroupedProperty.call(PynMapSDK); },
       getUnitSpaces(unitId)        { return PynMapSDK.getUnitSpaces.call(PynMapSDK, unitId); },
       getBaseUnit(unitId)          { return PynMapSDK.getBaseUnit.call(PynMapSDK, unitId); },
+      hasSpaceConfig()             { return PynMapSDK.hasSpaceConfig.call(PynMapSDK); },
+      getFloorplanSpaceConfig(fpId){ return PynMapSDK.getFloorplanSpaceConfig.call(PynMapSDK, fpId); },
+      getSpaceLetters(fpId)        { return PynMapSDK.getSpaceLetters.call(PynMapSDK, fpId); },
       getFiltersData()             { return PynMapSDK.getFiltersData.call(PynMapSDK); },
       getGalleryList(opts)                  { return PynMapSDK.getGalleryList.call(PynMapSDK, opts); },
       getGalleryImages(galleryId, opts)     { return PynMapSDK.getGalleryImages.call(PynMapSDK, galleryId, opts); },
