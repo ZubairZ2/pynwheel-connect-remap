@@ -1487,6 +1487,26 @@
     },
 
     /**
+     * One floor plan, by either of the two id spaces the payload carries:
+     * floorplans[].floorplanId (our primary key) or the PMS's own id, which is
+     * what units[].floorplanId holds.
+     *
+     * Callers holding a unit only ever have the second one, so matching on
+     * floorplanId alone silently resolves nothing -- which is why floorPlanUtils
+     * has to fall back to comparing floor plan *names*.
+     */
+    getFloorplan(floorplanId) {
+      if (floorplanId == null) return null;
+
+      const wanted = String(floorplanId);
+
+      return (this.data.floorplans || []).find(fp =>
+        String(fp.floorplanId) === wanted ||
+        String(fp.spaceConfig?.providerFloorplanId ?? "") === wanted
+      ) || null;
+    },
+
+    /**
      * Returns all community amenities for the property.
      * Each object: { amenityId, name, description, amenityType, image, directionalText,
      *                additionalImages, additionalButtons }
@@ -4753,6 +4773,7 @@
       changeFloor(floorNumber)     { return PynMapSDK.changeFloor.call(PynMapSDK, floorNumber); },
       getFloors()                  { return PynMapSDK.getFloors.call(PynMapSDK); },
       getFloorplans()              { return PynMapSDK.getFloorplans.call(PynMapSDK); },
+      getFloorplan(fpId)           { return PynMapSDK.getFloorplan.call(PynMapSDK, fpId); },
       getAmenities()               { return PynMapSDK.getAmenities.call(PynMapSDK); },
       getUnits(filters, options)   { return PynMapSDK.getUnits.call(PynMapSDK, filters, options); },
       isGroupedProperty()          { return PynMapSDK.isGroupedProperty.call(PynMapSDK); },
