@@ -156,7 +156,39 @@ class SdkPayloadBuilderService
       color:                  compute_unit_marketing_color(unit, floorplan),
       opsColor:               compute_unit_ops_color(unit),
       isFavorite:             fav_ids.include?(unit.id.to_s)
+    }.merge(space_json_for(unit))
+  end
+
+  # The space's own letter and terms, carried on the unit itself.
+  #
+  # spaceConfig (on the floor plan) is what the pop-up renders; this is what lets
+  # a single unit still describe itself once it is out of that context -- a
+  # favourited bedroom in the favourites rail, an analytics event, and the
+  # door-preferred lookup that decides which unit a letter tab acts on.
+  #
+  # Emitted only for a student-housing property, so every other payload is
+  # unchanged.
+  def space_json_for(unit)
+    return {} unless @community.student_housing_property?
+
+    detail = space_details_by_unit_id[unit.id]
+    return {} unless detail
+
+    {
+      space: {
+        letter:         detail.space_letter,
+        isPremium:      detail.premium?,
+        rent:           detail.space_rent&.to_f,
+        leaseStartDate: detail.lease_start_date,
+        leaseEndDate:   detail.lease_end_date,
+        academicYear:   detail.academic_year_label
+      }
     }
+  end
+
+  def space_details_by_unit_id
+    @space_details_by_unit_id ||=
+      UnitSpaceDetail.for_community(@community.id).index_by(&:unit_id)
   end
 
   private
