@@ -7552,6 +7552,56 @@ ul.add-fav-options {
   font-weight: 600;
 }
 
+/* Info tooltip for rows in the map filters visibility modal. Self-contained
+   (CSS-only hover/focus) because the admin layout never boots Bootstrap's
+   tooltip JS. */
+.map-filter-tooltip {
+  position: relative;
+  display: inline-block;
+  margin-left: 6px;
+  color: #138fd4;
+  cursor: pointer;
+}
+
+.map-filter-tooltip .map-filter-tooltip__text {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.15s ease-in-out;
+  position: absolute;
+  bottom: 150%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  background-color: #000000;
+  color: #ffffff;
+  text-align: left;
+  border-radius: 6px;
+  padding: 12px;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.4;
+  white-space: normal;
+  z-index: 1060;
+}
+
+.map-filter-tooltip .map-filter-tooltip__text::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #000000 transparent transparent transparent;
+}
+
+.map-filter-tooltip:hover .map-filter-tooltip__text,
+.map-filter-tooltip:focus .map-filter-tooltip__text {
+  visibility: visible;
+  opacity: 1;
+}
+
 .map-configurations-alert {
   padding: 12px;
   margin-bottom: 0px;

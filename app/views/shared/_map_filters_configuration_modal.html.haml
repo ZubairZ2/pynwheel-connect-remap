@@ -15,7 +15,11 @@
             %tbody
               - filter_list.each do |filter|
                 %tr
-                  %td= filter[:name]
+                  %td
+                    = filter[:name]
+                    - if filter[:tooltip].present?
+                      %i.map-filter-tooltip.fa.fa-question-circle{ tabindex: "0" }
+                        %span.map-filter-tooltip__text= filter[:tooltip]
                   %td
                     .TriSea-technologies-Switch
                       = f.check_box filter[:marketing], checked: map_filter.send(filter[:marketing])

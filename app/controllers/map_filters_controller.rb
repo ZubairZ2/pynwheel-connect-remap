@@ -51,7 +51,9 @@ private
       :ops_units_tab_enabled,
       :ops_floorplans_tab_enabled,
       :ops_amenities_tab_enabled,
-      :ops_favorites_tab_enabled
+      :ops_favorites_tab_enabled,
+      :marketing_sort_enabled,
+      :ops_sort_enabled
     )
   end
 end
