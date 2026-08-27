@@ -108,7 +108,7 @@ class SdkPayloadBuilderService
     description, description_title = description_fields(unit, floorplan)
 
     {
-      unitNumber:      unit.marketing_name,
+      unitNumber:      unit.api_unit_marketing_name,
       unitMarketingName: unit.api_unit_marketing_name,
       mapId:           map_for_unit(unit),
       unitId:          unit.id,
