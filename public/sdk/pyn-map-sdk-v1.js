@@ -1645,16 +1645,21 @@
      * The space-letter tab set for a floor plan, or null when it has none.
      *
      * Each entry is a whole tab, already computed server-side:
-     *   { letter, availableCount, totalCount, isPremium, premiumAmenities,
-     *     rent, leaseStartDate, leaseEndDate, academicYear, applyUrl,
-     *     representativeUnitId }
+     *   { letter, availableCount, totalCount, availableDate, availabilityStatus,
+     *     isPremium, premiumAmenities, rent, leaseStartDate, leaseEndDate,
+     *     academicYear, representativeUnitId }
      *
      * Entries are objects so new fields can be added without a client release --
      * read the keys you know and ignore the rest.
      *
+     * Deliberately no per-letter apply URL: on a student-housing property Apply
+     * Now is always the floor plan's link (floorplans[].availability_url), because
+     * the applicant is choosing a room type and the property assigns the actual
+     * apartment at signing.
+     *
      * `representativeUnitId` may be null when every unit of that letter is leased
      * or hidden, so the payload carries none of them. The tab is still renderable;
-     * it just has no unit to act on, and applyUrl falls back to the floor plan's.
+     * it just has no unit to act on.
      */
     getFloorplanSpaceConfig(floorplanId) {
       if (floorplanId == null) return null;

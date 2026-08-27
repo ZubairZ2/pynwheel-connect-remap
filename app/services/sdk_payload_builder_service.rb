@@ -49,6 +49,28 @@ class SdkPayloadBuilderService
     units&.map { |unit| unit_json(unit, fav_ids) }
   end
 
+  # Relabels standalone bedrooms with their apartment number -- "501-A" -> "501".
+  #
+  # For callers that serialize favorited units straight through units_json rather
+  # than lifting them out of a door (get_favorites, which serves the shared
+  # favorites link). Those cards sit beside units-list cards that are already
+  # labelled with the apartment number, so without this the same bedroom reads
+  # "501" in one tab and "501-A" in another.
+  #
+  # Uses the grouper's own rule, so this and the units list can never disagree
+  # about what an apartment is called. No-op on every non-student property, and
+  # on any name with no bedroom suffix to strip.
+  def door_labelled(entries)
+    return entries unless @community.student_housing_property?
+
+    Array(entries).map do |entry|
+      apartment = SdkUnitSpaceGrouper.apartment_number(entry[:unitMarketingName] || entry[:unitNumber])
+      next entry unless apartment
+
+      entry.merge(unitNumber: apartment, unitMarketingName: apartment)
+    end
+  end
+
   # The same units, rolled up to one entry per plotted position — see
   # SdkUnitSpaceGrouper for why the plot is the grouping key.
   #
@@ -92,10 +114,22 @@ class SdkPayloadBuilderService
   # space's own values. The space's rent and availability win on merge, which is
   # what turns an apartment-level "from $1,200" back into that bedroom's price.
   #
+  # The one thing that does NOT win is the name. A lifted bedroom is labelled
+  # with its door's apartment number -- "501", not "501-A" -- because it is shown
+  # by the same card the units list uses, and that list already labels every door
+  # with its apartment number (see #grouped_units_json). Letting the bedroom's own
+  # name through put "501-A" on a favorites card sitting beside a units card
+  # reading "501", which reads as two different apartments. The letter is not lost:
+  # it stays on `space.letter`, which is where clients read it from.
+  #
   # This is the server-side twin of the merge the SDK does client-side, for the
   # places a response has to hand back single bedrooms rather than doors.
+  DOOR_OWNED_KEYS = %i[unitNumber unitMarketingName].freeze
+
   def self.space_as_unit(grouped_unit, space)
-    grouped_unit.except(:spaces, :hasFavoriteSpace, *ROLLUP_KEYS).merge(space)
+    grouped_unit.except(:spaces, :hasFavoriteSpace, *ROLLUP_KEYS)
+                .merge(space)
+                .merge(grouped_unit.slice(*DOOR_OWNED_KEYS))
   end
 
   # One unit, in the full map-facing shape. Extracted from units_json so the
@@ -574,7 +608,7 @@ class SdkPayloadBuilderService
         description:       fp.description.presence,
         description_title: floorplan_description_title(fp),
         additionalButtons: floorplan_additional_buttons(fp),
-        availability_url: first_unit&.get_availability_url(),
+        availability_url: floorplan_apply_url(fp, first_unit),
         availability_status: fp.availability_status,
         primaryImage:     fp.image.present?           ? fp.validated_image_url                                        : nil,
         secondaryImage:   fp.secondary_image.present? ? fp.convert_to_s3_accelerate_url(fp.secondary_image.url) : nil,
@@ -585,6 +619,25 @@ class SdkPayloadBuilderService
       config = space_configs[fp.provider_floorplan_id]
       config ? json.merge(spaceConfig: config) : json
     end
+  end
+
+  # The Apply Now link a floor-plan card and the space pop-up open.
+  #
+  # On a student-housing property this is deliberately the floor plan's **own**
+  # URL and never a unit's or a space's. Students lease a bed of a room type, not
+  # an apartment -- the property assigns the actual unit at signing -- so a
+  # per-space deep link would send an applicant at a specific bedroom the leasing
+  # office has not promised them. `separate_link` still wins, the way it does for
+  # every other Apply Now in the map.
+  #
+  # Every other property keeps exactly the behaviour it has today.
+  def floorplan_apply_url(fp, first_unit)
+    return first_unit&.get_availability_url() unless @community.student_housing_property?
+
+    credential = @community.credential
+    return credential.separate_link if credential&.apply_now.to_s == "separate_link"
+
+    fp.availability_url.presence
   end
 
   # The floor-plan-scoped tab set the student-housing pop-up renders: one entry
@@ -626,12 +679,12 @@ class SdkPayloadBuilderService
                 # unit resolves its tab set without falling back to name matching
                 # the way floorPlanUtils has to.
                 providerFloorplanId: provider_id,
-                letters: letters_json(rows, payload_units)
+                letters: letters_json(rows, payload_units, floorplans_by_provider_id[provider_id])
               }]
            }.to_h
   end
 
-  def letters_json(rows, payload_units)
+  def letters_json(rows, payload_units, floorplan = nil)
     rows.group_by(&:space_letter).sort_by(&:first).map do |letter, group|
       # Stable across syncs: ordered by the same natural key SdkUnitSpaceGrouper
       # elects a base unit with. Deliberately not "first available" -- availability
@@ -647,38 +700,62 @@ class SdkPayloadBuilderService
       # id is worse than an absent one. A nil here still renders a "0 spaces
       # available" tab; it just falls back to the floor plan's apply URL.
       actionable = payload_units[display.unit_id] || present.first
+      available  = present.select(&:available)
 
       {
         letter:           letter,
-        # The only aggregate, and the only field read from the payload's units:
+        # The only aggregates, and the only fields read from the payload's units:
         # `available` already honours sold, manual_override and the CMS's
         # availability_is_updated, where raw VacancyClass would not.
-        availableCount:   present.count(&:available),
+        availableCount:   available.size,
         totalCount:       group.size,
+        # When this letter's first bed frees up. The earliest move-in across the
+        # letter's own free spaces, which is what "when could I move in" means for
+        # a room type nobody has been assigned a specific apartment in yet. nil
+        # when the letter is fully leased -- the client then renders the status
+        # alone rather than an availability date that belongs to nothing.
+        availableDate:    earliest_available_date(available),
+        availabilityStatus: letter_availability_status(available.size, floorplan),
         isPremium:        display.premium?,
         premiumAmenities: display.premium_amenities,
         rent:             display.space_rent&.to_f,
         leaseStartDate:   display.lease_start_date,
         leaseEndDate:     display.lease_end_date,
         academicYear:     display.academic_year_label,
-        applyUrl:         apply_url_for(actionable),
+        # Deliberately no per-letter applyUrl. Apply Now on a student-housing
+        # property is always the floor plan's link -- floorplans[].availability_url
+        # -- because the applicant is choosing a room type, not an apartment. See
+        # floorplan_apply_url.
         representativeUnitId: actionable&.id
       }
     end
   end
 
-  # get_availability_url already resolves space URL -> floor plan URL and honours
-  # the separate_link credential mode, so the fallback lives there rather than
-  # here. The floorplan is passed in to keep it from re-querying: Unit#floorplan
-  # is an override that hits the database on every call.
-  def apply_url_for(unit)
-    return nil unless unit
+  # The soonest a visitor could move into this letter, or nil when none of its
+  # spaces are free. Year-zero dates are the importers' "no date" sentinel --
+  # Unit#available_now? reads them as available now -- so they are dropped rather
+  # than serialized as 0000-01-01.
+  def earliest_available_date(available_units)
+    available_units.filter_map { |u| u.available_date if u.available_date&.year.to_i > 1 }.min
+  end
 
-    # Both assignments exist to keep this off the database: Unit#floorplan is an
-    # override that queries on every call, and get_availability_url reaches for
-    # unit.community.credential.
-    unit.association(:community).target = @community
-    unit.get_availability_url(floorplans_by_provider_id[unit.floorplan_id])
+  # The badge the pop-up shows for the selected letter.
+  #
+  # Anchored to the floor plan's own CMS status rather than derived from a ratio:
+  # `availability_status` is a dropdown a property manager sets deliberately, and
+  # inventing "Almost Gone" from a percentage would overrule them with a threshold
+  # nobody agreed to. The one thing the letter knows better than the floor plan is
+  # whether *it* has anything left, so that is the only specialisation:
+  #
+  #   no free spaces of this letter  -> sold_out, whatever the plan says
+  #   free spaces of this letter     -> the plan's status, but never sold_out
+  def letter_availability_status(available_count, floorplan)
+    status = floorplan&.availability_status
+
+    return "sold_out" if available_count.zero?
+    return "available" if status.blank? || status == "sold_out"
+
+    status
   end
 
   def floorplans_by_provider_id

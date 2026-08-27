@@ -341,7 +341,9 @@ module Api
 
           units_ar = @community.units.visible_units.without_hidden_names.where(id: unit_ids.to_a).includes(:floorplan).to_a
           units_ar.each { |u| u.association(:community).target = @community }
-          favorite_units = builder.units_json(unit_ids, show_ops_map?, units_ar)
+          # door_labelled: a favorited bedroom is shown by the same card the units
+          # list uses, and that list labels every door with its apartment number.
+          favorite_units = builder.door_labelled(builder.units_json(unit_ids, show_ops_map?, units_ar))
 
           favorite_amenities  = builder.amenities_json(amenity_ids).select { |a| a[:isFavorite] }
           favorite_floorplans = builder.floorplans_json(nil, floorplan_ids).select { |f| f[:isFavorite] }
