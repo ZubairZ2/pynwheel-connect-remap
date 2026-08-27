@@ -2093,20 +2093,10 @@
 
       // Raw format expected by convertUnitsArr (from utils.js).
       // Fields mirror getFormattedBeansUnits() in beans3DHandler.js.
-      //
-      // `unit` is the match key, NOT a label: Beans resolves a row to a polygon
-      // by exact string equality against `building.name + "-" + poi.name` from
-      // its own model, and a row that misses gets no shape — the widget logs
-      // `Missing N: <unit>` and the unit never highlights. beansUnitName is the
-      // server's key for that lookup, held apart from unitNumber because
-      // unitNumber is a display name the student-housing roll-up rewrites
-      // ("414-A" -> "414") and because it needs a building prefix wherever a
-      // unit number repeats across buildings. See
-      // SdkPayloadBuilderService#beans_unit_name. `name` stays the display name.
       const rawUnits = units.map(u => ({
         unitId:          u.unitId,
         type:            "UNIT",
-        unit:            u.beansUnitName || u.unitNumber,
+        unit:            u.unitNumber,
         name:            u.unitNumber,
         floor:           u.floor,
         bed:             u.bedrooms,

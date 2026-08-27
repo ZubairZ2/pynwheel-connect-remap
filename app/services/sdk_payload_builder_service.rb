@@ -110,7 +110,6 @@ class SdkPayloadBuilderService
     {
       unitNumber:      unit.marketing_name,
       unitMarketingName: unit.api_unit_marketing_name,
-      beansUnitName:   beans_unit_name(unit),
       mapId:           map_for_unit(unit),
       unitId:          unit.id,
       building:        unit.building,
@@ -161,55 +160,6 @@ class SdkPayloadBuilderService
   end
 
   private
-
-  # The string the Beans 3D widget matches this unit against, kept separate from
-  # every name the UI shows.
-  #
-  # Beans resolves a row to a polygon by exact string equality against a key it
-  # builds as `building.name + "-" + poi.name` (the building part is dropped only
-  # when their building is literally named "main"). A row whose `unit` does not
-  # hit that key gets no shape at all — the widget logs `Missing N: <unit>` and
-  # the unit simply never highlights.
-  #
-  # Two reasons this cannot just be `unitNumber`:
-  #
-  # 1. `unitNumber` is a *display* name. The student-housing roll-up rewrites it
-  #    to the apartment number ("414-A" -> "414") so a units list does not mix
-  #    bedroom names with apartment names — see SdkUnitSpaceGrouper.door_name.
-  #    That rename is right for the list and wrong for Beans, whose model still
-  #    knows the unit by its real name.
-  # 2. A property phased under one address can repeat a unit number across
-  #    buildings ("414-A" in both "2818-4" and "Parkway Place - 4"). Both rows
-  #    reach Beans under the same key, so at most one of them can ever resolve.
-  #
-  # The building prefix is added only to names that are actually ambiguous. A
-  # name that already identifies one unit keeps the exact string it has always
-  # sent, so single-building properties — which is most of them, and all the ones
-  # matching today — are byte-for-byte unchanged.
-  def beans_unit_name(unit)
-    name = unit.marketing_name.to_s
-    return name unless ambiguous_unit_names.include?(name)
-
-    building = unit.building.to_s.strip
-    building.empty? ? name : "#{building}-#{name}"
-  end
-
-  # Marketing names shared by more than one unit on the property.
-  #
-  # Deliberately computed over every unit the community has, not over the units
-  # in this payload: availability filtering changes which units ship on any given
-  # request, and a key that grew or lost its building prefix as units leased
-  # would break matching for a different reason than it fixed.
-  def ambiguous_unit_names
-    @ambiguous_unit_names ||=
-      @community.units
-                .group(:marketing_name)
-                .having("COUNT(*) > 1")
-                .count
-                .keys
-                .map(&:to_s)
-                .to_set
-  end
 
   # Whether this payload's `units` are rolled up by plot position: the property
   # is configured for it AND the client asked. Both are required — see #build.
