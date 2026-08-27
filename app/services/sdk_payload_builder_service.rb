@@ -110,7 +110,6 @@ class SdkPayloadBuilderService
     {
       unitNumber:      unit.api_unit_marketing_name,
       unitMarketingName: unit.api_unit_marketing_name,
-      providerPropertyId: unit.property_id
       mapId:           map_for_unit(unit),
       unitId:          unit.id,
       building:        unit.building,

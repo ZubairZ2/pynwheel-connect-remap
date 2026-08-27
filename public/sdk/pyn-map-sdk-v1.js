@@ -2099,6 +2099,7 @@
         unit:            u.unitNumber,
         name:            u.unitNumber,
         floor:           u.floor,
+        building:        u.building,
         bed:             u.bedrooms,
         bath:            u.bathrooms,
         sqft:            u.square_feet,
