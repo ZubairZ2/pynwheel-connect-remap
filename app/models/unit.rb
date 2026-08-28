@@ -98,6 +98,27 @@ class Unit < ApplicationRecord
   has_one :door, as: :attached_with, dependent: :destroy
   has_one :tour_stop, as: :stop, dependent: :destroy
   
+  # Per-field "set by hand" markers, keyed by the grid column they belong to.
+  #
+  # The provider sync services check these before overwriting a column, and most
+  # of them do it independently of `manual_override` (see PsiService#206 for the
+  # name flag) - so a field stays pinned to its hand-entered value even with the
+  # unit-level Manual Override switched off, until its own flag is cleared.
+  # `sold` is the one exception: nothing syncs it, so its flag is display only.
+  FEED_OVERRIDE_FLAGS = {
+    "name" => { column: :name_is_updated, label: "Unit name" },
+    "floorplan" => { column: :floorplan_id_is_updated, label: "Floor plan" },
+    "price" => { column: :effective_rent_is_updated, label: "Price" },
+    "available" => { column: :available_is_updated, label: "Available flag" },
+    "available_date" => { column: :available_date_is_updated, label: "Available date" },
+    "availability" => { column: :availability_is_updated, label: "Availability status" },
+    "floor" => { column: :floor_is_updated, label: "Floor" },
+    "building" => { column: :building_is_updated, label: "Building" },
+    "sold" => { column: :sold_is_updated, label: "Sold", display_only: true }
+  }.freeze
+
+  FEED_OVERRIDE_COLUMNS = FEED_OVERRIDE_FLAGS.values.map { |f| f[:column] }.freeze
+
   scope :visible_units, -> {where(visible: true)}
 
   # Excludes units matching HIDE_UNIT_PATTERN by name, for units synced since the
@@ -575,6 +596,13 @@ class Unit < ApplicationRecord
 
   def unit_image
     self.image.present? ? self.image.url : (self.floorplan.present? && self.floorplan.image.present? ? self.floorplan.image.url : "/assets/default.jpeg")
+  end
+
+  # Does this unit have a position on the map? Legacy x/y coordinates and SVG
+  # pointers are both valid placements, matching UnitFilterQuery's plotted filter
+  # so the grid's marker icon and the filter can never disagree.
+  def plotted_on_map?
+    x_plot.to_i.positive? || y_plot.to_i.positive? || pointer_data.is_a?(Hash) && pointer_data["x_plot"].present?
   end
 
   def unit_market

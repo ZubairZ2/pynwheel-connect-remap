@@ -1,0 +1,9 @@
+-# A sortable column heading. Clicking toggles asc/desc on that column and keeps
+-# every active filter in the link, so sorting never silently widens the list.
+- active = @filter.sort_key == key
+- next_dir = (active && @filter.sort_dir == "asc") ? "desc" : "asc"
+- align = defined?(align) ? align : nil
+%th{class: [("right" if align == "right"), ("sorted" if active)].compact.join(" ")}
+  %a.sort-link{href: units_page_path(sort: key, dir: next_dir, page: nil), "data-remote-nav" => true}
+    = label
+    %span.sort-caret{class: (active ? @filter.sort_dir : "none")}

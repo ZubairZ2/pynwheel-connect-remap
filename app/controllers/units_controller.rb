@@ -7,10 +7,39 @@ class UnitsController < ApplicationController
   before_action :set_unit, only: [:edit,:update,:destroy,:remove_pri_scnd_image, :update_lock_provider]
   before_action :load_all_locks, only: [:new, :create, :edit, :update]
 
+  PER_PAGE = 50
+  PER_PAGE_OPTIONS = [25, 50, 100, 200].freeze
+
+  # "All" is still bounded. Pagination exists because rendering every unit of a
+  # property is what made this page megabytes of HTML, so the escape hatch gets a
+  # ceiling rather than an unbounded page - comfortably above the largest
+  # property today, and the view says so when a set is actually clipped.
+  MAX_PER_PAGE = 2000
+
+  helper_method :per_page, :showing_all?, :per_page_capped?
+
   def index
-    @community_info = Community.includes(:floorplans, :units).find(params[:community_id])
     @communities = current_company.communities
+    @currency_symbol = @community.get_currency_symbol
+    @floorplans = @community.floorplans.order(:name).to_a
+    @floorplans_by_provider_id = @floorplans.index_by(&:provider_floorplan_id)
+    @filter = UnitFilterQuery.new(@community, filter_params)
+    # includes(:door) is what keeps the lock column from firing one query per
+    # row - it was the bulk of the 700+ queries this page used to run.
+    scope = @filter.results.includes(:door)
+    @units = scope.paginate(page: params[:page], per_page: resolve_per_page)
+    @filter_options = unit_filter_options
     add_breadcrumb "Units", community_units_path(@community)
+
+    # One-time orientation note. Marked seen on the first full page view only -
+    # consuming it on a toolbar XHR would burn it without anyone seeing it.
+    @show_intro = !current_user.welcome_unit_page && !request.xhr?
+    current_user.update_column(:welcome_unit_page, true) if @show_intro
+
+    # The toolbar re-requests this action on every keystroke and sorts/pages
+    # through it too; sending back only the results fragment keeps the page
+    # chrome and the mass override modals out of every one of those responses.
+    render partial: "units_table", layout: false if request.xhr?
   end
 
   def show_unit_image_in_modal
@@ -511,68 +540,108 @@ class UnitsController < ApplicationController
   end
 
   def set_floor
-    @community.units.where(id: params[:unit_ids]).update_all(floor: params[:floor], manually_updated: true, floor_is_updated: true)
+    mass_override_units.update_all(floor: params[:floor], manually_updated: true, floor_is_updated: true, updated_at: Time.current)
     flash[:notice] = "Floor is updated for units successfully."
     redirect_back(fallback_location: root_path)
   end
 
   def set_building
-    @community.units.where(id: params[:unit_ids]).update_all(building: params[:building], manually_updated: true)
+    mass_override_units.update_all(building: params[:building], manually_updated: true, building_is_updated: true, updated_at: Time.current)
     flash[:notice] = "Building is updated for units successfully."
     redirect_back(fallback_location: root_path)
   end
 
+  # Mass override: point every selected unit at one floor plan. Mirrors the
+  # floor plan change on the unit edit page, so only the floor plan association
+  # and its derived amenities are touched - rent, square footage and the rest of
+  # the unit's own data are left alone.
+  def set_floorplan
+    floorplan = @community.floorplans.find_by(id: params[:floorplan_id])
+    unit_ids = mass_override_unit_ids
+
+    # Units reference their floor plan by provider_floorplan_id, so a floor plan
+    # missing one would silently unlink every selected unit.
+    if floorplan.blank? || floorplan.provider_floorplan_id.blank?
+      flash[:error] = "Please select a floor plan that has a Provider Floorplan ID."
+    elsif unit_ids.blank?
+      flash[:error] = "Please select at least one unit."
+    else
+      @community.units.where(id: unit_ids).update_all(
+        floorplan_id: floorplan.provider_floorplan_id,
+        floorplan_id_is_updated: true,
+        manually_updated: true,
+        updated_at: Time.current
+      )
+      AssignFloorplanToUnitsJob.perform_async(@community.id, unit_ids, floorplan.id)
+      flash[:notice] = "Floor plan is updated for units successfully."
+    end
+
+    redirect_back(fallback_location: root_path)
+  end
+
   def set_available_date
-    @community.units.where(id: params[:unit_ids]).update_all(available_date: params[:available_date], manually_updated: true, available_date_is_updated: true)
+    mass_override_units.update_all(available_date: params[:available_date], manually_updated: true, available_date_is_updated: true, updated_at: Time.current)
     flash[:notice] = "Available date is updated for units successfully."
     redirect_back(fallback_location: root_path)
   end
 
   def set_available
     if params[:available] == 'true'
-      @community.units.where(id: params[:unit_ids]).update_all(availability: "Unoccupied", manually_updated: true, available_date: Date.today - 1, available_is_updated: true, availability_is_updated: true, available: true)
+      mass_override_units.update_all(availability: "Unoccupied", manually_updated: true, available_date: Date.today - 1, available_is_updated: true, availability_is_updated: true, available: true, updated_at: Time.current)
     else
-      @community.units.where(id: params[:unit_ids]).update_all(availability: "Occupied", manually_updated: true, available: false, available_is_updated: true, availability_is_updated: true)
+      mass_override_units.update_all(availability: "Occupied", manually_updated: true, available: false, available_is_updated: true, availability_is_updated: true, updated_at: Time.current)
     end
     flash[:notice] = "Available is updated for units successfully."
     redirect_back(fallback_location: root_path)
   end
 
+  # Manual override, at whichever level the dialog asked for.
+  #
+  # Unit level flips the unit's own `manual_override`. Field level sets or clears
+  # the per-field "set by hand" markers, which are what actually stop the
+  # provider feed updating a column - and most of them are checked independently
+  # of `manual_override`, so without this there was no way to hand a pinned field
+  # back to the feed short of editing every unit one at a time.
   def set_manual_override
-    @community.units.where(id: params[:unit_ids]).update_all(manual_override: params[:manual_override])
-    flash[:notice] = "Manual Override is updated for units successfully."
+    if params[:override_scope].to_s == "field"
+      apply_field_overrides
+    else
+      mass_override_units.update_all(manual_override: params[:manual_override], updated_at: Time.current)
+      flash[:notice] = "Manual Override is updated for units successfully."
+    end
+
     redirect_back(fallback_location: root_path)
   end
 
   def set_sold
     if params[:sold] == "true"
-      @community.units.where(id: params[:unit_ids]).update_all(sold: params[:sold], manually_updated: true, availability: "Occupied", available: false, availability_is_updated: true, available_is_updated: true)
+      mass_override_units.update_all(sold: params[:sold], manually_updated: true, availability: "Occupied", available: false, availability_is_updated: true, available_is_updated: true, updated_at: Time.current)
     else
-      @community.units.where(id: params[:unit_ids]).update_all(sold: params[:sold], manually_updated: true, availability_is_updated: true, available_is_updated: true)
+      mass_override_units.update_all(sold: params[:sold], manually_updated: true, availability_is_updated: true, available_is_updated: true, updated_at: Time.current)
     end
     flash[:notice] = "Sold is updated for units successfully."
     redirect_back(fallback_location: root_path)
   end
 
   def add_additional_fees
-    additional_fee = params[:additional_fee].to_s
-    fee = additional_fee[2..additional_fee.length - 3]
-    formated_fee = add_padding_description fee
+    # The old modal posted this through `text_area :additional_fee, nil`, which
+    # names the field `additional_fee[]` - so the value arrived as an array and
+    # had to be un-stringified by slicing off the leading `["` and trailing `"]`.
+    # The field is a plain text_area_tag now, so the value is just the value.
+    formated_fee = add_padding_description params[:additional_fee].to_s
 
-    @community.units.where(id: params[:unit_ids]).update_all(additional_fee: formated_fee, manually_updated: true)
+    mass_override_units.update_all(additional_fee: formated_fee, manually_updated: true, updated_at: Time.current)
     flash[:notice] = "Additional Fees is updated for units successfully."
     redirect_back(fallback_location: root_path)
   end
 
   def add_description
-    description = params[:description].to_s
-    desc = description[2..description.length - 3]
-    str2 = add_padding_description desc
+    str2 = add_padding_description params[:description].to_s
 
-    update_attrs = { description: str2, manually_updated: true }
+    update_attrs = { description: str2, manually_updated: true, updated_at: Time.current }
     update_attrs[:description_title] = params[:description_title].presence
 
-    @community.units.where(id: params[:unit_ids]).update_all(update_attrs)
+    mass_override_units.update_all(update_attrs)
     flash[:notice] = "Description is updated for units successfully."
     redirect_back(fallback_location: root_path)
   end
@@ -625,7 +694,7 @@ class UnitsController < ApplicationController
     # Copy the uploaded file into safe tmp folder
     FileUtils.cp(uploaded_file.tempfile.path, tmp_path)
 
-    UploadImageForUnit.perform_async(@community.id, params[:unit_ids], tmp_path.to_s)
+    UploadImageForUnit.perform_async(@community.id, mass_override_unit_ids, tmp_path.to_s)
 
     flash[:notice] = "Image is being uploaded for units."
     redirect_back(fallback_location: root_path)
@@ -640,6 +709,126 @@ class UnitsController < ApplicationController
 
   def set_community
     @community = Community.find(params[:community_id])
+  end
+
+  def filter_params
+    params.permit(*UnitFilterQuery::FILTER_KEYS, :sort, :dir, :per_page)
+  end
+
+  def per_page
+    @per_page ||= resolve_per_page
+  end
+
+  def showing_all?
+    @showing_all
+  end
+
+  # True when "All" was asked for but the matching set is larger than the cap,
+  # so the page is showing the first MAX_PER_PAGE of it rather than everything.
+  def per_page_capped?
+    @per_page_capped
+  end
+
+  def resolve_per_page
+    requested = params[:per_page].to_s
+
+    if requested == "all"
+      @showing_all = true
+      total = @filter.results.reorder(nil).count
+      @per_page_capped = total > MAX_PER_PAGE
+      @per_page = [[total, 1].max, MAX_PER_PAGE].min
+    else
+      @showing_all = false
+      @per_page_capped = false
+      requested = requested.to_i
+      @per_page = PER_PAGE_OPTIONS.include?(requested) ? requested : PER_PAGE
+    end
+  end
+
+  # Which units a mass override applies to. The grid normally posts the ids it
+  # has checked; when the user takes the "select all N matching" shortcut it
+  # posts the filter set instead and the server re-resolves it, rather than the
+  # browser shipping thousands of ids it never rendered.
+  def mass_override_unit_ids
+    if params[:select_all_matching].to_s == "true"
+      UnitFilterQuery.new(@community, scope_filter_params).results.pluck(:id)
+    else
+      Array(params[:unit_ids]).reject(&:blank?).map(&:to_i)
+    end
+  end
+
+  # Each field carries its own three-way choice - leave alone, pin, or release -
+  # so one submit can hand Price back to the feed while pinning Floor. Fields
+  # left on "leave alone" are absent from the update entirely, which is what
+  # keeps this from clobbering markers the user never looked at.
+  def apply_field_overrides
+    requested = params[:field_state].respond_to?(:to_unsafe_h) ? params[:field_state].to_unsafe_h : (params[:field_state] || {})
+
+    attributes = requested.each_with_object({}) do |(key, value), acc|
+      flag = Unit::FEED_OVERRIDE_FLAGS[key.to_s]
+      next if flag.blank? || value.to_s.blank?
+
+      acc[flag[:column]] = (value.to_s == "true")
+    end
+
+    unit_ids = mass_override_unit_ids
+
+    if attributes.empty?
+      flash[:error] = "No field was set to change. Switch at least one field to Pinned or Feed."
+      return
+    elsif unit_ids.blank?
+      flash[:error] = "Please select at least one unit."
+      return
+    end
+
+    @community.units.where(id: unit_ids).update_all(attributes.merge(updated_at: Time.current))
+
+    pinned, released = attributes.partition { |_, value| value }.map do |group|
+      group.map { |column, _| Unit::FEED_OVERRIDE_FLAGS.values.find { |f| f[:column] == column }[:label] }
+    end
+
+    parts = []
+    parts << "pinned #{pinned.to_sentence}" if pinned.any?
+    parts << "handed #{released.to_sentence} back to the data feed" if released.any?
+    flash[:notice] = "#{parts.to_sentence.upcase_first} for #{helpers.pluralize(unit_ids.size, 'unit')}."
+  end
+
+  # The filters the "select all matching" choice was made against, posted under
+  # their own key rather than at the top level. Several filters share a name
+  # with the value a mass override is setting - floor, building, sold and
+  # manual_override all collide - so flat params would silently narrow the set
+  # to units that already have the value being applied.
+  def scope_filter_params
+    scope = params[:scope]
+    return {} if scope.blank?
+
+    scope.permit(*UnitFilterQuery::FILTER_KEYS)
+  end
+
+  def mass_override_units
+    @community.units.where(id: mass_override_unit_ids)
+  end
+
+  # Distinct values behind the toolbar's dropdowns, so each one only offers
+  # choices this property actually has.
+  def unit_filter_options
+    {
+      floorplans: @floorplans,
+      bedrooms: @floorplans.map { |f| f.bedrooms.presence }.compact.uniq.sort_by(&:to_f),
+      bathrooms: @floorplans.map { |f| f.bathrooms }.compact.uniq.sort,
+      floors: @community.units.distinct.where.not(floor: nil).order(:floor).pluck(:floor),
+      buildings: @community.units.distinct.where.not(building: [nil, ""]).order(:building).pluck(:building),
+      lock_providers: unit_lock_providers
+    }
+  end
+
+  # Providers actually in use on this property, from either the unit column or an
+  # attached door, so the filter never offers a choice that matches nothing.
+  def unit_lock_providers
+    from_units = @community.units.distinct.where.not(lock_provider: [nil, ""]).pluck(:lock_provider)
+    from_doors = Door.where(attached_with_type: "Unit", attached_with_id: @community.units.select(:id))
+                     .distinct.where.not(lock_provider: [nil, ""]).pluck(:lock_provider)
+    (from_units + from_doors).uniq.sort
   end
 
   def unit_params

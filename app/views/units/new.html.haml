@@ -1,33 +1,27 @@
 - content_for :title, "Add Unit - Pynwheel"
+= render "form_theme"
+
 %section
   .content
-    .title-heading.mb-25
-      %h4
-        %i.fa.fa-laptop
-        = @community.name.capitalize
-        %br
-          %small.text-primary
-            = @community.code
-    .box.box-info.add-plan
-      .box-header
-        %h3.box-title
-          Add 
-          %span Unit
-      / /.box-header
-      / form start
-      / <form class="form-horizontal">
-      = form_for @unit,:url=>community_units_path(:community_id=>@community.id),:html=>{:class=>"form-horizontal"} do |f|
-        .box-body
-          .row
-            .col-lg-9.col-lg-offset-1
-              = render :partial=>'form',:locals=>{:f=>f}
-        / /.box-body
-        .box-footer
-          = f.submit "ADD UNIT", :class=>"btn btn-success pull-right loader_class"
+    .unit-form-page
+      = link_to community_units_path(@community), class: "back" do
+        %i.fa.fa-angle-left
+        All units
+      %h1 Add unit
+      %p.sub
+        %b= @community.name
+        - if @community.code.present?
+          = "· #{@community.code}"
+
+      = form_for @unit, url: community_units_path(community_id: @community.id), html: { class: "unit-form" } do |f|
+        = render partial: "form", locals: { f: f }
+
+        .u-actionbar
+          %span.grow Marketing name, provider unit ID and price are required.
+          = link_to "Cancel", community_units_path(@community), class: "btn btn-ghost"
+          = f.submit "Add unit", class: "btn btn-success loader_class"
+
 :javascript
-
-
   $("#unit_secondary_image").change(function(){
       readSecondaryURL(this);
   });
-  $(".hide_on_new").addClass("hidden")

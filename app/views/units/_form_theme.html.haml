@@ -1,0 +1,117 @@
+-# Styling shared by the new and edit unit pages. Scoped under .unit-form-page so
+-# it cannot leak into the admin chrome around it.
+:css
+  .unit-form-page { max-width: 1180px; margin: 0 auto; padding: 24px 22px 130px; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #2b2f36; }
+  /* the admin chrome styles bare headings and labels globally, so reset the
+     handful this page uses rather than fighting specificity field by field */
+  .unit-form-page h1, .unit-form-page h2, .unit-form-page h3 { font-family: inherit; line-height: 1.3; }
+  .unit-form-page label { font-weight: 400; margin: 0; }
+  .unit-form-page a.back { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #6b7280; text-decoration: none; margin-bottom: 12px; }
+  .unit-form-page a.back:hover { color: #3558e8; }
+  .unit-form-page h1 { font-size: 25px; font-weight: 650; letter-spacing: -0.015em; margin: 0 0 5px; color: #0f172a; }
+  .unit-form-page .sub { color: #6b7280; font-size: 13.5px; margin: 0 0 22px; }
+  .unit-form-page .sub b { color: #374151; font-weight: 600; }
+
+  .unit-form-page .btn { display: inline-flex; align-items: center; gap: 7px; border: none; border-radius: 6px; padding: 8px 15px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; white-space: nowrap; line-height: 1.3; position: relative; }
+  .unit-form-page .btn-primary { background: #3558e8; color: #fff; }
+  .unit-form-page .btn-primary:hover { background: #2946c4; color: #fff; }
+  .unit-form-page .btn-ghost { background: #f1f5f9; color: #334155; }
+  .unit-form-page .btn-ghost:hover { background: #e2e8f0; color: #1f2937; }
+  .unit-form-page .btn-ghost.danger { color: #b91c1c; }
+  .unit-form-page .btn-ghost.danger:hover { background: #fef2f2; }
+  .unit-form-page .btn-success { background: #16a34a; color: #fff; }
+  .unit-form-page .btn-success:hover { background: #15803d; color: #fff; }
+
+  /* sections */
+  .unit-form-page .u-section { background: #fff; border: 1px solid #e8ebf0; border-radius: 12px; box-shadow: 0 1px 2px rgba(16,24,40,0.04), 0 1px 3px rgba(16,24,40,0.03); margin-bottom: 14px; overflow: hidden; }
+  .unit-form-page .u-section-head { padding: 13px 18px 12px; border-bottom: 1px solid #f2f4f7; background: #fbfcfd; }
+  .unit-form-page .u-section-head h2 { margin: 0; font-size: 13.5px; font-weight: 650; letter-spacing: 0.005em; color: #0f172a; }
+  .unit-form-page .u-section-head p { margin: 4px 0 0; font-size: 12px; line-height: 1.5; color: #7b8494; max-width: 780px; }
+  .unit-form-page .u-section-body { padding: 16px 18px; }
+
+  /* field grid */
+  .unit-form-page .u-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(215px, 1fr)); gap: 15px 16px; align-items: start; }
+  .unit-form-page .u-stack { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  .unit-form-page .u-field.span-2 { grid-column: span 2; }
+  @media (max-width: 720px) { .unit-form-page .u-field.span-2 { grid-column: span 1; } }
+
+  .unit-form-page .u-flabel { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 650; text-transform: uppercase; letter-spacing: 0.055em; color: #8b93a1; margin: 0 0 5px; min-height: 16px; }
+  /* the lock script rewrites this label as "Latch Lock <span>hint</span>" */
+  .unit-form-page .u-flabel span:not(.gate-badge) { text-transform: none; letter-spacing: 0; font-weight: 500; font-size: 11.5px; color: #a8afba; }
+  .unit-form-page .u-fhint { margin: 6px 0 0; font-size: 11.5px; line-height: 1.5; color: #9ca3af; }
+
+  .unit-form-page .gate-badge { display: inline-flex; align-items: center; gap: 3px; background: #eef2ff; color: #5b6ad0; border-radius: 3px; padding: 0 5px; font-size: 9px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; line-height: 15px; }
+  .unit-form-page .gate-badge .fa { font-size: 8px; }
+  .unit-form-page .gate-badge.inline { vertical-align: middle; }
+
+  /* a gated field while the feed still owns it */
+  .unit-form-page .u-field.feed-locked .form-control { background: #fbfbfc; border-style: dashed; color: #5b6472; }
+  .unit-form-page .u-field.feed-locked .u-flabel { color: #a8afba; }
+
+  .unit-form-page .form-control { width: 100%; padding: 8px 11px; border: 1px solid #dfe3e9; border-radius: 7px; font-size: 13.5px; background: #fff; color: #1f2937; height: 37px; box-shadow: none; transition: border-color .12s, box-shadow .12s; }
+  .unit-form-page .form-control:hover { border-color: #c9cfd8; }
+  .unit-form-page textarea.form-control { height: auto; min-height: 90px; }
+  .unit-form-page .form-control:focus { outline: none; border-color: #3558e8; box-shadow: 0 0 0 3px rgba(53,88,232,0.12); }
+  .unit-form-page select.form-control { appearance: auto; }
+
+  .unit-form-page .u-prefix { display: flex; align-items: stretch; }
+  .unit-form-page .u-prefix > span { display: inline-flex; align-items: center; padding: 0 11px; background: #f5f7fa; border: 1px solid #d1d5db; border-right: none; border-radius: 6px 0 0 6px; color: #6b7280; font-size: 13px; font-weight: 600; }
+  .unit-form-page .u-prefix .form-control { border-radius: 0 6px 6px 0; }
+
+  /* choices */
+  .unit-form-page .u-toggle-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; max-width: 640px; }
+  .unit-form-page .u-choice { display: flex; align-items: flex-start; gap: 10px; margin: 0; padding: 11px 13px; border: 1px solid #e5e7eb; border-radius: 9px; cursor: pointer; font-weight: 400; transition: border-color 0.12s, background 0.12s; }
+  .unit-form-page .u-choice:hover { border-color: #cbd5e1; background: #fcfcfd; }
+  .unit-form-page .u-choice input { margin: 2px 0 0; }
+  .unit-form-page .u-choice > span { display: block; font-size: 12px; color: #7b8494; line-height: 1.45; }
+  .unit-form-page .u-choice > span b { display: block; font-size: 13.5px; color: #111827; font-weight: 600; margin-bottom: 2px; }
+  .unit-form-page .u-choice:has(input:checked) { border-color: #3558e8; background: #f5f8ff; box-shadow: 0 0 0 1px #3558e8 inset; }
+
+  .unit-form-page .u-inline-choices { display: flex; gap: 18px; align-items: center; height: 37px; }
+  .unit-form-page .u-radio, .unit-form-page .u-check { display: inline-flex; align-items: center; gap: 7px; margin: 0; font-weight: 400; font-size: 13.5px; color: #374151; cursor: pointer; }
+  .unit-form-page .u-check { min-height: 37px; align-items: flex-start; padding-top: 9px; }
+  .unit-form-page .u-check span { line-height: 1.4; }
+  .unit-form-page .u-radio input, .unit-form-page .u-check input { margin: 0; }
+
+  /* images */
+  .unit-form-page .u-images { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 20px; }
+  .unit-form-page .u-image-head h3 { margin: 0 0 3px; font-size: 13px; font-weight: 600; color: #111827; }
+  .unit-form-page .u-image-head p { margin: 0 0 11px; font-size: 12px; color: #9ca3af; line-height: 1.5; }
+  .unit-form-page .u-image-frame { position: relative; border: 1px solid #eef0f3; border-radius: 9px; background: #f8fafc; min-height: 190px; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 10px; }
+  .unit-form-page .u-image-frame.empty { border-style: dashed; border-color: #dde2e9; }
+  .unit-form-page .u-image-frame img { max-height: 190px; max-width: 100%; height: auto; display: block; }
+  /* an empty slot still renders the <img> the preview script needs, so the
+     placeholder look comes from dimming the default artwork rather than
+     replacing it with different markup */
+  .unit-form-page .u-image-frame.empty img { opacity: 0.4; filter: grayscale(1); max-height: 150px; }
+  .unit-form-page .u-image-frame .waring_exal { position: absolute; top: 8px; right: 8px; }
+  .unit-form-page .u-image-actions { display: flex; gap: 7px; margin-top: 11px; flex-wrap: wrap; }
+  .unit-form-page .btn-file { overflow: hidden; }
+  .unit-form-page .btn-file input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+
+  /* wysihtml5 */
+  /* wysihtml5 ships a floated <ul> of Bootstrap 3 .btn elements, which at their
+     default size wrap onto a second row inside a dialog. Flex + a smaller button
+     scale keeps the whole toolbar on one line and in proportion with the rest of
+     the form. */
+  .unit-form-page ul.wysihtml5-toolbar { display: flex; flex-wrap: wrap; gap: 5px; margin: 0 0 8px; padding: 0; }
+  .unit-form-page ul.wysihtml5-toolbar::after { content: none; display: none; }
+  .unit-form-page ul.wysihtml5-toolbar > li { float: none; margin: 0; display: flex; list-style: none; }
+  .unit-form-page ul.wysihtml5-toolbar .btn { display: inline-flex; align-items: center; height: 30px; padding: 0 10px; font-size: 12px; font-weight: 600; line-height: 1; border: 1px solid #e3e7ec; background: #f6f8fa; color: #4b5563; border-radius: 6px; box-shadow: none; text-shadow: none; }
+  .unit-form-page ul.wysihtml5-toolbar .btn:hover, .unit-form-page ul.wysihtml5-toolbar .btn:focus { background: #eef1f5; color: #1f2937; border-color: #d7dde5; outline: none; }
+  .unit-form-page ul.wysihtml5-toolbar .btn.wysihtml5-command-active { background: #e7ecfd; border-color: #c3d0fb; color: #2946c4; box-shadow: none; }
+  .unit-form-page ul.wysihtml5-toolbar .btn-group > .btn { border-radius: 0; margin-left: -1px; }
+  .unit-form-page ul.wysihtml5-toolbar .btn-group > .btn:first-child { border-radius: 6px 0 0 6px; margin-left: 0; }
+  .unit-form-page ul.wysihtml5-toolbar .btn-group > .btn:last-child { border-radius: 0 6px 6px 0; }
+  .unit-form-page ul.wysihtml5-toolbar .btn .caret { margin-left: 5px; }
+  .unit-form-page ul.wysihtml5-toolbar .dropdown-menu { font-size: 13px; border-radius: 7px; border-color: #e5e7eb; box-shadow: 0 8px 24px rgba(16,24,40,0.12); }
+  .unit-form-page ul.wysihtml5-toolbar .dropdown-menu > li > a { padding: 6px 14px; }
+  .unit-form-page .wysihtml5-sandbox { width: 100% !important; border: 1px solid #dfe3e9 !important; border-radius: 7px !important; }
+  .unit-form-page .wysihtml5-sandbox { min-height: 190px; }
+
+  /* sticky save bar */
+  .unit-form-page .u-actionbar { position: sticky; bottom: 0; z-index: 50; margin: 18px -22px -130px; padding: 12px 22px; background: rgba(255,255,255,0.97); border-top: 1px solid #e8ebf0; box-shadow: 0 -4px 16px rgba(16,24,40,0.05); backdrop-filter: blur(6px); display: flex; align-items: center; gap: 10px; }
+  .unit-form-page .u-actionbar .grow { flex: 1; font-size: 12.5px; color: #9ca3af; }
+  .unit-form-page .u-actionbar input[type="submit"] { border: none; }
+
+  .unit-form-page .hide_it { display: none !important; }

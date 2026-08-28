@@ -1,148 +1,119 @@
 - content_for :title, "Edit Unit - Pynwheel"
+= render "form_theme"
+
+:css
+  .unit-form-page .u-tour-head { display: flex; align-items: flex-start; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+  .unit-form-page .u-tour-head .grow { flex: 1; min-width: 240px; }
+  .unit-form-page .u-tour-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .unit-form-page .u-modal-units { max-height: 340px; overflow-y: auto; border: 1px solid #eef0f3; border-radius: 8px; padding: 10px 12px; display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 6px 12px; }
+  .unit-form-page .u-modal-units label { font-weight: 400; font-size: 13px; color: #374151; display: inline-flex; align-items: center; gap: 6px; margin: 0; }
+
 %section
   .content
-    .box.box-info.add-plan.mt-20
-      .box-header
-        .col-lg-12
-          %h3.box-title
-            Unit Details
-            %span
-        .col-md-12
-          = link_to "<Back to All Units", community_units_path(@community), class: "btn btn-primary mt-10", style: "background: #8f4a9c; color: white;"
+    .unit-form-page
+      = link_to community_units_path(@community), class: "back" do
+        %i.fa.fa-angle-left
+        All units
+      %h1= @unit.marketing_name.presence || "Unit ##{@unit.id}"
+      %p.sub
+        %b= @community.name
+        - if @community.code.present?
+          = "· #{@community.code}"
+        - if @unit.provider_unit_id.present?
+          = "· Provider ID #{@unit.provider_unit_id}"
 
-      = form_for @unit,:url=> params[:floorNo].nil? ? community_unit_path(:id=>@unit.id,:community_id=>@community.id) : community_unit_path(:id=>@unit.id,:community_id=>@community.id) <<  '?floorNo=' + params[:floorNo] ,:html=>{:class=>"form-horizontal"} do |f|
-        .box-body
-          .row
-            .col-lg-9.col-lg-offset-1
-              = render :partial=>'form',:locals=>{:f=>f}
+      = form_for @unit, url: params[:floorNo].nil? ? community_unit_path(id: @unit.id, community_id: @community.id) : community_unit_path(id: @unit.id, community_id: @community.id) << ('?floorNo=' + params[:floorNo]), html: { class: "unit-form" } do |f|
+        = render partial: "form", locals: { f: f }
 
-        .box-footer
-          = f.submit "Save Changes", :class=>"btn btn-success pull-right submit_button"
-          
-#crop-unit-secondary-image.modal.fade.edit-image
-#crop-unit-image.modal.fade.edit-image
-- if @community.self_tour    
-  %section
-    .content
-      .box.box-info.add-plan.mt-20#logo_header
-        .box-header
-          %h3.box-title
-            Unit Tour Setup
-      .row
-        .col-lg-12.col-md-12
-          .row
-            .col-md-12
-              %h4.title
-                = @unit.marketing_name + " Unit Images"
-              %h4{:style => "color: grey;"}
-                %p
-                  Use the “Add Image” button or drag & drop area below to import images associated with the unit.
-                %p
-                  Once images have been added, a button will appear to allow you to plot them on the unit.
-              = link_to "PLOT IMAGES ON UNIT", plot_amenities_community_unit_amenities_path(@community,@unit), class: "btn btn-primary mb-20", id: "amenity_image"
-            .col-md-6
-              .mt-35
+        .u-actionbar
+          %span.grow Changes to feed-managed fields need Manual Override switched on.
+          = link_to "Cancel", community_units_path(@community), class: "btn btn-ghost"
+          = f.submit "Save changes", class: "btn btn-success submit_button"
+
+      #crop-unit-secondary-image.modal.fade.edit-image
+      #crop-unit-image.modal.fade.edit-image
+
+      - if @community.self_tour
+        .u-section
+          .u-section-head
+            %h2 Unit tour images
+            %p
+              Import images associated with this unit, then plot them so they appear in the
+              self-guided tour.
+          .u-section-body
+            .u-tour-head
+              .grow
+              .u-tour-actions
                 %span.btn.btn-success.btn-file
                   %i.fa.fa-plus-circle
                   Add image to this unit
-                  %input#unit-amenity-images{:multiple => "multiple", :type => "file"}
-                %button.dropbtn.btn.btn-primary{"data-target" => "#modal-to-set-image", "data-toggle" => "modal"} Add images to multiple units
-              .divLoading.hidden
-          #images-index-unit
-            = render :partial=>'edit'
+                  %input#unit-amenity-images{multiple: "multiple", type: "file"}
+                %button.btn.btn-ghost{type: "button", "data-target" => "#modal-to-set-image", "data-toggle" => "modal"}
+                  %i.fa.fa-clone
+                  Add images to multiple units
+                = link_to "Plot images on unit", plot_amenities_community_unit_amenities_path(@community, @unit), class: "btn btn-primary", id: "amenity_image"
+            .divLoading.hidden
+            #images-index-unit
+              = render partial: "edit"
 
-  #edit-image.modal.fade.edit-image
-  
-  #modal-to-set-image.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
-    .modal-dialog
-      .modal-content
-        .modal-header
-          %b Upload Interior Image for Multiple Units
-        = form_tag '/', :id=>"amenities-for-multiple-units", multipart: true do
-          .modal-body.set-floor-modal-body
-            %input#units-amenities-images{:multiple => "multiple", :type => "file", :required=>"required"}
-            .row
-              .col-md-4
-                = check_box_tag 'select_all_units_for_image'
-                %label Select all
-            .row
-              - if @units.present?
-                - @units.each do |unit|
-                  .col-md-3.pt-5.pb-5
-                    = check_box_tag 'unit_ids[]', unit.id,false,class: 'image-checkbox mass-override'
-                    = h unit.marketing_name
-          .modal-footer
-            = submit_tag 'Submit',:class=>"btn btn-success"
-            %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel
-.row
-  .col-md-12{:style => "bottom: 51px;"}
-    .box-footer.mt-30.pt-15
-      .row
-        .col-lg-10
-          .form-group{:style => "margin-left: -16px;  margin-bottom: 0px;"}
-            .col-md-12.col-lg-12
-              %button.btn-primary.done_btn.mb-20{:onclick => "unit_edit_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
-                DONE
+        #edit-image.modal.fade.edit-image
+
+        #modal-to-set-image.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", role: "dialog", tabindex: "-1"}
+          .modal-dialog
+            .modal-content
+              .modal-header
+                %b Upload interior image for multiple units
+              = form_tag '/', id: "amenities-for-multiple-units", multipart: true do
+                .modal-body
+                  %input#units-amenities-images{multiple: "multiple", type: "file", required: "required"}
+                  .mt-15.mb-10
+                    %label
+                      = check_box_tag 'select_all_units_for_image'
+                      Select all
+                  .u-modal-units
+                    - if @units.present?
+                      - @units.each do |unit|
+                        %label
+                          = check_box_tag 'unit_ids[]', unit.id, false, class: 'image-checkbox mass-override'
+                          = h unit.marketing_name
+                .modal-footer
+                  = submit_tag 'Submit', class: "btn btn-success"
+                  %button.btn.btn-primary{"data-dismiss" => "modal", type: "button"} Cancel
+
 :javascript
-  function unit_edit_goBack() {
-    if (window.history.length == 1)
-      window.location.reload();
-    else
-      window.history.back();
-  }
-
-
   $("#unit_secondary_image").change(function(){
-      readSecondaryURL(this);   
+      readSecondaryURL(this);
   });
 
-  if(#{@unit.amenities.count} == 0){
+  if (#{@unit.amenities.count} == 0) {
     $('#amenity_image').hide();
-  }
-
-  if(#{@unit.amenities.count.to_i} > 0){
+  } else {
     $('#amenity_image').show();
   }
 
   $('#select_all_units_for_image').change(function(){
-      if($(this).is(':checked')){
-        $('.image-checkbox').prop('checked',true)
-      }
-      else{
-        $('.image-checkbox').prop('checked',false)
-      }
+      $('.image-checkbox').prop('checked', $(this).is(':checked'));
   });
 
+  // shift-click selects a range of units in the multi-unit image modal
   var $chkboxes = $('.mass-override');
   var lastChecked = null;
-  var param_name = "lock_id"
-
   $chkboxes.click(function(e) {
-      if (!lastChecked) {
-          lastChecked = this;
-          return;
-      }
-
+      if (!lastChecked) { lastChecked = this; return; }
       if (e.shiftKey) {
           var start = $chkboxes.index(this);
           var end = $chkboxes.index(lastChecked);
-
-          $chkboxes.slice(Math.min(start,end), Math.max(start,end)+ 1).prop('checked', lastChecked.checked);
+          $chkboxes.slice(Math.min(start,end), Math.max(start,end) + 1).prop('checked', lastChecked.checked);
       }
-
       lastChecked = this;
   });
 
   var inputs = document.querySelectorAll('input[list]');
   for (var i = 0; i < inputs.length; i++) {
     inputs[i].addEventListener('change', function() {
-      var optionFound = false,
-      datalist = this.list;
+      var optionFound = false, datalist = this.list;
       for (var j = 0; j < datalist.options.length; j++) {
-          if (this.value == datalist.options[j].value) {
-              optionFound = true;
-              break;
-          }
+          if (this.value == datalist.options[j].value) { optionFound = true; break; }
       }
       if (optionFound) {
         this.setCustomValidity('');

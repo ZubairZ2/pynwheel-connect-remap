@@ -1,289 +1,234 @@
-.form-group
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Manual Override
-    %i.unit_manualoverride.fa.fa-question-circle
-      %span#unit_manualoverride_text
-        When Manual Override is set to Yes, then the items that have been changed will not update automatically from the property's property management software data feed (if the property is using a third party data feed).
+-# Unit form, shared by new and edit. Every field name, element id, validation
+-# class and JS hook is unchanged from the original layout - only the structure
+-# and styling are new. The lock section in particular is driven by the script at
+-# the bottom of this file by id, so #unit_lock_provider, #manual_access_code,
+-# #lock_access_code (which must contain a <label> the script rewrites),
+-# #lock_input, #locks_list, #lock_id and the .*_options blocks all stay put.
+- gated_hint = "Editable once Manual Override is on."
 
-  .col-sm-12.col-lg-2.col-md-2.col-xs-12
-    = f.radio_button :manual_override, true, class: "settings-field"
-    = f.label :manual_override, "Yes", :value => "true"
-  .col-sm-12.col-lg-2.col-md-2.col-xs-12
-    = f.radio_button :manual_override, false, class: "settings-field"
-    = f.label :manual_override, "No", :value => "false"
-.form-group
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+.u-section
+  .u-section-head
+    %h2 Data feed control
+    %p This property syncs from its property management software. Turn Manual Override on to hand-edit the fields marked #{content_tag(:span, "feed", class: "gate-badge inline")} below and stop the feed overwriting them.
+  .u-section-body
+    .u-toggle-row
+      %label.u-choice
+        = f.radio_button :manual_override, true, class: "settings-field"
+        %span
+          %b Yes
+          Hand-edited values win and stay put.
+      %label.u-choice
+        = f.radio_button :manual_override, false, class: "settings-field"
+        %span
+          %b No
+          The data feed keeps this unit up to date.
 
-  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    .row
-      .col-sm-6.col-lg-4.col-md-3.col-xs-12
-        = f.select :floorplan_id, [['', nil]] + @community.floorplans.collect{|f| [f.name,f.provider_floorplan_id]},{},{ :class=>"form-control"}
-        %small Floor plan (Manual Override Required)
-      .col-sm-6.col-lg-4.col-md-3.col-xs-12
-        = f.select :availability, [['No', 'Occupied'], ['Yes', 'Unoccupied']],{},{ :class=>"form-control"}
-        %small Availability (Manual Override Required)
-      .col-sm-6.col-lg-4.col-md-3.col-xs-12
-        = f.text_field :provider_unit_id, :class=>"form-control validate[required]", :placeholder=>"Provider Unit ID"
-        %small Provider Unit ID  
-.form-group
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+.u-section
+  .u-section-head
+    %h2 Unit details
+  .u-section-body
+    .u-grid
+      = unit_field "Marketing name", gated: true, hint: gated_hint do
+        = f.text_field :marketing_name, class: "form-control validate[required]", placeholder: "e.g. 103-B"
+      = unit_field "Provider unit ID", gated: true do
+        = f.text_field :provider_unit_id, class: "form-control validate[required]", placeholder: "ID from your data provider"
+      = unit_field "Floor plan", gated: true do
+        = f.select :floorplan_id, [["", nil]] + @community.floorplans.order(:name).map { |fp| [floorplan_option_label(fp), fp.provider_floorplan_id] }, {}, { class: "form-control" }
+      = unit_field "Price", gated: true do
+        .u-prefix
+          %span= @community.get_currency_symbol
+          = f.text_field :effective_rent, class: "form-control validate[required,custom[onlyDecimal]]", placeholder: "0", maxlength: "9", value: f.object.effective_rent.to_i
+      = unit_field "Availability", gated: true, hint: "Occupied units are hidden from the app regardless of the date below." do
+        = f.select :availability, [["Occupied — not available", "Occupied"], ["Unoccupied — available", "Unoccupied"]], {}, { class: "form-control" }
+      = unit_field "Available date", gated: true do
+        = f.text_field :available_date, class: "form-control datepicker", placeholder: "Select a date", maxlength: "15", autocomplete: "off", readonly: true
+      = unit_field "Unit status" do
+        = f.text_field :unit_status, class: "form-control", placeholder: "e.g. Notice", value: f.object.unit_status
+      = unit_field "Tour visiting order", hint: "Position of this unit in a self-guided tour." do
+        = f.number_field :tour_visiting_order_number, class: "form-control", placeholder: "e.g. 1", min: 1, step: 1
 
-  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    .row
-      .col-sm-6.col-lg-4.col-md-4.col-xs-12
-
-        = f.text_field :effective_rent, :class=>"form-control validate[required,custom[onlyDecimal]]", :placeholder=>"Rent",:maxlength=>"9", :value => f.object.effective_rent.to_i
-        %small Price (Manual Override Required)
-      .col-sm-6.col-lg-4.col-md-4.col-xs-12
-        = f.text_field :marketing_name, :class=>"form-control validate[required]", :placeholder=>"Marketing Name"
-        %small Marketing Name (Manual Override Required)
-      .col-sm-6.col-lg-4.col-md-4.col-xs-12
-        = f.text_field :available_date, :class=>"form-control datepicker", :placeholder=>"Available Date",:maxlength=>"15",:autocomplete=>"off",:readonly=>true
-        %small Available Date (Manual Override Required)
-.form-group
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-
-  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    .row
-      .col-sm-6.col-lg-4.col-md-4.col-xs-12
-        = f.text_field :building, :class=>"form-control", :placeholder=>"Building",:maxlength=>"20"
-        %small Building (Manual Override Required)
-
-      - unless @community.is_sitemap
-        - if f.object.floorplate.present?
-          .col-sm-6.col-lg-4.col-md-4.col-xs-12
-            = f.select :floor, f.object.floorplate.floors,{}, :class=>"form-control validate[custom[floor]]"
-            %small Floor (Manual Override Required)
+.u-section
+  .u-section-head
+    %h2 Placement &amp; size
+    %p A unit only appears on the interactive map once it has a floor.
+  .u-section-body
+    .u-grid
+      = unit_field "Building", gated: true do
+        = f.text_field :building, class: "form-control", placeholder: "e.g. B", maxlength: "20"
+      = unit_field "Floor", gated: true do
+        - if !@community.is_sitemap && f.object.floorplate.present?
+          = f.select :floor, f.object.floorplate.floors, {}, class: "form-control validate[custom[floor]]"
         - else
-          .col-sm-6.col-lg-4.col-md-4.col-xs-12
-            = f.text_field :floor, :class=>"form-control validate[custom[floor]]", :placeholder=>"Floor"
-            %small Floor (Manual Override Required)
-      - else
-        .col-sm-6.col-lg-4.col-md-4.col-xs-12
-          = f.text_field :floor, :class=>"form-control validate[custom[floor]]", :placeholder=>"Floor"
-          %small Floor (Manual Override Required)
+          = f.text_field :floor, class: "form-control validate[custom[floor]]", placeholder: "e.g. 3"
+      = unit_field "Square footage", gated: true, hint: "Leave at 0 to fall back to the floor plan's." do
+        = f.text_field :square_feet, class: "form-control", placeholder: "0", value: f.object.square_feet.to_i
 
-      .col-sm-6.col-lg-4.col-md-4.col-xs-12
-        = f.text_field :square_feet, :class=>"form-control ", :placeholder=>"Unit space", :value => f.object.square_feet.to_i
-        %small Square footage (Manual Override Required)
-  
-.form-group
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+.u-section
+  .u-section-head
+    %h2 Status
+  .u-section-body
+    .u-grid
+      = unit_field "Sold", gated: true, hint: "For-sale properties only. Marking sold also marks the unit occupied." do
+        .u-inline-choices
+          %label.u-radio
+            = f.radio_button :sold, true, class: "settings-field"
+            %span Yes
+          %label.u-radio
+            = f.radio_button :sold, false, class: "settings-field"
+            %span No
+      = unit_field "Model unit" do
+        %label.u-check
+          = f.check_box :modal_unit
+          %span Show this unit as a model unit
 
-  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    .row
-      .col-sm-6.col-lg-4.col-md-4.col-xs-12
-        = f.text_field :unit_status, :class=>"form-control ", :placeholder=>"Unit Status", :value => f.object.unit_status
-        %small Unit Status
-      
-      .col-sm-6.col-lg-4.col-md-4.col-xs-12
-        = f.number_field :tour_visiting_order_number, class: "form-control", placeholder: "Tour Visiting Order Number", min: 1, step: 1
-        %small Tour Visiting Order Number
-      
+.u-section
+  .u-section-head
+    %h2 Buttons &amp; links
+    %p Buttons shown on the unit's card in the app. Additional buttons appear on the Pynwheel Map only.
+  .u-section-body
+    .u-grid
+      = unit_field "Button label" do
+        = f.text_field :virtual_tour_button_label, class: "form-control", placeholder: "3D Tour", maxlength: 15
+      = unit_field "Button URL", span: 2 do
+        = f.text_field :virtual_tour_url, class: "form-control", placeholder: "https://…"
+      = unit_field "Open in new tab" do
+        %label.u-check
+          = f.check_box :link1_open_new_tab, { id: "link1_open_new_tab" }
+          %span Open the button URL in a new tab
+      = unit_field "Additional button label" do
+        = f.text_field :additional_button, class: "form-control", placeholder: "Additional Button Label"
+      = unit_field "Additional button URL", span: 2 do
+        = f.text_field :additional_url, class: "form-control", placeholder: "https://…"
+      = unit_field "Open in new tab" do
+        %label.u-check
+          = f.check_box :link2_open_new_tab, { id: "link2_open_new_tab" }
+          %span Open the additional button URL in a new tab
+      = unit_field "Additional button 2 label" do
+        = f.text_field :scheduler_label, class: "form-control", placeholder: "Additional Button Label"
+      = unit_field "Additional button 2 URL", span: 2 do
+        = f.text_field :scheduler_url, class: "form-control", placeholder: "https://…"
+      = unit_field "Open in new tab" do
+        %label.u-check
+          = f.check_box :link3_open_new_tab, { id: "link3_open_new_tab" }
+          %span Open the second additional button URL in a new tab
+
 = f.hidden_field :provider
-= render "shared/additional_buttons", f: f
 
 - if @community.enable_locks
   - locks_present_hash = {}
   - locks_present_hash["Dwelo"] = @community.multiple_locks_provider.include?("Dwelo") && @community.dwelo.present? && @all_locks[:dwelo_locks].any?
   - locks_present_hash["EdgeState"] = @community.multiple_locks_provider.include?("EdgeState") && @community.edge_state.present? && @all_locks[:edgestate_locks].any?
-  - locks_present_hash["Latch"] = @community.multiple_locks_provider.include?("Latch") &&  @community.latch.present? && @all_locks[:latch_locks].any?
-  - locks_present_hash["Zerv"] = @community.multiple_locks_provider.include?("Zerv") &&  @community.zerv.present? && @all_locks[:zerv_locks].any?
-  - locks_present_hash["Igloohome"] = @community.multiple_locks_provider.include?("Igloohome") &&  @community.igloohome.present? && @all_locks[:igloohome_locks].any?
+  - locks_present_hash["Latch"] = @community.multiple_locks_provider.include?("Latch") && @community.latch.present? && @all_locks[:latch_locks].any?
+  - locks_present_hash["Zerv"] = @community.multiple_locks_provider.include?("Zerv") && @community.zerv.present? && @all_locks[:zerv_locks].any?
+  - locks_present_hash["Igloohome"] = @community.multiple_locks_provider.include?("Igloohome") && @community.igloohome.present? && @all_locks[:igloohome_locks].any?
 
-  // load options and input values start
+  -# Hidden inputs and option pools the lock script reads from, by id/class.
   - if locks_present_hash["Dwelo"]
-    = hidden_field_tag "dwelo_lock_input_value", (@door.present?) ? (@door.dwelo_lock.present? ? @door.dwelo_lock.name + " (" + @door.dwelo_lock.remote_lock_type + ")"  : '') : ( @unit.dwelo_locks.present? ? @unit.dwelo_locks.first.name + " (" + @unit.dwelo_locks.first.remote_lock_type + ")" : '' )
+    = hidden_field_tag "dwelo_lock_input_value", (@door.present?) ? (@door.dwelo_lock.present? ? @door.dwelo_lock.name + " (" + @door.dwelo_lock.remote_lock_type + ")" : '') : (@unit.dwelo_locks.present? ? @unit.dwelo_locks.first.name + " (" + @unit.dwelo_locks.first.remote_lock_type + ")" : '')
     .dwelo_options.hide_it
       - @all_locks[:dwelo_locks].each do |lock|
-        %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
+        %option{value: "#{lock[:name]}", 'data-value' => "#{lock[:id]}"}
   - if locks_present_hash["EdgeState"]
-    = hidden_field_tag "edgestate_lock_input_value", (@door.present?) ? (@door.edgestate_lock.present? ? @door.edgestate_lock.name + " (" + @door.edgestate_lock.remote_lock_type + ")"  : '') : ( @unit.edgestate_locks.present? ? @unit.edgestate_locks.first.name + " (" + @unit.edgestate_locks.first.remote_lock_type + ")" : '' )
+    = hidden_field_tag "edgestate_lock_input_value", (@door.present?) ? (@door.edgestate_lock.present? ? @door.edgestate_lock.name + " (" + @door.edgestate_lock.remote_lock_type + ")" : '') : (@unit.edgestate_locks.present? ? @unit.edgestate_locks.first.name + " (" + @unit.edgestate_locks.first.remote_lock_type + ")" : '')
     .edgestate_options.hide_it
       - @all_locks[:edgestate_locks].each do |lock|
-        %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}  
+        %option{value: "#{lock[:name]}", 'data-value' => "#{lock[:id]}"}
   - if locks_present_hash["Latch"]
-    = hidden_field_tag "latch_lock_input_value", (@door.present?) ? (@door.latch_lock.present? ? @door.latch_lock.lock_name : '') : ( @unit.latch_locks.present? ? @unit.latch_locks.first.lock_name : '' )
+    = hidden_field_tag "latch_lock_input_value", (@door.present?) ? (@door.latch_lock.present? ? @door.latch_lock.lock_name : '') : (@unit.latch_locks.present? ? @unit.latch_locks.first.lock_name : '')
     .latch_options.hide_it
       - @all_locks[:latch_locks].each do |lock|
-        %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
+        %option{value: "#{lock[:name]}", 'data-value' => "#{lock[:id]}"}
   - if locks_present_hash["Zerv"]
-    = hidden_field_tag "zerv_lock_input_value", (@door.present?) ? (@door.zerv_lock.present? ? @door.zerv_lock.sub_location_name + " (" + @door.zerv_lock.sub_location_friendly_name + ")" : '') : ( @unit.zerv_locks.present? ?  @unit.zerv_locks.first.sub_location_name + " (" + @unit.zerv_locks.first.sub_location_friendly_name + ")" : '' )
+    = hidden_field_tag "zerv_lock_input_value", (@door.present?) ? (@door.zerv_lock.present? ? @door.zerv_lock.sub_location_name + " (" + @door.zerv_lock.sub_location_friendly_name + ")" : '') : (@unit.zerv_locks.present? ? @unit.zerv_locks.first.sub_location_name + " (" + @unit.zerv_locks.first.sub_location_friendly_name + ")" : '')
     .zerv_options.hide_it
       - @all_locks[:zerv_locks].each do |lock|
-        %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
+        %option{value: "#{lock[:name]}", 'data-value' => "#{lock[:id]}"}
   - if locks_present_hash["Igloohome"]
-    = hidden_field_tag "igloohome_lock_input_value", (@door.present?) ? (@door.igloohome_lock.present? ? @door.igloohome_lock.device_name : '') : ( @unit.igloohome_locks.present? ? @unit.igloohome_locks.first.device_name : '' )
+    = hidden_field_tag "igloohome_lock_input_value", (@door.present?) ? (@door.igloohome_lock.present? ? @door.igloohome_lock.device_name : '') : (@unit.igloohome_locks.present? ? @unit.igloohome_locks.first.device_name : '')
     .igloohome_options.hide_it
       - @all_locks[:igloohome_locks].each do |lock|
-        %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}  
+        %option{value: "#{lock[:name]}", 'data-value' => "#{lock[:id]}"}
 
-  .form-group
-    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-      Select Lock Type
-      %span Select the access provider for this stop
-    .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      = f.select :lock_provider , options_for_select(@community.lock_options(locks_present_hash), (@door.present?) ? @door.lock_provider : f.object.lock_provider),{},{:class=>"form-control lock_provider_input"}
+  .u-section
+    .u-section-head
+      %h2 Smart lock access
+      %p Choose the access provider for this unit, then pick the physical lock it maps to.
+    .u-section-body
+      .u-grid
+        = unit_field "Lock type" do
+          = f.select :lock_provider, options_for_select(@community.lock_options(locks_present_hash), (@door.present?) ? @door.lock_provider : f.object.lock_provider), {}, { class: "form-control lock_provider_input" }
 
-  .form-group.hide_it#manual_access_code
-    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-      Access Code
-    .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      - access_code_value = f.object.door.present? ? f.object.door.access_code : f.object.access_code
-      = f.text_field :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/g, '')", :class=>"form-control", :placeholder=>"Access Code",:maxLength => "10", :value => access_code_value
+        -# Both of these are toggled by the script below and start hidden. The
+        -# <label> inside #lock_access_code is rewritten by it with the chosen
+        -# provider's name, so it has to stay a plain label element.
+        .u-field.hide_it#manual_access_code
+          %label.u-flabel Access code
+          - access_code_value = f.object.door.present? ? f.object.door.access_code : f.object.access_code
+          = f.text_field :access_code, oninput: "this.value = this.value.replace(/[^0-9#*]/g, '')", class: "form-control", placeholder: "Digits, # and * only", maxLength: "10", value: access_code_value
 
-  .form-group#lock_access_code.hide_it
-    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    
-    .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      = text_field_tag :lock_input, '', :placeholder => "Search by lock name", :list => "locks_list", :autocomplete=> "off", :type => "text", :class => "form-control lock_provider_input"
-      %datalist#locks_list
-    = hidden_field_tag "lock_id", ""
-  
-  .form-group
-    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-      Fees
+        .u-field.span-2.hide_it#lock_access_code
+          %label.u-flabel Lock
+          = text_field_tag :lock_input, '', placeholder: "Search by lock name", list: "locks_list", autocomplete: "off", type: "text", class: "form-control lock_provider_input"
+          %datalist#locks_list
+        = hidden_field_tag "lock_id", ""
 
-    .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      = f.text_area :additional_fee, :class=>"form-control mb-20 wysihtml5", :placeholder=>"Enter Additional Fees"
+-# Fees, Details title and Details used to sit inside the `enable_locks`
+-# conditional above, so properties without smart locks could not edit any of
+-# them from this page at all.
+.u-section
+  .u-section-head
+    %h2 Content
+    %p Copy shown on this unit's card when a renter opens it on the map.
+  .u-section-body
+    .u-stack
+      = unit_field "Fees" do
+        = f.text_area :additional_fee, class: "form-control wysihtml5", placeholder: "Enter Additional Fees"
+      = unit_field "Details title", hint: 'Heading above the Details section. Defaults to "More Details".' do
+        = f.text_field :description_title, class: "form-control", placeholder: "More Details"
+      = unit_field "Details" do
+        = f.text_area :description, class: "form-control unit-description-wysihtml5", placeholder: "Enter Description"
+      - if @community.self_tour
+        = unit_field "Directional text", hint: "Appears above the image on the self-guided tour. Only the first #{ENV['DESCRIPTION_LIMIT'].to_i} characters show on the page." do
+          = f.text_area :stop_description, class: "form-control wysihtml5", placeholder: "Enter Directional Description", rows: "8"
 
-  .form-group
-    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-      Details Title
-      %i.desc-title-tooltip.fa.fa-question-circle
-        %span#desc_title_tooltip_text
-          This label appears as the heading above the Details section when a unit is opened on the map. Defaults to "More Details" if left blank.
-    .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      = f.text_field :description_title, class: "form-control", placeholder: "More Details"
+.u-section
+  .u-section-head
+    %h2 Floor plan images
+    %p Images render at 325 × 300 px. Anything smaller may look pixelated.
+  .u-section-body
+    .u-images
+      = render "image_upload", f: f, attribute: :image, title: "Primary floor plan image",
+                               note: "Replaces the floor plan's standard image for this unit.",
+                               preview_id: "preview-image", lightbox_title: "Unit Primary Image",
+                               crop_path: (f.object.image.present? && @unit.persisted? ? show_unit_image_in_modal_community_unit_path : nil),
+                               remove_key: "primary"
+      = render "image_upload", f: f, attribute: :secondary_image, title: "Secondary floor plan image",
+                               note: "An optional second view of this unit's floor plan.",
+                               preview_id: "preview-secondary-image", lightbox_title: "Unit Secondary Image",
+                               crop_path: (f.object.secondary_image.present? && @unit.persisted? ? show_unit_secondary_image_in_modal_community_unit_path : nil),
+                               remove_key: "secondary"
 
-  .form-group
-    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-      Details
-
-    .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      = f.text_area :description,:class=>"form-control mb-20 unit-description-wysihtml5",:placeholder=>"Enter Description"
-      <!-- %span.unit_details_text{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: #{ENV["DESCRIPTION_LIMIT"].to_i} -->
-
-- if @community.self_tour
-  .form-group
-    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-      Directional Text
-      %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
-        %span#propertyDetailNameText
-          This description will appear above the image. Only the first #{ENV["DESCRIPTION_LIMIT"].to_i} characters will appear on the page with the image; the rest of the description can be accessed by pulling up a separate page in the app.
-    .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      = f.text_area :stop_description,:class=>"form-control mb-20 wysihtml5",:placeholder=>"Enter Directional Description", :rows => "8"
-      <!-- %span.unit_directional_text{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: #{ENV["DESCRIPTION_LIMIT"].to_i} -->
-
-.form-group
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Sold
-    %i.unit_sold.fa.fa-question-circle
-      %span#unit_sold_text
-        This option is for For Sale properties only. When a Sold is set to Yes, then the details on the unit pop-up will show that the unit is sold.
-
-  .col-sm-12.col-lg-2.col-md-2.col-xs-12
-    = f.radio_button :sold, true, class: "settings-field"
-    = f.label :sold, "Yes", :value => "true"
-  .col-sm-12.col-lg-2.col-md-2.col-xs-12
-    = f.radio_button :sold, false, class: "settings-field"
-    = f.label :sold, "No", :value => "false"          
-
-.form-group
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Model Unit
-  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    .row
-      .col-sm-6.col-lg-6.col-md-4.col-xs-12
-        .checkbox
-          = f.check_box :modal_unit
-          %label Model unit
-
-.form-group
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label{style: "margin-top: 50px;"}
-    Primary Floor Plan Image
-    %span
-      THIS WILL REPLACE THE STANDARD FLOOR PLAN IMAGE FOR THIS UNIT.
-      %br/
-      Images will appear at a size of 325 x 300 px. Please note that images that are too small may appear pixelated.
-
-  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    .col-lg-5.col-md-5.col-sm-6.col-xs-6
-      .slide-image
-        .image-box.video-box
-          .images.height-200
-            - rn =  rand(9999999999999999999999999)
-            %a.preview-image{:href=>f.object.image.present? ? (f.object.image.url + "?timestamp=#{rn}") : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Unit Primary Image"}
-              = image_tag f.object.image.present? ? (f.object.image.url + "?timestamp=#{rn}") : "default.jpeg",:height=>"",:width=>"170",:id=>"preview-image", :style => "max-height: 190px; max-width: 270px;"
-          = image_tag "exclamation-mark.png", class: "waring_exal #{ (f.object.image.present? ? ((f.object.image.width < 300 && f.object.image.height < 250) ? "" : "hidden") : "hidden") rescue "hidden"}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
-        - if f.object.image.present?
-          .icons
-            %a.text-danger{"data-name"=>"Image","data-href" => "/communities/#{@community.id}/units/#{@unit.id}/remove_pri_scnd_image?image=primary", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
-              %i.fa.fa-close
-        .row
-          .col-lg-6
-            %span.btn.btn-default.black-button.btn-sm.btn-file
-              Upload a new image
-              = f.file_field :image
-          .col-lg-6
-            - if  f.object.image.present? && f.object.image.content_type != 'image/svg+xml'
-              .icon
-                = link_to show_unit_image_in_modal_community_unit_path(), remote: true do
-                  %span.btn.btn-default.black-button.btn-sm.btn-file{"data-target" => "#edit-name", "data-toggle" => "modal"}
-                    Crop
-
-.form-group
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label{style: "margin-top: 50px;"}
-    Secondary Floor Plan Image
-    %span
-      Upload secondary floor plan image of this Unit.
-      %br/
-      Images will appear at a size of 325 x 300 px. Please note that images that are too small may appear pixelated.
-
-  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    .col-lg-5.col-md-5.col-sm-6.col-xs-6
-      .slide-image
-        .image-box.video-box
-          .images.height-200
-            - rn =  rand(9999999999999999999999999)
-            %a.preview-image{:href=>f.object.secondary_image.present? ? (f.object.secondary_image.url  + "?timestamp=#{rn}") : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Unit Secondary Image"}
-              = image_tag f.object.secondary_image.present? ? (f.object.secondary_image.url  + "?timestamp=#{rn}") : "default.jpeg",:height=>"",:width=>"170",:id=>"preview-secondary-image", :style => "max-height: 190px; max-width: 270px;"
-          = image_tag "exclamation-mark.png", class: "waring_exal #{ (f.object.secondary_image.present? ? ((f.object.secondary_image.width < 300 && f.object.secondary_image.height < 250) ? "" : "hidden") : "hidden") rescue "hidden"}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
-        - if f.object.secondary_image.present?
-          .icons
-            %a.text-danger{"data-name"=>"Image","data-href" => "/communities/#{@community.id}/units/#{@unit.id}/remove_pri_scnd_image?image=secondary", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
-              %i.fa.fa-close
-        .row
-          .col-lg-6
-            %span.btn.btn-default.black-button.btn-sm.btn-file
-              Upload a new image
-              = f.file_field :secondary_image
-          .col-lg-6
-            - if  f.object.secondary_image.present? && f.object.secondary_image.content_type != 'image/svg+xml'
-              .icon
-                = link_to show_unit_secondary_image_in_modal_community_unit_path(), remote: true do
-                  %span.btn.btn-default.black-button.btn-sm.btn-file{"data-target" => "#edit-name", "data-toggle" => "modal"}
-                    crop
 :javascript
   var characterLimit = parseInt("#{ENV["DESCRIPTION_LIMIT"]}")
   var community_id = #{params[:community_id]}
-  var unit_id = #{@unit.id}
+  var unit_id = #{@unit.id || 0}
   var door = '#{(@community.auto_wayfinding and @door.present?) ? "present" : "undefined"}'
-  
-  var locks_input,locks_list = "#locks_list";
+
+  var locks_input, locks_list = "#locks_list";
   $(document).ready(function(){
-    // run it on ready 
+    // run it on ready
     update_locks_select_and_lock_code_field()
-    // provide locks on change 
+    // provide locks on change
     $('#unit_lock_provider').change(function(){
       update_locks_select_and_lock_code_field();
     });
 
     function update_locks_select_and_lock_code_field(){
-      // if any lock selected 
+      if ($('#unit_lock_provider').length === 0) return;
+      // if any lock selected
       if ($('#unit_lock_provider').val().length > 0 && $('#unit_lock_provider').val() != "Manual" ){
         $('#manual_access_code').addClass('hide_it')
-        // initialize elements 
+        // initialize elements
         lock_provider_type = $('#unit_lock_provider').val().toLowerCase()
         lock_input_value = "#" + lock_provider_type + "_lock_input_value"
         options = '.' + lock_provider_type + "_options"
@@ -296,13 +241,13 @@
 
         $('#lock_input').val( $(lock_input_value).val() )
         $('datalist#locks_list').html($(options).html())
-        $('#lock_access_code').removeClass('hide_it') 
+        $('#lock_access_code').removeClass('hide_it')
       }
       else if ($('#unit_lock_provider').val().length > 0){
         $('#lock_access_code').addClass('hide_it')
         $('#manual_access_code').removeClass('hide_it')
         locks_input = undefined
-      }  
+      }
       else
       {
         $('#lock_access_code').addClass('hide_it')
@@ -320,44 +265,57 @@
           lock_id = $(locks_list + ' [value="' + lock.value + '"]').data('value')
           $('#lock_id').val(lock_id)
         }
-        //else{ lock.reportValidity(); }
       }
     });
-
   });
 
   $(".datepicker").datepicker({dateFormat: 'yy-mm-dd' });
+
+  // The preview script swaps the <img> src in place; drop the empty styling so a
+  // freshly chosen file renders at full strength.
+  $(document).on("change", ".u-image-actions input[type=file]", function () {
+    $(this).closest(".u-image").find(".u-image-frame").removeClass("empty");
+  });
+
+  // Mirrors the server rule: without Manual Override the data feed owns these
+  // fields, so the form says so instead of repeating it under every input.
+  (function () {
+    var radios = document.querySelectorAll(".settings-field[name='unit[manual_override]']");
+    function syncGates() {
+      var on = document.querySelector(".settings-field[name='unit[manual_override]']:checked");
+      var overridden = on && on.value === "true";
+      document.querySelectorAll(".u-field.gated").forEach(function (field) {
+        field.classList.toggle("feed-locked", !overridden);
+      });
+    }
+    radios.forEach(function (r) { r.addEventListener("change", syncGates); });
+    syncGates();
+  })();
+
   $(document).ready(function(){
       $('.wysihtml5').each(function(i, elem) {
         $(elem).wysihtml5({'toolbar': {'image': false,'link' : true},
         events: {
                 change: function(){
-                    var wysihtml5Editor = $('#unit_stop_description').data("wysihtml5").editor;
+                    var el = $('#unit_stop_description');
+                    if (!el.length || !el.data("wysihtml5")) return;
+                    var wysihtml5Editor = el.data("wysihtml5").editor;
                     var t = wysihtml5Editor.getValue();
-                    t1 = t.substr(0, characterLimit)
-                    t2 = t.substr(characterLimit, t.length)
-                    <!-- t2 = t2.fontcolor("red"); -->
-                    wysihtml5Editor.setValue(t1 + t2);
+                    wysihtml5Editor.setValue(t.substr(0, characterLimit) + t.substr(characterLimit, t.length));
                 },
                 load: function(){
-                    $('.wysihtml5-sandbox').contents().find('body').on("keydown",function(event) {
-                    if (wysihtml5Editor.getValue() != "")
-                    {
+                    var el = $('#unit_stop_description');
+                    if (!el.length || !el.data("wysihtml5")) return;
+                    var wysihtml5Editor = el.data("wysihtml5").editor;
+                    $('.wysihtml5-sandbox').contents().find('body').on("keydown", function(event) {
+                      if (wysihtml5Editor.getValue() != "") {
                         var text_split = $('.unit_directional_text').text().split(" ")
                         var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
                         $('.unit_directional_text').text( text_split[0] + " " + text_split[1] + " " + (characterLimit - total_length)).toString()
-                        }
+                      }
                     });
-                    var wysihtml5Editor = $('#unit_stop_description').data("wysihtml5").editor;
                     var t = wysihtml5Editor.getValue();
-                    t1 = t.substr(0, characterLimit)
-                    t2 = t.substr(characterLimit, t.length)
-                    <!-- t2 = t2.fontcolor("red"); -->
-                    wysihtml5Editor.setValue(t1 + t2);
-                    var text_split = $('.unit_directional_text').text().split(" ")
-                    var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
-                    $('.unit_directional_text').text( text_split[0] + " " + text_split[1] + " " + (characterLimit - total_length)).toString()
-
+                    wysihtml5Editor.setValue(t.substr(0, characterLimit) + t.substr(characterLimit, t.length));
                 }
             }
         });
@@ -367,43 +325,26 @@
         $(elem).wysihtml5({'toolbar': {'image': false,'link' : true},
         events: {
                 change: function(){
-                    var wysihtml5Editor = $('#unit_description').data("wysihtml5").editor;
+                    var el = $('#unit_description');
+                    if (!el.length || !el.data("wysihtml5")) return;
+                    var wysihtml5Editor = el.data("wysihtml5").editor;
                     var t = wysihtml5Editor.getValue();
-                    t1 = t.substr(0, characterLimit)
-                    t2 = t.substr(characterLimit, t.length)
-                    <!-- t2 = t2.fontcolor("red"); -->
-                    wysihtml5Editor.setValue(t1 + t2);
+                    wysihtml5Editor.setValue(t.substr(0, characterLimit) + t.substr(characterLimit, t.length));
                 },
                 load: function(){
-                    $('.wysihtml5-sandbox').contents().find('body').on("keydown",function(event) {
-                    if (wysihtml5Editor.getValue() != "")
-                    {
-                        var text_split = $('.unit_details_text').text().split(" ")
-                        var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
-                        $('.unit_details_text').text( text_split[0] + " " + text_split[1] + " " + (characterLimit - total_length)).toString()
-                        }
-                    });
-                    var wysihtml5Editor = $('#unit_description').data("wysihtml5").editor;
+                    var el = $('#unit_description');
+                    if (!el.length || !el.data("wysihtml5")) return;
+                    var wysihtml5Editor = el.data("wysihtml5").editor;
                     var t = wysihtml5Editor.getValue();
-                    t1 = t.substr(0, characterLimit)
-                    t2 = t.substr(characterLimit, t.length)
-                    <!-- t2 = t2.fontcolor("red"); -->
-                    wysihtml5Editor.setValue(t1 + t2);
-                    var text_split = $('.unit_details_text').text().split(" ")
-                    var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
-                    $('.unit_details_text').text( text_split[0] + " " + text_split[1] + " " + (characterLimit - total_length)).toString()
-
+                    wysihtml5Editor.setValue(t.substr(0, characterLimit) + t.substr(characterLimit, t.length));
                 }
             }
         });
       });
-
-
   })
+
   if (localStorage.getItem("floorplanCropped") == "1")
   {
     localStorage.setItem("floorplanCropped", "0");
     location.reload(true);
   }
-
-

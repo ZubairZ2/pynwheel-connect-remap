@@ -1,0 +1,13 @@
+-# One labelled control on the unit form. `gated` marks a field the property's
+-# data feed owns unless Manual Override is on; the form's JS keeps the whole
+-# fieldset's state in sync with the Manual Override toggle.
+.u-field{class: [("span-#{span}" if span), ("gated" if gated)].compact.join(" ")}
+  %label.u-flabel
+    = label
+    - if gated
+      %span.gate-badge{title: "Managed by the property's data feed unless Manual Override is on"}
+        %i.fa.fa-refresh
+        feed
+  = control
+  - if hint.present?
+    %p.u-fhint= hint

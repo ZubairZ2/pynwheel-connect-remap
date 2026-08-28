@@ -1,0 +1,182 @@
+-# Mass override dialogs. Each one carries only its own input - the units it
+-# applies to come from the grid's selection, which the toolbar's filters and the
+-# "select all matching" banner already make easy to build. That is why these are
+-# small: the old versions each inlined a checkbox for every unit in the
+-# property, ten times over.
+- selectable_floorplans = @floorplans.select { |f| f.provider_floorplan_id.present? }
+
+.mo-overlay#mo-floorplan
+  .mo-dialog
+    = form_tag set_floorplan_community_units_path(@community), class: "js-mo-form" do
+      .mo-head
+        %h3 Set floor plan
+        %button.mo-x{type: "button", "data-mo-close" => true} &times;
+      .mo-body
+        %p.mo-note
+          Only the floor plan assigned to each unit changes. Price, square footage, availability
+          and the rest of the unit's details are left untouched.
+        - if selectable_floorplans.empty?
+          %p.mo-warn This property has no floor plans with a Provider Floorplan ID yet.
+        - else
+          -# A real list rather than a <select size>: 40+ long options make a
+          -# native dropdown open as a full-screen overlay, and there is nowhere
+          -# to put the bed/bath/sqft line that makes them tellable apart.
+          %input.f-input.mo-fp-search{type: "text", placeholder: "Filter floor plans…", autocomplete: "off"}
+          .mo-fp-list
+            - selectable_floorplans.each do |fp|
+              %label.mo-fp-item{"data-label" => "#{fp.name} #{floorplan_specs(fp)}".downcase}
+                = radio_button_tag "floorplan_id", fp.id, false, required: true
+                %span.fp-text
+                  %span.fp-name= fp.name.presence || "Unnamed Floor Plan"
+                  %span.fp-specs= floorplan_specs(fp)
+          %p.mo-fp-empty.hidden No floor plans match that search.
+      = render "mo_footer", verb: "Assign floor plan"
+
+.mo-overlay#mo-available
+  .mo-dialog
+    = form_tag set_available_community_units_path(@community), class: "js-mo-form" do
+      .mo-head
+        %h3 Set availability
+        %button.mo-x{type: "button", "data-mo-close" => true} &times;
+      .mo-body
+        %label.mo-label Available
+        = select_tag :available, options_for_select([["Yes", true], ["No", false]]), class: "f-select"
+        %p.mo-note Setting this to Yes also clears the availability date so the unit shows as available now.
+      = render "mo_footer", verb: "Set availability"
+
+.mo-overlay#mo-available-date
+  .mo-dialog
+    = form_tag set_available_date_community_units_path(@community), class: "js-mo-form" do
+      .mo-head
+        %h3 Set available date
+        %button.mo-x{type: "button", "data-mo-close" => true} &times;
+      .mo-body
+        %label.mo-label Available date
+        -# A native date input - the old modal used a readonly text field wired to
+        -# a .datepicker plugin that is not loaded on this page, so it could never
+        -# actually be filled in.
+        = date_field_tag :available_date, nil, class: "f-input", required: true
+      = render "mo_footer", verb: "Set date"
+
+.mo-overlay#mo-manual-override
+  .mo-dialog.wide
+    = form_tag set_manual_override_community_units_path(@community), class: "js-mo-form" do
+      .mo-head
+        %h3 Manual override
+        %button.mo-x{type: "button", "data-mo-close" => true} &times;
+      .mo-body
+        %label.mo-label Apply at
+        .mo-scope
+          %label.mo-scope-opt
+            = radio_button_tag :override_scope, "unit", true, class: "js-scope"
+            %span
+              %b Unit level
+              One switch for the whole unit.
+          %label.mo-scope-opt
+            = radio_button_tag :override_scope, "field", false, class: "js-scope"
+            %span
+              %b Field level
+              Choose exactly which columns the feed may touch.
+
+        .mo-panel#mo-scope-unit
+          %label.mo-label.mt Manual override
+          = select_tag :manual_override, options_for_select([["Yes", true], ["No", false]]), class: "f-select"
+          %p.mo-note
+            With manual override on, these units stop being updated by the property's data feed.
+
+        .mo-panel.hidden#mo-scope-field
+          %p.mo-note.top
+            A pinned field is skipped by the data feed - and for most fields that holds even when the
+            unit's Manual Override is off, which is why they stay red in the grid. Leave a row on
+            #{content_tag(:b, "No change")} to keep whatever each unit already has.
+          .mo-fo-fields
+            - Unit::FEED_OVERRIDE_FLAGS.each do |key, flag|
+              .mo-fo-row
+                .fo-name
+                  = flag[:label]
+                  - if flag[:display_only]
+                    %span.fo-tag{title: "No data feed updates this column, so its marker only affects the red highlight in the grid"} display only
+                .fo-seg
+                  %label.seg{title: "Leave each unit as it is"}
+                    = radio_button_tag "field_state[#{key}]", "", true
+                    %span No change
+                  %label.seg.on{title: "Pin the current value — the feed will not update it"}
+                    = radio_button_tag "field_state[#{key}]", "true", false
+                    %span Pinned
+                  %label.seg.off{title: "Hand this column back to the data feed"}
+                    = radio_button_tag "field_state[#{key}]", "false", false
+                    %span Feed
+          .mo-fo-bulk
+            %a{href: "#", "data-fo-all" => "false"} Set all to Feed
+            %a{href: "#", "data-fo-all" => "true"} Set all to Pinned
+            %a{href: "#", "data-fo-all" => ""} Reset
+      = render "mo_footer", verb: "Apply"
+
+.mo-overlay#mo-sold
+  .mo-dialog
+    = form_tag set_sold_community_units_path(@community), class: "js-mo-form" do
+      .mo-head
+        %h3 Set sold
+        %button.mo-x{type: "button", "data-mo-close" => true} &times;
+      .mo-body
+        %label.mo-label Sold
+        = select_tag :sold, options_for_select([["Yes", true], ["No", false]]), class: "f-select"
+        %p.mo-note For-sale properties only. Marking a unit sold also marks it occupied and unavailable.
+      = render "mo_footer", verb: "Set sold"
+
+.mo-overlay#mo-floor
+  .mo-dialog
+    = form_tag set_floor_community_units_path(@community), class: "js-mo-form" do
+      .mo-head
+        %h3 Set floor
+        %button.mo-x{type: "button", "data-mo-close" => true} &times;
+      .mo-body
+        %label.mo-label Floor
+        = number_field_tag :floor, nil, class: "f-input", placeholder: "e.g. 3", required: true
+        %p.mo-note Units only appear on the interactive map once they have a floor.
+      = render "mo_footer", verb: "Set floor"
+
+.mo-overlay#mo-building
+  .mo-dialog
+    = form_tag set_building_community_units_path(@community), class: "js-mo-form" do
+      .mo-head
+        %h3 Set building
+        %button.mo-x{type: "button", "data-mo-close" => true} &times;
+      .mo-body
+        %label.mo-label Building
+        = text_field_tag :building, nil, class: "f-input", placeholder: "e.g. B", maxlength: 20, required: true
+      = render "mo_footer", verb: "Set building"
+
+.mo-overlay#mo-description
+  .mo-dialog.wide
+    = form_tag add_description_community_units_path(@community), class: "js-mo-form" do
+      .mo-head
+        %h3 Add details
+        %button.mo-x{type: "button", "data-mo-close" => true} &times;
+      .mo-body
+        %label.mo-label Title
+        = text_field_tag :description_title, nil, class: "f-input", placeholder: "More Details"
+        %label.mo-label.mt Details
+        = text_area_tag :description, nil, class: "form-control wysihtml5", placeholder: "Enter details"
+      = render "mo_footer", verb: "Add details"
+
+.mo-overlay#mo-additional-fee
+  .mo-dialog.wide
+    = form_tag add_additional_fees_community_units_path(@community), class: "js-mo-form", multipart: true do
+      .mo-head
+        %h3 Add additional fees
+        %button.mo-x{type: "button", "data-mo-close" => true} &times;
+      .mo-body
+        = text_area_tag :additional_fee, nil, class: "form-control wysihtml5", placeholder: "Enter additional fees"
+      = render "mo_footer", verb: "Add fees"
+
+.mo-overlay#mo-image
+  .mo-dialog
+    = form_tag set_image_community_units_path(@community), class: "js-mo-form", multipart: true do
+      .mo-head
+        %h3 Upload floor plan image
+        %button.mo-x{type: "button", "data-mo-close" => true} &times;
+      .mo-body
+        = file_field_tag "image_file", accept: "image/*", required: true, class: "f-input", id: "size_limit"
+        %p.mo-note The same image is applied to every selected unit. It uploads in the background.
+      = render "mo_footer", verb: "Upload image"

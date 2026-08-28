@@ -1,132 +1,715 @@
 - content_for :title, "Units - Pynwheel"
-.divLoading.hidden
+
+:css
+  .units-page { max-width: 1560px; margin: 0 auto; padding: 26px 22px 90px; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #2b2f36; }
+  .units-page h1 { font-size: 25px; font-weight: 650; letter-spacing: -0.015em; margin: 0 0 5px; color: #0f172a; }
+  .units-page .sub { color: #6b7280; font-size: 13.5px; margin: 0; }
+  .units-page .sub .dot { color: #cbd5e1; margin: 0 6px; }
+  .units-page .sub b { color: #374151; font-weight: 600; }
+  .units-page .muted { color: #6b7280; font-size: 13px; }
+
+  .units-page .page-head { display: flex; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
+  .units-page .page-head .grow { flex: 1; min-width: 260px; }
+  .units-page .head-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+  .units-page .btn { display: inline-flex; align-items: center; gap: 7px; border: none; border-radius: 6px; padding: 8px 15px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; white-space: nowrap; line-height: 1.3; }
+  .units-page .btn-primary { background: #3558e8; color: #fff; }
+  .units-page .btn-primary:hover { background: #2946c4; color: #fff; }
+  .units-page .btn-ghost { background: #f1f5f9; color: #334155; }
+  .units-page .btn-ghost:hover { background: #e2e8f0; color: #1f2937; }
+  .units-page .btn-success { background: #16a34a; color: #fff; }
+  .units-page .btn-success:hover { background: #15803d; color: #fff; }
+  .units-page .btn:disabled, .units-page .btn.off { background: #eef1f5; color: #a3acb9; cursor: not-allowed; box-shadow: none; }
+  .units-page .btn:disabled:hover, .units-page .btn.off:hover { background: #eef1f5; color: #a3acb9; }
+
+  /* toolbar */
+  .units-page .toolbar { background: #fff; border: 1px solid #e8ebf0; border-radius: 12px; padding: 13px 15px; margin-bottom: 15px; box-shadow: 0 1px 2px rgba(16,24,40,0.04), 0 1px 3px rgba(16,24,40,0.03); }
+  .units-page .toolbar .row1 { display: flex; gap: 9px; flex-wrap: wrap; align-items: center; }
+  .units-page .toolbar .row2 { display: flex; gap: 9px; flex-wrap: wrap; align-items: center; margin-top: 11px; padding-top: 12px; border-top: 1px solid #f2f4f7; }
+  .units-page .f-input, .units-page .f-select { padding: 7px 11px; border: 1px solid #dfe3e9; border-radius: 7px; font-size: 13px; background: #fff; color: #1f2937; height: 36px; transition: border-color .12s, box-shadow .12s; }
+  .units-page .f-select:hover, .units-page .f-input:hover { border-color: #c9cfd8; }
+  .units-page .f-select { padding-right: 26px; }
+  .units-page .f-input:focus, .units-page .f-select:focus { outline: none; border-color: #3558e8; box-shadow: 0 0 0 3px rgba(53,88,232,0.12); }
+  .units-page .f-search { flex: 1; min-width: 230px; }
+  .units-page .f-num { width: 92px; }
+  .units-page .f-group { display: inline-flex; align-items: center; gap: 6px; padding: 0 10px 0 11px; border: 1px solid #dfe3e9; border-radius: 7px; height: 36px; background: #fbfcfd; margin: 0; }
+  .units-page .f-group > span { font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: #8b93a1; }
+  .units-page .f-group .f-input { border: none; background: none; height: 32px; padding: 0; width: 60px; }
+  .units-page .f-group .f-input:hover { border: none; }
+  .units-page .f-group .f-input:focus { box-shadow: none; }
+  .units-page .spin { width: 15px; height: 15px; border: 2px solid #e5e7eb; border-top-color: #3558e8; border-radius: 50%; opacity: 0; }
+  .units-page .spin.on { opacity: 1; animation: unitspin 0.7s linear infinite; }
+  @keyframes unitspin { to { transform: rotate(360deg); } }
+
+  /* selection bar */
+  .units-page .bulkbar { display: none; position: sticky; top: 8px; z-index: 60; margin: 0 0 14px; background: #fff; border: 1px solid #cfdafe; border-radius: 10px; box-shadow: 0 6px 22px rgba(37,63,150,0.14); padding: 11px 14px; }
+  .units-page .bulkbar.on { display: block; }
+  .units-page .bulkbar-inner { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .units-page .bb-count { font-size: 13.5px; font-weight: 600; color: #1e3a8a; flex: 1; min-width: 200px; }
+
+  /* mass override dropdown */
+  .units-page .mo-menu-wrap { position: relative; }
+  .units-page .mo-menu { display: none; position: absolute; right: 0; top: calc(100% + 6px); min-width: 232px; background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; box-shadow: 0 10px 34px rgba(0,0,0,0.16); padding: 6px; z-index: 120; }
+  .units-page .mo-menu.on { display: block; }
+  .units-page .mo-menu button { display: block; width: 100%; text-align: left; background: none; border: none; padding: 8px 11px; border-radius: 6px; font-size: 13.5px; color: #334155; cursor: pointer; }
+  .units-page .mo-menu button:hover { background: #f1f5f9; color: #111827; }
+  .units-page .mo-menu .sep { height: 1px; background: #eef0f3; margin: 5px 4px; }
+  .units-page .mo-menu .grp { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #9ca3af; padding: 7px 11px 4px; }
+
+  /* meta strip */
+  .units-page .units-meta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin: 0 2px 9px; }
+  .units-page .units-count { font-size: 13px; color: #475569; font-weight: 500; flex: 1; }
+  .units-page .units-page-n { color: #9ca3af; }
+  .units-page .units-perpage { display: inline-flex; align-items: center; gap: 5px; }
+  .units-page .units-perpage .pp { display: inline-flex; align-items: center; justify-content: center; min-width: 30px; height: 26px; padding: 0 7px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 12px; font-weight: 600; color: #64748b; text-decoration: none; background: #fff; }
+  .units-page .units-perpage .pp:hover { background: #f1f5f9; color: #1f2937; }
+  .units-page .units-perpage .pp.on { background: #3558e8; border-color: #3558e8; color: #fff; }
+
+  /* table */
+  /* The card must never become its own vertical scroll box: with "All" that
+     traps every row past the fold inside a viewport-height container. Narrow
+     screens still get horizontal scrolling; from 1280px up the table fits, so
+     overflow goes back to visible and the sticky header can anchor to the
+     viewport instead of to this element. */
+  .units-page .table-wrap { background: #fff; border: 1px solid #e8ebf0; border-radius: 12px; box-shadow: 0 1px 2px rgba(16,24,40,0.04), 0 1px 3px rgba(16,24,40,0.03); overflow-x: auto; }
+  @media (min-width: 1280px) { .units-page .table-wrap { overflow: visible; } }
+  .units-page table.units-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .units-page .units-table thead th { position: sticky; top: 0; z-index: 5; text-align: left; background: #f8fafc; color: #64748b; font-weight: 650; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.055em; padding: 11px 12px; box-shadow: inset 0 -1px 0 #e8ebf0; white-space: nowrap; }
+  .units-page .units-table thead th:first-child { border-top-left-radius: 12px; }
+  .units-page .units-table thead th:last-child { border-top-right-radius: 12px; }
+  .units-page .units-table thead th.right { text-align: right; }
+  .units-page .units-table thead th.sorted { color: #3558e8; background: #f5f8ff; }
+  .units-page .units-table tbody td { padding: 10px 12px; border-bottom: 1px solid #f4f6f8; vertical-align: middle; }
+  .units-page .units-table tbody td.right { text-align: right; }
+  .units-page .units-table tbody tr:last-child td { border-bottom: none; }
+  .units-page .units-table tbody tr { transition: background .1s; }
+  .units-page .units-table tbody tr:hover { background: #f9fbfd; }
+  .units-page .units-table tbody tr.sel, .units-page .units-table tbody tr.sel:hover { background: #f5f8ff; }
+  .units-page th.cb, .units-page td.cb { width: 34px; padding-right: 0; }
+  .units-page th.flag, .units-page td.flag { width: 1%; white-space: nowrap; text-align: center; padding-left: 8px; padding-right: 8px; }
+  .units-page th.cb input, .units-page td.cb input { width: 15px; height: 15px; cursor: pointer; margin: 0; display: block; }
+
+  .units-page .sort-link { color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+  .units-page .sort-link:hover { color: #3558e8; }
+  .units-page .sort-caret { width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; }
+  .units-page .sort-caret.asc { border-bottom: 5px solid currentColor; }
+  .units-page .sort-caret.desc { border-top: 5px solid currentColor; }
+  .units-page .sort-caret.none { border-bottom: 5px solid #d5dae2; }
+
+  .units-page .u-name { font-weight: 600; color: #111827; font-size: 13.5px; }
+  .units-page .u-plan { color: #1f2937; }
+  .units-page .u-sub { color: #9ca3af; font-size: 11.5px; margin-top: 2px; white-space: nowrap; }
+  .units-page .c-price { font-variant-numeric: tabular-nums; font-weight: 600; color: #111827; white-space: nowrap; }
+  .units-page .c-price .cur { color: #a8afba; font-weight: 500; margin-right: 1px; }
+  .units-page .c-unit, .units-page .c-plan { min-width: 148px; }
+  .units-page .c-avail { min-width: 132px; }
+  .units-page .u-kv { display: flex; align-items: baseline; gap: 8px; line-height: 1.7; white-space: nowrap; }
+  .units-page .u-kv .k { flex: none; width: 34px; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #c2c8d1; }
+  .units-page .u-kv .v { color: #374151; }
+
+  /* the grid marks feed-overriding edits in red, as it always has */
+  .units-page .edited, .units-page .edited * { color: #dd4a39 !important; }
+  .units-page tr.overridden .u-name { color: #b4402f; }
+
+  .units-page .u-flag { font-weight: 600; font-size: 12px; white-space: nowrap; }
+  .units-page .u-flag .best_in_place { display: inline-block; padding: 2.5px 9px; border-radius: 20px; line-height: 1.45; }
+  .units-page .u-flag.yes .best_in_place { background: #e7f8ed; color: #15803d; }
+  .units-page .u-flag.no .best_in_place, .units-page .u-flag.off .best_in_place { background: #f1f3f6; color: #98a0ad; }
+  .units-page .u-flag.on .best_in_place { background: #eaeffe; color: #3558e8; }
+  .units-page .u-flag.sold .best_in_place { background: #fdf0dd; color: #b45309; }
+
+  .units-page .u-thumb { width: 46px; height: 34px; object-fit: cover; border-radius: 5px; border: 1px solid #eef0f3; background: #f8fafc; display: block; }
+  .units-page span.u-thumb.empty { background: repeating-linear-gradient(45deg, #f8fafc, #f8fafc 5px, #f1f5f9 5px, #f1f5f9 10px); }
+  /* the shared .locks-field-width class forces 200px !important, which blew this
+     column out; the partial uses .unit-lock-select here instead */
+  .units-page .c-lock { max-width: 170px; }
+  .units-page .c-lock select.unit-lock-select { width: 100%; max-width: 158px; font-size: 12px; height: 30px; padding: 3px 24px 3px 7px; border: 1px solid #dfe3e9; border-radius: 6px; background: #fff; color: #374151; }
+  .units-page .u-none { color: #cbd2da; }
+
+  .units-page .u-actions { display: inline-flex; gap: 3px; align-items: center; justify-content: flex-end; }
+  .units-page .u-actions .ico { display: inline-flex; align-items: center; justify-content: center; width: 27px; height: 27px; border-radius: 6px; color: #7c8595; text-decoration: none; font-size: 13px; }
+  .units-page .u-actions .ico:hover { background: #f1f5f9; color: #1f2937; }
+  .units-page .u-actions .ico.danger:hover { background: #fef2f2; color: #b91c1c; }
+  .units-page .u-actions .ico.static { color: #3558e8; cursor: default; }
+  .units-page .u-actions .ico.static:hover { background: none; }
+
+  .units-page .units-empty { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 56px 20px; text-align: center; }
+  .units-page .units-empty-title { font-size: 15px; font-weight: 600; color: #374151; margin: 0 0 5px; }
+
+  .units-page #select-all-banner { background: #f8fafc; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px; padding: 9px 16px; font-size: 13px; color: #475569; text-align: center; }
+  .units-page #select-all-banner a { color: #3558e8; font-weight: 600; text-decoration: none; margin-left: 6px; }
+  .units-page #select-all-banner a:hover { text-decoration: underline; }
+
+  /* will_paginate emits the current page as <em> and disabled prev/next as
+     <span>, so all three need the same box or the current page renders as bare
+     italic text. */
+  .units-page .pager { margin-top: 18px; display: flex; justify-content: center; }
+  .units-page .pagination { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .units-page .pagination a, .units-page .pagination em, .units-page .pagination span { display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 32px; padding: 0 10px; box-sizing: border-box; border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; font-size: 13px; font-weight: 600; font-style: normal; line-height: 1; color: #475569; text-decoration: none; }
+  .units-page .pagination a:hover { background: #f1f5f9; border-color: #d7dde5; color: #1f2937; }
+  .units-page .pagination em.current { background: #3558e8; border-color: #3558e8; color: #fff; }
+  .units-page .pagination .disabled { color: #c3cad4; background: #fafbfc; border-color: #eef0f3; }
+  .units-page .pagination .gap { border: none; background: none; min-width: 0; padding: 0 2px; color: #9ca3af; }
+
+  /* notices */
+  .units-page .note-card { display: flex; gap: 10px; align-items: flex-start; background: #fffcf2; border: 1px solid #f6e5b8; color: #8a6420; border-radius: 10px; padding: 10px 13px; font-size: 12.5px; line-height: 1.55; margin-bottom: 14px; }
+  .units-page .note-card a { color: #78500a; font-weight: 600; }
+  .units-page .intro-card { display: flex; gap: 11px; align-items: flex-start; background: #eff4ff; border: 1px solid #cfdafe; color: #1e3a8a; border-radius: 9px; padding: 11px 14px; font-size: 13px; line-height: 1.55; margin-bottom: 14px; }
+  .units-page .note-x { background: none; border: none; color: inherit; opacity: 0.5; font-size: 17px; line-height: 1; cursor: pointer; padding: 0 2px; }
+  .units-page .note-x:hover { opacity: 1; }
+
+  /* mass override dialogs */
+  .units-page .mo-overlay { display: none; position: fixed; inset: 0; background: rgba(15,17,21,0.5); z-index: 1100; align-items: flex-start; justify-content: center; padding: 68px 20px 40px; overflow-y: auto; }
+  .units-page .mo-overlay.open { display: flex; }
+  .units-page .mo-dialog { background: #fff; border-radius: 12px; width: 100%; max-width: 460px; box-shadow: 0 22px 62px rgba(0,0,0,0.32); overflow: hidden; }
+  .units-page .mo-dialog.wide { max-width: 740px; }
+  .units-page .mo-head { display: flex; align-items: center; gap: 10px; padding: 17px 20px 13px; border-bottom: 1px solid #f1f3f6; }
+  .units-page .mo-head h3 { margin: 0; font-size: 16.5px; font-weight: 600; color: #111827; flex: 1; }
+  .units-page .mo-x { background: none; border: none; font-size: 22px; line-height: 1; color: #9ca3af; cursor: pointer; padding: 0 3px; }
+  .units-page .mo-x:hover { color: #4b5563; }
+  .units-page .mo-body { padding: 17px 20px; }
+  .units-page .mo-body .f-input, .units-page .mo-body .f-select { width: 100%; }
+  .units-page .mo-body select.f-select[size] { height: auto; padding: 4px; }
+  .units-page .mo-body select.f-select[size] option { padding: 6px 8px; border-radius: 4px; }
+  .units-page .mo-fp-search { margin-bottom: 9px; }
+  .units-page .mo-fp-list { max-height: 310px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px; padding: 5px; }
+  .units-page .mo-fp-item { display: flex; align-items: center; gap: 10px; margin: 0; padding: 8px 10px; border-radius: 6px; cursor: pointer; font-weight: 400; }
+  .units-page .mo-fp-item:hover { background: #f6f8fc; }
+  .units-page .mo-fp-item input { margin: 0; flex: none; }
+  .units-page .mo-fp-item .fp-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .units-page .mo-fp-item .fp-name { font-size: 13.5px; font-weight: 600; color: #1f2937; }
+  .units-page .mo-fp-item .fp-specs { font-size: 11.5px; color: #9ca3af; }
+  .units-page .mo-fp-item:has(input:checked) { background: #eef3ff; box-shadow: 0 0 0 1px #b9c9fb inset; }
+  .units-page .mo-fp-item.hidden, .units-page .mo-fp-empty.hidden { display: none; }
+  .units-page .mo-fp-empty { margin: 12px 0 0; font-size: 12.5px; color: #9ca3af; text-align: center; }
+
+  /* manual override: unit level vs field level */
+  .units-page .mo-note.top { margin: 0 0 14px; }
+  .units-page .mo-panel.hidden { display: none; }
+  .units-page .mo-scope { display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); gap: 9px; }
+  .units-page .mo-scope-opt { display: flex; align-items: flex-start; gap: 10px; margin: 0; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px; cursor: pointer; font-weight: 400; }
+  .units-page .mo-scope-opt:hover { background: #fcfcfd; border-color: #cbd5e1; }
+  .units-page .mo-scope-opt input { margin: 2px 0 0; flex: none; }
+  .units-page .mo-scope-opt > span { font-size: 12px; color: #7b8494; line-height: 1.45; }
+  .units-page .mo-scope-opt > span b { display: block; font-size: 13.5px; color: #111827; font-weight: 600; margin-bottom: 2px; }
+  .units-page .mo-scope-opt:has(input:checked) { border-color: #3558e8; background: #f5f8ff; box-shadow: 0 0 0 1px #3558e8 inset; }
+
+  .units-page .mo-fo-fields { border: 1px solid #eef0f3; border-radius: 9px; overflow: hidden; }
+  .units-page .mo-fo-row { display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-bottom: 1px solid #f4f6f8; }
+  .units-page .mo-fo-row:last-child { border-bottom: none; }
+  .units-page .mo-fo-row:nth-child(odd) { background: #fcfdfe; }
+  .units-page .mo-fo-row .fo-name { flex: 1; font-size: 13px; color: #374151; display: flex; align-items: center; gap: 7px; }
+  .units-page .fo-tag { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #a8afba; background: #f1f3f6; border-radius: 3px; padding: 1px 5px; }
+
+  /* three-way segmented control: leave alone / pin / hand back */
+  .units-page .fo-seg { display: inline-flex; background: #f1f3f6; border-radius: 7px; padding: 2px; flex: none; }
+  .units-page .fo-seg .seg { position: relative; margin: 0; cursor: pointer; }
+  .units-page .fo-seg .seg input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+  .units-page .fo-seg .seg span { display: block; padding: 4px 11px; border-radius: 5px; font-size: 11.5px; font-weight: 600; color: #7b8494; white-space: nowrap; transition: background .12s, color .12s; }
+  .units-page .fo-seg .seg:hover span { color: #475569; }
+  .units-page .fo-seg .seg input:checked + span { background: #fff; color: #334155; box-shadow: 0 1px 2px rgba(16,24,40,0.09); }
+  .units-page .fo-seg .seg.on input:checked + span { background: #3558e8; color: #fff; }
+  .units-page .fo-seg .seg.off input:checked + span { background: #16a34a; color: #fff; }
+
+  .units-page .mo-fo-bulk { display: flex; gap: 14px; margin-top: 9px; }
+  .units-page .mo-fo-bulk a { font-size: 12px; font-weight: 600; color: #3558e8; text-decoration: none; }
+  .units-page .mo-fo-bulk a:hover { text-decoration: underline; }
+  .units-page .mo-label { display: block; font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #8b93a1; margin: 0 0 6px; }
+  .units-page .mo-label.mt { margin-top: 14px; }
+  .units-page .mo-note { color: #6b7280; font-size: 12.5px; line-height: 1.55; margin: 10px 0 0; }
+  .units-page .mo-warn { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; border-radius: 7px; padding: 10px 12px; font-size: 13px; margin: 0; }
+  .units-page .mo-foot { display: flex; align-items: center; gap: 10px; padding: 13px 20px; background: #fafbfc; border-top: 1px solid #f1f3f6; }
+  .units-page .mo-target { flex: 1; font-size: 12.5px; color: #475569; font-weight: 600; }
+  .units-page .mo-foot-actions { display: flex; gap: 8px; }
+
+  /* wysihtml5 ships a floated <ul> of Bootstrap 3 .btn elements, which at their
+     default size wrap onto a second row inside a dialog. Flex + a smaller button
+     scale keeps the whole toolbar on one line and in proportion with the rest of
+     the form. */
+  .units-page .mo-body ul.wysihtml5-toolbar { display: flex; flex-wrap: wrap; gap: 5px; margin: 0 0 8px; padding: 0; }
+  .units-page .mo-body ul.wysihtml5-toolbar::after { content: none; display: none; }
+  .units-page .mo-body ul.wysihtml5-toolbar > li { float: none; margin: 0; display: flex; list-style: none; }
+  .units-page .mo-body ul.wysihtml5-toolbar .btn { display: inline-flex; align-items: center; height: 30px; padding: 0 10px; font-size: 12px; font-weight: 600; line-height: 1; border: 1px solid #e3e7ec; background: #f6f8fa; color: #4b5563; border-radius: 6px; box-shadow: none; text-shadow: none; }
+  .units-page .mo-body ul.wysihtml5-toolbar .btn:hover, .units-page .mo-body ul.wysihtml5-toolbar .btn:focus { background: #eef1f5; color: #1f2937; border-color: #d7dde5; outline: none; }
+  .units-page .mo-body ul.wysihtml5-toolbar .btn.wysihtml5-command-active { background: #e7ecfd; border-color: #c3d0fb; color: #2946c4; box-shadow: none; }
+  .units-page .mo-body ul.wysihtml5-toolbar .btn-group > .btn { border-radius: 0; margin-left: -1px; }
+  .units-page .mo-body ul.wysihtml5-toolbar .btn-group > .btn:first-child { border-radius: 6px 0 0 6px; margin-left: 0; }
+  .units-page .mo-body ul.wysihtml5-toolbar .btn-group > .btn:last-child { border-radius: 0 6px 6px 0; }
+  .units-page .mo-body ul.wysihtml5-toolbar .btn .caret { margin-left: 5px; }
+  .units-page .mo-body ul.wysihtml5-toolbar .dropdown-menu { font-size: 13px; border-radius: 7px; border-color: #e5e7eb; box-shadow: 0 8px 24px rgba(16,24,40,0.12); }
+  .units-page .mo-body ul.wysihtml5-toolbar .dropdown-menu > li > a { padding: 6px 14px; }
+  .units-page .mo-body .wysihtml5-sandbox { width: 100% !important; border: 1px solid #dfe3e9 !important; border-radius: 7px !important; }
+  .units-page .mo-body .wysihtml5-sandbox { height: 195px !important; }
+  .units-page .mo-body textarea.wysihtml5 { min-height: 195px; }
+
 %section
   .content
-    .title-heading
-      %h4
-        %i.fa.fa-laptop
-        = @community.name.capitalize
-        %br
-          %small.text-primary
-            = @community.code
-    #units-index
-      = render 'index'
+    .units-page
+      .page-head
+        .grow
+          %h1 Units
+          %p.sub
+            %b= @community.name
+            - if @community.code.present?
+              %span.dot ·
+              = @community.code
+            %span.dot ·
+            = pluralize(@community.units.count, "unit")
+        .head-actions
+          = link_to new_community_unit_path(@community), class: "btn btn-success" do
+            %i.fa.fa-plus-circle
+            Add unit
+          .mo-menu-wrap
+            %button.btn.btn-primary.off#mo-open{type: "button", disabled: true}
+              %i.fa.fa-bolt
+              %span#mo-open-label Mass overrides
+            #mo-menu.mo-menu
+              .grp Availability
+              %button{type: "button", "data-mo" => "mo-available"} Available
+              %button{type: "button", "data-mo" => "mo-available-date"} Available date
+              %button{type: "button", "data-mo" => "mo-sold"} Sold
+              .sep
+              .grp Placement
+              %button{type: "button", "data-mo" => "mo-floorplan"} Floor plan
+              %button{type: "button", "data-mo" => "mo-floor"} Floor
+              %button{type: "button", "data-mo" => "mo-building"} Building
+              .sep
+              .grp Content
+              %button{type: "button", "data-mo" => "mo-description"} Details
+              %button{type: "button", "data-mo" => "mo-additional-fee"} Additional fees
+              %button{type: "button", "data-mo" => "mo-image"} Floor plan image
+              .sep
+              .grp Feed control
+              %button{type: "button", "data-mo" => "mo-manual-override"} Manual override
+
+      - if @show_intro
+        .intro-card#intro-card
+          %i.fa.fa-lightbulb-o{style: "margin-top:2px"}
+          %div
+            %b Tip:
+            Filter the grid to the units you want — by floor plan, beds, availability, building and more —
+            then tick them (or use "select all matching") and apply a mass override to the whole set at once.
+            Any value edited by hand shows in red and stops following the data feed.
+          %button.note-x{type: "button", onclick: "document.getElementById('intro-card').remove()"} &times;
+
+      .note-card
+        %i.fa.fa-info-circle{style: "margin-top:2px"}
+        %div
+          If you have made changes to units in your property management software, please contact
+          Pynwheel support at
+          %a{href: "mailto:support@pynwheel.com"} support@pynwheel.com
+          to import your data.
+
+      %form.toolbar#unit-filters{method: "get", action: community_units_path(@community)}
+        .row1
+          %input.f-input.f-search{type: "text", name: "q", value: params[:q], placeholder: "Search unit name, building, provider ID or floor plan…", autocomplete: "off"}
+          = unit_filter_select :floorplan, @filter_options[:floorplans].map { |f| [f.name.presence || "Unnamed Floor Plan", f.provider_floorplan_id] } + [["No floor plan", UnitFilterQuery::NONE]], "All floor plans"
+          = unit_filter_select :bedrooms, @filter_options[:bedrooms].map { |b| [floorplan_bedrooms_label(b), b] }, "All beds"
+          = unit_filter_select :bathrooms, @filter_options[:bathrooms].map { |b| ["#{floorplan_bathrooms_label(b)} Bath", b] }, "All baths"
+          = unit_filter_select :availability, [["Available now", "now"], ["Available later", "upcoming"], ["Available (any date)", "true"], ["Not available", "false"]], "Any availability"
+          %span.spin#filter-spin
+        .row2
+          = unit_filter_select :floor, @filter_options[:floors].map { |f| ["Floor #{f}", f] } + [["No floor", UnitFilterQuery::NONE]], "All floors"
+          = unit_filter_select :building, @filter_options[:buildings].map { |b| ["Bldg #{b}", b] } + [["No building", UnitFilterQuery::NONE]], "All buildings"
+          %label.f-group
+            %span= "Price #{@currency_symbol}"
+            %input.f-input{type: "number", name: "min_price", value: params[:min_price], placeholder: "min", min: 0}
+            %span &ndash;
+            %input.f-input{type: "number", name: "max_price", value: params[:max_price], placeholder: "max", min: 0}
+          %label.f-group
+            %span Sq Ft
+            %input.f-input{type: "number", name: "min_sqft", value: params[:min_sqft], placeholder: "min", min: 0}
+            %span &ndash;
+            %input.f-input{type: "number", name: "max_sqft", value: params[:max_sqft], placeholder: "max", min: 0}
+          = unit_filter_select :sold, [["Sold", "true"], ["Not sold", "false"]], "Sold: any"
+          = unit_filter_select :manual_override, [["Overridden", "true"], ["Not overridden", "false"]], "Override: any"
+          = unit_filter_select :plotted, [["Plotted", "true"], ["Not plotted", "false"]], "Plotting: any"
+          = unit_filter_select :overridden_field, [["Any pinned field", "any"]] + Unit::FEED_OVERRIDE_FLAGS.map { |key, flag| ["Pinned: #{flag[:label]}", key] }, "Field overrides: any"
+          - if @community.enable_locks
+            = unit_filter_select :lock, [["Any lock", "any"], ["No lock", UnitFilterQuery::NONE]] + @filter_options[:lock_providers].map { |p| [lock_provider_label(p), p] }, "Lock: any"
+          %a.btn.btn-ghost#clear-filters{href: community_units_path(@community), style: ("display:none" unless @filter.filtering?)} Clear filters
+
+      .bulkbar#bulkbar
+        .bulkbar-inner
+          %span.bb-count#bb-count
+          %button.btn.btn-ghost{type: "button", id: "bb-clear"} Clear selection
+
+      #units-results
+        = render "units_table"
+
+      = render "mass_override_modals"
 
 :javascript
-  $("#communities_at_units").change(function(){
-    var community_id = $('#communities_at_units').val();
+  (function () {
+    "use strict";
+
+    var form     = document.getElementById("unit-filters");
+    var results  = document.getElementById("units-results");
+    var spinner  = document.getElementById("filter-spin");
+    var bulkbar  = document.getElementById("bulkbar");
+    var bbCount  = document.getElementById("bb-count");
+    var moOpen   = document.getElementById("mo-open");
+    var moLabel  = document.getElementById("mo-open-label");
+    var moMenu   = document.getElementById("mo-menu");
+    var DEBOUNCE_MS = 260;
+
+    // Selection survives filtering and paging: the grid is swapped over XHR, so
+    // holding the ids here (rather than only in the DOM) means a user can build
+    // a set across several pages before applying an override to it.
+    var selected = new Set();
+    // The cross-page shortcut. When on, the server re-resolves "every unit
+    // matching the current filters" itself instead of trusting a list of ids
+    // the browser never rendered.
+    var selectAllMatching = false;
+
+    // ---- filtering, sorting, paging -------------------------------------
+    var timer = null, inFlight = null, lastQuery = window.location.search;
+
+    function currentQuery() {
+      var params = new URLSearchParams(new FormData(form));
+      Array.from(params.keys()).forEach(function (k) { if (!params.get(k)) params.delete(k); });
+      var qs = params.toString();
+      return qs ? "?" + qs : "";
+    }
+
+    function fetchResults(query) {
+      if (inFlight) inFlight.abort();
+      inFlight = new AbortController();
+      spinner.classList.add("on");
+
+      return fetch(form.action + query, { signal: inFlight.signal, headers: { "X-Requested-With": "XMLHttpRequest" } })
+        .then(function (res) { return res.text(); })
+        .then(function (html) {
+          results.innerHTML = html;
+          afterRender();
+          history.replaceState(null, "", query || window.location.pathname);
+          lastQuery = query;
+        })
+        .catch(function (e) { if (e.name !== "AbortError") window.location.search = query; })
+        .finally(function () { spinner.classList.remove("on"); inFlight = null; });
+    }
+
+    // A filter change redefines the matching set, so a standing "all matching"
+    // choice has to drop with it — it was made against a different set.
+    function applyFilters() {
+      var query = currentQuery();
+      if (query === lastQuery) return;
+      selectAllMatching = false;
+      fetchResults(query);
+      syncClear();
+    }
+
+    function syncClear() {
+      var clear = document.getElementById("clear-filters");
+      if (clear) clear.style.display = currentQuery() ? "" : "none";
+    }
+
+    form.addEventListener("submit", function (e) { e.preventDefault(); applyFilters(); });
+    form.addEventListener("input", function () {
+      clearTimeout(timer);
+      timer = setTimeout(applyFilters, DEBOUNCE_MS);
+    });
+    form.addEventListener("change", function () { clearTimeout(timer); applyFilters(); });
+
+    document.getElementById("clear-filters").addEventListener("click", function (e) {
+      e.preventDefault();
+      form.querySelectorAll("input[type=text], input[type=number]").forEach(function (i) { i.value = ""; });
+      form.querySelectorAll("select").forEach(function (s) { s.value = ""; });
+      applyFilters();
+    });
+
+    // Sort headers, pager links and the rows-per-page control are ordinary
+    // links; intercepting them keeps paging on the same XHR path as filtering,
+    // which is what lets a selection span pages.
+    results.addEventListener("click", function (e) {
+      var link = e.target.closest("a[data-remote-nav], .pagination a");
+      if (!link || link.classList.contains("disabled")) return;
+      e.preventDefault();
+      var query = link.getAttribute("href").replace(/^[^?]*/, "");
+      fetchResults(query);
+    });
+
+    // ---- selection -------------------------------------------------------
+    function rowBoxes() { return Array.prototype.slice.call(results.querySelectorAll(".js-row-cb")); }
+
+    function selectionCount() {
+      if (selectAllMatching) {
+        var banner = document.getElementById("select-all-banner");
+        return banner ? parseInt(banner.getAttribute("data-total"), 10) : selected.size;
+      }
+      return selected.size;
+    }
+
+    function syncSelection() {
+      var boxes = rowBoxes();
+      boxes.forEach(function (b) {
+        var on = selectAllMatching || selected.has(parseInt(b.value, 10));
+        b.checked = on;
+        b.closest("tr").classList.toggle("sel", on);
+      });
+
+      var page = document.getElementById("select-page");
+      if (page) {
+        var onPage = boxes.filter(function (b) { return b.checked; }).length;
+        page.checked = boxes.length > 0 && onPage === boxes.length;
+        page.indeterminate = onPage > 0 && onPage < boxes.length;
+      }
+
+      var n = selectionCount();
+      bulkbar.classList.toggle("on", n > 0);
+      bbCount.textContent = n + (n === 1 ? " unit selected" : " units selected") +
+        (selectAllMatching ? " (everything matching the current filters)" : "");
+      moOpen.disabled = n === 0;
+      moOpen.classList.toggle("off", n === 0);
+      moLabel.textContent = n > 0 ? "Mass overrides (" + n + ")" : "Mass overrides";
+      if (n === 0) moMenu.classList.remove("on");
+
+      syncBanner(boxes);
+    }
+
+    function syncBanner(boxes) {
+      var banner = document.getElementById("select-all-banner");
+      if (!banner) return;
+      var total = parseInt(banner.getAttribute("data-total"), 10);
+      var allOnPage = boxes.length > 0 && boxes.every(function (b) { return b.checked; });
+      // Only worth offering when there is more matching the filters than the
+      // page can show.
+      banner.style.display = (allOnPage || selectAllMatching) && total > boxes.length ? "" : "none";
+
+      var text  = document.getElementById("sab-text");
+      var all   = document.getElementById("sab-all");
+      var clear = document.getElementById("sab-clear");
+      if (selectAllMatching) {
+        text.textContent = "All " + total + " units matching these filters are selected.";
+        all.style.display = "none";
+        clear.style.display = "";
+      } else {
+        text.textContent = "All " + boxes.length + " units on this page are selected.";
+        all.style.display = "";
+        clear.style.display = "none";
+      }
+    }
+
+    results.addEventListener("change", function (e) {
+      if (e.target.id === "select-page") {
+        rowBoxes().forEach(function (b) {
+          var id = parseInt(b.value, 10);
+          if (e.target.checked) { selected.add(id); } else { selected.delete(id); }
+        });
+        if (!e.target.checked) selectAllMatching = false;
+        syncSelection();
+      } else if (e.target.classList.contains("js-row-cb")) {
+        // Un-ticking one row means the set is no longer "everything matching",
+        // so it collapses to the concrete ids currently on screen.
+        if (selectAllMatching && !e.target.checked) {
+          selectAllMatching = false;
+          rowBoxes().forEach(function (b) { if (b !== e.target) selected.add(parseInt(b.value, 10)); });
+        }
+        var id = parseInt(e.target.value, 10);
+        if (e.target.checked) { selected.add(id); } else { selected.delete(id); }
+        syncSelection();
+      }
+    });
+
+    results.addEventListener("click", function (e) {
+      if (e.target.id === "sab-all") {
+        e.preventDefault();
+        selectAllMatching = true;
+        syncSelection();
+      } else if (e.target.id === "sab-clear") {
+        e.preventDefault();
+        clearSelection();
+      }
+    });
+
+    function clearSelection() {
+      selected.clear();
+      selectAllMatching = false;
+      syncSelection();
+    }
+    document.getElementById("bb-clear").addEventListener("click", clearSelection);
+
+    // ---- mass override dialogs -------------------------------------------
+    moOpen.addEventListener("click", function (e) {
+      e.stopPropagation();
+      if (moOpen.disabled) return;
+      moMenu.classList.toggle("on");
+    });
+    document.addEventListener("click", function (e) {
+      if (!moMenu.contains(e.target) && e.target !== moOpen) moMenu.classList.remove("on");
+    });
+
+    moMenu.addEventListener("click", function (e) {
+      var btn = e.target.closest("button[data-mo]");
+      if (!btn) return;
+      moMenu.classList.remove("on");
+      openDialog(document.getElementById(btn.getAttribute("data-mo")));
+    });
+
+    // The Details and Fees dialogs use the same rich text editor as the unit
+    // form. It is initialised on first open rather than at page load: wysihtml5
+    // measures its iframe when it starts, and inside a display:none dialog that
+    // yields a zero-height editor.
+    function initEditors(overlay) {
+      if (!window.jQuery || !jQuery.fn.wysihtml5) return;
+      jQuery(overlay).find("textarea.wysihtml5").each(function () {
+        if (jQuery(this).data("wysihtml5")) return;
+        jQuery(this).wysihtml5({ toolbar: { image: false, link: true } });
+      });
+    }
+
+    function openDialog(overlay) {
+      if (!overlay) return;
+      initEditors(overlay);
+      var n = selectionCount();
+      var target = overlay.querySelector(".js-mo-target");
+      if (target) {
+        target.textContent = "Applies to " + n + (n === 1 ? " unit" : " units");
+      }
+      overlay.classList.add("open");
+      var first = overlay.querySelector("input:not([type=hidden]), select");
+      if (first) setTimeout(function () { first.focus(); }, 30);
+    }
+
+    function closeDialog(overlay) { overlay.classList.remove("open"); }
+
+    document.querySelectorAll(".mo-overlay").forEach(function (overlay) {
+      overlay.addEventListener("click", function (e) {
+        if (e.target === overlay || e.target.closest("[data-mo-close]")) closeDialog(overlay);
+      });
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "Escape") return;
+      document.querySelectorAll(".mo-overlay.open").forEach(closeDialog);
+    });
+
+    // Every dialog posts the same way: either the concrete ids, or the filter
+    // params plus a flag telling the server to resolve the matching set itself.
+    document.querySelectorAll(".js-mo-form").forEach(function (moForm) {
+      moForm.addEventListener("submit", function (e) {
+        if (selectionCount() === 0) {
+          e.preventDefault();
+          return;
+        }
+        moForm.querySelectorAll(".js-mo-injected").forEach(function (n) { n.remove(); });
+
+        // Push the editor's content into the textarea it shadows, so the posted
+        // value is what the user actually sees.
+        if (window.jQuery && jQuery.fn.wysihtml5) {
+          jQuery(moForm).find("textarea.wysihtml5").each(function () {
+            var bound = jQuery(this).data("wysihtml5");
+            if (bound && bound.editor) this.value = bound.editor.getValue();
+          });
+        }
+
+        if (selectAllMatching) {
+          // Namespaced under scope[] so a filter can never be mistaken for the
+          // value this override is setting - floor, building, sold and
+          // manual_override exist on both sides.
+          moForm.appendChild(hidden("select_all_matching", "true"));
+          new URLSearchParams(currentQuery()).forEach(function (value, key) {
+            moForm.appendChild(hidden("scope[" + key + "]", value));
+          });
+        } else {
+          selected.forEach(function (id) { moForm.appendChild(hidden("unit_ids[]", id)); });
+        }
+      });
+    });
+
+    function hidden(name, value) {
+      var input = document.createElement("input");
+      input.type = "hidden";
+      input.name = name;
+      input.value = value;
+      input.className = "js-mo-injected";
+      return input;
+    }
+
+    // Manual override dialog: swap between the unit-level switch and the
+    // per-field controls. Only the visible panel's inputs are submitted, so the
+    // server never has to guess which level was meant.
+    var scopeRadios = document.querySelectorAll(".js-scope");
+    function syncScope() {
+      var field = document.querySelector(".js-scope[value='field']").checked;
+      document.getElementById("mo-scope-unit").classList.toggle("hidden", field);
+      document.getElementById("mo-scope-field").classList.toggle("hidden", !field);
+    }
+    scopeRadios.forEach(function (r) { r.addEventListener("change", syncScope); });
+    if (scopeRadios.length) syncScope();
+
+    document.querySelectorAll("[data-fo-all]").forEach(function (link) {
+      link.addEventListener("click", function (e) {
+        e.preventDefault();
+        var want = link.getAttribute("data-fo-all");
+        document.querySelectorAll(".mo-fo-row").forEach(function (row) {
+          var target = row.querySelector("input[value='" + want + "']");
+          if (target) target.checked = true;
+        });
+      });
+    });
+
+    // Filter the floor plan list as you type.
+    var fpSearch = document.querySelector(".mo-fp-search");
+    if (fpSearch) {
+      var fpItems = Array.prototype.slice.call(document.querySelectorAll(".mo-fp-item"));
+      var fpEmpty = document.querySelector(".mo-fp-empty");
+      fpSearch.addEventListener("input", function () {
+        var term = fpSearch.value.trim().toLowerCase();
+        var shown = 0;
+        fpItems.forEach(function (item) {
+          var hit = !term || item.getAttribute("data-label").indexOf(term) !== -1;
+          item.classList.toggle("hidden", !hit);
+          if (hit) shown++;
+        });
+        if (fpEmpty) fpEmpty.classList.toggle("hidden", shown > 0);
+        // One match left is almost certainly the one they want.
+        if (shown === 1) {
+          var only = fpItems.find(function (i) { return !i.classList.contains("hidden"); });
+          if (only) only.querySelector("input").checked = true;
+        }
+      });
+    }
+
+    // ---- per-row behaviour that has to survive a fragment swap -----------
+    // best_in_place binds on concrete elements, so every swapped-in row needs
+    // re-binding; the visibility toggle is delegated instead.
+    function afterRender() {
+      if (window.jQuery && jQuery.fn.best_in_place) {
+        jQuery("#units-results .best_in_place").best_in_place();
+      }
+      syncSelection();
+    }
+
+    results.addEventListener("click", function (e) {
+      var toggle = e.target.closest(".unit_toggle");
+      if (!toggle) return;
+      e.preventDefault();
+      var icon = toggle.querySelector(".fa");
+      jQuery.ajax({
+        url: "/communities/#{@community.id}/units/" + toggle.dataset.unitId + "/display_unit",
+        type: "PUT"
+      }).done(function (data) {
+        icon.classList.toggle("fa-eye", data.visible);
+        icon.classList.toggle("fa-eye-slash", !data.visible);
+      });
+    });
+
+    syncClear();
+    afterRender();
+  })();
+
+  // Defined once for the whole grid. The lock <select> is rendered per row by
+  // the attached_lock partial, which used to carry this function with it - one
+  // identical copy of it per unit on the page.
+  function handleLockChange(dropdown, provider, unit_id, community_id) {
+    var selectedLockID = $(dropdown).val();
+    if (!selectedLockID) return;
 
     $.ajax({
-      url: "/communities/"+community_id+"/units",
-      type: "GET",
-      dataType: "script"
+      url: "/communities/" + community_id + "/units/" + unit_id + "/update_lock_provider",
+      type: "PUT",
+      data: { unit: { lock_provider: provider, access_code: selectedLockID }, lock_id: selectedLockID },
+      success: function () { window.location.reload(); },
+      error: function (error) { console.error(error); }
     });
-  });
-
-  if (!#{current_user.welcome_unit_page}) {
-    $('[data-toggle="unitMassOverridePopover"]').popover({
-      html: true,
-      template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Use this button to change data for multiple units at once, such as availability, floor number, details, and images. </div><div class="popover-footer"><a id="unitMassOverridePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-    }).popover('show');
   }
-
-  $(document).on("click", "#unitMassOverridePopoverClose" , function(){
-    $(this).parents(".popover").popover('hide');
-    $(this).parents(".popover").addClass('hidden');
-    $('[data-toggle="unitManualOverridePopover"]').popover({
-      html: true,
-      template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">When Manual Override is set to Yes, then the items that have been changed will not update automatically from the property"s property management software data feed.</div><div class="popover-footer"><a id="unitManualOverridePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-    }).popover('show');
-  });
-
-  $(document).on("click", "#unitManualOverridePopoverClose" , function(){
-    $(this).parents(".popover").popover('hide');
-    $(this).parents(".popover").addClass('hidden');
-    $('[data-toggle="unitGridNamePopover"]').popover({
-      html: true,
-      template: '<div class="popover pyn-popover"  style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">Changing the unit name will change how the name appears in the Pynwheel app.</div><div class="popover-footer"><a id="unitGridNamePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-    }).popover('show');
-  });
-
-  $(document).on("click", "#unitGridNamePopoverClose" , function(){
-    $(this).parents(".popover").popover('hide');
-    $(this).parents(".popover").addClass('hidden');
-    $('[data-toggle="unitGridFloorplanPopover"]').popover({
-      html: true,
-      template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">Changing the floor plan will change the floor plan associated with each unit.</div><div class="popover-footer"><a id="unitGridFloorplanPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-    }).popover('show');
-  });
-
-  $(document).on("click", "#unitGridFloorplanPopoverClose" , function(){
-    $(this).parents(".popover").popover('hide');
-    $(this).parents(".popover").addClass('hidden');
-    $('[data-toggle="unitGridPricePopover"]').popover({
-      html: true,
-      template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">Changing the price will change the price associated with each unit.</div><div class="popover-footer"><a id="unitGridPricePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-    }).popover('show');
-  });
-
-  $(document).on("click", "#unitGridPricePopoverClose" , function(){
-    $(this).parents(".popover").popover('hide');
-    $(this).parents(".popover").addClass('hidden');
-    $('[data-toggle="unitGridAvailableDatePopover"]').popover({
-      html: true,
-      template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">Changing the Available Date will change when the unit is displayed as available as long as Available is set to "Yes."</div><div class="popover-footer"><a id="unitGridAvailableDatePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-    }).popover('show');
-  });
-
-  $(document).on("click", "#unitGridAvailableDatePopoverClose" , function(){
-    $(this).parents(".popover").popover('hide');
-    $(this).parents(".popover").addClass('hidden');
-    $('[data-toggle="unitGridAvailablePopover"]').popover({
-      html: true,
-      template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">Changing Available to "No" will exclude this unit from appearing as available in the app, regardless of the date that is set.</div><div class="popover-footer"><a id="unitGridAvailablePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-    }).popover('show');
-  });
-
-  $(document).on("click", "#unitGridAvailablePopoverClose" , function(){
-    $(this).parents(".popover").popover('hide');
-    $(this).parents(".popover").addClass('hidden');
-    $('[data-toggle="unitGridSoldPopover"]').popover({
-      html: true,
-      template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">This option is for For Sale properties only. When a Sold is set to Yes, then the details on the unit pop-up will show that the unit is sold.</div><div class="popover-footer"><a id="unitGridSoldPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-    }).popover('show');
-  });
-
-  $(document).on("click", "#unitGridSoldPopoverClose" , function(){
-    $(this).parents(".popover").popover('hide');
-    $(this).parents(".popover").addClass('hidden');
-    $('[data-toggle="unitGridFloorPopover"]').popover({
-      placement: 'left',
-      html: true,
-      template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">Changing the Floor will change the floor that each unit appears on in the interactive map. Units will not appear on the interactive map unless a floor has been selected.</div><div class="popover-footer"><a id="unitGridInteriorImagesPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-    }).popover('show');
-  });
-
-  $(document).on("click", "#unitGridSoldPopoverClose" , function(){
-    $(this).parents(".popover").popover('hide');
-    $(this).parents(".popover").addClass('hidden');
-    $('[data-toggle="unitGridInteriorImagesPopover"]').popover({
-      placement: 'left',
-      html: true,
-      template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">Add or change images (such as interior photography or renderings) associated with each unit.</div><div class="popover-footer"><a id="unitGridInteriorImagesPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-    }).popover('show');
-  });
-  
-  $(document).on("click", "#unitGridInteriorImagesPopoverClose" , function(){
-    $(this).parents(".popover").popover('hide');
-    $(this).parents(".popover").addClass('hidden');
-    $('[data-toggle="unitGridActionPopover"]').popover({
-      placement: 'left',
-      html: true,
-      template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">Click the edit icon to view or change the details associated with each such as building number, images, and details.</div><div class="popover-footer"><a id="unitGridActionPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-    }).popover('show');
-  });
-
-  $(document).on("click", "#unitGridActionPopoverClose" , function(){
-    $(this).parents(".popover").popover('hide');
-    $(this).parents(".popover").addClass('hidden');
-    #{current_user.welcome_unit_page = true}
-    #{current_user.save}
-  });
-
