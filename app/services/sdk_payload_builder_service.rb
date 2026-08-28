@@ -453,20 +453,25 @@ class SdkPayloadBuilderService
     filter_list = @community.map_filter.get_filter_list(false)
     tab_list    = @community.map_filter.get_tab_visibility_list(false)
     {
-      showBedroomFilter:      filter_list[:show_bedroom_filter],
-      showPricingFilter:      filter_list[:show_pricing_filter],
-      showSquareFeetFilter:   filter_list[:show_square_feet_filter],
-      showAvailabilityFilter: filter_list[:show_availability_filter],
-      showPropertiesFilter:   filter_list[:show_properties_filter],
-      showUnitsTab:           tab_list[:show_units_tab],
-      showFloorPlansTab:      tab_list[:show_floorplans_tab],
-      showAmenitiesTab:       tab_list[:show_amenities_tab],
-      showFavsTab:            tab_list[:show_favorites_tab],
+      showBedroomFilter:         filter_list[:show_bedroom_filter],
+      showPricingFilter:         filter_list[:show_pricing_filter],
+      showSquareFeetFilter:      filter_list[:show_square_feet_filter],
+      showAvailabilityFilter:    filter_list[:show_availability_filter],
+      showPropertiesFilter:      filter_list[:show_properties_filter],
+      showUnitsTab:              tab_list[:show_units_tab],
+      showFloorPlansTab:         tab_list[:show_floorplans_tab],
+      showAmenitiesTab:          tab_list[:show_amenities_tab],
+      showFavsTab:               tab_list[:show_favorites_tab],
       # "Show sort options" CMS toggle. Hides the right-rail "Sort By" control on
       # the units & floor-plans lists; the lists then fall back to their default
       # order. Independent of the pricing/availability display toggles, which only
       # decide WHICH sort options are offered when the control is shown.
-      showSortOptions:        @community.map_filter.show_sort_options?(false)
+      showSortOptions:           @community.map_filter.show_sort_options?(false),
+      # "Enable Floor Plan Gallery Page" CMS toggle. Gates the map's "View All
+      # Floor Plans" button, which opens the full floor-plan gallery listing
+      # page. Off means visitors browse floor plans on the map only; it does not
+      # touch showFloorPlansTab, which decides whether the list exists at all.
+      showFloorPlanGalleryPage:  @community.map_filter.show_floorplan_gallery_page?(false)
     }
   end
 

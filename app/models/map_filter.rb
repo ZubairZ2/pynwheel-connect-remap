@@ -5,6 +5,11 @@ class MapFilter < ApplicationRecord
                  "When set to No, the sort control is hidden from the right rail; " \
                  "when Yes, users can sort units/floorplans.".freeze
 
+  FLOORPLAN_GALLERY_PAGE_TOOLTIP = "This option shows or hides the 'View All Floor Plans' button on the map. " \
+                                   "When on, visitors can open the full floor plan gallery listing page; " \
+                                   "when off, the button is hidden and visitors browse floor plans directly " \
+                                   "on the map.".freeze
+
   def get_filters_list
     [
       { name: "Properties",   marketing: :marketing_properties_enabled,  ops: :ops_properties_enabled },
@@ -21,6 +26,12 @@ class MapFilter < ApplicationRecord
         marketing: :marketing_sort_enabled,
         ops:       :ops_sort_enabled,
         tooltip:   SORT_TOOLTIP
+      },
+      {
+        name:      "Enable Floor Plan Gallery Page",
+        marketing: :marketing_floorplan_gallery_page_enabled,
+        ops:       :ops_floorplan_gallery_page_enabled,
+        tooltip:   FLOORPLAN_GALLERY_PAGE_TOOLTIP
       }
     ]
   end
@@ -101,6 +112,16 @@ class MapFilter < ApplicationRecord
   # only thing that decides it — same as the tab toggles below.
   def show_sort_options?(ops_map = false)
     ops_map ? ops_sort_enabled : marketing_sort_enabled
+  end
+
+  # --------- Floor Plan Gallery Page Visibility --------- #
+
+  # Gates the "View All Floor Plans" button that opens the full floor-plan
+  # gallery listing page. Like the sort toggle above, this is a UI affordance
+  # rather than an availability-derived filter, so `community.turn_availability_on`
+  # does not short-circuit it — the CMS toggle alone decides.
+  def show_floorplan_gallery_page?(ops_map = false)
+    ops_map ? ops_floorplan_gallery_page_enabled : marketing_floorplan_gallery_page_enabled
   end
 
   # --------- Tab Visibility --------- #

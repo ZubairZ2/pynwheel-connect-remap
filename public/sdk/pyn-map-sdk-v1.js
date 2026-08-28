@@ -3402,7 +3402,7 @@
      *     visibility: {
      *       showBedroomFilter, showPricingFilter,
      *       showSquareFeetFilter, showAvailabilityFilter, showPropertiesFilter,
-     *       showSortOptions
+     *       showSortOptions, showFloorPlanGalleryPage
      *     },
      *     displayFlags: { displayRent, hideBedrooms, hideSquareFeet, hideAvailability }
      *   }
@@ -3415,6 +3415,13 @@
      *   if (filters.visibility.showSquareFeetFilter && !filters.displayFlags.hideSquareFeet) {
      *     initRangeSlider(filters.squareFootage.min, filters.squareFootage.max);
      *   }
+     *
+     * `showFloorPlanGalleryPage` gates the "View All Floor Plans" button that
+     * opens the full floor plan gallery listing page. It is separate from
+     * `showFloorPlansTab`: the tab decides whether floor plans are browsable on
+     * the map at all, this decides whether the listing page can be reached.
+     *
+     *   if (filters.visibility.showFloorPlanGalleryPage) showViewAllFloorPlansButton();
      */
     getFiltersData() {
       return this.data.filters || null;

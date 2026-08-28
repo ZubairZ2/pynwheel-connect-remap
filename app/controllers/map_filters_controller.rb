@@ -53,7 +53,9 @@ private
       :ops_amenities_tab_enabled,
       :ops_favorites_tab_enabled,
       :marketing_sort_enabled,
-      :ops_sort_enabled
+      :ops_sort_enabled,
+      :marketing_floorplan_gallery_page_enabled,
+      :ops_floorplan_gallery_page_enabled
     )
   end
 end
