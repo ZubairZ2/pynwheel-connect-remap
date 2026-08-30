@@ -95,6 +95,10 @@ class Unit < ApplicationRecord
   has_many :igloohome_locks, as: :stop, dependent: :destroy
   has_many :igloohome_guests, as: :guest_of_stop, dependent: :destroy
 
+  # Feed-derived detail for this leasable space (student housing / Entrata).
+  # Absent for most units; see UnitSpaceDetail. The FK also cascades, because
+  # units are deleted through raw SQL in places that skip callbacks.
+  has_one :unit_space_detail, dependent: :destroy
   has_one :door, as: :attached_with, dependent: :destroy
   has_one :tour_stop, as: :stop, dependent: :destroy
   

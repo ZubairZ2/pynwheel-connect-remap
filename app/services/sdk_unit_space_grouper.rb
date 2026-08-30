@@ -107,6 +107,19 @@ class SdkUnitSpaceGrouper
     stripped.presence
   end
 
+  # The bedroom letter a unit name ends in: "115-A" -> "A", "12b" -> "B".
+  #
+  # Deliberately the exact inverse of apartment_number, sharing its regex: that
+  # method strips this suffix to name the door, this one returns it to name the
+  # space. If the two ever disagreed, a door labelled "115" would show a tab set
+  # that did not correspond to its own bedrooms.
+  #
+  # nil when there is no suffix to take ("103"), or when the suffix is numeric
+  # ("2-101"), which names a unit rather than a bedroom.
+  def self.space_letter(name)
+    name.to_s[/\A.*\d[^A-Za-z0-9]?([A-Za-z]{1,2})\z/, 1]&.upcase
+  end
+
   # The apartment number the given unit names share, or nil when they do not
   # name one apartment — "105-A".."105-D" gives "105", and the caller labels the
   # door with that instead of borrowing one bedroom's name.
@@ -128,6 +141,18 @@ class SdkUnitSpaceGrouper
     return nil if names.any? { |name| name[stem.length..].to_s.start_with?(/\d/) }
 
     stem
+  end
+
+  # Sort key that orders "3-1-2" before "3-1-10" — every digit run is left-padded
+  # to a fixed width, so plain string comparison becomes numeric-aware. Returning
+  # a padded String rather than the usual alternating [text, number, ...] array
+  # keeps every key mutually comparable, which an array of mixed types is not.
+  #
+  # Public because anything electing a stable representative from a set of units
+  # has to order them the same way this class elects a base unit; two orderings
+  # would let a floor plan's tab point at one unit and its door at another.
+  def self.natural_key(name)
+    name.to_s.downcase.gsub(/\d+/) { |digits| digits.rjust(DIGIT_PAD, "0") }
   end
 
   def self.common_prefix(a, b)
@@ -202,11 +227,7 @@ class SdkUnitSpaceGrouper
     [natural_key(unit.marketing_name), unit.id.to_i]
   end
 
-  # Sort key that orders "3-1-2" before "3-1-10" — every digit run is left-padded
-  # to a fixed width, so plain string comparison becomes numeric-aware. Returning
-  # a padded String rather than the usual alternating [text, number, ...] array
-  # keeps every key mutually comparable, which an array of mixed types is not.
   def natural_key(name)
-    name.to_s.downcase.gsub(/\d+/) { |digits| digits.rjust(DIGIT_PAD, "0") }
+    self.class.natural_key(name)
   end
 end

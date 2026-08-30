@@ -849,6 +849,7 @@
       ["unit", "amenity", "floorplan"].forEach(type => this._hydrateFavorites(type));
 
       this._indexUnits();
+      this._indexSpaceConfig();
       this._resolve3DConfig();
       this._applyThemeConfig();
     },
@@ -902,6 +903,33 @@
     // drawn on (SdkPayloadBuilderService::SPACE_NEVER_KEYS). getUnitSpaces puts
     // these back so a caller still receives a complete unit.
     _POSITION_KEYS: ["x_plot", "y_plot", "pointerData", "mapId", "floor"],
+
+    // Student housing: floorplans[].spaceConfig carries a finished tab set for the
+    // pop-up -- one entry per space letter, each with its own availability count,
+    // premium chips, rent and lease dates. Indexed once at load rather than looked
+    // up per call, because the modal re-reads it on every tab click.
+    //
+    // Keyed by floorplanId as a String: the payload's floorplanId is a number and
+    // callers routinely hold it as a string from a DOM attribute.
+    _indexSpaceConfig() {
+      this.spaceConfigByFloorplanId = {};
+
+      // Indexed under both floor-plan id spaces the payload carries:
+      //   floorplans[].floorplanId -> our primary key
+      //   units[].floorplanId      -> the PMS's own id
+      // A caller holding a unit only has the second one, so indexing on the
+      // first alone silently resolved nothing.
+      (this.data.floorplans || []).forEach(fp => {
+        if (!fp || !fp.spaceConfig) return;
+
+        this.spaceConfigByFloorplanId[String(fp.floorplanId)] = fp.spaceConfig;
+
+        const providerId = fp.spaceConfig.providerFloorplanId;
+        if (providerId != null && providerId !== "") {
+          this.spaceConfigByFloorplanId[String(providerId)] = fp.spaceConfig;
+        }
+      });
+    },
 
     _indexUnits() {
       this.unitsByMap             = {};
@@ -1459,6 +1487,26 @@
     },
 
     /**
+     * One floor plan, by either of the two id spaces the payload carries:
+     * floorplans[].floorplanId (our primary key) or the PMS's own id, which is
+     * what units[].floorplanId holds.
+     *
+     * Callers holding a unit only ever have the second one, so matching on
+     * floorplanId alone silently resolves nothing -- which is why floorPlanUtils
+     * has to fall back to comparing floor plan *names*.
+     */
+    getFloorplan(floorplanId) {
+      if (floorplanId == null) return null;
+
+      const wanted = String(floorplanId);
+
+      return (this.data.floorplans || []).find(fp =>
+        String(fp.floorplanId) === wanted ||
+        String(fp.spaceConfig?.providerFloorplanId ?? "") === wanted
+      ) || null;
+    },
+
+    /**
      * Returns all community amenities for the property.
      * Each object: { amenityId, name, description, amenityType, image, directionalText,
      *                additionalImages, additionalButtons }
@@ -1591,6 +1639,51 @@
     getBaseUnit(unitId) {
       if (unitId == null) return null;
       return this.unitById?.[String(unitId)] || null;
+    },
+
+    /**
+     * The space-letter tab set for a floor plan, or null when it has none.
+     *
+     * Each entry is a whole tab, already computed server-side:
+     *   { letter, availableCount, totalCount, availableDate, availabilityStatus,
+     *     isPremium, premiumAmenities, rent, leaseStartDate, leaseEndDate,
+     *     academicYear, representativeUnitId }
+     *
+     * Entries are objects so new fields can be added without a client release --
+     * read the keys you know and ignore the rest.
+     *
+     * Deliberately no per-letter apply URL: on a student-housing property Apply
+     * Now is always the floor plan's link (floorplans[].availability_url), because
+     * the applicant is choosing a room type and the property assigns the actual
+     * apartment at signing.
+     *
+     * `representativeUnitId` may be null when every unit of that letter is leased
+     * or hidden, so the payload carries none of them. The tab is still renderable;
+     * it just has no unit to act on.
+     */
+    getFloorplanSpaceConfig(floorplanId) {
+      if (floorplanId == null) return null;
+      return this.spaceConfigByFloorplanId?.[String(floorplanId)] || null;
+    },
+
+    /** Just the letters, e.g. ["A","B","C","D"]. Empty when there is no tab set. */
+    getSpaceLetters(floorplanId) {
+      const config = this.getFloorplanSpaceConfig(floorplanId);
+      return config ? config.letters.map(entry => entry.letter) : [];
+    },
+
+    /**
+     * Whether this property has any floor-plan tab set at all.
+     *
+     * The signal to route on: a host branches on the shape it has to render, never
+     * on a vertical or a PMS. Distinct from isGroupedProperty(), which answers a
+     * different question -- how to parse units[]. They are both true on a student
+     * property today, and they diverge when the feed named no letters: the payload
+     * is still rolled up, but there is no tab set, and the host falls back to its
+     * ordinary unit detail view.
+     */
+    hasSpaceConfig() {
+      return Object.keys(this.spaceConfigByFloorplanId || {}).length > 0;
     },
 
     /**
@@ -4693,11 +4786,15 @@
       changeFloor(floorNumber)     { return PynMapSDK.changeFloor.call(PynMapSDK, floorNumber); },
       getFloors()                  { return PynMapSDK.getFloors.call(PynMapSDK); },
       getFloorplans()              { return PynMapSDK.getFloorplans.call(PynMapSDK); },
+      getFloorplan(fpId)           { return PynMapSDK.getFloorplan.call(PynMapSDK, fpId); },
       getAmenities()               { return PynMapSDK.getAmenities.call(PynMapSDK); },
       getUnits(filters, options)   { return PynMapSDK.getUnits.call(PynMapSDK, filters, options); },
       isGroupedProperty()          { return PynMapSDK.isGroupedProperty.call(PynMapSDK); },
       getUnitSpaces(unitId)        { return PynMapSDK.getUnitSpaces.call(PynMapSDK, unitId); },
       getBaseUnit(unitId)          { return PynMapSDK.getBaseUnit.call(PynMapSDK, unitId); },
+      hasSpaceConfig()             { return PynMapSDK.hasSpaceConfig.call(PynMapSDK); },
+      getFloorplanSpaceConfig(fpId){ return PynMapSDK.getFloorplanSpaceConfig.call(PynMapSDK, fpId); },
+      getSpaceLetters(fpId)        { return PynMapSDK.getSpaceLetters.call(PynMapSDK, fpId); },
       getFiltersData()             { return PynMapSDK.getFiltersData.call(PynMapSDK); },
       getGalleryList(opts)                  { return PynMapSDK.getGalleryList.call(PynMapSDK, opts); },
       getGalleryImages(galleryId, opts)     { return PynMapSDK.getGalleryImages.call(PynMapSDK, galleryId, opts); },
