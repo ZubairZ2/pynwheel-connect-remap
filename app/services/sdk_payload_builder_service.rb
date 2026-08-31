@@ -612,6 +612,7 @@ class SdkPayloadBuilderService
         square_feet:       fp.square_feet,
         description:       fp.description.presence,
         description_title: floorplan_description_title(fp),
+        showDescriptionOnCard: show_floorplan_description_on_card?(fp),
         additionalButtons: floorplan_additional_buttons(fp),
         availability_url: floorplan_apply_url(fp, first_unit),
         availability_status: fp.availability_status,
@@ -1016,6 +1017,19 @@ class SdkPayloadBuilderService
   def floorplan_description_title(fp)
     return nil if fp.description.blank?
     fp.description_title.presence || DEFAULT_DESCRIPTION_TITLE
+  end
+
+  # The per-floor-plan "Show on cards" toggle: whether the Details body is also
+  # drawn as preview text on the right-rail card, instead of only inside the
+  # pop-up. Off by default, so a property that never touches the toggle keeps the
+  # card it has today.
+  #
+  # Reported as false when there is no description, the same way the title above
+  # goes nil — an "on" flag with an empty body would have the card reserve room
+  # for text that never arrives.
+  def show_floorplan_description_on_card?(fp)
+    return false if fp.description.blank?
+    fp.show_description_on_card == true
   end
 
   AVAILABILITY_FILTER_LABELS = {

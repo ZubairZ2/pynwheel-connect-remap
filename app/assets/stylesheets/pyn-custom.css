@@ -4372,6 +4372,50 @@ a#favoriteclickme {
   visibility: visible;
 }
 
+/* "Show on cards" help icon on the floor plan form. Same shape and specificity
+   as .desc-title-tooltip directly above it -- an id inside the panel, because a
+   class-only rule loses to the form's own label styling and the tooltip
+   collapses into a tall thin column. Colour is inherited so the icon matches the
+   other help icons in the form rather than picking up an accent of its own. */
+.card-desc-tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.card-desc-tooltip #card_desc_tooltip_text {
+  visibility: hidden;
+  width: 320px;
+  background-color: #000000;
+  color: white;
+  text-align: left;
+  border-radius: 6px;
+  padding: 15px;
+  position: absolute;
+  z-index: 1;
+  bottom: 150%;
+  left: 50%;
+  margin-left: -67px;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.3;
+  font-weight: normal;
+}
+
+.card-desc-tooltip #card_desc_tooltip_text::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -120px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: black transparent transparent transparent;
+}
+
+.card-desc-tooltip:hover #card_desc_tooltip_text {
+  visibility: visible;
+}
+
 .unit_sold {
   position: relative;
   display: inline-block;

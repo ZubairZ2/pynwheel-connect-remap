@@ -1480,7 +1480,12 @@
     /**
      * Returns all floorplans for the property.
      * Each object: { floorplanId, name, bedrooms, bathrooms, market_rent, square_feet,
-     *                description, availability_url, primaryImage, secondaryImage }
+     *                description, description_title, showDescriptionOnCard,
+     *                availability_url, primaryImage, secondaryImage }
+     *
+     * showDescriptionOnCard is the CMS "Show on cards" toggle: true when the host
+     * should also render `description` as preview text on the floor plan card,
+     * rather than only inside the pop-up. False whenever there is no description.
      */
     getFloorplans() {
       return (this.data.floorplans || []).slice();

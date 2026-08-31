@@ -67,6 +67,19 @@
 
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Show on cards
+    %i.card-desc-tooltip.fa.fa-question-circle
+      %span#card_desc_tooltip_text
+        Also show the Details content as preview text on the floor plan cards in the right rail. When off, Details appears only inside the floor plan pop-up. Long text is shortened to fit the card.
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .TriSea-technologies-Switch
+      %span.pr-15 No
+      = f.check_box :show_description_on_card, id: "floorplan-show-description-on-card"
+      %label.label-primary{ for: "floorplan-show-description-on-card" }
+      %span.pl-15 Yes
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Details
     %i.tooltip1.fa.fa-question-circle{ "data-toggle" => "floorplanAdditionalUrlDetailsPopover","data-content" => " "}
       %span#tooltiptext1
