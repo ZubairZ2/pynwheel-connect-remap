@@ -378,7 +378,13 @@ class SdkPayloadBuilderService
         defaultFloor:         @community.default_map_floor,
         sitemapAutoZoom:      @community.sitemap_auto_zoom,
         enable3dMaps:         @community.enable_three_d_maps,
-        defaultSatelliteView: @community.default_satellite_view
+        defaultSatelliteView: @community.default_satellite_view,
+        # "Highlight all units on hover" CMS toggle. On, hovering a unit lights
+        # up every unit sharing its floor plan and the pop-up names the whole
+        # range rather than the one unit; off is today's single-unit hover.
+        # Properties that plot one tenant per floor plan across several units
+        # want the group, but nothing here is specific to such a property.
+        highlightAllUnitsOnHover: @community.highlight_all_units_on_hover
       },
 
       beans3dConfig: {

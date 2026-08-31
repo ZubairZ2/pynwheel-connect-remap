@@ -310,6 +310,20 @@
 
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                        Highlight all units on hover
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            Hovering any unit on the map highlights every unit that shares the same floor plan. When off, hovering highlights only the unit under the cursor.
+
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .TriSea-technologies-Switch
+                          %span.pr-15 No
+                          = check_box_tag :highlight_all_units_on_hover, true, @community.highlight_all_units_on_hover, class: "apartment-setting-field"
+                          %label.label-primary{:for => "highlight_all_units_on_hover"}
+                          %span.pl-15 Yes
+
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                         Student Housing Property
                         %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
                           %span#propertyDetailNameText
@@ -615,6 +629,20 @@
                           %span.pr-15 No
                           = check_box_tag :turn_availability_on, true, @community.turn_availability_on, class: "apartment-setting-field"
                           %label.label-primary{:for => "turn_availability_on"}
+                          %span.pl-15 Yes
+
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                        Highlight all units on hover
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            Hovering any unit on the map highlights every unit that shares the same floor plan. When off, hovering highlights only the unit under the cursor.
+
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .TriSea-technologies-Switch
+                          %span.pr-15 No
+                          = check_box_tag :highlight_all_units_on_hover, true, @community.highlight_all_units_on_hover, class: "apartment-setting-field"
+                          %label.label-primary{:for => "highlight_all_units_on_hover"}
                           %span.pl-15 Yes
 
                     .form-group

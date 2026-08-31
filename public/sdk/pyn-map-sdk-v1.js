@@ -2801,6 +2801,61 @@
     },
 
     // ----------------------------------------------------
+    // GROUP HOVER ("Highlight all units on hover")
+    // ----------------------------------------------------
+    //
+    // Which units hover as one. That is the whole of it: bringing a group
+    // forward is highlightUnits() plus the dimming the right rail's floor plan
+    // hover already does, so there is no second painting path here.
+
+    _hoverGroupEnabled() {
+      return this.data?.property?.map?.highlightAllUnitsOnHover === true;
+    },
+
+    /**
+     * Units that hover as one with the given unit: everything on the map sharing
+     * its floor plan, the unit itself included. Matching mirrors
+     * onFloorplanHover — id first, name as the fallback for units whose
+     * floorplanId never came through the feed.
+     *
+     * With the CMS "Highlight all units on hover" toggle off, or for a unit with
+     * no floor plan to group on, this is just [unit] — so a host can hand the
+     * result straight to highlightUnits() without asking whether the property
+     * has the feature on.
+     *
+     * @param {object|string|number} unitOrId a unit, or a unit/space id
+     * @returns {object[]}
+     */
+    getHoverGroupUnits(unitOrId) {
+      const unit = (unitOrId && typeof unitOrId === "object")
+        ? unitOrId
+        : this._findUnitOnActiveMap(unitOrId);
+
+      if (!unit) return [];
+      if (!this._hoverGroupEnabled()) return [unit];
+
+      const fpId   = unit.floorplanId != null ? String(unit.floorplanId) : null;
+      const fpName = unit.floorplanName || null;
+      if (fpId === null && fpName === null) return [unit];
+
+      const group = this._hoverGroupPool().filter(u =>
+        (fpId   !== null && u.floorplanId != null && String(u.floorplanId) === fpId) ||
+        (fpName !== null && u.floorplanName === fpName)
+      );
+
+      return group.length > 0 ? group : [unit];
+    },
+
+    // What "on the map" means depends on the renderer: 3D draws every floor of
+    // the property at once, while an SVG or raster map draws one floorplate.
+    _hoverGroupPool() {
+      if (this._3dMode) return this.data.units || [];
+
+      const mapUnits = this.unitsByMap[this.activeMapId] || [];
+      return mapUnits.length > 0 ? mapUnits : (this.data.units || []);
+    },
+
+    // ----------------------------------------------------
     // FAST UNIT EVENTS (DELEGATED)
     // ----------------------------------------------------
     _bindUnitEvents() {
@@ -3482,6 +3537,11 @@
      *   console.log(cfg.branding.logoUrl);
      *   console.log(cfg.unitDisplay.displayRent);
      *   console.log(cfg.filters.showBedroomFilter);
+     *
+     * `map.highlightAllUnitsOnHover` is the CMS "Highlight all units on hover"
+     * toggle: on, hovering a unit should bring its whole floor plan forward
+     * rather than the one unit. getHoverGroupUnits() answers which units those
+     * are, and already returns just the hovered unit when the toggle is off.
      */
     getPropertyConfig() {
       return this.data.property || null;
@@ -4787,6 +4847,7 @@
       init(cfg)                    { return PynMapSDK.init.call(PynMapSDK, cfg); },
       getPropertyConfig()          { return PynMapSDK.getPropertyConfig.call(PynMapSDK); },
       highlightUnits(unitIds)      { return PynMapSDK.highlightUnits.call(PynMapSDK, unitIds); },
+      getHoverGroupUnits(unit)     { return PynMapSDK.getHoverGroupUnits.call(PynMapSDK, unit); },
       changeMap(mapId)             { return PynMapSDK.changeMap.call(PynMapSDK, mapId); },
       changeFloor(floorNumber)     { return PynMapSDK.changeFloor.call(PynMapSDK, floorNumber); },
       getFloors()                  { return PynMapSDK.getFloors.call(PynMapSDK); },
