@@ -1,0 +1,51 @@
+-# Rendered the instant a "Test ..." button is clicked, while TestConnectionWorker
+-# does the provider round trip. It polls the same URL until the worker has parked
+-# a result in the cache, at which point that URL renders the XML instead.
+-# No layout: this opens in its own tab and should paint before the fetch finishes.
+!!!
+%html
+  %head
+    %meta{ charset: "utf-8" }
+    %meta{ name: "viewport", content: "width=device-width, initial-scale=1" }
+    %title Testing #{@test_label}
+    :css
+      body { margin: 0; font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; color: #333; background: #f7f7f9; }
+      .wrap { max-width: 480px; margin: 18vh auto; padding: 32px; background: #fff; border: 1px solid #e3e3e6; border-radius: 6px; text-align: center; }
+      h1 { margin: 0 0 8px; font-size: 18px; font-weight: 600; }
+      p { margin: 0 0 6px; color: #666; }
+      .elapsed { color: #999; font-size: 12px; }
+      .spinner { width: 28px; height: 28px; margin: 0 auto 18px; border: 3px solid #e3e3e6; border-top-color: #337ab7; border-radius: 50%; animation: spin .8s linear infinite; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+  %body
+    .wrap
+      .spinner
+      %h1= "Testing #{@test_label}…"
+      %p This can take a minute on a large property. The page loads the data as soon as the provider answers.
+      %p.elapsed#elapsed
+    :javascript
+      (function () {
+        // Each poll is a full page load, so the start time has to outlive it.
+        var key = 'pyn-test-started:' + window.location.pathname;
+        var started = Number(sessionStorage.getItem(key)) || Date.now();
+        sessionStorage.setItem(key, started);
+
+        var elapsed = document.getElementById('elapsed');
+        function tick() {
+          elapsed.textContent = Math.round((Date.now() - started) / 1000) + 's elapsed';
+        }
+        tick();
+        setInterval(tick, 1000);
+
+        // ?refresh=1 busts the cached result. Carrying it into the poll would
+        // throw away the answer the worker just wrote, so drop it on the way.
+        var url = new URL(window.location.href);
+        url.searchParams.delete('refresh');
+
+        // A full navigation rather than fetch-and-swap: the finished response is
+        // an XML document, which the browser's own viewer renders far better
+        // than anything we could inject into this page.
+        setTimeout(function () {
+          sessionStorage.setItem(key, started);
+          window.location.replace(url.toString());
+        }, 3000);
+      })();

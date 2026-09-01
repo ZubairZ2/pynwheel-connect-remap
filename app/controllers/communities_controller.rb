@@ -453,60 +453,15 @@ class CommunitiesController < ApplicationController
   end
 
   def test_connection
-    if @community.credentials_are_present?
-      if xml = @community.connect_to_provider
-        begin
-          render :xml => xml
-        rescue
-          flash[:error] = "Please enter correct credentials in settings before importing data."
-          redirect_to community_settings_path(:community_id=>@community.id)
-        end
-      else
-        flash[:error] = "Please enter correct credentials in settings before importing data."
-        redirect_to community_settings_path(:community_id=>@community.id)
-      end
-    else
-      flash[:error] = "Please enter credentials in settings before importing data."
-      redirect_to community_settings_path(:community_id=>@community.id)
-    end
+    render_provider_test("connection")
   end
 
   def psi_pricing_test_connection
-    @community = Community.find params[:community_id]
-    if @community.credentials_are_present?
-      if xml = @community.connect_to_pricing(@community)
-        if @community.data_provider == "realpagesvc"
-          unless xml.present?
-            render :xml => "Wait until data loads"
-          else
-            render :xml => Nokogiri::XML(@community.realpage_pricing_data)
-          end
-        else
-          render :xml => xml
-        end
-      else
-        flash[:error] = "Please enter correct credentials in settings before importing data."
-        redirect_to community_settings_path(:community_id=>@community.id)
-      end
-    else
-      flash[:error] = "Please enter credentials in settings before importing data."
-      redirect_to community_settings_path(:community_id=>@community.id)
-    end
+    render_provider_test("pricing")
   end
 
   def psi_space_configuration_test_connection
-    @community = Community.find params[:community_id] 
-    if @community.credentials_are_present?
-      if xml = @community.connect_to_pricing_with_space_configuration(@community)
-        render :xml => xml
-      else
-        flash[:error] = "Please enter correct credentials in settings before importing data."
-        redirect_to community_settings_path(:community_id=>@community.id)
-      end
-    else
-      flash[:error] = "Please enter credentials in settings before importing data."
-      redirect_to community_settings_path(:community_id=>@community.id)
-    end
+    render_provider_test("space_configuration")
   end
 
   def reset_neighborhood_request_counter
@@ -1077,4 +1032,52 @@ class CommunitiesController < ApplicationController
     params.require(:community).permit(:coloring_mode)
   end
 
+  # The three "Test ..." buttons on the settings page.
+  #
+  # These used to call the provider inline. A large Entrata property takes well
+  # over Heroku's 30s router limit to fetch, parse and re-serialise, so the
+  # admin got an "Application error" page rather than the data — and the dyno
+  # thread kept working on a response nobody would ever receive. The fetch now
+  # runs in TestConnectionWorker and this action only reads what has landed, so
+  # it always answers immediately.
+  def render_provider_test(kind)
+    @community ||= Community.find(params[:community_id])
+
+    unless @community.credentials_are_present?
+      flash[:error] = "Please enter credentials in settings before importing data."
+      return redirect_to community_settings_path(community_id: @community.id)
+    end
+
+    DataProviders::TestConnectionCache.clear(@community.id, kind) if params[:refresh].present?
+
+    result = DataProviders::TestConnectionCache.read(@community.id, kind)
+
+    if result.nil?
+      enqueue_provider_test(kind)
+      return render_provider_test_pending(kind)
+    end
+
+    if result[:xml].present?
+      response.headers["X-Pynwheel-Generated-At"] = result[:generated_at].to_s
+      render xml: result[:xml]
+    else
+      flash[:error] = result[:error].presence ||
+                      "Please enter correct credentials in settings before importing data."
+      redirect_to community_settings_path(community_id: @community.id)
+    end
+  end
+
+  def enqueue_provider_test(kind)
+    return unless DataProviders::TestConnectionCache.claim(@community.id, kind)
+
+    TestConnectionWorker.perform_async(@community.id, kind)
+  end
+
+  def render_provider_test_pending(kind)
+    @test_kind = kind
+    @test_label = { "connection" => "Connection",
+                    "pricing" => "Pricing",
+                    "space_configuration" => "Space Configuration" }[kind]
+    render "communities/test_connection_pending", layout: false
+  end
 end

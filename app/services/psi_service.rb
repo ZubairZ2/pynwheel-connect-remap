@@ -2,6 +2,14 @@ class PsiService < BaseService
   @@floorplanHash = Hash.new
   attr_reader :credentials
 
+  # Without these HTTParty waits on the socket forever. In a web request that
+  # meant the dyno thread stayed blocked long after Heroku's router had already
+  # returned its 30s H12 page, so every retried click cost another worker.
+  # Background imports get a longer read window than an interactive test button
+  # needs, so both are tunable.
+  ENTRATA_OPEN_TIMEOUT = ENV.fetch("ENTRATA_OPEN_TIMEOUT", 10).to_i
+  ENTRATA_READ_TIMEOUT = ENV.fetch("ENTRATA_READ_TIMEOUT", 120).to_i
+
   class << self
     def call_entrata_api(subdomain:, endpoint:, method:, payload:)
       validated_subdomain = get_validated_entrata_subdomain(subdomain)
@@ -19,7 +27,14 @@ class PsiService < BaseService
         'X-Api-Key' => ENV.fetch('ENTRATA_API_KEY')
       }
 
-      HTTParty.send(method, url, body: body, headers: headers)
+      HTTParty.send(
+        method,
+        url,
+        body: body,
+        headers: headers,
+        open_timeout: ENTRATA_OPEN_TIMEOUT,
+        read_timeout: ENTRATA_READ_TIMEOUT
+      )
     rescue URI::InvalidURIError => e
       raise ArgumentError, "Invalid API endpoint: #{e.message}"
     end

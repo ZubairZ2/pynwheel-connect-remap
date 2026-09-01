@@ -34,9 +34,9 @@
             .box-header
               %p
                 This option allows you to test connection settings in the data section.A new browser window will open and attempt to write the data feed output.
-              = link_to "Test Connection" , community_test_connection_path(current_community) , :class=>"btn btn-primary",:target=>"_blank"
-              = link_to "Test Pricing" , community_psi_pricing_test_connection_path(current_community) , :class=>"btn btn-primary credential_fields",:target=>"_blank", :id => "entrata_pricing_button"
-              = link_to "Test Space Configuration" , community_psi_space_configuration_test_connection_path(current_community) , :class=>"btn btn-primary credential_fields",:target=>"_blank", :id => "entrata_space_configuration_button"
+              = link_to "Test Connection" , community_test_connection_path(current_community, refresh: 1) , :class=>"btn btn-primary",:target=>"_blank"
+              = link_to "Test Pricing" , community_psi_pricing_test_connection_path(current_community, refresh: 1) , :class=>"btn btn-primary credential_fields",:target=>"_blank", :id => "entrata_pricing_button"
+              = link_to "Test Space Configuration" , community_psi_space_configuration_test_connection_path(current_community, refresh: 1) , :class=>"btn btn-primary credential_fields",:target=>"_blank", :id => "entrata_space_configuration_button"
               / = link_to "Store Pricing" , community_realpage_load_pricing_data_path(current_community) , :class=>"btn btn-primary credential_fields", :id => "realpage_store_pricing_button"
               / = link_to "Show Pricing" , community_show_realpage_pricing_data_path(current_community) , :class=>"btn btn-primary credential_fields",:target=>"_blank", :id => "realpage_show_pricing_button"
               %p{:style => "margin-bottom: -7px; margin-top: 10px;"}

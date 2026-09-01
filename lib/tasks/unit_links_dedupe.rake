@@ -1,0 +1,134 @@
+# Finds — and optionally clears — units whose three "Buttons & links" slots point
+# at the same place twice.
+#
+#   rake unit_links:dedupe[935]               # report only, writes nothing
+#   rake unit_links:dedupe[935,apply_exact]   # clear only the risk-free duplicates
+#   rake unit_links:dedupe[935,apply]         # clear every duplicate middle button
+#
+# Generic on purpose: it takes any company id and judges duplication by URL, not
+# by label. Labels are useless as a signal here — the same action shows up as
+# "Apply Now", "APPLY NOW" and "Tour Now" across this data, and the map
+# uppercases every label in CSS anyway, so what a person sees on screen says
+# nothing about what is stored.
+#
+# Three kinds of duplicate, reported separately because they carry different risk:
+#
+#   exact       — the two slots hold the same URL. Removing one loses nothing.
+#   same_target — the two slots hold DIFFERENT URLs on the same host (two
+#                 distinct Boom application links, say). Removing one discards a
+#                 URL nothing else records.
+#   same_label  — the two slots carry the same label ignoring case and spacing
+#                 ("APPLY NOW" vs "Apply Now"), whatever the URLs are. Two
+#                 buttons offering the reader the same action is the duplication
+#                 people actually see on the map, so it counts even when the
+#                 hosts differ.
+#
+# A pair is classified once, strongest signal first: exact, then same_target,
+# then same_label.
+#
+# Cleanup only ever clears the middle button (additional_button/additional_url).
+# Buttons 1 and 3 are the ones RenuUnitLinksSyncService owns and can rebuild from
+# the sheet; the middle one it never writes, so that is the safe copy to drop.
+namespace :unit_links do
+  desc "Report (or clear, with 'apply_exact'/'apply') duplicate unit button links for a company (args: company_id[,apply_exact|apply])"
+  task :dedupe, [:company_id, :mode] => :environment do |_task, args|
+    company_id = args[:company_id].presence or abort("company_id is required — rake unit_links:dedupe[935]")
+    mode = args[:mode].to_s
+    abort("mode must be apply_exact or apply") unless ["", "apply_exact", "apply"].include?(mode)
+
+    company = Company.find_by(id: company_id) or abort("no company with id=#{company_id}")
+    community_ids = company.communities.select(:id)
+
+    # slot name => [url column, label column]
+    slots = { "button1" => [:virtual_tour_url, :virtual_tour_button_label],
+              "button2" => [:additional_url,   :additional_button],
+              "button3" => [:scheduler_url,    :scheduler_label] }
+    pairs = slots.keys.combination(2).to_a
+
+    # Trailing slashes and casing differ between hand-entered and imported links
+    # often enough that comparing raw strings under-reports badly.
+    normalize = ->(url) { url.to_s.strip.downcase.sub(%r{/+\z}, "").presence }
+    host      = ->(url) { URI.parse(url).host&.downcase rescue nil }
+    # "APPLY NOW", "Apply Now" and "apply  now" are one label as far as a reader
+    # looking at two identical buttons is concerned.
+    label     = ->(text) { text.to_s.strip.downcase.gsub(/\s+/, " ").presence }
+
+    columns = [:id, :marketing_name] + slots.values.flatten
+    scope = Unit.where(community_id: community_ids)
+                .where("COALESCE(units.virtual_tour_url, '') <> '' OR " \
+                       "COALESCE(units.additional_url, '')   <> '' OR " \
+                       "COALESCE(units.scheduler_url, '')    <> ''")
+
+    findings = Hash.new { |h, k| h[k] = [] }
+    scanned = 0
+
+    scope.in_batches(of: 2_000) do |batch|
+      batch.pluck(*columns).each do |row|
+        unit = columns.zip(row).to_h
+        scanned += 1
+
+        pairs.each do |left, right|
+          a = normalize.call(unit[slots[left][0]])
+          b = normalize.call(unit[slots[right][0]])
+          next if a.nil? || b.nil?
+
+          la, lb = label.call(unit[slots[left][1]]), label.call(unit[slots[right][1]])
+          ha, hb = host.call(a), host.call(b)
+
+          kind = if a == b
+                   :exact
+                 elsif ha && ha == hb
+                   :same_target
+                 elsif la && la == lb
+                   :same_label
+                 end
+          next if kind.nil?
+
+          findings[[kind, left, right]] << unit
+        end
+      end
+    end
+
+    puts "company #{company.id} (#{company.name}) — #{company.communities.count} communities, #{scanned} units with at least one link"
+    if findings.empty?
+      puts "no duplicate button links"
+      next
+    end
+
+    puts
+    findings.sort_by { |(kind, _, _), units| [kind == :exact ? 0 : 1, -units.size] }.each do |(kind, left, right), units|
+      puts format("  %-12s %s <-> %s  units=%d", kind, left, right, units.size)
+      if kind != :exact
+        units.first(3).each do |unit|
+          puts format("      e.g. unit=%s %s", unit[:id], unit[:marketing_name])
+          [left, right].each do |slot|
+            puts format("           %-8s %-20s %s", slot, unit[slots[slot][1]].inspect, unit[slots[slot][0]])
+          end
+        end
+      end
+    end
+
+    # Only the middle button is ever cleared, and only where it duplicates one of
+    # the two slots the sheet owns.
+    # apply_exact deliberately skips :same_target, where the two URLs differ and
+    # dropping one throws away a link nothing else records.
+    kinds = mode == "apply" ? [:exact, :same_target, :same_label] : [:exact]
+    clearable = findings.select { |(kind, left, right), _| kinds.include?(kind) && [left, right].include?("button2") }
+                        .values.flatten.uniq { |unit| unit[:id] }
+    puts
+    puts "clearable now (#{kinds.join(' + ')}): #{clearable.size}"
+
+    if mode.empty?
+      puts "report only — re-run with rake \"unit_links:dedupe[#{company_id},apply_exact]\" (safe) " \
+           "or [#{company_id},apply] (includes same_target)"
+      next
+    end
+
+    ids = clearable.map { |unit| unit[:id] }
+    cleared = ids.each_slice(1_000).sum do |slice|
+      Unit.where(id: slice).update_all(additional_button: nil, additional_url: nil,
+                                       link2_open_new_tab: false, updated_at: Time.current)
+    end
+    puts "cleared=#{cleared}"
+  end
+end
