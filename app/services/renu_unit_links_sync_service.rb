@@ -31,7 +31,14 @@
 class RenuUnitLinksSyncService
   class Error < StandardError; end
 
-  SPREADSHEET_ID = "1BhPQM4HZjrG27prhWWGxc5OhO607l8MquV30rrJIeFY".freeze
+  # A link-shared ("anyone with the link can view") copy of RENU's original
+  # "Pynwheel - RENU Property Data Feed", which we only hold viewer rights on and
+  # therefore cannot share with a service account. Because it is link-shared, the
+  # reader takes its no-credentials CSV path and GOOGLE_SERVICE_ACCOUNT_JSON is
+  # NOT required. Two things follow from it being a copy rather than the source:
+  # it does not update itself when RENU edits theirs, and if it is ever switched
+  # back to Restricted this job starts failing with a 401 until credentials exist.
+  SPREADSHEET_ID = "1wcIn0lQBbGCA8LoPnF_g5XElUqhPEsWUMvUJyhHD5OU".freeze
   TAB_NAME       = "Data Feed".freeze
 
   # The sheet column holding the id we join on.
