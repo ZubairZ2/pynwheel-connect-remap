@@ -4,6 +4,9 @@
 #   rake unit_links:dedupe[935]              # report only, writes nothing
 #   rake unit_links:dedupe[935,apply_safe]   # clear only provably identical links
 #   rake unit_links:dedupe[935,apply]        # clear every duplicate middle button
+#   rake unit_links:dedupe[935,apply_labels] # clear EVERY middle button whose label
+#                                            # reads as apply/schedule/tour, whatever
+#                                            # its URL — leaves buttons 1 and 3 only
 #
 # Generic on purpose: it takes any company id and judges duplication by URL, not
 # by label. Labels are useless as a signal here — the same action shows up as
@@ -39,7 +42,15 @@ namespace :unit_links do
   task :dedupe, [:company_id, :mode] => :environment do |_task, args|
     company_id = args[:company_id].presence or abort("company_id is required — rake unit_links:dedupe[935]")
     mode = args[:mode].to_s
-    abort("mode must be apply_safe or apply") unless ["", "apply_safe", "apply"].include?(mode)
+    abort("mode must be apply_safe, apply or apply_labels") unless ["", "apply_safe", "apply", "apply_labels"].include?(mode)
+
+    # apply_labels implements a flat editorial rule rather than a duplicate test:
+    # a unit should end up with button1 "Apply Now" and button3 "Schedule a Tour"
+    # and nothing else, so any middle button captioned like one of those two goes,
+    # whatever it points at. Substring matching is what makes it catch the whole
+    # spread of hand-entered casings and wordings at once — "APPLY NOW",
+    # "Apply Now", "SCHEDULE A TOUR", "Schedule A Tour", "Tour Now".
+    label_words = %w[apply schedule tour].freeze
 
     company = Company.find_by(id: company_id) or abort("no company with id=#{company_id}")
     community_ids = company.communities.select(:id)
@@ -149,6 +160,35 @@ namespace :unit_links do
     if mode.empty?
       puts "report only — re-run with rake \"unit_links:dedupe[#{company_id},apply_safe]\" " \
            "or [#{company_id},apply]"
+      next
+    end
+
+    if mode == "apply_labels"
+      # Guarded to units the sync actually populated: if neither button1 nor
+      # button3 holds a link, the middle button is the unit's ONLY link and
+      # removing it would leave the card with no call to action at all.
+      labelled = Unit.where(community_id: community_ids)
+                     .where("COALESCE(units.additional_url, '') <> ''")
+                     .where("COALESCE(units.virtual_tour_url, '') <> '' OR COALESCE(units.scheduler_url, '') <> ''")
+                     .where(label_words.map { "units.additional_button ILIKE ?" }.join(" OR "),
+                            *label_words.map { |word| "%#{word}%" })
+      puts
+      puts "button2 with an apply/schedule/tour label (and a surviving button1 or button3): #{labelled.count}"
+      labelled.group(:additional_button).count.sort_by { |_, n| -n }
+              .each { |lbl, n| puts "    #{lbl.inspect} => #{n}" }
+
+      orphans = Unit.where(community_id: community_ids)
+                    .where("COALESCE(units.additional_url, '') <> ''")
+                    .where("COALESCE(units.virtual_tour_url, '') = '' AND COALESCE(units.scheduler_url, '') = ''")
+                    .where(label_words.map { "units.additional_button ILIKE ?" }.join(" OR "),
+                           *label_words.map { |word| "%#{word}%" })
+      puts "  skipped — button2 is the unit's only link: #{orphans.count}"
+
+      cleared = labelled.in_batches(of: 1_000).sum do |batch|
+        batch.update_all(additional_button: nil, additional_url: nil,
+                         link2_open_new_tab: false, updated_at: Time.current)
+      end
+      puts "cleared=#{cleared}"
       next
     end
 
