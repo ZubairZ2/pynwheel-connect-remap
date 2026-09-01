@@ -1,9 +1,9 @@
 # Finds — and optionally clears — units whose three "Buttons & links" slots point
 # at the same place twice.
 #
-#   rake unit_links:dedupe[935]               # report only, writes nothing
-#   rake unit_links:dedupe[935,apply_exact]   # clear only the risk-free duplicates
-#   rake unit_links:dedupe[935,apply]         # clear every duplicate middle button
+#   rake unit_links:dedupe[935]              # report only, writes nothing
+#   rake unit_links:dedupe[935,apply_safe]   # clear only provably identical links
+#   rake unit_links:dedupe[935,apply]        # clear every duplicate middle button
 #
 # Generic on purpose: it takes any company id and judges duplication by URL, not
 # by label. Labels are useless as a signal here — the same action shows up as
@@ -11,30 +11,35 @@
 # uppercases every label in CSS anyway, so what a person sees on screen says
 # nothing about what is stored.
 #
-# Three kinds of duplicate, reported separately because they carry different risk:
+# Four kinds of duplicate, reported separately because they carry different risk:
 #
-#   exact       — the two slots hold the same URL. Removing one loses nothing.
-#   same_target — the two slots hold DIFFERENT URLs on the same host (two
-#                 distinct Boom application links, say). Removing one discards a
+#   exact         — the two slots hold the same URL. Removing one loses nothing.
+#   same_resource — different URLs that provably address the SAME thing: the same
+#                 Boom application token in two URL shapes
+#                 (/a/<token> vs /auth/sign-in?token=<token>), or the same Rently
+#                 property id on two of their hosts (secure. vs homes.). Removing
+#                 one loses nothing either, which is why apply_safe includes it.
+#   same_target — different URLs on the same host that do NOT share an id (two
+#                 genuinely distinct Boom applications). Removing one discards a
 #                 URL nothing else records.
 #   same_label  — the two slots carry the same label ignoring case and spacing
-#                 ("APPLY NOW" vs "Apply Now"), whatever the URLs are. Two
-#                 buttons offering the reader the same action is the duplication
-#                 people actually see on the map, so it counts even when the
-#                 hosts differ.
+#                 ("APPLY NOW" vs "Apply Now"), whatever the URLs are. Beware:
+#                 this catches mislabelling as readily as duplication — a Rently
+#                 link captioned "APPLY NOW" lands here, and clearing it removes
+#                 a link that is not a duplicate at all.
 #
-# A pair is classified once, strongest signal first: exact, then same_target,
-# then same_label.
+# A pair is classified once, strongest signal first: exact, same_resource,
+# same_target, same_label.
 #
 # Cleanup only ever clears the middle button (additional_button/additional_url).
 # Buttons 1 and 3 are the ones RenuUnitLinksSyncService owns and can rebuild from
 # the sheet; the middle one it never writes, so that is the safe copy to drop.
 namespace :unit_links do
-  desc "Report (or clear, with 'apply_exact'/'apply') duplicate unit button links for a company (args: company_id[,apply_exact|apply])"
+  desc "Report (or clear, with 'apply_safe'/'apply') duplicate unit button links for a company (args: company_id[,apply_safe|apply])"
   task :dedupe, [:company_id, :mode] => :environment do |_task, args|
     company_id = args[:company_id].presence or abort("company_id is required — rake unit_links:dedupe[935]")
     mode = args[:mode].to_s
-    abort("mode must be apply_exact or apply") unless ["", "apply_exact", "apply"].include?(mode)
+    abort("mode must be apply_safe or apply") unless ["", "apply_safe", "apply"].include?(mode)
 
     company = Company.find_by(id: company_id) or abort("no company with id=#{company_id}")
     community_ids = company.communities.select(:id)
@@ -52,6 +57,19 @@ namespace :unit_links do
     # "APPLY NOW", "Apply Now" and "apply  now" are one label as far as a reader
     # looking at two identical buttons is concerned.
     label     = ->(text) { text.to_s.strip.downcase.gsub(/\s+/, " ").presence }
+
+    # The id a URL addresses, vendor-qualified, so the same application or
+    # listing is recognised across the several URL shapes each vendor emits.
+    # Returns nil for anything we cannot identify, which simply means the pair
+    # falls through to the weaker host/label signals.
+    resource = lambda do |url|
+      base = host.call(url).to_s.split(".").last(2).join(".")
+      id = case base
+           when "boompay.app" then url[%r{/a/([A-Za-z0-9_-]+)}, 1] || url[/[?&]token=([A-Za-z0-9_-]+)/, 1]
+           when "rently.com"  then url[%r{/properties/(\d+)}, 1]
+           end
+      "#{base}:#{id}" if id
+    end
 
     columns = [:id, :marketing_name] + slots.values.flatten
     scope = Unit.where(community_id: community_ids)
@@ -75,8 +93,12 @@ namespace :unit_links do
           la, lb = label.call(unit[slots[left][1]]), label.call(unit[slots[right][1]])
           ha, hb = host.call(a), host.call(b)
 
+          ra, rb = resource.call(a), resource.call(b)
+
           kind = if a == b
                    :exact
+                 elsif ra && ra == rb
+                   :same_resource
                  elsif ha && ha == hb
                    :same_target
                  elsif la && la == lb
@@ -96,7 +118,8 @@ namespace :unit_links do
     end
 
     puts
-    findings.sort_by { |(kind, _, _), units| [kind == :exact ? 0 : 1, -units.size] }.each do |(kind, left, right), units|
+    order = { exact: 0, same_resource: 1, same_target: 2, same_label: 3 }
+    findings.sort_by { |(kind, _, _), units| [order[kind], -units.size] }.each do |(kind, left, right), units|
       puts format("  %-12s %s <-> %s  units=%d", kind, left, right, units.size)
       if kind != :exact
         units.first(3).each do |unit|
@@ -112,17 +135,24 @@ namespace :unit_links do
     # the two slots the sheet owns.
     # apply_exact deliberately skips :same_target, where the two URLs differ and
     # dropping one throws away a link nothing else records.
-    kinds = mode == "apply" ? [:exact, :same_target, :same_label] : [:exact]
-    clearable = findings.select { |(kind, left, right), _| kinds.include?(kind) && [left, right].include?("button2") }
-                        .values.flatten.uniq { |unit| unit[:id] }
+    button2_of = lambda do |kinds|
+      findings.select { |(kind, left, right), _| kinds.include?(kind) && [left, right].include?("button2") }
+              .values.flatten.uniq { |unit| unit[:id] }
+    end
+
+    safe_kinds = [:exact, :same_resource]
+    all_kinds  = [:exact, :same_resource, :same_target, :same_label]
     puts
-    puts "clearable now (#{kinds.join(' + ')}): #{clearable.size}"
+    puts "button2 clearable — apply_safe (#{safe_kinds.join(' + ')}): #{button2_of.call(safe_kinds).size}"
+    puts "button2 clearable — apply      (all four kinds):          #{button2_of.call(all_kinds).size}"
 
     if mode.empty?
-      puts "report only — re-run with rake \"unit_links:dedupe[#{company_id},apply_exact]\" (safe) " \
-           "or [#{company_id},apply] (includes same_target)"
+      puts "report only — re-run with rake \"unit_links:dedupe[#{company_id},apply_safe]\" " \
+           "or [#{company_id},apply]"
       next
     end
+
+    clearable = button2_of.call(mode == "apply" ? all_kinds : safe_kinds)
 
     ids = clearable.map { |unit| unit[:id] }
     cleared = ids.each_slice(1_000).sum do |slice|
