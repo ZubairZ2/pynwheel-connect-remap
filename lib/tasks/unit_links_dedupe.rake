@@ -4,9 +4,10 @@
 #   rake unit_links:dedupe[935]              # report only, writes nothing
 #   rake unit_links:dedupe[935,apply_safe]   # clear only provably identical links
 #   rake unit_links:dedupe[935,apply]        # clear every duplicate middle button
-#   rake unit_links:dedupe[935,apply_labels] # clear EVERY middle button whose label
-#                                            # reads as apply/schedule/tour, whatever
-#                                            # its URL — leaves buttons 1 and 3 only
+#   rake unit_links:dedupe[935,apply_labels] # across ALL THREE slots, keep one button
+#                                            # per action and clear the rest, judged by
+#                                            # label alone — the end state is one
+#                                            # "Apply Now" and one "Schedule a Tour"
 #
 # Generic on purpose: it takes any company id and judges duplication by URL, not
 # by label. Labels are useless as a signal here — the same action shows up as
@@ -44,13 +45,6 @@ namespace :unit_links do
     mode = args[:mode].to_s
     abort("mode must be apply_safe, apply or apply_labels") unless ["", "apply_safe", "apply", "apply_labels"].include?(mode)
 
-    # apply_labels implements a flat editorial rule rather than a duplicate test:
-    # a unit should end up with button1 "Apply Now" and button3 "Schedule a Tour"
-    # and nothing else, so any middle button captioned like one of those two goes,
-    # whatever it points at. Substring matching is what makes it catch the whole
-    # spread of hand-entered casings and wordings at once — "APPLY NOW",
-    # "Apply Now", "SCHEDULE A TOUR", "Schedule A Tour", "Tour Now".
-    label_words = %w[apply schedule tour].freeze
 
     company = Company.find_by(id: company_id) or abort("no company with id=#{company_id}")
     community_ids = company.communities.select(:id)
@@ -81,6 +75,31 @@ namespace :unit_links do
            end
       "#{base}:#{id}" if id
     end
+
+    # apply_labels is an editorial rule rather than a duplicate test: a unit should
+    # offer each action ONCE. It reads every slot's label, groups the slots by the
+    # action the label advertises, and where an action occupies more than one slot
+    # it keeps the canonical one and clears the others — whatever the URLs are.
+    #
+    # Substring matching on a downcased label is what catches the whole spread of
+    # hand-entered wordings at once: "APPLY NOW", "Apply Now", "SCHEDULE A TOUR",
+    # "Schedule A Tour", "Tour Now". A label matching nothing ("View Floor Plan")
+    # has no action and is never touched.
+    #
+    # Canonical slot per action is the one RenuUnitLinksSyncService writes, so a
+    # re-sync re-affirms the survivor instead of fighting this task.
+    action_of = lambda do |text|
+      normalized = label.call(text)
+      next nil if normalized.nil?
+
+      if normalized.include?("apply") then :apply
+      elsif normalized.include?("schedule") || normalized.include?("tour") then :schedule
+      end
+    end
+    canonical = { apply: "button1", schedule: "button3" }.freeze
+    toggles   = { "button1" => :link1_open_new_tab,
+                  "button2" => :link2_open_new_tab,
+                  "button3" => :link3_open_new_tab }.freeze
 
     columns = [:id, :marketing_name] + slots.values.flatten
     scope = Unit.where(community_id: community_ids)
@@ -164,29 +183,61 @@ namespace :unit_links do
     end
 
     if mode == "apply_labels"
-      # Guarded to units the sync actually populated: if neither button1 nor
-      # button3 holds a link, the middle button is the unit's ONLY link and
-      # removing it would leave the card with no call to action at all.
-      labelled = Unit.where(community_id: community_ids)
-                     .where("COALESCE(units.additional_url, '') <> ''")
-                     .where("COALESCE(units.virtual_tour_url, '') <> '' OR COALESCE(units.scheduler_url, '') <> ''")
-                     .where(label_words.map { "units.additional_button ILIKE ?" }.join(" OR "),
-                            *label_words.map { |word| "%#{word}%" })
+      pending = Hash.new { |hash, slots_to_clear| hash[slots_to_clear] = [] }
+      summary = Hash.new(0)
+
+      scope.in_batches(of: 2_000) do |batch|
+        batch.pluck(*columns).each do |row|
+          unit = columns.zip(row).to_h
+
+          # Which slots currently advertise which action. A slot with no URL is
+          # already empty, so there is nothing there to clear.
+          by_action = Hash.new { |hash, key| hash[key] = [] }
+          slots.each_key do |slot|
+            next if normalize.call(unit[slots[slot][0]]).nil?
+
+            action = action_of.call(unit[slots[slot][1]])
+            by_action[action] << slot if action
+          end
+
+          drop = by_action.flat_map do |action, occupied|
+            next [] if occupied.size < 2
+
+            # Prefer the slot the sync owns; otherwise keep the first in slot order
+            # so a unit never loses an action entirely.
+            keep = occupied.include?(canonical[action]) ? canonical[action] : occupied.first
+            summary["#{action}: kept #{keep}, cleared #{(occupied - [keep]).join(',')}"] += 1
+            occupied - [keep]
+          end
+          next if drop.empty?
+
+          pending[drop.sort] << unit[:id]
+        end
+      end
+
+      if pending.empty?
+        puts
+        puts "no unit advertises the same action twice — nothing to clear"
+        next
+      end
+
       puts
-      puts "button2 with an apply/schedule/tour label (and a surviving button1 or button3): #{labelled.count}"
-      labelled.group(:additional_button).count.sort_by { |_, n| -n }
-              .each { |lbl, n| puts "    #{lbl.inspect} => #{n}" }
+      puts "duplicate actions across all three slots:"
+      summary.sort_by { |_, n| -n }.each { |line, n| puts "    #{line} => #{n}" }
 
-      orphans = Unit.where(community_id: community_ids)
-                    .where("COALESCE(units.additional_url, '') <> ''")
-                    .where("COALESCE(units.virtual_tour_url, '') = '' AND COALESCE(units.scheduler_url, '') = ''")
-                    .where(label_words.map { "units.additional_button ILIKE ?" }.join(" OR "),
-                           *label_words.map { |word| "%#{word}%" })
-      puts "  skipped — button2 is the unit's only link: #{orphans.count}"
+      cleared = 0
+      pending.each do |slots_to_clear, unit_ids|
+        attrs = slots_to_clear.each_with_object({}) do |slot, acc|
+          acc[slots[slot][0]] = nil          # url
+          acc[slots[slot][1]] = nil          # label
+          acc[toggles[slot]]  = false        # open-in-new-tab for that slot
+        end
+        attrs[:updated_at] = Time.current
 
-      cleared = labelled.in_batches(of: 1_000).sum do |batch|
-        batch.update_all(additional_button: nil, additional_url: nil,
-                         link2_open_new_tab: false, updated_at: Time.current)
+        unit_ids.each_slice(1_000) do |slice|
+          cleared += Unit.where(id: slice).update_all(attrs)
+        end
+        puts "    cleared #{slots_to_clear.join(',')} on #{unit_ids.size} units"
       end
       puts "cleared=#{cleared}"
       next
