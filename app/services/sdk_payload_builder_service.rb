@@ -465,53 +465,40 @@ class SdkPayloadBuilderService
     end
   end
 
-  # Enough for the host to decide whether to render a Gallery entry point, and
-  # nothing more — the images themselves come from fetch_gallery, only once the
-  # visitor opens the panel. imageCount lets the host hide the button for a
-  # property that has the feature on but has uploaded nothing.
+  # Enough to render the Gallery entry point, and nothing more — the images
+  # themselves come from fetch_gallery, only once the visitor opens the panel.
+  # imageCount lets the host hide the button for a property that has uploaded
+  # nothing.
   def gallery_discovery_json
     builder = SdkGalleryBuilderService.new(@community)
 
     {
-      enabled:           builder.enabled?,
       pageName:          @community.gallery_page_name.presence || SdkGalleryBuilderService::DEFAULT_PAGE_NAME,
       displayOnHomepage: @community.display_gallery_on_homepage,
       imageCount:        builder.image_count
     }
   end
 
-  # Same contract as gallery_discovery_json: enough to render the entry point
-  # and draw the map, nothing that costs a query per row. The curated pins come
+  # Same contract as gallery_discovery_json: enough to render the page and draw
+  # the map, nothing that costs a query per row. The curated pins come
   # from fetch_neighborhood and the live places from fetch_neighborhood_places,
   # both only once the visitor opens the panel.
   def neighborhood_discovery_json
     SdkNeighborhoodBuilderService.new(@community).discovery_json
   end
 
-  # The CMS "Page Name" and "Show this page" controls on the Favorites settings
-  # screen (app/views/favorite_settings/_form.html.haml), so the host can label
-  # and gate its Favorites nav entry without a deploy. The favorited items
-  # themselves come from get_favorites, which the host calls when the page opens.
+  # The CMS "Page Name" control on the Favorites settings screen
+  # (app/views/favorite_settings/_form.html.haml), so the host can label its
+  # Favorites nav entry without a deploy. The favorited items themselves come
+  # from get_favorites, which the host calls when the page opens.
   #
   # Deliberately no count: that belongs to the session, not the property, and the
   # SDK already tracks it client-side — shipping one here would be a second
   # source of truth that goes stale the moment anything is favorited.
-  #
-  # Unlike gallery_discovery_json this does NOT gate on pynwheel_touch_enabled?.
-  # The favorites count badge is wanted on the regular web map too; the Touch
-  # page is gated by the host on its own `src=touch` route condition.
-  #
-  # No favorite_settings row means nobody ever opened the CMS page — the row is
-  # created lazily by FavoriteSettingsController#index. The legacy jbuilder
-  # (data.json.jbuilder:1586-1596) treats that as visible with the default label,
-  # and so do we: defaulting to hidden would pull the page out from under every
-  # property that never touched the setting.
   def favorites_discovery_json
     setting = @community.favorite_setting
 
     {
-      # Nullable column: NULL on a legacy row means "never set", not "off".
-      enabled:  setting.nil? || setting.show_favorite != false,
       # Verbatim, not Community#favorites_page_name — that titleizes, which would
       # render a CMS value of "MY PICKS" as "My Picks". The tab must show exactly
       # what was typed.

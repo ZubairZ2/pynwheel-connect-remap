@@ -22,24 +22,17 @@ class SdkNeighborhoodBuilderService
     @community = community
   end
 
-  # Neighborhood is a Pynwheel Touch feature, so it needs both the product
-  # toggle and the property's own "show neighborhood" switch.
-  def enabled?
-    return false unless @community.pynwheel_touch_enabled?
-
-    neighborhood.present? && neighborhood.show_neighborhood?
-  end
-
-  # Whether the live Google half can run at all: the feature on, a key
-  # configured, and a centre to search around. Lets the host hide the category
-  # rail instead of rendering tabs that resolve to nothing.
+  # Whether the live Google half can run at all: a key configured and a centre
+  # to search around. Not a page gate — without these the nearby search has
+  # nothing to call or nowhere to call about — so the host can hide the
+  # category rail instead of rendering tabs that resolve to nothing.
   def places_enabled?
-    enabled? && ENV["GOOGLE_MAPS_API_KEY"].present? && center_present?
+    ENV["GOOGLE_MAPS_API_KEY"].present? && center_present?
   end
 
   # Cheap COUNT for the discovery block — never loads rows.
   def location_count
-    return 0 unless enabled?
+    return 0 if neighborhood.nil?
 
     Location.where(neighborhood_id: neighborhood.id).count
   end
@@ -48,9 +41,7 @@ class SdkNeighborhoodBuilderService
   # The column is a comma-separated string of display labels; unrecognised and
   # duplicate entries are dropped rather than shipped as dead tabs.
   def categories
-    return [] unless enabled?
-
-    neighborhood.category.to_s.split(",").filter_map { |raw|
+    neighborhood&.category.to_s.split(",").filter_map { |raw|
       slug = SdkNeighborhoodCategories.slug_for(raw)
       next if slug.nil? || slug == SdkNeighborhoodCategories::OTHER
 
@@ -58,12 +49,12 @@ class SdkNeighborhoodBuilderService
     }.uniq { |category| category[:id] }
   end
 
-  # Enough for the host to decide whether to render a Neighborhood entry point,
-  # and to draw the map before any content arrives. The pins themselves come
+  # Everything the host needs to draw the neighborhood page before any content
+  # arrives. The page itself is ungated — a property with no neighborhoods row
+  # still gets it, drawn around the property's own address with no curated pins. The pins themselves come
   # from fetch_neighborhood, the live places from fetch_neighborhood_places.
   def discovery_json
     {
-      enabled:           enabled?,
       pageName:          neighborhood&.neighborhood_name.presence || DEFAULT_PAGE_NAME,
       displayOnHomepage: neighborhood&.display_neighborhood_on_homepage || false,
       center:            center,
@@ -81,7 +72,7 @@ class SdkNeighborhoodBuilderService
   # coordinates are skipped — the legacy jbuilder shipped them as a pin at
   # (0, 0), in the Gulf of Guinea.
   def build
-    return [] unless enabled?
+    return [] if neighborhood.nil?
 
     neighborhood.locations.filter_map { |location| location_json(location) }
   end

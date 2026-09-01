@@ -3594,11 +3594,8 @@
     // Whether to show a Gallery entry point at all comes from the map payload,
     // free of any network call:
     //
-    //   const { enabled, pageName, imageCount } = PynMapSDK.getGalleryConfig();
-    //   if (enabled && imageCount > 0) showGalleryTab(pageName);
-    //
-    // `enabled` is true only when the property has Pynwheel Touch on AND its own
-    // gallery switch on.
+    //   const { pageName, imageCount } = PynMapSDK.getGalleryConfig();
+    //   if (imageCount > 0) showGalleryTab(pageName);
     //
     // Content then comes in two steps, deliberately kept apart — the same shape
     // as the neighborhood's category rail and its per-category places:
@@ -3704,9 +3701,9 @@
     // Config arrives free with the map payload, so the host can render the tab,
     // centre the map and draw the category rail before any of this is called:
     //
-    //   const { enabled, pageName, center, zoom, categories } =
+    //   const { pageName, center, zoom, categories } =
     //     PynMapSDK.getNeighborhoodConfig();
-    //   if (enabled) showNeighborhoodTab(pageName);
+    //   showNeighborhoodTab(pageName);
     //
     // Content comes from two independent sources, deliberately kept apart:
     //
@@ -3848,8 +3845,8 @@
     // host asks for what it is about to render instead of reaching into
     // getPropertyConfig() and knowing where each block lives:
     //
-    //   const { enabled, pageName, count } = PynMapSDK.getFavoritesConfig();
-    //   if (enabled) renderFavoritesTab(pageName, count);
+    //   const { pageName, count } = PynMapSDK.getFavoritesConfig();
+    //   renderFavoritesTab(pageName, count);
     //
     // All three read the map payload, so they are synchronous, cost nothing,
     // and are safe to call on every render. The pages' contents come from
@@ -3860,28 +3857,26 @@
      * Internal: one page's config block off the map payload, with defaults
      * filled in.
      *
-     * Two things every caller would otherwise repeat: an object rather than
-     * undefined before the payload lands (or against a server old enough not to
-     * send the block), and `enabled` as a real boolean rather than whatever the
-     * block happens to carry. Everything else the server sends passes straight
-     * through, so a new field on a block reaches hosts without a change here.
+     * Saves every caller the same repetition: an object rather than undefined
+     * before the payload lands (or against a server old enough not to send the
+     * block). Everything the server sends passes straight through, so a new
+     * field on a block reaches hosts without a change here.
      */
     _pageConfig(cfg, defaults) {
-      if (!cfg) return { ...defaults };
-      return { ...defaults, ...cfg, enabled: cfg.enabled !== false };
+      return { ...defaults, ...cfg };
     },
 
     /**
-     * The Favorites page: its CMS label and visibility, plus how many items are
-     * currently favorited.
+     * The Favorites page: its CMS label, plus how many items are currently
+     * favorited.
      *
      *   {
-     *     enabled,   // CMS "Show this page" — false hides the page and its tab
      *     pageName,  // CMS "Page Name", verbatim — "MY PICKS" stays "MY PICKS"
      *     count      // badge number: units + amenities + floor plans + images
      *   }
      *
-     * enabled/pageName are CMS-driven and change on reload with no deploy.
+     * pageName is CMS-driven and changes on reload with no deploy. The page
+     * itself is ungated — every property has it.
      *
      * `count` is live, not config — re-call this after saveFavorite /
      * deleteFavorite / clearAllFavorites to refresh a badge. It is already
@@ -3890,13 +3885,12 @@
      * join the count only once getGalleryImages() has run, as that collection
      * loads on demand.
      *
-     * Defaults to enabled with the label "Favorites" — the same thing the
-     * server returns for a property whose CMS page was never opened, so a
-     * missing block never costs a host its tab.
+     * Defaults to the label "Favorites" — the same thing the server returns for
+     * a property whose CMS page was never opened.
      */
     getFavoritesConfig() {
       return {
-        ...this._pageConfig(this.data.property?.favorites, { enabled: true, pageName: "Favorites" }),
+        ...this._pageConfig(this.data.property?.favorites, { pageName: "Favorites" }),
         count: this._FAVORITE_TYPES.reduce((sum, t) => sum + this._favState(t).set.size, 0)
       };
     },
@@ -3905,20 +3899,17 @@
      * The Gallery page.
      *
      *   {
-     *     enabled,           // CMS gallery switch AND the Pynwheel Touch product toggle
      *     pageName,          // CMS label for the tab
      *     displayOnHomepage,
-     *     imageCount         // 0 means the feature is on but nothing is uploaded —
-     *                        // check it before offering the entry point
+     *     imageCount         // 0 means nothing has been uploaded — check it
+     *                        // before offering the entry point
      *   }
      *
-     * Defaults to disabled: unlike Favorites, a gallery a host cannot confirm
-     * is one it should not advertise. Content comes from getGalleryList()
-     * and getGalleryImages().
+     * The page is ungated; only imageCount says whether there is anything to
+     * show. Content comes from getGalleryList() and getGalleryImages().
      */
     getGalleryConfig() {
       return this._pageConfig(this.data.gallery, {
-        enabled:           false,
         pageName:          "Gallery",
         displayOnHomepage: false,
         imageCount:        0
@@ -3930,19 +3921,18 @@
      * category rail before any content is fetched.
      *
      *   {
-     *     enabled, pageName, displayOnHomepage,
+     *     pageName, displayOnHomepage,
      *     center: { lat, lng }, radius, zoom, address,
      *     listing, categories, locationCount,
      *     placesEnabled      // false when live Google results are off for this
      *                        // property; curated pins may still exist
      *   }
      *
-     * Defaults to disabled, for the same reason as the gallery. Curated pins
-     * come from getNeighborhood(), live results from getNeighborhoodPlaces().
+     * The page is ungated, like the gallery. Curated pins come from
+     * getNeighborhood(), live results from getNeighborhoodPlaces().
      */
     getNeighborhoodConfig() {
       return this._pageConfig(this.data.property?.neighborhood, {
-        enabled:           false,
         pageName:          "Neighborhood",
         displayOnHomepage: false,
         center:            null,

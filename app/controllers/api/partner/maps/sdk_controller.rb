@@ -121,8 +121,6 @@ module Api
         def fetch_gallery_list
           builder = SdkGalleryBuilderService.new(@community)
 
-          return render_error("Gallery is not available for this property.", 404) unless builder.enabled?
-
           render json: { galleries: builder.list, status: "success", code: 200 }
         end
 
@@ -139,8 +137,6 @@ module Api
         # ------------------------------------------------------------------
         def fetch_gallery_images
           builder = SdkGalleryBuilderService.new(@community)
-
-          return render_error("Gallery is not available for this property.", 404) unless builder.enabled?
 
           gallery_id = params[:gallery_id] || params[:galleryId]
           return render_error("gallery_id is required.", 400) if gallery_id.blank?
@@ -173,8 +169,6 @@ module Api
         def fetch_neighborhood
           builder = neighborhood_builder
 
-          return render_error("Neighborhood is not available for this property.", 404) unless builder.enabled?
-
           payload = { locations: builder.build, status: "success", code: 200 }
 
           response.headers['Cache-Control']    = 'private, no-store'
@@ -199,7 +193,6 @@ module Api
         def fetch_neighborhood_places
           builder = neighborhood_builder
 
-          return render_error("Neighborhood is not available for this property.", 404) unless builder.enabled?
           return render_error("Neighborhood places are not configured for this property.", 404) unless builder.places_enabled?
 
           service  = SdkNeighborhoodPlacesService.new(@community, builder: builder)

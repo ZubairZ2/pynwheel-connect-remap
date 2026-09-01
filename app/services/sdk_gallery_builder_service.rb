@@ -4,7 +4,7 @@
 # Deliberately separate from SdkPayloadBuilderService: that service runs on every
 # map boot, while the gallery is fetched only when a visitor actually opens the
 # gallery panel. Nothing here belongs on the boot path — the map payload carries
-# only the small discovery block (see #enabled? / #image_count).
+# only the small discovery block (see #image_count).
 class SdkGalleryBuilderService
   # Most video rows never got a `video_thumbnail` version generated, because
   # GalleryUploader#video? tests for an "application/*" content type and mp4
@@ -22,16 +22,9 @@ class SdkGalleryBuilderService
     @community = community
   end
 
-  # The gallery is a Pynwheel Touch feature, so it needs both the product toggle
-  # and the property's own "show gallery" switch.
-  def enabled?
-    @community.pynwheel_touch_enabled? && @community.show_gallery?
-  end
-
   # Cheap COUNT for the discovery block in the map payload — never loads rows.
   # Counted through galleries so it matches exactly what #build would return.
   def image_count
-    return 0 unless enabled?
     gallery_images_scope.count
   end
 
@@ -45,8 +38,6 @@ class SdkGalleryBuilderService
   # filter that drops unrenderable rows, so the sidebar's "9 Photos" always
   # matches the number of tiles #images_for returns.
   def list
-    return [] unless enabled?
-
     each_gallery(Set.new).map { |gallery, images| summary_json(gallery, images) }
   end
 
@@ -56,8 +47,6 @@ class SdkGalleryBuilderService
   # Returns [] for an id that is not this community's — ownership is enforced
   # here rather than trusted from the query string.
   def images_for(gallery_id, fav_ids = Set.new)
-    return [] unless enabled?
-
     gallery = @community.galleries.includes(:gallery_images).find_by(id: gallery_id)
     return [] if gallery.nil?
 
@@ -69,8 +58,6 @@ class SdkGalleryBuilderService
   # ordering rules live in exactly one place — the same way floorplans_json /
   # amenities_json are reused in get_favorites.
   def favorites_json(fav_ids)
-    return [] unless enabled?
-
     each_gallery(fav_ids).flat_map { |_gallery, images| images }.select { |image| image[:isFavorite] }
   end
 
