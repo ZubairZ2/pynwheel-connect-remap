@@ -51,8 +51,9 @@ class SdkNeighborhoodBuilderService
 
   # Everything the host needs to draw the neighborhood page before any content
   # arrives. The page itself is ungated — a property with no neighborhoods row
-  # still gets it, drawn around the property's own address with no curated pins. The pins themselves come
-  # from fetch_neighborhood, the live places from fetch_neighborhood_places.
+  # still gets it, drawn around the property's own address with no curated pins.
+  # The pins themselves come from fetch_neighborhood, the live places from
+  # fetch_neighborhood_places.
   def discovery_json
     {
       pageName:          neighborhood&.neighborhood_name.presence || DEFAULT_PAGE_NAME,
