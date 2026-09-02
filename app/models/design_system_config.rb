@@ -28,7 +28,9 @@ class DesignSystemConfig < ApplicationRecord
       "units"       => "Units",
       "floor_plans" => "Floor Plans",
       "amenities"   => "Amenities",
-      "favs"        => "Favs"
+      # "Favorites", not "Favs": this is what the map has always rendered, so an
+      # unset field must not silently rename the tab on every property.
+      "favs"        => "Favorites"
     }
   }.freeze
 

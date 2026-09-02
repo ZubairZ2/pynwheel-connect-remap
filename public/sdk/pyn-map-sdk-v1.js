@@ -3687,7 +3687,7 @@
         units:      "Units",
         floorPlans: "Floor Plans",
         amenities:  "Amenities",
-        favs:       "Favs"
+        favs:       "Favorites"
       });
     },
 
