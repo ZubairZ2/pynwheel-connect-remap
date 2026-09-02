@@ -84,9 +84,10 @@ module CommunitiesHelper
     worksheet.write(0, 26, "Monthly Billing Rate ($)", format)
     worksheet.write(0, 27, "SDK Map Enabled", format)
     worksheet.write(0, 28, "Map Type (SVG / Image)", format)
-    worksheet.write(0, 29, "Beans 3D Map", format)
-    worksheet.write(0, 30, "Map SDK URL", format)
-    worksheet.write(0, 31, "Map SDK Embed Code", format)
+    worksheet.write(0, 29, "Beans Generated SVG", format)
+    worksheet.write(0, 30, "Beans 3D Map", format)
+    worksheet.write(0, 31, "Map SDK URL", format)
+    worksheet.write(0, 32, "Map SDK Embed Code", format)
 
     Community.without_test_properties.each do |community|
       if community.present?
@@ -163,9 +164,10 @@ module CommunitiesHelper
 
         worksheet.write(row, 27, community.enable_sdk_map ? "Yes" : "No", format1)
         worksheet.write(row, 28, community.enable_svg_mode ? "SVG" : "Image", format1)
-        worksheet.write(row, 29, community.enable_three_d_maps ? "Yes" : "No", format1)
-        worksheet.write(row, 30, community.sdk_map_link, format1)
-        worksheet.write(row, 31, community.sdk_map_embed_code, format1)
+        worksheet.write(row, 29, community.is_beans_svg ? "Yes" : "No", format1)
+        worksheet.write(row, 30, community.enable_three_d_maps ? "Yes" : "No", format1)
+        worksheet.write(row, 31, community.sdk_map_link, format1)
+        worksheet.write(row, 32, community.sdk_map_embed_code, format1)
 
         row = row + 1
       end
