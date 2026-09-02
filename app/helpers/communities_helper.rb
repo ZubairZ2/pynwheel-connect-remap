@@ -352,6 +352,10 @@ module CommunitiesHelper
       additional_fees: @community.get_additional_fees(unit),
       property_id: unit.property_id,
       unit_status: unit&.unit_status,
+      # Whether `availability` was pinned by hand. The ops colour prefers a
+      # pinned availability over the fed unit_status -- see
+      # SdkPayloadBuilderService#ops_status_key.
+      availability_is_updated: unit&.availability_is_updated,
       model_unit: unit&.modal_unit,
       pricing_calculator_url: unit.pricing_calculator_url,
       pyn_estimated_monthly: unit_pyn_estimated_monthly(unit, @community_info),
@@ -712,6 +716,7 @@ module CommunitiesHelper
       "unit-description-title": struct[:description_title],
       "property-id": struct[:property_id],
       "unit-status": struct[:unit_status],
+      "availability-is-updated": struct[:availability_is_updated],
       "model-unit": struct[:model_unit],
       "color-by": @community.coloring_mode,
       "config": map_configuration(@community, show_ops_map),

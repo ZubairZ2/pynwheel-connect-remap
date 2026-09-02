@@ -199,6 +199,7 @@ function getFormattedBeansUnits() {
       // the 3D view sent every door of such a property to "Missing Data" while
       // the 2D view, which reads the data attributes directly, coloured them.
       availability: transformedData.availability,
+      availability_is_updated: transformedData.availabilityIsUpdated,
       modelUnit: transformedData.modalUnit || transformedData.modelUnit,
       unit: transformedData.unitMarketingName,
       name: transformedData.unitMarketingName,

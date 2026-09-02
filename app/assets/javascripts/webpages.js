@@ -4322,9 +4322,13 @@ function currentVisibleMapImage() {
 // }
 
 // Which colour bucket an ops map paints a unit, in order of how much the value
-// can be trusted: the PMS `unit_status` first, then the CMS's own two-value
-// `availability` control, then nothing -- and when it is nothing, the unit wears
-// the "Missing Data" colour rather than a status it never reported.
+// can be trusted: a hand-pinned `availability` first, then the PMS `unit_status`,
+// then an unpinned `availability`, then nothing -- and when it is nothing, the
+// unit wears the "Missing Data" colour rather than a status it never reported.
+//
+// The pinned case matters because nothing pins unit_status: once staff correct a
+// unit's availability the feed keeps rewriting its status over the top, and the
+// two columns disagree for good. The value a person set wins.
 //
 // Mirrors SdkPayloadBuilderService#ops_status_key so both maps agree.
 var OPS_STATUS_COLOR_KEYS = {
@@ -4353,6 +4357,13 @@ var OPS_STATUS_FALLBACK_COLORS = {
   missing: "#eecea5"
 };
 
+// Data attributes arrive as strings ("true"), jQuery .data() as real booleans.
+function isTruthyFlag(value) {
+  return typeof value === "boolean"
+    ? value
+    : String(value).toLowerCase() === "true";
+}
+
 function getOpsStatusColor(unit) {
   if (isModelUnit(unit)) {
     return mapMarkerColors.model || OPS_STATUS_FALLBACK_COLORS.model;
@@ -4363,8 +4374,14 @@ function getOpsStatusColor(unit) {
   ).toLowerCase().trim();
 
   const availability = String(unit.availability || "").toLowerCase().trim();
+  const pinned = isTruthyFlag(
+    unit.availability_is_updated !== undefined
+      ? unit.availability_is_updated
+      : unit.availabilityIsUpdated
+  );
 
   const key =
+    (pinned ? OPS_STATUS_COLOR_KEYS[availability] : null) ||
     OPS_STATUS_COLOR_KEYS[status] ||
     OPS_STATUS_COLOR_KEYS[availability] ||
     "missing";

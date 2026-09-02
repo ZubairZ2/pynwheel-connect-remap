@@ -870,16 +870,20 @@ class SdkPayloadBuilderService
   # Which colour bucket a unit falls into on an ops map, in order of how much the
   # value can be trusted:
   #
-  #   1. `unit_status` -- the PMS status string, when the feed sends one we know.
-  #   2. `availability` -- the CMS's own two-value control ("Occupied" /
+  #   1. `availability`, but only where a person pinned it -- see
+  #      #pinned_availability. A hand-set value outranks anything the feed says.
+  #   2. `unit_status` -- the PMS status string, when the feed sends one we know.
+  #      Preferred over plain `availability` because it is the richer answer:
+  #      six operational buckets rather than occupied/not.
+  #   3. `availability` unpinned -- the CMS's own two-value control ("Occupied" /
   #      "Unoccupied"), which is all a hand-managed property has. Flagging a unit
   #      sold writes "Occupied" here too, which is the app's own rule rather than
   #      noise: sold means leased, and leased means occupied. Also catches a
   #      real-but-unmapped unit_status like "Waitlist", which lands here rather
   #      than being thrown away.
-  #   3. Nothing -- so say nothing. :missing is what the "Missing Data" legend
-  #      entry is for, and it is the only honest answer when neither column
-  #      reports anything.
+  #   4. Nothing -- so say nothing. :missing is what the "Missing Data" legend
+  #      entry is for, and it is the only honest answer when no column reports
+  #      anything.
   #
   # That last branch used to be :vacant, which put a confident "every door is
   # empty" on a property whose feed simply carries no status. It is reachable now
@@ -888,9 +892,28 @@ class SdkPayloadBuilderService
   def ops_status_key(unit)
     return :model if unit.modal_unit
 
-    OPS_STATUS_BY_VALUE[unit.unit_status.to_s.downcase.strip] ||
+    OPS_STATUS_BY_VALUE[pinned_availability(unit)] ||
+      OPS_STATUS_BY_VALUE[unit.unit_status.to_s.downcase.strip] ||
       OPS_STATUS_BY_VALUE[unit.availability.to_s.downcase.strip] ||
       :missing
+  end
+
+  # `availability` when a person set it by hand, and nothing otherwise.
+  #
+  # `availability_is_updated` is the app's own "pinned, the feed must not
+  # overwrite this" marker (Unit::FEED_OVERRIDE_FLAGS). Nothing pins
+  # `unit_status`, so once staff correct a unit's availability the two columns
+  # drift apart for good: the feed keeps rewriting its status while the corrected
+  # availability stays put. Real example -- a Yardi unit reading "Occupied No
+  # Notice" whose pinned availability, units grid and marketing map all say it is
+  # available now.
+  #
+  # The pinned value is a person's deliberate correction of exactly this data, so
+  # it outranks the column the feed is still overwriting.
+  def pinned_availability(unit)
+    return nil unless unit.availability_is_updated?
+
+    unit.availability.to_s.downcase.strip
   end
 
   def compute_unit_ops_color(unit)
