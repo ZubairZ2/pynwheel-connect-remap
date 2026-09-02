@@ -19,6 +19,17 @@ class DesignSystemConfig < ApplicationRecord
       "base_size"    => "14px",
       "heading_size" => "16px"
     },
+    # Per-property names for the map's four right-rail / bottom-nav tabs, set on
+    # Design -> Custom Design. A property that renames "Units" to "Homes" gets it
+    # on web and touch with no deploy. The keys here are also the fallback
+    # labels, so an empty CMS field means the default below rather than a blank
+    # tab.
+    "tab_labels" => {
+      "units"       => "Units",
+      "floor_plans" => "Floor Plans",
+      "amenities"   => "Amenities",
+      "favs"        => "Favs"
+    }
   }.freeze
 
   def merged_config
@@ -46,6 +57,24 @@ class DesignSystemConfig < ApplicationRecord
         baseSize:    cfg["fonts"]["base_size"],
         headingSize: cfg["fonts"]["heading_size"]
       }
+    }
+  end
+
+  # The tab names for the SDK payload, camelCased for JS.
+  #
+  # `presence` rather than a plain fetch: clearing a CMS input saves "" (the
+  # field is not removed from the JSONB blob), and deep_merge keeps that ""
+  # over the default. Falling back here is what makes "clear the field to get
+  # the default label back" work.
+  def to_tab_labels
+    labels   = merged_config["tab_labels"] || {}
+    defaults = DEFAULT_CONFIG["tab_labels"]
+
+    {
+      units:      labels["units"].presence       || defaults["units"],
+      floorPlans: labels["floor_plans"].presence || defaults["floor_plans"],
+      amenities:  labels["amenities"].presence   || defaults["amenities"],
+      favs:       labels["favs"].presence        || defaults["favs"]
     }
   end
 

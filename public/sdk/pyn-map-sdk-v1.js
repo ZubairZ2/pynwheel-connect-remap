@@ -3668,6 +3668,29 @@
       return this.data.filters || null;
     },
 
+    /**
+     * The CMS names for the map's four tabs.
+     *
+     *   { units, floorPlans, amenities, favs }
+     *
+     * Set per property on Design -> Custom Design, so a property can call Units
+     * "Homes" without a deploy; an unset field comes back as its default label.
+     * Pair with getFiltersData().visibility / getPropertyConfig().filters, which
+     * decide whether each tab is shown at all — this only names them, and never
+     * changes a tab's icon or behavior.
+     *
+     *   const { units } = PynMapSDK.getTabLabels();
+     *   renderTab("units", units);
+     */
+    getTabLabels() {
+      return this._pageConfig(this.data.property?.tabLabels, {
+        units:      "Units",
+        floorPlans: "Floor Plans",
+        amenities:  "Amenities",
+        favs:       "Favs"
+      });
+    },
+
     // ----------------------------------------------------
     // GALLERY (PUBLIC API)
     //
@@ -3928,8 +3951,11 @@
     // host asks for what it is about to render instead of reaching into
     // getPropertyConfig() and knowing where each block lives:
     //
-    //   const { pageName, count } = PynMapSDK.getFavoritesConfig();
-    //   renderFavoritesTab(pageName, count);
+    //   const { count } = PynMapSDK.getFavoritesConfig();
+    //   renderFavoritesTab(PynMapSDK.getTabLabels().favs, count);
+    //
+    // Gallery and Neighborhood carry their own pageName; the Favorites tab is
+    // named with the other three map tabs, by getTabLabels().
     //
     // All three read the map payload, so they are synchronous, cost nothing,
     // and are safe to call on every render. The pages' contents come from
@@ -3950,16 +3976,13 @@
     },
 
     /**
-     * The Favorites page: its CMS label, plus how many items are currently
-     * favorited.
+     * How many items are currently favorited.
      *
      *   {
-     *     pageName,  // CMS "Page Name", verbatim — "MY PICKS" stays "MY PICKS"
      *     count      // badge number: units + amenities + floor plans + images
      *   }
      *
-     * pageName is CMS-driven and changes on reload with no deploy. The page
-     * itself is ungated — every property has it.
+     * The page is ungated — every property has it.
      *
      * `count` is live, not config — re-call this after saveFavorite /
      * deleteFavorite / clearAllFavorites to refresh a badge. It is already
@@ -3968,12 +3991,12 @@
      * join the count only once getGalleryImages() has run, as that collection
      * loads on demand.
      *
-     * Defaults to the label "Favorites" — the same thing the server returns for
-     * a property whose CMS page was never opened.
+     * No pageName here: the Favorites tab is named by getTabLabels().favs, set
+     * on the CMS Design -> Custom Design tab alongside the other three map tabs.
+     * The old Favorites-settings "Page Name" field no longer reaches this map.
      */
     getFavoritesConfig() {
       return {
-        ...this._pageConfig(this.data.property?.favorites, { pageName: "Favorites" }),
         count: this._FAVORITE_TYPES.reduce((sum, t) => sum + this._favState(t).set.size, 0)
       };
     },
@@ -4945,6 +4968,7 @@
       zoomIn()                     { return PynMapSDK.zoomIn.call(PynMapSDK); },
       zoomOut()                    { return PynMapSDK.zoomOut.call(PynMapSDK); },
       resetZoom()                  { return PynMapSDK.resetZoom.call(PynMapSDK); },
+      getTabLabels()                                        { return PynMapSDK.getTabLabels.call(PynMapSDK); },
       getFavoritesConfig()                                  { return PynMapSDK.getFavoritesConfig.call(PynMapSDK); },
       getGalleryConfig()                                    { return PynMapSDK.getGalleryConfig.call(PynMapSDK); },
       getNeighborhoodConfig()                               { return PynMapSDK.getNeighborhoodConfig.call(PynMapSDK); },

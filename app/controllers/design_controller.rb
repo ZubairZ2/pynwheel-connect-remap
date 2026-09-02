@@ -16,6 +16,9 @@ class DesignController < ApplicationController
     @gable = @design.gable ||  @design.create_gable 
     @expressionist = @design.expressionist ||  @design.create_expressionist 
     @expressionist = @design.filter_panel ||  @design.create_filter_panel
+    # Map Filters Visibility lives on the Custom Design tab. Older properties
+    # predate the after_create hook, so build the row on demand.
+    @map_filter = @community.map_filter || @community.create_map_filter
     @floorplans = current_community.floorplans || []
     @unique_bedrooms = @floorplans.map { |f| f.bedrooms.to_i }.uniq.sort
     @bedroom_marker_colors = @unique_bedrooms.map do |br|

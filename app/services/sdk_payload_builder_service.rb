@@ -2,10 +2,6 @@ class SdkPayloadBuilderService
   include ApplicationHelper
   include CommunitiesHelper
 
-  # Falls back to the same label the legacy Touch jbuilder shipped when a
-  # property has no favorite_settings row.
-  DEFAULT_FAVORITES_PAGE_NAME = "Favorites".freeze
-
   def initialize(community)
     @community = community
   end
@@ -434,13 +430,16 @@ class SdkPayloadBuilderService
 
       neighborhood: neighborhood_discovery_json,
 
-      favorites: favorites_discovery_json,
-
       filters: property_filters_json(show_ops_map),
+
+      # Names only. Whether each tab exists at all is filters.showUnitsTab and
+      # friends, which the CMS keeps separately per map type; a renamed tab is
+      # still the same tab, so these are one set for the property.
+      tabLabels: design_system_config.to_tab_labels,
 
       fontFamily: @community.font_setting&.svg_labels_font_family,
 
-      themeConfig: (@community.design_system_config || DesignSystemConfig.new).to_theme_config
+      themeConfig: design_system_config.to_theme_config
     }
   end
 
@@ -487,25 +486,6 @@ class SdkPayloadBuilderService
     SdkNeighborhoodBuilderService.new(@community).discovery_json
   end
 
-  # The CMS "Page Name" control on the Favorites settings screen
-  # (app/views/favorite_settings/_form.html.haml), so the host can label its
-  # Favorites nav entry without a deploy. The favorited items themselves come
-  # from get_favorites, which the host calls when the page opens.
-  #
-  # Deliberately no count: that belongs to the session, not the property, and the
-  # SDK already tracks it client-side — shipping one here would be a second
-  # source of truth that goes stale the moment anything is favorited.
-  def favorites_discovery_json
-    setting = @community.favorite_setting
-
-    {
-      # Verbatim, not Community#favorites_page_name — that titleizes, which would
-      # render a CMS value of "MY PICKS" as "My Picks". The tab must show exactly
-      # what was typed.
-      pageName: setting&.favorite_name.presence || DEFAULT_FAVORITES_PAGE_NAME
-    }
-  end
-
   # The CMS keeps two independent sets of these toggles -- one for the marketing
   # map, one for the ops map -- so which set to read is decided by `ops_map`, not
   # by which one happens to be the default. Passing `false` unconditionally, as
@@ -538,6 +518,13 @@ class SdkPayloadBuilderService
       # touch showFloorPlansTab, which decides whether the list exists at all.
       showFloorPlanGalleryPage:  @community.map_filter.show_floorplan_gallery_page?(ops_map)
     }
+  end
+
+  # Two blocks of the property payload read this (themeConfig and tabLabels),
+  # and a property that has never had its Custom Design page opened has no row —
+  # hence the unsaved instance, which answers with DEFAULT_CONFIG.
+  def design_system_config
+    @design_system_config ||= @community.design_system_config || DesignSystemConfig.new
   end
 
   def resolve_map_logo_url(community)

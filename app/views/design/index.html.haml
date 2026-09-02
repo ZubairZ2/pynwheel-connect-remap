@@ -105,6 +105,12 @@
               = render 'ebrochure_settings'
             #custom-design.tab-pane.fade{:role => "tabpanel"}
               = render 'custom_design'
+
+-# Opened by the "View Configurations" button on the Custom Design tab.
+-# Rendered here rather than inside the tab pane so the modal is not nested in
+-# a faded .tab-pane while it animates open.
+= render partial: "shared/map_filters_configuration_modal", locals: { community: @community, map_filter: @map_filter, filter_list: @map_filter.get_filters_list }
+
 :javascript 
   var community_id = #{params[:community_id]};
   var selected_theme = '#{@community.theme_name}';
@@ -114,6 +120,12 @@
 
   $(document).ready(function(e){
   $('[data-toggle="popover"]').popover();
+    // Saving the map filters config round-trips through MapFiltersController,
+    // which redirects back here; the hash brings the admin back to the tab they
+    // were on rather than the default one.
+    if (window.location.hash) {
+      $('#myTabs a[href="' + window.location.hash + '"]').tab('show');
+    }
     if (!(#{current_user.welcome_prompt}))
     {
       $('#welcome-prompt-modal1').modal('show');

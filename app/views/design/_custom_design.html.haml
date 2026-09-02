@@ -1,6 +1,12 @@
-- cfg = (@community.design_system_config || @community.build_design_system_config).merged_config
+- ds_config = @community.design_system_config || @community.build_design_system_config
+- cfg = ds_config.merged_config
 - colors = cfg["colors"]
 - fonts  = cfg["fonts"]
+-# Raw config_json, not merged_config: an unset label has to render as an empty
+-# input showing the default as placeholder, and merged_config would already have
+-# filled the default in as a real value.
+- tab_labels = ds_config.config_json["tab_labels"] || {}
+- tab_label_defaults = DesignSystemConfig::DEFAULT_CONFIG["tab_labels"]
 
 .box-body{ style: "padding: 20px;" }
 
@@ -52,6 +58,51 @@
         style: "width:120px;flex:0 0 120px;",
         data: { key: "fonts.heading_size", community: @community.id }
     %button.btn.btn-default.ds-save-btn{ style: "flex-shrink:0;", data: { key: "fonts.heading_size", source: "ds_heading_font_size", community: @community.id } } Save
+
+  %hr
+
+  / MAP TAB BUTTONS
+  %h4.section-title{ style: "margin-top: 20px;" } Map tab buttons
+  %p.text-muted
+    Rename the four map tab buttons for this property. Leave a field empty to use the default label.
+    Labels update on the map (web + touch) without a deployment. Icons and behavior are unchanged.
+
+  %p.text-uppercase.text-muted{ style: "font-size: 11px; letter-spacing: 1px; margin-top: 20px;" } Button labels
+
+  - [["units", "Units"], ["floor_plans", "Floor Plans"], ["amenities", "Amenities"], ["favs", "Favs"]].each do |key, label|
+    - field_id = "ds_tab_label_#{key}"
+    .form-group{ style: "display:flex;align-items:center;gap:12px;margin-bottom:14px;" }
+      %label.control-label{ for: field_id, style: "width:190px;flex-shrink:0;margin:0;font-weight:600;" }
+        = label
+        %span.text-muted{ style: "display:block;font-weight:400;font-size:11px;" }
+          = "Default: \"#{tab_label_defaults[key]}\""
+      = text_field_tag field_id,
+          tab_labels[key],
+          class: "form-control",
+          placeholder: tab_label_defaults[key],
+          style: "width:220px;flex:0 0 220px;"
+      %button.btn.btn-default.ds-save-btn{ style: "flex-shrink:0;", data: { key: "tab_labels.#{key}", source: field_id, community: @community.id } } Save
+
+  %hr
+
+  / MAP FILTERS VISIBILITY
+  %h4.section-title{ style: "margin-top: 20px;" } Map filters visibility
+  %p.text-muted Controls which filters and tabs are shown on the marketing and ops maps.
+
+  .form-group{ style: "display:flex;align-items:center;gap:12px;margin-bottom:14px;margin-top:20px;" }
+    -# 14px and nowrap, below this tab's 18px label size: "Map Filters
+    -# Visibility" is long enough to wrap inside the shared 190px label column,
+    -# which pushed the help icon onto a line of its own. Flex keeps the text,
+    -# the icon and the button on one row.
+    %label.control-label{ style: "min-width:190px;flex-shrink:0;margin:0;font-size:14px;font-weight:600;white-space:nowrap;display:flex;align-items:center;gap:6px;line-height:1.3;" }
+      -# Bare text, deliberately not wrapped in a %span: `.add-plan
+      -# label.control-label span` in pyn-custom.css would restyle it as 13px
+      -# muted sub-label text at width 100%.
+      Map Filters Visibility
+      %i.propertyDetailName.fa.fa-question-circle{ style: "flex-shrink:0;", "data-toggle" => "sitemapDisplayPricePopover", "data-content" => " " }
+        %span#propertyDetailNameText
+          This option will help us hide/show the filters on the map and by default all the filters will be visible.
+    = link_to "View Configurations", "#", class: "btn map-design-configurations-btn map_type", style: "background:#138fd4;color:white;height:38px;line-height:24px;padding:7px 14px;border-radius:4px;flex-shrink:0;margin:0;", "data-name" => "plot", "data-target" => "#map-filter-configuration-modal", "data-toggle" => "modal", "data-href" => "/"
 
 :javascript
   (function () {

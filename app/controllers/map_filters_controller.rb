@@ -16,12 +16,11 @@ class MapFiltersController < ApplicationController
 
 private
 
+  # The only entry point is the Custom Design tab on the Design page, so that is
+  # where a save returns to — it used to be the floorplates/plotexp map settings
+  # modal, which no longer carries this option.
   def redirect_path_to
-    if @community.is_sitemap?
-      plotexp_community_sitemaps_path(@community)
-    else
-      community_floorplates_path(@community)
-    end
+    community_design_index_path(@community, anchor: "custom-design")
   end
 
   def set_map_filter
