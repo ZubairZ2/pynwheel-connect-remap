@@ -4321,6 +4321,69 @@ function currentVisibleMapImage() {
 //   return scale;
 // }
 
+// Which colour bucket an ops map paints a unit, in order of how much the value
+// can be trusted: the PMS `unit_status` first, then the CMS's own two-value
+// `availability` control, then nothing -- and when it is nothing, the unit wears
+// the "Missing Data" colour rather than a status it never reported.
+//
+// `availability` is skipped on a sold unit: flagging a unit sold rewrites that
+// column to "Occupied" as a side effect, so there it echoes the flag rather than
+// reporting occupancy.
+//
+// Mirrors SdkPayloadBuilderService#ops_status_key so both maps agree.
+var OPS_STATUS_COLOR_KEYS = {
+  "occupied": "occupied",
+  "occupied no notice": "occupied",
+  "notice rented": "occupied",
+  "occupied on notice": "occupied_on_notice",
+  "notice unrented": "occupied_on_notice",
+  "vacant": "vacant",
+  "available": "vacant",
+  "unoccupied": "vacant",
+  "vacant unrented not ready": "vacant",
+  "vacant unrented ready": "vacant",
+  "vacant lease": "vacant_leased",
+  "vacant rented": "vacant_leased",
+  "vacant rented ready": "vacant_leased",
+  "vacant rented not ready": "vacant_leased"
+};
+
+var OPS_STATUS_FALLBACK_COLORS = {
+  occupied: "#f2f2f2",
+  occupied_on_notice: "#8545a1",
+  vacant: "#d37474",
+  vacant_leased: "#f9d648",
+  model: "#f57396",
+  missing: "#eecea5"
+};
+
+function isSoldUnit(unit) {
+  const sold = unit.sold !== undefined ? unit.sold : unit.isSold;
+
+  return typeof sold === "boolean" ? sold : String(sold).toLowerCase() === "true";
+}
+
+function getOpsStatusColor(unit) {
+  if (isModelUnit(unit)) {
+    return mapMarkerColors.model || OPS_STATUS_FALLBACK_COLORS.model;
+  }
+
+  const status = String(
+    unit.unit_status || unit.unitStatus || unit.status || ""
+  ).toLowerCase().trim();
+
+  const availability = isSoldUnit(unit)
+    ? ""
+    : String(unit.availability || "").toLowerCase().trim();
+
+  const key =
+    OPS_STATUS_COLOR_KEYS[status] ||
+    OPS_STATUS_COLOR_KEYS[availability] ||
+    "missing";
+
+  return mapMarkerColors[key] || OPS_STATUS_FALLBACK_COLORS[key];
+}
+
 function getUnitMarkerColor(unit) {
   if (!unit) {
     if (svgMode && !_3dMapMode() && opsMapMarkersEnabled) {
@@ -4330,49 +4393,9 @@ function getUnitMarkerColor(unit) {
   }
 
   const unitCommunityId = unit.property_id || unit.propertyId || "";
-  // Feeds disagree about which column carries leasing state: most fill
-  // unit_status with a PMS status string, but some leave it empty and only
-  // populate `availability` ("Occupied" / "Unoccupied"). Falling back to the
-  // second keeps such a property off an ops map where the default branch below
-  // paints every door vacant, when the feed said plainly they are occupied.
-  // Mirrors SdkPayloadBuilderService#ops_status_value so both maps agree.
-  const unitStatus =
-    unit.unit_status || unit.unitStatus || unit.status || unit.availability || "";
 
   if (opsMapMarkersEnabled) {
-    let result = getCommunityBasedMarkerColor(unitCommunityId);
-    if (isModelUnit(unit)) {
-      result = mapMarkerColors.model || "#f57396";
-    } else {
-      switch (unitStatus.toLowerCase().trim()) {
-        case "occupied":
-        case "occupied no notice":
-        case "notice rented":
-          result = mapMarkerColors.occupied || "#f2f2f2";
-          break;
-        case "occupied on notice":
-        case "notice unrented":
-          result = mapMarkerColors.occupied_on_notice || "#8545a1";
-          break;
-        case "vacant":
-        case "available":
-        case "unoccupied":
-        case "vacant unrented not ready":
-        case "vacant unrented ready":
-          result = mapMarkerColors.vacant || "#d37474";
-          break;
-        case "vacant lease":
-        case "vacant rented":
-        case "vacant rented ready":
-        case "vacant rented not ready":
-          result = mapMarkerColors.vacant_leased || "#f9d648";
-          break;
-        default:
-          result = map_marker_color;
-          break;
-      }
-    }
-    return toHexColor(result);
+    return toHexColor(getOpsStatusColor(unit));
   }
 
   // Marketing Map: multi-community uses sub-community-specific colors

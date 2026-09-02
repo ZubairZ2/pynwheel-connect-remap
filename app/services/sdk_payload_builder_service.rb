@@ -847,38 +847,60 @@ class SdkPayloadBuilderService
   # Which colour bucket a unit's raw PMS status falls into. Extracted from
   # compute_unit_ops_color so the ops rollup can rank a group's bedrooms by
   # status without re-deriving the mapping and letting the two drift.
+  # Every status string either map knows, and the colour bucket it belongs to.
+  # A lookup rather than a case so the same table can be tried against more than
+  # one column without repeating the vocabulary -- see #ops_status_key.
+  OPS_STATUS_BY_VALUE = {
+    "occupied"                  => :occupied,
+    "occupied no notice"        => :occupied,
+    "notice rented"             => :occupied,
+    "occupied on notice"        => :occupied_on_notice,
+    "notice unrented"           => :occupied_on_notice,
+    "vacant"                    => :vacant,
+    "available"                 => :vacant,
+    "unoccupied"                => :vacant,
+    "vacant unrented not ready" => :vacant,
+    "vacant unrented ready"     => :vacant,
+    "vacant lease"              => :vacant_leased,
+    "vacant rented"             => :vacant_leased,
+    "vacant rented ready"       => :vacant_leased,
+    "vacant rented not ready"   => :vacant_leased
+  }.freeze
+
+  # Which colour bucket a unit falls into on an ops map, in order of how much the
+  # value can be trusted:
+  #
+  #   1. `unit_status` -- the PMS status string, when the feed sends one we know.
+  #   2. `availability` -- the CMS's own two-value control ("Occupied" /
+  #      "Unoccupied"), which is all a hand-managed property has. Also catches a
+  #      real-but-unmapped unit_status like "Waitlist", which lands here rather
+  #      than being thrown away.
+  #   3. Nothing -- so say nothing. :missing is what the "Missing Data" legend
+  #      entry is for, and it is the only honest answer when neither column
+  #      reports anything.
+  #
+  # That last branch used to be :vacant, which put a confident "every door is
+  # empty" on a property whose feed simply carries no status. It is reachable now
+  # in a way it was not before: such units used to be dropped from the ops map
+  # entirely by the status whitelist in Unit.map_units.
   def ops_status_key(unit)
     return :model if unit.modal_unit
 
-    case ops_status_value(unit)
-    when "occupied", "occupied no notice", "notice rented"
-      :occupied
-    when "occupied on notice", "notice unrented"
-      :occupied_on_notice
-    when "vacant", "available", "unoccupied",
-         "vacant unrented not ready", "vacant unrented ready"
-      :vacant
-    when "vacant lease", "vacant rented",
-         "vacant rented ready", "vacant rented not ready"
-      :vacant_leased
-    else
-      :vacant
-    end
+    OPS_STATUS_BY_VALUE[unit.unit_status.to_s.downcase.strip] ||
+      OPS_STATUS_BY_VALUE[reported_availability(unit)] ||
+      :missing
   end
 
-  # Which column actually carries leasing state, for the status mapping above.
+  # `availability`, but only when it is something the property actually reported.
   #
-  # Feeds disagree: most fill `unit_status` with a PMS status string, but some
-  # leave it empty and only populate `availability` ("Occupied" / "Unoccupied").
-  # Reading the second when the first is blank is what keeps such a property off
-  # a map where every door claims to be vacant -- the `else` branch above -- when
-  # the feed said plainly that they are occupied.
-  #
-  # Both values go through the same case, so a status only has to be spelled out
-  # once no matter which column it arrived in.
-  def ops_status_value(unit)
-    status = unit.unit_status.to_s.downcase.strip
-    return status if status.present?
+  # Flagging a unit sold rewrites availability to "Occupied" as a side effect
+  # (UnitsController -- three separate places do it, mass overrides included), so
+  # on a sold unit the column is an echo of that flag rather than a statement
+  # about occupancy. Reading it anyway is what painted every door of a commercial
+  # park "Occupied", vacant suites included: their feed sets no unit_status, and
+  # every unit is flagged sold.
+  def reported_availability(unit)
+    return "" if unit.sold?
 
     unit.availability.to_s.downcase.strip
   end

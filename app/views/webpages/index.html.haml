@@ -88,7 +88,10 @@
       - units = @units
       - min_unit_floor = @min_floor
 
-      - marker_colors = { vacant: map_marker_color, occupied: map_marker_occupied_color, occupied_on_notice: map_marker_occupied_on_notice_color, vacant_leased: map_marker_vacant_leased_color, model: map_marker_model_color }.merge( @svg_enabled ? { missing: map_marker_missing_color } : {} )
+      -# :missing is always in the key -- a unit whose property reports no status
+      -# resolves to it as well as an unmatched SVG shape, so it is no longer
+      -# SVG-only. Mirrors CommunitiesHelper#build_legend_items.
+      - marker_colors = { vacant: map_marker_color, occupied: map_marker_occupied_color, occupied_on_notice: map_marker_occupied_on_notice_color, vacant_leased: map_marker_vacant_leased_color, model: map_marker_model_color, missing: map_marker_missing_color }
       - colors = marker_colors.values_at(:missing_floorplan, :missing, :occupied, :occupied_on_notice, :vacant, :vacant_leased, :model)
       - labels = ["Missing Floorplan", "Missing Data", "Occupied", "Occupied on Notice", "Vacant", "Vacant Leased", "Model"]
       - legend_items = colors.map.with_index { |color, index| color ? { label: labels[index], color: color } : nil }.compact

@@ -553,10 +553,13 @@ module CommunitiesHelper
   def build_legend_items(community)
     marker_colors = status_based_default_colors(community)
 
-    # Exclude :missing if SVG is disabled
-    filtered_keys = community.enable_svg_mode? ? STATUS_KEYS : STATUS_KEYS - [:missing]
-
-    filtered_keys.filter_map do |key|
+    # Every status, :missing included. It used to be dropped unless the property
+    # was in SVG mode, back when the only thing wearing that colour was an SVG
+    # shape no unit pointed at. A unit whose property reports no status at all
+    # now resolves to :missing too (see SdkPayloadBuilderService#ops_status_key),
+    # and that can happen on any map -- so the key has to explain the colour
+    # wherever it can appear.
+    STATUS_KEYS.filter_map do |key|
       color = marker_colors[key]
       color ? { label: STATUS_LABELS[key], color: color } : nil
     end
