@@ -38,7 +38,7 @@ class SdkPayloadBuilderService
       units:       all_units,
       floorplans:  floorplans_json(units_ar),
       amenities:   amenities_json,
-      filters:     filters_json(units_ar),
+      filters:     filters_json(units_ar, ops_map),
       status:      "success",
       code:        200
     }
@@ -436,7 +436,7 @@ class SdkPayloadBuilderService
 
       favorites: favorites_discovery_json,
 
-      filters: property_filters_json,
+      filters: property_filters_json(show_ops_map),
 
       fontFamily: @community.font_setting&.svg_labels_font_family,
 
@@ -506,11 +506,17 @@ class SdkPayloadBuilderService
     }
   end
 
-  def property_filters_json
+  # The CMS keeps two independent sets of these toggles -- one for the marketing
+  # map, one for the ops map -- so which set to read is decided by `ops_map`, not
+  # by which one happens to be the default. Passing `false` unconditionally, as
+  # this used to, made an ops map wear the marketing map's tabs and filters: a
+  # property with the Units tab turned off for marketing lost it on ops too, even
+  # though the ops toggle right beside it was on.
+  def property_filters_json(ops_map = false)
     return {} unless @community.map_filter
 
-    filter_list = @community.map_filter.get_filter_list(false)
-    tab_list    = @community.map_filter.get_tab_visibility_list(false)
+    filter_list = @community.map_filter.get_filter_list(ops_map)
+    tab_list    = @community.map_filter.get_tab_visibility_list(ops_map)
     {
       showBedroomFilter:         filter_list[:show_bedroom_filter],
       showPricingFilter:         filter_list[:show_pricing_filter],
@@ -525,12 +531,12 @@ class SdkPayloadBuilderService
       # the units & floor-plans lists; the lists then fall back to their default
       # order. Independent of the pricing/availability display toggles, which only
       # decide WHICH sort options are offered when the control is shown.
-      showSortOptions:           @community.map_filter.show_sort_options?(false),
+      showSortOptions:           @community.map_filter.show_sort_options?(ops_map),
       # "Enable Floor Plan Gallery Page" CMS toggle. Gates the map's "View All
       # Floor Plans" button, which opens the full floor-plan gallery listing
       # page. Off means visitors browse floor plans on the map only; it does not
       # touch showFloorPlansTab, which decides whether the list exists at all.
-      showFloorPlanGalleryPage:  @community.map_filter.show_floorplan_gallery_page?(false)
+      showFloorPlanGalleryPage:  @community.map_filter.show_floorplan_gallery_page?(ops_map)
     }
   end
 
@@ -797,15 +803,15 @@ class SdkPayloadBuilderService
       end
   end
 
-  def filters_json(units_ar = nil)
-    units = units_ar || @community.units.map_units(@community, false).visible_units.without_hidden_names.includes(:floorplan)
+  def filters_json(units_ar = nil, ops_map = false)
+    units = units_ar || @community.units.map_units(@community, ops_map).visible_units.without_hidden_names.includes(:floorplan)
 
     {
       bedrooms:      filter_bedroom_options(units),
-      availability:  filter_availability_options(units),
+      availability:  filter_availability_options(units, ops_map),
       squareFootage: filter_square_footage_data(units),
       priceRange:    filter_price_range_data(units),
-      visibility:    property_filters_json,
+      visibility:    property_filters_json(ops_map),
       displayFlags: {
         displayRent:      @community.display_rent,
         hideBedrooms:     @community.hide_bedrooms_bathrooms,
@@ -844,7 +850,7 @@ class SdkPayloadBuilderService
   def ops_status_key(unit)
     return :model if unit.modal_unit
 
-    case unit.unit_status.to_s.downcase.strip
+    case ops_status_value(unit)
     when "occupied", "occupied no notice", "notice rented"
       :occupied
     when "occupied on notice", "notice unrented"
@@ -852,11 +858,29 @@ class SdkPayloadBuilderService
     when "vacant", "available", "unoccupied",
          "vacant unrented not ready", "vacant unrented ready"
       :vacant
-    when "vacant lease", "vacant rented ready", "vacant rented not ready"
+    when "vacant lease", "vacant rented",
+         "vacant rented ready", "vacant rented not ready"
       :vacant_leased
     else
       :vacant
     end
+  end
+
+  # Which column actually carries leasing state, for the status mapping above.
+  #
+  # Feeds disagree: most fill `unit_status` with a PMS status string, but some
+  # leave it empty and only populate `availability` ("Occupied" / "Unoccupied").
+  # Reading the second when the first is blank is what keeps such a property off
+  # a map where every door claims to be vacant -- the `else` branch above -- when
+  # the feed said plainly that they are occupied.
+  #
+  # Both values go through the same case, so a status only has to be spelled out
+  # once no matter which column it arrived in.
+  def ops_status_value(unit)
+    status = unit.unit_status.to_s.downcase.strip
+    return status if status.present?
+
+    unit.availability.to_s.downcase.strip
   end
 
   def compute_unit_ops_color(unit)
@@ -1036,9 +1060,13 @@ class SdkPayloadBuilderService
 
   # Built from the same Unit#availability_bucket the units themselves carry, so an
   # option can only appear when at least one unit actually matches it.
-  def filter_availability_options(units)
+  # `units_availability_over_120_days` is a marketing decision -- how far out a
+  # prospect is shown move-in dates. An ops map is looking at the whole book, so
+  # it keeps the far-out bucket whatever that toggle says, matching the old map
+  # (`units_availability_over_120_days || opsMapMarkersEnabled` in webpages.js).
+  def filter_availability_options(units, ops_map = false)
     buckets = units.filter_map(&:availability_bucket).uniq
-    buckets.delete("121+") unless @community.units_availability_over_120_days
+    buckets.delete("121+") unless @community.units_availability_over_120_days || ops_map
 
     order = AVAILABILITY_FILTER_LABELS.keys
     buckets.sort_by { |bucket| order.index(bucket) || 99 }

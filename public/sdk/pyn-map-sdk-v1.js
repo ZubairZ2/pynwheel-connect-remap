@@ -2866,6 +2866,8 @@
       const byPointer = this.unitsByPointerIdByMap[mapId] || {};
       const pointerIds = this.pointerIdsByMap[mapId] || [];
 
+      this._paintUnmatchedOpsShapes();
+
       pointerIds.forEach(pid => {
         const unit = byPointer[pid];
         const sel  = this._pointerSelector(unit?.pointerData);
@@ -3275,6 +3277,87 @@
       }
 
       return selector || null;
+    },
+
+    // The shapes an ops map paints "Missing Data".
+    //
+    // A door drawn on the SVG that no unit record claims is a gap in the feed,
+    // and on an ops map that gap is itself the information -- the legend has an
+    // entry for it. The old map does this in svgHandler.setSvgCoordinates; the
+    // SDK only ever knew about shapes a unit pointed at, so those doors kept
+    // whatever fill the artwork shipped with and read as ordinary units.
+    //
+    // Only unclaimed shapes are painted, so this never fights _applyFill: a
+    // shape a unit owns is coloured by its status and is never touched here, and
+    // _clearUnitStyles only walks the claimed pointer ids, so the base survives
+    // a floor change. The data attribute keeps a cached SVG from being walked
+    // again every time it is re-shown.
+    //
+    // Marketing maps are left alone -- an unclaimed shape there is simply a home
+    // that is not on the market, which is what the artwork already shows.
+    _opsMissingShapeSelector: "path, polyline, rect, polygon, ellipse, circle",
+
+    _paintUnmatchedOpsShapes() {
+      if (this.config.mapType !== "ops" || this._3dMode) return;
+
+      const svg = this._getActiveSvg();
+      if (!svg) return;
+
+      const missing = this.data?.property?.markerConfig?.ops_map_colors?.missing;
+      if (!missing) return;
+
+      const byPointer = this.unitsByPointerIdByMap[this.activeMapId] || {};
+      const claimed   = new Set();
+
+      (this.pointerIdsByMap[this.activeMapId] || []).forEach(pid => {
+        const sel = this._pointerSelector(byPointer[pid]?.pointerData);
+        if (!sel) return;
+        let el = null;
+        try { el = svg.querySelector(sel); } catch { return; }
+        if (el) claimed.add(el);
+      });
+
+      svg.querySelectorAll(this._opsMissingShapeSelector).forEach(shape => {
+        if (shape.dataset.pynOpsMissing) return;
+        // Ancestors too, not just the shape: a unit whose pointer names the <g>
+        // owns every path inside it, and _applyFill colours them through the
+        // group. Testing only the shape itself would repaint those children
+        // "missing" straight over the status colour their unit had just set.
+        if (this._isClaimedShape(shape, claimed, svg)) return;
+        if (this._svgShapeCategory(shape) !== "unit") return;
+
+        shape.dataset.pynOpsMissing = "1";
+        this._applyFill(shape, missing);
+      });
+    },
+
+    _isClaimedShape(shape, claimed, svg) {
+      for (let node = shape; node && node !== svg; node = node.parentElement) {
+        if (claimed.has(node)) return true;
+      }
+
+      return false;
+    },
+
+    // What a shape is, decided by the nearest <g> ancestor that names itself --
+    // an exact mirror of svgHandler.js getValidShapeCategory, so both maps agree
+    // on which shapes are doors. Groups named for outlines, labels, text or
+    // icons are decoration and belong to nothing.
+    _svgShapeCategory(el) {
+      let node = el.parentElement;
+
+      while (node && node.tagName && node.tagName.toLowerCase() === "g") {
+        const id = (node.id || "").toLowerCase();
+
+        if (id.includes("uni"))  return "unit";
+        if (id.includes("amen")) return "amenity";
+        if (id.includes("outlines") || id.includes("label") ||
+            id.includes("text")    || id.includes("icon")) return null;
+
+        node = node.parentElement;
+      }
+
+      return null;
     },
 
     // Mirrors svgHandler.js: use setProperty("important") so inline !important beats

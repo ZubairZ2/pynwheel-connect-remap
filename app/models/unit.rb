@@ -61,22 +61,6 @@ class Unit < ApplicationRecord
   belongs_to :floorplan
   belongs_to :floorplate
 
-  AVAILABILITY_SCOPED_STATUSES = [
-    "occupied",
-    "occupied no notice",
-    "notice rented",
-    "occupied on notice",
-    "notice unrented",
-    "vacant",
-    "available",
-    "unoccupied",
-    "vacant unrented not ready",
-    "vacant lease",
-    "vacant rented ready",
-    "vacant rented not ready",
-    "vacant unrented ready"
-  ]
-
   # validates :effective_rent, :numericality => { :greater_than => 0, :less_than => 100000001 }, :length => { :maximum => 11}
   validates_uniqueness_of :provider_unit_id, scope: :community_id
   # validates_uniqueness_of :marketing_name, scope: :community_id
@@ -244,14 +228,6 @@ class Unit < ApplicationRecord
     end
   }
 
-  scope :status_scoped, ->(availability_over_120_days = false) {
-    result = where("LOWER(unit_status) IN (?) OR modal_unit = ?", AVAILABILITY_SCOPED_STATUSES.map(&:downcase), true)
-    unless availability_over_120_days
-      result = result.where(available_date: [nil, '']).or(where.not("available_date > ?", Date.today + 120.days))
-    end
-    result
-  }
-  
   scope :visible_on_map_for, ->(community) {
     begin
       return all unless SHOW_ON_MAP.include?(community.data_provider)
@@ -282,10 +258,15 @@ class Unit < ApplicationRecord
 
     if community.data_provider === "beans"
       community.units
-    elsif community.turn_availability_on && !show_ops_map
+    # An ops map is the marketing map plus every door marketing hides, so it can
+    # never return fewer units than the marketing branch below. It used to filter
+    # on a whitelist of known `unit_status` strings, which inverted that: a feed
+    # that leaves unit_status blank (or sends a status nobody listed) dropped
+    # every unit, and the map rendered with nothing plotted on it at all.
+    # Status is what an ops map COLOURS a unit by, never what it selects on --
+    # see SdkPayloadBuilderService#ops_status_key.
+    elsif show_ops_map || community.turn_availability_on
       are_plotted_units(svg_enabled)
-    elsif show_ops_map
-      are_plotted_units(svg_enabled).status_scoped(true)
     else
       available_units(svg_enabled, community.units_availability_over_120_days)
         .visible_on_map_for(community)

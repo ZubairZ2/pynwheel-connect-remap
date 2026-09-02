@@ -29,15 +29,18 @@ module CommunitiesHelper
     model
   ].freeze
 
-  STATUS_LABELS = [
-    "Missing Floorplan",
-    "Occupied",
-    "Occupied on Notice",
-    "Vacant",
-    "Vacant Leased",
-    "Model"
-  ].unshift("Missing Data") # for :missing
-  .freeze
+  # Keyed by status rather than positional: as a list it carried one more entry
+  # than STATUS_KEYS has keys, so zipping the two by index shifted every label
+  # down one and the ops legend named each colour after the status above it --
+  # the "Vacant" swatch was the occupied-on-notice colour, and so on.
+  STATUS_LABELS = {
+    missing:            "Missing Data",
+    occupied:           "Occupied",
+    occupied_on_notice: "Occupied on Notice",
+    vacant:             "Vacant",
+    vacant_leased:      "Vacant Leased",
+    model:              "Model"
+  }.freeze
 
 
   def write_account_report(workbook)
@@ -553,11 +556,10 @@ module CommunitiesHelper
     # Exclude :missing if SVG is disabled
     filtered_keys = community.enable_svg_mode? ? STATUS_KEYS : STATUS_KEYS - [:missing]
 
-    filtered_keys.map.with_index do |key, idx|
+    filtered_keys.filter_map do |key|
       color = marker_colors[key]
-      label = STATUS_LABELS[idx]
-      color ? { label:, color: } : nil
-    end.compact
+      color ? { label: STATUS_LABELS[key], color: color } : nil
+    end
   end
 
   def floorplan_map_config unit

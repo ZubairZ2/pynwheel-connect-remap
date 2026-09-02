@@ -4330,14 +4330,21 @@ function getUnitMarkerColor(unit) {
   }
 
   const unitCommunityId = unit.property_id || unit.propertyId || "";
-  const unitStatus = unit.unit_status || unit.unitStatus || unit.status || "";
+  // Feeds disagree about which column carries leasing state: most fill
+  // unit_status with a PMS status string, but some leave it empty and only
+  // populate `availability` ("Occupied" / "Unoccupied"). Falling back to the
+  // second keeps such a property off an ops map where the default branch below
+  // paints every door vacant, when the feed said plainly they are occupied.
+  // Mirrors SdkPayloadBuilderService#ops_status_value so both maps agree.
+  const unitStatus =
+    unit.unit_status || unit.unitStatus || unit.status || unit.availability || "";
 
   if (opsMapMarkersEnabled) {
     let result = getCommunityBasedMarkerColor(unitCommunityId);
     if (isModelUnit(unit)) {
       result = mapMarkerColors.model || "#f57396";
     } else {
-      switch (unitStatus.toLowerCase()) {
+      switch (unitStatus.toLowerCase().trim()) {
         case "occupied":
         case "occupied no notice":
         case "notice rented":
@@ -4355,6 +4362,7 @@ function getUnitMarkerColor(unit) {
           result = mapMarkerColors.vacant || "#d37474";
           break;
         case "vacant lease":
+        case "vacant rented":
         case "vacant rented ready":
         case "vacant rented not ready":
           result = mapMarkerColors.vacant_leased || "#f9d648";
