@@ -4326,10 +4326,6 @@ function currentVisibleMapImage() {
 // `availability` control, then nothing -- and when it is nothing, the unit wears
 // the "Missing Data" colour rather than a status it never reported.
 //
-// `availability` is skipped on a sold unit: flagging a unit sold rewrites that
-// column to "Occupied" as a side effect, so there it echoes the flag rather than
-// reporting occupancy.
-//
 // Mirrors SdkPayloadBuilderService#ops_status_key so both maps agree.
 var OPS_STATUS_COLOR_KEYS = {
   "occupied": "occupied",
@@ -4357,12 +4353,6 @@ var OPS_STATUS_FALLBACK_COLORS = {
   missing: "#eecea5"
 };
 
-function isSoldUnit(unit) {
-  const sold = unit.sold !== undefined ? unit.sold : unit.isSold;
-
-  return typeof sold === "boolean" ? sold : String(sold).toLowerCase() === "true";
-}
-
 function getOpsStatusColor(unit) {
   if (isModelUnit(unit)) {
     return mapMarkerColors.model || OPS_STATUS_FALLBACK_COLORS.model;
@@ -4372,9 +4362,7 @@ function getOpsStatusColor(unit) {
     unit.unit_status || unit.unitStatus || unit.status || ""
   ).toLowerCase().trim();
 
-  const availability = isSoldUnit(unit)
-    ? ""
-    : String(unit.availability || "").toLowerCase().trim();
+  const availability = String(unit.availability || "").toLowerCase().trim();
 
   const key =
     OPS_STATUS_COLOR_KEYS[status] ||

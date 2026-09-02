@@ -872,7 +872,9 @@ class SdkPayloadBuilderService
   #
   #   1. `unit_status` -- the PMS status string, when the feed sends one we know.
   #   2. `availability` -- the CMS's own two-value control ("Occupied" /
-  #      "Unoccupied"), which is all a hand-managed property has. Also catches a
+  #      "Unoccupied"), which is all a hand-managed property has. Flagging a unit
+  #      sold writes "Occupied" here too, which is the app's own rule rather than
+  #      noise: sold means leased, and leased means occupied. Also catches a
   #      real-but-unmapped unit_status like "Waitlist", which lands here rather
   #      than being thrown away.
   #   3. Nothing -- so say nothing. :missing is what the "Missing Data" legend
@@ -887,22 +889,8 @@ class SdkPayloadBuilderService
     return :model if unit.modal_unit
 
     OPS_STATUS_BY_VALUE[unit.unit_status.to_s.downcase.strip] ||
-      OPS_STATUS_BY_VALUE[reported_availability(unit)] ||
+      OPS_STATUS_BY_VALUE[unit.availability.to_s.downcase.strip] ||
       :missing
-  end
-
-  # `availability`, but only when it is something the property actually reported.
-  #
-  # Flagging a unit sold rewrites availability to "Occupied" as a side effect
-  # (UnitsController -- three separate places do it, mass overrides included), so
-  # on a sold unit the column is an echo of that flag rather than a statement
-  # about occupancy. Reading it anyway is what painted every door of a commercial
-  # park "Occupied", vacant suites included: their feed sets no unit_status, and
-  # every unit is flagged sold.
-  def reported_availability(unit)
-    return "" if unit.sold?
-
-    unit.availability.to_s.downcase.strip
   end
 
   def compute_unit_ops_color(unit)

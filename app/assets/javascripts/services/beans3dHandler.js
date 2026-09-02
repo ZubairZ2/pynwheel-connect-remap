@@ -194,6 +194,11 @@ function getFormattedBeansUnits() {
       availabilityUrl: transformedData.availabilityUrl,
       leaseTerm: transformedData.unitLeaseTerm,
       status: transformedData.unitStatus,
+      // Carried alongside unit_status because the ops colour falls back to it
+      // when the feed leaves unit_status blank (getOpsStatusColor). Without it
+      // the 3D view sent every door of such a property to "Missing Data" while
+      // the 2D view, which reads the data attributes directly, coloured them.
+      availability: transformedData.availability,
       modelUnit: transformedData.modalUnit || transformedData.modelUnit,
       unit: transformedData.unitMarketingName,
       name: transformedData.unitMarketingName,
