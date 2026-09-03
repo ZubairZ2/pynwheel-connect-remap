@@ -1,0 +1,15 @@
+-# The count and rows-per-page strip that sits above every grid. Shared so the
+-# page counter, the "clipped" warning and the "All" escape hatch read the same
+-# way wherever a grid appears.
+.grid-meta
+  %span.grid-count
+    = pluralize(collection.total_entries, noun)
+    - if collection.total_pages > 1
+      %span.grid-page-n= "· page #{collection.current_page} of #{collection.total_pages}"
+    - if per_page_capped?
+      %span.grid-page-n= "· showing the first #{number_with_delimiter(per_page)}"
+  .grid-perpage
+    %span.muted Rows
+    - GridPagination::PER_PAGE_OPTIONS.each do |option|
+      = link_to option, grid_path(per_page: option, page: nil), class: "pp#{' on' if !showing_all? && per_page == option}", "data-remote-nav" => true
+    = link_to "All", grid_path(per_page: "all", page: nil), class: "pp#{' on' if showing_all?}", "data-remote-nav" => true, title: "Show every match on one page"

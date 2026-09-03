@@ -49,11 +49,20 @@ module UnitsHelper
     (bathrooms.to_f % 1).zero? ? bathrooms.to_i : bathrooms.to_f
   end
 
-  # One labelled control on the unit form. Wrapping them keeps 25-odd fields
-  # visually identical and puts the "manual override required" rule in one
-  # place - it used to be repeated as loose text under every gated field.
+  # A unit form field. Adds the one thing the shared field doesn't know about:
+  # `gated` marks a field the property's data feed owns unless Manual Override
+  # is on, which both badges the label and gives the form's JS the hook it
+  # toggles - `.pf-field.gated` - when the override switch changes.
   def unit_field(label, gated: false, hint: nil, span: nil, &block)
-    render "units/field", label: label, gated: gated, hint: hint, span: span, control: capture(&block)
+    badge = gated ? feed_gate_badge : nil
+    pyn_field(label, hint: hint, span: span, badge: badge, field_class: ("gated" if gated), &block)
+  end
+
+  def feed_gate_badge
+    content_tag(:span, class: "gate-badge",
+                title: "Managed by the property's data feed unless Manual Override is on") do
+      content_tag(:i, "", class: "fa fa-refresh") + " feed"
+    end
   end
 
   # The lock provider actually in force for a unit: the door's if it has one,
@@ -80,22 +89,5 @@ module UnitsHelper
       title: "#{label} was set by hand, so the data feed will not update it. " \
              "Clear it with Mass overrides → Field overrides."
     }
-  end
-
-  # Link back to the units grid with the current filters preserved and only the
-  # given keys changed - what every sort header, pager link and rows-per-page
-  # control needs so it can't drop the filter set out from under the user.
-  def units_page_path(overrides = {})
-    query = @filter.to_query_params.merge(page: params[:page]).merge(overrides)
-    community_units_path(@community, query.compact_blank)
-  end
-
-  # Options for one of the toolbar's selects, marking the active choice.
-  def unit_filter_select(name, choices, placeholder)
-    select_tag name,
-               options_for_select(choices, params[name].to_s),
-               include_blank: placeholder,
-               class: "f-select",
-               id: "filter-#{name}"
   end
 end

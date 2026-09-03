@@ -3,7 +3,7 @@
 
 %section
   .content
-    .unit-form-page
+    .pyn-form.unit-form-page
       = link_to community_units_path(@community), class: "back" do
         %i.fa.fa-angle-left
         All units
@@ -16,7 +16,7 @@
       = form_for @unit, url: community_units_path(community_id: @community.id), html: { class: "unit-form" } do |f|
         = render partial: "form", locals: { f: f }
 
-        .u-actionbar
+        .pf-actionbar
           %span.grow Marketing name, provider unit ID and price are required.
           = link_to "Cancel", community_units_path(@community), class: "btn btn-ghost"
           = f.submit "Add unit", class: "btn btn-success loader_class"

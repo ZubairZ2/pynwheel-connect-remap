@@ -1,43 +1,63 @@
+- content_for :title, "Properties - Pynwheel"
 
-- content_for :title, "Home - Pynwheel"
-.container
-  %section
-    .row
-      .col-md-4
-        %h2 Communities
-        %h5
-          All communities are listed here.
-        - if current_user.is_super_admin?
-          %p.mb-30
-            This Admin feature allows you to directly access any community in the system
-        - elsif current_user.is_dwelo_admin?
-          %p.mb-30
-            This Dwelo admin feature allows you to directly access any dwelo community in the system </br>
-      - if can? :read, Company     
-        .col-md-2
-          - if current_user.is_super_admin? or current_user.is_dwelo_admin?
-            .mt-35
-              %a.btn.btn-success.pull-right.mb-20{:href => "/companies"}
-                List all companies         
+:css
+  /* Column widths and the two cells that are particular to this grid.
+     Everything else - the toolbar, table, badges, pager - comes from
+     pyn_grid.scss, shared with the units grid. */
+  .properties-page .c-property { min-width: 240px; }
+  .properties-page .c-company { min-width: 150px; }
+  .properties-page .c-location { min-width: 130px; }
+  .properties-page .c-provider { min-width: 140px; text-transform: capitalize; }
+  .properties-page .c-products { min-width: 190px; max-width: 320px; }
+  .properties-page .c-property .cell-sub .dot { color: #d8dde4; margin: 0 5px; }
+  .properties-page .cell-link { color: #475569; text-decoration: none; }
+  .properties-page .cell-link:hover { color: #3558e8; text-decoration: none; }
 
-    .box.box-widget.panel-box
-      #new-search-area
-      %table#communities.table.table-hover.table-responsive
-        %thead
-          %tr
-            %th Community
-            %th{:width => "250"} Company
-        %tbody
-          - @communities.each do |community|
-            %tr
-              %td
-                %h4.h4
-                  - if current_user.is_view_visitor_details_page?
-                    = link_to community.name, community_tour_users_path(community),:title=>community.data_provider
-                  - elsif community&.company.present?
-                    = link_to community.name, edit_company_community_path(community.company,community),:title=>community.data_provider
-                %h6.h6 Timezone: #{community.time_zone}
-                %h6 Provider: #{community&.data_provider}, Updated: #{community.data_provider_updated_on}
-              %td
-                %h5.h5
-                  = community.company.name rescue ""
+%section
+  .content
+    .pyn-grid.properties-page
+      .page-head
+        .grow
+          %h1 Properties
+          %p.sub
+            - if current_user.is_super_admin?
+              Every property in the system.
+            - else
+              The properties you have access to.
+            %span.dot ·
+            = pluralize(@communities.total_entries, "match")
+        - if can?(:read, Company) && (current_user.is_super_admin? || current_user.is_dwelo_admin?)
+          .head-actions
+            = link_to companies_path, class: "btn btn-ghost" do
+              %i.fa.fa-building-o
+              All companies
+
+      %form.toolbar#property-filters{method: "get", action: root_path}
+        .row1
+          %input.f-input.f-search{type: "text", name: "q", value: params[:q], placeholder: "Search property, code, city, address or company…", autocomplete: "off"}
+          = grid_filter_select :company_id, @filter_options[:companies], "All companies"
+          = grid_filter_select :state, @filter_options[:states].map { |s| [s, s] }, "All states"
+          = grid_filter_select :status, [["Live", "live"], ["In setup", "setup"], ["Locked", "locked"]], "Any status"
+          %span.spin#filter-spin
+        .row2
+          = grid_filter_select :data_provider, @filter_options[:providers].map { |p| [p.titleize, p] } + [["No data feed", CommunityFilterQuery::NONE]], "All data feeds"
+          = grid_filter_select :synced, [["Has synced", "true"], ["Never synced", "false"]], "Sync: any"
+          = grid_filter_select :product, Community::FEATURES.map { |key, f| [f[:title], key] }, "Any product"
+          = grid_filter_select :map_type, [["SDK map", "sdk"], ["SVG map", "svg"], ["3D map", "three_d"], ["Sitemap", "sitemap"], ["Floor-level map", "floor_level"]], "Any map type"
+          - if @filter_options[:regions].any?
+            = grid_filter_select :region_id, @filter_options[:regions], "All regions"
+          - if @filter_options[:groups].any?
+            = grid_filter_select :community_group_id, @filter_options[:groups], "All groups"
+          = grid_range_filter "Units", :min_units, :max_units
+          %a.btn.btn-ghost#clear-filters{href: root_path, style: ("display:none" unless @filter.filtering?)} Clear filters
+
+      #property-results
+        = render "communities_table"
+
+:javascript
+  PynGrid.init({
+    form: "#property-filters",
+    results: "#property-results",
+    spinner: "#filter-spin",
+    clear: "#clear-filters"
+  });

@@ -4,35 +4,24 @@
 - show_on_map = SHOW_ON_MAP.include?(@community.data_provider)
 - tour_order = PROPERTIES_LIST.include?(@community.id)
 
-.units-meta
-  %span.units-count
-    = pluralize(@units.total_entries, "unit")
-    - if @units.total_pages > 1
-      %span.units-page-n= "· page #{@units.current_page} of #{@units.total_pages}"
-    - if per_page_capped?
-      %span.units-page-n= "· showing the first #{number_with_delimiter(per_page)}"
-  .units-perpage
-    %span.muted Rows
-    - UnitsController::PER_PAGE_OPTIONS.each do |option|
-      = link_to option, units_page_path(per_page: option, page: nil), class: "pp#{' on' if !showing_all? && per_page == option}", "data-remote-nav" => true
-    = link_to "All", units_page_path(per_page: "all", page: nil), class: "pp#{' on' if showing_all?}", "data-remote-nav" => true, title: "Show every matching unit on one page"
+= render "shared/grid_meta", collection: @units, noun: "unit"
 
 - if @units.empty?
-  .units-empty
-    %p.units-empty-title No units match these filters.
+  .grid-empty
+    %p.grid-empty-title No units match these filters.
     %p.muted Try widening the search, or clear the filters to see all #{pluralize(@community.units.count, 'unit')}.
 - else
   .table-wrap
-    %table.units-table
+    %table.grid-table
       %thead
         %tr
           %th.cb
             %input#select-page{type: "checkbox", title: "Select every unit on this page"}
-          = render "sort_header", key: "name", label: "Unit"
-          = render "sort_header", key: "floorplan", label: "Floor Plan"
-          = render "sort_header", key: "price", label: "Price", align: "right"
-          = render "sort_header", key: "available_date", label: "Availability"
-          = render "sort_header", key: "floor", label: "Location"
+          = render "shared/grid_sort_header", key: "name", label: "Unit"
+          = render "shared/grid_sort_header", key: "floorplan", label: "Floor Plan"
+          = render "shared/grid_sort_header", key: "price", label: "Price", align: "right"
+          = render "shared/grid_sort_header", key: "available_date", label: "Availability"
+          = render "shared/grid_sort_header", key: "floor", label: "Location"
           %th.flag{title: "Manual Override — when on, these values stop following the property's data feed"} Override
           %th.flag Sold
           - if show_on_map
@@ -49,41 +38,41 @@
             %td.cb
               %input.js-row-cb{type: "checkbox", value: u.id}
             %td.c-unit
-              .u-name{feed_pinned_attrs(u.name_is_updated, "Unit name")}
+              .cell-title{feed_pinned_attrs(u.name_is_updated, "Unit name")}
                 = best_in_place u, :marketing_name, url: community_unit_path(@community, u), display_as: (@community.data_provider == "yardi" ? :provider_unit_id : :unit_market)
               - if u.provider_unit_id.present? && @community.data_provider != "yardi"
-                .u-sub= u.provider_unit_id
+                .cell-sub= u.provider_unit_id
             %td.c-plan
               .u-plan{feed_pinned_attrs(u.floorplan_id_is_updated, "Floor plan")}
                 = best_in_place u, :floorplan_id, as: :select, collection: @floorplans.map { |f| [f.provider_floorplan_id, f.name] }, url: community_unit_path(@community, u)
               - if floorplan
-                .u-sub= floorplan_specs(floorplan, unit_square_feet: u.square_feet)
-            %td.right.c-price{feed_pinned_attrs(u.effective_rent_is_updated, "Price")}
+                .cell-sub= floorplan_specs(floorplan, unit_square_feet: u.square_feet)
+            %td.right.c-price.cell-num{feed_pinned_attrs(u.effective_rent_is_updated, "Price")}
               %span.cur= @currency_symbol
               = best_in_place u, :effective_rent, as: :input, url: community_unit_path(@community, u), display_as: :show_integer_rent
             %td.c-avail
-              %span.u-flag{class: [(u.available ? "yes" : "no"), ("edited" if u.available_is_updated || u.availability_is_updated)].compact.join(" "), title: ((u.available_is_updated || u.availability_is_updated) ? "Availability was set by hand, so the data feed will not update it. Clear it with Mass overrides → Field overrides." : nil)}
+              %span.pill{class: [(u.available ? "yes" : "no"), ("edited" if u.available_is_updated || u.availability_is_updated)].compact.join(" "), title: ((u.available_is_updated || u.availability_is_updated) ? "Availability was set by hand, so the data feed will not update it. Clear it with Mass overrides → Field overrides." : nil)}
                 = best_in_place u, :available, as: :checkbox, collection: { false: "Not available", true: "Available" }, url: community_unit_path(@community, u)
-              .u-sub{feed_pinned_attrs(u.available_date_is_updated, "Available date")}
+              .cell-sub{feed_pinned_attrs(u.available_date_is_updated, "Available date")}
                 = best_in_place u, :available_date, as: :date, url: community_unit_path(@community, u), place_holder: (u.sold ? "Never available" : "—")
             %td.c-loc
-              .u-kv
+              .cell-kv
                 %span.k Floor
                 %span.v{feed_pinned_attrs(u.floor_is_updated, "Floor")}
                   = best_in_place u, :floor, url: community_unit_path(@community, u), place_holder: "—"
-              .u-kv
+              .cell-kv
                 %span.k Bldg
                 %span.v{feed_pinned_attrs(u.building_is_updated, "Building")}
                   = best_in_place u, :building, url: community_unit_path(@community, u), place_holder: "—"
             %td.flag
-              %span.u-flag{class: (u.manual_override ? "on" : "off")}
+              %span.pill{class: (u.manual_override ? "on" : "off")}
                 = best_in_place u, :manual_override, as: :checkbox, collection: { false: "No", true: "Yes" }, url: community_unit_path(@community, u)
             %td.flag
-              %span.u-flag{class: [(u.sold ? "sold" : "off"), ("edited" if u.sold_is_updated)].compact.join(" ")}
+              %span.pill{class: [(u.sold ? "sold" : "off"), ("edited" if u.sold_is_updated)].compact.join(" ")}
                 = best_in_place u, :sold, as: :checkbox, collection: { false: "No", true: "Yes" }, url: community_unit_path(@community, u)
             - if show_on_map
               %td.flag
-                %span.u-flag{class: (u.show_on_map ? "on" : "off")}
+                %span.pill{class: (u.show_on_map ? "on" : "off")}
                   = best_in_place u, :show_on_map, as: :checkbox, collection: { false: "No", true: "Yes" }, url: community_unit_path(@community, u)
             - if tour_order
               %td= best_in_place u, :tour_visiting_order_number, as: :input, url: community_unit_path(@community, u), place_holder: "—"
@@ -91,7 +80,7 @@
               - if unit_lock_provider(u).present?
                 = render partial: "attached_lock", locals: { u: u, community: @community }
               - else
-                %span.u-none &mdash;
+                %span.cell-none &mdash;
             %td.c-img
               - thumb = u.validated_image_url || (floorplan && (floorplan.validated_image_url || (floorplan.secondary_image.present? && floorplan.secondary_image.url)))
               - if thumb
@@ -99,7 +88,7 @@
               - else
                 %span.u-thumb.empty
             %td.right.c-actions
-              .u-actions
+              .row-actions
                 = link_to edit_community_unit_path(@community, u), class: "ico", title: "Edit unit" do
                   %i.fa.fa-pencil
                 = link_to community_unit_amenities_path(@community, u), class: "ico", title: "Manage interior images" do
@@ -127,6 +116,4 @@
     %a#sab-all{href: "#"}= "Select all #{@units.total_entries} units matching these filters"
     %a#sab-clear{href: "#", style: "display:none"} Clear selection
 
-  - if @units.total_pages > 1
-    .pager
-      = will_paginate @units, params: @filter.to_query_params
+  = render "shared/grid_pager", collection: @units
