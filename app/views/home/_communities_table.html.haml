@@ -52,13 +52,14 @@
               - else
                 %span.cell-none Not connected
             %td.c-status
-              %span.pill{class: community_status(community)[:tone]}= community_status(community)[:label]
+              - status = community_status(community)
+              %span.pill{class: status[:tone]}= status[:label]
             %td.c-products
-              - features = community_feature_badges(community)
-              - if features.any?
+              - badges = community_feature_badges(community)
+              - if badges.any?
                 .tags
-                  - features.each do |feature|
-                    %span.tag{class: ("accent" if feature[:accent]), title: feature[:title]}= feature[:label]
+                  - badges.each do |badge|
+                    %span.tag{class: ("accent" if badge[:accent]), title: badge[:title]}= badge[:label]
               - else
                 %span.cell-none &mdash;
             %td.right

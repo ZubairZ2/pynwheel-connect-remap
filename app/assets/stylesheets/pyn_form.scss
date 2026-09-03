@@ -52,10 +52,11 @@ $pf-line: #e8ebf0;
   .pf-section {
     background: #fff; border: 1px solid $pf-line; border-radius: 12px;
     box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.03);
-    margin-bottom: 14px; overflow: hidden;
+    margin-bottom: 14px;
   }
   .pf-section-head {
     padding: 13px 18px 12px; border-bottom: 1px solid #f2f4f7; background: #fbfcfd;
+    border-radius: 12px 12px 0 0;
     h2 { margin: 0; font-size: 13.5px; font-weight: 650; letter-spacing: 0.005em; color: #0f172a; }
     p { margin: 4px 0 0; font-size: 12px; line-height: 1.5; color: #7b8494; max-width: 780px; }
   }
@@ -75,7 +76,7 @@ $pf-line: #e8ebf0;
     font-size: 11px; font-weight: 650; text-transform: uppercase; letter-spacing: 0.055em;
     color: #8b93a1; margin: 0 0 5px; min-height: 16px;
     // a hint the label carries inline (the lock script rewrites one of these)
-    span:not(.gate-badge):not(.pf-tip) { text-transform: none; letter-spacing: 0; font-weight: 500; font-size: 11.5px; color: #a8afba; }
+    span:not(.gate-badge) { text-transform: none; letter-spacing: 0; font-weight: 500; font-size: 11.5px; color: #a8afba; }
   }
   .pf-hint { margin: 6px 0 0; font-size: 11.5px; line-height: 1.5; color: #9ca3af; }
 

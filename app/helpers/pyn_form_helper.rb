@@ -14,14 +14,4 @@ module PynFormHelper
            field_class: field_class,
            control: capture(&block)
   end
-
-  # The circled "?" the property form uses for the handful of fields whose
-  # effect reaches beyond this page. Plain title text rather than a popover:
-  # the popover plugin here is wired into a one-time onboarding chain, and
-  # borrowing it for a permanent hint would fire that chain.
-  def pyn_tip(text)
-    content_tag(:span, class: "pf-tip", title: text) do
-      content_tag(:i, "", class: "fa fa-question-circle")
-    end
-  end
 end

@@ -2,6 +2,26 @@ module CommunitiesHelper
   include ApplicationHelper
   include ActionView::Helpers::NumberHelper
 
+  # The circled "?" beside a property field whose effect reaches past this page.
+  #
+  # Two flavours, both driven by global CSS in pyn-custom.css. `popover` names
+  # the anchor a first-visit walkthrough attaches a Bootstrap popover to - the
+  # chain in _alert_modals.html.haml starts on propertyDetailNamePopover1 and
+  # hops Name -> Address -> Email -> Website by id, so those four anchors have
+  # to keep their data-toggle exactly. Everything else is a plain hover tip.
+  def property_tip(text, popover: nil)
+    if popover
+      content_tag(:i, class: "propertyDetailName fa fa-question-circle",
+                  "data-toggle" => popover, "data-content" => " ") do
+        content_tag(:span, text, id: "propertyDetailNameText")
+      end
+    else
+      content_tag(:i, class: "unit_manualoverride fa fa-question-circle") do
+        content_tag(:span, text, id: "unit_manualoverride_text")
+      end
+    end
+  end
+
   DATA_ATTRIBUTES_SAME_KEYS = %w[
     is-fav availability-url community-property-id floorplan-name square-feet availability bedrooms
     bathrooms floorplan-image secondary-image floor sold available

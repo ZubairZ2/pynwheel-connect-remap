@@ -54,8 +54,9 @@ module UnitsHelper
   # is on, which both badges the label and gives the form's JS the hook it
   # toggles - `.pf-field.gated` - when the override switch changes.
   def unit_field(label, gated: false, hint: nil, span: nil, &block)
-    badge = gated ? feed_gate_badge : nil
-    pyn_field(label, hint: hint, span: span, badge: badge, field_class: ("gated" if gated), &block)
+    pyn_field(label, hint: hint, span: span,
+              badge: (gated ? feed_gate_badge : nil),
+              field_class: ("gated" if gated), &block)
   end
 
   def feed_gate_badge

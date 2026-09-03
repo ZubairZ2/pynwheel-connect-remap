@@ -10,8 +10,6 @@
   .properties-page .c-provider { min-width: 140px; text-transform: capitalize; }
   .properties-page .c-products { min-width: 190px; max-width: 320px; }
   .properties-page .c-property .cell-sub .dot { color: #d8dde4; margin: 0 5px; }
-  .properties-page .cell-link { color: #475569; text-decoration: none; }
-  .properties-page .cell-link:hover { color: #3558e8; text-decoration: none; }
 
 %section
   .content
@@ -26,7 +24,7 @@
               The properties you have access to.
             %span.dot ·
             = pluralize(@communities.total_entries, "match")
-        - if can?(:read, Company) && (current_user.is_super_admin? || current_user.is_dwelo_admin?)
+        - if current_user.is_super_admin? || current_user.is_dwelo_admin?
           .head-actions
             = link_to companies_path, class: "btn btn-ghost" do
               %i.fa.fa-building-o

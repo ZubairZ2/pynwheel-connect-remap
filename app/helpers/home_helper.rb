@@ -25,9 +25,7 @@ module HomeHelper
     end
   end
 
-  # The product switches this property has on, in the order Community::FEATURES
-  # declares them so a column of badges reads the same way on every row. The
-  # first two are the products themselves rather than map options, so they lead.
+  # The products themselves lead; the rest are map and billing options.
   ACCENTED_FEATURES = %w[touch self_tour access].freeze
 
   # How many badges a row shows before the rest collapse into a "+N". A property

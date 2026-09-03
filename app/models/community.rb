@@ -120,7 +120,9 @@ class Community < ApplicationRecord
 
   # The product/feature switches worth seeing at a glance on the properties
   # list. One table, so the toolbar's "Product" filter and the badges in the
-  # grid can never drift apart - adding a product here adds both.
+  # grid can never drift apart - adding a product here adds both. Columns that
+  # are on for effectively every property (enable_locks defaults to true) are
+  # deliberately left out: as a badge they would be pure noise.
   FEATURES = {
     "touch" => { column: :touchscreen_app, label: "Touch", title: "Pynwheel Touch" },
     "self_tour" => { column: :self_tour, label: "Self Tour", title: "Self-guided touring" },
