@@ -20,14 +20,11 @@
                     - if filter[:tooltip].present?
                       %i.map-filter-tooltip.fa.fa-question-circle{ tabindex: "0" }
                         %span.map-filter-tooltip__text= filter[:tooltip]
-                  %td
-                    .TriSea-technologies-Switch
-                      = f.check_box filter[:marketing], checked: map_filter.send(filter[:marketing])
-                      %label.label-primary{ for: "map_filter_#{filter[:marketing]}" }
-                  %td
-                    .TriSea-technologies-Switch
-                      = f.check_box filter[:ops], checked: map_filter.send(filter[:ops])
-                      %label.label-primary{ for: "map_filter_#{filter[:ops]}" }
+                  - [filter[:marketing], filter[:ops]].each do |attribute|
+                    %td
+                      .TriSea-technologies-Switch
+                        = f.check_box attribute, checked: map_filter.send(attribute)
+                        %label.label-primary{ for: "map_filter_#{attribute}" }
         .modal-footer
           = f.submit "Save Filters", class: "btn btn-primary submit-click"
           %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel

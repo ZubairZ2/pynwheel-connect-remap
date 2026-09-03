@@ -375,7 +375,7 @@ class SdkPayloadBuilderService
         sitemapAutoZoom:      @community.sitemap_auto_zoom,
         enable3dMaps:         @community.enable_three_d_maps,
         defaultSatelliteView: @community.default_satellite_view,
-        # "Highlight all units on hover" CMS toggle. On, hovering a unit lights
+        # "Highlight floor plan on hover" CMS toggle. On, hovering a unit lights
         # up every unit sharing its floor plan and the pop-up names the whole
         # range rather than the one unit; off is today's single-unit hover.
         # Properties that plot one tenant per floor plan across several units

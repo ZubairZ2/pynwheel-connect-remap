@@ -316,7 +316,7 @@
 
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                  Highlight all units on hover
+                  Highlight floor plan on hover
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
                     %span#propertyDetailNameText
                       Hovering any unit on the map highlights every unit that shares the same floor plan. When off, hovering highlights only the unit under the cursor.
@@ -333,12 +333,12 @@
                   Student Housing Property
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
                     %span#propertyDetailNameText
-                      This toggle organizes unit space data, as well as switches the 'display pricing' to 'no' and switches the 'show all as available' toggle to 'yes'. These two toggles can be adjusted on the Property Map page.
+                      Student housing markets floor plans, not the units inside them. This toggle organizes unit space data. Switching it on also sets 'Display Pricing' to No, 'Show all as available' to Yes, 'Highlight floor plan on hover' to Yes, and turns off the Units tab on the marketing map -- each of those stays individually adjustable afterwards.
 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
                     %span.pr-15 No
-                    = check_box_tag :student_housing_property, true, @community.student_housing_property, class: "student-housing-toggle", id: "student_housing_property"
+                    = check_box_tag :student_housing_property, true, @community.student_housing_property, class: "apartment-setting-field", id: "student_housing_property"
                     %label.label-primary{:for => "student_housing_property"}
                     %span.pl-15 Yes
 
@@ -618,7 +618,7 @@
 
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                  Highlight all units on hover
+                  Highlight floor plan on hover
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
                     %span#propertyDetailNameText
                       Hovering any unit on the map highlights every unit that shares the same floor plan. When off, hovering highlights only the unit under the cursor.
@@ -635,12 +635,12 @@
                   Student Housing Property
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
                     %span#propertyDetailNameText
-                      This toggle organizes unit space data, as well as switches the 'display pricing' to 'no' and switches the 'show all as available' toggle to 'yes'. These two toggles can be adjusted on the Property Map page.
+                      Student housing markets floor plans, not the units inside them. This toggle organizes unit space data. Switching it on also sets 'Display Pricing' to No, 'Show all as available' to Yes, 'Highlight floor plan on hover' to Yes, and turns off the Units tab on the marketing map -- each of those stays individually adjustable afterwards.
 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
                     %span.pr-15 No
-                    = check_box_tag :student_housing_property, true, @community.student_housing_property, class: "student-housing-toggle", id: "student_housing_property"
+                    = check_box_tag :student_housing_property, true, @community.student_housing_property, class: "apartment-setting-field", id: "student_housing_property"
                     %label.label-primary{:for => "student_housing_property"}
                     %span.pl-15 Yes
 
@@ -777,16 +777,6 @@
     });
 
     $('.apartment-setting-field').change(function(){
-      $('.apartment-settings-form').submit();
-    });
-
-    // Student Housing Property: force pricing off and availability on.
-    // Both toggles stay individually adjustable afterwards.
-    $('.student-housing-toggle').change(function(){
-      if ($(this).is(':checked')) {
-        $('#display_rent').prop('checked', false);
-        $('#turn_availability_on').prop('checked', true);
-      }
       $('.apartment-settings-form').submit();
     });
 

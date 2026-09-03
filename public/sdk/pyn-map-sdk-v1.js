@@ -2801,7 +2801,7 @@
     },
 
     // ----------------------------------------------------
-    // GROUP HOVER ("Highlight all units on hover")
+    // GROUP HOVER ("Highlight floor plan on hover")
     // ----------------------------------------------------
     //
     // Which units hover as one. That is the whole of it: bringing a group
@@ -2818,7 +2818,7 @@
      * onFloorplanHover — id first, name as the fallback for units whose
      * floorplanId never came through the feed.
      *
-     * With the CMS "Highlight all units on hover" toggle off, or for a unit with
+     * With the CMS "Highlight floor plan on hover" toggle off, or for a unit with
      * no floor plan to group on, this is just [unit] — so a host can hand the
      * result straight to highlightUnits() without asking whether the property
      * has the feature on.
@@ -3621,7 +3621,7 @@
      *   console.log(cfg.unitDisplay.displayRent);
      *   console.log(cfg.filters.showBedroomFilter);
      *
-     * `map.highlightAllUnitsOnHover` is the CMS "Highlight all units on hover"
+     * `map.highlightAllUnitsOnHover` is the CMS "Highlight floor plan on hover"
      * toggle: on, hovering a unit should bring its whole floor plan forward
      * rather than the one unit. getHoverGroupUnits() answers which units those
      * are, and already returns just the hovered unit when the toggle is off.

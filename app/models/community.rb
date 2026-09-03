@@ -99,6 +99,25 @@ class Community < ApplicationRecord
   after_update :crop_image, if: ->(obj) { obj.logo_changed? }
   after_update :crop_secondary_image, if: ->(obj) { obj.secondary_logo_changed? }
   after_update :turn_off_marketing_availability_filter, if: :saved_change_to_turn_availability_on?
+
+  # Switching a property to student housing settles four display questions the
+  # same way every time, so the toggle answers them rather than leaving four
+  # separate settings to be remembered:
+  #
+  #   Display Pricing               -> No    (student housing prices per space)
+  #   Show all as available         -> Yes
+  #   Highlight floor plan on hover -> Yes   (floor plans are what it markets)
+  #   marketing map's Units tab     -> off   (and units are not)
+  #
+  # Defaults, not rules: applied once, on the save that turns the toggle on, and
+  # every one of them stays adjustable afterwards. Keyed on the transition for
+  # exactly that reason -- re-applying on every save would leave a student
+  # property unable to ever show pricing again.
+  #
+  # In the model rather than in each map page's JavaScript, which is where the
+  # first two used to be forced, once per page.
+  before_save :apply_student_housing_defaults, if: :switching_on_student_housing?
+  after_save  :turn_off_marketing_units_tab,   if: :switched_on_student_housing?
   after_create :create_tour_also
   after_create :assign_community_user
   after_create :create_map_filter
@@ -2219,6 +2238,28 @@ class Community < ApplicationRecord
   def turn_off_marketing_availability_filter
     return unless map_filter.present?
     map_filter.update!(marketing_availability_enabled: !turn_availability_on)
+  end
+
+  def switching_on_student_housing?
+    student_housing_property? && will_save_change_to_student_housing_property?
+  end
+
+  def switched_on_student_housing?
+    student_housing_property? && saved_change_to_student_housing_property?
+  end
+
+  def apply_student_housing_defaults
+    self.display_rent = false
+    self.turn_availability_on = true
+    self.highlight_all_units_on_hover = true
+  end
+
+  # The Units tab belongs to MapFilter, so it is written after this property's
+  # own save rather than beside it -- same shape as
+  # turn_off_marketing_availability_filter above.
+  def turn_off_marketing_units_tab
+    return unless map_filter.present?
+    map_filter.update!(marketing_units_tab_enabled: false)
   end
 
   def sanitize_content(content)
