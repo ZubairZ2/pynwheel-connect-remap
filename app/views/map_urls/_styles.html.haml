@@ -1,0 +1,56 @@
+:css
+  .map-urls-head { display: flex; align-items: center; gap: 14px; margin: 4px 0 18px; }
+  .map-urls-head-icon { width: 44px; height: 44px; flex: 0 0 44px; border-radius: 10px;
+    background: linear-gradient(135deg, #3c8dbc 0%, #2d6f97 100%); color: #fff;
+    display: flex; align-items: center; justify-content: center; font-size: 18px;
+    box-shadow: 0 3px 8px rgba(60,141,188,.28); }
+  .map-urls-head-text h3 { margin: 0 0 3px; font-size: 21px; font-weight: 700; color: #2f3a46; }
+  .map-urls-head-text p { margin: 0; color: #8a949f; font-size: 13px; }
+
+  .map-urls-box { border-top: none; border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(31,41,55,.08), 0 6px 18px rgba(31,41,55,.05); }
+  .map-urls-box .box-body { padding: 0; }
+
+  /* Filters */
+  /* auto-fill (not auto-fit) keeps the track count stable, so a filter that wraps
+     onto its own row stays column-width instead of stretching across. */
+  .map-urls-filters { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 16px; padding: 22px; background: #f7f9fb; border-bottom: 1px solid #e4e9ee;
+    border-radius: 10px 10px 0 0; }
+  .map-url-filter { min-width: 0; }
+  .map-url-filter[hidden] { display: none; }
+  .map-url-filter label { display: block; font-size: 11px; font-weight: 700; color: #6b7683;
+    text-transform: uppercase; letter-spacing: .6px; margin-bottom: 7px; }
+  .map-url-filter select { width: 100%; height: 40px; padding: 0 12px; font-size: 13.5px;
+    color: #46525f; background: #fff; border: 1px solid #dfe5eb; border-radius: 8px; }
+  .map-url-filter select:focus { border-color: #3c8dbc; outline: none;
+    box-shadow: 0 0 0 3px rgba(60,141,188,.12); }
+
+  /* Result */
+  .map-url-result { padding: 22px; }
+  .map-url-field + .map-url-field { margin-top: 22px; padding-top: 22px; border-top: 1px dashed #e8ecf0; }
+  .map-url-field > label { display: block; font-size: 11px; font-weight: 700; color: #6b7683;
+    text-transform: uppercase; letter-spacing: .6px; margin-bottom: 9px; }
+  .map-url-row { display: flex; gap: 10px; align-items: stretch; flex-wrap: wrap; }
+  .map-url-row > input, .map-url-row > textarea { flex: 1 1 340px; min-width: 0; height: 42px;
+    font-family: Menlo, Consolas, monospace; font-size: 12.5px; color: #46525f; background: #f6f8fa;
+    border: 1px solid #e0e6ec; border-radius: 8px; padding: 0 14px; }
+  .map-url-row > textarea { height: auto; padding: 11px 14px; line-height: 1.65;
+    resize: vertical; white-space: pre-wrap; word-break: break-all; }
+  .map-url-row > input:focus, .map-url-row > textarea:focus { background: #fff; border-color: #3c8dbc;
+    outline: none; box-shadow: 0 0 0 3px rgba(60,141,188,.12); }
+
+  .map-url-copy, .map-url-open { flex: 0 0 auto; height: 42px; padding: 0 20px; border-radius: 8px;
+    font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 7px;
+    transition: all .15s ease; }
+  .map-url-copy { color: #4c5661; background: #fff; border: 1px solid #dfe5eb; }
+  .map-url-copy:hover { background: #f2f8fc; border-color: #b7d4e6; color: #2b6f97; }
+  /* The shared .clipboard-btn handler swaps the icon to fa-check on success. */
+  .map-url-copy:has(.fa-check) { background: #eaf7ee; border-color: #a9dcb8; color: #2f8a4a; }
+  .map-url-open { color: #fff; background: #3c8dbc; border: 1px solid #3c8dbc; text-decoration: none; }
+  .map-url-open:hover, .map-url-open:focus { background: #327ba4; border-color: #327ba4; color: #fff; }
+
+  @media (max-width: 767px) {
+    .map-urls-filters, .map-url-result { padding: 16px; }
+    .map-url-copy, .map-url-open { flex: 1 1 auto; justify-content: center; }
+  }

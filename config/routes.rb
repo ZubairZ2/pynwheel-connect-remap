@@ -164,6 +164,7 @@ Rails.application.routes.draw do
     end
 
     resources :map_filters, only: [:update]
+    resources :map_urls, only: [:index]
     resources :building_starting_points
     resources :crm_providers
     resources :remote_locks do

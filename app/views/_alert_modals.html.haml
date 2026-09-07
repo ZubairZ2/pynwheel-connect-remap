@@ -71,10 +71,6 @@
       .modal-footer
         %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Ok    
 - unless current_community.nil?
-  = render partial: 'webpages/map_links_modals/web_map_links_modal'
-  = render partial: 'webpages/map_links_modals/touch_map_links_modal'
-
-
 
   #share-scheduler-widget.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
     .modal-dialog

@@ -1,0 +1,120 @@
+- content_for :title, "Map URLs - Pynwheel"
+
+= render partial: "map_urls/styles"
+
+%section.is-home-page
+  .content
+    .map-urls-head
+      .map-urls-head-icon
+        %i.fa.fa-link
+      .map-urls-head-text
+        %h3 Map URLs
+        %p Pick your options below — the map URL and embed code update as you choose.
+
+    .box.box-widget.panel-box.map-urls-box
+      .box-body
+        .map-urls-filters
+          .map-url-filter
+            %label{ for: "map-url-src" } Map Type
+            %select#map-url-src{ "data-map-param" => "src" }
+              %option{ value: "" } Web (browser)
+              %option{ value: "touch" } Touch (kiosk)
+
+          .map-url-filter
+            %label{ for: "map-url-ops" } Map View
+            %select#map-url-ops{ "data-map-param" => "ops_map" }
+              %option{ value: "" } Marketing
+              %option{ value: "true" } Ops
+
+          -# Touch-only filters: hidden and left out of the url for the web map.
+          .map-url-filter{ "data-touch-only" => true }
+            %label{ for: "map-url-orientation" } Orientation
+            %select#map-url-orientation{ "data-map-param" => "orientation" }
+              %option{ value: "" } None
+              %option{ value: "horizontal" } Horizontal
+              %option{ value: "vertical" } Vertical
+
+          .map-url-filter{ "data-touch-only" => true }
+            %label{ for: "map-url-page" } Page
+            %select#map-url-page{ "data-map-param" => "page" }
+              %option{ value: "" } None
+              %option{ value: "gallery" } Gallery
+              %option{ value: "neighborhood" } Neighborhood
+              %option{ value: "favorites" } Favorites
+
+          - if @floors.any?
+            .map-url-filter
+              %label{ for: "map-url-floor" } Floor
+              %select#map-url-floor{ "data-map-param" => "floor" }
+                %option{ value: "" } All floors
+                - @floors.each do |floor|
+                  %option{ value: floor }= "Level #{floor}"
+
+          .map-url-filter
+            %label{ for: "map-url-partner" } Partner
+            %select#map-url-partner{ "data-map-param" => "partner" }
+              %option{ value: "" } None
+              - @partners.each do |partner|
+                %option{ value: partner[:key] }= partner[:label]
+
+        .map-url-result
+          .map-url-field
+            %label{ for: "map-url-link" } Map URL
+            .map-url-row
+              %input#map-url-link{ type: "text", readonly: true, onclick: "this.select();" }
+              %button.map-url-copy.clipboard-btn{ type: "button", title: "Copy map URL" }
+                %i.fa.fa-copy
+                Copy
+              %a#map-url-open.map-url-open{ target: "_blank", rel: "noopener" }
+                %i.fa.fa-external-link
+                Open
+
+          .map-url-field
+            %label{ for: "map-url-embed" } Embed Code
+            .map-url-row
+              %textarea#map-url-embed{ readonly: true, rows: 3, onclick: "this.select();" }
+              %button.map-url-copy.clipboard-btn{ type: "button", title: "Copy embed code" }
+                %i.fa.fa-copy
+                Copy
+
+:javascript
+  (function () {
+    var BASE        = "#{j @base_url}";
+    var EMBED       = "#{j @embed_template}";
+    var PLACEHOLDER = "#{j Community::MAP_URL_PLACEHOLDER}";
+    // Alphabetical, matching how Ruby's to_query orders map_query_params, so the
+    // url is byte-identical to the one the server builds for the same options.
+    var PARAMS      = ["floor", "ops_map", "orientation", "page", "partner", "src"];
+
+    var link  = document.getElementById("map-url-link");
+    var embed = document.getElementById("map-url-embed");
+    var open  = document.getElementById("map-url-open");
+    var selects   = [].slice.call(document.querySelectorAll("[data-map-param]"));
+    var touchOnly = [].slice.call(document.querySelectorAll("[data-touch-only]"));
+
+    function field(param) { return document.querySelector('[data-map-param="' + param + '"]'); }
+
+    function render() {
+      var isTouch = field("src").value === "touch";
+      touchOnly.forEach(function (filter) { filter.hidden = !isTouch; });
+
+      var query = PARAMS.map(function (param) {
+        var select = field(param);
+        if (!select || !select.value || select.closest(".map-url-filter").hidden) return null;
+        return encodeURIComponent(param) + "=" + encodeURIComponent(select.value);
+      }).filter(Boolean).join("&");
+
+      // The SDK map base already carries ?propertyId=<id>, the legacy one has no query.
+      var url = query ? BASE + (BASE.indexOf("?") > -1 ? "&" : "?") + query : BASE;
+      link.value  = url;
+      open.href   = url;
+      embed.value = EMBED.split(PLACEHOLDER).join(url);
+
+      // The shared .clipboard-btn handler copies whatever data-url holds.
+      link.parentNode.querySelector(".clipboard-btn").setAttribute("data-url", url);
+      embed.parentNode.querySelector(".clipboard-btn").setAttribute("data-url", embed.value);
+    }
+
+    selects.forEach(function (select) { select.addEventListener("change", render); });
+    render();
+  })();

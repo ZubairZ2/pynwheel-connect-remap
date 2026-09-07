@@ -2163,10 +2163,19 @@ class Community < ApplicationRecord
   end
   
   def map_embed_code(partner = nil, floor = nil, ops_map = nil, src = nil)
+    map_embed_code_for(map_link(partner, floor, ops_map, src))
+  end
+
+  # The iframe embed snippet for an arbitrary map url. The CMS "Map URLs" page
+  # renders this with MAP_URL_PLACEHOLDER and swaps the url in as filters change,
+  # so the snippet itself is defined in exactly one place.
+  MAP_URL_PLACEHOLDER = "__MAP_URL__".freeze
+
+  def map_embed_code_for(url)
     <<-HTML.strip.gsub(/\n\s*/, "")
       <embed onload='window.parent.$("body").animate({scrollTop:0}, "slow");' 
         style='margin-top: 0px; overflow:scroll;' 
-        src='#{map_link(partner, floor, ops_map, src)}'
+        src='#{url}'
         width='100%' 
         height='750px' />
       <script type='text/javascript'>
@@ -2191,13 +2200,28 @@ class Community < ApplicationRecord
   end
   
   def sdk_map_embed_code(partner = nil, floor = nil, ops_map = nil, src = nil)
+    sdk_map_embed_code_for(sdk_map_link(partner, floor, ops_map, src))
+  end
+
+  def sdk_map_embed_code_for(url)
     <<-HTML.strip.gsub(/\n\s*/, "")
       <embed
-        src='#{sdk_map_link(partner, floor, ops_map, src)}'
+        src='#{url}'
         width='100%'
         height='100%'
       />
     HTML
+  end
+
+  # Base url and embed snippet for whichever map this property actually serves.
+  # The snippet carries MAP_URL_PLACEHOLDER so the CMS "Map URLs" page can swap
+  # the url in as filters change.
+  def map_url_source
+    if enable_sdk_map?
+      { base_url: sdk_map_link, embed_template: sdk_map_embed_code_for(MAP_URL_PLACEHOLDER) }
+    else
+      { base_url: map_link, embed_template: map_embed_code_for(MAP_URL_PLACEHOLDER) }
+    end
   end
 
   def sdk_map_link(partner = nil, floor = nil, ops_map = nil, src = nil)

@@ -86,7 +86,10 @@
             %span Home Page
 
       - if current_user.is_admin?
-        %li.treeview.menu-open{:class=>"#{controller_name =='sitemaps' || controller_name =='floorplates' || controller_name =='sitemap_amenities' || controller_name =='floorplans' || controller_name =='units' || controller_name =='floorplate_amenities' || controller_name =='amenities' || controller_name =='floorplates' ? 'active' : ''}"}
+        -# Expanded and highlighted only while one of its own pages is open, like
+        -# the other treeviews here. AdminLTE toggles it on click (followLink is off).
+        - property_map_open = %w[sitemaps floorplates sitemap_amenities floorplans units floorplate_amenities amenities].include?(controller_name)
+        %li.treeview{:class=>"#{'active menu-open' if property_map_open}"}
           %a{:href => "/"}
             - if current_community.is_sitemap
               %i.fa.fa-map-marker
@@ -95,7 +98,7 @@
             %span Property Map
             %span.pull-right-container
               %i.fa.fa-angle-right.pull-right
-          %ul.treeview-menu.property_map_intent_list{:style=>"display: block"}
+          %ul.treeview-menu.property_map_intent_list{:style=>"#{'display: block' if property_map_open}"}
             - if (current_community.is_sitemap && current_community.show_map && current_user.is_admin? )
               %li.loader_class{:class=>"#{controller_name =='sitemaps' && params[:action] != 'plot_amenities' ? 'active' : ''}"}
                 %a{:href => "#{plotexp_community_sitemaps_path(current_community)}"}
@@ -164,21 +167,10 @@
               %i.fa.fa-star
               %span Additional Pages
       - if (current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_company_admin? || current_user.is_regional_admin? )
-        %li.treeview
-          %a{:href => "#", :class => "pynwheel-map-toggle"}
-            %i.fa.fa-share
-            %span Pynwheel Map
-            %span.pull-right-container
-              %i.fa.fa-angle-right.pull-right
-          %ul.treeview-menu.maps-treeview
-            %li.loader_class
-              %a{ "data-toggle" => "modal", "data-target" => "#web-map-links-modal", href: "#" }
-                %i.fa.fa-globe
-                %span Web Map
-            %li.loader_class
-              %a{ "data-toggle" => "modal", "data-target" => "#touch-map-links-modal", href: "#" }
-                %i.fa.fa-hand-pointer-o
-                %span Touch Map
+        %li.loader_class{:class=>"#{controller_name =='map_urls' ? 'active' : ''}"}
+          %a{:href => "#{community_map_urls_path(current_community)}"}
+            %i.fa.fa-link
+            %span Map URLs
 
       - if (current_user.is_admin? || current_user.is_community_assistant?) and current_community.self_tour
         %li.treeview{:class=>"#{controller_name =='tours' ? 'active' : 'active'}"}
@@ -261,8 +253,3 @@
             %i.fa.fa-video-camera
             %span Tutorials
 
-:javascript
-  $(document).on("click", ".maps-treeview li a", function(e) {
-    e.preventDefault(); // stop default navigation
-    $(".divLoading").hide();
-  });
