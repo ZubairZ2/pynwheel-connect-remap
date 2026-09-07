@@ -117,7 +117,7 @@ class SdkGalleryBuilderService
       name:              row.name.presence,
       url:               url,
       thumbUrl:          video ? nil : thumb_url(row),
-      posterUrl:         video ? finalize(version_url(row, :video_thumbnail), row) : nil,
+      posterUrl:         video ? poster_url(row) : nil,
       posterFallbackUrl: video ? LEGACY_VIDEO_POSTER : nil,
       isVideo:           video,
       isFavorite:        fav_ids.include?(row.id.to_s)
@@ -146,7 +146,47 @@ class SdkGalleryBuilderService
   # 640x360 version — what a grid should render. The legacy jbuilder only ever
   # shipped the 1920px original, so every tile pulled a full-resolution file.
   def thumb_url(row)
-    finalize(version_url(row, :thumb), row)
+    derived_version_url(row, :thumb) { finalize(version_url(row, :thumb), row) }
+  end
+
+  # Poster frame for a video row. Same reasoning as #thumb_url — and the same
+  # S3 HEAD if asked of the uploader. GalleryUploader#png_name renames this one
+  # to "video_thumbnail_<name>.png", dropping the source extension.
+  def poster_url(row)
+    derived_version_url(row, :video_thumbnail, as_png: true) do
+      finalize(version_url(row, :video_thumbnail), row)
+    end
+  end
+
+  # A CarrierWave version URL built by string, never by touching `row.image`.
+  #
+  # Retrieving a mounted uploader walks active_versions, which evaluates every
+  # version's :if condition (thumb / ios / large / video_thumbnail), and each
+  # of those calls new_file.content_type — on :fog storage an S3 HEAD request.
+  # That was one S3 round-trip per row, making the gallery O(photos) in network
+  # time: ~320ms each, so a 55-photo property spent 17s building a 671-byte
+  # list. Version filenames are deterministic — the version name is prefixed
+  # onto the stored file in the same directory — so this is pure string work.
+  #
+  # Derived from standard_image_url specifically: that column holds the base,
+  # unversioned URL. large_image_url is itself "large_<file>", and prefixing
+  # that would yield a "thumb_large_<file>" that does not exist.
+  #
+  # Falls back to the uploader (the given block) only when the column is empty,
+  # which is the one case the filename cannot be derived from.
+  def derived_version_url(row, version, as_png: false)
+    # A row with no stored file has no versions, whatever the URL columns still
+    # say. version_url returned nil for these, and so must this.
+    return nil if row.read_attribute(:image).blank?
+
+    base = row.standard_image_url.presence
+    return yield if base.blank?
+
+    dir, _, file = base.split("?").first.rpartition("/")
+    return nil if file.blank?
+
+    file = "#{File.basename(file, File.extname(file))}.png" if as_png
+    finalize("#{dir}/#{version}_#{file}", row)
   end
 
   def video_url(row)

@@ -40,6 +40,32 @@ class SdkPayloadBuilderService
     }
   end
 
+  # The property and gallery blocks alone — no units, floor plans, amenities or
+  # filters, and none of the queries that build them.
+  #
+  # This is everything the standalone touch pages (gallery, favorites,
+  # neighborhood) actually read: they call getPropertyConfig() for branding and
+  # feature flags, then fetch their own content from their own endpoints. They
+  # never call getUnits() / getFloorplans() / getFiltersData().
+  #
+  # Worth its own path because #build is dominated by the unit rollup — on a
+  # 276-unit property that is ~6,700 queries and ~1.6s to serialize 1.5MB the
+  # standalone pages immediately discard. These two blocks cost single-digit
+  # queries and a few KB.
+  # Takes group_units for the same reason #build does: property_json reports
+  # unitGrouping.mode, and that has to describe what this client asked for, or a
+  # config-only boot would tell a student-housing host its property is flat.
+  def build_config(ops_map: false, group_units: false)
+    @group_units = group_units
+
+    {
+      property: property_json(ops_map),
+      gallery:  gallery_discovery_json,
+      status:   "success",
+      code:     200
+    }
+  end
+
   def units_json(fav_ids = Set.new, ops_map = false, units_ar = nil)
     units = units_ar || @community.units.map_units(@community, ops_map).visible_units.without_hidden_names.includes(:floorplan)
     units&.map { |unit| unit_json(unit, fav_ids) }

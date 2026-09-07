@@ -708,6 +708,7 @@ Rails.application.routes.draw do
         get :units, to: 'webhooks#units'
         get    :authorized,       to: 'sdk#authorized'
         get    :fetch_data,       to: 'sdk#fetch_data'
+        get    :fetch_config,     to: 'sdk#fetch_config'
         get    :fetch_svg_image,  to: 'sdk#fetch_svg_image'
         get    :fetch_gallery_list,        to: 'sdk#fetch_gallery_list'
         get    :fetch_gallery_images,      to: 'sdk#fetch_gallery_images'

@@ -303,7 +303,12 @@
         show3DMap:            cfg.show3DMap            != null ? cfg.show3DMap            === true : null,
         defaultSatelliteView: cfg.defaultSatelliteView != null ? cfg.defaultSatelliteView === true : null,
         // "marketing" (default) or "ops" — controls which server-resolved color is used
-        mapType:          cfg.mapType === "ops" ? "ops" : "marketing"
+        mapType:          cfg.mapType === "ops" ? "ops" : "marketing",
+        // Boot far enough to answer getPropertyConfig() / getGalleryConfig() and
+        // nothing more: no map payload, no SVGs, no rendering. For hosts that
+        // show a property's gallery, favorites or neighborhood without ever
+        // drawing a map — see the configOnly branch in the boot chain below.
+        configOnly:       cfg.configOnly === true
       };
 
       // Stable session ID persisted in localStorage so favorites survive page reloads.
@@ -355,15 +360,17 @@
       this._partner = this._getPartnerParam() || null;
 
       // Start loading pan-zoom immediately — parallel with auth + data fetch.
-      const panZoomReady = this._loadPanZoom();
+      // A config-only boot renders no map, so it never needs the library.
+      const configOnly   = this.config.configOnly;
+      const panZoomReady = configOnly ? Promise.resolve(true) : this._loadPanZoom();
 
       // Reuse a cached session token when available to skip the partner auth round-trip.
       const cachedTok = this._readCachedToken(propertyId);
       if (cachedTok) {
         this._sessionToken = cachedTok;
         this._startAnalytics();
-        this._showLoading("Loading property map...");
-      } else {
+        if (!configOnly) this._showLoading("Loading property map...");
+      } else if (!configOnly) {
         this._showLoading("Verifying partner...");
       }
 
@@ -380,7 +387,7 @@
       doAuth
         .then(v => {
           if (!v?.success) return this._showError(v?.error || "Partner verification failed.", v?.code);
-          return this._fetchConfig();
+          return configOnly ? this._fetchPropertyConfig() : this._fetchConfig();
         })
         .then(r => {
           // A rejected session token must never surface to the user — the map
@@ -389,13 +396,22 @@
           // freshly-issued token is rejected (e.g. the signing server rotated
           // its secret mid-deploy). Re-authenticate once, then retry the fetch.
           if (!r?.success && r?.error === "Session invalid or expired") {
-            return this._reauthenticate().then(token => token ? this._fetchConfig() : r);
+            const refetch = () => configOnly ? this._fetchPropertyConfig() : this._fetchConfig();
+            return this._reauthenticate().then(token => token ? refetch() : r);
           }
           return r;
         })
         .then(r => {
           if (!r?.success) return this._showError(r?.error || "Config load error", r?.code);
           this._storeConfig(r.data);
+
+          // Config-only: the host asked for the property blocks, which have now
+          // arrived. Everything below draws a map — returning null short-circuits
+          // the next step, which bails on a falsy result.
+          if (configOnly) {
+            this.config.onReady?.();
+            return null;
+          }
 
           if (this._isImageMapMode()) {
             // Image map: no SVG to fetch — just need panzoom ready.
@@ -685,6 +701,42 @@
 
         const data = await res.json();
         return { success: true, data };
+      } catch {
+        return { success: false, error: "Network error loading config" };
+      }
+    },
+
+    /**
+     * Fetch the property config block alone — branding, feature flags and the
+     * gallery discovery block. No units, floor plans, amenities or filters.
+     *
+     * What a configOnly boot loads. Same auth and same shape as _fetchConfig,
+     * so _storeConfig, the reauth-and-retry path and the error mapping all work
+     * unchanged; the arrays it does not carry default to empty there.
+     *
+     * The server skips the unit rollup entirely for this — on a 276-unit
+     * property that is ~6,700 queries and ~1.6s of work a gallery, favorites or
+     * neighborhood page would immediately throw away.
+     */
+    async _fetchPropertyConfig() {
+      try {
+        const params = new URLSearchParams({ unit_grouping: "spaces" });
+        if (this.config.mapType === "ops") params.set("map_type", "ops");
+        const url = `${this._apiBase()}/api/partner/maps/fetch_config?${params}`;
+        const res = await fetch(url, {
+          headers: {
+            "Authorization":    `Bearer ${this._sessionToken}`,
+            "X-SDK-Session-Id": this._sdkSessionId
+          }
+        });
+
+        if (!res.ok) {
+          if (res.status === 401) return { success: false, error: "Session invalid or expired" };
+          if (res.status === 404) return { success: false, error: "Property not found" };
+          return { success: false, error: `Server error (${res.status})` };
+        }
+
+        return { success: true, data: await res.json() };
       } catch {
         return { success: false, error: "Network error loading config" };
       }

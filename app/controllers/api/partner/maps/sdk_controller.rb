@@ -13,7 +13,7 @@ module Api
         # `fetch_data`, `fetch_svg_image`, `save_favorites`, `delete_favorites`,
         # `clear_all_favorites`, `get_favorites` → session token only
         SESSION_ACTIONS = [
-          :fetch_data, :fetch_svg_image,
+          :fetch_data, :fetch_config, :fetch_svg_image,
           :fetch_gallery_list, :fetch_gallery_images,
           :fetch_neighborhood, :fetch_neighborhood_places,
           :save_favorites, :delete_favorites, :clear_all_favorites,
@@ -90,6 +90,33 @@ module Api
             favorite_amenities: amenities.select  { |a| a[:isFavorite] },
             favorite_floorplans: floorplans.select { |f| f[:isFavorite] }
           )
+
+          response.headers['Cache-Control']    = 'private, no-store'
+          response.headers['Content-Encoding'] = 'gzip'
+          response.headers['Vary']             = 'Accept-Encoding'
+
+          send_data gzip_json(payload), type: 'application/json; charset=utf-8', disposition: 'inline'
+        end
+
+        # ------------------------------------------------------------------
+        # GET /api/partner/maps/fetch_config
+        # Authorization: Bearer <session_token>
+        #
+        # The property config block on its own — branding, feature flags, and the
+        # small gallery discovery block. No units, floor plans, amenities or
+        # filters.
+        #
+        # This is the boot payload for the standalone touch pages (gallery,
+        # favorites, neighborhood). Those pages render no map: they read
+        # getPropertyConfig() for branding, then fetch their own content from
+        # fetch_gallery_*, fetch_neighborhood* and get_favorites. Booting them on
+        # fetch_data meant building the entire unit rollup — on a 276-unit
+        # property ~6,700 queries and ~1.6s to serialize 1.5MB — and throwing all
+        # of it away. Same community load, same session token; just the two
+        # blocks they actually read.
+        # ------------------------------------------------------------------
+        def fetch_config
+          payload = SdkPayloadBuilderService.new(@community).build_config(ops_map: show_ops_map?, group_units: group_units?)
 
           response.headers['Cache-Control']    = 'private, no-store'
           response.headers['Content-Encoding'] = 'gzip'
