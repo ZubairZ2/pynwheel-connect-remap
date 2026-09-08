@@ -162,6 +162,7 @@ class SdkPayloadBuilderService
     fees      = @community.get_additional_fees(unit)
     buttons   = unit_additional_buttons(unit)
     description, description_title = description_fields(unit, floorplan)
+    primary_image, secondary_image = unit_images(unit, floorplan)
 
     {
       unitNumber:      unit.api_unit_marketing_name,
@@ -208,17 +209,42 @@ class SdkPayloadBuilderService
       pricing_calculator_url:     unit.pricing_calculator_url,
       estimatedMonthlyRent:       estimated_monthly_rent(unit),
       estimatedMonthlyRentMax:    estimated_monthly_rent_max(unit),
-      image:                  unit.validated_image_url || floorplan&.validated_image_url || floorplan&.secondary_image&.url.presence,
-      # The unit's own two images, in the same shape floorplans_json emits them.
-      # `image` above stays as-is -- it is the resolved card image and falls back
-      # to the floor plan -- while these two say only what the unit itself has, so
-      # a host can tell "no unit photo" apart from "showing the floor plan's".
-      primaryImage:           unit.image.present?           ? unit.validated_image_url                                    : nil,
-      secondaryImage:         unit.secondary_image.present? ? unit.convert_to_s3_accelerate_url(unit.secondary_image.url) : nil,
+      primaryImage:           primary_image,
+      secondaryImage:         secondary_image,
       color:                  compute_unit_marketing_color(unit, floorplan),
       opsColor:               compute_unit_ops_color(unit),
       isFavorite:             fav_ids.include?(unit.id.to_s)
     }.merge(space_json_for(unit))
+  end
+
+  # A record's own two pictures, in the shape units and floor plans both carry
+  # them. A nil slot means "this record has no such image" -- never a borrowed
+  # one; deciding whether to borrow is #unit_images' job, not this one's.
+  def record_images(record)
+    return [nil, nil] unless record
+
+    [
+      record.image.present?           ? record.validated_image_url                                      : nil,
+      record.secondary_image.present? ? record.convert_to_s3_accelerate_url(record.secondary_image.url) : nil
+    ]
+  end
+
+  # A unit's two pictures: its own when it has any, otherwise its floor plan's.
+  #
+  # Whole-set, not per-slot. A unit carrying only a primary shows that one image
+  # rather than borrowing the plan's secondary as its second -- a detail view
+  # pages through this pair behind a single set of arrows, and filling the gap
+  # from the other record puts a different apartment behind the next arrow.
+  #
+  # This subsumes the old `image` key, which resolved the same unit-then-plan
+  # fallback but flattened it to a single URL, so a host could never show the
+  # second picture or tell which record the one it got came from. Hosts read the
+  # pair now; the map already resolved it this way client-side.
+  def unit_images(unit, floorplan)
+    own = record_images(unit)
+    return own if own.any?(&:present?)
+
+    record_images(floorplan)
   end
 
   # The space's own letter and terms, carried on the unit itself.
@@ -621,6 +647,8 @@ class SdkPayloadBuilderService
       fp_units   = units_by_floorplan[fp.id] || []
       first_unit = fp_units.find(&:available) || fp_units.first
 
+      fp_primary_image, fp_secondary_image = record_images(fp)
+
       json = {
         floorplanId:       fp.id,
         name:              fp.name,
@@ -634,8 +662,8 @@ class SdkPayloadBuilderService
         additionalButtons: floorplan_additional_buttons(fp),
         availability_url: floorplan_apply_url(fp, first_unit),
         availability_status: fp.availability_status,
-        primaryImage:     fp.image.present?           ? fp.validated_image_url                                        : nil,
-        secondaryImage:   fp.secondary_image.present? ? fp.convert_to_s3_accelerate_url(fp.secondary_image.url) : nil,
+        primaryImage:     fp_primary_image,
+        secondaryImage:   fp_secondary_image,
         color:            compute_floorplan_color(fp),
         isFavorite:       fav_ids.include?(fp.id.to_s)
       }

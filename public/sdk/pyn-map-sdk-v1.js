@@ -1578,14 +1578,15 @@
     /**
      * Returns all units for the property.
      *
-     * Images on a unit come in three fields, and they are not interchangeable:
-     *   image          — the resolved card image, already falling back to the
-     *                    floor plan's when the unit has no photo of its own.
-     *   primaryImage   — the unit's OWN primary image, null when it has none.
-     *   secondaryImage — the unit's OWN secondary image, null when it has none.
-     * Same shape floorplans carry, so a host rendering a gallery can show the
-     * unit's two photos and tell "no unit photo" apart from "showing the floor
-     * plan's".
+     * A unit carries its pictures as `primaryImage` and `secondaryImage`, the
+     * same pair floorplans carry, so one host-side helper reads both. A unit
+     * with no picture of its own arrives carrying its floor plan's — the
+     * fallback is resolved server-side, and it is whole-set, so a unit with only
+     * a primary shows one image rather than borrowing the plan's secondary as
+     * its second.
+     *
+     * These replace the old single `image` field, which flattened the same
+     * fallback into one URL and so could never carry the second picture.
      *
      * Pass an optional filters object to narrow results:
      *
