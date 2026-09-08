@@ -456,6 +456,15 @@ class SdkPayloadBuilderService
         displayBuilding:              @community.display_building,
         displayAvailableDate:         @community.display_available_date,
         displayAdditionalFee:         @community.display_additional_fee,
+        # The property's own fee blob -- what #get_additional_fees returns with
+        # no unit in hand. Carried here, once, rather than copied onto every
+        # floor plan: it is the same markup for the whole property, and a view
+        # that has no unit to ask (the student-housing space pop-up, which is
+        # open on a room type before any door is chosen) has nowhere else to
+        # read it from. Units keep their own `additional_fees`, which already
+        # falls back to this string, so nothing about the unit pop-up changes.
+        # nil whenever the toggle above is off -- get_additional_fees gates it.
+        additionalFees:               @community.get_additional_fees,
         pricingMessage:               @community.pricing_message,
         hideBedrooms:                 @community.hide_bedrooms_bathrooms,
         hideSquareFeet:               @community.hide_square_feet,
