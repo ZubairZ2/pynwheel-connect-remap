@@ -1,6 +1,17 @@
-:concurrency: 3
+# :strict means Sidekiq drains this list in order on every poll, so anything
+# higher up is picked before anything below it whenever a thread frees up.
+#
+# Concurrency was 3. The scheduled Entrata sweep enqueues ~60 EntrataDataUpdateWorker
+# jobs at once, which pinned all three threads for long stretches; raising it gives
+# an interactive job a free thread sooner. Keep an eye on R14 on the Standard-2X
+# worker dyno if this goes much higher.
+:concurrency: 5
 :strict: true
 :queues:
+  # First on purpose. This is the only queue an admin sits and waits on: the
+  # "Test ..." buttons poll a spinner until the job lands. Everything below it is
+  # background batch work that nobody is watching, so a test must never wait on it.
+  - provider_test
   - critical
   - restarts
   - message

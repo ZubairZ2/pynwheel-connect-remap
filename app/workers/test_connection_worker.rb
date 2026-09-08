@@ -3,12 +3,18 @@
 #
 #   TestConnectionWorker.perform_async(community_id, "pricing")
 #
+# It runs on its own "provider_test" queue, first in the strict priority list in
+# config/sidekiq.yml. It used to share "entrata" with EntrataDataUpdateWorker: the
+# scheduled import sweep drops ~60 full property imports on that queue at once, and
+# FIFO put an admin waiting at a spinner behind every one of them on a 3 thread
+# pool. An interactive click must never queue behind batch work.
+#
 # retry: false on purpose — a stale retry would hand an admin data from minutes
 # ago while they are actively changing credentials, and clicking the button
 # again is both cheaper and clearer.
 class TestConnectionWorker
   include Sidekiq::Worker
-  sidekiq_options queue: "entrata", retry: false
+  sidekiq_options queue: "provider_test", retry: false
 
   def perform(community_id, kind)
     kind = kind.to_s

@@ -23,7 +23,14 @@ module DataProviders
 
     # A claim older than this is treated as a dead job — a Sidekiq restart mid
     # fetch would otherwise wedge the button until the key expired on its own.
-    PENDING_TTL = 3.minutes
+    #
+    # This has to outlast the whole queue wait plus the fetch, not just the fetch.
+    # At 3 minutes it expired while the job was still sitting in the queue, so the
+    # polling page re-claimed and enqueued a duplicate every 3 minutes — one stuck
+    # test quietly turned into four, all of them behind each other. An explicit
+    # click (refresh=1) clears this key outright via .clear, so a genuinely dead
+    # job is one button press away and does not need a short TTL to recover.
+    PENDING_TTL = 15.minutes
 
     module_function
 
@@ -48,8 +55,12 @@ module DataProviders
       release(community_id, kind)
     end
 
+    # Called for refresh=1, i.e. the admin actually clicked the button. That is an
+    # explicit "do it again now", so it drops the claim as well as the result — it
+    # is the escape hatch for a claim whose job died, and it is why PENDING_TTL can
+    # afford to be long. Polling reloads never reach here; they drop refresh.
     def clear(community_id, kind)
-      redis { |conn| conn.del(result_key(community_id, kind)) }
+      redis { |conn| conn.del(result_key(community_id, kind), pending_key(community_id, kind)) }
     end
 
     # SET NX, so two admins hammering the button enqueue one fetch rather than

@@ -19,7 +19,7 @@
           .box-header
             %p
               This option allows you to test connection settings in the data section.A new browser window will open and attempt to write the data feed output.
-            = link_to "Test Connection" , community_test_connection_path(current_community) , :class=>"btn btn-primary",:target=>"_blank"
+            = link_to "Test Connection" , community_test_connection_path(current_community, refresh: 1) , :class=>"btn btn-primary",:target=>"_blank"
         .row
           .col-md-6
             %h4.title Import Vendor Data
