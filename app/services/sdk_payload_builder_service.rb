@@ -209,6 +209,12 @@ class SdkPayloadBuilderService
       estimatedMonthlyRent:       estimated_monthly_rent(unit),
       estimatedMonthlyRentMax:    estimated_monthly_rent_max(unit),
       image:                  unit.validated_image_url || floorplan&.validated_image_url || floorplan&.secondary_image&.url.presence,
+      # The unit's own two images, in the same shape floorplans_json emits them.
+      # `image` above stays as-is -- it is the resolved card image and falls back
+      # to the floor plan -- while these two say only what the unit itself has, so
+      # a host can tell "no unit photo" apart from "showing the floor plan's".
+      primaryImage:           unit.image.present?           ? unit.validated_image_url                                    : nil,
+      secondaryImage:         unit.secondary_image.present? ? unit.convert_to_s3_accelerate_url(unit.secondary_image.url) : nil,
       color:                  compute_unit_marketing_color(unit, floorplan),
       opsColor:               compute_unit_ops_color(unit),
       isFavorite:             fav_ids.include?(unit.id.to_s)

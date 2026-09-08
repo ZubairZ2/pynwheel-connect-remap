@@ -1577,6 +1577,16 @@
 
     /**
      * Returns all units for the property.
+     *
+     * Images on a unit come in three fields, and they are not interchangeable:
+     *   image          — the resolved card image, already falling back to the
+     *                    floor plan's when the unit has no photo of its own.
+     *   primaryImage   — the unit's OWN primary image, null when it has none.
+     *   secondaryImage — the unit's OWN secondary image, null when it has none.
+     * Same shape floorplans carry, so a host rendering a gallery can show the
+     * unit's two photos and tell "no unit photo" apart from "showing the floor
+     * plan's".
+     *
      * Pass an optional filters object to narrow results:
      *
      *   // Existing filters
