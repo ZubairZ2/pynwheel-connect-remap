@@ -18,6 +18,8 @@
   .units-page .btn-ghost { background: #f1f5f9; color: #334155; }
   .units-page .btn-ghost:hover { background: #e2e8f0; color: #1f2937; }
   .units-page .btn-success { background: #16a34a; color: #fff; }
+  .units-page .btn-link { background: none; color: #3558e8; text-decoration: underline; padding: 8px 4px; }
+  .units-page .btn-link:hover { background: none; color: #1e3a8a; }
   .units-page .btn-success:hover { background: #15803d; color: #fff; }
   .units-page .btn:disabled, .units-page .btn.off { background: #eef1f5; color: #a3acb9; cursor: not-allowed; box-shadow: none; }
   .units-page .btn:disabled:hover, .units-page .btn.off:hover { background: #eef1f5; color: #a3acb9; }
@@ -26,6 +28,28 @@
   .units-page .toolbar { background: #fff; border: 1px solid #e8ebf0; border-radius: 12px; padding: 13px 15px; margin-bottom: 15px; box-shadow: 0 1px 2px rgba(16,24,40,0.04), 0 1px 3px rgba(16,24,40,0.03); }
   .units-page .toolbar .row1 { display: flex; gap: 9px; flex-wrap: wrap; align-items: center; }
   .units-page .toolbar .row2 { display: flex; gap: 9px; flex-wrap: wrap; align-items: center; margin-top: 11px; padding-top: 12px; border-top: 1px solid #f2f4f7; }
+
+  /* search field with its own icon and clear affordance */
+  .units-page .f-searchwrap { position: relative; flex: 1; min-width: 250px; display: flex; }
+  .units-page .f-searchwrap .f-search { width: 100%; padding-left: 32px; padding-right: 30px; }
+  .units-page .f-searchicon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: #a8afba; font-size: 12.5px; pointer-events: none; }
+  .units-page .f-searchclear { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); border: none; background: none; color: #a8afba; font-size: 17px; line-height: 1; padding: 2px 6px; cursor: pointer; border-radius: 5px; }
+  .units-page .f-searchclear:hover { background: #f1f5f9; color: #475569; }
+
+  /* active filter pills */
+  .units-page .chips { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; margin-top: 11px; padding-top: 11px; border-top: 1px solid #f2f4f7; }
+  .units-page .chips-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #9ca3af; }
+  .units-page .chips-list { display: flex; gap: 7px; flex-wrap: wrap; flex: 1; }
+  .units-page .chip { display: inline-flex; align-items: center; gap: 6px; background: #eef2ff; border: 1px solid #dbe3fd; color: #2946c4; border-radius: 16px; padding: 3px 5px 3px 11px; font-size: 12.5px; font-weight: 600; }
+  .units-page .chip b { font-weight: 700; }
+  .units-page .chip-x { border: none; background: none; color: #7d90d8; cursor: pointer; font-size: 14px; line-height: 1; padding: 0 4px; border-radius: 50%; }
+  .units-page .chip-x:hover { background: #dbe3fd; color: #1e3a8a; }
+  .units-page .chips-clear { font-size: 12.5px; font-weight: 600; color: #64748b; text-decoration: none; white-space: nowrap; }
+  .units-page .chips-clear:hover { color: #b91c1c; text-decoration: underline; }
+
+  .units-page .f-hint { margin-top: 9px; font-size: 12px; color: #94a3b8; line-height: 1.6; }
+  .units-page .f-hint b { color: #64748b; font-weight: 600; }
+  .units-page .f-hint code { background: #f1f5f9; border: 1px solid #e6ebf1; border-radius: 4px; padding: 1px 5px; font-size: 11.5px; color: #475569; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   .units-page .f-input, .units-page .f-select { padding: 7px 11px; border: 1px solid #dfe3e9; border-radius: 7px; font-size: 13px; background: #fff; color: #1f2937; height: 36px; transition: border-color .12s, box-shadow .12s; }
   .units-page .f-select:hover, .units-page .f-input:hover { border-color: #c9cfd8; }
   .units-page .f-select { padding-right: 26px; }
@@ -287,9 +311,10 @@
           %i.fa.fa-lightbulb-o{style: "margin-top:2px"}
           %div
             %b Tip:
-            Filter the grid to the units you want — by floor plan, beds, availability, building and more —
-            then tick them (or use "select all matching") and apply a mass override to the whole set at once.
-            Any value edited by hand shows in red and stops following the data feed.
+            Filter the grid to the units you want — the toolbar always searches the whole property, not just
+            the page on screen. Then tick one row and <b>shift-click</b> another to select everything in
+            between, or use "select all matching" to take the entire filtered set, and apply a mass override
+            to all of them at once. Any value edited by hand shows in red and stops following the data feed.
           %button.note-x{type: "button", onclick: "document.getElementById('intro-card').remove()"} &times;
 
       .note-card
@@ -300,17 +325,28 @@
           %a{href: "mailto:support@pynwheel.com"} support@pynwheel.com
           to import your data.
 
+      -# Everything the toolbar narrows by is resolved in SQL against the whole
+      -# property, never against the rows on screen - so a filter set while
+      -# looking at page 4 still means "every matching unit", and a bulk action
+      -# can be applied to that whole set.
       %form.toolbar#unit-filters{method: "get", action: community_units_path(@community)}
         .row1
-          %input.f-input.f-search{type: "text", name: "q", value: params[:q], placeholder: "Search unit name, building, provider ID or floor plan…", autocomplete: "off"}
+          .f-searchwrap
+            %i.fa.fa-search.f-searchicon
+            %input.f-input.f-search{type: "text", name: "q", value: params[:q], placeholder: "Search unit numbers…", autocomplete: "off"}
+            %button.f-searchclear#search-clear{type: "button", title: "Clear search", style: ("display:none" if params[:q].blank?)} &times;
           = unit_filter_select :floorplan, @filter_options[:floorplans].map { |f| [f.name.presence || "Unnamed Floor Plan", f.provider_floorplan_id] } + [["No floor plan", UnitFilterQuery::NONE]], "All floor plans"
           = unit_filter_select :bedrooms, @filter_options[:bedrooms].map { |b| [floorplan_bedrooms_label(b), b] }, "All beds"
-          = unit_filter_select :bathrooms, @filter_options[:bathrooms].map { |b| ["#{floorplan_bathrooms_label(b)} Bath", b] }, "All baths"
+          = unit_filter_select :building, @filter_options[:buildings].map { |b| ["Bldg #{b}", b] } + [["No building", UnitFilterQuery::NONE]], "All buildings"
+          = unit_filter_select :floor, @filter_options[:floors].map { |f| ["Floor #{f}", f] } + [["No floor", UnitFilterQuery::NONE]], "All floors"
           = unit_filter_select :availability, [["Available now", "now"], ["Available later", "upcoming"], ["Available (any date)", "true"], ["Not available", "false"]], "Any availability"
           %span.spin#filter-spin
+
+        -# The less-reached-for filters, on their own row. Every one of them stays
+        -# on screen: a filter behind a disclosure is a filter nobody finds, and
+        -# one already in play would be hiding its own state.
         .row2
-          = unit_filter_select :floor, @filter_options[:floors].map { |f| ["Floor #{f}", f] } + [["No floor", UnitFilterQuery::NONE]], "All floors"
-          = unit_filter_select :building, @filter_options[:buildings].map { |b| ["Bldg #{b}", b] } + [["No building", UnitFilterQuery::NONE]], "All buildings"
+          = unit_filter_select :bathrooms, @filter_options[:bathrooms].map { |b| ["#{floorplan_bathrooms_label(b)} Bath", b] }, "All baths"
           %label.f-group
             %span= "Price #{@currency_symbol}"
             %input.f-input{type: "number", name: "min_price", value: params[:min_price], placeholder: "min", min: 0}
@@ -327,12 +363,25 @@
           = unit_filter_select :overridden_field, [["Any pinned field", "any"]] + Unit::FEED_OVERRIDE_FLAGS.map { |key, flag| ["Pinned: #{flag[:label]}", key] }, "Field overrides: any"
           - if @community.enable_locks
             = unit_filter_select :lock, [["Any lock", "any"], ["No lock", UnitFilterQuery::NONE]] + @filter_options[:lock_providers].map { |p| [lock_provider_label(p), p] }, "Lock: any"
-          %a.btn.btn-ghost#clear-filters{href: community_units_path(@community), style: ("display:none" unless @filter.filtering?)} Clear filters
+
+        -# One pill per active filter, so what is narrowing the list is readable
+        -# at a glance and removable one at a time - including the ones sitting
+        -# inside the collapsed panel.
+        .chips#filter-chips{style: "display:none"}
+          %span.chips-label Filtering by
+          .chips-list#chips-list
+          %a.chips-clear#clear-filters{href: community_units_path(@community)} Clear all
+
+        .f-hint
+          %b Tip:
+          separate with commas — <code>1-201, 1-202, 1-203</code> — to pull up exactly those units, or
+          use <code>1-2*</code> for every unit whose number starts with 1-2.
 
       .bulkbar#bulkbar
         .bulkbar-inner
           %span.bb-count#bb-count
-          %button.btn.btn-ghost{type: "button", id: "bb-clear"} Clear selection
+          %button.btn.btn-link#bb-all{type: "button", style: "display:none"}
+          %button.btn.btn-ghost#bb-clear{type: "button"} Clear selection
 
       #units-results
         = render "units_table"
@@ -351,6 +400,7 @@
     var moOpen   = document.getElementById("mo-open");
     var moLabel  = document.getElementById("mo-open-label");
     var moMenu   = document.getElementById("mo-menu");
+    var bbAll    = document.getElementById("bb-all");
     var DEBOUNCE_MS = 260;
 
     // Selection survives filtering and paging: the grid is swapped over XHR, so
@@ -393,15 +443,96 @@
     // choice has to drop with it — it was made against a different set.
     function applyFilters() {
       var query = currentQuery();
+      // The pills describe the controls, not the last request, so they are
+      // redrawn before the early return - otherwise clearing a filter back to a
+      // query that has already been fetched leaves a pill on screen for a filter
+      // that is no longer set.
+      syncClear();
       if (query === lastQuery) return;
       selectAllMatching = false;
       fetchResults(query);
-      syncClear();
+    }
+
+    // ---- active filter pills --------------------------------------------
+    // Reading the labels straight off the controls means a pill can never drift
+    // from the filter it represents, and every filter gets one for free.
+    var chipsRow  = document.getElementById("filter-chips");
+    var chipsList = document.getElementById("chips-list");
+    var searchBox = form.querySelector(".f-search");
+    var searchX   = document.getElementById("search-clear");
+
+    // Ranges read as one pill ("Price 1200 – 1800") rather than two halves.
+    var RANGES = [
+      { label: "Price", min: "min_price", max: "max_price" },
+      { label: "Sq Ft", min: "min_sqft", max: "max_sqft" }
+    ];
+
+    function activeFilters() {
+      var out = [];
+      var paired = {};
+      RANGES.forEach(function (r) { paired[r.min] = true; paired[r.max] = true; });
+
+      if (searchBox && searchBox.value.trim()) {
+        out.push({ label: "Search", value: searchBox.value.trim(), fields: ["q"] });
+      }
+
+      form.querySelectorAll("select").forEach(function (select) {
+        if (!select.value) return;
+        var option = select.options[select.selectedIndex];
+        out.push({ label: null, value: option ? option.text : select.value, fields: [select.name] });
+      });
+
+      RANGES.forEach(function (r) {
+        var lo = form.querySelector("[name='" + r.min + "']");
+        var hi = form.querySelector("[name='" + r.max + "']");
+        var loV = lo && lo.value, hiV = hi && hi.value;
+        if (!loV && !hiV) return;
+        var text = loV && hiV ? loV + " – " + hiV : (loV ? loV + " and up" : "up to " + hiV);
+        out.push({ label: r.label, value: text, fields: [r.min, r.max] });
+      });
+
+      return out;
+    }
+
+    function clearFields(fields) {
+      fields.forEach(function (name) {
+        var field = form.querySelector("[name='" + name + "']");
+        if (field) field.value = "";
+      });
     }
 
     function syncClear() {
-      var clear = document.getElementById("clear-filters");
-      if (clear) clear.style.display = currentQuery() ? "" : "none";
+      var chips = activeFilters();
+      chipsList.innerHTML = "";
+      chips.forEach(function (chip) {
+        var pill = document.createElement("span");
+        pill.className = "chip";
+        if (chip.label) {
+          var strong = document.createElement("b");
+          strong.textContent = chip.label + " ";
+          pill.appendChild(strong);
+        }
+        pill.appendChild(document.createTextNode(chip.value));
+        var x = document.createElement("button");
+        x.type = "button";
+        x.className = "chip-x";
+        x.innerHTML = "&times;";
+        x.title = "Remove this filter";
+        x.addEventListener("click", function () { clearFields(chip.fields); applyFilters(); });
+        pill.appendChild(x);
+        chipsList.appendChild(pill);
+      });
+      chipsRow.style.display = chips.length ? "" : "none";
+
+      if (searchX) searchX.style.display = (searchBox && searchBox.value) ? "" : "none";
+    }
+
+    if (searchX) {
+      searchX.addEventListener("click", function () {
+        searchBox.value = "";
+        searchBox.focus();
+        applyFilters();
+      });
     }
 
     form.addEventListener("submit", function (e) { e.preventDefault(); applyFilters(); });
@@ -432,11 +563,14 @@
     // ---- selection -------------------------------------------------------
     function rowBoxes() { return Array.prototype.slice.call(results.querySelectorAll(".js-row-cb")); }
 
+    // How many units the filters match in total, across every page.
+    function matchingTotal() {
+      var banner = document.getElementById("select-all-banner");
+      return banner ? parseInt(banner.getAttribute("data-total"), 10) : 0;
+    }
+
     function selectionCount() {
-      if (selectAllMatching) {
-        var banner = document.getElementById("select-all-banner");
-        return banner ? parseInt(banner.getAttribute("data-total"), 10) : selected.size;
-      }
+      if (selectAllMatching) return matchingTotal() || selected.size;
       return selected.size;
     }
 
@@ -456,13 +590,21 @@
       }
 
       var n = selectionCount();
+      var total = matchingTotal();
       bulkbar.classList.toggle("on", n > 0);
       bbCount.textContent = n + (n === 1 ? " unit selected" : " units selected") +
-        (selectAllMatching ? " (everything matching the current filters)" : "");
+        (selectAllMatching ? " — everything matching the current filters" : "");
       moOpen.disabled = n === 0;
       moOpen.classList.toggle("off", n === 0);
       moLabel.textContent = n > 0 ? "Mass overrides (" + n + ")" : "Mass overrides";
       if (n === 0) moMenu.classList.remove("on");
+
+      // The cross-page shortcut, repeated in the sticky bar so it stays reachable
+      // once the inline banner has scrolled off. Only worth offering while the
+      // filters match more than one page.
+      var offerAll = !selectAllMatching && n > 0 && total > boxes.length;
+      bbAll.style.display = offerAll ? "" : "none";
+      if (offerAll) bbAll.textContent = "Select all " + total + " matching";
 
       syncBanner(boxes);
     }
@@ -471,10 +613,11 @@
       var banner = document.getElementById("select-all-banner");
       if (!banner) return;
       var total = parseInt(banner.getAttribute("data-total"), 10);
-      var allOnPage = boxes.length > 0 && boxes.every(function (b) { return b.checked; });
-      // Only worth offering when there is more matching the filters than the
-      // page can show.
-      banner.style.display = (allOnPage || selectAllMatching) && total > boxes.length ? "" : "none";
+      var onPage = boxes.filter(function (b) { return b.checked; }).length;
+      // Offered as soon as anything on the page is ticked, not only once every
+      // box is - waiting for a full page is exactly the state a 500-unit
+      // property never reaches by hand.
+      banner.style.display = (onPage > 0 || selectAllMatching) && total > boxes.length ? "" : "none";
 
       var text  = document.getElementById("sab-text");
       var all   = document.getElementById("sab-all");
@@ -484,11 +627,27 @@
         all.style.display = "none";
         clear.style.display = "";
       } else {
-        text.textContent = "All " + boxes.length + " units on this page are selected.";
+        text.textContent = onPage + (onPage === 1 ? " unit" : " units") + " selected on this page.";
         all.style.display = "";
         clear.style.display = "none";
       }
     }
+
+    // Shift-click ticks the whole run between the last box clicked and this one,
+    // which is the difference between one click and four hundred when a floor or
+    // a building is being assigned. `change` does not carry modifier keys, so
+    // the click is what records it.
+    var anchorIndex = null;
+    var rangeClick = false;
+
+    results.addEventListener("click", function (e) {
+      if (e.target.classList && e.target.classList.contains("js-row-cb")) {
+        rangeClick = e.shiftKey;
+        // Shift-clicking a checkbox otherwise leaves a blue text selection
+        // dragged across the rows in between.
+        if (rangeClick && window.getSelection) window.getSelection().removeAllRanges();
+      }
+    }, true);
 
     results.addEventListener("change", function (e) {
       if (e.target.id === "select-page") {
@@ -497,6 +656,7 @@
           if (e.target.checked) { selected.add(id); } else { selected.delete(id); }
         });
         if (!e.target.checked) selectAllMatching = false;
+        anchorIndex = null;
         syncSelection();
       } else if (e.target.classList.contains("js-row-cb")) {
         // Un-ticking one row means the set is no longer "everything matching",
@@ -505,8 +665,23 @@
           selectAllMatching = false;
           rowBoxes().forEach(function (b) { if (b !== e.target) selected.add(parseInt(b.value, 10)); });
         }
-        var id = parseInt(e.target.value, 10);
-        if (e.target.checked) { selected.add(id); } else { selected.delete(id); }
+
+        var boxes = rowBoxes();
+        var index = boxes.indexOf(e.target);
+        var from = index, to = index;
+        if (rangeClick && anchorIndex !== null && index !== -1) {
+          from = Math.min(anchorIndex, index);
+          to = Math.max(anchorIndex, index);
+        }
+        rangeClick = false;
+
+        for (var i = from; i <= to; i++) {
+          var id = parseInt(boxes[i].value, 10);
+          if (e.target.checked) { selected.add(id); } else { selected.delete(id); }
+        }
+        // The anchor moves to the last box actually clicked, so runs can be
+        // chained: click, shift-click, shift-click again.
+        anchorIndex = index;
         syncSelection();
       }
     });
@@ -528,6 +703,10 @@
       syncSelection();
     }
     document.getElementById("bb-clear").addEventListener("click", clearSelection);
+    bbAll.addEventListener("click", function () {
+      selectAllMatching = true;
+      syncSelection();
+    });
 
     // ---- mass override dialogs -------------------------------------------
     moOpen.addEventListener("click", function (e) {
@@ -677,6 +856,9 @@
       if (window.jQuery && jQuery.fn.best_in_place) {
         jQuery("#units-results .best_in_place").best_in_place();
       }
+      // Row positions are meaningless across a swap, so a stale anchor would
+      // select an arbitrary run on the new page.
+      anchorIndex = null;
       syncSelection();
     }
 

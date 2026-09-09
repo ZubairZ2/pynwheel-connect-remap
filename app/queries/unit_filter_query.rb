@@ -55,6 +55,14 @@ class UnitFilterQuery
 
   DEFAULT_SORT = "name".freeze
 
+  # The search box matches the unit name and nothing else. Building, floor plan,
+  # beds and the rest each have their own dropdown, so folding them into the text
+  # search only ever widened a result set someone was trying to narrow - a
+  # provider id that happened to contain "243" would surface as a unit 243.
+  SEARCH_COLUMN = "units.marketing_name".freeze
+
+  MAX_SEARCH_TERMS = 40
+
   # Filter values that mean "the field is empty" rather than a real value.
   NONE = "none".freeze
 
@@ -120,16 +128,40 @@ class UnitFilterQuery
     scope.joins(FLOORPLAN_JOIN)
   end
 
+  # Search accepts a list, not just one string. "1-201, 1-202" finds both units,
+  # so a set copied out of a spreadsheet can be pulled up in one go and acted on
+  # together - the alternative was ticking them one at a time.
+  #
+  # A "*" is an explicit wildcard: "1-2*" is every unit whose name starts with
+  # "1-2", which is how you ask for one building's second floor. Plain substring
+  # matching cannot express that, which is why searching "1-2" also drags in
+  # 11-2xx and anything else containing the pair.
   def apply_search(scope)
-    term = params[:q].to_s.strip
-    return scope if term.blank?
+    terms = search_terms
+    return scope if terms.empty?
 
-    like = "%#{sanitize_like(term)}%"
-    scope.where(
-      "units.marketing_name ILIKE :like ESCAPE '\\' OR units.building ILIKE :like ESCAPE '\\' " \
-      "OR units.provider_unit_id ILIKE :like ESCAPE '\\' OR floorplans.name ILIKE :like ESCAPE '\\'",
-      like: like
-    )
+    binds = {}
+    clauses = terms.each_with_index.map do |term, index|
+      key = :"q#{index}"
+      binds[key] = search_pattern(term)
+      "#{SEARCH_COLUMN} ILIKE :#{key} ESCAPE '\\'"
+    end
+
+    scope.where(clauses.join(" OR "), binds)
+  end
+
+  # Commas and newlines separate list items; a space does not, so a name that
+  # contains one stays a single phrase. Bounded so a pasted wall of text cannot
+  # turn into an unbounded pile of OR clauses.
+  def search_terms
+    params[:q].to_s.split(/[,\n\r]+/).map(&:strip).reject(&:blank?).uniq.first(MAX_SEARCH_TERMS)
+  end
+
+  # Without a "*" the term keeps the old substring behaviour, so nothing that
+  # used to match stops matching.
+  def search_pattern(term)
+    escaped = sanitize_like(term)
+    term.include?("*") ? escaped.tr("*", "%") : "%#{escaped}%"
   end
 
   def apply_floorplan(scope)

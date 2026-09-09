@@ -729,6 +729,11 @@ class UnitsController < ApplicationController
     @per_page_capped
   end
 
+  # The rows-per-page choice sticks for the rest of the session, so someone who
+  # works at 200 rows does not have to re-pick it on every property and every
+  # return trip. "All" is deliberately not remembered - it is an escape hatch for
+  # one screenful of work, and silently reloading 2000 rows on a later visit is
+  # not what anyone asked for. A fresh session still starts at PER_PAGE.
   def resolve_per_page
     requested = params[:per_page].to_s
 
@@ -740,8 +745,17 @@ class UnitsController < ApplicationController
     else
       @showing_all = false
       @per_page_capped = false
-      requested = requested.to_i
-      @per_page = PER_PAGE_OPTIONS.include?(requested) ? requested : PER_PAGE
+      @per_page = remembered_per_page(requested.to_i)
+    end
+  end
+
+  def remembered_per_page(requested)
+    if PER_PAGE_OPTIONS.include?(requested)
+      session[:units_per_page] = requested
+      requested
+    else
+      stored = session[:units_per_page].to_i
+      PER_PAGE_OPTIONS.include?(stored) ? stored : PER_PAGE
     end
   end
 

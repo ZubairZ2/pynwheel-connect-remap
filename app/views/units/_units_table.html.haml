@@ -4,13 +4,26 @@
 - show_on_map = SHOW_ON_MAP.include?(@community.data_provider)
 - tour_order = PROPERTIES_LIST.include?(@community.id)
 
+-# The count says both numbers whenever they differ, because "493" next to a
+-# screen holding 50 rows is what makes people think the filters only searched
+-# the page they can see. They never do - the toolbar always queries the whole
+-# property.
+- total_units = @community.units.count
+- page_offset = @units.offset.to_i
+- first_row = @units.total_entries.zero? ? 0 : page_offset + 1
+- last_row = page_offset + @units.length
+
 .units-meta
   %span.units-count
-    = pluralize(@units.total_entries, "unit")
+    - if @filter.filtering?
+      %b= pluralize(@units.total_entries, "unit")
+      matching your filters, out of #{number_with_delimiter(total_units)} in this property
+    - else
+      %b= pluralize(@units.total_entries, "unit")
     - if @units.total_pages > 1
-      %span.units-page-n= "· page #{@units.current_page} of #{@units.total_pages}"
+      %span.units-page-n= "· showing #{number_with_delimiter(first_row)}–#{number_with_delimiter(last_row)} (page #{@units.current_page} of #{@units.total_pages})"
     - if per_page_capped?
-      %span.units-page-n= "· showing the first #{number_with_delimiter(per_page)}"
+      %span.units-page-n= "· capped at the first #{number_with_delimiter(per_page)}"
   .units-perpage
     %span.muted Rows
     - UnitsController::PER_PAGE_OPTIONS.each do |option|
@@ -20,14 +33,16 @@
 - if @units.empty?
   .units-empty
     %p.units-empty-title No units match these filters.
-    %p.muted Try widening the search, or clear the filters to see all #{pluralize(@community.units.count, 'unit')}.
+    %p.muted
+      Every filter searches all #{pluralize(@community.units.count, 'unit')} in this property, so nothing here matched.
+      Try widening the search or clearing the filters.
 - else
   .table-wrap
     %table.units-table
       %thead
         %tr
           %th.cb
-            %input#select-page{type: "checkbox", title: "Select every unit on this page"}
+            %input#select-page{type: "checkbox", title: "Select every unit on this page. Tip: tick one row, then shift-click another to select everything in between."}
           = render "sort_header", key: "name", label: "Unit"
           = render "sort_header", key: "floorplan", label: "Floor Plan"
           = render "sort_header", key: "price", label: "Price", align: "right"
