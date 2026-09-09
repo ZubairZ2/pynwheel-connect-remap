@@ -644,6 +644,11 @@ Rails.application.routes.draw do
     # Custom Design CMS — auth-protected
     resource :design_system_config, only: [:show, :update]
 
+    # Map analytics data layer (PYN-1655) — super-admin only. Controls which map
+    # interactions this property may publish to its embedding page's Google Tag
+    # Manager data layer.
+    resource :map_analytics_setting, only: [:show, :update]
+
     # Public-facing embed calculator (no auth required) — serves published config
     resources :pricing_calculators, only: [] do
       collection do

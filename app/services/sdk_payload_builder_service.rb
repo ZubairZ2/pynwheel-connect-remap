@@ -169,6 +169,12 @@ class SdkPayloadBuilderService
       unitMarketingName: unit.api_unit_marketing_name,
       mapId:           map_for_unit(unit),
       unitId:          unit.id,
+      # The PMS's own id for this unit, alongside ours. Analytics publishes this
+      # one as `unit_id` (PYN-1655 asks for the id "from data provider"), because
+      # it is the only id a client can reconcile against their own systems —
+      # `unitId` above is a Pynwheel primary key and means nothing to them.
+      # Already on the loaded row, so this costs no query.
+      providerUnitId:  unit.provider_unit_id,
       building:        unit.building,
       floor:           unit.floor,
       sold:            unit.sold,
@@ -182,6 +188,7 @@ class SdkPayloadBuilderService
                          hide_decimals(floorplan.square_feet)
                        end,
       floorplanId:            unit.floorplan_id,
+      providerFloorplanId:    floorplan&.provider_floorplan_id,
       floorplanName:          floorplan&.name,
       pointerData:            unit.pointer_data,
       market_rent:            unit.get_market_rent(),
@@ -399,7 +406,19 @@ class SdkPayloadBuilderService
     {
       propertyId:   @community.id,
       propertyName: @community.name,
+      # Every analytics event is stamped with the owning company so a
+      # multi-property client can roll their reporting up without us shipping
+      # them a property-to-company mapping. Read off the already-loaded
+      # community row — no association is walked.
+      companyId:    @community.company_id,
       website:      @community.community_website,
+
+      # What this property is allowed to push into its embedding page's GTM data
+      # layer. Server-driven on purpose: pyn-map-sdk-v1.js is one file every
+      # client loads from our CDN, so a hardcoded list would make "expose one
+      # more event for one property" a JS release and a cache bust for everyone.
+      # See Analytics::MapEventContract#data_layer_config.
+      analytics:    Analytics::MapEventContract.data_layer_config(@community),
 
       branding: {
         logoUrl:         resolve_map_logo_url(@community),
@@ -660,6 +679,9 @@ class SdkPayloadBuilderService
 
       json = {
         floorplanId:       fp.id,
+        # The PMS's id, published by analytics as `floor_plan_id` for the same
+        # reason units carry theirs. Already read below for spaceConfig.
+        providerFloorplanId: fp.provider_floorplan_id,
         name:              fp.name,
         bedrooms:          fp.bedrooms,
         bathrooms:         fp.bathrooms,
@@ -1027,11 +1049,22 @@ class SdkPayloadBuilderService
     @community.floorplate_for_floor(unit.floor)&.id
   end
 
+  # `slot` and `kind` exist because of the select on the last line.
+  #
+  # These are three fixed CMS link slots and the select drops the empty ones, so
+  # a property that fills only slots 2 and 3 hands the client an array whose
+  # first entry is slot 2 with nothing saying so. Analytics could not report
+  # "additional link 1 vs 2 vs 3" (PYN-1655's link_index), and a Schedule Tour
+  # click was indistinguishable from a 3D Tour click once both were merely "the
+  # button at index 0".
+  #
+  # `kind` is the stable identity, `slot` the CMS position. Neither is derived
+  # from the label, which is free text an operator renames at will.
   def unit_additional_buttons(unit)
     [
-      { label: unit.get_virtual_tour_label,      url: unit.get_virtual_tour_url,      openInNewTab: unit.link1_open_in_new_tab? },
-      { label: unit.get_additional_button_label, url: unit.get_additional_button_url, openInNewTab: unit.link2_open_in_new_tab? },
-      { label: unit.get_schedule_tour_label,     url: unit.get_schedule_tour_url,     openInNewTab: unit.link3_open_in_new_tab? }
+      { label: unit.get_virtual_tour_label,      url: unit.get_virtual_tour_url,      openInNewTab: unit.link1_open_in_new_tab?, slot: 1, kind: "virtual_tour" },
+      { label: unit.get_additional_button_label, url: unit.get_additional_button_url, openInNewTab: unit.link2_open_in_new_tab?, slot: 2, kind: "additional" },
+      { label: unit.get_schedule_tour_label,     url: unit.get_schedule_tour_url,     openInNewTab: unit.link3_open_in_new_tab?, slot: 3, kind: "schedule_tour" }
     ].select { |btn| btn[:url].present? }
   end
 
@@ -1043,11 +1076,14 @@ class SdkPayloadBuilderService
   def floorplan_additional_buttons(fp)
     [
       { label: fp.virtual_tour_button_label.presence || "3D Tour",
-        url: fp.virtual_tour_url, openInNewTab: fp.virtual_tour_url.present? && fp.link1_open_new_tab },
+        url: fp.virtual_tour_url, openInNewTab: fp.virtual_tour_url.present? && fp.link1_open_new_tab,
+        slot: 1, kind: "virtual_tour" },
       { label: fp.additional_button.presence || "Additional Button",
-        url: fp.additional_url,   openInNewTab: fp.additional_url.present?   && fp.link2_open_new_tab },
+        url: fp.additional_url,   openInNewTab: fp.additional_url.present?   && fp.link2_open_new_tab,
+        slot: 2, kind: "additional" },
       { label: fp.scheduler_label.presence || "Scheduled Tour",
-        url: fp.scheduler_url,    openInNewTab: fp.scheduler_url.present?    && fp.link3_open_new_tab }
+        url: fp.scheduler_url,    openInNewTab: fp.scheduler_url.present?    && fp.link3_open_new_tab,
+        slot: 3, kind: "schedule_tour" }
     ].select { |btn| btn[:url].present? }
   end
 
@@ -1062,7 +1098,11 @@ class SdkPayloadBuilderService
     [{
       label:        amenity.video_link_button_label.presence || "3D Tour",
       url:          amenity.video_link,
-      openInNewTab: false
+      openInNewTab: false,
+      # An amenity has one link, not three slots, but it carries the same two
+      # fields so a single analytics helper reads every button the map renders.
+      slot:         1,
+      kind:         "virtual_tour"
     }]
   end
 

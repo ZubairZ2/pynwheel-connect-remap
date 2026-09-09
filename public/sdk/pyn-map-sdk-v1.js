@@ -1,7 +1,110 @@
 (function (global) {
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // PynAnalytics — internal analytics engine (batched, fire-and-forget)
+  // PYN_EVENT_CONTRACT — the client-side mirror of Analytics::MapEventContract.
+  //
+  // Two vocabularies, deliberately. The left side is Pynwheel's internal event
+  // name and churns with the UI. The right side is the published action a client
+  // builds a GTM trigger against, so it changes only with notice. An internal
+  // rename costs one line here and nothing in anybody's tag manager.
+  //
+  // This table must be edited in step with app/services/analytics/
+  // map_event_contract.rb. VERSION is how the two announce agreement: it rides on
+  // every event as schema_version, so a client running a stale cached SDK shows
+  // up in the data instead of having to be guessed at.
+  // ─────────────────────────────────────────────────────────────────────────────
+  var PYN_EVENT_CONTRACT = {
+    VERSION: 1,
+
+    // The event name every push carries. Never varies — the whole point of the
+    // design is that a property builds one GTM trigger, once, and never touches
+    // it again as we add interactions. They tell events apart by `action`.
+    EVENT_NAME: 'pynwheel_map',
+
+    // A value is either a published action, or a { by, map } pair that picks one
+    // from a dimension of the event. The second form exists because one internal
+    // event can be several client-facing things: `tour_button` fires for all
+    // three CMS link slots, so a single action would report a 3D Tour click as a
+    // scheduled tour. It discriminates on `link_kind` — the slot's stable
+    // identity — never on the label, which is CMS free text.
+    ACTIONS: {
+      // Per-unit CTAs — the two PYN-1655 ships enabled.
+      apply_now:            'apply_clicked',
+      space_apply_now:      'apply_clicked',
+      tour_button:          {
+        by:  'link_kind',
+        map: {
+          schedule_tour: 'schedule_tour_clicked',
+          virtual_tour:  'virtual_tour_clicked',
+          additional:    'additional_link_clicked'
+        }
+      },
+
+      // Already tracked and already carrying dimensions; they reach a data layer
+      // only when a property's server-side allowlist names them.
+      unit_card:            'unit_selected',
+      floor_plan_card:      'floor_plan_selected',
+      amenity_card:         'amenity_selected',
+      unit_marker_click:    'unit_selected',
+      amenity_marker_click: 'amenity_selected',
+      save_favorite:        'unit_favorited',
+      delete_favorite:      'unit_favorited',
+      share_favorites:      'share_clicked',
+      sent_favorite:        'share_clicked',
+      gallery_view:         'gallery_viewed',
+      bedroom_filter:       'map_filter_used',
+      availability_filter:  'map_filter_used',
+      square_feet_filter:   'map_filter_used',
+      pricing_filter:       'map_filter_used',
+      sorting_filter:       'map_filter_used'
+    },
+
+    // Every field a data-layer push carries, in order, with the metadata key it
+    // reads from. `null` here means "no metadata source — filled from context".
+    //
+    // The list is exhaustive on purpose. GTM merges each push into one persistent
+    // data layer, so a key omitted from push #2 keeps the value push #1 left
+    // behind: a floor-plan click after a unit click would report the unit's
+    // building. Every push therefore writes every field, explicitly null when it
+    // does not apply. This is PYN-1655's "null/clear unused fields per push".
+    FIELDS: [
+      ['unit_id',        'provider_unit_id'],
+      ['unit_name',      'unit_name'],
+      ['building',       'building'],
+      ['floor_level',    'floor_level'],
+      ['floor_plan_id',  'provider_floorplan_id'],
+      ['floor_plan_name', 'floorplan_name'],
+      ['bedrooms',       'bedrooms'],
+      ['bathrooms',      'bathrooms'],
+      ['square_footage', 'square_footage'],
+      ['link_label',     'link_label'],
+      ['link_url',       'link_url'],
+      ['link_index',     'link_index'],
+      ['amenity_id',     'amenity_id'],
+      ['amenity_name',   'amenity_name'],
+      ['filter_name',    'filter_name'],
+      ['filter_value',   'filter_value'],
+      ['favorite_state', 'favorite_state'],
+      ['shared_entity',  'shared_entity'],
+      ['share_target',   'share_target']
+    ],
+
+    // The published action for a captured event, or null when it has none.
+    // An event whose discriminator is missing resolves to null rather than to a
+    // default: a wrong action in a client's GA4 is worse than a missing one,
+    // because only the missing one is visible to them.
+    actionFor: function (ev) {
+      var entry = this.ACTIONS[ev.name];
+      if (!entry) return null;
+      if (typeof entry === 'string') return entry;
+
+      var meta = ev.metadata || {};
+      return entry.map[meta[entry.by]] || null;
+    }
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // PynAnalytics — internal analytics engine (fan-out, fire-and-forget)
   //
   // Session model:
   //   sdkSessionId  — stable localStorage UUID (user identity / favorites).
@@ -13,10 +116,60 @@
   //   tab hidden  → map_session_background (keepalive flush, session stays open)
   //   tab visible → map_session_active     (session continues)
   //   destroy()   → map_session_end        (true close, keepalive flush)
+  //
+  // Sinks:
+  //   One capture() fans out to every sink in SINKS. BatchSink is Pynwheel's own
+  //   reporting (queued, flushed every 5s); DataLayerSink is the client's GTM
+  //   (immediate, no network). They have opposite latency requirements and must
+  //   not be forced to share a path — a tag manager that learns about a click
+  //   five seconds late has already lost the pageview it belonged to.
+  //
+  //   Adding an integration — Segment, a pixel, a second endpoint — means adding
+  //   one object to SINKS and nothing else. No call site changes.
   // ─────────────────────────────────────────────────────────────────────────────
   var PynAnalytics = (function () {
 
     var IDLE_MS = 2 * 60 * 1000; // 2 minutes
+
+    // ── BatchSink — Pynwheel's own analytics endpoint ────────────────────────
+    // Queues and flushes on a timer. Sessions, counters and the sdk_events fact
+    // table are all fed from here.
+    var BatchSink = {
+      name: 'pynwheel',
+      receive: function (s, ev) {
+        s.queue.push(ev);
+        if (s.queue.length >= 20) _flush(s, false);
+      },
+      flush:   function (s, beacon) { _flush(s, beacon); },
+      destroy: function () {}
+    };
+
+    // ── DataLayerSink — the embedding page's GTM data layer ──────────────────
+    // Emitted the instant the interaction happens. No network call of its own:
+    // in an iframe it posts a message to the parent, which the property's relay
+    // snippet pushes into window.dataLayer; embedded directly it pushes there
+    // itself. One code path serves both embed modes.
+    var DataLayerSink = {
+      name: 'data_layer',
+      receive: function (s, ev) {
+        var action = PYN_EVENT_CONTRACT.actionFor(ev);
+        if (!action) return; // tracked internally, no published name
+
+        // Config arrives with the property payload, which lands after the first
+        // events are already captured. Hold them rather than dropping them —
+        // map_load in particular fires before anything is configured. Capped
+        // because an unconfigured property must not grow an array forever.
+        if (!s.dataLayerReady) {
+          if (s.dataLayerPending.length < 25) s.dataLayerPending.push(ev);
+          return;
+        }
+        _emitDataLayer(s, ev, action);
+      },
+      flush:   function () {},
+      destroy: function () {}
+    };
+
+    var SINKS = [BatchSink, DataLayerSink];
 
     function create(opts) {
       var s = {
@@ -37,7 +190,18 @@
         dead:         false,
         timer:        null,
         idleTimer:    null,
-        onHide:       null
+        onHide:       null,
+
+        // ── Data layer state ──────────────────────────────────────────────────
+        // Ambient property context (company, property, host page URL). Stamped
+        // on every push so no call site has to carry it.
+        context:           {},
+        // { enabled, actions: [], targetOrigin } — server-driven, from the
+        // property payload. Never a client-side default: which events a property
+        // exposes to its own GA4 is that property's decision, not the SDK's.
+        dataLayerConfig:   { enabled: false, actions: [], targetOrigin: null },
+        dataLayerReady:    false,
+        dataLayerPending:  []
       };
 
       s.timer = setInterval(function () { _flush(s, false); }, 5000);
@@ -62,6 +226,28 @@
       return {
         capture:   function (name, type, metadata) { _capture(s, name, type, metadata); },
         sessionId: function ()                      { return s.sessionId; },
+
+        // Called once the property payload lands. Supplies the ambient
+        // dimensions every push carries and the server's data-layer allowlist,
+        // then replays whatever was captured while we were still booting.
+        configure: function (context, dataLayerConfig) {
+          s.context = context || {};
+          var cfg = dataLayerConfig || {};
+          s.dataLayerConfig = {
+            enabled:      cfg.enabled === true,
+            actions:      Array.isArray(cfg.actions) ? cfg.actions : [],
+            targetOrigin: cfg.targetOrigin || null
+          };
+          s.dataLayerReady = true;
+
+          var pending = s.dataLayerPending;
+          s.dataLayerPending = [];
+          for (var i = 0; i < pending.length; i++) {
+            var action = PYN_EVENT_CONTRACT.actionFor(pending[i]);
+            if (action) _emitDataLayer(s, pending[i], action);
+          }
+        },
+
         destroy:   function () {
           if (s.dead) return;
           s.dead = true;
@@ -70,6 +256,7 @@
           document.removeEventListener('visibilitychange', s.onHide);
           // True session end — map is being unmounted / closed.
           s.queue.push({ name: 'map_session_end', type: 'state', ts: Date.now() });
+          for (var i = 0; i < SINKS.length; i++) SINKS[i].destroy(s);
           _flush(s, true);
         }
       };
@@ -93,11 +280,106 @@
       }, IDLE_MS);
     }
 
+    // One event, built once, handed to every sink. Sinks never mutate it.
     function _capture(s, name, type, metadata) {
       if (s.dead) return;
-      s.queue.push({ name: name, type: type || 'click', metadata: _sanitize(metadata), ts: Date.now() });
-      if (s.queue.length >= 20) _flush(s, false);
+
+      var meta = _sanitize(metadata);
+
+      // The host page every event happened on, stamped here rather than at the
+      // call sites. It is ambient — the same for every event in a session — and
+      // resolved once at configure time, so this costs a property read, not a
+      // cross-origin probe per click.
+      if (s.context.page_url && !meta.page_url) meta.page_url = s.context.page_url;
+
+      var ev = {
+        name:     name,
+        type:     type || 'click',
+        metadata: meta,
+        ts:       Date.now()
+      };
+
+      for (var i = 0; i < SINKS.length; i++) {
+        // A failing sink must never take down the others, or the interaction
+        // itself. Analytics is the least important thing on the page.
+        try { SINKS[i].receive(s, ev); } catch (e) {}
+      }
+
       _resetIdle(s);
+    }
+
+    // ── Data layer emission ───────────────────────────────────────────────────
+
+    // Build the published payload and deliver it. Every field in the contract is
+    // written on every push — see PYN_EVENT_CONTRACT.FIELDS for why null matters
+    // as much as a value here.
+    function _emitDataLayer(s, ev, action) {
+      var cfg = s.dataLayerConfig;
+      if (!cfg.enabled) return;
+      if (cfg.actions.indexOf(action) === -1) return;
+
+      var meta    = ev.metadata || {};
+      var ctx     = s.context;
+      var payload = {
+        event:          PYN_EVENT_CONTRACT.EVENT_NAME,
+        action:         action,
+        schema_version: PYN_EVENT_CONTRACT.VERSION,
+
+        // Session and timing. session_id is the rotating analytics segment;
+        // visitor_id is the stable identity, so a client can count people as
+        // well as visits without us sending anything that identifies a person.
+        session_id:     s.sessionId,
+        visitor_id:     s.sdkSessionId,
+        ts_iso:         new Date(ev.ts).toISOString(),
+
+        // Property context.
+        company_id:     _nullable(ctx.company_id),
+        property_id:    _nullable(ctx.property_id),
+        property_name:  _nullable(ctx.property_name),
+        page_url:       _nullable(ctx.page_url)
+      };
+
+      var fields = PYN_EVENT_CONTRACT.FIELDS;
+      for (var i = 0; i < fields.length; i++) {
+        payload[fields[i][0]] = _nullable(meta[fields[i][1]]);
+      }
+
+      // The published `unit_id` is the PMS's id, which is what a client can
+      // reconcile against their own systems. Pynwheel's own primary key is only
+      // a fallback for a property whose feed carries no provider id.
+      if (payload.unit_id === null)       payload.unit_id       = _nullable(meta.unit_id);
+      if (payload.floor_plan_id === null) payload.floor_plan_id = _nullable(meta.floorplan_id);
+
+      _deliver(s, payload);
+    }
+
+    // In an iframe: hand the payload to the parent, whose relay snippet pushes
+    // it into their data layer. Embedded directly: push it ourselves. Checking
+    // window.parent !== window rather than a config flag means a property that
+    // changes how it embeds the map needs no change on our side.
+    function _deliver(s, payload) {
+      var framed = false;
+      try { framed = window.parent && window.parent !== window; } catch (e) { framed = true; }
+
+      if (framed) {
+        // '*' unless the property configured an exact origin. The payload is IDs
+        // and labels with no PII, and the receiving page verifies *our* origin in
+        // its relay snippet, which is the check that actually prevents forged
+        // events. A property that wants delivery narrowed sets target_origin.
+        try { window.parent.postMessage(payload, s.dataLayerConfig.targetOrigin || '*'); } catch (e) {}
+        return;
+      }
+
+      try {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push(payload);
+      } catch (e) {}
+    }
+
+    // undefined and '' both become null. GTM treats a missing key as "keep the
+    // previous value", so an absent dimension has to be an explicit null.
+    function _nullable(value) {
+      return (value === undefined || value === '') ? null : value;
     }
 
     function _flush(s, beacon) {
@@ -153,14 +435,24 @@
       };
     }
 
+    // Caps raised, and the key pattern widened to allow digits.
+    //
+    // The previous limits were 15 keys, 300 characters, and /^[a-z_]+$/. A CTA
+    // event now carries 18 dimensions, so the key cap silently discarded roughly
+    // a fifth of every payload; the pattern threw away any key with a number in
+    // it (`link_1_label`); and 300 characters truncates a real apply URL with
+    // query parameters. All three failed without an error anywhere, which is the
+    // worst way for analytics to be wrong. These match the server's limits in
+    // Analytics::MapEventContract exactly.
     function _sanitize(meta) {
       if (!meta || typeof meta !== 'object') return {};
       var out = {}, n = 0;
       for (var k in meta) {
-        if (n >= 15) break;
-        if (!/^[a-z_]{1,50}$/.test(k)) continue;
+        if (n >= 40) break;
+        if (!/^[a-z][a-z0-9_]{0,49}$/.test(k)) continue;
         var v = meta[k];
-        if (typeof v === 'string')  { out[k] = v.slice(0, 300); n++; }
+        if (v === null || v === undefined) continue;
+        if (typeof v === 'string')  { out[k] = v.slice(0, 2000); n++; }
         else if (typeof v === 'number' || typeof v === 'boolean') { out[k] = v; n++; }
       }
       return out;
@@ -510,6 +802,12 @@
         sdkVersion:   'v1',
         sdkSessionId: this._sdkSessionId  // stable localStorage UUID for journey linking
       });
+
+      // Normally the property payload arrives after this and configures the
+      // engine itself. On the re-auth path it does not — the payload is already
+      // stored and a fresh engine would sit unconfigured, silently emitting
+      // nothing to the client's data layer.
+      if (this.data.property) this._configureAnalytics();
     },
 
     // ----------------------------------------------------
@@ -904,6 +1202,48 @@
       this._indexSpaceConfig();
       this._resolve3DConfig();
       this._applyThemeConfig();
+      this._configureAnalytics();
+    },
+
+    // Hands the analytics engine its ambient context and the property's
+    // data-layer allowlist, and replays anything captured while the payload was
+    // still in flight.
+    //
+    // This is the single choke point both boot paths pass through — the full map
+    // fetch and the config-only boot the standalone touch pages use — so there
+    // is exactly one place where analytics learns which property it is looking
+    // at. Called on every re-fetch too, which is what makes a CMS change to the
+    // allowlist take effect on the next load rather than the next SDK release.
+    _configureAnalytics() {
+      if (!this._analytics) return;
+
+      const property = this.data.property || {};
+
+      this._analytics.configure(
+        {
+          company_id:    property.companyId ?? null,
+          property_id:   property.propertyId ?? null,
+          property_name: property.propertyName ?? null,
+          page_url:      this._hostPageUrl()
+        },
+        property.analytics || { enabled: false, actions: [], targetOrigin: null }
+      );
+    },
+
+    // The URL of the page the visitor is actually on, which is the parent page
+    // when the map is framed — not our own iframe URL, which is meaningless in a
+    // client's report.
+    //
+    // Same-origin parents answer directly. Cross-origin ones throw, and the
+    // referrer is the parent's URL in exactly that case. Both can be empty under
+    // a strict referrer policy, so this returns null rather than a wrong answer.
+    _hostPageUrl() {
+      try {
+        if (!window.parent || window.parent === window) return window.location.href;
+        return window.parent.location.href;
+      } catch (e) {
+        return document.referrer || null;
+      }
     },
 
     _applyThemeConfig() {
