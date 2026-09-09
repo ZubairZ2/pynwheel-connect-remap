@@ -55,11 +55,30 @@ class UnitFilterQuery
 
   DEFAULT_SORT = "name".freeze
 
-  # The search box matches the unit name and nothing else. Building, floor plan,
-  # beds and the rest each have their own dropdown, so folding them into the text
-  # search only ever widened a result set someone was trying to narrow - a
-  # provider id that happened to contain "243" would surface as a unit 243.
-  SEARCH_COLUMN = "units.marketing_name".freeze
+  # A unit's name is not one column. The grid labels a row the way Unit#unit_market
+  # does - the building prefixed onto the marketing name - so building "1" and
+  # marketing name "202-A" read as "1-202-A" on screen. On other properties the
+  # building is already baked into the marketing name and the column stands alone.
+  #
+  # Searching only the raw column is why "1-2" found nothing on a property whose
+  # units all look like "1-202-A": the "1-" the user typed lives in a different
+  # column from the "2" next to it.
+  DISPLAY_NAME = <<~SQL.squish.freeze
+    CASE WHEN COALESCE(units.building, '') <> ''
+         THEN units.building || '-' || units.marketing_name
+         ELSE units.marketing_name END
+  SQL
+
+  # Matched together, so both spellings of a name find their unit. The raw column
+  # is what makes an anchored search like "202*" work on a property that keeps the
+  # building separate - against the display name that term starts in the wrong
+  # place. Nothing here reaches outside the unit's own name: building, floor plan
+  # and the rest each have their own dropdown.
+  SEARCH_COLUMNS = [DISPLAY_NAME, "units.marketing_name"].freeze
+
+  # Yardi properties label every row with the provider id instead, so on those it
+  # is the name, not a hidden identifier.
+  YARDI_SEARCH_COLUMNS = ["units.provider_unit_id"].freeze
 
   MAX_SEARCH_TERMS = 40
 
@@ -140,14 +159,19 @@ class UnitFilterQuery
     terms = search_terms
     return scope if terms.empty?
 
+    columns = search_columns
     binds = {}
     clauses = terms.each_with_index.map do |term, index|
       key = :"q#{index}"
       binds[key] = search_pattern(term)
-      "#{SEARCH_COLUMN} ILIKE :#{key} ESCAPE '\\'"
+      "(" + columns.map { |column| "#{column} ILIKE :#{key} ESCAPE '\\'" }.join(" OR ") + ")"
     end
 
     scope.where(clauses.join(" OR "), binds)
+  end
+
+  def search_columns
+    community.data_provider.to_s == "yardi" ? YARDI_SEARCH_COLUMNS : SEARCH_COLUMNS
   end
 
   # Commas and newlines separate list items; a space does not, so a name that
