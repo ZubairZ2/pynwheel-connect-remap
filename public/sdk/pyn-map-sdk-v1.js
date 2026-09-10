@@ -3059,9 +3059,14 @@
     // ----------------------------------------------------
 
     // Returns amenities that belong to the given mapId and have valid pointer_data.
+    //
+    // Uses the shared ownership rule (see _amenityBelongsToMap). The strict
+    // `floorplateId === mapId` test this used to do silently dropped every
+    // sitemap amenity, because those rows carry a null owner -- so SVG
+    // floorplate maps plotted their amenities and SVG sitemaps plotted none.
     _svgAmenitiesForMap(mapId) {
       return (this.data.amenities || []).filter(a =>
-        a.pointerData && String(a.floorplateId) === String(mapId)
+        a.pointerData && this._amenityBelongsToMap(a, mapId)
       );
     },
 
@@ -4672,17 +4677,28 @@
       );
     },
 
+    _isSitemapId(mapId) {
+      return !!this.data.sitemap && String(this.data.sitemap.mapId) === String(mapId);
+    },
+
+    // Does an amenity belong to the given map?
+    //
+    // Ownership is floorplateId (the amenity's amenityable_id), which for a
+    // floorplate amenity is that floorplate's own mapId. Sitemap amenities are
+    // the exception: a row saved with no amenityable carries null there, so on
+    // the sitemap a null owner means "mine". Both renderers share this rule --
+    // they differ only in which coordinates they need to draw with (x_plot /
+    // y_plot for image maps, pointerData for SVG maps).
+    _amenityBelongsToMap(amenity, mapId) {
+      if (String(amenity.floorplateId) === String(mapId)) return true;
+      return !amenity.floorplateId && this._isSitemapId(mapId);
+    },
+
     // Amenities belonging to a given map.
     _imgAmenitiesForMap(mapId) {
-      const isSitemap = !!this.data.sitemap && String(this.data.sitemap.mapId) === String(mapId);
-      return (this.data.amenities || []).filter(a => {
-        if (!(a.x_plot > 0 || a.y_plot > 0)) return false;
-        // floorplateId is the amenity's amenityable_id, so a sitemap amenity carries
-        // the sitemap's own id -- not null. Legacy rows with no amenityable still
-        // belong to the sitemap, so accept those too.
-        if (isSitemap) return !a.floorplateId || String(a.floorplateId) === String(mapId);
-        return String(a.floorplateId) === String(mapId);
-      });
+      return (this.data.amenities || []).filter(a =>
+        (a.x_plot > 0 || a.y_plot > 0) && this._amenityBelongsToMap(a, mapId)
+      );
     },
 
     // Build HTML for all unit markers, grouping overlapping coords into one marker with a badge.
