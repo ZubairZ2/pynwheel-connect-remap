@@ -4677,8 +4677,10 @@
       const isSitemap = !!this.data.sitemap && String(this.data.sitemap.mapId) === String(mapId);
       return (this.data.amenities || []).filter(a => {
         if (!(a.x_plot > 0 || a.y_plot > 0)) return false;
-        // Sitemap amenities have no floorplateId; floorplate amenities have one.
-        if (isSitemap) return !a.floorplateId;
+        // floorplateId is the amenity's amenityable_id, so a sitemap amenity carries
+        // the sitemap's own id -- not null. Legacy rows with no amenityable still
+        // belong to the sitemap, so accept those too.
+        if (isSitemap) return !a.floorplateId || String(a.floorplateId) === String(mapId);
         return String(a.floorplateId) === String(mapId);
       });
     },
