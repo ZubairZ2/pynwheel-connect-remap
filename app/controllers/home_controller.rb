@@ -10,7 +10,7 @@ class HomeController < ApplicationController
       ids = (assigned_communities_ids + dwelo_communities_ids + dwelo_companies_communities).uniq
       @communities = ids.present? ? Community.active_properties.where(id: ids) : []
     when current_user.is_company_admin?
-      @communities = current_user.company.communities.active_properties
+      @communities = current_user&.company&.communities&.active_properties
     when current_user.is_regional_admin?
       @communities = current_user.region.communities.active_properties
     else

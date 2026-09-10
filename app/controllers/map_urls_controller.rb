@@ -10,6 +10,11 @@ class MapUrlsController < ApplicationController
     @embed_template = source[:embed_template]
     @floors         = current_community.has_floorplates? ? current_community.property_floor_numbers : []
     @partners       = Community::MAP_PARTNERS
+    # Touch (kiosk) urls are internal: only the Pynwheel admin role (stored as
+    # "Super admin") may hand them out. require_map_urls_access has already
+    # guaranteed current_user, and the view leaves the option out entirely when
+    # this is false, so the markup never reaches anyone else.
+    @touch_allowed  = current_user.is_super_admin?
   end
 
   private

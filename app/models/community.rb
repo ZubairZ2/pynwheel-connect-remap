@@ -2172,7 +2172,7 @@ class Community < ApplicationRecord
   MAP_URL_PLACEHOLDER = "__MAP_URL__".freeze
 
   def map_embed_code_for(url)
-    <<-HTML.strip.gsub(/\n\s*/, "")
+    <<-HTML.strip.gsub(/\s*\n\s*/, " ")
       <embed onload='window.parent.$("body").animate({scrollTop:0}, "slow");' 
         style='margin-top: 0px; overflow:scroll;' 
         src='#{url}'
@@ -2204,7 +2204,7 @@ class Community < ApplicationRecord
   end
 
   def sdk_map_embed_code_for(url)
-    <<-HTML.strip.gsub(/\n\s*/, "")
+    <<-HTML.strip.gsub(/\s*\n\s*/, " ")
       <embed
         src='#{url}'
         width='100%'

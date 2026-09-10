@@ -14,11 +14,15 @@
     .box.box-widget.panel-box.map-urls-box
       .box-body
         .map-urls-filters
-          .map-url-filter
-            %label{ for: "map-url-src" } Map Type
-            %select#map-url-src{ "data-map-param" => "src" }
-              %option{ value: "" } Web (browser)
-              %option{ value: "touch" } Touch (kiosk)
+          -# Touch (kiosk) urls are Pynwheel-admin only, so the Map Type choice and
+          -# the filters that only apply to it are left out of the response for
+          -# every other role. See MapUrlsController#index.
+          - if @touch_allowed
+            .map-url-filter
+              %label{ for: "map-url-src" } Map Type
+              %select#map-url-src{ "data-map-param" => "src" }
+                %option{ value: "" } Web (browser)
+                %option{ value: "touch" } Touch (kiosk)
 
           .map-url-filter
             %label{ for: "map-url-ops" } Map View
@@ -26,21 +30,22 @@
               %option{ value: "" } Marketing
               %option{ value: "true" } Ops
 
-          -# Touch-only filters: hidden and left out of the url for the web map.
-          .map-url-filter{ "data-touch-only" => true }
-            %label{ for: "map-url-orientation" } Orientation
-            %select#map-url-orientation{ "data-map-param" => "orientation" }
-              %option{ value: "" } None
-              %option{ value: "horizontal" } Horizontal
-              %option{ value: "vertical" } Vertical
+          - if @touch_allowed
+            -# Touch-only filters: hidden and left out of the url for the web map.
+            .map-url-filter{ "data-touch-only" => true }
+              %label{ for: "map-url-orientation" } Orientation
+              %select#map-url-orientation{ "data-map-param" => "orientation" }
+                %option{ value: "" } None
+                %option{ value: "horizontal" } Horizontal
+                %option{ value: "vertical" } Vertical
 
-          .map-url-filter{ "data-touch-only" => true }
-            %label{ for: "map-url-page" } Page
-            %select#map-url-page{ "data-map-param" => "page" }
-              %option{ value: "" } None
-              %option{ value: "gallery" } Gallery
-              %option{ value: "neighborhood" } Neighborhood
-              %option{ value: "favorites" } Favorites
+            .map-url-filter{ "data-touch-only" => true }
+              %label{ for: "map-url-page" } Page
+              %select#map-url-page{ "data-map-param" => "page" }
+                %option{ value: "" } None
+                %option{ value: "gallery" } Gallery
+                %option{ value: "neighborhood" } Neighborhood
+                %option{ value: "favorites" } Favorites
 
           - if @floors.any?
             .map-url-filter
@@ -95,7 +100,9 @@
     function field(param) { return document.querySelector('[data-map-param="' + param + '"]'); }
 
     function render() {
-      var isTouch = field("src").value === "touch";
+      // The src select is absent unless the viewer is a Pynwheel admin.
+      var src     = field("src");
+      var isTouch = !!src && src.value === "touch";
       touchOnly.forEach(function (filter) { filter.hidden = !isTouch; });
 
       var query = PARAMS.map(function (param) {

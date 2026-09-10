@@ -28,7 +28,7 @@
             %th Community
             %th{:width => "250"} Company
         %tbody
-          - @communities.each do |community|
+          - @communities&.each do |community|
             %tr
               %td
                 %h4.h4
