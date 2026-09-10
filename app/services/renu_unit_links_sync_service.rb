@@ -5,8 +5,11 @@
 #
 # Mapping — sheet column -> unit column (see LINKS):
 #
-#   "Boom Application URL" -> virtual_tour_url  (+ label "Apply Now")
-#   "Rently Listing URL"   -> scheduler_url     (+ label "Schedule a Tour")
+#   "Boom Application URL" -> virtual_tour_url  (+ label "Apply Now",       open in new tab)
+#   "Rently Listing URL"   -> scheduler_url     (+ label "Schedule a Tour", open in new tab)
+#
+# A link RENU feeds us always points off-site, so whenever a URL is synced its
+# label and its link{1,3}_open_new_tab flag are brought along with it.
 #
 # The join is the sheet's "AF Unit Integration ID" against units.provider_unit_id,
 # compared case-insensitively and whitespace-trimmed. Anything that does not join
@@ -44,14 +47,17 @@ class RenuUnitLinksSyncService
   # The sheet column holding the id we join on.
   KEY_COLUMN = "af_unit_integration_id".freeze
 
+  # Each entry carries everything one link owns: the URL column, the caption
+  # column and its text, and the "open in a new tab" flag that belongs to that
+  # same button — link1 is the virtual-tour button, link3 the scheduler one.
   # Declaration order is also the column order used to bucket writes, so the
   # generated SQL is stable and easy to read in a log.
   LINKS = {
-    "boom_application_url" => { url: :virtual_tour_url, label: :virtual_tour_button_label, label_text: "Apply Now" },
-    "rently_listing_url"   => { url: :scheduler_url,    label: :scheduler_label,           label_text: "Schedule a Tour" }
+    "boom_application_url" => { url: :virtual_tour_url, label: :virtual_tour_button_label, label_text: "Apply Now",       new_tab: :link1_open_new_tab },
+    "rently_listing_url"   => { url: :scheduler_url,    label: :scheduler_label,           label_text: "Schedule a Tour", new_tab: :link3_open_new_tab }
   }.freeze
 
-  UNIT_COLUMNS = ([:id, :provider_unit_id] + LINKS.values.flat_map { |m| [m[:url], m[:label]] }).freeze
+  UNIT_COLUMNS = ([:id, :provider_unit_id] + LINKS.values.flat_map { |m| [m[:url], m[:label], m[:new_tab]] }).freeze
 
   READ_BATCH  = 2_000
   WRITE_BATCH = 500
@@ -166,8 +172,8 @@ class RenuUnitLinksSyncService
 
   # The whole "skip if it already matches" rule lives here. A column is included
   # only when the sheet has a value for it AND that value differs from what the
-  # unit already holds; the label rides along with its URL so a link never shows
-  # up under the wrong caption.
+  # unit already holds; the label and the new-tab flag ride along with their URL
+  # so a link never shows up under the wrong caption or opens in place.
   def diff(current, wanted)
     LINKS.each_value.with_object({}) do |mapping, changes|
       url = wanted[mapping[:url]]
@@ -178,6 +184,7 @@ class RenuUnitLinksSyncService
         @stats[:replaced_urls] += 1 if current[mapping[:url]].present?
       end
       changes[mapping[:label]] = mapping[:label_text] if current[mapping[:label]].to_s != mapping[:label_text]
+      changes[mapping[:new_tab]] = true unless current[mapping[:new_tab]]
     end
   end
 
@@ -193,20 +200,23 @@ class RenuUnitLinksSyncService
   #
   #   UPDATE units AS u
   #      SET "virtual_tour_url" = v."virtual_tour_url", …, "updated_at" = CURRENT_TIMESTAMP
-  #     FROM (VALUES (12::bigint, 'https://…'::varchar, …), …) AS v("id", "virtual_tour_url", …)
+  #     FROM (VALUES (12::integer, 'https://…'::character varying, TRUE::boolean, …), …)
+  #            AS v("id", "virtual_tour_url", "link1_open_new_tab", …)
   #    WHERE u."id" = v."id"
   #
   # Every literal is cast because Postgres infers a VALUES list's column types
   # from its first row, and an all-NULL first row would otherwise come out as
-  # `unknown` and fail to join.
+  # `unknown` and fail to join. The cast is read straight off the schema rather
+  # than hardcoded, so a boolean flag and a varchar label sit in the same tuple
+  # without anyone having to keep a type table in sync with the columns.
   def write_slice(columns, slice)
     connection = Unit.connection
-    quoted_columns = ([:id] + columns).map { |column| connection.quote_column_name(column) }
+    all_columns = [:id] + columns
+    quoted_columns = all_columns.map { |column| connection.quote_column_name(column) }
+    casts = all_columns.map { |column| Unit.columns_hash.fetch(column.to_s).sql_type }
 
     tuples = slice.map do |row|
-      literals = row.each_with_index.map do |value, index|
-        "#{connection.quote(value)}::#{index.zero? ? 'bigint' : 'varchar'}"
-      end
+      literals = row.each_with_index.map { |value, index| "#{connection.quote(value)}::#{casts[index]}" }
       "(#{literals.join(', ')})"
     end
 
