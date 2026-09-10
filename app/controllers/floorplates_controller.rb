@@ -97,9 +97,6 @@ class FloorplatesController < ApplicationController
   end
 
   def update
-    original_svg_image_checksum = nil
-    file_checksum = nil
-
     if floorplate_params[:name] != @floorplate.name
       @floorplate.name_is_updated = true
     end
@@ -125,7 +122,7 @@ class FloorplatesController < ApplicationController
     
     if floorplate_params[:manual_override] == "true"
       if @floorplate.update(floorplate_params)
-        clear_svg_plotted_units_and_amenities(@floorplate, file_checksum, original_svg_image_checksum) if original_svg_image_checksum.present?
+        revalidate_svg_plots
 
         flash[:notice] = "Floorplate updated successfully."
         PaperTrail::Version.create(item_type: "Floorplate", item_id: @floorplate.id, event: "update", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
@@ -140,7 +137,7 @@ class FloorplatesController < ApplicationController
     else
       unless (floorplate_params[:name] != @floorplate.name) || (floorplate_params[:building] != @floorplate.building)
         if @floorplate.update(floorplate_params)
-          clear_svg_plotted_units_and_amenities(@floorplate, file_checksum, original_svg_image_checksum) if original_svg_image_checksum.present?
+          revalidate_svg_plots
   
           flash[:notice] = "Floorplate updated successfully."
           #PaperTrail::Version.create(item_type: "Floorplate", item_id: @floorplate.id, event: "update", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
@@ -275,6 +272,9 @@ class FloorplatesController < ApplicationController
     doc = parse_svg(svg_file)
     return unless doc
 
+    # Held for revalidate_svg_plots, which runs after the floorplate saves.
+    @uploaded_svg_doc = doc
+
     width  = doc.root["width"].to_i
     height = doc.root["height"].to_i
 
@@ -283,6 +283,15 @@ class FloorplatesController < ApplicationController
     # end
 
     @floorplate.svg_metadata = { width: width, height: height }
+  end
+
+  # Drops plotting only for the shapes that are missing from the newly uploaded
+  # artwork. Previously this compared file checksums, but the two locals it read
+  # were never assigned, so floorplate plotting was never revalidated at all.
+  def revalidate_svg_plots
+    return unless @uploaded_svg_doc
+
+    SvgPlotRevalidator.call(current_community, @uploaded_svg_doc, floorplate: @floorplate)
   end
 
   def parse_svg(svg_file)

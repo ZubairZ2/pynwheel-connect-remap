@@ -174,23 +174,16 @@ class SitemapsController < ApplicationController
 
     return render(json: { status: "not_found" }, status: :not_found) unless sitemap
 
-    original_svg = fetch_svg_by_url(get_environment_based_svg_url(sitemap))
-    original_checksum = Digest::MD5.hexdigest(original_svg) if original_svg.present?
-
     sitemap.svg_image       = file
     sitemap.svg_metadata    = svg_data.slice(:width, :height)
     sitemap.is_ocr_enabled  = false
 
     if sitemap.save
-      if original_checksum.present?
-        clear_svg_plotted_units_and_amenities(
-          sitemap,
-          svg_data[:checksum],
-          original_checksum
-        )
-      end
+      # Only the plots whose shape is missing from the new artwork are dropped --
+      # editing a road name leaves the map fully plotted. See SvgPlotRevalidator.
+      cleared = SvgPlotRevalidator.call(@community, svg_data[:doc])
 
-      render json: { status: "success" }
+      render json: { status: "success", cleared_plots: cleared.total }
     else
       render json: { status: "fail" }
     end

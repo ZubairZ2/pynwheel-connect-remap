@@ -2241,17 +2241,6 @@ class Community < ApplicationRecord
     params.to_query
   end
 
-  def clear_svg_plotted_units_and_amenities(floorplate = nil)
-    (if floorplate
-      [Unit.where(community_id: id, floorplate_id: floorplate.id),
-       Amenity.where(community_id: id, amenityable: floorplate)]
-    else
-      [Unit.where(community_id: id), Amenity.where(community_id: id)]
-    end).each do |model|
-      model.svg_pointed.update_all(pointer_data: {})
-    end
-  end
-
   # Launch: the community details form is complete once the property can be contacted and located.
   def derive_launch_status
     launch_status_from(check_community_requirments(self))

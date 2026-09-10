@@ -22,7 +22,10 @@ module SvgUploadHelper
     {
       width: width,
       height: height,
-      checksum: Digest::MD5.hexdigest(doc.to_xml)
+      checksum: Digest::MD5.hexdigest(doc.to_xml),
+      # Handed back so the caller can re-check plotted shapes against the new
+      # artwork without paying to parse the file a second time.
+      doc: doc
     }
   end
 

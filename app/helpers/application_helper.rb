@@ -742,12 +742,6 @@ module ApplicationHelper
     end
   end
 
-  def clear_svg_plotted_units_and_amenities(resource, new_checksum, old_checksum)
-    if new_checksum != old_checksum
-      @community.clear_svg_plotted_units_and_amenities(resource.is_a?(Floorplate) ? resource : nil)
-    end
-  end
-  
   def fetch_svg_by_url(url)
     return unless url
     if Rails.env.development?
