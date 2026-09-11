@@ -164,7 +164,8 @@ next page load.
 | `gallery_viewed` | The gallery was opened. |
 | `map_filter_used` | Any filter was applied. |
 
-New properties start with `apply_clicked` and `schedule_tour_clicked` only.
+A property that enables the data layer receives the four click-through CTAs at
+the top of that table. Ask us for any of the others.
 
 ---
 
@@ -255,7 +256,8 @@ Community.find(34).update!(map_analytics_settings: {
 
 - `enabled` false, or the key absent, means the map emits nothing to the page.
 - `actions` is validated against the contract on read. An unknown name is
-  ignored, never trusted. Empty or absent falls back to the two CTAs.
+  ignored, never trusted. Empty or absent falls back to the four click-through
+  CTAs.
 - `target_origin` narrows postMessage delivery to one host. Null broadcasts,
   which is the default: the payload has no PII, and the receiving page verifies
   our origin in its own relay snippet, which is the check that actually prevents

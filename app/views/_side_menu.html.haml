@@ -179,7 +179,7 @@
         %li.loader_class{:class=>"#{controller_name =='map_analytics_settings' ? 'active' : ''}"}
           %a{:href => "#{community_map_analytics_setting_path(current_community)}"}
             %i.fa.fa-line-chart
-            %span Map Analytics
+            %span Setup Map Google Analytics
 
       - if (current_user.is_admin? || current_user.is_community_assistant?) and current_community.self_tour
         %li.treeview{:class=>"#{controller_name =='tours' ? 'active' : 'active'}"}

@@ -88,9 +88,25 @@ module Analytics
       "map_filter_used"         => "Any map filter was applied"
     }.freeze
 
-    # What a property gets when it enables the data layer and names no actions.
-    # PYN-1655: "Only the two per-unit CTA interactions Renu needs now."
-    DEFAULT_DATA_LAYER_ACTIONS = %w[apply_clicked schedule_tour_clicked].freeze
+    # What a property gets when it enables the data layer and names no actions:
+    # every click-through the map renders. Apply Now and the three CMS link
+    # slots are the interactions that end in the visitor leaving for the
+    # client's own funnel, so a property turning the data layer on wants all
+    # four without having to ask.
+    #
+    # Everything else the contract publishes -- selections, favourites, shares,
+    # filters -- is a browsing signal. Those are tracked and stored either way;
+    # they reach a client's GA4 only when that client asks for them, because
+    # each one is another event they have to name and register at their end.
+    #
+    # Listed rather than derived from ACTIONS' first group, so adding a CTA to
+    # the contract is not silently a change to what every property publishes.
+    DEFAULT_DATA_LAYER_ACTIONS = %w[
+      apply_clicked
+      schedule_tour_clicked
+      virtual_tour_clicked
+      additional_link_clicked
+    ].freeze
 
     # Every action a property may opt into, derived rather than listed so the two
     # can never drift.

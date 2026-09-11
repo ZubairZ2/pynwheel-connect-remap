@@ -55,9 +55,9 @@
             .map-analytics-step-body
               %h4 Choose which interactions to send
               %p.hint
-                Only what the client asked for. Every extra interaction lands in their
-                GA4 as another event they have to name and register, so start with the
-                two CTAs and add more when they ask.
+                The four click-through CTAs are on by default. Everything below them is
+                browsing signal, and each one lands in the client's GA4 as another event
+                they have to name and register, so tick those only when they ask.
               .map-analytics-actions
                 - @known_actions.each do |action|
                   %label.map-analytics-action
