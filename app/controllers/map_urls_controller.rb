@@ -15,6 +15,9 @@ class MapUrlsController < ApplicationController
     # guaranteed current_user, and the view leaves the option out entirely when
     # this is false, so the markup never reaches anyone else.
     @touch_allowed  = current_user.is_super_admin?
+    # Orientation and Page only exist on the SDK map, so the filters for them
+    # are left out entirely for communities still on the legacy map.
+    @sdk_map        = current_community.enable_sdk_map?
   end
 
   private

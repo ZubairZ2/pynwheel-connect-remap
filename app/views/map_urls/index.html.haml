@@ -30,8 +30,9 @@
               %option{ value: "" } Marketing
               %option{ value: "true" } Ops
 
-          - if @touch_allowed
-            -# Touch-only filters: hidden and left out of the url for the web map.
+          - if @touch_allowed && @sdk_map
+            -# SDK-map-only filters, and touch-only within it: hidden and left out
+            -# of the url for the web map.
             .map-url-filter{ "data-touch-only" => true }
               %label{ for: "map-url-orientation" } Orientation
               %select#map-url-orientation{ "data-map-param" => "orientation" }
