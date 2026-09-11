@@ -12,16 +12,25 @@ module HomeHelper
     community_units_path(community)
   end
 
-  # `locked` and `move_to_production` are two booleans describing one thing:
-  # where the property is in its life cycle. The grid shows the answer, not the
-  # flags, and the Status filter narrows on exactly the same three cases.
-  def community_status(community)
-    if community.locked?
-      { label: "Locked", tone: "bad" }
-    elsif community.move_to_production?
-      { label: "Live", tone: "yes" }
+  # The company cell goes to the company's own settings for anyone allowed to
+  # change them, and to that company's property list for everyone else, so the
+  # link never lands a user on a page CanCan will refuse.
+  def company_row_path(company)
+    return edit_company_path(company) if can?(:update, company)
+
+    company_communities_path(company)
+  end
+
+  # How the property is mapped. `is_sitemap` is the map-style radio on the
+  # property form - one map of the whole site, or a plan per floor - and
+  # `is_floor_level_map` is the separate switch that splits a sitemap property
+  # by floor, so it reads as a note under the style rather than a style of its
+  # own.
+  def community_map_type(community)
+    if community.is_sitemap?
+      { label: "Sitemap", sub: ("Floor-level" if community.is_floor_level_map?) }
     else
-      { label: "In setup", tone: "warn" }
+      { label: "Floorplates", sub: nil }
     end
   end
 

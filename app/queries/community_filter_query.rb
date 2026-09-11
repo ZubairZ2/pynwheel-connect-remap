@@ -26,10 +26,6 @@ class CommunityFilterQuery < FilterQuery
   # shown, in SQL rather than by sorting an array of every row in Ruby.
   NATURAL_NAME = "regexp_replace(lower(communities.name), '^(the|\\(dwelo\\))\\s+', '')".freeze
 
-  # "Never" is the literal the sync services write when a property has never
-  # pulled from its provider, so an empty string counts as never too.
-  NEVER_SYNCED = "(communities.data_provider_updated_on IS NULL OR communities.data_provider_updated_on IN ('', 'Never'))".freeze
-
   SORTS = {
     "name" => "#{NATURAL_NAME} %<dir>s NULLS LAST",
     "company" => "lower(companies.name) %<dir>s NULLS LAST, #{NATURAL_NAME} ASC",
@@ -43,7 +39,7 @@ class CommunityFilterQuery < FilterQuery
 
   FILTER_KEYS = %i[
     q company_id region_id community_group_id state data_provider
-    status product map_type synced min_units max_units
+    product map_type
   ].freeze
 
   # Which map a property renders. Mutually exclusive as far as the operator
@@ -54,15 +50,6 @@ class CommunityFilterQuery < FilterQuery
     "three_d" => "communities.enable_three_d_maps IS TRUE",
     "sitemap" => "communities.is_sitemap IS TRUE",
     "floor_level" => "communities.is_floor_level_map IS TRUE"
-  }.freeze
-
-  # `locked` and `move_to_production` between them describe where a property is
-  # in its life cycle; the grid states that as one column and filters it as one
-  # dropdown rather than making an operator read two booleans.
-  STATUSES = {
-    "live" => "communities.locked IS NOT TRUE AND communities.move_to_production IS TRUE",
-    "setup" => "communities.locked IS NOT TRUE AND communities.move_to_production IS NOT TRUE",
-    "locked" => "communities.locked IS TRUE"
   }.freeze
 
   private
@@ -78,11 +65,8 @@ class CommunityFilterQuery < FilterQuery
     relation = apply_association(relation, :community_group_id, "communities.community_group_id")
     relation = apply_exact(relation, :state, "communities.state", blank_sql: "communities.state IS NULL OR communities.state = ''")
     relation = apply_exact(relation, :data_provider, "communities.data_provider", blank_sql: "communities.data_provider IS NULL OR communities.data_provider = ''")
-    relation = apply_lookup(relation, :status, STATUSES)
     relation = apply_lookup(relation, :map_type, MAP_TYPES)
-    relation = apply_product(relation)
-    relation = apply_synced(relation)
-    apply_range(relation, UNIT_COUNT, params[:min_units], params[:max_units])
+    apply_product(relation)
   end
 
   # One box over everything an operator would recognise a property by: its own
@@ -126,13 +110,5 @@ class CommunityFilterQuery < FilterQuery
     return relation.none if feature.blank?
 
     relation.where("communities.#{feature[:column]} IS TRUE")
-  end
-
-  def apply_synced(relation)
-    case params[:synced].to_s
-    when "true" then relation.where("NOT #{NEVER_SYNCED}")
-    when "false" then relation.where(NEVER_SYNCED)
-    else relation
-    end
   end
 end

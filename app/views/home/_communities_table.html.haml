@@ -17,21 +17,20 @@
           = render "shared/grid_sort_header", key: "location", label: "Location"
           = render "shared/grid_sort_header", key: "units", label: "Units", align: "right"
           = render "shared/grid_sort_header", key: "provider", label: "Data Feed"
-          %th Status
+          %th Map Type
           %th Products
           %th.right Actions
       %tbody
         - @communities.each do |community|
-          %tr
+          %tr{"data-href" => community_row_path(community)}
             %td.c-property
               = link_to community.name.presence || "Untitled property", community_row_path(community), class: "cell-title"
               .cell-sub
-                = community.code.presence || "No code"
-                %span.dot ·
+                = "Timezone: "
                 = community.time_zone
             %td.c-company
               - if community.company
-                = link_to community.company.name, company_communities_path(community.company), class: "cell-link"
+                = link_to community.company.name, company_row_path(community.company), class: "cell-link", title: "Open this company"
               - else
                 %span.cell-none &mdash;
             %td.c-location
@@ -51,9 +50,11 @@
                   = community_sync_label(community)
               - else
                 %span.cell-none Not connected
-            %td.c-status
-              - status = community_status(community)
-              %span.pill{class: status[:tone]}= status[:label]
+            %td.c-map-type
+              - map_type = community_map_type(community)
+              = map_type[:label]
+              - if map_type[:sub]
+                .cell-sub= map_type[:sub]
             %td.c-products
               - badges = community_feature_badges(community)
               - if badges.any?
@@ -66,10 +67,5 @@
               .row-actions
                 = link_to community_row_path(community), class: "ico", title: "Open this property" do
                   %i.fa.fa-external-link
-                = link_to community_units_path(community), class: "ico", title: "Units" do
-                  %i.fa.fa-th-list
-                - if community.company
-                  = link_to edit_company_community_path(community.company, community), class: "ico", title: "Property settings" do
-                    %i.fa.fa-cog
 
   = render "shared/grid_pager", collection: @communities
