@@ -112,6 +112,19 @@ class Floorplate < ApplicationRecord
     floors
   end
 
+  # What a floor this floorplate covers is called on the map, verbatim from the
+  # CMS ("-1", "B", "G0", "-A" are all valid):
+  #   1. the floor name, when "Add floor name" is on and one was entered;
+  #   2. else the floorplate name, when this floorplate covers only that floor
+  #      (a "1-5" floorplate would otherwise label five floors identically);
+  #   3. else the floor number.
+  # The new map's SDK (PynMapSDK.getFloors) applies the same rule — keep them in step.
+  def floor_label(floor)
+    return floor_name.strip if floor_name_added && floor_name.present?
+    return name.strip if name.present? && floors.uniq.size == 1
+    floor.to_s
+  end
+
   def fetch_units
     units = Unit.visible_units.where(community_id: community_id,floor: self.floors)
   end

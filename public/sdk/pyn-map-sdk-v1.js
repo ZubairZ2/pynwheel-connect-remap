@@ -1472,6 +1472,7 @@
      *   1. the floor name, when "Add floor name" is on and one was entered;
      *   2. else the floorplate name, when that floorplate covers only this floor;
      *   3. else the floor number.
+     * Same rule as Floorplate#floor_label, which labels the old map — keep them in step.
      * Use with changeFloor(floor) or changeMap(mapId).
      */
     getFloors() {
