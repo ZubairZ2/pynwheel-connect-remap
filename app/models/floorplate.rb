@@ -112,16 +112,26 @@ class Floorplate < ApplicationRecord
     floors
   end
 
+  # True once the floorplate name was changed in the CMS under Manual Override
+  # (the floorplates table shows such names in red). The name typed when a map is
+  # first loaded is not an override: clients enter anything there, so it must
+  # never reach a floor list on its own.
+  def name_overridden?
+    name_is_updated == true && name.present?
+  end
+
   # What a floor this floorplate covers is called on the map, verbatim from the
   # CMS ("-1", "B", "G0", "-A" are all valid):
   #   1. the floor name, when "Add floor name" is on and one was entered;
-  #   2. else the floorplate name, when this floorplate covers only that floor
-  #      (a "1-5" floorplate would otherwise label five floors identically);
-  #   3. else the floor number.
-  # The new map's SDK (PynMapSDK.getFloors) applies the same rule — keep them in step.
+  #   2. else the floorplate name, only when it was overridden (name_overridden?)
+  #      and this floorplate covers only that floor (a "1-5" floorplate would
+  #      otherwise label five floors identically);
+  #   3. else the floor number from the range.
+  # The one place this rule lives: the old map calls it directly, and the new map
+  # receives its result through the SDK payload (floorplates[].floorLabels).
   def floor_label(floor)
     return floor_name.strip if floor_name_added && floor_name.present?
-    return name.strip if name.present? && floors.uniq.size == 1
+    return name.strip if name_overridden? && floors.uniq.size == 1
     floor.to_s
   end
 

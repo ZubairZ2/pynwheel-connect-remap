@@ -1468,44 +1468,32 @@
      * Returns a sorted array of floor objects derived from units.
      * Each object: { floor: Number, mapId: String, name: String }
      * `name` is what the floor should be labelled as, verbatim from the CMS
-     * ("-1", "B", "G1", "-A" are all valid):
-     *   1. the floor name, when "Add floor name" is on and one was entered;
-     *   2. else the floorplate name, when that floorplate covers only this floor;
-     *   3. else the floor number.
-     * Same rule as Floorplate#floor_label, which labels the old map — keep them in step.
+     * ("-1", "B", "G1", "-A" are all valid). The server decides it
+     * (Floorplate#floor_label, sent as floorplates[].floorLabels), so it always
+     * matches the old map; a floor without a label shows its number.
      * Use with changeFloor(floor) or changeMap(mapId).
      */
     getFloors() {
-      const seen = new Map(); // floor → { fp, floorCount }
+      const seen = new Map(); // floor → owning floorplate
 
       // Floors are derived EXCLUSIVELY from floorplate ranges, mirroring the old
       // map's `@floorplates.map { |f| f.floors }`. Units are never a source of
       // truth for floors — a unit with a stray/blank/unplotted floor (which
       // coerces to 0) must not conjure a phantom entry the property doesn't have.
       (this.data.floorplates || []).forEach(fp => {
-        const floors = [...new Set(this._floorsForRange(fp.range))];
         // First floorplate to declare a floor owns it.
-        floors.forEach(f => {
-          if (!seen.has(f)) seen.set(f, { fp, floorCount: floors.length });
+        this._floorsForRange(fp.range).forEach(f => {
+          if (!seen.has(f)) seen.set(f, fp);
         });
       });
 
-      // A floorplate spanning several floors ("1-5") has one name for all of
-      // them, so it would label every one of those floors identically; those
-      // floors keep their numbers instead.
       return [...seen.entries()]
         .sort(([a], [b]) => a - b)
-        .map(([floor, { fp, floorCount }]) => {
-          const mapId          = fp.mapId != null ? String(fp.mapId) : null;
-          const floorName      = String(fp.floorName ?? "").trim();
-          const floorplateName = String(fp.name ?? "").trim();
-
-          let name = String(floor);
-          if (fp.floorNameAdded && floorName) name = floorName;
-          else if (floorCount === 1 && floorplateName) name = floorplateName;
-
-          return { floor, mapId, name };
-        });
+        .map(([floor, fp]) => ({
+          floor,
+          mapId: fp.mapId != null ? String(fp.mapId) : null,
+          name:  fp.floorLabels?.[String(floor)] ?? String(floor),
+        }));
     },
 
     /**

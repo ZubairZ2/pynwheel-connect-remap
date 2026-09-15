@@ -637,6 +637,10 @@ class SdkPayloadBuilderService
         mapType:        'floorplate',
         name:           fp.name,
         range:          fp.range,
+        # { "floor" => label } — what each floor is called in the floor list,
+        # decided here by Floorplate#floor_label so the new map's labels come from
+        # the same rule as the old map's and the SDK only has to look them up.
+        floorLabels:    floor_labels_for(fp),
         floorName:      fp.floor_name,
         floorNameAdded: fp.floor_name_added,
         updatedAt:      fp.updated_at.to_i,
@@ -644,6 +648,16 @@ class SdkPayloadBuilderService
         imageWidth:     fp.floorplate_image_width.to_i,
         imageHeight:    fp.floorplate_image_height.to_i
       }
+    end
+  end
+
+  # Floorplate#floors cannot parse a blank range, so such a floorplate sends no
+  # labels and the SDK falls back to floor numbers.
+  def floor_labels_for(floorplate)
+    return {} if floorplate.range.blank?
+
+    floorplate.floors.each_with_object({}) do |floor, labels|
+      labels[floor.to_s] = floorplate.floor_label(floor)
     end
   end
 
