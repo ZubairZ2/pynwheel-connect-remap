@@ -175,21 +175,12 @@ class Community < ApplicationRecord
     end
   end
 
+  # Resolved through Floorplate#floors so every range format matches the floor
+  # list the map shows. A naive split on "-" read a basement range like "-1" as
+  # 0..1, which stole floors 0 and 1 from their own floorplates.
   def floorplate_for_floor(floor)
     floor = floor.to_i
-
-    floorplates.each do |fp|
-      range_str = fp.range.to_s.strip
-
-      if range_str.include?("-")
-        start_floor, end_floor = range_str.split("-").map(&:to_i)
-        return fp if floor >= start_floor && floor <= end_floor
-      else
-        return fp if floor == range_str.to_i
-      end
-    end
-
-    nil
+    floorplates.detect { |fp| fp.range.present? && fp.floors.include?(floor) }
   end
 
   def have_multi_property_ids?
