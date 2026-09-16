@@ -40,6 +40,10 @@ class Floorplate < ApplicationRecord
   has_many :access_points, class_name: 'Door', as: :attached_with, dependent: :destroy
   include LaunchStatusable
 
+  # An SVG uploaded in Connect lands on a record that may already be marked in
+  # progress; let Launch see the map is ready for review.
+  after_commit :advance_launch_status, on: :update, if: :saved_change_to_svg_image?
+
   validates_uniqueness_of :name, scope: :community_id, if: -> { name.present? }
   validates :image, :presence => {message: "cannot be blank. Please upload Floor Plate image first."}, if: -> { image.present? }
   validates_with FloorValidator
@@ -168,9 +172,10 @@ class Floorplate < ApplicationRecord
     self.height > 0 ? self.height : self.image.height rescue 0
   end
 
-  # Launch: the property map form is complete once the floorplate artwork is in.
+  # Launch: the property map form is complete once the floorplate artwork is in,
+  # whether that is a raster image, a design file or an SVG.
   def derive_launch_status
-    launch_status_from(image&.url.present? || file&.url.present?)
+    launch_status_from(image&.url.present? || file&.url.present? || svg_image&.url.present?)
   end
 
   private

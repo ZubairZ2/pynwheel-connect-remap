@@ -57,4 +57,31 @@ namespace :pynwheel_launch do
 
     puts "\n#{grand_total} record(s) across #{models.size} models#{dry_run ? ' would be backfilled' : "; #{grand_failed} failed"}."
   end
+
+  # Property maps whose only artwork is an SVG used to derive "in progress", so
+  # Launch never offered to approve them. Moves those still in progress on to
+  # submitted; any status a reviewer has set is left alone.
+  #
+  #   rake pynwheel_launch:advance_svg_map_statuses
+  #   rake pynwheel_launch:advance_svg_map_statuses[dry_run]
+  desc "Mark SVG-only property maps still in progress as submitted"
+  task :advance_svg_map_statuses, [:mode] => :environment do |_task, args|
+    dry_run = args[:mode].to_s == "dry_run"
+
+    [Sitemap, Floorplate].each do |model|
+      scope = model.joins(:status)
+                   .where(statuses: { status: Status.statuses[IN_PROGRESS] })
+                   .where.not(svg_image: [nil, ""])
+      advanced = 0
+
+      scope.find_each(batch_size: 500) do |record|
+        next unless record.derive_launch_status.eql?(SUBMITTED)
+
+        advanced += 1
+        record.advance_launch_status unless dry_run
+      end
+
+      puts "#{model.name}: #{advanced} record(s) #{dry_run ? "would be moved" : "moved"} to submitted"
+    end
+  end
 end
