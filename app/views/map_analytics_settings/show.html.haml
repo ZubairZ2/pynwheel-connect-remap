@@ -122,29 +122,29 @@
                         });
                       &lt;/script&gt;
 
-              %p.hint
-                %b B.
-                In their Google Tag Manager, one trigger and one tag, built once:
-              %ul.map-analytics-checklist
-                %li
-                  Trigger: Custom Event, event name
-                  %code pynwheel_map
-                %li
-                  Tag: GA4 Event, using the
-                  %code action
-                  field as the GA4 event name
-                %li
-                  One Data Layer Variable per field they want to report on
+              -# %p.hint
+              -#   %b B.
+              -#   In their Google Tag Manager, one trigger and one tag, built once:
+              -# %ul.map-analytics-checklist
+              -#   %li
+              -#     Trigger: Custom Event, event name
+              -#     %code pynwheel_map
+              -#   %li
+              -#     Tag: GA4 Event, using the
+              -#     %code action
+              -#     field as the GA4 event name
+              -#   %li
+              -#     One Data Layer Variable per field they want to report on
 
-              %p.hint
-                %b C.
-                In GA4, register those fields as event-scoped custom dimensions. Skipping
-                this is the usual reason a client says "the data is not arriving" when it is.
+              -# %p.hint
+              -#   %b C.
+              -#   In GA4, register those fields as event-scoped custom dimensions. Skipping
+              -#   this is the usual reason a client says "the data is not arriving" when it is.
 
-              %p.hint
-                The full field list and examples are in
-                %code docs/map-analytics-data-layer.md
-                — send that document with the snippet.
+              -# %p.hint
+              -#   The full field list and examples are in
+              -#   %code docs/map-analytics-data-layer.md
+              -#   — send that document with the snippet.
 
           .map-analytics-save
             %button.btn-save{ type: "submit" } Save settings
