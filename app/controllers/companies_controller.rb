@@ -14,6 +14,9 @@ class CompaniesController < ApplicationController
     else
       @companies = alphabetical_sort(Company.where(id: current_user.company_id))
     end
+
+    # Pynwheel Connect (Next.js) reads the same list over JSON.
+    render_connect_companies if request.format.json?
   end
 
   def new
@@ -130,6 +133,13 @@ class CompaniesController < ApplicationController
   end
 
   private
+
+  def render_connect_companies
+    render json: Connect::ResponseEnvelope.new(
+      data: Connect::CompanySerializer.collection(@companies),
+      meta: Connect::ResponseEnvelope.listing_meta(current_user, @companies.size)
+    ).as_json
+  end
 
   def set_company
     @company = Company.find params[:id]

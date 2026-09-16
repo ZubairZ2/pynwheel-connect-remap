@@ -16,6 +16,10 @@ class CommunitiesController < ApplicationController
   # add_breadcrumb "Communities", :company_communities_path, except: [:import_page,:settings_page,:logs]
 
   def index
+    # Pynwheel Connect (Next.js) Properties listing: every community the signed-in
+    # user may access, in the same scope the legacy Home screen uses.
+    return render_connect_properties if request.format.json? && params[:enable_communities].blank?
+
     #@communities = Community.page(params[:page]).per(10)
     if params[:enable_communities].present?
       user_enable_communities_ids = CommunityUser.where(user_id: params[:user], chat_enable: true).map { |x| x.community_id } rescue nil
@@ -912,6 +916,15 @@ class CommunitiesController < ApplicationController
   end
 
   private
+
+  def render_connect_properties
+    communities = AccessibleCommunitiesQuery.new(current_user).call
+
+    render json: Connect::ResponseEnvelope.new(
+      data: Connect::PropertySerializer.collection(communities),
+      meta: Connect::ResponseEnvelope.listing_meta(current_user, communities.size)
+    ).as_json
+  end
 
   def store_map_ocr_data model_object, aws_ocr_detected_units
     if model_object.present? && model_object.image.present? && model_object.image.url.present?
