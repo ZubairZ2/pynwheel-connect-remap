@@ -256,7 +256,7 @@ module Analytics
         product:               @product,
         sdk_version:           @sdk_version,
         name:                  name,
-        action:                MapEventContract.action_for(name, metadata),
+        action:                MapEventContract.action_for(name, metadata, event_type),
         event_type:            event_type,
         occurred_at:           occurred_at,
         properties:            properties,

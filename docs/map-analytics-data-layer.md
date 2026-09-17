@@ -15,9 +15,9 @@ layer. You wire them up once in your own GTM and own the reporting from there.
 We never need your GA4 Measurement ID, your API secret, or any credential.
 
 Every interaction arrives under **one event name**, `pynwheel_map`, and carries an
-`action` field saying which interaction it was. So you build your GTM side once:
-one custom-event trigger, one GA4 tag. When we add an interaction later, nothing
-on your side changes.
+`action` field naming what was clicked, such as `101A_clicked` or
+`Apply_Now_clicked`. So you build your GTM side once: one custom-event trigger,
+one GA4 tag. When we add an interaction later, nothing on your side changes.
 
 ## Step 1 — Add the relay snippet
 
@@ -48,9 +48,11 @@ pushes to `window.dataLayer` itself in that case.
 
 1. **Trigger** — Custom Event, event name `pynwheel_map`. One trigger, all
    interactions.
-2. **Tag** — GA4 Event. Send the `action` value as the event name, or send a
-   fixed name and keep `action` as a parameter. Either works; the first gives
-   you separate events in GA4 reports, the second keeps everything under one.
+2. **Tag** — GA4 Event with the fixed event name `pynwheel_map`, and `action`
+   sent as a parameter. Do not use `action` as the GA4 event name. GA4 event
+   names must start with a letter and stay under 40 characters, and an action
+   like `101A_clicked` breaks the first rule. GA4 drops such events without an
+   error.
 3. **Variables** — one Data Layer Variable per field you want to report on,
    from the table below.
 4. **GA4 custom dimensions** — register each one as an event-scoped custom
@@ -68,12 +70,11 @@ push's value.
 | Field | Meaning |
 |---|---|
 | `event` | Always `pynwheel_map`. |
-| `action` | Which interaction. See the action list below. |
-| `schema_version` | Version of this schema. Currently `1`. |
+| `action` | What was clicked, then `_clicked`. See "How `action` is worded" below. |
 | `session_id` | One visit. Rotates after two minutes of inactivity. |
-| `visitor_id` | Stable per browser. Lets you count people, not just visits. |
 | `ts_iso` | When it happened, UTC, ISO 8601. |
 | `company_id` | Pynwheel's id for the management company. |
+| `company_name` | The management company's name. |
 | `property_id` | Pynwheel's id for the property. |
 | `property_name` | The property's name. |
 | `page_url` | The page hosting the map, not the iframe's own URL. |
@@ -91,15 +92,36 @@ push's value.
 | `bedrooms`, `bathrooms`, `square_footage` | Floor plan attributes. |
 | `link_label` | The button text the visitor actually saw, captured at click time. |
 | `link_url` | Where the click sent them. |
-| `link_index` | Which configured link slot it was: 1, 2 or 3. |
-| `amenity_id`, `amenity_name` | For amenity interactions. |
+| `amenity_id`, `amenity_name` | For amenity interactions. `floor_level` is the amenity's floor. |
 | `filter_name`, `filter_value` | For filter interactions. |
-| `favorite_state` | For save/unsave. |
-| `shared_entity`, `share_target` | For shares. |
+| `favorite_state` | `saved` or `deleted`. |
+| `shared_entity`, `share_target` | For shares, e.g. `favorites` and `email`. |
 
-`link_index` is the link's configured slot, not its position on screen. A
-property that leaves slot 1 empty still reports its slot 2 link as `2`, so adding
-a link later never renumbers your historical data.
+A unit interaction always carries its floor plan's fields too. A favourite
+carries the fields of whatever was saved: a unit, a floor plan or an amenity.
+
+All ids are strings. `bedrooms`, `bathrooms`, `square_footage` and
+`floor_level` are numbers.
+
+### How `action` is worded
+
+The name of the clicked thing, with spaces turned into underscores and anything
+other than letters, digits and underscores removed, then `_clicked`.
+
+| Interaction | `action` |
+|---|---|
+| Apply Now, or any CMS link | The button text: `Apply_Now_clicked`, `3D_Tour_clicked` |
+| A unit | Its name: unit `101-A` gives `101A_clicked` |
+| A floor plan | Its name: `2 Bed / 2 Bath` gives `2_Bed_2_Bath_clicked` |
+| An amenity | Its name: `Rooftop Pool` gives `Rooftop_Pool_clicked` |
+| Saving or removing a favourite | `101A_favorite_saved_clicked`, `101A_favorite_deleted_clicked` |
+| Sharing favourites | `Share_favorites_clicked`, `Share_favorites_email_clicked` |
+| Opening the gallery | `Gallery_clicked` |
+| A filter | `bedrooms_2_clicked` |
+
+To report on a *kind* of interaction rather than one unit, filter on the fields
+instead of on `action`: every unit click has a `unit_name`, every favourite a
+`favorite_state`.
 
 No personally identifying information is ever sent. IDs, labels, and property
 attributes only.
@@ -109,16 +131,17 @@ attributes only.
 ```json
 {
   "event": "pynwheel_map",
-  "action": "apply_clicked",
-  "schema_version": 1,
+  "action": "Apply_Now_clicked",
   "session_id": "0f8c…",
-  "visitor_id": "b31a…",
   "ts_iso": "2026-09-09T12:33:40.115Z",
-  "company_id": 10,
-  "property_id": 34,
+  "company_id": "10",
+  "company_name": "Example Management",
+  "property_id": "34",
   "property_name": "Troubadour",
   "page_url": "https://www.example.com/properties/troubadour/",
-  "unit_id": "A-203",
+  "link_label": "Apply Now",
+  "link_url": "https://apply.example.com/unit/A-203",
+  "unit_id": "4455613-4814590",
   "unit_name": "A-203",
   "building": "Building 4",
   "floor_level": 2,
@@ -127,9 +150,6 @@ attributes only.
   "bedrooms": 2,
   "bathrooms": 2,
   "square_footage": 950,
-  "link_label": "Apply Now",
-  "link_url": "https://apply.example.com/unit/A-203",
-  "link_index": null,
   "amenity_id": null,
   "amenity_name": null,
   "filter_name": null,
@@ -140,17 +160,17 @@ attributes only.
 }
 ```
 
-Schedule a Tour is the identical payload with `action` of
-`schedule_tour_clicked`, `link_label` of `Schedule a Tour`, and `link_index` of
-`3`.
+Schedule a Tour is the identical payload with `link_label` of
+`Schedule a Tour`, so `action` is `Schedule_a_Tour_clicked`.
 
 ## Step 4 — Which actions you receive
 
 Enabled per property by Pynwheel. Ask us to turn on any of these; it is a
 configuration change on our side, not a code release, and takes effect on the
-next page load.
+next page load. These are our names for each kind of interaction. The `action`
+you receive is worded as above.
 
-| Action | Interaction |
+| Kind | Interaction |
 |---|---|
 | `apply_clicked` | Apply Now, on a unit or a student-housing space. |
 | `schedule_tour_clicked` | The Schedule a Tour link. |
@@ -175,19 +195,56 @@ the top of that table. Ask us for any of the others.
 
 | Concern | File |
 |---|---|
-| The contract: names, actions, dimensions, limits | `app/services/analytics/map_event_contract.rb` |
-| Its client-side mirror | `PYN_EVENT_CONTRACT` at the top of `public/sdk/pyn-map-sdk-v1.js` |
+| The contract: names, actions, wording, published fields, dimensions, limits | `app/services/analytics/map_event_contract.rb` |
+| The engine that applies it | `PYN_EVENT_CONTRACT` at the top of `public/sdk/pyn-map-sdk-v1.js` |
+| Filling in unit, floor plan and amenity details from an id | `_analyticsDims` in the same file |
 | Emission and fan-out to sinks | `PynAnalytics` in the same file |
-| Which dimensions a React call site sends | `pynwheel-maps/src/analytics/dimensions.js` |
+| Click-time facts a React call site sends | `pynwheel-maps/src/analytics/dimensions.js` |
 | Event name registry (React) | `pynwheel-maps/src/analytics/index.js` |
 | Ingestion and storage | `app/services/analytics/sdk_analytics_service.rb` |
 | The fact table | `app/models/sdk_event.rb` |
 | Per-property config | `communities.map_analytics_settings` |
 
-**The two contracts must be edited together.** `CONTRACT_VERSION` in the Ruby
-file and `PYN_EVENT_CONTRACT.VERSION` in the JS are how they announce agreement,
-and the value rides on every push as `schema_version`, so a client running a
-stale cached SDK shows up in the data rather than having to be guessed at.
+**There is one contract, and it is the Ruby one.** It reaches the SDK inside the
+property payload as `property.analytics.contract`, only for a property that
+publishes. The SDK keeps no copy. It used to keep a hand-edited mirror, which
+drifted: it keyed map-marker clicks as `unit_marker_click` while the SDK
+captured them as `unit_marker`, so no marker click was ever published.
+
+The contract also checks itself at boot. An action in `ACTIONS` without a
+`PUBLISHED_ACTIONS` entry, or the reverse, raises when the class loads.
+
+## Two names for every interaction
+
+- **The stable action**, such as `unit_selected`. Stored in
+  `sdk_events.action`, named in a property's allowlist, and shown on the CMS
+  screen. It never depends on free text.
+- **The worded action**, such as `101A_clicked`. Built by the SDK from the
+  `subject` in `PUBLISHED_ACTIONS`, and sent only to a client's data layer.
+
+`sdk_events.name` keeps the internal event name, such as `unit_marker`.
+
+## Where the details come from
+
+A call site sends the id of what was clicked. `_analyticsDims` in the SDK looks
+that id up in the map payload and fills in the rest before either sink sees the
+event, so `sdk_events` stores exactly what a client receives.
+
+| The call site sends | The SDK fills in |
+|---|---|
+| `unit_id`, `viewed_unit_id`, or a unit favourite's `favorited_id` | Unit ids and name, building, floor, and the unit's floor plan |
+| `floorplan_id`, or a floor plan favourite's `favorited_id` | Floor plan ids and name, bedrooms, bathrooms, size |
+| `amenity_id`, `marker_id`, or an amenity favourite's `favorited_id` | Amenity id and name, and its floor |
+
+Values the SDK resolves replace the call site's. Where nothing resolves, as on
+the shared-favorites screen, the call site's values stand. Click-time facts such
+as `link_label` are never replaced. Fixed per-event values, such as
+`favorite_state` for `save_favorite`, come from `_ANALYTICS_EVENT_DIMS`.
+
+The SDK's own favourite API reports saves and removals as
+`favorite_save_confirmed` and `favorite_remove_confirmed`. The visitor's click is
+`save_favorite` or `delete_favorite`, captured by the host. Emitting
+`save_favorite` from both counted and published every save twice.
 
 ## The sink model
 
@@ -248,7 +305,7 @@ offsets behind it, so ordering and spacing survive while skew does not. See
 Community.find(34).update!(map_analytics_settings: {
   "data_layer" => {
     "enabled" => true,
-    "actions" => ["apply_clicked", "schedule_tour_clicked"],
+    "actions" => ["apply_clicked", "schedule_tour_clicked"],   # stable actions
     "target_origin" => "https://www.example.com"   # optional
   }
 })
@@ -271,12 +328,29 @@ property" a JS release and a cache bust for everyone.
 ## Adding a new tracked interaction
 
 1. Add the event name to `pynwheel-maps/src/analytics/index.js`.
-2. Call `track(E.YOUR_EVENT, "click", unitDims(unit, …))` at the call site. Use
-   the builders in `dimensions.js`; do not hand-assemble a metadata bag.
-3. It is now counted on the session and stored in `sdk_events` with no further
-   work. It reaches no client data layer.
-4. To publish it, add it to `ACTIONS` in **both** contract files and bump both
-   version constants. Then name the action in a property's `map_analytics_settings`.
+2. Call `track(E.YOUR_EVENT, "click", { unit_id })` at the call site, or
+   `floorplan_id` / `amenity_id`. The SDK fills in the rest. Send click-time
+   facts, such as a button's label, with the builders in `dimensions.js`.
+3. It is now counted on the session and stored in `sdk_events` with full
+   details. It reaches no client data layer.
+4. To publish it, add one line to `ACTIONS` and one entry to
+   `PUBLISHED_ACTIONS` in `map_event_contract.rb`, and bump `CONTRACT_VERSION`.
+   It appears on the CMS screen, off until a property ticks it. No SDK release.
+
+For example, to publish the pricing calculator:
+
+```ruby
+# ACTIONS
+"calculate_modal_open" => "calculator_opened",
+
+# PUBLISHED_ACTIONS: gives "101A_calculator_clicked"
+"calculator_opened" => {
+  label: "The pricing calculator was opened", subject: %w[unit_name =calculator]
+},
+```
+
+A new published *field* is one line in `PUBLISHED_FIELDS`. Only published
+events are clicks; hovers never publish.
 
 Adding a *dimension* additionally needs a column and one line in `DIMENSIONS`. A
 metadata key that is not a dimension still arrives and is still stored, it just

@@ -6,21 +6,33 @@ module Analytics
   # Three consumers, one definition:
   #
   #   * SdkAnalyticsService      -- deciding what to persist and in which column.
-  #   * SdkPayloadBuilderService -- telling the SDK which actions this property
-  #                                 may push to the embedding page's data layer.
-  #   * pyn-map-sdk-v1.js        -- the client-side mirror (see PYN_EVENT_CONTRACT
-  #                                 there). It must be edited in step with this
-  #                                 file; CONTRACT_VERSION is how they announce
-  #                                 agreement, and every event carries it.
+  #   * SdkPayloadBuilderService -- handing the SDK this property's allowlist and
+  #                                 the contract below (see .client_contract).
+  #   * pyn-map-sdk-v1.js        -- applies that contract. It holds no copy of
+  #                                 it, so nothing here needs a matching SDK edit.
+  #
+  # ── Publishing a new interaction ──────────────────────────────────────────────
+  #
+  #   1. pynwheel-maps: add the event name to src/analytics/index.js and call
+  #      track() with the id of what was clicked (unit_id, floorplan_id or
+  #      amenity_id). The SDK fills in every other detail from that id.
+  #   2. Here: one line in ACTIONS, one entry in PUBLISHED_ACTIONS.
+  #   3. It now appears on the CMS screen, off by default, for any property to
+  #      tick. No SDK release, no migration.
+  #
+  # A new *field* is one line in PUBLISHED_FIELDS, plus a DIMENSIONS line and a
+  # migration if a report should read it from its own column.
   #
   # Nothing here names a client. Renu is the first consumer of the data layer and
   # Jonah is the second; both read the same actions, because a schema that
   # branches per client stops being a schema.
   class MapEventContract
-    # Bump on any change to ACTIONS or DIMENSIONS below, and in the SDK's mirror.
-    # Stored on every event so a reader can tell which vocabulary produced a row
-    # and a stale cached SDK is visible in the data rather than inferred.
-    CONTRACT_VERSION = 1
+    # Bump on any change to what a client receives: ACTIONS, PUBLISHED_ACTIONS,
+    # PUBLISHED_FIELDS. Sent to the SDK inside .client_contract.
+    #
+    # 2: the action is worded from the clicked thing ("101A_clicked"),
+    #    company_name added, schema_version / visitor_id / link_index removed.
+    CONTRACT_VERSION = 2
 
     # ── Internal event name → client-facing action ────────────────────────────
     #
@@ -38,8 +50,16 @@ module Analytics
     # CMS link slots, so mapping it to a single action would report a 3D Tour
     # click as a scheduled tour. Discriminating on `link_kind` -- the slot's
     # stable identity, not its CMS label -- keeps that honest.
+    #
+    # Keys are the captured event *name*. The SDK captures marker clicks as
+    # `unit_marker` with a type of click; `unit_marker_click` is the session
+    # counter's spelling, and keying on it here matched nothing.
+    #
+    # The action on the right is what sdk_events.action stores and what a
+    # property's allowlist names. A client's GA4 receives it worded after the
+    # clicked thing instead -- see PUBLISHED_ACTIONS.
     ACTIONS = {
-      # Per-unit CTAs. The two PYN-1655 ships with.
+      # Per-unit CTAs.
       "apply_now"            => "apply_clicked",
       "space_apply_now"      => "apply_clicked",
       "tour_button"          => {
@@ -57,8 +77,8 @@ module Analytics
       "unit_card"            => "unit_selected",
       "floor_plan_card"      => "floor_plan_selected",
       "amenity_card"         => "amenity_selected",
-      "unit_marker_click"    => "unit_selected",
-      "amenity_marker_click" => "amenity_selected",
+      "unit_marker"          => "unit_selected",
+      "amenity_marker"       => "amenity_selected",
       "save_favorite"        => "unit_favorited",
       "delete_favorite"      => "unit_favorited",
       "share_favorites"      => "share_clicked",
@@ -71,22 +91,101 @@ module Analytics
       "sorting_filter"       => "map_filter_used"
     }.freeze
 
-    # Plain-language name for each published action, for the CMS screen and for
-    # anything we hand a client. Here rather than in a view, because the action
-    # names and what they mean are one vocabulary and drift if kept apart.
-    ACTION_LABELS = {
-      "apply_clicked"           => "Apply Now clicked",
-      "schedule_tour_clicked"   => "Schedule a Tour clicked",
-      "virtual_tour_clicked"    => "3D / virtual tour link clicked",
-      "additional_link_clicked" => "Second configurable link clicked",
-      "unit_selected"           => "A unit was opened, from the map or a card",
-      "floor_plan_selected"     => "A floor plan was opened",
-      "amenity_selected"        => "An amenity was opened",
-      "unit_favorited"          => "A unit was saved or unsaved",
-      "share_clicked"           => "Favourites were shared",
-      "gallery_viewed"          => "The gallery was opened",
-      "map_filter_used"         => "Any map filter was applied"
+    # ── Each published action ────────────────────────────────────────────────
+    #
+    # label   -- what the CMS screen calls it.
+    # subject -- how a client's GA4 names it. The parts are joined with spaces,
+    #            cleaned to letters, digits and underscores, and given a
+    #            "_clicked" suffix: ["unit_name"] on unit 101-A gives
+    #            "101A_clicked". A part is
+    #
+    #              "key"          a published field, or failing that a raw
+    #                             metadata key
+    #              ["a", "b"]     the first of those keys with a value
+    #              "?key"         a key that may be absent
+    #              "=text"        literal text
+    #
+    #            A required part with no value, or an empty subject, publishes
+    #            the stable action instead, so a push never reads "_clicked".
+    PUBLISHED_ACTIONS = {
+      "apply_clicked" => {
+        label: "Apply Now clicked", subject: %w[link_label]
+      },
+      "schedule_tour_clicked" => {
+        label: "Schedule a Tour clicked", subject: %w[link_label]
+      },
+      "virtual_tour_clicked" => {
+        label: "3D / virtual tour link clicked", subject: %w[link_label]
+      },
+      "additional_link_clicked" => {
+        label: "Second configurable link clicked", subject: %w[link_label]
+      },
+      "unit_selected" => {
+        label: "A unit was opened, from the map or a card", subject: %w[unit_name]
+      },
+      "floor_plan_selected" => {
+        label: "A floor plan was opened", subject: %w[floor_plan_name]
+      },
+      "amenity_selected" => {
+        label: "An amenity was opened", subject: %w[amenity_name]
+      },
+      # "101A_favorite_saved_clicked". Whatever was saved: a unit, a floor plan,
+      # an amenity, or a gallery image, whose name is never a published field.
+      "unit_favorited" => {
+        label:   "A unit, floor plan or amenity was saved or unsaved",
+        subject: [%w[unit_name floor_plan_name amenity_name gallery_image_name], "=favorite", "favorite_state"]
+      },
+      "share_clicked" => {
+        label: "Favourites were shared", subject: %w[=Share shared_entity ?share_target]
+      },
+      "gallery_viewed" => {
+        label: "The gallery was opened", subject: %w[=Gallery]
+      },
+      "map_filter_used" => {
+        label: "Any map filter was applied", subject: %w[filter_name ?filter_value]
+      }
     }.freeze
+
+    ACTION_LABELS = PUBLISHED_ACTIONS.transform_values { |spec| spec[:label] }.freeze
+
+    # ── What a client's data layer receives ──────────────────────────────────
+    #
+    # [published key, metadata source], in the order a client reads them. A
+    # source is a metadata key, or a list of keys where the first with a value
+    # wins. The ambient fields -- session, time, company, property, page -- come
+    # first and are not listed; the SDK stamps them from the property payload.
+    #
+    # Every field is written on every push, explicitly null when it does not
+    # apply, because GTM keeps a key's last value when a push omits it.
+    #
+    # `unit_id` and `floor_plan_id` are the PMS's ids, which is what a client can
+    # reconcile against their own systems; Pynwheel's keys are only a fallback
+    # for a feed that carries none. `link_index` is stored but not published: a
+    # CMS slot number is ours, not a client's.
+    PUBLISHED_FIELDS = [
+      ["link_label",      "link_label"],
+      ["link_url",        "link_url"],
+      ["unit_id",         %w[provider_unit_id unit_id]],
+      ["unit_name",       "unit_name"],
+      ["building",        "building"],
+      ["floor_level",     "floor_level"],
+      ["floor_plan_id",   %w[provider_floorplan_id floorplan_id]],
+      ["floor_plan_name", "floorplan_name"],
+      ["bedrooms",        "bedrooms"],
+      ["bathrooms",       "bathrooms"],
+      ["square_footage",  "square_footage"],
+      ["amenity_id",      "amenity_id"],
+      ["amenity_name",    "amenity_name"],
+      ["filter_name",     "filter_name"],
+      ["filter_value",    "filter_value"],
+      ["favorite_state",  "favorite_state"],
+      ["shared_entity",   "shared_entity"],
+      ["share_target",    "share_target"]
+    ].map(&:freeze).freeze
+
+    # Sent as strings whatever their source type, so a GA4 dimension never holds
+    # "34" on one event and 34 on the next.
+    PUBLISHED_ID_FIELDS = %w[company_id property_id unit_id floor_plan_id amenity_id].freeze
 
     # What a property gets when it enables the data layer and names no actions:
     # every click-through the map renders. Apply Now and the three CMS link
@@ -111,6 +210,27 @@ module Analytics
     # Every action a property may opt into, derived rather than listed so the two
     # can never drift.
     KNOWN_ACTIONS = ACTIONS.values.flat_map { |v| v.is_a?(Hash) ? v[:map].values : v }.uniq.freeze
+
+    # A half-registered action fails here, at boot, rather than as a blank label
+    # on the CMS screen or a stable name in a client's report.
+    unless (KNOWN_ACTIONS - PUBLISHED_ACTIONS.keys).empty? && (PUBLISHED_ACTIONS.keys - KNOWN_ACTIONS).empty?
+      raise ArgumentError, "MapEventContract: ACTIONS and PUBLISHED_ACTIONS disagree on " \
+                           "#{((KNOWN_ACTIONS - PUBLISHED_ACTIONS.keys) | (PUBLISHED_ACTIONS.keys - KNOWN_ACTIONS)).join(', ')}"
+    end
+
+    unless (DEFAULT_DATA_LAYER_ACTIONS - KNOWN_ACTIONS).empty?
+      raise ArgumentError, "MapEventContract: unknown default action #{(DEFAULT_DATA_LAYER_ACTIONS - KNOWN_ACTIONS).join(', ')}"
+    end
+
+    # Everything the SDK needs to publish an event, and nothing it does not. The
+    # SDK keeps no copy of any of this; see PYN_EVENT_CONTRACT there.
+    CLIENT_CONTRACT = {
+      version:  CONTRACT_VERSION,
+      events:   ACTIONS,
+      fields:   PUBLISHED_FIELDS,
+      idFields: PUBLISHED_ID_FIELDS,
+      subjects: PUBLISHED_ACTIONS.transform_values { |spec| spec[:subject] }
+    }.freeze
 
     # ── Durability ────────────────────────────────────────────────────────────
     #
@@ -151,6 +271,9 @@ module Analytics
       "link_url"             => [:link_url,             :text],
       "link_index"           => [:link_index,           :integer],
 
+      "amenity_id"           => [:amenity_id,           :integer],
+      "amenity_name"         => [:amenity_name,         :string],
+
       "page_url"             => [:page_url,             :text]
     }.freeze
 
@@ -178,14 +301,19 @@ module Analytics
     SCALAR_TYPES = [String, Integer, Float, TrueClass, FalseClass, BigDecimal].freeze
 
     class << self
-      # Client-facing action for an event, or nil when it has no published name.
+      # Stable action for an event, or nil when it has no published name.
       #
       # Takes the metadata because an event's action can depend on which thing
       # inside it was clicked -- see the `tour_button` entry in ACTIONS. An event
       # whose discriminator is missing resolves to nil rather than to a default:
       # a wrong action in a client's GA4 is worse than a missing one, because
       # only the missing one is visible to them.
-      def action_for(name, metadata = nil)
+      #
+      # Clicks only, as in the SDK: `unit_marker` is captured for hovers too, and
+      # a hover is not a selection.
+      def action_for(name, metadata = nil, event_type = "click")
+        return nil unless event_type.to_s == "click"
+
         entry = ACTIONS[name.to_s]
         return entry unless entry.is_a?(Hash)
         return nil unless metadata.is_a?(Hash)
@@ -259,7 +387,9 @@ module Analytics
           enabled:      enabled == true,
           actions:      actions,
           targetOrigin: normalize_origin(config["target_origin"]),
-          version:      CONTRACT_VERSION
+          version:      CONTRACT_VERSION,
+          # Only a property that publishes needs to be told how.
+          contract:     enabled == true ? CLIENT_CONTRACT : nil
         }
       end
 

@@ -411,6 +411,10 @@ class SdkPayloadBuilderService
       # them a property-to-company mapping. Read off the already-loaded
       # community row — no association is walked.
       companyId:    @community.company_id,
+      # Published on every analytics event beside the id, so a client's report
+      # reads a name without keeping its own id-to-company table. The
+      # controllers that build this payload preload the company.
+      companyName:  @community.company&.name,
       website:      @community.community_website,
 
       # What this property is allowed to push into its embedding page's GTM data
