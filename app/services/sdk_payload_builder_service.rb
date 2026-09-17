@@ -300,19 +300,11 @@ class SdkPayloadBuilderService
   #
   # Costs no query of its own: the controller's community loader already
   # includes `:floorplans`, so this is a walk over rows that are in memory.
+  # Reuses #floorplans_by_provider_id, which the student-housing space config
+  # already built for exactly this lookup.
   def attach_floorplans(units)
     by_provider_id = floorplans_by_provider_id
     units.each { |unit| unit.preloaded_floorplan = by_provider_id[unit.floorplan_id] }
-  end
-
-  # provider id -> plan, first one winning, which is what Floorplan.find_by
-  # returns for the duplicate provider ids some feeds send. Keys are the raw
-  # column values so a nil `floorplan_id` still matches a plan with a nil
-  # `provider_floorplan_id`, exactly as the query it replaces did.
-  def floorplans_by_provider_id
-    @floorplans_by_provider_id ||= @community.floorplans.each_with_object({}) do |fp, map|
-      map[fp.provider_floorplan_id] ||= fp
-    end
   end
 
   # Whether this payload's `units` are rolled up by plot position: the property
