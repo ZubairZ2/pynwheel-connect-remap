@@ -12,7 +12,11 @@ class SdkPayloadBuilderService
   # the flat payload whatever the property is configured as.
   def build(ops_map: false, group_units: false)
     @group_units = group_units
-    units_ar = @community.units.map_units(@community, ops_map).visible_units.without_hidden_names.to_a
+    @timings     = {}
+
+    units_ar = section(:load_units) do
+      @community.units.map_units(@community, ops_map).visible_units.without_hidden_names.to_a
+    end
     units_ar.each { |u| u.association(:community).target = @community }
     attach_floorplans(units_ar)
 
@@ -20,25 +24,46 @@ class SdkPayloadBuilderService
     # flat list: a floor plan's unit count and a filter's option list must both
     # describe what a resident can actually lease, so a price band or an
     # availability window that exists on only one bedroom still has to appear.
-    all_units = grouped_units? ? grouped_units_json(units_ar, Set.new, ops_map)
-                               : units_json(Set.new, ops_map, units_ar)
+    all_units = section(:units) do
+      grouped_units? ? grouped_units_json(units_ar, Set.new, ops_map)
+                     : units_json(Set.new, ops_map, units_ar)
+    end
 
     {
-      property:    property_json(ops_map),
+      property:    section(:property) { property_json(ops_map) },
       # Top level, not nested under `property`: the gallery is its own feature
       # with its own endpoints, and the SDK serves it through getGalleryConfig()
       # rather than making hosts dig through the property blob.
-      gallery:     gallery_discovery_json,
-      sitemap:     sitemap_json,
-      backgroundSvg: background_svg_json,
-      floorplates: floorplates_json,
+      gallery:     section(:gallery)     { gallery_discovery_json },
+      sitemap:     section(:sitemap)     { sitemap_json },
+      backgroundSvg: section(:background) { background_svg_json },
+      floorplates: section(:floorplates) { floorplates_json },
       units:       all_units,
-      floorplans:  floorplans_json(units_ar),
-      amenities:   amenities_json,
-      filters:     filters_json(units_ar, ops_map),
+      floorplans:  section(:floorplans)  { floorplans_json(units_ar) },
+      amenities:   section(:amenities)   { amenities_json },
+      filters:     section(:filters)     { filters_json(units_ar, ops_map) },
       status:      "success",
       code:        200
     }
+  end
+
+  # Milliseconds spent in each section of the last #build, keyed by section name.
+  #
+  # Published by the controller as Server-Timing. A payload can be slow for
+  # reasons that never touch the database -- an image decode, an S3 read, a
+  # regex over every unit -- and a query count alone cannot tell those apart
+  # from each other. This says which part of the payload the time went into.
+  attr_reader :timings
+
+  # Records how long the block took under `name` and returns its value. The
+  # measurement is monotonic and costs two clock reads, so it stays on in
+  # production; the timings are worthless if they are only collected when
+  # somebody already suspects a problem.
+  def section(name)
+    started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+    yield
+  ensure
+    (@timings ||= {})[name] = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - started) * 1000).round(1)
   end
 
   # The property and gallery blocks alone — no units, floor plans, amenities or
@@ -666,9 +691,33 @@ class SdkPayloadBuilderService
       mapType:     'sitemap',
       updatedAt:   sitemap.updated_at.to_i,
       imageUrl:    sitemap.validated_image_url,
-      imageWidth:  sitemap.try(:width).to_i > 0 ? sitemap.width.to_i : (sitemap.image.present? ? sitemap.image.width.to_i : 0),
-      imageHeight: sitemap.try(:height).to_i > 0 ? sitemap.height.to_i : (sitemap.image.present? ? sitemap.image.height.to_i : 0)
+      imageWidth:  sitemap_dimensions(sitemap)[0],
+      imageHeight: sitemap_dimensions(sitemap)[1]
     }
+  end
+
+  # [width, height] for the sitemap image, preferring the columns and falling
+  # back to the file exactly as this used to.
+  #
+  # The columns default to 0 rather than NULL, so `> 0` was false for every
+  # sitemap that had never had its size recorded and both branches fell through
+  # to `image.width` / `image.height` -- two separate S3 downloads and two full
+  # ImageMagick decodes, on every payload build, for every sitemap property.
+  # StoredImageDimensions makes that one decode, and writes the answer to the
+  # columns so it does not happen again.
+  #
+  # Same values as before, including the 0 a property with no artwork gets.
+  def sitemap_dimensions(sitemap)
+    stored = [sitemap.try(:width).to_i, sitemap.try(:height).to_i]
+    return stored if stored.all?(&:positive?)
+    return stored unless sitemap.image.present?
+
+    decoded = sitemap.stored_image_dimensions
+    [stored[0].positive? ? stored[0] : decoded[0].to_i,
+     stored[1].positive? ? stored[1] : decoded[1].to_i]
+  rescue => e
+    Rails.logger.warn("[sdk] sitemap #{sitemap.id} dimensions unavailable: #{e.class}: #{e.message}")
+    [sitemap.try(:width).to_i, sitemap.try(:height).to_i]
   end
 
   def floorplates_json

@@ -27,6 +27,8 @@ class Floorplate < ApplicationRecord
   include ::S3Acceleration
   include SvgOptimizableMap
 
+  include StoredImageDimensions
+
   mount_uploader :image, SiteMapUploader
   mount_uploader :svg_image, SiteMapUploader
   mount_uploader :label_image, SiteMapUploader
@@ -164,13 +166,18 @@ class Floorplate < ApplicationRecord
     end
   end
 
+  # Both of these keep their original shape deliberately, `rescue 0` included:
+  # a nil column raises on `> 0` and answers 0 without ever reaching the file,
+  # and that fast path is load-bearing for every floorplate whose dimensions
+  # were never recorded. Only the fallback changed.
   def floorplate_image_width
-    self.width > 0 ? self.width : self.image.width rescue 0
+    self.width > 0 ? self.width : stored_image_dimensions[0] rescue 0
   end
 
   def floorplate_image_height
-    self.height > 0 ? self.height : self.image.height rescue 0
+    self.height > 0 ? self.height : stored_image_dimensions[1] rescue 0
   end
+
 
   # Launch: the property map form is complete once the floorplate artwork is in,
   # whether that is a raster image, a design file or an SVG.

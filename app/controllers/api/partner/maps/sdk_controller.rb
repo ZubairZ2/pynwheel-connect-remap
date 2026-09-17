@@ -505,7 +505,9 @@ module Api
         private
 
         def build_sdk_payload(ops_map = false)
-          SdkPayloadBuilderService.new(@community).build(ops_map: ops_map, group_units: group_units?)
+          # Kept so #server_timing! can read its per-section breakdown afterwards.
+          @payload_builder = SdkPayloadBuilderService.new(@community)
+          @payload_builder.build(ops_map: ops_map, group_units: group_units?)
         end
 
         # The student-housing rollup is opt-in per request. pyn-map-sdk-v1.js asks
@@ -558,10 +560,18 @@ module Api
         # Counts ride along as `desc` because Server-Timing has no other field
         # for them; Chrome shows the description beside the duration.
         def server_timing!(community:, favorites:, build:, merge:, gzip:, sql:, units:, bytes:)
+          # Each section of the build, so a slow payload names the part of itself
+          # that was slow. Sorted slowest first: on a header this long the eye
+          # needs the answer at the front, not in source order.
+          sections = (@payload_builder&.timings || {})
+                       .sort_by { |_, ms| -ms }
+                       .map { |name, ms| "build.#{name};dur=#{ms}" }
+
           entries = [
             ("community;dur=#{community}" if community),
             "favorites;dur=#{favorites}",
             "build;dur=#{build};desc=\"#{sql} sql, #{units} units\"",
+            *sections,
             "merge;dur=#{merge}",
             "gzip;dur=#{gzip};desc=\"#{(bytes / 1024.0).round}KB\"",
             "total;dur=#{(community.to_f + favorites + build + merge + gzip).round(1)}"
@@ -576,7 +586,8 @@ module Api
           # after the fact without a browser open in front of it.
           Rails.logger.info(
             "[sdk.fetch_data] community=#{@community&.id} units=#{units} sql=#{sql} " \
-            "community_ms=#{community} build_ms=#{build} merge_ms=#{merge} gzip_ms=#{gzip} bytes=#{bytes}"
+            "community_ms=#{community} build_ms=#{build} merge_ms=#{merge} gzip_ms=#{gzip} bytes=#{bytes} " \
+            "sections=#{(@payload_builder&.timings || {}).sort_by { |_, ms| -ms }.to_h}"
           )
         rescue => e
           Rails.logger.warn("[sdk.fetch_data] timing failed: #{e.class}: #{e.message}")
