@@ -228,21 +228,26 @@ class Unit < ApplicationRecord
     end
   }
 
+  # Provider-specific map visibility. Every branch (including the rescue fallback)
+  # starts from without_hidden_names, so HIDE_UNIT_PATTERN units can never leak
+  # onto the map regardless of provider or credential settings.
   scope :visible_on_map_for, ->(community) {
+    base = without_hidden_names
+
     begin
-      return all unless SHOW_ON_MAP.include?(community.data_provider)
+      return base unless SHOW_ON_MAP.include?(community.data_provider)
 
       case community.data_provider
       when "psi"
-        community.credential&.entrata_available_units_only ? where(show_on_map: true) : all
+        community.credential&.entrata_available_units_only ? base.where(show_on_map: true) : base
       when "yardirentcafe"
-        community.credential&.limit_result ? where(show_on_map: true) : all
+        community.credential&.limit_result ? base.where(show_on_map: true) : base
       else
-        all
+        base
       end
-      
+
     rescue
-      all
+      base
     end
   }
 
