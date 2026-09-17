@@ -1,7 +1,118 @@
 (function (global) {
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // PynAnalytics — internal analytics engine (batched, fire-and-forget)
+  // PYN_EVENT_CONTRACT — reads the published-event contract; defines none of it.
+  //
+  // What a map interaction is called, which of its fields a client receives and
+  // how its action is worded all live in Analytics::MapEventContract, and arrive
+  // with the property payload as property.analytics.contract. This object is the
+  // engine that applies them. Publishing a new interaction, or a new field, is
+  // therefore a server edit: no SDK release, and no cache bust for every client
+  // that loads this file from our CDN.
+  //
+  // It used to be a hand-kept mirror of the Ruby table, and the two drifted: the
+  // mirror keyed map-marker clicks as `unit_marker_click` while the SDK captured
+  // them as `unit_marker`, so no marker click was ever published.
+  //
+  // The contract's shape (see MapEventContract.client_contract):
+  //
+  //   events   { captured name: action | { by, map: { value: action } } }
+  //   fields   [[published key, source], ...]
+  //   idFields [published key, ...]            sent as strings
+  //   subjects { action: [part, ...] }         how the action is worded
+  //
+  // A source is a metadata key, or a list of keys where the first with a value
+  // wins. A subject part is a key read the same way (the published payload
+  // first, then the raw metadata), a list of alternative keys, "?key" for a key
+  // that may be absent, or "=text" for literal text.
+  // ─────────────────────────────────────────────────────────────────────────────
+  var PYN_EVENT_CONTRACT = {
+    // The event name every push carries. Never varies — a property builds one
+    // GTM trigger, once, and tells interactions apart by `action`.
+    EVENT_NAME: 'pynwheel_map',
+
+    // The stable action for a captured event, or null when it has none.
+    //
+    // Clicks only: `unit_marker` is captured for hovers too, and a hover is not
+    // a selection. A missing discriminator resolves to null rather than to a
+    // default, because a wrong action in a client's GA4 is worse than a missing
+    // one — only the missing one is visible to them.
+    actionFor: function (contract, ev) {
+      if (!contract || !contract.events || ev.type !== 'click') return null;
+
+      var entry = contract.events[ev.name];
+      if (!entry) return null;
+      if (typeof entry === 'string') return entry;
+
+      var meta = ev.metadata || {};
+      return (entry.map || {})[meta[entry.by]] || null;
+    },
+
+    // The first of `keys` holding a value, looked up in each bag in turn.
+    // "" counts as no value, the same as null.
+    read: function (keys, bags) {
+      var list = Array.isArray(keys) ? keys : [keys];
+      for (var i = 0; i < list.length; i++) {
+        for (var b = 0; b < bags.length; b++) {
+          var value = bags[b] && bags[b][list[i]];
+          if (value !== undefined && value !== null && value !== '') return value;
+        }
+      }
+      return null;
+    },
+
+    // The action a client's GA4 receives: the clicked thing's name, then
+    // "_clicked". "101-A" becomes "101A_clicked", "Apply Now"
+    // "Apply_Now_clicked", a saved unit "101A_favorite_saved_clicked".
+    //
+    // Any required part without a value, or an action with no subject, falls
+    // back to the stable action — so a push never carries a bare "_clicked", and
+    // an action added on the server without a subject still publishes.
+    displayAction: function (contract, action, payload, meta) {
+      var parts = contract && contract.subjects && contract.subjects[action];
+      if (!Array.isArray(parts) || !parts.length) return action;
+
+      var bags  = [payload, meta || {}];
+      var words = [];
+      for (var i = 0; i < parts.length; i++) {
+        var part = parts[i];
+
+        if (typeof part === 'string' && part.charAt(0) === '=') {
+          words.push(part.slice(1));
+          continue;
+        }
+
+        var optional = typeof part === 'string' && part.charAt(0) === '?';
+        var value    = this.read(optional ? part.slice(1) : part, bags);
+        if (value === null) {
+          if (optional) continue;
+          return action;
+        }
+        words.push(value);
+      }
+
+      var slug = this.slug(words.join(' '));
+      return slug ? slug + '_clicked' : action;
+    },
+
+    // Letters, digits and underscores only: the character set GA4 accepts in a
+    // name. Whitespace becomes an underscore, accents are folded ("Café" to
+    // "Cafe") and anything else is dropped, so "101-A" reads "101A" and
+    // "2 Bed / 2 Bath" reads "2_Bed_2_Bath".
+    slug: function (text) {
+      if (text === null || text === undefined) return '';
+      return String(text)
+        .normalize('NFD').replace(/[̀-ͯ]/g, '')
+        .trim()
+        .replace(/\s+/g, '_')
+        .replace(/[^A-Za-z0-9_]/g, '')
+        .replace(/_+/g, '_')
+        .replace(/^_+|_+$/g, '');
+    }
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // PynAnalytics — internal analytics engine (fan-out, fire-and-forget)
   //
   // Session model:
   //   sdkSessionId  — stable localStorage UUID (user identity / favorites).
@@ -13,10 +124,59 @@
   //   tab hidden  → map_session_background (keepalive flush, session stays open)
   //   tab visible → map_session_active     (session continues)
   //   destroy()   → map_session_end        (true close, keepalive flush)
+  //
+  // Sinks:
+  //   One capture() fans out to every sink in SINKS. BatchSink is Pynwheel's own
+  //   reporting (queued, flushed every 5s); DataLayerSink is the client's GTM
+  //   (immediate, no network). They have opposite latency requirements and must
+  //   not be forced to share a path — a tag manager that learns about a click
+  //   five seconds late has already lost the pageview it belonged to.
+  //
+  //   Adding an integration — Segment, a pixel, a second endpoint — means adding
+  //   one object to SINKS and nothing else. No call site changes.
   // ─────────────────────────────────────────────────────────────────────────────
   var PynAnalytics = (function () {
 
     var IDLE_MS = 2 * 60 * 1000; // 2 minutes
+
+    // ── BatchSink — Pynwheel's own analytics endpoint ────────────────────────
+    // Queues and flushes on a timer. Sessions, counters and the sdk_events fact
+    // table are all fed from here.
+    var BatchSink = {
+      name: 'pynwheel',
+      receive: function (s, ev) {
+        s.queue.push(ev);
+        if (s.queue.length >= 20) _flush(s, false);
+      },
+      flush:   function (s, beacon) { _flush(s, beacon); },
+      destroy: function () {}
+    };
+
+    // ── DataLayerSink — the embedding page's GTM data layer ──────────────────
+    // Emitted the instant the interaction happens. No network call of its own:
+    // in an iframe it posts a message to the parent, which the property's relay
+    // snippet pushes into window.dataLayer; embedded directly it pushes there
+    // itself. One code path serves both embed modes.
+    var DataLayerSink = {
+      name: 'data_layer',
+      receive: function (s, ev) {
+        // Config — and with it the contract that says what is publishable —
+        // arrives with the property payload, after the first events are already
+        // captured. Hold clicks rather than dropping them; configure() decides
+        // which of them publish. Hovers are never published, and capping the
+        // buffer means they could otherwise crowd out a real click. Capped at all
+        // because an unconfigured property must not grow an array forever.
+        if (!s.dataLayerReady) {
+          if (ev.type === 'click' && s.dataLayerPending.length < 25) s.dataLayerPending.push(ev);
+          return;
+        }
+        _emitDataLayer(s, ev);
+      },
+      flush:   function () {},
+      destroy: function () {}
+    };
+
+    var SINKS = [BatchSink, DataLayerSink];
 
     function create(opts) {
       var s = {
@@ -37,7 +197,19 @@
         dead:         false,
         timer:        null,
         idleTimer:    null,
-        onHide:       null
+        onHide:       null,
+
+        // ── Data layer state ──────────────────────────────────────────────────
+        // Ambient property context (company, property, host page URL). Stamped
+        // on every push so no call site has to carry it.
+        context:           {},
+        // { enabled, actions: [], targetOrigin, contract } — server-driven, from
+        // the property payload. Never a client-side default: which events a
+        // property exposes to its own GA4 is that property's decision, and what
+        // those events are is the server contract's, not the SDK's.
+        dataLayerConfig:   { enabled: false, actions: [], targetOrigin: null, contract: null },
+        dataLayerReady:    false,
+        dataLayerPending:  []
       };
 
       s.timer = setInterval(function () { _flush(s, false); }, 5000);
@@ -62,6 +234,26 @@
       return {
         capture:   function (name, type, metadata) { _capture(s, name, type, metadata); },
         sessionId: function ()                      { return s.sessionId; },
+
+        // Called once the property payload lands. Supplies the ambient
+        // dimensions every push carries and the server's data-layer allowlist,
+        // then replays whatever was captured while we were still booting.
+        configure: function (context, dataLayerConfig) {
+          s.context = context || {};
+          var cfg = dataLayerConfig || {};
+          s.dataLayerConfig = {
+            enabled:      cfg.enabled === true,
+            actions:      Array.isArray(cfg.actions) ? cfg.actions : [],
+            targetOrigin: cfg.targetOrigin || null,
+            contract:     cfg.contract || null
+          };
+          s.dataLayerReady = true;
+
+          var pending = s.dataLayerPending;
+          s.dataLayerPending = [];
+          for (var i = 0; i < pending.length; i++) _emitDataLayer(s, pending[i]);
+        },
+
         destroy:   function () {
           if (s.dead) return;
           s.dead = true;
@@ -70,6 +262,7 @@
           document.removeEventListener('visibilitychange', s.onHide);
           // True session end — map is being unmounted / closed.
           s.queue.push({ name: 'map_session_end', type: 'state', ts: Date.now() });
+          for (var i = 0; i < SINKS.length; i++) SINKS[i].destroy(s);
           _flush(s, true);
         }
       };
@@ -93,11 +286,119 @@
       }, IDLE_MS);
     }
 
+    // One event, built once, handed to every sink. Sinks never mutate it.
     function _capture(s, name, type, metadata) {
       if (s.dead) return;
-      s.queue.push({ name: name, type: type || 'click', metadata: _sanitize(metadata), ts: Date.now() });
-      if (s.queue.length >= 20) _flush(s, false);
+
+      var meta = _sanitize(metadata);
+
+      // The host page every event happened on, stamped here rather than at the
+      // call sites. It is ambient — the same for every event in a session — and
+      // resolved once at configure time, so this costs a property read, not a
+      // cross-origin probe per click.
+      if (s.context.page_url && !meta.page_url) meta.page_url = s.context.page_url;
+
+      var ev = {
+        name:     name,
+        type:     type || 'click',
+        metadata: meta,
+        ts:       Date.now()
+      };
+
+      for (var i = 0; i < SINKS.length; i++) {
+        // A failing sink must never take down the others, or the interaction
+        // itself. Analytics is the least important thing on the page.
+        try { SINKS[i].receive(s, ev); } catch (e) {}
+      }
+
       _resetIdle(s);
+    }
+
+    // ── Data layer emission ───────────────────────────────────────────────────
+
+    // Build the published payload and deliver it.
+    //
+    // Every contract field is written on every push, explicitly null when it
+    // does not apply. GTM merges each push into one persistent data layer, so a
+    // key omitted from push #2 keeps the value push #1 left behind: a floor-plan
+    // click after a unit click would otherwise report the unit's building.
+    function _emitDataLayer(s, ev) {
+      var cfg      = s.dataLayerConfig;
+      var contract = cfg.contract;
+      if (!cfg.enabled || !contract) return;
+
+      // The stable action gates publication; the property's allowlist names
+      // stable actions, never the worded ones, so it never depends on free text.
+      var action = PYN_EVENT_CONTRACT.actionFor(contract, ev);
+      if (!action || cfg.actions.indexOf(action) === -1) return;
+
+      var meta    = ev.metadata || {};
+      var ctx     = s.context;
+
+      // `action` is filled in last, once the fields it is named from are known.
+      // Declared here so it still sits second in the object, where a client
+      // reading the push looks for it.
+      //
+      // No schema_version, visitor_id or link_index: those serve our own
+      // reporting, which reads them from sdk_events, and are noise in a client's.
+      var payload = {
+        event:          PYN_EVENT_CONTRACT.EVENT_NAME,
+        action:         null,
+        session_id:     s.sessionId,
+        ts_iso:         new Date(ev.ts).toISOString(),
+        company_id:     _nullable(ctx.company_id),
+        company_name:   _nullable(ctx.company_name),
+        property_id:    _nullable(ctx.property_id),
+        property_name:  _nullable(ctx.property_name),
+        page_url:       _nullable(ctx.page_url)
+      };
+
+      var fields = contract.fields || [];
+      for (var i = 0; i < fields.length; i++) {
+        payload[fields[i][0]] = PYN_EVENT_CONTRACT.read(fields[i][1], [meta]);
+      }
+
+      // Ids go out as strings whatever their source type, so a GA4 dimension
+      // never holds "34" on one event and 34 on the next.
+      var ids = contract.idFields || [];
+      for (var j = 0; j < ids.length; j++) {
+        if (payload[ids[j]] !== null && payload[ids[j]] !== undefined) {
+          payload[ids[j]] = String(payload[ids[j]]);
+        }
+      }
+
+      payload.action = PYN_EVENT_CONTRACT.displayAction(contract, action, payload, meta);
+
+      _deliver(s, payload);
+    }
+
+    // In an iframe: hand the payload to the parent, whose relay snippet pushes
+    // it into their data layer. Embedded directly: push it ourselves. Checking
+    // window.parent !== window rather than a config flag means a property that
+    // changes how it embeds the map needs no change on our side.
+    function _deliver(s, payload) {
+      var framed = false;
+      try { framed = window.parent && window.parent !== window; } catch (e) { framed = true; }
+
+      if (framed) {
+        // '*' unless the property configured an exact origin. The payload is IDs
+        // and labels with no PII, and the receiving page verifies *our* origin in
+        // its relay snippet, which is the check that actually prevents forged
+        // events. A property that wants delivery narrowed sets target_origin.
+        try { window.parent.postMessage(payload, s.dataLayerConfig.targetOrigin || '*'); } catch (e) {}
+        return;
+      }
+
+      try {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push(payload);
+      } catch (e) {}
+    }
+
+    // undefined and '' both become null. GTM treats a missing key as "keep the
+    // previous value", so an absent dimension has to be an explicit null.
+    function _nullable(value) {
+      return (value === undefined || value === '') ? null : value;
     }
 
     function _flush(s, beacon) {
@@ -153,14 +454,24 @@
       };
     }
 
+    // Caps raised, and the key pattern widened to allow digits.
+    //
+    // The previous limits were 15 keys, 300 characters, and /^[a-z_]+$/. A CTA
+    // event now carries 18 dimensions, so the key cap silently discarded roughly
+    // a fifth of every payload; the pattern threw away any key with a number in
+    // it (`link_1_label`); and 300 characters truncates a real apply URL with
+    // query parameters. All three failed without an error anywhere, which is the
+    // worst way for analytics to be wrong. These match the server's limits in
+    // Analytics::MapEventContract exactly.
     function _sanitize(meta) {
       if (!meta || typeof meta !== 'object') return {};
       var out = {}, n = 0;
       for (var k in meta) {
-        if (n >= 15) break;
-        if (!/^[a-z_]{1,50}$/.test(k)) continue;
+        if (n >= 40) break;
+        if (!/^[a-z][a-z0-9_]{0,49}$/.test(k)) continue;
         var v = meta[k];
-        if (typeof v === 'string')  { out[k] = v.slice(0, 300); n++; }
+        if (v === null || v === undefined) continue;
+        if (typeof v === 'string')  { out[k] = v.slice(0, 2000); n++; }
         else if (typeof v === 'number' || typeof v === 'boolean') { out[k] = v; n++; }
       }
       return out;
@@ -485,11 +796,147 @@
       this._currentMapType = this.getMapType();
     },
 
-    // Internal: capture with map_type automatically injected.
+    // Internal: capture with map_type and the interacted entity's dimensions
+    // injected.
     _captureWithMapType(name, type, metadata) {
       if (!this._analytics) return;
-      const enhanced = Object.assign({}, metadata, { map_type: this.getMapType() });
-      this._analytics.capture(name, type || 'click', enhanced);
+      const eventType = type || 'click';
+      const enhanced  = Object.assign(
+        {},
+        metadata,
+        this._analyticsDims(name, eventType, metadata),
+        { map_type: this.getMapType() }
+      );
+      this._analytics.capture(name, eventType, enhanced);
+    },
+
+    // ── Analytics enrichment ────────────────────────────────────────────────
+    //
+    // A call site names what was interacted with — a unit id, a floor plan id,
+    // an amenity id, a favourite — and this fills in everything the SDK already
+    // holds about it: provider ids, names, building, floor, the unit's floor
+    // plan and its bedrooms, bathrooms and size. Both sinks receive the result,
+    // so sdk_events stores the same detail a client's GA4 does.
+    //
+    // It lives here rather than at the call sites because there are more than a
+    // dozen of those, and each used to remember a different subset: a favourite
+    // carried only an id, a floor plan card only its id, a marker click a
+    // differently-named id. A new tracked interaction gets every dimension by
+    // sending one id.
+    //
+    // Resolved values win over what the call site sent, because this is the
+    // payload the map rendered from. A call site's value survives only where
+    // nothing resolves — the shared-favorites screen boots without map data.
+    // Click-time facts (link label, link URL, filter value) are never touched.
+    _analyticsDims(name, type, metadata) {
+      // Hovers and lifecycle events are counters only: never stored as rows,
+      // never published. Resolving a unit on every pointer pass buys nothing.
+      if (type === 'hover' || type === 'state') return {};
+
+      const meta = metadata || {};
+      const dims = Object.assign({}, this._ANALYTICS_EVENT_DIMS[name]);
+      const kind = meta.favorite_type;
+      const ref  = (...keys) => {
+        for (const key of keys) {
+          const value = meta[key];
+          if (value !== undefined && value !== null && value !== '') return String(value);
+        }
+        return null;
+      };
+      const favoriteRef = (wanted) => (kind === wanted ? ref('favorited_id') : null);
+      // The payload formats some counts as strings ("1") and others as numbers;
+      // a report must not see both for one field.
+      const num = (value) => {
+        const parsed = value === null || value === undefined || value === '' ? NaN : Number(value);
+        return Number.isFinite(parsed) ? parsed : null;
+      };
+
+      // The share modal names its channel `method`; the published field is
+      // share_target.
+      if (meta.method && !meta.share_target) dims.share_target = meta.method;
+
+      const unit = this._analyticsUnit(ref('unit_id', 'viewed_unit_id') ?? favoriteRef('unit'));
+      if (unit) {
+        const plan = this.getFloorplan(unit.floorplanId);
+        return Object.assign(dims, this._compactDims({
+          unit_id:               unit.unitId,
+          provider_unit_id:      unit.providerUnitId,
+          unit_name:             unit.unitMarketingName ?? unit.unitNumber,
+          building:              unit.building,
+          floor_level:           num(unit.floor),
+          floorplan_id:          plan?.floorplanId,
+          provider_floorplan_id: unit.providerFloorplanId ?? plan?.providerFloorplanId,
+          floorplan_name:        unit.floorplanName ?? plan?.name,
+          bedrooms:              num(unit.bedrooms ?? plan?.bedrooms),
+          bathrooms:             num(unit.bathrooms ?? plan?.bathrooms),
+          // The unit's own size when it has one; the server already falls back
+          // to the floor plan's when it builds the unit.
+          square_footage:        num(unit.square_feet ?? plan?.square_feet)
+        }));
+      }
+
+      const plan = this.getFloorplan(ref('floorplan_id') ?? favoriteRef('floorplan'));
+      if (plan) {
+        return Object.assign(dims, this._compactDims({
+          floorplan_id:          plan.floorplanId,
+          provider_floorplan_id: plan.providerFloorplanId,
+          floorplan_name:        plan.name,
+          bedrooms:              num(plan.bedrooms),
+          bathrooms:             num(plan.bathrooms),
+          square_footage:        num(plan.square_feet)
+        }));
+      }
+
+      const amenityId = ref('amenity_id', 'marker_id') ?? favoriteRef('amenity');
+      const amenity   = amenityId && (this.data.amenities || []).find(a => String(a.amenityId) === amenityId);
+      if (amenity) {
+        return Object.assign(dims, this._compactDims({
+          amenity_id:   amenity.amenityId,
+          amenity_name: amenity.name,
+          floor_level:  num(amenity.floor)
+        }));
+      }
+
+      const imageId = favoriteRef('gallery_image');
+      if (imageId) {
+        const image = this._favState('gallery_image').list.find(i => String(i.id) === imageId);
+        dims.gallery_image_name = image?.name || 'Gallery Image';
+      }
+
+      return dims;
+    },
+
+    // Dimensions an event carries by virtue of its name alone. A new event with
+    // a fixed dimension is one line here.
+    _ANALYTICS_EVENT_DIMS: {
+      save_favorite:   { favorite_state: 'saved' },
+      delete_favorite: { favorite_state: 'deleted' },
+      share_favorites: { shared_entity: 'favorites' },
+      sent_favorite:   { shared_entity: 'favorites' }
+    },
+
+    // The unit an id names. On a student-housing property that id may be one
+    // bedroom's, which unitById maps to its door; the bedroom is the more
+    // precise record, so it is preferred when present.
+    _analyticsUnit(unitId) {
+      if (!unitId) return null;
+      const door = this.unitById?.[unitId];
+      if (!door) return null;
+      const space = Array.isArray(door.spaces)
+        ? door.spaces.find(sp => String(sp.unitId) === unitId)
+        : null;
+      return space || door;
+    },
+
+    // Drops what the payload does not have, so an absent field stays absent
+    // instead of overwriting a value the call site did send.
+    _compactDims(bag) {
+      const out = {};
+      Object.keys(bag).forEach(key => {
+        const value = bag[key];
+        if (value !== undefined && value !== null && value !== '') out[key] = value;
+      });
+      return out;
     },
 
     // Called by React (or any host) to capture events that the SDK cannot
@@ -510,6 +957,12 @@
         sdkVersion:   'v1',
         sdkSessionId: this._sdkSessionId  // stable localStorage UUID for journey linking
       });
+
+      // Normally the property payload arrives after this and configures the
+      // engine itself. On the re-auth path it does not — the payload is already
+      // stored and a fresh engine would sit unconfigured, silently emitting
+      // nothing to the client's data layer.
+      if (this.data.property) this._configureAnalytics();
     },
 
     // ----------------------------------------------------
@@ -904,6 +1357,49 @@
       this._indexSpaceConfig();
       this._resolve3DConfig();
       this._applyThemeConfig();
+      this._configureAnalytics();
+    },
+
+    // Hands the analytics engine its ambient context and the property's
+    // data-layer allowlist, and replays anything captured while the payload was
+    // still in flight.
+    //
+    // This is the single choke point both boot paths pass through — the full map
+    // fetch and the config-only boot the standalone touch pages use — so there
+    // is exactly one place where analytics learns which property it is looking
+    // at. Called on every re-fetch too, which is what makes a CMS change to the
+    // allowlist take effect on the next load rather than the next SDK release.
+    _configureAnalytics() {
+      if (!this._analytics) return;
+
+      const property = this.data.property || {};
+
+      this._analytics.configure(
+        {
+          company_id:    property.companyId ?? null,
+          company_name:  property.companyName ?? null,
+          property_id:   property.propertyId ?? null,
+          property_name: property.propertyName ?? null,
+          page_url:      this._hostPageUrl()
+        },
+        property.analytics || { enabled: false, actions: [], targetOrigin: null }
+      );
+    },
+
+    // The URL of the page the visitor is actually on, which is the parent page
+    // when the map is framed — not our own iframe URL, which is meaningless in a
+    // client's report.
+    //
+    // Same-origin parents answer directly. Cross-origin ones throw, and the
+    // referrer is the parent's URL in exactly that case. Both can be empty under
+    // a strict referrer policy, so this returns null rather than a wrong answer.
+    _hostPageUrl() {
+      try {
+        if (!window.parent || window.parent === window) return window.location.href;
+        return window.parent.location.href;
+      } catch (e) {
+        return document.referrer || null;
+      }
     },
 
     _applyThemeConfig() {
@@ -1526,7 +2022,7 @@
 
       return (this.data.floorplans || []).find(fp =>
         String(fp.floorplanId) === wanted ||
-        String(fp.spaceConfig?.providerFloorplanId ?? "") === wanted
+        String(fp.providerFloorplanId ?? fp.spaceConfig?.providerFloorplanId ?? "") === wanted
       ) || null;
     },
 
@@ -4193,10 +4689,15 @@
     /**
      * Internal: emit a favorites analytics event.
      *
-     * The names below are ones the server already recognises — 'save_favorite'
-     * becomes the save_favorite_click key that INTERACTION_EVENTS counts, and
-     * 'view_favorites' maps to the "Favorites page" visited-page entry — so they
-     * must stay exactly as written.
+     * 'view_favorites' maps to the server's "Favorites page" visited-page entry,
+     * so it must stay exactly as written.
+     *
+     * Saves and removals are reported under confirmation names, not as
+     * 'save_favorite' / 'delete_favorite'. Those two are the visitor's click,
+     * which the host captures the moment it happens — before a favorites session
+     * even exists — and which analytics_controller counts and a client's GA4
+     * receives. Emitting 'save_favorite' here as well counted every save twice
+     * and published it twice.
      *
      * Metadata is scalars only: the analytics sanitiser silently drops arrays,
      * which is why the ids go over as a joined string.
@@ -4351,7 +4852,7 @@
           if (item) item.isFavorite = true;
         });
 
-        this._captureFavorite("save_favorite", type, ids);
+        this._captureFavorite("favorite_save_confirmed", type, ids);
 
         if (this.config.onFavoriteChange) {
           this.config.onFavoriteChange(ids, "saved", [...set], type);
@@ -4404,7 +4905,7 @@
           if (item) item.isFavorite = false;
         });
 
-        this._captureFavorite("remove_favorite", type, ids);
+        this._captureFavorite("favorite_remove_confirmed", type, ids);
 
         if (this.config.onFavoriteChange) {
           this.config.onFavoriteChange(ids, "deleted", [...set], type);

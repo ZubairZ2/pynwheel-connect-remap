@@ -555,7 +555,7 @@ module Api
         # ------------------------------------------------------------------
         def load_community_from_session
           @community = Community
-            .includes(:sitemap, :floorplates, :floorplans, :map_filter,
+            .includes(:company, :sitemap, :floorplates, :floorplans, :map_filter,
                       :font_setting, :credential, :calculator_config,
                       :three_d_maps_configuration, :design_system_config,
                       # discovery block only — the pins themselves are never
