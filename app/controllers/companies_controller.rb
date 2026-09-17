@@ -7,6 +7,10 @@ class CompaniesController < ApplicationController
   before_action :check_community
   
   def index
+    # Pynwheel Connect (Next.js) reads the same companies over JSON, one page at
+    # a time — it must not build the full list below.
+    return render_connect_companies if request.format.json?
+
     if current_user.is_super_admin?
       @companies = alphabetical_sort(Company.all)
     elsif current_user.is_dwelo_admin?
@@ -130,6 +134,16 @@ class CompaniesController < ApplicationController
   end
 
   private
+
+  def render_connect_companies
+    scope = AccessibleCompaniesQuery.new(current_user, params).call
+    page = Connect::PaginatedCollection.new(scope, page: params[:page], per_page: params[:per_page])
+
+    render json: Connect::ResponseEnvelope.new(
+      data: Connect::CompanySerializer.collection(page.records),
+      meta: Connect::ResponseEnvelope.listing_meta(current_user, page.total_count, pagination: page.meta)
+    ).as_json
+  end
 
   def set_company
     @company = Company.find params[:id]
