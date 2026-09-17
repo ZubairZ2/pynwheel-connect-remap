@@ -2266,9 +2266,30 @@ class Community < ApplicationRecord
     map_filter.update!(marketing_units_tab_enabled: false)
   end
 
+  # How many distinct fee strings one community instance will remember. The
+  # realistic count is one or two -- the property fee, plus whatever a unit
+  # overrides it with -- so this is a ceiling for a pathological property that
+  # gives every unit its own markup, not a working size. Past it the method
+  # simply stops caching and keeps answering correctly.
+  SANITIZE_CACHE_LIMIT = 64
+
+  # Memoised per instance because #get_additional_fees calls this once or twice
+  # for every unit in an SDK payload, nearly always on the very same
+  # property-level fee string -- thousands of Loofah parses for one answer.
+  #
+  # strip_tags is pure, so caching on the input is safe. The cache lives on this
+  # one instance and dies with the request that loaded it: nothing is shared
+  # between requests, threads or properties, and it is capped above so a single
+  # community can never grow one unbounded.
   def sanitize_content(content)
     return nil unless content.present?
-    ActionController::Base.helpers.strip_tags(content.to_s.strip).strip
+
+    @sanitize_content_cache ||= {}
+    return @sanitize_content_cache[content] if @sanitize_content_cache.key?(content)
+
+    stripped = ActionController::Base.helpers.strip_tags(content.to_s.strip).strip
+    @sanitize_content_cache[content] = stripped if @sanitize_content_cache.size < SANITIZE_CACHE_LIMIT
+    stripped
   end
 
   def get_lock_info_object lock_object, styling_start, styling_end

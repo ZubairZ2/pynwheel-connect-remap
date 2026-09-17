@@ -580,8 +580,40 @@ class Unit < ApplicationRecord
     end
   end
 
+  # Overrides the `belongs_to :floorplan` reader declared at the top of this
+  # class. The `floorplan_id` column holds the PMS's own id for the plan, not our
+  # primary key, so the association's join is on the wrong column and the record
+  # has to be resolved through `provider_floorplan_id` instead.
+  #
+  # Memoised because the SDK payload asks a unit for its floor plan around twenty
+  # times over: once directly in SdkPayloadBuilderService#unit_json, and again
+  # inside every get_*/link*_open_in_new_tab? fallback below, each of which
+  # re-reads it through its own `&.` chain. Unmemoised that was ~20 SELECTs per
+  # unit, so a four-figure student-housing property spent tens of thousands of
+  # round trips on one answer -- the bulk of a 14s fetch_data.
+  #
+  # Keyed on the two columns the lookup reads, so reassigning `floorplan_id`
+  # invalidates the cache by itself and a re-import can never serve a stale plan.
+  # A miss is cached too: a unit whose plan is genuinely missing asks once.
   def floorplan
-    Floorplan.find_by(provider_floorplan_id: self.floorplan_id, community_id: self.community_id)
+    key = [floorplan_id, community_id]
+    return @floorplan_lookup.last if @floorplan_lookup && @floorplan_lookup.first == key
+
+    found = Floorplan.find_by(provider_floorplan_id: floorplan_id, community_id: community_id)
+    @floorplan_lookup = [key, found]
+    found
+  end
+
+  # Hands a unit a floor plan that some caller already has in memory, so the
+  # lookup above never runs at all. SdkPayloadBuilderService uses this to serve a
+  # whole property's units from the floor plans loaded once with the community.
+  def preloaded_floorplan=(record)
+    @floorplan_lookup = [[floorplan_id, community_id], record]
+  end
+
+  def reload(*)
+    @floorplan_lookup = nil
+    super
   end
 
   def unit_image

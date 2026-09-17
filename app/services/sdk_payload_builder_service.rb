@@ -12,8 +12,9 @@ class SdkPayloadBuilderService
   # the flat payload whatever the property is configured as.
   def build(ops_map: false, group_units: false)
     @group_units = group_units
-    units_ar = @community.units.map_units(@community, ops_map).visible_units.without_hidden_names.includes(:floorplan).to_a
+    units_ar = @community.units.map_units(@community, ops_map).visible_units.without_hidden_names.to_a
     units_ar.each { |u| u.association(:community).target = @community }
+    attach_floorplans(units_ar)
 
     # Only `units` is grouped. floorplans_json and filters_json keep reading the
     # flat list: a floor plan's unit count and a filter's option list must both
@@ -287,6 +288,32 @@ class SdkPayloadBuilderService
   end
 
   private
+
+  # Hands every unit the floor plan it would otherwise fetch for itself.
+  #
+  # Rails cannot preload this one: Unit#floorplan resolves on
+  # `provider_floorplan_id`, not on our primary key, so `includes(:floorplan)`
+  # joins the wrong column and the overridden reader throws the result away.
+  # That left each unit doing its own SELECT — around twenty of them, because
+  # every additional-button fallback re-reads the plan — which is what made
+  # fetch_data cost tens of thousands of queries on a large property.
+  #
+  # Costs no query of its own: the controller's community loader already
+  # includes `:floorplans`, so this is a walk over rows that are in memory.
+  def attach_floorplans(units)
+    by_provider_id = floorplans_by_provider_id
+    units.each { |unit| unit.preloaded_floorplan = by_provider_id[unit.floorplan_id] }
+  end
+
+  # provider id -> plan, first one winning, which is what Floorplan.find_by
+  # returns for the duplicate provider ids some feeds send. Keys are the raw
+  # column values so a nil `floorplan_id` still matches a plan with a nil
+  # `provider_floorplan_id`, exactly as the query it replaces did.
+  def floorplans_by_provider_id
+    @floorplans_by_provider_id ||= @community.floorplans.each_with_object({}) do |fp, map|
+      map[fp.provider_floorplan_id] ||= fp
+    end
+  end
 
   # Whether this payload's `units` are rolled up by plot position: the property
   # is configured for it AND the client asked. Both are required — see #build.
@@ -1064,7 +1091,23 @@ class SdkPayloadBuilderService
 
   def map_for_unit(unit)
     return @community.sitemap&.id if @community.is_sitemap?
-    @community.floorplate_for_floor(unit.floor)&.id
+    map_id_by_floor[unit.floor.to_i]
+  end
+
+  # floor number -> floorplate id, built once for the property.
+  #
+  # Community#floorplate_for_floor rescans every floorplate on each call and
+  # re-parses its `range` string into a floor array while doing so. On a 27-floor
+  # property with a four-figure unit list that is tens of thousands of range
+  # parses for an answer that only ever depends on the floor number.
+  #
+  # Walks the floorplates in association order (number DESC) and lets the first
+  # one claiming a floor keep it, which is the same one #detect returned.
+  def map_id_by_floor
+    @map_id_by_floor ||= @community.floorplates.each_with_object({}) do |fp, map|
+      next if fp.range.blank?
+      fp.floors.each { |floor| map[floor] ||= fp.id }
+    end
   end
 
   # `slot` and `kind` exist because of the select on the last line.
