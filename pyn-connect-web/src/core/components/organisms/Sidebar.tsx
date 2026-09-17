@@ -5,31 +5,20 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { OrgsIcon, PropertiesIcon, SignOutIcon } from '~/core/components/atoms/Icons';
-import { CORE_STRINGS } from '~/config/app/strings';
 import { APP_ROUTES } from '~/config/app/urls';
+import { CORE_STRINGS } from '~/config/app/strings';
+import { Icon } from '~/core/components/atoms/connect/Icon';
+import { activeNavId, generateNavigation } from '~/core/utils/generator/navigation.generator';
+import { initials } from '~/core/utils/connect/format';
 import { i18n } from '~/resources/i18n';
-import { generateNavigation, type NavItem } from '~/core/utils/generator/navigation.generator';
 import type { CurrentUser } from '~/core/models/data/session.data';
 
-const ICONS: Record<NavItem['icon'], () => React.JSX.Element> = {
-  orgs: OrgsIcon,
-  properties: PropertiesIcon
-};
-
-const initialsOf = (name: string): string =>
-  name
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((word) => word[0])
-    .join('')
-    .toUpperCase();
-
+/** The design's back-office sidebar: brand, grouped nav, signed-in user. */
 export const Sidebar = ({ currentUser }: { currentUser: CurrentUser | null }) => {
   const pathname = usePathname();
   const router = useRouter();
   const [signingOut, setSigningOut] = useState(false);
+  const active = activeNavId(pathname);
 
   const signOut = async () => {
     setSigningOut(true);
@@ -57,20 +46,18 @@ export const Sidebar = ({ currentUser }: { currentUser: CurrentUser | null }) =>
           <div key={group.header}>
             <div className="bo-sidebar__header">{group.header}</div>
             {group.items.map((item) => {
-              const Icon = ICONS[item.icon];
-              const active = pathname.startsWith(item.href);
+              const isActive = active === item.id;
 
               return (
                 <Link
                   key={item.id}
                   href={item.href}
-                  aria-current={active ? 'page' : undefined}
-                  className={`bo-navitem ${active ? 'bo-navitem--active' : ''}`}
+                  aria-current={isActive ? 'page' : undefined}
+                  className={`bo-navitem ${isActive ? 'bo-navitem--active' : ''}`}
                 >
-                  <span className="bo-navitem__icon">
-                    <Icon />
-                  </span>
+                  <Icon name={item.icon} className="bo-navitem__icon" />
                   <span style={{ flex: 1 }}>{item.label}</span>
+                  {item.badge && <span className="bo-navbadge">{item.badge}</span>}
                 </Link>
               );
             })}
@@ -80,7 +67,7 @@ export const Sidebar = ({ currentUser }: { currentUser: CurrentUser | null }) =>
 
       <div className="bo-sidebar__user">
         <span className="bo-avatar" aria-hidden="true">
-          {initialsOf(currentUser?.name ?? 'Pynwheel')}
+          {initials(currentUser?.name ?? 'Pynwheel')}
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className="bo-sidebar__username">{currentUser?.name ?? '—'}</div>
@@ -93,7 +80,11 @@ export const Sidebar = ({ currentUser }: { currentUser: CurrentUser | null }) =>
           disabled={signingOut}
           onClick={signOut}
         >
-          <SignOutIcon />
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
         </button>
       </div>
     </nav>

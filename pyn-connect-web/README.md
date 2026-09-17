@@ -1,12 +1,19 @@
 # Pynwheel Connect — web (Next.js)
 
-The first three screens of the new Pynwheel Connect back office: **Sign In**, **Companies**,
-**Properties**. It renders the design in `../pyn-connect-new.html` and reads **real data from the
-existing Pynwheel CMS (Rails) application** — there is no second backend, no new authentication
-system and no mock data anywhere in this app.
+The Pynwheel Connect back office, rendering the design in `../pyn-connect-new.html`.
+
+Two kinds of screen live here, and the difference matters:
+
+- **Sign In, Companies, Properties** read **real data** from the existing Pynwheel CMS (Rails)
+  application. No second backend, no new authentication system.
+- **Every other screen** — Dashboard, the property and company detail screens, Tour Scheduling,
+  Integrations, the Pricing Calculator and the rest — runs on **local demo data** under
+  `src/data/mock/`. They do not touch the database. Swapping one to a real endpoint means adding a
+  thunk that writes parsed models into the same Redux slice; nothing above the slice changes.
 
 ```
 Browser ── Next.js (server components + route handlers) ── Rails CMS (Devise session)
+                   └── demo slice (src/data/mock) for the ported screens
 ```
 
 ## Running it
@@ -28,6 +35,20 @@ health probe, HTTPS and cookie requirements, troubleshooting — see [DEPLOYMENT
 | `NEXT_PUBLIC_CMS_URL` | Same URL, used only for the "Forgot password?" link. |
 | `NEXT_PUBLIC_ENV_LABEL` | Text in the environment chip (defaults to `STAGING`). |
 | `PYN_CONNECT_COOKIE_SECURE` | `false` only when a production build is served over plain HTTP. |
+| `PYN_CONNECT_REACT_FLOW` | `off` sends every Connect route to the legacy Rails UI. See `src/config/app/reactFlow.ts`. |
+| `NEXT_PUBLIC_SCREEN_HARNESS` | `on` exposes `/screen-harness/<screen>` in a production build. Used by the end-to-end suite; off by default. |
+
+## Tests
+
+```bash
+npm run test:e2e     # Playwright, real Chrome
+npm run typecheck
+npm run build
+```
+
+`tests/e2e/` covers every route, every ported screen (asserting **no** console errors), and the
+interactions the design demonstrates — tabs, search, filters, dialogs, confirm-before-destroy,
+toggles, plotting a pin, and the layout at phone width.
 
 ## How it is layered
 
