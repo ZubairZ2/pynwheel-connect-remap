@@ -1721,13 +1721,34 @@
         }
       }
 
-      await Promise.all(pending.map(async ({ mapId, mapType }) => {
-        try {
-          const svg = await this._loadSVGIfNeeded(mapId, mapType);
-          if (svg) this.svgCache[mapId] = svg;
-        } catch {}
+      // Bounded, rather than one Promise.all over the whole list.
+      //
+      // A 27-floor property otherwise fires 27 requests the instant the map
+      // becomes usable. That is more than a browser will open to one origin, so
+      // they queue in the tab; and it is more than a dyno has Puma threads, so
+      // they queue again on the server. Anything the visitor actually asks for
+      // next -- a floor they clicked, a second fetch_data -- lands behind
+      // artwork nobody has looked at yet.
+      //
+      // Four keeps the cache filling quickly while leaving the connection pool
+      // and the server free for whatever the visitor does next. Prefetching is
+      // by definition work nobody is waiting on, so it yields.
+      const queue = pending.slice();
+      const workerCount = Math.min(this.PREFETCH_CONCURRENCY, queue.length);
+
+      await Promise.all(Array.from({ length: workerCount }, async () => {
+        while (queue.length) {
+          const { mapId, mapType } = queue.shift();
+          try {
+            const svg = await this._loadSVGIfNeeded(mapId, mapType);
+            if (svg) this.svgCache[mapId] = svg;
+          } catch {}
+        }
       }));
     },
+
+    // How many floor SVGs to prefetch at once. See _prefetchRemainingMaps.
+    PREFETCH_CONCURRENCY: 4,
 
     _parseSVG(svgText) {
       const parser = new DOMParser();

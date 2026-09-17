@@ -257,9 +257,30 @@ class SdkPayloadBuilderService
     return [nil, nil] unless record
 
     [
-      record.image.present?           ? record.validated_image_url                                      : nil,
-      record.secondary_image.present? ? record.convert_to_s3_accelerate_url(record.secondary_image.url) : nil
+      stored_image?(record, :image) ? record.validated_image_url : nil,
+      stored_image?(record, :secondary_image) ?
+        record.convert_to_s3_accelerate_url(record.secondary_image.url) : nil
     ]
+  end
+
+  # Whether the record actually has a file in this slot, decided from the column
+  # rather than from the uploader.
+  #
+  # `record.image.present?` reads like an attribute and is not: it builds the
+  # mounted uploader, retrieves the stored file and walks the uploader's
+  # versions. For a record with no picture that is the whole apparatus assembled
+  # to arrive at nil -- and the payload asks it of every unit and then again of
+  # that unit's floor plan, four slots per pair. Measured on a 671-unit
+  # property it was 24ms of a 53ms unit serialization, the single largest item.
+  #
+  # CarrierWave stores the filename in the column, so a blank column means "no
+  # file" with certainty and without constructing anything. A record that does
+  # carry an image still goes through the uploader exactly as before.
+  def stored_image?(record, column)
+    return record.read_attribute(column).present? if record.has_attribute?(column)
+
+    # Not every record handed to #record_images is backed by that column.
+    record.public_send(column).present?
   end
 
   # A unit's two pictures: its own when it has any, otherwise its floor plan's.
@@ -277,7 +298,20 @@ class SdkPayloadBuilderService
     own = record_images(unit)
     return own if own.any?(&:present?)
 
-    record_images(floorplan)
+    floorplan_images(floorplan)
+  end
+
+  # A floor plan's pictures, resolved once per plan rather than once per unit.
+  #
+  # Most units carry no image of their own and fall back to their plan's, so
+  # this ran for every unit on the property -- 671 resolutions of the same 46
+  # answers, each one going through the uploader. The plans are shared by
+  # definition, and nothing about the pair depends on which unit is asking.
+  def floorplan_images(floorplan)
+    return [nil, nil] unless floorplan
+
+    @floorplan_images ||= {}
+    @floorplan_images.fetch(floorplan.id) { @floorplan_images[floorplan.id] = record_images(floorplan) }
   end
 
   # The space's own letter and terms, carried on the unit itself.
@@ -821,10 +855,27 @@ class SdkPayloadBuilderService
   # the floor plan: the specific apartment is assigned at signing, so the pop-up
   # never names a unit. Precomputed here rather than derived in the browser so
   # opening the modal costs an array index, not a scan over a thousand units.
+  # The only two things this needs from a space's unit, carried along on the
+  # join instead of fetched as a whole record.
+  #
+  # It used to `includes(:unit)`, which instantiated every unit on the property
+  # a second time -- the payload already holds them all -- so that two
+  # attributes could be read off each one. On a 671-bed property that was 87% of
+  # the time spent building the floor plans.
+  #
+  # INNER JOIN rather than LEFT is deliberate and changes nothing: a detail row
+  # whose unit is gone used to resolve to a nil floorplan_id and was dropped by
+  # the `.except(nil)` below, so the join drops exactly the same rows.
+  SPACE_UNIT_COLUMNS =
+    "units.floorplan_id AS unit_floorplan_id, units.marketing_name AS unit_marketing_name".freeze
+
   def space_configs_by_floorplan(units)
     return {} unless @community.student_housing_property?
 
-    details = UnitSpaceDetail.for_community(@community.id).lettered.includes(:unit).to_a
+    details = UnitSpaceDetail.for_community(@community.id).lettered
+                             .joins(:unit)
+                             .select("unit_space_details.*", SPACE_UNIT_COLUMNS)
+                             .to_a
     return {} if details.empty?
 
     # The units this payload actually carries. Deliberately NOT the same source as
@@ -835,7 +886,7 @@ class SdkPayloadBuilderService
     # actionable unit id come from the payload.
     payload_units = units.index_by(&:id)
 
-    details.group_by { |detail| detail.unit&.floorplan_id }
+    details.group_by(&:unit_floorplan_id)
            .except(nil)
            .map { |provider_id, rows|
              [provider_id,
@@ -859,7 +910,7 @@ class SdkPayloadBuilderService
       # elects a base unit with. Deliberately not "first available" -- availability
       # flips as leases are signed, and this id is what favourites, deep links and
       # analytics are keyed on.
-      ordered = group.sort_by { |d| [SdkUnitSpaceGrouper.natural_key(d.unit&.marketing_name), d.unit_id.to_i] }
+      ordered = group.sort_by { |d| [SdkUnitSpaceGrouper.natural_key(d.unit_marketing_name), d.unit_id.to_i] }
       display = ordered.first
       present = ordered.filter_map { |d| payload_units[d.unit_id] }
 
