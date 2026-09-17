@@ -19,11 +19,15 @@ npm run dev                       # http://localhost:3001
 
 The Rails app must be running (`bundle exec rails s -p 3000` in the repo root).
 
+To stand this up on another machine or in production — Node/Docker, environment variables, the
+health probe, HTTPS and cookie requirements, troubleshooting — see [DEPLOYMENT.md](DEPLOYMENT.md).
+
 | Variable | Meaning |
 |---|---|
 | `PYNWHEEL_CMS_URL` | Base URL of the Rails CMS. Server-side only. |
 | `NEXT_PUBLIC_CMS_URL` | Same URL, used only for the "Forgot password?" link. |
 | `NEXT_PUBLIC_ENV_LABEL` | Text in the environment chip (defaults to `STAGING`). |
+| `PYN_CONNECT_COOKIE_SECURE` | `false` only when a production build is served over plain HTTP. |
 
 ## How it is layered
 
