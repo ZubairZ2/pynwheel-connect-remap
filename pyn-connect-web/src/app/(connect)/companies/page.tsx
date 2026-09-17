@@ -12,9 +12,17 @@ import { CompaniesListingScreen } from '~/core/screens/companies/companiesListin
 
 export const dynamic = 'force-dynamic';
 
-export default async function CompaniesPage() {
+interface Props {
+  searchParams: Promise<{ page?: string; q?: string }>;
+}
+
+export default async function CompaniesPage({ searchParams }: Props) {
+  const { page, q } = await searchParams;
   const cookie = await readRailsCookie();
-  const response = await fetchCompanies(cookie);
+
+  // Paging and search are query parameters on the Rails request: one page of
+  // rows comes back, not the whole table.
+  const response = await fetchCompanies(cookie, { page: Number(page) || 1, q });
 
   if (response.status === 401 || response.status === 302) redirect(APP_ROUTES.signIn);
 
@@ -28,6 +36,8 @@ export default async function CompaniesPage() {
     >
       <CompaniesListingScreen
         companies={companies}
+        pagination={meta.pagination}
+        initialQuery={q ?? ''}
         error={response.ok ? null : i18n.t(CORE_STRINGS.shared.loadFailed)}
       />
     </ListingScreenTemplate>

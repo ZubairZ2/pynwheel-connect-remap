@@ -85,6 +85,29 @@ const readSetCookies = (response: Response): string[] => {
   return single ? [single] : [];
 };
 
+/**
+ * Appends query parameters, dropping the ones that carry no meaning upstream:
+ * blanks, and the `all` sentinel the filter selects use for "no filter".
+ */
+export const withQuery = (
+  path: string,
+  params: Record<string, string | number | undefined | null>
+): string => {
+  const query = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value == null) return;
+
+    const asString = String(value).trim();
+    if (asString === '' || asString === 'all') return;
+
+    query.set(key, asString);
+  });
+
+  const serialized = query.toString();
+  return serialized ? `${path}?${serialized}` : path;
+};
+
 /** Collapses `Set-Cookie` lines into a `Cookie` header value. */
 export const mergeCookies = (existing: string | null, setCookies: string[]): string => {
   const jar = new Map<string, string>();

@@ -503,6 +503,76 @@ table {
   gap: 8px;
 }
 
+/* ---------- pager ---------- */
+
+.bo-panel--busy {
+  opacity: 0.55;
+  transition: opacity 120ms ease-in;
+  pointer-events: none;
+}
+
+.bo-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  background: #fafafb;
+  border-top: 1px solid var(--bo-line);
+}
+
+.bo-pager__summary {
+  font: 600 12px var(--bo-font);
+  color: var(--bo-subtle);
+}
+
+.bo-pager__nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.bo-pager__page,
+.bo-pager__step {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--bo-line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--bo-muted);
+  font: 700 12.5px var(--bo-font);
+  cursor: pointer;
+}
+
+.bo-pager__page:hover:not(:disabled),
+.bo-pager__step:hover:not(:disabled) {
+  background: var(--bo-side-hover);
+  color: var(--bo-ink);
+}
+
+.bo-pager__page--active,
+.bo-pager__page--active:hover {
+  background: var(--bo-accent);
+  border-color: var(--bo-accent);
+  color: #fff;
+  cursor: default;
+}
+
+.bo-pager__page:disabled,
+.bo-pager__step:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.bo-pager__gap {
+  font: 700 12.5px var(--bo-font);
+  color: var(--bo-subtle);
+  padding: 0 2px;
+}
+
 .bo-empty {
   padding: 28px 16px;
   text-align: center;

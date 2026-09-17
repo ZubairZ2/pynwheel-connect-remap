@@ -21,12 +21,14 @@ module Connect
     end
 
     # Meta every listing carries: who is signed in (the Connect sidebar needs
-    # it) plus the record count.
-    def self.listing_meta(user, total_count)
+    # it), the record count, and — for paginated listings — the page metadata
+    # the frontend's pager renders from.
+    def self.listing_meta(user, total_count, pagination: nil, extra: {})
       {
         total_count: total_count,
-        current_user: current_user_meta(user)
-      }
+        current_user: current_user_meta(user),
+        pagination: pagination
+      }.merge(extra)
     end
 
     def self.current_user_meta(user)

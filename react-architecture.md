@@ -2290,3 +2290,59 @@ decode from the manifest island, commit under `public/`, reference through `next
 `pyn-connect-web/src/core/screens/signIn/signIn.screen.tsx`,
 `pyn-connect-web/src/core/components/organisms/Sidebar.tsx`,
 `pyn-connect-web/public/images/`; the `__bundler/manifest` island in `pyn-connect-new.html`.
+
+### September 17, 2026 — Infrastructure Update: pagination
+
+**What was missing:**
+The September 17 entry on listing scope recorded that neither listing was paginated, and that if the
+row count became a problem pagination belonged in the backend rather than the frontend. It did:
+Properties shipped 802 rows (404 KB) and Companies 217 (58 KB) on every load, and serializing the
+full Properties list took ~2.3 s. The document also did not say **which** pagination this codebase
+uses — it has both `kaminari` and `will_paginate` in the Gemfile.
+
+**What was found/implemented:**
+`will_paginate` is the de-facto standard here: `SvgOptimizerController`,
+`PartnerConfigurationsController`, `ImpressionsController` and `UnitsController` all call
+`.paginate(page:, per_page:)`, and `SvgOptimizerController#paginated_property_rows` is the closest
+precedent — SQL-level filters in the scope, paging in SQL, with a documented fallback for filters
+that can only be computed in Ruby. Both Connect listings now follow it, 10 rows per page:
+
+- `Connect::PaginatedCollection` wraps a relation and exposes `meta` as
+  `{ page, per_page, total_count, total_pages }`. It clamps a page past the end to the last page, so
+  a stale bookmark shows the last page rather than an empty table. `current_page` is cast with
+  `to_i`: it is a `WillPaginate::PageNumber`, which would otherwise serialize as `"page 1"`.
+- `AccessibleCompaniesQuery` was added, mirroring the role branches of `CompaniesController#index`
+  as an ordered relation. The HTML path still uses `alphabetical_sort`; the JSON path orders in SQL
+  by `LOWER(name)`, because Ruby-side sorting cannot be paged in SQL. **This is a deliberate
+  ordering difference**: `alphabetical_sort` ignores a leading "The"/"(Dwelo)" when comparing, SQL
+  ordering does not. Only the JSON listing is affected.
+- `AccessibleCommunitiesQuery` gained the listing's search and three filters as SQL conditions. The
+  lifecycle-stage filter reproduces the serializer's date precedence (each stage asserts its own
+  milestone date and the absence of every later one). The Maps product flag only exists inside
+  `product_options`, a jsonb column holding a JSON *string*, so it is matched by unwrapping it:
+  `(product_options #>> '{}')::jsonb -> 'product_options' ->> 'pynwheel_maps'`.
+- The query object uses `preload`, not `includes`. An `includes` that turns into a JOIN would apply
+  `LIMIT`/`OFFSET` to joined rows, silently returning the wrong page.
+
+**Why the filters had to move to the backend:** they used to run in the browser over the whole
+dataset. Once the browser only holds ten rows, client-side filtering searches ten rows — a silent
+regression. Search, the three Properties filters and paging are therefore all server-side, and the
+Properties response carries `meta.filters.companies` because one page of rows cannot produce the
+company dropdown's options.
+
+**Frontend:** listing state lives in the URL (`?page=&q=&stage=&company_id=&product=`), so a page or
+filter change is a navigation that re-runs the server component and fetches exactly one page, and a
+refresh or shared link restores the same view. `generatePager` is a pure generator in the §8 sense;
+`Pagination` renders its descriptors and knows nothing about which listing it sits in. The loading
+state is `useTransition`'s `isPending` (the table dims, controls disable) plus a `loading.tsx` per
+route for the first load. Changing a filter resets to page 1; paging keeps the filters.
+
+**Measured:** Companies 58 KB → 3.1 KB, Properties 404 KB → 11.8 KB per request; warm responses
+40–70 ms; SQL confirmed as `LIMIT 10 OFFSET n` with preloads scoped to the page's ids.
+
+**Reference:**
+`app/serializers/connect/paginated_collection.rb`, `app/queries/accessible_companies_query.rb`,
+`app/queries/accessible_communities_query.rb`,
+`pyn-connect-web/src/core/utils/generator/pagination.generator.ts`,
+`pyn-connect-web/src/core/hooks/useListingParams.ts`;
+precedent: `app/controllers/svg_optimizer_controller.rb#paginated_property_rows`.

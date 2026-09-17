@@ -12,9 +12,36 @@ import { PropertiesListingScreen } from '~/core/screens/properties/propertiesLis
 
 export const dynamic = 'force-dynamic';
 
-export default async function PropertiesPage() {
+interface Props {
+  searchParams: Promise<{
+    page?: string;
+    q?: string;
+    stage?: string;
+    company_id?: string;
+    product?: string;
+  }>;
+}
+
+export default async function PropertiesPage({ searchParams }: Props) {
+  const params = await searchParams;
   const cookie = await readRailsCookie();
-  const response = await fetchProperties(cookie);
+
+  const filters = {
+    query: params.q ?? '',
+    stage: params.stage ?? 'all',
+    companyId: params.company_id ?? 'all',
+    product: params.product ?? 'all'
+  };
+
+  // Search, filters and paging all resolve on the server; the response is one
+  // page of rows however many communities the user can see.
+  const response = await fetchProperties(cookie, {
+    page: Number(params.page) || 1,
+    q: filters.query,
+    stage: filters.stage,
+    companyId: filters.companyId,
+    product: filters.product
+  });
 
   if (response.status === 401 || response.status === 302) redirect(APP_ROUTES.signIn);
 
@@ -28,6 +55,9 @@ export default async function PropertiesPage() {
     >
       <PropertiesListingScreen
         properties={properties}
+        pagination={meta.pagination}
+        filters={filters}
+        companyOptions={meta.companyOptions}
         error={response.ok ? null : i18n.t(CORE_STRINGS.shared.loadFailed)}
       />
     </ListingScreenTemplate>

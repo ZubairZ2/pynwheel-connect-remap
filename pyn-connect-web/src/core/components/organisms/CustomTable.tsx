@@ -29,8 +29,7 @@ const DOT_ICON: Record<string, () => React.JSX.Element> = {
  * descriptors from a generator.
  */
 export const CustomTable = ({ columns, rows, emptyLabel, caption }: Props) => (
-  <div className="bo-panel">
-    <table className="bo-table">
+  <table className="bo-table">
       <caption className="sr-only" style={{ position: 'absolute', left: '-10000px' }}>
         {caption}
       </caption>
@@ -60,9 +59,8 @@ export const CustomTable = ({ columns, rows, emptyLabel, caption }: Props) => (
             </td>
           </tr>
         )}
-      </tbody>
-    </table>
-  </div>
+    </tbody>
+  </table>
 );
 
 const Cell = ({ descriptor }: { descriptor?: CellDescriptor }) => {
