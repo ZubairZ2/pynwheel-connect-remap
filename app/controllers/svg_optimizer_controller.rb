@@ -503,7 +503,7 @@ class SvgOptimizerController < ApplicationController
 
   # Partner filter — "any" means enrolled with at least one partner, otherwise
   # a specific partner key. Partner enrollment lives in
-  # communities.partner_map_settings (see Community::MAP_PARTNERS), the same
+  # communities.partner_map_settings (see Partner.registry), the same
   # source the Partner Configuration screen reads.
   def apply_partner_filter(scope)
     case params[:partner]
@@ -511,7 +511,7 @@ class SvgOptimizerController < ApplicationController
     when "any"   then scope.with_any_partner
     when "none"  then scope.where.not(id: Community.with_any_partner.select(:id))
     else
-      Community::MAP_PARTNER_KEYS.include?(params[:partner]) ? scope.for_partner(params[:partner]) : scope
+      Partner.registry_keys.include?(params[:partner]) ? scope.for_partner(params[:partner]) : scope
     end
   end
 

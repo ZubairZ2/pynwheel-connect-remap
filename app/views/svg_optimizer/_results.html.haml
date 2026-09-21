@@ -47,10 +47,10 @@
               - else
                 %span.flag.no{title: "\"Beans Generated SVG\" is off for this property"} False
             %td.p-partners
-              - enabled = Community::MAP_PARTNERS.select { |p| community.partner_map_enabled?(p[:key]) }
+              - enabled = Partner.registry.select { |p| community.partner_map_enabled?(p.key) }
               - if enabled.any?
                 - enabled.each do |p|
-                  %span.ptag= p[:label]
+                  %span.ptag= p.label
               - else
                 %span.muted —
             %td= rollup[:total]

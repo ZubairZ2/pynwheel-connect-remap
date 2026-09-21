@@ -3,9 +3,6 @@ module Api
     module Maps
       class WebhooksController < BaseController
 
-        # Partner that is only allowed to see SVG-enabled properties.
-        SVG_ONLY_PARTNER = "apartments".freeze
-
         before_action :load_property_for_units, only: [:units]
 
         # --------------------------------------------------
@@ -136,11 +133,14 @@ module Api
         end
 
         # Base scope of properties this partner may access.
-        # Apartments.com only receives properties with SVG mode enabled;
-        # every other partner sees all of their enabled properties.
+        #
+        # Some partners (Apartments.com today) only ever receive properties with
+        # SVG mode enabled. That is a flag on the partner record rather than a
+        # hardcoded key, so the next partner with the same restriction is a
+        # settings change, not a deploy.
         def partner_properties_scope
           scope = Community.for_partner(@partner)
-          scope = scope.where(enable_svg_mode: true) if @partner == SVG_ONLY_PARTNER
+          scope = scope.where(enable_svg_mode: true) if @partner_record&.svg_only?
           scope
         end
 

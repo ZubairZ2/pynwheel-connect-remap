@@ -12,6 +12,9 @@
         %span.text-muted.font-size-13
           Control which partner listing sites display each property's Pynwheel interactive map.
       .pc-header-actions
+        %button.btn.btn-default#pcAddPartnerBtn{ type: "button" }
+          %i.fa.fa-plus.mr-5
+          Add partner
         %button.btn.btn-default.pc-upload-launch#pcExportBtn{ type: "button" }
           %i.fa.fa-download.mr-5
           Export CSV
@@ -28,10 +31,14 @@
               All
               %span.badge.tab-badge= @counts["all"]
           - @partners.each do |p|
-            %li{ class: (@partner == p[:key] ? "active" : "") }
-              = link_to community_partner_configurations_path(current_community, partner: p[:key], sort: @sort, search: @search) do
-                = p[:label]
-                %span.badge.tab-badge= @counts[p[:key]]
+            %li{ class: (@partner == p.key ? "active" : "") }
+              = link_to community_partner_configurations_path(current_community, partner: p.key, sort: @sort, search: @search) do
+                = p.label
+                %span.badge.tab-badge= @counts[p.key]
+
+        -# API key for the partner whose tab is open.
+        - if @partner_record.present?
+          = render partial: "partner_configurations/api_key_panel", locals: { partner: @partner_record }
 
         -# ---------- Filter toolbar ----------
         = form_tag community_partner_configurations_path(current_community), method: :get, class: "partner-config-toolbar" do
@@ -78,7 +85,7 @@
                     %td.text-center.text-muted{ colspan: 5, style: "padding: 40px;" }
                       No properties found.
                 - @communities.each do |c|
-                  - enabled = @partners.select { |p| c.partner_map_enabled?(p[:key]) }
+                  - enabled = @partners.select { |p| c.partner_map_enabled?(p.key) }
                   %tr{ data: { id: c.id, name: c.name } }
                     %td.check-col
                       = check_box_tag "community_ids[]", c.id, false, class: "row-check"
@@ -87,13 +94,13 @@
                     %td.partners-cell
                       - if enabled.any?
                         - enabled.each do |p|
-                          %span.partner-badge{ data: { key: p[:key] } }= p[:label]
+                          %span.partner-badge{ data: { key: p.key } }= p.label
                       - else
                         %span.text-muted.font-size-12 None
                     %td.text-right.actions-cell
                       %button.icon-btn.edit-btn{ type: "button", title: "Edit partners",
                         data: { id: c.id, name: c.name,
-                                enabled: enabled.map { |p| p[:key] }.to_json } }
+                                enabled: enabled.map(&:key).to_json } }
                         %i.fa.fa-pencil
                       %button.icon-btn.delete-btn{ type: "button", title: "Remove all partner assignments",
                         data: { id: c.id, name: c.name } }
@@ -110,5 +117,7 @@
 = render partial: "partner_configurations/bulk_upload"
 
 = render partial: "partner_configurations/script"
+
+= render partial: "partner_configurations/partner_admin_script"
 
 = render partial: "partner_configurations/bulk_upload_script"
