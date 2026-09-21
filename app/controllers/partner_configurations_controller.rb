@@ -205,12 +205,18 @@ class PartnerConfigurationsController < ApplicationController
 
   private
 
+  # Pynwheel admins only — this screen exposes every client's property list and
+  # the partner API keys, so it is gated for the whole controller rather than
+  # per action. `format.any` matters: without it an unusual format (say
+  # bulk_export.csv) would fall through respond_to and raise instead of being
+  # denied, which makes the denial depend on the request format.
   def require_super_admin
-    unless current_user&.is_super_admin?
-      respond_to do |format|
-        format.json { render json: { success: false, message: "Not authorized." }, status: :forbidden }
-        format.html { redirect_to root_path, alert: "You are not authorized to view that page." }
-      end
+    return if current_user&.is_super_admin?
+
+    respond_to do |format|
+      format.json { render json: { success: false, message: "Not authorized." }, status: :forbidden }
+      format.html { redirect_to root_path, alert: "You are not authorized to view that page." }
+      format.any  { head :forbidden }
     end
   end
 
