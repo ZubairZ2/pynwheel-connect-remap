@@ -89,7 +89,7 @@ class PsiStaticService < BaseService
       address_details = prperty_details&.dig('Address')
 
       name = prperty_details&.dig('MarketingName')
-      website = prperty_details&.dig('WebSite')
+      # website = prperty_details&.dig('WebSite')
       address = address_details&.dig('Address')
       city = address_details&.dig('City')
       state = address_details&.dig('State')
@@ -106,7 +106,7 @@ class PsiStaticService < BaseService
 
       community.update!(
         name: name,
-        website: website,
+        # website: website,
         address: address,
         city: city,
         state: state,
