@@ -77,6 +77,15 @@ class CreatePartners < ActiveRecord::Migration[7.2]
 
   private
 
+  # `quote` is not a method on Migration: it falls through
+  # ActiveRecord::Migration#method_missing, which rewrites the first argument
+  # with `proper_table_name` before delegating to the connection. That turns nil
+  # into "" (quoted as '') and a Time into its to_s, so go straight to the
+  # connection instead and let NULL stay NULL.
+  def q(value)
+    connection.quote(value)
+  end
+
   def seed_registry
     now = Time.current
 
@@ -88,18 +97,18 @@ class CreatePartners < ActiveRecord::Migration[7.2]
           (key, label, position, active, api_key_digest, api_key_prefix,
            api_key_last4, env_var, settings, key_issued_at, created_at, updated_at)
         VALUES (
-          #{quote(partner[:key])},
-          #{quote(partner[:label])},
+          #{q(partner[:key])},
+          #{q(partner[:label])},
           #{index},
           TRUE,
-          #{quote(raw && Digest::SHA256.hexdigest(raw))},
-          #{quote(raw && raw[0, 8])},
-          #{quote(raw && raw[-4, 4])},
-          #{quote(partner[:env])},
-          #{quote((partner[:settings] || {}).to_json)}::jsonb,
-          #{quote(raw ? now : nil)},
-          #{quote(now)},
-          #{quote(now)}
+          #{q(raw && Digest::SHA256.hexdigest(raw))},
+          #{q(raw && raw[0, 8])},
+          #{q(raw && raw[-4, 4])},
+          #{q(partner[:env])},
+          #{q((partner[:settings] || {}).to_json)}::jsonb,
+          #{q(raw ? now : nil)},
+          #{q(now)},
+          #{q(now)}
         )
         ON CONFLICT (key) DO NOTHING
       SQL
@@ -109,7 +118,7 @@ class CreatePartners < ActiveRecord::Migration[7.2]
     # Partner Configuration, which is what produces the one-time delivery link.
     execute(<<~SQL)
       INSERT INTO partners (key, label, position, active, settings, created_at, updated_at)
-      VALUES ('jonah', 'Jonah', #{LEGACY.size}, TRUE, '{}'::jsonb, #{quote(now)}, #{quote(now)})
+      VALUES ('jonah', 'Jonah', #{LEGACY.size}, TRUE, '{}'::jsonb, #{q(now)}, #{q(now)})
       ON CONFLICT (key) DO NOTHING
     SQL
   end
