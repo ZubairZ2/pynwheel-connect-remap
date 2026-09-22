@@ -26,8 +26,7 @@ module Api
         # SdkNeighborhoodPhotoService — and touches no property data.
         PUBLIC_ACTIONS = [:neighborhood_photo].freeze
 
-        skip_before_action :validate_api_key,   only: SESSION_ACTIONS + PUBLIC_ACTIONS
-        skip_before_action :load_partner_name,  only: SESSION_ACTIONS + PUBLIC_ACTIONS
+        skip_before_action :validate_api_key, only: SESSION_ACTIONS + PUBLIC_ACTIONS
         before_action :validate_session_token,      only: SESSION_ACTIONS
         # get_favorites only needs sitemap + floorplates for map_for_unit — skip the
         # 6 other heavy includes (floorplans, map_filter, font_setting, credential,
