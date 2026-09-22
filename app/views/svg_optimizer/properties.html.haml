@@ -131,8 +131,8 @@
       %option{value: ""} All partners
       %option{value: "any", selected: params[:partner] == "any"} Any partner
       %option{value: "none", selected: params[:partner] == "none"} No partner
-      - Community::MAP_PARTNERS.each do |mp|
-        %option{value: mp[:key], selected: params[:partner] == mp[:key]}= mp[:label]
+      - Partner.registry.each do |mp|
+        %option{value: mp.key, selected: params[:partner] == mp.key}= mp.label
     %select{name: "state"}
       %option{value: ""} All statuses
       - %w[not_started partial done in_progress done_with_errors].each do |st|

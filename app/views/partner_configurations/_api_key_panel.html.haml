@@ -1,0 +1,28 @@
+-# The Partner Maps API key for the partner whose tab is open. Rendered only on
+-# a partner tab (never on "All"), and only for Pynwheel admins — the whole
+-# controller is already gated on is_super_admin?.
+.pc-key-panel{ data: { partner: partner.key, label: partner.label } }
+  .pc-key-left
+    %i.fa.fa-key.pc-key-icon
+    %span.pc-key-title API key
+    - if partner.api_key?
+      %code.pc-key-value#pcKeyValue= partner.masked_api_key
+    - else
+      %span.pc-key-none#pcKeyValue Not issued yet
+    - if partner.revoked?
+      %span.pc-key-flag.revoked
+        Revoked #{time_ago_in_words(partner.key_revoked_at)} ago
+    - elsif partner.key_rotated_at.present?
+      %span.pc-key-flag
+        Rotated #{time_ago_in_words(partner.key_rotated_at)} ago
+    - elsif partner.key_issued_at.present?
+      %span.pc-key-flag
+        Issued #{time_ago_in_words(partner.key_issued_at)} ago
+  .pc-key-actions
+    %button.btn.btn-default.btn-sm#pcRotateBtn{ type: "button" }
+      %i.fa.fa-refresh.mr-5
+      = partner.api_key? ? "Rotate" : "Generate key"
+    - if partner.api_key?
+      %button.btn.btn-default.btn-sm.pc-revoke#pcRevokeBtn{ type: "button" }
+        %i.fa.fa-ban.mr-5
+        Revoke

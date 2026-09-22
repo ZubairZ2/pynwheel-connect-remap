@@ -288,6 +288,10 @@ Rails.application.routes.draw do
         post  :bulk_upload_match
         post  :bulk_upload_apply
         get   :bulk_export
+        # Partner registry + API key lifecycle (Pynwheel admins only).
+        post   :create_partner
+        post   :rotate_key
+        delete :revoke_key
       end
     end
 
@@ -698,6 +702,10 @@ Rails.application.routes.draw do
   namespace :sdk do
     get "map_config/:property_id", to: "map_config#show"
   end
+
+  # One-time partner API key delivery. Unauthenticated by design: the token in
+  # the url IS the secret, and it is consumed the first time the page is opened.
+  get "partner-key/:token", to: "partner_key_reveals#show", as: :partner_key_reveal
 
   namespace :api, constraints: { format: 'json' } do
     post 'notify-email', to: 'notify_email#create'

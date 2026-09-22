@@ -209,3 +209,29 @@
   .pc-cand { min-width: 220px; }
 
   #pcFooterUpload, #pcFooterPreview { display: flex; justify-content: flex-end; gap: 8px; }
+
+  /* API key panel (partner tab only) */
+  .pc-key-panel { display: flex; justify-content: space-between; align-items: center; gap: 16px;
+    flex-wrap: wrap; margin: 16px 16px 0; padding: 12px 16px; background: #f8fafc;
+    border: 1px solid #e4e7ea; border-radius: 6px; }
+  .pc-key-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-width: 0; }
+  .pc-key-icon { color: #8a97a8; }
+  .pc-key-title { font-weight: 600; color: #55606e; font-size: 13px; }
+  .pc-key-value { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 13px; background: #fff; border: 1px solid #dfe5ec; border-radius: 4px;
+    padding: 4px 10px; color: #12233b; word-break: break-all; }
+  .pc-key-none { font-size: 13px; color: #98a2b3; font-style: italic; }
+  .pc-key-flag { font-size: 12px; color: #8a97a8; }
+  .pc-key-flag.revoked { color: #c0392b; }
+  .pc-key-actions { display: flex; gap: 8px; flex: 0 0 auto; }
+  .pc-key-actions .pc-revoke { color: #c0392b; }
+  .pc-key-actions .pc-revoke:hover { background: #fdf0ee; border-color: #e8bcb4; color: #a93226; }
+
+  /* Key link modal */
+  .pc-copy-row { display: flex; gap: 8px; }
+  .pc-copy-row .form-control { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12.5px; }
+  .pc-key-warning { margin-top: 14px; padding: 11px 13px; border-radius: 5px; font-size: 12.5px;
+    line-height: 1.55; background: #fff6e5; border: 1px solid #f2dcae; color: #74521a; }
+  .pc-inline-error { display: none; margin-top: 10px; padding: 9px 12px; border-radius: 5px;
+    font-size: 12.5px; background: #fdf0ee; border: 1px solid #e8bcb4; color: #a93226; }

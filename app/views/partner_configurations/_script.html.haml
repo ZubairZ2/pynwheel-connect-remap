@@ -2,7 +2,7 @@
   (function(){
     var updateUrl     = "#{update_property_community_partner_configurations_path(current_community)}";
     var csrf          = $('meta[name="csrf-token"]').attr('content');
-    var partnerLabels = #{Community::MAP_PARTNERS.map { |p| [p[:key], p[:label]] }.to_h.to_json};
+    var partnerLabels = #{Partner.registry.map { |p| [p.key, p.label] }.to_h.to_json};
 
     // ---------- selection ----------
     function selectedCount(){ return $('.row-check:checked').length; }

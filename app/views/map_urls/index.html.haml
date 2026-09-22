@@ -61,7 +61,7 @@
             %select#map-url-partner{ "data-map-param" => "partner" }
               %option{ value: "" } None
               - @partners.each do |partner|
-                %option{ value: partner[:key] }= partner[:label]
+                %option{ value: partner.key }= partner.label
 
         .map-url-result
           .map-url-field
