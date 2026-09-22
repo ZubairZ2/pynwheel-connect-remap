@@ -62,6 +62,8 @@
     padding: 12px 4px; border-bottom: 1px solid #eef1f4; }
   .pc-toggle-row:last-child { border-bottom: none; }
   .pc-toggle-row .pc-label { font-weight: 600; color: #2f3b48; }
+  .pc-bulk-picker-label { margin: 18px 0 2px; font-size: 12px; font-weight: 600;
+    letter-spacing: .04em; text-transform: uppercase; color: #8b95a1; }
   .mr-10 { margin-right: 10px; }
   .mr-5 { margin-right: 5px; }
 
@@ -74,7 +76,7 @@
   .pc-upload-launch { white-space: nowrap; height: 40px; border-radius: 6px; font-weight: 600; }
 
   /* ============ Export modal ============ */
-  .pc-export-scope { display: flex; flex-direction: column; gap: 6px; }
+  .pc-export-scope, .pc-mode-scope { display: flex; flex-direction: column; gap: 6px; }
   .pc-radio-row { display: flex; align-items: flex-start; gap: 10px; margin: 0; padding: 12px 14px;
     border: 1px solid #e4e7ea; border-radius: 8px; cursor: pointer; font-weight: 400; transition: border-color .12s; }
   .pc-radio-row:hover { border-color: #3c8dbc; }
@@ -84,7 +86,7 @@
   .pc-radio-hint { font-size: 12px; color: #9aa4b1; }
   .pc-export-partners { margin-top: 12px; padding-left: 4px; opacity: .5; pointer-events: none; transition: opacity .12s; }
   .pc-export-partners.is-active { opacity: 1; pointer-events: auto; }
-  .pc-export-warn { color: #d9534f; font-size: 12px; margin: 10px 0 0; }
+  .pc-export-warn, .pc-inline-warn { color: #d9534f; font-size: 12px; margin: 10px 0 0; }
 
   /* ============ Bulk upload wizard ============ */
   /* Vertically + horizontally centered with equal margins all around. */

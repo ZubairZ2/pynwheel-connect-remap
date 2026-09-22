@@ -2072,29 +2072,11 @@ class Community < ApplicationRecord
 
   # --- Efficient set-based bulk update (single UPDATE, no per-row loads) -------
 
-  # Set the given properties' enabled partners to EXACTLY `partner_keys`,
-  # replacing whatever they currently have. Preserves the existing enabled_at for
-  # partners that were already enabled. One UPDATE. Returns rows affected.
-  def self.bulk_set_partners(community_ids, partner_keys, now: Time.current)
-    ids  = Array(community_ids)
-    keys = Array(partner_keys).map(&:to_s) & Partner.registry_keys
-    return 0 if ids.empty?
-
-    if keys.empty?
-      return where(id: ids).update_all(sanitize_sql_array(["partner_map_settings = ?::jsonb", "{}"]))
-    end
-
-    payload = { "enabled" => true, "enabled_at" => now.iso8601 }.to_json
-    pairs = keys.map do |k|
-      "#{connection.quote(k)}, COALESCE(partner_map_settings -> #{connection.quote(k)}, #{connection.quote(payload)}::jsonb)"
-    end.join(", ")
-
-    where(id: ids).update_all("partner_map_settings = jsonb_build_object(#{pairs})")
-  end
-
   # Additively ENABLE the given partners on the properties, leaving any partners
-  # they already have untouched (preserves existing enabled_at). Used by the
-  # bulk CSV/Excel upload flow. One UPDATE. Returns rows affected.
+  # they already have untouched (preserves existing enabled_at). Every bulk path
+  # is additive on purpose: a bulk action names the partners it is turning on, so
+  # it must never silently drop the ones a property already had. One UPDATE.
+  # Returns rows affected.
   def self.bulk_add_partners(community_ids, partner_keys, now: Time.current)
     ids  = Array(community_ids).map(&:to_i).reject(&:zero?).uniq
     keys = Array(partner_keys).map(&:to_s) & Partner.registry_keys
@@ -2108,6 +2090,19 @@ class Community < ApplicationRecord
     end
 
     where(id: ids).update_all("partner_map_settings = #{expr}")
+  end
+
+  # The mirror of bulk_add_partners: DISABLE just the given partners, leaving the
+  # rest of each property's assignments alone. One UPDATE. Returns rows affected.
+  def self.bulk_remove_partners(community_ids, partner_keys)
+    ids  = Array(community_ids).map(&:to_i).reject(&:zero?).uniq
+    keys = Array(partner_keys).map(&:to_s) & Partner.registry_keys
+    return 0 if ids.empty? || keys.empty?
+
+    list = keys.map { |k| connection.quote(k) }.join(", ")
+    where(id: ids).update_all(
+      "partner_map_settings = COALESCE(partner_map_settings, '{}'::jsonb) - ARRAY[#{list}]::text[]"
+    )
   end
 
   def partner_map_enabled?(partner_key)

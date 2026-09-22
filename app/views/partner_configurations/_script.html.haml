@@ -76,8 +76,23 @@
       row.find('.edit-btn').data('enabled', keys);
     }
 
-    // ---------- bulk (multi-toggle applied to all selected) ----------
+    // ---------- bulk (chosen partners applied to all selected) ----------
+    // Only the partners toggled on are sent, together with the direction. Nothing
+    // a property already has is touched unless it is one of them.
     var activePartner = "#{@partner}";
+    function bulkMode(){ return $('.pc-bulk-mode:checked').val() || 'add'; }
+    function refreshBulkMode(){
+      var removing = bulkMode() === 'remove';
+      $('#pcBulkConfirm')
+        .text(removing ? 'Remove from selected' : 'Add to selected')
+        .toggleClass('btn-danger', removing)
+        .toggleClass('btn-primary', !removing);
+    }
+    $(document).on('change', '.pc-bulk-mode', refreshBulkMode);
+    $(document).on('change', '.pc-bulk-toggle', function(){
+      if ($('.pc-bulk-toggle:checked').length){ $('#pcBulkWarn').hide(); }
+    });
+
     $('#bulkSetBtn').on('click', function(){
       if (selectedCount() === 0){ return; }
       $('#pcBulkCount').text(selectedCount() + ' ' + (selectedCount() === 1 ? 'property' : 'properties'));
@@ -85,11 +100,18 @@
       $('.pc-bulk-toggle').each(function(){
         $(this).prop('checked', $(this).data('key') === activePartner);
       });
+      $('#pcBulkModeAdd').prop('checked', true);
+      $('#pcBulkWarn').hide();
+      refreshBulkMode();
       $('#pcBulkModal').modal('show');
     });
     $('#pcBulkConfirm').on('click', function(){
+      var $checked = $('.pc-bulk-toggle:checked');
+      if (!$checked.length){ $('#pcBulkWarn').show(); return; }
+
       var $wrap = $('#bulkPartnerKeys').empty();
-      $('.pc-bulk-toggle:checked').each(function(){
+      $wrap.append($('<input type="hidden" name="mode">').val(bulkMode()));
+      $checked.each(function(){
         $wrap.append($('<input type="hidden" name="partner_keys[]">').val($(this).data('key')));
       });
       $('#bulkForm').submit();

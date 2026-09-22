@@ -67,16 +67,29 @@ class PartnerConfigurationsController < ApplicationController
     end
   end
 
-  # Bulk update: set the selected properties' partners to exactly the chosen set.
+  # Bulk update: turn the chosen partners on (or off) across the selected
+  # properties. Both directions touch only the partners named in the modal —
+  # a bulk add never drops a partner a property already had, which is what an
+  # admin ticking 25 rows and one partner expects.
   def bulk
     ids  = Array(params[:community_ids]).map(&:to_i).reject(&:zero?).uniq
     keys = permitted_partner_keys(params[:partner_keys])
+    mode = params[:mode].to_s == "remove" ? "remove" : "add"
 
     return respond_bulk(false, "No properties selected.") if ids.empty?
+    return respond_bulk(false, "Choose at least one partner.") if keys.empty?
 
-    affected = Community.bulk_set_partners(ids, keys)
-    log_association_event(keys, ids, "bulk_set")
-    respond_bulk(true, "Updated #{affected} #{'property'.pluralize(affected)}.")
+    affected = if mode == "remove"
+                 Community.bulk_remove_partners(ids, keys)
+               else
+                 Community.bulk_add_partners(ids, keys)
+               end
+
+    log_association_event(keys, ids, "bulk_#{mode}", action: (mode == "remove" ? "disassociated" : "associated"))
+
+    labels = @partners.select { |p| keys.include?(p.key) }.map(&:label).join(", ")
+    verb   = mode == "remove" ? "Removed #{labels} from" : "Added #{labels} to"
+    respond_bulk(true, "#{verb} #{affected} #{'property'.pluralize(affected)}.")
   end
 
   # Download a sample CSV so users know the expected upload format.
@@ -345,14 +358,14 @@ class PartnerConfigurationsController < ApplicationController
 
   # Bulk writes are a single set-based UPDATE, so the trail records one event
   # per partner carrying the affected ids rather than a row per property.
-  def log_association_event(keys, community_ids, source)
+  def log_association_event(keys, community_ids, source, action: "associated")
     @partners.each do |partner|
       next unless keys.include?(partner.key)
 
       partner.log_event!(
         "properties_updated",
         actor: current_user,
-        metadata: { "action" => "associated", "community_ids" => community_ids, "source" => source }
+        metadata: { "action" => action, "community_ids" => community_ids, "source" => source }
       )
     end
   end

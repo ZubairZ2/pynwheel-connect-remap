@@ -58,10 +58,20 @@
           %span#pcBulkCount
           selected
       .modal-body
-        %p.text-muted.font-size-13
-          Turn partners on or off, then Apply. The selected properties will be set to
-          %strong exactly
-          these partners — replacing whatever they currently have.
+        -# Only the partners picked below are touched. Whatever else a property
+        -# already has is left alone in both directions.
+        .pc-mode-scope
+          %label.pc-radio-row
+            = radio_button_tag :pc_bulk_mode, "add", true, class: "pc-bulk-mode", id: "pcBulkModeAdd"
+            %span
+              %strong Turn the chosen partners on
+              %span.pc-radio-hint Added to every selected property. Partners they already have are kept.
+          %label.pc-radio-row
+            = radio_button_tag :pc_bulk_mode, "remove", false, class: "pc-bulk-mode", id: "pcBulkModeRemove"
+            %span
+              %strong Turn the chosen partners off
+              %span.pc-radio-hint Removed from every selected property. Their other partners are kept.
+        %p.pc-bulk-picker-label Choose the partners
         - Partner.registry.each do |p|
           .pc-toggle-row
             %span.pc-label= p.label
@@ -70,6 +80,9 @@
               = check_box_tag "pc_bulk_#{p.key}", true, false, class: "pc-bulk-toggle", data: { key: p.key }
               %label.label-primary{ for: "pc_bulk_#{p.key}" }
               %span.pl-15 Yes
+        %p.pc-inline-warn#pcBulkWarn{ style: "display:none;" }
+          %i.fa.fa-exclamation-circle.mr-5
+          Choose at least one partner.
       .modal-footer
         %button.btn.btn-default{ type: "button", data: { dismiss: "modal" } } Cancel
         %button.btn.btn-primary#pcBulkConfirm{ type: "button" } Apply to selected
