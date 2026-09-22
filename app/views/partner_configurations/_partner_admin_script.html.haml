@@ -6,6 +6,10 @@
     var createUrl  = "#{create_partner_community_partner_configurations_path(current_community)}";
     var rotateUrl  = "#{rotate_key_community_partner_configurations_path(current_community)}";
     var revokeUrl  = "#{revoke_key_community_partner_configurations_path(current_community)}";
+    var emailUrl   = "#{email_key_community_partner_configurations_path(current_community)}";
+    // The token behind the one-time link, held only for as long as the modal is
+    // open so it can be emailed without the server re-issuing the key.
+    var revealToken = null;
     var panel      = $('.pc-key-panel');
     var partnerKey = panel.data('partner');
     var partnerLbl = panel.data('label');
@@ -77,17 +81,42 @@
     function showKeyLink(res){
       $('#pcKeyLinkIntro').text(res.message || '');
       $('#pcKeyLink').val(res.reveal_url);
-      $('#pcKeyLinkEmail').attr('href',
-        'mailto:?subject=' + encodeURIComponent('Your Pynwheel Partner API key') +
-        '&body=' + encodeURIComponent(
-          'Hello,\n\nYour Pynwheel Partner API key is ready. Open the link below to read it — ' +
-          'it can only be opened once and expires in 72 hours:\n\n' + res.reveal_url +
-          '\n\nStore the key somewhere safe; it cannot be shown again.\n\nThanks,\nPynwheel'
-        ));
+      revealToken = res.token;
+      $('#pcKeyLinkEmail').val('');
+      $('#pcKeyLinkStatus').hide().removeClass('is-ok is-error').text('');
       $('#pcKeyLinkModal').modal('show');
       // Reflect the new masked key without a reload.
       $('#pcKeyValue').removeClass('pc-key-none').addClass('pc-key-value').text(res.partner.masked_key);
     }
+
+    $('#pcKeyLinkSend').on('click', function(){
+      var $btn    = $(this);
+      var $status = $('#pcKeyLinkStatus');
+      var email   = $.trim($('#pcKeyLinkEmail').val());
+
+      if (!email) {
+        $status.removeClass('is-ok').addClass('is-error').text('Enter the partner\'s email address.').show();
+        return;
+      }
+
+      $btn.prop('disabled', true);
+      $status.removeClass('is-ok is-error').text('Sending…').show();
+
+      post(emailUrl, { partner_key: partnerKey, token: revealToken, email: email })
+        .done(function(res){
+          $status.addClass('is-ok').text(res.message);
+          $('#pcKeyLinkEmail').val('');
+        })
+        .fail(function(xhr){
+          $status.addClass('is-error').text(failMessage(xhr, 'The email could not be sent. Copy the link and send it manually.'));
+        })
+        .always(function(){ $btn.prop('disabled', false); });
+    });
+
+    // Enter in the email field sends, rather than doing nothing.
+    $('#pcKeyLinkEmail').on('keydown', function(e){
+      if (e.which === 13) { e.preventDefault(); $('#pcKeyLinkSend').click(); }
+    });
 
     $('#pcKeyLinkCopy').on('click', function(){
       var $btn = $(this);

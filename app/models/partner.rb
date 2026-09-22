@@ -28,7 +28,7 @@ class Partner < ApplicationRecord
 
   before_validation :normalize_key
 
-  EVENTS = %w[created key_issued key_rotated key_revoked properties_updated].freeze
+  EVENTS = %w[created key_issued key_rotated key_revoked key_emailed properties_updated].freeze
 
   # --- Registry ------------------------------------------------------------
 

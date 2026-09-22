@@ -140,10 +140,15 @@
           %i.fa.fa-exclamation-triangle.mr-5
           The link opens once and expires after 72 hours. Nobody — including Pynwheel —
           can read the key again afterwards; if it is lost, rotate to issue a new one.
+        .pc-email-block
+          %label.control-label{ for: "pcKeyLinkEmail" } Email it to the partner
+          .pc-copy-row
+            = email_field_tag :pc_key_email, nil, id: "pcKeyLinkEmail", class: "form-control", placeholder: "partner@example.com"
+            %button.btn.btn-default#pcKeyLinkSend{ type: "button" }
+              %i.fa.fa-envelope-o.mr-5
+              Send
+          %p.pc-email-status#pcKeyLinkStatus
       .modal-footer
-        %a.btn.btn-default#pcKeyLinkEmail{ href: "#" }
-          %i.fa.fa-envelope-o.mr-5
-          Email to partner
         %button.btn.btn-primary{ type: "button", data: { dismiss: "modal" } } Done
 
 -# ---------------- Revoke key confirm ----------------

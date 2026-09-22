@@ -187,9 +187,55 @@ class PartnerConfigurationsController < ApplicationController
     render json: {
       success:    true,
       partner:    partner_json(partner),
+      token:      token,
       reveal_url: partner_key_reveal_url(token),
       message:    "A new API key was generated for #{partner.label}. The one-time link below is the only time it can be read."
     }
+  end
+
+  # Email the one-time link to the partner.
+  #
+  # The token is the whole secret, so it is never taken on trust: it has to
+  # still be pending in the reveal store, which rules out a link that was
+  # already opened, has expired, or was superseded by a later rotation. Sending
+  # is synchronous on purpose — the admin is watching the modal and needs to
+  # know now whether to fall back to copying the link by hand.
+  def email_key
+    partner   = find_partner!
+    recipient = params[:email].to_s.strip
+    token     = params[:token].to_s
+
+    unless recipient.match?(URI::MailTo::EMAIL_REGEXP)
+      return render json: { success: false, message: "Enter a valid email address." },
+                    status: :unprocessable_entity
+    end
+
+    unless PartnerApiKey.reveal_pending?(token)
+      return render json: {
+        success: false,
+        message: "That link has already been opened or has expired. Rotate the key to issue a new one."
+      }, status: :unprocessable_entity
+    end
+
+    begin
+      PartnerKeyMailer.api_key_link(
+        recipient:        recipient,
+        partner_label:    partner.label,
+        reveal_url:       partner_key_reveal_url(token),
+        expires_in_hours: (PartnerApiKey::REVEAL_TTL / 1.hour).to_i
+      ).deliver_now
+    rescue => e
+      Rails.logger.error("[PartnerConfigurations] key email to #{recipient} failed: #{e.class}: #{e.message}")
+      return render json: {
+        success: false,
+        message: "The email could not be sent. Copy the link above and send it manually."
+      }, status: :bad_gateway
+    end
+
+    # Recorded so the trail shows where a key was sent, not just that it was issued.
+    partner.log_event!("key_emailed", actor: current_user, metadata: { "recipient" => recipient })
+
+    render json: { success: true, message: "Sent to #{recipient}. The link still opens only once." }
   end
 
   def revoke_key

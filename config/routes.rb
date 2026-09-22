@@ -291,6 +291,7 @@ Rails.application.routes.draw do
         # Partner registry + API key lifecycle (Pynwheel admins only).
         post   :create_partner
         post   :rotate_key
+        post   :email_key
         delete :revoke_key
       end
     end
