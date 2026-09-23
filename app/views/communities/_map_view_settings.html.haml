@@ -41,19 +41,19 @@
       %p.map-view-empty No 2D or 3D map is configured for this property yet.
 
 - if @community.map_view_switcher?
-  .form-group
-    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+  - default_view = @community.resolved_default_map_view
+  .form-group#default-map-view
+    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
       Default map view
       %i.propertyDetailName.fa.fa-question-circle
         %span#propertyDetailNameText
           The view the map opens in. Visitors can still switch between 2D and 3D.
-    .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      .TriSea-technologies-Switch
-        %span.pr-15 2D
-        = hidden_field_tag :default_map_view, "2d", id: nil
-        = check_box_tag :default_map_view, "3d", @community.resolved_default_map_view == "3d", class: "apartment-setting-field"
-        %label.label-primary{ for: "default_map_view" }
-        %span.pl-15 3D
+    .col-sm-12.col-lg-6.col-md-6.col-xs-12
+      .map-view-options{ role: "radiogroup", "aria-label" => "Default map view" }
+        - { "2d" => "2D", "3d" => "3D" }.each do |view, label|
+          %label.map-view-option{ for: "default_map_view_#{view}" }
+            = radio_button_tag :default_map_view, view, view == default_view, class: "apartment-setting-field"
+            %span= label
 
 - if @community.map_view_3d?
   .form-group
@@ -74,19 +74,25 @@
 -# here, and Bootstrap's .radio-inline absolutely positions the input.
 :css
   .map-design-configurations-btn { margin-left: 40px; }
-  #available-map-views .map-view-options { display: flex; flex-wrap: wrap; gap: 10px; }
-  #available-map-views label.map-view-option {
+  #available-map-views .map-view-options,
+  #default-map-view .map-view-options { display: flex; flex-wrap: wrap; gap: 10px; }
+  #available-map-views label.map-view-option,
+  #default-map-view label.map-view-option {
     display: inline-flex; align-items: center; gap: 8px; margin: 0; width: auto;
     padding: 8px 16px; border: 1px solid #d2d6de; border-radius: 4px;
     background: #fff; color: #333; font-weight: 500; cursor: pointer;
     transition: border-color .15s, background-color .15s;
   }
-  #available-map-views label.map-view-option:hover { border-color: #3c8dbc; }
-  #available-map-views label.map-view-option input[type="radio"] {
+  #available-map-views label.map-view-option:hover,
+  #default-map-view label.map-view-option:hover { border-color: #3c8dbc; }
+  #available-map-views label.map-view-option input[type="radio"],
+  #default-map-view label.map-view-option input[type="radio"] {
     position: static; margin: 0; width: 16px; height: 16px; cursor: pointer;
   }
-  #available-map-views label.map-view-option span { width: auto; color: inherit; }
-  #available-map-views label.map-view-option:has(input:checked) {
+  #available-map-views label.map-view-option span,
+  #default-map-view label.map-view-option span { width: auto; color: inherit; }
+  #available-map-views label.map-view-option:has(input:checked),
+  #default-map-view label.map-view-option:has(input:checked) {
     border-color: #3c8dbc; background: #eef6fb; color: #3c8dbc;
   }
   #available-map-views .map-view-empty { margin: 7px 0 0; color: #8b8b8b; }
