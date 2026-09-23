@@ -185,6 +185,10 @@
         = f.text_area :additional_fee, class: "form-control wysihtml5", placeholder: "Enter Additional Fees"
       = unit_field "Details title", hint: 'Heading above the Details section. Defaults to "More Details".' do
         = f.text_field :description_title, class: "form-control", placeholder: "More Details"
+      = unit_field "Expand details in pop-ups", hint: "When off, visitors click the Details heading to open it. A unit with no Details of its own shows its floor plan's, and follows the floor plan's setting." do
+        %label.u-check
+          = f.check_box :expand_description_in_popup
+          %span Show Details already open in this unit's pop-up on the map, with no dropdown arrow
       = unit_field "Details" do
         = f.text_area :description, class: "form-control unit-description-wysihtml5", placeholder: "Enter Description"
       - if @community.self_tour

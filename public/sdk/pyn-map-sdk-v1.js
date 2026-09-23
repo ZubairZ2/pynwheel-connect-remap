@@ -2057,11 +2057,17 @@
      * Returns all floorplans for the property.
      * Each object: { floorplanId, name, bedrooms, bathrooms, market_rent, square_feet,
      *                description, description_title, showDescriptionOnCard,
-     *                availability_url, primaryImage, secondaryImage }
+     *                expandDescriptionInPopup, availability_url, primaryImage,
+     *                secondaryImage }
      *
      * showDescriptionOnCard is the CMS "Show on cards" toggle: true when the host
      * should also render `description` as preview text on the floor plan card,
      * rather than only inside the pop-up. False whenever there is no description.
+     *
+     * expandDescriptionInPopup is the CMS "Expand details in pop-ups" toggle: true
+     * when the pop-up should open with `description` already showing, with no
+     * accordion to click. Independent of showDescriptionOnCard, and likewise false
+     * whenever there is no description.
      */
     getFloorplans() {
       return (this.data.floorplans || []).slice();
@@ -2111,6 +2117,9 @@
      *
      * These replace the old single `image` field, which flattened the same
      * fallback into one URL and so could never carry the second picture.
+     *
+     * `expandDescriptionInPopup` (see getFloorplans) travels with `description`:
+     * a unit showing its floor plan's Details carries the floor plan's flag.
      *
      * Pass an optional filters object to narrow results:
      *

@@ -4376,13 +4376,16 @@ a#favoriteclickme {
    as .desc-title-tooltip directly above it -- an id inside the panel, because a
    class-only rule loses to the form's own label styling and the tooltip
    collapses into a tall thin column. Colour is inherited so the icon matches the
-   other help icons in the form rather than picking up an accent of its own. */
-.card-desc-tooltip {
+   other help icons in the form rather than picking up an accent of its own.
+   "Expand details in pop-ups" in the row below shares the same tooltip. */
+.card-desc-tooltip,
+.popup-desc-tooltip {
   position: relative;
   display: inline-block;
 }
 
-.card-desc-tooltip #card_desc_tooltip_text {
+.card-desc-tooltip #card_desc_tooltip_text,
+.popup-desc-tooltip #popup_desc_tooltip_text {
   visibility: hidden;
   width: 320px;
   background-color: #000000;
@@ -4401,7 +4404,8 @@ a#favoriteclickme {
   font-weight: normal;
 }
 
-.card-desc-tooltip #card_desc_tooltip_text::after {
+.card-desc-tooltip #card_desc_tooltip_text::after,
+.popup-desc-tooltip #popup_desc_tooltip_text::after {
   content: "";
   position: absolute;
   top: 100%;
@@ -4412,7 +4416,8 @@ a#favoriteclickme {
   border-color: black transparent transparent transparent;
 }
 
-.card-desc-tooltip:hover #card_desc_tooltip_text {
+.card-desc-tooltip:hover #card_desc_tooltip_text,
+.popup-desc-tooltip:hover #popup_desc_tooltip_text {
   visibility: visible;
 }
 

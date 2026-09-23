@@ -187,7 +187,7 @@ class SdkPayloadBuilderService
     floorplan = unit.floorplan
     fees      = @community.get_additional_fees(unit)
     buttons   = unit_additional_buttons(unit)
-    description, description_title = description_fields(unit, floorplan)
+    description, description_title, expand_description = description_fields(unit, floorplan)
     primary_image, secondary_image = unit_images(unit, floorplan)
 
     {
@@ -232,6 +232,7 @@ class SdkPayloadBuilderService
       lease_pricing:          unit.get_lease_term_pricing_matrix(),
       description:            description,
       description_title:      description_title,
+      expandDescriptionInPopup: expand_description,
       display_rent:           unit&.community&.display_rent,
       additional_fees:        fees,
       property_id:            unit.property_id,
@@ -850,6 +851,7 @@ class SdkPayloadBuilderService
         description:       fp.description.presence,
         description_title: floorplan_description_title(fp),
         showDescriptionOnCard: show_floorplan_description_on_card?(fp),
+        expandDescriptionInPopup: expand_description_in_popup?(fp),
         additionalButtons: floorplan_additional_buttons(fp),
         availability_url: floorplan_apply_url(fp, first_unit),
         availability_status: fp.availability_status,
@@ -1336,18 +1338,26 @@ class SdkPayloadBuilderService
 
   DEFAULT_DESCRIPTION_TITLE = "More Details".freeze
 
-  # Description and its heading, taken as a pair from whichever record supplies the
-  # description. Reading the title independently would let a unit's description_title
-  # column default ("More Details") mask the heading a floorplan-level special was
-  # given, since the column is never nil for rows created with that default.
+  # Description, its heading and its "Expand details in pop-ups" flag, taken
+  # together from whichever record supplies the description. Reading the title
+  # independently would let a unit's description_title column default ("More
+  # Details") mask the heading a floorplan-level special was given, since the column
+  # is never nil for rows created with that default. The flag follows the same
+  # rule: a unit showing its floor plan's Details opens them the way the floor plan
+  # was set to, and a unit with Details of its own answers for them itself.
   def description_fields(unit, floorplan)
-    if unit.description.present?
-      [unit.description, unit.description_title.presence || DEFAULT_DESCRIPTION_TITLE]
-    elsif floorplan&.description.present?
-      [floorplan.description, floorplan.description_title.presence || DEFAULT_DESCRIPTION_TITLE]
-    else
-      ["", DEFAULT_DESCRIPTION_TITLE]
-    end
+    source = if unit.description.present?
+               unit
+             elsif floorplan&.description.present?
+               floorplan
+             end
+    return ["", DEFAULT_DESCRIPTION_TITLE, false] unless source
+
+    [
+      source.description,
+      source.description_title.presence || DEFAULT_DESCRIPTION_TITLE,
+      expand_description_in_popup?(source)
+    ]
   end
 
   # Only meaningful next to a description, so it stays nil when there is none —
@@ -1369,6 +1379,19 @@ class SdkPayloadBuilderService
   def show_floorplan_description_on_card?(fp)
     return false if fp.description.blank?
     fp.show_description_on_card == true
+  end
+
+  # The per-record "Expand details in pop-ups" toggle, on floor plans and units
+  # alike: whether the pop-up opens with the Details body already showing, with
+  # no accordion chevron, instead of collapsed under its heading. Off by default,
+  # so a property that never touches it keeps the collapsible Details it has today.
+  #
+  # Independent of "Show on cards" above -- that one governs the right-rail card,
+  # this one the pop-up. False when there is no description, since there is
+  # nothing to expand.
+  def expand_description_in_popup?(record)
+    return false if record.description.blank?
+    record.expand_description_in_popup == true
   end
 
   AVAILABILITY_FILTER_LABELS = {
