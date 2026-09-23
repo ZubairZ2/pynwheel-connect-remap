@@ -533,6 +533,12 @@ class SdkPayloadBuilderService
         defaultFloor:         @community.default_map_floor,
         sitemapAutoZoom:      @community.sitemap_auto_zoom,
         enable3dMaps:         @community.enable_three_d_maps,
+        # "2d" | "3d" | "both" -- the "Available map views" setting, resolved
+        # against the maps this property actually has (PYN-1610). The SDK boots
+        # straight into the one view when it isn't "both", and the 2D/3D
+        # switcher exists only for "both".
+        availableViews:       map_views,
+        defaultView:          @community.resolved_default_map_view,
         defaultSatelliteView: @community.default_satellite_view,
         # "Highlight floor plan on hover" CMS toggle. On, hovering a unit lights
         # up every unit sharing its floor plan and the pop-up names the whole
@@ -542,13 +548,7 @@ class SdkPayloadBuilderService
         highlightAllUnitsOnHover: @community.highlight_all_units_on_hover
       },
 
-      beans3dConfig: {
-        enabled:              @community.enable_three_d_maps,
-        beansApiKey:          ENV['BEANS_API_KEY'].to_s,
-        defaultSatelliteView: @community.default_satellite_view,
-        propertyAddress:      [@community.address, @community.city, @community.state, @community.zip].compact.join(', '),
-        mapConfig:            @community.three_d_maps_configuration&.as_json || {}
-      },
+      beans3dConfig: beans3d_config_json,
 
       unitDisplay: {
         displayRent:                  @community.display_rent,
@@ -706,7 +706,36 @@ class SdkPayloadBuilderService
   # sitemap/floorplate SVGs (units only, transparent) overlaid on top — for
   # floorplates every floor SVG overlays this same background. The SDK renders
   # it as an <img>, so we hand back the resolved image URL directly.
+  def map_views
+    @map_views ||= @community.resolved_map_views
+  end
+
+  def map_view_2d?
+    map_views != "3d"
+  end
+
+  def map_view_3d?
+    map_views != "2d"
+  end
+
+  # A 2D-only map never starts Beans, so it gets no key and no 3D styling to
+  # look up. show3dByDefault opens the map in 3D: always for a 3D-only map, and
+  # for "both" when the property's "Default map view" is 3D.
+  def beans3d_config_json
+    return { enabled: false } unless map_view_3d?
+
+    {
+      enabled:              true,
+      show3dByDefault:      @community.resolved_default_map_view == "3d",
+      beansApiKey:          ENV['BEANS_API_KEY'].to_s,
+      defaultSatelliteView: @community.default_satellite_view,
+      propertyAddress:      [@community.address, @community.city, @community.state, @community.zip].compact.join(', '),
+      mapConfig:            @community.three_d_maps_configuration&.as_json || {}
+    }
+  end
+
   def background_svg_json
+    return nil unless map_view_2d?
     return nil unless @community&.is_beans_svg?
     return nil unless @community.background_svg_image.present?
 
@@ -720,14 +749,16 @@ class SdkPayloadBuilderService
     return nil unless @community&.is_sitemap?
     sitemap = @community.sitemap
     return nil unless sitemap
-    {
+
+    json = {
       mapId:       sitemap.id,
       mapType:     'sitemap',
-      updatedAt:   sitemap.updated_at.to_i,
-      imageUrl:    sitemap.validated_image_url,
-      imageWidth:  sitemap_dimensions(sitemap)[0],
-      imageHeight: sitemap_dimensions(sitemap)[1]
+      updatedAt:   sitemap.updated_at.to_i
     }
+    return json unless map_view_2d?
+
+    width, height = sitemap_dimensions(sitemap)
+    json.merge(imageUrl: sitemap.validated_image_url, imageWidth: width, imageHeight: height)
   end
 
   # [width, height] for the sitemap image, preferring the columns and falling
@@ -768,12 +799,21 @@ class SdkPayloadBuilderService
         floorLabels:    floor_labels_for(fp),
         floorName:      fp.floor_name,
         floorNameAdded: fp.floor_name_added,
-        updatedAt:      fp.updated_at.to_i,
-        imageUrl:       fp.validated_image_url,
-        imageWidth:     fp.floorplate_image_width.to_i,
-        imageHeight:    fp.floorplate_image_height.to_i
-      }
+        updatedAt:      fp.updated_at.to_i
+      }.merge(floorplate_image_json(fp))
     end
+  end
+
+  # A 3D-only map still needs each floorplate for its floor list, but never
+  # draws the artwork -- so skip the URL and the dimension lookups behind it.
+  def floorplate_image_json(fp)
+    return {} unless map_view_2d?
+
+    {
+      imageUrl:    fp.validated_image_url,
+      imageWidth:  fp.floorplate_image_width.to_i,
+      imageHeight: fp.floorplate_image_height.to_i
+    }
   end
 
   # Floorplate#floors cannot parse a blank range, so such a floorplate sends no

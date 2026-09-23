@@ -88,6 +88,8 @@ class Community < ApplicationRecord
   validate :apartment_page_name_length_validate
   validate :gallery_page_name_length_validate
   validate :validate_page_position
+  validates :available_map_views, inclusion: { in: %w[2d 3d both] }, allow_nil: true
+  validates :default_map_view, inclusion: { in: %w[2d 3d] }, allow_nil: true
   validates_with CodeValidatorOnUpdate , on: [:update]
   validates_with CodeValidatorOnCreate , on: [:create]
 
@@ -802,6 +804,67 @@ class Community < ApplicationRecord
 
   def has_floorplates?
     !is_sitemap
+  end
+
+  # PYN-1610 "Available map views". The stored column is the property's choice;
+  # everything that draws a map reads #resolved_map_views instead, which never
+  # returns a view the property has no map for.
+
+  # A 2D map exists when the artwork the map will actually draw is uploaded: the
+  # SVG in SVG mode, the raster image otherwise. Reads the upload columns only --
+  # no S3 or image decode -- through the cached association every map caller
+  # loads anyway, so it costs no query of its own.
+  def has_2d_map?
+    return @has_2d_map if defined?(@has_2d_map)
+
+    column = enable_svg_mode? ? :svg_image : :image
+    maps = is_sitemap? ? [sitemap].compact : floorplates
+    @has_2d_map = maps.any? { |map| map.read_attribute(column).present? }
+  end
+
+  def has_3d_map?
+    enable_three_d_maps?
+  end
+
+  # The options the settings page offers. A view with no map behind it is left
+  # out entirely, and so is "both" unless both maps exist.
+  def map_view_options
+    options = []
+    options << "2d" if has_2d_map?
+    options << "3d" if has_3d_map?
+    options << "both" if options.size == 2
+    options
+  end
+
+  # The view the map runs in: the saved choice while it is still possible,
+  # otherwise the default -- "both" when both maps exist, else the only one.
+  # A property with neither map configured stays "2d", today's behavior.
+  def resolved_map_views
+    options = map_view_options
+    return available_map_views if options.include?(available_map_views)
+
+    options.last || "2d"
+  end
+
+  def map_view_2d?
+    resolved_map_views != "3d"
+  end
+
+  def map_view_3d?
+    resolved_map_views != "2d"
+  end
+
+  # Only "both" leaves the visitor anything to switch between.
+  def map_view_switcher?
+    resolved_map_views == "both"
+  end
+
+  # The view the map opens in. Only "both" has a choice to make; a single-view
+  # map opens in the one it has.
+  def resolved_default_map_view
+    return resolved_map_views unless map_view_switcher?
+
+    default_map_view == "3d" ? "3d" : "2d"
   end
 
   def property_floor_options

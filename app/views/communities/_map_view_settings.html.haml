@@ -1,0 +1,92 @@
+-# PYN-1610 map view settings, on the Property Map page's apartment settings form.
+-#
+-# Each toggle posts a hidden "off" value ahead of its checkbox (as f.check_box
+-# does), so save_apartment_settings updates a field only while it is on screen.
+-# The form auto-submits on change, so rows that depend on another setting are
+-# decided here, server-side, from what the map will actually do.
+- labels = { "2d" => "2D only", "3d" => "3D only", "both" => "Both (2D + 3D)" }
+- options = @community.map_view_options
+- selected = @community.resolved_map_views
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+    Beans.ai 3D Maps
+    %i.propertyDetailName.fa.fa-question-circle
+      %span#propertyDetailNameText
+        Turns on the Beans.ai 3D map for this property.
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .TriSea-technologies-Switch
+      %span.pr-15 No
+      = hidden_field_tag :enable_three_d_maps, false, id: nil
+      = check_box_tag :enable_three_d_maps, true, @community.enable_three_d_maps, class: "apartment-setting-field"
+      %label.label-primary{ for: "enable_three_d_maps" }
+      %span.pl-15 Yes
+      - if @community.has_3d_map?
+        = link_to "3D Map Design Configurations", "#", class: "btn btn-primary map-design-configurations-btn", title: "3D Maps Configuration", "data-toggle" => "modal", "data-target" => "#configurations-modal"
+
+.form-group#available-map-views
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+    Available map views
+    %i.propertyDetailName.fa.fa-question-circle
+      %span#propertyDetailNameText
+        Controls which map views are available on the property map. The 2D/3D switcher button is hidden for any view not enabled here.
+  .col-sm-12.col-lg-6.col-md-6.col-xs-12
+    - if options.any?
+      .map-view-options{ role: "radiogroup", "aria-label" => "Available map views" }
+        - options.each do |view|
+          %label.map-view-option{ for: "available_map_views_#{view}" }
+            = radio_button_tag :available_map_views, view, view == selected, class: "apartment-setting-field"
+            %span= labels[view]
+    - else
+      %p.map-view-empty No 2D or 3D map is configured for this property yet.
+
+- if @community.map_view_switcher?
+  .form-group
+    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+      Default map view
+      %i.propertyDetailName.fa.fa-question-circle
+        %span#propertyDetailNameText
+          The view the map opens in. Visitors can still switch between 2D and 3D.
+    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+      .TriSea-technologies-Switch
+        %span.pr-15 2D
+        = hidden_field_tag :default_map_view, "2d", id: nil
+        = check_box_tag :default_map_view, "3d", @community.resolved_default_map_view == "3d", class: "apartment-setting-field"
+        %label.label-primary{ for: "default_map_view" }
+        %span.pl-15 3D
+
+- if @community.map_view_3d?
+  .form-group
+    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+      Default Satellite View
+      %i.propertyDetailName.fa.fa-question-circle
+        %span#propertyDetailNameText
+          Shows satellite imagery instead of the 3D map style when the 3D view opens.
+    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+      .TriSea-technologies-Switch
+        %span.pr-15 No
+        = hidden_field_tag :default_satellite_view, false, id: nil
+        = check_box_tag :default_satellite_view, true, @community.default_satellite_view, class: "apartment-setting-field"
+        %label.label-primary{ for: "default_satellite_view" }
+        %span.pl-15 Yes
+
+-# Id-scoped: `.add-plan label` rules in pyn-custom.css outrank class selectors
+-# here, and Bootstrap's .radio-inline absolutely positions the input.
+:css
+  .map-design-configurations-btn { margin-left: 40px; }
+  #available-map-views .map-view-options { display: flex; flex-wrap: wrap; gap: 10px; }
+  #available-map-views label.map-view-option {
+    display: inline-flex; align-items: center; gap: 8px; margin: 0; width: auto;
+    padding: 8px 16px; border: 1px solid #d2d6de; border-radius: 4px;
+    background: #fff; color: #333; font-weight: 500; cursor: pointer;
+    transition: border-color .15s, background-color .15s;
+  }
+  #available-map-views label.map-view-option:hover { border-color: #3c8dbc; }
+  #available-map-views label.map-view-option input[type="radio"] {
+    position: static; margin: 0; width: 16px; height: 16px; cursor: pointer;
+  }
+  #available-map-views label.map-view-option span { width: auto; color: inherit; }
+  #available-map-views label.map-view-option:has(input:checked) {
+    border-color: #3c8dbc; background: #eef6fb; color: #3c8dbc;
+  }
+  #available-map-views .map-view-empty { margin: 7px 0 0; color: #8b8b8b; }

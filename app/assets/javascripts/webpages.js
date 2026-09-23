@@ -78,16 +78,20 @@ $(document).ready(function () {
   debouncedShowMarkers = debounce(showMarkers, 100);
 
   if (isDefined(webCommunity)) {
+    // Beans-fed units carry no 2D plot coordinates; only unit grouping in
+    // showUnitModal reads this. Which views the map offers is the property's
+    // "Available map views" setting (PYN-1610), not its data provider.
     beanOnlyProperty = (webCommunity.data_provider === "beans")
-    selectMap = (defaultSatelliteView || opsMapMarkersEnabled || beanOnlyProperty) ? "3d-map" : "2d-map"; //webCommunity.web_map_type;
-    enable3DMaps = webCommunity.enable_three_d_maps;
+    enable3DMaps = enabled3dMaps;
+    // Ops maps have always opened in 3D whenever they can switch to it.
+    selectMap =
+      defaultMapView === "3d" || (availableMapViews === "both" && opsMapMarkersEnabled)
+        ? "3d-map"
+        : "2d-map";
 
     if (enable3DMaps) {
       initializeBeans3DMap();
       handleMapControl();
-
-      if (beanOnlyProperty)
-        $(".2d-map-option").hide();
     }
   }
 

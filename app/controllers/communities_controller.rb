@@ -885,8 +885,16 @@ class CommunitiesController < ApplicationController
     @community.display_manual_additional_fee = params[:display_manual_additional_fee]
     @community.additional_fee = params[:additional_fee]
     @community.default_map_floor = params[:default_map_floor]
+    # Map view settings (PYN-1610). Posted only by the Property Map pages, and
+    # each only while it is on screen -- the toggles carry a hidden "off" value
+    # the way f.check_box does -- so a page without a field leaves it alone.
+    @community.enable_three_d_maps    = params[:enable_three_d_maps]    if params.key?(:enable_three_d_maps)
+    @community.available_map_views    = params[:available_map_views]    if params.key?(:available_map_views)
+    @community.default_map_view       = params[:default_map_view]       if params.key?(:default_map_view)
+    @community.default_satellite_view = params[:default_satellite_view] if params.key?(:default_satellite_view)
 
     if @community.save
+      update_map_type(@community) if @community.saved_change_to_enable_three_d_maps?
       flash[:notice] = "Apartment settings updated successfully."
       redirect_back(fallback_location: root_path)
     else
