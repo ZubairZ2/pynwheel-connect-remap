@@ -724,6 +724,10 @@
             return null;
           }
 
+          // 3D-only (PYN-1610): no SVG, raster or panzoom is ever shown, so none
+          // of it is fetched. Resolved to a string the next step routes on.
+          if (this._availableMapViews() === "3d") return "3d";
+
           if (this._isImageMapMode()) {
             // Image map: no SVG to fetch — just need panzoom ready.
             return Promise.all([this._loadFontAwesome(), panZoomReady]);
@@ -734,6 +738,8 @@
         })
         .then(result => {
           if (!result) return;
+
+          if (result === "3d") return this._boot3DOnly();
 
           if (this._isImageMapMode()) {
             return this._bootImageMap();
@@ -775,6 +781,23 @@
       if (this.config.enable3DMap && this.config.show3DMap) {
         this.switchTo3DMap();
       }
+
+      if (this._analytics) this._captureWithMapType('map_load');
+      this.config.onReady?.();
+    },
+
+    // 3D-only property: straight into the Beans widget, with no 2D map behind it.
+    async _boot3DOnly() {
+      const c = this.container;
+      c.innerHTML      = "";
+      c.style.position = "relative";
+      c.style.overflow = "hidden";
+
+      this._mount3DWrapper();
+      if (this.config.showZoomControls) this._renderZoomControls();
+
+      await this.switchTo3DMap();
+      if (this.config.floor) await this.changeFloor(this.config.floor);
 
       if (this._analytics) this._captureWithMapType('map_load');
       this.config.onReady?.();
@@ -1445,6 +1468,19 @@
       if (this.config.enable3DMap          === null) this.config.enable3DMap          = cfg3d?.enabled          === true;
       if (this.config.show3DMap            === null) this.config.show3DMap            = cfg3d?.show3dByDefault  === true;
       if (this.config.defaultSatelliteView === null) this.config.defaultSatelliteView = cfg3d?.defaultSatelliteView === true;
+
+      // The property's "Available map views" setting outranks init() options: a
+      // host can't turn on a view the property doesn't offer.
+      const views = this._availableMapViews();
+      if (views === "2d") this.config.enable3DMap = false;
+      if (views === "3d") this.config.enable3DMap = this.config.show3DMap = true;
+    },
+
+    // "2d" | "3d" | "both". A payload without the field predates the setting,
+    // which behaved as "both".
+    _availableMapViews() {
+      const views = this.data.property?.map?.availableViews;
+      return views === "2d" || views === "3d" ? views : "both";
     },
 
     // The position a space does not carry, because it belongs to the door it is
@@ -1806,29 +1842,7 @@
         c.appendChild(clone);
       }
 
-      // Restore or create the 3D wrapper
-      if (this.config.enable3DMap) {
-        if (saved3d) {
-          c.appendChild(saved3d);
-          this._3dWrapper = saved3d;
-        } else {
-          const wrapper3d = document.createElement("div");
-          Object.assign(wrapper3d.style, {
-            position: "absolute",
-            top: "0", left: "0", right: "0", bottom: "0",
-            display: "none"
-          });
-          const beansDiv = document.createElement("div");
-          beansDiv.id = "pyn-3d-map";
-          beansDiv.style.width  = "100%";
-          beansDiv.style.height = "100%";
-          wrapper3d.appendChild(beansDiv);
-          c.appendChild(wrapper3d);
-          this._3dWrapper = wrapper3d;
-        }
-        // Sync 3D wrapper visibility to current mode
-        this._3dWrapper.style.display = this._3dMode ? "block" : "none";
-      }
+      this._mount3DWrapper(saved3d);
 
       if (this.config.showZoomControls) {
         this._renderZoomControls();
@@ -1836,6 +1850,32 @@
 
       this._enablePanZoom(clone);
       c.style.overflow   = "hidden";
+    },
+
+    // Restore or create the 3D wrapper, synced to the current mode.
+    _mount3DWrapper(saved3d) {
+      if (!this.config.enable3DMap) return;
+
+      if (saved3d) {
+        this.container.appendChild(saved3d);
+        this._3dWrapper = saved3d;
+      } else {
+        const wrapper3d = document.createElement("div");
+        wrapper3d.className = "pyn-3d-wrapper";
+        Object.assign(wrapper3d.style, {
+          position: "absolute",
+          top: "0", left: "0", right: "0", bottom: "0",
+          display: "none"
+        });
+        const beansDiv = document.createElement("div");
+        beansDiv.id = "pyn-3d-map";
+        beansDiv.style.width  = "100%";
+        beansDiv.style.height = "100%";
+        wrapper3d.appendChild(beansDiv);
+        this.container.appendChild(wrapper3d);
+        this._3dWrapper = wrapper3d;
+      }
+      this._3dWrapper.style.display = this._3dMode ? "block" : "none";
     },
 
 
@@ -2460,6 +2500,7 @@
      */
     switchTo2DMap() {
       if (!this._3dMode) return;
+      if (this._availableMapViews() === "3d") return;
       // Drop any hover before the mode flag flips, so the consumer is told the
       // tooltip is gone and does not keep a 3D unit hovered on the 2D map.
       this._clear3DHover();
@@ -3770,7 +3811,7 @@
       wrapper.appendChild(minus);
       wrapper.appendChild(reset);
 
-      if (this.config.enable3DMap) {
+      if (this.config.enable3DMap && this._availableMapViews() === "both") {
         const toggle = document.createElement("div");
         toggle.className = "pyn-3d-toggle";
         toggle.innerText = this._3dMode ? "2D" : "3D";

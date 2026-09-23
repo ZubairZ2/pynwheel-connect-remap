@@ -33,6 +33,8 @@
 
                     .col-sm-12.col-lg-6.col-md-6.col-xs-12
                       = select_tag :default_map_floor, options_for_select(@community.property_floor_options, @community.default_map_floor), class: "form-control apartment-setting-field"
+
+                  = render partial: "communities/map_view_settings"
                   
                   - if @community.pynwheel_touch_enabled?
                     .form-group
@@ -809,6 +811,7 @@
           .row
             .col-md-12
   #select_floor.modal.fade.select_floor
+  = render partial: "communities/3d_map_configurations"
 
 :javascript
   $('.wysihtml5').each(function(i, elem) {

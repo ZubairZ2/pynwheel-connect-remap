@@ -20,7 +20,7 @@
       %meta{:content => "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no", :name => "viewport"}/
 
       
-      - if @community.enable_three_d_maps
+      - if @community_info.map_view_3d?
         %link{:href => "https://js.arcgis.com/4.27/esri/themes/light/main.css", :rel => "stylesheet"}/
         %link{:href => "https://www.beans.ai/mapswidget/css/mapswidget-1.0.4.css", :rel => "stylesheet"}/ 
 
@@ -38,7 +38,7 @@
       = javascript_include_tag "moment"
       = javascript_include_tag 'webpages', v: javascript_version
 
-      - if @community.enable_three_d_maps
+      - if @community_info.map_view_3d?
         %script{type: "text/javascript", src: "https://js.arcgis.com/4.27/"}  
         %script{type: "text/javascript", src: "https://www.beans.ai/mapswidget/js/mapswidget-1.0.4-speed.js"}
         %script{type: "text/javascript", src: "https://www.beans.ai/mapswidget/client/utils.js"}
@@ -95,7 +95,11 @@
       - colors = marker_colors.values_at(:missing_floorplan, :missing, :occupied, :occupied_on_notice, :vacant, :vacant_leased, :model)
       - labels = ["Missing Floorplan", "Missing Data", "Occupied", "Occupied on Notice", "Vacant", "Vacant Leased", "Model"]
       - legend_items = colors.map.with_index { |color, index| color ? { label: labels[index], color: color } : nil }.compact
-      - _3d_enabled = @community.enable_three_d_maps
+      -# PYN-1610: the "Available map views" setting decides which views exist;
+      -# the 2D/3D switcher is only drawn when both do.
+      - _3d_enabled = @community_info.map_view_3d?
+      - _2d_enabled = @community_info.map_view_2d?
+      - _map_switcher = @community_info.map_view_switcher?
       -# Box-style color legend: by_bedroom on any map, and by_property on SVG.
       -# Image maps by_property keep the pin + camera icon legend; by_floorplan
       -# shows no legend at all (SVG or image).
@@ -273,13 +277,14 @@
                     -# Ops 3D keeps its in-map status legend. Marketing maps render
                     -# their color key in the footer (see .location-items below) so the
                     -# 3D view matches 2D instead of floating tiles over the map.
-                    - if @community.enable_three_d_maps && @show_ops_map
+                    - if _3d_enabled && @show_ops_map
                       = render partial: 'webpages/marker_colors_legend', locals: { legend_items: }
 
                   .image-map#zoomable.zoomable-map-container{style: "text-align: center; display: flex;"}
                     .hidden-units
                     %div#zoom-group-wrapper
-                      = render partial: @svg_enabled ? 'webpages/svg_map' : 'webpages/image_map' #, locals: svg_and_image_locals
+                      - if _2d_enabled
+                        = render partial: @svg_enabled ? 'webpages/svg_map' : 'webpages/image_map' #, locals: svg_and_image_locals
 
                     - if @show_ops_map
                       = render partial: 'webpages/marker_colors_legend', locals: { legend_items: }
@@ -309,7 +314,7 @@
                             %span.map-key__label= @community.show_amenity_key_text
 
 
-                    - if _3d_enabled
+                    - if _map_switcher
                       .zooming-content.zoomable-map-container
                         %a.zooming-action.zoom-controls.map-toggle-button.3d-map-option{:href => "#", "data-current-map-type"=>"3d-current-map"}
                           3D view
@@ -357,7 +362,7 @@
                         %a.minus-action.zooming-action.zoom-out-webpage.zoom-controls{:href => "#"}
                           %img{:src => "/assets/minus.png"}/
                       
-                        - if _3d_enabled
+                        - if _map_switcher
                           %a.zooming-action.zoom-controls.map-toggle-button.3d-map-option{:href => "#", "data-current-map-type"=>"3d-current-map"}
                             3D view
                           %a.zooming-action.zoom-controls.map-toggle-button.2d-map-option.hidden{:href => "#", "data-current-map-type"=>"2d-current-map"}
@@ -455,7 +460,11 @@
     var redirect_url = "#{community_webpages_url(@community)}"
     var has_floorplate = "#{@community_info.has_floorplates?}";
     var svgMode = #{@community.enable_svg_mode}
-    var enabled3dMaps = "#{@community.enable_three_d_maps?}" === "true";
+    var enabled3dMaps = "#{@community_info.map_view_3d?}" === "true";
+    // "2d" | "3d" | "both" -- Community#resolved_map_views (PYN-1610).
+    var availableMapViews = "#{@community_info.resolved_map_views}";
+    // "2d" | "3d" -- the view the map opens in (Community#resolved_default_map_view).
+    var defaultMapView = "#{@community_info.resolved_default_map_view}";
     var defaultSatelliteView = "#{@community.default_satellite_view?}" === "true";
     var community_name = "#{@community_info.name}"
     var display_rent = "#{@community_info.display_rent}"
@@ -502,7 +511,9 @@
     $(document).ready(function () {
       if (communityInactivated) return;
   
-      if(svgMode)
+      // The tracker shows the loader until the 2D SVGs arrive; a 3D-only map
+      // loads none, so it would never be hidden.
+      if(svgMode && availableMapViews !== "3d")
         assetTracker = new AssetLoadingTracker({ loaderSelector: ".webPageLoader" });
   
       if (!units) units = $("#communityWebpagesData").data("units");
@@ -700,10 +711,13 @@
       setWebpageContainerSize();
   
       parsedSVGs = [];
-      if(svgMode)
-        fetchWebpageSVGAndSetCoordinates();
-      else {
-        setImageMapMarkers();
+      // A 3D-only map has no 2D artwork on the page, so there is nothing to fetch.
+      if (availableMapViews !== "3d") {
+        if(svgMode)
+          fetchWebpageSVGAndSetCoordinates();
+        else {
+          setImageMapMarkers();
+        }
       }
   
       $("#close-modal").on("click", function() {
