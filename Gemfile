@@ -23,9 +23,6 @@ gem 'write_xlsx'
 gem "mini_magick"
 gem 'google_places'
 gem 'currency_select'
-source 'https://rails-assets.org' do
-  gem 'rails-assets-jsTimezoneDetect'
-end
 gem 'geocoder'
 gem 'amoeba'
 gem 'pg', '~> 1.1'
