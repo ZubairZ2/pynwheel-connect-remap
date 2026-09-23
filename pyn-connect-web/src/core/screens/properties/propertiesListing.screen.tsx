@@ -3,32 +3,52 @@
 import { CORE_STRINGS } from '~/config/app/strings';
 import { i18n } from '~/resources/i18n';
 import { SearchField } from '~/core/components/molecules/SearchField';
+import { Pagination } from '~/core/components/organisms/Pagination';
 import { ResourceListingTemplate } from '~/core/templates/ResourceListingTemplate';
 import { usePropertiesListing } from '~/core/hooks/usePropertiesListing';
 import type { Property } from '~/core/models/data/property.data';
+import type {
+  CompanyFilterOption,
+  Pagination as PaginationMeta
+} from '~/core/models/data/session.data';
 import type { FilterOption } from '~/core/utils/generator/listing.types';
+import type { PropertyFilters } from '~/core/utils/generator/propertyListing.generator';
 
 interface Props {
   properties: Property[];
+  pagination: PaginationMeta | null;
+  filters: PropertyFilters;
+  companyOptions: CompanyFilterOption[];
   error?: string | null;
 }
 
-export const PropertiesListingScreen = ({ properties, error }: Props) => {
+export const PropertiesListingScreen = ({
+  properties,
+  pagination,
+  filters: initialFilters,
+  companyOptions: companyFilterOptions,
+  error
+}: Props) => {
   const {
     filters,
+    setQuery,
     setFilter,
     columns,
     rows,
+    pager,
+    isPending,
     stageOptions,
     companyOptions,
-    productOptions
-  } = usePropertiesListing(properties);
+    productOptions,
+    goToPage
+  } = usePropertiesListing(properties, pagination, initialFilters, companyFilterOptions);
 
   return (
     <ResourceListingTemplate
       error={error}
       columns={columns}
       rows={rows}
+      busy={isPending}
       caption={i18n.t(CORE_STRINGS.properties.title)}
       emptyLabel={i18n.t(CORE_STRINGS.properties.empty)}
       toolbar={
@@ -36,7 +56,7 @@ export const PropertiesListingScreen = ({ properties, error }: Props) => {
           <SearchField
             className="bo-toolbar__search"
             value={filters.query}
-            onChange={(value) => setFilter('query', value)}
+            onChange={setQuery}
             ariaLabel={i18n.t(CORE_STRINGS.properties.search)}
             placeholder={i18n.t(CORE_STRINGS.properties.search)}
           />
@@ -59,6 +79,14 @@ export const PropertiesListingScreen = ({ properties, error }: Props) => {
             onChange={(value) => setFilter('product', value)}
           />
         </>
+      }
+      footer={
+        <Pagination
+          pager={pager}
+          disabled={isPending}
+          label={i18n.t(CORE_STRINGS.properties.title)}
+          onPageChange={goToPage}
+        />
       }
     />
   );

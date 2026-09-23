@@ -918,11 +918,19 @@ class CommunitiesController < ApplicationController
   private
 
   def render_connect_properties
-    communities = AccessibleCommunitiesQuery.new(current_user).call
+    query = AccessibleCommunitiesQuery.new(current_user, params)
+    page = Connect::PaginatedCollection.new(query.call, page: params[:page], per_page: params[:per_page])
 
     render json: Connect::ResponseEnvelope.new(
-      data: Connect::PropertySerializer.collection(communities),
-      meta: Connect::ResponseEnvelope.listing_meta(current_user, communities.size)
+      data: Connect::PropertySerializer.collection(page.records),
+      meta: Connect::ResponseEnvelope.listing_meta(
+        current_user,
+        page.total_count,
+        pagination: page.meta,
+        # The company filter's options: the listing only ever holds one page of
+        # rows, so it cannot derive them from the data it was sent.
+        extra: { filters: { companies: query.company_options } }
+      )
     ).as_json
   end
 

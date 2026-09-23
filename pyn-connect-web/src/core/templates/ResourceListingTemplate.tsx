@@ -10,20 +10,27 @@ interface Props {
   emptyLabel: string;
   caption: string;
   error?: string | null;
+  footer?: ReactNode;
+  busy?: boolean;
 }
 
-/** Toolbar + table + empty state — the listing body contract. */
+/** Toolbar + table + pager — the listing body contract. */
 export const ResourceListingTemplate = ({
   toolbar,
   columns,
   rows,
   emptyLabel,
   caption,
-  error
+  error,
+  footer,
+  busy
 }: Props) => (
   <div className="bo-listing">
     {error && <div className="bo-error" role="alert">{error}</div>}
     <div className="bo-toolbar">{toolbar}</div>
-    <CustomTable columns={columns} rows={rows} emptyLabel={emptyLabel} caption={caption} />
+    <div className={`bo-panel ${busy ? 'bo-panel--busy' : ''}`} aria-busy={busy || undefined}>
+      <CustomTable columns={columns} rows={rows} emptyLabel={emptyLabel} caption={caption} />
+      {footer}
+    </div>
   </div>
 );

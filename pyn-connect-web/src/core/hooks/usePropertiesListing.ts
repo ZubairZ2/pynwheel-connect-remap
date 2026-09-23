@@ -1,9 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import {
-  filterProperties,
   generateCompanyFilterOptions,
   generateProductFilterOptions,
   generatePropertyColumns,
@@ -11,36 +10,45 @@ import {
   generateStageFilterOptions,
   type PropertyFilters
 } from '~/core/utils/generator/propertyListing.generator';
+import { generatePager } from '~/core/utils/generator/pagination.generator';
 import type { Property } from '~/core/models/data/property.data';
+import type { CompanyFilterOption, Pagination } from '~/core/models/data/session.data';
+import { useDebouncedSearch } from './useDebouncedSearch';
+import { useListingParams } from './useListingParams';
 
-const INITIAL_FILTERS: PropertyFilters = {
-  query: '',
-  stage: 'all',
-  companyId: 'all',
-  product: 'all'
-};
-
-export const usePropertiesListing = (properties: Property[]) => {
-  const [filters, setFilters] = useState<PropertyFilters>(INITIAL_FILTERS);
-
-  const setFilter = <K extends keyof PropertyFilters>(key: K, value: PropertyFilters[K]) =>
-    setFilters((current) => ({ ...current, [key]: value }));
+export const usePropertiesListing = (
+  properties: Property[],
+  pagination: Pagination | null,
+  filters: PropertyFilters,
+  companyOptions: CompanyFilterOption[]
+) => {
+  const { setParams, isPending } = useListingParams();
+  const { value: query, setValue: setQuery } = useDebouncedSearch(filters.query, (value) =>
+    setParams({ q: value })
+  );
 
   const columns = useMemo(() => generatePropertyColumns(), []);
+  const rows = useMemo(() => generatePropertyRows(properties), [properties]);
+  const pager = useMemo(() => generatePager(pagination), [pagination]);
   const stageOptions = useMemo(() => generateStageFilterOptions(), []);
   const productOptions = useMemo(() => generateProductFilterOptions(), []);
-  const companyOptions = useMemo(() => generateCompanyFilterOptions(properties), [properties]);
-  const filtered = useMemo(() => filterProperties(properties, filters), [properties, filters]);
-  const rows = useMemo(() => generatePropertyRows(filtered), [filtered]);
+  const companyFilterOptions = useMemo(
+    () => generateCompanyFilterOptions(companyOptions),
+    [companyOptions]
+  );
 
   return {
-    filters,
-    setFilter,
+    filters: { ...filters, query },
+    setQuery,
+    setFilter: (key: 'stage' | 'companyId' | 'product', value: string) =>
+      setParams({ [key === 'companyId' ? 'company_id' : key]: value }),
     columns,
     rows,
+    pager,
+    isPending,
     stageOptions,
-    companyOptions,
+    companyOptions: companyFilterOptions,
     productOptions,
-    filteredCount: filtered.length
+    goToPage: (page: number) => setParams({ page }, { keepPage: true })
   };
 };

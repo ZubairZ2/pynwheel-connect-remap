@@ -80,16 +80,3 @@ export const generateCompanyRows = (companies: Company[]): RowDescriptor[] =>
       }
     };
   });
-
-/** Same search behaviour as the mockup: name, PMS provider, contact email. */
-export const filterCompanies = (companies: Company[], query: string): Company[] => {
-  const needle = query.trim().toLowerCase();
-  if (!needle) return companies;
-
-  return companies.filter((company) =>
-    [company.name, company.email ?? '', company.pmsProviders.join(' ')]
-      .join(' ')
-      .toLowerCase()
-      .includes(needle)
-  );
-};

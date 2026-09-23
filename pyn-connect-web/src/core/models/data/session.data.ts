@@ -8,9 +8,25 @@ export interface CurrentUser {
   companyId: number | null;
 }
 
+/** One page of a listing, as the backend reports it. */
+export interface Pagination {
+  page: number;
+  perPage: number;
+  totalCount: number;
+  totalPages: number;
+}
+
+/** Filter options the backend supplies, because one page cannot derive them. */
+export interface CompanyFilterOption {
+  id: number;
+  name: string;
+}
+
 export interface ListingMeta {
   totalCount: number;
   currentUser: CurrentUser | null;
+  pagination: Pagination | null;
+  companyOptions: CompanyFilterOption[];
 }
 
 /** The `{ data, meta, flash_messages }` envelope every endpoint returns. */

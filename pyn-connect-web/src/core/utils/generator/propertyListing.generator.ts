@@ -1,6 +1,7 @@
 import { CORE_STRINGS } from '~/config/app/strings';
 import { i18n } from '~/resources/i18n';
 import type { LifecycleStage, ProductKey, Property } from '~/core/models/data/property.data';
+import type { CompanyFilterOption } from '~/core/models/data/session.data';
 import type { ColumnDescriptor, FilterOption, PillVariant, RowDescriptor } from './listing.types';
 
 export const PROPERTY_COLUMN_IDS = {
@@ -100,22 +101,14 @@ export const generateStageFilterOptions = (): FilterOption[] => [
   }))
 ];
 
-export const generateCompanyFilterOptions = (properties: Property[]): FilterOption[] => {
-  const seen = new Map<string, string>();
-
-  properties.forEach((property) => {
-    if (property.companyId != null && property.companyName) {
-      seen.set(String(property.companyId), property.companyName);
-    }
-  });
-
-  return [
-    { id: 'all', label: i18n.t(CORE_STRINGS.properties.allCompanies) },
-    ...Array.from(seen.entries())
-      .map(([id, label]) => ({ id, label }))
-      .sort((a, b) => a.label.localeCompare(b.label))
-  ];
-};
+/**
+ * The options come from the backend (`meta.filters.companies`): the listing
+ * only ever holds one page of rows, so it cannot derive the full list itself.
+ */
+export const generateCompanyFilterOptions = (companies: CompanyFilterOption[]): FilterOption[] => [
+  { id: 'all', label: i18n.t(CORE_STRINGS.properties.allCompanies) },
+  ...companies.map((company) => ({ id: String(company.id), label: company.name }))
+];
 
 export const generateProductFilterOptions = (): FilterOption[] => [
   { id: 'all', label: i18n.t(CORE_STRINGS.properties.allProducts) },
@@ -123,25 +116,3 @@ export const generateProductFilterOptions = (): FilterOption[] => [
   { id: 'tour', label: 'Self-Guided Tour' },
   { id: 'maps', label: 'Pynwheel Maps' }
 ];
-
-export const filterProperties = (properties: Property[], filters: PropertyFilters): Property[] => {
-  const needle = filters.query.trim().toLowerCase();
-
-  return properties.filter((property) => {
-    if (
-      needle &&
-      ![property.name, property.companyName ?? '', property.location, property.dataProvider ?? '']
-        .join(' ')
-        .toLowerCase()
-        .includes(needle)
-    ) {
-      return false;
-    }
-
-    if (filters.stage !== 'all' && property.stage !== filters.stage) return false;
-    if (filters.companyId !== 'all' && String(property.companyId) !== filters.companyId) return false;
-    if (filters.product !== 'all' && !property.products[filters.product as ProductKey]) return false;
-
-    return true;
-  });
-};
