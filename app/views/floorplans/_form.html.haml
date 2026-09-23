@@ -80,6 +80,19 @@
 
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Expand details in pop-ups
+    %i.popup-desc-tooltip.fa.fa-question-circle
+      %span#popup_desc_tooltip_text
+        Show the Details content already open in floor plan and unit pop-ups on the map, with no dropdown arrow to click. When off, visitors click the Details heading to open it.
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .TriSea-technologies-Switch
+      %span.pr-15 No
+      = f.check_box :expand_description_in_popup, id: "floorplan-expand-description-in-popup"
+      %label.label-primary{ for: "floorplan-expand-description-in-popup" }
+      %span.pl-15 Yes
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Details
     %i.tooltip1.fa.fa-question-circle{ "data-toggle" => "floorplanAdditionalUrlDetailsPopover","data-content" => " "}
       %span#tooltiptext1
