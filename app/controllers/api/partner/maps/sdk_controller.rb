@@ -14,7 +14,7 @@ module Api
         # `clear_all_favorites`, `get_favorites` → session token only
         SESSION_ACTIONS = [
           :fetch_data, :fetch_config, :fetch_svg_image,
-          :fetch_gallery_list, :fetch_gallery_images,
+          :fetch_gallery_list, :fetch_gallery_images, :fetch_homescreen,
           :fetch_neighborhood, :fetch_neighborhood_places,
           :save_favorites, :delete_favorites, :clear_all_favorites,
           :get_favorites, :share_favorites_email, :track_events
@@ -32,13 +32,15 @@ module Api
         # 6 other heavy includes (floorplans, map_filter, font_setting, credential,
         # calculator_config, three_d_maps_configuration) that it never uses.
         # track_events only needs community_id, timezone — use a lightweight load.
-        before_action :load_community_from_session, only: SESSION_ACTIONS - [:get_favorites, :fetch_svg_image, :fetch_gallery_list, :fetch_gallery_images, :fetch_neighborhood, :fetch_neighborhood_places, :share_favorites_email, :track_events]
+        before_action :load_community_from_session, only: SESSION_ACTIONS - [:get_favorites, :fetch_svg_image, :fetch_gallery_list, :fetch_gallery_images, :fetch_homescreen, :fetch_neighborhood, :fetch_neighborhood_places, :share_favorites_email, :track_events]
         before_action :load_community_for_analytics, only: [:track_events]
         before_action :load_community_for_svg,      only: [:fetch_svg_image]
         before_action :load_community_for_favorites, only: [:get_favorites]
         before_action :load_community_for_email,     only: [:share_favorites_email]
         before_action :load_community_for_gallery,   only: [:fetch_gallery_list, :fetch_gallery_images]
         before_action :load_community_for_neighborhood, only: [:fetch_neighborhood, :fetch_neighborhood_places]
+        before_action :load_community_for_homescreen,   only: [:fetch_homescreen]
+        before_action :require_touch_homescreen!,       only: [:fetch_homescreen]
 
         # ------------------------------------------------------------------
         # GET /api/partner/maps/authorized?propertyId=:id
@@ -204,6 +206,23 @@ module Api
           response.headers['Vary']             = 'Accept-Encoding'
 
           send_data gzip_json(payload), type: 'application/json; charset=utf-8', disposition: 'inline'
+        end
+
+        # ------------------------------------------------------------------
+        # GET /api/partner/maps/fetch_homescreen?src=touch
+        # Authorization: Bearer <session_token>
+        #
+        # The Pynwheel Touch home screen loop — images, video and loop_type, the
+        # same block data.json serves as `homescreen`. Touch-only: 403 unless
+        # the request comes from src=touch AND the property has Pynwheel Touch
+        # enabled (see #require_touch_homescreen!).
+        # ------------------------------------------------------------------
+        def fetch_homescreen
+          homescreen = SdkHomescreenBuilderService.new(@community, asset_host: request.base_url).build
+
+          response.headers['Cache-Control'] = 'private, no-store'
+
+          render json: { homescreen: homescreen, status: "success", code: 200 }
         end
 
         # ------------------------------------------------------------------
@@ -713,6 +732,23 @@ module Api
         def load_community_for_gallery
           @community = Community.find_by(id: @session_property_id)
           return render_error("Property not found.", 404) if @community.nil?
+        end
+
+        # Only the design row and the home screen media hanging off it.
+        def load_community_for_homescreen
+          @community = Community
+            .includes(design: [:home_page_images, :home_page_video])
+            .find_by(id: @session_property_id)
+          return render_error("Property not found.", 404) if @community.nil?
+        end
+
+        # src is client-supplied (it is not bound into the session token), so it
+        # only scopes the endpoint to the touch surface; the property's Pynwheel
+        # Touch toggle is the real entitlement check.
+        def require_touch_homescreen!
+          return if @community.is_touch_map(params[:src].to_s.strip.downcase) && @community.pynwheel_touch_enabled?
+
+          render_error("Home screen is only available for Pynwheel Touch.", 403)
         end
 
         # Only the neighborhood row and its pins. None of the six heavy includes

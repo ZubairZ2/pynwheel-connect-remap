@@ -512,6 +512,8 @@
                                     // rows are all unrenderable is not refetched on every reopen
     _neighborhoodPromise: null,     // in-flight getNeighborhood() request; deduplicates concurrent calls
     _neighborhoodLoaded: false,     // true once fetched, so a property with no pins is not refetched forever
+    _homescreenPromise: null,       // in-flight getHomescreen() request; deduplicates concurrent calls
+    _homescreenLoaded: false,       // true once fetched (touch only), so a 403 is not retried on every call
     _placesPromises: {},            // { [slug]: Promise } — one in-flight request per category
     _placesLoaded: new Set(),       // slugs already fetched; a Set, not a flag, so an empty
                                     // category is not refetched on every tab switch
@@ -570,6 +572,7 @@
       filters:     null,
       gallery:     null,  // gallery config block from the map payload; see getGalleryConfig()
       galleryList: [],    // gallery summaries without images; populated by getGalleryList()
+      homescreen: null,   // Pynwheel Touch home screen loop; populated by getHomescreen() (src=touch only)
       galleryImages: {},  // { [galleryId]: image[] } — populated per gallery by getGalleryImages()
       neighborhood: [],   // curated pins; populated by getNeighborhood()
       neighborhoodPlaces: {}  // { [slug]: category } — live Google results, per category
@@ -1237,6 +1240,29 @@
         return data.galleries || [];
       } catch {
         return [];
+      }
+    },
+
+    /**
+     * Fetch the Pynwheel Touch home screen. The server answers 403 unless src is
+     * "touch" and the property has Pynwheel Touch enabled; that, like any other
+     * failure, resolves to null.
+     */
+    async _fetchHomescreen() {
+      try {
+        const res = await fetch(`${this._apiBase()}/api/partner/maps/fetch_homescreen?src=touch`, {
+          headers: {
+            "Authorization":    `Bearer ${this._sessionToken}`,
+            "X-SDK-Session-Id": this._sdkSessionId
+          }
+        });
+
+        if (!res.ok) return null;
+
+        const data = await res.json();
+        return data.homescreen || null;
+      } catch {
+        return null;
       }
     },
 
@@ -4152,10 +4178,12 @@
       this._galleryImagesLoaded  = new Set();
       this._neighborhoodPromise = null;
       this._neighborhoodLoaded  = false;
+      this._homescreenPromise   = null;
+      this._homescreenLoaded    = false;
       this._placesPromises      = {};
       this._placesLoaded        = new Set();
       this._neighborhoodLimited = false;
-      this.data                = { property: null, sitemap: null, backgroundSvg: null, floorplates: [], units: [], floorplans: [], amenities: [], filters: null, gallery: null, galleryList: [], galleryImages: {}, neighborhood: [], neighborhoodPlaces: {} };
+      this.data                = { property: null, sitemap: null, backgroundSvg: null, floorplates: [], units: [], floorplans: [], amenities: [], filters: null, gallery: null, galleryList: [], galleryImages: {}, homescreen: null, neighborhood: [], neighborhoodPlaces: {} };
       this.unitsByMap          = {};
       this.pointerIdsByMap     = {};
       this.unitsByPointerIdByMap = {};
@@ -4375,6 +4403,38 @@
         .finally(() => { this._galleryListPromise = null; });
 
       return this._galleryListPromise;
+    },
+
+    /**
+     * The Pynwheel Touch home screen loop — the same block data.json serves as
+     * `homescreen`:
+     *
+     *   { images: [{ filename, url }], video, loop_type }   // loop_type: "images" | "video"
+     *
+     * Touch only. Outside src=touch it resolves to null without a request; on
+     * touch the server still returns nothing unless the property has Pynwheel
+     * Touch enabled.
+     *
+     * Memoised for the life of the page, concurrent calls share one request, and
+     * it never throws — any failure resolves to null.
+     *
+     * @param {{ force?: boolean }} [opts]
+     * @returns {Promise<object|null>}
+     */
+    async getHomescreen({ force = false } = {}) {
+      if (this._productSrc !== "touch") return null;
+      if (!force && this._homescreenLoaded) return this.data.homescreen;
+      if (this._homescreenPromise) return this._homescreenPromise;
+
+      this._homescreenPromise = this._fetchHomescreen()
+        .then((homescreen) => {
+          this.data.homescreen   = homescreen;
+          this._homescreenLoaded = true;
+          return homescreen;
+        })
+        .finally(() => { this._homescreenPromise = null; });
+
+      return this._homescreenPromise;
     },
 
     /**
@@ -5601,6 +5661,7 @@
       getFiltersData()             { return PynMapSDK.getFiltersData.call(PynMapSDK); },
       getGalleryList(opts)                  { return PynMapSDK.getGalleryList.call(PynMapSDK, opts); },
       getGalleryImages(galleryId, opts)     { return PynMapSDK.getGalleryImages.call(PynMapSDK, galleryId, opts); },
+      getHomescreen(opts)                   { return PynMapSDK.getHomescreen.call(PynMapSDK, opts); },
       getNeighborhood(opts)                 { return PynMapSDK.getNeighborhood.call(PynMapSDK, opts); },
       getNeighborhoodPlaces(category, opts) { return PynMapSDK.getNeighborhoodPlaces.call(PynMapSDK, category, opts); },
       isNeighborhoodLimited()               { return PynMapSDK.isNeighborhoodLimited.call(PynMapSDK); },

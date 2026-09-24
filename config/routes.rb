@@ -726,6 +726,7 @@ Rails.application.routes.draw do
         get    :fetch_svg_image,  to: 'sdk#fetch_svg_image'
         get    :fetch_gallery_list,        to: 'sdk#fetch_gallery_list'
         get    :fetch_gallery_images,      to: 'sdk#fetch_gallery_images'
+        get    :fetch_homescreen,          to: 'sdk#fetch_homescreen'
         get    :fetch_neighborhood,        to: 'sdk#fetch_neighborhood'
         get    :fetch_neighborhood_places, to: 'sdk#fetch_neighborhood_places'
         get    :neighborhood_photo,        to: 'sdk#neighborhood_photo'
