@@ -1,6 +1,7 @@
 class AmenitiesController < ApplicationController
   # include Error::ErrorHandler
   include AssignLocksHelper
+  include Connect::InventoryJson
   before_action :authenticate_user!
   before_action :check_community
   after_action :previous_url, only: [:edit]
@@ -9,6 +10,9 @@ class AmenitiesController < ApplicationController
 
   def index
     @amenities = current_community.amenities.order(id: :desc)
+    # Pynwheel Connect's read-only Property Inventory.
+    return render_connect_amenities if request.format.json?
+
     add_breadcrumb "Amenity Images", community_amenities_path(current_community)
   end
 
@@ -169,6 +173,14 @@ class AmenitiesController < ApplicationController
   end
 
   private
+
+  def render_connect_amenities
+    render_connect_inventory(
+      Connect::AmenitySerializer.collection(@amenities, current_community, base_url: request.base_url),
+      current_community,
+      extra: { category_options: Connect::AmenitySerializer.category_options }
+    )
+  end
 
   def save_floorplan_galleries amenity, community, amenity_gallery_image
     return unless amenity.amenityable_id.present?

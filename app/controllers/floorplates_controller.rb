@@ -1,6 +1,7 @@
 class FloorplatesController < ApplicationController
   include AssignLocksHelper
   include CommunitiesHelper
+  include Connect::InventoryJson
   # include Error::ErrorHandler
   add_breadcrumb "Home", :root_path
   before_action :authenticate_user!
@@ -10,6 +11,9 @@ class FloorplatesController < ApplicationController
 
   def index
     @floorplates = current_community.floorplates.order(id: :desc)
+    # Pynwheel Connect's read-only Property Inventory.
+    return render_connect_floorplates if request.format.json?
+
     add_breadcrumb "Floorplates", community_floorplates_path(current_community)
     if params[:amenities].present?
       @amenities = true
@@ -261,6 +265,30 @@ class FloorplatesController < ApplicationController
   end
 
   private
+
+  def render_connect_floorplates
+    community = current_community
+    tour = community.community_tour
+    sitemap = community.sitemap
+
+    render_connect_inventory(
+      Connect::FloorplateSerializer.collection(@floorplates, community, base_url: request.base_url),
+      community,
+      extra: {
+        map_type: community.has_floorplates? ? "floorplates" : "sitemap",
+        svg_mode: community.enable_svg_mode.present?,
+        tour_stop_count: tour ? tour.tour_stops.count : 0,
+        shared_background: Connect::UploadUrl.file(community, :background_svg_image, request.base_url),
+        sitemap: sitemap && {
+          id: sitemap.id,
+          image: Connect::UploadUrl.file(sitemap, :image, request.base_url),
+          svg: Connect::UploadUrl.file(sitemap, :svg_image, request.base_url),
+          width: sitemap.width,
+          height: sitemap.height
+        }
+      }
+    )
+  end
 
   def upload_svg_image(svg_file)
     return unless svg_file.present?

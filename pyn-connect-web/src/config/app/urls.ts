@@ -18,6 +18,13 @@ export const CORE_URLS = {
     listing: '/communities.json',
     // CommunitiesController#edit (the legacy Property Details page), as JSON.
     detail: (propertyId: number) => `/communities/${propertyId}/edit.json`
+  },
+  // One property's inventory: the legacy listings' `format.json` branches.
+  inventory: {
+    floorplates: (propertyId: number) => `/communities/${propertyId}/floorplates.json`,
+    floorplans: (propertyId: number) => `/communities/${propertyId}/floorplans.json`,
+    units: (propertyId: number) => `/communities/${propertyId}/units.json`,
+    amenities: (propertyId: number) => `/communities/${propertyId}/amenities.json`
   }
 } as const;
 
