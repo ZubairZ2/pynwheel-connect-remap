@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 
 import {
   generateCompanyColumns,
+  generateCompanyListingSummary,
   generateCompanyRows
 } from '~/core/utils/generator/companyListing.generator';
 import { generatePager } from '~/core/utils/generator/pagination.generator';
@@ -20,7 +21,8 @@ import { useListingParams } from './useListingParams';
 export const useCompaniesListing = (
   companies: Company[],
   pagination: Pagination | null,
-  initialQuery: string
+  initialQuery: string,
+  totals: { companies: number | null; properties: number | null }
 ) => {
   const { setParams, isPending } = useListingParams();
   const { value: query, setValue: setQuery } = useDebouncedSearch(initialQuery, (value) =>
@@ -30,6 +32,10 @@ export const useCompaniesListing = (
   const columns = useMemo(() => generateCompanyColumns(), []);
   const rows = useMemo(() => generateCompanyRows(companies), [companies]);
   const pager = useMemo(() => generatePager(pagination), [pagination]);
+  const summary = useMemo(
+    () => generateCompanyListingSummary(totals.companies, totals.properties),
+    [totals.companies, totals.properties]
+  );
 
   return {
     query,
@@ -37,6 +43,7 @@ export const useCompaniesListing = (
     columns,
     rows,
     pager,
+    summary,
     isPending,
     goToPage: (page: number) => setParams({ page }, { keepPage: true })
   };

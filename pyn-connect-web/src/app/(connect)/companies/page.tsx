@@ -30,14 +30,12 @@ export default async function CompaniesPage({ searchParams }: Props) {
   const meta = parseListingMeta(response.body);
 
   return (
-    <ListingScreenTemplate
-      headerTitle={i18n.t(CORE_STRINGS.companies.title)}
-      recordCount={response.ok ? meta.totalCount : undefined}
-    >
+    <ListingScreenTemplate headerTitle={i18n.t(CORE_STRINGS.companies.title)}>
       <CompaniesListingScreen
         companies={companies}
         pagination={meta.pagination}
         initialQuery={q ?? ''}
+        totals={{ companies: meta.scopeTotalCount, properties: meta.propertyTotalCount }}
         error={response.ok ? null : i18n.t(CORE_STRINGS.shared.loadFailed)}
       />
     </ListingScreenTemplate>

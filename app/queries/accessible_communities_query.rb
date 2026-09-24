@@ -12,8 +12,40 @@ class AccessibleCommunitiesQuery
   # into a JOIN would page over joined rows instead.
   PRELOADS = [:company, :region, :credential, { tour: :tour_stops }].freeze
 
-  PRODUCT_FILTERS = %w[touch tour maps].freeze
-  STAGE_FILTERS = %w[installed activated production released approval].freeze
+  # The lifecycle stage is derived from milestone dates, most advanced first
+  # (see Connect::PropertySerializer#stage), so each stage asserts its own date
+  # and the absence of every later one.
+  STAGE_CONDITIONS = {
+    'released' => 'communities.released_date IS NOT NULL',
+    'approval' => 'communities.released_date IS NULL ' \
+                  'AND communities.submitted_final_approval_date IS NOT NULL',
+    'production' => 'communities.released_date IS NULL ' \
+                    'AND communities.submitted_final_approval_date IS NULL ' \
+                    'AND communities.production_started_date IS NOT NULL',
+    'activated' => 'communities.released_date IS NULL ' \
+                   'AND communities.submitted_final_approval_date IS NULL ' \
+                   'AND communities.production_started_date IS NULL ' \
+                   'AND communities.date_activated IS NOT NULL',
+    # installed: no milestone date recorded yet
+    'installed' => 'communities.released_date IS NULL ' \
+                   'AND communities.submitted_final_approval_date IS NULL ' \
+                   'AND communities.production_started_date IS NULL ' \
+                   'AND communities.date_activated IS NULL'
+  }.freeze
+
+  # Mirrors Connect::PropertySerializer#products. Touch and Tour have real
+  # boolean columns; Maps only exists as a flag inside `product_options`, a
+  # jsonb column holding a JSON *string*, which has to be unwrapped (#>> '{}')
+  # before it can be traversed.
+  PRODUCT_CONDITIONS = {
+    'touch' => 'communities.touchscreen_app = TRUE',
+    'tour' => 'communities.self_tour = TRUE',
+    'maps' => "communities.enable_sdk_map = TRUE OR " \
+              "((communities.product_options #>> '{}')::jsonb -> 'product_options' ->> 'pynwheel_maps') = 'true'"
+  }.freeze
+
+  # The Data Provider filter's option for communities with no provider set.
+  NO_DATA_PROVIDER = 'none'.freeze
 
   def initialize(user, params = {})
     @user = user
@@ -26,6 +58,7 @@ class AccessibleCommunitiesQuery
     scope = apply_stage(scope)
     scope = apply_company(scope)
     scope = apply_product(scope)
+    scope = apply_data_provider(scope)
 
     scope.order(Arel.sql('LOWER(communities.name) ASC'), id: :asc)
   end
@@ -41,12 +74,29 @@ class AccessibleCommunitiesQuery
       .map { |id, name| { id: id, name: name } }
   end
 
+  # The Data Provider filter's options: every provider slug in the user's scope,
+  # plus NO_DATA_PROVIDER when some communities have none. Unfiltered, like
+  # company_options. The frontend labels and sorts them.
+  def data_provider_options
+    providers = base_scope.where.not(data_provider: [nil, '']).distinct.pluck(:data_provider).sort
+    providers << NO_DATA_PROVIDER if base_scope.where(data_provider: [nil, '']).exists?
+    providers
+  end
+
+  # How many communities the user can see before search and filters: the
+  # listing header's total.
+  def scope_count
+    base_scope.count
+  end
+
   private
 
     attr_reader :user, :params
 
+    # Memoized: the listing, both filter option lists and the total all start
+    # here, and the Dwelo branch costs several queries to build.
     def base_scope
-      case
+      @base_scope ||= case
       when user.is_super_admin?
         Community.real_properties
       when user.is_dwelo_admin?
@@ -86,60 +136,41 @@ class AccessibleCommunitiesQuery
         )
     end
 
-    # The lifecycle stage is derived from milestone dates, most advanced first
-    # (see Connect::PropertySerializer#stage). Each filter therefore asserts its
-    # own date and the absence of every later one.
-    def apply_stage(scope)
-      stage = params[:stage].to_s
-      return scope unless STAGE_FILTERS.include?(stage)
+    # Each filter takes one value or several (`stage=released,approval`, or
+    # `stage[]=…`). Values within a filter are ORed; filters are ANDed.
+    def list_param(key)
+      Array(params[key]).flat_map { |value| value.to_s.split(',') }.map(&:strip).reject(&:blank?).uniq
+    end
 
-      case stage
-      when 'released'
-        scope.where.not(released_date: nil)
-      when 'approval'
-        scope.where(released_date: nil).where.not(submitted_final_approval_date: nil)
-      when 'production'
-        scope.where(released_date: nil, submitted_final_approval_date: nil)
-             .where.not(production_started_date: nil)
-      when 'activated'
-        scope.where(released_date: nil, submitted_final_approval_date: nil, production_started_date: nil)
-             .where.not(date_activated: nil)
-      else # installed — no milestone date recorded yet
-        scope.where(
-          released_date: nil,
-          submitted_final_approval_date: nil,
-          production_started_date: nil,
-          date_activated: nil
-        )
-      end
+    def apply_stage(scope)
+      stages = list_param(:stage) & STAGE_CONDITIONS.keys
+      return scope if stages.empty?
+
+      scope.where(stages.map { |stage| "(#{STAGE_CONDITIONS[stage]})" }.join(' OR '))
     end
 
     def apply_company(scope)
-      company_id = params[:company_id].to_i
-      return scope unless company_id.positive?
+      company_ids = list_param(:company_id).map(&:to_i).select(&:positive?)
+      return scope if company_ids.empty?
 
-      scope.where(company_id: company_id)
+      scope.where(company_id: company_ids)
     end
 
-    # Mirrors Connect::PropertySerializer#products. Touch and Tour have real
-    # boolean columns; Maps only exists as a flag inside `product_options`, a
-    # jsonb column holding a JSON *string*, so it is matched as text.
     def apply_product(scope)
-      product = params[:product].to_s
-      return scope unless PRODUCT_FILTERS.include?(product)
+      products = list_param(:product) & PRODUCT_CONDITIONS.keys
+      return scope if products.empty?
 
-      case product
-      when 'touch'
-        scope.where(touchscreen_app: true)
-      when 'tour'
-        scope.where(self_tour: true)
-      else
-        # `product_options` is jsonb holding a JSON string, so it has to be
-        # unwrapped (#>> '{}') before it can be traversed.
-        scope.where(
-          "communities.enable_sdk_map = TRUE OR " \
-          "((communities.product_options #>> '{}')::jsonb -> 'product_options' ->> 'pynwheel_maps') = 'true'"
-        )
-      end
+      scope.where(products.map { |product| "(#{PRODUCT_CONDITIONS[product]})" }.join(' OR '))
+    end
+
+    def apply_data_provider(scope)
+      providers = list_param(:data_provider)
+      return scope if providers.empty?
+
+      clauses = []
+      clauses << "COALESCE(communities.data_provider, '') = ''" if providers.delete(NO_DATA_PROVIDER)
+      clauses << 'communities.data_provider IN (:providers)' if providers.any?
+
+      scope.where(clauses.join(' OR '), providers: providers)
     end
 end

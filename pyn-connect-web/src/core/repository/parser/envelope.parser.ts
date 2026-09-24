@@ -21,7 +21,9 @@ interface RawMeta {
   totalCount?: number;
   currentUser?: CurrentUser | null;
   pagination?: Partial<Pagination> | null;
-  filters?: { companies?: CompanyFilterOption[] } | null;
+  filters?: { companies?: CompanyFilterOption[]; dataProviders?: unknown[] } | null;
+  scopeTotalCount?: number | null;
+  propertyTotalCount?: number | null;
 }
 
 export const unwrapData = (payload: unknown): unknown[] => {
@@ -44,8 +46,20 @@ export const parseListingMeta = (payload: unknown): ListingMeta => {
           id: Number(company.id),
           name: String(company.name ?? '')
         }))
-      : []
+      : [],
+    dataProviderOptions: Array.isArray(meta.filters?.dataProviders)
+      ? meta.filters.dataProviders.map(String).filter((slug) => slug.length > 0)
+      : [],
+    scopeTotalCount: optionalCount(meta.scopeTotalCount),
+    propertyTotalCount: optionalCount(meta.propertyTotalCount)
   };
+};
+
+/** Totals an older backend (or an error body) may not send: absent, not zero. */
+const optionalCount = (value: unknown): number | null => {
+  if (value == null) return null;
+  const count = Number(value);
+  return Number.isFinite(count) ? count : null;
 };
 
 /**

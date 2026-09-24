@@ -11,8 +11,8 @@ interface Props {
 
 /**
  * Page skeleton for every screen ported from the design: the shared topbar plus
- * a scrollable content area. The Rails-backed listings keep using
- * `ListingScreenTemplate`, which adds a record count to the same header.
+ * a scrollable content area. The Rails-backed listings use
+ * `ListingScreenTemplate`, which is the same shell.
  */
 export const ConnectScreenTemplate = ({ title, children }: Props) => (
   <>

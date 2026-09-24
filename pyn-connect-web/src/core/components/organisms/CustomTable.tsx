@@ -1,7 +1,13 @@
-import { IdentityIcon, LockIcon, PmsIcon } from '~/core/components/atoms/Icons';
+import Link from 'next/link';
+
+import { InventoryIcon, MapPinIcon, PaletteIcon, PlugIcon } from '~/core/components/atoms/Icons';
 import { StatusPill } from '~/core/components/atoms/StatusPill';
-import type { CellDescriptor, ColumnDescriptor, RowDescriptor } from '~/core/utils/generator/listing.types';
-import type { IntegrationState } from '~/core/models/data/property.data';
+import type {
+  CellDescriptor,
+  ColumnDescriptor,
+  LinkIcon,
+  RowDescriptor
+} from '~/core/utils/generator/listing.types';
 
 interface Props {
   columns: ColumnDescriptor[];
@@ -10,18 +16,15 @@ interface Props {
   caption: string;
 }
 
-const DOT_COLOR: Record<IntegrationState, string> = {
-  ok: 'var(--dot-ok)',
-  warn: 'var(--dot-warn)',
-  crit: 'var(--dot-crit)',
-  neutral: 'var(--dot-neutral)'
+const LINK_ICON: Record<LinkIcon, () => React.JSX.Element> = {
+  inventory: InventoryIcon,
+  map: MapPinIcon,
+  integrations: PlugIcon,
+  branding: PaletteIcon
 };
 
-const DOT_ICON: Record<string, () => React.JSX.Element> = {
-  lock: LockIcon,
-  identity: IdentityIcon,
-  pms: PmsIcon
-};
+const cellClass = (column: ColumnDescriptor): string =>
+  `bo-cell--${column.align}${column.kind ? ` bo-cell--${column.kind}` : ''}`;
 
 /**
  * The one table renderer (`CustomTable` in the reference implementation): it
@@ -36,7 +39,7 @@ export const CustomTable = ({ columns, rows, emptyLabel, caption }: Props) => (
       <thead>
         <tr>
           {columns.map((column) => (
-            <th key={column.id} className={`bo-cell--${column.align}`} scope="col">
+            <th key={column.id} className={cellClass(column)} scope="col">
               {column.title}
             </th>
           ))}
@@ -46,7 +49,7 @@ export const CustomTable = ({ columns, rows, emptyLabel, caption }: Props) => (
         {rows.map((row) => (
           <tr key={row.id}>
             {columns.map((column) => (
-              <td key={column.id} className={`bo-cell--${column.align}`}>
+              <td key={column.id} className={cellClass(column)}>
                 <Cell descriptor={row.cells[column.id]} />
               </td>
             ))}
@@ -94,34 +97,38 @@ const Cell = ({ descriptor }: { descriptor?: CellDescriptor }) => {
     case 'pill':
       return <StatusPill label={descriptor.label} variant={descriptor.variant} />;
 
-    case 'integrations':
+    case 'tags':
       return (
-        <div className="bo-integrations">
-          <div className="bo-integrations__products">
-            {descriptor.products.map((product) => (
-              <span key={product} className="bo-producttag">
-                {product}
-              </span>
-            ))}
-            {descriptor.products.length === 0 && (
-              <span className="bo-producttag bo-producttag--none">None</span>
-            )}
-          </div>
-          <div className="bo-integrations__dots">
-            {descriptor.dots.map((dot) => {
-              const Icon = DOT_ICON[dot.id];
-              return (
-                <span
-                  key={dot.id}
-                  title={`${dot.title}: ${dot.state}`}
-                  aria-label={`${dot.title}: ${dot.state}`}
-                  style={{ display: 'flex', color: DOT_COLOR[dot.state] }}
-                >
-                  {Icon ? <Icon /> : null}
-                </span>
-              );
-            })}
-          </div>
+        <div className="bo-tags">
+          {descriptor.tags.map((tag) => (
+            <span key={tag} className="bo-producttag">
+              {tag}
+            </span>
+          ))}
+          {descriptor.tags.length === 0 && (
+            <span className="bo-producttag bo-producttag--none">{descriptor.emptyLabel}</span>
+          )}
+        </div>
+      );
+
+    case 'links':
+      return (
+        <div className="bo-goto">
+          {descriptor.links.map((link) => {
+            const Icon = LINK_ICON[link.icon];
+            return (
+              <Link
+                key={link.id}
+                href={link.href}
+                title={link.title}
+                aria-label={link.ariaLabel}
+                className="bo-goto__link"
+              >
+                <Icon />
+                <span className="bo-goto__label">{link.label}</span>
+              </Link>
+            );
+          })}
         </div>
       );
 

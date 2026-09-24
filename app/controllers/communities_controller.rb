@@ -927,9 +927,13 @@ class CommunitiesController < ApplicationController
         current_user,
         page.total_count,
         pagination: page.meta,
-        # The company filter's options: the listing only ever holds one page of
-        # rows, so it cannot derive them from the data it was sent.
-        extra: { filters: { companies: query.company_options } }
+        # The filters' options: the listing only ever holds one page of rows, so
+        # it cannot derive them from the data it was sent. The scope total is
+        # the listing header's "N Properties", before search and filters.
+        extra: {
+          filters: { companies: query.company_options, data_providers: query.data_provider_options },
+          scope_total_count: query.scope_count
+        }
       )
     ).as_json
   end

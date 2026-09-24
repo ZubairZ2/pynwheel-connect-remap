@@ -4,14 +4,17 @@ import { Navbar } from '~/core/components/organisms/Navbar';
 
 interface Props {
   headerTitle: string;
-  recordCount?: number;
   children: ReactNode;
 }
 
-/** Page skeleton shared by every listing: header + scrollable content. */
-export const ListingScreenTemplate = ({ headerTitle, recordCount, children }: Props) => (
+/**
+ * Page skeleton shared by the Rails-backed listings: header + scrollable
+ * content. Their totals sit in the listing's own summary line
+ * (`ResourceListingTemplate`), not in the top bar.
+ */
+export const ListingScreenTemplate = ({ headerTitle, children }: Props) => (
   <>
-    <Navbar title={headerTitle} recordCount={recordCount} />
+    <Navbar title={headerTitle} />
     <main className="bo-content">{children}</main>
   </>
 );

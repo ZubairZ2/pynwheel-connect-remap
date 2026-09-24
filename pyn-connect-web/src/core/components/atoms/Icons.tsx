@@ -35,32 +35,58 @@ export const SearchIcon = () => (
 );
 
 export const SignOutIcon = () => (
-  <svg {...base} width={16} height={16}>
+  <svg {...base}>
     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
     <polyline points="16 17 21 12 16 7" />
     <line x1="21" y1="12" x2="9" y2="12" />
   </svg>
 );
 
-export const LockIcon = () => (
-  <svg {...base} width={16} height={16}>
-    <rect x="3" y="11" width="18" height="10" rx="2" />
-    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+/** The Properties listing's Go To buttons: 15px, a lighter stroke. */
+const goTo = { ...base, width: 15, height: 15, strokeWidth: 1.9 };
+
+export const InventoryIcon = () => (
+  <svg {...goTo}>
+    <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" />
+    <path d="M4 7.5l8 4.5 8-4.5" />
+    <path d="M12 12v9" />
   </svg>
 );
 
-export const IdentityIcon = () => (
-  <svg {...base} width={16} height={16}>
-    <rect x="3" y="4" width="18" height="16" rx="2" />
-    <circle cx="9" cy="10" r="2" />
-    <path d="M15 8h3M15 12h3M7 15h10" />
+export const MapPinIcon = () => (
+  <svg {...goTo}>
+    <path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z" />
+    <circle cx="12" cy="10" r="2.4" />
   </svg>
 );
 
-export const PmsIcon = () => (
-  <svg {...base} width={16} height={16}>
-    <ellipse cx="12" cy="5" rx="9" ry="3" />
-    <path d="M3 5v14a9 3 0 0 0 18 0V5" />
-    <path d="M3 12a9 3 0 0 0 18 0" />
+export const PlugIcon = () => (
+  <svg {...goTo}>
+    <path d="M9 3v6" />
+    <path d="M15 3v6" />
+    <path d="M7 9h10v3a5 5 0 01-10 0V9z" />
+    <path d="M12 17v4" />
+  </svg>
+);
+
+export const PaletteIcon = () => (
+  <svg {...goTo}>
+    <circle cx="13.5" cy="6.5" r="1.6" />
+    <circle cx="17.5" cy="11" r="1.6" />
+    <circle cx="8.5" cy="7.5" r="1.6" />
+    <circle cx="6.5" cy="12.5" r="1.6" />
+    <path d="M12 22a4 4 0 010-8 3 3 0 003-3 8 8 0 10-8 11h5z" />
+  </svg>
+);
+
+export const ChevronDownIcon = () => (
+  <svg {...base} width={14} height={14} strokeWidth={2.4}>
+    <polyline points="6 9 12 15 18 9" />
+  </svg>
+);
+
+export const CheckIcon = () => (
+  <svg {...base} width={11} height={11} stroke="#fff" strokeWidth={3.4}>
+    <polyline points="20 6 9 17 4 12" />
   </svg>
 );
