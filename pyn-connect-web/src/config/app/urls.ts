@@ -15,7 +15,9 @@ export const CORE_URLS = {
   },
   properties: {
     // The Properties tab is the communities listing.
-    listing: '/communities.json'
+    listing: '/communities.json',
+    // CommunitiesController#edit (the legacy Property Details page), as JSON.
+    detail: (propertyId: number) => `/communities/${propertyId}/edit.json`
   }
 } as const;
 

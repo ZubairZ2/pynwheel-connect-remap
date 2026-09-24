@@ -2,7 +2,7 @@ import { CORE_STRINGS } from '~/config/app/strings';
 import { i18n } from '~/resources/i18n';
 import { ListingScreenTemplate } from '~/core/templates/ListingScreenTemplate';
 
-/** Shown while the property is looked up in the Properties listing. */
+/** Shown while the property's record loads. */
 export default function PropertyLoading() {
   return (
     <ListingScreenTemplate headerTitle={i18n.t(CORE_STRINGS.propertyDetail.title)}>

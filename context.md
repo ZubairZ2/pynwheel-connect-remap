@@ -116,7 +116,8 @@ Company ─┬─ Region ─┐
     - `data_provider`: a provider slug, or `none`
   - `meta`: `total_count` (after search and filters), `pagination`, `current_user`, `scope_total_count` (before them), `filters.companies` and `filters.data_providers` (slugs; `none` when some properties have no provider).
 - Supporting code: `app/serializers/connect/` (envelope, paginated_collection, serializers) and `app/queries/accessible_{companies,communities}_query.rb`
-- **There is no single-record Connect JSON** (no `communities#show` branch, no `id` filter). The real Property Detail page (Sep 24) therefore finds its property in `communities.json` (§11).
+- `GET /communities/:id/edit.json` (added Sep 24, §12): `CommunitiesController#edit` → `Connect::PropertyDetailSerializer`. One property in the listing's scope (404 otherwise): the row fields plus profile, milestones, settings, billing, Touch/Tour/Maps configuration, inventory counts and ILS partners. Read-only.
+  - *History:* before this, there was no single-record Connect JSON, and the first Property Detail found its row in `communities.json` (§11).
 - **Derived values, not columns:**
   - A property's lifecycle stage comes from four milestone dates (`date_activated`, `production_started_date`, `submitted_final_approval_date`, `released_date`).
   - A company's status comes from `companies.inactivate`; `companies.locked` is unused (NULL everywhere).
@@ -233,7 +234,7 @@ The working tree holds large local-only material. It is deliberately untracked o
 
 ## 11. Property Detail: implementation knowledge (September 24, 2026)
 
-Added with phase 2d (branch `feature/properties_detail_page`, uncommitted as of Sep 24; PYN_CONNECT_PROGRESS.md §15). Nothing in the Rails app changed.
+Added with phase 2d (branch `feature/properties_detail_page`, commit `ef9e4549a`; PYN_CONNECT_PROGRESS.md §15). Nothing in the Rails app changed in that version. **The data path below was superseded the same day by §12** (a read-only JSON branch on `communities#edit`); the legacy-flow and convention notes still apply.
 
 ### The flow
 
@@ -289,3 +290,60 @@ Properties row (click, or its title link)
 - **Test** with a session minted by `rails runner` (script in PYN_CONNECT_PROGRESS.md §7). It signs in a user through Warden's session keys; then set Connect's two cookies (`pyn_connect_rails_session`, `pyn_connect_user`).
   - Test as a super admin (all 9 listing pages; property 919 is on the last) and as a company admin (scope: `jleinweber@zaremba.net` sees only 364).
   - Real ids worth keeping: 503 (first row), 1411 (all three products), 1990 (Final Approval), 1107 (no city).
+
+---
+
+## 12. Property Detail under the revised backend rule (September 24, 2026)
+
+The Property Detail brief now allows minimal, read-only JSON branches on existing actions (`properties_detail_feature.md` §9a). PYN_CONNECT_PROGRESS.md §16 has the full record; the gaps are in `gaps_properties_detail_feature.md` §0.
+
+### The flow now
+
+```
+Properties row → /properties/:id                    app/(connect)/properties/[propId]/page.tsx
+  numeric id → fetchPropertyDetail                  GET /communities/:id/edit.json
+               → CommunitiesController#edit          `return render_connect_property_detail if request.format.json?`
+               → AccessibleCommunitiesQuery scope    (404 outside it; 401 signed out)
+               → Connect::PropertyDetailSerializer   (reuses Connect::PropertySerializer for the row)
+             → parsePropertyDetail → PropertyDetail → propertyDetail.generator → usePropertyDetail → screen
+  slug id    → the phase 2 demo screen (unchanged)
+```
+
+### Existing data sources the JSON reads
+
+- **The legacy Property Details form** (`_form.html.haml`): `address`, `city`, `state`, `zip`, `latitude`, `longitude`, `manual_lat_long`, `phone`, `email`, `website`, `property_manager_*`, `number_of_units`, `is_sitemap`, `description`.
+- **The Floorplates page** (`floorplates/index.html.haml` → `save_apartment_settings`): the pricing and unit-display flags and `student_housing_property`.
+- **The Settings page** (`settings_page.html.haml`):
+  - `community_logo`, `locked`
+  - billing rates: the self-tour rate shown is Lincoln/Dwelo/standard by the page's own test
+  - Touch: `code`, `is_vertical_app`, `date_installed`, `mdu`, `show_gesture_icons`, `powered_by_btn`
+  - Maps flags
+- **Model methods and constants:**
+  - `Community#community_tour` (the property's own tour; `has_one :tour` can be a visitor's copy)
+  - `Community#property_floor_options`
+  - `Community#fetch_multi_properties` (sub-communities; units link by `property_id`)
+  - `Community::MAP_PARTNERS` / `#partner_map_enabled?` (ILS)
+- **Association counts:** `units`, `floorplans`, `floorplates`, `amenities`.
+
+### Decisions and conventions
+
+- **The JSON branch goes on the legacy action that owns the data** (`#edit`), not in a new controller or route.
+- **Not `#settings_page`:** it creates a Tour/TourSetting when they are missing, a write on read.
+- **No business logic, scope, model, schema or route changed.** The serializer only reads.
+- **Scope:** the JSON applies the Connect listing's existing scope, so the page shows exactly what the listing links to.
+- **Read-only Connect:**
+  - The design's edit forms are built and prefilled from the record; "Save Changes" sends nothing and says so.
+  - Toggles are indicators (`Switch` without `onToggle`).
+- **Values shown as stored:**
+  - Blank rates → "Not set" (never the legacy form's pre-filled defaults); bare numbers get a `$`.
+  - Dates render in UTC, so server and browser agree.
+  - `web_map_type` / `billing_type` appear as stored where the design's vocabulary differs.
+- **Remaining gaps:**
+  - R1: 7-stage lifecycle
+  - R2: QR codes
+  - R3: separate tour start date
+  - R4: Maps pins/paths
+  - R5: writes, disabled by rule
+- **Testing notes:**
+  - Minted sessions expire after 8 hours (Devise `timeoutable`).
+  - If `config/database.yml` is back to the committed `postgres` user, give `rails runner` a `DATABASE_URL` for your own role instead of editing the file (PYN_CONNECT_PROGRESS.md traps 26–28).

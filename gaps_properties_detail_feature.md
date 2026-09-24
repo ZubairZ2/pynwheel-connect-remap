@@ -3,11 +3,95 @@
 **Date:** September 24, 2026
 **Branch:** `feature/properties_detail_page`
 **Target design:** `pyn-connect-22-sep-new.html`, screen `isPropertyDetail`
-**Related:** [PYN_CONNECT_PROGRESS.md](PYN_CONNECT_PROGRESS.md) §15 · [context.md](context.md) §11
+**Related:** [PYN_CONNECT_PROGRESS.md](PYN_CONNECT_PROGRESS.md) §15–§16 · [context.md](context.md) §11–§12 · the revised rule: §0 below
 
 This file lists what the Property Detail page could and could not read from the **existing** Rails backend. The brief ruled out backend changes: no migrations, columns, APIs, serializers, controller, model or route changes. Everything under "Unavailable" is therefore left out of the page. Nothing is shown with a placeholder value.
 
 Only backend and data-access gaps are listed here. Frontend work that the existing data would already support is not.
+
+---
+
+## 0. Update, September 24, 2026: the revised backend rule
+
+The brief's rule changed (`properties_detail_feature.md` §9a). A **minimal, read-only JSON branch on an existing controller action** is now allowed when it only exposes existing data. Business logic, authorization, queries, models, the schema and write behaviour must not change.
+
+**What was done:**
+- `CommunitiesController#edit`, the legacy Property Details action, gained `return render_connect_property_detail if request.format.json?`. This is the same guard `#index` uses. The HTML path is unchanged.
+- The JSON is `Connect::PropertyDetailSerializer`. It holds the listing row (reusing `Connect::PropertySerializer`), plus the record's existing columns and counts of its existing associations.
+- It serves only communities in the Connect listing's scope (`AccessibleCommunitiesQuery`); anything else is a 404.
+
+Sections 2 and 3 below are the original no-backend-change analysis, kept for history. This table records where each gap stands now:
+
+| Gap | Now | How |
+|---|---|---|
+| G1 one-property lookup | ✅ Resolved | One request, `GET /communities/:id/edit.json` (~0.1–0.35 s) |
+| G2 Location (street, ZIP, coordinates, auto/manual) | ✅ Resolved | `address`, `zip`, `latitude`, `longitude`, `manual_lat_long` |
+| G3 Leasing Contact | ✅ Resolved | `phone`, `email`, `website` |
+| G4 On-Site Team | ✅ Resolved | `property_manager_*` |
+| G5 Map mode, Notes | ✅ Resolved | `is_sitemap`, `description`. "Number of Units" shows `units.count`, as the legacy form does |
+| G6 Edit Details (save) | ⛔ Disabled on purpose | The form is built and prefilled; Save sends nothing (the rule keeps Connect read-only) |
+| G7 Product metrics | ✅ Mostly | Units · floorplates for Touch; tour stops for Tour (`Community#community_tour`). Maps pins/paths: still a gap (R4). Toggling: disabled on purpose |
+| G8 Inventory counts, sub-communities | ✅ Resolved | `units`, `floorplans`, `floorplates`, `amenities` counts; `Community#fetch_multi_properties` + units grouped by `property_id` |
+| G9 Property Settings | ✅ Resolved (read-only) | The 16 `communities` flags from the Floorplates and Settings pages |
+| G10 Billing Rate Card | ✅ Resolved (read-only) | `billing_rate_touch`, the self-tour rate the Settings page shows (Lincoln/Dwelo rule), `billing_rate_maps`, `billing_rate_for_both`, `billing_type`, `billing_month`. Blank rates show "Not set", never the legacy form's pre-filled defaults |
+| G11 Lifecycle | ✅ Partly | Each stage shows its recorded milestone date. The 7-stage model is still a gap (R1) |
+| G12 Touch / Tour / Maps cards | ✅ Mostly | `code`, `is_vertical_app`, `date_installed`, `mdu`, `show_gesture_icons`, `powered_by_btn`; `visual_id_verification`, `enable_locks`, `auto_wayfinding`; `web_map_type`, `default_satellite_view`, `default_map_floor` (+ `Community#property_floor_options`), `enable_three_d_maps`, `is_beans_svg`, `enable_svg_mode`, `enable_sdk_map`, `enable_floorplan_level_color`, `highlight_all_units_on_hover`. QR codes and a tour start date: still gaps (R2, R3) |
+| G13 ILS Syndication | ✅ Resolved (read-only) | `Community::MAP_PARTNERS` + `partner_map_enabled?` (`partner_map_settings`) |
+| G14 Manage This Property destinations | ⏳ Unchanged | Map & Plotting, Integrations and Branding are still demo screens. Inventory is being made real on `feature/inventory_implementation` |
+
+### Remaining gaps (a minimal JSON response cannot close them)
+
+**R1. The 7-stage launch lifecycle**
+
+| | |
+|---|---|
+| **UI requirement** | Order Received → Payment Received → Pre-Production → In Production → Released → Installed → Orientation |
+| **Rails source investigated** | `api/v2/communities#move_to_production`, `Statuses`; the milestone columns |
+| **Model / data** | `communities.date_activated`, `production_started_date`, `submitted_final_approval_date`, `released_date` (four dates, five stages) |
+| **Why it cannot be exposed** | Nothing records order, payment, pre-production, installation or orientation |
+| **Why a JSON response is not enough** | There is no data to serialize; inventing the stages would be new business logic |
+| **Future work** | A lifecycle model or columns, and the process that sets them |
+
+**R2. Entry QR codes (Self-Guided Tour card)**
+
+| | |
+|---|---|
+| **UI requirement** | "Entry QR Codes · two active codes · lobby and gate", with a QR dialog |
+| **Rails source investigated** | Models, controllers, `db/schema.rb`, the Gemfile, and every column name containing "qr" |
+| **Model / data** | None: no table, column or QR library |
+| **Why it cannot be exposed** | The data does not exist |
+| **Why a JSON response is not enough** | Nothing to serialize |
+| **Future work** | A QR-code model (or a generator over an existing tour URL, if the business defines one) |
+
+**R3. A separate Self-Guided Tour subscription start date**
+
+| | |
+|---|---|
+| **UI requirement** | "Subscription Start Date" on the Tour card, separate from Touch's |
+| **Rails source investigated** | `settings_page.html.haml` (one "Subscription Start Date" field, `date_installed`) |
+| **Model / data** | Only `communities.date_installed`, shown on the Touch card |
+| **Why it cannot be exposed** | There is no per-product start date |
+| **Why a JSON response is not enough** | Reusing `date_installed` for Tour would present one date as two facts |
+| **Future work** | A per-product subscription date, if billing needs it |
+
+**R4. Pynwheel Maps "N pins · M paths"**
+
+| | |
+|---|---|
+| **UI requirement** | The Maps product line's pin and path counts |
+| **Rails source investigated** | Tour stops, amenities, hallways/pathways (`HallwaysController`, `automate_plotting`) |
+| **Model / data** | Plotted markers and hallway points exist, but the design's "pin" and "path" are not defined anywhere in the CMS |
+| **Why it cannot be exposed** | No existing method counts pins or paths |
+| **Why a JSON response is not enough** | Choosing which records count as a pin or a path would be new business logic |
+| **Future work** | The business defines the two counts; an existing model method then serves them |
+
+**R5. Writes (by rule, not missing data)**
+
+Edit Details, Edit Rates and every toggle are **UI only**. The forms prefill from the record; Save sends no request and shows a notice that nothing was saved. Enabling writes needs the phase 3 decision and a CSRF strategy for the proxy (G6).
+
+**Presentation notes (the data is shown as stored):**
+- **Map Display Type:** the design's four options (2D + 3D / 2D / 3D / Satellite) do not map one-to-one onto `web_map_type` (`2d-map` / `3d-map`) plus `default_satellite_view`, so both are shown as stored.
+- **Billing cadence:** the design says "Monthly"; every row stores `billing_type = annual`.
 
 ---
 

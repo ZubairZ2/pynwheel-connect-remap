@@ -2572,3 +2572,24 @@ action. The listing's rows were also not clickable.
 `pyn-connect-web/src/core/utils/generator/propertyDetail.generator.ts`,
 `pyn-connect-web/src/core/components/organisms/CustomTable.tsx`; PYN_CONNECT_PROGRESS.md §15;
 gaps_properties_detail_feature.md.
+
+### September 24, 2026 — Infrastructure Update: a read-only detail endpoint on the legacy action
+
+**What was missing:**
+The first Property Detail walked the paged listing for one row, and could show only the listing's fields.
+
+**What was found/implemented:**
+
+- **The endpoint.** Under the relaxed rule (read-only JSON on existing actions), `CommunitiesController#edit` answers
+  `.json` through `Connect::PropertyDetailSerializer`, scoped by `AccessibleCommunitiesQuery`. The frontend makes
+  one request (`fetchPropertyDetail`), and the parser maps it to a `PropertyDetail` model; `propertyLookup.server.ts`
+  is gone.
+- **Read-only edit UI.** The design's forms live as local drafts in the hook (`usePropertyDetail`). "Save" never
+  calls the network; it closes the form and shows a notice. That keeps the "components never fetch" rule and the
+  read-only rule in one place.
+
+**Reference:**
+`app/controllers/communities_controller.rb` (`render_connect_property_detail`),
+`app/serializers/connect/property_detail_serializer.rb`,
+`pyn-connect-web/src/core/repository/parser/property.parser.ts` (`parsePropertyDetail`),
+`pyn-connect-web/src/core/hooks/usePropertyDetail.ts`; PYN_CONNECT_PROGRESS.md §16.

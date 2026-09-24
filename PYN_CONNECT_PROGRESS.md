@@ -3,10 +3,12 @@
 **Last updated:** September 24, 2026
 **Read this first in a new session.** For what the repository itself is (Rails stack, models, roles, integrations), see [context.md](context.md).
 
-This is the single progress document. It merges the original phase 1/2 handoff with the Sep 23 summary (formerly `progress.md`, now removed), and it is current through **phase 2d** (§15).
+This is the single progress document. It merges the original phase 1/2 handoff with the Sep 23 summary (formerly `progress.md`, now removed), and it is current through **phase 2d** (§15, revised in §16).
 
 - Phases 1 to 2c are merged to `main` (PR #3 was the last).
-- Phase 2d, the real-data Property Detail page, is on branch `feature/properties_detail_page`. It is **uncommitted**, with no PR yet. Its backend gaps are in [gaps_properties_detail_feature.md](gaps_properties_detail_feature.md).
+- Phase 2d, the real-data Property Detail page, is on branch `feature/properties_detail_page`. Its backend gaps are in [gaps_properties_detail_feature.md](gaps_properties_detail_feature.md).
+  - First version: commit `ef9e4549a` (local, not pushed).
+  - Revision under the relaxed backend rule (§16): in the working tree / staged.
 
 ---
 
@@ -20,7 +22,8 @@ This is the single progress document. It merges the original phase 1/2 handoff w
 | **2b**: Merge 1b into 2 | — | `feat/pyn-connect-full-ui` (`4ec2242aa`) | ✅ Done. ⚠️ One doc section was lost (see §10) |
 | **Staging deploy** on Heroku (Rails and Connect) | chat, Sep 23 | apps `pyn-system` and `pyn-system-connect` | ✅ Live |
 | **2c**: Companies and Properties listings → the 22-Sep design | chat, Sep 24 | `feature/Companies_and_properties_improvments` → `main`, **PR #3** (merged) | ✅ Done, 4 items deferred (§14) |
-| **2d**: Property Detail on real data, no backend changes | `properties_detail_feature.md`, Sep 24 | `feature/properties_detail_page` (uncommitted, no PR yet) | ✅ Done for what the backend exposes; gaps in [gaps_properties_detail_feature.md](gaps_properties_detail_feature.md) (§15) |
+| **2d**: Property Detail on real data, no backend changes | `properties_detail_feature.md`, Sep 24 | `feature/properties_detail_page` (`ef9e4549a`, local, no PR yet) | ✅ Done for what the listing exposed (§15) |
+| **2d-r**: Property Detail, revised rule (read-only JSON on `communities#edit`) | `properties_detail_feature.md` §9a, Sep 24 | `feature/properties_detail_page` (not yet committed) | ✅ Every design section on real data except R1–R4 in [gaps_properties_detail_feature.md](gaps_properties_detail_feature.md) §0 (§16) |
 | **3**: Replace demo data with real Rails data | *brief not written yet* | — | ⏭ Next (§11) |
 
 **`main` holds everything above except 2d** (PRs #1–#3 merged, Sep 24). Local `main` is one commit ahead of `origin/main` (`c9416ae67`, this doc's catch-up; not pushed).
@@ -91,6 +94,7 @@ The three older feature branches are fully merged. Phase 2d's work sits uncommit
 - **Endpoints:** `GET /companies.json` and `GET /communities.json`. Both need a Devise session.
 - **Constraints kept:** no schema change, migration, route change or auth change.
 - **Phase 2d added nothing on the Rails side.** Property Detail reads the `communities.json` rows (§15).
+- **Revision 2d-r (§16):** `communities_controller.rb` `#edit` gained a JSON branch (`render_connect_property_detail`), served by the new `app/serializers/connect/property_detail_serializer.rb`. Endpoint: `GET /communities/:id/edit.json`. The HTML path, queries, models and schema are unchanged.
 
 ### Next.js side, `pyn-connect-web/`
 
@@ -114,7 +118,7 @@ route (server component) → API module → parser → model → screen → hook
 | *Phase 2* route registry | `src/config/app/connectRoutes.ts` |
 | *Phase 2* React ↔ legacy ERB switch | `src/config/app/reactFlow.ts` |
 | *Phase 2* screen harness for e2e | `src/app/screen-harness/[screen]`. 404s unless `PYN_CONNECT_SCREEN_HARNESS=on` |
-| *2d* one property by id | `src/core/repository/remote/propertyLookup.server.ts`: walks `communities.json` 100 rows a page (there is no detail endpoint) |
+| *2d* one property by id | ~~`propertyLookup.server.ts`, walking `communities.json`~~. Removed in 2d-r: `fetchPropertyDetail` → `GET /communities/:id/edit.json`, parsed by `parsePropertyDetail` (§16) |
 | *2d* Property Detail, real data | `app/(connect)/properties/[propId]/page.tsx` (numeric id → real, slug → demo), `core/screens/properties/propertyDetail.screen.tsx`, `core/hooks/usePropertyDetail.ts`, `core/utils/generator/propertyDetail.generator.ts` |
 | *2d* detail building blocks | `core/components/molecules/DetailSection.tsx`, `core/components/atoms/Switch.tsx` (read-only); `RowDescriptor.href` makes `CustomTable` rows open their record |
 | *2d* hand-off links to the legacy CMS | `legacyCmsURLs` in `src/config/app/urls.ts` (built on `NEXT_PUBLIC_CMS_URL`) |
@@ -231,11 +235,15 @@ The full rationale is in react-architecture.md §20.
 
 **Phase 2d (Property Detail)**
 
-20. **Rails has no single-property JSON and no id filter.** The detail page walks the listing: 9 requests for a super admin, about 2–3 s in dev. Do not add an id filter or show action without the user's go-ahead; the 2d brief forbade backend changes (gap G1).
+20. **Rails had no single-property JSON and no id filter** (2d). The first version walked the listing: 9 requests for a super admin, 2–3 s in dev. *Superseded by §16:* `communities#edit.json` answers in one request.
 21. **The demo `STAGES` mock puts Final Approval *after* Released.** The real order (the serializer's ranking) is installed → activated → production → approval → released. Do not reuse the mock for real data.
 22. **A Google Fonts stall can make one browser navigation take ~30 s** (trap 18, intermittent). Before blaming the app, read the time in the Next log (`GET /properties/364 200 in 159ms`) or `curl` the page.
 23. **`globals.css` has no margin reset, and `a` is accent-blue.** New classes must zero their own `h2`/`h3`/`p`/`dl`/`dd`/`ul` margins. A link meant to look like text needs its own `color`.
 24. **`loading.tsx` wraps nested routes.** `properties/[propId]/loading.tsx` ("Loading property…") also shows while the demo sub-screens (`/properties/:id/map`, …) load.
+25. **The property's own tour is `Community#community_tour`** (the last tour with `tour_user_id: nil`). `has_one :tour` can return a visitor's customised copy. For 1411 that is 4 stops instead of the real 5. The listing's `tour_published` still uses `community.tour`.
+26. **Devise sessions time out after 8 hours** (`timeoutable`), so a minted session goes 401 overnight. Re-mint it.
+27. **If `config/database.yml` has been reset to the committed version** (`username: postgres`, a role this machine lacks), `rails runner` fails to connect. Prefix it with `DATABASE_URL=postgres://$(whoami)@localhost/pynwheel_development` rather than editing the file. Also prefix `DISABLE_SPRING=1 OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES` if it crashes on fork.
+28. **The dev server's evented file watcher can lag** a second or two after a Ruby edit. Re-request before assuming a change did not load.
 
 ---
 
@@ -466,11 +474,15 @@ The Rails side repeats the phase 1 recipe:
 | `ea0c89072` | main | Merge pull request #2 from ZubairZ2/feat/pyn-connect-full-ui |
 | `8aa39721f` | 2c | Bring the Companies and Properties listings in line with the 22-Sep design |
 | `e75a4d90e` | main | Merge pull request #3 from ZubairZ2/feature/Companies_and_properties_improvments |
-| `c9416ae67` | main | Bring the progress doc up to date with the merged PRs. **Local only**: not on `origin/main` as of Sep 24 |
+| `c9416ae67` | main | Bring the progress doc up to date with the merged PRs. Not on `origin/main`; it reached GitHub only as the tip of the (otherwise empty) pushed `origin/feature/properties_detail_page` |
+| `ef9e4549a` | 2d | Add the Property Detail page on real listing data. **Local, not pushed** |
 
 "Branch" is where the commit was made. "both" means the two phase 1/2 branches. All of these are on local `main` now.
 
-**Phase 2d:** `feature/properties_detail_page` was cut from `c9416ae67`. It has **no commits yet**; the work is in the working tree (§15, "Files").
+**Phase 2d:** `feature/properties_detail_page` was cut from `c9416ae67`.
+- Its first commit is `ef9e4549a` (§15).
+- The §16 revision is staged on top of it and not yet committed.
+- `feature/inventory_implementation` (the Inventory page) is a separate branch; its work is not part of these commits.
 
 **Deliberately untracked; do not commit without asking:**
 
@@ -790,3 +802,91 @@ See [gaps_properties_detail_feature.md](gaps_properties_detail_feature.md) (G1�
 4. **Manage This Property / Inventory links** lead to demo screens for real ids (gap G14). They need no change once those screens read real data.
 5. **Deploy to staging** when wanted. 2d changes only Connect (`pyn-system-connect`); Heroku still runs pre-2c commits (§8).
 6. **Company row click (B6)** can reuse `RowDescriptor.href` once Company detail reads real data.
+
+---
+
+## 16. Phase 2d-r: Property Detail under the revised backend rule (September 24, 2026)
+
+**Rule change:** [properties_detail_feature.md](properties_detail_feature.md) §9a relaxes "no backend changes". A minimal, **read-only JSON branch on an existing controller action** is allowed when it only exposes existing data. Business logic, authorization, queries, scopes, models, associations, schema and write behaviour must not change, and Connect stays read-only.
+
+**Branch:** `feature/properties_detail_page`, on top of `ef9e4549a`. Staged; not yet committed.
+
+### Controller changed
+
+| File | Change |
+|---|---|
+| `app/controllers/communities_controller.rb` | `#edit` (the legacy Property Details action) starts with `return render_connect_property_detail if request.format.json?`, the same guard `#index` uses for the listing. The new private `render_connect_property_detail` finds the community in `AccessibleCommunitiesQuery.new(current_user).call` (the listing's scope) and answers 404 outside it. The HTML path is untouched |
+| `app/serializers/connect/property_detail_serializer.rb` (new) | Presentation only, following the existing `Connect::*Serializer` convention. It reuses `Connect::PropertySerializer` for the row fields (stage, products, unit count) |
+
+- **Endpoint:** `GET /communities/:id/edit.json`. The shallow route already existed, so no route was added. It needs a Devise session: signed out gives 401.
+- **Why `#edit`:** it is the legacy page whose record (`@community`, via `set_community`) holds every field the design shows. The Settings and Floorplates pages read the same record. `#settings_page` was not used because it *creates* a Tour/TourSetting when they are missing. The inventory controllers are left to the Inventory branch.
+
+### JSON exposed, and where each part comes from
+
+| Key | Source (existing) |
+|---|---|
+| row fields (`id`, `name`, `stage`, `products`, …) | `Connect::PropertySerializer`, unchanged |
+| `profile` | `communities.address`, `city`, `state`, `zip`, `latitude`, `longitude`, `manual_lat_long`, `phone`, `email`, `website`, `property_manager_*`, `number_of_units`, `is_sitemap`, `description`. These are the fields of `communities/_form.html.haml` |
+| `milestones` | `date_activated`, `production_started_date`, `submitted_final_approval_date`, `released_date` |
+| `settings` | The 14 flags of `floorplates/index.html.haml` (`save_apartment_settings`), plus `community_logo` and `locked` from `settings_page.html.haml` |
+| `billing` | `billing_rate_touch`, `billing_rate_selftour`, `lincoln_billing_rate`, `dwelo_billing_rate`, `billing_rate_maps`, `billing_rate_for_both`, `billing_type`, `billing_month`, and `self_tour_rate_field`. The last mirrors the view's own test: Lincoln company → Lincoln rate; Dwelo-admin creator → Dwelo rate |
+| `touch` | `code`, `is_vertical_app`, `date_installed` (the legacy "Subscription Start Date"), `mdu`, `show_gesture_icons`, `powered_by_btn` |
+| `tour` | `Community#community_tour` → `tour_stops.size`, `visual_id_verification`; `enable_locks`, `auto_wayfinding` |
+| `maps` | `web_map_type`, `default_satellite_view`, `default_map_floor` with its label from `Community#property_floor_options`; `enable_three_d_maps`, `is_beans_svg`, `enable_svg_mode`, `enable_sdk_map`, `enable_floorplan_level_color`, `highlight_all_units_on_hover` |
+| `inventory` | Counts of the existing `units`, `floorplans`, `floorplates` and `amenities` associations. Sub-communities come from `Community#fetch_multi_properties`, with unit counts from `units` grouped by `property_id` |
+| `partners` | `Community::MAP_PARTNERS` + `Community#partner_map_enabled?` (as in `PartnerConfigurationsController#enabled_partners`) |
+
+### Confirmations
+
+- **Business logic unchanged.** No rule, calculation, validation, scope, association or model method was changed or added. The serializer only reads columns and calls existing methods.
+- **Authorization unchanged** for every existing path. The new JSON branch applies the existing Connect listing scope; the HTML `#edit` behaves exactly as before (verified: HTML edit 200).
+- **No schema change, migration or new column.** No route was added.
+- **Writes remain disabled.** "Edit Details" and "Edit Rates" open the design's forms, prefilled from the record. "Save Changes" sends **no request**: verified, no non-GET request fired. It shows "Connect is read-only for now, so nothing was saved", with a link to the legacy form. Every toggle is a read-only indicator.
+
+### Frontend
+
+- **Data path:** `fetchPropertyDetail` (API) → `parsePropertyDetail` (parser; the only place snake_case is read) → the `PropertyDetail` model → `propertyDetail.generator.ts` (pure descriptors) → `usePropertyDetail` (view plus local drafts) → the screen.
+- **Removed:** `propertyLookup.server.ts` (the listing scan).
+- **Sections now on real data:**
+  - header
+  - Manage This Property
+  - lifecycle, with each stage's recorded date
+  - the full four-group Profile
+  - Products (units · floorplates, tour stops)
+  - Inventory (4 counts, sub-communities)
+  - ILS Syndication
+  - Property Settings (3 groups)
+  - the Touch, Tour and Maps cards (dimmed with the design's note when the product is off)
+  - Billing Rate Card
+- **Reused:** `DetailSection`, `Switch`, `StatusPill`, `Icon`, `STAGE_PILL`, the route helpers and `.bo-field`. New CSS covers the forms, notice, config cards, ILS grid and rate cards.
+
+### Verified (local DB, real Chrome, super admin and company admin)
+
+- **1411:**
+  - every value matches `psql`: 2500 Larimer St, 80216, 39.757643, 303-640-3652; Touch Code "John Demo"; start Jun 19, 2019; rates "0" → $0; January; 230 / 8 / 4 / 7; 5 stops
+  - page loads in ~0.64 s; the endpoint answers in 0.1–0.35 s
+- **4331:** sub-communities 122 / 77 / 267 (= 466 units).
+- **Scope:** company admin 364 ✅, 366 (locked) → not found, 503 (other company) → not found. Missing id → not found; signed out → 401 → Sign In.
+- **Navigation:** the listing row click and the demo slug `/properties/luxe` still work.
+- **Layout:** no overflow at 1440 / 1024 / 390px.
+- **Console:** no errors.
+- **Checks:** the staged snapshot passes `tsc` and `next build` on its own (the untracked Inventory files are excluded).
+
+### Remaining gaps
+
+In [gaps_properties_detail_feature.md](gaps_properties_detail_feature.md) §0:
+- **R1:** the 7-stage lifecycle (no columns)
+- **R2:** QR codes (no data)
+- **R3:** a separate tour subscription date
+- **R4:** Maps pins/paths (undefined)
+- **R5:** writes, disabled by rule
+
+G14 (the demo destinations) is unchanged.
+
+### Note: working-tree files restored outside git (Sep 24, 19:33)
+
+Between the `ef9e4549a` commit (19:19) and this revision, tracked files were restored to `HEAD` outside git (no git command in the reflog did it). That affected:
+- the Inventory work's edits to tracked files (4 controllers, strings, i18n, urls, Icons, Switch, `shell.reducers.ts`, gaps §4 onward)
+- the local `config/database.yml`, `bin/*` and `db/schema.rb` edits
+
+The untracked Inventory files are still present. None of these files were touched by this revision.

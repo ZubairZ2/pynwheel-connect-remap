@@ -36,3 +36,11 @@ export const fetchProperties = (
     }),
     { cookie }
   );
+
+/**
+ * GET /communities/:id/edit.json — the legacy Property Details action's JSON
+ * branch: one property the user may access (404 otherwise), with its profile,
+ * settings, billing, product configuration and inventory counts.
+ */
+export const fetchPropertyDetail = (cookie: string | null, propertyId: number): Promise<ApiResponse> =>
+  apiRequest(CORE_URLS.properties.detail(propertyId), { cookie });
