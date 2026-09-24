@@ -90,3 +90,12 @@ export const CheckIcon = () => (
     <polyline points="20 6 9 17 4 12" />
   </svg>
 );
+
+/** Marks a link that opens outside Connect (the legacy CMS), in a new tab. */
+export const ExternalLinkIcon = () => (
+  <svg {...base} width={13} height={13} aria-hidden="true">
+    <path d="M14 4h6v6" />
+    <path d="M20 4l-9 9" />
+    <path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
+  </svg>
+);

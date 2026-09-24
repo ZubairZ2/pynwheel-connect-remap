@@ -5,6 +5,8 @@ import { apiRequest, withQuery, type ApiResponse } from './base.api';
 
 export interface PropertiesQuery {
   page?: number;
+  /** Rows per page. Rails defaults to 10 and caps it at 100. */
+  perPage?: number;
   q?: string;
   stage?: string[];
   companyId?: string[];
@@ -25,6 +27,7 @@ export const fetchProperties = (
   apiRequest(
     withQuery(CORE_URLS.properties.listing, {
       page: query.page,
+      per_page: query.perPage,
       q: query.q,
       stage: query.stage?.join(','),
       company_id: query.companyId?.join(','),

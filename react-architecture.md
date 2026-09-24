@@ -2540,3 +2540,35 @@ still loading would be built on the old URL and drop the first change.
 `pyn-connect-web/src/core/components/organisms/CustomTable.tsx`,
 `pyn-connect-web/src/core/components/connect/PropertyScope.tsx`,
 `app/queries/accessible_communities_query.rb`; PYN_CONNECT_PROGRESS.md §14.
+
+### September 24, 2026 — Infrastructure Update: a detail screen with no detail endpoint
+
+**What was missing:**
+The Property Detail page had to show one real property, but the brief allowed no backend changes. Rails
+exposes properties to Connect only as the paged `communities.json` listing: no id filter, no show
+action. The listing's rows were also not clickable.
+
+**What was found/implemented:**
+
+- **The lookup is its own server-only module.** `propertyLookup.server.ts` sits beside the API
+  modules. It calls `fetchProperties` (now with `perPage`) and the existing parsers, then returns
+  `found`, `missing`, `unauthorized` or `failed`. The route maps those to the screen, a
+  sign-in redirect or an error. Walking the listing inherits the user's scope for free: an id outside
+  it is `missing`. When Rails gains a detail endpoint, only this module changes.
+- **Real and demo share one route.** `/properties/[propId]` renders the real screen for integer ids
+  (communities) and the phase 2 demo screen for slugs, so demo navigation keeps working until phase 3.
+- **Rows that open a record.** `RowDescriptor.href` (generator-set) makes `CustomTable` rows clickable.
+  The title cell renders as the `next/link`, so keyboard and new-tab behaviour come from a real anchor;
+  the row's own click ignores clicks inside `a` and `button`. `CustomTable` is now a client component
+  (it needs `useRouter`).
+- **Detail building blocks.** `DetailSection` (molecule) is the design's panel. `Switch` (atom) is a
+  read-only toggle. Descriptors come from `propertyDetail.generator.ts`, and fields with no data are
+  omitted, not placeholdered.
+
+**Reference:**
+`pyn-connect-web/src/core/repository/remote/propertyLookup.server.ts`,
+`pyn-connect-web/src/app/(connect)/properties/[propId]/page.tsx`,
+`pyn-connect-web/src/core/screens/properties/propertyDetail.screen.tsx`,
+`pyn-connect-web/src/core/utils/generator/propertyDetail.generator.ts`,
+`pyn-connect-web/src/core/components/organisms/CustomTable.tsx`; PYN_CONNECT_PROGRESS.md §15;
+gaps_properties_detail_feature.md.

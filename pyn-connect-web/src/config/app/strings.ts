@@ -90,6 +90,61 @@ export const CORE_STRINGS = {
       of: 'properties.summary.of'
     }
   },
+  propertyDetail: {
+    title: 'propertyDetail.title',
+    breadcrumb: 'propertyDetail.breadcrumb',
+    loading: 'propertyDetail.loading',
+    loadFailed: 'propertyDetail.loadFailed',
+    notFound: {
+      title: 'propertyDetail.notFound.title',
+      body: 'propertyDetail.notFound.body',
+      back: 'propertyDetail.notFound.back'
+    },
+    manage: {
+      title: 'propertyDetail.manage.title',
+      subtitle: 'propertyDetail.manage.subtitle'
+    },
+    lifecycle: {
+      title: 'propertyDetail.lifecycle.title',
+      current: 'propertyDetail.lifecycle.current',
+      installed: 'propertyDetail.lifecycle.installed',
+      activated: 'propertyDetail.lifecycle.activated',
+      production: 'propertyDetail.lifecycle.production',
+      approval: 'propertyDetail.lifecycle.approval',
+      released: 'propertyDetail.lifecycle.released',
+      installedDesc: 'propertyDetail.lifecycle.installedDesc',
+      activatedDesc: 'propertyDetail.lifecycle.activatedDesc',
+      productionDesc: 'propertyDetail.lifecycle.productionDesc',
+      approvalDesc: 'propertyDetail.lifecycle.approvalDesc',
+      releasedDesc: 'propertyDetail.lifecycle.releasedDesc'
+    },
+    profile: {
+      title: 'propertyDetail.profile.title',
+      subtitle: 'propertyDetail.profile.subtitle',
+      edit: 'propertyDetail.profile.edit',
+      editHint: 'propertyDetail.profile.editHint',
+      location: 'propertyDetail.profile.location',
+      configuration: 'propertyDetail.profile.configuration',
+      name: 'propertyDetail.profile.name',
+      cityState: 'propertyDetail.profile.cityState',
+      units: 'propertyDetail.profile.units'
+    },
+    products: {
+      title: 'propertyDetail.products.title',
+      touch: 'propertyDetail.products.touch',
+      tour: 'propertyDetail.products.tour',
+      maps: 'propertyDetail.products.maps',
+      enabled: 'propertyDetail.products.enabled',
+      notEnabled: 'propertyDetail.products.notEnabled',
+      tourStops: 'propertyDetail.products.tourStops',
+      noTourStops: 'propertyDetail.products.noTourStops'
+    },
+    inventory: {
+      title: 'propertyDetail.inventory.title',
+      manage: 'propertyDetail.inventory.manage',
+      units: 'propertyDetail.inventory.units'
+    }
+  },
   filter: {
     clear: 'filter.clear',
     done: 'filter.done',

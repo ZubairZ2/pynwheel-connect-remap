@@ -1,4 +1,8 @@
+'use client';
+
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import type { MouseEvent } from 'react';
 
 import { InventoryIcon, MapPinIcon, PaletteIcon, PlugIcon } from '~/core/components/atoms/Icons';
 import { StatusPill } from '~/core/components/atoms/StatusPill';
@@ -31,8 +35,23 @@ const cellClass = (column: ColumnDescriptor): string =>
  * knows cell *types*, never modules. Everything module-specific arrives as
  * descriptors from a generator.
  */
-export const CustomTable = ({ columns, rows, emptyLabel, caption }: Props) => (
-  <table className="bo-table">
+export const CustomTable = ({ columns, rows, emptyLabel, caption }: Props) => {
+  const router = useRouter();
+
+  // A row with an `href` opens on a click anywhere in it, as the design's rows
+  // do. Its title cell is a real link, so keyboard, middle-click and "open in
+  // new tab" keep working; clicks on that link or on a cell's own buttons and
+  // links are theirs to handle.
+  const openRow = (href: string) => (event: MouseEvent<HTMLTableRowElement>) => {
+    if ((event.target as HTMLElement).closest('a, button')) return;
+    if (window.getSelection()?.toString()) return;
+
+    if (event.metaKey || event.ctrlKey) window.open(href, '_blank', 'noopener');
+    else router.push(href);
+  };
+
+  return (
+    <table className="bo-table">
       <caption className="sr-only" style={{ position: 'absolute', left: '-10000px' }}>
         {caption}
       </caption>
@@ -47,10 +66,14 @@ export const CustomTable = ({ columns, rows, emptyLabel, caption }: Props) => (
       </thead>
       <tbody>
         {rows.map((row) => (
-          <tr key={row.id}>
+          <tr
+            key={row.id}
+            className={row.href ? 'bo-row--link' : undefined}
+            onClick={row.href ? openRow(row.href) : undefined}
+          >
             {columns.map((column) => (
               <td key={column.id} className={cellClass(column)}>
-                <Cell descriptor={row.cells[column.id]} />
+                <Cell descriptor={row.cells[column.id]} href={row.href} />
               </td>
             ))}
           </tr>
@@ -62,11 +85,12 @@ export const CustomTable = ({ columns, rows, emptyLabel, caption }: Props) => (
             </td>
           </tr>
         )}
-    </tbody>
-  </table>
-);
+      </tbody>
+    </table>
+  );
+};
 
-const Cell = ({ descriptor }: { descriptor?: CellDescriptor }) => {
+const Cell = ({ descriptor, href }: { descriptor?: CellDescriptor; href?: string }) => {
   if (!descriptor) return <span>—</span>;
 
   switch (descriptor.type) {
@@ -83,7 +107,13 @@ const Cell = ({ descriptor }: { descriptor?: CellDescriptor }) => {
     case 'title':
       return (
         <div>
-          <div className="bo-celltitle">{descriptor.title}</div>
+          {href ? (
+            <Link href={href} className="bo-celltitle bo-celltitle--link">
+              {descriptor.title}
+            </Link>
+          ) : (
+            <div className="bo-celltitle">{descriptor.title}</div>
+          )}
           <div className="bo-cellsubtitle">{descriptor.subtitle}</div>
         </div>
       );
