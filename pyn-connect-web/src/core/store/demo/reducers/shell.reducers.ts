@@ -70,7 +70,8 @@ export const shellReducers = {
       title: string;
       msg: string;
       label: string;
-      action: PendingAction;
+      /** Null for a read-only confirmation: confirming only closes the dialog. */
+      action: PendingAction | null;
       match?: string;
     }>
   ) {

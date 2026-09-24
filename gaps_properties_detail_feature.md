@@ -278,3 +278,195 @@ The "Required later" column assumes the phase 1 recipe (PYN_CONNECT_PROGRESS.md 
 | **UI requirement** | Inventory, Map & Plotting, Integrations and Branding open this property's screens |
 | **Why the frontend cannot access it** | Those screens still run on demo data (phase 2). A real id reaches their "No demo property" state, as the listing's Go To buttons already do (phase 2c) |
 | **Required later** | The phase 3 JSON endpoints for those screens (PYN_CONNECT_PROGRESS.md §11). The links need no change |
+
+---
+
+## 4. Property Inventory (added September 24, 2026)
+
+**Branch:** `feature/inventory_implementation`, on top of `feature/properties_detail_page` (`824c1f07a`).
+**Brief:** `feature_inventory_page.md`.
+**Target design:** `pyn-connect-22-sep-new.html`, screen `tourContent` ("Property Inventory") and its dialogs.
+**Related:** [PYN_CONNECT_PROGRESS.md](PYN_CONNECT_PROGRESS.md) §17 · [context.md](context.md) §13.
+
+### How the inventory data is read
+
+None of the four legacy inventory actions answered JSON, so without a backend change nothing on the page could be read. With the user's explicit approval (Sep 24), under the same rule as §0 ("returning the data in the required format, no change in business logic or flow"), each action gained a **read-only `format.json` branch**. The branch serializes the records the action already loads:
+
+| Endpoint | Action | Records (the action's own query) |
+|---|---|---|
+| `GET /communities/:id/floorplates.json` | `FloorplatesController#index` | `current_community.floorplates.order(id: :desc)` |
+| `GET /communities/:id/floorplans.json` | `FloorplansController#index` | `@community.floorplans.order(id: :desc)` |
+| `GET /communities/:id/units.json` | `UnitsController#index` | `UnitFilterQuery.new(@community, filter_params).results.includes(:door)`, returned before the grid's paging and its one-time `welcome_unit_page` write |
+| `GET /communities/:id/amenities.json` | `AmenitiesController#index` | `current_community.amenities.order(id: :desc)` |
+
+**What stays exactly as it was:** routes, queries, models, the schema, the HTML paths and authorization (`authenticate_user!` and each controller's `check_community`).
+
+**The one flow difference:** for these four JSON reads only, `ApplicationController#community_code` and `#load_tour_users_chats` are skipped (`Connect::InventoryJson`).
+- `community_code` creates a missing Tour/SchedulerWidgetSetting on any request carrying a `community_id`; 11 properties lack one locally.
+- `load_tour_users_chats` builds the HTML layout's chat sidebar.
+
+**Verified:**
+- Zero INSERT/UPDATE/DELETE statements across 16 JSON reads on 4 properties, including property 3325, which has no SchedulerWidgetSetting (`scheduler_widget_settings` 792 → 792).
+- The company admin gets 200 for their own property and a 302 for another company's.
+- Signed out gets 401.
+- The HTML pages still render.
+
+Everything the database holds for floorplates, floorplans, units and amenities is now shown for real. The gaps below are only the design elements no existing column, table or controller can supply, and the write paths.
+
+**Updates to earlier entries:**
+- **G8** (inventory counts): the Inventory page now reads every count from these endpoints. The Property Detail page gets its counts from `communities#edit.json` (§0).
+- **G14** (Manage This Property destinations): **Inventory** is now real for numeric ids. Map & Plotting, Integrations, Branding and Tour Setup are still demo.
+
+## Gap: G15. Background Library (named, reusable floorplate backgrounds)
+
+### UI Requirement
+A property-level library of named raster backgrounds ("Site Aerial · site-aerial.jpg · 1.8 MB · 2400 × 1600"), each assignable to any number of floorplates, with a per-floorplate "Background" picker and "Used by N floorplates".
+
+### Existing Backend Investigation
+- `floorplates` columns: `image` (the raster map, `SiteMapUploader`), `svg_image`, `label_image`, `standard_image_url`, `svg_image_url` (a rasterised `svg_for_metro` copy, not the SVG), `width`, `height`, `svg_metadata`.
+- `communities.background_svg_image`: the single shared base map of a Beans property. Every floor SVG overlays it (`SvgOptimizableMap`). The legacy Floorplates page shows its uploader for `is_beans_svg?` properties. Locally 1 of 803 properties has one.
+
+### Current Limitation
+- There is no background table, background name, floorplate→background assignment or stored file size.
+- A floorplate's `image` is its own map picture, not a shared layer.
+- Whether an SVG embeds a raster is only known by parsing it (`SvgOptimizerController#analyze`, which is super-admin only).
+
+### Future Backend Requirement
+A `floorplate_backgrounds` table (`community_id`, `name`, uploader, `byte_size`, `width`, `height`) plus `floorplates.background_id`, with JSON read and write. Alternatively, a business decision that `background_svg_image` is the only shared layer.
+
+### Current Frontend Behavior
+- The library lists the real shared background (`background_svg_image`) when the property has one, with a working Preview. Otherwise it shows an explanatory empty state.
+- The name field, Upload Background, Replace and Delete are shown disabled, with the reason.
+- The floorplate Background field reads "Shared background map" or "No separate background".
+- Each floorplate's own image is shown on its card and in the viewer.
+
+## Gap: G16. Tour publish state ("4 stops staged · not yet published")
+
+### UI Requirement
+The Inventory header says whether the tour is live or only staged.
+
+### Existing Backend Investigation
+- `tours` has no `published`, `published_at` or status column.
+- `tour_stops` (`display_stop`, `sort`) belong to `Community#community_tour`.
+- The listing's `tour_published` only means the tour has at least one stop.
+
+### Current Limitation
+Nothing records a publish event, so "staged" and "live" cannot be told apart.
+
+### Future Backend Requirement
+A publish state (flag and timestamp) on `tours`, set by the Tour Setup publish flow.
+
+### Current Frontend Behavior
+The header shows the real stop count ("7 tour stops" or "No tour stops yet") and makes no published or unpublished claim.
+
+## Gap: G17. Floorplan marketing badges
+
+### UI Requirement
+Coloured badges on floorplan cards ("Limited Availability", "1 Month Free"), a badge library, and "Add badge" / "Edit badges".
+
+### Existing Backend Investigation
+- There is no badge model or table in `app/models`.
+- The nearest real value is `floorplans.availability_status` (available / limited_availability / almost_gone / sold_out). The legacy Floor Plans page offers it only when `communities.turn_availability_on` is set.
+
+### Current Limitation
+Badge text, colour, size and assignment are not stored.
+
+### Future Backend Requirement
+A community-level badge table and a floorplan↔badge join, with JSON read and write.
+
+### Current Frontend Behavior
+Badges and the badge dialog are not rendered. `availability_status` is shown as a pill when the property has floor-plan availability on, as on the legacy page. Locally it is `available` on 14,615 of 14,616 floor plans.
+
+## Gap: G18. Floorplan "Directional Text"
+
+### UI Requirement
+The Add/Edit Floor Plan dialog's "Directional Text" (shown above the image on the self-guided tour).
+
+### Existing Backend Investigation
+`floorplans` has `description`, `description_title` and `show_description_on_card`, but no directional-text column. Units keep theirs in `units.stop_description`, which the Unit dialog uses.
+
+### Current Limitation
+There is no column to read.
+
+### Future Backend Requirement
+A `floorplans.stop_description` (or similar) column, if floor plans need one.
+
+### Current Frontend Behavior
+The field is shown empty and disabled, with a note.
+
+## Gap: G19. Uploaded-file metadata (size; dimensions outside floorplates)
+
+### UI Requirement
+Upload rows read "JPG · 1.4 MB · 1280 × 960"; background rows show a size.
+
+### Existing Backend Investigation
+- The CarrierWave mounts on `floorplates`, `floorplans`, `units`, `amenities`, `amenity_galleries` and `communities` store only the file identifier.
+- Only floorplates keep `width`/`height` and `svg_metadata`.
+
+### Current Limitation
+The size needs an S3 request per file, and the dimensions need a download.
+
+### Future Backend Requirement
+Store `byte_size`, `width` and `height` at upload, or add a metadata endpoint.
+
+### Current Frontend Behavior
+Upload rows show the real file name and type. Floorplates also show their stored dimensions. Size is never shown.
+
+## Gap: G20. Inventory write actions
+
+### UI Requirement
+The flows below should change data:
+- Add, Edit and Delete for floorplates, floorplans, units and amenities
+- Upload, Replace and Remove for SVGs and images
+- Plotting
+- Mass Overrides
+- Re-sync from PMS
+- The amenity category and gallery ordering
+
+### Existing Backend Investigation
+Every flow exists in the legacy CMS as an HTML form post, or as a GET with side effects. None answers JSON:
+- `FloorplatesController#create/update/destroy`
+- `FloorplansController#create/update/destroy`, `remove_pri_scnd_image`
+- `UnitsController#create/update/destroy` and the mass overrides: `set_manual_override`, `set_available`, `set_floor`, `set_building`, `set_floorplan`, `set_sold`
+- Re-sync: `CommunitiesController#import` / `update_community_data`, which queue provider syncs
+- `AmenitiesController#update`, `amenity_galleries`
+
+All sit behind `protect_from_forgery`.
+
+### Current Limitation
+- The Connect proxy holds no CSRF token, and the brief keeps Connect read-only.
+- Several flows run side effects that belong to the legacy flow: provider syncs, `AssignFloorplanImagesToUnitJob`, tour-stop and path cleanup.
+
+### Future Backend Requirement
+JSON branches on those actions and a CSRF strategy for the proxy (as G6/R5), once the phase 3 "read-only or real writes?" decision is made.
+
+### Current Frontend Behavior
+- Every action is visible.
+- Add and Edit open the full 22-Sep dialogs. Edit is prefilled with the record's real values.
+- Save, Apply and Run Sync only close the dialog. The footer and confirm text say nothing is saved; no request is sent and no success message is shown.
+- Delete and Remove open the shared confirm dialog, which only closes.
+- Plotting, Map & Plotting and Tour Setup link to the (still demo) Connect screens.
+- Verified in real Chrome: the browser issued only GETs, and the CMS side received only the four inventory GETs per page load.
+
+## Gap: G21. Unit-level "Almost gone" availability
+
+### UI Requirement
+Unit availability as Available / Almost gone / Occupied (the design's unit dialog and availability filter).
+
+### Existing Backend Investigation
+- `units.available`, `available_date`, `availability` (Unoccupied/Occupied) and `sold`.
+- `UnitFilterQuery#apply_availability` (`true` / `false` / `now` / `upcoming`).
+- "Almost gone" exists only at floor-plan level.
+
+### Current Limitation
+Units carry no "almost gone" state.
+
+### Future Backend Requirement
+None, unless the business wants a unit-level state (a column, or a rule on `available_date`).
+
+### Current Frontend Behavior
+Availability uses the CMS's real states: **Available now**, **Available {date}** (upcoming), **Not available**, **Sold**. Sold wins over the others, as in UnitFilterQuery and the `sold` flag.
+
+### Data observations (not backend gaps)
+- **Some stored image files cannot be served.** For example, property 2919's floor plan images return 403 from S3 on both the plain and the accelerated host. The cards and the viewer say "Image unavailable" / "This image could not be loaded"; the legacy page shows a broken image.
+- **In development, uploader-only files resolve to paths on the CMS host** (`/uploads/...`), because the uploaders use `:file` storage there and the files are not on this machine. These are SVGs, secondary images and gallery photos. On staging and production they are S3 URLs. Raster images that carry a `standard_image_url` load from S3 everywhere.

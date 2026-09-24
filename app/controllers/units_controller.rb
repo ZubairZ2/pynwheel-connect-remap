@@ -1,6 +1,7 @@
 class UnitsController < ApplicationController
   # include Error::ErrorHandler
   include AssignLocksHelper
+  include Connect::InventoryJson
   add_breadcrumb "Home", :root_path
   before_action :set_community
   before_action :check_community
@@ -27,6 +28,10 @@ class UnitsController < ApplicationController
     # includes(:door) is what keeps the lock column from firing one query per
     # row - it was the bulk of the 700+ queries this page used to run.
     scope = @filter.results.includes(:door)
+    # Pynwheel Connect's read-only Property Inventory: every matching unit,
+    # before the grid's paging and the one-time intro below.
+    return render_connect_units(scope) if request.format.json?
+
     @units = scope.paginate(page: params[:page], per_page: resolve_per_page)
     @filter_options = unit_filter_options
     add_breadcrumb "Units", community_units_path(@community)
@@ -706,6 +711,34 @@ class UnitsController < ApplicationController
   end
 
   private
+
+  def render_connect_units(scope)
+    render_connect_inventory(
+      Connect::UnitSerializer.collection(
+        scope, @community, floorplans_by_provider_id: @floorplans_by_provider_id, base_url: request.base_url
+      ),
+      @community,
+      extra: {
+        currency_symbol: @currency_symbol,
+        data_provider: @community.data_provider.presence,
+        last_sync: @community.data_provider_updated_on.presence,
+        lock_devices: connect_lock_devices
+      }
+    )
+  end
+
+  # The lock devices the unit form offers (AssignLocksHelper#all_locks), one
+  # list across vendors. A vendor record with a missing name makes that helper
+  # raise; the units must still load when it does.
+  def connect_lock_devices
+    all_locks(@community).flat_map do |kind, locks|
+      vendor = kind.to_s.delete_suffix("_locks")
+      locks.map { |lock| { vendor: vendor, id: lock[:id], name: lock[:name], stop_id: lock[:stop_id] } }
+    end
+  rescue StandardError => e
+    Rails.logger.warn("[Connect] lock devices unavailable for community #{@community.id}: #{e.class}: #{e.message}")
+    []
+  end
 
   def set_community
     @community = Community.find(params[:community_id])

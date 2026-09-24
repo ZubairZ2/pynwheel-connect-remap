@@ -1,4 +1,5 @@
 class FloorplansController < ApplicationController
+  include Connect::InventoryJson
   # include Error::ErrorHandler
   add_breadcrumb "Home", :root_path
   before_action :set_community
@@ -7,6 +8,9 @@ class FloorplansController < ApplicationController
 
   def index
     @floorplans = @community.floorplans.order(id: :desc)
+    # Pynwheel Connect's read-only Property Inventory.
+    return render_connect_floorplans if request.format.json?
+
     @communities = current_company.communities
     add_breadcrumb "Floor plans", community_floorplans_path(@community)
   end
@@ -263,6 +267,19 @@ end
   end
 
   private
+
+  def render_connect_floorplans
+    render_connect_inventory(
+      Connect::FloorplanSerializer.collection(@floorplans, @community, base_url: request.base_url),
+      @community,
+      extra: {
+        currency_symbol: @community.get_currency_symbol,
+        # The legacy grid only offers a floor plan's availability status when
+        # this property setting is on.
+        turn_availability_on: @community.turn_availability_on.present?
+      }
+    )
+  end
 
   def set_floorplan
     @floorplan = Floorplan.find params[:id]
