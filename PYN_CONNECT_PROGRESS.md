@@ -3,7 +3,7 @@
 **Last updated:** September 24, 2026
 **Read this first in a new session.** For what the repository itself is (Rails stack, models, roles, integrations), see [context.md](context.md).
 
-This is the single progress document. It merges the original phase 1/2 handoff with the Sep 23 summary (formerly `progress.md`, now removed), and it is current through phase 2c (§14).
+This is the single progress document. It merges the original phase 1/2 handoff with the Sep 23 summary (formerly `progress.md`, now removed), and it is current through phase 2c (§14), merged to `main` as PR #3.
 
 ---
 
@@ -11,15 +11,15 @@ This is the single progress document. It merges the original phase 1/2 handoff w
 
 | Phase | Brief | Where | State |
 |---|---|---|---|
-| **1**: Sign In, Companies, Properties on real data | [feature1.md](feature1.md) | `feat/pyn-connect-initial-screens`, **PR #1** open against `main` | ✅ Done |
+| **1**: Sign In, Companies, Properties on real data | [feature1.md](feature1.md) | `feat/pyn-connect-initial-screens` → `main`, **PR #1** (merged) | ✅ Done |
 | **1b**: Pagination, 10 per page, server-side | chat request, Sep 17 | `feat/pyn-connect-initial-screens` (`dec760dda`) | ✅ Done |
-| **2**: Full `pyn-connect-new.html` UI on demo data | [feature-whole-ui-next.md](feature-whole-ui-next.md) | `feat/pyn-connect-full-ui` | ✅ Done |
+| **2**: Full `pyn-connect-new.html` UI on demo data | [feature-whole-ui-next.md](feature-whole-ui-next.md) | `feat/pyn-connect-full-ui` → `main`, **PR #2** (merged) | ✅ Done |
 | **2b**: Merge 1b into 2 | — | `feat/pyn-connect-full-ui` (`4ec2242aa`) | ✅ Done. ⚠️ One doc section was lost (see §10) |
 | **Staging deploy** on Heroku (Rails and Connect) | chat, Sep 23 | apps `pyn-system` and `pyn-system-connect` | ✅ Live |
-| **2c**: Companies and Properties listings → the 22-Sep design | chat, Sep 24 | `feature/Companies_and_properties_improvments` (uncommitted) | ✅ Done, 4 items deferred (§14) |
+| **2c**: Companies and Properties listings → the 22-Sep design | chat, Sep 24 | `feature/Companies_and_properties_improvments` → `main`, **PR #3** (merged) | ✅ Done, 4 items deferred (§14) |
 | **3**: Replace demo data with real Rails data | *brief not written yet* | — | ⏭ Next (§11) |
 
-**`feat/pyn-connect-full-ui` is now the working branch.** It contains everything above. `feat/pyn-connect-initial-screens` is fully merged into it and only matters for PR #1.
+**`main` holds everything above** (PRs #1–#3 merged, Sep 24). The three feature branches are fully merged; start new work from `main`.
 
 ---
 
@@ -312,7 +312,7 @@ heroku run rails db:migrate -a pyn-system               # only when migrations a
 2. ⚠️ **The pagination entry in react-architecture.md §20 was lost in the merge** (`4ec2242aa`). The section *"September 17, 2026 — Infrastructure Update: pagination"* exists in `dec760dda` but not on `feat/pyn-connect-full-ui`. Restore it from `git show dec760dda:react-architecture.md`.
 3. **Re-run `npm run test:e2e` on a network that reaches Google Fonts.** Sep 24 gave 51 passes; the 29 failures were all the font request (§14). The suite does not cover the real listings, which need a Rails session.
 3a. **Phase 2c follow-ups:** see §14, "Remaining / follow-up".
-4. **PR for `feat/pyn-connect-full-ui`:** not opened yet. PR #1 (`initial-screens`) is still open against `main`.
+4. **Pull requests:** none open. PRs #1, #2 and #3 are all merged into `main`.
 5. **`db/schema.rb` in git is stale** (see trap 8). The local copy has uncommitted edits.
 6. **Leftover local files:** `toc.list` and `toc-trimmed.list` (the restore's table of contents). Delete them or keep them out of git.
 
@@ -417,11 +417,18 @@ The Rails side repeats the phase 1 recipe:
 | `4ec2242aa` | full-ui | Merge branch 'feat/pyn-connect-initial-screens' into feat/pyn-connect-full-ui |
 | `d5280f9ff` | full-ui | Vendor jstz so Heroku does not need rails-assets.org |
 | `605c9116c` | full-ui | Bind Next.js to Heroku PORT and pin Node 22 |
+| `3dc79eb86` | main | Merge pull request #1 from ZubairZ2/feat/pyn-connect-initial-screens |
+| `6df3da6e7` | full-ui | progress file for the project (this doc and `context.md`) |
+| `ea0c89072` | main | Merge pull request #2 from ZubairZ2/feat/pyn-connect-full-ui |
+| `8aa39721f` | 2c | Bring the Companies and Properties listings in line with the 22-Sep design |
+| `e75a4d90e` | main | Merge pull request #3 from ZubairZ2/feature/Companies_and_properties_improvments |
+
+"Branch" is where the commit was made. "both" means the two phase 1/2 branches. All of these are on `main` now.
 
 **Deliberately untracked; do not commit without asking:**
 
 - `pyn-connect-new.html` (20 MB) and `pyn-connect-22-sep-new.html` (21 MB)
-- `feature1.md`, `feature-whole-ui-next.md`, `context.md` (until the user says otherwise)
+- `feature1.md`, `feature-whole-ui-next.md`. (`context.md` has been tracked since `6df3da6e7`.)
 - `latest.dump*`, `pynwheel-staging.dump` (~6 GB)
 - the vendored bundle tree (`gems/`, `cache/`, `bundler/`, `extensions/`, `specifications/`, `build_info/`) and `bin/*` binstubs
 - the local edits to `bin/rails|rake|spring`, `config/database.yml` and `db/schema.rb`
@@ -450,7 +457,7 @@ manifest  = json.loads(grab('manifest'))    # uuid -> {mime, compressed, data(ba
 
 ## 14. Phase 2c: Companies and Properties listings → the 22-Sep design
 
-**Brief (chat, Sep 24):** bring the two real-data listings in line with `pyn-connect-22-sep-new.html`, using `pyn-connect-new.html` as the baseline to find what changed. Branch `feature/Companies_and_properties_improvments`. **Not committed yet.**
+**Brief (chat, Sep 24):** bring the two real-data listings in line with `pyn-connect-22-sep-new.html`, using `pyn-connect-new.html` as the baseline to find what changed. Branch `feature/Companies_and_properties_improvments`: commit `8aa39721f`, merged to `main` as PR #3 (`e75a4d90e`).
 
 ### How the two design files differ
 
@@ -587,4 +594,4 @@ Columns: **Old** = `pyn-connect-new.html`, **New** = `pyn-connect-22-sep-new.htm
 3. If the business adds a richer lifecycle or company billing status, extend `STAGE_CONDITIONS` / `STAGE_PILL` and the company status mapping.
 4. `Connect::CompanySerializer` still computes region, portfolio group and user counts that the listing no longer shows. That is three grouped queries per page; drop them if nothing else needs them.
 5. The Companies filter lists 191 companies in a 274px scroll with no search box, as the design has it. A search field inside the panel would help.
-6. Commit the branch and open a PR (no AI attribution, §3.11).
+6. Deploy to staging when wanted. Heroku still runs the pre-2c commits (§8), and this phase changes both apps: Rails (the query objects and controllers) and Connect.
