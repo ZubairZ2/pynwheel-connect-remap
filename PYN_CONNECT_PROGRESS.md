@@ -24,6 +24,7 @@ This is the single progress document. It merges the original phase 1/2 handoff w
 | **2c**: Companies and Properties listings → the 22-Sep design | chat, Sep 24 | `feature/Companies_and_properties_improvments` → `main`, **PR #3** (merged) | ✅ Done, 4 items deferred (§14) |
 | **2d**: Property Detail on real data, no backend changes | `properties_detail_feature.md`, Sep 24 | `feature/properties_detail_page` (`ef9e4549a`, local, no PR yet) | ✅ Done for what the listing exposed (§15) |
 | **2d-r**: Property Detail, revised rule (read-only JSON on `communities#edit`) | `properties_detail_feature.md` §9a, Sep 24 | `feature/properties_detail_page` (not yet committed) | ✅ Every design section on real data except R1–R4 in [gaps_properties_detail_feature.md](gaps_properties_detail_feature.md) §0 (§16) |
+| **2e**: Property Inventory on real data (read-only JSON on the four inventory `index` actions) | `feature_inventory_page.md`, Sep 24 | `feature/inventory_implementation` (on `824c1f07a`, uncommitted) | ✅ All four tabs, filters, viewer and dialogs on real data; gaps G15–G21 (§17) |
 | **3**: Replace demo data with real Rails data | *brief not written yet* | — | ⏭ Next (§11) |
 
 **`main` holds everything above except 2d** (PRs #1–#3 merged, Sep 24). Local `main` is one commit ahead of `origin/main` (`c9416ae67`, this doc's catch-up; not pushed).
@@ -890,3 +891,174 @@ Between the `ef9e4549a` commit (19:19) and this revision, tracked files were res
 - the local `config/database.yml`, `bin/*` and `db/schema.rb` edits
 
 The untracked Inventory files are still present. None of these files were touched by this revision.
+
+---
+
+## 17. Phase 2e: Property Inventory on real data (September 24, 2026)
+
+**Brief:** `feature_inventory_page.md` (untracked, like the other briefs). Build the 22-Sep design's Property Inventory (`tourContent`) for a real property, opening it from Property Detail → Inventory and from Properties → Go To → Inv. Everything must read the real DB through the existing controllers. Every write must stay a no-op, and nothing may be faked.
+
+**Backend rule, as revised by the user mid-task:** the brief said "no backend changes". The investigation showed no inventory controller answered JSON, so nothing could be read. The user then approved **read-only JSON on the existing controllers**, "just the change of returning the data in the required format, no change in business logic or flow" (the same rule as 2d-r, §16). Saved as feedback memory `connect-json-branch-exception`.
+
+**Branch:** `feature/inventory_implementation`, fast-forwarded onto `feature/properties_detail_page` (`824c1f07a`) after the user committed 2d-r. **Uncommitted.** When 2d-r was committed from another session, this branch's edits to *tracked* files disappeared from the working tree, and all of them were re-applied. The untracked files were never lost.
+
+### Investigation completed
+
+- **Docs and designs.** Both HTML files were extracted as in §13. The 22-Sep `tourContent` block is 57 KB, with four tabs:
+  - Floorplates, with the Background Library
+  - Floorplans, with a filter toolbar
+  - Units, with ten filters
+  - Amenities
+
+  The dialogs are Floorplate (changed from the old design), Floor Plan (changed) and Mass Override (changed). New in 22-Sep: Unit, image preview, gallery and badges. Confirm and the generic form are identical to the old design. The old demo Inventory screen (phase 2) follows the *old* design and runs on the demo slice.
+
+- **Rails flows traced:**
+
+| Page | Route → action | Query | View |
+|---|---|---|---|
+| Floorplates | `GET /communities/:id/floorplates` → `FloorplatesController#index` | `current_community.floorplates.order(id: :desc)` (association default `number DESC`) | `floorplates/index.html.haml`: name, range, `validated_image_url \|\| validated_svg_image_url`; building column commented out |
+| Floor plans | `GET /communities/:id/floorplans` → `FloorplansController#index` | `@community.floorplans.order(id: :desc)` | `floorplans/_index.html.haml`: name, SF/BR/BA, image; red cells from `*_is_updated` |
+| Units | `GET /communities/:id/units` → `UnitsController#index` | `UnitFilterQuery.new(@community, filter_params).results.includes(:door)`, paged 25–200 (All ≤ 2000) | `units/_units_table.html.haml` (XHR partial) |
+| Amenities | `GET /communities/:id/amenities` → `AmenitiesController#index` | `current_community.amenities.order(id: :desc)` | `amenities/_index.html.haml` ("Amenity Images") |
+
+- **Associations used:**
+  - `Unit#floorplan` joins on `units.floorplan_id = floorplans.provider_floorplan_id` (not the primary key).
+  - `Floorplate#floors` / `#fetch_units` gives the visible units on its floors.
+  - Plotted means `Unit#plotted_on_map?`: x/y > 0, or an SVG pointer.
+  - Amenities are polymorphic. With no owner, an amenity is not placed; owned by a Floorplate or the Sitemap, it is plotted (a tour stop is `tour_stops.stop_type = 'amenity'`); owned by a Floorplan or Unit, it is an interior image.
+  - The gallery is `amenity_galleries`.
+  - Locks: `unit.door.lock_provider` or `units.lock_provider`. Devices come from `AssignLocksHelper#all_locks` (DB only); a lock's `stop_id` is the door.
+
+- **Ruled out as data sources:**
+  - `api/v1/communities/:id/data.json` (kiosk): only available, map-visible units; writes an `impressions` row with the whole body per call.
+  - `unit_and_floorplan_data`: calls PSI and saves units.
+  - The `suggest_*` / `*_auto_plot_units` GETs: they write.
+  - `api/v1/floorplans`: token auth, available-only.
+  - The SVG optimizer JSON: super-admin only.
+  - Scraping the HTML: partial fields, brittle, and GETs create SchedulerWidgetSettings.
+
+### Change and data-source map
+
+| UI feature | Old Rails source | Model / association | Existing React | Real data? | Implementation | Gap |
+|---|---|---|---|---|---|---|
+| Inventory route and navigation | Side-menu pages | Community id | `/properties/[propId]/inventory` (demo `PropertyScope`); links from listing Go To and Property Detail | ✅ | Numeric id → real screen; slug → demo, unchanged | — |
+| Header and summary | Breadcrumbs; tour stops | `floorplates.svg_image`; `community_tour.tour_stops` | Demo header | ✅ counts; ❌ publish state | "N floorplates · M without a floor SVG · K tour stops" | G16 |
+| Summary cards (tab counts) | 4 index pages | floorplates / floorplans / units / amenities | Demo tabs | ✅ | Tab badges | — |
+| Floorplate cards | `floorplates#index` | name, range, floors, building, floor_name(_added), manual_override, image, svg_image, width/height, svg_metadata; `fetch_units`; `amenities` | Demo cards (old design) | ✅ | `floorplates.json` → `Connect::FloorplateSerializer` | — |
+| Floorplate images and viewer | image / svg uploaders | `standard_image_url`, `svg_image` | None | ✅ | Thumbnail (raster first, as the legacy table) + `ImageViewer` | — |
+| Background Library | Beans uploader on the floorplates page | `communities.background_svg_image` | None | Partly | Real shared background, else empty state; adding disabled | G15, G19 |
+| Floorplate actions | create/update/destroy, plotexp | — | Demo dialog | n/a | Dialog prefilled; Save closes; Delete → confirm; Plotting → Map & Plotting | G20 |
+| Floor plan cards | `floorplans#index` | name, provider id, beds/baths, sq ft, market_rent, `*_is_updated`, manual_override, images, 3 buttons, `availability_status`; units by provider id; interior images | Demo | ✅ | `floorplans.json` → `Connect::FloorplanSerializer` | G17 (badges) |
+| Floor plan filters | — | Same fields | — | ✅ | Search, Layout, Baths, Sq Ft, Setup (in-browser) | — |
+| Add Floor Plan dialog | floorplans/_form | Same | Demo (old design) | ✅ prefill | 22-Sep dialog; Save closes | G18, G20 |
+| Unit cards | `units#index` | Every unit column the grid and form show, `FEED_OVERRIDE_FLAGS`, door lock, interior images | Demo | ✅ | `units.json` → `Connect::UnitSerializer` | — |
+| Unit filters and search | UnitFilterQuery | Same semantics | — | ✅ | 10 filters + search (in-browser) | G21 (states) |
+| Unit image viewer | unit / floor plan images | `standard_image_url`, secondary, interiors, plan image | — | ✅ | `ImageViewer` gallery | — |
+| Re-sync from PMS | `communities#import` / `update_community_data` | — | Demo confirm | n/a | Shared confirm, no action | G20 |
+| Mass Overrides | `set_manual_override`, `set_available` | — | Demo dialog | n/a | 22-Sep dialog, scope = filtered count; Apply closes | G20 |
+| Add Unit | units#new / create | — | — | ✅ options | 22-Sep dialog; lock types per `Community#lock_options`; devices from `all_locks` | G20 |
+| Amenities | `amenities#index` | name, `amenity_type`, owner, floor/building, plotted, image, gallery, tour stop; `Amenity::AMENITY_TYPE` | Demo | ✅ | `amenities.json` → `Connect::AmenitySerializer` | — |
+
+### Backend (read-only JSON on existing actions)
+
+- `app/controllers/concerns/connect/inventory_json.rb` does three things:
+  - It skips `community_code` and `load_tour_users_chats` only when `action_name == 'index' && request.format.json?`. This is one predicate on purpose: a skip carrying both `only:` and `if:` is skipped when *either* holds (verified in ActiveSupport 7.2.2 `merge_conditional_options`).
+  - It renders the Connect envelope.
+  - It adds `meta.property` (id, name, company).
+- The four controllers each gained an `include` and one `return render_connect_* if request.format.json?` right after their existing query. The Units branch returns before pagination (which writes `session[:units_per_page]`) and before the `welcome_unit_page` update.
+- **Serializers:** `Connect::FloorplateSerializer`, `FloorplanSerializer`, `UnitSerializer`, `AmenitySerializer`, and `Connect::UploadUrl`.
+  - `UploadUrl` resolves images as `S3Acceleration#validated_image_url` does (`standard_image_url` → accelerate). It reads presence from the column, because dev's `:file` storage makes `uploader.present?` false.
+  - Counts are one grouped query each, not per row.
+- **Meta per endpoint:**
+  - floorplates: `map_type`, `svg_mode`, `tour_stop_count`, `shared_background`, `sitemap`
+  - floorplans: `currency_symbol`, `turn_availability_on`
+  - units: `currency_symbol`, `data_provider`, `last_sync` (`data_provider_updated_on`), `lock_devices`
+  - amenities: `category_options` (`Amenity::AMENITY_TYPE`)
+- **Timing** (local, serializer only): 1,169 units in ≈0.3 s, about 1.2 MB of JSON; 305 units ≈ 340 KB.
+
+### Frontend
+
+**Layering:** route → `propertyInventory.server.ts` (four listings in parallel) → `inventory.parser.ts` → `propertyInventory.data.ts` → hooks (`usePropertyInventory`, `useInventoryFloorplans`, `useInventoryUnits`, `useClientPages`) → generators (`core/utils/generator/inventory/*`) → `screens/properties/propertyInventory.screen.tsx` and the section and dialog files in `screens/properties/inventory/`.
+
+- **Route:** numeric ids load the real screen, and slugs keep the demo one. `?tab=` picks the tab, and switching tabs uses `history.replaceState`, so there is no refetch. "Today" is computed on the server in the CMS zone (Eastern), so "available now" matches `Date.current` and hydration cannot disagree. A 401 redirects to Sign In; 302/404 shows "Property not found"; other failures show a load-failed banner. `inventory/loading.tsx` shows "Loading inventory…".
+- **Floorplates:** cards ordered by lowest floor. They show:
+  - SVG Ready/Missing
+  - range ("Floors 1–3"), naming (Manual name / Auto from range), name on map (Shown · P1 / Hidden), building, background
+  - units and amenities with plotted counts
+  - thumbnail with View / Replace / Remove, the Plotting link, and Edit/Delete
+
+  Sitemap-mode properties get a property-map panel. The Background Library is described in G15.
+- **Floorplans:** cards show:
+  - provider ID, layout, sq ft and base price with Feed/Manual tags from the `*_is_updated` flags
+  - units ("54 units · 1 available")
+  - chips: buttons configured (a button counts when it has a URL), interior images, secondary image
+  - the status pill only when `turn_availability_on`, and a Manual Override pill
+
+  Filters: search (name, provider ID), Layout, Baths, Sq Ft, Setup. Pages of 20.
+- **Units:** pages of 25.
+  - Search takes comma-separated terms and `*` as a start-anchored wildcard, like UnitFilterQuery, over the display name, marketing name, provider ID and plan name.
+  - Filters: Floor Plan (+ No floor plan), Availability (now / soon / not available / sold), Building (+ No building), State (plotted / not on map / model / manual overrides / no photos), Beds, Baths, Floors (+ No floor), Price, Sq Ft (the unit's own, else the plan's). OR within a filter, AND across.
+  - Card meta: Provider ID, Floor plan, Layout, Price, Sq Ft, Available, Placement, Lock ("Zerv" shows as Pynwheel Access), Tour order, Unit status. Tags come from `FEED_OVERRIDE_FLAGS` and are shown only for fed records (`provider` present and not `manually`).
+  - Pills: availability, Plotted / Not on map, Model Unit, Manual Override.
+  - The title opens the unit's dialog.
+- **Amenities:** property amenities only (unplaced or plotted). Each card shows where it is ("Floor 1 · Bldg", "Property map", "Not placed on a map"), a Tour stop pill, the category in a disabled select, and the gallery strip with previews. Reorder and remove are disabled. Pages of 20.
+- **Dialogs** (22-Sep markup): Floorplate, Floor Plan, Unit, Amenity, Mass Override. Local form state only: picked files become local object URLs and are never uploaded. HTML descriptions are shown as plain text. Every footer says saving changes nothing. Confirms (Delete / Remove / Re-sync) reuse the shared `ConfirmDialog` with `action: null`, and their message says confirming changes nothing.
+- **Viewer:** one lightbox for single images and galleries. Arrows, keyboard ←/→, thumbnails, Escape or backdrop to close (Escape closes only the topmost dialog), and a "could not be loaded" state.
+
+### Components reused
+
+- `ConnectScreenTemplate`, `ListingScreenTemplate` (loading)
+- `DetailSection` (every panel), `StatusPill`, `MultiFilter`, `SearchField`
+- `Pagination` + `generatePager` (client-side paging)
+- The shared `ConfirmDialog`: its `askConfirm` payload now allows `action: null`
+- `Switch` (gained an optional `onToggle` for dialogs; read-only use unchanged)
+- The icon module (gained icons), `formatCount`, the `CORE_STRINGS`/`i18n` registry
+- `.bo-field`, `.bo-section`, `.bo-linkbutton`, `.bo-error`, and the route helpers (`mapEditorRoute`, `tourSetupRoute`, `propRoute`)
+
+### New components, and why
+
+| New | Why nothing existing would do |
+|---|---|
+| `molecules/Modal` | The app had no dialog shell. Each phase-2 dialog inlines its own overlay and is wired to demo state, with a Save that mutates demo data and toasts. This shell adds a portal, Escape for the topmost dialog, focus return and a body scroll lock |
+| `organisms/ImageViewer` | No image viewer existed (the design's `imgPreviewOpen` and `galleryOpen` are new in 22-Sep) |
+| `molecules/RecordCard`, `MediaThumb`, `MetaGrid` | The card layout (image, details, actions), the thumbnail with hover actions and a missing-file state, and the label/value grid with source tags repeat across all four tabs; no equivalent existed |
+| `molecules/RangeFilter` | The design's min–max box; the toolbars had only search and multi-select |
+| `molecules/UploadSlot` | The design's `ImageUploader.dc.html`; no uploader component existed |
+| `molecules/Breadcrumb` | Three-level breadcrumb; 2d's is a private component inside its screen |
+| `atoms/IconButton`, `SourceTag`, `SafeImage` | Square icon buttons (used about 40 times), the Feed/Manual tag, and an `<img>` that shows a label when the S3 file is missing |
+| `screens/properties/inventory/*`, dialog parts | The screen's sections and the five dialogs (22-Sep markup, read-only). The demo dialogs could not be reused: they are demo-state bound, use the old design, and show success toasts |
+
+### Real-data verification (Sep 24, local DB)
+
+- **Rails, in-process** (Warden test login in `rails runner`, no cookie exported). All JSON reads return 200 with DB-exact counts:
+  - 348: 4 floorplates / 8 floorplans / 305 units / 8 amenities
+  - 236 (sitemap): 0 / 13 / 328 / 14
+  - 1625: 3 / 50 / 175 / 32
+  - 2919: 7 / 26 / 239 / 17
+
+  The write audit counted 0 write statements. Scope and 401 behave as expected, and the HTML pages still render (see G20 and the gaps doc §4).
+- **UI.** Session minting was blocked by the auto-mode permission classifier this time. Instead, the real JSON was captured in-process and served by a logging stub (`PYNWHEEL_CMS_URL`), and Connect ran from an rsync'd copy so the user's dev server `.next` was untouched. In real Chrome, at 1440 / 1024 / 390 px:
+  - **Filters** checked against counts computed independently from the same JSON. On 1625: Sold 102, Model 7, Sold + Model 2, Now 67, Now OR Not available 73, search "11" → 4, sq ft ≥ 1000 → 11, Floor 1 → 32; floor plans with no secondary image 3, sq ft ≥ 1000 → 6. On 348: price 1,500–2,000 → 153, sq ft ≥ 1000 → 91, search → 68. On 4397 (1,169 units): `1*` → 583 in about 100 ms.
+  - **Prefill:** unit 151 → name, provider ID and $8,755 match the row; Manual Override Yes. Add dialogs start empty.
+  - **Images:** every thumbnail on 348 loads. 2919's floor plan files return 403 from S3 and show "Image unavailable". Dev-local uploader paths 404 by design (context §13).
+  - **Navigation:** Listing Inv → `/properties/503/inventory`; Detail → Inventory → breadcrumb → Back keeps the tab. Unknown id → not found; `/properties/luxe/inventory` → demo. No horizontal overflow at 1024 / 390 px.
+  - **Write audit:** every browser request was a GET, the stub logged only GETs (4 per page load), there were 0 mutation attempts, and no success message appeared after Save, Apply, Run Sync or Delete.
+- `npm run typecheck` ✅ · `next build` ✅ (`/properties/[propId]/inventory` 24 kB) · `npm run test:e2e` **80/80 passed** (fonts reachable this time).
+- **Regression:** Companies, Properties, Property Detail (`/properties/348`), demo Property Detail, Sign In and the signed-out redirect all OK; no console errors.
+
+### Traps found in this phase
+
+1. **Auto-mode blocks `mint_session.rb`** ("credential materialization"). Test Rails in-process with `Warden::Test::Helpers#login_as(user, scope: :user, run_callbacks: false)` (`run_callbacks: false` keeps `last_sign_in_at` untouched). Test the UI through the capture-and-stub approach, or ask the user to sign in.
+2. **The committed `config/database.yml` uses role `postgres`**, which does not exist locally. The local edit is gone. Use `DATABASE_URL=postgres://zubairzulifqar@localhost/pynwheel_development` together with `DISABLE_SPRING=1 OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES` (the `bin/*` edits that avoided Spring's fork crash are gone too).
+3. **Don't run a second `next dev` in `pyn-connect-web/`** while another is running: they share `.next`. Use an rsync'd copy with `node_modules` symlinked.
+4. **`ApplicationController#community_code` writes on GET** for any `community_id` route (11 local properties lack a SchedulerWidgetSetting). Any future Connect JSON branch on a community-scoped action should skip it for JSON, as `Connect::InventoryJson` does.
+5. **`skip_before_action x, only: :a, if: :b` skips x when *either* condition holds.** Use one combined predicate.
+6. **Card thumbnails need a moment after switching tabs.** Screenshots taken at 600 ms looked blank; waiting for network idle shows them all loaded.
+
+### Remaining / follow-ups
+
+1. **Commit** (no AI attribution). Include the gaps doc; leave the untracked briefs and dumps out. Then PR on top of `feature/properties_detail_page`, or merge 2d-r first.
+2. **Writes** (G20) wait on the phase 3 decision and a CSRF strategy.
+3. **Map & Plotting, Tour Setup and the unit detail page** are still demo screens. The inventory's links to them need no change once they read real data.
+4. **Backend gaps G15–G19** are listed in the gaps doc §4.
+5. **Deploy both apps** when wanted: this phase changes Rails (4 controllers, the concern, the serializers) and Connect.

@@ -2593,3 +2593,16 @@ The first Property Detail walked the paged listing for one row, and could show o
 `app/serializers/connect/property_detail_serializer.rb`,
 `pyn-connect-web/src/core/repository/parser/property.parser.ts` (`parsePropertyDetail`),
 `pyn-connect-web/src/core/hooks/usePropertyDetail.ts`; PYN_CONNECT_PROGRESS.md §16.
+
+### September 24, 2026 — Infrastructure Update: a read-only inventory over four legacy listings
+
+**What was missing.** The Property Inventory design needs every floorplate, floor plan, unit and amenity of one property, but the four legacy listing actions rendered only HTML. The React side also had no dialog shell, no image viewer and no way to page a list the browser already holds; the phase-2 dialogs were bound to the demo slice.
+
+**What was found / done.**
+- **Backend:** each `index` action gained a `format.json` branch that serializes the records it already loads (`Connect::InventoryJson` + four `Connect::*Serializer`s). A write-y `ApplicationController` callback is skipped only for those JSON reads.
+- **Loader:** the route loads the four listings in parallel on the server and passes one `PropertyInventory` model to a client screen.
+- **Filtering:** all of it runs in the browser over the full lists, because the design's multi-select filters exceed `UnitFilterQuery`'s single-value params and the query object could not be changed. Only one page of cards renders (`useClientPages` + the existing `generatePager`).
+- **Descriptor-driven screen:** generators under `core/utils/generator/inventory/` turn records into card, filter and dialog descriptors. Sections only render them.
+- **Dialogs:** built on a new `Modal` molecule and prefilled from real records. They never call the network; confirmations reuse the shared `ConfirmDialog` with `action: null`.
+
+**Reference.** PYN_CONNECT_PROGRESS.md §17, context.md §13, gaps_properties_detail_feature.md §4.

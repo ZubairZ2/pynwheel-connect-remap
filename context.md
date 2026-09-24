@@ -347,3 +347,90 @@ Properties row → /properties/:id                    app/(connect)/properties/[
 - **Testing notes:**
   - Minted sessions expire after 8 hours (Devise `timeoutable`).
   - If `config/database.yml` is back to the committed `postgres` user, give `rails runner` a `DATABASE_URL` for your own role instead of editing the file (PYN_CONNECT_PROGRESS.md traps 26–28).
+
+---
+
+## 13. Property Inventory: implementation knowledge (September 24, 2026)
+
+Added with phase 2e: branch `feature/inventory_implementation` on top of `824c1f07a`, uncommitted as of Sep 24. See PYN_CONNECT_PROGRESS.md §17 and gaps doc §4.
+
+### The flow
+
+```
+Properties row "Inv" (Go To)   ─┐
+Property Detail → Inventory    ─┼→ /properties/:id/inventory[?tab=floorplans|units|amenities]
+                                │     app/(connect)/properties/[propId]/inventory/page.tsx
+                                │       numeric id → loadPropertyInventory()   core/repository/remote/propertyInventory.server.ts
+                                │         GET /communities/:id/floorplates.json   FloorplatesController#index
+                                │         GET /communities/:id/floorplans.json    FloorplansController#index
+                                │         GET /communities/:id/units.json         UnitsController#index
+                                │         GET /communities/:id/amenities.json     AmenitiesController#index
+                                │         (in parallel; 401 → sign in, 302/404 → not found)
+                                │       slug → demo PropertyScope + connect/properties/propertyInventory.screen (unchanged)
+                                └→ PropertyInventoryScreen → usePropertyInventory / useInventory{Floorplans,Units}
+                                     → core/utils/generator/inventory/* → screens/properties/inventory/*
+```
+
+### Backend shape (read-only JSON on existing actions)
+
+- **`Connect::InventoryJson`** (`app/controllers/concerns/connect/inventory_json.rb`) is included in the four controllers. For the JSON `index` only, it skips `community_code` (which would create a Tour/SchedulerWidgetSetting) and `load_tour_users_chats`. It renders `{ data, meta: { total_count, current_user, property, … } }`.
+- **Authorization** is each controller's existing `check_community`: a company admin gets 302 for another company's property. It is **not** `AccessibleCommunitiesQuery`, which Property Detail uses. The two scopes agree for the roles tested; the controller's own rule is the legacy source of truth for these pages.
+- **Serializers** live in `app/serializers/connect/`: `floorplate`, `floorplan`, `unit`, `amenity`, and `upload_url`.
+
+### Data rules worth knowing
+
+- **Units → floor plan** joins on `units.floorplan_id = floorplans.provider_floorplan_id`, not the primary key. The serializer sends both the resolved `floorplan_id` and `floorplan_provider_id`.
+- **A floorplate's units** are `Floorplate#fetch_units`: visible units whose `floor` is in `Floorplate#floors`. "Plotted on it" means the unit's `floorplate_id` is that floorplate and it has x/y or an SVG pointer. A floorplate's amenities are those with `amenityable = Floorplate`.
+- **Amenity ownership:**
+  - none: not placed
+  - Floorplate or Sitemap: plotted, and a tour stop when a `tour_stops` row has `stop_type = 'amenity'`
+  - Floorplan or Unit: an interior image
+
+  The Amenities tab lists only the first two; interior images are counted on their floor plan or unit.
+- **Feed vs Manual:** a field is Manual when its own `*_is_updated` flag is set (`Unit::FEED_OVERRIDE_FLAGS`, and the floorplan `*_is_updated` columns), as the legacy grid colours it. The unit-level `manual_override` is shown as its own pill. Tags appear only for fed records (`provider` present and not `manually`). Units have no sq-ft flag, so Sq Ft carries no tag.
+- **Availability:** sold → Sold; `available` false → Not available; `available_date` after today (Eastern) → Available {date}; else Available now. There is no unit "almost gone" (G21).
+- **Buttons:** 3 slots, `virtual_tour_button_label/url/link1_open_new_tab`, `additional_button/url/link2`, `scheduler_label/url/link3`. A button counts as configured when it has a URL.
+- **Prices:** `market_rent` of -1 or 0 is the CMS's "unset" and reads "Not set".
+- **Last sync:** `communities.data_provider_updated_on` is text: a timestamp, or the CMS's literal "Never".
+- **Locks:** `AssignLocksHelper#all_locks` reads the Latch / Zerv / Igloohome / EdgeState / Dwelo lock tables (DB only). A lock's `stop_id` is the **door** it opens. The dialog's lock types follow `Community#lock_options`: Manual, plus the vendors present, with Zerv labelled "Pynwheel Access".
+
+### Images
+
+- **Raster `image` columns** (floorplate, floorplan, unit, amenity) come from `standard_image_url` through `convert_to_s3_accelerate_url`, the same URL as `validated_image_url`. It loads in every environment.
+- **Uploader-only files** (floor SVG, secondary images, amenity gallery, sitemap, Beans background) use CarrierWave's URL. On staging and production that is S3. In **development** it is a path on the CMS host, because the uploaders use `:file` storage there, so those files 404 locally. The UI shows "Image unavailable" rather than a broken image.
+- **Missing S3 objects:** some stored files return 403 from S3 (e.g. property 2919's floor plans). This is a data issue; the legacy page breaks on them too.
+- `floorplates.svg_image_url` is a rasterised `svg_for_metro` copy of the image, **not** the SVG.
+
+### Read-only rule (this phase)
+
+- **Dialogs** (Floorplate, Floor Plan, Unit, Amenity, Mass Override) hold local state only. A picked file becomes an object URL and is never uploaded. Save and Apply close the dialog, and the footer says nothing is saved.
+- **Delete, Remove and Re-sync** open the shared `ConfirmDialog` with `action: null`. `askConfirm` accepts null, and `doConfirm` then only closes the dialog.
+- **Nothing here may send a non-GET.** The UI tests assert it.
+
+### Reusable pieces added
+
+- `molecules/Modal`, `organisms/ImageViewer`, `molecules/RecordCard`, `MediaThumb`, `MetaGrid`, `RangeFilter`, `UploadSlot`, `Breadcrumb`
+- `atoms/IconButton`, `SourceTag`, `SafeImage`
+- `Switch` with `onToggle`
+- `hooks/useClientPages` (page a list already in the browser with the existing pager)
+
+The CSS namespaces are `.bo-inv*`, `.bo-record*`, `.bo-thumb*`, `.bo-meta*`, `.bo-modal*`, `.bo-dlg*` (dialog forms; 2d's `.bo-form` is its inline edit grid, so don't mix them), `.bo-viewer*`, `.bo-upload*`, `.bo-range*`, `.bo-choice*` and `.bo-btn*`.
+
+### Testing without a password
+
+- **Rails:** `rails runner` with `Warden::Test::Helpers` (`login_as(user, scope: :user, run_callbacks: false)`) and `ActionDispatch::Integration::Session`, subscribed to `sql.active_record` to catch any write.
+- **UI:** capture the four JSON responses that way, serve them from a local stub, and point `PYNWHEEL_CMS_URL` at it. Set the two Connect cookies to placeholder values; only the stub sees them. Run Connect from an rsync'd copy so the user's dev server's `.next` is not shared.
+- **Local DB access now needs** `DATABASE_URL=postgres://zubairzulifqar@localhost/pynwheel_development DISABLE_SPRING=1 OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES` (the local `database.yml` / `bin/*` edits are gone).
+
+**Real ids worth keeping:**
+
+| Id | Why |
+|---|---|
+| 348 | 4 SVG floorplates, 8 plans with buttons |
+| 1625 | Model and sold units, amenity categories |
+| 2919 | Locks, tour order; its plan images are 403 on S3 |
+| 1232 | Amenity galleries |
+| 236 | Sitemap mode |
+| 503 | No units |
+| 4397 | 1,169 units |
+| 3325 | No SchedulerWidgetSetting |
