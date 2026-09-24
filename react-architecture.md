@@ -2505,3 +2505,38 @@ switches real buttons is a follow-up worth doing before this UI goes in front of
 **Reference:**
 `pyn-connect-web/playwright.config.ts`, `pyn-connect-web/tests/e2e/`,
 `pyn-connect-web/src/app/screen-harness/[screen]/page.tsx`; run with `npm run test:e2e`.
+
+### September 24, 2026 — Infrastructure Update: multi-select filters on server-paged listings
+
+**What was missing:**
+The 22-Sep design (`pyn-connect-22-sep-new.html`) turns the Properties filters into multi-selects
+(`MultiFilter.dc.html`) and adds a fourth filter, Data Providers. The listing is paged in SQL
+(phase 1b), so filtering cannot move to the client. The existing flow also had a race: one filter
+change per navigation, rebuilt from `useSearchParams()`. A second change made while the first page was
+still loading would be built on the old URL and drop the first change.
+
+**What was found/implemented:**
+
+- **Where the state lives.** The URL is still the source of truth: one comma-separated parameter per
+  filter, e.g. `?stage=released,approval&data_provider=yardi,none`. `usePropertiesListing` keeps a
+  local copy of the selection, so the ticks show at once. Every navigation writes **all four** filters
+  from that copy, so a quick second tick builds on the first. When the URL changes on its own (back
+  button, a shared link), the copy re-syncs during render, following React's "adjusting state when a
+  prop changes" pattern. No effect is involved.
+- **Rails** reads the lists in `AccessibleCommunitiesQuery#list_param`. Within a filter the values are
+  ORed as whitelisted SQL fragments (`STAGE_CONDITIONS`, `PRODUCT_CONDITIONS`); filters are ANDed. The
+  options a single page cannot produce, and the header totals, travel in `meta`: `filters.data_providers`,
+  `scope_total_count` and `property_total_count`.
+- **Components.** `MultiFilter` is a molecule. It holds only its open state and knows nothing about
+  URLs. `CustomTable` gains two cell types from generators: `tags` and `links` (the Go To buttons,
+  plain `next/link` anchors). It also gains an `actions` column kind.
+- **Scoping a screen that has its own picker.** The Integrations Hub chooses its property from a
+  dropdown, so the strict `PropertyScope` would revert every change. `PropertyPreselect` selects the
+  property from `?property=` once, holds the first frame until the store agrees, and then steps aside.
+
+**Reference:**
+`pyn-connect-web/src/core/hooks/usePropertiesListing.ts`,
+`pyn-connect-web/src/core/components/molecules/MultiFilter.tsx`,
+`pyn-connect-web/src/core/components/organisms/CustomTable.tsx`,
+`pyn-connect-web/src/core/components/connect/PropertyScope.tsx`,
+`app/queries/accessible_communities_query.rb`; PYN_CONNECT_PROGRESS.md §14.

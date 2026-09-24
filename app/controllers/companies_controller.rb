@@ -136,12 +136,18 @@ class CompaniesController < ApplicationController
   private
 
   def render_connect_companies
-    scope = AccessibleCompaniesQuery.new(current_user, params).call
-    page = Connect::PaginatedCollection.new(scope, page: params[:page], per_page: params[:per_page])
+    query = AccessibleCompaniesQuery.new(current_user, params)
+    page = Connect::PaginatedCollection.new(query.call, page: params[:page], per_page: params[:per_page])
 
     render json: Connect::ResponseEnvelope.new(
       data: Connect::CompanySerializer.collection(page.records),
-      meta: Connect::ResponseEnvelope.listing_meta(current_user, page.total_count, pagination: page.meta)
+      meta: Connect::ResponseEnvelope.listing_meta(
+        current_user,
+        page.total_count,
+        pagination: page.meta,
+        # The listing header's totals, which ignore the search.
+        extra: { scope_total_count: query.accessible.count, property_total_count: query.property_total }
+      )
     ).as_json
   end
 

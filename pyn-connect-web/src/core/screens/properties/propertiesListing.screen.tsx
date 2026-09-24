@@ -2,6 +2,7 @@
 
 import { CORE_STRINGS } from '~/config/app/strings';
 import { i18n } from '~/resources/i18n';
+import { MultiFilter } from '~/core/components/molecules/MultiFilter';
 import { SearchField } from '~/core/components/molecules/SearchField';
 import { Pagination } from '~/core/components/organisms/Pagination';
 import { ResourceListingTemplate } from '~/core/templates/ResourceListingTemplate';
@@ -11,7 +12,6 @@ import type {
   CompanyFilterOption,
   Pagination as PaginationMeta
 } from '~/core/models/data/session.data';
-import type { FilterOption } from '~/core/utils/generator/listing.types';
 import type { PropertyFilters } from '~/core/utils/generator/propertyListing.generator';
 
 interface Props {
@@ -19,6 +19,9 @@ interface Props {
   pagination: PaginationMeta | null;
   filters: PropertyFilters;
   companyOptions: CompanyFilterOption[];
+  dataProviderOptions: string[];
+  /** Every property the user can see, before search and filters. */
+  scopeTotal: number | null;
   error?: string | null;
 }
 
@@ -27,24 +30,37 @@ export const PropertiesListingScreen = ({
   pagination,
   filters: initialFilters,
   companyOptions: companyFilterOptions,
+  dataProviderOptions: dataProviderSlugs,
+  scopeTotal,
   error
 }: Props) => {
   const {
-    filters,
+    query,
     setQuery,
-    setFilter,
+    selection,
+    toggleFilter,
+    clearFilter,
     columns,
     rows,
     pager,
+    summary,
     isPending,
     stageOptions,
     companyOptions,
     productOptions,
+    dataProviderOptions,
     goToPage
-  } = usePropertiesListing(properties, pagination, initialFilters, companyFilterOptions);
+  } = usePropertiesListing(
+    properties,
+    pagination,
+    initialFilters,
+    { companies: companyFilterOptions, dataProviders: dataProviderSlugs },
+    scopeTotal
+  );
 
   return (
     <ResourceListingTemplate
+      summary={summary}
       error={error}
       columns={columns}
       rows={rows}
@@ -54,29 +70,43 @@ export const PropertiesListingScreen = ({
       toolbar={
         <>
           <SearchField
-            className="bo-toolbar__search"
-            value={filters.query}
+            className="bo-toolbar__search bo-toolbar__search--narrow"
+            value={query}
             onChange={setQuery}
             ariaLabel={i18n.t(CORE_STRINGS.properties.search)}
             placeholder={i18n.t(CORE_STRINGS.properties.search)}
           />
-          <FilterSelect
-            label={i18n.t(CORE_STRINGS.properties.allStatuses)}
-            value={filters.stage}
+          <MultiFilter
+            label={i18n.t(CORE_STRINGS.properties.filters.status)}
+            allLabel={i18n.t(CORE_STRINGS.properties.filters.allStatuses)}
             options={stageOptions}
-            onChange={(value) => setFilter('stage', value)}
+            selected={selection.stage}
+            onToggle={(id) => toggleFilter('stage', id)}
+            onClear={() => clearFilter('stage')}
           />
-          <FilterSelect
-            label={i18n.t(CORE_STRINGS.properties.allCompanies)}
-            value={filters.companyId}
+          <MultiFilter
+            label={i18n.t(CORE_STRINGS.properties.filters.companies)}
+            allLabel={i18n.t(CORE_STRINGS.properties.filters.allCompanies)}
             options={companyOptions}
-            onChange={(value) => setFilter('companyId', value)}
+            selected={selection.companyId}
+            onToggle={(id) => toggleFilter('companyId', id)}
+            onClear={() => clearFilter('companyId')}
           />
-          <FilterSelect
-            label={i18n.t(CORE_STRINGS.properties.allProducts)}
-            value={filters.product}
+          <MultiFilter
+            label={i18n.t(CORE_STRINGS.properties.filters.products)}
+            allLabel={i18n.t(CORE_STRINGS.properties.filters.allProducts)}
             options={productOptions}
-            onChange={(value) => setFilter('product', value)}
+            selected={selection.product}
+            onToggle={(id) => toggleFilter('product', id)}
+            onClear={() => clearFilter('product')}
+          />
+          <MultiFilter
+            label={i18n.t(CORE_STRINGS.properties.filters.dataProviders)}
+            allLabel={i18n.t(CORE_STRINGS.properties.filters.allDataProviders)}
+            options={dataProviderOptions}
+            selected={selection.dataProvider}
+            onToggle={(id) => toggleFilter('dataProvider', id)}
+            onClear={() => clearFilter('dataProvider')}
           />
         </>
       }
@@ -91,25 +121,3 @@ export const PropertiesListingScreen = ({
     />
   );
 };
-
-interface FilterSelectProps {
-  label: string;
-  value: string;
-  options: FilterOption[];
-  onChange: (value: string) => void;
-}
-
-const FilterSelect = ({ label, value, options, onChange }: FilterSelectProps) => (
-  <select
-    className="bo-select"
-    aria-label={label}
-    value={value}
-    onChange={(event) => onChange(event.target.value)}
-  >
-    {options.map((option) => (
-      <option key={option.id} value={option.id}>
-        {option.label}
-      </option>
-    ))}
-  </select>
-);

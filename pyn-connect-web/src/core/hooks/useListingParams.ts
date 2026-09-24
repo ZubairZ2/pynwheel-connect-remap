@@ -24,8 +24,8 @@ export const useListingParams = () => {
       Object.entries(updates).forEach(([key, value]) => {
         const asString = value == null ? '' : String(value).trim();
 
-        // `all` is the filter selects' "no filter" option, and page 1 is the
-        // default — neither belongs in the URL.
+        // An empty filter, the old selects' `all` ("no filter") and page 1
+        // are all defaults — none belongs in the URL.
         if (asString === '' || asString === 'all' || (key === 'page' && asString === '1')) {
           next.delete(key);
         } else {

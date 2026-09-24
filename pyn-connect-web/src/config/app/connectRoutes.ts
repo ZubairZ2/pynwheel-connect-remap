@@ -80,6 +80,14 @@ export const brandingRoute = (propId: string): string => `/properties/${propId}/
 export const contentRoute = (propId: string): string => `/properties/${propId}/content`;
 
 /**
+ * The Integrations Hub is not property-scoped (it has its own property picker),
+ * so a jump from one property's row names the property as a query parameter
+ * the Hub starts on.
+ */
+export const propIntegrationsRoute = (propId: string): string =>
+  `${CONNECT_ROUTES.integrations}?property=${encodeURIComponent(propId)}`;
+
+/**
  * Which sidebar entry lights up for a screen (`NAV_GROUP` in the design).
  * Property- and company-scoped screens stay under their parent listing.
  */

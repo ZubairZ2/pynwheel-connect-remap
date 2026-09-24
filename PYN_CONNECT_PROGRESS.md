@@ -3,7 +3,7 @@
 **Last updated:** September 24, 2026
 **Read this first in a new session.** For what the repository itself is (Rails stack, models, roles, integrations), see [context.md](context.md).
 
-This is the single progress document. It merges the original phase 1/2 handoff with the Sep 23 summary (formerly `progress.md`, now removed), and it is current through the Heroku staging deploy.
+This is the single progress document. It merges the original phase 1/2 handoff with the Sep 23 summary (formerly `progress.md`, now removed), and it is current through phase 2c (§14).
 
 ---
 
@@ -16,6 +16,7 @@ This is the single progress document. It merges the original phase 1/2 handoff w
 | **2**: Full `pyn-connect-new.html` UI on demo data | [feature-whole-ui-next.md](feature-whole-ui-next.md) | `feat/pyn-connect-full-ui` | ✅ Done |
 | **2b**: Merge 1b into 2 | — | `feat/pyn-connect-full-ui` (`4ec2242aa`) | ✅ Done. ⚠️ One doc section was lost (see §10) |
 | **Staging deploy** on Heroku (Rails and Connect) | chat, Sep 23 | apps `pyn-system` and `pyn-system-connect` | ✅ Live |
+| **2c**: Companies and Properties listings → the 22-Sep design | chat, Sep 24 | `feature/Companies_and_properties_improvments` (uncommitted) | ✅ Done, 4 items deferred (§14) |
 | **3**: Replace demo data with real Rails data | *brief not written yet* | — | ⏭ Next (§11) |
 
 **`feat/pyn-connect-full-ui` is now the working branch.** It contains everything above. `feat/pyn-connect-initial-screens` is fully merged into it and only matters for PR #1.
@@ -42,6 +43,7 @@ This is the single progress document. It merges the original phase 1/2 handoff w
 | `feature1.md`, `feature-whole-ui-next.md` | The phase 1 and 2 briefs | Plain markdown |
 | [react-architecture.md](react-architecture.md) | The architecture to follow **and keep updated** | §1–19 describe the **ezofficeinventory** React SPA (`/Users/zubairzulifqar/ezofficeinventory`, a different product). §20 is the dated log of how that maps onto Connect |
 | `pyn-connect-new.html` | The design, 20 MB | **Not plain HTML.** It is a bundled page; see §13 for how to extract it. **Never paste it into a chat**, because it overflows the context |
+| `pyn-connect-22-sep-new.html` | The 22-Sep revision of the design, 21 MB. **Now the target** for Companies and Properties (§14) | Same bundle format as above (§13) |
 
 `/Users/zubairzulifqar/pyn-system` is a separate future monorepo. **This work does not go there.**
 
@@ -76,6 +78,7 @@ This is the single progress document. It merges the original phase 1/2 handoff w
 | `app/serializers/connect/response_envelope.rb` | `{ data, meta, flash_messages }`, with `meta.current_user` on every listing |
 | `app/serializers/connect/paginated_collection.rb` | *1b.* One page plus `{ page, per_page, total_count, total_pages }`. A page past the end clamps to the last page |
 | `app/serializers/connect/{company,property}_serializer.rb` | Row shapes. The four company association counts use one grouped query each |
+| *2c* listing meta | `companies.json`: `scope_total_count`, `property_total_count`. `communities.json`: `scope_total_count`, `filters.data_providers`. Filters take comma-separated lists; `data_provider` is new (§14) |
 | `vendor/assets/javascripts/jsTimezoneDetect.js` | *Heroku.* Vendored in place of the `rails-assets-jsTimezoneDetect` gem, so the build does not depend on rails-assets.org (`d5280f9ff`) |
 
 - **Endpoints:** `GET /companies.json` and `GET /communities.json`. Both need a Devise session.
@@ -99,6 +102,7 @@ route (server component) → API module → parser → model → screen → hook
 | Pure descriptor builders (columns, rows, pills, filters, pager) | `src/core/utils/generator/` |
 | Auth route handlers and health check | `src/app/api/auth/{sign-in,sign-out}/route.ts`, `src/app/api/health/route.ts` |
 | Pagination UI | `core/components/organisms/Pagination.tsx`; `useListingParams`, `useDebouncedSearch`; `loading.tsx` for each listing route |
+| *2c* multi-select filter | `core/components/molecules/MultiFilter.tsx` (the design's `MultiFilter.dc.html`) |
 | *Phase 2* route registry | `src/config/app/connectRoutes.ts` |
 | *Phase 2* React ↔ legacy ERB switch | `src/config/app/reactFlow.ts` |
 | *Phase 2* screen harness for e2e | `src/app/screen-harness/[screen]`. 404s unless `PYN_CONNECT_SCREEN_HARNESS=on` |
@@ -205,6 +209,12 @@ The full rationale is in react-architecture.md §20.
     - It cannot filter out `versions`, so restore from the laptop with `pg_restore -L … --no-owner --no-acl`.
     - The restore must finish **before** the first `db:migrate`.
 
+**Phase 2c (local verification)**
+
+17. **Port 3000 may belong to another app.** On Sep 24 an `ezofficeinventory` Puma took :3000 mid-session and this repo's Rails was killed. Run Rails on another port (e.g. `-p 3100`) and start Connect with `PYNWHEEL_CMS_URL=http://127.0.0.1:3100 npm run dev`. The environment variable overrides `.env.local`.
+18. **`fonts.gstatic.com` resets connections from this machine**, so the e2e "no console errors" checks fail on the font request, not the app (§14).
+19. **In Ruby, `[false].any?` is `false`.** Check `empty?` before adding a clause built from booleans.
+
 ---
 
 ## 7. Running locally
@@ -225,7 +235,7 @@ npm run dev
 |---|---|
 | Types | `npm run typecheck`. ✅ Clean on `feat/pyn-connect-full-ui` after the merge (Sep 24) |
 | Build | `npm run build` |
-| End-to-end | `npm run test:e2e` (80 Playwright tests, real Chrome). Last recorded green **before** the 1b merge; re-run it |
+| End-to-end | `npm run test:e2e` (80 Playwright tests, real Chrome). Sep 24: 51 pass; the other 29 fail only on the unreachable Google Fonts request (trap 18) |
 
 - **Database:** `pynwheel_development` on local Postgres (217 companies, 803 communities).
 - **Sign-in account:** `salahudin@pynwheel.com` (Super admin). **Ask the user for the password**; it is deliberately not written down.
@@ -300,7 +310,8 @@ heroku run rails db:migrate -a pyn-system               # only when migrations a
    - Keep **`worker=0`** and add no scheduler until a post-restore scrub has run. Otherwise Sidekiq jobs and rake tasks will sync against real PMS/CRM systems and email or text real people.
    - The SMTP and Twilio vars are set on `pyn-system`, so even web-triggered mail can go out.
 2. ⚠️ **The pagination entry in react-architecture.md §20 was lost in the merge** (`4ec2242aa`). The section *"September 17, 2026 — Infrastructure Update: pagination"* exists in `dec760dda` but not on `feat/pyn-connect-full-ui`. Restore it from `git show dec760dda:react-architecture.md`.
-3. **Re-run `npm run test:e2e`** on the merged branch. Pagination moved Companies/Properties search and filters server-side after the e2e suite was written.
+3. **Re-run `npm run test:e2e` on a network that reaches Google Fonts.** Sep 24 gave 51 passes; the 29 failures were all the font request (§14). The suite does not cover the real listings, which need a Rails session.
+3a. **Phase 2c follow-ups:** see §14, "Remaining / follow-up".
 4. **PR for `feat/pyn-connect-full-ui`:** not opened yet. PR #1 (`initial-screens`) is still open against `main`.
 5. **`db/schema.rb` in git is stale** (see trap 8). The local copy has uncommitted edits.
 6. **Leftover local files:** `toc.list` and `toc-trimmed.list` (the restore's table of contents). Delete them or keep them out of git.
@@ -409,7 +420,7 @@ The Rails side repeats the phase 1 recipe:
 
 **Deliberately untracked; do not commit without asking:**
 
-- `pyn-connect-new.html` (20 MB)
+- `pyn-connect-new.html` (20 MB) and `pyn-connect-22-sep-new.html` (21 MB)
 - `feature1.md`, `feature-whole-ui-next.md`, `context.md` (until the user says otherwise)
 - `latest.dump*`, `pynwheel-staging.dump` (~6 GB)
 - the vendored bundle tree (`gems/`, `cache/`, `bundler/`, `extensions/`, `specifications/`, `build_info/`) and `bin/*` binstubs
@@ -432,4 +443,148 @@ manifest  = json.loads(grab('manifest'))    # uuid -> {mime, compressed, data(ba
 - The markup uses `sc-if` / `sc-for` with `{{ }}` bindings.
 - Screen state and seed data are in the `<script type="text/x-dc">` block at the end.
 - Screens are keyed by `isOrgs` (Companies), `isProperties` and `isAuth` (Sign In).
+- `pyn-connect-22-sep-new.html` extracts the same way. Its manifest adds `MultiFilter.dc.html` and `ImageUploader.dc.html` (`ext_resources` maps the ids to file names). Rendering the file in Chrome (`file://…`, click Sign in, then the nav) is the quickest way to screenshot a reference.
 - The four images for Sign In were extracted to `pyn-connect-web/public/images/`.
+
+---
+
+## 14. Phase 2c: Companies and Properties listings → the 22-Sep design
+
+**Brief (chat, Sep 24):** bring the two real-data listings in line with `pyn-connect-22-sep-new.html`, using `pyn-connect-new.html` as the baseline to find what changed. Branch `feature/Companies_and_properties_improvments`. **Not committed yet.**
+
+### How the two design files differ
+
+Both files extract the same way (§13). What differs, as far as these two screens are concerned:
+
+- **Template:** only the `isOrgs` and `isProperties` blocks change, plus the sign-out button, which moves from the sidebar footer to the top bar. The `<style>` block, `NAV`, `TITLES` and the Add Company/Property dialogs are identical.
+- **New sub-components:** `MultiFilter.dc.html` (a multi-select filter dropdown) and `ImageUploader.dc.html` (used by dialogs, not the listings). `StatusPill.dc.html` is byte-identical.
+- **New images:** six floor plan/floorplate PNGs. None is used by the listings.
+- **Seed/logic:** companies gain `status`/`statusV` (Active, Past Due, Onboarding). The property lifecycle grows from 5 stages to 7 (Order Received → Orientation). Filters become arrays. `visibleProps()` ANDs across filters and ORs within one.
+- **No `@media` rules** in either file. The only responsive hint added is `flex-wrap:wrap` on the header and the Properties toolbar.
+
+### Checklist
+
+Legend: ✅ done and verified · ⚠️ deliberately deferred (see "Deviations").
+Columns: **Old** = `pyn-connect-new.html`, **New** = `pyn-connect-22-sep-new.html`, **Before** = React before this phase.
+
+#### A. Shared components
+
+| # | Item | Old | New | Before | Change | Files | Status |
+|---|---|---|---|---|---|---|---|
+| A1 | Multi-select filter | Native `<select>`, one value | `MultiFilter`: button (all-label / one label / label + count badge, chevron), popover with checkbox rows, **Clear**, **Done**, "Showing everything" / "N selected" | `FilterSelect` (native select) | New molecule `MultiFilter` | `components/molecules/MultiFilter.tsx`, `globals.css` | ✅ |
+| A2 | Listing page header | None | Row above the toolbar: total (800 20px) and a subtle summary line (600 12.5px), baseline-aligned, wraps | None | `summary` slot on `ResourceListingTemplate` | `templates/ResourceListingTemplate.tsx`, `globals.css` | ✅ |
+| A3 | Sign-out button | 30×30 in the sidebar footer, next to the user | 38×38 (radius 8, 18px icon) in the top bar after the bell; the sidebar footer keeps only avatar, name and role | In the sidebar (30×30) | Moved to `Navbar` (applies to every screen) | `organisms/Navbar.tsx`, `organisms/Sidebar.tsx`, `atoms/Icons.tsx`, `globals.css` | ✅ |
+| A4 | "N records" in the top bar | Not in the design (a phase 1 addition) | The totals live in the page header (A2) | `Navbar` showed `{n} records` | Removed; A2 replaces it | `ListingScreenTemplate.tsx`, `ConnectScreenTemplate.tsx`, `Navbar.tsx`, both `page.tsx`, strings | ✅ |
+| A5 | Table cell types | — | Products-only tags; a row of link buttons | `integrations` cell (tags + lock/ID/PMS dots) | Added `tags` and `links` cells and an `actions` column kind; dropped `integrations` and its three dot icons | `organisms/CustomTable.tsx`, `generator/listing.types.ts`, `atoms/Icons.tsx`, `globals.css` | ✅ |
+| A6 | StatusPill | — | Byte-identical | Matches | None | — | ✅ |
+
+#### B. Companies listing
+
+| # | Item | Old | New | Before | Change | Files | Status |
+|---|---|---|---|---|---|---|---|
+| B1 | Header | None | "{N} Companies" · "{M} properties total", both unfiltered | None | Rails `meta.scope_total_count` + `meta.property_total_count`; parser, generator, screen | `companies_controller.rb`, `accessible_companies_query.rb`, `envelope.parser.ts`, `session.data.ts`, `companyListing.generator.ts`, `useCompaniesListing.ts`, `companiesListing.screen.tsx`, `companies/page.tsx` | ✅ "217 Companies · 802 properties total"; unchanged while searching |
+| B2 | Columns | Company · Regions · Portfolio Groups · PMS Provider · Properties · Users | Company · **Status** · PMS Provider · Properties | Same as old | Dropped Regions, Portfolio Groups and Users; added Status (left) | `companyListing.generator.ts`, strings | ✅ |
+| B3 | Status pill | — | Active / Past Due / Onboarding | — | `companies.inactivate` → **Inactive** (neutral), otherwise **Active** (ok) | `companyListing.generator.ts` | ✅ (1 of 217 is Inactive locally) |
+| B4 | Search matches status | Name, PMS, contact | Adds `status` | Name, email, PMS (server-side) | Rails search also matches the status words, by prefix | `accessible_companies_query.rb` | ✅ `q=inact` → 1, `q=active` → 216 |
+| B5 | Add Company button | Present | Present | Missing | Not built | — | ⚠️ |
+| B6 | Row click → company detail | Present | Present | Rows not clickable | Not built | — | ⚠️ |
+
+#### C. Properties listing
+
+| # | Item | Old | New | Before | Change | Files | Status |
+|---|---|---|---|---|---|---|---|
+| C1 | Header | None | "{N} Properties" · "Across {K} companies", or "Showing {n} of {N}" once filtered | None | Rails `meta.scope_total_count`; K = size of the company filter options | `communities_controller.rb`, `accessible_communities_query.rb`, parser, `propertyListing.generator.ts`, `usePropertiesListing.ts`, screen, `properties/page.tsx` | ✅ "802 Properties · Across 191 companies" / "Showing 637 of 802" |
+| C2 | Toolbar | Search 280px + 3 selects + Add | Same, now `flex-wrap:wrap` | Wraps; search 320px | Search max-width 280px | `propertiesListing.screen.tsx`, `globals.css` | ✅ |
+| C3 | Filters are multi-select | One value each | Status, Companies, Products, **Data Providers**; OR within a filter, AND across | Three single selects | `MultiFilter` ×4; Rails accepts comma lists (or `[]` arrays); URL `?stage=a,b&company_id=1,2&product=touch&data_provider=yardi,none` | `accessible_communities_query.rb`, `properties.api.ts`, `properties/page.tsx`, `usePropertiesListing.ts`, generator, screen | ✅ |
+| C4 | Status options | "All Statuses" + 5 long labels | STAGE_PILL labels, no "All" row | "All Statuses" + 5 pill labels | Dropped the "all" row | `propertyListing.generator.ts` | ✅ |
+| C5 | Company options | Every company | Only companies that have properties | Already only companies with visible properties | Dropped the "all" row | `propertyListing.generator.ts` | ✅ (191) |
+| C6 | Product options | Pynwheel Touch / Self-Guided Tour / Pynwheel Maps | Touch / Tour / Maps | Old labels | New labels, no "all" row | `propertyListing.generator.ts` | ✅ |
+| C7 | Data Providers filter | — | Vendors in scope + "Not connected", sorted, "Not connected" last | — | Rails `meta.filters.data_providers` and a `data_provider` filter; labels from `providerLabel`, which gained `spreadsheet`, `xml`, `rentmanager`, `zaremba` | `accessible_communities_query.rb`, `communities_controller.rb`, parser, both generators | ✅ 12 options |
+| C8 | Columns | Property · Company · Status · Integrations · Tour Published | Property · Company · **Go To** · **Products** · **Data Provider** · Status | Same as old | Reordered and replaced | `propertyListing.generator.ts`, strings | ✅ |
+| C9 | Go To buttons | — | Inv / Map / Integ / Brand: 52px wide, 15px icon, 8.5px uppercase label, accent on hover; cell padding 10px 16px; header `nowrap` | — | `links` cell → `/properties/:id/inventory`, `/properties/:id/map`, `/integrations?property=:id`, `/properties/:id/branding`. The Hub honours `?property=` through a new `PropertyPreselect` | generator, `CustomTable.tsx`, `connectRoutes.ts`, `integrations/page.tsx`, `PropertyScope.tsx` | ✅ (real ids land on the demo "no such property" state; see Deviations) |
+| C10 | Products column | Tags **and** lock/ID/PMS dots | Tags only, centred; "None" when empty | Tags + dots | `tags` cell | generator, `CustomTable.tsx` | ✅ |
+| C11 | Data Provider column | — | Vendor pill when connected, else "Not connected" (neutral) | — | Label `providerLabel(data_provider)`; variant from `integrations.pms` (ok with a credential, warn without) | generator | ✅ |
+| C12 | Status column | 3rd | Last | 3rd | Moved | generator | ✅ |
+| C13 | Tour Published column | Present | Removed | Present | Removed (the model keeps `tourPublished`) | generator, strings | ✅ |
+| C14 | Add Property button | Present | Present | Missing | Not built | — | ⚠️ |
+| C15 | Row click → property detail | Present | Present | Rows not clickable | Not built | — | ⚠️ |
+
+#### D. Styling and layout
+
+| # | Item | Change | Status |
+|---|---|---|---|
+| D1 | Header typography and spacing (A2) | `bo-listing__header`, `__total`, `__summary` | ✅ |
+| D2 | MultiFilter skin (A1) | Idle: white, `--bo-line` border, muted text. Active: `--bo-accent-soft` background, accent border and text; 18px count badge; 250–340px panel, radius 11, two-layer shadow | ✅ compared with the rendered design |
+| D3 | Go To buttons (C9) | `bo-goto`, `bo-goto__link`, `bo-goto__label` | ✅ |
+| D4 | Properties search 280px (C2) | `bo-toolbar__search--narrow` | ✅ |
+| D5 | Top-bar sign-out 38×38 (A3) | `bo-iconbutton` restyled (its only user) | ✅ |
+
+#### E. Interactions and behaviour
+
+| # | Item | Change | Status |
+|---|---|---|---|
+| E1 | MultiFilter | Opening one closes the others; click-away closes; **Done** closes; **Clear** empties that filter; each toggle applies at once. Escape closes and returns focus (added) | ✅ |
+| E2 | Rapid toggles | The selection is held in `usePropertiesListing`; every navigation sends all four filters, so a second toggle cannot drop the first while a page loads | ✅ ticked two filters without waiting; both reached the URL |
+| E3 | Filter change → page 1 | Existing `useListingParams` behaviour | ✅ |
+| E4 | Back/forward and shared links | The selection re-syncs whenever the URL's filters change | ✅ Back restored "Status 2" on page 2 |
+| E5 | Sign out from the top bar | Same flow: `POST /api/auth/sign-out` → `/sign-in` | ✅ cookies cleared; the guard then redirects |
+
+#### F. Pagination
+
+| # | Item | Change | Status |
+|---|---|---|---|
+| F1 | Server-side pager, 10 per page | Kept. Neither design paginates; phase 1b requires it | ✅ |
+| F2 | Filters survive paging; paging keeps filters | Existing `keepPage` | ✅ `…&page=2` → "11–20 of 202" |
+| F3 | "Showing n of N" agrees with the pager | Both read the filtered `total_count` | ✅ |
+
+#### G. Responsive
+
+| # | Item | Change | Status |
+|---|---|---|---|
+| G1 | Header wraps | `flex-wrap` | ✅ |
+| G2 | Toolbar wraps with four filters | Existing `flex-wrap`; at ≤760px the search takes its own row | ✅ |
+| G3 | MultiFilter panel stays on screen | Right-aligns when it would overflow; `max-width: min(340px, 100vw − 32px)` | ✅ |
+| G4 | Six-column table on narrow screens | `bo-panel__scroll` scrolls sideways inside the panel | ✅ no page overflow at 1024px or 390px |
+| G5 | Collapsed sidebar (≤1100px) | The sign-out button no longer overflows the 72px rail (A3) | ✅ |
+
+### Decisions
+
+1. **Filters stay server-side.** Multi-select needed the Rails query objects to accept lists. That is a query-parameter change on the existing `format.json` branches: no schema change, route change or new endpoint, and the HTML paths are untouched.
+2. **URL format:** one comma-separated parameter per filter (`stage=released,approval`). Rails also accepts `stage[]=…`. `none` means "no data provider". The old single-select value `all` is ignored, so bookmarks from before this phase still work.
+3. **Header totals come from Rails**, because one page of rows cannot produce them: `scope_total_count` (both listings) and `property_total_count` (Companies). "Across K companies" reuses the company filter's option count.
+4. **Company status** is `inactivate` → Inactive, otherwise Active. The CMS has no per-company billing or onboarding state.
+5. **Go To targets** are the React screens the design names. Integrations Hub has no property-scoped route and has its own property picker, so the link is `/integrations?property=:id`. `PropertyPreselect` selects that property once and then lets the picker take over. The strict `PropertyScope` would have reverted every change made in the picker.
+6. **The record count left the top bar** (A4) rather than appearing twice.
+
+### Deviations from the reference
+
+| Design | Here | Why |
+|---|---|---|
+| 7-stage lifecycle (Order Received … Orientation) in the Status pill and filter | The 5 real milestone stages (Installed, Activated, In Production, Final Approval, Released) | Only four milestone dates exist on `communities`; nothing records order, payment, installation or orientation |
+| Company status Active / Past Due / Onboarding | Active / Inactive | See decision 4 |
+| Add Company, Add Property (B5, C14) | Not rendered | Present in **both** designs. A real create needs a write path, which is still the open "read-only or real writes?" question (§11) |
+| Row click opens detail (B6, C15) | Rows are not links | Present in both designs. Detail screens still run on demo ids |
+| Go To opens that property's screens | Real (numeric) ids reach the explicit "No demo property with the id …" state | The destinations are demo screens until phase 3. The links are correct, so they will work unchanged once those screens read real data |
+| Products filter lists only products some property has | Always Touch, Tour, Maps | All three exist in the data (543 / 226 / 76) |
+| Search matches status by substring | By prefix | With Active/Inactive, a substring match makes "active" find every company |
+| No pager | Server pager kept | Phase 1b requirement |
+| Properties search looks ~190px wide | 280px (its `max-width`) | In the design it shares the row with the Add button, which is not rendered |
+| — | Escape closes a filter; panel flips left near the right edge; search on its own row at ≤760px | Accessibility and phone widths; the design has no responsive rules |
+
+### Verification (Sep 24, local DB, super admin)
+
+- **Rails** (`rails runner` and HTTP): the stage counts partition the 802 properties (113 / 592 / 44 / 8 / 45). Multi-value results equal the sums: `yardi,psi` = 86 + 137. `none` = 30. Unknown values are ignored. Search + 3 filters pages correctly (41 rows, 5 pages).
+- **UI** (Playwright in real Chrome, 1440 / 1024 / 390px): the header, columns, pills, Go To links, all four filters, paging, Clear, Back, deep links and the empty state all behave as listed above. No console errors from this work. The only console output is Next's existing warning about the sidebar logo `<Image>` sizing.
+- **Compared** side by side with the 22-Sep file rendered at 1440px: the listings, the filter panel and the top bar match, except for the deviations above.
+- **Sign In:** the page renders; a wrong password shows Devise's "Invalid Email or password."; the guard redirects; sign-out clears both cookies. A *successful* sign-in was not re-run, because the password is not recorded. The local checks used a session minted with `rails runner`. The sign-in route handler itself is unchanged.
+- `npm run typecheck` ✅ · `npm run build` ✅
+- `npm run test:e2e`: **51 passed, 29 failed**. All 29 fail on one thing: `fonts.gstatic.com` resets connections from this machine (`curl` fails the same way), and the "no console errors" check counts the failed font request. Each of those tests' content assertions passed. Re-run on a network that reaches Google Fonts.
+
+### Remaining / follow-up
+
+1. Add Company / Add Property, and row click → detail: after the phase 3 decision on writes, and once detail screens read real data.
+2. When Inventory, Map, Branding and Integrations become real (phase 3), the Go To links need no change.
+3. If the business adds a richer lifecycle or company billing status, extend `STAGE_CONDITIONS` / `STAGE_PILL` and the company status mapping.
+4. `Connect::CompanySerializer` still computes region, portfolio group and user counts that the listing no longer shows. That is three grouped queries per page; drop them if nothing else needs them.
+5. The Companies filter lists 191 companies in a 274px scroll with no search box, as the design has it. A search field inside the panel would help.
+6. Commit the branch and open a PR (no AI attribution, §3.11).

@@ -106,8 +106,20 @@ Company ─┬─ Region ─┐
 **Pynwheel Connect JSON** is a `format.json` branch on the *existing* controllers. There is no new API namespace:
 
 - `GET /companies.json`: `CompaniesController#index` → `Connect::CompanySerializer`
+  - Params: `page`, `per_page`, `q` (name, email, PMS provider, or a status word: `active` / `inactive`, matched by prefix).
+  - `meta`: `total_count` (after search), `pagination`, `current_user`, `scope_total_count` (every company the user can see) and `property_total_count` (properties across those companies).
 - `GET /communities.json`: `CommunitiesController#index` → `Connect::PropertySerializer`
+  - Params: `page`, `per_page`, `q`, and four filters. Each filter takes a comma-separated list (or `[]` array). Values are ORed within a filter; filters are ANDed:
+    - `stage`: installed, activated, production, approval, released
+    - `company_id`
+    - `product`: touch, tour, maps
+    - `data_provider`: a provider slug, or `none`
+  - `meta`: `total_count` (after search and filters), `pagination`, `current_user`, `scope_total_count` (before them), `filters.companies` and `filters.data_providers` (slugs; `none` when some properties have no provider).
 - Supporting code: `app/serializers/connect/` (envelope, paginated_collection, serializers) and `app/queries/accessible_{companies,communities}_query.rb`
+- **Derived values, not columns:**
+  - A property's lifecycle stage comes from four milestone dates (`date_activated`, `production_started_date`, `submitted_final_approval_date`, `released_date`).
+  - A company's status comes from `companies.inactivate`; `companies.locked` is unused (NULL everywhere).
+  - Neither the 22-Sep design's 7-stage lifecycle nor its Past Due / Onboarding company states has a column behind it.
 
 **Known dead route:** `namespace :sdk { get "map_config/:property_id" }` has no controller.
 
@@ -174,6 +186,8 @@ bundle exec rails s -p 3000 -b 127.0.0.1
 cd pyn-connect-web && npm install && npm run dev
 ```
 
+If :3000 is taken (another local app, such as ezofficeinventory, may hold it), run Rails with `-p 3100` and start Connect with `PYNWHEEL_CMS_URL=http://127.0.0.1:3100 npm run dev`.
+
 - **Tests (Rails):** Minitest with fixtures. Coverage is thin. Run `bin/rails test`.
 - **Tests (Connect):** `npm run typecheck`, `npm run build`. The full-UI branch adds `npm run test:e2e` (Playwright).
 
@@ -187,7 +201,7 @@ The working tree holds large local-only material. It is deliberately untracked o
 - The vendored bundle tree: `gems/`, `cache/`, `bundler/`, `extensions/`, `specifications/`, `build_info/`
 - Generated `bin/*` binstubs, and local edits to `bin/rails|rake|spring`
 - `config/database.yml` (local credentials) and `db/schema.rb` (local edits)
-- `pyn-connect-new.html` (the 20 MB design), `feature1.md`, `feature-whole-ui-next.md`
+- `pyn-connect-new.html` (the 20 MB design), `pyn-connect-22-sep-new.html` (its 21 MB Sep 22 revision), `feature1.md`, `feature-whole-ui-next.md`
 - `.DS_Store`, and `toc*.list` (left over from the staging restore)
 
 **Hosting:** staging runs on Heroku as two apps: `pyn-system` (Rails) and `pyn-system-connect` (Next.js). Details are in [PYN_CONNECT_PROGRESS.md](PYN_CONNECT_PROGRESS.md) §8.
@@ -205,5 +219,6 @@ The working tree holds large local-only material. It is deliberately untracked o
 | [feature1.md](feature1.md) | Phase 1 brief (Sign In / Companies / Properties, real data) |
 | [feature-whole-ui-next.md](feature-whole-ui-next.md) | Phase 2 brief (full design on demo data) |
 | `pyn-connect-new.html` | The design (a bundled page, not plain HTML). PYN_CONNECT_PROGRESS.md §13 explains how to read it |
+| `pyn-connect-22-sep-new.html` | The 22-Sep revision of the design, and the target for Companies and Properties since phase 2c. Its differences from the original are listed in PYN_CONNECT_PROGRESS.md §14 |
 | [pyn-connect-web/README.md](pyn-connect-web/README.md), [DEPLOYMENT.md](pyn-connect-web/DEPLOYMENT.md) | Connect app readme; Docker/standalone deploy |
 | `docs/*.md` | Map SDK plans: map load performance, gallery endpoint, neighborhood endpoint, student-housing popups and unit-space grouping, SVG optimizer |

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { demoActions } from '~/core/store/demo/demo.slice';
 import { useAppDispatch, useAppSelector } from '~/core/store/hooks';
@@ -24,6 +24,29 @@ export const PropertyScope = ({ propId, children }: { propId: string; children: 
 
   if (!known) return <UnknownRecord kind="property" id={propId} />;
   if (current !== propId) return null;
+  return <>{children}</>;
+};
+
+/**
+ * For a screen with its own property picker (the Integrations Hub): select the
+ * property the link named, once, then let the picker take over. Holding the
+ * first render until the store agrees keeps the rule above — no frame shows
+ * another property's data.
+ */
+export const PropertyPreselect = ({ propId, children }: { propId: string; children: React.ReactNode }) => {
+  const dispatch = useAppDispatch();
+  const known = useAppSelector((s) => s.demo.props.some((p) => p.id === propId));
+  const current = useAppSelector((s) => s.demo.propId);
+  const [claimed, setClaimed] = useState(false);
+
+  useEffect(() => {
+    if (!known || claimed) return;
+    if (current === propId) setClaimed(true);
+    else dispatch(demoActions.selectProp(propId));
+  }, [known, claimed, current, propId, dispatch]);
+
+  if (!known) return <UnknownRecord kind="property" id={propId} />;
+  if (!claimed) return null;
   return <>{children}</>;
 };
 

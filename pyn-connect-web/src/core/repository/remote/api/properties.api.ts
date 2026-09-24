@@ -6,15 +6,17 @@ import { apiRequest, withQuery, type ApiResponse } from './base.api';
 export interface PropertiesQuery {
   page?: number;
   q?: string;
-  stage?: string;
-  companyId?: string;
-  product?: string;
+  stage?: string[];
+  companyId?: string[];
+  product?: string[];
+  dataProvider?: string[];
 }
 
 /**
  * GET /communities.json — the existing CommunitiesController#index, as JSON.
- * Search, the three filters and paging are all applied server-side, so the
- * response is one page of rows regardless of how many the user can see.
+ * Search, the four filters and paging are all applied server-side, so the
+ * response is one page of rows regardless of how many the user can see. Each
+ * filter can hold several values, sent as one comma-separated parameter.
  */
 export const fetchProperties = (
   cookie: string | null,
@@ -24,9 +26,10 @@ export const fetchProperties = (
     withQuery(CORE_URLS.properties.listing, {
       page: query.page,
       q: query.q,
-      stage: query.stage,
-      company_id: query.companyId,
-      product: query.product
+      stage: query.stage?.join(','),
+      company_id: query.companyId?.join(','),
+      product: query.product?.join(','),
+      data_provider: query.dataProvider?.join(',')
     }),
     { cookie }
   );

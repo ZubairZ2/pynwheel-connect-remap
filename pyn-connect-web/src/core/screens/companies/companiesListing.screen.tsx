@@ -13,18 +13,22 @@ interface Props {
   companies: Company[];
   pagination: PaginationMeta | null;
   initialQuery: string;
+  /** Companies and properties in the user's scope, before search. */
+  totals: { companies: number | null; properties: number | null };
   error?: string | null;
 }
 
-export const CompaniesListingScreen = ({ companies, pagination, initialQuery, error }: Props) => {
-  const { query, setQuery, columns, rows, pager, isPending, goToPage } = useCompaniesListing(
+export const CompaniesListingScreen = ({ companies, pagination, initialQuery, totals, error }: Props) => {
+  const { query, setQuery, columns, rows, pager, summary, isPending, goToPage } = useCompaniesListing(
     companies,
     pagination,
-    initialQuery
+    initialQuery,
+    totals
   );
 
   return (
     <ResourceListingTemplate
+      summary={summary}
       error={error}
       columns={columns}
       rows={rows}

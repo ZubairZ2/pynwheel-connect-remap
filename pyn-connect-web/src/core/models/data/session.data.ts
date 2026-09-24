@@ -27,6 +27,12 @@ export interface ListingMeta {
   currentUser: CurrentUser | null;
   pagination: Pagination | null;
   companyOptions: CompanyFilterOption[];
+  /** Data provider slugs in the user's scope; `none` stands for "no provider". */
+  dataProviderOptions: string[];
+  /** Everything the user can see before search and filters (the page header's total). */
+  scopeTotalCount: number | null;
+  /** Companies listing only: properties across every company in scope. */
+  propertyTotalCount: number | null;
 }
 
 /** The `{ data, meta, flash_messages }` envelope every endpoint returns. */

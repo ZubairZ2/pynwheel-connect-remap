@@ -28,11 +28,20 @@ export const CORE_STRINGS = {
     empty: 'companies.empty',
     columns: {
       company: 'companies.columns.company',
-      regions: 'companies.columns.regions',
-      portfolioGroups: 'companies.columns.portfolioGroups',
+      status: 'companies.columns.status',
       pmsProvider: 'companies.columns.pmsProvider',
-      properties: 'companies.columns.properties',
-      users: 'companies.columns.users'
+      properties: 'companies.columns.properties'
+    },
+    status: {
+      active: 'companies.status.active',
+      inactive: 'companies.status.inactive'
+    },
+    summary: {
+      companyOne: 'companies.summary.companyOne',
+      companyMany: 'companies.summary.companyMany',
+      propertyOne: 'companies.summary.propertyOne',
+      propertyMany: 'companies.summary.propertyMany',
+      total: 'companies.summary.total'
     },
     notConfigured: 'companies.notConfigured'
   },
@@ -40,24 +49,56 @@ export const CORE_STRINGS = {
     title: 'properties.title',
     search: 'properties.search',
     empty: 'properties.empty',
-    allStatuses: 'properties.allStatuses',
-    allCompanies: 'properties.allCompanies',
-    allProducts: 'properties.allProducts',
     units: 'properties.units',
-    published: 'properties.published',
-    notPublished: 'properties.notPublished',
+    noProducts: 'properties.noProducts',
+    notConnected: 'properties.notConnected',
+    filters: {
+      status: 'properties.filters.status',
+      allStatuses: 'properties.filters.allStatuses',
+      companies: 'properties.filters.companies',
+      allCompanies: 'properties.filters.allCompanies',
+      products: 'properties.filters.products',
+      allProducts: 'properties.filters.allProducts',
+      dataProviders: 'properties.filters.dataProviders',
+      allDataProviders: 'properties.filters.allDataProviders'
+    },
     columns: {
       property: 'properties.columns.property',
       company: 'properties.columns.company',
-      status: 'properties.columns.status',
-      integrations: 'properties.columns.integrations',
-      tourPublished: 'properties.columns.tourPublished'
+      goTo: 'properties.columns.goTo',
+      products: 'properties.columns.products',
+      dataProvider: 'properties.columns.dataProvider',
+      status: 'properties.columns.status'
+    },
+    goTo: {
+      inventory: 'properties.goTo.inventory',
+      inventoryShort: 'properties.goTo.inventoryShort',
+      map: 'properties.goTo.map',
+      mapShort: 'properties.goTo.mapShort',
+      integrations: 'properties.goTo.integrations',
+      integrationsShort: 'properties.goTo.integrationsShort',
+      branding: 'properties.goTo.branding',
+      brandingShort: 'properties.goTo.brandingShort'
+    },
+    summary: {
+      propertyOne: 'properties.summary.propertyOne',
+      propertyMany: 'properties.summary.propertyMany',
+      companyOne: 'properties.summary.companyOne',
+      companyMany: 'properties.summary.companyMany',
+      across: 'properties.summary.across',
+      showing: 'properties.summary.showing',
+      of: 'properties.summary.of'
     }
+  },
+  filter: {
+    clear: 'filter.clear',
+    done: 'filter.done',
+    showingEverything: 'filter.showingEverything',
+    selected: 'filter.selected'
   },
   shared: {
     signOut: 'shared.signOut',
     searchPlaceholder: 'shared.searchPlaceholder',
-    loadFailed: 'shared.loadFailed',
-    recordCount: 'shared.recordCount'
+    loadFailed: 'shared.loadFailed'
   }
 } as const;

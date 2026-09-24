@@ -1,10 +1,14 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import { CONNECT_ROUTES } from '~/config/app/connectRoutes';
+import { CORE_STRINGS } from '~/config/app/strings';
+import { APP_ROUTES } from '~/config/app/urls';
 import { Icon } from '~/core/components/atoms/connect/Icon';
+import { SignOutIcon } from '~/core/components/atoms/Icons';
+import { i18n } from '~/resources/i18n';
 import { demoActions } from '~/core/store/demo/demo.slice';
 import { useAppDispatch, useAppSelector } from '~/core/store/hooks';
 import {
@@ -15,16 +19,16 @@ import { orgRoute, propRoute } from '~/config/app/connectRoutes';
 
 interface Props {
   title: string;
-  recordCount?: number;
 }
 
 /**
  * The design's top bar: page title, omni-search over the demo data, environment
- * chip and the audit-log bell. Shared by every screen, old and new.
+ * chip, the audit-log bell and sign out. Shared by every screen, old and new.
  */
-export const Navbar = ({ title, recordCount }: Props) => {
+export const Navbar = ({ title }: Props) => {
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const [signingOut, setSigningOut] = useState(false);
   const query = useAppSelector((s) => s.demo.globalQuery);
   const demo = useAppSelector((s) => s.demo);
   const results = useMemo(() => generateGlobalResults(demo), [demo]);
@@ -43,15 +47,16 @@ export const Navbar = ({ title, recordCount }: Props) => {
     }
   };
 
+  const signOut = async () => {
+    setSigningOut(true);
+    await fetch('/api/auth/sign-out', { method: 'POST' });
+    router.replace(APP_ROUTES.signIn);
+    router.refresh();
+  };
+
   return (
     <header className="bo-topbar">
       <h1 className="bo-topbar__title">{title}</h1>
-      {recordCount != null && (
-        <>
-          <span className="bo-topbar__divider" aria-hidden="true" />
-          <span className="bo-topbar__count">{recordCount.toLocaleString()} records</span>
-        </>
-      )}
 
       <span className="bo-topbar__divider" aria-hidden="true" />
 
@@ -130,6 +135,17 @@ export const Navbar = ({ title, recordCount }: Props) => {
           <path d="M13.73 21a2 2 0 0 1-3.46 0" />
         </svg>
         <span className="bo-bell__dot" aria-hidden="true" />
+      </button>
+
+      <button
+        type="button"
+        className="bo-iconbutton"
+        aria-label={i18n.t(CORE_STRINGS.shared.signOut)}
+        title={i18n.t(CORE_STRINGS.shared.signOut)}
+        disabled={signingOut}
+        onClick={signOut}
+      >
+        <SignOutIcon />
       </button>
     </header>
   );
