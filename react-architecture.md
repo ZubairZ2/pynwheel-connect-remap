@@ -2291,58 +2291,217 @@ decode from the manifest island, commit under `public/`, reference through `next
 `pyn-connect-web/src/core/components/organisms/Sidebar.tsx`,
 `pyn-connect-web/public/images/`; the `__bundler/manifest` island in `pyn-connect-new.html`.
 
-### September 17, 2026 — Infrastructure Update: pagination
+### September 17, 2026 — Infrastructure Update: the full design port, and where demo data lives
 
 **What was missing:**
-The September 17 entry on listing scope recorded that neither listing was paginated, and that if the
-row count became a problem pagination belonged in the backend rather than the frontend. It did:
-Properties shipped 802 rows (404 KB) and Companies 217 (58 KB) on every load, and serializing the
-full Properties list took ~2.3 s. The document also did not say **which** pagination this codebase
-uses — it has both `kaminari` and `will_paginate` in the Gemfile.
+§§1–19 describe a frontend whose every screen is fed by the network: thunk → API module → parser →
+slice. `feature-whole-ui-next.md` asks for the opposite — the complete `pyn-connect-new.html` UI,
+about thirty screens, driven entirely by local demo data, with no new controllers, endpoints or
+schema. Nothing in this document said where that data should live, nor how a screen with no API
+behind it keeps the layering honest.
 
 **What was found/implemented:**
-`will_paginate` is the de-facto standard here: `SvgOptimizerController`,
-`PartnerConfigurationsController`, `ImpressionsController` and `UnitsController` all call
-`.paginate(page:, per_page:)`, and `SvgOptimizerController#paginated_property_rows` is the closest
-precedent — SQL-level filters in the scope, paging in SQL, with a documented fallback for filters
-that can only be computed in Ruby. Both Connect listings now follow it, 10 rows per page:
+Demo data is a *source*, not a shortcut past the layers. It enters at the bottom and travels the
+same path a parsed API response would:
 
-- `Connect::PaginatedCollection` wraps a relation and exposes `meta` as
-  `{ page, per_page, total_count, total_pages }`. It clamps a page past the end to the last page, so
-  a stale bookmark shows the last page rather than an empty table. `current_page` is cast with
-  `to_i`: it is a `WillPaginate::PageNumber`, which would otherwise serialize as `"page 1"`.
-- `AccessibleCompaniesQuery` was added, mirroring the role branches of `CompaniesController#index`
-  as an ordered relation. The HTML path still uses `alphabetical_sort`; the JSON path orders in SQL
-  by `LOWER(name)`, because Ruby-side sorting cannot be paged in SQL. **This is a deliberate
-  ordering difference**: `alphabetical_sort` ignores a leading "The"/"(Dwelo)" when comparing, SQL
-  ordering does not. Only the JSON listing is affected.
-- `AccessibleCommunitiesQuery` gained the listing's search and three filters as SQL conditions. The
-  lifecycle-stage filter reproduces the serializer's date precedence (each stage asserts its own
-  milestone date and the absence of every later one). The Maps product flag only exists inside
-  `product_options`, a jsonb column holding a JSON *string*, so it is matched by unwrapping it:
-  `(product_options #>> '{}')::jsonb -> 'product_options' ->> 'pynwheel_maps'`.
-- The query object uses `preload`, not `includes`. An `includes` that turns into a JOIN would apply
-  `LIMIT`/`OFFSET` to joined rows, silently returning the wrong page.
+```
+src/data/mock/*.mock.ts     seed constants, lifted verbatim from the design
+        ↓
+core/models/data/connect/   typed domain models (the shape the UI expects)
+        ↓
+core/store/demo/            one Redux slice, seeded from the mocks
+        ↓
+core/utils/generator/connect/   pure state → descriptor transforms
+        ↓
+core/hooks/connect/         binds descriptors to dispatch + navigation
+        ↓
+core/screens/connect/       markup only
+```
 
-**Why the filters had to move to the backend:** they used to run in the browser over the whole
-dataset. Once the browser only holds ten rows, client-side filtering searches ten rows — a silent
-regression. Search, the three Properties filters and paging are therefore all server-side, and the
-Properties response carries `meta.filters.companies` because one page of rows cannot produce the
-company dropdown's options.
-
-**Frontend:** listing state lives in the URL (`?page=&q=&stage=&company_id=&product=`), so a page or
-filter change is a navigation that re-runs the server component and fetches exactly one page, and a
-refresh or shared link restores the same view. `generatePager` is a pure generator in the §8 sense;
-`Pagination` renders its descriptors and knows nothing about which listing it sits in. The loading
-state is `useTransition`'s `isPending` (the table dims, controls disable) plus a `loading.tsx` per
-route for the first load. Changing a filter resets to page 1; paging keeps the filters.
-
-**Measured:** Companies 58 KB → 3.1 KB, Properties 404 KB → 11.8 KB per request; warm responses
-40–70 ms; SQL confirmed as `LIMIT 10 OFFSET n` with preloads scoped to the page's ids.
+The rules from §3 hold unchanged: generators stay pure and never dispatch; screens never reach for
+the store directly; only the hook layer knows about `dispatch`. The one deliberate difference is
+that there are no thunks and no API modules on this path — there is no network. When an endpoint
+arrives for a screen, the slice's seeded `initialState` is replaced by a thunk writing parsed models
+into the same slice, and **nothing above the slice changes**. That is the whole point of keeping the
+mock data behind the models rather than inside the components.
 
 **Reference:**
-`app/serializers/connect/paginated_collection.rb`, `app/queries/accessible_companies_query.rb`,
-`app/queries/accessible_communities_query.rb`,
-`pyn-connect-web/src/core/utils/generator/pagination.generator.ts`,
-`pyn-connect-web/src/core/hooks/useListingParams.ts`;
-precedent: `app/controllers/svg_optimizer_controller.rb#paginated_property_rows`.
+`pyn-connect-web/src/data/mock/`, `pyn-connect-web/src/core/models/data/connect/`,
+`pyn-connect-web/src/core/store/demo/`.
+
+### September 17, 2026 — Infrastructure Update: Redux is now in use
+
+**What was missing:**
+The first Connect entry recorded that Redux was *deliberately not ported*, because three read-only
+listings had no cross-tree state, and noted that "if dialogs arrive, §9 applies as written".
+
+**What was found/implemented:**
+Dialogs arrived, along with a toast, a confirm dialog, a map editor whose selection is read by three
+panes at once, and a fee builder with drag-and-drop between categories. §9 now applies:
+`@reduxjs/toolkit` + `react-redux`, one `demo` slice, typed `useAppSelector` / `useAppDispatch`
+hooks (§7's "typed Redux hooks — mandatory").
+
+Two adaptations the App Router forces, neither of which §9 anticipated:
+
+1. **The store cannot be a module singleton.** Server components render per request, so a
+   module-level store would leak one visitor's demo edits into the next request. `StoreProvider`
+   creates it once per browser session in a ref instead.
+2. **Confirm dialogs store an action, not a callback.** The design passes a closure to
+   `askConfirm(...)`. Functions are not serialisable, so the slice stores
+   `{ type, payload }` and `doConfirm` dispatches it. The handful of flows that must read state
+   before deciding — auto-plot, publish, the delayed connection tests — register a named local
+   handler in `useConnectActions` instead, keyed by the same action `type`.
+
+Reducers are grouped by domain under `core/store/demo/reducers/` purely for file size; RTK still
+sees one flat reducer map, so action types stay `demo/<reducerName>`.
+
+**Reference:**
+`pyn-connect-web/src/core/store/store.ts`, `.../StoreProvider.tsx`, `.../demo/demo.slice.ts`,
+`.../demo/reducers/`, `pyn-connect-web/src/core/hooks/connect/useConnectActions.ts`.
+
+### September 17, 2026 — Infrastructure Update: routing, and screen ids as URLs
+
+**What was missing:**
+§5 describes `react-router-dom` with a single route table. The App Router has no route table, and
+the design has no routing at all — it keeps one `screen` string in component state and swaps the
+body, so nothing in either source said what the URLs should be.
+
+**What was found/implemented:**
+The design's screen ids are kept, because the sidebar, the page titles and the active-state rules
+are all keyed by them, but each one now resolves to a real URL in `config/app/connectRoutes.ts` —
+the App Router equivalent of §5's route table and `AppRoutes` enum. Deep links and the back button
+work as a result.
+
+Property- and company-scoped screens carry their record in the path
+(`/properties/:propId/map`) while the screens themselves still read `demo.propId`. `PropertyScope`
+/ `CompanyScope` / `UnitScope` bridge the two: they select the record from the URL and hold the
+first render back until the store agrees, so a deep link never paints one property's data under
+another's heading. An id the demo set does not contain renders an explicit empty state rather than
+silently falling back to the first record — which matters here, because `/companies` and
+`/properties` are Rails-backed and their real ids are numeric.
+
+**Reference:**
+`pyn-connect-web/src/config/app/connectRoutes.ts`,
+`pyn-connect-web/src/core/components/connect/PropertyScope.tsx`,
+`pyn-connect-web/src/app/(connect)/`.
+
+### September 17, 2026 — Infrastructure Update: the React ↔ legacy ERB switch
+
+**What was missing:**
+`feature-whole-ui-next.md` §12–13 ask for the existing Rails React mounting mechanism and its
+early-return escape hatch. That mechanism is
+`ApplicationController#react_supported_controller_action?` in **`ezofficeinventory`** — it does not
+exist in `pynwheel-staging`, and phase 1 did not add it.
+
+**What was found/implemented:**
+The two apps mount React differently, and the difference is load-bearing:
+
+| | `ezofficeinventory` | Pynwheel Connect |
+|---|---|---|
+| Who renders React | Rails, at the same URL as the ERB page | a separate Next app on its own origin |
+| The switch | `react_supported_controller_action?` | `reactFlowEnabled()` |
+| Escape hatch | commented-out `# return false` | commented-out `// return false;` |
+| Legacy ERB flow | rendered when the switch is false | the Rails app, always reachable, never modified |
+
+Adding the Rails concern here would have meant new backend infrastructure, which §13 forbids in the
+same breath as it asks for the hatch. So the switch lives at the single point that actually decides
+whether a visitor sees the React flow — the Connect layout — with the same shape and the same
+one-line hatch. When it returns false every Connect route redirects to the Rails app; Rails itself
+is untouched either way, which is why the ERB flow cannot break.
+
+**Reference:**
+`pyn-connect-web/src/config/app/reactFlow.ts`,
+`pyn-connect-web/src/app/(connect)/layout.tsx`;
+`ezofficeinventory/app/controllers/application_controller.rb:171`.
+
+### September 17, 2026 — Infrastructure Update: porting the design's markup
+
+**What was missing:**
+Nothing in §6 covers a design delivered as a template dialect. `pyn-connect-new.html`'s markup
+island is not HTML: it uses `sc-if` / `sc-for` elements, `{{ }}` interpolation,
+`sc-camel-on-click`-style event attributes, and `<dc-import name="StatusPill">` component tags,
+with every rule as an inline `style` attribute.
+
+**What was found/implemented:**
+The markup was translated mechanically rather than retyped, which is what keeps the port pixel-
+faithful: `sc-if` → a ternary, `sc-for` → `.map`, `sc-camel-on-*` → the React prop, `{{ expr }}` →
+a JSX expression, `<dc-import name="X">` → `<X />`, and inline styles → style objects with the
+duplicate declarations the cascade would have resolved collapsed to the last one. Bundled image
+UUIDs resolve to files under `public/images/` (same decoding route as the earlier assets entry).
+
+Two consequences worth knowing:
+
+- **Inline styles are deliberate in `core/screens/connect/`.** They are the design's own values,
+  carried across unchanged. Shared chrome — sidebar, topbar, pills, fields — uses the `.bo-*`
+  classes in `globals.css`; screens do not.
+- **Every screen's prop contract is exactly the free identifiers of its markup.** A screen
+  destructures what it renders and nothing else, so a hook that stops supplying a value is a type
+  error rather than an `undefined` on the page.
+
+The design is a fixed 1440px canvas with no responsive rules. The port keeps every content
+dimension and collapses only the chrome (sidebar to icons at 1100px, topbar extras at 760px), so
+desktop matches the design exactly and narrow screens stay usable.
+
+**Reference:**
+`pyn-connect-web/src/core/screens/connect/`,
+`pyn-connect-web/src/core/components/atoms/connect/StatusPill.tsx` (the `StatusPill.dc.html`
+component, including its label→variant vocabulary),
+`pyn-connect-web/src/core/components/atoms/connect/Icon.tsx` (the design's `ICONS` sheet, replacing
+its `paintIcons()` DOM pass).
+
+### September 17, 2026 — Infrastructure Update: what was left out, and why
+
+**What was missing:**
+The brief asks for every screen in the design. Two of them cannot be built under the brief's own
+constraints, and saying so is better than shipping something that looks finished and is not.
+
+**What was found/implemented:**
+
+- **Sign Up (`isSignup`).** The design has a registration screen. §14 of the brief forbids a new
+  authentication system and §6 forbids new backend endpoints; account creation needs both. The
+  screen is not ported. Sign In is untouched and still drives the existing Devise flow.
+- **The demo Companies / Properties listings (`isOrgs`, `isProperties`).** These two screens are
+  already implemented at `/companies` and `/properties` against the real database, from phase 1.
+  The brief says to leave them alone, so the design's mock versions were not built a second time.
+  Their detail screens *are* ported and run on demo data, reachable from the Dashboard and the
+  topbar search rather than from the real listings, whose ids belong to a different data set.
+
+**Reference:**
+`pyn-connect-web/src/app/(connect)/companies/page.tsx`,
+`pyn-connect-web/src/app/(connect)/properties/page.tsx`, `feature-whole-ui-next.md` §§2, 6, 14, 15.
+
+### September 17, 2026 — Infrastructure Update: end-to-end tests
+
+**What was missing:**
+§16 records that the reference implementation uses Jest + React Testing Library and that "coverage is
+partial". Phase 1 of Connect shipped no tests at all. Nothing said how to test screens that sit
+behind a Devise session the test runner has no credentials for.
+
+**What was found/implemented:**
+Playwright, driving real Chrome (`channel: 'chrome'`, so CI does not download a browser), in
+`pyn-connect-web/tests/e2e/`:
+
+| Spec | What it covers |
+|---|---|
+| `routes.spec.ts` | every sidebar URL resolves and is behind the session guard; Sign In still renders the Devise form; `/api/health` |
+| `screens.spec.ts` | all 29 ported screens render their own content, with **zero** console errors, page exceptions or failed requests; no dialog opens on its own |
+| `interactions.spec.ts` | tabs, search, filters, dialogs (open / validate / save / cancel), confirm-before-destroy including type-the-name, toggles writing through to the store, plotting a pin on the site plan, switching floors, the fee estimator recomputing, and no horizontal overflow at 390px |
+
+The session problem is solved by `app/screen-harness/[screen]`, which renders one screen with the
+demo store and the dialog host and nothing else. It is not part of the product: a production build
+404s unless `PYN_CONNECT_SCREEN_HARNESS=on` is set.
+
+Treating a console error as a test failure caught two real defects that a rendering smoke test would
+have missed: every dialog rendered open (the port had dropped the design's outer open/closed
+conditional), and the Integrations screen mismatched on hydration because a seed value used
+`Math.random()` — which is evaluated once on the server and again in the browser. Seed data must be
+deterministic for exactly that reason.
+
+**Known gap:** the design builds its switches as `<div onClick>`, so they are not reachable by
+keyboard and carry no `role="switch"`. The port keeps that markup to stay visually faithful and
+locates them structurally in tests. Icon-only `<button>`s did get accessible names. Making the
+switches real buttons is a follow-up worth doing before this UI goes in front of users.
+
+**Reference:**
+`pyn-connect-web/playwright.config.ts`, `pyn-connect-web/tests/e2e/`,
+`pyn-connect-web/src/app/screen-harness/[screen]/page.tsx`; run with `npm run test:e2e`.

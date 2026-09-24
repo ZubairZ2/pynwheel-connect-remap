@@ -754,3 +754,240 @@ table {
     display: none;
   }
 }
+
+/* ---------- design tokens the ported screens reference ---------- */
+/*
+ * Added with the full-UI port: the design's dark-chrome and logo-blade tokens.
+ * Logo blades are categorical only (bed tiers, device split, product families).
+ */
+:root {
+  --pw-primary-light-10: #e8f4fb;
+  --pw-logo-yellow: #ffd200;
+  --pw-logo-green: #8dc63f;
+  --pw-logo-coral: #f0603f;
+  --pw-logo-purple: #92499e;
+  --pw-logo-gray: #58595b;
+  --pw-font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  --bo-nav: #14161c;
+  --bo-nav-2: #1c1f29;
+  --bo-nav-line: #282c38;
+  --bo-nav-txt: #aeb4c0;
+  --bo-nav-txt-dim: #7b8291;
+}
+
+.bo-row:hover {
+  background: #fafafb;
+}
+
+.bo-navitem:hover {
+  background: var(--bo-side-hover);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c6cad2;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+input,
+textarea,
+select {
+  font-family: var(--bo-font);
+}
+
+/* ---------- sidebar badge ---------- */
+
+.bo-navbadge {
+  background: #c62534;
+  color: #fff;
+  font: 800 10px var(--bo-font);
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+/* ---------- topbar omni-search ---------- */
+
+.bo-globalsearch {
+  flex: 1;
+  max-width: 340px;
+  position: relative;
+}
+
+.bo-globalsearch__icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.bo-globalsearch__input {
+  width: 100%;
+  height: 36px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 0 12px 0 36px;
+  font: 500 13px var(--bo-font);
+  color: var(--bo-ink);
+  outline: none;
+  background: var(--bo-side-hover);
+}
+
+.bo-globalsearch__input:focus {
+  border-color: var(--bo-accent);
+  background: #fff;
+}
+
+.bo-globalsearch__panel {
+  position: absolute;
+  top: 44px;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid var(--bo-line);
+  border-radius: 10px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.14);
+  overflow: hidden;
+  z-index: 40;
+}
+
+.bo-globalsearch__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: none;
+  border-bottom: 1px solid var(--bo-line-2);
+  background: #fff;
+  cursor: pointer;
+  width: 100%;
+}
+
+.bo-globalsearch__row:hover {
+  background: #fafafb;
+}
+
+.bo-globalsearch__badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: #eef0f4;
+  color: var(--bo-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.bo-globalsearch__name {
+  display: block;
+  font: 700 12.5px var(--bo-font);
+  color: var(--bo-ink);
+}
+
+.bo-globalsearch__sub {
+  display: block;
+  font: 600 11px var(--bo-font);
+  color: var(--bo-subtle);
+}
+
+.bo-globalsearch__kind {
+  font: 700 10px var(--bo-font);
+  color: var(--bo-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.bo-globalsearch__empty {
+  padding: 14px 12px;
+  font: 600 12px var(--bo-font);
+  color: var(--bo-subtle);
+}
+
+.bo-globalsearch__clear {
+  display: block;
+  width: 100%;
+  padding: 9px 12px;
+  background: #fafafb;
+  border: none;
+  font: 700 11px var(--bo-font);
+  color: var(--bo-muted);
+  cursor: pointer;
+  text-align: right;
+}
+
+/* ---------- notifications bell ---------- */
+
+.bo-bell {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  border: 1px solid var(--bo-line);
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  color: var(--bo-muted);
+  flex-shrink: 0;
+}
+
+.bo-bell__dot {
+  position: absolute;
+  top: 8px;
+  right: 9px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #e03b45;
+  border: 1.5px solid #fff;
+}
+
+/* ---------- responsive ---------- *
+ * The design is a fixed 1440px canvas. The port keeps every dimension inside
+ * the content area and only collapses the chrome, so nothing reflows on
+ * desktop while narrow screens stay usable.
+ */
+@media (max-width: 1100px) {
+  .bo-sidebar {
+    width: 72px;
+  }
+
+  .bo-sidebar__header,
+  .bo-sidebar__username,
+  .bo-sidebar__role,
+  .bo-chip,
+  .bo-navitem > span:not(.bo-navbadge) {
+    display: none;
+  }
+
+  .bo-navitem {
+    justify-content: center;
+  }
+
+  .bo-globalsearch {
+    max-width: 180px;
+  }
+}
+
+@media (max-width: 760px) {
+  .bo-content {
+    padding: 16px;
+  }
+
+  .bo-topbar {
+    padding: 0 16px;
+  }
+
+  .bo-globalsearch,
+  .bo-topbar__count,
+  .bo-env {
+    display: none;
+  }
+}

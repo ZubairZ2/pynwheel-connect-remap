@@ -28,6 +28,7 @@ export const railsURL = (path: string): string => `${baseURLGenerator()}${path}`
 /** Client-side routes of this app. */
 export const APP_ROUTES = {
   signIn: '/sign-in',
+  dashboard: '/dashboard',
   companies: '/companies',
   properties: '/properties'
 } as const;
