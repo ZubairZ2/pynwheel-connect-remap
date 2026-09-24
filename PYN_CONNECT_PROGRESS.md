@@ -3,7 +3,12 @@
 **Last updated:** September 24, 2026
 **Read this first in a new session.** For what the repository itself is (Rails stack, models, roles, integrations), see [context.md](context.md).
 
-This is the single progress document. It merges the original phase 1/2 handoff with the Sep 23 summary (formerly `progress.md`, now removed), and it is current through phase 2c (§14).
+This is the single progress document. It merges the original phase 1/2 handoff with the Sep 23 summary (formerly `progress.md`, now removed), and it is current through **phase 2d** (§15, revised in §16).
+
+- Phases 1 to 2c are merged to `main` (PR #3 was the last).
+- Phase 2d, the real-data Property Detail page, is on branch `feature/properties_detail_page`. Its backend gaps are in [gaps_properties_detail_feature.md](gaps_properties_detail_feature.md).
+  - First version: commit `ef9e4549a` (local, not pushed).
+  - Revision under the relaxed backend rule (§16): in the working tree / staged.
 
 ---
 
@@ -11,15 +16,19 @@ This is the single progress document. It merges the original phase 1/2 handoff w
 
 | Phase | Brief | Where | State |
 |---|---|---|---|
-| **1**: Sign In, Companies, Properties on real data | [feature1.md](feature1.md) | `feat/pyn-connect-initial-screens`, **PR #1** open against `main` | ✅ Done |
+| **1**: Sign In, Companies, Properties on real data | [feature1.md](feature1.md) | `feat/pyn-connect-initial-screens` → `main`, **PR #1** (merged) | ✅ Done |
 | **1b**: Pagination, 10 per page, server-side | chat request, Sep 17 | `feat/pyn-connect-initial-screens` (`dec760dda`) | ✅ Done |
-| **2**: Full `pyn-connect-new.html` UI on demo data | [feature-whole-ui-next.md](feature-whole-ui-next.md) | `feat/pyn-connect-full-ui` | ✅ Done |
+| **2**: Full `pyn-connect-new.html` UI on demo data | [feature-whole-ui-next.md](feature-whole-ui-next.md) | `feat/pyn-connect-full-ui` → `main`, **PR #2** (merged) | ✅ Done |
 | **2b**: Merge 1b into 2 | — | `feat/pyn-connect-full-ui` (`4ec2242aa`) | ✅ Done. ⚠️ One doc section was lost (see §10) |
 | **Staging deploy** on Heroku (Rails and Connect) | chat, Sep 23 | apps `pyn-system` and `pyn-system-connect` | ✅ Live |
-| **2c**: Companies and Properties listings → the 22-Sep design | chat, Sep 24 | `feature/Companies_and_properties_improvments` (uncommitted) | ✅ Done, 4 items deferred (§14) |
+| **2c**: Companies and Properties listings → the 22-Sep design | chat, Sep 24 | `feature/Companies_and_properties_improvments` → `main`, **PR #3** (merged) | ✅ Done, 4 items deferred (§14) |
+| **2d**: Property Detail on real data, no backend changes | `properties_detail_feature.md`, Sep 24 | `feature/properties_detail_page` (`ef9e4549a`, local, no PR yet) | ✅ Done for what the listing exposed (§15) |
+| **2d-r**: Property Detail, revised rule (read-only JSON on `communities#edit`) | `properties_detail_feature.md` §9a, Sep 24 | `feature/properties_detail_page` (not yet committed) | ✅ Every design section on real data except R1–R4 in [gaps_properties_detail_feature.md](gaps_properties_detail_feature.md) §0 (§16) |
 | **3**: Replace demo data with real Rails data | *brief not written yet* | — | ⏭ Next (§11) |
 
-**`feat/pyn-connect-full-ui` is now the working branch.** It contains everything above. `feat/pyn-connect-initial-screens` is fully merged into it and only matters for PR #1.
+**`main` holds everything above except 2d** (PRs #1–#3 merged, Sep 24). Local `main` is one commit ahead of `origin/main` (`c9416ae67`, this doc's catch-up; not pushed).
+
+The three older feature branches are fully merged. Phase 2d's work sits uncommitted on `feature/properties_detail_page`. Commit and open a PR, or merge it, before starting other work from `main`.
 
 ---
 
@@ -34,16 +43,17 @@ This is the single progress document. It merges the original phase 1/2 handoff w
 | Screens | Data |
 |---|---|
 | Sign In, Companies, Properties | **Real**: Devise and the local/staging Postgres |
-| The other 29 screens and 9 dialogs | **Demo**: `pyn-connect-web/src/data/mock/*.mock.ts` |
+| Property Detail for a real (numeric) id, *2d* | **Real**, but only the fields the Properties listing row carries (§15) |
+| The other 29 screens and 9 dialogs, including the demo Property detail for slug ids (`/properties/luxe`) | **Demo**: `pyn-connect-web/src/data/mock/*.mock.ts` |
 
 ### Input files
 
 | File | What it is | How to read it |
 |---|---|---|
-| `feature1.md`, `feature-whole-ui-next.md` | The phase 1 and 2 briefs | Plain markdown |
+| `feature1.md`, `feature-whole-ui-next.md`, `properties_detail_feature.md` | The phase 1, 2 and 2d briefs | Plain markdown |
 | [react-architecture.md](react-architecture.md) | The architecture to follow **and keep updated** | §1–19 describe the **ezofficeinventory** React SPA (`/Users/zubairzulifqar/ezofficeinventory`, a different product). §20 is the dated log of how that maps onto Connect |
 | `pyn-connect-new.html` | The design, 20 MB | **Not plain HTML.** It is a bundled page; see §13 for how to extract it. **Never paste it into a chat**, because it overflows the context |
-| `pyn-connect-22-sep-new.html` | The 22-Sep revision of the design, 21 MB. **Now the target** for Companies and Properties (§14) | Same bundle format as above (§13) |
+| `pyn-connect-22-sep-new.html` | The 22-Sep revision of the design, 21 MB. **Now the target** for Companies and Properties (§14) and Property Detail (§15) | Same bundle format as above (§13) |
 
 `/Users/zubairzulifqar/pyn-system` is a separate future monorepo. **This work does not go there.**
 
@@ -83,6 +93,8 @@ This is the single progress document. It merges the original phase 1/2 handoff w
 
 - **Endpoints:** `GET /companies.json` and `GET /communities.json`. Both need a Devise session.
 - **Constraints kept:** no schema change, migration, route change or auth change.
+- **Phase 2d added nothing on the Rails side.** Property Detail reads the `communities.json` rows (§15).
+- **Revision 2d-r (§16):** `communities_controller.rb` `#edit` gained a JSON branch (`render_connect_property_detail`), served by the new `app/serializers/connect/property_detail_serializer.rb`. Endpoint: `GET /communities/:id/edit.json`. The HTML path, queries, models and schema are unchanged.
 
 ### Next.js side, `pyn-connect-web/`
 
@@ -106,6 +118,10 @@ route (server component) → API module → parser → model → screen → hook
 | *Phase 2* route registry | `src/config/app/connectRoutes.ts` |
 | *Phase 2* React ↔ legacy ERB switch | `src/config/app/reactFlow.ts` |
 | *Phase 2* screen harness for e2e | `src/app/screen-harness/[screen]`. 404s unless `PYN_CONNECT_SCREEN_HARNESS=on` |
+| *2d* one property by id | ~~`propertyLookup.server.ts`, walking `communities.json`~~. Removed in 2d-r: `fetchPropertyDetail` → `GET /communities/:id/edit.json`, parsed by `parsePropertyDetail` (§16) |
+| *2d* Property Detail, real data | `app/(connect)/properties/[propId]/page.tsx` (numeric id → real, slug → demo), `core/screens/properties/propertyDetail.screen.tsx`, `core/hooks/usePropertyDetail.ts`, `core/utils/generator/propertyDetail.generator.ts` |
+| *2d* detail building blocks | `core/components/molecules/DetailSection.tsx`, `core/components/atoms/Switch.tsx` (read-only); `RowDescriptor.href` makes `CustomTable` rows open their record |
+| *2d* hand-off links to the legacy CMS | `legacyCmsURLs` in `src/config/app/urls.ts` (built on `NEXT_PUBLIC_CMS_URL`) |
 
 **Rules:**
 - Only route handlers and server components touch the network.
@@ -118,7 +134,7 @@ route (server component) → API module → parser → model → screen → hook
 | Group | Screens |
 |---|---|
 | Overview | Dashboard |
-| Accounts | Company detail, Regions, Portfolio Groups; Property detail, Pricing & Availability, Units & Floor Plans, Unit detail, Map & Plotting, Property Inventory, Tour Setup, Design System & Branding, Property Content |
+| Accounts | Company detail, Regions, Portfolio Groups; Property detail (slug ids only since 2d; real ids use the §15 screen), Pricing & Availability, Units & Floor Plans, Unit detail, Map & Plotting, Property Inventory, Tour Setup, Design System & Branding, Property Content |
 | Leasing | Tour Scheduling, Pricing Calculator, Favorites & eBrochure |
 | Residents | Resident Access |
 | Platform | Integrations Hub, SVG Maps Optimizer, Partner Configuration, White-Label Builds, Live Chat, AI Services |
@@ -168,6 +184,8 @@ src/data/mock/*.mock.ts → core/models/data/connect → core/store/demo (one Re
 | Property: lock / identity / PMS dots | `enable_locks` + provider; `tours.visual_id_verification`; `data_provider` + `credential` |
 | Property: Tour Published | The community's tour has at least one `tour_stop` |
 
+| *2d* Property Detail: header, Profile (Name, City · State, Units), Products, Inventory (Units), lifecycle | The same listing row. Every other Property Detail field is mapped to its column in [gaps_properties_detail_feature.md](gaps_properties_detail_feature.md) |
+
 Three design columns have **no** counterpart and were left out rather than faked:
 - a company contact person
 - a per-property region column
@@ -215,6 +233,18 @@ The full rationale is in react-architecture.md §20.
 18. **`fonts.gstatic.com` resets connections from this machine**, so the e2e "no console errors" checks fail on the font request, not the app (§14).
 19. **In Ruby, `[false].any?` is `false`.** Check `empty?` before adding a clause built from booleans.
 
+**Phase 2d (Property Detail)**
+
+20. **Rails had no single-property JSON and no id filter** (2d). The first version walked the listing: 9 requests for a super admin, 2–3 s in dev. *Superseded by §16:* `communities#edit.json` answers in one request.
+21. **The demo `STAGES` mock puts Final Approval *after* Released.** The real order (the serializer's ranking) is installed → activated → production → approval → released. Do not reuse the mock for real data.
+22. **A Google Fonts stall can make one browser navigation take ~30 s** (trap 18, intermittent). Before blaming the app, read the time in the Next log (`GET /properties/364 200 in 159ms`) or `curl` the page.
+23. **`globals.css` has no margin reset, and `a` is accent-blue.** New classes must zero their own `h2`/`h3`/`p`/`dl`/`dd`/`ul` margins. A link meant to look like text needs its own `color`.
+24. **`loading.tsx` wraps nested routes.** `properties/[propId]/loading.tsx` ("Loading property…") also shows while the demo sub-screens (`/properties/:id/map`, …) load.
+25. **The property's own tour is `Community#community_tour`** (the last tour with `tour_user_id: nil`). `has_one :tour` can return a visitor's customised copy. For 1411 that is 4 stops instead of the real 5. The listing's `tour_published` still uses `community.tour`.
+26. **Devise sessions time out after 8 hours** (`timeoutable`), so a minted session goes 401 overnight. Re-mint it.
+27. **If `config/database.yml` has been reset to the committed version** (`username: postgres`, a role this machine lacks), `rails runner` fails to connect. Prefix it with `DATABASE_URL=postgres://$(whoami)@localhost/pynwheel_development` rather than editing the file. Also prefix `DISABLE_SPRING=1 OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES` if it crashes on fork.
+28. **The dev server's evented file watcher can lag** a second or two after a Ruby edit. Re-request before assuming a change did not load.
+
 ---
 
 ## 7. Running locally
@@ -233,12 +263,33 @@ npm run dev
 
 | Check | Command |
 |---|---|
-| Types | `npm run typecheck`. ✅ Clean on `feat/pyn-connect-full-ui` after the merge (Sep 24) |
+| Types | `npm run typecheck`. ✅ Clean on `feature/properties_detail_page` (Sep 24) |
 | Build | `npm run build` |
-| End-to-end | `npm run test:e2e` (80 Playwright tests, real Chrome). Sep 24: 51 pass; the other 29 fail only on the unreachable Google Fonts request (trap 18) |
+| End-to-end | `npm run test:e2e` (80 Playwright tests, real Chrome; start dev with `PYN_CONNECT_SCREEN_HARNESS=on`). Sep 24, also re-run on 2d: 51 pass; the other 29 fail only on the unreachable Google Fonts request (trap 18) |
 
 - **Database:** `pynwheel_development` on local Postgres (217 companies, 803 communities).
 - **Sign-in account:** `salahudin@pynwheel.com` (Super admin). **Ask the user for the password**; it is deliberately not written down.
+- **Testing without the password:** mint a Devise session with `rails runner`, then give Connect its two cookies. Used for 2c and 2d; the script is below.
+- **Other test users:** `jleinweber@zaremba.net` (Company admin, company 129) is handy for scope checks. Only property 364 is visible to them; 365–368 are locked.
+
+```ruby
+# EMAIL=someone@pynwheel.com bundle exec rails runner mint_session.rb   (local dev only)
+user = User.find_by!(email: ENV.fetch('EMAIL'))
+key  = Rails.application.config.session_options[:key] || '_pynwheel-cms_session'
+env  = Rack::MockRequest.env_for('http://127.0.0.1:3000/').merge(Rails.application.env_config)
+jar  = ActionDispatch::Request.new(env).cookie_jar
+jar.encrypted[key] = { value: {
+  'session_id' => SecureRandom.hex(16),
+  'warden.user.user.key' => [[user.id], user.authenticatable_salt],
+  'warden.user.user.session' => { 'last_request_at' => Time.now.to_i },
+  '_csrf_token' => SecureRandom.base64(32) } }
+puts JSON.generate(rails_cookie: "#{key}=#{Rack::Utils.escape(jar[key])}",
+                   user: Connect::ResponseEnvelope.current_user_meta(user))
+```
+
+In the browser (Playwright `context.addCookies`, on the Connect origin, httpOnly), set:
+- `pyn_connect_rails_session` = `encodeURIComponent(rails_cookie)`
+- `pyn_connect_user` = `encodeURIComponent(JSON.stringify(user))`
 - `pyn-connect-web/.env.local` points at `http://127.0.0.1:3000`.
 - Docker and standalone deployment: [pyn-connect-web/DEPLOYMENT.md](pyn-connect-web/DEPLOYMENT.md).
 
@@ -310,9 +361,10 @@ heroku run rails db:migrate -a pyn-system               # only when migrations a
    - Keep **`worker=0`** and add no scheduler until a post-restore scrub has run. Otherwise Sidekiq jobs and rake tasks will sync against real PMS/CRM systems and email or text real people.
    - The SMTP and Twilio vars are set on `pyn-system`, so even web-triggered mail can go out.
 2. ⚠️ **The pagination entry in react-architecture.md §20 was lost in the merge** (`4ec2242aa`). The section *"September 17, 2026 — Infrastructure Update: pagination"* exists in `dec760dda` but not on `feat/pyn-connect-full-ui`. Restore it from `git show dec760dda:react-architecture.md`.
-3. **Re-run `npm run test:e2e` on a network that reaches Google Fonts.** Sep 24 gave 51 passes; the 29 failures were all the font request (§14). The suite does not cover the real listings, which need a Rails session.
+3. **Re-run `npm run test:e2e` on a network that reaches Google Fonts.** Sep 24 gave 51 passes; the 29 failures were all the font request (§14). The suite does not cover the real listings or the real Property Detail, which need a Rails session. The 2d checks were run by hand with a minted session (§7, §15).
 3a. **Phase 2c follow-ups:** see §14, "Remaining / follow-up".
-4. **PR for `feat/pyn-connect-full-ui`:** not opened yet. PR #1 (`initial-screens`) is still open against `main`.
+3b. **Phase 2d follow-ups:** see §15, "Follow-ups", and [gaps_properties_detail_feature.md](gaps_properties_detail_feature.md).
+4. **Pull requests:** none open. PRs #1, #2 and #3 are all merged into `main`. Phase 2d is uncommitted on `feature/properties_detail_page`.
 5. **`db/schema.rb` in git is stale** (see trap 8). The local copy has uncommitted edits.
 6. **Leftover local files:** `toc.list` and `toc-trimmed.list` (the restore's table of contents). Delete them or keep them out of git.
 
@@ -350,7 +402,7 @@ The Rails side repeats the phase 1 recipe:
 | Partner Configuration | `partner_configurations#*` (JSON on update/bulk) | Ready/Partial |
 | Scheduling | `schedual_tours/index.json.jbuilder`; `tour_users`, `opening_hours` | Ready/Partial |
 | Favorites & eBrochure | `favorite_settings`, `favorite_images`, `ebrochure_menu_buttons` | Ready/Partial |
-| Property detail | Extend `Connect::PropertySerializer` (products, locks, `move_to_production`, counts) | Partial |
+| Property detail | *2d:* the real screen exists, on listing-row data only (§15). Next: a detail endpoint (`communities#show` JSON + `Connect::PropertyDetailSerializer`) for the fields in the gaps doc (G1–G13) | Partial: frontend ready |
 | Company detail | `companies#edit`, `company_settings`; history would come from `versions` | Partial |
 | Dashboard | `home#index` counts; stages from `move_to_production` / `statuses` | Partial |
 | Tour Setup | `tours#index/settings/select_stops` | Partial |
@@ -371,7 +423,7 @@ The Rails side repeats the phase 1 recipe:
 ### Suggested order: read-only first, most value for least effort
 
 1. **Regions and Portfolio Groups.** This finishes the Companies drill-down.
-2. **Property detail.** Extending `PropertySerializer` feeds the property header and the Dashboard KPIs.
+2. **Property detail.** The frontend is done (2d, §15). What remains is backend: a detail serializer for the gaps doc's fields (profile, settings, billing, inventory counts). It also feeds the Dashboard KPIs.
 3. **Units, Unit detail and Inventory.** Paginate them the way phase 1b did.
 4. **Branding, Pricing Calculator and SVG Maps Optimizer.** Their JSON endpoints already exist.
 5. **Billing, then Users & Roles.**
@@ -417,11 +469,25 @@ The Rails side repeats the phase 1 recipe:
 | `4ec2242aa` | full-ui | Merge branch 'feat/pyn-connect-initial-screens' into feat/pyn-connect-full-ui |
 | `d5280f9ff` | full-ui | Vendor jstz so Heroku does not need rails-assets.org |
 | `605c9116c` | full-ui | Bind Next.js to Heroku PORT and pin Node 22 |
+| `3dc79eb86` | main | Merge pull request #1 from ZubairZ2/feat/pyn-connect-initial-screens |
+| `6df3da6e7` | full-ui | progress file for the project (this doc and `context.md`) |
+| `ea0c89072` | main | Merge pull request #2 from ZubairZ2/feat/pyn-connect-full-ui |
+| `8aa39721f` | 2c | Bring the Companies and Properties listings in line with the 22-Sep design |
+| `e75a4d90e` | main | Merge pull request #3 from ZubairZ2/feature/Companies_and_properties_improvments |
+| `c9416ae67` | main | Bring the progress doc up to date with the merged PRs. Not on `origin/main`; it reached GitHub only as the tip of the (otherwise empty) pushed `origin/feature/properties_detail_page` |
+| `ef9e4549a` | 2d | Add the Property Detail page on real listing data. **Local, not pushed** |
+
+"Branch" is where the commit was made. "both" means the two phase 1/2 branches. All of these are on local `main` now.
+
+**Phase 2d:** `feature/properties_detail_page` was cut from `c9416ae67`.
+- Its first commit is `ef9e4549a` (§15).
+- The §16 revision is staged on top of it and not yet committed.
+- `feature/inventory_implementation` (the Inventory page) is a separate branch; its work is not part of these commits.
 
 **Deliberately untracked; do not commit without asking:**
 
 - `pyn-connect-new.html` (20 MB) and `pyn-connect-22-sep-new.html` (21 MB)
-- `feature1.md`, `feature-whole-ui-next.md`, `context.md` (until the user says otherwise)
+- `feature1.md`, `feature-whole-ui-next.md`, `properties_detail_feature.md` (the briefs). (`context.md` has been tracked since `6df3da6e7`. `gaps_properties_detail_feature.md` is a 2d deliverable and **should** be committed with it.)
 - `latest.dump*`, `pynwheel-staging.dump` (~6 GB)
 - the vendored bundle tree (`gems/`, `cache/`, `bundler/`, `extensions/`, `specifications/`, `build_info/`) and `bin/*` binstubs
 - the local edits to `bin/rails|rake|spring`, `config/database.yml` and `db/schema.rb`
@@ -442,7 +508,8 @@ manifest  = json.loads(grab('manifest'))    # uuid -> {mime, compressed, data(ba
 
 - The markup uses `sc-if` / `sc-for` with `{{ }}` bindings.
 - Screen state and seed data are in the `<script type="text/x-dc">` block at the end.
-- Screens are keyed by `isOrgs` (Companies), `isProperties` and `isAuth` (Sign In).
+- Screens are keyed by `isOrgs` (Companies), `isProperties`, `isPropertyDetail` and `isAuth` (Sign In).
+- To pull one screen out of the template, start at `<sc-if value="{{ isPropertyDetail }}"` and count nested `<sc-if>` / `</sc-if>` until the depth returns to zero. Its computed values (`productCards`, `configCards`, `profile`, …) are in the `render` state of the `text/x-dc` block.
 - `pyn-connect-22-sep-new.html` extracts the same way. Its manifest adds `MultiFilter.dc.html` and `ImageUploader.dc.html` (`ext_resources` maps the ids to file names). Rendering the file in Chrome (`file://…`, click Sign in, then the nav) is the quickest way to screenshot a reference.
 - The four images for Sign In were extracted to `pyn-connect-web/public/images/`.
 
@@ -450,7 +517,7 @@ manifest  = json.loads(grab('manifest'))    # uuid -> {mime, compressed, data(ba
 
 ## 14. Phase 2c: Companies and Properties listings → the 22-Sep design
 
-**Brief (chat, Sep 24):** bring the two real-data listings in line with `pyn-connect-22-sep-new.html`, using `pyn-connect-new.html` as the baseline to find what changed. Branch `feature/Companies_and_properties_improvments`. **Not committed yet.**
+**Brief (chat, Sep 24):** bring the two real-data listings in line with `pyn-connect-22-sep-new.html`, using `pyn-connect-new.html` as the baseline to find what changed. Branch `feature/Companies_and_properties_improvments`: commit `8aa39721f`, merged to `main` as PR #3 (`e75a4d90e`).
 
 ### How the two design files differ
 
@@ -507,7 +574,7 @@ Columns: **Old** = `pyn-connect-new.html`, **New** = `pyn-connect-22-sep-new.htm
 | C12 | Status column | 3rd | Last | 3rd | Moved | generator | ✅ |
 | C13 | Tour Published column | Present | Removed | Present | Removed (the model keeps `tourPublished`) | generator, strings | ✅ |
 | C14 | Add Property button | Present | Present | Missing | Not built | — | ⚠️ |
-| C15 | Row click → property detail | Present | Present | Rows not clickable | Not built | — | ⚠️ |
+| C15 | Row click → property detail | Present | Present | Rows not clickable | Not built in 2c. **Done in 2d** (§15) | — | ⚠️ → ✅ 2d |
 
 #### D. Styling and layout
 
@@ -563,7 +630,7 @@ Columns: **Old** = `pyn-connect-new.html`, **New** = `pyn-connect-22-sep-new.htm
 | 7-stage lifecycle (Order Received … Orientation) in the Status pill and filter | The 5 real milestone stages (Installed, Activated, In Production, Final Approval, Released) | Only four milestone dates exist on `communities`; nothing records order, payment, installation or orientation |
 | Company status Active / Past Due / Onboarding | Active / Inactive | See decision 4 |
 | Add Company, Add Property (B5, C14) | Not rendered | Present in **both** designs. A real create needs a write path, which is still the open "read-only or real writes?" question (§11) |
-| Row click opens detail (B6, C15) | Rows are not links | Present in both designs. Detail screens still run on demo ids |
+| Row click opens detail (B6, C15) | Rows are not links | Present in both designs. Detail screens still run on demo ids. *Update, 2d:* C15 is done, and Properties rows open the real Property Detail (§15). B6 (Companies) is still open |
 | Go To opens that property's screens | Real (numeric) ids reach the explicit "No demo property with the id …" state | The destinations are demo screens until phase 3. The links are correct, so they will work unchanged once those screens read real data |
 | Products filter lists only products some property has | Always Touch, Tour, Maps | All three exist in the data (543 / 226 / 76) |
 | Search matches status by substring | By prefix | With Active/Inactive, a substring match makes "active" find every company |
@@ -582,9 +649,244 @@ Columns: **Old** = `pyn-connect-new.html`, **New** = `pyn-connect-22-sep-new.htm
 
 ### Remaining / follow-up
 
-1. Add Company / Add Property, and row click → detail: after the phase 3 decision on writes, and once detail screens read real data.
+1. Add Company / Add Property, and row click → detail: after the phase 3 decision on writes, and once detail screens read real data. *(Properties row click: done in 2d, §15. Company row click: still open.)*
 2. When Inventory, Map, Branding and Integrations become real (phase 3), the Go To links need no change.
 3. If the business adds a richer lifecycle or company billing status, extend `STAGE_CONDITIONS` / `STAGE_PILL` and the company status mapping.
 4. `Connect::CompanySerializer` still computes region, portfolio group and user counts that the listing no longer shows. That is three grouped queries per page; drop them if nothing else needs them.
 5. The Companies filter lists 191 companies in a 274px scroll with no search box, as the design has it. A search field inside the panel would help.
-6. Commit the branch and open a PR (no AI attribution, §3.11).
+6. Deploy to staging when wanted. Heroku still runs the pre-2c commits (§8), and this phase changes both apps: Rails (the query objects and controllers) and Connect.
+
+---
+
+## 15. Phase 2d: Property Detail on real data (September 24, 2026)
+
+**Brief:** [properties_detail_feature.md](properties_detail_feature.md) (untracked, like the other briefs). Build the Property Detail page of `pyn-connect-22-sep-new.html` so it opens from a Properties row and shows the selected property's **real** data. **No backend changes of any kind.** Anything the existing backend does not expose to React is left out and recorded in [gaps_properties_detail_feature.md](gaps_properties_detail_feature.md).
+
+**Branch:** `feature/properties_detail_page`, cut from `main` at `c9416ae67`. **Uncommitted**: no commit or PR yet.
+
+### Investigation completed
+
+- **Designs.** Both files extracted as in §13. `isPropertyDetail` differs a lot between them:
+  - The old file has a dark "Live Products" bar, a 5-step "Deployment Lifecycle", Design System and QR cards, Map Configuration, and Integrations / White-Label links.
+  - The 22-Sep file has a "Manage This Property" bar, a 7-step "Property Launch Lifecycle", **Property Profile** (4 groups plus an inline edit form), Products + Inventory, ILS Syndication, **Property Settings** (3 groups), Touch / Tour / Maps config cards and the **Billing Rate Card**.
+  - A render of the 22-Sep screen at 1440px was the visual reference.
+- **Rails, the old Property Detail flow.**
+  - `GET /companies/:cid/communities/:id/edit` → `CommunitiesController#edit` → `communities/_form.html.haml` → `PATCH …#update` (`community_params`).
+  - Settings: `communities/settings_page.html.haml` (products, Touch code, billing rates, Community Logo, Inactivate) and the legacy Floorplates page `floorplates/index.html.haml`, whose form posts to `CommunitiesController#save_apartment_settings` (pricing and unit-display flags, Student Housing).
+  - Models: `Community` has many `units`, `floorplans`, `floorplates`, `amenities` and `sub_communities`; it has one `tour` (`tour_stops`), `credential` and `design`. Each field's column is in the gaps doc.
+- **What React can reach.** Only `GET /communities.json` (the Connect listing row). There is no JSON for the edit or settings pages, and no id filter. api/v2 uses token auth, and the kiosk and SDK feeds are unauthenticated or partner-keyed (gaps doc §1).
+- **React.** `/properties/[propId]` rendered phase 2's demo `PropertyDetailScreen` (old design, demo slugs only). A real id reached "No demo property". Listing rows were not clickable (§14, C15).
+
+### Change and data-source map
+
+| # | New UI section | Old UI / Rails source | Existing React | Backend data | Available to React? | Change made |
+|---|---|---|---|---|---|---|
+| 1 | Row click → detail | `openProp(p.id)` in both designs | `CustomTable` rows inert | Row `id` | ✅ | `RowDescriptor.href`; the row opens it and the title cell is a `next/link` |
+| 2 | Breadcrumb, title, status pill, subtitle | Legacy breadcrumbs; `stage` | Demo screen only | `name`, `stage`, `company_name`, `city`/`state`, `unit_count` | ✅ | New real screen; reuses `StatusPill` and `STAGE_PILL` |
+| 3 | Manage This Property | Legacy side menu | Route helpers from the Go To buttons | Row `id` | ✅ (nav only) | Links to the same 4 routes; destinations are still demo (gap G14) |
+| 4 | Property Launch Lifecycle | Four milestone dates | Demo `generateStageSteps` (mock stages) | `stage` | ✅ current stage; ❌ dates, 7-stage model, setting a stage | 5 real stages, read-only (G11) |
+| 5 | Profile: Location | `_form`: `name`, `address`, `city`, `state`, `zip`, `latitude`/`longitude`, `manual_lat_long` | — | `name`, `city`, `state` | Partly | Name and City · State shown; Street, ZIP and coordinates left out (G2) |
+| 6 | Profile: Leasing Contact | `_form`: `phone`, `email`, `website` | — | — | ❌ | Group not rendered (G3) |
+| 7 | Profile: On-Site Team | `_form`: `property_manager_*` | — | — | ❌ | Group not rendered (G4) |
+| 8 | Profile: Configuration | `_form`: `number_of_units`, `is_sitemap`, `description` | — | `unit_count` | Partly | Units shown; Map mode and Notes left out (G5) |
+| 9 | Edit Details | `CommunitiesController#edit/update` | Demo modal | — | ❌ writes | Opens the legacy form in a new tab (G6) |
+| 10 | Products | `touchscreen_app`, `self_tour`, `product_options`, `enable_sdk_map` | Demo toggles | `products.*`, `tour_published`, `unit_count` | ✅ read; ❌ write and counts | Read-only switches; real metric lines (G7) |
+| 11 | Inventory | `floorplans`, `floorplates`, `amenities`, `sub_communities`, `units` | Demo cards | `unit_count` | Units only | Units card and Manage Inventory link; the rest left out (G8) |
+| 12 | Property Settings | `save_apartment_settings` columns; `community_logo`, `locked` | Demo | — | ❌ | Not rendered (G9) |
+| 13 | Billing Rate Card | `billing_rate_*`, `billing_month`, `billing_type` | Demo | — | ❌ | Not rendered (G10) |
+| 14 | Touch / Tour / Maps config cards | `code`, `is_vertical_app`, `mdu`, `enable_locks`, `is_beans_svg`, … | Demo | — | ❌ | Not rendered (G12) |
+| 15 | ILS Syndication | `PartnerConfigurationsController`, `MAP_PARTNER_KEYS` | Demo | — | ❌ | Not rendered (G13) |
+| 16 | Loading, not found, load failed | — | Listing loading only | Lookup status | ✅ | `[propId]/loading.tsx`; "Property not found"; error banner |
+
+### Sections implemented, one item at a time
+
+1. **Row click** on the Properties listing opens `/properties/:id`. The title is a real link, so keyboard, middle-click and new-tab all work. Clicks on the Go To buttons stay theirs.
+2. **Lookup** (`lookupProperty`): walks `GET /communities.json` at `per_page=100`, fetching the first page and then the rest in parallel. It honours the user's scope, so an id outside it shows "Property not found". A 401 redirects to Sign In.
+3. **Route:** a numeric id renders the real screen. A slug (`luxe`, `cortsky`, …) still renders the demo screen, so the Dashboard, the global search and the demo sub-screens keep working.
+4. **Header:** breadcrumb, name, stage pill, company · city · units.
+5. **Manage This Property.**
+6. **Property Launch Lifecycle:** 5 real stages, read-only.
+7. **Property Profile:** real fields only, plus "Edit Details" → legacy CMS.
+8. **Products:** read-only switches.
+9. **Inventory:** Units and Manage Inventory.
+10. **States and layout:** loading, not found, load failed; responsive CSS.
+
+### Components reused
+
+`ConnectScreenTemplate`, `ListingScreenTemplate` (loading), `StatusPill` (listing variant), `Icon` (the design's icon sheet), `CustomTable`, `STAGE_PILL`, `formatCount`, the route helpers (`tourContentRoute`, `mapEditorRoute`, `propIntegrationsRoute`, `brandingRoute`, `propRoute`), `parseProperties`, `parseListingMeta`, `fetchProperties`, `readRailsCookie`, the `CORE_STRINGS` / `i18n` registry, and the `.bo-error` / `.bo-empty` styles.
+
+### New components, and why
+
+| New | Why an existing one would not do |
+|---|---|
+| `molecules/DetailSection` | No section card existed; the demo screens inline the markup. It holds the heading, subtitle, icon and actions pattern the design repeats on every panel |
+| `atoms/Switch` | No toggle component existed; the demo screens inline it. It is read-only on purpose (`role="img"`, labelled), because Connect has no write path |
+| `atoms/Icons` → `ExternalLinkIcon` | Marks "Edit Details" as leaving Connect |
+| `screens/properties/propertyDetail.screen.tsx`, `hooks/usePropertyDetail.ts`, `generator/propertyDetail.generator.ts`, `repository/remote/propertyLookup.server.ts` | The real-data layers (route → API → parser → hook → generator → screen), next to the listing's. The demo `connect/properties/propertyDetail.screen.tsx` is untouched |
+
+### Real backend data consumed
+
+`communities.json` row fields: `id`, `name`, `city`, `state`, `unit_count`, `company_id`, `company_name`, `stage`, `products`, `tour_published`. The full table is in the gaps doc §2.
+
+### Testing completed (Sep 24, local DB, real Chrome through Playwright)
+
+The session was minted with `rails runner` (password not recorded). Rails ran on **:3100**, because another local app (ezofficeinventory) took :3000 and this repo's Rails was killed (trap 17).
+
+| Check | Result |
+|---|---|
+| Listing → detail by clicking a row's company cell | `/properties/503`; name, pill and company match the row |
+| Title link on a filtered page 3 (`?page=3&product=tour`), then Back | Right record (1044); Back restores the filter and the page |
+| Keyboard: Enter on a focused title link | Opens the property |
+| Go To button inside a row | Its own target, not the detail page |
+| Last property by name (919, page 9 of 9) | Found, ~3.1 s (dev, 9 listing requests) |
+| Maps on (1411), Final Approval (1990), blank city (1107) | Switches, metrics and stepper correct; the city shows "—" |
+| Unknown id (999999999) | "Property not found" and a way back |
+| Company admin (`jleinweber@zaremba.net`): own 364 / own but locked 366 / other company 503 | Found / not found / not found; one listing request (~0.3 s server-side) |
+| Signed out | Redirects to `/sign-in` |
+| Breadcrumb → Properties | ✅ |
+| Demo `/properties/luxe` | Still the demo screen |
+| 1440 / 1024 / 390px | No page or content overflow; the stepper scrolls at 390px |
+| Regression | Companies (217 · 802 total, paging, rows not clickable), Properties header / filter / search, Sign In, `/api/health` |
+| Console | No errors from the app. Two navigations stalled on Google Fonts (trap 18) |
+| `npm run typecheck` / `npm run build` | ✅ / ✅ |
+| `npm run test:e2e` | **51 passed, 29 failed**, the same as §14. Every failure is the `fonts.gstatic.com` request (trap 18) |
+
+### Files
+
+- **Changed:**
+  - `pyn-connect-web/src/app/(connect)/properties/[propId]/page.tsx`
+  - `core/components/organisms/CustomTable.tsx`
+  - `core/components/atoms/Icons.tsx`
+  - `core/utils/generator/listing.types.ts`
+  - `core/utils/generator/propertyListing.generator.ts`
+  - `core/repository/remote/api/properties.api.ts` (`perPage`)
+  - `config/app/urls.ts`
+  - `config/app/strings.ts`
+  - `resources/i18n/index.ts`
+  - `app/globals.css`
+- **Added:**
+  - `app/(connect)/properties/[propId]/loading.tsx`
+  - `core/repository/remote/propertyLookup.server.ts`
+  - `core/utils/generator/propertyDetail.generator.ts`
+  - `core/hooks/usePropertyDetail.ts`
+  - `core/screens/properties/propertyDetail.screen.tsx`
+  - `core/components/molecules/DetailSection.tsx`
+  - `core/components/atoms/Switch.tsx`
+- **Docs:**
+  - `gaps_properties_detail_feature.md` (new)
+  - this section and §1, §2, §4–§7, §10–§14 notes
+  - context.md §4, §8–§11
+  - react-architecture.md §20 (Sep 24 entry)
+- **Rails:** none. The locally modified `bin/*`, `config/database.yml`, `db/schema.rb` and `app/.DS_Store` predate this phase and stay uncommitted (§12).
+
+### Remaining gaps
+
+See [gaps_properties_detail_feature.md](gaps_properties_detail_feature.md) (G1–G14). In short:
+- no single-property JSON, so the page scans the listing
+- no JSON for address, ZIP, coordinates, contacts, manager, website, notes, map mode, settings, billing, per-product config, ILS, or floorplan / floorplate / amenity / sub-community counts
+- no write path for any of them
+
+### Decisions
+
+1. **Leave out rather than fake.** Sections and fields with no reachable data are not rendered, as the brief asked; the gaps doc lists every one.
+2. **No HTML scraping** of the legacy edit and settings pages. It is brittle, and it would change the legacy session's current company.
+3. **"Edit Details" hands off** to the legacy form (an existing route) in a new tab, so editing is still possible today.
+4. **Demo slugs keep the demo screen** until phase 3 retires the demo data.
+5. **Lifecycle order** follows the serializer's ranking: Installed → Activated → Production → Final Approval → Released. The mock `STAGES` list puts Final Approval after Released.
+
+### Follow-ups
+
+1. **Commit the work and open a PR** (no AI attribution, decision 11). Include `gaps_properties_detail_feature.md`. Leave the untracked briefs and the local environment edits out.
+2. **Backend, when approved:** a single-property JSON (`communities#show` + `Connect::PropertyDetailSerializer`, scoped by `AccessibleCommunitiesQuery`). Then swap `lookupProperty` for one request and add the sections the gaps doc lists. The screen only needs new generator descriptors.
+3. **Writes** (Edit Details, product toggles, settings, rates) wait on the phase 3 "read-only or real writes?" decision (§11). Until then "Edit Details" hands off to the legacy form.
+4. **Manage This Property / Inventory links** lead to demo screens for real ids (gap G14). They need no change once those screens read real data.
+5. **Deploy to staging** when wanted. 2d changes only Connect (`pyn-system-connect`); Heroku still runs pre-2c commits (§8).
+6. **Company row click (B6)** can reuse `RowDescriptor.href` once Company detail reads real data.
+
+---
+
+## 16. Phase 2d-r: Property Detail under the revised backend rule (September 24, 2026)
+
+**Rule change:** [properties_detail_feature.md](properties_detail_feature.md) §9a relaxes "no backend changes". A minimal, **read-only JSON branch on an existing controller action** is allowed when it only exposes existing data. Business logic, authorization, queries, scopes, models, associations, schema and write behaviour must not change, and Connect stays read-only.
+
+**Branch:** `feature/properties_detail_page`, on top of `ef9e4549a`. Staged; not yet committed.
+
+### Controller changed
+
+| File | Change |
+|---|---|
+| `app/controllers/communities_controller.rb` | `#edit` (the legacy Property Details action) starts with `return render_connect_property_detail if request.format.json?`, the same guard `#index` uses for the listing. The new private `render_connect_property_detail` finds the community in `AccessibleCommunitiesQuery.new(current_user).call` (the listing's scope) and answers 404 outside it. The HTML path is untouched |
+| `app/serializers/connect/property_detail_serializer.rb` (new) | Presentation only, following the existing `Connect::*Serializer` convention. It reuses `Connect::PropertySerializer` for the row fields (stage, products, unit count) |
+
+- **Endpoint:** `GET /communities/:id/edit.json`. The shallow route already existed, so no route was added. It needs a Devise session: signed out gives 401.
+- **Why `#edit`:** it is the legacy page whose record (`@community`, via `set_community`) holds every field the design shows. The Settings and Floorplates pages read the same record. `#settings_page` was not used because it *creates* a Tour/TourSetting when they are missing. The inventory controllers are left to the Inventory branch.
+
+### JSON exposed, and where each part comes from
+
+| Key | Source (existing) |
+|---|---|
+| row fields (`id`, `name`, `stage`, `products`, …) | `Connect::PropertySerializer`, unchanged |
+| `profile` | `communities.address`, `city`, `state`, `zip`, `latitude`, `longitude`, `manual_lat_long`, `phone`, `email`, `website`, `property_manager_*`, `number_of_units`, `is_sitemap`, `description`. These are the fields of `communities/_form.html.haml` |
+| `milestones` | `date_activated`, `production_started_date`, `submitted_final_approval_date`, `released_date` |
+| `settings` | The 14 flags of `floorplates/index.html.haml` (`save_apartment_settings`), plus `community_logo` and `locked` from `settings_page.html.haml` |
+| `billing` | `billing_rate_touch`, `billing_rate_selftour`, `lincoln_billing_rate`, `dwelo_billing_rate`, `billing_rate_maps`, `billing_rate_for_both`, `billing_type`, `billing_month`, and `self_tour_rate_field`. The last mirrors the view's own test: Lincoln company → Lincoln rate; Dwelo-admin creator → Dwelo rate |
+| `touch` | `code`, `is_vertical_app`, `date_installed` (the legacy "Subscription Start Date"), `mdu`, `show_gesture_icons`, `powered_by_btn` |
+| `tour` | `Community#community_tour` → `tour_stops.size`, `visual_id_verification`; `enable_locks`, `auto_wayfinding` |
+| `maps` | `web_map_type`, `default_satellite_view`, `default_map_floor` with its label from `Community#property_floor_options`; `enable_three_d_maps`, `is_beans_svg`, `enable_svg_mode`, `enable_sdk_map`, `enable_floorplan_level_color`, `highlight_all_units_on_hover` |
+| `inventory` | Counts of the existing `units`, `floorplans`, `floorplates` and `amenities` associations. Sub-communities come from `Community#fetch_multi_properties`, with unit counts from `units` grouped by `property_id` |
+| `partners` | `Community::MAP_PARTNERS` + `Community#partner_map_enabled?` (as in `PartnerConfigurationsController#enabled_partners`) |
+
+### Confirmations
+
+- **Business logic unchanged.** No rule, calculation, validation, scope, association or model method was changed or added. The serializer only reads columns and calls existing methods.
+- **Authorization unchanged** for every existing path. The new JSON branch applies the existing Connect listing scope; the HTML `#edit` behaves exactly as before (verified: HTML edit 200).
+- **No schema change, migration or new column.** No route was added.
+- **Writes remain disabled.** "Edit Details" and "Edit Rates" open the design's forms, prefilled from the record. "Save Changes" sends **no request**: verified, no non-GET request fired. It shows "Connect is read-only for now, so nothing was saved", with a link to the legacy form. Every toggle is a read-only indicator.
+
+### Frontend
+
+- **Data path:** `fetchPropertyDetail` (API) → `parsePropertyDetail` (parser; the only place snake_case is read) → the `PropertyDetail` model → `propertyDetail.generator.ts` (pure descriptors) → `usePropertyDetail` (view plus local drafts) → the screen.
+- **Removed:** `propertyLookup.server.ts` (the listing scan).
+- **Sections now on real data:**
+  - header
+  - Manage This Property
+  - lifecycle, with each stage's recorded date
+  - the full four-group Profile
+  - Products (units · floorplates, tour stops)
+  - Inventory (4 counts, sub-communities)
+  - ILS Syndication
+  - Property Settings (3 groups)
+  - the Touch, Tour and Maps cards (dimmed with the design's note when the product is off)
+  - Billing Rate Card
+- **Reused:** `DetailSection`, `Switch`, `StatusPill`, `Icon`, `STAGE_PILL`, the route helpers and `.bo-field`. New CSS covers the forms, notice, config cards, ILS grid and rate cards.
+
+### Verified (local DB, real Chrome, super admin and company admin)
+
+- **1411:**
+  - every value matches `psql`: 2500 Larimer St, 80216, 39.757643, 303-640-3652; Touch Code "John Demo"; start Jun 19, 2019; rates "0" → $0; January; 230 / 8 / 4 / 7; 5 stops
+  - page loads in ~0.64 s; the endpoint answers in 0.1–0.35 s
+- **4331:** sub-communities 122 / 77 / 267 (= 466 units).
+- **Scope:** company admin 364 ✅, 366 (locked) → not found, 503 (other company) → not found. Missing id → not found; signed out → 401 → Sign In.
+- **Navigation:** the listing row click and the demo slug `/properties/luxe` still work.
+- **Layout:** no overflow at 1440 / 1024 / 390px.
+- **Console:** no errors.
+- **Checks:** the staged snapshot passes `tsc` and `next build` on its own (the untracked Inventory files are excluded).
+
+### Remaining gaps
+
+In [gaps_properties_detail_feature.md](gaps_properties_detail_feature.md) §0:
+- **R1:** the 7-stage lifecycle (no columns)
+- **R2:** QR codes (no data)
+- **R3:** a separate tour subscription date
+- **R4:** Maps pins/paths (undefined)
+- **R5:** writes, disabled by rule
+
+G14 (the demo destinations) is unchanged.
+
+### Note: working-tree files restored outside git (Sep 24, 19:33)
+
+Between the `ef9e4549a` commit (19:19) and this revision, tracked files were restored to `HEAD` outside git (no git command in the reflog did it). That affected:
+- the Inventory work's edits to tracked files (4 controllers, strings, i18n, urls, Icons, Switch, `shell.reducers.ts`, gaps §4 onward)
+- the local `config/database.yml`, `bin/*` and `db/schema.rb` edits
+
+The untracked Inventory files are still present. None of these files were touched by this revision.

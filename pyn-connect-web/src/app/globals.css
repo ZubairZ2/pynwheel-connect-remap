@@ -497,6 +497,27 @@ table {
   color: var(--bo-subtle);
 }
 
+/* A row that opens its record (the design's `tr` click). */
+.bo-row--link {
+  cursor: pointer;
+}
+
+.bo-celltitle--link {
+  display: inline-block;
+  text-decoration: none;
+}
+
+.bo-row--link:hover .bo-celltitle--link,
+.bo-celltitle--link:focus-visible {
+  color: var(--bo-accent);
+}
+
+.bo-celltitle--link:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
 .bo-text--muted {
   color: var(--bo-muted);
 }
@@ -807,6 +828,802 @@ table {
   border-radius: 10px;
   padding: 14px 16px;
   font: 600 13px var(--bo-font);
+}
+
+/* ---------- property detail (22-Sep design, `isPropertyDetail`) ---------- */
+
+.bo-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.bo-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 600 13px var(--bo-font);
+  color: var(--bo-subtle);
+  min-width: 0;
+}
+
+.bo-breadcrumb__link:hover,
+.bo-breadcrumb__link:focus-visible {
+  text-decoration: underline;
+}
+
+.bo-breadcrumb__current {
+  color: var(--bo-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bo-detail__titlerow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.bo-detail__title {
+  margin: 0;
+  font: 800 22px var(--bo-font);
+  color: var(--bo-ink);
+  word-break: break-word;
+}
+
+.bo-detail__subtitle {
+  margin: 0;
+  font: 600 13px var(--bo-font);
+  color: var(--bo-muted);
+}
+
+.bo-detail__pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: stretch;
+}
+
+.bo-section {
+  background: var(--bo-panel);
+  border: 1px solid var(--bo-line);
+  border-radius: 12px;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.bo-section--tight {
+  padding: 20px;
+  gap: 12px;
+}
+
+.bo-section--bar {
+  padding: 16px 20px;
+}
+
+.bo-section--empty {
+  align-items: center;
+  text-align: center;
+  padding: 48px 28px;
+  gap: 8px;
+}
+
+.bo-section__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.bo-section--bar .bo-section__head {
+  gap: 16px;
+}
+
+.bo-section__icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--bo-accent-soft);
+  color: var(--bo-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.bo-section__heading {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.bo-section__title {
+  margin: 0;
+  font: 800 14px var(--bo-font);
+  color: var(--bo-ink);
+}
+
+.bo-section--empty .bo-section__title {
+  font-size: 16px;
+}
+
+.bo-section__subtitle {
+  margin: 0;
+  font: 500 12px var(--bo-font);
+  color: var(--bo-subtle);
+}
+
+.bo-section--empty .bo-section__subtitle {
+  font: 500 13.5px/1.7 var(--bo-font);
+  color: var(--bo-muted);
+  margin-bottom: 8px;
+}
+
+.bo-section__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* The design's outlined button, as a link. */
+.bo-linkbutton {
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--bo-line);
+  background: #fff;
+  border-radius: 8px;
+  font: 700 12.5px var(--bo-font);
+  color: var(--bo-ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.bo-linkbutton--quiet {
+  height: 34px;
+  font-size: 12px;
+  color: var(--bo-muted);
+}
+
+.bo-linkbutton--small {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 7px;
+}
+
+.bo-linkbutton:hover,
+.bo-linkbutton:focus-visible {
+  border-color: var(--bo-accent);
+  color: var(--bo-accent);
+  background: var(--bo-accent-soft);
+}
+
+.bo-linkbutton:focus-visible,
+.bo-stat:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+}
+
+/* Lifecycle stepper */
+
+.bo-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: flex-start;
+}
+
+.bo-steps__step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 0 4px;
+  text-align: center;
+  min-width: 0;
+}
+
+.bo-steps__track {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.bo-steps__line {
+  flex: 1;
+  height: 2px;
+  background: var(--bo-line);
+}
+
+.bo-steps__num {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border: 2px solid var(--bo-line);
+  color: var(--bo-subtle);
+  font: 800 12px var(--bo-font);
+}
+
+.bo-steps__label {
+  font: 700 12px var(--bo-font);
+  color: var(--bo-subtle);
+}
+
+.bo-steps__desc {
+  font: 500 10.5px var(--bo-font);
+  color: var(--bo-subtle);
+  margin-top: 2px;
+}
+
+/* As in the design, only completed steps colour their connectors. */
+.bo-steps__step--done .bo-steps__line {
+  background: var(--bo-accent);
+}
+
+.bo-steps__step--done .bo-steps__num,
+.bo-steps__step--current .bo-steps__num {
+  background: var(--bo-accent);
+  border-color: var(--bo-accent);
+  color: #fff;
+}
+
+.bo-steps__step--done .bo-steps__label {
+  color: var(--bo-muted);
+}
+
+.bo-steps__step--current .bo-steps__label {
+  font-weight: 800;
+  color: var(--bo-ink);
+}
+
+/* Profile */
+
+.bo-profile {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.bo-profile__group,
+.bo-profile__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  margin: 0;
+}
+
+.bo-profile__heading {
+  margin: 0;
+  font: 700 10.5px var(--bo-font);
+  color: var(--bo-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.bo-profile__label {
+  font: 600 10.5px var(--bo-font);
+  color: var(--bo-subtle);
+  margin-bottom: 2px;
+}
+
+.bo-profile__value {
+  margin: 0;
+  font: 700 12.5px var(--bo-font);
+  color: var(--bo-ink);
+  word-break: break-word;
+}
+
+/* Products */
+
+.bo-products {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bo-products__item {
+  border: 1px solid var(--bo-line);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+}
+
+.bo-products__icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: #eef0f4;
+  color: var(--bo-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.bo-products__item--on .bo-products__icon {
+  background: var(--bo-accent-soft);
+  color: var(--bo-accent);
+}
+
+.bo-products__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.bo-products__name {
+  font: 800 12.5px var(--bo-font);
+  color: var(--bo-muted);
+}
+
+.bo-products__item--on .bo-products__name {
+  color: var(--bo-ink);
+}
+
+.bo-products__metric {
+  font: 600 10.5px var(--bo-font);
+  color: var(--bo-subtle);
+}
+
+/* A read-only toggle (atoms/Switch). */
+.bo-switch {
+  width: 42px;
+  height: 24px;
+  border-radius: 999px;
+  background: #cdd2db;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.bo-switch__knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.bo-switch--on {
+  background: var(--bo-accent);
+}
+
+.bo-switch--on .bo-switch__knob {
+  left: 21px;
+}
+
+/* Inventory */
+
+.bo-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.bo-stat {
+  border: 1px solid var(--bo-line);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: inherit;
+}
+
+.bo-stat:hover {
+  border-color: var(--bo-accent);
+  background: var(--bo-accent-soft);
+}
+
+.bo-stat__icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #eef0f4;
+  color: var(--bo-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.bo-stat__value {
+  display: block;
+  font: 800 19px/1.1 var(--bo-font);
+  color: var(--bo-ink);
+}
+
+.bo-stat__label {
+  display: block;
+  font: 600 11px var(--bo-font);
+  color: var(--bo-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Property detail: read-only edit forms, settings, ILS, billing (22-Sep design) */
+
+button.bo-linkbutton {
+  cursor: pointer;
+}
+
+.bo-primarybutton {
+  height: 34px;
+  padding: 0 16px;
+  border: none;
+  background: var(--bo-accent);
+  border-radius: 8px;
+  font: 700 12px var(--bo-font);
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.bo-primarybutton--small {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 7px;
+}
+
+.bo-primarybutton:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+}
+
+.bo-profile__note {
+  margin: 2px 0 0;
+  font: 600 10.5px var(--bo-font);
+  color: var(--bo-subtle);
+}
+
+/* "Nothing was saved": Connect is read-only. */
+.bo-notice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  border: 1px solid #ffecae;
+  background: #fff4d4;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font: 600 12px var(--bo-font);
+  color: #8a6a00;
+}
+
+.bo-notice > span {
+  flex: 1 1 260px;
+}
+
+.bo-notice__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 700;
+}
+
+.bo-notice__dismiss {
+  border: none;
+  background: none;
+  padding: 0;
+  font: 700 12px var(--bo-font);
+  color: #8a6a00;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* The Edit Details / Edit Rates form fields */
+.bo-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.bo-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.bo-form__field--span2 {
+  grid-column: span 2;
+}
+
+.bo-form__field--span3 {
+  grid-column: 1 / -1;
+}
+
+.bo-form__field--narrow {
+  max-width: 260px;
+}
+
+.bo-form__label {
+  font: 700 10.5px var(--bo-font);
+  color: var(--bo-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.bo-form__input {
+  height: 36px;
+  font-size: 13px;
+}
+
+.bo-form__input:disabled {
+  background: #f4f5f7;
+  color: var(--bo-muted);
+}
+
+.bo-form__textarea {
+  height: 76px;
+  padding: 10px 12px;
+  resize: vertical;
+  font-size: 13px;
+}
+
+.bo-segmented {
+  display: flex;
+  gap: 6px;
+}
+
+.bo-segmented__option {
+  flex: 1;
+  height: 36px;
+  border: 1px solid var(--bo-line);
+  background: #fff;
+  color: var(--bo-muted);
+  border-radius: 8px;
+  font: 700 12px var(--bo-font);
+  cursor: pointer;
+}
+
+.bo-segmented__option--on {
+  border-color: var(--bo-accent);
+  background: var(--bo-accent-soft);
+  color: var(--bo-accent);
+}
+
+/* Inventory: sub-communities */
+.bo-subcommunities {
+  border-top: 1px solid var(--bo-line-2);
+  padding-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bo-subcommunities__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.bo-subcommunities__item {
+  border: 1px solid var(--bo-line);
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bo-subcommunities__name {
+  font: 700 12.5px var(--bo-font);
+  color: var(--bo-ink);
+}
+
+.bo-subcommunities__units {
+  font: 600 11.5px var(--bo-font);
+  color: var(--bo-subtle);
+}
+
+/* Section icon tiles: neutral (ILS, a product that is off) and product-on */
+.bo-section--neutral-icon .bo-section__icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: #eef0f4;
+  color: var(--bo-ink);
+}
+
+.bo-section--off.bo-section--neutral-icon .bo-section__icon {
+  color: var(--bo-subtle);
+}
+
+.bo-section--accent-icon .bo-section__icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+}
+
+/* ILS partners */
+.bo-toggles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.bo-toggles__item {
+  border: 1px solid var(--bo-line);
+  border-radius: 10px;
+  padding: 13px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.bo-toggles__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.bo-toggles__name {
+  font: 800 12.5px var(--bo-font);
+  color: var(--bo-ink);
+}
+
+.bo-toggles__status {
+  font: 600 10.5px var(--bo-font);
+  color: var(--bo-subtle);
+}
+
+/* Property Settings and the Touch / Tour / Maps cards */
+.bo-configs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  align-items: stretch;
+}
+
+.bo-section--config {
+  gap: 11px;
+}
+
+.bo-section--wide {
+  grid-column: 1 / -1;
+}
+
+.bo-section--off {
+  opacity: 0.5;
+}
+
+.bo-offnote {
+  border: 1px solid #ffecae;
+  background: #fff4d4;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font: 600 11.5px var(--bo-font);
+  color: #8a6a00;
+}
+
+.bo-configgroups {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px 32px;
+}
+
+.bo-configgroup {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  min-width: 0;
+}
+
+.bo-configgroup__title {
+  margin: 0;
+  font: 700 10.5px var(--bo-font);
+  color: var(--bo-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--bo-line-2);
+  padding-bottom: 10px;
+}
+
+.bo-configrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 23px;
+}
+
+.bo-configrow__label {
+  flex: 1;
+  min-width: 0;
+  font: 700 11.5px var(--bo-font);
+  color: var(--bo-ink);
+}
+
+.bo-configrow__value {
+  flex-shrink: 0;
+  max-width: 54%;
+  text-align: right;
+  font: 600 12px var(--bo-font);
+  color: var(--bo-muted);
+  word-break: break-word;
+}
+
+.bo-configlinks {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+.bo-configlinks__link {
+  flex: 1 1 150px;
+  height: 36px;
+  justify-content: center;
+}
+
+/* Billing Rate Card */
+.bo-rates {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.bo-rate {
+  border: 1px solid var(--bo-line);
+  border-radius: 10px;
+  padding: 13px;
+  min-width: 0;
+}
+
+.bo-rate__label {
+  font: 600 11px var(--bo-font);
+  color: var(--bo-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.bo-rate__value {
+  font: 800 18px var(--bo-font);
+  color: var(--bo-ink);
+  margin-top: 4px;
+  word-break: break-word;
+}
+
+.bo-rate__input {
+  height: 34px;
+  margin-top: 6px;
+  font-size: 13px;
+}
+
+.bo-rate--accent {
+  border-color: var(--bo-accent);
+  background: var(--bo-accent-soft);
+}
+
+.bo-rate--accent .bo-rate__label,
+.bo-rate--accent .bo-rate__value {
+  color: var(--bo-accent);
 }
 
 /* ---------- sign in ---------- */
@@ -1215,5 +2032,61 @@ select {
   .bo-toolbar__search--narrow {
     flex-basis: 100%;
     max-width: none;
+  }
+}
+
+/* Property detail. The design has no responsive rules; these keep it usable. */
+@media (max-width: 1100px) {
+  .bo-profile {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .bo-detail__pair,
+  .bo-profile {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bo-section {
+    padding: 16px;
+  }
+
+  .bo-section__actions {
+    justify-content: flex-start;
+  }
+
+  /* Five steps do not fit a phone's width: the stepper scrolls sideways. */
+  .bo-steps {
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .bo-steps__step {
+    flex: 0 0 104px;
+  }
+}
+
+/* Property detail, added sections. */
+@media (max-width: 1100px) {
+  .bo-configs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .bo-rates {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .bo-configs,
+  .bo-configgroups,
+  .bo-toggles,
+  .bo-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bo-form__field--span2 {
+    grid-column: auto;
   }
 }

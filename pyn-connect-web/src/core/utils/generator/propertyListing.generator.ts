@@ -3,6 +3,7 @@ import {
   brandingRoute,
   mapEditorRoute,
   propIntegrationsRoute,
+  propRoute,
   tourContentRoute
 } from '~/config/app/connectRoutes';
 import { i18n } from '~/resources/i18n';
@@ -105,6 +106,7 @@ export const generatePropertyRows = (properties: Property[]): RowDescriptor[] =>
 
     return {
       id: property.id,
+      href: propRoute(String(property.id)),
       cells: {
         [PROPERTY_COLUMN_IDS.property]: {
           type: 'title',

@@ -15,9 +15,27 @@ export const CORE_URLS = {
   },
   properties: {
     // The Properties tab is the communities listing.
-    listing: '/communities.json'
+    listing: '/communities.json',
+    // CommunitiesController#edit (the legacy Property Details page), as JSON.
+    detail: (propertyId: number) => `/communities/${propertyId}/edit.json`
   }
 } as const;
+
+/**
+ * Legacy CMS pages a Connect screen sends the user to in the browser, for work
+ * Connect cannot do yet. Null when `NEXT_PUBLIC_CMS_URL` is not set, since
+ * there is then nowhere to send them.
+ */
+export const legacyCmsURLs = {
+  /** CommunitiesController#edit, the legacy "Property Details" form. */
+  propertyDetails: (companyId: number, propertyId: number): string | null =>
+    legacyCmsURL(`/companies/${companyId}/communities/${propertyId}/edit`)
+};
+
+const legacyCmsURL = (path: string): string | null => {
+  const base = process.env.NEXT_PUBLIC_CMS_URL;
+  return base ? `${base.replace(/\/$/, '')}${path}` : null;
+};
 
 /** Base URL of the existing Pynwheel CMS (Rails) application. */
 export const baseURLGenerator = (): string =>

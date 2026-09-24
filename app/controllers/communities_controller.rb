@@ -77,6 +77,10 @@ class CommunitiesController < ApplicationController
   # end
 
   def edit
+    # Pynwheel Connect (Next.js) Property Detail: this property's existing
+    # record as JSON. Read-only; the HTML path below is unchanged.
+    return render_connect_property_detail if request.format.json?
+
     @com_id = current_community.id
     @chatroom = params[:tour_user_id].present? ? show_chat_modal(params[:tour_user_id], current_community.community_tour.id) : Chatroom.new
     @all_regions = current_company.regions.order(:name).collect {|p| [ p.name, p.id ] } rescue []
@@ -935,6 +939,19 @@ class CommunitiesController < ApplicationController
           scope_total_count: query.scope_count
         }
       )
+    ).as_json
+  end
+
+  # Only communities in the Connect Properties listing's scope (the rules the
+  # legacy Home screen applies) are served, so the detail page shows exactly
+  # the properties the listing links to.
+  def render_connect_property_detail
+    community = AccessibleCommunitiesQuery.new(current_user).call.find_by(id: @community.id)
+    return head :not_found if community.nil?
+
+    render json: Connect::ResponseEnvelope.new(
+      data: Connect::PropertyDetailSerializer.new(community).as_json,
+      meta: { current_user: Connect::ResponseEnvelope.current_user_meta(current_user) }
     ).as_json
   end
 

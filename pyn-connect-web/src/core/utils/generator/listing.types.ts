@@ -36,6 +36,8 @@ export interface ColumnDescriptor {
 export interface RowDescriptor {
   id: number;
   cells: Record<string, CellDescriptor>;
+  /** The record's own screen. The row opens it, and its `title` cell links to it. */
+  href?: string;
 }
 
 export interface FilterOption {
