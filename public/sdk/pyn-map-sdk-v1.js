@@ -2015,7 +2015,7 @@
           _svgClamping = false;
         }
       };
-      // svgEl._pz.on("pan",  svgClamp);
+      svgEl._pz.on("pan",  svgClamp);
       svgEl._pz.on("zoom", svgClamp);
 
       // Block single-finger touch pan when at default zoom; let two-finger pinch-zoom through.
@@ -5487,7 +5487,7 @@
           _imgClamping = false;
         }
       };
-      // wrapperEl._pz.on("pan",  imgClamp);
+      wrapperEl._pz.on("pan",  imgClamp);
       wrapperEl._pz.on("zoom", imgClamp);
 
       const touchBlocker = (e) => {
