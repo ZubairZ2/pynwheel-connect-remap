@@ -4,6 +4,7 @@ import React from 'react';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { StatusPill } from '~/core/components/atoms/connect/StatusPill';
 import { useCompanyDetailScreen } from '~/core/hooks/connect/useCompanyDetailScreen';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const CompanyDetailScreen = () => {
   const {
@@ -43,12 +44,12 @@ export const CompanyDetailScreen = () => {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
           <div style={{ width: "52px", height: "52px", borderRadius: "12px", background: "var(--bo-accent-soft)", color: "var(--bo-accent)", display: "flex", alignItems: "center", justifyContent: "center", font: "800 18px var(--bo-font)" }}>
-            {org.initials}
+            {org.initials}<DemoMark />
           </div>
           <div style={{ flex: "1" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <div style={{ font: "800 22px var(--bo-font)", color: "var(--bo-ink)" }}>
-                {org.name}
+                {org.name}<DemoMark />
               </div>
               <StatusPill variant={org.pmsV} label={org.pmsProvider} />
             </div>
@@ -66,7 +67,7 @@ export const CompanyDetailScreen = () => {
         <div style={{ display: "grid", gridTemplateColumns: "1.3fr 1fr", gap: "16px" }}>
           <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px" }}>
             <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)", marginBottom: "14px" }}>
-              Properties
+              Properties<DemoMark />
             </div>
             <table>
               <tbody>
@@ -100,10 +101,10 @@ export const CompanyDetailScreen = () => {
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px" }}>
               <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)", marginBottom: "12px" }}>
-                Primary Contact
+                Primary Contact<DemoMark />
               </div>
               <div style={{ font: "700 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                {org.contact}
+                {org.contact}<DemoMark />
               </div>
               <div style={{ font: "600 12px var(--bo-font)", color: "var(--bo-accent)" }}>
                 {org.email}
@@ -118,7 +119,7 @@ export const CompanyDetailScreen = () => {
             </div>
             <div style={{ flex: "1", minWidth: "0" }}>
               <div style={{ font: "800 15px var(--bo-font)", color: "var(--bo-ink)" }}>
-                Company PMS Credentials
+                Company PMS Credentials<DemoMark />
               </div>
               <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
                 {orgPmsSummary}
@@ -133,7 +134,7 @@ export const CompanyDetailScreen = () => {
                   <div style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
                     <div style={{ flex: "1", minWidth: "0" }}>
                       <div style={{ font: "800 13.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                        {v.name}
+                        {v.name}<DemoMark />
                       </div>
                       <div style={{ font: "600 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                         {v.note}
@@ -184,7 +185,7 @@ export const CompanyDetailScreen = () => {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", marginTop: "16px", paddingTop: "16px", borderTop: "1px solid var(--bo-line-2)" }}>
             <div style={{ flex: "1" }}>
               <div style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                Use company-level settings
+                Use company-level settings<DemoMark />
               </div>
               <div style={{ font: "500 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                 Push this credential to every property in the company instead of per-property keys
@@ -200,7 +201,7 @@ export const CompanyDetailScreen = () => {
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
               <div>
                 <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                  Regions
+                  Regions<DemoMark />
                 </div>
                 <div style={{ font: "500 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                   Org-chart grouping for reporting &amp; CSV export
@@ -218,7 +219,7 @@ export const CompanyDetailScreen = () => {
                   </div>
                   <div style={{ flex: "1", minWidth: "0" }}>
                     <div style={{ font: "700 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      {r.name}
+                      {r.name}<DemoMark />
                     </div>
                     <div style={{ font: "600 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                       {r.contact} · {r.email}
@@ -226,7 +227,7 @@ export const CompanyDetailScreen = () => {
                   </div>
                   <div style={{ textAlign: "right" }}>
                     <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      {r.props}
+                      {r.props}<DemoMark />
                     </div>
                     <div style={{ font: "600 10px var(--bo-font)", color: "var(--bo-subtle)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
                       Properties
@@ -247,7 +248,7 @@ export const CompanyDetailScreen = () => {
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
               <div>
                 <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                  Portfolio Groups
+                  Portfolio Groups<DemoMark />
                 </div>
                 <div style={{ font: "500 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                   Branded multi-property landing pages
@@ -265,7 +266,7 @@ export const CompanyDetailScreen = () => {
                   </div>
                   <div style={{ flex: "1", minWidth: "0" }}>
                     <div style={{ font: "700 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      {g.name}
+                      {g.name}<DemoMark />
                     </div>
                     <div style={{ font: "600 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                       Master: {g.master} · {g.videoLabel}
@@ -273,7 +274,7 @@ export const CompanyDetailScreen = () => {
                   </div>
                   <div style={{ textAlign: "right" }}>
                     <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      {g.props}
+                      {g.props}<DemoMark />
                     </div>
                     <div style={{ font: "600 10px var(--bo-font)", color: "var(--bo-subtle)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
                       Properties
@@ -293,7 +294,7 @@ export const CompanyDetailScreen = () => {
         </div>
         <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px" }}>
           <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)", marginBottom: "6px" }}>
-            Activity History
+            Activity History<DemoMark />
           </div>
           {(orgHistory ?? []).map((h: any, hIdx: number) => (
             <React.Fragment key={hIdx}>

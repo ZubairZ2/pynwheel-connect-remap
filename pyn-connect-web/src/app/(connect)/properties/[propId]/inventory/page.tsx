@@ -29,7 +29,7 @@ export default async function Page({
 
   if (!REAL_ID.test(propId)) {
     return (
-      <ConnectScreenTemplate title={title}>
+      <ConnectScreenTemplate title={title} demo>
         <PropertyScope propId={propId}>
           <DemoPropertyInventoryScreen />
         </PropertyScope>

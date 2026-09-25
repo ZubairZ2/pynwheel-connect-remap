@@ -4,6 +4,7 @@ import React from 'react';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { StatusPill } from '~/core/components/atoms/connect/StatusPill';
 import { useIntegrationsScreen } from '~/core/hooks/connect/useIntegrationsScreen';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const IntegrationsScreen = () => {
   const {
@@ -45,7 +46,7 @@ export const IntegrationsScreen = () => {
           {isIntegTab ? (
             <>
               <span style={{ font: "700 13px var(--bo-font)", color: "var(--bo-muted)" }}>
-                Property
+                Property<DemoMark />
               </span>
               <select value={propId} onChange={onPropSelect} className="bo-field" style={{ width: "auto", minWidth: "260px", textTransform: "none" }}>
                 {(allPropOptions ?? []).map((p: any, pIdx: number) => (
@@ -61,7 +62,7 @@ export const IntegrationsScreen = () => {
           {isAccessTab ? (
             <>
               <span style={{ font: "700 13px var(--bo-font)", color: "var(--bo-muted)" }}>
-                Filter
+                Filter<DemoMark />
               </span>
               <select value={accessFilter} onChange={onAccessFilter} className="bo-field" style={{ width: "auto", minWidth: "220px", textTransform: "none" }}>
                 {(accessFilterOptions ?? []).map((o: any, oIdx: number) => (
@@ -85,7 +86,7 @@ export const IntegrationsScreen = () => {
                   </div>
                   <div style={{ flex: "1" }}>
                     <div style={{ font: "800 15px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Locks / Physical Access
+                      Locks / Physical Access<DemoMark />
                     </div>
                     <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
                       One lock provider per property · {lockConnectedCount} connected · {lockTotalLabel}
@@ -99,7 +100,7 @@ export const IntegrationsScreen = () => {
                         <div style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
                           <div style={{ flex: "1", minWidth: "0" }}>
                             <div style={{ font: "800 13.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                              {v.name}
+                              {v.name}<DemoMark />
                             </div>
                             <div style={{ font: "600 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                               {v.note}
@@ -130,7 +131,7 @@ export const IntegrationsScreen = () => {
                         {v.hasExtra ? (
                           <>
                             <div style={{ padding: "9px 11px", background: "#FFF4D4", border: "1px solid #FFECAE", borderRadius: "8px", font: "700 11.5px var(--bo-font)", color: "#8A6A00" }}>
-                              {v.extraLabel}
+                              {v.extraLabel}<DemoMark />
                             </div>
                           </>
                         ) : null}
@@ -176,7 +177,7 @@ export const IntegrationsScreen = () => {
                       </div>
                       <div style={{ flex: "1" }}>
                         <div style={{ font: "800 15px var(--bo-font)", color: "var(--bo-ink)" }}>
-                          Latch Digital Key Grants
+                          Latch Digital Key Grants<DemoMark />
                         </div>
                         <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
                           Keys are issued against a visitor's tour window and expire automatically · {latchActiveCount}
@@ -188,7 +189,7 @@ export const IntegrationsScreen = () => {
                         <div style={{ display: "flex", alignItems: "center", gap: "14px", padding: "12px 0", borderTop: "1px solid var(--bo-line-2)" }}>
                           <div style={{ flex: "1", minWidth: "0" }}>
                             <div style={{ font: "700 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                              {k.visitor}
+                              {k.visitor}<DemoMark />
                             </div>
                             <div style={{ font: "600 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                               {k.unit}
@@ -223,7 +224,7 @@ export const IntegrationsScreen = () => {
                       </div>
                       <div style={{ flex: "1", minWidth: "0" }}>
                         <div style={{ font: "800 15px var(--bo-font)", color: "var(--bo-ink)" }}>
-                          {cat.label}
+                          {cat.label}<DemoMark />
                         </div>
                         <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
                           {cat.sub} · {cat.summary}
@@ -238,7 +239,7 @@ export const IntegrationsScreen = () => {
                             <div style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
                               <div style={{ flex: "1", minWidth: "0" }}>
                                 <div style={{ font: "800 13.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                                  {v.name}
+                                  {v.name}<DemoMark />
                                 </div>
                                 <div style={{ font: "600 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                                   {v.note}
@@ -303,7 +304,7 @@ export const IntegrationsScreen = () => {
             <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", overflow: "hidden" }}>
               <div style={{ padding: "16px 18px", borderBottom: "1px solid var(--bo-line)" }}>
                 <div style={{ font: "800 15px var(--bo-font)", color: "var(--bo-ink)" }}>
-                  Access Log
+                  Access Log<DemoMark />
                 </div>
                 <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
                   Every lock actuation across all vendors and properties · {accessLogCount}
@@ -335,7 +336,7 @@ export const IntegrationsScreen = () => {
                       <tr style={{ borderBottom: "1px solid var(--bo-line-2)" }}>
                         <td style={{ padding: "13px 18px" }}>
                           <div style={{ font: "700 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                            {e.lock}
+                            {e.lock}<DemoMark />
                           </div>
                           <div style={{ font: "600 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
                             {e.vendor}

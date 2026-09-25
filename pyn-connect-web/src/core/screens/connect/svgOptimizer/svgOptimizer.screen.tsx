@@ -4,6 +4,7 @@ import React from 'react';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { StatusPill } from '~/core/components/atoms/connect/StatusPill';
 import { useSvgOptimizerScreen } from '~/core/hooks/connect/useSvgOptimizerScreen';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const SvgOptimizerScreen = () => {
   const {
@@ -21,7 +22,7 @@ export const SvgOptimizerScreen = () => {
           </div>
           <div style={{ flex: "1" }}>
             <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-              SVG Maps Optimizer
+              SVG Maps Optimizer<DemoMark />
             </div>
             <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
               Portfolio-wide floor SVG validation and compression · {svgOptSummary}
@@ -57,7 +58,7 @@ export const SvgOptimizerScreen = () => {
                   <tr className="bo-row" style={{ borderBottom: "1px solid var(--bo-line-2)" }}>
                     <td style={{ padding: "13px 16px" }}>
                       <div style={{ font: "800 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                        {r.name}
+                        {r.name}<DemoMark />
                       </div>
                       <div style={{ font: "600 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
                         {r.org}

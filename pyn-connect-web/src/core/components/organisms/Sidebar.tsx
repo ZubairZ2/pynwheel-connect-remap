@@ -8,6 +8,7 @@ import { Icon } from '~/core/components/atoms/connect/Icon';
 import { activeNavId, generateNavigation } from '~/core/utils/generator/navigation.generator';
 import { initials } from '~/core/utils/connect/format';
 import type { CurrentUser } from '~/core/models/data/session.data';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 /**
  * The design's back-office sidebar: brand, grouped nav, signed-in user. Sign
@@ -47,7 +48,12 @@ export const Sidebar = ({ currentUser }: { currentUser: CurrentUser | null }) =>
                 >
                   <Icon name={item.icon} className="bo-navitem__icon" />
                   <span style={{ flex: 1 }}>{item.label}</span>
-                  {item.badge && <span className="bo-navbadge">{item.badge}</span>}
+                  {item.badge && (
+                    <span className="bo-navbadge">
+                      {item.badge}
+                      <DemoMark />
+                    </span>
+                  )}
                 </Link>
               );
             })}

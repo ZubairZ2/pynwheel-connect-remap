@@ -3,7 +3,7 @@ import { AuditScreen } from '~/core/screens/connect/audit/audit.screen';
 
 export default function Page() {
   return (
-    <ConnectScreenTemplate title="Audit Log">
+    <ConnectScreenTemplate title="Audit Log" demo>
       <AuditScreen />
     </ConnectScreenTemplate>
   );

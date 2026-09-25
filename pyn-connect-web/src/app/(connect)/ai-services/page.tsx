@@ -3,7 +3,7 @@ import { AiServicesScreen } from '~/core/screens/connect/aiServices/aiServices.s
 
 export default function Page() {
   return (
-    <ConnectScreenTemplate title="AI Services">
+    <ConnectScreenTemplate title="AI Services" demo>
       <AiServicesScreen />
     </ConnectScreenTemplate>
   );

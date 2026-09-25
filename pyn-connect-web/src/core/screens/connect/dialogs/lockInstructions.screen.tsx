@@ -3,6 +3,7 @@
 import React from 'react';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { useLockInstructionsDialog } from '~/core/hooks/connect/useLockInstructionsDialog';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const LockInstructionsDialog = () => {
   const {
@@ -21,7 +22,7 @@ export const LockInstructionsDialog = () => {
               <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--bo-line)", display: "flex", alignItems: "center", gap: "12px" }}>
                 <div style={{ flex: "1" }}>
                   <div style={{ font: "800 17px var(--bo-font)", color: "var(--bo-ink)" }}>
-                    {instrVendor.name} Instruction Images
+                    {instrVendor.name} Instruction Images<DemoMark />
                   </div>
                   <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
                     Branded steps a visitor sees in the self-guided app · {instrVendor.note}
@@ -36,11 +37,11 @@ export const LockInstructionsDialog = () => {
                   <React.Fragment key={stIdx}>
                     <div style={{ border: "1px solid var(--bo-line)", borderRadius: "10px", overflow: "hidden" }}>
                       <div style={{ height: "110px", background: "#EEF0F4", display: "flex", alignItems: "center", justifyContent: "center", font: "800 30px var(--bo-font)", color: "var(--bo-accent)" }}>
-                        {st.n}
+                        {st.n}<DemoMark />
                       </div>
                       <div style={{ padding: "12px" }}>
                         <div style={{ font: "800 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                          {st.title}
+                          {st.title}<DemoMark />
                         </div>
                         <div style={{ font: "500 11.5px/1.5 var(--bo-font)", color: "var(--bo-subtle)", marginTop: "3px" }}>
                           {st.body}

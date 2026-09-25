@@ -105,11 +105,11 @@ test.describe('dialogs', () => {
     await expect(transcriptLine).toHaveCount(1); // the queue excerpt only
 
     await page.getByRole('button', { name: 'Review' }).first().click();
-    await expect(page.getByText('Flagged Transcript', { exact: true })).toBeVisible();
+    await expect(page.getByText(/^Flagged Transcript\*?$/)).toBeVisible();
     await expect(transcriptLine).toHaveCount(2); // excerpt + the open dialog
 
     await page.getByRole('button', { name: 'Mark Reviewed' }).click();
-    await expect(page.getByText('Flagged Transcript', { exact: true })).toHaveCount(0);
+    await expect(page.getByText(/^Flagged Transcript\*?$/)).toHaveCount(0);
     await expect(page.getByRole('status')).toContainText('Transcript marked reviewed');
   });
 });
@@ -190,10 +190,10 @@ test.describe('the map editor', () => {
 
   test('switches floors', async ({ page }) => {
     await open(page, 'mapEditor');
-    await expect(page.getByText('Tower A · Lobby', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText(/^Tower A · Lobby\*?$/).first()).toBeVisible();
 
     await page.getByRole('button', { name: /Floor 12/ }).first().click();
-    await expect(page.getByText('Tower A · Floor 12', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText(/^Tower A · Floor 12\*?$/).first()).toBeVisible();
   });
 });
 

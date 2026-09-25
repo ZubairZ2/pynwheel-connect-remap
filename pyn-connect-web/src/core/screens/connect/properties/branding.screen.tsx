@@ -4,6 +4,7 @@ import React from 'react';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { StatusPill } from '~/core/components/atoms/connect/StatusPill';
 import { useBrandingScreen } from '~/core/hooks/connect/useBrandingScreen';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const BrandingScreen = () => {
   const {
@@ -61,7 +62,7 @@ export const BrandingScreen = () => {
               <Icon name={"palette"} style={{ color: "#A88A0B", display: "flex", flexShrink: "0" }} />
               <div style={{ flex: "1" }}>
                 <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                  Design Direction not submitted yet
+                  Design Direction not submitted yet<DemoMark />
                 </div>
                 <div style={{ font: "500 12.5px/1.55 var(--bo-font)", color: "#7A660C" }}>
                   {prop.name} hasn't completed brand kickoff. Collect a moodboard, a starting palette, and written direction before building out the full theme.
@@ -94,7 +95,7 @@ export const BrandingScreen = () => {
           <>
             <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px 22px" }}>
               <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                Starter Themes
+                Starter Themes<DemoMark />
               </div>
               <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)", marginBottom: "16px" }}>
                 Pick a named theme as the foundation, then refine tokens individually
@@ -108,13 +109,13 @@ export const BrandingScreen = () => {
                         <div style={{ flex: "1", height: "34px", borderRadius: "6px", background: t.secondary }} />
                       </div>
                       <div style={{ font: "800 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                        {t.name}
+                        {t.name}<DemoMark />
                       </div>
                       <div style={{ font: "500 11px/1.45 var(--bo-font)", color: "var(--bo-subtle)", marginBottom: "8px" }}>
                         {t.note}
                       </div>
                       <div style={{ font: "800 10.5px var(--bo-font)", color: t.badgeColor, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                        {t.badge}
+                        {t.badge}<DemoMark />
                       </div>
                     </div>
                   </React.Fragment>
@@ -129,11 +130,11 @@ export const BrandingScreen = () => {
               <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px 22px" }}>
                   <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)", marginBottom: "4px" }}>
-                    Color &amp; Type
+                    Color &amp; Type<DemoMark />
                   </div>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderTop: "1px solid var(--bo-line-2)" }}>
                     <div style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Primary color
+                      Primary color<DemoMark />
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "9px" }}>
                       <div style={{ width: "26px", height: "26px", borderRadius: "6px", border: "1px solid var(--bo-line)", background: theme.primary }} />
@@ -142,7 +143,7 @@ export const BrandingScreen = () => {
                   </div>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderTop: "1px solid var(--bo-line-2)" }}>
                     <div style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Secondary color
+                      Secondary color<DemoMark />
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "9px" }}>
                       <div style={{ width: "26px", height: "26px", borderRadius: "6px", border: "1px solid var(--bo-line)", background: theme.secondary }} />
@@ -151,7 +152,7 @@ export const BrandingScreen = () => {
                   </div>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderTop: "1px solid var(--bo-line-2)" }}>
                     <div style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Font family
+                      Font family<DemoMark />
                     </div>
                     <select value={theme.font} onChange={onFont} className="bo-field" style={{ width: "auto", minWidth: "150px", textTransform: "none" }}>
                       {(fontFamilies ?? []).map((ff: any, ffIdx: number) => (
@@ -165,7 +166,7 @@ export const BrandingScreen = () => {
                   </div>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderTop: "1px solid var(--bo-line-2)" }}>
                     <div style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Weight
+                      Weight<DemoMark />
                     </div>
                     <select value={theme.weight} onChange={onWeight} className="bo-field" style={{ width: "auto", minWidth: "150px", textTransform: "none" }}>
                       {(fontWeights ?? []).map((fw: any, fwIdx: number) => (
@@ -179,18 +180,18 @@ export const BrandingScreen = () => {
                   </div>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderTop: "1px solid var(--bo-line-2)" }}>
                     <div style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Base size
+                      Base size<DemoMark />
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                       <input type="range" min="12" max="24" step="1" value={theme.size} onChange={onBrandSize} style={{ width: "150px" }} />
                       <div style={{ font: "800 13px var(--bo-font)", color: "var(--bo-ink)", minWidth: "40px", textAlign: "right" }}>
-                        {theme.sizeLabel}
+                        {theme.sizeLabel}<DemoMark />
                       </div>
                     </div>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0 0", borderTop: "1px solid var(--bo-line-2)" }}>
                     <div style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Alignment
+                      Alignment<DemoMark />
                     </div>
                     <div style={{ display: "flex", gap: "6px" }}>
                       {(alignOptions ?? []).map((a: any, aIdx: number) => (
@@ -205,11 +206,11 @@ export const BrandingScreen = () => {
                 </div>
                 <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px 22px" }}>
                   <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)", marginBottom: "4px" }}>
-                    Navigation &amp; Map Markers
+                    Navigation &amp; Map Markers<DemoMark />
                   </div>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderTop: "1px solid var(--bo-line-2)" }}>
                     <div style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Nav button style
+                      Nav button style<DemoMark />
                     </div>
                     <div style={{ display: "flex", gap: "6px" }}>
                       {(navStyleOptions ?? []).map((n: any, nIdx: number) => (
@@ -223,7 +224,7 @@ export const BrandingScreen = () => {
                   </div>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderTop: "1px solid var(--bo-line-2)" }}>
                     <div style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Marker color
+                      Marker color<DemoMark />
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "9px" }}>
                       <div style={{ width: "26px", height: "26px", borderRadius: "6px", border: "1px solid var(--bo-line)", background: theme.markerColor }} />
@@ -232,7 +233,7 @@ export const BrandingScreen = () => {
                   </div>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0 0", borderTop: "1px solid var(--bo-line-2)" }}>
                     <div style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Marker size
+                      Marker size<DemoMark />
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                       <div style={{ width: "34px", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -254,7 +255,7 @@ export const BrandingScreen = () => {
               <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px 22px" }}>
                   <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                    Homepage Hero Media
+                    Homepage Hero Media<DemoMark />
                   </div>
                   <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)", marginBottom: "14px" }}>
                     What plays behind the kiosk homepage
@@ -266,7 +267,7 @@ export const BrandingScreen = () => {
                           <Icon name={"image"} style={{ color: "var(--bo-muted)", display: "flex", flexShrink: "0" }} />
                           <div style={{ flex: "1" }}>
                             <div style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                              {h.label}
+                              {h.label}<DemoMark />
                             </div>
                             <div style={{ font: "600 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
                               {h.note}
@@ -279,15 +280,15 @@ export const BrandingScreen = () => {
                 </div>
                 <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px 22px" }}>
                   <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)", marginBottom: "12px" }}>
-                    Live Preview
+                    Live Preview<DemoMark />
                   </div>
                   <div style={{ border: "1px solid var(--bo-line)", borderRadius: "10px", overflow: "hidden" }}>
                     <div style={{ background: theme.primary, padding: "16px 18px" }}>
                       <div style={{ font: "700 11px var(--bo-font)", color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                        {theme.themeName}
+                        {theme.themeName}<DemoMark />
                       </div>
                       <div style={{ font: "800 18px var(--bo-font)", color: "#fff", textAlign: theme.align }}>
-                        {prop.name}
+                        {prop.name}<DemoMark />
                       </div>
                     </div>
                     <div style={{ padding: "16px 18px", display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -321,7 +322,7 @@ export const BrandingScreen = () => {
                     <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", marginBottom: "14px" }}>
                       <div style={{ flex: "1" }}>
                         <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                          {l.label}
+                          {l.label}<DemoMark />
                         </div>
                         <div style={{ font: "500 11.5px/1.5 var(--bo-font)", color: "var(--bo-subtle)" }}>
                           {l.note}
@@ -336,7 +337,7 @@ export const BrandingScreen = () => {
                             <img src="/images/amenity-thumb.jpg" alt="Logo artwork" style={{ position: "absolute", left: l.imgLeft, top: l.imgTop, width: l.imgW, height: l.imgH, objectFit: "cover" }} />
                           </div>
                           <div style={{ position: "absolute", bottom: "8px", left: "8px", font: "800 10px var(--bo-font)", color: "#fff", background: "rgba(20,22,28,0.82)", padding: "3px 8px", borderRadius: "4px" }}>
-                            {l.cropLabel}
+                            {l.cropLabel}<DemoMark />
                           </div>
                         </>
                       ) : null}

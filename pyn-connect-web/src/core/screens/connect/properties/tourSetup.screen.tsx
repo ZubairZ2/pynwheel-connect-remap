@@ -4,6 +4,7 @@ import React from 'react';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { StatusPill } from '~/core/components/atoms/connect/StatusPill';
 import { useTourSetupScreen } from '~/core/hooks/connect/useTourSetupScreen';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const TourSetupScreen = () => {
   const {
@@ -61,7 +62,7 @@ export const TourSetupScreen = () => {
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <div style={{ flex: "1" }}>
             <div style={{ font: "800 16px var(--bo-font)", color: "var(--bo-ink)" }}>
-              Tour Setup
+              Tour Setup<DemoMark />
             </div>
             <div style={{ font: "600 12.5px var(--bo-font)", color: "var(--bo-muted)" }}>
               Stops, elevator access and routing · {prop.pubDetail}
@@ -91,7 +92,7 @@ export const TourSetupScreen = () => {
               <button onClick={t.go} style={{ height: "36px", padding: "0 14px", border: `1px solid ${t.border}`, background: t.bg, color: t.color, borderRadius: "8px", font: "700 12.5px var(--bo-font)", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}>
                 {t.label}
                 <span style={{ font: "800 10.5px var(--bo-font)", background: t.badgeBg, color: t.badgeColor, padding: "2px 7px", borderRadius: "999px" }}>
-                  {t.count}
+                  {t.count}<DemoMark />
                 </span>
               </button>
             </React.Fragment>
@@ -102,7 +103,7 @@ export const TourSetupScreen = () => {
             <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "14px 18px", display: "flex", alignItems: "center", gap: "12px", marginBottom: "4px" }}>
               <div style={{ flex: "1" }}>
                 <div style={{ font: "800 13.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                  Tour Stops
+                  Tour Stops<DemoMark />
                 </div>
                 <div style={{ font: "600 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                   A stop is always a unit or an amenity promoted from inventory · {stopSourcePool}
@@ -126,7 +127,7 @@ export const TourSetupScreen = () => {
                       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                         <Icon name={s.icon} style={{ color: "var(--bo-accent)", display: "flex" }} />
                         <div style={{ font: "800 15px var(--bo-font)", color: "var(--bo-ink)", flex: "1" }}>
-                          {s.name}
+                          {s.name}<DemoMark />
                         </div>
                         <span style={{ font: "700 10px var(--bo-font)", color: "var(--bo-muted)", background: "#EEF0F4", padding: "3px 8px", borderRadius: "4px", textTransform: "uppercase" }}>
                           {s.type}
@@ -213,7 +214,7 @@ export const TourSetupScreen = () => {
               <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "14px 18px", display: "flex", alignItems: "center", gap: "12px" }}>
                 <div style={{ flex: "1" }}>
                   <div style={{ font: "800 13.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                    Elevators &amp; Smart-Lock Grants
+                    Elevators &amp; Smart-Lock Grants<DemoMark />
                   </div>
                   <div style={{ font: "600 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                     Gated banks issue a time-boxed key for the visitor's tour window · vendor keys live on the Integrations Hub
@@ -236,7 +237,7 @@ export const TourSetupScreen = () => {
                       <div style={{ flex: "1" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "9px" }}>
                           <span style={{ font: "800 14.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                            {e.name}
+                            {e.name}<DemoMark />
                           </span>
                           <StatusPill variant={e.lockV} label={e.lockLabel} />
                         </div>
@@ -245,7 +246,7 @@ export const TourSetupScreen = () => {
                         </div>
                       </div>
                       <span style={{ font: "700 11.5px var(--bo-font)", color: "var(--bo-muted)" }}>
-                        Smart-lock gated
+                        Smart-lock gated<DemoMark />
                       </span>
                       <div onClick={e.toggleLock} style={{ width: "44px", height: "26px", borderRadius: "999px", background: e.toggleBg, position: "relative", cursor: "pointer", flexShrink: "0", transition: "background .15s" }}>
                         <div style={{ position: "absolute", top: "3px", left: e.knob, width: "20px", height: "20px", borderRadius: "999px", background: "#fff", transition: "left .15s", boxShadow: "0 1px 2px rgba(0,0,0,0.3)" }} />
@@ -264,7 +265,7 @@ export const TourSetupScreen = () => {
                             <div role="img" aria-label="Elevator photo" style={{ width: "100%", height: "96px", backgroundImage: `url(${p.src})`, backgroundSize: "cover", backgroundPosition: "center", backgroundColor: "#EEF0F4" }} />
                             <div style={{ display: "flex", alignItems: "center", gap: "5px", padding: "6px 8px" }}>
                               <span style={{ flex: "1", font: "700 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
-                                {p.pos}
+                                {p.pos}<DemoMark />
                               </span>
                               <button onClick={p.up} aria-label="Move earlier" style={{ width: "24px", height: "24px", borderRadius: "5px", border: "1px solid var(--bo-line)", background: "#fff", color: "var(--bo-muted)", cursor: "pointer", font: "700 11px var(--bo-font)" }}>
                                 ←
@@ -295,7 +296,7 @@ export const TourSetupScreen = () => {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", alignItems: "start" }}>
               <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px 22px" }}>
                 <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)", marginBottom: "4px" }}>
-                  Route Preview
+                  Route Preview<DemoMark />
                 </div>
                 <div style={{ font: "500 11.5px var(--bo-font)", color: "var(--bo-subtle)", marginBottom: "12px" }}>
                   Solves the shortest path across floors and buildings, including elevator and stair links
@@ -331,7 +332,7 @@ export const TourSetupScreen = () => {
                 <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", marginBottom: "4px" }}>
                   <div style={{ flex: "1" }}>
                     <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Building Starting Points
+                      Building Starting Points<DemoMark />
                     </div>
                     <div style={{ font: "500 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                       One designated entry per building — set them on the pathway graph
@@ -346,7 +347,7 @@ export const TourSetupScreen = () => {
                     <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "11px 0", borderTop: "1px solid var(--bo-line-2)" }}>
                       <div style={{ flex: "1", minWidth: "0" }}>
                         <div style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                          {b.building}
+                          {b.building}<DemoMark />
                         </div>
                         <div style={{ font: "600 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
                           {b.name}

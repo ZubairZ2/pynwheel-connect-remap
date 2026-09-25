@@ -3,7 +3,7 @@ import { HelpScreen } from '~/core/screens/connect/help/help.screen';
 
 export default function Page() {
   return (
-    <ConnectScreenTemplate title="Help & Tutorials">
+    <ConnectScreenTemplate title="Help & Tutorials" demo>
       <HelpScreen />
     </ConnectScreenTemplate>
   );

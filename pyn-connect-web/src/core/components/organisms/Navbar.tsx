@@ -7,6 +7,7 @@ import { CONNECT_ROUTES } from '~/config/app/connectRoutes';
 import { CORE_STRINGS } from '~/config/app/strings';
 import { APP_ROUTES } from '~/config/app/urls';
 import { Icon } from '~/core/components/atoms/connect/Icon';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 import { SignOutIcon } from '~/core/components/atoms/Icons';
 import { i18n } from '~/resources/i18n';
 import { demoActions } from '~/core/store/demo/demo.slice';
@@ -19,19 +20,21 @@ import { orgRoute, propRoute } from '~/config/app/connectRoutes';
 
 interface Props {
   title: string;
+  /** The screen runs on demo data: its title carries the placeholder mark. */
+  demo?: boolean;
 }
 
 /**
  * The design's top bar: page title, omni-search over the demo data, environment
  * chip, the audit-log bell and sign out. Shared by every screen, old and new.
  */
-export const Navbar = ({ title }: Props) => {
+export const Navbar = ({ title, demo = false }: Props) => {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const [signingOut, setSigningOut] = useState(false);
   const query = useAppSelector((s) => s.demo.globalQuery);
-  const demo = useAppSelector((s) => s.demo);
-  const results = useMemo(() => generateGlobalResults(demo), [demo]);
+  const demoState = useAppSelector((s) => s.demo);
+  const results = useMemo(() => generateGlobalResults(demoState), [demoState]);
   const open = query.trim().length > 0;
 
   const openResult = (kind: string, id: string) => {
@@ -56,7 +59,10 @@ export const Navbar = ({ title }: Props) => {
 
   return (
     <header className="bo-topbar">
-      <h1 className="bo-topbar__title">{title}</h1>
+      <h1 className="bo-topbar__title">
+        {title}
+        {demo && <DemoMark />}
+      </h1>
 
       <span className="bo-topbar__divider" aria-hidden="true" />
 
@@ -95,7 +101,10 @@ export const Navbar = ({ title }: Props) => {
                   <Icon name={result.icon} style={{ transform: 'scale(0.8)' }} />
                 </span>
                 <span style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
-                  <span className="bo-globalsearch__name">{result.name}</span>
+                  <span className="bo-globalsearch__name">
+                    {result.name}
+                    <DemoMark />
+                  </span>
                   <span className="bo-globalsearch__sub">{result.sub}</span>
                 </span>
                 <span className="bo-globalsearch__kind">{result.kind}</span>
@@ -135,6 +144,7 @@ export const Navbar = ({ title }: Props) => {
           <path d="M13.73 21a2 2 0 0 1-3.46 0" />
         </svg>
         <span className="bo-bell__dot" aria-hidden="true" />
+        <DemoMark />
       </button>
 
       <button

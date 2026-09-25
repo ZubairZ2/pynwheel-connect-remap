@@ -3,6 +3,7 @@
 import React from 'react';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { useKickoffDialog } from '~/core/hooks/connect/useKickoffDialog';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const KickoffDialog = () => {
   const {
@@ -25,10 +26,10 @@ export const KickoffDialog = () => {
             <div style={{ width: "600px", maxHeight: "88vh", overflowY: "auto", background: "#fff", borderRadius: "14px", boxShadow: "0 20px 50px rgba(0,0,0,0.3)" }}>
               <div style={{ padding: "22px 24px", borderBottom: "1px solid var(--bo-line)" }}>
                 <div style={{ font: "700 10.5px var(--bo-font)", color: "var(--bo-accent)", textTransform: "uppercase", letterSpacing: "0.09em" }}>
-                  Brand Kickoff
+                  Brand Kickoff<DemoMark />
                 </div>
                 <div style={{ font: "800 18px var(--bo-font)", color: "var(--bo-ink)", marginTop: "3px" }}>
-                  Design Direction
+                  Design Direction<DemoMark />
                 </div>
                 <div style={{ font: "500 12.5px/1.6 var(--bo-font)", color: "var(--bo-muted)", marginTop: "4px" }}>
                   A quick intake for {prop.name} before the full theme gets built. Three inputs — the design team takes it from here.
@@ -37,7 +38,7 @@ export const KickoffDialog = () => {
               <div style={{ padding: "22px 24px", display: "flex", flexDirection: "column", gap: "20px" }}>
                 <div>
                   <div style={{ font: "800 12.5px var(--bo-font)", color: "var(--bo-ink)", marginBottom: "3px" }}>
-                    1 · Moodboard
+                    1 · Moodboard<DemoMark />
                   </div>
                   <div style={{ font: "500 11.5px var(--bo-font)", color: "var(--bo-subtle)", marginBottom: "9px" }}>
                     Reference imagery, a brand sheet, or a screenshot of a site they like
@@ -53,7 +54,7 @@ export const KickoffDialog = () => {
                 </div>
                 <div>
                   <div style={{ font: "800 12.5px var(--bo-font)", color: "var(--bo-ink)", marginBottom: "3px" }}>
-                    2 · Starting Palette
+                    2 · Starting Palette<DemoMark />
                   </div>
                   <div style={{ font: "500 11.5px var(--bo-font)", color: "var(--bo-subtle)", marginBottom: "9px" }}>
                     One hex to anchor the theme — refined later in the token editor
@@ -68,7 +69,7 @@ export const KickoffDialog = () => {
                 </div>
                 <div>
                   <div style={{ font: "800 12.5px var(--bo-font)", color: "var(--bo-ink)", marginBottom: "3px" }}>
-                    3 · Brand Direction
+                    3 · Brand Direction<DemoMark />
                   </div>
                   <div style={{ font: "500 11.5px var(--bo-font)", color: "var(--bo-subtle)", marginBottom: "9px" }}>
                     How should this property feel to a prospective renter?

@@ -4,6 +4,7 @@ import React from 'react';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { StatusPill } from '~/core/components/atoms/connect/StatusPill';
 import { useUnitDetailScreen } from '~/core/hooks/connect/useUnitDetailScreen';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const UnitDetailScreen = () => {
   const {
@@ -45,7 +46,7 @@ export const UnitDetailScreen = () => {
           <div style={{ flex: "1" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <div style={{ font: "800 22px var(--bo-font)", color: "var(--bo-ink)" }}>
-                {unitDetail.name}
+                {unitDetail.name}<DemoMark />
               </div>
               <StatusPill variant={unitDetail.availV} label={unitDetail.availLabel} />
               <StatusPill variant={unitDetail.plottedV} label={unitDetail.plottedLabel} />
@@ -70,7 +71,7 @@ export const UnitDetailScreen = () => {
               <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "14px" }}>
                 <div style={{ flex: "1" }}>
                   <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                    Unit Data
+                    Unit Data<DemoMark />
                   </div>
                   <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
                     Typing in a field marks it Manual — the next PMS sync leaves it alone
@@ -86,7 +87,7 @@ export const UnitDetailScreen = () => {
                     <div style={{ border: "1px solid var(--bo-line)", borderRadius: "10px", padding: "12px 14px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
                         <span style={{ flex: "1", font: "700 11px var(--bo-font)", color: "var(--bo-subtle)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                          {fd.label}
+                          {fd.label}<DemoMark />
                         </span>
                         <StatusPill variant={fd.srcV} label={fd.srcLabel} />
                         <button onClick={fd.toggle} style={{ height: "24px", padding: "0 8px", border: "1px solid var(--bo-line)", background: "#fff", borderRadius: "6px", font: "700 10.5px var(--bo-font)", color: "var(--bo-muted)", cursor: "pointer" }}>
@@ -99,7 +100,7 @@ export const UnitDetailScreen = () => {
                 ))}
                 <div style={{ border: "1px solid var(--bo-line)", borderRadius: "10px", padding: "12px 14px" }}>
                   <div style={{ font: "700 11px var(--bo-font)", color: "var(--bo-subtle)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "6px" }}>
-                    Availability
+                    Availability<DemoMark />
                   </div>
                   <select value={unitDetail.avail} onChange={unitDetail.onAvail} className="bo-field" style={{ textTransform: "none" }}>
                     {(unitDetail.availOptions ?? []).map((o: any, oIdx: number) => (
@@ -113,10 +114,10 @@ export const UnitDetailScreen = () => {
                 </div>
                 <div style={{ border: "1px solid var(--bo-line)", borderRadius: "10px", padding: "12px 14px" }}>
                   <div style={{ font: "700 11px var(--bo-font)", color: "var(--bo-subtle)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "6px" }}>
-                    PMS Floor / Building
+                    PMS Floor / Building<DemoMark />
                   </div>
                   <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                    {unitDetail.pmsFloor}
+                    {unitDetail.pmsFloor}<DemoMark />
                   </div>
                 </div>
               </div>
@@ -125,7 +126,7 @@ export const UnitDetailScreen = () => {
               <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "14px" }}>
                 <div style={{ flex: "1" }}>
                   <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                    Unit Gallery
+                    Unit Gallery<DemoMark />
                   </div>
                   <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
                     {unitDetail.photoCount} · first image is the card thumbnail on the kiosk
@@ -144,7 +145,7 @@ export const UnitDetailScreen = () => {
                           <div role="img" aria-label="Unit photo" style={{ width: "100%", height: "96px", backgroundImage: `url(${p.src})`, backgroundSize: "cover", backgroundPosition: "center", backgroundColor: "#EEF0F4" }} />
                           <div style={{ display: "flex", alignItems: "center", gap: "5px", padding: "6px 8px" }}>
                             <span style={{ flex: "1", font: "700 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
-                              {p.pos}
+                              {p.pos}<DemoMark />
                             </span>
                             <button onClick={p.up} aria-label="Move earlier" style={{ width: "24px", height: "24px", borderRadius: "5px", border: "1px solid var(--bo-line)", background: "#fff", color: "var(--bo-muted)", cursor: "pointer", font: "700 11px var(--bo-font)" }}>
                               ←
@@ -174,7 +175,7 @@ export const UnitDetailScreen = () => {
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px 22px" }}>
               <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)", marginBottom: "4px" }}>
-                Placement
+                Placement<DemoMark />
               </div>
               <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)", marginBottom: "12px" }}>
                 {unitDetail.where} · pin at {unitDetail.coord}
@@ -192,7 +193,7 @@ export const UnitDetailScreen = () => {
             </div>
             <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px 22px" }}>
               <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)", marginBottom: "4px" }}>
-                Lease-Term Pricing
+                Lease-Term Pricing<DemoMark />
               </div>
               <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)", marginBottom: "12px" }}>
                 Inherited from {unitDetail.fpName}
@@ -202,10 +203,10 @@ export const UnitDetailScreen = () => {
                   <React.Fragment key={tIdx}>
                     <div style={{ border: `1px solid ${t.border}`, background: t.bg, borderRadius: "9px", padding: "9px 11px" }}>
                       <div style={{ font: "700 10.5px var(--bo-font)", color: t.labelColor, textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                        {t.label}
+                        {t.label}<DemoMark />
                       </div>
                       <div style={{ font: "800 15px var(--bo-font)", color: t.valueColor }}>
-                        {t.value}
+                        {t.value}<DemoMark />
                       </div>
                     </div>
                   </React.Fragment>

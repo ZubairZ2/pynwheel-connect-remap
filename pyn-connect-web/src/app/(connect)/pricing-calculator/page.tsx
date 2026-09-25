@@ -3,7 +3,7 @@ import { PricingCalculatorScreen } from '~/core/screens/connect/pricingCalculato
 
 export default function Page() {
   return (
-    <ConnectScreenTemplate title="Pricing Calculator">
+    <ConnectScreenTemplate title="Pricing Calculator" demo>
       <PricingCalculatorScreen />
     </ConnectScreenTemplate>
   );

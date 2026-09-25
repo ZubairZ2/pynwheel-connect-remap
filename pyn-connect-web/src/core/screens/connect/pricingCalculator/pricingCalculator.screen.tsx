@@ -4,6 +4,7 @@ import React from 'react';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { StatusPill } from '~/core/components/atoms/connect/StatusPill';
 import { usePricingCalculatorScreen } from '~/core/hooks/connect/usePricingCalculatorScreen';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const PricingCalculatorScreen = () => {
   const {
@@ -41,7 +42,7 @@ export const PricingCalculatorScreen = () => {
           </div>
           <div style={{ flex: "1" }}>
             <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-              Move-In Cost Estimator
+              Move-In Cost Estimator<DemoMark />
             </div>
             <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
               Categorized fee builder powering the public embeddable calculator widget · {pcSummary}
@@ -82,7 +83,7 @@ export const PricingCalculatorScreen = () => {
                     <Icon name={"drag"} style={{ display: "flex", color: "var(--bo-subtle)", cursor: "grab" }} />
                     <input value={cat.name} onChange={cat.onName} style={{ flex: "1", minWidth: "0", border: "none", background: "transparent", font: "800 14px var(--bo-font)", color: "var(--bo-ink)", outline: "none" }} />
                     <span style={{ font: "700 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
-                      {cat.count}
+                      {cat.count}<DemoMark />
                     </span>
                     <button onClick={cat.addFee} style={{ height: "30px", padding: "0 11px", border: "1px solid var(--bo-accent)", background: "var(--bo-accent-soft)", borderRadius: "7px", font: "700 12px var(--bo-font)", color: "var(--bo-accent)", cursor: "pointer" }}>
                       + Fee
@@ -108,7 +109,7 @@ export const PricingCalculatorScreen = () => {
                         <div style={{ flex: "1", minWidth: "0" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                             <span style={{ font: "800 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                              {f.label}
+                              {f.label}<DemoMark />
                             </span>
                             <span style={{ font: "700 10px var(--bo-font)", color: "var(--bo-accent)", background: "var(--bo-accent-soft)", padding: "2px 7px", borderRadius: "5px" }}>
                               {f.logicLabel}
@@ -119,7 +120,7 @@ export const PricingCalculatorScreen = () => {
                           </div>
                         </div>
                         <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)", textAlign: "right", whiteSpace: "nowrap" }}>
-                          {f.priceLabel}
+                          {f.priceLabel}<DemoMark />
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: "0" }}>
                           <span style={{ font: "700 10px var(--bo-font)", color: "var(--bo-subtle)" }}>
@@ -148,7 +149,7 @@ export const PricingCalculatorScreen = () => {
               <>
                 <div style={{ background: "var(--bo-panel)", border: "1px dashed var(--bo-line)", borderRadius: "12px", padding: "36px", textAlign: "center" }}>
                   <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                    No fee categories yet
+                    No fee categories yet<DemoMark />
                   </div>
                   <div style={{ font: "600 12px var(--bo-font)", color: "var(--bo-subtle)", marginTop: "4px" }}>
                     Add a category to start building this property's move-in cost estimator.
@@ -163,13 +164,13 @@ export const PricingCalculatorScreen = () => {
           <div style={{ width: "300px", flexShrink: "0", display: "flex", flexDirection: "column", gap: "14px" }}>
             <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "18px" }}>
               <div style={{ font: "800 13px var(--bo-font)", color: "var(--bo-ink)", marginBottom: "12px" }}>
-                Embed URLs
+                Embed URLs<DemoMark />
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "12px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "7px" }}>
                   <span style={{ width: "7px", height: "7px", borderRadius: "999px", background: "#2E9C6A" }} />
                   <span style={{ font: "700 11px var(--bo-font)", color: "var(--bo-muted)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                    Live
+                    Live<DemoMark />
                   </span>
                 </div>
                 <div style={{ display: "flex", gap: "6px" }}>
@@ -183,7 +184,7 @@ export const PricingCalculatorScreen = () => {
                 <div style={{ display: "flex", alignItems: "center", gap: "7px" }}>
                   <span style={{ width: "7px", height: "7px", borderRadius: "999px", background: "var(--bo-accent)" }} />
                   <span style={{ font: "700 11px var(--bo-font)", color: "var(--bo-muted)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                    Draft
+                    Draft<DemoMark />
                   </span>
                 </div>
                 <div style={{ display: "flex", gap: "6px" }}>
@@ -198,7 +199,7 @@ export const PricingCalculatorScreen = () => {
               <>
                 <div style={{ border: "1px solid #FFECAE", background: "#FFF4D4", borderRadius: "12px", padding: "14px 16px" }}>
                   <div style={{ font: "800 12.5px var(--bo-font)", color: "#8A6A00" }}>
-                    Unpublished Changes
+                    Unpublished Changes<DemoMark />
                   </div>
                   <div style={{ font: "600 11.5px/1.5 var(--bo-font)", color: "#8A6A00", marginTop: "3px" }}>
                     The draft differs from what the public widget shows. Publish to push these fees live, or save the draft to keep editing.
@@ -211,10 +212,10 @@ export const PricingCalculatorScreen = () => {
             ) : null}
             <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "18px" }}>
               <div style={{ font: "800 13px var(--bo-font)", color: "var(--bo-ink)", marginBottom: "10px" }}>
-                Estimated Move-In
+                Estimated Move-In<DemoMark />
               </div>
               <div data-testid="pc-estimate" style={{ font: "800 26px var(--bo-font)", color: "var(--bo-accent)" }}>
-                {pcEstimate}
+                {pcEstimate}<DemoMark />
               </div>
               <div style={{ font: "600 11px var(--bo-font)", color: "var(--bo-subtle)", marginTop: "3px" }}>
                 Example: {pcEstimateNote}

@@ -4,6 +4,7 @@ import React from 'react';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { StatusPill } from '~/core/components/atoms/connect/StatusPill';
 import { useBillingScreen } from '~/core/hooks/connect/useBillingScreen';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const BillingScreen = () => {
   const {
@@ -19,7 +20,7 @@ export const BillingScreen = () => {
           <Icon name={"billing"} style={{ color: "var(--bo-muted)", display: "flex", flexShrink: "0" }} />
           <div style={{ flex: "1" }}>
             <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-              Rate Card Rollup
+              Rate Card Rollup<DemoMark />
             </div>
             <div style={{ font: "500 12px/1.55 var(--bo-font)", color: "var(--bo-subtle)" }}>
               Billing lives per-property, not per-company — there is no subscription tier or MRR on a company. This rolls up the Phase 1 rate cards so you can see contracted rates across the portfolio. Invoicing happens outside this system.
@@ -34,7 +35,7 @@ export const BillingScreen = () => {
                   {k.label}
                 </div>
                 <div style={{ font: "800 26px var(--bo-font)", color: "var(--bo-ink)", marginTop: "6px" }}>
-                  {k.value}
+                  {k.value}<DemoMark />
                 </div>
                 <div style={{ font: "600 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                   {k.sub}
@@ -47,7 +48,7 @@ export const BillingScreen = () => {
           <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--bo-line)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
               <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                Per-Property Rate Cards
+                Per-Property Rate Cards<DemoMark />
               </div>
               <div style={{ font: "500 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                 Grouped by company · edit a rate on its Property Detail screen
@@ -119,7 +120,7 @@ export const BillingScreen = () => {
         </div>
         <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px 22px" }}>
           <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-            Rollup by Company
+            Rollup by Company<DemoMark />
           </div>
           <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)", marginBottom: "6px" }}>
             Sum of combined rates for properties billing this month
@@ -128,18 +129,18 @@ export const BillingScreen = () => {
             <React.Fragment key={oIdx}>
               <div onClick={o.open} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 0", borderTop: "1px solid var(--bo-line-2)", cursor: "pointer" }}>
                 <div style={{ width: "30px", height: "30px", borderRadius: "8px", background: "var(--bo-accent-soft)", color: "var(--bo-accent)", display: "flex", alignItems: "center", justifyContent: "center", font: "800 11px var(--bo-font)", flexShrink: "0" }}>
-                  {o.initials}
+                  {o.initials}<DemoMark />
                 </div>
                 <div style={{ flex: "1", minWidth: "0" }}>
                   <div style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                    {o.name}
+                    {o.name}<DemoMark />
                   </div>
                   <div style={{ font: "600 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
                     {o.detail}
                   </div>
                 </div>
                 <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                  {o.total}
+                  {o.total}<DemoMark />
                 </div>
               </div>
             </React.Fragment>

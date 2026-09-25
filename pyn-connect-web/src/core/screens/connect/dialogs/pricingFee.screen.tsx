@@ -3,6 +3,7 @@
 import React from 'react';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { usePricingFeeDialog } from '~/core/hooks/connect/usePricingFeeDialog';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const PricingFeeDialog = () => {
   const {
@@ -26,7 +27,7 @@ export const PricingFeeDialog = () => {
               <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--bo-line)", display: "flex", alignItems: "center", gap: "12px", position: "sticky", top: "0", background: "#fff", zIndex: "2" }}>
                 <div style={{ flex: "1" }}>
                   <div style={{ font: "800 17px var(--bo-font)", color: "var(--bo-ink)" }}>
-                    {pcFeeTitle}
+                    {pcFeeTitle}<DemoMark />
                   </div>
                   <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
                     How this fee is priced and shown in the move-in cost estimator.
@@ -123,7 +124,7 @@ export const PricingFeeDialog = () => {
                   <div style={{ display: "flex", alignItems: "center", gap: "11px" }}>
                     <div style={{ flex: "1" }}>
                       <div style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                        Quantity Controls
+                        Quantity Controls<DemoMark />
                       </div>
                       <div style={{ font: "500 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
                         Let the visitor pick how many with +/- steppers.
@@ -138,13 +139,13 @@ export const PricingFeeDialog = () => {
                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", paddingTop: "2px" }}>
                         <label style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                           <span style={{ font: "700 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
-                            Min Qty
+                            Min Qty<DemoMark />
                           </span>
                           <input value={pcFee.qtyMin} onChange={pcFee.onQtyMin} placeholder="0" className="bo-field" style={{ textTransform: "none" }} />
                         </label>
                         <label style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                           <span style={{ font: "700 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
-                            Max Qty
+                            Max Qty<DemoMark />
                           </span>
                           <input value={pcFee.qtyMax} onChange={pcFee.onQtyMax} placeholder="0" className="bo-field" style={{ textTransform: "none" }} />
                         </label>
@@ -155,7 +156,7 @@ export const PricingFeeDialog = () => {
                 <div style={{ display: "flex", alignItems: "center", gap: "11px", border: "1px solid var(--bo-line)", borderRadius: "10px", padding: "12px 14px" }}>
                   <div style={{ flex: "1" }}>
                     <div style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Visible on Widget
+                      Visible on Widget<DemoMark />
                     </div>
                     <div style={{ font: "500 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
                       Hidden fees stay in the draft but never render publicly.

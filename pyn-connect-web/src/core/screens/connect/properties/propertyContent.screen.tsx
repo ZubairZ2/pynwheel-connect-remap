@@ -4,6 +4,7 @@ import React from 'react';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { StatusPill } from '~/core/components/atoms/connect/StatusPill';
 import { usePropertyContentScreen } from '~/core/hooks/connect/usePropertyContentScreen';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const PropertyContentScreen = () => {
   const {
@@ -69,7 +70,7 @@ export const PropertyContentScreen = () => {
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
                 <div>
                   <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                    Pages &amp; Galleries
+                    Pages &amp; Galleries<DemoMark />
                   </div>
                   <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
                     Linked or embedded pages and image galleries · drag order controls homepage placement
@@ -89,7 +90,7 @@ export const PropertyContentScreen = () => {
                       </div>
                       <div style={{ flex: "1", minWidth: "0" }}>
                         <div style={{ font: "700 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                          {p.title}
+                          {p.title}<DemoMark />
                         </div>
                         <div style={{ font: "600 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                           {p.typeLabel} · {p.detail}
@@ -97,7 +98,7 @@ export const PropertyContentScreen = () => {
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: "7px", flexShrink: "0" }}>
                         <span style={{ font: "700 11.5px var(--bo-font)", color: "var(--bo-muted)" }}>
-                          On homepage
+                          On homepage<DemoMark />
                         </span>
                         <div onClick={p.homeToggle} style={{ width: "44px", height: "26px", borderRadius: "999px", background: p.toggleBg, position: "relative", cursor: "pointer", transition: "background .15s" }}>
                           <div style={{ position: "absolute", top: "3px", left: p.knob, width: "20px", height: "20px", borderRadius: "999px", background: "#fff", transition: "left .15s", boxShadow: "0 1px 2px rgba(0,0,0,0.3)" }} />
@@ -138,7 +139,7 @@ export const PropertyContentScreen = () => {
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
                   <div>
                     <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Homepage Icon Tiles
+                      Homepage Icon Tiles<DemoMark />
                     </div>
                     <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
                       {tileCount} of 5 configured · order sets left-to-right placement
@@ -165,7 +166,7 @@ export const PropertyContentScreen = () => {
                         </div>
                         <div style={{ flex: "1", minWidth: "0" }}>
                           <div style={{ font: "700 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                            {t.label}
+                            {t.label}<DemoMark />
                           </div>
                           <div style={{ font: "600 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
                             Position {t.num}
@@ -196,7 +197,7 @@ export const PropertyContentScreen = () => {
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px" }}>
                   <div>
                     <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Brochure Link Buttons
+                      Brochure Link Buttons<DemoMark />
                     </div>
                     <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
                       Custom buttons in the emailed favorites brochure
@@ -209,7 +210,7 @@ export const PropertyContentScreen = () => {
                       <Icon name={"link"} style={{ color: "var(--bo-subtle)", display: "flex", flexShrink: "0" }} />
                       <div style={{ flex: "1", minWidth: "0" }}>
                         <div style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                          {l.label}
+                          {l.label}<DemoMark />
                         </div>
                         <div style={{ font: "600 11px var(--bo-font)", color: "var(--bo-accent)" }}>
                           {l.url}
@@ -244,28 +245,28 @@ export const PropertyContentScreen = () => {
               <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px 22px" }}>
                   <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                    Search Area
+                    Search Area<DemoMark />
                   </div>
                   <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)", marginBottom: "14px" }}>
                     Center point and radius for point-of-interest lookups
                   </div>
                   <div style={{ font: "700 11.5px var(--bo-font)", color: "var(--bo-muted)", marginBottom: "6px" }}>
-                    Search center
+                    Search center<DemoMark />
                   </div>
                   <input type="text" value={hood.center} onChange={onHoodCenter} style={{ width: "100%", height: "36px", border: "1px solid var(--bo-line)", borderRadius: "7px", padding: "0 11px", font: "600 12.5px var(--bo-font)", color: "var(--bo-ink)", boxSizing: "border-box" }} />
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "16px" }}>
                     <div style={{ font: "700 11.5px var(--bo-font)", color: "var(--bo-muted)" }}>
-                      Radius
+                      Radius<DemoMark />
                     </div>
                     <div style={{ font: "800 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      {hood.radiusLabel}
+                      {hood.radiusLabel}<DemoMark />
                     </div>
                   </div>
                   <input type="range" min="0.5" max="5" step="0.5" value={hood.radius} onChange={onHoodRadius} style={{ width: "100%", marginTop: "8px" }} />
                 </div>
                 <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px 22px" }}>
                   <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                    Category Filters
+                    Category Filters<DemoMark />
                   </div>
                   <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)", marginBottom: "13px" }}>
                     Which categories renters can filter by on the kiosk
@@ -283,7 +284,7 @@ export const PropertyContentScreen = () => {
                 <div style={{ background: hood.quotaBg, border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "18px 20px" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
                     <div style={{ font: "800 13.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      API Usage Quota
+                      API Usage Quota<DemoMark />
                     </div>
                     <StatusPill variant={hood.quotaV} label={hood.quotaPill} />
                   </div>
@@ -305,7 +306,7 @@ export const PropertyContentScreen = () => {
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
                   <div>
                     <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Points of Interest
+                      Points of Interest<DemoMark />
                     </div>
                     <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
                       {poiCount} results in the selected categories
@@ -324,14 +325,14 @@ export const PropertyContentScreen = () => {
                       </div>
                       <div style={{ flex: "1", minWidth: "0" }}>
                         <div style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                          {p.name}
+                          {p.name}<DemoMark />
                         </div>
                         <div style={{ font: "600 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
                           {p.cat} · {p.dist}
                         </div>
                       </div>
                       <div style={{ font: "800 12px var(--bo-font)", color: "var(--bo-ink)" }}>
-                        ★ {p.rating}
+                        ★ {p.rating}<DemoMark />
                       </div>
                     </div>
                   </React.Fragment>

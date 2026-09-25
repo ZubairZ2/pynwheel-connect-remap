@@ -1127,3 +1127,19 @@ No business logic, validation, authorization, route, model, association, schema 
 - G15–G21 and R1–R5 stand (gaps doc §4, §5). New in §5: the design's per-plan "Inherited from {plan}" lease terms are the unit's own PMS matrix here; "Add Company" / "Add Property" and the badge dialog are not built (writes / no data).
 - Map & Plotting and Tour Setup, which the inventory and Unit Detail link to, are still demo screens.
 - Commit (no AI attribution), then PR against `main`.
+
+---
+
+## 19. Placeholder marks on every non-DB value (September 25, 2026)
+
+**Ask:** mark all information and settings anywhere in the Connect UI that are not read from the CMS database with a small asterisk, so nobody mistakes demo content for real state; remove each mark when its data goes real.
+
+**Done**
+- `DemoMark` atom (`atoms/DemoMark.tsx`, `.bo-demomark`, tooltip + `aria-label` via `CORE_STRINGS.shared.placeholderTitle`).
+- `ConnectScreenTemplate` / `Navbar` gained a `demo` flag: title asterisk plus the legend line `.bo-demo-legend` ("* Placeholder data. Nothing marked with an asterisk is read from the Pynwheel CMS database yet…"). Set on the 26 demo pages and on the slug branches of `/properties/[propId]`, `/inventory` and `/units/[unitId]`.
+- 371 marks appended across the 37 demo screen and dialog files by codemod (headings, card titles, stat values, setting labels).
+- Shell marks: sidebar badges, bell dot, topbar search results.
+- Real-data screens (Sign In, Companies, Properties, Property Detail, Inventory, Unit Detail) carry none.
+- Docs: context.md §15 holds the rule and the removal instruction; pyn-connect-web/README.md links to it.
+
+**Verified:** typecheck ✅; e2e 50 pass + 29 known font failures; one test updated to accept the optional trailing `*` on a dialog title. Screenshots: Dashboard shows 36 marks + legend; `/properties/348` shows only the 3 badge marks and the bell mark.
