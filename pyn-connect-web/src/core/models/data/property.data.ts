@@ -105,6 +105,8 @@ export interface PropertyDetail extends Property {
     floorplans: number;
     floorplates: number;
     amenities: number;
+    /** Distinct `building` values across the property's units and amenities (the CMS has no buildings table). */
+    buildings: number;
     subCommunities: { name: string; propertyId: string; unitCount: number }[];
   };
   partners: { key: string; label: string; enabled: boolean }[];

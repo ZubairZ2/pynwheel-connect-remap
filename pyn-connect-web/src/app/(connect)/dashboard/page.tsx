@@ -3,7 +3,7 @@ import { DashboardScreen } from '~/core/screens/connect/dashboard/dashboard.scre
 
 export default function Page() {
   return (
-    <ConnectScreenTemplate title="Dashboard">
+    <ConnectScreenTemplate title="Dashboard" demo>
       <DashboardScreen />
     </ConnectScreenTemplate>
   );

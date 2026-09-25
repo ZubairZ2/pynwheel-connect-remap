@@ -3,7 +3,7 @@ import { PartnerConfigScreen } from '~/core/screens/connect/partnerConfig/partne
 
 export default function Page() {
   return (
-    <ConnectScreenTemplate title="Partner Configuration">
+    <ConnectScreenTemplate title="Partner Configuration" demo>
       <PartnerConfigScreen />
     </ConnectScreenTemplate>
   );

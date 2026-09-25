@@ -5,6 +5,9 @@ module Connect
   class UnitSerializer
     def self.collection(units, community, floorplans_by_provider_id:, base_url:)
       units = units.to_a
+      # Unit#get_lease_term_pricing_matrix reads `unit.community`; one preload
+      # keeps that from being a query per row.
+      ActiveRecord::Associations::Preloader.new(records: units, associations: :community).call
       interiors = Amenity.where(amenityable_type: 'Unit', amenityable_id: units.map(&:id))
                          .order(:sort, :id)
                          .group_by(&:amenityable_id)
@@ -52,6 +55,10 @@ module Connect
         floor: unit.floor,
         floorplate_id: unit.floorplate_id,
         plotted: unit.plotted_on_map?,
+        # Raster pin position on the floorplate image (pixels); an SVG-pointer
+        # placement has none, so both are nil while `plotted` is still true.
+        x_plot: unit.x_plot.to_i.positive? ? unit.x_plot.to_i : nil,
+        y_plot: unit.y_plot.to_i.positive? ? unit.y_plot.to_i : nil,
         visible: unit.visible.present?,
         show_on_map: unit.show_on_map.present?,
         model_unit: unit.modal_unit.present?,
@@ -67,6 +74,10 @@ module Connect
         secondary_image: UploadUrl.file(unit, :secondary_image, base_url),
         interior_images: interiors.map { |amenity| FloorplanSerializer.interior(amenity, base_url) },
         buttons: FloorplanSerializer.buttons(unit),
+        # The kiosk's lease-term matrix ("12 Month" => "$1,500"), as the model
+        # already derives it from `lease_pricing` when the property shows
+        # pricing options; empty otherwise.
+        lease_terms: unit.get_lease_term_pricing_matrix,
         additional_fee: unit.additional_fee.presence,
         description_title: unit.description_title.presence,
         description: unit.description.presence,

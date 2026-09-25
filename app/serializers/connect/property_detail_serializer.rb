@@ -162,8 +162,17 @@ module Connect
           floorplans: community.floorplans.count,
           floorplates: community.floorplates.count,
           amenities: community.amenities.count,
+          # The CMS has no buildings table: a building is the distinct
+          # `building` value on the property's units and amenities
+          # (Buildings#get_community_buildings / Community#fetch_building_list).
+          buildings: building_count,
           sub_communities: sub_communities
         }
+      end
+
+      def building_count
+        (community.units.distinct.pluck(:building) + community.amenities.distinct.pluck(:building))
+          .map { |building| building.to_s.strip }.reject(&:empty?).uniq.size
       end
 
       def sub_communities

@@ -3,6 +3,7 @@
 import React from 'react';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { useCompanyGroupsScreen } from '~/core/hooks/connect/useCompanyGroupsScreen';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const CompanyGroupsScreen = () => {
   const {
@@ -37,7 +38,7 @@ export const CompanyGroupsScreen = () => {
         <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
           <div style={{ flex: "1" }}>
             <div style={{ font: "800 18px var(--bo-font)", color: "var(--bo-ink)" }}>
-              Portfolio Groups
+              Portfolio Groups<DemoMark />
             </div>
             <div style={{ font: "600 12.5px var(--bo-font)", color: "var(--bo-muted)" }}>
               Branded multi-property landing pages · {org.groupLabel} defined
@@ -57,7 +58,7 @@ export const CompanyGroupsScreen = () => {
                   </div>
                   <div style={{ flex: "1", minWidth: "0" }}>
                     <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      {g.name}
+                      {g.name}<DemoMark />
                     </div>
                     <div style={{ font: "600 11.5px var(--bo-font)", color: "var(--bo-accent)" }}>
                       {g.url}
@@ -106,7 +107,7 @@ export const CompanyGroupsScreen = () => {
           <>
             <div style={{ background: "var(--bo-panel)", border: "1px dashed var(--bo-line)", borderRadius: "12px", padding: "40px", textAlign: "center" }}>
               <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-muted)" }}>
-                No portfolio groups yet
+                No portfolio groups yet<DemoMark />
               </div>
               <div style={{ font: "500 12.5px/1.6 var(--bo-font)", color: "var(--bo-subtle)", marginTop: "4px", maxWidth: "460px", marginLeft: "auto", marginRight: "auto" }}>
                 A group is one branded landing page across several properties, with a master property, its own design, and an optional background loop video.

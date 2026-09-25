@@ -4,6 +4,7 @@ import React from 'react';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { StatusPill } from '~/core/components/atoms/connect/StatusPill';
 import { useMapEditorScreen } from '~/core/hooks/connect/useMapEditorScreen';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const MapEditorScreen = () => {
   const {
@@ -117,7 +118,7 @@ export const MapEditorScreen = () => {
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <div style={{ flex: "1" }}>
             <div style={{ font: "800 16px var(--bo-font)", color: "var(--bo-ink)" }}>
-              Map &amp; Plotting
+              Map &amp; Plotting<DemoMark />
             </div>
             <div style={{ font: "600 12.5px var(--bo-font)", color: "var(--bo-muted)" }}>
               Site plans, unit and amenity pins, and the pathway graph. Tour stops and lock grants are managed on Tour Setup.
@@ -140,7 +141,7 @@ export const MapEditorScreen = () => {
                       {l.sub}
                     </div>
                     <div style={{ font: "800 12.5px var(--bo-font)", color: l.color }}>
-                      {l.label}
+                      {l.label}<DemoMark />
                     </div>
                   </button>
                 </React.Fragment>
@@ -161,7 +162,7 @@ export const MapEditorScreen = () => {
               </button>
               <div style={{ display: "flex", alignItems: "center", gap: "7px", paddingLeft: "4px" }}>
                 <span style={{ font: "700 11.5px var(--bo-font)", color: "var(--bo-muted)" }}>
-                  Grid
+                  Grid<DemoMark />
                 </span>
                 <div onClick={toggleGrid} style={{ width: "38px", height: "22px", borderRadius: "999px", background: gridToggleBg, position: "relative", cursor: "pointer", flexShrink: "0", transition: "background .15s" }}>
                   <div style={{ position: "absolute", top: "3px", left: gridKnob, width: "16px", height: "16px", borderRadius: "999px", background: "#fff", transition: "left .15s", boxShadow: "0 1px 2px rgba(0,0,0,0.3)" }} />
@@ -177,7 +178,7 @@ export const MapEditorScreen = () => {
             </div>
             <div style={{ padding: "9px 16px", borderBottom: "1px solid var(--bo-line)", background: "#FBFBFC", display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
               <span style={{ font: "800 12px var(--bo-font)", color: "var(--bo-ink)" }}>
-                {curLevelLabel}
+                {curLevelLabel}<DemoMark />
               </span>
               <span style={{ font: "700 10px var(--bo-font)", color: "var(--bo-muted)", background: "#EEF0F4", padding: "3px 8px", borderRadius: "4px", textTransform: "uppercase", letterSpacing: "0.04em" }}>
                 {curPlanKindLabel}
@@ -196,7 +197,7 @@ export const MapEditorScreen = () => {
                 Optimize SVG
               </button>
               <span style={{ font: "700 11px var(--bo-font)", color: "var(--bo-subtle)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                Drop target
+                Drop target<DemoMark />
               </span>
               <button onClick={pickDropSvg} style={{ height: "30px", padding: "0 11px", border: "1px solid var(--bo-line)", background: dropSlotSvgBg, color: dropSlotSvgColor, borderRadius: "7px 0 0 7px", font: "700 11.5px var(--bo-font)", cursor: "pointer" }}>
                 Floor SVG
@@ -221,7 +222,7 @@ export const MapEditorScreen = () => {
                       File Size
                     </span>
                     <span style={{ font: "800 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      {planOptSize}
+                      {planOptSize}<DemoMark />
                     </span>
                   </div>
                   <div style={{ display: "flex", flexDirection: "column" }}>
@@ -229,7 +230,7 @@ export const MapEditorScreen = () => {
                       Nodes
                     </span>
                     <span style={{ font: "800 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      {planOptNodes}
+                      {planOptNodes}<DemoMark />
                     </span>
                   </div>
                   <div style={{ display: "flex", flexDirection: "column" }}>
@@ -237,7 +238,7 @@ export const MapEditorScreen = () => {
                       Paths
                     </span>
                     <span style={{ font: "800 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      {planOptPaths}
+                      {planOptPaths}<DemoMark />
                     </span>
                   </div>
                   <div style={{ flex: "1", minWidth: "180px", font: "500 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
@@ -267,7 +268,7 @@ export const MapEditorScreen = () => {
                     <div style={{ width: "100%", height: "100%", border: `2px dashed ${dropBorder}`, background: dropBg, borderRadius: "14px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "10px" }}>
                       <Icon name={"upload"} style={{ color: "var(--bo-accent)", display: "flex", transform: "scale(1.6)", marginBottom: "6px" }} />
                       <div style={{ font: "800 15px var(--bo-font)", color: "var(--bo-ink)" }}>
-                        {dropLabel}
+                        {dropLabel}<DemoMark />
                       </div>
                       <div style={{ font: "600 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
                         {planEmptyLabel} — the floor SVG carries the geometry, an optional background image sits underneath
@@ -312,7 +313,7 @@ export const MapEditorScreen = () => {
                       <Icon name={p.icon} style={{ display: "flex", transform: "scale(0.62)" }} />
                     </div>
                     <span style={{ font: "800 10px var(--bo-font)", color: "#fff", background: "rgba(20,22,28,0.86)", padding: "2px 7px", borderRadius: "4px", whiteSpace: "nowrap" }}>
-                      {p.label}
+                      {p.label}<DemoMark />
                     </span>
                   </div>
                 </React.Fragment>
@@ -336,10 +337,10 @@ export const MapEditorScreen = () => {
             <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "18px" }}>
               <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "8px" }}>
                 <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                  Place Units &amp; Amenities
+                  Place Units &amp; Amenities<DemoMark />
                 </div>
                 <span style={{ font: "700 11px var(--bo-font)", color: "var(--bo-accent)" }}>
-                  {plotDoneLabel}
+                  {plotDoneLabel}<DemoMark />
                 </span>
               </div>
               <div style={{ font: "500 11.5px var(--bo-font)", color: "var(--bo-subtle)", marginBottom: "10px" }}>
@@ -379,7 +380,7 @@ export const MapEditorScreen = () => {
                   <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginBottom: "8px" }}>
                     <div style={{ flex: "1" }}>
                       <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                        Auto-Plot Result
+                        Auto-Plot Result<DemoMark />
                       </div>
                       <div style={{ font: "500 11.5px/1.5 var(--bo-font)", color: "var(--bo-subtle)" }}>
                         {autoPlotReport.headline}
@@ -392,7 +393,7 @@ export const MapEditorScreen = () => {
                   <div style={{ display: "flex", gap: "8px", marginBottom: "10px" }}>
                     <div style={{ flex: "1", border: "1px solid var(--bo-line)", borderRadius: "8px", padding: "9px 11px" }}>
                       <div style={{ font: "800 18px var(--bo-font)", color: "#4A7212" }}>
-                        {autoPlotReport.placed}
+                        {autoPlotReport.placed}<DemoMark />
                       </div>
                       <div style={{ font: "600 10px var(--bo-font)", color: "var(--bo-subtle)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
                         Placed
@@ -400,7 +401,7 @@ export const MapEditorScreen = () => {
                     </div>
                     <div style={{ flex: "1", border: "1px solid var(--bo-line)", borderRadius: "8px", padding: "9px 11px" }}>
                       <div style={{ font: "800 18px var(--bo-font)", color: "#8A6A00" }}>
-                        {autoPlotReport.skippedCount}
+                        {autoPlotReport.skippedCount}<DemoMark />
                       </div>
                       <div style={{ font: "600 10px var(--bo-font)", color: "var(--bo-subtle)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
                         Not placed
@@ -414,7 +415,7 @@ export const MapEditorScreen = () => {
                           <React.Fragment key={rIdx}>
                             <div>
                               <div style={{ font: "800 11.5px var(--bo-font)", color: "#8A6A00" }}>
-                                {r.name}
+                                {r.name}<DemoMark />
                               </div>
                               <div style={{ font: "600 11px/1.45 var(--bo-font)", color: "#8A6A00" }}>
                                 {r.reason}
@@ -434,7 +435,7 @@ export const MapEditorScreen = () => {
                   <div style={{ display: "flex", alignItems: "center", gap: "9px", marginBottom: "4px" }}>
                     <span style={{ width: "13px", height: "13px", borderRadius: "999px", background: selPin.color, flexShrink: "0" }} />
                     <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      {selPin.name}
+                      {selPin.name}<DemoMark />
                     </div>
                   </div>
                   <div style={{ font: "600 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
@@ -460,7 +461,7 @@ export const MapEditorScreen = () => {
             ) : null}
             <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "18px" }}>
               <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)", marginBottom: "4px" }}>
-                Building Starting Points
+                Building Starting Points<DemoMark />
               </div>
               <div style={{ font: "500 11.5px var(--bo-font)", color: "var(--bo-subtle)", marginBottom: "10px" }}>
                 One designated entry/exit per building
@@ -470,7 +471,7 @@ export const MapEditorScreen = () => {
                   <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "9px 0", borderTop: "1px solid var(--bo-line-2)" }}>
                     <div style={{ flex: "1", minWidth: "0" }}>
                       <div style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                        {b.building}
+                        {b.building}<DemoMark />
                       </div>
                       <div style={{ font: "600 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
                         {b.name}
@@ -490,7 +491,7 @@ export const MapEditorScreen = () => {
             </div>
             <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "18px" }}>
               <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)", marginBottom: "6px" }}>
-                Selection
+                Selection<DemoMark />
               </div>
               {hasSelection ? (
                 <>
@@ -534,7 +535,7 @@ export const MapEditorScreen = () => {
             </div>
             <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "18px" }}>
               <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)", marginBottom: "4px" }}>
-                Marker Colors by Bedroom
+                Marker Colors by Bedroom<DemoMark />
               </div>
               <div style={{ font: "500 11.5px var(--bo-font)", color: "var(--bo-subtle)", marginBottom: "10px" }}>
                 Unit pins take their color from bedroom count
@@ -563,7 +564,7 @@ export const MapEditorScreen = () => {
               <>
                 <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "18px" }}>
                   <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)", marginBottom: "4px" }}>
-                    Vertical Connections
+                    Vertical Connections<DemoMark />
                   </div>
                   <div style={{ font: "500 11.5px var(--bo-font)", color: "var(--bo-subtle)", marginBottom: "8px" }}>
                     Links that leave this floor

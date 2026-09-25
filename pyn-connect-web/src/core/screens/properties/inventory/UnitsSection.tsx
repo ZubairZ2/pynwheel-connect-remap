@@ -1,7 +1,10 @@
 'use client';
 
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 
+import { unitRoute } from '~/config/app/connectRoutes';
 import { i18n } from '~/resources/i18n';
 import { IconButton } from '~/core/components/atoms/IconButton';
 import { EyeIcon, PencilIcon, TrashIcon, UploadIcon } from '~/core/components/atoms/Icons';
@@ -28,8 +31,10 @@ interface Props {
 
 /** The Units tab of the 22-Sep design, on every real unit of the property. */
 export const UnitsSection = ({ inventory, today, actions }: Props) => {
+  const router = useRouter();
   const list = useInventoryUnits(inventory, today);
   const overrides = useMemo(() => manualOverrideCount(inventory), [inventory]);
+  const propId = String(inventory.property.id);
   const connected = !!inventory.dataProvider;
   const priceLabel = i18n.t(S.units.price);
   const sqftLabel = i18n.t(S.units.sqft);
@@ -168,6 +173,9 @@ export const UnitsSection = ({ inventory, today, actions }: Props) => {
 
       {list.cards.map((card) => {
         const edit = () => actions.openDialog({ kind: 'unit', id: card.id });
+        // The design's `manageUnitImages` and `openUnit` both land on Unit Detail.
+        const detailHref = unitRoute(propId, String(card.id));
+        const openDetail = () => router.push(detailHref);
 
         return (
           <RecordCard
@@ -186,7 +194,7 @@ export const UnitsSection = ({ inventory, today, actions }: Props) => {
                     icon: <EyeIcon size={14} />,
                     onClick: () => actions.openViewer(card.images)
                   },
-                  { id: 'manage', label: i18n.t(S.units.manageImages), icon: <UploadIcon size={14} />, onClick: edit },
+                  { id: 'manage', label: i18n.t(S.units.manageImages), icon: <UploadIcon size={14} />, onClick: openDetail },
                   ...(card.hasOwnImage
                     ? [
                         {
@@ -199,19 +207,18 @@ export const UnitsSection = ({ inventory, today, actions }: Props) => {
                       ]
                     : [])
                 ]}
-                placeholder={{ label: i18n.t(S.units.addImage), icon: <UploadIcon />, onClick: edit }}
+                placeholder={{ label: i18n.t(S.units.addImage), icon: <UploadIcon />, onClick: openDetail }}
               />
             }
             title={
               <h3 className="bo-record__title">
-                <button
-                  type="button"
-                  className="bo-record__titlebutton"
-                  onClick={edit}
+                <Link
+                  href={detailHref}
+                  className="bo-record__titlebutton bo-record__titlelink"
                   aria-label={t(S.units.open, { name: card.title })}
                 >
                   {card.title}
-                </button>
+                </Link>
               </h3>
             }
             pills={card.pills.map((pill) => (

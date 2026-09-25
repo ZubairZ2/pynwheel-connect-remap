@@ -4,6 +4,7 @@ import React from 'react';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { StatusPill } from '~/core/components/atoms/connect/StatusPill';
 import { usePropertyInventoryScreen } from '~/core/hooks/connect/usePropertyInventoryScreen';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const PropertyInventoryScreen = () => {
   const {
@@ -66,7 +67,7 @@ export const PropertyInventoryScreen = () => {
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <div style={{ flex: "1" }}>
             <div style={{ font: "800 16px var(--bo-font)", color: "var(--bo-ink)" }}>
-              Property Inventory
+              Property Inventory<DemoMark />
             </div>
             <div style={{ font: "600 12.5px var(--bo-font)", color: "var(--bo-muted)" }}>
               {floorplateSummary} · {prop.pubDetail}
@@ -89,7 +90,7 @@ export const PropertyInventoryScreen = () => {
               <button onClick={t.go} style={{ height: "36px", padding: "0 14px", border: `1px solid ${t.border}`, background: t.bg, color: t.color, borderRadius: "8px", font: "700 12.5px var(--bo-font)", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}>
                 {t.label}
                 <span style={{ font: "800 10.5px var(--bo-font)", background: t.badgeBg, color: t.badgeColor, padding: "2px 7px", borderRadius: "999px" }}>
-                  {t.count}
+                  {t.count}<DemoMark />
                 </span>
               </button>
             </React.Fragment>
@@ -101,7 +102,7 @@ export const PropertyInventoryScreen = () => {
               <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "14px 18px", display: "flex", alignItems: "center", gap: "12px" }}>
                 <div style={{ flex: "1" }}>
                   <div style={{ font: "800 13.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                    Floorplates
+                    Floorplates<DemoMark />
                   </div>
                   <div style={{ font: "600 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                     The layout of each floor in each building — one site plan per floorplate, and the surface units and amenities are plotted on
@@ -121,7 +122,7 @@ export const PropertyInventoryScreen = () => {
                       <div style={{ flex: "1", minWidth: "0" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "9px" }}>
                           <span style={{ font: "800 14.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                            {fp.floor}
+                            {fp.floor}<DemoMark />
                           </span>
                           <StatusPill variant={fp.planV} label={fp.planLabel} />
                         </div>
@@ -158,10 +159,10 @@ export const PropertyInventoryScreen = () => {
                       <div style={{ border: `1px solid ${fp.bgBorder}`, background: fp.bgBg, borderRadius: "10px", padding: "12px 14px", display: "flex", alignItems: "center", gap: "12px" }}>
                         <div style={{ flex: "1", minWidth: "0" }}>
                           <div style={{ font: "700 11px var(--bo-font)", color: "var(--bo-subtle)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                            Background Image
+                            Background Image<DemoMark />
                           </div>
                           <div style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                            {fp.bgFile}
+                            {fp.bgFile}<DemoMark />
                           </div>
                           <div style={{ font: "500 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
                             Raster context under the floor — aerial, render or scan
@@ -181,10 +182,10 @@ export const PropertyInventoryScreen = () => {
                       <div style={{ border: `1px solid ${fp.svgBorder}`, background: fp.svgBg, borderRadius: "10px", padding: "12px 14px", display: "flex", alignItems: "center", gap: "12px" }}>
                         <div style={{ flex: "1", minWidth: "0" }}>
                           <div style={{ font: "700 11px var(--bo-font)", color: "var(--bo-subtle)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                            Floor SVG
+                            Floor SVG<DemoMark />
                           </div>
                           <div style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                            {fp.svgFile}
+                            {fp.svgFile}<DemoMark />
                           </div>
                           <div style={{ font: "500 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
                             Vector geometry only — keeps the map light and fast on the kiosk
@@ -213,7 +214,7 @@ export const PropertyInventoryScreen = () => {
                                 File Size
                               </span>
                               <span style={{ font: "800 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                                {fp.optSize}
+                                {fp.optSize}<DemoMark />
                               </span>
                             </div>
                             <div style={{ display: "flex", flexDirection: "column" }}>
@@ -221,7 +222,7 @@ export const PropertyInventoryScreen = () => {
                                 Nodes
                               </span>
                               <span style={{ font: "800 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                                {fp.optNodes}
+                                {fp.optNodes}<DemoMark />
                               </span>
                             </div>
                             <div style={{ display: "flex", flexDirection: "column" }}>
@@ -229,7 +230,7 @@ export const PropertyInventoryScreen = () => {
                                 Paths
                               </span>
                               <span style={{ font: "800 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                                {fp.optPaths}
+                                {fp.optPaths}<DemoMark />
                               </span>
                             </div>
                             <div style={{ flex: "1", font: "500 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
@@ -251,7 +252,7 @@ export const PropertyInventoryScreen = () => {
               <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "14px 18px", display: "flex", alignItems: "center", gap: "12px" }}>
                 <div style={{ flex: "1" }}>
                   <div style={{ font: "800 13.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                    Floorplans
+                    Floorplans<DemoMark />
                   </div>
                   <div style={{ font: "600 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                     Unit types, lease-term pricing and marketing imagery · fields marked Manual are protected from the next PMS sync
@@ -268,7 +269,7 @@ export const PropertyInventoryScreen = () => {
                       <div style={{ flex: "1" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "9px" }}>
                           <span style={{ font: "800 15px var(--bo-font)", color: "var(--bo-ink)" }}>
-                            {f.name}
+                            {f.name}<DemoMark />
                           </span>
                           <StatusPill variant={f.statusV} label={f.statusLabel} />
                         </div>
@@ -278,7 +279,7 @@ export const PropertyInventoryScreen = () => {
                       </div>
                       <div style={{ textAlign: "right" }}>
                         <div style={{ font: "800 16px var(--bo-font)", color: "var(--bo-ink)" }}>
-                          {f.rentLabel}
+                          {f.rentLabel}<DemoMark />
                         </div>
                         <div style={{ font: "600 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                           Deposit {f.depositLabel}
@@ -298,7 +299,7 @@ export const PropertyInventoryScreen = () => {
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", marginBottom: "14px" }}>
                       <span style={{ font: "700 11px var(--bo-font)", color: "var(--bo-subtle)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                        Field source
+                        Field source<DemoMark />
                       </span>
                       {(f.srcRows ?? []).map((sr: any, srIdx: number) => (
                         <React.Fragment key={srIdx}>
@@ -318,7 +319,7 @@ export const PropertyInventoryScreen = () => {
                                 <div role="img" aria-label="Floorplan image" style={{ width: "100%", height: "96px", backgroundImage: `url(${p.src})`, backgroundSize: "cover", backgroundPosition: "center", backgroundColor: "#EEF0F4" }} />
                                 <div style={{ display: "flex", alignItems: "center", gap: "5px", padding: "6px 8px" }}>
                                   <span style={{ flex: "1", font: "700 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
-                                    {p.pos}
+                                    {p.pos}<DemoMark />
                                   </span>
                                   <button onClick={p.up} aria-label="Move earlier" style={{ width: "24px", height: "24px", borderRadius: "5px", border: "1px solid var(--bo-line)", background: "#fff", color: "var(--bo-muted)", cursor: "pointer", font: "700 11px var(--bo-font)" }}>
                                     ←
@@ -339,22 +340,22 @@ export const PropertyInventoryScreen = () => {
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                       <div>
                         <div style={{ font: "700 11px var(--bo-font)", color: "var(--bo-subtle)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "7px" }}>
-                          Lease-Term Pricing
+                          Lease-Term Pricing<DemoMark />
                         </div>
                         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "8px" }}>
                           {(f.termRows ?? []).map((t: any, tIdx: number) => (
                             <React.Fragment key={tIdx}>
                               <div style={{ border: `1px solid ${t.border}`, background: t.bg, borderRadius: "9px", padding: "9px 11px" }}>
                                 <div style={{ font: "700 10.5px var(--bo-font)", color: t.labelColor, textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                                  {t.label}
+                                  {t.label}<DemoMark />
                                 </div>
                                 <div style={{ display: "flex", alignItems: "baseline", gap: "1px" }}>
                                   <span style={{ font: "800 15px var(--bo-font)", color: t.valueColor }}>
-                                    $
+                                    $<DemoMark />
                                   </span>
                                   <input value={t.fmt} onChange={t.onChange} style={{ flex: "1", minWidth: "0", border: "none", outline: "none", background: "transparent", font: "800 15px var(--bo-font)", color: t.valueColor, padding: "2px 0 0" }} />
                                   <span style={{ font: "700 10.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
-                                    /mo
+                                    /mo<DemoMark />
                                   </span>
                                 </div>
                               </div>
@@ -364,7 +365,7 @@ export const PropertyInventoryScreen = () => {
                       </div>
                       <div>
                         <div style={{ font: "700 11px var(--bo-font)", color: "var(--bo-subtle)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "7px" }}>
-                          Virtual Tour
+                          Virtual Tour<DemoMark />
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: "10px", border: "1px solid var(--bo-line)", borderRadius: "9px", padding: "11px 13px" }}>
                           <Icon name={"cube"} style={{ display: "flex", color: "var(--bo-accent)" }} />
@@ -393,7 +394,7 @@ export const PropertyInventoryScreen = () => {
               <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "14px 18px", display: "flex", alignItems: "center", gap: "12px" }}>
                 <div style={{ flex: "1" }}>
                   <div style={{ font: "800 13.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                    PMS-synced inventory
+                    PMS-synced inventory<DemoMark />
                   </div>
                   <div style={{ font: "600 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                     Last sync {lastSync} · fields marked Manual are protected from the next sync
@@ -416,7 +417,7 @@ export const PropertyInventoryScreen = () => {
                       <div onClick={u.open} style={{ flex: "1", cursor: "pointer" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "9px" }}>
                           <span style={{ font: "800 14.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                            {u.name}
+                            {u.name}<DemoMark />
                           </span>
                           <StatusPill variant={u.availV} label={u.availLabel} />
                           <StatusPill variant={u.plottedV} label={u.plottedLabel} />
@@ -446,13 +447,13 @@ export const PropertyInventoryScreen = () => {
                           <div style={{ border: "1px solid var(--bo-line)", borderRadius: "9px", padding: "10px 12px" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: "7px", marginBottom: "3px" }}>
                               <span style={{ font: "700 10.5px var(--bo-font)", color: "var(--bo-subtle)", textTransform: "uppercase", letterSpacing: "0.04em", flex: "1" }}>
-                                {f.label}
+                                {f.label}<DemoMark />
                               </span>
                               <StatusPill variant={f.srcV} label={f.srcLabel} />
                             </div>
                             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                               <span style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)", flex: "1" }}>
-                                {f.value}
+                                {f.value}<DemoMark />
                               </span>
                               <button onClick={f.toggle} style={{ height: "26px", padding: "0 9px", border: "1px solid var(--bo-line)", background: "#fff", borderRadius: "6px", font: "700 10.5px var(--bo-font)", color: "var(--bo-muted)", cursor: "pointer" }}>
                                 Toggle
@@ -481,7 +482,7 @@ export const PropertyInventoryScreen = () => {
               <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "14px 18px", display: "flex", alignItems: "center", gap: "12px" }}>
                 <div style={{ flex: "1" }}>
                   <div style={{ font: "800 13.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                    Amenities
+                    Amenities<DemoMark />
                   </div>
                   <div style={{ font: "600 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                     Name, category, floorplate and gallery — the same records that become tour stops
@@ -498,7 +499,7 @@ export const PropertyInventoryScreen = () => {
                       <div style={{ flex: "1" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "9px" }}>
                           <span style={{ font: "800 14.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                            {a.name}
+                            {a.name}<DemoMark />
                           </span>
                           <StatusPill variant={a.plottedV} label={a.plottedLabel} />
                         </div>
@@ -532,7 +533,7 @@ export const PropertyInventoryScreen = () => {
                             <div role="img" aria-label="Amenity photo" style={{ width: "100%", height: "96px", backgroundImage: `url(${p.src})`, backgroundSize: "cover", backgroundPosition: "center", backgroundColor: "#EEF0F4" }} />
                             <div style={{ display: "flex", alignItems: "center", gap: "5px", padding: "6px 8px" }}>
                               <span style={{ flex: "1", font: "700 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
-                                {p.pos}
+                                {p.pos}<DemoMark />
                               </span>
                               <button onClick={p.up} aria-label="Move earlier" style={{ width: "24px", height: "24px", borderRadius: "5px", border: "1px solid var(--bo-line)", background: "#fff", color: "var(--bo-muted)", cursor: "pointer", font: "700 11px var(--bo-font)" }}>
                                 ←
@@ -567,7 +568,7 @@ export const PropertyInventoryScreen = () => {
               <div style={{ padding: "15px 18px", borderBottom: "1px solid var(--bo-line)", display: "flex", alignItems: "center", gap: "12px" }}>
                 <div style={{ flex: "1" }}>
                   <div style={{ font: "800 14.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                    Unplotted Units
+                    Unplotted Units<DemoMark />
                   </div>
                   <div style={{ font: "600 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                     {unplottedCount} · Plot on Map opens the editor with that unit armed
@@ -644,7 +645,7 @@ export const PropertyInventoryScreen = () => {
             <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", overflow: "hidden", marginTop: "16px" }}>
               <div style={{ padding: "15px 18px", borderBottom: "1px solid var(--bo-line)" }}>
                 <div style={{ font: "800 14.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                  Unplotted Amenities
+                  Unplotted Amenities<DemoMark />
                 </div>
                 <div style={{ font: "600 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                   {unplottedAmenityCount}

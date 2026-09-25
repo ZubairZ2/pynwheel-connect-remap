@@ -6,7 +6,7 @@ export default async function Page({ params }: { params: Promise<{ orgId: string
   const { orgId } = await params;
 
   return (
-    <ConnectScreenTemplate title="Regions">
+    <ConnectScreenTemplate title="Regions" demo>
       <CompanyScope orgId={orgId}>
         <CompanyRegionsScreen />
       </CompanyScope>

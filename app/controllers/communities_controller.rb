@@ -7,6 +7,13 @@ class CommunitiesController < ApplicationController
   include FeedbacksHelper
   #load_and_authorize_resource
   before_action :check_community
+  # Pynwheel Connect's read-only Property Detail JSON (`edit.json`) must not
+  # write: ApplicationController#community_code creates a missing Tour and
+  # SchedulerWidgetSetting on any community-scoped GET, and
+  # load_tour_users_chats only feeds the HTML layout. Both are skipped for that
+  # one JSON read, exactly as Connect::InventoryJson does for the inventory.
+  skip_before_action :community_code, if: :connect_detail_json?
+  skip_before_action :load_tour_users_chats, if: :connect_detail_json?
   before_action :set_community , only: [:save_pointer_data, :update_coloring_mode, :update_marketing_map_colors, :update_amenities_color, :update_bedroom_marker_colors, :edit,:update,:destroy,:remove_plots, :sitemap_auto_plot_units, :floorplate_auto_plot_units, :suggest_sitemap_units, :suggest_floorplate_units]
   add_breadcrumb "Home", :root_path
   add_breadcrumb "Companies", :companies_path, except: [:import_page, :settings_page]
@@ -945,6 +952,10 @@ class CommunitiesController < ApplicationController
   # Only communities in the Connect Properties listing's scope (the rules the
   # legacy Home screen applies) are served, so the detail page shows exactly
   # the properties the listing links to.
+  def connect_detail_json?
+    action_name == 'edit' && request.format.json?
+  end
+
   def render_connect_property_detail
     community = AccessibleCommunitiesQuery.new(current_user).call.find_by(id: @community.id)
     return head :not_found if community.nil?

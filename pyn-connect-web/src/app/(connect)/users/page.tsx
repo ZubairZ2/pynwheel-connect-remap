@@ -3,7 +3,7 @@ import { UsersScreen } from '~/core/screens/connect/users/users.screen';
 
 export default function Page() {
   return (
-    <ConnectScreenTemplate title="Users & Roles">
+    <ConnectScreenTemplate title="Users & Roles" demo>
       <UsersScreen />
     </ConnectScreenTemplate>
   );

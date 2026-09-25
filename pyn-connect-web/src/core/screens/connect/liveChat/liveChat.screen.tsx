@@ -4,6 +4,7 @@ import React from 'react';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { StatusPill } from '~/core/components/atoms/connect/StatusPill';
 import { useLiveChatScreen } from '~/core/hooks/connect/useLiveChatScreen';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const LiveChatScreen = () => {
   const {
@@ -28,7 +29,7 @@ export const LiveChatScreen = () => {
           <Icon name={"chat"} style={{ color: "#4A7212", display: "flex", flexShrink: "0" }} />
           <div style={{ flex: "1" }}>
             <div style={{ font: "800 13.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-              Shipped — real-time human chat
+              Shipped — real-time human chat<DemoMark />
             </div>
             <div style={{ font: "500 12px var(--bo-font)", color: "#20603C" }}>
               Live conversations between touring visitors and property staff. No AI in the loop — every reply is a person.
@@ -44,7 +45,7 @@ export const LiveChatScreen = () => {
                   {k.label}
                 </div>
                 <div style={{ font: "800 26px var(--bo-font)", color: "var(--bo-ink)", marginTop: "6px" }}>
-                  {k.value}
+                  {k.value}<DemoMark />
                 </div>
                 <div style={{ font: "600 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                   {k.sub}
@@ -65,7 +66,7 @@ export const LiveChatScreen = () => {
         <div style={{ display: "grid", gridTemplateColumns: "1.15fr 1fr", gap: "16px", alignItems: "start" }}>
           <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px 22px" }}>
             <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)", marginBottom: "2px" }}>
-              Active Conversations
+              Active Conversations<DemoMark />
             </div>
             <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)", marginBottom: "12px" }}>
               Unassigned chats need a human before the visitor gives up
@@ -77,12 +78,12 @@ export const LiveChatScreen = () => {
                     <div style={{ flex: "1", minWidth: "0" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "7px" }}>
                         <span style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                          {c.visitor}
+                          {c.visitor}<DemoMark />
                         </span>
                         {c.hasUnread ? (
                           <>
                             <span style={{ minWidth: "17px", height: "17px", padding: "0 5px", borderRadius: "999px", background: "#C62534", color: "#fff", font: "800 10px var(--bo-font)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                              {c.unread}
+                              {c.unread}<DemoMark />
                             </span>
                           </>
                         ) : null}
@@ -121,7 +122,7 @@ export const LiveChatScreen = () => {
                   <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", marginBottom: "12px" }}>
                     <div style={{ flex: "1", minWidth: "0" }}>
                       <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                        {thread.visitor}
+                        {thread.visitor}<DemoMark />
                       </div>
                       <div style={{ font: "600 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                         {thread.property} · {thread.staff}
@@ -160,7 +161,7 @@ export const LiveChatScreen = () => {
             ) : null}
             <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px 22px" }}>
               <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)", marginBottom: "2px" }}>
-                Staff Availability
+                Staff Availability<DemoMark />
               </div>
               <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
                 Toggle whether each person is in their property's chat rotation
@@ -169,13 +170,13 @@ export const LiveChatScreen = () => {
                 <React.Fragment key={xIdx}>
                   <div style={{ display: "flex", alignItems: "center", gap: "11px", padding: "12px 0", borderTop: "1px solid var(--bo-line-2)" }}>
                     <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "#EEF0F4", color: "var(--bo-muted)", display: "flex", alignItems: "center", justifyContent: "center", font: "800 11px var(--bo-font)", flexShrink: "0" }}>
-                      {x.initials}
+                      {x.initials}<DemoMark />
                     </div>
                     <div style={{ flex: "1", minWidth: "0" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                         <span style={{ width: "7px", height: "7px", borderRadius: "999px", background: x.dot }} />
                         <span style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                          {x.name}
+                          {x.name}<DemoMark />
                         </span>
                       </div>
                       <div style={{ font: "600 10.5px var(--bo-font)", color: "var(--bo-subtle)" }}>

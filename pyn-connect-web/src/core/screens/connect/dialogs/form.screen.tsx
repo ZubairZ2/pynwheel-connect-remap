@@ -3,6 +3,7 @@
 import React from 'react';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { useFormDialog } from '~/core/hooks/connect/useFormDialog';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const FormDialog = () => {
   const {
@@ -22,7 +23,7 @@ export const FormDialog = () => {
             <div style={{ width: "520px", maxHeight: "88vh", overflowY: "auto", background: "#fff", borderRadius: "14px", boxShadow: "0 20px 50px rgba(0,0,0,0.3)" }}>
               <div style={{ padding: "22px 24px", borderBottom: "1px solid var(--bo-line)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div style={{ font: "800 18px var(--bo-font)", color: "var(--bo-ink)" }}>
-                  {modalTitle}
+                  {modalTitle}<DemoMark />
                 </div>
                 <button aria-label="Close modal" onClick={closeModal} style={{ width: "30px", height: "30px", borderRadius: "999px", border: "none", background: "#EEF0F4", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--bo-ink)" }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">

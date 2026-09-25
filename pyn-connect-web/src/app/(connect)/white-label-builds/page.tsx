@@ -3,7 +3,7 @@ import { BuildsScreen } from '~/core/screens/connect/builds/builds.screen';
 
 export default function Page() {
   return (
-    <ConnectScreenTemplate title="White-Label Build Pipeline">
+    <ConnectScreenTemplate title="White-Label Build Pipeline" demo>
       <BuildsScreen />
     </ConnectScreenTemplate>
   );

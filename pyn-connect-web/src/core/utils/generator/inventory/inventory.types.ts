@@ -5,6 +5,8 @@ export interface MetaDescriptor {
   label: string;
   value: string;
   source?: { kind: 'feed' | 'manual'; label: string; title: string };
+  /** The design shows this cell as a select (read-only in Connect). */
+  control?: 'select';
 }
 
 /** One real image a viewer can show. */

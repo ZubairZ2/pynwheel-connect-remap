@@ -4,6 +4,7 @@ import React from 'react';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { StatusPill } from '~/core/components/atoms/connect/StatusPill';
 import { usePropertyUnitsScreen } from '~/core/hooks/connect/usePropertyUnitsScreen';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const PropertyUnitsScreen = () => {
   const {
@@ -68,7 +69,7 @@ export const PropertyUnitsScreen = () => {
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <div style={{ flex: "1" }}>
             <div style={{ font: "800 16px var(--bo-font)", color: "var(--bo-ink)" }}>
-              Units &amp; Floor Plans
+              Units &amp; Floor Plans<DemoMark />
             </div>
             <div style={{ font: "600 12.5px var(--bo-font)", color: "var(--bo-muted)" }}>
               {puSummary}
@@ -117,7 +118,7 @@ export const PropertyUnitsScreen = () => {
                 <>
                   <div style={{ background: "var(--bo-panel)", border: "1px dashed var(--bo-line)", borderRadius: "12px", padding: "40px", textAlign: "center" }}>
                     <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      {puEmptyTitle}
+                      {puEmptyTitle}<DemoMark />
                     </div>
                     <div style={{ font: "600 12px var(--bo-font)", color: "var(--bo-subtle)", marginTop: "4px" }}>
                       {puEmptyBody}
@@ -220,7 +221,7 @@ export const PropertyUnitsScreen = () => {
                 </div>
                 <div style={{ flex: "1" }}>
                   <div style={{ font: "800 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                    Bulk Image Upload
+                    Bulk Image Upload<DemoMark />
                   </div>
                   <div style={{ font: "600 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                     Drop a batch of floor plan renders here — files are matched to floor plans by name.
@@ -234,7 +235,7 @@ export const PropertyUnitsScreen = () => {
                 <>
                   <div style={{ background: "var(--bo-panel)", border: "1px dashed var(--bo-line)", borderRadius: "12px", padding: "40px", textAlign: "center" }}>
                     <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      No floor plans yet
+                      No floor plans yet<DemoMark />
                     </div>
                     <div style={{ font: "600 12px var(--bo-font)", color: "var(--bo-subtle)", marginTop: "4px" }}>
                       Add a floor plan or wait for the next PMS sync to populate unit types.
@@ -268,7 +269,7 @@ export const PropertyUnitsScreen = () => {
                       <div style={{ padding: "14px", display: "flex", flexDirection: "column", gap: "10px", flex: "1" }}>
                         <div>
                           <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                            {fp.name}
+                            {fp.name}<DemoMark />
                           </div>
                           <div style={{ font: "600 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                             {fp.spec}

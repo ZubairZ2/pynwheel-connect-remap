@@ -4,6 +4,7 @@ import React from 'react';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { StatusPill } from '~/core/components/atoms/connect/StatusPill';
 import { useAiServicesScreen } from '~/core/hooks/connect/useAiServicesScreen';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const AiServicesScreen = () => {
   const {
@@ -20,7 +21,7 @@ export const AiServicesScreen = () => {
           <Icon name={"ai"} style={{ color: "#A88A0B", display: "flex", flexShrink: "0" }} />
           <div style={{ flex: "1" }}>
             <div style={{ font: "800 13.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-              Planned — not yet built
+              Planned — not yet built<DemoMark />
             </div>
             <div style={{ font: "500 12px/1.55 var(--bo-font)", color: "#7A660C" }}>
               No AI or concierge backend exists in the product today. This screen is the forward-looking vision, kept deliberately so the direction isn't lost. What ships today is real human chat — see{' '}
@@ -36,7 +37,7 @@ export const AiServicesScreen = () => {
         </div>
         <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", overflow: "hidden" }}>
           <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--bo-line)", font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-            AI Concierge — Per Property
+            AI Concierge — Per Property<DemoMark />
           </div>
           <table>
             <thead>
@@ -94,10 +95,10 @@ export const AiServicesScreen = () => {
           <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "14px" }}>
             <Icon name={"shield"} style={{ color: "#C62534", display: "flex" }} />
             <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-              Flagged Transcript Review Queue
+              Flagged Transcript Review Queue<DemoMark />
             </div>
             <span style={{ font: "700 11px var(--bo-font)", color: "#C62534", background: "#FDEDEF", padding: "3px 9px", borderRadius: "999px" }}>
-              {reviewCount} to review
+              {reviewCount} to review<DemoMark />
             </span>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -107,7 +108,7 @@ export const AiServicesScreen = () => {
                   <div style={{ flex: "1" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                       <span style={{ font: "800 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                        {r.property}
+                        {r.property}<DemoMark />
                       </span>
                       <span style={{ font: "700 10px var(--bo-font)", color: r.tagColor, background: r.tagBg, padding: "2px 8px", borderRadius: "4px" }}>
                         {r.reason}

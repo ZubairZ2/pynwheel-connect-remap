@@ -38,3 +38,49 @@ db/schema.rb
 
 # Claude Code local tooling
 .claude/
+
+# ---------------------------------------------------------------------------
+# Local-only material (never committed, not needed on Heroku). See context.md §9.
+# ---------------------------------------------------------------------------
+
+# The vendored bundle tree (`bundle install` with BUNDLE_PATH inside the repo)
+/gems/
+/cache/
+/specifications/
+/extensions/
+/bundler/
+/build_info/
+
+# Generated binstubs and their lock files; the committed bin/* scripts stay tracked
+/bin/*
+!/bin/bundle
+!/bin/delayed_job
+!/bin/rails
+!/bin/rake
+!/bin/setup
+!/bin/spring
+!/bin/update
+
+# Database dumps and restore leftovers
+*.dump
+latest.dump*
+/toc.list
+/toc-trimmed.list
+
+# Bundled design prototypes (20 MB+ each) and other local HTML references
+/pyn-connect-new.html
+/pyn-connect-22-sep-new.html
+/pyn-system-stack-proposal.html
+
+# Local task briefs / prompts (the tracked docs are PYN_CONNECT_PROGRESS.md, context.md,
+# react-architecture.md, properties_detail_feature.md and gaps_properties_detail_feature.md)
+/feature1.md
+/feature-whole-ui-next.md
+/feature_inventory_page.md
+/properties_inventory_main_improvment.md
+/data-serialization-architecture.md
+
+# OS and editor litter
+.DS_Store
+*~
+.ruby-lsp/

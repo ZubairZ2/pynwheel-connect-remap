@@ -184,7 +184,9 @@ export const CORE_STRINGS = {
       tourStop: 'propertyDetail.count.tourStop',
       tourStops: 'propertyDetail.count.tourStops',
       subCommunity: 'propertyDetail.count.subCommunity',
-      subCommunities: 'propertyDetail.count.subCommunities'
+      subCommunities: 'propertyDetail.count.subCommunities',
+      building: 'propertyDetail.count.building',
+      buildings: 'propertyDetail.count.buildings'
     },
     inventory: {
       title: 'propertyDetail.inventory.title',
@@ -195,6 +197,7 @@ export const CORE_STRINGS = {
       amenities: 'propertyDetail.inventory.amenities',
       subSupported: 'propertyDetail.inventory.subSupported',
       singleProperty: 'propertyDetail.inventory.singleProperty',
+      noSubCommunities: 'propertyDetail.inventory.noSubCommunities',
       subHeading: 'propertyDetail.inventory.subHeading'
     },
     ils: {
@@ -801,8 +804,60 @@ export const CORE_STRINGS = {
     selected: 'filter.selected'
   },
   shared: {
+    placeholderTitle: 'shared.placeholderTitle',
+    placeholderLegend: 'shared.placeholderLegend',
     signOut: 'shared.signOut',
     searchPlaceholder: 'shared.searchPlaceholder',
     loadFailed: 'shared.loadFailed'
+  },
+  unitDetail: {
+    title: 'unitDetail.title',
+    loading: 'unitDetail.loading',
+    breadcrumbUnits: 'unitDetail.breadcrumbUnits',
+    notFound: {
+      title: 'unitDetail.notFound.title',
+      body: 'unitDetail.notFound.body',
+      back: 'unitDetail.notFound.back'
+    },
+    noFloorplate: 'unitDetail.noFloorplate',
+    viewOnPlan: 'unitDetail.viewOnPlan',
+    plotOnPlan: 'unitDetail.plotOnPlan',
+    edit: 'unitDetail.edit',
+    remove: 'unitDetail.remove',
+    data: {
+      title: 'unitDetail.data.title',
+      subtitle: 'unitDetail.data.subtitle',
+      price: 'unitDetail.data.price',
+      sqft: 'unitDetail.data.sqft',
+      availability: 'unitDetail.data.availability',
+      pmsFloor: 'unitDetail.data.pmsFloor',
+      toggle: 'unitDetail.data.toggle',
+      sourceManual: 'unitDetail.data.sourceManual',
+      sourcePms: 'unitDetail.data.sourcePms'
+    },
+    gallery: {
+      title: 'unitDetail.gallery.title',
+      subtitle: 'unitDetail.gallery.subtitle',
+      addPhoto: 'unitDetail.gallery.addPhoto',
+      photo: 'unitDetail.gallery.photo',
+      position: 'unitDetail.gallery.position',
+      preview: 'unitDetail.gallery.preview',
+      moveEarlier: 'unitDetail.gallery.moveEarlier',
+      moveLater: 'unitDetail.gallery.moveLater',
+      remove: 'unitDetail.gallery.remove',
+      dropPrompt: 'unitDetail.gallery.dropPrompt',
+      browse: 'unitDetail.gallery.browse',
+      dropHint: 'unitDetail.gallery.dropHint'
+    },
+    placement: {
+      title: 'unitDetail.placement.title',
+      pinAt: 'unitDetail.placement.pinAt',
+      warning: 'unitDetail.placement.warning'
+    },
+    terms: {
+      title: 'unitDetail.terms.title',
+      subtitle: 'unitDetail.terms.subtitle',
+      empty: 'unitDetail.terms.empty'
+    }
   }
 } as const;

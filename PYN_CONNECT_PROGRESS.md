@@ -1062,3 +1062,84 @@ The untracked Inventory files are still present. None of these files were touche
 3. **Map & Plotting, Tour Setup and the unit detail page** are still demo screens. The inventory's links to them need no change once they read real data.
 4. **Backend gaps G15–G19** are listed in the gaps doc §4.
 5. **Deploy both apps** when wanted: this phase changes Rails (4 controllers, the concern, the serializers) and Connect.
+
+---
+
+## 18. Phase 2f: Property Detail and Inventory improvements against the 22-Sep design (September 25, 2026)
+
+**Brief:** `properties_inventory_main_improvment.md` (untracked). Compare the merged Property Detail (§16) and Inventory (§17) pages with `pyn-connect-22-sep-new.html` section by section, close every divergence that existing data can support, keep writes as no-ops, and re-verify on real data.
+
+**Branch:** `feature/properties_inventory_improvments`, from `main` (`4da1204df`). Uncommitted.
+
+### Investigation
+
+The two prototype files are bundled pages (a JSON asset manifest on one line, the markup as a JSON string on another). They were unpacked once into the session scratchpad and split into per-screen files (`screen_isPropertyDetail`, `screen_isTourContent`, `screen_isUnitDetail`, one file per dialog) plus `state.js`. Seven reader passes then produced element-by-element maps of: the React Property Detail page, the React Inventory page and its components, the shell and listings, the prototype Property Detail, the prototype Inventory (Floorplates/Floorplans and Units/Amenities/Unplotted, with every dialog), and the Rails routes, serializers and models. Their findings, in one place:
+
+- The prototype's **Unplotted tab is dead markup**: `tcTabs` has four entries and nothing sets `tcTab:'unplotted'`. Not built.
+- The prototype opens the **Unit Detail screen** from a unit card's title (`u.open`) and from "Manage images"; Connect opened the Unit dialog instead, and `/properties/:id/units/:unitId` was still the phase-2 demo screen.
+- Property Detail rendered the design's **form controls as text**: Default Availability (select), Touch Code / Billing Rate (inputs), Display Type (select), Subscription Start Date (date), Map Display Type and Default Map floor (selects). The inventory stat cards all opened the Floorplates tab, while the design opens each card's own tab. The Inventory subtitle said "Single property · no sub-communities" where the design shows "{N} buildings · …".
+- Floorplate cards laid their meta out as 4 + 3 cells; the design is `repeat(4, minmax(0,1fr)) minmax(210px,1.5fr)` with the fifth cell a **Background select**.
+- Rails: `communities#edit.json` still ran `ApplicationController#community_code` (creates a Tour and SchedulerWidgetSetting when missing) — a write on a read that the inventory concern already skipped; `floorplates.json` / `amenities.json` answered **500** for an unknown property id; `units.json` carried no lease-term matrix and no pin coordinates, both of which the Unit Detail screen shows and the DB holds (`units.lease_pricing` via `Unit#get_lease_term_pricing_matrix`; `units.x_plot` / `y_plot`).
+- The user's `next dev` had been serving a page that could not hydrate since a `next build` at 20:27 wiped `.next/static/chunks/app-pages-internals.js` (trap 9). No button on any Connect page worked in a browser until the server was restarted with a clean `.next`.
+
+### Backend (read-only JSON only)
+
+| File | Change |
+|---|---|
+| `app/controllers/communities_controller.rb` | `skip_before_action :community_code` and `:load_tour_users_chats` for `edit.json` only (`connect_detail_json?` = `action_name == 'edit' && request.format.json?`), the same skip `Connect::InventoryJson` applies to the inventory reads. The HTML `#edit` is untouched (the nested `/companies/:cid/communities/:id/edit` answers 200 before and after; the shallow HTML route has always 500'd on its breadcrumb) |
+| `app/controllers/floorplates_controller.rb`, `amenities_controller.rb` | `return head :not_found if request.format.json? && current_community.nil?` before the query, so an unknown id is a 404 in JSON instead of a `NoMethodError`. The HTML path is unchanged |
+| `app/serializers/connect/unit_serializer.rb` | `lease_terms` (the existing `Unit#get_lease_term_pricing_matrix`, so the kiosk's own rule decides when the matrix shows), `x_plot`, `y_plot` (positive pixel positions, else null). One `Preloader` on `:community` keeps the model method from a query per row |
+| `app/serializers/connect/property_detail_serializer.rb` | `inventory.buildings`: distinct non-blank `building` values across the property's units and amenities, the same definition as `Buildings#get_community_buildings` |
+
+No business logic, validation, authorization, route, model, association, schema or write behaviour changed. Verified on 348 / 4331 / 531 / 1122: the new keys match `psql` (1122: 2 buildings; 531: 388 of 593 units carry a matrix; 348: 297 of 305 carry a pin), the missing-id reads answer 404, and every request in the browser audit was a GET.
+
+### Frontend
+
+**Property Detail** (`propertyDetail.generator.ts`, `propertyDetail.screen.tsx`, `property.parser.ts`, `property.data.ts`, `globals.css`):
+- `ConfigRow` gained `input`, `date` and `select` kinds. The screen renders them as the design's `.bo-field` controls (54% / 34px; the Default Availability select 46% / 32px), **disabled** and showing the stored value (`.bo-configrow__control`). Touch Code, Display Type, Billing Rate, Subscription Start Date, Default Availability, Map Display Type and Default Map floor now look like the design. The two Maps selects hold the stored value as their only option, because the design's four map types do not map onto `web_map_type` + `default_satellite_view`.
+- The four inventory stat cards deep-link to their tab (`?tab=units|floorplans|amenities`; Floorplates is the default).
+- Inventory subtitle: "{N} buildings · {M} sub-communities" (or "· no sub-communities"), from the new `inventory.buildings`.
+
+**Inventory — Floorplates** (`floorplates.generator.ts`, `FloorplatesSection.tsx`, `MetaGrid.tsx`, `inventory.types.ts`): the meta grid is the design's 4 + 1 layout (`.bo-meta--plates`), with Background as a disabled select (`MetaItem.control = 'select'`) whose only option is the real state ("Shared background map" / "No separate background", gap G15). Units and amenities stay on a second row (the brief asks for them; the 22-Sep card does not draw them). Edit dialogs are titled "Edit Floorplate" / "Edit Floor Plan" as in the design (the record name was dropped from the title).
+
+**Inventory — Units → Unit Detail** (new: `unitDetail.generator.ts`, `useUnitDetail.ts`, `screens/properties/unitDetail.screen.tsx`, `units/[unitId]/loading.tsx`, `utils/date/cmsToday.ts`; changed: `units/[unitId]/page.tsx`, `UnitsSection.tsx`, `inventory.parser.ts`, `propertyInventory.data.ts`, `units.generator.ts`, strings, i18n, CSS):
+- Numeric `propId` + `unitId` render the real screen from the property's four listings (`loadPropertyInventory`; there is no single-unit endpoint, see rails-trace F5). Slugs keep the demo screen. 401 → Sign In; unknown property or unit → "Unit not found" with a link back to the Units tab; other failures → the load-failed banner.
+- The screen is the 22-Sep `isUnitDetail` markup on real data: header with availability and Plotted pills and "{plan} · {beds} · {baths} · {building} · {floor}"; Unit Data tiles (Price and Square feet with the PMS / Manual pill from `*_is_updated`, Availability select with the real vocabulary, PMS Floor / Building); Unit Gallery (primary, secondary and interior images through the shared `ImageViewer`, or the design's dropzone); Placement ("… · pin at 48%, 48%" from `x_plot` / floorplate `width`, "—" for SVG-pointer placements, and the no-pin warning); Lease-Term Pricing tiles from `lease_terms` with the 12-month tile highlighted, or "No lease-term pricing from the feed".
+- Unit card titles are now links to the Unit Detail page (as `u.open` in the design); the thumb's "Manage images" goes there too. The pencil still opens the Unit dialog; the detail page's Edit Unit reuses the same `InventoryDialogs` component.
+- `cmsToday()` (the CMS-zone "today" that "available now" is measured against) moved out of the inventory route into `core/utils/date/cmsToday.ts` so both routes share it.
+
+**Read-only:** every control on the detail page is disabled; Toggle, Add Photo, ←/→/×, Save, Re-sync and Delete send nothing. Confirms use the shared `ConfirmDialog` with `action: null`. No success message is shown anywhere.
+
+**Components reused:** `Breadcrumb`, `StatusPill`, `SourceTag`, `DetailSection`, `ImageViewer`, `SafeImage`, `MetaGrid`, `RecordCard`, `MediaThumb`, `Modal` (through `InventoryDialogs`), `ConfirmDialog`, `Switch`, the icon module, `.bo-field`, `.bo-inv__*` buttons. **No new component** was created; the new files are a generator, a hook, a screen, a loading state and a date helper.
+
+### Verification (local DB, headless Chrome through Playwright with a minted Devise session)
+
+- **Property Detail 348:** every profile, settings, Touch, Maps and billing value unchanged from §16 and still equal to `psql`; controls show the stored values ("Buckingham Mosaic", Horizontal, $2,388, All, "2D map", "Auto (lowest available floor)"); stat cards open the right tab.
+- **Inventory 348 / 4331 / 1625:** counts 4/8/305/8 and 5/21/466/28 as before; floorplate Background selects render; Floorplans / Units / Amenities tabs unchanged.
+- **Unit Detail:** 348/56229 (no matrix, pin 48%, 48%), 348/56233 (7 lease-term tiles, "12 Month" highlighted, `$1405` matches `units.lease_pricing`), 1625/464817 (5 gallery photos, viewer opens at "2 of 5"), unknown unit → not found.
+- **Write audit:** across Property Detail, all four inventory tabs, every dialog (Add/Edit Floorplate, Add/Edit Floor Plan, Add/Edit Unit, Add/Edit Amenity, Mass Overrides, Re-sync, Delete confirms, Edit Details, Edit Rates) and the Unit Detail actions: **0 non-GET requests**, 0 page errors. Console shows only the dev-server 404s for local uploader paths, the pre-existing `next/image` logo warning, and `fonts.gstatic.com` resets (trap 18).
+- **Scope:** company admin `jleinweber@zaremba.net` sees 364 and its inventory; 348 and its inventory read "Property not found". Signed out → Sign In.
+- **Regression:** Sign In, Companies, Properties (search, Go To → Inv, row click → detail → Inventory) all fine.
+- `npm run typecheck` ✅. `npm run test:e2e`: 51 pass; the 29 "no console errors" screen tests fail only on the `fonts.gstatic.com` request-failed guard, exactly as on Sep 24 (§7).
+
+### Remaining
+
+- G15–G21 and R1–R5 stand (gaps doc §4, §5). New in §5: the design's per-plan "Inherited from {plan}" lease terms are the unit's own PMS matrix here; "Add Company" / "Add Property" and the badge dialog are not built (writes / no data).
+- Map & Plotting and Tour Setup, which the inventory and Unit Detail link to, are still demo screens.
+- Commit (no AI attribution), then PR against `main`.
+
+---
+
+## 19. Placeholder marks on every non-DB value (September 25, 2026)
+
+**Ask:** mark all information and settings anywhere in the Connect UI that are not read from the CMS database with a small asterisk, so nobody mistakes demo content for real state; remove each mark when its data goes real.
+
+**Done**
+- `DemoMark` atom (`atoms/DemoMark.tsx`, `.bo-demomark`, tooltip + `aria-label` via `CORE_STRINGS.shared.placeholderTitle`).
+- `ConnectScreenTemplate` / `Navbar` gained a `demo` flag: title asterisk plus the legend line `.bo-demo-legend` ("* Placeholder data. Nothing marked with an asterisk is read from the Pynwheel CMS database yet…"). Set on the 26 demo pages and on the slug branches of `/properties/[propId]`, `/inventory` and `/units/[unitId]`.
+- 371 marks appended across the 37 demo screen and dialog files by codemod (headings, card titles, stat values, setting labels).
+- Shell marks: sidebar badges, bell dot, topbar search results.
+- Real-data screens (Sign In, Companies, Properties, Property Detail, Inventory, Unit Detail) carry none.
+- Docs: context.md §15 holds the rule and the removal instruction; pyn-connect-web/README.md links to it.
+
+**Verified:** typecheck ✅; e2e 50 pass + 29 known font failures; one test updated to accept the optional trailing `*` on a dialog title. Screenshots: Dashboard shows 36 marks + legend; `/properties/348` shows only the 3 badge marks and the bell mark.

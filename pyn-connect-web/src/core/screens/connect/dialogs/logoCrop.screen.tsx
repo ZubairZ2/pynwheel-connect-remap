@@ -2,6 +2,7 @@
 
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { useLogoCropDialog } from '~/core/hooks/connect/useLogoCropDialog';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const LogoCropDialog = () => {
   const {
@@ -29,7 +30,7 @@ export const LogoCropDialog = () => {
                 <Icon name={"crop"} style={{ color: "var(--bo-accent)", display: "flex", flexShrink: "0" }} />
                 <div style={{ flex: "1" }}>
                   <div style={{ font: "800 17px var(--bo-font)", color: "var(--bo-ink)" }}>
-                    Crop {cropWhichLabel}
+                    Crop {cropWhichLabel}<DemoMark />
                   </div>
                   <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
                     Drag the frame to reposition · drag the corner handle to resize
@@ -49,7 +50,7 @@ export const LogoCropDialog = () => {
                 </div>
                 <div style={{ width: "200px", flexShrink: "0", display: "flex", flexDirection: "column", gap: "10px" }}>
                   <div style={{ font: "700 11px var(--bo-font)", color: "var(--bo-muted)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                    Result
+                    Result<DemoMark />
                   </div>
                   <div style={{ height: "100px", border: "1px solid var(--bo-line)", borderRadius: "9px", overflow: "hidden", position: "relative", background: "#fff" }}>
                     <img src="/images/amenity-thumb.jpg" alt="Cropped result" style={{ position: "absolute", left: cropPreview.imgLeft, top: cropPreview.imgTop, width: cropPreview.imgW, height: cropPreview.imgH, objectFit: "cover" }} />

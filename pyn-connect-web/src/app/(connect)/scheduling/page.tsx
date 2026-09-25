@@ -3,7 +3,7 @@ import { SchedulingScreen } from '~/core/screens/connect/scheduling/scheduling.s
 
 export default function Page() {
   return (
-    <ConnectScreenTemplate title="Tour Scheduling">
+    <ConnectScreenTemplate title="Tour Scheduling" demo>
       <SchedulingScreen />
     </ConnectScreenTemplate>
   );

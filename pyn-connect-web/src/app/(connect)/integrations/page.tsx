@@ -11,7 +11,7 @@ export default async function Page({ searchParams }: Props) {
   const { property } = await searchParams;
 
   return (
-    <ConnectScreenTemplate title="Integrations Hub">
+    <ConnectScreenTemplate title="Integrations Hub" demo>
       {property ? (
         <PropertyPreselect propId={property}>
           <IntegrationsScreen />

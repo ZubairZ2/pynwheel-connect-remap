@@ -648,3 +648,16 @@ Provide:
 11. Remaining issues
 
 **Start with investigation only. Do not modify code until you have inspected both HTML prototypes, the current React implementation, the existing Rails Property Detail flow, and created the change/data-source map.**
+
+---
+
+# Status update — September 25, 2026 (branch `feature/properties_inventory_improvments`)
+
+The page runs on `GET /communities/:id/edit.json` (§16 of PYN_CONNECT_PROGRESS.md). This pass (§18) closed the remaining differences from the 22-Sep design that existing data supports:
+
+- **Controls:** Default Availability, Touch Code, Display Type, Billing Rate, Subscription Start Date, Map Display Type and Default Map floor now render as the design's form controls, disabled, showing the stored values (`ConfigRow` kinds `input` / `date` / `select`).
+- **Inventory panel:** the four stat cards open their own Inventory tab; the subtitle is "{N} buildings · {M} sub-communities" from the new `inventory.buildings` key (distinct `building` over units and amenities).
+- **Controller:** `edit.json` no longer runs the write-on-GET `community_code` callback (skipped for that JSON read only).
+
+Data sources are unchanged (§16 table). Reused: `DetailSection`, `Switch`, `StatusPill`, `.bo-field`. No new components.
+Remaining gaps: R1–R5 in the gaps doc; "Add Property" on the listing is not built (writes are disabled by rule).

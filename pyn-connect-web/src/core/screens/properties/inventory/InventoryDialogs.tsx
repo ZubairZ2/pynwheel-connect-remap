@@ -225,7 +225,7 @@ const FloorplanDialog = ({ inventory, id, onClose, onView }: DialogProps) => {
   return (
     <Modal
       open
-      title={plan ? `${i18n.t(F.editTitle)} · ${plan.name}` : i18n.t(F.addTitle)}
+      title={i18n.t(plan ? F.editTitle : F.addTitle)}
       subtitle={i18n.t(F.subtitle)}
       width={820}
       onClose={onClose}

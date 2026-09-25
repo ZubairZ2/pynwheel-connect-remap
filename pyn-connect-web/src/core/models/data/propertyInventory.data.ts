@@ -110,6 +110,12 @@ export interface UnitFlags {
   sold: boolean;
 }
 
+/** One row of the kiosk's lease-term matrix, as the CMS formats it ("12 Month" → "$1,500"). */
+export interface UnitLeaseTerm {
+  term: string;
+  rent: string;
+}
+
 export interface InventoryUnit {
   id: number;
   marketingName: string | null;
@@ -134,6 +140,13 @@ export interface InventoryUnit {
   floor: number | null;
   floorplateId: number | null;
   plotted: boolean;
+  /**
+   * The pin's position on the floorplate's raster image, in image pixels.
+   * Null for an SVG-pointer placement (then `plotted` is still true) and for
+   * an unplotted unit.
+   */
+  xPlot: number | null;
+  yPlot: number | null;
   visible: boolean;
   showOnMap: boolean;
   modelUnit: boolean;
@@ -146,6 +159,8 @@ export interface InventoryUnit {
   secondaryImage: InventoryUpload | null;
   interiorImages: InventoryImage[];
   buttons: InventoryButton[];
+  /** Empty unless the property shows pricing options and the feed sent a matrix. */
+  leaseTerms: UnitLeaseTerm[];
   additionalFee: string | null;
   descriptionTitle: string | null;
   description: string | null;

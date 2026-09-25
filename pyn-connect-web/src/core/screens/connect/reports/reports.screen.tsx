@@ -3,6 +3,7 @@
 import React from 'react';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { useReportsScreen } from '~/core/hooks/connect/useReportsScreen';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const ReportsScreen = () => {
   const {
@@ -19,7 +20,7 @@ export const ReportsScreen = () => {
         <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "16px 20px", display: "flex", alignItems: "center", gap: "14px" }}>
           <div style={{ flex: "1" }}>
             <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-              Exportable Reports
+              Exportable Reports<DemoMark />
             </div>
             <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
               Generated against the current Analytics scope — {scopeSummary}
@@ -44,14 +45,14 @@ export const ReportsScreen = () => {
                 </div>
                 <div style={{ flex: "1", minWidth: "0" }}>
                   <div style={{ font: "800 13.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                    {r.name}
+                    {r.name}<DemoMark />
                   </div>
                   <div style={{ font: "500 11.5px/1.5 var(--bo-font)", color: "var(--bo-subtle)" }}>
                     {r.note}
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: "7px", marginTop: "9px" }}>
                     <span style={{ font: "800 10px var(--bo-font)", color: "var(--bo-muted)", background: "#EEF0F4", padding: "3px 7px", borderRadius: "5px" }}>
-                      {r.fmt}
+                      {r.fmt}<DemoMark />
                     </span>
                     <span style={{ font: "600 10.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                       {r.cadence} · {r.lastRun} {r.lastBy}
@@ -82,7 +83,7 @@ export const ReportsScreen = () => {
                         {r.downloadLabel}
                       </button>
                       <div style={{ font: "700 10.5px var(--bo-font)", color: "#4A7212" }}>
-                        {r.readyLabel}
+                        {r.readyLabel}<DemoMark />
                       </div>
                       <button onClick={r.run} style={{ height: "24px", padding: "0 9px", border: "1px solid var(--bo-line)", background: "#fff", borderRadius: "6px", font: "700 10.5px var(--bo-font)", color: "var(--bo-muted)", cursor: "pointer" }}>
                         Re-generate

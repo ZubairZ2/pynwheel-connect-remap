@@ -199,7 +199,7 @@ export const FloorplatesSection = ({ inventory, actions }: Props) => {
               </>
             }
           >
-            <MetaGrid items={card.meta} columns={4} />
+            <MetaGrid items={card.meta} columns="plates" />
           </RecordCard>
         );
       })}

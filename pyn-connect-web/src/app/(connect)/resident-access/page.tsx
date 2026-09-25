@@ -3,7 +3,7 @@ import { ResidentAccessScreen } from '~/core/screens/connect/residentAccess/resi
 
 export default function Page() {
   return (
-    <ConnectScreenTemplate title="Resident Access">
+    <ConnectScreenTemplate title="Resident Access" demo>
       <ResidentAccessScreen />
     </ConnectScreenTemplate>
   );

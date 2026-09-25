@@ -4,6 +4,7 @@ import React from 'react';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { StatusPill } from '~/core/components/atoms/connect/StatusPill';
 import { useUsersScreen } from '~/core/hooks/connect/useUsersScreen';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const UsersScreen = () => {
   const {
@@ -16,7 +17,7 @@ export const UsersScreen = () => {
       <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ font: "700 13px var(--bo-font)", color: "var(--bo-muted)" }}>
-            Platform admins &amp; assigned staff-console users
+            Platform admins &amp; assigned staff-console users<DemoMark />
           </div>
           <button onClick={inviteUser} style={{ height: "38px", padding: "0 16px", background: "var(--bo-accent)", color: "#fff", border: "none", borderRadius: "8px", font: "700 13px var(--bo-font)", cursor: "pointer", display: "flex", alignItems: "center", gap: "7px" }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round">
@@ -52,11 +53,11 @@ export const UsersScreen = () => {
                     <td style={{ padding: "13px 18px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "11px" }}>
                         <div style={{ width: "32px", height: "32px", borderRadius: "999px", background: "#EEF0F4", color: "var(--bo-muted)", display: "flex", alignItems: "center", justifyContent: "center", font: "800 11px var(--bo-font)" }}>
-                          {u.initials}
+                          {u.initials}<DemoMark />
                         </div>
                         <div>
                           <div style={{ font: "700 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                            {u.name}
+                            {u.name}<DemoMark />
                           </div>
                           <div style={{ font: "600 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
                             {u.email}

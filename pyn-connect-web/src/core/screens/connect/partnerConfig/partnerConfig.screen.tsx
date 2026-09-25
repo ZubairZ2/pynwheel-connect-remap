@@ -3,6 +3,7 @@
 import React from 'react';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { usePartnerConfigScreen } from '~/core/hooks/connect/usePartnerConfigScreen';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const PartnerConfigScreen = () => {
   const {
@@ -25,7 +26,7 @@ export const PartnerConfigScreen = () => {
           </div>
           <div style={{ flex: "1" }}>
             <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-              Partner Configuration
+              Partner Configuration<DemoMark />
             </div>
             <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
               ILS syndication across the portfolio · {partnerSummary}
@@ -88,7 +89,7 @@ export const PartnerConfigScreen = () => {
                   <tr className="bo-row" style={{ borderBottom: "1px solid var(--bo-line-2)" }}>
                     <td style={{ padding: "13px 16px" }}>
                       <div style={{ font: "800 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                        {r.name}
+                        {r.name}<DemoMark />
                       </div>
                       <div style={{ font: "600 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
                         {r.org}

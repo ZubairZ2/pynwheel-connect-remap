@@ -6,7 +6,7 @@ export default async function Page({ params }: { params: Promise<{ propId: strin
   const { propId } = await params;
 
   return (
-    <ConnectScreenTemplate title="Tour Setup">
+    <ConnectScreenTemplate title="Tour Setup" demo>
       <PropertyScope propId={propId}>
         <TourSetupScreen />
       </PropertyScope>
