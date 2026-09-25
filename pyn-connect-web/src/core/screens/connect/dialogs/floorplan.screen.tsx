@@ -2,6 +2,7 @@
 
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { useFloorplanDialog } from '~/core/hooks/connect/useFloorplanDialog';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const FloorplanDialog = () => {
   const {
@@ -22,7 +23,7 @@ export const FloorplanDialog = () => {
               <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--bo-line)", display: "flex", alignItems: "center", gap: "12px", position: "sticky", top: "0", background: "#fff", zIndex: "2" }}>
                 <div style={{ flex: "1" }}>
                   <div style={{ font: "800 17px var(--bo-font)", color: "var(--bo-ink)" }}>
-                    {fplModalTitle}
+                    {fplModalTitle}<DemoMark />
                   </div>
                   <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
                     Unit-type record shown on the kiosk, web widget, and Pynwheel Map. PMS-synced fields are read-only unless Manual Override is on.
@@ -36,7 +37,7 @@ export const FloorplanDialog = () => {
                 <div style={{ display: "flex", gap: "24px", padding: "18px 0", borderTop: "1px solid var(--bo-line-2)" }}>
                   <div style={{ width: "196px", flexShrink: "0" }}>
                     <div style={{ font: "800 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Manual Override
+                      Manual Override<DemoMark />
                     </div>
                     <div style={{ font: "500 11.5px/1.5 var(--bo-font)", color: "var(--bo-subtle)" }}>
                       Enter details yourself instead of taking them from the PMS feed
@@ -49,7 +50,7 @@ export const FloorplanDialog = () => {
                           <span style={{ width: "8px", height: "8px", borderRadius: "999px", background: fplForm.yesDot }} />
                         </span>
                         <span style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                          Yes
+                          Yes<DemoMark />
                         </span>
                       </div>
                       <div onClick={fplForm.pickNo} style={{ display: "flex", alignItems: "center", gap: "9px", cursor: "pointer" }}>
@@ -57,7 +58,7 @@ export const FloorplanDialog = () => {
                           <span style={{ width: "8px", height: "8px", borderRadius: "999px", background: fplForm.noDot }} />
                         </span>
                         <span style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                          No
+                          No<DemoMark />
                         </span>
                       </div>
                     </div>
@@ -66,7 +67,7 @@ export const FloorplanDialog = () => {
                 <div style={{ display: "flex", gap: "24px", padding: "18px 0", borderTop: "1px solid var(--bo-line-2)" }}>
                   <div style={{ width: "196px", flexShrink: "0" }}>
                     <div style={{ font: "800 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Floor Plan Name
+                      Floor Plan Name<DemoMark />
                     </div>
                     <div style={{ font: "500 11.5px/1.5 var(--bo-font)", color: "var(--bo-subtle)" }}>
                       Specify name here (Manual Override required)
@@ -79,7 +80,7 @@ export const FloorplanDialog = () => {
                 <div style={{ display: "flex", gap: "24px", padding: "18px 0", borderTop: "1px solid var(--bo-line-2)" }}>
                   <div style={{ width: "196px", flexShrink: "0" }}>
                     <div style={{ font: "800 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Provider Floor Plan ID
+                      Provider Floor Plan ID<DemoMark />
                     </div>
                     <div style={{ font: "500 11.5px/1.5 var(--bo-font)", color: "var(--bo-subtle)" }}>
                       From 3rd-party vendor (Manual Override required)
@@ -92,7 +93,7 @@ export const FloorplanDialog = () => {
                 <div style={{ display: "flex", gap: "24px", padding: "18px 0", borderTop: "1px solid var(--bo-line-2)" }}>
                   <div style={{ width: "196px", flexShrink: "0" }}>
                     <div style={{ font: "800 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Floor Plan Info
+                      Floor Plan Info<DemoMark />
                     </div>
                     <div style={{ font: "500 11.5px/1.5 var(--bo-font)", color: "var(--bo-subtle)" }}>
                       Specify floor plan info here (Manual Override required)
@@ -128,7 +129,7 @@ export const FloorplanDialog = () => {
                 <div style={{ display: "flex", gap: "24px", padding: "18px 0", borderTop: "1px solid var(--bo-line-2)" }}>
                   <div style={{ width: "196px", flexShrink: "0" }}>
                     <div style={{ font: "800 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Button
+                      Button<DemoMark />
                     </div>
                     <div style={{ font: "500 11.5px/1.5 var(--bo-font)", color: "var(--bo-subtle)" }}>
                       Primary CTA on the floor plan card
@@ -166,7 +167,7 @@ export const FloorplanDialog = () => {
                 <div style={{ display: "flex", gap: "24px", padding: "18px 0", borderTop: "1px solid var(--bo-line-2)" }}>
                   <div style={{ width: "196px", flexShrink: "0" }}>
                     <div style={{ font: "800 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Additional Buttons
+                      Additional Buttons<DemoMark />
                     </div>
                     <div style={{ font: "500 11.5px/1.5 var(--bo-font)", color: "var(--bo-subtle)" }}>
                       Only appear on the Pynwheel Map
@@ -234,7 +235,7 @@ export const FloorplanDialog = () => {
                 <div style={{ display: "flex", gap: "24px", padding: "18px 0", borderTop: "1px solid var(--bo-line-2)" }}>
                   <div style={{ width: "196px", flexShrink: "0" }}>
                     <div style={{ font: "800 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Details
+                      Details<DemoMark />
                     </div>
                     <div style={{ font: "500 11.5px/1.5 var(--bo-font)", color: "var(--bo-subtle)" }}>
                       Long-form description shown under More Details
@@ -250,11 +251,11 @@ export const FloorplanDialog = () => {
                     <div style={{ display: "flex", flexDirection: "column" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "2px", border: "1px solid var(--bo-line)", borderBottom: "none", borderRadius: "8px 8px 0 0", background: "#FAFAFB", padding: "6px 8px" }}>
                         <span style={{ font: "700 11px var(--bo-font)", color: "var(--bo-muted)", padding: "0 6px" }}>
-                          Normal text
+                          Normal text<DemoMark />
                         </span>
                         <span style={{ width: "1px", height: "16px", background: "var(--bo-line)", margin: "0 4px" }} />
                         <span style={{ font: "800 12px var(--bo-font)", color: "var(--bo-muted)", padding: "0 5px" }}>
-                          B
+                          B<DemoMark />
                         </span>
                         <span style={{ font: "800 italic 12px var(--bo-font)", color: "var(--bo-muted)", padding: "0 5px" }}>
                           I
@@ -274,7 +275,7 @@ export const FloorplanDialog = () => {
                 <div style={{ display: "flex", gap: "24px", padding: "18px 0", borderTop: "1px solid var(--bo-line-2)" }}>
                   <div style={{ width: "196px", flexShrink: "0" }}>
                     <div style={{ font: "800 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Primary Image
+                      Primary Image<DemoMark />
                     </div>
                     <div style={{ font: "500 11.5px/1.5 var(--bo-font)", color: "var(--bo-subtle)" }}>
                       Shown at 325 × 300 when expanded. Small images appear pixelated.
@@ -321,7 +322,7 @@ export const FloorplanDialog = () => {
                 <div style={{ display: "flex", gap: "24px", padding: "18px 0", borderTop: "1px solid var(--bo-line-2)" }}>
                   <div style={{ width: "196px", flexShrink: "0" }}>
                     <div style={{ font: "800 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Secondary Image
+                      Secondary Image<DemoMark />
                     </div>
                     <div style={{ font: "500 11.5px/1.5 var(--bo-font)", color: "var(--bo-subtle)" }}>
                       Shown at 325 × 300 when expanded. Small images appear pixelated.

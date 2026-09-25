@@ -456,3 +456,18 @@ Branch `feature/properties_inventory_improvments`; PYN_CONNECT_PROGRESS.md §18.
 - `core/utils/date/cmsToday.ts` is the one place the CMS-zone "today" is computed.
 
 **Local testing.** Mint sessions with `rails runner` (progress §7 script; `EMAIL=… OUT=… `) and give Playwright the two Connect cookies (`pyn_connect_rails_session`, `pyn_connect_user`, URL-encoded). **Wait for hydration** before clicking (`__reactFiber` on a button); a page that never hydrates means `.next` is stale — stop `next dev`, `rm -rf .next`, restart (trap 9). The e2e screen tests need `NEXT_PUBLIC_SCREEN_HARNESS=on` on the dev server and still fail on `fonts.gstatic.com` from this machine.
+
+---
+
+## 15. The placeholder marker (`*`) — what is real and what is not (September 25, 2026)
+
+Every piece of information or setting in the Connect UI that is **not read from the Pynwheel CMS database** carries a small superscript asterisk (`<DemoMark />`, `src/core/components/atoms/DemoMark.tsx`, class `.bo-demomark`, hover text "Placeholder: not read from the Pynwheel CMS database yet").
+
+**Where the marks are today**
+- **Whole demo screens** (Dashboard, Company detail / Regions / Groups, Tour Scheduling, Integrations, SVG Maps Optimizer, Partner Configuration, White-Label Builds, Pricing Calculator, Favorites, Resident Access, Live Chat, Analytics, Reports, Users & Roles, AI Services, Billing, Audit Log, Help, and the property screens Map & Plotting, Tour Setup, Branding, Content, Pricing, Units & Floor Plans, plus every slug-id property/unit route): the page passes `demo` to `ConnectScreenTemplate`, which puts the asterisk on the topbar title and shows the amber legend under it, and every panel heading, card title, stat value and setting label in `src/core/screens/connect/**` (including the demo dialogs) has its own `<DemoMark />`.
+- **Shell:** the sidebar badges (Tour Scheduling 2, Live Chat 4, AI Services 3 — hard-coded in `navigation.generator.ts`), the notification bell's dot, and every row of the topbar search results (demo data only).
+- **No marks** on Sign In, Companies, Properties, Property Detail, Property Inventory and Unit Detail (numeric ids): everything they show comes from Rails.
+
+**Rule when wiring real data:** as soon as a screen or a single setting reads its value through a Rails controller (`format.json` branch → `Connect::*Serializer` → parser → model), delete its `<DemoMark />`; when the whole screen is real, also drop the `demo` flag from its `page.tsx` so the title asterisk and the legend disappear. Do not leave a mark on real data, and do not add real data without removing the mark. The e2e text matchers accept an optional trailing `*` (`/^Title\*?$/`) so tests keep passing either way.
+
+**How the marks were placed:** a one-off codemod over `src/core/screens/connect/**/*.tsx` appended `<DemoMark />` to `div`/`span`/`h*` elements whose inline font is `800 <any>px` or `700 10.5–13px` and whose child is plain text or a single `{expression}`. Nested headings the regex could not see safely were left unmarked; the screen-level title + legend still cover them.

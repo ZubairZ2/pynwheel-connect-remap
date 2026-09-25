@@ -3,7 +3,7 @@ import { AnalyticsScreen } from '~/core/screens/connect/analytics/analytics.scre
 
 export default function Page() {
   return (
-    <ConnectScreenTemplate title="Analytics">
+    <ConnectScreenTemplate title="Analytics" demo>
       <AnalyticsScreen />
     </ConnectScreenTemplate>
   );

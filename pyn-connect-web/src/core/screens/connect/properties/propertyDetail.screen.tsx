@@ -4,6 +4,7 @@ import React from 'react';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { StatusPill } from '~/core/components/atoms/connect/StatusPill';
 import { usePropertyDetailScreen } from '~/core/hooks/connect/usePropertyDetailScreen';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const PropertyDetailScreen = () => {
   const {
@@ -67,7 +68,7 @@ export const PropertyDetailScreen = () => {
           <div style={{ flex: "1" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <div style={{ font: "800 22px var(--bo-font)", color: "var(--bo-ink)" }}>
-                {prop.name}
+                {prop.name}<DemoMark />
               </div>
               <StatusPill variant={prop.statusV} label={prop.status} />
             </div>
@@ -88,7 +89,7 @@ export const PropertyDetailScreen = () => {
           </div>
           <div style={{ flex: "1 1 260px", minWidth: "260px" }}>
             <div style={{ font: "800 16px var(--bo-font)", color: "#fff", whiteSpace: "nowrap" }}>
-              Live Products
+              Live Products<DemoMark />
             </div>
             <div style={{ font: "500 12.5px var(--bo-font)", color: "var(--bo-nav-txt)" }}>
               {productSummary}
@@ -122,7 +123,7 @@ export const PropertyDetailScreen = () => {
         <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px 22px" }}>
           <div style={{ marginBottom: "16px" }}>
             <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-              Deployment Lifecycle
+              Deployment Lifecycle<DemoMark />
             </div>
             <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
               Current stage: {prop.stageLabel}
@@ -135,7 +136,7 @@ export const PropertyDetailScreen = () => {
                   <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
                     <div style={{ flex: "1", height: "2px", background: st.lineBg }} />
                     <div style={{ width: "28px", height: "28px", borderRadius: "999px", flexShrink: "0", display: "flex", alignItems: "center", justifyContent: "center", background: st.circleBg, border: `2px solid ${st.circleBorder}`, color: st.circleColor, font: "800 12px var(--bo-font)" }}>
-                      {st.num}
+                      {st.num}<DemoMark />
                     </div>
                     <div style={{ flex: "1", height: "2px", background: st.lineBg }} />
                   </div>
@@ -155,7 +156,7 @@ export const PropertyDetailScreen = () => {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px" }}>
           <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px", display: "flex", flexDirection: "column", gap: "12px" }}>
             <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-              Products
+              Products<DemoMark />
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {(productCards ?? []).map((p: any, pIdx: number) => (
@@ -167,7 +168,7 @@ export const PropertyDetailScreen = () => {
                       </div>
                       <div style={{ flex: "1", minWidth: "0" }}>
                         <div style={{ font: "800 12.5px var(--bo-font)", color: p.nameColor }}>
-                          {p.name}
+                          {p.name}<DemoMark />
                         </div>
                         <div style={{ font: "600 10.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                           {p.metric}
@@ -191,7 +192,7 @@ export const PropertyDetailScreen = () => {
                             <>
                               <label style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                                 <span style={{ font: "700 10.5px var(--bo-font)", color: "var(--bo-subtle)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                                  Kiosk Display Type
+                                  Kiosk Display Type<DemoMark />
                                 </span>
                                 <select value={p.tDisplay} onChange={p.onTDisplay} className="bo-field" style={{ textTransform: "none", height: "34px" }}>
                                   {(touchDisplayOptions ?? []).map((o: any, oIdx: number) => (
@@ -216,7 +217,7 @@ export const PropertyDetailScreen = () => {
                               </div>
                               <label style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                                 <span style={{ font: "700 10.5px var(--bo-font)", color: "var(--bo-subtle)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                                  ID Verification Provider
+                                  ID Verification Provider<DemoMark />
                                 </span>
                                 <select value={p.tIdv} onChange={p.onTIdv} className="bo-field" style={{ textTransform: "none", height: "34px" }}>
                                   {(idvProviderOptions ?? []).map((o: any, oIdx: number) => (
@@ -230,7 +231,7 @@ export const PropertyDetailScreen = () => {
                               </label>
                               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                                 <div style={{ flex: "1", font: "700 11.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                                  Enable Locks
+                                  Enable Locks<DemoMark />
                                 </div>
                                 <div onClick={p.toggleTLocks} style={{ width: "40px", height: "23px", borderRadius: "999px", background: p.tLocksBg, position: "relative", cursor: "pointer", flexShrink: "0" }}>
                                   <div style={{ position: "absolute", top: "3px", left: p.tLocksKnob, width: "17px", height: "17px", borderRadius: "999px", background: "#fff", boxShadow: "0 1px 2px rgba(0,0,0,0.3)" }} />
@@ -238,7 +239,7 @@ export const PropertyDetailScreen = () => {
                               </div>
                               <label style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                                 <span style={{ font: "700 10.5px var(--bo-font)", color: "var(--bo-subtle)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                                  Subscription Start Date
+                                  Subscription Start Date<DemoMark />
                                 </span>
                                 <input type="date" value={p.tStart} onChange={p.onTStart} className="bo-field" style={{ textTransform: "none", height: "34px" }} />
                               </label>
@@ -248,7 +249,7 @@ export const PropertyDetailScreen = () => {
                             <>
                               <label style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                                 <span style={{ font: "700 10.5px var(--bo-font)", color: "var(--bo-subtle)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                                  Subscription Start Date
+                                  Subscription Start Date<DemoMark />
                                 </span>
                                 <input type="date" value={p.tourStart} onChange={p.onTourStart} className="bo-field" style={{ textTransform: "none", height: "34px" }} />
                               </label>
@@ -269,7 +270,7 @@ export const PropertyDetailScreen = () => {
                             <>
                               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                                 <div style={{ flex: "1", font: "700 11.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                                  Beans.ai 3D Maps
+                                  Beans.ai 3D Maps<DemoMark />
                                 </div>
                                 <div onClick={p.toggleMBeans} style={{ width: "40px", height: "23px", borderRadius: "999px", background: p.mBeansBg, position: "relative", cursor: "pointer", flexShrink: "0" }}>
                                   <div style={{ position: "absolute", top: "3px", left: p.mBeansKnob, width: "17px", height: "17px", borderRadius: "999px", background: "#fff", boxShadow: "0 1px 2px rgba(0,0,0,0.3)" }} />
@@ -277,7 +278,7 @@ export const PropertyDetailScreen = () => {
                               </div>
                               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                                 <div style={{ flex: "1", font: "700 11.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                                  SVG Mode
+                                  SVG Mode<DemoMark />
                                 </div>
                                 <div onClick={p.toggleMSvg} style={{ width: "40px", height: "23px", borderRadius: "999px", background: p.mSvgBg, position: "relative", cursor: "pointer", flexShrink: "0" }}>
                                   <div style={{ position: "absolute", top: "3px", left: p.mSvgKnob, width: "17px", height: "17px", borderRadius: "999px", background: "#fff", boxShadow: "0 1px 2px rgba(0,0,0,0.3)" }} />
@@ -285,7 +286,7 @@ export const PropertyDetailScreen = () => {
                               </div>
                               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                                 <div style={{ flex: "1", font: "700 11.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                                  Automate Wayfinding
+                                  Automate Wayfinding<DemoMark />
                                 </div>
                                 <div onClick={p.toggleMWayfind} style={{ width: "40px", height: "23px", borderRadius: "999px", background: p.mWayfindBg, position: "relative", cursor: "pointer", flexShrink: "0" }}>
                                   <div style={{ position: "absolute", top: "3px", left: p.mWayfindKnob, width: "17px", height: "17px", borderRadius: "999px", background: "#fff", boxShadow: "0 1px 2px rgba(0,0,0,0.3)" }} />
@@ -293,7 +294,7 @@ export const PropertyDetailScreen = () => {
                               </div>
                               <label style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                                 <span style={{ font: "700 10.5px var(--bo-font)", color: "var(--bo-subtle)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                                  Map Display Type
+                                  Map Display Type<DemoMark />
                                 </span>
                                 <select value={p.mDisplay} onChange={p.onMDisplay} className="bo-field" style={{ textTransform: "none", height: "34px" }}>
                                   {(mapDisplayOptions ?? []).map((o: any, oIdx: number) => (
@@ -307,7 +308,7 @@ export const PropertyDetailScreen = () => {
                               </label>
                               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                                 <div style={{ flex: "1", font: "700 11.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                                  Gesture Icons
+                                  Gesture Icons<DemoMark />
                                 </div>
                                 <div onClick={p.toggleMGestures} style={{ width: "40px", height: "23px", borderRadius: "999px", background: p.mGesturesBg, position: "relative", cursor: "pointer", flexShrink: "0" }}>
                                   <div style={{ position: "absolute", top: "3px", left: p.mGesturesKnob, width: "17px", height: "17px", borderRadius: "999px", background: "#fff", boxShadow: "0 1px 2px rgba(0,0,0,0.3)" }} />
@@ -326,7 +327,7 @@ export const PropertyDetailScreen = () => {
           <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px", display: "flex", flexDirection: "column", gap: "12px" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                Design System
+                Design System<DemoMark />
               </div>
               <StatusPill variant={brandKickoffV} label={brandKickoffLabel} />
             </div>
@@ -355,7 +356,7 @@ export const PropertyDetailScreen = () => {
           </div>
           <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px", display: "flex", flexDirection: "column", gap: "12px" }}>
             <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-              Entry QR Codes
+              Entry QR Codes<DemoMark />
             </div>
             <div style={{ display: "flex", gap: "12px" }}>
               <div style={{ flex: "1", textAlign: "center" }}>
@@ -394,7 +395,7 @@ export const PropertyDetailScreen = () => {
             </div>
             <div style={{ flex: "1" }}>
               <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                ILS Syndication
+                ILS Syndication<DemoMark />
               </div>
               <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
                 Where this property's listing is published · manage the full portfolio in Partner Configuration
@@ -407,7 +408,7 @@ export const PropertyDetailScreen = () => {
                 <div style={{ border: "1px solid var(--bo-line)", borderRadius: "10px", padding: "13px", display: "flex", alignItems: "center", gap: "11px" }}>
                   <div style={{ flex: "1", minWidth: "0" }}>
                     <div style={{ font: "800 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      {p.name}
+                      {p.name}<DemoMark />
                     </div>
                     <div style={{ font: "600 10.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                       {p.statusLabel}
@@ -425,7 +426,7 @@ export const PropertyDetailScreen = () => {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
             <div>
               <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                Inventory
+                Inventory<DemoMark />
               </div>
               <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
                 {propBuildingLabel} · sub-communities supported
@@ -444,7 +445,7 @@ export const PropertyDetailScreen = () => {
                   </div>
                   <div>
                     <div style={{ font: "800 19px var(--bo-font)", color: "var(--bo-ink)", lineHeight: "1.1" }}>
-                      {c.value}
+                      {c.value}<DemoMark />
                     </div>
                     <div style={{ font: "600 11px var(--bo-font)", color: "var(--bo-subtle)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
                       {c.label}
@@ -465,7 +466,7 @@ export const PropertyDetailScreen = () => {
                     <React.Fragment key={bIdx}>
                       <div style={{ border: "1px solid var(--bo-line)", borderRadius: "8px", padding: "8px 12px", display: "flex", alignItems: "center", gap: "10px" }}>
                         <span style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                          {b.name}
+                          {b.name}<DemoMark />
                         </span>
                         <span style={{ font: "600 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                           {b.units} units
@@ -483,7 +484,7 @@ export const PropertyDetailScreen = () => {
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
               <div>
                 <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                  Billing Rate Card
+                  Billing Rate Card<DemoMark />
                 </div>
                 <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
                   Per-property rates · {propBilling.cadence} · {propBilling.month}
@@ -499,7 +500,7 @@ export const PropertyDetailScreen = () => {
                   Touch Kiosk
                 </div>
                 <div style={{ font: "800 18px var(--bo-font)", color: "var(--bo-ink)", marginTop: "4px" }}>
-                  {propBilling.touch}
+                  {propBilling.touch}<DemoMark />
                 </div>
               </div>
               <div style={{ border: "1px solid var(--bo-line)", borderRadius: "10px", padding: "13px" }}>
@@ -507,7 +508,7 @@ export const PropertyDetailScreen = () => {
                   Self-Guided Tour
                 </div>
                 <div style={{ font: "800 18px var(--bo-font)", color: "var(--bo-ink)", marginTop: "4px" }}>
-                  {propBilling.tour}
+                  {propBilling.tour}<DemoMark />
                 </div>
               </div>
               <div style={{ border: "1px solid var(--bo-line)", borderRadius: "10px", padding: "13px" }}>
@@ -515,7 +516,7 @@ export const PropertyDetailScreen = () => {
                   Maps
                 </div>
                 <div style={{ font: "800 18px var(--bo-font)", color: "var(--bo-ink)", marginTop: "4px" }}>
-                  {propBilling.maps}
+                  {propBilling.maps}<DemoMark />
                 </div>
               </div>
               <div style={{ border: "1px solid var(--bo-accent)", background: "var(--bo-accent-soft)", borderRadius: "10px", padding: "13px" }}>
@@ -523,7 +524,7 @@ export const PropertyDetailScreen = () => {
                   Combined
                 </div>
                 <div style={{ font: "800 18px var(--bo-font)", color: "var(--bo-accent)", marginTop: "4px" }}>
-                  {propBilling.combined}
+                  {propBilling.combined}<DemoMark />
                 </div>
               </div>
             </div>
@@ -531,7 +532,7 @@ export const PropertyDetailScreen = () => {
           <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px 22px", display: "flex", flexDirection: "column", gap: "12px", opacity: mapConfigOpacity }}>
             <div>
               <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                Map Configuration
+                Map Configuration<DemoMark />
               </div>
               <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
                 2D and 3D are configured separately
@@ -550,7 +551,7 @@ export const PropertyDetailScreen = () => {
               </div>
               <div style={{ flex: "1" }}>
                 <div style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                  2D Map &amp; Pathways
+                  2D Map &amp; Pathways<DemoMark />
                 </div>
                 <div style={{ font: "600 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
                   {propNodeCount} nodes · {propEdgeCount} connections
@@ -564,7 +565,7 @@ export const PropertyDetailScreen = () => {
               </div>
               <div style={{ flex: "1" }}>
                 <div style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                  3D Maps
+                  3D Maps<DemoMark />
                 </div>
                 <div style={{ font: "600 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
                   Separate 3D model configuration
@@ -583,7 +584,7 @@ export const PropertyDetailScreen = () => {
           <div onClick={goIntegrations} style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
               <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                Integrations
+                Integrations<DemoMark />
               </div>
               <div style={{ font: "600 12px var(--bo-font)", color: "var(--bo-muted)" }}>
                 Locks, CRM, Data Feed, ILS
@@ -596,7 +597,7 @@ export const PropertyDetailScreen = () => {
           <div onClick={goBuilds} style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
               <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                White-Label Build
+                White-Label Build<DemoMark />
               </div>
               <div style={{ font: "600 12px var(--bo-font)", color: "var(--bo-muted)" }}>
                 App status: {prop.status}

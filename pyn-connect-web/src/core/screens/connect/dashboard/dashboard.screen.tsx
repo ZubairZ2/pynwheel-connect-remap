@@ -4,6 +4,7 @@ import React from 'react';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { StatusPill } from '~/core/components/atoms/connect/StatusPill';
 import { useDashboardScreen } from '~/core/hooks/connect/useDashboardScreen';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const DashboardScreen = () => {
   const {
@@ -30,7 +31,7 @@ export const DashboardScreen = () => {
                   {k.label}
                 </div>
                 <div style={{ font: "800 30px var(--bo-font)", color: "var(--bo-ink)" }}>
-                  {k.value}
+                  {k.value}<DemoMark />
                 </div>
                 <div style={{ font: "700 12px var(--bo-font)", color: k.deltaColor }}>
                   {k.delta}
@@ -45,7 +46,7 @@ export const DashboardScreen = () => {
               <div onClick={p.pick} style={{ border: `1px solid ${p.border}`, background: p.bg, borderRadius: "12px", padding: "18px 20px", cursor: "pointer", display: "flex", alignItems: "center", gap: "16px" }}>
                 <div style={{ flex: "1", minWidth: "0" }}>
                   <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                    {p.label}
+                    {p.label}<DemoMark />
                   </div>
                   <div style={{ font: "600 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                     {p.note} · {p.propLabel}
@@ -53,7 +54,7 @@ export const DashboardScreen = () => {
                 </div>
                 <div style={{ textAlign: "right" }}>
                   <div style={{ font: "800 26px var(--bo-font)", color: p.valueColor, lineHeight: "1.1" }}>
-                    {p.value}
+                    {p.value}<DemoMark />
                   </div>
                   <div style={{ font: "600 10.5px var(--bo-font)", color: "var(--bo-subtle)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
                     {p.sub}
@@ -68,7 +69,7 @@ export const DashboardScreen = () => {
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "18px" }}>
               <div>
                 <div style={{ font: "800 15px var(--bo-font)", color: "var(--bo-ink)" }}>
-                  {trendTitle}
+                  {trendTitle}<DemoMark />
                 </div>
                 <div style={{ font: "600 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                   {dashScopeLabel} · all tenants
@@ -97,7 +98,7 @@ export const DashboardScreen = () => {
           </div>
           <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px", display: "flex", flexDirection: "column", gap: "12px" }}>
             <div style={{ font: "800 15px var(--bo-font)", color: "var(--bo-ink)" }}>
-              Sessions Happening Now
+              Sessions Happening Now<DemoMark />
             </div>
             {(liveTours ?? []).map((t: any, tIdx: number) => (
               <React.Fragment key={tIdx}>
@@ -105,7 +106,7 @@ export const DashboardScreen = () => {
                   <span style={{ width: "8px", height: "8px", borderRadius: "999px", background: "#5C8E1C", flexShrink: "0" }} />
                   <div style={{ flex: "1", minWidth: "0" }}>
                     <div style={{ font: "700 13px var(--bo-font)", color: "var(--bo-ink)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                      {t.property}
+                      {t.property}<DemoMark />
                     </div>
                     <div style={{ font: "600 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
                       {t.stop}
@@ -125,7 +126,7 @@ export const DashboardScreen = () => {
         <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: "16px" }}>
           <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px" }}>
             <div style={{ font: "800 15px var(--bo-font)", color: "var(--bo-ink)", marginBottom: "14px" }}>
-              Alerts Needing Attention
+              Alerts Needing Attention<DemoMark />
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {(alerts ?? []).map((a: any, aIdx: number) => (
@@ -134,7 +135,7 @@ export const DashboardScreen = () => {
                     <Icon name={"alert"} style={{ color: a.color, display: "flex", flexShrink: "0" }} />
                     <div style={{ flex: "1" }}>
                       <div style={{ font: "700 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                        {a.title}
+                        {a.title}<DemoMark />
                       </div>
                       <div style={{ font: "600 12px var(--bo-font)", color: "var(--bo-muted)" }}>
                         {a.sub}
@@ -148,18 +149,18 @@ export const DashboardScreen = () => {
           </div>
           <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px" }}>
             <div style={{ font: "800 15px var(--bo-font)", color: "var(--bo-ink)", marginBottom: "14px" }}>
-              Recent Client Onboarding
+              Recent Client Onboarding<DemoMark />
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
               {(recentSignups ?? []).map((r: any, rIdx: number) => (
                 <React.Fragment key={rIdx}>
                   <div onClick={r.go} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "11px 0", borderBottom: "1px solid var(--bo-line-2)", cursor: "pointer" }}>
                     <div style={{ width: "30px", height: "30px", borderRadius: "8px", background: "var(--bo-accent-soft)", color: "var(--bo-accent)", display: "flex", alignItems: "center", justifyContent: "center", font: "800 12px var(--bo-font)", flexShrink: "0" }}>
-                      {r.initials}
+                      {r.initials}<DemoMark />
                     </div>
                     <div style={{ flex: "1", minWidth: "0" }}>
                       <div style={{ font: "700 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                        {r.name}
+                        {r.name}<DemoMark />
                       </div>
                       <div style={{ font: "600 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
                         {r.plan} · {r.when}

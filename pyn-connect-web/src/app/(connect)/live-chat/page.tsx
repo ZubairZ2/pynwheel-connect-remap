@@ -3,7 +3,7 @@ import { LiveChatScreen } from '~/core/screens/connect/liveChat/liveChat.screen'
 
 export default function Page() {
   return (
-    <ConnectScreenTemplate title="Live Chat">
+    <ConnectScreenTemplate title="Live Chat" demo>
       <LiveChatScreen />
     </ConnectScreenTemplate>
   );

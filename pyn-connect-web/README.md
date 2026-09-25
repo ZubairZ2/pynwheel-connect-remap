@@ -96,3 +96,7 @@ clears both cookies.
 | Properties | `GET /communities.json` | `CommunitiesController#index` → `AccessibleCommunitiesQuery` |
 
 Both return `{ data, meta: { total_count, current_user }, flash_messages }`.
+
+## Placeholder marks
+
+A small superscript `*` on any value or setting means it is **not** read from the Pynwheel CMS database yet (demo seed data). Whole demo screens also carry the asterisk on their title and an amber legend. When a screen or setting is wired to a Rails controller, remove its `<DemoMark />` (and the page's `demo` flag once the whole screen is real). See `../context.md` §15.

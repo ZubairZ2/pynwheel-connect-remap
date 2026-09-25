@@ -3,7 +3,7 @@ import { FavoritesScreen } from '~/core/screens/connect/favorites/favorites.scre
 
 export default function Page() {
   return (
-    <ConnectScreenTemplate title="Favorites & eBrochure">
+    <ConnectScreenTemplate title="Favorites & eBrochure" demo>
       <FavoritesScreen />
     </ConnectScreenTemplate>
   );

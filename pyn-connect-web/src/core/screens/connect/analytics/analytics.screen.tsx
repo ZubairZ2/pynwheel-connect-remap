@@ -3,6 +3,7 @@
 import React from 'react';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { useAnalyticsScreen } from '~/core/hooks/connect/useAnalyticsScreen';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const AnalyticsScreen = () => {
   const {
@@ -33,7 +34,7 @@ export const AnalyticsScreen = () => {
         <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "16px 20px", display: "flex", flexDirection: "column", gap: "12px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
             <span style={{ font: "700 11.5px var(--bo-font)", color: "var(--bo-subtle)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-              Drill down
+              Drill down<DemoMark />
             </span>
             <div style={{ display: "flex", gap: "6px" }}>
               {(scopeTabs ?? []).map((t: any, tIdx: number) => (
@@ -80,7 +81,7 @@ export const AnalyticsScreen = () => {
                   {k.label}
                 </div>
                 <div style={{ font: "800 26px var(--bo-font)", color: "var(--bo-ink)", marginTop: "6px" }}>
-                  {k.value}
+                  {k.value}<DemoMark />
                 </div>
                 <div style={{ font: "600 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                   {k.sub}
@@ -99,7 +100,7 @@ export const AnalyticsScreen = () => {
         <div style={{ display: "grid", gridTemplateColumns: "1.3fr 1fr", gap: "16px" }}>
           <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px" }}>
             <div style={{ font: "800 15px var(--bo-font)", color: "var(--bo-ink)", marginBottom: "18px" }}>
-              Tour Funnel
+              Tour Funnel<DemoMark />
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
               {(funnel ?? []).map((f: any, fIdx: number) => (
@@ -121,13 +122,13 @@ export const AnalyticsScreen = () => {
           </div>
           <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px" }}>
             <div style={{ font: "800 15px var(--bo-font)", color: "var(--bo-ink)", marginBottom: "18px" }}>
-              Entry Path Split
+              Entry Path Split<DemoMark />
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
               <div style={{ width: "130px", height: "130px", borderRadius: "999px", background: entryConic, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <div style={{ width: "86px", height: "86px", borderRadius: "999px", background: "#fff", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
                   <div style={{ font: "800 20px var(--bo-font)", color: "var(--bo-ink)" }}>
-                    {entryNativePct}
+                    {entryNativePct}<DemoMark />
                   </div>
                   <div style={{ font: "600 10px var(--bo-font)", color: "var(--bo-subtle)" }}>
                     Native app
@@ -150,7 +151,7 @@ export const AnalyticsScreen = () => {
         <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: "16px", alignItems: "start" }}>
           <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px 22px" }}>
             <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-              Breakdown by Product Surface
+              Breakdown by Product Surface<DemoMark />
             </div>
             <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)", marginBottom: "6px" }}>
               Where sessions actually happen across the product line
@@ -161,17 +162,17 @@ export const AnalyticsScreen = () => {
                   <div style={{ display: "flex", alignItems: "baseline", gap: "10px", marginBottom: "7px" }}>
                     <div style={{ flex: "1", minWidth: "0" }}>
                       <span style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                        {x.label}
+                        {x.label}<DemoMark />
                       </span>
                       <span style={{ font: "600 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
                         {' '}· {x.note}
                       </span>
                     </div>
                     <div style={{ font: "800 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      {x.sessionsLabel}
+                      {x.sessionsLabel}<DemoMark />
                     </div>
                     <div style={{ font: "700 11.5px var(--bo-font)", color: x.deltaColor, minWidth: "48px", textAlign: "right" }}>
-                      {x.delta}
+                      {x.delta}<DemoMark />
                     </div>
                   </div>
                   <div style={{ height: "10px", background: "#EEF0F3", borderRadius: "5px", overflow: "hidden" }}>
@@ -183,7 +184,7 @@ export const AnalyticsScreen = () => {
           </div>
           <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px 22px" }}>
             <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-              Device Type
+              Device Type<DemoMark />
             </div>
             <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)", marginBottom: "6px" }}>
               Share of sessions by hardware
@@ -195,11 +196,11 @@ export const AnalyticsScreen = () => {
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                       <span style={{ width: "11px", height: "11px", borderRadius: "3px", background: d.color }} />
                       <span style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                        {d.label}
+                        {d.label}<DemoMark />
                       </span>
                     </div>
                     <div style={{ font: "800 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      {d.pctLabel}
+                      {d.pctLabel}<DemoMark />
                     </div>
                   </div>
                   <div style={{ height: "10px", background: "#EEF0F3", borderRadius: "5px", overflow: "hidden" }}>
@@ -212,7 +213,7 @@ export const AnalyticsScreen = () => {
         </div>
         <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", overflow: "hidden" }}>
           <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--bo-line)", font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-            Top-Performing Properties
+            Top-Performing Properties<DemoMark />
           </div>
           <table>
             <thead>

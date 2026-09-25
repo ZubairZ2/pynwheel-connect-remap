@@ -3,7 +3,7 @@ import { BillingScreen } from '~/core/screens/connect/billing/billing.screen';
 
 export default function Page() {
   return (
-    <ConnectScreenTemplate title="Billing">
+    <ConnectScreenTemplate title="Billing" demo>
       <BillingScreen />
     </ConnectScreenTemplate>
   );

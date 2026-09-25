@@ -27,7 +27,7 @@ export default async function Page({ params }: { params: Promise<{ propId: strin
 
   if (!REAL_ID.test(propId)) {
     return (
-      <ConnectScreenTemplate title={title}>
+      <ConnectScreenTemplate title={title} demo>
         <PropertyScope propId={propId}>
           <DemoPropertyDetailScreen />
         </PropertyScope>

@@ -716,6 +716,8 @@ const ENGLISH: Record<string, string> = {
   [CORE_STRINGS.propertyDetail.billing.notSet]: 'Not set',
   [CORE_STRINGS.propertyDetail.billing.month]: 'Billing Month',
 
+  [CORE_STRINGS.shared.placeholderTitle]: 'Placeholder: not read from the Pynwheel CMS database yet',
+  [CORE_STRINGS.shared.placeholderLegend]: '* Placeholder data. Nothing marked with an asterisk is read from the Pynwheel CMS database yet; it will show the real state once its controller data is wired up.',
   [CORE_STRINGS.shared.signOut]: 'Sign out',
   [CORE_STRINGS.shared.searchPlaceholder]: 'Search companies, properties, users…',
   [CORE_STRINGS.shared.loadFailed]: 'We could not load this list. Please try again.',

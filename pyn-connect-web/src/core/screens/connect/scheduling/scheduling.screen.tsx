@@ -4,6 +4,7 @@ import React from 'react';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { StatusPill } from '~/core/components/atoms/connect/StatusPill';
 import { useSchedulingScreen } from '~/core/hooks/connect/useSchedulingScreen';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const SchedulingScreen = () => {
   const {
@@ -64,7 +65,7 @@ export const SchedulingScreen = () => {
                         {k.label}
                       </div>
                       <div style={{ font: "800 26px var(--bo-font)", color: "var(--bo-ink)", marginTop: "6px" }}>
-                        {k.value}
+                        {k.value}<DemoMark />
                       </div>
                       <div style={{ font: "600 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                         {k.sub}
@@ -78,7 +79,7 @@ export const SchedulingScreen = () => {
                   <Icon name={"alert"} style={{ color: "#E03B45", display: "flex" }} />
                   <div style={{ flex: "1" }}>
                     <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Abandoned Self-Guided Tours
+                      Abandoned Self-Guided Tours<DemoMark />
                     </div>
                     <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
                       Sessions idle more than 60 minutes — visitor likely left without finishing
@@ -93,7 +94,7 @@ export const SchedulingScreen = () => {
                         <Icon name={"clock"} style={{ color: a.dotColor, display: "flex", flexShrink: "0" }} />
                         <div onClick={a.go} style={{ flex: "1", cursor: "pointer" }}>
                           <div style={{ font: "700 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                            {a.visitor} · {a.property}
+                            {a.visitor} · {a.property}<DemoMark />
                           </div>
                           <div style={{ font: "600 12px var(--bo-font)", color: "var(--bo-muted)" }}>
                             Last activity at {a.stop} · started {a.started}
@@ -127,7 +128,7 @@ export const SchedulingScreen = () => {
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
                     <div style={{ flex: "1" }}>
                       <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                        Scheduled Appointments
+                        Scheduled Appointments<DemoMark />
                       </div>
                       <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
                         Booked ahead of time — separate from walk-in self-guided sessions
@@ -143,7 +144,7 @@ export const SchedulingScreen = () => {
                         <div style={{ display: "flex", flexDirection: "column", gap: "7px" }}>
                           <div style={{ paddingBottom: "8px", borderBottom: "2px solid var(--bo-line)" }}>
                             <div style={{ font: "800 12px var(--bo-font)", color: d.headColor }}>
-                              {d.label}
+                              {d.label}<DemoMark />
                             </div>
                             <div style={{ font: "600 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
                               {d.date}
@@ -153,10 +154,10 @@ export const SchedulingScreen = () => {
                             <React.Fragment key={bIdx}>
                               <div onClick={b.pick} style={{ border: b.outline, background: b.b, borderRadius: "8px", padding: "8px 9px", cursor: "pointer", opacity: b.op }}>
                                 <div style={{ font: "800 11px var(--bo-font)", color: b.c, textDecoration: b.strike }}>
-                                  {b.time}
+                                  {b.time}<DemoMark />
                                 </div>
                                 <div style={{ font: "700 11.5px var(--bo-font)", color: "var(--bo-ink)", textDecoration: b.strike }}>
-                                  {b.visitor}
+                                  {b.visitor}<DemoMark />
                                 </div>
                                 <div style={{ font: "600 10.5px var(--bo-font)", color: "var(--bo-muted)" }}>
                                   {b.typeLabel}
@@ -180,11 +181,11 @@ export const SchedulingScreen = () => {
                   <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "14px" }}>
                       <div style={{ width: "38px", height: "38px", borderRadius: "10px", background: booking.typeBg, color: booking.typeColor, display: "flex", alignItems: "center", justifyContent: "center", font: "800 13px var(--bo-font)", flexShrink: "0" }}>
-                        {booking.initials}
+                        {booking.initials}<DemoMark />
                       </div>
                       <div style={{ flex: "1", minWidth: "0" }}>
                         <div style={{ font: "800 15px var(--bo-font)", color: "var(--bo-ink)" }}>
-                          {booking.visitor}
+                          {booking.visitor}<DemoMark />
                         </div>
                         <div style={{ font: "600 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
                           {booking.dayLabel} · {booking.time}
@@ -195,7 +196,7 @@ export const SchedulingScreen = () => {
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", font: "600 12.5px var(--bo-font)", color: "var(--bo-muted)" }}>
                         Tour type
                         <span style={{ font: "800 11px var(--bo-font)", color: booking.typeColor, background: booking.typeBg, padding: "3px 8px", borderRadius: "999px" }}>
-                          {booking.typeLabel}
+                          {booking.typeLabel}<DemoMark />
                         </span>
                       </div>
                       <div style={{ display: "flex", justifyContent: "space-between", font: "600 12.5px var(--bo-font)", color: "var(--bo-muted)" }}>
@@ -221,7 +222,7 @@ export const SchedulingScreen = () => {
                   <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px" }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
                       <div style={{ font: "800 13.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                        CRM Sync
+                        CRM Sync<DemoMark />
                       </div>
                       <StatusPill variant={booking.syncV} label={booking.syncLabel} />
                     </div>
@@ -238,7 +239,7 @@ export const SchedulingScreen = () => {
                   </div>
                   <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px" }}>
                     <div style={{ font: "800 13.5px var(--bo-font)", color: "var(--bo-ink)", marginBottom: "4px" }}>
-                      Reminder Timeline
+                      Reminder Timeline<DemoMark />
                     </div>
                     {(reminderSteps ?? []).map((r: any, rIdx: number) => (
                       <React.Fragment key={rIdx}>
@@ -246,7 +247,7 @@ export const SchedulingScreen = () => {
                           <div style={{ width: "9px", height: "9px", borderRadius: "999px", background: r.dot, flexShrink: "0" }} />
                           <div style={{ flex: "1", minWidth: "0" }}>
                             <div style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                              {r.label}
+                              {r.label}<DemoMark />
                             </div>
                             <div style={{ font: "600 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
                               {r.detail}
@@ -261,7 +262,7 @@ export const SchedulingScreen = () => {
                     <div style={{ display: "flex", alignItems: "center", gap: "9px", marginBottom: "10px" }}>
                       <Icon name={"card"} style={{ color: "var(--bo-muted)", display: "flex" }} />
                       <div style={{ flex: "1", font: "800 13.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                        Stripe Card Hold
+                        Stripe Card Hold<DemoMark />
                       </div>
                       <StatusPill variant={booking.holdV} label={booking.holdLabel} />
                     </div>
@@ -289,7 +290,7 @@ export const SchedulingScreen = () => {
                       </div>
                       <div style={{ flex: "1", minWidth: "0" }}>
                         <div style={{ font: "800 14.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                          {t.label}
+                          {t.label}<DemoMark />
                         </div>
                         <div style={{ font: "500 11.5px/1.5 var(--bo-font)", color: "var(--bo-subtle)" }}>
                           {t.note}
@@ -302,7 +303,7 @@ export const SchedulingScreen = () => {
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0", borderTop: "1px solid var(--bo-line-2)" }}>
                       <div>
                         <div style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                          Daily capacity
+                          Daily capacity<DemoMark />
                         </div>
                         <div style={{ font: "600 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
                           Max bookings per day
@@ -313,7 +314,7 @@ export const SchedulingScreen = () => {
                           −
                         </button>
                         <div style={{ font: "800 15px var(--bo-font)", color: "var(--bo-ink)", minWidth: "24px", textAlign: "center" }}>
-                          {t.dailyCap}
+                          {t.dailyCap}<DemoMark />
                         </div>
                         <button onClick={t.dailyUp} style={{ width: "26px", height: "26px", border: "1px solid var(--bo-line)", background: "#fff", borderRadius: "6px", font: "800 14px var(--bo-font)", color: "var(--bo-muted)", cursor: "pointer" }}>
                           +
@@ -323,7 +324,7 @@ export const SchedulingScreen = () => {
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0", borderTop: "1px solid var(--bo-line-2)" }}>
                       <div>
                         <div style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                          Per-slot capacity
+                          Per-slot capacity<DemoMark />
                         </div>
                         <div style={{ font: "600 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
                           Concurrent tours per time slot
@@ -334,7 +335,7 @@ export const SchedulingScreen = () => {
                           −
                         </button>
                         <div style={{ font: "800 15px var(--bo-font)", color: "var(--bo-ink)", minWidth: "24px", textAlign: "center" }}>
-                          {t.slotCap}
+                          {t.slotCap}<DemoMark />
                         </div>
                         <button onClick={t.slotUp} style={{ width: "26px", height: "26px", border: "1px solid var(--bo-line)", background: "#fff", borderRadius: "6px", font: "800 14px var(--bo-font)", color: "var(--bo-muted)", cursor: "pointer" }}>
                           +
@@ -355,7 +356,7 @@ export const SchedulingScreen = () => {
                       <>
                         <div style={{ marginTop: "12px", borderTop: "1px solid var(--bo-line-2)", paddingTop: "12px" }}>
                           <div style={{ font: "800 11px var(--bo-font)", color: "var(--bo-subtle)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "8px" }}>
-                            Behavior
+                            Behavior<DemoMark />
                           </div>
                           <div style={{ display: "flex", flexDirection: "column", gap: "9px" }}>
                             {(t.behaviors ?? []).map((bx: any, bxIdx: number) => (
@@ -377,7 +378,7 @@ export const SchedulingScreen = () => {
                             ))}
                           </div>
                           <div style={{ font: "800 11px var(--bo-font)", color: "var(--bo-subtle)", textTransform: "uppercase", letterSpacing: "0.05em", margin: "14px 0 8px" }}>
-                            Visiting Hours
+                            Visiting Hours<DemoMark />
                           </div>
                           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                             {(t.hourRows ?? []).map((h: any, hIdx: number) => (
@@ -387,7 +388,7 @@ export const SchedulingScreen = () => {
                                     <div style={{ position: "absolute", top: "3px", left: h.knob, width: "14px", height: "14px", borderRadius: "999px", background: "#fff", boxShadow: "0 1px 2px rgba(0,0,0,0.3)" }} />
                                   </div>
                                   <span style={{ width: "30px", font: "700 11.5px var(--bo-font)", color: "var(--bo-ink)", flexShrink: "0" }}>
-                                    {h.day}
+                                    {h.day}<DemoMark />
                                   </span>
                                   {h.on ? (
                                     <>
@@ -427,7 +428,7 @@ export const SchedulingScreen = () => {
                 </div>
                 <div style={{ flex: "1" }}>
                   <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                    Visitor Directory
+                    Visitor Directory<DemoMark />
                   </div>
                   <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
                     Every prospective tour visitor across all properties · handle GDPR / CCPA data-removal requests here
@@ -514,7 +515,7 @@ export const SchedulingScreen = () => {
                             {v.isRemoved ? (
                               <>
                                 <span style={{ font: "700 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
-                                  Removed
+                                  Removed<DemoMark />
                                 </span>
                               </>
                             ) : null}
@@ -541,7 +542,7 @@ export const SchedulingScreen = () => {
               <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px 22px" }}>
                   <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                    Embeddable Scheduler Widget
+                    Embeddable Scheduler Widget<DemoMark />
                   </div>
                   <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)", marginBottom: "16px" }}>
                     The booking form partners embed on their own property websites
@@ -549,7 +550,7 @@ export const SchedulingScreen = () => {
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderTop: "1px solid var(--bo-line-2)" }}>
                     <div>
                       <div style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                        Bookings per time slot
+                        Bookings per time slot<DemoMark />
                       </div>
                       <div style={{ font: "600 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
                         Applies across all tour types in the widget
@@ -561,14 +562,14 @@ export const SchedulingScreen = () => {
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
                       <div>
                         <div style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                          Available time slots
+                          Available time slots<DemoMark />
                         </div>
                         <div style={{ font: "600 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
                           Click to enable or disable a slot
                         </div>
                       </div>
                       <div style={{ font: "700 11.5px var(--bo-font)", color: "var(--bo-accent)" }}>
-                        {widgetSlotCount} enabled
+                        {widgetSlotCount} enabled<DemoMark />
                       </div>
                     </div>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "7px" }}>
@@ -584,7 +585,7 @@ export const SchedulingScreen = () => {
                 </div>
                 <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px 22px" }}>
                   <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                    Confirmation Message
+                    Confirmation Message<DemoMark />
                   </div>
                   <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)", marginBottom: "12px" }}>
                     Shown after booking and included in the confirmation email
@@ -595,7 +596,7 @@ export const SchedulingScreen = () => {
               <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px 22px" }}>
                   <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)", marginBottom: "12px" }}>
-                    Embed Code
+                    Embed Code<DemoMark />
                   </div>
                   <div style={{ background: "#161821", borderRadius: "9px", padding: "14px", font: "500 11px/1.7 var(--pw-font-mono),monospace", color: "#C9D3E4", wordBreak: "break-all" }}>
                     {embedCode}
@@ -605,7 +606,7 @@ export const SchedulingScreen = () => {
                   <div style={{ display: "flex", alignItems: "center", gap: "9px", marginBottom: "10px" }}>
                     <Icon name={"card"} style={{ color: "var(--bo-muted)", display: "flex" }} />
                     <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Card Hold at Booking
+                      Card Hold at Booking<DemoMark />
                     </div>
                   </div>
                   <div style={{ font: "500 12.5px/1.65 var(--bo-font)", color: "var(--bo-muted)" }}>

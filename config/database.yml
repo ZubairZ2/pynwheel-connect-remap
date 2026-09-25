@@ -1,3 +1,17 @@
+# connection: &connection
+#   adapter: postgresql
+#   host: localhost
+#   username: postgres
+#   password: 123
+#   pool: 10
+#   timeout: 5000
+#   min_messages: warning
+# development:
+#   <<: *connection
+#   database: pynwheel_development
+# production:
+#   pool: 20
+
 connection: &connection
   adapter: postgresql
   host: localhost
@@ -8,6 +22,6 @@ connection: &connection
   min_messages: warning
 development:
   <<: *connection
-  database: pynwheel_development
+  database: pynwheel_prod
 production:
-  pool: 20  
+  pool: 20

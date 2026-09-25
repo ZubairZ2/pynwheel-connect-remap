@@ -3838,3 +3838,37 @@ select {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Placeholder marker: information or a setting that is not read from the CMS
+   database yet (demo seed data). Remove the <DemoMark /> when it goes real. */
+.bo-demomark {
+  display: inline-block;
+  margin-left: 2px;
+  font: 800 10px var(--bo-font);
+  line-height: 0;
+  color: #b7791f;
+  cursor: help;
+  vertical-align: super;
+}
+
+.bo-navbadge .bo-demomark {
+  color: #fff;
+  margin-left: 1px;
+}
+
+.bo-bell .bo-demomark {
+  position: absolute;
+  top: 2px;
+  right: 1px;
+  line-height: 1;
+}
+
+.bo-demo-legend {
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border: 1px solid #ffecae;
+  background: #fff4d4;
+  border-radius: 8px;
+  font: 600 11.5px/1.5 var(--bo-font);
+  color: #8a6a00;
+}

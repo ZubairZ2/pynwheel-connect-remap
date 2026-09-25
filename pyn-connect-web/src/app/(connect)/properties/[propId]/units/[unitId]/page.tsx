@@ -27,7 +27,7 @@ export default async function Page({
 
   if (!REAL_ID.test(propId) || !REAL_ID.test(unitId)) {
     return (
-      <ConnectScreenTemplate title={title}>
+      <ConnectScreenTemplate title={title} demo>
         <PropertyScope propId={propId}>
           <UnitScope unitId={unitId}>
             <DemoUnitDetailScreen />

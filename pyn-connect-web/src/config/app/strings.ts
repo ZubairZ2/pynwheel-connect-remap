@@ -804,6 +804,8 @@ export const CORE_STRINGS = {
     selected: 'filter.selected'
   },
   shared: {
+    placeholderTitle: 'shared.placeholderTitle',
+    placeholderLegend: 'shared.placeholderLegend',
     signOut: 'shared.signOut',
     searchPlaceholder: 'shared.searchPlaceholder',
     loadFailed: 'shared.loadFailed'

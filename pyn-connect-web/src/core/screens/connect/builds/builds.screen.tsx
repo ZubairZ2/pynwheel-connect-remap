@@ -4,6 +4,7 @@ import React from 'react';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { StatusPill } from '~/core/components/atoms/connect/StatusPill';
 import { useBuildsScreen } from '~/core/hooks/connect/useBuildsScreen';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const BuildsScreen = () => {
   const {
@@ -20,7 +21,7 @@ export const BuildsScreen = () => {
         <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1fr", gap: "16px" }}>
           <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px", display: "flex", flexDirection: "column", gap: "14px" }}>
             <div style={{ font: "800 15px var(--bo-font)", color: "var(--bo-ink)" }}>
-              App Configuration — {prop.name}
+              App Configuration — {prop.name}<DemoMark />
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
               <img src="/images/app-icon.png" alt="App icon" style={{ width: "72px", height: "72px", flexShrink: "0", objectFit: "cover", borderRadius: "16px", display: "block" }} />
@@ -53,11 +54,11 @@ export const BuildsScreen = () => {
           </div>
           <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", padding: "20px", display: "flex", flexDirection: "column", gap: "12px" }}>
             <div style={{ font: "800 15px var(--bo-font)", color: "var(--bo-ink)" }}>
-              Store Links
+              Store Links<DemoMark />
             </div>
             <div onClick={toastStore} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", border: "1px solid var(--bo-line)", borderRadius: "10px", cursor: "pointer" }}>
               <div style={{ font: "700 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                App Store Connect
+                App Store Connect<DemoMark />
               </div>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--bo-subtle)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
@@ -67,7 +68,7 @@ export const BuildsScreen = () => {
             </div>
             <div onClick={toastStore} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", border: "1px solid var(--bo-line)", borderRadius: "10px", cursor: "pointer" }}>
               <div style={{ font: "700 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                Google Play Console
+                Google Play Console<DemoMark />
               </div>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--bo-subtle)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
@@ -79,7 +80,7 @@ export const BuildsScreen = () => {
         </div>
         <div style={{ background: "var(--bo-panel)", border: "1px solid var(--bo-line)", borderRadius: "12px", overflow: "hidden" }}>
           <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--bo-line)", font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-            Build &amp; Submission History
+            Build &amp; Submission History<DemoMark />
           </div>
           <table>
             <thead>

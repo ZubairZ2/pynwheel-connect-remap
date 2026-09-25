@@ -3,6 +3,7 @@
 import React from 'react';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { useFloorplateDialog } from '~/core/hooks/connect/useFloorplateDialog';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const FloorplateDialog = () => {
   const {
@@ -22,7 +23,7 @@ export const FloorplateDialog = () => {
               <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--bo-line)", display: "flex", alignItems: "center", gap: "12px" }}>
                 <div style={{ flex: "1" }}>
                   <div style={{ font: "800 17px var(--bo-font)", color: "var(--bo-ink)" }}>
-                    {fpModalTitle}
+                    {fpModalTitle}<DemoMark />
                   </div>
                   <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
                     To change the image of the floorplate, upload a new image or SVG here. Images that are too small appear pixelated on the kiosk.
@@ -41,7 +42,7 @@ export const FloorplateDialog = () => {
                 <div style={{ display: "flex", gap: "24px", padding: "18px 0", borderTop: "1px solid var(--bo-line-2)" }}>
                   <div style={{ width: "184px", flexShrink: "0" }}>
                     <div style={{ font: "800 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Manual Override
+                      Manual Override<DemoMark />
                     </div>
                     <div style={{ font: "500 11.5px/1.5 var(--bo-font)", color: "var(--bo-subtle)" }}>
                       Name this floorplate yourself instead of deriving it from the range
@@ -54,7 +55,7 @@ export const FloorplateDialog = () => {
                           <span style={{ width: "8px", height: "8px", borderRadius: "999px", background: fpForm.yesDot }} />
                         </span>
                         <span style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                          Yes
+                          Yes<DemoMark />
                         </span>
                       </div>
                       <div onClick={fpForm.pickNo} style={{ display: "flex", alignItems: "center", gap: "9px", cursor: "pointer" }}>
@@ -62,7 +63,7 @@ export const FloorplateDialog = () => {
                           <span style={{ width: "8px", height: "8px", borderRadius: "999px", background: fpForm.noDot }} />
                         </span>
                         <span style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                          No
+                          No<DemoMark />
                         </span>
                       </div>
                     </div>
@@ -71,7 +72,7 @@ export const FloorplateDialog = () => {
                 <div style={{ display: "flex", gap: "24px", padding: "18px 0", borderTop: "1px solid var(--bo-line-2)" }}>
                   <div style={{ width: "184px", flexShrink: "0" }}>
                     <div style={{ font: "800 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Floorplate Name
+                      Floorplate Name<DemoMark />
                     </div>
                     <div style={{ font: "500 11.5px/1.5 var(--bo-font)", color: "var(--bo-subtle)" }}>
                       Specify name here (Manual Override required)
@@ -87,7 +88,7 @@ export const FloorplateDialog = () => {
                 <div style={{ display: "flex", gap: "24px", padding: "18px 0", borderTop: "1px solid var(--bo-line-2)" }}>
                   <div style={{ width: "184px", flexShrink: "0" }}>
                     <div style={{ font: "800 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Building
+                      Building<DemoMark />
                     </div>
                     <div style={{ font: "500 11.5px/1.5 var(--bo-font)", color: "var(--bo-subtle)" }}>
                       Which building or sub-community this floorplate belongs to
@@ -108,7 +109,7 @@ export const FloorplateDialog = () => {
                 <div style={{ display: "flex", gap: "24px", padding: "18px 0", borderTop: "1px solid var(--bo-line-2)" }}>
                   <div style={{ width: "184px", flexShrink: "0" }}>
                     <div style={{ font: "800 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Range
+                      Range<DemoMark />
                     </div>
                     <div style={{ font: "500 11.5px/1.5 var(--bo-font)", color: "var(--bo-subtle)" }}>
                       Enter the range of floors this floorplate covers
@@ -124,7 +125,7 @@ export const FloorplateDialog = () => {
                 <div style={{ display: "flex", gap: "24px", padding: "18px 0", borderTop: "1px solid var(--bo-line-2)" }}>
                   <div style={{ width: "184px", flexShrink: "0" }}>
                     <div style={{ font: "800 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Add Floor Name
+                      Add Floor Name<DemoMark />
                     </div>
                     <div style={{ font: "500 11.5px/1.5 var(--bo-font)", color: "var(--bo-subtle)" }}>
                       Print the floor name over the plan on the kiosk map
@@ -133,13 +134,13 @@ export const FloorplateDialog = () => {
                   <div style={{ flex: "1", minWidth: "0" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "11px", paddingTop: "2px" }}>
                       <span style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-muted)" }}>
-                        No
+                        No<DemoMark />
                       </span>
                       <div onClick={fpForm.toggleAddName} style={{ width: "44px", height: "26px", borderRadius: "999px", background: fpForm.addNameBg, position: "relative", cursor: "pointer", flexShrink: "0", transition: "background .15s" }}>
                         <div style={{ position: "absolute", top: "3px", left: fpForm.addNameKnob, width: "20px", height: "20px", borderRadius: "999px", background: "#fff", transition: "left .15s", boxShadow: "0 1px 2px rgba(0,0,0,0.3)" }} />
                       </div>
                       <span style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-muted)" }}>
-                        Yes
+                        Yes<DemoMark />
                       </span>
                     </div>
                   </div>
@@ -147,7 +148,7 @@ export const FloorplateDialog = () => {
                 <div style={{ display: "flex", gap: "24px", padding: "18px 0", borderTop: "1px solid var(--bo-line-2)" }}>
                   <div style={{ width: "184px", flexShrink: "0" }}>
                     <div style={{ font: "800 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Upload Image
+                      Upload Image<DemoMark />
                     </div>
                     <div style={{ font: "500 11.5px/1.5 var(--bo-font)", color: "var(--bo-subtle)" }}>
                       Background image of this floorplate
@@ -194,7 +195,7 @@ export const FloorplateDialog = () => {
                 <div style={{ display: "flex", gap: "24px", padding: "18px 0", borderTop: "1px solid var(--bo-line-2)" }}>
                   <div style={{ width: "184px", flexShrink: "0" }}>
                     <div style={{ font: "800 13px var(--bo-font)", color: "var(--bo-ink)" }}>
-                      Upload SVG
+                      Upload SVG<DemoMark />
                     </div>
                     <div style={{ font: "500 11.5px/1.5 var(--bo-font)", color: "var(--bo-subtle)" }}>
                       Vector geometry of this floorplate — keeps the kiosk map fast

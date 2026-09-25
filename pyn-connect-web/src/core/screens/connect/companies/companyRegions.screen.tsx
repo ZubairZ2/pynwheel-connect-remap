@@ -3,6 +3,7 @@
 import React from 'react';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { useCompanyRegionsScreen } from '~/core/hooks/connect/useCompanyRegionsScreen';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const CompanyRegionsScreen = () => {
   const {
@@ -37,7 +38,7 @@ export const CompanyRegionsScreen = () => {
         <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
           <div style={{ flex: "1" }}>
             <div style={{ font: "800 18px var(--bo-font)", color: "var(--bo-ink)" }}>
-              Regions
+              Regions<DemoMark />
             </div>
             <div style={{ font: "600 12.5px var(--bo-font)", color: "var(--bo-muted)" }}>
               Reporting and CSV grouping · {org.regionLabel} defined
@@ -56,7 +57,7 @@ export const CompanyRegionsScreen = () => {
                 </div>
                 <div style={{ flex: "1", minWidth: "0" }}>
                   <div style={{ font: "800 13.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                    {r.name}
+                    {r.name}<DemoMark />
                   </div>
                   <div style={{ font: "600 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                     {r.contact} · {r.email}
@@ -67,7 +68,7 @@ export const CompanyRegionsScreen = () => {
                 </div>
                 <div style={{ textAlign: "right", flexShrink: "0" }}>
                   <div style={{ font: "800 16px var(--bo-font)", color: "var(--bo-ink)" }}>
-                    {r.propCount}
+                    {r.propCount}<DemoMark />
                   </div>
                   <div style={{ font: "600 10px var(--bo-font)", color: "var(--bo-subtle)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
                     Properties
@@ -86,7 +87,7 @@ export const CompanyRegionsScreen = () => {
             <>
               <div style={{ padding: "34px 0 26px", textAlign: "center" }}>
                 <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-muted)" }}>
-                  No regions yet
+                  No regions yet<DemoMark />
                 </div>
                 <div style={{ font: "500 12.5px var(--bo-font)", color: "var(--bo-subtle)", marginTop: "4px" }}>
                   Regions group properties for reporting and CSV export. Each one carries its own contact.

@@ -3,6 +3,7 @@
 import React from 'react';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { useHelpScreen } from '~/core/hooks/connect/useHelpScreen';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const HelpScreen = () => {
   const {
@@ -22,7 +23,7 @@ export const HelpScreen = () => {
           </div>
           <div style={{ flex: "1" }}>
             <div style={{ font: "800 14px var(--bo-font)", color: "var(--bo-ink)" }}>
-              Help &amp; Tutorials
+              Help &amp; Tutorials<DemoMark />
             </div>
             <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
               Short guides and videos for each part of the Back Office · {helpCount}
@@ -47,14 +48,14 @@ export const HelpScreen = () => {
                 </div>
                 <div style={{ flex: "1" }}>
                   <div style={{ font: "800 13.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                    {sec.name}
+                    {sec.name}<DemoMark />
                   </div>
                   <div style={{ font: "500 11.5px var(--bo-font)", color: "var(--bo-subtle)" }}>
                     {sec.blurb}
                   </div>
                 </div>
                 <span style={{ font: "700 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
-                  {sec.count}
+                  {sec.count}<DemoMark />
                 </span>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "1px", background: "var(--bo-line-2)" }}>
@@ -66,7 +67,7 @@ export const HelpScreen = () => {
                       </div>
                       <div style={{ flex: "1", minWidth: "0" }}>
                         <div style={{ font: "700 12.5px var(--bo-font)", color: "var(--bo-ink)" }}>
-                          {a.title}
+                          {a.title}<DemoMark />
                         </div>
                         <div style={{ font: "600 11px var(--bo-font)", color: "var(--bo-subtle)" }}>
                           {a.meta}

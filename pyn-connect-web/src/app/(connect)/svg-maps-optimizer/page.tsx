@@ -3,7 +3,7 @@ import { SvgOptimizerScreen } from '~/core/screens/connect/svgOptimizer/svgOptim
 
 export default function Page() {
   return (
-    <ConnectScreenTemplate title="SVG Maps Optimizer">
+    <ConnectScreenTemplate title="SVG Maps Optimizer" demo>
       <SvgOptimizerScreen />
     </ConnectScreenTemplate>
   );

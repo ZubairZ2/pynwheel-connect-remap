@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_04_26_183928) do
+ActiveRecord::Schema[7.2].define(version: 2026_09_23_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -102,6 +102,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_26_183928) do
     t.integer "tour_visiting_order_number"
     t.jsonb "pointer_data", default: {}
     t.index ["amenityable_type", "amenityable_id"], name: "index_amenities_on_amenityable_type_and_amenityable_id"
+    t.index ["community_id"], name: "index_amenities_on_community_id"
   end
 
   create_table "amenity_galleries", id: :serial, force: :cascade do |t|
@@ -140,6 +141,19 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_26_183928) do
     t.index ["tour_user_id"], name: "index_as_guests_on_tour_user_id"
   end
 
+  create_table "bedroom_marker_colors", force: :cascade do |t|
+    t.bigint "community_id", null: false
+    t.integer "bedroom", null: false
+    t.string "available_units_color", default: "#f9d648", null: false
+    t.decimal "available_units_opacity", precision: 3, scale: 2, default: "1.0", null: false
+    t.string "model_units_color", default: "#f57396", null: false
+    t.decimal "model_units_opacity", precision: 3, scale: 2, default: "1.0", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["community_id", "bedroom"], name: "index_bedroom_marker_colors_on_community_id_and_bedroom", unique: true
+    t.index ["community_id"], name: "index_bedroom_marker_colors_on_community_id"
+  end
+
   create_table "building_starting_points", id: :serial, force: :cascade do |t|
     t.integer "community_id"
     t.integer "x_plot"
@@ -155,6 +169,18 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_26_183928) do
     t.datetime "updated_at", precision: nil, null: false
     t.string "lock_provider", default: ""
     t.index ["community_id"], name: "index_building_starting_points_on_community_id"
+  end
+
+  create_table "calculator_configs", force: :cascade do |t|
+    t.bigint "community_id", null: false
+    t.boolean "enabled", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.jsonb "config_json", default: {}, null: false
+    t.jsonb "published_config_json"
+    t.datetime "published_at"
+    t.index ["community_id"], name: "index_calculator_configs_on_community_id"
+    t.index ["config_json"], name: "index_calculator_configs_on_config_json", using: :gin
   end
 
   create_table "chatrooms", id: :serial, force: :cascade do |t|
@@ -286,9 +312,9 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_26_183928) do
     t.string "arrive_too_late_alert"
     t.string "unscheduled_alert"
     t.string "unscheduled_alert_with_widget"
-    t.string "billing_rate_touch", default: "$2,028"
+    t.string "billing_rate_touch", default: "$2628"
     t.string "billing_rate_selftour", default: "$385"
-    t.string "billing_rate_maps", default: "$50"
+    t.string "billing_rate_maps", default: "$29"
     t.string "lincoln_billing_rate", default: "$295"
     t.string "dwelo_billing_rate", default: "$280"
     t.string "billing_rate_for_both", default: "$2413"
@@ -303,8 +329,6 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_26_183928) do
     t.string "web_map_type", default: "2d-map"
     t.boolean "auto_wayfinding", default: false
     t.boolean "community_logo", default: true
-    t.boolean "enable_home_legend", default: true
-    t.boolean "enable_amenity_legend", default: true
     t.boolean "enable_three_d_maps", default: false
     t.string "time_zone", default: "UTC"
     t.string "data_provider_updated_on", default: "Never"
@@ -328,15 +352,49 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_26_183928) do
     t.boolean "use_company_level_data_settings", default: false
     t.string "country_code"
     t.string "pricing_message", default: "Please see an agent for pricing details."
-    t.boolean "show_availability_over_120_days", default: true
     t.boolean "units_availability_over_120_days", default: true
     t.boolean "display_additional_fee", default: true
     t.boolean "display_manual_additional_fee", default: false
     t.string "additional_fee", default: ""
     t.boolean "enable_svg_mode", default: false
+    t.boolean "display_tbd_legend", default: false
+    t.boolean "show_current_availability", default: false
+    t.boolean "is_floor_level_map", default: false
+    t.boolean "turn_availability_on", default: false
+    t.string "available_units_color", default: "#F9D648", null: false
+    t.decimal "available_units_opacity", precision: 3, scale: 2, default: "1.0", null: false
+    t.string "model_units_color", default: "#F57396", null: false
+    t.decimal "model_units_opacity", precision: 3, scale: 2, default: "1.0", null: false
+    t.string "amenities_color", default: "#d37474", null: false
+    t.decimal "amenities_opacity", precision: 3, scale: 2, default: "1.0", null: false
+    t.integer "coloring_mode", default: 0, null: false
+    t.boolean "is_beans_svg", default: false
+    t.string "background_svg_image"
+    t.string "map_logo"
+    t.boolean "enable_unit_type_pricing", default: false
+    t.boolean "enable_floorplan_level_color", default: false
+    t.integer "default_map_floor"
+    t.boolean "hide_bedrooms_bathrooms", default: false
+    t.boolean "enable_pricing_calculator", default: false, null: false
+    t.string "pricing_calculator_embed_code"
+    t.boolean "hide_square_feet", default: false
+    t.boolean "hide_availability", default: false
+    t.boolean "default_satellite_view", default: false
+    t.boolean "enable_sdk_map", default: false
+    t.boolean "enable_pynwheel_pricing_calculator", default: false, null: false
+    t.jsonb "partner_map_settings", default: {}, null: false
+    t.boolean "student_housing_property", default: false
+    t.boolean "highlight_all_units_on_hover", default: false
+    t.jsonb "map_analytics_settings", default: {}
+    t.string "available_map_views"
+    t.string "default_map_view"
+    t.index "(((map_analytics_settings -> 'data_layer'::text) ->> 'enabled'::text))", name: "idx_communities_map_analytics_data_layer_enabled", where: "(((map_analytics_settings -> 'data_layer'::text) ->> 'enabled'::text) = 'true'::text)"
     t.index ["community_group_id"], name: "index_communities_on_community_group_id"
     t.index ["company_id"], name: "index_communities_on_company_id"
+    t.index ["partner_map_settings"], name: "index_communities_on_partner_map_settings", using: :gin
     t.index ["region_id"], name: "index_communities_on_region_id"
+    t.check_constraint "highlight_all_units_on_hover IS NOT NULL", name: "communities_highlight_all_units_on_hover_not_null", validate: false
+    t.check_constraint "map_analytics_settings IS NOT NULL", name: "communities_map_analytics_settings_not_null", validate: false
   end
 
   create_table "community_groups", id: :serial, force: :cascade do |t|
@@ -458,6 +516,13 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_26_183928) do
     t.string "rentmanager_auth_token", default: ""
     t.string "rentmanager_base_url", default: ""
     t.boolean "allow_sub_communities", default: false
+    t.string "app_folio_property_id", default: ""
+    t.string "unit_name_key", default: "MarketingTitle", null: false
+    t.string "app_folio_database_id"
+    t.string "app_folio_property_scope", default: "is_app_folio_property_id", null: false
+    t.string "app_folio_property_group_id"
+    t.string "apartmentlist_url"
+    t.index ["app_folio_property_scope"], name: "index_credentials_on_app_folio_property_scope"
     t.index ["community_id"], name: "index_credentials_on_community_id"
     t.index ["company_id"], name: "index_credentials_on_company_id"
   end
@@ -540,6 +605,14 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_26_183928) do
     t.datetime "updated_at", precision: nil, null: false
     t.string "file"
     t.index ["community_id"], name: "index_design_directions_on_community_id"
+  end
+
+  create_table "design_system_configs", force: :cascade do |t|
+    t.bigint "community_id", null: false
+    t.jsonb "config_json", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["community_id"], name: "index_design_system_configs_on_community_id", unique: true
   end
 
   create_table "designs", id: :serial, force: :cascade do |t|
@@ -673,6 +746,11 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_26_183928) do
     t.string "filter_panel_label_color"
     t.string "filter_panel_label_opacity"
     t.string "pynwheel_touch_hardware_spec"
+    t.text "property_map_occupied_color", default: "#f2f2f2"
+    t.text "property_map_occupied_on_notice_color", default: "#8545a1"
+    t.text "property_map_vacant_leased_color", default: "#f9d648"
+    t.text "property_map_model_color", default: "#f57396"
+    t.text "property_map_missing_color", default: "#eecea5"
   end
 
   create_table "doors", id: :serial, force: :cascade do |t|
@@ -915,6 +993,10 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_26_183928) do
     t.jsonb "unit_ids"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.jsonb "amenity_ids", default: []
+    t.jsonb "floorplan_ids", default: []
+    t.jsonb "gallery_image_ids", default: []
+    t.index ["session_id", "community_id"], name: "index_favorites_on_session_id_and_community_id", unique: true
   end
 
   create_table "feedbacks", id: :serial, force: :cascade do |t|
@@ -993,6 +1075,24 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_26_183928) do
     t.boolean "do_crop_secondary", default: false
     t.boolean "iframe_enable_for_3Dtour", default: true
     t.string "file"
+    t.string "additional_button"
+    t.string "additional_url"
+    t.string "scheduler_label"
+    t.string "scheduler_url"
+    t.string "available_units_color", default: "#f9d648", null: false
+    t.decimal "available_units_opacity", precision: 3, scale: 2, default: "1.0", null: false
+    t.string "model_units_color", default: "#f57396", null: false
+    t.decimal "model_units_opacity", precision: 3, scale: 2, default: "1.0", null: false
+    t.integer "availability_status", default: 0, null: false
+    t.boolean "link1_open_new_tab", default: false
+    t.boolean "link2_open_new_tab", default: false
+    t.boolean "link3_open_new_tab", default: false
+    t.string "description_title", default: "More Details"
+    t.boolean "show_description_on_card", default: false
+    t.boolean "expand_description_in_popup", default: false
+    t.index ["community_id"], name: "index_floorplans_on_community_id"
+    t.check_constraint "expand_description_in_popup IS NOT NULL", name: "floorplans_expand_description_in_popup_not_null", validate: false
+    t.check_constraint "show_description_on_card IS NOT NULL", name: "floorplans_show_description_on_card_not_null", validate: false
   end
 
   create_table "floorplates", id: :serial, force: :cascade do |t|
@@ -1019,6 +1119,15 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_26_183928) do
     t.string "file"
     t.string "svg_image"
     t.jsonb "svg_metadata", default: {}
+    t.index ["community_id"], name: "index_floorplates_on_community_id"
+  end
+
+  create_table "font_settings", force: :cascade do |t|
+    t.bigint "community_id", null: false
+    t.string "svg_labels_font_family"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["community_id"], name: "index_font_settings_on_community_id", unique: true
   end
 
   create_table "gables", id: :serial, force: :cascade do |t|
@@ -1443,6 +1552,39 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_26_183928) do
     t.datetime "updated_at", precision: nil, null: false
   end
 
+  create_table "map_filters", force: :cascade do |t|
+    t.bigint "community_id", null: false
+    t.boolean "marketing_properties_enabled", default: true, null: false
+    t.boolean "marketing_bedrooms_enabled", default: true, null: false
+    t.boolean "marketing_pricing_enabled", default: true, null: false
+    t.boolean "marketing_square_feet_enabled", default: true, null: false
+    t.boolean "marketing_availability_enabled", default: true, null: false
+    t.boolean "ops_properties_enabled", default: true, null: false
+    t.boolean "ops_bedrooms_enabled", default: true, null: false
+    t.boolean "ops_pricing_enabled", default: true, null: false
+    t.boolean "ops_square_feet_enabled", default: true, null: false
+    t.boolean "ops_availability_enabled", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.boolean "marketing_units_tab_enabled", default: true, null: false
+    t.boolean "marketing_floorplans_tab_enabled", default: true, null: false
+    t.boolean "marketing_amenities_tab_enabled", default: true, null: false
+    t.boolean "marketing_favorites_tab_enabled", default: true, null: false
+    t.boolean "ops_units_tab_enabled", default: true, null: false
+    t.boolean "ops_floorplans_tab_enabled", default: true, null: false
+    t.boolean "ops_amenities_tab_enabled", default: true, null: false
+    t.boolean "ops_favorites_tab_enabled", default: true, null: false
+    t.boolean "marketing_sort_enabled", default: true
+    t.boolean "ops_sort_enabled", default: true
+    t.boolean "marketing_floorplan_gallery_page_enabled", default: true
+    t.boolean "ops_floorplan_gallery_page_enabled", default: true
+    t.index ["community_id"], name: "index_map_filters_on_community_id", unique: true
+    t.check_constraint "marketing_floorplan_gallery_page_enabled IS NOT NULL", name: "map_filters_marketing_floorplan_gallery_page_enabled_not_null", validate: false
+    t.check_constraint "marketing_sort_enabled IS NOT NULL", name: "map_filters_marketing_sort_enabled_not_null", validate: false
+    t.check_constraint "ops_floorplan_gallery_page_enabled IS NOT NULL", name: "map_filters_ops_floorplan_gallery_page_enabled_not_null", validate: false
+    t.check_constraint "ops_sort_enabled IS NOT NULL", name: "map_filters_ops_sort_enabled_not_null", validate: false
+  end
+
   create_table "map_partners", id: :serial, force: :cascade do |t|
     t.integer "community_id", null: false
     t.string "partner", null: false
@@ -1582,6 +1724,37 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_26_183928) do
     t.datetime "updated_at", precision: nil, null: false
     t.string "area_type"
     t.index ["community_id"], name: "index_other_locks_on_community_id"
+  end
+
+  create_table "partner_events", force: :cascade do |t|
+    t.bigint "partner_id", null: false
+    t.bigint "user_id"
+    t.string "event", null: false
+    t.jsonb "metadata", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.index ["partner_id", "created_at"], name: "index_partner_events_on_partner_id_and_created_at"
+    t.index ["partner_id"], name: "index_partner_events_on_partner_id"
+    t.index ["user_id"], name: "index_partner_events_on_user_id"
+  end
+
+  create_table "partners", force: :cascade do |t|
+    t.string "key", null: false
+    t.string "label", null: false
+    t.integer "position", default: 0, null: false
+    t.boolean "active", default: true, null: false
+    t.string "api_key_digest"
+    t.string "api_key_prefix"
+    t.string "api_key_last4"
+    t.string "env_var"
+    t.jsonb "settings", default: {}, null: false
+    t.datetime "key_issued_at"
+    t.datetime "key_rotated_at"
+    t.datetime "key_revoked_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active", "position"], name: "index_partners_on_active_and_position"
+    t.index ["api_key_digest"], name: "index_partners_on_api_key_digest", unique: true, where: "(api_key_digest IS NOT NULL)"
+    t.index ["key"], name: "index_partners_on_key", unique: true
   end
 
   create_table "path_points", id: :serial, force: :cascade do |t|
@@ -1813,6 +1986,74 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_26_183928) do
     t.index ["community_id"], name: "index_schlages_on_community_id"
   end
 
+  create_table "sdk_events", force: :cascade do |t|
+    t.bigint "sdk_session_id"
+    t.string "session_id", null: false
+    t.string "parent_sdk_session_id"
+    t.integer "community_id", null: false
+    t.integer "company_id"
+    t.string "client_type", null: false
+    t.string "partner"
+    t.string "product"
+    t.string "sdk_version"
+    t.string "name", null: false
+    t.string "action"
+    t.string "event_type", default: "click", null: false
+    t.datetime "occurred_at", null: false
+    t.text "page_url"
+    t.integer "unit_id"
+    t.string "provider_unit_id"
+    t.string "unit_name"
+    t.string "building"
+    t.integer "floor_level"
+    t.integer "floorplan_id"
+    t.string "provider_floorplan_id"
+    t.string "floorplan_name"
+    t.decimal "bedrooms", precision: 4, scale: 1
+    t.decimal "bathrooms", precision: 4, scale: 1
+    t.integer "square_footage"
+    t.string "link_label"
+    t.text "link_url"
+    t.integer "link_index"
+    t.jsonb "properties", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.integer "amenity_id"
+    t.string "amenity_name"
+    t.index ["community_id", "action", "occurred_at"], name: "idx_sdk_events_community_action_time"
+    t.index ["community_id", "occurred_at"], name: "idx_sdk_events_community_time"
+    t.index ["company_id", "occurred_at"], name: "idx_sdk_events_company_time"
+    t.index ["occurred_at"], name: "idx_sdk_events_time_brin", using: :brin
+    t.index ["parent_sdk_session_id", "occurred_at"], name: "idx_sdk_events_visitor_time"
+    t.index ["sdk_session_id", "occurred_at"], name: "idx_sdk_events_session_time"
+  end
+
+  create_table "sdk_sessions", force: :cascade do |t|
+    t.integer "community_id", null: false
+    t.string "client_type", null: false
+    t.string "session_id", null: false
+    t.string "parent_sdk_session_id"
+    t.string "partner"
+    t.string "product", default: "web", null: false
+    t.string "sdk_version", default: "v1"
+    t.string "community_time_zone", default: "UTC"
+    t.datetime "start_datetime"
+    t.datetime "end_datetime"
+    t.integer "map_interactions", default: 0, null: false
+    t.datetime "map_interactions_last_active"
+    t.string "visited_pages", default: [], array: true
+    t.jsonb "events", default: {}, null: false
+    t.jsonb "device_context", default: {}, null: false
+    t.jsonb "full_event", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["community_id", "client_type", "start_datetime"], name: "idx_sdk_sessions_community_type_date"
+    t.index ["device_context"], name: "idx_sdk_sessions_device_context_gin", using: :gin
+    t.index ["events"], name: "idx_sdk_sessions_events_gin", using: :gin
+    t.index ["parent_sdk_session_id", "start_datetime"], name: "idx_sdk_sessions_parent_date"
+    t.index ["partner", "start_datetime"], name: "idx_sdk_sessions_partner_date"
+    t.index ["session_id", "community_id", "start_datetime"], name: "idx_sdk_sessions_session_community_date"
+  end
+
   create_table "shared_tours", id: :serial, force: :cascade do |t|
     t.string "name"
     t.string "recipient_name"
@@ -1848,6 +2089,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_26_183928) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.text "remarks"
+    t.index ["statusable_type", "statusable_id"], name: "index_statuses_on_statusable"
   end
 
   create_table "stop_details", id: :serial, force: :cascade do |t|
@@ -1873,7 +2115,32 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_26_183928) do
     t.bigint "community_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "map_marker_color", default: "#d37474"
     t.index ["community_id"], name: "index_sub_communities_on_community_id"
+  end
+
+  create_table "svg_optimization_runs", force: :cascade do |t|
+    t.bigint "community_id", null: false
+    t.string "target_type", null: false
+    t.bigint "target_id", null: false
+    t.string "action", default: "optimize", null: false
+    t.bigint "reverts_run_id"
+    t.string "status", default: "queued", null: false
+    t.string "backup_url"
+    t.string "resulting_url"
+    t.bigint "original_bytes"
+    t.bigint "optimized_bytes"
+    t.decimal "reduction_pct", precision: 5, scale: 1
+    t.text "error_message"
+    t.bigint "triggered_by_user_id"
+    t.datetime "started_at"
+    t.datetime "finished_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["community_id"], name: "index_svg_optimization_runs_on_community_id"
+    t.index ["reverts_run_id"], name: "index_svg_optimization_runs_on_reverts_run_id"
+    t.index ["status"], name: "index_svg_optimization_runs_on_status"
+    t.index ["target_type", "target_id"], name: "index_svg_optimization_runs_on_target_type_and_target_id"
   end
 
   create_table "temp_tables", id: :serial, force: :cascade do |t|
@@ -2168,6 +2435,29 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_26_183928) do
     t.index ["unit_id"], name: "index_unit_elevators_on_unit_id"
   end
 
+  create_table "unit_space_details", force: :cascade do |t|
+    t.bigint "unit_id", null: false
+    t.integer "community_id", null: false
+    t.string "provider", null: false
+    t.string "provider_space_id"
+    t.string "space_letter"
+    t.string "space_option"
+    t.jsonb "amenities", default: [], null: false
+    t.jsonb "premium_amenities", default: [], null: false
+    t.jsonb "lease_terms", default: [], null: false
+    t.jsonb "metadata", default: {}, null: false
+    t.date "lease_start_date"
+    t.date "lease_end_date"
+    t.decimal "space_rent", precision: 10, scale: 2
+    t.datetime "synced_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["community_id", "provider"], name: "index_unit_space_details_on_community_id_and_provider"
+    t.index ["community_id", "provider_space_id"], name: "index_unit_space_details_on_community_id_and_provider_space_id"
+    t.index ["community_id", "space_letter"], name: "index_unit_space_details_on_community_id_and_space_letter"
+    t.index ["unit_id"], name: "index_unit_space_details_on_unit_id", unique: true
+  end
+
   create_table "units", id: :serial, force: :cascade do |t|
     t.integer "community_id"
     t.string "provider"
@@ -2238,6 +2528,20 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_26_183928) do
     t.integer "tour_visiting_order_number"
     t.string "additional_fee", default: ""
     t.jsonb "pointer_data", default: {}
+    t.string "voyager_property_code"
+    t.string "additional_button"
+    t.string "additional_url"
+    t.string "scheduler_label"
+    t.string "scheduler_url"
+    t.boolean "show_on_map", default: false
+    t.boolean "link1_open_new_tab", default: false
+    t.boolean "link2_open_new_tab", default: false
+    t.boolean "link3_open_new_tab", default: false
+    t.string "description_title", default: "More Details"
+    t.boolean "expand_description_in_popup", default: false
+    t.index ["community_id"], name: "index_units_on_community_id"
+    t.index ["floorplan_id"], name: "index_units_on_floorplan_id"
+    t.check_constraint "expand_description_in_popup IS NOT NULL", name: "units_expand_description_in_popup_not_null", validate: false
   end
 
   create_table "user_stripes", id: :serial, force: :cascade do |t|
@@ -2430,7 +2734,9 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_26_183928) do
   add_foreign_key "amenity_galleries", "amenities"
   add_foreign_key "as_guests", "communities"
   add_foreign_key "as_guests", "tour_users"
+  add_foreign_key "bedroom_marker_colors", "communities"
   add_foreign_key "building_starting_points", "communities"
+  add_foreign_key "calculator_configs", "communities"
   add_foreign_key "chatrooms", "tour_users"
   add_foreign_key "chatrooms", "tours"
   add_foreign_key "chats", "chatrooms"
@@ -2444,6 +2750,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_26_183928) do
   add_foreign_key "crm_credentials", "communities"
   add_foreign_key "crm_discovery_sources", "communities"
   add_foreign_key "crm_time_slots", "communities"
+  add_foreign_key "design_system_configs", "communities"
   add_foreign_key "doors", "communities"
   add_foreign_key "dwelos", "communities"
   add_foreign_key "edge_states", "communities"
@@ -2457,6 +2764,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_26_183928) do
   add_foreign_key "favorite_stops", "communities"
   add_foreign_key "feedbacks", "tour_users"
   add_foreign_key "feedbacks", "tours"
+  add_foreign_key "font_settings", "communities"
   add_foreign_key "galleries", "communities"
   add_foreign_key "gallery_images", "communities"
   add_foreign_key "gallery_images", "galleries"
@@ -2481,6 +2789,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_26_183928) do
   add_foreign_key "locations", "neighborhoods"
   add_foreign_key "lock_histories", "tour_histories"
   add_foreign_key "lock_histories", "tour_users"
+  add_foreign_key "map_filters", "communities"
   add_foreign_key "map_partners", "communities"
   add_foreign_key "maps_positions", "communities"
   add_foreign_key "maps_positions", "floorplates"
@@ -2491,6 +2800,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_26_183928) do
   add_foreign_key "oauth_access_tokens", "oauth_applications", column: "application_id"
   add_foreign_key "opening_hours", "communities"
   add_foreign_key "other_locks", "communities"
+  add_foreign_key "partner_events", "partners"
+  add_foreign_key "partner_events", "users"
   add_foreign_key "prospects", "communities"
   add_foreign_key "prospects", "tour_users"
   add_foreign_key "pynwheel_access_users", "communities"
@@ -2505,6 +2816,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_26_183928) do
   add_foreign_key "stop_details", "tour_stops"
   add_foreign_key "stop_galleries", "tour_stops"
   add_foreign_key "sub_communities", "communities"
+  add_foreign_key "svg_optimization_runs", "communities"
   add_foreign_key "three_d_maps_configurations", "communities"
   add_foreign_key "tour_histories", "tour_users"
   add_foreign_key "tour_settings", "tours"
@@ -2514,6 +2826,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_26_183928) do
   add_foreign_key "tutorials", "communities"
   add_foreign_key "unit_elevators", "elevators"
   add_foreign_key "unit_elevators", "units"
+  add_foreign_key "unit_space_details", "units", on_delete: :cascade
   add_foreign_key "user_stripes", "tour_users"
   add_foreign_key "visited_stops", "tour_users"
   add_foreign_key "webpages", "communities"

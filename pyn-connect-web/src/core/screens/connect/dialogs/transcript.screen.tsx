@@ -3,6 +3,7 @@
 import React from 'react';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { useTranscriptDialog } from '~/core/hooks/connect/useTranscriptDialog';
+import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 export const TranscriptDialog = () => {
   const {
@@ -21,7 +22,7 @@ export const TranscriptDialog = () => {
               <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--bo-line)", display: "flex", alignItems: "center", gap: "12px" }}>
                 <div style={{ flex: "1" }}>
                   <div style={{ font: "800 17px var(--bo-font)", color: "var(--bo-ink)" }}>
-                    Flagged Transcript
+                    Flagged Transcript<DemoMark />
                   </div>
                   <div style={{ font: "500 12px var(--bo-font)", color: "var(--bo-subtle)" }}>
                     {transcript.property} · {transcript.reason}
