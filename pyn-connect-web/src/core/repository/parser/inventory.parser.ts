@@ -11,7 +11,8 @@ import type {
   InventorySitemap,
   InventoryUnit,
   InventoryUpload,
-  LockDevice
+  LockDevice,
+  UnitLeaseTerm
 } from '~/core/models/data/propertyInventory.data';
 import { unwrapData } from './envelope.parser';
 
@@ -62,6 +63,12 @@ const buttons = (value: unknown): InventoryButton[] =>
     url: text(button.url),
     newTab: flag(button.newTab)
   }));
+
+/** `Unit#get_lease_term_pricing_matrix` rows; a row missing either half is dropped. */
+const leaseTerms = (value: unknown): UnitLeaseTerm[] =>
+  (Array.isArray(value) ? (value as Source[]) : [])
+    .map((row) => ({ term: text(row.pricingMonth) ?? '', rent: text(row.pricingRent) ?? '' }))
+    .filter((row) => row.term && row.rent);
 
 const flagsOf = <K extends string>(value: unknown, keys: readonly K[]): Record<K, boolean> => {
   const source = (value ?? {}) as Source;
@@ -210,6 +217,8 @@ export const parseInventoryUnits = (payload: unknown) => {
         floor: num(source.floor),
         floorplateId: num(source.floorplateId),
         plotted: flag(source.plotted),
+        xPlot: num(source.xPlot),
+        yPlot: num(source.yPlot),
         visible: flag(source.visible),
         showOnMap: flag(source.showOnMap),
         modelUnit: flag(source.modelUnit),
@@ -222,6 +231,7 @@ export const parseInventoryUnits = (payload: unknown) => {
         secondaryImage: upload(source.secondaryImage),
         interiorImages: images(source.interiorImages),
         buttons: buttons(source.buttons),
+        leaseTerms: leaseTerms(source.leaseTerms),
         additionalFee: text(source.additionalFee),
         descriptionTitle: text(source.descriptionTitle),
         description: text(source.description),

@@ -9,6 +9,10 @@ class AmenitiesController < ApplicationController
   add_breadcrumb "Home", :root_path
 
   def index
+    # Pynwheel Connect asks for JSON; an unknown property id is a 404 there
+    # rather than the NoMethodError the HTML path has always raised.
+    return head :not_found if request.format.json? && current_community.nil?
+
     @amenities = current_community.amenities.order(id: :desc)
     # Pynwheel Connect's read-only Property Inventory.
     return render_connect_amenities if request.format.json?

@@ -1559,6 +1559,29 @@ button.bo-linkbutton {
   color: var(--bo-ink);
 }
 
+/* The design's `.bo-field` controls inside a config row: 54% wide, 34px tall
+   (the Default Availability select is 46% and 32px). Disabled, they still show
+   the stored value in the design's ink. */
+.bo-configrow__control {
+  width: 54%;
+  height: 34px;
+  flex-shrink: 0;
+  text-transform: none;
+}
+
+.bo-configrow__control--narrow {
+  width: 46%;
+  height: 32px;
+}
+
+.bo-configrow__control:disabled {
+  opacity: 1;
+  background: #fff;
+  color: var(--bo-ink);
+  -webkit-text-fill-color: var(--bo-ink);
+  cursor: default;
+}
+
 .bo-configrow__value {
   flex-shrink: 0;
   max-width: 54%;
@@ -2581,6 +2604,32 @@ select {
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
+/* Floorplate cards: four cells and the wider Background column (`repeat(4,minmax(0,1fr)) minmax(210px,1.5fr)`). */
+.bo-meta--plates {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) minmax(210px, 1.5fr);
+  gap: 6px 18px;
+}
+
+/* The units / amenities cells wrap under the narrow columns instead of truncating. */
+.bo-meta--plates .bo-meta__value {
+  white-space: normal;
+}
+
+.bo-meta__select {
+  height: 28px;
+  padding: 0 10px;
+  font: 500 11.5px var(--bo-font);
+  text-transform: none;
+}
+
+.bo-meta__select:disabled {
+  background: #fff;
+  color: var(--bo-ink);
+  -webkit-text-fill-color: var(--bo-ink);
+  opacity: 1;
+  cursor: default;
+}
+
 .bo-meta__item {
   display: flex;
   flex-direction: column;
@@ -2612,7 +2661,6 @@ select {
   padding: 1px 4px;
   font: 800 8.5px var(--bo-font);
   letter-spacing: 0.02em;
-  text-transform: none;
 }
 
 .bo-srctag--feed {
@@ -3409,7 +3457,8 @@ select {
 }
 
 @media (max-width: 1100px) {
-  .bo-meta--5 {
+  .bo-meta--5,
+  .bo-meta--plates {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
@@ -3492,4 +3541,300 @@ select {
   font: 700 10px var(--bo-font);
   color: var(--bo-subtle);
   text-align: center;
+}
+
+/* ---------- unit detail (22-Sep design, `isUnitDetail`) ---------- */
+
+/* The unit card's title is a link to Unit Detail, dressed like the title button. */
+.bo-record__titlelink {
+  text-decoration: none;
+  display: inline;
+}
+
+.bo-unit__titlerow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.bo-unit__title {
+  margin: 0;
+  font: 800 22px var(--bo-font);
+  color: var(--bo-ink);
+  word-break: break-word;
+}
+
+.bo-unit__subtitle {
+  margin: 0;
+  font: 600 13px var(--bo-font);
+  color: var(--bo-muted);
+}
+
+.bo-inv__ghost--danger {
+  border-color: #f7cfd5;
+  color: #c62534;
+}
+
+.bo-inv__ghost--danger:hover,
+.bo-inv__ghost--danger:focus-visible {
+  border-color: #c62534;
+  color: #c62534;
+}
+
+/* The 32px ghost button of a panel head. */
+.bo-inv__ghost--sm {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 7px;
+}
+
+.bo-unit__layout {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.bo-unit__col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.bo-section--unit {
+  gap: 14px;
+}
+
+.bo-section--unit-side {
+  gap: 12px;
+}
+
+.bo-section--unit-side .bo-section__heading {
+  flex-basis: 100%;
+}
+
+.bo-unit__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.bo-unit__tile {
+  border: 1px solid var(--bo-line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  min-width: 0;
+}
+
+.bo-unit__tilehead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.bo-unit__caption {
+  flex: 1;
+  font: 700 11px var(--bo-font);
+  color: var(--bo-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.bo-unit__caption--block {
+  margin-bottom: 6px;
+}
+
+.bo-unit__toggle {
+  height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--bo-line);
+  background: #fff;
+  border-radius: 6px;
+  font: 700 10.5px var(--bo-font);
+  color: var(--bo-muted);
+  cursor: pointer;
+}
+
+.bo-unit__toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Read-only fields keep the design's white look rather than the disabled grey. */
+.bo-unit__value,
+.bo-unit__value:disabled {
+  text-transform: none;
+  background: #fff;
+  color: var(--bo-ink);
+  cursor: default;
+  opacity: 1;
+}
+
+.bo-unit__value--bold {
+  font-weight: 800;
+}
+
+.bo-unit__static {
+  font: 800 14px var(--bo-font);
+  color: var(--bo-ink);
+}
+
+.bo-unit__photos {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.bo-unit__photo {
+  width: 150px;
+  border: 1px solid var(--bo-line);
+  border-radius: 9px;
+  overflow: hidden;
+}
+
+.bo-unit__photoimg {
+  width: 100%;
+  height: 96px;
+  background: #eef0f4;
+}
+
+.bo-unit__photofile {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.bo-unit__photobar {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 8px;
+}
+
+.bo-unit__photopos {
+  flex: 1;
+  font: 700 11px var(--bo-font);
+  color: var(--bo-subtle);
+}
+
+.bo-unit__photobtn {
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  border: 1px solid var(--bo-line);
+  background: #fff;
+  color: var(--bo-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: 700 11px var(--bo-font);
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.bo-unit__photobtn--danger {
+  border-color: #f7cfd5;
+  color: #c62534;
+}
+
+.bo-unit__photobtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.bo-unit__photobtn:not(:disabled):hover,
+.bo-unit__photobtn:not(:disabled):focus-visible {
+  border-color: var(--bo-accent);
+  color: var(--bo-accent);
+}
+
+/* An upload zone that only describes what uploading would do. */
+.bo-upload--static,
+.bo-upload--static:hover {
+  border-color: #cdd2db;
+  background: #f7f8fa;
+  cursor: default;
+}
+
+.bo-unit__plot {
+  width: 100%;
+  height: 36px;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.bo-unit__warn {
+  margin: 0;
+  padding: 10px 12px;
+  background: #fff4d4;
+  border: 1px solid #ffecae;
+  border-radius: 8px;
+  font: 600 11.5px/1.5 var(--bo-font);
+  color: #8a6a00;
+}
+
+.bo-unit__terms {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.bo-unit__term {
+  border: 1px solid var(--bo-line);
+  background: #fff;
+  border-radius: 9px;
+  padding: 9px 11px;
+  min-width: 0;
+}
+
+.bo-unit__termlabel {
+  font: 700 10.5px var(--bo-font);
+  color: var(--bo-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bo-unit__termvalue {
+  font: 800 15px var(--bo-font);
+  color: var(--bo-ink);
+}
+
+.bo-unit__term--base {
+  border-color: var(--bo-accent);
+  background: var(--bo-accent-soft);
+}
+
+.bo-unit__term--base .bo-unit__termlabel,
+.bo-unit__term--base .bo-unit__termvalue {
+  color: var(--bo-accent);
+}
+
+.bo-unit__termsempty {
+  margin: 0;
+  border: 1px dashed var(--bo-line);
+  border-radius: 9px;
+  padding: 14px 12px;
+  text-align: center;
+  font: 600 12px var(--bo-font);
+  color: var(--bo-subtle);
+}
+
+@media (max-width: 960px) {
+  .bo-unit__layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .bo-unit__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

@@ -339,13 +339,47 @@ const ConfigCardView = ({ card }: { card: ConfigCard }) => (
   </DetailSection>
 );
 
+/** The design's controls, showing the stored value only (Connect is read-only, so they are disabled). */
 const ConfigRowView = ({ row }: { row: ConfigRow }) => (
-  <div className="bo-configrow" title={row.kind === 'toggle' ? t(S.config.readOnly) : undefined}>
+  <div className="bo-configrow" title={row.kind === 'value' ? undefined : t(S.config.readOnly)}>
     <span className="bo-configrow__label">{row.label}</span>
-    {row.kind === 'toggle' ? (
+    {row.kind === 'toggle' && (
       <Switch on={row.on} label={`${row.label}: ${t(row.on ? S.products.enabled : S.products.notEnabled)}`} />
-    ) : (
-      <span className="bo-configrow__value">{row.value}</span>
+    )}
+    {row.kind === 'value' && <span className="bo-configrow__value">{row.value}</span>}
+    {row.kind === 'input' && (
+      <input
+        className="bo-field bo-configrow__control"
+        value={row.value}
+        placeholder={row.placeholder}
+        aria-label={row.label}
+        readOnly
+        disabled
+      />
+    )}
+    {row.kind === 'date' && (
+      <input
+        type="date"
+        className="bo-field bo-configrow__control"
+        value={row.value ?? ''}
+        aria-label={row.label}
+        readOnly
+        disabled
+      />
+    )}
+    {row.kind === 'select' && (
+      <select
+        className={`bo-field bo-configrow__control${row.narrow ? ' bo-configrow__control--narrow' : ''}`}
+        value={row.value}
+        aria-label={row.label}
+        disabled
+      >
+        {row.options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
     )}
   </div>
 );

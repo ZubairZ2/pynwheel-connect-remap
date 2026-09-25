@@ -470,3 +470,29 @@ Availability uses the CMS's real states: **Available now**, **Available {date}**
 ### Data observations (not backend gaps)
 - **Some stored image files cannot be served.** For example, property 2919's floor plan images return 403 from S3 on both the plain and the accelerated host. The cards and the viewer say "Image unavailable" / "This image could not be loaded"; the legacy page shows a broken image.
 - **In development, uploader-only files resolve to paths on the CMS host** (`/uploads/...`), because the uploaders use `:file` storage there and the files are not on this machine. These are SVGs, secondary images and gallery photos. On staging and production they are S3 URLs. Raster images that carry a `standard_image_url` load from S3 everywhere.
+
+---
+
+## 5. Property Detail and Inventory improvements (September 25, 2026)
+
+**Branch:** `feature/properties_inventory_improvments`. **Related:** PYN_CONNECT_PROGRESS.md §18, context.md §14.
+
+### Closed in this pass (existing data, minimal JSON exposure)
+
+| Was | Now |
+|---|---|
+| Unit Detail "Lease-Term Pricing" had no known source (§4, G-note under proto-units) | `units.json lease_terms` from the existing `Unit#get_lease_term_pricing_matrix` (`units.lease_pricing`, shown only when `communities.display_pricing_options` is on, as on the kiosk). Not a gap |
+| Unit Detail "pin at X%, Y%" | `units.json x_plot` / `y_plot` over the floorplate's stored `width` / `height`. SVG-pointer placements (`pointer_data`) have no pixel position, so they read "—" while still "Plotted" |
+| Property Detail "{N} buildings" | `edit.json inventory.buildings` (distinct `building` over units ∪ amenities; the CMS has no buildings table) |
+| `edit.json` created a Tour / SchedulerWidgetSetting for a property lacking one | The callback is skipped for that JSON read; the HTML page keeps its behaviour |
+| `floorplates.json` / `amenities.json` 500 on an unknown id | 404 |
+
+### Presentation notes (not gaps)
+
+- The design's Lease-Term panel says "Inherited from {floor plan}" with 6 / 12 / 18-month tiles. The CMS matrix is **per unit**, with whatever terms the feed sends (3–18 months on 531). Connect shows the unit's own terms and highlights the 12-month tile when present.
+- The design's Unit Data subtitle describes typing to mark a field Manual; Connect's inputs are disabled, so the subtitle states the sync rule instead.
+- The Maps card's two selects hold the stored value as their only option (Map Display Type / Default Map floor do not map onto the design's option lists; see §0).
+
+### Still gaps (unchanged)
+
+G15 background library, G16 publish state, G17 badges (the "Add badge" button and badge dialog are therefore not rendered), G18 directional text, G19 file metadata, G20 every write (incl. Add Company / Add Property on the listings, gallery reordering and Toggle on Unit Detail), G21 unit "almost gone"; R1–R5 on Property Detail. Map & Plotting and Tour Setup remain demo screens, so "View on Plan" / "Plot on Plan" and the floorplate "Plotting" button open them.

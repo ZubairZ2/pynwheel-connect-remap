@@ -86,10 +86,17 @@ export interface InventoryCard {
   href: string;
 }
 
-/** A row in a configuration card: an on/off flag, or a stored value. */
+/**
+ * A row in a configuration card: an on/off flag, a stored value, or one of the
+ * design's form controls. The controls only display the stored value: Connect
+ * is read-only, so the screen renders them disabled.
+ */
 export type ConfigRow =
   | { kind: 'toggle'; label: string; on: boolean }
-  | { kind: 'value'; label: string; value: string };
+  | { kind: 'value'; label: string; value: string }
+  | { kind: 'input'; label: string; value: string; placeholder?: string }
+  | { kind: 'date'; label: string; value: string | null }
+  | { kind: 'select'; label: string; value: string; options: { value: string; label: string }[]; narrow?: boolean };
 
 export interface ConfigGroup {
   id: string;
@@ -394,32 +401,37 @@ export const generateProductCards = (property: PropertyDetail): ProductCard[] =>
 /** Where "Manage Inventory" and the inventory cards lead: the Property Inventory screen. */
 export const generateInventoryHref = (property: PropertyDetail): string => tourContentRoute(String(property.id));
 
+/** Each card opens its own tab of the Property Inventory screen, as in the design. */
 export const generateInventoryCards = (property: PropertyDetail): InventoryCard[] => {
   const href = generateInventoryHref(property);
   const inv = property.inventory;
+  const tab = (name: string): string => `${href}?tab=${name}`;
 
   return [
-    { id: 'units', label: t(S.inventory.units), value: formatCount(inv.units), icon: 'bed', href },
-    { id: 'floorplans', label: t(S.inventory.floorplans), value: formatCount(inv.floorplans), icon: 'grid', href },
+    { id: 'units', label: t(S.inventory.units), value: formatCount(inv.units), icon: 'bed', href: tab('units') },
+    { id: 'floorplans', label: t(S.inventory.floorplans), value: formatCount(inv.floorplans), icon: 'grid', href: tab('floorplans') },
     { id: 'floorplates', label: t(S.inventory.floorplates), value: formatCount(inv.floorplates), icon: 'properties', href },
-    { id: 'amenities', label: t(S.inventory.amenities), value: formatCount(inv.amenities), icon: 'star', href }
+    { id: 'amenities', label: t(S.inventory.amenities), value: formatCount(inv.amenities), icon: 'star', href: tab('amenities') }
   ];
 };
 
 /**
- * The design's "{N} buildings · sub-communities supported". The CMS's buildings
- * are its sub-communities (one per PMS property id).
+ * The design's "{N} buildings · sub-communities supported", on real data: the
+ * property's distinct buildings, then how many sub-communities (PMS property
+ * ids) it really has.
  */
 export const generateInventorySummary = (
   property: PropertyDetail
 ): { subtitle: string; subCommunities: { name: string; units: string }[] } => {
   const subs = property.inventory.subCommunities;
+  const buildings = plural(property.inventory.buildings, t(S.count.building), t(S.count.buildings));
 
   return {
-    subtitle:
+    subtitle: `${buildings} · ${
       subs.length > 0
-        ? `${plural(subs.length, t(S.count.subCommunity), t(S.count.subCommunities))} · ${t(S.inventory.subSupported)}`
-        : t(S.inventory.singleProperty),
+        ? plural(subs.length, t(S.count.subCommunity), t(S.count.subCommunities))
+        : t(S.inventory.noSubCommunities)
+    }`,
     // As in the design, the list only appears when there is more than one.
     subCommunities:
       subs.length > 1
@@ -441,6 +453,26 @@ export const generatePartners = (property: PropertyDetail): PartnerRow[] =>
 
 const toggle = (label: string, on: boolean): ConfigRow => ({ kind: 'toggle', label: t(label), on });
 const value = (label: string, stored: string): ConfigRow => ({ kind: 'value', label: t(label), value: stored });
+const input = (label: string, stored: string | null, placeholder?: string): ConfigRow => ({
+  kind: 'input',
+  label: t(label),
+  value: stored ?? '',
+  placeholder
+});
+const date = (label: string, stored: string | null): ConfigRow => ({ kind: 'date', label: t(label), value: isoDate(stored) });
+const select = (
+  label: string,
+  stored: string,
+  options: { value: string; label: string }[],
+  narrow = false
+): ConfigRow => ({ kind: 'select', label: t(label), value: stored, options, narrow });
+
+/** The `YYYY-MM-DD` a date control shows, or null when nothing is stored. */
+const isoDate = (stored: string | null): string | null => {
+  if (!stored) return null;
+  const match = /^\d{4}-\d{2}-\d{2}/.exec(stored.trim());
+  return match ? match[0] : null;
+};
 
 const SETTING_GROUPS: { id: string; title: string; rows: (PropertySettingKey | 'availability')[] }[] = [
   {
@@ -513,7 +545,15 @@ export const generateConfigCards = (property: PropertyDetail): ConfigCard[] => {
         rows: group.rows.map((key) =>
           key === 'availability'
             ? // "Default Availability Settings": the Floorplates page's All / Now switch.
-              value(S.settings.defaultAvailability, t(s.showCurrentAvailability ? S.settings.now : S.settings.all))
+              select(
+                S.settings.defaultAvailability,
+                s.showCurrentAvailability ? 'now' : 'all',
+                [
+                  { value: 'all', label: t(S.settings.all) },
+                  { value: 'now', label: t(S.settings.now) }
+                ],
+                true
+              )
             : toggle(SETTING_LABELS[key], s[key])
         )
       })),
@@ -531,10 +571,13 @@ export const generateConfigCards = (property: PropertyDetail): ConfigCard[] => {
           id: 'touch',
           title: '',
           rows: [
-            value(S.config.touchCode, touch.code ?? t(S.profile.notSet)),
-            value(S.config.displayType, t(touch.isVerticalApp ? S.config.vertical : S.config.horizontal)),
-            value(S.config.billingRate, formatRate(property.billing.touch)),
-            value(S.config.startDate, formatDate(touch.subscriptionStartDate) ?? t(S.profile.notSet)),
+            input(S.config.touchCode, touch.code, t(S.profile.notSet)),
+            select(S.config.displayType, touch.isVerticalApp ? 'vertical' : 'horizontal', [
+              { value: 'vertical', label: t(S.config.vertical) },
+              { value: 'horizontal', label: t(S.config.horizontal) }
+            ]),
+            input(S.config.billingRate, property.billing.touch ? formatRate(property.billing.touch) : null, t(S.profile.notSet)),
+            date(S.config.startDate, touch.subscriptionStartDate),
             toggle(S.config.mdu, touch.mdu),
             toggle(S.config.gestureIcons, touch.showGestureIcons),
             toggle(S.config.poweredBy, touch.poweredByBtn)
@@ -578,8 +621,14 @@ export const generateConfigCards = (property: PropertyDetail): ConfigCard[] => {
           id: 'maps',
           title: '',
           rows: [
-            value(S.config.mapDisplay, mapDisplayLabel(maps.webMapType, maps.defaultSatelliteView)),
-            value(S.config.defaultFloor, maps.defaultMapFloorLabel ?? t(S.profile.notSet)),
+            // The stored value is the only option: the design's four map types
+            // do not map one-to-one onto `web_map_type` + `default_satellite_view`.
+            select(S.config.mapDisplay, 'stored', [
+              { value: 'stored', label: mapDisplayLabel(maps.webMapType, maps.defaultSatelliteView) }
+            ]),
+            select(S.config.defaultFloor, 'stored', [
+              { value: 'stored', label: maps.defaultMapFloorLabel ?? t(S.profile.notSet) }
+            ]),
             toggle(S.config.beans3d, maps.enableThreeDMaps),
             toggle(S.config.beansSvg, maps.isBeansSvg),
             toggle(S.config.svgMode, maps.enableSvgMode),

@@ -178,6 +178,7 @@ export const parsePropertyDetail = (payload: unknown): PropertyDetail | null => 
       floorplans: count(inventory.floorplans),
       floorplates: count(inventory.floorplates),
       amenities: count(inventory.amenities),
+      buildings: count(inventory.buildings),
       subCommunities: (Array.isArray(inventory.subCommunities) ? (inventory.subCommunities as Raw[]) : []).map(
         (sub) => ({ name: text(sub.name) ?? '', propertyId: text(sub.propertyId) ?? '', unitCount: count(sub.unitCount) })
       )

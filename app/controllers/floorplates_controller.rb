@@ -10,6 +10,10 @@ class FloorplatesController < ApplicationController
   skip_before_action :load_tour_users_chats, only: [:floatplate_images]
 
   def index
+    # Pynwheel Connect asks for JSON; an unknown property id is a 404 there
+    # rather than the NoMethodError the HTML path has always raised.
+    return head :not_found if request.format.json? && current_community.nil?
+
     @floorplates = current_community.floorplates.order(id: :desc)
     # Pynwheel Connect's read-only Property Inventory.
     return render_connect_floorplates if request.format.json?

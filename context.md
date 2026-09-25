@@ -434,3 +434,25 @@ The CSS namespaces are `.bo-inv*`, `.bo-record*`, `.bo-thumb*`, `.bo-meta*`, `.b
 | 503 | No units |
 | 4397 | 1,169 units |
 | 3325 | No SchedulerWidgetSetting |
+
+---
+
+## 14. Property Detail and Inventory improvements: implementation knowledge (September 25, 2026)
+
+Branch `feature/properties_inventory_improvments`; PYN_CONNECT_PROGRESS.md §18.
+
+**The prototype files.** `pyn-connect-22-sep-new.html` and `pyn-connect-new.html` are bundled pages: line 380 is a JSON asset manifest (`uuid → {mime, compressed, data}`; gzip when `compressed`), line 392 is the whole markup as one JSON string. `JSON.parse` that line, then cut a screen out with `<sc-if value="{{ isX }}"` and nested-tag counting; the state and render code is the `<script type="text/x-dc">` block. Render bindings for Property Detail sit near `state.js` lines 2454–2613, the inventory (`tcTabs`, floorplates, floorplans, units) at 2734–3130 and 3346–3440, Unit Detail at 3413–3440. The `isTcUnplotted` block is unreachable in the 22-Sep file.
+
+**Rails, Connect JSON (six reads, all Devise-session):** `communities.json`, `communities/:id/edit.json` (also nested under `/companies/:cid`), and `communities/:id/{floorplates,floorplans,units,amenities}.json`. `edit.json` now skips `community_code` / `load_tour_users_chats` like the inventory reads (`CommunitiesController#connect_detail_json?`). Unknown ids are 404 on all of them. There is **no** `units#show`; `units/:id/edit.json`, `floorplans/:id/edit.json` and `settings_page.json` are 406. `units.json` honours every `UnitFilterQuery` param and is unpaginated.
+
+**Two tenant scopes:** `edit.json` uses `AccessibleCommunitiesQuery` (locked own property → 404 for non-super-admins); the inventory reads use `check_community` (company admin → 200 incl. locked, other company → 302). Connect shows "not found" for both 302 and 404.
+
+**New keys.** `units.json`: `lease_terms` (`[{pricing_month, pricing_rent}]`, from `Unit#get_lease_term_pricing_matrix`, which itself checks `communities.display_pricing_options`; rent strings are the model's, e.g. `$1405`), `x_plot`, `y_plot` (pixels on the floorplate image; percent = value / floorplate `width` or `height`; null for SVG-pointer placements). `edit.json`: `inventory.buildings` (distinct `building` over units ∪ amenities — the CMS has no buildings table).
+
+**Frontend.**
+- `ConfigRow` kinds: `toggle | value | input | date | select` (`propertyDetail.generator.ts`); the screen renders the last three disabled through `.bo-configrow__control`.
+- `MetaItem.control = 'select'` renders a disabled `.bo-meta__select`; `MetaGrid columns="plates"` is the floorplate card's 4 + 1 grid.
+- Unit Detail: route `/properties/:propId/units/:unitId` (numeric ids) → `loadPropertyInventory` → `unitDetail.generator.ts` → `useUnitDetail` → `screens/properties/unitDetail.screen.tsx`. It reuses `InventoryDialogs` for Edit Unit. `unitRoute(propId, unitId)` already existed in `connectRoutes.ts`.
+- `core/utils/date/cmsToday.ts` is the one place the CMS-zone "today" is computed.
+
+**Local testing.** Mint sessions with `rails runner` (progress §7 script; `EMAIL=… OUT=… `) and give Playwright the two Connect cookies (`pyn_connect_rails_session`, `pyn_connect_user`, URL-encoded). **Wait for hydration** before clicking (`__reactFiber` on a button); a page that never hydrates means `.next` is stale — stop `next dev`, `rm -rf .next`, restart (trap 9). The e2e screen tests need `NEXT_PUBLIC_SCREEN_HARNESS=on` on the dev server and still fail on `fonts.gstatic.com` from this machine.

@@ -86,7 +86,10 @@ export const generateFloorplateCards = (inventory: PropertyInventory): Floorplat
         { label: i18n.t(S.floorplates.meta.building), value: plate.building ?? EMPTY },
         {
           label: i18n.t(S.floorplates.meta.background),
-          value: i18n.t(inventory.sharedBackground ? S.floorplates.sharedBackground : S.floorplates.noBackground)
+          // The design's Background picker; the CMS keeps no library (G15), so
+          // the only option is what the property really has.
+          value: i18n.t(inventory.sharedBackground ? S.floorplates.sharedBackground : S.floorplates.noBackground),
+          control: 'select'
         },
         {
           label: i18n.t(S.floorplates.meta.units),

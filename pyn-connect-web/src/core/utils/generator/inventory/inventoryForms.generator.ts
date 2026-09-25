@@ -85,7 +85,7 @@ export const floorplateForm = (plate: InventoryFloorplate | null): FloorplateFor
 });
 
 export const floorplateDialogTitle = (plate: InventoryFloorplate | null): string =>
-  plate ? `${i18n.t(S.dialogs.floorplate.editTitle)} · ${floorplateTitle(plate)}` : i18n.t(S.dialogs.floorplate.addTitle);
+  i18n.t(plate ? S.dialogs.floorplate.editTitle : S.dialogs.floorplate.addTitle);
 
 /* ---------------- Floor plan ---------------- */
 

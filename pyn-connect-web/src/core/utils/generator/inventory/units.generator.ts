@@ -273,7 +273,7 @@ export interface UnitCard {
   removeImageConfirm: ConfirmDescriptor;
 }
 
-const availabilityPill = (unit: InventoryUnit, today: string): PillDescriptor => {
+export const availabilityPill = (unit: InventoryUnit, today: string): PillDescriptor => {
   switch (unitAvailability(unit, today)) {
     case 'sold':
       return { label: i18n.t(S.units.sold), variant: 'crit' };

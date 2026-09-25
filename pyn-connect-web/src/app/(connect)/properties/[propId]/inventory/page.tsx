@@ -9,19 +9,13 @@ import { readRailsCookie } from '~/core/session/session.server';
 import { ConnectScreenTemplate } from '~/core/templates/ConnectScreenTemplate';
 import { PropertyInventoryScreen as DemoPropertyInventoryScreen } from '~/core/screens/connect/properties/propertyInventory.screen';
 import { PropertyInventoryScreen } from '~/core/screens/properties/propertyInventory.screen';
+import { cmsToday } from '~/core/utils/date/cmsToday';
 import { asInventoryTab } from '~/core/utils/generator/inventory/inventoryHeader.generator';
 
 export const dynamic = 'force-dynamic';
 
 /** Real properties have integer ids; demo slugs (`luxe`) keep the demo screen, as on Property Detail. */
 const REAL_ID = /^\d+$/;
-
-/**
- * Today in the CMS's time zone (`config.time_zone`, Eastern), which is what
- * "available now" is measured against on the legacy units grid.
- */
-const cmsToday = (): string =>
-  new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date());
 
 export default async function Page({
   params,
