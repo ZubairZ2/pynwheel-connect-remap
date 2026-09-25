@@ -448,29 +448,16 @@
         ? this._zoomWrapper
         : svgEl;
 
-      // No panzoom `bounds` — it constrains the SVG *element*, whose letterbox
-      // margins let the actual map be dragged fully out of view. _clampToMapEdges
-      // bounds the rendered content instead.
       const pz = panzoom(target, {
         minZoom: 0.5,
         maxZoom: 10,
+        bounds: true,
+        boundsPadding: 0.1,
       });
 
       // Everything else reaches the instance through the SVG, so alias it there.
       svgEl._pz  = pz;
       target._pz = pz;
-
-      // moveTo() fires "pan" synchronously and the transform is only painted on
-      // the next animation frame, so clamping here never shows the overshoot.
-      // The flag stops our own moveTo() from re-entering.
-      let clamping = false;
-      const clamp = () => {
-        if (clamping) return;
-        clamping = true;
-        try { this._clampToMapEdges(svgEl, target); } finally { clamping = false; }
-      };
-      pz.on("pan",  clamp);
-      pz.on("zoom", clamp);
 
       // Defer so the browser finishes layout before we read clientWidth/Height
       setTimeout(() => this._centerSvg(svgEl), 0);
@@ -522,46 +509,6 @@
         }, { threshold: 0 });
         try { io.observe(c); } catch { ioClean(); }
       }
-    },
-
-    // Keep the map graphic's physical edges inside the viewport.
-    // The pan target (SVG, or the Beans wrapper) is sized 100% of the container,
-    // and preserveAspectRatio="xMidYMid meet" letterboxes the content inside it,
-    // so the map itself occupies a centred sub-rect derived from the viewBox.
-    // After panzoom's matrix(s,0,0,s,tx,ty) that rect spans
-    //   x: [s*offX + tx, s*(offX+w) + tx]   (same for y)
-    // Per axis: when the map is larger than the viewport it must cover it (no
-    // whitespace past an edge); when smaller (zoomed out) it must stay fully
-    // inside. Both reduce to clamping t between the two edge-flush positions.
-    _clampToMapEdges(svgEl, target) {
-      const pz = svgEl && svgEl._pz;
-      const viewport = target && target.parentElement;
-      if (!pz || !viewport) return;
-
-      const vw = viewport.clientWidth;
-      const vh = viewport.clientHeight;
-      if (!vw || !vh) return;
-
-      let offX = 0, offY = 0, w = vw, h = vh;
-      const vb = svgEl.viewBox && svgEl.viewBox.baseVal;
-      if (vb && vb.width > 0 && vb.height > 0) {
-        const fit = Math.min(vw / vb.width, vh / vb.height);
-        w = vb.width  * fit;
-        h = vb.height * fit;
-        offX = (vw - w) / 2;
-        offY = (vh - h) / 2;
-      }
-
-      const t = pz.getTransform();
-      const clampAxis = (pos, off, len, view) => {
-        const a = -t.scale * off;                // leading edge flush with viewport start
-        const b = view - t.scale * (off + len);  // trailing edge flush with viewport end
-        return Math.min(Math.max(a, b), Math.max(Math.min(a, b), pos));
-      };
-
-      const x = clampAxis(t.x, offX, w, vw);
-      const y = clampAxis(t.y, offY, h, vh);
-      if (Math.abs(x - t.x) > 0.5 || Math.abs(y - t.y) > 0.5) pz.moveTo(x, y);
     },
 
     _centerSvg(svgEl) {
