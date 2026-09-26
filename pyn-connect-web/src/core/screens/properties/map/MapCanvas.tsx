@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 
 import { i18n } from '~/resources/i18n';
 import { Icon } from '~/core/components/atoms/connect/Icon';
+import { LoadingIndicator } from '~/core/components/atoms/LoadingIndicator';
+import { useImageStatus } from '~/core/hooks/useImageStatus';
 import type { PropertyMapController } from '~/core/hooks/usePropertyMap';
 import type { LevelNode } from '~/core/utils/generator/map/mapNodes.generator';
 import { edgeKey } from '~/core/utils/generator/map/mapState';
@@ -44,7 +46,9 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
     controller;
   const surfaceRef = useRef<HTMLDivElement | null>(null);
   const [surface, setSurface] = useState({ w: 0, h: 0 });
-  const [failed, setFailed] = useState<string | null>(null);
+  const onSvg = space === 'svg';
+  const src = onSvg ? null : (assets?.image?.url ?? null);
+  const image = useImageStatus(src);
 
   useEffect(() => {
     const element = surfaceRef.current;
@@ -58,9 +62,7 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
 
   if (!level || !graph) return null;
 
-  const onSvg = space === 'svg';
   const svgReady = onSvg && svgStatus === 'ready' && !!svgDoc;
-  const src = onSvg ? null : assets?.image?.url ?? null;
   const has = !!assets?.has && (onSvg ? !!assets?.svg : !!src);
   const dims = graph.dims ?? (onSvg && level.svgWidth && level.svgHeight ? { w: level.svgWidth, h: level.svgHeight } : null);
 
@@ -127,25 +129,32 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
                     </span>
                   </span>
                 ) : (
-                  i18n.t(M.plan.svgLoading)
+                  <LoadingIndicator variant="cover" label={i18n.t(M.plan.svgLoading)} />
                 )}
               </div>
             )
-          ) : failed === src ? (
+          ) : image.status === 'failed' ? (
             <div className="bo-map__missing" role="status">
               {i18n.t(M.plan.imageUnavailable)}
             </div>
           ) : (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              key={src ?? ''}
-              className="bo-map__image"
-              src={src ?? undefined}
-              alt={i18n.t(M.plan.alt)}
-              draggable={false}
-              onLoad={(event) => actions.onImageLoad(level.id, event.currentTarget.naturalWidth, event.currentTarget.naturalHeight)}
-              onError={() => setFailed(src ?? null)}
-            />
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element -- the floor image is a CMS file on S3, or a local object URL. */}
+              <img
+                key={src ?? ''}
+                ref={image.ref}
+                className="bo-map__image"
+                src={src ?? undefined}
+                alt={i18n.t(M.plan.alt)}
+                draggable={false}
+                onLoad={(event) => {
+                  image.onLoad();
+                  actions.onImageLoad(level.id, event.currentTarget.naturalWidth, event.currentTarget.naturalHeight);
+                }}
+                onError={image.onError}
+              />
+              {image.status === 'loading' && <LoadingIndicator variant="cover" label={i18n.t(M.plan.imageLoading)} />}
+            </>
           )}
 
           {state.gridOn && <div className="bo-map__grid" aria-hidden="true" />}

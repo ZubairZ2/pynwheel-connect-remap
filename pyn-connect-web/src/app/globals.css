@@ -206,8 +206,9 @@ table {
 }
 
 .bo-sidebar__logo {
+  /* Both sides, matching the rendered size next/image is told (103 × 24), so it does not warn about a one-sided override. */
+  width: 103px;
   height: 24px;
-  width: auto;
 }
 
 .bo-sidebar__nav {
@@ -3015,11 +3016,21 @@ select {
   gap: 18px;
 }
 
+/* The read-only note takes a full row of the footer, so Cancel and Save always sit side by side under it. */
 .bo-dlg__readonly {
-  margin: 0 auto 0 0;
-  flex: 1 1 260px;
+  margin: 0;
+  flex: 1 1 100%;
   font: 600 11.5px/1.5 var(--bo-font);
   color: var(--bo-subtle);
+}
+
+.bo-dlg__fielderror {
+  font: 600 11.5px/1.5 var(--bo-font);
+  color: #c62534;
+}
+
+.bo-field[aria-invalid='true'] {
+  border-color: #e0808b;
 }
 
 .bo-dlg__notice {
@@ -3380,6 +3391,7 @@ select {
 }
 
 .bo-upload__preview {
+  position: relative;
   width: 92px;
   height: 66px;
   border-radius: 7px;
@@ -3475,6 +3487,7 @@ select {
 }
 
 .bo-viewer__thumb {
+  position: relative;
   width: 72px;
   height: 52px;
   flex-shrink: 0;
@@ -3923,14 +3936,7 @@ select {
 .bo-map__side { width: 300px; flex-shrink: 0; display: flex; flex-direction: column; gap: 16px; }
 .bo-map__spacer { flex: 1; }
 
-/* Floor tabs */
-.bo-map__levels { padding: 12px 16px 0; display: flex; align-items: flex-end; gap: 6px; flex-wrap: wrap; }
-.bo-map__level { padding: 7px 13px; border: 1px solid var(--bo-line); background: #fff; border-radius: 8px 8px 0 0; cursor: pointer; text-align: left; display: flex; flex-direction: column; gap: 1px; }
-.bo-map__levelsub { font: 700 9.5px var(--bo-font); color: var(--bo-subtle); text-transform: uppercase; letter-spacing: 0.05em; }
-.bo-map__levellabel { font: 800 12.5px var(--bo-font); color: var(--bo-muted); }
-.bo-map__level--active { background: var(--bo-ink); border-color: var(--bo-ink); }
-.bo-map__level--active .bo-map__levelsub { color: rgba(255, 255, 255, 0.62); }
-.bo-map__level--active .bo-map__levellabel { color: #fff; }
+/* Floor tabs: the horizontal floorplate strip, defined with the building pills below (`.bo-map__levelsrow`). */
 
 /* Tool bar */
 .bo-map__toolbar { padding: 12px 16px; border-top: 1px solid var(--bo-line); border-bottom: 1px solid var(--bo-line); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -4058,8 +4064,10 @@ select {
 .bo-map__levelscroll { width: 28px; height: 58px; flex-shrink: 0; border: 1px solid var(--bo-line); border-bottom: none; background: #fff; border-radius: 8px 8px 0 0; color: var(--bo-ink); cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .bo-map__levelscroll:disabled { opacity: 0.35; cursor: default; }
 .bo-map__levelswrap { position: relative; flex: 1; min-width: 0; }
-.bo-map__levels { display: flex; align-items: flex-end; gap: 6px; overflow-x: auto; scrollbar-width: none; scroll-behavior: smooth; padding: 0; }
+/* One row that never wraps: the strip scrolls sideways (arrows, wheel, drag) so 3 or 31 floorplates take the same height. */
+.bo-map__levels { display: flex; flex-wrap: nowrap; align-items: flex-end; gap: 6px; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; scroll-behavior: smooth; padding: 0; }
 .bo-map__levels::-webkit-scrollbar { display: none; }
+@media (prefers-reduced-motion: reduce) { .bo-map__levels { scroll-behavior: auto; } }
 .bo-map__levelfade { position: absolute; top: 0; bottom: 0; width: 36px; pointer-events: none; opacity: 0; transition: opacity 0.15s; }
 .bo-map__levelfade--left { left: 0; background: linear-gradient(90deg, #fff, rgba(255, 255, 255, 0)); }
 .bo-map__levelfade--right { right: 0; background: linear-gradient(270deg, #fff, rgba(255, 255, 255, 0)); }
@@ -4089,6 +4097,20 @@ select {
 .bo-map__addlevel { flex-shrink: 0; height: 58px; padding: 7px 13px; border: 1px dashed var(--bo-accent); border-bottom: none; background: var(--bo-accent-soft); border-radius: 8px 8px 0 0; cursor: pointer; text-align: left; color: var(--bo-accent); display: flex; flex-direction: column; gap: 2px; }
 .bo-map__addlevel .bo-map__levelsub { color: var(--bo-accent); opacity: 0.8; }
 .bo-map__addlevellabel { font: 800 12.5px var(--bo-font); display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+/* The plotting design's dialogs (Edit Tour Stop, Add Stop, Add Elevator Bank): 520px panel, 18px title, 42px buttons in one row. */
+.bo-tour__dialog .bo-modal__head { padding: 22px 24px; align-items: center; }
+.bo-tour__dialog .bo-modal__title { font-size: 18px; }
+.bo-tour__dialog .bo-modal__body { padding: 22px 24px; }
+.bo-tour__dialog .bo-dlg--stacked { gap: 16px; }
+.bo-tour__dialog .bo-modal__foot { padding: 18px 24px; flex-wrap: nowrap; }
+.bo-tour__dialog .bo-modal__foot .bo-dlg__readonly { flex: 1 1 auto; min-width: 0; }
+.bo-tour__dialog .bo-modal__foot .bo-btn { height: 42px; flex-shrink: 0; }
+.bo-tour__dialog .bo-modal__foot .bo-btn--primary { padding: 0 20px; }
+@media (max-width: 560px) {
+  .bo-tour__dialog .bo-modal__foot { flex-wrap: wrap; }
+  .bo-tour__dialog .bo-modal__foot .bo-dlg__readonly { flex-basis: 100%; }
+}
+
 .bo-map__toolbartitle { flex: 1 1 auto; min-width: 0; display: flex; align-items: baseline; gap: 10px; white-space: nowrap; }
 .bo-map__toolbarlevel { font: 800 13px var(--bo-font); color: var(--bo-ink); }
 .bo-map__toolbarsub { font: 600 11.5px var(--bo-font); color: var(--bo-subtle); }
@@ -4174,7 +4196,7 @@ select {
 .bo-tour__list { display: flex; flex-direction: column; gap: 12px; }
 .bo-tour__stop { background: var(--bo-panel); border: 1px solid var(--bo-line); border-radius: 12px; padding: 16px; display: flex; gap: 16px; }
 .bo-tour__stop--hidden { opacity: 0.72; }
-.bo-tour__stopimage { width: 150px; height: 120px; flex-shrink: 0; border-radius: 10px; overflow: hidden; background: #eef0f4; display: flex; align-items: center; justify-content: center; }
+.bo-tour__stopimage { position: relative; width: 150px; height: 120px; flex-shrink: 0; border-radius: 10px; overflow: hidden; background: #eef0f4; display: flex; align-items: center; justify-content: center; }
 .bo-tour__stopimg { width: 100%; height: 100%; object-fit: cover; display: block; }
 .bo-tour__stopimage .bo-safeimg__missing, .bo-tour__photoimg .bo-safeimg__missing { font: 600 11px var(--bo-font); color: var(--bo-subtle); text-align: center; padding: 8px; }
 .bo-tour__stopbody { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
@@ -4208,7 +4230,7 @@ select {
 .bo-tour__elevatormeta b { font-weight: 800; color: var(--bo-ink); }
 .bo-tour__photos { display: flex; gap: 10px; flex-wrap: wrap; }
 .bo-tour__photo { width: 150px; border: 1px solid var(--bo-line); border-radius: 9px; overflow: hidden; }
-.bo-tour__photoimg { display: flex; align-items: center; justify-content: center; width: 100%; height: 96px; background: #eef0f4; overflow: hidden; }
+.bo-tour__photoimg { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 96px; background: #eef0f4; overflow: hidden; }
 .bo-tour__photofile { width: 100%; height: 100%; object-fit: cover; display: block; }
 .bo-tour__photoimg--missing { display: flex; align-items: center; justify-content: center; font: 600 11px var(--bo-font); color: var(--bo-subtle); }
 .bo-tour__photobar { display: flex; align-items: center; gap: 4px; padding: 6px 8px; }
@@ -4358,4 +4380,116 @@ select {
 }
 @media (max-width: 760px) {
   .bo-map__surface { height: 400px; }
+}
+
+/* ---------------------------------------------------------------------------
+   Loading indicator (LoadingIndicator): the CMS's cat-with-pinwheel GIF
+   (`loader.gif`, the file behind the legacy .divLoading / .mapLoading /
+   .modal-loader overlays) shown small on a white disc with a caption. It fades
+   in after a short delay so a load that finishes at once never flashes it.
+   --------------------------------------------------------------------------- */
+.bo-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--bo-subtle);
+  animation: bo-loading-in 0.25s ease 0.2s both;
+}
+
+@keyframes bo-loading-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.bo-loading__cat {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 6px 20px rgba(16, 24, 40, 0.1), 0 0 0 1px rgba(16, 24, 40, 0.05);
+  object-fit: cover;
+}
+
+.bo-loading__label {
+  font: 600 12.5px var(--bo-font);
+  color: var(--bo-subtle);
+  text-align: center;
+}
+
+.bo-loading--page {
+  min-height: 360px;
+  padding: 48px 16px;
+}
+
+.bo-loading--page .bo-loading__cat {
+  width: 112px;
+  height: 112px;
+}
+
+.bo-loading--block {
+  padding: 36px 16px;
+}
+
+.bo-loading--inline {
+  flex-direction: row;
+  gap: 8px;
+  padding: 0;
+}
+
+.bo-loading--inline .bo-loading__cat {
+  width: 26px;
+  height: 26px;
+  box-shadow: 0 0 0 1px rgba(16, 24, 40, 0.08);
+}
+
+.bo-loading--inline .bo-loading__label {
+  font-size: 11.5px;
+}
+
+.bo-loading--cover,
+.bo-loading--overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: rgba(255, 255, 255, 0.78);
+  pointer-events: none;
+}
+
+.bo-loading--overlay {
+  gap: 0;
+}
+
+.bo-loading--overlay .bo-loading__cat {
+  width: 34px;
+  height: 34px;
+  box-shadow: none;
+}
+
+.bo-loading--overlay .bo-loading__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bo-loading {
+    animation: none;
+  }
+
+  .bo-loading__cat {
+    display: none;
+  }
+
+  .bo-loading--overlay .bo-loading__label {
+    position: static;
+    width: auto;
+    height: auto;
+    clip: auto;
+    font-size: 10.5px;
+  }
 }

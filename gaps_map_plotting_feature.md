@@ -279,6 +279,8 @@ Only the save (M10).
 
 Not a Connect gap. CarrierWave stores to disk in development while this database's files live on S3, so `floorplates.svg_image.url` names a file the CMS host does not hold. The `plan-svg` route reads the S3 copy that sits beside the floorplate's image (`uploads/floorplate/svg_image/<id>/<file>`, same bucket as `standard_image_url`) when the CMS host answers 404; on staging and production the uploader's own URL is that S3 URL and the fallback never runs.
 
+**Update, September 27, 2026 (branch `feature/inventory_properties_issues`):** resolved at the source. `Connect::UploadUrl.upload` now answers the S3 copy itself whenever an uploader on file storage names a file that is not on disk (the bucket of the record's own `standard_image_url`, else the property's), so the floorplates JSON already carries the S3 SVG URL and the `plan-svg` route's own fallback was removed. The same rule serves the amenity galleries, elevator images and galleries, secondary images and the sitemap files (PYN_CONNECT_PROGRESS.md §23).
+
 ## Not gaps (decisions recorded elsewhere)
 
 - **Polygon labels.** The design prints every polygon's id over it; the real floor SVGs already carry their room numbers as `<text>`, so Connect labels only the polygons that hold something, are hovered, or are open.

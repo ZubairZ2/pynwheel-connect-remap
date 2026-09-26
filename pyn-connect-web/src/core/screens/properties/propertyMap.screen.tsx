@@ -51,10 +51,13 @@ const MapEditor = ({ map, initial }: { map: PropertyMap; initial: MapInitial | n
   const tabsRef = useRef<HTMLDivElement | null>(null);
   const [canScroll, setCanScroll] = useState({ left: false, right: false });
 
+  // Which arrow can still move the strip. Only a changed answer reaches state,
+  // so the scroll events of a smooth scroll do not re-render the editor.
   const measureTabs = useCallback(() => {
     const element = tabsRef.current;
     if (!element) return;
-    setCanScroll({ left: element.scrollLeft > 2, right: element.scrollLeft + element.clientWidth < element.scrollWidth - 2 });
+    const next = { left: element.scrollLeft > 2, right: element.scrollLeft + element.clientWidth < element.scrollWidth - 2 };
+    setCanScroll((current) => (current.left === next.left && current.right === next.right ? current : next));
   }, []);
 
   useEffect(() => {
@@ -66,7 +69,19 @@ const MapEditor = ({ map, initial }: { map: PropertyMap; initial: MapInitial | n
     return () => observer.disconnect();
   }, [measureTabs, tabs.length]);
 
-  const scrollTabs = (direction: -1 | 1) => tabsRef.current?.scrollBy({ left: direction * 260, behavior: 'smooth' });
+  // The selected floorplate stays in view: a deep link (`?level=`) or a pick
+  // from Tour Setup may land on a tab far along the strip.
+  useEffect(() => {
+    const active = tabsRef.current?.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]');
+    active?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }, [state.levelId]);
+
+  // One page of tabs per click: what the strip shows, less one tab so the last visible tab stays as the anchor.
+  const scrollTabs = (direction: -1 | 1) => {
+    const element = tabsRef.current;
+    if (!element) return;
+    element.scrollBy({ left: direction * Math.max(element.clientWidth - 120, 160), behavior: 'smooth' });
+  };
   const manualOn = state.tool === 'plot';
   const noLevel = !level;
 

@@ -1413,3 +1413,100 @@ Nothing else changed on the Rails side: no business logic, business rule, calcul
 - Commit (no AI attribution), then PR against `main`. Deploy both apps when wanted (Rails: the one serializer; Connect: the screens and the route handler).
 
 ---
+
+## 23. Phase 2j: Inventory and property issues — images, loading, floor strip, hydration, the Hazel pass (September 27, 2026)
+
+**Brief:** `issues_in_inevntory_properties.md` (untracked, like the other briefs). Fix the amenity images that read "Image unavailable" in the Edit dialog and "This image could not be loaded" in the eye viewer, add the old system's loading animation everywhere the app loads, make the Map & Plotting floorplate list a horizontal strip with working arrows, rebuild the Edit Tour Stop dialog to the plotting design, investigate the `cz-shortcut-listen` hydration warning, and validate everything end to end on the Hazel property with real UI tests. Minimal read-only JSON on existing controllers is allowed; the old Rails pages remain the behaviour source of truth.
+
+**Branch:** `feature/inventory_properties_issues`, from `feature/map_plotting_tour_setup` (`7539ffe7c`).
+
+### Investigation and reproduction (before any change)
+
+Every issue was reproduced in a clean headless Chrome (Playwright, no extensions) against the running CMS and `next dev`, on Hazel (property **1618**: QuadReal, Burnaby BC, 238 units, 17 floor plans, 31 floorplates with floor images and no floor SVG, 6 amenities, a 13-stop tour with 3 elevators and 220 hallway nodes).
+
+| Issue | Current behaviour (reproduced) | Old system behaviour | Root cause | Fix | Test |
+|---|---|---|---|---|---|
+| Amenity Edit: gallery photos "Image unavailable" | Penthouse South Lounge's 4 gallery photos requested from `http://127.0.0.1:3000/uploads/amenity_gallery/image/970/…`; the CMS answered its 404 page, Chrome reported `ERR_BLOCKED_BY_ORB`; the amenity's own image loaded | `amenities/_edit_amenity.html.haml` renders `amenity_gallery_image.image.url`; on staging that URL is `https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/amenity_gallery/image/970/…` (fog storage) and the photo renders | `AvatarUploader` stores to disk in development (`storage Rails.env.development? ? :file : :fog`) while this database was restored from staging: `image.url` names a file this machine never had. The amenity's own image works because the CMS persists its S3 URL in `standard_image_url` (`StandardUrl#set_standard_url`), which the JSON already preferred; gallery rows have no such column | `Connect::UploadUrl.upload` answers the S3 copy when an uploader on file storage names a file that is not on disk (below) | `hazel.spec.ts` "Amenities": 4 photos, sort order, every `<img>` on `amazonaws.com/uploads/amenity_gallery/image/`, all decoded, 0 "unavailable" |
+| Eye viewer: "This image could not be loaded" on photo 2 of 3 | Same URLs, same failure; photo 1 (the amenity image) loaded | Legacy lightbox opens `image.url` | Same | Same; the viewer also gained a real loading state | `hazel.spec.ts` "Amenities" (1 of 3 → 2 of 3 → 3 of 3, arrows, keys, close) and "image viewer" (loading, failure) |
+| No global loading state | Route `loading.tsx` files showed a line of text; images, the floor SVG and the wizard showed text or nothing | `.divLoading` / `.mapLoading` / `.modal-loader` overlays with `app/assets/images/loader.gif` (the cat with the pinwheel, 320 × 320, 357 KB) | No shared component | `LoadingIndicator` + `useImageStatus`, used everywhere below | `hazel.spec.ts` "Loading", "image viewer", "floor SVG" |
+| Floorplate list grows vertically; arrows dead | 31 tabs wrapped into a 570 px tall block; `scrollWidth == clientWidth`, both arrows disabled | The legacy page shows floor buttons in a row | `globals.css` kept two `.bo-map__levels` rules: the older one (`flex-wrap: wrap`, from the phase 2g layout) survived the plotting-design rule, which never set `flex-wrap`; the tabs wrapped, nothing overflowed, so the arrows had nothing to scroll | The stale rule removed, `flex-wrap: nowrap` explicit; page-wide scrolling per click; the selected tab scrolls into view; arrow state only re-renders on change | `hazel.spec.ts` "horizontal floorplate strip", "deep link", "3 floorplates … 19 scroll" |
+| Edit Tour Stop: Cancel / Save Changes stacked | The footer note (`flex: 1 1 260px`) plus two buttons wrapped inside the 520 px footer (`flex-wrap: wrap`) | Reference: one row, Cancel then Save Changes, 42 px | Footer layout | Note on its own row; the tour dialogs get the design's 22/24 px paddings, 18 px title, 42 px buttons that never wrap above 560 px | `hazel.spec.ts` "Tour Setup": panel 520 px, both buttons 42 px on one row, Cancel left of Save |
+| Hydration warning `<body cz-shortcut-listen="true">` | Not reproducible in a clean browser: `document.body` has no attributes and no console warning on Property Detail, Inventory, Map & Plotting or Tour Setup | — | `cz-shortcut-listen` is the attribute the ColorZilla Chrome extension adds to `<body>` on load; React 19 reports it as a server/client mismatch. `app/layout.tsx` renders a static `<html>`/`<body>`; nothing in the tree reads `Date`, `Math.random`, `window` or ids during render (the only client-only reads are inside `useEffect` or event handlers) | **No application change.** Not suppressed either: the warning is real in that browser and goes away with the extension off or in an incognito window | `hazel.spec.ts` "Hydration": zero body attributes and zero hydration messages across the four screens |
+
+Two smaller findings on the way: the sidebar logo's `next/image` warned on every page because CSS fixed only its height (now both sides are set to the rendered 103 × 24); and the floorplate card never showed "No SVG" because the state was only reached when a floorplate had no plan at all (it now reads "No SVG · plotted/total" for a floorplate with a floor image and no SVG, as the plotting design lists it).
+
+### Amenity images: the data flow, traced
+
+```
+Old:  AmenitiesController#edit → @amenity.amenity_galleries.order(:sort) → AmenityGallery#image (AvatarUploader, mount_base64_uploader)
+        → image.url → :fog (staging/production) https://<bucket>.s3….amazonaws.com/uploads/amenity_gallery/image/<id>/<file>
+                    → :file (development)       /uploads/amenity_gallery/image/<id>/<file> on the CMS host (no file locally)
+      the amenity's own image: standard_image_url (S3, copied after upload) through S3Acceleration#validated_image_url
+
+New:  AmenitiesController#index (format.json) → Connect::AmenitySerializer → Connect::UploadUrl
+        → image: UploadUrl.file(amenity, :image)            = standard_image_url (unchanged)
+        → gallery[].url: UploadUrl.upload(photo, :image, bucket: bucket_of(amenity, hint))
+             uploader.url; when the uploader is on file storage and the file is not on disk → "#{bucket}#{uploader.url}"
+             bucket = the S3 base of the amenity's standard_image_url, else the property's (bucket_hint: first standard URL among
+             its floorplates, amenities, units, floor plans; queried at most once per listing, only when needed)
+      → inventory.parser (`gallery[].url`) → amenityImages() → InteriorGrid / ImageViewer → <img src> (S3, public-read)
+```
+
+All six Hazel photos exist on the same bucket as the amenity's own image (`images-pynwheel-cms-v2`, HEAD 200, also through `s3-accelerate`). The same rule now serves every other upload without a stored S3 URL: floorplate SVGs (the `plan-svg` route's own bucket guess was removed; the listing already names the S3 file), secondary images of floor plans and units, elevator images and galleries, the sitemap's files and the shared SVG background. On staging and production the uploader's URL is already the S3 one and the rule never fires. `staging-pynwheel` objects without public-read (some 2934 elevator and stop images, HEAD 403 on the CMS's own `standard_image_url` too) still cannot render anywhere, and the UI now says so only when the request itself fails.
+
+### Loading: one component, the old asset
+
+- **Asset:** `app/assets/images/loader.gif` copied unchanged to `pyn-connect-web/public/images/loader.gif` (same bytes). `loader_.gif`, `loader1.gif` and `dots_loader.gif` are the legacy's other spinners; the cat is the one behind `.divLoading`, `.mapLoading` and `.modal-loader`.
+- **Component:** `core/components/atoms/LoadingIndicator.tsx` — `role="status"`, `aria-live="polite"`, the GIF on an 84 px white disc with a caption, five variants (`page`, `block`, `inline`, `cover`, `overlay`), a 200 ms delayed fade-in so a fast load never flashes it, and `prefers-reduced-motion` hides the animation and keeps the caption.
+- **Hook:** `core/hooks/useImageStatus.ts` — loading / ready / failed per `src`, also reading `complete` / `naturalWidth` on mount for an image that finished before React attached its handlers. Used by `SafeImage`, `MediaThumb`, `UploadSlot`'s preview, `ImageViewer` and the map canvas image.
+- **Where it shows:** every route `loading.tsx` (companies, properties, property, inventory, map, tour setup, unit detail) plus a new `(connect)/loading.tsx` for routes without their own; every thumbnail and gallery photo (overlay); the image viewer's stage (cover with "Loading image…"); the floor SVG and the floor image on the map canvas (cover); the Auto Plot wizard's "n units wait for their floor SVG" note and the Routing panel's "Routing…" (inline). Errors stay errors: `onError` / a failed request is the only way to "could not be loaded".
+
+### Map & Plotting: the strip
+
+`propertyMap.screen.tsx`: `scrollTabs` moves by one visible page (the strip's width less a tab), the selected tab is scrolled into view when `state.levelId` changes (deep links from Tour Setup land in view), and `measureTabs` only writes state when an arrow's answer changes, so smooth scrolling no longer re-renders the editor on every scroll event. Add Floorplate stays the last item of the row and opens the inventory `FloorplateDialog`; Save closes it. Canvas behaviour is unchanged: picking a floor still loads its image or SVG, polygons, pins, nodes, paths and the selection (the mapPlotting and Hazel specs assert it).
+
+### Tour Setup: the Edit Tour Stop dialog
+
+Same data as before (the stop's own name, kind, building and floor from the wayfinding JSON; its directional text as the talking point), on the reference's dialog: 520 px, 18 px title, the read-only note on its own row, Cancel and Save Changes 42 px side by side (the measured button boxes match the prototype's to the pixel). Validation lives in `dwellTimeProblem` (`tourSetup.generator.ts`): a dwell time is a whole number of minutes 0–999 or empty; the field shows the message, Save is disabled, and `saveDialog` refuses anyway. Save applies to the page's state only; Cancel discards; nothing is sent.
+
+### Old-system flows discovered and verified
+
+| Flow | Entry point | Controller / action | Data loaded | Interaction, modal, state | Error / empty | Navigation |
+|---|---|---|---|---|---|---|
+| Properties → property | sidebar | `communities#index` / `#edit` | Community | — | — | Connect: `/properties` → `/properties/:id` |
+| Amenity Images | property menu | `amenities#index` (`index.html.haml`, `_index`) | `community.amenities.order(id: :desc)`, `show_amenity_name` | ADD FILES (`create`, `AmenityImagesJob`), "Show Amenity Name on Webpages" toggle (`update_amenity_toggle`), per-image crop modal (`show_amenity_image_in_modal` → Jcrop → `crop_amenity_image`), lightbox on the image, delete | no amenities → the upload box only | Connect: Inventory → Amenities tab |
+| Amenity edit | pencil on the image | `amenities#edit` (`edit.html.haml`) | Amenity, `ordered_doors`, floors of the building's floorplates, lock providers | form: name, video label / link, building, floor (select over the plotted plate's floors, else a text field), type, lock provider / door / access code / lock search, Show in Stops List, description and directional text (wysihtml5), the gallery (`_edit_amenity`: sortable, lightbox, pencil → `amenity_galleries#edit` modal (name), delete → `amenity_galleries#destroy`), drag-and-drop upload (`saveAmenityGallery`) | — | back to Amenity Images / the unit or floor plan it belongs to (`previous_url`) |
+| Property Map → Floor plates → Plot Units | property menu | `floorplates#index` → `#plotexp` | floorplates, units, amenities, `svg_metadata`, `pointer_data` | image / SVG plotting (§22) | no SVG → image section only | Connect: Map & Plotting |
+| Property Map → Auto Wayfinding | property menu | `automate_plotting#index` | hallways, elevators, entry points, doors, tour, stops | pathway tools (§20) | — | Connect: Map & Plotting "Pathways & pins" |
+| Tour Setup → Tour Stops | sidebar (self-tour) | `tours#index` | tour, stops, elevators, entry points | building / floor buttons, add unit / amenity (`ajaxplottourstoppoint`), sortable list, eye, edit (→ the unit / amenity / elevator / entry point form), delete (`tour_stops#destroy`) | no stops → empty table | Connect: Tour Setup → Tour Stops |
+| Elevators | sidebar | `elevators#index` / `#edit` | elevators, `elevator_galleries`, `elevator_banks` | name, description, directional text, floors, building, lock, gallery, banks | no photo → none shown | Connect: Elevators & Locks |
+| Floor plans, Units | property menu | `floorplans#index`, `units#index` | listings, images, interior amenities | edit forms, crop modals | — | Connect: Inventory tabs, Unit Detail |
+
+### Test matrix (from the old system's cases) and results
+
+| Area | Cases | Where |
+|---|---|---|
+| Images | one image (The Lobby), several (Fitness Centre: own + 2, Penthouse South Lounge: 4 in `sort` order), no image (the Add dialog's drop zone; no Hazel — or any — amenity lacks one in this database), slow file (loading state), broken file (failure text), next / previous / keys / close | `hazel.spec.ts` Amenities, image viewer |
+| Floorplates | no SVG (all 31 Hazel plates, "No SVG · n/n"), SVG present (1468, with the canvas loading state), plotted / partial / none (the progress bar and label), 3 plates (203, no scrolling, arrows off), 19 (816), 31 (Hazel), first / middle / last selected (deep links `?level=floorplate:2241 / 2256 / 2271`) | `hazel.spec.ts` strip, deep link, 3 / 19, floor SVG; `mapPlotting.spec.ts` |
+| Units | plotted / not plotted, available and other statuses, provider id, manual and feed values | `mapPlotting.spec.ts`, `amenities.spec.ts`, phase 2f specs (unchanged) |
+| Amenities | image / gallery, video (Fitness Centre's 3D Tour link) / none (Boardroom), plotted, in / hidden from stops (Penthouse South Lounge), lock provider (Zerv → "Pynwheel Access") / none, search, Type and Floor filters | `hazel.spec.ts` Amenities; `amenities.spec.ts` (2157) |
+| Modals | open, close, validation (dwell time), Save (local), Cancel (discard), empty state, read-only note, no request | `hazel.spec.ts` Tour Setup, Amenities |
+| Navigation | forward / backward arrows, direct selection, deep links, Properties → Detail → Inventory → Amenities → Map ↔ Tour Setup, browser back | `hazel.spec.ts` Navigation, strip |
+| Loading | route loading (slowed payload, activated without prefetch), image loading, SVG loading, error state | `hazel.spec.ts` Loading, image viewer, floor SVG |
+| Hydration | clean-browser console and `<body>` attributes on the four screens | `hazel.spec.ts` Hydration |
+
+**Results (Sep 27):** `tsc` clean; `tests/e2e/hazel.spec.ts` 12 passed (43 s); the existing suites (amenities, mapPlotting, tourSetup, screens, routes, interactions) 87 passed (2.1 min) — 99 in all. Every real-data test ends on the same assertion: no non-GET request left the browser. Hand checks in the browser pane and Playwright scripts: Hazel's gallery photos and viewer (all 200 from S3), the strip at 31 / 19 / 3 plates, the Edit Tour Stop dialog against the prototype's own dialog (button boxes identical: Cancel at x 734.75, Save Changes at x 826.6, both 42 px), the loading indicator on the viewer, the map canvas and a slowed route.
+
+### Backend
+
+Rails changes, all read-only JSON: `app/serializers/connect/upload_url.rb` (the S3 resolution above, `bucket_hint`, `bucket_of`), and a `bucket:` argument threaded through `amenity_serializer.rb`, `floorplan_serializer.rb`, `unit_serializer.rb`, `floorplate_serializer.rb`, `wayfinding_serializer.rb` and the sitemap / shared-background block of `FloorplatesController#render_connect_floorplates`. No business logic, business rules, schema, migration, validation, authorization, storage configuration or unrelated backend behaviour changed; no file was moved or written.
+
+### Components
+
+Reused: `Modal`, `SafeImage`, `MediaThumb`, `UploadSlot`, `ImageViewer`, `InteriorGrid`, `FloorplateDialog`, `ListingScreenTemplate`, the map and tour screens. New: `LoadingIndicator` (the one loading component), `useImageStatus` (the one image-state hook), `(connect)/loading.tsx`. Removed: the `plan-svg` route's bucket fallback, the stale floor-tab CSS.
+
+### Remaining
+
+- `staging-pynwheel` objects that are not public-read (some elevator and stop images of 2934) cannot render in any UI; not a Connect gap.
+- Every write remains local (M1–M13, T1–T7, GA3): plotting, stop edits, dwell time, uploads, publish.
+- The eye viewer streams the full-size photo (some Hazel photos are 5,000 px wide); the CMS's `thumb` versions are not exposed and the legacy pages use the full file too.

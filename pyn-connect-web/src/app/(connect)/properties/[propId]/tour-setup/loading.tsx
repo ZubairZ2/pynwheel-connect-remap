@@ -1,16 +1,13 @@
 import { CORE_STRINGS } from '~/config/app/strings';
 import { i18n } from '~/resources/i18n';
+import { LoadingIndicator } from '~/core/components/atoms/LoadingIndicator';
 import { ListingScreenTemplate } from '~/core/templates/ListingScreenTemplate';
 
-/** Shown while the property's tour, inventory and wayfinding graph load. */
+/** Shown while the property's tour, stops and elevators load. */
 export default function TourSetupLoading() {
   return (
     <ListingScreenTemplate headerTitle={i18n.t(CORE_STRINGS.tourSetup.title)}>
-      <div className="bo-inv">
-        <div className="bo-section bo-section--empty" role="status">
-          <p className="bo-section__subtitle">{i18n.t(CORE_STRINGS.tourSetup.loading)}</p>
-        </div>
-      </div>
+      <LoadingIndicator variant="page" label={i18n.t(CORE_STRINGS.tourSetup.loading)} />
     </ListingScreenTemplate>
   );
 }

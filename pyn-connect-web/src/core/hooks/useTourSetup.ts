@@ -15,6 +15,7 @@ import {
   generateStopCards,
   generateTourSummary,
   initialTourState,
+  dwellTimeProblem,
   stopEndpoints,
   stopSourceOptions,
   tourGraphs,
@@ -132,9 +133,14 @@ export const useTourSetup = (map: PropertyMap) => {
 
   const closeDialog = useCallback(() => patch(() => ({ dialog: null })), [patch]);
 
+  // The dwell time rule, for the field's message and the Save button; null when the open dialog has no dwell time or it is fine.
+  const dialogProblem = state.dialog && (state.dialog.kind === 'addStop' || state.dialog.kind === 'editStop') ? dwellTimeProblem(state.dialog.duration) : null;
+
   const saveDialog = useCallback(() => {
     const dialog = state.dialog;
     if (!dialog) return;
+    // Checked on this page only: an invalid dwell time never leaves the dialog (nothing is sent anyway).
+    if ((dialog.kind === 'addStop' || dialog.kind === 'editStop') && dwellTimeProblem(dialog.duration)) return;
     if (dialog.kind === 'addStop') {
       const ref = parsePinKey(dialog.source);
       if (!ref) {
@@ -318,6 +324,7 @@ export const useTourSetup = (map: PropertyMap) => {
     startPoints,
     buildings,
     hasStops: stops.length > 0,
+    dialogProblem,
     actions: {
       setTab: (tab: TourTab) => patch(() => ({ tab })),
       moveStop,

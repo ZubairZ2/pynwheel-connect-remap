@@ -664,3 +664,41 @@ CarrierWave stores to disk in development (`storage Rails.env.development? ? :fi
 
 - `tests/e2e/mapPlotting.spec.ts` (1468 with SVG: polygons, Manual Plot, the wizard's four steps, Publish, Add Floorplate, Remove Plan, Grid, Junction; 2919 raster: the pathway tools, both algorithms) and `tests/e2e/tourSetup.spec.ts` (2934: reorder, hide, edit, add, remove, gate, add bank, remove, route, publish), both real-data, both asserting 0 non-GET requests. Session env as §13.
 - Real properties for this screen: **3837 Sylo** (floor 1 SVG with ids A102…, 84 unplotted units → the wizard's exact-match case; floors 0, 2–4 plotted by pointer), **1468** (floor SVG + image + 20 hallways + 4 elevators, 3 pointer units), **2934** (Tour Setup: 20 stops, 4 elevators, Latch bank, gallery, 2 entry points), 4397 (1087 pointers), 2919 / 1264 / 236 as in §16.
+
+## 19. Images, loading, the floorplate strip and hydration: implementation knowledge (September 27, 2026)
+
+Added with phase 2j (branch `feature/inventory_properties_issues`; PYN_CONNECT_PROGRESS.md §23; gaps updates in `gaps_amenities_feature.md`, `gaps_map_plotting_feature.md` M13 and `gaps_tour_setup_feature.md` T7).
+
+### Upload URLs
+
+`Connect::UploadUrl` is the one place the JSON turns a CarrierWave column into a URL:
+
+- `image(record, base_url, bucket:)` — the main `image`: the stored `standard_image_url` (S3, copied by `StandardUrl#set_standard_url` after every upload, served through `S3Acceleration`), else `upload`.
+- `upload(record, column, base_url, bucket:)` — any other mounted upload: `uploader.url`; **when the uploader is on file storage (`uploader.class.storage == CarrierWave::Storage::File`, i.e. development) and the stored file is not on disk (`uploader.file.exists?` false), the same key on the bucket** (`"#{bucket}#{uploader.url}"`, the path fog writes to). `bucket` is an S3 base or a resolver.
+- `bucket_hint(community)` — a memoised lambda: the S3 base of the first `standard_image_url` among the property's floorplates, amenities, units and floor plans; at most one query per listing, only when a file is missing. `bucket_of(record, fallback)` prefers the record's own `standard_image_url` bucket (the gallery photo beside its amenity's image, the SVG beside its floorplate's image).
+- Nothing else about images changed. On staging and production the uploader URL is already the S3 URL and the rule never fires. A key on a bucket without public-read (`staging-pynwheel`, HEAD 403) fails in every UI, including the legacy one.
+
+The `plan-svg` route now only proxies the URL the floorplates listing names (its own bucket guess is gone).
+
+### Loading
+
+`LoadingIndicator` (`core/components/atoms`): the old CMS `loader.gif` (copied unchanged to `public/images/loader.gif`) on a white disc with a caption; variants `page` (route `loading.tsx`), `block`, `inline` (wizard note, Routing…), `cover` (the viewer stage, the map canvas), `overlay` (thumbnails). It fades in after 200 ms and hides the animation under `prefers-reduced-motion`. `useImageStatus(src)` gives every `<img>` a loading / ready / failed status per `src` (with a mount-time `complete` / `naturalWidth` check for images that finished before hydration); give the `<img>` `key={src}`. A "could not be loaded" label is only ever the result of `onError` or a request that failed.
+
+### The floorplate strip
+
+`.bo-map__levels` is a single `flex-wrap: nowrap`, `overflow-x: auto` row inside `.bo-map__levelswrap`; the arrows scroll by one visible page, `onScroll` re-measures (state changes only when an arrow's answer changes), and an effect scrolls the selected tab into view on `state.levelId` (deep links). The earlier phase's `.bo-map__levels { flex-wrap: wrap }` rule was the cause of the vertical list; do not reintroduce a second definition. A floorplate card reads "No SVG · plotted/total" whenever it has no floor SVG (image or not), "No plan" when it has no file at all.
+
+### The tour dialogs
+
+`Modal` with `className="bo-tour__dialog"`: 22/24 px head and body, 18 px title, 16 px field gap, footer `flex-wrap: nowrap` with the read-only note first and 42 px buttons; below 560 px the note wraps to its own row. `dwellTimeProblem` (`tourSetup.generator.ts`) is the dialog's validation; `useTourSetup` exposes it as `dialogProblem` and `saveDialog` refuses an invalid dwell time.
+
+### Hydration
+
+`cz-shortcut-listen="true"` on `<body>` is added by the ColorZilla extension; React 19 flags it as a mismatch. In a clean browser the four screens hydrate with no warnings and no body attributes (`hazel.spec.ts` asserts it). No `suppressHydrationWarning` was added; nothing in the tree renders client-only values.
+
+### Verifying locally (traps met on Sep 27)
+
+- The shell's ruby is 3.1.4; the CMS needs 3.3.5. Mint sessions and run `rails runner` with the 3.3.5 toolchain on `PATH` / `GEM_HOME` / `GEM_PATH` (`~/.rvm/rubies/ruby-3.3.5/bin/ruby -S bundle exec …`).
+- A minted Devise session expires after a day or so; a smoke that suddenly lands on `/sign-in` means re-mint, not a regression.
+- `next dev` (:3001) and puma (:3000) do not survive between sessions; `.claude/launch.json` (ignored) starts both.
+- ColorZilla-style extensions make the hydration warning; test hydration in a clean profile.

@@ -274,6 +274,9 @@ class FloorplatesController < ApplicationController
     community = current_community
     tour = community.community_tour
     sitemap = community.sitemap
+    # Where the property's uploads live on S3, for a file the CMS host does
+    # not hold on disk (Connect::UploadUrl).
+    bucket = Connect::UploadUrl.bucket_hint(community)
 
     render_connect_inventory(
       Connect::FloorplateSerializer.collection(@floorplates, community, base_url: request.base_url),
@@ -282,11 +285,11 @@ class FloorplatesController < ApplicationController
         map_type: community.has_floorplates? ? "floorplates" : "sitemap",
         svg_mode: community.enable_svg_mode.present?,
         tour_stop_count: tour ? tour.tour_stops.count : 0,
-        shared_background: Connect::UploadUrl.file(community, :background_svg_image, request.base_url),
+        shared_background: Connect::UploadUrl.file(community, :background_svg_image, request.base_url, bucket: bucket),
         sitemap: sitemap && {
           id: sitemap.id,
-          image: Connect::UploadUrl.file(sitemap, :image, request.base_url),
-          svg: Connect::UploadUrl.file(sitemap, :svg_image, request.base_url),
+          image: Connect::UploadUrl.file(sitemap, :image, request.base_url, bucket: bucket),
+          svg: Connect::UploadUrl.file(sitemap, :svg_image, request.base_url, bucket: Connect::UploadUrl.bucket_of(sitemap, bucket)),
           width: sitemap.width,
           height: sitemap.height
         }

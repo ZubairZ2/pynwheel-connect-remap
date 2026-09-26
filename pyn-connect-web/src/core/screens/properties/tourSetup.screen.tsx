@@ -433,7 +433,7 @@ const RoutingTab = ({ controller, propId }: { controller: TourSetupController; p
 };
 
 const TourDialogs = ({ controller }: { controller: TourSetupController }) => {
-  const { state, sources, buildings, summary, actions, stops, map } = controller;
+  const { state, sources, buildings, summary, actions, stops, map, dialogProblem } = controller;
   const dialog = state.dialog;
   const editing = dialog?.kind === 'editStop' ? stops.find((row) => row.key === dialog.key) ?? null : null;
   const confirm = state.confirm;
@@ -443,10 +443,23 @@ const TourDialogs = ({ controller }: { controller: TourSetupController }) => {
       <button type="button" className="bo-btn bo-btn--secondary" onClick={actions.closeDialog}>
         {i18n.t(T.dialogs.cancel)}
       </button>
-      <button type="button" className="bo-btn bo-btn--primary" onClick={actions.saveDialog}>
+      <button type="button" className="bo-btn bo-btn--primary" onClick={actions.saveDialog} disabled={!!dialogProblem}>
         {i18n.t(dialog?.kind === 'addStop' ? T.dialogs.addStop : dialog?.kind === 'addElevator' ? T.dialogs.addElevator : T.dialogs.saveChanges)}
       </button>
     </>
+  );
+  const dwellField = (value: string, hint: string) => (
+    <label className="bo-dlg__field">
+      <span className="bo-dlg__fieldlabel">{i18n.t(T.dialogs.duration)}</span>
+      <input
+        className="bo-field"
+        inputMode="numeric"
+        value={value}
+        aria-invalid={dialogProblem ? 'true' : undefined}
+        onChange={(event) => actions.setDialog({ duration: event.target.value.replace(/[^0-9]/g, '') })}
+      />
+      {dialogProblem ? <span className="bo-dlg__fielderror" role="alert">{dialogProblem}</span> : <span className="bo-dlg__fieldhint">{hint}</span>}
+    </label>
   );
 
   return (
@@ -458,6 +471,7 @@ const TourDialogs = ({ controller }: { controller: TourSetupController }) => {
         width={520}
         onClose={actions.closeDialog}
         closeLabel={i18n.t(T.dialogs.close)}
+        className="bo-tour__dialog"
         footer={footer}
       >
         {dialog?.kind === 'addStop' && (
@@ -473,11 +487,7 @@ const TourDialogs = ({ controller }: { controller: TourSetupController }) => {
               </select>
               <span className="bo-dlg__fieldhint">{i18n.t(T.dialogs.sourceHint)}</span>
             </label>
-            <label className="bo-dlg__field">
-              <span className="bo-dlg__fieldlabel">{i18n.t(T.dialogs.duration)}</span>
-              <input className="bo-field" inputMode="numeric" value={dialog.duration} onChange={(event) => actions.setDialog({ duration: event.target.value.replace(/[^0-9]/g, '') })} />
-              <span className="bo-dlg__fieldhint">{i18n.t(T.dialogs.durationHint)}</span>
-            </label>
+            {dwellField(dialog.duration, i18n.t(T.dialogs.durationHint))}
             <label className="bo-dlg__field">
               <span className="bo-dlg__fieldlabel">{i18n.t(T.stops.talkingPoint)}</span>
               <textarea className="bo-field bo-dlg__textarea" value={dialog.talkingPoint} onChange={(event) => actions.setDialog({ talkingPoint: event.target.value })} />
@@ -486,11 +496,7 @@ const TourDialogs = ({ controller }: { controller: TourSetupController }) => {
         )}
         {dialog?.kind === 'editStop' && (
           <div className="bo-dlg bo-dlg--stacked">
-            <label className="bo-dlg__field">
-              <span className="bo-dlg__fieldlabel">{i18n.t(T.dialogs.duration)}</span>
-              <input className="bo-field" inputMode="numeric" value={dialog.duration} onChange={(event) => actions.setDialog({ duration: event.target.value.replace(/[^0-9]/g, '') })} />
-              <span className="bo-dlg__fieldhint">{i18n.t(T.dialogs.durationHint)}</span>
-            </label>
+            {dwellField(dialog.duration, i18n.t(T.dialogs.durationHint))}
             <label className="bo-dlg__field">
               <span className="bo-dlg__fieldlabel">{i18n.t(T.stops.talkingPoint)}</span>
               <textarea className="bo-field bo-dlg__textarea" value={dialog.talkingPoint} onChange={(event) => actions.setDialog({ talkingPoint: event.target.value })} />

@@ -126,6 +126,8 @@ Optional: a from/to variant of `shortest_path` so the preview and the tour app a
 
 Not a Connect gap, but the reason elevator photos and the tour stop images read "Photo unavailable" locally: CarrierWave stores to disk in development (`storage Rails.env.development? ? :file : :fog`) while this database's files live on S3. The floor images use their S3 copy (`standard_image_url`); elevator and gallery images have no such copy, so their URLs point at the CMS host, which has no file. On staging and production the same records serve from S3 and render.
 
+**Update, September 27, 2026 (branch `feature/inventory_properties_issues`):** resolved. `Connect::UploadUrl.upload` now answers the S3 copy of any upload whose file is not on this machine (the bucket the property's `standard_image_url`s name), so the wayfinding JSON carries S3 URLs for elevator images and galleries and Tour Setup renders them locally; nothing changed for staging and production, where the uploader's URL already was that S3 URL (PYN_CONNECT_PROGRESS.md §23).
+
 ---
 
 ## Not gaps (decisions recorded elsewhere)
