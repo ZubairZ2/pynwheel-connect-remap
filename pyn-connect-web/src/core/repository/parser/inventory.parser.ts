@@ -295,6 +295,9 @@ export const parseInventoryAmenities = (payload: unknown) => {
         yPlot: num(source.yPlot),
         svgPointer: svgPointer(source.svgPointer),
         tourStop: flag(source.tourStop),
+        // Absent on an older backend: the CMS default for the column is true.
+        showInStops: source.showInStops !== false,
+        lockProvider: text(source.lockProvider),
         image: upload(source.image),
         gallery: (Array.isArray(source.gallery) ? (source.gallery as Source[]) : []).map((photo) => ({
           id: count(photo.id),
@@ -303,12 +306,19 @@ export const parseInventoryAmenities = (payload: unknown) => {
           url: text(photo.url)
         })),
         videoLink: text(source.videoLink),
+        videoLinkButtonLabel: text(source.videoLinkButtonLabel),
         description: text(source.description),
         directionalText: text(source.directionalText)
       };
     }),
     amenityCategories: (Array.isArray(meta.categoryOptions) ? meta.categoryOptions : [])
       .map((option) => text(option))
-      .filter((option): option is string => !!option)
+      .filter((option): option is string => !!option),
+    selfTour: flag(meta.selfTour),
+    enableLocks: flag(meta.enableLocks),
+    showAmenityName: flag(meta.showAmenityName),
+    amenityLockOptions: (Array.isArray(meta.lockOptions) ? (meta.lockOptions as Source[]) : [])
+      .map((option) => ({ id: text(option.id) ?? '', label: text(option.label) ?? '' }))
+      .filter((option) => option.id)
   };
 };

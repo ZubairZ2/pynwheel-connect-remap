@@ -256,39 +256,74 @@ export const lockDeviceOptions = (inventory: PropertyInventory, provider: string
 
 /* ---------------- Amenity ---------------- */
 
+/**
+ * The legacy amenity form (`amenities/edit.html.haml`): name, type, building
+ * and floor, the video button, the lock provider, "Show in Stops List", the
+ * description and directional text, the amenity image and its gallery.
+ */
 export interface AmenityForm {
   name: string;
-  category: string;
-  /** '' (not placed), 'sitemap', or a floorplate id. */
-  placement: string;
-  photos: ImageDescriptor[];
+  type: string;
+  building: string;
+  floor: string;
+  videoLabel: string;
+  videoLink: string;
+  lock: string;
+  showInStops: boolean;
+  description: string;
+  directional: string;
+  image: UploadFileDescriptor | null;
+  gallery: ImageDescriptor[];
 }
 
 export const amenityForm = (amenity: InventoryAmenity | null): AmenityForm => ({
   name: amenity?.name ?? '',
-  category: amenity?.category ?? '',
-  placement:
-    amenity?.ownerType === 'Sitemap'
-      ? 'sitemap'
-      : amenity?.ownerType === 'Floorplate' && amenity.ownerId != null
-        ? String(amenity.ownerId)
-        : '',
-  photos: [
-    ...(amenity?.image ? [{ name: amenity.name, src: amenity.image.url }] : []),
-    ...(amenity?.gallery ?? [])
-      .filter((photo): photo is typeof photo & { url: string } => !!photo.url)
-      .map((photo, index) => ({ name: photo.name ?? t(S.amenities.photo, { position: index + 1 }), src: photo.url }))
-  ]
+  type: amenity?.category ?? '',
+  building: amenity?.building ?? (amenity?.ownerType === 'Floorplate' ? (amenity.ownerBuilding ?? '') : ''),
+  floor: text(amenity?.floor),
+  // The CMS defaults a new amenity's label to "PLAY VIDEO".
+  videoLabel: amenity ? (amenity.videoLinkButtonLabel ?? '') : i18n.t(S.dialogs.amenity.videoLabelPlaceholder),
+  videoLink: amenity?.videoLink ?? '',
+  lock: amenity?.lockProvider ?? '',
+  showInStops: amenity?.showInStops ?? true,
+  description: plainText(amenity?.description ?? null),
+  directional: plainText(amenity?.directionalText ?? null),
+  image: amenity ? uploadFile(amenity.image) : null,
+  gallery: (amenity?.gallery ?? [])
+    .filter((photo): photo is typeof photo & { url: string } => !!photo.url)
+    .map((photo, index) => ({ name: photo.name ?? t(S.amenities.photo, { position: index + 1 }), src: photo.url }))
 });
 
-export const amenityPlacementOptions = (inventory: PropertyInventory): FilterOption[] => [
-  { id: '', label: i18n.t(S.dialogs.amenity.notPlaced) },
-  ...(inventory.mapType === 'sitemap' || inventory.sitemap ? [{ id: 'sitemap', label: i18n.t(S.amenities.propertyMap) }] : []),
-  ...inventory.floorplates.map((plate) => ({
-    id: String(plate.id),
-    label: [floorplateTitle(plate), plate.building].filter(Boolean).join(' · ')
-  }))
-];
+/** `Amenity::AMENITY_TYPE`, plus the amenity's own type when it is not in that list any more. */
+export const amenityTypeOptions = (inventory: PropertyInventory, current: string): FilterOption[] => {
+  const types = [...inventory.amenityCategories];
+  if (current && !types.includes(current)) types.push(current);
+  return [{ id: '', label: i18n.t(S.dialogs.amenity.typePlaceholder) }, ...types.map((type) => ({ id: type, label: type }))];
+};
+
+/** The buildings the property's floorplates, units and amenities name, plus the amenity's own. */
+export const amenityBuildingOptions = (inventory: PropertyInventory, current: string): FilterOption[] => {
+  const buildings = new Set(buildingOptions(inventory));
+  inventory.amenities.forEach((amenity) => {
+    if (amenity.building) buildings.add(amenity.building);
+  });
+  if (current) buildings.add(current);
+  return [
+    { id: '', label: i18n.t(S.dialogs.amenity.selectBuilding) },
+    ...[...buildings].sort(naturalCompare).map((building) => ({ id: building, label: building }))
+  ];
+};
+
+/**
+ * "Select Lock Provider" as the amenity form fills it (`Community#lock_options`,
+ * from `amenities.json` meta), plus the amenity's current provider so an Edit
+ * always shows its value. Zerv is sold as Pynwheel Access.
+ */
+export const amenityLockOptions = (inventory: PropertyInventory, current: string): FilterOption[] => {
+  const options = inventory.amenityLockOptions.map((option) => ({ id: option.id, label: lockText(option.id) }));
+  if (current && !options.some((option) => option.id === current)) options.push({ id: current, label: lockText(current) });
+  return [{ id: '', label: i18n.t(S.dialogs.amenity.lockPlaceholder) }, ...options];
+};
 
 /* ---------------- Mass overrides ---------------- */
 

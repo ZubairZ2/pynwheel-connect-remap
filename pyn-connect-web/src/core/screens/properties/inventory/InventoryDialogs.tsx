@@ -10,8 +10,10 @@ import type { InventoryButton, PropertyInventory } from '~/core/models/data/prop
 import type { ImageDescriptor } from '~/core/utils/generator/inventory/inventory.types';
 import {
   MASS_OVERRIDE_ACTIONS,
+  amenityBuildingOptions,
   amenityForm,
-  amenityPlacementOptions,
+  amenityLockOptions,
+  amenityTypeOptions,
   buildingOptions,
   floorplanForm,
   floorplateDialogTitle,
@@ -24,7 +26,7 @@ import {
   unitForm,
   type MassOverrideAction
 } from '~/core/utils/generator/inventory/inventoryForms.generator';
-import { S, rangeText, t } from '~/core/utils/generator/inventory/inventoryText';
+import { S, counted, rangeText, t } from '~/core/utils/generator/inventory/inventoryText';
 import {
   DialogFooter,
   Field,
@@ -587,57 +589,141 @@ const UnitDialog = ({ inventory, id, onClose, onView }: DialogProps) => {
 
 /* ---------------- Amenity ---------------- */
 
+/**
+ * The amenities design's Add / Edit Amenity dialog, on the legacy amenity
+ * form's real fields. Every field can be changed here; Save only closes.
+ */
 const AmenityDialog = ({ inventory, id, onClose, onView }: DialogProps) => {
   const amenity = inventory.amenities.find((candidate) => candidate.id === id) ?? null;
   const [form, setForm] = useState(() => amenityForm(amenity));
   const pick = usePickedFiles();
   const A = S.dialogs.amenity;
-  const categories = [...new Set([...inventory.amenityCategories, ...(form.category ? [form.category] : [])])];
+  const set = (patch: Partial<typeof form>) => setForm({ ...form, ...patch });
 
   return (
     <Modal
       open
-      title={amenity ? `${i18n.t(A.editTitle)} · ${amenity.name}` : i18n.t(A.addTitle)}
-      width={560}
+      title={i18n.t(amenity ? A.editTitle : A.addTitle)}
+      subtitle={i18n.t(A.subtitle)}
+      width={820}
       onClose={onClose}
       closeLabel={i18n.t(S.dialogs.close)}
       footer={<DialogFooter saveLabel={i18n.t(amenity ? A.editSave : A.addSave)} onClose={onClose} />}
     >
-      <div className="bo-dlg bo-dlg--stacked">
-        <Field label={i18n.t(A.name)} wide>
-          <input className="bo-field" value={form.name} placeholder={i18n.t(A.namePlaceholder)} onChange={(event) => setForm({ ...form, name: event.target.value })} />
-        </Field>
-        <Field label={i18n.t(A.category)} wide>
-          <select className="bo-field" value={form.category} onChange={(event) => setForm({ ...form, category: event.target.value })}>
-            <option value="">{i18n.t(A.noCategory)}</option>
-            {categories.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field label={i18n.t(A.placement)} wide>
-          <select className="bo-field" value={form.placement} onChange={(event) => setForm({ ...form, placement: event.target.value })}>
-            {amenityPlacementOptions(inventory).map((option) => (
+      <div className="bo-dlg">
+        <FormRow label={i18n.t(A.name)} hint={i18n.t(A.nameHint)}>
+          <input className="bo-field" value={form.name} placeholder={i18n.t(A.namePlaceholder)} onChange={(event) => set({ name: event.target.value })} />
+        </FormRow>
+        <FormRow label={i18n.t(A.type)} hint={i18n.t(A.typeHint)}>
+          <select className="bo-field" value={form.type} aria-label={i18n.t(A.type)} onChange={(event) => set({ type: event.target.value })}>
+            {amenityTypeOptions(inventory, amenity?.category ?? '').map((option) => (
               <option key={option.id} value={option.id}>
                 {option.label}
               </option>
             ))}
           </select>
-        </Field>
-        <Field label={i18n.t(A.gallery)} wide>
-          <InteriorGrid
-            images={form.photos}
-            onView={(index) => onView(form.photos, index)}
-            onAdd={(files) =>
-              setForm({ ...form, photos: [...form.photos, ...files.map((file) => ({ name: file.name, src: pick(file).src as string }))] })
-            }
-            addLabel={i18n.t(S.dialogs.floorplan.addImages)}
-            viewAllLabel={i18n.t(S.dialogs.floorplan.viewAll)}
-            leadLabel={i18n.t(S.dialogs.floorplan.lead)}
+        </FormRow>
+        <FormRow label={i18n.t(A.location)} hint={i18n.t(A.locationHint)}>
+          <div className="bo-dlg__grid bo-dlg__grid--two">
+            <Field label={i18n.t(A.building)}>
+              <select className="bo-field" value={form.building} onChange={(event) => set({ building: event.target.value })}>
+                {amenityBuildingOptions(inventory, form.building).map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label={i18n.t(A.floor)}>
+              <input className="bo-field" value={form.floor} placeholder={i18n.t(A.floorPlaceholder)} onChange={(event) => set({ floor: event.target.value })} />
+            </Field>
+          </div>
+        </FormRow>
+        <FormRow label={i18n.t(A.video)} hint={i18n.t(A.videoHint)}>
+          <div className="bo-dlg__grid bo-dlg__grid--two">
+            <Field label={i18n.t(A.videoLabel)}>
+              <input
+                className="bo-field"
+                value={form.videoLabel}
+                placeholder={i18n.t(A.videoLabelPlaceholder)}
+                maxLength={15}
+                onChange={(event) => set({ videoLabel: event.target.value })}
+              />
+            </Field>
+            <Field label={i18n.t(A.videoLink)}>
+              <input className="bo-field" value={form.videoLink} placeholder="https://…" onChange={(event) => set({ videoLink: event.target.value })} />
+            </Field>
+          </div>
+        </FormRow>
+        <FormRow label={i18n.t(A.lock)} hint={i18n.t(A.lockHint)}>
+          <select
+            className="bo-field"
+            value={form.lock}
+            aria-label={i18n.t(A.lock)}
+            disabled={!inventory.enableLocks}
+            onChange={(event) => set({ lock: event.target.value })}
+          >
+            {amenityLockOptions(inventory, amenity?.lockProvider ?? '').map((option) => (
+              <option key={option.id} value={option.id}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          {!inventory.enableLocks && <span className="bo-dlg__fieldhint">{i18n.t(A.locksOff)}</span>}
+        </FormRow>
+        <FormRow label={i18n.t(A.showInStops)} hint={i18n.t(A.showInStopsHint)}>
+          <SwitchField label={i18n.t(A.showInStops)} on={form.showInStops} onToggle={() => set({ showInStops: !form.showInStops })} />
+          {!inventory.selfTour && <span className="bo-dlg__fieldhint">{i18n.t(A.selfTourOff)}</span>}
+        </FormRow>
+        <FormRow label={i18n.t(A.description)} hint={i18n.t(A.descriptionHint)}>
+          <textarea
+            className="bo-field bo-dlg__textarea bo-dlg__textarea--tall"
+            value={form.description}
+            placeholder={i18n.t(A.description)}
+            aria-label={i18n.t(A.description)}
+            onChange={(event) => set({ description: event.target.value })}
           />
-        </Field>
+        </FormRow>
+        <FormRow label={i18n.t(A.directional)} hint={i18n.t(A.directionalHint)}>
+          <textarea
+            className="bo-field bo-dlg__textarea"
+            value={form.directional}
+            placeholder={i18n.t(A.directional)}
+            aria-label={i18n.t(A.directional)}
+            onChange={(event) => set({ directional: event.target.value })}
+          />
+          <span className="bo-dlg__fieldhint">{i18n.t(A.directionalNote)}</span>
+        </FormRow>
+        <FormRow label={i18n.t(A.image)} hint={i18n.t(A.imageHint)}>
+          <UploadSlot
+            file={form.image}
+            accept="image/png,image/jpeg"
+            hint={i18n.t(A.imageUploadHint)}
+            labels={uploadLabels()}
+            onPreview={preview(form.image, onView)}
+            onPick={(file) => set({ image: pick(file) })}
+            onRemove={() => set({ image: null })}
+          />
+        </FormRow>
+        <div className="bo-dlg__row">
+          <FormGroup title={i18n.t(A.gallery)} hint={i18n.t(A.galleryHint)}>
+            <InteriorGrid
+              images={form.gallery}
+              onView={(index) => onView(form.gallery, index)}
+              onAdd={(files) =>
+                set({ gallery: [...form.gallery, ...files.map((file) => ({ name: file.name, src: pick(file).src as string }))] })
+              }
+              addLabel={i18n.t(S.dialogs.floorplan.addImages)}
+              viewAllLabel={i18n.t(S.dialogs.floorplan.viewAll)}
+              leadLabel={i18n.t(S.dialogs.floorplan.lead)}
+            />
+            <p className="bo-dlg__fieldhint">
+              {form.gallery.length
+                ? t(A.gallerySummary, { images: counted(form.gallery.length, S.count.imageOne, S.count.imageMany) })
+                : i18n.t(A.galleryNone)}
+            </p>
+          </FormGroup>
+        </div>
       </div>
     </Modal>
   );
