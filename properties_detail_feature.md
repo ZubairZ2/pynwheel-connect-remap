@@ -661,3 +661,7 @@ The page runs on `GET /communities/:id/edit.json` (§16 of PYN_CONNECT_PROGRESS.
 
 Data sources are unchanged (§16 table). Reused: `DetailSection`, `Switch`, `StatusPill`, `.bo-field`. No new components.
 Remaining gaps: R1–R5 in the gaps doc; "Add Property" on the listing is not built (writes are disabled by rule).
+
+# Status update — September 26, 2026 (branch `feature/amenities_improvements`)
+
+Amenities on this page are unchanged: the Inventory panel's Amenities count still comes from `communities/:id/edit.json` (`inventory.amenities`), and its stat card opens `/properties/:id/inventory?tab=amenities`, which is now the amenities design on real data (feature_inventory_page.md status update of the same date, PYN_CONNECT_PROGRESS.md §21). Nothing on Property Detail reads the new amenity keys.

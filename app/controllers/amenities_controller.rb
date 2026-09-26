@@ -182,8 +182,31 @@ class AmenitiesController < ApplicationController
     render_connect_inventory(
       Connect::AmenitySerializer.collection(@amenities, current_community, base_url: request.base_url),
       current_community,
-      extra: { category_options: Connect::AmenitySerializer.category_options }
+      extra: {
+        category_options: Connect::AmenitySerializer.category_options,
+        # The settings the legacy amenity pages read: "Show in Stops List",
+        # Description and Directional Text are self-tour fields (`edit`), the
+        # lock fields need locks enabled (`edit`), and "Show Amenity Name on
+        # Webpages" is the toggle above the Amenity Images list (`index`).
+        self_tour: current_community.self_tour.present?,
+        enable_locks: current_community.enable_locks.present?,
+        show_amenity_name: current_community.show_amenity_name.present?,
+        lock_options: connect_amenity_lock_options
+      }
     )
+  end
+
+  # "Select Lock Provider" on the amenity form: Community#lock_options over the
+  # vendors this property has locks with (AssignLocksHelper), without its blank
+  # "Select an option" row. A vendor record with a missing account makes that
+  # helper raise; the amenities must still load when it does.
+  def connect_amenity_lock_options
+    current_community.lock_options(existing_locks_provider(current_community))
+                     .map { |label, value| { id: value, label: label } }
+                     .reject { |option| option[:id].blank? }
+  rescue StandardError => e
+    Rails.logger.warn("[Connect] amenity lock options unavailable for community #{current_community.id}: #{e.class}: #{e.message}")
+    [{ id: 'Manual', label: 'Manual' }]
   end
 
   def save_floorplan_galleries amenity, community, amenity_gallery_image

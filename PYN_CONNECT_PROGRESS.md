@@ -1236,3 +1236,77 @@ No business logic, validation, authorization, route, model, association, schema 
 - Gaps M1–M9 in `gaps_map_plotting_feature.md` (writes, publish, uploads, Textract/SVG auto-plot, the algorithm over local edits, vertical links, starting points, marker colours, SVG element shapes).
 - Tour Setup is still a demo screen; its "Open Map & Plotting" now lands on the real screen for numeric ids.
 - Commit (no AI attribution), then PR against `main`. Deploy both apps when wanted (Rails: the controller, the concern, three serializers; Connect: the screen).
+
+## 21. Phase 2h: the Amenities tab against the amenities design (September 26, 2026)
+
+**Brief:** `feature_aminities_improvments.md` (untracked). Make the Inventory page's Amenities tab match `pyn-connect-amenties.html` on real data: the header, the section, a working search and six working filters, the new cards, the image viewer, the video state, and the full Add / Edit Amenity dialog — all read-only, with at most a read-only `format.json` exposure of data the CMS already holds.
+
+**Branch:** `feature/amenities_improvements`, from `feature/map_plotting_auto_wayfinding` (`da81bb700`). Uncommitted.
+
+### Investigation
+
+- **The three prototype files differ only in the Amenities tab.** `pyn-connect-amenties.html` vs `pyn-connect-22-sep-new.html` is 12 lines in the bundle (asset ids and the markup string); unpacked (context.md §14 recipe) it is 600 lines: the `isTcAmenities` block (markup lines 1796–1862), the `amModalOpen` dialog (4359–4520), the `invAmenities` / `amForm` view models (8080–8118, 8561–8590), `filteredAmenities` (6797–6809) and the seed `INVENTORY.luxe.amenities` (5815–5822). Everything else is the 22-Sep design already built in §17–§18.
+- **Old CMS, traced from the labels the brief quotes.** `GET /communities/:id/amenities` → `AmenitiesController#index` → `amenities/index.html.haml` ("Amenity Images", the drag-and-drop uploader, the "Show Amenity Name on Webpages" switch, which posts `communities#update_amenity_toggle` → `communities.show_amenity_name`). `#edit` → `edit.html.haml` is the real amenity form: Name, Video Link Button Label, Tour Visiting Order Number, Video Link, Building (text), Floor (a select over the plotted floorplate's floors, else text), Amenity Type (`Amenity::AMENITY_TYPE`), then — only when `community.enable_locks` — Select the door / Select Lock Provider (`Community#lock_options(existing_locks_provider)`) / Access Code / Select the lock, then — only when `community.self_tour` — "Show in Stops List" (`amenities.breezway_lock_visible`, default true), Description and Directional Text (wysihtml5), the image with Crop, and the gallery (`_edit_amenity`, `amenity_galleries` sortable). Models: `Amenity` (polymorphic `amenityable`, `has_many :amenity_galleries`, `has_many :doors`, `has_one :tour_stop`), `AmenityGallery`, `Door`, `TourStop`. "Hidden from the stops list" is `breezway_lock_visible: false`: `CommunityTour` and `Community#filter_tour_stops` drop those amenities from the self-guided tour.
+- **What the JSON already carried** (§17): name, category, owner (floorplate / sitemap / floor plan / unit), building, floor, plotted, pin, tour-stop row, image, gallery, video link, description, directional text, `category_options`. **Missing for the design:** the lock provider, the stop-list flag, the video button label, and the property flags the form is gated on.
+
+**UI → data map**
+
+| UI element | Old Rails source | Model / association | React component | Real DB data | JSON |
+|---|---|---|---|---|---|
+| Breadcrumb, "Property Inventory", summary, tab counts | `floorplates.json` meta + the four listings | Community, Floorplate, Tour | `propertyInventory.screen`, `inventoryHeader.generator` | ✅ | existing |
+| Amenities title / subtitle / Add Amenity | `amenities/index.html.haml` | — | `DetailSection`, `.bo-inv__add` | — | — |
+| Show amenity name on webpages (read-only switch) | `_amenity_name_toggle_form` | `communities.show_amenity_name` | `Switch` (indicator) | ✅ | **new meta `show_amenity_name`** |
+| Search name, type or location | — (the old page has no search) | name, `amenity_type`, building, floor | `SearchField` + `filterAmenities` | ✅ | existing |
+| All Types | `Amenity::AMENITY_TYPE`, `amenities.amenity_type` | Amenity | `MultiFilter` | ✅ | existing (`category`, `category_options`) |
+| All Buildings | `amenities.building`, else the plotted floorplate's | Amenity → Floorplate | `MultiFilter` | ✅ | existing (`building`, `owner_building`) |
+| All Floors | `amenities.floor`, else the plotted floorplate | Amenity → Floorplate | `MultiFilter` | ✅ (as "Floor N") | existing (`floor`, `owner_name`) |
+| Any Lock | `amenities.lock_provider`, or the first door's (`#edit`) | Amenity, Door | `MultiFilter` | ✅ | **new `lock_provider`** |
+| Any State | `breezway_lock_visible`; `x_plot`/`y_plot`/`pointer_data` | Amenity | `MultiFilter` | ✅ | **new `show_in_stops`**, existing `plotted` |
+| Any Setup | image, galleries, video, description, directional | Amenity, AmenityGallery | `MultiFilter` | ✅ | existing |
+| "{n} amenities" / "Showing n of t" | `current_community.amenities` | Amenity | `generateShowingLabel` | ✅ | existing |
+| Card image, View / Replace / Remove, Upload image | `amenities.image` (`standard_image_url`) | Amenity | `MediaThumb`, `ImageViewer` | ✅ | existing |
+| Name, type tag | `name`, `amenity_type` | Amenity | `RecordCard`, `.bo-record__tag` | ✅ | existing |
+| Plotted / Not on map | `x_plot`/`y_plot`/`pointer_data` | Amenity | `StatusPill` | ✅ | existing |
+| In Stops List / Hidden from Stops | `breezway_lock_visible` | Amenity | `StatusPill` | ✅ | **new** |
+| Building, Floor | as the filters | | `MetaGrid` | ✅ | existing |
+| Lock Provider | as the filter | | `MetaGrid` | ✅ | **new** |
+| Video: label → link, or None | `video_link`, `video_link_button_label` | Amenity | `MetaGrid` (`href`) | ✅ | **new `video_link_button_label`** |
+| Gallery: "N images" / Empty | `amenity_galleries` | AmenityGallery | `MetaGrid` | ✅ | existing |
+| Description / Directional Text / Video chips | `description`, `directional_text`, `video_link` | Amenity | `.bo-inv-chip` | ✅ | existing |
+| Edit / Delete | `#update`, `#destroy` | — | `IconButton`, `ConfirmDialog` | — | read-only |
+| Dialog: every field above, image, gallery | `edit.html.haml` | Amenity, AmenityGallery, Community | `Modal`, `FormRow`, `Field`, `SwitchField`, `UploadSlot`, `InteriorGrid` | ✅ | **new meta `self_tour`, `enable_locks`, `lock_options`** |
+
+### Backend (read-only JSON only)
+
+| File | Change |
+|---|---|
+| `app/serializers/connect/amenity_serializer.rb` | Three keys per row: `show_in_stops` (`breezway_lock_visible != false`), `lock_provider` (the first door's provider when the amenity has doors — `Amenity#ordered_doors`' order, by `sort` under auto-wayfinding, else by creation — else the amenity's own column, the rule `AmenitiesController#edit` shows), `video_link_button_label`. One `Door.where(...)` per listing feeds the door rule |
+| `app/controllers/amenities_controller.rb` | `render_connect_amenities` meta gains `self_tour`, `enable_locks`, `show_amenity_name` and `lock_options` (`Community#lock_options(existing_locks_provider(community))` without its blank row, as the form's "Select Lock Provider" is filled; a vendor lookup failure logs and falls back to Manual, like `connect_lock_devices` in §17) |
+
+No business logic, validation, authorization, route, model, association, schema, migration or write behaviour changed; the HTML `index` / `edit` / `update` paths are untouched. `access_code` is deliberately not exposed.
+
+### Frontend
+
+- **Model / parser** (`propertyInventory.data.ts`, `inventory.parser.ts`): `InventoryAmenity.showInStops` (true when absent), `lockProvider`, `videoLinkButtonLabel`; `PropertyInventory.selfTour`, `enableLocks`, `showAmenityName`, `amenityLockOptions`.
+- **Generator** (`amenities.generator.ts`, rewritten): `AmenityFilters` (query, type, building, floor, lock, state, setup), `generateAmenityFilterOptions` (Type/Building/Floor/Lock offer only the values the property's amenities carry, in the CMS's type order, with "No type / No building / No floor / No lock" when some lack one; State and Setup always offer every state), `filterAmenities` (the design's `filteredAmenities`: one search term over name, type, building and floor; AND across filters, OR within), `amenityWhere` (own building/floor, else the plotted floorplate's; a numeric floorplate name reads "Floor N"), `generateAmenityCards` (type tag, Plotted/Not on map + In Stops List/Hidden from Stops pills, the five meta cells, the three chips, the viewer's images, the two confirms).
+- **Hook** `useInventoryAmenities.ts` (the `useInventoryUnits` / `useInventoryFloorplans` shape: filters, options, one page of cards, showing label).
+- **Section** `AmenitiesSection.tsx` (rewritten): the design's header row (plus the legacy "Show amenity name on webpages" switch, read-only), toolbar (`SearchField` + six `MultiFilter`s + count), cards (`RecordCard` / `MediaThumb` with View → `ImageViewer`, Replace → Edit dialog, Remove → confirm; the name opens Edit; `.bo-record__tag`; `StatusPill`s; `MetaGrid` 5-up; `.bo-inv-chips`; Edit / Delete `IconButton`s), the two empty states, `Pagination`. The old card's photo strip (←/→/× per gallery photo) is gone, as in the design; the gallery is in the viewer and in the dialog.
+- **Dialog** (`InventoryDialogs.tsx` `AmenityDialog`, `inventoryForms.generator.ts` `amenityForm` / `amenityTypeOptions` / `amenityBuildingOptions` / `amenityLockOptions`): the design's 820px form — Name, Amenity Type (`Amenity::AMENITY_TYPE` + the stored value), Location (Building select over floorplates ∪ units ∪ amenities, Floor input), Video (label, link), Lock Provider (`lock_options`, disabled with a note when locks are off), Show in Stops List (switch; a note when self-tour is off), Description, Directional Text, Amenity Image (`UploadSlot`), Amenity Gallery (`InteriorGrid` with Lead, View all, the "{n} images · scroll for more" line). Edit opens on the record's real values; Save / Add only closes.
+- **MetaGrid** gained an optional `href` / `hrefLabel` (the Video cell is a link that opens the stored URL in a new tab; `.bo-meta__link`). CSS: `.bo-record__tag`, `.bo-meta__link`, `.bo-inv__setting`, `.bo-dlg__textarea--tall`, `.bo-dlg__row > .bo-dlg__group`.
+- **Strings:** `CORE_STRINGS.inventory.amenities.*` and `dialogs.amenity.*` re-keyed to the design's wording; the subtitle is now "Type, location, media and access for every amenity · the same records that become tour stops".
+
+**Components reused:** `DetailSection`, `SearchField`, `MultiFilter`, `RecordCard`, `MediaThumb`, `MetaGrid`, `StatusPill`, `Switch`, `IconButton`, `ImageViewer`, `Pagination`, `Modal`, `FormRow`, `FormGroup`, `Field`, `SwitchField`, `UploadSlot`, `InteriorGrid`, `DialogFooter`, `ConfirmDialog`, the icon module, `useClientPages`. **No new component**; the new files are a hook (`useInventoryAmenities`) and an e2e spec.
+
+### Verification (local DB, Rails :3000 + `next dev` :3001, headless Chrome through Playwright with a minted Devise session)
+
+- **JSON vs `psql`:** 2157 (Bowers Residences, 19 amenities): `lock_provider` Dwelo on the six rows `psql` has it on (no doors on this property, so the amenity column decides), `show_in_stops` false on the one row with `breezway_lock_visible = false` (56770 Fitness Center), `lock_options` Manual + Dwelo; 1106 (The Carson): Matterport `video_link`s with labels "Virtual Tour" / "3D Tour", Latch on five rows; meta `self_tour` / `enable_locks` / `show_amenity_name` equal to the `communities` columns.
+- **`tests/e2e/amenities.spec.ts`** (new, real data, skips without the session env): on 2157 — the tab count 19, "19 amenities", the Elevator Room 1 card (Other, Plotted, In Stops List, Main Building, Floor 1, Dwelo, Video None, Gallery Empty, two chips on), the one "Hidden from Stops" card; search "fitness" → 5, "main building" → 13, "floor 8" → 2, nonsense → the empty state; Type = Fitness Center → 4, No type → 5; Building = Main Building → 13, No building → 6; Floor 1 → 8; Lock = Dwelo → 6, No lock → 13; State = Hidden → 1, Plotted → 13, Plotted + Not on map → 19; Setup = No description → 13, No directional text → 6, Has video → none, Empty gallery → 19; Building + Floor + Lock + State combined → exactly Elevator Room 1, then + search. Every count equals the `psql` count computed with the same rule. The viewer opens on a real image; Add Amenity opens, takes input on every field, and Add only closes; Edit Amenity opens on the stored values (name, type, building, floor "1", Dwelo, stops on, description, the image row); the name opens the same dialog; Delete and Remove image open the shared confirm. On 1106 the Video cell is an `<a target="_blank">` to `my.matterport.com` reading "Virtual Tour" / "3D Tour", Has video → 4 of 7, Latch → 5 of 7; on 1232 "Sky" reads "3 images", the viewer says "1 of 4" and steps to "2 of 4", the dialog's gallery has 3 thumbnails and "3 images · scroll for more". **0 non-GET requests, 0 page errors** in both tests.
+- **Pixel comparison:** full-page screenshots of the React tab (2157, 1106) beside the prototype's Amenities tab and Add Amenity dialog (the bundled file driven from `file://`): same header, toolbar, card anatomy (150 × 104 image, name + type tag + two pills, five meta cells, three chips, edit / delete), same dialog rows and footer. Differences, all deliberate: plain textareas instead of the prototype's decorative rich-text toolbar (as the other Connect dialogs); uppercase field labels (the shared `Field`); "e.g. 3" for Floor (an integer column); "Floor N" instead of "Lobby / Rooftop" (gaps doc GA1); the read-only "Show amenity name on webpages" switch, which the prototype does not draw but the old page has.
+- **Regression:** Companies, Properties, Property Detail 2157 (its Amenities stat card links to `?tab=amenities`), Inventory 348 (Floorplates / Floorplans / Units), Unit Detail 348/56229, Map & Plotting 2919 all render with 0 writes and 0 errors; signed out → Sign In. `npm run typecheck` ✅. `npx playwright test` (all suites, with the session env so the two real-data specs run): **84 passed** — the 29 `fonts.gstatic.com` failures of §7 did not occur this run.
+
+### Remaining
+
+- `gaps_amenities_feature.md`: GA1 named floors, GA2 (= G16) publish state, GA3 (= G20) every write, GA4 (= G19) file metadata; plus the frontend limitations listed there (video opens in a new tab rather than inline; plain text for the wysihtml5 HTML; the legacy form's lock-device picker and Tour Visiting Order Number, which the design has no field for).
+- Commit (no AI attribution), then PR against `main`.
+
+---

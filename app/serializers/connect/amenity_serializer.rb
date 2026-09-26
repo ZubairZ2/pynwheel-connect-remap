@@ -19,6 +19,10 @@ module Connect
         floorplates: Floorplate.where(id: owner_ids.call('Floorplate')).index_by(&:id),
         floorplans: Floorplan.where(id: owner_ids.call('Floorplan')).pluck(:id, :name).to_h,
         units: Unit.where(id: owner_ids.call('Unit')).pluck(:id, :marketing_name).to_h,
+        # The amenity form shows the first door's lock provider when the
+        # amenity has doors (AmenitiesController#edit), so the doors come too.
+        doors: Door.where(attached_with_type: 'Amenity', attached_with_id: ids).group_by(&:attached_with_id),
+        auto_wayfinding: community.auto_wayfinding.present?,
         base_url: base_url
       }
 
@@ -52,9 +56,17 @@ module Connect
         y_plot: amenity.y_plot.to_i.positive? ? amenity.y_plot.to_i : nil,
         svg_pointer: UnitSerializer.svg_pointer(amenity.pointer_data),
         tour_stop: context[:tour_stop_ids].include?(amenity.id),
+        # "Show in Stops List" on the amenity form (`breezway_lock_visible`,
+        # default true): a hidden amenity is left out of the self-guided
+        # tour's stop list (CommunityTour, Community#filter_tour_stops).
+        show_in_stops: amenity.breezway_lock_visible != false,
+        # "Select Lock Provider" on the amenity form: the first door's provider
+        # when the amenity has doors, else the amenity's own column.
+        lock_provider: lock_provider,
         image: UploadUrl.file(amenity, :image, context[:base_url]),
         gallery: (context[:galleries][amenity.id] || []).map { |photo| gallery_photo(photo) },
         video_link: amenity.video_link.presence,
+        video_link_button_label: amenity.video_link_button_label.presence,
         description: amenity.description.presence,
         directional_text: amenity.directional_text.presence,
         updated_at: amenity.updated_at
@@ -79,6 +91,23 @@ module Connect
 
       def pointer_x
         amenity.pointer_data.is_a?(Hash) ? amenity.pointer_data['x_plot'] : nil
+      end
+
+      # The door the form reads: Amenity#ordered_doors' first, which is by
+      # `sort` under auto-wayfinding and by creation otherwise.
+      def first_door
+        doors = context[:doors][amenity.id] || []
+        return nil if doors.empty?
+
+        if context[:auto_wayfinding]
+          doors.min_by { |door| [door.sort.to_i, door.id] }
+        else
+          doors.min_by { |door| [door.created_at, door.id] }
+        end
+      end
+
+      def lock_provider
+        first_door&.lock_provider.presence || amenity.lock_provider.presence
       end
 
       def gallery_photo(photo)

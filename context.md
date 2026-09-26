@@ -554,3 +554,50 @@ The concern `Connect::WayfindingJson` skips `community_code` / `load_tour_users_
 - `tests/e2e/mapPlotting.spec.ts` runs against a real CMS when `PYN_CONNECT_E2E_RAILS_COOKIE` and `PYN_CONNECT_E2E_USER` hold a minted session (§7 script; `PYN_CONNECT_E2E_PROPERTY` defaults to 2919). It asserts the stored map renders, exercises every tool and dialog, runs both algorithms, and fails on any non-GET request or page error.
 - Compare with the legacy page in-process (integration session + Nokogiri on `#map_<floor>` markers and the `#hallways` hidden field), not in a browser: the CMS origin's cookie is httpOnly and cannot be injected.
 - Real ids: 2919 (everything), 1264 (15 entry points), 1108 (the brief's "100 moffett": 3 buildings, no hallways), 2003 (OCR, nothing plotted), 348 (pins + SVG pointers, no graph), 236 (sitemap mode).
+
+## 17. Amenities tab: implementation knowledge (September 26, 2026)
+
+Branch `feature/amenities_improvements` (from `feature/map_plotting_auto_wayfinding`); PYN_CONNECT_PROGRESS.md §21; gaps in `gaps_amenities_feature.md`. Target design: `pyn-connect-amenties.html`, which differs from the 22-Sep file only in the Amenities tab and the Amenity modal.
+
+### The flow
+
+```
+/properties/:id/inventory?tab=amenities
+  app/(connect)/properties/[propId]/inventory/page.tsx → loadPropertyInventory()      (unchanged)
+    GET /communities/:id/amenities.json   AmenitiesController#index → Connect::AmenitySerializer
+  PropertyInventoryScreen → AmenitiesSection
+    useInventoryAmenities → amenities.generator (propertyAmenities → sortAmenities → generateAmenityFilterOptions / filterAmenities → generateAmenityCards)
+    InventoryDialogs → AmenityDialog (inventoryForms.generator: amenityForm, amenityTypeOptions, amenityBuildingOptions, amenityLockOptions)
+```
+
+### Rails: the amenity form is the source of truth
+
+- **Route → controller → view:** `communities/:community_id/amenities` (`resources :amenities`) → `AmenitiesController` → `index.html.haml` (the "Amenity Images" upload page, with the property-level "Show Amenity Name on Webpages" switch → `communities#update_amenity_toggle` → `communities.show_amenity_name`) and `edit.html.haml` (the form every card field comes from). `update` does `params.require(:amenity).permit!` plus `update_locks`; `destroy` also deletes the amenity's `TourStop` and `VisitedStop`s.
+- **Columns behind the design's fields:** `name`, `amenity_type` (`Amenity::AMENITY_TYPE`; `amenty_type` is a dead misspelt column), `building` (free text), `floor` (integer), `video_link`, `video_link_button_label` (default "PLAY VIDEO"; the Realync webhook also writes it), `lock_provider` + `access_code`, `breezway_lock_visible` (**"Show in Stops List"**, default true — despite its name; `CommunityTour` and `Community#filter_tour_stops` drop `false` rows from the self-guided tour's stop list), `description` and `directional_text` (wysihtml5 HTML), `image` (+ `standard_image_url`, crop columns), `tour_visiting_order_number`, `amenityable_*` / `x_plot` / `y_plot` / `pointer_data` (plotting). Galleries: `amenity_galleries` (`image`, `name`, `description`, `sort`). Doors: `doors` (`attached_with = Amenity`, `lock_provider`, `access_code`, `sort`).
+- **The form's gates:** the lock fields render only when `communities.enable_locks`; "Show in Stops List", Description and Directional Text only when `communities.self_tour`. The lock select's options are `Community#lock_options(existing_locks_provider(community))`: "Manual" plus each vendor in `multiple_locks_provider` that has a lock account with locks (Latch, Zerv shown as "Pynwheel Access", Igloohome, EdgeState, Dwelo).
+- **Lock provider rule:** when the amenity has doors the form shows and updates the first door's `lock_provider` (`Amenity#ordered_doors`: by `sort` under `auto_wayfinding`, else by `created_at`), keeping `amenities.lock_provider` in step; otherwise the amenity's own column. The serializer applies the same rule (`Door.where(attached_with_type: 'Amenity', ...)`, one query per listing).
+
+### `amenities.json` (only these keys are new)
+
+- Rows: `show_in_stops` (`breezway_lock_visible != false`), `lock_provider` (the door rule above; blank → null), `video_link_button_label` (blank → null).
+- Meta: `self_tour`, `enable_locks`, `show_amenity_name` (booleans), `lock_options` (`[{id, label}]`, the select's real options without its blank row; Manual only if the vendor lookup raises).
+- Not exposed on purpose: `access_code`, `tour_visiting_order_number` (no field in the design), the crop columns.
+
+### Frontend rules
+
+- **Which rows are amenities:** `propertyAmenities` keeps `amenityable` blank / Floorplate / Sitemap; Floorplan- and Unit-owned rows are interior images and stay on their floor plan or unit (§13).
+- **Building / Floor** (`amenityWhere`): the amenity's own column first, else the plotted floorplate's `building` / name; a numeric floorplate name reads "Floor N"; nothing → "—" and the "No building" / "No floor" filter option. Floors read "Floor N" because the CMS stores an integer (GA1).
+- **Type** options keep `Amenity::AMENITY_TYPE`'s order (from `category_options`), then any stored type outside that list (e.g. "Rooftop Lounge" exists in the DB), then "No type" when some rows have none. A blank type is shown as "No type", not "Other" (the design's `a.category||'Other'` would misreport it).
+- **Pills:** Plotted / Not on map from `plotted`; In Stops List / Hidden from Stops from `showInStops`. The `tourStop` flag (a real `tour_stops` row) is still in the model for the map, but the design draws only these two pills.
+- **Video:** `videoLink` present → the meta cell is `<a target="_blank" rel="noopener">` labelled with `videoLinkButtonLabel` (else "Play Video"); absent → "None". Opening the stored URL is a plain navigation, not a write.
+- **Search** is the design's: one term, `includes` over name + type + building + floor. (Units keep the legacy grid's comma / wildcard grammar; amenities never had a search.)
+- **Chips** are "on" when the stored HTML has visible text (tags stripped).
+- **Dialog:** `amenityForm` fills every field from the row (`plainText` for the two HTML fields; a new amenity starts with the CMS's "PLAY VIDEO" label and Show in Stops on). Building offers floorplates ∪ units ∪ amenities' buildings plus the stored one; Lock offers `amenityLockOptions` plus the stored provider; both selects are disabled-with-a-note only for the lock when `enableLocks` is off. Save / Add / Cancel close; nothing is sent.
+- **Read-only:** View opens the viewer; Replace / Upload open the dialog; Remove image and Delete open `ConfirmDialog` with `action: null`; the header switch is an indicator. The e2e spec asserts zero non-GET requests.
+
+### Testing
+
+- `tests/e2e/amenities.spec.ts` needs `PYN_CONNECT_E2E_RAILS_COOKIE` / `PYN_CONNECT_E2E_USER` (progress §7 mint script) and a running CMS; it skips otherwise. Hydration is awaited on `.bo-inv__tab`. MultiFilter buttons are named "{label}: {shown}" ("Lock: Any Lock"); options are `role=checkbox`.
+- **Real ids worth keeping:** 2157 Bowers Residences (19 amenities, Dwelo locks, one hidden from stops, no videos, no galleries), 1106 The Carson (Matterport video links with custom labels, Latch), 1232 Lincoln at Dilworth (galleries: "Sky" has 3 images), 1618 Hazel (videos + galleries + locks + one hidden).
+
+---

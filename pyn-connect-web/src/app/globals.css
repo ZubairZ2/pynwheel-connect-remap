@@ -2766,6 +2766,39 @@ select {
   font-size: 12.5px;
 }
 
+/* The grey type tag after an amenity's name (the design's `typeLabel`). */
+.bo-record__tag {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 4px;
+  padding: 3px 9px;
+  background: #f1f2f5;
+  color: var(--bo-muted);
+  font: 800 10.5px var(--bo-font);
+  white-space: nowrap;
+}
+
+/* A meta value that is a link (an amenity's video). */
+.bo-meta__link {
+  color: var(--bo-accent);
+  text-decoration: none;
+}
+
+.bo-meta__link:hover,
+.bo-meta__link:focus-visible {
+  text-decoration: underline;
+}
+
+/* A property-level setting shown beside a section's actions (read-only). */
+.bo-inv__setting {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 700 11.5px var(--bo-font);
+  color: var(--bo-muted);
+  white-space: nowrap;
+}
+
 /* Amenity gallery strip */
 .bo-inv__photos {
   margin: 4px 0 0;
@@ -3048,6 +3081,12 @@ select {
   padding-top: 4px;
 }
 
+/* A group (the amenity gallery) that is itself one row of a settings dialog. */
+.bo-dlg__row > .bo-dlg__group {
+  flex: 1;
+  min-width: 0;
+}
+
 .bo-dlg__grouptitle {
   margin: 0;
   font: 800 13.5px var(--bo-font);
@@ -3114,6 +3153,10 @@ select {
   height: 84px;
   padding: 10px 12px;
   resize: vertical;
+}
+
+.bo-dlg__textarea--tall {
+  height: 110px;
 }
 
 .bo-dlg__switch {
