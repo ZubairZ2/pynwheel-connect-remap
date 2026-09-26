@@ -25,6 +25,18 @@ export interface InventoryButton {
   newTab: boolean;
 }
 
+/**
+ * An SVG-mode placement (`pointer_data`): the SVG element the pin points at
+ * and its position in the floor SVG's user units (not the raster's pixels).
+ */
+export interface SvgPointer {
+  xPlot: number;
+  yPlot: number;
+  tag: string | null;
+  elementId: string | null;
+  selector: string | null;
+}
+
 export interface InventoryProperty {
   id: number;
   name: string;
@@ -147,6 +159,7 @@ export interface InventoryUnit {
    */
   xPlot: number | null;
   yPlot: number | null;
+  svgPointer: SvgPointer | null;
   visible: boolean;
   showOnMap: boolean;
   modelUnit: boolean;
@@ -181,6 +194,10 @@ export interface InventoryAmenity {
   floor: number | null;
   building: string | null;
   plotted: boolean;
+  /** The pin's pixel position on the owner's image; null when unplotted or placed by SVG pointer. */
+  xPlot: number | null;
+  yPlot: number | null;
+  svgPointer: SvgPointer | null;
   tourStop: boolean;
   image: InventoryUpload | null;
   gallery: { id: number; name: string | null; description: string | null; url: string | null }[];

@@ -1,6 +1,6 @@
 # Repository context — pynwheel-staging
 
-**Last updated:** September 24, 2026
+**Last updated:** September 25, 2026
 **Companion doc:** [PYN_CONNECT_PROGRESS.md](PYN_CONNECT_PROGRESS.md), which covers where the Pynwheel Connect work stands and what comes next.
 
 This file describes what the repository *is*. The progress doc describes what is being *done* to it.
@@ -116,6 +116,7 @@ Company ─┬─ Region ─┐
     - `data_provider`: a provider slug, or `none`
   - `meta`: `total_count` (after search and filters), `pagination`, `current_user`, `scope_total_count` (before them), `filters.companies` and `filters.data_providers` (slugs; `none` when some properties have no provider).
 - Supporting code: `app/serializers/connect/` (envelope, paginated_collection, serializers) and `app/queries/accessible_{companies,communities}_query.rb`
+- `GET /automate_plotting.json?community_id=:id` and `GET /automate_plotting/shortest_path.json?community_id=:id&path_type=sorting` (added Sep 25, §16): `AutomatePlottingController` → `Connect::WayfindingSerializer` / the action's own JSON. The pathway graph, elevators, starting points, tour stops, doors and stored OCR text behind the legacy Auto Wayfinding page, and its routing algorithm. Read-only, scoped by `check_community`.
 - `GET /communities/:id/edit.json` (added Sep 24, §12): `CommunitiesController#edit` → `Connect::PropertyDetailSerializer`. One property in the listing's scope (404 otherwise): the row fields plus profile, milestones, settings, billing, Touch/Tour/Maps configuration, inventory counts and ILS partners. Read-only.
   - *History:* before this, there was no single-record Connect JSON, and the first Property Detail found its row in `communities.json` (§11).
 - **Derived values, not columns:**
@@ -229,6 +230,7 @@ The working tree holds large local-only material. It is deliberately untracked o
 | [pyn-connect-web/README.md](pyn-connect-web/README.md), [DEPLOYMENT.md](pyn-connect-web/DEPLOYMENT.md) | Connect app readme; Docker/standalone deploy |
 | `docs/*.md` | Map SDK plans: map load performance, gallery endpoint, neighborhood endpoint, student-housing popups and unit-space grouping, SVG optimizer |
 | [gaps_properties_detail_feature.md](gaps_properties_detail_feature.md) | What the Property Detail page cannot read from the existing backend, and what each gap needs (Sep 24) |
+| [gaps_map_plotting_feature.md](gaps_map_plotting_feature.md) | What the Map & Plotting screen cannot do read-only (writes, publish, uploads, Textract, the algorithm over local edits), and what each needs (Sep 25) |
 
 ---
 
@@ -471,3 +473,84 @@ Every piece of information or setting in the Connect UI that is **not read from 
 **Rule when wiring real data:** as soon as a screen or a single setting reads its value through a Rails controller (`format.json` branch → `Connect::*Serializer` → parser → model), delete its `<DemoMark />`; when the whole screen is real, also drop the `demo` flag from its `page.tsx` so the title asterisk and the legend disappear. Do not leave a mark on real data, and do not add real data without removing the mark. The e2e text matchers accept an optional trailing `*` (`/^Title\*?$/`) so tests keep passing either way.
 
 **How the marks were placed:** a one-off codemod over `src/core/screens/connect/**/*.tsx` appended `<DemoMark />` to `div`/`span`/`h*` elements whose inline font is `800 <any>px` or `700 10.5–13px` and whose child is plain text or a single `{expression}`. Nested headings the regex could not see safely were left unmarked; the screen-level title + legend still cover them.
+
+---
+
+## 16. Map & Plotting: implementation knowledge (September 25, 2026)
+
+Added with phase 2g (branch `feature/map_plotting_auto_wayfinding`; PYN_CONNECT_PROGRESS.md §20; gaps in `gaps_map_plotting_feature.md`).
+
+### The flow
+
+```
+Property Detail → Map & Plotting / Inventory → Plotting / Properties → Go To → Map / Unit Detail → View on plan
+  → /properties/:id/map                        app/(connect)/properties/[propId]/map/page.tsx
+       numeric id → loadPropertyMap()          core/repository/remote/propertyMap.server.ts
+                      loadPropertyInventory()  GET /communities/:id/{floorplates,floorplans,units,amenities}.json
+                      fetchWayfindingGraph()   GET /automate_plotting.json?community_id=:id   AutomatePlottingController#index
+                    → wayfinding.parser.ts + inventory.parser.ts → PropertyMap { inventory, graph }
+       slug id    → the phase 2 demo screen (unchanged, `demo` flag)
+  → PropertyMapScreen → usePropertyMap (one LocalMapState) → generator/map/* → MapCanvas + MapPanels + MapDialogs
+  Run Algorithm → fetch('/api/properties/:id/wayfinding-route')            app/api/properties/[propId]/wayfinding-route/route.ts
+                    → GET /automate_plotting/shortest_path.json?community_id=&path_type=sorting   #shortest_path (read)
+```
+
+### The legacy Auto Wayfinding page
+
+| | |
+|---|---|
+| Menu | Tour Setup treeview → "Auto Wayfinding" (`_side_menu.html.haml`), shown when `communities.self_tour && auto_wayfinding` |
+| Route → action | `GET /automate_plotting?community_id=:id` → `AutomatePlottingController#index`; `GET /automate_plotting/shortest_path?community_id=&path_type=sorting\|actual shortest` → `#shortest_path` (read-only JSON) |
+| Views | `automate_plotting/index.html.haml`, `_floorplate_map` (floor/building buttons, "Start Plotting Hallways", "Run Algo(Animated)"), `_show_map` (one `#map_<floor>` per floor, `#<building>_map_<floor>` with several buildings), `_sitemap`, `_decide_styling` (marker colour/size per theme; offsets `left = (size-25)/2`, `top = 0.8 × size`) |
+| JavaScript | `app/assets/javascripts/maps.js` (hallway editor + route animation), `jquery.line.js`, `services/zoomHandler.js`, `panzoom`; the plotting page's `unit-plotting.js`, `door-plotting.js`, `svgHandler.js`, `svgAutoPlotting.js` |
+| Writes on that page | `POST /save_hallways_point`, `/update_hallways_point`, `/delete_hallways_point`, `/connect_leaf_point`, `/save_selected_point` (`HallwaysController`); the GET itself saves a hallway (`make_sure_one_selected_hallway`) and may create a Tour (`community_code`). Connect calls none of these |
+
+**What the page shows vs Connect.** The legacy page draws only *tour-stop* units and amenities (`display_stop: true`) plus hallways, elevators, entry/exit points and the tour start. Connect draws every plotted unit and amenity (it is the plotting screen) and marks the tour stops.
+
+### Models and tables
+
+| Table / model | Role | Notes |
+|---|---|---|
+| `floorplates` (`Floorplate`) | The maps. `range` → `#floors` ("1-5", "1,3", "4", "-1"); `image` (raster, `standard_image_url` copy), `svg_image`, `width/height`, `svg_metadata {width,height}`, `map_ocr_data` (Textract boxes), `building`, `floor_name` | Community order is `number DESC`; Connect sorts by lowest floor. `has_many :hallways, as: :parent`, `:elevators`, `:units`, `:amenities, as: :amenityable`, `:access_points` (Door) |
+| `sitemaps` (`Sitemap`) | The one property map of a sitemap-mode property (`communities.is_sitemap`) | Same uploaders, `width/height` ints; units on it have `floorplate_id NULL` |
+| `hallways` (`Hallway`) | Pathway nodes: `x_plot`, `y_plot` (float px), `next_points int[]` (ids it links to, stored one way, walked both ways), `selected` (the node the editor chains from), polymorphic `parent` (Floorplate/Sitemap) | 4,108 rows locally. No edge table; weights are Euclidean px |
+| `elevators` (`Elevator`) | Vertical connections: one `x_plot/y_plot`, `floorplate_covering_range` → `#floors`, `building`, `duplicate_of`, `has_one :tour_stop` | `Floorplate#fetch_elevators(floor)` = every elevator of the property whose floors include the floor |
+| `building_starting_points` | The designated entry/exit per building (`validate_building`), `floor`, x/y, `has_one :tour_stop` | Created by `tours#building_starting_point` (a GET) |
+| `tours` (`Community#community_tour`) | The tour start `x_plot/y_plot` (0/0 = none), `starting_floor`, `building`, `building_order`, `sort_hash`, `dotted_line_color` | `has_one :tour` can be a visitor's copy; use `community_tour` |
+| `tour_stops` | `stop_type` unit / amenity / elevator / building_starting_point, `stop_id`, `sort`, `display_stop`, `latitude/longitude` (copies of x/y) | The algorithm routes visible stops in `sort` order |
+| `doors` (`Door`) | Unit doors, amenity doors and access points (`attached_with` Unit / Amenity / Floorplate / Sitemap), x/y, `sort` | The algorithm targets a stop's door when it has one (`ordered_doors.first` for amenities) |
+| `units.pointer_data`, `amenities.pointer_data` | SVG-mode placement `{x_plot, y_plot, tag, id, selector}` in SVG user units | Serialized as `svg_pointer` |
+| `bedroom_marker_colors` | Per-bedroom colours | Empty for every property locally; unused by the CMS |
+| `paths` / `path_points` | Legacy manual Tour Setup lines (`draw_map_line`) | Not used by auto wayfinding; not rendered by Connect |
+
+### The coordinate system
+
+- **Unit:** every stored `x_plot/y_plot` is a natural pixel of the map's raster image (`floorplates.width/height`, or the file's own size — `Floorplate#floorplate_image_width` falls back to `image.width`; a sitemap uses `sitemaps.width/height`). Nothing is stored as a percentage. Connect converts `pct = px / dim × 100` and lays every marker out as a percentage of the image box, which `MapCanvas` fits inside the 520 px surface at the image's aspect ratio; when the CMS has no size, the loaded image's `naturalWidth/Height` is used (`LocalMapState.measured`).
+- **Anchors:** a unit's x/y is the pin point (the legacy pin is drawn at `x − left_margin, y − top_margin` so its tip sits there; Connect centres a circle on it). Hallway nodes, doors, elevators, entry points and the tour start store a 16 px icon's top-left and the legacy lines run from `x + 8, y + 8`, so Connect centres them at stored + 8 (`NODE_ANCHOR_OFFSET`). Amenities are drawn at the stored point on both. Route points from the CMS are offset by +8 for every kind, as `maps.js` does.
+- **SVG pointers** are in SVG user units against `svg_metadata`; a pin with a pointer and no raster x/y is placed with those. A floorplate with both files shows the raster by default and a "Floor SVG" toggle.
+- **Hallways belong to the floorplate**, not to a floor or a building, so every floor of a range and every building sees the same graph (the legacy page copies the same list into each map). The level in Connect *is* the floorplate.
+- **Elevators** appear on every floor in their range at the same x/y; the CMS needs consecutive integer floors for its `floor ± 1` hops.
+
+### The JSON
+
+`GET /automate_plotting.json?community_id=:id` (Devise session; scoped by `check_community`, 302 outside the scope, 404 unknown) → `{ data: { settings, buildings, floor_to_floorplate, hallways[], elevators[], building_starting_points[], tour, tour_stops[], doors[], bedroom_marker_colors[], ocr{} }, meta: { property, current_user } }`. Every coordinate as stored. `ocr` holds only boxes with text, keyed `Floorplate:<id>` / `Sitemap:<id>`, normalised 0..1. `units.json` / `amenities.json` add `svg_pointer` (and amenities `x_plot/y_plot`). `GET /automate_plotting/shortest_path.json` answers the action's own `{path_object, floor_ids, is_multiple_buildings}` (JSON text inside JSON); `parseWayfindingRoute` turns the three shapes (sitemap points object, `[floor, points]`, `[building, floor, points]`) into `RouteLeg[]`.
+
+The concern `Connect::WayfindingJson` skips `community_code` / `load_tour_users_chats` for the two JSON actions, loads `@community` read-only, and adds the `check_community` scope the HTML page never had. `#index` returns before `make_sure_one_selected_hallway`; `#shortest_path` is unchanged.
+
+### Persisted vs temporary
+
+`PropertyMap` (from the server) is never mutated. `LocalMapState` (`core/utils/generator/map/mapState.ts`) holds: `pinOverrides` (placed / moved / `null` = removed), `nodeOverrides` (moved stored nodes), `tempNodes` (junctions), `tempEdges` (connections, any two nodes, across levels), `hiddenNodes` / `hiddenEdges` (stored ones hidden on the page), `chainFrom` (hallway plotting), `startOverrides` (building → node), `planOverrides` (object-URL previews, `removed`), `bedColors`, `autoPlotReport`, `route` (legs + reveal counter), dialogs. All in the level's pixel space, so a temporary pin and a stored pin are comparable. The generators (`generateLevelGraph`, `generatePinItems`, the panel generators) merge the two on every render; the selection panel says which one an item is. A reload restores the stored map.
+
+### Behaviour worth knowing
+
+- **Auto-Plot** runs the CMS's own rule (`set_floorplate_markers_on_map`: a text box longer than 2 characters, `marketing_name.include?(text)`, position `left × width, top × height`, later box wins) over the boxes the CMS already stored; it cannot run Textract. Units only, as the CMS.
+- **Run Algorithm (Animated)** is the real CMS algorithm; **Preview with local edits** is `localRoute.ts` (per-floor Dijkstra with nearest-node attachment, stops in tour order, doors as targets, elevator towards floors with more stops, else back to the start). The route reveals one point every 300 ms and switches the level to the leg's floor (`levelForLeg`: floor → floorplate, or the property map).
+- **Start Plotting Hallways** mirrors `maps.js`: the chain starts from the map's `selected` hallway (or the selected node), every click adds a junction linked to the previous one.
+- **Marker colours:** bedroom tiers from the unit's floor plan (`floorplan_id` = provider id); `bedroom_marker_colors` rows override the design palette when present; the panel also prints the CMS's availability colours the kiosk really uses.
+- **Not drawn:** legacy manual `paths`; there is no zoom/pan (not in the design).
+
+### Testing
+
+- `tests/e2e/mapPlotting.spec.ts` runs against a real CMS when `PYN_CONNECT_E2E_RAILS_COOKIE` and `PYN_CONNECT_E2E_USER` hold a minted session (§7 script; `PYN_CONNECT_E2E_PROPERTY` defaults to 2919). It asserts the stored map renders, exercises every tool and dialog, runs both algorithms, and fails on any non-GET request or page error.
+- Compare with the legacy page in-process (integration session + Nokogiri on `#map_<floor>` markers and the `#hallways` hidden field), not in a browser: the CMS origin's cookie is httpOnly and cannot be injected.
+- Real ids: 2919 (everything), 1264 (15 entry points), 1108 (the brief's "100 moffett": 3 buildings, no hallways), 2003 (OCR, nothing plotted), 348 (pins + SVG pointers, no graph), 236 (sitemap mode).

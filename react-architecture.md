@@ -2606,3 +2606,40 @@ The first Property Detail walked the paged listing for one row, and could show o
 - **Dialogs:** built on a new `Modal` molecule and prefilled from real records. They never call the network; confirmations reuse the shared `ConfirmDialog` with `action: null`.
 
 **Reference.** PYN_CONNECT_PROGRESS.md §17, context.md §13, gaps_properties_detail_feature.md §4.
+
+### September 25, 2026 — Infrastructure Update: a canvas over stored coordinates, and a local-state editor
+
+**What was missing:**
+The Map & Plotting design is an editor: tools that add, move and connect things on a plan. The
+architecture so far had read-only screens whose only client state was filters and dialogs, no
+component that lays anything out by coordinates, and no way for a button to reach a Rails action
+on demand (every read happens in the route's server component).
+
+**What was found/implemented:**
+
+- **One page state, merged on render.** The server-fetched `PropertyMap` stays immutable. The hook
+  (`usePropertyMap`) keeps a single `LocalMapState` of overrides — placed/moved/removed pins, temporary
+  junctions and connections, hidden stored nodes, plan previews, colours, the route — in the CMS's
+  own pixel space. Generators (`core/utils/generator/map/*`) merge the two into per-level descriptors
+  every render, so a temporary and a stored item go through the same path and the panels can say
+  which is which. Nothing in the state is ever posted; that is the read-only rule expressed as a type.
+- **Coordinates are the model's, not the canvas's.** Descriptors carry stored pixels and their percentage
+  of the image; `MapCanvas` only fits the image at its aspect ratio and positions by percent. Anchor
+  rules of the legacy page (pin point vs icon top-left + 8) live in one constant, not in the components.
+- **An on-demand read goes through a route handler.** "Run Algorithm" is the only button that talks to
+  Rails: a client `fetch` to `app/api/properties/[propId]/wayfinding-route`, which replays the session
+  cookie to the existing `shortest_path` action and returns the parsed legs. Components still never call
+  Rails; the API module and parser stay server-only.
+- **Domain logic without React.** The OCR auto-plot (`autoPlot.ts`) and the local Dijkstra
+  (`core/utils/wayfinding/localRoute.ts`) are pure functions over the model and the local state, so
+  they can be unit-tested and reasoned about apart from the screen.
+- **A real-data e2e spec that skips itself.** `tests/e2e/mapPlotting.spec.ts` needs a minted session
+  from the environment; without it the suite still passes. With it, the last assertion is the one the
+  brief cares about: no non-GET request left the browser.
+
+**Reference:**
+`pyn-connect-web/src/core/hooks/usePropertyMap.ts`, `pyn-connect-web/src/core/utils/generator/map/mapState.ts`,
+`pyn-connect-web/src/core/screens/properties/map/MapCanvas.tsx`,
+`pyn-connect-web/src/app/api/properties/[propId]/wayfinding-route/route.ts`,
+`app/controllers/concerns/connect/wayfinding_json.rb`, `app/serializers/connect/wayfinding_serializer.rb`;
+PYN_CONNECT_PROGRESS.md §20, context.md §16, gaps_map_plotting_feature.md.
