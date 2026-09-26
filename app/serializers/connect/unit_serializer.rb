@@ -25,6 +25,21 @@ module Connect
       end
     end
 
+    # `pointer_data` as the SVG plotting page saves it (`{x_plot, y_plot, tag,
+    # id, selector}`, the numbers as strings); nil when the record has none.
+    # Shared with the amenity serializer, which stores the same hash.
+    def self.svg_pointer(pointer)
+      return nil unless pointer.is_a?(Hash) && pointer['x_plot'].present?
+
+      {
+        x_plot: pointer['x_plot'].to_f,
+        y_plot: pointer['y_plot'].to_f,
+        tag: pointer['tag'].presence,
+        element_id: pointer['id'].presence,
+        selector: pointer['selector'].presence
+      }
+    end
+
     def initialize(unit, floorplan:, interiors:, label_by_provider_id:, base_url:)
       @unit = unit
       @floorplan = floorplan
@@ -59,6 +74,9 @@ module Connect
         # placement has none, so both are nil while `plotted` is still true.
         x_plot: unit.x_plot.to_i.positive? ? unit.x_plot.to_i : nil,
         y_plot: unit.y_plot.to_i.positive? ? unit.y_plot.to_i : nil,
+        # The SVG-mode placement (`pointer_data`): which SVG element the pin
+        # points at, and its position in SVG user units.
+        svg_pointer: self.class.svg_pointer(unit.pointer_data),
         visible: unit.visible.present?,
         show_on_map: unit.show_on_map.present?,
         model_unit: unit.modal_unit.present?,

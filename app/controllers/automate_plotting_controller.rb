@@ -1,7 +1,12 @@
 class AutomatePlottingController < ApplicationController
   include AssignLocksHelper
   include ShortestPath
+  include Connect::WayfindingJson
   def index
+    # Pynwheel Connect's read-only Map & Plotting: the page's data as JSON,
+    # before anything below runs (see Connect::WayfindingJson).
+    return render_connect_wayfinding if request.format.json?
+
     @community = Community.find params[:community_id]
     @current_locks_provider = existing_locks_provider(@community)
     @all_locks = all_locks(@community)

@@ -46,6 +46,11 @@ module Connect
         floor: amenity.floor,
         building: amenity.building.presence,
         plotted: FloorplateSerializer.positioned?(amenity.x_plot, amenity.y_plot, pointer_x),
+        # Pin position on the owner's image (pixels), as the plotting pages
+        # store it; nil when unplotted or placed by SVG pointer.
+        x_plot: amenity.x_plot.to_i.positive? ? amenity.x_plot.to_i : nil,
+        y_plot: amenity.y_plot.to_i.positive? ? amenity.y_plot.to_i : nil,
+        svg_pointer: UnitSerializer.svg_pointer(amenity.pointer_data),
         tour_stop: context[:tour_stop_ids].include?(amenity.id),
         image: UploadUrl.file(amenity, :image, context[:base_url]),
         gallery: (context[:galleries][amenity.id] || []).map { |photo| gallery_photo(photo) },
