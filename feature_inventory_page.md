@@ -1217,3 +1217,14 @@ The Amenities tab now follows `pyn-connect-amenties.html` (the amenities design;
 | Floors as "Lobby / Rooftop" | `amenities.floor` is an integer | Reads "Floor N" (gaps GA1) |
 
 Testing: typecheck ✅; new `tests/e2e/amenities.spec.ts` on 2157 / 1106 / 1232 (every filter count equals the database's); full Playwright run 84 passed; regression over Companies, Properties, Property Detail, Inventory tabs, Unit Detail and Map & Plotting with 0 writes.
+
+# Status update — September 26, 2026 (branch `feature/map_plotting_tour_setup`)
+
+The two screens the Inventory header links to are now both real for numeric ids (PYN_CONNECT_PROGRESS.md §22, context.md §18):
+
+| Link | Screen | State |
+|---|---|---|
+| Map & Plotting (header, and every floorplate card's Plot) | `/properties/:id/map` on the plotting design: building pills, floorplate tabs with plotting progress, the real floor SVG with its polygons, Manual Plot, the Auto Plot wizard, the Plot Units & Amenities panel, plus the phase 2g pathway tools | ✅ Local-only edits; 0 non-GET requests |
+| Tour Setup (header) | `/properties/:id/tour-setup` on real data: Tour Stops, Elevators & Locks, Routing | ✅ Local-only edits; 0 non-GET requests |
+
+Add Floorplate on the map screen opens this page's own `FloorplateDialog` (now exported from `InventoryDialogs.tsx`); Save still only closes it. The Amenities tab and the rest of this page are unchanged.

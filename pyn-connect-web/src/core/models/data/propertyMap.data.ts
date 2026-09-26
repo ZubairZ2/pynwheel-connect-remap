@@ -32,10 +32,28 @@ export interface MapHallway {
   parentId: number;
 }
 
+/** One photo of an elevator's gallery (`elevator_galleries`), as the elevator form lists them. */
+export interface ElevatorPhoto {
+  id: number;
+  name: string | null;
+  url: string | null;
+}
+
+/** One Latch elevator bank of an elevator (`elevator_banks`): a cab, its position and the lock it opens. */
+export interface ElevatorBank {
+  id: number;
+  name: string | null;
+  position: string | null;
+  lockType: string | null;
+  lockName: string | null;
+}
+
 /** A vertical connection: one position, shown on every floor in its range. */
 export interface MapElevator {
   id: number;
   name: string | null;
+  /** The elevator form's description (HTML as stored). */
+  description: string | null;
   xPlot: number | null;
   yPlot: number | null;
   floorplateId: number | null;
@@ -48,6 +66,8 @@ export interface MapElevator {
   duplicateOf: number | null;
   lockProvider: string | null;
   image: string | null;
+  gallery: ElevatorPhoto[];
+  banks: ElevatorBank[];
   tourStop: StopState | null;
 }
 

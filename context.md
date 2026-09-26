@@ -601,3 +601,66 @@ Branch `feature/amenities_improvements` (from `feature/map_plotting_auto_wayfind
 - **Real ids worth keeping:** 2157 Bowers Residences (19 amenities, Dwelo locks, one hidden from stops, no videos, no galleries), 1106 The Carson (Matterport video links with custom labels, Latch), 1232 Lincoln at Dilworth (galleries: "Sky" has 3 images), 1618 Hazel (videos + galleries + locks + one hidden).
 
 ---
+
+## 18. Map & Plotting (plotting design) and Tour Setup: implementation knowledge (September 26, 2026)
+
+Added with phase 2i (branch `feature/map_plotting_tour_setup`; PYN_CONNECT_PROGRESS.md §22; gaps in `gaps_map_plotting_feature.md` (M10–M13) and `gaps_tour_setup_feature.md`). §16 still describes the raster map, the pathway graph and the wayfinding JSON; this section adds the floor SVG, polygon plotting, the Auto Plot wizard and the real Tour Setup.
+
+### The flow
+
+```
+Property Detail → Map & Plotting / Inventory → Plotting / Tour Setup → View on Plan
+  → /properties/:id/map[?level=floorplate:12&pin=unit:34&arm=1]     app/(connect)/properties/[propId]/map/page.tsx
+       loadPropertyMap() (unchanged: the four inventory listings + automate_plotting.json)
+       → PropertyMapScreen → usePropertyMap(map, initial) → generator/map/* → MapCanvas (+ SvgPlanLayer) / MapPanels / MapDialogs
+       floor SVG: fetch('/api/properties/:id/plan-svg?floorplate=<id>')     app/api/properties/[propId]/plan-svg/route.ts
+                    → GET /communities/:id/floorplates.json (scoped) → the plate's svg URL → the file, as image/svg+xml
+                    → measureFloorSvg() (utils/map/floorSvg.ts) → FloorSvgDoc { viewBox, targets[] } in LocalMapState.svgDocs
+  → /properties/:id/tour-setup                                          app/(connect)/properties/[propId]/tour-setup/page.tsx
+       numeric id → loadPropertyMap() → TourSetupScreen → useTourSetup → generator/tour/tourSetup.generator.ts
+       slug id    → the phase 2 demo screen (unchanged)
+```
+
+### The legacy SVG plotting, traced
+
+| | |
+|---|---|
+| Page | `GET /communities/:id/floorplates/:fid/plotexp` → `FloorplatesController#plotexp` → `plotexp.html.haml` renders `_svg_or_image_unit_plotting` twice: the image section (raster pins, hallways, doors, "Start Plotting Hallways") and the SVG section (`is_svg: true`) |
+| JavaScript | `services/svgHandler.js`: `fetchSVG` (fetches the file, `uniquifySVGIds`, mounts it), `isValidShape` (a shape in a `<g>` of shapes + a trailing `<text>`, not under an outlines / label / text / icon group), `getTheMarkabeSVGShape` (point-in-shape), `getNormalizedMouseCoordinates` (client px → viewBox units through the CTM), `processSvgBlock` (clones the matched shape, fills it with the marker colour, adds the tooltip); `services/svgAutoPlotting.js`: `autoPlotUnits` (`#Units` group → `Building_*` / `Floor_*` groups → polygons; `normalize` strips everything but letters and digits; matches the group's `<text>` label, then the unit's short name, then "variants" with ≥ 0.55 similarity) → `POST /communities/:id/save_pointer_data` |
+| Stored | `units.pointer_data` / `amenities.pointer_data` = `{ id, tag, x_plot, y_plot, selector }` — the shape's raw id and tag, its centre in **viewBox units**, or a group selector (`g#R-112 > polygon:nth-child(1)`) when the shape has no id. `floorplates.svg_metadata` = the SVG's own `width`/`height` attributes read on upload (`upload_svg_image`, Nokogiri); the viewBox is what the browser scales, so Connect reads it from the file |
+| Ids | Illustrator escapes an id that is not an XML name: `_x32_` is "2", `_x31_0` is "10", `_x34_7_00000017…_` is "47" with a uniqueness suffix. `decodeIllustratorId` gives the design's "polygon ID"; the raw id is what `pointer_data.id` holds |
+
+### The plot targets (`utils/map/floorSvg.ts`)
+
+`measureFloorSvg` parses the text, mounts a copy off-screen at its own viewBox size (so `getBBox` + `getCTM` answer in viewBox units), and collects the plottable shapes: every `polygon | path | rect | circle | ellipse | polyline` with an id, plus every named group holding shapes without ids of their own (the `g#R-112 > polygon` form the legacy auto-plot saves), inside a `Units` group when the file has one, never under outline / label / text / icon groups. Each target carries `code` (decoded id), `rawId`, `groupId`, `selector`, the sibling `<text>` label, its centre and box. `pointerTarget` resolves a stored pointer by raw id, then selector / group, then the box the saved point falls in.
+
+### Two layers, two coordinate spaces
+
+A level draws either its **floor SVG** (`space: 'svg'`, viewBox units) or its **floor image** (`space: 'raster'`, image pixels), never both at once: the two files do not share a frame (1468: 2942×1942 image, 1412×912 viewBox; 2934: a square 2000×2000 SVG over a landscape image). `activeSpace(level, state)` picks the SVG when the level has one (a "Floor SVG / Background image" toggle when it has both). Every placement, temporary node and override carries its `space`; `generateLevelGraph(…, space)` draws only that space's records. Hallways, elevators, entry points, doors, the tour start and the CMS route are image-space records (the CMS plots them on the image section), so they draw on the image layer; Manual Plot and Auto Plot produce SVG-space placements (`PinOverride { space: 'svg', polygon }`); Place Pin / Junction drop into whichever layer is shown.
+
+### Manual Plot, Auto Plot, the panel
+
+- **Manual Plot** is the `plot` tool: tick items in To Plot (`plotSel`), click a polygon → `dropOnPolygon` writes one override per item at the polygon's centre with its code; a click on empty plan with one armed item places it there (the old Place Pin). Clicking a polygon with the tool off opens its popover (what sits on it, Unplot). The Plotted tab ticks items for "Unplot n items".
+- **Auto Plot** (`utils/map/autoPlotRules.ts`, a port of the design's `apAnalyze` / `apSuggest` / rules): scope = this floorplate / all in the building / all in the property; each level's unplotted units (`unitNumber` = `marketing_name`, floor, building) against its targets' codes *and labels*; rules rewrite either side (`{unit}`/`{id}`, `{digits}`, `{letters}`, `{floor}`, `{floor2}`, `{stack}`, `{stack3}`, `{bldg}`; find & replace in order; trim; pad; prefix; suffix; ignore separators / leading zeros / case); a manual pick per unmatched row; "Suggested" tries the design's pattern list. Result → overrides + `autoPlotReport`; rules remembered per building on the page.
+- Levels' progress (`generateLevelTabs`): items whose plotted level (else floor + building) is the level; Done / n/m / No units / No SVG / No plan. `levelForFloor` prefers a floorplate of the unit's building when several cover the floor.
+- Tour Setup's **View / Plot on Plan** opens the map with `?level=&pin=&arm=1`: `usePropertyMap(map, initial)` starts on that level with the pin selected, or armed.
+
+### Tour Setup
+
+| | |
+|---|---|
+| Legacy pages | sidebar "Tour Setup" treeview (`_side_menu.html.haml`): Settings (`tours#settings`), Tour Stops (`tours#index`: building / floor buttons, Add Amenities / Add Units selects, the sortable stops table with eye (`display_stop`), draw path, edit, delete; ADD STARTING POINT, BUILDING ENTRY / EXIT, ADD ELEVATOR), Auto Wayfinding; elevators on `elevators#index` / `#edit` (`_edit_elevator`: name, description, directional text, covering range, building, lock type / code / lock, Latch banks in `_elevator_bank_block`, the gallery) |
+| Data | `tour_stops` of `Community#community_tour` (`tours.where(tour_user_id: nil).last`) in `sort` order — all of them, hidden ones too; the records behind them (units.json / amenities.json / the wayfinding JSON's elevators and building starting points); elevators with `description`, `gallery` (`elevator_galleries`) and `banks` (`elevator_banks`) — the only JSON added this phase (`Connect::WayfindingSerializer#elevators`) |
+| Talking point | `TourStop#stop_directional_text`: `units.stop_description`, else `directional_text`, else `description`; HTML shown as plain text, editable on the page (gap T2) |
+| Counts | Tour Stops = stops on the community tour; Elevators & Locks = elevators; Routing = stored hallway connections (`Σ next_points`) |
+| Local state | `TourLocalState` (`generator/tour/tourSetup.generator.ts`): stops (order, `visible`, `talkingPoint`, `duration`, `removed`, `local`), `gated`, `photos` / `photoOrder`, `removedElevators`, `localElevators`, the route inputs, dialogs. `initialTourState(map)` rebuilds it from the stored tour; nothing is sent |
+| Routing | `utils/wayfinding/stopRoute.ts`: every stop (its door, else its pin), elevator and entry point attaches to the nearest hallway node of its level; hallway links weigh their pixel length; an elevator serving two floors is a zero-length link between its two nodes; Dijkstra from stop to stop → legs, hops, pixel length, floor / building changes, elevators ridden. Building Starting Points reuse `generateStartPointRows` |
+
+### Development-only trap
+
+CarrierWave stores to disk in development (`storage Rails.env.development? ? :file : :fog`) while this database was restored from staging, whose files are on S3. Floor images are fine (`standard_image_url` is the S3 copy); floor SVGs, elevator images and galleries are not on disk, so the CMS host answers 404. The `plan-svg` route falls back to the S3 copy beside the floorplate's image (`bucketOf` + `uploads/<kind>/svg_image/<id>/<file>`); photos show "Photo unavailable". On staging and production the uploader's own URLs are the S3 URLs.
+
+### Testing
+
+- `tests/e2e/mapPlotting.spec.ts` (1468 with SVG: polygons, Manual Plot, the wizard's four steps, Publish, Add Floorplate, Remove Plan, Grid, Junction; 2919 raster: the pathway tools, both algorithms) and `tests/e2e/tourSetup.spec.ts` (2934: reorder, hide, edit, add, remove, gate, add bank, remove, route, publish), both real-data, both asserting 0 non-GET requests. Session env as §13.
+- Real properties for this screen: **3837 Sylo** (floor 1 SVG with ids A102…, 84 unplotted units → the wizard's exact-match case; floors 0, 2–4 plotted by pointer), **1468** (floor SVG + image + 20 hallways + 4 elevators, 3 pointer units), **2934** (Tour Setup: 20 stops, 4 elevators, Latch bank, gallery, 2 entry points), 4397 (1087 pointers), 2919 / 1264 / 236 as in §16.

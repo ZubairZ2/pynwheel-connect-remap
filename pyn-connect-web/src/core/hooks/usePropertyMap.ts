@@ -8,21 +8,57 @@ import { i18n } from '~/resources/i18n';
 import type { PropertyMap, RouteLeg, WayfindingRoute } from '~/core/models/data/propertyMap.data';
 import { demoActions } from '~/core/store/demo/demo.slice';
 import { useAppDispatch } from '~/core/store/hooks';
-import { runLocalAutoPlot } from '~/core/utils/generator/map/autoPlot';
-import { generateMapLevels, levelById, planAssets, type MapLevel } from '~/core/utils/generator/map/mapLevels.generator';
-import { generateAllGraphs, generatePinItems, type LevelGraph } from '~/core/utils/generator/map/mapNodes.generator';
 import {
+  AP_PRESETS,
+  apAnalyze,
+  apDefault,
+  apDraftProblem,
+  apIsDefault,
+  apSuggest,
+  apUnitNo,
+  type ApDir,
+  type ApLevelInput,
+  type ApRules,
+  type ApTrim
+} from '~/core/utils/map/autoPlotRules';
+import { measureFloorSvg, type PlotTarget } from '~/core/utils/map/floorSvg';
+import {
+  activeSpace,
+  defaultSpace,
+  generateMapLevels,
+  levelById,
+  levelSpaceDims,
+  levelsOfBuilding,
+  mapBuildings,
+  planAssets,
+  type MapLevel
+} from '~/core/utils/generator/map/mapLevels.generator';
+import {
+  generateAllGraphs,
+  generatePinItems,
+  generateRasterGraphs,
+  svgDocOf,
+  unitNumber,
+  type LevelGraph,
+  type PinItem
+} from '~/core/utils/generator/map/mapNodes.generator';
+import {
+  generateAutoPlotMenu,
   generateBedLegend,
+  generateBuildingPills,
   generateLevelTabs,
   generateMapHint,
   generatePlanInfo,
-  generatePlotSummary,
+  generatePlotPanel,
+  generatePolygons,
   generatePublishSummary,
   generateSelectedPin,
+  generateSelectedPolygon,
   generateSelection,
   generateStartPointRows,
   generateTools,
   generateVerticalLinks,
+  itemsOfLevel,
   levelForLeg
 } from '~/core/utils/generator/map/mapPanels.generator';
 import {
@@ -30,13 +66,19 @@ import {
   edgeKey,
   initialLocalMapState,
   nodeKey,
+  parsePinKey,
   pinKey,
   toPercent,
+  type ApScope,
+  type ApStep,
+  type AutoPlotState,
   type BedTier,
   type ConfirmState,
   type LocalMapState,
   type MapTool,
+  type PinOverride,
   type PinRef,
+  type PlanSpace,
   type RouteState
 } from '~/core/utils/generator/map/mapState';
 import { M, coordText, plural, t } from '~/core/utils/generator/map/mapText';
@@ -56,29 +98,50 @@ export interface RouteLine {
 
 /**
  * All of the Map & Plotting screen's state. The stored map never changes here:
- * pins placed or moved, junctions, connections, starting points, plan files,
- * marker colours and routes live in `LocalMapState` until the page reloads,
- * and no action sends anything but the one read that runs the CMS algorithm.
+ * pins placed, dropped onto polygons or moved, junctions, connections,
+ * starting points, plan files, marker colours, Auto Plot results and routes
+ * live in `LocalMapState` until the page reloads, and no action sends
+ * anything but reads (the floor SVGs, and the one that runs the CMS
+ * algorithm).
  */
-export const usePropertyMap = (map: PropertyMap) => {
+export interface MapInitial {
+  levelId: string | null;
+  /** A pin key (`unit:12`) to select, or to arm for plotting when `arm` is set. */
+  pin: string | null;
+  arm: boolean;
+}
+
+export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = null) => {
   const dispatch = useAppDispatch();
   const levels = useMemo(() => generateMapLevels(map), [map]);
-  const [state, setState] = useState<LocalMapState>(() => initialLocalMapState(levels[0]?.id ?? ''));
+  const buildings = useMemo(() => mapBuildings(map, levels), [map, levels]);
+  const [state, setState] = useState<LocalMapState>(() => {
+    const first = (initial?.levelId && levels.find((row) => row.id === initial.levelId)) || levels[0] || null;
+    const base = initialLocalMapState(first?.id ?? '', buildings.length > 1 ? (first?.building ?? buildings[0]) : null, defaultSpace(levels));
+    const pin = initial?.pin ? parsePinKey(initial.pin) : null;
+    if (!pin) return base;
+    return initial?.arm ? { ...base, tool: 'plot', plotTarget: pin } : { ...base, selectedPin: pin };
+  });
   const planRef = useRef<HTMLDivElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const pendingSlot = useRef<'svg' | 'bg'>('svg');
+  const loading = useRef(new Set<string>());
 
   const level = levelById(levels, state.levelId) ?? levels[0] ?? null;
+  const space: PlanSpace = level ? activeSpace(level, state) : 'raster';
   const graphs = useMemo(() => generateAllGraphs(map, levels, state), [map, levels, state]);
+  const rasterGraphs = useMemo(() => generateRasterGraphs(map, levels, state), [map, levels, state]);
   const graph: LevelGraph | null = level ? (graphs[level.id] ?? null) : null;
   const dims = graph?.dims ?? null;
+  const svgDoc = svgDocOf(state, level);
+  const assets = level ? planAssets(level, state.planOverrides[level.id]) : null;
 
   const toast = useCallback((message: string) => dispatch(demoActions.showToast(message)), [dispatch]);
   const patch = useCallback((update: (current: LocalMapState) => Partial<LocalMapState>) => {
     setState((current) => ({ ...current, ...update(current) }));
   }, []);
 
-  /** Pointer position in the level's pixels (its image's natural size). */
+  /** Pointer position in the layer's own units (image pixels, or viewBox units). */
   const pointerPx = useCallback(
     (event: { clientX: number; clientY: number }): { x: number; y: number } | null => {
       const element = planRef.current;
@@ -94,6 +157,7 @@ export const usePropertyMap = (map: PropertyMap) => {
 
   const pinItems = useMemo(() => generatePinItems(map, levels, state), [map, levels, state]);
   const itemOf = useCallback((ref: PinRef) => pinItems.find((item) => item.key === pinKey(ref)) ?? null, [pinItems]);
+  const itemByKey = useCallback((key: string) => pinItems.find((item) => item.key === key) ?? null, [pinItems]);
 
   const nextUnplotted = useCallback(
     (skip: PinRef | null, levelId: string): PinRef | null => {
@@ -105,19 +169,83 @@ export const usePropertyMap = (map: PropertyMap) => {
     [pinItems]
   );
 
-  /* ── levels and tools ─────────────────────────────────────────────── */
+  /* ── floor SVGs ───────────────────────────────────────────────────── */
+
+  const loadSvg = useCallback(
+    async (target: MapLevel) => {
+      const own = planAssets(target, state.planOverrides[target.id]);
+      if (!own.svg || loading.current.has(target.id)) return;
+      loading.current.add(target.id);
+      patch((current) => ({ svgDocs: { ...current.svgDocs, [target.id]: { status: 'loading' } } }));
+      try {
+        const url = own.svg.local ? own.svg.url : APP_API.planSvg(map.inventory.property.id, { kind: target.kind, id: target.recordId });
+        const response = await fetch(url, { cache: 'no-store' });
+        if (!response.ok) throw new Error(String(response.status));
+        const text = await response.text();
+        const doc = measureFloorSvg(text);
+        patch((current) => ({ svgDocs: { ...current.svgDocs, [target.id]: { status: 'ready', doc } } }));
+      } catch {
+        patch((current) => ({ svgDocs: { ...current.svgDocs, [target.id]: { status: 'failed' } } }));
+      } finally {
+        loading.current.delete(target.id);
+      }
+    },
+    [map.inventory.property.id, patch, state.planOverrides]
+  );
+
+  // The level in view loads its floor SVG; the Auto Plot wizard loads its scope's.
+  const apScopeLevels = useCallback(
+    (ap: AutoPlotState | null): MapLevel[] => {
+      if (!ap) return [];
+      if (ap.scope === 'all') return levels;
+      if (ap.scope === 'building') return levelsOfBuilding(levels, ap.building).filter((row) => row.building === ap.building || ap.building == null);
+      return levels.filter((row) => row.id === ap.levelId);
+    },
+    [levels]
+  );
+
+  useEffect(() => {
+    const wanted = level ? [level, ...apScopeLevels(state.ap)] : apScopeLevels(state.ap);
+    wanted.forEach((target) => {
+      if (!state.svgDocs[target.id]) void loadSvg(target);
+    });
+  }, [level, state.ap, state.svgDocs, apScopeLevels, loadSvg]);
+
+  /* ── buildings, levels, layers and tools ───────────────────────────── */
 
   const pickLevel = useCallback(
-    (id: string) => patch(() => ({ levelId: id, selectedNode: null, selectedEdge: null, selectedPin: null, chainFrom: null })),
+    (id: string) =>
+      patch(() => ({ levelId: id, selectedNode: null, selectedEdge: null, selectedPin: null, chainFrom: null, selPoly: null, polyHover: null, plotUnSel: [] })),
     [patch]
   );
+
+  const pickBuilding = useCallback(
+    (name: string) => {
+      const first = levelsOfBuilding(levels, name).find((row) => row.building === name) ?? levelsOfBuilding(levels, name)[0] ?? null;
+      patch((current) => ({
+        building: name,
+        levelId: first ? first.id : current.levelId,
+        plotSel: [],
+        plotUnSel: [],
+        selPoly: null,
+        polyHover: null,
+        selectedNode: null,
+        selectedEdge: null,
+        selectedPin: null
+      }));
+    },
+    [levels, patch]
+  );
+
+  const pickLayer = useCallback((layer: PlanSpace) => patch(() => ({ layer, selPoly: null, polyHover: null, selectedNode: null, selectedEdge: null })), [patch]);
 
   const pickTool = useCallback(
     (tool: MapTool) =>
       patch((current) => {
-        const next: Partial<LocalMapState> = { tool, selectedNode: null, selectedEdge: null };
+        const next: Partial<LocalMapState> = { tool, selectedNode: null, selectedEdge: null, polyHover: null };
         if (tool !== 'edge') next.edgeFrom = null;
-        next.plotTarget = tool === 'plot' ? (current.plotTarget ?? nextUnplotted(null, current.levelId)) : null;
+        next.plotTarget = tool === 'plot' ? (current.plotTarget ?? (current.plotSel.length ? null : nextUnplotted(null, current.levelId))) : null;
+        if (tool !== 'plot') next.plotSel = current.plotSel;
         if (tool === 'hallway') {
           // The legacy editor chains from the map's `selected` hallway, or the selected node.
           const levelGraph = graphs[current.levelId];
@@ -135,9 +263,34 @@ export const usePropertyMap = (map: PropertyMap) => {
     [graphs, map.graph.hallways, nextUnplotted, patch]
   );
 
+  const toggleManualPlot = useCallback(() => {
+    const on = state.tool !== 'plot';
+    pickTool(on ? 'plot' : 'select');
+    if (on && !state.plotSel.length && space === 'svg') toast(i18n.t(M.toast.manualPlotOn));
+  }, [pickTool, space, state.plotSel.length, state.tool, toast]);
+
   const toggleHallways = useCallback(() => pickTool(state.tool === 'hallway' ? 'select' : 'hallway'), [pickTool, state.tool]);
   const toggleGrid = useCallback(() => patch((current) => ({ gridOn: !current.gridOn })), [patch]);
-  const toggleSvgLayer = useCallback(() => patch((current) => ({ svgLayer: !current.svgLayer })), [patch]);
+
+  /* ── the To Plot / Plotted lists ──────────────────────────────────── */
+
+  const togglePlotSel = useCallback(
+    (key: string) =>
+      patch((current) => ({
+        plotSel: current.plotSel.includes(key) ? current.plotSel.filter((row) => row !== key) : [...current.plotSel, key],
+        plotTarget: null
+      })),
+    [patch]
+  );
+  const setPlotSel = useCallback((keys: string[]) => patch(() => ({ plotSel: keys, plotTarget: null })), [patch]);
+  const toggleUnSel = useCallback(
+    (key: string) =>
+      patch((current) => ({ plotUnSel: current.plotUnSel.includes(key) ? current.plotUnSel.filter((row) => row !== key) : [...current.plotUnSel, key] })),
+    [patch]
+  );
+  const setUnSel = useCallback((keys: string[]) => patch(() => ({ plotUnSel: keys })), [patch]);
+  const setPlotTab = useCallback((tab: 'todo' | 'done') => patch(() => ({ plotTab: tab })), [patch]);
+  const setPlotQuery = useCallback((query: string) => patch(() => ({ plotQuery: query })), [patch]);
 
   /* ── placing pins ─────────────────────────────────────────────────── */
 
@@ -148,6 +301,7 @@ export const usePropertyMap = (map: PropertyMap) => {
       patch((current) => ({
         tool: 'plot',
         plotTarget: ref,
+        plotSel: [],
         selectedNode: null,
         selectedEdge: null,
         selectedPin: null,
@@ -158,7 +312,7 @@ export const usePropertyMap = (map: PropertyMap) => {
     [itemOf, patch, toast]
   );
 
-  const clearPlotTarget = useCallback(() => patch(() => ({ plotTarget: null, tool: 'select' })), [patch]);
+  const clearPlotTarget = useCallback(() => patch(() => ({ plotTarget: null, plotSel: [], tool: 'select' })), [patch]);
 
   const placePin = useCallback(
     (px: { x: number; y: number }) => {
@@ -167,7 +321,7 @@ export const usePropertyMap = (map: PropertyMap) => {
       if (!target || !item || !level || !dims) return;
       const next = nextUnplotted(target, level.id);
       patch((current) => ({
-        pinOverrides: { ...current.pinOverrides, [pinKey(target)]: { levelId: level.id, x: px.x, y: px.y } },
+        pinOverrides: { ...current.pinOverrides, [pinKey(target)]: { levelId: level.id, x: px.x, y: px.y, space, polygon: null } },
         selectedPin: target,
         plotTarget: next,
         tool: next ? 'plot' : 'select'
@@ -179,8 +333,77 @@ export const usePropertyMap = (map: PropertyMap) => {
         }`
       );
     },
-    [dims, itemOf, level, nextUnplotted, patch, state.plotTarget, toast]
+    [dims, itemOf, level, nextUnplotted, patch, space, state.plotTarget, toast]
   );
+
+  /** Manual Plot: the ticked items (or the armed one) land on a polygon. */
+  const dropOnPolygon = useCallback(
+    (target: PlotTarget) => {
+      if (!level) return;
+      const keys = state.plotSel.length ? state.plotSel : state.plotTarget ? [pinKey(state.plotTarget)] : [];
+      const items = keys.map(itemByKey).filter((item): item is PinItem => !!item);
+      if (!items.length) {
+        toast(i18n.t(M.toast.nothingSelected));
+        return;
+      }
+      const override: PinOverride = { levelId: level.id, x: target.cx, y: target.cy, space: 'svg', polygon: target.code };
+      patch((current) => ({
+        pinOverrides: { ...current.pinOverrides, ...Object.fromEntries(items.map((item) => [item.key, override])) },
+        plotSel: [],
+        plotTarget: null,
+        selPoly: null,
+        selectedPin: items.length === 1 ? items[0].ref : null
+      }));
+      toast(t(M.toast.dropped, { what: items.length === 1 ? items[0].label : plural(items.length, M.place.itemOne, M.place.itemMany), code: target.code }));
+    },
+    [itemByKey, level, patch, state.plotSel, state.plotTarget, toast]
+  );
+
+  const clickPolygon = useCallback(
+    (target: PlotTarget) => {
+      if (state.tool === 'plot' && (state.plotSel.length || state.plotTarget)) {
+        dropOnPolygon(target);
+        return;
+      }
+      patch((current) => ({ selPoly: current.selPoly === target.code ? null : target.code, selectedPin: null, selectedNode: null, selectedEdge: null }));
+    },
+    [dropOnPolygon, patch, state.plotSel.length, state.plotTarget, state.tool]
+  );
+
+  const hoverPolygon = useCallback((code: string | null) => patch((current) => (current.polyHover === code ? {} : { polyHover: code })), [patch]);
+  const closeSelPoly = useCallback(() => patch(() => ({ selPoly: null })), [patch]);
+
+  const unplotItems = useCallback(
+    (keys: string[]) => {
+      const items = keys.map(itemByKey).filter((item): item is PinItem => !!item && item.placed);
+      if (!items.length) return;
+      patch((current) => ({
+        pinOverrides: { ...current.pinOverrides, ...Object.fromEntries(items.map((item) => [item.key, null])) },
+        plotUnSel: current.plotUnSel.filter((key) => !keys.includes(key)),
+        selectedPin: current.selectedPin && keys.includes(pinKey(current.selectedPin)) ? null : current.selectedPin
+      }));
+      toast(items.length === 1 ? t(M.toast.pinRemoved, { name: items[0].label }) : t(M.toast.unplotted, { count: items.length }));
+    },
+    [itemByKey, patch, toast]
+  );
+
+  const askConfirm = useCallback((confirm: ConfirmState) => patch(() => ({ confirm })), [patch]);
+  const closeConfirm = useCallback(() => patch(() => ({ confirm: null })), [patch]);
+
+  const unplotMany = useCallback(() => {
+    const keys = state.plotUnSel;
+    if (!keys.length) return;
+    askConfirm({
+      title: t(M.place.unplotTitle, { items: plural(keys.length, M.place.itemOne, M.place.itemMany) }),
+      message: i18n.t(M.place.unplotBody),
+      label: i18n.t(M.place.unplot),
+      danger: true,
+      onConfirm: () => {
+        unplotItems(keys);
+        patch(() => ({ confirm: null }));
+      }
+    });
+  }, [askConfirm, patch, state.plotUnSel, unplotItems]);
 
   /* ── nodes and connections ────────────────────────────────────────── */
 
@@ -191,7 +414,7 @@ export const usePropertyMap = (map: PropertyMap) => {
         const key = nodeKey('junction', current.nextJunction);
         const tempEdges = chainFrom ? [...current.tempEdges, { a: chainFrom, b: key }] : current.tempEdges;
         return {
-          tempNodes: [...current.tempNodes, { key, levelId: level.id, x: px.x, y: px.y, label: `Node ${current.nextJunction}` }],
+          tempNodes: [...current.tempNodes, { key, levelId: level.id, x: px.x, y: px.y, label: `Node ${current.nextJunction}`, space }],
           tempEdges,
           nextJunction: current.nextJunction + 1,
           selectedNode: key,
@@ -201,7 +424,7 @@ export const usePropertyMap = (map: PropertyMap) => {
       });
       if (chainFrom) toast(i18n.t(M.toast.hallwayAdded));
     },
-    [level, patch, toast]
+    [level, patch, space, toast]
   );
 
   const connectNodes = useCallback(
@@ -215,7 +438,7 @@ export const usePropertyMap = (map: PropertyMap) => {
         selectedNode: b,
         selectedEdge: null
       }));
-      if (!exists) toast(i18n.t(M.toast.connected));
+      toast(i18n.t(exists ? M.toast.alreadyConnected : M.toast.connected));
     },
     [graphs, patch, state.tempEdges, toast]
   );
@@ -246,7 +469,7 @@ export const usePropertyMap = (map: PropertyMap) => {
         patch(() => ({ chainFrom: key, selectedNode: key, selectedEdge: null, selectedPin: null }));
         return;
       }
-      patch(() => ({ selectedNode: key, selectedEdge: null, selectedPin: null }));
+      patch(() => ({ selectedNode: key, selectedEdge: null, selectedPin: null, selPoly: null }));
     },
     [connectNodes, patch, state.edgeFrom, state.tool]
   );
@@ -259,7 +482,7 @@ export const usePropertyMap = (map: PropertyMap) => {
         patch(() => ({ dragging: { kind: 'pin', ref }, selectedPin: ref, selectedNode: null, selectedEdge: null }));
         return;
       }
-      patch(() => ({ selectedPin: ref, selectedNode: null, selectedEdge: null }));
+      patch(() => ({ selectedPin: ref, selectedNode: null, selectedEdge: null, selPoly: null }));
     },
     [patch, state.tool]
   );
@@ -281,6 +504,10 @@ export const usePropertyMap = (map: PropertyMap) => {
         placePin(px);
         return;
       }
+      if (state.tool === 'plot' && state.plotSel.length && px) {
+        toast(i18n.t(space === 'svg' ? M.toast.clickPolygon : M.toast.armOne));
+        return;
+      }
       if (state.tool === 'junction' && px) {
         addJunction(px, null);
         return;
@@ -289,9 +516,9 @@ export const usePropertyMap = (map: PropertyMap) => {
         addJunction(px, state.chainFrom);
         return;
       }
-      patch(() => ({ selectedNode: null, selectedEdge: null, selectedPin: null }));
+      patch(() => ({ selectedNode: null, selectedEdge: null, selectedPin: null, selPoly: null }));
     },
-    [addJunction, patch, placePin, pointerPx, state.chainFrom, state.plotTarget, state.tool]
+    [addJunction, patch, placePin, pointerPx, space, state.chainFrom, state.plotSel.length, state.plotTarget, state.tool, toast]
   );
 
   const onSurfaceMove = useCallback(
@@ -302,7 +529,7 @@ export const usePropertyMap = (map: PropertyMap) => {
       if (!px) return;
       if (dragging.kind === 'pin') {
         patch((current) => ({
-          pinOverrides: { ...current.pinOverrides, [pinKey(dragging.ref)]: { levelId: level.id, x: px.x, y: px.y } }
+          pinOverrides: { ...current.pinOverrides, [pinKey(dragging.ref)]: { levelId: level.id, x: px.x, y: px.y, space, polygon: null } }
         }));
       } else if (dragging.key.startsWith('j:')) {
         patch((current) => ({
@@ -312,7 +539,7 @@ export const usePropertyMap = (map: PropertyMap) => {
         patch((current) => ({ nodeOverrides: { ...current.nodeOverrides, [dragging.key]: { x: px.x, y: px.y } } }));
       }
     },
-    [level, patch, pointerPx, state.dragging]
+    [level, patch, pointerPx, space, state.dragging]
   );
 
   const onSurfaceUp = useCallback(() => {
@@ -367,9 +594,6 @@ export const usePropertyMap = (map: PropertyMap) => {
 
   /* ── the selected pin ─────────────────────────────────────────────── */
 
-  const askConfirm = useCallback((confirm: ConfirmState) => patch(() => ({ confirm })), [patch]);
-  const closeConfirm = useCallback(() => patch(() => ({ confirm: null })), [patch]);
-
   const removePin = useCallback(() => {
     const ref = state.selectedPin;
     const item = ref && itemOf(ref);
@@ -391,40 +615,16 @@ export const usePropertyMap = (map: PropertyMap) => {
     const item = ref && itemOf(ref);
     if (!ref || !item || !level) return;
     const target = dims ? { x: Math.round(dims.w / 2), y: Math.round(dims.h / 2) } : { x: 0, y: 0 };
-    patch((current) => ({ pinOverrides: { ...current.pinOverrides, [pinKey(ref)]: { levelId: level.id, ...target } } }));
+    patch((current) => ({ pinOverrides: { ...current.pinOverrides, [pinKey(ref)]: { levelId: level.id, space, polygon: null, ...target } } }));
     toast(t(M.toast.pinMoved, { name: item.label, level: `${level.sub} · ${level.label}` }));
-  }, [dims, itemOf, level, patch, state.selectedPin, toast]);
+  }, [dims, itemOf, level, patch, space, state.selectedPin, toast]);
 
-  /* ── colours, auto-plot, plan files ───────────────────────────────── */
+  /* ── colours, plan files ──────────────────────────────────────────── */
 
   const setBedColor = useCallback(
     (tier: BedTier, color: string) => patch((current) => ({ bedColors: { ...current.bedColors, [tier]: color } })),
     [patch]
   );
-
-  const autoPlot = useCallback(() => {
-    const pool = pinItems.filter((item) => !item.placed);
-    if (!pool.length) {
-      toast(i18n.t(M.place.autoPlotNothing));
-      return;
-    }
-    askConfirm({
-      title: t(M.place.autoPlotTitle, { count: plural(pool.length, M.place.itemOne, M.place.itemMany) }),
-      message: i18n.t(M.place.autoPlotBody),
-      label: i18n.t(M.tools.autoPlot),
-      onConfirm: () => {
-        const result = runLocalAutoPlot(map, levels, state);
-        patch((current) => ({
-          pinOverrides: { ...current.pinOverrides, ...result.overrides },
-          autoPlotReport: result.report,
-          confirm: null
-        }));
-        toast(t(M.toast.autoPlot, { placed: result.report.placed, total: result.report.total }));
-      }
-    });
-  }, [askConfirm, levels, map, patch, pinItems, state, toast]);
-
-  const dismissAutoPlot = useCallback(() => patch(() => ({ autoPlotReport: null })), [patch]);
 
   const openFilePicker = useCallback((slot: 'svg' | 'bg') => {
     pendingSlot.current = slot;
@@ -437,14 +637,25 @@ export const usePropertyMap = (map: PropertyMap) => {
   const applyLocalFile = useCallback(
     (file: File, slot: 'svg' | 'bg') => {
       if (!level) return;
+      if (slot === 'svg' && !/\.svg$/i.test(file.name) && file.type !== 'image/svg+xml') {
+        toast(i18n.t(M.toast.notSvg));
+        patch(() => ({ svgDrag: false }));
+        return;
+      }
       const url = URL.createObjectURL(file);
-      patch((current) => ({
-        planOverrides: {
-          ...current.planOverrides,
-          [level.id]: { ...current.planOverrides[level.id], removed: false, [slot]: { name: file.name, url } }
-        },
-        svgDrag: false
-      }));
+      patch((current) => {
+        const svgDocs = { ...current.svgDocs };
+        if (slot === 'svg') delete svgDocs[level.id];
+        return {
+          planOverrides: {
+            ...current.planOverrides,
+            [level.id]: { ...current.planOverrides[level.id], removed: false, [slot]: { name: file.name, url } }
+          },
+          svgDocs,
+          layer: slot === 'svg' ? 'svg' : current.layer,
+          svgDrag: false
+        };
+      });
       toast(t(M.toast.fileLocal, { file: file.name, level: `${level.sub} · ${level.label}` }));
     },
     [level, patch, toast]
@@ -465,18 +676,176 @@ export const usePropertyMap = (map: PropertyMap) => {
       label: i18n.t(M.plan.removePlan),
       danger: true,
       onConfirm: () => {
-        patch((current) => ({ planOverrides: { ...current.planOverrides, [level.id]: { removed: true } }, confirm: null }));
+        patch((current) => {
+          const svgDocs = { ...current.svgDocs };
+          delete svgDocs[level.id];
+          return { planOverrides: { ...current.planOverrides, [level.id]: { removed: true } }, svgDocs, confirm: null };
+        });
         toast(i18n.t(M.toast.planRemoved));
       }
     });
   }, [askConfirm, level, patch, toast]);
+
+  /* ── Auto Plot ────────────────────────────────────────────────────── */
+
+  const apLevels = useCallback(
+    (ap: AutoPlotState): ApLevelInput[] =>
+      apScopeLevels(ap).map((row) => {
+        const own = planAssets(row, state.planOverrides[row.id]);
+        const doc = svgDocOf(state, row);
+        const scope = itemsOfLevel(pinItems, row).filter((item) => !item.placed);
+        return {
+          id: row.id,
+          name: `${row.sub} · ${row.label}`,
+          building: row.building,
+          floors: row.floors,
+          hasSvg: !!own.svg,
+          targets: own.svg ? (doc ? doc.targets : null) : [],
+          units: scope
+            .filter((item) => item.kind === 'unit')
+            .map((item) => {
+              const unit = map.inventory.units.find((candidate) => candidate.id === item.ref.id);
+              return { key: item.key, name: item.label, number: unit ? unitNumber(unit) : item.label, floor: item.floor, building: item.building };
+            }),
+          amenities: scope.filter((item) => item.kind === 'amenity').map((item) => ({ key: item.key, name: item.label }))
+        };
+      }),
+    [apScopeLevels, map.inventory.units, pinItems, state]
+  );
+
+  const apAnalysis = useMemo(() => (state.ap ? apAnalyze(apLevels(state.ap), state.ap.rules, state.ap.manual) : null), [apLevels, state.ap]);
+  const apPreview = useMemo(() => (state.ap ? apAnalyze(apLevels(state.ap), state.ap.draft, {}, true) : null), [apLevels, state.ap]);
+  const apCurrentMatched = useMemo(() => (state.ap ? apAnalyze(apLevels(state.ap), state.ap.rules, {}, true).matched : 0), [apLevels, state.ap]);
+  const apSuggestion = useMemo(
+    () => (state.ap && state.ap.step === 'analyze' && apAnalysis && apAnalysis.unmatched > 0 ? apSuggest(apLevels(state.ap), state.ap.rules) : null),
+    [apAnalysis, apLevels, state.ap]
+  );
+
+  const patchAp = useCallback((update: (ap: AutoPlotState) => Partial<AutoPlotState>) => {
+    setState((current) => (current.ap ? { ...current, ap: { ...current.ap, ...update(current.ap) } } : current));
+  }, []);
+
+  const openAutoPlot = useCallback(
+    (scope: ApScope) => {
+      if (!level) return;
+      const own = planAssets(level, state.planOverrides[level.id]);
+      if (scope === 'one' && !own.svg) {
+        toast(t(M.toast.needSvg, { level: `${level.sub} · ${level.label}` }));
+        patch(() => ({ apMenuOpen: false }));
+        return;
+      }
+      const remembered = state.apPatterns[level.building ?? ''];
+      const rules: ApRules = { ...apDefault('pms'), ...(remembered ?? {}) };
+      patch(() => ({
+        apMenuOpen: false,
+        ap: { step: 'analyze', scope, levelId: level.id, building: level.building, rules, draft: { ...rules, replaces: rules.replaces.map((r) => ({ ...r })) }, manual: {}, remember: true, placed: 0, left: [] }
+      }));
+    },
+    [level, patch, state.apPatterns, state.planOverrides, toast]
+  );
+
+  const apGo = useCallback(
+    (step: ApStep) => patchAp((ap) => ({ step, draft: step === 'pattern' ? { ...ap.rules, replaces: ap.rules.replaces.map((r) => ({ ...r })) } : ap.draft })),
+    [patchAp]
+  );
+
+  const apDraft = useCallback((update: Partial<ApRules>) => patchAp((ap) => ({ draft: { ...ap.draft, ...update } })), [patchAp]);
+
+  const apSetDir = useCallback(
+    (dir: ApDir) =>
+      patchAp((ap) => {
+        const pattern = String(ap.draft.pattern || '');
+        const next = dir === 'svg' ? pattern.replace(/\{unit\}/g, '{id}') : pattern.replace(/\{id\}/g, '{unit}');
+        return { draft: { ...ap.draft, dir, pattern: next || (dir === 'svg' ? '{id}' : '{unit}') } };
+      }),
+    [patchAp]
+  );
+
+  const apApply = useCallback(() => {
+    const ap = state.ap;
+    if (!ap) return;
+    const problem = apDraftProblem(ap.draft);
+    if (problem) {
+      toast(i18n.t(M.autoPlot.problems[problem as keyof typeof M.autoPlot.problems]));
+      return;
+    }
+    patchAp((current) => ({ rules: { ...current.draft, replaces: current.draft.replaces.map((r) => ({ ...r })) }, step: 'analyze' }));
+    toast(i18n.t(M.toast.patternApplied));
+  }, [patchAp, state.ap, toast]);
+
+  const apUseSuggest = useCallback(() => {
+    if (!apSuggestion) return;
+    const rules = apSuggestion.rules;
+    patchAp(() => ({ rules, draft: { ...rules } }));
+    toast(t(M.toast.suggestionApplied, { count: apSuggestion.matched }));
+  }, [apSuggestion, patchAp, toast]);
+
+  const apSetManual = useCallback(
+    (unitKey: string, targetKey: string) =>
+      patchAp((ap) => {
+        const manual = { ...ap.manual };
+        if (targetKey) manual[unitKey] = targetKey;
+        else delete manual[unitKey];
+        return { manual };
+      }),
+    [patchAp]
+  );
+
+  const apRun = useCallback(() => {
+    const ap = state.ap;
+    if (!ap || !apAnalysis) return;
+    const ok = apAnalysis.rows.filter((row) => row.ok && row.target);
+    if (apAnalysis.loading) {
+      toast(i18n.t(M.toast.svgStillLoading));
+      return;
+    }
+    const overrides = Object.fromEntries(
+      ok.map((row) => [row.key, { levelId: row.levelId, x: row.target!.cx, y: row.target!.cy, space: 'svg' as const, polygon: row.target!.code } satisfies PinOverride])
+    );
+    const left = apAnalysis.rows
+      .filter((row) => !row.ok)
+      .map((row) => ({
+        name: row.name,
+        where: row.levelName,
+        reason:
+          row.how === 'amenity'
+            ? i18n.t(M.autoPlot.reasonAmenity)
+            : row.how === 'nosvg'
+              ? i18n.t(M.autoPlot.reasonNoSvg)
+              : t(M.autoPlot.reasonNoPolygon, { key: row.pmsKey })
+      }));
+    const scopeName = apScopeName(ap);
+    patch((current) => ({
+      pinOverrides: { ...current.pinOverrides, ...overrides },
+      ap: current.ap ? { ...current.ap, step: 'done', placed: ok.length, left } : null,
+      apPatterns:
+        ap.remember && !apIsDefault(ap.rules) && ap.building != null
+          ? { ...current.apPatterns, [ap.building]: ap.rules }
+          : current.apPatterns,
+      autoPlotReport: { placed: ok.length, total: apAnalysis.rows.length, skipped: left }
+    }));
+    toast(t(M.toast.autoPlot, { placed: plural(ok.length, M.autoPlot.unitOne, M.autoPlot.unitMany), scope: scopeName }));
+  }, [apAnalysis, patch, state.ap, toast]);
+
+  const apScopeName = (ap: AutoPlotState): string => {
+    const own = levelById(levels, ap.levelId) ?? level;
+    if (ap.scope === 'all') return `${i18n.t(M.autoPlot.allPlates)} · ${map.inventory.property.name}`;
+    if (ap.scope === 'building') return `${i18n.t(M.autoPlot.allPlates)} · ${ap.building ?? own?.sub ?? ''}`;
+    return own ? `${own.sub} · ${own.label}` : '';
+  };
+
+  const apClose = useCallback(() => patch(() => ({ ap: null })), [patch]);
+  const apFinishManual = useCallback(() => {
+    patch(() => ({ ap: null, tool: 'plot', plotTab: 'todo', plotTarget: null }));
+    toast(i18n.t(M.toast.manualPlotRest));
+  }, [patch, toast]);
 
   /* ── routes ───────────────────────────────────────────────────────── */
 
   const startRoute = useCallback(
     (route: RouteState) => {
       const first = route.legs[0] && levelForLeg(levels, route.legs[0]);
-      patch(() => ({ route, levelId: first ? first.id : state.levelId, selectedNode: null, selectedEdge: null }));
+      patch(() => ({ route, levelId: first ? first.id : state.levelId, layer: 'raster', selectedNode: null, selectedEdge: null }));
     },
     [levels, patch, state.levelId]
   );
@@ -505,9 +874,9 @@ export const usePropertyMap = (map: PropertyMap) => {
   }, [map.inventory.property.id, patch, startRoute]);
 
   const runLocalRoute = useCallback(() => {
-    const leg: RouteLeg | null = level ? computeLocalRoute(map, levels, graphs, level, state) : null;
+    const leg: RouteLeg | null = level ? computeLocalRoute(map, levels, rasterGraphs, level, state) : null;
     startRoute({ source: 'local', status: leg ? 'done' : 'empty', legs: leg ? [leg] : [], revealed: 0 });
-  }, [graphs, level, levels, map, startRoute, state]);
+  }, [level, levels, map, rasterGraphs, startRoute, state]);
 
   const clearRoute = useCallback(() => patch(() => ({ route: null })), [patch]);
 
@@ -539,7 +908,9 @@ export const usePropertyMap = (map: PropertyMap) => {
 
   const routeLines = useMemo((): RouteLine[] => {
     const route = state.route;
-    if (!route || !level || !dims || route.status !== 'done') return [];
+    if (!route || !level || route.status !== 'done' || space !== 'raster') return [];
+    const rasterDims = levelSpaceDims(level, state, 'raster');
+    if (!rasterDims) return [];
     const lines: RouteLine[] = [];
     let remaining = route.revealed;
     const totalRevealed = route.revealed;
@@ -557,17 +928,17 @@ export const usePropertyMap = (map: PropertyMap) => {
         const b = leg.points[i];
         seen += 1;
         lines.push({
-          x1: toPercent(a.x + NODE_ANCHOR_OFFSET, dims.w),
-          y1: toPercent(a.y + NODE_ANCHOR_OFFSET, dims.h),
-          x2: toPercent(b.x + NODE_ANCHOR_OFFSET, dims.w),
-          y2: toPercent(b.y + NODE_ANCHOR_OFFSET, dims.h),
+          x1: toPercent(a.x + NODE_ANCHOR_OFFSET, rasterDims.w),
+          y1: toPercent(a.y + NODE_ANCHOR_OFFSET, rasterDims.h),
+          x2: toPercent(b.x + NODE_ANCHOR_OFFSET, rasterDims.w),
+          y2: toPercent(b.y + NODE_ANCHOR_OFFSET, rasterDims.h),
           head: seen + 1 === totalRevealed
         });
       }
       seen += 1;
     });
     return lines;
-  }, [dims, level, levels, state.route]);
+  }, [level, levels, space, state]);
 
   /* ── misc ─────────────────────────────────────────────────────────── */
 
@@ -580,38 +951,75 @@ export const usePropertyMap = (map: PropertyMap) => {
   );
 
   const plotTargetItem = state.plotTarget ? itemOf(state.plotTarget) : null;
-  const assets = level ? planAssets(level, state.planOverrides[level.id]) : null;
+  const polygons = useMemo(() => generatePolygons(space === 'svg' ? svgDoc : null, graph, state), [graph, space, state, svgDoc]);
+  const svgState = level ? state.svgDocs[level.id] ?? null : null;
 
   return {
     map,
     levels,
     level,
+    space,
     graph,
     graphs,
+    rasterGraphs,
     state,
     planRef,
     fileInputRef,
-    tabs: generateLevelTabs(levels, state),
+    svgDoc,
+    svgStatus: assets?.svg ? (svgState?.status ?? 'loading') : null,
+    polygons,
+    selectedPolygon: level ? generateSelectedPolygon(level, polygons, state) : null,
+    buildings: useMemo(() => generateBuildingPills(map, levels, state), [map, levels, state]),
+    tabs: useMemo(() => generateLevelTabs(map, levels, pinItems, state), [map, levels, pinItems, state]),
     tools: generateTools(state),
-    hint: generateMapHint(state, plotTargetItem?.label ?? null),
+    hint: generateMapHint(state, plotTargetItem?.label ?? null, space === 'svg'),
     cursor: state.tool === 'junction' || state.tool === 'hallway' ? 'copy' : state.tool === 'move' ? 'grab' : state.tool === 'plot' ? 'crosshair' : 'default',
     assets,
     planInfo: level && graph ? generatePlanInfo(level, graph, state) : null,
-    plotSummary: useMemo(() => generatePlotSummary(map, levels, state), [map, levels, state]),
-    plotArmedLabel: plotTargetItem && state.tool === 'plot' ? t(M.plan.armed, { name: plotTargetItem.label }) : null,
+    plotPanel: useMemo(() => generatePlotPanel(map, levels, level, pinItems, graphs, state), [map, levels, level, pinItems, graphs, state]),
+    autoPlotMenu: useMemo(() => generateAutoPlotMenu(map, levels, level, pinItems), [map, levels, level, pinItems]),
+    ap: state.ap,
+    apAnalysis,
+    apPreview,
+    apCurrentMatched,
+    apSuggestion,
+    apScopeName: state.ap ? apScopeName(state.ap) : '',
+    apPresets: state.ap ? AP_PRESETS[state.ap.draft.dir] : [],
+    apUnitNo,
+    plotArmedLabel:
+      state.tool === 'plot'
+        ? plotTargetItem
+          ? t(M.plan.armed, { name: plotTargetItem.label })
+          : state.plotSel.length
+            ? t(M.plan.armedMany, { count: plural(state.plotSel.length, M.place.itemOne, M.place.itemMany), it: state.plotSel.length === 1 ? i18n.t(M.plan.it) : i18n.t(M.plan.them) })
+            : i18n.t(space === 'svg' ? M.plan.manualOn : M.plan.manualOnImage)
+        : null,
     selectedPin: generateSelectedPin(map, levels, state),
     selection: graph ? generateSelection(graph, state) : null,
-    startPoints: useMemo(() => generateStartPointRows(map, levels, graphs, state), [map, levels, graphs, state]),
-    verticalLinks: level ? generateVerticalLinks(levels, level, graphs, state) : [],
+    startPoints: useMemo(() => generateStartPointRows(map, levels, rasterGraphs, state), [map, levels, rasterGraphs, state]),
+    verticalLinks: level ? generateVerticalLinks(levels, level, rasterGraphs, state) : [],
     bedLegend: generateBedLegend(map, state),
-    publishSummary: useMemo(() => generatePublishSummary(map, levels, graphs, state), [map, levels, graphs, state]),
+    publishSummary: useMemo(() => generatePublishSummary(map, levels, rasterGraphs, state), [map, levels, rasterGraphs, state]),
     routeLines,
     actions: {
+      pickBuilding,
       pickLevel,
+      pickLayer,
       pickTool,
+      toggleManualPlot,
       toggleHallways,
       toggleGrid,
-      toggleSvgLayer,
+      togglePlotSel,
+      setPlotSel,
+      toggleUnSel,
+      setUnSel,
+      setPlotTab,
+      setPlotQuery,
+      clickPolygon,
+      hoverPolygon,
+      closeSelPoly,
+      unplotItems,
+      unplotMany,
       onSurfaceDown,
       onSurfaceMove,
       onSurfaceUp,
@@ -626,8 +1034,38 @@ export const usePropertyMap = (map: PropertyMap) => {
       removePin,
       movePinHere,
       setBedColor,
-      autoPlot,
-      dismissAutoPlot,
+      openAutoPlotMenu: () => patch((current) => ({ apMenuOpen: !current.apMenuOpen })),
+      closeAutoPlotMenu: () => patch(() => ({ apMenuOpen: false })),
+      openAutoPlot,
+      apGo,
+      apDraft,
+      apSetDir,
+      apInsertToken: (token: string) => patchAp((ap) => ({ draft: { ...ap.draft, pattern: `${ap.draft.pattern || ''}${token}` } })),
+      apAddReplace: () => patchAp((ap) => ({ draft: { ...ap.draft, replaces: [...ap.draft.replaces, { find: '', repl: '' }] } })),
+      apSetReplace: (index: number, key: 'find' | 'repl', value: string) =>
+        patchAp((ap) => ({ draft: { ...ap.draft, replaces: ap.draft.replaces.map((row, position) => (position === index ? { ...row, [key]: value } : row)) } })),
+      apDropReplace: (index: number) => patchAp((ap) => ({ draft: { ...ap.draft, replaces: ap.draft.replaces.filter((_row, position) => position !== index) } })),
+      apSetTrim: (trim: ApTrim) => patchAp((ap) => ({ draft: { ...ap.draft, trim } })),
+      apSetTrimN: (value: string) => {
+        const digits = value.replace(/[^0-9]/g, '').slice(0, 2);
+        patchAp((ap) => ({ draft: { ...ap.draft, trimN: digits, trim: ap.draft.trim === 'none' && digits ? 'keepLast' : ap.draft.trim } }));
+      },
+      apStepTrim: (delta: number) =>
+        patchAp((ap) => {
+          const n = Math.max(0, Math.min(20, (parseInt(ap.draft.trimN, 10) || 0) + delta));
+          return { draft: { ...ap.draft, trimN: String(n), trim: ap.draft.trim === 'none' ? 'keepLast' : ap.draft.trim } };
+        }),
+      apToggleFlag: (flag: 'ignoreSep' | 'ignoreZeros' | 'ignoreCase') => patchAp((ap) => ({ draft: { ...ap.draft, [flag]: !ap.draft[flag] } })),
+      apResetDraft: () => patchAp((ap) => ({ draft: { ...apDefault(ap.draft.dir), dir: ap.draft.dir } })),
+      apApply,
+      apUseSuggest,
+      apSetManual,
+      apToggleRemember: () => patchAp((ap) => ({ remember: !ap.remember })),
+      apRun,
+      apClose,
+      apFinishManual,
+      openFloorplateDialog: () => patch(() => ({ floorplateDialog: true })),
+      closeFloorplateDialog: () => patch(() => ({ floorplateDialog: false })),
       uploadSvg: () => openFilePicker('svg'),
       uploadRaster: () => openFilePicker('bg'),
       onFilePicked,
@@ -650,13 +1088,22 @@ export const usePropertyMap = (map: PropertyMap) => {
         applyLocalFile(file, /\.svg$/i.test(file.name) ? 'svg' : state.dropSlot);
       },
       clearPlan,
+      retrySvg: () => {
+        if (!level) return;
+        patch((current) => {
+          const svgDocs = { ...current.svgDocs };
+          delete svgDocs[level.id];
+          return { svgDocs };
+        });
+      },
       openPublish: () => patch(() => ({ publishOpen: true })),
       closePublish: () => patch(() => ({ publishOpen: false })),
       runCmsRoute,
       runLocalRoute,
       clearRoute,
       onImageLoad,
-      closeConfirm
+      closeConfirm,
+      dismissAutoPlot: () => patch(() => ({ autoPlotReport: null }))
     }
   };
 };

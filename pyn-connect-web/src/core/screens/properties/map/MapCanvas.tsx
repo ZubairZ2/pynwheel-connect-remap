@@ -8,6 +8,7 @@ import type { PropertyMapController } from '~/core/hooks/usePropertyMap';
 import type { LevelNode } from '~/core/utils/generator/map/mapNodes.generator';
 import { edgeKey } from '~/core/utils/generator/map/mapState';
 import { M, t } from '~/core/utils/generator/map/mapText';
+import { SvgPlanLayer } from './SvgPlanLayer';
 
 /** The legacy route colour (maps.js draws the animated path in orange, stroke 5). */
 const ROUTE_COLOR = '#ffa500';
@@ -31,13 +32,16 @@ const NODE_SIZE: Record<LevelNode['kind'], number> = {
 };
 
 /**
- * The plan surface: the floor image at its own aspect ratio, and on top of it
- * the grid, the pathway edges, the route, the nodes and the pins, every one
- * positioned as a percentage of the image so a stored pixel lands where the
- * legacy map drew it.
+ * The plan surface: the floor SVG (its polygons live, as the design plots
+ * onto them) or the floor image, at its own aspect ratio, and on top of it
+ * the grid, the pathway edges, the route, the nodes, the pins and the
+ * selected polygon's popover, every one positioned as a percentage of the
+ * layer's own coordinate space so a stored position lands where the legacy
+ * map drew it.
  */
 export const MapCanvas = ({ controller }: { controller: PropertyMapController }) => {
-  const { level, graph, state, assets, actions, planRef, fileInputRef, routeLines, cursor, plotArmedLabel } = controller;
+  const { level, graph, space, state, assets, actions, planRef, fileInputRef, routeLines, cursor, plotArmedLabel, svgDoc, svgStatus, polygons, selectedPolygon } =
+    controller;
   const surfaceRef = useRef<HTMLDivElement | null>(null);
   const [surface, setSurface] = useState({ w: 0, h: 0 });
   const [failed, setFailed] = useState<string | null>(null);
@@ -54,22 +58,26 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
 
   if (!level || !graph) return null;
 
-  const dims = graph.dims;
-  const showSvg = !!assets?.svg && (state.svgLayer || !assets.image);
-  const src = showSvg ? assets?.svg?.url : assets?.image?.url;
-  const has = !!assets?.has && !!src;
+  const onSvg = space === 'svg';
+  const svgReady = onSvg && svgStatus === 'ready' && !!svgDoc;
+  const src = onSvg ? null : assets?.image?.url ?? null;
+  const has = !!assets?.has && (onSvg ? !!assets?.svg : !!src);
+  const dims = graph.dims ?? (onSvg && level.svgWidth && level.svgHeight ? { w: level.svgWidth, h: level.svgHeight } : null);
 
-  // Fit the image's box inside the surface, centred, so percentages map onto it.
+  // Fit the layer's box inside the surface, centred, so percentages map onto it.
   const box = (() => {
     if (!dims || !surface.w || !surface.h) return { width: '100%', height: '100%' };
     const scale = Math.min(surface.w / dims.w, surface.h / dims.h);
     return { width: `${Math.floor(dims.w * scale)}px`, height: `${Math.floor(dims.h * scale)}px` };
   })();
 
+  const dropping = state.plotSel.length > 0 || !!state.plotTarget;
+  const labelled = polygons.filter((polygon) => polygon.filled || polygon.hover || polygon.selected);
+
   return (
     <div
       ref={surfaceRef}
-      className={`bo-map__surface${has ? '' : ' bo-map__surface--empty'}`}
+      className={`bo-map__surface${has ? '' : ' bo-map__surface--empty'}${onSvg ? ' bo-map__surface--svg' : ''}`}
       data-testid="plan-surface"
       style={{ cursor }}
       onPointerDown={(event) => {
@@ -92,16 +100,47 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
 
       {has ? (
         <div ref={planRef} className="bo-map__plan" style={box}>
-          {failed === src ? (
+          {onSvg ? (
+            svgReady ? (
+              <SvgPlanLayer
+                doc={svgDoc!}
+                polygons={polygons}
+                plotOn={state.tool === 'plot'}
+                dropping={dropping}
+                onPolygonDown={actions.clickPolygon}
+                onPolygonHover={actions.hoverPolygon}
+              />
+            ) : (
+              <div className="bo-map__missing" role="status">
+                {svgStatus === 'failed' ? (
+                  <span className="bo-map__missingstack">
+                    {i18n.t(M.plan.svgFailed)}
+                    <span className="bo-map__missingactions">
+                      <button type="button" className="bo-map__planbtn" onClick={actions.retrySvg}>
+                        {i18n.t(M.plan.retry)}
+                      </button>
+                      {assets?.image && (
+                        <button type="button" className="bo-map__planbtn" onClick={() => actions.pickLayer('raster')}>
+                          {i18n.t(M.plan.showImage)}
+                        </button>
+                      )}
+                    </span>
+                  </span>
+                ) : (
+                  i18n.t(M.plan.svgLoading)
+                )}
+              </div>
+            )
+          ) : failed === src ? (
             <div className="bo-map__missing" role="status">
               {i18n.t(M.plan.imageUnavailable)}
             </div>
           ) : (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              key={src}
+              key={src ?? ''}
               className="bo-map__image"
-              src={src}
+              src={src ?? undefined}
               alt={i18n.t(M.plan.alt)}
               draggable={false}
               onLoad={(event) => actions.onImageLoad(level.id, event.currentTarget.naturalWidth, event.currentTarget.naturalHeight)}
@@ -110,6 +149,17 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
           )}
 
           {state.gridOn && <div className="bo-map__grid" aria-hidden="true" />}
+
+          {svgReady && labelled.length > 0 && (
+            <div className="bo-map__polylabels" aria-hidden="true">
+              {labelled.map((polygon) => (
+                <div key={polygon.key} className="bo-map__polylabel" style={{ left: `${polygon.left}%`, top: `${polygon.top}%` }}>
+                  <span className="bo-map__polycode">{polygon.code}</span>
+                  {polygon.assigned && <span className="bo-map__polyassigned">{polygon.assigned}</span>}
+                </div>
+              ))}
+            </div>
+          )}
 
           <svg className="bo-map__edges" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
             {graph.edges.map((edge) => {
@@ -188,11 +238,12 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
 
           {graph.pins.map((pin) => {
             const selected = !!state.selectedPin && `${state.selectedPin.kind}:${state.selectedPin.id}` === pin.key;
+            const onPolygon = !!pin.polygon && svgReady;
             return (
               <div
                 key={pin.key}
                 data-node={pin.key}
-                className={`bo-map__pin${selected ? ' bo-map__pin--selected' : ''}${pin.temporary ? ' bo-map__pin--temp' : ''}`}
+                className={`bo-map__pin${selected ? ' bo-map__pin--selected' : ''}${pin.temporary ? ' bo-map__pin--temp' : ''}${onPolygon ? ' bo-map__pin--poly' : ''}`}
                 style={{ left: `${pin.xPct}%`, top: `${pin.yPct}%`, zIndex: selected ? 7 : 4 }}
                 onPointerDown={actions.onPinDown(pin.ref)}
                 title={pin.label}
@@ -200,20 +251,57 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
                 <span
                   className="bo-map__pindot"
                   style={{
-                    width: selected ? 26 : 22,
-                    height: selected ? 26 : 22,
+                    width: selected ? 26 : onPolygon ? 16 : 22,
+                    height: selected ? 26 : onPolygon ? 16 : 22,
                     background: pin.color,
                     borderColor: selected ? '#7B3A87' : '#fff',
                     borderWidth: selected ? 3 : 2,
                     borderStyle: pin.temporary || pin.moved ? 'dashed' : 'solid'
                   }}
                 >
-                  <Icon name={pin.kind === 'unit' ? 'bed' : 'star'} style={{ transform: 'scale(0.62)' }} />
+                  {!onPolygon && <Icon name={pin.kind === 'unit' ? 'bed' : 'star'} style={{ transform: 'scale(0.62)' }} />}
                 </span>
-                <span className="bo-map__pinlabel">{pin.label}</span>
+                {!onPolygon && <span className="bo-map__pinlabel">{pin.label}</span>}
               </div>
             );
           })}
+
+          {selectedPolygon && svgReady && (
+            <div
+              className="bo-map__polypop"
+              data-node="polygon-popover"
+              style={{
+                left: `${selectedPolygon.left}%`,
+                top: `${selectedPolygon.top}%`,
+                transform: selectedPolygon.below ? 'translate(-50%, 24px)' : 'translate(-50%, calc(-100% - 24px))'
+              }}
+              onPointerDown={(event) => event.stopPropagation()}
+            >
+              <div className="bo-map__polypophead">
+                <div className="bo-map__polypoptext">
+                  <div className="bo-map__polypoptitle">{selectedPolygon.title}</div>
+                  <div className="bo-map__polypopsub">{selectedPolygon.sub}</div>
+                </div>
+                <button type="button" className="bo-map__dismiss" aria-label={i18n.t(M.place.closePolygon)} onClick={actions.closeSelPoly}>
+                  ×
+                </button>
+              </div>
+              <div className="bo-map__polypoplist">
+                {selectedPolygon.items.map((item) => (
+                  <div key={item.key} className="bo-map__polypoprow">
+                    <div className="bo-map__polypoptext">
+                      <div className="bo-map__polypopname">{item.name}</div>
+                      <div className="bo-map__polypopmeta">{item.meta}</div>
+                    </div>
+                    <button type="button" className="bo-map__unplot" onClick={() => actions.unplotItems([item.key])}>
+                      {i18n.t(M.place.unplot)}
+                    </button>
+                  </div>
+                ))}
+              </div>
+              {selectedPolygon.items.length === 0 && <div className="bo-map__polypopempty">{i18n.t(M.place.polygonEmpty)}</div>}
+            </div>
+          )}
         </div>
       ) : (
         <div
@@ -235,7 +323,9 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
             <Icon name="upload" style={{ color: 'var(--bo-accent)', transform: 'scale(1.6)', marginBottom: 6 }} />
             <div className="bo-map__droptitle">{i18n.t(state.svgDrag ? M.plan.dropActive : M.plan.dropLabel)}</div>
             <div className="bo-map__dropsub">
-              {t(M.plan.emptyFor, { level: `${level.sub} · ${level.label}` })} {i18n.t(M.plan.emptyHint)}
+              {assets?.image
+                ? t(M.plan.needSvg, { level: `${level.sub} · ${level.label}` })
+                : `${t(M.plan.emptyFor, { level: `${level.sub} · ${level.label}` })} ${i18n.t(M.plan.emptyHint)}`}
             </div>
             <div className="bo-map__dropactions">
               <button
@@ -248,16 +338,30 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
               >
                 {i18n.t(M.plan.chooseSvg)}
               </button>
-              <button
-                type="button"
-                className="bo-inv__ghost"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  actions.uploadRaster();
-                }}
-              >
-                {i18n.t(M.plan.uploadInstead)}
-              </button>
+              {!assets?.image && (
+                <button
+                  type="button"
+                  className="bo-inv__ghost"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    actions.uploadRaster();
+                  }}
+                >
+                  {i18n.t(M.plan.uploadInstead)}
+                </button>
+              )}
+              {assets?.image && (
+                <button
+                  type="button"
+                  className="bo-inv__ghost"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    actions.pickLayer('raster');
+                  }}
+                >
+                  {i18n.t(M.plan.showImage)}
+                </button>
+              )}
             </div>
             <div className="bo-map__dropnote">{i18n.t(M.plan.dropNote)}</div>
           </div>
@@ -266,10 +370,10 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
 
       {plotArmedLabel && has && (
         <div className="bo-map__armed" role="status">
-          <Icon name="pin" style={{ color: 'var(--bo-accent)', flexShrink: 0 }} />
+          <Icon name="pin" style={{ color: '#7CC4E8', flexShrink: 0 }} />
           <div className="bo-map__armedlabel">{plotArmedLabel}</div>
           <button type="button" className="bo-map__armedcancel" onClick={actions.clearPlotTarget}>
-            {i18n.t(M.plan.cancel)}
+            {i18n.t(M.plan.turnOff)}
           </button>
         </div>
       )}

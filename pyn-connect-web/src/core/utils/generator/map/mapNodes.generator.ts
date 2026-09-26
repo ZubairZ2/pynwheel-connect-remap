@@ -1,7 +1,8 @@
 import { i18n } from '~/resources/i18n';
 import type { InventoryAmenity, InventoryUnit } from '~/core/models/data/propertyInventory.data';
 import type { PropertyMap } from '~/core/models/data/propertyMap.data';
-import { levelDims, levelForAmenity, levelForUnit, type MapLevel } from './mapLevels.generator';
+import { pointerTarget, type FloorSvgDoc, type PlotTarget } from '~/core/utils/map/floorSvg';
+import { activeSpace, levelDims, levelForAmenity, levelForUnit, levelSpaceDims, type MapLevel } from './mapLevels.generator';
 import {
   AMENITY_COLOR,
   DEFAULT_BED_COLORS,
@@ -15,15 +16,17 @@ import {
   type LocalMapState,
   type NodeKind,
   type PinKind,
-  type PinRef
+  type PinRef,
+  type PlanSpace
 } from './mapState';
 import { M, bedsLabel } from './mapText';
 
 /**
  * What one level draws, from the stored records and the page's local state.
- * Positions are the level's pixels (`x`/`y`, centre of the marker) and their
- * percentage of the level's image (`xPct`/`yPct`), which is what the canvas
- * lays out with.
+ * Positions are the level's units in the layer's own space (`x`/`y`, centre
+ * of the marker: image pixels on the raster layer, viewBox units on the SVG
+ * layer) and their percentage of that space (`xPct`/`yPct`), which is what
+ * the canvas lays out with.
  */
 
 export interface LevelPin {
@@ -40,8 +43,9 @@ export interface LevelPin {
   temporary: boolean;
   moved: boolean;
   tourStop: boolean;
-  /** Positioned by the SVG pointer, in the floor SVG's user units rather than the raster's pixels. */
-  svgSpace: boolean;
+  space: PlanSpace;
+  /** The polygon the pin sits on (a stored pointer's shape, or the one it was dropped on here). */
+  polygon: string | null;
   beds: number | null;
 }
 
@@ -76,6 +80,8 @@ export interface LevelEdge {
 
 export interface LevelGraph {
   level: MapLevel;
+  /** The layer this graph is drawn on. */
+  space: PlanSpace;
   dims: { w: number; h: number } | null;
   pins: LevelPin[];
   nodes: LevelNode[];
@@ -92,6 +98,8 @@ export interface PinItem {
   level: MapLevel | null;
   placed: boolean;
   temporary: boolean;
+  space: PlanSpace | null;
+  polygon: string | null;
   beds: number | null;
   category: string | null;
   floor: number | null;
@@ -113,6 +121,9 @@ export const bedColorsOf = (map: PropertyMap, state: LocalMapState): Record<BedT
 export const unitLabel = (unit: InventoryUnit): string =>
   unit.displayName ?? unit.marketingName ?? unit.providerUnitId ?? `#${unit.id}`;
 
+/** The PMS unit number the Auto Plot matches: the marketing name the feed sends. */
+export const unitNumber = (unit: InventoryUnit): string => unit.marketingName ?? unit.providerUnitId ?? unitLabel(unit);
+
 export const unitBeds = (map: PropertyMap, unit: InventoryUnit): number | null =>
   unit.floorplanId != null ? (map.inventory.floorplans.find((plan) => plan.id === unit.floorplanId)?.bedrooms ?? null) : null;
 
@@ -120,24 +131,36 @@ export const unitBeds = (map: PropertyMap, unit: InventoryUnit): number | null =
 export const mapAmenities = (map: PropertyMap): InventoryAmenity[] =>
   map.inventory.amenities.filter((amenity) => amenity.ownerType == null || amenity.ownerType === 'Floorplate' || amenity.ownerType === 'Sitemap');
 
-interface Placement {
+export interface Placement {
   level: MapLevel | null;
   x: number;
   y: number;
-  space: 'raster' | 'svg';
+  space: PlanSpace;
+  polygon: string | null;
   temporary: boolean;
   moved: boolean;
 }
 
-/** A stored pin's own position: raster pixels, else the SVG pointer. */
+/** The loaded SVG document of a level, when it is parsed. */
+export const svgDocOf = (state: LocalMapState, level: MapLevel | null): FloorSvgDoc | null => {
+  if (!level) return null;
+  const entry = state.svgDocs[level.id];
+  return entry?.status === 'ready' ? entry.doc : null;
+};
+
+/** A stored pin's own position: raster pixels, else the SVG pointer (and the shape it names). */
 const storedPlacement = (
-  levels: MapLevel[],
-  record: { xPlot: number | null; yPlot: number | null; svgPointer: { xPlot: number; yPlot: number } | null },
+  state: LocalMapState,
+  record: { xPlot: number | null; yPlot: number | null; svgPointer: { xPlot: number; yPlot: number; tag: string | null; elementId: string | null; selector: string | null } | null },
   level: MapLevel | null
 ): Omit<Placement, 'temporary' | 'moved'> | null => {
   if (!level) return null;
-  if (record.xPlot != null && record.yPlot != null) return { level, x: record.xPlot, y: record.yPlot, space: 'raster' };
-  if (record.svgPointer) return { level, x: record.svgPointer.xPlot, y: record.svgPointer.yPlot, space: 'svg' };
+  if (record.svgPointer) {
+    const doc = svgDocOf(state, level);
+    const target = doc ? pointerTarget(doc, record.svgPointer) : null;
+    return { level, x: record.svgPointer.xPlot, y: record.svgPointer.yPlot, space: 'svg', polygon: target?.code ?? null };
+  }
+  if (record.xPlot != null && record.yPlot != null) return { level, x: record.xPlot, y: record.yPlot, space: 'raster', polygon: null };
   return null;
 };
 
@@ -151,7 +174,7 @@ const withOverride = (
   if (override === null) return null;
   if (override) {
     const level = levels.find((row) => row.id === override.levelId) ?? null;
-    return { level, x: override.x, y: override.y, space: 'raster', temporary: !stored, moved: !!stored };
+    return { level, x: override.x, y: override.y, space: override.space, polygon: override.polygon, temporary: !stored, moved: !!stored };
   }
   return stored ? { ...stored, temporary: false, moved: false } : null;
 };
@@ -162,7 +185,7 @@ export const placementOfUnit = (levels: MapLevel[], state: LocalMapState, unit: 
     unit.floorplateId != null
       ? (levels.find((row) => row.kind === 'floorplate' && row.recordId === unit.floorplateId) ?? null)
       : (levels.find((row) => row.kind === 'sitemap') ?? null);
-  return withOverride(levels, state, { kind: 'unit', id: unit.id }, storedPlacement(levels, unit, level));
+  return withOverride(levels, state, { kind: 'unit', id: unit.id }, storedPlacement(state, unit, level));
 };
 
 export const placementOfAmenity = (levels: MapLevel[], state: LocalMapState, amenity: InventoryAmenity): Placement | null => {
@@ -172,7 +195,7 @@ export const placementOfAmenity = (levels: MapLevel[], state: LocalMapState, ame
       : amenity.ownerType === 'Sitemap'
         ? (levels.find((row) => row.kind === 'sitemap') ?? null)
         : null;
-  return withOverride(levels, state, { kind: 'amenity', id: amenity.id }, storedPlacement(levels, amenity, level));
+  return withOverride(levels, state, { kind: 'amenity', id: amenity.id }, storedPlacement(state, amenity, level));
 };
 
 /** Where a pin is right now, looked up by reference. Null when unplotted. */
@@ -203,6 +226,8 @@ export const generatePinItems = (map: PropertyMap, levels: MapLevel[], state: Lo
       level: placement?.level ?? levelForUnit(levels, unit),
       placed: !!placement,
       temporary: !!placement?.temporary,
+      space: placement?.space ?? null,
+      polygon: placement?.polygon ?? null,
       beds,
       category: null,
       floor: unit.floor,
@@ -223,10 +248,12 @@ export const generatePinItems = (map: PropertyMap, levels: MapLevel[], state: Lo
       level: placement?.level ?? levelForAmenity(levels, amenity),
       placed: !!placement,
       temporary: !!placement?.temporary,
+      space: placement?.space ?? null,
+      polygon: placement?.polygon ?? null,
       beds: null,
       category: amenity.category,
       floor: amenity.floor,
-      building: amenity.building,
+      building: amenity.building ?? amenity.ownerBuilding,
       tourStop: stopIds.has(`amenity:${amenity.id}`),
       color: AMENITY_COLOR
     };
@@ -242,16 +269,18 @@ const iconCentre = (x: number | null, y: number | null): { x: number; y: number 
   x == null || y == null || (x <= 0 && y <= 0) ? null : { x: x + NODE_ANCHOR_OFFSET, y: y + NODE_ANCHOR_OFFSET };
 
 /**
- * The level's nodes: its stored hallways, the elevators serving one of its
- * floors (the legacy `fetch_elevators(floor)`), the building entry/exit
- * points on its floors, the tour's starting point on the starting floor, the
- * doors of the units and amenities plotted on it, and the page's temporary
- * junctions. Hidden nodes are left out; moved ones carry their stored centre.
+ * The level's graph on one layer. On the raster layer: its stored hallways,
+ * the elevators serving one of its floors (the legacy `fetch_elevators(floor)`),
+ * the building entry/exit points on its floors, the tour's starting point on
+ * the starting floor, the doors of the units and amenities plotted on it, the
+ * page's temporary junctions, and the raster-space pins. On the SVG layer:
+ * the pins placed in SVG units (stored pointers and polygon drops) and the
+ * junctions dropped there. Hidden nodes are left out; moved ones carry their
+ * stored centre.
  */
-export const generateLevelGraph = (map: PropertyMap, levels: MapLevel[], level: MapLevel, state: LocalMapState): LevelGraph => {
+export const generateLevelGraph = (map: PropertyMap, levels: MapLevel[], level: MapLevel, state: LocalMapState, space: PlanSpace): LevelGraph => {
   const { graph, inventory } = map;
-  const dims = levelDims(level, state);
-  const svgDims = level.svgWidth && level.svgHeight ? { w: level.svgWidth, h: level.svgHeight } : dims;
+  const dims = levelSpaceDims(level, state, space);
   const hidden = new Set(state.hiddenNodes);
   const hiddenEdges = new Set(state.hiddenEdges);
   const colors = bedColorsOf(map, state);
@@ -283,58 +312,62 @@ export const generateLevelGraph = (map: PropertyMap, levels: MapLevel[], level: 
   };
 
   const parentType = level.kind === 'floorplate' ? 'Floorplate' : 'Sitemap';
-  graph.hallways
-    .filter((hallway) => hallway.parentType === parentType && hallway.parentId === level.recordId)
-    .forEach((hallway) =>
-      place(nodeKey('hallway', hallway.id), 'hallway', `#${hallway.id}`, iconCentre(hallway.xPlot, hallway.yPlot))
-    );
+
+  if (space === 'raster') {
+    graph.hallways
+      .filter((hallway) => hallway.parentType === parentType && hallway.parentId === level.recordId)
+      .forEach((hallway) =>
+        place(nodeKey('hallway', hallway.id), 'hallway', `#${hallway.id}`, iconCentre(hallway.xPlot, hallway.yPlot))
+      );
+  }
 
   state.tempNodes
-    .filter((node) => node.levelId === level.id)
+    .filter((node) => node.levelId === level.id && node.space === space)
     .forEach((node) => place(node.key, 'junction', node.label, { x: node.x, y: node.y }));
 
-  graph.elevators
-    .filter((elevator) =>
-      level.kind === 'sitemap'
-        ? elevator.sitemapId === level.recordId || (elevator.floorplateId == null && elevator.sitemapId == null)
-        : elevator.floors.some((floor) => level.floors.includes(floor)) || elevator.floorplateId === level.recordId
-    )
-    .forEach((elevator) =>
-      place(nodeKey('elevator', elevator.id), 'elevator', elevator.name ?? i18n.t(M.selection.elevator), iconCentre(elevator.xPlot, elevator.yPlot), {
-        floors: elevator.floors,
-        building: elevator.building
-      })
-    );
-
-  graph.buildingStartingPoints
-    .filter((point) => level.kind === 'sitemap' || level.floors.includes(point.floor ?? 1))
-    .forEach((point) =>
-      place(
-        nodeKey('startingPoint', point.id),
-        'startingPoint',
-        point.name ?? `${point.building ?? ''} ${i18n.t(M.selection.startingPoint)}`.trim(),
-        iconCentre(point.xPlot, point.yPlot),
-        { building: point.building, isStart: true }
+  if (space === 'raster') {
+    graph.elevators
+      .filter((elevator) =>
+        level.kind === 'sitemap'
+          ? elevator.sitemapId === level.recordId || (elevator.floorplateId == null && elevator.sitemapId == null)
+          : elevator.floors.some((floor) => level.floors.includes(floor)) || elevator.floorplateId === level.recordId
       )
-    );
+      .forEach((elevator) =>
+        place(nodeKey('elevator', elevator.id), 'elevator', elevator.name ?? i18n.t(M.selection.elevator), iconCentre(elevator.xPlot, elevator.yPlot), {
+          floors: elevator.floors,
+          building: elevator.building
+        })
+      );
 
-  const tour = graph.tour;
-  if (tour && tour.xPlot + tour.yPlot > 0) {
-    const startFloor = tour.startingFloor ?? Math.min(...levels.flatMap((row) => row.floors), Number.POSITIVE_INFINITY);
-    const onThisLevel = level.kind === 'sitemap' || level.floors.includes(startFloor) || (levels[0]?.id === level.id && !Number.isFinite(startFloor));
-    if (onThisLevel) {
-      place(nodeKey('tourStart', 'tour'), 'tourStart', tour.name ?? i18n.t(M.starts.tourStart), iconCentre(tour.xPlot, tour.yPlot), {
-        building: tour.building,
-        isStart: true
-      });
+    graph.buildingStartingPoints
+      .filter((point) => level.kind === 'sitemap' || level.floors.includes(point.floor ?? 1))
+      .forEach((point) =>
+        place(
+          nodeKey('startingPoint', point.id),
+          'startingPoint',
+          point.name ?? `${point.building ?? ''} ${i18n.t(M.selection.startingPoint)}`.trim(),
+          iconCentre(point.xPlot, point.yPlot),
+          { building: point.building, isStart: true }
+        )
+      );
+
+    const tour = graph.tour;
+    if (tour && tour.xPlot + tour.yPlot > 0) {
+      const startFloor = tour.startingFloor ?? Math.min(...levels.flatMap((row) => row.floors), Number.POSITIVE_INFINITY);
+      const onThisLevel = level.kind === 'sitemap' || level.floors.includes(startFloor) || (levels[0]?.id === level.id && !Number.isFinite(startFloor));
+      if (onThisLevel) {
+        place(nodeKey('tourStart', 'tour'), 'tourStart', tour.name ?? i18n.t(M.starts.tourStart), iconCentre(tour.xPlot, tour.yPlot), {
+          building: tour.building,
+          isStart: true
+        });
+      }
     }
   }
 
-  // Pins: units plotted on this floorplate (or on the sitemap), amenities it owns, and temporary placements.
+  // Pins: units plotted on this floorplate (or on the sitemap), amenities it owns, and temporary placements, in this space.
   const pins: LevelPin[] = [];
   const pushPin = (ref: PinRef, placement: Placement | null, label: string, beds: number | null, color: string, tourStop: boolean) => {
-    if (!placement || placement.level?.id !== level.id) return;
-    const space = placement.space === 'svg' ? svgDims : dims;
+    if (!placement || placement.level?.id !== level.id || placement.space !== space) return;
     pins.push({
       ref,
       key: pinKey(ref),
@@ -342,13 +375,14 @@ export const generateLevelGraph = (map: PropertyMap, levels: MapLevel[], level: 
       label,
       x: placement.x,
       y: placement.y,
-      xPct: pct(placement.x, space?.w),
-      yPct: pct(placement.y, space?.h),
+      xPct: pct(placement.x, dims?.w),
+      yPct: pct(placement.y, dims?.h),
       color,
       temporary: placement.temporary,
       moved: placement.moved,
       tourStop,
-      svgSpace: placement.space === 'svg',
+      space,
+      polygon: placement.polygon,
       beds
     });
   };
@@ -360,15 +394,17 @@ export const generateLevelGraph = (map: PropertyMap, levels: MapLevel[], level: 
     pushPin({ kind: 'amenity', id: amenity.id }, placementOfAmenity(levels, state, amenity), amenity.name, null, AMENITY_COLOR, stopIds.has(`amenity:${amenity.id}`))
   );
 
-  // Doors of the pins on this level, and the map's access points.
-  const pinIds = { Unit: new Set(pins.filter((pin) => pin.kind === 'unit').map((pin) => pin.ref.id)), Amenity: new Set(pins.filter((pin) => pin.kind === 'amenity').map((pin) => pin.ref.id)) };
-  graph.doors
-    .filter((door) => {
-      if (door.attachedWithType === 'Unit') return pinIds.Unit.has(door.attachedWithId);
-      if (door.attachedWithType === 'Amenity') return pinIds.Amenity.has(door.attachedWithId);
-      return door.attachedWithType === parentType && door.attachedWithId === level.recordId;
-    })
-    .forEach((door) => place(nodeKey('door', door.id), 'door', door.name ?? i18n.t(M.selection.door), iconCentre(door.xPlot, door.yPlot)));
+  if (space === 'raster') {
+    // Doors of the pins on this level, and the map's access points.
+    const pinIds = { Unit: new Set(pins.filter((pin) => pin.kind === 'unit').map((pin) => pin.ref.id)), Amenity: new Set(pins.filter((pin) => pin.kind === 'amenity').map((pin) => pin.ref.id)) };
+    graph.doors
+      .filter((door) => {
+        if (door.attachedWithType === 'Unit') return pinIds.Unit.has(door.attachedWithId);
+        if (door.attachedWithType === 'Amenity') return pinIds.Amenity.has(door.attachedWithId);
+        return door.attachedWithType === parentType && door.attachedWithId === level.recordId;
+      })
+      .forEach((door) => place(nodeKey('door', door.id), 'door', door.name ?? i18n.t(M.selection.door), iconCentre(door.xPlot, door.yPlot)));
+  }
 
   const byKey = new Map(nodes.map((node) => [node.key, node]));
   const edges: LevelEdge[] = [];
@@ -380,22 +416,48 @@ export const generateLevelGraph = (map: PropertyMap, levels: MapLevel[], level: 
     if (hiddenEdges.has(key) || edges.some((edge) => edge.key === key)) return;
     edges.push({ key, a, b, x1: na.xPct, y1: na.yPct, x2: nb.xPct, y2: nb.yPct, temporary });
   };
-  graph.hallways.forEach((hallway) =>
-    hallway.nextPoints.forEach((next) => pushEdge(nodeKey('hallway', hallway.id), nodeKey('hallway', next), false))
-  );
+  if (space === 'raster') {
+    graph.hallways.forEach((hallway) =>
+      hallway.nextPoints.forEach((next) => pushEdge(nodeKey('hallway', hallway.id), nodeKey('hallway', next), false))
+    );
+  }
   state.tempEdges.forEach((edge) => pushEdge(edge.a, edge.b, true));
 
-  return { level, dims, pins, nodes, edges };
+  return { level, space, dims, pins, nodes, edges };
 };
 
-/** Every level's graph, keyed by level id (cross-floor panels read this). */
+/** Every level's graph on its active layer, keyed by level id (cross-floor panels read this). */
 export const generateAllGraphs = (map: PropertyMap, levels: MapLevel[], state: LocalMapState): Record<string, LevelGraph> =>
-  Object.fromEntries(levels.map((level) => [level.id, generateLevelGraph(map, levels, level, state)]));
+  Object.fromEntries(levels.map((level) => [level.id, generateLevelGraph(map, levels, level, state, activeSpace(level, state))]));
+
+/** Every level's raster graph (the pathway graph the routing works on), whatever layer is shown. */
+export const generateRasterGraphs = (map: PropertyMap, levels: MapLevel[], state: LocalMapState): Record<string, LevelGraph> =>
+  Object.fromEntries(levels.map((level) => [level.id, generateLevelGraph(map, levels, level, state, 'raster')]));
 
 export const pinMeta = (map: PropertyMap, item: PinItem): string =>
   item.kind === 'unit'
     ? `${bedsLabel(item.beds)}${item.floor != null ? ` · ${i18n.t(M.level.floor).replace('{floor}', String(item.floor))}` : ''}`
     : `${i18n.t(M.place.amenity)}${item.category ? ` · ${item.category}` : ''}`;
 
-export { unitLabel as labelOfUnit };
+/** The items sitting on each polygon of a level's SVG, by polygon code. */
+export const itemsByPolygon = (pins: LevelPin[]): Record<string, LevelPin[]> => {
+  const out: Record<string, LevelPin[]> = {};
+  pins.forEach((pin) => {
+    if (!pin.polygon) return;
+    (out[pin.polygon] = out[pin.polygon] ?? []).push(pin);
+  });
+  return out;
+};
+
+/** The polygon a pin sits on, or the nearest one to it, when the SVG is loaded. */
+export const polygonOfPin = (doc: FloorSvgDoc | null, pin: LevelPin): PlotTarget | null => {
+  if (!doc) return null;
+  if (pin.polygon) {
+    const named = doc.targets.find((target) => target.code === pin.polygon);
+    if (named) return named;
+  }
+  return doc.targets.find((target) => pin.x >= target.bbox.x && pin.x <= target.bbox.x + target.bbox.w && pin.y >= target.bbox.y && pin.y <= target.bbox.y + target.bbox.h) ?? null;
+};
+
+export { unitLabel as labelOfUnit, levelDims };
 export type { PropertyMap };

@@ -20,7 +20,9 @@ import { NODE_ANCHOR_OFFSET, distance, nodeId, type LocalMapState } from '~/core
  *     the starting point (the CMS's traverse back).
  *
  * The CMS reduces stops with several doors to the first one and runs the
- * whole property floor by floor; this previews the current floor only.
+ * whole property floor by floor; this previews the current floor only. It
+ * works on the raster graphs (the pathway graph is stored in image pixels),
+ * whatever layer the canvas shows.
  */
 
 interface Node {
@@ -133,7 +135,7 @@ export const computeLocalRoute = (
     .sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0))
     .flatMap((stop): Attached[] => {
       const pin = graph.pins.find((row) => row.kind === stop.stopType && row.ref.id === stop.stopId);
-      if (!pin || pin.svgSpace) return [];
+      if (!pin || pin.space !== 'raster') return [];
       const door = doorOf(stop.stopType === 'unit' ? 'Unit' : 'Amenity', stop.stopId);
       const x = door ? door.x : pin.x;
       const y = door ? door.y : pin.y;

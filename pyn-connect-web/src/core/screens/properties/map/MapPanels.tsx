@@ -4,44 +4,159 @@ import { i18n } from '~/resources/i18n';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { StatusPill } from '~/core/components/atoms/StatusPill';
 import type { PropertyMapController } from '~/core/hooks/usePropertyMap';
+import type { PlotListItem } from '~/core/utils/generator/map/mapPanels.generator';
 import { M, t } from '~/core/utils/generator/map/mapText';
 
 /** The design's right-hand column: one panel per section, all read from the controller. */
 
-export const PlacePanel = ({ controller }: { controller: PropertyMapController }) => {
-  const { plotSummary, actions } = controller;
+const Tick = ({ on, danger }: { on: boolean; danger?: boolean }) => (
+  <span className={`bo-map__tick${on ? (danger ? ' bo-map__tick--danger' : ' bo-map__tick--on') : ''}`} aria-hidden="true">
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: on ? 1 : 0 }}>
+      <path d="M5 12l5 5L20 7" />
+    </svg>
+  </span>
+);
+
+const ListRow = ({ item, danger, onToggle, action }: { item: PlotListItem; danger?: boolean; onToggle: () => void; action?: React.ReactNode }) => (
+  <div className={`bo-map__plotrow${item.ticked ? (danger ? ' bo-map__plotrow--danger' : ' bo-map__plotrow--on') : ''}`}>
+    <button type="button" className="bo-map__plotpick" onClick={onToggle} aria-pressed={item.ticked} aria-label={item.label}>
+      <Tick on={item.ticked} danger={danger} />
+      <span className="bo-map__plottext">
+        <span className="bo-map__plotname">{item.label}</span>
+        <span className="bo-map__plotmeta">{item.meta}</span>
+      </span>
+    </button>
+    {action}
+  </div>
+);
+
+/**
+ * "Plot Units & Amenities": the level's items to plot and the ones already
+ * plotted, as the design lays them out — search, two tabs, tick boxes,
+ * Unplot. Ticking is local; dropping happens on the canvas.
+ */
+export const PlotPanel = ({ controller }: { controller: PropertyMapController }) => {
+  const { plotPanel, state, actions } = controller;
+  const todoTab = state.plotTab !== 'done';
+
   return (
-    <section className="bo-map__panel">
-      <div className="bo-map__panelrow">
-        <h3 className="bo-map__paneltitle">{i18n.t(M.place.title)}</h3>
-        <span className="bo-map__accent">{plotSummary.doneLabel}</span>
+    <section className="bo-map__panel bo-map__panel--plot" data-testid="plot-panel">
+      <div>
+        <div className="bo-map__panelrow">
+          <h3 className="bo-map__paneltitle">{i18n.t(M.place.title)}</h3>
+          <span className="bo-map__accent">{plotPanel.doneLabel}</span>
+        </div>
+        <p className="bo-map__panelsub">{plotPanel.scopeLabel}</p>
       </div>
-      <p className="bo-map__panelsub">{plotSummary.queueLabel}</p>
-      {plotSummary.queue.length === 0 && <div className="bo-map__empty">{i18n.t(M.place.empty)}</div>}
-      <div className="bo-map__queue">
-        {plotSummary.queue.map((item) => (
-          <button
-            key={item.key}
-            type="button"
-            className={`bo-map__queueitem${item.armed ? ' bo-map__queueitem--armed' : ''}`}
-            onClick={() => actions.armPlot(item.ref)}
-          >
-            <span className="bo-map__queuedot" style={{ background: item.color }} />
-            <span className="bo-map__queuetext">
-              <span className="bo-map__queuename">{item.label}</span>
-              <span className="bo-map__queuewhere">
-                {item.kindLabel} · {item.where}
-              </span>
-            </span>
-          </button>
-        ))}
+      <div className="bo-map__plotsearch">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--bo-subtle)" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input
+          type="search"
+          value={state.plotQuery}
+          aria-label={i18n.t(M.place.search)}
+          placeholder={i18n.t(M.place.search)}
+          onChange={(event) => actions.setPlotQuery(event.target.value)}
+        />
       </div>
-      <button type="button" className="bo-map__wide bo-map__wide--accent" onClick={actions.autoPlot}>
-        {i18n.t(M.place.autoPlot)}
-      </button>
+      <div className="bo-map__plottabs" role="tablist">
+        <button type="button" role="tab" aria-selected={todoTab} className={`bo-map__plottab${todoTab ? ' bo-map__plottab--on' : ''}`} onClick={() => actions.setPlotTab('todo')}>
+          {i18n.t(M.place.toPlot)}
+          <span>{plotPanel.todoTotal}</span>
+        </button>
+        <button type="button" role="tab" aria-selected={!todoTab} className={`bo-map__plottab${!todoTab ? ' bo-map__plottab--on' : ''}`} onClick={() => actions.setPlotTab('done')}>
+          {i18n.t(M.place.plotted)}
+          <span>{plotPanel.doneTotal}</span>
+        </button>
+      </div>
+
+      {todoTab ? (
+        <div className="bo-map__plotbody">
+          <div className="bo-map__plotall">
+            <button
+              type="button"
+              className="bo-map__plotpick bo-map__plotpick--all"
+              aria-pressed={plotPanel.allTodoTicked}
+              onClick={() =>
+                actions.setPlotSel(
+                  plotPanel.allTodoTicked
+                    ? state.plotSel.filter((key) => !plotPanel.todo.some((item) => item.key === key))
+                    : [...new Set([...state.plotSel, ...plotPanel.todo.map((item) => item.key)])]
+                )
+              }
+            >
+              <Tick on={plotPanel.allTodoTicked} />
+              <span className="bo-map__plotalllabel">{plotPanel.selCountLabel}</span>
+            </button>
+            {state.plotSel.length > 0 && (
+              <button type="button" className="bo-map__plotclear" onClick={() => actions.setPlotSel([])}>
+                {i18n.t(M.place.clear)}
+              </button>
+            )}
+          </div>
+          <div className="bo-map__plotlist">
+            {plotPanel.todo.map((item) => (
+              <ListRow key={item.key} item={item} onToggle={() => actions.togglePlotSel(item.key)} />
+            ))}
+            {plotPanel.todo.length === 0 && <div className="bo-map__empty">{plotPanel.todoEmptyLabel}</div>}
+          </div>
+          {plotPanel.hint && <div className="bo-map__plothint">{plotPanel.hint}</div>}
+        </div>
+      ) : (
+        <div className="bo-map__plotbody">
+          <div className="bo-map__plotall">
+            <button
+              type="button"
+              className="bo-map__plotpick bo-map__plotpick--all"
+              aria-pressed={plotPanel.allDoneTicked}
+              onClick={() =>
+                actions.setUnSel(
+                  plotPanel.allDoneTicked
+                    ? state.plotUnSel.filter((key) => !plotPanel.done.some((item) => item.key === key))
+                    : [...new Set([...state.plotUnSel, ...plotPanel.done.map((item) => item.key)])]
+                )
+              }
+            >
+              <Tick on={plotPanel.allDoneTicked} danger />
+              <span className="bo-map__plotalllabel">{plotPanel.unSelLabel}</span>
+            </button>
+            {state.plotUnSel.length > 0 && (
+              <button type="button" className="bo-map__plotclear" onClick={() => actions.setUnSel([])}>
+                {i18n.t(M.place.clear)}
+              </button>
+            )}
+          </div>
+          <div className="bo-map__plotlist">
+            {plotPanel.done.map((item) => (
+              <ListRow
+                key={item.key}
+                item={item}
+                danger
+                onToggle={() => actions.toggleUnSel(item.key)}
+                action={
+                  <button type="button" className="bo-map__unplot" title={i18n.t(M.place.unplotTitleShort)} onClick={() => actions.unplotItems([item.key])}>
+                    {i18n.t(M.place.unplot)}
+                  </button>
+                }
+              />
+            ))}
+            {plotPanel.done.length === 0 && <div className="bo-map__empty">{plotPanel.doneEmptyLabel}</div>}
+          </div>
+          {state.plotUnSel.length > 0 && (
+            <button type="button" className="bo-map__wide bo-map__wide--dangerfill" onClick={actions.unplotMany}>
+              {plotPanel.unplotManyLabel}
+            </button>
+          )}
+        </div>
+      )}
     </section>
   );
 };
+
+/** The plot panel under the name the screen imports it by. */
+export const PlacePanelSlot = PlotPanel;
 
 export const AutoPlotReportPanel = ({ controller }: { controller: PropertyMapController }) => {
   const report = controller.state.autoPlotReport;
@@ -69,12 +184,13 @@ export const AutoPlotReportPanel = ({ controller }: { controller: PropertyMapCon
       </div>
       {report.skipped.length > 0 && (
         <div className="bo-map__warnbox bo-map__warnbox--list">
-          {report.skipped.map((row, index) => (
+          {report.skipped.slice(0, 12).map((row, index) => (
             <div key={`${row.name}-${index}`}>
               <div className="bo-map__warnname">{row.name}</div>
               <div className="bo-map__warnreason">{row.reason}</div>
             </div>
           ))}
+          {report.skipped.length > 12 && <div className="bo-map__warnreason">{t(M.autoPlot.more, { count: report.skipped.length - 12 })}</div>}
         </div>
       )}
     </section>
@@ -128,7 +244,7 @@ export const StartingPointsPanel = ({ controller }: { controller: PropertyMapCon
 };
 
 export const SelectionPanel = ({ controller }: { controller: PropertyMapController }) => {
-  const { selection, actions } = controller;
+  const { selection, actions, space } = controller;
   return (
     <section className="bo-map__panel">
       <h3 className="bo-map__paneltitle">{i18n.t(M.selection.title)}</h3>
@@ -156,9 +272,9 @@ export const SelectionPanel = ({ controller }: { controller: PropertyMapControll
         </div>
       ) : (
         <p className="bo-map__help">
-          {i18n.t(M.selection.helpIntro)} <b>{i18n.t(M.tools.plot)}</b> {i18n.t(M.selection.helpPlot)} <b>{i18n.t(M.tools.junction)}</b>{' '}
-          {i18n.t(M.selection.helpJunction)} <b>{i18n.t(M.tools.edge)}</b> {i18n.t(M.selection.helpEdge)} <b>{i18n.t(M.tools.move)}</b>{' '}
-          {i18n.t(M.selection.helpMove)}
+          {i18n.t(space === 'svg' ? M.selection.helpIntroSvg : M.selection.helpIntro)} <b>{i18n.t(M.tools.plot)}</b> {i18n.t(M.selection.helpPlot)}{' '}
+          <b>{i18n.t(M.tools.junction)}</b> {i18n.t(M.selection.helpJunction)} <b>{i18n.t(M.tools.edge)}</b> {i18n.t(M.selection.helpEdge)}{' '}
+          <b>{i18n.t(M.tools.move)}</b> {i18n.t(M.selection.helpMove)}
         </p>
       )}
     </section>
@@ -270,7 +386,10 @@ export const RoutePanel = ({ controller }: { controller: PropertyMapController }
                       className="bo-map__leglink"
                       onClick={() => {
                         const target = leg.floor == null ? levels[0] : levels.find((level) => level.floors.includes(leg.floor!));
-                        if (target) actions.pickLevel(target.id);
+                        if (target) {
+                          actions.pickLevel(target.id);
+                          actions.pickLayer('raster');
+                        }
                       }}
                     >
                       {legLabel(leg)}

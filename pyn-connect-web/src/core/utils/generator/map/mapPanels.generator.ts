@@ -1,8 +1,9 @@
 import { i18n } from '~/resources/i18n';
 import type { PropertyMap } from '~/core/models/data/propertyMap.data';
 import type { PillVariant } from '../listing.types';
-import { levelById, levelDims, planAssets, type MapLevel } from './mapLevels.generator';
-import { bedColorsOf, generatePinItems, pinPlacement, type LevelGraph, type LevelNode, type PinItem } from './mapNodes.generator';
+import { activeSpace, levelById, levelSpaceDims, levelsOfBuilding, mapBuildings, planAssets, type MapLevel } from './mapLevels.generator';
+import { bedColorsOf, generatePinItems, itemsByPolygon, pinPlacement, type LevelGraph, type LevelNode, type PinItem } from './mapNodes.generator';
+import { toViewBoxPercent, type FloorSvgDoc } from '~/core/utils/map/floorSvg';
 import {
   AMENITY_COLOR,
   BED_SWATCHES,
@@ -18,7 +19,7 @@ import {
 } from './mapState';
 import { M, bedsLabel, coordText, plural, t } from './mapText';
 
-/** Descriptors for the panels beside the canvas. Pure: props in, view data out. */
+/** Descriptors for the toolbar, tabs and panels beside the canvas. Pure: props in, view data out. */
 
 export interface ToolDescriptor {
   id: MapTool;
@@ -38,9 +39,10 @@ export const generateTools = (state: LocalMapState): ToolDescriptor[] =>
     ] as const
   ).map(([id, label, icon]) => ({ id, label: i18n.t(label), icon, active: state.tool === id }));
 
-export const generateMapHint = (state: LocalMapState, plotTargetName: string | null): string => {
+export const generateMapHint = (state: LocalMapState, plotTargetName: string | null, onSvg: boolean): string => {
   switch (state.tool) {
     case 'plot':
+      if (onSvg) return state.plotSel.length ? t(M.hints.plotPolygon, { count: state.plotSel.length }) : i18n.t(M.hints.plotPickPolygon);
       return plotTargetName ? t(M.hints.plotArmed, { name: plotTargetName }) : i18n.t(M.hints.plotPick);
     case 'junction':
       return i18n.t(M.hints.junction);
@@ -51,19 +53,72 @@ export const generateMapHint = (state: LocalMapState, plotTargetName: string | n
     case 'hallway':
       return i18n.t(M.hints.hallway);
     default:
-      return i18n.t(M.hints.select);
+      return i18n.t(onSvg ? M.hints.selectSvg : M.hints.select);
   }
 };
+
+/** Where an item belongs for the tabs' counts: the level it is plotted on, else its floor's. */
+export const itemsOfLevel = (items: PinItem[], level: MapLevel): PinItem[] => items.filter((item) => item.level?.id === level.id);
+
+export interface BuildingPill {
+  name: string;
+  count: string;
+  active: boolean;
+}
+
+export const generateBuildingPills = (map: PropertyMap, levels: MapLevel[], state: LocalMapState): BuildingPill[] => {
+  const names = mapBuildings(map, levels);
+  if (names.length < 2) return [];
+  // The count is what the pill shows: the building's floorplates, plus the ones no building claims.
+  return names.map((name) => ({
+    name,
+    count: String(levelsOfBuilding(levels, name).length),
+    active: state.building === name
+  }));
+};
+
+export type LevelProgressState = 'done' | 'partial' | 'none' | 'empty' | 'nosvg';
 
 export interface LevelTabDescriptor {
   id: string;
   label: string;
   sub: string;
   active: boolean;
+  /** 0–100, the share of the level's items that are plotted. */
+  pct: number;
+  progress: string;
+  state: LevelProgressState;
 }
 
-export const generateLevelTabs = (levels: MapLevel[], state: LocalMapState): LevelTabDescriptor[] =>
-  levels.map((level) => ({ id: level.id, label: level.label, sub: level.sub, active: level.id === state.levelId }));
+/**
+ * The floorplate tabs of the building in view, each with its plotting
+ * progress: "Done", "3/4", "0/4", "No units", or "No SVG" when the
+ * floorplate has no floor SVG to plot onto (as the design flags it).
+ */
+export const generateLevelTabs = (map: PropertyMap, levels: MapLevel[], items: PinItem[], state: LocalMapState): LevelTabDescriptor[] =>
+  levelsOfBuilding(levels, state.building).map((level) => {
+    const scope = itemsOfLevel(items, level);
+    const done = scope.filter((item) => item.placed).length;
+    const total = scope.length;
+    const assets = planAssets(level, state.planOverrides[level.id]);
+    const progressState: LevelProgressState = !assets.svg && !assets.image ? 'nosvg' : !total ? 'empty' : done === total ? 'done' : done ? 'partial' : 'none';
+    const progress = {
+      done: i18n.t(M.level.done),
+      partial: `${done}/${total}`,
+      none: `0/${total}`,
+      empty: i18n.t(M.level.noUnits),
+      nosvg: i18n.t(assets.image ? M.level.noSvg : M.level.noPlan)
+    }[progressState];
+    return {
+      id: level.id,
+      label: level.label,
+      sub: level.scopeLabel,
+      active: level.id === state.levelId,
+      pct: total ? Math.round((done / total) * 100) : 0,
+      progress: progressState === 'nosvg' && assets.image ? `${progress} · ${done}/${total}` : progress,
+      state: progressState
+    };
+  });
 
 export interface PlanInfo {
   levelLabel: string;
@@ -73,6 +128,8 @@ export interface PlanInfo {
   has: boolean;
   hasBoth: boolean;
   local: boolean;
+  /** Whether the shown layer is the floor SVG. */
+  onSvg: boolean;
 }
 
 export const generatePlanInfo = (level: MapLevel, graph: LevelGraph, state: LocalMapState): PlanInfo => {
@@ -90,45 +147,208 @@ export const generatePlanInfo = (level: MapLevel, graph: LevelGraph, state: Loca
     countLabel: t(M.plan.onThisFloor, { count: counts }),
     has: assets.has,
     hasBoth: !!(assets.svg && assets.image),
-    local: !!(assets.svg?.local || assets.image?.local)
+    local: !!(assets.svg?.local || assets.image?.local),
+    onSvg: activeSpace(level, state) === 'svg'
   };
 };
 
-export interface QueueItem extends PinItem {
+export interface PlotListItem extends PinItem {
+  meta: string;
+  ticked: boolean;
+  /** For plotted items: "Polygon 12" on this floor, else the level it sits on. */
   where: string;
-  kindLabel: string;
-  armed: boolean;
+  onThisLevel: boolean;
 }
 
-export interface PlotSummary {
+export interface PlotPanel {
+  scopeLabel: string;
+  doneLabel: string;
   placed: number;
   total: number;
-  doneLabel: string;
-  queueLabel: string;
-  queue: QueueItem[];
+  todo: PlotListItem[];
+  done: PlotListItem[];
+  todoTotal: number;
+  doneTotal: number;
+  todoEmptyLabel: string;
+  doneEmptyLabel: string;
+  allTodoTicked: boolean;
+  allDoneTicked: boolean;
+  selCountLabel: string;
+  unSelLabel: string;
+  unplotManyLabel: string;
+  hint: string;
 }
 
-export const generatePlotSummary = (map: PropertyMap, levels: MapLevel[], state: LocalMapState): PlotSummary => {
-  const items = generatePinItems(map, levels, state);
-  const placed = items.filter((item) => item.placed).length;
-  const queue = items
-    .filter((item) => !item.placed)
-    .map(
-      (item): QueueItem => ({
-        ...item,
-        where: item.level ? `${item.level.sub} · ${item.level.label}` : i18n.t(M.place.noLevel),
-        kindLabel: i18n.t(item.kind === 'unit' ? M.place.unit : M.place.amenity),
-        armed: !!state.plotTarget && pinKey(state.plotTarget) === item.key
-      })
-    );
+const kindLabelOf = (item: PinItem): string => i18n.t(item.kind === 'unit' ? M.place.unit : M.place.amenity);
+
+const floorOf = (item: PinItem): string => (item.floor != null ? t(M.level.floor, { floor: item.floor }) : '—');
+
+/**
+ * The design's "Plot Units & Amenities" panel for the level in view: the
+ * items whose floor (or plotted position) is this floorplate, split into To
+ * Plot and Plotted, searched by name or floor.
+ */
+export const generatePlotPanel = (map: PropertyMap, levels: MapLevel[], level: MapLevel | null, items: PinItem[], graphs: Record<string, LevelGraph>, state: LocalMapState): PlotPanel => {
+  const scope = level ? itemsOfLevel(items, level) : [];
+  const query = state.plotQuery.trim().toLowerCase();
+  const matches = (item: PinItem) =>
+    !query || item.label.toLowerCase().includes(query) || String(item.floor ?? '').toLowerCase().includes(query) || (item.building ?? '').toLowerCase().includes(query);
+  const done = scope.filter((item) => item.placed);
+  const todo = scope.filter((item) => !item.placed);
+  const shownTodo = todo.filter(matches);
+  const shownDone = done.filter(matches);
+  const graph = level ? graphs[level.id] : null;
+
+  const todoItems = shownTodo.map(
+    (item): PlotListItem => ({
+      ...item,
+      meta: `${kindLabelOf(item)} · ${floorOf(item)}`,
+      ticked: state.plotSel.includes(item.key),
+      where: '',
+      onThisLevel: true
+    })
+  );
+  const doneItems = shownDone.map((item): PlotListItem => {
+    const here = item.level?.id === level?.id;
+    const pin = graph?.pins.find((row) => row.key === item.key) ?? null;
+    const where = here
+      ? pin?.polygon
+        ? t(M.place.polygon, { code: pin.polygon })
+        : i18n.t(item.space === 'svg' ? M.place.onSvg : M.place.onImage)
+      : item.level
+        ? `${item.level.sub} · ${item.level.label}`
+        : '—';
+    return { ...item, meta: `${where} · ${floorOf(item)}`, ticked: state.plotUnSel.includes(item.key), where, onThisLevel: here };
+  });
+
+  const selCount = state.plotSel.length;
+  const unCount = state.plotUnSel.length;
+  const allTodoKeys = todoItems.map((item) => item.key);
+  const allDoneKeys = doneItems.map((item) => item.key);
+  const onSvg = level ? activeSpace(level, state) === 'svg' : false;
 
   return {
-    placed,
-    total: items.length,
-    doneLabel: t(M.place.done, { placed, total: items.length }),
-    queueLabel: t(M.place.queue, { count: queue.length }),
-    queue
+    scopeLabel: level ? `${level.sub} · ${level.scopeLabel}` : (state.building ?? i18n.t(M.level.allBuildings)),
+    doneLabel: t(M.place.done, { placed: done.length, total: scope.length }),
+    placed: done.length,
+    total: scope.length,
+    todo: todoItems,
+    done: doneItems,
+    todoTotal: todo.length,
+    doneTotal: done.length,
+    todoEmptyLabel: query
+      ? t(M.place.noMatch, { query: state.plotQuery.trim() })
+      : scope.length
+        ? i18n.t(M.place.allPlotted)
+        : i18n.t(M.place.noneInRange),
+    doneEmptyLabel: query ? t(M.place.noMatch, { query: state.plotQuery.trim() }) : i18n.t(M.place.nothingPlotted),
+    allTodoTicked: allTodoKeys.length > 0 && allTodoKeys.every((key) => state.plotSel.includes(key)),
+    allDoneTicked: allDoneKeys.length > 0 && allDoneKeys.every((key) => state.plotUnSel.includes(key)),
+    selCountLabel: selCount ? t(M.place.selected, { count: selCount }) : t(M.place.selectAll, { count: todoItems.length }),
+    unSelLabel: unCount ? t(M.place.selected, { count: unCount }) : t(M.place.selectAll, { count: doneItems.length }),
+    unplotManyLabel: t(M.place.unplotMany, { items: plural(unCount, M.place.itemOne, M.place.itemMany) }),
+    hint: !selCount ? '' : state.tool === 'plot' ? i18n.t(onSvg ? M.place.hintDrop : M.place.hintDropImage) : i18n.t(M.place.hintTurnOn)
   };
+};
+
+export interface PolygonDescriptor {
+  key: string;
+  code: string;
+  /** Centre, as a percentage of the SVG's viewBox. */
+  left: number;
+  top: number;
+  bbox: { x: number; y: number; w: number; h: number };
+  filled: boolean;
+  hover: boolean;
+  selected: boolean;
+  assigned: string;
+  items: { key: string; name: string; meta: string }[];
+}
+
+/**
+ * The level's polygons as the canvas draws them: filled when something sits
+ * on them, highlighted under the pointer while Manual Plot is on, outlined
+ * when their popover is open.
+ */
+export const generatePolygons = (doc: FloorSvgDoc | null, graph: LevelGraph | null, state: LocalMapState): PolygonDescriptor[] => {
+  if (!doc || !graph) return [];
+  const byPolygon = itemsByPolygon(graph.pins);
+  const plotOn = state.tool === 'plot';
+  return doc.targets.map((target) => {
+    const pins = byPolygon[target.code] ?? [];
+    const { xPct, yPct } = toViewBoxPercent(doc.viewBox, target.cx, target.cy);
+    return {
+      key: target.key,
+      code: target.code,
+      left: xPct,
+      top: yPct,
+      bbox: target.bbox,
+      filled: pins.length > 0,
+      hover: plotOn && state.polyHover === target.code,
+      selected: state.selPoly === target.code,
+      assigned: pins.length ? `${pins[0].label}${pins.length > 1 ? ` +${pins.length - 1}` : ''}` : '',
+      items: pins.map((pin) => ({ key: pin.key, name: pin.label, meta: `${i18n.t(pin.kind === 'unit' ? M.place.unit : M.place.amenity)}${pin.temporary ? ` · ${i18n.t(M.selection.temporary)}` : ''}` }))
+    };
+  });
+};
+
+export interface SelectedPolygon {
+  code: string;
+  title: string;
+  sub: string;
+  items: { key: string; name: string; meta: string }[];
+  left: number;
+  top: number;
+  /** Whether the popover opens below (upper half) or above the polygon. */
+  below: boolean;
+}
+
+export const generateSelectedPolygon = (level: MapLevel, polygons: PolygonDescriptor[], state: LocalMapState): SelectedPolygon | null => {
+  const polygon = polygons.find((row) => row.code === state.selPoly);
+  if (!polygon) return null;
+  return {
+    code: polygon.code,
+    title: t(M.place.polygon, { code: polygon.code }),
+    sub: `${level.sub} · ${level.scopeLabel}`,
+    items: polygon.items,
+    left: Math.max(20, Math.min(80, polygon.left)),
+    top: polygon.top,
+    below: polygon.top < 50
+  };
+};
+
+export interface AutoPlotMenuItem {
+  scope: 'one' | 'building' | 'all';
+  label: string;
+  sub: string;
+}
+
+export const generateAutoPlotMenu = (map: PropertyMap, levels: MapLevel[], level: MapLevel | null, items: PinItem[]): AutoPlotMenuItem[] => {
+  if (!level) return [];
+  const count = (scope: MapLevel[]) => scope.reduce((sum, row) => sum + itemsOfLevel(items, row).filter((item) => item.kind === 'unit' && !item.placed).length, 0);
+  const building = level.building ?? level.sub;
+  const inBuilding = levelsOfBuilding(levels, level.building).filter((row) => row.building === level.building);
+  const buildings = mapBuildings(map, levels);
+  const menu: AutoPlotMenuItem[] = [
+    {
+      scope: 'one',
+      label: i18n.t(M.autoPlot.scopeOne),
+      sub: `${building} · ${level.label} · ${plural(count([level]), M.autoPlot.unitOne, M.autoPlot.unitMany)} ${i18n.t(M.autoPlot.toPlot)}`
+    },
+    {
+      scope: 'building',
+      label: t(M.autoPlot.scopeBuilding, { building }),
+      sub: `${plural(inBuilding.length, M.autoPlot.plateOne, M.autoPlot.plateMany)} · ${plural(count(inBuilding), M.autoPlot.unitOne, M.autoPlot.unitMany)} ${i18n.t(M.autoPlot.toPlot)}`
+    }
+  ];
+  if (buildings.length > 1) {
+    menu.push({
+      scope: 'all',
+      label: i18n.t(M.autoPlot.scopeAll),
+      sub: `${plural(levels.length, M.autoPlot.plateOne, M.autoPlot.plateMany)} · ${plural(count(levels), M.autoPlot.unitOne, M.autoPlot.unitMany)} ${i18n.t(M.autoPlot.toPlot)}`
+    });
+  }
+  return menu;
 };
 
 export interface SelectedPinDescriptor {
@@ -148,10 +368,8 @@ export const generateSelectedPin = (map: PropertyMap, levels: MapLevel[], state:
   if (!item) return null;
   const placement = pinPlacement(map, levels, state, item.ref);
   const level = placement?.level ?? item.level;
-  const dims = level ? levelDims(level, state) : null;
-  const svgDims = level?.svgWidth && level.svgHeight ? { w: level.svgWidth, h: level.svgHeight } : dims;
-  const space = placement?.space === 'svg' ? svgDims : dims;
-  const coord = placement && space ? coordText(toPercent(placement.x, space.w), toPercent(placement.y, space.h)) : '—';
+  const dims = level && placement ? levelSpaceDims(level, state, placement.space) : null;
+  const coord = placement && dims ? coordText(toPercent(placement.x, dims.w), toPercent(placement.y, dims.h)) : '—';
   const unit = item.kind === 'unit' ? map.inventory.units.find((row) => row.id === item.ref.id) : null;
 
   const metaParts = [
@@ -166,15 +384,18 @@ export const generateSelectedPin = (map: PropertyMap, levels: MapLevel[], state:
     name: item.label,
     meta: metaParts.join(' · '),
     coordLabel: placement
-      ? placement.space === 'svg' && unit?.svgPointer
-        ? t(M.pin.svgPointer, { element: unit.svgPointer.elementId ?? unit.svgPointer.tag ?? 'SVG' })
-        : t(M.pin.at, { coord })
+      ? placement.polygon
+        ? t(M.pin.onPolygon, { code: placement.polygon })
+        : placement.space === 'svg' && unit?.svgPointer
+          ? t(M.pin.svgPointer, { element: unit.svgPointer.elementId ?? unit.svgPointer.tag ?? 'SVG' })
+          : t(M.pin.at, { coord })
       : '',
     color: item.kind === 'unit' ? item.color : AMENITY_COLOR,
     onThisLevel: level?.id === state.levelId,
     temporary: !!placement?.temporary,
-    moved: !!placement?.moved
-  , tourStop: item.tourStop };
+    moved: !!placement?.moved,
+    tourStop: item.tourStop
+  };
 };
 
 export interface SelectionDescriptor {
@@ -326,7 +547,7 @@ export interface VerticalLinkRow {
  * Links that leave the level: each elevator on it that serves other floors,
  * and each temporary connection drawn to a node on another level.
  */
-export const generateVerticalLinks = (levels: MapLevel[], level: MapLevel, graphs: Record<string, LegacyLevelGraph>, state: LocalMapState): VerticalLinkRow[] => {
+export const generateVerticalLinks = (levels: MapLevel[], level: MapLevel, graphs: Record<string, LevelGraph>, state: LocalMapState): VerticalLinkRow[] => {
   const here = graphs[level.id];
   if (!here) return [];
   const rows: VerticalLinkRow[] = [];
@@ -369,8 +590,6 @@ export const generateVerticalLinks = (levels: MapLevel[], level: MapLevel, graph
   return rows;
 };
 
-type LegacyLevelGraph = LevelGraph;
-
 export interface BedLegendRow {
   id: BedTier;
   label: string;
@@ -397,6 +616,8 @@ export const generateBedLegend = (map: PropertyMap, state: LocalMapState): BedLe
 export interface PublishSummary {
   body: string;
   unplotted: string | null;
+  /** Temporary placements and edits on this page, which no publish would carry. */
+  local: string | null;
 }
 
 export const generatePublishSummary = (map: PropertyMap, levels: MapLevel[], graphs: Record<string, LevelGraph>, state: LocalMapState): PublishSummary => {
@@ -405,6 +626,7 @@ export const generatePublishSummary = (map: PropertyMap, levels: MapLevel[], gra
   const pins = items.filter((item) => item.placed && !item.temporary).length;
   const nodes = Object.values(graphs).reduce((sum, graph) => sum + graph.nodes.filter((node) => node.kind === 'hallway').length, 0);
   const unplotted = items.filter((item) => !item.placed).length;
+  const temporary = items.filter((item) => item.temporary).length + state.tempNodes.length + state.tempEdges.length;
   return {
     body: t(M.publish.body, {
       stops: plural(stops, M.publish.stopOne, M.publish.stopMany),
@@ -412,7 +634,8 @@ export const generatePublishSummary = (map: PropertyMap, levels: MapLevel[], gra
       nodes: plural(nodes, M.publish.nodeOne, M.publish.nodeMany),
       property: map.inventory.property.name
     }),
-    unplotted: unplotted ? t(M.publish.unplotted, { count: unplotted }) : null
+    unplotted: unplotted ? t(M.publish.unplotted, { count: unplotted }) : null,
+    local: temporary ? t(M.publish.local, { count: temporary }) : null
   };
 };
 

@@ -111,6 +111,7 @@ export const parseWayfindingGraph = (payload: unknown): WayfindingGraph | null =
       (row): MapElevator => ({
         id: count(row.id),
         name: text(row.name),
+        description: text(row.description),
         xPlot: num(row.xPlot),
         yPlot: num(row.yPlot),
         floorplateId: num(row.floorplateId),
@@ -122,6 +123,14 @@ export const parseWayfindingGraph = (payload: unknown): WayfindingGraph | null =
         duplicateOf: num(row.duplicateOf),
         lockProvider: text(row.lockProvider),
         image: text(row.image),
+        gallery: list(row.gallery).map((photo) => ({ id: count(photo.id), name: text(photo.name), url: text(photo.url) })),
+        banks: list(row.banks).map((bank) => ({
+          id: count(bank.id),
+          name: text(bank.name),
+          position: text(bank.position),
+          lockType: text(bank.lockType),
+          lockName: text(bank.lockName)
+        })),
         tourStop: stopState(row.tourStop)
       })
     ),

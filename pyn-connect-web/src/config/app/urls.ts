@@ -39,7 +39,16 @@ export const CORE_URLS = {
 /** This app's own route handlers the browser calls (never Rails directly). */
 export const APP_API = {
   /** Runs the CMS routing algorithm for a property; GET, read-only. */
-  wayfindingRoute: (propertyId: number) => `/api/properties/${propertyId}/wayfinding-route`
+  wayfindingRoute: (propertyId: number) => `/api/properties/${propertyId}/wayfinding-route`,
+  /**
+   * The floor SVG of one of the property's floorplates (or its property map),
+   * fetched by this server from where the CMS stores it and handed to the
+   * browser as `image/svg+xml`, so the Map & Plotting canvas can read its
+   * polygons (the stored S3 file carries no CORS headers for this origin).
+   * GET, read-only.
+   */
+  planSvg: (propertyId: number, level: { kind: 'floorplate' | 'sitemap'; id: number }) =>
+    `/api/properties/${propertyId}/plan-svg?${level.kind}=${level.id}`
 } as const;
 
 /**
