@@ -2,7 +2,11 @@
 
 import { useRef, useState } from 'react';
 
+import { CORE_STRINGS } from '~/config/app/strings';
+import { i18n } from '~/resources/i18n';
 import { CubeIcon, EyeIcon, ReplaceIcon, TrashIcon, UploadIcon } from '~/core/components/atoms/Icons';
+import { LoadingIndicator } from '~/core/components/atoms/LoadingIndicator';
+import { useImageStatus } from '~/core/hooks/useImageStatus';
 
 export interface UploadSlotFile {
   name: string;
@@ -37,6 +41,8 @@ interface Props {
 export const UploadSlot = ({ file, accept, hint, labels, onPreview, onPick, onRemove }: Props) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
+  const previewSrc = file && !file.isSvg ? file.src : null;
+  const preview = useImageStatus(previewSrc);
 
   const picker = (
     <input
@@ -95,12 +101,13 @@ export const UploadSlot = ({ file, accept, hint, labels, onPreview, onPick, onRe
     <div className="bo-upload">
       {picker}
       <button type="button" className="bo-upload__preview" onClick={onPreview} aria-label={labels.preview} disabled={!onPreview}>
-        {file.isSvg || !file.src ? (
+        {!previewSrc || preview.status === 'failed' ? (
           <CubeIcon />
         ) : (
-          // A plain <img>: a CMS file on S3, or a local object URL.
-          <img src={file.src} alt="" />
+          // eslint-disable-next-line @next/next/no-img-element -- a plain <img>: a CMS file on S3, or a local object URL.
+          <img key={previewSrc} ref={preview.ref} src={previewSrc} alt="" onLoad={preview.onLoad} onError={preview.onError} />
         )}
+        {previewSrc && preview.status === 'loading' && <LoadingIndicator variant="overlay" label={i18n.t(CORE_STRINGS.shared.loadingImage)} />}
       </button>
       <span className="bo-upload__text">
         <span className="bo-upload__name">{file.name}</span>

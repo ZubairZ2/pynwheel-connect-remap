@@ -7,6 +7,10 @@ export interface MetaItem {
   source?: { kind: 'feed' | 'manual'; label: string; title: string };
   /** Render the value as the design's (read-only) select rather than text. */
   control?: 'select';
+  /** The value is a link that opens this URL in a new tab (a stored video link). */
+  href?: string;
+  /** Accessible name of that link. */
+  hrefLabel?: string;
 }
 
 interface Props {
@@ -29,6 +33,12 @@ export const MetaGrid = ({ items, columns = 5 }: Props) => (
             <select className="bo-field bo-meta__select" value={item.value} aria-label={item.label} disabled>
               <option value={item.value}>{item.value}</option>
             </select>
+          </dd>
+        ) : item.href ? (
+          <dd className="bo-meta__value" title={item.href}>
+            <a className="bo-meta__link" href={item.href} target="_blank" rel="noopener noreferrer" aria-label={item.hrefLabel ?? item.value}>
+              {item.value}
+            </a>
           </dd>
         ) : (
           <dd className="bo-meta__value" title={item.value}>

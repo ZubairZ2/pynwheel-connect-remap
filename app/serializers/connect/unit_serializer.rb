@@ -13,6 +13,7 @@ module Connect
                          .group_by(&:amenityable_id)
       # The grid labels every row with the provider id on Yardi properties.
       label_by_provider_id = community.data_provider.to_s == 'yardi'
+      bucket = UploadUrl.bucket_hint(community)
 
       units.map do |unit|
         new(
@@ -20,7 +21,8 @@ module Connect
           floorplan: unit.floorplan_id.present? ? floorplans_by_provider_id[unit.floorplan_id] : nil,
           interiors: interiors[unit.id] || [],
           label_by_provider_id: label_by_provider_id,
-          base_url: base_url
+          base_url: base_url,
+          bucket: bucket
         ).as_json
       end
     end
@@ -40,12 +42,13 @@ module Connect
       }
     end
 
-    def initialize(unit, floorplan:, interiors:, label_by_provider_id:, base_url:)
+    def initialize(unit, floorplan:, interiors:, label_by_provider_id:, base_url:, bucket: nil)
       @unit = unit
       @floorplan = floorplan
       @interiors = interiors
       @label_by_provider_id = label_by_provider_id
       @base_url = base_url
+      @bucket = bucket
     end
 
     def as_json(*)
@@ -88,9 +91,9 @@ module Connect
         lock_provider: unit.door&.lock_provider.presence || unit.lock_provider.presence,
         door_id: unit.door&.id,
         tour_order: unit.tour_visiting_order_number,
-        image: UploadUrl.file(unit, :image, base_url),
-        secondary_image: UploadUrl.file(unit, :secondary_image, base_url),
-        interior_images: interiors.map { |amenity| FloorplanSerializer.interior(amenity, base_url) },
+        image: UploadUrl.file(unit, :image, base_url, bucket: bucket),
+        secondary_image: UploadUrl.file(unit, :secondary_image, base_url, bucket: UploadUrl.bucket_of(unit, bucket)),
+        interior_images: interiors.map { |amenity| FloorplanSerializer.interior(amenity, base_url, bucket) },
         buttons: FloorplanSerializer.buttons(unit),
         # The kiosk's lease-term matrix ("12 Month" => "$1,500"), as the model
         # already derives it from `lease_pricing` when the property shows
@@ -106,7 +109,7 @@ module Connect
 
     private
 
-      attr_reader :unit, :floorplan, :interiors, :label_by_provider_id, :base_url
+      attr_reader :unit, :floorplan, :interiors, :label_by_provider_id, :base_url, :bucket
 
       # Unit#unit_market ("{building}-{name}"), without its failure on a unit
       # that has a building but no name.

@@ -252,6 +252,7 @@ const Detail = ({ inventory, unit, today }: { inventory: PropertyInventory; unit
           previous: i18n.t(S.viewer.previous),
           next: i18n.t(S.viewer.next),
           position: (current, total) => t(S.viewer.position, { current, total }),
+          loading: i18n.t(S.viewer.loading),
           unavailable: i18n.t(S.viewer.unavailable)
         }}
       />

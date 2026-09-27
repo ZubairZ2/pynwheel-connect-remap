@@ -14,7 +14,9 @@ module Connect
   #     stored one way and walked both ways by the algorithm; `selected` is
   #     the node the legacy editor chains the next click from.
   #   - elevators: a vertical connection. One row, one x/y, shown on every
-  #     floor in `floorplate_covering_range`.
+  #     floor in `floorplate_covering_range`; with the elevator form's
+  #     description, gallery photos and Latch elevator banks, which the
+  #     Connect Tour Setup "Elevators & Locks" tab lists.
   #   - building starting points: the designated entry/exit per building.
   #   - the tour's own starting point (`tours.x_plot` / `y_plot`) and the
   #     visible tour stops in their sort order, which is what the algorithm
@@ -121,10 +123,19 @@ module Connect
       end
 
       def elevators
-        community.elevators.order(:id).map do |elevator|
+        rows = community.elevators.order(:id).to_a
+        # The Tour Setup "Elevators & Locks" tab also shows what the legacy
+        # elevator form holds: the gallery (`elevator_galleries`, the photos
+        # under the form) and the Latch elevator banks (`elevator_banks`: the
+        # per-cab name, position and lock). One query each for the property.
+        galleries = ElevatorGallery.where(elevator_id: rows.map(&:id)).order(:id).group_by(&:elevator_id)
+        banks = ElevatorBank.where(elevator_id: rows.map(&:id)).order(:created_at, :id).group_by(&:elevator_id)
+
+        rows.map do |elevator|
           {
             id: elevator.id,
             name: elevator.name,
+            description: elevator.description.presence,
             x_plot: elevator.x_plot,
             y_plot: elevator.y_plot,
             floorplate_id: elevator.floorplate_id,
@@ -135,10 +146,28 @@ module Connect
             directional_text: elevator.directional_text.presence,
             duplicate_of: elevator.duplicate_of,
             lock_provider: elevator.lock_provider.presence,
-            image: UploadUrl.upload(elevator, :image, base_url),
+            image: UploadUrl.upload(elevator, :image, base_url, bucket: bucket),
+            gallery: (galleries[elevator.id] || []).map do |photo|
+              { id: photo.id, name: photo.name.presence, url: UploadUrl.upload(photo, :image, base_url, bucket: bucket) }
+            end,
+            banks: (banks[elevator.id] || []).map do |bank|
+              {
+                id: bank.id,
+                name: bank.name.presence,
+                position: bank.position.presence,
+                lock_type: bank.lock_type.presence,
+                lock_name: bank.lock_name.presence
+              }
+            end,
             tour_stop: stop_state('elevator', elevator.id)
           }
         end
+      end
+
+      # Where the property's uploads live on S3, for an elevator image or
+      # gallery photo whose file is not on this machine (UploadUrl).
+      def bucket
+        @bucket ||= UploadUrl.bucket_hint(community)
       end
 
       def elevator_floors(elevator)

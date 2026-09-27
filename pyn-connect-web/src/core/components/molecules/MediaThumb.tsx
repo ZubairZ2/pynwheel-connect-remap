@@ -1,6 +1,11 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
+
+import { CORE_STRINGS } from '~/config/app/strings';
+import { i18n } from '~/resources/i18n';
+import { LoadingIndicator } from '~/core/components/atoms/LoadingIndicator';
+import { useImageStatus } from '~/core/hooks/useImageStatus';
 
 export interface ThumbAction {
   id: string;
@@ -38,7 +43,7 @@ export const MediaThumb = ({
   unavailableLabel,
   size = 'md'
 }: Props) => {
-  const [broken, setBroken] = useState<string | null>(null);
+  const { ref, status, onLoad, onError } = useImageStatus(src);
 
   if (!src) {
     if (!placeholder) return null;
@@ -53,12 +58,13 @@ export const MediaThumb = ({
 
   return (
     <div className={`bo-thumb bo-thumb--${size} bo-thumb--${fit}`}>
-      {broken === src ? (
+      {status === 'failed' ? (
         <span className="bo-thumb__missing">{unavailableLabel}</span>
       ) : (
-        // A plain <img>: these are the CMS's own S3 files, on hosts next/image is not configured for.
-        <img className="bo-thumb__image" src={src} alt={alt} loading="lazy" onError={() => setBroken(src)} />
+        // eslint-disable-next-line @next/next/no-img-element -- these are the CMS's own S3 files, on hosts next/image is not configured for.
+        <img key={src} ref={ref} className="bo-thumb__image" src={src} alt={alt} loading="lazy" onLoad={onLoad} onError={onError} />
       )}
+      {status === 'loading' && <LoadingIndicator variant="overlay" label={i18n.t(CORE_STRINGS.shared.loadingImage)} />}
       {badge && <span className="bo-thumb__badge">{badge}</span>}
       {actions.length > 0 && (
         <div className="bo-thumb__overlay">

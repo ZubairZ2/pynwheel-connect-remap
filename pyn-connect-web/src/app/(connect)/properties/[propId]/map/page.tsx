@@ -15,8 +15,28 @@ export const dynamic = 'force-dynamic';
 /** Real properties have integer ids; demo slugs (`luxe`) keep the demo screen, as on Property Detail. */
 const REAL_ID = /^\d+$/;
 
-export default async function Page({ params }: { params: Promise<{ propId: string }> }) {
+/**
+ * Tour Setup's "View on Plan" / "Plot on Plan" land here with the stop's
+ * level and pin (`?level=floorplate:12&pin=unit:34&arm=1`): the map opens
+ * on that floorplate with the pin selected, or armed for plotting.
+ */
+const initialFrom = (query: Record<string, string | string[] | undefined>) => {
+  const one = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value) ?? null;
+  const level = one(query.level);
+  const pin = one(query.pin);
+  const arm = one(query.arm) === '1';
+  return level || pin ? { levelId: level, pin, arm } : null;
+};
+
+export default async function Page({
+  params,
+  searchParams
+}: {
+  params: Promise<{ propId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const { propId } = await params;
+  const initial = initialFrom(await searchParams);
   const title = i18n.t(CORE_STRINGS.mapPlotting.title);
 
   if (!REAL_ID.test(propId)) {
@@ -36,6 +56,7 @@ export default async function Page({ params }: { params: Promise<{ propId: strin
     <ConnectScreenTemplate title={title}>
       <PropertyMapScreen
         map={load.status === 'found' ? load.map : null}
+        initial={initial}
         error={load.status === 'failed' ? i18n.t(CORE_STRINGS.mapPlotting.loadFailed) : null}
       />
     </ConnectScreenTemplate>
