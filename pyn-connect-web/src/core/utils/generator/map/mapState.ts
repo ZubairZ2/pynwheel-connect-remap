@@ -1,12 +1,19 @@
 import type { RouteLeg } from '~/core/models/data/propertyMap.data';
+import type { ApRules } from '~/core/utils/map/autoPlotRules';
+import type { FloorSvgDoc } from '~/core/utils/map/floorSvg';
 
 /**
  * The Map & Plotting screen's local state: what the user changes on the page
  * on top of the stored map. Nothing here is ever sent to the CMS; it lives
- * until the page reloads. Every coordinate is in the level's own pixel space
- * (the natural size of the floor image), the same unit the CMS stores, so a
- * temporary pin and a stored pin are directly comparable.
+ * until the page reloads. Every coordinate is in the level's own space —
+ * the natural pixels of the floor image (`raster`, what the CMS stores for
+ * pins, hallways and elevators) or the floor SVG's viewBox units (`svg`,
+ * what it stores for `pointer_data`) — so a temporary placement and a
+ * stored one are directly comparable.
  */
+
+/** The coordinate space of a placement: the floor image's pixels, or the floor SVG's viewBox. */
+export type PlanSpace = 'raster' | 'svg';
 
 export type MapTool = 'select' | 'plot' | 'junction' | 'edge' | 'move' | 'hallway';
 
@@ -87,6 +94,7 @@ export interface TempNode {
   x: number;
   y: number;
   label: string;
+  space: PlanSpace;
 }
 
 export interface TempEdge {
@@ -94,11 +102,17 @@ export interface TempEdge {
   b: string;
 }
 
-/** A pin's temporary position; null marks a stored pin removed on this page. */
+/**
+ * A pin's temporary position; null marks a stored pin removed on this page.
+ * `polygon` names the SVG shape it was dropped onto (Manual Plot / Auto
+ * Plot), when it was.
+ */
 export interface PinOverride {
   levelId: string;
   x: number;
   y: number;
+  space: PlanSpace;
+  polygon: string | null;
 }
 
 export interface LocalFile {
@@ -164,17 +178,49 @@ export interface ConfirmState {
   onConfirm: () => void;
 }
 
+/** A level's floor SVG on this page: being fetched, unreadable, or parsed. */
+export type SvgDocState = { status: 'loading' } | { status: 'failed' } | { status: 'ready'; doc: FloorSvgDoc };
+
+export type ApScope = 'one' | 'building' | 'all';
+export type ApStep = 'analyze' | 'pattern' | 'confirm' | 'done';
+
+/** The Auto Plot wizard while it is open. */
+export interface AutoPlotState {
+  step: ApStep;
+  scope: ApScope;
+  levelId: string;
+  building: string | null;
+  rules: ApRules;
+  draft: ApRules;
+  /** unit key → polygon key picked by hand in the Analyze table. */
+  manual: Record<string, string>;
+  remember: boolean;
+  placed: number;
+  left: { name: string; where: string; reason: string }[];
+}
+
 export interface LocalMapState {
   levelId: string;
+  /** The building the floorplate tabs are filtered to; null shows every level. */
+  building: string | null;
+  /** The layer shown when the level has both a floor SVG and a floor image. */
+  layer: PlanSpace;
   tool: MapTool;
   gridOn: boolean;
-  /** Show the floor SVG rather than the raster where both are stored. */
-  svgLayer: boolean;
   selectedPin: PinRef | null;
   selectedNode: string | null;
   selectedEdge: string | null;
   edgeFrom: string | null;
   plotTarget: PinRef | null;
+  /** Items ticked in the To Plot list, dropped together on the next polygon click. */
+  plotSel: string[];
+  /** Items ticked in the Plotted list, for "Unplot N items". */
+  plotUnSel: string[];
+  plotTab: 'todo' | 'done';
+  plotQuery: string;
+  /** The polygon whose popover is open. */
+  selPoly: string | null;
+  polyHover: string | null;
   pinOverrides: Record<string, PinOverride | null>;
   nodeOverrides: Record<string, { x: number; y: number }>;
   tempNodes: TempNode[];
@@ -193,22 +239,36 @@ export interface LocalMapState {
   svgDrag: boolean;
   /** Natural size of a level's image once the browser has loaded it (a fallback for missing stored dimensions). */
   measured: Record<string, { w: number; h: number }>;
+  /** Each level's floor SVG, once asked for. */
+  svgDocs: Record<string, SvgDocState>;
+  ap: AutoPlotState | null;
+  apMenuOpen: boolean;
+  /** Rules remembered on this page per building ("Use these rules next time"). */
+  apPatterns: Record<string, ApRules>;
   route: RouteState | null;
   publishOpen: boolean;
+  floorplateDialog: boolean;
   confirm: ConfirmState | null;
   nextJunction: number;
 }
 
-export const initialLocalMapState = (levelId: string): LocalMapState => ({
+export const initialLocalMapState = (levelId: string, building: string | null, layer: PlanSpace): LocalMapState => ({
   levelId,
+  building,
+  layer,
   tool: 'select',
   gridOn: false,
-  svgLayer: false,
   selectedPin: null,
   selectedNode: null,
   selectedEdge: null,
   edgeFrom: null,
   plotTarget: null,
+  plotSel: [],
+  plotUnSel: [],
+  plotTab: 'todo',
+  plotQuery: '',
+  selPoly: null,
+  polyHover: null,
   pinOverrides: {},
   nodeOverrides: {},
   tempNodes: [],
@@ -224,8 +284,13 @@ export const initialLocalMapState = (levelId: string): LocalMapState => ({
   dropSlot: 'svg',
   svgDrag: false,
   measured: {},
+  svgDocs: {},
+  ap: null,
+  apMenuOpen: false,
+  apPatterns: {},
   route: null,
   publishOpen: false,
+  floorplateDialog: false,
   confirm: null,
   nextJunction: 1
 });

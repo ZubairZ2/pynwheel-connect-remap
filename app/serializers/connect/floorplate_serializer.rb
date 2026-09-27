@@ -24,18 +24,21 @@ module Connect
                          .pluck(:amenityable_id, :x_plot, :y_plot, Arel.sql("amenities.pointer_data->>'x_plot'"))
                          .group_by(&:first)
 
-      floorplates.map { |floorplate| new(floorplate, units, amenities[floorplate.id] || [], base_url).as_json }
+      bucket = UploadUrl.bucket_hint(community)
+
+      floorplates.map { |floorplate| new(floorplate, units, amenities[floorplate.id] || [], base_url, bucket).as_json }
     end
 
     def self.positioned?(x_plot, y_plot, pointer_x)
       x_plot.to_i.positive? || y_plot.to_i.positive? || pointer_x.present?
     end
 
-    def initialize(floorplate, units, amenities, base_url)
+    def initialize(floorplate, units, amenities, base_url, bucket = nil)
       @floorplate = floorplate
       @units = units
       @amenities = amenities
       @base_url = base_url
+      @bucket = bucket
     end
 
     def as_json(*)
@@ -55,8 +58,9 @@ module Connect
         manual_override: floorplate.manual_override.present?,
         name_is_updated: floorplate.name_is_updated.present?,
         building_is_updated: floorplate.building_is_updated.present?,
-        image: UploadUrl.file(floorplate, :image, base_url),
-        svg: UploadUrl.file(floorplate, :svg_image, base_url),
+        image: UploadUrl.file(floorplate, :image, base_url, bucket: bucket),
+        # The SVG sits beside the floor image on S3 (`uploads/floorplate/svg_image/<id>/…`).
+        svg: UploadUrl.file(floorplate, :svg_image, base_url, bucket: UploadUrl.bucket_of(floorplate, bucket)),
         width: floorplate.width.to_i.positive? ? floorplate.width.to_i : nil,
         height: floorplate.height.to_i.positive? ? floorplate.height.to_i : nil,
         svg_width: svg['width'].to_i.positive? ? svg['width'].to_i : nil,
@@ -71,7 +75,7 @@ module Connect
 
     private
 
-      attr_reader :floorplate, :units, :amenities, :base_url
+      attr_reader :floorplate, :units, :amenities, :base_url, :bucket
 
       # Floorplate#floors reads the first character of `range`, so a floorplate
       # saved without one has no floors rather than an error.

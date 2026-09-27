@@ -22,6 +22,7 @@ module Connect
       interiors = Amenity.where(amenityable_type: 'Floorplan', amenityable_id: floorplans.map(&:id))
                          .order(:sort, :id)
                          .group_by(&:amenityable_id)
+      bucket = UploadUrl.bucket_hint(community)
 
       floorplans.map do |floorplan|
         provider_id = floorplan.provider_floorplan_id.presence
@@ -31,7 +32,8 @@ module Connect
           unit_count: provider_id ? unit_counts[provider_id].to_i : 0,
           available_count: provider_id ? available_counts[provider_id].to_i : 0,
           interiors: interiors[floorplan.id] || [],
-          base_url: base_url
+          base_url: base_url,
+          bucket: bucket
         ).as_json
       end
     end
@@ -42,16 +44,17 @@ module Connect
       end
     end
 
-    def self.interior(amenity, base_url)
-      { id: amenity.id, name: amenity.name.presence, url: UploadUrl.image(amenity, base_url) }
+    def self.interior(amenity, base_url, bucket = nil)
+      { id: amenity.id, name: amenity.name.presence, url: UploadUrl.image(amenity, base_url, bucket: bucket) }
     end
 
-    def initialize(floorplan, unit_count:, available_count:, interiors:, base_url:)
+    def initialize(floorplan, unit_count:, available_count:, interiors:, base_url:, bucket: nil)
       @floorplan = floorplan
       @unit_count = unit_count
       @available_count = available_count
       @interiors = interiors
       @base_url = base_url
+      @bucket = bucket
     end
 
     def as_json(*)
@@ -78,9 +81,9 @@ module Connect
           bathrooms: floorplan.bathroom_is_updated.present?,
           market_rent: floorplan.market_rent_is_updated.present?
         },
-        image: UploadUrl.file(floorplan, :image, base_url),
-        secondary_image: UploadUrl.file(floorplan, :secondary_image, base_url),
-        interior_images: interiors.map { |amenity| self.class.interior(amenity, base_url) },
+        image: UploadUrl.file(floorplan, :image, base_url, bucket: bucket),
+        secondary_image: UploadUrl.file(floorplan, :secondary_image, base_url, bucket: UploadUrl.bucket_of(floorplan, bucket)),
+        interior_images: interiors.map { |amenity| self.class.interior(amenity, base_url, bucket) },
         buttons: self.class.buttons(floorplan),
         description_title: floorplan.description_title.presence,
         description: floorplan.description.presence,
@@ -91,6 +94,6 @@ module Connect
 
     private
 
-      attr_reader :floorplan, :unit_count, :available_count, :interiors, :base_url
+      attr_reader :floorplan, :unit_count, :available_count, :interiors, :base_url, :bucket
   end
 end

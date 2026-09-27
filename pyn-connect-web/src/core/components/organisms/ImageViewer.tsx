@@ -1,10 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 import { ChevronLeftIcon, ChevronRightIcon } from '~/core/components/atoms/Icons';
+import { LoadingIndicator } from '~/core/components/atoms/LoadingIndicator';
 import { Modal } from '~/core/components/molecules/Modal';
 import { SafeImage } from '~/core/components/atoms/SafeImage';
+import { useImageStatus } from '~/core/hooks/useImageStatus';
 
 export interface ViewerImage {
   /** Caption: what the image is ("Floor SVG", "Interior 2 — Kitchen"). */
@@ -24,6 +26,9 @@ interface Props {
     next: string;
     /** "{position} of {total}" is built by the caller's generator. */
     position: (current: number, total: number) => string;
+    /** Under the animation while the file is fetched. */
+    loading: string;
+    /** Only when the file's request really failed. */
     unavailable: string;
   };
 }
@@ -37,7 +42,7 @@ export const ImageViewer = ({ images, index, onIndexChange, onClose, labels }: P
   const open = images.length > 0;
   const current = images[Math.min(Math.max(index, 0), Math.max(images.length - 1, 0))];
   const many = images.length > 1;
-  const [failed, setFailed] = useState<Record<string, boolean>>({});
+  const { ref, status, onLoad, onError } = useImageStatus(current?.src ?? null);
 
   useEffect(() => {
     if (!open || !many) return undefined;
@@ -63,7 +68,7 @@ export const ImageViewer = ({ images, index, onIndexChange, onClose, labels }: P
       dismissOnBackdrop
       className="bo-viewer"
     >
-      <div className="bo-viewer__stage">
+      <div className="bo-viewer__stage" aria-busy={status === 'loading'}>
         {many && (
           <button
             type="button"
@@ -75,20 +80,23 @@ export const ImageViewer = ({ images, index, onIndexChange, onClose, labels }: P
           </button>
         )}
 
-        {failed[current.src] ? (
+        {status === 'failed' ? (
           <p className="bo-viewer__missing" role="status">
             {labels.unavailable}
           </p>
         ) : (
-          // A plain <img>: these are the CMS's own S3 files, on hosts next/image is not configured for.
+          // eslint-disable-next-line @next/next/no-img-element -- a plain <img>: these are the CMS's own S3 files, on hosts next/image is not configured for.
           <img
             key={current.src}
-            className="bo-viewer__image"
+            ref={ref}
+            className={`bo-viewer__image${status === 'loading' ? ' bo-viewer__image--loading' : ''}`}
             src={current.src}
             alt={current.name}
-            onError={() => setFailed((previous) => ({ ...previous, [current.src]: true }))}
+            onLoad={onLoad}
+            onError={onError}
           />
         )}
+        {status === 'loading' && <LoadingIndicator variant="cover" label={labels.loading} />}
 
         {many && (
           <button

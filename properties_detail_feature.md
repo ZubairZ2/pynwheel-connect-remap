@@ -665,3 +665,11 @@ Remaining gaps: R1–R5 in the gaps doc; "Add Property" on the listing is not bu
 # Status update — September 26, 2026 (branch `feature/amenities_improvements`)
 
 Amenities on this page are unchanged: the Inventory panel's Amenities count still comes from `communities/:id/edit.json` (`inventory.amenities`), and its stat card opens `/properties/:id/inventory?tab=amenities`, which is now the amenities design on real data (feature_inventory_page.md status update of the same date, PYN_CONNECT_PROGRESS.md §21). Nothing on Property Detail reads the new amenity keys.
+
+# Status update — September 26, 2026 (branch `feature/map_plotting_tour_setup`)
+
+Property Detail is unchanged. Its Go To → Map link and its Configuration → Tour Setup link now land on real-data screens for numeric ids: Map & Plotting rebuilt to the plotting design (floor SVG polygons, Manual Plot, the Auto Plot wizard) and Tour Setup (Tour Stops, Elevators & Locks, Routing), both read-only (PYN_CONNECT_PROGRESS.md §22, context.md §18, `gaps_map_plotting_feature.md` M10–M13, `gaps_tour_setup_feature.md`).
+
+# Status update — September 27, 2026 (branch `feature/inventory_properties_issues`)
+
+Property Detail is unchanged in content; it now shows the shared loading indicator while it (or any child route reached from it) loads, and it was validated on Hazel (1618): name, "QuadReal · Burnaby, BC · 238 units", 4733 Hazel St, Burnaby BC V5H 0J7, the unassigned manager, the Inventory panel's 238 / 17 / 31 / 6, "13 tour stops", the settings switches and ILS rows (`tests/e2e/hazel.spec.ts`; PYN_CONNECT_PROGRESS.md §23). Its Map & Plotting link lands on the horizontal floorplate strip; the Tour Setup link on the rebuilt Edit Tour Stop dialog.

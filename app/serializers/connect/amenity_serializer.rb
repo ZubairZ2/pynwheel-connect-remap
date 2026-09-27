@@ -23,7 +23,10 @@ module Connect
         # amenity has doors (AmenitiesController#edit), so the doors come too.
         doors: Door.where(attached_with_type: 'Amenity', attached_with_id: ids).group_by(&:attached_with_id),
         auto_wayfinding: community.auto_wayfinding.present?,
-        base_url: base_url
+        base_url: base_url,
+        # Where the property's uploads live on S3, for a gallery photo whose
+        # file is not on this machine (UploadUrl).
+        bucket: UploadUrl.bucket_hint(community)
       }
 
       amenities.map { |amenity| new(amenity, context).as_json }
@@ -63,7 +66,7 @@ module Connect
         # "Select Lock Provider" on the amenity form: the first door's provider
         # when the amenity has doors, else the amenity's own column.
         lock_provider: lock_provider,
-        image: UploadUrl.file(amenity, :image, context[:base_url]),
+        image: UploadUrl.file(amenity, :image, context[:base_url], bucket: context[:bucket]),
         gallery: (context[:galleries][amenity.id] || []).map { |photo| gallery_photo(photo) },
         video_link: amenity.video_link.presence,
         video_link_button_label: amenity.video_link_button_label.presence,
@@ -115,7 +118,8 @@ module Connect
           id: photo.id,
           name: photo.name.presence,
           description: photo.description.presence,
-          url: UploadUrl.upload(photo, :image, context[:base_url])
+          # The photo sits beside the amenity's own image on S3.
+          url: UploadUrl.upload(photo, :image, context[:base_url], bucket: UploadUrl.bucket_of(amenity, context[:bucket]))
         }
       end
   end

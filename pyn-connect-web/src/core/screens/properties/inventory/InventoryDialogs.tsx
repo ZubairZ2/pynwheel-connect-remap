@@ -70,7 +70,7 @@ export const InventoryDialogs = ({ inventory, dialog, onClose, onView }: Props) 
   }
 };
 
-interface DialogProps {
+export interface DialogProps {
   inventory: PropertyInventory;
   id: number | null;
   onClose: () => void;
@@ -82,7 +82,8 @@ const preview = (file: UploadSlotFile | null, onView: DialogProps['onView']) =>
 
 /* ---------------- Floorplate ---------------- */
 
-const FloorplateDialog = ({ inventory, id, onClose, onView }: DialogProps) => {
+/** Add / Edit Floorplate: also opened from the Map & Plotting screen's Add Floorplate tab. */
+export const FloorplateDialog = ({ inventory, id, onClose, onView }: DialogProps) => {
   const plate = inventory.floorplates.find((candidate) => candidate.id === id) ?? null;
   const [form, setForm] = useState(() => floorplateForm(plate));
   const pick = usePickedFiles();

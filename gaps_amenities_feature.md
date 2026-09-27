@@ -58,3 +58,9 @@ The dialog's image row shows the stored file name and type only; no size or dime
 - **Lock device ("Select the lock") and Access Code.** The legacy form maps a Latch / Zerv / Igloohome / EdgeState / Dwelo lock to the amenity's door and takes an access code. The design has no field for either; `lock_devices` already exists on `units.json` meta and could be reused by the dialog when a field is designed. The access code is deliberately not exposed.
 - **Tour Visiting Order Number.** A legacy form field with no counterpart in the design; not exposed. Units expose the same column as `tour_order`, so the one-line addition is known if a field is added.
 - **Sort order.** The legacy page lists newest first (`order(id: :desc)`); Connect sorts by name, as the other three tabs do.
+
+## Update — September 27, 2026 (branch `feature/inventory_properties_issues`)
+
+**Gallery images that read "Image unavailable" locally were not a gap.** The Edit dialog and the eye viewer failed on every gallery photo because `AmenityGallery#image.url` on file storage (development) names a path on the CMS host, and this database's files were uploaded to S3 by staging. The amenity's own image had always worked through its stored `standard_image_url`. `Connect::UploadUrl.upload` now answers the S3 copy of a stored file that is not on this machine (the bucket of the amenity's `standard_image_url`, else the property's), which is the URL the fog storage produces on staging and production; nothing else about images changed (PYN_CONNECT_PROGRESS.md §23). The dialog and the viewer also show the shared loading indicator while a photo streams and only report a failure when the request itself fails.
+
+No new backend gap came out of the Hazel pass. GA1–GA5 stand as written.

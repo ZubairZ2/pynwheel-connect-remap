@@ -214,3 +214,75 @@ A CMS endpoint that serves the SVG with CORS (or proxies it), as the partner SDK
 - The legacy **manual paths** (`paths` / `path_points`, Tour Setup's "draw map line") are not drawn: they are per-stop manual lines the auto-wayfinding page does not use. See `context.md` §16.
 - **Doors** are drawn as small nodes (the design has no door concept); plotting a door is a write (`plot_unit_door`), covered by M1.
 - **Zoom / pan** of the plan (the legacy `panzoom`) is not in the design and was not built.
+
+---
+
+# Update, September 26, 2026 — the plotting design (phase 2i, `PYN_CONNECT_PROGRESS.md` §22)
+
+The Map & Plotting screen was rebuilt to `pyn-system-plotting.html`: building pills, floorplate tabs with their plotting progress, Manual Plot onto the polygons of the real floor SVG, the four-step Auto Plot wizard (Analyze · Match Pattern · Confirm · Result, with the full rule builder), the Plot Units & Amenities panel, Add Floorplate, plus the pathway tools the brief keeps from the previous phase. Gaps M1–M9 above still hold as written; this section records what the polygon-based screen adds to them. Everything the screen does — including reading the stored floor SVGs through this app's own `plan-svg` route, resolving stored `pointer_data` to their polygons, and Manual / Auto Plot on the page — is in `context.md` §18, not here.
+
+## Gap: M10. Saving polygon placements (Manual Plot, Auto Plot) — extends M1
+
+### UI Requirement
+Dropping ticked units or amenities on a polygon, Auto Plot's "Confirm & Auto Plot", Unplot.
+
+### Existing Rails Source Investigated
+`UnitsController#ajaxplotunitforfloorplate` (`pointer[...]` params → `units.pointer_data`), `FloorplateAmenitiesController#plot_amenity` (amenities, the same hash), `CommunitiesController#save_pointer_data` (the legacy SVG auto-plot's bulk POST from `svgAutoPlotting.js`: `{ pointer_data: { <unit id>: { id, tag, x_plot, y_plot, selector } } }`), `#remove_plots_from_floorplate?svg_deletion=true`, `SvgPlotRevalidator` (drops placements whose shape a newly uploaded SVG no longer has).
+
+### Existing DB Data
+`units.pointer_data` / `amenities.pointer_data` (`{ id, tag, x_plot, y_plot, selector }`, viewBox units), `floorplates.svg_metadata`.
+
+### What Can Be Implemented Locally
+Both work on the page and produce exactly the hash the CMS stores (the polygon's raw id and tag, its centre in viewBox units, or the group selector), in `LocalMapState.pinOverrides` (`space: 'svg'`, `polygon`). Unplot removes a stored or local placement on the page.
+
+### Why Backend Work Is Required
+Writes behind `protect_from_forgery`, as M1.
+
+### Future Backend Requirement
+A JSON branch on `save_pointer_data` (already a JSON POST) for the CSRF strategy of G6/R5 would carry the Auto Plot result as is.
+
+## Gap: M11. Remembering Auto Plot rules per building
+
+### UI Requirement
+"Use these rules next time for {building}" on the Confirm step.
+
+### Existing Rails Source Investigated
+The legacy auto-plot (`svgAutoPlotting.js`) hard-codes its matching (normalise, short name, variants, similarity ≥ 0.55) and stores no rule; no column or table holds a pattern.
+
+### Existing DB Data
+None.
+
+### What Can Be Implemented Locally
+The rules are remembered per building for the life of the page (`LocalMapState.apPatterns`): reopening the wizard on the same building starts from them.
+
+### Why Backend Work Is Required
+Nothing to store them in.
+
+### Future Backend Requirement
+A per-property (or per-building) JSON column for the last rules, if the business wants them kept.
+
+## Gap: M12. The CMS's own SVG auto-plot
+
+### UI Requirement
+The legacy "Auto Plot" button of the SVG section (`autoPlotUnits()`).
+
+### Existing Rails Source Investigated
+`svgAutoPlotting.js` runs entirely in the browser over the mounted SVG (`#Units` group, building/floor groups, `<text>` labels, similarity), then POSTs `save_pointer_data`.
+
+### What Can Be Implemented Locally
+The wizard's matching is the same idea made explicit: "ignore separators + ignore letter case" reproduces the legacy `normalize`, the polygon's `<text>` label counts as a second key as the legacy matches labels, and the tokens / presets / find-replace / trim / pad cover the legacy "variants". The legacy similarity fallback (≥ 0.55 of matching characters in position) is not reproduced: it silently matches a unit to a near-miss, which the wizard reports as "No match · closest …" for the user to pick.
+
+### Why Backend Work Is Required
+Only the save (M10).
+
+## Gap: M13. Floor SVGs in a development database restored from staging
+
+Not a Connect gap. CarrierWave stores to disk in development while this database's files live on S3, so `floorplates.svg_image.url` names a file the CMS host does not hold. The `plan-svg` route reads the S3 copy that sits beside the floorplate's image (`uploads/floorplate/svg_image/<id>/<file>`, same bucket as `standard_image_url`) when the CMS host answers 404; on staging and production the uploader's own URL is that S3 URL and the fallback never runs.
+
+**Update, September 27, 2026 (branch `feature/inventory_properties_issues`):** resolved at the source. `Connect::UploadUrl.upload` now answers the S3 copy itself whenever an uploader on file storage names a file that is not on disk (the bucket of the record's own `standard_image_url`, else the property's), so the floorplates JSON already carries the S3 SVG URL and the `plan-svg` route's own fallback was removed. The same rule serves the amenity galleries, elevator images and galleries, secondary images and the sitemap files (PYN_CONNECT_PROGRESS.md §23).
+
+## Not gaps (decisions recorded elsewhere)
+
+- **Polygon labels.** The design prints every polygon's id over it; the real floor SVGs already carry their room numbers as `<text>`, so Connect labels only the polygons that hold something, are hovered, or are open.
+- **Two layers, two spaces.** A floorplate with both a floor SVG and a floor image shows one at a time (Floor SVG / Background image): stored `x_plot/y_plot` are pixels of the image and stored `pointer_data` is viewBox units of the SVG, and the two files do not share a frame (`context.md` §18). The pathway graph, elevators, entry points and the tour start are image-space records and draw on the image layer; the CMS plots them there too.
+- **The OCR auto-plot of phase 2g** (Textract boxes, `map_ocr_data`) was superseded by the wizard; the Textract run itself stays a CMS action (M4 in the section above).

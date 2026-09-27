@@ -1217,3 +1217,27 @@ The Amenities tab now follows `pyn-connect-amenties.html` (the amenities design;
 | Floors as "Lobby / Rooftop" | `amenities.floor` is an integer | Reads "Floor N" (gaps GA1) |
 
 Testing: typecheck ✅; new `tests/e2e/amenities.spec.ts` on 2157 / 1106 / 1232 (every filter count equals the database's); full Playwright run 84 passed; regression over Companies, Properties, Property Detail, Inventory tabs, Unit Detail and Map & Plotting with 0 writes.
+
+# Status update — September 26, 2026 (branch `feature/map_plotting_tour_setup`)
+
+The two screens the Inventory header links to are now both real for numeric ids (PYN_CONNECT_PROGRESS.md §22, context.md §18):
+
+| Link | Screen | State |
+|---|---|---|
+| Map & Plotting (header, and every floorplate card's Plot) | `/properties/:id/map` on the plotting design: building pills, floorplate tabs with plotting progress, the real floor SVG with its polygons, Manual Plot, the Auto Plot wizard, the Plot Units & Amenities panel, plus the phase 2g pathway tools | ✅ Local-only edits; 0 non-GET requests |
+| Tour Setup (header) | `/properties/:id/tour-setup` on real data: Tour Stops, Elevators & Locks, Routing | ✅ Local-only edits; 0 non-GET requests |
+
+Add Floorplate on the map screen opens this page's own `FloorplateDialog` (now exported from `InventoryDialogs.tsx`); Save still only closes it. The Amenities tab and the rest of this page are unchanged.
+
+# Status update — September 27, 2026 (branch `feature/inventory_properties_issues`)
+
+Amenities tab fixes on real data (PYN_CONNECT_PROGRESS.md §23, context.md §19):
+
+| Item | State |
+|---|---|
+| Edit Amenity gallery photos | ✅ Real S3 files, in `sort` order, "Lead" on the first; the "Image unavailable" of Sep 26 was the development file-storage trap, resolved in `Connect::UploadUrl` |
+| Eye / image viewer | ✅ Own image then gallery ("1 of 3" … "3 of 3"), arrows and keys, a loading state while a photo streams, the failure text only when the request fails |
+| Loading | ✅ The shared `LoadingIndicator` (the CMS's cat GIF) on the inventory route, every thumbnail, the dialogs' previews and the viewer |
+| Hazel (1618) validation | ✅ 31 / 17 / 238 / 6 tabs, header "31 floorplates · 31 without a floor SVG · 13 tour stops", every amenity card's values against `psql`; `tests/e2e/hazel.spec.ts` |
+
+The floorplates, floor plans and units tabs are unchanged; their secondary images and interior images go through the same URL rule.
