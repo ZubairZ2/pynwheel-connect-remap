@@ -63,4 +63,6 @@ The dialog's image row shows the stored file name and type only; no size or dime
 
 **Gallery images that read "Image unavailable" locally were not a gap.** The Edit dialog and the eye viewer failed on every gallery photo because `AmenityGallery#image.url` on file storage (development) names a path on the CMS host, and this database's files were uploaded to S3 by staging. The amenity's own image had always worked through its stored `standard_image_url`. `Connect::UploadUrl.upload` now answers the S3 copy of a stored file that is not on this machine (the bucket of the amenity's `standard_image_url`, else the property's), which is the URL the fog storage produces on staging and production; nothing else about images changed (PYN_CONNECT_PROGRESS.md §23). The dialog and the viewer also show the shared loading indicator while a photo streams and only report a failure when the request itself fails.
 
+On the Heroku staging CMS the same photos failed for a different reason — fog storage names the configured `staging-pynwheel` bucket while the copied records live on `images-pynwheel-cms-v2` — and `UploadUrl` now resolves that too (a cached HEAD picks the copy that answers). Files that exist on no public bucket still fail everywhere, legacy included; that is data, not a gap.
+
 No new backend gap came out of the Hazel pass. GA1–GA5 stand as written.

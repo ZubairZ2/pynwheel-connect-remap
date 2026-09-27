@@ -1,3 +1,6 @@
+require 'digest'
+require 'net/http'
+
 module Connect
   # URLs of the CarrierWave uploads the inventory shows, resolved the way the
   # CMS itself resolves them.
@@ -45,6 +48,7 @@ module Connect
       uploader = record.public_send(column)
       url = uploader.url
       url = stored_copy(url, bucket) if url.present? && missing_on_disk?(uploader)
+      url = reachable_copy(url, bucket) if url.present? && on_fog?(uploader)
 
       absolute(accelerated(record, url), base_url)
     end
@@ -116,6 +120,49 @@ module Connect
       return url if base.blank? || !url.start_with?('/')
 
       "#{base}#{url}"
+    end
+
+    def on_fog?(uploader)
+      uploader.class.storage == CarrierWave::Storage::Fog
+    end
+
+    # Fog storage names every file on the configured bucket (`S3_BUCKET_NAME`),
+    # but a database copied from another environment holds files that were
+    # uploaded to *that* environment's bucket: the Heroku staging CMS keeps
+    # `staging-pynwheel` configured while its records' `standard_image_url`s
+    # name `images-pynwheel-cms-v2`, so a gallery photo's URL answers 403
+    # there although the file exists. When the record's family names another
+    # bucket, the two are asked (one HEAD each, remembered for a day) and the
+    # copy that answers wins; the configured URL stays when neither does, or
+    # when the check itself fails.
+    def reachable_copy(url, bucket)
+      own = s3_base(url)
+      family = bucket.respond_to?(:call) ? bucket.call : bucket
+      return url if own.nil? || family.blank? || bucket_name(family) == bucket_name(own)
+      return url if reachable?(url) != false
+
+      candidate = "#{family}#{url.delete_prefix(own)}"
+      reachable?(candidate) ? candidate : url
+    end
+
+    def bucket_name(base)
+      URI.parse(base).host.to_s.split('.s3').first
+    rescue URI::InvalidURIError
+      base
+    end
+
+    # true / false from a HEAD of the public URL; nil when the check could not
+    # be made (then the caller keeps what it has). Answers are cached, failures
+    # are not.
+    def reachable?(url)
+      Rails.cache.fetch("connect/upload_url/reachable/#{Digest::SHA1.hexdigest(url)}", expires_in: 24.hours, skip_nil: true) do
+        uri = URI.parse(url)
+        Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https', open_timeout: 3, read_timeout: 5) do |http|
+          http.head(uri.request_uri).is_a?(Net::HTTPSuccess)
+        end
+      rescue StandardError
+        nil
+      end
     end
   end
 end
