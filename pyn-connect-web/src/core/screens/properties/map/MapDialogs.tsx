@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import { i18n } from '~/resources/i18n';
+import { LoadingIndicator } from '~/core/components/atoms/LoadingIndicator';
 import { StatusPill } from '~/core/components/atoms/StatusPill';
 import { Modal } from '~/core/components/molecules/Modal';
 import { ImageViewer } from '~/core/components/organisms/ImageViewer';
@@ -93,6 +94,7 @@ export const MapDialogs = ({ controller }: { controller: PropertyMapController }
           previous: i18n.t(S.viewer.previous),
           next: i18n.t(S.viewer.next),
           position: (current, total) => t(S.viewer.position, { current, total }),
+          loading: i18n.t(S.viewer.loading),
           unavailable: i18n.t(S.viewer.unavailable)
         }}
       />
@@ -322,7 +324,11 @@ const AutoPlotDialog = ({ controller }: { controller: PropertyMapController }) =
               </div>
             ))}
           </div>
-          {r.loading > 0 && <div className="bo-ap__note">{t(M.autoPlot.loadingSvgs, { count: r.loading })}</div>}
+          {r.loading > 0 && (
+            <div className="bo-ap__note">
+              <LoadingIndicator variant="inline" label={t(M.autoPlot.loadingSvgs, { count: r.loading })} />
+            </div>
+          )}
           {allOk && (
             <div className="bo-ap__ok">
               <div className="bo-ap__okhead">{t(exact && !r.manual ? M.autoPlot.okHeadExact : M.autoPlot.okHead, { count: plural(r.units, M.autoPlot.unitOne, M.autoPlot.unitMany) })}</div>

@@ -2,6 +2,7 @@
 
 import { i18n } from '~/resources/i18n';
 import { Icon } from '~/core/components/atoms/connect/Icon';
+import { LoadingIndicator } from '~/core/components/atoms/LoadingIndicator';
 import { StatusPill } from '~/core/components/atoms/StatusPill';
 import type { PropertyMapController } from '~/core/hooks/usePropertyMap';
 import type { PlotListItem } from '~/core/utils/generator/map/mapPanels.generator';
@@ -365,6 +366,7 @@ export const RoutePanel = ({ controller }: { controller: PropertyMapController }
         </button>
         <p className="bo-map__panelnote">{i18n.t(M.route.localNote)}</p>
       </div>
+      {running && <LoadingIndicator variant="inline" label={i18n.t(M.route.running)} className="bo-map__routebusy" />}
       {route && route.status !== 'running' && (
         <div className="bo-map__routeresult" role="status">
           {route.status === 'failed' && <div className="bo-map__warnbox">{i18n.t(M.route.failed)}</div>}

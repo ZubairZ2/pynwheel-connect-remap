@@ -108,6 +108,7 @@ const Inventory = ({ inventory, initialTab, today }: Omit<Props, 'inventory' | '
           previous: i18n.t(S.viewer.previous),
           next: i18n.t(S.viewer.next),
           position: (current, total) => t(S.viewer.position, { current, total }),
+          loading: i18n.t(S.viewer.loading),
           unavailable: i18n.t(S.viewer.unavailable)
         }}
       />

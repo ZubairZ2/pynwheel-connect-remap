@@ -197,6 +197,17 @@ export interface StopCard {
 
 const floorText = (floor: number | null): string => (floor == null ? '—' : t(T.stops.floor, { floor }));
 
+/**
+ * The Edit / Add Tour Stop dialog's only rule, checked on this page: a dwell
+ * time is a whole number of minutes from 0 to 999, or empty. The message to
+ * show under the field, or null when the value is fine.
+ */
+export const dwellTimeProblem = (value: string): string | null => {
+  const trimmed = value.trim();
+  if (trimmed === '') return null;
+  return /^\d{1,3}$/.test(trimmed) ? null : i18n.t(T.dialogs.dwellInvalid);
+};
+
 export const generateStopCards = (map: PropertyMap, levels: MapLevel[], state: TourLocalState): StopCard[] => {
   const shown = state.stops.filter((stop) => !stop.removed);
   return shown.map((stop, index): StopCard => {

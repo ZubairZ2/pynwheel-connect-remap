@@ -146,9 +146,9 @@ module Connect
             directional_text: elevator.directional_text.presence,
             duplicate_of: elevator.duplicate_of,
             lock_provider: elevator.lock_provider.presence,
-            image: UploadUrl.upload(elevator, :image, base_url),
+            image: UploadUrl.upload(elevator, :image, base_url, bucket: bucket),
             gallery: (galleries[elevator.id] || []).map do |photo|
-              { id: photo.id, name: photo.name.presence, url: UploadUrl.upload(photo, :image, base_url) }
+              { id: photo.id, name: photo.name.presence, url: UploadUrl.upload(photo, :image, base_url, bucket: bucket) }
             end,
             banks: (banks[elevator.id] || []).map do |bank|
               {
@@ -162,6 +162,12 @@ module Connect
             tour_stop: stop_state('elevator', elevator.id)
           }
         end
+      end
+
+      # Where the property's uploads live on S3, for an elevator image or
+      # gallery photo whose file is not on this machine (UploadUrl).
+      def bucket
+        @bucket ||= UploadUrl.bucket_hint(community)
       end
 
       def elevator_floors(elevator)

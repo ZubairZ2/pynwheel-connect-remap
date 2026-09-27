@@ -345,6 +345,7 @@ export const CORE_STRINGS = {
       previous: 'inventory.viewer.previous',
       next: 'inventory.viewer.next',
       position: 'inventory.viewer.position',
+      loading: 'inventory.viewer.loading',
       unavailable: 'inventory.viewer.unavailable'
     },
     source: {
@@ -964,6 +965,7 @@ export const CORE_STRINGS = {
       layerSvg: 'mapPlotting.plan.layerSvg',
       layerImage: 'mapPlotting.plan.layerImage',
       svgLoading: 'mapPlotting.plan.svgLoading',
+      imageLoading: 'mapPlotting.plan.imageLoading',
       svgFailed: 'mapPlotting.plan.svgFailed',
       retry: 'mapPlotting.plan.retry',
       showImage: 'mapPlotting.plan.showImage',
@@ -1436,6 +1438,7 @@ export const CORE_STRINGS = {
       duration: 'tourSetup.dialogs.duration',
       durationHint: 'tourSetup.dialogs.durationHint',
       talkingHint: 'tourSetup.dialogs.talkingHint',
+      dwellInvalid: 'tourSetup.dialogs.dwellInvalid',
       bankName: 'tourSetup.dialogs.bankName',
       bankNamePlaceholder: 'tourSetup.dialogs.bankNamePlaceholder',
       building: 'tourSetup.dialogs.building',
@@ -1486,7 +1489,9 @@ export const CORE_STRINGS = {
     placeholderLegend: 'shared.placeholderLegend',
     signOut: 'shared.signOut',
     searchPlaceholder: 'shared.searchPlaceholder',
-    loadFailed: 'shared.loadFailed'
+    loadFailed: 'shared.loadFailed',
+    loading: 'shared.loading',
+    loadingImage: 'shared.loadingImage'
   },
   unitDetail: {
     title: 'unitDetail.title',

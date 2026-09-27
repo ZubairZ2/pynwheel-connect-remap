@@ -101,7 +101,10 @@ export const generateLevelTabs = (map: PropertyMap, levels: MapLevel[], items: P
     const done = scope.filter((item) => item.placed).length;
     const total = scope.length;
     const assets = planAssets(level, state.planOverrides[level.id]);
-    const progressState: LevelProgressState = !assets.svg && !assets.image ? 'nosvg' : !total ? 'empty' : done === total ? 'done' : done ? 'partial' : 'none';
+    // The card's SVG state comes first, as in the plotting design: a floorplate
+    // without a floor SVG reads "No SVG" (with its plotted count when it has a
+    // background image to plot on), "No plan" when it has no file at all.
+    const progressState: LevelProgressState = !assets.svg ? 'nosvg' : !total ? 'empty' : done === total ? 'done' : done ? 'partial' : 'none';
     const progress = {
       done: i18n.t(M.level.done),
       partial: `${done}/${total}`,

@@ -1228,3 +1228,16 @@ The two screens the Inventory header links to are now both real for numeric ids 
 | Tour Setup (header) | `/properties/:id/tour-setup` on real data: Tour Stops, Elevators & Locks, Routing | ✅ Local-only edits; 0 non-GET requests |
 
 Add Floorplate on the map screen opens this page's own `FloorplateDialog` (now exported from `InventoryDialogs.tsx`); Save still only closes it. The Amenities tab and the rest of this page are unchanged.
+
+# Status update — September 27, 2026 (branch `feature/inventory_properties_issues`)
+
+Amenities tab fixes on real data (PYN_CONNECT_PROGRESS.md §23, context.md §19):
+
+| Item | State |
+|---|---|
+| Edit Amenity gallery photos | ✅ Real S3 files, in `sort` order, "Lead" on the first; the "Image unavailable" of Sep 26 was the development file-storage trap, resolved in `Connect::UploadUrl` |
+| Eye / image viewer | ✅ Own image then gallery ("1 of 3" … "3 of 3"), arrows and keys, a loading state while a photo streams, the failure text only when the request fails |
+| Loading | ✅ The shared `LoadingIndicator` (the CMS's cat GIF) on the inventory route, every thumbnail, the dialogs' previews and the viewer |
+| Hazel (1618) validation | ✅ 31 / 17 / 238 / 6 tabs, header "31 floorplates · 31 without a floor SVG · 13 tour stops", every amenity card's values against `psql`; `tests/e2e/hazel.spec.ts` |
+
+The floorplates, floor plans and units tabs are unchanged; their secondary images and interior images go through the same URL rule.
