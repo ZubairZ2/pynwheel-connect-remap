@@ -25,6 +25,18 @@ export interface InventoryButton {
   newTab: boolean;
 }
 
+/**
+ * An SVG-mode placement (`pointer_data`): the SVG element the pin points at
+ * and its position in the floor SVG's user units (not the raster's pixels).
+ */
+export interface SvgPointer {
+  xPlot: number;
+  yPlot: number;
+  tag: string | null;
+  elementId: string | null;
+  selector: string | null;
+}
+
 export interface InventoryProperty {
   id: number;
   name: string;
@@ -147,6 +159,7 @@ export interface InventoryUnit {
    */
   xPlot: number | null;
   yPlot: number | null;
+  svgPointer: SvgPointer | null;
   visible: boolean;
   showOnMap: boolean;
   modelUnit: boolean;
@@ -181,10 +194,20 @@ export interface InventoryAmenity {
   floor: number | null;
   building: string | null;
   plotted: boolean;
+  /** The pin's pixel position on the owner's image; null when unplotted or placed by SVG pointer. */
+  xPlot: number | null;
+  yPlot: number | null;
+  svgPointer: SvgPointer | null;
   tourStop: boolean;
+  /** "Show in Stops List" on the amenity form (`breezway_lock_visible`); a hidden amenity is left out of the self-guided tour's stop list. */
+  showInStops: boolean;
+  /** "Select Lock Provider" on the amenity form: the first door's provider when the amenity has doors, else its own column. */
+  lockProvider: string | null;
   image: InventoryUpload | null;
   gallery: { id: number; name: string | null; description: string | null; url: string | null }[];
   videoLink: string | null;
+  /** The "Video Link Button Label" the pop-up's button carries (the CMS defaults it to "PLAY VIDEO"). */
+  videoLinkButtonLabel: string | null;
   description: string | null;
   directionalText: string | null;
 }
@@ -227,4 +250,12 @@ export interface PropertyInventory {
   lastSync: string | null;
   lockDevices: LockDevice[];
   amenityCategories: string[];
+  /** communities.self_tour: the amenity form's stop-list, description and directional fields are self-tour fields. */
+  selfTour: boolean;
+  /** communities.enable_locks: the amenity form's lock fields need it. */
+  enableLocks: boolean;
+  /** communities.show_amenity_name: "Show Amenity Name on Webpages", the toggle above the legacy Amenity Images list. */
+  showAmenityName: boolean;
+  /** Community#lock_options: the providers the amenity form's "Select Lock Provider" offers (Manual plus the vendors present). */
+  amenityLockOptions: { id: string; label: string }[];
 }

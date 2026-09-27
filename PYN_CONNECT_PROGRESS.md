@@ -1143,3 +1143,370 @@ No business logic, validation, authorization, route, model, association, schema 
 - Docs: context.md §15 holds the rule and the removal instruction; pyn-connect-web/README.md links to it.
 
 **Verified:** typecheck ✅; e2e 50 pass + 29 known font failures; one test updated to accept the optional trailing `*` on a dialog title. Screenshots: Dashboard shows 36 marks + legend; `/properties/348` shows only the 3 badge marks and the bell mark.
+
+---
+
+## 20. Phase 2g: Map & Plotting on real data (September 25, 2026)
+
+**Brief:** `ploting_mappping_and_auto_plot_UI.md` (untracked, like the other briefs). Build the 22-Sep design's Map & Plotting (`isMapEditor`) for a real property as a remap of the legacy **Auto Wayfinding** page, with the canvas as the priority: the stored floor image, unit and amenity pins, pathway nodes and connections, vertical connections and starting points must render at their stored coordinates. Minimal read-only JSON on existing controllers is allowed; nothing may be persisted from the React UI; everything write-shaped stays local to the page.
+
+**Branch:** `feature/map_plotting_auto_wayfinding`, from `main` (`f259ff6a8`).
+
+### Investigation
+
+- **The prototype.** Both HTML files were unpacked as in §13; the `isMapEditor` block is 24 KB and its state/render code sits in `state.js` (initial state near line 948, handlers 1667–2100, render bindings 2610–2735). It has five tools (Select, Place Pin, Junction, Connect, Move), Auto-Plot, Grid, Publish, the plan bar (Upload SVG / Upload Image / Drop target / Remove Plan), and the Place / Auto-Plot Result / selected pin / Building Starting Points / Selection / Marker Colors / Vertical Connections panels. **"Start Plotting Hallways" and "Run Algorithm" are not in either prototype**; they are the two buttons of the legacy Auto Wayfinding page, and were built from that page.
+- **Legacy Auto Wayfinding, traced.** Sidebar → `automate_plotting_index_path(community_id:)` (under *Tour Setup*, shown when `self_tour && auto_wayfinding`) → `GET /automate_plotting?community_id=:id` → `AutomatePlottingController#index` (`include ShortestPath`) → per floor (`Floorplate#floors` → `floor_to_floorplate`), or per building × floor when `Community#fetch_building_list` has ≥ 2: hallways (`floorplate.hallways.order(:id)`), the tour-stop units and amenities (`display_stop: true`, with `Door`s), `Floorplate#fetch_elevators(floor)`, `BuildingStartingPoint`s, the tour start (`tours.x_plot/y_plot`) → `automate_plotting/index.html.haml` + `_floorplate_map` / `_show_map` / `_sitemap` / `_decide_styling` → `maps.js` (hallway editor: click adds a node chained from the `selected` one, Ctrl+click connects, drag moves, double-click deletes; every change is a `POST` to `HallwaysController`), `jquery.line.js`, `panzoom`. "Run Algo(Animated)" → `GET /automate_plotting/shortest_path?community_id=&path_type=sorting` → `ShortestPath.return_path_for_floorplate` / `..._for_multiple_buildings` / `return_path_for_sitemap` (`DijkstraAlgo`), drawn in orange leg by leg, auto-clicking floors. The page's own text ("Select units to add a marker…", "Click Grid…") is copy-paste from the plotting page: it has no unit list and no Grid button, and "Plot" is a heading.
+- **Writes hiding in GETs.** `#index` calls `make_sure_one_selected_hallway` (saves a hallway when none is selected) and inherits `community_code` (creates a Tour/SchedulerWidgetSetting when missing). `plotexp`, `suggest_floorplate_units`, `floorplate_auto_plot_units` and `tours#building_starting_point` also write on GET. None is called by Connect.
+- **Coordinates.** Every `x_plot/y_plot` (units, amenities, doors, hallways, elevators, starting points, tour start) is a natural pixel of the floorplate's `image` (`floorplates.width/height`, else the file's own size); a sitemap uses `sitemaps.width/height`; SVG-mode placements are `units.pointer_data` in SVG user units against `svg_metadata`. Units store the pin point itself; hallway nodes, doors, elevators and entry points store a 16 px icon's top-left, and the legacy lines run from `x+8, y+8` (`maps.js` `return_x_y_values`). Hallways belong to a floorplate, not a floor, so every floor of a range shares one graph; an elevator has one x/y for every floor in `floorplate_covering_range`.
+- **DB (local dump).** 4,108 hallways (3,298 on floorplates, 810 on sitemaps), 217 elevators, 195 building starting points, 15,837 legacy `path_points` (manual Tour Setup lines, unused by auto wayfinding), 0 rows in `bedroom_marker_colors`, `map_ocr_data` on 12 floorplates. Test properties: 2919 "Sofia" (7 floorplates 2942×1942, 367 hallways, 1 elevator 1–7, 1 entry point, 17 stops, 227 doors, 181 plotted units), 1264 "The Lagoons" (15 entry points, multi-building), 1108 "100 Moffett" (the brief's screenshot: 3 buildings, 3 elevators, 2 entry points, no hallways), 2003 "Aertson Midtown" (650 OCR boxes, 0 plotted units), 348 (pins + SVG pointers, no graph), 236 (sitemap mode).
+
+### Change and data-source map
+
+| New UI | Old Auto Wayfinding source | Rails controller/action | Model | Existing data | JSON | React | Status |
+|---|---|---|---|---|---|---|---|
+| Floor tabs ("Tower A · Lobby") | `_floorplate_map` floor/building buttons, `floor_to_floorplate` | `floorplates#index` | Floorplate (`range` → `floors`, `building`, `floor_name`) | ✅ | `floorplates.json` (existing) | `generateMapLevels` → one level per floorplate, or the property map | ✅ |
+| Floor SVG / background | `floorplate.image.url`, `svg_image`, `width/height`, `svg_metadata` | same | Floorplate / Sitemap uploaders | ✅ (S3 URLs) | existing `image`, `svg`, `width`, `height`, `svg_width/height` | `MapCanvas` fits the raster at its aspect ratio; SVG toggle when both exist | ✅ read; uploads local only (M3) |
+| Unit pins | `units.x_plot/y_plot` on the floorplate | `units#index` | Unit (`floorplate_id`, `floor`, `building`, `pointer_data`) | ✅ | existing `x_plot/y_plot` + new `svg_pointer` | `generateLevelGraph` pins (percent of the image) | ✅ |
+| Amenity pins | `amenities.x_plot/y_plot` (owner Floorplate/Sitemap) | `amenities#index` | Amenity | ✅ | new `x_plot`, `y_plot`, `svg_pointer` | same | ✅ |
+| Pathway nodes + connections | `hallways` + `next_points` | **`automate_plotting#index.json`** (new) | Hallway (polymorphic parent) | ✅ | `hallways[]` | nodes at `x+8, y+8`, undirected edges | ✅ |
+| Vertical connections | `Elevator#floors`, `fetch_elevators(floor)` | same | Elevator | ✅ | `elevators[]` with `floors` | node on every floor served; Vertical Connections panel | ✅ read (M6) |
+| Building starting points / tour start | `BuildingStartingPoint`, `tours.x_plot/y_plot/starting_floor/building` | same | BuildingStartingPoint, Tour | ✅ | `building_starting_points[]`, `tour` | nodes + panel rows | ✅ read; Set local (M7) |
+| Tour stops (what the algorithm routes) | `tour.tour_stops.visible.order(:sort)` | same | TourStop | ✅ | `tour_stops[]` | "Tour stop" flag on pins; local route order | ✅ |
+| Doors | `unit.door`, `amenity.ordered_doors`, access points | same | Door | ✅ | `doors[]` | small nodes; route targets | ✅ |
+| Auto-Plot | `floorplate_auto_plot_units` (Textract → `set_floorplate_markers_on_map`) | same (read of `map_ocr_data`) | Floorplate `map_ocr_data` | ✅ on 12 plates | `ocr{}` | `runLocalAutoPlot`: the CMS rule over stored boxes, temporary pins | ✅ local (M4) |
+| Run Algorithm (Animated) | `shortest_path` + `maps.js` animation | **`automate_plotting#shortest_path.json`** (existing action, now scoped) | ShortestPath | ✅ | `{path_object, floor_ids, is_multiple_buildings}` | `/api/properties/:id/wayfinding-route` → animated legs, floor auto-switch | ✅ |
+| Preview with local edits | per-floor Dijkstra | — | — | ✅ | — | `localRoute.ts` | ✅ local (M5) |
+| Marker colours | `_decide_styling`, `communities.*_color` | same | Community, Design, BedroomMarkerColor | ✅ (table empty) | `settings`, `bedroom_marker_colors[]` | bedroom tiers from real floor plans; swatches local | ✅ (M8) |
+| Grid | `.grid-graph` (never toggled on this page; `showHideOverlayGrid` on plotexp) | — | — | — | — | 5% overlay as the design | ✅ |
+| Publish | none in the CMS | — | — | ❌ | — | dialog with real counts, "not available" | gap M2 |
+
+### Backend (read-only JSON only)
+
+| File | Change |
+|---|---|
+| `app/controllers/concerns/connect/wayfinding_json.rb` (new) | For `index.json` and `shortest_path.json` only: skips `community_code` and `load_tour_users_chats`, loads `@community` read-only (404 when unknown), and runs the existing `check_community` scope (302 for another company's property). Renders the Connect envelope |
+| `app/controllers/automate_plotting_controller.rb` | `include Connect::WayfindingJson`; `#index` starts with `return render_connect_wayfinding if request.format.json?`, before the locks helpers and `make_sure_one_selected_hallway`. `#shortest_path` is untouched (it already renders JSON) |
+| `app/serializers/connect/wayfinding_serializer.rb` (new) | `settings`, `buildings` (`Community#fetch_building_list`), `floor_to_floorplate`, `hallways`, `elevators` (+ `floors`), `building_starting_points`, `tour`, `tour_stops`, `doors`, `bedroom_marker_colors`, `ocr` (text boxes only). Every coordinate as stored |
+| `app/serializers/connect/amenity_serializer.rb` | `x_plot`, `y_plot` (positive, else nil), `svg_pointer` |
+| `app/serializers/connect/unit_serializer.rb` | `svg_pointer` (`pointer_data` as `{x_plot, y_plot, tag, element_id, selector}`); `UnitSerializer.svg_pointer` shared with amenities |
+
+No business logic, validation, authorization, route, model, association, schema or write behaviour changed. The HTML Auto Wayfinding page renders as before (verified in-process: 200, 0 writes).
+
+### Frontend
+
+**Layering:** route (`app/(connect)/properties/[propId]/map/page.tsx`, numeric ids; slugs keep the demo screen with its `demo` flag) → `propertyMap.server.ts` (`loadPropertyInventory` + `fetchWayfindingGraph` in parallel) → `wayfinding.parser.ts` / `inventory.parser.ts` → `PropertyMap` model → `usePropertyMap` (all page state in one `useState`) → generators under `core/utils/generator/map/` → `screens/properties/propertyMap.screen.tsx` with `map/MapCanvas.tsx`, `map/MapPanels.tsx`, `map/MapDialogs.tsx`. Run Algorithm goes through `app/api/properties/[propId]/wayfinding-route/route.ts` (GET) so components never call Rails. Strings: `CORE_STRINGS.mapPlotting`. CSS: `.bo-map*` in `globals.css`.
+
+- **Levels:** one tab per floorplate, lowest floor first, labelled `floor_name` / "Floor 3" / "Floors 1–3" with the building (or the property's only building, or "All buildings") above it; a sitemap property has one "Property map" level.
+- **Canvas:** the raster (`standard_image_url`, accelerated) drawn at its own aspect ratio inside the 520 px surface; percent = stored px / `floorplates.width|height` (or the loaded image's natural size when the CMS has none). Pins are the stored point; nodes are the stored point + 8 px. Edges from `next_points`; the route in the legacy orange; the grid at 5 %.
+- **Local state (`LocalMapState`), never sent:** pin overrides (placed, moved, removed), moved nodes, temporary junctions and connections (across levels too), hidden stored nodes/edges, hallway-chain node, starting-point choices, plan file previews / Remove Plan, bed colours, the auto-plot report, the route and its reveal counter, dialogs.
+- **Tools:** Select (pin, node or edge), Place Pin (armed from the queue; the next unplotted item on the same floor arms itself), Junction, Connect (two nodes; different floors → Vertical Connections), Move (pointer capture drag), Start/Stop Plotting Hallways (each click adds a node linked to the last, seeded from the map's `selected` hallway as `maps.js` does), Grid, Auto-Plot, Publish (dialog only), Run Algorithm (Animated) and Preview with local edits.
+- **Panels:** Place Units & Amenities (real counts, queue with floor), Auto-Plot Result, selected pin (meta, "Pin at x%, y%", Move Pin to This Floor, Remove Pin), Building Starting Points (tour start + one row per building), Selection (node/edge, stored vs temporary vs "moved · the CMS still holds x%, y%", Set as Building Starting Point, Delete/Hide), Run Algorithm, Marker Colors by Bedroom (+ the CMS's availability colours), Vertical Connections.
+- **Read-only:** a note under the header; every confirm says nothing is saved; Publish says publishing is not available; uploads are object-URL previews.
+
+### Components reused
+
+`ConnectScreenTemplate`, `ListingScreenTemplate` (loading), `Breadcrumb`, `StatusPill`, `Modal` (confirm + Publish), `Icon`, `.bo-switch`, `.bo-inv__*` header/button classes, `.bo-field`, `.bo-btn`, `.bo-section--empty` not-found, the toast (`demoActions.showToast`), `rangeText` / `t` from the inventory text helpers, `loadPropertyInventory`, the inventory parsers and models.
+
+### New components, and why
+
+| New | Why nothing existing would do |
+|---|---|
+| `map/MapCanvas.tsx` | No canvas, zoom, pan or coordinate component existed; the demo canvas is inline-styled and bound to the demo slice, with percent coordinates on a 100×100 box rather than an image's pixels |
+| `map/MapPanels.tsx`, `map/MapDialogs.tsx`, `propertyMap.screen.tsx` | The design's panels over real descriptors; the demo panels read `s.demo` |
+| `usePropertyMap.ts` + `core/utils/generator/map/*` + `core/utils/wayfinding/localRoute.ts` | The local-state model, the stored+temporary merge, the OCR auto-plot and the local Dijkstra did not exist |
+
+### Verification (local DB, Rails on :3100, Connect on :3001, real Chrome)
+
+- **Rails, in-process** (Warden login, SQL write audit): `automate_plotting.json` 200 for 2919 (367 hallways / 1 elevator / 1 entry point / 17 stops / 227 doors), 348, 1108 (buildings B, A, C; OCR on plate 1437), 236 (sitemap), 2003 (OCR 650 boxes), 1264 (15 entry points); unknown id 404; company admin: 364 → 200, 348 → 302; signed out 401; `shortest_path.json` 2919 → 15 legs over floors 1–7, 2003 → 2 legs (multi-building), 1108 / 236 → `[]` (no hallways). **0 write statements.** The legacy HTML page for 2919 also rendered with 0 writes, and its floor-2 markers are the same stored pixels the JSON carries (hallway 5128 at 182/414 → 5129, elevator 910 at 1914/1482, the four amenity stops, the tour start at 1822/1348 on floor 1).
+- **Browser (2919):** Floor 1 shows the S3 plan, 2 pins, 3 hallway nodes, the elevator and the tour start; Floor 2 shows 21 pins, 55 nodes and 54 edges running along the corridors — the stored graph lands where the corridors are, which is the coordinate check. Place Units & Amenities "197 of 256 plotted". Run Algorithm (Animated) draws the 263-point CMS route in orange and follows it from floor 1 upward. On 2003, Auto-Plot placed 123 of 373 unplotted items at their OCR labels and reported the 250 it could not (no label / amenities). 236 renders the single Property map; 1108 five floorplates and three building rows; company admin sees 364 and "Property not found" for 348; the route API answers 404 for a property outside the scope.
+- **Playwright `tests/e2e/mapPlotting.spec.ts`** (real data, runs when `PYN_CONNECT_E2E_RAILS_COOKIE` / `PYN_CONNECT_E2E_USER` are set): renders, selects a pin and a node, places a pin, adds two junctions, connects them, moves one, toggles the grid, plots a hallway node, runs Auto-Plot, opens Publish and Remove Plan, runs the CMS algorithm and the local preview, switches floors — **0 non-GET requests, 0 page errors**; unknown id → not found. **2/2 pass.** The demo tests for `/properties/luxe/map` and the map-editor interactions still pass (5/5). `npm run typecheck` ✅.
+
+### Traps found in this phase
+
+1. **`shortest_path` reads `@community` from the `community_code` callback.** Skipping the callback for JSON (to avoid its Tour creation) needs a read-only replacement (`load_connect_community`), or the action raises.
+2. **The legacy page draws units at `x - 2, y - 24` and everything else from `x + 8`.** Pins are centred on the stored point, nodes on the stored point + 8; do not "fix" one to match the other.
+3. **Hallways are per floorplate.** A floorplate covering floors 1–3 shows one graph on every one of its floors; the level model is the floorplate, not the floor.
+4. **`GET /automate_plotting` writes** (`make_sure_one_selected_hallway`) and so do several plotting GETs; the JSON branch must return before them.
+5. **Rails `check_community` redirects (302) rather than 403** for another company's property; the loader treats 302 like the inventory does.
+6. **Injecting a Rails session into the built-in browser is blocked** on the CMS origin (its cookie is httpOnly). Compare with the legacy page in-process instead (`legacy_compare.rb` pattern: integration session + Nokogiri).
+7. **The floor image's stored size can be 0** (1108 plate 1437); the canvas then measures the loaded image (`measured`), and the OCR auto-plot waits for it.
+
+### Remaining
+
+- Gaps M1–M9 in `gaps_map_plotting_feature.md` (writes, publish, uploads, Textract/SVG auto-plot, the algorithm over local edits, vertical links, starting points, marker colours, SVG element shapes).
+- Tour Setup is still a demo screen; its "Open Map & Plotting" now lands on the real screen for numeric ids.
+- Commit (no AI attribution), then PR against `main`. Deploy both apps when wanted (Rails: the controller, the concern, three serializers; Connect: the screen).
+
+## 21. Phase 2h: the Amenities tab against the amenities design (September 26, 2026)
+
+**Brief:** `feature_aminities_improvments.md` (untracked). Make the Inventory page's Amenities tab match `pyn-connect-amenties.html` on real data: the header, the section, a working search and six working filters, the new cards, the image viewer, the video state, and the full Add / Edit Amenity dialog — all read-only, with at most a read-only `format.json` exposure of data the CMS already holds.
+
+**Branch:** `feature/amenities_improvements`, from `feature/map_plotting_auto_wayfinding` (`da81bb700`). Uncommitted.
+
+### Investigation
+
+- **The three prototype files differ only in the Amenities tab.** `pyn-connect-amenties.html` vs `pyn-connect-22-sep-new.html` is 12 lines in the bundle (asset ids and the markup string); unpacked (context.md §14 recipe) it is 600 lines: the `isTcAmenities` block (markup lines 1796–1862), the `amModalOpen` dialog (4359–4520), the `invAmenities` / `amForm` view models (8080–8118, 8561–8590), `filteredAmenities` (6797–6809) and the seed `INVENTORY.luxe.amenities` (5815–5822). Everything else is the 22-Sep design already built in §17–§18.
+- **Old CMS, traced from the labels the brief quotes.** `GET /communities/:id/amenities` → `AmenitiesController#index` → `amenities/index.html.haml` ("Amenity Images", the drag-and-drop uploader, the "Show Amenity Name on Webpages" switch, which posts `communities#update_amenity_toggle` → `communities.show_amenity_name`). `#edit` → `edit.html.haml` is the real amenity form: Name, Video Link Button Label, Tour Visiting Order Number, Video Link, Building (text), Floor (a select over the plotted floorplate's floors, else text), Amenity Type (`Amenity::AMENITY_TYPE`), then — only when `community.enable_locks` — Select the door / Select Lock Provider (`Community#lock_options(existing_locks_provider)`) / Access Code / Select the lock, then — only when `community.self_tour` — "Show in Stops List" (`amenities.breezway_lock_visible`, default true), Description and Directional Text (wysihtml5), the image with Crop, and the gallery (`_edit_amenity`, `amenity_galleries` sortable). Models: `Amenity` (polymorphic `amenityable`, `has_many :amenity_galleries`, `has_many :doors`, `has_one :tour_stop`), `AmenityGallery`, `Door`, `TourStop`. "Hidden from the stops list" is `breezway_lock_visible: false`: `CommunityTour` and `Community#filter_tour_stops` drop those amenities from the self-guided tour.
+- **What the JSON already carried** (§17): name, category, owner (floorplate / sitemap / floor plan / unit), building, floor, plotted, pin, tour-stop row, image, gallery, video link, description, directional text, `category_options`. **Missing for the design:** the lock provider, the stop-list flag, the video button label, and the property flags the form is gated on.
+
+**UI → data map**
+
+| UI element | Old Rails source | Model / association | React component | Real DB data | JSON |
+|---|---|---|---|---|---|
+| Breadcrumb, "Property Inventory", summary, tab counts | `floorplates.json` meta + the four listings | Community, Floorplate, Tour | `propertyInventory.screen`, `inventoryHeader.generator` | ✅ | existing |
+| Amenities title / subtitle / Add Amenity | `amenities/index.html.haml` | — | `DetailSection`, `.bo-inv__add` | — | — |
+| Show amenity name on webpages (read-only switch) | `_amenity_name_toggle_form` | `communities.show_amenity_name` | `Switch` (indicator) | ✅ | **new meta `show_amenity_name`** |
+| Search name, type or location | — (the old page has no search) | name, `amenity_type`, building, floor | `SearchField` + `filterAmenities` | ✅ | existing |
+| All Types | `Amenity::AMENITY_TYPE`, `amenities.amenity_type` | Amenity | `MultiFilter` | ✅ | existing (`category`, `category_options`) |
+| All Buildings | `amenities.building`, else the plotted floorplate's | Amenity → Floorplate | `MultiFilter` | ✅ | existing (`building`, `owner_building`) |
+| All Floors | `amenities.floor`, else the plotted floorplate | Amenity → Floorplate | `MultiFilter` | ✅ (as "Floor N") | existing (`floor`, `owner_name`) |
+| Any Lock | `amenities.lock_provider`, or the first door's (`#edit`) | Amenity, Door | `MultiFilter` | ✅ | **new `lock_provider`** |
+| Any State | `breezway_lock_visible`; `x_plot`/`y_plot`/`pointer_data` | Amenity | `MultiFilter` | ✅ | **new `show_in_stops`**, existing `plotted` |
+| Any Setup | image, galleries, video, description, directional | Amenity, AmenityGallery | `MultiFilter` | ✅ | existing |
+| "{n} amenities" / "Showing n of t" | `current_community.amenities` | Amenity | `generateShowingLabel` | ✅ | existing |
+| Card image, View / Replace / Remove, Upload image | `amenities.image` (`standard_image_url`) | Amenity | `MediaThumb`, `ImageViewer` | ✅ | existing |
+| Name, type tag | `name`, `amenity_type` | Amenity | `RecordCard`, `.bo-record__tag` | ✅ | existing |
+| Plotted / Not on map | `x_plot`/`y_plot`/`pointer_data` | Amenity | `StatusPill` | ✅ | existing |
+| In Stops List / Hidden from Stops | `breezway_lock_visible` | Amenity | `StatusPill` | ✅ | **new** |
+| Building, Floor | as the filters | | `MetaGrid` | ✅ | existing |
+| Lock Provider | as the filter | | `MetaGrid` | ✅ | **new** |
+| Video: label → link, or None | `video_link`, `video_link_button_label` | Amenity | `MetaGrid` (`href`) | ✅ | **new `video_link_button_label`** |
+| Gallery: "N images" / Empty | `amenity_galleries` | AmenityGallery | `MetaGrid` | ✅ | existing |
+| Description / Directional Text / Video chips | `description`, `directional_text`, `video_link` | Amenity | `.bo-inv-chip` | ✅ | existing |
+| Edit / Delete | `#update`, `#destroy` | — | `IconButton`, `ConfirmDialog` | — | read-only |
+| Dialog: every field above, image, gallery | `edit.html.haml` | Amenity, AmenityGallery, Community | `Modal`, `FormRow`, `Field`, `SwitchField`, `UploadSlot`, `InteriorGrid` | ✅ | **new meta `self_tour`, `enable_locks`, `lock_options`** |
+
+### Backend (read-only JSON only)
+
+| File | Change |
+|---|---|
+| `app/serializers/connect/amenity_serializer.rb` | Three keys per row: `show_in_stops` (`breezway_lock_visible != false`), `lock_provider` (the first door's provider when the amenity has doors — `Amenity#ordered_doors`' order, by `sort` under auto-wayfinding, else by creation — else the amenity's own column, the rule `AmenitiesController#edit` shows), `video_link_button_label`. One `Door.where(...)` per listing feeds the door rule |
+| `app/controllers/amenities_controller.rb` | `render_connect_amenities` meta gains `self_tour`, `enable_locks`, `show_amenity_name` and `lock_options` (`Community#lock_options(existing_locks_provider(community))` without its blank row, as the form's "Select Lock Provider" is filled; a vendor lookup failure logs and falls back to Manual, like `connect_lock_devices` in §17) |
+
+No business logic, validation, authorization, route, model, association, schema, migration or write behaviour changed; the HTML `index` / `edit` / `update` paths are untouched. `access_code` is deliberately not exposed.
+
+### Frontend
+
+- **Model / parser** (`propertyInventory.data.ts`, `inventory.parser.ts`): `InventoryAmenity.showInStops` (true when absent), `lockProvider`, `videoLinkButtonLabel`; `PropertyInventory.selfTour`, `enableLocks`, `showAmenityName`, `amenityLockOptions`.
+- **Generator** (`amenities.generator.ts`, rewritten): `AmenityFilters` (query, type, building, floor, lock, state, setup), `generateAmenityFilterOptions` (Type/Building/Floor/Lock offer only the values the property's amenities carry, in the CMS's type order, with "No type / No building / No floor / No lock" when some lack one; State and Setup always offer every state), `filterAmenities` (the design's `filteredAmenities`: one search term over name, type, building and floor; AND across filters, OR within), `amenityWhere` (own building/floor, else the plotted floorplate's; a numeric floorplate name reads "Floor N"), `generateAmenityCards` (type tag, Plotted/Not on map + In Stops List/Hidden from Stops pills, the five meta cells, the three chips, the viewer's images, the two confirms).
+- **Hook** `useInventoryAmenities.ts` (the `useInventoryUnits` / `useInventoryFloorplans` shape: filters, options, one page of cards, showing label).
+- **Section** `AmenitiesSection.tsx` (rewritten): the design's header row (plus the legacy "Show amenity name on webpages" switch, read-only), toolbar (`SearchField` + six `MultiFilter`s + count), cards (`RecordCard` / `MediaThumb` with View → `ImageViewer`, Replace → Edit dialog, Remove → confirm; the name opens Edit; `.bo-record__tag`; `StatusPill`s; `MetaGrid` 5-up; `.bo-inv-chips`; Edit / Delete `IconButton`s), the two empty states, `Pagination`. The old card's photo strip (←/→/× per gallery photo) is gone, as in the design; the gallery is in the viewer and in the dialog.
+- **Dialog** (`InventoryDialogs.tsx` `AmenityDialog`, `inventoryForms.generator.ts` `amenityForm` / `amenityTypeOptions` / `amenityBuildingOptions` / `amenityLockOptions`): the design's 820px form — Name, Amenity Type (`Amenity::AMENITY_TYPE` + the stored value), Location (Building select over floorplates ∪ units ∪ amenities, Floor input), Video (label, link), Lock Provider (`lock_options`, disabled with a note when locks are off), Show in Stops List (switch; a note when self-tour is off), Description, Directional Text, Amenity Image (`UploadSlot`), Amenity Gallery (`InteriorGrid` with Lead, View all, the "{n} images · scroll for more" line). Edit opens on the record's real values; Save / Add only closes.
+- **MetaGrid** gained an optional `href` / `hrefLabel` (the Video cell is a link that opens the stored URL in a new tab; `.bo-meta__link`). CSS: `.bo-record__tag`, `.bo-meta__link`, `.bo-inv__setting`, `.bo-dlg__textarea--tall`, `.bo-dlg__row > .bo-dlg__group`.
+- **Strings:** `CORE_STRINGS.inventory.amenities.*` and `dialogs.amenity.*` re-keyed to the design's wording; the subtitle is now "Type, location, media and access for every amenity · the same records that become tour stops".
+
+**Components reused:** `DetailSection`, `SearchField`, `MultiFilter`, `RecordCard`, `MediaThumb`, `MetaGrid`, `StatusPill`, `Switch`, `IconButton`, `ImageViewer`, `Pagination`, `Modal`, `FormRow`, `FormGroup`, `Field`, `SwitchField`, `UploadSlot`, `InteriorGrid`, `DialogFooter`, `ConfirmDialog`, the icon module, `useClientPages`. **No new component**; the new files are a hook (`useInventoryAmenities`) and an e2e spec.
+
+### Verification (local DB, Rails :3000 + `next dev` :3001, headless Chrome through Playwright with a minted Devise session)
+
+- **JSON vs `psql`:** 2157 (Bowers Residences, 19 amenities): `lock_provider` Dwelo on the six rows `psql` has it on (no doors on this property, so the amenity column decides), `show_in_stops` false on the one row with `breezway_lock_visible = false` (56770 Fitness Center), `lock_options` Manual + Dwelo; 1106 (The Carson): Matterport `video_link`s with labels "Virtual Tour" / "3D Tour", Latch on five rows; meta `self_tour` / `enable_locks` / `show_amenity_name` equal to the `communities` columns.
+- **`tests/e2e/amenities.spec.ts`** (new, real data, skips without the session env): on 2157 — the tab count 19, "19 amenities", the Elevator Room 1 card (Other, Plotted, In Stops List, Main Building, Floor 1, Dwelo, Video None, Gallery Empty, two chips on), the one "Hidden from Stops" card; search "fitness" → 5, "main building" → 13, "floor 8" → 2, nonsense → the empty state; Type = Fitness Center → 4, No type → 5; Building = Main Building → 13, No building → 6; Floor 1 → 8; Lock = Dwelo → 6, No lock → 13; State = Hidden → 1, Plotted → 13, Plotted + Not on map → 19; Setup = No description → 13, No directional text → 6, Has video → none, Empty gallery → 19; Building + Floor + Lock + State combined → exactly Elevator Room 1, then + search. Every count equals the `psql` count computed with the same rule. The viewer opens on a real image; Add Amenity opens, takes input on every field, and Add only closes; Edit Amenity opens on the stored values (name, type, building, floor "1", Dwelo, stops on, description, the image row); the name opens the same dialog; Delete and Remove image open the shared confirm. On 1106 the Video cell is an `<a target="_blank">` to `my.matterport.com` reading "Virtual Tour" / "3D Tour", Has video → 4 of 7, Latch → 5 of 7; on 1232 "Sky" reads "3 images", the viewer says "1 of 4" and steps to "2 of 4", the dialog's gallery has 3 thumbnails and "3 images · scroll for more". **0 non-GET requests, 0 page errors** in both tests.
+- **Pixel comparison:** full-page screenshots of the React tab (2157, 1106) beside the prototype's Amenities tab and Add Amenity dialog (the bundled file driven from `file://`): same header, toolbar, card anatomy (150 × 104 image, name + type tag + two pills, five meta cells, three chips, edit / delete), same dialog rows and footer. Differences, all deliberate: plain textareas instead of the prototype's decorative rich-text toolbar (as the other Connect dialogs); uppercase field labels (the shared `Field`); "e.g. 3" for Floor (an integer column); "Floor N" instead of "Lobby / Rooftop" (gaps doc GA1); the read-only "Show amenity name on webpages" switch, which the prototype does not draw but the old page has.
+- **Regression:** Companies, Properties, Property Detail 2157 (its Amenities stat card links to `?tab=amenities`), Inventory 348 (Floorplates / Floorplans / Units), Unit Detail 348/56229, Map & Plotting 2919 all render with 0 writes and 0 errors; signed out → Sign In. `npm run typecheck` ✅. `npx playwright test` (all suites, with the session env so the two real-data specs run): **84 passed** — the 29 `fonts.gstatic.com` failures of §7 did not occur this run.
+
+### Remaining
+
+- `gaps_amenities_feature.md`: GA1 named floors, GA2 (= G16) publish state, GA3 (= G20) every write, GA4 (= G19) file metadata; plus the frontend limitations listed there (video opens in a new tab rather than inline; plain text for the wysihtml5 HTML; the legacy form's lock-device picker and Tour Visiting Order Number, which the design has no field for).
+- Commit (no AI attribution), then PR against `main`.
+
+---
+
+## 22. Phase 2i: Map & Plotting and Tour Setup against the plotting design (September 26, 2026)
+
+**Brief:** `map_ploting_and_tour_improvment.md` (untracked, like the other briefs). Rebuild the Map & Plotting screen to `pyn-system-plotting.html` (the plotting design, untracked at the repo root) on real data — building selector, floorplate tabs with their status, the floor SVG with its polygons, Manual Plot, the four-step Auto Plot wizard, the Plot Units & Amenities panel, Add Floorplate — and build the Tour Setup screen (Tour Stops, Elevators & Locks, Routing) on real data, keeping every write local to the page. Minimal read-only JSON on existing controllers is allowed; the old Rails Auto Wayfinding / plotting / Tour Setup pages are the behaviour source of truth.
+
+**Branch:** `feature/map_plotting_tour_setup`, from `feature/amenities_improvements` (`c472b9338`).
+
+### Investigation
+
+- **The prototype.** `pyn-system-plotting.html` is a bundled page: the `__bundler/template` script holds the markup (5,456 lines once unpacked; `isMapEditor` at lines 1342–1558, `isTourSetup` 2065–2204, the `apOpen` wizard 4412–4660) and a 4,321-line `text/x-dc` script holds the state (`apDefault` / `apAnalyze` / `apSuggest` / `apRun` at 2144–2258, the map view model 2840–3060, the wizard view model 3700–3800, `tsTabs` 3418). **Its Map & Plotting no longer has Select / Place Pin / Junction / Connect / Move, Grid, Publish, the plan bar or the side panels** (the state keeps them as `_oldMapLevels` / `_oldPlotDoneLabel`); the brief asks for them, so they stay as a "Pathways & pins" strip, a Grid switch, Publish, the plan bar and the panels below the plot panel. The design's polygons are bare rectangles with the room number printed over each; the real floor SVGs already carry their room numbers as `<text>`, so Connect labels only the polygons that hold something, are hovered or are open.
+- **Legacy SVG plotting, traced.** Floor plates → Plot Units (`GET /communities/:id/floorplates/:fid/plotexp` → `FloorplatesController#plotexp` → `plotexp.html.haml` → `_svg_or_image_unit_plotting` twice: image section, SVG section). `services/svgHandler.js` fetches and mounts the SVG (`fetchSVG`, `uniquifySVGIds`), decides what a click may land on (`isValidShape`: a shape in a group of shapes with a trailing `<text>`, not under outlines / label / text / icon; `getTheMarkabeSVGShape`: point-in-shape), converts the click through the CTM to viewBox units (`getNormalizedMouseCoordinates`) and draws a placement by cloning the shape with the marker colour (`processSvgBlock`). `services/svgAutoPlotting.js` is the legacy SVG "Auto Plot": `#Units` group → `Building_*` / `Floor_*` groups → polygons, `normalize` (letters and digits only), match the group's `<text>` label, then the unit's short name, then "variants" at ≥ 0.55 similarity, `POST /communities/:id/save_pointer_data`. Stored: `units.pointer_data` / `amenities.pointer_data` = `{ id, tag, x_plot, y_plot, selector }` in viewBox units; `floorplates.svg_metadata` = the file's `width` / `height` attributes read on upload (`upload_svg_image`); `SvgPlotRevalidator` drops placements a re-uploaded SVG no longer has shapes for. Illustrator writes ids as `_x32_` ("2"), `_x31_0` ("10"), `A168_000000448…` (a uniqueness suffix).
+- **Legacy Tour Setup, traced.** Sidebar "Tour Setup" treeview (`_side_menu.html.haml`, shown when `self_tour`): Settings, **Tour Stops** (`ToursController#index` → `tours/index.html.haml`: building and floor buttons, Add Amenities / Add Units selects (`ajaxplottourstoppoint` creates the `TourStop`), the `rails_sortable` stops table (`sort_stops` → `tours.sort_hash`), the eye (`display_stop`), draw path (`draw_map_line`, the legacy `paths` / `path_points`), edit (unit / amenity / elevator / entry point forms), delete (`TourStopsController#destroy`, which also destroys the elevator or entry point); ADD STARTING POINT (`starting_point` / `save_starting_point`, `ajaxplotstartingpoint`), BUILDING ENTRY / EXIT (`building_starting_point`, a GET that creates), ADD ELEVATOR (`add_elevator`), and a map with the stops' markers), Auto Wayfinding (§20). Elevators: `ElevatorsController#index` (images) / `#edit` (`_edit_elevator`: name, description, directional text, covering range, building, lock type / access code / lock, the Latch `_elevator_bank_block`, the gallery `elevator_galleries`). `Community#community_tour` = `tours.where(tour_user_id: nil).last` (visitors get copies; 2934 has 10 tours, one is the community's).
+- **What the JSON already carried** (§17, §20): floorplates with `svg`, `svg_width` / `svg_height`, units and amenities with `svg_pointer`, the wayfinding graph with elevators, entry points, the tour and all its stops. **Missing:** the elevators' description, gallery and Latch banks.
+- **DB (local dump, restored from staging).** SVG-mode properties (`enable_svg_mode`) with floor SVGs: **3837 Sylo** (5 floorplates, 5 SVGs; floor 1's SVG has 410 id'd shapes `A102`…, its 84 units carry `floorplate_id` but no position → the wizard's exact-match case; floors 0, 2–4 hold 312 pointer placements), **1468** (one floorplate: a 2942×1942 image *and* a 1412×912 SVG with 320 id'd polygons `_x32_`…; 3 pointer units, 127 raster units, 20 hallways, 4 elevators with a 3-photo gallery and Latch banks, 15 stops), **2934** (3 floorplates, 2 SVGs, 47 hallways, 4 elevators (Latch bank, gallery, Dwelo lock), 2 entry points, 20 stops on the community tour, 2 hidden), 4397 (1,087 pointers), 4100, 3970, 3902, 3808; raster: 2919, 1264 (multi-building, 15 entry points), 236 (sitemap). **Files:** CarrierWave stores to disk in development, so `svg_image.url`, elevator images and galleries point at the CMS host, which has no such files; the floor image's `standard_image_url` is its S3 copy, and the SVG's S3 copy sits beside it (`uploads/floorplate/svg_image/<id>/<file>`, verified with curl: 200, 2.6–5.5 MB).
+
+### Change and data-source map
+
+| New UI | Old Rails / UI source | Controller / action | Model / association | Real DB data | JSON | React | Change |
+|---|---|---|---|---|---|---|---|
+| Header, breadcrumb, Inventory / Tour Setup | `floorplates.json` meta | `floorplates#index` | Community | ✅ | existing | `propertyMap.screen` | rewritten |
+| Building pills ("Tower A 19") | `_floorplate_map` building buttons, `Community#fetch_building_list` | `automate_plotting#index` | units / amenities `building`, `floorplates.building` | ✅ | existing (`buildings`) | `generateBuildingPills`, `mapBuildings` | new |
+| Floorplate tabs with progress ("Done", "3/4", "No SVG") | floor buttons; `Floorplate#floors`, `#fetch_units` | `floorplates#index`, `units#index`, `amenities#index` | Floorplate, Unit (`floor`, `building`, `floorplate_id`), Amenity (`amenityable`) | ✅ | existing | `generateLevelTabs`, `itemsOfLevel`, `levelForFloor` (building-aware) | new |
+| Add Floorplate | `floorplates#new` | — | — | — | — | inventory `FloorplateDialog` (exported) | reused; Save closes |
+| "{building} · {floor} · n of m plotted" | plotexp counts | — | as above | ✅ | existing | `generatePlotPanel` | new |
+| Auto Plot menu (this floorplate / building / property) | SVG section "Auto Plot" (`autoPlotUnits`) | — | units per level | ✅ | existing | `generateAutoPlotMenu` | new |
+| Auto Plot wizard: Analyze (matched / manual / no match / skipped, table, closest hint, manual pick) | `svgAutoPlotting.js` matching | — | `units.marketing_name` / `floor` / `building`; polygon ids and labels of the stored SVG | ✅ | existing + `plan-svg` | `autoPlotRules.ts`, `AutoPlotDialog` | new |
+| Wizard: Match Pattern (side, tokens, presets, find & replace, trim, pad & wrap, comparison, live preview, suggestion) | — (the legacy hard-codes its rules) | — | same | ✅ | — | same | new |
+| Wizard: Confirm, Result, "Plot the rest manually", remember rules | `save_pointer_data` (not called) | — | — | — | — | same; `apRun` → `pinOverrides` | new, local |
+| Manual Plot (tick items, click polygon), polygon popover with Unplot, Plotted tab, Unplot n items | SVG section click → `ajaxplotunitforfloorplate` with `pointer` (not called), `remove_plot_from_floorplate` | — | `pointer_data` shape | ✅ | — | `dropOnPolygon`, `unplotItems`, `SvgPlanLayer`, `PlotPanel` | new, local |
+| The floor SVG and its polygons | `fetchSVG` / `setSVG`; `isValidShape` | (file) | `floorplates.svg_image`, `svg_metadata` | ✅ | **new route `/api/properties/:id/plan-svg`** (read) | `floorSvg.ts` (`measureFloorSvg`, `collectTargets`, `decodeIllustratorId`, `pointerTarget`), `SvgPlanLayer` | new |
+| Stored SVG placements on their polygons | `processSvgBlock` (clone + fill) | `units#index`, `amenities#index` | `pointer_data` | ✅ | existing (`svg_pointer`) | `storedPlacement` → `space: 'svg'`, `polygon` | changed |
+| Floor image, raster pins, hallways, elevators, entry points, doors, tour start, route | §20 | §20 | §20 | ✅ | existing | `generateLevelGraph(…, 'raster')`, layer toggle | changed (space-aware) |
+| Search unit name or number; To Plot / Plotted | — | — | — | ✅ | — | `generatePlotPanel` | new |
+| Grid, Publish, Upload SVG / Image, Remove Plan, Select / Place Pin / Junction / Connect / Move / Start Plotting Hallways, Run Algorithm, Selection, Building Starting Points, Vertical Connections, Marker Colors | §20 | §20 | §20 | ✅ | existing | kept from §20, restyled | kept |
+| Tour Setup header, tabs and counts | sidebar treeview; `tours#index` | `automate_plotting#index` (JSON) | Tour, TourStop, Elevator, Hallway (`next_points`) | ✅ | existing | `generateTourSummary` | new |
+| Tour Stops cards: name, type, image, Plotted / Not Plotted, building · floor, source, lock, Node n, talking point, Hidden pill | `tours/index.html.haml` stops table + the unit / amenity / elevator / entry-point forms | `units#index`, `amenities#index`, `automate_plotting#index` | TourStop → Unit / Amenity / Elevator / BuildingStartingPoint; `display_stop`, `sort`; `stop_description` / `directional_text` / `description` | ✅ | existing | `generateStopCards`, `initialTourState` | new |
+| Distance ft / duration min | — (no column) | — | — | ❌ | — | "—" + note | gap T3 |
+| View on Plan / Plot on Plan | edit icon / plotting page | — | — | ✅ | — | `mapHref` → `/map?level=&pin=&arm=1`; `usePropertyMap(map, initial)` | new |
+| Move up / down, Hide / Show, Edit, Remove, Add Stop | `sort_stops`, `display_stop`, forms, `tour_stops#destroy`, `ajaxplottourstoppoint` (none called) | — | — | ✅ | — | `useTourSetup` | new, local (gap T1) |
+| Elevators & Locks cards: name, Gated · vendor / Open access, building · serves floors · n photos, gallery, banks, directional text, description | `elevators#index` / `#edit`, `_elevator_bank_block` | `automate_plotting#index` | Elevator, ElevatorGallery, ElevatorBank, `lock_provider` | ✅ | **`elevators[].description`, `gallery`, `banks`** (new keys) | `generateElevatorCards` | new |
+| Smart-lock gated toggle, Add Photo, reorder / remove photos, Add Elevator Bank, Delete | `elevators#update`, galleries, `add_elevator`, `#destroy` (none called) | — | — | ✅ | — | `useTourSetup` | new, local (gap T4) |
+| Lock Vendors | Integrations Hub | — | — | — | — | `propIntegrationsRoute` | reused |
+| Routing: From / To, Compute Multi-Floor Route, result | `shortest_path` (whole tour, §20) | — | Hallway, Elevator, Door, BuildingStartingPoint | ✅ | existing | `stopRoute.ts`, `stopEndpoints` | new, local (gap T6) |
+| Building Starting Points rows, Open Map & Plotting | `tours#building_starting_point` | — | BuildingStartingPoint, Tour | ✅ | existing | `tourStartPointRows` (reuses `generateStartPointRows`) | reused |
+| Publish to Touch App | — (no publish in the CMS) | — | — | ❌ | — | dialog | gap T5 / M2 |
+
+### Backend (read-only JSON only)
+
+| File | Change |
+|---|---|
+| `app/serializers/connect/wayfinding_serializer.rb` | `#elevators` adds `description`, `gallery` (`elevator_galleries`: id, name, url) and `banks` (`elevator_banks`: id, name, position, lock_type, lock_name), one query each for the property |
+
+Nothing else changed on the Rails side: no business logic, business rule, calculation, validation, authorization, schema, migration, model, association, route, unrelated controller, or write behaviour; the HTML pages and their queries are untouched. The floor SVG is read by this app's own route handler through the existing scoped `floorplates.json`, not by a new Rails action.
+
+### Frontend
+
+- **Route handler** `app/api/properties/[propId]/plan-svg/route.ts` (GET): resolves `?floorplate=<id>` / `?sitemap=<id>` through `floorplates.json` (401 → 401, 302 / 404 → 404), fetches the stored SVG and returns it as `image/svg+xml` (private, 10-minute cache); a 404 from the CMS host (development file storage) falls back to the S3 copy beside the floorplate's image. `APP_API.planSvg`.
+- **SVG:** `core/utils/map/floorSvg.ts` — `measureFloorSvg` (parse, mount off-screen at viewBox size, `getBBox` + `getCTM` per shape), `collectTargets` (id'd shapes and named groups of shapes, `Units` scope, no outline / label / text / icon layers), `decodeIllustratorId`, `pointerSelector`, `pointerTarget`, `toViewBoxPercent`.
+- **Auto Plot:** `core/utils/map/autoPlotRules.ts` — the design's rules (`ApRules`), tokens, presets, trims, `apUnitKey` / `apPolygonKey` / `apNorm`, `apAnalyze` (matches codes and labels; manual picks; closest hint; loading / no-SVG rows), `apSuggest`, `apRuleSummary`, `apDraftProblem` (validation).
+- **State / generators** (`core/utils/generator/map/`): `mapState.ts` (`PlanSpace`, `PinOverride { space, polygon }`, `TempNode.space`, plot selection, `svgDocs`, `AutoPlotState`, `apPatterns`, `floorplateDialog`), `mapLevels.generator.ts` (`scopeLabel`, `mapBuildings`, `levelsOfBuilding`, building-aware `levelForFloor`, `levelSvgDims`, `levelSpaceDims`, `activeSpace`, `defaultSpace`), `mapNodes.generator.ts` (space-aware placements and graphs, `generateRasterGraphs`, `itemsByPolygon`, `polygonOfPin`, `unitNumber`), `mapPanels.generator.ts` (`generateBuildingPills`, `generateLevelTabs` with progress states, `generatePlotPanel`, `generatePolygons`, `generateSelectedPolygon`, `generateAutoPlotMenu`, the rest updated). The phase 2g OCR helper (`autoPlot.ts`) was removed (superseded; gap M4 stands).
+- **Hook** `core/hooks/usePropertyMap.ts` (`MapInitial` from the URL; buildings, layers, Manual Plot, polygon click / hover / popover, unplot, floor SVG loading per level and per wizard scope, the wizard's state machine and every rule action, remembered rules, Add Floorplate dialog).
+- **Screen** `core/screens/properties/propertyMap.screen.tsx` (rewritten to the design's shell), `map/SvgPlanLayer.tsx` (new: mounts the SVG once, wires the targets by selector, restyles them in place, delegates pointer events), `map/MapCanvas.tsx` (the SVG layer, the image layer, polygon labels, the popover, loading / failed / no-SVG states), `map/MapPanels.tsx` (`PlotPanel` new; the others kept), `map/MapDialogs.tsx` (`AutoPlotDialog` new; the inventory's `FloorplateDialog` reused, exported from `InventoryDialogs.tsx`; an `ImageViewer` for its previews).
+- **Tour Setup:** `core/utils/generator/tour/tourSetup.generator.ts` (`TourLocalState`, `initialTourState`, `generateStopCards`, `generateElevatorCards`, `stopSourceOptions`, `stopEndpoints`, `generateTourSummary`, `tourGraphs`, `tourStartPointRows`), `core/utils/wayfinding/stopRoute.ts` (multi-floor Dijkstra), `core/hooks/useTourSetup.ts`, `core/screens/properties/tourSetup.screen.tsx` (three tabs, Add / Edit Stop, Add Elevator Bank, confirm and publish dialogs), `app/(connect)/properties/[propId]/tour-setup/page.tsx` (real for numeric ids, the demo screen for slugs, as the map page) + `loading.tsx`.
+- **Model / parser:** `propertyMap.data.ts` (`ElevatorPhoto`, `ElevatorBank`, `MapElevator.description / gallery / banks`), `wayfinding.parser.ts`.
+- **Strings:** `CORE_STRINGS.mapPlotting.*` regenerated to the design's wording (385 keys), `CORE_STRINGS.tourSetup.*` new (161 keys); `resources/i18n/index.ts`.
+- **CSS:** `.bo-map__*` for the pills, tabs with progress, toolbar, pathways strip, SVG layer, polygon labels and popover, the plot panel; `.bo-ap__*` for the wizard; `.bo-tour__*` for Tour Setup.
+
+**Components reused:** `Breadcrumb`, `Modal`, `StatusPill`, `Switch` classes, `Icon`, `SafeImage`, `ImageViewer`, the inventory `FloorplateDialog` (+ `DialogFooter`, `FormRow`, `YesNo`, `SwitchField`, `UploadSlot`), `.bo-inv__*` header / buttons, `.bo-field`, `.bo-btn`, `.bo-dlg__*` form classes, the toast (`demoActions.showToast`), `plainText` / `layoutText` / `t` from the inventory text helpers, `loadPropertyMap`, the inventory and wayfinding parsers.
+
+**New components, and why**
+
+| New | Why nothing existing would do |
+|---|---|
+| `map/SvgPlanLayer.tsx` | Nothing mounted an SVG document and made its own shapes interactive; the canvas drew images and absolutely positioned markers only |
+| `AutoPlotDialog` (in `map/MapDialogs.tsx`) | A four-step wizard with a rule builder and a live table; no existing dialog has steps, a two-column rule / preview layout or editable rows |
+| `PlotPanel` (in `map/MapPanels.tsx`) | The design's ticked To Plot / Plotted lists with select-all, search and Unplot; the phase 2g queue was single-arm |
+| `tourSetup.screen.tsx` + `useTourSetup` + `tourSetup.generator.ts` + `stopRoute.ts` | The Tour Setup screen existed only on demo data (`s.demo`), with no real-record model, no stop / elevator descriptors and no route over the stored graph |
+
+### Verification (local DB, Rails :3000 + `next dev` :3001, headless Chrome through Playwright with a minted Devise session)
+
+- **JSON:** `automate_plotting.json` for 1468 carries the new elevator keys (Elevator 1: `description` null, a 3-photo `gallery`, `banks` []; 2934's Elevator Bank: Latch bank "mkmk · jnjn · Latch 2410"); the rest of the payload is unchanged. `plan-svg?floorplate=3043` (1468) 200 in 4.5 s (2.66 MB, through the S3 fallback), `?floorplate=3303` (3837) 200 (5.5 MB); an unknown plate 404; signed out 401.
+- **Canvas on real SVGs:** 1468 mounts its 1412×912 floor SVG; the three stored pointer units (PH-0913 / 0914 / 0916, `pointer_data.id` `_x34_7_…` etc.) resolve to their polygons and draw as filled polygons with their labels at the stored viewBox positions; the layer toggle shows the 2942×1942 image with the 127 raster pins, 20 hallway nodes and 4 elevators of §20. 3837 Sylo: five floorplate tabs read Done · 1/88 · Done · 104/106 · 91/94 from the real placements; floor 0's ten pointer units sit on polygons A152–A170; 236 (sitemap) and 1264 (multi-building raster) still render.
+- **Manual Plot on Sylo floor 1:** ticking B-B101 and C-C101 and clicking polygon A150 drops both (label "A150 · B-B101 +1", To Plot 87 → 85, Plotted 1 → 3); the popover lists both as "Temporary · this page only" and Unplot returns one. **Auto Plot on Sylo floor 1:** Analyze reads **85 matched · 0 manual · 0 no match · 1 skipped** (the amenity), every row "Exact match" (B-B101 → B101 → B101 …); Match Pattern's live preview recomputes on every rule ("Stack only": 0 of 85, "−85 vs current rules", example "B101 → 01"); Confirm reads "Plot 85 units · All buildings · Floor 1? · Exact match · 85 units by exact match · 1 unplotted item stay in To Plot"; Result "85 plotted · 1 left for Manual Plot (C_COURT_06_0071.jpg: amenities are plotted manually)"; the map then shows 86 polygon placements and the tab 87/88.
+- **Tour Setup on 2934:** header "20 stops · 2 hidden from the tour"; tabs 20 / 4 / 44 (44 = the property's stored hallway links); cards in sort order with the real kinds, images (where files exist), Plotted pills, buildings and floors ("1 · JD", "2 Bed · 2 Bath · Floor 1"), sources, Latch / Dwelo lock labels, stored directional texts ("Directional text of Elevevator", unit stop descriptions); Elevators & Locks lists Elevator 1–4 with "Gated · Dwelo" on Elevator Bank, its Latch bank, the gallery photo; Routing lists the two entry points ("Set") and routes between real stops over the 47 hallways.
+- **Playwright** (`mapPlotting.spec.ts`: 1468 SVG flow + 2919 raster flow + not-found; `tourSetup.spec.ts`: 2934 + not-found): both pass; the whole suite with the session env (demo screens, routes, interactions, amenities, map, tour) is **87 passed** in 2.2 minutes, no font failures this run. Every real-data spec asserts **0 non-GET requests and 0 page errors**; the smoke runs over 236, 1264, 1468, 2919, 2934 and 3837 (map and tour) recorded the same.
+- **Pixel review:** the prototype driven from `file://` (Sign in → Properties → Luxe Mile High → Map & Plotting / Auto Plot / Tour Setup tabs) beside the React screens: same header, building pills, floorplate tabs with progress bars, toolbar (Auto Plot menu, Manual Plot On/Off pill), plot panel anatomy (search, two tabs, select-all, ticked rows, Unplot), wizard (step rail, four stat tiles, tables, rule builder, live preview, confirm rows, result tiles), Tour Setup cards (icon, name, type tag, pill, view button, up / down / Edit / delete, meta row, talking point), elevator cards and the routing grid. Deliberate differences: the read-only note, the pathways strip, the plan bar and the side panels the brief keeps; polygon labels only where something is plotted; Hide / Show and the lock label on stop cards (real `display_stop` and lock providers); "—" for distance / duration; "n stops · m hidden" instead of "staged · not yet published".
+- `npm run typecheck` ✅.
+
+### Traps found in this phase
+
+1. **Development file storage.** `svg_image.url`, elevator images and galleries point at the CMS host in development, which holds none of the files of a database restored from staging; the floor image works only because `standard_image_url` is the S3 copy. The `plan-svg` route reads the S3 copy beside the image when the host answers 404; photos say "Photo unavailable".
+2. **Illustrator ids.** `pointer_data.id` is the raw, escaped, suffixed id; the design's polygon id is the decoded one. Match on the raw id first, decode for display and matching.
+3. **`getBBox` needs a mounted SVG.** Bounding boxes are measured on an off-screen copy at viewBox size (width/height set to the viewBox), with `getCTM` for shapes inside transformed groups.
+4. **Do not filter shapes by layer name.** Real floor SVGs keep their rooms under layers named Footprints, Elements, Library…; only the legacy's outlines / label / text / icon rule applies (an earlier "artwork layer" filter hid every room of the 1468 SVG).
+5. **Two coordinate spaces.** A floorplate can hold a raster placement (`x_plot/y_plot`, image pixels) and an SVG one (`pointer_data`, viewBox units) for different units; the level's layer decides which are drawn, and every local edit records its space.
+6. **A `};` inside an English string** ("{level}; the CMS runs…") broke a naive scan for the end of the string table; anchor on a line break before `};`.
+
+### Remaining
+
+- Gaps M10–M13 (`gaps_map_plotting_feature.md`) and T1–T7 (`gaps_tour_setup_feature.md`); M1–M9 as before.
+- Commit (no AI attribution), then PR against `main`. Deploy both apps when wanted (Rails: the one serializer; Connect: the screens and the route handler).
+
+---
+
+## 23. Phase 2j: Inventory and property issues — images, loading, floor strip, hydration, the Hazel pass (September 27, 2026)
+
+**Brief:** `issues_in_inevntory_properties.md` (untracked, like the other briefs). Fix the amenity images that read "Image unavailable" in the Edit dialog and "This image could not be loaded" in the eye viewer, add the old system's loading animation everywhere the app loads, make the Map & Plotting floorplate list a horizontal strip with working arrows, rebuild the Edit Tour Stop dialog to the plotting design, investigate the `cz-shortcut-listen` hydration warning, and validate everything end to end on the Hazel property with real UI tests. Minimal read-only JSON on existing controllers is allowed; the old Rails pages remain the behaviour source of truth.
+
+**Branch:** `feature/inventory_properties_issues`, from `feature/map_plotting_tour_setup` (`7539ffe7c`).
+
+### Investigation and reproduction (before any change)
+
+Every issue was reproduced in a clean headless Chrome (Playwright, no extensions) against the running CMS and `next dev`, on Hazel (property **1618**: QuadReal, Burnaby BC, 238 units, 17 floor plans, 31 floorplates with floor images and no floor SVG, 6 amenities, a 13-stop tour with 3 elevators and 220 hallway nodes).
+
+| Issue | Current behaviour (reproduced) | Old system behaviour | Root cause | Fix | Test |
+|---|---|---|---|---|---|
+| Amenity Edit: gallery photos "Image unavailable" | Penthouse South Lounge's 4 gallery photos requested from `http://127.0.0.1:3000/uploads/amenity_gallery/image/970/…`; the CMS answered its 404 page, Chrome reported `ERR_BLOCKED_BY_ORB`; the amenity's own image loaded | `amenities/_edit_amenity.html.haml` renders `amenity_gallery_image.image.url`; on staging that URL is `https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/amenity_gallery/image/970/…` (fog storage) and the photo renders | `AvatarUploader` stores to disk in development (`storage Rails.env.development? ? :file : :fog`) while this database was restored from staging: `image.url` names a file this machine never had. The amenity's own image works because the CMS persists its S3 URL in `standard_image_url` (`StandardUrl#set_standard_url`), which the JSON already preferred; gallery rows have no such column | `Connect::UploadUrl.upload` answers the S3 copy when an uploader on file storage names a file that is not on disk (below) | `hazel.spec.ts` "Amenities": 4 photos, sort order, every `<img>` on `amazonaws.com/uploads/amenity_gallery/image/`, all decoded, 0 "unavailable" |
+| Eye viewer: "This image could not be loaded" on photo 2 of 3 | Same URLs, same failure; photo 1 (the amenity image) loaded | Legacy lightbox opens `image.url` | Same | Same; the viewer also gained a real loading state | `hazel.spec.ts` "Amenities" (1 of 3 → 2 of 3 → 3 of 3, arrows, keys, close) and "image viewer" (loading, failure) |
+| No global loading state | Route `loading.tsx` files showed a line of text; images, the floor SVG and the wizard showed text or nothing | `.divLoading` / `.mapLoading` / `.modal-loader` overlays with `app/assets/images/loader.gif` (the cat with the pinwheel, 320 × 320, 357 KB) | No shared component | `LoadingIndicator` + `useImageStatus`, used everywhere below | `hazel.spec.ts` "Loading", "image viewer", "floor SVG" |
+| Floorplate list grows vertically; arrows dead | 31 tabs wrapped into a 570 px tall block; `scrollWidth == clientWidth`, both arrows disabled | The legacy page shows floor buttons in a row | `globals.css` kept two `.bo-map__levels` rules: the older one (`flex-wrap: wrap`, from the phase 2g layout) survived the plotting-design rule, which never set `flex-wrap`; the tabs wrapped, nothing overflowed, so the arrows had nothing to scroll | The stale rule removed, `flex-wrap: nowrap` explicit; page-wide scrolling per click; the selected tab scrolls into view; arrow state only re-renders on change | `hazel.spec.ts` "horizontal floorplate strip", "deep link", "3 floorplates … 19 scroll" |
+| Edit Tour Stop: Cancel / Save Changes stacked | The footer note (`flex: 1 1 260px`) plus two buttons wrapped inside the 520 px footer (`flex-wrap: wrap`) | Reference: one row, Cancel then Save Changes, 42 px | Footer layout | Note on its own row; the tour dialogs get the design's 22/24 px paddings, 18 px title, 42 px buttons that never wrap above 560 px | `hazel.spec.ts` "Tour Setup": panel 520 px, both buttons 42 px on one row, Cancel left of Save |
+| Hydration warning `<body cz-shortcut-listen="true">` | Not reproducible in a clean browser: `document.body` has no attributes and no console warning on Property Detail, Inventory, Map & Plotting or Tour Setup | — | `cz-shortcut-listen` is the attribute the ColorZilla Chrome extension adds to `<body>` on load; React 19 reports it as a server/client mismatch. `app/layout.tsx` renders a static `<html>`/`<body>`; nothing in the tree reads `Date`, `Math.random`, `window` or ids during render (the only client-only reads are inside `useEffect` or event handlers) | **No application change.** Not suppressed either: the warning is real in that browser and goes away with the extension off or in an incognito window | `hazel.spec.ts` "Hydration": zero body attributes and zero hydration messages across the four screens |
+
+Two smaller findings on the way: the sidebar logo's `next/image` warned on every page because CSS fixed only its height (now both sides are set to the rendered 103 × 24); and the floorplate card never showed "No SVG" because the state was only reached when a floorplate had no plan at all (it now reads "No SVG · plotted/total" for a floorplate with a floor image and no SVG, as the plotting design lists it).
+
+### Amenity images: the data flow, traced
+
+```
+Old:  AmenitiesController#edit → @amenity.amenity_galleries.order(:sort) → AmenityGallery#image (AvatarUploader, mount_base64_uploader)
+        → image.url → :fog (staging/production) https://<bucket>.s3….amazonaws.com/uploads/amenity_gallery/image/<id>/<file>
+                    → :file (development)       /uploads/amenity_gallery/image/<id>/<file> on the CMS host (no file locally)
+      the amenity's own image: standard_image_url (S3, copied after upload) through S3Acceleration#validated_image_url
+
+New:  AmenitiesController#index (format.json) → Connect::AmenitySerializer → Connect::UploadUrl
+        → image: UploadUrl.file(amenity, :image)            = standard_image_url (unchanged)
+        → gallery[].url: UploadUrl.upload(photo, :image, bucket: bucket_of(amenity, hint))
+             uploader.url; when the uploader is on file storage and the file is not on disk → "#{bucket}#{uploader.url}"
+             bucket = the S3 base of the amenity's standard_image_url, else the property's (bucket_hint: first standard URL among
+             its floorplates, amenities, units, floor plans; queried at most once per listing, only when needed)
+      → inventory.parser (`gallery[].url`) → amenityImages() → InteriorGrid / ImageViewer → <img src> (S3, public-read)
+```
+
+All six Hazel photos exist on the same bucket as the amenity's own image (`images-pynwheel-cms-v2`, HEAD 200, also through `s3-accelerate`). The same rule now serves every other upload without a stored S3 URL: floorplate SVGs (the `plan-svg` route's own bucket guess was removed; the listing already names the S3 file), secondary images of floor plans and units, elevator images and galleries, the sitemap's files and the shared SVG background. On staging and production the uploader's URL is already the S3 one and the rule never fires. `staging-pynwheel` objects without public-read (some 2934 elevator and stop images, HEAD 403 on the CMS's own `standard_image_url` too) still cannot render anywhere, and the UI now says so only when the request itself fails.
+
+### Loading: one component, the old asset
+
+- **Asset:** `app/assets/images/loader.gif` copied unchanged to `pyn-connect-web/public/images/loader.gif` (same bytes). `loader_.gif`, `loader1.gif` and `dots_loader.gif` are the legacy's other spinners; the cat is the one behind `.divLoading`, `.mapLoading` and `.modal-loader`.
+- **Component:** `core/components/atoms/LoadingIndicator.tsx` — `role="status"`, `aria-live="polite"`, the GIF on an 84 px white disc with a caption, five variants (`page`, `block`, `inline`, `cover`, `overlay`), a 200 ms delayed fade-in so a fast load never flashes it, and `prefers-reduced-motion` hides the animation and keeps the caption. The `page` variant is what the legacy `.divLoading` was: a fixed veil that mildly dims the whole screen (sidebar and top bar included) with the animation at the exact centre of the viewport, shown at once rather than faded in, because Next swaps a route's loading boundary for a nested one mid-load (the `[propId]` one, then the screen's own) and a restarted fade would blink; `cover` does the same over its stage (the viewer, the map canvas). Traced in a slowed navigation: the veil is continuous from the moment the payload starts streaming until the screen mounts. Note that Next's router keeps the previous page on screen until the new route's payload *starts* streaming, so pure network latency before the first byte shows no loading state; the veil covers the time the server spends on the CMS reads.
+- **Hook:** `core/hooks/useImageStatus.ts` — loading / ready / failed per `src`, also reading `complete` / `naturalWidth` on mount for an image that finished before React attached its handlers. Used by `SafeImage`, `MediaThumb`, `UploadSlot`'s preview, `ImageViewer` and the map canvas image.
+- **Where it shows:** every route `loading.tsx` (companies, properties, property, inventory, map, tour setup, unit detail) plus a new `(connect)/loading.tsx` for routes without their own; every thumbnail and gallery photo (overlay); the image viewer's stage (cover with "Loading image…"); the floor SVG and the floor image on the map canvas (cover); the Auto Plot wizard's "n units wait for their floor SVG" note and the Routing panel's "Routing…" (inline). Errors stay errors: `onError` / a failed request is the only way to "could not be loaded".
+
+### Map & Plotting: the strip
+
+`propertyMap.screen.tsx`: `scrollTabs` moves by one visible page (the strip's width less a tab), the selected tab is scrolled into view when `state.levelId` changes (deep links from Tour Setup land in view), and `measureTabs` only writes state when an arrow's answer changes, so smooth scrolling no longer re-renders the editor on every scroll event. Add Floorplate stays the last item of the row and opens the inventory `FloorplateDialog`; Save closes it. Canvas behaviour is unchanged: picking a floor still loads its image or SVG, polygons, pins, nodes, paths and the selection (the mapPlotting and Hazel specs assert it).
+
+### Tour Setup: the Edit Tour Stop dialog
+
+Same data as before (the stop's own name, kind, building and floor from the wayfinding JSON; its directional text as the talking point), on the reference's dialog: 520 px, 18 px title, the read-only note on its own row, Cancel and Save Changes 42 px side by side (the measured button boxes match the prototype's to the pixel). Validation lives in `dwellTimeProblem` (`tourSetup.generator.ts`): a dwell time is a whole number of minutes 0–999 or empty; the field shows the message, Save is disabled, and `saveDialog` refuses anyway. Save applies to the page's state only; Cancel discards; nothing is sent.
+
+### Old-system flows discovered and verified
+
+| Flow | Entry point | Controller / action | Data loaded | Interaction, modal, state | Error / empty | Navigation |
+|---|---|---|---|---|---|---|
+| Properties → property | sidebar | `communities#index` / `#edit` | Community | — | — | Connect: `/properties` → `/properties/:id` |
+| Amenity Images | property menu | `amenities#index` (`index.html.haml`, `_index`) | `community.amenities.order(id: :desc)`, `show_amenity_name` | ADD FILES (`create`, `AmenityImagesJob`), "Show Amenity Name on Webpages" toggle (`update_amenity_toggle`), per-image crop modal (`show_amenity_image_in_modal` → Jcrop → `crop_amenity_image`), lightbox on the image, delete | no amenities → the upload box only | Connect: Inventory → Amenities tab |
+| Amenity edit | pencil on the image | `amenities#edit` (`edit.html.haml`) | Amenity, `ordered_doors`, floors of the building's floorplates, lock providers | form: name, video label / link, building, floor (select over the plotted plate's floors, else a text field), type, lock provider / door / access code / lock search, Show in Stops List, description and directional text (wysihtml5), the gallery (`_edit_amenity`: sortable, lightbox, pencil → `amenity_galleries#edit` modal (name), delete → `amenity_galleries#destroy`), drag-and-drop upload (`saveAmenityGallery`) | — | back to Amenity Images / the unit or floor plan it belongs to (`previous_url`) |
+| Property Map → Floor plates → Plot Units | property menu | `floorplates#index` → `#plotexp` | floorplates, units, amenities, `svg_metadata`, `pointer_data` | image / SVG plotting (§22) | no SVG → image section only | Connect: Map & Plotting |
+| Property Map → Auto Wayfinding | property menu | `automate_plotting#index` | hallways, elevators, entry points, doors, tour, stops | pathway tools (§20) | — | Connect: Map & Plotting "Pathways & pins" |
+| Tour Setup → Tour Stops | sidebar (self-tour) | `tours#index` | tour, stops, elevators, entry points | building / floor buttons, add unit / amenity (`ajaxplottourstoppoint`), sortable list, eye, edit (→ the unit / amenity / elevator / entry point form), delete (`tour_stops#destroy`) | no stops → empty table | Connect: Tour Setup → Tour Stops |
+| Elevators | sidebar | `elevators#index` / `#edit` | elevators, `elevator_galleries`, `elevator_banks` | name, description, directional text, floors, building, lock, gallery, banks | no photo → none shown | Connect: Elevators & Locks |
+| Floor plans, Units | property menu | `floorplans#index`, `units#index` | listings, images, interior amenities | edit forms, crop modals | — | Connect: Inventory tabs, Unit Detail |
+
+### Test matrix (from the old system's cases) and results
+
+| Area | Cases | Where |
+|---|---|---|
+| Images | one image (The Lobby), several (Fitness Centre: own + 2, Penthouse South Lounge: 4 in `sort` order), no image (the Add dialog's drop zone; no Hazel — or any — amenity lacks one in this database), slow file (loading state), broken file (failure text), next / previous / keys / close | `hazel.spec.ts` Amenities, image viewer |
+| Floorplates | no SVG (all 31 Hazel plates, "No SVG · n/n"), SVG present (1468, with the canvas loading state), plotted / partial / none (the progress bar and label), 3 plates (203, no scrolling, arrows off), 19 (816), 31 (Hazel), first / middle / last selected (deep links `?level=floorplate:2241 / 2256 / 2271`) | `hazel.spec.ts` strip, deep link, 3 / 19, floor SVG; `mapPlotting.spec.ts` |
+| Units | plotted / not plotted, available and other statuses, provider id, manual and feed values | `mapPlotting.spec.ts`, `amenities.spec.ts`, phase 2f specs (unchanged) |
+| Amenities | image / gallery, video (Fitness Centre's 3D Tour link) / none (Boardroom), plotted, in / hidden from stops (Penthouse South Lounge), lock provider (Zerv → "Pynwheel Access") / none, search, Type and Floor filters | `hazel.spec.ts` Amenities; `amenities.spec.ts` (2157) |
+| Modals | open, close, validation (dwell time), Save (local), Cancel (discard), empty state, read-only note, no request | `hazel.spec.ts` Tour Setup, Amenities |
+| Navigation | forward / backward arrows, direct selection, deep links, Properties → Detail → Inventory → Amenities → Map ↔ Tour Setup, browser back | `hazel.spec.ts` Navigation, strip |
+| Loading | route loading (slowed payload, activated without prefetch), image loading, SVG loading, error state | `hazel.spec.ts` Loading, image viewer, floor SVG |
+| Hydration | clean-browser console and `<body>` attributes on the four screens | `hazel.spec.ts` Hydration |
+
+**Results (Sep 27):** `tsc` clean; `tests/e2e/hazel.spec.ts` 12 passed (43 s); the existing suites (amenities, mapPlotting, tourSetup, screens, routes, interactions) 87 passed (2.1 min) — 99 in all. Every real-data test ends on the same assertion: no non-GET request left the browser. Hand checks in the browser pane and Playwright scripts: Hazel's gallery photos and viewer (all 200 from S3), the strip at 31 / 19 / 3 plates, the Edit Tour Stop dialog against the prototype's own dialog (button boxes identical: Cancel at x 734.75, Save Changes at x 826.6, both 42 px), the loading indicator on the viewer, the map canvas and a slowed route.
+
+### Backend
+
+Rails changes, all read-only JSON: `app/serializers/connect/upload_url.rb` (the S3 resolution above, `bucket_hint`, `bucket_of`), and a `bucket:` argument threaded through `amenity_serializer.rb`, `floorplan_serializer.rb`, `unit_serializer.rb`, `floorplate_serializer.rb`, `wayfinding_serializer.rb` and the sitemap / shared-background block of `FloorplatesController#render_connect_floorplates`. No business logic, business rules, schema, migration, validation, authorization, storage configuration or unrelated backend behaviour changed; no file was moved or written.
+
+### Components
+
+Reused: `Modal`, `SafeImage`, `MediaThumb`, `UploadSlot`, `ImageViewer`, `InteriorGrid`, `FloorplateDialog`, `ListingScreenTemplate`, the map and tour screens. New: `LoadingIndicator` (the one loading component), `useImageStatus` (the one image-state hook), `(connect)/loading.tsx`. Removed: the `plan-svg` route's bucket fallback, the stale floor-tab CSS.
+
+### Remaining
+
+- `staging-pynwheel` objects that are not public-read (some elevator and stop images of 2934) cannot render in any UI; not a Connect gap.
+- Every write remains local (M1–M13, T1–T7, GA3): plotting, stop edits, dwell time, uploads, publish.
+- The eye viewer streams the full-size photo (some Hazel photos are 5,000 px wide); the CMS's `thumb` versions are not exposed and the legacy pages use the full file too.

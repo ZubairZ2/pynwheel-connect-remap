@@ -13,6 +13,7 @@ module Connect
                          .group_by(&:amenityable_id)
       # The grid labels every row with the provider id on Yardi properties.
       label_by_provider_id = community.data_provider.to_s == 'yardi'
+      bucket = UploadUrl.bucket_hint(community)
 
       units.map do |unit|
         new(
@@ -20,17 +21,34 @@ module Connect
           floorplan: unit.floorplan_id.present? ? floorplans_by_provider_id[unit.floorplan_id] : nil,
           interiors: interiors[unit.id] || [],
           label_by_provider_id: label_by_provider_id,
-          base_url: base_url
+          base_url: base_url,
+          bucket: bucket
         ).as_json
       end
     end
 
-    def initialize(unit, floorplan:, interiors:, label_by_provider_id:, base_url:)
+    # `pointer_data` as the SVG plotting page saves it (`{x_plot, y_plot, tag,
+    # id, selector}`, the numbers as strings); nil when the record has none.
+    # Shared with the amenity serializer, which stores the same hash.
+    def self.svg_pointer(pointer)
+      return nil unless pointer.is_a?(Hash) && pointer['x_plot'].present?
+
+      {
+        x_plot: pointer['x_plot'].to_f,
+        y_plot: pointer['y_plot'].to_f,
+        tag: pointer['tag'].presence,
+        element_id: pointer['id'].presence,
+        selector: pointer['selector'].presence
+      }
+    end
+
+    def initialize(unit, floorplan:, interiors:, label_by_provider_id:, base_url:, bucket: nil)
       @unit = unit
       @floorplan = floorplan
       @interiors = interiors
       @label_by_provider_id = label_by_provider_id
       @base_url = base_url
+      @bucket = bucket
     end
 
     def as_json(*)
@@ -59,6 +77,9 @@ module Connect
         # placement has none, so both are nil while `plotted` is still true.
         x_plot: unit.x_plot.to_i.positive? ? unit.x_plot.to_i : nil,
         y_plot: unit.y_plot.to_i.positive? ? unit.y_plot.to_i : nil,
+        # The SVG-mode placement (`pointer_data`): which SVG element the pin
+        # points at, and its position in SVG user units.
+        svg_pointer: self.class.svg_pointer(unit.pointer_data),
         visible: unit.visible.present?,
         show_on_map: unit.show_on_map.present?,
         model_unit: unit.modal_unit.present?,
@@ -70,9 +91,9 @@ module Connect
         lock_provider: unit.door&.lock_provider.presence || unit.lock_provider.presence,
         door_id: unit.door&.id,
         tour_order: unit.tour_visiting_order_number,
-        image: UploadUrl.file(unit, :image, base_url),
-        secondary_image: UploadUrl.file(unit, :secondary_image, base_url),
-        interior_images: interiors.map { |amenity| FloorplanSerializer.interior(amenity, base_url) },
+        image: UploadUrl.file(unit, :image, base_url, bucket: bucket),
+        secondary_image: UploadUrl.file(unit, :secondary_image, base_url, bucket: UploadUrl.bucket_of(unit, bucket)),
+        interior_images: interiors.map { |amenity| FloorplanSerializer.interior(amenity, base_url, bucket) },
         buttons: FloorplanSerializer.buttons(unit),
         # The kiosk's lease-term matrix ("12 Month" => "$1,500"), as the model
         # already derives it from `lease_pricing` when the property shows
@@ -88,7 +109,7 @@ module Connect
 
     private
 
-      attr_reader :unit, :floorplan, :interiors, :label_by_provider_id, :base_url
+      attr_reader :unit, :floorplan, :interiors, :label_by_provider_id, :base_url, :bucket
 
       # Unit#unit_market ("{building}-{name}"), without its failure on a unit
       # that has a building but no name.

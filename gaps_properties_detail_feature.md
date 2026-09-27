@@ -37,7 +37,7 @@ Sections 2 and 3 below are the original no-backend-change analysis, kept for his
 | G11 Lifecycle | ✅ Partly | Each stage shows its recorded milestone date. The 7-stage model is still a gap (R1) |
 | G12 Touch / Tour / Maps cards | ✅ Mostly | `code`, `is_vertical_app`, `date_installed`, `mdu`, `show_gesture_icons`, `powered_by_btn`; `visual_id_verification`, `enable_locks`, `auto_wayfinding`; `web_map_type`, `default_satellite_view`, `default_map_floor` (+ `Community#property_floor_options`), `enable_three_d_maps`, `is_beans_svg`, `enable_svg_mode`, `enable_sdk_map`, `enable_floorplan_level_color`, `highlight_all_units_on_hover`. QR codes and a tour start date: still gaps (R2, R3) |
 | G13 ILS Syndication | ✅ Resolved (read-only) | `Community::MAP_PARTNERS` + `partner_map_enabled?` (`partner_map_settings`) |
-| G14 Manage This Property destinations | ⏳ Unchanged | Map & Plotting, Integrations and Branding are still demo screens. Inventory is being made real on `feature/inventory_implementation` |
+| G14 Manage This Property destinations | ⏳ Partly | Map & Plotting is real for numeric ids since Sep 25 (phase 2g, `gaps_map_plotting_feature.md`); Integrations and Branding are still demo screens. Inventory is being made real on `feature/inventory_implementation` |
 
 ### Remaining gaps (a minimal JSON response cannot close them)
 
@@ -315,7 +315,7 @@ Everything the database holds for floorplates, floorplans, units and amenities i
 
 **Updates to earlier entries:**
 - **G8** (inventory counts): the Inventory page now reads every count from these endpoints. The Property Detail page gets its counts from `communities#edit.json` (§0).
-- **G14** (Manage This Property destinations): **Inventory** is now real for numeric ids. Map & Plotting, Integrations, Branding and Tour Setup are still demo.
+- **G14** (Manage This Property destinations): **Inventory** and **Map & Plotting** are now real for numeric ids (Sep 25). Integrations, Branding and Tour Setup are still demo.
 
 ## Gap: G15. Background Library (named, reusable floorplate backgrounds)
 
@@ -445,7 +445,7 @@ JSON branches on those actions and a CSRF strategy for the proxy (as G6/R5), onc
 - Add and Edit open the full 22-Sep dialogs. Edit is prefilled with the record's real values.
 - Save, Apply and Run Sync only close the dialog. The footer and confirm text say nothing is saved; no request is sent and no success message is shown.
 - Delete and Remove open the shared confirm dialog, which only closes.
-- Plotting, Map & Plotting and Tour Setup link to the (still demo) Connect screens.
+- Plotting and Map & Plotting link to the real Map & Plotting screen (Sep 25; its own write gaps are M1–M9 in `gaps_map_plotting_feature.md`); Tour Setup is still the demo screen.
 - Verified in real Chrome: the browser issued only GETs, and the CMS side received only the four inventory GETs per page load.
 
 ## Gap: G21. Unit-level "Almost gone" availability

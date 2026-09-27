@@ -12,6 +12,7 @@ import type {
   InventoryUnit,
   InventoryUpload,
   LockDevice,
+  SvgPointer,
   UnitLeaseTerm
 } from '~/core/models/data/propertyInventory.data';
 import { unwrapData } from './envelope.parser';
@@ -69,6 +70,22 @@ const leaseTerms = (value: unknown): UnitLeaseTerm[] =>
   (Array.isArray(value) ? (value as Source[]) : [])
     .map((row) => ({ term: text(row.pricingMonth) ?? '', rent: text(row.pricingRent) ?? '' }))
     .filter((row) => row.term && row.rent);
+
+/** `pointer_data` as the SVG plotting page saves it; null unless it holds a position. */
+const svgPointer = (value: unknown): SvgPointer | null => {
+  const source = (value ?? null) as Source | null;
+  const x = num(source?.xPlot);
+  const y = num(source?.yPlot);
+  if (x == null || y == null) return null;
+
+  return {
+    xPlot: x,
+    yPlot: y,
+    tag: text(source?.tag),
+    elementId: text(source?.elementId),
+    selector: text(source?.selector)
+  };
+};
 
 const flagsOf = <K extends string>(value: unknown, keys: readonly K[]): Record<K, boolean> => {
   const source = (value ?? {}) as Source;
@@ -219,6 +236,7 @@ export const parseInventoryUnits = (payload: unknown) => {
         plotted: flag(source.plotted),
         xPlot: num(source.xPlot),
         yPlot: num(source.yPlot),
+        svgPointer: svgPointer(source.svgPointer),
         visible: flag(source.visible),
         showOnMap: flag(source.showOnMap),
         modelUnit: flag(source.modelUnit),
@@ -273,7 +291,13 @@ export const parseInventoryAmenities = (payload: unknown) => {
         floor: num(source.floor),
         building: text(source.building),
         plotted: flag(source.plotted),
+        xPlot: num(source.xPlot),
+        yPlot: num(source.yPlot),
+        svgPointer: svgPointer(source.svgPointer),
         tourStop: flag(source.tourStop),
+        // Absent on an older backend: the CMS default for the column is true.
+        showInStops: source.showInStops !== false,
+        lockProvider: text(source.lockProvider),
         image: upload(source.image),
         gallery: (Array.isArray(source.gallery) ? (source.gallery as Source[]) : []).map((photo) => ({
           id: count(photo.id),
@@ -282,12 +306,19 @@ export const parseInventoryAmenities = (payload: unknown) => {
           url: text(photo.url)
         })),
         videoLink: text(source.videoLink),
+        videoLinkButtonLabel: text(source.videoLinkButtonLabel),
         description: text(source.description),
         directionalText: text(source.directionalText)
       };
     }),
     amenityCategories: (Array.isArray(meta.categoryOptions) ? meta.categoryOptions : [])
       .map((option) => text(option))
-      .filter((option): option is string => !!option)
+      .filter((option): option is string => !!option),
+    selfTour: flag(meta.selfTour),
+    enableLocks: flag(meta.enableLocks),
+    showAmenityName: flag(meta.showAmenityName),
+    amenityLockOptions: (Array.isArray(meta.lockOptions) ? (meta.lockOptions as Source[]) : [])
+      .map((option) => ({ id: text(option.id) ?? '', label: text(option.label) ?? '' }))
+      .filter((option) => option.id)
   };
 };

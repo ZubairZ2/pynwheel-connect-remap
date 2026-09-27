@@ -7,6 +7,10 @@ export interface MetaDescriptor {
   source?: { kind: 'feed' | 'manual'; label: string; title: string };
   /** The design shows this cell as a select (read-only in Connect). */
   control?: 'select';
+  /** The value opens this URL in a new tab (an amenity's video link). */
+  href?: string;
+  /** Accessible name of the link, when `href` is set. */
+  hrefLabel?: string;
 }
 
 /** One real image a viewer can show. */
