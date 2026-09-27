@@ -8,18 +8,26 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
  *
  *   PYN_CONNECT_E2E_RAILS_COOKIE   the `rails_cookie` value the mint script prints
  *   PYN_CONNECT_E2E_USER           the `user` JSON it prints
+ *   PYNWHEEL_CMS_URL               the CMS the app talks to (default http://127.0.0.1:3000)
  *
- * Every expected value is the local database's (`psql`, Sep 27): Hazel is a
- * QuadReal property in Burnaby, BC with 238 units, 17 floor plans, 31
- * floorplates (floor images, no floor SVGs), 6 amenities (Fitness Centre
- * carries 2 gallery photos, Penthouse South Lounge 4 and is hidden from the
- * stop list, Boardroom has no gallery and no video) and a 13-stop tour with 3
- * elevators. Speer Blvd. (203) has 3 floorplates and The Wave (816) 19, for
- * the strip's boundaries; 1468 has a floor SVG for the canvas loading state.
- * Every test ends on the same assertion: the browser sent nothing but GETs.
+ * The counts the screens must show are read from the CMS's own JSON at the
+ * start of the run (units, floor plans, floorplates, amenities, tour stops,
+ * elevators), so the suite asserts "the UI equals the database" whichever
+ * local dump the CMS runs on (`pynwheel_development`: 238 units, 13 stops;
+ * `pynwheel_prod`: 244 units, 9 stops). What is the same in every dump and
+ * asserted literally: Hazel is a QuadReal property at 4733 Hazel St, Burnaby
+ * BC, with 31 floorplates (floor images, no floor SVG) and 6 amenities —
+ * Fitness Centre carries 2 gallery photos, Penthouse South Lounge 4 and is
+ * hidden from the stop list, Boardroom has no gallery and no video. Speer
+ * Blvd. (203) has 3 floorplates and The Wave (816) 19, for the strip's
+ * boundaries; PYN_CONNECT_E2E_PROPERTY names a property with a floor SVG for
+ * the canvas loading state (default 1468; skipped when that property has no
+ * SVG in the running dump). Every test ends on the same assertion: the browser
+ * sent nothing but GETs.
  */
 const railsCookie = process.env.PYN_CONNECT_E2E_RAILS_COOKIE;
 const user = process.env.PYN_CONNECT_E2E_USER;
+const CMS = (process.env.PYNWHEEL_CMS_URL ?? 'http://127.0.0.1:3000').replace(/\/$/, '');
 const HAZEL = process.env.PYN_CONNECT_E2E_HAZEL ?? '1618';
 const THREE_PLATES = process.env.PYN_CONNECT_E2E_THREE_PLATES ?? '203';
 const NINETEEN_PLATES = process.env.PYN_CONNECT_E2E_NINETEEN_PLATES ?? '816';
@@ -28,8 +36,63 @@ const SVG_PROPERTY = process.env.PYN_CONNECT_E2E_PROPERTY ?? '1468';
 /** A 1 × 1 PNG, served in place of a photo when a test only needs the request to finish at a known moment. */
 const TINY_PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
 
+type Json = Record<string, unknown>;
+
+/** What the CMS holds for Hazel, read once from the same JSON the screens read. */
+interface HazelFacts {
+  company: string;
+  units: number;
+  floorplans: number;
+  plates: number;
+  platesWithoutSvg: number;
+  amenities: number;
+  stops: number;
+  hiddenStops: number;
+  firstStopHidden: boolean;
+  elevators: number;
+}
+
 test.describe('Hazel (real data)', () => {
   test.skip(!railsCookie || !user, 'PYN_CONNECT_E2E_RAILS_COOKIE / PYN_CONNECT_E2E_USER not set');
+
+  let facts: HazelFacts;
+
+  /** One CMS JSON read with the minted session (the same cookie the app replays). */
+  const cms = async (path: string): Promise<Json> => {
+    const response = await fetch(`${CMS}${path}`, { headers: { Cookie: railsCookie!, Accept: 'application/json' } });
+    if (!response.ok) throw new Error(`${path} answered ${response.status}`);
+    return (await response.json()) as Json;
+  };
+
+  test.beforeAll(async () => {
+    if (!railsCookie || !user) return;
+    const [units, floorplans, floorplates, amenities, wayfinding] = await Promise.all([
+      cms(`/communities/${HAZEL}/units.json?per_page=1`),
+      cms(`/communities/${HAZEL}/floorplans.json`),
+      cms(`/communities/${HAZEL}/floorplates.json`),
+      cms(`/communities/${HAZEL}/amenities.json`),
+      cms(`/automate_plotting.json?community_id=${HAZEL}`)
+    ]);
+    const plates = floorplates.data as Json[];
+    const meta = floorplates.meta as Json;
+    // The wayfinding JSON sits in the same envelope (`data` holds the graph).
+    const graph = ((wayfinding.data as Json | undefined) ?? wayfinding) as Json;
+    const stops = [...((graph.tour_stops as Json[]) ?? [])].sort(
+      (a, b) => Number(a.sort ?? 0) - Number(b.sort ?? 0) || Number(a.id) - Number(b.id)
+    );
+    facts = {
+      company: String((meta.property as Json).company_name),
+      units: Number((units.meta as Json).total_count),
+      floorplans: (floorplans.data as Json[]).length,
+      plates: plates.length,
+      platesWithoutSvg: plates.filter((plate) => !plate.svg).length,
+      amenities: (amenities.data as Json[]).length,
+      stops: stops.length,
+      hiddenStops: stops.filter((stop) => stop.display_stop === false).length,
+      firstStopHidden: stops[0]?.display_stop === false,
+      elevators: ((graph.elevators as Json[]) ?? []).length
+    };
+  });
 
   const signIn = async (page: Page) => {
     const origin = new URL(String(test.info().project.use.baseURL ?? 'http://127.0.0.1:3001'));
@@ -127,17 +190,18 @@ test.describe('Hazel (real data)', () => {
     await hydrated(page);
 
     await expect(page.getByRole('heading', { level: 2, name: 'Hazel' })).toBeVisible();
-    await expect(page.getByText('QuadReal · Burnaby, BC · 238 units')).toBeVisible();
+    await expect(page.getByText(`${facts.company} · Burnaby, BC · ${facts.units} units`)).toBeVisible();
     await expect(page.getByText('4733 Hazel St')).toBeVisible();
     await expect(page.getByText('Burnaby, BC V5H 0J7')).toBeVisible();
+    // The on-site team block is there (a manager in one dump, "Unassigned" in another).
     await expect(page.getByText('Property Manager', { exact: true })).toBeVisible();
-    await expect(page.getByText('Unassigned').first()).toBeVisible();
-    await expect(page.getByText('13 tour stops')).toBeVisible();
-    await expect(page.getByText('238 units · 31 floorplates')).toBeVisible();
+    await expect(page.getByText('Manager Email', { exact: true })).toBeVisible();
+    await expect(page.getByText(`${facts.stops} tour stops`)).toBeVisible();
+    await expect(page.getByText(`${facts.units} units · ${facts.plates} floorplates`)).toBeVisible();
     // The Inventory panel's four stat cards read the same records the tabs list; the settings cards name the property's switches.
     const main = page.locator('main');
     await expect(main).toContainText('Manage Inventory');
-    await expect(main).toContainText('238Units17Floorplans31Floorplates6Amenities');
+    await expect(main).toContainText(`${facts.units}Units${facts.floorplans}Floorplans${facts.plates}Floorplates${facts.amenities}Amenities`);
     await expect(main).toContainText('Enable Locks');
     await expect(main).toContainText('Automate Wayfinding');
     await expect(main).toContainText('Rent.com');
@@ -151,11 +215,11 @@ test.describe('Hazel (real data)', () => {
     await hydrated(page, '.bo-inv__tab');
 
     await expect(page.getByRole('heading', { level: 2, name: 'Property Inventory' })).toBeVisible();
-    await expect(page.getByText('31 floorplates · 31 without a floor SVG · 13 tour stops')).toBeVisible();
-    await expect(page.getByRole('tab', { name: /^Floorplates/ })).toContainText('31');
-    await expect(page.getByRole('tab', { name: /^Floorplans/ })).toContainText('17');
-    await expect(page.getByRole('tab', { name: /^Units/ })).toContainText('238');
-    await expect(page.getByRole('tab', { name: /^Amenities/ })).toContainText('6');
+    await expect(page.getByText(`${facts.plates} floorplates · ${facts.platesWithoutSvg} without a floor SVG · ${facts.stops} tour stops`)).toBeVisible();
+    await expect(page.getByRole('tab', { name: /^Floorplates/ })).toContainText(String(facts.plates));
+    await expect(page.getByRole('tab', { name: /^Floorplans/ })).toContainText(String(facts.floorplans));
+    await expect(page.getByRole('tab', { name: /^Units/ })).toContainText(String(facts.units));
+    await expect(page.getByRole('tab', { name: /^Amenities/ })).toContainText(String(facts.amenities));
     clean(audited);
   });
 
@@ -291,6 +355,19 @@ test.describe('Hazel (real data)', () => {
     await expect(cover).toBeVisible();
     await expect(cover).toContainText('Loading image…');
     await expect(cover.locator('img')).toHaveAttribute('src', '/images/loader.gif');
+    // The veil dims the stage and the animation sits at its exact centre.
+    const geometry = await cover.evaluate((element) => {
+      const stage = element.parentElement!.getBoundingClientRect();
+      const cat = element.querySelector('.bo-loading__cat')!.getBoundingClientRect();
+      return {
+        background: getComputedStyle(element).backgroundColor,
+        dx: Math.abs(stage.left + stage.width / 2 - (cat.left + cat.width / 2)),
+        dy: Math.abs(stage.top + stage.height / 2 - (cat.top + cat.height / 2))
+      };
+    });
+    expect(geometry.background).toBe('rgba(23, 26, 33, 0.32)');
+    expect(geometry.dx).toBeLessThan(1);
+    expect(geometry.dy).toBeLessThan(1);
     await expect(cover).toHaveCount(0, { timeout: 15_000 });
     await expect(viewer.locator('.bo-viewer__image')).toBeVisible();
     await expect(viewer.locator('.bo-viewer__missing')).toHaveCount(0);
@@ -343,10 +420,11 @@ test.describe('Hazel (real data)', () => {
     await expect(tabs.last()).toHaveAttribute('aria-selected', 'true');
     await expect(page.locator('.bo-map__toolbarlevel')).toHaveText('1 · Floor 31');
     await expect(page.locator('.bo-map__image')).toBeVisible();
-    await expect(page.locator('main')).toContainText('4 pins · 9 nodes on this floor');
-    await expect(page.locator('.bo-map__pin')).toHaveCount(4);
-    // The 9 hallway nodes, plus the elevators that serve this floor.
-    expect(await page.locator('.bo-map__node').count()).toBeGreaterThanOrEqual(9);
+    // The plan bar counts this floor's pins and pathway nodes, and the canvas draws that many (plus the elevators serving the floor).
+    await expect(page.locator('main')).toContainText(/\d+ pins · \d+ nodes on this floor/);
+    const counts = /(\d+) pins · (\d+) nodes on this floor/.exec(await page.locator('main').innerText())!;
+    await expect(page.locator('.bo-map__pin')).toHaveCount(Number(counts[1]));
+    expect(await page.locator('.bo-map__node').count()).toBeGreaterThanOrEqual(Number(counts[2]));
     // Backward.
     await scrollLeft(page).click();
     await expect.poll(async () => (await strip(page)).scrollLeft).toBeLessThan(geometry.max);
@@ -406,6 +484,8 @@ test.describe('Hazel (real data)', () => {
 
   test('Map & Plotting: the canvas shows the loading state while a floor SVG streams', async ({ page }) => {
     test.setTimeout(180_000);
+    const plates = (await cms(`/communities/${SVG_PROPERTY}/floorplates.json`)).data as Json[];
+    test.skip(!plates.some((plate) => plate.svg), `property ${SVG_PROPERTY} has no floor SVG in this database; set PYN_CONNECT_E2E_PROPERTY`);
     const audited = audit(page);
     await signIn(page);
     await page.route(`**/api/properties/${SVG_PROPERTY}/plan-svg**`, async (route) => {
@@ -429,22 +509,25 @@ test.describe('Hazel (real data)', () => {
     await page.goto(`/properties/${HAZEL}/tour-setup`);
     await hydrated(page, '.bo-tour__tab');
 
-    await expect(page.getByText('13 stops · 2 hidden from the tour')).toBeVisible();
-    await expect(page.getByRole('tab', { name: /^Tour Stops/ }).locator('.bo-tour__tabcount')).toHaveText('13');
-    await expect(page.getByRole('tab', { name: /^Elevators & Locks/ }).locator('.bo-tour__tabcount')).toHaveText('3');
+    await expect(page.locator('main')).toContainText(`${facts.stops} stops`);
+    if (facts.hiddenStops) await expect(page.locator('main')).toContainText(`${facts.hiddenStops} hidden from the tour`);
+    await expect(page.getByRole('tab', { name: /^Tour Stops/ }).locator('.bo-tour__tabcount')).toHaveText(String(facts.stops));
+    await expect(page.getByRole('tab', { name: /^Elevators & Locks/ }).locator('.bo-tour__tabcount')).toHaveText(String(facts.elevators));
     const stops = page.locator('.bo-tour__stop');
-    await expect(stops).toHaveCount(13);
+    await expect(stops).toHaveCount(facts.stops);
     const first = stops.first();
-    await expect(first.locator('.bo-tour__stopname')).toHaveText('1-706');
-    await expect(first).toContainText('Hidden from tour');
-    await expect(first).toContainText('1 · Floor 7');
-    await expect(first.getByRole('link', { name: 'View on Plan' })).toHaveAttribute('href', new RegExp(`/properties/${HAZEL}/map\\?level=floorplate%3A\\d+&pin=`));
+    const firstName = (await first.locator('.bo-tour__stopname').innerText()).trim();
+    expect(firstName).not.toBe('');
+    if (facts.firstStopHidden) await expect(first).toContainText('Hidden from tour');
+    await expect(first.locator('.bo-tour__meta')).toContainText('Floor');
+    await expect(first.getByRole('link', { name: /on Plan$/ })).toHaveAttribute('href', new RegExp(`/properties/${HAZEL}/map\\?`));
 
     // Edit Tour Stop: the reference's 520px dialog with the stop's own data and Cancel / Save side by side.
     await first.getByRole('button', { name: 'Edit' }).click();
     const dialog = page.getByRole('dialog');
     await expect(dialog.locator('.bo-modal__title')).toHaveText('Edit Tour Stop');
-    await expect(dialog.locator('.bo-modal__subtitle')).toHaveText('1-706 · Unit · 1 · Floor 7');
+    await expect(dialog.locator('.bo-modal__subtitle')).toContainText(`${firstName} · `);
+    await expect(dialog.locator('.bo-modal__subtitle')).toContainText('Floor');
     await expect(dialog).toContainText('Dwell time (min)');
     await expect(dialog).toContainText('Kept on this page only; the CMS stores no dwell time.');
     await expect(dialog).toContainText('AI Concierge Talking Point');
@@ -478,14 +561,17 @@ test.describe('Hazel (real data)', () => {
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(first.locator('.bo-tour__meta')).toContainText('7 min');
 
-    // Elevators & Locks: the three real elevators. Routing: a local route between two real stops.
+    // Elevators & Locks: the real elevators. Routing: a local route between two real stops.
     await page.getByRole('tab', { name: /^Elevators & Locks/ }).click();
-    await expect(page.locator('.bo-tour__elevator')).toHaveCount(3);
+    await expect(page.locator('.bo-tour__elevator')).toHaveCount(facts.elevators);
     await page.getByRole('tab', { name: /^Routing/ }).click();
-    await page.getByRole('combobox', { name: 'From' }).selectOption({ index: 1 });
-    await page.getByRole('combobox', { name: 'To' }).selectOption({ index: 2 });
-    await page.getByRole('button', { name: 'Compute Multi-Floor Route' }).click();
-    await expect(page.locator('.bo-tour__routeresult')).not.toHaveText(/Pick two stops/);
+    const from = page.getByRole('combobox', { name: 'From' });
+    if ((await from.locator('option').count()) > 2) {
+      await from.selectOption({ index: 1 });
+      await page.getByRole('combobox', { name: 'To' }).selectOption({ index: 2 });
+      await page.getByRole('button', { name: 'Compute Multi-Floor Route' }).click();
+      await expect(page.locator('.bo-tour__routeresult')).not.toHaveText(/Pick two stops/);
+    }
     clean(audited);
   });
 
@@ -522,13 +608,13 @@ test.describe('Hazel (real data)', () => {
     clean(audited);
   });
 
-  test('Loading: the shared indicator shows while a slow route resolves, then leaves', async ({ page }) => {
+  test('Loading: the shared indicator dims the whole screen from its exact centre while a slow route resolves, then leaves', async ({ page }) => {
     test.setTimeout(120_000);
     const audited = audit(page);
     await signIn(page);
     await page.goto(`/properties/${HAZEL}`);
     await hydrated(page);
-    // The next screen's payload takes 3 s; the link is activated without a hover so nothing is prefetched first.
+    // The next screen's payload takes 3 s — the prefetch too, so a hover before the click changes nothing.
     await page.route(
       (url) => url.pathname === `/properties/${HAZEL}/inventory`,
       async (route) => {
@@ -536,11 +622,27 @@ test.describe('Hazel (real data)', () => {
         await route.continue();
       }
     );
-    await page.getByRole('link', { name: 'Inventory', exact: true }).first().dispatchEvent('click');
+    await page.getByRole('link', { name: 'Inventory', exact: true }).first().click();
     const loading = page.locator('.bo-loading--page');
     await expect(loading).toBeVisible({ timeout: 5000 });
     await expect(loading.locator('img')).toHaveAttribute('src', '/images/loader.gif');
     await expect(loading).toHaveAttribute('role', 'status');
+    const geometry = await loading.evaluate((element) => {
+      const cat = element.querySelector('.bo-loading__cat')!.getBoundingClientRect();
+      const box = element.getBoundingClientRect();
+      return {
+        position: getComputedStyle(element).position,
+        background: getComputedStyle(element).backgroundColor,
+        coversViewport: box.left === 0 && box.top === 0 && box.width === innerWidth && box.height === innerHeight,
+        dx: Math.abs(innerWidth / 2 - (cat.left + cat.width / 2)),
+        dy: Math.abs(innerHeight / 2 - (cat.top + cat.height / 2))
+      };
+    });
+    expect(geometry.position).toBe('fixed');
+    expect(geometry.coversViewport).toBe(true);
+    expect(geometry.background).toBe('rgba(23, 26, 33, 0.32)');
+    expect(geometry.dx).toBeLessThan(1);
+    expect(geometry.dy).toBeLessThan(1);
     await hydrated(page, '.bo-inv__tab');
     await expect(loading).toHaveCount(0);
     clean(audited);

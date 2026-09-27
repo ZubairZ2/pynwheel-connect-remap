@@ -4387,6 +4387,9 @@ select {
    (`loader.gif`, the file behind the legacy .divLoading / .mapLoading /
    .modal-loader overlays) shown small on a white disc with a caption. It fades
    in after a short delay so a load that finishes at once never flashes it.
+   The page and cover variants do what the legacy overlays did: a veil that
+   mildly dims everything behind, with the animation pinned to the exact
+   centre of the screen (or of the stage it covers) and the caption under it.
    --------------------------------------------------------------------------- */
 .bo-loading {
   display: flex;
@@ -4418,14 +4421,58 @@ select {
   text-align: center;
 }
 
+/* The whole screen while a route loads: fixed over the shell, sidebar and top bar included, under any dialog (z 400).
+   No fade here: the router can swap one route's loading boundary for a nested one mid-load, and a restarted fade
+   would blink the veil; an instant veil stays continuous across the swap, as the legacy overlay did. */
 .bo-loading--page {
-  min-height: 360px;
-  padding: 48px 16px;
+  position: fixed;
+  inset: 0;
+  z-index: 390;
+  background: rgba(23, 26, 33, 0.32);
+  animation: none;
+}
+
+/* A stage (the image viewer, the map canvas) while its file streams. */
+.bo-loading--cover {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: rgba(23, 26, 33, 0.32);
+  pointer-events: none;
+}
+
+/* The animation sits at the exact centre; the caption hangs below it so it never shifts the disc. */
+.bo-loading--page .bo-loading__cat,
+.bo-loading--cover .bo-loading__cat {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.35);
 }
 
 .bo-loading--page .bo-loading__cat {
   width: 112px;
   height: 112px;
+}
+
+.bo-loading--page .bo-loading__label,
+.bo-loading--cover .bo-loading__label {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  top: 50%;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.bo-loading--page .bo-loading__label {
+  margin-top: 70px;
+  font-size: 13px;
+}
+
+.bo-loading--cover .bo-loading__label {
+  margin-top: 56px;
 }
 
 .bo-loading--block {
@@ -4448,17 +4495,14 @@ select {
   font-size: 11.5px;
 }
 
-.bo-loading--cover,
+/* A thumbnail: the animation only, over a light veil. */
 .bo-loading--overlay {
   position: absolute;
   inset: 0;
   z-index: 3;
+  gap: 0;
   background: rgba(255, 255, 255, 0.78);
   pointer-events: none;
-}
-
-.bo-loading--overlay {
-  gap: 0;
 }
 
 .bo-loading--overlay .bo-loading__cat {
@@ -4483,6 +4527,13 @@ select {
 
   .bo-loading__cat {
     display: none;
+  }
+
+  /* Without the animation the caption takes the centre. */
+  .bo-loading--page .bo-loading__label,
+  .bo-loading--cover .bo-loading__label {
+    margin-top: 0;
+    transform: translateY(-50%);
   }
 
   .bo-loading--overlay .bo-loading__label {
