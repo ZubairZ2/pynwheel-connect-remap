@@ -537,6 +537,9 @@
     // pointer may drift from where the hover began before it counts as having
     // left. Same value the CMS map uses.
     _3D_HOVER_EXIT_RADIUS_PX: 30,
+    // Host-driven 3D highlight (right-rail hover) — see the 3D RAIL HOVER section.
+    _3dRailHoverIds: null,   // base unit ids the host asked to bring forward
+    _3dRailHover:    null,   // what was applied: { layer, handle, faded }
     _3dWrapper:     null,
     _3dToggleBtn:   null,
     _zoomInBtn:     null,
@@ -2539,6 +2542,7 @@
       // Drop any hover before the mode flag flips, so the consumer is told the
       // tooltip is gone and does not keep a 3D unit hovered on the 2D map.
       this._clear3DHover();
+      this.highlight3DUnits(null);
       this._3dMode = false;
       this._updateCurrentMapType();
       if (this._analytics) this._captureWithMapType('map_2d');
@@ -2917,12 +2921,17 @@
       if (!this._beansWidget.workingInstance?.mapView?.ready) return;
 
       try {
+        // The redraw recolours every unit from the filter set, so a rail
+        // highlight's faded colours are handed back first and re-applied on top
+        // of the fresh colours afterwards — never restored over them.
+        this._clear3DRailHover();
         this._beansWidget.setDisplayOptions(opts);
         // setDisplayOptions swaps the options object wholesale and redraw() does
         // not recompute the floor, so the engine has to be told directly.
         // Mirrors reDrawBeansWidget in beans3dHandler.js.
         this._set3DSelectedFloor(this._beans3dFloor);
         this._beansWidget.redraw();
+        this._apply3DRailHover();
       } catch (e) {
         console.warn("PynMapSDK: Could not update 3D filter", e);
       }
@@ -3147,6 +3156,152 @@
 
       return inside;
     },
+
+    // ----------------------------------------------------
+    // 3D RAIL HOVER
+    // ----------------------------------------------------
+    //
+    // The 3D counterpart of the 2D rail hover: the given units get Esri's own
+    // highlight and every other unit fades back to the building colour. It works
+    // on the graphics Beans drew (engine.markers[ix], keyed by our _beans3dArr
+    // index), so it never touches filteredRows — the filter set stays exactly as
+    // highlightUnits() left it.
+
+    /**
+     * Bring these units forward on the 3D map and fade the rest; null restores.
+     * No-op outside 3D — 2D hosts keep using highlightUnits().
+     *
+     * @param {Array<string|number>|null} unitIds unit or space ids
+     */
+    highlight3DUnits(unitIds) {
+      this._3dRailHoverIds = Array.isArray(unitIds) && unitIds.length > 0
+        ? this._toBaseIds(unitIds.map(String))
+        : null;
+      this._apply3DRailHover();
+    },
+
+    /**
+     * Viewport position of the top-centre of a unit's 3D tile — where a tooltip
+     * should point. Projected from the unit's real elevation and height, so it
+     * holds at any tilt or heading. null when the unit is not drawn (no tile,
+     * floor hidden, engine not ready).
+     *
+     * @returns {{x: number, y: number, onScreen: boolean}|null}
+     */
+    get3DUnitAnchor(unitId) {
+      const engine = this._3dMode ? this._beans3DInstance() : null;
+      const view   = engine?.mapView;
+      if (!view?.ready) return null;
+
+      const [ix] = this._beans3dIndicesForUnitIds(this._toBaseIds([String(unitId)]));
+      const graphic  = engine.markers?.[ix];
+      const centroid = graphic?.geometry?.centroid;
+      if (!centroid) return null;
+
+      // Beans hides every floor above the selected one (floor <= selectedFloor).
+      const { floor, elevation, height } = graphic.attributes || {};
+      if (engine.selectedFloor && Number(floor) > Number(engine.selectedFloor)) return null;
+
+      const opts   = engine.displayOptions || {};
+      const ground = opts.useGroundElevation ? Number(opts.offsetGroundElevation) || 0 : 0;
+      const top    = centroid.clone();
+      top.z    = ground + (Number(elevation) || 0) + (Number(height) || 0);
+      top.hasZ = true;
+
+      const point = view.toScreen(top);
+      if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) return null;
+
+      const rect = view.container.getBoundingClientRect();
+      return {
+        x: rect.left + point.x,
+        y: rect.top + point.y,
+        onScreen: point.x >= 0 && point.y >= 0 && point.x <= rect.width && point.y <= rect.height
+      };
+    },
+
+    /**
+     * Sync the drawn graphics to _3dRailHoverIds.
+     *
+     * Diffed against what is already faded, so moving from one rail card to the
+     * next only recolours the units whose state changed — one applyEdits batch,
+     * not a restore-everything-then-fade-everything round trip per hover.
+     */
+    _apply3DRailHover() {
+      const engine = this._3dMode ? this._beans3DInstance() : null;
+      const layer  = engine?.mapView?.ready ? engine.unitsLayer : null;
+
+      // A full Beans re-render swaps the layer; the old graphics are gone, so
+      // there is nothing left to restore on them.
+      let state = this._3dRailHover;
+      if (state && state.layer !== layer) {
+        state.handle?.remove();
+        state = this._3dRailHover = null;
+      }
+      if (!layer) return;
+
+      const markers = engine.markers || [];
+      const wanted  = new Set(this._3dRailHoverIds ? this._beans3dIndicesForUnitIds(this._3dRailHoverIds) : []);
+      const targets = [...wanted].map(ix => markers[ix]).filter(Boolean);
+      const active  = targets.length > 0;
+
+      if (!state && !active) return;
+      if (!state) {
+        // Beans keeps its own selection halo on currentIx. Esri highlights are
+        // not reference-counted, so ours would take it down unpredictably on
+        // removal — set it aside for the hover and hand it back after.
+        engine.highlight?.remove();
+        state = this._3dRailHover = { layer, handle: null, faded: new Map() };
+      }
+
+      const edits = [];
+      markers.forEach((graphic, ix) => {
+        if (!graphic) return;
+        const fade = active && !wanted.has(ix);
+        const original = state.faded.get(graphic);
+
+        if (fade && original === undefined) {
+          state.faded.set(graphic, graphic.attributes.color);
+          graphic.attributes.color = this._3D_FADED_COLOR;
+          edits.push(graphic);
+        } else if (!fade && original !== undefined) {
+          state.faded.delete(graphic);
+          // A redraw may have recoloured it since; only hand back our own fade.
+          if (graphic.attributes.color === this._3D_FADED_COLOR) {
+            graphic.attributes.color = original;
+            edits.push(graphic);
+          }
+        }
+      });
+      if (edits.length > 0) layer.applyEdits({ updateFeatures: edits }).catch(() => {});
+
+      state.handle?.remove();
+      state.handle = null;
+      if (!active) {
+        this._3dRailHover = null;
+        engine.highlightAndMaybeShowBalloons?.();
+        return;
+      }
+
+      const token = state.token = {};
+      engine.mapView.whenLayerView(layer)
+        .then(layerView => {
+          if (this._3dRailHover === state && state.token === token) state.handle = layerView.highlight(targets);
+        })
+        .catch(() => {});
+    },
+
+    /** Drop the drawn rail highlight, keeping _3dRailHoverIds for a re-apply. */
+    _clear3DRailHover() {
+      const ids = this._3dRailHoverIds;
+      this._3dRailHoverIds = null;
+      this._apply3DRailHover();
+      this._3dRailHoverIds = ids;
+    },
+
+    // The unit layer's first colour stop is Beans' plain building shape (the
+    // `unitShape` stop in makeUnitExtrudeRenderer), so this fades a unit into the
+    // building around it — the same look Beans gives a filtered-out unit.
+    _3D_FADED_COLOR: 1,
 
     _beans3dIndicesForFloor(floorNumber) {
       return this._beans3dArr
@@ -4154,6 +4309,8 @@
       this._beansWidget        = null;
       this._beans3dArr         = [];
       this._beans3dFloor       = null;
+      this._3dRailHoverIds     = null;
+      this._3dRailHover        = null;
       this._unbind3DHoverTracker();
       this._3dHoveredUnit      = null;
       this._3dHoverOrigin      = null;
@@ -5645,6 +5802,8 @@
       getPropertyConfig()          { return PynMapSDK.getPropertyConfig.call(PynMapSDK); },
       highlightUnits(unitIds)      { return PynMapSDK.highlightUnits.call(PynMapSDK, unitIds); },
       getHoverGroupUnits(unit)     { return PynMapSDK.getHoverGroupUnits.call(PynMapSDK, unit); },
+      highlight3DUnits(unitIds)    { return PynMapSDK.highlight3DUnits.call(PynMapSDK, unitIds); },
+      get3DUnitAnchor(unitId)      { return PynMapSDK.get3DUnitAnchor.call(PynMapSDK, unitId); },
       changeMap(mapId)             { return PynMapSDK.changeMap.call(PynMapSDK, mapId); },
       changeFloor(floorNumber)     { return PynMapSDK.changeFloor.call(PynMapSDK, floorNumber); },
       getFloors()                  { return PynMapSDK.getFloors.call(PynMapSDK); },
