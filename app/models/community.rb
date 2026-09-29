@@ -139,6 +139,23 @@ class Community < ApplicationRecord
 
   scope :real_properties, -> {where.not(name: DUMMY_COMMUNITY_NAME)}
 
+  # The product/feature switches worth seeing at a glance on the properties
+  # list. One table, so the toolbar's "Product" filter and the badges in the
+  # grid can never drift apart - adding a product here adds both. Columns that
+  # are on for effectively every property (enable_locks defaults to true) are
+  # deliberately left out: as a badge they would be pure noise.
+  FEATURES = {
+    "touch" => { column: :touchscreen_app, label: "Touch", title: "Pynwheel Touch" },
+    "self_tour" => { column: :self_tour, label: "Self Tour", title: "Self-guided touring" },
+    "access" => { column: :pynwheel_access, label: "Access", title: "Pynwheel Access" },
+    "sdk_map" => { column: :enable_sdk_map, label: "SDK Map", title: "New SDK map" },
+    "svg_map" => { column: :enable_svg_mode, label: "SVG", title: "SVG map mode" },
+    "three_d" => { column: :enable_three_d_maps, label: "3D", title: "3D maps" },
+    "calculator" => { column: :enable_pynwheel_pricing_calculator, label: "Calculator", title: "Pynwheel pricing calculator" },
+    "student" => { column: :student_housing_property, label: "Student", title: "Student housing property" }
+  }.freeze
+
+
   scope :active_communities, -> { real_properties.where(locked: false) }
   scope :self_tour_enabled_only, -> { real_properties.where('self_tour = ?', true) }
   scope :desc_created_at, -> { order(created_at: :desc) }

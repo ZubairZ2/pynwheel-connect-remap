@@ -4,6 +4,6 @@
 - next_dir = (active && @filter.sort_dir == "asc") ? "desc" : "asc"
 - align = defined?(align) ? align : nil
 %th{class: [("right" if align == "right"), ("sorted" if active)].compact.join(" ")}
-  %a.sort-link{href: units_page_path(sort: key, dir: next_dir, page: nil), "data-remote-nav" => true}
+  %a.sort-link{href: grid_path(sort: key, dir: next_dir, page: nil), "data-remote-nav" => true}
     = label
     %span.sort-caret{class: (active ? @filter.sort_dir : "none")}

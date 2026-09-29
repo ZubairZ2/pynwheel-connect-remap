@@ -1,0 +1,27 @@
+-# The count and rows-per-page strip that sits above every grid. Shared so the
+-# page counter, the "clipped" warning and the "All" escape hatch read the same
+-# way wherever a grid appears.
+-#
+-# The count says both numbers whenever they differ, because "493" next to a
+-# screen holding 50 rows is what makes people think the filters only searched
+-# the page they can see. They never do - the toolbar always queries the whole
+-# set. Pass `total` and `within` ("in this property") to name that whole set.
+- total = local_assigns[:total]
+- page_offset = collection.offset.to_i
+- first_row = collection.total_entries.zero? ? 0 : page_offset + 1
+- last_row = page_offset + collection.length
+
+.grid-meta
+  %span.grid-count
+    %b= pluralize(collection.total_entries, noun)
+    - if @filter.filtering? && total
+      matching your filters, out of #{number_with_delimiter(total)} #{local_assigns[:within]}
+    - if collection.total_pages > 1
+      %span.grid-page-n= "· showing #{number_with_delimiter(first_row)}–#{number_with_delimiter(last_row)} (page #{collection.current_page} of #{collection.total_pages})"
+    - if per_page_capped?
+      %span.grid-page-n= "· capped at the first #{number_with_delimiter(per_page)}"
+  .grid-perpage
+    %span.muted Rows
+    - GridPagination::PER_PAGE_OPTIONS.each do |option|
+      = link_to option, grid_path(per_page: option, page: nil), class: "pp#{' on' if !showing_all? && per_page == option}", "data-remote-nav" => true
+    = link_to "All", grid_path(per_page: "all", page: nil), class: "pp#{' on' if showing_all?}", "data-remote-nav" => true, title: "Show every match on one page"

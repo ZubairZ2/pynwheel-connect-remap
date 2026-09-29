@@ -1,0 +1,71 @@
+-# The filterable half of the properties list. Rendered standalone (no layout)
+-# for the toolbar's XHR, so filtering, sorting and paging never re-render the
+-# page chrome.
+= render "shared/grid_meta", collection: @communities, noun: "property"
+
+- if @communities.empty?
+  .grid-empty
+    %p.grid-empty-title No properties match these filters.
+    %p.muted Try widening the search, or clear the filters to start again.
+- else
+  .table-wrap
+    %table.grid-table
+      %thead
+        %tr
+          = render "shared/grid_sort_header", key: "name", label: "Property"
+          = render "shared/grid_sort_header", key: "company", label: "Company"
+          = render "shared/grid_sort_header", key: "location", label: "Location"
+          = render "shared/grid_sort_header", key: "units", label: "Units", align: "right"
+          = render "shared/grid_sort_header", key: "provider", label: "Data Feed"
+          %th Map Type
+          %th Products
+          %th.right Actions
+      %tbody
+        - @communities.each do |community|
+          %tr{"data-href" => community_row_path(community)}
+            %td.c-property
+              = link_to community.name.presence || "Untitled property", community_row_path(community), class: "cell-title"
+              .cell-sub
+                = "Timezone: "
+                = community.time_zone
+            %td.c-company
+              - if community.company
+                = link_to community.company.name, company_row_path(community.company), class: "cell-link", title: "Open this company"
+              - else
+                %span.cell-none &mdash;
+            %td.c-location
+              - place = [community.city.presence, community.state.presence].compact.join(", ")
+              - if place.present?
+                = place
+              - else
+                %span.cell-none &mdash;
+              - if community.zip.present?
+                .cell-sub= community.zip
+            %td.right.c-units
+              %span.cell-num= number_with_delimiter(@unit_counts.fetch(community.id, 0))
+            %td.c-provider
+              - if community.data_provider.present?
+                = community.data_provider
+                .cell-sub{title: "Last import from the property management software"}
+                  = community_sync_label(community)
+              - else
+                %span.cell-none Not connected
+            %td.c-map-type
+              - map_type = community_map_type(community)
+              = map_type[:label]
+              - if map_type[:sub]
+                .cell-sub= map_type[:sub]
+            %td.c-products
+              - badges = community_feature_badges(community)
+              - if badges.any?
+                .tags
+                  - badges.each do |badge|
+                    %span.tag{class: ("accent" if badge[:accent]), title: badge[:title]}= badge[:label]
+              - else
+                %span.cell-none &mdash;
+            %td.right
+              .row-actions
+                = link_to community_row_path(community), class: "ico", title: "Open this property" do
+                  %i.fa.fa-external-link
+
+  = render "shared/grid_pager", collection: @communities

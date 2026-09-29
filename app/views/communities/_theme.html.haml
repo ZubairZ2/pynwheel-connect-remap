@@ -1,0 +1,18 @@
+-# What is particular to the property form. The page shell, sections, field
+-# grid, controls, choices and save bar all come from pyn_form.scss - `.pyn-form`
+-# on the wrapper is what pulls them in.
+:css
+  /* The two help-tip flavours are positioned by pyn-custom.css, which assumes
+     the old Bootstrap .control-label context; inside a .pf-label they only need
+     to sit on the baseline beside the text. */
+  .property-form-page .pf-label .propertyDetailName,
+  .property-form-page .pf-label .unit_manualoverride { position: relative; color: #b6bcc6; font-size: 12px; cursor: help; }
+  .property-form-page .pf-label .propertyDetailName:hover,
+  .property-form-page .pf-label .unit_manualoverride:hover { color: #3558e8; }
+
+  .property-form-page .dwelo-flag { margin: 0 0 14px; }
+  .property-form-page .dwelo-logo { height: 30px; width: auto; }
+
+  /* validationEngine appends its bubbles to the field's offset parent, so the
+     section card must not clip them */
+  .property-form-page .pf-section { overflow: visible; }

@@ -1,0 +1,142 @@
+// Chrome shared by the CMS's rebuilt record forms (unit, property).
+//
+// Like pyn_grid.scss this was inline in the units views, so a second form could
+// only be built by copying it. The vocabulary here is deliberately small: a
+// page is a stack of `.pf-section`s, each holding a `.pf-grid` of `.pf-field`s,
+// with one sticky `.pf-actionbar` at the bottom.
+//
+// The surrounding admin chrome styles bare headings, labels and .form-control
+// globally, so a few of these rules exist to reset it rather than to fight it
+// field by field.
+
+$pf-accent: #3558e8;
+$pf-accent-dark: #2946c4;
+$pf-line: #e8ebf0;
+
+.pyn-form {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 24px 22px 130px;
+  font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #2b2f36;
+
+  h1, h2, h3 { font-family: inherit; line-height: 1.3; }
+  label { font-weight: 400; margin: 0; }
+
+  a.back {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 600; color: #6b7280; text-decoration: none; margin-bottom: 12px;
+    &:hover { color: $pf-accent; }
+  }
+  h1 { font-size: 25px; font-weight: 650; letter-spacing: -0.015em; margin: 0 0 5px; color: #0f172a; }
+  .sub { color: #6b7280; font-size: 13.5px; margin: 0 0 22px; }
+  .sub b { color: #374151; font-weight: 600; }
+  .sub .dot { color: #cbd5e1; margin: 0 6px; }
+
+  // ---- buttons -------------------------------------------------------------
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    border: none; border-radius: 6px; padding: 8px 15px;
+    font-size: 13px; font-weight: 600; line-height: 1.3;
+    cursor: pointer; text-decoration: none; white-space: nowrap; position: relative;
+  }
+  .btn-primary { background: $pf-accent; color: #fff; &:hover { background: $pf-accent-dark; color: #fff; } }
+  .btn-ghost {
+    background: #f1f5f9; color: #334155;
+    &:hover { background: #e2e8f0; color: #1f2937; }
+    &.danger { color: #b91c1c; &:hover { background: #fef2f2; } }
+  }
+  .btn-success { background: #16a34a; color: #fff; &:hover { background: #15803d; color: #fff; } }
+
+  // ---- sections ------------------------------------------------------------
+  .pf-section {
+    background: #fff; border: 1px solid $pf-line; border-radius: 12px;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.03);
+    margin-bottom: 14px;
+  }
+  .pf-section-head {
+    padding: 13px 18px 12px; border-bottom: 1px solid #f2f4f7; background: #fbfcfd;
+    border-radius: 12px 12px 0 0;
+    h2 { margin: 0; font-size: 13.5px; font-weight: 650; letter-spacing: 0.005em; color: #0f172a; }
+    p { margin: 4px 0 0; font-size: 12px; line-height: 1.5; color: #7b8494; max-width: 780px; }
+  }
+  .pf-section-body { padding: 16px 18px; }
+
+  // ---- field grid ----------------------------------------------------------
+  .pf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(215px, 1fr)); gap: 15px 16px; align-items: start; }
+  .pf-stack { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  .pf-field.span-2 { grid-column: span 2; }
+  .pf-field.span-3 { grid-column: span 3; }
+  @media (max-width: 720px) {
+    .pf-field.span-2, .pf-field.span-3 { grid-column: span 1; }
+  }
+
+  .pf-label {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 650; text-transform: uppercase; letter-spacing: 0.055em;
+    color: #8b93a1; margin: 0 0 5px; min-height: 16px;
+    // a hint the label carries inline (the lock script rewrites one of these)
+    span:not(.gate-badge) { text-transform: none; letter-spacing: 0; font-weight: 500; font-size: 11.5px; color: #a8afba; }
+  }
+  .pf-hint { margin: 6px 0 0; font-size: 11.5px; line-height: 1.5; color: #9ca3af; }
+
+  // ---- controls ------------------------------------------------------------
+  .form-control {
+    width: 100%; padding: 8px 11px; border: 1px solid #dfe3e9; border-radius: 7px;
+    font-size: 13.5px; background: #fff; color: #1f2937; height: 37px; box-shadow: none;
+    transition: border-color .12s, box-shadow .12s;
+    &:hover { border-color: #c9cfd8; }
+    &:focus { outline: none; border-color: $pf-accent; box-shadow: 0 0 0 3px rgba(53, 88, 232, 0.12); }
+  }
+  textarea.form-control { height: auto; min-height: 90px; }
+  select.form-control { appearance: auto; }
+
+  .pf-prefix {
+    display: flex; align-items: stretch;
+    > span {
+      display: inline-flex; align-items: center; padding: 0 11px;
+      background: #f5f7fa; border: 1px solid #d1d5db; border-right: none; border-radius: 6px 0 0 6px;
+      color: #6b7280; font-size: 13px; font-weight: 600;
+    }
+    .form-control { border-radius: 0 6px 6px 0; }
+  }
+
+  // ---- choices -------------------------------------------------------------
+  .pf-toggle-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; max-width: 640px; }
+  .pf-choice {
+    display: flex; align-items: flex-start; gap: 10px; margin: 0; padding: 11px 13px;
+    border: 1px solid #e5e7eb; border-radius: 9px; cursor: pointer; font-weight: 400;
+    transition: border-color 0.12s, background 0.12s;
+    &:hover { border-color: #cbd5e1; background: #fcfcfd; }
+    input { margin: 2px 0 0; }
+    > span {
+      display: block; font-size: 12px; color: #7b8494; line-height: 1.45;
+      b { display: block; font-size: 13.5px; color: #111827; font-weight: 600; margin-bottom: 2px; }
+    }
+    &:has(input:checked) { border-color: $pf-accent; background: #f5f8ff; box-shadow: 0 0 0 1px $pf-accent inset; }
+  }
+
+  .pf-inline-choices { display: flex; gap: 18px; align-items: center; height: 37px; }
+  .pf-radio, .pf-check {
+    display: inline-flex; align-items: center; gap: 7px; margin: 0;
+    font-weight: 400; font-size: 13.5px; color: #374151; cursor: pointer;
+    input { margin: 0; }
+  }
+  .pf-check { min-height: 37px; align-items: flex-start; padding-top: 9px; span { line-height: 1.4; } }
+
+  // ---- sticky save bar -----------------------------------------------------
+  // Negative margins pull it out of the page's own padding so it spans the full
+  // width; the matching bottom padding on .pyn-form is what stops it covering
+  // the last field.
+  .pf-actionbar {
+    position: sticky; bottom: 0; z-index: 50;
+    margin: 18px -22px -130px; padding: 12px 22px;
+    background: rgba(255, 255, 255, 0.97); border-top: 1px solid $pf-line;
+    box-shadow: 0 -4px 16px rgba(16, 24, 40, 0.05); backdrop-filter: blur(6px);
+    display: flex; align-items: center; gap: 10px;
+    .grow { flex: 1; font-size: 12.5px; color: #9ca3af; }
+    input[type="submit"] { border: none; }
+  }
+
+  .hide_it { display: none !important; }
+}

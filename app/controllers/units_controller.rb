@@ -1,22 +1,12 @@
 class UnitsController < ApplicationController
   # include Error::ErrorHandler
   include AssignLocksHelper
+  include GridPagination
   add_breadcrumb "Home", :root_path
   before_action :set_community
   before_action :check_community
   before_action :set_unit, only: [:edit,:update,:destroy,:remove_pri_scnd_image, :update_lock_provider]
   before_action :load_all_locks, only: [:new, :create, :edit, :update]
-
-  PER_PAGE = 50
-  PER_PAGE_OPTIONS = [25, 50, 100, 200].freeze
-
-  # "All" is still bounded. Pagination exists because rendering every unit of a
-  # property is what made this page megabytes of HTML, so the escape hatch gets a
-  # ceiling rather than an unbounded page - comfortably above the largest
-  # property today, and the view says so when a set is actually clipped.
-  MAX_PER_PAGE = 2000
-
-  helper_method :per_page, :showing_all?, :per_page_capped?
 
   def index
     @communities = current_company.communities
@@ -26,8 +16,7 @@ class UnitsController < ApplicationController
     @filter = UnitFilterQuery.new(@community, filter_params)
     # includes(:door) is what keeps the lock column from firing one query per
     # row - it was the bulk of the 700+ queries this page used to run.
-    scope = @filter.results.includes(:door)
-    @units = scope.paginate(page: params[:page], per_page: resolve_per_page)
+    @units = paginate_grid(@filter.results.includes(:door), @filter)
     @filter_options = unit_filter_options
     add_breadcrumb "Units", community_units_path(@community)
 
@@ -713,50 +702,6 @@ class UnitsController < ApplicationController
 
   def filter_params
     params.permit(*UnitFilterQuery::FILTER_KEYS, :sort, :dir, :per_page)
-  end
-
-  def per_page
-    @per_page ||= resolve_per_page
-  end
-
-  def showing_all?
-    @showing_all
-  end
-
-  # True when "All" was asked for but the matching set is larger than the cap,
-  # so the page is showing the first MAX_PER_PAGE of it rather than everything.
-  def per_page_capped?
-    @per_page_capped
-  end
-
-  # The rows-per-page choice sticks for the rest of the session, so someone who
-  # works at 200 rows does not have to re-pick it on every property and every
-  # return trip. "All" is deliberately not remembered - it is an escape hatch for
-  # one screenful of work, and silently reloading 2000 rows on a later visit is
-  # not what anyone asked for. A fresh session still starts at PER_PAGE.
-  def resolve_per_page
-    requested = params[:per_page].to_s
-
-    if requested == "all"
-      @showing_all = true
-      total = @filter.results.reorder(nil).count
-      @per_page_capped = total > MAX_PER_PAGE
-      @per_page = [[total, 1].max, MAX_PER_PAGE].min
-    else
-      @showing_all = false
-      @per_page_capped = false
-      @per_page = remembered_per_page(requested.to_i)
-    end
-  end
-
-  def remembered_per_page(requested)
-    if PER_PAGE_OPTIONS.include?(requested)
-      session[:units_per_page] = requested
-      requested
-    else
-      stored = session[:units_per_page].to_i
-      PER_PAGE_OPTIONS.include?(stored) ? stored : PER_PAGE
-    end
   end
 
   # Which units a mass override applies to. The grid normally posts the ids it

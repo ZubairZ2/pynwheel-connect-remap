@@ -1,25 +1,34 @@
 - content_for :title, "Property Details - Pynwheel"
+= render "theme"
+
 .divLoading.hidden
 %section.is-community-page
   .content
-    - if @community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"
-      .box-info.add-plan{style: "margin-right: 10px;"}
-        %img.dwelo-logo{:alt => "Smiley face", :src => "/assets/Dwelo-Logo.png"}
-    .box.box-info.add-plan.mt-20
-      .box-header
-        %h3.box-title
-          PROPERTY
-          %span DETAILS
+    .pyn-form.property-form-page
+      = link_to root_path, class: "back" do
+        %i.fa.fa-angle-left
+        All properties
+      %h1= @community.name.presence || "Property ##{@community.id}"
+      %p.sub
+        %b= current_company.name
+        - if @community.code.present?
+          %span.dot ·
+          = @community.code
+        - if @community.data_provider.present?
+          %span.dot ·
+          = "#{@community.data_provider} feed"
 
-      = form_for @community,:url=>company_community_path(current_company,@community),:html=>{:class=>"form-horizontal"} do |f|
-        .box-body
-          .row
-            .col-lg-9.col-lg-offset-1
-              = render :partial=>'form',:locals=>{:f=>f}
-        / /.box-body
-        .box-footer
-          = link_to "CANCEL" , company_communities_path(current_company), :class=>"btn btn-default pull-right"
-          = f.submit "SAVE CHANGES", :class=>"btn btn-success pull-right mr-10 loader_class"
+      - if @community.creator_id.present? && @community.creator.present? && @community.creator.role == "Dwelo admin"
+        .dwelo-flag
+          %img.dwelo-logo{alt: "Dwelo", src: "/assets/Dwelo-Logo.png"}
+
+      = form_for @community, url: company_community_path(current_company, @community), html: { class: "property-form" } do |f|
+        = render partial: "form", locals: { f: f }
+
+        .pf-actionbar
+          %span.grow Changes here affect the eBrochure, the app and the Neighborhood page.
+          = link_to "Cancel", company_communities_path(current_company), class: "btn btn-ghost"
+          = f.submit "Save changes", class: "btn btn-success loader_class"
 
 :javascript
   $(document).ready(function(e){
@@ -28,7 +37,7 @@
       $('#welcome-prompt-modal1').modal('show');
     }
   });
-  
+
   if("#{@chatroom&.id&.present?}" == "true")
   {
     show_modal();
@@ -39,19 +48,16 @@
     setTimeout(function(){
       $("#ChatSupport").modal('show');
       if ($("#chat_person_#{@chatroom&.id}").length == 0) {
-        
-       
-
         $('#support_sidebar').prepend(`
             <div class="chat_list" id="chat_with_#{@chatroom&.id}">
                 <div class="chat_people">
                     <div class="chat_img"> <img id="img_id" src=#{@chatroom&.tour_user&.present? ? (@chatroom&.tour_user&.image.present? ? @chatroom&.tour_user&.image : "/assets/chat-tour-user.jpg") : ""} alt=#{@chatroom&.tour_user&.present? ? @chatroom&.tour_user&.name : ""}> </div>
                     <div class="chat_ib">
-                        <a class="sidebar-chat" data-remote="true" href="/chats/#{@chatroom&.id}" style="overflow: hidden;display: block; width: 100%;" id="chat_person_#{@chatroom&.id}" > 
+                        <a class="sidebar-chat" data-remote="true" href="/chats/#{@chatroom&.id}" style="overflow: hidden;display: block; width: 100%;" id="chat_person_#{@chatroom&.id}" >
                             <p> <span style="color: black;"> #{@chatroom&.tour_user&.present? ? @chatroom&.tour_user&.name : ""} </span></p>
                             <p> <a> #{@chatroom&.tour_user&.present? ? @chatroom&.tour_user&.email : ""} </a> </p>
                         </a>
-                    </div> 
+                    </div>
                 </div>
             </div>`);
 
@@ -61,7 +67,7 @@
       else
       {
         $("#chat_person_#{@chatroom&.id}").click();
-        $("#chatroom_id").val( "#{@chatroom&.id}" );  
+        $("#chatroom_id").val( "#{@chatroom&.id}" );
       }
     }, 1000);
   }

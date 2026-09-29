@@ -1,0 +1,10 @@
+-# One labelled control on a record form. `badge` is optional markup appended to
+-# the label - a status chip, a help tip - so a page can annotate a field without
+-# needing a field partial of its own.
+.pf-field{class: [("span-#{span}" if span), field_class].compact.join(" ")}
+  %label.pf-label
+    = label
+    = badge
+  = control
+  - if hint.present?
+    %p.pf-hint= hint

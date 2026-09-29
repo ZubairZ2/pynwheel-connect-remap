@@ -6,28 +6,28 @@
 -# #lock_input, #locks_list, #lock_id and the .*_options blocks all stay put.
 - gated_hint = "Editable once Manual Override is on."
 
-.u-section
-  .u-section-head
+.pf-section
+  .pf-section-head
     %h2 Data feed control
     %p This property syncs from its property management software. Turn Manual Override on to hand-edit the fields marked #{content_tag(:span, "feed", class: "gate-badge inline")} below and stop the feed overwriting them.
-  .u-section-body
-    .u-toggle-row
-      %label.u-choice
+  .pf-section-body
+    .pf-toggle-row
+      %label.pf-choice
         = f.radio_button :manual_override, true, class: "settings-field"
         %span
           %b Yes
           Hand-edited values win and stay put.
-      %label.u-choice
+      %label.pf-choice
         = f.radio_button :manual_override, false, class: "settings-field"
         %span
           %b No
           The data feed keeps this unit up to date.
 
-.u-section
-  .u-section-head
+.pf-section
+  .pf-section-head
     %h2 Unit details
-  .u-section-body
-    .u-grid
+  .pf-section-body
+    .pf-grid
       = unit_field "Marketing name", gated: true, hint: gated_hint do
         = f.text_field :marketing_name, class: "form-control validate[required]", placeholder: "e.g. 103-B"
       = unit_field "Provider unit ID", gated: true do
@@ -35,7 +35,7 @@
       = unit_field "Floor plan", gated: true do
         = f.select :floorplan_id, [["", nil]] + @community.floorplans.order(:name).map { |fp| [floorplan_option_label(fp), fp.provider_floorplan_id] }, {}, { class: "form-control" }
       = unit_field "Price", gated: true do
-        .u-prefix
+        .pf-prefix
           %span= @community.get_currency_symbol
           = f.text_field :effective_rent, class: "form-control validate[required,custom[onlyDecimal]]", placeholder: "0", maxlength: "9", value: f.object.effective_rent.to_i
       = unit_field "Availability", gated: true, hint: "Occupied units are hidden from the app regardless of the date below." do
@@ -47,12 +47,12 @@
       = unit_field "Tour visiting order", hint: "Position of this unit in a self-guided tour." do
         = f.number_field :tour_visiting_order_number, class: "form-control", placeholder: "e.g. 1", min: 1, step: 1
 
-.u-section
-  .u-section-head
+.pf-section
+  .pf-section-head
     %h2 Placement &amp; size
     %p A unit only appears on the interactive map once it has a floor.
-  .u-section-body
-    .u-grid
+  .pf-section-body
+    .pf-grid
       = unit_field "Building", gated: true do
         = f.text_field :building, class: "form-control", placeholder: "e.g. B", maxlength: "20"
       = unit_field "Floor", gated: true do
@@ -63,36 +63,36 @@
       = unit_field "Square footage", gated: true, hint: "Leave at 0 to fall back to the floor plan's." do
         = f.text_field :square_feet, class: "form-control", placeholder: "0", value: f.object.square_feet.to_i
 
-.u-section
-  .u-section-head
+.pf-section
+  .pf-section-head
     %h2 Status
-  .u-section-body
-    .u-grid
+  .pf-section-body
+    .pf-grid
       = unit_field "Sold", gated: true, hint: "For-sale properties only. Marking sold also marks the unit occupied." do
-        .u-inline-choices
-          %label.u-radio
+        .pf-inline-choices
+          %label.pf-radio
             = f.radio_button :sold, true, class: "settings-field"
             %span Yes
-          %label.u-radio
+          %label.pf-radio
             = f.radio_button :sold, false, class: "settings-field"
             %span No
       = unit_field "Model unit" do
-        %label.u-check
+        %label.pf-check
           = f.check_box :modal_unit
           %span Show this unit as a model unit
 
-.u-section
-  .u-section-head
+.pf-section
+  .pf-section-head
     %h2 Buttons &amp; links
     %p Buttons shown on the unit's card in the app. Additional buttons appear on the Pynwheel Map only.
-  .u-section-body
-    .u-grid
+  .pf-section-body
+    .pf-grid
       = unit_field "Button label" do
         = f.text_field :virtual_tour_button_label, class: "form-control", placeholder: "3D Tour", maxlength: 15
       = unit_field "Button URL", span: 2 do
         = f.text_field :virtual_tour_url, class: "form-control", placeholder: "https://…"
       = unit_field "Open in new tab" do
-        %label.u-check
+        %label.pf-check
           = f.check_box :link1_open_new_tab, { id: "link1_open_new_tab" }
           %span Open the button URL in a new tab
       = unit_field "Additional button label" do
@@ -100,7 +100,7 @@
       = unit_field "Additional button URL", span: 2 do
         = f.text_field :additional_url, class: "form-control", placeholder: "https://…"
       = unit_field "Open in new tab" do
-        %label.u-check
+        %label.pf-check
           = f.check_box :link2_open_new_tab, { id: "link2_open_new_tab" }
           %span Open the additional button URL in a new tab
       = unit_field "Additional button 2 label" do
@@ -108,7 +108,7 @@
       = unit_field "Additional button 2 URL", span: 2 do
         = f.text_field :scheduler_url, class: "form-control", placeholder: "https://…"
       = unit_field "Open in new tab" do
-        %label.u-check
+        %label.pf-check
           = f.check_box :link3_open_new_tab, { id: "link3_open_new_tab" }
           %span Open the second additional button URL in a new tab
 
@@ -149,25 +149,25 @@
       - @all_locks[:igloohome_locks].each do |lock|
         %option{value: "#{lock[:name]}", 'data-value' => "#{lock[:id]}"}
 
-  .u-section
-    .u-section-head
+  .pf-section
+    .pf-section-head
       %h2 Smart lock access
       %p Choose the access provider for this unit, then pick the physical lock it maps to.
-    .u-section-body
-      .u-grid
+    .pf-section-body
+      .pf-grid
         = unit_field "Lock type" do
           = f.select :lock_provider, options_for_select(@community.lock_options(locks_present_hash), (@door.present?) ? @door.lock_provider : f.object.lock_provider), {}, { class: "form-control lock_provider_input" }
 
         -# Both of these are toggled by the script below and start hidden. The
         -# <label> inside #lock_access_code is rewritten by it with the chosen
         -# provider's name, so it has to stay a plain label element.
-        .u-field.hide_it#manual_access_code
-          %label.u-flabel Access code
+        .pf-field.hide_it#manual_access_code
+          %label.pf-label Access code
           - access_code_value = f.object.door.present? ? f.object.door.access_code : f.object.access_code
           = f.text_field :access_code, oninput: "this.value = this.value.replace(/[^0-9#*]/g, '')", class: "form-control", placeholder: "Digits, # and * only", maxLength: "10", value: access_code_value
 
-        .u-field.span-2.hide_it#lock_access_code
-          %label.u-flabel Lock
+        .pf-field.span-2.hide_it#lock_access_code
+          %label.pf-label Lock
           = text_field_tag :lock_input, '', placeholder: "Search by lock name", list: "locks_list", autocomplete: "off", type: "text", class: "form-control lock_provider_input"
           %datalist#locks_list
         = hidden_field_tag "lock_id", ""
@@ -175,12 +175,12 @@
 -# Fees, Details title and Details used to sit inside the `enable_locks`
 -# conditional above, so properties without smart locks could not edit any of
 -# them from this page at all.
-.u-section
-  .u-section-head
+.pf-section
+  .pf-section-head
     %h2 Content
     %p Copy shown on this unit's card when a renter opens it on the map.
-  .u-section-body
-    .u-stack
+  .pf-section-body
+    .pf-stack
       = unit_field "Fees" do
         = f.text_area :additional_fee, class: "form-control wysihtml5", placeholder: "Enter Additional Fees"
       = unit_field "Details title", hint: 'Heading above the Details section. Defaults to "More Details".' do
@@ -195,11 +195,11 @@
         = unit_field "Directional text", hint: "Appears above the image on the self-guided tour. Only the first #{ENV['DESCRIPTION_LIMIT'].to_i} characters show on the page." do
           = f.text_area :stop_description, class: "form-control wysihtml5", placeholder: "Enter Directional Description", rows: "8"
 
-.u-section
-  .u-section-head
+.pf-section
+  .pf-section-head
     %h2 Floor plan images
     %p Images render at 325 × 300 px. Anything smaller may look pixelated.
-  .u-section-body
+  .pf-section-body
     .u-images
       = render "image_upload", f: f, attribute: :image, title: "Primary floor plan image",
                                note: "Replaces the floor plan's standard image for this unit.",
@@ -288,7 +288,7 @@
     function syncGates() {
       var on = document.querySelector(".settings-field[name='unit[manual_override]']:checked");
       var overridden = on && on.value === "true";
-      document.querySelectorAll(".u-field.gated").forEach(function (field) {
+      document.querySelectorAll(".pf-field.gated").forEach(function (field) {
         field.classList.toggle("feed-locked", !overridden);
       });
     }
