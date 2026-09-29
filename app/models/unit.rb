@@ -102,6 +102,7 @@ class Unit < ApplicationRecord
     "availability" => { column: :availability_is_updated, label: "Availability status" },
     "floor" => { column: :floor_is_updated, label: "Floor" },
     "building" => { column: :building_is_updated, label: "Building" },
+    "show_on_map" => { column: :show_on_map_is_updated, label: "Show on map" },
     "sold" => { column: :sold_is_updated, label: "Sold", display_only: true }
   }.freeze
 
@@ -151,6 +152,21 @@ class Unit < ApplicationRecord
     return false unless available
 
     (available_date || Date.new(0)) <= Date.today
+  end
+
+  # Availability was set to available by hand, so the feed no longer owns it.
+  def pinned_available?
+    available.present? && (available_is_updated.present? || availability_is_updated.present?)
+  end
+
+  # show_on_map value for a feed sync pass. The feed decides it from whether the
+  # provider returned the unit on its available-only pass, but a value set by hand
+  # is kept, and a unit someone marked available by hand must stay on the map even
+  # when the feed disagrees, or visible_on_map_for hides it on the next sync.
+  def feed_show_on_map(limit_result)
+    return show_on_map if show_on_map_is_updated
+
+    limit_result || pinned_available?
   end
 
   # Which availability filter bucket this unit falls into, matching the old map's

@@ -213,7 +213,7 @@ class PsiService < BaseService
 
           static_building_name_update(unit, u)
           set_availability_url(unit, u, property_id)
-          unit.show_on_map = limit_result
+          unit.show_on_map = unit.feed_show_on_map(limit_result)
 
           @unit_record << unit.provider_unit_id
           import_units << unit      
@@ -305,7 +305,7 @@ class PsiService < BaseService
           static_building_name_update(unit, u)
           set_availability_url(unit, u, property_id)
           unit.manually_updated = false
-          unit.show_on_map = limit_result
+          unit.show_on_map = unit.feed_show_on_map(limit_result)
 
           import_units << unit
         end

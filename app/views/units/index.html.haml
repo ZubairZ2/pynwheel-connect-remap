@@ -175,6 +175,8 @@
               %button{type: "button", "data-mo" => "mo-available"} Available
               %button{type: "button", "data-mo" => "mo-available-date"} Available date
               %button{type: "button", "data-mo" => "mo-sold"} Sold
+              - if SHOW_ON_MAP.include?(@community.data_provider)
+                %button{type: "button", "data-mo" => "mo-show-on-map"} Show on map
               .sep
               .grp Placement
               %button{type: "button", "data-mo" => "mo-floorplan"} Floor plan

@@ -117,7 +117,7 @@ class YardiRentCafeV2Service < ::BaseService
                   end
 
                   unit.lease_pricing = leasing
-                  unit.show_on_map = limit_result
+                  unit.show_on_map = unit.feed_show_on_map(limit_result)
 
                   import_units << unit
 
@@ -224,7 +224,7 @@ class YardiRentCafeV2Service < ::BaseService
                     end
 
                     unit.lease_pricing = leasing
-                    unit.show_on_map = limit_result
+                    unit.show_on_map = unit.feed_show_on_map(limit_result)
 
                     import_units << unit
 

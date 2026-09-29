@@ -166,6 +166,7 @@ class UnitsController < ApplicationController
           @unit.available_is_updated = true
         end
         @unit.available = true
+        @unit.show_on_map = true
       elsif (params[:unit].present? and params[:unit][:availability].present? && params[:unit][:availability] == "Occupied")
         if @unit.available == true
           @unit.available_is_updated = true
@@ -193,6 +194,9 @@ class UnitsController < ApplicationController
       end
       if (params[:unit][:available_date].present? && params[:unit][:available_date] != @unit.available_date)
         @unit.available_date_is_updated = true
+      end
+      if (params[:unit][:show_on_map].present? && params[:unit][:show_on_map].to_s != @unit.show_on_map.to_s)
+        @unit.show_on_map_is_updated = true
       end
       if (params[:unit][:floor].present? && params[:unit][:floor] != @unit.floor.to_i.to_s)
         @unit.floor_is_updated = true
@@ -326,7 +330,7 @@ class UnitsController < ApplicationController
     end
     if params[:unit][:available] == 'true'
 
-      @unit.update(availability: "Unoccupied", available: true, availability_is_updated: true)
+      @unit.update(availability: "Unoccupied", available: true, availability_is_updated: true, show_on_map: true)
     end
     if params[:unit][:available] == 'false'
       @unit.update(availability: "Occupied", available: false, availability_is_updated: true)
@@ -576,7 +580,7 @@ class UnitsController < ApplicationController
 
   def set_available
     if params[:available] == 'true'
-      mass_override_units.update_all(availability: "Unoccupied", manually_updated: true, available_date: Date.today - 1, available_is_updated: true, availability_is_updated: true, available: true, updated_at: Time.current)
+      mass_override_units.update_all(availability: "Unoccupied", manually_updated: true, available_date: Date.today - 1, available_is_updated: true, availability_is_updated: true, available: true, show_on_map: true, updated_at: Time.current)
     else
       mass_override_units.update_all(availability: "Occupied", manually_updated: true, available: false, available_is_updated: true, availability_is_updated: true, updated_at: Time.current)
     end
@@ -599,6 +603,12 @@ class UnitsController < ApplicationController
       flash[:notice] = "Manual Override is updated for units successfully."
     end
 
+    redirect_back(fallback_location: root_path)
+  end
+
+  def set_show_on_map
+    mass_override_units.update_all(show_on_map: params[:show_on_map] == "true", manually_updated: true, show_on_map_is_updated: true, updated_at: Time.current)
+    flash[:notice] = "Show on map is updated for units successfully."
     redirect_back(fallback_location: root_path)
   end
 

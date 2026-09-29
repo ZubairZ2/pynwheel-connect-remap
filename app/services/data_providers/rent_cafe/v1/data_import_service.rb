@@ -131,7 +131,7 @@ module DataProviders
               unit.min_effective_rent = r["MinimumRent"] if r["MinimumRent"].present?
               unit.max_effective_rent = r["MinimumRent"] if r["MinimumRent"].present?
               unit.unit_status = r["UnitStatus"] rescue ""
-              unit.show_on_map = limit_result
+              unit.show_on_map = unit.feed_show_on_map(limit_result)
 
             rescue => exception
               exception

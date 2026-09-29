@@ -142,7 +142,7 @@ class PsiSwapService < BaseService
         building = u["Units"]["Unit"]["BuildingName"]
         unit.building = building.present? ? building.gsub("Building ", "") : ""
         set_availability_url(unit, u, property_id)
-        unit.show_on_map = limit_result
+        unit.show_on_map = unit.feed_show_on_map(limit_result)
         
         unit.save(validate: false)
       else
@@ -202,7 +202,7 @@ class PsiSwapService < BaseService
         unit.building = building.present? ? building.gsub("Building ", "") : ""
 
         set_availability_url(unit, u, property_id)
-        unit.show_on_map = limit_result
+        unit.show_on_map = unit.feed_show_on_map(limit_result)
 
         unit.save(validate: false)
       end

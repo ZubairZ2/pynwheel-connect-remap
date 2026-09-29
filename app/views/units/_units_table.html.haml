@@ -76,7 +76,7 @@
                 = best_in_place u, :sold, as: :checkbox, collection: { false: "No", true: "Yes" }, url: community_unit_path(@community, u)
             - if show_on_map
               %td.flag
-                %span.pill{class: (u.show_on_map ? "on" : "off")}
+                %span.pill{class: [(u.show_on_map ? "on" : "off"), ("edited" if u.show_on_map_is_updated)].compact.join(" "), title: (u.show_on_map_is_updated ? "Set by hand, so the data feed will not update it. Clear it with Mass overrides → Field overrides." : nil)}
                   = best_in_place u, :show_on_map, as: :checkbox, collection: { false: "No", true: "Yes" }, url: community_unit_path(@community, u)
             - if tour_order
               %td= best_in_place u, :tour_visiting_order_number, as: :input, url: community_unit_path(@community, u), place_holder: "—"

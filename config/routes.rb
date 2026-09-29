@@ -469,6 +469,7 @@ Rails.application.routes.draw do
         post :set_available
         post :set_manual_override
         post :set_sold
+        post :set_show_on_map
         post :add_description
         post :add_additional_fees
         post :set_image

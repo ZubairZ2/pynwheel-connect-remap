@@ -213,7 +213,7 @@ class PsiStaticService < BaseService
 
         set_availability_url(unit, u, property_id)
         unit.manually_updated = false
-        unit.show_on_map = limit_result
+        unit.show_on_map = unit.feed_show_on_map(limit_result)
 
         unit.save(validate: false)
       end
