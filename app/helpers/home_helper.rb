@@ -50,15 +50,35 @@ module HomeHelper
     end
   end
 
-  # The badges to draw, plus - when there are more than fit - one overflow badge
-  # whose tooltip names the ones it stands for, so nothing is simply lost.
-  def community_feature_badges(community)
-    features = community_features(community)
-    return features if features.size <= VISIBLE_FEATURES
+  # Which map views the property offers: "2D only", "3D only", or "2D + 3D"
+  # with the view the map opens in marked. Takes the [views, opens_in] pair
+  # CommunityFilterQuery.map_views_for resolved, so a row costs no query. A
+  # property with no map uploaded yet gets no badge.
+  def community_map_view_badge(views, opens_in)
+    case views
+    when "2d" then { label: "2D only", title: "Map views: 2D only", view: true }
+    when "3d" then { label: "3D only", title: "Map views: 3D only", view: true }
+    when "both"
+      { label: "2D + 3D", opens_in: opens_in, view: true,
+        title: "Map views: 2D and 3D, opens in #{opens_in.upcase}" }
+    end
+  end
 
-    shown = features.first(VISIBLE_FEATURES)
-    rest = features.drop(VISIBLE_FEATURES)
-    shown + [{ label: "+#{rest.size}", title: rest.map { |f| f[:title] }.join(", "), accent: false }]
+  # The badges to draw, plus - when there are more than fit - one overflow badge
+  # whose tooltip names the ones it stands for, so nothing is simply lost. The
+  # map view badge always leads and is never folded into the "+N".
+  def community_feature_badges(community, map_view = nil)
+    view_badge = community_map_view_badge(*map_view)
+    features = community_features(community)
+    room = view_badge ? VISIBLE_FEATURES - 1 : VISIBLE_FEATURES
+
+    if features.size > room
+      rest = features.drop(room)
+      features = features.first(room) +
+        [{ label: "+#{rest.size}", title: rest.map { |f| f[:title] }.join(", "), accent: false }]
+    end
+
+    [view_badge, *features].compact
   end
 
   # `data_provider_updated_on` is a free-text string the sync services write,

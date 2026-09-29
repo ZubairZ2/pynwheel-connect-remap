@@ -150,7 +150,6 @@ class Community < ApplicationRecord
     "access" => { column: :pynwheel_access, label: "Access", title: "Pynwheel Access" },
     "sdk_map" => { column: :enable_sdk_map, label: "SDK Map", title: "New SDK map" },
     "svg_map" => { column: :enable_svg_mode, label: "SVG", title: "SVG map mode" },
-    "three_d" => { column: :enable_three_d_maps, label: "3D", title: "3D maps" },
     "calculator" => { column: :enable_pynwheel_pricing_calculator, label: "Calculator", title: "Pynwheel pricing calculator" },
     "student" => { column: :student_housing_property, label: "Student", title: "Student housing property" }
   }.freeze

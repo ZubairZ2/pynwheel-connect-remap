@@ -7,6 +7,7 @@ class HomeController < ApplicationController
     # per row; the filter's own join covers searching and sorting on it.
     @communities = paginate_grid(@filter.results.includes(:company), @filter)
     @unit_counts = unit_counts_for(@communities)
+    @map_views = CommunityFilterQuery.map_views_for(@communities.map(&:id))
     @filter_options = community_filter_options
 
     # The toolbar re-requests this action on every keystroke and sorts and pages

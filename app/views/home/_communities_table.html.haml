@@ -56,11 +56,17 @@
               - if map_type[:sub]
                 .cell-sub= map_type[:sub]
             %td.c-products
-              - badges = community_feature_badges(community)
+              - badges = community_feature_badges(community, @map_views[community.id])
               - if badges.any?
                 .tags
                   - badges.each do |badge|
-                    %span.tag{class: ("accent" if badge[:accent]), title: badge[:title]}= badge[:label]
+                    %span.tag{class: [("accent" if badge[:accent]), ("view" if badge[:view])], title: badge[:title]}
+                      - if badge[:opens_in]
+                        %span{class: ("dim" unless badge[:opens_in] == "2d")}> 2D
+                        = " + "
+                        %span{class: ("dim" unless badge[:opens_in] == "3d")}< 3D
+                      - else
+                        = badge[:label]
               - else
                 %span.cell-none &mdash;
             %td.right

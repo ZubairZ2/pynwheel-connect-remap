@@ -11,6 +11,10 @@
   .properties-page .c-map-type { min-width: 110px; }
   .properties-page .c-products { min-width: 190px; max-width: 320px; }
   .properties-page .c-property .cell-sub .dot { color: #d8dde4; margin: 0 5px; }
+  /* The map view badge leads the Products cell. On "2D + 3D" the view the map
+     opens in stays full strength and the other is dimmed. */
+  .properties-page .tag.view { background: #e7f6ef; color: #15803d; }
+  .properties-page .tag.view .dim { opacity: 0.45; }
   /* Now that the toolbar is one row, the search box takes only the space the
      dropdowns leave rather than all of it. */
   .properties-page .f-search { flex: 1 1 260px; min-width: 180px; max-width: 560px; }
@@ -45,7 +49,8 @@
           = grid_filter_select :state, @filter_options[:states].map { |s| [s, s] }, "All states"
           = grid_filter_select :data_provider, @filter_options[:providers].map { |p| [p.titleize, p] } + [["No data feed", CommunityFilterQuery::NONE]], "All data feeds"
           = grid_filter_select :product, Community::FEATURES.map { |key, f| [f[:title], key] }, "Any product"
-          = grid_filter_select :map_type, [["SDK map", "sdk"], ["SVG map", "svg"], ["3D map", "three_d"], ["Sitemap", "sitemap"], ["Floor-level map", "floor_level"]], "Any map type"
+          = grid_filter_select :map_type, [["SDK map", "sdk"], ["SVG map", "svg"], ["Sitemap", "sitemap"], ["Floor-level map", "floor_level"]], "Any map type"
+          = grid_filter_select :map_view, [["2D only", "2d"], ["3D only", "3d"], ["2D + 3D", "both"], ["2D + 3D, opens in 2D", "both_2d"], ["2D + 3D, opens in 3D", "both_3d"], ["No map yet", CommunityFilterQuery::NONE]], "Any map view"
           - if @filter_options[:regions].any?
             = grid_filter_select :region_id, @filter_options[:regions], "All regions"
           - if @filter_options[:groups].any?

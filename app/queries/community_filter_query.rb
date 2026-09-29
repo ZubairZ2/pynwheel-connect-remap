@@ -39,18 +39,71 @@ class CommunityFilterQuery < FilterQuery
 
   FILTER_KEYS = %i[
     q company_id region_id community_group_id state data_provider
-    product map_type
+    product map_type map_view
   ].freeze
 
   # Which map a property renders. Mutually exclusive as far as the operator
-  # cares, and each is a different column, so they share one dropdown.
+  # cares, and each is a different column, so they share one dropdown. 3D is
+  # not here: whether a property shows 3D is the map view filter's question.
   MAP_TYPES = {
     "sdk" => "communities.enable_sdk_map IS TRUE",
     "svg" => "communities.enable_svg_mode IS TRUE",
-    "three_d" => "communities.enable_three_d_maps IS TRUE",
     "sitemap" => "communities.is_sitemap IS TRUE",
     "floor_level" => "communities.is_floor_level_map IS TRUE"
   }.freeze
+
+  # Community#resolved_map_views and #resolved_default_map_view, in SQL, so the
+  # grid can filter on them and draw a whole page of them in one query instead
+  # of loading every property's floorplates to ask. Keep the two in step.
+  #
+  # A 2D map exists when the artwork the map draws is uploaded: the SVG in SVG
+  # mode, the raster image otherwise, on the sitemap or the floorplates.
+  HAS_2D_MAP = <<~SQL.squish.freeze
+    (CASE WHEN communities.is_sitemap IS TRUE
+          THEN EXISTS (SELECT 1 FROM sitemaps WHERE sitemaps.community_id = communities.id
+                         AND COALESCE(CASE WHEN communities.enable_svg_mode IS TRUE THEN sitemaps.svg_image ELSE sitemaps.image END, '') <> '')
+          ELSE EXISTS (SELECT 1 FROM floorplates WHERE floorplates.community_id = communities.id
+                         AND COALESCE(CASE WHEN communities.enable_svg_mode IS TRUE THEN floorplates.svg_image ELSE floorplates.image END, '') <> '')
+     END)
+  SQL
+
+  HAS_3D_MAP = "(communities.enable_three_d_maps IS TRUE)".freeze
+
+  # "2d", "3d" or "both". Where the model falls back to "2d" for a property with
+  # no map at all, this says "none" - on a list of properties that difference is
+  # the useful part.
+  MAP_VIEWS = <<~SQL.squish.freeze
+    (CASE WHEN #{HAS_2D_MAP} AND #{HAS_3D_MAP}
+          THEN (CASE WHEN communities.available_map_views IN ('2d', '3d', 'both')
+                     THEN communities.available_map_views ELSE 'both' END)
+          WHEN #{HAS_3D_MAP} THEN '3d'
+          WHEN #{HAS_2D_MAP} THEN '2d'
+          ELSE 'none'
+     END)
+  SQL
+
+  # Only a map offering both views has a default to choose.
+  OPENS_IN_3D = "communities.default_map_view = '3d'".freeze
+
+  MAP_VIEW_FILTERS = {
+    "2d" => "#{MAP_VIEWS} = '2d'",
+    "3d" => "#{MAP_VIEWS} = '3d'",
+    "both" => "#{MAP_VIEWS} = 'both'",
+    "both_2d" => "#{MAP_VIEWS} = 'both' AND #{OPENS_IN_3D} IS NOT TRUE",
+    "both_3d" => "#{MAP_VIEWS} = 'both' AND #{OPENS_IN_3D}",
+    NONE => "#{MAP_VIEWS} = 'none'"
+  }.freeze
+
+  # The resolved views and opening view for each of the given properties, as
+  # { id => ["both", "3d"] }. One query for a whole page of rows.
+  def self.map_views_for(ids)
+    return {} if ids.empty?
+
+    opens_in = "CASE WHEN #{OPENS_IN_3D} THEN '3d' ELSE '2d' END"
+    Community.where(id: ids)
+             .pluck(:id, Arel.sql(MAP_VIEWS), Arel.sql(opens_in))
+             .to_h { |id, views, opens| [id, [views, views == "both" ? opens : views]] }
+  end
 
   private
 
@@ -66,6 +119,7 @@ class CommunityFilterQuery < FilterQuery
     relation = apply_exact(relation, :state, "communities.state", blank_sql: "communities.state IS NULL OR communities.state = ''")
     relation = apply_exact(relation, :data_provider, "communities.data_provider", blank_sql: "communities.data_provider IS NULL OR communities.data_provider = ''")
     relation = apply_lookup(relation, :map_type, MAP_TYPES)
+    relation = apply_lookup(relation, :map_view, MAP_VIEW_FILTERS)
     apply_product(relation)
   end
 
