@@ -17,7 +17,9 @@ interface Props {
   /** Something is selected to drop, so a polygon click drops it. */
   dropping: boolean;
   onPolygonDown: (target: PlotTarget) => void;
-  onPolygonHover: (code: string | null) => void;
+  onPolygonHover: (key: string | null) => void;
+  /** font_settings.svg_labels_font_family: set on the document's text, as the legacy page does. */
+  fontFamily?: string | null;
 }
 
 interface Original {
@@ -34,7 +36,7 @@ interface Original {
  * again by the selectors the parser recorded, styled in place when something
  * sits on them or the pointer is over them, and restored otherwise.
  */
-export const SvgPlanLayer = ({ doc, polygons, plotOn, dropping, onPolygonDown, onPolygonHover }: Props) => {
+export const SvgPlanLayer = ({ doc, polygons, plotOn, dropping, onPolygonDown, onPolygonHover, fontFamily = null }: Props) => {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const elements = useRef(new Map<string, Element>());
   const byElement = useRef(new Map<Element, PlotTarget>());
@@ -55,6 +57,8 @@ export const SvgPlanLayer = ({ doc, polygons, plotOn, dropping, onPolygonDown, o
     root.setAttribute('preserveAspectRatio', 'none');
     root.setAttribute('class', 'bo-map__svgdoc');
     root.setAttribute('focusable', 'false');
+    // The labels are the SVG's own text; the CMS lets a property pick their font (`updateSvgTextFontFamily`).
+    if (fontFamily) root.querySelectorAll('text, tspan').forEach((element) => element.setAttribute('font-family', fontFamily));
     host.replaceChildren(root);
 
     const found = new Map<string, Element>();
@@ -83,7 +87,7 @@ export const SvgPlanLayer = ({ doc, polygons, plotOn, dropping, onPolygonDown, o
       byElement.current = new Map();
       originals.current = new Map();
     };
-  }, [doc]);
+  }, [doc, fontFamily]);
 
   // Restyle the shapes whenever what sits on them, or the pointer, changes.
   useEffect(() => {
@@ -93,6 +97,11 @@ export const SvgPlanLayer = ({ doc, polygons, plotOn, dropping, onPolygonDown, o
       const polygon = byKey.get(key);
       if (!original) return;
       const active = polygon && (polygon.filled || polygon.hover || polygon.selected);
+      // The shape's state, readable by tests and styles.
+      if (polygon?.filled) element.setAttribute('data-plotted', '');
+      else element.removeAttribute('data-plotted');
+      if (polygon?.selected) element.setAttribute('data-selected', '');
+      else element.removeAttribute('data-selected');
       if (!active) {
         style.fill = original.fill;
         style.stroke = original.stroke;
@@ -130,10 +139,10 @@ export const SvgPlanLayer = ({ doc, polygons, plotOn, dropping, onPolygonDown, o
       }}
       onPointerMove={(event) => {
         if (!plotOn) return;
-        const code = targetOf(event)?.code ?? null;
-        if (code !== hovered.current) {
-          hovered.current = code;
-          onPolygonHover(code);
+        const key = targetOf(event)?.key ?? null;
+        if (key !== hovered.current) {
+          hovered.current = key;
+          onPolygonHover(key);
         }
       }}
       onPointerLeave={() => {

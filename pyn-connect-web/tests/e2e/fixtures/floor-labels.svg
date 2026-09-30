@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  A floor SVG in the shape the CMS's real floor files take (the John Demo
+  floor 1 export): a `Units` layer whose groups are named by room and carry
+  the room's polygon (with a generated id) and its printed number, an
+  `Amenities` layer of named spaces, one unit whose polygon has no printed
+  text, and artwork text outside both layers. Used by the map tests to check
+  what the canvas labels, and with what.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500" fill="none">
+<rect width="800" height="500" fill="#F5F5F5"/>
+<g id="BG">
+<g id="Road_Name">
+<text id="GALILEO_WAY" fill="black" font-family="Inter" font-size="12"><tspan x="320" y="40">GALILEO WAY</tspan></text>
+</g>
+<g id="Floor_1">
+<g id="TENANT_LEASE_SPACE">
+<rect id="Vector_9" x="40" y="380" width="300" height="90" fill="#E1D5C5" stroke="black" stroke-width="0.5"/>
+<text id="TENANT_LEASE_SPACE_2" fill="black" font-family="Inter" font-size="9"><tspan x="130" y="428">TENANT LEASE SPACE</tspan></text>
+</g>
+</g>
+</g>
+<g id="Amenities">
+<g id="POOL">
+<polygon fill="#BFE3F2" stroke="white" stroke-width="0.7" points="560,80 700,80 700,200 560,200"/>
+<text id="POOL_2" fill="black" font-family="Inter" font-size="12"><tspan x="612" y="145">POOL</tspan></text>
+</g>
+<g id="COURTYARD">
+<polygon id="Vector_18" fill="#D9E8C9" points="560,220 700,220 700,340 560,340"/>
+<text id="COURTYARD_2" fill="black" font-family="Inter" font-size="9"><tspan x="600" y="284">COURTYARD</tspan></text>
+</g>
+</g>
+<g id="Units">
+<g id="Floor_1_2">
+<g id="101">
+<polygon id="Vector_2650" fill="#EECEA5" stroke="black" stroke-width="0.5" points="60,80 180,80 180,180 60,180"/>
+<text id="101_2" fill="black" font-family="Inter" font-size="9"><tspan x="110" y="134">101</tspan></text>
+</g>
+<g id="102">
+<polygon id="Vector_2651" fill="#EECEA5" stroke="black" stroke-width="0.5" points="200,80 320,80 320,180 200,180"/>
+<text id="102_2" fill="black" font-family="Inter" font-size="9"><tspan x="250" y="134">102</tspan></text>
+</g>
+<g id="103">
+<polygon id="Vector_2652" fill="#EECEA5" stroke="black" stroke-width="0.5" points="340,80 460,80 460,180 340,180"/>
+</g>
+<g id="104">
+<polygon id="Vector_2653" fill="#EECEA5" stroke="black" stroke-width="0.5" points="60,200 180,200 180,300 60,300"/>
+<text id="104_2" fill="black" font-family="Inter" font-size="9"><tspan x="110" y="254">104</tspan></text>
+</g>
+</g>
+</g>
+</svg>

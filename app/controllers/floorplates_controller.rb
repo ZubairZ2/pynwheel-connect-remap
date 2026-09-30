@@ -288,6 +288,9 @@ class FloorplatesController < ApplicationController
         # How many rows units.json answers (the same unfiltered UnitFilterQuery),
         # so the inventory can show the Units tab's count before it loads them.
         unit_count: UnitFilterQuery.new(community).results.count,
+        # The marker colours, sizes and SVG label font the legacy plotting
+        # pages draw this property's map with (Connect::MapMarkers).
+        markers: Connect::MapMarkers.for(community),
         shared_background: Connect::UploadUrl.file(community, :background_svg_image, request.base_url, bucket: bucket),
         sitemap: sitemap && {
           id: sitemap.id,

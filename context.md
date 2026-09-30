@@ -735,3 +735,24 @@ The screen shows only what `pyn-system-plotting.html` shows: Building row, floor
 ### Tests
 
 `tests/e2e/listingsAndInventory.spec.ts` (same session env as `hazel.spec.ts`; `PYN_CONNECT_E2E_JOHN` defaults to 1411). `hazel.spec.ts` "Loading" slows Map & Plotting, not Inventory: the Inventory route is now too fast for the veil to be observed after a pre-first-byte delay.
+
+## 21. Map & Plotting canvas: zoom, markers and labels — implementation knowledge (October 1, 2026)
+
+Added with phase 2l (branch `feature/map_zoom_labels_pins`; PYN_CONNECT_PROGRESS.md §25 has the legacy trace and the measurements).
+
+### Viewport
+
+`MapCanvas` owns a `View { scale, x, y }`: `scale` is relative to the fitted plan (1 = fit inside the canvas less `PLAN_INSET`), `x` / `y` move the plan's centre in canvas pixels. It is applied as a CSS `transform` on `.bo-map__plan`, so the SVG, its polygons, the overlay labels, pins, nodes and edges (all positioned as percentages of the plan) move as one — no overlay keeps its own coordinate space. Limits `MIN_ZOOM 0.5` … `MAX_ZOOM 8`; buttons step ×1.3 about the canvas centre (the legacy `BUTTON_ZOOM_STEP`); the wheel zooms about the pointer through a native non-passive listener (React's `onWheel` is passive and would let the page scroll); dragging the empty canvas in Select mode pans (a move under 3 px is a click and clears the selection as before); `bound()` keeps a tenth of the plan in view (legacy `boundsPadding 0.1`); Reset is `setView(DEFAULT_VIEW)` — no reload, no request; a floor or layer change resets. The polygon popover is placed in canvas space (`toCanvas`) so it does not scale. `pointerPx` in the hook reads `planRef`'s rendered box, which includes the transform, so drops and drags stay exact at any zoom. Tests read `data-scale` on `[data-testid="plan"]`.
+
+### Markers
+
+`MapMarkers.tsx` holds the legacy glyphs as inline SVG (Font Awesome paths): the location marker with its tip on the point, the green door plus, the amenity square with a camera, the hallway `dot-circle`, the door, the red tour start. Sizes are in image pixels × `k` (plan px per image px), so they scale with the map like the legacy panzoom container. Colours come from `PropertyInventory.markers` (`floorplates.json` `meta.markers`, `Connect::MapMarkers`): change the theme logic there, never in the frontend. Rules: a placement on an SVG polygon draws **no marker** (the filled polygon is the placement, as the legacy clone); the plus appears only when `markers.autoWayfinding && inventory.selfTour` and the item has no door (`LevelPin.hasDoor`); edges are 1px black (`vectorEffect: non-scaling-stroke`); no permanent label chips — a selected marker names itself; never print coordinates.
+
+### SVG polygons and labels
+
+`collectTargets` scopes to the `Units` and `Amenities` layers when the file has them (legacy `getValidShapeCategory`), else the whole document minus outline / label / text / icon layers. `PlotTarget.code` is what the map calls the polygon: the group's printed `<text>` (`label`), else the group's name, else the shape id — a generated id (`GENERIC_ID`: `Vector_…`, `Group_…`, `path…`) never wins over a named group. **Identity is `PlotTarget.key`** (`rawId ?? selector`), used for `pinOverrides[].polygon`, `selPoly`, `polyHover`, `itemsByPolygon` and the SvgPlanLayer hover; several shapes can share a code. The canvas prints an overlay label only when the SVG has no text for the polygon (`showCode`, while active) or when the plotted item's name differs from the polygon's text (`assigned`, `sameName`). `SvgPlanLayer` sets `data-plotted` / `data-selected` on the shapes and applies `markers.svgFontFamily` to `text` / `tspan`. Auto Plot only receives targets whose `category !== 'amenity'`.
+
+### Verifying
+
+- `tests/e2e/mapCanvas.spec.ts` serves `tests/e2e/fixtures/floor-labels.svg` (a small file in the shape of the CMS's real exports) for the SVG property's first floor; the real John Demo floor 1 file lives on the public bucket at `uploads/floorplate/svg_image/4230/1785636792-optimized.svg` and can be served the same way for a manual check.
+- After an `rsync` into the verify copy while `next dev` is compiling, pages can answer `__webpack_modules__[moduleId] is not a function` (client-rendered fallback, a page error in the tests); restart the dev server with `.next` removed. Not a code fault.

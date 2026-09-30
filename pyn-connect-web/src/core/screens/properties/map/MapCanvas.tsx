@@ -1,54 +1,88 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 
 import { i18n } from '~/resources/i18n';
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { LoadingIndicator } from '~/core/components/atoms/LoadingIndicator';
 import { useImageStatus } from '~/core/hooks/useImageStatus';
 import type { PropertyMapController } from '~/core/hooks/usePropertyMap';
-import type { LevelNode } from '~/core/utils/generator/map/mapNodes.generator';
+import type { LevelNode, LevelPin } from '~/core/utils/generator/map/mapNodes.generator';
 import { edgeKey } from '~/core/utils/generator/map/mapState';
 import { M, t } from '~/core/utils/generator/map/mapText';
+import {
+  AmenityGlyph,
+  DoorGlyph,
+  DotGlyph,
+  EDGE_COLOR,
+  ELEVATOR_COLOR,
+  ENTRY_COLOR,
+  HALLWAY_COLOR,
+  HALLWAY_SELECTED_COLOR,
+  LocationGlyph,
+  NodeGlyph,
+  PlusGlyph,
+  ResetViewIcon,
+  TourStartGlyph,
+  markerWidth
+} from './MapMarkers';
 import { SvgPlanLayer } from './SvgPlanLayer';
 
 /** The legacy route colour (maps.js draws the animated path in orange, stroke 5). */
 const ROUTE_COLOR = '#ffa500';
 
-const NODE_FILL: Record<LevelNode['kind'], string> = {
-  hallway: '#171A21',
-  junction: '#171A21',
-  elevator: '#7B3A87',
-  startingPoint: '#4A7212',
-  tourStart: '#4A7212',
-  door: '#3153d2'
-};
-
-const NODE_SIZE: Record<LevelNode['kind'], number> = {
-  hallway: 12,
-  junction: 12,
-  elevator: 18,
-  startingPoint: 18,
-  tourStart: 18,
-  door: 9
-};
-
 /** The margin around the plan inside the canvas (the design's plan sits inset, not edge to edge). */
 const PLAN_INSET = 24;
 
-/**
+/*
+ * The viewport. `scale` is relative to the fitted plan (1 = the whole floor
+ * in view); `x` / `y` move the plan's centre from the canvas's centre, in
+ * canvas pixels. The legacy page ran timmywil/panzoom over the same
+ * container (zoomHandler.js): wheel and drag, a ×1.3 step per button towards
+ * the canvas centre, and a reset to the fitted, centred plan; its bounds kept
+ * a tenth of the plan in view.
+ */
+interface View {
+  scale: number;
+  x: number;
+  y: number;
+}
+
+const DEFAULT_VIEW: View = { scale: 1, x: 0, y: 0 };
+const MIN_ZOOM = 0.5;
+const MAX_ZOOM = 8;
+const BUTTON_ZOOM_STEP = 1.3;
+const WHEEL_ZOOM_SPEED = 0.0015;
+const BOUNDS_PADDING = 0.1;
+/** A pointer that moves less than this before it lifts is a click, not a pan. */
+const PAN_THRESHOLD = 3;
+
+const clampZoom = (scale: number): number => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, scale));
+
+/** The legacy sizes of the node glyphs, in plan pixels at the image's own scale (`fa-lg` in a 30px box; `fa-xs` at the door size). */
+const NODE_GLYPH = 18;
+const DOOR_GLYPH = 22;
+const TOUR_START = 25;
+
+/*
  * The plan surface: the floor SVG (its polygons live, as the design plots
  * onto them) or the floor image, at its own aspect ratio, and on top of it
- * the grid, the pathway edges, the route, the nodes, the pins and the
- * selected polygon's popover, every one positioned as a percentage of the
- * layer's own coordinate space so a stored position lands where the legacy
- * map drew it.
+ * the pathway edges, the route, the nodes, the pins and the polygon labels,
+ * every one positioned as a percentage of the layer's own coordinate space
+ * so a stored position lands where the legacy map drew it and stays there
+ * while the plan zooms and pans. The markers are the legacy page's — the
+ * theme's location marker with its tip on the point, the green door plus,
+ * the amenity square, the hallway dots and 1px lines — sized in the plan's
+ * pixels so they scale with it, as the legacy panzoom container scaled them.
  */
 export const MapCanvas = ({ controller }: { controller: PropertyMapController }) => {
-  const { level, graph, space, state, assets, actions, planRef, fileInputRef, routeLines, cursor, plotArmedLabel, svgDoc, svgStatus, polygons, selectedPolygon } =
+  const { map, level, graph, space, state, assets, actions, planRef, fileInputRef, routeLines, cursor, plotArmedLabel, svgDoc, svgStatus, polygons, selectedPolygon } =
     controller;
+  const { markers } = map.inventory;
   const surfaceRef = useRef<HTMLDivElement | null>(null);
   const [surface, setSurface] = useState({ w: 0, h: 0 });
+  const [view, setView] = useState<View>(DEFAULT_VIEW);
+  const [panning, setPanning] = useState(false);
   const onSvg = space === 'svg';
   const src = onSvg ? null : (assets?.image?.url ?? null);
   const image = useImageStatus(src);
@@ -63,35 +97,188 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
     return () => observer.disconnect();
   }, []);
 
-  if (!level || !graph) return null;
-
   const svgReady = onSvg && svgStatus === 'ready' && !!svgDoc;
   const has = !!assets?.has && (onSvg ? !!assets?.svg : !!src);
-  const dims = graph.dims ?? (onSvg && level.svgWidth && level.svgHeight ? { w: level.svgWidth, h: level.svgHeight } : null);
+  const dims = graph?.dims ?? (onSvg && level?.svgWidth && level?.svgHeight ? { w: level.svgWidth, h: level.svgHeight } : null);
 
   // Fit the layer's box inside the surface, centred and inset as the design
   // draws the plan, so percentages map onto it.
-  const box = (() => {
-    if (!dims || !surface.w || !surface.h) return { width: '100%', height: '100%' };
+  const fit = (() => {
+    if (!dims || !surface.w || !surface.h) return null;
     const scale = Math.min((surface.w - 2 * PLAN_INSET) / dims.w, (surface.h - 2 * PLAN_INSET) / dims.h);
-    return { width: `${Math.floor(dims.w * scale)}px`, height: `${Math.floor(dims.h * scale)}px` };
+    return { w: Math.floor(dims.w * scale), h: Math.floor(dims.h * scale) };
   })();
+  const box = fit ? { width: `${fit.w}px`, height: `${fit.h}px` } : { width: '100%', height: '100%' };
+  /** One image (or viewBox) pixel, in the plan's pixels: the legacy marker sizes are given in the former. */
+  const k = fit && dims ? fit.w / dims.w : 1;
 
+  // The geometry the zoom maths reads, kept current for the native wheel listener.
+  const geometry = useRef({ surface, fit });
+  geometry.current = { surface, fit };
+
+  /** Keeps at least a tenth of the plan inside the canvas, as the legacy bounds did. */
+  const bound = useCallback((next: View): View => {
+    const { surface: s, fit: f } = geometry.current;
+    if (!f || !s.w || !s.h) return next;
+    const planW = f.w * next.scale;
+    const planH = f.h * next.scale;
+    const padX = Math.min(planW, s.w) * BOUNDS_PADDING;
+    const padY = Math.min(planH, s.h) * BOUNDS_PADDING;
+    const centreX = s.w / 2 + next.x;
+    const centreY = s.h / 2 + next.y;
+    const boundedX = Math.min(s.w - padX + planW / 2, Math.max(padX - planW / 2, centreX));
+    const boundedY = Math.min(s.h - padY + planH / 2, Math.max(padY - planH / 2, centreY));
+    return { scale: next.scale, x: boundedX - s.w / 2, y: boundedY - s.h / 2 };
+  }, []);
+
+  /** Zooms by a factor about a canvas point (the pointer), or about the canvas centre (the buttons). */
+  const zoomAt = useCallback(
+    (factor: number, point: { x: number; y: number } | null) => {
+      setView((current) => {
+        const { surface: s } = geometry.current;
+        const scale = clampZoom(current.scale * factor);
+        if (scale === current.scale || !s.w || !s.h) return current;
+        const centre = { x: s.w / 2, y: s.h / 2 };
+        const at = point ?? centre;
+        const planCentre = { x: centre.x + current.x, y: centre.y + current.y };
+        // The plan point under the pointer stays under it.
+        const local = { x: (at.x - planCentre.x) / current.scale, y: (at.y - planCentre.y) / current.scale };
+        const next = { x: at.x - local.x * scale, y: at.y - local.y * scale };
+        return bound({ scale, x: next.x - centre.x, y: next.y - centre.y });
+      });
+    },
+    [bound]
+  );
+
+  const resetView = useCallback(() => setView(DEFAULT_VIEW), []);
+
+  // A new floor, or the other layer of the same floor, opens fitted and centred.
+  useEffect(() => {
+    setView(DEFAULT_VIEW);
+  }, [level?.id, space]);
+
+  // The wheel zooms about the pointer. React registers wheel listeners as
+  // passive, so the page would scroll too; a native listener can prevent that.
+  useEffect(() => {
+    const element = surfaceRef.current;
+    if (!element) return undefined;
+    const onWheel = (event: WheelEvent) => {
+      if (!geometry.current.fit) return;
+      event.preventDefault();
+      const rect = element.getBoundingClientRect();
+      zoomAt(Math.exp(-event.deltaY * WHEEL_ZOOM_SPEED), { x: event.clientX - rect.left, y: event.clientY - rect.top });
+    };
+    element.addEventListener('wheel', onWheel, { passive: false });
+    return () => element.removeEventListener('wheel', onWheel);
+  }, [zoomAt]);
+
+  // Dragging the empty canvas pans it; a still click keeps clearing the selection.
+  const pan = useRef<{ pointerId: number; startX: number; startY: number; origin: View; moved: boolean; down: ReactPointerEvent<HTMLDivElement> } | null>(null);
+  const canPan = has && state.tool === 'select' && !plotArmedLabel;
+
+  const onPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!has) return;
+    if ((event.target as Element).closest('[data-node]')) {
+      actions.onSurfaceDown(event);
+      return;
+    }
+    if (!canPan || event.button !== 0) {
+      actions.onSurfaceDown(event);
+      return;
+    }
+    pan.current = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, origin: view, moved: false, down: event };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const onPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    actions.onSurfaceMove(event);
+    const current = pan.current;
+    if (!current || current.pointerId !== event.pointerId) return;
+    const dx = event.clientX - current.startX;
+    const dy = event.clientY - current.startY;
+    if (!current.moved) {
+      if (Math.hypot(dx, dy) < PAN_THRESHOLD) return;
+      current.moved = true;
+      setPanning(true);
+    }
+    setView(bound({ ...current.origin, x: current.origin.x + dx, y: current.origin.y + dy }));
+  };
+
+  const onPointerUp = (event: ReactPointerEvent<HTMLDivElement>) => {
+    actions.onSurfaceUp();
+    const current = pan.current;
+    if (!current || current.pointerId !== event.pointerId) return;
+    pan.current = null;
+    setPanning(false);
+    if (!current.moved) actions.onSurfaceDown(current.down);
+  };
+
+  if (!level || !graph) return null;
+
+  const isDefaultView = view.scale === 1 && view.x === 0 && view.y === 0;
   const dropping = state.plotSel.length > 0 || !!state.plotTarget;
-  const labelled = polygons.filter((polygon) => polygon.filled || polygon.hover || polygon.selected);
+  // A label prints on a polygon when the SVG gives it no text of its own and it is active, or when something with another name sits on it.
+  const labelled = polygons.filter((polygon) => (polygon.showCode && (polygon.filled || polygon.hover || polygon.selected)) || polygon.assigned);
+  const showDoorPlus = markers.autoWayfinding && map.inventory.selfTour;
+
+  /** A stored plan point, as canvas pixels under the current view (for chrome that must not scale, like the popover). */
+  const toCanvas = (leftPct: number, topPct: number): { left: number; top: number } => {
+    if (!fit) return { left: 0, top: 0 };
+    return {
+      left: surface.w / 2 + view.x + (leftPct / 100 - 0.5) * fit.w * view.scale,
+      top: surface.h / 2 + view.y + (topPct / 100 - 0.5) * fit.h * view.scale
+    };
+  };
+
+  const nodeGlyph = (node: LevelNode, selected: boolean) => {
+    switch (node.kind) {
+      case 'hallway':
+      case 'junction':
+        return <NodeGlyph size={Math.max(6, NODE_GLYPH * k)} color={selected ? HALLWAY_SELECTED_COLOR : HALLWAY_COLOR} dashed={node.temporary} />;
+      case 'door':
+        return <DoorGlyph size={Math.max(8, DOOR_GLYPH * k)} color={markers.doorColor} />;
+      case 'tourStart':
+        return <TourStartGlyph size={Math.max(10, TOUR_START * k)} />;
+      case 'elevator':
+        return <DotGlyph size={Math.max(8, NODE_GLYPH * k)} color={ELEVATOR_COLOR} ring={selected ? HALLWAY_SELECTED_COLOR : undefined} />;
+      default:
+        return <DotGlyph size={Math.max(8, NODE_GLYPH * k)} color={node.isStart ? ENTRY_COLOR : ELEVATOR_COLOR} ring={selected ? HALLWAY_SELECTED_COLOR : undefined} />;
+    }
+  };
+
+  const pinGlyph = (pin: LevelPin) => {
+    if (pin.kind === 'amenity') {
+      const size = Math.max(10, markers.amenitySize * k);
+      return (
+        <>
+          <AmenityGlyph size={size} color={markers.amenityColor} />
+          {showDoorPlus && !pin.hasDoor && (
+            <PlusGlyph size={Math.max(6, size / 1.8)} color={markers.doorPlusColor} style={{ left: size / 2 - size * 0.2, top: -size / 2 }} />
+          )}
+        </>
+      );
+    }
+    const size = Math.max(10, markers.unitSize * k);
+    return (
+      <>
+        <LocationGlyph size={size} color={markers.unitColor} />
+        {showDoorPlus && !pin.hasDoor && (
+          <PlusGlyph size={Math.max(6, size / 2)} color={markers.doorPlusColor} style={{ left: markerWidth(size) / 2 - size * 0.2, top: -size }} />
+        )}
+      </>
+    );
+  };
 
   return (
     <div
       ref={surfaceRef}
-      className={`bo-map__surface${has ? '' : ' bo-map__surface--empty'}${onSvg ? ' bo-map__surface--svg' : ''}`}
+      className={`bo-map__surface${has ? '' : ' bo-map__surface--empty'}${onSvg ? ' bo-map__surface--svg' : ''}${panning ? ' bo-map__surface--panning' : ''}`}
       data-testid="plan-surface"
-      style={{ cursor }}
-      onPointerDown={(event) => {
-        if (has) actions.onSurfaceDown(event);
-      }}
-      onPointerMove={actions.onSurfaceMove}
-      onPointerUp={actions.onSurfaceUp}
-      onPointerCancel={actions.onSurfaceUp}
+      style={{ cursor: panning ? 'grabbing' : cursor }}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
     >
       <input
         ref={fileInputRef}
@@ -105,7 +292,13 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
       />
 
       {has ? (
-        <div ref={planRef} className="bo-map__plan" style={box}>
+        <div
+          ref={planRef}
+          className="bo-map__plan"
+          data-testid="plan"
+          data-scale={view.scale.toFixed(3)}
+          style={{ ...box, transform: `translate(${view.x}px, ${view.y}px) scale(${view.scale})` }}
+        >
           {onSvg ? (
             svgReady ? (
               <SvgPlanLayer
@@ -115,6 +308,7 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
                 dropping={dropping}
                 onPolygonDown={actions.clickPolygon}
                 onPolygonHover={actions.hoverPolygon}
+                fontFamily={markers.svgFontFamily}
               />
             ) : (
               <div className="bo-map__missing" role="status">
@@ -161,13 +355,11 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
             </>
           )}
 
-          {state.gridOn && <div className="bo-map__grid" aria-hidden="true" />}
-
           {svgReady && labelled.length > 0 && (
             <div className="bo-map__polylabels" aria-hidden="true">
               {labelled.map((polygon) => (
                 <div key={polygon.key} className="bo-map__polylabel" style={{ left: `${polygon.left}%`, top: `${polygon.top}%` }}>
-                  <span className="bo-map__polycode">{polygon.code}</span>
+                  {polygon.showCode && <span className="bo-map__polycode">{polygon.code}</span>}
                   {polygon.assigned && <span className="bo-map__polyassigned">{polygon.assigned}</span>}
                 </div>
               ))}
@@ -192,8 +384,8 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
                     y1={edge.y1}
                     x2={edge.x2}
                     y2={edge.y2}
-                    stroke={selected ? '#7B3A87' : edge.temporary ? '#4A7212' : '#0077AE'}
-                    strokeWidth={selected ? 3.5 : 2.5}
+                    stroke={selected ? HALLWAY_SELECTED_COLOR : edge.temporary ? ENTRY_COLOR : EDGE_COLOR}
+                    strokeWidth={selected ? 2.5 : 1}
                     strokeDasharray={edge.temporary ? '6 4' : undefined}
                     vectorEffect="non-scaling-stroke"
                     strokeLinecap="round"
@@ -221,100 +413,39 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
           {graph.nodes.map((node) => {
             const selected = state.selectedNode === node.key;
             const edgeFrom = state.edgeFrom === node.key;
-            const chain = state.chainFrom === node.key && state.tool === 'hallway';
-            const quiet = node.kind === 'hallway' || node.kind === 'door';
-            const size = NODE_SIZE[node.kind] + (selected ? 4 : 0);
             return (
               <div
                 key={node.key}
                 data-node={node.key}
-                className={`bo-map__node bo-map__node--${node.kind}${selected ? ' bo-map__node--selected' : ''}`}
+                className={`bo-map__marker bo-map__node bo-map__node--${node.kind}${selected ? ' bo-map__node--selected bo-map__marker--selected' : ''}${edgeFrom ? ' bo-map__marker--from' : ''}${node.temporary ? ' bo-map__marker--temp' : ''}`}
                 style={{ left: `${node.xPct}%`, top: `${node.yPct}%`, zIndex: selected ? 6 : node.kind === 'hallway' ? 2 : 3 }}
                 onPointerDown={actions.onNodeDown(node.key)}
                 title={node.label}
               >
-                <span
-                  className="bo-map__dot"
-                  style={{
-                    width: size,
-                    height: size,
-                    background: node.isStart && node.kind !== 'tourStart' ? '#4A7212' : NODE_FILL[node.kind],
-                    borderColor: selected ? '#7B3A87' : edgeFrom ? '#4A7212' : chain ? '#C62534' : '#fff',
-                    borderWidth: selected || edgeFrom || chain ? 3 : 2,
-                    borderStyle: node.temporary ? 'dashed' : 'solid'
-                  }}
-                />
-                {(!quiet || selected) && <span className="bo-map__nodelabel">{node.label}</span>}
+                {nodeGlyph(node, selected)}
+                {selected && <span className="bo-map__nodelabel bo-map__markerlabel">{node.label}</span>}
               </div>
             );
           })}
 
           {graph.pins.map((pin) => {
+            // A placement on a polygon is the filled polygon itself, as the legacy page clones the shape: no marker on top.
+            if (pin.polygon && svgReady) return null;
             const selected = !!state.selectedPin && `${state.selectedPin.kind}:${state.selectedPin.id}` === pin.key;
-            const onPolygon = !!pin.polygon && svgReady;
             return (
               <div
                 key={pin.key}
                 data-node={pin.key}
-                className={`bo-map__pin${selected ? ' bo-map__pin--selected' : ''}${pin.temporary ? ' bo-map__pin--temp' : ''}${onPolygon ? ' bo-map__pin--poly' : ''}`}
+                className={`bo-map__marker bo-map__pin bo-map__pin--${pin.kind}${selected ? ' bo-map__pin--selected bo-map__marker--selected' : ''}${pin.temporary || pin.moved ? ' bo-map__pin--temp bo-map__marker--temp' : ''}`}
                 style={{ left: `${pin.xPct}%`, top: `${pin.yPct}%`, zIndex: selected ? 7 : 4 }}
                 onPointerDown={actions.onPinDown(pin.ref)}
-                title={pin.label}
+                title={pin.temporary ? `${pin.label} · ${i18n.t(M.selection.temporary)}` : pin.label}
               >
-                <span
-                  className="bo-map__pindot"
-                  style={{
-                    width: selected ? 26 : onPolygon ? 16 : 22,
-                    height: selected ? 26 : onPolygon ? 16 : 22,
-                    background: pin.color,
-                    borderColor: selected ? '#7B3A87' : '#fff',
-                    borderWidth: selected ? 3 : 2,
-                    borderStyle: pin.temporary || pin.moved ? 'dashed' : 'solid'
-                  }}
-                >
-                  {!onPolygon && <Icon name={pin.kind === 'unit' ? 'bed' : 'star'} style={{ transform: 'scale(0.62)' }} />}
-                </span>
-                {!onPolygon && <span className="bo-map__pinlabel">{pin.label}</span>}
+                {pinGlyph(pin)}
+                {selected && <span className="bo-map__nodelabel bo-map__markerlabel">{pin.label}</span>}
               </div>
             );
           })}
-
-          {selectedPolygon && svgReady && (
-            <div
-              className="bo-map__polypop"
-              data-node="polygon-popover"
-              style={{
-                left: `${selectedPolygon.left}%`,
-                top: `${selectedPolygon.top}%`,
-                transform: selectedPolygon.below ? 'translate(-50%, 24px)' : 'translate(-50%, calc(-100% - 24px))'
-              }}
-              onPointerDown={(event) => event.stopPropagation()}
-            >
-              <div className="bo-map__polypophead">
-                <div className="bo-map__polypoptext">
-                  <div className="bo-map__polypoptitle">{selectedPolygon.title}</div>
-                  <div className="bo-map__polypopsub">{selectedPolygon.sub}</div>
-                </div>
-                <button type="button" className="bo-map__dismiss" aria-label={i18n.t(M.place.closePolygon)} onClick={actions.closeSelPoly}>
-                  ×
-                </button>
-              </div>
-              <div className="bo-map__polypoplist">
-                {selectedPolygon.items.map((item) => (
-                  <div key={item.key} className="bo-map__polypoprow">
-                    <div className="bo-map__polypoptext">
-                      <div className="bo-map__polypopname">{item.name}</div>
-                      <div className="bo-map__polypopmeta">{item.meta}</div>
-                    </div>
-                    <button type="button" className="bo-map__unplot" onClick={() => actions.unplotItems([item.key])}>
-                      {i18n.t(M.place.unplot)}
-                    </button>
-                  </div>
-                ))}
-              </div>
-              {selectedPolygon.items.length === 0 && <div className="bo-map__polypopempty">{i18n.t(M.place.polygonEmpty)}</div>}
-            </div>
-          )}
         </div>
       ) : (
         <div
@@ -350,6 +481,61 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {selectedPolygon && svgReady && has && (
+        <div
+          className="bo-map__polypop"
+          data-node="polygon-popover"
+          style={{
+            ...toCanvas(selectedPolygon.left, selectedPolygon.top),
+            transform: selectedPolygon.below ? 'translate(-50%, 24px)' : 'translate(-50%, calc(-100% - 24px))'
+          }}
+          onPointerDown={(event) => event.stopPropagation()}
+        >
+          <div className="bo-map__polypophead">
+            <div className="bo-map__polypoptext">
+              <div className="bo-map__polypoptitle">{selectedPolygon.title}</div>
+              <div className="bo-map__polypopsub">{selectedPolygon.sub}</div>
+            </div>
+            <button type="button" className="bo-map__dismiss" aria-label={i18n.t(M.place.closePolygon)} onClick={actions.closeSelPoly}>
+              ×
+            </button>
+          </div>
+          <div className="bo-map__polypoprows">
+            {selectedPolygon.items.map((item) => (
+              <div key={item.key} className="bo-map__polypoprow">
+                <div className="bo-map__polypoptext">
+                  <div className="bo-map__polypopname">{item.name}</div>
+                  <div className="bo-map__polypopmeta">{item.meta}</div>
+                </div>
+                <button type="button" className="bo-map__unplot" onClick={() => actions.unplotItems([item.key])}>
+                  {i18n.t(M.place.unplot)}
+                </button>
+              </div>
+            ))}
+          </div>
+          {selectedPolygon.items.length === 0 && <div className="bo-map__polypopempty">{i18n.t(M.place.polygonEmpty)}</div>}
+        </div>
+      )}
+
+      {has && (
+        <div className="bo-map__zoom" role="group" aria-label={i18n.t(M.plan.zoom)} onPointerDown={(event) => event.stopPropagation()}>
+          <button type="button" className="bo-map__zoombtn" aria-label={i18n.t(M.plan.zoomIn)} title={i18n.t(M.plan.zoomIn)} disabled={view.scale >= MAX_ZOOM} onClick={() => zoomAt(BUTTON_ZOOM_STEP, null)}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden="true">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+          </button>
+          <button type="button" className="bo-map__zoombtn" aria-label={i18n.t(M.plan.zoomOut)} title={i18n.t(M.plan.zoomOut)} disabled={view.scale <= MIN_ZOOM} onClick={() => zoomAt(1 / BUTTON_ZOOM_STEP, null)}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden="true">
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+          </button>
+          <button type="button" className="bo-map__zoombtn" aria-label={i18n.t(M.plan.resetView)} title={i18n.t(M.plan.resetView)} disabled={isDefaultView} onClick={resetView}>
+            <ResetViewIcon />
+          </button>
         </div>
       )}
 

@@ -47,6 +47,8 @@ export interface LevelPin {
   /** The polygon the pin sits on (a stored pointer's shape, or the one it was dropped on here). */
   polygon: string | null;
   beds: number | null;
+  /** The unit or amenity has a plotted door, so the legacy map draws no green "plot the door" marker beside it. */
+  hasDoor: boolean;
 }
 
 export interface LevelNode {
@@ -158,7 +160,7 @@ const storedPlacement = (
   if (record.svgPointer) {
     const doc = svgDocOf(state, level);
     const target = doc ? pointerTarget(doc, record.svgPointer) : null;
-    return { level, x: record.svgPointer.xPlot, y: record.svgPointer.yPlot, space: 'svg', polygon: target?.code ?? null };
+    return { level, x: record.svgPointer.xPlot, y: record.svgPointer.yPlot, space: 'svg', polygon: target?.key ?? null };
   }
   if (record.xPlot != null && record.yPlot != null) return { level, x: record.xPlot, y: record.yPlot, space: 'raster', polygon: null };
   return null;
@@ -209,7 +211,7 @@ export const pinPlacement = (map: PropertyMap, levels: MapLevel[], state: LocalM
 };
 
 export const generatePinItems = (map: PropertyMap, levels: MapLevel[], state: LocalMapState): PinItem[] => {
-  const colors = bedColorsOf(map, state);
+  const { markers } = map.inventory;
   const stopIds = new Set(
     map.graph.tourStops.filter((stop) => stop.displayStop).map((stop) => `${stop.stopType}:${stop.stopId}`)
   );
@@ -233,7 +235,7 @@ export const generatePinItems = (map: PropertyMap, levels: MapLevel[], state: Lo
       floor: unit.floor,
       building: unit.building,
       tourStop: stopIds.has(`unit:${unit.id}`),
-      color: colors[bedTierOf(beds)]
+      color: markers.unitColor
     };
   });
 
@@ -255,7 +257,7 @@ export const generatePinItems = (map: PropertyMap, levels: MapLevel[], state: Lo
       floor: amenity.floor,
       building: amenity.building ?? amenity.ownerBuilding,
       tourStop: stopIds.has(`amenity:${amenity.id}`),
-      color: AMENITY_COLOR
+      color: markers.amenityColor
     };
   });
 
@@ -283,9 +285,14 @@ export const generateLevelGraph = (map: PropertyMap, levels: MapLevel[], level: 
   const dims = levelSpaceDims(level, state, space);
   const hidden = new Set(state.hiddenNodes);
   const hiddenEdges = new Set(state.hiddenEdges);
-  const colors = bedColorsOf(map, state);
+  // Markers take the property's theme colours, as the legacy plotting page draws them.
+  const { markers } = inventory;
   const stopIds = new Set(graph.tourStops.filter((stop) => stop.displayStop).map((stop) => `${stop.stopType}:${stop.stopId}`));
   const startKeys = new Set(Object.values(state.startOverrides));
+  const doorsOf = { Unit: new Set<number>(), Amenity: new Set<number>() };
+  graph.doors.forEach((door) => {
+    if (door.attachedWithType === 'Unit' || door.attachedWithType === 'Amenity') doorsOf[door.attachedWithType].add(door.attachedWithId);
+  });
   const nodes: LevelNode[] = [];
 
   const place = (key: string, kind: NodeKind, label: string, stored: { x: number; y: number } | null, extra: Partial<LevelNode> = {}) => {
@@ -366,7 +373,7 @@ export const generateLevelGraph = (map: PropertyMap, levels: MapLevel[], level: 
 
   // Pins: units plotted on this floorplate (or on the sitemap), amenities it owns, and temporary placements, in this space.
   const pins: LevelPin[] = [];
-  const pushPin = (ref: PinRef, placement: Placement | null, label: string, beds: number | null, color: string, tourStop: boolean) => {
+  const pushPin = (ref: PinRef, placement: Placement | null, label: string, beds: number | null, color: string, tourStop: boolean, hasDoor: boolean) => {
     if (!placement || placement.level?.id !== level.id || placement.space !== space) return;
     pins.push({
       ref,
@@ -383,15 +390,32 @@ export const generateLevelGraph = (map: PropertyMap, levels: MapLevel[], level: 
       tourStop,
       space,
       polygon: placement.polygon,
-      beds
+      beds,
+      hasDoor
     });
   };
   inventory.units.forEach((unit) => {
     const beds = unitBeds(map, unit);
-    pushPin({ kind: 'unit', id: unit.id }, placementOfUnit(levels, state, unit), unitLabel(unit), beds, colors[bedTierOf(beds)], stopIds.has(`unit:${unit.id}`));
+    pushPin(
+      { kind: 'unit', id: unit.id },
+      placementOfUnit(levels, state, unit),
+      unitLabel(unit),
+      beds,
+      markers.unitColor,
+      stopIds.has(`unit:${unit.id}`),
+      unit.doorId != null || doorsOf.Unit.has(unit.id)
+    );
   });
   mapAmenities(map).forEach((amenity) =>
-    pushPin({ kind: 'amenity', id: amenity.id }, placementOfAmenity(levels, state, amenity), amenity.name, null, AMENITY_COLOR, stopIds.has(`amenity:${amenity.id}`))
+    pushPin(
+      { kind: 'amenity', id: amenity.id },
+      placementOfAmenity(levels, state, amenity),
+      amenity.name,
+      null,
+      markers.amenityColor,
+      stopIds.has(`amenity:${amenity.id}`),
+      doorsOf.Amenity.has(amenity.id)
+    )
   );
 
   if (space === 'raster') {
@@ -439,7 +463,7 @@ export const pinMeta = (map: PropertyMap, item: PinItem): string =>
     ? `${bedsLabel(item.beds)}${item.floor != null ? ` · ${i18n.t(M.level.floor).replace('{floor}', String(item.floor))}` : ''}`
     : `${i18n.t(M.place.amenity)}${item.category ? ` · ${item.category}` : ''}`;
 
-/** The items sitting on each polygon of a level's SVG, by polygon code. */
+/** The items sitting on each polygon of a level's SVG, by the polygon's key (`PlotTarget.key`; several shapes can share a printed code). */
 export const itemsByPolygon = (pins: LevelPin[]): Record<string, LevelPin[]> => {
   const out: Record<string, LevelPin[]> = {};
   pins.forEach((pin) => {
@@ -453,7 +477,7 @@ export const itemsByPolygon = (pins: LevelPin[]): Record<string, LevelPin[]> => 
 export const polygonOfPin = (doc: FloorSvgDoc | null, pin: LevelPin): PlotTarget | null => {
   if (!doc) return null;
   if (pin.polygon) {
-    const named = doc.targets.find((target) => target.code === pin.polygon);
+    const named = doc.targets.find((target) => target.key === pin.polygon);
     if (named) return named;
   }
   return doc.targets.find((target) => pin.x >= target.bbox.x && pin.x <= target.bbox.x + target.bbox.w && pin.y >= target.bbox.y && pin.y <= target.bbox.y + target.bbox.h) ?? null;

@@ -95,14 +95,15 @@ test.describe('Map & Plotting (real data)', () => {
     // Stored SVG pointers already sit on polygons, so the counts are compared before and after.
     const todoRows = page.locator('.bo-map__plotrow');
     const before = await page.locator('.bo-map__plottab').nth(1).innerText();
-    const storedOnPolygons = await page.locator('.bo-map__pin--poly').count();
+    // A placement on a polygon is the filled polygon itself (the legacy page clones the shape; no marker sits on it).
+    const storedOnPolygons = await page.locator('[data-plotted]').count();
     if (await todoRows.count()) {
       await todoRows.first().locator('.bo-map__plotpick').click();
       await page.getByRole('button', { name: /^Manual Plot/ }).click();
       await expect(page.locator('.bo-map__armed')).toContainText('selected');
       const shape = svgLayer.locator('polygon[id], path[id], rect[id]').first();
       await shape.dispatchEvent('pointerdown', { bubbles: true, pointerId: 1 });
-      await expect(page.locator('.bo-map__pin--poly')).toHaveCount(storedOnPolygons + 1);
+      await expect(page.locator('[data-plotted]')).toHaveCount(storedOnPolygons + 1);
       await page.locator('.bo-map__plottab').nth(1).click();
       await expect(page.locator('.bo-map__plottab').nth(1)).not.toHaveText(before);
       // Its polygon popover lists it and can unplot it.
@@ -110,7 +111,7 @@ test.describe('Map & Plotting (real data)', () => {
       await shape.dispatchEvent('pointerdown', { bubbles: true, pointerId: 1 });
       await expect(page.locator('.bo-map__polypop')).toBeVisible();
       await page.locator('.bo-map__polypop').getByRole('button', { name: 'Unplot' }).first().click();
-      await expect(page.locator('.bo-map__pin--poly')).toHaveCount(storedOnPolygons);
+      await expect(page.locator('[data-plotted]')).toHaveCount(storedOnPolygons);
       await page.locator('.bo-map__plottab').nth(0).click();
     }
 
