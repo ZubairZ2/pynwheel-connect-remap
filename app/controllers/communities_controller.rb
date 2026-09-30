@@ -874,6 +874,9 @@ class CommunitiesController < ApplicationController
     @community.enable_unit_type_pricing = params[:enable_unit_type_pricing]
     @community.student_housing_property = params[:student_housing_property].present? ? params[:student_housing_property] : false
     @community.highlight_all_units_on_hover = params[:highlight_all_units_on_hover].present? ? params[:highlight_all_units_on_hover] : false
+    # Posts a hidden "off" ahead of its checkbox, like the PYN-1610 map view
+    # settings below, so a settings form without the toggle leaves it alone.
+    @community.hide_map_unit_numbers = params[:hide_map_unit_numbers] if params.key?(:hide_map_unit_numbers)
     @community.hide_bedrooms_bathrooms = params[:hide_bedrooms_bathrooms]
     @community.hide_square_feet = params[:hide_square_feet]
     @community.hide_availability = params[:hide_availability]

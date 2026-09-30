@@ -329,6 +329,8 @@
                     %label.label-primary{:for => "highlight_all_units_on_hover"}
                     %span.pl-15 Yes
 
+              = render partial: "communities/hide_map_unit_numbers_setting"
+
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                   Student Housing Property
@@ -630,6 +632,8 @@
                     = check_box_tag :highlight_all_units_on_hover, true, @community.highlight_all_units_on_hover, class: "apartment-setting-field"
                     %label.label-primary{:for => "highlight_all_units_on_hover"}
                     %span.pl-15 Yes
+
+              = render partial: "communities/hide_map_unit_numbers_setting"
 
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30

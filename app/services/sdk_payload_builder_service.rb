@@ -546,7 +546,11 @@ class SdkPayloadBuilderService
         # range rather than the one unit; off is today's single-unit hover.
         # Properties that plot one tenant per floor plan across several units
         # want the group, but nothing here is specific to such a property.
-        highlightAllUnitsOnHover: @community.highlight_all_units_on_hover
+        highlightAllUnitsOnHover: @community.highlight_all_units_on_hover,
+        # "Hide unit numbers" CMS toggle. On, the SDK drops the number labels
+        # the SVG draws inside its unit groups; the unit shapes themselves, and
+        # everything they do on hover and click, are untouched.
+        hideUnitNumbers:          @community.hide_map_unit_numbers
       },
 
       beans3dConfig: beans3d_config_json,

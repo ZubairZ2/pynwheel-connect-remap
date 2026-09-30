@@ -440,6 +440,7 @@
     var enablePynwheelCalculator = #{@community.enable_pynwheel_pricing_calculator? ? 'true' : 'false'}
     var enableEngrainCalculator = #{@community.enable_pricing_calculator? ? 'true' : 'false'}
     var fontFamily = "#{@font_family}"
+    var hideUnitNumbers = "#{@community.hide_map_unit_numbers?}" === "true"
     var isPartnerMap = "#{@is_partner_map}"
     var isTouchMap = "#{@is_touch_map}" === "true"
     var floorplans = $("#communityWebpagesData").data("floorplans");

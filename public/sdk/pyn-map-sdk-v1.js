@@ -1853,6 +1853,7 @@
       clone.style.pointerEvents  = this._3dMode ? "none"   : "";
 
       this._applyGlobalLabelStyles(clone, this.config.styles.unitLabels);
+      this._hideUnitNumbers(clone);
 
       clone.removeAttribute("width");
       clone.removeAttribute("height");
@@ -4299,6 +4300,19 @@
       svg._pynTextStyled = true;
     },
 
+    // CMS "Hide unit numbers": drops the labels that sit in the SVG's unit
+    // groups -- the same _svgShapeCategory test that decides which shapes are
+    // units, so amenity labels and free-standing text stay. Labels already take
+    // no pointer events (_applyGlobalLabelStyles), so the unit shapes keep every
+    // hover, click and pop-up exactly as before.
+    _hideUnitNumbers(svg) {
+      if (!svg || this.data?.property?.map?.hideUnitNumbers !== true) return;
+
+      svg.querySelectorAll("text").forEach(el => {
+        if (this._svgShapeCategory(el) === "unit") el.style.display = "none";
+      });
+    },
+
     _getActiveSvg() {
       return this.container.querySelector(`svg[data-map-id="${this.activeMapId}"]`);
     },
@@ -4462,6 +4476,9 @@
      * toggle: on, hovering a unit should bring its whole floor plan forward
      * rather than the one unit. getHoverGroupUnits() answers which units those
      * are, and already returns just the hovered unit when the toggle is off.
+     *
+     * `map.hideUnitNumbers` is the CMS "Hide unit numbers" toggle. The SDK
+     * already applies it to the SVGs it renders; hosts need do nothing.
      */
     getPropertyConfig() {
       return this.data.property || null;

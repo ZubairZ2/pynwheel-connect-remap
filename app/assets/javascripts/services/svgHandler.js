@@ -241,6 +241,11 @@ async function fetchSVG(
     if (fontFamily)
       updateSvgTextFontFamily(svgElement, fontFamily);
 
+    // Only the renter map (web + touch) declares hideUnitNumbers; the CMS
+    // plotting pages share fetchSVG and must keep their labels.
+    if (typeof hideUnitNumbers !== "undefined" && hideUnitNumbers)
+      hideSvgUnitNumbers(svgElement);
+
     if (tracker) {
       asset.node = svgElement;
       tracker.addOrUpdateAsset(asset, trackerVisibilityCheck);
@@ -969,6 +974,16 @@ function getLastClonedJQueryElement(parentGroupElement) {
     console.warn("No cloned element found");
     return;
   }
+}
+
+// CMS "Hide unit numbers": hides the labels inside the SVG's unit groups,
+// classified by getValidShapeCategory so amenity labels and free-standing text
+// stay. Done before units are plotted, so a clone of a unit <g> copies its label
+// hidden. Hidden text takes no pointer events; the unit shapes keep theirs.
+function hideSvgUnitNumbers(svgElement) {
+  svgElement.querySelectorAll("text").forEach((el) => {
+    if (getValidShapeCategory(el, true) === "unit") el.style.display = "none";
+  });
 }
 
 function updateSvgTextFontFamily(svgElement, fontFamily) {
