@@ -13,6 +13,7 @@ import {
   type PropertyFilterKey,
   type PropertyFilters
 } from '~/core/utils/generator/propertyListing.generator';
+import { listingSortParams, nextListingSort, sortByLabel, type ListingSort } from '~/core/utils/generator/listingSort';
 import { generatePager } from '~/core/utils/generator/pagination.generator';
 import type { Property } from '~/core/models/data/property.data';
 import type { CompanyFilterOption, Pagination } from '~/core/models/data/session.data';
@@ -45,6 +46,7 @@ export const usePropertiesListing = (
   properties: Property[],
   pagination: Pagination | null,
   filters: PropertyFilters,
+  sort: ListingSort | null,
   options: { companies: CompanyFilterOption[]; dataProviders: string[] },
   scopeTotal: number | null
 ) => {
@@ -118,6 +120,9 @@ export const usePropertiesListing = (
     companyOptions,
     productOptions,
     dataProviderOptions,
-    goToPage: (page: number) => setParams({ page }, { keepPage: true })
+    goToPage: (page: number) => setParams({ page }, { keepPage: true }),
+    // A new order starts again from page 1; search and filters stay as they are.
+    toggleSort: (key: string) => setParams(listingSortParams(nextListingSort(sort, key))),
+    sortLabel: sortByLabel
   };
 };

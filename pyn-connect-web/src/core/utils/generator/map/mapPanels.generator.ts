@@ -68,12 +68,14 @@ export interface BuildingPill {
 
 export const generateBuildingPills = (map: PropertyMap, levels: MapLevel[], state: LocalMapState): BuildingPill[] => {
   const names = mapBuildings(map, levels);
-  if (names.length < 2) return [];
+  if (names.length === 0) return [];
   // The count is what the pill shows: the building's floorplates, plus the ones no building claims.
+  // A one-building property still shows its pill (as the design's Building row
+  // does), selected: every floorplate is that building's.
   return names.map((name) => ({
     name,
     count: String(levelsOfBuilding(levels, name).length),
-    active: state.building === name
+    active: names.length === 1 || state.building === name
   }));
 };
 

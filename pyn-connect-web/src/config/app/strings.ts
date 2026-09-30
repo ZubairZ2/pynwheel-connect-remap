@@ -468,6 +468,9 @@ export const CORE_STRINGS = {
     },
     units: {
       title: 'inventory.units.title',
+      loading: 'inventory.units.loading',
+      loadFailed: 'inventory.units.loadFailed',
+      retry: 'inventory.units.retry',
       lastSync: 'inventory.units.lastSync',
       neverSynced: 'inventory.units.neverSynced',
       noPms: 'inventory.units.noPms',
@@ -1490,6 +1493,7 @@ export const CORE_STRINGS = {
     signOut: 'shared.signOut',
     searchPlaceholder: 'shared.searchPlaceholder',
     loadFailed: 'shared.loadFailed',
+    sortBy: 'shared.sortBy',
     loading: 'shared.loading',
     loadingImage: 'shared.loadingImage'
   },

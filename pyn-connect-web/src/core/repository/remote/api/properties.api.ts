@@ -12,6 +12,9 @@ export interface PropertiesQuery {
   companyId?: string[];
   product?: string[];
   dataProvider?: string[];
+  /** A sortable column's key and direction (`ListingSort` in Rails); absent, the default order. */
+  sort?: string;
+  dir?: 'asc' | 'desc';
 }
 
 /**
@@ -32,7 +35,9 @@ export const fetchProperties = (
       stage: query.stage?.join(','),
       company_id: query.companyId?.join(','),
       product: query.product?.join(','),
-      data_provider: query.dataProvider?.join(',')
+      data_provider: query.dataProvider?.join(','),
+      sort: query.sort,
+      dir: query.dir
     }),
     { cookie }
   );

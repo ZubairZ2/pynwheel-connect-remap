@@ -286,3 +286,9 @@ Not a Connect gap. CarrierWave stores to disk in development while this database
 - **Polygon labels.** The design prints every polygon's id over it; the real floor SVGs already carry their room numbers as `<text>`, so Connect labels only the polygons that hold something, are hovered, or are open.
 - **Two layers, two spaces.** A floorplate with both a floor SVG and a floor image shows one at a time (Floor SVG / Background image): stored `x_plot/y_plot` are pixels of the image and stored `pointer_data` is viewBox units of the SVG, and the two files do not share a frame (`context.md` §18). The pathway graph, elevators, entry points and the tour start are image-space records and draw on the image layer; the CMS plots them there too.
 - **The OCR auto-plot of phase 2g** (Textract boxes, `map_ocr_data`) was superseded by the wizard; the Textract run itself stays a CMS action (M4 in the section above).
+
+---
+
+## Status update — September 30, 2026: tools removed from the Connect screen
+
+The user chose to match `pyn-system-plotting.html` exactly, so Map & Plotting no longer offers the pathway tools (Select, Place Pin, Junction, Connect, Move, Start Plotting Hallways), Grid, Publish, the floor SVG / image upload bar and Remove Plan, the layer switch, Run Algorithm, Building Starting Points, Vertical Connections or Marker Colors. Gaps M1 (saving pathway edits), M2 (Publish), M3 (uploads / Remove Plan) and M5 (routing over local edits) therefore have no UI in Connect for now; they still describe the backend work if those tools return. The legacy CMS pages (Auto Wayfinding, Floor plates → Plot Units) remain the place to edit pathways and plans. Plotting itself (Manual Plot, Auto Plot, M4) is unchanged. PYN_CONNECT_PROGRESS.md §24.

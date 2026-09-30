@@ -17,12 +17,11 @@ import { FloorplateDialog } from '../inventory/InventoryDialogs';
 
 /**
  * The dialogs of the screen: the confirm (a local change only, and its
- * message says so), Publish (what the CMS would push, and that Connect
- * cannot publish yet), Add Floorplate (the inventory's own dialog; Save only
+ * message says so), Add Floorplate (the inventory's own dialog; Save only
  * closes) and the four-step Auto Plot wizard. None sends a request.
  */
 export const MapDialogs = ({ controller }: { controller: PropertyMapController }) => {
-  const { state, actions, publishSummary, map } = controller;
+  const { state, actions, map } = controller;
   const confirm = state.confirm;
   const [viewer, setViewer] = useState<{ images: ImageDescriptor[]; index: number }>({ images: [], index: 0 });
 
@@ -56,24 +55,6 @@ export const MapDialogs = ({ controller }: { controller: PropertyMapController }
         <p className="bo-map__dialognote">{i18n.t(M.confirm.readOnly)}</p>
       </Modal>
 
-      <Modal
-        open={state.publishOpen}
-        title={i18n.t(M.publish.title)}
-        width={480}
-        onClose={actions.closePublish}
-        closeLabel={i18n.t(M.publish.close)}
-        className="bo-map__dialog"
-        footer={
-          <button type="button" className="bo-btn bo-btn--secondary" onClick={actions.closePublish}>
-            {i18n.t(M.publish.close)}
-          </button>
-        }
-      >
-        <p className="bo-map__dialogtext">{publishSummary.body}</p>
-        {publishSummary.unplotted && <p className="bo-map__dialogtext">{publishSummary.unplotted}</p>}
-        {publishSummary.local && <p className="bo-map__dialogtext">{publishSummary.local}</p>}
-        <div className="bo-map__warnbox">{i18n.t(M.publish.unavailable)}</div>
-      </Modal>
 
       {state.floorplateDialog && (
         <FloorplateDialog

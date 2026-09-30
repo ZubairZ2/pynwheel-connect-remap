@@ -207,5 +207,3 @@ export const activeSpace = (level: MapLevel, state: LocalMapState): PlanSpace =>
   return assets.svg ? 'svg' : 'raster';
 };
 
-/** The default layer for a property: the SVG when its first level has one. */
-export const defaultSpace = (levels: MapLevel[]): PlanSpace => (levels[0]?.svg ? 'svg' : 'raster');

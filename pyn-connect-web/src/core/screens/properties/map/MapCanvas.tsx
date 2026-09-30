@@ -33,6 +33,9 @@ const NODE_SIZE: Record<LevelNode['kind'], number> = {
   door: 9
 };
 
+/** The margin around the plan inside the canvas (the design's plan sits inset, not edge to edge). */
+const PLAN_INSET = 24;
+
 /**
  * The plan surface: the floor SVG (its polygons live, as the design plots
  * onto them) or the floor image, at its own aspect ratio, and on top of it
@@ -66,10 +69,11 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
   const has = !!assets?.has && (onSvg ? !!assets?.svg : !!src);
   const dims = graph.dims ?? (onSvg && level.svgWidth && level.svgHeight ? { w: level.svgWidth, h: level.svgHeight } : null);
 
-  // Fit the layer's box inside the surface, centred, so percentages map onto it.
+  // Fit the layer's box inside the surface, centred and inset as the design
+  // draws the plan, so percentages map onto it.
   const box = (() => {
     if (!dims || !surface.w || !surface.h) return { width: '100%', height: '100%' };
-    const scale = Math.min(surface.w / dims.w, surface.h / dims.h);
+    const scale = Math.min((surface.w - 2 * PLAN_INSET) / dims.w, (surface.h - 2 * PLAN_INSET) / dims.h);
     return { width: `${Math.floor(dims.w * scale)}px`, height: `${Math.floor(dims.h * scale)}px` };
   })();
 
@@ -331,11 +335,8 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
           <div className={`bo-map__dropzone${state.svgDrag ? ' bo-map__dropzone--active' : ''}`}>
             <Icon name="upload" style={{ color: 'var(--bo-accent)', transform: 'scale(1.6)', marginBottom: 6 }} />
             <div className="bo-map__droptitle">{i18n.t(state.svgDrag ? M.plan.dropActive : M.plan.dropLabel)}</div>
-            <div className="bo-map__dropsub">
-              {assets?.image
-                ? t(M.plan.needSvg, { level: `${level.sub} · ${level.label}` })
-                : `${t(M.plan.emptyFor, { level: `${level.sub} · ${level.label}` })} ${i18n.t(M.plan.emptyHint)}`}
-            </div>
+            {/* The design's No SVG state: the floor SVG is what plotting drops onto. A picked file is a local preview only. */}
+            <div className="bo-map__dropsub">{t(M.plan.needSvg, { level: `${level.sub} · ${level.label}` })}</div>
             <div className="bo-map__dropactions">
               <button
                 type="button"
@@ -347,32 +348,7 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
               >
                 {i18n.t(M.plan.chooseSvg)}
               </button>
-              {!assets?.image && (
-                <button
-                  type="button"
-                  className="bo-inv__ghost"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    actions.uploadRaster();
-                  }}
-                >
-                  {i18n.t(M.plan.uploadInstead)}
-                </button>
-              )}
-              {assets?.image && (
-                <button
-                  type="button"
-                  className="bo-inv__ghost"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    actions.pickLayer('raster');
-                  }}
-                >
-                  {i18n.t(M.plan.showImage)}
-                </button>
-              )}
             </div>
-            <div className="bo-map__dropnote">{i18n.t(M.plan.dropNote)}</div>
           </div>
         </div>
       )}

@@ -6,23 +6,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { propRoute, tourContentRoute, tourSetupRoute } from '~/config/app/connectRoutes';
 import { APP_ROUTES } from '~/config/app/urls';
 import { i18n } from '~/resources/i18n';
-import { Icon } from '~/core/components/atoms/connect/Icon';
 import { Breadcrumb } from '~/core/components/molecules/Breadcrumb';
 import { usePropertyMap, type MapInitial } from '~/core/hooks/usePropertyMap';
 import type { PropertyMap } from '~/core/models/data/propertyMap.data';
 import { M, plural, t } from '~/core/utils/generator/map/mapText';
 import { MapCanvas } from './map/MapCanvas';
 import { MapDialogs } from './map/MapDialogs';
-import {
-  AutoPlotReportPanel,
-  BedLegendPanel,
-  PlacePanelSlot,
-  RoutePanel,
-  SelectedPinPanel,
-  SelectionPanel,
-  StartingPointsPanel,
-  VerticalLinksPanel
-} from './map/MapPanels';
+import { PlotPanel } from './map/MapPanels';
 
 interface Props {
   /** Null when the property was not found, or could not be loaded (then `error` says so). */
@@ -33,20 +23,20 @@ interface Props {
 }
 
 /**
- * Map & Plotting on real data: the plotting design's `mapEditor` screen —
- * building pills, floorplate tabs with their plotting progress, Auto Plot,
- * Manual Plot onto the floor SVG's polygons, the Plot Units & Amenities
- * panel — over the property's floor plates, its unit and amenity pins, and
- * the pathway graph the legacy Auto Wayfinding page edits. Everything the
- * user does here is local to the page; the only requests any button sends
- * are reads (a floor SVG, the CMS routing algorithm).
+ * Map & Plotting on real data, exactly as the plotting design's `mapEditor`
+ * screen lays it out: building pills, floorplate tabs with their plotting
+ * progress, "{floor} · n of m plotted" with Auto Plot and Manual Plot, the
+ * floor plan with its polygons and pins, and the Plot Units & Amenities
+ * panel — over the property's floor plates, its unit and amenity pins and
+ * the stored pathway graph. Everything the user does here is local to the
+ * page; the only requests it sends are reads (a floor SVG).
  */
 export const PropertyMapScreen = ({ map, initial, error }: Props) =>
   map ? <MapEditor map={map} initial={initial ?? null} /> : <MapUnavailable error={error ?? null} />;
 
 const MapEditor = ({ map, initial }: { map: PropertyMap; initial: MapInitial | null }) => {
   const controller = usePropertyMap(map, initial);
-  const { buildings, tabs, tools, hint, planInfo, plotPanel, state, actions, level, assets, autoPlotMenu, space } = controller;
+  const { buildings, tabs, plotPanel, state, actions, level, autoPlotMenu } = controller;
   const propId = String(map.inventory.property.id);
   const tabsRef = useRef<HTMLDivElement | null>(null);
   const [canScroll, setCanScroll] = useState({ left: false, right: false });
@@ -110,10 +100,6 @@ const MapEditor = ({ map, initial }: { map: PropertyMap; initial: MapInitial | n
         </div>
       </div>
 
-      <p className="bo-map__readonly" role="note">
-        {i18n.t(M.readOnly)}
-      </p>
-
       <div className="bo-map__layout">
         <div className="bo-map__main">
           {buildings.length > 0 && (
@@ -127,7 +113,7 @@ const MapEditor = ({ map, initial }: { map: PropertyMap; initial: MapInitial | n
                     role="tab"
                     aria-selected={building.active}
                     className={`bo-map__pill${building.active ? ' bo-map__pill--on' : ''}`}
-                    onClick={() => actions.pickBuilding(building.name)}
+                    onClick={() => !building.active && actions.pickBuilding(building.name)}
                   >
                     {building.name}
                     <span className="bo-map__pillcount">{building.count}</span>
@@ -231,104 +217,7 @@ const MapEditor = ({ map, initial }: { map: PropertyMap; initial: MapInitial | n
               {i18n.t(M.tools.manualPlot)}
               <span className="bo-map__toolpill">{i18n.t(manualOn ? M.tools.on : M.tools.off)}</span>
             </button>
-            <div className="bo-map__gridtoggle">
-              <span className="bo-map__gridlabel">{i18n.t(M.tools.grid)}</span>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={state.gridOn}
-                aria-label={i18n.t(M.tools.grid)}
-                className={`bo-switch bo-switch--control bo-map__switch${state.gridOn ? ' bo-switch--on' : ''}`}
-                onClick={actions.toggleGrid}
-              >
-                <span className="bo-switch__knob" />
-              </button>
-            </div>
-            {planInfo?.hasBoth && (
-              <div className="bo-map__layers" role="tablist" aria-label={i18n.t(M.plan.layer)}>
-                <button type="button" role="tab" aria-selected={space === 'svg'} className={`bo-map__planbtn bo-map__planbtn--left${space === 'svg' ? ' bo-map__planbtn--on' : ''}`} onClick={() => actions.pickLayer('svg')}>
-                  {i18n.t(M.plan.layerSvg)}
-                </button>
-                <button type="button" role="tab" aria-selected={space === 'raster'} className={`bo-map__planbtn bo-map__planbtn--right${space === 'raster' ? ' bo-map__planbtn--on' : ''}`} onClick={() => actions.pickLayer('raster')}>
-                  {i18n.t(M.plan.layerImage)}
-                </button>
-              </div>
-            )}
-            <div className="bo-map__spacer" />
-            <button type="button" className="bo-map__publish" onClick={actions.openPublish}>
-              {i18n.t(M.tools.publish)}
-            </button>
           </div>
-
-          <div className="bo-map__toolstrip">
-            <span className="bo-map__eyebrow">{i18n.t(M.tools.pathways)}</span>
-            {tools.map((tool) => (
-              <button
-                key={tool.id}
-                type="button"
-                className={`bo-map__tool bo-map__tool--sm${tool.active ? ' bo-map__tool--active' : ''}`}
-                aria-pressed={tool.active}
-                onClick={() => actions.pickTool(tool.id)}
-                disabled={noLevel}
-              >
-                <Icon name={tool.icon} />
-                {tool.label}
-              </button>
-            ))}
-            <button
-              type="button"
-              className={`bo-map__tool bo-map__tool--sm${state.tool === 'hallway' ? ' bo-map__tool--active' : ''}`}
-              aria-pressed={state.tool === 'hallway'}
-              onClick={actions.toggleHallways}
-              disabled={noLevel}
-            >
-              <Icon name="drag" />
-              {i18n.t(state.tool === 'hallway' ? M.tools.hallwayStop : M.tools.hallway)}
-            </button>
-            <span className="bo-map__hint" role="status">
-              {hint}
-            </span>
-          </div>
-
-          {level && planInfo && (
-            <div className="bo-map__planbar">
-              <span className="bo-map__planlevel">{planInfo.levelLabel}</span>
-              <span className="bo-map__plankind">{planInfo.kindLabel}</span>
-              <span className="bo-map__planfile">
-                {planInfo.fileLabel} · {planInfo.countLabel}
-                {planInfo.local ? ` · ${i18n.t(M.plan.localPreview)}` : ''}
-              </span>
-              <div className="bo-map__spacer" />
-              <button type="button" className="bo-map__planbtn" onClick={actions.uploadSvg}>
-                {i18n.t(M.plan.uploadSvg)}
-              </button>
-              <button type="button" className="bo-map__planbtn" onClick={actions.uploadRaster}>
-                {i18n.t(M.plan.uploadImage)}
-              </button>
-              <span className="bo-map__droptarget">{i18n.t(M.plan.dropTarget)}</span>
-              <button
-                type="button"
-                className={`bo-map__planbtn bo-map__planbtn--left${state.dropSlot === 'svg' ? ' bo-map__planbtn--on' : ''}`}
-                aria-pressed={state.dropSlot === 'svg'}
-                onClick={() => actions.pickDropSlot('svg')}
-              >
-                {i18n.t(M.plan.dropSvg)}
-              </button>
-              <button
-                type="button"
-                className={`bo-map__planbtn bo-map__planbtn--right${state.dropSlot === 'bg' ? ' bo-map__planbtn--on' : ''}`}
-                aria-pressed={state.dropSlot === 'bg'}
-                onClick={() => actions.pickDropSlot('bg')}
-              >
-                {i18n.t(M.plan.dropBackground)}
-              </button>
-              {planInfo.has && (
-                <button type="button" className="bo-map__planbtn bo-map__planbtn--danger" onClick={actions.clearPlan}>
-                  {i18n.t(M.plan.removePlan)}
-                </button>
-              )}
-            </div>
-          )}
 
           {level ? (
             <MapCanvas controller={controller} />
@@ -340,22 +229,10 @@ const MapEditor = ({ map, initial }: { map: PropertyMap; initial: MapInitial | n
               </button>
             </div>
           )}
-          {assets && !assets.svg && assets.image && level && space === 'raster' && (
-            <p className="bo-map__planhint" role="note">
-              {t(M.plan.imageOnlyNote, { level: `${level.sub} · ${level.label}` })}
-            </p>
-          )}
         </div>
 
         <aside className="bo-map__side">
-          <PlacePanelSlot controller={controller} />
-          <AutoPlotReportPanel controller={controller} />
-          <SelectedPinPanel controller={controller} />
-          <SelectionPanel controller={controller} />
-          <StartingPointsPanel controller={controller} />
-          <VerticalLinksPanel controller={controller} />
-          <RoutePanel controller={controller} />
-          <BedLegendPanel controller={controller} />
+          <PlotPanel controller={controller} />
         </aside>
       </div>
 

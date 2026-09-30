@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { MouseEvent } from 'react';
 
-import { InventoryIcon, MapPinIcon, PaletteIcon, PlugIcon } from '~/core/components/atoms/Icons';
+import { InventoryIcon, MapPinIcon, PaletteIcon, PlugIcon, SortIcon } from '~/core/components/atoms/Icons';
 import { StatusPill } from '~/core/components/atoms/StatusPill';
 import type {
   CellDescriptor,
@@ -12,12 +12,18 @@ import type {
   LinkIcon,
   RowDescriptor
 } from '~/core/utils/generator/listing.types';
+import { ariaSortOf, sortStateOf, type ListingSort } from '~/core/utils/generator/listingSort';
 
 interface Props {
   columns: ColumnDescriptor[];
   rows: RowDescriptor[];
   emptyLabel: string;
   caption: string;
+  /** The listing's active sort; a column with a `sortKey` is sortable when `onSort` is given. */
+  sort?: ListingSort | null;
+  onSort?: (key: string) => void;
+  /** "Sort by {column}", for the header buttons' accessible names. */
+  sortLabel?: (column: string) => string;
 }
 
 const LINK_ICON: Record<LinkIcon, () => React.JSX.Element> = {
@@ -35,7 +41,7 @@ const cellClass = (column: ColumnDescriptor): string =>
  * knows cell *types*, never modules. Everything module-specific arrives as
  * descriptors from a generator.
  */
-export const CustomTable = ({ columns, rows, emptyLabel, caption }: Props) => {
+export const CustomTable = ({ columns, rows, emptyLabel, caption, sort = null, onSort, sortLabel }: Props) => {
   const router = useRouter();
 
   // A row with an `href` opens on a click anywhere in it, as the design's rows
@@ -57,11 +63,30 @@ export const CustomTable = ({ columns, rows, emptyLabel, caption }: Props) => {
       </caption>
       <thead>
         <tr>
-          {columns.map((column) => (
-            <th key={column.id} className={cellClass(column)} scope="col">
-              {column.title}
-            </th>
-          ))}
+          {columns.map((column) => {
+            if (!column.sortKey || !onSort) {
+              return (
+                <th key={column.id} className={cellClass(column)} scope="col">
+                  {column.title}
+                </th>
+              );
+            }
+            const state = sortStateOf(sort, column.sortKey);
+            const key = column.sortKey;
+            return (
+              <th key={column.id} className={cellClass(column)} scope="col" aria-sort={ariaSortOf(state)}>
+                <button
+                  type="button"
+                  className={`bo-sort${state !== 'none' ? ' bo-sort--active' : ''}`}
+                  onClick={() => onSort(key)}
+                  title={sortLabel?.(column.title)}
+                >
+                  <span>{column.title}</span>
+                  <SortIcon state={state} />
+                </button>
+              </th>
+            );
+          })}
         </tr>
       </thead>
       <tbody>

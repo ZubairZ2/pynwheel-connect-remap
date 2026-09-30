@@ -8,21 +8,25 @@ import { ResourceListingTemplate } from '~/core/templates/ResourceListingTemplat
 import { useCompaniesListing } from '~/core/hooks/useCompaniesListing';
 import type { Company } from '~/core/models/data/company.data';
 import type { Pagination as PaginationMeta } from '~/core/models/data/session.data';
+import type { ListingSort } from '~/core/utils/generator/listingSort';
 
 interface Props {
   companies: Company[];
   pagination: PaginationMeta | null;
   initialQuery: string;
+  /** The active column sort from the URL; null is the CMS's default order. */
+  sort: ListingSort | null;
   /** Companies and properties in the user's scope, before search. */
   totals: { companies: number | null; properties: number | null };
   error?: string | null;
 }
 
-export const CompaniesListingScreen = ({ companies, pagination, initialQuery, totals, error }: Props) => {
-  const { query, setQuery, columns, rows, pager, summary, isPending, goToPage } = useCompaniesListing(
+export const CompaniesListingScreen = ({ companies, pagination, initialQuery, sort, totals, error }: Props) => {
+  const { query, setQuery, columns, rows, pager, summary, isPending, goToPage, toggleSort, sortLabel } = useCompaniesListing(
     companies,
     pagination,
     initialQuery,
+    sort,
     totals
   );
 
@@ -33,6 +37,9 @@ export const CompaniesListingScreen = ({ companies, pagination, initialQuery, to
       columns={columns}
       rows={rows}
       busy={isPending}
+      sort={sort}
+      onSort={toggleSort}
+      sortLabel={sortLabel}
       caption={i18n.t(CORE_STRINGS.companies.title)}
       emptyLabel={i18n.t(CORE_STRINGS.companies.empty)}
       toolbar={

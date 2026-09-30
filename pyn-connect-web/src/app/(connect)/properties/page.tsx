@@ -9,7 +9,8 @@ import { parseListingMeta } from '~/core/repository/parser/envelope.parser';
 import { readRailsCookie } from '~/core/session/session.server';
 import { ListingScreenTemplate } from '~/core/templates/ListingScreenTemplate';
 import { PropertiesListingScreen } from '~/core/screens/properties/propertiesListing.screen';
-import type { PropertyFilters } from '~/core/utils/generator/propertyListing.generator';
+import { PROPERTY_SORTABLE, type PropertyFilters } from '~/core/utils/generator/propertyListing.generator';
+import { parseListingSort } from '~/core/utils/generator/listingSort';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,6 +22,8 @@ interface Props {
     company_id?: string;
     product?: string;
     data_provider?: string;
+    sort?: string;
+    dir?: string;
   }>;
 }
 
@@ -51,9 +54,13 @@ export default async function PropertiesPage({ searchParams }: Props) {
     dataProvider: listParam(params.data_provider)
   };
 
-  // Search, filters and paging all resolve on the server; the response is one
-  // page of rows however many communities the user can see.
+  const sort = parseListingSort(params.sort, params.dir, PROPERTY_SORTABLE);
+
+  // Search, filters, sorting and paging all resolve on the server; the
+  // response is one page of rows however many communities the user can see.
   const response = await fetchProperties(cookie, {
+    sort: sort?.key,
+    dir: sort?.dir,
     page: Number(params.page) || 1,
     q: filters.query,
     stage: filters.stage,
@@ -73,6 +80,7 @@ export default async function PropertiesPage({ searchParams }: Props) {
         properties={properties}
         pagination={meta.pagination}
         filters={filters}
+        sort={sort}
         companyOptions={meta.companyOptions}
         dataProviderOptions={meta.dataProviderOptions}
         scopeTotal={meta.scopeTotalCount}

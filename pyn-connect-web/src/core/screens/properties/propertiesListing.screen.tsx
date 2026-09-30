@@ -13,11 +13,14 @@ import type {
   Pagination as PaginationMeta
 } from '~/core/models/data/session.data';
 import type { PropertyFilters } from '~/core/utils/generator/propertyListing.generator';
+import type { ListingSort } from '~/core/utils/generator/listingSort';
 
 interface Props {
   properties: Property[];
   pagination: PaginationMeta | null;
   filters: PropertyFilters;
+  /** The active column sort from the URL; null is the CMS's default order. */
+  sort: ListingSort | null;
   companyOptions: CompanyFilterOption[];
   dataProviderOptions: string[];
   /** Every property the user can see, before search and filters. */
@@ -29,6 +32,7 @@ export const PropertiesListingScreen = ({
   properties,
   pagination,
   filters: initialFilters,
+  sort,
   companyOptions: companyFilterOptions,
   dataProviderOptions: dataProviderSlugs,
   scopeTotal,
@@ -49,11 +53,14 @@ export const PropertiesListingScreen = ({
     companyOptions,
     productOptions,
     dataProviderOptions,
-    goToPage
+    goToPage,
+    toggleSort,
+    sortLabel
   } = usePropertiesListing(
     properties,
     pagination,
     initialFilters,
+    sort,
     { companies: companyFilterOptions, dataProviders: dataProviderSlugs },
     scopeTotal
   );
@@ -65,6 +72,9 @@ export const PropertiesListingScreen = ({
       columns={columns}
       rows={rows}
       busy={isPending}
+      sort={sort}
+      onSort={toggleSort}
+      sortLabel={sortLabel}
       caption={i18n.t(CORE_STRINGS.properties.title)}
       emptyLabel={i18n.t(CORE_STRINGS.properties.empty)}
       toolbar={

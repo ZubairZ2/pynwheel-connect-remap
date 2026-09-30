@@ -1241,3 +1241,15 @@ Amenities tab fixes on real data (PYN_CONNECT_PROGRESS.md §23, context.md §19)
 | Hazel (1618) validation | ✅ 31 / 17 / 238 / 6 tabs, header "31 floorplates · 31 without a floor SVG · 13 tour stops", every amenity card's values against `psql`; `tests/e2e/hazel.spec.ts` |
 
 The floorplates, floor plans and units tabs are unchanged; their secondary images and interior images go through the same URL rule.
+
+# Status update — September 30, 2026 (branch `feature/plotting_sorting_inventory_perf`)
+
+Inventory performance (PYN_CONNECT_PROGRESS.md §24, context.md §20):
+
+| Item | State |
+|---|---|
+| Root cause of the slow open | The route waited for all four listings and shipped all of them; `units.json` is ~93 % of the payload (John Pynwheel Demo 1411: 288 KB of 301 KB; Hazel: 506 of 547 KB) and the slowest listing, but only the Units tab and unit-dependent dialogs read it. The Properties listing and Property Detail never loaded inventory data (0 CMS reads, verified in the Rails log; production prefetches stop at `loading.tsx`) |
+| Fix | Floorplates, floor plans and amenities load with the page; units load when the Units tab (or a Floorplate / Unit / Amenity / Mass Override dialog) first needs them, once, with the shared loading state and a Retry on failure; `?tab=units` still loads them on the server |
+| Counts | The Units badge reads `floorplates.json` `meta.unit_count` (the same query as `units.json`; equal on 8 properties checked) until the units arrive |
+| Before → after | Inventory RSC 301 → 32 KB (1411), 547 → 60 KB (Hazel); server 0.14 → 0.06 s / 0.25 → 0.06 s; CMS reads on open 4 → 3; no duplicate requests |
+| Tests | `tests/e2e/listingsAndInventory.spec.ts` (5 inventory tests) |

@@ -24,7 +24,6 @@ import {
 import { measureFloorSvg, type PlotTarget } from '~/core/utils/map/floorSvg';
 import {
   activeSpace,
-  defaultSpace,
   generateMapLevels,
   levelById,
   levelSpaceDims,
@@ -117,7 +116,8 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
   const buildings = useMemo(() => mapBuildings(map, levels), [map, levels]);
   const [state, setState] = useState<LocalMapState>(() => {
     const first = (initial?.levelId && levels.find((row) => row.id === initial.levelId)) || levels[0] || null;
-    const base = initialLocalMapState(first?.id ?? '', buildings.length > 1 ? (first?.building ?? buildings[0]) : null, defaultSpace(levels));
+    // A floor with both a floor SVG and an image shows the SVG: plotting drops onto its polygons (the design has no layer switch).
+    const base = initialLocalMapState(first?.id ?? '', buildings.length > 1 ? (first?.building ?? buildings[0]) : null, 'svg');
     const pin = initial?.pin ? parsePinKey(initial.pin) : null;
     if (!pin) return base;
     return initial?.arm ? { ...base, tool: 'plot', plotTarget: pin } : { ...base, selectedPin: pin };

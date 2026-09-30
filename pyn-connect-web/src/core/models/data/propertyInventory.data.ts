@@ -229,11 +229,25 @@ export interface InventorySitemap {
   height: number | null;
 }
 
+/** What `units.json` adds to the inventory: its rows and its meta. */
+export interface InventoryUnitListing {
+  units: InventoryUnit[];
+  currencySymbol: string;
+  dataProvider: string | null;
+  lastSync: string | null;
+  lockDevices: LockDevice[];
+}
+
 export interface PropertyInventory {
   property: InventoryProperty;
   floorplates: InventoryFloorplate[];
   floorplans: InventoryFloorplan[];
+  /** Empty until `unitsLoaded`: the Inventory screen reads the units listing when it first needs it. */
   units: InventoryUnit[];
+  /** False while `units`, `dataProvider`, `lastSync` and `lockDevices` wait for the units listing. */
+  unitsLoaded: boolean;
+  /** How many rows the units listing holds (floorplates.json meta), known before the units themselves. */
+  unitCount: number;
   amenities: InventoryAmenity[];
   /** `floorplates` (floorplate maps) or `sitemap` (one property map). */
   mapType: 'floorplates' | 'sitemap';

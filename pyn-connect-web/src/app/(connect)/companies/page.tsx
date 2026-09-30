@@ -9,20 +9,23 @@ import { parseListingMeta } from '~/core/repository/parser/envelope.parser';
 import { readRailsCookie } from '~/core/session/session.server';
 import { ListingScreenTemplate } from '~/core/templates/ListingScreenTemplate';
 import { CompaniesListingScreen } from '~/core/screens/companies/companiesListing.screen';
+import { COMPANY_SORTABLE } from '~/core/utils/generator/companyListing.generator';
+import { parseListingSort } from '~/core/utils/generator/listingSort';
 
 export const dynamic = 'force-dynamic';
 
 interface Props {
-  searchParams: Promise<{ page?: string; q?: string }>;
+  searchParams: Promise<{ page?: string; q?: string; sort?: string; dir?: string }>;
 }
 
 export default async function CompaniesPage({ searchParams }: Props) {
-  const { page, q } = await searchParams;
+  const { page, q, sort: sortParam, dir } = await searchParams;
   const cookie = await readRailsCookie();
+  const sort = parseListingSort(sortParam, dir, COMPANY_SORTABLE);
 
-  // Paging and search are query parameters on the Rails request: one page of
-  // rows comes back, not the whole table.
-  const response = await fetchCompanies(cookie, { page: Number(page) || 1, q });
+  // Paging, search and sorting are query parameters on the Rails request: one
+  // page of rows comes back, not the whole table, in the order asked for.
+  const response = await fetchCompanies(cookie, { page: Number(page) || 1, q, sort: sort?.key, dir: sort?.dir });
 
   if (response.status === 401 || response.status === 302) redirect(APP_ROUTES.signIn);
 
@@ -35,6 +38,7 @@ export default async function CompaniesPage({ searchParams }: Props) {
         companies={companies}
         pagination={meta.pagination}
         initialQuery={q ?? ''}
+        sort={sort}
         totals={{ companies: meta.scopeTotalCount, properties: meta.propertyTotalCount }}
         error={response.ok ? null : i18n.t(CORE_STRINGS.shared.loadFailed)}
       />

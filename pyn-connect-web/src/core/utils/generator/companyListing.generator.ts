@@ -14,11 +14,45 @@ export const COMPANY_COLUMN_IDS = {
   properties: 'properties'
 } as const;
 
+/**
+ * The sortable columns and the CMS's key for each (`AccessibleCompaniesQuery::sorts`):
+ * every column sorts on what it shows — the name, Active before Inactive, the
+ * providers' labels, the property count.
+ */
+export const COMPANY_SORT_KEYS = {
+  company: 'name',
+  status: 'status',
+  pmsProvider: 'pms_provider',
+  properties: 'properties'
+} as const;
+
+export const COMPANY_SORTABLE = Object.values(COMPANY_SORT_KEYS);
+
 export const generateCompanyColumns = (): ColumnDescriptor[] => [
-  { id: COMPANY_COLUMN_IDS.company, title: i18n.t(CORE_STRINGS.companies.columns.company), align: 'left' },
-  { id: COMPANY_COLUMN_IDS.status, title: i18n.t(CORE_STRINGS.companies.columns.status), align: 'left' },
-  { id: COMPANY_COLUMN_IDS.pmsProvider, title: i18n.t(CORE_STRINGS.companies.columns.pmsProvider), align: 'left' },
-  { id: COMPANY_COLUMN_IDS.properties, title: i18n.t(CORE_STRINGS.companies.columns.properties), align: 'center' }
+  {
+    id: COMPANY_COLUMN_IDS.company,
+    title: i18n.t(CORE_STRINGS.companies.columns.company),
+    align: 'left',
+    sortKey: COMPANY_SORT_KEYS.company
+  },
+  {
+    id: COMPANY_COLUMN_IDS.status,
+    title: i18n.t(CORE_STRINGS.companies.columns.status),
+    align: 'left',
+    sortKey: COMPANY_SORT_KEYS.status
+  },
+  {
+    id: COMPANY_COLUMN_IDS.pmsProvider,
+    title: i18n.t(CORE_STRINGS.companies.columns.pmsProvider),
+    align: 'left',
+    sortKey: COMPANY_SORT_KEYS.pmsProvider
+  },
+  {
+    id: COMPANY_COLUMN_IDS.properties,
+    title: i18n.t(CORE_STRINGS.companies.columns.properties),
+    align: 'center',
+    sortKey: COMPANY_SORT_KEYS.properties
+  }
 ];
 
 export const initialsOf = (name: string): string =>

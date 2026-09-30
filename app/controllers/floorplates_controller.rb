@@ -285,6 +285,9 @@ class FloorplatesController < ApplicationController
         map_type: community.has_floorplates? ? "floorplates" : "sitemap",
         svg_mode: community.enable_svg_mode.present?,
         tour_stop_count: tour ? tour.tour_stops.count : 0,
+        # How many rows units.json answers (the same unfiltered UnitFilterQuery),
+        # so the inventory can show the Units tab's count before it loads them.
+        unit_count: UnitFilterQuery.new(community).results.count,
         shared_background: Connect::UploadUrl.file(community, :background_svg_image, request.base_url, bucket: bucket),
         sitemap: sitemap && {
           id: sitemap.id,

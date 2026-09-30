@@ -10,6 +10,7 @@ import type {
   InventoryProperty,
   InventorySitemap,
   InventoryUnit,
+  InventoryUnitListing,
   InventoryUpload,
   LockDevice,
   SvgPointer,
@@ -138,6 +139,7 @@ export const parseInventoryFloorplates = (payload: unknown) => {
     mapType: meta.mapType === 'sitemap' ? ('sitemap' as const) : ('floorplates' as const),
     svgMode: flag(meta.svgMode),
     tourStopCount: count(meta.tourStopCount),
+    unitCount: count(meta.unitCount),
     sharedBackground: upload(meta.sharedBackground),
     sitemap: sitemap
       ? ({
@@ -207,7 +209,7 @@ const UNIT_FLAGS = [
   'sold'
 ] as const;
 
-export const parseInventoryUnits = (payload: unknown) => {
+export const parseInventoryUnits = (payload: unknown): InventoryUnitListing => {
   const meta = metaOf(payload);
 
   return {

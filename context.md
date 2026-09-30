@@ -703,3 +703,35 @@ The `plan-svg` route now only proxies the URL the floorplates listing names (its
 - A minted Devise session expires after a day or so; a smoke that suddenly lands on `/sign-in` means re-mint, not a regression.
 - `next dev` (:3001) and puma (:3000) do not survive between sessions; `.claude/launch.json` (ignored) starts both.
 - ColorZilla-style extensions make the hydration warning; test hydration in a clean profile.
+
+## 20. Inventory on demand and listing sorting: implementation knowledge (September 30, 2026)
+
+Added with phase 2k (branch `feature/plotting_sorting_inventory_perf`; PYN_CONNECT_PROGRESS.md §24, with the before/after measurements).
+
+### Inventory: the units listing is read on demand
+
+- `loadPropertyInventory(cookie, id, { units })` fetches floorplates, floor plans and amenities always, units only when `units` is true (the default). The **Inventory route passes `units: tab === 'units'`**; Map & Plotting, Tour Setup and Unit Detail keep the full load (they draw every unit).
+- Without units, `PropertyInventory.unitsLoaded` is false, `units` is `[]`, `dataProvider` / `lastSync` / `lockDevices` are empty, and `unitCount` comes from `floorplates.json` `meta.unit_count` (`UnitFilterQuery.new(community).results.count`, the exact row count `units.json` answers). Any code that reads `inventory.units` on an Inventory screen must check `unitsLoaded` first; tab counts use `unitsLoaded ? units.length : unitCount`.
+- `usePropertyInventory` owns the inventory state and `loadUnits` (GET `APP_API.inventoryUnits` → `app/api/properties/[propId]/inventory/units/route.ts` → `loadInventoryUnits` → the same parser). It runs when the Units tab or a dialog with `dialogNeedsUnits(kind)` (all but the floor plan form) first needs units; a second trigger joins the in-flight request (`unitsRequest` ref); 401 → Sign In; a failure stays until Retry. The screen is keyed by property id.
+- Next's production prefetch of the listing's Go To links stops at `loading.tsx` and never runs the page loader: it is not a source of CMS reads (checked in the Rails log). `next dev` does not prefetch at all, so measure prefetch behaviour on a `next build` (use a copy with `node_modules` symlinked; a build inside `pyn-connect-web` breaks the running dev server's `.next`).
+
+### Listing sorting (Companies, Properties)
+
+- Server-side, whole list: `sort` / `dir` travel on the URL, the page validates them (`parseListingSort` against `COMPANY_SORTABLE` / `PROPERTY_SORTABLE`) and passes them to `companies.json` / `communities.json`. Rails: `ListingSort` (`app/queries/listing_sort.rb`) applies `<expr> ASC|DESC NULLS LAST` then the default order; anything not whitelisted is the default order. Keys: companies `name`, `status`, `pms_provider`, `properties`; properties `name`, `company`, `data_provider`, `status`.
+- Each SQL expression sorts on what the cell shows: provider slugs through `ListingSort::PROVIDER_LABELS` (keep it in step with `providerLabel` in `companyListing.generator.ts`), property status by lifecycle rank (same precedence as `PropertySerializer#stage`), the company Properties count with the serializer's `real_properties` count.
+- Keep SQL built from relations (`to_sql`) out of constants: it needs a DB connection at class load. `AccessibleCompaniesQuery.sorts` is memoised for that reason.
+- Frontend: `listingSort.ts` (cycle new → asc → desc → default), `ColumnDescriptor.sortKey`, `CustomTable` header button + `SortIcon` + `aria-sort`. A sort change resets the page; search, filters and paging keep the sort.
+
+### Map & Plotting follows the design exactly (user decision, Sep 30)
+
+The screen shows only what `pyn-system-plotting.html` shows: Building row, floorplate strip, "{floor} · n of m plotted" + Auto Plot + Manual Plot, the canvas, the Plot Units & Amenities panel. Grid, the Floor SVG / Background switch, Publish, Pathways & pins, the plan bar, the read-only banner and the other side panels were removed from the UI (PYN_CONNECT_PROGRESS.md §24 lists them). Do not bring them back from an older brief without asking.
+
+- Floors with both files open on the SVG (`initialLocalMapState(…, 'svg')`); `state.layer` only changes through the SVG-failed fallback ("Show background image").
+- Manual Plot on a floor image: turning it on arms the next unplotted item; a click drops its pin. Ticking several items only works on SVG polygons.
+- `generateBuildingPills` returns one selected pill for a one-building property; a click on the active pill does nothing.
+- The plan is inset `PLAN_INSET` (24 px) inside a white canvas.
+- `usePropertyMap` still carries the pathway / route / grid / publish logic and the `wayfinding-route` handler still exists; nothing in the UI reaches them.
+
+### Tests
+
+`tests/e2e/listingsAndInventory.spec.ts` (same session env as `hazel.spec.ts`; `PYN_CONNECT_E2E_JOHN` defaults to 1411). `hazel.spec.ts` "Loading" slows Map & Plotting, not Inventory: the Inventory route is now too fast for the veil to be observed after a pre-first-byte delay.

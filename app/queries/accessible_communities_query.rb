@@ -44,6 +44,21 @@ class AccessibleCommunitiesQuery
               "((communities.product_options #>> '{}')::jsonb -> 'product_options' ->> 'pynwheel_maps') = 'true'"
   }.freeze
 
+  # The listing's sortable columns (`sort` / `dir`, see ListingSort), each on
+  # the value its cell shows: the property and company names, the data
+  # provider's label, and the lifecycle stage in its order (Installed →
+  # Activated → In Production → Final Approval → Released), derived with the
+  # same precedence as Connect::PropertySerializer#stage.
+  SORTS = {
+    'name' => 'LOWER(communities.name)',
+    'company' => '(SELECT LOWER(companies.name) FROM companies WHERE companies.id = communities.company_id)',
+    'data_provider' => ListingSort.provider_label_sql('communities.data_provider'),
+    'status' => 'CASE WHEN communities.released_date IS NOT NULL THEN 5 ' \
+                'WHEN communities.submitted_final_approval_date IS NOT NULL THEN 4 ' \
+                'WHEN communities.production_started_date IS NOT NULL THEN 3 ' \
+                'WHEN communities.date_activated IS NOT NULL THEN 2 ELSE 1 END'
+  }.freeze
+
   # The Data Provider filter's option for communities with no provider set.
   NO_DATA_PROVIDER = 'none'.freeze
 
@@ -60,7 +75,7 @@ class AccessibleCommunitiesQuery
     scope = apply_product(scope)
     scope = apply_data_provider(scope)
 
-    scope.order(Arel.sql('LOWER(communities.name) ASC'), id: :asc)
+    ListingSort.new(SORTS, params).apply(scope, Arel.sql('LOWER(communities.name) ASC'), id: :asc)
   end
 
   # Companies present anywhere in this user's accessible scope — the options for

@@ -673,3 +673,7 @@ Property Detail is unchanged. Its Go To → Map link and its Configuration → T
 # Status update — September 27, 2026 (branch `feature/inventory_properties_issues`)
 
 Property Detail is unchanged in content; it now shows the shared loading indicator while it (or any child route reached from it) loads, and it was validated on Hazel (1618): name, "QuadReal · Burnaby, BC · 238 units", 4733 Hazel St, Burnaby BC V5H 0J7, the unassigned manager, the Inventory panel's 238 / 17 / 31 / 6, "13 tour stops", the settings switches and ILS rows (`tests/e2e/hazel.spec.ts`; PYN_CONNECT_PROGRESS.md §23). Its Map & Plotting link lands on the horizontal floorplate strip; the Tour Setup link on the rebuilt Edit Tour Stop dialog.
+
+# Status update — September 30, 2026 (branch `feature/plotting_sorting_inventory_perf`)
+
+Property Detail is unchanged and was re-measured: opening it makes one CMS read (`communities/:id/edit.json`, ~3 KB) and loads none of the inventory listings; its Inventory link now opens an Inventory that defers the units listing until the Units tab (PYN_CONNECT_PROGRESS.md §24). The Properties listing that leads here gained server-side column sorting (Property, Company, Data Provider, Status; Ascending → Descending → Default, whole list, kept across paging and search).

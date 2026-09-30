@@ -6,6 +6,7 @@ import { useId } from 'react';
 import { mapEditorRoute, propRoute, tourSetupRoute } from '~/config/app/connectRoutes';
 import { APP_ROUTES } from '~/config/app/urls';
 import { i18n } from '~/resources/i18n';
+import { LoadingIndicator } from '~/core/components/atoms/LoadingIndicator';
 import { Breadcrumb } from '~/core/components/molecules/Breadcrumb';
 import { ImageViewer } from '~/core/components/organisms/ImageViewer';
 import { usePropertyInventory } from '~/core/hooks/usePropertyInventory';
@@ -35,13 +36,14 @@ interface Props {
  */
 export const PropertyInventoryScreen = ({ inventory, initialTab, today, error }: Props) =>
   inventory ? (
-    <Inventory inventory={inventory} initialTab={initialTab} today={today} />
+    <Inventory key={inventory.property.id} inventory={inventory} initialTab={initialTab} today={today} />
   ) : (
     <InventoryUnavailable error={error ?? null} />
   );
 
-const Inventory = ({ inventory, initialTab, today }: Omit<Props, 'inventory' | 'error'> & { inventory: PropertyInventory }) => {
-  const state = usePropertyInventory(inventory, initialTab);
+const Inventory = ({ inventory: initial, initialTab, today }: Omit<Props, 'inventory' | 'error'> & { inventory: PropertyInventory }) => {
+  const state = usePropertyInventory(initial, initialTab);
+  const { inventory } = state;
   const propId = String(inventory.property.id);
   const tablistId = useId();
   const actions = { openViewer: state.openViewer, openDialog: state.openDialog, confirm: state.confirm };
@@ -92,11 +94,23 @@ const Inventory = ({ inventory, initialTab, today }: Omit<Props, 'inventory' | '
       <div id={`${tablistId}-panel`} role="tabpanel" aria-labelledby={`${tablistId}-${state.tab}`}>
         {state.tab === 'floorplates' && <FloorplatesSection inventory={inventory} actions={actions} />}
         {state.tab === 'floorplans' && <FloorplansSection inventory={inventory} actions={actions} />}
-        {state.tab === 'units' && <UnitsSection inventory={inventory} today={today} actions={actions} />}
+        {state.tab === 'units' &&
+          (inventory.unitsLoaded ? (
+            <UnitsSection inventory={inventory} today={today} actions={actions} />
+          ) : (
+            <UnitsPending failed={state.unitsStatus === 'failed'} onRetry={state.retryUnits} />
+          ))}
         {state.tab === 'amenities' && <AmenitiesSection inventory={inventory} actions={actions} />}
       </div>
 
-      <InventoryDialogs inventory={inventory} dialog={state.dialog} onClose={state.closeDialog} onView={state.openViewer} />
+      <InventoryDialogs
+        inventory={inventory}
+        dialog={state.dialog}
+        onClose={state.closeDialog}
+        onView={state.openViewer}
+        unitsFailed={state.unitsStatus === 'failed'}
+        onRetryUnits={state.retryUnits}
+      />
 
       <ImageViewer
         images={state.viewer.images}
@@ -115,6 +129,19 @@ const Inventory = ({ inventory, initialTab, today }: Omit<Props, 'inventory' | '
     </div>
   );
 };
+
+/** The Units tab while its listing loads, or after it failed to. */
+export const UnitsPending = ({ failed, onRetry }: { failed: boolean; onRetry: () => void }) =>
+  failed ? (
+    <div className="bo-error bo-inv__retry" role="alert">
+      <span>{i18n.t(S.units.loadFailed)}</span>
+      <button type="button" className="bo-inv__ghost" onClick={onRetry}>
+        {i18n.t(S.units.retry)}
+      </button>
+    </div>
+  ) : (
+    <LoadingIndicator variant="block" label={i18n.t(S.units.loading)} />
+  );
 
 const InventoryUnavailable = ({ error }: { error: string | null }) => (
   <div className="bo-inv">

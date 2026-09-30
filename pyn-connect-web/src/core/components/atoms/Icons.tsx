@@ -91,6 +91,18 @@ export const CheckIcon = () => (
   </svg>
 );
 
+/**
+ * A sortable column header's state: both chevrons faint while the column is
+ * not sorted, the up one for ascending, the down one for descending (the
+ * design's ↑ / ↓ beside the label).
+ */
+export const SortIcon = ({ state }: { state: 'asc' | 'desc' | 'none' }) => (
+  <svg {...base} width={12} height={12} strokeWidth={2.6} aria-hidden="true" className={`bo-sorticon bo-sorticon--${state}`}>
+    <polyline className="bo-sorticon__up" points="7 10 12 5 17 10" />
+    <polyline className="bo-sorticon__down" points="7 14 12 19 17 14" />
+  </svg>
+);
+
 /** Marks a link that opens outside Connect (the legacy CMS), in a new tab. */
 export const ExternalLinkIcon = () => (
   <svg {...base} width={13} height={13} aria-hidden="true">
