@@ -1966,60 +1966,34 @@
       // We must use the *rendered content* bounds from the SVG viewBox, not the SVG element
       // bounds — preserveAspectRatio="xMidYMid meet" letterboxes the content inside the
       // element, so at scale=2 with tx=0 there can be blank SVG background at the top/bottom.
-      let _svgClamping = false;
-      const svgClamp = () => {
-        if (_svgClamping) return;
-        const pz = svgEl._pz;
-        if (!pz) return;
-        const t  = pz.getTransform();
-        const pr = svgEl.parentElement;
-        if (!pr) return;
-        const cw = pr.clientWidth;
-        const ch = pr.clientHeight;
+      const svgClamp = this._makePanClamp(target, (scale) => {
+        const sw = svgEl.clientWidth;
+        const sh = svgEl.clientHeight;
+        if (!sw || !sh) return null;
 
-        // Snap to default when back at base zoom.
-        if (t.scale <= 1.01) {
-          if (Math.abs(t.x) > 0.5 || Math.abs(t.y) > 0.5) {
-            _svgClamping = true;
-            pz.moveTo(0, 0);
-            _svgClamping = false;
-          }
-          return;
-        }
-
-        // Compute rendered content rect inside the SVG element.
         // SVG preserveAspectRatio="xMidYMid meet" scales content to fit while preserving
         // aspect ratio, centering it — the blank margins are NOT part of the map.
-        let cofX = 0, cofY = 0, cfW = cw, cfH = ch;
+        let x = 0, y = 0, w = sw, h = sh;
         const vb = svgEl.viewBox && svgEl.viewBox.baseVal;
         if (vb && vb.width > 0 && vb.height > 0) {
-          const rs = Math.min(cw / vb.width, ch / vb.height);
-          cfW  = vb.width  * rs;
-          cfH  = vb.height * rs;
-          cofX = (cw - cfW) / 2;
-          cofY = (ch - cfH) / 2;
+          const fit = Math.min(sw / vb.width, sh / vb.height);
+          w = vb.width  * fit;
+          h = vb.height * fit;
+          x = (sw - w) / 2;
+          y = (sh - h) / 2;
         }
 
-        // After panzoom matrix(s,0,0,s,tx,ty) the content occupies
-        //   x: [s*cofX + tx ,  s*(cofX+cfW) + tx]
-        //   y: [s*cofY + ty ,  s*(cofY+cfH) + ty]
-        // Clamp so content always covers [0,cw]×[0,ch].
-        const maxX = -t.scale * cofX;
-        const minX =  cw - t.scale * (cofX + cfW);
-        const maxY = -t.scale * cofY;
-        const minY =  ch - t.scale * (cofY + cfH);
-
-        const x = minX > maxX ? (minX + maxX) / 2 : Math.min(maxX, Math.max(minX, t.x));
-        const y = minY > maxY ? (minY + maxY) / 2 : Math.min(maxY, Math.max(minY, t.y));
-
-        if (Math.abs(x - t.x) > 0.5 || Math.abs(y - t.y) > 0.5) {
-          _svgClamping = true;
-          pz.moveTo(x, y);
-          _svgClamping = false;
+        // Beans: the SVG sits inside the panned wrapper; add its offset there.
+        if (target !== svgEl) {
+          const sr = svgEl.getBoundingClientRect();
+          const tr = target.getBoundingClientRect();
+          x += (sr.left - tr.left) / scale;
+          y += (sr.top  - tr.top)  / scale;
         }
-      };
-      // svgEl._pz.on("pan",  svgClamp);
-      svgEl._pz.on("zoom", svgClamp);
+        return { x, y, w, h };
+      });
+      pz.on("pan",  svgClamp);
+      pz.on("zoom", svgClamp);
 
       // Block single-finger touch pan when at default zoom; let two-finger pinch-zoom through.
       const touchBlocker = (e) => {
@@ -2033,6 +2007,61 @@
 
       // Defer so the browser finishes layout before we read clientWidth/Height
       setTimeout(() => this._centerSvg(svgEl), 0);
+    },
+
+    // Build a pan/zoom listener that keeps the map on screen. `getContent(scale)`
+    // returns the map's drawn rect in the target's own untransformed coordinates.
+    // The target's position in the viewport is measured, not assumed: on mobile the
+    // container is still a centring flexbox from the loading spinner, so the SVG is
+    // only as tall as its aspect ratio and sits mid-container. Assuming it filled the
+    // container shifted the clamp by (scale - 1) × that margin, leaving the top or
+    // bottom of the map impossible to drag into view.
+    _makePanClamp(target, getContent) {
+      let clamping = false;
+      return () => {
+        if (clamping) return;
+        const pz = target._pz;
+        const vp = target.parentElement;
+        if (!pz || !vp) return;
+        const t  = pz.getTransform();
+        const cw = vp.clientWidth;
+        const ch = vp.clientHeight;
+        if (!cw || !ch) return;
+
+        let x = 0, y = 0;
+        // Snap to default when back at base zoom.
+        if (t.scale > 1.01) {
+          // panzoom updates getTransform() at once but paints the CSS transform on the
+          // next frame, so rects still show the painted one. Measure against that.
+          const css     = getComputedStyle(target).transform;
+          const painted = css && css !== "none" ? new DOMMatrixReadOnly(css) : new DOMMatrixReadOnly();
+
+          const c = getContent(painted.a || 1);
+          if (!c) return;
+
+          // panzoom transforms from origin 0 0, so with its translate taken out the
+          // bounding rect gives the target's layout position inside the viewport.
+          const tr = target.getBoundingClientRect();
+          const vr = vp.getBoundingClientRect();
+          const lx = tr.left - vr.left - vp.clientLeft - painted.e;
+          const ly = tr.top  - vr.top  - vp.clientTop  - painted.f;
+
+          // The content spans [lay + s*off + pos, lay + s*(off+len) + pos]. Keep it
+          // covering the viewport, or centred on an axis where it's still smaller.
+          const clampAxis = (pos, lay, off, len, view) => {
+            const max = -lay - t.scale * off;
+            const min = view - lay - t.scale * (off + len);
+            return min > max ? (min + max) / 2 : Math.min(max, Math.max(min, pos));
+          };
+          x = clampAxis(t.x, lx, c.x, c.w, cw);
+          y = clampAxis(t.y, ly, c.y, c.h, ch);
+        }
+
+        if (Math.abs(x - t.x) > 0.5 || Math.abs(y - t.y) > 0.5) {
+          clamping = true;
+          try { pz.moveTo(x, y); } finally { clamping = false; }
+        }
+      };
     },
 
     _centerSvg(svgEl) {
@@ -5603,48 +5632,21 @@
       });
 
       // Clamp so the image content always covers the container — no background gaps.
-      let _imgClamping = false;
-      const imgClamp = () => {
-        if (_imgClamping) return;
-        const pz = wrapperEl._pz;
-        if (!pz) return;
-        const t  = pz.getTransform();
-        const pr = wrapperEl.parentElement;
-        if (!pr) return;
-        const cw = pr.clientWidth;
-        const ch = pr.clientHeight;
-
-        if (t.scale <= 1.01) {
-          if (Math.abs(t.x) > 0.5 || Math.abs(t.y) > 0.5) {
-            _imgClamping = true;
-            pz.moveTo(0, 0);
-            _imgClamping = false;
-          }
-          return;
-        }
-
-        // Image is contained and centered within the wrapper. Use its actual
-        // rendered size and account for the centering offset ((container - image)/2)
-        // so the cover bounds keep the image edges flush with the container.
+      // The image is contained and centered within the wrapper; its rect relative
+      // to the wrapper, divided by the scale, is where it sits before the transform.
+      const imgClamp = this._makePanClamp(wrapperEl, (scale) => {
         const img = wrapperEl.querySelector(".pyn-map-image");
-        const iw  = img && img.clientWidth  > 0 ? img.clientWidth  : cw;
-        const ih  = img && img.clientHeight > 0 ? img.clientHeight : ch;
-
-        const maxX = -t.scale * (cw - iw) / 2;
-        const minX = cw - t.scale * (cw + iw) / 2;
-        const maxY = -t.scale * (ch - ih) / 2;
-        const minY = ch - t.scale * (ch + ih) / 2;
-
-        const x = minX > maxX ? (minX + maxX) / 2 : Math.min(maxX, Math.max(minX, t.x));
-        const y = minY > maxY ? (minY + maxY) / 2 : Math.min(maxY, Math.max(minY, t.y));
-
-        if (Math.abs(x - t.x) > 0.5 || Math.abs(y - t.y) > 0.5) {
-          _imgClamping = true;
-          pz.moveTo(x, y);
-          _imgClamping = false;
-        }
-      };
-      // wrapperEl._pz.on("pan",  imgClamp);
+        if (!img || !img.clientWidth || !img.clientHeight) return null;
+        const ir = img.getBoundingClientRect();
+        const wr = wrapperEl.getBoundingClientRect();
+        return {
+          x: (ir.left - wr.left) / scale,
+          y: (ir.top  - wr.top)  / scale,
+          w: ir.width  / scale,
+          h: ir.height / scale,
+        };
+      });
+      wrapperEl._pz.on("pan",  imgClamp);
       wrapperEl._pz.on("zoom", imgClamp);
 
       const touchBlocker = (e) => {
