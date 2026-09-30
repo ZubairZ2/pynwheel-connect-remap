@@ -4513,8 +4513,8 @@
      * Set per property on Design -> Custom Design, so a property can call Units
      * "Homes" without a deploy; an unset field comes back as its default label.
      * Pair with getFiltersData().visibility / getPropertyConfig().filters, which
-     * decide whether each tab is shown at all — this only names them, and never
-     * changes a tab's icon or behavior.
+     * decide whether each tab is shown at all — this only names them. Icons are
+     * getTabIcons().
      *
      *   const { units } = PynMapSDK.getTabLabels();
      *   renderTab("units", units);
@@ -4526,6 +4526,35 @@
         amenities:  "Amenities",
         favs:       "Favorites"
       });
+    },
+
+    /**
+     * The CMS icon for each of the map's four tabs, same keys as getTabLabels().
+     *
+     *   { units, floorPlans, amenities, favs }, each
+     *   {
+     *     icon       // key from the predefined set, e.g. "briefcase"
+     *     isDefault  // true = the tab's stock icon; draw your built-in one
+     *     show       // false = label-only tab
+     *     svg        // markup for `icon`, from the server's fixed set
+     *   }
+     *
+     * Set per property on Design -> Custom Design, independent of the label.
+     * A property that never touched it gets every tab isDefault + shown, and
+     * the same before the payload lands (svg is null until then).
+     *
+     *   const { floorPlans } = PynMapSDK.getTabIcons();
+     *   if (floorPlans.show) iconEl.innerHTML = floorPlans.isDefault ? STOCK_GRID : floorPlans.svg;
+     */
+    getTabIcons() {
+      const stock = (icon) => ({ icon, isDefault: true, show: true, svg: null });
+      const icons = this.data.property?.tabIcons || {};
+      return {
+        units:      { ...stock("building"), ...icons.units },
+        floorPlans: { ...stock("grid"),     ...icons.floorPlans },
+        amenities:  { ...stock("dumbbell"), ...icons.amenities },
+        favs:       { ...stock("heart"),    ...icons.favs }
+      };
     },
 
     // ----------------------------------------------------
@@ -5832,6 +5861,7 @@
       zoomOut()                    { return PynMapSDK.zoomOut.call(PynMapSDK); },
       resetZoom()                  { return PynMapSDK.resetZoom.call(PynMapSDK); },
       getTabLabels()                                        { return PynMapSDK.getTabLabels.call(PynMapSDK); },
+      getTabIcons()                                         { return PynMapSDK.getTabIcons.call(PynMapSDK); },
       getFavoritesConfig()                                  { return PynMapSDK.getFavoritesConfig.call(PynMapSDK); },
       getGalleryConfig()                                    { return PynMapSDK.getGalleryConfig.call(PynMapSDK); },
       getNeighborhoodConfig()                               { return PynMapSDK.getNeighborhoodConfig.call(PynMapSDK); },

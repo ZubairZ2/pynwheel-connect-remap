@@ -80,6 +80,32 @@ class DesignSystemConfig < ApplicationRecord
     }
   end
 
+  # The icon above each tab's label, for the SDK payload next to tabLabels.
+  # Stored separately under config_json["tab_icons"], so renaming a tab and
+  # re-iconing it never touch each other:
+  #
+  #   "tab_icons" => { "floor_plans" => { "icon" => "briefcase", "show" => true } }
+  #
+  # Each tab comes out as
+  #
+  #   { icon: "briefcase", isDefault: false, show: true, svg: "<svg…>" }
+  #
+  # A tab with nothing stored (every property until someone opens the picker),
+  # a blank key (Reset to default saves ""), or a key no longer in the set, all
+  # resolve to the stock icon with isDefault: true, and the map keeps drawing
+  # its own built-in component for those — nothing changes on upgrade. `svg` is
+  # still sent for them so other API consumers can draw every tab one way.
+  def to_tab_icons
+    stored = config_json["tab_icons"] || {}
+
+    {
+      units:      tab_icon("units",       stored["units"]),
+      floorPlans: tab_icon("floor_plans", stored["floor_plans"]),
+      amenities:  tab_icon("amenities",   stored["amenities"]),
+      favs:       tab_icon("favs",        stored["favs"])
+    }
+  end
+
   def to_css_vars
     cfg = merged_config
     c   = cfg["colors"]
@@ -96,6 +122,20 @@ class DesignSystemConfig < ApplicationRecord
   end
 
   private
+
+  def tab_icon(tab, cfg)
+    cfg   = cfg.is_a?(Hash) ? cfg : {}
+    stock = MapTabIcons::STOCK.fetch(tab)
+    key   = MapTabIcons.valid?(cfg["icon"]) ? cfg["icon"].to_s : stock
+
+    {
+      icon:      key,
+      isDefault: key == stock,
+      # Shown unless explicitly switched off; "false" covers a form-encoded save.
+      show:      ![false, "false"].include?(cfg["show"]),
+      svg:       MapTabIcons.svg(key)
+    }
+  end
 
   def cv(hex, opacity)
     return hex.to_s if opacity.nil? || opacity.to_f >= 1.0

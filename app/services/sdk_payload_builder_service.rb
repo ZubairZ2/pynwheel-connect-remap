@@ -606,6 +606,10 @@ class SdkPayloadBuilderService
       # still the same tab, so these are one set for the property.
       tabLabels: design_system_config.to_tab_labels,
 
+      # The icon above each of those names: which one, and whether it shows at
+      # all. Same four keys as tabLabels, stored independently of them.
+      tabIcons: design_system_config.to_tab_icons,
+
       fontFamily: @community.font_setting&.svg_labels_font_family,
 
       themeConfig: design_system_config.to_theme_config
