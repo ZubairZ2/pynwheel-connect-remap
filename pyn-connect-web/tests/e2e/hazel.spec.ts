@@ -272,7 +272,8 @@ test.describe('Hazel (real data)', () => {
     await lounge.getByRole('button', { name: /^Edit/ }).first().click();
     const dialog = page.getByRole('dialog');
     await expect(dialog).toContainText('Edit Amenity');
-    await expect(dialog.locator('input.bo-field').first()).toHaveValue('Penthouse South Lounge');
+    // The amenity form waits for the units listing (its Building list names unit buildings), read on demand.
+    await expect(dialog.locator('input.bo-field').first()).toHaveValue('Penthouse South Lounge', { timeout: 30_000 });
     const gallery = dialog.locator('.bo-dlg__interior');
     await expect(gallery).toHaveCount(4);
     await expect(gallery.nth(0)).toContainText('Chef Kitchen');

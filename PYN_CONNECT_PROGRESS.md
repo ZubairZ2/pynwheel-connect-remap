@@ -26,6 +26,7 @@ This is the single progress document. It merges the original phase 1/2 handoff w
 | **2d-r**: Property Detail, revised rule (read-only JSON on `communities#edit`) | `properties_detail_feature.md` §9a, Sep 24 | `feature/properties_detail_page` (not yet committed) | ✅ Every design section on real data except R1–R4 in [gaps_properties_detail_feature.md](gaps_properties_detail_feature.md) §0 (§16) |
 | **2e**: Property Inventory on real data (read-only JSON on the four inventory `index` actions) | `feature_inventory_page.md`, Sep 24 | `feature/inventory_implementation` (on `824c1f07a`, uncommitted) | ✅ All four tabs, filters, viewer and dialogs on real data; gaps G15–G21 (§17) |
 | **2k**: Inventory loads units on demand; Companies / Properties column sorting; Map & Plotting review | `improvments_relatd_to_ploting_listing_inventory.md`, Sep 30 | `feature/plotting_sorting_inventory_perf` (from `main` `b04012b4a`) | ✅ (§24) |
+| **2l**: Map & Plotting — Manual Plot states, zoom / reset, legacy markers and paths, SVG labels | `ploting_map_improvments.md`, Oct 1 | `feature/map_zoom_labels_pins` (from `feature/plotting_sorting_inventory_perf` `5ab58783d`) | ✅ incl. John Demo floors 1 and 3 on the user's data (§25) |
 | **3**: Replace demo data with real Rails data | *brief not written yet* | — | ⏭ Next (§11) |
 
 **`main` holds everything above except 2d** (PRs #1–#3 merged, Sep 24). Local `main` is one commit ahead of `origin/main` (`c9416ae67`, this doc's catch-up; not pushed).
@@ -1622,3 +1623,76 @@ Server-side sort checked separately over **every page** of both listings (217 co
 - Commit (no AI attribution) and PR to `main`. Deploy both apps (Rails: the floorplates meta and the two queries + `ListingSort`; Connect: everything else).
 - Unit Detail payload (deferred above).
 - Remove the pathway / route / grid / publish logic `usePropertyMap` keeps without a UI, and the `wayfinding-route` handler, if those tools are not coming back.
+
+---
+
+## 25. Phase 2l: Map & Plotting — Manual Plot states, zoom, legacy markers and SVG labels (October 1, 2026)
+
+**Brief:** `ploting_map_improvments.md` (untracked, like the other briefs). Fix the Manual Plot ON + hover state; add Zoom In / Zoom Out / Reset to the map; render the map the way the old plotting page does (yellow location markers, green plus markers, pathway lines, the SVG's own labels, no debug ids or coordinates); validate on John Demo → Floor 3 ("Tenant lease space").
+
+**Branch:** `feature/map_zoom_labels_pins`, from `feature/plotting_sorting_inventory_perf` (`5ab58783d`, pushed).
+
+### Implementation map
+
+| Issue | Current behaviour (reproduced) | Old system behaviour (traced) | Root cause | Change | Reused |
+|---|---|---|---|---|---|
+| Manual Plot ON + hover | Measured in Chrome: ON = `bg rgb(0,119,174)`, `color #fff`; ON + hover = `bg rgb(0,119,174)`, **`color rgb(0,119,174)`** — the text vanished | The design (`mpBtnBg/Color/Border` in the plotting prototype) has one ON look and no hover; the legacy page has no such control | `.bo-map__tool:hover:not(.bo-map__tool--active)` (specificity 0,3,0) outranked `.bo-map__tool--fill:hover` (0,2,0), so the OFF-hover text colour was applied over the ON background | OFF hover never applies to `--fill`; ON + hover deepens the accent (`--bo-accent-deep: #005f8c`, one step of the design's accent), text stays white; `:focus-visible` ring; disabled excluded. Measured after: ON + hover `bg rgb(0,95,140)`, `color #fff` | existing `.bo-map__tool*` classes |
+| Zoom | None | `plotexp.html.haml` → `services/zoomHandler.js`: timmywil **panzoom** on `.plot-image` (`minZoom 0.5`, `maxZoom 10`, wheel, drag), `shared/_zoom_control_buttons` (+ − ↻ top-right, `.zoom-controls`), `BUTTON_ZOOM_STEP = 1.3` towards the container centre, initial scale = fit into the parent (capped at 1) and centred, bounds with 10 % padding; the legacy `.reset` **reloads the page** | No viewport | A `View { scale, x, y }` in `MapCanvas` applied as `transform` on `.bo-map__plan` (everything inside — SVG, polygons, labels, pins, nodes, paths — moves as one); + / − ×1.3 about the canvas centre, wheel about the pointer (native non-passive listener, so the page does not scroll), drag-to-pan on the empty canvas in Select mode (a still click still clears the selection), limits **0.5–8 × the fitted plan**, bounds keep a tenth in view; **Reset** restores the fitted, centred plan without a reload or a request; a floor or layer change opens fitted. Floating control top-right (`.bo-map__zoom`), disabled at the limits / at default. The popover is positioned in canvas space so it does not scale | `MapCanvas`, `planRef` pointer maths (already relative to the plan's rendered box, so drops and drags stay exact under zoom) |
+| Labels on a floor SVG | Overlay printed the shape's **generated id** ("Vector 2415") over every active polygon, plus coloured dots on placed polygons | `svgHandler.js`: the SVG is mounted as-is — **its own `<text>` is the labelling** (`updateSvgTextFontFamily` applies `font_settings.svg_labels_font_family`); a placed unit is the shape **cloned and filled** with the theme marker colour (`processSvgBlock`), no extra text; `getValidShapeCategory` accepts shapes under a `Units` *or* an `Amenities` layer; `isValidShape` rejects outline / label / text / icon layers. `svgAutoPlotting.js` matches the group's `<text>`. (`moveSvgTextGroupsToEnd` exists but is never called.) | `collectTargets` scoped to the `Units` layer only and named a target after its shape id | `PlotTarget.code` = the group's printed `<text>`, else the group's name, else the shape id (generated ids like `Vector_…` / `Group_…` never win over a named group); `category` per the legacy rule; the `Amenities` layer is plottable; polygons are identified by their unique `key` (several shapes can share a printed code — 1468 lit 15 shapes for 3 units before). The canvas prints an overlay only where the SVG prints nothing (the design's code, when active) or where the plotted item's name differs from the polygon's text; nothing on top of a placed polygon (the fill is the placement, as the legacy clone); the SVG's text gets the property's label font. Auto Plot matches unit polygons only | `floorSvg.ts`, `SvgPlanLayer`, `generatePolygons` |
+| Markers on a floor image | Large coloured discs (bedroom palette) with bed / star icons and dark name chips; node dots with permanent labels; edges 2.5px blue | `_svg_or_image_unit_plotting.html.haml`: `fa-map-marker-alt` at the design's size (default 30px) in the **theme colour** (`property_map_color` / `*_property_map_marker_color` per theme, else `rgba(247,0,0,.61)`), the `<p class="marker">` at `(x − 13, y − 34)` so the tip sits on the point; a green `fa-plus-circle` (`#59de83`, half size) beside it when `self_tour && auto_wayfinding` and the unit has no door; doors `fa-sign-in` `#3153d2`; amenities (`_svg_or_image_amenity_plotting`) a `(size − 5)` square bordered in the amenity colour with `fa-camera-retro`; `maps.js draw_initial_hallways`: nodes `fa-dot-circle fa-lg` `#008fd4` (`#f7296a` selected), **1px black lines** between node centres (+8); the tour start `.start-point` red 25px disc; unit numbers are in the image; tooltips only, no labels | Phase 2g drew its own markers | `MapMarkers.tsx` (the glyphs as inline SVG, Font Awesome paths), sizes in image pixels so they scale with the plan; colours from a new `floorplates.json` `meta.markers`; permanent chips removed (a selected marker names itself); edges 1px black; no coordinates anywhere | `MapCanvas`, `generateLevelGraph` |
+| Marker colours | App palette | Per-theme Design columns (above), `font_settings.svg_labels_font_family`, `communities.auto_wayfinding` | Not in any JSON | `Connect::MapMarkers` (read-only; the same branches as the two partials) → `meta.markers` on `floorplates.json`; `PropertyInventory.markers` | `FloorplatesController#render_connect_floorplates` |
+| Background image not loading (1411 locally) | "The floor image could not be loaded" | Same URL on the legacy page | The local dump's 1411 (Penrose on Mass, 2021) points at `images-pynwheel-cms-v2/uploads/floorplate/image/186x/…`, which answers **403 on S3** for both the accelerate and the plain host — the objects are not public. Not a Connect data-flow bug; the legacy page fails the same way. The user's John Demo (a newer 1411 with floor SVGs, `pynwheel_prod`) was not reachable from here — see Validation | — | — |
+
+### Backend (read-only JSON only)
+
+| File | Change |
+|---|---|
+| `app/serializers/connect/map_markers.rb` (new) | `unit_color`, `unit_size`, `amenity_color`, `amenity_size` (the partial's `size − 5`), `door_color`, `door_plus_color`, `svg_font_family`, `auto_wayfinding`, decided exactly as the two plotting partials decide them per `theme_name` (gables / modernist "no color" → primary / futurist / expressionist / panther / legacy default) |
+| `app/controllers/floorplates_controller.rb` | `render_connect_floorplates` meta gains `markers: Connect::MapMarkers.for(community)` |
+
+Checked against the DB: 1411 (expressionist) `#dd4426` / 35, 1618 and 2919 (futurist) `#d37474` / 30, 3837 (futurist) unit `#ffd400` (the yellow of the screenshots) amenity `#1463d6`. No business logic, schema, migration, validation, authorization or write changed.
+
+### Frontend
+
+- `MapCanvas.tsx`: the viewport (state, wheel, pan, bounds, buttons, reset on floor change), the legacy markers by kind, the polygon-label rule, the popover in canvas space, `data-scale` / `data-testid="plan"`.
+- `MapMarkers.tsx` (new): `LocationGlyph`, `PlusGlyph`, `AmenityGlyph`, `NodeGlyph`, `DoorGlyph`, `DotGlyph`, `TourStartGlyph`, `ResetViewIcon`; the legacy colours.
+- `floorSvg.ts`: `PlotTarget.category`, `code` precedence (`codeOf`), `Units` + `Amenities` scopes, `GENERIC_ID`.
+- `SvgPlanLayer.tsx`: `fontFamily`, `data-plotted` / `data-selected` on the shapes, hover by key.
+- `mapNodes.generator.ts`: pins coloured from `markers`, `hasDoor` (units' `door_id`, the graph's doors); placements keyed by `PlotTarget.key`.
+- `mapPanels.generator.ts`: `PolygonDescriptor.showCode`, `assigned` suppressed when it repeats the SVG's text; identity by key.
+- `usePropertyMap.ts`: drops / hover / selection / Auto Plot keyed by `PlotTarget.key`; Auto Plot ignores amenity-layer polygons.
+- Model / parser: `MapMarkers`, `meta.markers` with the legacy defaults.
+- Strings: `mapPlotting.plan.zoom / zoomIn / zoomOut / resetView`.
+- CSS: Manual Plot states, `--bo-accent-deep`, `.bo-map__zoom*`, `.bo-map__marker*`, `.bo-map__glyph*`; the old dot / chip rules removed.
+
+### Coordinates and geometry
+
+- A floor SVG's coordinate system is its `viewBox` (John Demo floor 1: `0 0 1419 938`, a 1412 × 932 raster embedded as a pattern, `Inter` text at 9 / 12 / 15). `pointer_data` is stored in viewBox units; a raster placement in image pixels. Overlays are positioned as percentages of the plan's box; the zoom transform applies to that box, so nothing drifts (verified: a pin's, a node's, an overlay label's and an SVG `<text>`'s positions relative to the plan are identical before and after zoom, pan and a viewport resize).
+- Polygon centres come from `getBBox` + `getCTM` on the off-screen mount (unchanged); the overlay label sits at the centre.
+
+### Validation (local: CMS on :3100 with `pynwheel_development`, Connect dev on :3005, headless Chrome, minted super-admin session)
+
+- **Manual Plot** measured: OFF white / ink; OFF + hover white / accent text and border; ON accent / white; ON + hover `rgb(0,95,140)` / white; keyboard focus ring; the pill stays white.
+- **Zoom** on Hazel: + → 1.300 (plan 715 → 929 px, centre unmoved, a pin's relative position `[0.161, 0.543]` before and after); 8 clicks → 8.000 and + disabled; − to 0.500 and − disabled; Reset → 1.000 at the fitted box, Reset disabled; wheel → 1.822 about the pointer, page `scrollY` unchanged; drag → +60 / +40 px; a floor switch → 1.000. 0 non-GET requests.
+- **Floor image** (Hazel floor 1, 2919): amenity squares in `#d37474`, the green plus on the amenity without a door, 8 hallway dots, 10 black 1px links, the elevator, the red tour start; no chips, no coordinates.
+- **Floor SVG**: 1468 fills exactly its 3 pointer shapes (15 before the key fix) and prints the three unit names (the SVG's own "47" is left as the label). **The real John Demo floor 1 file** (`uploads/floorplate/svg_image/4230/1785636792-optimized.svg`, fetched from the public bucket) served in place of a Sylo floor: its 32 `<text>` labels render; Manual Plot onto `Vector_2651` fills room **652**, prints the unit's name, the popover reads "Polygon 652"; `POOL` (amenities layer) is a polygon ("Polygon POOL"); no `Vector_` label anywhere; zoom keeps text and overlay aligned.
+- `tsc` clean; `next build` ✅; Playwright: `tests/e2e/mapCanvas.spec.ts` (new, 6) + the suite, **113 passed** in 2.6 min. Every real-data test asserts 0 non-GET requests and 0 page errors.
+
+**John Demo on the user's data (validated live, Oct 1):** the user signed in to their own Connect (`localhost:3001`, on the local `pynwheel_prod` copy) inside the app's browser pane and the screen was driven read-only there. Property 1411 has 6 floorplates, all with floor SVG + background, all "Done". **Floor 1:** the SVG mounts with its 55 own `<text>` labels ("TENANT LEASE SPACE" twice among them), 39 of 39 units filled as polygons, no generated-id label anywhere, extra names printed only where they differ from the room number (A-107, Pet Spa, Business Center, Conference Room, Mail Room, Yoga Room, Pool Lounge). **Floor 3** (the brief's case): 68 own labels — "TENANT LEASE SPACE", "STORAGE", "COURTYARD", "POOL", the road names, rooms 301–367 — **60 of 60 units filled**, only "Resort Style Pool" printed as an extra name, no `Vector_…` label. Zoom on that floor: ×1.3 twice → 1.690 (plan 532 → 899 px), Zoom out → 0.769 (409 px), Reset → 1.000 with Reset disabled; "TENANT LEASE SPACE" and the "Resort Style Pool" label stayed at the same position relative to the plan (`[0.360, 0.662]` / `[0.584, 0.398]`) at every scale. 0 non-GET requests, no page errors. The old `plotexp` page itself needs the user's CMS login and was compared through the user's screenshots (image section: yellow markers with the green plus; SVG section: the file's own text) and the traced source.
+
+### Old-system behaviour discovered
+
+- The legacy reset button reloads the whole page; the panzoom `initial` transform is the fit-and-centre. Connect resets the viewport only.
+- The legacy scales markers with the map (they live in the panzoom container); labels are the SVG's text and scale too. Connect does the same; only the popover is kept at screen size.
+- Legacy hover on a valid shape (Manual Plot on) fills it with the marker colour; a placement is a clone of the shape filled with the marker colour. Connect keeps the design's fills (`#E8F4FB` placed, `#CFE7F4` hover, accent stroke) — the design is the UI reference — and the theme colour for image markers.
+- `moveSvgTextGroupsToEnd` is dead code in the legacy; no reordering is done.
+
+### Tests
+
+`mapCanvas.spec.ts`: Manual Plot states (OFF, OFF + hover, ON, ON + hover, keyboard focus, Enter toggles); zoom buttons (step, centre, limits, reset, floor switch resets); wheel about the pointer without page scroll, drag pan, wheel to the minimum; floor image markers (counts of unit / amenity markers, hallway nodes and links from the CMS JSON, 1px black lines, theme colours from `meta.markers`, the door plus rule, no chips / coordinates, a selected node names itself); floor SVG labels with `fixtures/floor-labels.svg` (7 texts incl. "TENANT LEASE SPACE" and artwork; nothing printed before plotting; a plotted room named by its text, never `Vector`; a room without text prints its code on hover / when plotted; `POOL` plottable, artwork not; the popover does not scale; labels and SVG text keep their relative positions through zoom, pan and a resize; a floor switch and back keeps the plotted state); a real floor SVG (1468) fills exactly its stored pointers with no marker on top. `mapPlotting.spec.ts` counts placements through `[data-plotted]`; `hazel.spec.ts` waits for the Edit Amenity form (it reads the on-demand units).
+
+### Remaining
+
+- John Demo floor 3 on the user's data (above).
+- Access points (`fa-lock`, `#66bf60`) are not in the wayfinding JSON; not drawn.
+- The legacy hover fill in the marker colour on the SVG is not reproduced (design fills kept).

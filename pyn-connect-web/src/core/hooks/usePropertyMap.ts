@@ -346,7 +346,7 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
         toast(i18n.t(M.toast.nothingSelected));
         return;
       }
-      const override: PinOverride = { levelId: level.id, x: target.cx, y: target.cy, space: 'svg', polygon: target.code };
+      const override: PinOverride = { levelId: level.id, x: target.cx, y: target.cy, space: 'svg', polygon: target.key };
       patch((current) => ({
         pinOverrides: { ...current.pinOverrides, ...Object.fromEntries(items.map((item) => [item.key, override])) },
         plotSel: [],
@@ -365,12 +365,12 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
         dropOnPolygon(target);
         return;
       }
-      patch((current) => ({ selPoly: current.selPoly === target.code ? null : target.code, selectedPin: null, selectedNode: null, selectedEdge: null }));
+      patch((current) => ({ selPoly: current.selPoly === target.key ? null : target.key, selectedPin: null, selectedNode: null, selectedEdge: null }));
     },
     [dropOnPolygon, patch, state.plotSel.length, state.plotTarget, state.tool]
   );
 
-  const hoverPolygon = useCallback((code: string | null) => patch((current) => (current.polyHover === code ? {} : { polyHover: code })), [patch]);
+  const hoverPolygon = useCallback((key: string | null) => patch((current) => (current.polyHover === key ? {} : { polyHover: key })), [patch]);
   const closeSelPoly = useCallback(() => patch(() => ({ selPoly: null })), [patch]);
 
   const unplotItems = useCallback(
@@ -700,7 +700,8 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
           building: row.building,
           floors: row.floors,
           hasSvg: !!own.svg,
-          targets: own.svg ? (doc ? doc.targets : null) : [],
+          // Units match unit polygons; an amenities layer's shapes are plotted by hand.
+          targets: own.svg ? (doc ? doc.targets.filter((target) => target.category !== 'amenity') : null) : [],
           units: scope
             .filter((item) => item.kind === 'unit')
             .map((item) => {
@@ -800,7 +801,7 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
       return;
     }
     const overrides = Object.fromEntries(
-      ok.map((row) => [row.key, { levelId: row.levelId, x: row.target!.cx, y: row.target!.cy, space: 'svg' as const, polygon: row.target!.code } satisfies PinOverride])
+      ok.map((row) => [row.key, { levelId: row.levelId, x: row.target!.cx, y: row.target!.cy, space: 'svg' as const, polygon: row.target!.key } satisfies PinOverride])
     );
     const left = apAnalysis.rows
       .filter((row) => !row.ok)
