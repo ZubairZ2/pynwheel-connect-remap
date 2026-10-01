@@ -6,6 +6,7 @@ import type {
   ListingSummary,
   RowDescriptor
 } from '~/core/utils/generator/listing.types';
+import type { ListingSort } from '~/core/utils/generator/listingSort';
 
 interface Props {
   toolbar: ReactNode;
@@ -17,6 +18,9 @@ interface Props {
   error?: string | null;
   footer?: ReactNode;
   busy?: boolean;
+  sort?: ListingSort | null;
+  onSort?: (key: string) => void;
+  sortLabel?: (column: string) => string;
 }
 
 /** Summary + toolbar + table + pager — the listing body contract. */
@@ -29,7 +33,10 @@ export const ResourceListingTemplate = ({
   summary,
   error,
   footer,
-  busy
+  busy,
+  sort,
+  onSort,
+  sortLabel
 }: Props) => (
   <div className="bo-listing">
     {summary && (
@@ -43,7 +50,15 @@ export const ResourceListingTemplate = ({
     <div className={`bo-panel ${busy ? 'bo-panel--busy' : ''}`} aria-busy={busy || undefined}>
       {/* Wide tables scroll sideways on narrow screens instead of squashing. */}
       <div className="bo-panel__scroll">
-        <CustomTable columns={columns} rows={rows} emptyLabel={emptyLabel} caption={caption} />
+        <CustomTable
+          columns={columns}
+          rows={rows}
+          emptyLabel={emptyLabel}
+          caption={caption}
+          sort={sort}
+          onSort={onSort}
+          sortLabel={sortLabel}
+        />
       </div>
       {footer}
     </div>

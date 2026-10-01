@@ -38,14 +38,18 @@ export default async function Page({
   }
 
   const { tab } = await searchParams;
-  const load = await loadPropertyInventory(await readRailsCookie(), Number(propId));
+  const initialTab = asInventoryTab(Array.isArray(tab) ? tab[0] : tab);
+  // The units listing is most of the inventory's weight and only the Units tab
+  // (and the unit dialogs) read it: it is fetched here only when the page opens
+  // on that tab, and otherwise by the screen when it is first needed.
+  const load = await loadPropertyInventory(await readRailsCookie(), Number(propId), { units: initialTab === 'units' });
   if (load.status === 'unauthorized') redirect(APP_ROUTES.signIn);
 
   return (
     <ConnectScreenTemplate title={title}>
       <PropertyInventoryScreen
         inventory={load.status === 'found' ? load.inventory : null}
-        initialTab={asInventoryTab(Array.isArray(tab) ? tab[0] : tab)}
+        initialTab={initialTab}
         today={cmsToday()}
         error={load.status === 'failed' ? i18n.t(CORE_STRINGS.inventory.loadFailed) : null}
       />

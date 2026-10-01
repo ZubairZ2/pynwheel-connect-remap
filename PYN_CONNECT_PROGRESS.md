@@ -25,6 +25,8 @@ This is the single progress document. It merges the original phase 1/2 handoff w
 | **2d**: Property Detail on real data, no backend changes | `properties_detail_feature.md`, Sep 24 | `feature/properties_detail_page` (`ef9e4549a`, local, no PR yet) | ✅ Done for what the listing exposed (§15) |
 | **2d-r**: Property Detail, revised rule (read-only JSON on `communities#edit`) | `properties_detail_feature.md` §9a, Sep 24 | `feature/properties_detail_page` (not yet committed) | ✅ Every design section on real data except R1–R4 in [gaps_properties_detail_feature.md](gaps_properties_detail_feature.md) §0 (§16) |
 | **2e**: Property Inventory on real data (read-only JSON on the four inventory `index` actions) | `feature_inventory_page.md`, Sep 24 | `feature/inventory_implementation` (on `824c1f07a`, uncommitted) | ✅ All four tabs, filters, viewer and dialogs on real data; gaps G15–G21 (§17) |
+| **2k**: Inventory loads units on demand; Companies / Properties column sorting; Map & Plotting review | `improvments_relatd_to_ploting_listing_inventory.md`, Sep 30 | `feature/plotting_sorting_inventory_perf` (from `main` `b04012b4a`) | ✅ (§24) |
+| **2l**: Map & Plotting — Manual Plot states, zoom / reset, legacy markers and paths, SVG labels | `ploting_map_improvments.md`, Oct 1 | `feature/map_zoom_labels_pins` (from `feature/plotting_sorting_inventory_perf` `5ab58783d`) | ✅ incl. John Demo floors 1 and 3 on the user's data (§25) |
 | **3**: Replace demo data with real Rails data | *brief not written yet* | — | ⏭ Next (§11) |
 
 **`main` holds everything above except 2d** (PRs #1–#3 merged, Sep 24). Local `main` is one commit ahead of `origin/main` (`c9416ae67`, this doc's catch-up; not pushed).
@@ -1512,3 +1514,185 @@ Reused: `Modal`, `SafeImage`, `MediaThumb`, `UploadSlot`, `ImageViewer`, `Interi
 - `staging-pynwheel` objects that are not public-read (some elevator and stop images of 2934) cannot render in any UI; not a Connect gap.
 - Every write remains local (M1–M13, T1–T7, GA3): plotting, stop edits, dwell time, uploads, publish.
 - The eye viewer streams the full-size photo (some Hazel photos are 5,000 px wide); the CMS's `thumb` versions are not exposed and the legacy pages use the full file too.
+
+---
+
+## 24. Phase 2k: Inventory on demand, listing sorting, Map & Plotting review (September 30, 2026)
+
+**Brief:** `improvments_relatd_to_ploting_listing_inventory.md` (untracked, like the other briefs). Find why Inventory opens slowly for John Demo and stop loading inventory data before it is needed (measured before and after); add Ascending → Descending → Default column sorting to Companies and Properties; align Map & Plotting with `pyn-system-plotting.html` on real data. Read-only rule and minimal JSON changes as before.
+
+**Branch:** `feature/plotting_sorting_inventory_perf`, from `main` (`b04012b4a`). The brief names `feature/properties_inventory_improvments`, which is already merged into `main`.
+
+**Scope decision (asked, Sep 30):** Companies and Properties are paged by the CMS at 10 rows per page, so sorting only the rows on screen would sort 10 of 217 / 802. The user chose **whole-list sorting on the server**: a whitelisted `sort` / `dir` on the two existing Connect listing queries (ORDER BY only; default order unchanged).
+
+### Root-cause / task map
+
+| Area | Current behaviour (measured) | Root cause | Change | Result |
+|---|---|---|---|---|
+| Properties listing | 1 CMS read (`communities.json`). A production build prefetches `/properties/:id`, `/inventory`, `/map`, `/branding` for each row in view and 16 sidebar routes: RSC requests with `Next-Router-Prefetch`, which stop at the `loading.tsx` boundary; **0 inventory reads reach the CMS** | — (the listing never loaded inventory data) | none | unchanged, verified |
+| Property Detail | 1 CMS read (`communities/:id/edit.json`); same prefetches, 0 inventory reads | — | none | unchanged, verified |
+| Inventory click | The route waits for **all four listings** (`Promise.all`) and serializes all of them to the client. `units.json` is ~93 % of it (1411: 288 KB of 301 KB RSC; Hazel: 506 KB of 547 KB) and the slowest listing, yet only the Units tab and the unit-dependent dialogs read it | `loadPropertyInventory` fetched and shipped everything for every tab | Units are fetched only when the Units tab (or a dialog that needs units) first opens, once; the Units badge reads a new `meta.unit_count` on `floorplates.json` | RSC 301 → 32 KB (1411), 547 → 60 KB (Hazel); server 0.14 → 0.06 s, 0.25 → 0.06 s |
+| Companies sorting | none | — | `ListingSort` + `AccessibleCompaniesQuery.sorts`; sortable headers | 4 columns |
+| Properties sorting | none | — | `AccessibleCommunitiesQuery::SORTS`; sortable headers | 4 columns |
+| Map & Plotting | On real data since phase 2i/2j, but with rows the plotting design does not have: Grid, Floor SVG / Background image, Publish, the Pathways & pins strip, the plan bar, a read-only banner and seven side panels (kept then because the briefs asked for them). The Building row was also hidden for a one-building property | The Sep 30 brief listed those rows again (§13–15); the user then pointed at the design, which shows only "{floor} · n of m plotted · Auto Plot · Manual Plot", and chose **match the design exactly** | Removed those rows and panels; the Building row always shows; the plan sits inset on a white canvas; floors with both files show the SVG; the no-SVG drop zone uses the design's wording and only "Choose SVG File" | the screen matches `pyn-system-plotting.html` |
+
+### Measurements (local: CMS on :3000 with `pynwheel_development`, Connect production build on :3004, headless Chrome, minted super-admin session)
+
+John Demo locally is **1411 "John Pynwheel Demo"**: 4 floorplates, 8 floor plans, 230 units, 7 amenities (the 6 / 7 / 294 in the brief are the Heroku database's; Heroku was not measured from here). Hazel is 1618 (31 / 17 / 238 / 6). CMS requests were counted from `log/development.log` per step; browser requests from Playwright.
+
+| Metric | Before | After |
+|---|---:|---:|
+| Inventory CMS reads while on Properties (search → hover → idle) | 0 | 0 |
+| Inventory prefetches from Properties (browser, stop at `loading.tsx`) | 1 per row (`/inventory` RSC) | 1 per row (unchanged, no CMS read) |
+| CMS reads when Inventory opens (Floorplates tab) | 4 (floorplates, floorplans, units, amenities) | 3 (floorplates, floorplans, amenities) |
+| CMS reads on first Units tab | 0 | 1 (`units.json`, via `/api/properties/:id/inventory/units`) |
+| CMS reads on later tab switches | 0 | 0 |
+| Inventory RSC payload, 1411 / Hazel | 301 KB / 547 KB | 32 KB / 60 KB |
+| Inventory HTML (full load), 1411 / Hazel | 378 KB / 747 KB | 75 KB / 212 KB |
+| Inventory server time (RSC), 1411 / Hazel | 0.14 s / 0.25 s | 0.06 s / 0.06 s |
+| Units listing (only when the Units tab opens), 1411 / Hazel | in the page | 270 KB, 0.11 s / 487 KB, 0.21 s |
+| Deep link `?tab=units` | 301 KB / 547 KB | same (units fetched on the server; 0 extra requests) |
+| Duplicate requests | 0 | 0 (one units request; a second trigger joins it; revisits reuse it) |
+| Click → tabs hydrated (1411) | 397 ms | 399 ms (dominated by client work locally; the saving is server time and bytes) |
+
+CMS per-listing times, 1411 (cold / warm): floorplates 0.36 / 0.02 s, floorplans 0.11 / 0.03 s, **units 0.31 / 0.11 s (288 KB)**, amenities 0.06 / 0.03 s. Hazel: units 0.30 / 0.20 s (506 KB), the rest ≤ 0.05 s. Locally the whole inventory loads in well under a second; the slowness reported on Heroku comes on top of this (the CMS dyno's R14 memory warnings, and `Connect::UploadUrl.reachable_copy` HEADs S3 for a record family whose bucket differs from the configured one when its day-long cache is cold, which hits the image-heavy units listing hardest). Deferring units removes that listing from the Inventory's critical path on every host.
+
+### Backend (read-only)
+
+| File | Change |
+|---|---|
+| `app/controllers/floorplates_controller.rb` | `render_connect_floorplates` meta gains `unit_count: UnitFilterQuery.new(community).results.count`: the same unfiltered query `units#index` JSON answers with (checked equal to `units.json` length on 1411, 1618, 348, 1625, 4397, 236, 3837, 1414) |
+| `app/queries/listing_sort.rb` (new) | Whitelisted column sort: `sort` must name an offered column and `dir` be `asc` / `desc`, else the default order; `… NULLS LAST` then the default order as the tie-break. `PROVIDER_LABELS` mirrors the frontend's `providerLabel`, so provider columns sort on the label shown ("psi" as "Entrata / PSI"). Built without a DB connection (safe at class load / asset precompile) |
+| `app/queries/accessible_companies_query.rb` | `sorts`: `name`, `status` (Active before Inactive), `pms_provider` (labels in stored order; none → last), `properties` (the serializer's `real_properties` count) |
+| `app/queries/accessible_communities_query.rb` | `SORTS`: `name`, `company`, `data_provider` (label; none → last), `status` (lifecycle rank: Installed 1 → Activated → In Production → Final Approval → Released 5, same precedence as `PropertySerializer#stage`) |
+
+Both queries are used only by the Connect JSON actions (`companies#index.json`, `communities#index.json`, `communities#edit.json` without params); the legacy HTML pages still use `alphabetical_sort`. No schema, migration, model, business rule, authorization or write changed.
+
+### Frontend
+
+- **Inventory on demand.** `loadPropertyInventory(cookie, id, { units })` (the Inventory route passes `units: tab === 'units'`; Map, Tour Setup and Unit Detail keep the default `true`); `loadInventoryUnits` + route handler `app/api/properties/[propId]/inventory/units/route.ts` (GET, same session, scope and parser; 401 / 404 / 502 like `wayfinding-route`), `APP_API.inventoryUnits`. Model: `InventoryUnitListing`, `PropertyInventory.unitsLoaded` / `unitCount`; parser reads `meta.unitCount`. `usePropertyInventory` holds the inventory in state, loads units when the Units tab or a unit-dependent dialog (`dialogNeedsUnits`: every dialog but the floor plan form, because the floorplate and amenity Building lists include unit buildings) first needs them, joins an in-flight request, sends a 401 to Sign In, and leaves a failure to Retry. The Units tab shows the shared `LoadingIndicator` ("Loading units…") or the error with Retry (`UnitsPending`); a dialog waiting for units opens at once with the same state (`UnitsPendingDialog`). The screen is keyed by property id so state never leaks between properties. Tab badge: `unitsLoaded ? units.length : unitCount`.
+- **Sorting.** `core/utils/generator/listingSort.ts` (shared: `parseListingSort`, `nextListingSort` (new column → asc; asc → desc → default), `listingSortParams`, `sortStateOf`, `ariaSortOf`, `sortByLabel`); `ColumnDescriptor.sortKey`; `CustomTable` renders a sortable header as a button with `SortIcon` (new in `atoms/Icons.tsx`: both chevrons faint = unsorted, up = ascending, down = descending) and `aria-sort`; `ResourceListingTemplate` passes `sort` / `onSort`. The pages read `sort` / `dir` from the URL, validate them against `COMPANY_SORTABLE` / `PROPERTY_SORTABLE`, send them to the CMS and pass them down; the hooks' `toggleSort` writes the next state to the URL (page reset to 1; search and filters kept; paging keeps the sort). Not sortable: Go To (buttons), Products (a set of tags).
+- **Map & Plotting.** `generateBuildingPills` shows a one-building property's pill, selected; the screen ignores a click on the active pill.
+
+### Map & Plotting against `pyn-system-plotting.html` (unchanged since Sep 26)
+
+Driven side by side (prototype from `file://` → Properties → Luxe Mile High → MAP, also its Manual Plot on and a No SVG floor; Connect on 1411, 1468 and 1618).
+
+**Decision (asked, Sep 30):** the brief's §13–15 listed Grid, Floor SVG / Background image, Publish, the Pathways & pins tools and the floor plan bar; the design has none of them. The user chose **match the design exactly**.
+
+- **Now on screen, as the design:** breadcrumb, title, subtitle, Inventory / Tour Setup; the Building row with counts (also for a one-building property: its pill, selected; a click on the active pill does nothing); the horizontal floorplate strip ("Single floor" / "Named floor", name, progress bar, "Done" / "n/m" / "No SVG · n/m", arrows, "N floorplates · Add Floorplate" last); "{building} · {floor}  n of m plotted" with **Auto Plot** (menu → the four-step wizard) and **Manual Plot** (Off / On, with the dark "Manual Plot is on … Turn Off" bar); the canvas (the floor SVG with its polygons and polygon popover, or the floor image, inset 24 px on white); the no-SVG drop zone ("Drop the floor .svg here", "Plotting needs the floor SVG for {floor}…", Choose SVG File); the one side panel, Plot Units & Amenities.
+- **Removed from the screen:** the read-only banner; Grid; the Floor SVG / Background image switch (a floor with both files shows the SVG, the design's plotting surface; the SVG-failed state still offers "Show background image"); Publish and its dialog; the Pathways & pins strip (Select, Place Pin, Junction, Connect, Move, Start Plotting Hallways, the hint); the plan bar (file names, pins / nodes, Upload SVG / Image, Drop target, Remove Plan); the image-only note under the canvas; the side panels Auto Plot report, selected pin, Selection, Building Starting Points, Vertical Connections, Run Algorithm, Marker Colors by Bedroom; "Upload Image Instead" and the file-format note in the drop zone; 45 CSS rules no element uses any more.
+- **Still drawn on the canvas (stored data, read-only):** unit and amenity pins, the stored hallway nodes, elevators, entry points and their links. They cannot be edited here any more.
+- **Behaviour kept:** Manual Plot onto polygons (ticked items) and onto a floor image (turning it on arms the next item to plot; a click drops its pin), Unplot from the polygon popover and the Plotted tab, Auto Plot, Add Floorplate (the inventory dialog), deep links from Tour Setup. Everything stays local; the only request the screen sends is the floor SVG read.
+- **Not removed yet:** the hook's pathway, route, grid and publish state and actions (`usePropertyMap`) and the `wayfinding-route` handler, now unreachable from the UI; left for a separate cleanup so this change stays reviewable (and restorable).
+
+### Tests
+
+`tests/e2e/listingsAndInventory.spec.ts` (new, 8 tests, real data, expected values read from the CMS JSON at run time, every test asserts 0 non-GET requests and 0 page errors):
+
+- Properties listing requests nothing of the inventory (no `/api/properties/*`, no non-prefetch inventory / map / tour / unit navigation)
+- Inventory opens without units, the badge already shows the CMS count, Floorplans / Amenities don't load units, the Units tab loads them once (200, 25 cards), revisiting reuses them
+- `?tab=units` arrives with units and makes no extra request
+- Edit floorplate on the Floorplates tab shows "Loading units…" in the dialog until the (held) response arrives, then the form; one request
+- A 502 shows the error; Retry loads the units (2 requests)
+- Companies: all four headers start `aria-sort="none"`; Properties asc / desc / default equal the CMS's own sorted rows and are numerically ordered; switching to Company resets Properties; Company desc page 2 equals the CMS page 2
+- Properties: Go To / Products not sortable; Status asc starts Installed, desc starts Released; Data Provider asc and desc both end with "Not connected" on the last page; search keeps the sort
+- Hazel map: one Building pill, selected, count = floorplates; clicking it keeps Floor 5
+
+`mapPlotting.spec.ts` now holds the screen to the design (`expectDesignLayout`: the toolbar's buttons are exactly Auto Plot and Manual Plot, one side panel, none of the removed controls); its image-floor test checks the stored pins and hallway nodes and a Manual Plot drop on the image with Turn Off. `hazel.spec.ts`'s strip test compares the canvas pins with the Plot panel's Plotted count instead of the removed plan bar.
+
+Floor-strip navigation (first / next / previous / last, 3 / 19 / 31 plates, deep links near the middle and end, selected floor in view) is covered by `hazel.spec.ts` since §23 and still passes. `hazel.spec.ts` "Loading" now slows the Map & Plotting route instead of Inventory: the Inventory's server render is now ~60 ms, too short to observe the veil after a pre-first-byte delay (the indicator itself is unchanged).
+
+Server-side sort checked separately over **every page** of both listings (217 companies, 802 properties) for all 8 columns in both directions: values ordered, empties last, same row set as the default; an unknown `sort` or `dir` returns the default order.
+
+**Results (Sep 30):** `tsc` clean; `next build` ✅ (map route 23.4 → 20.9 kB); new spec 8 / 8; full suite (`npm run test:e2e` with the session env) **107 passed** in 1.8 min, after the Map & Plotting change too (run against an isolated CMS on :3100 and Connect dev on :3005, because the user's own servers on :3000 / :3001 run on `pynwheel_prod`). Legacy HTML `/companies`, `/communities/1411/floorplates`, `/communities/1618/floorplates` 200; no 500 in the CMS log today.
+
+### Additional performance issues found
+
+| Issue | Status |
+|---|---|
+| Inventory shipped the full units listing on every tab | **Fixed** (above) |
+| Production prefetch of every Go To link and sidebar route on the Properties listing (~20 RSC requests) | **Not an actual issue**: they stop at the `loading.tsx` boundary and make no CMS read (Rails log), ~0–12 KB each |
+| Unit Detail loads all four listings to show one unit (there is no single-unit endpoint) and ships them to the client | **Deferred**: its Edit Unit dialog's Building and lock lists derive from the other units and the floorplates; trimming it needs a single-unit JSON read |
+| Map & Plotting / Tour Setup load the whole inventory (313 KB / 612 KB RSC for 1411 / Hazel) | **Not an actual issue**: every listing is read there (pins and the strip's progress need every unit and amenity, the bedroom marker colours need the floor plans); loaded only when the screen opens |
+| Duplicate requests | **None found** in any flow measured |
+| Heroku timings | **Not measured** from this machine; see the note under Measurements |
+
+### Remaining
+
+- Commit (no AI attribution) and PR to `main`. Deploy both apps (Rails: the floorplates meta and the two queries + `ListingSort`; Connect: everything else).
+- Unit Detail payload (deferred above).
+- Remove the pathway / route / grid / publish logic `usePropertyMap` keeps without a UI, and the `wayfinding-route` handler, if those tools are not coming back.
+
+---
+
+## 25. Phase 2l: Map & Plotting — Manual Plot states, zoom, legacy markers and SVG labels (October 1, 2026)
+
+**Brief:** `ploting_map_improvments.md` (untracked, like the other briefs). Fix the Manual Plot ON + hover state; add Zoom In / Zoom Out / Reset to the map; render the map the way the old plotting page does (yellow location markers, green plus markers, pathway lines, the SVG's own labels, no debug ids or coordinates); validate on John Demo → Floor 3 ("Tenant lease space").
+
+**Branch:** `feature/map_zoom_labels_pins`, from `feature/plotting_sorting_inventory_perf` (`5ab58783d`, pushed).
+
+### Implementation map
+
+| Issue | Current behaviour (reproduced) | Old system behaviour (traced) | Root cause | Change | Reused |
+|---|---|---|---|---|---|
+| Manual Plot ON + hover | Measured in Chrome: ON = `bg rgb(0,119,174)`, `color #fff`; ON + hover = `bg rgb(0,119,174)`, **`color rgb(0,119,174)`** — the text vanished | The design (`mpBtnBg/Color/Border` in the plotting prototype) has one ON look and no hover; the legacy page has no such control | `.bo-map__tool:hover:not(.bo-map__tool--active)` (specificity 0,3,0) outranked `.bo-map__tool--fill:hover` (0,2,0), so the OFF-hover text colour was applied over the ON background | OFF hover never applies to `--fill`; ON + hover deepens the accent (`--bo-accent-deep: #005f8c`, one step of the design's accent), text stays white; `:focus-visible` ring; disabled excluded. Measured after: ON + hover `bg rgb(0,95,140)`, `color #fff` | existing `.bo-map__tool*` classes |
+| Zoom | None | `plotexp.html.haml` → `services/zoomHandler.js`: timmywil **panzoom** on `.plot-image` (`minZoom 0.5`, `maxZoom 10`, wheel, drag), `shared/_zoom_control_buttons` (+ − ↻ top-right, `.zoom-controls`), `BUTTON_ZOOM_STEP = 1.3` towards the container centre, initial scale = fit into the parent (capped at 1) and centred, bounds with 10 % padding; the legacy `.reset` **reloads the page** | No viewport | A `View { scale, x, y }` in `MapCanvas` applied as `transform` on `.bo-map__plan` (everything inside — SVG, polygons, labels, pins, nodes, paths — moves as one); + / − ×1.3 about the canvas centre, wheel about the pointer (native non-passive listener, so the page does not scroll), drag-to-pan on the empty canvas in Select mode (a still click still clears the selection), limits **0.5–8 × the fitted plan**, bounds keep a tenth in view; **Reset** restores the fitted, centred plan without a reload or a request; a floor or layer change opens fitted. Floating control top-right (`.bo-map__zoom`), disabled at the limits / at default. The popover is positioned in canvas space so it does not scale | `MapCanvas`, `planRef` pointer maths (already relative to the plan's rendered box, so drops and drags stay exact under zoom) |
+| Labels on a floor SVG | Overlay printed the shape's **generated id** ("Vector 2415") over every active polygon, plus coloured dots on placed polygons | `svgHandler.js`: the SVG is mounted as-is — **its own `<text>` is the labelling** (`updateSvgTextFontFamily` applies `font_settings.svg_labels_font_family`); a placed unit is the shape **cloned and filled** with the theme marker colour (`processSvgBlock`), no extra text; `getValidShapeCategory` accepts shapes under a `Units` *or* an `Amenities` layer; `isValidShape` rejects outline / label / text / icon layers. `svgAutoPlotting.js` matches the group's `<text>`. (`moveSvgTextGroupsToEnd` exists but is never called.) | `collectTargets` scoped to the `Units` layer only and named a target after its shape id | `PlotTarget.code` = the group's printed `<text>`, else the group's name, else the shape id (generated ids like `Vector_…` / `Group_…` never win over a named group); `category` per the legacy rule; the `Amenities` layer is plottable; polygons are identified by their unique `key` (several shapes can share a printed code — 1468 lit 15 shapes for 3 units before). The canvas prints an overlay only where the SVG prints nothing (the design's code, when active) or where the plotted item's name differs from the polygon's text; nothing on top of a placed polygon (the fill is the placement, as the legacy clone); the SVG's text gets the property's label font. Auto Plot matches unit polygons only | `floorSvg.ts`, `SvgPlanLayer`, `generatePolygons` |
+| Markers on a floor image | Large coloured discs (bedroom palette) with bed / star icons and dark name chips; node dots with permanent labels; edges 2.5px blue | `_svg_or_image_unit_plotting.html.haml`: `fa-map-marker-alt` at the design's size (default 30px) in the **theme colour** (`property_map_color` / `*_property_map_marker_color` per theme, else `rgba(247,0,0,.61)`), the `<p class="marker">` at `(x − 13, y − 34)` so the tip sits on the point; a green `fa-plus-circle` (`#59de83`, half size) beside it when `self_tour && auto_wayfinding` and the unit has no door; doors `fa-sign-in` `#3153d2`; amenities (`_svg_or_image_amenity_plotting`) a `(size − 5)` square bordered in the amenity colour with `fa-camera-retro`; `maps.js draw_initial_hallways`: nodes `fa-dot-circle fa-lg` `#008fd4` (`#f7296a` selected), **1px black lines** between node centres (+8); the tour start `.start-point` red 25px disc; unit numbers are in the image; tooltips only, no labels | Phase 2g drew its own markers | `MapMarkers.tsx` (the glyphs as inline SVG, Font Awesome paths), sizes in image pixels so they scale with the plan; colours from a new `floorplates.json` `meta.markers`; permanent chips removed (a selected marker names itself); edges 1px black; no coordinates anywhere | `MapCanvas`, `generateLevelGraph` |
+| Marker colours | App palette | Per-theme Design columns (above), `font_settings.svg_labels_font_family`, `communities.auto_wayfinding` | Not in any JSON | `Connect::MapMarkers` (read-only; the same branches as the two partials) → `meta.markers` on `floorplates.json`; `PropertyInventory.markers` | `FloorplatesController#render_connect_floorplates` |
+| Background image not loading (1411 locally) | "The floor image could not be loaded" | Same URL on the legacy page | The local dump's 1411 (Penrose on Mass, 2021) points at `images-pynwheel-cms-v2/uploads/floorplate/image/186x/…`, which answers **403 on S3** for both the accelerate and the plain host — the objects are not public. Not a Connect data-flow bug; the legacy page fails the same way. The user's John Demo (a newer 1411 with floor SVGs, `pynwheel_prod`) was not reachable from here — see Validation | — | — |
+
+### Backend (read-only JSON only)
+
+| File | Change |
+|---|---|
+| `app/serializers/connect/map_markers.rb` (new) | `unit_color`, `unit_size`, `amenity_color`, `amenity_size` (the partial's `size − 5`), `door_color`, `door_plus_color`, `svg_font_family`, `auto_wayfinding`, decided exactly as the two plotting partials decide them per `theme_name` (gables / modernist "no color" → primary / futurist / expressionist / panther / legacy default) |
+| `app/controllers/floorplates_controller.rb` | `render_connect_floorplates` meta gains `markers: Connect::MapMarkers.for(community)` |
+
+Checked against the DB: 1411 (expressionist) `#dd4426` / 35, 1618 and 2919 (futurist) `#d37474` / 30, 3837 (futurist) unit `#ffd400` (the yellow of the screenshots) amenity `#1463d6`. No business logic, schema, migration, validation, authorization or write changed.
+
+### Frontend
+
+- `MapCanvas.tsx`: the viewport (state, wheel, pan, bounds, buttons, reset on floor change), the legacy markers by kind, the polygon-label rule, the popover in canvas space, `data-scale` / `data-testid="plan"`.
+- `MapMarkers.tsx` (new): `LocationGlyph`, `PlusGlyph`, `AmenityGlyph`, `NodeGlyph`, `DoorGlyph`, `DotGlyph`, `TourStartGlyph`, `ResetViewIcon`; the legacy colours.
+- `floorSvg.ts`: `PlotTarget.category`, `code` precedence (`codeOf`), `Units` + `Amenities` scopes, `GENERIC_ID`.
+- `SvgPlanLayer.tsx`: `fontFamily`, `data-plotted` / `data-selected` on the shapes, hover by key.
+- `mapNodes.generator.ts`: pins coloured from `markers`, `hasDoor` (units' `door_id`, the graph's doors); placements keyed by `PlotTarget.key`.
+- `mapPanels.generator.ts`: `PolygonDescriptor.showCode`, `assigned` suppressed when it repeats the SVG's text; identity by key.
+- `usePropertyMap.ts`: drops / hover / selection / Auto Plot keyed by `PlotTarget.key`; Auto Plot ignores amenity-layer polygons.
+- Model / parser: `MapMarkers`, `meta.markers` with the legacy defaults.
+- Strings: `mapPlotting.plan.zoom / zoomIn / zoomOut / resetView`.
+- CSS: Manual Plot states, `--bo-accent-deep`, `.bo-map__zoom*`, `.bo-map__marker*`, `.bo-map__glyph*`; the old dot / chip rules removed.
+
+### Coordinates and geometry
+
+- A floor SVG's coordinate system is its `viewBox` (John Demo floor 1: `0 0 1419 938`, a 1412 × 932 raster embedded as a pattern, `Inter` text at 9 / 12 / 15). `pointer_data` is stored in viewBox units; a raster placement in image pixels. Overlays are positioned as percentages of the plan's box; the zoom transform applies to that box, so nothing drifts (verified: a pin's, a node's, an overlay label's and an SVG `<text>`'s positions relative to the plan are identical before and after zoom, pan and a viewport resize).
+- Polygon centres come from `getBBox` + `getCTM` on the off-screen mount (unchanged); the overlay label sits at the centre.
+
+### Validation (local: CMS on :3100 with `pynwheel_development`, Connect dev on :3005, headless Chrome, minted super-admin session)
+
+- **Manual Plot** measured: OFF white / ink; OFF + hover white / accent text and border; ON accent / white; ON + hover `rgb(0,95,140)` / white; keyboard focus ring; the pill stays white.
+- **Zoom** on Hazel: + → 1.300 (plan 715 → 929 px, centre unmoved, a pin's relative position `[0.161, 0.543]` before and after); 8 clicks → 8.000 and + disabled; − to 0.500 and − disabled; Reset → 1.000 at the fitted box, Reset disabled; wheel → 1.822 about the pointer, page `scrollY` unchanged; drag → +60 / +40 px; a floor switch → 1.000. 0 non-GET requests.
+- **Floor image** (Hazel floor 1, 2919): amenity squares in `#d37474`, the green plus on the amenity without a door, 8 hallway dots, 10 black 1px links, the elevator, the red tour start; no chips, no coordinates.
+- **Floor SVG**: 1468 fills exactly its 3 pointer shapes (15 before the key fix) and prints the three unit names (the SVG's own "47" is left as the label). **The real John Demo floor 1 file** (`uploads/floorplate/svg_image/4230/1785636792-optimized.svg`, fetched from the public bucket) served in place of a Sylo floor: its 32 `<text>` labels render; Manual Plot onto `Vector_2651` fills room **652**, prints the unit's name, the popover reads "Polygon 652"; `POOL` (amenities layer) is a polygon ("Polygon POOL"); no `Vector_` label anywhere; zoom keeps text and overlay aligned.
+- `tsc` clean; `next build` ✅; Playwright: `tests/e2e/mapCanvas.spec.ts` (new, 6) + the suite, **113 passed** in 2.6 min. Every real-data test asserts 0 non-GET requests and 0 page errors.
+
+**John Demo on the user's data (validated live, Oct 1):** the user signed in to their own Connect (`localhost:3001`, on the local `pynwheel_prod` copy) inside the app's browser pane and the screen was driven read-only there. Property 1411 has 6 floorplates, all with floor SVG + background, all "Done". **Floor 1:** the SVG mounts with its 55 own `<text>` labels ("TENANT LEASE SPACE" twice among them), 39 of 39 units filled as polygons, no generated-id label anywhere, extra names printed only where they differ from the room number (A-107, Pet Spa, Business Center, Conference Room, Mail Room, Yoga Room, Pool Lounge). **Floor 3** (the brief's case): 68 own labels — "TENANT LEASE SPACE", "STORAGE", "COURTYARD", "POOL", the road names, rooms 301–367 — **60 of 60 units filled**, only "Resort Style Pool" printed as an extra name, no `Vector_…` label. Zoom on that floor: ×1.3 twice → 1.690 (plan 532 → 899 px), Zoom out → 0.769 (409 px), Reset → 1.000 with Reset disabled; "TENANT LEASE SPACE" and the "Resort Style Pool" label stayed at the same position relative to the plan (`[0.360, 0.662]` / `[0.584, 0.398]`) at every scale. 0 non-GET requests, no page errors. The old `plotexp` page itself needs the user's CMS login and was compared through the user's screenshots (image section: yellow markers with the green plus; SVG section: the file's own text) and the traced source.
+
+### Old-system behaviour discovered
+
+- The legacy reset button reloads the whole page; the panzoom `initial` transform is the fit-and-centre. Connect resets the viewport only.
+- The legacy scales markers with the map (they live in the panzoom container); labels are the SVG's text and scale too. Connect does the same; only the popover is kept at screen size.
+- Legacy hover on a valid shape (Manual Plot on) fills it with the marker colour; a placement is a clone of the shape filled with the marker colour. Connect keeps the design's fills (`#E8F4FB` placed, `#CFE7F4` hover, accent stroke) — the design is the UI reference — and the theme colour for image markers.
+- `moveSvgTextGroupsToEnd` is dead code in the legacy; no reordering is done.
+
+### Tests
+
+`mapCanvas.spec.ts`: Manual Plot states (OFF, OFF + hover, ON, ON + hover, keyboard focus, Enter toggles); zoom buttons (step, centre, limits, reset, floor switch resets); wheel about the pointer without page scroll, drag pan, wheel to the minimum; floor image markers (counts of unit / amenity markers, hallway nodes and links from the CMS JSON, 1px black lines, theme colours from `meta.markers`, the door plus rule, no chips / coordinates, a selected node names itself); floor SVG labels with `fixtures/floor-labels.svg` (7 texts incl. "TENANT LEASE SPACE" and artwork; nothing printed before plotting; a plotted room named by its text, never `Vector`; a room without text prints its code on hover / when plotted; `POOL` plottable, artwork not; the popover does not scale; labels and SVG text keep their relative positions through zoom, pan and a resize; a floor switch and back keeps the plotted state); a real floor SVG (1468) fills exactly its stored pointers with no marker on top. `mapPlotting.spec.ts` counts placements through `[data-plotted]`; `hazel.spec.ts` waits for the Edit Amenity form (it reads the on-demand units).
+
+### Remaining
+
+- John Demo floor 3 on the user's data (above).
+- Access points (`fa-lock`, `#66bf60`) are not in the wayfinding JSON; not drawn.
+- The legacy hover fill in the marker colour on the SVG is not reproduced (design fills kept).

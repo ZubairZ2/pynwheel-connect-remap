@@ -31,6 +31,8 @@ export interface ColumnDescriptor {
   align: 'left' | 'center';
   /** `actions` cells hold buttons: tighter padding, and the header never wraps. */
   kind?: 'actions';
+  /** The CMS's sort key when the column is sortable (`listingSort.ts`); absent otherwise. */
+  sortKey?: string;
 }
 
 export interface RowDescriptor {

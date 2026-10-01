@@ -221,6 +221,25 @@ export interface LockDevice {
   stopId: number | null;
 }
 
+/**
+ * How the legacy plotting pages draw the property's map markers (theme
+ * colours and sizes from the Design, the SVG label font, and whether the
+ * green "plot this unit's door" marker applies): `floorplates.json` meta.
+ */
+export interface MapMarkers {
+  unitColor: string;
+  /** The unit marker's height in image pixels (the legacy icon's font size). */
+  unitSize: number;
+  amenityColor: string;
+  /** The amenity marker's square, in image pixels. */
+  amenitySize: number;
+  doorColor: string;
+  doorPlusColor: string;
+  /** font_settings.svg_labels_font_family: applied to the floor SVG's text, as the legacy page does. */
+  svgFontFamily: string | null;
+  autoWayfinding: boolean;
+}
+
 export interface InventorySitemap {
   id: number;
   image: InventoryUpload | null;
@@ -229,11 +248,25 @@ export interface InventorySitemap {
   height: number | null;
 }
 
+/** What `units.json` adds to the inventory: its rows and its meta. */
+export interface InventoryUnitListing {
+  units: InventoryUnit[];
+  currencySymbol: string;
+  dataProvider: string | null;
+  lastSync: string | null;
+  lockDevices: LockDevice[];
+}
+
 export interface PropertyInventory {
   property: InventoryProperty;
   floorplates: InventoryFloorplate[];
   floorplans: InventoryFloorplan[];
+  /** Empty until `unitsLoaded`: the Inventory screen reads the units listing when it first needs it. */
   units: InventoryUnit[];
+  /** False while `units`, `dataProvider`, `lastSync` and `lockDevices` wait for the units listing. */
+  unitsLoaded: boolean;
+  /** How many rows the units listing holds (floorplates.json meta), known before the units themselves. */
+  unitCount: number;
   amenities: InventoryAmenity[];
   /** `floorplates` (floorplate maps) or `sitemap` (one property map). */
   mapType: 'floorplates' | 'sitemap';
@@ -241,6 +274,7 @@ export interface PropertyInventory {
   tourStopCount: number;
   /** A Beans property's one shared background map (communities.background_svg_image). */
   sharedBackground: InventoryUpload | null;
+  markers: MapMarkers;
   sitemap: InventorySitemap | null;
   currencySymbol: string;
   /** The legacy "Show all as available" setting, which turns on floor plan statuses. */

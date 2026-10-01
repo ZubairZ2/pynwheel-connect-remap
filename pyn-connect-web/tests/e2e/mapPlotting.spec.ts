@@ -11,10 +11,11 @@ import { expect, test, type Page } from '@playwright/test';
  *   PYN_CONNECT_E2E_RASTER_PROPERTY a property with floor images only (default 2919)
  *
  * Every interaction the screen offers is exercised — the building pills and
- * floorplate tabs, Manual Plot onto a real polygon, the Auto Plot wizard's
- * four steps over the real PMS numbers and polygon ids, the pathway tools,
- * the dialogs — and the assertion that matters most is the last: the
- * browser sent nothing but GETs.
+ * floorplate tabs, Manual Plot onto a real polygon and onto a floor image,
+ * the Auto Plot wizard's four steps over the real PMS numbers and polygon
+ * ids, Add Floorplate — the layout is held to the plotting design (the
+ * toolbar carries Auto Plot and Manual Plot only; one side panel), and the
+ * assertion that matters most is the last: the browser sent nothing but GETs.
  */
 const railsCookie = process.env.PYN_CONNECT_E2E_RAILS_COOKIE;
 const user = process.env.PYN_CONNECT_E2E_USER;
@@ -49,6 +50,24 @@ test.describe('Map & Plotting (real data)', () => {
     return { writes, errors };
   };
 
+  /**
+   * The plotting design's layout: the toolbar holds the floor, its plotted
+   * count, Auto Plot and Manual Plot, and nothing else; the side column is
+   * the Plot Units & Amenities panel alone.
+   */
+  const expectDesignLayout = async (page: Page) => {
+    const toolbar = page.locator('.bo-map__toolbar');
+    await expect(toolbar.getByRole('button')).toHaveText([/^Auto Plot/, /^Manual Plot/]);
+    await expect(toolbar).toContainText(/\d+ of \d+ plotted/);
+    await expect(page.locator('.bo-map__side > *')).toHaveCount(1);
+    for (const gone of ['Publish', 'Grid', 'Place Pin', 'Junction', 'Connect', 'Move', 'Start Plotting Hallways', 'Upload SVG', 'Upload Image', 'Remove Plan', 'Run Algorithm (Animated)']) {
+      await expect(page.getByRole('button', { name: gone, exact: true }), gone).toHaveCount(0);
+    }
+    await expect(page.getByRole('switch', { name: 'Grid' })).toHaveCount(0);
+    await expect(page.getByText('Pathways & pins', { exact: false })).toHaveCount(0);
+    await expect(page.getByText('Read-only: pins, nodes and connections', { exact: false })).toHaveCount(0);
+  };
+
   test('plots onto the real floor SVG polygons and runs the Auto Plot wizard read-only', async ({ page }) => {
     test.setTimeout(240_000);
     const { writes, errors } = audit(page);
@@ -63,6 +82,7 @@ test.describe('Map & Plotting (real data)', () => {
     await expect(page.locator('.bo-map__levelpct').first()).toBeVisible();
     await expect(page.getByTestId('plot-panel')).toContainText('Plot Units & Amenities');
     await expect(page.getByRole('button', { name: /^Manual Plot/ })).toBeVisible();
+    await expectDesignLayout(page);
 
     // The real floor SVG mounts with its polygons.
     const svgLayer = page.getByTestId('plan-svg');
@@ -75,14 +95,15 @@ test.describe('Map & Plotting (real data)', () => {
     // Stored SVG pointers already sit on polygons, so the counts are compared before and after.
     const todoRows = page.locator('.bo-map__plotrow');
     const before = await page.locator('.bo-map__plottab').nth(1).innerText();
-    const storedOnPolygons = await page.locator('.bo-map__pin--poly').count();
+    // A placement on a polygon is the filled polygon itself (the legacy page clones the shape; no marker sits on it).
+    const storedOnPolygons = await page.locator('[data-plotted]').count();
     if (await todoRows.count()) {
       await todoRows.first().locator('.bo-map__plotpick').click();
       await page.getByRole('button', { name: /^Manual Plot/ }).click();
       await expect(page.locator('.bo-map__armed')).toContainText('selected');
       const shape = svgLayer.locator('polygon[id], path[id], rect[id]').first();
       await shape.dispatchEvent('pointerdown', { bubbles: true, pointerId: 1 });
-      await expect(page.locator('.bo-map__pin--poly')).toHaveCount(storedOnPolygons + 1);
+      await expect(page.locator('[data-plotted]')).toHaveCount(storedOnPolygons + 1);
       await page.locator('.bo-map__plottab').nth(1).click();
       await expect(page.locator('.bo-map__plottab').nth(1)).not.toHaveText(before);
       // Its polygon popover lists it and can unplot it.
@@ -90,7 +111,7 @@ test.describe('Map & Plotting (real data)', () => {
       await shape.dispatchEvent('pointerdown', { bubbles: true, pointerId: 1 });
       await expect(page.locator('.bo-map__polypop')).toBeVisible();
       await page.locator('.bo-map__polypop').getByRole('button', { name: 'Unplot' }).first().click();
-      await expect(page.locator('.bo-map__pin--poly')).toHaveCount(storedOnPolygons);
+      await expect(page.locator('[data-plotted]')).toHaveCount(storedOnPolygons);
       await page.locator('.bo-map__plottab').nth(0).click();
     }
 
@@ -131,24 +152,11 @@ test.describe('Map & Plotting (real data)', () => {
     }
     await expect(page.getByRole('dialog')).toHaveCount(0);
 
-    // Publish, Add Floorplate, Remove Plan: dialogs only.
-    await page.getByRole('button', { name: 'Publish' }).click();
-    await expect(page.getByText('Publishing from Connect is not available yet', { exact: false })).toBeVisible();
-    await page.getByRole('dialog').locator('.bo-btn--secondary').click();
+    // Add Floorplate: the inventory's dialog; Save only closes.
     await page.getByRole('button', { name: /Add Floorplate/ }).first().click();
     await expect(page.getByRole('dialog')).toContainText('Add Floorplate');
     await page.getByRole('dialog').getByRole('button', { name: 'Cancel' }).click();
-    await page.getByRole('button', { name: 'Remove Plan' }).click();
-    await page.getByRole('dialog').locator('.bo-btn--secondary').click();
-
-    // Grid, and the pathway tools on the floor SVG.
-    await page.getByRole('switch', { name: 'Grid' }).click();
-    await expect(page.locator('.bo-map__grid')).toBeVisible();
-    await page.getByRole('button', { name: 'Junction', exact: true }).click();
-    const plan = page.locator('.bo-map__plan');
-    const box = await plan.boundingBox();
-    await plan.dispatchEvent('pointerdown', { bubbles: true, pointerId: 1, clientX: box!.x + box!.width * 0.05, clientY: box!.y + box!.height * 0.05 });
-    await expect(page.locator('.bo-map__node--junction')).toHaveCount(1);
+    await expect(page.getByRole('dialog')).toHaveCount(0);
 
     // Switch to the second floorplate, and back.
     if ((await tabs.count()) > 1) {
@@ -160,59 +168,32 @@ test.describe('Map & Plotting (real data)', () => {
     expect(writes, 'non-GET requests').toEqual([]);
   });
 
-  test('renders the stored pathway graph on a floor image and stays read-only through the pathway tools', async ({ page }) => {
+  test('draws the stored pins and pathway graph on a floor image, and Manual Plot drops a pin on it', async ({ page }) => {
     test.setTimeout(180_000);
     const { writes, errors } = audit(page);
     await signIn(page);
     await page.goto(`/properties/${rasterProperty}/map`);
     await hydrated(page);
+    await expectDesignLayout(page);
 
+    // The floor image with its stored pins and hallway nodes (the legacy Auto Wayfinding graph), read-only.
     await expect(page.getByTestId('plan-surface')).toBeVisible();
     await expect(page.locator('.bo-map__pin').first()).toBeVisible();
-    const storedNodes = await page.locator('.bo-map__node--hallway').count();
-    expect(storedNodes).toBeGreaterThan(0);
+    expect(await page.locator('.bo-map__node--hallway').count()).toBeGreaterThan(0);
 
-    // Select a pin and a node.
-    await page.locator('.bo-map__pin').first().dispatchEvent('pointerdown', { bubbles: true, pointerId: 1 });
-    await expect(page.locator('.bo-map__panel--accent')).toBeVisible();
-    await page.locator('.bo-map__node--hallway').first().dispatchEvent('pointerdown', { bubbles: true, pointerId: 1 });
-    await expect(page.locator('.bo-map__node--selected')).toHaveCount(1);
-
-    // Place Pin: tick one item, turn Manual Plot on, click the image.
-    const plan = page.locator('.bo-map__plan');
-    const box = await plan.boundingBox();
-    const queueItem = page.locator('.bo-map__plotrow').first();
-    if (await queueItem.count()) {
-      await queueItem.locator('.bo-map__plotpick').click();
+    // Manual Plot on an image: turning it on arms the next item to plot, a click on the plan drops its pin, Turn Off ends it.
+    if (await page.locator('.bo-map__plotrow').count()) {
+      const pins = await page.locator('.bo-map__pin').count();
       await page.getByRole('button', { name: /^Manual Plot/ }).click();
+      await expect(page.getByRole('button', { name: /^Manual Plot/ })).toHaveAttribute('aria-pressed', 'true');
+      await expect(page.locator('.bo-map__armed')).toBeVisible();
+      const plan = page.locator('.bo-map__plan');
+      const box = await plan.boundingBox();
       await plan.dispatchEvent('pointerdown', { bubbles: true, pointerId: 1, clientX: box!.x + box!.width * 0.3, clientY: box!.y + box!.height * 0.3 });
-      // Several ticked items cannot drop on an image; one armed item can.
-      await page.getByRole('button', { name: /^Manual Plot/ }).click();
+      await expect(page.locator('.bo-map__pin')).toHaveCount(pins + 1);
+      if (await page.locator('.bo-map__armed').count()) await page.locator('.bo-map__armed').getByRole('button', { name: 'Turn Off' }).click();
+      await expect(page.getByRole('button', { name: /^Manual Plot/ })).toHaveAttribute('aria-pressed', 'false');
     }
-
-    // Junction, Connect, Move, hallway plotting.
-    await page.getByRole('button', { name: 'Junction', exact: true }).click();
-    await plan.dispatchEvent('pointerdown', { bubbles: true, pointerId: 1, clientX: box!.x + box!.width * 0.5, clientY: box!.y + box!.height * 0.5 });
-    await plan.dispatchEvent('pointerdown', { bubbles: true, pointerId: 1, clientX: box!.x + box!.width * 0.6, clientY: box!.y + box!.height * 0.55 });
-    await expect(page.locator('.bo-map__node--junction')).toHaveCount(2);
-    await page.getByRole('button', { name: 'Connect', exact: true }).click();
-    await page.locator('.bo-map__node--junction').nth(0).dispatchEvent('pointerdown', { bubbles: true, pointerId: 1 });
-    await page.locator('.bo-map__node--junction').nth(1).dispatchEvent('pointerdown', { bubbles: true, pointerId: 1 });
-    await expect(page.locator('.bo-map__edges line[stroke-dasharray]')).toHaveCount(1);
-    await page.getByRole('button', { name: 'Move', exact: true }).click();
-    await page.locator('.bo-map__node--junction').nth(0).dispatchEvent('pointerdown', { bubbles: true, pointerId: 1 });
-    await page.getByTestId('plan-surface').dispatchEvent('pointermove', { bubbles: true, pointerId: 1, clientX: box!.x + box!.width * 0.4, clientY: box!.y + box!.height * 0.4 });
-    await page.getByTestId('plan-surface').dispatchEvent('pointerup', { bubbles: true, pointerId: 1 });
-    await page.getByRole('button', { name: 'Start Plotting Hallways' }).click();
-    await plan.dispatchEvent('pointerdown', { bubbles: true, pointerId: 1, clientX: box!.x + box!.width * 0.7, clientY: box!.y + box!.height * 0.7 });
-    await expect(page.locator('.bo-map__node--junction')).toHaveCount(3);
-    await page.getByRole('button', { name: 'Stop Plotting Hallways' }).click();
-
-    // Run the CMS algorithm (a GET through this app's route handler) and the local preview.
-    await page.getByRole('button', { name: 'Run Algorithm (Animated)' }).click();
-    await expect(page.locator('.bo-map__routeresult')).toBeVisible({ timeout: 60000 });
-    await page.getByRole('button', { name: 'Preview with local edits' }).click();
-    await expect(page.locator('.bo-map__routeresult')).toBeVisible();
 
     expect(errors, 'page errors').toEqual([]);
     expect(writes, 'non-GET requests').toEqual([]);

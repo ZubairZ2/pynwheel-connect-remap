@@ -272,7 +272,8 @@ test.describe('Hazel (real data)', () => {
     await lounge.getByRole('button', { name: /^Edit/ }).first().click();
     const dialog = page.getByRole('dialog');
     await expect(dialog).toContainText('Edit Amenity');
-    await expect(dialog.locator('input.bo-field').first()).toHaveValue('Penthouse South Lounge');
+    // The amenity form waits for the units listing (its Building list names unit buildings), read on demand.
+    await expect(dialog.locator('input.bo-field').first()).toHaveValue('Penthouse South Lounge', { timeout: 30_000 });
     const gallery = dialog.locator('.bo-dlg__interior');
     await expect(gallery).toHaveCount(4);
     await expect(gallery.nth(0)).toContainText('Chef Kitchen');
@@ -420,11 +421,9 @@ test.describe('Hazel (real data)', () => {
     await expect(tabs.last()).toHaveAttribute('aria-selected', 'true');
     await expect(page.locator('.bo-map__toolbarlevel')).toHaveText('1 · Floor 31');
     await expect(page.locator('.bo-map__image')).toBeVisible();
-    // The plan bar counts this floor's pins and pathway nodes, and the canvas draws that many (plus the elevators serving the floor).
-    await expect(page.locator('main')).toContainText(/\d+ pins · \d+ nodes on this floor/);
-    const counts = /(\d+) pins · (\d+) nodes on this floor/.exec(await page.locator('main').innerText())!;
-    await expect(page.locator('.bo-map__pin')).toHaveCount(Number(counts[1]));
-    expect(await page.locator('.bo-map__node').count()).toBeGreaterThanOrEqual(Number(counts[2]));
+    // The canvas draws one pin per item the Plot panel lists as plotted on this floorplate.
+    const plotted = Number((await page.locator('.bo-map__plottab').nth(1).innerText()).replace(/\D+/g, ''));
+    await expect(page.locator('.bo-map__pin')).toHaveCount(plotted);
     // Backward.
     await scrollLeft(page).click();
     await expect.poll(async () => (await strip(page)).scrollLeft).toBeLessThan(geometry.max);
@@ -612,17 +611,20 @@ test.describe('Hazel (real data)', () => {
     test.setTimeout(120_000);
     const audited = audit(page);
     await signIn(page);
-    await page.goto(`/properties/${HAZEL}`);
-    await hydrated(page);
+    await page.goto(`/properties/${HAZEL}/inventory`);
+    await hydrated(page, '.bo-inv__tab');
     // The next screen's payload takes 3 s — the prefetch too, so a hover before the click changes nothing.
+    // Map & Plotting, because its server render still waits on five CMS reads
+    // (the inventory's own route answers in ~60 ms since it defers the units,
+    // too fast for the veil to be observed after a pre-first-byte delay).
     await page.route(
-      (url) => url.pathname === `/properties/${HAZEL}/inventory`,
+      (url) => url.pathname === `/properties/${HAZEL}/map`,
       async (route) => {
         if (route.request().headers().rsc === '1' || route.request().url().includes('_rsc')) await new Promise((resolve) => setTimeout(resolve, 3000));
         await route.continue();
       }
     );
-    await page.getByRole('link', { name: 'Inventory', exact: true }).first().click();
+    await page.getByRole('link', { name: 'Map & Plotting', exact: true }).first().click();
     const loading = page.locator('.bo-loading--page');
     await expect(loading).toBeVisible({ timeout: 5000 });
     await expect(loading.locator('img')).toHaveAttribute('src', '/images/loader.gif');
@@ -643,7 +645,7 @@ test.describe('Hazel (real data)', () => {
     expect(geometry.background).toBe('rgba(23, 26, 33, 0.32)');
     expect(geometry.dx).toBeLessThan(1);
     expect(geometry.dy).toBeLessThan(1);
-    await hydrated(page, '.bo-inv__tab');
+    await hydrated(page, '.bo-map__tool');
     await expect(loading).toHaveCount(0);
     clean(audited);
   });

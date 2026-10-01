@@ -7,6 +7,7 @@ import {
   generateCompanyListingSummary,
   generateCompanyRows
 } from '~/core/utils/generator/companyListing.generator';
+import { listingSortParams, nextListingSort, sortByLabel, type ListingSort } from '~/core/utils/generator/listingSort';
 import { generatePager } from '~/core/utils/generator/pagination.generator';
 import type { Company } from '~/core/models/data/company.data';
 import type { Pagination } from '~/core/models/data/session.data';
@@ -15,13 +16,14 @@ import { useListingParams } from './useListingParams';
 
 /**
  * Reads the screen's data, calls the generators, returns descriptors +
- * handlers. Searching and paging are server-side, so both are expressed as URL
- * changes rather than local filtering (react-architecture.md §7).
+ * handlers. Searching, sorting and paging are server-side, so all three are
+ * expressed as URL changes rather than local work (react-architecture.md §7).
  */
 export const useCompaniesListing = (
   companies: Company[],
   pagination: Pagination | null,
   initialQuery: string,
+  sort: ListingSort | null,
   totals: { companies: number | null; properties: number | null }
 ) => {
   const { setParams, isPending } = useListingParams();
@@ -45,6 +47,9 @@ export const useCompaniesListing = (
     pager,
     summary,
     isPending,
-    goToPage: (page: number) => setParams({ page }, { keepPage: true })
+    goToPage: (page: number) => setParams({ page }, { keepPage: true }),
+    // A new order starts again from page 1.
+    toggleSort: (key: string) => setParams(listingSortParams(nextListingSort(sort, key))),
+    sortLabel: sortByLabel
   };
 };

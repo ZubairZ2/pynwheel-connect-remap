@@ -10,8 +10,10 @@ import type {
   InventoryProperty,
   InventorySitemap,
   InventoryUnit,
+  InventoryUnitListing,
   InventoryUpload,
   LockDevice,
+  MapMarkers,
   SvgPointer,
   UnitLeaseTerm
 } from '~/core/models/data/propertyInventory.data';
@@ -104,6 +106,32 @@ export const parseInventoryProperty = (payload: unknown): InventoryProperty | nu
   };
 };
 
+/** The legacy plotting pages' defaults, for a CMS that does not send `meta.markers`. */
+const LEGACY_MARKERS: MapMarkers = {
+  unitColor: 'rgba(247, 0, 0, 0.61)',
+  unitSize: 30,
+  amenityColor: 'rgba(247, 0, 0, 0.61)',
+  amenitySize: 25,
+  doorColor: '#3153d2',
+  doorPlusColor: '#59de83',
+  svgFontFamily: null,
+  autoWayfinding: false
+};
+
+const markersOf = (value: unknown): MapMarkers => {
+  const source = camel(value);
+  return {
+    unitColor: text(source.unitColor) ?? LEGACY_MARKERS.unitColor,
+    unitSize: num(source.unitSize) ?? LEGACY_MARKERS.unitSize,
+    amenityColor: text(source.amenityColor) ?? LEGACY_MARKERS.amenityColor,
+    amenitySize: num(source.amenitySize) ?? LEGACY_MARKERS.amenitySize,
+    doorColor: text(source.doorColor) ?? LEGACY_MARKERS.doorColor,
+    doorPlusColor: text(source.doorPlusColor) ?? LEGACY_MARKERS.doorPlusColor,
+    svgFontFamily: text(source.svgFontFamily),
+    autoWayfinding: flag(source.autoWayfinding)
+  };
+};
+
 export const parseInventoryFloorplates = (payload: unknown) => {
   const meta = metaOf(payload);
   const sitemap = (meta.sitemap ?? null) as Source | null;
@@ -138,7 +166,9 @@ export const parseInventoryFloorplates = (payload: unknown) => {
     mapType: meta.mapType === 'sitemap' ? ('sitemap' as const) : ('floorplates' as const),
     svgMode: flag(meta.svgMode),
     tourStopCount: count(meta.tourStopCount),
+    unitCount: count(meta.unitCount),
     sharedBackground: upload(meta.sharedBackground),
+    markers: markersOf(meta.markers),
     sitemap: sitemap
       ? ({
           id: count(sitemap.id),
@@ -207,7 +237,7 @@ const UNIT_FLAGS = [
   'sold'
 ] as const;
 
-export const parseInventoryUnits = (payload: unknown) => {
+export const parseInventoryUnits = (payload: unknown): InventoryUnitListing => {
   const meta = metaOf(payload);
 
   return {

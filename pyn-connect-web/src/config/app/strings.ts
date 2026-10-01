@@ -468,6 +468,9 @@ export const CORE_STRINGS = {
     },
     units: {
       title: 'inventory.units.title',
+      loading: 'inventory.units.loading',
+      loadFailed: 'inventory.units.loadFailed',
+      retry: 'inventory.units.retry',
       lastSync: 'inventory.units.lastSync',
       neverSynced: 'inventory.units.neverSynced',
       noPms: 'inventory.units.noPms',
@@ -971,6 +974,10 @@ export const CORE_STRINGS = {
       showImage: 'mapPlotting.plan.showImage',
       needSvg: 'mapPlotting.plan.needSvg',
       turnOff: 'mapPlotting.plan.turnOff',
+      zoom: 'mapPlotting.plan.zoom',
+      zoomIn: 'mapPlotting.plan.zoomIn',
+      zoomOut: 'mapPlotting.plan.zoomOut',
+      resetView: 'mapPlotting.plan.resetView',
       armedMany: 'mapPlotting.plan.armedMany',
       it: 'mapPlotting.plan.it',
       them: 'mapPlotting.plan.them',
@@ -1490,6 +1497,7 @@ export const CORE_STRINGS = {
     signOut: 'shared.signOut',
     searchPlaceholder: 'shared.searchPlaceholder',
     loadFailed: 'shared.loadFailed',
+    sortBy: 'shared.sortBy',
     loading: 'shared.loading',
     loadingImage: 'shared.loadingImage'
   },

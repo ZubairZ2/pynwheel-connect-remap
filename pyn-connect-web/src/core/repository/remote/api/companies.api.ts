@@ -6,6 +6,9 @@ import { apiRequest, withQuery, type ApiResponse } from './base.api';
 export interface CompaniesQuery {
   page?: number;
   q?: string;
+  /** A sortable column's key and direction (`ListingSort` in Rails); absent, the default order. */
+  sort?: string;
+  dir?: 'asc' | 'desc';
 }
 
 /**
@@ -17,4 +20,4 @@ export const fetchCompanies = (
   cookie: string | null,
   query: CompaniesQuery = {}
 ): Promise<ApiResponse> =>
-  apiRequest(withQuery(CORE_URLS.companies.listing, { page: query.page, q: query.q }), { cookie });
+  apiRequest(withQuery(CORE_URLS.companies.listing, { page: query.page, q: query.q, sort: query.sort, dir: query.dir }), { cookie });

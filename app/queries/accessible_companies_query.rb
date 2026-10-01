@@ -10,6 +10,23 @@ class AccessibleCompaniesQuery
   # A prefix match, so that "active" does not also find "inactive".
   STATUS_LABELS = { 'active' => false, 'inactive' => true }.freeze
 
+  # The listing's sortable columns (`sort` / `dir`, see ListingSort), each on
+  # the value its cell shows: the name, Active before Inactive, the PMS
+  # providers' labels in their stored order, and the Properties count (the
+  # same real_properties count Connect::CompanySerializer puts in the row).
+  # Built on first use: the count's SQL comes from a relation, which needs a
+  # database connection, so it cannot be a constant evaluated at class load.
+  def self.sorts
+    @sorts ||= {
+      'name' => 'LOWER(companies.name)',
+      'status' => 'COALESCE(companies.inactivate, FALSE)',
+      'pms_provider' => "(SELECT string_agg(#{ListingSort.provider_label_sql('providers.slug')}, ', ' ORDER BY providers.position) " \
+                        'FROM unnest(companies.data_providers) WITH ORDINALITY AS providers(slug, position) ' \
+                        "WHERE NULLIF(TRIM(providers.slug), '') IS NOT NULL)",
+      'properties' => "(#{Community.real_properties.where('communities.company_id = companies.id').select('COUNT(*)').to_sql})"
+    }.freeze
+  end
+
   def initialize(user, params = {})
     @user = user
     @params = params
@@ -18,7 +35,7 @@ class AccessibleCompaniesQuery
   def call
     scope = apply_search(accessible)
 
-    scope.order(Arel.sql('LOWER(companies.name) ASC'), id: :asc)
+    ListingSort.new(self.class.sorts, params).apply(scope, Arel.sql('LOWER(companies.name) ASC'), id: :asc)
   end
 
   # Every company the user may see, before search. The listing header's totals

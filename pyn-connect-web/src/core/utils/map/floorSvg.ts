@@ -17,6 +17,22 @@ const SHAPE_SELECTOR = SHAPE_TAGS.join(',');
 /** Group ids the legacy `isValidShape` rejects a shape under (outlines, labels, text, icons). */
 const NOT_PLOTTABLE_GROUP = /outline|label|text|icon/i;
 
+/**
+ * The layer groups the legacy `getValidShapeCategory` reads a shape's kind
+ * from: an ancestor group named for units, or for amenities.
+ */
+const UNITS_GROUP = /^units?$/i;
+const AMENITIES_GROUP = /^amenit(y|ies)$/i;
+
+/**
+ * Ids Illustrator / Figma hand out to shapes it did not name: `Vector_2415`,
+ * `Group_12`, `path1234`. They identify the shape, but they are not what the
+ * legacy map shows for it.
+ */
+const GENERIC_ID = /^(vector|group|path|rect|polygon|polyline|shape|layer|clip|mask|g|ellipse|circle)[_\-\s]*\d*$/i;
+
+export type PlotTargetCategory = 'unit' | 'amenity';
+
 export interface SvgViewBox {
   x: number;
   y: number;
@@ -35,8 +51,14 @@ export interface SvgBox {
 export interface PlotTarget {
   /** Unique within the document: the element id, or the selector that finds it. */
   key: string;
-  /** The "polygon ID" the design shows: the element (or group) id, Illustrator escapes decoded. */
+  /**
+   * What the map calls this polygon: the `<text>` the SVG prints on it (the
+   * room number the legacy map shows), else the name of the group it stands
+   * in, else the shape's own id — Illustrator escapes decoded.
+   */
   code: string;
+  /** The polygon sits under a units layer or an amenities layer (legacy `getValidShapeCategory`), when the file has them. */
+  category: PlotTargetCategory | null;
   /** The raw `id` attribute of the shape, when it has one. */
   rawId: string | null;
   /** The raw id of the named group the shape stands in, when the group is what names it. */
@@ -94,6 +116,31 @@ export const parseViewBox = (root: Element): SvgViewBox | null => {
   const w = parseFloat(root.getAttribute('width') ?? '');
   const h = parseFloat(root.getAttribute('height') ?? '');
   return Number.isFinite(w) && Number.isFinite(h) && w > 0 && h > 0 ? { x: 0, y: 0, w, h } : null;
+};
+
+/** The nearest named group that stands for a layer of units or amenities (legacy `getValidShapeCategory`). */
+const categoryOf = (element: Element, stopAt: Element): PlotTargetCategory | null => {
+  let node: Element | null = element.parentElement;
+  while (node && node !== stopAt.parentElement) {
+    if (node.tagName.toLowerCase() === 'g' && node.id) {
+      const name = decodeIllustratorId(node.id);
+      if (UNITS_GROUP.test(name)) return 'unit';
+      if (AMENITIES_GROUP.test(name)) return 'amenity';
+    }
+    node = node.parentElement;
+  }
+  return null;
+};
+
+/** The legacy map's name for a shape: its printed text, else its named group, else its own id. */
+const codeOf = (label: string | null, rawId: string | null, group: string | null): string => {
+  if (label) return label;
+  const own = rawId ? decodeIllustratorId(rawId) : '';
+  if (group && (!own || GENERIC_ID.test(rawId ?? ''))) {
+    const named = decodeIllustratorId(group);
+    if (named && !GENERIC_ID.test(group)) return named;
+  }
+  return own || (group ? decodeIllustratorId(group) : '');
 };
 
 const groupId = (element: Element): string | null => {
@@ -155,49 +202,60 @@ const rootBox = (svg: SVGSVGElement, shape: SVGGraphicsElement): SvgBox | null =
  * The plottable shapes of a mounted SVG: every shape with an id (the ids
  * are the room numbers in the CMS's floor files), plus every named group
  * that holds shapes without ids of their own (`g#R-112 > polygon`, the form
- * the legacy auto-plot saves). Inside a `Units` group when the file has one;
- * artwork layers are left out otherwise.
+ * the legacy auto-plot saves). Inside the `Units` and `Amenities` layers
+ * when the file has them (the two layers the legacy page plots onto);
+ * artwork layers are left out otherwise. Each target's `code` is what the
+ * legacy map prints for it: the group's `<text>`, else the group's name.
  */
 export const collectTargets = (svg: SVGSVGElement): { targets: PlotTarget[]; unitsGroup: boolean } => {
-  const units = Array.from(svg.querySelectorAll('g[id]')).find((group) => /^units?$/i.test(decodeIllustratorId(group.id)));
-  const scope: Element = units ?? svg;
+  const groups = Array.from(svg.querySelectorAll('g[id]'));
+  const units = groups.find((group) => UNITS_GROUP.test(decodeIllustratorId(group.id))) ?? null;
+  const amenities = groups.find((group) => AMENITIES_GROUP.test(decodeIllustratorId(group.id))) ?? null;
+  const scopes: Element[] = [units, amenities].filter((group): group is Element => !!group);
+  if (!scopes.length) scopes.push(svg);
   const targets: PlotTarget[] = [];
   const seen = new Set<Element>();
 
-  const push = (shape: Element, rawId: string | null, group: string | null, code: string, selector: string) => {
-    if (seen.has(shape) || !code || hidden(shape)) return;
+  const push = (scope: Element, shape: Element, rawId: string | null, group: string | null, selector: string) => {
+    if (seen.has(shape) || hidden(shape)) return;
+    const label = textLabel(shape);
+    const code = codeOf(label, rawId, group);
+    if (!code) return;
     const box = rootBox(svg, shape as SVGGraphicsElement);
     if (!box || (box.w <= 0 && box.h <= 0)) return;
     seen.add(shape);
     targets.push({
       key: rawId ?? selector,
       code,
+      category: categoryOf(shape, scope),
       rawId,
       groupId: group,
       tag: shape.tagName.toLowerCase(),
       selector,
-      label: textLabel(shape),
+      label,
       cx: box.x + box.w / 2,
       cy: box.y + box.h / 2,
       bbox: box
     });
   };
 
-  scope.querySelectorAll(SHAPE_SELECTOR).forEach((shape) => {
-    if (!shape.id) return;
-    if (underGroup(shape, NOT_PLOTTABLE_GROUP, scope)) return;
-    const tag = shape.tagName.toLowerCase();
-    push(shape, shape.id, groupId(shape), decodeIllustratorId(shape.id), /^[0-9]/.test(shape.id) ? `${tag}[id="${shape.id}"]` : `${tag}#${escapeId(shape.id)}`);
-  });
+  scopes.forEach((scope) => {
+    scope.querySelectorAll(SHAPE_SELECTOR).forEach((shape) => {
+      if (!shape.id) return;
+      if (underGroup(shape, NOT_PLOTTABLE_GROUP, scope)) return;
+      const tag = shape.tagName.toLowerCase();
+      push(scope, shape, shape.id, groupId(shape), /^[0-9]/.test(shape.id) ? `${tag}[id="${shape.id}"]` : `${tag}#${escapeId(shape.id)}`);
+    });
 
-  scope.querySelectorAll('g[id]').forEach((group) => {
-    if (group === units) return;
-    if (underGroup(group, NOT_PLOTTABLE_GROUP, scope) || NOT_PLOTTABLE_GROUP.test(group.id)) return;
-    if (group.querySelector(`${SHAPE_SELECTOR.split(',').map((tag) => `${tag}[id]`).join(',')}`)) return;
-    const child = Array.from(group.children).find((node) => (SHAPE_TAGS as readonly string[]).includes(node.tagName.toLowerCase()));
-    if (!child) return;
-    const tag = child.tagName.toLowerCase();
-    push(child, null, group.id, decodeIllustratorId(group.id), `g[id="${group.id}"] > ${tag}`);
+    scope.querySelectorAll('g[id]').forEach((group) => {
+      if (group === units || group === amenities) return;
+      if (underGroup(group, NOT_PLOTTABLE_GROUP, scope) || NOT_PLOTTABLE_GROUP.test(group.id)) return;
+      if (group.querySelector(`${SHAPE_SELECTOR.split(',').map((tag) => `${tag}[id]`).join(',')}`)) return;
+      const child = Array.from(group.children).find((node) => (SHAPE_TAGS as readonly string[]).includes(node.tagName.toLowerCase()));
+      if (!child) return;
+      const tag = child.tagName.toLowerCase();
+      push(scope, child, null, group.id, `g[id="${group.id}"] > ${tag}`);
+    });
   });
 
   return { targets, unitsGroup: !!units };

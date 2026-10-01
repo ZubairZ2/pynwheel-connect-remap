@@ -7,6 +7,14 @@ export type InventoryTab = 'floorplates' | 'floorplans' | 'units' | 'amenities';
 
 export const INVENTORY_TABS: InventoryTab[] = ['floorplates', 'floorplans', 'units', 'amenities'];
 
+/**
+ * Dialogs that read the units listing: the unit form and Mass Overrides, and
+ * the floorplate and amenity forms, whose Building list includes the buildings
+ * units name. Only the floor plan form does without it.
+ */
+export const dialogNeedsUnits = (kind: 'floorplate' | 'floorplan' | 'unit' | 'amenity' | 'mass'): boolean =>
+  kind !== 'floorplan';
+
 export const asInventoryTab = (value: string | null | undefined): InventoryTab =>
   INVENTORY_TABS.includes(value as InventoryTab) ? (value as InventoryTab) : 'floorplates';
 
@@ -52,7 +60,8 @@ export const generateInventoryTabs = (inventory: PropertyInventory, active: Inve
   const counts: Record<InventoryTab, number> = {
     floorplates: inventory.floorplates.length,
     floorplans: inventory.floorplans.length,
-    units: inventory.units.length,
+    // Until the Units tab has loaded its listing, the count its meta announced.
+    units: inventory.unitsLoaded ? inventory.units.length : inventory.unitCount,
     amenities: propertyAmenities(inventory).length
   };
 

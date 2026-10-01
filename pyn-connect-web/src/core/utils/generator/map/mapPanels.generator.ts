@@ -68,12 +68,14 @@ export interface BuildingPill {
 
 export const generateBuildingPills = (map: PropertyMap, levels: MapLevel[], state: LocalMapState): BuildingPill[] => {
   const names = mapBuildings(map, levels);
-  if (names.length < 2) return [];
+  if (names.length === 0) return [];
   // The count is what the pill shows: the building's floorplates, plus the ones no building claims.
+  // A one-building property still shows its pill (as the design's Building row
+  // does), selected: every floorplate is that building's.
   return names.map((name) => ({
     name,
     count: String(levelsOfBuilding(levels, name).length),
-    active: state.building === name
+    active: names.length === 1 || state.building === name
   }));
 };
 
@@ -256,7 +258,10 @@ export const generatePlotPanel = (map: PropertyMap, levels: MapLevel[], level: M
 
 export interface PolygonDescriptor {
   key: string;
+  /** The polygon's name on the map: the SVG's own printed text, else its group's name (`PlotTarget.code`). */
   code: string;
+  /** The SVG prints no text for this polygon, so the canvas prints its code when it is active (the design's label). */
+  showCode: boolean;
   /** Centre, as a percentage of the SVG's viewBox. */
   left: number;
   top: number;
@@ -264,9 +269,13 @@ export interface PolygonDescriptor {
   filled: boolean;
   hover: boolean;
   selected: boolean;
+  /** What is plotted here ("B-B101 +1"), empty when it only repeats the polygon's own text. */
   assigned: string;
   items: { key: string; name: string; meta: string }[];
 }
+
+/** "652" and "652", "A-107" and "a 107": the same name, for deciding whether an assigned label repeats the polygon's text. */
+const sameName = (a: string, b: string): boolean => a.replace(/[^a-z0-9]/gi, '').toLowerCase() === b.replace(/[^a-z0-9]/gi, '').toLowerCase();
 
 /**
  * The level's polygons as the canvas draws them: filled when something sits
@@ -278,18 +287,22 @@ export const generatePolygons = (doc: FloorSvgDoc | null, graph: LevelGraph | nu
   const byPolygon = itemsByPolygon(graph.pins);
   const plotOn = state.tool === 'plot';
   return doc.targets.map((target) => {
-    const pins = byPolygon[target.code] ?? [];
+    const pins = byPolygon[target.key] ?? [];
     const { xPct, yPct } = toViewBoxPercent(doc.viewBox, target.cx, target.cy);
+    const assigned = pins.length ? `${pins[0].label}${pins.length > 1 ? ` +${pins.length - 1}` : ''}` : '';
     return {
       key: target.key,
       code: target.code,
+      showCode: target.label == null,
       left: xPct,
       top: yPct,
       bbox: target.bbox,
       filled: pins.length > 0,
-      hover: plotOn && state.polyHover === target.code,
-      selected: state.selPoly === target.code,
-      assigned: pins.length ? `${pins[0].label}${pins.length > 1 ? ` +${pins.length - 1}` : ''}` : '',
+      hover: plotOn && state.polyHover === target.key,
+      selected: state.selPoly === target.key,
+      // The legacy map prints nothing for a plotted room beyond the SVG's own
+      // number; the assigned name is shown only when it says something else.
+      assigned: pins.length === 1 && target.label != null && sameName(pins[0].label, target.label) ? '' : assigned,
       items: pins.map((pin) => ({ key: pin.key, name: pin.label, meta: `${i18n.t(pin.kind === 'unit' ? M.place.unit : M.place.amenity)}${pin.temporary ? ` · ${i18n.t(M.selection.temporary)}` : ''}` }))
     };
   });
@@ -307,7 +320,7 @@ export interface SelectedPolygon {
 }
 
 export const generateSelectedPolygon = (level: MapLevel, polygons: PolygonDescriptor[], state: LocalMapState): SelectedPolygon | null => {
-  const polygon = polygons.find((row) => row.code === state.selPoly);
+  const polygon = polygons.find((row) => row.key === state.selPoly);
   if (!polygon) return null;
   return {
     code: polygon.code,

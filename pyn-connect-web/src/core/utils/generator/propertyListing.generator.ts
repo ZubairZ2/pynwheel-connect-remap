@@ -46,9 +46,33 @@ export const PRODUCT_LABELS: Record<ProductKey, string> = {
 /** The Data Providers filter's value for "no provider set" (mirrors Rails). */
 export const NO_DATA_PROVIDER = 'none';
 
+/**
+ * The sortable columns and the CMS's key for each (`AccessibleCommunitiesQuery::SORTS`).
+ * Go To (buttons) and Products (a set of tags) have no order; Status sorts by
+ * the lifecycle (Installed → … → Released), the rest on the text they show.
+ */
+export const PROPERTY_SORT_KEYS = {
+  property: 'name',
+  company: 'company',
+  dataProvider: 'data_provider',
+  status: 'status'
+} as const;
+
+export const PROPERTY_SORTABLE = Object.values(PROPERTY_SORT_KEYS);
+
 export const generatePropertyColumns = (): ColumnDescriptor[] => [
-  { id: PROPERTY_COLUMN_IDS.property, title: i18n.t(CORE_STRINGS.properties.columns.property), align: 'left' },
-  { id: PROPERTY_COLUMN_IDS.company, title: i18n.t(CORE_STRINGS.properties.columns.company), align: 'left' },
+  {
+    id: PROPERTY_COLUMN_IDS.property,
+    title: i18n.t(CORE_STRINGS.properties.columns.property),
+    align: 'left',
+    sortKey: PROPERTY_SORT_KEYS.property
+  },
+  {
+    id: PROPERTY_COLUMN_IDS.company,
+    title: i18n.t(CORE_STRINGS.properties.columns.company),
+    align: 'left',
+    sortKey: PROPERTY_SORT_KEYS.company
+  },
   {
     id: PROPERTY_COLUMN_IDS.goTo,
     title: i18n.t(CORE_STRINGS.properties.columns.goTo),
@@ -59,9 +83,15 @@ export const generatePropertyColumns = (): ColumnDescriptor[] => [
   {
     id: PROPERTY_COLUMN_IDS.dataProvider,
     title: i18n.t(CORE_STRINGS.properties.columns.dataProvider),
-    align: 'left'
+    align: 'left',
+    sortKey: PROPERTY_SORT_KEYS.dataProvider
   },
-  { id: PROPERTY_COLUMN_IDS.status, title: i18n.t(CORE_STRINGS.properties.columns.status), align: 'left' }
+  {
+    id: PROPERTY_COLUMN_IDS.status,
+    title: i18n.t(CORE_STRINGS.properties.columns.status),
+    align: 'left',
+    sortKey: PROPERTY_SORT_KEYS.status
+  }
 ];
 
 /**

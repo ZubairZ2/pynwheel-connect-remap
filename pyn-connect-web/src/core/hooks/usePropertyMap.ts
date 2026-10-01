@@ -24,7 +24,6 @@ import {
 import { measureFloorSvg, type PlotTarget } from '~/core/utils/map/floorSvg';
 import {
   activeSpace,
-  defaultSpace,
   generateMapLevels,
   levelById,
   levelSpaceDims,
@@ -117,7 +116,8 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
   const buildings = useMemo(() => mapBuildings(map, levels), [map, levels]);
   const [state, setState] = useState<LocalMapState>(() => {
     const first = (initial?.levelId && levels.find((row) => row.id === initial.levelId)) || levels[0] || null;
-    const base = initialLocalMapState(first?.id ?? '', buildings.length > 1 ? (first?.building ?? buildings[0]) : null, defaultSpace(levels));
+    // A floor with both a floor SVG and an image shows the SVG: plotting drops onto its polygons (the design has no layer switch).
+    const base = initialLocalMapState(first?.id ?? '', buildings.length > 1 ? (first?.building ?? buildings[0]) : null, 'svg');
     const pin = initial?.pin ? parsePinKey(initial.pin) : null;
     if (!pin) return base;
     return initial?.arm ? { ...base, tool: 'plot', plotTarget: pin } : { ...base, selectedPin: pin };
@@ -346,7 +346,7 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
         toast(i18n.t(M.toast.nothingSelected));
         return;
       }
-      const override: PinOverride = { levelId: level.id, x: target.cx, y: target.cy, space: 'svg', polygon: target.code };
+      const override: PinOverride = { levelId: level.id, x: target.cx, y: target.cy, space: 'svg', polygon: target.key };
       patch((current) => ({
         pinOverrides: { ...current.pinOverrides, ...Object.fromEntries(items.map((item) => [item.key, override])) },
         plotSel: [],
@@ -365,12 +365,12 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
         dropOnPolygon(target);
         return;
       }
-      patch((current) => ({ selPoly: current.selPoly === target.code ? null : target.code, selectedPin: null, selectedNode: null, selectedEdge: null }));
+      patch((current) => ({ selPoly: current.selPoly === target.key ? null : target.key, selectedPin: null, selectedNode: null, selectedEdge: null }));
     },
     [dropOnPolygon, patch, state.plotSel.length, state.plotTarget, state.tool]
   );
 
-  const hoverPolygon = useCallback((code: string | null) => patch((current) => (current.polyHover === code ? {} : { polyHover: code })), [patch]);
+  const hoverPolygon = useCallback((key: string | null) => patch((current) => (current.polyHover === key ? {} : { polyHover: key })), [patch]);
   const closeSelPoly = useCallback(() => patch(() => ({ selPoly: null })), [patch]);
 
   const unplotItems = useCallback(
@@ -700,7 +700,8 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
           building: row.building,
           floors: row.floors,
           hasSvg: !!own.svg,
-          targets: own.svg ? (doc ? doc.targets : null) : [],
+          // Units match unit polygons; an amenities layer's shapes are plotted by hand.
+          targets: own.svg ? (doc ? doc.targets.filter((target) => target.category !== 'amenity') : null) : [],
           units: scope
             .filter((item) => item.kind === 'unit')
             .map((item) => {
@@ -800,7 +801,7 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
       return;
     }
     const overrides = Object.fromEntries(
-      ok.map((row) => [row.key, { levelId: row.levelId, x: row.target!.cx, y: row.target!.cy, space: 'svg' as const, polygon: row.target!.code } satisfies PinOverride])
+      ok.map((row) => [row.key, { levelId: row.levelId, x: row.target!.cx, y: row.target!.cy, space: 'svg' as const, polygon: row.target!.key } satisfies PinOverride])
     );
     const left = apAnalysis.rows
       .filter((row) => !row.ok)
