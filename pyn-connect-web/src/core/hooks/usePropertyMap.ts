@@ -82,6 +82,7 @@ import {
 } from '~/core/utils/generator/map/mapState';
 import { M, coordText, plural, t } from '~/core/utils/generator/map/mapText';
 import { computeLocalRoute } from '~/core/utils/wayfinding/localRoute';
+import { useMapWayfinding } from './useMapWayfinding';
 
 /** How long each route point stays hidden before the animation reveals it. */
 const REVEAL_MS = 300;
@@ -141,6 +142,9 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
     setState((current) => ({ ...current, ...update(current) }));
   }, []);
 
+  const askConfirm = useCallback((confirm: ConfirmState) => patch(() => ({ confirm })), [patch]);
+  const closeConfirm = useCallback(() => patch(() => ({ confirm: null })), [patch]);
+
   /** Pointer position in the layer's own units (image pixels, or viewBox units). */
   const pointerPx = useCallback(
     (event: { clientX: number; clientY: number }): { x: number; y: number } | null => {
@@ -156,6 +160,7 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
   );
 
   const pinItems = useMemo(() => generatePinItems(map, levels, state), [map, levels, state]);
+  const wayfinding = useMapWayfinding({ map, levels, level, state, patch, rasterGraphs, toast, askConfirm, pointerPx });
   const itemOf = useCallback((ref: PinRef) => pinItems.find((item) => item.key === pinKey(ref)) ?? null, [pinItems]);
   const itemByKey = useCallback((key: string) => pinItems.find((item) => item.key === key) ?? null, [pinItems]);
 
@@ -215,7 +220,27 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
 
   const pickLevel = useCallback(
     (id: string) =>
-      patch(() => ({ levelId: id, selectedNode: null, selectedEdge: null, selectedPin: null, chainFrom: null, selPoly: null, polyHover: null, plotUnSel: [] })),
+      patch((current) => ({
+        levelId: id,
+        selectedNode: null,
+        selectedEdge: null,
+        selectedPin: null,
+        chainFrom: null,
+        selPoly: null,
+        polyHover: null,
+        plotUnSel: [],
+        plotSel: current.levelId === id ? current.plotSel : [],
+        plotFloor: current.levelId === id ? current.plotFloor : null,
+        wfSel: null,
+        wfSelEdge: null,
+        wfFrom: null,
+        selStop: null,
+        stopTarget: null,
+        wfPick: null,
+        // A route across floors stays (its steps switch floors); one on a single floor belongs to that floor.
+        wfRoute: current.wfRoute?.ok && current.wfRoute.multi ? current.wfRoute : null,
+        wfAnim: current.wfAnim ? { ...current.wfAnim, playing: false } : null
+      })),
     [patch]
   );
 
@@ -227,11 +252,18 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
         levelId: first ? first.id : current.levelId,
         plotSel: [],
         plotUnSel: [],
+        plotFloor: null,
         selPoly: null,
         polyHover: null,
         selectedNode: null,
         selectedEdge: null,
-        selectedPin: null
+        selectedPin: null,
+        wfSel: null,
+        wfSelEdge: null,
+        wfFrom: null,
+        selStop: null,
+        stopTarget: null,
+        wfPick: null
       }));
     },
     [levels, patch]
@@ -312,7 +344,7 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
     [itemOf, patch, toast]
   );
 
-  const clearPlotTarget = useCallback(() => patch(() => ({ plotTarget: null, plotSel: [], tool: 'select' })), [patch]);
+  const clearPlotTarget = useCallback(() => patch(() => ({ plotTarget: null, plotSel: [], tool: 'select', stopTarget: null })), [patch]);
 
   const placePin = useCallback(
     (px: { x: number; y: number }) => {
@@ -343,7 +375,11 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
       const keys = state.plotSel.length ? state.plotSel : state.plotTarget ? [pinKey(state.plotTarget)] : [];
       const items = keys.map(itemByKey).filter((item): item is PinItem => !!item);
       if (!items.length) {
-        toast(i18n.t(M.toast.nothingSelected));
+        // Ticked stops sit on the floor image, not on a polygon: Wayfinding shows the image to place them on.
+        const stop = keys.find((key) => key.startsWith('stop:'));
+        const row = stop ? wayfinding.plate?.stops.find((candidate) => `stop:${candidate.key}` === stop) : null;
+        if (row) wayfinding.actions.armStop(row.key, level.id, row.label);
+        else toast(i18n.t(M.toast.nothingSelected));
         return;
       }
       const override: PinOverride = { levelId: level.id, x: target.cx, y: target.cy, space: 'svg', polygon: target.key };
@@ -356,7 +392,7 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
       }));
       toast(t(M.toast.dropped, { what: items.length === 1 ? items[0].label : plural(items.length, M.place.itemOne, M.place.itemMany), code: target.code }));
     },
-    [itemByKey, level, patch, state.plotSel, state.plotTarget, toast]
+    [itemByKey, level, patch, state.plotSel, state.plotTarget, toast, wayfinding.actions, wayfinding.plate?.stops]
   );
 
   const clickPolygon = useCallback(
@@ -375,20 +411,22 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
 
   const unplotItems = useCallback(
     (keys: string[]) => {
+      const stopKeys = keys.filter((key) => key.startsWith('stop:')).map((key) => key.slice('stop:'.length));
+      const stops = (wayfinding.plate?.stops ?? []).filter((stop) => stopKeys.includes(stop.key) && stop.placed);
       const items = keys.map(itemByKey).filter((item): item is PinItem => !!item && item.placed);
-      if (!items.length) return;
+      if (!items.length && !stops.length) return;
+      if (stops.length) wayfinding.actions.unplotStops(stops.map((stop) => stop.key));
       patch((current) => ({
         pinOverrides: { ...current.pinOverrides, ...Object.fromEntries(items.map((item) => [item.key, null])) },
         plotUnSel: current.plotUnSel.filter((key) => !keys.includes(key)),
         selectedPin: current.selectedPin && keys.includes(pinKey(current.selectedPin)) ? null : current.selectedPin
       }));
-      toast(items.length === 1 ? t(M.toast.pinRemoved, { name: items[0].label }) : t(M.toast.unplotted, { count: items.length }));
+      const names = [...items.map((item) => item.label), ...stops.map((stop) => stop.label)];
+      toast(names.length === 1 ? t(M.toast.pinRemoved, { name: names[0] }) : t(M.toast.unplotted, { count: names.length }));
     },
-    [itemByKey, patch, toast]
+    [itemByKey, patch, toast, wayfinding.actions, wayfinding.plate?.stops]
   );
 
-  const askConfirm = useCallback((confirm: ConfirmState) => patch(() => ({ confirm })), [patch]);
-  const closeConfirm = useCallback(() => patch(() => ({ confirm: null })), [patch]);
 
   const unplotMany = useCallback(() => {
     const keys = state.plotUnSel;
@@ -469,9 +507,14 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
         patch(() => ({ chainFrom: key, selectedNode: key, selectedEdge: null, selectedPin: null }));
         return;
       }
-      patch(() => ({ selectedNode: key, selectedEdge: null, selectedPin: null, selPoly: null }));
+      // A stop (elevator, entry / exit, tour start, access point) opens its popover: Move, Unplot.
+      if (wayfinding.enabled && wayfinding.plate?.stops.some((stop) => stop.key === key)) {
+        patch(() => ({ selStop: key, selectedNode: null, selectedEdge: null, selectedPin: null, selPoly: null }));
+        return;
+      }
+      patch(() => ({ selectedNode: key, selectedEdge: null, selectedPin: null, selPoly: null, selStop: null }));
     },
-    [connectNodes, patch, state.edgeFrom, state.tool]
+    [connectNodes, patch, state.edgeFrom, state.tool, wayfinding.enabled, wayfinding.plate?.stops]
   );
 
   const onPinDown = useCallback(
@@ -500,6 +543,19 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
     (event: ReactPointerEvent<HTMLElement>) => {
       if ((event.target as Element).closest('[data-node]')) return;
       const px = pointerPx(event);
+      if (state.stopTarget && px && space === 'raster') {
+        wayfinding.actions.placeStops([state.stopTarget], px);
+        return;
+      }
+      if (wayfinding.wayfind) {
+        wayfinding.actions.onSurfaceDown(px);
+        return;
+      }
+      const tickedStops = state.plotSel.filter((key) => key.startsWith('stop:')).map((key) => key.slice('stop:'.length));
+      if (state.tool === 'plot' && tickedStops.length && px && space === 'raster') {
+        wayfinding.actions.placeStops(tickedStops, px);
+        return;
+      }
       if (state.tool === 'plot' && state.plotTarget && px) {
         placePin(px);
         return;
@@ -516,9 +572,9 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
         addJunction(px, state.chainFrom);
         return;
       }
-      patch(() => ({ selectedNode: null, selectedEdge: null, selectedPin: null, selPoly: null }));
+      patch(() => ({ selectedNode: null, selectedEdge: null, selectedPin: null, selPoly: null, selStop: null }));
     },
-    [addJunction, patch, placePin, pointerPx, space, state.chainFrom, state.plotSel.length, state.plotTarget, state.tool, toast]
+    [addJunction, patch, placePin, pointerPx, space, state.chainFrom, state.plotSel, state.plotTarget, state.stopTarget, state.tool, toast, wayfinding.actions, wayfinding.wayfind]
   );
 
   const onSurfaceMove = useCallback(
@@ -530,6 +586,10 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
       if (dragging.kind === 'pin') {
         patch((current) => ({
           pinOverrides: { ...current.pinOverrides, [pinKey(dragging.ref)]: { levelId: level.id, x: px.x, y: px.y, space, polygon: null } }
+        }));
+      } else if (dragging.key.startsWith('n:')) {
+        patch((current) => ({
+          tempStops: current.tempStops.map((stop) => (stop.key === dragging.key ? { ...stop, x: px.x, y: px.y } : stop))
         }));
       } else if (dragging.key.startsWith('j:')) {
         patch((current) => ({
@@ -543,8 +603,11 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
   );
 
   const onSurfaceUp = useCallback(() => {
-    if (state.dragging) patch(() => ({ dragging: null }));
-  }, [patch, state.dragging]);
+    const dragging = state.dragging;
+    if (!dragging) return;
+    patch(() => ({ dragging: null }));
+    if (wayfinding.wayfind && dragging.kind === 'node') wayfinding.actions.onDragEnd(dragging.key);
+  }, [patch, state.dragging, wayfinding.actions, wayfinding.wayfind]);
 
   const renameSelected = useCallback(
     (label: string) =>
@@ -971,13 +1034,32 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
     polygons,
     selectedPolygon: level ? generateSelectedPolygon(level, polygons, state) : null,
     buildings: useMemo(() => generateBuildingPills(map, levels, state), [map, levels, state]),
-    tabs: useMemo(() => generateLevelTabs(map, levels, pinItems, state), [map, levels, pinItems, state]),
+    tabs: useMemo(
+      () => generateLevelTabs(map, levels, pinItems, state, wayfinding.wayfind ? wayfinding.plates : null),
+      [map, levels, pinItems, state, wayfinding.plates, wayfinding.wayfind]
+    ),
     tools: generateTools(state),
     hint: generateMapHint(state, plotTargetItem?.label ?? null, space === 'svg'),
-    cursor: state.tool === 'junction' || state.tool === 'hallway' ? 'copy' : state.tool === 'move' ? 'grab' : state.tool === 'plot' ? 'crosshair' : 'default',
+    cursor: state.stopTarget
+      ? 'crosshair'
+      : wayfinding.wayfind
+        ? state.wfTool === 'node'
+          ? 'crosshair'
+          : 'default'
+        : state.tool === 'junction' || state.tool === 'hallway'
+          ? 'copy'
+          : state.tool === 'move'
+            ? 'grab'
+            : state.tool === 'plot'
+              ? 'crosshair'
+              : 'default',
     assets,
     planInfo: level && graph ? generatePlanInfo(level, graph, state) : null,
-    plotPanel: useMemo(() => generatePlotPanel(map, levels, level, pinItems, graphs, state), [map, levels, level, pinItems, graphs, state]),
+    plotPanel: useMemo(
+      () => generatePlotPanel(map, levels, level, pinItems, graphs, state, wayfinding.enabled ? (wayfinding.plate?.stops ?? []) : null),
+      [map, levels, level, pinItems, graphs, state, wayfinding.enabled, wayfinding.plate]
+    ),
+    wayfinding,
     autoPlotMenu: useMemo(() => generateAutoPlotMenu(map, levels, level, pinItems), [map, levels, level, pinItems]),
     ap: state.ap,
     apAnalysis,
@@ -987,8 +1069,11 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
     apScopeName: state.ap ? apScopeName(state.ap) : '',
     apPresets: state.ap ? AP_PRESETS[state.ap.draft.dir] : [],
     apUnitNo,
-    plotArmedLabel:
-      state.tool === 'plot'
+    plotArmedLabel: state.stopTarget
+      ? t(M.wayfinding.armedStop, { name: wayfinding.plate?.stops.find((stop) => stop.key === state.stopTarget)?.label ?? '' })
+      : wayfinding.wayfind
+        ? null
+        : state.tool === 'plot'
         ? plotTargetItem
           ? t(M.plan.armed, { name: plotTargetItem.label })
           : state.plotSel.length

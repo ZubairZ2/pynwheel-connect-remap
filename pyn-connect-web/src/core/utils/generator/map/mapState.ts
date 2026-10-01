@@ -1,6 +1,8 @@
 import type { RouteLeg } from '~/core/models/data/propertyMap.data';
 import type { ApRules } from '~/core/utils/map/autoPlotRules';
 import type { FloorSvgDoc } from '~/core/utils/map/floorSvg';
+import type { StopTypeId } from '~/core/utils/wayfinding/stopTypes';
+import type { WfRouteResult } from '~/core/utils/wayfinding/wayfindingRoute';
 
 /**
  * The Map & Plotting screen's local state: what the user changes on the page
@@ -181,6 +183,99 @@ export interface ConfirmState {
 /** A level's floor SVG on this page: being fetched, unreadable, or parsed. */
 export type SvgDocState = { status: 'loading' } | { status: 'failed' } | { status: 'ready'; doc: FloorSvgDoc };
 
+/** The two modes of the screen: plotting units, amenities and stops, or the self-tour's wayfinding paths. */
+export type MapMode = 'plot' | 'wayfind';
+
+/** What the Plot on Map panel lists ("Show"). */
+export type PlotKind = 'unit' | 'amenity' | 'stop';
+
+/** The wayfinding tools: drag points, link points and stops, drop points, remove points and paths. */
+export type WfTool = 'move' | 'connect' | 'node' | 'erase';
+
+/** How far "Test shortest path" may route: within the floor, across a building's floors, across buildings. */
+export type WfScope = 'plate' | 'floors' | 'buildings';
+
+/**
+ * An Additional Stop added on this page (the design's "Add Additional
+ * Stop"). It lives in the floor image's pixels like every stored stop, and
+ * is gone on reload; nothing is sent.
+ */
+export interface TempStop {
+  /** `n:<n>`, the stop's key on the map. */
+  key: string;
+  type: StopTypeId;
+  name: string;
+  building: string | null;
+  levelId: string;
+  /** On a stacked floorplate: the one floor it applies to (null = every floor of the stack). */
+  floorOnly: number | null;
+  /** Elevator / stairs: the floors it serves, as typed ("1-12", "Lobby–12"). */
+  floors: string;
+  accessible: boolean;
+  lock: boolean;
+  note: string;
+  /** Raster pixels once placed; null while it waits in To Plot. */
+  x: number | null;
+  y: number | null;
+}
+
+/** The Add Additional Stop dialog's fields while it is open. */
+export interface StopForm {
+  /** The temporary stop being edited, or null for a new one. */
+  editing: string | null;
+  type: StopTypeId;
+  name: string;
+  building: string;
+  levelId: string;
+  /** '' = every floor of the stack. */
+  floorOnly: string;
+  floors: string;
+  accessible: boolean;
+  lock: boolean;
+  note: string;
+  place: boolean;
+  /** Set by the first Save attempt, so the field errors show from then on. */
+  submitted: boolean;
+}
+
+/** The From / To picker of "Test shortest path" while it is open. */
+export interface WfPickState {
+  which: 'A' | 'B';
+  query: string;
+  kind: 'all' | 'unit' | 'amenity' | 'stop';
+  index: number;
+  /** Fixed position beside the card, so the scrolling panel never clips it. */
+  pos: { left: number; width: number; top: number | null; bottom: number | null; listH: number };
+}
+
+export interface WfAnimState {
+  leg: number;
+  playing: boolean;
+  finished: boolean;
+  /** Changes on every (re)start, so the animation restarts from the leg's first point. */
+  run: number;
+}
+
+/** What Detect Paths changed, so it can be reviewed and undone. */
+export interface WfSnapshot {
+  nodeOverrides: Record<string, { x: number; y: number }>;
+  tempNodes: TempNode[];
+  tempEdges: TempEdge[];
+  hiddenNodes: string[];
+  hiddenEdges: string[];
+  wfLinks: Record<string, string>;
+  wfEdited: Record<string, 'detected' | 'edited'>;
+  nextJunction: number;
+}
+
+export interface WfDetectReview {
+  levelIds: string[];
+  points: number;
+  paths: number;
+  skipped: string[];
+  snapshot: WfSnapshot;
+}
+
 export type ApScope = 'one' | 'building' | 'all';
 export type ApStep = 'analyze' | 'pattern' | 'confirm' | 'done';
 
@@ -250,6 +345,43 @@ export interface LocalMapState {
   floorplateDialog: boolean;
   confirm: ConfirmState | null;
   nextJunction: number;
+
+  /* ── Plotting / Wayfinding ──────────────────────────────────────── */
+  mode: MapMode;
+  plotShow: Record<PlotKind, boolean>;
+  plotShowOpen: boolean;
+  /** Plot on Map on a stacked floorplate: the one floor listed (null = all floors, shared stops only). */
+  plotFloor: number | null;
+  /** A stop armed for placement: the next click on the floor image puts it there. */
+  stopTarget: string | null;
+  /** The stop marker whose popover is open. */
+  selStop: string | null;
+  tempStops: TempStop[];
+  nextStop: number;
+  stopDialog: StopForm | null;
+  wfTool: WfTool;
+  /** The selected hallway point. */
+  wfSel: string | null;
+  /** The selected path (an edge key). */
+  wfSelEdge: string | null;
+  /** Connect: the point or stop the next click links from. */
+  wfFrom: string | null;
+  /** Wayfinding on a stacked floorplate: the floor in view. */
+  wfFloor: number | null;
+  wfMenuOpen: boolean;
+  /** `${levelId}|${stop key}` → the point a stop was linked to by hand (else it attaches to the nearest point, as the CMS does). */
+  wfLinks: Record<string, string>;
+  /** Levels whose paths were detected or edited on this page. */
+  wfEdited: Record<string, 'detected' | 'edited'>;
+  wfReview: WfDetectReview | null;
+  wfScope: WfScope;
+  wfA: string;
+  wfB: string;
+  wfStepFree: boolean;
+  wfRoute: WfRouteResult | null;
+  wfPick: WfPickState | null;
+  wfAnim: WfAnimState | null;
+  wfAnimMode: 'point' | 'stop';
 }
 
 export const initialLocalMapState = (levelId: string, building: string | null, layer: PlanSpace): LocalMapState => ({
@@ -292,7 +424,33 @@ export const initialLocalMapState = (levelId: string, building: string | null, l
   publishOpen: false,
   floorplateDialog: false,
   confirm: null,
-  nextJunction: 1
+  nextJunction: 1,
+  mode: 'plot',
+  plotShow: { unit: true, amenity: false, stop: false },
+  plotShowOpen: false,
+  plotFloor: null,
+  stopTarget: null,
+  selStop: null,
+  tempStops: [],
+  nextStop: 1,
+  stopDialog: null,
+  wfTool: 'move',
+  wfSel: null,
+  wfSelEdge: null,
+  wfFrom: null,
+  wfFloor: null,
+  wfMenuOpen: false,
+  wfLinks: {},
+  wfEdited: {},
+  wfReview: null,
+  wfScope: 'plate',
+  wfA: '',
+  wfB: '',
+  wfStepFree: false,
+  wfRoute: null,
+  wfPick: null,
+  wfAnim: null,
+  wfAnimMode: 'point'
 });
 
 /** Pixel → percent of the level's image, clamped to the surface. */

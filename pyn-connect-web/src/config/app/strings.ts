@@ -934,7 +934,9 @@ export const CORE_STRINGS = {
       none: 'mapPlotting.level.none',
       scrollLeft: 'mapPlotting.level.scrollLeft',
       scrollRight: 'mapPlotting.level.scrollRight',
-      tabs: 'mapPlotting.level.tabs'
+      tabs: 'mapPlotting.level.tabs',
+      stacked: 'mapPlotting.level.stacked',
+      oneFloor: 'mapPlotting.level.oneFloor'
     },
     plan: {
       svgAndBackground: 'mapPlotting.plan.svgAndBackground',
@@ -1015,7 +1017,9 @@ export const CORE_STRINGS = {
       hintDropImage: 'mapPlotting.place.hintDropImage',
       hintTurnOn: 'mapPlotting.place.hintTurnOn',
       closePolygon: 'mapPlotting.place.closePolygon',
-      polygonEmpty: 'mapPlotting.place.polygonEmpty'
+      polygonEmpty: 'mapPlotting.place.polygonEmpty',
+      onPlan: 'mapPlotting.place.onPlan',
+      nothingForTypes: 'mapPlotting.place.nothingForTypes'
     },
     autoPlot: {
       title: 'mapPlotting.autoPlot.title',
@@ -1303,6 +1307,375 @@ export const CORE_STRINGS = {
       addTitle: 'mapPlotting.building.addTitle',
       plateOne: 'mapPlotting.building.plateOne',
       plateMany: 'mapPlotting.building.plateMany'
+    },
+    show: {
+      label: 'mapPlotting.show.label',
+      title: 'mapPlotting.show.title',
+      units: 'mapPlotting.show.units',
+      unitsDesc: 'mapPlotting.show.unitsDesc',
+      amenities: 'mapPlotting.show.amenities',
+      amenitiesDesc: 'mapPlotting.show.amenitiesDesc',
+      stops: 'mapPlotting.show.stops',
+      stopsDesc: 'mapPlotting.show.stopsDesc',
+      noneHere: 'mapPlotting.show.noneHere',
+      toPlot: 'mapPlotting.show.toPlot',
+      allPlotted: 'mapPlotting.show.allPlotted',
+      allTypes: 'mapPlotting.show.allTypes',
+      hiddenToPlot: 'mapPlotting.show.hiddenToPlot',
+      allFloors: 'mapPlotting.show.allFloors',
+      floor: 'mapPlotting.show.floor'
+    },
+    stops: {
+      add: 'mapPlotting.stops.add',
+      addTitle: 'mapPlotting.stops.addTitle',
+      addA: 'mapPlotting.stops.addA',
+      addNote: 'mapPlotting.stops.addNote',
+      types: {
+        entry: {
+          label: 'mapPlotting.stops.types.entry.label',
+          hint: 'mapPlotting.stops.types.entry.hint',
+          example: 'mapPlotting.stops.types.entry.example'
+        },
+        exit: {
+          label: 'mapPlotting.stops.types.exit.label',
+          hint: 'mapPlotting.stops.types.exit.hint',
+          example: 'mapPlotting.stops.types.exit.example'
+        },
+        elevator: {
+          label: 'mapPlotting.stops.types.elevator.label',
+          hint: 'mapPlotting.stops.types.elevator.hint',
+          example: 'mapPlotting.stops.types.elevator.example'
+        },
+        stairs: {
+          label: 'mapPlotting.stops.types.stairs.label',
+          hint: 'mapPlotting.stops.types.stairs.hint',
+          example: 'mapPlotting.stops.types.stairs.example'
+        },
+        ramp: {
+          label: 'mapPlotting.stops.types.ramp.label',
+          hint: 'mapPlotting.stops.types.ramp.hint',
+          example: 'mapPlotting.stops.types.ramp.example'
+        },
+        door: {
+          label: 'mapPlotting.stops.types.door.label',
+          hint: 'mapPlotting.stops.types.door.hint',
+          example: 'mapPlotting.stops.types.door.example'
+        },
+        blocker: {
+          label: 'mapPlotting.stops.types.blocker.label',
+          hint: 'mapPlotting.stops.types.blocker.hint',
+          example: 'mapPlotting.stops.types.blocker.example'
+        },
+        leasing: {
+          label: 'mapPlotting.stops.types.leasing.label',
+          hint: 'mapPlotting.stops.types.leasing.hint',
+          example: 'mapPlotting.stops.types.leasing.example'
+        },
+        restroom: {
+          label: 'mapPlotting.stops.types.restroom.label',
+          hint: 'mapPlotting.stops.types.restroom.hint',
+          example: 'mapPlotting.stops.types.restroom.example'
+        },
+        mail: {
+          label: 'mapPlotting.stops.types.mail.label',
+          hint: 'mapPlotting.stops.types.mail.hint',
+          example: 'mapPlotting.stops.types.mail.example'
+        },
+        parking: {
+          label: 'mapPlotting.stops.types.parking.label',
+          hint: 'mapPlotting.stops.types.parking.hint',
+          example: 'mapPlotting.stops.types.parking.example'
+        },
+        waypoint: {
+          label: 'mapPlotting.stops.types.waypoint.label',
+          hint: 'mapPlotting.stops.types.waypoint.hint',
+          example: 'mapPlotting.stops.types.waypoint.example'
+        }
+      },
+      dialog: {
+        title: 'mapPlotting.stops.dialog.title',
+        editTitle: 'mapPlotting.stops.dialog.editTitle',
+        subtitle: 'mapPlotting.stops.dialog.subtitle',
+        type: 'mapPlotting.stops.dialog.type',
+        name: 'mapPlotting.stops.dialog.name',
+        namePlaceholder: 'mapPlotting.stops.dialog.namePlaceholder',
+        building: 'mapPlotting.stops.dialog.building',
+        floorplate: 'mapPlotting.stops.dialog.floorplate',
+        pickFloorplate: 'mapPlotting.stops.dialog.pickFloorplate',
+        appliesTo: 'mapPlotting.stops.dialog.appliesTo',
+        stackShared: 'mapPlotting.stops.dialog.stackShared',
+        stackAll: 'mapPlotting.stops.dialog.stackAll',
+        stackOne: 'mapPlotting.stops.dialog.stackOne',
+        floorsServed: 'mapPlotting.stops.dialog.floorsServed',
+        floorsPlaceholder: 'mapPlotting.stops.dialog.floorsPlaceholder',
+        accessible: 'mapPlotting.stops.dialog.accessible',
+        smartLock: 'mapPlotting.stops.dialog.smartLock',
+        blockerNote: 'mapPlotting.stops.dialog.blockerNote',
+        instruction: 'mapPlotting.stops.dialog.instruction',
+        instructionSub: 'mapPlotting.stops.dialog.instructionSub',
+        instructionPlaceholder: 'mapPlotting.stops.dialog.instructionPlaceholder',
+        place: 'mapPlotting.stops.dialog.place',
+        cancel: 'mapPlotting.stops.dialog.cancel',
+        close: 'mapPlotting.stops.dialog.close',
+        add: 'mapPlotting.stops.dialog.add',
+        addPlace: 'mapPlotting.stops.dialog.addPlace',
+        save: 'mapPlotting.stops.dialog.save',
+        localNote: 'mapPlotting.stops.dialog.localNote'
+      },
+      errors: {
+        type: 'mapPlotting.stops.errors.type',
+        building: 'mapPlotting.stops.errors.building',
+        level: 'mapPlotting.stops.errors.level',
+        levelBuilding: 'mapPlotting.stops.errors.levelBuilding',
+        nameLong: 'mapPlotting.stops.errors.nameLong',
+        floorOnly: 'mapPlotting.stops.errors.floorOnly',
+        floors: 'mapPlotting.stops.errors.floors',
+        noteLong: 'mapPlotting.stops.errors.noteLong'
+      },
+      popover: {
+        temporary: 'mapPlotting.stops.popover.temporary',
+        stored: 'mapPlotting.stops.popover.stored',
+        edit: 'mapPlotting.stops.popover.edit',
+        move: 'mapPlotting.stops.popover.move',
+        remove: 'mapPlotting.stops.popover.remove'
+      },
+      remove: {
+        title: 'mapPlotting.stops.remove.title',
+        body: 'mapPlotting.stops.remove.body',
+        confirm: 'mapPlotting.stops.remove.confirm',
+        done: 'mapPlotting.stops.remove.done'
+      }
+    },
+    wayfinding: {
+      title: 'mapPlotting.wayfinding.title',
+      modes: {
+        label: 'mapPlotting.wayfinding.modes.label',
+        plot: 'mapPlotting.wayfinding.modes.plot',
+        wayfind: 'mapPlotting.wayfinding.modes.wayfind'
+      },
+      tools: {
+        label: 'mapPlotting.wayfinding.tools.label',
+        move: 'mapPlotting.wayfinding.tools.move',
+        moveTip: 'mapPlotting.wayfinding.tools.moveTip',
+        moveHint: 'mapPlotting.wayfinding.tools.moveHint',
+        connect: 'mapPlotting.wayfinding.tools.connect',
+        connectTip: 'mapPlotting.wayfinding.tools.connectTip',
+        connectHint: 'mapPlotting.wayfinding.tools.connectHint',
+        node: 'mapPlotting.wayfinding.tools.node',
+        nodeTip: 'mapPlotting.wayfinding.tools.nodeTip',
+        nodeHint: 'mapPlotting.wayfinding.tools.nodeHint',
+        erase: 'mapPlotting.wayfinding.tools.erase',
+        eraseTip: 'mapPlotting.wayfinding.tools.eraseTip',
+        eraseHint: 'mapPlotting.wayfinding.tools.eraseHint'
+      },
+      detect: {
+        button: 'mapPlotting.wayfinding.detect.button',
+        title: 'mapPlotting.wayfinding.detect.title',
+        plate: 'mapPlotting.wayfinding.detect.plate',
+        building: 'mapPlotting.wayfinding.detect.building',
+        all: 'mapPlotting.wayfinding.detect.all',
+        note: 'mapPlotting.wayfinding.detect.note',
+        skipNoImage: 'mapPlotting.wayfinding.detect.skipNoImage',
+        skipHasPaths: 'mapPlotting.wayfinding.detect.skipHasPaths',
+        skipTooFew: 'mapPlotting.wayfinding.detect.skipTooFew',
+        replaceTitle: 'mapPlotting.wayfinding.detect.replaceTitle',
+        replaceBody: 'mapPlotting.wayfinding.detect.replaceBody',
+        replace: 'mapPlotting.wayfinding.detect.replace'
+      },
+      clear: {
+        label: 'mapPlotting.wayfinding.clear.label',
+        tip: 'mapPlotting.wayfinding.clear.tip',
+        tipEmpty: 'mapPlotting.wayfinding.clear.tipEmpty',
+        title: 'mapPlotting.wayfinding.clear.title',
+        body: 'mapPlotting.wayfinding.clear.body',
+        confirm: 'mapPlotting.wayfinding.clear.confirm'
+      },
+      status: {
+        done: 'mapPlotting.wayfinding.status.done',
+        partial: 'mapPlotting.wayfinding.status.partial',
+        none: 'mapPlotting.wayfinding.status.none',
+        noplan: 'mapPlotting.wayfinding.status.noplan'
+      },
+      stack: {
+        viewing: 'mapPlotting.wayfinding.stack.viewing',
+        done: 'mapPlotting.wayfinding.stack.done',
+        nextIncomplete: 'mapPlotting.wayfinding.stack.nextIncomplete',
+        sharedPaths: 'mapPlotting.wayfinding.stack.sharedPaths',
+        polygonUnit: 'mapPlotting.wayfinding.stack.polygonUnit',
+        sharedStops: 'mapPlotting.wayfinding.stack.sharedStops',
+        linkedTip: 'mapPlotting.wayfinding.stack.linkedTip',
+        unitExample: 'mapPlotting.wayfinding.stack.unitExample',
+        unitsOn: 'mapPlotting.wayfinding.stack.unitsOn'
+      },
+      counts: {
+        points: 'mapPlotting.wayfinding.counts.points',
+        paths: 'mapPlotting.wayfinding.counts.paths',
+        linked: 'mapPlotting.wayfinding.counts.linked'
+      },
+      noPlan: 'mapPlotting.wayfinding.noPlan',
+      noPaths: 'mapPlotting.wayfinding.noPaths',
+      selection: {
+        point: 'mapPlotting.wayfinding.selection.point',
+        path: 'mapPlotting.wayfinding.selection.path',
+        linkedStop: 'mapPlotting.wayfinding.selection.linkedStop',
+        connectionOne: 'mapPlotting.wayfinding.selection.connectionOne',
+        connectionMany: 'mapPlotting.wayfinding.selection.connectionMany',
+        isolated: 'mapPlotting.wayfinding.selection.isolated',
+        isolatedTitle: 'mapPlotting.wayfinding.selection.isolatedTitle',
+        moved: 'mapPlotting.wayfinding.selection.moved',
+        deselect: 'mapPlotting.wayfinding.selection.deselect',
+        deselectEsc: 'mapPlotting.wayfinding.selection.deselectEsc',
+        delete: 'mapPlotting.wayfinding.selection.delete'
+      },
+      review: {
+        title: 'mapPlotting.wayfinding.review.title',
+        body: 'mapPlotting.wayfinding.review.body',
+        nothing: 'mapPlotting.wayfinding.review.nothing',
+        nothingBody: 'mapPlotting.wayfinding.review.nothingBody',
+        undo: 'mapPlotting.wayfinding.review.undo',
+        dismiss: 'mapPlotting.wayfinding.review.dismiss'
+      },
+      scope: {
+        plate: 'mapPlotting.wayfinding.scope.plate',
+        plateTip: 'mapPlotting.wayfinding.scope.plateTip',
+        floors: 'mapPlotting.wayfinding.scope.floors',
+        floorsTip: 'mapPlotting.wayfinding.scope.floorsTip',
+        buildings: 'mapPlotting.wayfinding.scope.buildings',
+        buildingsTip: 'mapPlotting.wayfinding.scope.buildingsTip'
+      },
+      sample: {
+        title: 'mapPlotting.wayfinding.sample.title',
+        plate: 'mapPlotting.wayfinding.sample.plate',
+        floors: 'mapPlotting.wayfinding.sample.floors',
+        buildings: 'mapPlotting.wayfinding.sample.buildings'
+      },
+      route: {
+        title: 'mapPlotting.wayfinding.route.title',
+        across: 'mapPlotting.wayfinding.route.across',
+        choose: 'mapPlotting.wayfinding.route.choose',
+        from: 'mapPlotting.wayfinding.route.from',
+        to: 'mapPlotting.wayfinding.route.to',
+        swap: 'mapPlotting.wayfinding.route.swap',
+        stepFree: 'mapPlotting.wayfinding.route.stepFree',
+        stepFreeSub: 'mapPlotting.wayfinding.route.stepFreeSub',
+        find: 'mapPlotting.wayfinding.route.find',
+        noRoute: 'mapPlotting.wayfinding.route.noRoute',
+        needTwoPlate: 'mapPlotting.wayfinding.route.needTwoPlate',
+        needTwoScope: 'mapPlotting.wayfinding.route.needTwoScope',
+        length: 'mapPlotting.wayfinding.route.length',
+        clickStep: 'mapPlotting.wayfinding.route.clickStep',
+        inGreen: 'mapPlotting.wayfinding.route.inGreen',
+        now: 'mapPlotting.wayfinding.route.now',
+        onMap: 'mapPlotting.wayfinding.route.onMap',
+        view: 'mapPlotting.wayfinding.route.view',
+        shares: 'mapPlotting.wayfinding.route.shares',
+        pickTwo: 'mapPlotting.wayfinding.route.pickTwo',
+        noPlan: 'mapPlotting.wayfinding.route.noPlan',
+        fixDetectPlate: 'mapPlotting.wayfinding.route.fixDetectPlate',
+        fixDetectBuilding: 'mapPlotting.wayfinding.route.fixDetectBuilding',
+        fixDetectAll: 'mapPlotting.wayfinding.route.fixDetectAll',
+        noPathsStart: 'mapPlotting.wayfinding.route.noPathsStart',
+        noPathsEnd: 'mapPlotting.wayfinding.route.noPathsEnd',
+        svgOnly: 'mapPlotting.wayfinding.route.svgOnly',
+        notLinked: 'mapPlotting.wayfinding.route.notLinked',
+        blocked: 'mapPlotting.wayfinding.route.blocked',
+        missingPaths: 'mapPlotting.wayfinding.route.missingPaths',
+        andMore: 'mapPlotting.wayfinding.route.andMore',
+        noBuildingLink: 'mapPlotting.wayfinding.route.noBuildingLink',
+        fixEntry: 'mapPlotting.wayfinding.route.fixEntry',
+        noVertical: 'mapPlotting.wayfinding.route.noVertical',
+        fixVertical: 'mapPlotting.wayfinding.route.fixVertical',
+        noStepFree: 'mapPlotting.wayfinding.route.noStepFree',
+        noPathBlocker: 'mapPlotting.wayfinding.route.noPathBlocker',
+        noPath: 'mapPlotting.wayfinding.route.noPath',
+        stepWalk: 'mapPlotting.wayfinding.route.stepWalk',
+        stepWalkSub: 'mapPlotting.wayfinding.route.stepWalkSub',
+        hallway: 'mapPlotting.wayfinding.route.hallway',
+        stepOutdoor: 'mapPlotting.wayfinding.route.stepOutdoor',
+        stepOutdoorSub: 'mapPlotting.wayfinding.route.stepOutdoorSub',
+        stepRide: 'mapPlotting.wayfinding.route.stepRide',
+        up: 'mapPlotting.wayfinding.route.up',
+        down: 'mapPlotting.wayfinding.route.down',
+        floorOne: 'mapPlotting.wayfinding.route.floorOne',
+        floorMany: 'mapPlotting.wayfinding.route.floorMany',
+        liftOne: 'mapPlotting.wayfinding.route.liftOne',
+        liftMany: 'mapPlotting.wayfinding.route.liftMany',
+        stairOne: 'mapPlotting.wayfinding.route.stairOne',
+        stairMany: 'mapPlotting.wayfinding.route.stairMany',
+        outdoorOne: 'mapPlotting.wayfinding.route.outdoorOne',
+        outdoorMany: 'mapPlotting.wayfinding.route.outdoorMany',
+        stepArrive: 'mapPlotting.wayfinding.route.stepArrive'
+      },
+      anim: {
+        title: 'mapPlotting.wayfinding.anim.title',
+        point: 'mapPlotting.wayfinding.anim.point',
+        pointSub: 'mapPlotting.wayfinding.anim.pointSub',
+        stop: 'mapPlotting.wayfinding.anim.stop',
+        stopSub: 'mapPlotting.wayfinding.anim.stopSub',
+        play: 'mapPlotting.wayfinding.anim.play',
+        replay: 'mapPlotting.wayfinding.anim.replay',
+        pause: 'mapPlotting.wayfinding.anim.pause',
+        resume: 'mapPlotting.wayfinding.anim.resume',
+        stopLabel: 'mapPlotting.wayfinding.anim.stopLabel',
+        stopTitle: 'mapPlotting.wayfinding.anim.stopTitle',
+        arrived: 'mapPlotting.wayfinding.anim.arrived',
+        status: 'mapPlotting.wayfinding.anim.status',
+        playing: 'mapPlotting.wayfinding.anim.playing',
+        paused: 'mapPlotting.wayfinding.anim.paused'
+      },
+      picker: {
+        start: 'mapPlotting.wayfinding.picker.start',
+        end: 'mapPlotting.wayfinding.picker.end',
+        count: 'mapPlotting.wayfinding.picker.count',
+        all: 'mapPlotting.wayfinding.picker.all',
+        units: 'mapPlotting.wayfinding.picker.units',
+        amenities: 'mapPlotting.wayfinding.picker.amenities',
+        stops: 'mapPlotting.wayfinding.picker.stops',
+        placeholder: 'mapPlotting.wayfinding.picker.placeholder',
+        noMatch: 'mapPlotting.wayfinding.picker.noMatch',
+        noneOfType: 'mapPlotting.wayfinding.picker.noneOfType',
+        keys: 'mapPlotting.wayfinding.picker.keys'
+      },
+      unlinked: {
+        head: 'mapPlotting.wayfinding.unlinked.head',
+        onFloor: 'mapPlotting.wayfinding.unlinked.onFloor',
+        hint: 'mapPlotting.wayfinding.unlinked.hint',
+        svgOnly: 'mapPlotting.wayfinding.unlinked.svgOnly',
+        isolated: 'mapPlotting.wayfinding.unlinked.isolated'
+      },
+      footnote: 'mapPlotting.wayfinding.footnote',
+      pointOne: 'mapPlotting.wayfinding.pointOne',
+      pointMany: 'mapPlotting.wayfinding.pointMany',
+      pathOne: 'mapPlotting.wayfinding.pathOne',
+      pathMany: 'mapPlotting.wayfinding.pathMany',
+      buildingOne: 'mapPlotting.wayfinding.buildingOne',
+      buildingMany: 'mapPlotting.wayfinding.buildingMany',
+      stopOne: 'mapPlotting.wayfinding.stopOne',
+      stopMany: 'mapPlotting.wayfinding.stopMany',
+      pointLabel: 'mapPlotting.wayfinding.pointLabel',
+      armedStop: 'mapPlotting.wayfinding.armedStop',
+      toast: {
+        linked: 'mapPlotting.wayfinding.toast.linked',
+        pickPoint: 'mapPlotting.wayfinding.toast.pickPoint',
+        selectPointFirst: 'mapPlotting.wayfinding.toast.selectPointFirst',
+        connected: 'mapPlotting.wayfinding.toast.connected',
+        unlinked: 'mapPlotting.wayfinding.toast.unlinked',
+        pointRemoved: 'mapPlotting.wayfinding.toast.pointRemoved',
+        pathRemoved: 'mapPlotting.wayfinding.toast.pathRemoved',
+        cleared: 'mapPlotting.wayfinding.toast.cleared',
+        detected: 'mapPlotting.wayfinding.toast.detected',
+        nothingDetected: 'mapPlotting.wayfinding.toast.nothingDetected',
+        undone: 'mapPlotting.wayfinding.toast.undone',
+        noSample: 'mapPlotting.wayfinding.toast.noSample',
+        noSampleBlocked: 'mapPlotting.wayfinding.toast.noSampleBlocked',
+        sample: 'mapPlotting.wayfinding.toast.sample',
+        noImageForStop: 'mapPlotting.wayfinding.toast.noImageForStop',
+        placeStop: 'mapPlotting.wayfinding.toast.placeStop',
+        stopAdded: 'mapPlotting.wayfinding.toast.stopAdded',
+        stopUpdated: 'mapPlotting.wayfinding.toast.stopUpdated',
+        stopUpdatedMoved: 'mapPlotting.wayfinding.toast.stopUpdatedMoved',
+        stopPlaced: 'mapPlotting.wayfinding.toast.stopPlaced'
+      }
     }
   },
   tourSetup: {

@@ -13,6 +13,8 @@ import { M, plural, t } from '~/core/utils/generator/map/mapText';
 import { MapCanvas } from './map/MapCanvas';
 import { MapDialogs } from './map/MapDialogs';
 import { PlotPanel } from './map/MapPanels';
+import { WayfindingPanel } from './map/WayfindingPanel';
+import { ModeSwitch, WayfindingToolbar } from './map/WayfindingToolbar';
 
 interface Props {
   /** Null when the property was not found, or could not be loaded (then `error` says so). */
@@ -23,12 +25,13 @@ interface Props {
 }
 
 /**
- * Map & Plotting on real data, exactly as the plotting design's `mapEditor`
- * screen lays it out: building pills, floorplate tabs with their plotting
- * progress, "{floor} · n of m plotted" with Auto Plot and Manual Plot, the
- * floor plan with its polygons and pins, and the Plot Units & Amenities
- * panel — over the property's floor plates, its unit and amenity pins and
- * the stored pathway graph. Everything the user does here is local to the
+ * Map & Plotting on real data, as the wayfinding design's `mapEditor` screen
+ * lays it out: building pills, floorplate tabs with their progress, and —
+ * for a self-tour property — the Plotting / Wayfinding switch. Plotting:
+ * "{floor} · n of m plotted" with Auto Plot and Manual Plot, the floor plan
+ * with its polygons and pins, and the Plot on Map panel. Wayfinding: Detect
+ * Paths, the path tools and the Wayfinding panel over the stored hallway
+ * graph, on the same canvas. Everything the user does here is local to the
  * page; the only requests it sends are reads (a floor SVG).
  */
 export const PropertyMapScreen = ({ map, initial, error }: Props) =>
@@ -36,7 +39,8 @@ export const PropertyMapScreen = ({ map, initial, error }: Props) =>
 
 const MapEditor = ({ map, initial }: { map: PropertyMap; initial: MapInitial | null }) => {
   const controller = usePropertyMap(map, initial);
-  const { buildings, tabs, plotPanel, state, actions, level, autoPlotMenu } = controller;
+  const { buildings, tabs, plotPanel, state, actions, level, autoPlotMenu, wayfinding } = controller;
+  const wayfind = wayfinding.wayfind && !!wayfinding.toolbar;
   const propId = String(map.inventory.property.id);
   const tabsRef = useRef<HTMLDivElement | null>(null);
   const [canScroll, setCanScroll] = useState({ left: false, right: false });
@@ -185,9 +189,14 @@ const MapEditor = ({ map, initial }: { map: PropertyMap; initial: MapInitial | n
 
           <div className="bo-map__toolbar">
             <div className="bo-map__toolbartitle">
+              <ModeSwitch controller={controller} />
               <span className="bo-map__toolbarlevel">{level ? `${level.sub} · ${level.label}` : (state.building ?? i18n.t(M.level.allBuildings))}</span>
-              {level && <span className="bo-map__toolbarsub">{plotPanel.doneLabel}</span>}
+              {level && <span className="bo-map__toolbarsub">{wayfind ? wayfinding.toolbar!.sub : plotPanel.doneLabel}</span>}
             </div>
+            {wayfind ? (
+              <WayfindingToolbar controller={controller} />
+            ) : (
+              <>
             <div className="bo-map__apmenu" onMouseLeave={actions.closeAutoPlotMenu}>
               <button type="button" className="bo-map__tool bo-map__tool--strong" aria-haspopup="menu" aria-expanded={state.apMenuOpen} onClick={actions.openAutoPlotMenu} disabled={noLevel}>
                 {i18n.t(M.tools.autoPlot)}
@@ -217,6 +226,8 @@ const MapEditor = ({ map, initial }: { map: PropertyMap; initial: MapInitial | n
               {i18n.t(M.tools.manualPlot)}
               <span className="bo-map__toolpill">{i18n.t(manualOn ? M.tools.on : M.tools.off)}</span>
             </button>
+              </>
+            )}
           </div>
 
           {level ? (
@@ -231,9 +242,7 @@ const MapEditor = ({ map, initial }: { map: PropertyMap; initial: MapInitial | n
           )}
         </div>
 
-        <aside className="bo-map__side">
-          <PlotPanel controller={controller} />
-        </aside>
+        <aside className="bo-map__side">{wayfind ? <WayfindingPanel controller={controller} /> : <PlotPanel controller={controller} />}</aside>
       </div>
 
       <MapDialogs controller={controller} />

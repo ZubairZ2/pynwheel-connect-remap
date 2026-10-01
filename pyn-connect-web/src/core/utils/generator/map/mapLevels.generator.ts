@@ -24,6 +24,10 @@ export interface MapLevel {
   sub: string;
   /** The tab's small line: "Single floor", "Floors 1–3", "Named floor". */
   scopeLabel: string;
+  /** What the floorplate covers, from its `range`: "Floors 5–14", "Floor 3", else the floor's name. */
+  rangeLabel: string;
+  /** The plotting design's tab line: "10 floors · stacked", "1 floor", "Named floor". */
+  stackLabel: string;
   floors: number[];
   /** The raster floor image (what every stored raster coordinate is measured on). */
   image: InventoryUpload | null;
@@ -49,6 +53,21 @@ const scopeLabel = (floors: number[], floorName: string | null): string => {
   return i18n.t(M.level.singleFloor);
 };
 
+/** "Floors 5–14" for a run, "Floors 1, 3" for a list, "Floor 4" for one floor. */
+export const floorsText = (floors: number[]): string => {
+  if (!floors.length) return '';
+  if (floors.length === 1) return t(M.level.floor, { floor: floors[0] });
+  const sorted = [...floors].sort((a, b) => a - b);
+  const run = sorted.every((floor, index) => index === 0 || floor === sorted[index - 1] + 1);
+  return t(M.level.floors, { floors: run ? `${sorted[0]}–${sorted[sorted.length - 1]}` : sorted.join(', ') });
+};
+
+const stackLabel = (floors: number[]): string => {
+  if (floors.length > 1) return t(M.level.stacked, { count: floors.length });
+  if (floors.length === 1) return i18n.t(M.level.oneFloor);
+  return i18n.t(M.level.namedFloor);
+};
+
 /**
  * One level per floorplate, lowest floor first (the inventory's order), or the
  * single property map. A floorplate with no building shows the property's
@@ -69,6 +88,8 @@ export const generateMapLevels = (map: PropertyMap): MapLevel[] => {
         label: i18n.t(M.level.sitemap),
         sub: inventory.property.name,
         scopeLabel: i18n.t(M.level.wholeProperty),
+        rangeLabel: i18n.t(M.level.sitemap),
+        stackLabel: i18n.t(M.level.wholeProperty),
         floors: [],
         image: sitemap.image,
         svg: sitemap.svg,
@@ -86,22 +107,27 @@ export const generateMapLevels = (map: PropertyMap): MapLevel[] => {
       const fb = b.floors.length ? Math.min(...b.floors) : Number.POSITIVE_INFINITY;
       return fa === fb ? a.id - b.id : fa - fb;
     })
-    .map((plate) => ({
-      id: `floorplate:${plate.id}`,
-      kind: 'floorplate',
-      recordId: plate.id,
-      building: plate.building,
-      label: plate.floorName ?? floorLabel(plate.floors, plate.range) ?? plate.name,
-      sub: plate.building ?? onlyBuilding ?? i18n.t(M.level.allBuildings),
-      scopeLabel: scopeLabel(plate.floors, plate.floorName),
-      floors: plate.floors,
-      image: plate.image,
-      svg: plate.svg,
-      width: plate.width,
-      height: plate.height,
-      svgWidth: plate.svgWidth,
-      svgHeight: plate.svgHeight
-    }));
+    .map((plate) => {
+      const label = plate.floorName ?? (floorLabel(plate.floors, plate.range) || plate.name);
+      return {
+        id: `floorplate:${plate.id}`,
+        kind: 'floorplate',
+        recordId: plate.id,
+        building: plate.building,
+        label,
+        sub: plate.building ?? onlyBuilding ?? i18n.t(M.level.allBuildings),
+        scopeLabel: scopeLabel(plate.floors, plate.floorName),
+        rangeLabel: plate.floors.length > 1 ? floorsText(plate.floors) : label,
+        stackLabel: stackLabel(plate.floors),
+        floors: plate.floors,
+        image: plate.image,
+        svg: plate.svg,
+        width: plate.width,
+        height: plate.height,
+        svgWidth: plate.svgWidth,
+        svgHeight: plate.svgHeight
+      } satisfies MapLevel;
+    });
 };
 
 export const levelById = (levels: MapLevel[], id: string | null): MapLevel | null =>
@@ -200,10 +226,27 @@ export const planAssets = (level: MapLevel, override: PlanOverride | undefined):
   return { image: image || null, svg: svg || null, has: !!(image || svg) };
 };
 
-/** The layer the canvas shows for a level: the floor SVG where there is one and the user has not switched. */
+/**
+ * The layer the canvas shows for a level: the floor SVG where there is one
+ * and the user has not switched. Wayfinding always works on the floor image
+ * when the level has one: the CMS stores hallways, elevators, entry points
+ * and doors in the image's pixels (the Auto Wayfinding page and the
+ * plotting page's image section both draw them there), and the two files do
+ * not share a frame.
+ */
 export const activeSpace = (level: MapLevel, state: LocalMapState): PlanSpace => {
   const assets = planAssets(level, state.planOverrides[level.id]);
+  if (state.mode === 'wayfind' && assets.image) return 'raster';
   if (assets.svg && assets.image) return state.layer;
   return assets.svg ? 'svg' : 'raster';
+};
+
+/** A floorplate whose `range` covers more than one floor: one layout shared by a stack of floors. */
+export const isStacked = (level: MapLevel | null): boolean => !!level && level.floors.length > 1;
+
+/** The floor of a stacked level the page looks at: the asked one when the stack covers it, else the stack's first. */
+export const stackFloor = (level: MapLevel | null, wanted: number | null): number | null => {
+  if (!level || !isStacked(level)) return null;
+  return wanted != null && level.floors.includes(wanted) ? wanted : level.floors[0];
 };
 

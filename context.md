@@ -756,3 +756,40 @@ Added with phase 2l (branch `feature/map_zoom_labels_pins`; PYN_CONNECT_PROGRESS
 
 - `tests/e2e/mapCanvas.spec.ts` serves `tests/e2e/fixtures/floor-labels.svg` (a small file in the shape of the CMS's real exports) for the SVG property's first floor; the real John Demo floor 1 file lives on the public bucket at `uploads/floorplate/svg_image/4230/1785636792-optimized.svg` and can be served the same way for a manual check.
 - After an `rsync` into the verify copy while `next dev` is compiling, pages can answer `__webpack_modules__[moduleId] is not a function` (client-rendered fallback, a page error in the tests); restart the dev server with `.next` removed. Not a code fault.
+
+## 22. Map & Plotting: the Wayfinding mode, Plot on Map and Additional Stops — implementation knowledge (October 1, 2026)
+
+Added with phase 2m (branch `feature/wayfinding_plot_on_map`; PYN_CONNECT_PROGRESS.md §26 has the matrix, the data map and the measurements; gaps M14–M19 in `gaps_map_plotting_feature.md`, T8 in `gaps_tour_setup_feature.md`). Reference: `wayfinding-tour-app.html` — a bundled page; its screen lives in the gzip/base64 manifest (`script[type="__bundler/manifest"]` + `__bundler/template`), decode it to read the markup and the `wf*` / `NAV_TYPES` / `WF_TOOLS` logic.
+
+### The flow
+
+```
+/properties/:id/map  (unchanged loader: inventory listings + automate_plotting.json)
+  PropertyMapScreen → usePropertyMap(map) ── composes ──▶ useMapWayfinding({ state, patch, rasterGraphs, … })
+     ModeSwitch (Plotting | Wayfinding)   shown when settings.selfTour && settings.autoWayfinding
+     plot  : Auto Plot · Manual Plot · PlotPanel ("Plot on Map")
+     wayfind: WayfindingToolbar (Detect Paths ▾, Move / Connect / Add Point / Erase, Clear) · WayfindingPanel
+     MapCanvas (one canvas) ── wayfind ──▶ WayfindingLayer (paths, points, links, stops, blockers, route, RouteDot)
+     MapDialogs → AddStopDialog
+  pure: wayfindingGraph.wayfindingPlate → wayfindingRoute (routeGroups / defaultPair / computeWayfindingRoute / sampleRoute)
+        detectPaths · wayfinding.generator (descriptors, stop-form validation) · stopTypes
+```
+
+### Rules worth knowing
+
+- **One state.** Everything is in `LocalMapState`; Wayfinding edits write the pathway fields the phase 2g tools used (`tempNodes` `j:` points, `tempEdges`, `nodeOverrides`, `hiddenNodes`, `hiddenEdges`) plus `wfLinks` (`${levelId}|${stopKey}` → point), `wfEdited`, `tempStops` (`n:` keys). `generateLevelGraph` merges them with the stored graph, so the panel, the tabs, the canvas and the routes always agree. Any graph edit clears `wfRoute` / `wfAnim`.
+- **The image, not the SVG.** `activeSpace` returns `raster` in Wayfinding when the level has an image; hallways, elevators, entries, doors and stops are image-pixel records. Stops are always placed on the image; arming a stop while plotting on an SVG switches to Wayfinding.
+- **Attachment = nearest point** (`ShortestPath`), door first; linked = that point has ≥ 1 path. An SVG-only unit with a door still attaches (its door is on the image). `WfAnchor.svgOnly` marks the rest.
+- **Stacks.** `level.floors.length > 1` (from `floorplates.range` via `Floorplate#floors`). Copies `levelId@floor` share points / paths; `WfAnchor.floors` / `WfStop.floors` null = every floor (single floor, no floor, or a record covering the whole stack — `floorsOn`). Plot on Map's "All N floors" lists shared stops only, as the reference.
+- **Multi-building.** A level shows an elevator / entry / tour start whose floors overlap it, unless the record is named for another floorplate's building (`belongsElsewhere`). Buildings scope adds an outdoor link between entry / exit stops of different buildings.
+- **Vertical links.** Same elevator record on two copies; temporary Elevator / Stairs stops by type + name (an added Elevator named like a stored one rides with it); served floors (`parseServedFloors`, "Lobby" = 1) restrict temporary ones. Weights are the reference's (50 + 10·Δfloors elevator, 90·Δ stairs, 500 outdoor) scaled from its 760 × 470 plan to the floor image's diagonal; blockers cut links within 30/760 of the image.
+- **Detect Paths** is a proposal from the stops' positions (spine along the long axis, widest gap across it); `wfReview.snapshot` is the Undo.
+- **Toasts / state updaters.** Compute from the render's `state` in handlers; never return values out of a `setState` updater (React may defer it — `toggleEdge` once did).
+
+### Real ids for this screen
+
+1839 Oeuvre (floorplate 2364 `1-6` with 35 hallways, 278 units across 6 floors, 2 elevators; 3022 `7-10` with no paths), 1234 Alderwood (Floor 2: 117 plotted units, no hallways → Detect; 19 buildings + entry points), 1105 Trestle (two floorplate buildings, Buildings scope), 2919 Sofia (single floors), 3136 / 1034 / 2000 (more stacks), 1618 Hazel (31 floorplates, performance).
+
+### Testing
+
+`tests/e2e/wayfindingLogic.spec.ts` needs no server (fixtures through the pure functions). `tests/e2e/wayfinding.spec.ts` uses the §13 session env and the property env vars in its header; every test asserts 0 non-GET requests. Click empty plan spots through `elementFromPoint` (pins and stops cover much of a dense floor).

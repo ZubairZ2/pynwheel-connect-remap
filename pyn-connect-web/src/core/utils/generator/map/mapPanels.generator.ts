@@ -15,9 +15,13 @@ import {
   toPercent,
   type BedTier,
   type LocalMapState,
-  type MapTool
+  type MapTool,
+  type PlotKind
 } from './mapState';
 import { M, bedsLabel, coordText, plural, t } from './mapText';
+import { stopTypeOf } from '~/core/utils/wayfinding/stopTypes';
+import type { WfPlate, WfStop } from '~/core/utils/wayfinding/wayfindingGraph';
+import { wayfindingTab } from './wayfinding.generator';
 
 /** Descriptors for the toolbar, tabs and panels beside the canvas. Pure: props in, view data out. */
 
@@ -97,8 +101,20 @@ export interface LevelTabDescriptor {
  * progress: "Done", "3/4", "0/4", "No units", or "No SVG" when the
  * floorplate has no floor SVG to plot onto (as the design flags it).
  */
-export const generateLevelTabs = (map: PropertyMap, levels: MapLevel[], items: PinItem[], state: LocalMapState): LevelTabDescriptor[] =>
+export const generateLevelTabs = (
+  map: PropertyMap,
+  levels: MapLevel[],
+  items: PinItem[],
+  state: LocalMapState,
+  plates: Record<string, WfPlate> | null = null
+): LevelTabDescriptor[] =>
   levelsOfBuilding(levels, state.building).map((level) => {
+    // Wayfinding: the card shows the floorplate's path progress instead (Complete / Incomplete / Not started).
+    const plate = state.mode === 'wayfind' ? plates?.[level.id] : null;
+    if (plate) {
+      const wf = wayfindingTab(plate);
+      return { id: level.id, label: level.label, sub: level.stackLabel, active: level.id === state.levelId, pct: wf.pct, progress: wf.progress, state: wf.state };
+    }
     const scope = itemsOfLevel(items, level);
     const done = scope.filter((item) => item.placed).length;
     const total = scope.length;
@@ -117,7 +133,7 @@ export const generateLevelTabs = (map: PropertyMap, levels: MapLevel[], items: P
     return {
       id: level.id,
       label: level.label,
-      sub: level.scopeLabel,
+      sub: level.stackLabel,
       active: level.id === state.levelId,
       pct: total ? Math.round((done / total) * 100) : 0,
       progress: progressState === 'nosvg' && assets.image ? `${progress} · ${done}/${total}` : progress,
@@ -157,12 +173,24 @@ export const generatePlanInfo = (level: MapLevel, graph: LevelGraph, state: Loca
   };
 };
 
-export interface PlotListItem extends PinItem {
+/** One row of the Plot on Map lists: a unit, an amenity or an Additional Stop. */
+export interface PlotListItem {
+  key: string;
+  kind: PlotKind;
+  label: string;
   meta: string;
   ticked: boolean;
-  /** For plotted items: "Polygon 12" on this floor, else the level it sits on. */
-  where: string;
-  onThisLevel: boolean;
+  placed: boolean;
+  temporary: boolean;
+}
+
+export interface PlotShowOption {
+  kind: PlotKind;
+  label: string;
+  desc: string;
+  on: boolean;
+  badge: string;
+  badgeTone: 'none' | 'pending' | 'done';
 }
 
 export interface PlotPanel {
@@ -182,60 +210,140 @@ export interface PlotPanel {
   unSelLabel: string;
   unplotManyLabel: string;
   hint: string;
+  show: PlotShowOption[];
+  showSummary: string;
+  /** "3 to plot", or "5 hidden to plot" when only hidden types have something left. */
+  showPending: string | null;
+  /** A stacked floorplate's floor filter: "All 10 floors · shared stops only", then each floor. */
+  floorOptions: { id: string; label: string }[] | null;
+  floorValue: string;
+  /** Additional Stops are listed (self-tour wayfinding), so Add Stop is offered. */
+  showAddStop: boolean;
+  emptyAddStop: boolean;
 }
 
 const kindLabelOf = (item: PinItem): string => i18n.t(item.kind === 'unit' ? M.place.unit : M.place.amenity);
 
 const floorOf = (item: PinItem): string => (item.floor != null ? t(M.level.floor, { floor: item.floor }) : '—');
 
+/** The Plot on Map lists shown on a stacked floorplate: one floor, or every floor (then only stops shared by the stack). */
+export const plotFloorOf = (level: MapLevel | null, state: LocalMapState): number | null =>
+  level && level.floors.length > 1 && state.plotFloor != null && level.floors.includes(state.plotFloor) ? state.plotFloor : null;
+
+interface PlotRow {
+  key: string;
+  kind: PlotKind;
+  label: string;
+  placed: boolean;
+  temporary: boolean;
+  todoMeta: string;
+  doneMeta: string;
+  /** What "Search name or floor" matches on. */
+  search: string;
+}
+
 /**
- * The design's "Plot Units & Amenities" panel for the level in view: the
- * items whose floor (or plotted position) is this floorplate, split into To
- * Plot and Plotted, searched by name or floor.
+ * The design's "Plot on Map" panel for the level in view: the units and
+ * amenities whose floor (or plotted position) is this floorplate and — when
+ * the property routes self-tour visitors — its Additional Stops, filtered by
+ * "Show", by the floor of a stacked floorplate and by "Search name or
+ * floor", split into To Plot and Plotted.
  */
-export const generatePlotPanel = (map: PropertyMap, levels: MapLevel[], level: MapLevel | null, items: PinItem[], graphs: Record<string, LevelGraph>, state: LocalMapState): PlotPanel => {
-  const scope = level ? itemsOfLevel(items, level) : [];
-  const query = state.plotQuery.trim().toLowerCase();
-  const matches = (item: PinItem) =>
-    !query || item.label.toLowerCase().includes(query) || String(item.floor ?? '').toLowerCase().includes(query) || (item.building ?? '').toLowerCase().includes(query);
-  const done = scope.filter((item) => item.placed);
-  const todo = scope.filter((item) => !item.placed);
-  const shownTodo = todo.filter(matches);
-  const shownDone = done.filter(matches);
+export const generatePlotPanel = (
+  map: PropertyMap,
+  levels: MapLevel[],
+  level: MapLevel | null,
+  items: PinItem[],
+  graphs: Record<string, LevelGraph>,
+  state: LocalMapState,
+  stops: WfStop[] | null
+): PlotPanel => {
+  const floor = plotFloorOf(level, state);
+  const scope = level ? itemsOfLevel(items, level).filter((item) => floor == null || item.floor === floor) : [];
+  const stopScope = level && stops ? stops.filter((stop) => (floor == null ? stop.floors == null : stop.floors == null || stop.floors.includes(floor))) : [];
   const graph = level ? graphs[level.id] : null;
 
-  const todoItems = shownTodo.map(
-    (item): PlotListItem => ({
-      ...item,
-      meta: `${kindLabelOf(item)} · ${floorOf(item)}`,
-      ticked: state.plotSel.includes(item.key),
-      where: '',
-      onThisLevel: true
+  const rows: PlotRow[] = [
+    ...scope.map((item): PlotRow => {
+      const here = item.level?.id === level?.id;
+      const pin = graph?.pins.find((row) => row.key === item.key) ?? null;
+      const where = here
+        ? pin?.polygon
+          ? t(M.place.polygon, { code: pin.polygon })
+          : i18n.t(item.space === 'svg' ? M.place.onSvg : M.place.onImage)
+        : item.level
+          ? `${item.level.sub} · ${item.level.label}`
+          : '—';
+      return {
+        key: item.key,
+        kind: item.kind,
+        label: item.label,
+        placed: item.placed,
+        temporary: item.temporary,
+        todoMeta: `${kindLabelOf(item)} · ${floorOf(item)}`,
+        doneMeta: `${where} · ${floorOf(item)}`,
+        search: `${item.label} ${item.floor ?? ''} ${floorOf(item)} ${item.building ?? ''}`.toLowerCase()
+      };
+    }),
+    ...stopScope.map((stop): PlotRow => {
+      const type = i18n.t(stopTypeOf(stop.type).label);
+      const where = stop.floors?.length === 1 ? t(M.level.floor, { floor: stop.floors[0] }) : (level?.rangeLabel ?? '');
+      return {
+        key: `stop:${stop.key}`,
+        kind: 'stop',
+        label: stop.label,
+        placed: stop.placed,
+        temporary: stop.temporary,
+        todoMeta: `${type}${stop.temporary ? ` · ${i18n.t(M.selection.temporary)}` : ''} · ${where}`,
+        doneMeta: `${type} · ${i18n.t(M.place.onPlan)}`,
+        search: `${stop.label} ${type} ${where}`.toLowerCase()
+      };
     })
-  );
-  const doneItems = shownDone.map((item): PlotListItem => {
-    const here = item.level?.id === level?.id;
-    const pin = graph?.pins.find((row) => row.key === item.key) ?? null;
-    const where = here
-      ? pin?.polygon
-        ? t(M.place.polygon, { code: pin.polygon })
-        : i18n.t(item.space === 'svg' ? M.place.onSvg : M.place.onImage)
-      : item.level
-        ? `${item.level.sub} · ${item.level.label}`
-        : '—';
-    return { ...item, meta: `${where} · ${floorOf(item)}`, ticked: state.plotUnSel.includes(item.key), where, onThisLevel: here };
+  ];
+
+  const kinds: PlotKind[] = stops ? ['unit', 'amenity', 'stop'] : ['unit', 'amenity'];
+  const shown = (kind: PlotKind) => state.plotShow[kind] && kinds.includes(kind);
+  const visible = rows.filter((row) => shown(row.kind));
+  const query = state.plotQuery.trim().toLowerCase();
+  const matches = (row: PlotRow) => !query || row.search.includes(query);
+  const todo = visible.filter((row) => !row.placed);
+  const done = visible.filter((row) => row.placed);
+  const toItem = (row: PlotRow, meta: string, ticked: boolean): PlotListItem => ({ key: row.key, kind: row.kind, label: row.label, meta, ticked, placed: row.placed, temporary: row.temporary });
+  const todoItems = todo.filter(matches).map((row) => toItem(row, row.todoMeta, state.plotSel.includes(row.key)));
+  const doneItems = done.filter(matches).map((row) => toItem(row, row.doneMeta, state.plotUnSel.includes(row.key)));
+
+  const SHOW: Record<PlotKind, { label: string; desc: string }> = {
+    unit: { label: M.show.units, desc: M.show.unitsDesc },
+    amenity: { label: M.show.amenities, desc: M.show.amenitiesDesc },
+    stop: { label: M.show.stops, desc: M.show.stopsDesc }
+  };
+  const show = kinds.map((kind): PlotShowOption => {
+    const all = rows.filter((row) => row.kind === kind);
+    const pending = all.filter((row) => !row.placed).length;
+    return {
+      kind,
+      label: i18n.t(SHOW[kind].label),
+      desc: i18n.t(SHOW[kind].desc),
+      on: shown(kind),
+      badge: !all.length ? i18n.t(M.show.noneHere) : pending ? t(M.show.toPlot, { count: pending }) : i18n.t(M.show.allPlotted),
+      badgeTone: !all.length ? 'none' : pending ? 'pending' : 'done'
+    };
   });
+  const pendingOn = show.filter((row) => row.on).reduce((sum, row) => sum + rows.filter((item) => item.kind === row.kind && !item.placed).length, 0);
+  const pendingOff = show.filter((row) => !row.on).reduce((sum, row) => sum + rows.filter((item) => item.kind === row.kind && !item.placed).length, 0);
+  const onRows = show.filter((row) => row.on);
 
   const selCount = state.plotSel.length;
   const unCount = state.plotUnSel.length;
   const allTodoKeys = todoItems.map((item) => item.key);
   const allDoneKeys = doneItems.map((item) => item.key);
   const onSvg = level ? activeSpace(level, state) === 'svg' : false;
+  const unitsDone = scope.filter((item) => item.placed).length;
 
   return {
-    scopeLabel: level ? `${level.sub} · ${level.scopeLabel}` : (state.building ?? i18n.t(M.level.allBuildings)),
-    doneLabel: t(M.place.done, { placed: done.length, total: scope.length }),
-    placed: done.length,
+    scopeLabel: level ? `${level.sub} · ${level.rangeLabel}` : (state.building ?? i18n.t(M.level.allBuildings)),
+    doneLabel: t(M.place.done, { placed: unitsDone, total: scope.length }),
+    placed: unitsDone,
     total: scope.length,
     todo: todoItems,
     done: doneItems,
@@ -243,16 +351,28 @@ export const generatePlotPanel = (map: PropertyMap, levels: MapLevel[], level: M
     doneTotal: done.length,
     todoEmptyLabel: query
       ? t(M.place.noMatch, { query: state.plotQuery.trim() })
-      : scope.length
+      : visible.length
         ? i18n.t(M.place.allPlotted)
-        : i18n.t(M.place.noneInRange),
+        : rows.length
+          ? i18n.t(M.place.nothingForTypes)
+          : i18n.t(M.place.noneInRange),
     doneEmptyLabel: query ? t(M.place.noMatch, { query: state.plotQuery.trim() }) : i18n.t(M.place.nothingPlotted),
     allTodoTicked: allTodoKeys.length > 0 && allTodoKeys.every((key) => state.plotSel.includes(key)),
     allDoneTicked: allDoneKeys.length > 0 && allDoneKeys.every((key) => state.plotUnSel.includes(key)),
     selCountLabel: selCount ? t(M.place.selected, { count: selCount }) : t(M.place.selectAll, { count: todoItems.length }),
     unSelLabel: unCount ? t(M.place.selected, { count: unCount }) : t(M.place.selectAll, { count: doneItems.length }),
     unplotManyLabel: t(M.place.unplotMany, { items: plural(unCount, M.place.itemOne, M.place.itemMany) }),
-    hint: !selCount ? '' : state.tool === 'plot' ? i18n.t(onSvg ? M.place.hintDrop : M.place.hintDropImage) : i18n.t(M.place.hintTurnOn)
+    hint: !selCount ? '' : state.tool === 'plot' ? i18n.t(onSvg ? M.place.hintDrop : M.place.hintDropImage) : i18n.t(M.place.hintTurnOn),
+    show,
+    showSummary: onRows.length === show.length && show.length > 1 ? t(M.show.allTypes, { count: show.length }) : onRows.map((row) => row.label).join(', '),
+    showPending: pendingOn + pendingOff > 0 ? (pendingOff && !pendingOn ? t(M.show.hiddenToPlot, { count: pendingOff }) : t(M.show.toPlot, { count: pendingOn })) : null,
+    floorOptions:
+      level && level.floors.length > 1
+        ? [{ id: 'all', label: t(M.show.allFloors, { count: level.floors.length }) }, ...level.floors.map((value) => ({ id: String(value), label: t(M.level.floor, { floor: value }) }))]
+        : null,
+    floorValue: floor == null ? 'all' : String(floor),
+    showAddStop: !!stops && shown('stop'),
+    emptyAddStop: !!stops && shown('stop') && !query
   };
 };
 

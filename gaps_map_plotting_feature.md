@@ -292,3 +292,147 @@ Not a Connect gap. CarrierWave stores to disk in development while this database
 ## Status update — September 30, 2026: tools removed from the Connect screen
 
 The user chose to match `pyn-system-plotting.html` exactly, so Map & Plotting no longer offers the pathway tools (Select, Place Pin, Junction, Connect, Move, Start Plotting Hallways), Grid, Publish, the floor SVG / image upload bar and Remove Plan, the layer switch, Run Algorithm, Building Starting Points, Vertical Connections or Marker Colors. Gaps M1 (saving pathway edits), M2 (Publish), M3 (uploads / Remove Plan) and M5 (routing over local edits) therefore have no UI in Connect for now; they still describe the backend work if those tools return. The legacy CMS pages (Auto Wayfinding, Floor plates → Plot Units) remain the place to edit pathways and plans. Plotting itself (Manual Plot, Auto Plot, M4) is unchanged. PYN_CONNECT_PROGRESS.md §24.
+
+---
+
+## Wayfinding mode, Plot on Map and Additional Stops — October 1, 2026
+
+Phase 2m (`PYN_CONNECT_PROGRESS.md` §26, `context.md` §22) brought the Plotting / Wayfinding switch, the Plot on Map panel and Additional Stops to the screen, on the stored data and the page's state only. The gaps below are what the existing DB, the existing Rails behaviour and the existing JSON cannot carry. Everything else in the brief is implemented.
+
+## Gap: M14. Saving wayfinding edits — points, paths, moves, links, detected and cleared paths (extends M1)
+
+### Requirement
+Move / Connect / Add Point / Erase, Clear Paths, Detect Paths and "link this stop to that point" change the hallway graph.
+
+### Existing Rails Source Investigated
+`HallwaysController#point_save`, `#update_point`, `#remove_point`, `#connect_leaf_point`, `#save_selected_point` (`maps.js` 229–353); `ShortestPath#get_unit_data` / `get_elevator_data` / `get_starting_point_data` / `get_building_starting_exit_point_data` (attachment to the nearest hallway).
+
+### Existing DB Data
+`hallways.x_plot / y_plot / next_points / parent_*`. **No column records which point a stop joins**: the CMS always attaches a stop to its nearest hallway.
+
+### What Can Be Implemented in Next.js Today
+All of it on the page: the points, paths, counts, "Stops Linked", the Not linked list and the routes follow every edit; a stored point moved reads "Moved on this page"; Detect has Undo; a reload restores the stored graph. A hand-made stop link overrides the nearest-point rule on the page.
+
+### What Cannot Be Implemented
+Keeping any of it, and keeping an explicit stop → point link at all.
+
+### Why It Requires Backend Persistence/Business Logic
+The hallway endpoints are CSRF-protected form posts (M1). An explicit link is new data and would change `ShortestPath`'s attachment rule.
+
+### Future Requirement
+JSON write branches on `HallwaysController` (or one Connect wayfinding endpoint) taking `LocalMapState`'s `tempNodes` / `tempEdges` / `nodeOverrides` / `hiddenNodes` / `hiddenEdges`; a decision on stop → hallway links (a column, or keep nearest-point and drop the Connect link).
+
+## Gap: M15. Additional Stops: the stop types, the visitor instruction and "applies to one floor"
+
+### Requirement
+Add Additional Stop with 12 types (Entry Point, Exit Point, Elevator, Stairs, Ramp, Door / Gate, Blocker, Leasing Office, Restroom, Mail & Packages, Parking Access, Waypoint), Name, Building, Floorplate, the floor of a stacked floorplate, floors served + wheelchair access (Elevator / Stairs), smart lock (Door / Gate), a visitor instruction; Edit, Move, Unplot, Delete.
+
+### Existing Rails Source Investigated
+`ToursController#building_starting_point` (a GET that **creates** "Building X Entry / Exit" and its tour stop), `#update_building_starting_point`, `#add_elevator` (creates "Elevator N" with a default range), `ElevatorsController#edit / update`, `doors` (unit / amenity doors and floorplate access points).
+
+### Existing DB Data
+`building_starting_points` (one entry / exit per building, `floor`, `directional_text`), `elevators` (`floorplate_covering_range`, `building`, `directional_text`, lock fields), `doors` (`attached_with` Floorplate = access point, lock fields). Nothing for stairs, ramps, blockers, leasing office, restroom, mail, parking or waypoints; no "exit only"; no accessibility flag; no "one floor of the stack" for an elevator; no visitor instruction on a door.
+
+### What Can Be Implemented in Next.js Today
+The stored stops are listed and drawn (elevators, entry / exit, tour start, access points), can be moved, unplotted and placed again on the page. Every type can be added as a temporary stop with full validation, placed, edited, linked, routed through (Elevator / Stairs join floors, Blocker cuts hallways, Entry / Exit join buildings) and removed. Nothing is saved; the dialog says so.
+
+### What Cannot Be Implemented
+Saving a stop, or any of the types / fields above that have no column.
+
+### Why It Requires Backend Persistence/Business Logic
+Creating entry points and elevators goes through GET-with-side-effect and form actions; the other types and fields need a schema and the self-tour app would have to read them.
+
+### Future Requirement
+A stops model (type, position, floorplate, floor-only, floors served, accessible, lock, instruction) or columns on the existing tables, JSON write endpoints, and the Tour app reading them.
+
+## Gap: M16. Detect Paths from the floor's artwork
+
+### Requirement
+"Detect hallways on" this floorplate / a building / all buildings.
+
+### Existing Rails Source Investigated
+No detection exists in the CMS (hallways are drawn on Auto Wayfinding; `svgAutoPlotting.js` detects units, not corridors). `floorplates.map_ocr_data` holds Textract text boxes only.
+
+### Existing DB Data
+Positions of doors, units, amenities and stops on the floor image; no corridor geometry.
+
+### What Can Be Implemented in Next.js Today
+A proposal from those positions (a corridor spine with a point opposite each stop), shown as temporary paths with a review card, Undo, and the multi-floorplate skip rule. Verified on Alderwood Floor 2: 37 points, 36 paths, 119/119 linked.
+
+### What Cannot Be Implemented
+Detection from the image itself (walls and corridors), and saving the result (M14).
+
+### Why It Requires Backend Persistence/Business Logic
+Image analysis of the floor plan is new processing (server-side or a vision service); persistence is M14.
+
+### Future Requirement
+A detection service over the floor image or SVG, and M14 to store its result.
+
+## Gap: M17. Walking distance and time on the route
+
+### Requirement
+The reference prints "120 ft · about 1 min" and per-step feet.
+
+### Existing Rails Source Investigated
+`ShortestPath` / `DijkstraAlgo` weigh Euclidean pixels; no scale anywhere (gap T3).
+
+### Existing DB Data
+Image pixels only.
+
+### What Can Be Implemented in Next.js Today
+The route's length in floor-image pixels ("797 px along the plan · 16 points"), per-step pixels, floors, elevator rides, stairwells, outdoor walks.
+
+### What Cannot Be Implemented
+Feet, metres or minutes.
+
+### Why It Requires Backend Persistence/Business Logic
+A per-floorplate scale (or a calibration) has to be stored.
+
+### Future Requirement
+A `scale` (feet per pixel) on `floorplates` / `sitemaps`, entered once per plan.
+
+## Gap: M18. Blockers, stairs and step-free routes in the self-tour app
+
+### Requirement
+Routes avoid blockers; "Step-free route · elevators, no stairs".
+
+### Existing Rails Source Investigated
+`ShortestPath` routes over hallways and elevators only; there are no stairs, blockers or accessibility flags in its graph.
+
+### Existing DB Data
+None for blockers or stairs.
+
+### What Can Be Implemented in Next.js Today
+Test shortest path honours blockers added on the page (links within the blocker's radius are cut, and the error names the blocker) and Step-free (stairs left out, its own error).
+
+### What Cannot Be Implemented
+The visitors' app following the same rules.
+
+### Why It Requires Backend Persistence/Business Logic
+The routing the Tour app uses is the CMS's (`*_for_mobile`); it needs M15's data and new rules.
+
+### Future Requirement
+M15, then blockers / stairs / accessibility in `ShortestPath`.
+
+## Gap: M19. Floorplate building vs unit building in multi-building properties
+
+### Requirement
+Buildings scope routes between buildings through their entry / exit points.
+
+### Existing Rails Source Investigated
+`return_floorplate_path_for_multiple_buildings`: buildings are the **units'** `building` values, floorplates are keyed by floor and shared, elevators per building (`fetch_elevator_according_to_building`), one starting point per unit building.
+
+### Existing DB Data
+`floorplates.building` is often blank or named differently from `units.building` / `elevators.building` / `building_starting_points.building` (Trestle: floorplates "1" / "2", elevators "N-1" / "N-3", entries "N-3" / "S").
+
+### What Can Be Implemented in Next.js Today
+Routing per floorplate (the plan the user sees), elevators by floor overlap, a record named for another floorplate's building kept off that floorplate, outdoor links between entries of different buildings. Verified on Trestle.
+
+### What Cannot Be Implemented
+An exact replica of the CMS's per-unit-building passes when the names disagree.
+
+### Why It Requires Backend Persistence/Business Logic
+Which floorplate a unit building's floors are on is not stored; reconciling the names is data work.
+
+### Future Requirement
+Consistent building names (or a floorplate ↔ building mapping) across `floorplates`, `units`, `elevators` and `building_starting_points`.

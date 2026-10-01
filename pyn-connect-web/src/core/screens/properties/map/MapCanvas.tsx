@@ -27,6 +27,8 @@ import {
   markerWidth
 } from './MapMarkers';
 import { SvgPlanLayer } from './SvgPlanLayer';
+import { StopMarker, WayfindingLayer } from './WayfindingLayer';
+import { stopTypeOf } from '~/core/utils/wayfinding/stopTypes';
 
 /** The legacy route colour (maps.js draws the animated path in orange, stroke 5). */
 const ROUTE_COLOR = '#ffa500';
@@ -76,8 +78,9 @@ const TOUR_START = 25;
  * pixels so they scale with it, as the legacy panzoom container scaled them.
  */
 export const MapCanvas = ({ controller }: { controller: PropertyMapController }) => {
-  const { map, level, graph, space, state, assets, actions, planRef, fileInputRef, routeLines, cursor, plotArmedLabel, svgDoc, svgStatus, polygons, selectedPolygon } =
+  const { map, level, graph, space, state, assets, actions, planRef, fileInputRef, routeLines, cursor, plotArmedLabel, svgDoc, svgStatus, polygons, selectedPolygon, wayfinding } =
     controller;
+  const wfLayer = wayfinding.layer;
   const { markers } = map.inventory;
   const surfaceRef = useRef<HTMLDivElement | null>(null);
   const [surface, setSurface] = useState({ w: 0, h: 0 });
@@ -174,7 +177,8 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
 
   // Dragging the empty canvas pans it; a still click keeps clearing the selection.
   const pan = useRef<{ pointerId: number; startX: number; startY: number; origin: View; moved: boolean; down: ReactPointerEvent<HTMLDivElement> } | null>(null);
-  const canPan = has && state.tool === 'select' && !plotArmedLabel;
+  // Wayfinding clicks and drags start on points and stops, so the empty plan always pans (a still click still reaches the tool).
+  const canPan = has && (wfLayer ? !state.stopTarget : state.tool === 'select' && !plotArmedLabel);
 
   const onPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (!has) return;
@@ -216,6 +220,9 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
   if (!level || !graph) return null;
 
   const isDefaultView = view.scale === 1 && view.x === 0 && view.y === 0;
+  const plateStops = wayfinding.plate?.stops ?? [];
+  const placedTempStops = plateStops.filter((stop) => stop.temporary && stop.placed);
+  const selectedStop = !onSvg && state.selStop && !state.dragging ? (plateStops.find((stop) => stop.key === state.selStop && stop.placed) ?? null) : null;
   const dropping = state.plotSel.length > 0 || !!state.plotTarget;
   // A label prints on a polygon when the SVG gives it no text of its own and it is active, or when something with another name sits on it.
   const labelled = polygons.filter((polygon) => (polygon.showCode && (polygon.filled || polygon.hover || polygon.selected)) || polygon.assigned);
@@ -366,6 +373,9 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
             </div>
           )}
 
+          {wfLayer && <WayfindingLayer controller={controller} layer={wfLayer} />}
+
+          {!wfLayer && (
           <svg className="bo-map__edges" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
             {graph.edges.map((edge) => {
               const selected = state.selectedEdge === edge.key;
@@ -409,8 +419,9 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
               />
             ))}
           </svg>
+          )}
 
-          {graph.nodes.map((node) => {
+          {!wfLayer && graph.nodes.map((node) => {
             const selected = state.selectedNode === node.key;
             const edgeFrom = state.edgeFrom === node.key;
             return (
@@ -428,9 +439,31 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
             );
           })}
 
+          {!wfLayer &&
+            onSvg === false &&
+            placedTempStops.map((stop) => (
+              <StopMarker
+                key={stop.key}
+                stopKey={stop.key}
+                name={stop.label}
+                type={stop.type}
+                xPct={stop.xPct}
+                yPct={stop.yPct}
+                selected={state.selStop === stop.key}
+                temporary
+                cursor="pointer"
+                onPointerDown={(event) => {
+                  event.stopPropagation();
+                  wayfinding.actions.selectStop(stop.key);
+                }}
+              />
+            ))}
+
           {graph.pins.map((pin) => {
             // A placement on a polygon is the filled polygon itself, as the legacy page clones the shape: no marker on top.
             if (pin.polygon && svgReady) return null;
+            // Wayfinding on a stacked floorplate shows the floor in view's units only.
+            if (wfLayer && !wfLayer.pins.has(pin.key)) return null;
             const selected = !!state.selectedPin && `${state.selectedPin.kind}:${state.selectedPin.id}` === pin.key;
             return (
               <div
@@ -438,10 +471,10 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
                 data-node={pin.key}
                 className={`bo-map__marker bo-map__pin bo-map__pin--${pin.kind}${selected ? ' bo-map__pin--selected bo-map__marker--selected' : ''}${pin.temporary || pin.moved ? ' bo-map__pin--temp bo-map__marker--temp' : ''}`}
                 style={{ left: `${pin.xPct}%`, top: `${pin.yPct}%`, zIndex: selected ? 7 : 4 }}
-                onPointerDown={actions.onPinDown(pin.ref)}
+                onPointerDown={wfLayer ? wayfinding.actions.onAnchorDown(pin.key, false) : actions.onPinDown(pin.ref)}
                 title={pin.temporary ? `${pin.label} · ${i18n.t(M.selection.temporary)}` : pin.label}
               >
-                {pinGlyph(pin)}
+                {wfLayer ? pinGlyph({ ...pin, hasDoor: true }) : pinGlyph(pin)}
                 {selected && <span className="bo-map__nodelabel bo-map__markerlabel">{pin.label}</span>}
               </div>
             );
@@ -517,6 +550,54 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
             ))}
           </div>
           {selectedPolygon.items.length === 0 && <div className="bo-map__polypopempty">{i18n.t(M.place.polygonEmpty)}</div>}
+        </div>
+      )}
+
+      {selectedStop && has && (
+        <div
+          className="bo-map__polypop bo-wf__stoppop"
+          data-node="stop-popover"
+          data-testid="stop-popover"
+          style={{
+            ...toCanvas(selectedStop.xPct, selectedStop.yPct),
+            transform: selectedStop.yPct < 50 ? 'translate(-50%, 28px)' : 'translate(-50%, calc(-100% - 28px))'
+          }}
+          onPointerDown={(event) => event.stopPropagation()}
+        >
+          <div className="bo-map__polypophead">
+            <span className="bo-wf__stopdisc bo-wf__stopdisc--static" style={{ background: stopTypeOf(selectedStop.type).color }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d={stopTypeOf(selectedStop.type).d} />
+              </svg>
+            </span>
+            <div className="bo-map__polypoptext">
+              <div className="bo-map__polypoptitle">{selectedStop.label}</div>
+              <div className="bo-map__polypopsub">
+                {i18n.t(stopTypeOf(selectedStop.type).label)} · {i18n.t(selectedStop.temporary ? M.stops.popover.temporary : M.stops.popover.stored)}
+              </div>
+            </div>
+            <button type="button" className="bo-map__dismiss" aria-label={i18n.t(M.place.closePolygon)} onClick={() => wayfinding.actions.selectStop(null)}>
+              ×
+            </button>
+          </div>
+          <div className="bo-wf__stoppopbtns">
+            {selectedStop.temporary && (
+              <button type="button" className="bo-wf__smallbtn" onClick={() => wayfinding.actions.editStop(selectedStop.key)}>
+                {i18n.t(M.stops.popover.edit)}
+              </button>
+            )}
+            <button type="button" className="bo-wf__smallbtn" onClick={() => wayfinding.actions.armStop(selectedStop.key, selectedStop.levelId, selectedStop.label)}>
+              {i18n.t(M.stops.popover.move)}
+            </button>
+            <button type="button" className="bo-map__unplot" onClick={() => actions.unplotItems([`stop:${selectedStop.key}`])}>
+              {i18n.t(M.place.unplot)}
+            </button>
+            {selectedStop.temporary && (
+              <button type="button" className="bo-map__unplot" onClick={() => wayfinding.actions.removeStop(selectedStop.key)}>
+                {i18n.t(M.stops.popover.remove)}
+              </button>
+            )}
+          </div>
         </div>
       )}
 
