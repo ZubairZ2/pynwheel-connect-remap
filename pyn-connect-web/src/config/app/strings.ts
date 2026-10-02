@@ -1512,6 +1512,10 @@ export const CORE_STRINGS = {
         noteLoading: 'mapPlotting.wayfinding.detect.noteLoading',
         keptTitle: 'mapPlotting.wayfinding.detect.keptTitle',
         keptDetail: 'mapPlotting.wayfinding.detect.keptDetail',
+        keptUnlinkedTitle: 'mapPlotting.wayfinding.detect.keptUnlinkedTitle',
+        keptUnlinkedBody: 'mapPlotting.wayfinding.detect.keptUnlinkedBody',
+        rowUnlinked: 'mapPlotting.wayfinding.detect.rowUnlinked',
+        moreNames: 'mapPlotting.wayfinding.detect.moreNames',
         button: 'mapPlotting.wayfinding.detect.button',
         title: 'mapPlotting.wayfinding.detect.title',
         plate: 'mapPlotting.wayfinding.detect.plate',
@@ -1687,7 +1691,10 @@ export const CORE_STRINGS = {
         hint: 'mapPlotting.wayfinding.unlinked.hint',
         svgOnly: 'mapPlotting.wayfinding.unlinked.svgOnly',
         isolated: 'mapPlotting.wayfinding.unlinked.isolated',
-        detached: 'mapPlotting.wayfinding.unlinked.detached'
+        detached: 'mapPlotting.wayfinding.unlinked.detached',
+        linkHere: 'mapPlotting.wayfinding.unlinked.linkHere',
+        placeHere: 'mapPlotting.wayfinding.unlinked.placeHere',
+        placed: 'mapPlotting.wayfinding.unlinked.placed'
       },
       undo: {
         label: 'mapPlotting.wayfinding.undo.label',
@@ -1738,6 +1745,7 @@ export const CORE_STRINGS = {
       armedStop: 'mapPlotting.wayfinding.armedStop',
       toast: {
         bridgeRemoved: 'mapPlotting.wayfinding.toast.bridgeRemoved',
+        placedLinked: 'mapPlotting.wayfinding.toast.placedLinked',
         pointAdded: 'mapPlotting.wayfinding.toast.pointAdded',
         pointDeleted: 'mapPlotting.wayfinding.toast.pointDeleted',
         pathDeleted: 'mapPlotting.wayfinding.toast.pathDeleted',

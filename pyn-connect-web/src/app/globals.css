@@ -4180,7 +4180,9 @@ select {
 .bo-map__tool--sm { height: 30px; padding: 0 10px; font-size: 11.5px; }
 .bo-map__tool:disabled { opacity: 0.5; cursor: not-allowed; }
 .bo-map__apmenu { position: relative; }
-.bo-map__apmenupanel { position: absolute; top: 100%; right: 0; margin-top: 6px; z-index: 30; width: 280px; background: #fff; border: 1px solid var(--bo-line); border-radius: 10px; box-shadow: 0 10px 28px rgba(16, 24, 40, 0.16); padding: 6px; display: flex; flex-direction: column; gap: 2px; }
+/* The panel sits 6px under its button; a transparent strip above it bridges that gap, so the pointer never leaves the menu on its way down. */
+.bo-map__apmenupanel { position: absolute; top: calc(100% + 6px); right: 0; z-index: 30; width: 280px; background: #fff; border: 1px solid var(--bo-line); border-radius: 10px; box-shadow: 0 10px 28px rgba(16, 24, 40, 0.16); padding: 6px; display: flex; flex-direction: column; gap: 2px; }
+.bo-map__apmenupanel::before { content: ''; position: absolute; left: 0; right: 0; bottom: 100%; height: 8px; }
 .bo-map__apmenuhead { padding: 6px 10px 4px; }
 .bo-map__apmenuitem { text-align: left; border: none; background: #fff; border-radius: 7px; padding: 9px 10px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; }
 .bo-map__apmenuitem:hover { background: var(--bo-accent-soft); }
@@ -4443,6 +4445,7 @@ select {
 .bo-wf__anchor--idle { opacity: 0.55; }
 .bo-wf__anchor--selected { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #e0a800; z-index: 6; }
 .bo-wf__linkhit { stroke-width: 10; }
+.bo-wf__unlinkedlink { margin-top: 5px; }
 .bo-wf__tools--none { box-shadow: inset 0 0 0 1px #d8dce4; }
 .bo-wf__editing { display: flex; align-items: center; gap: 7px; padding: 7px 10px; border-radius: 8px; background: #eef6fb; border: 1px solid #cfe3ef; font: 800 11.5px var(--bo-font); color: #0b4f7a; }
 .bo-wf__editing--tool { background: var(--bo-ink); border-color: var(--bo-ink); color: #fff; }

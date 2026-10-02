@@ -383,7 +383,7 @@ test.describe('Hallway engine', () => {
       const points = [{ x: pa.x, y: pa.y }, ...mid, { x: pb.x, y: pb.y }];
       return { key: [pa.key, pb.key].sort().join('|'), a: pa.key, b: pb.key, x1: 0, y1: 0, x2: 0, y2: 0, temporary: true, points, length: polylineLength(points), kind: 'inferred' };
     };
-    const anchor = (key: string, x: number, y: number, attached: string): WfAnchor => ({ key, kind: 'unit', type: null, label: key, meta: 'Unit', floors: null, x, y, pin: { x, y }, offLayer: false, attached, linked: true, explicit: true, detached: false, door: null, polygon: null });
+    const anchor = (key: string, x: number, y: number, attached: string): WfAnchor => ({ key, kind: 'unit', type: null, label: key, meta: 'Unit', floors: null, x, y, pin: { x, y }, offLayer: false, attached, linked: true, explicit: true, detached: false, placedHere: false, door: null, polygon: null });
     const plateOf = (points: WfPoint[], paths: WfPath[], anchors: WfAnchor[]) =>
       ({ level, dims: { w: 1000, h: 500 }, space: 'svg', hasPlan: true, points, paths, stops: [], anchors, blockers: [] }) as unknown as WfPlate;
     const route = (plate: WfPlate) => {

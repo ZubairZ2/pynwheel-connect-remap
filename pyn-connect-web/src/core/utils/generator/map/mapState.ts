@@ -281,9 +281,17 @@ export interface WfSnapshot {
   hiddenNodes: string[];
   hiddenEdges: string[];
   wfLinks: Record<string, string | null>;
+  wfPlaces: Record<string, WfPlace>;
   wfEdited: Record<string, 'detected' | 'edited'>;
   wfSvg: Record<string, true>;
   nextJunction: number;
+}
+
+/** Where a unit or amenity plotted only on the other layer joins the paths on this one: the hallway point it was placed at by hand. */
+export interface WfPlace {
+  x: number;
+  y: number;
+  space: PlanSpace;
 }
 
 /** How far back Ctrl/Cmd+Z goes (the POC's `UNDO_LIMIT`). */
@@ -428,6 +436,12 @@ export interface LocalMapState {
    * links it again.
    */
   wfLinks: Record<string, string | null>;
+  /**
+   * `${levelId}|${unit or amenity key}` → a position on the level's
+   * Wayfinding layer given by hand to an item plotted only on the other
+   * layer (the two share no frame), so it can be linked and routed to here.
+   */
+  wfPlaces: Record<string, WfPlace>;
   /** Levels whose paths were detected or edited on this page. */
   wfEdited: Record<string, 'detected' | 'edited'>;
   /** Levels whose Wayfinding works on the floor SVG because hallways were detected from it here (an SVG-only level always does). */
@@ -503,6 +517,7 @@ export const initialLocalMapState = (levelId: string, building: string | null, l
   wfFloor: null,
   wfMenuOpen: false,
   wfLinks: {},
+  wfPlaces: {},
   wfEdited: {},
   wfSvg: {},
   wfUndo: [],
