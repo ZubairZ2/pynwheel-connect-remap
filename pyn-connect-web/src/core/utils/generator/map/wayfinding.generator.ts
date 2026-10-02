@@ -4,8 +4,9 @@ import type { PillVariant } from '../listing.types';
 import { STOP_TYPES, stopTypeOf, AMENITY_GLYPH, END_GLYPH, OUTDOOR_GLYPH, UNIT_GLYPH, WALK_GLYPH, type StopTypeId } from '~/core/utils/wayfinding/stopTypes';
 import { anchorsOnFloor, blockerRadius, parseServedFloors, plateProgress, stopsOnFloor, type WfAnchor, type WfPlate, type WfProgress } from '~/core/utils/wayfinding/wayfindingGraph';
 import { copyKey, type WfRouteGroup, type WfRouteResult, type WfStepKind } from '~/core/utils/wayfinding/wayfindingRoute';
+import type { EdgeKind } from '~/core/utils/wayfinding/hallways/types';
 import { levelsOfBuilding, mapBuildings, stackFloor, type MapLevel } from './mapLevels.generator';
-import { edgeKey, toPercent, type LocalMapState, type StopForm, type WfScope, type WfTool } from './mapState';
+import { distance, edgeKey, toPercent, type LocalMapState, type StopForm, type WfDetectStatus, type WfScope, type WfTool } from './mapState';
 import { M, plural, t } from './mapText';
 
 /** Descriptors for the Wayfinding mode: the toolbar, the side panel, the canvas layer and the Add Additional Stop dialog. Pure. */
@@ -21,6 +22,9 @@ export const WF_TOOLS: { id: WfTool; label: string; tip: string; hint: string; d
   { id: 'node', label: W.tools.node, tip: W.tools.nodeTip, hint: W.tools.nodeHint, d: 'M12 5v14M5 12h14' },
   { id: 'erase', label: W.tools.erase, tip: W.tools.eraseTip, hint: W.tools.eraseHint, d: 'M20 20H9l-5-5a1.5 1.5 0 0 1 0-2l9-9a1.5 1.5 0 0 1 2 0l5 5a1.5 1.5 0 0 1 0 2l-9 9M9 9l6 6' }
 ];
+
+/** The POC's bulk-confirm threshold: only proposals above it, never "confirm all". */
+export const REVIEW_THRESHOLD = 0.9;
 
 const PROGRESS_LABEL: Record<WfProgress['state'], string> = { done: W.status.done, partial: W.status.partial, none: W.status.none, noplan: W.status.noplan };
 const PROGRESS_PILL: Record<WfProgress['state'], PillVariant> = { done: 'ok', partial: 'warn', none: 'warn', noplan: 'neutral' };
@@ -62,34 +66,45 @@ export interface WfToolbar {
   sub: string;
   detectMenu: { scope: 'plate' | 'building' | 'all'; label: string; sub: string }[];
   tools: { id: WfTool; label: string; tip: string; d: string; active: boolean }[];
+  /** No tool is on: the POC's own editing gestures apply. */
+  defaultEditing: boolean;
   canClear: boolean;
   clearTip: string;
   noPlan: boolean;
+  detecting: boolean;
+  undo: { can: boolean; tip: string };
 }
+
+/** The floorplates a Detect Hallways scope covers: this one, its building's, or every one. */
+export const detectScopeLevels = (levels: MapLevel[], level: MapLevel, scope: 'plate' | 'building' | 'all'): MapLevel[] =>
+  scope === 'plate' ? [level] : scope === 'building' ? levelsOfBuilding(levels, level.building) : levels;
 
 export const generateWfToolbar = (map: PropertyMap, levels: MapLevel[], level: MapLevel, plate: WfPlate, state: LocalMapState): WfToolbar => {
   const building = level.building ?? level.sub;
   const inBuilding = levelsOfBuilding(levels, level.building);
   const buildings = mapBuildings(map, levels);
-  const detectMenu: WfToolbar['detectMenu'] = [
-    { scope: 'plate', label: i18n.t(W.detect.plate), sub: `${level.sub} · ${level.label}` },
-    { scope: 'building', label: t(W.detect.building, { building }), sub: plural(inBuilding.length, M.autoPlot.plateOne, M.autoPlot.plateMany) }
-  ];
-  if (buildings.length > 1) {
+  const detectMenu: WfToolbar['detectMenu'] = [{ scope: 'plate', label: i18n.t(W.detect.plate), sub: `${level.sub} · ${level.label}` }];
+  // The building's floorplates and every floorplate, when they differ from what is already offered.
+  if (level.building && inBuilding.length > 1) detectMenu.push({ scope: 'building', label: t(W.detect.building, { building }), sub: plural(inBuilding.length, M.autoPlot.plateOne, M.autoPlot.plateMany) });
+  if (levels.length > 1 && (inBuilding.length < levels.length || !level.building)) {
     detectMenu.push({
       scope: 'all',
       label: i18n.t(W.detect.all),
-      sub: `${plural(levels.length, M.autoPlot.plateOne, M.autoPlot.plateMany)} · ${plural(buildings.length, W.buildingOne, W.buildingMany)}`
+      sub: `${plural(levels.length, M.autoPlot.plateOne, M.autoPlot.plateMany)}${buildings.length > 1 ? ` · ${plural(buildings.length, W.buildingOne, W.buildingMany)}` : ''}`
     });
   }
+  const undoCount = state.wfUndo.length;
   return {
     title: `${level.sub} · ${level.label}`,
     sub: `${plural(plate.points.length, W.pointOne, W.pointMany)} · ${plural(plate.paths.length, W.pathOne, W.pathMany)}`,
     detectMenu,
     tools: WF_TOOLS.map((tool) => ({ id: tool.id, label: i18n.t(tool.label), tip: i18n.t(tool.tip), d: tool.d, active: state.wfTool === tool.id })),
+    defaultEditing: state.wfTool == null,
     canClear: plate.points.length > 0,
     clearTip: i18n.t(plate.points.length ? W.clear.tip : W.clear.tipEmpty),
-    noPlan: !plate.hasImage
+    noPlan: !plate.hasPlan,
+    detecting: !!state.wfDetect?.running,
+    undo: { can: undoCount > 0 && !state.wfDetect?.running, tip: undoCount ? t(W.undo.tip, { count: undoCount }) : i18n.t(W.undo.tipEmpty) }
   };
 };
 
@@ -130,6 +145,7 @@ export interface WfRouteView {
   ok: boolean;
   title: string;
   sub: string;
+  warnings: string[];
   error: string;
   fixLabel: string | null;
   steps: { key: string; kind: WfStepKind; title: string; sub: string; d: string; iconBg: string; iconColor: string; ck: string; clickable: boolean; tag: string; tagColor: string; active: boolean; here: boolean }[];
@@ -150,8 +166,14 @@ export interface WayfindingPanel {
   };
   counts: { points: string; paths: string; linked: string };
   hint: string;
-  selection: null | { kind: 'point' | 'path'; title: string; meta: string };
-  review: null | { title: string; body: string; skipped: string[] };
+  /** Which way the floorplate is drawn on, when Wayfinding uses its SVG. */
+  layerNote: string | null;
+  /** The active tool, or the default editing gestures. */
+  mode: { label: string; tool: WfTool | null };
+  selection: null | { kind: 'point' | 'path' | 'link'; title: string; meta: string };
+  detect: WfDetectView | null;
+  /** Inferred points still waiting for review on this floorplate. */
+  pending: null | { count: number; text: string; confirmable: number; confirmLabel: string };
   scopes: { id: WfScope; label: string; tip: string; active: boolean }[];
   scope: WfScope;
   sample: string | null;
@@ -165,6 +187,88 @@ export interface WayfindingPanel {
   unlinked: null | { head: string; rows: { key: string; name: string; meta: string }[] };
   picker: WfPicker | null;
 }
+
+export interface WfDetectView {
+  title: string;
+  running: boolean;
+  /** 0–100. */
+  pct: number;
+  current: string | null;
+  summary: { label: string; value: number; tone: 'ok' | 'warn' | 'muted' | 'danger' }[];
+  rows: { levelId: string; name: string; status: WfDetectStatus; label: string; detail: string; tone: 'ok' | 'warn' | 'muted' | 'danger' | 'run' }[];
+  canUndo: boolean;
+  empty: string | null;
+}
+
+const DETECT_STATUS: Record<WfDetectStatus, { label: string; tone: WfDetectView['rows'][number]['tone'] }> = {
+  queued: { label: W.detect.status.queued, tone: 'muted' },
+  running: { label: W.detect.status.running, tone: 'run' },
+  detected: { label: W.detect.status.detected, tone: 'ok' },
+  existing: { label: W.detect.status.existing, tone: 'muted' },
+  noSvg: { label: W.detect.status.noSvg, tone: 'muted' },
+  invalidSvg: { label: W.detect.status.invalidSvg, tone: 'danger' },
+  noHallway: { label: W.detect.status.noHallway, tone: 'warn' },
+  failed: { label: W.detect.status.failed, tone: 'danger' }
+};
+
+/** The Detect Hallways card: progress while the run goes, then what each floorplate came to. */
+export const generateDetectView = (state: LocalMapState): WfDetectView | null => {
+  const run = state.wfDetect;
+  if (!run) return null;
+  const count = (status: WfDetectStatus) => run.rows.filter((row) => row.status === status).length;
+  const finished = run.rows.filter((row) => row.status !== 'queued' && row.status !== 'running').length;
+  const detected = count('detected');
+  const current = run.rows.find((row) => row.status === 'running') ?? null;
+  const detectedRows = run.rows.filter((row) => row.status === 'detected');
+  const points = detectedRows.reduce((sum, row) => sum + row.points, 0);
+  const paths = detectedRows.reduce((sum, row) => sum + row.paths, 0);
+  // A floorplate that already had paths keeps them; its `paths` is what Auto-Connect added beside them.
+  const connected = run.rows.filter((row) => row.status === 'existing').reduce((sum, row) => sum + row.paths, 0);
+  // Nothing changed at all: every floorplate already had paths (with nothing to auto-connect) or had no floor SVG.
+  const untouched = !run.running && !run.stopped && !connected && run.rows.every((row) => row.status === 'existing' || row.status === 'noSvg');
+  const title = run.running
+    ? t(W.detect.progress, { done: finished, total: run.rows.length })
+    : detected
+      ? t(W.detect.doneTitle, { plates: plural(detected, M.autoPlot.plateOne, M.autoPlot.plateMany), points: plural(points, W.pointOne, W.pointMany), paths: plural(paths, W.pathOne, W.pathMany) })
+      : connected
+        ? t(W.detect.keptTitle, { paths: plural(connected, W.pathOne, W.pathMany) })
+        : i18n.t(run.stopped ? W.detect.stoppedTitle : untouched ? W.detect.nothingTitle : W.detect.noneTitle);
+  return {
+    title,
+    running: run.running,
+    pct: run.rows.length ? Math.round((finished / run.rows.length) * 100) : 100,
+    current: current ? current.name : null,
+    summary: [
+      { label: i18n.t(W.detect.sum.processed), value: finished, tone: 'muted' as const },
+      { label: i18n.t(W.detect.sum.detected), value: detected, tone: 'ok' as const },
+      { label: i18n.t(W.detect.sum.existing), value: count('existing'), tone: 'muted' as const },
+      { label: i18n.t(W.detect.sum.noSvg), value: count('noSvg'), tone: 'muted' as const },
+      { label: i18n.t(W.detect.sum.noHallway), value: count('noHallway'), tone: 'warn' as const },
+      { label: i18n.t(W.detect.sum.failed), value: count('failed') + count('invalidSvg'), tone: 'danger' as const }
+    ].filter((row) => row.value > 0 || row.label === i18n.t(W.detect.sum.processed)),
+    rows: run.rows.map((row) => {
+      const status = DETECT_STATUS[row.status];
+      const detail =
+        row.status === 'detected'
+          ? `${plural(row.points, W.pointOne, W.pointMany)} · ${plural(row.paths, W.pathOne, W.pathMany)} · ${i18n.t(row.source === 'vector' ? W.detect.fromWalkway : W.detect.fromInferred)}`
+          : row.status === 'existing' && row.paths
+            ? t(W.detect.keptDetail, { note: row.note, paths: plural(row.paths, W.pathOne, W.pathMany) })
+            : row.note;
+      return { levelId: row.levelId, name: row.name, status: row.status, label: i18n.t(status.label), detail, tone: status.tone };
+    }),
+    canUndo: !run.running && (detected > 0 || connected > 0),
+    empty: !run.running && !detected && !connected ? i18n.t(run.stopped ? W.detect.stoppedBody : untouched ? W.detect.nothingBody : W.detect.noneBody) : null
+  };
+};
+
+const EDGE_KIND_LABEL: Record<EdgeKind, string> = {
+  traced: W.kind.traced,
+  inferred: W.kind.inferred,
+  bridge: W.kind.bridge,
+  knn: W.kind.knn,
+  manual: W.kind.manual,
+  stored: W.kind.stored
+};
 
 const STEP_COLORS: Record<WfStepKind, [string, string]> = {
   walk: ['#E6F2F9', '#0077AE'],
@@ -237,36 +341,61 @@ export const generateWayfindingPanel = (
     };
   }
 
-  const tool = WF_TOOLS.find((row) => row.id === state.wfTool) ?? WF_TOOLS[0];
-  const hint = !plate.hasImage
+  const tool = WF_TOOLS.find((row) => row.id === state.wfTool) ?? null;
+  const hint = !plate.hasPlan
     ? i18n.t(W.noPlan)
     : plate.points.length || state.wfTool === 'node'
-      ? i18n.t(tool.hint)
+      ? i18n.t(tool ? tool.hint : W.tools.defaultHint)
       : i18n.t(W.noPaths);
 
   let selection: WayfindingPanel['selection'] = null;
   const selectedPoint = state.wfSel ? plate.points.find((point) => point.key === state.wfSel) : null;
   if (selectedPoint) {
     const linkedHere = anchors.filter((anchor) => anchor.attached === selectedPoint.key);
+    const origin =
+      selectedPoint.source === 'inferred'
+        ? `${i18n.t(W.selection.inferred)}${selectedPoint.confidence != null ? ` · ${t(W.selection.confidence, { value: selectedPoint.confidence.toFixed(2) })}` : ''}${selectedPoint.review === 'pending' ? ` · ${i18n.t(W.selection.needsReview)}` : ''}`
+        : selectedPoint.source === 'vector'
+          ? i18n.t(W.selection.traced)
+          : null;
     selection = {
       kind: 'point',
       title: linkedHere.length ? linkedHere.map((anchor) => anchor.label).slice(0, 3).join(', ') : i18n.t(W.selection.point),
-      meta: `${linkedHere.length ? `${i18n.t(W.selection.linkedStop)} · ` : ''}${plural(selectedPoint.degree, W.selection.connectionOne, W.selection.connectionMany)}${selectedPoint.degree ? '' : ` ${i18n.t(W.selection.isolated)}`}${selectedPoint.temporary ? ` · ${i18n.t(M.selection.temporary)}` : selectedPoint.moved ? ` · ${i18n.t(W.selection.moved)}` : ''}`
+      meta: `${linkedHere.length ? `${i18n.t(W.selection.linkedStop)} · ` : ''}${plural(selectedPoint.degree, W.selection.connectionOne, W.selection.connectionMany)}${selectedPoint.degree ? '' : ` ${i18n.t(W.selection.isolated)}`}${selectedPoint.temporary ? ` · ${i18n.t(M.selection.temporary)}` : selectedPoint.moved ? ` · ${i18n.t(W.selection.moved)}` : ''}${origin ? ` · ${origin}` : ''}`
     };
   } else if (state.wfSelEdge) {
     const path = plate.paths.find((row) => row.key === state.wfSelEdge);
-    if (path) selection = { kind: 'path', title: i18n.t(W.selection.path), meta: i18n.t(path.temporary ? M.selection.temporary : M.selection.stored) };
+    if (path) {
+      selection = {
+        kind: 'path',
+        title: i18n.t(W.selection.path),
+        meta: `${i18n.t(EDGE_KIND_LABEL[path.kind])} · ${t(W.selection.length, { length: Math.round(path.length).toLocaleString('en-US'), unit: i18n.t(plate.space === 'svg' ? W.units.svg : W.units.raster) })} · ${i18n.t(path.temporary ? M.selection.temporary : M.selection.stored)}`
+      };
+    }
+  } else if (state.wfSelLink) {
+    // A bridge: the dashed line from a unit, amenity or stop to the point it joins the paths at.
+    const anchor = anchors.find((row) => row.key === state.wfSelLink);
+    const point = anchor?.attached ? plate.points.find((row) => row.key === anchor.attached) : null;
+    if (anchor && point && anchor.x != null && anchor.y != null) {
+      selection = {
+        kind: 'link',
+        title: `${i18n.t(W.selection.bridge)} · ${anchor.label}`,
+        meta: `${i18n.t(anchor.explicit ? W.selection.linkedByHand : W.selection.nearestPoint)} · ${t(W.selection.length, {
+          length: Math.round(distance(anchor.x, anchor.y, point.x, point.y)).toLocaleString('en-US'),
+          unit: i18n.t(plate.space === 'svg' ? W.units.svg : W.units.raster)
+        })}`
+      };
+    }
   }
 
-  const review = state.wfReview
+  const pendingPoints = plate.points.filter((point) => point.review === 'pending');
+  const confirmable = pendingPoints.filter((point) => point.confidence != null && point.confidence > REVIEW_THRESHOLD).length;
+  const pending = pendingPoints.length
     ? {
-        title: state.wfReview.levelIds.length
-          ? t(W.review.title, { plates: plural(state.wfReview.levelIds.length, M.autoPlot.plateOne, M.autoPlot.plateMany) })
-          : i18n.t(W.review.nothing),
-        body: state.wfReview.levelIds.length
-          ? t(W.review.body, { points: plural(state.wfReview.points, W.pointOne, W.pointMany), paths: plural(state.wfReview.paths, W.pathOne, W.pathMany) })
-          : i18n.t(W.review.nothingBody),
-        skipped: state.wfReview.skipped
+        count: pendingPoints.length,
+        text: t(W.pending.text, { points: plural(pendingPoints.length, W.pointOne, W.pointMany) }),
+        confirmable,
+        confirmLabel: t(W.pending.confirm, { count: confirmable, threshold: REVIEW_THRESHOLD })
       }
     : null;
 
@@ -296,7 +425,13 @@ export const generateWayfindingPanel = (
           rows: unlinkedRows.map((anchor) => ({
             key: anchor.key,
             name: anchor.label,
-            meta: anchor.svgOnly ? i18n.t(W.unlinked.svgOnly) : anchor.attached ? `${anchor.meta} · ${i18n.t(W.unlinked.isolated)}` : anchor.meta
+            meta: anchor.detached
+              ? `${anchor.meta} · ${i18n.t(W.unlinked.detached)}`
+              : anchor.offLayer
+                ? i18n.t(plate.space === 'svg' ? W.unlinked.imageOnly : W.unlinked.svgOnly)
+                : anchor.attached
+                  ? `${anchor.meta} · ${i18n.t(W.unlinked.isolated)}`
+                  : anchor.meta
           }))
         }
       : null;
@@ -304,12 +439,15 @@ export const generateWayfindingPanel = (
   return {
     scopeLabel: `${level.sub} · ${level.rangeLabel}`,
     status: { label: i18n.t(PROGRESS_LABEL[progress.state]), variant: PROGRESS_PILL[progress.state] },
-    noPlan: !plate.hasImage,
+    noPlan: !plate.hasPlan,
     stacked,
     counts: { points: String(plate.points.length), paths: String(plate.paths.length), linked: `${progress.linked}/${progress.total}` },
     hint,
+    layerNote: plate.space === 'svg' ? i18n.t(state.wfSvg[level.id] ? W.layer.detected : W.layer.svgOnly) : null,
+    mode: { label: tool ? t(W.mode.tool, { tool: i18n.t(tool.label) }) : i18n.t(W.mode.default), tool: state.wfTool },
     selection,
-    review,
+    detect: generateDetectView(state),
+    pending,
     scopes,
     scope,
     sample: sampleAvailable && count >= 2 ? i18n.t(scope === 'plate' ? W.sample.plate : scope === 'floors' ? W.sample.floors : W.sample.buildings) : null,
@@ -333,6 +471,7 @@ const routeView = (state: LocalMapState, result: WfRouteResult, level: MapLevel,
       ok: false,
       title: i18n.t(W.route.noRoute),
       sub: '',
+      warnings: [],
       error: result.error,
       fixLabel: result.fix?.label ?? null,
       steps: [],
@@ -371,8 +510,9 @@ const routeView = (state: LocalMapState, result: WfRouteResult, level: MapLevel,
   const points = result.legs.reduce((sum, leg) => sum + leg.points.length, 0);
   return {
     ok: true,
-    title: t(W.route.length, { px: result.px.toLocaleString('en-US'), points: plural(points, W.pointOne, W.pointMany) }),
+    title: t(W.route.length, { px: result.px.toLocaleString('en-US'), unit: result.unit, points: plural(points, W.pointOne, W.pointMany) }),
     sub: `${result.summary} · ${i18n.t(result.multi ? W.route.clickStep : W.route.inGreen)}`,
+    warnings: result.warnings,
     error: '',
     fixLabel: null,
     steps,
@@ -457,6 +597,11 @@ export interface WfLayerPoint {
   onRoute: boolean;
   lonely: boolean;
   temporary: boolean;
+  /** An inferred point not reviewed yet (dashed, fainter the less confident). */
+  pending: boolean;
+  confidence: number | null;
+  /** Being dragged right now. */
+  dragging: boolean;
 }
 
 export interface WfLayerPath {
@@ -465,6 +610,9 @@ export interface WfLayerPath {
   y1: number;
   x2: number;
   y2: number;
+  /** The drawn polyline in percent of the plan (`x,y x,y …`). */
+  d: string;
+  kind: EdgeKind;
   onRoute: boolean;
   selected: boolean;
   temporary: boolean;
@@ -481,6 +629,7 @@ export interface WfLayerStop {
   blocker: boolean;
 }
 
+/** A bridge: the dashed line from a unit, amenity or stop (its join point) to the hallway point it attaches to. Keyed by the anchor. */
 export interface WfLayerLink {
   key: string;
   x1: number;
@@ -489,6 +638,22 @@ export interface WfLayerLink {
   y2: number;
   linked: boolean;
   explicit: boolean;
+  selected: boolean;
+}
+
+/** A unit's or amenity's marker in Wayfinding: a small hollow outline at its polygon's edge (on the SVG) or on its pin (on the image). */
+export interface WfLayerAnchor {
+  key: string;
+  kind: 'unit' | 'amenity';
+  name: string;
+  xPct: number;
+  yPct: number;
+  linked: boolean;
+  selected: boolean;
+  /** The floor has no paths at all, so there is nothing to be linked to yet: drawn neutral, not as unlinked. */
+  idle: boolean;
+  /** On the floor SVG: the polygon the unit is plotted on (`PlotTarget.key`). */
+  polygon: string | null;
 }
 
 export interface WfLayer {
@@ -502,10 +667,12 @@ export interface WfLayer {
   /** Where the Deselect badge floats (percent), when a point is selected. */
   badge: { xPct: number; yPct: number } | null;
   dimmed: boolean;
-  /** The unit and amenity pins of the floor in view (a stack's other floors share the image, not the units). */
-  pins: Set<string>;
-  /** Their doors (stored on the floor image), where the CMS routes to and the links start. */
+  /** The doors of the floor's units and amenities (stored on the floor image), where the CMS routes to and the bridges start. */
   doors: { key: string; xPct: number; yPct: number }[];
+  /** The units and amenities of the floor in view, on either layer (a stack's other floors share the plan, not the units). */
+  anchors: WfLayerAnchor[];
+  /** A path being bent: the preview line from the grab point to the pointer, and the handle. */
+  bend: { x1: number; y1: number; x2: number; y2: number } | null;
 }
 
 /** The plan's wayfinding layer for the floor in view (on a stack: the shared paths plus that floor's stops and links). */
@@ -525,7 +692,18 @@ export const generateWfLayer = (plate: WfPlate, level: MapLevel, state: LocalMap
   const links: WfLayerLink[] = anchors.flatMap((anchor) => {
     const point = anchor.attached ? points.get(anchor.attached) : null;
     if (!point || anchor.x == null || anchor.y == null) return [];
-    return [{ key: anchor.key, x1: pct(anchor.x, dims?.w), y1: pct(anchor.y, dims?.h), x2: point.xPct, y2: point.yPct, linked: anchor.linked, explicit: anchor.explicit }];
+    return [
+      {
+        key: anchor.key,
+        x1: pct(anchor.x, dims?.w),
+        y1: pct(anchor.y, dims?.h),
+        x2: point.xPct,
+        y2: point.yPct,
+        linked: anchor.linked,
+        explicit: anchor.explicit,
+        selected: state.wfSelLink === anchor.key
+      }
+    ];
   });
 
   const fromStop = state.wfFrom && !points.has(state.wfFrom) ? state.wfFrom : null;
@@ -547,6 +725,8 @@ export const generateWfLayer = (plate: WfPlate, level: MapLevel, state: LocalMap
 
   const radius = blockerRadius(dims);
   const selected = state.wfSel ? points.get(state.wfSel) : state.wfFrom ? points.get(state.wfFrom) : null;
+  const dragging = state.dragging;
+  const bend = dragging?.kind === 'bend' && dragging.moved && dims ? dragging : null;
   return {
     points: plate.points.map((point) => ({
       key: point.key,
@@ -556,7 +736,10 @@ export const generateWfLayer = (plate: WfPlate, level: MapLevel, state: LocalMap
       from: state.wfFrom === point.key,
       onRoute: onRoutePoints.has(point.key),
       lonely: point.degree === 0,
-      temporary: point.temporary
+      temporary: point.temporary,
+      pending: point.review === 'pending',
+      confidence: point.confidence,
+      dragging: dragging?.kind === 'node' && dragging.key === point.key
     })),
     paths: plate.paths.map((path) => ({
       key: path.key,
@@ -564,6 +747,8 @@ export const generateWfLayer = (plate: WfPlate, level: MapLevel, state: LocalMap
       y1: path.y1,
       x2: path.x2,
       y2: path.y2,
+      d: path.points.map((p) => `${pct(p.x, dims?.w)},${pct(p.y, dims?.h)}`).join(' '),
+      kind: path.kind,
       onRoute: onRouteEdges.has(path.key),
       selected: state.wfSelEdge === path.key,
       temporary: path.temporary
@@ -574,12 +759,26 @@ export const generateWfLayer = (plate: WfPlate, level: MapLevel, state: LocalMap
       .filter((stop) => stop.blocker)
       .map((stop) => ({ key: stop.key, xPct: stop.xPct, yPct: stop.yPct, rPctW: dims ? (radius / dims.w) * 100 : 4, rPctH: dims ? (radius / dims.h) * 100 : 4 })),
     route: leg && dims ? leg.points.map((point) => ({ x: pct(point.x, dims.w), y: pct(point.y, dims.h), stop: point.stop, name: point.name })) : null,
-    badge: selected && !state.dragging ? { xPct: selected.xPct, yPct: selected.yPct } : null,
+    // No badge while Connect holds a point: it would float over the markers next to that point, the very targets of the next click.
+    badge: selected && !state.dragging && state.wfTool !== 'connect' ? { xPct: selected.xPct, yPct: selected.yPct } : null,
     dimmed: !!leg,
-    pins: new Set(anchors.filter((anchor) => anchor.kind !== 'stop').map((anchor) => anchor.key)),
     doors: anchors
       .filter((anchor) => anchor.door && anchor.x != null && anchor.y != null)
-      .map((anchor) => ({ key: anchor.door!, xPct: pct(anchor.x!, dims?.w), yPct: pct(anchor.y!, dims?.h) }))
+      .map((anchor) => ({ key: anchor.door!, xPct: pct(anchor.x!, dims?.w), yPct: pct(anchor.y!, dims?.h) })),
+    anchors: anchors
+      .filter((anchor): anchor is WfAnchor & { pin: { x: number; y: number }; kind: 'unit' | 'amenity' } => anchor.kind !== 'stop' && !!anchor.pin)
+      .map((anchor) => ({
+        key: anchor.key,
+        kind: anchor.kind,
+        name: anchor.label,
+        xPct: pct(anchor.pin.x, dims?.w),
+        yPct: pct(anchor.pin.y, dims?.h),
+        linked: anchor.linked,
+        selected: state.wfFrom === anchor.key || state.wfSelLink === anchor.key,
+        idle: plate.points.length === 0,
+        polygon: anchor.polygon
+      })),
+    bend: bend ? { x1: pct(bend.grab.x, dims!.w), y1: pct(bend.grab.y, dims!.h), x2: pct(bend.drop.x, dims!.w), y2: pct(bend.drop.y, dims!.h) } : null
   };
 };
 

@@ -7,7 +7,6 @@ import { generateRasterGraphs } from '~/core/utils/generator/map/mapNodes.genera
 import { generatePlotPanel } from '~/core/utils/generator/map/mapPanels.generator';
 import { initialLocalMapState, type LocalMapState, type TempStop } from '~/core/utils/generator/map/mapState';
 import { generateWayfindingPanel, newStopForm, stopFormErrors, wayfindingEnabled } from '~/core/utils/generator/map/wayfinding.generator';
-import { detectPaths, detectionSites } from '~/core/utils/wayfinding/detectPaths';
 import { anchorsOnFloor, parseServedFloors, plateProgress, wayfindingPlate, type WfPlate } from '~/core/utils/wayfinding/wayfindingGraph';
 import { computeWayfindingRoute, defaultPair, routeGroups, sampleRoute, type WfRouteInput } from '~/core/utils/wayfinding/wayfindingRoute';
 
@@ -171,6 +170,33 @@ test.describe('Wayfinding logic', () => {
     expect(plateProgress(tower, 5)).toMatchObject({ state: 'done', linked: 2, total: 2 });
   });
 
+  test('a bridge removed on the page detaches only that unit: it is listed as not linked with the reason, a route to it fails, and Connect links it again', () => {
+    const map = buildMap();
+    const detached = setup(map, { wfLinks: { 'floorplate:20|unit:501': null } });
+    const tower = detached.plates[detached.level('Floors 5–14').id];
+    const unit = anchorsOnFloor(tower, 5).find((anchor) => anchor.label === 'Unit 0501')!;
+    expect(unit).toMatchObject({ attached: null, linked: false, explicit: true, detached: true });
+    // Only that bridge went: the elevator still joins its nearest point, and the hallways are intact.
+    expect(anchorsOnFloor(tower, 5).find((anchor) => anchor.label === 'Elevator A')).toMatchObject({ linked: true, detached: false });
+    expect(tower.points).toHaveLength(4);
+    expect(tower.paths).toHaveLength(3);
+    expect(plateProgress(tower, 5)).toMatchObject({ state: 'partial', linked: 1, total: 2 });
+    const level = detached.level('Floors 5–14');
+    const input: WfRouteInput = { levels: detached.levels, plates: detached.plates, current: level, floor: 5, scope: 'plate', stepFree: false };
+    const groups = routeGroups(input);
+    const panel = generateWayfindingPanel(map, detached.levels, level, tower, { ...detached.state, levelId: level.id, wfFloor: 5 }, groups, defaultPair(input, groups, '', ''), true);
+    expect(panel.counts.linked).toBe('1/2');
+    expect(panel.unlinked?.rows.map((row) => row.name)).toEqual(['Unit 0501']);
+    expect(panel.unlinked?.rows[0].meta).toContain('bridge removed on this page');
+    const route = computeWayfindingRoute(input, groups, `${level.id}@5|e:1`, `${level.id}@5|unit:501`);
+    expect(route.ok).toBe(false);
+    if (!route.ok) expect(route.error).toContain('isn’t connected');
+    // Connect again: linked by hand to a stored point.
+    const relinked = setup(map, { wfLinks: { 'floorplate:20|unit:501': 'h:101' } });
+    const again = anchorsOnFloor(relinked.plates[level.id], 5).find((anchor) => anchor.label === 'Unit 0501')!;
+    expect(again).toMatchObject({ attached: 'h:101', linked: true, explicit: true, detached: false });
+  });
+
   test('the stacked panel: range, every floor, completion per floor, the floor-specific unit example', () => {
     const map = buildMap();
     const { levels, plates, level, state } = setup(map);
@@ -306,16 +332,6 @@ test.describe('Wayfinding logic', () => {
       expect(route.fix?.kind).toBe('detect');
     }
     expect(plateProgress(plates[levels.find((row) => row.recordId === 30)!.id], null).state).toBe('none');
-  });
-
-  test('Detect Paths proposes a spine joining every stop, and nothing below two stops', () => {
-    const { plates, level } = setup(buildMap());
-    const tower = plates[level('Floors 5–14').id];
-    const result = detectPaths(detectionSites(tower.anchors), tower.dims!);
-    expect(result).not.toBeNull();
-    expect(result!.points.length).toBeGreaterThanOrEqual(3);
-    expect(result!.paths).toHaveLength(result!.points.length - 1);
-    expect(detectPaths([{ x: 10, y: 10 }], { w: 100, h: 100 })).toBeNull();
   });
 
   test('Plot on Map: Show, the stacked floor, search and the counts', () => {

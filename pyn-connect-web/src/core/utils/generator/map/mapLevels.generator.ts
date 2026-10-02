@@ -227,16 +227,28 @@ export const planAssets = (level: MapLevel, override: PlanOverride | undefined):
 };
 
 /**
- * The layer the canvas shows for a level: the floor SVG where there is one
- * and the user has not switched. Wayfinding always works on the floor image
- * when the level has one: the CMS stores hallways, elevators, entry points
- * and doors in the image's pixels (the Auto Wayfinding page and the
- * plotting page's image section both draw them there), and the two files do
- * not share a frame.
+ * The layer Wayfinding works on for a level. The floor image when the level
+ * has one: the CMS stores hallways, elevators, entry points and doors in the
+ * image's pixels (the Auto Wayfinding page and the plotting page's image
+ * section both draw them there), and the two files do not share a frame.
+ * The floor SVG when that is all the level has, or when Detect Hallways read
+ * the hallways from it on this page — the detected graph is in the SVG's
+ * units, so the floor is shown and edited on the SVG. Null without a plan.
  */
+export const wayfindingSpace = (level: MapLevel, state: Pick<LocalMapState, 'planOverrides' | 'wfSvg'>): PlanSpace | null => {
+  const assets = planAssets(level, state.planOverrides[level.id]);
+  if (assets.svg && (!assets.image || state.wfSvg[level.id])) return 'svg';
+  if (assets.image) return 'raster';
+  return null;
+};
+
+/** The layer the canvas shows for a level: the floor SVG where there is one and the user has not switched; in Wayfinding, the layer its paths live on. */
 export const activeSpace = (level: MapLevel, state: LocalMapState): PlanSpace => {
   const assets = planAssets(level, state.planOverrides[level.id]);
-  if (state.mode === 'wayfind' && assets.image) return 'raster';
+  if (state.mode === 'wayfind') {
+    const space = wayfindingSpace(level, state);
+    if (space) return space;
+  }
   if (assets.svg && assets.image) return state.layer;
   return assets.svg ? 'svg' : 'raster';
 };

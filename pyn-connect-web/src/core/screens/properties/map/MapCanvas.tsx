@@ -222,7 +222,9 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
   const isDefaultView = view.scale === 1 && view.x === 0 && view.y === 0;
   const plateStops = wayfinding.plate?.stops ?? [];
   const placedTempStops = plateStops.filter((stop) => stop.temporary && stop.placed);
-  const selectedStop = !onSvg && state.selStop && !state.dragging ? (plateStops.find((stop) => stop.key === state.selStop && stop.placed) ?? null) : null;
+  // Stops sit on the floorplate's Wayfinding layer: their popover shows while that layer is the one in view.
+  const stopsHere = (wayfinding.plate?.space ?? 'raster') === space;
+  const selectedStop = stopsHere && state.selStop && !state.dragging ? (plateStops.find((stop) => stop.key === state.selStop && stop.placed) ?? null) : null;
   const dropping = state.plotSel.length > 0 || !!state.plotTarget;
   // A label prints on a polygon when the SVG gives it no text of its own and it is active, or when something with another name sits on it.
   const labelled = polygons.filter((polygon) => (polygon.showCode && (polygon.filled || polygon.hover || polygon.selected)) || polygon.assigned);
@@ -311,6 +313,7 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
               <SvgPlanLayer
                 doc={svgDoc!}
                 polygons={polygons}
+                passive={!!wfLayer}
                 plotOn={state.tool === 'plot'}
                 dropping={dropping}
                 onPolygonDown={actions.clickPolygon}
@@ -440,7 +443,7 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
           })}
 
           {!wfLayer &&
-            onSvg === false &&
+            stopsHere &&
             placedTempStops.map((stop) => (
               <StopMarker
                 key={stop.key}
@@ -459,26 +462,26 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
               />
             ))}
 
-          {graph.pins.map((pin) => {
-            // A placement on a polygon is the filled polygon itself, as the legacy page clones the shape: no marker on top.
-            if (pin.polygon && svgReady) return null;
-            // Wayfinding on a stacked floorplate shows the floor in view's units only.
-            if (wfLayer && !wfLayer.pins.has(pin.key)) return null;
-            const selected = !!state.selectedPin && `${state.selectedPin.kind}:${state.selectedPin.id}` === pin.key;
-            return (
-              <div
-                key={pin.key}
-                data-node={pin.key}
-                className={`bo-map__marker bo-map__pin bo-map__pin--${pin.kind}${selected ? ' bo-map__pin--selected bo-map__marker--selected' : ''}${pin.temporary || pin.moved ? ' bo-map__pin--temp bo-map__marker--temp' : ''}`}
-                style={{ left: `${pin.xPct}%`, top: `${pin.yPct}%`, zIndex: selected ? 7 : 4 }}
-                onPointerDown={wfLayer ? wayfinding.actions.onAnchorDown(pin.key, false) : actions.onPinDown(pin.ref)}
-                title={pin.temporary ? `${pin.label} · ${i18n.t(M.selection.temporary)}` : pin.label}
-              >
-                {wfLayer ? pinGlyph({ ...pin, hasDoor: true }) : pinGlyph(pin)}
-                {selected && <span className="bo-map__nodelabel bo-map__markerlabel">{pin.label}</span>}
-              </div>
-            );
-          })}
+          {!wfLayer &&
+            graph.pins.map((pin) => {
+              // A placement on a polygon is the filled polygon itself, as the legacy page clones the shape: no marker on top.
+              // In Wayfinding the layer draws its own small anchor markers instead of these.
+              if (pin.polygon && svgReady) return null;
+              const selected = !!state.selectedPin && `${state.selectedPin.kind}:${state.selectedPin.id}` === pin.key;
+              return (
+                <div
+                  key={pin.key}
+                  data-node={pin.key}
+                  className={`bo-map__marker bo-map__pin bo-map__pin--${pin.kind}${selected ? ' bo-map__pin--selected bo-map__marker--selected' : ''}${pin.temporary || pin.moved ? ' bo-map__pin--temp bo-map__marker--temp' : ''}`}
+                  style={{ left: `${pin.xPct}%`, top: `${pin.yPct}%`, zIndex: selected ? 7 : 4 }}
+                  onPointerDown={actions.onPinDown(pin.ref)}
+                  title={pin.temporary ? `${pin.label} · ${i18n.t(M.selection.temporary)}` : pin.label}
+                >
+                  {pinGlyph(pin)}
+                  {selected && <span className="bo-map__nodelabel bo-map__markerlabel">{pin.label}</span>}
+                </div>
+              );
+            })}
         </div>
       ) : (
         <div
