@@ -345,10 +345,10 @@ Creating entry points and elevators goes through GET-with-side-effect and form a
 ### Future Requirement
 A stops model (type, position, floorplate, floor-only, floors served, accessible, lock, instruction) or columns on the existing tables, JSON write endpoints, and the Tour app reading them.
 
-## Gap: M16. Detect Hallways — keeping the result (superseded October 1, 2026: detection now runs; see M20–M23)
+## Gap: M16. Detect Hallways — keeping the result (superseded October 1, 2026: detection now runs; see M20–M23; October 2: stored hallways are never replaced, Auto-Connect is part of the run — see M24)
 
 ### Requirement
-"Detect hallways on" this floorplate / all floorplates in a building / all floorplates; Auto-Connect Paths; the POC's editing; Find Shortest Path over the result.
+"Detect hallways on" this floorplate / all floorplates in a building / all floorplates, with Auto-Connect as part of the run; the POC's editing; Find Shortest Path over the result.
 
 ### Existing Rails Source Investigated
 No detection exists in the CMS (hallways are drawn on Auto Wayfinding; `svgAutoPlotting.js` detects units, not corridors). `floorplates.map_ocr_data` holds Textract text boxes only. `FloorplatesController#upload_svg_image` stores the floor SVG (`svg_image`, `svg_metadata`).
@@ -357,7 +357,7 @@ No detection exists in the CMS (hallways are drawn on Auto Wayfinding; `svgAutoP
 The floor SVG of each floorplate (on S3), its unit / amenity polygons (`pointer_data`), the stored `hallways` (floor-image pixels).
 
 ### What Can Be Implemented in Next.js Today
-All of it, on the page (October 1 phase, `PYN_CONNECT_PROGRESS.md` §27): the POC's pipeline over each floorplate's real SVG — its walkway layer when it has one, otherwise the corridors inferred between the rooms inside the building footprints — gap bridging, stops joined at their polygons, Auto-Connect, the POC's gestures and Ctrl/Cmd+Z, A* routing. Floorplates that already have stored hallways are skipped and never overwritten; floorplates without an SVG are reported. Verified on Sylo (3837): 4 floorplates detected, 370 points / 363 paths, every plotted unit linked; Floor 4's 15 stored hallways skipped.
+All of it, on the page (October 1 phase, `PYN_CONNECT_PROGRESS.md` §27): the POC's pipeline over each floorplate's real SVG — its walkway layer when it has one, otherwise the corridors inferred between the rooms inside the building footprints — gap bridging, stops joined at their polygons, Auto-Connect, the POC's gestures and Ctrl/Cmd+Z, A* routing. Since October 2 (§28) a floorplate that already has paths — stored in the CMS or made on the page — keeps every one of them, in every scope: Detect Hallways never hides, moves or replaces a stored hallway (the "Detect & Replace" confirmation is gone), it only runs the POC's Auto-Connect over the existing points and adds the resulting paths on the page. Floorplates without an SVG are reported. Verified on Sylo (3837): 4 floorplates detected, 370 points / 363 paths, every plotted unit linked; Floor 4's 15 stored hallways kept.
 
 ### What Cannot Be Implemented
 Keeping the result: the detected graph is gone on reload (M14), and three of its parts have nowhere to go even with write endpoints (M20, M21).
@@ -528,3 +528,26 @@ It is a content / export-template change, not Connect code.
 
 ### Future Requirement
 A `Walkway` (or `Corridor`) layer in the SVG export template the map designers use; detection then switches to the exact path automatically.
+
+## Gap: M24. Bridges removed by hand, and re-detecting a floorplate that already has stored hallways (October 2, 2026)
+
+### Requirement
+A unit, amenity or stop's dashed bridge to the hallway graph can be selected and removed like a path (Erase, double-click, Delete), and linked again with Connect by clicking the unit polygon or stop marker; Detect Hallways must never replace the hallways stored in the CMS.
+
+### Existing Rails Source Investigated
+`ShortestPath#get_unit_data` / `get_elevator_data` / `get_starting_point_data` (every stop joins its **nearest** hallway, no distance limit, nothing stored about it); `HallwaysController` (points and `next_points` only).
+
+### Existing DB Data
+`hallways.x_plot / y_plot / next_points`. Nothing records a stop ↔ hallway link, and nothing records that a stop should join no hallway.
+
+### What Can Be Implemented in Next.js Today
+On the page: a removed bridge leaves the unit / stop detached (listed under "Not linked" as "bridge removed on this page", routes to it fail with the reason, its marker goes dashed red), Connect links it to a point of the user's choice, Ctrl/Cmd+Z and Clear Paths put things back. Detect Hallways keeps every stored hallway and only auto-connects over it; a floorplate with stored hallways is therefore never re-read from its SVG.
+
+### What Cannot Be Implemented
+Keeping a removed or hand-made bridge: the CMS always routes to the nearest hallway, so after a reload every stop joins its nearest point again. Re-detecting a floorplate that already has stored hallways from its SVG — there is no transform between the two files (M20), so the detected graph could not sit beside the stored one on one plan; the only way to try the SVG on such a floor is to hide its stored points by hand first (Clear Paths, or deleting them), which Undo reverses.
+
+### Why It Requires Backend Persistence/Business Logic
+An explicit "joins this point" / "joins nothing" is new data and a new routing rule in `ShortestPath`; a stored-vs-detected choice per floorplate needs M20's transform or a stored `space`.
+
+### Future Requirement
+M14 (saving edits) plus a column for the stop → hallway link (or "no link"), and `ShortestPath` honouring it; M20 for mixing detected and stored geometry on one floor.

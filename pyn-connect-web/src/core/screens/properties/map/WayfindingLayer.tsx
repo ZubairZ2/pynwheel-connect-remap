@@ -28,9 +28,11 @@ const KIND_STYLE: Record<EdgeKind, { color: string; dash?: string }> = {
 
 /**
  * The Wayfinding layer of the plan: the hallway paths and points, the
- * dashed link from each stop to the point it joins, the stop markers, the
- * blocker zones and the route — all positioned as percentages of the floor
- * image, inside the plan, so they stay on the image as it zooms and pans.
+ * dashed bridge from each unit, amenity or stop to the point it joins (a
+ * bridge selects, erases and double-click-removes like a path), the small
+ * hollow unit / amenity markers, the stop markers, the blocker zones and
+ * the route — all positioned as percentages of the plan, inside it, so they
+ * stay in place as it zooms and pans.
  */
 export const WayfindingLayer = ({ controller, layer }: { controller: PropertyMapController; layer: WfLayer }) => {
   const { wayfinding, state } = controller;
@@ -48,19 +50,37 @@ export const WayfindingLayer = ({ controller, layer }: { controller: PropertyMap
           <ellipse key={zone.key} cx={zone.xPct} cy={zone.yPct} rx={zone.rPctW} ry={zone.rPctH} fill="rgba(198,37,52,0.1)" stroke={DANGER} strokeWidth={2} strokeDasharray="6 5" vectorEffect="non-scaling-stroke" />
         ))}
         {layer.links.map((link) => (
-          <line
-            key={`link-${link.key}`}
-            x1={link.x1}
-            y1={link.y1}
-            x2={link.x2}
-            y2={link.y2}
-            stroke={link.linked ? PATH : DANGER}
-            strokeOpacity={link.linked ? 0.55 : 0.8}
-            strokeWidth={link.explicit ? 2 : 1.25}
-            strokeDasharray="4 3"
-            vectorEffect="non-scaling-stroke"
-            data-testid="wf-link"
-          />
+          <g key={`link-${link.key}`}>
+            <line
+              x1={link.x1}
+              y1={link.y1}
+              x2={link.x2}
+              y2={link.y2}
+              className="bo-map__edgehit bo-wf__linkhit"
+              onPointerDown={wf.onLinkDown(link.key)}
+              onDoubleClick={(event) => {
+                event.stopPropagation();
+                wf.onLinkDoubleClick(link.key);
+              }}
+              data-wf-link={link.key}
+              data-linked={link.linked ? '1' : '0'}
+            >
+              {tool == null && <title>{i18n.t(W.hints.link)}</title>}
+            </line>
+            <line
+              x1={link.x1}
+              y1={link.y1}
+              x2={link.x2}
+              y2={link.y2}
+              stroke={link.selected ? SELECTED : link.linked ? PATH : DANGER}
+              strokeOpacity={link.selected ? 1 : link.linked ? 0.55 : 0.8}
+              strokeWidth={link.selected ? 3 : link.explicit ? 2 : 1.25}
+              strokeDasharray="4 3"
+              vectorEffect="non-scaling-stroke"
+              pointerEvents="none"
+              data-testid="wf-link"
+            />
+          </g>
         ))}
         {layer.paths.map((path) => {
           const style = KIND_STYLE[path.kind];
@@ -132,9 +152,16 @@ export const WayfindingLayer = ({ controller, layer }: { controller: PropertyMap
           key={anchor.key}
           data-node={anchor.key}
           data-testid="wf-anchor"
-          className={`bo-wf__anchor${anchor.linked ? '' : ' bo-wf__anchor--unlinked'}${anchor.selected ? ' bo-wf__anchor--selected' : ''}`}
+          data-linked={anchor.idle ? undefined : anchor.linked ? '1' : '0'}
+          data-polygon={anchor.polygon ?? undefined}
+          className={`bo-wf__anchor bo-wf__anchor--${anchor.kind}${anchor.idle ? ' bo-wf__anchor--idle' : anchor.linked ? '' : ' bo-wf__anchor--unlinked'}${anchor.selected ? ' bo-wf__anchor--selected' : ''}`}
           style={{ left: `${anchor.xPct}%`, top: `${anchor.yPct}%` }}
+          title={tool == null && anchor.linked ? `${anchor.name} · ${i18n.t(W.hints.link)}` : anchor.name}
           onPointerDown={wf.onAnchorDown(anchor.key, false)}
+          onDoubleClick={(event) => {
+            event.stopPropagation();
+            wf.onAnchorDoubleClick(anchor.key);
+          }}
         />
       ))}
 
@@ -173,6 +200,7 @@ export const WayfindingLayer = ({ controller, layer }: { controller: PropertyMap
           temporary={stop.temporary}
           cursor={tool === 'move' ? 'grab' : 'pointer'}
           onPointerDown={wf.onAnchorDown(stop.key, true)}
+          onDoubleClick={() => wf.onAnchorDoubleClick(stop.key)}
         />
       ))}
 
@@ -210,7 +238,8 @@ export const StopMarker = ({
   selected,
   temporary,
   cursor,
-  onPointerDown
+  onPointerDown,
+  onDoubleClick
 }: {
   stopKey: string;
   name: string;
@@ -221,6 +250,7 @@ export const StopMarker = ({
   temporary: boolean;
   cursor: string;
   onPointerDown: (event: ReactPointerEvent<HTMLDivElement>) => void;
+  onDoubleClick?: () => void;
 }) => {
   const kind = stopTypeOf(type);
   return (
@@ -230,6 +260,13 @@ export const StopMarker = ({
       className={`bo-wf__stop${selected ? ' bo-wf__stop--selected' : ''}${temporary ? ' bo-wf__stop--temp' : ''}`}
       style={{ left: `${xPct}%`, top: `${yPct}%`, cursor }}
       onPointerDown={onPointerDown}
+      onDoubleClick={
+        onDoubleClick &&
+        ((event) => {
+          event.stopPropagation();
+          onDoubleClick();
+        })
+      }
       title={name}
     >
       <span className="bo-wf__stopdisc" style={{ background: kind.color }}>

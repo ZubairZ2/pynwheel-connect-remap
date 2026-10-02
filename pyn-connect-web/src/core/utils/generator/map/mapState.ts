@@ -280,7 +280,7 @@ export interface WfSnapshot {
   tempEdges: TempEdge[];
   hiddenNodes: string[];
   hiddenEdges: string[];
-  wfLinks: Record<string, string>;
+  wfLinks: Record<string, string | null>;
   wfEdited: Record<string, 'detected' | 'edited'>;
   wfSvg: Record<string, true>;
   nextJunction: number;
@@ -414,13 +414,20 @@ export interface LocalMapState {
   wfSel: string | null;
   /** The selected path (an edge key). */
   wfSelEdge: string | null;
+  /** The selected bridge: the key of the unit, amenity or stop it joins the paths from. */
+  wfSelLink: string | null;
   /** Connect: the point or stop the next click links from. */
   wfFrom: string | null;
   /** Wayfinding on a stacked floorplate: the floor in view. */
   wfFloor: number | null;
   wfMenuOpen: boolean;
-  /** `${levelId}|${stop key}` → the point a stop was linked to by hand (else it attaches to the nearest point, as the CMS does). */
-  wfLinks: Record<string, string>;
+  /**
+   * `${levelId}|${stop key}` → the point a unit, amenity or stop was linked
+   * to by hand (else it attaches to the nearest point, as the CMS does), or
+   * null when its bridge was removed by hand: it joins nothing until Connect
+   * links it again.
+   */
+  wfLinks: Record<string, string | null>;
   /** Levels whose paths were detected or edited on this page. */
   wfEdited: Record<string, 'detected' | 'edited'>;
   /** Levels whose Wayfinding works on the floor SVG because hallways were detected from it here (an SVG-only level always does). */
@@ -491,6 +498,7 @@ export const initialLocalMapState = (levelId: string, building: string | null, l
   wfTool: null,
   wfSel: null,
   wfSelEdge: null,
+  wfSelLink: null,
   wfFrom: null,
   wfFloor: null,
   wfMenuOpen: false,

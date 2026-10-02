@@ -28,8 +28,9 @@ import { stopTypeOf, type StopTypeId } from './stopTypes';
  * A stop joins the paths at its nearest point — the CMS's own rule
  * (`ShortestPath#get_unit_data`, `get_elevator_data`,
  * `get_starting_point_data`: the closest hallway, no distance limit) —
- * unless it was linked to a point by hand on this page. It counts as linked
- * when that point has at least one path.
+ * unless it was linked to a point by hand on this page, or its bridge was
+ * removed by hand (then it joins nothing until linked again). It counts as
+ * linked when that point has at least one path.
  *
  * A floorplate whose `range` covers several floors is one layout shared by
  * the stack: its points and paths are the same on every floor, while a unit
@@ -107,15 +108,24 @@ export interface WfAnchor {
   label: string;
   meta: string;
   floors: number[] | null;
-  /** Where the anchor joins the paths: its door, else its pin, else the stop's marker (image pixels); null when it has no place on the floor image. */
+  /**
+   * Where the anchor joins the paths (the bridge and a route meet it here):
+   * on the floor image its door, else its pin, else the stop's marker; on
+   * the floor SVG the edge of its polygon facing the point it joins. Null
+   * when it has no place on the layer.
+   */
   x: number | null;
   y: number | null;
+  /** Where its marker is drawn: the join point on the SVG; its pin (or door) on the image; the stop's marker. */
+  pin: { x: number; y: number } | null;
   /** Plotted only on the other layer (the floor SVG while Wayfinding is on the image, or the reverse), whose frame this one does not share. */
   offLayer: boolean;
   attached: string | null;
   linked: boolean;
   /** Linked by hand on this page (Connect), rather than to the nearest point. */
   explicit: boolean;
+  /** Its bridge was removed by hand on this page: it joins nothing until Connect links it again. */
+  detached: boolean;
   /** The door the anchor joins the paths from (`d:<id>`), when it has one. */
   door: string | null;
   /** On the floor SVG: the polygon it is plotted on (`PlotTarget.key`), when known. */
@@ -212,6 +222,24 @@ const doorCentre = (door: MapDoor | null, state: LocalMapState): { x: number; y:
 };
 
 const onFloor = (floors: number[] | null, floor: number | null): boolean => floor == null || floors == null || floors.includes(floor);
+
+/**
+ * Where a polygon meets its bridge: the point of its box's outline on the
+ * way from the centre towards `toward` (the hallway point it joins), so the
+ * marker sits at the polygon's edge and the label in the middle stays
+ * readable. Its bottom edge when there is nothing to face.
+ */
+export const polygonEdge = (box: { x: number; y: number; w: number; h: number }, centre: { x: number; y: number }, toward: { x: number; y: number } | null): { x: number; y: number } => {
+  const aim = toward ?? { x: box.x + box.w / 2, y: box.y + box.h + 1 };
+  const dx = aim.x - centre.x;
+  const dy = aim.y - centre.y;
+  if (Math.abs(dx) < 1e-9 && Math.abs(dy) < 1e-9) return { x: box.x + box.w / 2, y: box.y + box.h };
+  const tx = dx > 0 ? (box.x + box.w - centre.x) / dx : dx < 0 ? (box.x - centre.x) / dx : Number.POSITIVE_INFINITY;
+  const ty = dy > 0 ? (box.y + box.h - centre.y) / dy : dy < 0 ? (box.y - centre.y) / dy : Number.POSITIVE_INFINITY;
+  const k = Math.min(tx, ty, 1);
+  if (!Number.isFinite(k) || k <= 0) return { x: box.x + box.w / 2, y: box.y + box.h };
+  return { x: centre.x + dx * k, y: centre.y + dy * k };
+};
 
 /**
  * The floors of this level a record applies to: some floors of a stack, or
@@ -420,10 +448,12 @@ export const wayfindingPlate = (map: PropertyMap, levels: MapLevel[], level: Map
     return { key: edge.key, a: edge.a, b: edge.b, x1: edge.x1, y1: edge.y1, x2: edge.x2, y2: edge.y2, temporary: edge.temporary, points: line, length, kind: edge.kind };
   });
 
-  const attach = (key: string, x: number | null, y: number | null): Pick<WfAnchor, 'attached' | 'linked' | 'explicit'> => {
-    if (x == null || y == null || !points.length) return { attached: null, linked: false, explicit: false };
+  const attach = (key: string, x: number | null, y: number | null): Pick<WfAnchor, 'attached' | 'linked' | 'explicit' | 'detached'> => {
+    if (x == null || y == null || !points.length) return { attached: null, linked: false, explicit: false, detached: false };
     const chosen = state.wfLinks[`${level.id}|${key}`];
-    if (chosen && byKey.has(chosen)) return { attached: chosen, linked: (byKey.get(chosen)?.degree ?? 0) > 0, explicit: true };
+    // A bridge removed by hand: the anchor joins nothing until Connect links it again.
+    if (chosen === null) return { attached: null, linked: false, explicit: true, detached: true };
+    if (chosen && byKey.has(chosen)) return { attached: chosen, linked: (byKey.get(chosen)?.degree ?? 0) > 0, explicit: true, detached: false };
     let best: WfPoint | null = null;
     let bestDistance = Number.POSITIVE_INFINITY;
     points.forEach((point) => {
@@ -434,55 +464,76 @@ export const wayfindingPlate = (map: PropertyMap, levels: MapLevel[], level: Map
       }
     });
     const nearest = best as WfPoint | null;
-    return { attached: nearest?.key ?? null, linked: !!nearest && nearest.degree > 0, explicit: false };
+    return { attached: nearest?.key ?? null, linked: !!nearest && nearest.degree > 0, explicit: false, detached: false };
+  };
+
+  /**
+   * A plotted unit or amenity as an anchor. It attaches by its centre (its
+   * door or pin on the image, its polygon's centre on the SVG — the CMS's
+   * nearest-point rule); on the SVG the bridge, the route and the marker
+   * then meet it at the polygon's edge facing that point.
+   */
+  const placeAnchor = (
+    key: string,
+    kind: 'unit' | 'amenity',
+    label: string,
+    meta: string,
+    floors: number[] | null,
+    pin: { x: number; y: number } | null,
+    doorRecord: MapDoor | null,
+    polygon: string | null
+  ) => {
+    const door = layer === 'raster' ? doorCentre(doorRecord, state) : null;
+    const centre = door ?? pin;
+    const joined = attach(key, centre?.x ?? null, centre?.y ?? null);
+    const target = layer === 'svg' && polygon ? targets?.get(polygon) : null;
+    const point = joined.attached ? byKey.get(joined.attached) : null;
+    const at = centre && target ? polygonEdge(target.bbox, centre, point ? { x: point.x, y: point.y } : null) : centre;
+    anchors.push({
+      key,
+      kind,
+      type: null,
+      label,
+      meta,
+      floors,
+      x: at?.x ?? null,
+      y: at?.y ?? null,
+      pin: layer === 'svg' ? at : (pin ?? door),
+      offLayer: !at,
+      door: door && doorRecord ? `d:${doorRecord.id}` : null,
+      polygon,
+      ...joined
+    });
   };
 
   const anchors: WfAnchor[] = [];
   map.inventory.units.forEach((unit) => {
     const placement = placementOfUnit(levels, state, unit);
     if (!placement || placement.level?.id !== level.id) return;
-    const pin = placeIn(layer, placement, unit, centreOf);
-    const doorRecord = firstDoor(map.graph.doors, 'Unit', unit.id);
-    const door = layer === 'raster' ? doorCentre(doorRecord, state) : null;
-    const at = door ?? pin;
-    const key = `unit:${unit.id}`;
-    anchors.push({
-      key,
-      kind: 'unit',
-      type: null,
-      label: labelOfUnit(unit),
-      meta: unitMeta(unit),
-      floors: unit.floor != null && level.floors.length > 1 ? [unit.floor] : null,
-      x: at?.x ?? null,
-      y: at?.y ?? null,
-      offLayer: !at,
-      door: door && doorRecord ? `d:${doorRecord.id}` : null,
-      polygon: placement.space === 'svg' ? placement.polygon : null,
-      ...attach(key, at?.x ?? null, at?.y ?? null)
-    });
+    placeAnchor(
+      `unit:${unit.id}`,
+      'unit',
+      labelOfUnit(unit),
+      unitMeta(unit),
+      unit.floor != null && level.floors.length > 1 ? [unit.floor] : null,
+      placeIn(layer, placement, unit, centreOf),
+      firstDoor(map.graph.doors, 'Unit', unit.id),
+      placement.space === 'svg' ? placement.polygon : null
+    );
   });
   mapAmenities(map).forEach((amenity) => {
     const placement = placementOfAmenity(levels, state, amenity);
     if (!placement || placement.level?.id !== level.id) return;
-    const pin = placeIn(layer, placement, amenity, centreOf);
-    const doorRecord = firstDoor(map.graph.doors, 'Amenity', amenity.id);
-    const door = layer === 'raster' ? doorCentre(doorRecord, state) : null;
-    const at = door ?? pin;
-    const key = `amenity:${amenity.id}`;
-    anchors.push({
-      key,
-      kind: 'amenity',
-      type: null,
-      label: amenity.name,
-      meta: amenityMeta(amenity),
-      floors: amenity.floor != null && level.floors.length > 1 ? [amenity.floor] : null,
-      x: at?.x ?? null,
-      y: at?.y ?? null,
-      offLayer: !at,
-      door: door && doorRecord ? `d:${doorRecord.id}` : null,
-      polygon: placement.space === 'svg' ? placement.polygon : null,
-      ...attach(key, at?.x ?? null, at?.y ?? null)
-    });
+    placeAnchor(
+      `amenity:${amenity.id}`,
+      'amenity',
+      amenity.name,
+      amenityMeta(amenity),
+      amenity.floor != null && level.floors.length > 1 ? [amenity.floor] : null,
+      placeIn(layer, placement, amenity, centreOf),
+      firstDoor(map.graph.doors, 'Amenity', amenity.id),
+      placement.space === 'svg' ? placement.polygon : null
+    );
   });
 
   const stops = levelStops(map, levels, level, graph, state);
@@ -498,6 +549,7 @@ export const wayfindingPlate = (map: PropertyMap, levels: MapLevel[], level: Map
         floors: stop.floors,
         x: stop.x,
         y: stop.y,
+        pin: stop.x != null && stop.y != null ? { x: stop.x, y: stop.y } : null,
         offLayer: false,
         door: null,
         polygon: null,

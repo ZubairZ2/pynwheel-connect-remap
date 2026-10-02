@@ -141,18 +141,19 @@ export const graphPatch = (
 };
 
 /**
- * Detect Hallways' result for one floorplate as overrides: whatever the
- * floorplate showed is hidden (stored) or dropped (page), the detected
- * graph is added as page points and paths on the floor SVG, each stop the
- * engine joined is linked to its point, and the level's Wayfinding moves to
- * the SVG.
+ * Detect Hallways' result for one floorplate as overrides. Nothing the
+ * floorplate already shows is touched — the hallways stored in the CMS and
+ * any point or path made on this page stay exactly as they are — and the
+ * detected graph is added beside them as page points and paths on the floor
+ * SVG. Each stop the engine joined is linked to its point (a link made by
+ * hand to a stop the engine did not join stays), and the level's Wayfinding
+ * moves to the SVG.
  */
 export const detectionPatch = (current: LocalMapState, level: MapLevel, plate: WfPlate, result: DetectedHallways, labelFor: (n: number) => string): Partial<LocalMapState> => {
-  const old = plateGraph(plate);
-  const cleared = graphPatch(current, level, 'svg', old, { nodes: [], edges: [] }, labelFor);
-  const base = { ...current, ...cleared.patch };
-  const built = graphPatch(base, level, 'svg', { nodes: [], edges: [] }, { nodes: result.nodes, edges: result.edges }, labelFor);
-  const links = Object.fromEntries(Object.entries(current.wfLinks).filter(([k]) => !k.startsWith(`${level.id}|`)));
+  const before = plateGraph(plate);
+  const after: GraphState = { nodes: [...before.nodes, ...result.nodes], edges: [...before.edges, ...result.edges] };
+  const built = graphPatch(current, level, 'svg', before, after, labelFor);
+  const links: Record<string, string | null> = { ...current.wfLinks };
   result.connections.forEach((connection) => {
     if (!connection.connectedNodeId) return;
     const point = built.keyOf.get(connection.connectedNodeId);

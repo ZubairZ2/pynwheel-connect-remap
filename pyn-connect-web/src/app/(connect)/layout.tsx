@@ -7,6 +7,7 @@ import { ConnectDialogs } from '~/core/components/connect/ConnectDialogs';
 import { ConnectToast } from '~/core/components/connect/ConnectToast';
 import { Sidebar } from '~/core/components/organisms/Sidebar';
 import { StoreProvider } from '~/core/store/StoreProvider';
+import { CurrentUserProvider } from '~/core/session/CurrentUserProvider';
 import { loadCurrentUser } from '~/core/session/currentUser.server';
 
 /**
@@ -16,7 +17,8 @@ import { loadCurrentUser } from '~/core/session/currentUser.server';
  *
  * `StoreProvider` wraps the whole shell because the demo slice backs the
  * topbar's omni-search and every ported screen; the Rails-backed listings
- * simply never read from it.
+ * simply never read from it. `CurrentUserProvider` hands the signed-in user
+ * to the top bar's profile block.
  */
 export default async function ConnectLayout({ children }: { children: React.ReactNode }) {
   // The one place the React flow can be turned off in favour of the legacy
@@ -28,13 +30,15 @@ export default async function ConnectLayout({ children }: { children: React.Reac
 
   return (
     <StoreProvider>
-      <div className="bo-shell">
-        <Sidebar currentUser={currentUser} />
-        <div className="bo-main">{children}</div>
-      </div>
-      <ConnectDialogs />
-      <ConfirmDialog />
-      <ConnectToast />
+      <CurrentUserProvider user={currentUser}>
+        <div className="bo-shell">
+          <Sidebar />
+          <div className="bo-main">{children}</div>
+        </div>
+        <ConnectDialogs />
+        <ConfirmDialog />
+        <ConnectToast />
+      </CurrentUserProvider>
     </StoreProvider>
   );
 }
