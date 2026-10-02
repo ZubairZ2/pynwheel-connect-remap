@@ -135,3 +135,28 @@ Not a Connect gap, but the reason elevator photos and the tour stop images read 
 - **View on Plan / Plot on Plan** open the Map & Plotting screen on the stop's floorplate with its pin selected, or armed for plotting (`?level=&pin=&arm=1`); nothing is saved (M1 covers plotting).
 - **Lock Vendors** opens the Integrations Hub preselected on the property (a demo screen, phase 2).
 - The legacy Tour Setup page's **manual path drawing** (`draw_map_line`, `paths` / `path_points`) is not reproduced: the auto-wayfinding page does not use it (`context.md` §16).
+
+---
+
+## Gap: T8. Additional Stops on Tour Setup (October 1, 2026)
+
+### Requirement
+The wayfinding design also lists Additional Stops on Tour Setup ("Add Additional Stop", "Open Map & Plotting", Plot / View on Map per stop).
+
+### Existing Rails Source Investigated
+As M15 (`ToursController#building_starting_point`, `#add_elevator`, `ElevatorsController`).
+
+### Existing DB Data
+Entry / exit points and elevators only.
+
+### What Can Be Implemented in Next.js Today
+On Map & Plotting: the full Additional Stop flow, on the page (`PYN_CONNECT_PROGRESS.md` §26). Tour Setup already lists the stored elevators and entry points.
+
+### What Cannot Be Implemented
+Stops added on Map & Plotting appearing on Tour Setup: they are page state of the map, and there is nowhere to save them.
+
+### Why It Requires Backend Persistence/Business Logic
+Same as M15.
+
+### Future Requirement
+M15; then Tour Setup reads the stops model.

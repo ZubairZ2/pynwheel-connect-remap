@@ -2,7 +2,8 @@ import { i18n } from '~/resources/i18n';
 import type { InventoryAmenity, InventoryUnit } from '~/core/models/data/propertyInventory.data';
 import type { PropertyMap } from '~/core/models/data/propertyMap.data';
 import { pointerTarget, type FloorSvgDoc, type PlotTarget } from '~/core/utils/map/floorSvg';
-import { activeSpace, levelDims, levelForAmenity, levelForUnit, levelSpaceDims, type MapLevel } from './mapLevels.generator';
+import type { EdgeKind, ExtractionSource, ReviewStatus } from '~/core/utils/wayfinding/hallways/types';
+import { activeSpace, levelDims, levelForAmenity, levelForUnit, levelSpaceDims, wayfindingSpace, type MapLevel } from './mapLevels.generator';
 import {
   AMENITY_COLOR,
   DEFAULT_BED_COLORS,
@@ -67,6 +68,10 @@ export interface LevelNode {
   /** The floors an elevator serves. */
   floors: number[];
   building: string | null;
+  /** Hallway points: where they came from and whether they are reviewed (stored ones are the CMS's). */
+  source: ExtractionSource;
+  review: ReviewStatus;
+  confidence: number | null;
 }
 
 export interface LevelEdge {
@@ -78,6 +83,9 @@ export interface LevelEdge {
   x2: number;
   y2: number;
   temporary: boolean;
+  /** The drawn polyline between the two ends (ends excluded, from `a` to `b`), in the layer's units; empty for a straight link. */
+  points: { x: number; y: number }[];
+  kind: EdgeKind;
 }
 
 export interface LevelGraph {
@@ -314,6 +322,9 @@ export const generateLevelGraph = (map: PropertyMap, levels: MapLevel[], level: 
       isStart: startKeys.has(key),
       floors: [],
       building: null,
+      source: kind === 'junction' ? 'manual' : 'stored',
+      review: 'confirmed',
+      confidence: null,
       ...extra
     });
   };
@@ -330,7 +341,9 @@ export const generateLevelGraph = (map: PropertyMap, levels: MapLevel[], level: 
 
   state.tempNodes
     .filter((node) => node.levelId === level.id && node.space === space)
-    .forEach((node) => place(node.key, 'junction', node.label, { x: node.x, y: node.y }));
+    .forEach((node) =>
+      place(node.key, 'junction', node.label, { x: node.x, y: node.y }, { source: node.source ?? 'manual', review: node.review ?? 'confirmed', confidence: node.confidence ?? null })
+    );
 
   if (space === 'raster') {
     graph.elevators
@@ -432,20 +445,22 @@ export const generateLevelGraph = (map: PropertyMap, levels: MapLevel[], level: 
 
   const byKey = new Map(nodes.map((node) => [node.key, node]));
   const edges: LevelEdge[] = [];
-  const pushEdge = (a: string, b: string, temporary: boolean) => {
+  const seen = new Set<string>();
+  const pushEdge = (a: string, b: string, temporary: boolean, points: { x: number; y: number }[], kind: EdgeKind) => {
     const na = byKey.get(a);
     const nb = byKey.get(b);
     if (!na || !nb) return;
     const key = edgeKey(a, b);
-    if (hiddenEdges.has(key) || edges.some((edge) => edge.key === key)) return;
-    edges.push({ key, a, b, x1: na.xPct, y1: na.yPct, x2: nb.xPct, y2: nb.yPct, temporary });
+    if (hiddenEdges.has(key) || seen.has(key)) return;
+    seen.add(key);
+    edges.push({ key, a, b, x1: na.xPct, y1: na.yPct, x2: nb.xPct, y2: nb.yPct, temporary, points, kind });
   };
   if (space === 'raster') {
     graph.hallways.forEach((hallway) =>
-      hallway.nextPoints.forEach((next) => pushEdge(nodeKey('hallway', hallway.id), nodeKey('hallway', next), false))
+      hallway.nextPoints.forEach((next) => pushEdge(nodeKey('hallway', hallway.id), nodeKey('hallway', next), false, [], 'stored'))
     );
   }
-  state.tempEdges.forEach((edge) => pushEdge(edge.a, edge.b, true));
+  state.tempEdges.forEach((edge) => pushEdge(edge.a, edge.b, true, edge.points ?? [], edge.kind ?? 'manual'));
 
   return { level, space, dims, pins, nodes, edges };
 };
@@ -457,6 +472,10 @@ export const generateAllGraphs = (map: PropertyMap, levels: MapLevel[], state: L
 /** Every level's raster graph (the pathway graph the routing works on), whatever layer is shown. */
 export const generateRasterGraphs = (map: PropertyMap, levels: MapLevel[], state: LocalMapState): Record<string, LevelGraph> =>
   Object.fromEntries(levels.map((level) => [level.id, generateLevelGraph(map, levels, level, state, 'raster')]));
+
+/** Every level's graph on the layer Wayfinding works on (the floor image, or the floor SVG its hallways were detected from). */
+export const generateWayfindingGraphs = (map: PropertyMap, levels: MapLevel[], state: LocalMapState): Record<string, LevelGraph> =>
+  Object.fromEntries(levels.map((level) => [level.id, generateLevelGraph(map, levels, level, state, wayfindingSpace(level, state) ?? 'raster')]));
 
 export const pinMeta = (map: PropertyMap, item: PinItem): string =>
   item.kind === 'unit'

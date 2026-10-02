@@ -53,7 +53,7 @@ test.describe('Map & Plotting (real data)', () => {
   /**
    * The plotting design's layout: the toolbar holds the floor, its plotted
    * count, Auto Plot and Manual Plot, and nothing else; the side column is
-   * the Plot Units & Amenities panel alone.
+   * the Plot on Map panel alone.
    */
   const expectDesignLayout = async (page: Page) => {
     const toolbar = page.locator('.bo-map__toolbar');
@@ -80,7 +80,7 @@ test.describe('Map & Plotting (real data)', () => {
     const tabs = page.getByRole('tablist', { name: 'Floorplates' }).getByRole('tab');
     expect(await tabs.count()).toBeGreaterThan(0);
     await expect(page.locator('.bo-map__levelpct').first()).toBeVisible();
-    await expect(page.getByTestId('plot-panel')).toContainText('Plot Units & Amenities');
+    await expect(page.getByTestId('plot-panel')).toContainText('Plot on Map');
     await expect(page.getByRole('button', { name: /^Manual Plot/ })).toBeVisible();
     await expectDesignLayout(page);
 

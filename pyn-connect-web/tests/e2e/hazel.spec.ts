@@ -396,9 +396,9 @@ test.describe('Hazel (real data)', () => {
     expect(geometry.rowHeight).toBeLessThan(120);
     expect(geometry.scrollable).toBe(true);
     expect(geometry.arrowsDisabled).toEqual([true, false]);
-    expect(geometry.activeText).toMatch(/^SINGLE FLOOR Floor 1 /);
+    expect(geometry.activeText).toMatch(/^1 FLOOR Floor 1 /);
     // Each card: floor type, floor name, its SVG state and plotted count from the database.
-    await expect(tabs.first()).toContainText('Single floor');
+    await expect(tabs.first()).toContainText('1 floor');
     await expect(tabs.first()).toContainText('Floor 1');
     await expect(tabs.first()).toContainText('No SVG');
     await expect(tabs.first()).toContainText(/\d+\/\d+/);
@@ -421,9 +421,9 @@ test.describe('Hazel (real data)', () => {
     await expect(tabs.last()).toHaveAttribute('aria-selected', 'true');
     await expect(page.locator('.bo-map__toolbarlevel')).toHaveText('1 · Floor 31');
     await expect(page.locator('.bo-map__image')).toBeVisible();
-    // The canvas draws one pin per item the Plot panel lists as plotted on this floorplate.
+    // The canvas draws one unit pin per unit the Plot on Map panel lists as plotted on this floorplate ("Show: Units", the design's default).
     const plotted = Number((await page.locator('.bo-map__plottab').nth(1).innerText()).replace(/\D+/g, ''));
-    await expect(page.locator('.bo-map__pin')).toHaveCount(plotted);
+    await expect(page.locator('.bo-map__pin--unit')).toHaveCount(plotted);
     // Backward.
     await scrollLeft(page).click();
     await expect.poll(async () => (await strip(page)).scrollLeft).toBeLessThan(geometry.max);

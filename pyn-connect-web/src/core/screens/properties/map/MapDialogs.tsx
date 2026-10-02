@@ -14,6 +14,7 @@ import type { ImageDescriptor } from '~/core/utils/generator/inventory/inventory
 import { S } from '~/core/utils/generator/inventory/inventoryText';
 import { M, plural, t } from '~/core/utils/generator/map/mapText';
 import { FloorplateDialog } from '../inventory/InventoryDialogs';
+import { AddStopDialog } from './AddStopDialog';
 
 /**
  * The dialogs of the screen: the confirm (a local change only, and its
@@ -55,6 +56,8 @@ export const MapDialogs = ({ controller }: { controller: PropertyMapController }
         <p className="bo-map__dialognote">{i18n.t(M.confirm.readOnly)}</p>
       </Modal>
 
+
+      <AddStopDialog controller={controller} />
 
       {state.floorplateDialog && (
         <FloorplateDialog

@@ -17,6 +17,8 @@ interface Props {
   /** Something is selected to drop, so a polygon click drops it. */
   dropping: boolean;
   onPolygonDown: (target: PlotTarget) => void;
+  /** Wayfinding draws its own layer on top: polygons take no clicks, so a click reaches the editing gestures. */
+  passive?: boolean;
   onPolygonHover: (key: string | null) => void;
   /** font_settings.svg_labels_font_family: set on the document's text, as the legacy page does. */
   fontFamily?: string | null;
@@ -36,7 +38,7 @@ interface Original {
  * again by the selectors the parser recorded, styled in place when something
  * sits on them or the pointer is over them, and restored otherwise.
  */
-export const SvgPlanLayer = ({ doc, polygons, plotOn, dropping, onPolygonDown, onPolygonHover, fontFamily = null }: Props) => {
+export const SvgPlanLayer = ({ doc, polygons, plotOn, dropping, onPolygonDown, onPolygonHover, fontFamily = null, passive = false }: Props) => {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const elements = useRef(new Map<string, Element>());
   const byElement = useRef(new Map<Element, PlotTarget>());
@@ -112,9 +114,9 @@ export const SvgPlanLayer = ({ doc, polygons, plotOn, dropping, onPolygonDown, o
       style.fill = polygon.hover ? FILL_HOVER : polygon.filled ? FILL_ASSIGNED : original.fill;
       style.stroke = polygon.hover || polygon.selected ? STROKE_ACTIVE : original.stroke;
       style.strokeWidth = polygon.hover || polygon.selected ? '3' : original.strokeWidth;
-      style.cursor = plotOn && dropping ? 'copy' : 'pointer';
+      style.cursor = passive ? '' : plotOn && dropping ? 'copy' : 'pointer';
     });
-  }, [byKey, dropping, plotOn]);
+  }, [byKey, dropping, passive, plotOn]);
 
   const targetOf = (event: ReactPointerEvent<HTMLDivElement>): PlotTarget | null => {
     let node = event.target as Element | null;
@@ -132,6 +134,7 @@ export const SvgPlanLayer = ({ doc, polygons, plotOn, dropping, onPolygonDown, o
       className="bo-map__svglayer"
       data-testid="plan-svg"
       onPointerDown={(event) => {
+        if (passive) return;
         const target = targetOf(event);
         if (!target) return;
         event.stopPropagation();
