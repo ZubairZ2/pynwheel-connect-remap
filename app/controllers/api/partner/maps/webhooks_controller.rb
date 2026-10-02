@@ -181,7 +181,8 @@ module Api
             assetId: unit.id,
             buildingId: unit.building,
             floorId: unit.floor,
-            floorplanId: unit.floorplan_id
+            floorplanId: unit.floorplan_id,
+            pmsUnitId: unit.pms_unit_id
           }
         end
 

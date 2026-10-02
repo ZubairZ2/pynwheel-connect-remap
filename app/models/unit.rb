@@ -643,6 +643,12 @@ class Unit < ApplicationRecord
     x_plot.to_i.positive? || y_plot.to_i.positive? || pointer_data.is_a?(Hash) && pointer_data["x_plot"].present?
   end
 
+  # The source PMS's own unit id (e.g. Entrata's PropertyUnitId), or nil when it
+  # cannot be recovered exactly. See PmsUnitIdResolver.
+  def pms_unit_id
+    PmsUnitIdResolver.call(self)
+  end
+
   def unit_market
     (self.building.present?) ?  (self.building.to_s + "-" + self.marketing_name) :  self.marketing_name
   end
