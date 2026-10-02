@@ -184,7 +184,8 @@ export interface WayfindingPanel {
   multiScope: boolean;
   stepFree: boolean;
   route: WfRouteView | null;
-  unlinked: null | { head: string; rows: { key: string; name: string; meta: string }[] };
+  /** The stops that join no path; `link` is the row's button while a hallway point is in hand (Connect, or a selected point). */
+  unlinked: null | { head: string; rows: { key: string; name: string; meta: string; link: string | null }[] };
   picker: WfPicker | null;
 }
 
@@ -211,8 +212,33 @@ const DETECT_STATUS: Record<WfDetectStatus, { label: string; tone: WfDetectView[
   failed: { label: W.detect.status.failed, tone: 'danger' }
 };
 
-/** The Detect Hallways card: progress while the run goes, then what each floorplate came to. */
-export const generateDetectView = (state: LocalMapState): WfDetectView | null => {
+/** Why a unit, amenity or stop joins no path, in the Not linked list's words. */
+export const unlinkedReason = (anchor: WfAnchor, plate: WfPlate): string =>
+  anchor.detached
+    ? i18n.t(W.unlinked.detached)
+    : anchor.offLayer
+      ? i18n.t(plate.space === 'svg' ? W.unlinked.imageOnly : W.unlinked.svgOnly)
+      : anchor.attached
+        ? i18n.t(W.unlinked.isolated)
+        : anchor.meta;
+
+/** "{count} not linked — A, B, C +2 more (reason)": the stops a kept floorplate still cannot route to, for its Detect row. */
+const unlinkedSummary = (plate: WfPlate): { count: number; text: string } => {
+  const rows = plate.anchors.filter((anchor) => !anchor.linked);
+  if (!rows.length) return { count: 0, text: '' };
+  const shown = rows.slice(0, 3);
+  const names = `${shown.map((anchor) => `${anchor.label} (${unlinkedReason(anchor, plate)})`).join(', ')}${rows.length > 3 ? ` ${t(W.detect.moreNames, { count: rows.length - 3 })}` : ''}`;
+  return { count: rows.length, text: t(W.detect.rowUnlinked, { count: rows.length, names }) };
+};
+
+/**
+ * The Detect Hallways card: progress while the run goes, then what each
+ * floorplate came to. With the floorplates' views, a kept floorplate's row
+ * also names the stops that still join no path — detection keeps stored
+ * paths and cannot link a stop plotted on the other layer, so the card says
+ * why the floorplate stays Incomplete.
+ */
+export const generateDetectView = (state: LocalMapState, plates: Record<string, WfPlate> = {}): WfDetectView | null => {
   const run = state.wfDetect;
   if (!run) return null;
   const count = (status: WfDetectStatus) => run.rows.filter((row) => row.status === status).length;
@@ -226,13 +252,18 @@ export const generateDetectView = (state: LocalMapState): WfDetectView | null =>
   const connected = run.rows.filter((row) => row.status === 'existing').reduce((sum, row) => sum + row.paths, 0);
   // Nothing changed at all: every floorplate already had paths (with nothing to auto-connect) or had no floor SVG.
   const untouched = !run.running && !run.stopped && !connected && run.rows.every((row) => row.status === 'existing' || row.status === 'noSvg');
+  // The stops the kept floorplates still cannot route to (read live, so linking one updates the card).
+  const kept = run.rows.filter((row) => row.status === 'existing').map((row) => ({ row, unlinked: plates[row.levelId] ? unlinkedSummary(plates[row.levelId]) : { count: 0, text: '' } }));
+  const stillUnlinked = kept.reduce((sum, entry) => sum + entry.unlinked.count, 0);
   const title = run.running
     ? t(W.detect.progress, { done: finished, total: run.rows.length })
     : detected
       ? t(W.detect.doneTitle, { plates: plural(detected, M.autoPlot.plateOne, M.autoPlot.plateMany), points: plural(points, W.pointOne, W.pointMany), paths: plural(paths, W.pathOne, W.pathMany) })
       : connected
         ? t(W.detect.keptTitle, { paths: plural(connected, W.pathOne, W.pathMany) })
-        : i18n.t(run.stopped ? W.detect.stoppedTitle : untouched ? W.detect.nothingTitle : W.detect.noneTitle);
+        : untouched && stillUnlinked
+          ? t(W.detect.keptUnlinkedTitle, { count: stillUnlinked })
+          : i18n.t(run.stopped ? W.detect.stoppedTitle : untouched ? W.detect.nothingTitle : W.detect.noneTitle);
   return {
     title,
     running: run.running,
@@ -248,16 +279,20 @@ export const generateDetectView = (state: LocalMapState): WfDetectView | null =>
     ].filter((row) => row.value > 0 || row.label === i18n.t(W.detect.sum.processed)),
     rows: run.rows.map((row) => {
       const status = DETECT_STATUS[row.status];
+      const unlinked = kept.find((entry) => entry.row === row)?.unlinked;
       const detail =
         row.status === 'detected'
           ? `${plural(row.points, W.pointOne, W.pointMany)} · ${plural(row.paths, W.pathOne, W.pathMany)} · ${i18n.t(row.source === 'vector' ? W.detect.fromWalkway : W.detect.fromInferred)}`
-          : row.status === 'existing' && row.paths
-            ? t(W.detect.keptDetail, { note: row.note, paths: plural(row.paths, W.pathOne, W.pathMany) })
+          : row.status === 'existing'
+            ? `${row.paths ? t(W.detect.keptDetail, { note: row.note, paths: plural(row.paths, W.pathOne, W.pathMany) }) : row.note}${unlinked?.count ? ` · ${unlinked.text}` : ''}`
             : row.note;
       return { levelId: row.levelId, name: row.name, status: row.status, label: i18n.t(status.label), detail, tone: status.tone };
     }),
     canUndo: !run.running && (detected > 0 || connected > 0),
-    empty: !run.running && !detected && !connected ? i18n.t(run.stopped ? W.detect.stoppedBody : untouched ? W.detect.nothingBody : W.detect.noneBody) : null
+    empty:
+      !run.running && !detected && !connected
+        ? i18n.t(run.stopped ? W.detect.stoppedBody : untouched ? (stillUnlinked ? W.detect.keptUnlinkedBody : W.detect.nothingBody) : W.detect.noneBody)
+        : null
   };
 };
 
@@ -306,7 +341,8 @@ export const generateWayfindingPanel = (
   state: LocalMapState,
   groups: WfRouteGroup[],
   pair: [string, string],
-  sampleAvailable: boolean
+  sampleAvailable: boolean,
+  plates: Record<string, WfPlate> = { [level.id]: plate }
 ): WayfindingPanel => {
   const floor = stackFloor(level, state.wfFloor);
   const progress = plateProgress(plate, floor);
@@ -380,7 +416,7 @@ export const generateWayfindingPanel = (
       selection = {
         kind: 'link',
         title: `${i18n.t(W.selection.bridge)} · ${anchor.label}`,
-        meta: `${i18n.t(anchor.explicit ? W.selection.linkedByHand : W.selection.nearestPoint)} · ${t(W.selection.length, {
+        meta: `${i18n.t(anchor.explicit ? W.selection.linkedByHand : W.selection.nearestPoint)}${anchor.placedHere ? ` · ${i18n.t(W.unlinked.placed)}` : ''} · ${t(W.selection.length, {
           length: Math.round(distance(anchor.x, anchor.y, point.x, point.y)).toLocaleString('en-US'),
           unit: i18n.t(plate.space === 'svg' ? W.units.svg : W.units.raster)
         })}`
@@ -418,6 +454,9 @@ export const generateWayfindingPanel = (
   const route = state.wfRoute ? routeView(state, state.wfRoute, level, floor) : null;
 
   const unlinkedRows = anchors.filter((anchor) => !anchor.linked);
+  // A hallway point in hand: the Connect tool's first click, or the selected point.
+  const inHand = state.wfTool === 'connect' ? state.wfFrom : state.wfTool === 'erase' || state.wfTool === 'move' ? null : state.wfSel;
+  const pointInHand = !!inHand && plate.points.some((point) => point.key === inHand);
   const unlinked =
     plate.points.length > 0 && unlinkedRows.length
       ? {
@@ -425,13 +464,8 @@ export const generateWayfindingPanel = (
           rows: unlinkedRows.map((anchor) => ({
             key: anchor.key,
             name: anchor.label,
-            meta: anchor.detached
-              ? `${anchor.meta} · ${i18n.t(W.unlinked.detached)}`
-              : anchor.offLayer
-                ? i18n.t(plate.space === 'svg' ? W.unlinked.imageOnly : W.unlinked.svgOnly)
-                : anchor.attached
-                  ? `${anchor.meta} · ${i18n.t(W.unlinked.isolated)}`
-                  : anchor.meta
+            meta: anchor.offLayer ? unlinkedReason(anchor, plate) : anchor.detached || anchor.attached ? `${anchor.meta} · ${unlinkedReason(anchor, plate)}` : anchor.meta,
+            link: pointInHand ? i18n.t(anchor.offLayer ? W.unlinked.placeHere : W.unlinked.linkHere) : null
           }))
         }
       : null;
@@ -446,7 +480,7 @@ export const generateWayfindingPanel = (
     layerNote: plate.space === 'svg' ? i18n.t(state.wfSvg[level.id] ? W.layer.detected : W.layer.svgOnly) : null,
     mode: { label: tool ? t(W.mode.tool, { tool: i18n.t(tool.label) }) : i18n.t(W.mode.default), tool: state.wfTool },
     selection,
-    detect: generateDetectView(state),
+    detect: generateDetectView(state, plates),
     pending,
     scopes,
     scope,

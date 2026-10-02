@@ -27,6 +27,7 @@ export const snapshotOf = (state: LocalMapState): WfSnapshot => ({
   hiddenNodes: state.hiddenNodes,
   hiddenEdges: state.hiddenEdges,
   wfLinks: state.wfLinks,
+  wfPlaces: state.wfPlaces,
   wfEdited: state.wfEdited,
   wfSvg: state.wfSvg,
   nextJunction: state.nextJunction

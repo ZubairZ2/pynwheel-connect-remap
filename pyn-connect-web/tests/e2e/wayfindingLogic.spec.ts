@@ -6,7 +6,8 @@ import { generateMapLevels, isStacked, stackFloor } from '~/core/utils/generator
 import { generateRasterGraphs } from '~/core/utils/generator/map/mapNodes.generator';
 import { generatePlotPanel } from '~/core/utils/generator/map/mapPanels.generator';
 import { initialLocalMapState, type LocalMapState, type TempStop } from '~/core/utils/generator/map/mapState';
-import { generateWayfindingPanel, newStopForm, stopFormErrors, wayfindingEnabled } from '~/core/utils/generator/map/wayfinding.generator';
+import { generateDetectView, generateWayfindingPanel, newStopForm, stopFormErrors, wayfindingEnabled } from '~/core/utils/generator/map/wayfinding.generator';
+import { snapshotOf } from '~/core/utils/wayfinding/hallwayEdits';
 import { anchorsOnFloor, parseServedFloors, plateProgress, wayfindingPlate, type WfPlate } from '~/core/utils/wayfinding/wayfindingGraph';
 import { computeWayfindingRoute, defaultPair, routeGroups, sampleRoute, type WfRouteInput } from '~/core/utils/wayfinding/wayfindingRoute';
 
@@ -195,6 +196,54 @@ test.describe('Wayfinding logic', () => {
     const relinked = setup(map, { wfLinks: { 'floorplate:20|unit:501': 'h:101' } });
     const again = anchorsOnFloor(relinked.plates[level.id], 5).find((anchor) => anchor.label === 'Unit 0501')!;
     expect(again).toMatchObject({ attached: 'h:101', linked: true, explicit: true, detached: false });
+  });
+
+  test('a unit plotted only on the floor SVG has no place on the image floor; placed at a point by hand it links and routes there', () => {
+    const map = buildMap();
+    const svgOnly = { ...unit(102, 'Unit 0102', 10, 1, 0, 0), xPlot: null, yPlot: null, svgPointer: { xPlot: 10, yPlot: 10, tag: 'rect', elementId: 'A1', selector: '#A1' } } as unknown as InventoryUnit;
+    map.inventory.units.push(svgOnly);
+    const before = setup(map);
+    const lobby = before.level('Floor 1');
+    const anchor = anchorsOnFloor(before.plates[lobby.id], null).find((row) => row.label === 'Unit 0102')!;
+    expect(anchor).toMatchObject({ offLayer: true, linked: false, placedHere: false, x: null });
+    const inputBefore: WfRouteInput = { levels: before.levels, plates: before.plates, current: lobby, floor: null, scope: 'plate', stepFree: false };
+    const groupsBefore = routeGroups(inputBefore);
+    const panelBefore = generateWayfindingPanel(map, before.levels, lobby, before.plates[lobby.id], { ...before.state, levelId: lobby.id, wfTool: 'connect', wfFrom: 'h:1' }, groupsBefore, defaultPair(inputBefore, groupsBefore, '', ''), true);
+    const row = panelBefore.unlinked?.rows.find((item) => item.name === 'Unit 0102');
+    expect(row?.meta).toContain('Plotted on the floor SVG only');
+    expect(row?.link).toBe('Place at the selected point and link');
+    // Placed at the second hallway point and linked to it.
+    const after = setup(map, { wfPlaces: { [`${lobby.id}|unit:102`]: { x: 308, y: 300, space: 'raster' } }, wfLinks: { [`${lobby.id}|unit:102`]: 'h:2' } });
+    const placed = anchorsOnFloor(after.plates[lobby.id], null).find((item) => item.label === 'Unit 0102')!;
+    expect(placed).toMatchObject({ offLayer: false, placedHere: true, attached: 'h:2', linked: true, x: 308, y: 300 });
+    const input: WfRouteInput = { levels: after.levels, plates: after.plates, current: lobby, floor: null, scope: 'plate', stepFree: false };
+    const groups = routeGroups(input);
+    const route = computeWayfindingRoute(input, groups, `${lobby.id}@|unit:101`, `${lobby.id}@|unit:102`);
+    expect(route.ok).toBe(true);
+  });
+
+  test('the Detect card on a kept floorplate names the stops that still join no path and says why', () => {
+    const map = buildMap();
+    const detached = setup(map, { wfLinks: { 'floorplate:20|unit:501': null } });
+    const level = detached.level('Floors 5–14');
+    const run = {
+      scope: 'plate' as const,
+      rows: [{ levelId: level.id, name: 'Tower A · Floors 5–14', status: 'existing' as const, points: 4, paths: 0, source: null, note: '4 stored hallway points kept — not overwritten' }],
+      running: false,
+      stopped: false,
+      snapshot: snapshotOf(detached.state),
+      undoDepth: 0
+    };
+    const view = generateDetectView({ ...detached.state, wfDetect: run }, detached.plates)!;
+    expect(view.title).toBe('Existing paths kept · 1 not linked');
+    expect(view.rows[0].detail).toBe('4 stored hallway points kept — not overwritten · 1 not linked — Unit 0501 (bridge removed on this page)');
+    expect(view.empty).toContain('still join no path');
+    expect(view.canUndo).toBe(false);
+    // Linked again: the same run reads as nothing to do.
+    const relinked = setup(map, { wfLinks: { 'floorplate:20|unit:501': 'h:101' } });
+    const again = generateDetectView({ ...relinked.state, wfDetect: run }, relinked.plates)!;
+    expect(again.title).toBe('Nothing to detect');
+    expect(again.rows[0].detail).toBe('4 stored hallway points kept — not overwritten');
   });
 
   test('the stacked panel: range, every floor, completion per floor, the floor-specific unit example', () => {

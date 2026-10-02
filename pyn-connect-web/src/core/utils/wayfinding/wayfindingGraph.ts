@@ -126,6 +126,8 @@ export interface WfAnchor {
   explicit: boolean;
   /** Its bridge was removed by hand on this page: it joins nothing until Connect links it again. */
   detached: boolean;
+  /** Plotted only on the other layer, but given a place on this one by hand (at the point it was linked to). */
+  placedHere: boolean;
   /** The door the anchor joins the paths from (`d:<id>`), when it has one. */
   door: string | null;
   /** On the floor SVG: the polygon it is plotted on (`PlotTarget.key`), when known. */
@@ -484,7 +486,10 @@ export const wayfindingPlate = (map: PropertyMap, levels: MapLevel[], level: Map
     polygon: string | null
   ) => {
     const door = layer === 'raster' ? doorCentre(doorRecord, state) : null;
-    const centre = door ?? pin;
+    // An item plotted only on the other layer can be given a place here by hand (Not linked → place at a point).
+    const placed = state.wfPlaces[`${level.id}|${key}`];
+    const placedHere = !door && !pin && !!placed && placed.space === layer;
+    const centre = door ?? pin ?? (placedHere ? { x: placed.x, y: placed.y } : null);
     const joined = attach(key, centre?.x ?? null, centre?.y ?? null);
     const target = layer === 'svg' && polygon ? targets?.get(polygon) : null;
     const point = joined.attached ? byKey.get(joined.attached) : null;
@@ -498,11 +503,12 @@ export const wayfindingPlate = (map: PropertyMap, levels: MapLevel[], level: Map
       floors,
       x: at?.x ?? null,
       y: at?.y ?? null,
-      pin: layer === 'svg' ? at : (pin ?? door),
+      pin: layer === 'svg' ? at : (pin ?? door ?? centre),
       offLayer: !at,
       door: door && doorRecord ? `d:${doorRecord.id}` : null,
       polygon,
-      ...joined
+      ...joined,
+      placedHere
     });
   };
 
@@ -553,7 +559,8 @@ export const wayfindingPlate = (map: PropertyMap, levels: MapLevel[], level: Map
         offLayer: false,
         door: null,
         polygon: null,
-        ...attach(stop.key, stop.x, stop.y)
+        ...attach(stop.key, stop.x, stop.y),
+        placedHere: false
       })
     );
 

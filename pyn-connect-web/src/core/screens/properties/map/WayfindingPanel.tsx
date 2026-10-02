@@ -321,11 +321,16 @@ export const WayfindingPanel = ({ controller }: { controller: PropertyMapControl
             <div className="bo-map__eyebrow">{panel.unlinked.head}</div>
             <div className="bo-wf__unlinkedhint">{i18n.t(W.unlinked.hint)}</div>
             {panel.unlinked.rows.map((row) => (
-              <div key={row.key} className="bo-wf__unlinkedrow">
+              <div key={row.key} className="bo-wf__unlinkedrow" data-testid="wf-unlinked-row">
                 <span className="bo-wf__unlinkeddot" />
                 <div className="bo-wf__unlinkedtext">
                   <div className="bo-wf__unlinkedname">{row.name}</div>
                   <div className="bo-wf__unlinkedmeta">{row.meta}</div>
+                  {row.link && (
+                    <button type="button" className="bo-wf__smallbtn bo-wf__unlinkedlink" onClick={() => wf.linkListed(row.key)}>
+                      {row.link}
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

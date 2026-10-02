@@ -304,6 +304,37 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
   const anchorName = useCallback((key: string) => plate?.anchors.find((anchor) => anchor.key === key)?.label ?? plate?.stops.find((stop) => stop.key === key)?.label ?? key, [plate]);
 
   /**
+   * The button on a Not linked row: links the stop to the hallway point in
+   * hand (Connect's first click, or the selected point). A unit or amenity
+   * plotted only on the other layer has no place on this one — the two
+   * files share no frame — so it is placed at that point here, page-only
+   * and undoable, and the route reaches it there.
+   */
+  const linkListed = useCallback(
+    (key: string) => {
+      if (!level || !plate?.space) return;
+      const inHand = state.wfTool === 'connect' ? state.wfFrom : state.wfTool === 'erase' || state.wfTool === 'move' ? null : state.wfSel;
+      const point = isPoint(inHand) ? plate.points.find((row) => row.key === inHand) : null;
+      const anchor = plate.anchors.find((row) => row.key === key);
+      if (!point || !anchor) {
+        toast(i18n.t(W.toast.selectPointFirst));
+        return;
+      }
+      const space = plate.space;
+      patch((current) => ({
+        wfPlaces: anchor.offLayer ? { ...current.wfPlaces, [`${level.id}|${key}`]: { x: point.x, y: point.y, space } } : current.wfPlaces,
+        wfLinks: { ...current.wfLinks, [`${level.id}|${key}`]: point.key },
+        wfFrom: null,
+        wfSel: point.key,
+        wfSelLink: null,
+        ...edited(current, level.id)
+      }));
+      toast(t(anchor.offLayer ? W.toast.placedLinked : W.toast.linked, { name: anchor.label }));
+    },
+    [level, patch, plate, state.wfFrom, state.wfSel, state.wfTool, toast]
+  );
+
+  /**
    * Removes a bridge on this page: the unit, amenity or stop joins nothing
    * until Connect links it again. Only that bridge goes — the hallway paths
    * and every other bridge stay — and Ctrl/Cmd+Z brings it back.
@@ -707,6 +738,7 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
           tempNodes: current.tempNodes.filter((node) => !temporary.has(node.key)),
           tempEdges: current.tempEdges.filter((edge) => !temporary.has(edge.a) && !temporary.has(edge.b) && !stored.includes(edge.a) && !stored.includes(edge.b)),
           wfLinks: Object.fromEntries(Object.entries(current.wfLinks).filter(([key]) => !key.startsWith(`${level.id}|`))),
+          wfPlaces: Object.fromEntries(Object.entries(current.wfPlaces).filter(([key]) => !key.startsWith(`${level.id}|`))),
           wfSel: null,
           wfSelEdge: null,
           wfSelLink: null,
@@ -1299,7 +1331,7 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
 
   const toolbar = level && plate && wayfind ? generateWfToolbar(map, levels, level, plate, state) : null;
   const panel =
-    level && plate && wayfind && routeInput ? generateWayfindingPanel(map, levels, level, plate, state, groups, pair, groups.reduce((sum, group) => sum + group.items.length, 0) >= 2) : null;
+    level && plate && wayfind && routeInput ? generateWayfindingPanel(map, levels, level, plate, state, groups, pair, groups.reduce((sum, group) => sum + group.items.length, 0) >= 2, plates) : null;
   const layer = level && plate && wayfind ? generateWfLayer(plate, level, state) : null;
   const stopForm = state.stopDialog ? generateStopForm(state.stopDialog, levels) : null;
 
@@ -1330,6 +1362,7 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
       onLinkDown,
       onLinkDoubleClick,
       onAnchorDoubleClick,
+      linkListed,
       onBendEnd,
       clearPaths,
       deleteSelected,
