@@ -6,7 +6,7 @@ import { anchorsOnFloor, blockerRadius, parseServedFloors, plateProgress, stopsO
 import { copyKey, type WfRouteGroup, type WfRouteResult, type WfStepKind } from '~/core/utils/wayfinding/wayfindingRoute';
 import type { EdgeKind } from '~/core/utils/wayfinding/hallways/types';
 import { levelsOfBuilding, mapBuildings, stackFloor, type MapLevel } from './mapLevels.generator';
-import { edgeKey, toPercent, type LocalMapState, type StopForm, type WfDetectStatus, type WfScope, type WfTool } from './mapState';
+import { distance, edgeKey, toPercent, type LocalMapState, type StopForm, type WfDetectStatus, type WfScope, type WfTool } from './mapState';
 import { M, plural, t } from './mapText';
 
 /** Descriptors for the Wayfinding mode: the toolbar, the side panel, the canvas layer and the Add Additional Stop dialog. Pure. */
@@ -72,7 +72,6 @@ export interface WfToolbar {
   clearTip: string;
   noPlan: boolean;
   detecting: boolean;
-  canAutoConnect: boolean;
   undo: { can: boolean; tip: string };
 }
 
@@ -105,7 +104,6 @@ export const generateWfToolbar = (map: PropertyMap, levels: MapLevel[], level: M
     clearTip: i18n.t(plate.points.length ? W.clear.tip : W.clear.tipEmpty),
     noPlan: !plate.hasPlan,
     detecting: !!state.wfDetect?.running,
-    canAutoConnect: plate.points.length >= 2 && !state.wfDetect?.running,
     undo: { can: undoCount > 0 && !state.wfDetect?.running, tip: undoCount ? t(W.undo.tip, { count: undoCount }) : i18n.t(W.undo.tipEmpty) }
   };
 };
@@ -172,7 +170,7 @@ export interface WayfindingPanel {
   layerNote: string | null;
   /** The active tool, or the default editing gestures. */
   mode: { label: string; tool: WfTool | null };
-  selection: null | { kind: 'point' | 'path'; title: string; meta: string };
+  selection: null | { kind: 'point' | 'path' | 'link'; title: string; meta: string };
   detect: WfDetectView | null;
   /** Inferred points still waiting for review on this floorplate. */
   pending: null | { count: number; text: string; confirmable: number; confirmLabel: string };
@@ -221,15 +219,20 @@ export const generateDetectView = (state: LocalMapState): WfDetectView | null =>
   const finished = run.rows.filter((row) => row.status !== 'queued' && row.status !== 'running').length;
   const detected = count('detected');
   const current = run.rows.find((row) => row.status === 'running') ?? null;
-  const points = run.rows.reduce((sum, row) => sum + row.points, 0);
-  const paths = run.rows.reduce((sum, row) => sum + row.paths, 0);
-  // Nothing was read at all: every floorplate already had paths or had no floor SVG.
-  const untouched = !run.running && !run.stopped && run.rows.every((row) => row.status === 'existing' || row.status === 'noSvg');
+  const detectedRows = run.rows.filter((row) => row.status === 'detected');
+  const points = detectedRows.reduce((sum, row) => sum + row.points, 0);
+  const paths = detectedRows.reduce((sum, row) => sum + row.paths, 0);
+  // A floorplate that already had paths keeps them; its `paths` is what Auto-Connect added beside them.
+  const connected = run.rows.filter((row) => row.status === 'existing').reduce((sum, row) => sum + row.paths, 0);
+  // Nothing changed at all: every floorplate already had paths (with nothing to auto-connect) or had no floor SVG.
+  const untouched = !run.running && !run.stopped && !connected && run.rows.every((row) => row.status === 'existing' || row.status === 'noSvg');
   const title = run.running
     ? t(W.detect.progress, { done: finished, total: run.rows.length })
     : detected
       ? t(W.detect.doneTitle, { plates: plural(detected, M.autoPlot.plateOne, M.autoPlot.plateMany), points: plural(points, W.pointOne, W.pointMany), paths: plural(paths, W.pathOne, W.pathMany) })
-      : i18n.t(run.stopped ? W.detect.stoppedTitle : untouched ? W.detect.nothingTitle : W.detect.noneTitle);
+      : connected
+        ? t(W.detect.keptTitle, { paths: plural(connected, W.pathOne, W.pathMany) })
+        : i18n.t(run.stopped ? W.detect.stoppedTitle : untouched ? W.detect.nothingTitle : W.detect.noneTitle);
   return {
     title,
     running: run.running,
@@ -248,11 +251,13 @@ export const generateDetectView = (state: LocalMapState): WfDetectView | null =>
       const detail =
         row.status === 'detected'
           ? `${plural(row.points, W.pointOne, W.pointMany)} · ${plural(row.paths, W.pathOne, W.pathMany)} · ${i18n.t(row.source === 'vector' ? W.detect.fromWalkway : W.detect.fromInferred)}`
-          : row.note;
+          : row.status === 'existing' && row.paths
+            ? t(W.detect.keptDetail, { note: row.note, paths: plural(row.paths, W.pathOne, W.pathMany) })
+            : row.note;
       return { levelId: row.levelId, name: row.name, status: row.status, label: i18n.t(status.label), detail, tone: status.tone };
     }),
-    canUndo: !run.running && detected > 0,
-    empty: !run.running && !detected ? i18n.t(run.stopped ? W.detect.stoppedBody : untouched ? W.detect.nothingBody : W.detect.noneBody) : null
+    canUndo: !run.running && (detected > 0 || connected > 0),
+    empty: !run.running && !detected && !connected ? i18n.t(run.stopped ? W.detect.stoppedBody : untouched ? W.detect.nothingBody : W.detect.noneBody) : null
   };
 };
 
@@ -367,6 +372,20 @@ export const generateWayfindingPanel = (
         meta: `${i18n.t(EDGE_KIND_LABEL[path.kind])} · ${t(W.selection.length, { length: Math.round(path.length).toLocaleString('en-US'), unit: i18n.t(plate.space === 'svg' ? W.units.svg : W.units.raster) })} · ${i18n.t(path.temporary ? M.selection.temporary : M.selection.stored)}`
       };
     }
+  } else if (state.wfSelLink) {
+    // A bridge: the dashed line from a unit, amenity or stop to the point it joins the paths at.
+    const anchor = anchors.find((row) => row.key === state.wfSelLink);
+    const point = anchor?.attached ? plate.points.find((row) => row.key === anchor.attached) : null;
+    if (anchor && point && anchor.x != null && anchor.y != null) {
+      selection = {
+        kind: 'link',
+        title: `${i18n.t(W.selection.bridge)} · ${anchor.label}`,
+        meta: `${i18n.t(anchor.explicit ? W.selection.linkedByHand : W.selection.nearestPoint)} · ${t(W.selection.length, {
+          length: Math.round(distance(anchor.x, anchor.y, point.x, point.y)).toLocaleString('en-US'),
+          unit: i18n.t(plate.space === 'svg' ? W.units.svg : W.units.raster)
+        })}`
+      };
+    }
   }
 
   const pendingPoints = plate.points.filter((point) => point.review === 'pending');
@@ -406,7 +425,13 @@ export const generateWayfindingPanel = (
           rows: unlinkedRows.map((anchor) => ({
             key: anchor.key,
             name: anchor.label,
-            meta: anchor.offLayer ? i18n.t(plate.space === 'svg' ? W.unlinked.imageOnly : W.unlinked.svgOnly) : anchor.attached ? `${anchor.meta} · ${i18n.t(W.unlinked.isolated)}` : anchor.meta
+            meta: anchor.detached
+              ? `${anchor.meta} · ${i18n.t(W.unlinked.detached)}`
+              : anchor.offLayer
+                ? i18n.t(plate.space === 'svg' ? W.unlinked.imageOnly : W.unlinked.svgOnly)
+                : anchor.attached
+                  ? `${anchor.meta} · ${i18n.t(W.unlinked.isolated)}`
+                  : anchor.meta
           }))
         }
       : null;
@@ -604,6 +629,7 @@ export interface WfLayerStop {
   blocker: boolean;
 }
 
+/** A bridge: the dashed line from a unit, amenity or stop (its join point) to the hallway point it attaches to. Keyed by the anchor. */
 export interface WfLayerLink {
   key: string;
   x1: number;
@@ -612,6 +638,22 @@ export interface WfLayerLink {
   y2: number;
   linked: boolean;
   explicit: boolean;
+  selected: boolean;
+}
+
+/** A unit's or amenity's marker in Wayfinding: a small hollow outline at its polygon's edge (on the SVG) or on its pin (on the image). */
+export interface WfLayerAnchor {
+  key: string;
+  kind: 'unit' | 'amenity';
+  name: string;
+  xPct: number;
+  yPct: number;
+  linked: boolean;
+  selected: boolean;
+  /** The floor has no paths at all, so there is nothing to be linked to yet: drawn neutral, not as unlinked. */
+  idle: boolean;
+  /** On the floor SVG: the polygon the unit is plotted on (`PlotTarget.key`). */
+  polygon: string | null;
 }
 
 export interface WfLayer {
@@ -625,12 +667,10 @@ export interface WfLayer {
   /** Where the Deselect badge floats (percent), when a point is selected. */
   badge: { xPct: number; yPct: number } | null;
   dimmed: boolean;
-  /** The unit and amenity pins of the floor in view (a stack's other floors share the image, not the units). */
-  pins: Set<string>;
-  /** Their doors (stored on the floor image), where the CMS routes to and the links start. */
+  /** The doors of the floor's units and amenities (stored on the floor image), where the CMS routes to and the bridges start. */
   doors: { key: string; xPct: number; yPct: number }[];
-  /** On the floor SVG a plotted unit is its filled polygon, with no marker: a dot there to click (Connect, Add Point). */
-  anchors: { key: string; xPct: number; yPct: number; linked: boolean; selected: boolean }[];
+  /** The units and amenities of the floor in view, on either layer (a stack's other floors share the plan, not the units). */
+  anchors: WfLayerAnchor[];
   /** A path being bent: the preview line from the grab point to the pointer, and the handle. */
   bend: { x1: number; y1: number; x2: number; y2: number } | null;
 }
@@ -652,7 +692,18 @@ export const generateWfLayer = (plate: WfPlate, level: MapLevel, state: LocalMap
   const links: WfLayerLink[] = anchors.flatMap((anchor) => {
     const point = anchor.attached ? points.get(anchor.attached) : null;
     if (!point || anchor.x == null || anchor.y == null) return [];
-    return [{ key: anchor.key, x1: pct(anchor.x, dims?.w), y1: pct(anchor.y, dims?.h), x2: point.xPct, y2: point.yPct, linked: anchor.linked, explicit: anchor.explicit }];
+    return [
+      {
+        key: anchor.key,
+        x1: pct(anchor.x, dims?.w),
+        y1: pct(anchor.y, dims?.h),
+        x2: point.xPct,
+        y2: point.yPct,
+        linked: anchor.linked,
+        explicit: anchor.explicit,
+        selected: state.wfSelLink === anchor.key
+      }
+    ];
   });
 
   const fromStop = state.wfFrom && !points.has(state.wfFrom) ? state.wfFrom : null;
@@ -708,18 +759,25 @@ export const generateWfLayer = (plate: WfPlate, level: MapLevel, state: LocalMap
       .filter((stop) => stop.blocker)
       .map((stop) => ({ key: stop.key, xPct: stop.xPct, yPct: stop.yPct, rPctW: dims ? (radius / dims.w) * 100 : 4, rPctH: dims ? (radius / dims.h) * 100 : 4 })),
     route: leg && dims ? leg.points.map((point) => ({ x: pct(point.x, dims.w), y: pct(point.y, dims.h), stop: point.stop, name: point.name })) : null,
-    badge: selected && !state.dragging ? { xPct: selected.xPct, yPct: selected.yPct } : null,
+    // No badge while Connect holds a point: it would float over the markers next to that point, the very targets of the next click.
+    badge: selected && !state.dragging && state.wfTool !== 'connect' ? { xPct: selected.xPct, yPct: selected.yPct } : null,
     dimmed: !!leg,
-    pins: new Set(anchors.filter((anchor) => anchor.kind !== 'stop').map((anchor) => anchor.key)),
     doors: anchors
       .filter((anchor) => anchor.door && anchor.x != null && anchor.y != null)
       .map((anchor) => ({ key: anchor.door!, xPct: pct(anchor.x!, dims?.w), yPct: pct(anchor.y!, dims?.h) })),
-    anchors:
-      plate.space === 'svg'
-        ? anchors
-            .filter((anchor) => anchor.kind !== 'stop' && anchor.x != null && anchor.y != null)
-            .map((anchor) => ({ key: anchor.key, xPct: pct(anchor.x!, dims?.w), yPct: pct(anchor.y!, dims?.h), linked: anchor.linked, selected: state.wfFrom === anchor.key }))
-        : [],
+    anchors: anchors
+      .filter((anchor): anchor is WfAnchor & { pin: { x: number; y: number }; kind: 'unit' | 'amenity' } => anchor.kind !== 'stop' && !!anchor.pin)
+      .map((anchor) => ({
+        key: anchor.key,
+        kind: anchor.kind,
+        name: anchor.label,
+        xPct: pct(anchor.pin.x, dims?.w),
+        yPct: pct(anchor.pin.y, dims?.h),
+        linked: anchor.linked,
+        selected: state.wfFrom === anchor.key || state.wfSelLink === anchor.key,
+        idle: plate.points.length === 0,
+        polygon: anchor.polygon
+      })),
     bend: bend ? { x1: pct(bend.grab.x, dims!.w), y1: pct(bend.grab.y, dims!.h), x2: pct(bend.drop.x, dims!.w), y2: pct(bend.drop.y, dims!.h) } : null
   };
 };

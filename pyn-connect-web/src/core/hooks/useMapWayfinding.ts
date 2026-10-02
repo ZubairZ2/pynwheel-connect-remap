@@ -8,6 +8,7 @@ import type { PropertyMap } from '~/core/models/data/propertyMap.data';
 import { activeSpace, levelById, planAssets, stackFloor, wayfindingSpace, type MapLevel } from '~/core/utils/generator/map/mapLevels.generator';
 import { generateLevelGraph, type LevelGraph } from '~/core/utils/generator/map/mapNodes.generator';
 import {
+  distance,
   edgeKey,
   nodeKey,
   WF_UNDO_LIMIT,
@@ -43,7 +44,7 @@ import type { DetectFailure } from '~/core/utils/wayfinding/hallways/extract';
 import { buildObstacleIndex, NO_OBSTACLES, type ObstacleIndex } from '~/core/utils/wayfinding/hallways/obstacles';
 import type { Point, StopCandidate } from '~/core/utils/wayfinding/hallways/types';
 import { stopTypeOf } from '~/core/utils/wayfinding/stopTypes';
-import { wayfindingPlate, type WfPlate } from '~/core/utils/wayfinding/wayfindingGraph';
+import { anchorsOnFloor, wayfindingPlate, type WfPlate } from '~/core/utils/wayfinding/wayfindingGraph';
 import { computeWayfindingRoute, copyKey, defaultPair, parseCopyKey, routeGroups, sampleRoute, type WfRouteInput } from '~/core/utils/wayfinding/wayfindingRoute';
 
 const W = M.wayfinding;
@@ -129,6 +130,7 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
         selectedPin: null,
         wfSel: null,
         wfSelEdge: null,
+        wfSelLink: null,
         wfFrom: null,
         wfMenuOpen: false,
         apMenuOpen: false,
@@ -293,13 +295,92 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
   const linkAnchor = useCallback(
     (anchorKey: string, point: string, name: string) => {
       if (!level) return;
-      patch((current) => ({ wfLinks: { ...current.wfLinks, [`${level.id}|${anchorKey}`]: point }, wfFrom: null, wfSel: point, ...edited(current, level.id) }));
+      patch((current) => ({ wfLinks: { ...current.wfLinks, [`${level.id}|${anchorKey}`]: point }, wfFrom: null, wfSel: point, wfSelLink: null, ...edited(current, level.id) }));
       toast(t(W.toast.linked, { name }));
     },
     [level, patch, toast]
   );
 
   const anchorName = useCallback((key: string) => plate?.anchors.find((anchor) => anchor.key === key)?.label ?? plate?.stops.find((stop) => stop.key === key)?.label ?? key, [plate]);
+
+  /**
+   * Removes a bridge on this page: the unit, amenity or stop joins nothing
+   * until Connect links it again. Only that bridge goes — the hallway paths
+   * and every other bridge stay — and Ctrl/Cmd+Z brings it back.
+   */
+  const unlinkAnchor = useCallback(
+    (key: string) => {
+      if (!level) return;
+      patch((current) => ({
+        wfLinks: { ...current.wfLinks, [`${level.id}|${key}`]: null },
+        wfSelLink: current.wfSelLink === key ? null : current.wfSelLink,
+        wfFrom: current.wfFrom === key ? null : current.wfFrom,
+        ...edited(current, level.id)
+      }));
+      toast(t(W.toast.bridgeRemoved, { name: anchorName(key) }));
+    },
+    [anchorName, level, patch, toast]
+  );
+
+  /** A bridge clicked: Erase removes it; any other tool, or none, selects it (the panel offers Delete). */
+  const onLinkDown = useCallback(
+    (key: string) => (event: ReactPointerEvent<Element>) => {
+      event.stopPropagation();
+      if (state.stopTarget) return;
+      if (state.wfTool === 'erase') {
+        unlinkAnchor(key);
+        return;
+      }
+      patch(() => ({ wfSelLink: key, wfSel: null, wfSelEdge: null, wfFrom: null, selStop: null }));
+    },
+    [patch, state.stopTarget, state.wfTool, unlinkAnchor]
+  );
+
+  /** No tool: a double-click removes only that bridge, as it deletes only that path. */
+  const onLinkDoubleClick = useCallback(
+    (key: string) => {
+      if (state.wfTool != null || state.stopTarget) return;
+      unlinkAnchor(key);
+    },
+    [state.stopTarget, state.wfTool, unlinkAnchor]
+  );
+
+  /**
+   * The unit or amenity under a click on the plan: on the floor SVG the
+   * smallest plotted polygon containing the point, on the floor image the
+   * nearest marker within a few pixels. So Connect can take the polygon
+   * itself, not only its small marker.
+   */
+  const anchorAt = useCallback(
+    (px: Point): string | null => {
+      if (!plate || !level) return null;
+      const candidates = anchorsOnFloor(plate, floor).filter((anchor) => anchor.kind !== 'stop' && anchor.pin);
+      if (plate.space === 'svg') {
+        const doc = state.svgDocs[level.id];
+        const targets = doc?.status === 'ready' ? new Map(doc.doc.targets.map((target) => [target.key, target])) : null;
+        let best: { key: string; area: number } | null = null;
+        candidates.forEach((anchor) => {
+          const box = anchor.polygon ? targets?.get(anchor.polygon)?.bbox : null;
+          if (!box || px.x < box.x || px.x > box.x + box.w || px.y < box.y || px.y > box.y + box.h) return;
+          const area = box.w * box.h;
+          if (!best || area < best.area) best = { key: anchor.key, area };
+        });
+        return (best as { key: string } | null)?.key ?? null;
+      }
+      const dims = plate.dims;
+      let radius = Math.max(10, (dims ? Math.hypot(dims.w, dims.h) : 1000) * 0.012);
+      let found: string | null = null;
+      candidates.forEach((anchor) => {
+        const d = distance(anchor.pin!.x, anchor.pin!.y, px.x, px.y);
+        if (d < radius) {
+          radius = d;
+          found = anchor.key;
+        }
+      });
+      return found;
+    },
+    [floor, level, plate, state.svgDocs]
+  );
 
   /* ── pointer handlers (the canvas calls these in Wayfinding mode) ─── */
 
@@ -319,7 +400,7 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
       // Move, or no tool (the POC's default): drag the point; the graph before the drag is kept for Ctrl/Cmd+Z.
       if (tool === 'move' || tool == null) {
         capture(event);
-        patch((current) => ({ dragging: { kind: 'node', key, before: snapshotOf(current), moved: false }, wfSel: key, wfSelEdge: null, wfFrom: null, selStop: null }));
+        patch((current) => ({ dragging: { kind: 'node', key, before: snapshotOf(current), moved: false }, wfSel: key, wfSelEdge: null, wfSelLink: null, wfFrom: null, selStop: null }));
         return;
       }
       if (tool === 'erase') {
@@ -330,7 +411,7 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
       if (tool === 'connect') {
         const from = state.wfFrom;
         if (!from) {
-          patch(() => ({ wfFrom: key, wfSel: key, wfSelEdge: null }));
+          patch(() => ({ wfFrom: key, wfSel: key, wfSelEdge: null, wfSelLink: null }));
           return;
         }
         if (from === key) {
@@ -339,7 +420,7 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
         }
         if (isPoint(from)) {
           const outcome = toggleEdge(from, key);
-          patch(() => ({ wfFrom: key, wfSel: key, wfSelEdge: null }));
+          patch(() => ({ wfFrom: key, wfSel: key, wfSelEdge: null, wfSelLink: null }));
           toast(i18n.t(outcome === 'removed' ? W.toast.unlinked : W.toast.connected));
           return;
         }
@@ -355,7 +436,7 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
         const exists = !!graphs[level?.id ?? '']?.edges.some((edge) => edge.key === edgeKey(state.wfSel!, key));
         if (!exists) toggleEdge(state.wfSel, key);
       }
-      patch(() => ({ wfSel: key, wfSelEdge: null }));
+      patch(() => ({ wfSel: key, wfSelEdge: null, wfSelLink: null }));
     },
     [anchorName, graphs, level?.id, linkAnchor, patch, removePoint, state.stopTarget, state.wfFrom, state.wfSel, state.wfTool, toast, toggleEdge]
   );
@@ -429,7 +510,7 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
         const px = pointerPx(event);
         if (!px) return;
         capture(event);
-        patch(() => ({ dragging: { kind: 'bend', key, grab: px, drop: px, client: { x: event.clientX, y: event.clientY }, moved: false }, wfSelEdge: key, wfSel: null, wfFrom: null, selStop: null }));
+        patch(() => ({ dragging: { kind: 'bend', key, grab: px, drop: px, client: { x: event.clientX, y: event.clientY }, moved: false }, wfSelEdge: key, wfSel: null, wfSelLink: null, wfFrom: null, selStop: null }));
         return;
       }
       if (state.wfTool === 'erase') {
@@ -442,46 +523,87 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
         if (px) addPoint(px, isPoint(state.wfSel) ? state.wfSel : null, key);
         return;
       }
-      patch(() => ({ wfSelEdge: key, wfSel: null, wfFrom: null, selStop: null }));
+      patch(() => ({ wfSelEdge: key, wfSel: null, wfSelLink: null, wfFrom: null, selStop: null }));
     },
     [addPoint, patch, pointerPx, removePath, state.stopTarget, state.wfSel, state.wfTool, toast]
   );
 
-  /** A stop marker, unit or amenity pin clicked in Wayfinding mode: Connect / Add Point link it; Move drags a stop. */
-  const onAnchorDown = useCallback(
-    (key: string, draggable: boolean) => (event: ReactPointerEvent<Element>) => {
-      event.stopPropagation();
-      if (state.stopTarget) return;
+  /** The anchor joins a point right now (its bridge exists — possibly too short to click when the unit sits on the corridor). */
+  const hasBridge = useCallback((key: string) => !!plate?.anchors.find((anchor) => anchor.key === key)?.attached, [plate?.anchors]);
+
+  /**
+   * A unit, amenity or stop picked (its marker, its polygon, or a stop
+   * marker): Connect / Add Point link it to the point in hand; Erase removes
+   * its bridge; with no tool and nothing in hand its bridge is selected, so a
+   * bridge too short to click (the unit sits on the corridor) is still
+   * editable from the marker. Blockers and Move do nothing here.
+   */
+  const anchorClicked = useCallback(
+    (key: string) => {
       const name = anchorName(key);
       const blocker = !!plate?.blockers.some((stop) => stop.key === key);
-      if (state.wfTool === 'move') {
-        if (draggable) {
-          capture(event);
-          patch(() => ({ dragging: { kind: 'node', key }, selStop: key, wfSel: null, wfSelEdge: null }));
-        } else {
-          patch(() => ({ selStop: null }));
-        }
+      if (blocker || state.wfTool === 'move') return;
+      if (state.wfTool === 'erase') {
+        if (hasBridge(key)) unlinkAnchor(key);
         return;
       }
-      if (blocker || state.wfTool === 'erase') return;
       const point = state.wfTool === 'connect' ? state.wfFrom : state.wfSel;
       if (isPoint(point)) {
         linkAnchor(key, point, name);
         return;
       }
       if (state.wfTool === 'connect') {
-        patch(() => ({ wfFrom: key, wfSel: null }));
+        patch(() => ({ wfFrom: key, wfSel: null, wfSelLink: null }));
         toast(t(W.toast.pickPoint, { name }));
+        return;
+      }
+      if (state.wfTool == null && hasBridge(key)) {
+        patch(() => ({ wfSelLink: key, wfSel: null, wfSelEdge: null, wfFrom: null, selStop: null }));
         return;
       }
       toast(i18n.t(W.toast.selectPointFirst));
     },
-    [anchorName, linkAnchor, patch, plate?.blockers, state.stopTarget, state.wfFrom, state.wfSel, state.wfTool, toast]
+    [anchorName, hasBridge, linkAnchor, patch, plate?.blockers, state.wfFrom, state.wfSel, state.wfTool, toast, unlinkAnchor]
   );
 
-  /** The empty plan clicked in Wayfinding mode (after the canvas has ruled out a pan). */
+  /** No tool: a double-click on a unit, amenity or stop marker removes its bridge, as on the bridge itself. */
+  const onAnchorDoubleClick = useCallback(
+    (key: string) => {
+      if (state.wfTool != null || state.stopTarget || !hasBridge(key)) return;
+      unlinkAnchor(key);
+    },
+    [hasBridge, state.stopTarget, state.wfTool, unlinkAnchor]
+  );
+
+  /** A stop marker, unit or amenity marker clicked in Wayfinding mode: Move drags a stop; otherwise it is picked. */
+  const onAnchorDown = useCallback(
+    (key: string, draggable: boolean) => (event: ReactPointerEvent<Element>) => {
+      event.stopPropagation();
+      if (state.stopTarget) return;
+      if (state.wfTool === 'move') {
+        if (draggable) {
+          capture(event);
+          patch(() => ({ dragging: { kind: 'node', key }, selStop: key, wfSel: null, wfSelEdge: null, wfSelLink: null }));
+        } else {
+          patch(() => ({ selStop: null }));
+        }
+        return;
+      }
+      anchorClicked(key);
+    },
+    [anchorClicked, patch, state.stopTarget, state.wfTool]
+  );
+
+  /** The plan clicked in Wayfinding mode (after the canvas has ruled out a pan): with Connect, a plotted polygon counts as its unit or amenity. */
   const onSurfaceDown = useCallback(
     (px: { x: number; y: number } | null) => {
+      if (state.wfTool === 'connect' && px) {
+        const hit = anchorAt(px);
+        if (hit) {
+          anchorClicked(hit);
+          return;
+        }
+      }
       if (state.wfTool === 'node' && px && plate?.hasPlan) {
         addPoint(px, isPoint(state.wfSel) ? state.wfSel : null);
         return;
@@ -490,9 +612,9 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
         addConnectedPoint(px);
         return;
       }
-      patch(() => ({ wfSel: null, wfSelEdge: null, wfFrom: null, selStop: null }));
+      patch(() => ({ wfSel: null, wfSelEdge: null, wfSelLink: null, wfFrom: null, selStop: null }));
     },
-    [addConnectedPoint, addPoint, patch, plate?.hasPlan, state.wfDetect?.running, state.wfSel, state.wfTool]
+    [addConnectedPoint, addPoint, anchorAt, anchorClicked, patch, plate?.hasPlan, state.wfDetect?.running, state.wfSel, state.wfTool]
   );
 
   /** A point or stop drag ended: a point that moved is an undoable edit, and touching an inferred point confirms it. */
@@ -531,6 +653,7 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
         wfDetect: now.wfDetect && rest.length <= now.wfDetect.undoDepth ? null : now.wfDetect,
         wfSel: null,
         wfSelEdge: null,
+        wfSelLink: null,
         wfFrom: null,
         dragging: null,
         ...STALE
@@ -538,19 +661,6 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
     });
     toast(i18n.t(W.toast.undoneEdit));
   }, [patch, toast]);
-
-  /** Auto-Connect Paths on the floorplate in view (the POC's `autoConnectNodes`). */
-  const autoConnect = useCallback(() => {
-    if (!plate || plate.points.length < 2) return;
-    const options = connectOptions(plate);
-    const result = autoConnectNodes(plateGraph(plate), options);
-    if (!result.addedEdgeCount) {
-      toast(t(W.toast.autoConnectNone, { obstacle: result.rejectedByObstacle, redundant: result.rejectedAsRedundant }));
-      return;
-    }
-    applyOp((graph) => ({ nodes: graph.nodes, edges: result.graph.edges }));
-    toast(t(W.toast.autoConnected, { added: result.addedEdgeCount, obstacle: result.rejectedByObstacle, redundant: result.rejectedAsRedundant }));
-  }, [applyOp, connectOptions, plate, toast]);
 
   /** "Confirm N above 0.9": only confident inferred points (the POC's `confirmNodesAboveConfidence`). */
   const confirmPending = useCallback(() => {
@@ -566,7 +676,7 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
   /** A tool button toggles: clicking the active tool turns it off, back to the default editing gestures. */
   const setTool = useCallback((tool: WfTool) => patch((current) => ({ wfTool: current.wfTool === tool ? null : tool, wfFrom: null })), [patch]);
 
-  const deselect = useCallback(() => patch(() => ({ wfSel: null, wfSelEdge: null, wfFrom: null, selStop: null })), [patch]);
+  const deselect = useCallback(() => patch(() => ({ wfSel: null, wfSelEdge: null, wfSelLink: null, wfFrom: null, selStop: null })), [patch]);
 
   const deleteSelected = useCallback(() => {
     if (state.wfSel) {
@@ -575,8 +685,10 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
     } else if (state.wfSelEdge) {
       removePath(state.wfSelEdge);
       toast(i18n.t(W.toast.pathRemoved));
+    } else if (state.wfSelLink) {
+      unlinkAnchor(state.wfSelLink);
     }
-  }, [removePath, removePoint, state.wfSel, state.wfSelEdge, toast]);
+  }, [removePath, removePoint, state.wfSel, state.wfSelEdge, state.wfSelLink, toast, unlinkAnchor]);
 
   const clearPaths = useCallback(() => {
     if (!level || !plate?.points.length) return;
@@ -587,14 +699,17 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
       label: i18n.t(W.clear.confirm),
       danger: true,
       onConfirm: () => {
+        // Stored hallways are hidden on this page (never changed in the CMS; Undo brings them back); page points, paths and bridges go.
         const stored = plate.points.filter((point) => point.key.startsWith('h:')).map((point) => point.key);
         const temporary = new Set(plate.points.filter((point) => point.key.startsWith('j:')).map((point) => point.key));
         patch((current) => ({
           hiddenNodes: [...new Set([...current.hiddenNodes, ...stored])],
           tempNodes: current.tempNodes.filter((node) => !temporary.has(node.key)),
           tempEdges: current.tempEdges.filter((edge) => !temporary.has(edge.a) && !temporary.has(edge.b) && !stored.includes(edge.a) && !stored.includes(edge.b)),
+          wfLinks: Object.fromEntries(Object.entries(current.wfLinks).filter(([key]) => !key.startsWith(`${level.id}|`))),
           wfSel: null,
           wfSelEdge: null,
+          wfSelLink: null,
           wfFrom: null,
           confirm: null,
           ...edited(current, level.id)
@@ -604,20 +719,62 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
     });
   }, [askConfirm, level, patch, plate, toast]);
 
+  /** A floorplate's obstacles for Auto-Connect (on its SVG): the cached index, else read from the file; none on the floor image, whose frame the SVG does not share. */
+  const obstaclesForDetect = useCallback(
+    async (target: MapLevel, view: WfPlate): Promise<ObstacleIndex> => {
+      if (view.space !== 'svg') return NO_OBSTACLES;
+      const cached = obstacles.current.get(target.id);
+      if (cached) return cached.index;
+      try {
+        const text = await fetchSvgText(target);
+        const { obstaclesOf, parseSvgTree } = await loadEngine();
+        const parsed = parseSvgTree(text);
+        const outlines = parsed.ok ? obstaclesOf(parsed.root) : [];
+        const index = outlines.length ? buildObstacleIndex(outlines) : NO_OBSTACLES;
+        obstacles.current.set(target.id, { text, index });
+        return index;
+      } catch {
+        return NO_OBSTACLES;
+      }
+    },
+    [fetchSvgText]
+  );
+
   /**
-   * Detect Hallways for one floorplate, against the latest page state: skip
-   * it when it already has paths (unless replacing), or has no floor SVG;
-   * read its SVG; run the engine with the floor's plotted units, amenities
-   * and stops as the stops to join; add the result as page points and paths.
+   * Detect Hallways for one floorplate, against the latest page state.
+   *
+   * A floorplate that already has paths — the hallways stored in the CMS, or
+   * points made on this page — keeps every one of them exactly as it is:
+   * nothing is hidden, moved or replaced. Only Auto-Connect runs over them
+   * (the POC's pass, as part of every detection), adding page paths where
+   * the network forces a long detour; a second run adds nothing.
+   *
+   * A floorplate without paths is read from its floor SVG: the engine runs
+   * with the floor's plotted units, amenities and stops as the stops to
+   * join, auto-connects the result, and it is added as page points and
+   * paths. No floor SVG, nothing to read.
    */
   const detectOne = useCallback(
-    async (target: MapLevel, replace: boolean): Promise<Omit<WfDetectRow, 'levelId' | 'name'>> => {
+    async (target: MapLevel): Promise<Omit<WfDetectRow, 'levelId' | 'name'>> => {
       const empty = { points: 0, paths: 0, source: null } as const;
       const now = stateRef.current;
       const current = wayfindingPlate(map, levels, target, generateLevelGraph(map, levels, target, now, wayfindingSpace(target, now) ?? 'raster'), now);
-      if (!replace && current.points.length) {
+      if (current.points.length) {
         const stored = current.points.filter((point) => point.key.startsWith('h:')).length;
-        return { ...empty, status: 'existing', note: stored ? t(W.detect.noteStored, { count: stored }) : i18n.t(W.detect.notePage) };
+        const kept = { ...empty, status: 'existing' as const, points: current.points.length, note: stored ? t(W.detect.noteStored, { count: stored }) : i18n.t(W.detect.notePage) };
+        if (current.points.length < 2) return kept;
+        const index = await obstaclesForDetect(target, current);
+        const dims = current.dims;
+        const result = autoConnectNodes(plateGraph(current), { maxDistance: computeAutoConnectDistance(dims ? Math.hypot(dims.w, dims.h) : 1000), obstacles: index });
+        if (!result.addedEdgeCount) return kept;
+        const space = current.space ?? 'raster';
+        patch((state) => {
+          const view = wayfindingPlate(map, levels, target, generateLevelGraph(map, levels, target, state, wayfindingSpace(target, state) ?? 'raster'), state);
+          const before = plateGraph(view);
+          const { patch: changes } = graphPatch(state, target, space, before, { nodes: before.nodes, edges: [...before.edges, ...result.added] }, (n) => t(W.pointLabel, { n }));
+          return { ...changes, wfEdited: { ...state.wfEdited, [target.id]: 'edited' } };
+        });
+        return { ...kept, paths: result.addedEdgeCount };
       }
       if (!planAssets(target, now.planOverrides[target.id]).svg) return { ...empty, status: 'noSvg', note: i18n.t(W.detect.noteNoSvg) };
       let text: string;
@@ -661,7 +818,7 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
       });
       return { status: 'detected', points: result.nodes.length, paths: result.edges.length, source: result.source, note: '' };
     },
-    [fetchSvgText, levels, map, patch]
+    [fetchSvgText, levels, map, obstaclesForDetect, patch]
   );
 
   const setRow = useCallback(
@@ -672,9 +829,9 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
 
   /**
    * Detect Hallways over a scope, one floorplate after another with the
-   * progress shown as it goes. With more than one floorplate, those that
-   * already have paths are skipped and never overwritten; this floorplate
-   * alone asks before replacing its paths. One Undo (or Ctrl/Cmd+Z) takes
+   * progress shown as it goes. A floorplate that already has paths keeps
+   * them and is only auto-connected; the rest are read from their floor
+   * SVGs. Nothing stored is ever replaced. One Undo (or Ctrl/Cmd+Z) takes
    * the whole run back. Nothing is sent but the floor SVGs' GETs.
    */
   const runDetect = useCallback(
@@ -685,13 +842,14 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
         return;
       }
       const list = detectScopeLevels(levels, level, scope);
-      const go = async (replace: boolean) => {
+      const go = async () => {
         stopRun.current = false;
         patch((current) => ({
           wfMenuOpen: false,
           confirm: null,
           wfSel: null,
           wfSelEdge: null,
+          wfSelLink: null,
           wfFrom: null,
           dragging: null,
           wfDetect: {
@@ -711,7 +869,7 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
           await nextFrame();
           let outcome: Omit<WfDetectRow, 'levelId' | 'name'>;
           try {
-            outcome = await detectOne(row, replace && row.id === level.id);
+            outcome = await detectOne(row);
           } catch {
             outcome = { status: 'failed', points: 0, paths: 0, source: null, note: i18n.t(W.detect.noteInvalid) };
           }
@@ -722,30 +880,19 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
         patch((current) => {
           if (!current.wfDetect) return {};
           const rows = current.wfDetect.rows.map((row) => (row.status === 'queued' || row.status === 'running' ? { ...row, status: 'queued' as const, note: i18n.t(W.detect.noteStopped) } : row));
-          const detected = rows.filter((row) => row.status === 'detected').length;
-          // A run that changed nothing leaves nothing to undo.
+          // Detected floorplates, or kept ones that gained auto-connected paths: a run that changed nothing leaves nothing to undo.
+          const changed = rows.some((row) => row.status === 'detected' || (row.status === 'existing' && row.paths > 0));
           return {
             wfDetect: { ...current.wfDetect, rows, running: false, stopped },
-            wfUndo: detected ? current.wfUndo : current.wfUndo.slice(0, current.wfDetect.undoDepth),
-            wfTool: detected ? null : current.wfTool
+            wfUndo: changed ? current.wfUndo : current.wfUndo.slice(0, current.wfDetect.undoDepth),
+            wfTool: changed ? null : current.wfTool
           };
         });
         toast(i18n.t(stopped ? W.toast.detectStopped : W.toast.detectFinished));
       };
-      // Replacing only means something when there is an SVG to read the new paths from.
-      if (scope === 'plate' && plate?.points.length && planAssets(level, state.planOverrides[level.id]).svg) {
-        patch(() => ({ wfMenuOpen: false }));
-        askConfirm({
-          title: t(W.detect.replaceTitle, { level: level.label }),
-          message: i18n.t(W.detect.replaceBody),
-          label: i18n.t(W.detect.replace),
-          onConfirm: () => void go(true)
-        });
-        return;
-      }
-      void go(false);
+      void go();
     },
-    [askConfirm, detectOne, level, levels, patch, plate?.points.length, setRow, state.planOverrides, toast]
+    [detectOne, level, levels, patch, setRow, toast]
   );
 
   const stopDetect = useCallback(() => {
@@ -756,7 +903,7 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
   const undoDetect = useCallback(() => {
     patch((current) =>
       current.wfDetect && !current.wfDetect.running
-        ? { ...current.wfDetect.snapshot, wfUndo: current.wfUndo.slice(0, current.wfDetect.undoDepth), wfDetect: null, wfSel: null, wfSelEdge: null, wfFrom: null, ...STALE }
+        ? { ...current.wfDetect.snapshot, wfUndo: current.wfUndo.slice(0, current.wfDetect.undoDepth), wfDetect: null, wfSel: null, wfSelEdge: null, wfSelLink: null, wfFrom: null, ...STALE }
         : {}
     );
     toast(i18n.t(W.toast.undone));
@@ -764,7 +911,7 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
 
   /* ── stacked floors ───────────────────────────────────────────────── */
 
-  const setFloor = useCallback((value: number) => patch(() => ({ wfFloor: value, wfSel: null, wfFrom: null, wfSelEdge: null, selStop: null })), [patch]);
+  const setFloor = useCallback((value: number) => patch(() => ({ wfFloor: value, wfSel: null, wfFrom: null, wfSelEdge: null, wfSelLink: null, selStop: null })), [patch]);
 
   /* ── shortest path ────────────────────────────────────────────────── */
 
@@ -878,6 +1025,7 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
         wfFloor: value ?? current.wfFloor,
         wfSel: null,
         wfSelEdge: null,
+        wfSelLink: null,
         wfFrom: null,
         selStop: null,
         ...extra(current)
@@ -1143,11 +1291,11 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
         return;
       }
       if (event.key !== 'Escape') return;
-      if (state.wfSel || state.wfFrom || state.wfSelEdge || state.selStop) deselect();
+      if (state.wfSel || state.wfFrom || state.wfSelEdge || state.wfSelLink || state.selStop) deselect();
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [deselect, state.selStop, state.wfFrom, state.wfSel, state.wfSelEdge, undo, wayfind]);
+  }, [deselect, state.selStop, state.wfFrom, state.wfSel, state.wfSelEdge, state.wfSelLink, undo, wayfind]);
 
   const toolbar = level && plate && wayfind ? generateWfToolbar(map, levels, level, plate, state) : null;
   const panel =
@@ -1176,10 +1324,12 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
       dismissReview: () => patch((current) => (current.wfDetect?.running ? {} : { wfDetect: null })),
       stopDetect,
       undo,
-      autoConnect,
       confirmPending,
       onPointDoubleClick,
       onPathDoubleClick,
+      onLinkDown,
+      onLinkDoubleClick,
+      onAnchorDoubleClick,
       onBendEnd,
       clearPaths,
       deleteSelected,

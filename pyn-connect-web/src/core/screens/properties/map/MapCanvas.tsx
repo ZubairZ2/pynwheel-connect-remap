@@ -462,26 +462,26 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
               />
             ))}
 
-          {graph.pins.map((pin) => {
-            // A placement on a polygon is the filled polygon itself, as the legacy page clones the shape: no marker on top.
-            if (pin.polygon && svgReady) return null;
-            // Wayfinding on a stacked floorplate shows the floor in view's units only.
-            if (wfLayer && !wfLayer.pins.has(pin.key)) return null;
-            const selected = !!state.selectedPin && `${state.selectedPin.kind}:${state.selectedPin.id}` === pin.key;
-            return (
-              <div
-                key={pin.key}
-                data-node={pin.key}
-                className={`bo-map__marker bo-map__pin bo-map__pin--${pin.kind}${selected ? ' bo-map__pin--selected bo-map__marker--selected' : ''}${pin.temporary || pin.moved ? ' bo-map__pin--temp bo-map__marker--temp' : ''}`}
-                style={{ left: `${pin.xPct}%`, top: `${pin.yPct}%`, zIndex: selected ? 7 : 4 }}
-                onPointerDown={wfLayer ? wayfinding.actions.onAnchorDown(pin.key, false) : actions.onPinDown(pin.ref)}
-                title={pin.temporary ? `${pin.label} · ${i18n.t(M.selection.temporary)}` : pin.label}
-              >
-                {wfLayer ? pinGlyph({ ...pin, hasDoor: true }) : pinGlyph(pin)}
-                {selected && <span className="bo-map__nodelabel bo-map__markerlabel">{pin.label}</span>}
-              </div>
-            );
-          })}
+          {!wfLayer &&
+            graph.pins.map((pin) => {
+              // A placement on a polygon is the filled polygon itself, as the legacy page clones the shape: no marker on top.
+              // In Wayfinding the layer draws its own small anchor markers instead of these.
+              if (pin.polygon && svgReady) return null;
+              const selected = !!state.selectedPin && `${state.selectedPin.kind}:${state.selectedPin.id}` === pin.key;
+              return (
+                <div
+                  key={pin.key}
+                  data-node={pin.key}
+                  className={`bo-map__marker bo-map__pin bo-map__pin--${pin.kind}${selected ? ' bo-map__pin--selected bo-map__marker--selected' : ''}${pin.temporary || pin.moved ? ' bo-map__pin--temp bo-map__marker--temp' : ''}`}
+                  style={{ left: `${pin.xPct}%`, top: `${pin.yPct}%`, zIndex: selected ? 7 : 4 }}
+                  onPointerDown={actions.onPinDown(pin.ref)}
+                  title={pin.temporary ? `${pin.label} · ${i18n.t(M.selection.temporary)}` : pin.label}
+                >
+                  {pinGlyph(pin)}
+                  {selected && <span className="bo-map__nodelabel bo-map__markerlabel">{pin.label}</span>}
+                </div>
+              );
+            })}
         </div>
       ) : (
         <div

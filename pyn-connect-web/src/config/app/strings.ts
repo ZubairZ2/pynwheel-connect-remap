@@ -1510,15 +1510,14 @@ export const CORE_STRINGS = {
         noteFetch: 'mapPlotting.wayfinding.detect.noteFetch',
         noteStopped: 'mapPlotting.wayfinding.detect.noteStopped',
         noteLoading: 'mapPlotting.wayfinding.detect.noteLoading',
+        keptTitle: 'mapPlotting.wayfinding.detect.keptTitle',
+        keptDetail: 'mapPlotting.wayfinding.detect.keptDetail',
         button: 'mapPlotting.wayfinding.detect.button',
         title: 'mapPlotting.wayfinding.detect.title',
         plate: 'mapPlotting.wayfinding.detect.plate',
         building: 'mapPlotting.wayfinding.detect.building',
         all: 'mapPlotting.wayfinding.detect.all',
-        note: 'mapPlotting.wayfinding.detect.note',
-        replaceTitle: 'mapPlotting.wayfinding.detect.replaceTitle',
-        replaceBody: 'mapPlotting.wayfinding.detect.replaceBody',
-        replace: 'mapPlotting.wayfinding.detect.replace'
+        note: 'mapPlotting.wayfinding.detect.note'
       },
       clear: {
         label: 'mapPlotting.wayfinding.clear.label',
@@ -1560,6 +1559,9 @@ export const CORE_STRINGS = {
         length: 'mapPlotting.wayfinding.selection.length',
         point: 'mapPlotting.wayfinding.selection.point',
         path: 'mapPlotting.wayfinding.selection.path',
+        bridge: 'mapPlotting.wayfinding.selection.bridge',
+        linkedByHand: 'mapPlotting.wayfinding.selection.linkedByHand',
+        nearestPoint: 'mapPlotting.wayfinding.selection.nearestPoint',
         linkedStop: 'mapPlotting.wayfinding.selection.linkedStop',
         connectionOne: 'mapPlotting.wayfinding.selection.connectionOne',
         connectionMany: 'mapPlotting.wayfinding.selection.connectionMany',
@@ -1684,17 +1686,13 @@ export const CORE_STRINGS = {
         onFloor: 'mapPlotting.wayfinding.unlinked.onFloor',
         hint: 'mapPlotting.wayfinding.unlinked.hint',
         svgOnly: 'mapPlotting.wayfinding.unlinked.svgOnly',
-        isolated: 'mapPlotting.wayfinding.unlinked.isolated'
+        isolated: 'mapPlotting.wayfinding.unlinked.isolated',
+        detached: 'mapPlotting.wayfinding.unlinked.detached'
       },
       undo: {
         label: 'mapPlotting.wayfinding.undo.label',
         tip: 'mapPlotting.wayfinding.undo.tip',
         tipEmpty: 'mapPlotting.wayfinding.undo.tipEmpty',
-      },
-      autoConnect: {
-        label: 'mapPlotting.wayfinding.autoConnect.label',
-        tip: 'mapPlotting.wayfinding.autoConnect.tip',
-        tipEmpty: 'mapPlotting.wayfinding.autoConnect.tipEmpty',
       },
       kind: {
         traced: 'mapPlotting.wayfinding.kind.traced',
@@ -1724,7 +1722,8 @@ export const CORE_STRINGS = {
       },
       hints: {
         point: 'mapPlotting.wayfinding.hints.point',
-        path: 'mapPlotting.wayfinding.hints.path'
+        path: 'mapPlotting.wayfinding.hints.path',
+        link: 'mapPlotting.wayfinding.hints.link'
       },
       footnote: 'mapPlotting.wayfinding.footnote',
       pointOne: 'mapPlotting.wayfinding.pointOne',
@@ -1738,8 +1737,7 @@ export const CORE_STRINGS = {
       pointLabel: 'mapPlotting.wayfinding.pointLabel',
       armedStop: 'mapPlotting.wayfinding.armedStop',
       toast: {
-        autoConnected: 'mapPlotting.wayfinding.toast.autoConnected',
-        autoConnectNone: 'mapPlotting.wayfinding.toast.autoConnectNone',
+        bridgeRemoved: 'mapPlotting.wayfinding.toast.bridgeRemoved',
         pointAdded: 'mapPlotting.wayfinding.toast.pointAdded',
         pointDeleted: 'mapPlotting.wayfinding.toast.pointDeleted',
         pathDeleted: 'mapPlotting.wayfinding.toast.pathDeleted',

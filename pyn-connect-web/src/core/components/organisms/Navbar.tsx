@@ -10,6 +10,8 @@ import { Icon } from '~/core/components/atoms/connect/Icon';
 import { DemoMark } from '~/core/components/atoms/DemoMark';
 import { SignOutIcon } from '~/core/components/atoms/Icons';
 import { i18n } from '~/resources/i18n';
+import { useCurrentUser } from '~/core/session/CurrentUserProvider';
+import { initials } from '~/core/utils/connect/format';
 import { demoActions } from '~/core/store/demo/demo.slice';
 import { useAppDispatch, useAppSelector } from '~/core/store/hooks';
 import {
@@ -26,11 +28,13 @@ interface Props {
 
 /**
  * The design's top bar: page title, omni-search over the demo data, environment
- * chip, the audit-log bell and sign out. Shared by every screen, old and new.
+ * chip, the audit-log bell, the signed-in user and sign out. Shared by every
+ * screen, old and new.
  */
 export const Navbar = ({ title, demo = false }: Props) => {
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const currentUser = useCurrentUser();
   const [signingOut, setSigningOut] = useState(false);
   const query = useAppSelector((s) => s.demo.globalQuery);
   const demoState = useAppSelector((s) => s.demo);
@@ -146,6 +150,16 @@ export const Navbar = ({ title, demo = false }: Props) => {
         <span className="bo-bell__dot" aria-hidden="true" />
         <DemoMark />
       </button>
+
+      <div className="bo-topbar__user" data-testid="topbar-user">
+        <span className="bo-avatar" aria-hidden="true">
+          {initials(currentUser?.name ?? 'Pynwheel')}
+        </span>
+        <div className="bo-topbar__usertext">
+          <div className="bo-topbar__username">{currentUser?.name ?? '—'}</div>
+          <div className="bo-topbar__role">{currentUser?.role ?? ''}</div>
+        </div>
+      </div>
 
       <button
         type="button"

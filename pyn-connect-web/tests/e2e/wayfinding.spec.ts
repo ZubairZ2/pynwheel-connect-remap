@@ -133,7 +133,8 @@ test.describe('Map & Plotting · Wayfinding (real data)', () => {
     await expect(page.getByTestId('plot-panel')).toHaveCount(0);
     for (const name of ['Move', 'Connect', 'Add Point', 'Erase', 'Undo', 'Clear Paths']) await expect(toolbar.getByRole('button', { name, exact: true })).toBeVisible();
     await expect(toolbar.getByRole('button', { name: /^Detect Hallways/ })).toBeVisible();
-    await expect(toolbar.getByRole('button', { name: /Auto-Connect Paths/ })).toBeVisible();
+    // Auto-Connect is part of Detect Hallways now: no separate button.
+    await expect(toolbar.getByRole('button', { name: /Auto-Connect/ })).toHaveCount(0);
     // No tool is on by default: the POC's own gestures apply, and the panel says so.
     for (const name of ['Move', 'Connect', 'Add Point', 'Erase']) await expect(toolbar.getByRole('button', { name, exact: true })).toHaveAttribute('aria-pressed', 'false');
     await expect(page.getByTestId('wf-mode')).toHaveText('Editing — no tool selected');
@@ -311,7 +312,7 @@ test.describe('Map & Plotting · Wayfinding (real data)', () => {
       return null;
     }, skip);
 
-  test('Detect Hallways · All floorplates: floorplates with stored paths are skipped, the rest are read from their floor SVG; Undo restores', async ({ page }) => {
+  test('Detect Hallways · All floorplates: floorplates with stored paths keep them (auto-connected only), the rest are read from their floor SVG; Undo restores', async ({ page }) => {
     const done = audit(page);
     const [floorplates, graph] = await Promise.all([plates(DETECT), hallways(DETECT)]);
     const stored = floorplates.filter((row) => graphOf(graph, row.id).points > 0);
@@ -330,9 +331,9 @@ test.describe('Map & Plotting · Wayfinding (real data)', () => {
       const row = rows.filter({ hasText: plate.floors.length === 1 ? `Floor ${plate.floors[0]}` : plate.name }).first();
       const status = await row.getAttribute('data-status');
       if (graphOf(graph, plate.id).points > 0) {
-        // Never overwritten: the stored hallways are reported and left alone.
+        // Never overwritten: the stored hallways are reported and kept exactly as stored.
         expect(status).toBe('existing');
-        await expect(row).toContainText(`already has ${graphOf(graph, plate.id).points} stored hallway points`);
+        await expect(row).toContainText(`${graphOf(graph, plate.id).points} stored hallway points kept`);
       } else if (!plate.svg) {
         expect(status).toBe('noSvg');
       } else {
@@ -341,10 +342,15 @@ test.describe('Map & Plotting · Wayfinding (real data)', () => {
     }
     await expect(page.getByTestId('wf-detect-title')).toContainText(/Hallways detected on \d+ floorplate/);
 
-    // The stored floorplate still shows exactly the CMS's graph.
+    // The stored floorplate still shows every one of the CMS's points and links (Auto-Connect may add page paths beside them, never fewer).
     const keep = stored[0];
     await levelTab(page, new RegExp(`Floor ${keep.floors[0]}\\b`)).first().click();
-    expect(await counts(page)).toMatchObject(graphOf(graph, keep.id));
+    const keptCounts = await counts(page);
+    expect(keptCounts.points).toBe(graphOf(graph, keep.id).points);
+    expect(keptCounts.paths).toBeGreaterThanOrEqual(graphOf(graph, keep.id).paths);
+    // Every stored point is still on the plan.
+    const storedKeys = graph.filter((row) => row.parent_type === 'Floorplate' && row.parent_id === keep.id).map((row) => `h:${row.id}`);
+    for (const key of storedKeys) await expect(page.locator(`[data-node="${key}"]`)).toHaveCount(1);
 
     // One Undo takes the whole run back.
     await page.getByTestId('wf-detect').getByRole('button', { name: 'Undo' }).click();
@@ -426,10 +432,13 @@ test.describe('Map & Plotting · Wayfinding (real data)', () => {
     await page.mouse.click(spot.x, spot.y);
     expect(await counts(page)).toMatchObject({ points: detected.points, paths: detected.paths });
 
-    // Auto-Connect reports what it did (local only).
+    // Detect Hallways again on a floorplate that already has paths: every point stays (nothing replaced, nothing asked), only Auto-Connect runs.
     await page.getByRole('button', { name: 'Move', exact: true }).click();
-    await page.getByRole('button', { name: /Auto-Connect Paths/ }).click();
-    await expect(page.getByText(/Auto-Connect/).last()).toBeVisible();
+    await detect(page, /This floorplate/);
+    await expect(page.getByTestId('wf-detect-rows').locator('.bo-wf__detectrow').first()).toHaveAttribute('data-status', 'existing');
+    await expect(page.getByTestId('wf-detect-rows')).toContainText('Existing paths kept');
+    expect((await counts(page)).points).toBe(detected.points);
+    expect((await counts(page)).paths).toBeGreaterThanOrEqual(detected.paths);
     done();
   });
 

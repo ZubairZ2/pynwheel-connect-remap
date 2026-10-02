@@ -4,12 +4,12 @@ import { expect, test } from '@playwright/test';
 
 import type { MapLevel } from '~/core/utils/generator/map/mapLevels.generator';
 import { initialLocalMapState, type LocalMapState } from '~/core/utils/generator/map/mapState';
-import { graphPatch, plateGraph, snapshotOf } from '~/core/utils/wayfinding/hallwayEdits';
+import { detectionPatch, graphPatch, plateGraph, snapshotOf } from '~/core/utils/wayfinding/hallwayEdits';
 import { autoConnectNodes, computeAutoConnectDistance, connectNodeToNearest } from '~/core/utils/wayfinding/hallways/autoConnect';
 import { bridgeComponentGaps, computeGapBridgeDistance } from '~/core/utils/wayfinding/hallways/bridgeGaps';
 import { buildWayfindingGraph, computeSnapTolerance } from '~/core/utils/wayfinding/hallways/buildGraph';
 import { addNode, confirmNodesAboveConfidence, deleteEdge, deleteNode, moveNode, rerouteEdge, type GraphState, type HallwayNode } from '~/core/utils/wayfinding/hallways/editing';
-import { detectHallways, dropShortComponents } from '~/core/utils/wayfinding/hallways/extract';
+import { detectHallways, dropShortComponents, type DetectedHallways } from '~/core/utils/wayfinding/hallways/extract';
 import { polylineLength } from '~/core/utils/wayfinding/hallways/geometry';
 import { buildObstacleIndex } from '~/core/utils/wayfinding/hallways/obstacles';
 import { detectSvgStructure, normalizeId } from '~/core/utils/wayfinding/hallways/svg/detectLayers';
@@ -17,7 +17,7 @@ import { elementCentres } from '~/core/utils/wayfinding/hallways/svg/elementCent
 import { normalizePath, parsePathToSubpaths } from '~/core/utils/wayfinding/hallways/svg/pathData';
 import { flattenShapes } from '~/core/utils/wayfinding/hallways/svg/shapes';
 import type { WayfindingEdge } from '~/core/utils/wayfinding/hallways/types';
-import type { WfAnchor, WfPath, WfPlate, WfPoint } from '~/core/utils/wayfinding/wayfindingGraph';
+import { polygonEdge, type WfAnchor, type WfPath, type WfPlate, type WfPoint } from '~/core/utils/wayfinding/wayfindingGraph';
 import { computeWayfindingRoute, routeGroups, type WfRouteInput } from '~/core/utils/wayfinding/wayfindingRoute';
 import { readSvgTree } from './helpers/svgTree';
 
@@ -302,6 +302,62 @@ test.describe('Hallway engine', () => {
       expect(patch.tempEdges).toEqual([{ a: 'h:1', b: 'h:3', points: [{ x: 100, y: 0 }], kind: 'stored' }]);
     });
 
+    test('Detect Hallways on a floorplate that already has paths only adds: every stored point and link stays, nothing is hidden, moved or replaced', () => {
+      const detected = {
+        ok: true,
+        nodes: [
+          { id: 'n1', x: 50, y: 80, source: 'vector', review: 'confirmed', confidence: null },
+          { id: 'n2', x: 150, y: 80, source: 'vector', review: 'confirmed', confidence: null }
+        ],
+        edges: [{ id: 'e1', fromNodeId: 'n1', toNodeId: 'n2', pathPoints: [{ x: 50, y: 80 }, { x: 100, y: 90 }, { x: 150, y: 80 }], length: 102, kind: 'traced' }],
+        connections: [{ groupId: 'unit:5', label: 'Unit 5', anchor: { x: 50, y: 120 }, connectedNodeId: 'n1', snapDistance: 40, connectionMethod: 'existing_node' }]
+      } as unknown as DetectedHallways;
+      const current: LocalMapState = { ...base, wfLinks: { [`${level.id}|unit:9`]: null } };
+      const patch = detectionPatch(current, level, plate, detected, (n) => `Point ${n}`);
+      // The stored graph is untouched: nothing hidden, nothing moved.
+      expect(patch.hiddenNodes).toEqual([]);
+      expect(patch.hiddenEdges).toEqual([]);
+      expect(patch.nodeOverrides).toEqual({});
+      // The detected graph is added beside it as page points and paths on the SVG.
+      expect((patch.tempNodes ?? []).map((row) => [row.key, row.space, row.source])).toEqual([
+        ['j:1', 'svg', 'vector'],
+        ['j:2', 'svg', 'vector']
+      ]);
+      expect(patch.tempEdges).toEqual([{ a: 'j:1', b: 'j:2', points: [{ x: 100, y: 90 }], kind: 'traced' }]);
+      // The stop the engine joined is linked to its point; a bridge removed by hand on another stop stays removed.
+      expect(patch.wfLinks).toEqual({ [`${level.id}|unit:9`]: null, [`${level.id}|unit:5`]: 'j:1' });
+      expect(patch.wfSvg).toEqual({ [level.id]: true });
+      expect(patch.wfEdited).toEqual({ [level.id]: 'detected' });
+    });
+
+    test('Auto-Connect over a stored graph (what Detect Hallways does on a floorplate with paths) adds page paths only: the stored points and links stay as they are', () => {
+      const lonely = point('h:4', 200, 20);
+      const stored = { level, space: 'raster', points: [h1, h2, h3, lonely], paths: [path(h1, h2), path(h2, h3)] } as unknown as WfPlate;
+      const before = plateGraph(stored);
+      const result = autoConnectNodes(before, { maxDistance: 250 });
+      expect(result.addedEdgeCount).toBeGreaterThan(0);
+      const { patch } = graphPatch(base, level, 'raster', before, { nodes: before.nodes, edges: [...before.edges, ...result.added] }, (n) => `Point ${n}`);
+      expect(patch.tempNodes).toEqual([]);
+      expect(patch.hiddenNodes).toEqual([]);
+      expect(patch.hiddenEdges).toEqual([]);
+      expect(patch.nodeOverrides).toEqual({});
+      expect((patch.tempEdges ?? []).every((row) => row.kind === 'knn' && row.a.startsWith('h:') && row.b.startsWith('h:'))).toBe(true);
+      expect((patch.tempEdges ?? []).some((row) => row.a === 'h:4' || row.b === 'h:4')).toBe(true);
+      // A second pass over the joined graph adds nothing more.
+      expect(autoConnectNodes({ nodes: before.nodes, edges: [...before.edges, ...result.added] }, { maxDistance: 250 }).addedEdgeCount).toBe(0);
+    });
+
+    test('a unit’s marker and bridge meet its polygon at the edge facing its hallway point, never over the label in the middle', () => {
+      const box = { x: 0, y: 0, w: 100, h: 50 };
+      const centre = { x: 50, y: 25 };
+      expect(polygonEdge(box, centre, { x: 50, y: 200 })).toEqual({ x: 50, y: 50 });
+      expect(polygonEdge(box, centre, { x: 300, y: 25 })).toEqual({ x: 100, y: 25 });
+      expect(polygonEdge(box, centre, { x: -100, y: 25 })).toEqual({ x: 0, y: 25 });
+      expect(polygonEdge(box, centre, null)).toEqual({ x: 50, y: 50 });
+      // A point inside the polygon is met where it is.
+      expect(polygonEdge(box, centre, { x: 60, y: 30 })).toEqual({ x: 60, y: 30 });
+    });
+
     test('a bend adds a page point on the level’s layer with its two halves; the snapshot taken before it restores the graph', () => {
       const before = plateGraph(plate);
       const bent = rerouteEdge(before, 'h:1|h:2', { x: 50, y: 0 }, { x: 50, y: 40 })!;
@@ -327,7 +383,7 @@ test.describe('Hallway engine', () => {
       const points = [{ x: pa.x, y: pa.y }, ...mid, { x: pb.x, y: pb.y }];
       return { key: [pa.key, pb.key].sort().join('|'), a: pa.key, b: pb.key, x1: 0, y1: 0, x2: 0, y2: 0, temporary: true, points, length: polylineLength(points), kind: 'inferred' };
     };
-    const anchor = (key: string, x: number, y: number, attached: string): WfAnchor => ({ key, kind: 'unit', type: null, label: key, meta: 'Unit', floors: null, x, y, offLayer: false, attached, linked: true, explicit: true, door: null, polygon: null });
+    const anchor = (key: string, x: number, y: number, attached: string): WfAnchor => ({ key, kind: 'unit', type: null, label: key, meta: 'Unit', floors: null, x, y, pin: { x, y }, offLayer: false, attached, linked: true, explicit: true, detached: false, door: null, polygon: null });
     const plateOf = (points: WfPoint[], paths: WfPath[], anchors: WfAnchor[]) =>
       ({ level, dims: { w: 1000, h: 500 }, space: 'svg', hasPlan: true, points, paths, stops: [], anchors, blockers: [] }) as unknown as WfPlate;
     const route = (plate: WfPlate) => {

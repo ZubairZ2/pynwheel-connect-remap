@@ -10,9 +10,9 @@ const W = M.wayfinding;
 
 /**
  * The toolbar's right-hand side in Wayfinding mode: Detect Hallways ▾ (this
- * floorplate / its building's / all), Auto-Connect Paths, the four tools —
- * each toggles, and with none on the POC's own gestures apply — Undo, and
- * Clear Paths.
+ * floorplate / its building's / all; it auto-connects as part of the run),
+ * the four tools — each toggles, and with none on the POC's own gestures
+ * apply — Undo, and Clear Paths.
  */
 export const WayfindingToolbar = ({ controller }: { controller: PropertyMapController }) => {
   const { wayfinding, state } = controller;
@@ -48,21 +48,6 @@ export const WayfindingToolbar = ({ controller }: { controller: PropertyMapContr
               </button>
             ))}
             <div className="bo-wf__menunote">{i18n.t(W.detect.note)}</div>
-          </div>
-        )}
-      </div>
-
-      <div className="bo-wf__toolwrap" onMouseEnter={() => setTip('auto')} onMouseLeave={() => setTip(null)}>
-        <button type="button" className="bo-map__tool" onClick={wf.autoConnect} disabled={!toolbar.canAutoConnect} data-testid="wf-autoconnect">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M6 6a2 2 0 1 1-4 0a2 2 0 1 1 4 0zM22 6a2 2 0 1 1-4 0a2 2 0 1 1 4 0zM14 18a2 2 0 1 1-4 0a2 2 0 1 1 4 0zM6 6h12M5 7.5l6 9M19 7.5l-6 9" />
-          </svg>
-          {i18n.t(W.autoConnect.label)}
-        </button>
-        {tip === 'auto' && (
-          <div className="bo-wf__tip" role="tooltip">
-            <span className="bo-wf__tiptitle">{i18n.t(W.autoConnect.label)}</span>
-            <span className="bo-wf__tiptext">{i18n.t(toolbar.canAutoConnect ? W.autoConnect.tip : W.autoConnect.tipEmpty)}</span>
           </div>
         )}
       </div>

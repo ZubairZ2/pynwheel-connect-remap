@@ -6,15 +6,13 @@ import { usePathname } from 'next/navigation';
 
 import { Icon } from '~/core/components/atoms/connect/Icon';
 import { activeNavId, generateNavigation } from '~/core/utils/generator/navigation.generator';
-import { initials } from '~/core/utils/connect/format';
-import type { CurrentUser } from '~/core/models/data/session.data';
 import { DemoMark } from '~/core/components/atoms/DemoMark';
 
 /**
- * The design's back-office sidebar: brand, grouped nav, signed-in user. Sign
- * out lives in the top bar (`Navbar`), as the 22-Sep design moved it.
+ * The design's back-office sidebar: brand and grouped nav. The signed-in
+ * user and sign out live in the top bar (`Navbar`).
  */
-export const Sidebar = ({ currentUser }: { currentUser: CurrentUser | null }) => {
+export const Sidebar = () => {
   const pathname = usePathname();
   const active = activeNavId(pathname);
 
@@ -59,16 +57,6 @@ export const Sidebar = ({ currentUser }: { currentUser: CurrentUser | null }) =>
             })}
           </div>
         ))}
-      </div>
-
-      <div className="bo-sidebar__user">
-        <span className="bo-avatar" aria-hidden="true">
-          {initials(currentUser?.name ?? 'Pynwheel')}
-        </span>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div className="bo-sidebar__username">{currentUser?.name ?? '—'}</div>
-          <div className="bo-sidebar__role">{currentUser?.role ?? ''}</div>
-        </div>
       </div>
     </nav>
   );

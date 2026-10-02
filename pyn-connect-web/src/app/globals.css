@@ -264,12 +264,22 @@ table {
   color: var(--pw-primary-hover);
 }
 
-.bo-sidebar__user {
-  padding: 12px 14px;
-  border-top: 1px solid var(--bo-line);
+/* The signed-in user, in the top bar between the bell and sign out. */
+.bo-topbar__user {
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
+  max-width: 220px;
+  padding: 0 2px;
+}
+
+.bo-topbar__usertext {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
 }
 
 .bo-avatar {
@@ -285,7 +295,7 @@ table {
   flex-shrink: 0;
 }
 
-.bo-sidebar__username {
+.bo-topbar__username {
   font: 700 12.5px var(--bo-font);
   color: var(--bo-ink);
   white-space: nowrap;
@@ -293,9 +303,12 @@ table {
   text-overflow: ellipsis;
 }
 
-.bo-sidebar__role {
+.bo-topbar__role {
   font: 600 11px var(--bo-font);
   color: var(--bo-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .bo-iconbutton {
@@ -2082,8 +2095,6 @@ select {
   }
 
   .bo-sidebar__header,
-  .bo-sidebar__username,
-  .bo-sidebar__role,
   .bo-chip,
   .bo-navitem > span:not(.bo-navbadge) {
     display: none;
@@ -2108,7 +2119,8 @@ select {
   }
 
   .bo-globalsearch,
-  .bo-env {
+  .bo-env,
+  .bo-topbar__usertext {
     display: none;
   }
 
@@ -4417,9 +4429,20 @@ select {
 /* Detect Hallways, the POC's default editing and the review of inferred points. */
 .bo-wf__point--pending { width: 10px; height: 10px; margin: -5px 0 0 -5px; border-width: 2px; border-style: dashed; border-color: #c62534; }
 .bo-wf__point--dragging { width: 16px; height: 16px; margin: -8px 0 0 -8px; }
-.bo-wf__anchor { position: absolute; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-radius: 999px; background: #0077ae; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(23, 26, 33, 0.25); box-sizing: content-box; z-index: 5; cursor: pointer; touch-action: none; }
-.bo-wf__anchor--unlinked { background: #c62534; }
-.bo-wf__anchor--selected { box-shadow: 0 0 0 3px #e0a800; }
+/*
+ * Unit and amenity markers in Wayfinding: a small hollow dark outline (a ring
+ * for a unit, a square for an amenity, as the legacy plotting page tells them
+ * apart) at the polygon's edge facing its hallway point, or on the pin, so
+ * the name printed on the plan stays readable. Dashed red when the floor has
+ * paths and this one joins none; faded while the floor has no paths at all.
+ */
+.bo-wf__anchor { position: absolute; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 999px; background: rgba(255, 255, 255, 0.35); border: 1.5px solid #171a21; box-sizing: border-box; z-index: 5; cursor: pointer; touch-action: none; }
+.bo-wf__anchor::after { content: ''; position: absolute; inset: -6px; }
+.bo-wf__anchor--amenity { border-radius: 2px; }
+.bo-wf__anchor--unlinked { border-color: #c62534; border-style: dashed; }
+.bo-wf__anchor--idle { opacity: 0.55; }
+.bo-wf__anchor--selected { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #e0a800; z-index: 6; }
+.bo-wf__linkhit { stroke-width: 10; }
 .bo-wf__tools--none { box-shadow: inset 0 0 0 1px #d8dce4; }
 .bo-wf__editing { display: flex; align-items: center; gap: 7px; padding: 7px 10px; border-radius: 8px; background: #eef6fb; border: 1px solid #cfe3ef; font: 800 11.5px var(--bo-font); color: #0b4f7a; }
 .bo-wf__editing--tool { background: var(--bo-ink); border-color: var(--bo-ink); color: #fff; }
