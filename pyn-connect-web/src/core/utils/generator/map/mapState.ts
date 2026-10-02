@@ -1,6 +1,7 @@
 import type { RouteLeg } from '~/core/models/data/propertyMap.data';
 import type { ApRules } from '~/core/utils/map/autoPlotRules';
 import type { FloorSvgDoc } from '~/core/utils/map/floorSvg';
+import type { EdgeKind, ExtractionSource, ReviewStatus } from '~/core/utils/wayfinding/hallways/types';
 import type { StopTypeId } from '~/core/utils/wayfinding/stopTypes';
 import type { WfRouteResult } from '~/core/utils/wayfinding/wayfindingRoute';
 
@@ -97,11 +98,20 @@ export interface TempNode {
   y: number;
   label: string;
   space: PlanSpace;
+  /** Where the point came from: traced from a walkway layer, an inferred corridor, or drawn here (the default). */
+  source?: ExtractionSource;
+  /** Inferred points are proposals until touched or confirmed. */
+  review?: ReviewStatus;
+  confidence?: number | null;
 }
 
 export interface TempEdge {
   a: string;
   b: string;
+  /** The drawn polyline between the two points, ends excluded, from `a` towards `b` (none = a straight line). */
+  points?: { x: number; y: number }[];
+  /** What made the path (Detect Hallways' traced / inferred / bridge, Auto-Connect's knn, a hand-drawn manual one). */
+  kind?: EdgeKind;
 }
 
 /**
@@ -189,7 +199,12 @@ export type MapMode = 'plot' | 'wayfind';
 /** What the Plot on Map panel lists ("Show"). */
 export type PlotKind = 'unit' | 'amenity' | 'stop';
 
-/** The wayfinding tools: drag points, link points and stops, drop points, remove points and paths. */
+/**
+ * The wayfinding tools: drag points, link points and stops, drop points,
+ * remove points and paths. None selected is the POC's own editing: drag a
+ * point, double-click it to delete it, click the plan to add one, drag a
+ * path to bend it, double-click a path to delete it, Ctrl/Cmd+Z to undo.
+ */
 export type WfTool = 'move' | 'connect' | 'node' | 'erase';
 
 /** How far "Test shortest path" may route: within the floor, across a building's floors, across buildings. */
@@ -214,9 +229,11 @@ export interface TempStop {
   accessible: boolean;
   lock: boolean;
   note: string;
-  /** Raster pixels once placed; null while it waits in To Plot. */
+  /** Raster pixels once placed (viewBox units with `space: 'svg'`); null while it waits in To Plot. */
   x: number | null;
   y: number | null;
+  /** The layer it was placed on (absent: the floor image, as every stored stop). */
+  space?: PlanSpace;
 }
 
 /** The Add Additional Stop dialog's fields while it is open. */
@@ -256,7 +273,7 @@ export interface WfAnimState {
   run: number;
 }
 
-/** What Detect Paths changed, so it can be reviewed and undone. */
+/** The graph fields one local edit changes: what Ctrl/Cmd+Z and Detect Hallways' Undo restore. */
 export interface WfSnapshot {
   nodeOverrides: Record<string, { x: number; y: number }>;
   tempNodes: TempNode[];
@@ -265,15 +282,38 @@ export interface WfSnapshot {
   hiddenEdges: string[];
   wfLinks: Record<string, string>;
   wfEdited: Record<string, 'detected' | 'edited'>;
+  wfSvg: Record<string, true>;
   nextJunction: number;
 }
 
-export interface WfDetectReview {
-  levelIds: string[];
+/** How far back Ctrl/Cmd+Z goes (the POC's `UNDO_LIMIT`). */
+export const WF_UNDO_LIMIT = 50;
+
+/** One floorplate's outcome in a Detect Hallways run. */
+export type WfDetectStatus = 'queued' | 'running' | 'detected' | 'existing' | 'noSvg' | 'invalidSvg' | 'noHallway' | 'failed';
+
+export interface WfDetectRow {
+  levelId: string;
+  name: string;
+  status: WfDetectStatus;
   points: number;
   paths: number;
-  skipped: string[];
+  /** Traced from a walkway layer, or inferred from the footprints and rooms. */
+  source: 'vector' | 'inferred' | null;
+  /** Why it was skipped or found nothing, in a few words. */
+  note: string;
+}
+
+/** A Detect Hallways run: progress while it runs, the result card after. */
+export interface WfDetectRun {
+  scope: 'plate' | 'building' | 'all';
+  rows: WfDetectRow[];
+  running: boolean;
+  stopped: boolean;
+  /** The graph before the run, for its Undo. */
   snapshot: WfSnapshot;
+  /** `wfUndo.length` before the run: its Undo also drops the run's entry. */
+  undoDepth: number;
 }
 
 export type ApScope = 'one' | 'building' | 'all';
@@ -324,7 +364,16 @@ export interface LocalMapState {
   hiddenEdges: string[];
   /** Hallway plotting: the node the next click links from. */
   chainFrom: string | null;
-  dragging: { kind: 'pin'; ref: PinRef } | { kind: 'node'; key: string } | null;
+  /**
+   * A drag in progress: a pin, a point or stop (with the graph before it,
+   * so a real move can be undone), or a path being bent (where it was
+   * grabbed and where the pointer is, in the layer's units).
+   */
+  dragging:
+    | { kind: 'pin'; ref: PinRef }
+    | { kind: 'node'; key: string; before?: WfSnapshot; moved?: boolean }
+    | { kind: 'bend'; key: string; grab: { x: number; y: number }; drop: { x: number; y: number }; client: { x: number; y: number }; moved: boolean }
+    | null;
   bedColors: Partial<Record<BedTier, string>>;
   autoPlotReport: AutoPlotReport | null;
   /** building → node key chosen as its starting point on this page. */
@@ -359,7 +408,8 @@ export interface LocalMapState {
   tempStops: TempStop[];
   nextStop: number;
   stopDialog: StopForm | null;
-  wfTool: WfTool;
+  /** The active tool; null = none (the POC's default editing). */
+  wfTool: WfTool | null;
   /** The selected hallway point. */
   wfSel: string | null;
   /** The selected path (an edge key). */
@@ -373,7 +423,11 @@ export interface LocalMapState {
   wfLinks: Record<string, string>;
   /** Levels whose paths were detected or edited on this page. */
   wfEdited: Record<string, 'detected' | 'edited'>;
-  wfReview: WfDetectReview | null;
+  /** Levels whose Wayfinding works on the floor SVG because hallways were detected from it here (an SVG-only level always does). */
+  wfSvg: Record<string, true>;
+  /** Local graph edits, newest last, for Ctrl/Cmd+Z. */
+  wfUndo: WfSnapshot[];
+  wfDetect: WfDetectRun | null;
   wfScope: WfScope;
   wfA: string;
   wfB: string;
@@ -434,7 +488,7 @@ export const initialLocalMapState = (levelId: string, building: string | null, l
   tempStops: [],
   nextStop: 1,
   stopDialog: null,
-  wfTool: 'move',
+  wfTool: null,
   wfSel: null,
   wfSelEdge: null,
   wfFrom: null,
@@ -442,7 +496,9 @@ export const initialLocalMapState = (levelId: string, building: string | null, l
   wfMenuOpen: false,
   wfLinks: {},
   wfEdited: {},
-  wfReview: null,
+  wfSvg: {},
+  wfUndo: [],
+  wfDetect: null,
   wfScope: 'plate',
   wfA: '',
   wfB: '',

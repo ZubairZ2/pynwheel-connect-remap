@@ -1,10 +1,11 @@
 import { i18n } from '~/resources/i18n';
 import type { InventoryAmenity, InventoryUnit } from '~/core/models/data/propertyInventory.data';
 import type { MapDoor, PropertyMap } from '~/core/models/data/propertyMap.data';
-import { planAssets, type MapLevel } from '~/core/utils/generator/map/mapLevels.generator';
+import { wayfindingSpace, type MapLevel } from '~/core/utils/generator/map/mapLevels.generator';
 import { labelOfUnit, mapAmenities, placementOfAmenity, placementOfUnit, type LevelGraph, type Placement } from '~/core/utils/generator/map/mapNodes.generator';
-import { NODE_ANCHOR_OFFSET, distance, toPercent, type LocalMapState, type TempStop } from '~/core/utils/generator/map/mapState';
+import { NODE_ANCHOR_OFFSET, distance, toPercent, type LocalMapState, type PlanSpace, type TempStop } from '~/core/utils/generator/map/mapState';
 import { M } from '~/core/utils/generator/map/mapText';
+import type { EdgeKind, ExtractionSource, ReviewStatus } from './hallways/types';
 import { stopTypeOf, type StopTypeId } from './stopTypes';
 
 /**
@@ -35,6 +36,12 @@ import { stopTypeOf, type StopTypeId } from './stopTypes';
  * belongs to its own floor (`units.floor`), an entry point to its `floor`,
  * an elevator to the floors it serves, and an access point or amenity
  * without a floor to all of them.
+ *
+ * Everything is in the level's Wayfinding layer (`wayfindingSpace`): the
+ * floor image's pixels, or — for a floor whose hallways were detected from
+ * its SVG, or one with only an SVG — the SVG's viewBox units, where the
+ * units plotted on polygons sit and the image-only records (stored
+ * elevators, entries, doors) have no place.
  */
 
 export interface WfPoint {
@@ -46,6 +53,9 @@ export interface WfPoint {
   degree: number;
   temporary: boolean;
   moved: boolean;
+  source: ExtractionSource;
+  review: ReviewStatus;
+  confidence: number | null;
 }
 
 export interface WfPath {
@@ -57,6 +67,11 @@ export interface WfPath {
   x2: number;
   y2: number;
   temporary: boolean;
+  /** The polyline from `a` to `b`, both ends included, in the layer's units. */
+  points: { x: number; y: number }[];
+  /** Its length along the polyline: the routing weight. */
+  length: number;
+  kind: EdgeKind;
 }
 
 export type WfStopSource = 'elevator' | 'entry' | 'tourStart' | 'door' | 'temp';
@@ -95,21 +110,25 @@ export interface WfAnchor {
   /** Where the anchor joins the paths: its door, else its pin, else the stop's marker (image pixels); null when it has no place on the floor image. */
   x: number | null;
   y: number | null;
-  /** Plotted only on the floor SVG, whose frame the floor image does not share. */
-  svgOnly: boolean;
+  /** Plotted only on the other layer (the floor SVG while Wayfinding is on the image, or the reverse), whose frame this one does not share. */
+  offLayer: boolean;
   attached: string | null;
   linked: boolean;
   /** Linked by hand on this page (Connect), rather than to the nearest point. */
   explicit: boolean;
   /** The door the anchor joins the paths from (`d:<id>`), when it has one. */
   door: string | null;
+  /** On the floor SVG: the polygon it is plotted on (`PlotTarget.key`), when known. */
+  polygon: string | null;
 }
 
 export interface WfPlate {
   level: MapLevel;
   dims: { w: number; h: number } | null;
-  /** The floor image the CMS draws hallways on. */
-  hasImage: boolean;
+  /** The layer Wayfinding works on; null when the level has no plan at all. */
+  space: PlanSpace | null;
+  /** A plan to draw paths on (the floor image, or the floor SVG). */
+  hasPlan: boolean;
   points: WfPoint[];
   paths: WfPath[];
   stops: WfStop[];
@@ -159,13 +178,21 @@ export const parseServedFloors = (text: string): number[] | null => {
 };
 
 /**
- * The stored unit / amenity raster pin, or the page's raster placement. An
- * SVG placement has no place on the floor image; the record's door (stored
- * on the image) still has, and is where the CMS routes to.
+ * Where a unit / amenity sits on the layer: on the floor image its stored
+ * raster pin or the page's raster placement (an SVG placement has no place
+ * there; the record's door, stored on the image, still has); on the floor
+ * SVG its pointer or the page's polygon drop.
  */
-const rasterOf = (placement: Placement, record: { xPlot: number | null; yPlot: number | null }): { x: number; y: number } | null => {
-  if (placement.space === 'raster') return { x: placement.x, y: placement.y };
-  if (!placement.moved && !placement.temporary && record.xPlot != null && record.yPlot != null && record.xPlot + record.yPlot > 0) {
+const placeIn = (
+  space: PlanSpace,
+  placement: Placement,
+  record: { xPlot: number | null; yPlot: number | null },
+  centreOf: (polygon: string) => { x: number; y: number } | null
+): { x: number; y: number } | null => {
+  // On the SVG the polygon is the placement (the canvas fills it by element id); its centre beats a stored pointer's x/y, which can sit elsewhere.
+  if (placement.space === space && space === 'svg' && placement.polygon) return centreOf(placement.polygon) ?? { x: placement.x, y: placement.y };
+  if (placement.space === space) return { x: placement.x, y: placement.y };
+  if (space === 'raster' && !placement.moved && !placement.temporary && record.xPlot != null && record.yPlot != null && record.xPlot + record.yPlot > 0) {
     return { x: record.xPlot, y: record.yPlot };
   }
   return null;
@@ -322,8 +349,10 @@ export const levelStops = (map: PropertyMap, levels: MapLevel[], level: MapLevel
       );
     });
 
+  const space = graph?.space ?? 'raster';
   tempStopsOf(state, level).forEach((stop) => {
     const type = stopTypeOf(stop.type);
+    const here = (stop.space ?? 'raster') === space;
     push(
       {
         key: stop.key,
@@ -336,7 +365,7 @@ export const levelStops = (map: PropertyMap, levels: MapLevel[], level: MapLevel
         building: stop.building,
         served: type.vertical ? (parseServedFloors(stop.floors) ?? []) : []
       },
-      stop.x != null && stop.y != null ? { x: stop.x, y: stop.y } : null,
+      here && stop.x != null && stop.y != null ? { x: stop.x, y: stop.y } : null,
       false
     );
   });
@@ -352,7 +381,14 @@ const amenityMeta = (amenity: InventoryAmenity): string => `${i18n.t(M.place.ame
 /** The wayfinding view of a level (see the module comment). Pure; recomputed from the stored map and the page's state. */
 export const wayfindingPlate = (map: PropertyMap, levels: MapLevel[], level: MapLevel, graph: LevelGraph | null, state: LocalMapState): WfPlate => {
   const dims = graph?.dims ?? null;
-  const hasImage = !!planAssets(level, state.planOverrides[level.id]).image;
+  const space = wayfindingSpace(level, state);
+  const layer: PlanSpace = graph?.space ?? space ?? 'raster';
+  const doc = state.svgDocs[level.id];
+  const targets = doc?.status === 'ready' ? new Map(doc.doc.targets.map((target) => [target.key, target])) : null;
+  const centreOf = (polygon: string) => {
+    const target = targets?.get(polygon);
+    return target ? { x: target.cx, y: target.cy } : null;
+  };
   const pointNodes = (graph?.nodes ?? []).filter((node) => node.kind === 'hallway' || node.kind === 'junction');
   const pointKeys = new Set(pointNodes.map((node) => node.key));
   const pathEdges = (graph?.edges ?? []).filter((edge) => pointKeys.has(edge.a) && pointKeys.has(edge.b));
@@ -369,10 +405,20 @@ export const wayfindingPlate = (map: PropertyMap, levels: MapLevel[], level: Map
     yPct: node.yPct,
     degree: degree.get(node.key) ?? 0,
     temporary: node.temporary,
-    moved: node.moved
+    moved: node.moved,
+    source: node.source,
+    review: node.review,
+    confidence: node.confidence
   }));
-  const paths: WfPath[] = pathEdges.map((edge) => ({ key: edge.key, a: edge.a, b: edge.b, x1: edge.x1, y1: edge.y1, x2: edge.x2, y2: edge.y2, temporary: edge.temporary }));
   const byKey = new Map(points.map((point) => [point.key, point]));
+  const paths: WfPath[] = pathEdges.map((edge) => {
+    const a = byKey.get(edge.a)!;
+    const b = byKey.get(edge.b)!;
+    const line = [{ x: a.x, y: a.y }, ...edge.points, { x: b.x, y: b.y }];
+    let length = 0;
+    for (let i = 1; i < line.length; i += 1) length += distance(line[i - 1].x, line[i - 1].y, line[i].x, line[i].y);
+    return { key: edge.key, a: edge.a, b: edge.b, x1: edge.x1, y1: edge.y1, x2: edge.x2, y2: edge.y2, temporary: edge.temporary, points: line, length, kind: edge.kind };
+  });
 
   const attach = (key: string, x: number | null, y: number | null): Pick<WfAnchor, 'attached' | 'linked' | 'explicit'> => {
     if (x == null || y == null || !points.length) return { attached: null, linked: false, explicit: false };
@@ -395,9 +441,9 @@ export const wayfindingPlate = (map: PropertyMap, levels: MapLevel[], level: Map
   map.inventory.units.forEach((unit) => {
     const placement = placementOfUnit(levels, state, unit);
     if (!placement || placement.level?.id !== level.id) return;
-    const pin = rasterOf(placement, unit);
+    const pin = placeIn(layer, placement, unit, centreOf);
     const doorRecord = firstDoor(map.graph.doors, 'Unit', unit.id);
-    const door = doorCentre(doorRecord, state);
+    const door = layer === 'raster' ? doorCentre(doorRecord, state) : null;
     const at = door ?? pin;
     const key = `unit:${unit.id}`;
     anchors.push({
@@ -409,17 +455,18 @@ export const wayfindingPlate = (map: PropertyMap, levels: MapLevel[], level: Map
       floors: unit.floor != null && level.floors.length > 1 ? [unit.floor] : null,
       x: at?.x ?? null,
       y: at?.y ?? null,
-      svgOnly: !at,
+      offLayer: !at,
       door: door && doorRecord ? `d:${doorRecord.id}` : null,
+      polygon: placement.space === 'svg' ? placement.polygon : null,
       ...attach(key, at?.x ?? null, at?.y ?? null)
     });
   });
   mapAmenities(map).forEach((amenity) => {
     const placement = placementOfAmenity(levels, state, amenity);
     if (!placement || placement.level?.id !== level.id) return;
-    const pin = rasterOf(placement, amenity);
+    const pin = placeIn(layer, placement, amenity, centreOf);
     const doorRecord = firstDoor(map.graph.doors, 'Amenity', amenity.id);
-    const door = doorCentre(doorRecord, state);
+    const door = layer === 'raster' ? doorCentre(doorRecord, state) : null;
     const at = door ?? pin;
     const key = `amenity:${amenity.id}`;
     anchors.push({
@@ -431,8 +478,9 @@ export const wayfindingPlate = (map: PropertyMap, levels: MapLevel[], level: Map
       floors: amenity.floor != null && level.floors.length > 1 ? [amenity.floor] : null,
       x: at?.x ?? null,
       y: at?.y ?? null,
-      svgOnly: !at,
+      offLayer: !at,
       door: door && doorRecord ? `d:${doorRecord.id}` : null,
+      polygon: placement.space === 'svg' ? placement.polygon : null,
       ...attach(key, at?.x ?? null, at?.y ?? null)
     });
   });
@@ -450,8 +498,9 @@ export const wayfindingPlate = (map: PropertyMap, levels: MapLevel[], level: Map
         floors: stop.floors,
         x: stop.x,
         y: stop.y,
-        svgOnly: false,
+        offLayer: false,
         door: null,
+        polygon: null,
         ...attach(stop.key, stop.x, stop.y)
       })
     );
@@ -459,7 +508,8 @@ export const wayfindingPlate = (map: PropertyMap, levels: MapLevel[], level: Map
   return {
     level,
     dims,
-    hasImage,
+    space,
+    hasPlan: !!space,
     points,
     paths,
     stops,
@@ -479,7 +529,7 @@ export const stopsOnFloor = (plate: WfPlate, floor: number | null): WfStop[] => 
  * "Complete" when every anchor on the floor is linked, else "Incomplete".
  */
 export const plateProgress = (plate: WfPlate, floor: number | null): WfProgress => {
-  if (!plate.hasImage) return { state: 'noplan', pct: 0, linked: 0, total: 0 };
+  if (!plate.hasPlan) return { state: 'noplan', pct: 0, linked: 0, total: 0 };
   const anchors = anchorsOnFloor(plate, floor);
   const linked = anchors.filter((anchor) => anchor.linked).length;
   if (!plate.points.length) return { state: 'none', pct: 0, linked, total: anchors.length };
@@ -489,6 +539,13 @@ export const plateProgress = (plate: WfPlate, floor: number | null): WfProgress 
 
 /** The distance around a blocker that routes keep clear of: the design's 30 units of its 760-unit plan, scaled to this floor image. */
 export const blockerRadius = (dims: { w: number; h: number } | null): number => (dims ? (Math.max(dims.w, dims.h) * 30) / 760 : 30);
+
+/** The shortest distance from a point to a polyline. */
+export const polylineDistance = (p: { x: number; y: number }, line: { x: number; y: number }[]): number => {
+  let best = Number.POSITIVE_INFINITY;
+  for (let i = 1; i < line.length; i += 1) best = Math.min(best, segmentDistance(p, line[i - 1], line[i]));
+  return line.length === 1 ? Math.hypot(p.x - line[0].x, p.y - line[0].y) : best;
+};
 
 /** The shortest distance from a point to a segment. */
 export const segmentDistance = (p: { x: number; y: number }, a: { x: number; y: number }, b: { x: number; y: number }): number => {

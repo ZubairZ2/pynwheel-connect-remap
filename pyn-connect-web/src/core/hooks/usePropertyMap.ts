@@ -30,12 +30,14 @@ import {
   levelsOfBuilding,
   mapBuildings,
   planAssets,
+  wayfindingSpace,
   type MapLevel
 } from '~/core/utils/generator/map/mapLevels.generator';
 import {
   generateAllGraphs,
   generatePinItems,
   generateRasterGraphs,
+  generateWayfindingGraphs,
   svgDocOf,
   unitNumber,
   type LevelGraph,
@@ -132,6 +134,7 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
   const space: PlanSpace = level ? activeSpace(level, state) : 'raster';
   const graphs = useMemo(() => generateAllGraphs(map, levels, state), [map, levels, state]);
   const rasterGraphs = useMemo(() => generateRasterGraphs(map, levels, state), [map, levels, state]);
+  const wayfindingGraphs = useMemo(() => generateWayfindingGraphs(map, levels, state), [map, levels, state]);
   const graph: LevelGraph | null = level ? (graphs[level.id] ?? null) : null;
   const dims = graph?.dims ?? null;
   const svgDoc = svgDocOf(state, level);
@@ -160,7 +163,25 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
   );
 
   const pinItems = useMemo(() => generatePinItems(map, levels, state), [map, levels, state]);
-  const wayfinding = useMapWayfinding({ map, levels, level, state, patch, rasterGraphs, toast, askConfirm, pointerPx });
+
+  /** A level's floor SVG as text, for Detect Hallways: the copy this page already loaded, else a GET through the plan-svg route. */
+  const svgDocsRef = useRef(state.svgDocs);
+  svgDocsRef.current = state.svgDocs;
+  const fetchSvgText = useCallback(
+    async (target: MapLevel): Promise<string> => {
+      const loaded = svgDocsRef.current[target.id];
+      if (loaded?.status === 'ready') return loaded.doc.text;
+      const own = planAssets(target, state.planOverrides[target.id]);
+      if (!own.svg) throw new Error('no svg');
+      const url = own.svg.local ? own.svg.url : APP_API.planSvg(map.inventory.property.id, { kind: target.kind, id: target.recordId });
+      const response = await fetch(url, { cache: 'no-store' });
+      if (!response.ok) throw new Error(String(response.status));
+      return response.text();
+    },
+    [map.inventory.property.id, state.planOverrides]
+  );
+
+  const wayfinding = useMapWayfinding({ map, levels, level, state, patch, graphs: wayfindingGraphs, toast, askConfirm, pointerPx, fetchSvgText });
   const itemOf = useCallback((ref: PinRef) => pinItems.find((item) => item.key === pinKey(ref)) ?? null, [pinItems]);
   const itemByKey = useCallback((key: string) => pinItems.find((item) => item.key === key) ?? null, [pinItems]);
 
@@ -543,7 +564,8 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
     (event: ReactPointerEvent<HTMLElement>) => {
       if ((event.target as Element).closest('[data-node]')) return;
       const px = pointerPx(event);
-      if (state.stopTarget && px && space === 'raster') {
+      // Stops go on the level's Wayfinding layer (the floor image, or the SVG its hallways came from).
+      if (state.stopTarget && px && level && space === (wayfindingSpace(level, state) ?? 'raster')) {
         wayfinding.actions.placeStops([state.stopTarget], px);
         return;
       }
@@ -552,7 +574,7 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
         return;
       }
       const tickedStops = state.plotSel.filter((key) => key.startsWith('stop:')).map((key) => key.slice('stop:'.length));
-      if (state.tool === 'plot' && tickedStops.length && px && space === 'raster') {
+      if (state.tool === 'plot' && tickedStops.length && px && level && space === (wayfindingSpace(level, state) ?? 'raster')) {
         wayfinding.actions.placeStops(tickedStops, px);
         return;
       }
@@ -583,6 +605,13 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
       if (!dragging || !level) return;
       const px = pointerPx(event);
       if (!px) return;
+      if (dragging.kind === 'bend') {
+        // A press that travels less than the POC's click slop (4 px) is a click on the path, not a bend.
+        const moved = dragging.moved || Math.hypot(event.clientX - dragging.client.x, event.clientY - dragging.client.y) > 4;
+        patch((current) => (current.dragging?.kind === 'bend' ? { dragging: { ...current.dragging, drop: px, moved } } : {}));
+        return;
+      }
+      if (dragging.kind === 'node' && !dragging.moved) patch((current) => (current.dragging?.kind === 'node' ? { dragging: { ...current.dragging, moved: true } } : {}));
       if (dragging.kind === 'pin') {
         patch((current) => ({
           pinOverrides: { ...current.pinOverrides, [pinKey(dragging.ref)]: { levelId: level.id, x: px.x, y: px.y, space, polygon: null } }
@@ -606,7 +635,8 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
     const dragging = state.dragging;
     if (!dragging) return;
     patch(() => ({ dragging: null }));
-    if (wayfinding.wayfind && dragging.kind === 'node') wayfinding.actions.onDragEnd(dragging.key);
+    if (wayfinding.wayfind && dragging.kind === 'node') wayfinding.actions.onDragEnd(dragging);
+    if (wayfinding.wayfind && dragging.kind === 'bend') wayfinding.actions.onBendEnd(dragging);
   }, [patch, state.dragging, wayfinding.actions, wayfinding.wayfind]);
 
   const renameSelected = useCallback(
@@ -1043,7 +1073,8 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
     cursor: state.stopTarget
       ? 'crosshair'
       : wayfinding.wayfind
-        ? state.wfTool === 'node'
+        ? // Add Point, and no tool (a click on the plan adds a point, as in the POC).
+          state.wfTool === 'node' || state.wfTool == null
           ? 'crosshair'
           : 'default'
         : state.tool === 'junction' || state.tool === 'hallway'

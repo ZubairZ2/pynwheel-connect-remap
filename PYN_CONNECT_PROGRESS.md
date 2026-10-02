@@ -1795,3 +1795,82 @@ The CMS has no hallway detection (hallways are drawn by hand on the Auto Wayfind
 ### Remaining
 
 Backend persistence and the things the CMS's data cannot express are in `gaps_map_plotting_feature.md` (M14–M19) and `gaps_tour_setup_feature.md` (T8).
+
+---
+
+## 27. Phase 2n: Map & Plotting — Detect Hallways, Auto-Connect Paths, the POC's editing and shortest path (October 1, 2026)
+
+**Brief:** `POC_auto_plot_impmemnted.md` (untracked). Reference implementation: the POC at `/Users/zubairzulifqar/sample_pyn_wheel_map` (`CONTEXT.md`, `FEATURES.md`). Rule: the POC gives the algorithm, the CMS gives the data, the new UI gives the design; the database stays read-only.
+
+**Branch:** `feature/wayfinding_detect_hallways_auto_connect`, from `feature/wayfinding_plot_on_map` (`3ccba184a`).
+
+### Investigation and the two decisions taken with the user
+
+- **No CMS floor SVG has a walkway layer.** The POC detects hallways only from a labelled `Walkway` / `Hallway` / `Corridor` / `Sidewalk` layer. Every distinct floor and sitemap SVG design in the local database (18 files covering every design) has `Units`, `Amenities`, `Footprints`, `Outlines`, `Streets`, `Stairs_Elevators`… and none. The user chose **port the POC faithfully and add corridor inference** (the POC's unbuilt "Phase 1B") for files without the layer.
+- **The floor SVG and the floor image do not share a frame** (least-squares fit of units placed in both: 300–600 px error on 6 of 7 floorplates). The user chose **the SVG layer**: a floorplate whose hallways come from its SVG is shown and edited on the SVG.
+- The SVGs hold **every floor of a building**, hiding the others with `display="none"`; building outlines sit **inside** `Units` (`Units/A-4/Outlines`); ids are Illustrator-escaped (`AMENITIES__x28_other_x29_`, `Units_000…_`).
+- **Stored SVG pointers can be off their polygon**: Sylo Floor 0's ten pointers name rects centred at x ≈ 989 but store `x_plot` 759 (gap M22).
+
+### POC → Connect mapping
+
+| POC (`sample_pyn_wheel_map`) | Connect | Notes |
+|---|---|---|
+| `lib/wayfinding/detectLayers.ts` | `utils/wayfinding/hallways/svg/detectLayers.ts` | Same keywords and exact-base-id match; ids decoded first (`_xHH_`, `_000…_`); hidden subtrees skipped; adds Footprints / rooms layers for inference |
+| `svg/matrix.ts`, `shapeGeometry.ts`, `flattenShapes.ts` | `svg/matrix.ts`, `svg/shapes.ts` | Verbatim logic; runs on a plain element tree (`svg/svgTree.ts`: DOMParser in the browser, `tests/e2e/helpers/svgTree.ts` in Node) |
+| `svg/parsePathData.ts` (`svg-pathdata`, `svg-path-properties`) | `svg/pathData.ts` | Own M/L/H/V/C/S/Q/T/A/Z normaliser (arcs → ≤ 90° cubics, compact flags) and arc-length sampling — no new dependency |
+| `rbush` | `hallways/spatialIndex.ts` | Same `search(box)` contract on a uniform grid |
+| `graph/buildGraph.ts`, `crossings.ts`, `cluster.ts`, `simplify.ts`, `splitEdge.ts`, `geometry.ts` | same names under `hallways/` | Verbatim |
+| `graph/bridgeGaps.ts` | `hallways/bridgeGaps.ts` | Verbatim |
+| `graph/autoConnect.ts`, `obstacles.ts` | `hallways/autoConnect.ts`, `obstacles.ts` | Verbatim (k = 3, range max(60, 8% diag), redundancy 3×, rescue); `connectNodeToNearest` = full pass, edges touching the node kept |
+| `stops/snapStops.ts` | `hallways/snapStops.ts` | Verbatim (edge split); stops = the floor's plotted units / amenities / placed stops, aimed at their polygon centres |
+| `wayfinding/editing.ts` | `hallways/editing.ts` | `moveNode` (confirms), `deleteNode` (chain rejoin), `addNode`, `deleteEdge`, `rerouteEdge`, `confirmNodesAboveConfidence` |
+| `routing/astar.ts`, `componentGap.ts`, `computeRoute.ts` | `hallways/astar.ts` + `utils/wayfinding/wayfindingRoute.ts` | A* (heuristic within one floor; off across floors, where it would not be admissible), polyline stitching, route-time bridge ≤ max(50, 2% diag) with a warning |
+| Phase 1B (not built in the POC) | `hallways/inferCorridors.ts` | New: footprints − rooms on a grid (≤ 900 cells on the long side), opening by the narrowest corridor half-width, small pieces dropped, Zhang–Suen thinning, spur pruning, tracing to polylines with a confidence per run |
+| `extract.ts` | `hallways/extract.ts` (`detectHallways`, `obstaclesOf`) | Orchestrates either path, then stop snapping, Auto-Connect, parallel-edge split; loaded on demand (`hallways/floorEngine.ts`) |
+| `state/MapProvider.tsx` (`commit`, `undo`, edit actions) | `hooks/useMapWayfinding.ts` + `utils/wayfinding/hallwayEdits.ts` | The POC's ops run on the floorplate's graph; `graphPatch` writes the difference as the page's overrides; `wfUndo` (50) is the history |
+| `components/GraphEditorLayer.tsx` gestures | `WayfindingLayer.tsx` + `usePropertyMap` surface handlers | Drag, double-click, click-add, bend (4 px slop, preview), with no tool on |
+| Save Map, My Maps, Upload, Auto-Plot Nodes, IndexedDB | not ported | Out of scope by the brief |
+
+**Parity:** on the POC's real exports, with the POC's own functions and with the port, the graph build, gap bridging and Auto-Connect counts are identical — 77 N Camino Seco 227/229 → 227/233 (4 bridges) → 16 drawn / 210 blocked / 92 redundant; 10700 N La Reserve 354/360 → 357/370 (7) → 12 / 150 / 335; Floor_3_withBG 500/424 → 516/518 (78) → 154 / 250 / 322; 0 isolated on all (held in `tests/e2e/hallways.spec.ts` when the POC folder is present).
+
+### DB → Controller → JSON → Parser → React
+
+| Data | Source | Path into Connect (unchanged) |
+|---|---|---|
+| Floor SVG text | `floorplates.svg_image` (S3) | `floorplates.json` `svg` → `/api/properties/:id/plan-svg?floorplate=` (GET proxy) → `parseSvgTree` |
+| Stored hallways | `hallways` | `automate_plotting.json` → `wayfinding.parser` → `generateLevelGraph` |
+| Unit / amenity polygons | `units.pointer_data`, `amenities.pointer_data` | `units.json` / `amenities.json` `svg_pointer` → `elementCentres` (by element id / selector) |
+| Elevators, entries, doors, tour start | as phase 2m | image-space only (gap M20) |
+
+**Backend changes: none.** No controller, serializer, route, schema or migration was touched; the only requests the feature adds are GETs of floor SVGs through the existing `plan-svg` route.
+
+### Behaviour
+
+- **Detect Hallways ▾** — "Detect hallways on": *This floorplate* (`1 · Floor 1`), *All floorplates in {building}* (when the building is a subset), *All floorplates* (`31 floorplates`), counts from the real levels. A run goes floorplate by floorplate (progress bar, the one being read, chips for processed / detected / existing paths / no SVG / no hallway / failed, one row per floorplate with its reason) and can be stopped. **More than one floorplate: any floorplate with paths (stored, or added on this page) is skipped — "Skipped — existing paths · already has N stored hallway points — not overwritten".** This floorplate alone asks before replacing (the stored points are hidden on the page, Undo brings them back). No SVG → "Skipped — no SVG"; unreadable / empty → "Invalid SVG"; nothing traced or inferred → "No hallway found" with the reason; all skipped → "Nothing to detect". One Undo (card, toolbar or Ctrl/Cmd+Z) takes the whole run back.
+- **Frame:** `wayfindingSpace(level, state)` — the floor image, or the floor SVG when hallways were detected from it here (`wfSvg`) or the level has only an SVG. `generateWayfindingGraphs` builds each level on its own layer; anchors on the SVG sit at their polygon centres; stored image-only records are not placed there (M20).
+- **Auto-Connect Paths** (toolbar): the POC's pass on the floorplate in view, obstacles = the SVG's rooms / footprints (or its obstacle layers); toast with drawn / blocked / redundant counts; undoable; runs as part of every detection too.
+- **Editing.** No tool is on by default (`wfTool: null`; "Editing — no tool selected" in the panel, crosshair cursor): drag a point (moves; an inferred point becomes reviewed), double-click a point (POC `deleteNode`, chain rejoin), click the plan (POC `addNode` + `connectNodeToNearest`), drag a path (POC `rerouteEdge` + auto-connect, live preview), double-click a path (only that path), Ctrl/Cmd+Z (not while typing or in a dialog). Each tool button toggles; with Move / Connect / Add Point / Erase on, only that tool's behaviour applies (a double-click deletes nothing, a click adds nothing unless Add Point). Every tool edit, Clear Paths and link is undoable too; undo restores the graph fields only (not floor, dialogs, search, filters).
+- **Review:** inferred points are pending (dashed red, faded by confidence); "Confirm N above 0.9"; a route over pending points shows "This route uses N inferred point(s) not reviewed yet" (the POC refuses such routes — the brief wants them testable; gap M21).
+- **Shortest path:** paths weigh their polyline length; the route line follows each polyline; lengths say px (image) or SVG units; the POC's route-time bridge warns "crosses an unmapped N-unit gap"; scopes, elevators, stairs, outdoor links, blockers and step-free are phase 2m's rules on top.
+
+### Validation (local: CMS :3100 on `pynwheel_development`, Connect dev :3005 from an rsync'd copy, headless Chrome, minted super-admin session)
+
+- **Sylo (3837), All floorplates** (5 SVG floorplates, Floor 4 with 15 stored hallways): Floors 0–3 detected by inference — Floor 0 105 points / 106 paths, Floor 1 47 / 43, Floor 2 106 / 104, Floor 3 112 / 110 (370 / 363); Floor 4 "Skipped — existing paths · already has 15 stored hallway points"; ≈ 6 s including the four SVG GETs (≈ 250 ms of geometry per floor). Floor 0: 10/10 units linked at their polygons A152–A170. Undo → every detected floor back to 0 / 0.
+- **Sylo Floor 4, This floorplate:** confirm → 107 / 100, **91/91** units linked on the SVG; Undo → the stored 15 / 14, 13/91 on the image.
+- **Gestures on Floor 0:** drag (moved, reviewed; Ctrl+Z restores position and pending state), double-click point (104 / 105, undo), click plan (+1 point linked), bend (+1 point, +2 paths, preview shown), double-click path (only that path), Move on (no delete, no add), Auto-Connect ("13 blocked, 127 redundant" — nothing to add after detection).
+- **Routes:** Floor 0 A-A152 → A-A154 along the corridor, 73 SVG units, warning for 2 pending points; Floors scope A-A152 (Floor 0) → Elevator A → Floor 1 with an Elevator stop added on each SVG floor: "145 SVG units · 2 floors · 1 elevator ride"; Floor 4's stored graph still routes (391 px sample).
+- **Hazel (1618), All floorplates:** "All floorplates · 31 floorplates", all 31 skipped as existing in 2.6 s, no SVG fetched. **Alderwood (1234):** "Skipped — no SVG", "Nothing to detect".
+- **Read-only:** every script and spec recorded **0 non-GET requests** and 0 page errors. **Responsive:** no horizontal scroll at 1440 / 900 / 390 px.
+- **Bundle:** map route 43.1 kB (36.4 kB before; the SVG engine is a separate chunk loaded when Detect Hallways runs).
+
+### Tests
+
+`npm run typecheck` clean; `next build` ✅. `tests/e2e/hallways.spec.ts` (new, 26, no server): path data, transforms, Illustrator ids and hidden floors, polygon centres, unreadable files; walkway tracing with crossings / stop splits / obstacles; gap bridging; corridor inference on a CMS-shaped floor; no layer / no corridor; short islands; the POC's real exports at the POC's numbers; move / delete-rejoin / add + connect / bend / delete path / confirm / Auto-Connect; local overrides and undo; routes on polylines, the gap bridge, the pending warning, invalid ends. `wayfindingLogic.spec.ts` 13/13 (the old Detect Paths test removed with `detectPaths.ts`). `wayfinding.spec.ts` 10/10 on real data (new: Detect Hallways · All floorplates with the skip rules and Undo; default editing gestures, Ctrl/Cmd+Z and the Move override; shortest path on a detected floor and the no-SVG floorplate). Regression: `mapPlotting`, `mapCanvas`, `hazel`, `tourSetup`, `wayfinding*`, `hallways` 72/72; `listingsAndInventory`, `amenities`, `routes`, `screens`, `interactions` 90/90.
+
+### Limitations
+
+Inference is a proposal (pending review): it reads footprints minus rooms, so a building drawn without a `Footprints` layer gets no corridors, garden-style buildings with outside access get none (correctly), and doors are not modelled (a unit joins the corridor at its polygon's nearest point). Detected graphs live on the SVG and cannot show the stored image-only elevators / entries (M20). Nothing is kept across a reload (M14, M21). `connectNodeToNearest` runs a whole-graph pass per new point, as in the POC. The detection runs on the main thread, one floorplate per frame.
+
+### Remaining
+
+Gaps M14, M16 (updated), M20–M23 in `gaps_map_plotting_feature.md`.

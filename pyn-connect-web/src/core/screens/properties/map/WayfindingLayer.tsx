@@ -6,6 +6,7 @@ import { i18n } from '~/resources/i18n';
 import type { PropertyMapController } from '~/core/hooks/usePropertyMap';
 import type { WfLayer } from '~/core/utils/generator/map/wayfinding.generator';
 import { M } from '~/core/utils/generator/map/mapText';
+import type { EdgeKind } from '~/core/utils/wayfinding/hallways/types';
 import { stopTypeOf, type StopTypeId } from '~/core/utils/wayfinding/stopTypes';
 
 const W = M.wayfinding;
@@ -14,6 +15,16 @@ const PATH = '#0077AE';
 const ROUTE = '#4A7212';
 const SELECTED = '#E0A800';
 const DANGER = '#C62534';
+
+/** The POC's path styles by kind, in this screen's blue: traced / inferred solid, a bridged gap dark and dashed, Auto-Connect light and dotted, hand-drawn dark. */
+const KIND_STYLE: Record<EdgeKind, { color: string; dash?: string }> = {
+  stored: { color: PATH },
+  traced: { color: PATH },
+  inferred: { color: '#2F86C4' },
+  bridge: { color: '#0B4F7A', dash: '7 4' },
+  knn: { color: '#6FB2DD', dash: '2 4' },
+  manual: { color: '#0B4F7A' }
+};
 
 /**
  * The Wayfinding layer of the plan: the hallway paths and points, the
@@ -51,24 +62,53 @@ export const WayfindingLayer = ({ controller, layer }: { controller: PropertyMap
             data-testid="wf-link"
           />
         ))}
-        {layer.paths.map((path) => (
-          <g key={path.key}>
-            <line x1={path.x1} y1={path.y1} x2={path.x2} y2={path.y2} className="bo-map__edgehit bo-wf__hit" onPointerDown={wf.onPathDown(path.key)} data-wf-path={path.key} />
-            <line
-              x1={path.x1}
-              y1={path.y1}
-              x2={path.x2}
-              y2={path.y2}
-              stroke={path.selected ? SELECTED : path.onRoute ? (anim ? '#B9D69C' : ROUTE) : PATH}
-              strokeWidth={path.selected ? 4 : path.onRoute ? 6 : 3}
-              strokeOpacity={path.onRoute || path.selected ? 1 : layer.dimmed ? 0.3 : 0.85}
-              strokeDasharray={path.temporary && !path.onRoute ? '6 4' : undefined}
-              strokeLinecap="round"
-              vectorEffect="non-scaling-stroke"
-              pointerEvents="none"
-            />
-          </g>
-        ))}
+        {layer.paths.map((path) => {
+          const style = KIND_STYLE[path.kind];
+          return (
+            <g key={path.key}>
+              <polyline
+                points={path.d}
+                fill="none"
+                className="bo-map__edgehit bo-wf__hit"
+                onPointerDown={wf.onPathDown(path.key)}
+                onDoubleClick={(event) => {
+                  event.stopPropagation();
+                  wf.onPathDoubleClick(path.key);
+                }}
+                data-wf-path={path.key}
+                data-kind={path.kind}
+              >
+                {tool == null && <title>{i18n.t(W.hints.path)}</title>}
+              </polyline>
+              <polyline
+                points={path.d}
+                fill="none"
+                stroke={path.selected ? SELECTED : path.onRoute ? (anim ? '#B9D69C' : ROUTE) : style.color}
+                strokeWidth={path.selected ? 4 : path.onRoute ? 6 : 3}
+                strokeOpacity={path.onRoute || path.selected ? 1 : layer.dimmed ? 0.3 : 0.85}
+                strokeDasharray={path.onRoute ? undefined : (style.dash ?? (path.temporary && path.kind === 'manual' ? '6 4' : undefined))}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                vectorEffect="non-scaling-stroke"
+                pointerEvents="none"
+              />
+            </g>
+          );
+        })}
+        {layer.bend && (
+          <line
+            x1={layer.bend.x1}
+            y1={layer.bend.y1}
+            x2={layer.bend.x2}
+            y2={layer.bend.y2}
+            stroke={SELECTED}
+            strokeWidth={3}
+            strokeDasharray="5 4"
+            vectorEffect="non-scaling-stroke"
+            pointerEvents="none"
+            data-testid="wf-bend"
+          />
+        )}
         {layer.route && !animHere && (
           <polyline
             points={layer.route.map((point) => `${point.x},${point.y}`).join(' ')}
@@ -87,15 +127,37 @@ export const WayfindingLayer = ({ controller, layer }: { controller: PropertyMap
         <span key={door.key} className="bo-wf__door" style={{ left: `${door.xPct}%`, top: `${door.yPct}%` }} aria-hidden="true" />
       ))}
 
+      {layer.anchors.map((anchor) => (
+        <div
+          key={anchor.key}
+          data-node={anchor.key}
+          data-testid="wf-anchor"
+          className={`bo-wf__anchor${anchor.linked ? '' : ' bo-wf__anchor--unlinked'}${anchor.selected ? ' bo-wf__anchor--selected' : ''}`}
+          style={{ left: `${anchor.xPct}%`, top: `${anchor.yPct}%` }}
+          onPointerDown={wf.onAnchorDown(anchor.key, false)}
+        />
+      ))}
+
       {layer.points.map((point) => (
         <div
           key={point.key}
           data-node={point.key}
           data-testid="wf-point"
-          className={`bo-wf__point${point.selected || point.from ? ' bo-wf__point--selected' : ''}${point.onRoute ? ' bo-wf__point--route' : ''}${point.lonely ? ' bo-wf__point--lonely' : ''}${point.temporary ? ' bo-wf__point--temp' : ''}`}
-          style={{ left: `${point.xPct}%`, top: `${point.yPct}%`, cursor: tool === 'move' ? 'grab' : 'pointer' }}
+          data-pending={point.pending ? '1' : undefined}
+          className={`bo-wf__point${point.selected || point.from ? ' bo-wf__point--selected' : ''}${point.onRoute ? ' bo-wf__point--route' : ''}${point.lonely ? ' bo-wf__point--lonely' : ''}${point.temporary ? ' bo-wf__point--temp' : ''}${point.pending ? ' bo-wf__point--pending' : ''}${point.dragging ? ' bo-wf__point--dragging' : ''}`}
+          style={{
+            left: `${point.xPct}%`,
+            top: `${point.yPct}%`,
+            cursor: tool === 'move' || tool == null ? 'grab' : 'pointer',
+            // The POC fades a proposal by how unsure it is.
+            opacity: point.pending && point.confidence != null ? 0.45 + point.confidence * 0.55 : undefined
+          }}
           onPointerDown={wf.onPointDown(point.key)}
-          title={point.lonely ? i18n.t(W.selection.isolatedTitle) : undefined}
+          onDoubleClick={(event) => {
+            event.stopPropagation();
+            wf.onPointDoubleClick(point.key);
+          }}
+          title={point.lonely ? i18n.t(W.selection.isolatedTitle) : tool == null ? i18n.t(W.hints.point) : undefined}
         />
       ))}
 

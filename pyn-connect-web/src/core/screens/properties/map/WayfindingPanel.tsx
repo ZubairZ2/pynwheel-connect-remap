@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { i18n } from '~/resources/i18n';
 import { StatusPill } from '~/core/components/atoms/StatusPill';
 import type { PropertyMapController } from '~/core/hooks/usePropertyMap';
-import type { WfPicker } from '~/core/utils/generator/map/wayfinding.generator';
+import type { WfDetectView, WfPicker } from '~/core/utils/generator/map/wayfinding.generator';
 import { M, t } from '~/core/utils/generator/map/mapText';
 
 const W = M.wayfinding;
@@ -27,9 +27,11 @@ const Check = ({ on }: { on: boolean }) => (
 /**
  * The design's Wayfinding side panel for the floorplate in view: its status,
  * the stacked floor picker, the point / path / linked-stop counts from the
- * real hallway graph, the tool hint and selection, the Detect Paths review,
- * "Test shortest path" (scope, sample, From / To, step-free, the route and
- * its animation), the stops not linked yet.
+ * real hallway graph, the editing mode, tool hint and selection, the Detect
+ * Hallways run (progress, then each floorplate's outcome), the inferred
+ * points still to review, "Test shortest path" (scope, sample, From / To,
+ * step-free, the route, its warnings and animation), the stops not linked
+ * yet.
  */
 export const WayfindingPanel = ({ controller }: { controller: PropertyMapController }) => {
   const { wayfinding } = controller;
@@ -110,29 +112,23 @@ export const WayfindingPanel = ({ controller }: { controller: PropertyMapControl
           </div>
         </div>
 
+        <div className={`bo-wf__editing${panel.mode.tool ? ' bo-wf__editing--tool' : ''}`} data-testid="wf-mode" aria-label={i18n.t(W.mode.label)}>
+          <span className="bo-wf__editingdot" aria-hidden="true" />
+          {panel.mode.label}
+        </div>
         <div className="bo-wf__hint">{panel.hint}</div>
+        {panel.layerNote && <div className="bo-wf__layernote">{panel.layerNote}</div>}
 
-        {panel.review && (
-          <div className="bo-wf__review" role="status" data-testid="wf-review">
-            <div className="bo-wf__reviewtext">
-              <div className="bo-wf__reviewtitle">{panel.review.title}</div>
-              <div className="bo-wf__reviewbody">{panel.review.body}</div>
-              {panel.review.skipped.map((line) => (
-                <div key={line} className="bo-wf__reviewskip">
-                  {line}
-                </div>
-              ))}
-            </div>
-            <div className="bo-wf__reviewactions">
-              {controller.state.wfReview?.levelIds.length ? (
-                <button type="button" className="bo-wf__smallbtn" onClick={wf.undoDetect}>
-                  {i18n.t(W.review.undo)}
-                </button>
-              ) : null}
-              <button type="button" className="bo-wf__smallbtn" onClick={wf.dismissReview}>
-                {i18n.t(W.review.dismiss)}
+        {panel.detect && <DetectCard view={panel.detect} controller={controller} />}
+
+        {panel.pending && (
+          <div className="bo-wf__pending" role="status" data-testid="wf-pending">
+            <div className="bo-wf__pendingtext">{panel.pending.text}</div>
+            {panel.pending.confirmable > 0 && (
+              <button type="button" className="bo-wf__smallbtn" onClick={wf.confirmPending}>
+                {panel.pending.confirmLabel}
               </button>
-            </div>
+            )}
           </div>
         )}
 
@@ -249,6 +245,11 @@ export const WayfindingPanel = ({ controller }: { controller: PropertyMapControl
                     <div className="bo-wf__resulttitle">{route.title}</div>
                     <div className="bo-wf__resultsub">{route.sub}</div>
                   </div>
+                  {route.warnings.map((warning) => (
+                    <div key={warning} className="bo-wf__warning" data-testid="wf-route-warning">
+                      {warning}
+                    </div>
+                  ))}
                   <div className="bo-wf__anim">
                     <span className="bo-map__eyebrow">{i18n.t(W.anim.title)}</span>
                     <div className="bo-wf__animmodes" role="radiogroup" aria-label={i18n.t(W.anim.title)}>
@@ -334,6 +335,60 @@ export const WayfindingPanel = ({ controller }: { controller: PropertyMapControl
         <div className="bo-wf__footnote">{i18n.t(W.footnote)}</div>
       </div>
     </section>
+  );
+};
+
+/** Detect Hallways: a progress bar and the floorplate being read while it runs; then the counts and every floorplate's outcome, with Undo. */
+const DetectCard = ({ view, controller }: { view: WfDetectView; controller: PropertyMapController }) => {
+  const wf = controller.wayfinding.actions;
+  return (
+    <div className={`bo-wf__detect${view.running ? ' bo-wf__detect--running' : ''}`} role="status" aria-live="polite" data-testid="wf-detect">
+      <div className="bo-wf__detecthead">
+        <div className="bo-wf__reviewtitle" data-testid="wf-detect-title">
+          {view.title}
+        </div>
+        <div className="bo-wf__reviewactions">
+          {view.running ? (
+            <button type="button" className="bo-wf__smallbtn" onClick={wf.stopDetect}>
+              {i18n.t(W.detect.stop)}
+            </button>
+          ) : (
+            <>
+              {view.canUndo && (
+                <button type="button" className="bo-wf__smallbtn" onClick={wf.undoDetect}>
+                  {i18n.t(W.review.undo)}
+                </button>
+              )}
+              <button type="button" className="bo-wf__smallbtn" onClick={wf.dismissReview}>
+                {i18n.t(W.review.dismiss)}
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+      <div className="bo-wf__progress" aria-hidden={!view.running}>
+        <span className="bo-wf__progressbar" style={{ width: `${view.pct}%` }} />
+      </div>
+      {view.current && <div className="bo-wf__detectnow">{view.current}</div>}
+      <div className="bo-wf__detectsum">
+        {view.summary.map((row) => (
+          <span key={row.label} className={`bo-wf__detectchip bo-wf__detectchip--${row.tone}`}>
+            <b>{row.value}</b> {row.label}
+          </span>
+        ))}
+      </div>
+      {view.empty && <div className="bo-wf__reviewbody">{view.empty}</div>}
+      <div className="bo-wf__detectrows" data-testid="wf-detect-rows">
+        {view.rows.map((row) => (
+          <div key={row.levelId} className="bo-wf__detectrow" data-status={row.status}>
+            <span className={`bo-wf__detectdot bo-wf__detectdot--${row.tone}`} aria-hidden="true" />
+            <span className="bo-wf__detectname">{row.name}</span>
+            <span className={`bo-wf__detectstatus bo-wf__detectstatus--${row.tone}`}>{row.label}</span>
+            {row.detail && <span className="bo-wf__detectdetail">{row.detail}</span>}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 };
 

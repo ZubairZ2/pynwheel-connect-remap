@@ -7,7 +7,6 @@ import { generateRasterGraphs } from '~/core/utils/generator/map/mapNodes.genera
 import { generatePlotPanel } from '~/core/utils/generator/map/mapPanels.generator';
 import { initialLocalMapState, type LocalMapState, type TempStop } from '~/core/utils/generator/map/mapState';
 import { generateWayfindingPanel, newStopForm, stopFormErrors, wayfindingEnabled } from '~/core/utils/generator/map/wayfinding.generator';
-import { detectPaths, detectionSites } from '~/core/utils/wayfinding/detectPaths';
 import { anchorsOnFloor, parseServedFloors, plateProgress, wayfindingPlate, type WfPlate } from '~/core/utils/wayfinding/wayfindingGraph';
 import { computeWayfindingRoute, defaultPair, routeGroups, sampleRoute, type WfRouteInput } from '~/core/utils/wayfinding/wayfindingRoute';
 
@@ -306,16 +305,6 @@ test.describe('Wayfinding logic', () => {
       expect(route.fix?.kind).toBe('detect');
     }
     expect(plateProgress(plates[levels.find((row) => row.recordId === 30)!.id], null).state).toBe('none');
-  });
-
-  test('Detect Paths proposes a spine joining every stop, and nothing below two stops', () => {
-    const { plates, level } = setup(buildMap());
-    const tower = plates[level('Floors 5–14').id];
-    const result = detectPaths(detectionSites(tower.anchors), tower.dims!);
-    expect(result).not.toBeNull();
-    expect(result!.points.length).toBeGreaterThanOrEqual(3);
-    expect(result!.paths).toHaveLength(result!.points.length - 1);
-    expect(detectPaths([{ x: 10, y: 10 }], { w: 100, h: 100 })).toBeNull();
   });
 
   test('Plot on Map: Show, the stacked floor, search and the counts', () => {

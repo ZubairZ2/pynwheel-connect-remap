@@ -11,7 +11,8 @@ import { expect, test, type Page } from '@playwright/test';
  *   PYNWHEEL_CMS_URL                the CMS the app talks to (default http://127.0.0.1:3000)
  *   PYN_CONNECT_E2E_STACKED         a property with a stacked floorplate and hallways (default 1839, Oeuvre: range 1-6)
  *   PYN_CONNECT_E2E_SINGLE          a property with single-floor floorplates and hallways (default 2919, Sofia)
- *   PYN_CONNECT_E2E_DETECT          a property with plotted units on a floorplate without hallways (default 1234, Alderwood)
+ *   PYN_CONNECT_E2E_DETECT          a property with floor SVGs, some floorplates with stored hallways and some without (default 3837, Sylo)
+ *   PYN_CONNECT_E2E_NO_SVG          a property whose floorplates have floor images only (default 1234, Alderwood)
  *   PYN_CONNECT_E2E_BUILDINGS       a property with two floorplate buildings (default 1105, Trestle)
  *
  * Every expected count is read from the CMS's own JSON (`automate_plotting.json`,
@@ -24,12 +25,13 @@ const user = process.env.PYN_CONNECT_E2E_USER;
 const CMS = (process.env.PYNWHEEL_CMS_URL ?? 'http://127.0.0.1:3000').replace(/\/$/, '');
 const STACKED = process.env.PYN_CONNECT_E2E_STACKED ?? '1839';
 const SINGLE = process.env.PYN_CONNECT_E2E_SINGLE ?? '2919';
-const DETECT = process.env.PYN_CONNECT_E2E_DETECT ?? '1234';
+const DETECT = process.env.PYN_CONNECT_E2E_DETECT ?? '3837';
+const NO_SVG = process.env.PYN_CONNECT_E2E_NO_SVG ?? '1234';
 const BUILDINGS = process.env.PYN_CONNECT_E2E_BUILDINGS ?? '1105';
 
 type Json = Record<string, unknown>;
 type Hallway = { id: number; next_points: number[]; parent_type: string; parent_id: number };
-type Plate = { id: number; range: string | null; floors: number[]; name: string };
+type Plate = { id: number; range: string | null; floors: number[]; name: string; svg: string | null };
 
 test.describe('Map & Plotting · Wayfinding (real data)', () => {
   test.skip(!railsCookie || !user, 'PYN_CONNECT_E2E_RAILS_COOKIE / PYN_CONNECT_E2E_USER not set');
@@ -129,8 +131,16 @@ test.describe('Map & Plotting · Wayfinding (real data)', () => {
     await modes.getByRole('tab', { name: 'Wayfinding' }).click();
     await expect(wayfinding(page)).toBeVisible();
     await expect(page.getByTestId('plot-panel')).toHaveCount(0);
-    for (const name of ['Move', 'Connect', 'Add Point', 'Erase', 'Clear Paths']) await expect(toolbar.getByRole('button', { name, exact: true })).toBeVisible();
-    await expect(toolbar.getByRole('button', { name: /^Detect Paths/ })).toBeVisible();
+    for (const name of ['Move', 'Connect', 'Add Point', 'Erase', 'Undo', 'Clear Paths']) await expect(toolbar.getByRole('button', { name, exact: true })).toBeVisible();
+    await expect(toolbar.getByRole('button', { name: /^Detect Hallways/ })).toBeVisible();
+    await expect(toolbar.getByRole('button', { name: /Auto-Connect Paths/ })).toBeVisible();
+    // No tool is on by default: the POC's own gestures apply, and the panel says so.
+    for (const name of ['Move', 'Connect', 'Add Point', 'Erase']) await expect(toolbar.getByRole('button', { name, exact: true })).toHaveAttribute('aria-pressed', 'false');
+    await expect(page.getByTestId('wf-mode')).toHaveText('Editing — no tool selected');
+    await toolbar.getByRole('button', { name: 'Move', exact: true }).click();
+    await expect(page.getByTestId('wf-mode')).toHaveText('Move tool on');
+    await toolbar.getByRole('button', { name: 'Move', exact: true }).click();
+    await expect(page.getByTestId('wf-mode')).toHaveText('Editing — no tool selected');
     await expect(toolbar.getByRole('button', { name: /^Auto Plot/ })).toHaveCount(0);
     // One canvas: the same surface element stays mounted across the switch.
     expect(await surface!.evaluate((node) => node.isConnected)).toBe(true);
@@ -253,43 +263,206 @@ test.describe('Map & Plotting · Wayfinding (real data)', () => {
     done();
   });
 
-  test('Detect Paths: a floorplate without hallways gets a reviewable proposal, Undo restores it; too few stops detects nothing', async ({ page }) => {
+  /** Runs Detect Hallways from the toolbar menu and waits for the run to finish. */
+  const detect = async (page: Page, option: RegExp) => {
+    await page.getByRole('button', { name: /^Detect Hallways/ }).click();
+    await page.getByRole('menuitem', { name: option }).click();
+    await expect(page.getByTestId('wf-detect')).toBeVisible();
+    await expect(page.locator('.bo-wf__detect--running')).toHaveCount(0, { timeout: 180_000 });
+  };
+  /** The point under a spot that is really on top there (a dense floor overlaps points). */
+  const topPoint = (page: Page) =>
+    page.evaluate(() => {
+      for (const el of Array.from(document.querySelectorAll('[data-testid="wf-point"]'))) {
+        const r = el.getBoundingClientRect();
+        const x = r.x + r.width / 2;
+        const y = r.y + r.height / 2;
+        if (document.elementFromPoint(x, y) === el) return { key: el.getAttribute('data-node')!, x, y };
+      }
+      return null;
+    });
+  /** A spot on the plan — the floor image or the floor SVG under it — with no point, path or stop on it. */
+  const planSpot = (page: Page, skip = 0) =>
+    page.evaluate((skip) => {
+      const plan = document.querySelector('[data-testid="plan"]')!.getBoundingClientRect();
+      let found = 0;
+      for (let fy = 0.2; fy < 0.8; fy += 0.03)
+        for (let fx = 0.2; fx < 0.8; fx += 0.03) {
+          const x = plan.left + plan.width * fx;
+          const y = plan.top + plan.height * fy;
+          const el = document.elementFromPoint(x, y);
+          if (el?.closest('[data-testid="plan"]') && !el.closest('[data-node]') && !el.closest('[data-wf-path]') && found++ >= skip) return { x, y };
+        }
+      return null;
+    }, skip);
+  /** A spot on a path, away from its points. */
+  const pathSpot = (page: Page, skip = 0) =>
+    page.evaluate((skip) => {
+      let found = 0;
+      for (const el of Array.from(document.querySelectorAll<SVGPolylineElement>('polyline[data-wf-path]'))) {
+        const length = el.getTotalLength();
+        if (length < 4) continue;
+        const p = el.getPointAtLength(length * 0.4);
+        const m = el.getScreenCTM()!;
+        const x = p.x * m.a + m.e;
+        const y = p.y * m.d + m.f;
+        if (document.elementFromPoint(x, y) === el && found++ >= skip) return { key: el.getAttribute('data-wf-path')!, x, y };
+      }
+      return null;
+    }, skip);
+
+  test('Detect Hallways · All floorplates: floorplates with stored paths are skipped, the rest are read from their floor SVG; Undo restores', async ({ page }) => {
     const done = audit(page);
     const [floorplates, graph] = await Promise.all([plates(DETECT), hallways(DETECT)]);
-    const empty = floorplates.find((row) => graphOf(graph, row.id).points === 0)!;
+    const stored = floorplates.filter((row) => graphOf(graph, row.id).points > 0);
+    expect(stored.length, 'the property needs a floorplate with stored hallways').toBeGreaterThan(0);
     await openMap(page, DETECT);
     await page.getByRole('tab', { name: 'Wayfinding' }).click();
-    await levelTab(page, new RegExp(`Floor ${empty.floors[0]}\\b`)).first().click();
-    expect(await counts(page)).toMatchObject({ points: 0, paths: 0 });
-    await expect(wayfinding(page).locator('.bo-pill')).toHaveText('Not started');
+    await page.getByRole('button', { name: /^Detect Hallways/ }).click();
+    await expect(page.getByRole('menuitem', { name: /All floorplates/ })).toContainText(`${floorplates.length} floorplates`);
+    await page.keyboard.press('Escape');
+    await page.mouse.move(5, 5);
+    await detect(page, /All floorplates/);
 
-    await page.getByRole('button', { name: /^Detect Paths/ }).click();
-    await page.getByRole('menuitem', { name: /This floorplate/ }).click();
-    await expect(page.getByTestId('wf-review')).toContainText('Paths detected on 1 floorplate');
-    const detected = await counts(page);
-    expect(detected.points).toBeGreaterThan(1);
-    expect(detected.paths).toBe(detected.points - 1);
-    const [linked, total] = detected.linked!.split('/').map(Number);
-    expect(linked).toBe(total);
+    const rows = page.getByTestId('wf-detect-rows').locator('.bo-wf__detectrow');
+    await expect(rows).toHaveCount(floorplates.length);
+    for (const plate of floorplates) {
+      const row = rows.filter({ hasText: plate.floors.length === 1 ? `Floor ${plate.floors[0]}` : plate.name }).first();
+      const status = await row.getAttribute('data-status');
+      if (graphOf(graph, plate.id).points > 0) {
+        // Never overwritten: the stored hallways are reported and left alone.
+        expect(status).toBe('existing');
+        await expect(row).toContainText(`already has ${graphOf(graph, plate.id).points} stored hallway points`);
+      } else if (!plate.svg) {
+        expect(status).toBe('noSvg');
+      } else {
+        expect(['detected', 'noHallway', 'invalidSvg', 'failed']).toContain(status);
+      }
+    }
+    await expect(page.getByTestId('wf-detect-title')).toContainText(/Hallways detected on \d+ floorplate/);
 
-    // Review: edit the proposal locally (Erase a point), then undo the whole detection.
-    await page.getByRole('button', { name: 'Erase', exact: true }).click();
-    await page.getByTestId('wf-point').last().dispatchEvent('pointerdown', { bubbles: true, pointerId: 1 });
-    expect((await counts(page)).points).toBe(detected.points - 1);
-    await page.getByTestId('wf-review').getByRole('button', { name: 'Undo' }).click();
-    expect(await counts(page)).toMatchObject({ points: 0, paths: 0 });
+    // The stored floorplate still shows exactly the CMS's graph.
+    const keep = stored[0];
+    await levelTab(page, new RegExp(`Floor ${keep.floors[0]}\\b`)).first().click();
+    expect(await counts(page)).toMatchObject(graphOf(graph, keep.id));
 
-    // Add Point and Connect: a hand-drawn path on this page.
-    await page.getByRole('button', { name: 'Add Point', exact: true }).click();
-    const a = await emptySpot(page, 0);
-    await page.mouse.click(a!.x, a!.y);
-    const b = await emptySpot(page, 4);
-    await page.mouse.click(b!.x, b!.y);
-    expect(await counts(page)).toMatchObject({ points: 2, paths: 1 });
-    await page.getByRole('button', { name: 'Clear Paths' }).click();
-    await page.getByRole('dialog').getByRole('button', { name: 'Clear Paths' }).click();
-    expect(await counts(page)).toMatchObject({ points: 0, paths: 0 });
+    // One Undo takes the whole run back.
+    await page.getByTestId('wf-detect').getByRole('button', { name: 'Undo' }).click();
+    await expect(page.getByTestId('wf-detect')).toHaveCount(0);
+    for (const plate of floorplates.filter((row) => !graphOf(graph, row.id).points)) {
+      await levelTab(page, new RegExp(`Floor ${plate.floors[0]}\\b`)).first().click();
+      expect(await counts(page)).toMatchObject({ points: 0, paths: 0 });
+    }
     done();
+  });
+
+  test('default editing (no tool): drag, double-click to delete, click to add, drag a path to bend it, double-click a path, Ctrl/Cmd+Z; a tool overrides them', async ({ page }) => {
+    const done = audit(page);
+    const [floorplates, graph] = await Promise.all([plates(DETECT), hallways(DETECT)]);
+    const target = floorplates.find((row) => row.svg && !graphOf(graph, row.id).points)!;
+    await openMap(page, DETECT);
+    await page.getByRole('tab', { name: 'Wayfinding' }).click();
+    await levelTab(page, new RegExp(`Floor ${target.floors[0]}\\b`)).first().click();
+    await expect(page.getByTestId('plan-svg').locator('svg')).toHaveCount(1, { timeout: 120_000 });
+    await detect(page, /This floorplate/);
+    await expect(page.getByTestId('wf-detect-rows')).toContainText('Detected');
+    const detected = await counts(page);
+    expect(detected.points).toBeGreaterThan(2);
+
+    // Drag a point: it moves, and the inferred point counts as reviewed.
+    const point = (await topPoint(page))!;
+    const node = page.locator(`[data-node="${point.key}"]`);
+    const left = await node.evaluate((el) => (el as HTMLElement).style.left);
+    await page.mouse.move(point.x, point.y);
+    await page.mouse.down();
+    await page.mouse.move(point.x + 20, point.y + 15, { steps: 5 });
+    await page.mouse.up();
+    expect(await node.evaluate((el) => (el as HTMLElement).style.left)).not.toBe(left);
+    await expect(node).not.toHaveAttribute('data-pending', '1');
+    await page.keyboard.press('Control+z');
+    expect(await node.evaluate((el) => (el as HTMLElement).style.left)).toBe(left);
+
+    // Double-click a point: deleted, its neighbours re-joined (one path fewer per point removed, the others joined).
+    const doomed = (await topPoint(page))!;
+    await page.mouse.dblclick(doomed.x, doomed.y);
+    expect((await counts(page)).points).toBe(detected.points - 1);
+    await page.keyboard.press('Control+z');
+    expect(await counts(page)).toMatchObject({ points: detected.points, paths: detected.paths });
+
+    // Click the empty plan: a point, linked to its neighbours.
+    const spot = (await planSpot(page, 3))!;
+    await page.mouse.click(spot.x, spot.y);
+    const added = await counts(page);
+    expect(added.points).toBe(detected.points + 1);
+    expect(added.paths).toBeGreaterThan(detected.paths);
+    await page.keyboard.press('Control+z');
+    expect(await counts(page)).toMatchObject({ points: detected.points, paths: detected.paths });
+
+    // Drag a path: a point appears where it is let go, the path splits around it.
+    const bend = (await pathSpot(page))!;
+    await page.mouse.move(bend.x, bend.y);
+    await page.mouse.down();
+    await page.mouse.move(bend.x + 15, bend.y + 15, { steps: 4 });
+    await expect(page.getByTestId('wf-bend')).toHaveCount(1);
+    await page.mouse.move(bend.x + 25, bend.y + 25, { steps: 2 });
+    await page.mouse.up();
+    const bent = await counts(page);
+    expect(bent.points).toBe(detected.points + 1);
+    expect(bent.paths).toBeGreaterThanOrEqual(detected.paths + 1);
+    await expect(page.locator(`[data-wf-path="${bend.key}"]`)).toHaveCount(0);
+    await page.keyboard.press('Control+z');
+
+    // Double-click a path: only that connection goes.
+    const cut = (await pathSpot(page, 1))!;
+    await page.mouse.dblclick(cut.x, cut.y);
+    expect(await counts(page)).toMatchObject({ points: detected.points, paths: detected.paths - 1 });
+    await page.getByTestId('wf-undo').click();
+    expect(await counts(page)).toMatchObject({ points: detected.points, paths: detected.paths });
+
+    // With Move on, a double-click deletes nothing and a click on the plan adds nothing.
+    await page.getByRole('button', { name: 'Move', exact: true }).click();
+    const again = (await topPoint(page))!;
+    await page.mouse.dblclick(again.x, again.y);
+    await page.mouse.click(spot.x, spot.y);
+    expect(await counts(page)).toMatchObject({ points: detected.points, paths: detected.paths });
+
+    // Auto-Connect reports what it did (local only).
+    await page.getByRole('button', { name: 'Move', exact: true }).click();
+    await page.getByRole('button', { name: /Auto-Connect Paths/ }).click();
+    await expect(page.getByText(/Auto-Connect/).last()).toBeVisible();
+    done();
+  });
+
+  test('Find Shortest Path on a detected floor follows the detected corridors; a floorplate with only floor images has nothing to detect', async ({ page }) => {
+    const done = audit(page);
+    const [floorplates, graph] = await Promise.all([plates(DETECT), hallways(DETECT)]);
+    const target = floorplates.find((row) => row.svg && !graphOf(graph, row.id).points)!;
+    await openMap(page, DETECT);
+    await page.getByRole('tab', { name: 'Wayfinding' }).click();
+    await levelTab(page, new RegExp(`Floor ${target.floors[0]}\\b`)).first().click();
+    await page.getByRole('button', { name: 'Find Shortest Path' }).click();
+    await expect(page.getByTestId('wf-route-error')).toContainText('has no paths yet');
+    await detect(page, /This floorplate/);
+    await page.getByRole('button', { name: 'Find Shortest Path' }).click();
+    const route = page.getByTestId('wf-route');
+    await expect(route).toContainText('SVG units along the plan');
+    await expect(page.getByTestId('wf-route-line')).toHaveCount(1);
+    await expect(page.getByTestId('wf-route-warning')).toContainText(/inferred point/);
+    done();
+
+    const [imageOnly, imageGraph] = await Promise.all([plates(NO_SVG), hallways(NO_SVG)]);
+    const bare = imageOnly.find((row) => !row.svg && !graphOf(imageGraph, row.id).points)!;
+    const second = await page.context().newPage();
+    const finish = audit(second);
+    await signIn(second);
+    await second.goto(`/properties/${NO_SVG}/map`);
+    await hydrated(second);
+    await second.getByRole('tab', { name: 'Wayfinding' }).click();
+    await levelTab(second, new RegExp(`Floor ${bare.floors[0]}\\b`)).first().click();
+    await detect(second, /This floorplate/);
+    await expect(second.getByTestId('wf-detect-rows').locator('.bo-wf__detectrow').first()).toHaveAttribute('data-status', 'noSvg');
+    await expect(second.getByTestId('wf-detect-title')).toHaveText('Nothing to detect');
+    finish();
   });
 
   test('Plot on Map: search, select all, unplot and the counts stay in step with the map', async ({ page }) => {

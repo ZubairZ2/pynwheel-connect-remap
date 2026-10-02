@@ -2,16 +2,20 @@ import { i18n } from '~/resources/i18n';
 import { levelsOfBuilding, type MapLevel } from '~/core/utils/generator/map/mapLevels.generator';
 import { distance } from '~/core/utils/generator/map/mapState';
 import { M, plural, t } from '~/core/utils/generator/map/mapText';
+import { astar, computeComponentBridgeDistance, nearestCrossSetPair, reachableFrom, type AdjacencyEntry, type RouteNode } from './hallways/astar';
 import { stopTypeOf, type StopTypeId } from './stopTypes';
-import { anchorsOnFloor, blockerRadius, segmentDistance, stopsOnFloor, type WfAnchor, type WfPlate } from './wayfindingGraph';
+import { anchorsOnFloor, blockerRadius, polylineDistance, stopsOnFloor, type WfAnchor, type WfPlate } from './wayfindingGraph';
 
 /**
  * "Test shortest path": a route between two anchors (a unit, an amenity or
  * a stop) over the wayfinding graph of the floors in scope, the way the
  * CMS's ShortestPath walks it — every anchor joins the hallways at its
- * point (the nearest one, unless linked by hand), Dijkstra over the hallway
- * links weighted by their length on the floor image — and the way floors
- * and buildings join:
+ * point (the nearest one, unless linked by hand) — with the POC's router
+ * (`lib/routing/computeRoute.ts`): A* over the paths weighted by their
+ * length along the drawn polyline, the route stitched back into that
+ * polyline, and, when the two ends sit on pieces of one floor that do not
+ * meet, one temporary straight bridge across the nearest gap (within 2% of
+ * the plan's diagonal) with a warning naming it. Floors and buildings join:
  *
  *   - an elevator is one record shown on every floor it serves
  *     (`floorplate_covering_range`), so its copies on two floors are linked;
@@ -71,7 +75,7 @@ export interface WfRouteLeg {
   ck: string;
   levelId: string;
   floor: number | null;
-  /** The route's points on this floor, in the floor image's pixels, in walking order. */
+  /** The route's points on this floor, in the layer's units (image pixels, or SVG units), in walking order, along each path's drawn line. */
   points: { x: number; y: number; stop: boolean; name: string }[];
   /** The hallway points walked (keys on the level), for highlighting their paths. */
   pointKeys: string[];
@@ -83,7 +87,7 @@ export interface WfRouteLeg {
 export type WfRouteFix = { kind: 'detect'; scope: 'plate' | 'building' | 'all'; label: string } | { kind: 'stop'; levelId: string; label: string };
 
 export type WfRouteResult =
-  | { ok: true; a: string; b: string; legs: WfRouteLeg[]; steps: WfRouteStep[]; px: number; multi: boolean; summary: string }
+  | { ok: true; a: string; b: string; legs: WfRouteLeg[]; steps: WfRouteStep[]; px: number; multi: boolean; summary: string; warnings: string[]; unit: string }
   | { ok: false; a: string; b: string; error: string; fix: WfRouteFix | null };
 
 export interface WfRouteInput {
@@ -140,7 +144,7 @@ export const routeGroups = (input: WfRouteInput): WfRouteGroup[] => {
   const groups: WfRouteGroup[] = [];
   scopeCopies(input).forEach((copy) => {
     const plate = input.plates[copy.level.id];
-    if (!plate || !plate.hasImage) return;
+    if (!plate || !plate.hasPlan) return;
     const label = `${copyName(copy, withBuilding)}${copy.floor != null ? ` ${t(R.shares, { range: copy.level.rangeLabel })}` : ''}`;
     const items = anchorsOnFloor(plate, copy.floor).map(
       (anchor): WfEndpoint => ({ id: `${copy.ck}|${anchor.key}`, ck: copy.ck, levelId: copy.level.id, floor: copy.floor, anchor, label: anchor.label, group: label })
@@ -180,67 +184,13 @@ export const defaultPair = (input: WfRouteInput, groups: WfRouteGroup[], a: stri
   return [from, to];
 };
 
-type Edge = { to: string; w: number; type: 'walk' | 'link' | 'elevator' | 'stairs' | 'outdoor'; name: string };
-
-/** Dijkstra with a binary heap; the node keys on the path, source first, and its length. */
-const dijkstra = (adjacency: Map<string, Edge[]>, from: string, to: string): { path: string[]; via: Map<string, Edge>; cost: number } | null => {
-  const dist = new Map<string, number>([[from, 0]]);
-  const via = new Map<string, Edge>();
-  const previous = new Map<string, string>();
-  const heap: [number, string][] = [[0, from]];
-  const push = (item: [number, string]) => {
-    heap.push(item);
-    let i = heap.length - 1;
-    while (i > 0) {
-      const parent = (i - 1) >> 1;
-      if (heap[parent][0] <= heap[i][0]) break;
-      [heap[parent], heap[i]] = [heap[i], heap[parent]];
-      i = parent;
-    }
-  };
-  const pop = (): [number, string] | undefined => {
-    const top = heap[0];
-    const last = heap.pop();
-    if (heap.length && last) {
-      heap[0] = last;
-      let i = 0;
-      for (;;) {
-        const l = 2 * i + 1;
-        const r = l + 1;
-        let m = i;
-        if (l < heap.length && heap[l][0] < heap[m][0]) m = l;
-        if (r < heap.length && heap[r][0] < heap[m][0]) m = r;
-        if (m === i) break;
-        [heap[m], heap[i]] = [heap[i], heap[m]];
-        i = m;
-      }
-    }
-    return top;
-  };
-  const done = new Set<string>();
-  while (heap.length) {
-    const [d, node] = pop()!;
-    if (done.has(node)) continue;
-    done.add(node);
-    if (node === to) break;
-    (adjacency.get(node) ?? []).forEach((edge) => {
-      const next = d + edge.w;
-      if (next < (dist.get(edge.to) ?? Number.POSITIVE_INFINITY)) {
-        dist.set(edge.to, next);
-        previous.set(edge.to, node);
-        via.set(edge.to, edge);
-        push([next, edge.to]);
-      }
-    });
-  }
-  if (!dist.has(to)) return null;
-  const path = [to];
-  while (path[0] !== from) {
-    const prev = previous.get(path[0]);
-    if (prev == null) return null;
-    path.unshift(prev);
-  }
-  return { path, via, cost: dist.get(to) ?? 0 };
+type Edge = {
+  to: string;
+  w: number;
+  type: 'walk' | 'link' | 'elevator' | 'stairs' | 'outdoor' | 'bridge';
+  name: string;
+  /** A walk's drawn line, from this end to `to`, ends included. */
+  line?: { x: number; y: number }[];
 };
 
 interface Built {
@@ -251,15 +201,24 @@ interface Built {
   skippedStairs: number;
 }
 
+/** The built graph in the router's shape: every node in its frame (the floor copy), every link with its weight. */
+const routerOf = (built: Built): { nodes: Map<string, RouteNode>; adjacency: Map<string, AdjacencyEntry<Edge>[]> } => {
+  const nodes = new Map<string, RouteNode>();
+  built.position.forEach((at, key) => nodes.set(key, { x: at.x, y: at.y, frame: at.ck }));
+  const adjacency = new Map<string, AdjacencyEntry<Edge>[]>();
+  built.adjacency.forEach((edges, key) => adjacency.set(key, edges.map((edge) => ({ to: edge.to, w: edge.w, edge }))));
+  return { nodes, adjacency };
+};
+
 /** The scope's graph: one copy of each floor's points and paths, the anchors joined to their points, and the links between floors and buildings. */
 const buildGraph = (input: WfRouteInput, copies: WfCopy[], blockers: boolean): Built => {
   const adjacency = new Map<string, Edge[]>();
   const position: Built['position'] = new Map();
-  const add = (a: string, b: string, w: number, type: Edge['type'], name = '') => {
+  const add = (a: string, b: string, w: number, type: Edge['type'], name = '', line?: { x: number; y: number }[]) => {
     if (!adjacency.has(a)) adjacency.set(a, []);
     if (!adjacency.has(b)) adjacency.set(b, []);
-    adjacency.get(a)!.push({ to: b, w, type, name });
-    adjacency.get(b)!.push({ to: a, w, type, name });
+    adjacency.get(a)!.push({ to: b, w, type, name, line });
+    adjacency.get(b)!.push({ to: a, w, type, name, line: line ? line.slice().reverse() : undefined });
   };
   const dims = input.plates[input.current.id]?.dims;
   // The design weighs a floor change against walking in its 760 × 470 plan; the same weights scaled to this floor image.
@@ -269,7 +228,7 @@ const buildGraph = (input: WfRouteInput, copies: WfCopy[], blockers: boolean): B
 
   copies.forEach((copy) => {
     const plate = input.plates[copy.level.id];
-    if (!plate || !plate.hasImage) return;
+    if (!plate || !plate.hasPlan) return;
     const radius = blockerRadius(plate.dims);
     const cuts = blockers ? plate.blockers.filter((stop) => stop.x != null && stop.y != null && (copy.floor == null || stop.floors == null || stop.floors.includes(copy.floor))) : [];
     const pointKey = (key: string) => `${copy.ck}~${key}`;
@@ -283,8 +242,8 @@ const buildGraph = (input: WfRouteInput, copies: WfCopy[], blockers: boolean): B
       const a = byKey.get(path.a);
       const b = byKey.get(path.b);
       if (!a || !b) return;
-      if (cuts.some((stop) => segmentDistance({ x: stop.x!, y: stop.y! }, a, b) < radius)) return;
-      add(pointKey(a.key), pointKey(b.key), distance(a.x, a.y, b.x, b.y), 'walk');
+      if (cuts.some((stop) => polylineDistance({ x: stop.x!, y: stop.y! }, path.points) < radius)) return;
+      add(pointKey(a.key), pointKey(b.key), path.length, 'walk', '', path.points);
     });
     anchorsOnFloor(plate, copy.floor).forEach((anchor) => {
       if (anchor.x == null || anchor.y == null) return;
@@ -369,11 +328,11 @@ export const computeWayfindingRoute = (input: WfRouteInput, groups: WfRouteGroup
   const name = (ck: string) => copyName(copyOf(ck), withBuilding);
   const levelName = (level: MapLevel) => `${level.sub} · ${level.label}`;
 
-  const noPlan = [from, to].map((item) => input.levels.find((level) => level.id === item.levelId)).find((level) => level && !input.plates[level.id]?.hasImage);
+  const noPlan = [from, to].map((item) => input.levels.find((level) => level.id === item.levelId)).find((level) => level && !input.plates[level.id]?.hasPlan);
   if (noPlan) return fail(t(R.noPlan, { level: levelName(noPlan) }));
 
   const inScope = scopeLevels(input.levels, input.current, input.scope);
-  const missing = inScope.filter((level) => input.plates[level.id]?.hasImage && !input.plates[level.id]?.points.length);
+  const missing = inScope.filter((level) => input.plates[level.id]?.hasPlan && !input.plates[level.id]?.points.length);
   const fixDetect: WfRouteFix | null = missing.length
     ? {
         kind: 'detect',
@@ -393,12 +352,33 @@ export const computeWayfindingRoute = (input: WfRouteInput, groups: WfRouteGroup
   }
 
   for (const item of [from, to]) {
-    if (item.anchor.svgOnly) return fail(t(R.svgOnly, { name: item.label }));
+    if (item.anchor.offLayer) return fail(t(input.plates[item.levelId]?.space === 'svg' ? R.imageOnly : R.svgOnly, { name: item.label }));
     if (!item.anchor.linked) return fail(t(R.notLinked, { name: item.label, floor: name(item.ck) }));
   }
 
   const built = buildGraph(input, copies, !options.noBlockers);
-  const found = dijkstra(built.adjacency, a, b);
+  const router = routerOf(built);
+  // A straight line only bounds the walk within one floor's frame.
+  const heuristic = input.scope === 'plate';
+  let found = astar(router.nodes, router.adjacency, a, b, { heuristic });
+  const warnings: string[] = [];
+  if (!found && from.ck === to.ck) {
+    // The POC's last resort: the two ends' pieces of this floor, the nearest two points across them, one temporary bridge.
+    const plate = input.plates[from.levelId];
+    const dims = plate?.dims;
+    const limit = computeComponentBridgeDistance(dims ? Math.hypot(dims.w, dims.h) : 1000);
+    const isPoint = (id: string) => built.position.get(id)?.point != null && built.position.get(id)?.ck === from.ck;
+    const gap = nearestCrossSetPair(router.nodes, reachableFrom(router.adjacency, a), reachableFrom(router.adjacency, b), isPoint);
+    if (gap && gap.distance <= limit) {
+      const pa = built.position.get(gap.a)!;
+      const pb = built.position.get(gap.b)!;
+      const bridge: Edge = { to: gap.b, w: gap.distance, type: 'walk', name: '', line: [pa, pb] };
+      router.adjacency.get(gap.a)?.push({ to: gap.b, w: gap.distance, edge: bridge });
+      router.adjacency.get(gap.b)?.push({ to: gap.a, w: gap.distance, edge: { ...bridge, to: gap.a, line: [pb, pa] } });
+      found = astar(router.nodes, router.adjacency, a, b, { heuristic });
+      if (found) warnings.push(t(R.bridged, { gap: Math.round(gap.distance).toLocaleString('en-US') }));
+    }
+  }
   if (!found) {
     const anyBlocker = copies.some((copy) => input.plates[copy.level.id]?.blockers.length);
     if (!options.noBlockers && anyBlocker) {
@@ -437,11 +417,16 @@ export const computeWayfindingRoute = (input: WfRouteInput, groups: WfRouteGroup
   let leg: WfRouteLeg = { ck: start.ck, levelId: parseCopyKey(start.ck).levelId, floor: parseCopyKey(start.ck).floor, points: [start], pointKeys: [], px: 0, from: start.name, to: '' };
   for (let i = 1; i < found.path.length; i += 1) {
     const key = found.path[i];
-    const edge = found.via.get(key)!;
+    const edge = found.via.get(key)!.edge;
     const at = built.position.get(key)!;
-    if (edge.type === 'walk' || edge.type === 'link') {
+    if (edge.type === 'walk' || edge.type === 'link' || edge.type === 'bridge') {
       const previous = leg.points[leg.points.length - 1];
-      leg.px += distance(previous.x, previous.y, at.x, at.y);
+      if (edge.line && edge.line.length > 2) {
+        edge.line.slice(1, -1).forEach((p) => leg.points.push({ x: p.x, y: p.y, stop: false, name: '' }));
+        leg.px += edge.w;
+      } else {
+        leg.px += distance(previous.x, previous.y, at.x, at.y);
+      }
       leg.points.push(at);
       if (at.point) leg.pointKeys.push(at.point);
       continue;
@@ -454,6 +439,10 @@ export const computeWayfindingRoute = (input: WfRouteInput, groups: WfRouteGroup
   leg.to = built.position.get(found.path[found.path.length - 1])!.name;
   legs.push(leg);
 
+  // Lengths are in the layer's own units: floor-image pixels, or SVG units on a floor whose paths came from its SVG.
+  const unitOf = (levelId: string) => i18n.t(input.plates[levelId]?.space === 'svg' ? M.wayfinding.units.svg : M.wayfinding.units.raster);
+  const legUnits = new Set(legs.map((row) => unitOf(row.levelId)));
+  const unit = legUnits.size === 1 ? [...legUnits][0] : i18n.t(M.wayfinding.units.mixed);
   const steps: WfRouteStep[] = [];
   legs.forEach((row, index) => {
     if (row.points.length > 1 || legs.length === 1) {
@@ -462,7 +451,7 @@ export const computeWayfindingRoute = (input: WfRouteInput, groups: WfRouteGroup
         ck: row.ck,
         legIndex: index,
         title: t(R.stepWalk, { floor: name(row.ck) }),
-        sub: t(R.stepWalkSub, { from: row.from || i18n.t(R.hallway), to: row.to || i18n.t(R.hallway), px: Math.round(row.px).toLocaleString('en-US') })
+        sub: t(R.stepWalkSub, { from: row.from || i18n.t(R.hallway), to: row.to || i18n.t(R.hallway), px: Math.round(row.px).toLocaleString('en-US'), unit: unitOf(row.levelId) })
       });
     }
     const next = transitions[index];
@@ -501,7 +490,15 @@ export const computeWayfindingRoute = (input: WfRouteInput, groups: WfRouteGroup
     .filter(Boolean)
     .join(' · ');
 
-  return { ok: true, a, b, legs, steps, px: Math.round(legs.reduce((sum, row) => sum + row.px, 0)), multi: floorCount > 1, summary };
+  // Inferred points are proposals until reviewed: say so when the route relies on them (the POC refuses such routes; this brief wants them testable).
+  const pending = legs.reduce((sum, row) => {
+    const plate = input.plates[row.levelId];
+    const review = new Map((plate?.points ?? []).map((point) => [point.key, point.review]));
+    return sum + new Set(row.pointKeys.filter((key) => review.get(key) === 'pending')).size;
+  }, 0);
+  if (pending) warnings.push(t(R.pendingReview, { count: pending }));
+
+  return { ok: true, a, b, legs, steps, px: Math.round(legs.reduce((sum, row) => sum + row.px, 0)), multi: floorCount > 1, summary, warnings, unit };
 };
 
 /**

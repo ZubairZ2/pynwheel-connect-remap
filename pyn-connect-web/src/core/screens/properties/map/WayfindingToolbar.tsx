@@ -8,7 +8,12 @@ import { M } from '~/core/utils/generator/map/mapText';
 
 const W = M.wayfinding;
 
-/** The toolbar's right-hand side in Wayfinding mode, as the design draws it: Detect Paths ▾, the four tools, Clear Paths. */
+/**
+ * The toolbar's right-hand side in Wayfinding mode: Detect Hallways ▾ (this
+ * floorplate / its building's / all), Auto-Connect Paths, the four tools —
+ * each toggles, and with none on the POC's own gestures apply — Undo, and
+ * Clear Paths.
+ */
 export const WayfindingToolbar = ({ controller }: { controller: PropertyMapController }) => {
   const { wayfinding, state } = controller;
   const toolbar = wayfinding.toolbar;
@@ -19,7 +24,15 @@ export const WayfindingToolbar = ({ controller }: { controller: PropertyMapContr
   return (
     <>
       <div className="bo-map__apmenu" onMouseLeave={wf.closeMenu}>
-        <button type="button" className="bo-map__tool bo-map__tool--strong" aria-haspopup="menu" aria-expanded={state.wfMenuOpen} onClick={wf.toggleMenu} disabled={toolbar.noPlan}>
+        <button
+          type="button"
+          className="bo-map__tool bo-map__tool--strong"
+          aria-haspopup="menu"
+          aria-expanded={state.wfMenuOpen}
+          onClick={wf.toggleMenu}
+          disabled={toolbar.detecting}
+          data-testid="wf-detect-button"
+        >
           {i18n.t(W.detect.button)}
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M6 9l6 6 6-6" />
@@ -39,7 +52,22 @@ export const WayfindingToolbar = ({ controller }: { controller: PropertyMapContr
         )}
       </div>
 
-      <div className="bo-wf__tools" role="toolbar" aria-label={i18n.t(W.tools.label)}>
+      <div className="bo-wf__toolwrap" onMouseEnter={() => setTip('auto')} onMouseLeave={() => setTip(null)}>
+        <button type="button" className="bo-map__tool" onClick={wf.autoConnect} disabled={!toolbar.canAutoConnect} data-testid="wf-autoconnect">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M6 6a2 2 0 1 1-4 0a2 2 0 1 1 4 0zM22 6a2 2 0 1 1-4 0a2 2 0 1 1 4 0zM14 18a2 2 0 1 1-4 0a2 2 0 1 1 4 0zM6 6h12M5 7.5l6 9M19 7.5l-6 9" />
+          </svg>
+          {i18n.t(W.autoConnect.label)}
+        </button>
+        {tip === 'auto' && (
+          <div className="bo-wf__tip" role="tooltip">
+            <span className="bo-wf__tiptitle">{i18n.t(W.autoConnect.label)}</span>
+            <span className="bo-wf__tiptext">{i18n.t(toolbar.canAutoConnect ? W.autoConnect.tip : W.autoConnect.tipEmpty)}</span>
+          </div>
+        )}
+      </div>
+
+      <div className={`bo-wf__tools${toolbar.defaultEditing ? ' bo-wf__tools--none' : ''}`} role="toolbar" aria-label={i18n.t(W.tools.label)} data-tool={state.wfTool ?? 'none'}>
         {toolbar.tools.map((tool) => (
           <div key={tool.id} className="bo-wf__toolwrap" onMouseEnter={() => setTip(tool.id)} onMouseLeave={() => setTip(null)}>
             <button
@@ -63,6 +91,21 @@ export const WayfindingToolbar = ({ controller }: { controller: PropertyMapContr
             )}
           </div>
         ))}
+      </div>
+
+      <div className="bo-wf__toolwrap" onMouseEnter={() => setTip('undo')} onMouseLeave={() => setTip(null)}>
+        <button type="button" className="bo-wf__clear bo-wf__undo" aria-label={i18n.t(W.undo.label)} disabled={!toolbar.undo.can} onClick={wf.undo} data-testid="wf-undo">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M9 14L4 9l5-5" />
+            <path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" />
+          </svg>
+        </button>
+        {tip === 'undo' && (
+          <div className="bo-wf__tip bo-wf__tip--right" role="tooltip">
+            <span className="bo-wf__tiptitle">{i18n.t(W.undo.label)}</span>
+            <span className="bo-wf__tiptext">{toolbar.undo.tip}</span>
+          </div>
+        )}
       </div>
 
       <div className="bo-wf__toolwrap" onMouseEnter={() => setTip('clear')} onMouseLeave={() => setTip(null)}>

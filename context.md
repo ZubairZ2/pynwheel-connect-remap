@@ -793,3 +793,47 @@ Added with phase 2m (branch `feature/wayfinding_plot_on_map`; PYN_CONNECT_PROGRE
 ### Testing
 
 `tests/e2e/wayfindingLogic.spec.ts` needs no server (fixtures through the pure functions). `tests/e2e/wayfinding.spec.ts` uses the §13 session env and the property env vars in its header; every test asserts 0 non-GET requests. Click empty plan spots through `elementFromPoint` (pins and stops cover much of a dense floor).
+
+## 23. Map & Plotting: Detect Hallways, Auto-Connect, the POC's editing and A* — implementation knowledge (October 1, 2026)
+
+Added with phase 2n (branch `feature/wayfinding_detect_hallways_auto_connect`; PYN_CONNECT_PROGRESS.md §27 has the POC mapping, parity numbers and measurements; gaps M16, M20–M23). It supersedes §22's "Detect Paths is a proposal from the stops' positions" (`detectPaths.ts` is gone) and §22's "the image, not the SVG" for floors whose hallways were detected from their SVG.
+
+### The flow
+
+```
+Detect Hallways ▾ (WayfindingToolbar) → useMapWayfinding.runDetect(scope)
+  for each floorplate (detectScopeLevels), one per frame, wfDetect rows updated as it goes:
+    has paths (stored h: or page j:) and not replacing → 'existing'      no svg → 'noSvg'
+    fetchSvgText (svgDocs copy, else GET /api/properties/:id/plan-svg?floorplate=)
+    import('hallways/floorEngine') → parseSvgTree → detectHallways(root, stops)
+        detectSvgStructure ─┬─ walkway layer → flattenShapes → buildWayfindingGraph → bridgeComponentGaps          (POC, exact)
+                            └─ Footprints − rooms → inferCorridors → buildWayfindingGraph('inferred') → short bridges   (Phase 1B)
+        → dropShortComponents → snapStopsToGraph → autoConnectNodes → splitParallelEdges
+    detectionPatch → tempNodes (space 'svg', source/review/confidence) + tempEdges (points, kind) + wfLinks + wfSvg[level]
+editing: plateGraph(plate) → POC op (hallways/editing.ts, autoConnect.ts) → graphPatch → LocalMapState overrides, wfUndo push
+routing: wayfindingRoute.computeWayfindingRoute → hallways/astar (heuristic only for This Floor) → legs along path polylines
+```
+
+### Rules worth knowing
+
+- **Frames.** `wayfindingSpace(level, state)`: `'svg'` when the level has an SVG and either no image or `state.wfSvg[level.id]` (set by detection); else `'raster'`; null with no plan. `activeSpace` returns it in Wayfinding; `generateWayfindingGraphs` builds every level on its own layer (`rasterGraphs` still feeds Tour Setup / publish / start points). Never mix coordinates between layers: there is no transform (gap M20).
+- **Anchors on the SVG** sit at the polygon's centre — `FloorSvgDoc.targets` for the loaded floor, `elementCentres(root)` (by `pointer_data.id`, else `selector`) during detection — because stored pointer `x_plot/y_plot` can be elsewhere (M22). `WfAnchor.offLayer` (was `svgOnly`) = no place on this layer; `WfAnchor.polygon` is the target key.
+- **Page edges carry geometry.** `TempEdge.points` = interior polyline from `a` to `b`, `kind` ∈ traced / inferred / bridge / knn / manual / stored. `LevelEdge.points/kind`, `WfPath.points` (ends included) / `length` / `kind`. Routing weights by `length`; `generateWfLayer` draws `d`. One edge per point pair (`edgeKey`): the POC's parallel routes are split at a middle vertex (`splitParallelEdges`).
+- **Page points carry provenance.** `TempNode.source` (vector / inferred / manual), `review` (pending / confirmed), `confidence`. A drag confirms (`onDragEnd`); "Confirm N above 0.9" (`REVIEW_THRESHOLD`) uses `confirmNodesAboveConfidence`. Routes over pending points warn rather than refuse (the POC refuses).
+- **All graph edits go through `edited()`** in `useMapWayfinding` (marks the level, pushes `snapshotOf(current)` onto `wfUndo`, max `WF_UNDO_LIMIT` 50, clears the route) or `applyOp(op)` for the POC's operations (diff written by `graphPatch`). Drags keep the pre-drag snapshot in `dragging.before` and push it only if the pointer moved. A detection run pushes one entry and records `undoDepth`; its card Undo restores `wfDetect.snapshot`. `undo()` restores `WfSnapshot` fields only.
+- **Tool state.** `wfTool: WfTool | null`, default null; `setTool` toggles. Null = the POC's gestures (point drag / double-click delete; plan click add + connect; path drag bend (`dragging.kind === 'bend'`, 4 px slop, `wf-bend` preview) / double-click delete). With a tool on, `onPointDoubleClick` / `onPathDoubleClick` / the add-on-click do nothing. In Wayfinding, `SvgPlanLayer` is `passive` so polygon clicks reach the gestures.
+- **Skip rule.** A multi-floorplate run never touches a floorplate with points (stored or page). "This floorplate" with points asks first (`detect.replaceTitle`) and hides the stored points on the page.
+- **Obstacles** for Auto-Connect / new points / bends come from the floor's SVG (rooms + footprints, or the POC's obstacle layers), computed in the background when the SVG floor is in view and cached per level and text (`obstacles` ref); the floor image has none.
+- **Bundle.** `hallways/floorEngine.ts` (layer detection, path parsing, inference, graph build, bridging, snapping) is only reached through `import()`; editing, Auto-Connect and A* are in the page bundle.
+- **Stops on the SVG.** `TempStop.space`; `armStop` / `placeStops` use the level's Wayfinding layer; stored elevators / entries / doors stay image-only, so a cross-floor route through an SVG floor needs Elevator / Stairs stops added there.
+
+### Traps
+
+- The overlay SVG's viewBox is `0 0 100 100`: `getTotalLength()` of a path in tests is in percent units.
+- Points on a detected floor overlap; pick test targets with `elementFromPoint` (`topPoint`, `pathSpot`, `planSpot` in `wayfinding.spec.ts`). The old `emptySpot` only recognises the image plan.
+- Two buttons are named "Undo" when the run card is open: use `data-testid="wf-undo"` for the toolbar's.
+- `.bo-wf__mode` is the Plotting / Wayfinding switch; the editing indicator is `.bo-wf__editing`.
+
+### Testing
+
+`tests/e2e/hallways.spec.ts` (pure, no server; the POC-parity block reads `PYN_CONNECT_POC_FIXTURES`, default the POC folder, and skips when absent — no real floor plan is committed). `tests/e2e/wayfinding.spec.ts` uses §13's session env plus `PYN_CONNECT_E2E_DETECT` (default 3837 Sylo: SVG floorplates, Floor 4 with stored hallways) and `PYN_CONNECT_E2E_NO_SVG` (default 1234 Alderwood: images only). Real ids: 3837 Sylo (everything), 1618 Hazel (31 floorplates, all with hallways, no SVG — skip path and timing), 2934 Dummy-High-Rise (SVGs + hallways), 1468 (SVG + image + 20 hallways).
