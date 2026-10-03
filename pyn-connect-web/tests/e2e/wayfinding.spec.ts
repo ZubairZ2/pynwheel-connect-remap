@@ -348,7 +348,8 @@ test.describe('Map & Plotting · Wayfinding (real data)', () => {
     const keptCounts = await counts(page);
     expect(keptCounts.points).toBe(graphOf(graph, keep.id).points);
     expect(keptCounts.paths).toBeGreaterThanOrEqual(graphOf(graph, keep.id).paths);
-    // Every stored point is still on the plan.
+    // Every stored point is still on the plan (drawn once the floor image is in place: nothing is drawn while it loads).
+    await expect(page.locator('.bo-map__surface .bo-loading--cover')).toHaveCount(0, { timeout: 60_000 });
     const storedKeys = graph.filter((row) => row.parent_type === 'Floorplate' && row.parent_id === keep.id).map((row) => `h:${row.id}`);
     for (const key of storedKeys) await expect(page.locator(`[data-node="${key}"]`)).toHaveCount(1);
 

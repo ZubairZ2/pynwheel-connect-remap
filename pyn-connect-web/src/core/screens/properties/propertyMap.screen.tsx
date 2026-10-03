@@ -7,6 +7,7 @@ import { propRoute, tourContentRoute, tourSetupRoute } from '~/config/app/connec
 import { APP_ROUTES } from '~/config/app/urls';
 import { i18n } from '~/resources/i18n';
 import { Breadcrumb } from '~/core/components/molecules/Breadcrumb';
+import { HoverMenu } from '~/core/components/molecules/HoverMenu';
 import { usePropertyMap, type MapInitial } from '~/core/hooks/usePropertyMap';
 import type { PropertyMap } from '~/core/models/data/propertyMap.data';
 import { M, plural, t } from '~/core/utils/generator/map/mapText';
@@ -106,7 +107,8 @@ const MapEditor = ({ map, initial }: { map: PropertyMap; initial: MapInitial | n
 
       <div className="bo-map__layout">
         <div className="bo-map__main">
-          {buildings.length > 0 && (
+          {/* The Building row is a choice: it shows only when the property's map is split across several buildings. */}
+          {buildings.length > 1 && (
             <div className="bo-map__buildings">
               <span className="bo-map__eyebrow">{i18n.t(M.building.label)}</span>
               <div className="bo-map__pills" role="tablist" aria-label={i18n.t(M.building.label)}>
@@ -188,34 +190,41 @@ const MapEditor = ({ map, initial }: { map: PropertyMap; initial: MapInitial | n
           </div>
 
           <div className="bo-map__toolbar">
+            {/* | switch | text (wraps) | actions |: the text grows and wraps between the switch and the fixed action area. */}
             <div className="bo-map__toolbartitle">
               <ModeSwitch controller={controller} />
-              <span className="bo-map__toolbarlevel">{level ? `${level.sub} · ${level.label}` : (state.building ?? i18n.t(M.level.allBuildings))}</span>
-              {level && <span className="bo-map__toolbarsub">{wayfind ? wayfinding.toolbar!.sub : plotPanel.doneLabel}</span>}
+              <div className="bo-map__toolbartext">
+                <span className="bo-map__toolbarlevel">{level ? `${level.sub} · ${level.label}` : (state.building ?? i18n.t(M.level.allBuildings))}</span>
+                {level && <span className="bo-map__toolbarsub">{wayfind ? wayfinding.toolbar!.sub : plotPanel.doneLabel}</span>}
+              </div>
             </div>
+            <div className="bo-map__toolbaractions">
             {wayfind ? (
               <WayfindingToolbar controller={controller} />
             ) : (
               <>
-            <div className="bo-map__apmenu" onMouseLeave={actions.closeAutoPlotMenu}>
-              <button type="button" className="bo-map__tool bo-map__tool--strong" aria-haspopup="menu" aria-expanded={state.apMenuOpen} onClick={actions.openAutoPlotMenu} disabled={noLevel}>
-                {i18n.t(M.tools.autoPlot)}
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M6 9l6 6 6-6" />
-                </svg>
-              </button>
-              {state.apMenuOpen && (
-                <div className="bo-map__apmenupanel" role="menu">
-                  <div className="bo-map__eyebrow bo-map__apmenuhead">{i18n.t(M.autoPlot.scopeTitle)}</div>
-                  {autoPlotMenu.map((item) => (
-                    <button key={item.scope} type="button" role="menuitem" className="bo-map__apmenuitem" onClick={() => actions.openAutoPlot(item.scope)}>
-                      <span className="bo-map__apmenulabel">{item.label}</span>
-                      <span className="bo-map__apmenusub">{item.sub}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            <HoverMenu
+              className="bo-map__apmenu"
+              open={state.apMenuOpen}
+              onClose={actions.closeAutoPlotMenu}
+              panelClassName="bo-map__apmenupanel"
+              trigger={
+                <button type="button" className="bo-map__tool bo-map__tool--strong" aria-haspopup="menu" aria-expanded={state.apMenuOpen} onClick={actions.openAutoPlotMenu} disabled={noLevel}>
+                  {i18n.t(M.tools.autoPlot)}
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </button>
+              }
+            >
+              <div className="bo-map__eyebrow bo-map__apmenuhead">{i18n.t(M.autoPlot.scopeTitle)}</div>
+              {autoPlotMenu.map((item) => (
+                <button key={item.scope} type="button" role="menuitem" className="bo-map__apmenuitem" onClick={() => actions.openAutoPlot(item.scope)}>
+                  <span className="bo-map__apmenulabel">{item.label}</span>
+                  <span className="bo-map__apmenusub">{item.sub}</span>
+                </button>
+              ))}
+            </HoverMenu>
             <button
               type="button"
               className={`bo-map__tool bo-map__tool--strong${manualOn ? ' bo-map__tool--fill' : ''}`}
@@ -228,6 +237,7 @@ const MapEditor = ({ map, initial }: { map: PropertyMap; initial: MapInitial | n
             </button>
               </>
             )}
+            </div>
           </div>
 
           {level ? (

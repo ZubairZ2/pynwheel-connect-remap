@@ -14,7 +14,14 @@ import { M, plural, t } from './mapText';
 const W = M.wayfinding;
 
 /** The property routes self-tour visitors, as the CMS's Auto Wayfinding menu requires (`communities.self_tour && auto_wayfinding`). */
-export const wayfindingEnabled = (map: PropertyMap): boolean => map.graph.settings.selfTour && map.graph.settings.autoWayfinding;
+/**
+ * Wayfinding is a Self-Guided Tour capability: a property with the tour
+ * product gets the mode, its Additional Stops and the vertical connections.
+ * `auto_wayfinding` is a setting *within* the tour (the legacy "Automate
+ * Wayfinding" switch that turns the routing algorithm on for the app); it
+ * still drives the door-plus markers, but not whether the editor is offered.
+ */
+export const wayfindingEnabled = (map: PropertyMap): boolean => map.graph.settings.selfTour;
 
 export const WF_TOOLS: { id: WfTool; label: string; tip: string; hint: string; d: string }[] = [
   { id: 'move', label: W.tools.move, tip: W.tools.moveTip, hint: W.tools.moveHint, d: 'M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20' },

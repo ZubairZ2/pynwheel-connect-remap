@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import { i18n } from '~/resources/i18n';
+import { HoverMenu } from '~/core/components/molecules/HoverMenu';
 import type { PropertyMapController } from '~/core/hooks/usePropertyMap';
 import { M } from '~/core/utils/generator/map/mapText';
 
@@ -23,34 +24,37 @@ export const WayfindingToolbar = ({ controller }: { controller: PropertyMapContr
 
   return (
     <>
-      <div className="bo-map__apmenu" onMouseLeave={wf.closeMenu}>
-        <button
-          type="button"
-          className="bo-map__tool bo-map__tool--strong"
-          aria-haspopup="menu"
-          aria-expanded={state.wfMenuOpen}
-          onClick={wf.toggleMenu}
-          disabled={toolbar.detecting}
-          data-testid="wf-detect-button"
-        >
-          {i18n.t(W.detect.button)}
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M6 9l6 6 6-6" />
-          </svg>
-        </button>
-        {state.wfMenuOpen && (
-          <div className="bo-map__apmenupanel bo-wf__detectmenu" role="menu">
-            <div className="bo-map__eyebrow bo-map__apmenuhead">{i18n.t(W.detect.title)}</div>
-            {toolbar.detectMenu.map((item) => (
-              <button key={item.scope} type="button" role="menuitem" className="bo-map__apmenuitem" onClick={() => wf.runDetect(item.scope)}>
-                <span className="bo-map__apmenulabel">{item.label}</span>
-                <span className="bo-map__apmenusub">{item.sub}</span>
-              </button>
-            ))}
-            <div className="bo-wf__menunote">{i18n.t(W.detect.note)}</div>
-          </div>
-        )}
-      </div>
+      <HoverMenu
+        className="bo-map__apmenu"
+        open={state.wfMenuOpen}
+        onClose={wf.closeMenu}
+        panelClassName="bo-map__apmenupanel bo-wf__detectmenu"
+        trigger={
+          <button
+            type="button"
+            className="bo-map__tool bo-map__tool--strong"
+            aria-haspopup="menu"
+            aria-expanded={state.wfMenuOpen}
+            onClick={wf.toggleMenu}
+            disabled={toolbar.detecting}
+            data-testid="wf-detect-button"
+          >
+            {i18n.t(W.detect.button)}
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+        }
+      >
+        <div className="bo-map__eyebrow bo-map__apmenuhead">{i18n.t(W.detect.title)}</div>
+        {toolbar.detectMenu.map((item) => (
+          <button key={item.scope} type="button" role="menuitem" className="bo-map__apmenuitem" onClick={() => wf.runDetect(item.scope)}>
+            <span className="bo-map__apmenulabel">{item.label}</span>
+            <span className="bo-map__apmenusub">{item.sub}</span>
+          </button>
+        ))}
+        <div className="bo-wf__menunote">{i18n.t(W.detect.note)}</div>
+      </HoverMenu>
 
       <div className={`bo-wf__tools${toolbar.defaultEditing ? ' bo-wf__tools--none' : ''}`} role="toolbar" aria-label={i18n.t(W.tools.label)} data-tool={state.wfTool ?? 'none'}>
         {toolbar.tools.map((tool) => (

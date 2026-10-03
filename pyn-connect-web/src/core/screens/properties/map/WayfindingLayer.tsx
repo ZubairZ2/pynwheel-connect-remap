@@ -34,7 +34,16 @@ const KIND_STYLE: Record<EdgeKind, { color: string; dash?: string }> = {
  * the route — all positioned as percentages of the plan, inside it, so they
  * stay in place as it zooms and pans.
  */
-export const WayfindingLayer = ({ controller, layer }: { controller: PropertyMapController; layer: WfLayer }) => {
+export const WayfindingLayer = ({
+  controller,
+  layer,
+  onStopHover
+}: {
+  controller: PropertyMapController;
+  layer: WfLayer;
+  /** The stop under the pointer (null when none): the canvas shows its popover on hover as it does on click. */
+  onStopHover?: (key: string | null) => void;
+}) => {
   const { wayfinding, state } = controller;
   const wf = wayfinding.actions;
   const tool = state.wfTool;
@@ -201,6 +210,7 @@ export const WayfindingLayer = ({ controller, layer }: { controller: PropertyMap
           cursor={tool === 'move' ? 'grab' : 'pointer'}
           onPointerDown={wf.onAnchorDown(stop.key, true)}
           onDoubleClick={() => wf.onAnchorDoubleClick(stop.key)}
+          onHover={onStopHover}
         />
       ))}
 
@@ -239,7 +249,8 @@ export const StopMarker = ({
   temporary,
   cursor,
   onPointerDown,
-  onDoubleClick
+  onDoubleClick,
+  onHover
 }: {
   stopKey: string;
   name: string;
@@ -251,6 +262,8 @@ export const StopMarker = ({
   cursor: string;
   onPointerDown: (event: ReactPointerEvent<HTMLDivElement>) => void;
   onDoubleClick?: () => void;
+  /** Hover in / out (the key, or null): the canvas opens the stop's popover on hover, the same one a click pins. */
+  onHover?: (key: string | null) => void;
 }) => {
   const kind = stopTypeOf(type);
   return (
@@ -267,7 +280,8 @@ export const StopMarker = ({
           onDoubleClick();
         })
       }
-      title={name}
+      onPointerEnter={onHover && (() => onHover(stopKey))}
+      onPointerLeave={onHover && (() => onHover(null))}
     >
       <span className="bo-wf__stopdisc" style={{ background: kind.color }}>
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

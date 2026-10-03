@@ -74,8 +74,8 @@ export const generateBuildingPills = (map: PropertyMap, levels: MapLevel[], stat
   const names = mapBuildings(map, levels);
   if (names.length === 0) return [];
   // The count is what the pill shows: the building's floorplates, plus the ones no building claims.
-  // A one-building property still shows its pill (as the design's Building row
-  // does), selected: every floorplate is that building's.
+  // A one-building property's pill is selected (every floorplate is that
+  // building's); the screen shows the Building row only when there is a choice.
   return names.map((name) => ({
     name,
     count: String(levelsOfBuilding(levels, name).length),
@@ -399,8 +399,9 @@ const sameName = (a: string, b: string): boolean => a.replace(/[^a-z0-9]/gi, '')
 
 /**
  * The level's polygons as the canvas draws them: filled when something sits
- * on them, highlighted under the pointer while Manual Plot is on, outlined
- * when their popover is open.
+ * on them, highlighted under the pointer — every polygon while Manual Plot is
+ * on (it is a drop target), only the plotted ones otherwise (their details
+ * show on hover) — and outlined when their popover is open.
  */
 export const generatePolygons = (doc: FloorSvgDoc | null, graph: LevelGraph | null, state: LocalMapState): PolygonDescriptor[] => {
   if (!doc || !graph) return [];
@@ -418,7 +419,7 @@ export const generatePolygons = (doc: FloorSvgDoc | null, graph: LevelGraph | nu
       top: yPct,
       bbox: target.bbox,
       filled: pins.length > 0,
-      hover: plotOn && state.polyHover === target.key,
+      hover: state.polyHover === target.key && (plotOn || pins.length > 0),
       selected: state.selPoly === target.key,
       // The legacy map prints nothing for a plotted room beyond the SVG's own
       // number; the assigned name is shown only when it says something else.
@@ -429,6 +430,7 @@ export const generatePolygons = (doc: FloorSvgDoc | null, graph: LevelGraph | nu
 };
 
 export interface SelectedPolygon {
+  key: string;
   code: string;
   title: string;
   sub: string;
@@ -439,10 +441,12 @@ export interface SelectedPolygon {
   below: boolean;
 }
 
-export const generateSelectedPolygon = (level: MapLevel, polygons: PolygonDescriptor[], state: LocalMapState): SelectedPolygon | null => {
-  const polygon = polygons.find((row) => row.key === state.selPoly);
+/** The popover of one polygon: what sits on it, with Unplot per item. Null for a key the level does not have. */
+export const polygonPopover = (level: MapLevel, polygons: PolygonDescriptor[], key: string | null): SelectedPolygon | null => {
+  const polygon = key ? polygons.find((row) => row.key === key) : undefined;
   if (!polygon) return null;
   return {
+    key: polygon.key,
     code: polygon.code,
     title: t(M.place.polygon, { code: polygon.code }),
     sub: `${level.sub} · ${level.scopeLabel}`,
@@ -451,6 +455,23 @@ export const generateSelectedPolygon = (level: MapLevel, polygons: PolygonDescri
     top: polygon.top,
     below: polygon.top < 50
   };
+};
+
+/** The popover of the clicked polygon (it stays until closed). */
+export const generateSelectedPolygon = (level: MapLevel, polygons: PolygonDescriptor[], state: LocalMapState): SelectedPolygon | null =>
+  polygonPopover(level, polygons, state.selPoly);
+
+/**
+ * The popover of the polygon under the pointer: the same details a click
+ * shows, for a plotted polygon, while nothing is being dropped (Manual Plot
+ * highlights the polygon as a drop target instead) and no popover is pinned
+ * open by a click.
+ */
+export const generateHoveredPolygon = (level: MapLevel, polygons: PolygonDescriptor[], state: LocalMapState): SelectedPolygon | null => {
+  if (state.tool === 'plot' || state.selPoly) return null;
+  const polygon = polygons.find((row) => row.key === state.polyHover);
+  if (!polygon || !polygon.filled) return null;
+  return polygonPopover(level, polygons, polygon.key);
 };
 
 export interface AutoPlotMenuItem {
