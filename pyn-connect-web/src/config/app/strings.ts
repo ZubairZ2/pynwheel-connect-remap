@@ -890,7 +890,12 @@ export const CORE_STRINGS = {
     clear: 'filter.clear',
     done: 'filter.done',
     showingEverything: 'filter.showingEverything',
-    selected: 'filter.selected'
+    selected: 'filter.selected',
+    /** The search box inside a long filter list. */
+    search: 'filter.search',
+    clearSearch: 'filter.clearSearch',
+    noMatches: 'filter.noMatches',
+    matching: 'filter.matching'
   },
   mapPlotting: {
     title: 'mapPlotting.title',

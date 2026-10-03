@@ -3,91 +3,40 @@ import { redirect } from 'next/navigation';
 import { APP_ROUTES } from '~/config/app/urls';
 import { CORE_STRINGS } from '~/config/app/strings';
 import { i18n } from '~/resources/i18n';
-import { fetchProperties } from '~/core/repository/remote/api/properties.api';
-import { parseProperties } from '~/core/repository/parser/property.parser';
-import { parseListingMeta } from '~/core/repository/parser/envelope.parser';
+import { emptyListing, loadPropertiesListing } from '~/core/repository/remote/listings.server';
 import { readRailsCookie } from '~/core/session/session.server';
 import { ListingScreenTemplate } from '~/core/templates/ListingScreenTemplate';
 import { PropertiesListingScreen } from '~/core/screens/properties/propertiesListing.screen';
-import { PROPERTY_SORTABLE, type PropertyFilters } from '~/core/utils/generator/propertyListing.generator';
-import { parseListingSort } from '~/core/utils/generator/listingSort';
-import { clampPageSize } from '~/core/utils/generator/pagination.generator';
+import { propertiesParamsOf } from '~/core/utils/generator/listingParams';
 
 export const dynamic = 'force-dynamic';
 
 interface Props {
-  searchParams: Promise<{
-    page?: string;
-    per_page?: string;
-    q?: string;
-    stage?: string;
-    company_id?: string;
-    product?: string;
-    data_provider?: string;
-    sort?: string;
-    dir?: string;
-  }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 /**
- * A filter parameter holds one value or several, comma-separated. `all` is how
- * the single-select filters before phase 2c said "no filter"; old bookmarks
- * may still carry it.
+ * The first page of the Properties listing for the URL's state (search, the
+ * four filters, sort, page, rows per page), rendered on the server; every
+ * change after that is one request from the screen to this app's listing
+ * route handler (`useServerListing`), the URL kept in step.
  */
-const listParam = (value?: string): string[] =>
-  Array.from(
-    new Set(
-      (value ?? '')
-        .split(',')
-        .map((part) => part.trim())
-        .filter((part) => part !== '' && part !== 'all')
-    )
-  );
-
 export default async function PropertiesPage({ searchParams }: Props) {
-  const params = await searchParams;
-  const cookie = await readRailsCookie();
-
-  const filters: PropertyFilters = {
-    query: params.q ?? '',
-    stage: listParam(params.stage),
-    companyId: listParam(params.company_id),
-    product: listParam(params.product),
-    dataProvider: listParam(params.data_provider)
-  };
-
-  const sort = parseListingSort(params.sort, params.dir, PROPERTY_SORTABLE);
-
-  // Search, filters, sorting and paging all resolve on the server; the
-  // response is one page of rows however many communities the user can see.
-  const response = await fetchProperties(cookie, {
-    sort: sort?.key,
-    dir: sort?.dir,
-    page: Number(params.page) || 1,
-    perPage: clampPageSize(params.per_page),
-    q: filters.query,
-    stage: filters.stage,
-    companyId: filters.companyId,
-    product: filters.product,
-    dataProvider: filters.dataProvider
+  const raw = await searchParams;
+  const params = propertiesParamsOf((key) => {
+    const value = raw[key];
+    return Array.isArray(value) ? value[0] : value;
   });
+  const load = await loadPropertiesListing(await readRailsCookie(), params);
 
-  if (response.status === 401 || response.status === 302) redirect(APP_ROUTES.signIn);
-
-  const properties = response.ok ? parseProperties(response.body) : [];
-  const meta = parseListingMeta(response.body);
+  if (load.status === 'unauthorized') redirect(APP_ROUTES.signIn);
 
   return (
     <ListingScreenTemplate headerTitle={i18n.t(CORE_STRINGS.properties.title)}>
       <PropertiesListingScreen
-        properties={properties}
-        pagination={meta.pagination}
-        filters={filters}
-        sort={sort}
-        companyOptions={meta.companyOptions}
-        dataProviderOptions={meta.dataProviderOptions}
-        scopeTotal={meta.scopeTotalCount}
-        error={response.ok ? null : i18n.t(CORE_STRINGS.shared.loadFailed)}
+        initial={load.status === 'found' ? { rows: load.rows, meta: load.meta } : emptyListing()}
+        params={params}
+        error={load.status === 'failed' ? i18n.t(CORE_STRINGS.shared.loadFailed) : null}
       />
     </ListingScreenTemplate>
   );

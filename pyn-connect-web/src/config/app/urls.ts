@@ -38,6 +38,9 @@ export const CORE_URLS = {
 
 /** This app's own route handlers the browser calls (never Rails directly). */
 export const APP_API = {
+  /** One page of the Companies / Properties listing for a query string (the same parameters the pages read). GET, read-only. */
+  companiesListing: '/api/listings/companies',
+  propertiesListing: '/api/listings/properties',
   /** A property's units listing, parsed; the Property Inventory reads it on demand. GET, read-only. */
   inventoryUnits: (propertyId: number) => `/api/properties/${propertyId}/inventory/units`,
   /** Runs the CMS routing algorithm for a property; GET, read-only. */

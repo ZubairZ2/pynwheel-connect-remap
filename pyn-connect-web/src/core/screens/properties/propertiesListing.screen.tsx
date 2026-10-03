@@ -7,37 +7,19 @@ import { SearchField } from '~/core/components/molecules/SearchField';
 import { Pagination } from '~/core/components/organisms/Pagination';
 import { ResourceListingTemplate } from '~/core/templates/ResourceListingTemplate';
 import { usePropertiesListing } from '~/core/hooks/usePropertiesListing';
+import type { ListingData } from '~/core/hooks/useServerListing';
 import type { Property } from '~/core/models/data/property.data';
-import type {
-  CompanyFilterOption,
-  Pagination as PaginationMeta
-} from '~/core/models/data/session.data';
-import type { PropertyFilters } from '~/core/utils/generator/propertyListing.generator';
-import type { ListingSort } from '~/core/utils/generator/listingSort';
+import type { PropertiesListingParams } from '~/core/utils/generator/listingParams';
 
 interface Props {
-  properties: Property[];
-  pagination: PaginationMeta | null;
-  filters: PropertyFilters;
-  /** The active column sort from the URL; null is the CMS's default order. */
-  sort: ListingSort | null;
-  companyOptions: CompanyFilterOption[];
-  dataProviderOptions: string[];
-  /** Every property the user can see, before search and filters. */
-  scopeTotal: number | null;
+  /** What the server rendered for `params`. */
+  initial: ListingData<Property>;
+  /** The listing's state from the URL. */
+  params: PropertiesListingParams;
   error?: string | null;
 }
 
-export const PropertiesListingScreen = ({
-  properties,
-  pagination,
-  filters: initialFilters,
-  sort,
-  companyOptions: companyFilterOptions,
-  dataProviderOptions: dataProviderSlugs,
-  scopeTotal,
-  error
-}: Props) => {
+export const PropertiesListingScreen = ({ initial, params, error }: Props) => {
   const {
     query,
     setQuery,
@@ -48,8 +30,10 @@ export const PropertiesListingScreen = ({
     rows,
     pager,
     pageSize,
+    sort,
     summary,
     isPending,
+    failed,
     stageOptions,
     companyOptions,
     productOptions,
@@ -58,19 +42,12 @@ export const PropertiesListingScreen = ({
     setPageSize,
     toggleSort,
     sortLabel
-  } = usePropertiesListing(
-    properties,
-    pagination,
-    initialFilters,
-    sort,
-    { companies: companyFilterOptions, dataProviders: dataProviderSlugs },
-    scopeTotal
-  );
+  } = usePropertiesListing(initial, params);
 
   return (
     <ResourceListingTemplate
       summary={summary}
-      error={error}
+      error={error ?? (failed ? i18n.t(CORE_STRINGS.shared.loadFailed) : null)}
       columns={columns}
       rows={rows}
       busy={isPending}

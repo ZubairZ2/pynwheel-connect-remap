@@ -138,19 +138,6 @@ export const generateCompanyRows = (companies: Company[]): RowDescriptor[] =>
     };
   });
 
-/** Each filter holds any number of values; an empty list means "no filter". */
-export interface CompanyFilters {
-  query: string;
-  /** `active` / `inactive`. */
-  status: string[];
-  /** Provider slugs, or `none`. */
-  pmsProvider: string[];
-  /** `with` / `without`. */
-  properties: string[];
-}
-
-export type CompanyFilterKey = Exclude<keyof CompanyFilters, 'query'>;
-
 /** The Properties listing's value for "no provider" (mirrors AccessibleCompaniesQuery::NO_PROVIDER). */
 export const NO_PMS_PROVIDER = 'none';
 

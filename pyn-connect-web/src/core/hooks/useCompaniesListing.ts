@@ -1,120 +1,82 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
+import { APP_API } from '~/config/app/urls';
+import type { Company } from '~/core/models/data/company.data';
 import {
   generateCompanyColumns,
   generateCompanyListingSummary,
   generateCompanyPropertiesFilterOptions,
   generateCompanyProviderFilterOptions,
   generateCompanyRows,
-  generateCompanyStatusFilterOptions,
-  type CompanyFilterKey,
-  type CompanyFilters
+  generateCompanyStatusFilterOptions
 } from '~/core/utils/generator/companyListing.generator';
-import { listingSortParams, nextListingSort, sortByLabel, type ListingSort } from '~/core/utils/generator/listingSort';
-import { DEFAULT_PAGE_SIZE, generatePager } from '~/core/utils/generator/pagination.generator';
-import type { Company } from '~/core/models/data/company.data';
-import type { Pagination } from '~/core/models/data/session.data';
-import { useDebouncedSearch } from './useDebouncedSearch';
-import { useListingParams } from './useListingParams';
+import { companiesParamsFromSearch, companiesSearch, type CompaniesListingParams } from '~/core/utils/generator/listingParams';
+import { nextListingSort, sortByLabel } from '~/core/utils/generator/listingSort';
+import { generatePager } from '~/core/utils/generator/pagination.generator';
+import { useServerListing, type ListingData } from './useServerListing';
 
-type Selection = Record<CompanyFilterKey, string[]>;
-
-const FILTER_KEYS: CompanyFilterKey[] = ['status', 'pmsProvider', 'properties'];
-
-/** The URL parameter each filter travels as — the names Rails reads (AccessibleCompaniesQuery). */
-const FILTER_PARAMS: Record<CompanyFilterKey, string> = {
-  status: 'status',
-  pmsProvider: 'pms_provider',
-  properties: 'properties'
-};
-
-const selectionOf = (filters: CompanyFilters): Selection => ({
-  status: filters.status,
-  pmsProvider: filters.pmsProvider,
-  properties: filters.properties
-});
-
-const keyOf = (selection: Selection): string => FILTER_KEYS.map((key) => selection[key].join(',')).join('|');
+export type CompanyFilterKey = 'status' | 'pmsProvider' | 'properties';
 
 /**
  * Reads the screen's data, calls the generators, returns descriptors +
- * handlers. Searching, filtering, sorting and paging are server-side, so all
- * of them are expressed as URL changes rather than local work
- * (react-architecture.md §7). The filter selection follows the same pattern
- * as the Properties listing: held locally so a quick second tick builds on
- * the first, re-synced when the URL moves on its own.
+ * handlers. Searching, filtering, sorting and paging are server-side, one
+ * request per change through `useServerListing`, which also keeps the URL in
+ * step and protects the results from out-of-order responses
+ * (react-architecture.md §7, §20).
  */
-export const useCompaniesListing = (
-  companies: Company[],
-  pagination: Pagination | null,
-  filters: CompanyFilters,
-  sort: ListingSort | null,
-  providerSlugs: string[],
-  totals: { companies: number | null; properties: number | null }
-) => {
-  const { setParams, isPending } = useListingParams();
-  const { value: query, setValue: setQuery } = useDebouncedSearch(filters.query, (value) =>
-    setParams({ q: value })
-  );
-
-  const urlSelection = selectionOf(filters);
-  const [selection, setSelection] = useState<Selection>(urlSelection);
-  const [syncedKey, setSyncedKey] = useState(keyOf(urlSelection));
-  if (keyOf(urlSelection) !== syncedKey) {
-    setSyncedKey(keyOf(urlSelection));
-    setSelection(urlSelection);
-  }
-
-  const applySelection = (next: Selection) => {
-    setSelection(next);
-    setParams(Object.fromEntries(FILTER_KEYS.map((key) => [FILTER_PARAMS[key], next[key].join(',')])));
-  };
+export const useCompaniesListing = (initial: ListingData<Company>, params: CompaniesListingParams) => {
+  const listing = useServerListing<Company, CompaniesListingParams>({
+    initial,
+    params,
+    endpoint: APP_API.companiesListing,
+    search: companiesSearch,
+    parse: companiesParamsFromSearch
+  });
+  const { rows: companies, meta, params: current, status, update } = listing;
 
   const toggleFilter = (key: CompanyFilterKey, id: string) => {
-    const current = selection[key];
-    applySelection({
-      ...selection,
-      [key]: current.includes(id) ? current.filter((value) => value !== id) : [...current, id]
-    });
+    const selected = current[key];
+    update({ [key]: selected.includes(id) ? selected.filter((value) => value !== id) : [...selected, id] } as Partial<CompaniesListingParams>);
   };
 
   const clearFilter = (key: CompanyFilterKey) => {
-    if (selection[key].length > 0) applySelection({ ...selection, [key]: [] });
+    if (current[key].length > 0) update({ [key]: [] } as Partial<CompaniesListingParams>);
   };
 
   const columns = useMemo(() => generateCompanyColumns(), []);
   const rows = useMemo(() => generateCompanyRows(companies), [companies]);
-  const pager = useMemo(() => generatePager(pagination), [pagination]);
+  const pager = useMemo(() => generatePager(meta.pagination), [meta.pagination]);
   const statusOptions = useMemo(() => generateCompanyStatusFilterOptions(), []);
-  const providerOptions = useMemo(() => generateCompanyProviderFilterOptions(providerSlugs), [providerSlugs]);
+  const providerOptions = useMemo(() => generateCompanyProviderFilterOptions(meta.pmsProviderOptions), [meta.pmsProviderOptions]);
   const propertiesOptions = useMemo(() => generateCompanyPropertiesFilterOptions(), []);
   const summary = useMemo(
-    () => generateCompanyListingSummary(totals.companies, totals.properties),
-    [totals.companies, totals.properties]
+    () => generateCompanyListingSummary(meta.scopeTotalCount, meta.propertyTotalCount),
+    [meta.scopeTotalCount, meta.propertyTotalCount]
   );
 
   return {
-    query,
-    setQuery,
-    selection,
+    query: listing.query,
+    setQuery: listing.setQuery,
+    selection: { status: current.status, pmsProvider: current.pmsProvider, properties: current.properties },
     toggleFilter,
     clearFilter,
     columns,
     rows,
     pager,
-    pageSize: pagination?.perPage ?? DEFAULT_PAGE_SIZE,
+    pageSize: current.perPage,
+    sort: current.sort,
     summary,
-    isPending,
+    isPending: status === 'loading',
+    failed: status === 'failed',
+    retry: listing.retry,
     statusOptions,
     providerOptions,
     propertiesOptions,
-    goToPage: (page: number) => setParams({ page }, { keepPage: true }),
-    // A new size starts again from page 1; the default size needs no parameter.
-    setPageSize: (size: number) => setParams({ per_page: size === DEFAULT_PAGE_SIZE ? '' : size }),
-    // A new order starts again from page 1.
-    toggleSort: (key: string) => setParams(listingSortParams(nextListingSort(sort, key))),
+    goToPage: (page: number) => update({ page }, { keepPage: true }),
+    setPageSize: (size: number) => update({ perPage: size }),
+    toggleSort: (key: string) => update({ sort: nextListingSort(current.sort, key) }),
     sortLabel: sortByLabel
   };
 };

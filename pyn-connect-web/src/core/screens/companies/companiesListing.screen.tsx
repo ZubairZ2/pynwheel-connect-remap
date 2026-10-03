@@ -7,25 +7,19 @@ import { SearchField } from '~/core/components/molecules/SearchField';
 import { Pagination } from '~/core/components/organisms/Pagination';
 import { ResourceListingTemplate } from '~/core/templates/ResourceListingTemplate';
 import { useCompaniesListing } from '~/core/hooks/useCompaniesListing';
+import type { ListingData } from '~/core/hooks/useServerListing';
 import type { Company } from '~/core/models/data/company.data';
-import type { Pagination as PaginationMeta } from '~/core/models/data/session.data';
-import type { CompanyFilters } from '~/core/utils/generator/companyListing.generator';
-import type { ListingSort } from '~/core/utils/generator/listingSort';
+import type { CompaniesListingParams } from '~/core/utils/generator/listingParams';
 
 interface Props {
-  companies: Company[];
-  pagination: PaginationMeta | null;
-  filters: CompanyFilters;
-  /** The active column sort from the URL; null is the CMS's default order. */
-  sort: ListingSort | null;
-  /** PMS provider slugs across the companies in scope (`meta.filters.pms_providers`). */
-  providerOptions: string[];
-  /** Companies and properties in the user's scope, before search and filters. */
-  totals: { companies: number | null; properties: number | null };
+  /** What the server rendered for `params`. */
+  initial: ListingData<Company>;
+  /** The listing's state from the URL. */
+  params: CompaniesListingParams;
   error?: string | null;
 }
 
-export const CompaniesListingScreen = ({ companies, pagination, filters, sort, providerOptions: providerSlugs, totals, error }: Props) => {
+export const CompaniesListingScreen = ({ initial, params, error }: Props) => {
   const {
     query,
     setQuery,
@@ -36,8 +30,10 @@ export const CompaniesListingScreen = ({ companies, pagination, filters, sort, p
     rows,
     pager,
     pageSize,
+    sort,
     summary,
     isPending,
+    failed,
     statusOptions,
     providerOptions,
     propertiesOptions,
@@ -45,13 +41,13 @@ export const CompaniesListingScreen = ({ companies, pagination, filters, sort, p
     setPageSize,
     toggleSort,
     sortLabel
-  } = useCompaniesListing(companies, pagination, filters, sort, providerSlugs, totals);
+  } = useCompaniesListing(initial, params);
   const F = CORE_STRINGS.companies.filters;
 
   return (
     <ResourceListingTemplate
       summary={summary}
-      error={error}
+      error={error ?? (failed ? i18n.t(CORE_STRINGS.shared.loadFailed) : null)}
       columns={columns}
       rows={rows}
       busy={isPending}

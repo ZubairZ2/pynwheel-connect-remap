@@ -641,6 +641,10 @@ const ENGLISH: Record<string, string> = {
   [CORE_STRINGS.filter.done]: 'Done',
   [CORE_STRINGS.filter.showingEverything]: 'Showing everything',
   [CORE_STRINGS.filter.selected]: 'selected',
+  [CORE_STRINGS.filter.search]: 'Search {label}…',
+  [CORE_STRINGS.filter.clearSearch]: 'Clear the search',
+  [CORE_STRINGS.filter.noMatches]: 'Nothing matches “{query}”',
+  [CORE_STRINGS.filter.matching]: '{shown} of {total} shown',
 
   [CORE_STRINGS.propertyDetail.title]: 'Property',
   [CORE_STRINGS.propertyDetail.breadcrumb]: 'Properties',

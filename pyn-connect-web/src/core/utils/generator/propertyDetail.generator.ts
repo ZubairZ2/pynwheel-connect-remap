@@ -607,10 +607,13 @@ export const generateConfigCards = (property: PropertyDetail): ConfigCard[] => {
           ]
         }
       ],
-      links: [
-        { id: 'tourSetup', label: t(S.config.tourSetup), href: tourSetupRoute(id) },
-        { id: 'scheduling', label: t(S.config.tourScheduling), href: CONNECT_ROUTES.scheduling }
-      ]
+      // The tour's screens are offered only while the property has the tour, as the legacy menu shows Tour Setup only then.
+      links: on.tour
+        ? [
+            { id: 'tourSetup', label: t(S.config.tourSetup), href: tourSetupRoute(id) },
+            { id: 'scheduling', label: t(S.config.tourScheduling), href: CONNECT_ROUTES.scheduling }
+          ]
+        : []
     },
     {
       id: 'maps',
