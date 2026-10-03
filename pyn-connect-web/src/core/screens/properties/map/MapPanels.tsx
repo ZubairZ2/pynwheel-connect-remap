@@ -1,6 +1,9 @@
 'use client';
 
+import { useCallback } from 'react';
+
 import { i18n } from '~/resources/i18n';
+import { HoverMenu } from '~/core/components/molecules/HoverMenu';
 import type { PropertyMapController } from '~/core/hooks/usePropertyMap';
 import type { PlotListItem } from '~/core/utils/generator/map/mapPanels.generator';
 import { M } from '~/core/utils/generator/map/mapText';
@@ -38,6 +41,7 @@ export const PlotPanel = ({ controller }: { controller: PropertyMapController })
   const { plotPanel, state, actions, wayfinding } = controller;
   const todoTab = state.plotTab !== 'done';
   const wf = wayfinding.actions;
+  const closeShow = useCallback(() => wf.setPlotShowOpen(false), [wf]);
 
   return (
     <section className="bo-map__panel bo-map__panel--plot" data-testid="plot-panel">
@@ -72,37 +76,41 @@ export const PlotPanel = ({ controller }: { controller: PropertyMapController })
         </label>
       )}
 
-      <div className="bo-map__show" onMouseLeave={() => wf.setPlotShowOpen(false)}>
-        <button
-          type="button"
-          className={`bo-map__showbtn${state.plotShowOpen ? ' bo-map__showbtn--open' : ''}`}
-          aria-haspopup="true"
-          aria-expanded={state.plotShowOpen}
-          onClick={() => wf.setPlotShowOpen(!state.plotShowOpen)}
-        >
-          <span className="bo-map__selectlabel">{i18n.t(M.show.label)}</span>
-          <span className="bo-map__showsummary">{plotPanel.showSummary}</span>
-          {plotPanel.showPending && <span className="bo-map__showpending">{plotPanel.showPending}</span>}
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--bo-muted)" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0, transform: state.plotShowOpen ? 'rotate(180deg)' : 'none' }}>
-            <path d="M6 9l6 6 6-6" />
-          </svg>
-        </button>
-        {state.plotShowOpen && (
-          <div className="bo-map__showmenu" role="menu">
-            <div className="bo-map__eyebrow bo-map__showhead">{i18n.t(M.show.title)}</div>
-            {plotPanel.show.map((option) => (
-              <button key={option.kind} type="button" role="menuitemcheckbox" aria-checked={option.on} className="bo-map__showitem" onClick={() => wf.togglePlotShow(option.kind)}>
-                <Tick on={option.on} />
-                <span className="bo-map__showtext">
-                  <span className="bo-map__showname">{option.label}</span>
-                  <span className="bo-map__showdesc">{option.desc}</span>
-                </span>
-                <span className={`bo-map__showbadge bo-map__showbadge--${option.badgeTone}`}>{option.badge}</span>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      <HoverMenu
+        className="bo-map__show"
+        open={state.plotShowOpen}
+        onClose={closeShow}
+        align="stretch"
+        panelClassName="bo-map__showmenu"
+        trigger={
+          <button
+            type="button"
+            className={`bo-map__showbtn${state.plotShowOpen ? ' bo-map__showbtn--open' : ''}`}
+            aria-haspopup="true"
+            aria-expanded={state.plotShowOpen}
+            onClick={() => wf.setPlotShowOpen(!state.plotShowOpen)}
+          >
+            <span className="bo-map__selectlabel">{i18n.t(M.show.label)}</span>
+            <span className="bo-map__showsummary">{plotPanel.showSummary}</span>
+            {plotPanel.showPending && <span className="bo-map__showpending">{plotPanel.showPending}</span>}
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--bo-muted)" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0, transform: state.plotShowOpen ? 'rotate(180deg)' : 'none' }}>
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+        }
+      >
+        <div className="bo-map__eyebrow bo-map__showhead">{i18n.t(M.show.title)}</div>
+        {plotPanel.show.map((option) => (
+          <button key={option.kind} type="button" role="menuitemcheckbox" aria-checked={option.on} className="bo-map__showitem" onClick={() => wf.togglePlotShow(option.kind)}>
+            <Tick on={option.on} />
+            <span className="bo-map__showtext">
+              <span className="bo-map__showname">{option.label}</span>
+              <span className="bo-map__showdesc">{option.desc}</span>
+            </span>
+            <span className={`bo-map__showbadge bo-map__showbadge--${option.badgeTone}`}>{option.badge}</span>
+          </button>
+        ))}
+      </HoverMenu>
 
       <div className="bo-map__plotsearch">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--bo-subtle)" strokeWidth="2" strokeLinecap="round" aria-hidden="true">

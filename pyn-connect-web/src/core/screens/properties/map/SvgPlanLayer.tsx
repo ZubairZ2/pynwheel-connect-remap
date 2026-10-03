@@ -19,6 +19,8 @@ interface Props {
   onPolygonDown: (target: PlotTarget) => void;
   /** Wayfinding draws its own layer on top: polygons take no clicks, so a click reaches the editing gestures. */
   passive?: boolean;
+  /** The polygon the page currently holds as hovered (`state.polyHover`): moves over it report nothing new. */
+  hoveredKey: string | null;
   onPolygonHover: (key: string | null) => void;
   /** font_settings.svg_labels_font_family: set on the document's text, as the legacy page does. */
   fontFamily?: string | null;
@@ -38,12 +40,11 @@ interface Original {
  * again by the selectors the parser recorded, styled in place when something
  * sits on them or the pointer is over them, and restored otherwise.
  */
-export const SvgPlanLayer = ({ doc, polygons, plotOn, dropping, onPolygonDown, onPolygonHover, fontFamily = null, passive = false }: Props) => {
+export const SvgPlanLayer = ({ doc, polygons, plotOn, dropping, onPolygonDown, hoveredKey, onPolygonHover, fontFamily = null, passive = false }: Props) => {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const elements = useRef(new Map<string, Element>());
   const byElement = useRef(new Map<Element, PlotTarget>());
   const originals = useRef(new Map<Element, Original>());
-  const hovered = useRef<string | null>(null);
 
   const byKey = useMemo(() => new Map(polygons.map((polygon) => [polygon.key, polygon])), [polygons]);
 
@@ -118,12 +119,24 @@ export const SvgPlanLayer = ({ doc, polygons, plotOn, dropping, onPolygonDown, o
     });
   }, [byKey, dropping, passive, plotOn]);
 
+  /**
+   * The plottable shape under the pointer: the event's own target or an
+   * ancestor, else — when the pointer is over something that sits on the shape,
+   * like the SVG's own room number printed at its centre — the first plottable
+   * shape beneath that point (the legacy page's point-in-shape test).
+   */
   const targetOf = (event: ReactPointerEvent<HTMLDivElement>): PlotTarget | null => {
     let node = event.target as Element | null;
     while (node && node !== hostRef.current) {
       const target = byElement.current.get(node);
       if (target) return target;
       node = node.parentElement;
+    }
+    if (typeof document.elementsFromPoint !== 'function') return null;
+    for (const element of document.elementsFromPoint(event.clientX, event.clientY)) {
+      if (!hostRef.current?.contains(element)) continue;
+      const target = byElement.current.get(element);
+      if (target) return target;
     }
     return null;
   };
@@ -141,18 +154,14 @@ export const SvgPlanLayer = ({ doc, polygons, plotOn, dropping, onPolygonDown, o
         onPolygonDown(target);
       }}
       onPointerMove={(event) => {
-        if (!plotOn) return;
+        // Tracked in every mode: Manual Plot highlights the drop target, otherwise a plotted polygon shows its details on hover.
+        // Compared with the page's own hover state (not a local copy), so a hover the page has reset — a tool change, a
+        // floor change — is reported again on the next move.
         const key = targetOf(event)?.key ?? null;
-        if (key !== hovered.current) {
-          hovered.current = key;
-          onPolygonHover(key);
-        }
+        if (key !== hoveredKey) onPolygonHover(key);
       }}
       onPointerLeave={() => {
-        if (hovered.current !== null) {
-          hovered.current = null;
-          onPolygonHover(null);
-        }
+        if (hoveredKey !== null) onPolygonHover(null);
       }}
     />
   );

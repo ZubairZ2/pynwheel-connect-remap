@@ -54,6 +54,7 @@ import {
   generatePolygons,
   generatePublishSummary,
   generateSelectedPin,
+  generateHoveredPolygon,
   generateSelectedPolygon,
   generateSelection,
   generateStartPointRows,
@@ -1065,6 +1066,8 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
     svgStatus: assets?.svg ? (svgState?.status ?? 'loading') : null,
     polygons,
     selectedPolygon: level ? generateSelectedPolygon(level, polygons, state) : null,
+    // Hovering a plotted polygon shows the same details a click does (Plotting mode only: Wayfinding's gestures own the polygons there).
+    hoveredPolygon: level && !wayfinding.wayfind ? generateHoveredPolygon(level, polygons, state) : null,
     buildings: useMemo(() => generateBuildingPills(map, levels, state), [map, levels, state]),
     tabs: useMemo(
       () => generateLevelTabs(map, levels, pinItems, state, wayfinding.wayfind ? wayfinding.plates : null),

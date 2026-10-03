@@ -3,7 +3,8 @@ import type { FilterOption } from '../listing.types';
 import type {
   InventoryFloorplan,
   InventoryUnit,
-  PropertyInventory
+  PropertyInventory,
+  UnitListingOptions
 } from '~/core/models/data/propertyInventory.data';
 import { bathsOption } from './floorplans.generator';
 import type {
@@ -31,10 +32,11 @@ import {
 } from './inventoryText';
 
 /**
- * The Units tab. Every unit of the property is loaded once, so each filter
- * works in the browser, on its own or combined: AND across filters, OR within
- * one. The semantics follow the legacy grid's UnitFilterQuery wherever it has
- * the same filter.
+ * The Units tab. The toolbar's search and filters are resolved by the CMS
+ * (Connect::UnitListingQuery on top of the legacy grid's UnitFilterQuery),
+ * which answers one page at a time: AND across filters, OR within one. This
+ * module holds the filters' shape, turns them into that request, and builds
+ * the cards and dropdown options from what comes back.
  */
 
 export interface UnitFilters {
@@ -89,30 +91,8 @@ export const effectiveSqft = (unit: InventoryUnit, plan: InventoryFloorplan | un
 export const unitName = (unit: InventoryUnit): string =>
   unit.displayName ?? unit.marketingName ?? unit.providerUnitId ?? `#${unit.id}`;
 
-/** Any field a person has pinned, or the unit-level Manual Override. */
-const hasManualOverrides = (unit: InventoryUnit): boolean =>
-  unit.manualOverride || Object.values(unit.flags).some(Boolean);
-
-const hasPhotos = (unit: InventoryUnit): boolean => !!unit.image || unit.interiorImages.length > 0;
-
+/** The State filter's values, as Connect::UnitListingQuery reads them. */
 const STATES = ['plotted', 'unplotted', 'model', 'manual', 'noPhotos'] as const;
-
-const stateMatches = (unit: InventoryUnit, state: string): boolean => {
-  switch (state) {
-    case 'plotted':
-      return unit.plotted;
-    case 'unplotted':
-      return !unit.plotted;
-    case 'model':
-      return unit.modelUnit;
-    case 'manual':
-      return hasManualOverrides(unit);
-    case 'noPhotos':
-      return !hasPhotos(unit);
-    default:
-      return true;
-  }
-};
 
 export interface UnitFilterOptions {
   floorplan: FilterOption[];
@@ -131,35 +111,33 @@ const AVAILABILITY: { id: UnitAvailability; label: string }[] = [
   { id: 'sold', label: S.units.sold }
 ];
 
-/** Each dropdown offers only values this property's units actually have, as the legacy grid does. */
-export const generateUnitFilterOptions = (inventory: PropertyInventory): UnitFilterOptions => {
-  const plans = planLookup(inventory);
-  const units = inventory.units;
-  const withNone = (options: FilterOption[], missing: boolean, label: string): FilterOption[] =>
-    missing ? [...options, { id: NONE, label: i18n.t(label) }] : options;
+/**
+ * Each dropdown offers only values this property's units actually have, as the
+ * legacy grid does: the floor plans from the floor plans listing, the rest
+ * from the units listing's `meta.filters` (`options`; empty until the first
+ * page has answered).
+ */
+export const generateUnitFilterOptions = (inventory: PropertyInventory, options: UnitListingOptions | null): UnitFilterOptions => {
+  const withNone = (list: FilterOption[], missing: boolean, label: string): FilterOption[] =>
+    missing ? [...list, { id: NONE, label: i18n.t(label) }] : list;
 
-  const buildings = [...new Set(units.map((unit) => unit.building).filter((b): b is string => !!b))].sort(naturalCompare);
-  const floors = [...new Set(units.map((unit) => unit.floor).filter((f): f is number => f != null))].sort((a, b) => a - b);
-  const unitPlans = units.map((unit) => planOf(unit, plans));
-  const beds = [...new Set(unitPlans.map((plan) => plan?.bedrooms).filter((b): b is number => b != null))].sort(
-    (a, b) => a - b
-  );
-  const baths = [
-    ...new Set(unitPlans.map((plan) => plan?.bathrooms).filter((b): b is number => b != null && b > 0))
-  ].sort((a, b) => a - b);
+  const buildings = [...(options?.buildings ?? [])].sort(naturalCompare);
+  const floors = [...(options?.floors ?? [])].sort((a, b) => a - b);
+  const beds = [...(options?.bedrooms ?? [])].sort((a, b) => a - b);
+  const baths = (options?.bathrooms ?? []).filter((b) => b > 0).sort((a, b) => a - b);
 
   return {
     floorplan: withNone(
       [...inventory.floorplans]
         .sort((a, b) => naturalCompare(a.name, b.name))
         .map((plan) => ({ id: String(plan.id), label: plan.name })),
-      units.some((unit) => unit.floorplanId == null),
+      !!options?.missing.floorplan,
       S.units.noFloorPlan
     ),
     availability: AVAILABILITY.map((option) => ({ id: option.id, label: i18n.t(option.label) })),
     building: withNone(
       buildings.map((building) => ({ id: building, label: building })),
-      units.some((unit) => !unit.building),
+      !!options?.missing.building,
       S.units.noBuilding
     ),
     state: STATES.map((state) => ({
@@ -181,85 +159,42 @@ export const generateUnitFilterOptions = (inventory: PropertyInventory): UnitFil
     baths: baths.map((b) => ({ id: String(b), label: bathsOption(b) })),
     floor: withNone(
       floors.map((floor) => ({ id: String(floor), label: t(S.units.floor, { floor }) })),
-      units.some((unit) => unit.floor == null),
+      !!options?.missing.floor,
       S.units.noFloor
     )
   };
 };
 
-const asNumber = (value: string): number | null => {
-  if (!value.trim()) return null;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
-};
-
-const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
 /**
- * Search terms as the legacy grid reads them: a comma or new line separates
- * terms (any may match), and `*` is a wildcard anchored at the start ("1-2*").
- * Without a `*` a term matches anywhere.
+ * The toolbar as a request: the query string `/api/properties/:id/inventory/units`
+ * takes, with the parameter names `UnitsController#index` reads for Connect
+ * (Connect::UnitListingQuery). Lists travel comma-separated; blanks are left out.
  */
-const searchMatchers = (query: string): ((value: string) => boolean)[] =>
-  query
-    .split(/[,\n\r]+/)
-    .map((term) => term.trim().toLowerCase())
-    .filter(Boolean)
-    .slice(0, 50)
-    .map((term) => {
-      if (!term.includes('*')) return (value: string) => value.includes(term);
-      const pattern = new RegExp(`^${term.split('*').map(escapeRegExp).join('.*')}`);
-      return (value: string) => pattern.test(value);
-    });
-
-const inRange = (value: number | null, min: number | null, max: number | null): boolean => {
-  if (min == null && max == null) return true;
-  if (value == null) return false;
-  if (min != null && value < min) return false;
-  if (max != null && value > max) return false;
-  return true;
+export const unitListingQuery = (filters: UnitFilters, page: number, perPage: number, today: string): string => {
+  const params = new URLSearchParams();
+  params.set('page', String(page));
+  params.set('per_page', String(perPage));
+  params.set('today', today);
+  const text = (key: string, value: string) => {
+    if (value.trim()) params.set(key, value.trim());
+  };
+  const list = (key: string, values: string[]) => {
+    if (values.length) params.set(key, values.join(','));
+  };
+  text('q', filters.query);
+  list('floorplan', filters.floorplan);
+  list('availability', filters.availability);
+  list('building', filters.building);
+  list('state', filters.state);
+  list('beds', filters.beds);
+  list('baths', filters.baths);
+  list('floor', filters.floor);
+  text('min_price', filters.priceMin);
+  text('max_price', filters.priceMax);
+  text('min_sqft', filters.sqftMin);
+  text('max_sqft', filters.sqftMax);
+  return params.toString();
 };
-
-export const filterUnits = (
-  units: InventoryUnit[],
-  filters: UnitFilters,
-  inventory: PropertyInventory,
-  today: string
-): InventoryUnit[] => {
-  const plans = planLookup(inventory);
-  const matchers = searchMatchers(filters.query);
-  const priceMin = asNumber(filters.priceMin);
-  const priceMax = asNumber(filters.priceMax);
-  const sqftMin = asNumber(filters.sqftMin);
-  const sqftMax = asNumber(filters.sqftMax);
-  const pick = (selected: string[], value: string | null) =>
-    selected.length === 0 || selected.includes(value == null || value === '' ? NONE : value);
-
-  return units.filter((unit) => {
-    const plan = planOf(unit, plans);
-
-    if (matchers.length) {
-      const fields = [unit.displayName, unit.marketingName, unit.providerUnitId, plan?.name]
-        .filter((field): field is string => !!field)
-        .map((field) => field.toLowerCase());
-      if (!matchers.some((matches) => fields.some(matches))) return false;
-    }
-    if (!pick(filters.floorplan, unit.floorplanId != null ? String(unit.floorplanId) : null)) return false;
-    if (filters.availability.length && !filters.availability.includes(unitAvailability(unit, today))) return false;
-    if (!pick(filters.building, unit.building)) return false;
-    if (filters.state.length && !filters.state.some((state) => stateMatches(unit, state))) return false;
-    if (filters.beds.length && !filters.beds.includes(String(plan?.bedrooms ?? ''))) return false;
-    if (filters.baths.length && !filters.baths.includes(String(plan?.bathrooms ?? ''))) return false;
-    if (!pick(filters.floor, unit.floor != null ? String(unit.floor) : null)) return false;
-    if (!inRange(unit.price, priceMin, priceMax)) return false;
-    if (!inRange(effectiveSqft(unit, plan), sqftMin, sqftMax)) return false;
-    return true;
-  });
-};
-
-/** Natural order by name, like the grid's default sort (UnitFilterQuery::NATURAL_NAME). */
-export const sortUnits = (units: InventoryUnit[]): InventoryUnit[] =>
-  [...units].sort((a, b) => naturalCompare(unitName(a), unitName(b)));
 
 export interface UnitCard {
   id: number;
@@ -400,6 +335,12 @@ export const generateUnitCards = (
   });
 };
 
-/** How many per-field manual markers the property's units carry (the Re-sync confirmation's count). */
+/**
+ * How many per-field manual markers the property's units carry (the Re-sync
+ * confirmation's count): counted over the units when they are all here, else
+ * the count the floorplates meta announced.
+ */
 export const manualOverrideCount = (inventory: PropertyInventory): number =>
-  inventory.units.reduce((total, unit) => total + Object.values(unit.flags).filter(Boolean).length, 0);
+  inventory.unitsLoaded
+    ? inventory.units.reduce((total, unit) => total + Object.values(unit.flags).filter(Boolean).length, 0)
+    : inventory.unitOverrideCount;

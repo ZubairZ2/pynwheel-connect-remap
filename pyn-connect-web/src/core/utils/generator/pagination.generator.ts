@@ -76,3 +76,13 @@ const pageNumbers = (current: number, totalPages: number): number[] => {
 
   return Array.from(wanted).sort((a, b) => a - b);
 };
+
+/** The page sizes every paginated listing offers; the first is the default. */
+export const PAGE_SIZE_OPTIONS = [25, 50, 75, 100] as const;
+export const DEFAULT_PAGE_SIZE: number = PAGE_SIZE_OPTIONS[0];
+
+/** A page size from a URL or a select: one of the offered sizes, else the default. */
+export const clampPageSize = (value: unknown): number => {
+  const size = Number(value);
+  return (PAGE_SIZE_OPTIONS as readonly number[]).includes(size) ? size : DEFAULT_PAGE_SIZE;
+};

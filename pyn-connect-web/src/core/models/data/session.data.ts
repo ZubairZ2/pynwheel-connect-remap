@@ -29,6 +29,8 @@ export interface ListingMeta {
   companyOptions: CompanyFilterOption[];
   /** Data provider slugs in the user's scope; `none` stands for "no provider". */
   dataProviderOptions: string[];
+  /** Companies listing only: PMS provider slugs across the companies in scope; `none` stands for "no provider". */
+  pmsProviderOptions: string[];
   /** Everything the user can see before search and filters (the page header's total). */
   scopeTotalCount: number | null;
   /** Companies listing only: properties across every company in scope. */

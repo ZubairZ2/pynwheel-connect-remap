@@ -70,13 +70,9 @@ module Connect
         'installed'
       end
 
+      # Connect::ProductState is the one definition every Connect JSON shares.
       def products
-        {
-          touch: community.touchscreen_app.present? || product_option_enabled?('pynwheel_touch'),
-          tour: community.self_tour.present? || product_option_enabled?('self_tour'),
-          maps: product_options.dig('product_options', 'pynwheel_maps').present? ||
-                community.enable_sdk_map.present?
-        }
+        ProductState.all(community)
       end
 
       def integrations
@@ -110,22 +106,6 @@ module Connect
 
       def tour_published?
         community.tour.present? && community.tour.tour_stops.size.positive?
-      end
-
-      def product_option_enabled?(key)
-        product_options.dig('product_options', key, 'is_enabled').present?
-      end
-
-      # `product_options` is a jsonb column that holds a JSON *string*
-      # (the v2 API writes `params[:product_options].to_json` into it).
-      def product_options
-        @product_options ||= begin
-          raw = community.product_options
-          raw = JSON.parse(raw) if raw.is_a?(String)
-          raw.is_a?(Hash) ? raw : {}
-        rescue JSON::ParserError
-          {}
-        end
       end
   end
 end

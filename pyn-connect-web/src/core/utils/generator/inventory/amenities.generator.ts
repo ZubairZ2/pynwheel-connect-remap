@@ -170,7 +170,10 @@ export const generateAmenityFilterOptions = (amenities: InventoryAmenity[], inve
       amenities.some((amenity) => !amenity.lockProvider),
       S.amenities.noLock
     ),
-    state: Object.entries(STATES).map(([id, label]) => ({ id, label: i18n.t(label) })),
+    // The stop-list states belong to the Self-Guided Tour: a property without it has no stops list to be in or hidden from.
+    state: Object.entries(STATES)
+      .filter(([id]) => inventory.selfTour || (id !== 'stops' && id !== 'hidden'))
+      .map(([id, label]) => ({ id, label: i18n.t(label) })),
     setup: Object.entries(SETUPS).map(([id, label]) => ({ id, label: i18n.t(label) }))
   };
 };
@@ -237,18 +240,28 @@ export const amenityImages = (amenity: InventoryAmenity): ImageDescriptor[] => {
 export const videoLabel = (amenity: InventoryAmenity): string =>
   amenity.videoLinkButtonLabel ?? i18n.t(S.amenities.playVideo);
 
-export const generateAmenityCards = (amenities: InventoryAmenity[]): AmenityCard[] =>
+/**
+ * One card per amenity. `selfTour` is the property's Self-Guided Tour state
+ * (`amenities.json` meta, from Connect::ProductState): the stop-list pill —
+ * "In Stops List" / "Hidden from Stops" — exists only for a property with the
+ * tour, as the legacy amenity form shows "Show in Stops List" only then.
+ */
+export const generateAmenityCards = (amenities: InventoryAmenity[], selfTour: boolean): AmenityCard[] =>
   amenities.map((amenity) => {
     const where = amenityWhere(amenity);
     const gallery = amenity.gallery.filter((photo) => !!photo.url).length;
     const pills: PillDescriptor[] = [
       amenity.plotted
         ? { label: i18n.t(S.amenities.plotted), variant: 'ok' }
-        : { label: i18n.t(S.amenities.notOnMap), variant: 'warn' },
-      amenity.showInStops
-        ? { label: i18n.t(S.amenities.inStops), variant: 'info' }
-        : { label: i18n.t(S.amenities.hiddenFromStops), variant: 'neutral' }
+        : { label: i18n.t(S.amenities.notOnMap), variant: 'warn' }
     ];
+    if (selfTour) {
+      pills.push(
+        amenity.showInStops
+          ? { label: i18n.t(S.amenities.inStops), variant: 'info' }
+          : { label: i18n.t(S.amenities.hiddenFromStops), variant: 'neutral' }
+      );
+    }
 
     return {
       id: amenity.id,

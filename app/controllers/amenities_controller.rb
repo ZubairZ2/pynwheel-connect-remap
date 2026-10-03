@@ -188,7 +188,8 @@ class AmenitiesController < ApplicationController
         # Description and Directional Text are self-tour fields (`edit`), the
         # lock fields need locks enabled (`edit`), and "Show Amenity Name on
         # Webpages" is the toggle above the Amenity Images list (`index`).
-        self_tour: current_community.self_tour.present?,
+        # The Self-Guided Tour state is the one every Connect screen shares.
+        self_tour: Connect::ProductState.tour?(current_community),
         enable_locks: current_community.enable_locks.present?,
         show_amenity_name: current_community.show_amenity_name.present?,
         lock_options: connect_amenity_lock_options

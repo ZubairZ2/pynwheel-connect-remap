@@ -9,7 +9,7 @@ import {
   parseInventoryUnits
 } from '~/core/repository/parser/inventory.parser';
 import type { ApiResponse } from './api/base.api';
-import { fetchInventoryListing } from './api/inventory.api';
+import { fetchInventoryListing, fetchInventoryUnitsPage, type UnitListingRequest } from './api/inventory.api';
 
 export type InventoryLoad =
   | { status: 'found'; inventory: PropertyInventory }
@@ -38,13 +38,15 @@ const statusOf = (responses: ApiResponse[]): 'unauthorized' | 'missing' | 'faile
 
 /**
  * One property's inventory: its floorplates, floor plans and amenities, and —
- * unless `units: false` — its units, fetched together.
+ * only when `units: true` — its units, fetched together.
  *
  * The units listing is most of the inventory's weight (every unit with its
- * images, flags and descriptions: about 290 KB for 230 units), and only the
- * Units tab and the unit dialogs read it. The Inventory screen leaves it out
- * and reads it on demand (`loadInventoryUnits`); the floorplates meta carries
- * its row count, so the Units tab can say how many there are meanwhile.
+ * images, flags and descriptions: about 290 KB for 230 units). The Inventory
+ * screen never loads it whole: its Units tab reads one page at a time
+ * (`loadInventoryUnitsPage`), and the floorplates meta carries what the other
+ * tabs and the dialogs need from the units — their count, their buildings,
+ * their manual-marker count, the PMS and last sync, the lock devices. Map &
+ * Plotting, Tour Setup and Unit Detail still take every unit: they draw them.
  */
 export const loadPropertyInventory = async (
   cookie: string | null,
@@ -66,9 +68,7 @@ export const loadPropertyInventory = async (
   const plates = parseInventoryFloorplates(floorplates.body);
   const plans = parseInventoryFloorplans(floorplans.body);
   const amenityListing = parseInventoryAmenities(amenities.body);
-  const unitListing: InventoryUnitListing = units
-    ? parseInventoryUnits(units.body)
-    : { units: [], currencySymbol: plans.currencySymbol, dataProvider: null, lastSync: null, lockDevices: [] };
+  const unitListing = units ? parseInventoryUnits(units.body) : null;
 
   return {
     status: 'found',
@@ -77,17 +77,18 @@ export const loadPropertyInventory = async (
       ...plates,
       floorplans: plans.floorplans,
       turnAvailabilityOn: plans.turnAvailabilityOn,
-      ...unitListing,
-      unitsLoaded: !!units,
-      unitCount: units ? unitListing.units.length : plates.unitCount,
+      currencySymbol: unitListing?.currencySymbol ?? plans.currencySymbol,
+      units: unitListing?.units ?? [],
+      unitsLoaded: !!unitListing,
+      unitCount: unitListing ? unitListing.units.length : plates.unitCount,
       ...amenityListing
     }
   };
 };
 
-/** The units listing alone: what the Inventory screen reads when its Units tab (or a unit dialog) first opens. */
-export const loadInventoryUnits = async (cookie: string | null, id: number): Promise<InventoryUnitsLoad> => {
-  const units = await fetchInventoryListing(cookie, id, 'units');
+/** One page of the units listing, as the Units tab's toolbar asks for it (`units.json` with a `page`). */
+export const loadInventoryUnitsPage = async (cookie: string | null, id: number, request: UnitListingRequest): Promise<InventoryUnitsLoad> => {
+  const units = await fetchInventoryUnitsPage(cookie, id, request);
   const failure = statusOf([units]);
   if (failure) return { status: failure };
 

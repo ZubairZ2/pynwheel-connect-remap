@@ -2,15 +2,16 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-import { generatePager, type PagerDescriptor } from '~/core/utils/generator/pagination.generator';
+import { DEFAULT_PAGE_SIZE, generatePager, type PagerDescriptor } from '~/core/utils/generator/pagination.generator';
 
 /**
  * Pages a list the browser already holds, with the listings' pager. The page
- * resets to the first whenever the list itself changes (a new filter), and is
- * clamped when the list shrinks under it.
+ * resets to the first whenever the list itself changes (a new filter) or the
+ * rows-per-page changes, and is clamped when the list shrinks under it.
  */
-export const useClientPages = <T,>(items: T[], pageSize: number) => {
+export const useClientPages = <T,>(items: T[], initialPageSize: number = DEFAULT_PAGE_SIZE) => {
   const [page, setPage] = useState(1);
+  const [pageSize, setSize] = useState(initialPageSize);
 
   useEffect(() => setPage(1), [items]);
 
@@ -26,5 +27,10 @@ export const useClientPages = <T,>(items: T[], pageSize: number) => {
     [current, pageSize, items.length, totalPages]
   );
 
-  return { pageItems, pager, setPage };
+  const setPageSize = (size: number) => {
+    setSize(size);
+    setPage(1);
+  };
+
+  return { pageItems, pager, setPage, pageSize, setPageSize };
 };

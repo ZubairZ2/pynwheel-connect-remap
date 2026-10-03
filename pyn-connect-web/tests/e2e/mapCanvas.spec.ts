@@ -354,35 +354,58 @@ test.describe('Map & Plotting canvas (real data)', () => {
     await room102.dispatchEvent('pointerdown', { bubbles: true, pointerId: 1 });
     await expect(page.locator('[data-plotted]')).toHaveCount(1);
     await expect(room102).toHaveAttribute('data-plotted', '');
-    // The plotted item's name prints on the polygon (it is not "102"); the polygon's code does not, the SVG already prints it.
-    await expect(page.locator('.bo-map__polyassigned')).toHaveText([itemName]);
-    await expect(page.locator('.bo-map__polycode')).toHaveCount(0);
-    expect(await page.locator('.bo-map__polylabels').innerText()).not.toMatch(/Vector/);
     await manualPlot(page).click();
-    await room102.dispatchEvent('pointerdown', { bubbles: true, pointerId: 1 });
+    // Nothing is printed over a plotted polygon: the filled shape is the placement and the SVG's own "102" its label.
+    await expect(page.locator('.bo-map__polylabel')).toHaveCount(0);
+    await expect(page.locator('.bo-map__polypop')).toHaveCount(0);
+    const surface = (await page.getByTestId('plan-surface').boundingBox())!;
+    const leavePlan = () => page.mouse.move(surface.x + 4, surface.y + surface.height - 4);
+
+    // Hovering the plotted polygon shows what a click shows — the same popover, with the item and its Unplot — and leaving hides it.
+    await room102.hover({ force: true });
+    await expect(page.locator('.bo-map__polypop[data-peek="1"]')).toHaveCount(1);
     await expect(page.locator('.bo-map__polypoptitle')).toHaveText('Polygon 102');
     await expect(page.locator('.bo-map__polypop')).toContainText(itemName);
-    // The popover does not scale with the plan.
+    await expect(page.locator('.bo-map__polypop .bo-map__unplot')).toHaveCount(1);
+    await leavePlan();
+    await expect(page.locator('.bo-map__polypop')).toHaveCount(0);
+    // An unplotted polygon has nothing to show on hover.
+    const room103 = svg.locator('polygon[id="Vector_2652"]');
+    await room103.hover({ force: true });
+    await expect(page.locator('.bo-map__polypop')).toHaveCount(0);
+    await leavePlan();
+    // A click pins the popover open; it does not scale with the plan.
+    await room102.dispatchEvent('pointerdown', { bubbles: true, pointerId: 1 });
+    await expect(page.locator('.bo-map__polypop:not([data-peek])')).toHaveCount(1);
+    await expect(page.locator('.bo-map__polypoptitle')).toHaveText('Polygon 102');
     const popoverBefore = (await page.locator('.bo-map__polypop').boundingBox())!;
     await zoomIn(page).click();
     const popoverAfter = (await page.locator('.bo-map__polypop').boundingBox())!;
     expect(Math.abs(popoverAfter.width - popoverBefore.width)).toBeLessThan(1);
     await resetView(page).click();
     await page.locator('.bo-map__polypop .bo-map__dismiss').click();
+    await expect(page.locator('.bo-map__polypop')).toHaveCount(0);
 
-    // Room 103 prints no number of its own: the canvas prints its code once something sits on it.
+    // Room 103 prints no number of its own: its code prints while it is the hovered drop target, and never stays.
     const second = page.locator('.bo-map__plotrow').first();
     const secondName = (await second.locator('.bo-map__plotname').innerText()).trim();
     await second.locator('.bo-map__plotpick').click();
     await manualPlot(page).click();
-    const room103 = svg.locator('polygon[id="Vector_2652"]');
     await room103.dispatchEvent('pointermove', { bubbles: true, pointerId: 1 });
     await expect(page.locator('.bo-map__polycode')).toHaveText(['103']);
+    expect((await page.locator('.bo-map__polylabels').allInnerTexts()).join(' ')).not.toMatch(/Vector/);
     await room103.dispatchEvent('pointerdown', { bubbles: true, pointerId: 1 });
     await expect(page.locator('[data-plotted]')).toHaveCount(2);
-    await expect(page.locator('.bo-map__polycode')).toHaveText(['103']);
-    await expect(page.locator('.bo-map__polyassigned')).toHaveText([itemName, secondName]);
     await manualPlot(page).click();
+    await leavePlan();
+    await expect(page.locator('.bo-map__polylabel')).toHaveCount(0);
+    // Hovering it again names it and lists what sits on it.
+    await room103.hover({ force: true });
+    await expect(page.locator('.bo-map__polycode')).toHaveText(['103']);
+    await expect(page.locator('.bo-map__polypop')).toContainText(secondName);
+    await leavePlan();
+    await expect(page.locator('.bo-map__polypop')).toHaveCount(0);
+    await expect(page.locator('.bo-map__polylabel')).toHaveCount(0);
 
     // The amenities layer's spaces are polygons too, named by their text; the artwork rectangle is not.
     const pool = svg.locator('g[id="POOL"] > polygon');
@@ -392,25 +415,24 @@ test.describe('Map & Plotting canvas (real data)', () => {
     await svg.locator('rect[id="Vector_9"]').dispatchEvent('pointerdown', { bubbles: true, pointerId: 1 });
     await expect(page.locator('.bo-map__polypop')).toHaveCount(0);
 
-    // Labels follow their polygons through zoom, pan and a resize.
-    const label = page.locator('.bo-map__polylabel').first();
-    const before = await relativeTo(label, plan(page));
+    // The SVG's text follows its polygon through zoom, pan and a resize, and nothing of ours is printed over the plan meanwhile.
     const textBefore = await relativeTo(svg.locator('text[id="102_2"]'), plan(page));
     await zoomIn(page).click();
     await zoomIn(page).click();
-    expect(await relativeTo(label, plan(page))).toEqual(before);
     expect(await relativeTo(svg.locator('text[id="102_2"]'), plan(page))).toEqual(textBefore);
-    const surface = (await page.getByTestId('plan-surface').boundingBox())!;
+    await expect(page.locator('.bo-map__polylabel')).toHaveCount(0);
     await page.mouse.move(surface.x + surface.width * 0.7, surface.y + surface.height * 0.7);
     await page.mouse.down();
     await page.mouse.move(surface.x + surface.width * 0.5, surface.y + surface.height * 0.5, { steps: 5 });
     await page.mouse.up();
-    expect(await relativeTo(label, plan(page))).toEqual(before);
+    expect(await relativeTo(svg.locator('text[id="102_2"]'), plan(page))).toEqual(textBefore);
     await page.setViewportSize({ width: 1100, height: 900 });
-    await expect.poll(() => relativeTo(label, plan(page))).toEqual(before);
+    await expect.poll(() => relativeTo(svg.locator('text[id="102_2"]'), plan(page))).toEqual(textBefore);
     await page.setViewportSize({ width: 1440, height: 960 });
+    await leavePlan();
+    await expect(page.locator('.bo-map__polylabel')).toHaveCount(0);
 
-    // The other floor, and back: the plotted state and its labels are still there.
+    // The other floor, and back: the plotted state is still there, and still nothing is printed permanently.
     const tabs = page.locator('.bo-map__levels [role="tab"]');
     if ((await tabs.count()) > 1) {
       const current = await tabs.evaluateAll((nodes) => nodes.findIndex((node) => node.getAttribute('aria-selected') === 'true'));
@@ -419,12 +441,15 @@ test.describe('Map & Plotting canvas (real data)', () => {
       await tabs.nth(current).click();
       await expect(svg.locator('svg')).toHaveCount(1, { timeout: 60_000 });
       await expect(page.locator('[data-plotted]')).toHaveCount(2);
-      await expect(page.locator('.bo-map__polyassigned')).toHaveText([itemName, secondName]);
+      await expect(page.locator('.bo-map__polylabel')).toHaveCount(0);
+      await expect(page.locator('.bo-map__polypop')).toHaveCount(0);
     }
     clean();
   });
 
   test('Floor SVG: a real floor file mounts with its polygons and the stored placements fill them, nothing else drawn on top', async ({ page }) => {
+    // The real file is 2.6 MB and comes through the plan-svg proxy from S3: several seconds on its own.
+    test.setTimeout(180_000);
     const [floorplates, units] = await Promise.all([cms(`/communities/${SVG_PROPERTY}/floorplates.json`), cms(`/communities/${SVG_PROPERTY}/units.json`)]);
     const plate = (floorplates.data as Json[]).find((row) => row.svg != null);
     test.skip(!plate, `property ${SVG_PROPERTY} has no floor SVG in this dump`);
@@ -439,7 +464,8 @@ test.describe('Map & Plotting canvas (real data)', () => {
     // Each stored pointer fills one shape; no marker sits on a filled polygon; the file's own text is untouched.
     await expect(page.locator('[data-plotted]')).toHaveCount(pointers.length, { timeout: 30_000 });
     await expect(page.locator('.bo-map__pin')).toHaveCount(0);
-    expect(await page.locator('.bo-map__polylabels').innerText().catch(() => '')).not.toMatch(/Vector|_x3/);
+    // The label container is only rendered while something is hovered or selected; read it without waiting for it.
+    expect((await page.locator('.bo-map__polylabels').allInnerTexts()).join(' ')).not.toMatch(/Vector|_x3/);
     clean();
   });
 });

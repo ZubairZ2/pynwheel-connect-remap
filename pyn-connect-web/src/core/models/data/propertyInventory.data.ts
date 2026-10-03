@@ -1,3 +1,5 @@
+import type { Pagination } from './session.data';
+
 /**
  * The Property Inventory of one real property, as the four legacy inventory
  * listings return it (`GET /communities/:id/{floorplates,floorplans,units,
@@ -248,6 +250,19 @@ export interface InventorySitemap {
   height: number | null;
 }
 
+/**
+ * The Units tab's dropdown options and gaps, from the units listing's meta:
+ * one page of units cannot derive them. The floor plan options come from the
+ * floor plans listing; `missing.floorplan` says whether "No floor plan" is needed.
+ */
+export interface UnitListingOptions {
+  buildings: string[];
+  floors: number[];
+  bedrooms: number[];
+  bathrooms: number[];
+  missing: { floorplan: boolean; building: boolean; floor: boolean };
+}
+
 /** What `units.json` adds to the inventory: its rows and its meta. */
 export interface InventoryUnitListing {
   units: InventoryUnit[];
@@ -255,6 +270,15 @@ export interface InventoryUnitListing {
   dataProvider: string | null;
   lastSync: string | null;
   lockDevices: LockDevice[];
+  /**
+   * One page of a larger set (the Units tab): its paging and the toolbar's
+   * options. Null when the listing is the whole set (Map & Plotting, Tour
+   * Setup and Unit Detail draw every unit).
+   */
+  pagination: Pagination | null;
+  options: UnitListingOptions | null;
+  /** How many units the request's filters leave; the set's size when unpaged. */
+  totalCount: number;
 }
 
 export interface PropertyInventory {
@@ -267,6 +291,10 @@ export interface PropertyInventory {
   unitsLoaded: boolean;
   /** How many rows the units listing holds (floorplates.json meta), known before the units themselves. */
   unitCount: number;
+  /** The buildings the property's units name (floorplates.json meta): the Building lists read it instead of the units. */
+  unitBuildings: string[];
+  /** Σ of the per-field manual markers over the property's units (floorplates.json meta): the Re-sync confirmation's count. */
+  unitOverrideCount: number;
   amenities: InventoryAmenity[];
   /** `floorplates` (floorplate maps) or `sitemap` (one property map). */
   mapType: 'floorplates' | 'sitemap';

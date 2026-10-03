@@ -33,15 +33,16 @@ class AccessibleCommunitiesQuery
                    'AND communities.date_activated IS NULL'
   }.freeze
 
-  # Mirrors Connect::PropertySerializer#products. Touch and Tour have real
-  # boolean columns; Maps only exists as a flag inside `product_options`, a
-  # jsonb column holding a JSON *string*, which has to be unwrapped (#>> '{}')
-  # before it can be traversed.
+  # Mirrors Connect::ProductState, in SQL: a product is on when its column is
+  # set (the Settings page) or the Pynwheel Launch order form enabled it in
+  # `product_options` — a jsonb column holding a JSON *string*, which has to be
+  # unwrapped (#>> '{}') before it can be traversed. Maps only exists there (and
+  # in `enable_sdk_map`).
+  PRODUCT_OPTIONS_SQL = "(communities.product_options #>> '{}')::jsonb -> 'product_options'".freeze
   PRODUCT_CONDITIONS = {
-    'touch' => 'communities.touchscreen_app = TRUE',
-    'tour' => 'communities.self_tour = TRUE',
-    'maps' => "communities.enable_sdk_map = TRUE OR " \
-              "((communities.product_options #>> '{}')::jsonb -> 'product_options' ->> 'pynwheel_maps') = 'true'"
+    'touch' => "communities.touchscreen_app = TRUE OR (#{PRODUCT_OPTIONS_SQL} -> 'pynwheel_touch' ->> 'is_enabled') = 'true'",
+    'tour' => "communities.self_tour = TRUE OR (#{PRODUCT_OPTIONS_SQL} -> 'self_tour' ->> 'is_enabled') = 'true'",
+    'maps' => "communities.enable_sdk_map = TRUE OR (#{PRODUCT_OPTIONS_SQL} ->> 'pynwheel_maps') = 'true'"
   }.freeze
 
   # The listing's sortable columns (`sort` / `dir`, see ListingSort), each on

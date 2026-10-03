@@ -551,3 +551,18 @@ An explicit "joins this point" / "joins nothing" is new data and a new routing r
 
 ### Future Requirement
 M14 (saving edits) plus a column for the stop → hallway link (or "no link"), and `ShortestPath` honouring it; M20 for mixing detected and stored geometry on one floor.
+
+---
+
+## Update — October 3, 2026 (branch `fix/critical_issues_phase1`, PYN_CONNECT_PROGRESS.md §29)
+
+Resolved on the existing backend, none of them a gap:
+
+- **Permanent labels.** The canvas printed a unit's name over every plotted polygon whose name differed from the SVG's text, and the code of an unnamed polygon once filled. Nothing prints permanently now: a polygon's code shows only while it is hovered or its popover is open and the SVG has no text for it; hovering a plotted polygon, a stop or a marker shows the same details a click shows (the popover lingers while the pointer moves into it). Clicking a room's own number counts as clicking its polygon.
+- **The Detect / Auto Plot / Show menus** share `HoverMenu`, which bridges the gap under the trigger and also closes on outside click and Escape.
+- **Loading.** Pins, nodes, paths, stops and labels are not drawn while the floor SVG or image is loading, nor the previous floor's while the next one loads.
+- **The Building row** shows only when the map is split across several buildings (`mapBuildings`: floorplate buildings plus the ones units and amenities name).
+- **The toolbar** keeps its action icons (Clear Paths, Undo, the tools) on the switch's row however long the status text; only the text wraps.
+- **Wayfinding is offered to every Self-Guided Tour property** (`Connect::ProductState.tour?`), not only to the ones with `auto_wayfinding`; that switch still drives the door-plus markers. Properties with the tour but without the switch (156 locally) now get the mode, Additional Stops and the vertical links.
+
+M1–M24 stand as written; no new backend gap came out of this phase.

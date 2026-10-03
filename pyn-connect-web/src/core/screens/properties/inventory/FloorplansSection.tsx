@@ -159,7 +159,7 @@ export const FloorplansSection = ({ inventory, actions }: Props) => {
         </div>
       )}
 
-      <Pagination pager={list.pager} label={i18n.t(S.floorplans.title)} onPageChange={list.setPage} />
+      <Pagination pager={list.pager} label={i18n.t(S.floorplans.title)} onPageChange={list.setPage} pageSize={list.pageSize} onPageSizeChange={list.setPageSize} />
     </div>
   );
 };

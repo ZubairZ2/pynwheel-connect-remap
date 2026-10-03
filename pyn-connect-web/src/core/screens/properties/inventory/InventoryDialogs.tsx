@@ -3,11 +3,10 @@
 import { useState } from 'react';
 
 import { i18n } from '~/resources/i18n';
-import { LoadingIndicator } from '~/core/components/atoms/LoadingIndicator';
 import { Modal } from '~/core/components/molecules/Modal';
 import { UploadSlot, type UploadSlotFile } from '~/core/components/molecules/UploadSlot';
 import type { InventoryDialog } from '~/core/hooks/usePropertyInventory';
-import type { InventoryButton, PropertyInventory } from '~/core/models/data/propertyInventory.data';
+import type { InventoryButton, InventoryUnit, PropertyInventory } from '~/core/models/data/propertyInventory.data';
 import type { ImageDescriptor } from '~/core/utils/generator/inventory/inventory.types';
 import {
   MASS_OVERRIDE_ACTIONS,
@@ -27,7 +26,6 @@ import {
   unitForm,
   type MassOverrideAction
 } from '~/core/utils/generator/inventory/inventoryForms.generator';
-import { dialogNeedsUnits } from '~/core/utils/generator/inventory/inventoryHeader.generator';
 import { S, counted, rangeText, t } from '~/core/utils/generator/inventory/inventoryText';
 import {
   DialogFooter,
@@ -46,58 +44,17 @@ interface Props {
   dialog: InventoryDialog | null;
   onClose: () => void;
   onView: (images: ImageDescriptor[], index?: number) => void;
-  /** The units listing failed to load (the Inventory screen reads it on demand). */
-  unitsFailed?: boolean;
-  onRetryUnits?: () => void;
 }
-
-/** The title a dialog will carry, for the moment it waits for the units listing. */
-const pendingTitle = (inventory: PropertyInventory, dialog: InventoryDialog): string => {
-  switch (dialog.kind) {
-    case 'floorplate':
-      return floorplateDialogTitle(inventory.floorplates.find((plate) => plate.id === dialog.id) ?? null);
-    case 'unit':
-      return i18n.t(dialog.id != null ? S.dialogs.unit.editTitle : S.dialogs.unit.addTitle);
-    case 'amenity':
-      return i18n.t(dialog.id != null ? S.dialogs.amenity.editTitle : S.dialogs.amenity.addTitle);
-    case 'mass':
-      return i18n.t(S.dialogs.mass.title);
-    default:
-      return i18n.t(S.dialogs.floorplan.editTitle);
-  }
-};
-
-/**
- * A dialog whose form reads the units listing opens at once and shows the
- * shared loading state until the listing arrives (or says it failed).
- */
-const UnitsPendingDialog = ({ title, failed, onRetry, onClose }: { title: string; failed: boolean; onRetry?: () => void; onClose: () => void }) => (
-  <Modal open title={title} width={520} onClose={onClose} closeLabel={i18n.t(S.dialogs.close)}>
-    {failed ? (
-      <div className="bo-error bo-inv__retry" role="alert">
-        <span>{i18n.t(S.units.loadFailed)}</span>
-        {onRetry && (
-          <button type="button" className="bo-inv__ghost" onClick={onRetry}>
-            {i18n.t(S.units.retry)}
-          </button>
-        )}
-      </div>
-    ) : (
-      <LoadingIndicator variant="block" label={i18n.t(S.units.loading)} />
-    )}
-  </Modal>
-);
 
 /**
  * The inventory's Add / Edit dialogs and Mass Overrides, as the 22-Sep design
  * draws them. They open on the record's real values and can be filled in, but
- * Connect is read-only (gap G20): Save only closes the dialog.
+ * Connect is read-only (gap G20): Save only closes the dialog. None of them
+ * needs the whole units listing: the Building lists read the buildings the
+ * floorplates meta names, and the unit form is given its unit by the Units tab.
  */
-export const InventoryDialogs = ({ inventory, dialog, onClose, onView, unitsFailed = false, onRetryUnits }: Props) => {
+export const InventoryDialogs = ({ inventory, dialog, onClose, onView }: Props) => {
   if (!dialog) return null;
-  if (!inventory.unitsLoaded && dialogNeedsUnits(dialog.kind)) {
-    return <UnitsPendingDialog title={pendingTitle(inventory, dialog)} failed={unitsFailed} onRetry={onRetryUnits} onClose={onClose} />;
-  }
 
   switch (dialog.kind) {
     case 'floorplate':
@@ -105,7 +62,7 @@ export const InventoryDialogs = ({ inventory, dialog, onClose, onView, unitsFail
     case 'floorplan':
       return <FloorplanDialog key={`fl-${dialog.id}`} inventory={inventory} id={dialog.id} onClose={onClose} onView={onView} />;
     case 'unit':
-      return <UnitDialog key={`u-${dialog.id}`} inventory={inventory} id={dialog.id} onClose={onClose} onView={onView} />;
+      return <UnitDialog key={`u-${dialog.id}`} inventory={inventory} id={dialog.id} unit={dialog.unit ?? null} onClose={onClose} onView={onView} />;
     case 'amenity':
       return <AmenityDialog key={`a-${dialog.id}`} inventory={inventory} id={dialog.id} onClose={onClose} onView={onView} />;
     case 'mass':
@@ -397,8 +354,9 @@ const FloorplanDialog = ({ inventory, id, onClose, onView }: DialogProps) => {
 
 /* ---------------- Unit ---------------- */
 
-const UnitDialog = ({ inventory, id, onClose, onView }: DialogProps) => {
-  const unit = inventory.units.find((candidate) => candidate.id === id) ?? null;
+/** `unit` is the row the Units tab opened the dialog from; Unit Detail, which holds every unit, finds it by id. */
+const UnitDialog = ({ inventory, id, unit: given, onClose, onView }: DialogProps & { unit: InventoryUnit | null }) => {
+  const unit = given ?? inventory.units.find((candidate) => candidate.id === id) ?? null;
   const [form, setForm] = useState(() => unitForm(unit, inventory));
   const pick = usePickedFiles();
   const sources = unitFieldSources(unit);

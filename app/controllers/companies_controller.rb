@@ -145,8 +145,13 @@ class CompaniesController < ApplicationController
         current_user,
         page.total_count,
         pagination: page.meta,
-        # The listing header's totals, which ignore the search.
-        extra: { scope_total_count: query.accessible.count, property_total_count: query.property_total }
+        # The listing header's totals, which ignore the search and the filters,
+        # and the PMS Provider filter's options (one page cannot derive them).
+        extra: {
+          scope_total_count: query.accessible.count,
+          property_total_count: query.property_total,
+          filters: { pms_providers: query.provider_options }
+        }
       )
     ).as_json
   end

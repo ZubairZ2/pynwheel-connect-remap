@@ -288,6 +288,16 @@ class FloorplatesController < ApplicationController
         # How many rows units.json answers (the same unfiltered UnitFilterQuery),
         # so the inventory can show the Units tab's count before it loads them.
         unit_count: UnitFilterQuery.new(community).results.count,
+        # What the inventory's other tabs and dialogs used to read off the whole
+        # units listing, so the Units tab can be read one page at a time: the
+        # buildings units name (the Building lists), how many per-field manual
+        # markers they carry (the Re-sync confirmation), the PMS the units come
+        # from and when they last synced, and the lock devices the unit form offers.
+        unit_buildings: community.units.where.not(building: [nil, ""]).distinct.order(:building).pluck(:building),
+        unit_override_count: connect_unit_override_count(community),
+        data_provider: community.data_provider.presence,
+        last_sync: community.data_provider_updated_on.presence,
+        lock_devices: connect_lock_devices(community),
         # The marker colours, sizes and SVG label font the legacy plotting
         # pages draw this property's map with (Connect::MapMarkers).
         markers: Connect::MapMarkers.for(community),
@@ -301,6 +311,13 @@ class FloorplatesController < ApplicationController
         }
       }
     )
+  end
+
+  # Σ over the property's units of their per-field "set by hand" markers
+  # (Unit::FEED_OVERRIDE_FLAGS), in one query.
+  def connect_unit_override_count(community)
+    sum = Unit::FEED_OVERRIDE_COLUMNS.map { |column| "CASE WHEN units.#{column} IS TRUE THEN 1 ELSE 0 END" }.join(" + ")
+    community.units.pick(Arel.sql("COALESCE(SUM(#{sum}), 0)")).to_i
   end
 
   def upload_svg_image(svg_file)

@@ -47,13 +47,19 @@ export const uploadFile = (
   };
 };
 
-/** Buildings the property's floorplates and units name, in natural order. */
+/**
+ * Buildings the property's floorplates and units name, in natural order. The
+ * units' buildings come with the floorplates meta (`unitBuildings`), so the
+ * list is complete without the units listing itself.
+ */
 export const buildingOptions = (inventory: PropertyInventory): string[] =>
   [
     ...new Set(
-      [...inventory.floorplates.map((plate) => plate.building), ...inventory.units.map((unit) => unit.building)].filter(
-        (building): building is string => !!building
-      )
+      [
+        ...inventory.floorplates.map((plate) => plate.building),
+        ...inventory.unitBuildings,
+        ...inventory.units.map((unit) => unit.building)
+      ].filter((building): building is string => !!building)
     )
   ].sort(naturalCompare);
 
@@ -217,7 +223,7 @@ export const unitFieldSources = (unit: InventoryUnit | null) => {
 export const unitDialogSubtitle = (inventory: PropertyInventory): string =>
   t(S.dialogs.unit.propLabel, {
     property: inventory.property.name,
-    units: counted(inventory.units.length, S.count.unitOne, S.count.unitMany)
+    units: counted(inventory.unitCount, S.count.unitOne, S.count.unitMany)
   });
 
 /** The lock vendor accounts `all_locks` reads, by the provider name units and doors store. */

@@ -192,7 +192,7 @@ export const AmenitiesSection = ({ inventory, actions }: Props) => {
         <div className="bo-inv__empty">{i18n.t(list.hasAny ? S.amenities.emptyFiltered : S.amenities.empty)}</div>
       )}
 
-      <Pagination pager={list.pager} label={i18n.t(S.amenities.title)} onPageChange={list.setPage} />
+      <Pagination pager={list.pager} label={i18n.t(S.amenities.title)} onPageChange={list.setPage} pageSize={list.pageSize} onPageSizeChange={list.setPageSize} />
     </div>
   );
 };

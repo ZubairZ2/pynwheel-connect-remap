@@ -166,16 +166,8 @@ export const generatePropertyRows = (properties: Property[]): RowDescriptor[] =>
     };
   });
 
-/** Each filter holds any number of values; an empty list means "no filter". */
-export interface PropertyFilters {
-  query: string;
-  stage: string[];
-  companyId: string[];
-  product: string[];
-  dataProvider: string[];
-}
-
-export type PropertyFilterKey = Exclude<keyof PropertyFilters, 'query'>;
+/** The four filters, as `PropertiesListingParams` (listingParams.ts) names them. */
+export type PropertyFilterKey = 'stage' | 'companyId' | 'product' | 'dataProvider';
 
 export const generateStageFilterOptions = (): FilterOption[] =>
   (Object.keys(STAGE_PILL) as LifecycleStage[]).map((stage) => ({

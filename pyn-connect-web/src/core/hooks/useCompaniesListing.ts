@@ -2,54 +2,81 @@
 
 import { useMemo } from 'react';
 
+import { APP_API } from '~/config/app/urls';
+import type { Company } from '~/core/models/data/company.data';
 import {
   generateCompanyColumns,
   generateCompanyListingSummary,
-  generateCompanyRows
+  generateCompanyPropertiesFilterOptions,
+  generateCompanyProviderFilterOptions,
+  generateCompanyRows,
+  generateCompanyStatusFilterOptions
 } from '~/core/utils/generator/companyListing.generator';
-import { listingSortParams, nextListingSort, sortByLabel, type ListingSort } from '~/core/utils/generator/listingSort';
+import { companiesParamsFromSearch, companiesSearch, type CompaniesListingParams } from '~/core/utils/generator/listingParams';
+import { nextListingSort, sortByLabel } from '~/core/utils/generator/listingSort';
 import { generatePager } from '~/core/utils/generator/pagination.generator';
-import type { Company } from '~/core/models/data/company.data';
-import type { Pagination } from '~/core/models/data/session.data';
-import { useDebouncedSearch } from './useDebouncedSearch';
-import { useListingParams } from './useListingParams';
+import { useServerListing, type ListingData } from './useServerListing';
+
+export type CompanyFilterKey = 'status' | 'pmsProvider' | 'properties';
 
 /**
  * Reads the screen's data, calls the generators, returns descriptors +
- * handlers. Searching, sorting and paging are server-side, so all three are
- * expressed as URL changes rather than local work (react-architecture.md §7).
+ * handlers. Searching, filtering, sorting and paging are server-side, one
+ * request per change through `useServerListing`, which also keeps the URL in
+ * step and protects the results from out-of-order responses
+ * (react-architecture.md §7, §20).
  */
-export const useCompaniesListing = (
-  companies: Company[],
-  pagination: Pagination | null,
-  initialQuery: string,
-  sort: ListingSort | null,
-  totals: { companies: number | null; properties: number | null }
-) => {
-  const { setParams, isPending } = useListingParams();
-  const { value: query, setValue: setQuery } = useDebouncedSearch(initialQuery, (value) =>
-    setParams({ q: value })
-  );
+export const useCompaniesListing = (initial: ListingData<Company>, params: CompaniesListingParams) => {
+  const listing = useServerListing<Company, CompaniesListingParams>({
+    initial,
+    params,
+    endpoint: APP_API.companiesListing,
+    search: companiesSearch,
+    parse: companiesParamsFromSearch
+  });
+  const { rows: companies, meta, params: current, status, update } = listing;
+
+  const toggleFilter = (key: CompanyFilterKey, id: string) => {
+    const selected = current[key];
+    update({ [key]: selected.includes(id) ? selected.filter((value) => value !== id) : [...selected, id] } as Partial<CompaniesListingParams>);
+  };
+
+  const clearFilter = (key: CompanyFilterKey) => {
+    if (current[key].length > 0) update({ [key]: [] } as Partial<CompaniesListingParams>);
+  };
 
   const columns = useMemo(() => generateCompanyColumns(), []);
   const rows = useMemo(() => generateCompanyRows(companies), [companies]);
-  const pager = useMemo(() => generatePager(pagination), [pagination]);
+  const pager = useMemo(() => generatePager(meta.pagination), [meta.pagination]);
+  const statusOptions = useMemo(() => generateCompanyStatusFilterOptions(), []);
+  const providerOptions = useMemo(() => generateCompanyProviderFilterOptions(meta.pmsProviderOptions), [meta.pmsProviderOptions]);
+  const propertiesOptions = useMemo(() => generateCompanyPropertiesFilterOptions(), []);
   const summary = useMemo(
-    () => generateCompanyListingSummary(totals.companies, totals.properties),
-    [totals.companies, totals.properties]
+    () => generateCompanyListingSummary(meta.scopeTotalCount, meta.propertyTotalCount),
+    [meta.scopeTotalCount, meta.propertyTotalCount]
   );
 
   return {
-    query,
-    setQuery,
+    query: listing.query,
+    setQuery: listing.setQuery,
+    selection: { status: current.status, pmsProvider: current.pmsProvider, properties: current.properties },
+    toggleFilter,
+    clearFilter,
     columns,
     rows,
     pager,
+    pageSize: current.perPage,
+    sort: current.sort,
     summary,
-    isPending,
-    goToPage: (page: number) => setParams({ page }, { keepPage: true }),
-    // A new order starts again from page 1.
-    toggleSort: (key: string) => setParams(listingSortParams(nextListingSort(sort, key))),
+    isPending: status === 'loading',
+    failed: status === 'failed',
+    retry: listing.retry,
+    statusOptions,
+    providerOptions,
+    propertiesOptions,
+    goToPage: (page: number) => update({ page }, { keepPage: true }),
+    setPageSize: (size: number) => update({ perPage: size }),
+    toggleSort: (key: string) => update({ sort: nextListingSort(current.sort, key) }),
     sortLabel: sortByLabel
   };
 };

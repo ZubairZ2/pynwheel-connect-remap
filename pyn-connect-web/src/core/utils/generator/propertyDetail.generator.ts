@@ -367,10 +367,13 @@ const PRODUCTS: { id: ProductKey; name: string; icon: string }[] = [
 ];
 
 /**
- * The line under each product's name. Touch and Tour show the design's counts;
+ * The line under each product's name. A product that is off says so — no
+ * count stands in for an active state. Touch shows the property's unit and
+ * floorplate counts; Tour the stops on its own tour (`Community#community_tour`);
  * Maps' pins and paths are not stored as a count, so it shows its state.
  */
 const productMetric = (id: ProductKey, property: PropertyDetail): string => {
+  if (!property.products[id]) return t(S.products.notEnabled);
   switch (id) {
     case 'touch':
       return [
@@ -380,7 +383,7 @@ const productMetric = (id: ProductKey, property: PropertyDetail): string => {
     case 'tour':
       return plural(property.tour.stopCount, t(S.count.tourStop), t(S.count.tourStops));
     default:
-      return t(property.products[id] ? S.products.enabled : S.products.notEnabled);
+      return t(S.products.enabled);
   }
 };
 
@@ -604,10 +607,13 @@ export const generateConfigCards = (property: PropertyDetail): ConfigCard[] => {
           ]
         }
       ],
-      links: [
-        { id: 'tourSetup', label: t(S.config.tourSetup), href: tourSetupRoute(id) },
-        { id: 'scheduling', label: t(S.config.tourScheduling), href: CONNECT_ROUTES.scheduling }
-      ]
+      // The tour's screens are offered only while the property has the tour, as the legacy menu shows Tour Setup only then.
+      links: on.tour
+        ? [
+            { id: 'tourSetup', label: t(S.config.tourSetup), href: tourSetupRoute(id) },
+            { id: 'scheduling', label: t(S.config.tourScheduling), href: CONNECT_ROUTES.scheduling }
+          ]
+        : []
     },
     {
       id: 'maps',
