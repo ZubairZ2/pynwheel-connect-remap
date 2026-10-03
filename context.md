@@ -899,3 +899,18 @@ Added with phase 2p (branch `fix/critical_issues_phase1`; PYN_CONNECT_PROGRESS.m
 - Run Playwright with the project's binary (`./node_modules/.bin/playwright test …`); `npx playwright` resolved another installation and failed with "test.describe() … two different versions".
 - A locator for an element that is no longer rendered (`.bo-map__polylabels` when nothing is hovered) makes `innerText()` wait for the whole test timeout; read with `allInnerTexts()`.
 - Synthetic `dispatchEvent('pointermove')` hovers never generate a leave: steps that then expect the popover to close must move the real pointer (`locator.hover()` then `page.mouse.move` off the plan).
+
+## 26. Listing search race, searchable filters, Property Detail audit — implementation knowledge (October 3, 2026)
+
+Added with phase 2q (same branch as §25; PYN_CONNECT_PROGRESS.md §30 has the root cause and the measurements).
+
+### Rules worth knowing
+
+- **Listings fetch from the browser now.** `useServerListing` (`core/hooks/useServerListing.ts`) is the one place a server-paged listing's search, filters, sort, page and size live: one state, one request per change to this app's route handler (`/api/listings/companies`, `/api/listings/properties` → `listings.server.ts` → the existing CMS JSON), 300 ms debounce on typing (`SEARCH_TYPING_DELAY`), `AbortController` on every new request, a sequence number checked before and after the body is read (the latest request is the only one whose answer counts), the search box as local state a response never writes, `history.pushState` for the URL and a reload from the URL when it moves without the hook (Back / Forward). The page's server render is only the first paint. Do not go back to `router.push` for a listing change: it cannot be cancelled and it re-renders the screen from the URL, which is the race.
+- **`listingParams.ts` is the one reader and writer of listing state** (`companiesParamsOf` / `propertiesParamsOf` from any `(key) => value`, `…FromSearch` over `URLSearchParams`, `companiesSearch` / `propertiesSearch` to the canonical query string with defaults left out and a fixed order). The pages, the route handlers and the hook all use it; two equal states give one string, which is how the hook tells its own URL from another.
+- **`MultiFilter` is searchable from six options** (`SEARCHABLE_FROM`; `searchable` overrides). Short state lists stay plain. The panel's search box is `role=searchbox` named "Search {label}…" (label lower-cased); tests scope to `getByRole('group', { name })`, since the toolbar's own search input is a searchbox too and the top bar's global search shares the word "companies" in its placeholder.
+- **Property Detail is the record, full stop.** Everything on `/properties/:id` (numeric) comes from `communities/:id/edit.json`; empty states are "—", "Not set", "Unassigned", "No notes yet."; the lifecycle is the serializer's five milestone-dated stages and must not be changed; the Self-Guided Tour card's links exist only while the tour is on. `scratchpad/verify-detail.mjs` (pattern: compare every rendered field with `edit.json` for a list of ids) is how to re-check it; the label texts it needs are the `propertyDetail.*` i18n strings.
+
+### Real ids for this phase
+
+1469 City's End (no products; no phone, website or manager), 1062 The Line (no address), 1778 Paperbox Lofts (a named property manager), 2048 Cityway Test, 1107 (no city), plus §25's 1411 / 557 / 1232 / 1618 / 2919. Companies search: "haz" matches no company, "ha" a few — a ready-made race fixture; Properties: "the" has several pages.

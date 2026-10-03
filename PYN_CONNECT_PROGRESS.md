@@ -2010,3 +2010,55 @@ Checked with the minted session on `pynwheel_development`: `units.json?page=1&pe
 - Unit Detail still loads every unit of the property to show one (no single-unit JSON), as in §24.
 - The Properties listing's Company filter options list every company in scope; a Companies-page link always resolves because the company is in scope.
 - The user's own `pynwheel_prod` copy of 1411 was not driven from here (this tool may not read that database); every check above ran on `pynwheel_development`.
+
+---
+
+## 30. Phase 2q: listing search race, searchable filters, Property Detail on real data for every property (October 3, 2026)
+
+**Brief:** "Search, filter, and property data implementation" (pasted into the session; not a file). Three parts: the search race in Companies and Properties, searchable filter dropdowns on both listings, and a Property Detail page with nothing but DB-backed values (the Property Launch Lifecycle left exactly as it is). Same rule as every phase: read-only, backend changes only to expose existing data.
+
+**Branch:** `fix/critical_issues_phase1` (continued; six commits of §29 precede this).
+
+### Issue 1 — the search race
+
+**Root cause (reproduced on the Sep 24 flow).** A committed search was a `router.push` to `?q=…`; the listing was then re-rendered on the server and the screen re-read `initialQuery` from the URL. Two things went wrong when the user typed faster than the network: (1) `useDebouncedSearch` re-synced its box from `initialValue` on every URL change, so when the "ha" render landed while "haz" was in flight the box visibly went back to "ha"; (2) Next's router owns navigation fetches, so nothing could cancel "ha" once "haz" started, and the render for "ha" could still replace the rows. Filters and paging were separate pushes built on the URL as it was, so a page could belong to a search the user had already left.
+
+**Change: one client-driven request per change (`useServerListing`).** The listings keep their server render for the first paint and for any full navigation; after that every change of search, filter, sort, page or rows-per-page is one `fetch` from the screen to a new route handler (`/api/listings/companies`, `/api/listings/properties`), which replays the session cookie to the existing `companies.json` / `communities.json` through the same loaders and parsers the page uses (`listings.server.ts`), and returns the parsed rows and meta. The hook:
+
+- **debounces** typing (300 ms; toggles, paging and sorting request at once, with whatever is typed folded in);
+- **aborts** the previous request with `AbortController` when a new one starts;
+- **protects the latest request**: every request carries a sequence number and a response is applied only while it is still the latest — checked before and after its body is read — so a late "ha" (or a late answer after the search was cleared) changes nothing: not the rows, not the status, not the box;
+- keeps the **search box as local state** that only the user (or a URL the user navigated to) writes; a response never writes it back;
+- keeps the **URL in step** with `window.history.pushState` (Next 15's native-history integration), and reloads from the URL when it moves without the hook (Back / Forward, a link), comparing canonical query strings (`listingParams.ts` is the one reader and writer of the listing state);
+- always requests **search + filters + sort + page as one state**, so a page is never one of another search; any change but paging starts from page 1.
+
+The two hooks (`useCompaniesListing`, `usePropertiesListing`) are now thin: generators plus toggles over `useServerListing`. `useListingParams` and `useDebouncedSearch` are gone.
+
+### Issue 2 — searchable filter dropdowns
+
+`MultiFilter` (the one filter molecule both listings and the inventory tabs use) gains a search box above its options when the list has six or more (`SEARCHABLE_FROM`, or `searchable` set by the caller): focused when the panel opens, case-insensitive, matching anywhere in the label, narrowing at once, Enter ticks the first match, a × clears it, "{n} of {m} shown" in the footer, "Nothing matches" when none does; ticked options stay ticked whether or not they match; the box is empty again on reopen; Escape still closes, typing never does. Audit of the two listings: Companies → Status (2) and Properties (2) stay plain, PMS Provider (6 incl. "Not configured") is searchable; Properties → Status (5) and Products (3) stay plain, Companies (191 in the development dump) and Data Providers (13) are searchable. The filters are click-opened, so the Oct 2 hover-gap rule does not apply to them.
+
+### Feature 3 — Property Detail on real data
+
+The real page (numeric ids) has read `communities/:id/edit.json` since §16, and the audit found every rendered value derived from the record: header, the four profile groups (with their empty states "—", "Not set", "Unassigned", "No notes yet."), Products (`Connect::ProductState` since §29; an off product reads "Not enabled" with no count), inventory counts (`.count` on the associations, no records loaded), sub-communities, ILS partners, the 16 Property Settings and the Touch / Tour / Maps cards (disabled controls), the Billing Rate Card (stored strings; blank → "Not set"), the lifecycle (unchanged: the serializer's five milestone-dated stages). No `DemoMark`, no demo flag, no mock import on that path. One change: the Self-Guided Tour card offers its Tour Setup / Tour Scheduling links only while the property has the tour, as the legacy menu shows Tour Setup only then. The slug-id route (`/properties/luxe`) still opens the phase-2 demo screen with its placeholder legend, as every demo screen does; it is not the Property Detail page of any property.
+
+### Backend
+
+None. No controller, serializer, query, route, schema or migration changed in this phase.
+
+### Frontend
+
+- **New:** `core/utils/generator/listingParams.ts` (params, readers, canonical query strings for both listings), `core/repository/remote/listings.server.ts` (`loadCompaniesListing`, `loadPropertiesListing`, `emptyListing`), `app/api/listings/{companies,properties}/route.ts`, `core/hooks/useServerListing.ts`, `tests/e2e/listingSearch.spec.ts`.
+- **Changed:** `useCompaniesListing`, `usePropertiesListing`, both listing pages (`companiesParamsOf` / `propertiesParamsOf` + the loaders), both listing screens (`initial` + `params` props), `MultiFilter` (+ `.bo-multifilter__search*` / `__empty` CSS and `filter.search / clearSearch / noMatches / matching` strings), `urls.ts` (`APP_API.companiesListing / propertiesListing`), `propertyDetail.generator.ts` (tour links), `companyListing.generator.ts` / `propertyListing.generator.ts` (the old filter types removed).
+- **Removed:** `useListingParams.ts`, `useDebouncedSearch.ts`.
+
+### Validation (CMS :3100 on `pynwheel_development`, Connect :3005 from an rsync'd copy, headless Chrome, minted super-admin session)
+
+- `tests/e2e/listingSearch.spec.ts` (6 tests, real data): for both listings, "ha" is held 2.5 s and the user types "z": only "ha" and "haz" are ever requested ("h" never is), the box, the rows and the URL show "haz" at once and still do 3 s later when the old answer would have landed, the old request is aborted (`ERR_ABORTED`); clearing the search while "ha" is held → the unfiltered rows, still there 3 s later; on Properties a page, a filter and a sort each carry `q=the`, a new search keeps the filter and the sort and starts from page 1, and Back restores the previous state with its rows; the Companies and Data Providers filters are searchable (focused, case-insensitive, narrowed count in the footer, pick → `company_id` on the URL, clear → full list with the pick still ticked, "Nothing matches", empty on reopen) while Status and Products are plain; on Companies, PMS Provider narrows to "resm" and Enter ticks ResMan. 0 non-GET requests, 0 page errors.
+- `scratchpad/verify-detail.mjs`, 10 real properties — 1411 John Demo (all three products), 557 The Ogden (Touch only), 1232 Lincoln at Dilworth (Tour only, auto wayfinding off), 1618 Hazel (Touch + Tour), 1469 City's End (no products, no phone / website / manager), 1062 The Line (no address), 2048 Cityway Test, 1778 Paperbox Lofts (a named manager), 2919 Sofia (Tour + Maps), 1107 (no city): on each, no placeholder mark, legend or demo text on the page; header, every profile field (or its empty state), the Products card (on/off and metric), the four inventory counts, the ILS partners, nine Property Settings toggles, the tour card's toggles, the billing rates (blank → "Not set") and the lifecycle's current stage all equal `edit.json`; the Products card holds no control; the config cards' controls are disabled; the tour's links appear only when the tour is on; Map & Plotting opens for every property and offers Wayfinding exactly when the tour is on; Tour Setup opens with the DB's stop count for the tour properties. **145/145 checks, 0 non-GET requests, 0 page errors.**
+- **Whole Playwright suite** (14 specs, 174 tests, `./node_modules/.bin/playwright test`): 162/174 in a parallel run that took 24 min because the verify copy's `.next` had just been cleared and every route compiled cold under the workers; all 12 failures were 30 s navigation / click timeouts on that cold server (no assertion failed), and the same 12 pass serially in 2.5 min on the warmed server — so every spec passes. `tsc --noEmit` clean. `next build` on a copy compiled with no warnings: `/companies` 1.27 kB, `/properties` 1.38 kB (the screens are thinner without the URL-navigation hooks), the two listing route handlers 157 B each, shared JS 102 kB.
+
+### Remaining
+
+- The listing route handlers answer the parsed rows, so a very wide `per_page=100` page is the same size as the server render was; nothing new is loaded.
+- The demo screens the real page links to (Integrations, Branding, Home Screen & Pages, Pricing Calculator, Tour Scheduling) are still demo screens with their legend; making them real is phase 3.

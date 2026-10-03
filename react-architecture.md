@@ -2704,3 +2704,31 @@ strip. The map canvas showed details only on click, and printed labels permanent
 `pyn-connect-web/src/core/components/molecules/HoverMenu.tsx`, `pyn-connect-web/src/core/hooks/usePeek.ts`,
 `pyn-connect-web/src/core/screens/properties/map/MapCanvas.tsx`, `pyn-connect-web/src/core/screens/properties/map/SvgPlanLayer.tsx`,
 `pyn-connect-web/src/core/utils/generator/map/mapPanels.generator.ts`; PYN_CONNECT_PROGRESS.md §29, context.md §25.
+
+### October 3, 2026 — Infrastructure Update: a listing driven from the browser — debounce, abort, latest wins
+
+**What was missing:**
+The listings expressed every change as a `router.push` and re-read their state from the URL after
+the server re-rendered. That cannot be cancelled, and it re-synced the search box from the URL, so a
+slow older search visibly undid a newer one (the box went from "haz" back to "ha"; its rows could
+follow). Paging and filtering were separate pushes over the URL as it was.
+
+**What was found/implemented:**
+
+- **`useServerListing`**: the listing's state (search, filters, sort, page, size) is client state;
+  each change is one `fetch` to a route handler that replays the session cookie to the existing CMS
+  JSON through the same loaders and parsers the page uses. Typing is debounced; a new request aborts
+  the previous one; every request carries a sequence number and only the latest one's answer is
+  applied (checked before and after the body is read); the search box is written only by the user.
+- **The URL stays the shareable truth** through `window.history.pushState` (Next 15 integrates it
+  with `useSearchParams`), and the hook reloads from the URL when it moves without the hook (Back /
+  Forward). The server render is the first paint and the answer to any full navigation.
+- **One module reads and writes listing state** (`listingParams.ts`): the pages, the route handlers
+  and the hook agree on parameter names, defaults and order, and two equal states give one string.
+- **`MultiFilter` searches long lists** (six options or more) with a box that narrows them as the
+  user types; the selection model is unchanged.
+
+**Reference:**
+`pyn-connect-web/src/core/hooks/useServerListing.ts`, `pyn-connect-web/src/core/utils/generator/listingParams.ts`,
+`pyn-connect-web/src/core/repository/remote/listings.server.ts`, `pyn-connect-web/src/app/api/listings/*/route.ts`,
+`pyn-connect-web/src/core/components/molecules/MultiFilter.tsx`; PYN_CONNECT_PROGRESS.md §30, context.md §26.
