@@ -584,6 +584,26 @@ table {
   border-radius: 3px;
 }
 
+/* A count that opens a filtered listing (the Companies listing's Properties column). */
+.bo-cellnumber--link {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font: 700 12.5px var(--bo-font);
+  color: var(--bo-accent);
+  text-decoration: none;
+  background: var(--bo-accent-soft);
+}
+
+.bo-cellnumber--link:hover {
+  text-decoration: underline;
+}
+
+.bo-cellnumber--link:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+}
+
 .bo-text--muted {
   color: var(--bo-muted);
 }
@@ -829,9 +849,48 @@ table {
   border-top: 1px solid var(--bo-line);
 }
 
+.bo-pager__left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
 .bo-pager__summary {
   font: 600 12px var(--bo-font);
   color: var(--bo-subtle);
+}
+
+/* Rows per page: a native select in the pager's own type. */
+.bo-pager__size {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 600 12px var(--bo-font);
+  color: var(--bo-subtle);
+}
+
+.bo-pager__sizeselect {
+  height: 32px;
+  padding: 0 28px 0 10px;
+  border: 1px solid var(--bo-line);
+  border-radius: 8px;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 9px center;
+  color: var(--bo-ink);
+  font: 700 12.5px var(--bo-font);
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.bo-pager__sizeselect:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 1px;
+}
+
+.bo-pager__sizeselect:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .bo-pager__nav {
@@ -2593,6 +2652,14 @@ select {
   color: var(--bo-accent);
 }
 
+/* A record with no image and nothing to do about it here (a unit's image is its floor plan's). */
+.bo-thumb--static,
+.bo-thumb--static:hover {
+  border-color: #cdd2db;
+  color: var(--bo-subtle);
+  cursor: default;
+}
+
 .bo-thumb__cta {
   font: 700 10px var(--bo-font);
   letter-spacing: 0.03em;
@@ -3519,6 +3586,73 @@ select {
   object-fit: contain;
   border-radius: 8px;
   background: #fff;
+  /* Zoomed uniformly about its centre (never stretched), panned by translate. */
+  transform-origin: center center;
+  will-change: transform;
+  user-select: none;
+}
+
+.bo-viewer__stage {
+  overflow: hidden;
+  touch-action: none;
+}
+
+.bo-viewer__stage--zoomed {
+  cursor: grab;
+}
+
+.bo-viewer__stage--panning,
+.bo-viewer__stage--panning .bo-viewer__image {
+  cursor: grabbing;
+}
+
+/* Zoom In / Zoom Out / Reset, as on the Map & Plotting canvas. */
+.bo-viewer__zoom {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--bo-line);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(16, 24, 40, 0.12);
+  overflow: hidden;
+}
+
+.bo-viewer__zoombtn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-bottom: 1px solid var(--bo-line);
+  background: #fff;
+  color: var(--bo-ink);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.bo-viewer__zoombtn:last-child {
+  border-bottom: none;
+}
+
+.bo-viewer__zoombtn:hover:not(:disabled) {
+  background: var(--bo-accent-soft);
+  color: var(--bo-accent);
+}
+
+.bo-viewer__zoombtn:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: -2px;
+}
+
+.bo-viewer__zoombtn:disabled {
+  color: var(--bo-subtle);
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .bo-viewer__missing {
@@ -4012,7 +4146,9 @@ select {
 /* Floor tabs: the horizontal floorplate strip, defined with the building pills below (`.bo-map__levelsrow`). */
 
 /* Tool bar */
-.bo-map__toolbar { padding: 12px 16px; border-top: 1px solid var(--bo-line); border-bottom: 1px solid var(--bo-line); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+/* | switch | text | actions |: one row. The text area is the only part that shrinks and wraps; the actions keep their place on the right. */
+.bo-map__toolbar { padding: 12px 16px; border-top: 1px solid var(--bo-line); border-bottom: 1px solid var(--bo-line); display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; }
+.bo-map__toolbaractions { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; margin-left: auto; }
 .bo-map__tool { height: 34px; padding: 0 12px; border: 1px solid var(--bo-line); background: #fff; border-radius: 7px; font: 700 12px var(--bo-font); color: var(--bo-muted); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
 .bo-map__tool--active, .bo-map__tool--accent { border-color: var(--bo-accent); background: var(--bo-accent-soft); color: var(--bo-accent); }
 /* OFF + hover: accent border and text on the white button. Never applied to the filled (ON) state, whose text is white on the accent. */
@@ -4167,9 +4303,10 @@ select {
   .bo-tour__dialog .bo-modal__foot .bo-dlg__readonly { flex-basis: 100%; }
 }
 
-.bo-map__toolbartitle { flex: 1 1 auto; min-width: 0; display: flex; align-items: baseline; gap: 10px; white-space: nowrap; }
-.bo-map__toolbarlevel { font: 800 13px var(--bo-font); color: var(--bo-ink); }
-.bo-map__toolbarsub { font: 600 11.5px var(--bo-font); color: var(--bo-subtle); }
+.bo-map__toolbartitle { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 10px; }
+.bo-map__toolbartext { flex: 1 1 auto; min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 10px; row-gap: 2px; }
+.bo-map__toolbarlevel { font: 800 13px/1.35 var(--bo-font); color: var(--bo-ink); overflow-wrap: anywhere; }
+.bo-map__toolbarsub { font: 600 11.5px/1.35 var(--bo-font); color: var(--bo-subtle); overflow-wrap: anywhere; }
 .bo-map__tool--strong { height: 36px; padding: 0 12px 0 16px; border-color: var(--bo-stroke-strong); color: var(--bo-ink); font-size: 12.5px; box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06); border-radius: 8px; }
 /* ON: the design's filled state (accent background, white text, translucent pill). ON + hover deepens the accent; the text stays white. */
 .bo-map__tool--fill { background: var(--bo-accent); border-color: var(--bo-accent); color: #fff; }
@@ -4179,10 +4316,20 @@ select {
 .bo-map__tool--fill .bo-map__toolpill { background: rgba(255, 255, 255, 0.22); color: #fff; }
 .bo-map__tool--sm { height: 30px; padding: 0 10px; font-size: 11.5px; }
 .bo-map__tool:disabled { opacity: 0.5; cursor: not-allowed; }
-.bo-map__apmenu { position: relative; }
-/* The panel sits 6px under its button; a transparent strip above it bridges that gap, so the pointer never leaves the menu on its way down. */
-.bo-map__apmenupanel { position: absolute; top: calc(100% + 6px); right: 0; z-index: 30; width: 280px; background: #fff; border: 1px solid var(--bo-line); border-radius: 10px; box-shadow: 0 10px 28px rgba(16, 24, 40, 0.16); padding: 6px; display: flex; flex-direction: column; gap: 2px; }
-.bo-map__apmenupanel::before { content: ''; position: absolute; left: 0; right: 0; bottom: 100%; height: 8px; }
+/*
+ * Hover menus (molecules/HoverMenu): the panel hangs `--bo-menu-gap` under its
+ * trigger and a transparent strip bridges that gap, so the pointer never
+ * leaves the menu on its way down or diagonally into the options. Every menu
+ * that closes on hover-out uses these; the panel's own class only styles it.
+ */
+.bo-hovermenu { position: relative; --bo-menu-gap: 6px; }
+.bo-hovermenu__panel { position: absolute; top: calc(100% + var(--bo-menu-gap)); z-index: 30; }
+.bo-hovermenu__panel::before { content: ''; position: absolute; left: -8px; right: -8px; bottom: 100%; height: calc(var(--bo-menu-gap) + 2px); }
+.bo-hovermenu__panel--right { right: 0; }
+.bo-hovermenu__panel--left { left: 0; }
+.bo-hovermenu__panel--stretch { left: 0; right: 0; }
+
+.bo-map__apmenupanel { width: 280px; background: #fff; border: 1px solid var(--bo-line); border-radius: 10px; box-shadow: 0 10px 28px rgba(16, 24, 40, 0.16); padding: 6px; display: flex; flex-direction: column; gap: 2px; }
 .bo-map__apmenuhead { padding: 6px 10px 4px; }
 .bo-map__apmenuitem { text-align: left; border: none; background: #fff; border-radius: 7px; padding: 9px 10px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; }
 .bo-map__apmenuitem:hover { background: var(--bo-accent-soft); }
@@ -4253,7 +4400,7 @@ select {
 .bo-map__showbtn:focus-visible { outline: 2px solid var(--bo-accent); outline-offset: 2px; }
 .bo-map__showsummary { flex: 1; min-width: 0; font: 700 12.5px var(--bo-font); color: var(--bo-ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bo-map__showpending { height: 20px; padding: 0 7px; border-radius: 999px; background: #fdebc8; color: #8a5a00; font: 800 10.5px var(--bo-font); display: flex; align-items: center; flex-shrink: 0; white-space: nowrap; }
-.bo-map__showmenu { position: absolute; top: 100%; left: 0; right: 0; margin-top: 6px; z-index: 35; background: #fff; border: 1px solid var(--bo-line); border-radius: 10px; box-shadow: 0 10px 28px rgba(16, 24, 40, 0.16); padding: 6px; display: flex; flex-direction: column; gap: 2px; }
+.bo-map__showmenu { z-index: 35; background: #fff; border: 1px solid var(--bo-line); border-radius: 10px; box-shadow: 0 10px 28px rgba(16, 24, 40, 0.16); padding: 6px; display: flex; flex-direction: column; gap: 2px; }
 .bo-map__showhead { padding: 6px 8px 4px; }
 .bo-map__showitem { border: none; background: transparent; border-radius: 7px; padding: 9px 8px; display: flex; align-items: flex-start; gap: 10px; cursor: pointer; text-align: left; }
 .bo-map__showitem:hover { background: #f4f6f9; }
@@ -4532,8 +4679,10 @@ select {
   .bo-wf__scroll { overflow: visible; }
 }
 @media (max-width: 760px) {
+  /* Too narrow for one row: the whole action group moves to its own row, as a unit. The text still wraps in place. */
   .bo-map__toolbar { flex-wrap: wrap; }
-  .bo-map__toolbartitle { flex-basis: 100%; flex-wrap: wrap; white-space: normal; }
+  .bo-map__toolbartitle { flex-basis: 100%; }
+  .bo-map__toolbaractions { flex-basis: 100%; margin-left: 0; }
 }
 
 /* ── Tour Setup (plotting design): stops, elevators & locks, routing ── */

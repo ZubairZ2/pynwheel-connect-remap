@@ -25,8 +25,12 @@ interface Props {
   fit?: 'cover' | 'contain';
   /** Buttons over the image, shown on hover or keyboard focus. */
   actions?: ThumbAction[];
-  /** Shown instead of the image when there is none (the design's dashed "Upload" tile). */
-  placeholder?: { label: string; icon: ReactNode; onClick: () => void };
+  /**
+   * Shown instead of the image when there is none: the design's dashed
+   * "Upload" tile when it has `onClick`, otherwise a quiet "No image" tile that
+   * keeps the card's thumbnail column in place.
+   */
+  placeholder?: { label: string; icon: ReactNode; onClick?: () => void };
   /** Shown when the file exists but cannot be loaded. */
   unavailableLabel: string;
   size?: 'md' | 'sm';
@@ -47,6 +51,15 @@ export const MediaThumb = ({
 
   if (!src) {
     if (!placeholder) return null;
+
+    if (!placeholder.onClick) {
+      return (
+        <div className={`bo-thumb bo-thumb--${size} bo-thumb--empty bo-thumb--static`} role="img" aria-label={placeholder.label}>
+          {placeholder.icon}
+          <span className="bo-thumb__cta">{placeholder.label}</span>
+        </div>
+      );
+    }
 
     return (
       <button type="button" className={`bo-thumb bo-thumb--${size} bo-thumb--empty`} onClick={placeholder.onClick}>

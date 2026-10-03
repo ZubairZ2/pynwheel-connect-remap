@@ -147,7 +147,13 @@ const Cell = ({ descriptor, href }: { descriptor?: CellDescriptor; href?: string
       return <span className={descriptor.tone === 'muted' ? 'bo-text--muted' : undefined}>{descriptor.value}</span>;
 
     case 'number':
-      return <span>{descriptor.value}</span>;
+      return descriptor.href ? (
+        <Link href={descriptor.href} className="bo-cellnumber bo-cellnumber--link" aria-label={descriptor.ariaLabel}>
+          {descriptor.value.toLocaleString('en-US')}
+        </Link>
+      ) : (
+        <span className="bo-cellnumber">{descriptor.value.toLocaleString('en-US')}</span>
+      );
 
     case 'pill':
       return <StatusPill label={descriptor.label} variant={descriptor.variant} />;

@@ -21,7 +21,7 @@ interface RawMeta {
   totalCount?: number;
   currentUser?: CurrentUser | null;
   pagination?: Partial<Pagination> | null;
-  filters?: { companies?: CompanyFilterOption[]; dataProviders?: unknown[] } | null;
+  filters?: { companies?: CompanyFilterOption[]; dataProviders?: unknown[]; pmsProviders?: unknown[] } | null;
   scopeTotalCount?: number | null;
   propertyTotalCount?: number | null;
 }
@@ -50,6 +50,9 @@ export const parseListingMeta = (payload: unknown): ListingMeta => {
     dataProviderOptions: Array.isArray(meta.filters?.dataProviders)
       ? meta.filters.dataProviders.map(String).filter((slug) => slug.length > 0)
       : [],
+    pmsProviderOptions: Array.isArray(meta.filters?.pmsProviders)
+      ? meta.filters.pmsProviders.map(String).filter((slug) => slug.length > 0)
+      : [],
     scopeTotalCount: optionalCount(meta.scopeTotalCount),
     propertyTotalCount: optionalCount(meta.propertyTotalCount)
   };
@@ -66,7 +69,7 @@ const optionalCount = (value: unknown): number | null => {
  * A listing without pagination metadata (an error response, say) must not blow
  * up the pager, so this always returns a coherent single page.
  */
-const parsePagination = (raw: Partial<Pagination> | null | undefined): Pagination | null => {
+export const parsePagination = (raw: Partial<Pagination> | null | undefined): Pagination | null => {
   if (!raw) return null;
 
   const perPage = Number(raw.perPage ?? 0) || 10;

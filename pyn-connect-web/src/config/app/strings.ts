@@ -43,7 +43,21 @@ export const CORE_STRINGS = {
       propertyMany: 'companies.summary.propertyMany',
       total: 'companies.summary.total'
     },
-    notConfigured: 'companies.notConfigured'
+    notConfigured: 'companies.notConfigured',
+    filters: {
+      status: 'companies.filters.status',
+      allStatuses: 'companies.filters.allStatuses',
+      pmsProvider: 'companies.filters.pmsProvider',
+      allProviders: 'companies.filters.allProviders',
+      properties: 'companies.filters.properties',
+      allProperties: 'companies.filters.allProperties',
+      withProperties: 'companies.filters.withProperties',
+      withoutProperties: 'companies.filters.withoutProperties'
+    },
+    /** The property count's link: "View the 42 properties of Company A". */
+    viewProperties: 'companies.viewProperties',
+    viewPropertiesOne: 'companies.viewPropertiesOne',
+    noPropertiesToView: 'companies.noPropertiesToView'
   },
   properties: {
     title: 'properties.title',
@@ -346,7 +360,11 @@ export const CORE_STRINGS = {
       next: 'inventory.viewer.next',
       position: 'inventory.viewer.position',
       loading: 'inventory.viewer.loading',
-      unavailable: 'inventory.viewer.unavailable'
+      unavailable: 'inventory.viewer.unavailable',
+      zoom: 'inventory.viewer.zoom',
+      zoomIn: 'inventory.viewer.zoomIn',
+      zoomOut: 'inventory.viewer.zoomOut',
+      resetView: 'inventory.viewer.resetView'
     },
     source: {
       feed: 'inventory.source.feed',
@@ -521,6 +539,7 @@ export const CORE_STRINGS = {
       badgeUnitImage: 'inventory.units.badgeUnitImage',
       badgeFloorPlan: 'inventory.units.badgeFloorPlan',
       addImage: 'inventory.units.addImage',
+      noImage: 'inventory.units.noImage',
       view: 'inventory.units.view',
       manageImages: 'inventory.units.manageImages',
       removeImage: 'inventory.units.removeImage',
@@ -1962,6 +1981,16 @@ export const CORE_STRINGS = {
       elevatorRemoved: 'tourSetup.toast.elevatorRemoved',
       publishNeedsStop: 'tourSetup.toast.publishNeedsStop'
     }
+  },
+  /** The listings' pager (organisms/Pagination). */
+  pager: {
+    rowsPerPage: 'pager.rowsPerPage',
+    summary: 'pager.summary',
+    previous: 'pager.previous',
+    next: 'pager.next',
+    previousPage: 'pager.previousPage',
+    nextPage: 'pager.nextPage',
+    page: 'pager.page'
   },
   shared: {
     placeholderTitle: 'shared.placeholderTitle',

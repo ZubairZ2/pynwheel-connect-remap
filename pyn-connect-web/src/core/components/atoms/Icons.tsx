@@ -188,6 +188,27 @@ export const ChevronRightIcon = ({ size = 18 }: SizedIcon) => (
   </svg>
 );
 
+/** Zoom in / zoom out / reset view: the controls the Map & Plotting canvas and the image viewer share. */
+export const PlusIcon = ({ size = 14 }: SizedIcon) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden="true">
+    <line x1="12" y1="5" x2="12" y2="19" />
+    <line x1="5" y1="12" x2="19" y2="12" />
+  </svg>
+);
+
+export const MinusIcon = ({ size = 14 }: SizedIcon) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden="true">
+    <line x1="5" y1="12" x2="19" y2="12" />
+  </svg>
+);
+
+export const ResetIcon = ({ size = 14 }: SizedIcon) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <polyline points="23 4 23 10 17 10" />
+    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+  </svg>
+);
+
 export const ImageIcon = ({ size = 15 }: SizedIcon) => (
   <svg {...sized(size)} strokeWidth={1.7}>
     <rect x="3" y="3" width="18" height="18" rx="2" />

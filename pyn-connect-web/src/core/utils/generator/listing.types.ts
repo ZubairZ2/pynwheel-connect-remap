@@ -20,7 +20,8 @@ export type CellDescriptor =
   | { type: 'identity'; initials: string; label: string }
   | { type: 'title'; title: string; subtitle: string }
   | { type: 'text'; value: string; tone?: 'ink' | 'muted' }
-  | { type: 'number'; value: number }
+  /** With `href`, the number is a link (the Companies listing's property count opens the filtered Properties listing). */
+  | { type: 'number'; value: number; href?: string; ariaLabel?: string }
   | { type: 'pill'; label: string; variant: PillVariant }
   | { type: 'tags'; tags: string[]; emptyLabel: string }
   | { type: 'links'; links: LinkDescriptor[] };
