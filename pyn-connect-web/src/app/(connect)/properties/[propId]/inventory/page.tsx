@@ -39,10 +39,10 @@ export default async function Page({
 
   const { tab } = await searchParams;
   const initialTab = asInventoryTab(Array.isArray(tab) ? tab[0] : tab);
-  // The units listing is most of the inventory's weight and only the Units tab
-  // (and the unit dialogs) read it: it is fetched here only when the page opens
-  // on that tab, and otherwise by the screen when it is first needed.
-  const load = await loadPropertyInventory(await readRailsCookie(), Number(propId), { units: initialTab === 'units' });
+  // The units listing is never loaded whole here: the Units tab reads one page
+  // at a time through `/api/properties/:id/inventory/units`, and the floorplates
+  // meta carries what the other tabs and the dialogs need from the units.
+  const load = await loadPropertyInventory(await readRailsCookie(), Number(propId), { units: false });
   if (load.status === 'unauthorized') redirect(APP_ROUTES.signIn);
 
   return (

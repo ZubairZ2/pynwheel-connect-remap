@@ -15,9 +15,11 @@ import type {
   LockDevice,
   MapMarkers,
   SvgPointer,
-  UnitLeaseTerm
+  UnitLeaseTerm,
+  UnitListingOptions
 } from '~/core/models/data/propertyInventory.data';
-import { unwrapData } from './envelope.parser';
+import type { Pagination } from '~/core/models/data/session.data';
+import { parsePagination, unwrapData } from './envelope.parser';
 
 /**
  * The four inventory listings (floorplates, floorplans, units, amenities), from
@@ -167,6 +169,12 @@ export const parseInventoryFloorplates = (payload: unknown) => {
     svgMode: flag(meta.svgMode),
     tourStopCount: count(meta.tourStopCount),
     unitCount: count(meta.unitCount),
+    // What the other tabs and the dialogs used to read off the whole units listing.
+    unitBuildings: strings(meta.unitBuildings),
+    unitOverrideCount: count(meta.unitOverrideCount),
+    dataProvider: text(meta.dataProvider),
+    lastSync: text(meta.lastSync),
+    lockDevices: lockDevicesOf(meta.lockDevices),
     sharedBackground: upload(meta.sharedBackground),
     markers: markersOf(meta.markers),
     sitemap: sitemap
@@ -289,14 +297,40 @@ export const parseInventoryUnits = (payload: unknown): InventoryUnitListing => {
     currencySymbol: text(meta.currencySymbol) ?? '$',
     dataProvider: text(meta.dataProvider),
     lastSync: text(meta.lastSync),
-    lockDevices: (Array.isArray(meta.lockDevices) ? (meta.lockDevices as Source[]) : [])
-      .map((lock): LockDevice => ({
-        vendor: text(lock.vendor) ?? '',
-        id: text(lock.id) ?? '',
-        name: text(lock.name) ?? '',
-        stopId: num(lock.stopId)
-      }))
-      .filter((lock) => lock.id)
+    lockDevices: lockDevicesOf(meta.lockDevices),
+    pagination: parsePagination(meta.pagination as Partial<Pagination> | null | undefined),
+    options: unitOptionsOf(meta.filters),
+    totalCount: count(meta.totalCount)
+  };
+};
+
+const strings = (value: unknown): string[] =>
+  (Array.isArray(value) ? value : []).map((item) => text(item)).filter((item): item is string => !!item);
+
+const numbers = (value: unknown): number[] =>
+  (Array.isArray(value) ? value : []).map((item) => num(item)).filter((item): item is number => item != null);
+
+const lockDevicesOf = (value: unknown): LockDevice[] =>
+  (Array.isArray(value) ? (value as Source[]) : [])
+    .map((lock): LockDevice => ({
+      vendor: text(lock.vendor) ?? '',
+      id: text(lock.id) ?? '',
+      name: text(lock.name) ?? '',
+      stopId: num(lock.stopId)
+    }))
+    .filter((lock) => lock.id);
+
+/** `meta.filters` of a paged units listing; null when the listing is the whole set. */
+const unitOptionsOf = (value: unknown): UnitListingOptions | null => {
+  if (!value || typeof value !== 'object') return null;
+  const source = value as Source;
+  const missing = (source.missing ?? {}) as Source;
+  return {
+    buildings: strings(source.buildings),
+    floors: numbers(source.floors),
+    bedrooms: numbers(source.bedrooms),
+    bathrooms: numbers(source.bathrooms),
+    missing: { floorplan: flag(missing.floorplan), building: flag(missing.building), floor: flag(missing.floor) }
   };
 };
 

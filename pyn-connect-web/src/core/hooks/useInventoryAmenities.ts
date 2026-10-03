@@ -17,13 +17,12 @@ import { generateShowingLabel } from '~/core/utils/generator/inventory/floorplan
 import { S } from '~/core/utils/generator/inventory/inventoryText';
 import { useClientPages } from './useClientPages';
 
-const PAGE_SIZE = 20;
-
 type ListKey = 'type' | 'building' | 'floor' | 'lock' | 'state' | 'setup';
 
 /**
  * The Amenities tab: every amenity of the property is already in the browser,
- * so each filter narrows it at once. Only one page of cards is rendered.
+ * so each filter narrows it at once. Only one page of cards is rendered (25 a
+ * page by default).
  */
 export const useInventoryAmenities = (inventory: PropertyInventory) => {
   const [filters, setFilters] = useState<AmenityFilters>(EMPTY_AMENITY_FILTERS);
@@ -31,8 +30,8 @@ export const useInventoryAmenities = (inventory: PropertyInventory) => {
   const sorted = useMemo(() => sortAmenities(propertyAmenities(inventory)), [inventory]);
   const options = useMemo(() => generateAmenityFilterOptions(sorted, inventory), [sorted, inventory]);
   const filtered = useMemo(() => filterAmenities(sorted, filters), [sorted, filters]);
-  const { pageItems, pager, setPage } = useClientPages(filtered, PAGE_SIZE);
-  const cards = useMemo(() => generateAmenityCards(pageItems), [pageItems]);
+  const { pageItems, pager, setPage, pageSize, setPageSize } = useClientPages(filtered);
+  const cards = useMemo(() => generateAmenityCards(pageItems, inventory.selfTour), [pageItems, inventory.selfTour]);
 
   const update = useCallback((patch: Partial<AmenityFilters>) => setFilters((current) => ({ ...current, ...patch })), []);
 
@@ -51,6 +50,8 @@ export const useInventoryAmenities = (inventory: PropertyInventory) => {
     cards,
     pager,
     setPage,
+    pageSize,
+    setPageSize,
     showingLabel: generateShowingLabel(filtered.length, sorted.length, S.count.amenityOne, S.count.amenityMany),
     empty: filtered.length === 0,
     hasAny: sorted.length > 0,

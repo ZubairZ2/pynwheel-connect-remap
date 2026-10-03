@@ -1,13 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 
 import { unitRoute } from '~/config/app/connectRoutes';
 import { i18n } from '~/resources/i18n';
 import { IconButton } from '~/core/components/atoms/IconButton';
-import { EyeIcon, PencilIcon, TrashIcon, UploadIcon } from '~/core/components/atoms/Icons';
+import { EyeIcon, ImageIcon, PencilIcon, TrashIcon } from '~/core/components/atoms/Icons';
+import { LoadingIndicator } from '~/core/components/atoms/LoadingIndicator';
 import { StatusPill } from '~/core/components/atoms/StatusPill';
 import { DetailSection } from '~/core/components/molecules/DetailSection';
 import { MediaThumb } from '~/core/components/molecules/MediaThumb';
@@ -31,7 +31,6 @@ interface Props {
 
 /** The Units tab of the 22-Sep design, on every real unit of the property. */
 export const UnitsSection = ({ inventory, today, actions }: Props) => {
-  const router = useRouter();
   const list = useInventoryUnits(inventory, today);
   const overrides = useMemo(() => manualOverrideCount(inventory), [inventory]);
   const propId = String(inventory.property.id);
@@ -171,16 +170,27 @@ export const UnitsSection = ({ inventory, today, actions }: Props) => {
         </div>
       )}
 
+      {list.status === 'failed' && (
+        <div className="bo-error bo-inv__retry" role="alert">
+          <span>{i18n.t(S.units.loadFailed)}</span>
+          <button type="button" className="bo-inv__ghost" onClick={list.retry}>
+            {i18n.t(S.units.retry)}
+          </button>
+        </div>
+      )}
+
+      {list.status === 'loading' && list.cards.length === 0 && <LoadingIndicator variant="block" label={i18n.t(S.units.loading)} />}
+
+      <div className="bo-inv__cards" aria-busy={list.status === 'loading'} data-testid="units-cards">
       {list.cards.map((card) => {
-        const edit = () => actions.openDialog({ kind: 'unit', id: card.id });
-        // The design's `manageUnitImages` and `openUnit` both land on Unit Detail.
+        const edit = () => actions.openDialog({ kind: 'unit', id: card.id, unit: list.unitById(card.id) });
         const detailHref = unitRoute(propId, String(card.id));
-        const openDetail = () => router.push(detailHref);
 
         return (
           <RecordCard
             key={card.id}
             thumb={
+              // A unit's image is its floor plan's: the card only views it. Uploads belong to the Floorplans tab, so there is no upload action here.
               <MediaThumb
                 src={card.thumb.src}
                 alt={card.thumb.alt}
@@ -193,21 +203,9 @@ export const UnitsSection = ({ inventory, today, actions }: Props) => {
                     label: i18n.t(S.units.view),
                     icon: <EyeIcon size={14} />,
                     onClick: () => actions.openViewer(card.images)
-                  },
-                  { id: 'manage', label: i18n.t(S.units.manageImages), icon: <UploadIcon size={14} />, onClick: openDetail },
-                  ...(card.hasOwnImage
-                    ? [
-                        {
-                          id: 'remove',
-                          label: i18n.t(S.units.removeImage),
-                          icon: <TrashIcon size={14} />,
-                          tone: 'danger' as const,
-                          onClick: () => actions.confirm(card.removeImageConfirm)
-                        }
-                      ]
-                    : [])
+                  }
                 ]}
-                placeholder={{ label: i18n.t(S.units.addImage), icon: <UploadIcon />, onClick: openDetail }}
+                placeholder={{ label: i18n.t(S.units.noImage), icon: <ImageIcon /> }}
               />
             }
             title={
@@ -240,12 +238,20 @@ export const UnitsSection = ({ inventory, today, actions }: Props) => {
           </RecordCard>
         );
       })}
+      </div>
 
       {list.empty && (
         <div className="bo-inv__empty">{i18n.t(list.hasAny ? S.units.emptyFiltered : S.units.empty)}</div>
       )}
 
-      <Pagination pager={list.pager} label={i18n.t(S.tabs.units)} onPageChange={list.setPage} />
+      <Pagination
+        pager={list.pager}
+        label={i18n.t(S.tabs.units)}
+        disabled={list.status === 'loading'}
+        onPageChange={list.setPage}
+        pageSize={list.pageSize}
+        onPageSizeChange={list.setPageSize}
+      />
     </div>
   );
 };

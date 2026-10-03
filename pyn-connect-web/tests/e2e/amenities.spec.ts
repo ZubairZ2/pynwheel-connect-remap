@@ -178,7 +178,8 @@ test.describe('Amenities (real data)', () => {
     await first.getByRole('button', { name: 'View image' }).click();
     const viewer = page.getByRole('dialog');
     await expect(viewer).toBeVisible();
-    await expect(viewer.locator('.bo-viewer__image')).toBeVisible();
+    // The photo streams from S3 (an image without pixels yet has no box): give it the time the Hazel spec gives its photos.
+    await expect(viewer.locator('.bo-viewer__image')).toBeVisible({ timeout: 90_000 });
     await viewer.getByRole('button', { name: 'Close image' }).click();
     await expect(viewer).toHaveCount(0);
 
