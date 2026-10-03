@@ -2643,3 +2643,64 @@ on demand (every read happens in the route's server component).
 `pyn-connect-web/src/app/api/properties/[propId]/wayfinding-route/route.ts`,
 `app/controllers/concerns/connect/wayfinding_json.rb`, `app/serializers/connect/wayfinding_serializer.rb`;
 PYN_CONNECT_PROGRESS.md §20, context.md §16, gaps_map_plotting_feature.md.
+
+### October 3, 2026 — Infrastructure Update: a server-paged listing inside a client screen
+
+**What was missing:**
+The Inventory's Units tab held the whole units listing in the browser and filtered, searched and
+paged it there (`useClientPages`), so opening it fetched every unit of the property (230–1,169 rows,
+~290–500 KB). Four dialogs waited for that listing because their Building lists and counts read it.
+The paging pattern so far was the listings': URL state and a server component per page.
+
+**What was found/implemented:**
+
+- **The request is the toolbar.** `useInventoryUnits` keeps the filters, page and rows-per-page as
+  client state and turns them into one query string (`unitListingQuery`), which it sends to this
+  app's route handler (`/api/properties/:id/inventory/units?page=&per_page=&…`). The handler
+  whitelists the parameters, replays the session cookie to `units.json` with a `page`, and the CMS
+  answers one page (`Connect::UnitListingQuery` on top of the legacy grid's `UnitFilterQuery`,
+  paged by `Connect::PaginatedCollection`). Components still never call Rails; the API module and
+  parser stay server-only. Typed inputs reach the request after a pause; toggles at once; any change
+  other than paging starts from page 1; an in-flight request is aborted by the next one.
+- **Options travel with the page.** A page cannot derive its dropdowns' options, so the CMS sends
+  them in `meta.filters` (buildings, floors, bedrooms, bathrooms and which "None" options are
+  needed), and the floor plan options come from the floor plans listing the screen already has.
+- **What the other tabs needed from the units moved to the floorplates meta** (`unit_buildings`,
+  `unit_override_count`, `data_provider`, `last_sync`, `lock_devices`), so no dialog depends on the
+  units listing; the unit form is handed its row by the tab (`InventoryDialog { kind: 'unit', unit }`).
+- **The whole set is still one request away** for the screens that draw every unit (Map & Plotting,
+  Tour Setup, Unit Detail): `units.json` without a `page` is unchanged.
+- **Rows per page is one component.** `Pagination` offers `PAGE_SIZE_OPTIONS` (25 · 50 · 75 · 100)
+  whenever a caller can act on the size: the listings put `per_page` on the URL and the Rails
+  request, `useClientPages` slices at the chosen size, the Units tab sends it.
+
+**Reference:**
+`pyn-connect-web/src/core/hooks/useInventoryUnits.ts`,
+`pyn-connect-web/src/core/utils/generator/inventory/units.generator.ts` (`unitListingQuery`, `generateUnitFilterOptions`),
+`pyn-connect-web/src/app/api/properties/[propId]/inventory/units/route.ts`,
+`pyn-connect-web/src/core/components/organisms/Pagination.tsx`, `pyn-connect-web/src/core/utils/generator/pagination.generator.ts`,
+`app/queries/connect/unit_listing_query.rb`, `app/controllers/units_controller.rb`; PYN_CONNECT_PROGRESS.md §29, context.md §25.
+
+### October 3, 2026 — Infrastructure Update: hover menus and hover popovers
+
+**What was missing:**
+Three floating menus closed when the pointer crossed the gap between their trigger and their panel
+(each wrapper's `onMouseLeave` fired in the gap); two had been patched one by one with a bridge
+strip. The map canvas showed details only on click, and printed labels permanently.
+
+**What was found/implemented:**
+
+- **`HoverMenu`** (molecule) owns the wrapper, the panel's position (`calc(100% + var(--bo-menu-gap))`),
+  the transparent bridge over the gap, and outside-click / Escape closing. Callers keep their open
+  flag in their own state and style the panel with their own class. Every hover-close menu uses it.
+- **`usePeek`** (hook) is hover state for a popover with buttons: it follows the hovered key at once
+  and clears it only after a grace period, never while the pointer is over the popover, so the
+  pointer can travel from the hovered thing into the popover. The canvas uses it for the polygon and
+  stop popovers; the same descriptor a click pins (`polygonPopover`) is what hover shows.
+- **Loading gates every overlay**: `MapCanvas.ready` is false while the plan's SVG or image loads,
+  so a floor never shows a half-drawn graph or the previous floor's markers under the indicator.
+
+**Reference:**
+`pyn-connect-web/src/core/components/molecules/HoverMenu.tsx`, `pyn-connect-web/src/core/hooks/usePeek.ts`,
+`pyn-connect-web/src/core/screens/properties/map/MapCanvas.tsx`, `pyn-connect-web/src/core/screens/properties/map/SvgPlanLayer.tsx`,
+`pyn-connect-web/src/core/utils/generator/map/mapPanels.generator.ts`; PYN_CONNECT_PROGRESS.md §29, context.md §25.

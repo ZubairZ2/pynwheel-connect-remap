@@ -66,3 +66,11 @@ The dialog's image row shows the stored file name and type only; no size or dime
 On the Heroku staging CMS the same photos failed for a different reason — fog storage names the configured `staging-pynwheel` bucket while the copied records live on `images-pynwheel-cms-v2` — and `UploadUrl` now resolves that too (a cached HEAD picks the copy that answers). Files that exist on no public bucket still fail everywhere, legacy included; that is data, not a gap.
 
 No new backend gap came out of the Hazel pass. GA1–GA5 stand as written.
+
+## Update — October 3, 2026 (branch `fix/critical_issues_phase1`, PYN_CONNECT_PROGRESS.md §29)
+
+- **"In Stops List" / "Hidden from Stops"** exist only for a property with the Self-Guided Tour, as the legacy amenity form shows "Show in Stops List" only then. The state comes from `amenities.json` `meta.self_tour`, which now reads `Connect::ProductState.tour?` — the one definition every Connect screen shares (the Settings-page column or the Launch order form). The State filter offers the stop-list states only then; the dialog keeps its switch with the existing hint. Verified on The Ogden 557 (tour off, no pills) and Hazel 1618 (tour on, pills kept).
+- **The image viewer** every eye action opens (amenity image and gallery, floorplate and floor plan images, units) has Zoom In / Zoom Out / Reset, wheel zoom and drag to pan, with the aspect ratio kept.
+- **The Amenities tab pages 25 cards** by default with a rows-per-page select (25 · 50 · 75 · 100).
+
+GA1–GA5 stand as written.
