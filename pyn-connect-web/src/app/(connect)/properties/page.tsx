@@ -11,12 +11,14 @@ import { ListingScreenTemplate } from '~/core/templates/ListingScreenTemplate';
 import { PropertiesListingScreen } from '~/core/screens/properties/propertiesListing.screen';
 import { PROPERTY_SORTABLE, type PropertyFilters } from '~/core/utils/generator/propertyListing.generator';
 import { parseListingSort } from '~/core/utils/generator/listingSort';
+import { clampPageSize } from '~/core/utils/generator/pagination.generator';
 
 export const dynamic = 'force-dynamic';
 
 interface Props {
   searchParams: Promise<{
     page?: string;
+    per_page?: string;
     q?: string;
     stage?: string;
     company_id?: string;
@@ -62,6 +64,7 @@ export default async function PropertiesPage({ searchParams }: Props) {
     sort: sort?.key,
     dir: sort?.dir,
     page: Number(params.page) || 1,
+    perPage: clampPageSize(params.per_page),
     q: filters.query,
     stage: filters.stage,
     companyId: filters.companyId,

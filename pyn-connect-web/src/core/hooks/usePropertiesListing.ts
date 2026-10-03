@@ -14,7 +14,7 @@ import {
   type PropertyFilters
 } from '~/core/utils/generator/propertyListing.generator';
 import { listingSortParams, nextListingSort, sortByLabel, type ListingSort } from '~/core/utils/generator/listingSort';
-import { generatePager } from '~/core/utils/generator/pagination.generator';
+import { DEFAULT_PAGE_SIZE, generatePager } from '~/core/utils/generator/pagination.generator';
 import type { Property } from '~/core/models/data/property.data';
 import type { CompanyFilterOption, Pagination } from '~/core/models/data/session.data';
 import { useDebouncedSearch } from './useDebouncedSearch';
@@ -114,6 +114,7 @@ export const usePropertiesListing = (
     columns,
     rows,
     pager,
+    pageSize: pagination?.perPage ?? DEFAULT_PAGE_SIZE,
     summary,
     isPending,
     stageOptions,
@@ -121,6 +122,8 @@ export const usePropertiesListing = (
     productOptions,
     dataProviderOptions,
     goToPage: (page: number) => setParams({ page }, { keepPage: true }),
+    // A new size starts again from page 1; the default size needs no parameter.
+    setPageSize: (size: number) => setParams({ per_page: size === DEFAULT_PAGE_SIZE ? '' : size }),
     // A new order starts again from page 1; search and filters stay as they are.
     toggleSort: (key: string) => setParams(listingSortParams(nextListingSort(sort, key))),
     sortLabel: sortByLabel

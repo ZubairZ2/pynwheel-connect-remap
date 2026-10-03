@@ -47,6 +47,7 @@ export const PropertiesListingScreen = ({
     columns,
     rows,
     pager,
+    pageSize,
     summary,
     isPending,
     stageOptions,
@@ -54,6 +55,7 @@ export const PropertiesListingScreen = ({
     productOptions,
     dataProviderOptions,
     goToPage,
+    setPageSize,
     toggleSort,
     sortLabel
   } = usePropertiesListing(
@@ -126,6 +128,8 @@ export const PropertiesListingScreen = ({
           disabled={isPending}
           label={i18n.t(CORE_STRINGS.properties.title)}
           onPageChange={goToPage}
+          pageSize={pageSize}
+          onPageSizeChange={setPageSize}
         />
       }
     />
