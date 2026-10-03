@@ -712,32 +712,42 @@ class UnitsController < ApplicationController
 
   private
 
+  # Pynwheel Connect reads this listing two ways. With a `page` (the Units tab)
+  # it gets one page of the units its toolbar's filters leave
+  # (Connect::UnitListingQuery), with the paging and the toolbar's options in
+  # `meta`; without one (Map & Plotting, Tour Setup, Unit Detail, which draw
+  # every unit) it gets the whole set, as before.
   def render_connect_units(scope)
+    extra = {
+      currency_symbol: @currency_symbol,
+      data_provider: @community.data_provider.presence,
+      last_sync: @community.data_provider_updated_on.presence,
+      lock_devices: connect_lock_devices(@community)
+    }
+    return render_connect_inventory(serialize_connect_units(scope), @community, extra: extra) if params[:page].blank?
+
+    listing = Connect::UnitListingQuery.new(@community, connect_listing_params)
+    page = listing.page
     render_connect_inventory(
-      Connect::UnitSerializer.collection(
-        scope, @community, floorplans_by_provider_id: @floorplans_by_provider_id, base_url: request.base_url
-      ),
+      serialize_connect_units(page.records),
       @community,
-      extra: {
-        currency_symbol: @currency_symbol,
-        data_provider: @community.data_provider.presence,
-        last_sync: @community.data_provider_updated_on.presence,
-        lock_devices: connect_lock_devices
-      }
+      extra: extra.merge(filters: listing.options),
+      pagination: page.meta,
+      total_count: page.total_count
     )
   end
 
-  # The lock devices the unit form offers (AssignLocksHelper#all_locks), one
-  # list across vendors. A vendor record with a missing name makes that helper
-  # raise; the units must still load when it does.
-  def connect_lock_devices
-    all_locks(@community).flat_map do |kind, locks|
-      vendor = kind.to_s.delete_suffix("_locks")
-      locks.map { |lock| { vendor: vendor, id: lock[:id], name: lock[:name], stop_id: lock[:stop_id] } }
-    end
-  rescue StandardError => e
-    Rails.logger.warn("[Connect] lock devices unavailable for community #{@community.id}: #{e.class}: #{e.message}")
-    []
+  def serialize_connect_units(units)
+    Connect::UnitSerializer.collection(
+      units, @community, floorplans_by_provider_id: @floorplans_by_provider_id, base_url: request.base_url
+    )
+  end
+
+  def connect_listing_params
+    params.permit(
+      :page, :per_page, :today, :q, :min_price, :max_price, :min_sqft, :max_sqft, :sort, :dir,
+      :floorplan, :availability, :building, :floor, :state, :beds, :baths
+    )
   end
 
   def set_community

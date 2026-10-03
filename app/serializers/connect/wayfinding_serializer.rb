@@ -71,7 +71,8 @@ module Connect
         design = community.design
         {
           auto_wayfinding: community.auto_wayfinding.present?,
-          self_tour: community.self_tour.present?,
+          # The Self-Guided Tour state every Connect screen shares (Connect::ProductState).
+          self_tour: ProductState.tour?(community),
           is_sitemap: community.is_sitemap.present?,
           enable_svg_mode: community.enable_svg_mode.present?,
           default_map_floor: community.default_map_floor,
