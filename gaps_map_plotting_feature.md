@@ -566,3 +566,23 @@ Resolved on the existing backend, none of them a gap:
 - **Wayfinding is offered to every Self-Guided Tour property** (`Connect::ProductState.tour?`), not only to the ones with `auto_wayfinding`; that switch still drives the door-plus markers. Properties with the tour but without the switch (156 locally) now get the mode, Additional Stops and the vertical links.
 
 M1–M24 stand as written; no new backend gap came out of this phase.
+
+## Update — October 4, 2026 (phase 3a: the persistence backend; PYN_CONNECT_PROGRESS.md §31, `map_plotting_backend_implementation.md`)
+
+The backend the gaps below asked for exists now. Status per gap:
+
+- **M1 Saving plots** — resolved: `PUT /communities/:id/wayfinding_graph.json` (`Wayfinding::GraphSave`) persists pins (units, amenities, elevators, entry points, doors, the tour start — the legacy plotting actions' columns and semantics, SVG pointers included), nodes, connections, moves and removals in one transaction; the Save button on both modes; after it the page re-reads the CMS.
+- **M2 Publish** — unchanged: nothing publishes; still a gap (= T5 / G16).
+- **M5 Routing over edits, across floors and buildings** — resolved on saved data: `shortest_path.json?from=&to=&step_free=` and the Tour App's `route.json` share `Wayfinding::RouteService` (floors through elevators / stairs / ramps, buildings through gates, blockers, step-free). Unsaved edits are still previewed by the page's own `stopRoute.ts`; pointing the preview at the server route is the follow-up.
+- **M6 Vertical connections other than elevators** — resolved: `elevators.kind` (elevator / stairs / ramp) and `accessible`; stairs and ramps get no `tour_stops` row, so the legacy engine never sees them.
+- **M9 / M10 SVG pointers and polygon placements** — resolved as far as the placement goes: the save writes `pointer_data` as the legacy SVG plotting page does; **M11** (Auto Plot rules per building) is still page state.
+- **M14 Saving wayfinding edits** — resolved (M1); cleared paths and deleted points leave `hallway_suppressions` tombstones; detected paths carry their run.
+- **M15 Additional Stops** — resolved for the map: `wayfinding_stops` (kind, name, note, floor, building, radius) through the same save; elevators / stairs / ramps / doors / entry points go to their legacy tables (`Wayfinding::StopWriter`). Listing them on Tour Setup is phase 2 of the report (they are not `tour_stops` yet; see T8).
+- **M16 Detect Hallways — keeping the result** — resolved: `origin: 'detect'` saves add only (merge within 6 px, tombstones respected, `request_id` replay, pending until confirmed and invisible to legacy until then); a run is a `hallway_detection_runs` row.
+- **M17 Distance and time** — partly: the route service answers pixel length, steps and durations; feet and minutes need `scale_ft_per_px` per level, a column nothing sets yet.
+- **M18 Blockers, stairs, step-free in the self-tour app** — resolved in the API the new app will consume (`route.json?step_free=`; blockers cut the hallway they sit on); the existing app's `start_tour` is unchanged.
+- **M20 SVG vs image frame** — partly: `svg_to_image_transform` per level, `Wayfinding::PlateTransform` / `ReprojectPlate`; svg-space rows are stored (`space: 'svg'`) but non-routable until a transform exists; no endpoint derives one yet.
+- **M21 Path geometry, provenance, review** — resolved: `hallway_edges` (polyline, kind, review, run), `hallways.source / review_status / confidence`.
+- **M24 Bridges removed by hand, re-detecting a stored floorplate** — resolved: `hallway_attachments` (`detached`, or `explicit` with an optional anchor) and the detect rules above.
+
+Still gaps: M2, M3 (uploads), M4 / M12 (auto-plot), M7, M8, M11, M13, M19, M22, M23.

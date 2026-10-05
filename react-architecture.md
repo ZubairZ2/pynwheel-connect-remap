@@ -2732,3 +2732,38 @@ follow). Paging and filtering were separate pushes over the URL as it was.
 `pyn-connect-web/src/core/hooks/useServerListing.ts`, `pyn-connect-web/src/core/utils/generator/listingParams.ts`,
 `pyn-connect-web/src/core/repository/remote/listings.server.ts`, `pyn-connect-web/src/app/api/listings/*/route.ts`,
 `pyn-connect-web/src/core/components/molecules/MultiFilter.tsx`; PYN_CONNECT_PROGRESS.md §30, context.md §26.
+
+### October 4, 2026 — Infrastructure Update: the first writes — a diff payload, CSRF through the route handler, compare-and-swap versions
+
+**What was missing:**
+Every Connect screen was read-only; Map & Plotting and Tour Setup kept their edits as page state
+("local only"). The CMS had no JSON write, no notion of a version to detect a concurrent edit, and
+no way to tell a Detect run's proposals from a user's own points.
+
+**What was found/implemented:**
+
+- **A write is a JSON action on the owning legacy controller**, never a new controller: `save_graph`
+  on `HallwaysController`, `save_setup` / `stop_list` on `ToursController`, each isolated by
+  `Connect::WritesJson` (the real CSRF check, `User#can_edit_map?`, the `PYN_CONNECT_WRITES` kill
+  switch, the envelope's 409 / 422 / 404 / 403). The HTML actions beside them are untouched.
+- **The screen sends a diff, not a document** (`graphDiff.ts`): the level's local overrides become
+  `nodes / edges / links / pins / stops` operations with `temp_key`s; the answer's `key_map` says what
+  each became. The server applies them in one transaction in a fixed order, re-derives what follows
+  (an edge's status from its ends, exactly one `selected` node) and answers the level's graph as stored.
+- **Compare-and-swap, not last-write-wins:** every save carries the `base_version` it was built on;
+  the CMS bumps `wayfinding_version` / `tour_setup_version` with `UPDATE … WHERE version = base` and
+  answers 409 with the current graph otherwise. The screen reloads and the user re-applies.
+- **CSRF without exposing a token to the browser:** the route handler fetches a fresh token together
+  with the session cookie it belongs to (the cookie session store keeps them in one cookie), sends
+  the PUT, retries once on `csrf`, and writes the merged cookie back (`connectWrite.server.ts`).
+  Components never see a token or call Rails.
+- **After a save the local state is dropped and the page re-read** (`router.refresh()`): the canvas
+  draws what the CMS stores, so a merge or a skipped proposal is visible at once.
+- **Idempotency by natural key:** a Detect run's `request_id` replays its stored answer; a point
+  within 6 px of a stored one merges; a deleted point leaves a tombstone a later run respects.
+
+**Reference:**
+`pyn-connect-web/src/core/repository/remote/connectWrite.server.ts`, `pyn-connect-web/src/core/utils/wayfinding/graphDiff.ts`,
+`pyn-connect-web/src/app/api/properties/[propId]/{map/save,tour-setup/save,stop-list}/route.ts`,
+`app/controllers/concerns/connect/writes_json.rb`, `app/services/wayfinding/graph_save.rb`;
+`map_plotting_backend_implementation.md`, PYN_CONNECT_PROGRESS.md §31, context.md §27.

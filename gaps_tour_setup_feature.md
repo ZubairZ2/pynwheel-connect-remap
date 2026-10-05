@@ -160,3 +160,14 @@ Same as M15.
 
 ### Future Requirement
 M15; then Tour Setup reads the stops model.
+
+## Update — October 4, 2026 (phase 3a: the persistence backend; PYN_CONNECT_PROGRESS.md §31, `map_plotting_backend_implementation.md`)
+
+- **T1 Saving the tour** — resolved: `PUT /communities/:id/tours/save_setup.json` (`TourSetup::Save`) persists order (`tour_stops.sort`), visibility, stops added or removed (through the legacy stop semantics: one row per record, `TourStops::Remove` for removal) and the elevator delete, with compare-and-swap on `tours.tour_setup_version`; the Save button on Tour Setup. "Show in Stops List" on the unit and amenity dialogs persists through `tours/stop_list.json` — the one field those dialogs write.
+- **T2 The AI Concierge talking point** — unchanged (still a gap).
+- **T3 Distance and dwell time per stop** — resolved for dwell time (`tour_stops.duration_minutes`, saved with the tour and used by the Tour App's `tour_route.json`); distance in feet still needs `scale_ft_per_px` (M17).
+- **T4 Elevator banks** — partly: deleting a bank persists (`elevators.delete` in the tour save; the record's stops in every tour go with it), adding one is the map's Additional Stop (elevator / stairs / ramp); gating and photos stay on the legacy page.
+- **T5 Publish** — unchanged (= M2).
+- **T6 Route Preview as the CMS would route** — resolved on the backend: `shortest_path.json?from=&to=` is the CMS's own answer, from the same service the Tour App's `route.json` uses; the Tour Setup preview still runs `stopRoute.ts` locally until it is pointed at it.
+- **T7** — unchanged (resolved September 27).
+- **T8 Additional Stops on Tour Setup** — partly: the stops persist on the map (`wayfinding_stops`); Tour Setup lists them once they become tour stops (phase 2 of the report).
