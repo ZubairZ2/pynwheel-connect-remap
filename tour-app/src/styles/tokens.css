@@ -1,0 +1,63 @@
+/*
+ * Design tokens of the Pynwheel Tour design (tour-app.html, `:root`).
+ * Every colour, radius, shadow and the font come from the reference verbatim;
+ * nothing here is invented. Safe-area insets are the one addition the real
+ * device needs (the reference draws a fake iPhone status bar instead).
+ */
+:root {
+  --pw-primary: #0077AE;
+  --pw-primary-hover: #005C8A;
+  --pw-primary-light-10: #E8F4FB;
+  --pw-primary-light-20: #CFE8F6;
+  --pw-primary-gradient: linear-gradient(#005C8A 0%, #0090D0 100%);
+  /* Pynwheel logo blades — categorical use only */
+  --pw-logo-pink: #EC4E8C;
+  --pw-logo-yellow: #FFD200;
+  --pw-logo-blue: #0090D0;
+  --pw-logo-green: #8DC63F;
+  --pw-logo-coral: #F0603F;
+  --pw-logo-purple: #92499E;
+  --pw-logo-gray: #58595B;
+  --pw-ink: #171717;
+  --pw-ink-2: #1F1F1F;
+  --pw-text: #3D3D3D;
+  --pw-text-muted: #525252;
+  --pw-text-subtle: #919191;
+  --pw-stroke: #CDCDCD;
+  --pw-divider: #D2D2D2;
+  --pw-surface-2: #EEEEEE;
+  --pw-surface-1: #FDFDFD;
+  --pw-bg: #FFFFFF;
+  --pw-label-yellow: #FFE873;
+  --pw-label-orange: #FFC53D;
+  --pw-label-coral: #E03B45;
+  --pw-warn-soft-bg: #FFF9E6;
+  --pw-warn-soft-border: #FFE58F;
+  --pw-warn-soft-text: #664D03;
+  --pw-success: #5C8E1C;
+  --pw-route: #4A7212;
+  --pw-route-soft: #E3F1D6;
+  --pw-danger: #C62534;
+  --pw-danger-soft: #FBE1E4;
+  --pw-r-0: 0px;
+  --pw-r-2: 2px;
+  --pw-r-4: 4px;
+  --pw-r-5: 5px;
+  --pw-r-6: 6px;
+  --pw-r-8: 8px;
+  --pw-r-10: 10px;
+  --pw-r-16: 16px;
+  --pw-r-pill: 999px;
+  --pw-shadow-card: 0 1px 2px -1px rgba(0, 0, 0, 0.1), 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  --pw-shadow-chip: 0 1.118px 2.235px -1.118px rgba(0, 0, 0, 0.1), 0 1.118px 3.353px 0 rgba(0, 0, 0, 0.1);
+  --pw-shadow-modal: 0 8px 11.1px 8px rgba(0, 0, 0, 0.15), 2px -5px 17.6px 8px rgba(0, 0, 0, 0.15);
+  --pw-font-sans: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* The device: the reference's status bar is 44px and its home indicator area 34px. */
+  --pw-safe-top: env(safe-area-inset-top, 0px);
+  --pw-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --pw-safe-left: env(safe-area-inset-left, 0px);
+  --pw-safe-right: env(safe-area-inset-right, 0px);
+  --pw-statusbar: max(var(--pw-safe-top), 44px);
+  --pw-home-indicator: max(var(--pw-safe-bottom), 34px);
+}

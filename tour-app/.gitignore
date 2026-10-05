@@ -1,0 +1,25 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.env.local
+.DS_Store
+
+# Capacitor native build output (the projects themselves are committed)
+ios/App/Pods/
+ios/App/App.xcworkspace/xcuserdata/
+ios/App/App.xcodeproj/xcuserdata/
+ios/App/App.xcodeproj/project.xcworkspace/xcuserdata/
+ios/App/build/
+ios/App/DerivedData/
+ios/App/public/
+ios/App/App/public/
+ios/capacitor-cordova-ios-plugins/
+android/.gradle/
+android/.idea/
+android/build/
+android/app/build/
+android/app/src/main/assets/public/
+android/capacitor-cordova-android-plugins/
+android/local.properties
+android/*.iml
+android/app/*.iml
