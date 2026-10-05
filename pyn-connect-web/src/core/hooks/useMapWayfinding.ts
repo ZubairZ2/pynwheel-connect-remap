@@ -1,8 +1,10 @@
 'use client';
 
 import type { KeyboardEvent as ReactKeyboardEvent, MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from 'react';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { APP_API, APP_ROUTES } from '~/config/app/urls';
 import { i18n } from '~/resources/i18n';
 import type { PropertyMap } from '~/core/models/data/propertyMap.data';
 import { activeSpace, levelById, planAssets, stackFloor, wayfindingSpace, type MapLevel } from '~/core/utils/generator/map/mapLevels.generator';
@@ -37,6 +39,7 @@ import {
   stopFormErrors,
   wayfindingEnabled
 } from '~/core/utils/generator/map/wayfinding.generator';
+import { buildGraphSavePayloads, clearSavedLevel, unsavedCount } from '~/core/utils/wayfinding/graphDiff';
 import { detectionPatch, graphPatch, plateGraph, snapshotOf } from '~/core/utils/wayfinding/hallwayEdits';
 import { autoConnectNodes, computeAutoConnectDistance, connectNodeToNearest } from '~/core/utils/wayfinding/hallways/autoConnect';
 import { addNode, confirmNodesAboveConfidence, deleteEdge, deleteNode, rerouteEdge, type GraphState } from '~/core/utils/wayfinding/hallways/editing';
@@ -943,6 +946,84 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
 
   /* ── stacked floors ───────────────────────────────────────────────── */
 
+  /* ── save ──────────────────────────────────────────────────────────── */
+
+  const router = useRouter();
+  const [saving, setSaving] = useState(false);
+  const canSave = map.write.canEditMap && map.write.writesEnabled;
+  /** The level's operations waiting to be saved (both layers). */
+  const unsaved = useMemo(() => (level ? unsavedCount(map, levels, level, state) : 0), [level, levels, map, state]);
+
+  /**
+   * Saves the level in view: `graphDiff` turns the page's overrides into the
+   * payload(s) `Wayfinding::GraphSave` applies in one transaction each (one
+   * per layer that changed), through this app's route handler. On success
+   * the level's overrides are dropped and the stored map is re-read, so what
+   * the page shows is what the CMS now holds; a stale version (someone else
+   * changed the level) or a refusal leaves every edit on the page.
+   */
+  const saveLevel = useCallback(async () => {
+    if (!level || saving) return;
+    const name = `${level.sub} · ${level.label}`;
+    if (!canSave) {
+      toast(i18n.t(map.write.writesEnabled ? W.save.notAllowed : W.save.disabled));
+      return;
+    }
+    const requestId = typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    let baseVersion = map.write.versions[level.id] ?? 0;
+    const payloads = buildGraphSavePayloads(map, levels, level, stateRef.current, baseVersion, requestId);
+    if (!payloads.length) {
+      toast(t(W.save.nothing, { level: name }));
+      return;
+    }
+    setSaving(true);
+    try {
+      for (const payload of payloads) {
+        payload.base_version = baseVersion;
+        const response = await fetch(APP_API.mapSave(map.inventory.property.id), {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(payload),
+          cache: 'no-store'
+        });
+        const body = (await response.json()) as
+          | { ok: true; data: { level: { version: number } } }
+          | { ok: false; error: string; message: string | null; changedBy?: string | null };
+        if (!body.ok) {
+          switch (body.error) {
+            case 'stale':
+              toast(t(W.save.stale, { by: body.changedBy ? ` (${body.changedBy})` : '' }));
+              break;
+            case 'invalid':
+              toast(t(W.save.invalid, { message: body.message ?? '' }));
+              break;
+            case 'forbidden':
+              toast(i18n.t(W.save.forbidden));
+              break;
+            case 'disabled':
+              toast(i18n.t(W.save.disabled));
+              break;
+            case 'unauthorized':
+              toast(i18n.t(W.save.unauthorized));
+              window.setTimeout(() => window.location.assign(APP_ROUTES.signIn), 1200);
+              break;
+            default:
+              toast(i18n.t(W.save.failed));
+          }
+          return;
+        }
+        baseVersion = body.data.level.version;
+      }
+      patch((current) => clearSavedLevel(current, level, map, levels));
+      toast(t(W.save.saved, { level: name }));
+      router.refresh();
+    } catch {
+      toast(i18n.t(W.save.failed));
+    } finally {
+      setSaving(false);
+    }
+  }, [canSave, level, levels, map, patch, router, saving, toast]);
+
   const setFloor = useCallback((value: number) => patch(() => ({ wfFloor: value, wfSel: null, wfFrom: null, wfSelEdge: null, wfSelLink: null, selStop: null })), [patch]);
 
   /* ── shortest path ────────────────────────────────────────────────── */
@@ -1346,7 +1427,12 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
     panel,
     layer,
     stopForm,
+    /** The level's unsaved operations, whether this user and property may save, and whether a save is running. */
+    unsaved,
+    canSave,
+    saving,
     actions: {
+      save: saveLevel,
       setMode,
       setTool,
       toggleMenu: () => patch((current) => ({ wfMenuOpen: !current.wfMenuOpen })),

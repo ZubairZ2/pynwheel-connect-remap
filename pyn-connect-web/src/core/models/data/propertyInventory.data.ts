@@ -170,6 +170,8 @@ export interface InventoryUnit {
   lockProvider: string | null;
   doorId: number | null;
   tourOrder: number | null;
+  /** In the Self-Guided Tour's stop list: a visible stop of the main tour (the one unit-form field Connect persists). */
+  inStopsList: boolean;
   image: InventoryUpload | null;
   secondaryImage: InventoryUpload | null;
   interiorImages: InventoryImage[];
@@ -203,6 +205,8 @@ export interface InventoryAmenity {
   tourStop: boolean;
   /** "Show in Stops List" on the amenity form (`breezway_lock_visible`); a hidden amenity is left out of the self-guided tour's stop list. */
   showInStops: boolean;
+  /** In the Self-Guided Tour's stop list: a visible stop of the main tour whose form flag is on (what the Connect toggle persists). */
+  inStopsList: boolean;
   /** "Select Lock Provider" on the amenity form: the first door's provider when the amenity has doors, else its own column. */
   lockProvider: string | null;
   image: InventoryUpload | null;

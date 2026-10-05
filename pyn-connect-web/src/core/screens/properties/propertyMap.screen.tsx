@@ -199,6 +199,16 @@ const MapEditor = ({ map, initial }: { map: PropertyMap; initial: MapInitial | n
               </div>
             </div>
             <div className="bo-map__toolbaractions">
+            <button
+              type="button"
+              className={`bo-map__tool bo-map__tool--accent${wayfinding.unsaved ? ' bo-map__tool--fill' : ''}`}
+              onClick={() => void wayfinding.actions.save()}
+              disabled={noLevel || wayfinding.saving || !wayfinding.unsaved}
+              title={wayfinding.canSave ? i18n.t(M.wayfinding.save.note) : i18n.t(map.write.writesEnabled ? M.wayfinding.save.notAllowed : M.wayfinding.save.disabled)}
+              data-testid="map-save"
+            >
+              {wayfinding.saving ? i18n.t(M.wayfinding.save.saving) : wayfinding.unsaved ? t(M.wayfinding.save.buttonCount, { count: wayfinding.unsaved }) : i18n.t(M.wayfinding.save.button)}
+            </button>
             {wayfind ? (
               <WayfindingToolbar controller={controller} />
             ) : (

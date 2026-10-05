@@ -1,0 +1,15 @@
+admin_on_tour_property:
+  community: tour_property
+  user: community_admin
+
+manager_on_tour_property:
+  community: tour_property
+  user: community_manager
+
+assistant_on_tour_property:
+  community: tour_property
+  user: community_assistant
+
+admin_on_no_tour_property:
+  community: no_tour_property
+  user: community_admin

@@ -1,0 +1,49 @@
+# A four-node chain on plate_a (h1 → h2 → h3 → h4, stored one way as the
+# legacy editor stores it), the last node selected; two nodes on plate_b.
+h1:
+  parent: plate_a (Floorplate)
+  community_id: <%= ActiveRecord::FixtureSet.identify(:tour_property) %>
+  x_plot: 100
+  y_plot: 100
+  next_points: "{<%= ActiveRecord::FixtureSet.identify(:h2) %>}"
+  selected: false
+
+h2:
+  parent: plate_a (Floorplate)
+  community_id: <%= ActiveRecord::FixtureSet.identify(:tour_property) %>
+  x_plot: 300
+  y_plot: 100
+  next_points: "{<%= ActiveRecord::FixtureSet.identify(:h3) %>}"
+  selected: false
+
+h3:
+  parent: plate_a (Floorplate)
+  community_id: <%= ActiveRecord::FixtureSet.identify(:tour_property) %>
+  x_plot: 300
+  y_plot: 300
+  next_points: "{<%= ActiveRecord::FixtureSet.identify(:h4) %>}"
+  selected: false
+
+h4:
+  parent: plate_a (Floorplate)
+  community_id: <%= ActiveRecord::FixtureSet.identify(:tour_property) %>
+  x_plot: 500
+  y_plot: 300
+  next_points: "{}"
+  selected: true
+
+h5:
+  parent: plate_b (Floorplate)
+  community_id: <%= ActiveRecord::FixtureSet.identify(:tour_property) %>
+  x_plot: 100
+  y_plot: 100
+  next_points: "{<%= ActiveRecord::FixtureSet.identify(:h6) %>}"
+  selected: false
+
+h6:
+  parent: plate_b (Floorplate)
+  community_id: <%= ActiveRecord::FixtureSet.identify(:tour_property) %>
+  x_plot: 300
+  y_plot: 100
+  next_points: "{}"
+  selected: true

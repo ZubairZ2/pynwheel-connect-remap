@@ -29,3 +29,29 @@ two:
   longitude: 9.99
   locked: false
   company: two
+
+# Wayfinding (October 2026): a floorplate property with the Self-Guided Tour,
+# one without it, and a sitemap property.
+tour_property:
+  name: Tour Property
+  company: one
+  is_sitemap: false
+  self_tour: true
+  auto_wayfinding: true
+  locked: false
+  mdu: true
+  show_map: true
+
+no_tour_property:
+  name: No Tour Property
+  company: one
+  is_sitemap: false
+  self_tour: false
+  locked: false
+
+sitemap_property:
+  name: Sitemap Property
+  company: one
+  is_sitemap: true
+  self_tour: true
+  locked: false

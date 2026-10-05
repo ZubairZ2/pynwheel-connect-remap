@@ -163,6 +163,43 @@ class User < ApplicationRecord
     is_super_admin? || is_community_admin? ||  is_community_manager? || is_company_admin? || is_regional_admin?
   end
 
+  # The property-access rule of ApplicationController#check_community, as one
+  # predicate: a super admin sees every property; a Dwelo admin the assigned
+  # ones, those created by a Dwelo admin and those of Dwelo-created companies;
+  # a company admin the company's and the assigned ones; everyone else the
+  # assigned ones (`community_users`). `check_community` delegates here, so
+  # the HTML pages and the Connect writes share one truth table.
+  def can_access_community?(community_id)
+    community_id = community_id.to_i
+    return false if community_id.zero?
+    return true if is_super_admin?
+
+    assigned_communities_ids = communities.ids
+    if is_dwelo_admin?
+      dwelo_admin_ids = User.where(role: "Dwelo admin").ids
+      dwelo_communities_ids = Community.where(creator_id: dwelo_admin_ids).ids
+      dwelo_companies_communities = Community.joins(:company).where(companies: { creator_id: dwelo_admin_ids }).ids
+      return (assigned_communities_ids + dwelo_communities_ids + dwelo_companies_communities).uniq.include?(community_id)
+    end
+    if is_company_admin?
+      return (company&.communities&.ids || []).include?(community_id) || assigned_communities_ids.include?(community_id)
+    end
+
+    assigned_communities_ids.include?(community_id)
+  end
+
+  def can_read_map?(community)
+    community.present? && can_access_community?(community.id)
+  end
+
+  # Who may change a property's map and tour setup from Connect: the admin
+  # roles (`is_admin?`: Super, Company, Regional, Community admin, Community
+  # manager) and the Dwelo admin, each within the properties they may see.
+  # Community assistants, visitor-detail viewers and New Clients read only.
+  def can_edit_map?(community)
+    can_read_map?(community) && (is_admin? || is_dwelo_admin?)
+  end
+
   # def gen_uuid
   #   self.uuid = SecureRandom.uuid
   # end

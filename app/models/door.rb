@@ -8,6 +8,13 @@ class Door < ApplicationRecord
     has_one :zerv_lock,   as: :stop
     has_one :igloohome_lock, as: :stop
 
+    # Wayfinding (October 2026): a door is where a unit or amenity joins the
+    # paths, and a plate-attached door is a stop of its own, so moving one
+    # moves the level's version.
+    has_many :hallway_attachments, as: :attachable, dependent: :delete_all
+    after_commit :bump_wayfinding_version, on: %i[create destroy]
+    after_commit :bump_wayfinding_version, on: :update, if: -> { saved_change_to_x_plot? || saved_change_to_y_plot? || saved_change_to_floor? }
+
     # after_create    :snatch_lock,             if: Proc.new { attached_with_type == "Unit" or attached_with_type == "Amenity" and lock_provider.blank? }          # To be on secure side for other developers, but I am not using Door.create any where
     after_save      :snatch_lock,             if: Proc.new { attached_with_type == "Unit" or attached_with_type == "Amenity" and lock_provider.blank? }
     before_destroy  :throw_back_lock,         if: Proc.new { attached_with_type == "Unit" or attached_with_type == "Amenity" and lock_provider.present? }
@@ -84,6 +91,10 @@ class Door < ApplicationRecord
 
     def digital_lock_provider?
         self.lock_provider.present? and self.lock_provider != "" and self.lock_provider != "Manual"
+    end
+
+    def bump_wayfinding_version
+        Wayfinding::VersionBump.community_levels!(community_id)
     end
 
 end

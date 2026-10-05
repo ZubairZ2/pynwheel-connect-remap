@@ -22,13 +22,15 @@ export interface ApiResponse<T = unknown> {
 }
 
 interface RequestOptions {
-  method?: 'GET' | 'POST' | 'DELETE';
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   cookie?: string | null;
   body?: string;
   contentType?: string;
   accept?: string;
   parseJson?: boolean;
   redirect?: RequestRedirect;
+  /** Rails' authenticity token for a Connect write (`X-CSRF-Token`); the write endpoints verify it (Connect::WritesJson). */
+  csrfToken?: string | null;
 }
 
 export const apiRequest = async <T = unknown>(
@@ -42,12 +44,17 @@ export const apiRequest = async <T = unknown>(
     contentType,
     accept = 'application/json',
     parseJson = true,
-    redirect = 'manual'
+    redirect = 'manual',
+    csrfToken
   } = options;
 
   const headers: Record<string, string> = { Accept: accept };
   if (contentType) headers['Content-Type'] = contentType;
   if (cookie) headers.Cookie = cookie;
+  if (csrfToken) {
+    headers['X-CSRF-Token'] = csrfToken;
+    headers['X-Requested-With'] = 'XMLHttpRequest';
+  }
 
   const response = await fetch(railsURL(path), {
     method,

@@ -18,13 +18,27 @@ import { S } from '~/core/utils/generator/inventory/inventoryText';
  */
 
 /** Cancel, and the save button that — Connect being read-only — only closes. */
-export const DialogFooter = ({ saveLabel, onClose, disabled }: { saveLabel: string; onClose: () => void; disabled?: boolean }) => (
+export const DialogFooter = ({
+  saveLabel,
+  onClose,
+  onSave,
+  disabled,
+  note
+}: {
+  saveLabel: string;
+  onClose: () => void;
+  /** What Save does; closing the dialog when absent (the forms Connect still keeps read-only). */
+  onSave?: () => void;
+  disabled?: boolean;
+  /** The footer's note; the read-only one when absent. */
+  note?: string;
+}) => (
   <>
-    <p className="bo-dlg__readonly">{i18n.t(S.dialogs.readOnly)}</p>
+    <p className="bo-dlg__readonly">{note ?? i18n.t(S.dialogs.readOnly)}</p>
     <button type="button" className="bo-btn bo-btn--secondary" onClick={onClose}>
       {i18n.t(S.dialogs.cancel)}
     </button>
-    <button type="button" className="bo-btn bo-btn--primary" onClick={onClose} disabled={disabled}>
+    <button type="button" className="bo-btn bo-btn--primary" onClick={onSave ?? onClose} disabled={disabled}>
       {saveLabel}
     </button>
   </>

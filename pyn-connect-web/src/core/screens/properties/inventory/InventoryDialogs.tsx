@@ -1,8 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useCallback, useState } from 'react';
 
+import { APP_API, APP_ROUTES } from '~/config/app/urls';
 import { i18n } from '~/resources/i18n';
+import { demoActions } from '~/core/store/demo/demo.slice';
+import { useAppDispatch } from '~/core/store/hooks';
 import { Modal } from '~/core/components/molecules/Modal';
 import { UploadSlot, type UploadSlotFile } from '~/core/components/molecules/UploadSlot';
 import type { InventoryDialog } from '~/core/hooks/usePropertyInventory';
@@ -81,6 +85,58 @@ export interface DialogProps {
 
 const preview = (file: UploadSlotFile | null, onView: DialogProps['onView']) =>
   file?.src ? () => onView([{ name: file.name, src: file.src as string }]) : undefined;
+
+/**
+ * "Show in Stops List" is the one field of the unit and amenity forms Connect
+ * persists (`TourStops::Membership`, through this app's stop-list route
+ * handler). Saving sends the toggle when it changed, says what happened, and
+ * re-reads the inventory so the lists and Tour Setup agree with the CMS;
+ * every other field is shown as the CMS has it and stays that way.
+ */
+const useStopListSave = (inventory: PropertyInventory, onClose: () => void) => {
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+  const [saving, setSaving] = useState(false);
+  const toast = useCallback((message: string) => dispatch(demoActions.showToast(message)), [dispatch]);
+
+  const save = useCallback(
+    async (stopType: 'unit' | 'amenity', stopId: number, name: string, before: boolean, after: boolean) => {
+      if (before === after || !inventory.selfTour) {
+        onClose();
+        return;
+      }
+      setSaving(true);
+      try {
+        const response = await fetch(APP_API.stopList(inventory.property.id), {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ stopType, stopId, show: after }),
+          cache: 'no-store'
+        });
+        const body = (await response.json()) as { ok: true } | { ok: false; error: string; message: string | null };
+        if (!body.ok) {
+          if (body.error === 'unauthorized') {
+            window.setTimeout(() => window.location.assign(APP_ROUTES.signIn), 1200);
+            toast(t(S.dialogs.stopList.failed, { message: i18n.t(S.dialogs.stopList.notAllowed) }));
+          } else {
+            toast(body.error === 'forbidden' ? i18n.t(S.dialogs.stopList.notAllowed) : t(S.dialogs.stopList.failed, { message: body.message ?? body.error }));
+          }
+          return;
+        }
+        toast(t(after ? S.dialogs.stopList.saved : S.dialogs.stopList.savedOff, { name }));
+        onClose();
+        router.refresh();
+      } catch {
+        toast(t(S.dialogs.stopList.failed, { message: '' }));
+      } finally {
+        setSaving(false);
+      }
+    },
+    [inventory.property.id, inventory.selfTour, onClose, router, toast]
+  );
+
+  return { save, saving };
+};
 
 /* ---------------- Floorplate ---------------- */
 
@@ -358,6 +414,8 @@ const FloorplanDialog = ({ inventory, id, onClose, onView }: DialogProps) => {
 const UnitDialog = ({ inventory, id, unit: given, onClose, onView }: DialogProps & { unit: InventoryUnit | null }) => {
   const unit = given ?? inventory.units.find((candidate) => candidate.id === id) ?? null;
   const [form, setForm] = useState(() => unitForm(unit, inventory));
+  const [inStops, setInStops] = useState(unit?.inStopsList ?? false);
+  const stopList = useStopListSave(inventory, onClose);
   const pick = usePickedFiles();
   const sources = unitFieldSources(unit);
   const U = S.dialogs.unit;
@@ -376,11 +434,23 @@ const UnitDialog = ({ inventory, id, unit: given, onClose, onView }: DialogProps
       footer={
         <>
           <p className="bo-dlg__readonly">{i18n.t(U.required)}</p>
-          <DialogFooter saveLabel={i18n.t(unit ? U.editSave : U.addSave)} onClose={onClose} />
+          <DialogFooter
+            saveLabel={i18n.t(unit ? U.editSave : U.addSave)}
+            onClose={onClose}
+            onSave={unit ? () => void stopList.save('unit', unit.id, unit.displayName ?? unit.marketingName ?? `#${unit.id}`, unit.inStopsList, inStops) : undefined}
+            disabled={stopList.saving}
+            note={unit && inventory.selfTour ? i18n.t(S.dialogs.stopList.note) : undefined}
+          />
         </>
       }
     >
       <div className="bo-dlg bo-dlg--stacked">
+        {unit && (
+          <FormGroup title={i18n.t(U.showInStops)} hint={i18n.t(U.showInStopsHint)}>
+            <SwitchField label={i18n.t(U.showInStops)} on={inStops} onToggle={() => inventory.selfTour && setInStops(!inStops)} />
+            {!inventory.selfTour && <span className="bo-dlg__fieldhint">{i18n.t(U.selfTourOff)}</span>}
+          </FormGroup>
+        )}
         <FormGroup title={i18n.t(U.feed)} hint={i18n.t(U.feedBody)}>
           <YesNo
             label={i18n.t(U.feed)}
@@ -599,7 +669,9 @@ const UnitDialog = ({ inventory, id, unit: given, onClose, onView }: DialogProps
  */
 const AmenityDialog = ({ inventory, id, onClose, onView }: DialogProps) => {
   const amenity = inventory.amenities.find((candidate) => candidate.id === id) ?? null;
-  const [form, setForm] = useState(() => amenityForm(amenity));
+  // The switch starts from the stop-list membership the CMS reports (a visible stop of the main tour with the form flag on).
+  const [form, setForm] = useState(() => ({ ...amenityForm(amenity), showInStops: amenity ? amenity.inStopsList : true }));
+  const stopList = useStopListSave(inventory, onClose);
   const pick = usePickedFiles();
   const A = S.dialogs.amenity;
   const set = (patch: Partial<typeof form>) => setForm({ ...form, ...patch });
@@ -612,7 +684,15 @@ const AmenityDialog = ({ inventory, id, onClose, onView }: DialogProps) => {
       width={820}
       onClose={onClose}
       closeLabel={i18n.t(S.dialogs.close)}
-      footer={<DialogFooter saveLabel={i18n.t(amenity ? A.editSave : A.addSave)} onClose={onClose} />}
+      footer={
+        <DialogFooter
+          saveLabel={i18n.t(amenity ? A.editSave : A.addSave)}
+          onClose={onClose}
+          onSave={amenity ? () => void stopList.save('amenity', amenity.id, amenity.name, amenity.inStopsList, form.showInStops) : undefined}
+          disabled={stopList.saving}
+          note={amenity && inventory.selfTour ? i18n.t(S.dialogs.stopList.note) : undefined}
+        />
+      }
     >
       <div className="bo-dlg">
         <FormRow label={i18n.t(A.name)} hint={i18n.t(A.nameHint)}>

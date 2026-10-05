@@ -800,7 +800,17 @@ export const CORE_STRINGS = {
         interiorsHint: 'inventory.dialogs.unit.interiorsHint',
         required: 'inventory.dialogs.unit.required',
         addSave: 'inventory.dialogs.unit.addSave',
-        editSave: 'inventory.dialogs.unit.editSave'
+        editSave: 'inventory.dialogs.unit.editSave',
+        showInStops: 'inventory.dialogs.unit.showInStops',
+        showInStopsHint: 'inventory.dialogs.unit.showInStopsHint',
+        selfTourOff: 'inventory.dialogs.unit.selfTourOff'
+      },
+      stopList: {
+        note: 'inventory.dialogs.stopList.note',
+        saved: 'inventory.dialogs.stopList.saved',
+        savedOff: 'inventory.dialogs.stopList.savedOff',
+        failed: 'inventory.dialogs.stopList.failed',
+        notAllowed: 'inventory.dialogs.stopList.notAllowed'
       },
       amenity: {
         addTitle: 'inventory.dialogs.amenity.addTitle',
@@ -1472,6 +1482,21 @@ export const CORE_STRINGS = {
     },
     wayfinding: {
       title: 'mapPlotting.wayfinding.title',
+      save: {
+        button: 'mapPlotting.wayfinding.save.button',
+        buttonCount: 'mapPlotting.wayfinding.save.buttonCount',
+        saving: 'mapPlotting.wayfinding.save.saving',
+        saved: 'mapPlotting.wayfinding.save.saved',
+        nothing: 'mapPlotting.wayfinding.save.nothing',
+        notAllowed: 'mapPlotting.wayfinding.save.notAllowed',
+        disabled: 'mapPlotting.wayfinding.save.disabled',
+        stale: 'mapPlotting.wayfinding.save.stale',
+        invalid: 'mapPlotting.wayfinding.save.invalid',
+        forbidden: 'mapPlotting.wayfinding.save.forbidden',
+        unauthorized: 'mapPlotting.wayfinding.save.unauthorized',
+        failed: 'mapPlotting.wayfinding.save.failed',
+        note: 'mapPlotting.wayfinding.save.note'
+      },
       modes: {
         label: 'mapPlotting.wayfinding.modes.label',
         plot: 'mapPlotting.wayfinding.modes.plot',
@@ -1808,6 +1833,20 @@ export const CORE_STRINGS = {
     breadcrumbRoot: 'tourSetup.breadcrumbRoot',
     breadcrumbCurrent: 'tourSetup.breadcrumbCurrent',
     readOnly: 'tourSetup.readOnly',
+    save: {
+      button: 'tourSetup.save.button',
+      buttonCount: 'tourSetup.save.buttonCount',
+      saving: 'tourSetup.save.saving',
+      saved: 'tourSetup.save.saved',
+      nothing: 'tourSetup.save.nothing',
+      notAllowed: 'tourSetup.save.notAllowed',
+      disabled: 'tourSetup.save.disabled',
+      stale: 'tourSetup.save.stale',
+      invalid: 'tourSetup.save.invalid',
+      forbidden: 'tourSetup.save.forbidden',
+      unauthorized: 'tourSetup.save.unauthorized',
+      failed: 'tourSetup.save.failed'
+    },
     header: {
       inventory: 'tourSetup.header.inventory',
       mapPlotting: 'tourSetup.header.mapPlotting',

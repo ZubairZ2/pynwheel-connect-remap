@@ -123,7 +123,9 @@ test.describe('Map & Plotting · Wayfinding (real data)', () => {
     await expect(modes.getByRole('tab')).toHaveText(['Plotting', 'Wayfinding']);
     await expect(modes.getByRole('tab', { name: 'Plotting' })).toHaveAttribute('aria-selected', 'true');
     const toolbar = page.locator('.bo-map__toolbar');
-    await expect(toolbar.getByRole('button')).toHaveText([/^Auto Plot/, /^Manual Plot/]);
+    // Save changes (the one button both modes share; nothing to save yet), Auto Plot, Manual Plot.
+    await expect(toolbar.getByRole('button')).toHaveText([/^Save changes/, /^Auto Plot/, /^Manual Plot/]);
+    await expect(toolbar.getByRole('button', { name: /^Save changes/ })).toBeDisabled();
     await expect(page.getByTestId('plot-panel')).toContainText('Plot on Map');
     await expect(page.getByTestId('wayfinding-panel')).toHaveCount(0);
 

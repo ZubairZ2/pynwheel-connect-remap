@@ -278,6 +278,11 @@ class Unit < ApplicationRecord
   after_update :crop_unit_secondary_image, if: ->(obj) { obj.secondary_image_changed? }
   after_update :remove_doors_plotting, if: Proc.new { x_plot == 0 and y_plot == 0 }
   before_destroy :destroy_associated_stops
+  # Wayfinding (October 2026): a plotting change moves the level's version so
+  # a Connect save started before it is refused instead of overwriting it.
+  # Bulk writes (`upsert_all`, `update_all`) fire no callbacks, by design.
+  has_many :hallway_attachments, as: :attachable, dependent: :delete_all
+  after_commit :bump_wayfinding_version, on: :update, if: :plotting_fields_changed?
 
   def stop_description_text
     description
@@ -588,6 +593,19 @@ class Unit < ApplicationRecord
   # so the grid's marker icon and the filter can never disagree.
   def plotted_on_map?
     x_plot.to_i.positive? || y_plot.to_i.positive? || pointer_data.is_a?(Hash) && pointer_data["x_plot"].present?
+  end
+
+  def plotting_fields_changed?
+    saved_change_to_x_plot? || saved_change_to_y_plot? || saved_change_to_floorplate_id? || saved_change_to_pointer_data? || saved_change_to_floor?
+  end
+
+  def bump_wayfinding_version
+    if floorplate_id.present?
+      Wayfinding::VersionBump.level!('Floorplate', floorplate_id)
+      Wayfinding::VersionBump.level!('Floorplate', floorplate_id_before_last_save) if saved_change_to_floorplate_id? && floorplate_id_before_last_save.present?
+    else
+      Wayfinding::VersionBump.community_levels!(community_id)
+    end
   end
 
   def unit_market

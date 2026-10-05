@@ -23,7 +23,6 @@ vendor/bundle/
 
 public/uploads/*
 vendor/bundle/
-test/
 
 .ruby-gemset
 .ruby-version

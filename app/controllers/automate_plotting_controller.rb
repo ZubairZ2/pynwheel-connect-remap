@@ -32,6 +32,11 @@ class AutomatePlottingController < ApplicationController
   end
 
   def shortest_path
+    # Pynwheel Connect's "Test shortest path": a route between two places on
+    # the persisted graph through the same service the Tour App uses, so the
+    # preview equals the app. Without `from` the action is the legacy one.
+    return render_connect_route if request.format.json? && params[:from].present?
+
     community = Community.find params[:community_id]
     if community.is_sitemap
       path_object_in_order = begin; return_path_for_sitemap(params[:community_id], params[:path_type]); rescue; []; end

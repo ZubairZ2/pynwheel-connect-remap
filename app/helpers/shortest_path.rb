@@ -787,7 +787,7 @@ module ShortestPath
       @planned_to_visit_units_and_doors_ids     = []
       @planned_to_visit_amenities_and_doors_ids = []
       @sitemap = @community.sitemap
-      @hallways = @sitemap.hallways.order("id ASC")
+      @hallways = @sitemap.hallways.routable.order("id ASC")
       @access_points = @sitemap.access_points
       planned_to_visit_units_ids     = tour_stops.where(stop_type: "unit", display_stop: true).pluck(:stop_id) rescue []
       planned_to_visit_amenities_ids = tour_stops.where(stop_type: "amenity",display_stop: true).pluck(:stop_id) rescue []
@@ -833,7 +833,7 @@ module ShortestPath
         @precedence_arr = tour_stops.pluck(:stop_id, :stop_type)
         tour_stops.each {|tour_stop| @stops_id_hash[tour_stop.id] = tour_stop.stop_id}
         @sitemap = @community.sitemap
-        @hallways = @sitemap.hallways.order("id ASC")
+        @hallways = @sitemap.hallways.routable.order("id ASC")
         @access_points = @sitemap.access_points
         planned_to_visit_units_ids     = tour_stops.where(stop_type: "unit", display_stop: true).pluck(:stop_id) rescue []
         planned_to_visit_amenities_ids = tour_stops.where(stop_type: "amenity",display_stop: true).pluck(:stop_id) rescue []
@@ -883,7 +883,7 @@ module ShortestPath
       @community.floorplates.map { |x| @floor_lists_hash[x.id] = x.floors }
       @floors_ids = @community.floorplates.map { |x| x.floors }.flatten!.uniq.sort
       @floor_to_floorplate_id = fetch_hash_for_floor_to_floorplate_id()
-      @floorplates.each {|floorplate| @floorplate_hallways[floorplate.id] = floorplate.hallways.order("id ASC") }
+      @floorplates.each {|floorplate| @floorplate_hallways[floorplate.id] = floorplate.hallways.routable.order("id ASC") }
       #@floorplates.each {|floorplate| @floorplate_access_points[floorplate.id] = floorplate.access_points } # For future use
       planned_to_visit_units_ids  = tour_stops.where(stop_type: "unit", display_stop: true).pluck(:stop_id) rescue []
       planned_to_visit_amenities_ids = tour_stops.where(stop_type: "amenity", display_stop: true).pluck(:stop_id) rescue []
@@ -945,7 +945,7 @@ module ShortestPath
       @community.floorplates.map { |x| @floor_lists_hash[x.id] = x.floors }
       @floors_ids = @community.floorplates.map { |x| x.floors }.flatten!.uniq.sort
       @floor_to_floorplate_id = fetch_hash_for_floor_to_floorplate_id()
-      @floorplates.each {|floorplate| @floorplate_hallways[floorplate.id] = floorplate.hallways.order("id ASC") }
+      @floorplates.each {|floorplate| @floorplate_hallways[floorplate.id] = floorplate.hallways.routable.order("id ASC") }
       #@floorplates.each {|floorplate| @floorplate_access_points[floorplate.id] = floorplate.access_points } # For future use
       planned_to_visit_units_ids  = tour_stops.where(stop_type: "unit", display_stop: true).pluck(:stop_id) rescue []
       planned_to_visit_amenities_ids = tour_stops.where(stop_type: "amenity", display_stop: true).pluck(:stop_id) rescue []
@@ -1006,7 +1006,7 @@ module ShortestPath
       @community.floorplates.map { |x| @floor_lists_hash[x.id] = x.floors }
       @floors_ids = @community.floorplates.map { |x| x.floors }.flatten!.uniq.sort
       @floor_to_floorplate_id = fetch_hash_for_floor_to_floorplate_id()
-      @floorplates.each {|floorplate| @floorplate_hallways[floorplate.id] = floorplate.hallways.order("id ASC") }
+      @floorplates.each {|floorplate| @floorplate_hallways[floorplate.id] = floorplate.hallways.routable.order("id ASC") }
       #@floorplates.each {|floorplate| @floorplate_access_points[floorplate.id] = floorplate.access_points } # For future use
       planned_to_visit_units_ids  = tour_stops.where(stop_type: "unit", display_stop: true).pluck(:stop_id) rescue []
       planned_to_visit_amenities_ids = tour_stops.where(stop_type: "amenity", display_stop: true).pluck(:stop_id) rescue []
@@ -1077,7 +1077,7 @@ module ShortestPath
       @community.floorplates.map { |x| @floor_lists_hash[x.id] = x.floors }
       @floors_ids = @community.floorplates.map { |x| x.floors }.flatten!.uniq.sort
       @floor_to_floorplate_id = fetch_hash_for_floor_to_floorplate_id()
-      @floorplates.each {|floorplate| @floorplate_hallways[floorplate.id] = floorplate.hallways.order("id ASC") }
+      @floorplates.each {|floorplate| @floorplate_hallways[floorplate.id] = floorplate.hallways.routable.order("id ASC") }
       #@floorplates.each {|floorplate| @floorplate_access_points[floorplate.id] = floorplate.access_points } # For future use
       planned_to_visit_units_ids  = tour_stops.where(stop_type: "unit", display_stop: true).pluck(:stop_id) rescue []
       planned_to_visit_amenities_ids = tour_stops.where(stop_type: "amenity", display_stop: true).pluck(:stop_id) rescue []
@@ -1822,6 +1822,9 @@ module ShortestPath
     end
     def fetch_hallways_coordinates_with_distance(hallways)
       new_hallways_coordinates = {}
+      # One query for the level instead of one per linked point: the output
+      # is unchanged (same keys, same order), checked by lib/tasks/wayfinding_snapshot.rake.
+      hallways_by_id = hallways.to_a.index_by(&:id)
       hallways.each_with_index do |point, indx|
         new_point = {}
         new_point['id'] = point.id;
@@ -1833,7 +1836,7 @@ module ShortestPath
         new_point['next_points'] = point.next_points;
         new_point['next_points_distance'] = [];
         point.next_points.each_with_index do |element, i|
-          obj  = hallways.where(id: element).first
+          obj  = hallways_by_id[element]
           if obj.present?
             id   = obj.id.to_s;
             a    = point.x_plot - obj.x_plot;

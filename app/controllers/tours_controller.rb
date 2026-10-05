@@ -2,6 +2,36 @@ class ToursController < ApplicationController
   # include Error::ErrorHandler
   include AssignLocksHelper
   include ToursHelper
+  # Pynwheel Connect's Tour Setup save and the Unit / Amenity "Show in Stops
+  # List" toggle (see Connect::WritesJson, TourSetup::Save, TourStops::Membership).
+  CONNECT_WRITE_ACTIONS = %w[save_setup stop_list].freeze
+  include Connect::WritesJson
+
+  # PUT /communities/:community_id/tours/save_setup.json
+  def save_setup
+    result = TourSetup::Save.call(community: @community, user: current_user, payload: params.to_unsafe_h.except('controller', 'action', 'format', 'community_id', 'tour'))
+    render json: Connect::ResponseEnvelope.new(
+      data: { tour: Connect::WayfindingSerializer.tour_setup_json(@community), key_map: result.key_map, counts: result.counts },
+      meta: connect_write_meta(versions: Connect::WayfindingSerializer.versions(@community))
+    ).as_json
+  end
+
+  # PUT /communities/:community_id/tours/stop_list.json  {stop_type, stop_id, show}
+  def stop_list
+    state = TourStops::Membership.set!(
+      community: @community, user: current_user,
+      stop_type: params[:stop_type].to_s, stop_id: params[:stop_id].to_i, show: ActiveModel::Type::Boolean.new.cast(params[:show]) == true
+    )
+    render json: Connect::ResponseEnvelope.new(
+      data: {
+        stop_type: params[:stop_type].to_s, stop_id: params[:stop_id].to_i,
+        in_stops_list: state.in_stops_list, show_in_stops: state.show_in_stops,
+        tour_stop: state.tour_stop && { id: state.tour_stop.id, sort: state.tour_stop.sort, visible: state.tour_stop.display_stop != false },
+        changed: state.changed
+      },
+      meta: connect_write_meta(versions: Connect::WayfindingSerializer.versions(@community))
+    ).as_json
+  end
   
   def index
     @community = Community.find params[:community_id]

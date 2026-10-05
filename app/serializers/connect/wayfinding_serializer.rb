@@ -43,13 +43,153 @@ module Connect
         tour_stops: tour_stops,
         doors: doors,
         bedroom_marker_colors: bedroom_marker_colors,
-        ocr: ocr
+        ocr: ocr,
+        # Wayfinding persistence (October 2026): the per-edge rows, the stop →
+        # hallway links, the additional stops, the levels' versions and frames,
+        # and how many user deletions each level remembers.
+        hallway_edges: hallway_edges,
+        hallway_attachments: hallway_attachments,
+        wayfinding_stops: wayfinding_stops,
+        levels: levels,
+        suppressions: suppressions
+      }
+    end
+
+    # The compare-and-swap versions a Connect save sends back: one per level
+    # ("floorplate:507" / "sitemap:12") and one for the main tour.
+    def self.versions(community)
+      out = {}
+      community.floorplates.pluck(:id, :wayfinding_version).each { |id, v| out["floorplate:#{id}"] = v }
+      Sitemap.where(community_id: community.id).pluck(:id, :wayfinding_version).each { |id, v| out["sitemap:#{id}"] = v }
+      out['tour'] = community.community_tour&.tour_setup_version
+      out
+    end
+
+    # The Tour Setup screen's part of the payload, after a save.
+    def self.tour_setup_json(community)
+      serializer = new(community, base_url: nil)
+      { tour: serializer.send(:tour_json), tour_stops: serializer.send(:tour_stops) }
+    end
+
+    def self.hallway_row(hallway)
+      {
+        id: hallway.id,
+        x_plot: hallway.x_plot,
+        y_plot: hallway.y_plot,
+        next_points: Array(hallway.next_points),
+        selected: hallway.selected.present?,
+        parent_type: hallway.parent_type,
+        parent_id: hallway.parent_id,
+        source: hallway.source,
+        review_status: hallway.review_status,
+        confidence: hallway.confidence,
+        space: hallway.space,
+        detection_run_id: hallway.detection_run_id,
+        confirmed_at: hallway.confirmed_at
+      }
+    end
+
+    def self.edge_row(edge)
+      {
+        id: edge.id,
+        from: edge.from_hallway_id,
+        to: edge.to_hallway_id,
+        parent_type: edge.parent_type,
+        parent_id: edge.parent_id,
+        kind: edge.kind,
+        points: Array(edge.path_points),
+        review_status: edge.review_status,
+        auto_generated: edge.auto_generated,
+        detection_run_id: edge.detection_run_id,
+        space: edge.space
+      }
+    end
+
+    def self.attachment_row(attachment)
+      {
+        id: attachment.id,
+        attachable_type: attachment.attachable_type,
+        attachable_id: attachment.attachable_id,
+        parent_type: attachment.parent_type,
+        parent_id: attachment.parent_id,
+        hallway_id: attachment.hallway_id,
+        mode: attachment.mode,
+        anchor_x: attachment.anchor_x,
+        anchor_y: attachment.anchor_y,
+        space: attachment.space
+      }
+    end
+
+    def self.stop_row(stop)
+      {
+        id: stop.id,
+        kind: stop.kind,
+        name: stop.name,
+        map_type: stop.map_type,
+        map_id: stop.map_id,
+        building: stop.building.presence,
+        floor: stop.floor,
+        x_plot: stop.x_plot,
+        y_plot: stop.y_plot,
+        space: stop.space,
+        accessible: stop.accessible,
+        lock_provider: stop.lock_provider.presence,
+        note: stop.note.presence,
+        radius_px: stop.radius_px,
+        hallway_id: stop.hallway_id,
+        status: stop.status,
+        source: stop.source
+      }
+    end
+
+    def self.level_row(record)
+      kind = record.class.base_class.name
+      {
+        kind: kind.underscore,
+        id: record.id,
+        wayfinding_version: record.wayfinding_version,
+        svg_to_image_transform: record.svg_to_image_transform,
+        scale_ft_per_px: record.scale_ft_per_px&.to_f,
+        wayfinding_space: Hallway.where(parent_type: kind, parent_id: record.id, space: 'svg').exists? ? 'svg' : 'raster'
       }
     end
 
     private
 
       attr_reader :community, :base_url
+
+      def level_records
+        @level_records ||= floorplates + [sitemap].compact
+      end
+
+      def level_scope(klass)
+        plates = floorplates.map(&:id)
+        scope = klass.where(parent_type: 'Floorplate', parent_id: plates)
+        scope = scope.or(klass.where(parent_type: 'Sitemap', parent_id: sitemap.id)) if sitemap
+        scope
+      end
+
+      def hallway_edges
+        level_scope(HallwayEdge).order(:id).map { |edge| self.class.edge_row(edge) }
+      end
+
+      def hallway_attachments
+        level_scope(HallwayAttachment).order(:id).map { |row| self.class.attachment_row(row) }
+      end
+
+      def wayfinding_stops
+        community.wayfinding_stops.active.order(:id).map { |stop| self.class.stop_row(stop) }
+      end
+
+      def levels
+        level_records.map { |record| self.class.level_row(record) }
+      end
+
+      def suppressions
+        level_scope(HallwaySuppression).group(:parent_type, :parent_id).count.each_with_object({}) do |((type, id), count), out|
+          out["#{type}:#{id}"] = count
+        end
+      end
 
       def tour
         return @tour if defined?(@tour)
@@ -110,17 +250,7 @@ module Connect
       def hallways
         scope = Hallway.where(parent_type: 'Floorplate', parent_id: floorplates.map(&:id))
         scope = scope.or(Hallway.where(parent_type: 'Sitemap', parent_id: sitemap.id)) if sitemap
-        scope.order(:id).map do |hallway|
-          {
-            id: hallway.id,
-            x_plot: hallway.x_plot,
-            y_plot: hallway.y_plot,
-            next_points: Array(hallway.next_points),
-            selected: hallway.selected.present?,
-            parent_type: hallway.parent_type,
-            parent_id: hallway.parent_id
-          }
-        end
+        scope.order(:id).map { |hallway| self.class.hallway_row(hallway) }
       end
 
       def elevators
@@ -147,6 +277,9 @@ module Connect
             directional_text: elevator.directional_text.presence,
             duplicate_of: elevator.duplicate_of,
             lock_provider: elevator.lock_provider.presence,
+            kind: elevator.kind,
+            accessible: elevator.accessible != false,
+            floor_positions: elevator.floor_positions.is_a?(Hash) ? elevator.floor_positions : {},
             image: UploadUrl.upload(elevator, :image, base_url, bucket: bucket),
             gallery: (galleries[elevator.id] || []).map do |photo|
               { id: photo.id, name: photo.name.presence, url: UploadUrl.upload(photo, :image, base_url, bucket: bucket) }
@@ -206,7 +339,8 @@ module Connect
           building: tour.building.presence,
           building_order: Array(tour.building_order),
           dotted_line_color: tour.dotted_line_color.presence,
-          enable_auto_zoom: tour.enable_auto_zoom.present?
+          enable_auto_zoom: tour.enable_auto_zoom.present?,
+          tour_setup_version: tour.tour_setup_version
         }
       end
 
@@ -224,7 +358,8 @@ module Connect
             sort: stop.sort,
             display_stop: stop.display_stop != false,
             latitude: stop.latitude&.to_f,
-            longitude: stop.longitude&.to_f
+            longitude: stop.longitude&.to_f,
+            duration_minutes: stop.duration_minutes
           }
         end
       end
@@ -247,7 +382,8 @@ module Connect
             attached_with_type: door.attached_with_type,
             attached_with_id: door.attached_with_id,
             sort: door.sort,
-            lock_provider: door.lock_provider.presence
+            lock_provider: door.lock_provider.presence,
+            note: door.note.presence
           }
         end
       end

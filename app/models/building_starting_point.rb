@@ -19,6 +19,24 @@ class BuildingStartingPoint < ApplicationRecord
   has_one :tour_stop, as: :stop, dependent: :destroy
   scope :fetch_building_starting_exit_points, -> (building_starting_exit_points_ids) { where(id: building_starting_exit_points_ids)}
 
+  # Wayfinding (October 2026): see Elevator.
+  has_many :hallway_attachments, as: :attachable, dependent: :delete_all
+  before_destroy :destroy_legacy_tour_stops
+  after_commit :bump_wayfinding_version, on: %i[create destroy]
+  after_commit :bump_wayfinding_version, on: :update, if: :wayfinding_fields_changed?
+
+  def destroy_legacy_tour_stops
+    TourStops::Remove.for_record!(self)
+  end
+
+  def wayfinding_fields_changed?
+    saved_change_to_x_plot? || saved_change_to_y_plot? || saved_change_to_floor? || saved_change_to_building?
+  end
+
+  def bump_wayfinding_version
+    Wayfinding::VersionBump.community_levels!(community_id)
+  end
+
   def validate_building
   	bsp = BuildingStartingPoint.where(community_id: attributes["community_id"], building: attributes["building"]).where.not(id: self.id)
   	errors[:base] << "Building Starting Point already exist." if bsp.count > 0

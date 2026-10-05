@@ -38,7 +38,10 @@ module Connect
             current_user,
             total_count || data.size,
             pagination: pagination,
-            extra: { property: connect_property_meta(community) }.merge(extra)
+            # `csrf_token`: the token the Connect write endpoints verify
+            # (Connect::WritesJson); the Next.js server reads it together with
+            # the session cookie of the same response, so the pair agrees.
+            extra: { property: connect_property_meta(community), csrf_token: form_authenticity_token }.merge(extra)
           )
         ).as_json
       end

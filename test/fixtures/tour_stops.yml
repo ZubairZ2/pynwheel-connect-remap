@@ -1,0 +1,27 @@
+unit_stop:
+  tour: main_tour
+  stop_type: unit
+  stop_id: <%= ActiveRecord::FixtureSet.identify(:plotted_unit) %>
+  name: "101"
+  sort: 1
+  display_stop: true
+  latitude: 400
+  longitude: 200
+
+unit_stop_floor3:
+  tour: main_tour
+  stop_type: unit
+  stop_id: <%= ActiveRecord::FixtureSet.identify(:plotted_unit_floor3) %>
+  name: "301"
+  sort: 2
+  display_stop: true
+  latitude: 450
+  longitude: 250
+
+lift_stop:
+  tour: main_tour
+  stop_type: elevator
+  stop_id: <%= ActiveRecord::FixtureSet.identify(:lift) %>
+  name: Elevator 1
+  sort: 3
+  display_stop: true

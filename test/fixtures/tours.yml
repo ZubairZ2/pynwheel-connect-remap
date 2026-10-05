@@ -1,0 +1,13 @@
+main_tour:
+  community: tour_property
+  name: Main Tour
+  x_plot: 90
+  y_plot: 92
+  starting_floor: 1
+  building: A
+
+sitemap_tour:
+  community: sitemap_property
+  name: Sitemap Tour
+  x_plot: 40
+  y_plot: 40

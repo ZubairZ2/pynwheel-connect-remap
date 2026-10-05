@@ -283,6 +283,7 @@ export const parseInventoryUnits = (payload: unknown): InventoryUnitListing => {
         lockProvider: text(source.lockProvider),
         doorId: num(source.doorId),
         tourOrder: num(source.tourOrder),
+        inStopsList: flag(source.inStopsList),
         image: upload(source.image),
         secondaryImage: upload(source.secondaryImage),
         interiorImages: images(source.interiorImages),
@@ -361,6 +362,7 @@ export const parseInventoryAmenities = (payload: unknown) => {
         tourStop: flag(source.tourStop),
         // Absent on an older backend: the CMS default for the column is true.
         showInStops: source.showInStops !== false,
+        inStopsList: flag(source.inStopsList),
         lockProvider: text(source.lockProvider),
         image: upload(source.image),
         gallery: (Array.isArray(source.gallery) ? (source.gallery as Source[]) : []).map((photo) => ({
