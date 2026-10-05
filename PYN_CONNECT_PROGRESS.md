@@ -2101,3 +2101,4 @@ None. No controller, serializer, query, route, schema or migration changed in th
 - SVG-space rows (detected on a floor SVG) are stored but non-routable until a `svg_to_image_transform` exists; `ReprojectPlate` and `DetectionUndo` have no endpoint yet.
 - The data repair (`rake wayfinding:repair:*`) and the CHECK constraints have not been applied anywhere.
 - Feet and minutes on routes need `scale_ft_per_px` per level, which nothing sets yet.
+- **October 5, 2026:** Save is offered in Wayfinding mode only and unit / amenity pins are no longer sent (`PLOTTING_SAVE = false` in `graphDiff.ts`): a pin saved to the CMS could not be removed from the plan. The backend still accepts them; the Plotting note says pins stay on the page.

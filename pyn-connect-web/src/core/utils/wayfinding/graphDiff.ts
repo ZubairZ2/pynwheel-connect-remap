@@ -111,6 +111,14 @@ const spaceOfNode = (key: string, state: LocalMapState): PlanSpace | null => {
 };
 
 /** Builds the payload(s) for `level`: one per space that has changes; empty when the level has none. */
+/**
+ * Whether a save carries unit and amenity pins (Manual Plot / Auto Plot).
+ * Off since October 5, 2026: a pin saved to the CMS cannot be removed from the
+ * plan yet, so plotting stays page state until that is handled. The Rails side
+ * keeps accepting `pins.units` / `pins.amenities`; flip this to send them again.
+ */
+export const PLOTTING_SAVE = false;
+
 export const buildGraphSavePayloads = (map: PropertyMap, levels: MapLevel[], level: MapLevel, state: LocalMapState, baseVersion: number, requestId: string): GraphSavePayload[] => {
   const spaces: PlanSpace[] = ['raster', 'svg'];
   const payloads: GraphSavePayload[] = [];
@@ -213,8 +221,8 @@ const buildFor = (map: PropertyMap, levels: MapLevel[], level: MapLevel, state: 
     });
   });
 
-  // Pins: units and amenities placed, moved or removed on this level; the legacy icon records moved or unplotted.
-  Object.entries(state.pinOverrides).forEach(([key, override]) => {
+  // Pins: units and amenities placed, moved or removed on this level (only while PLOTTING_SAVE); the legacy icon records moved or unplotted.
+  if (PLOTTING_SAVE) Object.entries(state.pinOverrides).forEach(([key, override]) => {
     const kind = key.startsWith('unit:') ? 'units' : key.startsWith('amenity:') ? 'amenities' : null;
     if (!kind) return;
     const id = Number(key.slice(key.indexOf(':') + 1));
@@ -350,7 +358,8 @@ export const clearSavedLevel = (state: LocalMapState, level: MapLevel, map: Prop
     wfLinks: Object.fromEntries(Object.entries(state.wfLinks).filter(([key]) => !key.startsWith(`${level.id}|`))),
     wfPlaces: Object.fromEntries(Object.entries(state.wfPlaces).filter(([key]) => !key.startsWith(`${level.id}|`))),
     tempStops: state.tempStops.filter((stop) => stop.levelId !== level.id),
-    pinOverrides: Object.fromEntries(Object.entries(state.pinOverrides).filter(([key, override]) => !pinOnLevel(key, override))),
+    // Unit / amenity pins are not saved while PLOTTING_SAVE is off, so a save must leave them on the page.
+    pinOverrides: PLOTTING_SAVE ? Object.fromEntries(Object.entries(state.pinOverrides).filter(([key, override]) => !pinOnLevel(key, override))) : state.pinOverrides,
     wfEdited: Object.fromEntries(Object.entries(state.wfEdited).filter(([key]) => key !== level.id)),
     wfUndo: [],
     wfDetect: null,

@@ -199,6 +199,8 @@ const MapEditor = ({ map, initial }: { map: PropertyMap; initial: MapInitial | n
               </div>
             </div>
             <div className="bo-map__toolbaractions">
+            {/* Save is offered in Wayfinding mode only: a plotted pin, once saved, has no way back off the plan yet (graphDiff PLOTTING_SAVE). */}
+            {wayfind && (
             <button
               type="button"
               className={`bo-map__tool bo-map__tool--accent${wayfinding.unsaved ? ' bo-map__tool--fill' : ''}`}
@@ -209,6 +211,7 @@ const MapEditor = ({ map, initial }: { map: PropertyMap; initial: MapInitial | n
             >
               {wayfinding.saving ? i18n.t(M.wayfinding.save.saving) : wayfinding.unsaved ? t(M.wayfinding.save.buttonCount, { count: wayfinding.unsaved }) : i18n.t(M.wayfinding.save.button)}
             </button>
+            )}
             {wayfind ? (
               <WayfindingToolbar controller={controller} />
             ) : (

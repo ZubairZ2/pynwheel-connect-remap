@@ -876,7 +876,7 @@ const ENGLISH: Record<string, string> = {
   [CORE_STRINGS.mapPlotting.notFound.title]: 'Property not found',
   [CORE_STRINGS.mapPlotting.notFound.body]: 'There is no property with this id in your account, or you do not have access to it.',
   [CORE_STRINGS.mapPlotting.notFound.back]: 'Back to Properties',
-  [CORE_STRINGS.mapPlotting.readOnly]: 'Pins, points and connections you add or move here stay on this page until you save the floorplate.',
+  [CORE_STRINGS.mapPlotting.readOnly]: 'Pins you place or move here stay on this page and are not saved to the CMS yet. Points and connections are saved from the Wayfinding mode.',
   [CORE_STRINGS.mapPlotting.tools.select]: 'Select',
   [CORE_STRINGS.mapPlotting.tools.plot]: 'Place Pin',
   [CORE_STRINGS.mapPlotting.tools.junction]: 'Junction',
