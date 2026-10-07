@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Debug builds only: lets the app talk to a development API on plain http (http://<lan-ip>:8000).
-     Release builds keep Android's default (no cleartext) and must use an https API URL. -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
-    <application
-        android:usesCleartextTraffic="true"
-        tools:replace="android:usesCleartextTraffic" />
+<!-- Debug builds only: lets the app talk to a development CMS on plain http (http://<lan-ip>:3100,
+     see .env.production.local). Release builds keep Android's default (no cleartext) and use the
+     https CMS URL of .env.production. The main manifest carries no usesCleartextTraffic, so this
+     attribute simply merges in for debug. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application android:usesCleartextTraffic="true" />
 </manifest>
