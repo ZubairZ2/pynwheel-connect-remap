@@ -2224,3 +2224,9 @@ Trestle, Dummy-High-Rise); cold open 1 graph build instead of 4; Play Route 60 f
 
 **Not done / blocked:** `pynwheel_prod` reads (classifier), Auto Detect temporary paths (nothing to
 detect in the dump: unroutable stops sit on plates without hallway points), iOS / Android runs.
+
+**Addendum (production data, same evening):** John Demo on `pynwheel_prod`: cold open 874 ms (1 build),
+route 23 ms, tour-route 66 ms, first SVG read 2.2 s then 44 ms, Play Route 60 fps across the floor
+change. Fixed on the way: stale per-property selection leaking into tour requests; the 4,832-row
+picker (capped at 120, current property first). Status moves to **NOT READY pending device validation
+only** (rules 1–10 hold with production evidence; iOS/Android remain the owner's).

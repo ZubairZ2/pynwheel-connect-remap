@@ -392,3 +392,12 @@ Brief `issues_in_tour_app.md`; report `tour-app-final-qa-report.md`.
 Measured in the browser on the dump's largest plans (Sofia 2919, 2942×1942): 60 fps, worst frame 18.7
 ms, zero network requests during Play Route, including the Floor 1 → 7 change. Property open and
 sign-in now issue each request once. Not run: iOS / Android devices.
+
+**Addendum, same evening (production data):** with `pynwheel_prod` reads allowed, John Demo's own six SVG
+plates played at 60 fps (worst frame 17.8 ms) including the Floor 1 → 2 change; its tour-route took
+66 ms. Two more app fixes came out of that run: a selection persisted for another property could leak
+into the tour request (hydration now resets per-property state when the session's property differs,
+and `selectedNodes` only sends stops on the current list), and the picker rendered all 4,832
+production properties (now capped at 120 rows with a "Showing 120 of N" footer, the current property
+pinned first, the filter behind `useDeferredValue`: 851 DOM nodes instead of 33,640, 78 ms per
+keystroke instead of 163 ms on this Mac). Report: `tour-app-final-qa-report.md`, "Production-DB run".

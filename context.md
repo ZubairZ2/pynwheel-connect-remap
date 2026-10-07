@@ -1085,3 +1085,9 @@ Branch `feature/tour_app_rails_api`; full account in `tour-app-backend-api.md` �
 - Dev-only noise: Vite HMR replaces the repository singleton (a concurrent `ensureSession` race
   showed "Choose a property first." once — now one shared restore); React StrictMode runs the
   restore effect twice (`auth/me` ×2).
+- **Production run (same evening):** John Demo on `pynwheel_prod` is 6 SVG plates (555 KB each);
+  API 23–66 ms warm, Play Route 60 fps on its plates. A 1 fps reading seen first was the Claude
+  browser pane being hidden (rAF throttled to 1 Hz) — always check `tabs_context` before trusting
+  frame numbers. Stale selection across properties and the 4,832-row picker were the real app
+  findings there (both fixed). Launch entry `rails-cms-prod` runs the verify server on the
+  production copy; a token can be minted with `rails runner` for `TOUR_API_TOKEN` and must be revoked.

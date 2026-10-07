@@ -681,3 +681,11 @@ ms, stops 34–71 ms, map 23–38 ms, graph 27–40 ms (37–256 KB), route 24�
 distances 26–43 ms — the ~25 ms floor is the development server. `pynwheel_prod` was not read
 (permission refused in this session), so the production John Demo numbers remain to be taken with
 `script/tour_api_measure.rb` against a Rails server on that database.
+
+**Addendum, same evening (production data):** on `pynwheel_prod` John Demo (1411: six 2942×1942
+plates, all with 555 KB SVG plans, 146 hallway points) opens cold in 874 ms with one graph build and
+answers warm in 23–45 ms (route 23 ms, tour-route 37–66 ms); the first S3 read of each SVG by the
+server is 2.2–2.6 s (once per deployment now). Hazel, Jennifer Demo FP, Hazel Copy Test, Hazel Testing
+Community 12345, Sofia and Madera: 23–76 ms warm. `GET /properties` is 867 KB there (4,832 rows,
+475 ms uncached / 92 ms cached). `script/tour_api_measure.rb` accepts `TOUR_API_TOKEN`. The only
+write was a two-hour token for the owner's account, revoked afterwards.
