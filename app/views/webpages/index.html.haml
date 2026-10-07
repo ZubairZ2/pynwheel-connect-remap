@@ -49,6 +49,7 @@
       %link{:href => "https://fonts.googleapis.com", :rel => "preconnect"}/
       %link{:crossorigin => "", :href => "https://fonts.gstatic.com", :rel => "preconnect"}/
       %link{:href => "https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&display=swap", :rel => "stylesheet"}/
+      = render 'shared/beans_svg_fonts', community: @community_info
       
       = favicon_link_tag 'logo-small.png'
       = render '/font_awesome_v5'

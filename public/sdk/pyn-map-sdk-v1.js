@@ -1852,6 +1852,7 @@
       clone.style.visibility     = this._3dMode ? "hidden" : "visible";
       clone.style.pointerEvents  = this._3dMode ? "none"   : "";
 
+      this._applyBeansSvgFonts();
       this._applyGlobalLabelStyles(clone, this.config.styles.unitLabels);
       this._hideUnitNumbers(clone);
 
@@ -4289,15 +4290,43 @@
     _applyGlobalLabelStyles(svg, textStyles) {
       if (!svg || svg._pynTextStyled) return;
 
+      // `el.style.fontFamily = undefined` writes the family name "undefined" inline,
+      // which beats the SVG's own font and the Beans Inter rule (_applyBeansSvgFonts).
+      // Beans maps skip it when no font is configured; other maps keep their
+      // existing rendering.
+      const isBeans = this.data.property?.map?.isBeansSvg === true;
+
       const elements = svg.querySelectorAll("text, tspan");
       elements.forEach(el => {
-        el.style.fontFamily   = textStyles?.fontFamily;
+        if (!isBeans || textStyles?.fontFamily) el.style.fontFamily = textStyles?.fontFamily;
         el.style.fontSize     = textStyles?.fontSize;
         el.style.fill         = textStyles?.fontColor;
         el.style.pointerEvents = "none";
       });
 
       svg._pynTextStyled = true;
+    },
+
+    // "Beans Generated SVG" maps (Figma exports) set font-family="Inter" on every
+    // label with no fallback and no font loaded, so labels fell back to serif.
+    // Only for that CMS toggle: the container gets .pyn-beans-svg, and the rule
+    // (scoped to it, and to labels that ask for Inter) loads once. Same rule as
+    // the CMS map's shared/_beans_svg_fonts.
+    _applyBeansSvgFonts() {
+      const isBeans = this.data.property?.map?.isBeansSvg === true;
+      this.container.classList.toggle("pyn-beans-svg", isBeans);
+      if (!isBeans || document.getElementById("pyn-svg-label-fonts")) return;
+
+      const link = document.createElement("link");
+      link.rel  = "stylesheet";
+      link.href = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap";
+      document.head.appendChild(link);
+
+      const s = document.createElement("style");
+      s.id = "pyn-svg-label-fonts";
+      s.textContent =
+        `.pyn-beans-svg svg text[font-family="Inter" i], .pyn-beans-svg svg tspan[font-family="Inter" i] { font-family: 'Inter', sans-serif; }`;
+      document.head.appendChild(s);
     },
 
     // CMS "Hide unit numbers": drops the labels that sit in the SVG's unit

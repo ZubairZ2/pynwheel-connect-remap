@@ -390,6 +390,7 @@
       clone.style.display = "block";
 
       // Apply global text styles (once per SVG)
+      this._applyBeansSvgFonts();
       this._applyGlobalLabelStyles(clone, this.config.styles.unitLabels);
 
       // AUTO SCALE SVG: fit inside whatever container partner gives
@@ -1345,6 +1346,28 @@
         if (textStyles.fontColor)  el.style.fill        = textStyles.fontColor;
         el.style.pointerEvents = "none";
       });
+    },
+
+    // "Beans Generated SVG" maps (Figma exports) set font-family="Inter" on every
+    // label with no fallback and no font loaded, so labels fell back to serif.
+    // Only for that CMS toggle: the container gets .pyn-beans-svg, and the rule
+    // (scoped to it, and to labels that ask for Inter) loads once. Same rule as
+    // the CMS map's shared/_beans_svg_fonts.
+    _applyBeansSvgFonts() {
+      const isBeans = this._isBeansSvgMap === true;
+      this.container.classList.toggle("pyn-beans-svg", isBeans);
+      if (!isBeans || document.getElementById("pyn-svg-label-fonts")) return;
+
+      const link = document.createElement("link");
+      link.rel  = "stylesheet";
+      link.href = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap";
+      document.head.appendChild(link);
+
+      const s = document.createElement("style");
+      s.id = "pyn-svg-label-fonts";
+      s.textContent =
+        `.pyn-beans-svg svg text[font-family="Inter" i], .pyn-beans-svg svg tspan[font-family="Inter" i] { font-family: 'Inter', sans-serif; }`;
+      document.head.appendChild(s);
     },
 
     _getActiveSvg() {

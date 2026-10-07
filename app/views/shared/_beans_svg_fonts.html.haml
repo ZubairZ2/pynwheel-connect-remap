@@ -1,0 +1,13 @@
+-# "Beans Generated SVG" maps (Figma exports) set font-family="Inter" on every
+-# <text> with no fallback and no font loaded, so labels fell back to serif.
+-# Matching on the attribute keeps the CMS "SVG labels font" working: svgHandler's
+-# updateSvgTextFontFamily rewrites the attribute, so the rule stops matching.
+- if community&.is_beans_svg?
+  %link{:href => "https://fonts.googleapis.com", :rel => "preconnect"}/
+  %link{:crossorigin => "", :href => "https://fonts.gstatic.com", :rel => "preconnect"}/
+  %link{:href => "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap", :rel => "stylesheet"}/
+  :css
+    svg text[font-family="Inter" i],
+    svg tspan[font-family="Inter" i] {
+      font-family: 'Inter', sans-serif;
+    }
