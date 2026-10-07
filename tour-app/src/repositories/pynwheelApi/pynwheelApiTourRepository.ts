@@ -36,9 +36,16 @@ export class PynwheelApiTourRepository implements TourRepository {
 
   private sessionChecked = false;
 
+  private sessionLoading: Promise<void> | null = null;
+
   private bundleCache: { propertyId: number; bundle: PropertyBundle; graphVersion: string } | null = null;
 
+  /** The bundle load in flight per property, so concurrent callers (the provider loads bundle, content and places together) share one set of requests. */
+  private bundleInflight: { propertyId: number; promise: Promise<PropertyBundle> } | null = null;
+
   private propertiesCache: PropertyListing[] | null = null;
+
+  private propertiesInflight: Promise<PropertyListing[]> | null = null;
 
   private readonly expiredHandlers = new Set<(message: string) => void>();
 
@@ -56,9 +63,18 @@ export class PynwheelApiTourRepository implements TourRepository {
   /** A fresh instance (a relaunch, or a dev hot update) picks the persisted session up before its first request. */
   private async ensureSession(): Promise<void> {
     if (this.session || this.sessionChecked) return;
-    this.sessionChecked = true;
-    const stored = await loadSession();
-    if (stored && !(stored.expiresAt && Date.parse(stored.expiresAt) <= Date.now())) this.session = stored;
+    // Concurrent first requests share one read of the store; the second caller must not run ahead with no session.
+    if (!this.sessionLoading) {
+      this.sessionLoading = loadSession()
+        .then((stored) => {
+          if (stored && !(stored.expiresAt && Date.parse(stored.expiresAt) <= Date.now())) this.session = stored;
+          this.sessionChecked = true;
+        })
+        .finally(() => {
+          this.sessionLoading = null;
+        });
+    }
+    await this.sessionLoading;
   }
 
   // ------------------------------------------------------------------ session
@@ -125,10 +141,20 @@ export class PynwheelApiTourRepository implements TourRepository {
 
   // ---------------------------------------------------------- property choice
   async getProperties(): Promise<PropertyListing[]> {
-    const { data } = await this.client.get<{ properties: ApiPropertySummary[] }>(`${API}/properties`);
-    const current = this.currentPropertyId();
-    this.propertiesCache = (Array.isArray(data.properties) ? data.properties : []).map((p) => parseListing(p, current));
-    return this.propertiesCache;
+    // One request however many callers ask at once (the provider's list load and `getContent` start together).
+    if (this.propertiesInflight) return this.propertiesInflight;
+    const promise = this.client
+      .get<{ properties: ApiPropertySummary[] }>(`${API}/properties`)
+      .then(({ data }) => {
+        const current = this.currentPropertyId();
+        this.propertiesCache = (Array.isArray(data.properties) ? data.properties : []).map((p) => parseListing(p, current));
+        return this.propertiesCache;
+      })
+      .finally(() => {
+        if (this.propertiesInflight === promise) this.propertiesInflight = null;
+      });
+    this.propertiesInflight = promise;
+    return promise;
   }
 
   async selectProperty(propertyId: number): Promise<void> {
@@ -153,6 +179,15 @@ export class PynwheelApiTourRepository implements TourRepository {
   // ----------------------------------------------------------- the property
   async getProperty(): Promise<PropertyBundle> {
     const id = await this.requireProperty();
+    if (this.bundleInflight?.propertyId === id) return this.bundleInflight.promise;
+    const promise = this.loadBundle(id).finally(() => {
+      if (this.bundleInflight?.promise === promise) this.bundleInflight = null;
+    });
+    this.bundleInflight = { propertyId: id, promise };
+    return promise;
+  }
+
+  private async loadBundle(id: number): Promise<PropertyBundle> {
     const headers = this.bundleCache?.propertyId === id ? { 'If-None-Match': `"${this.bundleCache.graphVersion}"` } : undefined;
     const [detail, graph, stops, map] = await Promise.all([
       this.client.get<ApiPropertyDetail>(`${API}/properties/${id}`),

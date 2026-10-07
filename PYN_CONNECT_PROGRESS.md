@@ -2200,3 +2200,27 @@ slide-to-unlock, Floor 1 → 2 switch at the Elevator Bank. No console errors; e
 their timings. **Remaining:** the owner's git-ignored `tour-app/.env.production.local` still points at
 the retired `:8000`; a malformed JSON body answers Rails' plain 400 (the app never sends one); the
 per-process caches mean each Puma worker builds a graph once per version.
+
+## 35. Tour App final QA pass: gaps, performance, Search Cancel (October 7, 2026)
+
+**Brief:** `issues_in_tour_app.md`. **Report:** `tour-app-final-qa-report.md` (status **NOT READY**:
+production-data, Auto Detect-on-production and device checks could not be run from this session).
+
+| Fixed | Where |
+|---|---|
+| Properties Search had no Cancel; native clear bypassed React | `tour-app/src/screens/SearchScreen.tsx`, `searchFilter.ts` (+3 tests) |
+| Play Route dispatched every frame through the whole app | `tour-app/src/hooks/useSimulationPlayer.ts` |
+| Floor plan repainted on every animation tick | `tour-app/src/map/MapView.tsx`, `components.css` (plan layer) |
+| Floor change waited on the next plan's fetch + decode (217 ms frame) | `tour-app/src/map/useLevelBase.ts` (`usePrefetchRouteLevels`) |
+| Bundle loaded twice per property open; list refetched per switch; concurrent session restore race | `pynwheelApiTourRepository.ts`, `AppProvider.tsx` |
+| Cold graph built once per concurrent request | `app/services/tour_api/engine.rb` single-flight (+4 tests) |
+| Floor SVG refetched from S3 after every restart / per worker | `app/services/tour_api/assets.rb` disk cache (+1 test) |
+
+**Measured (development dump, Rails dev mode):** API 24–71 ms warm on nine Self-Tour properties
+(Hazel, Hazel Copy Test, John Pynwheel Demo, Jennifer Demo FP, Sofia, The Lagoons, The Meadows,
+Trestle, Dummy-High-Rise); cold open 1 graph build instead of 4; Play Route 60 fps / worst 18.7 ms /
+0 requests on 2942×1942 plans incl. a floor change; Search Cancel verified on 803 properties;
+`rails test` 172 / 848 / 0; tour-app `typecheck`, 25 vitest, `build` + `cap sync android` clean.
+
+**Not done / blocked:** `pynwheel_prod` reads (classifier), Auto Detect temporary paths (nothing to
+detect in the dump: unroutable stops sit on plates without hallway points), iOS / Android runs.

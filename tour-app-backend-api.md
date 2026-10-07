@@ -657,3 +657,27 @@ the Python harness (`scripts/parity.py`, `scripts/measure.py` → `script/tour_a
   stops, concierge / booking / application / locks have no backend, Preferences is not encrypted
   storage, iOS / Android web views untested here (no SDKs on this Mac).
 - The development-mode timings above are not production figures.
+
+## 15. Final QA pass: cold-graph single flight and the SVG disk cache (October 7, 2026)
+
+Brief `issues_in_tour_app.md`; report `tour-app-final-qa-report.md`. Two generic server-side
+changes, no contract change (`rails test` 172 runs / 848 assertions / 0 failures):
+
+- **`TourApi::Engine.built` is single-flight.** The app opens a property with four parallel
+  requests and then asks for distances; on a graph version nobody had built yet each request built
+  its own copy (4 builds per cold open on 1064, 1114, 1241 — measured with `scratchpad/probe.rb`).
+  Now the first request builds and the others wait on a condition variable for the same `Built`
+  (1 build per cold open on 1268, 1234). On the dump the saving is small (0.2–1.8 s builds); on a
+  property whose build takes seconds it is the difference between one stall and one per Puma thread.
+  `test/services/tour_api/engine_test.rb` (4 threads → 1 build).
+- **`TourApi::Assets` keeps validated floor SVGs on disk** (`tmp/cache/tour_api_svg/<sha1(url)>.svg`)
+  and reads them before fetching, so a process restart or another worker never fetches a plan from
+  S3 again. The first S3 read of 2934's 5.2 MB plan took 17 s this run (9–11 s and once 205 s on
+  earlier runs); from memory or disk it is 30–300 ms. Invalid files are never written.
+  `test/services/tour_api/assets_test.rb`.
+
+Development-dump measurements for nine Self-Tour properties (warm, development mode): detail 39–44
+ms, stops 34–71 ms, map 23–38 ms, graph 27–40 ms (37–256 KB), route 24–34 ms, tour-route 37–55 ms,
+distances 26–43 ms — the ~25 ms floor is the development server. `pynwheel_prod` was not read
+(permission refused in this session), so the production John Demo numbers remain to be taken with
+`script/tour_api_measure.rb` against a Rails server on that database.

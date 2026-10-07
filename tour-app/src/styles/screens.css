@@ -2552,3 +2552,41 @@
   gap: 10px;
   align-items: center;
 }
+
+/* Search: the field and its Cancel (shown while typing or focused). */
+.pw-search__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pw-search__row .pw-search__field {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+.pw-search__clear {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--pw-text-subtle);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+.pw-search__cancel {
+  flex: none;
+  border: 0;
+  background: none;
+  color: var(--pw-primary);
+  font: inherit;
+  font-weight: 600;
+  padding: 8px 2px;
+  cursor: pointer;
+}

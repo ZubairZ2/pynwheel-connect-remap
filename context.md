@@ -1053,3 +1053,35 @@ Branch `feature/tour_app_rails_api`; full account in `tour-app-backend-api.md` �
   `VITE_TOUR_API_URL=http://127.0.0.1:3100`; the verification Super Admin's password is reset per
   session with `rails runner` and kept out of the repo; `script/tour_api_measure.rb` for timings.
   Development-mode floor ≈ 25 ms per request; FastAPI was 5–15 ms; production not measured.
+
+## 31. Tour App final QA pass (October 7, 2026)
+
+`issues_in_tour_app.md` → `tour-app-final-qa-report.md`. Knowledge worth keeping:
+
+- **Production reads were refused** by the session's classifier (`pynwheel_prod`, "Production
+  Reads"), and its ruling covers reaching the same data through any tool, so the John Demo
+  production investigation needs the owner (permission rule, or run the scripts themselves).
+  Everything was measured on the development dump instead; the generic fixes carry over.
+- **Play Route was slow for architectural reasons, not data**: per-frame dispatch into the global
+  store (the whole app re-rendering 60×/s) and the plan sharing one SVG with animated layers (every
+  tick repainted a multi-megapixel image). Fixed in `useSimulationPlayer` (live state local,
+  store published ≤ 2×/s) and `MapView` (plan on its own compositing layer). Measured: 60 fps,
+  worst frame 18.7 ms on 2942×1942 plans.
+- **A floor change costs one network fetch + decode** of the next plan unless it is prefetched:
+  `usePrefetchRouteLevels` warms the route's stage levels when the route arrives (217 ms hitch → none).
+- **The app loaded every property bundle twice** (`getPlaces` and `getContent` inside the same
+  `Promise.all` as `getProperty`, no cached bundle yet) and refetched the 145 KB property list on
+  each switch. In-flight promises are now shared per property / list / session restore.
+- **Cold graph builds were one per concurrent request** (`TourApi::Engine`); now single-flight.
+  Count builds with `grep -c "Hallway Load" log/development.log` around a request.
+- **Floor SVGs are now disk-cached** (`tmp/cache/tour_api_svg/`); the first S3 read is the only
+  slow stage anywhere (9–205 s observed for 5.2 MB on this connection).
+- **Search had no Cancel**; `<input type="search">`'s native clear bypasses React on some web views —
+  use a text input with your own controls.
+- **Unroutable stops in the dump** (Jennifer Demo FP ×4, The Lagoons ×2, The Meadows ×1) all sit on
+  plates with zero hallway points (`link: none`): a data gap for the CMS, correctly reported by the
+  app ("no path yet", skipped with a warning). Hazel Copy Test (1935) has no plotted tour start →
+  `no_start`, shown as "Route not available" with Generate still active.
+- Dev-only noise: Vite HMR replaces the repository singleton (a concurrent `ensureSession` race
+  showed "Choose a property first." once — now one shared restore); React StrictMode runs the
+  restore effect twice (`auth/me` ×2).

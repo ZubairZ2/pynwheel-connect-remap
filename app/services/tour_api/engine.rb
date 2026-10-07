@@ -19,6 +19,8 @@ module TourApi
 
     @cache = {}
     @mutex = Mutex.new
+    @building = {}
+    @built_cv = ConditionVariable.new
 
     module_function
 
@@ -26,22 +28,47 @@ module TourApi
       Wayfinding::GraphVersion.for(community)
     end
 
+    # One build per key, however many requests arrive at once: the app opens a
+    # property with four parallel requests (detail, graph, stops, map) and then
+    # asks for the distances, and each used to build its own copy of the same
+    # graph on a cold cache (one build per Puma thread, all stalling together).
+    # The first request builds; the others wait for its result.
     def built(community, step_free: false, avoid_blockers: true, version: nil)
       version ||= version(community)
       key = [community.id, version, step_free ? true : false, avoid_blockers ? true : false]
-      now = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-      @mutex.synchronize do
-        hit = @cache[key]
-        return hit if hit && now - hit.built_at < TTL
+      loop do
+        now = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        hit = nil
+        waited = false
+        @mutex.synchronize do
+          entry = @cache[key]
+          if entry && now - entry.built_at < TTL
+            hit = entry
+          elsif @building[key]
+            @built_cv.wait(@mutex) # another request is building this graph; re-check when it is done
+            waited = true
+          else
+            @building[key] = true
+          end
+        end
+        return hit if hit
+        break unless waited
       end
-      graph = Wayfinding::GraphBuilder.new(community, step_free: step_free, avoid_blockers: avoid_blockers).build
-      entry = Built.new(version: version, graph: graph, built_at: now, payloads: {}, graph_json: {})
-      @mutex.synchronize do
-        @cache.delete_if { |k, _| k[0] == community.id && k[1] != version }
-        @cache[key] = entry
-        @cache.shift while @cache.size > MAX_ENTRIES
+      begin
+        graph = Wayfinding::GraphBuilder.new(community, step_free: step_free, avoid_blockers: avoid_blockers).build
+        entry = Built.new(version: version, graph: graph, built_at: Process.clock_gettime(Process::CLOCK_MONOTONIC), payloads: {}, graph_json: {})
+        @mutex.synchronize do
+          @cache.delete_if { |k, _| k[0] == community.id && k[1] != version }
+          @cache[key] = entry
+          @cache.shift while @cache.size > MAX_ENTRIES
+        end
+        entry
+      ensure
+        @mutex.synchronize do
+          @building.delete(key)
+          @built_cv.broadcast
+        end
       end
-      entry
     end
 
     # The Tour App payload of `Wayfinding::GraphSerializer` (the shape the
@@ -52,7 +79,10 @@ module TourApi
     end
 
     def clear!
-      @mutex.synchronize { @cache.clear }
+      @mutex.synchronize do
+        @cache.clear
+        @building.clear
+      end
     end
   end
 end

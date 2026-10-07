@@ -375,3 +375,20 @@ Dummy-High-Rise (2934): the SVG-only plate `floorplate:3029` served through the 
 `npm run typecheck`, `npx vitest run` (22) and `npm run build` are clean. Still not verified: iOS /
 Android web views (no SDKs on this Mac). The owner's git-ignored `.env.production.local` still points
 at `:8000` and must name the CMS host before the next device build.
+
+## 16. Final QA pass: Search Cancel, Play Route smoothness, request efficiency (October 7, 2026)
+
+Brief `issues_in_tour_app.md`; report `tour-app-final-qa-report.md`.
+
+| Area | Change |
+|---|---|
+| `src/screens/SearchScreen.tsx`, `src/screens/searchFilter.ts` (+ test) | the picker had no Cancel: a Cancel appears while typing or focused (clears, blurs, restores the full list), a clear "×" in the field, Escape/Enter handling; plain `type="text"` + `inputMode="search"` because the native search clear did not reach React; the query resets when a property is chosen (`reducer` `selectProperty`) |
+| `src/hooks/useSimulationPlayer.ts` | the walker's state lives in the hook at frame rate (ref + local state) and is published to the store only on status changes and every 500 ms, instead of dispatching every animation frame through the whole app (`live` is returned for the screens' controls) |
+| `src/map/MapView.tsx`, `components.css` | the floor plan (`<image>`) is drawn in its own `<svg>` compositing layer under the overlay SVG (route, markers, walker), so the animated dashes, the pulse and the per-frame walker never repaint the plan |
+| `src/map/useLevelBase.ts` | `prefetchLevelPlan` / `usePrefetchRouteLevels`: the SVG (session cache) and image (browser cache) of every level a route's stages visit are warmed as soon as the route is known; Guided and Wayfinding screens call it. Removes the one 217 ms frame measured at a floor change |
+| `src/repositories/pynwheelApi/pynwheelApiTourRepository.ts` | one in-flight bundle load per property (the provider's `getProperty` / `getContent` / `getPlaces` used to load the bundle twice), one in-flight property-list request, one shared session restore |
+| `src/store/AppProvider.tsx` | the property list is no longer refetched on every property switch |
+
+Measured in the browser on the dump's largest plans (Sofia 2919, 2942×1942): 60 fps, worst frame 18.7
+ms, zero network requests during Play Route, including the Floor 1 → 7 change. Property open and
+sign-in now issue each request once. Not run: iOS / Android devices.

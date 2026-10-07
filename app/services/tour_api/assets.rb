@@ -2,6 +2,7 @@
 
 require 'net/http'
 require 'digest'
+require 'fileutils'
 
 module TourApi
   # Floor plan files the app cannot read for itself.
@@ -51,7 +52,7 @@ module TourApi
           return hit
         end
       end
-      content = read(url, local_base)
+      content = disk_read(url) || read(url, local_base).tap { |bytes| disk_write(url, bytes) }
       view_box = view_box_of(content)
       asset = Svg.new(url: url, content: content, etag: Digest::SHA1.hexdigest(content)[0, 20], view_box: view_box)
       @mutex.synchronize do
@@ -65,11 +66,44 @@ module TourApi
       asset
     end
 
-    def clear!
+    # A fetched file is also kept on disk (`tmp/cache/tour_api_svg/`), so a
+    # restart or another Puma worker never fetches it from S3 again: the
+    # stored file names carry an upload timestamp, so a URL's content never
+    # changes. Only files that passed validation are written (see `svg`).
+    def disk_dir
+      @disk_dir ||= Rails.root.join('tmp', 'cache', 'tour_api_svg')
+    end
+
+    def disk_path(url)
+      disk_dir.join("#{Digest::SHA1.hexdigest(url)}.svg")
+    end
+
+    def disk_read(url)
+      path = disk_path(url)
+      File.file?(path) ? File.binread(path) : nil
+    rescue StandardError
+      nil
+    end
+
+    def disk_write(url, content)
+      view_box_of(content) # not valid: nothing is written, the caller raises
+      FileUtils.mkdir_p(disk_dir)
+      tmp = disk_path(url).sub_ext(".#{Process.pid}.tmp")
+      File.binwrite(tmp, content)
+      File.rename(tmp, disk_path(url))
+    rescue Error
+      nil
+    rescue StandardError => e
+      Rails.logger.warn("[tour-api] svg disk cache not written: #{e.class}")
+      nil
+    end
+
+    def clear!(disk: false)
       @mutex.synchronize do
         @cache.clear
         @cache_bytes = 0
       end
+      FileUtils.rm_rf(disk_dir) if disk
     end
 
     def allowed?(url, local_base)

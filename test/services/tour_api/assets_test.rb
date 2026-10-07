@@ -1,9 +1,29 @@
 require 'test_helper'
 
 class TourApi::AssetsTest < ActiveSupport::TestCase
+  setup { TourApi::Assets.clear!(disk: true) }
+
   teardown do
-    TourApi::Assets.clear!
+    TourApi::Assets.clear!(disk: true)
     TourApi::Assets.http = nil
+  end
+
+  test 'a fetched file is kept on disk and survives a cleared memory cache' do
+    fetched = 0
+    TourApi::Assets.http = lambda do |_url|
+      fetched += 1
+      [200, '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 7 7"/>']
+    end
+    url = 'https://bucket.s3.amazonaws.com/uploads/floorplate/svg_image/5/plan.svg'
+    first = TourApi::Assets.svg(url)
+    TourApi::Assets.clear! # the process restarted (or another worker asks)
+    second = TourApi::Assets.svg(url)
+    assert_equal 1, fetched, 'the second read came from the disk cache'
+    assert_equal first.etag, second.etag
+    assert File.file?(TourApi::Assets.disk_path(url))
+    TourApi::Assets.http = ->(_url) { [200, '<html/>'] }
+    assert_raises(TourApi::Assets::Error) { TourApi::Assets.svg('https://bucket.s3.amazonaws.com/uploads/x/bad.svg') }
+    assert_not File.file?(TourApi::Assets.disk_path('https://bucket.s3.amazonaws.com/uploads/x/bad.svg')), 'an invalid file is never written'
   end
 
   test 'view_box_of reads the root viewBox or the width/height, from the first element only' do

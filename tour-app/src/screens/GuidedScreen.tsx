@@ -5,6 +5,7 @@ import { Button, IconButton, LoadingState } from '~/components/ui';
 import { useSimulationPlayer } from '~/hooks/useSimulationPlayer';
 import { FloorPills } from '~/map/FloorPills';
 import { MapView } from '~/map/MapView';
+import { usePrefetchRouteLevels } from '~/map/useLevelBase';
 import type { Route } from '~/models';
 import type { PropertyBundle } from '~/repositories/tourRepository';
 import type { MapView as MapViewState } from '~/store/appState';
@@ -46,8 +47,10 @@ export const GuidedScreen = (props: Props) => {
   const { mode, bundle, stop, stopNumber, stopTotal, route, routeStatus, routeError, distance, minutes, view, sim, onView, onSim, onBack, onItinerary, onArrive, onRetry, propertyName } = props;
   const onStage = useCallback((stage: MapViewState) => onView(stage), [onView]);
   const player = useSimulationPlayer(route, sim, onSim, onStage, bundle.levels);
+  const playing = player.live.status === 'playing';
   const level = useMemo(() => bundle.levels.find((l) => l.id === view?.level) ?? bundle.levels.find((l) => l.id === route?.stages[0]?.level) ?? bundle.levels[0], [bundle.levels, view, route]);
   const floor = view?.floor ?? level.floors[0] ?? null;
+  usePrefetchRouteLevels(route, bundle.levels, level.id);
   const step = route ? (route.steps[player.position?.step ?? 0] ?? route.steps[0]) : null;
   const multi = (route?.stages.length ?? 0) > 1;
 
@@ -75,7 +78,7 @@ export const GuidedScreen = (props: Props) => {
         highlight={{ to: stop?.node ?? null, current: stop?.node ?? null }}
         fitTo="route"
         fitKey={`${stopNumber}`}
-        followWalker={sim.status === 'playing'}
+        followWalker={playing}
       >
         {chip ? (
           <div className="pw-map__chip">
@@ -90,16 +93,16 @@ export const GuidedScreen = (props: Props) => {
   const player_controls = route ? (
     <div className="pw-play pw-play--compact">
       <button type="button" className="pw-play__main" onClick={player.controls.toggle} aria-label={player.label}>
-        <Icon name={sim.status === 'playing' ? 'pause' : 'play'} size={12} color="#fff" />
+        <Icon name={playing ? 'pause' : 'play'} size={12} color="#fff" />
         {player.label}
       </button>
-      <button type="button" className="pw-play__sq" onClick={player.controls.prev} aria-label="Previous point" disabled={sim.status === 'idle'}>
+      <button type="button" className="pw-play__sq" onClick={player.controls.prev} aria-label="Previous point" disabled={player.live.status === 'idle'}>
         <Icon name="prev" size={12} />
       </button>
-      <button type="button" className="pw-play__sq" onClick={player.controls.next} aria-label="Next point" disabled={sim.status === 'idle'}>
+      <button type="button" className="pw-play__sq" onClick={player.controls.next} aria-label="Next point" disabled={player.live.status === 'idle'}>
         <Icon name="next" size={12} />
       </button>
-      <button type="button" className="pw-play__sq" onClick={player.controls.stop} aria-label="Stop" disabled={sim.status === 'idle'}>
+      <button type="button" className="pw-play__sq" onClick={player.controls.stop} aria-label="Stop" disabled={player.live.status === 'idle'}>
         <Icon name="stop" size={12} />
       </button>
       <div className="pw-play__bar" aria-hidden>
@@ -136,7 +139,7 @@ export const GuidedScreen = (props: Props) => {
             </div>
             {route ? (
               <button type="button" className="pw-guidedar__play" onClick={player.controls.toggle} aria-label={player.label}>
-                <Icon name={sim.status === 'playing' ? 'pause' : 'play'} size={14} color="#fff" />
+                <Icon name={playing ? 'pause' : 'play'} size={14} color="#fff" />
               </button>
             ) : null}
           </div>

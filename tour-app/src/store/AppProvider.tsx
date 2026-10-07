@@ -83,7 +83,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       cancelled = true;
     };
-  }, [repository, hydrated, state.signedIn, state.propertyId, propertiesKey]);
+    // Not keyed on the chosen property: switching properties must not refetch the whole list (145 KB) every time.
+  }, [repository, hydrated, state.signedIn, propertiesKey]);
 
   // 4. The chosen property: bundle, content and places. Nothing stale is kept while a new one loads.
   useEffect(() => {

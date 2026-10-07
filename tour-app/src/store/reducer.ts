@@ -143,9 +143,9 @@ export const reducer = (state: AppState, action: Action): AppState => {
     case 'loginSucceeded':
       return { ...state, screen: action.propertyId != null ? 'home' : 'search', signedIn: true, user: action.user, propertyId: action.propertyId, password: '', auth: { status: 'idle', error: null } };
     case 'selectProperty':
-      if (state.propertyId === action.propertyId) return { ...state, screen: 'home', overlays: [] };
+      if (state.propertyId === action.propertyId) return { ...state, screen: 'home', overlays: [], searchQuery: '' };
       // A new property: every tour, route and selection belonged to the old one.
-      return { ...state, propertyId: action.propertyId, screen: 'home', overlays: [], selected: {}, tourOrder: [], stopIndex: 0, unlocked: {}, unlockDrag: 0, notes: {}, guided: initialGuided(), wayfinding: initialWayfinding(), floorByLevel: {} };
+      return { ...state, propertyId: action.propertyId, screen: 'home', overlays: [], searchQuery: '', selected: {}, tourOrder: [], stopIndex: 0, unlocked: {}, unlockDrag: 0, notes: {}, guided: initialGuided(), wayfinding: initialWayfinding(), floorByLevel: {} };
     case 'sessionExpired':
       return { ...initialAppState(), screen: 'login', signedIn: false, email: state.email, tourHistory: state.tourHistory, historyLoaded: state.historyLoaded, notifs: state.notifs, journey: state.journey, toast: action.message };
     case 'signOut':

@@ -1,6 +1,8 @@
+import { useEffect, useRef, useState } from 'react';
 import { TabBar } from '~/components/chrome';
 import { Icon } from '~/components/Icon';
 import type { Listing, PropertyListing } from '~/models';
+import { matchesQuery } from './searchFilter';
 import { LightShell, SectionLabel } from './shared';
 
 interface Props {
@@ -16,21 +18,74 @@ interface Props {
   onTab: (tab: 'home' | 'search' | 'profile') => void;
 }
 
-const matches = (query: string, ...parts: string[]) => !query || parts.join(' ').toLowerCase().includes(query.toLowerCase());
-
+/**
+ * The property picker. The list is in memory (one request at sign-in), so
+ * the search is a local filter and never waits on the network. The field has
+ * its own Cancel (shown while typing or focused): it clears the text, closes
+ * the keyboard and shows the full list again. A plain text input is used on
+ * purpose: the native clear button of `type="search"` does not reach React's
+ * `onChange` on every web view, which left stale text and a filtered list.
+ */
 export const SearchScreen = ({ status = 'ready', onRetry, query, onQuery, nearby, hiRise, onNearby, onListing, onTab }: Props) => {
+  const input = useRef<HTMLInputElement>(null);
+  const [focused, setFocused] = useState(false);
   const q = query.trim();
-  const nearbyMatches = nearby.filter((n) => matches(q, n.name, n.address));
-  const hiRiseMatches = hiRise.filter((l) => matches(q, l.name, l.address, l.meta));
+  const nearbyMatches = nearby.filter((n) => matchesQuery(q, n.name, n.address));
+  const hiRiseMatches = hiRise.filter((l) => matchesQuery(q, l.name, l.address, l.meta));
   const nothing = status === 'ready' && !!q && !nearbyMatches.length && !hiRiseMatches.length;
+  const showCancel = focused || query.length > 0;
+
+  const cancel = () => {
+    onQuery('');
+    setFocused(false);
+    input.current?.blur();
+  };
+
+  // A query the screen was reopened with is kept visible; the field itself is never left stale.
+  useEffect(() => {
+    if (input.current && input.current.value !== query) input.current.value = query;
+  }, [query]);
 
   return (
     <LightShell footer={<TabBar active="search" onSelect={onTab} />}>
       <div className="pw-search">
         <div className="pw-search__title">Search Properties</div>
-        <div className="pw-search__field">
-          <Icon name="search" size={18} color="var(--pw-text-subtle)" className="pw-search__icon" />
-          <input value={query} onChange={(e) => onQuery(e.target.value)} placeholder="Search by property, city, or address" className="pw-input pw-input--search" type="search" enterKeyHint="search" aria-label="Search properties" />
+        <div className="pw-search__row">
+          <div className="pw-search__field">
+            <Icon name="search" size={18} color="var(--pw-text-subtle)" className="pw-search__icon" />
+            <input
+              ref={input}
+              value={query}
+              onChange={(e) => onQuery(e.target.value)}
+              onInput={(e) => onQuery(e.currentTarget.value)}
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') cancel();
+                if (e.key === 'Enter') input.current?.blur();
+              }}
+              placeholder="Search by property, city, or address"
+              className="pw-input pw-input--search"
+              type="text"
+              inputMode="search"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="none"
+              spellCheck={false}
+              enterKeyHint="search"
+              aria-label="Search properties"
+            />
+            {query ? (
+              <button type="button" className="pw-search__clear" aria-label="Clear search" onMouseDown={(e) => e.preventDefault()} onClick={() => onQuery('')}>
+                <Icon name="close" size={12} color="#fff" strokeWidth={3} />
+              </button>
+            ) : null}
+          </div>
+          {showCancel ? (
+            <button type="button" className="pw-search__cancel" onMouseDown={(e) => e.preventDefault()} onClick={cancel}>
+              Cancel
+            </button>
+          ) : null}
         </div>
         {status === 'loading' ? <div className="pw-search__empty">Loading your properties…</div> : null}
         {status === 'error' ? (

@@ -5,6 +5,7 @@ import { Button, Checkbox, ErrorBanner, IconButton } from '~/components/ui';
 import { useSimulationPlayer } from '~/hooks/useSimulationPlayer';
 import { FloorPills } from '~/map/FloorPills';
 import { MapView } from '~/map/MapView';
+import { usePrefetchRouteLevels } from '~/map/useLevelBase';
 import { symbolOfStopKind } from '~/map/mapSymbols';
 import type { Place, RouteStep } from '~/models';
 import type { PropertyBundle } from '~/repositories/tourRepository';
@@ -49,18 +50,20 @@ export const WayfindingScreen = ({ bundle, places, wf, onBack, onPick, onSwap, o
   const failure = wf.result && !wf.result.ok ? wf.result : null;
   const onStage = useCallback((stage: MapViewState) => onView(stage), [onView]);
   const player = useSimulationPlayer(route, wf.sim, onSim, onStage, bundle.levels);
+  const simStatus = player.live.status;
 
   const from = placeByNode(places, wf.from);
   const to = placeByNode(places, wf.to);
   const level = useMemo(() => bundle.levels.find((l) => l.id === wf.view?.level) ?? bundle.levels.find((l) => l.id === from?.level) ?? bundle.levels[0], [bundle.levels, wf.view, from]);
   const floor = wf.view?.level === level.id ? wf.view.floor : (level.floors[0] ?? null);
+  usePrefetchRouteLevels(route, bundle.levels, level.id);
   const activeStep = player.position?.step ?? -1;
   const status =
-    wf.sim.status === 'idle'
+    simStatus === 'idle'
       ? null
-      : wf.sim.status === 'finished'
+      : simStatus === 'finished'
         ? 'Arrived · route complete'
-        : `${wf.sim.status === 'playing' ? 'Playing' : 'Paused'} · step ${activeStep + 1} of ${route?.steps.length ?? 0} · ${route?.steps[activeStep]?.title ?? ''}`;
+        : `${simStatus === 'playing' ? 'Playing' : 'Paused'} · step ${activeStep + 1} of ${route?.steps.length ?? 0} · ${route?.steps[activeStep]?.title ?? ''}`;
 
   const endpointLabel = (place: Place | null, floorOf: number | null) => {
     if (!place) return { label: 'Choose…', group: '' };
@@ -77,7 +80,7 @@ export const WayfindingScreen = ({ bundle, places, wf, onBack, onPick, onSwap, o
     const next = route.legs[step.leg + 1];
     const target = stage ?? (next?.kind === 'walk' ? { level: next.level, floor: next.floor } : null);
     if (target) onView(target);
-    if (wf.sim.status !== 'idle') player.controls.seekToLeg(step.leg);
+    if (simStatus !== 'idle') player.controls.seekToLeg(step.leg);
   };
 
   return (
@@ -98,7 +101,7 @@ export const WayfindingScreen = ({ bundle, places, wf, onBack, onPick, onSwap, o
             showNetwork={!route}
             fitTo={route ? 'route' : 'all'}
             fitKey={wf.view ? `${wf.view.level}@${wf.view.floor ?? ''}` : ''}
-            followWalker={wf.sim.status === 'playing'}
+            followWalker={simStatus === 'playing'}
           >
             <div className="pw-map__chip">
               <Icon name="layers" size={14} color="var(--pw-primary)" />
@@ -186,16 +189,16 @@ export const WayfindingScreen = ({ bundle, places, wf, onBack, onPick, onSwap, o
               </div>
               <div className="pw-play">
                 <button type="button" className="pw-play__main" onClick={player.controls.toggle} aria-label={player.label}>
-                  <Icon name={wf.sim.status === 'playing' ? 'pause' : 'play'} size={12} color="#fff" />
+                  <Icon name={simStatus === 'playing' ? 'pause' : 'play'} size={12} color="#fff" />
                   {player.label}
                 </button>
-                <button type="button" className="pw-play__sq" onClick={player.controls.prev} aria-label="Previous point" disabled={wf.sim.status === 'idle'}>
+                <button type="button" className="pw-play__sq" onClick={player.controls.prev} aria-label="Previous point" disabled={simStatus === 'idle'}>
                   <Icon name="prev" size={12} />
                 </button>
-                <button type="button" className="pw-play__sq" onClick={player.controls.next} aria-label="Next point" disabled={wf.sim.status === 'idle'}>
+                <button type="button" className="pw-play__sq" onClick={player.controls.next} aria-label="Next point" disabled={simStatus === 'idle'}>
                   <Icon name="next" size={12} />
                 </button>
-                <button type="button" className="pw-play__sq pw-play__sq--stop" onClick={player.controls.stop} aria-label="Stop the animation" disabled={wf.sim.status === 'idle'}>
+                <button type="button" className="pw-play__sq pw-play__sq--stop" onClick={player.controls.stop} aria-label="Stop the animation" disabled={simStatus === 'idle'}>
                   <Icon name="stop" size={12} />
                 </button>
               </div>
