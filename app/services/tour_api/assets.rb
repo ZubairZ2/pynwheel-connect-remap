@@ -52,7 +52,10 @@ module TourApi
           return hit
         end
       end
-      content = disk_read(url) || read(url, local_base).tap { |bytes| disk_write(url, bytes) }
+      content = disk_read(url)
+      source = content ? 'disk' : 'fetch'
+      content ||= read(url, local_base).tap { |bytes| disk_write(url, bytes) }
+      Rails.logger.info("[tour-api] svg #{source} #{content.bytesize} bytes #{URI.parse(url).path.split('/').last(2).join('/')}")
       view_box = view_box_of(content)
       asset = Svg.new(url: url, content: content, etag: Digest::SHA1.hexdigest(content)[0, 20], view_box: view_box)
       @mutex.synchronize do

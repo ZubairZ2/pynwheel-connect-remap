@@ -119,7 +119,7 @@ token rows that signing in creates and signing out revokes).
 |---|---|
 | `GET …/map/levels/floorplate:3029/svg` first read of the process (S3 → Rails) | 17.0 s this run; 9–11 s and once 205 s on earlier runs (the fetch itself; the client sees "Loading map…" meanwhile) |
 | same, process memory warm | 30–300 ms for 5.2 MB (293 ms with gzip to a browser) |
-| same, after a restart with the new disk cache (`tmp/cache/tour_api_svg/`) | **33.18 s** for the first request of the new process (read from disk, validated, no S3 request) |
+| same, after a restart with the new disk cache (`tmp/cache/tour_api_svg/`) | **0.52 s** for the first request of the new process (disk read + the cold graph build; the log line says `svg disk`), 34 ms for the next. An earlier attempt read 33 s, but the Rails preview tab was reloading `/` several times a second at the time and starved the development server; that run is discarded. |
 | `304` on `If-None-Match` | 30 ms |
 | SVG validation | first element only (`Nokogiri::XML::Reader`), viewBox `0 0 2000 2000`, ETag `"01d7a1f975a54da98156"`, `Content-Type: image/svg+xml` |
 | In the app | Blob URL drawn by an `<image>` on its own compositing layer; the frame is the viewBox for an SVG-only plate (2000×2000); Dummy-High-Rise 3029 rendered with the route over it (earlier run this session) |
