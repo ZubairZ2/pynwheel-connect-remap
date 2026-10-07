@@ -35,7 +35,7 @@ export const floorNameOf = (bundle: PropertyBundle, level: string | null, floor:
   const l = bundle.levels.find((x) => x.id === level);
   if (!l) return '';
   if (l.kind === 'sitemap') return 'Property map';
-  const name = floor === 15 ? 'Rooftop' : floor != null ? `Floor ${floor}` : l.name.replace(/ \*$/, '');
+  const name = bundle.demo && floor === 15 ? 'Rooftop' : floor != null ? `Floor ${floor}` : l.name.replace(/ \*$/, '');
   return l.building ? `${l.building.replace(/ \*$/, '')} · ${name}` : name;
 };
 
@@ -48,7 +48,7 @@ export const WayfindingScreen = ({ bundle, places, wf, onBack, onPick, onSwap, o
   const route = wf.result?.ok ? wf.result.route : null;
   const failure = wf.result && !wf.result.ok ? wf.result : null;
   const onStage = useCallback((stage: MapViewState) => onView(stage), [onView]);
-  const player = useSimulationPlayer(route, wf.sim, onSim, onStage);
+  const player = useSimulationPlayer(route, wf.sim, onSim, onStage, bundle.levels);
 
   const from = placeByNode(places, wf.from);
   const to = placeByNode(places, wf.to);

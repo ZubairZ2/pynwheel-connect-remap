@@ -48,11 +48,21 @@ export interface GuidedState {
   sim: SimulationState;
 }
 
+export interface AuthState {
+  status: 'idle' | 'busy' | 'error';
+  error: string | null;
+}
+
 export interface AppState {
   screen: Screen;
   overlays: Overlay[];
-  /** Whether the visitor has signed in (persisted so a relaunch skips onboarding and login). */
+  /** Whether the visitor has signed in (the session itself lives in the repository's session store). */
   signedIn: boolean;
+  /** Who is signed in, for the Profile screen. */
+  user: { name: string; email: string } | null;
+  /** The selected property (null right after sign-in until one is chosen). */
+  propertyId: number | null;
+  auth: AuthState;
   onboardIndex: number;
   email: string;
   password: string;
@@ -105,6 +115,9 @@ export const initialAppState = (): AppState => ({
   screen: 'splash',
   overlays: [],
   signedIn: false,
+  user: null,
+  propertyId: null,
+  auth: { status: 'idle', error: null },
   onboardIndex: 0,
   email: '',
   password: '',
@@ -138,6 +151,8 @@ export const initialAppState = (): AppState => ({
 export const PERSISTED_KEYS = [
   'screen',
   'signedIn',
+  'user',
+  'propertyId',
   'selected',
   'tourOrder',
   'tourMode',

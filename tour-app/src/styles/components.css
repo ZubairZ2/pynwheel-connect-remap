@@ -818,3 +818,35 @@
   font-size: 11px;
   padding: 0 10px;
 }
+
+/* Map plan states (October 2026) */
+.pw-map__veil {
+  flex-direction: column;
+  gap: 8px;
+}
+.pw-map__veiltext {
+  font: 600 12px var(--pw-font-sans);
+  color: var(--pw-text-muted);
+}
+.pw-map__error {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: var(--pw-r-10, 10px);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #f1c3c3;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  font: 500 12.5px/1.45 var(--pw-font-sans);
+  color: var(--pw-text-muted);
+  pointer-events: none;
+}
+.pw-map__error strong {
+  font: 700 14px var(--pw-font-sans);
+  color: #c62534;
+}

@@ -1,4 +1,6 @@
-import type { Place, RouteOptions, RouteResult } from '~/models';
+import type { MapLevel, Place, PropertyListing, RouteOptions, RouteResult } from '~/models';
+import type { Session } from '~/services/session';
+import { placesFromBundle } from '../places';
 import {
   APP_VERSION,
   AR_INIT_LABELS,
@@ -24,7 +26,7 @@ import {
   type DummyProperty
 } from '~/dummy';
 import { RouteService } from '~/wayfinding/routeService';
-import type { AppContent, BookingRequest, PropertyBundle, StopDistance, TourRepository, TourRouteResult } from '../tourRepository';
+import { FeatureUnavailableError, type AppContent, type BookingRequest, type PropertyBundle, type StopDistance, type TourRepository, type TourRouteResult } from '../tourRepository';
 
 /**
  * The dummy provider: answers every repository call from local dummy data,
@@ -47,7 +49,44 @@ export class DummyTourRepository implements TourRepository {
 
   private readonly routers = new Map<string, RouteService>();
 
+  private session: Session | null = null;
+
+  private propertyId: number | null = 1;
+
   constructor(private readonly latency: Partial<typeof LATENCY_MS> = {}) {}
+
+  // --- session: any email and password sign in (demo data, no backend)
+  async login(email: string, _password: string): Promise<Session> {
+    await this.delay('write');
+    this.session = { accessToken: 'dummy', expiresAt: null, user: { id: 0, name: FIRST_NAME.replace(/ \*$/, ''), email, role: 'demo' }, propertyId: this.propertyId };
+    return this.session;
+  }
+
+  async logout(): Promise<void> {
+    this.session = null;
+  }
+
+  async restoreSession(): Promise<Session | null> {
+    return null;
+  }
+
+  onSessionExpired(): () => void {
+    return () => undefined;
+  }
+
+  async getProperties(): Promise<PropertyListing[]> {
+    await this.delay('read');
+    return NEARBY_PROPERTIES.map((p) => ({ ...p, current: p.id === this.propertyId }));
+  }
+
+  async selectProperty(propertyId: number): Promise<void> {
+    this.propertyId = propertyId;
+    if (this.session) this.session = { ...this.session, propertyId };
+  }
+
+  currentPropertyId(): number | null {
+    return this.propertyId;
+  }
 
   private get bundle(): DummyProperty {
     if (!this.data) this.data = buildDummyProperty();
@@ -71,7 +110,7 @@ export class DummyTourRepository implements TourRepository {
   async getProperty(): Promise<PropertyBundle> {
     await this.delay('read');
     const { property, buildings, levels, graph, units, amenities, stops, arPins, floorLabels } = this.bundle;
-    return { property, buildings, levels, graph, units, amenities, stops, arPins, floorLabels };
+    return { property, buildings, levels, graph, units, amenities, stops, arPins, floorLabels, demo: true };
   }
 
   async getContent(): Promise<AppContent> {
@@ -102,55 +141,12 @@ export class DummyTourRepository implements TourRepository {
 
   async getPlaces(): Promise<Place[]> {
     await this.delay('read');
-    const { graph, units, amenities, stops } = this.bundle;
-    const linkedOf = (node: string) => graph.nodes.some((n) => n.id === node && n.link !== false && !!n.attach);
-    const places: Place[] = [];
-    units.forEach((u) =>
-      places.push({
-        node: u.node,
-        kind: 'unit',
-        name: u.name,
-        meta: u.bedrooms ? `${u.bedrooms} Bed · ${u.bathrooms} Bath` : 'Unit',
-        building: u.building,
-        floor: u.floor,
-        floors: u.floor != null ? [u.floor] : [],
-        level: u.level,
-        linked: linkedOf(u.node),
-        routable: true
-      })
-    );
-    amenities.forEach((a) =>
-      places.push({
-        node: a.node,
-        kind: 'amenity',
-        name: a.name,
-        meta: 'Amenity',
-        building: a.building,
-        floor: a.floor,
-        floors: a.floor != null ? [a.floor] : [],
-        level: a.level,
-        linked: linkedOf(a.node),
-        routable: true
-      })
-    );
-    stops.forEach((s) => {
-      const vertical = graph.verticalConnections.find((v) => v.id === s.node);
-      const label = s.kind.charAt(0).toUpperCase() + s.kind.slice(1);
-      places.push({
-        node: s.node,
-        kind: 'stop',
-        stopKind: s.kind,
-        name: s.name,
-        meta: s.kind === 'entry' ? 'Entry Point' : s.kind === 'exit' ? 'Exit Point' : s.kind === 'mail' ? 'Mail & Packages' : s.kind === 'leasing' ? 'Leasing Office' : label,
-        building: s.building,
-        floor: vertical ? null : s.floor,
-        floors: vertical ? vertical.floors : s.floor != null ? [s.floor] : [],
-        level: s.level,
-        linked: linkedOf(s.node),
-        routable: s.kind !== 'blocker'
-      });
-    });
-    return places;
+    return placesFromBundle(await this.getProperty());
+  }
+
+  async getLevelSvg(_level: MapLevel): Promise<Blob> {
+    // Demo levels carry inline vector geometry, not a floor SVG file.
+    throw new FeatureUnavailableError('A floor SVG file');
   }
 
   async findRoute(from: string, to: string, options: RouteOptions = {}): Promise<RouteResult> {

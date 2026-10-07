@@ -1,8 +1,9 @@
 import { useMemo } from 'react';
 import { useRepository } from '~/repositories/repositoryContext';
+import { FeatureUnavailableError } from '~/repositories/tourRepository';
 import { success, tap } from '~/services/native';
 import { useApp } from './appContext';
-import { bestMatchUnit, currentStop, selectedNodes, tourStopViews } from './selectors';
+import { bestMatchUnit, currentStop, markOf, selectedNodes, tourStopViews } from './selectors';
 
 /**
  * The async flows of the app: they call the repository and dispatch plain
@@ -17,6 +18,8 @@ export const useAppActions = () => {
     const content = data.content;
     const fill = (template: string, params: Record<string, string>) => template.replace(/\{(\w+)\}/g, (_, key: string) => params[key] ?? '');
     const toast = (message: string) => dispatch({ type: 'toast', message });
+    const mark = markOf(bundle);
+    const messageOf = (error: unknown, fallback: string) => (error instanceof Error && error.message ? error.message : fallback);
 
     const runTour = async (mode: 'self' | 'ar') => {
       if (!bundle) return;
@@ -43,13 +46,58 @@ export const useAppActions = () => {
     };
 
     return {
+      /** Sign in through the repository (the Pynwheel CMS credentials); the reducer moves to Home or to the property picker. */
+      login: async () => {
+        const email = state.email.trim();
+        if (!email || !state.password) {
+          dispatch({ type: 'loginFailed', message: 'Enter your email and password to continue.' });
+          return;
+        }
+        if (!/^[^\s@]+@[^\s@]+$/.test(email)) {
+          dispatch({ type: 'loginFailed', message: 'That email address does not look right.' });
+          return;
+        }
+        dispatch({ type: 'loginStart' });
+        try {
+          const session = await repository.login(email, state.password);
+          dispatch({ type: 'loginSucceeded', user: { name: session.user.name, email: session.user.email }, propertyId: session.propertyId });
+          void success();
+        } catch (error) {
+          dispatch({ type: 'loginFailed', message: messageOf(error, 'Sign-in failed. Please try again.') });
+        }
+      },
+
+      signOut: async () => {
+        dispatch({ type: 'signOut' });
+        try {
+          await repository.logout();
+        } catch {
+          /* the local session is gone either way */
+        }
+      },
+
+      /** Switch to another property (only tourable ones can be chosen). */
+      selectProperty: async (propertyId: number, tourable: boolean, name: string) => {
+        if (!tourable) {
+          toast(`${name} has no Self-Guided Tour yet, so it cannot be toured in the app.`);
+          return;
+        }
+        try {
+          await repository.selectProperty(propertyId);
+          dispatch({ type: 'selectProperty', propertyId });
+          void tap();
+        } catch (error) {
+          toast(messageOf(error, 'The property could not be selected.'));
+        }
+      },
+
       generateRoute: () => runTour('self'),
       launchArTour: () => runTour('ar'),
 
       nextStop: () => {
         if (!bundle) return;
         const names = state.tourOrder.map((n) => tourStopViews(bundle).find((v) => v.node === n)?.name ?? n);
-        dispatch({ type: 'nextStop', propertyName: bundle.property.name, names });
+        dispatch({ type: 'nextStop', propertyName: bundle.property.name, names, date: `Today${mark}` });
         void tap();
       },
 
@@ -87,7 +135,7 @@ export const useAppActions = () => {
           const answer = await repository.askConcierge(question, { stopName: stop?.name ?? null });
           dispatch({ type: 'aiReply', text: answer });
         } catch {
-          dispatch({ type: 'aiReply', text: 'I could not reach the concierge just now. Please try again. *' });
+          dispatch({ type: 'aiReply', text: `I could not reach the concierge just now. Please try again.${mark}` });
         }
       },
 
@@ -98,7 +146,7 @@ export const useAppActions = () => {
 
       openBook: () => {
         if (!bundle || !content) return;
-        const unit = bundle.units.find((u) => u.showInStopsList && u.available)?.name ?? 'No preference *';
+        const unit = bundle.units.find((u) => u.showInStopsList && u.available)?.name ?? `No preference${mark}`;
         dispatch({ type: 'openBook', day: content.booking.days[0] ?? '', time: content.booking.times[2] ?? content.booking.times[0] ?? '', unit });
       },
 
@@ -109,9 +157,10 @@ export const useAppActions = () => {
           await repository.requestBooking({ day: state.book.day, time: state.book.time, unit: state.book.unit, name: content.visitor.name, phone: content.visitor.phone });
           dispatch({ type: 'bookDone' });
           void success();
-        } catch {
-          dispatch({ type: 'toast', message: 'The request could not be sent. Please try again. *' });
-          dispatch({ type: 'bookDone' });
+        } catch (error) {
+          dispatch({ type: 'toast', message: error instanceof FeatureUnavailableError ? error.message : `The request could not be sent. Please try again.${mark}` });
+          dispatch({ type: 'setBook', field: 'day', value: state.book.day });
+          dispatch({ type: 'closeOverlay', overlay: 'book' });
         }
       },
 
@@ -128,10 +177,10 @@ export const useAppActions = () => {
         dispatch({ type: 'applySubmitting' });
         try {
           await repository.startApplication(state.applyUnit);
-          dispatch({ type: 'applyDone', message: `Application started for ${unit?.name ?? 'your unit'} — check your email to finish. *` });
+          dispatch({ type: 'applyDone', message: `Application started for ${unit?.name ?? 'your unit'} — check your email to finish.${mark}` });
           void success();
-        } catch {
-          dispatch({ type: 'applyDone', message: 'The application could not be started. Please try again. *' });
+        } catch (error) {
+          dispatch({ type: 'applyDone', message: error instanceof FeatureUnavailableError ? error.message : `The application could not be started. Please try again.${mark}` });
         }
       },
 
@@ -140,7 +189,7 @@ export const useAppActions = () => {
         toast(`Summary emailed to ${content.visitor.email}`);
       },
 
-      listingTap: (name: string) => toast(`${name} isn't tourable yet — we'll notify you when it opens.`),
+      listingTap: (name: string) => toast(`${name} has no Self-Guided Tour yet.`),
 
       toast
     };

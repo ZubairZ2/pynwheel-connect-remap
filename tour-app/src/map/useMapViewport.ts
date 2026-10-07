@@ -81,6 +81,8 @@ export const useMapViewport = (levelWidth: number, levelHeight: number) => {
   };
 
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    // A press on a control (the zoom buttons) is not a map gesture: capturing the pointer here would swallow its click.
+    if ((e.target as Element | null)?.closest?.('button, [data-no-gesture]')) return;
     const p = local(e);
     pointers.current.set(e.pointerId, p);
     e.currentTarget.setPointerCapture(e.pointerId);

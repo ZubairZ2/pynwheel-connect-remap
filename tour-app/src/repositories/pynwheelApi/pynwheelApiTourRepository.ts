@@ -1,69 +1,261 @@
-import type { Place, RouteOptions, RouteResult } from '~/models';
-import { RepositoryUnavailableError, type AppContent, type BookingRequest, type PropertyBundle, type StopDistance, type TourRepository, type TourRouteResult } from '../tourRepository';
+import communityPhoto from '~/assets/images/community-pool.jpg';
+import { APP_VERSION, AR_INIT_LABELS, BOOKING_TIMES, CONCIERGE_GREETING_GENERAL, CONCIERGE_GREETING_STOP, CONCIERGE_HUMAN_REPLY, CONCIERGE_NOT_CONNECTED, CONCIERGE_PROMPTS, HELP_ITEMS, ONBOARDING_SLIDES, SUPPORT_EMAIL, upcomingDays } from '~/content/appCopy';
+import type { MapLevel, Place, PropertyListing, RouteOptions, RouteResult } from '~/models';
+import { clearSession, loadSession, saveSession, type Session } from '~/services/session';
+import { placesFromBundle } from '../places';
+import { FeatureUnavailableError, type AppContent, type BookingRequest, type PropertyBundle, type StopDistance, type TourRepository, type TourRouteResult } from '../tourRepository';
+import { ApiClient, ApiError } from './apiClient';
+import type { ApiDistancesResponse, ApiGraph, ApiLoginResponse, ApiMapResponse, ApiPropertyDetail, ApiPropertySummary, ApiRouteResponse, ApiStopsResponse, ApiTourRouteResponse } from './apiTypes';
+import { parseBundle, parseDistances, parseListing, parseRoute, parseTourRoute } from './parsers';
 
 /**
- * The future provider — NOT enabled, NOT wired, and it makes no request.
+ * The production provider: the Pynwheel Tour App API (tour-api/, FastAPI)
+ * over the real Pynwheel data.
  *
- * It exists so the boundary is visible: when the Rails Tour App API is
- * connected, this class implements `TourRepository` over
+ *   POST /api/v1/auth/login, /logout, GET /auth/me
+ *   GET  /api/v1/properties, /properties/{id}
+ *   GET  /api/v1/properties/{id}/stops | /map | /graph
+ *   POST /api/v1/properties/{id}/route | /tour-route | /stops/distances
  *
- *   GET /api/self_tour/v1/communities/:id/wayfinding.json            → PropertyBundle (levels, nodes, edges, vertical_connections, gates, tour)
- *   GET /api/self_tour/v1/communities/:id/wayfinding/route.json      → RouteResult  (from, to, step_free, avoid_blockers, from_floor, to_floor)
- *   GET /api/self_tour/v1/communities/:id/wayfinding/tour_route.json → TourRouteResult
- *
- * with the existing self-tour token scheme, an ETag per graph version, and
- * a parser that camelCases the payload into the models in `~/models`. The
- * screens will not change: they already consume those models through the
- * repository interface.
- *
- * Until then every method throws `RepositoryUnavailableError`, and
- * `createTourRepository()` never constructs it.
+ * The session (token, user, selected property) is persisted by
+ * `services/session.ts`; the graph is cached per property with its ETag.
+ * Nothing here ever falls back to demo data.
  */
+
+const NO_PROPERTY = 'Choose a property first.';
+
 export class PynwheelApiTourRepository implements TourRepository {
   readonly source = 'pynwheel-api' as const;
 
-  constructor(
-    public readonly baseUrl: string,
-    public readonly communityId: number
-  ) {}
+  private readonly client: ApiClient;
 
-  private unavailable(): never {
-    throw new RepositoryUnavailableError('PynwheelApiTourRepository');
+  private session: Session | null = null;
+
+  private sessionChecked = false;
+
+  private bundleCache: { propertyId: number; bundle: PropertyBundle; graphVersion: string } | null = null;
+
+  private propertiesCache: PropertyListing[] | null = null;
+
+  private readonly expiredHandlers = new Set<(message: string) => void>();
+
+  constructor(options: { baseUrl: string; timeoutMs: number; fetchImpl?: typeof fetch }) {
+    this.client = new ApiClient({
+      baseUrl: options.baseUrl,
+      timeoutMs: options.timeoutMs,
+      fetchImpl: options.fetchImpl,
+      getToken: () => this.session?.accessToken ?? null,
+      beforeRequest: () => this.ensureSession(),
+      onUnauthorized: (error) => this.expire(error.message)
+    });
   }
 
-  getProperty(): Promise<PropertyBundle> {
-    return this.unavailable();
+  /** A fresh instance (a relaunch, or a dev hot update) picks the persisted session up before its first request. */
+  private async ensureSession(): Promise<void> {
+    if (this.session || this.sessionChecked) return;
+    this.sessionChecked = true;
+    const stored = await loadSession();
+    if (stored && !(stored.expiresAt && Date.parse(stored.expiresAt) <= Date.now())) this.session = stored;
   }
 
-  getContent(): Promise<AppContent> {
-    return this.unavailable();
+  // ------------------------------------------------------------------ session
+  async login(email: string, password: string): Promise<Session> {
+    const { data } = await this.client.post<ApiLoginResponse>('/api/v1/auth/login', { email: email.trim().toLowerCase(), password }, false);
+    if (!data.access_token || !data.user) throw new ApiError('malformed_response', 'The sign-in answer was incomplete. Please try again.', 200);
+    const previous = await loadSession();
+    this.sessionChecked = true;
+    this.session = { accessToken: data.access_token, expiresAt: data.expires_at ?? null, user: data.user, propertyId: previous?.user.id === data.user.id ? previous.propertyId : null };
+    this.propertiesCache = null;
+    await saveSession(this.session);
+    return this.session;
   }
 
-  getPlaces(): Promise<Place[]> {
-    return this.unavailable();
+  async logout(): Promise<void> {
+    const token = this.session?.accessToken;
+    this.session = null;
+    this.bundleCache = null;
+    this.propertiesCache = null;
+    await clearSession();
+    if (token) {
+      try {
+        await this.client.request('POST', '/api/v1/auth/logout', undefined, { Authorization: `Bearer ${token}` }, false);
+      } catch {
+        /* the token is dropped locally either way; it expires server-side */
+      }
+    }
   }
 
-  findRoute(_from: string, _to: string, _options?: RouteOptions): Promise<RouteResult> {
-    return this.unavailable();
+  async restoreSession(): Promise<Session | null> {
+    const stored = await loadSession();
+    if (!stored) return null;
+    if (stored.expiresAt && Date.parse(stored.expiresAt) <= Date.now()) {
+      await clearSession();
+      return null;
+    }
+    this.session = stored;
+    this.sessionChecked = true;
+    try {
+      await this.client.get('/api/v1/auth/me');
+    } catch (error) {
+      if (error instanceof ApiError && (error.isAuth || error.status === 403)) {
+        this.session = null;
+        await clearSession();
+        return null;
+      }
+      // Offline: keep the session; requests will fail with a network error the UI shows.
+    }
+    return this.session;
   }
 
-  getTourRoute(_stopNodes: string[] | null, _options?: RouteOptions): Promise<TourRouteResult> {
-    return this.unavailable();
+  onSessionExpired(handler: (message: string) => void): () => void {
+    this.expiredHandlers.add(handler);
+    return () => this.expiredHandlers.delete(handler);
   }
 
-  getStopDistances(_nodes: string[]): Promise<Record<string, StopDistance>> {
-    return this.unavailable();
+  private expire(message: string): void {
+    if (!this.session) return;
+    this.session = null;
+    this.bundleCache = null;
+    void clearSession();
+    this.expiredHandlers.forEach((h) => h(message));
   }
 
-  askConcierge(_question: string, _context: { stopName: string | null }): Promise<string> {
-    return this.unavailable();
+  // ---------------------------------------------------------- property choice
+  async getProperties(): Promise<PropertyListing[]> {
+    const { data } = await this.client.get<{ properties: ApiPropertySummary[] }>('/api/v1/properties');
+    const current = this.currentPropertyId();
+    this.propertiesCache = (Array.isArray(data.properties) ? data.properties : []).map((p) => parseListing(p, current));
+    return this.propertiesCache;
   }
 
-  requestBooking(_request: BookingRequest): Promise<{ id: string }> {
-    return this.unavailable();
+  async selectProperty(propertyId: number): Promise<void> {
+    await this.ensureSession();
+    if (!this.session) throw new ApiError('unauthorized', 'Sign in to continue.', 401);
+    if (this.session.propertyId !== propertyId) this.bundleCache = null;
+    this.session = { ...this.session, propertyId };
+    await saveSession(this.session);
   }
 
-  startApplication(_unitNode: string): Promise<{ id: string }> {
-    return this.unavailable();
+  currentPropertyId(): number | null {
+    return this.session?.propertyId ?? null;
+  }
+
+  private async requireProperty(): Promise<number> {
+    await this.ensureSession();
+    const id = this.currentPropertyId();
+    if (id == null) throw new ApiError('no_property', NO_PROPERTY, 0);
+    return id;
+  }
+
+  // ----------------------------------------------------------- the property
+  async getProperty(): Promise<PropertyBundle> {
+    const id = await this.requireProperty();
+    const headers = this.bundleCache?.propertyId === id ? { 'If-None-Match': `"${this.bundleCache.graphVersion}"` } : undefined;
+    const [detail, graph, stops, map] = await Promise.all([
+      this.client.get<ApiPropertyDetail>(`/api/v1/properties/${id}`),
+      this.client.get<ApiGraph>(`/api/v1/properties/${id}/graph`, headers),
+      this.client.get<ApiStopsResponse>(`/api/v1/properties/${id}/stops`),
+      this.client.get<ApiMapResponse>(`/api/v1/properties/${id}/map`)
+    ]);
+    if (graph.status === 304 && this.bundleCache?.propertyId === id && stops.data.graph_version === this.bundleCache.graphVersion) {
+      return this.bundleCache.bundle;
+    }
+    const graphData = graph.status === 304 ? null : graph.data;
+    if (!graphData) {
+      // The server says our graph is current but we have no copy (should not happen): fetch it plainly.
+      const fresh = await this.client.get<ApiGraph>(`/api/v1/properties/${id}/graph`);
+      return this.remember(id, parseBundle(detail.data, fresh.data, stops.data, communityPhoto, map.data), fresh.data.version);
+    }
+    return this.remember(id, parseBundle(detail.data, graphData, stops.data, communityPhoto, map.data), graphData.version);
+  }
+
+  private remember(propertyId: number, bundle: PropertyBundle, graphVersion: string): PropertyBundle {
+    this.bundleCache = { propertyId, bundle, graphVersion };
+    return bundle;
+  }
+
+  async getContent(): Promise<AppContent> {
+    const user = this.session?.user;
+    const name = user?.name?.trim() || user?.email || 'there';
+    const first = name.split(/\s+/)[0] ?? name;
+    const nearby = this.propertiesCache ?? (await this.getProperties().catch(() => [] as PropertyListing[]));
+    return {
+      visitor: { name, initials: name.charAt(0).toUpperCase(), email: user?.email ?? '', phone: '' },
+      firstName: first,
+      nearbyProperties: nearby,
+      hiRiseListings: [],
+      tourHistory: [],
+      onboarding: ONBOARDING_SLIDES,
+      arInitLabels: AR_INIT_LABELS,
+      help: HELP_ITEMS,
+      supportEmail: SUPPORT_EMAIL,
+      concierge: { answers: [], fallback: CONCIERGE_NOT_CONNECTED, greetingStop: CONCIERGE_GREETING_STOP, greetingGeneral: CONCIERGE_GREETING_GENERAL, humanReply: CONCIERGE_HUMAN_REPLY, prompts: CONCIERGE_PROMPTS },
+      booking: { days: upcomingDays(), times: BOOKING_TIMES },
+      bestMatch: { reasons: [], percent: 0 },
+      appVersion: APP_VERSION
+    };
+  }
+
+  async getPlaces(): Promise<Place[]> {
+    const bundle = this.bundleCache?.propertyId === this.currentPropertyId() ? this.bundleCache.bundle : await this.getProperty();
+    return placesFromBundle(bundle);
+  }
+
+  async getLevelSvg(level: MapLevel): Promise<Blob> {
+    if (!level.svgPath) throw new FeatureUnavailableError('A floor SVG for this level');
+    return this.client.blob(level.svgPath);
+  }
+
+  // ------------------------------------------------------------------ routes
+  async findRoute(from: string, to: string, options: RouteOptions = {}): Promise<RouteResult> {
+    const id = await this.requireProperty();
+    try {
+      const { data } = await this.client.post<ApiRouteResponse>(`/api/v1/properties/${id}/route`, { from_stop_id: from, to_stop_id: to, from_floor: options.fromFloor ?? null, to_floor: options.toFloor ?? null, step_free: options.stepFree === true, avoid_blockers: options.avoidBlockers !== false });
+      return { ok: true, route: parseRoute(data.route) };
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 422 && error.code !== 'validation_error' && error.code !== 'tour_disabled') {
+        return { ok: false, from, to, error: { code: error.code as RouteResult extends { ok: false; error: { code: infer C } } ? C : never, message: error.message }, warnings: [] };
+      }
+      throw error;
+    }
+  }
+
+  async getTourRoute(stopNodes: string[] | null, options: RouteOptions = {}): Promise<TourRouteResult> {
+    const id = await this.requireProperty();
+    let nodes = stopNodes;
+    if (!nodes) {
+      const bundle = this.bundleCache?.propertyId === id ? this.bundleCache.bundle : await this.getProperty();
+      nodes = [...bundle.amenities.map((a) => a.node), ...bundle.units.map((u) => u.node)];
+    }
+    try {
+      const { data } = await this.client.post<ApiTourRouteResponse>(`/api/v1/properties/${id}/tour-route`, { stop_ids: nodes, step_free: options.stepFree === true, avoid_blockers: options.avoidBlockers !== false });
+      return { ok: true, tour: parseTourRoute(data) };
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 422 && error.code !== 'validation_error' && error.code !== 'tour_disabled') {
+        return { ok: false, from: null, to: null, error: { code: (error.code === 'invalid_stop' ? 'unknown_endpoint' : error.code) as 'no_path', message: error.message }, warnings: [] };
+      }
+      throw error;
+    }
+  }
+
+  async getStopDistances(nodes: string[]): Promise<Record<string, StopDistance>> {
+    if (!nodes.length) return {};
+    const id = await this.requireProperty();
+    const { data } = await this.client.post<ApiDistancesResponse>(`/api/v1/properties/${id}/stops/distances`, { stop_ids: nodes });
+    return parseDistances(data);
+  }
+
+  // --------------------------------------------- features without a backend
+  async askConcierge(_question: string, context: { stopName: string | null }): Promise<string> {
+    const property = this.bundleCache?.bundle.property.name ?? 'this property';
+    return CONCIERGE_NOT_CONNECTED.replace('{property}', property).replace('{stop}', context.stopName ?? 'this stop');
+  }
+
+  async requestBooking(_request: BookingRequest): Promise<{ id: string }> {
+    throw new FeatureUnavailableError('Booking a live tour');
+  }
+
+  async startApplication(_unitNode: string): Promise<{ id: string }> {
+    throw new FeatureUnavailableError('Online applications');
   }
 }

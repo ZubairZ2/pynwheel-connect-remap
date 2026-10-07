@@ -1,5 +1,5 @@
 import { createContext, useContext, type Dispatch } from 'react';
-import type { Place } from '~/models';
+import type { Place, PropertyListing } from '~/models';
 import type { AppContent, PropertyBundle, StopDistance } from '~/repositories/tourRepository';
 import type { AppState } from './appState';
 import type { Action } from './reducer';
@@ -9,7 +9,8 @@ import type { Action } from './reducer';
  * Fast Refresh never recreates it on a hot update.
  */
 
-export type DataStatus = 'loading' | 'ready' | 'error';
+/** `idle`: signed out or no property chosen yet, so nothing is loaded. */
+export type DataStatus = 'idle' | 'loading' | 'ready' | 'error';
 
 export interface AppData {
   status: DataStatus;
@@ -19,6 +20,9 @@ export interface AppData {
   places: Place[];
   /** Distance from the tour start per stop node ("45 ft ↑" on the cards). */
   distances: Record<string, StopDistance>;
+  /** The properties the signed-in user may tour (the property picker). */
+  properties: PropertyListing[];
+  propertiesStatus: 'idle' | 'loading' | 'ready' | 'error';
 }
 
 export interface AppContextValue {
@@ -27,6 +31,7 @@ export interface AppContextValue {
   data: AppData;
   hydrated: boolean;
   reload: () => void;
+  reloadProperties: () => void;
 }
 
 export const AppContext = createContext<AppContextValue | null>(null);

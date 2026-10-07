@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
-import type { Route } from '~/models';
+import type { MapLevel, Route } from '~/models';
 import type { MapView } from '~/store/appState';
 import { advance, buildSimulation, play, positionOf, seekToLeg, setMode, stepBy, stop, type Simulation, type SimulationMode, type SimulationState, type WalkerPosition } from '~/wayfinding/simulation';
 
@@ -15,8 +15,8 @@ import { advance, buildSimulation, play, positionOf, seekToLeg, setMode, stepBy,
  * but never the walker. A change that did not come from the loop (the
  * controls, hydration) is adopted on the next render.
  */
-export const useSimulationPlayer = (route: Route | null, state: SimulationState, onChange: (next: SimulationState) => void, onStage?: (view: MapView) => void) => {
-  const sim: Simulation | null = useMemo(() => (route ? buildSimulation(route) : null), [route]);
+export const useSimulationPlayer = (route: Route | null, state: SimulationState, onChange: (next: SimulationState) => void, onStage?: (view: MapView) => void, levels: MapLevel[] = []) => {
+  const sim: Simulation | null = useMemo(() => (route ? buildSimulation(route, levels) : null), [route, levels]);
   const current = useRef(state);
   const emitted = useRef<SimulationState | null>(null);
   if (state !== emitted.current) current.current = state;

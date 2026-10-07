@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import type { FormEvent } from 'react';
 import logo from '~/assets/images/pynwheel-tour-logo.png';
 import { Button } from '~/components/ui';
 import { hideKeyboard } from '~/services/native';
@@ -7,37 +7,24 @@ import { LightShell } from './shared';
 interface Props {
   email: string;
   password: string;
+  busy: boolean;
+  error: string | null;
   onEmail: (value: string) => void;
   onPassword: (value: string) => void;
   onLogin: () => void;
 }
 
 /**
- * Sign in, as the reference: any email and password proceed (no backend in
- * this phase). Empty fields are refused with an inline message so the form
- * still behaves like a real one.
+ * Sign in with Pynwheel CMS credentials. The repository verifies them
+ * through the Tour App API (only Super Admins are admitted); the error the
+ * backend gives is shown inline.
  */
-export const LoginScreen = ({ email, password, onEmail, onPassword, onLogin }: Props) => {
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-
+export const LoginScreen = ({ email, password, busy, error, onEmail, onPassword, onLogin }: Props) => {
   const submit = (e?: FormEvent) => {
     e?.preventDefault();
-    if (!email.trim() || !password) {
-      setError('Enter your email and password to continue.');
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      setError('That email address does not look right.');
-      return;
-    }
-    setError(null);
-    setBusy(true);
+    if (busy) return;
     void hideKeyboard();
-    window.setTimeout(() => {
-      setBusy(false);
-      onLogin();
-    }, 500);
+    onLogin();
   };
 
   return (
@@ -46,11 +33,11 @@ export const LoginScreen = ({ email, password, onEmail, onPassword, onLogin }: P
         <img src={logo} alt="Pynwheel Tour" width={220} className="pw-login__logo" />
         <div className="pw-login__text">
           <div className="pw-login__title">Welcome Back</div>
-          <div className="pw-login__sub">Sign in to manage your tours.</div>
+          <div className="pw-login__sub">Sign in with your Pynwheel account.</div>
         </div>
         <div className="pw-login__fields">
-          <input type="email" inputMode="email" autoComplete="email" autoCapitalize="none" placeholder="Email" value={email} onChange={(e) => onEmail(e.target.value)} className="pw-input" aria-label="Email" />
-          <input type="password" autoComplete="current-password" placeholder="Password" value={password} onChange={(e) => onPassword(e.target.value)} className="pw-input" aria-label="Password" />
+          <input type="email" inputMode="email" autoComplete="email" autoCapitalize="none" placeholder="Email" value={email} onChange={(e) => onEmail(e.target.value)} className="pw-input" aria-label="Email" disabled={busy} />
+          <input type="password" autoComplete="current-password" placeholder="Password" value={password} onChange={(e) => onPassword(e.target.value)} className="pw-input" aria-label="Password" disabled={busy} />
           {error ? (
             <div className="pw-login__error" role="alert">
               {error}

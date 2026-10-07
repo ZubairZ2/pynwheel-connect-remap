@@ -22,7 +22,11 @@ export type Action =
   | { type: 'skipOnboard' }
   | { type: 'setEmail'; value: string }
   | { type: 'setPassword'; value: string }
-  | { type: 'login' }
+  | { type: 'loginStart' }
+  | { type: 'loginFailed'; message: string }
+  | { type: 'loginSucceeded'; user: { name: string; email: string }; propertyId: number | null }
+  | { type: 'selectProperty'; propertyId: number }
+  | { type: 'sessionExpired'; message: string }
   | { type: 'signOut' }
   | { type: 'toggleStop'; node: string }
   | { type: 'selectStops'; nodes: string[] }
@@ -37,7 +41,7 @@ export type Action =
   | { type: 'beginGuided' }
   | { type: 'jumpToStop'; node: string }
   | { type: 'arrive' }
-  | { type: 'nextStop'; propertyName: string; names: string[] }
+  | { type: 'nextStop'; propertyName: string; names: string[]; date: string }
   | { type: 'exitStop' }
   | { type: 'unlockDrag'; pct: number }
   | { type: 'unlockRelease'; node: string }
@@ -95,7 +99,7 @@ const segmentView = (tour: TourRoute | null, index: number): MapView | null => {
 export const reducer = (state: AppState, action: Action): AppState => {
   switch (action.type) {
     case 'hydrate': {
-      const next = { ...state, ...action.state };
+      const next = { ...state, ...action.state, auth: { status: 'idle' as const, error: null } };
       // A simulation that was playing resumes paused; overlays never persist.
       next.wayfinding = { ...next.wayfinding, status: 'idle', sim: { ...next.wayfinding.sim, status: next.wayfinding.sim.status === 'playing' ? 'paused' : next.wayfinding.sim.status } };
       next.guided = { ...next.guided, status: next.guided.tour ? 'ready' : 'idle', sim: { ...next.guided.sim, status: next.guided.sim.status === 'playing' ? 'paused' : next.guided.sim.status } };
@@ -132,8 +136,18 @@ export const reducer = (state: AppState, action: Action): AppState => {
       return { ...state, email: action.value };
     case 'setPassword':
       return { ...state, password: action.value };
-    case 'login':
-      return { ...state, screen: 'home', signedIn: true, password: '' };
+    case 'loginStart':
+      return { ...state, auth: { status: 'busy', error: null } };
+    case 'loginFailed':
+      return { ...state, auth: { status: 'error', error: action.message } };
+    case 'loginSucceeded':
+      return { ...state, screen: action.propertyId != null ? 'home' : 'search', signedIn: true, user: action.user, propertyId: action.propertyId, password: '', auth: { status: 'idle', error: null } };
+    case 'selectProperty':
+      if (state.propertyId === action.propertyId) return { ...state, screen: 'home', overlays: [] };
+      // A new property: every tour, route and selection belonged to the old one.
+      return { ...state, propertyId: action.propertyId, screen: 'home', overlays: [], selected: {}, tourOrder: [], stopIndex: 0, unlocked: {}, unlockDrag: 0, notes: {}, guided: initialGuided(), wayfinding: initialWayfinding(), floorByLevel: {} };
+    case 'sessionExpired':
+      return { ...initialAppState(), screen: 'login', signedIn: false, email: state.email, tourHistory: state.tourHistory, historyLoaded: state.historyLoaded, notifs: state.notifs, journey: state.journey, toast: action.message };
     case 'signOut':
       return { ...initialAppState(), screen: 'login', signedIn: false, tourHistory: state.tourHistory, historyLoaded: state.historyLoaded, notifs: state.notifs, journey: state.journey };
     case 'toggleStop':
@@ -173,7 +187,8 @@ export const reducer = (state: AppState, action: Action): AppState => {
     case 'jumpToStop': {
       const index = state.tourOrder.indexOf(action.node);
       if (index < 0) return state;
-      return { ...state, stopIndex: index, screen: 'guided', guided: { ...state.guided, view: segmentView(state.guided.tour, index), sim: initialSimulationState(state.guided.sim.mode) } };
+      // Jumping from the itinerary closes it, so the map is visible at once.
+      return { ...state, stopIndex: index, screen: 'guided', overlays: without(state.overlays, 'itinerary'), guided: { ...state.guided, view: segmentView(state.guided.tour, index), sim: initialSimulationState(state.guided.sim.mode) } };
     }
     case 'arrive': {
       const node = state.tourOrder[state.stopIndex];
@@ -185,7 +200,7 @@ export const reducer = (state: AppState, action: Action): AppState => {
         const index = state.stopIndex + 1;
         return { ...state, stopIndex: index, screen: 'guided', overlays: [], guided: { ...state.guided, view: segmentView(state.guided.tour, index), sim: initialSimulationState(state.guided.sim.mode) } };
       }
-      const entry: TourHistoryEntry = { id: `h-${Date.now()}`, property: action.propertyName, date: 'Today *', tags: action.names };
+      const entry: TourHistoryEntry = { id: `h-${Date.now()}`, property: action.propertyName, date: action.date, tags: action.names };
       return { ...state, screen: 'tourComplete', overlays: [], journey: { ...state.journey, toured: true }, tourHistory: [entry, ...state.tourHistory] };
     }
     case 'exitStop':

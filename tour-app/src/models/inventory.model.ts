@@ -16,9 +16,10 @@ export interface Unit {
   building: string | null;
   floor: number | null;
   level: string | null;
-  bedrooms: number;
-  bathrooms: number;
-  sqft: number;
+  /** From the unit's floor plan; null when the backend has none. */
+  bedrooms: number | null;
+  bathrooms: number | null;
+  sqft: number | null;
   /** Monthly rent in dollars; null when not published. */
   rent: number | null;
   available: boolean;
@@ -27,6 +28,9 @@ export interface Unit {
   /** Footprint on the level, in level pixels. */
   polygon: [number, number][] | null;
   showInStopsList: boolean;
+  /** Whether a route can reach it (plotted and joined to a path). */
+  routable?: boolean;
+  floorplanName?: string | null;
 }
 
 export interface Amenity {
@@ -40,8 +44,12 @@ export interface Amenity {
   icon: AmenityIcon;
   hours: string | null;
   description: string | null;
+  /** Directional text the CMS Tour Setup holds for the stop. */
+  instruction?: string | null;
   polygon: [number, number][] | null;
   showInStopsList: boolean;
+  routable?: boolean;
+  videoUrl?: string | null;
 }
 
 /** An additional self-tour stop (entry, exit, elevator, stairs, ramp, door, blocker, leasing, restroom, mail, parking, waypoint). */

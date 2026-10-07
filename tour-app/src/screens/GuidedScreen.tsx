@@ -45,7 +45,7 @@ interface Props {
 export const GuidedScreen = (props: Props) => {
   const { mode, bundle, stop, stopNumber, stopTotal, route, routeStatus, routeError, distance, minutes, view, sim, onView, onSim, onBack, onItinerary, onArrive, onRetry, propertyName } = props;
   const onStage = useCallback((stage: MapViewState) => onView(stage), [onView]);
-  const player = useSimulationPlayer(route, sim, onSim, onStage);
+  const player = useSimulationPlayer(route, sim, onSim, onStage, bundle.levels);
   const level = useMemo(() => bundle.levels.find((l) => l.id === view?.level) ?? bundle.levels.find((l) => l.id === route?.stages[0]?.level) ?? bundle.levels[0], [bundle.levels, view, route]);
   const floor = view?.floor ?? level.floors[0] ?? null;
   const step = route ? (route.steps[player.position?.step ?? 0] ?? route.steps[0]) : null;
@@ -130,7 +130,8 @@ export const GuidedScreen = (props: Props) => {
             <div>
               <div className="pw-guidedar__name">{stop?.name ?? '…'}</div>
               <div className="pw-guidedar__meta">
-                {minutes} min · {distance}
+                {minutes ? `${minutes} min · ` : ''}
+                {distance}
               </div>
             </div>
             {route ? (
@@ -160,7 +161,8 @@ export const GuidedScreen = (props: Props) => {
             Stop {stopNumber} of {stopTotal}
           </span>
           <span className="pw-guided__meta">
-            {minutes} min walk · {distance}
+            {minutes ? `${minutes} min walk · ` : ''}
+            {distance}
           </span>
         </div>
         <div className="pw-guided__title">Walk To {stop?.name ?? '…'}</div>

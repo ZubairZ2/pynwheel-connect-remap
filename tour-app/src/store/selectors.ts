@@ -5,6 +5,7 @@ import type { AppState } from './appState';
 /**
  * Derived views of the state the screens share. Pure functions of the
  * state and the loaded bundle; nothing here reads dummy data directly.
+ * Labels derived from demo data carry the ` *` marker; real data never does.
  */
 
 export type StopKindLabel = 'unit' | 'amenity';
@@ -13,9 +14,9 @@ export interface TourStopView {
   node: string;
   kind: StopKindLabel;
   name: string;
-  /** "1st Floor *" for an amenity, "2 Bed · 2 Bath" for a unit (as the reference's `floorLabel`). */
+  /** "1st Floor" for an amenity, "2 Bed · 2 Bath" for a unit (as the reference's `floorLabel`). */
   floorLabel: string;
-  /** The level's floor label ("Floor 1 *"). */
+  /** The level's floor label ("Floor 1", "Tower A · Floor 2"). */
   floor: string;
   icon: Amenity['icon'] | 'bed';
   /** Minutes the tour dwells here. */
@@ -31,15 +32,25 @@ const ordinal = (n: number): string => {
   return `${n}${s[(v - 20) % 10] ?? s[v] ?? s[0]}`;
 };
 
-export const floorText = (floor: number | null, fallback: string): string => {
-  if (floor === 15) return 'Rooftop *';
+/** The demo marker for derived labels: ` *` on demo data, nothing on real data. */
+export const markOf = (bundle: PropertyBundle | null | undefined): string => (bundle?.demo ? ' *' : '');
+
+export const floorText = (floor: number | null, fallback: string, mark = ''): string => {
   if (floor == null) return fallback;
-  return `${ordinal(floor)} Floor *`;
+  if (mark && floor === 15) return `Rooftop${mark}`; // the demo property's rooftop floor
+  return `${ordinal(floor)} Floor${mark}`;
+};
+
+/** "2 Bed · 2 Bath" when the floor plan says so, else the floor plan's name or "Unit". */
+export const unitLabel = (unit: Unit, mark = ''): string => {
+  if (unit.bedrooms != null && unit.bathrooms != null) return `${unit.bedrooms} Bed · ${unit.bathrooms} Bath${mark}`;
+  return `${unit.floorplanName ?? 'Unit'}${mark}`;
 };
 
 /** Every unit and amenity the visitor may put on a tour, as stop cards. */
 export const tourStopViews = (bundle: PropertyBundle): TourStopView[] => {
-  const dwell = new Map((bundle.graph.tour?.stops ?? []).map((s) => [s.node, s.durationMinutes ?? 3]));
+  const mark = markOf(bundle);
+  const dwell = new Map((bundle.graph.tour?.stops ?? []).map((s) => [s.node, s.durationMinutes ?? null]));
   const views: TourStopView[] = [];
   bundle.amenities
     .filter((a) => a.showInStopsList)
@@ -48,7 +59,7 @@ export const tourStopViews = (bundle: PropertyBundle): TourStopView[] => {
         node: a.node,
         kind: 'amenity',
         name: a.name,
-        floorLabel: floorText(a.floor, bundle.floorLabels[a.node] ?? ''),
+        floorLabel: bundle.demo ? floorText(a.floor, bundle.floorLabels[a.node] ?? '', mark) : (bundle.floorLabels[a.node] ?? floorText(a.floor, '')),
         floor: bundle.floorLabels[a.node] ?? '',
         icon: a.icon,
         duration: dwell.get(a.node) ?? 3,
@@ -64,7 +75,7 @@ export const tourStopViews = (bundle: PropertyBundle): TourStopView[] => {
         node: u.node,
         kind: 'unit',
         name: u.name,
-        floorLabel: `${u.bedrooms} Bed · ${u.bathrooms} Bath *`,
+        floorLabel: unitLabel(u, mark),
         floor: bundle.floorLabels[u.node] ?? '',
         icon: 'bed',
         duration: dwell.get(u.node) ?? 4,
@@ -98,9 +109,15 @@ export const bestMatchUnit = (state: AppState, bundle: PropertyBundle): Unit | n
   return available ?? bundle.units.find((u) => u.showInStopsList && u.available) ?? bundle.units[0] ?? null;
 };
 
-export const unitMeta = (unit: Unit): string => `${unit.bedrooms} Bed · ${unit.bathrooms} Bath · ${unit.sqft.toLocaleString('en-US')} sq.ft *`;
+export const unitMeta = (unit: Unit, mark = ''): string => {
+  const parts: string[] = [];
+  if (unit.bedrooms != null && unit.bathrooms != null) parts.push(`${unit.bedrooms} Bed · ${unit.bathrooms} Bath`);
+  else if (unit.floorplanName) parts.push(unit.floorplanName);
+  if (unit.sqft != null) parts.push(`${unit.sqft.toLocaleString('en-US')} sq.ft`);
+  return `${parts.join(' · ') || 'Unit'}${mark}`;
+};
 
-export const unitPrice = (unit: Unit): string => (unit.rent != null ? `$${unit.rent.toLocaleString('en-US')}/mo *` : 'Call for pricing *');
+export const unitPrice = (unit: Unit, mark = ''): string => (unit.rent != null ? `$${unit.rent.toLocaleString('en-US')}/mo${mark}` : `Call for pricing${mark}`);
 
 /** "45 ft" / "240 ft ↑" from a stop distance; "—" while unknown, "no path" when unreachable. */
 export const distanceLabel = (distance: StopDistance | undefined, arrow = false): string => {

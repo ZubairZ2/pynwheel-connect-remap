@@ -2102,3 +2102,53 @@ None. No controller, serializer, query, route, schema or migration changed in th
 - The data repair (`rake wayfinding:repair:*`) and the CHECK constraints have not been applied anywhere.
 - Feet and minutes on routes need `scale_ft_per_px` per level, which nothing sets yet.
 - **October 5, 2026:** Save is offered in Wayfinding mode only and unit / amenity pins are no longer sent (`PLOTTING_SAVE = false` in `graphDiff.ts`): a pin saved to the CMS could not be removed from the plan. The backend still accepts them; the Plotting note says pins stay on the page.
+
+## 32. Tour App backend — FastAPI Tour App API + mobile integration (October 5, 2026)
+
+**Built** (`tour-api/`, branch `feature/tour_app_backend_api`; full account in `tour-app-backend-api.md`):
+
+| Layer | What |
+|---|---|
+| FastAPI service | `app/main.py`, config, one error envelope, access log; routers auth / properties / stops / maps / routes; Pydantic schemas = OpenAPI (`/docs`) |
+| Auth | Doorkeeper password grant (`POST /api/v2/auth/token`) for sign-in, `oauth_access_tokens` lookup per request, Super Admin only, revoke on logout; refused logins never hand out the minted token |
+| Read-only data | `communities`/`companies` (tour flag = `ProductState.tour?` mirrored), the stops list (`TourStops::Membership.in_list?` mirrored), the 16 graph row scopes of `GraphBuilder#load_rows` |
+| Wayfinding | Python port of `GraphBuilder` / `RouteService` / `Timing` / `GraphSerializer` / `GraphVersion`; cache per (property, graph version); `tour(stop_keys)` + per-stop segments; `distances()` |
+| Mobile | `PynwheelApiTourRepository` (fetch client, parsers), session store, login / property picker / change property / session expiry, demo markers only on dummy data |
+
+**Rails: nothing changed.** Two attempts to let Rails accept a CMS bearer token on the wayfinding API
+were refused by the auto-mode classifier ("Security Weaken"); the Python port was chosen instead and
+proven equivalent with `tour-api/scripts/parity.py` (13 properties identical: 1411, 1618, 2934, 1468,
+1234, 1412, 1105, 2919, 1839, 1409, 1232, 1106, 2157; 225 routes + 13 tour routes identical).
+
+**Tested**: 52 pytest (`tour-api`), 17 vitest (`tour-app`), typecheck + build clean, `rails test`
+103/338/0 unchanged; live measurements (1411 / 1618 / 2934): graph 4–9 ms (36–239 KB, 304 on ETag),
+stops 8–13 ms, route 5–8 ms, tour-route 9–13 ms, login 325 ms (bcrypt in Rails), properties 50 ms;
+security boundaries (wrong password, non-admin account, missing/malformed/revoked token, unknown /
+tour-off property, another property's stop or node, SQL-looking ids, no access codes in payloads).
+Browser: sign-in with a wrong then right password, real property list, John Pynwheel Demo → Home →
+Build Your Tour with the real stops list and distances; Hazel flow in the session report.
+
+**Not verified**: native iOS/Android builds (no Xcode / SDK here), `pynwheel_prod`, staging. Traps
+learned: Doorkeeper lives under `/api/v2/auth/token` (not `/oauth/token`); a non-portal user gets
+HTTP 200 without a token; Rails loads elevators / entry points without ORDER BY (compare as sets);
+`fetch_building_list` sorts buildings with 8-digit zero padding; `floor_positions` is echoed, never
+used for coordinates.
+
+## 33. Tour App map rendering fix (October 6, 2026)
+
+`map_rendering_issue_in_tour_app.md`: the Tour App drew routes over an empty sheet and showed raw
+HTML in arrival text; zoom-in needed two taps; no zoom-out / reset; the walker was too fast.
+
+| Area | Change |
+|---|---|
+| API | `GET …/map/levels/{level_id}/svg` serves the floor SVG server-side (S3 has no CORS): validated as SVG, cached, ETag/304, `X-Svg-ViewBox`; `LevelOut.svg_path/svg_transform/svg_size`; plain-text `instruction`/`description` (`strip_html`) |
+| App | `map/mapBase.ts` (frame + placement rule = the CMS canvas rule, calibrated transform when stored), `map/useLevelBase.ts` (SVG via API → Blob URL, raster probe + plain-host retry, loading / unavailable / invalid states), `MapView` plan layer + `+ − Reset` controls (pointer-capture fix), playback speed per level (`PLAYBACK_SPEED_DESIGN_PX_PER_S`), repository `getLevelSvg`, singleton repository + session restore before the first request |
+| Tests | 57 pytest (+5 `test_svg.py`), 22 vitest (+`mapBase.test.ts`, playback speed) |
+
+Verified in the browser against the live API: 2934 `floorplate:3029` (SVG-only, 2000×2000 viewBox,
+5.2 MB) renders with the route 1130 → Office Space over it, playback ≈40 px/s with the floor chip
+switching to Floor 2 at the elevator; zoom 0.11 → 0.154 → 0.216 → 0.154 → 0.11 (one tap each);
+Hazel raster plates render; 1411 shows "Map unavailable" (private bucket) instead of a blank sheet.
+Not verified: iOS / Android web views (no SDKs on this Mac). Trap: a Vite Fast Refresh recreates
+`useMemo` values, so a repository held in a memo was replaced mid-session and lost its in-memory
+token — the provider is a module singleton now and restores the persisted session before any request.

@@ -1,3 +1,4 @@
+import communityPhoto from '~/assets/images/community-pool.jpg';
 import { TabBar } from '~/components/chrome';
 import { Icon } from '~/components/Icon';
 import { Button, IconButton, Pill } from '~/components/ui';
@@ -17,20 +18,23 @@ interface Props {
   onBook: () => void;
   onArMode: () => void;
   onWayfinding: () => void;
+  /** Opens the property picker (Search). */
+  onChangeProperty: () => void;
   onTab: (tab: 'home' | 'search' | 'profile') => void;
 }
 
-export const HomeScreen = ({ firstName, property, tourHistory, agent, resumable, onHelp, onStartTour, onResumeTour, onBook, onArMode, onWayfinding, onTab }: Props) => (
+export const HomeScreen = ({ firstName, property, tourHistory, agent, resumable, onHelp, onStartTour, onResumeTour, onBook, onArMode, onWayfinding, onChangeProperty, onTab }: Props) => (
   <LightShell footer={<TabBar active="home" onSelect={onTab} />}>
     <div className="pw-home">
       <div className="pw-home__top">
         <div className="pw-home__welcome">Welcome, {firstName}</div>
         <IconButton icon="help" label="Help" onClick={onHelp} />
       </div>
-      <div className="pw-home__location">
+      <button type="button" className="pw-home__location pw-home__location--button" onClick={onChangeProperty} aria-label="Change property">
         <Icon name="pin" size={12} />
-        Current Location
-      </div>
+        {property.city ? `${property.city} · ` : ''}Change property
+        <Icon name="chevronDown" size={12} />
+      </button>
 
       {agent ? (
         <div className="pw-home__agent">
@@ -46,7 +50,15 @@ export const HomeScreen = ({ firstName, property, tourHistory, agent, resumable,
       ) : null}
 
       <div className="pw-home__property">
-        <img src={property.heroImage} alt="Property" className="pw-home__hero" />
+        <img
+          src={property.heroImage}
+          alt=""
+          className="pw-home__hero"
+          onError={(e) => {
+            // A floor image the device cannot fetch (a private bucket) falls back to the bundled photo.
+            if (e.currentTarget.src !== communityPhoto) e.currentTarget.src = communityPhoto;
+          }}
+        />
         <div className="pw-home__propertybody">
           <div>
             <div className="pw-home__propertyname">{property.name}</div>

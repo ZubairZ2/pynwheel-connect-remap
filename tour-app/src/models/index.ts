@@ -1,4 +1,4 @@
-export type { Building, CoordinateSpace, FloorGeometry, FloorShape, LevelKind, MapLevel, Property } from './property.model';
+export type { AffineTransform, Building, CoordinateSpace, FloorGeometry, FloorShape, LevelKind, MapLevel, Property } from './property.model';
 export type {
   Gate,
   GraphEdge,

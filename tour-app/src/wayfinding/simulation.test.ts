@@ -84,3 +84,20 @@ describe('Play Route simulation', () => {
     expect(levels.has('floorplate:201')).toBe(true);
   });
 });
+
+import { PLAYBACK_MAX_PX_PER_S, PLAYBACK_MIN_PX_PER_S, PLAYBACK_SPEED_DESIGN_PX_PER_S, speedForLevel } from './simulation';
+
+describe('playback speed', () => {
+  it('is distance-aware and scales with the level size, within guard rails', () => {
+    expect(speedForLevel({ width: 760, height: 470 })).toBeCloseTo(PLAYBACK_SPEED_DESIGN_PX_PER_S, 5);
+    const hazel = speedForLevel({ width: 1412, height: 932 });
+    expect(hazel).toBeGreaterThan(PLAYBACK_SPEED_DESIGN_PX_PER_S);
+    expect(hazel).toBeLessThanOrEqual(PLAYBACK_MAX_PX_PER_S);
+    expect(speedForLevel({ width: 3300, height: 2550 })).toBe(PLAYBACK_MAX_PX_PER_S);
+    expect(speedForLevel({ width: 10, height: 10 })).toBe(PLAYBACK_MIN_PX_PER_S);
+    expect(speedForLevel(null)).toBeCloseTo(PLAYBACK_SPEED_DESIGN_PX_PER_S, 5);
+    expect(speedForLevel({ width: 0, height: 0, svgSize: { width: 1412, height: 912 } })).toBeCloseTo(speedForLevel({ width: 1412, height: 912 }), 5);
+    // A 1,032 px walk on Hazel's plan takes well over 10 seconds, not 4.7 as before.
+    expect(1032 / hazel).toBeGreaterThan(10);
+  });
+});
