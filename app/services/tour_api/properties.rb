@@ -14,7 +14,7 @@ module TourApi
 
     module_function
 
-    def summary(community)
+    def summary(community, company_name: community.company&.name)
       {
         id: community.id,
         name: community.name.presence || "Property #{community.id}",
@@ -22,15 +22,21 @@ module TourApi
         city: community.city,
         state: community.state,
         zip: community.zip,
-        company: community.company&.name,
+        company: company_name,
         tour_enabled: Connect::ProductState.tour?(community),
         is_sitemap: community.is_sitemap.present?
       }
     end
 
+    # Only the columns the summary reads (a community row is wide), with the
+    # company names looked up in one query.
+    SUMMARY_COLUMNS = %i[id name address city state zip company_id is_sitemap self_tour product_options].freeze
+
     def all_summaries
       LIST_CACHE.fetch('all') do
-        Community.includes(:company).order(Arel.sql('lower(communities.name), communities.id')).map { |c| summary(c) }
+        rows = Community.select(*SUMMARY_COLUMNS).order(Arel.sql('lower(communities.name), communities.id')).to_a
+        companies = Company.where(id: rows.map(&:company_id).compact.uniq).pluck(:id, :name).to_h
+        rows.map { |c| summary(c, company_name: companies[c.company_id]) }
       end
     end
 

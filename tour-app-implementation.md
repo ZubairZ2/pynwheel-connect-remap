@@ -343,3 +343,35 @@ builds still cannot be produced on this Mac.
   hold 2.2 s.
 - Instructions are plain text; the API strips the CMS's HTML.
 - Tests: `src/map/mapBase.test.ts`, playback speed in `simulation.test.ts`; 22 vitest in all.
+
+## 15. The API is the Rails CMS now (October 7, 2026)
+
+The FastAPI service the app talked to since §13 was ported into the Rails CMS as `Api::TourApp::V1`
+(`tour-app-backend-api.md` §14) and `tour-api/` was deleted. The app's contract is unchanged; the
+only app change is the API prefix, `/api/v1` → **`/api/tour/v1`**, held in one constant (`API`) in
+`src/repositories/pynwheelApi/pynwheelApiTourRepository.ts` (the legacy CMS already serves a vendor
+route at `GET /api/v1/properties`, so the Tour App API needed its own prefix). `svg_path` values the
+API returns carry the new prefix too, so `getLevelSvg` needed nothing.
+
+| Area | Change |
+|---|---|
+| `src/repositories/pynwheelApi/pynwheelApiTourRepository.ts` | `const API = '/api/tour/v1'`; every path is `${API}/…`; doc comment names the Rails controllers |
+| `src/repositories/pynwheelApi/apiTypes.ts` | comment: the JSON is now defined by `app/services/tour_api/` in the CMS |
+| `.env.development` / `.env.example` | `VITE_TOUR_API_URL=http://127.0.0.1:3000` (the CMS; the verify server is :3100, set at launch) |
+| `.env.staging` / `.env.production` | comments: the URL is the CMS host; `VITE_TOUR_API_URL=https://<cms host> npm run build && npx cap sync android` |
+| `src/config/env.ts`, `src/repositories/tourRepository.ts`, `src/repositories/repositoryProvider.tsx` | comments / the configuration-error message name the CMS instead of `:8000` |
+
+One API behaviour the app benefits from: the `tour-route` segments now index their own legs
+(`legs[].index`, `steps[].leg`, `stages[].leg` are 0-based per segment) and an elevator step's
+`transition.to_level_id` is filled in every segment — the FastAPI service offset them twice after the
+first stop, which desynchronised the step card during Play Route from the second stop on
+(`wayfinding/simulation.ts` `stepIndexOf` matches steps to legs by index). No parser change was needed.
+
+Verified in the browser against the Rails verify server (:3100, `pynwheel_development`): sign-in →
+property list → Hazel (1618): Build Your Tour with real distances, 3-stop tour, Play Route, the floor
+change to Floor 31 at the elevators, stop detail, Tour Complete, Tour Summary → Change property →
+Dummy-High-Rise (2934): the SVG-only plate `floorplate:3029` served through the Rails SVG endpoint,
+3-stop tour incl. unit 1130's slide-to-unlock and the Floor 1 → Floor 2 switch at the Elevator Bank.
+`npm run typecheck`, `npx vitest run` (22) and `npm run build` are clean. Still not verified: iOS /
+Android web views (no SDKs on this Mac). The owner's git-ignored `.env.production.local` still points
+at `:8000` and must name the CMS host before the next device build.

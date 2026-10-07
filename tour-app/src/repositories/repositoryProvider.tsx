@@ -23,7 +23,7 @@ export const createTourRepository = (): TourRepository => {
     instance = new DummyTourRepository();
     return instance;
   }
-  if (!env.apiUrl) throw new RepositoryConfigurationError('VITE_TOUR_API_URL is not set, so the app does not know where the Pynwheel Tour App API runs. Set it at build time (tour-app/.env.production.local, e.g. http://<your-machine-ip>:8000) and rebuild with `npm run build && npx cap sync`.');
+  if (!env.apiUrl) throw new RepositoryConfigurationError('VITE_TOUR_API_URL is not set, so the app does not know where the Pynwheel Tour App API runs. Set it at build time (tour-app/.env.production.local, e.g. http://<your-machine-ip>:3000, the Pynwheel CMS) and rebuild with `npm run build && npx cap sync`.');
   instance = new PynwheelApiTourRepository({ baseUrl: env.apiUrl, timeoutMs: env.apiTimeoutMs });
   return instance;
 };

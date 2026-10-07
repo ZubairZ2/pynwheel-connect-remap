@@ -27,7 +27,7 @@ import type { Session } from '~/services/session';
  *     ↓
  *   TourRepository               ← this interface
  *     ↓
- *   PynwheelApiTourRepository    the configured provider: the Pynwheel Tour App API (tour-api/, FastAPI)
+ *   PynwheelApiTourRepository    the configured provider: the Pynwheel Tour App API (the Rails CMS, Api::TourApp::V1)
  *   DummyTourRepository          development only (VITE_TOUR_DATA_SOURCE=dummy): local demo data marked `*`
  *
  * Screens depend on this interface only. The provider never falls back from

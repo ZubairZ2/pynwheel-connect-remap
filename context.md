@@ -1003,3 +1003,53 @@ Brief `map_rendering_issue_in_tour_app.md`; details in `tour-app-backend-api.md`
   (private bucket → explicit "Map unavailable"). Not verified on iOS/Android web views (no SDKs
   here). Verification account `tour-api-verify@pynwheel.local` had its password changed by the
   owner on Oct 6 and was reset again for this run.
+
+## 30. Tour App API ported into Rails; tour-api retired (October 7, 2026)
+
+Branch `feature/tour_app_rails_api`; full account in `tour-app-backend-api.md` §14,
+`tour-app-implementation.md` §15, `PYN_CONNECT_PROGRESS.md` §34.
+
+- **One runtime.** The FastAPI service of §28–29 is gone (`tour-api/` deleted, its launch entry and
+  Python harness removed). The Tour App API is `Api::TourApp::V1` in the CMS: `/api/tour/v1/{health,
+  auth/login, auth/logout, auth/me, properties, properties/:id, …/stops, …/map, …/map/levels/:id,
+  …/map/levels/:id/svg, …/graph, …/route, …/tour-route, …/stops/distances}` + a JSON 404 for the prefix.
+  Controllers in `app/controllers/api/tour_app/v1/`, the contract layer in `app/services/tour_api/`
+  (`Auth`, `Properties`, `Engine`, `Shapes`, `Stops`, `Maps`, `Assets`, `RouteService`, `Routing`,
+  `Text`, `ApiError`). The `Wayfinding::*` services, `TourStops::Membership`'s rule,
+  `Connect::ProductState`, `Connect::UploadUrl` and `Wayfinding::PlateTransform` are reused as they are.
+- **Why `/api/tour/v1` and not `/api/v1`.** `GET /api/v1/properties` is a legacy vendor route
+  (`api/v1/schedule_tours#communities`); the `constraints: { format: 'json' }` on the legacy `api`
+  namespace is a default, not a requirement, so suffix-less requests reach it too (the §27 note "the
+  routes need `.json`" is wrong for that namespace). The app's prefix is one constant.
+- **Authorization (the part the Oct 5 classifier refused).** Only the new controllers accept a CMS
+  Doorkeeper bearer token: `Doorkeeper::AccessToken.by_token` → revoked / expired → user → inactive
+  (pending invitation, inactivated company) → `is_super_admin?`; property access
+  `User#can_access_community?`. Sign-in runs the Doorkeeper password grant in-process
+  (`Doorkeeper::Helpers::Controller#server.token_request('password').authorize`), so Devise checks the
+  password; refused accounts (`not_authorized_account` for non-portal users, `not_super_admin`,
+  `inactive_user`) have the minted token revoked at once. `Api::SelfTour::V1::TokenAuthorization` is
+  untouched. The owner authorised this namespace explicitly.
+- **Contract.** Byte-identical with the FastAPI service on 1411 / 1618 / 2934
+  (`script/tour_api_parity.rb`: 57 comparisons, 0 differences on the literal port), because the Pydantic
+  models serialised every field and `TourApi::Shapes` mirrors that (nulls present). One deliberate fix
+  in its own commit: `tour-route` segment leg/step indexes are per segment and `transition.to_level_id`
+  is filled after the first stop (FastAPI offset them twice).
+- **Caching.** Built graphs per (property, `Wayfinding::GraphVersion`, step_free, avoid_blockers) in a
+  per-process store (15 min, 64 entries; AR rows and default-proc hashes cannot go in `Rails.cache`);
+  the `GraphSerializer` payload and the `/graph` JSON string ride with the built graph; the property
+  list 60 s per process; SVGs 128 MB per-process LRU. The graph version is recomputed per request, so
+  CMS edits are seen at once. Rails' own `graph_version` digest differs from the Python mirror's
+  (number formatting) — normalise it when diffing old captures.
+- **Logging.** `token` added to `config.filter_parameters`: it also masks the `oauth_access_tokens.token`
+  bind in ActiveRecord's debug SQL log, which otherwise prints the bearer token on every request in
+  development and staging (and always did for the legacy token endpoint's INSERT).
+- **Tests.** `rails test` 167 runs / 831 assertions / 0 failures (103 / 338 before + 64 new). Traps: the
+  test env's uploaders are fog without a bucket (`Connect::UploadUrl` raises for any level with an
+  image / svg_image → stub, `with_s3_uploads`); a fixture `Community` caches `floorplates` before
+  `setup` creates rows (`pluck` on a loaded association is in-memory) → re-find it before computing
+  the graph version.
+- **Verification recipe.** The dev verify server (:3100) autoloads the new controllers and routes
+  without a restart (initializers need one); `tour-app` launches with
+  `VITE_TOUR_API_URL=http://127.0.0.1:3100`; the verification Super Admin's password is reset per
+  session with `rails runner` and kept out of the repo; `script/tour_api_measure.rb` for timings.
+  Development-mode floor ≈ 25 ms per request; FastAPI was 5–15 ms; production not measured.

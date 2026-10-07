@@ -2152,3 +2152,51 @@ Hazel raster plates render; 1411 shows "Map unavailable" (private bucket) instea
 Not verified: iOS / Android web views (no SDKs on this Mac). Trap: a Vite Fast Refresh recreates
 `useMemo` values, so a repository held in a memo was replaced mid-session and lost its in-memory
 token — the provider is a module singleton now and restores the persisted session before any request.
+
+## 34. Tour App API in Rails: tour-api retired (October 7, 2026)
+
+**Brief:** port the Tour App API from `tour-api/` (FastAPI) into the Rails CMS with the same contract,
+verify with the existing harness and the mobile app, retire `tour-api/`. Branch
+`feature/tour_app_rails_api`; commits `f7b79e6d2` (port + tests + scripts + app prefix), `9d8de8485`
+(tour-route segment indexes), then the retirement + docs commit. Full account: `tour-app-backend-api.md`
+§14; app side `tour-app-implementation.md` §15; knowledge `context.md` §30.
+
+| Layer | What |
+|---|---|
+| Routes | `scope path: 'api/tour/v1', module: 'api/tour_app/v1'` (its own prefix: the legacy `GET /api/v1/properties` vendor route answers suffix-less requests); 14 endpoints + a JSON 404 |
+| Controllers (`app/controllers/api/tour_app/v1`) | `ActionController::API`: bearer auth, error envelope, `internal_error` with a log ref; auth (Doorkeeper grant in-process), properties, stops, maps + SVG proxy (ETag/304/`X-Svg-ViewBox`), graph (ETag/304), routes, health |
+| Services (`app/services/tour_api`) | `Auth`, `Properties`, `Engine` (per-process graph cache by `GraphVersion`), `Shapes` (every field present), `Stops` (Membership rule in bulk), `Maps`, `Assets` (S3/local SVG read, validate, LRU), `RouteService < Wayfinding::RouteService` (`tour(stop_keys:)`, `distances`), `Routing` (step adapter), `Text`, `ApiError` |
+| Reused unchanged | `Wayfinding::GraphBuilder/RouteService/Timing/GraphSerializer/GraphVersion/PlateTransform`, `TourStops::Membership`, `Connect::ProductState`, `Connect::UploadUrl`, `User#is_super_admin?/can_access_community?`, Doorkeeper config |
+| Legacy | untouched (no controller, route, schema, persistence or migration change); `config/initializers/filter_parameter_logging.rb` gains `token` (log masking only) |
+| Mobile | one constant: `API = '/api/tour/v1'`; env comments; `typecheck` / 22 vitest / `build` clean |
+| Removed | `tour-api/` (service, 57 pytest, Python harness, `.env.example`, README), its launch entry |
+
+**Tested:** `rails test` 167 runs / 831 assertions / 0 failures / 7 skips (was 103 / 338 / 0 / 7); 64 new
+Minitest runs port the 57 pytest (auth states incl. revoke-on-refusal, properties and filters, stops
+membership on/off/hidden/duplicates/order, maps and SVG proxy incl. `no_svg` / `invalid_svg` /
+`unknown_level` / 502, graph shape + ETag/304, routing same-floor / cross-floor / stairs / step-free /
+blocked / ambiguous / not linked / cross-building, tour-route ordering / segments / dwell / skipped /
+`invalid_stop`, distances, security boundaries, plain-text instructions, `strip_html`, viewBox parsing).
+
+**Parity** (`script/tour_api_parity.rb`, FastAPI :8000 vs Rails :3100, 1411 / 1618 / 2934): 57
+comparisons identical with the literal port (ignoring token, `expires_at`, the graph-version digest
+and the prefix in `svg_path`); after the deliberate index fix the three `tour-route` responses differ
+only in `route.steps[].leg`, `segments[].route.{legs[].index, stages[].leg, steps[].leg}` and
+`transition.to_level_id`.
+
+**Measured** (`script/tour_api_measure.rb`, development mode, warm): properties 18–24 ms cached /
+56 ms uncached (145 KB), detail 40 ms, stops 33–50 ms, map 27–37 ms, graph 28–34 ms (114–244 KB; 304
+in ~30 ms), route 27–33 ms, tour-route 36–56 ms (11–34 KB), distances 26–43 ms, SVG 3029 293 ms (5.2 MB
+from the process cache; 9–11 s on the first S3 read), login 343 ms (bcrypt). The ~25 ms floor is the
+development server; FastAPI was 5–15 ms; production not measured.
+
+**Browser** (tour-app :3012 → Rails :3100): sign-in → 803 properties → Hazel: Build Your Tour, 3-stop
+tour, Play Route, Floor 1 → 31 switch, stop details, Tour Complete, Tour Summary → Change property →
+Dummy-High-Rise: SVG-only plate 3029 rendered through the Rails SVG endpoint, 3-stop tour, unit
+slide-to-unlock, Floor 1 → 2 switch at the Elevator Bank. No console errors; every request on
+`/api/tour/v1`.
+
+**Not verified:** iOS / Android web views (no SDKs), `pynwheel_prod`, staging / production deploys and
+their timings. **Remaining:** the owner's git-ignored `tour-app/.env.production.local` still points at
+the retired `:8000`; a malformed JSON body answers Rails' plain 400 (the app never sends one); the
+per-process caches mean each Puma worker builds a graph once per version.
