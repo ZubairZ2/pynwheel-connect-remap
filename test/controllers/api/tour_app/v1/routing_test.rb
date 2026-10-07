@@ -157,8 +157,23 @@ class Api::TourApp::V1::RoutingTest < ActionDispatch::IntegrationTest
     assert_equal 'Walk on Floor 1', whole['steps'][0]['title']
     assert_equal 5, whole['steps'].count { |s| s['type'] == 'arrive' }, 'four stops plus the return to the start'
     assert_equal [], body['skipped']
-    assert_equal whole['legs'].size, body['segments'].sum { |s| s['route']['legs'].size } + whole['legs'].count { |l| l['index'] >= body['segments'].sum { |s| s['route']['legs'].size } }
     assert_equal (0...whole['legs'].size).to_a, whole['legs'].map { |l| l['index'] }
+    whole['steps'].each do |step|
+      leg = whole['legs'][step['leg']]
+      assert leg, "step #{step['sequence']} names leg #{step['leg']} of the whole tour"
+      assert_equal leg['kind'], step['type'] unless step['type'] == 'arrive'
+    end
+    body['segments'].each do |segment|
+      legs = segment['route']['legs']
+      assert_equal (0...legs.size).to_a, legs.map { |l| l['index'] }, 'a segment is a route on its own'
+      assert segment['route']['stages'].all? { |s| legs[s['leg']] && legs[s['leg']]['kind'] == 'walk' }, 'a stage names a walk leg of its own segment'
+      segment['route']['steps'].each { |step| assert step['leg'] < legs.size, 'a step indexes the legs of its own segment' }
+    end
+    cross = body['segments'].find { |s| s['stop_id'] == @u301 }
+    lift = cross['route']['steps'].find { |s| s['type'] == 'elevator' }
+    assert_equal [@level_a, @level_a], [lift['transition']['from_level_id'], lift['transition']['to_level_id']], 'the levels to switch between, in a segment after the first'
+    whole_lift = whole['steps'].find { |s| s['type'] == 'elevator' && s['to']['id'] == lift['to']['id'] && s['from']['id'] == lift['from']['id'] }
+    assert_equal @level_a, whole_lift['transition']['to_level_id']
   end
 
   test 'a stop the route cannot reach is skipped with a warning' do

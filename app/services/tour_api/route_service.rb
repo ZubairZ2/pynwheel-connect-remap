@@ -57,11 +57,15 @@ module TourApi
           warnings << "#{partial.error[:message]} (#{from_node.name} → #{to_node.name})"
           next
         end
+        # The whole tour's legs and steps carry whole-tour indexes; each
+        # segment keeps its own (0-based) so a segment is a route on its own
+        # and its steps index its legs. (The FastAPI service offset the
+        # segment legs in place and then again when assembling the whole
+        # tour's steps, so a step's `leg` and a transition's `to_level_id`
+        # were wrong after the first stop.)
         offset = legs.size
-        partial.legs.each { |leg| leg.index += offset }
-        legs.concat(partial.legs)
-        partial.steps.each { |step| step[:leg] += offset }
-        steps.concat(partial.steps)
+        legs.concat(partial.legs.map { |leg| leg.dup.tap { |copy| copy.index += offset } })
+        steps.concat(partial.steps.map { |step| step.merge(leg: step[:leg] + offset) })
         length += partial.length_px
         if partial.duration_s.nil?
           duration_known = false
