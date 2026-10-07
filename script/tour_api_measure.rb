@@ -5,6 +5,7 @@
 # size per endpoint, for one or more properties.
 #
 #   TOUR_API_URL=http://127.0.0.1:3100 EMAIL=... PASSWORD=... ruby script/tour_api_measure.rb 1411 1618 2934
+#   (or TOUR_API_TOKEN=<an existing Doorkeeper token> instead of EMAIL/PASSWORD; the token is then not revoked)
 #
 # TOUR_API_PREFIX defaults to /api/tour/v1 (the Rails API); pass /api/v1 to
 # measure the former FastAPI service. Each request is made twice and the
@@ -15,8 +16,10 @@ require 'uri'
 
 base = ENV.fetch('TOUR_API_URL', 'http://127.0.0.1:3100').chomp('/')
 prefix = ENV.fetch('TOUR_API_PREFIX', '/api/tour/v1')
-email = ENV.fetch('EMAIL')
-password = ENV.fetch('PASSWORD')
+# Either EMAIL + PASSWORD (signs in through the API) or TOUR_API_TOKEN (an existing Doorkeeper token).
+preset_token = ENV['TOUR_API_TOKEN']
+email = preset_token ? nil : ENV.fetch('EMAIL')
+password = preset_token ? nil : ENV.fetch('PASSWORD')
 ids = ARGV.map(&:to_i)
 ids = [1411] if ids.empty?
 
@@ -48,10 +51,14 @@ timed = lambda do |method, path, body: nil, headers: {}, repeat: 2|
   res
 end
 
-res = timed.call(:post, '/auth/login', body: { email: email, password: password }, repeat: 1)
-raise "login failed: #{res.code} #{res.body}" unless res.code.to_i == 200
+if preset_token
+  token = preset_token
+else
+  res = timed.call(:post, '/auth/login', body: { email: email, password: password }, repeat: 1)
+  raise "login failed: #{res.code} #{res.body}" unless res.code.to_i == 200
 
-token = JSON.parse(res.body)['access_token']
+  token = JSON.parse(res.body)['access_token']
+end
 timed.call(:get, '/auth/me')
 timed.call(:get, '/properties')
 timed.call(:get, '/properties?tour_enabled=true')
@@ -91,5 +98,7 @@ ids.each do |cid|
     puts "       #{r.body}"
   end
 end
-timed.call(:post, '/auth/logout', repeat: 1)
-timed.call(:get, '/auth/me', repeat: 1)
+unless preset_token
+  timed.call(:post, '/auth/logout', repeat: 1)
+  timed.call(:get, '/auth/me', repeat: 1)
+end

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { matchesQuery, normalizeQuery } from './searchFilter';
+import { MAX_VISIBLE_ROWS, matchesQuery, normalizeQuery, visibleRows } from './searchFilter';
 
 describe('property search filter', () => {
   it('matches case-insensitively on any visible part', () => {
@@ -15,5 +15,13 @@ describe('property search filter', () => {
   it('a short query narrows without throwing on missing parts', () => {
     expect(matchesQuery('j', 'John Pynwheel Demo', null, undefined)).toBe(true);
     expect(matchesQuery('zz', 'John Pynwheel Demo')).toBe(false);
+  });
+
+  it('caps the rendered rows and counts the rest', () => {
+    const rows = Array.from({ length: 4832 }, (_, i) => i);
+    const { shown, hidden } = visibleRows(rows);
+    expect(shown.length).toBe(MAX_VISIBLE_ROWS);
+    expect(hidden).toBe(4832 - MAX_VISIBLE_ROWS);
+    expect(visibleRows([1, 2, 3])).toEqual({ shown: [1, 2, 3], hidden: 0 });
   });
 });

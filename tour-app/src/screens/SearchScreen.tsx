@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useDeferredValue, useEffect, useRef, useState } from 'react';
 import { TabBar } from '~/components/chrome';
 import { Icon } from '~/components/Icon';
 import type { Listing, PropertyListing } from '~/models';
-import { matchesQuery } from './searchFilter';
+import { matchesQuery, visibleRows } from './searchFilter';
 import { LightShell, SectionLabel } from './shared';
 
 interface Props {
@@ -30,9 +30,13 @@ export const SearchScreen = ({ status = 'ready', onRetry, query, onQuery, nearby
   const input = useRef<HTMLInputElement>(null);
   const [focused, setFocused] = useState(false);
   const q = query.trim();
-  const nearbyMatches = nearby.filter((n) => matchesQuery(q, n.name, n.address));
-  const hiRiseMatches = hiRise.filter((l) => matchesQuery(q, l.name, l.address, l.meta));
-  const nothing = status === 'ready' && !!q && !nearbyMatches.length && !hiRiseMatches.length;
+  // The list follows the typed text with a deferred value: the field itself never waits on a long list render.
+  const deferredQ = useDeferredValue(q);
+  // The current property leads the list, so it is visible even when the list is capped.
+  const nearbyAll = nearby.filter((n) => matchesQuery(deferredQ, n.name, n.address)).sort((a, b) => Number(!!b.current) - Number(!!a.current));
+  const { shown: nearbyMatches, hidden: nearbyHidden } = visibleRows(nearbyAll);
+  const hiRiseMatches = hiRise.filter((l) => matchesQuery(deferredQ, l.name, l.address, l.meta));
+  const nothing = status === 'ready' && !!deferredQ && !nearbyAll.length && !hiRiseMatches.length;
   const showCancel = focused || query.length > 0;
 
   const cancel = () => {
@@ -104,7 +108,7 @@ export const SearchScreen = ({ status = 'ready', onRetry, query, onQuery, nearby
         {status === 'ready' && !nearby.length && !q ? <div className="pw-search__empty">No properties are available to your account.</div> : null}
         {nothing ? (
           <div className="pw-search__empty">
-            No properties match &ldquo;{q}&rdquo;.
+            No properties match &ldquo;{deferredQ}&rdquo;.
             <br />
             Try a different city or property name.
           </div>
@@ -124,6 +128,11 @@ export const SearchScreen = ({ status = 'ready', onRetry, query, onQuery, nearby
                 </button>
               ))}
             </div>
+            {nearbyHidden ? (
+              <div className="pw-search__more">
+                Showing {nearbyMatches.length.toLocaleString('en-US')} of {nearbyAll.length.toLocaleString('en-US')} properties · keep typing to narrow the list
+              </div>
+            ) : null}
           </div>
         ) : null}
         {hiRiseMatches.length ? (

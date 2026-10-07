@@ -23,7 +23,7 @@ export const useAppActions = () => {
 
     const runTour = async (mode: 'self' | 'ar') => {
       if (!bundle) return;
-      const chosen = selectedNodes(state);
+      const chosen = selectedNodes(state, bundle);
       const all = tourStopViews(bundle).map((v) => v.node);
       const nodes = chosen.length ? chosen : all;
       dispatch({ type: 'tourCalculating', mode });
