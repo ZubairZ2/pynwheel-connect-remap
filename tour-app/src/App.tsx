@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { Button, ErrorBanner, LoadingState, Toast } from '~/components/ui';
+import { ONBOARDING_SLIDES } from '~/content/appCopy';
 import { useBackButton, useChrome, useFramed, useNativeSplash } from '~/hooks/useDevice';
 import type { Route } from '~/models';
 import { topOverlay, type Overlay } from '~/navigation/screens';
 import { useRepository } from '~/repositories/repositoryContext';
-import { RepositoryProvider } from '~/repositories/repositoryProvider';
+import { RepositoryProvider, createTourRepository } from '~/repositories/repositoryProvider';
+import type { TourRepository } from '~/repositories/tourRepository';
 import { AppProvider } from '~/store/AppProvider';
 import { useApp } from '~/store/appContext';
 import type { MapView } from '~/store/appState';
-import { bestMatchUnit, currentSegment, currentStop, distanceLabel, tourStopViews, tourStopsInOrder } from '~/store/selectors';
+import { bestMatchUnit, currentSegment, currentStop, distanceLabel, markOf, tourStopViews, tourStopsInOrder } from '~/store/selectors';
 import { useAppActions } from '~/store/useAppActions';
 import type { SimulationState } from '~/wayfinding/simulation';
 import { ArInitScreen, ArLiveScreen, ChooseStopsScreen, ScanQrScreen } from './screens/ArScreens';
@@ -35,7 +37,7 @@ const distanceOf = (route: Route | null): string => (route ? (route.lengthFt != 
 const minutesOf = (route: Route | null): number => (route?.durationS != null ? Math.max(1, Math.round(route.durationS / 60)) : 0);
 
 const Shell = () => {
-  const { state, dispatch, data, hydrated, reload } = useApp();
+  const { state, dispatch, data, hydrated, reload, reloadProperties } = useApp();
   const actions = useAppActions();
   const repository = useRepository();
   const framed = useFramed();
@@ -130,16 +132,45 @@ const Shell = () => {
   const renderScreen = () => {
     if (state.screen === 'splash' || !hydrated) return <SplashScreen />;
     if (state.screen === 'onboarding') {
-      return <OnboardingScreen slides={content?.onboarding ?? []} index={state.onboardIndex} onNext={() => dispatch({ type: 'onboardNext', count: content?.onboarding.length ?? 3 })} onPrev={() => dispatch({ type: 'onboardPrev' })} onSkip={() => dispatch({ type: 'skipOnboard' })} />;
+      return <OnboardingScreen slides={content?.onboarding ?? ONBOARDING_SLIDES} index={state.onboardIndex} onNext={() => dispatch({ type: 'onboardNext', count: (content?.onboarding ?? ONBOARDING_SLIDES).length })} onPrev={() => dispatch({ type: 'onboardPrev' })} onSkip={() => dispatch({ type: 'skipOnboard' })} />;
     }
-    if (state.screen === 'login') {
-      return <LoginScreen email={state.email} password={state.password} onEmail={(v) => dispatch({ type: 'setEmail', value: v })} onPassword={(v) => dispatch({ type: 'setPassword', value: v })} onLogin={() => dispatch({ type: 'login' })} />;
+    if (state.screen === 'login' || !state.signedIn) {
+      return <LoginScreen email={state.email} password={state.password} busy={state.auth.status === 'busy'} error={state.auth.status === 'error' ? state.auth.error : null} onEmail={(v) => dispatch({ type: 'setEmail', value: v })} onPassword={(v) => dispatch({ type: 'setPassword', value: v })} onLogin={() => void actions.login()} />;
     }
-    if (data.status === 'loading' || !bundle || !content) {
+    // The property picker works before a property is chosen and while one fails to load.
+    if (state.screen === 'search' || state.propertyId == null) {
+      return (
+        <SearchScreen
+          status={data.propertiesStatus}
+          onRetry={reloadProperties}
+          query={state.searchQuery}
+          onQuery={(v) => dispatch({ type: 'setSearchQuery', value: v })}
+          nearby={data.properties.map((p) => ({ ...p, current: p.id === state.propertyId }))}
+          hiRise={content?.hiRiseListings ?? []}
+          onNearby={(item) => (item.current ? dispatch({ type: 'navigate', screen: 'home' }) : void actions.selectProperty(item.id, item.tourable, item.name))}
+          onListing={(item) => actions.listingTap(item.name)}
+          onTab={goTab}
+        />
+      );
+    }
+    if (data.status !== 'ready' || !bundle || !content) {
       if (data.status === 'error') {
         return (
           <div className="pw-screen pw-screen--center">
-            <ErrorBanner title="The property could not be loaded" body={data.error} action={<Button variant="danger" height={36} block={false} onClick={reload}>Try again</Button>} />
+            <ErrorBanner
+              title="The property could not be loaded"
+              body={data.error}
+              action={
+                <div className="pw-stack">
+                  <Button variant="danger" height={36} block={false} onClick={reload}>
+                    Try again
+                  </Button>
+                  <Button variant="ghost" height={36} block={false} onClick={() => dispatch({ type: 'navigate', screen: 'search' })}>
+                    Choose another property
+                  </Button>
+                </div>
+              }
+            />
           </div>
         );
       }
@@ -165,18 +196,7 @@ const Shell = () => {
             onBook={actions.openBook}
             onArMode={() => dispatch({ type: 'startArShortcut', nodes: stops.map((s) => s.node) })}
             onWayfinding={() => dispatch({ type: 'navigate', screen: 'wayfinding' })}
-            onTab={goTab}
-          />
-        );
-      case 'search':
-        return (
-          <SearchScreen
-            query={state.searchQuery}
-            onQuery={(v) => dispatch({ type: 'setSearchQuery', value: v })}
-            nearby={content.nearbyProperties}
-            hiRise={content.hiRiseListings}
-            onNearby={(item) => (item.current ? dispatch({ type: 'navigate', screen: 'home' }) : actions.listingTap(item.name))}
-            onListing={(item) => actions.listingTap(item.name)}
+            onChangeProperty={() => dispatch({ type: 'navigate', screen: 'search' })}
             onTab={goTab}
           />
         );
@@ -189,7 +209,7 @@ const Shell = () => {
             onHistory={() => open('history')}
             onNotifications={() => open('notifications')}
             onSettings={() => open('settings')}
-            onSignOut={() => dispatch({ type: 'signOut' })}
+            onSignOut={() => void actions.signOut()}
             onTab={goTab}
           />
         );
@@ -269,6 +289,7 @@ const Shell = () => {
             onAi={() => actions.openAiChat('general')}
             onShare={actions.shareSummary}
             onHome={() => dispatch({ type: 'resetTour' })}
+            mark={markOf(bundle)}
           />
         );
       }
@@ -359,10 +380,35 @@ const Shell = () => {
   );
 };
 
-export const App = () => (
-  <RepositoryProvider>
-    <AppProvider>
-      <Shell />
-    </AppProvider>
-  </RepositoryProvider>
+/** A build without a usable data source configuration says so instead of showing a blank screen. */
+const ConfigurationError = ({ message }: { message: string }) => (
+  <div className="pw-stage">
+    <div className="pw-frame">
+      <div className="pw-device">
+        <div className="pw-screen pw-screen--center">
+          <ErrorBanner title="The app is not configured" body={message} />
+        </div>
+      </div>
+    </div>
+  </div>
 );
+
+export const App = () => {
+  // One provider instance for the life of the app: a second instance would start without the
+  // restored session and its first requests would look like an expired sign-in.
+  const created = useMemo((): { repository: TourRepository } | { error: string } => {
+    try {
+      return { repository: createTourRepository() };
+    } catch (error) {
+      return { error: error instanceof Error ? error.message : 'Unknown configuration error.' };
+    }
+  }, []);
+  if ('error' in created) return <ConfigurationError message={created.error} />;
+  return (
+    <RepositoryProvider repository={created.repository}>
+      <AppProvider>
+        <Shell />
+      </AppProvider>
+    </RepositoryProvider>
+  );
+};

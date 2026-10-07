@@ -159,6 +159,7 @@ export interface DummyProperty {
   arPins: Record<string, { top: string; left: string }>;
   /** A short floor label per place node ("Floor 1 *", "Rooftop *"). */
   floorLabels: Record<string, string>;
+  demo: boolean;
 }
 
 export const buildDummyProperty = (): DummyProperty => {
@@ -301,10 +302,11 @@ export const buildDummyProperty = (): DummyProperty => {
     autoWayfinding: true,
     floorsCount: 15,
     unitsCount: units.length,
-    amenitiesCount: amenities.length
+    amenitiesCount: amenities.length,
+    tourEnabled: true
   };
 
   const buildings: Building[] = [TOWER_A, TOWER_B].map((name) => ({ name, levels: levels.filter((l) => l.building === name).map((l) => l.id) }));
 
-  return { property, buildings, levels, graph, units, amenities, stops, arPins, floorLabels };
+  return { property, buildings, levels, graph, units, amenities, stops, arPins, floorLabels, demo: true };
 };

@@ -941,3 +941,65 @@ Added with phase 3a (PYN_CONNECT_PROGRESS.md §31; the full account is `map_plot
 - The verify Rails server's `Rails.cache` is a memory store in development: a serializer change is invisible until the version string moves or the server restarts (`PAYLOAD_FORMAT` exists for that).
 - Legacy `:null_session` actions answer 401 to a script without `X-CSRF-Token`; send the page's meta token.
 - Playwright real-data specs encode the data as it was when they were written: a semantic change (the pill's meaning) or a new control (the Save button) fails them honestly; update the expectation with the real count, not the code.
+
+## 28. Tour App backend: the FastAPI Tour App API (October 5, 2026)
+
+The Pynwheel Tour mobile app (`tour-app/`, §27 / `tour-app-implementation.md`) now runs on real data
+through a new service, **`tour-api/`** (FastAPI, Python; write-up `tour-app-backend-api.md`;
+branch `feature/tour_app_backend_api`).
+
+- **No Rails change.** The session's security classifier refused adding any new credential path to
+  Rails (a Doorkeeper bearer on the Oct 4 wayfinding controller, or a new `api/v2` controller), so
+  the service reads the CMS database **read-only** (`default_transaction_read_only=on`) and carries a
+  line-for-line Python port of `Wayfinding::GraphBuilder` / `RouteService` / `Timing` /
+  `GraphSerializer` / `GraphVersion`. `tour-api/scripts/parity.py` proves it identical to the Rails
+  Tour App API (`api/self_tour/v1/.../wayfinding*`) on 13 real properties: every graph element and
+  every route. `rails test`: 103 runs / 338 assertions / 0 failures, unchanged.
+- **Sign-in** reuses the CMS's Doorkeeper password grant as-is — note the path is
+  `POST /api/v2/auth/token` (`use_doorkeeper scope: 'api/v2/auth'`), not `/oauth/token`; a wrong
+  password answers HTTP 400 with `{success:false, status_code:401}`, and a correct password for a
+  non-portal user (`User#verified_portal_user?` false) answers HTTP 200 **without** a token (the token
+  row is still created). Tokens are validated from `oauth_access_tokens`; only `role = 'Super admin'`
+  is admitted; sign-out revokes at `POST /api/v2/auth/revoke`.
+- **Facts mirrored from Rails** (never redefined): `Connect::ProductState.tour?` (incl. the
+  double-parsed `product_options` JSON string), `TourStops::Membership.in_list?` (main tour =
+  `tours.tour_user_id IS NULL` latest; amenities also need `breezway_lock_visible`), the tour order
+  (building order → floor → `tour_stops.sort` → id), upload URLs (`standard_image_url` →
+  `s3-accelerate` host; floor SVG under `uploads/<model>/svg_image/<id>/` on the property's bucket).
+- **Endpoints** (`/api/v1`): auth login/logout/me; properties (list, detail); per property: stops,
+  map, map/levels/{id}, graph (ETag/304), route, tour-route (chosen stops → ordered segments),
+  stops/distances. Errors: `{success:false, error:{code,message,details?}}`.
+- **Mobile**: `PynwheelApiTourRepository` is the configured provider (`VITE_TOUR_API_URL`); the dummy
+  provider only with `VITE_TOUR_DATA_SOURCE=dummy`; no fallback. New screens/flows: real sign-in,
+  property picker on Search, "Change property" on Home, session expiry → sign-in.
+- Verification accounts in `pynwheel_development` only: `tour-api-verify@pynwheel.local` (Super
+  admin, id 2050), `tour-api-viewer@pynwheel.local` (Community manager, id 2051).
+- Known gaps: no `scale_ft_per_px` anywhere (pixels, no minutes); 1411's dev floor images 403;
+  `wayfinding_stops` are not tour stops (phase 2); concierge/booking/application/locks have no
+  backend; Preferences is not encrypted storage.
+
+## 29. Tour App map rendering fix: SVG plans, zoom, playback (October 6, 2026)
+
+Brief `map_rendering_issue_in_tour_app.md`; details in `tour-app-backend-api.md` §13 and
+`tour-app-implementation.md` §14.
+
+- **Root cause of the blank map**: the app drew only a raster `<image>` (or a grey rectangle) and
+  never the floor SVG; a failed image rendered nothing with no error state; an SVG-only plate had a
+  0×0 frame. Fixed with one coordinate rule (`tour-app/src/map/mapBase.ts`): frame = floor image
+  pixels, else the SVG viewBox (SVG-only plates are plotted in viewBox units — 3029's hallways lie
+  in its 2000×2000 box), else the measured image; the SVG fills the frame as the CMS canvas does
+  (`preserveAspectRatio="none"`) unless `svg_to_image_transform` is stored (null everywhere today).
+- **SVG delivery**: S3 serves the files without CORS (Connect proxies them too), so the API now
+  serves `GET /api/v1/properties/{id}/map/levels/{level_id}/svg` (validated, cached, ETag/304,
+  `X-Svg-ViewBox`); the app loads it into a Blob URL drawn by an `<image>` (no inline DOM of a 5 MB
+  file). `/map` levels carry `svg_path`, `svg_transform`, `svg_size`. `/graph` unchanged.
+- **Zoom**: the map container captured the pointer on every `pointerdown`, so the `+` button's click
+  never fired (the second tap registered as a double-tap zoom). Controls are now `+` / `−` / Reset,
+  one action per tap.
+- **Playback**: speed = 45 px/s in the design frame × the level's diagonal unit, clamped 30–140 px/s
+  (`PLAYBACK_SPEED_DESIGN_PX_PER_S`); transition hold 2.2 s.
+- **HTML in instructions**: `directional_text` is rich text; the API strips tags (`strip_html`).
+- Verified on 2934 (SVG-only `floorplate:3029` 5.2 MB, raster+SVG 3085), Hazel (raster) and 1411
+  (private bucket → explicit "Map unavailable"). Not verified on iOS/Android web views (no SDKs
+  here). Verification account `tour-api-verify@pynwheel.local` had its password changed by the
+  owner on Oct 6 and was reset again for this run.

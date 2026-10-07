@@ -1,15 +1,19 @@
-import { useEffect, useMemo, useRef, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { Icon } from '~/components/Icon';
 import type { Amenity, GraphEdge, GraphNode, MapLevel, Route, Unit } from '~/models';
 import { centreOf } from '~/wayfinding/graphIndex';
 import type { WalkerPosition } from '~/wayfinding/simulation';
 import { FROM_COLOR, NETWORK_COLOR, ROUTE_CASING, ROUTE_COLOR, TO_COLOR, symbolOf } from './mapSymbols';
+import { svgPlacement } from './mapBase';
+import { useLevelBase, type BaseErrorKind } from './useLevelBase';
 import { useMapViewport, type Box } from './useMapViewport';
 
 /**
  * The map: one level at one floor, in layers —
  *
- *   background (site plan image or the vector plan: outline, rooms, corridors, cores, water, outdoor)
+ *   plan: the floor SVG (through the API) or the floor image, in the level's frame (`mapBase.ts`);
+ *         demo levels draw their inline vector plan instead
+ *   ↓ while the plan loads a veil says so; when it cannot load, an explicit "Map unavailable" / "Invalid SVG" state
  *   ↓ unit and amenity footprints (highlighted when they are a route end or the current stop)
  *   ↓ hallway network (paths and points, shown faintly when asked)
  *   ↓ stops: entries, exits, elevators, stairs, doors, blockers, destinations — each with its glyph
@@ -70,8 +74,20 @@ const bboxOf = (points: [number, number][]): Box | null => {
   return { x: x0 - pad, y: y0 - pad, w: x1 - x0 + pad * 2, h: y1 - y0 + pad * 2 };
 };
 
+const ZOOM_STEP = 1.4;
+
+const BASE_ERROR_TEXT: Record<BaseErrorKind, { title: string; body: string }> = {
+  unavailable: { title: 'Map unavailable', body: 'The floor plan could not be loaded from the server.' },
+  invalid: { title: 'Invalid floor plan', body: 'The stored floor plan is not a valid SVG file.' },
+  network: { title: 'Map unavailable', body: 'Check your connection and try again.' },
+  none: { title: 'No floor plan', body: 'This level has no floor plan in Pynwheel yet.' }
+};
+
 export const MapView = ({ level, floor, nodes, edges, units, amenities, route, walker, highlight, showNetwork = false, fitTo = 'route', fitKey, followWalker = false, onTapNode, children, className, style, loading }: Props) => {
-  const { container, viewport, fit, centerOn, zoomAt, wasTap, handlers } = useMapViewport(level.width, level.height);
+  const base = useLevelBase(level);
+  const frameWidth = base.frame.width || level.width;
+  const frameHeight = base.frame.height || level.height;
+  const { container, viewport, fit, centerOn, zoomAt, wasTap, handlers } = useMapViewport(frameWidth, frameHeight);
 
   const levelNodes = useMemo(() => nodes.filter((n) => n.level === level.id && onFloor(floor, n.floor)), [nodes, level.id, floor]);
   const levelEdges = useMemo(() => edges.filter((e) => e.level === level.id), [edges, level.id]);
@@ -110,18 +126,20 @@ export const MapView = ({ level, floor, nodes, edges, units, amenities, route, w
   }, [route, level.id, floor]);
 
   // Frame the map when the level, floor or route changes.
-  const fitSignature = `${level.id}@${floor ?? ''}|${fitTo}|${fitKey ?? ''}|${route ? route.from + route.to + route.lengthPx : ''}`;
+  const fitSignature = `${level.id}@${floor ?? ''}|${fitTo}|${fitKey ?? ''}|${route ? route.from + route.to + route.lengthPx : ''}|${frameWidth}x${frameHeight}`;
   const lastFit = useRef('');
+  const initialFit = useCallback(() => {
+    const points = routeHere.lines.flat();
+    const box = fitTo === 'route' ? bboxOf(points) : null;
+    fit(box ?? { x: 0, y: 0, w: frameWidth, h: frameHeight }, 14, box ? 1.7 : 1);
+  }, [routeHere.lines, fitTo, fit, frameWidth, frameHeight]);
   useEffect(() => {
     if (lastFit.current === fitSignature) return;
     lastFit.current = fitSignature;
-    const points = routeHere.lines.flat();
-    const box = fitTo === 'route' ? bboxOf(points) : null;
-    const frame = () => fit(box ?? { x: 0, y: 0, w: level.width, h: level.height }, 14, box ? 1.7 : 1);
-    frame();
-    const id = window.setTimeout(frame, 60);
+    initialFit();
+    const id = window.setTimeout(initialFit, 60);
     return () => window.clearTimeout(id);
-  }, [fitSignature, fit, routeHere.lines, fitTo, level.width, level.height]);
+  }, [fitSignature, initialFit]);
 
   // Keep the walker in view while it plays.
   useEffect(() => {
@@ -143,8 +161,17 @@ export const MapView = ({ level, floor, nodes, edges, units, amenities, route, w
     const highlightSet = new Set(highlightKey.split('|').filter(Boolean));
     return (
       <>
-          {/* Background */}
-          {level.image ? <image href={level.image} x={0} y={0} width={level.width} height={level.height} preserveAspectRatio="none" /> : <rect x={0} y={0} width={level.width} height={level.height} fill="#F6F7F8" />}
+          {/* Plan: the floor SVG in the level's frame, else the floor image, else (demo) the inline vector plan over a blank sheet */}
+          {base.kind === 'svg' && base.svgUrl && base.viewBox ? (
+            (() => {
+              const placement = svgPlacement(base.frame, base.viewBox, level.svgTransform);
+              return <image href={base.svgUrl} x={placement.x} y={placement.y} width={placement.width} height={placement.height} preserveAspectRatio={placement.preserveAspectRatio} transform={placement.transform ?? undefined} data-plan="svg" />;
+            })()
+          ) : base.kind === 'image' && base.imageUrl ? (
+            <image href={base.imageUrl} x={0} y={0} width={frameWidth} height={frameHeight} preserveAspectRatio="none" data-plan="image" />
+          ) : (
+            <rect x={0} y={0} width={frameWidth} height={frameHeight} fill="#F6F7F8" data-plan={geometry ? 'vector' : 'none'} />
+          )}
           {geometry?.shapes.map((shape) => {
             if (shape.kind === 'label') {
               return (
@@ -238,12 +265,12 @@ export const MapView = ({ level, floor, nodes, edges, units, amenities, route, w
       </>
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps -- wasTap reads a ref; the rest are the layer inputs
-  }, [level, floor, geometry, levelUnits, levelAmenities, levelNodes, levelEdges, showNetwork, routeHere, highlightKey, markerScale, onTapNode]);
+  }, [level, floor, geometry, levelUnits, levelAmenities, levelNodes, levelEdges, showNetwork, routeHere, highlightKey, markerScale, onTapNode, base.kind, base.svgUrl, base.viewBox, base.imageUrl, base.frame, frameWidth, frameHeight]);
 
   return (
     <div ref={container} className={`pw-map${className ? ` ${className}` : ''}`} style={style} {...handlers} role="img" aria-label={`${level.name}${floor != null ? `, floor ${floor}` : ''} map`}>
       <div className="pw-map__plane" style={{ transform: `translate(${viewport.tx}px, ${viewport.ty}px) scale(${viewport.scale})` }}>
-        <svg className="pw-map__svg" width={level.width} height={level.height} viewBox={`0 0 ${level.width} ${level.height}`}>
+        <svg className="pw-map__svg" width={frameWidth} height={frameHeight} viewBox={`0 0 ${frameWidth} ${frameHeight}`} data-base={base.status} data-base-kind={base.kind ?? ''}>
           {staticLayers}
           {/* Walker */}
           {walker && walker.level === level.id && walker.x != null && walker.y != null && onFloor(floor, walker.floor) ? (
@@ -254,16 +281,27 @@ export const MapView = ({ level, floor, nodes, edges, units, amenities, route, w
           ) : null}
         </svg>
       </div>
-      {loading ? (
+      {loading || base.status === 'loading' ? (
         <div className="pw-map__veil" role="status" aria-live="polite">
           <span className="pw-spinner" />
+          <span className="pw-map__veiltext">{base.status === 'loading' ? 'Loading map…' : 'Calculating…'}</span>
         </div>
       ) : null}
-      <div className="pw-map__zoom">
-        <button type="button" aria-label="Zoom in" onClick={() => zoomAt(1.3, (container.current?.clientWidth ?? 0) / 2, (container.current?.clientHeight ?? 0) / 2)}>
+      {base.status === 'error' && base.error ? (
+        <div className="pw-map__error" role="alert">
+          <strong>{BASE_ERROR_TEXT[base.error].title}</strong>
+          <span>{BASE_ERROR_TEXT[base.error].body}</span>
+        </div>
+      ) : null}
+      {/* The controls stop the pointer before the map's gesture handlers: a tap here is a button press, never a map tap. */}
+      <div className="pw-map__zoom" onPointerDown={(e) => e.stopPropagation()} onPointerUp={(e) => e.stopPropagation()}>
+        <button type="button" aria-label="Zoom in" onClick={() => zoomAt(ZOOM_STEP, (container.current?.clientWidth ?? 0) / 2, (container.current?.clientHeight ?? 0) / 2)}>
           <Icon name="plus" size={14} />
         </button>
-        <button type="button" aria-label="Fit to view" onClick={() => fit({ x: 0, y: 0, w: level.width, h: level.height }, 14, 1)}>
+        <button type="button" aria-label="Zoom out" onClick={() => zoomAt(1 / ZOOM_STEP, (container.current?.clientWidth ?? 0) / 2, (container.current?.clientHeight ?? 0) / 2)}>
+          <Icon name="minus" size={14} />
+        </button>
+        <button type="button" aria-label="Reset view" onClick={initialFit}>
           <Icon name="crosshair" size={14} />
         </button>
       </div>

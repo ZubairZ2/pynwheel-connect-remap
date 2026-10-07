@@ -1,4 +1,4 @@
-import type { Route, RouteLeg } from '~/models';
+import type { MapLevel, Route, RouteLeg } from '~/models';
 
 /**
  * Play Route: the simulation of walking a calculated route.
@@ -40,6 +40,8 @@ export interface Simulation {
   totalDistance: number;
   /** Cumulative distance at each frame. */
   cumulative: number[];
+  /** Walking speed per level id (px/s), from the level sizes given to `buildSimulation`. */
+  speeds: Record<string, number>;
 }
 
 export interface SimulationState {
@@ -55,10 +57,33 @@ export interface SimulationState {
   run: number;
 }
 
-export const POINT_SPEED_PX_PER_S = 220;
-export const STOP_LEG_MS = 1600;
-export const STOP_PAUSE_MS = 700;
-export const TRANSITION_HOLD_MS = 1400;
+/**
+ * Playback speed. The walker's speed is a distance per second in the
+ * design's 760×470 reference frame, scaled to each level by the level's
+ * diagonal (the same `unit` the routing engine weighs floor changes with), so
+ * a 3300 px plan and a 760 px plan are crossed in the same time and a short
+ * segment takes proportionally less time than a long one. Tune here only.
+ */
+export const PLAYBACK_SPEED_DESIGN_PX_PER_S = 45;
+/** Guard rails on the per-level speed, in that level's pixels per second. */
+export const PLAYBACK_MIN_PX_PER_S = 30;
+export const PLAYBACK_MAX_PX_PER_S = 140;
+/** @deprecated kept for callers that read the old constant; the effective speed is per level now. */
+export const POINT_SPEED_PX_PER_S = PLAYBACK_SPEED_DESIGN_PX_PER_S;
+export const STOP_LEG_MS = 4000;
+export const STOP_PAUSE_MS = 900;
+export const TRANSITION_HOLD_MS = 2200;
+export const ARRIVE_HOLD_MS = 600;
+
+const DESIGN_DIAGONAL = Math.hypot(760, 470);
+
+/** Pixels per second on a level, from its size (the floor image's; for an SVG-only plate the SVG's recorded size). */
+export const speedForLevel = (level: (Pick<MapLevel, 'width' | 'height'> & { svgSize?: { width: number; height: number } | null }) | null | undefined): number => {
+  const size = level && level.width > 0 && level.height > 0 ? { width: level.width, height: level.height } : level?.svgSize && level.svgSize.width > 0 && level.svgSize.height > 0 ? level.svgSize : null;
+  const diagonal = size ? Math.hypot(size.width, size.height) : DESIGN_DIAGONAL;
+  const unit = diagonal / DESIGN_DIAGONAL;
+  return Math.max(PLAYBACK_MIN_PX_PER_S, Math.min(PLAYBACK_MAX_PX_PER_S, PLAYBACK_SPEED_DESIGN_PX_PER_S * unit));
+};
 
 const stepIndexOf = (route: Route, legIndex: number, prefer: 'walk' | 'any'): number => {
   const byLeg = route.steps.map((s, i) => ({ s, i })).filter(({ s }) => s.leg === legIndex);
@@ -74,8 +99,12 @@ const stepIndexOf = (route: Route, legIndex: number, prefer: 'walk' | 'any'): nu
   return byLeg[0].i;
 };
 
-export const buildSimulation = (route: Route): Simulation => {
+export const buildSimulation = (route: Route, levels: (Pick<MapLevel, 'id' | 'width' | 'height'> & { svgSize?: { width: number; height: number } | null })[] = []): Simulation => {
   const frames: SimulationFrame[] = [];
+  const speeds: Record<string, number> = {};
+  levels.forEach((l) => {
+    speeds[l.id] = speedForLevel(l);
+  });
   let previous: [number, number] | null = null;
   route.legs.forEach((leg: RouteLeg) => {
     if (leg.kind === 'walk') {
@@ -111,7 +140,7 @@ export const buildSimulation = (route: Route): Simulation => {
     total += f.distance;
     cumulative.push(total);
   });
-  return { frames, totalDistance: total, cumulative };
+  return { frames, totalDistance: total, cumulative, speeds };
 };
 
 export const initialSimulationState = (mode: SimulationMode = 'point'): SimulationState => ({ status: 'idle', mode, frame: 0, t: 0, holdMs: 0, run: 0 });
@@ -127,7 +156,10 @@ const segmentMs = (sim: Simulation, state: SimulationState, frame: number): numb
   const next = sim.frames[frame + 1];
   if (!next) return 0;
   if (next.kind === 'transition' && next.x == null) return 0;
-  if (state.mode === 'point') return Math.max(40, (next.distance / POINT_SPEED_PX_PER_S) * 1000);
+  if (state.mode === 'point') {
+    const speed = (next.level && sim.speeds[next.level]) || speedForLevel(null);
+    return Math.max(60, (next.distance / speed) * 1000);
+  }
   // Stop by stop: every leg takes the same time regardless of its length.
   const legFrames = sim.frames.filter((f) => f.leg === next.leg && f.kind === 'point');
   const legDistance = legFrames.reduce((sum, f) => sum + f.distance, 0) || 1;
@@ -189,7 +221,7 @@ export const advance = (sim: Simulation, state: SimulationState, dtMs: number): 
       t = 0;
       if (next.kind === 'transition') holdMs = TRANSITION_HOLD_MS;
       else if (state.mode === 'stop' && isLegEnd(sim, frame)) holdMs = STOP_PAUSE_MS;
-      else if (next.kind === 'arrive') holdMs = 0;
+      else if (next.kind === 'arrive') holdMs = ARRIVE_HOLD_MS;
     } else {
       t += remaining / ms;
       remaining = 0;

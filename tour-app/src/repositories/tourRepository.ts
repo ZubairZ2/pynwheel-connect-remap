@@ -18,24 +18,23 @@ import type {
   Visitor,
   WayfindingGraph
 } from '~/models';
+import type { Session } from '~/services/session';
 
 /**
  * The data boundary of the Tour App.
  *
  *   UI (screens, hooks)
  *     ↓
- *   TourRepository              ← this interface
+ *   TourRepository               ← this interface
  *     ↓
- *   DummyTourRepository  today  — local dummy data, every value marked `*`
- *   PynwheelApiTourRepository   — later: GET /api/self_tour/v1/communities/:id/wayfinding.json,
- *                                 …/wayfinding/route.json, …/wayfinding/tour_route.json
+ *   PynwheelApiTourRepository    the configured provider: the Pynwheel Tour App API (tour-api/, FastAPI)
+ *   DummyTourRepository          development only (VITE_TOUR_DATA_SOURCE=dummy): local demo data marked `*`
  *
- * Screens depend on this interface only. Replacing the provider changes no
- * component, because every method answers the models in `~/models`, which
- * already follow the backend's serializer shapes.
+ * Screens depend on this interface only. The provider never falls back from
+ * one to the other: an API failure is a real error state, never demo data.
  */
 
-/** Everything the map needs about one property, in one read (what `wayfinding.json` answers). */
+/** Everything the map needs about one property, in one read. */
 export interface PropertyBundle {
   property: Property;
   buildings: Building[];
@@ -44,10 +43,12 @@ export interface PropertyBundle {
   units: Unit[];
   amenities: Amenity[];
   stops: TourStopPlace[];
-  /** AR pin positions by node, as the design places them. */
+  /** AR pin positions by node when the data has them (the app spreads the rest). */
   arPins: Record<string, { top: string; left: string }>;
-  /** "Floor 1 *" / "Rooftop *" per place node. */
+  /** "Floor 1" / "Tower A · Floor 2" per place node. */
   floorLabels: Record<string, string>;
+  /** True for demo data: the UI then marks derived labels with `*`. */
+  demo: boolean;
 }
 
 /** The app's non-map content (visitor, listings, help …). */
@@ -70,6 +71,7 @@ export interface AppContent {
     prompts: { label: string; question: string }[];
   };
   booking: { days: string[]; times: string[] };
+  /** `percent` 0 = no best-match scoring available (nothing is shown). */
   bestMatch: { reasons: string[]; percent: number };
   appVersion: string;
 }
@@ -97,10 +99,28 @@ export interface StopDistance {
 export interface TourRepository {
   /** Identifies the provider in the UI's dummy-data legend and the docs. */
   readonly source: 'dummy' | 'pynwheel-api';
+
+  // --- session
+  /** Signs in with Pynwheel credentials; resolves the session or throws an error whose message can be shown. */
+  login(email: string, password: string): Promise<Session>;
+  logout(): Promise<void>;
+  /** The persisted session, when one exists and is still usable. */
+  restoreSession(): Promise<Session | null>;
+  /** Called when the backend says the session is gone (expired / revoked). */
+  onSessionExpired(handler: (message: string) => void): () => void;
+
+  // --- property selection
+  getProperties(): Promise<PropertyListing[]>;
+  selectProperty(propertyId: number): Promise<void>;
+  currentPropertyId(): number | null;
+
+  // --- the selected property
   getProperty(): Promise<PropertyBundle>;
   getContent(): Promise<AppContent>;
   /** Every place a route can start or end at, for the From / To picker. */
   getPlaces(): Promise<Place[]>;
+  /** The level's floor SVG document (through the API, with the session token). Rejects when the level has none or it cannot be fetched. */
+  getLevelSvg(level: MapLevel): Promise<Blob>;
   findRoute(from: string, to: string, options?: RouteOptions): Promise<RouteResult>;
   /** The tour's route through the chosen stops (all visible stops when null). */
   getTourRoute(stopNodes: string[] | null, options?: RouteOptions): Promise<TourRouteResult>;
@@ -111,10 +131,18 @@ export interface TourRepository {
   startApplication(unitNode: string): Promise<{ id: string }>;
 }
 
-/** Thrown by a provider that is not enabled in this build. */
-export class RepositoryUnavailableError extends Error {
-  constructor(provider: string) {
-    super(`${provider} is not enabled in this build.`);
-    this.name = 'RepositoryUnavailableError';
+/** Thrown by a provider for a feature its backend does not offer. */
+export class FeatureUnavailableError extends Error {
+  constructor(feature: string) {
+    super(`${feature} is not available for this property yet.`);
+    this.name = 'FeatureUnavailableError';
+  }
+}
+
+/** Thrown when the app is built without a usable data source configuration. */
+export class RepositoryConfigurationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'RepositoryConfigurationError';
   }
 }

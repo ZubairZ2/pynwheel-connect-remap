@@ -7,6 +7,7 @@ import type { CSSProperties } from 'react';
  */
 export type IconName =
   | 'back'
+  | 'minus'
   | 'close'
   | 'help'
   | 'pin'
@@ -77,6 +78,7 @@ const STROKED: Record<string, string> = {
   back: 'M15 18l-6-6 6-6',
   close: 'M18 6L6 18M6 6l12 12',
   pin: 'M12 21s7-7.5 7-12a7 7 0 0 0-14 0c0 4.5 7 12 7 12ZM12 9m-2.5 0a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0-5 0',
+  minus: 'M5 12h14',
   list: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01',
   check: 'M20 6L9 17l-5-5',
   pencil: 'M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z',

@@ -10,6 +10,16 @@
  * screen changes.
  */
 
+/** x' = a·x + c·y + e, y' = b·x + d·y + f (the CMS's `svg_to_image_transform`). */
+export interface AffineTransform {
+  a: number;
+  b: number;
+  c: number;
+  d: number;
+  e: number;
+  f: number;
+}
+
 /** A level is one map: a floorplate (one floor, or a stacked range of floors sharing one plan) or the property's sitemap. */
 export type LevelKind = 'floorplate' | 'sitemap';
 
@@ -47,6 +57,14 @@ export interface MapLevel {
   image: string | null;
   /** Vector geometry drawn above the background (null when only an image exists). */
   svg: FloorGeometry | null;
+  /** The floor SVG file's S3 URL, when the backend has one (informational: the app loads it through `svgPath`). */
+  svgUrl?: string | null;
+  /** API path that serves the floor SVG with the session token (S3 has no CORS for the app). */
+  svgPath?: string | null;
+  /** Calibrated SVG viewBox → level pixels map when the CMS stores one; null = the SVG fills the frame. */
+  svgTransform?: AffineTransform | null;
+  /** The SVG's intrinsic size recorded at upload, when known. */
+  svgSize?: { width: number; height: number } | null;
   width: number;
   height: number;
   space: CoordinateSpace;
@@ -72,4 +90,6 @@ export interface Property {
   floorsCount: number;
   unitsCount: number;
   amenitiesCount: number;
+  /** The Self-Guided Tour is on for this property (server-side fact). */
+  tourEnabled: boolean;
 }

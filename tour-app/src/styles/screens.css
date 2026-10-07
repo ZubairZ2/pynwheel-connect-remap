@@ -2526,3 +2526,29 @@
   flex-direction: column;
   gap: 14px;
 }
+
+/* Property selection (October 2026): the Home location row opens the picker; Search lists real properties. */
+.pw-home__location--button {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.pw-search__retry {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 6px 0 0;
+  font: 700 13px var(--pw-font-sans);
+  color: var(--pw-primary);
+  cursor: pointer;
+}
+.pw-screen--center .pw-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}

@@ -23,3 +23,4 @@ android/capacitor-cordova-android-plugins/
 android/local.properties
 android/*.iml
 android/app/*.iml
+.env.*.local

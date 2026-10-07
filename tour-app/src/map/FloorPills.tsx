@@ -29,7 +29,7 @@ export const floorOptions = (levels: MapLevel[]): FloorOption[] => {
     .filter((l) => l.kind === 'floorplate')
     .forEach((l) => {
       const floors = l.floors.length ? l.floors : [null];
-      floors.forEach((f) => out.push({ level: l.id, floor: f, label: f === 15 ? 'Rooftop' : f != null ? `Floor ${f}` : l.name.replace(/ \*$/, ''), building: l.building }));
+      floors.forEach((f) => out.push({ level: l.id, floor: f, label: f != null ? `Floor ${f}` : l.name.replace(/ \*$/, ''), building: l.building }));
     });
   levels.filter((l) => l.kind === 'sitemap').forEach((l) => out.push({ level: l.id, floor: null, label: 'Property map', building: null }));
   return out;
