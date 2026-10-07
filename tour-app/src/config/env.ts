@@ -2,7 +2,7 @@
  * Build-time configuration (Vite `import.meta.env`, set in `.env.*` files or
  * the shell). Nothing here is a secret: the API URL is public by nature.
  *
- *   VITE_TOUR_API_URL      the Pynwheel Tour App API base, e.g. http://127.0.0.1:8000
+ *   VITE_TOUR_API_URL      the Pynwheel CMS base (the Tour App API lives under /api/tour/v1), e.g. http://127.0.0.1:3000
  *   VITE_TOUR_DATA_SOURCE  'pynwheel-api' (default) | 'dummy' (offline demo data, development only)
  *   VITE_TOUR_API_TIMEOUT  request timeout in ms (default 20000)
  */

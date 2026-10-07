@@ -161,17 +161,7 @@ export const MapView = ({ level, floor, nodes, edges, units, amenities, route, w
     const highlightSet = new Set(highlightKey.split('|').filter(Boolean));
     return (
       <>
-          {/* Plan: the floor SVG in the level's frame, else the floor image, else (demo) the inline vector plan over a blank sheet */}
-          {base.kind === 'svg' && base.svgUrl && base.viewBox ? (
-            (() => {
-              const placement = svgPlacement(base.frame, base.viewBox, level.svgTransform);
-              return <image href={base.svgUrl} x={placement.x} y={placement.y} width={placement.width} height={placement.height} preserveAspectRatio={placement.preserveAspectRatio} transform={placement.transform ?? undefined} data-plan="svg" />;
-            })()
-          ) : base.kind === 'image' && base.imageUrl ? (
-            <image href={base.imageUrl} x={0} y={0} width={frameWidth} height={frameHeight} preserveAspectRatio="none" data-plan="image" />
-          ) : (
-            <rect x={0} y={0} width={frameWidth} height={frameHeight} fill="#F6F7F8" data-plan={geometry ? 'vector' : 'none'} />
-          )}
+          {/* The plan itself (the floor SVG or image) is the separate layer below; demo levels draw their inline vector plan here */}
           {geometry?.shapes.map((shape) => {
             if (shape.kind === 'label') {
               return (
@@ -265,12 +255,27 @@ export const MapView = ({ level, floor, nodes, edges, units, amenities, route, w
       </>
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps -- wasTap reads a ref; the rest are the layer inputs
-  }, [level, floor, geometry, levelUnits, levelAmenities, levelNodes, levelEdges, showNetwork, routeHere, highlightKey, markerScale, onTapNode, base.kind, base.svgUrl, base.viewBox, base.imageUrl, base.frame, frameWidth, frameHeight]);
+  }, [level, floor, geometry, levelUnits, levelAmenities, levelNodes, levelEdges, showNetwork, routeHere, highlightKey, markerScale, onTapNode]);
+
+  // The plan is painted once into its own compositing layer: the animated route dashes, the walker's
+  // pulse and the per-frame walker updates repaint the overlay only, never the (possibly multi-megabyte)
+  // floor plan. Pan and zoom move both layers with one GPU transform on the plane.
+  const planLayer = useMemo(() => {
+    if (base.kind === 'svg' && base.svgUrl && base.viewBox) {
+      const placement = svgPlacement(base.frame, base.viewBox, level.svgTransform);
+      return <image href={base.svgUrl} x={placement.x} y={placement.y} width={placement.width} height={placement.height} preserveAspectRatio={placement.preserveAspectRatio} transform={placement.transform ?? undefined} data-plan="svg" />;
+    }
+    if (base.kind === 'image' && base.imageUrl) return <image href={base.imageUrl} x={0} y={0} width={frameWidth} height={frameHeight} preserveAspectRatio="none" data-plan="image" />;
+    return <rect x={0} y={0} width={frameWidth} height={frameHeight} fill="#F6F7F8" data-plan={geometry ? 'vector' : 'none'} />;
+  }, [base.kind, base.svgUrl, base.viewBox, base.imageUrl, base.frame, level.svgTransform, frameWidth, frameHeight, geometry]);
 
   return (
     <div ref={container} className={`pw-map${className ? ` ${className}` : ''}`} style={style} {...handlers} role="img" aria-label={`${level.name}${floor != null ? `, floor ${floor}` : ''} map`}>
       <div className="pw-map__plane" style={{ transform: `translate(${viewport.tx}px, ${viewport.ty}px) scale(${viewport.scale})` }}>
-        <svg className="pw-map__svg" width={frameWidth} height={frameHeight} viewBox={`0 0 ${frameWidth} ${frameHeight}`} data-base={base.status} data-base-kind={base.kind ?? ''}>
+        <svg className="pw-map__svg pw-map__svg--plan" width={frameWidth} height={frameHeight} viewBox={`0 0 ${frameWidth} ${frameHeight}`} aria-hidden>
+          {planLayer}
+        </svg>
+        <svg className="pw-map__svg pw-map__svg--overlay" width={frameWidth} height={frameHeight} viewBox={`0 0 ${frameWidth} ${frameHeight}`} data-base={base.status} data-base-kind={base.kind ?? ''}>
           {staticLayers}
           {/* Walker */}
           {walker && walker.level === level.id && walker.x != null && walker.y != null && onFloor(floor, walker.floor) ? (

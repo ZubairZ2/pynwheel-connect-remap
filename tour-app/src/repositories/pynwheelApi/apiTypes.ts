@@ -1,4 +1,4 @@
-/** The Tour App API's JSON (snake_case), as `tour-api/app/schemas` defines it. Parsed into `~/models` by `parsers.ts`. */
+/** The Tour App API's JSON (snake_case), as the Rails `Api::TourApp::V1` controllers (app/services/tour_api/) serve it. Parsed into `~/models` by `parsers.ts`. */
 
 export interface ApiUser {
   id: number;

@@ -343,3 +343,61 @@ builds still cannot be produced on this Mac.
   hold 2.2 s.
 - Instructions are plain text; the API strips the CMS's HTML.
 - Tests: `src/map/mapBase.test.ts`, playback speed in `simulation.test.ts`; 22 vitest in all.
+
+## 15. The API is the Rails CMS now (October 7, 2026)
+
+The FastAPI service the app talked to since §13 was ported into the Rails CMS as `Api::TourApp::V1`
+(`tour-app-backend-api.md` §14) and `tour-api/` was deleted. The app's contract is unchanged; the
+only app change is the API prefix, `/api/v1` → **`/api/tour/v1`**, held in one constant (`API`) in
+`src/repositories/pynwheelApi/pynwheelApiTourRepository.ts` (the legacy CMS already serves a vendor
+route at `GET /api/v1/properties`, so the Tour App API needed its own prefix). `svg_path` values the
+API returns carry the new prefix too, so `getLevelSvg` needed nothing.
+
+| Area | Change |
+|---|---|
+| `src/repositories/pynwheelApi/pynwheelApiTourRepository.ts` | `const API = '/api/tour/v1'`; every path is `${API}/…`; doc comment names the Rails controllers |
+| `src/repositories/pynwheelApi/apiTypes.ts` | comment: the JSON is now defined by `app/services/tour_api/` in the CMS |
+| `.env.development` / `.env.example` | `VITE_TOUR_API_URL=http://127.0.0.1:3000` (the CMS; the verify server is :3100, set at launch) |
+| `.env.staging` / `.env.production` | comments: the URL is the CMS host; `VITE_TOUR_API_URL=https://<cms host> npm run build && npx cap sync android` |
+| `src/config/env.ts`, `src/repositories/tourRepository.ts`, `src/repositories/repositoryProvider.tsx` | comments / the configuration-error message name the CMS instead of `:8000` |
+
+One API behaviour the app benefits from: the `tour-route` segments now index their own legs
+(`legs[].index`, `steps[].leg`, `stages[].leg` are 0-based per segment) and an elevator step's
+`transition.to_level_id` is filled in every segment — the FastAPI service offset them twice after the
+first stop, which desynchronised the step card during Play Route from the second stop on
+(`wayfinding/simulation.ts` `stepIndexOf` matches steps to legs by index). No parser change was needed.
+
+Verified in the browser against the Rails verify server (:3100, `pynwheel_development`): sign-in →
+property list → Hazel (1618): Build Your Tour with real distances, 3-stop tour, Play Route, the floor
+change to Floor 31 at the elevators, stop detail, Tour Complete, Tour Summary → Change property →
+Dummy-High-Rise (2934): the SVG-only plate `floorplate:3029` served through the Rails SVG endpoint,
+3-stop tour incl. unit 1130's slide-to-unlock and the Floor 1 → Floor 2 switch at the Elevator Bank.
+`npm run typecheck`, `npx vitest run` (22) and `npm run build` are clean. Still not verified: iOS /
+Android web views (no SDKs on this Mac). The owner's git-ignored `.env.production.local` still points
+at `:8000` and must name the CMS host before the next device build.
+
+## 16. Final QA pass: Search Cancel, Play Route smoothness, request efficiency (October 7, 2026)
+
+Brief `issues_in_tour_app.md`; report `tour-app-final-qa-report.md`.
+
+| Area | Change |
+|---|---|
+| `src/screens/SearchScreen.tsx`, `src/screens/searchFilter.ts` (+ test) | the picker had no Cancel: a Cancel appears while typing or focused (clears, blurs, restores the full list), a clear "×" in the field, Escape/Enter handling; plain `type="text"` + `inputMode="search"` because the native search clear did not reach React; the query resets when a property is chosen (`reducer` `selectProperty`) |
+| `src/hooks/useSimulationPlayer.ts` | the walker's state lives in the hook at frame rate (ref + local state) and is published to the store only on status changes and every 500 ms, instead of dispatching every animation frame through the whole app (`live` is returned for the screens' controls) |
+| `src/map/MapView.tsx`, `components.css` | the floor plan (`<image>`) is drawn in its own `<svg>` compositing layer under the overlay SVG (route, markers, walker), so the animated dashes, the pulse and the per-frame walker never repaint the plan |
+| `src/map/useLevelBase.ts` | `prefetchLevelPlan` / `usePrefetchRouteLevels`: the SVG (session cache) and image (browser cache) of every level a route's stages visit are warmed as soon as the route is known; Guided and Wayfinding screens call it. Removes the one 217 ms frame measured at a floor change |
+| `src/repositories/pynwheelApi/pynwheelApiTourRepository.ts` | one in-flight bundle load per property (the provider's `getProperty` / `getContent` / `getPlaces` used to load the bundle twice), one in-flight property-list request, one shared session restore |
+| `src/store/AppProvider.tsx` | the property list is no longer refetched on every property switch |
+
+Measured in the browser on the dump's largest plans (Sofia 2919, 2942×1942): 60 fps, worst frame 18.7
+ms, zero network requests during Play Route, including the Floor 1 → 7 change. Property open and
+sign-in now issue each request once. Not run: iOS / Android devices.
+
+**Addendum, same evening (production data):** with `pynwheel_prod` reads allowed, John Demo's own six SVG
+plates played at 60 fps (worst frame 17.8 ms) including the Floor 1 → 2 change; its tour-route took
+66 ms. Two more app fixes came out of that run: a selection persisted for another property could leak
+into the tour request (hydration now resets per-property state when the session's property differs,
+and `selectedNodes` only sends stops on the current list), and the picker rendered all 4,832
+production properties (now capped at 120 rows with a "Showing 120 of N" footer, the current property
+pinned first, the filter behind `useDeferredValue`: 851 DOM nodes instead of 33,640, 78 ms per
+keystroke instead of 163 ms on this Mac). Report: `tour-app-final-qa-report.md`, "Production-DB run".

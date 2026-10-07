@@ -401,3 +401,291 @@ playback speed).
 - `svg_to_image_transform` is null for every plate, so SVG placement is the CMS's stretch rule; a
   stored calibration is honoured automatically when one appears.
 - For an SVG-only plate without `svg_metadata` (3029) the walker uses the design speed (45 px/s).
+
+## 14. The API moves into Rails: `Api::TourApp::V1` replaces `tour-api/` (October 7, 2026)
+
+The FastAPI service of sections 1–13 was a detour: Pynwheel's backend is Ruby on Rails and the
+owner wants one runtime. On October 7 the Tour App API was ported into the CMS with the same
+contract, verified against the running FastAPI service endpoint by endpoint, and `tour-api/` was
+deleted (branch `feature/tour_app_rails_api`). Sections 1–13 stay as the record of how the contract
+came to be; where they say "FastAPI" or `/api/v1`, read "the Rails app" and `/api/tour/v1`.
+
+```
+Capacitor Tour App (tour-app/)
+      │  HTTPS · Authorization: Bearer <Doorkeeper token> · JSON
+      ▼
+Rails CMS  /api/tour/v1  (Api::TourApp::V1 controllers → TourApi services → Wayfinding::*, TourStops::Membership, Connect::ProductState)
+      │
+      ▼
+Pynwheel Postgres database
+```
+
+### What changed and what did not
+
+| | Before (Oct 5–6) | Now |
+|---|---|---|
+| Runtime | FastAPI (`tour-api/`, Python) reading the CMS database read-only + two HTTP calls to Rails for sign-in / sign-out | the Rails app itself |
+| Paths | `/api/v1/...` | **`/api/tour/v1/...`** — `GET /api/v1/properties` is a legacy vendor route (`api/v1/schedule_tours#communities`, `config/routes.rb` line ~921) that answers suffix-less requests, so the Tour App API could not sit at `/api/v1` without shadowing it. The mobile app's prefix is one constant (`API` in `tour-app/src/repositories/pynwheelApi/pynwheelApiTourRepository.ts`); nothing else in the app changed. |
+| Graph & routing | Python port of `Wayfinding::GraphBuilder` / `RouteService` / `Timing` / `GraphSerializer` / `GraphVersion`, proven equal by `scripts/parity.py` | the Rails services themselves, reused as they are (no fork): `TourApi::RouteService < Wayfinding::RouteService` adds only the chosen-stops tour (`tour(stop_keys:)`, with segments) and `distances(targets)`, sequencing the parent's private helpers |
+| Sign-in | HTTP `POST /api/v2/auth/token` to the CMS, then `oauth_access_tokens` read by SQL | the CMS's Doorkeeper password grant run **in-process**: `Api::TourApp::V1::AuthController` includes `Doorkeeper::Helpers::Controller`, so `server.token_request('password').authorize` runs the same `resource_owner_from_credentials` block (Devise `find_for_database_authentication` + `valid_password?`) as the token endpoint and mints the same `Doorkeeper::AccessToken` |
+| Token check | SQL on `oauth_access_tokens` | `Doorkeeper::AccessToken.by_token` → revoked? / expired? → user → inactive (pending invitation, inactivated company) → `User#is_super_admin?`; property access `User#can_access_community?` |
+| Facts mirrored in Python | `tour_enabled`, `in_list?`, upload URLs, double-parsed `product_options`, `humanize`, natural sort | gone: `Connect::ProductState.tour?`, `TourStops::Membership`'s rule (read in bulk, `TourApi::Stops`), `Connect::UploadUrl`, `Wayfinding::PlateTransform.present?` are called directly |
+| Legacy code | untouched | untouched: no legacy controller, route, schema or persistence changed; no migration. `Api::SelfTour::V1::TokenAuthorization` and the self-tour API are exactly as before. The one shared file edited besides `config/routes.rb` (additive scope) is `config/initializers/filter_parameter_logging.rb` (adds `token` to the filtered parameters, see Logging). |
+
+### Rails files added
+
+```
+config/routes.rb                                  scope path: 'api/tour/v1', module: 'api/tour_app/v1' (after the legacy api namespace; a JSON 404 catch-all for the prefix)
+app/controllers/api/tour_app/v1/
+  base_controller.rb        ActionController::API; bearer → TourApi::Auth; the error envelope for ApiError / ParameterMissing; internal_error with a log ref, never a trace; pydantic-style body/query validation helpers
+  property_controller.rb    /properties/:property_id gates: exists + access (404), tour on (422 tour_disabled); the cached built graph + payload
+  auth_controller.rb        POST auth/login (Doorkeeper grant in-process) · POST auth/logout (revoke) · GET auth/me
+  properties_controller.rb  GET properties (?q=, ?tour_enabled=; 60 s per-process list cache) · GET properties/:id (counts, buildings, tour summary, graph_version)
+  stops_controller.rb       GET properties/:id/stops
+  maps_controller.rb        GET …/map · …/map/levels/:level_id · …/map/levels/:level_id/svg (ETag, 304, X-Svg-ViewBox, Cache-Control private max-age=86400)
+  graphs_controller.rb      GET …/graph (ETag = graph version, 304 on If-None-Match, JSON string cached per version)
+  routes_controller.rb      POST …/route · …/tour-route · …/stops/distances
+  health_controller.rb      GET health (no token) · errors_controller.rb (404 envelope)
+app/services/tour_api/
+  api_error.rb    ApiError(status, code, message, details, headers) + unauthorized / forbidden / not_found / unprocessable / validation
+  auth.rb         login(granted) · authenticate(bearer) · logout · admit (the token states and 403 codes of §3) · display_name
+  properties.rb   summary · all_summaries (SELECT of the needed columns, company names in one query, 60 s MemoryStore) · list · find! · require_tour! · counts · detail
+  engine.rb       Built(version, graph, payloads, graph_json): GraphBuilder per (property, GraphVersion, step_free, avoid_blockers), per-process cache, 15 min TTL, 64 entries, older versions of a property dropped; GraphSerializer payload per base URL
+  shapes.rb       the Pydantic shapes (every field present, null when it does not apply, model field order) for levels, nodes, edges, vertical connections, gates, tour, the graph response
+  stops.rb        the stops list of §4–5: main tour, lowest visible tour_stops row per record, amenity flag, floor plan by provider id, node facts (level, location, routable), tour order
+  maps.rb         map · level · svg · graph; svg_path / svg_transform (PlateTransform.present?) / svg_size per level
+  assets.rb       the SVG reader of §13: *.amazonaws.com or this host (an upload this host serves is read from public/), 24 MB cap, streaming GET with redirects, first-element validation (Nokogiri::XML::Reader, STRICT|NONET), viewBox, SHA1 ETag, 128 MB per-process LRU
+  route_service.rb  Wayfinding::RouteService subclass: tour(stop_keys:) → [Result, segments], distances(targets); the open graph for a blocked diagnosis comes from Engine's cache
+  routing.rb      route · tour_route · distances · failure (422 with from/to/warnings/graph_version) and the step adapter of §7 (titles, descriptions, transitions, dwell_s)
+  text.rb         strip_html (tags → text, entities decoded, whitespace collapsed), Python-truthiness and to_f mirrors, name_of / place_name (Timing's phrasing), delimited / round_half_even ("1,032 px"), timestamp, py_str
+script/tour_api_parity.rb   two bases, endpoint by endpoint (replaces tour-api/scripts/parity.py)
+script/tour_api_measure.rb  live timings and payload sizes (replaces tour-api/scripts/measure.py)
+test/support/tour_api_test_helper.rb · test/controllers/api/tour_app/v1/{auth,properties,stops,maps,routing,security}_test.rb · test/services/tour_api/{text,assets}_test.rb
+```
+
+### Authorization design (the part the October 5 session could not do)
+
+Only the **new** `api/tour` controllers authenticate CMS users by bearer token; the owner authorised
+this namespace explicitly. `Api::TourApp::V1::BaseController#authenticate!` reads the
+`Authorization: Bearer <token>` header (any other scheme is `401 unauthorized` with
+`WWW-Authenticate: Bearer`), looks the token up with `Doorkeeper::AccessToken.by_token`, and
+`TourApi::Auth.admit` answers exactly the codes of §3: `401 invalid_token` (unknown token or a token
+whose user is gone), `401 token_revoked`, `401 token_expired`, `403 inactive_user`
+(`invitation_token` set and never accepted, or `companies.inactivate`), `403 not_super_admin`.
+Property access is `User#can_access_community?` (a Super Admin sees every property; a property the
+user may not see is a `404`). Sign-in runs the Doorkeeper password grant inside the request, so
+Devise verifies the password and Doorkeeper mints the token exactly as `POST /api/v2/auth/token`
+does; the CMS's `CustomTokenResponse` rule (an account that is not a portal user gets no token) is
+kept as `403 not_authorized_account`, and every refused sign-in revokes the just-minted token
+(the FastAPI service could not revoke the token the CMS withheld). Sessions, cookies and CSRF play
+no part: the controllers are `ActionController::API`.
+
+### Contract parity (`script/tour_api_parity.rb`, FastAPI :8000 vs Rails :3100, dev database)
+
+Every response of every endpoint was diffed for 1411 John Pynwheel Demo, 1618 Hazel and 2934
+Dummy-High-Rise — login, me, properties (with and without `?tour_enabled=true`), the error envelopes
+(404, 422 validation, bad token, unknown level, `no_svg`, `unknown_endpoint`, `invalid_stop`),
+properties/{id}, stops, map, map/levels/{id}, graph (+ `If-None-Match` → 304 on both), the SVG of
+`floorplate:3029` (same bytes, same ETag `"01d7a1f975a54da98156"`, same `X-Svg-ViewBox 0 0 2000 2000`),
+stops/distances for every stop, route start → first stop and between consecutive routable stops,
+step-free, tour-route over the routable stops: **57 comparisons, 0 differences** with the literal port
+(commit `f7b79e6d2`), ignoring only `access_token` / `expires_at`, the graph-version digest (each
+runtime hashes the same inputs in its own number format: `wf-1411-8d0d5f38…` vs `wf-1411-8a690f59…`;
+the ETag/304 round trip was checked on each side) and the `/api/v1` → `/api/tour/v1` prefix inside
+`svg_path`. Shapes match field for field because the Pydantic models serialised every field (nulls
+included) and `TourApi::Shapes` does the same; Ruby's `to_json` and Python's `json.dumps` differ only
+in how they spell the same numbers.
+
+**One deliberate divergence, as its own commit (`9d8de8485`):** the FastAPI `tour-route` offset a
+segment's leg indexes in place when assembling the whole tour and then offset the step indexes again,
+so after the first stop `segments[].route.steps[].leg` no longer named one of that segment's legs, the
+whole `route.steps[].leg` overshot `route.legs`, and an elevator step's `transition.to_level_id` was
+null. The app matches steps to legs by index during Play Route (`wayfinding/simulation.ts`
+`stepIndexOf`), so the step card fell out of sync after the first stop. In Rails a segment is a route
+on its own (legs and steps 0-based, the transition names the level to switch to) and the whole tour's
+legs and steps carry whole-tour indexes once. Re-running the harness after this commit shows
+differences in exactly those fields of the three `tour-route` responses (`route.steps[].leg`,
+`segments[].route.{legs[].index, stages[].leg, steps[].leg}`, `transition.to_level_id`) and nowhere
+else; the mobile app needed no change for it.
+
+### Tests
+
+`rails test`: **167 runs, 831 assertions, 0 failures, 0 errors, 7 skips** = the previous 103 / 338 / 0
+(unchanged, the 7 skips are the dead `schedual_tours` scaffold) plus 64 new runs. The 57 pytest of
+`tour-api/tests` became Minitest integration tests over the wayfinding fixture property, extended in
+`test/support/tour_api_test_helper.rb` with the rows the Python fixture had (a Gym stop with a dwell and
+rich-text instructions, a hidden stop, a Pool whose "Show in Stops List" is off, a duplicate
+`tour_stops` row, an island stop no path reaches, a second building reached outdoors):
+
+- `auth_test` (16): Doorkeeper grant mints the token (5-day expiry), wrong password / unknown account,
+  not a portal user → `not_authorized_account` + revoked, portal user not a Super Admin →
+  `not_super_admin` + revoked, inactivated company → `inactive_user`, body validation, missing /
+  unknown / Basic / expired / revoked / orphan tokens, non-admin token, me + logout (then
+  `token_revoked`), health, the prefix's JSON 404.
+- `properties_test` (7): list (fields, order), `tour_enabled` and `q` filters, bad boolean, detail with
+  and without the tour, 404, `tour_disabled` on stops / map / graph / level / route / distances, nothing
+  written by any read.
+- `stops_test` (6): membership (flag on/off, hidden, duplicates collapse, tour order), the stop
+  contract (door-centre location, floor plan facts, plain-text instruction), island not routable,
+  unplotted stop without location, no stops without a main tour, `TourStops::Membership.set!` off/on
+  round trip seen by the API.
+- `maps_test` (7): map levels / buildings / `svg_path` / `svg_size` / SVG-only width null, calibrated
+  transform carried (malformed dropped), level detail + `unknown_level`, graph shape (every node and
+  level carries every field; anchors, attachments, floors, lift once per level, vertical connections,
+  gates, tour stops, edge polyline) + ETag/304, SVG served validated and cached (ETag, viewBox,
+  Cache-Control, 304 from cache), SVG errors (`no_svg`, `invalid_svg`, `unknown_level`, 401, 502
+  `svg_unavailable`), plain-text instructions everywhere (the CMS text itself untouched).
+- `routing_test` (13): same-floor route (legs, floors, stages, every step field), cross-floor via the
+  elevator with its transition, stairs, step-free (and `no_step_free` with the lift inaccessible),
+  `ambiguous_floor`, `not_linked`, `blocked` / `avoid_blockers: false`, invalid endpoints and bodies,
+  cross-building outdoor step, tour-route order / segments / dwell / consistent indexes, skipped
+  unreachable stop with a warning, `invalid_stop` before any routing, distances.
+- `security_test` (7): another list's stop rejected, another property's node `unknown_endpoint`,
+  tour-disabled routing, non-admin blocked everywhere, id validation (0 / abc → 422, unknown → 404),
+  `internal_error` never leaks internals, another property isolated (its own version, sitemap level),
+  no `access_code` / `encrypted_password` in any payload.
+- `text_test` (5) and `assets_test` (3): `strip_html`, `to_f`, rounding, names and places, timestamps;
+  viewBox parsing (Illustrator DOCTYPE, invalid inputs), allowed hosts / validation / cache, local upload
+  read from `public/`.
+
+Test-environment traps worth knowing: the uploaders are fog without a bucket there, so any level with
+an `image` or `svg_image` makes `Connect::UploadUrl` raise — the helper's `with_s3_uploads` stands in
+the S3 URL the CMS would answer; and a fixture `Community` instance caches its `floorplates` before rows
+created in `setup` (a `pluck` on a loaded association is in-memory), which changes
+`Wayfinding::GraphVersion.for` — the helper hands tests a freshly loaded community.
+
+### Measurements (`script/tour_api_measure.rb`, Rails verify server :3100 in **development mode**, dev database, each request twice; first / warm)
+
+| Endpoint | 1411 | 1618 Hazel (31 levels) | 2934 Dummy-High-Rise |
+|---|---|---|---|
+| POST /auth/login | 343 ms (bcrypt + Doorkeeper insert) | | |
+| GET /properties (803 rows) | 56 ms uncached · 18–24 ms cached (145 KB); `?tour_enabled=true` 10–12 ms (40 KB) | | |
+| GET /properties/{id} | 40 ms | 40 ms | 45 ms |
+| GET …/stops | 47 / 33 ms · 1.9 KB | 37 / 34 ms · 4.6 KB | 42 / 50 ms · 5.7 KB |
+| GET …/map | 25 / 34 ms · 1.7 KB | 29 / 27 ms · 11.4 KB | 37 / 34 ms · 1.7 KB |
+| GET …/graph | 28 / 29 ms · 114 KB (304: 31 ms) | 31 / 28 ms · 244 KB (304: 27 ms) | 34 / 30 ms · 37 KB (304: 42 ms) |
+| GET …/map/levels/{id} | 34 / 27 ms · 32 KB | 29 / 28 ms · 7.6 KB | 32 / 33 ms · 18 KB |
+| GET …/map/levels/floorplate:3029/svg | | | 293 ms · 5.2 MB from the per-process cache (first read from S3 9–11 s); 304: 30 ms |
+| POST …/stops/distances | 28 / 26 ms | 42 / 43 ms | 35 / 39 ms |
+| POST …/route | 28 / 27 ms | 31 / 33 ms | 33 / 30 ms |
+| POST …/tour-route | 40 / 36 ms · 11 KB (2 segments) | 50 / 56 ms · 29 KB (6 segments, floors 1→15→31) | 45 / 50 ms · 34 KB (6 segments, floors 1–4) |
+
+The ~25 ms floor is the development server (code reloading checks on every request, debug SQL
+logging, no class caching); the FastAPI numbers of §11 were 5–15 ms for the same bodies. A graph is
+built from the database once per graph version per process (0.04–0.6 s, as in §11) and the
+`GraphSerializer` payload and the `/graph` JSON string are remembered with it; the property list is
+remembered for 60 s per process. Production (`log_level :error`, eager loading, no reloader) will sit
+well below these numbers; it was not measured here.
+
+### Verified in the browser (tour-app :3012 → Rails :3100, no app change but the prefix constant)
+
+Onboarding → sign in as the verification Super Admin → the real property list (803, "No Self-Guided
+Tour" rows) → search → **Hazel (1618)** → Home → Build Your Tour (7 real stops with distances from the
+tour start: "The Lobby · Floor 1 · 369 px", "Fitness Centre · 1032 px", …) → The Lobby + Fitness Centre
++ Penthouse West Lounge → Generate (`POST /tour-route`, 3 segments) → Guided: the raster plate renders,
+"Walk on Floor 1 · From Main Entrance to The Lobby · 369 px", Play Route animates → I've Arrived →
+the stop's CMS description → Next Stop → "From The Lobby to Fitness Centre · 808 px" → stop 3: floor
+chips Floor 1 / Floor 31, "Elevators → Floor 31", Play Route walks to the elevators, the map switches to
+**Floor 31** and the card follows ("Walk on Floor 31 · From Elevators to Penthouse West Lounge · 150
+px", then "Arrive at Penthouse West Lounge · Floor 31 · The West Lounge is located directly in front
+of the elevators." — the CMS's directional text, plain) → Finish → "Tour Complete" → Tour Summary
+(3 stops, 9 minutes, stops visited with floors) → Back To Home → Change property → **Dummy-High-Rise
+(2934)** → Build Your Tour (5 amenities, 7 units) → Game Room + 1130 + Office Space → Generate → the
+SVG-only plate `floorplate:3029` (5.2 MB, served through `/map/levels/floorplate:3029/svg`) renders
+with the route over it ("Walk on Floor 1 · From Tour start to Sofia's Parlour - Game Room.jpg · 2,449
+px"), Play Route → arrive → unit 1130 slide-to-unlock (the design's interaction) → Office Space: floor chips Floor 1 / Floor 2, "Elevator Bank → Floor 2", Play Route walks
+"From 1130 to Elevator Bank · 1,176 px", the map switches to **Floor 2** ("Walk on Floor 2 · From Elevator Bank
+to Office Space - Upper Study.jpg · 1,621 px") and arrives ("Arrive at Office Space - Upper Study.jpg ·
+Floor 2") → Finish → summary. Every request went to `http://127.0.0.1:3100/api/tour/v1/...` (CORS preflights
+answered by the existing `Rack::Cors`), with no console errors. `npm run typecheck`, `npx vitest run`
+(22) and `npm run build` are clean.
+
+### Logging
+
+Rails filters `password` from request logs; `token` was added to `filter_parameters`
+(`config/initializers/filter_parameter_logging.rb`), which also masks the `oauth_access_tokens.token`
+bind in ActiveRecord's debug SQL log — without it the development and staging logs printed the bearer
+token on every request (`WHERE "oauth_access_tokens"."token" = $1 [["token", "…"]]`), and the legacy
+token endpoint's INSERT had always done the same. The API's own log lines carry user ids and
+statuses only (`[tour-api] login ok user_id=…`, `login refused user_id=…`, `logout … revoked=…`,
+`internal_error ref=…`). An unexpected exception answers `500 internal_error` with a 12-character
+reference that the log line carries, never a trace.
+
+### Deployment: the API is the Rails app
+
+- **Nothing new to run.** Deploy the CMS as before; the Tour App API is served under
+  `https://<cms host>/api/tour/v1`. No new environment variable is needed: the database, Doorkeeper
+  (`access_token_expires_in 5.days`), Devise and the S3 configuration are the CMS's. `Rails.cache` is
+  not used for the graph (per-process memory, keyed by the graph version); with several Puma workers
+  each builds its own copy once per version.
+- **CORS.** The Capacitor web view's origins are `capacitor://localhost`, `https://localhost`,
+  `http://localhost` and `ionic://localhost`; `config/application.rb` already mounts `Rack::Cors` with
+  `origins '*'`, `headers: :any`, methods GET/POST/OPTIONS…, so no change was needed. The app reads no
+  response header (it uses the body's `version` for `If-None-Match` and the SVG's own viewBox), so
+  `expose_headers` is not required; add `expose: ['ETag', 'X-Svg-ViewBox']` to that block if it ever
+  does.
+- **SVG floor plans** are read by the Rails process from `https://*.amazonaws.com` (the bucket the
+  record's `standard_image_url` names, through S3 Transfer Acceleration) or, for a development upload
+  the CMS host serves itself, from `public/uploads/...`; nothing else is ever fetched. Files are cached
+  per process (128 MB LRU; the first read of 3029's 5.2 MB took 9–11 s from S3 here).
+- **Mobile build.** `VITE_TOUR_API_URL=https://<cms host> npm run build && npx cap sync android` (an
+  https URL: release builds keep the web view strict). `tour-app/.env.development` points at
+  `http://127.0.0.1:3000` (`rails server`); the verify server is :3100. The owner's git-ignored
+  `tour-app/.env.production.local` still names `http://192.168.1.101:8000` (the retired FastAPI port)
+  and must be changed to the CMS host before the next device build.
+
+### Removed
+
+`tour-api/` (app, tests, scripts, README, `.env.example`, Procfile, `.venv`), the `tour-api` entry of
+`.claude/launch.json` (the `tour-app` entry now launches with `VITE_TOUR_API_URL=http://127.0.0.1:3100`),
+the Python harness (`scripts/parity.py`, `scripts/measure.py` → `script/tour_api_parity.rb`,
+`script/tour_api_measure.rb`). The verification accounts of §12 are unchanged
+(`tour-api-verify@pynwheel.local`, id 2050, Super admin; its password was reset for this run with
+`rails runner` and lives only in the session scratchpad).
+
+### Known gaps (October 7, 2026)
+
+- The 60 s property-list cache and the graph cache are per Puma process; a change made in the CMS is
+  seen by the Tour App within a minute (list) or at once (graph version is recomputed per request).
+- A malformed JSON body answers Rails' plain `400 Bad Request` (the parse error is raised before the
+  controller), not the envelope; a wrong verb on a known path answers the envelope's `404 not_found`
+  where FastAPI answered `405 method_not_allowed`. The app sends neither.
+- Elevator steps on a level without floors would read "Take … to Floor None" (kept from the Python
+  contract; no such level exists in the data, all routed connectors have floors).
+- Everything of §12–13 that is not about the runtime still holds: no `scale_ft_per_px` anywhere
+  (pixels, `duration_s` null), 1411's development floor images 403, `wayfinding_stops` are not tour
+  stops, concierge / booking / application / locks have no backend, Preferences is not encrypted
+  storage, iOS / Android web views untested here (no SDKs on this Mac).
+- The development-mode timings above are not production figures.
+
+## 15. Final QA pass: cold-graph single flight and the SVG disk cache (October 7, 2026)
+
+Brief `issues_in_tour_app.md`; report `tour-app-final-qa-report.md`. Two generic server-side
+changes, no contract change (`rails test` 172 runs / 848 assertions / 0 failures):
+
+- **`TourApi::Engine.built` is single-flight.** The app opens a property with four parallel
+  requests and then asks for distances; on a graph version nobody had built yet each request built
+  its own copy (4 builds per cold open on 1064, 1114, 1241 — measured with `scratchpad/probe.rb`).
+  Now the first request builds and the others wait on a condition variable for the same `Built`
+  (1 build per cold open on 1268, 1234). On the dump the saving is small (0.2–1.8 s builds); on a
+  property whose build takes seconds it is the difference between one stall and one per Puma thread.
+  `test/services/tour_api/engine_test.rb` (4 threads → 1 build).
+- **`TourApi::Assets` keeps validated floor SVGs on disk** (`tmp/cache/tour_api_svg/<sha1(url)>.svg`)
+  and reads them before fetching, so a process restart or another worker never fetches a plan from
+  S3 again. The first S3 read of 2934's 5.2 MB plan took 17 s this run (9–11 s and once 205 s on
+  earlier runs); from memory or disk it is 30–300 ms. Invalid files are never written.
+  `test/services/tour_api/assets_test.rb`.
+
+Development-dump measurements for nine Self-Tour properties (warm, development mode): detail 39–44
+ms, stops 34–71 ms, map 23–38 ms, graph 27–40 ms (37–256 KB), route 24–34 ms, tour-route 37–55 ms,
+distances 26–43 ms — the ~25 ms floor is the development server. `pynwheel_prod` was not read
+(permission refused in this session), so the production John Demo numbers remain to be taken with
+`script/tour_api_measure.rb` against a Rails server on that database.
+
+**Addendum, same evening (production data):** on `pynwheel_prod` John Demo (1411: six 2942×1942
+plates, all with 555 KB SVG plans, 146 hallway points) opens cold in 874 ms with one graph build and
+answers warm in 23–45 ms (route 23 ms, tour-route 37–66 ms); the first S3 read of each SVG by the
+server is 2.2–2.6 s (once per deployment now). Hazel, Jennifer Demo FP, Hazel Copy Test, Hazel Testing
+Community 12345, Sofia and Madera: 23–76 ms warm. `GET /properties` is 867 KB there (4,832 rows,
+475 ms uncached / 92 ms cached). `script/tour_api_measure.rb` accepts `TOUR_API_TOKEN`. The only
+write was a two-hour token for the owner's account, revoked afterwards.

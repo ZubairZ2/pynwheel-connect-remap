@@ -604,6 +604,19 @@
 .pw-map__svg {
   display: block;
 }
+/* Two layers on the plane: the plan (painted once) and the overlay (route, markers, walker). */
+.pw-map__svg--plan {
+  position: relative;
+  will-change: transform;
+  contain: strict;
+}
+.pw-map__svg--overlay {
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform;
+  overflow: visible;
+}
 .pw-map__shape--outline {
   fill: #fdfdfd;
   stroke: #c4c9cf;

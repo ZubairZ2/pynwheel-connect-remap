@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { MapLevel } from '~/models';
 import { useRepository } from '~/repositories/repositoryContext';
+import type { TourRepository } from '~/repositories/tourRepository';
 import { frameOf, looksLikeSvg, parseSvgViewBox, plainS3Url, type Frame, type ViewBox } from './mapBase';
 
 /**
@@ -43,6 +44,48 @@ export const resetLevelBaseCache = (): void => {
   });
   svgCache.clear();
   inflight.clear();
+};
+
+/**
+ * Warms a level's plan ahead of time (the floor SVG into the session cache,
+ * the floor image into the browser's image cache) so that when Play Route or
+ * a floor pill switches to it, the map shows at once instead of fetching and
+ * decoding a multi-megapixel file in the middle of the animation.
+ */
+export const prefetchLevelPlan = (level: MapLevel, repository: Pick<TourRepository, 'getLevelSvg'>): void => {
+  if (level.svgPath && !svgCache.has(level.id) && !inflight.has(level.id)) {
+    const promise = repository
+      .getLevelSvg(level)
+      .then(async (blob) => {
+        const head = await blob.slice(0, 65536).text();
+        if (!looksLikeSvg(head)) throw Object.assign(new Error('not an SVG document'), { kind: 'invalid' });
+        const entry: CachedSvg = { blobUrl: URL.createObjectURL(blob.type.startsWith('image/svg') ? blob : new Blob([blob], { type: 'image/svg+xml' })), viewBox: parseSvgViewBox(head) };
+        svgCache.set(level.id, entry);
+        return entry;
+      })
+      .finally(() => inflight.delete(level.id));
+    promise.catch(() => undefined);
+    inflight.set(level.id, promise);
+  }
+  if (level.image && !prefetchedImages.has(level.image)) {
+    prefetchedImages.add(level.image);
+    const img = new Image();
+    img.decoding = 'async';
+    img.src = level.image;
+  }
+};
+
+const prefetchedImages = new Set<string>();
+
+/** Prefetches every level a route visits (its stages) other than the one shown. */
+export const usePrefetchRouteLevels = (route: { stages: { level: string }[] } | null, levels: MapLevel[], currentLevelId: string | null): void => {
+  const repository = useRepository();
+  useEffect(() => {
+    if (!route) return;
+    const wanted = new Set(route.stages.map((s) => s.level));
+    wanted.delete(currentLevelId ?? '');
+    levels.filter((l) => wanted.has(l.id)).forEach((l) => prefetchLevelPlan(l, repository));
+  }, [route, levels, currentLevelId, repository]);
 };
 
 export const useLevelBase = (level: MapLevel): LevelBase => {

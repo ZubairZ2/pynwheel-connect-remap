@@ -3,7 +3,7 @@ import { useRepository } from '~/repositories/repositoryContext';
 import { onAppStateChange } from '~/services/native';
 import { loadPersisted, savePersisted } from '~/services/persistence';
 import { AppContext, type AppContextValue, type AppData } from './appContext';
-import { PERSISTED_KEYS, STATE_VERSION, initialAppState, type AppState, type PersistedState } from './appState';
+import { PERSISTED_KEYS, STATE_VERSION, initialAppState, initialGuided, initialWayfinding, type AppState, type PersistedState } from './appState';
 import { reducer } from './reducer';
 
 export { useApp } from './appContext';
@@ -45,6 +45,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         if (session) {
           base.signedIn = true;
           base.user = { name: session.user.name, email: session.user.email };
+          if (persisted && persisted.propertyId !== session.propertyId) {
+            // The UI state was saved for another property (or the session store moved on): nothing of that
+            // property's tour, selection, routes or floors may leak into this one.
+            Object.assign(base, { selected: {}, tourOrder: [], stopIndex: 0, unlocked: {}, notes: {}, guided: initialGuided(), wayfinding: initialWayfinding(), floorByLevel: {} });
+          }
           base.propertyId = session.propertyId;
           if (session.propertyId == null && persisted?.screen !== 'search') base.screen = 'splash';
         } else {
@@ -83,7 +88,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       cancelled = true;
     };
-  }, [repository, hydrated, state.signedIn, state.propertyId, propertiesKey]);
+    // Not keyed on the chosen property: switching properties must not refetch the whole list (145 KB) every time.
+  }, [repository, hydrated, state.signedIn, propertiesKey]);
 
   // 4. The chosen property: bundle, content and places. Nothing stale is kept while a new one loads.
   useEffect(() => {

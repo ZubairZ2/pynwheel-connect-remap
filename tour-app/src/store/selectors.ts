@@ -96,7 +96,13 @@ export const currentStop = (state: AppState, bundle: PropertyBundle): TourStopVi
 
 export const tourStopsInOrder = (state: AppState, bundle: PropertyBundle): TourStopView[] => state.tourOrder.map((n) => stopViewOf(bundle, n)).filter((v): v is TourStopView => !!v);
 
-export const selectedNodes = (state: AppState): string[] => Object.entries(state.selected).filter(([, on]) => on).map(([node]) => node);
+/** The chosen stops that exist on the current property: a selection persisted for another property (or a stop removed from the list since) never reaches a route request. */
+export const selectedNodes = (state: AppState, bundle?: PropertyBundle | null): string[] => {
+  const chosen = Object.entries(state.selected).filter(([, on]) => on).map(([node]) => node);
+  if (!bundle) return chosen;
+  const known = new Set(tourStopViews(bundle).map((v) => v.node));
+  return chosen.filter((node) => known.has(node));
+};
 
 export const placeByNode = (places: Place[], node: string | null): Place | null => (node ? (places.find((p) => p.node === node) ?? null) : null);
 
