@@ -1034,4 +1034,28 @@ Rails.application.routes.draw do
 
     end
   end
+
+  # Pynwheel Tour mobile app API (Api::TourApp::V1): the Rails port of the
+  # former FastAPI service `tour-api/` (October 7, 2026), same contract. Its
+  # own prefix because the legacy `/api/v1/properties` (schedule_tours) is
+  # taken; no `.json` suffix (the app calls the plain paths). Bearer tokens
+  # of CMS Super Admins only (TourApi::Auth); nothing here is a legacy route.
+  scope path: 'api/tour/v1', module: 'api/tour_app/v1', as: 'api_tour_v1', defaults: { format: :json } do
+    get  'health', to: 'health#show'
+    post 'auth/login', to: 'auth#login'
+    post 'auth/logout', to: 'auth#logout'
+    get  'auth/me', to: 'auth#me'
+    get  'properties', to: 'properties#index'
+    get  'properties/:property_id', to: 'properties#show'
+    get  'properties/:property_id/stops', to: 'stops#index'
+    get  'properties/:property_id/map', to: 'maps#show'
+    get  'properties/:property_id/map/levels/:level_id', to: 'maps#level', constraints: { level_id: %r{[^/]+} }
+    get  'properties/:property_id/map/levels/:level_id/svg', to: 'maps#svg', constraints: { level_id: %r{[^/]+} }
+    get  'properties/:property_id/graph', to: 'graphs#show'
+    post 'properties/:property_id/route', to: 'routes#route'
+    post 'properties/:property_id/tour-route', to: 'routes#tour_route'
+    post 'properties/:property_id/stops/distances', to: 'routes#distances'
+    match '*unmatched', to: 'errors#not_found', via: :all
+  end
+
 end

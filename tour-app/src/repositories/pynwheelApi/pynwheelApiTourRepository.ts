@@ -9,18 +9,21 @@ import type { ApiDistancesResponse, ApiGraph, ApiLoginResponse, ApiMapResponse, 
 import { parseBundle, parseDistances, parseListing, parseRoute, parseTourRoute } from './parsers';
 
 /**
- * The production provider: the Pynwheel Tour App API (tour-api/, FastAPI)
- * over the real Pynwheel data.
+ * The production provider: the Pynwheel Tour App API, served by the Rails CMS
+ * (`Api::TourApp::V1`, prefix `/api/tour/v1`) over the real Pynwheel data.
  *
- *   POST /api/v1/auth/login, /logout, GET /auth/me
- *   GET  /api/v1/properties, /properties/{id}
- *   GET  /api/v1/properties/{id}/stops | /map | /graph
- *   POST /api/v1/properties/{id}/route | /tour-route | /stops/distances
+ *   POST {API}/auth/login, /logout, GET /auth/me
+ *   GET  {API}/properties, /properties/{id}
+ *   GET  {API}/properties/{id}/stops | /map | /map/levels/{id} | /map/levels/{id}/svg | /graph
+ *   POST {API}/properties/{id}/route | /tour-route | /stops/distances
  *
  * The session (token, user, selected property) is persisted by
  * `services/session.ts`; the graph is cached per property with its ETag.
  * Nothing here ever falls back to demo data.
  */
+
+/** The API's path prefix on the Pynwheel CMS host (Rails `Api::TourApp::V1`, October 2026; the former FastAPI service answered under `/api/v1`). */
+const API = '/api/tour/v1';
 
 const NO_PROPERTY = 'Choose a property first.';
 
@@ -60,7 +63,7 @@ export class PynwheelApiTourRepository implements TourRepository {
 
   // ------------------------------------------------------------------ session
   async login(email: string, password: string): Promise<Session> {
-    const { data } = await this.client.post<ApiLoginResponse>('/api/v1/auth/login', { email: email.trim().toLowerCase(), password }, false);
+    const { data } = await this.client.post<ApiLoginResponse>(`${API}/auth/login`, { email: email.trim().toLowerCase(), password }, false);
     if (!data.access_token || !data.user) throw new ApiError('malformed_response', 'The sign-in answer was incomplete. Please try again.', 200);
     const previous = await loadSession();
     this.sessionChecked = true;
@@ -78,7 +81,7 @@ export class PynwheelApiTourRepository implements TourRepository {
     await clearSession();
     if (token) {
       try {
-        await this.client.request('POST', '/api/v1/auth/logout', undefined, { Authorization: `Bearer ${token}` }, false);
+        await this.client.request('POST', `${API}/auth/logout`, undefined, { Authorization: `Bearer ${token}` }, false);
       } catch {
         /* the token is dropped locally either way; it expires server-side */
       }
@@ -95,7 +98,7 @@ export class PynwheelApiTourRepository implements TourRepository {
     this.session = stored;
     this.sessionChecked = true;
     try {
-      await this.client.get('/api/v1/auth/me');
+      await this.client.get(`${API}/auth/me`);
     } catch (error) {
       if (error instanceof ApiError && (error.isAuth || error.status === 403)) {
         this.session = null;
@@ -122,7 +125,7 @@ export class PynwheelApiTourRepository implements TourRepository {
 
   // ---------------------------------------------------------- property choice
   async getProperties(): Promise<PropertyListing[]> {
-    const { data } = await this.client.get<{ properties: ApiPropertySummary[] }>('/api/v1/properties');
+    const { data } = await this.client.get<{ properties: ApiPropertySummary[] }>(`${API}/properties`);
     const current = this.currentPropertyId();
     this.propertiesCache = (Array.isArray(data.properties) ? data.properties : []).map((p) => parseListing(p, current));
     return this.propertiesCache;
@@ -152,10 +155,10 @@ export class PynwheelApiTourRepository implements TourRepository {
     const id = await this.requireProperty();
     const headers = this.bundleCache?.propertyId === id ? { 'If-None-Match': `"${this.bundleCache.graphVersion}"` } : undefined;
     const [detail, graph, stops, map] = await Promise.all([
-      this.client.get<ApiPropertyDetail>(`/api/v1/properties/${id}`),
-      this.client.get<ApiGraph>(`/api/v1/properties/${id}/graph`, headers),
-      this.client.get<ApiStopsResponse>(`/api/v1/properties/${id}/stops`),
-      this.client.get<ApiMapResponse>(`/api/v1/properties/${id}/map`)
+      this.client.get<ApiPropertyDetail>(`${API}/properties/${id}`),
+      this.client.get<ApiGraph>(`${API}/properties/${id}/graph`, headers),
+      this.client.get<ApiStopsResponse>(`${API}/properties/${id}/stops`),
+      this.client.get<ApiMapResponse>(`${API}/properties/${id}/map`)
     ]);
     if (graph.status === 304 && this.bundleCache?.propertyId === id && stops.data.graph_version === this.bundleCache.graphVersion) {
       return this.bundleCache.bundle;
@@ -163,7 +166,7 @@ export class PynwheelApiTourRepository implements TourRepository {
     const graphData = graph.status === 304 ? null : graph.data;
     if (!graphData) {
       // The server says our graph is current but we have no copy (should not happen): fetch it plainly.
-      const fresh = await this.client.get<ApiGraph>(`/api/v1/properties/${id}/graph`);
+      const fresh = await this.client.get<ApiGraph>(`${API}/properties/${id}/graph`);
       return this.remember(id, parseBundle(detail.data, fresh.data, stops.data, communityPhoto, map.data), fresh.data.version);
     }
     return this.remember(id, parseBundle(detail.data, graphData, stops.data, communityPhoto, map.data), graphData.version);
@@ -210,7 +213,7 @@ export class PynwheelApiTourRepository implements TourRepository {
   async findRoute(from: string, to: string, options: RouteOptions = {}): Promise<RouteResult> {
     const id = await this.requireProperty();
     try {
-      const { data } = await this.client.post<ApiRouteResponse>(`/api/v1/properties/${id}/route`, { from_stop_id: from, to_stop_id: to, from_floor: options.fromFloor ?? null, to_floor: options.toFloor ?? null, step_free: options.stepFree === true, avoid_blockers: options.avoidBlockers !== false });
+      const { data } = await this.client.post<ApiRouteResponse>(`${API}/properties/${id}/route`, { from_stop_id: from, to_stop_id: to, from_floor: options.fromFloor ?? null, to_floor: options.toFloor ?? null, step_free: options.stepFree === true, avoid_blockers: options.avoidBlockers !== false });
       return { ok: true, route: parseRoute(data.route) };
     } catch (error) {
       if (error instanceof ApiError && error.status === 422 && error.code !== 'validation_error' && error.code !== 'tour_disabled') {
@@ -228,7 +231,7 @@ export class PynwheelApiTourRepository implements TourRepository {
       nodes = [...bundle.amenities.map((a) => a.node), ...bundle.units.map((u) => u.node)];
     }
     try {
-      const { data } = await this.client.post<ApiTourRouteResponse>(`/api/v1/properties/${id}/tour-route`, { stop_ids: nodes, step_free: options.stepFree === true, avoid_blockers: options.avoidBlockers !== false });
+      const { data } = await this.client.post<ApiTourRouteResponse>(`${API}/properties/${id}/tour-route`, { stop_ids: nodes, step_free: options.stepFree === true, avoid_blockers: options.avoidBlockers !== false });
       return { ok: true, tour: parseTourRoute(data) };
     } catch (error) {
       if (error instanceof ApiError && error.status === 422 && error.code !== 'validation_error' && error.code !== 'tour_disabled') {
@@ -241,7 +244,7 @@ export class PynwheelApiTourRepository implements TourRepository {
   async getStopDistances(nodes: string[]): Promise<Record<string, StopDistance>> {
     if (!nodes.length) return {};
     const id = await this.requireProperty();
-    const { data } = await this.client.post<ApiDistancesResponse>(`/api/v1/properties/${id}/stops/distances`, { stop_ids: nodes });
+    const { data } = await this.client.post<ApiDistancesResponse>(`${API}/properties/${id}/stops/distances`, { stop_ids: nodes });
     return parseDistances(data);
   }
 
