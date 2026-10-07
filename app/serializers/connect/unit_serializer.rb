@@ -14,6 +14,10 @@ module Connect
       # The grid labels every row with the provider id on Yardi properties.
       label_by_provider_id = community.data_provider.to_s == 'yardi'
       bucket = UploadUrl.bucket_hint(community)
+      # "Show in Stops List" as Connect toggles it (TourStops::Membership): the
+      # units that are a visible stop of the property's main tour. One query.
+      tour = community.community_tour
+      stop_ids = tour ? TourStop.where(tour_id: tour.id, stop_type: 'unit', stop_id: units.map(&:id), display_stop: true).distinct.pluck(:stop_id).to_set : Set.new
 
       units.map do |unit|
         new(
@@ -22,7 +26,8 @@ module Connect
           interiors: interiors[unit.id] || [],
           label_by_provider_id: label_by_provider_id,
           base_url: base_url,
-          bucket: bucket
+          bucket: bucket,
+          in_stops_list: stop_ids.include?(unit.id)
         ).as_json
       end
     end
@@ -42,13 +47,14 @@ module Connect
       }
     end
 
-    def initialize(unit, floorplan:, interiors:, label_by_provider_id:, base_url:, bucket: nil)
+    def initialize(unit, floorplan:, interiors:, label_by_provider_id:, base_url:, bucket: nil, in_stops_list: false)
       @unit = unit
       @floorplan = floorplan
       @interiors = interiors
       @label_by_provider_id = label_by_provider_id
       @base_url = base_url
       @bucket = bucket
+      @in_stops_list = in_stops_list
     end
 
     def as_json(*)
@@ -91,6 +97,9 @@ module Connect
         lock_provider: unit.door&.lock_provider.presence || unit.lock_provider.presence,
         door_id: unit.door&.id,
         tour_order: unit.tour_visiting_order_number,
+        # In the Self-Guided Tour's stop list: a visible stop of the main tour
+        # (the one field of the unit form Connect may persist).
+        in_stops_list: @in_stops_list,
         image: UploadUrl.file(unit, :image, base_url, bucket: bucket),
         secondary_image: UploadUrl.file(unit, :secondary_image, base_url, bucket: UploadUrl.bucket_of(unit, bucket)),
         interior_images: interiors.map { |amenity| FloorplanSerializer.interior(amenity, base_url, bucket) },

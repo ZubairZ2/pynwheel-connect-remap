@@ -163,6 +163,10 @@ Rails.application.routes.draw do
       get :web_cam_test
     end
 
+    # Pynwheel Connect: one-transaction save of one level's wayfinding graph
+    # (PUT /communities/:community_id/wayfinding_graph.json → HallwaysController#save_graph).
+    put :wayfinding_graph, to: 'hallways#save_graph'
+
     resources :map_filters, only: [:update]
     resources :map_urls, only: [:index]
     resources :building_starting_points
@@ -568,6 +572,9 @@ Rails.application.routes.draw do
         post :save_schedule_widget_btn_setting
         get :edit_amenity
         get :test_automate
+        # Pynwheel Connect: Tour Setup save and the Unit / Amenity stop-list toggle.
+        put :save_setup
+        put :stop_list
       end
       member do
         post :ajaxplotstartingpoint
@@ -746,6 +753,11 @@ Rails.application.routes.draw do
           get :generate_locks_accesses
           post :check_lock_access
           delete :start_tour
+          # The new Tour App's wayfinding API (Api::SelfTour::V1::WayfindingController):
+          # the persisted graph, a route between two places, the whole tour's route.
+          get :wayfinding, to: 'wayfinding#show'
+          get 'wayfinding/route', to: 'wayfinding#route'
+          get 'wayfinding/tour_route', to: 'wayfinding#tour_route'
         end
 
         resources :tour_users, only: :update do

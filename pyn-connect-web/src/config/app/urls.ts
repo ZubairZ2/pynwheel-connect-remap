@@ -32,7 +32,20 @@ export const CORE_URLS = {
   wayfinding: {
     graph: (propertyId: number) => `/automate_plotting.json?community_id=${propertyId}`,
     route: (propertyId: number, pathType: 'sorting' | 'actual shortest') =>
-      `/automate_plotting/shortest_path.json?community_id=${propertyId}&path_type=${encodeURIComponent(pathType)}`
+      `/automate_plotting/shortest_path.json?community_id=${propertyId}&path_type=${encodeURIComponent(pathType)}`,
+    /** A route between two places on the persisted graph (`Wayfinding::RouteService`), the same answer the Tour App gets. GET, read-only. */
+    path: (propertyId: number, params: { from: string; to: string; stepFree: boolean; fromFloor?: number | null; toFloor?: number | null }) => {
+      const query = new URLSearchParams({ community_id: String(propertyId), from: params.from, to: params.to, step_free: params.stepFree ? '1' : '0' });
+      if (params.fromFloor != null) query.set('from_floor', String(params.fromFloor));
+      if (params.toFloor != null) query.set('to_floor', String(params.toFloor));
+      return `/automate_plotting/shortest_path.json?${query.toString()}`;
+    },
+    /** One-transaction save of one level's graph (`HallwaysController#save_graph`, Wayfinding::GraphSave). PUT. */
+    saveGraph: (propertyId: number) => `/communities/${propertyId}/wayfinding_graph.json`,
+    /** One-transaction save of the Tour Setup screen (`ToursController#save_setup`, TourSetup::Save). PUT. */
+    saveTourSetup: (propertyId: number) => `/communities/${propertyId}/tours/save_setup.json`,
+    /** The Unit / Amenity "Show in Stops List" toggle (`ToursController#stop_list`, TourStops::Membership). PUT. */
+    stopList: (propertyId: number) => `/communities/${propertyId}/tours/stop_list.json`
   }
 } as const;
 
@@ -45,6 +58,14 @@ export const APP_API = {
   inventoryUnits: (propertyId: number) => `/api/properties/${propertyId}/inventory/units`,
   /** Runs the CMS routing algorithm for a property; GET, read-only. */
   wayfindingRoute: (propertyId: number) => `/api/properties/${propertyId}/wayfinding-route`,
+  /** A route between two places on the saved graph, as the Tour App would get it; GET, read-only. */
+  wayfindingPath: (propertyId: number) => `/api/properties/${propertyId}/wayfinding-path`,
+  /** Saves one level's wayfinding graph (points, paths, bridges, pins, additional stops) in one transaction. PUT. */
+  mapSave: (propertyId: number) => `/api/properties/${propertyId}/map/save`,
+  /** Saves the Tour Setup screen (stops added, removed, hidden, reordered, timed; elevators deleted). PUT. */
+  tourSetupSave: (propertyId: number) => `/api/properties/${propertyId}/tour-setup/save`,
+  /** Turns a unit or amenity on or off in the Self-Guided Tour's stop list. PUT. */
+  stopList: (propertyId: number) => `/api/properties/${propertyId}/stop-list`,
   /**
    * The floor SVG of one of the property's floorplates (or its property map),
    * fetched by this server from where the CMS stores it and handed to the

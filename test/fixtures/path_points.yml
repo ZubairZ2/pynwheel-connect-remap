@@ -1,11 +1,3 @@
-# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
-
-one:
-  x: 1
-  'y': 1
-  floorplate: one
-
-two:
-  x: 1
-  'y': 1
-  floorplate: two
+# Scaffold fixture; keys the schema no longer has were removed on October 4, 2026 so `fixtures :all` loads.
+one: {}
+two: {}

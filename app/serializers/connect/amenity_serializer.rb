@@ -16,6 +16,9 @@ module Connect
       context = {
         galleries: AmenityGallery.where(amenity_id: ids).order(:sort, :id).group_by(&:amenity_id),
         tour_stop_ids: TourStop.where(stop_type: 'amenity', stop_id: ids).distinct.pluck(:stop_id).to_set,
+        # "Show in Stops List" as Connect toggles it (TourStops::Membership): a
+        # visible stop of the property's main tour.
+        main_stop_ids: (tour = community.community_tour) ? TourStop.where(tour_id: tour.id, stop_type: 'amenity', stop_id: ids, display_stop: true).distinct.pluck(:stop_id).to_set : Set.new,
         floorplates: Floorplate.where(id: owner_ids.call('Floorplate')).index_by(&:id),
         floorplans: Floorplan.where(id: owner_ids.call('Floorplan')).pluck(:id, :name).to_h,
         units: Unit.where(id: owner_ids.call('Unit')).pluck(:id, :marketing_name).to_h,
@@ -63,6 +66,9 @@ module Connect
         # default true): a hidden amenity is left out of the self-guided
         # tour's stop list (CommunityTour, Community#filter_tour_stops).
         show_in_stops: amenity.breezway_lock_visible != false,
+        # In the Self-Guided Tour's stop list: a visible stop of the main tour
+        # whose amenity form flag is on - what the Connect toggle persists.
+        in_stops_list: context[:main_stop_ids].include?(amenity.id) && amenity.breezway_lock_visible != false,
         # "Select Lock Provider" on the amenity form: the first door's provider
         # when the amenity has doors, else the amenity's own column.
         lock_provider: lock_provider,

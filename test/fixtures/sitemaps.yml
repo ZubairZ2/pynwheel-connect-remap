@@ -7,3 +7,9 @@ one:
 two:
   image: MyString
   community: two
+
+property_map:
+  image: MyString
+  community: sitemap_property
+  width: 900
+  height: 700

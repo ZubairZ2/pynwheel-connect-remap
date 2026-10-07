@@ -36,7 +36,16 @@ class Floorplate < ApplicationRecord
   has_many :units, dependent: :destroy
   has_many :amenities, as: :amenityable
   has_many :elevators, dependent: :destroy
-  has_many :hallways, as: :parent
+  # Wayfinding (October 2026): the level owns its graph rows. The new tables
+  # are declared first so their rows go before the nodes they reference; the
+  # hallways themselves are now destroyed with the level (they were orphaned
+  # before: see lib/tasks/wayfinding_repair.rake).
+  has_many :hallway_edges, as: :parent, dependent: :delete_all
+  has_many :hallway_attachments, as: :parent, dependent: :delete_all
+  has_many :hallway_suppressions, as: :parent, dependent: :delete_all
+  has_many :hallway_detection_runs, as: :parent, dependent: :delete_all
+  has_many :wayfinding_stops, as: :map, dependent: :destroy
+  has_many :hallways, as: :parent, dependent: :destroy
   has_many :access_points, class_name: 'Door', as: :attached_with, dependent: :destroy
   include LaunchStatusable
 

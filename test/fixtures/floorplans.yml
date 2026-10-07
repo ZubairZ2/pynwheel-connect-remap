@@ -1,5 +1,4 @@
-# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
-
+# Scaffold fixture; keys the schema no longer has were removed on October 4, 2026 so `fixtures :all` loads.
 one:
   property_id: MyString
   provider_floorplan_id: MyString
@@ -13,8 +12,6 @@ one:
   deposit: 1.5
   comment: MyText
   description: MyText
-  file_url: MyString
-
 two:
   property_id: MyString
   provider_floorplan_id: MyString
@@ -28,4 +25,3 @@ two:
   deposit: 1.5
   comment: MyText
   description: MyText
-  file_url: MyString

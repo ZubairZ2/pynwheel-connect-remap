@@ -1,7 +1,7 @@
 import 'server-only';
 
 import type { PropertyMap } from '~/core/models/data/propertyMap.data';
-import { parseWayfindingGraph } from '~/core/repository/parser/wayfinding.parser';
+import { parseWayfindingGraph, parseWayfindingWriteMeta } from '~/core/repository/parser/wayfinding.parser';
 import { loadPropertyInventory } from './propertyInventory.server';
 import { fetchWayfindingGraph } from './api/wayfinding.api';
 
@@ -30,5 +30,5 @@ export const loadPropertyMap = async (cookie: string | null, id: number): Promis
   const parsed = parseWayfindingGraph(graph.body);
   if (!parsed) return { status: 'failed' };
 
-  return { status: 'found', map: { inventory: inventory.inventory, graph: parsed } };
+  return { status: 'found', map: { inventory: inventory.inventory, graph: parsed, write: parseWayfindingWriteMeta(graph.body) } };
 };

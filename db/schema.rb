@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_09_23_140000) do
+ActiveRecord::Schema[7.2].define(version: 2026_10_03_100011) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -767,6 +767,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_23_140000) do
     t.datetime "updated_at", precision: nil, null: false
     t.boolean "name_overrided", default: false
     t.integer "sort", default: 1
+    t.text "note"
     t.index ["attached_with_type", "attached_with_id"], name: "index_doors_on_attached_with_type_and_attached_with_id"
     t.index ["community_id"], name: "index_doors_on_community_id"
   end
@@ -849,6 +850,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_23_140000) do
     t.string "building"
     t.string "lock_provider", default: ""
     t.string "access_code"
+    t.string "kind", default: "elevator", null: false
+    t.boolean "accessible", default: true, null: false
+    t.jsonb "floor_positions", default: {}, null: false
+    t.index ["community_id", "kind"], name: "index_elevators_on_community_id_and_kind"
     t.index ["community_id"], name: "index_elevators_on_community_id"
     t.index ["floorplate_id"], name: "index_elevators_on_floorplate_id"
     t.index ["sitemap_id"], name: "index_elevators_on_sitemap_id"
@@ -1119,6 +1124,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_23_140000) do
     t.string "file"
     t.string "svg_image"
     t.jsonb "svg_metadata", default: {}
+    t.integer "wayfinding_version", default: 0, null: false
+    t.jsonb "svg_to_image_transform"
+    t.decimal "scale_ft_per_px", precision: 10, scale: 6
     t.index ["community_id"], name: "index_floorplates_on_community_id"
   end
 
@@ -1254,6 +1262,90 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_23_140000) do
     t.index ["community_id"], name: "index_guided_opening_hours_on_community_id"
   end
 
+  create_table "hallway_attachments", force: :cascade do |t|
+    t.string "attachable_type", null: false
+    t.integer "attachable_id", null: false
+    t.string "parent_type", null: false
+    t.integer "parent_id", null: false
+    t.integer "community_id"
+    t.integer "hallway_id"
+    t.string "mode", default: "explicit", null: false
+    t.float "anchor_x"
+    t.float "anchor_y"
+    t.string "space", default: "raster", null: false
+    t.integer "created_by_user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["attachable_type", "attachable_id", "parent_type", "parent_id"], name: "index_hallway_attachments_unique_per_level", unique: true
+    t.index ["hallway_id"], name: "index_hallway_attachments_on_hallway_id"
+    t.index ["parent_type", "parent_id"], name: "index_hallway_attachments_on_parent_type_and_parent_id"
+    t.check_constraint "mode::text = 'detached'::text AND hallway_id IS NULL OR mode::text = 'explicit'::text AND hallway_id IS NOT NULL", name: "hallway_attachments_mode_consistency"
+  end
+
+  create_table "hallway_detection_runs", force: :cascade do |t|
+    t.integer "community_id", null: false
+    t.string "parent_type", null: false
+    t.integer "parent_id", null: false
+    t.string "client_request_id", null: false
+    t.string "status", default: "applied", null: false
+    t.string "scope"
+    t.string "detector_source"
+    t.string "space", default: "raster", null: false
+    t.integer "nodes_added", default: 0, null: false
+    t.integer "edges_added", default: 0, null: false
+    t.integer "nodes_skipped", default: 0, null: false
+    t.integer "edges_skipped", default: 0, null: false
+    t.jsonb "result", default: {}, null: false
+    t.integer "triggered_by_user_id"
+    t.datetime "undone_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["client_request_id"], name: "index_hallway_detection_runs_on_client_request_id", unique: true
+    t.index ["parent_type", "parent_id"], name: "index_hallway_detection_runs_on_parent_type_and_parent_id"
+  end
+
+  create_table "hallway_edges", force: :cascade do |t|
+    t.integer "from_hallway_id", null: false
+    t.integer "to_hallway_id", null: false
+    t.string "parent_type", null: false
+    t.integer "parent_id", null: false
+    t.integer "community_id"
+    t.string "kind", default: "manual", null: false
+    t.jsonb "path_points", default: [], null: false
+    t.string "review_status", default: "confirmed", null: false
+    t.boolean "auto_generated", default: false, null: false
+    t.bigint "detection_run_id"
+    t.string "space", default: "raster", null: false
+    t.integer "created_by_user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["detection_run_id"], name: "index_hallway_edges_on_detection_run_id"
+    t.index ["from_hallway_id", "to_hallway_id"], name: "index_hallway_edges_on_from_hallway_id_and_to_hallway_id", unique: true
+    t.index ["parent_type", "parent_id"], name: "index_hallway_edges_on_parent_type_and_parent_id"
+    t.index ["to_hallway_id"], name: "index_hallway_edges_on_to_hallway_id"
+    t.check_constraint "from_hallway_id < to_hallway_id", name: "hallway_edges_canonical_pair"
+  end
+
+  create_table "hallway_suppressions", force: :cascade do |t|
+    t.string "parent_type", null: false
+    t.integer "parent_id", null: false
+    t.integer "community_id"
+    t.string "kind", null: false
+    t.string "space", default: "raster", null: false
+    t.float "x1", null: false
+    t.float "y1", null: false
+    t.float "x2"
+    t.float "y2"
+    t.integer "hallway_a_id"
+    t.integer "hallway_b_id"
+    t.string "removed_source"
+    t.string "removed_kind"
+    t.string "reason", default: "user_delete", null: false
+    t.integer "removed_by_user_id"
+    t.datetime "created_at", null: false
+    t.index ["parent_type", "parent_id", "kind"], name: "idx_on_parent_type_parent_id_kind_4f50b557e9"
+  end
+
   create_table "hallways", id: :serial, force: :cascade do |t|
     t.float "x_plot"
     t.float "y_plot"
@@ -1263,6 +1355,17 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_23_140000) do
     t.datetime "updated_at", precision: nil, null: false
     t.integer "next_points", default: [], array: true
     t.boolean "selected"
+    t.string "source", default: "manual", null: false
+    t.string "review_status", default: "confirmed", null: false
+    t.float "confidence"
+    t.string "space", default: "raster", null: false
+    t.integer "community_id"
+    t.bigint "detection_run_id"
+    t.datetime "confirmed_at"
+    t.integer "created_by_user_id"
+    t.index "parent_type, parent_id, space, ((round(x_plot))::integer), ((round(y_plot))::integer)", name: "index_hallways_natural_key"
+    t.index ["community_id"], name: "index_hallways_on_community_id"
+    t.index ["parent_type", "parent_id", "review_status", "space"], name: "index_hallways_routable_lookup"
     t.index ["parent_type", "parent_id"], name: "index_hallways_on_parent_type_and_parent_id"
   end
 
@@ -2078,6 +2181,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_23_140000) do
     t.string "file"
     t.string "svg_image"
     t.jsonb "svg_metadata", default: {}
+    t.integer "wayfinding_version", default: 0, null: false
+    t.jsonb "svg_to_image_transform"
+    t.decimal "scale_ft_per_px", precision: 10, scale: 6
     t.index ["community_id"], name: "index_sitemaps_on_community_id"
   end
 
@@ -2257,6 +2363,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_23_140000) do
     t.string "name"
     t.integer "sort"
     t.boolean "display_stop", default: true
+    t.integer "duration_minutes"
+    t.index ["stop_type", "stop_id"], name: "index_tour_stops_on_stop_type_and_stop_id"
     t.index ["tour_id"], name: "index_tour_stops_on_tour_id"
   end
 
@@ -2338,6 +2446,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_23_140000) do
     t.integer "tour_user_id"
     t.boolean "skip_tour_editing", default: false
     t.json "copy_sort_hash", default: "{}", null: false
+    t.integer "tour_setup_version", default: 0, null: false
     t.index ["community_id"], name: "index_tours_on_community_id"
     t.index ["tour_user_id"], name: "index_tours_on_tour_user_id"
   end
@@ -2541,6 +2650,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_23_140000) do
     t.boolean "expand_description_in_popup", default: false
     t.index ["community_id"], name: "index_units_on_community_id"
     t.index ["floorplan_id"], name: "index_units_on_floorplan_id"
+    t.index ["floorplate_id"], name: "index_units_on_floorplate_id"
     t.check_constraint "expand_description_in_popup IS NOT NULL", name: "units_expand_description_in_popup_not_null", validate: false
   end
 
@@ -2648,6 +2758,33 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_23_140000) do
     t.string "stop_type"
     t.string "stop_pin"
     t.index ["tour_user_id"], name: "index_visited_stops_on_tour_user_id"
+  end
+
+  create_table "wayfinding_stops", force: :cascade do |t|
+    t.integer "community_id", null: false
+    t.string "map_type", null: false
+    t.integer "map_id", null: false
+    t.string "kind", null: false
+    t.string "name", null: false
+    t.string "building"
+    t.integer "floor"
+    t.float "x_plot"
+    t.float "y_plot"
+    t.string "space", default: "raster", null: false
+    t.boolean "accessible", default: true, null: false
+    t.string "lock_provider", default: "", null: false
+    t.string "access_code"
+    t.text "note"
+    t.float "radius_px"
+    t.integer "hallway_id"
+    t.string "status", default: "active", null: false
+    t.string "source", default: "manual", null: false
+    t.integer "created_by_user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["community_id", "kind"], name: "index_wayfinding_stops_on_community_id_and_kind"
+    t.index ["community_id"], name: "index_wayfinding_stops_on_community_id"
+    t.index ["map_type", "map_id"], name: "index_wayfinding_stops_on_map_type_and_map_id"
   end
 
   create_table "web_hook_logs", id: :serial, force: :cascade do |t|
@@ -2772,6 +2909,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_23_140000) do
   add_foreign_key "group_homepage_images", "group_designs"
   add_foreign_key "group_homepage_videos", "group_designs"
   add_foreign_key "guided_opening_hours", "communities"
+  add_foreign_key "hallway_attachments", "hallways", on_delete: :cascade
+  add_foreign_key "hallway_edges", "hallways", column: "from_hallway_id", on_delete: :cascade
+  add_foreign_key "hallway_edges", "hallways", column: "to_hallway_id", on_delete: :cascade
   add_foreign_key "homepage_icons", "designs"
   add_foreign_key "igloo_guests", "communities"
   add_foreign_key "igloo_guests", "tour_users"
@@ -2829,6 +2969,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_23_140000) do
   add_foreign_key "unit_space_details", "units", on_delete: :cascade
   add_foreign_key "user_stripes", "tour_users"
   add_foreign_key "visited_stops", "tour_users"
+  add_foreign_key "wayfinding_stops", "hallways", on_delete: :nullify
   add_foreign_key "webpages", "communities"
   add_foreign_key "zerv_guests", "communities"
   add_foreign_key "zerv_guests", "tour_users"

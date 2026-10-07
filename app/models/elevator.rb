@@ -26,6 +26,20 @@ class Elevator < ApplicationRecord
   validate :check_floorplate_covering_range
   scope :plotted_elevators, -> { where("x_plot > ? or y_plot > ?", 0, 0) }
 
+  # Wayfinding (October 2026). A row is a vertical connector of one `kind`;
+  # every row before this column is an accessible elevator, which is what the
+  # defaults say. Stairs and ramps are created by Connect only and never get a
+  # `tour_stops` row, so the legacy router and the existing mobile app never
+  # see them as an "Elevator".
+  KINDS = %w[elevator stairs ramp].freeze
+  validates :kind, inclusion: { in: KINDS }
+  scope :lifts, -> { where(kind: 'elevator') }
+  scope :step_free, -> { where(accessible: true) }
+  has_many :hallway_attachments, as: :attachable, dependent: :delete_all
+  before_destroy :destroy_legacy_tour_stops
+  after_commit :bump_wayfinding_version, on: %i[create destroy]
+  after_commit :bump_wayfinding_version, on: :update, if: :wayfinding_fields_changed?
+
   after_save :remove_elevator_banks
   after_save :remove_elevator_banks, if: ->(obj) { obj.lock_provider_changed? }
 
@@ -127,6 +141,46 @@ class Elevator < ApplicationRecord
       min_floor = floors.first
     end
     min_floor
+  end
+
+  def lift?
+    kind == 'elevator'
+  end
+
+  def stairs?
+    kind == 'stairs'
+  end
+
+  def ramp?
+    kind == 'ramp'
+  end
+
+  # The icon's top-left on `floor`: the per-floor override when one is stored,
+  # else the one position every floor shares.
+  def position_on(floor)
+    override = floor_positions.is_a?(Hash) ? floor_positions[floor.to_s] : nil
+    if override.is_a?(Hash) && override['x'].present? && override['y'].present?
+      [override['x'].to_f, override['y'].to_f]
+    else
+      [x_plot, y_plot]
+    end
+  end
+
+  # The legacy `destroy` paths removed only the main tour's stop; copies made
+  # for individual visitors kept pointing at the deleted elevator. Every tour
+  # of the property is cleaned here.
+  def destroy_legacy_tour_stops
+    TourStops::Remove.for_record!(self)
+  end
+
+  def wayfinding_fields_changed?
+    saved_change_to_x_plot? || saved_change_to_y_plot? || saved_change_to_floorplate_covering_range? ||
+      saved_change_to_building? || saved_change_to_floor_positions? || saved_change_to_kind? ||
+      saved_change_to_accessible? || saved_change_to_floorplate_id? || saved_change_to_sitemap_id?
+  end
+
+  def bump_wayfinding_version
+    Wayfinding::VersionBump.community_levels!(community_id)
   end
 
 end

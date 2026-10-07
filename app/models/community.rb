@@ -46,6 +46,9 @@ class Community < ApplicationRecord
   has_many :tutorials, dependent: :destroy
   has_many :elevators, dependent: :destroy
   has_many :doors, dependent: :destroy
+  # Wayfinding (October 2026).
+  has_many :wayfinding_stops, dependent: :destroy
+  has_many :hallway_detection_runs, dependent: :delete_all
   has_many :access_points, -> { where("attached_with_type = 'Floorplate' OR attached_with_type = 'Sitemap'") }, class_name: 'Door', dependent: :destroy
   has_many :other_locks, dependent: :destroy
   has_many :track_sessions, dependent: :destroy

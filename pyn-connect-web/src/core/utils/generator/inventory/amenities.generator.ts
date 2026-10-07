@@ -90,9 +90,9 @@ const hasText = (value: string | null): boolean => !!value && !!value.replace(/<
 const stateMatches = (amenity: InventoryAmenity, state: string): boolean => {
   switch (state) {
     case 'stops':
-      return amenity.showInStops;
+      return amenity.inStopsList;
     case 'hidden':
-      return !amenity.showInStops;
+      return !amenity.inStopsList;
     case 'plotted':
       return amenity.plotted;
     case 'unplotted':
@@ -257,7 +257,7 @@ export const generateAmenityCards = (amenities: InventoryAmenity[], selfTour: bo
     ];
     if (selfTour) {
       pills.push(
-        amenity.showInStops
+        amenity.inStopsList
           ? { label: i18n.t(S.amenities.inStops), variant: 'info' }
           : { label: i18n.t(S.amenities.hiddenFromStops), variant: 'neutral' }
       );

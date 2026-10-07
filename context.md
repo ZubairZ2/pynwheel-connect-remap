@@ -914,3 +914,30 @@ Added with phase 2q (same branch as §25; PYN_CONNECT_PROGRESS.md §30 has the r
 ### Real ids for this phase
 
 1469 City's End (no products; no phone, website or manager), 1062 The Line (no address), 1778 Paperbox Lofts (a named property manager), 2048 Cityway Test, 1107 (no city), plus §25's 1411 / 557 / 1232 / 1618 / 2919. Companies search: "haz" matches no company, "ha" a few — a ready-made race fixture; Properties: "the" has several pages.
+
+## 27. Map & Plotting / Tour Setup persistence and the Tour App API — implementation knowledge (October 4, 2026)
+
+Added with phase 3a (PYN_CONNECT_PROGRESS.md §31; the full account is `map_plotting_backend_implementation.md`).
+
+### Rules worth knowing
+
+- **Adjacency stays in `hallways.next_points`; everything else about an edge is a `hallway_edges` row** (canonical `from < to`, polyline interior points in the stored frame, kind, review, run). A confirmed row is mirrored into the lower id's `next_points`; a pending one never is. The legacy editor dropping an adjacency deletes the row (`Hallway#prune_edge_rows_for_removed_links`); never the other way round.
+- **`Hallway.routable` = confirmed ∧ floor-image frame.** The legacy pages, `ShortestPath` and `make_sure_one_selected_hallway` see only those; a pending or svg-space node exists for Connect alone. Every pre-existing row is routable (the defaults), which is why the snapshot harness shows no change.
+- **Coordinates are stored in the legacy frame:** icon top-left for hallways, elevators, entry points, doors and the tour start (the page subtracts `NODE_ANCHOR_OFFSET` = 8), the point itself for `wayfinding_stops`; a Tour App node says which (`anchor`). Never convert on the server.
+- **Detect never overwrites:** `origin: 'detect'` may only add; a proposal within 6 px (raster) / 0.4 % of the SVG diagonal of a stored node merges onto it; one within tolerance of a `hallway_suppressions` tombstone is skipped; a hand-made point at a tombstone deletes the tombstone. A run is one `request_id`; replaying it returns the stored answer.
+- **Versions are compare-and-swap:** `floorplates / sitemaps.wayfinding_version`, `tours.tour_setup_version`; a save sends `base_version`, the CMS answers 409 `stale_version` with the current graph. `Wayfinding::VersionBump` callbacks move them on legacy writes too; `suspend` wraps the transactional saves. `Wayfinding::GraphVersion` (the Tour App ETag) hashes the counters and every table's count + latest `updated_at`, plus `PAYLOAD_FORMAT` — bump that whenever the Tour App payload changes shape.
+- **"Show in Stops List" is one fact, read and written the same way:** a visible `tour_stops` row of the main tour (units), and for amenities that row plus the form's `breezway_lock_visible` (`TourStops::Membership`). The Inventory pill, the State filter, the dialog switch and the serializer's `in_stops_list` all read it; the legacy flag alone is `show_in_stops`. Bowers Residences (2157) has 7 amenities outside the list (one flag off, six never added as stops).
+- **Plotting is not saved from the UI yet** (October 5, 2026): `PLOTTING_SAVE = false` in `graphDiff.ts` keeps unit / amenity pins out of the payload and out of `clearSavedLevel`, and the Save button renders in Wayfinding mode only, because a saved pin could not be removed from the plan. Flip the constant when unplotting a saved pin works end to end; `Wayfinding::PinWriter` is ready.
+- **PaperTrail rows go on the real record** (`Floorplate` / `Sitemap` + `wayfinding_save|wayfinding_detect|wayfinding_reproject|wayfinding_detect_undo`, `Tour` + `tour_setup_save`, `Unit` / `Amenity` + `stop_list_add|stop_list_remove`); an invented `item_type` makes PaperTrail constantize it.
+- **The Tour App gate is the Self-Guided Tour** (`Connect::ProductState.tour?`), the routes need `.json` (the api namespace constrains the format), and the token check is the legacy one (`TokenAuthorization`); locally `SECRET_KEY_BASE` is unset, so run the verify server with `API_ACCESS=true`.
+- **`test/` was in `.gitignore`** (line 26) until October 5, 2026, when the owner had the rule dropped; a checkout that still hides new test files has an old `.gitignore`. Run them with `RAILS_ENV=test DATABASE_URL=postgres://<user>@localhost/pynwheel_test bundle exec rails test` and the toolchain prefix of §25; `test_helper.rb` filters the `test_*_url/_path` route helpers out of Minitest's runnable methods; integration tests need `host! 'pynwheel-staging.herokuapp.com'` (the session cookie's domain outside development).
+
+### Real ids for this phase
+
+1411 John Pynwheel Demo / floorplate 1867 (74 hallways; Elevator 1 = `elevator:520` on four levels; units 397207 "229" on floor 2 and 397248 "315" on floor 3 route through it; the plate also has a disconnected 5-node piece, so a route to a unit on it is an honest `no_path`); 557 The Ogden (no tour → 422 on every write and on the Tour App API); 2157 Bowers Residences (the amenity pill); 1105 Trestle (two buildings), 2934 Dummy-High-Rise (SVG mode), 1839 Oeuvre (stacked 1–6), 2919 Sofia, 1618 Hazel (31 floorplates), 1412 Jennifer Demo FP; the snapshot harness default set 1411, 2934, 1468, 1839, 2919, 1105, 1234, 1786, 2935.
+
+### Verifying (traps met on Oct 4)
+
+- The verify Rails server's `Rails.cache` is a memory store in development: a serializer change is invisible until the version string moves or the server restarts (`PAYLOAD_FORMAT` exists for that).
+- Legacy `:null_session` actions answer 401 to a script without `X-CSRF-Token`; send the page's meta token.
+- Playwright real-data specs encode the data as it was when they were written: a semantic change (the pill's meaning) or a new control (the Save button) fails them honestly; update the expectation with the real count, not the code.

@@ -34,6 +34,12 @@ class TourStop < ApplicationRecord
 
   before_destroy :remove_associated_stops
 
+  # Wayfinding (October 2026). The stop types every legacy reader branches
+  # on; phase 1 of the Connect tour setup writes no other value.
+  LEGACY_STOP_TYPES = %w[unit amenity elevator building_starting_point].freeze
+  has_paper_trail
+  after_commit :bump_tour_setup_version
+
   scope :visible, -> { where(display_stop: true) }
   scope :visible, -> { where(display_stop: true) }
   scope :plotted_stops, -> { where.not(latitude: [0, nil]).or(where.not(longitude: [0, nil])).or(where.not(stop_type: ["unit", "amenity"])) }
@@ -244,6 +250,12 @@ class TourStop < ApplicationRecord
                    else 'th'
                    end
                  end
+  end
+
+  # Every change to the tour's stop list (from either editor) moves the tour's
+  # version, which the Connect Tour Setup save compares-and-swaps on.
+  def bump_tour_setup_version
+    Wayfinding::VersionBump.tour!(tour_id)
   end
 
 end

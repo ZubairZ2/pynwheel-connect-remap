@@ -68,6 +68,9 @@ class Amenity < ApplicationRecord
   after_commit :populate_image_urls, on: [:create,:update]
   after_update :crop_amenity_image, if: ->(obj) { obj.image_changed? }
   after_update :remove_doors_plotting, if: Proc.new { x_plot == 0 and y_plot == 0 }
+  # Wayfinding (October 2026): see Unit.
+  has_many :hallway_attachments, as: :attachable, dependent: :delete_all
+  after_commit :bump_wayfinding_version, on: :update, if: :plotting_fields_changed?
   after_update :sort_associated_unit_amenities, if: Proc.new { amenityable_id.present? && amenityable_type == "Floorplan" }
   before_destroy :destroy_associated_stops
 
@@ -179,6 +182,19 @@ class Amenity < ApplicationRecord
       res = TourStop.where(stop_id: self.id, stop_type: "amenity").destroy_all
       VisitedStop.where(tour_stop_id: res.pluck(:id)).destroy_all
     rescue => ex
+    end
+  end
+
+  def plotting_fields_changed?
+    saved_change_to_x_plot? || saved_change_to_y_plot? || saved_change_to_amenityable_id? || saved_change_to_amenityable_type? ||
+      saved_change_to_pointer_data? || saved_change_to_floor?
+  end
+
+  def bump_wayfinding_version
+    if %w[Floorplate Sitemap].include?(amenityable_type) && amenityable_id.present?
+      Wayfinding::VersionBump.level!(amenityable_type, amenityable_id)
+    else
+      Wayfinding::VersionBump.community_levels!(community_id)
     end
   end
 

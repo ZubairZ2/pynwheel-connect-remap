@@ -85,35 +85,13 @@ class ApplicationController < ActionController::Base
     return if params[:controller] == "tour_users" &&(params[:action]== "checkpoint_verification" || params[:action]== "show")
     return unless params[:community_id].present?
 
-    community_id = params[:community_id].to_i
-    assigned_communities_ids = current_user.communities.ids # all assinged communities
-
-    if current_user.is_dwelo_admin?
-      dwelo_communities_ids = Community.where(creator_id: User.where(role: "Dwelo admin").ids).ids # all communities created by any dwelo admin
-      dwelo_companies_communities = Community.joins(:company).where(companies: {creator_id: User.where(role: "Dwelo admin").ids}).ids # all communities under dwelo_companies (either created by dwelo_admin or super_admin)
-      ids = (assigned_communities_ids + dwelo_communities_ids + dwelo_companies_communities).uniq
-      communities = Community.where(id: ids)
-
-      if communities.ids.include?(community_id)
-        return
-      else
-        redirect_to root_path and return
-      end
-    end
-
-    if current_user.is_company_admin?
-      if current_user.company.communities.ids.include?(community_id) || assigned_communities_ids.include?(community_id)
-        return
-      else
-        redirect_to root_path and return
-      end
-    end
-
-    unless current_user.is_super_admin?
-      unless assigned_communities_ids.include?(community_id)
-        redirect_to root_path
-      end
-    end
+    # The rule itself lives in User#can_access_community? (October 2026) so
+    # the Connect write endpoints share it; the branches and their outcome
+    # are the ones this method always had: a super admin passes, a Dwelo
+    # admin passes for assigned, Dwelo-created and Dwelo-company properties,
+    # a company admin for the company's and assigned ones, everyone else for
+    # the assigned ones; anything else is sent home.
+    redirect_to root_path unless current_user.can_access_community?(params[:community_id])
   end
 
   def generate_remotelock_token
@@ -167,6 +145,10 @@ class ApplicationController < ActionController::Base
   end
 
   def make_sure_one_selected_hallway(hallways)
+    # The legacy pages see routable nodes only (confirmed, floor-image frame);
+    # a node still pending review or detected on the floor SVG stays out of
+    # the editor until it is confirmed. A no-op for every pre-existing row.
+    hallways = hallways.routable if hallways.respond_to?(:routable)
     if hallways.present? && !hallways.where(selected: true).any?
       hallway = hallways.last
       hallway.selected = true

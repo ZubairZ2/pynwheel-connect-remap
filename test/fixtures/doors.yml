@@ -1,0 +1,7 @@
+unit_door:
+  community: tour_property
+  attached_with: plotted_unit (Unit)
+  name: 101 (door 1)
+  x_plot: 380
+  y_plot: 190
+  sort: 1

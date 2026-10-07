@@ -89,10 +89,13 @@ test.describe('Amenities (real data)', () => {
     await expect(elevator.locator('.bo-meta__item').filter({ hasText: 'Gallery' })).toContainText('Empty');
     await expect(elevator.locator('.bo-inv-chip--on')).toHaveCount(2); // Description, Directional Text
 
-    // The one amenity hidden from the stop list.
+    // Hidden from the Self-Guided Tour's stop list (no visible stop of the main tour, or the
+    // amenity form's flag off): the flag-off Fitness Center and the six never added as stops.
     const hidden = cards(page).filter({ hasText: 'Hidden from Stops' });
-    await expect(hidden).toHaveCount(1);
-    await expect(hidden.first()).toContainText('Fitness Center');
+    await expect(hidden).toHaveCount(7);
+    await expect(hidden.filter({ hasText: 'Fitness Center' }).first()).toBeVisible();
+    await expect(hidden.filter({ hasText: 'Leasing Area' })).toHaveCount(1);
+    await expect(hidden.filter({ hasText: 'Sky Lounge' })).toHaveCount(0);
 
     // Search over name, type, building and floor.
     const search = page.getByRole('searchbox', { name: 'Search name, type or location' });
@@ -133,7 +136,7 @@ test.describe('Amenities (real data)', () => {
     await clearFilter(page, 'Lock');
 
     await pick(page, 'State', 'Hidden from Stops List');
-    await expect(showing(page)).toHaveText('Showing 1 of 19');
+    await expect(showing(page)).toHaveText('Showing 7 of 19');
     await clearFilter(page, 'State');
     await pick(page, 'State', 'Plotted');
     await expect(showing(page)).toHaveText('Showing 13 of 19');

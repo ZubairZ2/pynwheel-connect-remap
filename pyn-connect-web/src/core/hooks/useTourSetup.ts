@@ -1,7 +1,9 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { APP_API, APP_ROUTES } from '~/config/app/urls';
 import { i18n } from '~/resources/i18n';
 import type { PropertyMap } from '~/core/models/data/propertyMap.data';
 import { demoActions } from '~/core/store/demo/demo.slice';
@@ -11,6 +13,8 @@ import { generateMapLevels } from '~/core/utils/generator/map/mapLevels.generato
 import { parsePinKey } from '~/core/utils/generator/map/mapState';
 import {
   T,
+  buildTourSetupPayload,
+  tourSetupUnsavedCount,
   generateElevatorCards,
   generateStopCards,
   generateTourSummary,
@@ -38,6 +42,15 @@ export const useTourSetup = (map: PropertyMap) => {
   const levels = useMemo(() => generateMapLevels(map), [map]);
   const graphs = useMemo(() => tourGraphs(map, levels), [map, levels]);
   const [state, setState] = useState<TourLocalState>(() => initialTourState(map));
+  const router = useRouter();
+  const [saving, setSaving] = useState(false);
+  // After a save the page re-reads the tour; the local state restarts from it once it arrives.
+  const resetOnNextMap = useRef(false);
+  useEffect(() => {
+    if (!resetOnNextMap.current) return;
+    resetOnNextMap.current = false;
+    setState(initialTourState(map));
+  }, [map]);
 
   const toast = useCallback((message: string) => dispatch(demoActions.showToast(message)), [dispatch]);
   const patch = useCallback((update: (current: TourLocalState) => Partial<TourLocalState>) => {
@@ -284,6 +297,70 @@ export const useTourSetup = (map: PropertyMap) => {
     [buildings, patch]
   );
 
+  /* ── save ─────────────────────────────────────────────────────────── */
+
+  const canSave = map.write.canEditMap && map.write.writesEnabled;
+  const unsaved = useMemo(() => tourSetupUnsavedCount(map, state), [map, state]);
+
+  /**
+   * Saves the tour setup: the stops added, removed, hidden or shown, their
+   * order and dwell times, and the elevators deleted, as `TourSetup::Save`
+   * applies them in one transaction. Talking points, gating and photos stay
+   * on the page (no column holds them yet, gaps T2 / T4).
+   */
+  const save = useCallback(async () => {
+    if (saving) return;
+    if (!canSave) {
+      toast(i18n.t(map.write.writesEnabled ? T.save.notAllowed : T.save.disabled));
+      return;
+    }
+    const payload = buildTourSetupPayload(map, state);
+    if (!tourSetupUnsavedCount(map, state)) {
+      toast(i18n.t(T.save.nothing));
+      return;
+    }
+    setSaving(true);
+    try {
+      const response = await fetch(APP_API.tourSetupSave(map.inventory.property.id), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(payload),
+        cache: 'no-store'
+      });
+      const body = (await response.json()) as { ok: true } | { ok: false; error: string; message: string | null };
+      if (!body.ok) {
+        switch (body.error) {
+          case 'stale':
+            toast(i18n.t(T.save.stale));
+            break;
+          case 'invalid':
+            toast(t(T.save.invalid, { message: body.message ?? '' }));
+            break;
+          case 'forbidden':
+            toast(i18n.t(T.save.forbidden));
+            break;
+          case 'disabled':
+            toast(i18n.t(T.save.disabled));
+            break;
+          case 'unauthorized':
+            toast(i18n.t(T.save.unauthorized));
+            window.setTimeout(() => window.location.assign(APP_ROUTES.signIn), 1200);
+            break;
+          default:
+            toast(i18n.t(T.save.failed));
+        }
+        return;
+      }
+      resetOnNextMap.current = true;
+      toast(i18n.t(T.save.saved));
+      router.refresh();
+    } catch {
+      toast(i18n.t(T.save.failed));
+    } finally {
+      setSaving(false);
+    }
+  }, [canSave, map, router, saving, state, toast]);
+
   /* ── routing ──────────────────────────────────────────────────────── */
 
   const computeRoute = useCallback(() => {
@@ -325,7 +402,11 @@ export const useTourSetup = (map: PropertyMap) => {
     buildings,
     hasStops: stops.length > 0,
     dialogProblem,
+    unsaved,
+    canSave,
+    saving,
     actions: {
+      save,
       setTab: (tab: TourTab) => patch(() => ({ tab })),
       moveStop,
       setTalkingPoint,

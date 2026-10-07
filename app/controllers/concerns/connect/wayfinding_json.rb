@@ -60,10 +60,30 @@ module Connect
                 name: @community.name,
                 company_id: @community.company_id,
                 company_name: @community.company&.name
-              }
+              },
+              # The compare-and-swap versions the Connect saves send back, the
+              # token they carry, and whether this user and property may save.
+              versions: Connect::WayfindingSerializer.versions(@community),
+              csrf_token: form_authenticity_token,
+              writes_enabled: Connect::Flags.writes_enabled?(@community),
+              can_edit_map: current_user&.can_edit_map?(@community) == true
             }
           )
         ).as_json
+      end
+
+      # GET /automate_plotting/shortest_path.json?community_id=&from=&to=&step_free=&from_floor=&to_floor=
+      def render_connect_route
+        step_free = %w[1 true yes].include?(params[:step_free].to_s.downcase)
+        avoid_blockers = !%w[0 false no].include?(params[:avoid_blockers].to_s.downcase)
+        service = Wayfinding::RouteService.new(@community, from: params[:from].to_s, to: params[:to].to_s, step_free: step_free, avoid_blockers: avoid_blockers,
+                                               from_floor: params[:from_floor].presence, to_floor: params[:to_floor].presence)
+        result = service.call
+        version = Wayfinding::GraphVersion.for(@community)
+        render json: Connect::ResponseEnvelope.new(
+          data: Wayfinding::RouteSerializer.new(result, version: version, step_free: step_free, avoid_blockers: avoid_blockers).as_json,
+          meta: Connect::ResponseEnvelope.listing_meta(current_user, 1, extra: { property: { id: @community.id, name: @community.name } })
+        ).as_json, status: result.ok ? :ok : :unprocessable_entity
       end
   end
 end

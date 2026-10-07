@@ -1,12 +1,20 @@
 import { ModelDataConverter } from '~/core/utils/converter/modelDataConverter';
 import type {
   BedroomMarkerColor,
+  HallwayReview,
+  HallwaySource,
+  HallwaySpace,
   MapDoor,
   MapElevator,
   MapHallway,
+  MapHallwayAttachment,
+  MapHallwayEdge,
+  MapLevelMeta,
   MapStartingPoint,
   MapTour,
   MapTourStop,
+  MapWayfindingStop,
+  MapWriteMeta,
   OcrBox,
   RouteLeg,
   RoutePoint,
@@ -45,6 +53,25 @@ const list = (value: unknown): Source[] => (Array.isArray(value) ? (value as Sou
 
 const numbers = (value: unknown): number[] =>
   (Array.isArray(value) ? value : []).map(Number).filter((n) => Number.isFinite(n));
+
+const space = (value: unknown): HallwaySpace => (value === 'svg' ? 'svg' : 'raster');
+const review = (value: unknown): HallwayReview => (value === 'pending' ? 'pending' : 'confirmed');
+const sourceOf = (value: unknown): HallwaySource => (value === 'vector' || value === 'inferred' ? value : 'manual');
+const pairs = (value: unknown): [number, number][] =>
+  (Array.isArray(value) ? value : [])
+    .map((pair) => (Array.isArray(pair) && pair.length === 2 ? [num(pair[0]), num(pair[1])] : null))
+    .filter((pair): pair is [number, number] => !!pair && pair[0] != null && pair[1] != null);
+const parentType = (value: unknown): 'Floorplate' | 'Sitemap' => (value === 'Sitemap' ? 'Sitemap' : 'Floorplate');
+
+/** The write meta of `automate_plotting.json`: versions, the token, and whether saving is allowed here. */
+export const parseWayfindingWriteMeta = (payload: unknown): MapWriteMeta => {
+  const meta = camel((payload as { meta?: unknown } | null)?.meta);
+  const versions: Record<string, number | null> = {};
+  Object.entries((meta.versions ?? {}) as Record<string, unknown>).forEach(([key, value]) => {
+    versions[key] = num(value);
+  });
+  return { versions, csrfToken: text(meta.csrfToken), writesEnabled: flag(meta.writesEnabled), canEditMap: flag(meta.canEditMap) };
+};
 
 const stopState = (value: unknown): StopState | null => {
   const source = (value ?? null) as Source | null;
@@ -104,7 +131,12 @@ export const parseWayfindingGraph = (payload: unknown): WayfindingGraph | null =
         nextPoints: numbers(row.nextPoints),
         selected: flag(row.selected),
         parentType: row.parentType === 'Sitemap' ? 'Sitemap' : 'Floorplate',
-        parentId: count(row.parentId)
+        parentId: count(row.parentId),
+        source: sourceOf(row.source),
+        reviewStatus: review(row.reviewStatus),
+        confidence: num(row.confidence),
+        space: space(row.space),
+        detectionRunId: num(row.detectionRunId)
       })
     ),
     elevators: list(source.elevators).map(
@@ -122,6 +154,16 @@ export const parseWayfindingGraph = (payload: unknown): WayfindingGraph | null =
         directionalText: text(row.directionalText),
         duplicateOf: num(row.duplicateOf),
         lockProvider: text(row.lockProvider),
+        kind: row.kind === 'stairs' || row.kind === 'ramp' ? row.kind : 'elevator',
+        accessible: row.accessible !== false,
+        floorPositions: Object.fromEntries(
+          Object.entries((row.floorPositions ?? {}) as Record<string, unknown>).flatMap(([floor, at]) => {
+            const point = (at ?? null) as Record<string, unknown> | null;
+            const x = num(point?.x);
+            const y = num(point?.y);
+            return x != null && y != null ? [[floor, { x, y }]] : [];
+          })
+        ),
         image: text(row.image),
         gallery: list(row.gallery).map((photo) => ({ id: count(photo.id), name: text(photo.name), url: text(photo.url) })),
         banks: list(row.banks).map((bank) => ({
@@ -161,7 +203,8 @@ export const parseWayfindingGraph = (payload: unknown): WayfindingGraph | null =
               .map((building) => text(building))
               .filter((building): building is string => !!building),
             dottedLineColor: text(tour.dottedLineColor),
-            enableAutoZoom: flag(tour.enableAutoZoom)
+            enableAutoZoom: flag(tour.enableAutoZoom),
+            tourSetupVersion: count(tour.tourSetupVersion)
           } satisfies MapTour)
         : null,
     tourStops: list(source.tourStops).map(
@@ -173,7 +216,8 @@ export const parseWayfindingGraph = (payload: unknown): WayfindingGraph | null =
         sort: num(row.sort),
         displayStop: row.displayStop !== false,
         latitude: num(row.latitude),
-        longitude: num(row.longitude)
+        longitude: num(row.longitude),
+        durationMinutes: num(row.durationMinutes)
       })
     ),
     doors: list(source.doors).map(
@@ -186,7 +230,8 @@ export const parseWayfindingGraph = (payload: unknown): WayfindingGraph | null =
         attachedWithType: text(row.attachedWithType) ?? '',
         attachedWithId: count(row.attachedWithId),
         sort: num(row.sort),
-        lockProvider: text(row.lockProvider)
+        lockProvider: text(row.lockProvider),
+        note: text(row.note)
       })
     ),
     bedroomMarkerColors: list(source.bedroomMarkerColors).map(
@@ -198,7 +243,67 @@ export const parseWayfindingGraph = (payload: unknown): WayfindingGraph | null =
         modelUnitsOpacity: num(row.modelUnitsOpacity)
       })
     ),
-    ocr
+    ocr,
+    hallwayEdges: list(source.hallwayEdges).map(
+      (row): MapHallwayEdge => ({
+        id: count(row.id),
+        from: count(row.from),
+        to: count(row.to),
+        parentType: parentType(row.parentType),
+        parentId: count(row.parentId),
+        kind: text(row.kind) ?? 'manual',
+        points: pairs(row.points),
+        reviewStatus: review(row.reviewStatus),
+        autoGenerated: flag(row.autoGenerated),
+        space: space(row.space)
+      })
+    ),
+    hallwayAttachments: list(source.hallwayAttachments).map(
+      (row): MapHallwayAttachment => ({
+        id: count(row.id),
+        attachableType: text(row.attachableType) ?? '',
+        attachableId: count(row.attachableId),
+        parentType: parentType(row.parentType),
+        parentId: count(row.parentId),
+        hallwayId: num(row.hallwayId),
+        mode: row.mode === 'detached' ? 'detached' : 'explicit',
+        anchorX: num(row.anchorX),
+        anchorY: num(row.anchorY),
+        space: space(row.space)
+      })
+    ),
+    wayfindingStops: list(source.wayfindingStops).map(
+      (row): MapWayfindingStop => ({
+        id: count(row.id),
+        kind: text(row.kind) ?? 'waypoint',
+        name: text(row.name) ?? '',
+        mapType: parentType(row.mapType),
+        mapId: count(row.mapId),
+        building: text(row.building),
+        floor: num(row.floor),
+        xPlot: num(row.xPlot),
+        yPlot: num(row.yPlot),
+        space: space(row.space),
+        accessible: row.accessible !== false,
+        lockProvider: text(row.lockProvider),
+        note: text(row.note),
+        radiusPx: num(row.radiusPx),
+        hallwayId: num(row.hallwayId),
+        status: text(row.status) ?? 'active',
+        source: text(row.source) ?? 'manual'
+      })
+    ),
+    levelsMeta: list(source.levels).map(
+      (row): MapLevelMeta => ({
+        kind: row.kind === 'sitemap' ? 'sitemap' : 'floorplate',
+        id: count(row.id),
+        wayfindingVersion: count(row.wayfindingVersion),
+        svgToImageTransform: row.svgToImageTransform && typeof row.svgToImageTransform === 'object' ? (row.svgToImageTransform as Record<string, unknown>) : null,
+        scaleFtPerPx: num(row.scaleFtPerPx),
+        wayfindingSpace: space(row.wayfindingSpace)
+      })
+    ),
+    suppressions: Object.fromEntries(Object.entries((source.suppressions ?? {}) as Record<string, unknown>).map(([key, value]) => [key, count(value)]))
   };
 };
 

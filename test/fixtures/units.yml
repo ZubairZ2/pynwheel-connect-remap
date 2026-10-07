@@ -1,27 +1,58 @@
-# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
-
+# Scaffold fixture; keys the schema no longer has were removed on October 4, 2026 so `fixtures :all` loads.
 one:
   property_id: MyString
   provider_unit_id: MyString
-  name: MyString
-  number: 1
-  floor_plan_id: 1
-  avg_rent: 1.5
-  min_rent: 1.5
-  max_rent: 1
-  availabilty: MyString
-  availabilty_date: 2017-08-21
   building: MyString
-
 two:
   property_id: MyString
   provider_unit_id: MyString
-  name: MyString
-  number: 1
-  floor_plan_id: 1
-  avg_rent: 1.5
-  min_rent: 1.5
-  max_rent: 1
-  availabilty: MyString
-  availabilty_date: 2017-08-21
   building: MyString
+
+# Wayfinding (October 2026)
+plotted_unit:
+  community: tour_property
+  floorplate: plate_a
+  marketing_name: "101"
+  provider_unit_id: u101
+  x_plot: 400
+  y_plot: 200
+  floor: 1
+  building: A
+  visible: true
+  available: true
+  modal_unit: false
+
+plotted_unit_floor3:
+  community: tour_property
+  floorplate: plate_a
+  marketing_name: "301"
+  provider_unit_id: u301
+  x_plot: 450
+  y_plot: 250
+  floor: 3
+  building: A
+  visible: true
+  available: true
+  modal_unit: false
+
+unplotted_unit:
+  community: tour_property
+  marketing_name: "102"
+  provider_unit_id: u102
+  x_plot: 0
+  y_plot: 0
+  floor: 2
+  building: A
+  visible: true
+  available: true
+  modal_unit: false
+
+no_tour_unit:
+  community: no_tour_property
+  floorplate: no_tour_plate
+  marketing_name: "NT1"
+  provider_unit_id: nt1
+  x_plot: 100
+  y_plot: 100
+  floor: 1
+  visible: true

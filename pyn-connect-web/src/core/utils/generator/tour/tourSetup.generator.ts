@@ -99,7 +99,7 @@ export const initialTourState = (map: PropertyMap): TourLocalState => ({
       sort: stop.sort,
       visible: stop.displayStop,
       talkingPoint: storedTalkingPoint(map, stop.stopType as StopKind, stop.stopId),
-      duration: '',
+      duration: stop.durationMinutes != null ? String(stop.durationMinutes) : '',
       removed: false,
       local: false
     }))
@@ -512,3 +512,72 @@ export const tourStartPointRows = (map: PropertyMap, levels: MapLevel[], graphs:
   generateStartPointRows(map, levels, graphs, initialLocalMapState(levels[0]?.id ?? '', null, 'raster'));
 
 export { generateMapLevels };
+
+/* ── saving ───────────────────────────────────────────────────────────── */
+
+/** The payload `TourSetup::Save` applies: what changed on the page against the stored tour, nothing more. */
+export interface TourSetupSavePayload {
+  base_version: number;
+  stops: {
+    add: { temp_key: string; stop_type: StopKind; stop_id: number; visible: boolean; duration_minutes: number | null }[];
+    remove: number[];
+    visibility: { id: number; visible: boolean }[];
+    order: (number | string)[];
+    duration: { id: number; duration_minutes: number | null }[];
+  };
+  elevators: { delete: number[] };
+}
+
+const storedId = (key: string): number | null => (key.startsWith('stop:') ? Number(key.slice(5)) : null);
+
+const minutesOf = (value: string): number | null => (value.trim() === '' ? null : Number(value.trim()));
+
+export const buildTourSetupPayload = (map: PropertyMap, state: TourLocalState): TourSetupSavePayload => {
+  const stored = new Map(map.graph.tourStops.map((stop) => [stop.id, stop]));
+  const shown = state.stops.filter((stop) => !stop.removed);
+  const payload: TourSetupSavePayload = {
+    base_version: map.graph.tour?.tourSetupVersion ?? 0,
+    stops: { add: [], remove: [], visibility: [], order: [], duration: [] },
+    elevators: { delete: [...state.removedElevators] }
+  };
+  state.stops.forEach((stop) => {
+    const id = storedId(stop.key);
+    if (stop.local) {
+      if (!stop.removed && (stop.kind === 'unit' || stop.kind === 'amenity')) {
+        payload.stops.add.push({ temp_key: stop.key, stop_type: stop.kind, stop_id: stop.recordId, visible: stop.visible, duration_minutes: minutesOf(stop.duration) });
+      }
+      return;
+    }
+    if (id == null) return;
+    const before = stored.get(id);
+    if (!before) return;
+    if (stop.removed) {
+      payload.stops.remove.push(id);
+      return;
+    }
+    if (stop.visible !== before.displayStop) payload.stops.visibility.push({ id, visible: stop.visible });
+    if (minutesOf(stop.duration) !== before.durationMinutes) payload.stops.duration.push({ id, duration_minutes: minutesOf(stop.duration) });
+  });
+  // The order is sent when it differs from the stored one, or when a new stop has to be placed in it.
+  const storedOrder = [...map.graph.tourStops]
+    .sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0) || a.id - b.id)
+    .map((stop) => stop.id)
+    .filter((id) => !payload.stops.remove.includes(id));
+  const pageOrder = shown.map((stop) => (stop.local ? stop.key : storedId(stop.key))).filter((row): row is number | string => row != null);
+  const same = pageOrder.length === storedOrder.length && pageOrder.every((row, index) => row === storedOrder[index]);
+  if (!same || payload.stops.add.length) payload.stops.order = pageOrder;
+  return payload;
+};
+
+/** How many changes the Save button would send. */
+export const tourSetupUnsavedCount = (map: PropertyMap, state: TourLocalState): number => {
+  const payload = buildTourSetupPayload(map, state);
+  return (
+    payload.stops.add.length +
+    payload.stops.remove.length +
+    payload.stops.visibility.length +
+    payload.stops.duration.length +
+    (payload.stops.order.length && !payload.stops.add.length ? 1 : 0) +
+    payload.elevators.delete.length
+  );
+};

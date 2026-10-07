@@ -51,7 +51,12 @@ const corridor = (firstId: number, parentId: number, xs: number[]): MapHallway[]
     nextPoints: index < xs.length - 1 ? [firstId + index + 1] : [],
     selected: false,
     parentType: 'Floorplate',
-    parentId
+    parentId,
+    source: 'manual',
+    reviewStatus: 'confirmed',
+    confidence: null,
+    space: 'raster',
+    detectionRunId: null
   }));
 
 const elevator = (over: Partial<MapElevator>): MapElevator => ({
@@ -68,6 +73,9 @@ const elevator = (over: Partial<MapElevator>): MapElevator => ({
   directionalText: null,
   duplicateOf: null,
   lockProvider: null,
+  kind: 'elevator',
+  accessible: true,
+  floorPositions: {},
   image: null,
   gallery: [],
   banks: [],
@@ -126,9 +134,14 @@ const buildMap = (overrides: { elevators?: MapElevator[]; selfTour?: boolean } =
     tourStops: [],
     doors: [],
     bedroomMarkerColors: [],
-    ocr: {}
+    ocr: {},
+    hallwayEdges: [],
+    hallwayAttachments: [],
+    wayfindingStops: [],
+    levelsMeta: [],
+    suppressions: {}
   } as unknown as WayfindingGraph;
-  return { inventory, graph };
+  return { inventory, graph, write: { versions: {}, csrfToken: null, writesEnabled: true, canEditMap: true } };
 };
 
 const setup = (map: PropertyMap, patch: Partial<LocalMapState> = {}) => {

@@ -1,0 +1,42 @@
+# Roles of User::ROLES. Passwords are never used: integration tests sign in
+# with Devise::Test::IntegrationHelpers.
+super_admin:
+  email: super@example.test
+  encrypted_password: <%= Devise::Encryptor.digest(User, 'password') %>
+  role: Super admin
+  first_name: Super
+  last_name: Admin
+
+other_company_admin:
+  email: other-admin@example.test
+  encrypted_password: <%= Devise::Encryptor.digest(User, 'password') %>
+  role: Company admin
+  company: two
+  first_name: Other
+  last_name: Admin
+
+community_admin:
+  email: community-admin@example.test
+  encrypted_password: <%= Devise::Encryptor.digest(User, 'password') %>
+  role: Community admin
+  company: one
+  first_name: Community
+  last_name: Admin
+
+community_manager:
+  email: community-manager@example.test
+  encrypted_password: <%= Devise::Encryptor.digest(User, 'password') %>
+  role: Community manager
+  company: one
+
+community_assistant:
+  email: assistant@example.test
+  encrypted_password: <%= Devise::Encryptor.digest(User, 'password') %>
+  role: Community assistant
+  company: one
+
+unassigned_admin:
+  email: unassigned@example.test
+  encrypted_password: <%= Devise::Encryptor.digest(User, 'password') %>
+  role: Community admin
+  company: one

@@ -11,3 +11,15 @@ two:
   amenty_type: MyString
   description: MyText
   unit_id: 1
+
+# Wayfinding (October 2026)
+gym:
+  community: tour_property
+  name: Gym
+  amenityable: plate_a (Floorplate)
+  x_plot: 200
+  y_plot: 400
+  floor: 1
+  building: A
+  breezway_lock_visible: true
+  description: Open 24 hours

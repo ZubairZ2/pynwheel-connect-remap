@@ -1,11 +1,5 @@
-# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
-
+# Scaffold fixture; keys the schema no longer has were removed on October 4, 2026 so `fixtures :all` loads.
 one:
   name: MyString
-  community_path_id: 1
-  community_path_type: MyString
-
 two:
   name: MyString
-  community_path_id: 1
-  community_path_type: MyString

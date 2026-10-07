@@ -81,6 +81,16 @@ const TourSetup = ({ map }: { map: PropertyMap }) => {
             </svg>
             {i18n.t(T.header.addStop)}
           </button>
+          <button
+            type="button"
+            className="bo-inv__add"
+            onClick={() => void actions.save()}
+            disabled={controller.saving || !controller.unsaved}
+            title={controller.canSave ? undefined : i18n.t(map.write.writesEnabled ? T.save.notAllowed : T.save.disabled)}
+            data-testid="tour-save"
+          >
+            {controller.saving ? i18n.t(T.save.saving) : controller.unsaved ? t(T.save.buttonCount, { count: controller.unsaved }) : i18n.t(T.save.button)}
+          </button>
           <button type="button" className="bo-inv__add bo-tour__publish" onClick={actions.openPublish}>
             <Icon name="upload" />
             {i18n.t(T.header.publish)}

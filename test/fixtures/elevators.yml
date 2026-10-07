@@ -1,0 +1,22 @@
+lift:
+  name: Elevator 1
+  description: Elevator 1
+  community: tour_property
+  floorplate: plate_a
+  x_plot: 300
+  y_plot: 90
+  floorplate_covering_range: "1-5"
+  building: A
+  kind: elevator
+  accessible: true
+
+north_stairs:
+  name: North stairs
+  community: tour_property
+  floorplate: plate_a
+  x_plot: 500
+  y_plot: 290
+  floorplate_covering_range: "1-3"
+  building: A
+  kind: stairs
+  accessible: false
