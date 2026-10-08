@@ -586,6 +586,7 @@
     unitsByPointerIdByMap: {},     // { [mapId]: { [pointerId]: unit } }
     svgCache: {},                  // { [mapId]: SVGElement }
     _svgLoadingPromises: {},       // { [mapId]: Promise } — deduplicates in-flight fetches
+    _missingMaps: new Set(),       // mapIds whose SVG 404'd (none uploaded) — shown as a placeholder
     _lastHoverPid: null,           // last hovered pointer id (for debouncing)
     
     defaultStyles: {
@@ -751,9 +752,13 @@
             return this._bootImageMap();
           }
 
-          if (!this._hasAnyMap()) return this._showError("No maps found.");
-
-          if (!this._mapExists(this.activeMapId)) {
+          if (!this._hasAnyMap()) {
+            // Nothing loaded. If that is only because no floor has artwork yet,
+            // open on the placeholder like the old map does; if a fetch actually
+            // failed, error out so the host can offer a retry.
+            if (!this._bootPlaceholderMapId) return this._showError("No maps found.");
+            this.activeMapId = this._bootPlaceholderMapId;
+          } else if (!this._mapExists(this.activeMapId)) {
             this.activeMapId = this._getDefaultMapId();
           }
 
@@ -1601,28 +1606,51 @@
     // ----------------------------------------------------
 
     // Loads only the map that will be shown immediately, based on configured
-    // floor > server default floor > sitemap > first floorplate.
+    // floor > server default floor > sitemap > lowest floorplate.
+    //
+    // Each candidate is tried in turn until one loads. A floorplate with no SVG
+    // uploaded 404s, and that one floor must not take the whole map down with
+    // "No maps found." -- the old map just shows a placeholder for that floor.
+    // Floorplates go lowest floor first because `floorplates[0]` follows
+    // `number DESC`, which is arbitrary when `number` is unset; the old map
+    // opens on the lowest floor.
     async _loadActiveSVG() {
       const floor = this.config.floor ?? this.data.property?.map?.defaultFloor;
-      let primaryEntry = null;
+      const candidates = [];
+      const add = (mapId, mapType) => {
+        const id = String(mapId);
+        if (!candidates.some(c => c.mapId === id)) candidates.push({ mapId: id, mapType });
+      };
 
       if (floor != null) {
         const fp = this._findFloorplateByFloor(String(floor));
-        if (fp) primaryEntry = { mapId: String(fp.mapId), mapType: fp.mapType || "floorplate" };
+        if (fp) add(fp.mapId, fp.mapType || "floorplate");
       }
 
-      if (!primaryEntry && this.data.sitemap) {
-        primaryEntry = { mapId: String(this.data.sitemap.mapId), mapType: this.data.sitemap.mapType || "sitemap" };
+      if (this.data.sitemap) {
+        add(this.data.sitemap.mapId, this.data.sitemap.mapType || "sitemap");
       }
 
-      if (!primaryEntry && this.data.floorplates.length > 0) {
-        const fp = this.data.floorplates[0];
-        primaryEntry = { mapId: String(fp.mapId), mapType: fp.mapType || "floorplate" };
+      const lowestFloor = fp => {
+        const floors = this._floorsForRange(fp.range);
+        return floors.length ? Math.min(...floors) : Infinity;
+      };
+      (this.data.floorplates || [])
+        .slice()
+        .sort((a, b) => lowestFloor(a) - lowestFloor(b))
+        .forEach(fp => add(fp.mapId, fp.mapType || "floorplate"));
+
+      this._bootPlaceholderMapId = null;
+      for (const { mapId, mapType } of candidates) {
+        const svg = await this._loadSVGIfNeeded(mapId, mapType);
+        if (svg) {
+          this.svgCache[mapId] = svg;
+          return;
+        }
       }
 
-      if (primaryEntry) {
-        const svg = await this._loadSVGIfNeeded(primaryEntry.mapId, primaryEntry.mapType);
-        if (svg) this.svgCache[primaryEntry.mapId] = svg;
+      if (candidates.length && candidates.every(c => this._missingMaps.has(c.mapId))) {
+        this._bootPlaceholderMapId = candidates[0].mapId;
       }
     },
 
@@ -1697,6 +1725,7 @@
     async _loadSVGIfNeeded(mapId, mapType) {
       const id = String(mapId);
       if (this.svgCache[id]) return this.svgCache[id];
+      if (this._missingMaps.has(id)) return null;
 
       if (!this._svgLoadingPromises[id]) {
         this._svgLoadingPromises[id] = this._loadSVG(id, mapType).then(svg => {
@@ -1740,6 +1769,9 @@
         });
 
         if (!response.ok) {
+          // 404 means the floor has no SVG uploaded -- a permanent state for this
+          // session, not a failure worth retrying. Anything else may be transient.
+          if (response.status === 404) this._missingMaps.add(String(mapId));
           throw new Error(`Failed to fetch SVG: ${response.status} ${response.statusText}`);
         }
 
@@ -1836,6 +1868,13 @@
       c.style.position = "relative";
       this._bgMapLayer  = null;
       this._zoomWrapper = null;
+      this._missingMapPlaceholder = null;
+
+      if (this.activeMapId && this._missingMaps.has(this.activeMapId)) {
+        this._renderMissingMapPlaceholder();
+        this._mount3DWrapper(saved3d);
+        return;
+      }
 
       if (!this.activeMapId || !this._mapExists(this.activeMapId)) return;
 
@@ -1881,6 +1920,27 @@
 
       this._enablePanZoom(clone);
       c.style.overflow   = "hidden";
+    },
+
+    // Stands in for a floor whose SVG was never uploaded -- the new map's
+    // equivalent of the old map's default.jpeg. Hidden in 3D mode, like the SVG.
+    _renderMissingMapPlaceholder() {
+      const box = document.createElement("div");
+      box.className = "pyn-missing-map";
+      box.setAttribute("role", "status");
+      box.innerText = "Map not available for this floor.";
+      Object.assign(box.style, {
+        display:        this._3dMode ? "none" : "flex",
+        alignItems:     "center",
+        justifyContent: "center",
+        width:          "100%",
+        height:         "100%",
+        minHeight:      "200px",
+        fontSize:       "14px",
+        color:          "#6b7280"
+      });
+      this.container.appendChild(box);
+      this._missingMapPlaceholder = box;
     },
 
     // Restore or create the 3D wrapper, synced to the current mode.
@@ -2550,6 +2610,7 @@
       // group, so the whole group has to go — hiding the SVG alone would leave the
       // base map floating behind the 3D widget.
       if (this._zoomWrapper) this._zoomWrapper.style.display = "none";
+      if (this._missingMapPlaceholder) this._missingMapPlaceholder.style.display = "none";
       if (this._3dWrapper) this._3dWrapper.style.display = "block";
 
       // Update toggle button label and hide zoom controls (irrelevant in 3D)
@@ -2596,6 +2657,7 @@
         if (!activeSvg._pz) this._enablePanZoom(activeSvg);
       }
       if (this._zoomWrapper) this._zoomWrapper.style.display = "block";
+      if (this._missingMapPlaceholder) this._missingMapPlaceholder.style.display = "flex";
       if (this._3dWrapper) this._3dWrapper.style.display = "none";
 
       // Update toggle button label and restore zoom controls
@@ -3398,7 +3460,18 @@
         if (!mapType) return;
         this._showLoading("Loading floor...");
         const svg = await this._loadSVGIfNeeded(id, mapType);
-        if (!svg) return;
+        // A floor with no SVG uploaded still switches, onto a placeholder, so the
+        // floor the visitor picked is the floor they see. Any other failure puts
+        // back the map that was showing: _showLoading cleared the container, and
+        // returning without re-rendering would leave the spinner up for good.
+        if (!svg && !this._missingMaps.has(id)) {
+          this._renderMaps();
+          this._plotSvgAmenities();
+          this._highlightAllUnits();
+          this._bindUnitEvents();
+          this._bindSvgAmenityEvents();
+          return;
+        }
       }
 
       this.activeMapId   = id;
@@ -4417,6 +4490,7 @@
       this.pointerIdsByMap     = {};
       this.unitsByPointerIdByMap = {};
       this._svgLoadingPromises = {};
+      this._missingMaps        = new Set();
       this._lastHoverPid       = null;
       // svgCache is intentionally preserved to avoid re-fetching on reinit
     },
