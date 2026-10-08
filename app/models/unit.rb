@@ -762,6 +762,6 @@ class Unit < ApplicationRecord
       end
     end
 
-    { min: base + extra_min, max: base + extra_max }
+    { min: (base + extra_min).round(2), max: (base + extra_max).round(2) }
   end
 end
