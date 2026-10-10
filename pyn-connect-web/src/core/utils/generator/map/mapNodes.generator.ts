@@ -3,7 +3,7 @@ import type { InventoryAmenity, InventoryUnit } from '~/core/models/data/propert
 import type { PropertyMap } from '~/core/models/data/propertyMap.data';
 import { pointerTarget, type FloorSvgDoc, type PlotTarget } from '~/core/utils/map/floorSvg';
 import type { EdgeKind, ExtractionSource, ReviewStatus } from '~/core/utils/wayfinding/hallways/types';
-import { activeSpace, levelDims, levelForAmenity, levelForUnit, levelSpaceDims, wayfindingSpace, type MapLevel } from './mapLevels.generator';
+import { activeSpace, levelDims, levelForAmenity, levelForFloor, levelForUnit, levelSpaceDims, wayfindingSpace, type MapLevel } from './mapLevels.generator';
 import {
   AMENITY_COLOR,
   DEFAULT_BED_COLORS,
@@ -189,12 +189,24 @@ const withOverride = (
   return stored ? { ...stored, temporary: false, moved: false } : null;
 };
 
+/**
+ * The level a record placed on a floor SVG by a map import stands on. Beans
+ * writes the polygon a unit sits on (`pointer_data`) and never a
+ * `floorplate_id`, so the floorplate is the one covering the record's floor
+ * (its only floorplate), as the renter map and the SDK resolve it; the
+ * sitemap of a sitemap-mode property otherwise.
+ */
+const importedLevel = (levels: MapLevel[], floor: number | null, building: string | null): MapLevel | null =>
+  levels.find((row) => row.kind === 'sitemap') ?? levelForFloor(levels, floor, building);
+
 /** Where a unit is right now: the page's override first, else the CMS (its floorplate, or the sitemap). */
 export const placementOfUnit = (levels: MapLevel[], state: LocalMapState, unit: InventoryUnit): Placement | null => {
   const level =
     unit.floorplateId != null
       ? (levels.find((row) => row.kind === 'floorplate' && row.recordId === unit.floorplateId) ?? null)
-      : (levels.find((row) => row.kind === 'sitemap') ?? null);
+      : unit.svgPointer
+        ? importedLevel(levels, unit.floor, unit.building)
+        : (levels.find((row) => row.kind === 'sitemap') ?? null);
   return withOverride(levels, state, { kind: 'unit', id: unit.id }, storedPlacement(state, unit, level));
 };
 
@@ -204,7 +216,9 @@ export const placementOfAmenity = (levels: MapLevel[], state: LocalMapState, ame
       ? (levels.find((row) => row.kind === 'floorplate' && row.recordId === amenity.ownerId) ?? null)
       : amenity.ownerType === 'Sitemap'
         ? (levels.find((row) => row.kind === 'sitemap') ?? null)
-        : null;
+        : amenity.ownerType == null && amenity.svgPointer
+          ? importedLevel(levels, amenity.floor, amenity.building ?? amenity.ownerBuilding)
+          : null;
   return withOverride(levels, state, { kind: 'amenity', id: amenity.id }, storedPlacement(state, amenity, level));
 };
 

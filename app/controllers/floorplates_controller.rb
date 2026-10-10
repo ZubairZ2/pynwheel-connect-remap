@@ -301,6 +301,10 @@ class FloorplatesController < ApplicationController
         # The marker colours, sizes and SVG label font the legacy plotting
         # pages draw this property's map with (Connect::MapMarkers).
         markers: Connect::MapMarkers.for(community),
+        # A Beans-generated map: one static background (communities.background_svg_image)
+        # that every floor SVG overlays, as the renter map and the Map SDK draw it
+        # (webpages/_svg_map, SdkPayloadBuilderService#background_svg_json).
+        beans_svg: community.is_beans_svg?,
         shared_background: Connect::UploadUrl.file(community, :background_svg_image, request.base_url, bucket: bucket),
         sitemap: sitemap && {
           id: sitemap.id,

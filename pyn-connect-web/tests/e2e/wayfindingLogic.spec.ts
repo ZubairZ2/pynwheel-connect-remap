@@ -118,6 +118,7 @@ const buildMap = (overrides: { elevators?: MapElevator[]; selfTour?: boolean } =
     mapType: 'floorplates',
     svgMode: false,
     tourStopCount: 0,
+    beansSvg: false,
     sharedBackground: null,
     markers: { unitColor: '#C62534', amenityColor: '#0077AE' },
     sitemap: null,

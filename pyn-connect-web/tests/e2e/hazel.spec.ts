@@ -493,6 +493,9 @@ test.describe('Hazel (real data)', () => {
     });
     await page.goto(`/properties/${SVG_PROPERTY}/map`);
     await hydrated(page, '.bo-map__tool');
+    // Since October 10, 2026 a floorplate with both files opens on the frame its stored plotting is in; this test is about the SVG, so pick it.
+    const layer = page.getByTestId('layer-switch').getByRole('button', { name: 'Floor SVG' });
+    if (await layer.count()) await layer.click();
     const cover = page.locator('.bo-map__plan .bo-loading--cover');
     await expect(cover).toBeVisible();
     await expect(cover).toContainText('Loading the floor SVG…');

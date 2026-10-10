@@ -44,6 +44,7 @@ import { detectionPatch, graphPatch, plateGraph, snapshotOf } from '~/core/utils
 import { autoConnectNodes, computeAutoConnectDistance, connectNodeToNearest } from '~/core/utils/wayfinding/hallways/autoConnect';
 import { addNode, confirmNodesAboveConfidence, deleteEdge, deleteNode, rerouteEdge, type GraphState } from '~/core/utils/wayfinding/hallways/editing';
 import type { DetectFailure } from '~/core/utils/wayfinding/hallways/extract';
+import type { SvgEl } from '~/core/utils/wayfinding/hallways/svg/svgTree';
 import { buildObstacleIndex, NO_OBSTACLES, type ObstacleIndex } from '~/core/utils/wayfinding/hallways/obstacles';
 import type { Point, StopCandidate } from '~/core/utils/wayfinding/hallways/types';
 import { stopTypeOf } from '~/core/utils/wayfinding/stopTypes';
@@ -67,6 +68,8 @@ interface Options {
   pointerPx: (event: { clientX: number; clientY: number }) => { x: number; y: number } | null;
   /** The text of a level's floor SVG (a GET through the plan-svg route, or the copy already loaded). */
   fetchSvgText: (level: MapLevel) => Promise<string>;
+  /** The text of the property's shared background map (a Beans property), null when the property has none; throws when it cannot be read. */
+  fetchBackgroundText: () => Promise<string | null>;
 }
 
 const isPoint = (key: string | null): key is string => !!key && (key.startsWith('h:') || key.startsWith('j:'));
@@ -79,7 +82,12 @@ const pushUndo = (current: LocalMapState): WfSnapshot[] => [...current.wfUndo, s
 /** Lets the browser paint between two floorplates of a Detect Hallways run. */
 const nextFrame = () => new Promise<void>((resolve) => window.setTimeout(resolve, 0));
 
-const FAILURE_NOTE: Record<DetectFailure, string> = { 'no-hallway-layer': W.detect.noteNoLayer, 'no-corridor': W.detect.noteNoCorridor, 'no-edges': W.detect.noteNoEdges };
+const FAILURE_NOTE: Record<DetectFailure, string> = {
+  'no-layers': W.detect.noteNoLayers,
+  'no-hallway-layer': W.detect.noteNoLayer,
+  'no-corridor': W.detect.noteNoCorridor,
+  'no-edges': W.detect.noteNoEdges
+};
 
 /** The SVG-reading half of the engine, loaded the first time it is needed. */
 const loadEngine = () => import('~/core/utils/wayfinding/hallways/floorEngine');
@@ -91,7 +99,7 @@ const loadEngine = () => import('~/core/utils/wayfinding/hallways/floorEngine');
  * detected paths, stops and routes are page state only — no action here
  * sends a request.
  */
-export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toast, askConfirm, pointerPx, fetchSvgText }: Options) => {
+export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toast, askConfirm, pointerPx, fetchSvgText, fetchBackgroundText }: Options) => {
   const enabled = wayfindingEnabled(map);
   const wayfind = enabled && state.mode === 'wayfind';
   // The async Detect Hallways run reads the latest state between floorplates.
@@ -100,6 +108,21 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
   const stopRun = useRef(false);
   /** Outlines a synthesised link must not cross, per level (rooms, walls, footprints of its SVG). */
   const obstacles = useRef(new Map<string, { text: string; index: ObstacleIndex }>());
+  /** The shared background map's tree, parsed once (a Beans property): its walkways and outlines are read beside every floor file. */
+  const backgroundTree = useRef<{ text: string; root: SvgEl | null } | null>(null);
+  const backgroundRoot = useCallback(async (): Promise<{ root: SvgEl | null; failed: boolean }> => {
+    try {
+      const text = await fetchBackgroundText();
+      if (text == null) return { root: null, failed: false };
+      if (backgroundTree.current?.text === text) return { root: backgroundTree.current.root, failed: backgroundTree.current.root == null };
+      const { parseSvgTree } = await loadEngine();
+      const parsed = parseSvgTree(text);
+      backgroundTree.current = { text, root: parsed.ok ? parsed.root : null };
+      return { root: backgroundTree.current.root, failed: !parsed.ok };
+    } catch {
+      return { root: null, failed: true };
+    }
+  }, [fetchBackgroundText]);
 
   // Every floorplate's view while wayfinding (the cards, the route scopes);
   // only the one in view while plotting (its Additional Stops).
@@ -168,15 +191,15 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
     if (!level || !viewOnSvg || !viewText) return undefined;
     if (obstacles.current.get(level.id)?.text === viewText) return undefined;
     let cancelled = false;
-    void loadEngine().then(({ obstaclesOf, parseSvgTree }) => {
+    void Promise.all([loadEngine(), backgroundRoot()]).then(([{ obstaclesOf, parseSvgTree }, background]) => {
       if (cancelled) return;
       const parsed = parseSvgTree(viewText);
-      obstacles.current.set(level.id, { text: viewText, index: parsed.ok ? buildObstacleIndex(obstaclesOf(parsed.root)) : NO_OBSTACLES });
+      obstacles.current.set(level.id, { text: viewText, index: parsed.ok ? buildObstacleIndex(obstaclesOf(parsed.root, background.root)) : NO_OBSTACLES });
     });
     return () => {
       cancelled = true;
     };
-  }, [level, viewOnSvg, viewText]);
+  }, [backgroundRoot, level, viewOnSvg, viewText]);
 
   /** Auto-Connect's options on a floorplate: its k-NN range (8% of the plan's diagonal) and its obstacles. */
   const connectOptions = useCallback(
@@ -764,7 +787,8 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
         const text = await fetchSvgText(target);
         const { obstaclesOf, parseSvgTree } = await loadEngine();
         const parsed = parseSvgTree(text);
-        const outlines = parsed.ok ? obstaclesOf(parsed.root) : [];
+        const background = await backgroundRoot();
+        const outlines = parsed.ok ? obstaclesOf(parsed.root, background.root) : [];
         const index = outlines.length ? buildObstacleIndex(outlines) : NO_OBSTACLES;
         obstacles.current.set(target.id, { text, index });
         return index;
@@ -772,7 +796,7 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
         return NO_OBSTACLES;
       }
     },
-    [fetchSvgText]
+    [backgroundRoot, fetchSvgText]
   );
 
   /**
@@ -844,16 +868,25 @@ export const useMapWayfinding = ({ map, levels, level, state, patch, graphs, toa
         const at = anchor.kind === 'stop' ? null : polygonOf(anchor.key);
         stops.push({ groupId: anchor.key, label: anchor.label, anchor: at ?? { x: anchor.x, y: anchor.y } });
       });
-      const result = detectHallways(parsed.root, stops);
-      if (!result.ok) return { ...empty, status: 'noHallway', note: i18n.t(FAILURE_NOTE[result.failure ?? 'no-corridor']) };
+      // A Beans property's floor file holds the units only: its walkways and building outlines are in the shared background map.
+      const background = await backgroundRoot();
+      const result = detectHallways(parsed.root, stops, { background: background.root });
+      const backgroundNote = background.failed ? ` · ${i18n.t(W.detect.noteBackground)}` : '';
+      if (!result.ok) return { ...empty, status: 'noHallway', note: `${i18n.t(FAILURE_NOTE[result.failure ?? 'no-corridor'])}${backgroundNote}` };
       obstacles.current.set(target.id, { text, index: result.obstacles.length ? buildObstacleIndex(result.obstacles) : NO_OBSTACLES });
       patch((state) => {
         const view = wayfindingPlate(map, levels, target, generateLevelGraph(map, levels, target, state, wayfindingSpace(target, state) ?? 'raster'), state);
         return detectionPatch(state, target, view, result, (n) => t(W.pointLabel, { n }));
       });
-      return { status: 'detected', points: result.nodes.length, paths: result.edges.length, source: result.source, note: '' };
+      // The card says where the paths came from and whether they reach the floor's stops: a graph that joins nothing is not a success.
+      const notes = [
+        ...(result.fromBackground ? [i18n.t(W.detect.noteFromBackground)] : []),
+        stops.length ? t(W.detect.noteJoined, { joined: result.joined, total: stops.length }) : i18n.t(W.detect.noteNoStops),
+        ...(background.failed ? [i18n.t(W.detect.noteBackground)] : [])
+      ];
+      return { status: 'detected', points: result.nodes.length, paths: result.edges.length, source: result.source, note: notes.join(' · ') };
     },
-    [fetchSvgText, levels, map, obstaclesForDetect, patch]
+    [backgroundRoot, fetchSvgText, levels, map, obstaclesForDetect, patch]
   );
 
   const setRow = useCallback(

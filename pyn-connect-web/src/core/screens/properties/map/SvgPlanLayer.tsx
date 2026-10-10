@@ -24,6 +24,8 @@ interface Props {
   onPolygonHover: (key: string | null) => void;
   /** font_settings.svg_labels_font_family: set on the document's text, as the legacy page does. */
   fontFamily?: string | null;
+  /** A shared background is drawn under this layer: keep the floor SVG above it. */
+  over?: boolean;
 }
 
 interface Original {
@@ -40,7 +42,7 @@ interface Original {
  * again by the selectors the parser recorded, styled in place when something
  * sits on them or the pointer is over them, and restored otherwise.
  */
-export const SvgPlanLayer = ({ doc, polygons, plotOn, dropping, onPolygonDown, hoveredKey, onPolygonHover, fontFamily = null, passive = false }: Props) => {
+export const SvgPlanLayer = ({ doc, polygons, plotOn, dropping, onPolygonDown, hoveredKey, onPolygonHover, fontFamily = null, passive = false, over = false }: Props) => {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const elements = useRef(new Map<string, Element>());
   const byElement = useRef(new Map<Element, PlotTarget>());
@@ -144,7 +146,7 @@ export const SvgPlanLayer = ({ doc, polygons, plotOn, dropping, onPolygonDown, h
   return (
     <div
       ref={hostRef}
-      className="bo-map__svglayer"
+      className={`bo-map__svglayer${over ? ' bo-map__svglayer--over' : ''}`}
       data-testid="plan-svg"
       onPointerDown={(event) => {
         if (passive) return;

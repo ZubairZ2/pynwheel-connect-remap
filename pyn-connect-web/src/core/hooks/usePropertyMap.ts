@@ -22,7 +22,9 @@ import {
   type ApTrim
 } from '~/core/utils/map/autoPlotRules';
 import { measureFloorSvg, type PlotTarget } from '~/core/utils/map/floorSvg';
+import { localPlanError, planError, svgViewBoxOf } from '~/core/utils/map/planLoad';
 import {
+  backgroundOf,
   activeSpace,
   generateMapLevels,
   levelById,
@@ -182,7 +184,61 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
     [map.inventory.property.id, state.planOverrides]
   );
 
-  const wayfinding = useMapWayfinding({ map, levels, level, state, patch, graphs: wayfindingGraphs, toast, askConfirm, pointerPx, fetchSvgText });
+  /**
+   * The property's shared background map (a Beans property's one static base
+   * every floor SVG overlays): its text is read once through the plan-svg
+   * route, kept here for Detect Hallways (its walkways and building
+   * outlines live in the background, not in the floor files), and handed to
+   * the canvas as a blob URL with its own viewBox.
+   */
+  const sharedBackground = useMemo(() => backgroundOf(map), [map]);
+  const backgroundText = useRef<string | null>(null);
+  const backgroundUrl = useRef<string | null>(null);
+  const loadBackground = useCallback(async () => {
+    if (!sharedBackground || loading.current.has('background')) return;
+    loading.current.add('background');
+    patch(() => ({ background: { status: 'loading' } }));
+    try {
+      const response = await fetch(APP_API.planSvg(map.inventory.property.id, { background: true }), { cache: 'no-store' });
+      if (!response.ok) {
+        const error = await planError(response);
+        patch(() => ({ background: { status: 'failed', error } }));
+        return;
+      }
+      const text = await response.text();
+      const viewBox = svgViewBoxOf(text);
+      if (!viewBox) {
+        patch(() => ({ background: { status: 'failed', error: localPlanError(new Error('the SVG has no size'), sharedBackground.fileName) } }));
+        return;
+      }
+      backgroundText.current = text;
+      if (backgroundUrl.current) URL.revokeObjectURL(backgroundUrl.current);
+      const url = URL.createObjectURL(new Blob([text], { type: 'image/svg+xml' }));
+      backgroundUrl.current = url;
+      patch(() => ({ background: { status: 'ready', url, viewBox } }));
+    } catch (error) {
+      patch(() => ({ background: { status: 'failed', error: localPlanError(error, sharedBackground.fileName) } }));
+    } finally {
+      loading.current.delete('background');
+    }
+  }, [map.inventory.property.id, patch, sharedBackground]);
+  useEffect(
+    () => () => {
+      if (backgroundUrl.current) URL.revokeObjectURL(backgroundUrl.current);
+    },
+    []
+  );
+  const fetchBackgroundText = useCallback(async (): Promise<string | null> => {
+    if (!sharedBackground) return null;
+    if (backgroundText.current) return backgroundText.current;
+    const response = await fetch(APP_API.planSvg(map.inventory.property.id, { background: true }), { cache: 'no-store' });
+    if (!response.ok) throw new Error(String(response.status));
+    const text = await response.text();
+    backgroundText.current = text;
+    return text;
+  }, [map.inventory.property.id, sharedBackground]);
+
+  const wayfinding = useMapWayfinding({ map, levels, level, state, patch, graphs: wayfindingGraphs, toast, askConfirm, pointerPx, fetchSvgText, fetchBackgroundText });
   const itemOf = useCallback((ref: PinRef) => pinItems.find((item) => item.key === pinKey(ref)) ?? null, [pinItems]);
   const itemByKey = useCallback((key: string) => pinItems.find((item) => item.key === key) ?? null, [pinItems]);
 
@@ -207,12 +263,16 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
       try {
         const url = own.svg.local ? own.svg.url : APP_API.planSvg(map.inventory.property.id, { kind: target.kind, id: target.recordId });
         const response = await fetch(url, { cache: 'no-store' });
-        if (!response.ok) throw new Error(String(response.status));
+        if (!response.ok) {
+          const error = await planError(response);
+          patch((current) => ({ svgDocs: { ...current.svgDocs, [target.id]: { status: 'failed', error } } }));
+          return;
+        }
         const text = await response.text();
         const doc = measureFloorSvg(text);
         patch((current) => ({ svgDocs: { ...current.svgDocs, [target.id]: { status: 'ready', doc } } }));
-      } catch {
-        patch((current) => ({ svgDocs: { ...current.svgDocs, [target.id]: { status: 'failed' } } }));
+      } catch (error) {
+        patch((current) => ({ svgDocs: { ...current.svgDocs, [target.id]: { status: 'failed', error: localPlanError(error, own.svg?.name ?? null) } } }));
       } finally {
         loading.current.delete(target.id);
       }
@@ -237,6 +297,11 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
       if (!state.svgDocs[target.id]) void loadSvg(target);
     });
   }, [level, state.ap, state.svgDocs, apScopeLevels, loadSvg]);
+
+  // The shared background is read once the floor in view is on its SVG (the only layer it is drawn under).
+  useEffect(() => {
+    if (sharedBackground && level && space === 'svg' && !state.background) void loadBackground();
+  }, [level, loadBackground, sharedBackground, space, state.background]);
 
   /* ── buildings, levels, layers and tools ───────────────────────────── */
 
@@ -293,7 +358,12 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
     [levels, patch]
   );
 
-  const pickLayer = useCallback((layer: PlanSpace) => patch(() => ({ layer, selPoly: null, polyHover: null, selectedNode: null, selectedEdge: null })), [patch]);
+  /** The layer the level in view plots on, remembered per level (`plotLayer`); the page default stays for the others. */
+  const pickLayer = useCallback(
+    (layer: PlanSpace) =>
+      patch((current) => ({ layers: { ...current.layers, [current.levelId]: layer }, selPoly: null, polyHover: null, selectedNode: null, selectedEdge: null })),
+    [patch]
+  );
 
   const pickTool = useCallback(
     (tool: MapTool) =>
@@ -1064,6 +1134,11 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
     fileInputRef,
     svgDoc,
     svgStatus: assets?.svg ? (svgState?.status ?? 'loading') : null,
+    /** Why the level's floor SVG could not be shown, when it could not. */
+    svgError: svgState?.status === 'failed' ? svgState.error : null,
+    /** The shared background map to draw under the floor SVG (a Beans property), and its load state. */
+    sharedBackground,
+    background: state.background,
     polygons,
     selectedPolygon: level ? generateSelectedPolygon(level, polygons, state) : null,
     // Hovering a plotted polygon shows the same details a click does (Plotting mode only: Wayfinding's gestures own the polygons there).
@@ -1210,14 +1285,16 @@ export const usePropertyMap = (map: PropertyMap, initial: MapInitial | null = nu
         applyLocalFile(file, /\.svg$/i.test(file.name) ? 'svg' : state.dropSlot);
       },
       clearPlan,
+      // A fresh request for the floor SVG (the effect above re-issues it; the CMS re-resolves the file's URL), and for the background if it failed.
       retrySvg: () => {
         if (!level) return;
         patch((current) => {
           const svgDocs = { ...current.svgDocs };
           delete svgDocs[level.id];
-          return { svgDocs };
+          return { svgDocs, background: current.background?.status === 'failed' ? null : current.background };
         });
       },
+      retryBackground: () => patch((current) => ({ background: current.background?.status === 'failed' ? null : current.background })),
       openPublish: () => patch(() => ({ publishOpen: true })),
       closePublish: () => patch(() => ({ publishOpen: false })),
       runCmsRoute,

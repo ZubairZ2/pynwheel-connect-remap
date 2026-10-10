@@ -73,8 +73,8 @@ export const APP_API = {
    * polygons (the stored S3 file carries no CORS headers for this origin).
    * GET, read-only.
    */
-  planSvg: (propertyId: number, level: { kind: 'floorplate' | 'sitemap'; id: number }) =>
-    `/api/properties/${propertyId}/plan-svg?${level.kind}=${level.id}`
+  planSvg: (propertyId: number, level: { kind: 'floorplate' | 'sitemap'; id: number } | { background: true }) =>
+    'background' in level ? `/api/properties/${propertyId}/plan-svg?background=1` : `/api/properties/${propertyId}/plan-svg?${level.kind}=${level.id}`
 } as const;
 
 /**

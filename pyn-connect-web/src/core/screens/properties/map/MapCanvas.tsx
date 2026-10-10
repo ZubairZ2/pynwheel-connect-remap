@@ -9,9 +9,11 @@ import { useImageStatus } from '~/core/hooks/useImageStatus';
 import { usePeek } from '~/core/hooks/usePeek';
 import type { PropertyMapController } from '~/core/hooks/usePropertyMap';
 import type { LevelNode, LevelPin } from '~/core/utils/generator/map/mapNodes.generator';
+import { backgroundBox } from '~/core/utils/generator/map/mapLevels.generator';
 import { polygonPopover } from '~/core/utils/generator/map/mapPanels.generator';
 import { edgeKey } from '~/core/utils/generator/map/mapState';
 import { M, t } from '~/core/utils/generator/map/mapText';
+import { planErrorText } from '~/core/utils/map/planLoad';
 import {
   AmenityGlyph,
   DoorGlyph,
@@ -95,6 +97,9 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
     plotArmedLabel,
     svgDoc,
     svgStatus,
+    svgError,
+    sharedBackground,
+    background,
     polygons,
     selectedPolygon,
     hoveredPolygon,
@@ -144,6 +149,15 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
 
   const svgReady = onSvg && svgStatus === 'ready' && !!svgDoc;
   const has = !!assets?.has && (onSvg ? !!assets?.svg : !!src);
+  /*
+   * A Beans property's shared background goes under the floor SVG, placed
+   * where its own viewBox falls in the floor's: the two exports share one
+   * frame, so the units and amenities of the floor file land on the base
+   * map's buildings exactly, and a stored pointer keeps its place. The floor
+   * SVG is shown as soon as it is ready; the background arrives under it,
+   * and a background that cannot be read is said so without hiding the floor.
+   */
+  const backgroundStyle = svgReady && sharedBackground && background?.status === 'ready' && svgDoc ? backgroundBox(svgDoc.viewBox, background.viewBox) : null;
   /*
    * The plan is in place: the floor SVG is mounted, or the floor image has
    * loaded (or failed for good — the stored markers still have a place on
@@ -363,6 +377,16 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
         }}
       />
 
+      {onSvg && svgReady && sharedBackground && background?.status === 'failed' && (
+        // The surface starts a pan on pointerdown and captures the pointer, which would swallow the button's click: stop it here.
+        <div className="bo-map__bgnotice" role="status" data-testid="plan-background-error" onPointerDown={(event) => event.stopPropagation()}>
+          <span>{t(M.plan.backgroundFailed, { detail: planErrorText(background.error) })}</span>
+          <button type="button" className="bo-map__planbtn" onClick={actions.retryBackground}>
+            {i18n.t(M.plan.retry)}
+          </button>
+        </div>
+      )}
+
       {has ? (
         <div
           ref={planRef}
@@ -373,22 +397,43 @@ export const MapCanvas = ({ controller }: { controller: PropertyMapController })
         >
           {onSvg ? (
             svgReady ? (
-              <SvgPlanLayer
-                doc={svgDoc!}
-                polygons={polygons}
-                passive={!!wfLayer}
-                plotOn={state.tool === 'plot'}
-                dropping={dropping}
-                onPolygonDown={actions.clickPolygon}
-                hoveredKey={state.polyHover}
-                onPolygonHover={actions.hoverPolygon}
-                fontFamily={markers.svgFontFamily}
-              />
+              <>
+                {backgroundStyle && background?.status === 'ready' && (
+                  // eslint-disable-next-line @next/next/no-img-element -- the shared background is a blob of the CMS's own file, read through the plan-svg route.
+                  <img
+                    className="bo-map__bglayer"
+                    src={background.url}
+                    alt=""
+                    draggable={false}
+                    data-testid="plan-background"
+                    style={{ left: `${backgroundStyle.left}%`, top: `${backgroundStyle.top}%`, width: `${backgroundStyle.width}%`, height: `${backgroundStyle.height}%` }}
+                  />
+                )}
+                <SvgPlanLayer
+                  doc={svgDoc!}
+                  polygons={polygons}
+                  passive={!!wfLayer}
+                  plotOn={state.tool === 'plot'}
+                  dropping={dropping}
+                  onPolygonDown={actions.clickPolygon}
+                  hoveredKey={state.polyHover}
+                  onPolygonHover={actions.hoverPolygon}
+                  fontFamily={markers.svgFontFamily}
+                  over={!!sharedBackground}
+                />
+              </>
             ) : (
               <div className="bo-map__missing" role="status">
                 {svgStatus === 'failed' ? (
-                  <span className="bo-map__missingstack">
+                  // Retry and Show background image must get their click: the surface's pan gesture captures the pointer on pointerdown
+                  // for anything that is not a marker, and a captured pointer never clicks the button under it (the reported dead Retry).
+                  <span className="bo-map__missingstack" onPointerDown={(event) => event.stopPropagation()}>
                     {i18n.t(M.plan.svgFailed)}
+                    {svgError && (
+                      <span className="bo-map__missingdetail" data-testid="plan-svg-error">
+                        {planErrorText(svgError)}
+                      </span>
+                    )}
                     <span className="bo-map__missingactions">
                       <button type="button" className="bo-map__planbtn" onClick={actions.retrySvg}>
                         {i18n.t(M.plan.retry)}

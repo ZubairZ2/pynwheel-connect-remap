@@ -57,7 +57,9 @@ test.describe('Map & Plotting (real data)', () => {
    */
   const expectDesignLayout = async (page: Page) => {
     const toolbar = page.locator('.bo-map__toolbar');
-    await expect(toolbar.getByRole('button')).toHaveText([/^Auto Plot/, /^Manual Plot/]);
+    // A floorplate with both a floor SVG and a floor image carries the layer switch (October 10, 2026) before the plotting tools.
+    const layered = (await page.getByTestId('layer-switch').count()) > 0;
+    await expect(toolbar.getByRole('button')).toHaveText(layered ? [/^Floor SVG$/, /^Background image$/, /^Auto Plot/, /^Manual Plot/] : [/^Auto Plot/, /^Manual Plot/]);
     await expect(toolbar).toContainText(/\d+ of \d+ plotted/);
     await expect(page.locator('.bo-map__side > *')).toHaveCount(1);
     for (const gone of ['Publish', 'Grid', 'Place Pin', 'Junction', 'Connect', 'Move', 'Start Plotting Hallways', 'Upload SVG', 'Upload Image', 'Remove Plan', 'Run Algorithm (Animated)']) {
@@ -74,6 +76,9 @@ test.describe('Map & Plotting (real data)', () => {
     await signIn(page);
     await page.goto(`/properties/${svgProperty}/map`);
     await hydrated(page);
+    // Since October 10, 2026 a floorplate with both files opens on the frame its stored plotting is in; this test is about the SVG, so pick it.
+    const layer = page.getByTestId('layer-switch').getByRole('button', { name: 'Floor SVG' });
+    if (await layer.count()) await layer.click();
 
     // The design's shell: floorplate tabs with progress, the toolbar, the plot panel.
     await expect(page.getByRole('heading', { level: 2, name: 'Map & Plotting' })).toBeVisible();

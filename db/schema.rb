@@ -379,8 +379,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_03_100011) do
     t.string "pricing_calculator_embed_code"
     t.boolean "hide_square_feet", default: false
     t.boolean "hide_availability", default: false
-    t.boolean "default_satellite_view", default: false
     t.boolean "enable_sdk_map", default: false
+    t.boolean "default_satellite_view", default: false
     t.boolean "enable_pynwheel_pricing_calculator", default: false, null: false
     t.jsonb "partner_map_settings", default: {}, null: false
     t.boolean "student_housing_property", default: false
@@ -388,11 +388,13 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_03_100011) do
     t.jsonb "map_analytics_settings", default: {}
     t.string "available_map_views"
     t.string "default_map_view"
+    t.boolean "hide_map_unit_numbers", default: false
     t.index "(((map_analytics_settings -> 'data_layer'::text) ->> 'enabled'::text))", name: "idx_communities_map_analytics_data_layer_enabled", where: "(((map_analytics_settings -> 'data_layer'::text) ->> 'enabled'::text) = 'true'::text)"
     t.index ["community_group_id"], name: "index_communities_on_community_group_id"
     t.index ["company_id"], name: "index_communities_on_company_id"
     t.index ["partner_map_settings"], name: "index_communities_on_partner_map_settings", using: :gin
     t.index ["region_id"], name: "index_communities_on_region_id"
+    t.check_constraint "hide_map_unit_numbers IS NOT NULL", name: "communities_hide_map_unit_numbers_not_null", validate: false
     t.check_constraint "highlight_all_units_on_hover IS NOT NULL", name: "communities_highlight_all_units_on_hover_not_null", validate: false
     t.check_constraint "map_analytics_settings IS NOT NULL", name: "communities_map_analytics_settings_not_null", validate: false
   end
@@ -518,10 +520,11 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_03_100011) do
     t.boolean "allow_sub_communities", default: false
     t.string "app_folio_property_id", default: ""
     t.string "unit_name_key", default: "MarketingTitle", null: false
-    t.string "app_folio_database_id"
+    t.string "app_folio_database_id", default: ""
     t.string "app_folio_property_scope", default: "is_app_folio_property_id", null: false
     t.string "app_folio_property_group_id"
     t.string "apartmentlist_url"
+    t.string "apartmentlist_import_status", default: "pending"
     t.index ["app_folio_property_scope"], name: "index_credentials_on_app_folio_property_scope"
     t.index ["community_id"], name: "index_credentials_on_community_id"
     t.index ["company_id"], name: "index_credentials_on_company_id"
@@ -1669,23 +1672,31 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_03_100011) do
     t.boolean "ops_availability_enabled", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.boolean "marketing_units_tab_enabled", default: true, null: false
-    t.boolean "marketing_floorplans_tab_enabled", default: true, null: false
-    t.boolean "marketing_amenities_tab_enabled", default: true, null: false
-    t.boolean "marketing_favorites_tab_enabled", default: true, null: false
-    t.boolean "ops_units_tab_enabled", default: true, null: false
-    t.boolean "ops_floorplans_tab_enabled", default: true, null: false
-    t.boolean "ops_amenities_tab_enabled", default: true, null: false
-    t.boolean "ops_favorites_tab_enabled", default: true, null: false
+    t.boolean "marketing_units_tab_enabled", default: true
+    t.boolean "marketing_floorplans_tab_enabled", default: true
+    t.boolean "marketing_amenities_tab_enabled", default: true
+    t.boolean "marketing_favorites_tab_enabled", default: true
+    t.boolean "ops_units_tab_enabled", default: true
+    t.boolean "ops_floorplans_tab_enabled", default: true
+    t.boolean "ops_amenities_tab_enabled", default: true
+    t.boolean "ops_favorites_tab_enabled", default: true
     t.boolean "marketing_sort_enabled", default: true
     t.boolean "ops_sort_enabled", default: true
     t.boolean "marketing_floorplan_gallery_page_enabled", default: true
     t.boolean "ops_floorplan_gallery_page_enabled", default: true
     t.index ["community_id"], name: "index_map_filters_on_community_id", unique: true
+    t.check_constraint "marketing_amenities_tab_enabled IS NOT NULL", name: "map_filters_marketing_amenities_tab_enabled_not_null", validate: false
+    t.check_constraint "marketing_favorites_tab_enabled IS NOT NULL", name: "map_filters_marketing_favorites_tab_enabled_not_null", validate: false
     t.check_constraint "marketing_floorplan_gallery_page_enabled IS NOT NULL", name: "map_filters_marketing_floorplan_gallery_page_enabled_not_null", validate: false
+    t.check_constraint "marketing_floorplans_tab_enabled IS NOT NULL", name: "map_filters_marketing_floorplans_tab_enabled_not_null", validate: false
     t.check_constraint "marketing_sort_enabled IS NOT NULL", name: "map_filters_marketing_sort_enabled_not_null", validate: false
+    t.check_constraint "marketing_units_tab_enabled IS NOT NULL", name: "map_filters_marketing_units_tab_enabled_not_null", validate: false
+    t.check_constraint "ops_amenities_tab_enabled IS NOT NULL", name: "map_filters_ops_amenities_tab_enabled_not_null", validate: false
+    t.check_constraint "ops_favorites_tab_enabled IS NOT NULL", name: "map_filters_ops_favorites_tab_enabled_not_null", validate: false
     t.check_constraint "ops_floorplan_gallery_page_enabled IS NOT NULL", name: "map_filters_ops_floorplan_gallery_page_enabled_not_null", validate: false
+    t.check_constraint "ops_floorplans_tab_enabled IS NOT NULL", name: "map_filters_ops_floorplans_tab_enabled_not_null", validate: false
     t.check_constraint "ops_sort_enabled IS NOT NULL", name: "map_filters_ops_sort_enabled_not_null", validate: false
+    t.check_constraint "ops_units_tab_enabled IS NOT NULL", name: "map_filters_ops_units_tab_enabled_not_null", validate: false
   end
 
   create_table "map_partners", id: :serial, force: :cascade do |t|
@@ -2648,6 +2659,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_03_100011) do
     t.boolean "link3_open_new_tab", default: false
     t.string "description_title", default: "More Details"
     t.boolean "expand_description_in_popup", default: false
+    t.boolean "show_on_map_is_updated"
     t.index ["community_id"], name: "index_units_on_community_id"
     t.index ["floorplan_id"], name: "index_units_on_floorplan_id"
     t.index ["floorplate_id"], name: "index_units_on_floorplate_id"

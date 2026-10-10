@@ -117,6 +117,39 @@ export const WayfindingToolbar = ({ controller }: { controller: PropertyMapContr
 };
 
 /** Plotting / Wayfinding: the design's segmented switch at the start of the toolbar (self-tour properties only). */
+/**
+ * Floor SVG / Floor image, for a floorplate that has both files: which one
+ * the plotting canvas shows. The level opens on the file its stored plotting
+ * lives in (`plotLayer`); this remembers a different pick per level. Shown in
+ * Plotting only — Wayfinding draws on the layer its paths are stored on and
+ * says so in its panel.
+ */
+export const LayerSwitch = ({ controller }: { controller: PropertyMapController }) => {
+  const { planInfo, actions, space, level } = controller;
+  if (!planInfo?.hasBoth || !level) return null;
+  return (
+    <div className="bo-wf__modes bo-map__layers" role="group" aria-label={i18n.t(M.plan.layer)} data-testid="layer-switch">
+      {(
+        [
+          ['svg', M.plan.layerSvg, M.plan.layerPickSvg],
+          ['raster', M.plan.layerImage, M.plan.layerPickImage]
+        ] as const
+      ).map(([layer, label, title]) => (
+        <button
+          key={layer}
+          type="button"
+          aria-pressed={space === layer}
+          className={`bo-wf__mode${space === layer ? ' bo-wf__mode--on' : ''}`}
+          title={i18n.t(title)}
+          onClick={() => space !== layer && actions.pickLayer(layer)}
+        >
+          {i18n.t(label)}
+        </button>
+      ))}
+    </div>
+  );
+};
+
 export const ModeSwitch = ({ controller }: { controller: PropertyMapController }) => {
   const { wayfinding, state } = controller;
   if (!wayfinding.enabled) return null;

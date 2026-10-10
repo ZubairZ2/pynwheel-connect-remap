@@ -304,6 +304,12 @@ export interface PropertyInventory {
   mapType: 'floorplates' | 'sitemap';
   svgMode: boolean;
   tourStopCount: number;
+  /**
+   * A Beans-generated map (`communities.is_beans_svg`): the floor SVGs hold
+   * the units and amenities only, drawn over one shared static background
+   * (`sharedBackground`), as the renter map and the Map SDK composite them.
+   */
+  beansSvg: boolean;
   /** A Beans property's one shared background map (communities.background_svg_image). */
   sharedBackground: InventoryUpload | null;
   markers: MapMarkers;

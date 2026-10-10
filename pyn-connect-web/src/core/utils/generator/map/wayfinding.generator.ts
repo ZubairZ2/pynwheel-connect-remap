@@ -289,7 +289,7 @@ export const generateDetectView = (state: LocalMapState, plates: Record<string, 
       const unlinked = kept.find((entry) => entry.row === row)?.unlinked;
       const detail =
         row.status === 'detected'
-          ? `${plural(row.points, W.pointOne, W.pointMany)} · ${plural(row.paths, W.pathOne, W.pathMany)} · ${i18n.t(row.source === 'vector' ? W.detect.fromWalkway : W.detect.fromInferred)}`
+          ? `${plural(row.points, W.pointOne, W.pointMany)} · ${plural(row.paths, W.pathOne, W.pathMany)} · ${i18n.t(row.source === 'vector' ? W.detect.fromWalkway : row.source === 'both' ? W.detect.fromBoth : W.detect.fromInferred)}${row.note ? ` · ${row.note}` : ''}`
           : row.status === 'existing'
             ? `${row.paths ? t(W.detect.keptDetail, { note: row.note, paths: plural(row.paths, W.pathOne, W.pathMany) }) : row.note}${unlinked?.count ? ` · ${unlinked.text}` : ''}`
             : row.note;
