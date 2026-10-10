@@ -3,7 +3,7 @@ class RealPageSvcStaticService < BaseService
     @array_of_units = []
     @apply_now_base_url = get_availability_base_url(credentials.community_id)
     
-    if credentials&.community&.all_apps_enabled? || credentials&.community&.pynwheel_tour_enabled?
+    if DataProviders::RealPage::Integration.tour?(community)
       import_realpage_svc_floorplans
       import_initial_realpage_units
     else
@@ -404,13 +404,9 @@ class RealPageSvcStaticService < BaseService
         current_date = Date.today
         community_id = credentials.community_id
 
-        if credentials&.community&.all_apps_enabled? || credentials&.community&.pynwheel_tour_enabled?
-          url = RP_TOUR_API_URL
-          license_key = ENV['RP_TOUR_API_KEY']
-        else
-          url = RP_TOUCH_API_URL
-          license_key = ENV['RP_TOUCH_API_KEY']
-        end
+        integration = DataProviders::RealPage::Integration.for(community)
+        url = DataProviders::RealPage::Integration.url(integration)
+        license_key = DataProviders::RealPage::Integration.license_key(integration)
 
         soap_action = REALPAGE_PRICE_ACTION
         pmc_id = credentials.pmc_id
@@ -458,7 +454,8 @@ class RealPageSvcStaticService < BaseService
                               </tem:listCriteria>
                             </tem:getunitlist>
                           </soapenv:Body>
-                        </soapenv:Envelope>')
+                        </soapenv:Envelope>',
+            **DataProviders::RealPage::Integration.http_options)
         sleep 1
         result = Ox.load(response.body, mode: :hash)
 
@@ -574,13 +571,9 @@ class RealPageSvcStaticService < BaseService
       begin
         community_id = credentials.community_id
 
-        if credentials&.community&.all_apps_enabled? || credentials&.community&.pynwheel_tour_enabled?
-          url = RP_TOUR_API_URL
-          license_key = ENV['RP_TOUR_API_KEY']
-        else
-          url = RP_TOUCH_API_URL
-          license_key = ENV['RP_TOUCH_API_KEY']
-        end
+        integration = DataProviders::RealPage::Integration.for(community)
+        url = DataProviders::RealPage::Integration.url(integration)
+        license_key = DataProviders::RealPage::Integration.license_key(integration)
 
         soap_action = 'http://tempuri.org/IRPXService/getrentmatrix'
         pmc_id = credentials.pmc_id
@@ -618,7 +611,8 @@ class RealPageSvcStaticService < BaseService
                             </tem:getrentmatrix>
                         </tem:getrentmatrix>
                     </soapenv:Body>
-                </soapenv:Envelope>')
+                </soapenv:Envelope>',
+            **DataProviders::RealPage::Integration.http_options)
         sleep 2
         result = Ox.load(response.body, mode: :hash)
 
@@ -695,5 +689,15 @@ class RealPageSvcStaticService < BaseService
   def get_availability_base_url community_id
     app_base_url = Rails.env.development? ? "localhost:3000" : (ENV["RAILS_ENV"] == "staging" ? "https://pynwheel-staging.herokuapp.com" : "https://pynwheelapp.com")
     "#{app_base_url}/communities/#{community_id}/webpages"
+  end
+
+  # credentials arrives as an OpenStruct built from Credential#attributes -- the
+  # Sidekiq jobs serialise the record to JSON and hand that over -- so it carries
+  # community_id but none of the associations. `credentials.community` is simply
+  # nil, which meant the old `credentials&.community&.all_apps_enabled?` test was
+  # nil for every property and these services always took the Touch branch no
+  # matter what the community's product flags said. Resolve the record instead.
+  def community
+    @community ||= Community.find_by_id(credentials.community_id)
   end
 end

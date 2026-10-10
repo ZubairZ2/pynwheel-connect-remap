@@ -27,6 +27,8 @@ class Floorplate < ApplicationRecord
   include ::S3Acceleration
   include SvgOptimizableMap
 
+  include StoredImageDimensions
+
   mount_uploader :image, SiteMapUploader
   mount_uploader :svg_image, SiteMapUploader
   mount_uploader :label_image, SiteMapUploader
@@ -48,6 +50,10 @@ class Floorplate < ApplicationRecord
   has_many :hallways, as: :parent, dependent: :destroy
   has_many :access_points, class_name: 'Door', as: :attached_with, dependent: :destroy
   include LaunchStatusable
+
+  # An SVG uploaded in Connect lands on a record that may already be marked in
+  # progress; let Launch see the map is ready for review.
+  after_commit :advance_launch_status, on: :update, if: :saved_change_to_svg_image?
 
   validates_uniqueness_of :name, scope: :community_id, if: -> { name.present? }
   validates :image, :presence => {message: "cannot be blank. Please upload Floor Plate image first."}, if: -> { image.present? }
@@ -121,6 +127,29 @@ class Floorplate < ApplicationRecord
     floors
   end
 
+  # True once the floorplate name was changed in the CMS under Manual Override
+  # (the floorplates table shows such names in red). The name typed when a map is
+  # first loaded is not an override: clients enter anything there, so it must
+  # never reach a floor list on its own.
+  def name_overridden?
+    name_is_updated == true && name.present?
+  end
+
+  # What a floor this floorplate covers is called on the map, verbatim from the
+  # CMS ("-1", "B", "G0", "-A" are all valid):
+  #   1. the floor name, when "Add floor name" is on and one was entered;
+  #   2. else the floorplate name, only when it was overridden (name_overridden?)
+  #      and this floorplate covers only that floor (a "1-5" floorplate would
+  #      otherwise label five floors identically);
+  #   3. else the floor number from the range.
+  # The one place this rule lives: the old map calls it directly, and the new map
+  # receives its result through the SDK payload (floorplates[].floorLabels).
+  def floor_label(floor)
+    return floor_name.strip if floor_name_added && floor_name.present?
+    return name.strip if name_overridden? && floors.uniq.size == 1
+    floor.to_s
+  end
+
   def fetch_units
     units = Unit.visible_units.where(community_id: community_id,floor: self.floors)
   end
@@ -146,17 +175,23 @@ class Floorplate < ApplicationRecord
     end
   end
 
+  # Both of these keep their original shape deliberately, `rescue 0` included:
+  # a nil column raises on `> 0` and answers 0 without ever reaching the file,
+  # and that fast path is load-bearing for every floorplate whose dimensions
+  # were never recorded. Only the fallback changed.
   def floorplate_image_width
-    self.width > 0 ? self.width : self.image.width rescue 0
+    self.width > 0 ? self.width : stored_image_dimensions[0] rescue 0
   end
 
   def floorplate_image_height
-    self.height > 0 ? self.height : self.image.height rescue 0
+    self.height > 0 ? self.height : stored_image_dimensions[1] rescue 0
   end
 
-  # Launch: the property map form is complete once the floorplate artwork is in.
+
+  # Launch: the property map form is complete once the floorplate artwork is in,
+  # whether that is a raster image, a design file or an SVG.
   def derive_launch_status
-    launch_status_from(image&.url.present? || file&.url.present?)
+    launch_status_from(image&.url.present? || file&.url.present? || svg_image&.url.present?)
   end
 
   private

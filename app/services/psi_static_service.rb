@@ -89,7 +89,7 @@ class PsiStaticService < BaseService
       address_details = prperty_details&.dig('Address')
 
       name = prperty_details&.dig('MarketingName')
-      website = prperty_details&.dig('WebSite')
+      # website = prperty_details&.dig('WebSite')
       address = address_details&.dig('Address')
       city = address_details&.dig('City')
       state = address_details&.dig('State')
@@ -106,7 +106,7 @@ class PsiStaticService < BaseService
 
       community.update!(
         name: name,
-        website: website,
+        # website: website,
         address: address,
         city: city,
         state: state,
@@ -213,7 +213,7 @@ class PsiStaticService < BaseService
 
         set_availability_url(unit, u, property_id)
         unit.manually_updated = false
-        unit.show_on_map = limit_result
+        unit.show_on_map = unit.feed_show_on_map(limit_result)
 
         unit.save(validate: false)
       end
@@ -276,6 +276,12 @@ class PsiStaticService < BaseService
     def fill_psi_pricing_details(limit_result)
       floorplanHash = Hash.new
       property_ids = @credentials.property_id.split(',') rescue []
+
+      # save_psi_units saved freshly loaded records, so the snapshot taken in
+      # initialize no longer matches the database. The pricing upsert writes every
+      # column of the records it is given, so pricing must work from a fresh copy
+      # or it would put back the old floor plan, unit type and name.
+      @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(@credentials.community_id, "psi")
 
       property_ids.each do |property_id|
         move_in_dates = getMoveInDate(property_id)

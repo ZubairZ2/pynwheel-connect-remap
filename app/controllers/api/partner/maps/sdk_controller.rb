@@ -14,7 +14,7 @@ module Api
         # `clear_all_favorites`, `get_favorites` → session token only
         SESSION_ACTIONS = [
           :fetch_data, :fetch_config, :fetch_svg_image,
-          :fetch_gallery_list, :fetch_gallery_images,
+          :fetch_gallery_list, :fetch_gallery_images, :fetch_homescreen,
           :fetch_neighborhood, :fetch_neighborhood_places,
           :save_favorites, :delete_favorites, :clear_all_favorites,
           :get_favorites, :share_favorites_email, :track_events
@@ -26,20 +26,21 @@ module Api
         # SdkNeighborhoodPhotoService — and touches no property data.
         PUBLIC_ACTIONS = [:neighborhood_photo].freeze
 
-        skip_before_action :validate_api_key,   only: SESSION_ACTIONS + PUBLIC_ACTIONS
-        skip_before_action :load_partner_name,  only: SESSION_ACTIONS + PUBLIC_ACTIONS
+        skip_before_action :validate_api_key, only: SESSION_ACTIONS + PUBLIC_ACTIONS
         before_action :validate_session_token,      only: SESSION_ACTIONS
         # get_favorites only needs sitemap + floorplates for map_for_unit — skip the
         # 6 other heavy includes (floorplans, map_filter, font_setting, credential,
         # calculator_config, three_d_maps_configuration) that it never uses.
         # track_events only needs community_id, timezone — use a lightweight load.
-        before_action :load_community_from_session, only: SESSION_ACTIONS - [:get_favorites, :fetch_svg_image, :fetch_gallery_list, :fetch_gallery_images, :fetch_neighborhood, :fetch_neighborhood_places, :share_favorites_email, :track_events]
+        before_action :load_community_from_session, only: SESSION_ACTIONS - [:get_favorites, :fetch_svg_image, :fetch_gallery_list, :fetch_gallery_images, :fetch_homescreen, :fetch_neighborhood, :fetch_neighborhood_places, :share_favorites_email, :track_events]
         before_action :load_community_for_analytics, only: [:track_events]
         before_action :load_community_for_svg,      only: [:fetch_svg_image]
         before_action :load_community_for_favorites, only: [:get_favorites]
         before_action :load_community_for_email,     only: [:share_favorites_email]
         before_action :load_community_for_gallery,   only: [:fetch_gallery_list, :fetch_gallery_images]
         before_action :load_community_for_neighborhood, only: [:fetch_neighborhood, :fetch_neighborhood_places]
+        before_action :load_community_for_homescreen,   only: [:fetch_homescreen]
+        before_action :require_touch_homescreen!,       only: [:fetch_homescreen]
 
         # ------------------------------------------------------------------
         # GET /api/partner/maps/authorized?propertyId=:id
@@ -71,31 +72,55 @@ module Api
         # are merged in-memory at serve time.
         # ------------------------------------------------------------------
         def fetch_data
-          fav = favorite_record
-          fav_unit_ids      = favorite_ids(fav, "unit")
-          fav_amenity_ids   = favorite_ids(fav, "amenity")
-          fav_floorplan_ids = favorite_ids(fav, "floorplan")
+          built = nil
+          payload = nil
+          body = nil
 
-          built = build_sdk_payload(show_ops_map?)
+          # Phase timings, published as Server-Timing below. See #server_timing!.
+          t_favorites = timed do
+            fav = favorite_record
+            @fav_unit_ids      = favorite_ids(fav, "unit")
+            @fav_amenity_ids   = favorite_ids(fav, "amenity")
+            @fav_floorplan_ids = favorite_ids(fav, "floorplan")
+          end
 
-          units      = merge_unit_favorites(built[:units], fav_unit_ids)
-          amenities  = merge_favorites(built[:amenities],  :amenityId,   fav_amenity_ids)
-          floorplans = merge_favorites(built[:floorplans], :floorplanId, fav_floorplan_ids)
+          queries = 0
+          t_build = counting_queries(->(n) { queries = n }) do
+            timed { built = build_sdk_payload(show_ops_map?) }
+          end
 
-          payload = built.merge(
-            units:              units,
-            amenities:          amenities,
-            floorplans:         floorplans,
-            favorite_units:     favorited_units(units),
-            favorite_amenities: amenities.select  { |a| a[:isFavorite] },
-            favorite_floorplans: floorplans.select { |f| f[:isFavorite] }
-          )
+          t_merge = timed {
+            units      = merge_unit_favorites(built[:units], @fav_unit_ids)
+            amenities  = merge_favorites(built[:amenities],  :amenityId,   @fav_amenity_ids)
+            floorplans = merge_favorites(built[:floorplans], :floorplanId, @fav_floorplan_ids)
+
+            payload = built.merge(
+              units:              units,
+              amenities:          amenities,
+              floorplans:         floorplans,
+              favorite_units:     favorited_units(units),
+              favorite_amenities: amenities.select  { |a| a[:isFavorite] },
+              favorite_floorplans: floorplans.select { |f| f[:isFavorite] }
+            )
+          }
+
+          t_gzip = timed { body = gzip_json(payload) }
 
           response.headers['Cache-Control']    = 'private, no-store'
           response.headers['Content-Encoding'] = 'gzip'
           response.headers['Vary']             = 'Accept-Encoding'
+          server_timing!(
+            community: @timing_community_ms,
+            favorites: t_favorites,
+            build:     t_build,
+            merge:     t_merge,
+            gzip:      t_gzip,
+            sql:       queries,
+            units:     built[:units]&.size,
+            bytes:     body.bytesize
+          )
 
-          send_data gzip_json(payload), type: 'application/json; charset=utf-8', disposition: 'inline'
+          send_data body, type: 'application/json; charset=utf-8', disposition: 'inline'
         end
 
         # ------------------------------------------------------------------
@@ -181,6 +206,23 @@ module Api
           response.headers['Vary']             = 'Accept-Encoding'
 
           send_data gzip_json(payload), type: 'application/json; charset=utf-8', disposition: 'inline'
+        end
+
+        # ------------------------------------------------------------------
+        # GET /api/partner/maps/fetch_homescreen?src=touch
+        # Authorization: Bearer <session_token>
+        #
+        # The Pynwheel Touch home screen loop — images, video and loop_type, the
+        # same block data.json serves as `homescreen`. Touch-only: 403 unless
+        # the request comes from src=touch AND the property has Pynwheel Touch
+        # enabled (see #require_touch_homescreen!).
+        # ------------------------------------------------------------------
+        def fetch_homescreen
+          homescreen = SdkHomescreenBuilderService.new(@community, asset_host: request.base_url).build
+
+          response.headers['Cache-Control'] = 'private, no-store'
+
+          render json: { homescreen: homescreen, status: "success", code: 200 }
         end
 
         # ------------------------------------------------------------------
@@ -481,7 +523,9 @@ module Api
         private
 
         def build_sdk_payload(ops_map = false)
-          SdkPayloadBuilderService.new(@community).build(ops_map: ops_map, group_units: group_units?)
+          # Kept so #server_timing! can read its per-section breakdown afterwards.
+          @payload_builder = SdkPayloadBuilderService.new(@community)
+          @payload_builder.build(ops_map: ops_map, group_units: group_units?)
         end
 
         # The student-housing rollup is opt-in per request. pyn-map-sdk-v1.js asks
@@ -489,6 +533,82 @@ module Api
         # receiving the flat payload no matter how the property is configured.
         def group_units?
           params[:unit_grouping].to_s == "spaces"
+        end
+
+        # Runs the block with a SQL subscriber attached, reporting the query count
+        # to `sink` and returning whatever the block returned.
+        #
+        # The unsubscribe is in an ensure for a reason: a subscriber that outlives
+        # a raised request is never collected, and every one left behind is then
+        # invoked on every query the whole process runs afterwards. A handful of
+        # 500s would quietly tax every request on the dyno. Diagnostics must not
+        # be able to become the outage.
+        def counting_queries(sink)
+          count = 0
+          sub = ActiveSupport::Notifications.subscribe('sql.active_record') do |*, data|
+            count += 1 unless data[:name].to_s =~ /SCHEMA|TRANSACTION/
+          end
+          yield
+        ensure
+          ActiveSupport::Notifications.unsubscribe(sub) if sub
+          sink.call(count)
+        end
+
+        # Milliseconds spent in the block. Monotonic, so a clock adjustment on the
+        # dyno cannot turn a fast request into a negative one.
+        def timed
+          started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+          yield
+          ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - started) * 1000).round(1)
+        end
+
+        # Publishes the phase breakdown as a Server-Timing header, which Chrome
+        # renders in the Network panel's Timing tab under "Server Timing".
+        #
+        # This exists because a slow fetch_data is otherwise invisible from the
+        # outside: the browser can only say "waiting for server response 10s",
+        # which is equally consistent with a slow payload, a saturated dyno, and
+        # a request that sat in Heroku's router queue. Those need different
+        # fixes, so the server has to say which one it was.
+        #
+        # `sql` is the number of queries the payload build issued. It is the
+        # cheapest possible check on whether a given dyno is running the
+        # preloaded build (single digits) or something older (thousands).
+        #
+        # Counts ride along as `desc` because Server-Timing has no other field
+        # for them; Chrome shows the description beside the duration.
+        def server_timing!(community:, favorites:, build:, merge:, gzip:, sql:, units:, bytes:)
+          # Each section of the build, so a slow payload names the part of itself
+          # that was slow. Sorted slowest first: on a header this long the eye
+          # needs the answer at the front, not in source order.
+          sections = (@payload_builder&.timings || {})
+                       .sort_by { |_, ms| -ms }
+                       .map { |name, ms| "build.#{name};dur=#{ms}" }
+
+          entries = [
+            ("community;dur=#{community}" if community),
+            "favorites;dur=#{favorites}",
+            "build;dur=#{build};desc=\"#{sql} sql, #{units} units\"",
+            *sections,
+            "merge;dur=#{merge}",
+            "gzip;dur=#{gzip};desc=\"#{(bytes / 1024.0).round}KB\"",
+            "total;dur=#{(community.to_f + favorites + build + merge + gzip).round(1)}"
+          ].compact
+
+          response.headers['Server-Timing'] = entries.join(", ")
+          # The map is served from pynwheelmap.com and this API from
+          # pynwheelconnect.com, so without this the header is cross-origin and
+          # neither DevTools nor the SDK is allowed to read it back.
+          response.headers['Timing-Allow-Origin'] = '*'
+          # Same numbers in the dyno's own logs, so a slow request can be found
+          # after the fact without a browser open in front of it.
+          Rails.logger.info(
+            "[sdk.fetch_data] community=#{@community&.id} units=#{units} sql=#{sql} " \
+            "community_ms=#{community} build_ms=#{build} merge_ms=#{merge} gzip_ms=#{gzip} bytes=#{bytes} " \
+            "sections=#{(@payload_builder&.timings || {}).sort_by { |_, ms| -ms }.to_h}"
+          )
+        rescue => e
+          Rails.logger.warn("[sdk.fetch_data] timing failed: #{e.class}: #{e.message}")
         end
 
         def gzip_json(payload)
@@ -554,14 +674,16 @@ module Api
         # Load community for session-based endpoints (from session token).
         # ------------------------------------------------------------------
         def load_community_from_session
-          @community = Community
-            .includes(:sitemap, :floorplates, :floorplans, :map_filter,
-                      :font_setting, :credential, :calculator_config,
-                      :three_d_maps_configuration, :design_system_config,
-                      # discovery block only — the pins themselves are never
-                      # loaded here, just counted
-                      :neighborhood)
-            .find_by(id: @session_property_id)
+          @timing_community_ms = timed do
+            @community = Community
+              .includes(:company, :sitemap, :floorplates, :floorplans, :map_filter,
+                        :font_setting, :credential, :calculator_config,
+                        :three_d_maps_configuration, :design_system_config,
+                        # discovery block only — the pins themselves are never
+                        # loaded here, just counted
+                        :neighborhood)
+              .find_by(id: @session_property_id)
+          end
           return render_error("Property not found.", 404) if @community.nil?
         end
 
@@ -610,6 +732,23 @@ module Api
         def load_community_for_gallery
           @community = Community.find_by(id: @session_property_id)
           return render_error("Property not found.", 404) if @community.nil?
+        end
+
+        # Only the design row and the home screen media hanging off it.
+        def load_community_for_homescreen
+          @community = Community
+            .includes(design: [:home_page_images, :home_page_video])
+            .find_by(id: @session_property_id)
+          return render_error("Property not found.", 404) if @community.nil?
+        end
+
+        # src is client-supplied (it is not bound into the session token), so it
+        # only scopes the endpoint to the touch surface; the property's Pynwheel
+        # Touch toggle is the real entitlement check.
+        def require_touch_homescreen!
+          return if @community.is_touch_map(params[:src].to_s.strip.downcase) && @community.pynwheel_touch_enabled?
+
+          render_error("Home screen is only available for Pynwheel Touch.", 403)
         end
 
         # Only the neighborhood row and its pins. None of the six heavy includes

@@ -24,10 +24,10 @@
                 %span.pc-radio-hint Exports properties that have any of the chosen partners enabled.
           .pc-export-partners#pcExportPartners
             .pc-partner-picker
-              - Community::MAP_PARTNERS.each do |p|
+              - Partner.registry.each do |p|
                 %label.pc-partner-chip
-                  = check_box_tag "partner_keys[]", p[:key], false, class: "pc-export-partner", disabled: true
-                  %span= p[:label]
+                  = check_box_tag "partner_keys[]", p.key, false, class: "pc-export-partner", disabled: true
+                  %span= p.label
             %p.pc-export-warn#pcExportWarn{ style: "display:none;" }
               %i.fa.fa-exclamation-circle.mr-5
               Choose at least one partner.
@@ -69,10 +69,10 @@
                 Choose the partners to assign
               %p.text-muted.font-size-13 These partners will be turned on for every matched property. Existing partner assignments are kept.
               .pc-partner-picker
-                - Community::MAP_PARTNERS.each do |p|
+                - Partner.registry.each do |p|
                   %label.pc-partner-chip
-                    = check_box_tag "pc_upload_#{p[:key]}", true, false, class: "pc-upload-partner", data: { key: p[:key] }
-                    %span= p[:label]
+                    = check_box_tag "pc_upload_#{p.key}", true, false, class: "pc-upload-partner", data: { key: p.key }
+                    %span= p.label
 
             .pc-upload-col
               %h5.pc-block-title

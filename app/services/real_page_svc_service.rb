@@ -1,6 +1,15 @@
 class RealPageSvcService < BaseService
   attr_reader :credentials
 
+  # The four hashes below are lookup caches, not preconditions: they index what
+  # this community already has so each record can be matched to an update instead
+  # of a duplicate. They are empty for a property that has never imported.
+  #
+  # The import methods used to open with `return unless <hash>.present?`, which
+  # turned that emptiness into a refusal to import at all -- a new property could
+  # never get its first set of records, and this worker skipped it on every run
+  # forever after. Every branch already falls through to first_or_initialize, so
+  # an empty hash simply means everything is a create.
   def initialize(credentials)
     @credentials = credentials
     @unit_record = []
@@ -13,7 +22,7 @@ class RealPageSvcService < BaseService
 
   def perform
     before_updation_units = NotifyManagerService.new(@credentials.community_id)
-    if @credentials&.community&.all_apps_enabled? || @credentials&.community&.pynwheel_tour_enabled?
+    if DataProviders::RealPage::Integration.tour?(community)
       import_realpage_svc_floorplans
       # import_initials_realpage_units
     else
@@ -27,7 +36,6 @@ class RealPageSvcService < BaseService
 
   # For Pynwheel Tour Package
   def import_realpage_svc_floorplans
-    return unless @all_floorplans_hash.present?
     site_ids = @credentials.site_id.split(',').map(&:strip) rescue []
     site_ids.each do |site_id|
       begin
@@ -103,7 +111,6 @@ class RealPageSvcService < BaseService
 
   # For Pynwheel Touch and Map Package
   def import_new_realpage_svc_floorplans
-    return unless @all_floorplans_hash.present?
     site_ids = @credentials.site_id.split(',').map(&:strip) rescue []
     site_ids.each do |site_id|
       begin
@@ -377,7 +384,6 @@ class RealPageSvcService < BaseService
   end
 
   def import_realpage_svc_units
-    return unless @all_units_hash.present?
     unit_present = @all_units_hash.keys
 
     site_ids = @credentials.site_id.split(',').map(&:strip) rescue []
@@ -389,13 +395,9 @@ class RealPageSvcService < BaseService
         current_date = Date.today
         community_id = @credentials.community_id
 
-        if @credentials&.community&.all_apps_enabled? || @credentials&.community&.pynwheel_tour_enabled?
-          url = RP_TOUR_API_URL
-          license_key = ENV['RP_TOUR_API_KEY']
-        else
-          url = RP_TOUCH_API_URL
-          license_key = ENV['RP_TOUCH_API_KEY']
-        end
+        integration = DataProviders::RealPage::Integration.for(community)
+        url = DataProviders::RealPage::Integration.url(integration)
+        license_key = DataProviders::RealPage::Integration.license_key(integration)
 
         soap_action = REALPAGE_PRICE_ACTION
         pmc_id = @credentials.pmc_id
@@ -445,7 +447,8 @@ class RealPageSvcService < BaseService
                               </tem:listCriteria>
                             </tem:getunitlist>
                           </soapenv:Body>
-                        </soapenv:Envelope>')
+                        </soapenv:Envelope>',
+            **DataProviders::RealPage::Integration.http_options)
 
         result = Ox.load(response.body, mode: :hash)
 
@@ -453,7 +456,6 @@ class RealPageSvcService < BaseService
           units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitlistResponse][1][:getunitlistResult][:GetUnitList][1][:UnitObjects][:UnitObject]
           units = [units] if units.is_a?(Hash)
 
-          community = @credentials.community
           community&.community_data_updated_on()
           units.each do |u|
             provider_unit_id = "#{u[:Address][:UnitID]}-#{site_id}"
@@ -635,13 +637,9 @@ class RealPageSvcService < BaseService
 
       community_id = @credentials.community_id
 
-      if @credentials&.community&.all_apps_enabled? || @credentials&.community&.pynwheel_tour_enabled?
-        url = RP_TOUR_API_URL
-        license_key = ENV['RP_TOUR_API_KEY']
-      else
-        url = RP_TOUCH_API_URL
-        license_key = ENV['RP_TOUCH_API_KEY']
-      end
+      integration = DataProviders::RealPage::Integration.for(community)
+      url = DataProviders::RealPage::Integration.url(integration)
+      license_key = DataProviders::RealPage::Integration.license_key(integration)
 
       soap_action = 'http://tempuri.org/IRPXService/getrentmatrix'
       pmc_id = @credentials.pmc_id
@@ -680,7 +678,8 @@ class RealPageSvcService < BaseService
                             </tem:getrentmatrix>
                         </tem:getrentmatrix>
                     </soapenv:Body>
-                </soapenv:Envelope>')
+                </soapenv:Envelope>',
+            **DataProviders::RealPage::Integration.http_options)
           
         rescue => error
           raise error
@@ -764,4 +763,14 @@ class RealPageSvcService < BaseService
     "#{app_base_url}/communities/#{community_id}/webpages"
   end
 
+
+  # credentials arrives as an OpenStruct built from Credential#attributes -- the
+  # Sidekiq jobs serialise the record to JSON and hand that over -- so it carries
+  # community_id but none of the associations. `credentials.community` is simply
+  # nil, which meant the old `credentials&.community&.all_apps_enabled?` test was
+  # nil for every property and these services always took the Touch branch no
+  # matter what the community's product flags said. Resolve the record instead.
+  def community
+    @community ||= Community.find_by_id(credentials.community_id)
+  end
 end

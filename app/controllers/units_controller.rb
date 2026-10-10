@@ -2,22 +2,12 @@ class UnitsController < ApplicationController
   # include Error::ErrorHandler
   include AssignLocksHelper
   include Connect::InventoryJson
+  include GridPagination
   add_breadcrumb "Home", :root_path
   before_action :set_community
   before_action :check_community
   before_action :set_unit, only: [:edit,:update,:destroy,:remove_pri_scnd_image, :update_lock_provider]
   before_action :load_all_locks, only: [:new, :create, :edit, :update]
-
-  PER_PAGE = 50
-  PER_PAGE_OPTIONS = [25, 50, 100, 200].freeze
-
-  # "All" is still bounded. Pagination exists because rendering every unit of a
-  # property is what made this page megabytes of HTML, so the escape hatch gets a
-  # ceiling rather than an unbounded page - comfortably above the largest
-  # property today, and the view says so when a set is actually clipped.
-  MAX_PER_PAGE = 2000
-
-  helper_method :per_page, :showing_all?, :per_page_capped?
 
   def index
     @communities = current_company.communities
@@ -32,7 +22,7 @@ class UnitsController < ApplicationController
     # before the grid's paging and the one-time intro below.
     return render_connect_units(scope) if request.format.json?
 
-    @units = scope.paginate(page: params[:page], per_page: resolve_per_page)
+    @units = paginate_grid(scope, @filter)
     @filter_options = unit_filter_options
     add_breadcrumb "Units", community_units_path(@community)
 
@@ -182,6 +172,7 @@ class UnitsController < ApplicationController
           @unit.available_is_updated = true
         end
         @unit.available = true
+        @unit.show_on_map = true
       elsif (params[:unit].present? and params[:unit][:availability].present? && params[:unit][:availability] == "Occupied")
         if @unit.available == true
           @unit.available_is_updated = true
@@ -209,6 +200,9 @@ class UnitsController < ApplicationController
       end
       if (params[:unit][:available_date].present? && params[:unit][:available_date] != @unit.available_date)
         @unit.available_date_is_updated = true
+      end
+      if (params[:unit][:show_on_map].present? && params[:unit][:show_on_map].to_s != @unit.show_on_map.to_s)
+        @unit.show_on_map_is_updated = true
       end
       if (params[:unit][:floor].present? && params[:unit][:floor] != @unit.floor.to_i.to_s)
         @unit.floor_is_updated = true
@@ -342,7 +336,7 @@ class UnitsController < ApplicationController
     end
     if params[:unit][:available] == 'true'
 
-      @unit.update(availability: "Unoccupied", available: true, availability_is_updated: true)
+      @unit.update(availability: "Unoccupied", available: true, availability_is_updated: true, show_on_map: true)
     end
     if params[:unit][:available] == 'false'
       @unit.update(availability: "Occupied", available: false, availability_is_updated: true)
@@ -592,7 +586,7 @@ class UnitsController < ApplicationController
 
   def set_available
     if params[:available] == 'true'
-      mass_override_units.update_all(availability: "Unoccupied", manually_updated: true, available_date: Date.today - 1, available_is_updated: true, availability_is_updated: true, available: true, updated_at: Time.current)
+      mass_override_units.update_all(availability: "Unoccupied", manually_updated: true, available_date: Date.today - 1, available_is_updated: true, availability_is_updated: true, available: true, show_on_map: true, updated_at: Time.current)
     else
       mass_override_units.update_all(availability: "Occupied", manually_updated: true, available: false, available_is_updated: true, availability_is_updated: true, updated_at: Time.current)
     end
@@ -615,6 +609,12 @@ class UnitsController < ApplicationController
       flash[:notice] = "Manual Override is updated for units successfully."
     end
 
+    redirect_back(fallback_location: root_path)
+  end
+
+  def set_show_on_map
+    mass_override_units.update_all(show_on_map: params[:show_on_map] == "true", manually_updated: true, show_on_map_is_updated: true, updated_at: Time.current)
+    flash[:notice] = "Show on map is updated for units successfully."
     redirect_back(fallback_location: root_path)
   end
 
@@ -756,50 +756,6 @@ class UnitsController < ApplicationController
 
   def filter_params
     params.permit(*UnitFilterQuery::FILTER_KEYS, :sort, :dir, :per_page)
-  end
-
-  def per_page
-    @per_page ||= resolve_per_page
-  end
-
-  def showing_all?
-    @showing_all
-  end
-
-  # True when "All" was asked for but the matching set is larger than the cap,
-  # so the page is showing the first MAX_PER_PAGE of it rather than everything.
-  def per_page_capped?
-    @per_page_capped
-  end
-
-  # The rows-per-page choice sticks for the rest of the session, so someone who
-  # works at 200 rows does not have to re-pick it on every property and every
-  # return trip. "All" is deliberately not remembered - it is an escape hatch for
-  # one screenful of work, and silently reloading 2000 rows on a later visit is
-  # not what anyone asked for. A fresh session still starts at PER_PAGE.
-  def resolve_per_page
-    requested = params[:per_page].to_s
-
-    if requested == "all"
-      @showing_all = true
-      total = @filter.results.reorder(nil).count
-      @per_page_capped = total > MAX_PER_PAGE
-      @per_page = [[total, 1].max, MAX_PER_PAGE].min
-    else
-      @showing_all = false
-      @per_page_capped = false
-      @per_page = remembered_per_page(requested.to_i)
-    end
-  end
-
-  def remembered_per_page(requested)
-    if PER_PAGE_OPTIONS.include?(requested)
-      session[:units_per_page] = requested
-      requested
-    else
-      stored = session[:units_per_page].to_i
-      PER_PAGE_OPTIONS.include?(stored) ? stored : PER_PAGE
-    end
   end
 
   # Which units a mass override applies to. The grid normally posts the ids it

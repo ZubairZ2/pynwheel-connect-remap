@@ -10,7 +10,7 @@
 
 %section
   .content
-    .unit-form-page
+    .pyn-form.unit-form-page
       = link_to community_units_path(@community), class: "back" do
         %i.fa.fa-angle-left
         All units
@@ -25,7 +25,7 @@
       = form_for @unit, url: params[:floorNo].nil? ? community_unit_path(id: @unit.id, community_id: @community.id) : community_unit_path(id: @unit.id, community_id: @community.id) << ('?floorNo=' + params[:floorNo]), html: { class: "unit-form" } do |f|
         = render partial: "form", locals: { f: f }
 
-        .u-actionbar
+        .pf-actionbar
           %span.grow Changes to feed-managed fields need Manual Override switched on.
           = link_to "Cancel", community_units_path(@community), class: "btn btn-ghost"
           = f.submit "Save changes", class: "btn btn-success submit_button"
@@ -34,13 +34,13 @@
       #crop-unit-image.modal.fade.edit-image
 
       - if @community.self_tour
-        .u-section
-          .u-section-head
+        .pf-section
+          .pf-section-head
             %h2 Unit tour images
             %p
               Import images associated with this unit, then plot them so they appear in the
               self-guided tour.
-          .u-section-body
+          .pf-section-body
             .u-tour-head
               .grow
               .u-tour-actions

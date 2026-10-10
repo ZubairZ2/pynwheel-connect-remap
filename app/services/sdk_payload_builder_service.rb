@@ -12,32 +12,58 @@ class SdkPayloadBuilderService
   # the flat payload whatever the property is configured as.
   def build(ops_map: false, group_units: false)
     @group_units = group_units
-    units_ar = @community.units.map_units(@community, ops_map).visible_units.without_hidden_names.includes(:floorplan).to_a
+    @timings     = {}
+
+    units_ar = section(:load_units) do
+      @community.units.map_units(@community, ops_map).visible_units.without_hidden_names.to_a
+    end
     units_ar.each { |u| u.association(:community).target = @community }
+    attach_floorplans(units_ar)
 
     # Only `units` is grouped. floorplans_json and filters_json keep reading the
     # flat list: a floor plan's unit count and a filter's option list must both
     # describe what a resident can actually lease, so a price band or an
     # availability window that exists on only one bedroom still has to appear.
-    all_units = grouped_units? ? grouped_units_json(units_ar, Set.new, ops_map)
-                               : units_json(Set.new, ops_map, units_ar)
+    all_units = section(:units) do
+      grouped_units? ? grouped_units_json(units_ar, Set.new, ops_map)
+                     : units_json(Set.new, ops_map, units_ar)
+    end
 
     {
-      property:    property_json(ops_map),
+      property:    section(:property) { property_json(ops_map) },
       # Top level, not nested under `property`: the gallery is its own feature
       # with its own endpoints, and the SDK serves it through getGalleryConfig()
       # rather than making hosts dig through the property blob.
-      gallery:     gallery_discovery_json,
-      sitemap:     sitemap_json,
-      backgroundSvg: background_svg_json,
-      floorplates: floorplates_json,
+      gallery:     section(:gallery)     { gallery_discovery_json },
+      sitemap:     section(:sitemap)     { sitemap_json },
+      backgroundSvg: section(:background) { background_svg_json },
+      floorplates: section(:floorplates) { floorplates_json },
       units:       all_units,
-      floorplans:  floorplans_json(units_ar),
-      amenities:   amenities_json,
-      filters:     filters_json(units_ar, ops_map),
+      floorplans:  section(:floorplans)  { floorplans_json(units_ar) },
+      amenities:   section(:amenities)   { amenities_json },
+      filters:     section(:filters)     { filters_json(units_ar, ops_map) },
       status:      "success",
       code:        200
     }
+  end
+
+  # Milliseconds spent in each section of the last #build, keyed by section name.
+  #
+  # Published by the controller as Server-Timing. A payload can be slow for
+  # reasons that never touch the database -- an image decode, an S3 read, a
+  # regex over every unit -- and a query count alone cannot tell those apart
+  # from each other. This says which part of the payload the time went into.
+  attr_reader :timings
+
+  # Records how long the block took under `name` and returns its value. The
+  # measurement is monotonic and costs two clock reads, so it stays on in
+  # production; the timings are worthless if they are only collected when
+  # somebody already suspects a problem.
+  def section(name)
+    started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+    yield
+  ensure
+    (@timings ||= {})[name] = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - started) * 1000).round(1)
   end
 
   # The property and gallery blocks alone — no units, floor plans, amenities or
@@ -161,7 +187,7 @@ class SdkPayloadBuilderService
     floorplan = unit.floorplan
     fees      = @community.get_additional_fees(unit)
     buttons   = unit_additional_buttons(unit)
-    description, description_title = description_fields(unit, floorplan)
+    description, description_title, expand_description = description_fields(unit, floorplan)
     primary_image, secondary_image = unit_images(unit, floorplan)
 
     {
@@ -169,6 +195,12 @@ class SdkPayloadBuilderService
       unitMarketingName: unit.api_unit_marketing_name,
       mapId:           map_for_unit(unit),
       unitId:          unit.id,
+      # The PMS's own id for this unit, alongside ours. Analytics publishes this
+      # one as `unit_id` (PYN-1655 asks for the id "from data provider"), because
+      # it is the only id a client can reconcile against their own systems —
+      # `unitId` above is a Pynwheel primary key and means nothing to them.
+      # Already on the loaded row, so this costs no query.
+      providerUnitId:  unit.provider_unit_id,
       building:        unit.building,
       floor:           unit.floor,
       sold:            unit.sold,
@@ -182,6 +214,7 @@ class SdkPayloadBuilderService
                          hide_decimals(floorplan.square_feet)
                        end,
       floorplanId:            unit.floorplan_id,
+      providerFloorplanId:    floorplan&.provider_floorplan_id,
       floorplanName:          floorplan&.name,
       pointerData:            unit.pointer_data,
       market_rent:            unit.get_market_rent(),
@@ -199,6 +232,7 @@ class SdkPayloadBuilderService
       lease_pricing:          unit.get_lease_term_pricing_matrix(),
       description:            description,
       description_title:      description_title,
+      expandDescriptionInPopup: expand_description,
       display_rent:           unit&.community&.display_rent,
       additional_fees:        fees,
       property_id:            unit.property_id,
@@ -224,9 +258,30 @@ class SdkPayloadBuilderService
     return [nil, nil] unless record
 
     [
-      record.image.present?           ? record.validated_image_url                                      : nil,
-      record.secondary_image.present? ? record.convert_to_s3_accelerate_url(record.secondary_image.url) : nil
+      stored_image?(record, :image) ? record.validated_image_url : nil,
+      stored_image?(record, :secondary_image) ?
+        record.convert_to_s3_accelerate_url(record.secondary_image.url) : nil
     ]
+  end
+
+  # Whether the record actually has a file in this slot, decided from the column
+  # rather than from the uploader.
+  #
+  # `record.image.present?` reads like an attribute and is not: it builds the
+  # mounted uploader, retrieves the stored file and walks the uploader's
+  # versions. For a record with no picture that is the whole apparatus assembled
+  # to arrive at nil -- and the payload asks it of every unit and then again of
+  # that unit's floor plan, four slots per pair. Measured on a 671-unit
+  # property it was 24ms of a 53ms unit serialization, the single largest item.
+  #
+  # CarrierWave stores the filename in the column, so a blank column means "no
+  # file" with certainty and without constructing anything. A record that does
+  # carry an image still goes through the uploader exactly as before.
+  def stored_image?(record, column)
+    return record.read_attribute(column).present? if record.has_attribute?(column)
+
+    # Not every record handed to #record_images is backed by that column.
+    record.public_send(column).present?
   end
 
   # A unit's two pictures: its own when it has any, otherwise its floor plan's.
@@ -244,7 +299,20 @@ class SdkPayloadBuilderService
     own = record_images(unit)
     return own if own.any?(&:present?)
 
-    record_images(floorplan)
+    floorplan_images(floorplan)
+  end
+
+  # A floor plan's pictures, resolved once per plan rather than once per unit.
+  #
+  # Most units carry no image of their own and fall back to their plan's, so
+  # this ran for every unit on the property -- 671 resolutions of the same 46
+  # answers, each one going through the uploader. The plans are shared by
+  # definition, and nothing about the pair depends on which unit is asking.
+  def floorplan_images(floorplan)
+    return [nil, nil] unless floorplan
+
+    @floorplan_images ||= {}
+    @floorplan_images.fetch(floorplan.id) { @floorplan_images[floorplan.id] = record_images(floorplan) }
   end
 
   # The space's own letter and terms, carried on the unit itself.
@@ -280,6 +348,24 @@ class SdkPayloadBuilderService
   end
 
   private
+
+  # Hands every unit the floor plan it would otherwise fetch for itself.
+  #
+  # Rails cannot preload this one: Unit#floorplan resolves on
+  # `provider_floorplan_id`, not on our primary key, so `includes(:floorplan)`
+  # joins the wrong column and the overridden reader throws the result away.
+  # That left each unit doing its own SELECT — around twenty of them, because
+  # every additional-button fallback re-reads the plan — which is what made
+  # fetch_data cost tens of thousands of queries on a large property.
+  #
+  # Costs no query of its own: the controller's community loader already
+  # includes `:floorplans`, so this is a walk over rows that are in memory.
+  # Reuses #floorplans_by_provider_id, which the student-housing space config
+  # already built for exactly this lookup.
+  def attach_floorplans(units)
+    by_provider_id = floorplans_by_provider_id
+    units.each { |unit| unit.preloaded_floorplan = by_provider_id[unit.floorplan_id] }
+  end
 
   # Whether this payload's `units` are rolled up by plot position: the property
   # is configured for it AND the client asked. Both are required — see #build.
@@ -399,7 +485,23 @@ class SdkPayloadBuilderService
     {
       propertyId:   @community.id,
       propertyName: @community.name,
+      # Every analytics event is stamped with the owning company so a
+      # multi-property client can roll their reporting up without us shipping
+      # them a property-to-company mapping. Read off the already-loaded
+      # community row — no association is walked.
+      companyId:    @community.company_id,
+      # Published on every analytics event beside the id, so a client's report
+      # reads a name without keeping its own id-to-company table. The
+      # controllers that build this payload preload the company.
+      companyName:  @community.company&.name,
       website:      @community.community_website,
+
+      # What this property is allowed to push into its embedding page's GTM data
+      # layer. Server-driven on purpose: pyn-map-sdk-v1.js is one file every
+      # client loads from our CDN, so a hardcoded list would make "expose one
+      # more event for one property" a JS release and a cache bust for everyone.
+      # See Analytics::MapEventContract#data_layer_config.
+      analytics:    Analytics::MapEventContract.data_layer_config(@community),
 
       branding: {
         logoUrl:         resolve_map_logo_url(@community),
@@ -432,22 +534,26 @@ class SdkPayloadBuilderService
         defaultFloor:         @community.default_map_floor,
         sitemapAutoZoom:      @community.sitemap_auto_zoom,
         enable3dMaps:         @community.enable_three_d_maps,
+        # "2d" | "3d" | "both" -- the "Available map views" setting, resolved
+        # against the maps this property actually has (PYN-1610). The SDK boots
+        # straight into the one view when it isn't "both", and the 2D/3D
+        # switcher exists only for "both".
+        availableViews:       map_views,
+        defaultView:          @community.resolved_default_map_view,
         defaultSatelliteView: @community.default_satellite_view,
         # "Highlight floor plan on hover" CMS toggle. On, hovering a unit lights
         # up every unit sharing its floor plan and the pop-up names the whole
         # range rather than the one unit; off is today's single-unit hover.
         # Properties that plot one tenant per floor plan across several units
         # want the group, but nothing here is specific to such a property.
-        highlightAllUnitsOnHover: @community.highlight_all_units_on_hover
+        highlightAllUnitsOnHover: @community.highlight_all_units_on_hover,
+        # "Hide unit numbers" CMS toggle. On, the SDK drops the number labels
+        # the SVG draws inside its unit groups; the unit shapes themselves, and
+        # everything they do on hover and click, are untouched.
+        hideUnitNumbers:          @community.hide_map_unit_numbers
       },
 
-      beans3dConfig: {
-        enabled:              @community.enable_three_d_maps,
-        beansApiKey:          ENV['BEANS_API_KEY'].to_s,
-        defaultSatelliteView: @community.default_satellite_view,
-        propertyAddress:      [@community.address, @community.city, @community.state, @community.zip].compact.join(', '),
-        mapConfig:            @community.three_d_maps_configuration&.as_json || {}
-      },
+      beans3dConfig: beans3d_config_json,
 
       unitDisplay: {
         displayRent:                  @community.display_rent,
@@ -503,6 +609,10 @@ class SdkPayloadBuilderService
       # friends, which the CMS keeps separately per map type; a renamed tab is
       # still the same tab, so these are one set for the property.
       tabLabels: design_system_config.to_tab_labels,
+
+      # The icon above each of those names: which one, and whether it shows at
+      # all. Same four keys as tabLabels, stored independently of them.
+      tabIcons: design_system_config.to_tab_icons,
 
       fontFamily: @community.font_setting&.svg_labels_font_family,
 
@@ -605,7 +715,36 @@ class SdkPayloadBuilderService
   # sitemap/floorplate SVGs (units only, transparent) overlaid on top — for
   # floorplates every floor SVG overlays this same background. The SDK renders
   # it as an <img>, so we hand back the resolved image URL directly.
+  def map_views
+    @map_views ||= @community.resolved_map_views
+  end
+
+  def map_view_2d?
+    map_views != "3d"
+  end
+
+  def map_view_3d?
+    map_views != "2d"
+  end
+
+  # A 2D-only map never starts Beans, so it gets no key and no 3D styling to
+  # look up. show3dByDefault opens the map in 3D: always for a 3D-only map, and
+  # for "both" when the property's "Default map view" is 3D.
+  def beans3d_config_json
+    return { enabled: false } unless map_view_3d?
+
+    {
+      enabled:              true,
+      show3dByDefault:      @community.resolved_default_map_view == "3d",
+      beansApiKey:          ENV['BEANS_API_KEY'].to_s,
+      defaultSatelliteView: @community.default_satellite_view,
+      propertyAddress:      [@community.address, @community.city, @community.state, @community.zip].compact.join(', '),
+      mapConfig:            @community.three_d_maps_configuration&.as_json || {}
+    }
+  end
+
   def background_svg_json
+    return nil unless map_view_2d?
     return nil unless @community&.is_beans_svg?
     return nil unless @community.background_svg_image.present?
 
@@ -619,14 +758,40 @@ class SdkPayloadBuilderService
     return nil unless @community&.is_sitemap?
     sitemap = @community.sitemap
     return nil unless sitemap
-    {
+
+    json = {
       mapId:       sitemap.id,
       mapType:     'sitemap',
-      updatedAt:   sitemap.updated_at.to_i,
-      imageUrl:    sitemap.validated_image_url,
-      imageWidth:  sitemap.try(:width).to_i > 0 ? sitemap.width.to_i : (sitemap.image.present? ? sitemap.image.width.to_i : 0),
-      imageHeight: sitemap.try(:height).to_i > 0 ? sitemap.height.to_i : (sitemap.image.present? ? sitemap.image.height.to_i : 0)
+      updatedAt:   sitemap.updated_at.to_i
     }
+    return json unless map_view_2d?
+
+    width, height = sitemap_dimensions(sitemap)
+    json.merge(imageUrl: sitemap.validated_image_url, imageWidth: width, imageHeight: height)
+  end
+
+  # [width, height] for the sitemap image, preferring the columns and falling
+  # back to the file exactly as this used to.
+  #
+  # The columns default to 0 rather than NULL, so `> 0` was false for every
+  # sitemap that had never had its size recorded and both branches fell through
+  # to `image.width` / `image.height` -- two separate S3 downloads and two full
+  # ImageMagick decodes, on every payload build, for every sitemap property.
+  # StoredImageDimensions makes that one decode, and writes the answer to the
+  # columns so it does not happen again.
+  #
+  # Same values as before, including the 0 a property with no artwork gets.
+  def sitemap_dimensions(sitemap)
+    stored = [sitemap.try(:width).to_i, sitemap.try(:height).to_i]
+    return stored if stored.all?(&:positive?)
+    return stored unless sitemap.image.present?
+
+    decoded = sitemap.stored_image_dimensions
+    [stored[0].positive? ? stored[0] : decoded[0].to_i,
+     stored[1].positive? ? stored[1] : decoded[1].to_i]
+  rescue => e
+    Rails.logger.warn("[sdk] sitemap #{sitemap.id} dimensions unavailable: #{e.class}: #{e.message}")
+    [sitemap.try(:width).to_i, sitemap.try(:height).to_i]
   end
 
   def floorplates_json
@@ -637,13 +802,36 @@ class SdkPayloadBuilderService
         mapType:        'floorplate',
         name:           fp.name,
         range:          fp.range,
+        # { "floor" => label } — what each floor is called in the floor list,
+        # decided here by Floorplate#floor_label so the new map's labels come from
+        # the same rule as the old map's and the SDK only has to look them up.
+        floorLabels:    floor_labels_for(fp),
         floorName:      fp.floor_name,
         floorNameAdded: fp.floor_name_added,
-        updatedAt:      fp.updated_at.to_i,
-        imageUrl:       fp.validated_image_url,
-        imageWidth:     fp.floorplate_image_width.to_i,
-        imageHeight:    fp.floorplate_image_height.to_i
-      }
+        updatedAt:      fp.updated_at.to_i
+      }.merge(floorplate_image_json(fp))
+    end
+  end
+
+  # A 3D-only map still needs each floorplate for its floor list, but never
+  # draws the artwork -- so skip the URL and the dimension lookups behind it.
+  def floorplate_image_json(fp)
+    return {} unless map_view_2d?
+
+    {
+      imageUrl:    fp.validated_image_url,
+      imageWidth:  fp.floorplate_image_width.to_i,
+      imageHeight: fp.floorplate_image_height.to_i
+    }
+  end
+
+  # Floorplate#floors cannot parse a blank range, so such a floorplate sends no
+  # labels and the SDK falls back to floor numbers.
+  def floor_labels_for(floorplate)
+    return {} if floorplate.range.blank?
+
+    floorplate.floors.each_with_object({}) do |floor, labels|
+      labels[floor.to_s] = floorplate.floor_label(floor)
     end
   end
 
@@ -660,6 +848,9 @@ class SdkPayloadBuilderService
 
       json = {
         floorplanId:       fp.id,
+        # The PMS's id, published by analytics as `floor_plan_id` for the same
+        # reason units carry theirs. Already read below for spaceConfig.
+        providerFloorplanId: fp.provider_floorplan_id,
         name:              fp.name,
         bedrooms:          fp.bedrooms,
         bathrooms:         fp.bathrooms,
@@ -668,6 +859,7 @@ class SdkPayloadBuilderService
         description:       fp.description.presence,
         description_title: floorplan_description_title(fp),
         showDescriptionOnCard: show_floorplan_description_on_card?(fp),
+        expandDescriptionInPopup: expand_description_in_popup?(fp),
         additionalButtons: floorplan_additional_buttons(fp),
         availability_url: floorplan_apply_url(fp, first_unit),
         availability_status: fp.availability_status,
@@ -713,10 +905,27 @@ class SdkPayloadBuilderService
   # the floor plan: the specific apartment is assigned at signing, so the pop-up
   # never names a unit. Precomputed here rather than derived in the browser so
   # opening the modal costs an array index, not a scan over a thousand units.
+  # The only two things this needs from a space's unit, carried along on the
+  # join instead of fetched as a whole record.
+  #
+  # It used to `includes(:unit)`, which instantiated every unit on the property
+  # a second time -- the payload already holds them all -- so that two
+  # attributes could be read off each one. On a 671-bed property that was 87% of
+  # the time spent building the floor plans.
+  #
+  # INNER JOIN rather than LEFT is deliberate and changes nothing: a detail row
+  # whose unit is gone used to resolve to a nil floorplan_id and was dropped by
+  # the `.except(nil)` below, so the join drops exactly the same rows.
+  SPACE_UNIT_COLUMNS =
+    "units.floorplan_id AS unit_floorplan_id, units.marketing_name AS unit_marketing_name".freeze
+
   def space_configs_by_floorplan(units)
     return {} unless @community.student_housing_property?
 
-    details = UnitSpaceDetail.for_community(@community.id).lettered.includes(:unit).to_a
+    details = UnitSpaceDetail.for_community(@community.id).lettered
+                             .joins(:unit)
+                             .select("unit_space_details.*", SPACE_UNIT_COLUMNS)
+                             .to_a
     return {} if details.empty?
 
     # The units this payload actually carries. Deliberately NOT the same source as
@@ -727,7 +936,7 @@ class SdkPayloadBuilderService
     # actionable unit id come from the payload.
     payload_units = units.index_by(&:id)
 
-    details.group_by { |detail| detail.unit&.floorplan_id }
+    details.group_by(&:unit_floorplan_id)
            .except(nil)
            .map { |provider_id, rows|
              [provider_id,
@@ -751,7 +960,7 @@ class SdkPayloadBuilderService
       # elects a base unit with. Deliberately not "first available" -- availability
       # flips as leases are signed, and this id is what favourites, deep links and
       # analytics are keyed on.
-      ordered = group.sort_by { |d| [SdkUnitSpaceGrouper.natural_key(d.unit&.marketing_name), d.unit_id.to_i] }
+      ordered = group.sort_by { |d| [SdkUnitSpaceGrouper.natural_key(d.unit_marketing_name), d.unit_id.to_i] }
       display = ordered.first
       present = ordered.filter_map { |d| payload_units[d.unit_id] }
 
@@ -1024,14 +1233,41 @@ class SdkPayloadBuilderService
 
   def map_for_unit(unit)
     return @community.sitemap&.id if @community.is_sitemap?
-    @community.floorplate_for_floor(unit.floor)&.id
+    map_id_by_floor[unit.floor.to_i]
   end
 
+  # floor number -> floorplate id, built once for the property.
+  #
+  # Community#floorplate_for_floor rescans every floorplate on each call and
+  # re-parses its `range` string into a floor array while doing so. On a 27-floor
+  # property with a four-figure unit list that is tens of thousands of range
+  # parses for an answer that only ever depends on the floor number.
+  #
+  # Walks the floorplates in association order (number DESC) and lets the first
+  # one claiming a floor keep it, which is the same one #detect returned.
+  def map_id_by_floor
+    @map_id_by_floor ||= @community.floorplates.each_with_object({}) do |fp, map|
+      next if fp.range.blank?
+      fp.floors.each { |floor| map[floor] ||= fp.id }
+    end
+  end
+
+  # `slot` and `kind` exist because of the select on the last line.
+  #
+  # These are three fixed CMS link slots and the select drops the empty ones, so
+  # a property that fills only slots 2 and 3 hands the client an array whose
+  # first entry is slot 2 with nothing saying so. Analytics could not report
+  # "additional link 1 vs 2 vs 3" (PYN-1655's link_index), and a Schedule Tour
+  # click was indistinguishable from a 3D Tour click once both were merely "the
+  # button at index 0".
+  #
+  # `kind` is the stable identity, `slot` the CMS position. Neither is derived
+  # from the label, which is free text an operator renames at will.
   def unit_additional_buttons(unit)
     [
-      { label: unit.get_virtual_tour_label,      url: unit.get_virtual_tour_url,      openInNewTab: unit.link1_open_in_new_tab? },
-      { label: unit.get_additional_button_label, url: unit.get_additional_button_url, openInNewTab: unit.link2_open_in_new_tab? },
-      { label: unit.get_schedule_tour_label,     url: unit.get_schedule_tour_url,     openInNewTab: unit.link3_open_in_new_tab? }
+      { label: unit.get_virtual_tour_label,      url: unit.get_virtual_tour_url,      openInNewTab: unit.link1_open_in_new_tab?, slot: 1, kind: "virtual_tour" },
+      { label: unit.get_additional_button_label, url: unit.get_additional_button_url, openInNewTab: unit.link2_open_in_new_tab?, slot: 2, kind: "additional" },
+      { label: unit.get_schedule_tour_label,     url: unit.get_schedule_tour_url,     openInNewTab: unit.link3_open_in_new_tab?, slot: 3, kind: "schedule_tour" }
     ].select { |btn| btn[:url].present? }
   end
 
@@ -1043,11 +1279,14 @@ class SdkPayloadBuilderService
   def floorplan_additional_buttons(fp)
     [
       { label: fp.virtual_tour_button_label.presence || "3D Tour",
-        url: fp.virtual_tour_url, openInNewTab: fp.virtual_tour_url.present? && fp.link1_open_new_tab },
+        url: fp.virtual_tour_url, openInNewTab: fp.virtual_tour_url.present? && fp.link1_open_new_tab,
+        slot: 1, kind: "virtual_tour" },
       { label: fp.additional_button.presence || "Additional Button",
-        url: fp.additional_url,   openInNewTab: fp.additional_url.present?   && fp.link2_open_new_tab },
+        url: fp.additional_url,   openInNewTab: fp.additional_url.present?   && fp.link2_open_new_tab,
+        slot: 2, kind: "additional" },
       { label: fp.scheduler_label.presence || "Scheduled Tour",
-        url: fp.scheduler_url,    openInNewTab: fp.scheduler_url.present?    && fp.link3_open_new_tab }
+        url: fp.scheduler_url,    openInNewTab: fp.scheduler_url.present?    && fp.link3_open_new_tab,
+        slot: 3, kind: "schedule_tour" }
     ].select { |btn| btn[:url].present? }
   end
 
@@ -1062,7 +1301,11 @@ class SdkPayloadBuilderService
     [{
       label:        amenity.video_link_button_label.presence || "3D Tour",
       url:          amenity.video_link,
-      openInNewTab: false
+      openInNewTab: false,
+      # An amenity has one link, not three slots, but it carries the same two
+      # fields so a single analytics helper reads every button the map renders.
+      slot:         1,
+      kind:         "virtual_tour"
     }]
   end
 
@@ -1103,18 +1346,26 @@ class SdkPayloadBuilderService
 
   DEFAULT_DESCRIPTION_TITLE = "More Details".freeze
 
-  # Description and its heading, taken as a pair from whichever record supplies the
-  # description. Reading the title independently would let a unit's description_title
-  # column default ("More Details") mask the heading a floorplan-level special was
-  # given, since the column is never nil for rows created with that default.
+  # Description, its heading and its "Expand details in pop-ups" flag, taken
+  # together from whichever record supplies the description. Reading the title
+  # independently would let a unit's description_title column default ("More
+  # Details") mask the heading a floorplan-level special was given, since the column
+  # is never nil for rows created with that default. The flag follows the same
+  # rule: a unit showing its floor plan's Details opens them the way the floor plan
+  # was set to, and a unit with Details of its own answers for them itself.
   def description_fields(unit, floorplan)
-    if unit.description.present?
-      [unit.description, unit.description_title.presence || DEFAULT_DESCRIPTION_TITLE]
-    elsif floorplan&.description.present?
-      [floorplan.description, floorplan.description_title.presence || DEFAULT_DESCRIPTION_TITLE]
-    else
-      ["", DEFAULT_DESCRIPTION_TITLE]
-    end
+    source = if unit.description.present?
+               unit
+             elsif floorplan&.description.present?
+               floorplan
+             end
+    return ["", DEFAULT_DESCRIPTION_TITLE, false] unless source
+
+    [
+      source.description,
+      source.description_title.presence || DEFAULT_DESCRIPTION_TITLE,
+      expand_description_in_popup?(source)
+    ]
   end
 
   # Only meaningful next to a description, so it stays nil when there is none —
@@ -1136,6 +1387,19 @@ class SdkPayloadBuilderService
   def show_floorplan_description_on_card?(fp)
     return false if fp.description.blank?
     fp.show_description_on_card == true
+  end
+
+  # The per-record "Expand details in pop-ups" toggle, on floor plans and units
+  # alike: whether the pop-up opens with the Details body already showing, with
+  # no accordion chevron, instead of collapsed under its heading. Off by default,
+  # so a property that never touches it keeps the collapsible Details it has today.
+  #
+  # Independent of "Show on cards" above -- that one governs the right-rail card,
+  # this one the pop-up. False when there is no description, since there is
+  # nothing to expand.
+  def expand_description_in_popup?(record)
+    return false if record.description.blank?
+    record.expand_description_in_popup == true
   end
 
   AVAILABILITY_FILTER_LABELS = {

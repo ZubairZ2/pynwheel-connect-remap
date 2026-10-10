@@ -154,7 +154,9 @@ class PsiService < BaseService
           unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
           unit.provider = "psi"
           unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s
+          unit.unit_type = u["Units"]["Unit"]["UnitType"]
           unit_status_update(unit, u)
+          update_unit_floorplan(unit, u)
 
           if u["Units"]["Unit"]["MinSquareFeet"].present?
             if u["Units"]["Unit"]["MinSquareFeet"].to_f > 1
@@ -211,7 +213,7 @@ class PsiService < BaseService
 
           static_building_name_update(unit, u)
           set_availability_url(unit, u, property_id)
-          unit.show_on_map = limit_result
+          unit.show_on_map = unit.feed_show_on_map(limit_result)
 
           @unit_record << unit.provider_unit_id
           import_units << unit      
@@ -303,7 +305,7 @@ class PsiService < BaseService
           static_building_name_update(unit, u)
           set_availability_url(unit, u, property_id)
           unit.manually_updated = false
-          unit.show_on_map = limit_result
+          unit.show_on_map = unit.feed_show_on_map(limit_result)
 
           import_units << unit
         end
@@ -819,6 +821,16 @@ class PsiService < BaseService
     else
       unit.unit_status = "Occupied"
     end
+  end
+
+  # Keeps an existing unit on the floor plan Entrata currently assigns it, unless
+  # the floor plan was set by hand. A missing FloorPlanId leaves the link alone
+  # rather than unlinking the unit.
+  def update_unit_floorplan unit, u
+    return if unit.floorplan_id_is_updated
+
+    floorplan_id = u.dig("Units", "Unit", "@attributes", "FloorPlanId")
+    unit.floorplan_id = floorplan_id if floorplan_id.present?
   end
 
   def move_in_date_param move_in_date

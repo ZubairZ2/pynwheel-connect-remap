@@ -292,6 +292,11 @@ Rails.application.routes.draw do
         post  :bulk_upload_match
         post  :bulk_upload_apply
         get   :bulk_export
+        # Partner registry + API key lifecycle (Pynwheel admins only).
+        post   :create_partner
+        post   :rotate_key
+        post   :email_key
+        delete :revoke_key
       end
     end
 
@@ -468,6 +473,7 @@ Rails.application.routes.draw do
         post :set_available
         post :set_manual_override
         post :set_sold
+        post :set_show_on_map
         post :add_description
         post :add_additional_fees
         post :set_image
@@ -651,6 +657,11 @@ Rails.application.routes.draw do
     # Custom Design CMS — auth-protected
     resource :design_system_config, only: [:show, :update]
 
+    # Map analytics data layer (PYN-1655) — super-admin only. Controls which map
+    # interactions this property may publish to its embedding page's Google Tag
+    # Manager data layer.
+    resource :map_analytics_setting, only: [:show, :update]
+
     # Public-facing embed calculator (no auth required) — serves published config
     resources :pricing_calculators, only: [] do
       collection do
@@ -701,6 +712,10 @@ Rails.application.routes.draw do
     get "map_config/:property_id", to: "map_config#show"
   end
 
+  # One-time partner API key delivery. Unauthenticated by design: the token in
+  # the url IS the secret, and it is consumed the first time the page is opened.
+  get "partner-key/:token", to: "partner_key_reveals#show", as: :partner_key_reveal
+
   namespace :api, constraints: { format: 'json' } do
     post 'notify-email', to: 'notify_email#create'
 
@@ -719,6 +734,7 @@ Rails.application.routes.draw do
         get    :fetch_svg_image,  to: 'sdk#fetch_svg_image'
         get    :fetch_gallery_list,        to: 'sdk#fetch_gallery_list'
         get    :fetch_gallery_images,      to: 'sdk#fetch_gallery_images'
+        get    :fetch_homescreen,          to: 'sdk#fetch_homescreen'
         get    :fetch_neighborhood,        to: 'sdk#fetch_neighborhood'
         get    :fetch_neighborhood_places, to: 'sdk#fetch_neighborhood_places'
         get    :neighborhood_photo,        to: 'sdk#neighborhood_photo'

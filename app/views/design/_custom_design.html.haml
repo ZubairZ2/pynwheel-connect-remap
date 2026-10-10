@@ -7,6 +7,9 @@
 -# filled the default in as a real value.
 - tab_labels = ds_config.config_json["tab_labels"] || {}
 - tab_label_defaults = DesignSystemConfig::DEFAULT_CONFIG["tab_labels"]
+-# Resolved, unlike tab_labels: an unset icon has nothing to show as a
+-# placeholder, so the row starts on the stock icon, exactly what the map draws.
+- tab_icons = ds_config.to_tab_icons
 
 .box-body{ style: "padding: 20px;" }
 
@@ -64,24 +67,45 @@
   / MAP TAB BUTTONS
   %h4.section-title{ style: "margin-top: 20px;" } Map tab buttons
   %p.text-muted
-    Rename the four map tab buttons for this property. Leave a field empty to use the default label.
-    Labels update on the map (web + touch) without a deployment. Icons and behavior are unchanged.
+    Rename the four map tab buttons for this property and choose the icon shown above each label. Leave a field
+    empty to use the default label. Labels and icons update on the map (web + touch) without a deployment.
 
-  %p.text-uppercase.text-muted{ style: "font-size: 11px; letter-spacing: 1px; margin-top: 20px;" } Button labels
+  %p.text-uppercase.text-muted{ style: "font-size: 11px; letter-spacing: 1px; margin-top: 20px;" } Button labels &amp; icons
 
-  - [["units", "Units"], ["floor_plans", "Floor Plans"], ["amenities", "Amenities"], ["favs", "Favs"]].each do |key, label|
-    - field_id = "ds_tab_label_#{key}"
-    .form-group{ style: "display:flex;align-items:center;gap:12px;margin-bottom:14px;" }
-      %label.control-label{ for: field_id, style: "width:190px;flex-shrink:0;margin:0;font-weight:600;" }
-        = label
-        %span.text-muted{ style: "display:block;font-weight:400;font-size:11px;" }
-          = "Default: \"#{tab_label_defaults[key]}\""
-      = text_field_tag field_id,
-          tab_labels[key],
-          class: "form-control",
-          placeholder: tab_label_defaults[key],
-          style: "width:220px;flex:0 0 220px;"
-      %button.btn.btn-default.ds-save-btn{ style: "flex-shrink:0;", data: { key: "tab_labels.#{key}", source: field_id, community: @community.id } } Save
+  -# The whole set once, for the picker. A data attribute rather than
+  -# interpolation into the :javascript below, which would need its own escaping.
+  #ds-tab-icons{ data: { icons: MapTabIcons.catalog.to_json, groups: MapTabIcons::GROUPS.to_json } }
+    - [["units", :units, "Units"], ["floor_plans", :floorPlans, "Floor Plans"], ["amenities", :amenities, "Amenities"], ["favs", :favs, "Favs"]].each do |key, payload_key, label|
+      - field_id = "ds_tab_label_#{key}"
+      - icon = tab_icons[payload_key]
+      -# data-icon / data-show hold the row's pending choice; data-saved-* what
+      -# the server has, so Save can tell whether anything changed.
+      .form-group.ds-tab-row{ style: "display:flex;align-items:center;gap:12px;margin-bottom:14px;", data: { tab: key, label: label, stock: MapTabIcons::STOCK[key], icon: icon[:icon], show: icon[:show].to_s, saved_icon: icon[:icon], saved_show: icon[:show].to_s, saved_label: tab_labels[key].to_s } }
+        %label.control-label{ for: field_id, style: "width:190px;flex-shrink:0;margin:0;font-weight:600;" }
+          = label
+          %span.text-muted{ style: "display:block;font-weight:400;font-size:11px;" }
+            = "Default: \"#{tab_label_defaults[key]}\""
+        = text_field_tag field_id,
+            tab_labels[key],
+            class: "form-control",
+            placeholder: tab_label_defaults[key],
+            style: "width:220px;flex:0 0 220px;"
+        .ds-ti
+          %span.ds-ti-preview{ "aria-hidden" => "true" }
+          %span.ds-ti-badge
+          %button.btn.btn-default.ds-ti-change{ type: "button", "aria-haspopup" => "true", "aria-expanded" => "false" }
+            Change icon
+            %i.fa.fa-angle-down
+          %label.ds-ti-toggle
+            %input.ds-ti-show{ type: "checkbox", checked: icon[:show] }
+            %span.ds-ti-switch
+            Show icon
+          %button.btn.btn-default.ds-ti-reset{ type: "button" }
+            %i.fa.fa-undo
+            Reset to default
+        -# One Save per row, last: it commits the label, the icon and its
+        -# visibility together, and stays disabled until one of them changes.
+        %button.btn.btn-default.ds-save-btn{ type: "button", disabled: true, style: "flex-shrink:0;", data: { key: "tab_labels.#{key}", source: field_id, icon_tab: key, community: @community.id } } Save
 
   %hr
 
@@ -155,11 +179,363 @@
             value: document.getElementById(btn.dataset.opacitySource).value
           });
         }
+        var iconRow = btn.dataset.iconTab && btn.closest(".ds-tab-row");
+        if (iconRow) {
+          var base = "tab_icons." + btn.dataset.iconTab + ".";
+          // The stock icon is saved as "", not its key, so the tab keeps
+          // following its stock icon if that ever changes.
+          pairs.push({ key: base + "icon", value: iconRow.dataset.icon === iconRow.dataset.stock ? "" : iconRow.dataset.icon });
+          pairs.push({ key: base + "show", value: iconRow.dataset.show === "true" });
+        }
         saveFields(pairs).then(function (data) {
           if (!data.success) console.error("Design system config save failed:", data.message);
+          if (iconRow && data.success && window.dsTabIcons) window.dsTabIcons.markSaved(iconRow);
           btn.textContent = "Saved!";
           setTimeout(function () { btn.textContent = "Save"; }, 1500);
         });
       });
     });
+  })();
+
+:css
+  /* Map tab buttons -> icon controls. Scoped under the block's id: the admin
+     stylesheets carry global .switch / .slider / label span rules. */
+  #ds-tab-icons .ds-tab-row { flex-wrap: wrap; }
+  #ds-tab-icons .ds-ti {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 10px 12px;
+    padding-left: 16px; margin-left: 4px; border-left: 1px solid #e5e5e5;
+  }
+  #ds-tab-icons .ds-ti-preview {
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+    width: 38px; height: 38px; border: 1px solid #d0d0d0; border-radius: 6px; background: #fff;
+    transition: opacity .15s, border-color .15s;
+  }
+  #ds-tab-icons .ds-ti-preview svg { width: 22px; height: 22px; }
+  #ds-tab-icons .ds-ti-preview.is-hidden { border-style: dashed; background: #f7f7f7; }
+  #ds-tab-icons .ds-ti-preview.is-hidden svg { opacity: .35; }
+  #ds-tab-icons .ds-ti-badge {
+    font-size: 11px; font-weight: 600; line-height: 1; padding: 5px 7px; border-radius: 4px;
+    background: #eef0f2; color: #5a5a5a;
+  }
+  #ds-tab-icons .ds-ti-badge.is-custom { background: #e3f2fb; color: #0f75ae; }
+  #ds-tab-icons .ds-ti-change .fa { margin-left: 6px; }
+  #ds-tab-icons .ds-ti-change[aria-expanded="true"] { border-color: #138fd4; color: #138fd4; }
+  #ds-tab-icons .ds-ti-toggle {
+    display: inline-flex; align-items: center; gap: 8px; margin: 0; font-weight: 400; cursor: pointer;
+  }
+  #ds-tab-icons .ds-ti-toggle input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  #ds-tab-icons .ds-ti-switch {
+    position: relative; display: inline-block; flex-shrink: 0; width: 34px; height: 20px;
+    border-radius: 10px; background: #c4c4c4; transition: background .2s;
+  }
+  #ds-tab-icons .ds-ti-switch::after {
+    content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%;
+    background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.25); transition: transform .2s;
+  }
+  #ds-tab-icons .ds-ti-toggle input:checked + .ds-ti-switch { background: #138fd4; }
+  #ds-tab-icons .ds-ti-toggle input:checked + .ds-ti-switch::after { transform: translateX(14px); }
+  #ds-tab-icons .ds-ti-toggle input:focus-visible + .ds-ti-switch { outline: 2px solid #138fd4; outline-offset: 2px; }
+  /* .btn sets display, which would otherwise beat the [hidden] render() sets. */
+  #ds-tab-icons .ds-ti-reset[hidden] { display: none; }
+  #ds-tab-icons .ds-ti-reset .fa,
+  #ds-ti-picker .ds-ti-picker-reset .fa { margin-right: 5px; }
+  /* Row Save: greyed out until the label, icon or show/hide changes, then blue. */
+  #ds-tab-icons .ds-tab-row .ds-save-btn {
+    min-width: 72px; transition: background-color .25s ease, border-color .25s ease, color .25s ease, box-shadow .25s ease;
+  }
+  #ds-tab-icons .ds-tab-row .ds-save-btn:disabled { opacity: .55; cursor: not-allowed; }
+  #ds-tab-icons .ds-tab-row .ds-save-btn:not(:disabled) {
+    background: #138fd4; border-color: #138fd4; color: #fff;
+  }
+  #ds-tab-icons .ds-tab-row .ds-save-btn:not(:disabled):hover { background: #0f7dbb; border-color: #0f7dbb; }
+  #ds-tab-icons .ds-tab-row .ds-save-btn.is-arming { animation: ds-save-arm .45s ease-out; }
+  @keyframes ds-save-arm {
+    0%   { transform: scale(.94); box-shadow: 0 0 0 0 rgba(19,143,212,.55); }
+    60%  { transform: scale(1.04); box-shadow: 0 0 0 6px rgba(19,143,212,0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(19,143,212,0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #ds-tab-icons .ds-tab-row .ds-save-btn.is-arming { animation: none; }
+  }
+
+  /* Fixed and on <body>, placed by the picker JS: absolute inside the page, it
+     was clipped by the admin layout near the bottom of the page. */
+  #ds-ti-picker {
+    position: fixed; z-index: 1050; width: 336px;
+    background: #fff; border: 1px solid #d0d0d0; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.14);
+  }
+  #ds-ti-picker .ds-ti-picker-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 12px 14px; border-bottom: 1px solid #eee;
+  }
+  #ds-ti-picker .ds-ti-picker-head span { font-size: 12px; color: #777; }
+  #ds-ti-picker .ds-ti-picker-search { position: relative; padding: 12px 14px 4px; }
+  #ds-ti-picker .ds-ti-picker-search .fa { position: absolute; left: 25px; top: 23px; color: #999; }
+  #ds-ti-picker .ds-ti-picker-search input { padding-left: 30px; }
+  #ds-ti-picker .ds-ti-body { max-height: 280px; overflow-y: auto; padding: 2px 14px 10px; }
+  #ds-ti-picker .ds-ti-section-title {
+    margin: 10px 0 6px; font-size: 11px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; color: #888;
+  }
+  #ds-ti-picker .ds-ti-grid { display: grid; grid-template-columns: repeat(7, 36px); gap: 6px; }
+  #ds-ti-picker .ds-ti-opt {
+    display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px;
+    padding: 0; background: #fff; border: 1px solid #e5e5e5; border-radius: 6px; cursor: pointer;
+  }
+  #ds-ti-picker .ds-ti-opt[hidden] { display: none; }
+  #ds-ti-picker .ds-ti-opt svg { width: 20px; height: 20px; }
+  #ds-ti-picker .ds-ti-opt:hover { border-color: #999; }
+  #ds-ti-picker .ds-ti-opt:focus-visible { outline: 2px solid #138fd4; outline-offset: 1px; }
+  /* Grey outline: this tab's stock icon, pinned first so it can always be found again. */
+  #ds-ti-picker .ds-ti-opt.is-stock { border: 2px solid #b8b8b8; background: #f5f5f5; }
+  /* Filled: the current selection. */
+  #ds-ti-picker .ds-ti-opt.is-selected { border: 2px solid #138fd4; background: #e3f2fb; }
+  #ds-ti-picker .ds-ti-opt.is-selected svg path,
+  #ds-ti-picker .ds-ti-opt.is-selected svg circle { stroke: #138fd4; }
+  #ds-ti-picker .ds-ti-empty { padding: 8px 0 0; margin: 0; color: #999; font-size: 12px; }
+  /* Apply matches the rows' enabled Save. */
+  #ds-ti-picker .ds-ti-apply {
+    min-width: 72px; background: #138fd4; border: 1px solid #138fd4; color: #fff;
+    transition: background-color .2s ease, border-color .2s ease;
+  }
+  #ds-ti-picker .ds-ti-apply:hover,
+  #ds-ti-picker .ds-ti-apply:focus { background: #0f7dbb; border-color: #0f7dbb; color: #fff; }
+  #ds-ti-picker .ds-ti-picker-foot {
+    display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-top: 1px solid #eee;
+  }
+
+:javascript
+  // Map tab buttons -> icon picker. Everything here only changes the row's
+  // pending choice (data-icon / data-show) and its preview; the row's Save
+  // button above sends it, together with the label.
+  (function () {
+    var root = document.getElementById("ds-tab-icons");
+    if (!root) return;
+
+    var ICONS  = JSON.parse(root.dataset.icons);
+    var GROUPS = JSON.parse(root.dataset.groups); // tab => keys suggested for it
+    var byKey = {};
+    ICONS.forEach(function (icon) { byKey[icon.key] = icon; });
+
+    var open = null; // { row, el, selected }
+
+    function render(row) {
+      var isDefault = row.dataset.icon === row.dataset.stock;
+      var shown     = row.dataset.show === "true";
+      var icon      = byKey[row.dataset.icon] || byKey[row.dataset.stock];
+
+      var preview = row.querySelector(".ds-ti-preview");
+      preview.innerHTML = icon.svg;
+      preview.title = icon.name;
+      preview.classList.toggle("is-hidden", !shown);
+
+      var badge = row.querySelector(".ds-ti-badge");
+      badge.textContent = !shown ? "Hidden" : isDefault ? "Default" : "Custom";
+      badge.classList.toggle("is-custom", shown && !isDefault);
+
+      row.querySelector(".ds-ti-show").checked = shown;
+      row.querySelector(".ds-ti-reset").hidden = isDefault;
+      syncSave(row);
+    }
+
+    // Save is enabled only while the row differs from what the server has, and
+    // pulses once as it turns on.
+    function syncSave(row) {
+      var btn   = row.querySelector(".ds-save-btn");
+      var label = row.querySelector("input[type=text]");
+      var dirty = row.dataset.icon !== row.dataset.savedIcon ||
+                  row.dataset.show !== row.dataset.savedShow ||
+                  label.value.trim() !== row.dataset.savedLabel.trim();
+      if (dirty && btn.disabled) {
+        btn.classList.remove("is-arming");
+        void btn.offsetWidth; // restart the animation if it just ran
+        btn.classList.add("is-arming");
+      }
+      btn.disabled = !dirty;
+    }
+
+    function setIcon(row, key) {
+      row.dataset.icon = key;
+      render(row);
+    }
+
+    // Under the Change icon button, or above it when there is more room there;
+    // the icon list shrinks to whatever height the window leaves.
+    function place() {
+      if (!open) return;
+      var MARGIN = 8, GAP = 6;
+      var el   = open.el;
+      var body = el.querySelector(".ds-ti-body");
+      var r    = open.row.querySelector(".ds-ti-change").getBoundingClientRect();
+
+      body.style.maxHeight = "";
+      var chrome = el.offsetHeight - body.offsetHeight;
+      var below  = window.innerHeight - r.bottom - GAP - MARGIN;
+      var above  = r.top - GAP - MARGIN;
+      var up     = el.offsetHeight > below && above > below;
+      var room   = up ? above : below;
+      if (el.offsetHeight > room) body.style.maxHeight = Math.max(90, room - chrome) + "px";
+
+      el.style.top  = (up ? r.top - GAP - el.offsetHeight : r.bottom + GAP) + "px";
+      el.style.left = Math.max(MARGIN, Math.min(r.left, window.innerWidth - el.offsetWidth - MARGIN)) + "px";
+    }
+    // Capture: the page may scroll inside a layout container, not the window.
+    window.addEventListener("scroll", function (e) {
+      if (open && !open.el.contains(e.target)) place();
+    }, true);
+    window.addEventListener("resize", place);
+
+    function closePicker() {
+      if (!open) return;
+      open.el.remove();
+      open.row.querySelector(".ds-ti-change").setAttribute("aria-expanded", "false");
+      open = null;
+    }
+
+    function highlight() {
+      open.el.querySelectorAll(".ds-ti-opt").forEach(function (opt) {
+        var on = opt.dataset.key === open.selected;
+        opt.classList.toggle("is-selected", on);
+        opt.setAttribute("aria-selected", on ? "true" : "false");
+      });
+    }
+
+    function openPicker(row) {
+      closePicker();
+
+      var el = document.createElement("div");
+      el.id = "ds-ti-picker";
+      el.setAttribute("role", "dialog");
+      el.setAttribute("aria-label", "Choose an icon for " + row.dataset.label);
+      el.innerHTML =
+        '<div class="ds-ti-picker-head"><strong>Choose an icon</strong><span></span></div>' +
+        '<div class="ds-ti-picker-search"><i class="fa fa-search" aria-hidden="true"></i>' +
+          '<input type="search" class="form-control" placeholder="Search icons" aria-label="Search icons"></div>' +
+        '<div class="ds-ti-body" role="listbox"></div>' +
+        '<div class="ds-ti-picker-foot"><button type="button" class="btn btn-default ds-ti-picker-reset">' +
+          '<i class="fa fa-undo" aria-hidden="true"></i> Reset to default</button>' +
+          '<button type="button" class="btn ds-ti-apply">Apply</button></div>';
+      el.querySelector(".ds-ti-picker-head span").textContent = row.dataset.label;
+
+      // Two sections: "Suggested for <tab>", the icons that read as this tab
+      // (its stock icon pinned first), then "All icons", the rest of the one
+      // shared set, since any tab may use any icon.
+      var stock     = row.dataset.stock;
+      var list      = el.querySelector(".ds-ti-body");
+      var suggested = [stock].concat((GROUPS[row.dataset.tab] || []).filter(function (k) { return k !== stock; }));
+      var others    = ICONS.map(function (i) { return i.key; }).filter(function (k) { return suggested.indexOf(k) === -1; });
+
+      function section(title, keys) {
+        var sec = document.createElement("div");
+        sec.className = "ds-ti-section";
+        sec.innerHTML = '<p class="ds-ti-section-title"></p><div class="ds-ti-grid"></div>';
+        sec.querySelector(".ds-ti-section-title").textContent = title;
+        keys.forEach(function (key) { sec.querySelector(".ds-ti-grid").appendChild(option(byKey[key])); });
+        list.appendChild(sec);
+      }
+
+      function option(icon) {
+        var opt = document.createElement("button");
+        opt.type = "button";
+        opt.className = "ds-ti-opt" + (icon.key === stock ? " is-stock" : "");
+        opt.dataset.key = icon.key;
+        opt.dataset.search = (icon.name + " " + icon.key.replace(/_/g, " ")).toLowerCase();
+        opt.setAttribute("role", "option");
+        opt.title = icon.key === stock ? icon.name + " (default)" : icon.name;
+        opt.setAttribute("aria-label", opt.title);
+        opt.innerHTML = icon.svg;
+        return opt;
+      }
+
+      section("Suggested for " + row.dataset.label, suggested);
+      section("All icons", others);
+      list.insertAdjacentHTML("beforeend", '<p class="ds-ti-empty" hidden>No icons match.</p>');
+
+      open = { row: row, el: el, selected: row.dataset.icon };
+      highlight();
+
+      list.addEventListener("click", function (e) {
+        var opt = e.target.closest(".ds-ti-opt");
+        if (!opt) return;
+        open.selected = opt.dataset.key;
+        highlight();
+      });
+      list.addEventListener("dblclick", function (e) {
+        var opt = e.target.closest(".ds-ti-opt");
+        if (!opt) return;
+        setIcon(row, opt.dataset.key);
+        closePicker();
+      });
+      el.querySelector("input").addEventListener("input", function (e) {
+        var q = e.target.value.trim().toLowerCase();
+        var any = false;
+        list.querySelectorAll(".ds-ti-section").forEach(function (sec) {
+          var inSection = false;
+          sec.querySelectorAll(".ds-ti-opt").forEach(function (opt) {
+            var match = !q || opt.dataset.search.indexOf(q) !== -1;
+            opt.hidden = !match;
+            inSection = inSection || match;
+          });
+          sec.hidden = !inSection;
+          any = any || inSection;
+        });
+        el.querySelector(".ds-ti-empty").hidden = any;
+        place();
+      });
+      el.querySelector(".ds-ti-apply").addEventListener("click", function () {
+        setIcon(row, open.selected);
+        closePicker();
+      });
+      el.querySelector(".ds-ti-picker-reset").addEventListener("click", function () {
+        setIcon(row, stock);
+        closePicker();
+      });
+
+      document.body.appendChild(el);
+      place();
+      row.querySelector(".ds-ti-change").setAttribute("aria-expanded", "true");
+      el.querySelector("input").focus({ preventScroll: true });
+    }
+
+    root.querySelectorAll(".ds-tab-row").forEach(function (row) {
+      render(row);
+
+      row.querySelector("input[type=text]").addEventListener("input", function () { syncSave(row); });
+      row.querySelector(".ds-save-btn").addEventListener("animationend", function (e) {
+        e.target.classList.remove("is-arming");
+      });
+
+      row.querySelector(".ds-ti-change").addEventListener("click", function () {
+        if (open && open.row === row) closePicker(); else openPicker(row);
+      });
+      // Off keeps the chosen icon, only hides it, so switching back on
+      // restores it.
+      row.querySelector(".ds-ti-show").addEventListener("change", function (e) {
+        row.dataset.show = e.target.checked ? "true" : "false";
+        render(row);
+      });
+      row.querySelector(".ds-ti-reset").addEventListener("click", function () {
+        closePicker();
+        setIcon(row, row.dataset.stock);
+      });
+    });
+
+    document.addEventListener("mousedown", function (e) {
+      if (open && !open.el.contains(e.target) && !open.row.querySelector(".ds-ti-change").contains(e.target)) closePicker();
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "Escape" || !open) return;
+      var btn = open.row.querySelector(".ds-ti-change");
+      closePicker();
+      btn.focus();
+    });
+
+    // Called by the row's Save once the server has the row's choice.
+    window.dsTabIcons = {
+      markSaved: function (row) {
+        row.dataset.savedIcon  = row.dataset.icon;
+        row.dataset.savedShow  = row.dataset.show;
+        row.dataset.savedLabel = row.querySelector("input[type=text]").value;
+        render(row);
+      }
+    };
   })();

@@ -1,0 +1,147 @@
+-# Registry + API key management (add partner, generate/rotate, revoke).
+-# Kept apart from _script, which owns the property association table.
+:javascript
+  (function(){
+    var csrf       = $('meta[name="csrf-token"]').attr('content');
+    var createUrl  = "#{create_partner_community_partner_configurations_path(current_community)}";
+    var rotateUrl  = "#{rotate_key_community_partner_configurations_path(current_community)}";
+    var revokeUrl  = "#{revoke_key_community_partner_configurations_path(current_community)}";
+    var emailUrl   = "#{email_key_community_partner_configurations_path(current_community)}";
+    // The token behind the one-time link, held only for as long as the modal is
+    // open so it can be emailed without the server re-issuing the key.
+    var revealToken = null;
+    var panel      = $('.pc-key-panel');
+    var partnerKey = panel.data('partner');
+    var partnerLbl = panel.data('label');
+
+    function post(url, data, method){
+      return $.ajax({
+        url: url,
+        method: method || 'POST',
+        data: $.extend({ authenticity_token: csrf }, data),
+        dataType: 'json'
+      });
+    }
+
+    function failMessage(xhr, fallback){
+      var res = xhr && xhr.responseJSON;
+      return (res && res.message) || fallback;
+    }
+
+    // ---------- add partner ----------
+    // Suggest the identifier from the display name until the user edits it.
+    var keyTouched = false;
+    $('#pcPartnerKey').on('input', function(){ keyTouched = true; });
+    $('#pcPartnerLabel').on('input', function(){
+      if (keyTouched) { return; }
+      $('#pcPartnerKey').val(
+        $(this).val().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '')
+      );
+    });
+
+    $('#pcAddPartnerBtn').on('click', function(){
+      keyTouched = false;
+      $('#pcPartnerLabel, #pcPartnerKey').val('');
+      $('#pcAddPartnerError').hide().text('');
+      $('#pcAddPartnerModal').modal('show');
+    });
+
+    $('#pcAddPartnerSave').on('click', function(){
+      var $btn = $(this).prop('disabled', true);
+      post(createUrl, { label: $('#pcPartnerLabel').val(), key: $('#pcPartnerKey').val() })
+        .done(function(){ window.location.reload(); })
+        .fail(function(xhr){
+          $('#pcAddPartnerError').text(failMessage(xhr, 'Could not add the partner.')).show();
+          $btn.prop('disabled', false);
+        });
+    });
+
+    // ---------- generate / rotate ----------
+    $('#pcRotateBtn').on('click', function(){
+      var hasKey = $('#pcKeyValue').hasClass('pc-key-value');
+      $('#pcRotateTitle').text(hasKey ? 'Rotate API key' : 'Generate API key');
+      $('#pcRotateConfirm').text(hasKey ? 'Rotate key' : 'Generate');
+      $('#pcRotateBody').text(hasKey
+        ? 'Generating a new key for ' + partnerLbl + ' immediately invalidates the current one. Any of their integrations still using it will start failing, so send them the new key first.'
+        : 'Generate the Partner Maps API key for ' + partnerLbl + '.');
+      $('#pcRotateModal').modal('show');
+    });
+
+    $('#pcRotateConfirm').on('click', function(){
+      var $btn = $(this).prop('disabled', true);
+      post(rotateUrl, { partner_key: partnerKey })
+        .done(function(res){
+          $('#pcRotateModal').modal('hide');
+          showKeyLink(res);
+        })
+        .fail(function(xhr){ alert(failMessage(xhr, 'Could not generate the key. Please try again.')); })
+        .always(function(){ $btn.prop('disabled', false); });
+    });
+
+    function showKeyLink(res){
+      $('#pcKeyLinkIntro').text(res.message || '');
+      $('#pcKeyLink').val(res.reveal_url);
+      revealToken = res.token;
+      $('#pcKeyLinkEmail').val('');
+      $('#pcKeyLinkStatus').hide().removeClass('is-ok is-error').text('');
+      $('#pcKeyLinkModal').modal('show');
+      // Reflect the new masked key without a reload.
+      $('#pcKeyValue').removeClass('pc-key-none').addClass('pc-key-value').text(res.partner.masked_key);
+    }
+
+    $('#pcKeyLinkSend').on('click', function(){
+      var $btn    = $(this);
+      var $status = $('#pcKeyLinkStatus');
+      var email   = $.trim($('#pcKeyLinkEmail').val());
+
+      if (!email) {
+        $status.removeClass('is-ok').addClass('is-error').text('Enter the partner\'s email address.').show();
+        return;
+      }
+
+      $btn.prop('disabled', true);
+      $status.removeClass('is-ok is-error').text('Sending…').show();
+
+      post(emailUrl, { partner_key: partnerKey, token: revealToken, email: email })
+        .done(function(res){
+          $status.addClass('is-ok').text(res.message);
+          $('#pcKeyLinkEmail').val('');
+        })
+        .fail(function(xhr){
+          $status.addClass('is-error').text(failMessage(xhr, 'The email could not be sent. Copy the link and send it manually.'));
+        })
+        .always(function(){ $btn.prop('disabled', false); });
+    });
+
+    // Enter in the email field sends, rather than doing nothing.
+    $('#pcKeyLinkEmail').on('keydown', function(e){
+      if (e.which === 13) { e.preventDefault(); $('#pcKeyLinkSend').click(); }
+    });
+
+    $('#pcKeyLinkCopy').on('click', function(){
+      var $btn = $(this);
+      navigator.clipboard.writeText($('#pcKeyLink').val()).then(function(){
+        $btn.find('i').removeClass('fa-copy').addClass('fa-check');
+        setTimeout(function(){ $btn.find('i').removeClass('fa-check').addClass('fa-copy'); }, 1600);
+      });
+    });
+
+    // Reload on close so the panel reflects the rotated/revoked state exactly.
+    $('#pcKeyLinkModal').on('hidden.bs.modal', function(){ window.location.reload(); });
+
+    // ---------- revoke ----------
+    $('#pcRevokeBtn').on('click', function(){
+      $('#pcRevokePartnerName').text(partnerLbl);
+      $('#pcRevokeModal').modal('show');
+    });
+
+    $('#pcRevokeConfirm').on('click', function(){
+      var $btn = $(this).prop('disabled', true);
+      post(revokeUrl, { partner_key: partnerKey }, 'DELETE')
+        .done(function(){ window.location.reload(); })
+        .fail(function(xhr){
+          alert(failMessage(xhr, 'Could not revoke the key. Please try again.'));
+          $btn.prop('disabled', false);
+        });
+    });
+  })();

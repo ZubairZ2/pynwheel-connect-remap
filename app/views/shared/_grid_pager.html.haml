@@ -1,0 +1,5 @@
+-# Bottom pager. Only worth drawing when the set actually spans pages, and it
+-# has to carry the filters or page 2 would be page 2 of something else.
+- if collection.total_pages > 1
+  .pager
+    = will_paginate collection, params: @filter.to_query_params

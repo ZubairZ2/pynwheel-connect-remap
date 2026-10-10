@@ -124,6 +124,21 @@
         %p.mo-note For-sale properties only. Marking a unit sold also marks it occupied and unavailable.
       = render "mo_footer", verb: "Set sold"
 
+- if SHOW_ON_MAP.include?(@community.data_provider)
+  .mo-overlay#mo-show-on-map
+    .mo-dialog
+      = form_tag set_show_on_map_community_units_path(@community), class: "js-mo-form" do
+        .mo-head
+          %h3 Set show on map
+          %button.mo-x{type: "button", "data-mo-close" => true} &times;
+        .mo-body
+          %label.mo-label Show on map
+          = select_tag :show_on_map, options_for_select([["Yes", true], ["No", false]]), class: "f-select"
+          %p.mo-note
+            Pins the Map column so the data feed stops changing it. It only hides units when the
+            property's "Available units only" setting is on.
+        = render "mo_footer", verb: "Set show on map"
+
 .mo-overlay#mo-floor
   .mo-dialog
     = form_tag set_floor_community_units_path(@community), class: "js-mo-form" do

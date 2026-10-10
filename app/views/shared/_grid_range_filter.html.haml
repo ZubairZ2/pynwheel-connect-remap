@@ -1,0 +1,7 @@
+-# A labelled "min - max" pair. The two inputs sit inside one bordered group so
+-# a range reads as a single control rather than two loose boxes.
+%label.f-group
+  %span= label
+  %input.f-input{type: "number", name: min_key, value: params[min_key], placeholder: "min", min: 0}
+  %span &ndash;
+  %input.f-input{type: "number", name: max_key, value: params[max_key], placeholder: "max", min: 0}

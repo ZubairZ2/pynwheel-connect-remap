@@ -208,17 +208,21 @@ class Credential < ApplicationRecord
   
   def spreadsheet_data_update_or_import file
     xlsx = Roo::Spreadsheet.open(file.open)
-   
-    units = xlsx.sheet(0)
+
+    # Tabs are found by name so an extra or reordered tab doesn't swap units
+    # and floor plans; the positional fallback keeps older templates working.
+    units = spreadsheet_tab(xlsx, /unit/i, 0)
 
     units.each_with_index do |u, index|
-      create_or_update_unit(community_id, u) unless index == 0
+      next if index == 0 || spreadsheet_blank_row?(u)
+      create_or_update_unit(community_id, u)
     end
-    
-    floorplans = xlsx.sheet(1)
+
+    floorplans = spreadsheet_tab(xlsx, /floor\s*plan/i, 1)
 
     floorplans.each_with_index do |f,index|
-      create_or_update_floorplan(community_id, f) unless index == 0
+      next if index == 0 || spreadsheet_blank_row?(f)
+      create_or_update_floorplan(community_id, f)
     end
   end
 
@@ -253,41 +257,98 @@ class Credential < ApplicationRecord
   end
 
   def create_or_update_unit community_id, u
-    provider_unit_id = [ u[0].to_s.gsub(".",""), u[0].to_s.gsub(".","").gsub(/\s+/, '-') ]&.compact&.uniq
-    unit = Unit.where(provider: "spreadsheet", community_id: community_id, provider_unit_id: provider_unit_id ).first_or_initialize
+    provider_unit_id = spreadsheet_id(u[0])
+    unit = Unit.where(provider: "spreadsheet", community_id: community_id, provider_unit_id: spreadsheet_id_variants(u[0], hyphenate: true) ).first_or_initialize
+    available = spreadsheet_boolean(u[4])
+    rent = spreadsheet_number(u[6]) || 0
 
-    unit.provider_unit_id = u[0].to_s.gsub(".","").gsub(/\s+/, '-')
-    unit.marketing_name = get_integer_value(u[0])
-    unit.unit_type = get_integer_value(u[0])
-    unit.floorplan_id = u[1]
-    unit.floor = get_integer_value(u[3])
-    unit.availability = u[4] == true ? "Unoccupied" : "Occupied"
-    unit.available = u[4] == true  ? true : false
-    unit.available_date = u[5]
-    unit.market_rent = u[6].present? ? u[6] : 0
-    unit.effective_rent = u[6].present? ? u[6] : 0
+    unit.provider_unit_id = provider_unit_id.gsub(/\s+/, '-')
+    unit.marketing_name = provider_unit_id
+    unit.unit_type = provider_unit_id
+    # Must be spelled exactly like the floor plan's provider_floorplan_id:
+    # Unit#floorplan joins the two as strings, so "4.0" never finds "4".
+    unit.floorplan_id = spreadsheet_id(u[1]).presence
+    unit.floor = spreadsheet_number(u[3])&.to_i
+    unit.availability = available ? "Unoccupied" : "Occupied"
+    unit.available = available
+    unit.available_date = spreadsheet_date(u[5])
+    unit.market_rent = rent
+    unit.effective_rent = rent
 
     unit.save(validate: false)
   end
 
   def create_or_update_floorplan community_id, f
-    floorplan = Floorplan.where(provider: "spreadsheet", community_id: community_id, provider_floorplan_id: f[0] ).first_or_initialize
+    floorplan = Floorplan.where(provider: "spreadsheet", community_id: community_id, provider_floorplan_id: spreadsheet_id_variants(f[0]) ).first_or_initialize
 
-    floorplan.name = get_integer_value(f[1])
-    floorplan.provider_floorplan_id = f[0]
-    floorplan.square_feet = f[2]
-    floorplan.bedrooms = get_integer_value(f[3])
-    floorplan.bathrooms = get_integer_value(f[4])
+    floorplan.name = spreadsheet_id(f[1])
+    floorplan.provider_floorplan_id = spreadsheet_id(f[0])
+    floorplan.square_feet = spreadsheet_number(f[2])
+    floorplan.bedrooms = spreadsheet_number(f[3])&.to_i
+    # Not truncated: a 1.5-bath plan is real.
+    floorplan.bathrooms = spreadsheet_number(f[4])
 
     floorplan.save(validate: false)
   end
 
-  def get_integer_value value
-    if value.class == Integer || value.class == Float
-      value.to_i
+  def spreadsheet_tab xlsx, name_pattern, fallback_index
+    name = xlsx.sheets.find { |sheet| sheet.to_s.match?(name_pattern) }
+    xlsx.sheet(name || fallback_index)
+  end
+
+  def spreadsheet_blank_row? row
+    Array(row).all? { |cell| cell.to_s.strip.empty? }
+  end
+
+  # The same id can arrive as 4, 4.0 or "4" depending on how the cell was
+  # formatted, so every spelling collapses to "4". Non-numeric ids ("A01",
+  # "2BED-1BATH") pass through trimmed.
+  def spreadsheet_id value
+    case value
+    when nil then ""
+    when Float then value == value.to_i ? value.to_i.to_s : value.to_s
+    when Numeric then value.to_s
     else
-      value
+      text = value.to_s.strip
+      text.match?(/\A-?\d+\.0+\z/) ? text.sub(/\.0+\z/, "") : text
     end
+  end
+
+  # Every id this row may have been saved under by earlier versions of the
+  # importer (which stripped dots and hyphenated spaces), so re-importing
+  # updates those records rather than duplicating them.
+  def spreadsheet_id_variants value, hyphenate: false
+    variants = [spreadsheet_id(value), value.to_s, value.to_s.gsub(".", "")]
+    variants += variants.map { |v| v.gsub(/\s+/, '-') } if hyphenate
+    variants.map(&:strip).reject(&:empty?).uniq
+  end
+
+  # Accepts real numbers and text such as "1,895.00" or "$1,895", which a
+  # plain string-to-float cast would read as 1.0.
+  def spreadsheet_number value
+    return value.to_f if value.is_a?(Numeric)
+
+    text = value.to_s.gsub(/[$,\s]/, "")
+    Float(text) rescue nil
+  end
+
+  def spreadsheet_boolean value
+    return value if value == true || value == false
+    return value.to_i == 1 if value.is_a?(Numeric)
+
+    %w[true t yes y 1 available].include?(value.to_s.strip.downcase)
+  end
+
+  def spreadsheet_date value
+    return value.to_date if value.respond_to?(:to_date) && !value.is_a?(String)
+
+    text = value.to_s.strip
+    return nil if text.empty?
+
+    # US sheets write 10/15/2026, which Date.parse reads day-first and rejects.
+    Date.strptime(text, text.match?(/\A\d{1,2}\/\d{1,2}\/\d{2}\z/) ? "%m/%d/%y" : "%m/%d/%Y")
+  rescue ArgumentError
+    Date.parse(text) rescue nil
   end
 
 end

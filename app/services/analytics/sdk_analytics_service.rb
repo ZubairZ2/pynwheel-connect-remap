@@ -59,18 +59,28 @@ module Analytics
     end
 
     # Main entry point — called with a full batch of events from one SDK flush.
+    #
+    # Two writes for the whole batch, whatever its size: one UPDATE on the
+    # session row (counters, visited pages, device context) and one INSERT
+    # carrying every durable event. Nothing inside the loop touches the database.
     def process_batch(events:, device_context: nil)
       return if events.blank?
 
-      session = nil
+      session      = nil
+      received_at  = now
+      # The newest client timestamp in the batch anchors every other event's
+      # offset — see MapEventContract.occurred_at_for for why a client's
+      # wall-clock is never trusted directly.
+      latest_ts    = events.filter_map { |raw| raw["ts"] if raw["ts"].is_a?(Numeric) }.max
+      pending_rows = []
 
       events.each do |raw|
         name = raw["name"].to_s.strip
         type = raw["type"].to_s.presence || "click"
-        meta = sanitize_metadata(raw["metadata"])
+        meta = MapEventContract.sanitize_metadata(raw["metadata"])
 
         if name == SESSION_END_EVENT
-          (session || find_current_session)&.update_column(:end_datetime, now)
+          (session || find_current_session)&.update_column(:end_datetime, received_at)
           next
         end
 
@@ -88,15 +98,24 @@ module Analytics
         merge_event_metadata(session, meta)
         update_interactions(session, key)
         update_visited_pages(session, name)
-        store_full_event(session, raw)
+
+        next unless MapEventContract.durable?(name, type)
+
+        pending_rows << build_event_row(
+          name:        name,
+          event_type:  type,
+          metadata:    meta,
+          occurred_at: MapEventContract.occurred_at_for(raw["ts"], latest_ts, received_at)
+        )
       end
 
       if session
         # Store complete device_context object from payload
         session.device_context = merge_device_context(session.device_context, device_context)
+        session.save
       end
 
-      session&.save
+      persist_events(pending_rows, session)
 
     rescue StandardError => e
       Rails.logger.error("[SdkAnalyticsService#process_batch] #{e.class}: #{e.message}\n#{e.backtrace.first(5).join("\n")}")
@@ -142,7 +161,6 @@ module Analytics
         map_interactions_last_active: nil,
         events:                       {},
         device_context:               {},
-        full_event:                   {},
         visited_pages:                []
       )
     end
@@ -153,10 +171,19 @@ module Analytics
       session.events = counts
     end
 
+    # Session-level metadata: the last-value bag the existing dashboards read
+    # (SdkSession#share_url and friends).
+    #
+    # Contract dimensions are deliberately excluded. They describe *this* click —
+    # its unit, its floor plan, its link — and folding them into a per-session
+    # hash both loses them to the next event carrying the same key and grows the
+    # JSONB column every flush rewrites. They belong in sdk_events, one row per
+    # interaction, which is the reason that table exists.
     def merge_event_metadata(session, metadata)
       return if metadata.blank?
       current = session.events || {}
       metadata.each do |k, v|
+        next if MapEventContract::DIMENSIONS.key?(k)
         # Arrays: accumulate unique values (e.g. viewed unit IDs)
         # Scalars: last-write-wins (e.g. current floor)
         current[k] = v.is_a?(Array) ? ((current[k] || []) + v).uniq : v
@@ -191,21 +218,6 @@ module Analytics
       ((now.to_datetime - dt.to_datetime) * 24 * 60).to_i >= ENV.fetch("IDLE_TIME_MAPS", 10).to_i
     end
 
-    # Dynamic sanitizer: any snake_case key ≤ 50 chars, scalar value ≤ 300 chars.
-    # Adding new metadata fields requires zero code changes.
-    def sanitize_metadata(meta)
-      return {} unless meta.is_a?(Hash)
-      out = {}
-      meta.each do |k, v|
-        break if out.size >= 15
-        key = k.to_s
-        next unless key.match?(/\A[a-z_]{1,50}\z/)
-        next unless [String, Integer, Float, TrueClass, FalseClass].include?(v.class)
-        out[key] = v.is_a?(String) ? v.slice(0, 300) : v
-      end
-      out
-    end
-
     def sanitize_context(context)
       return {} if context.blank?
       # Handle ActionController::Parameters and regular hashes
@@ -221,18 +233,56 @@ module Analytics
       (existing || {}).merge(sanitized)
     end
 
-    def store_full_event(session, raw_event)
-      return if raw_event.blank?
-      event_name = raw_event["name"].to_s.strip
-      current = session.full_event || {}
+    # ── sdk_events ────────────────────────────────────────────────────────────
 
-      # Initialize array for this event name if first occurrence
-      current[event_name] ||= []
+    # One row, built entirely in memory. The scope columns are identical for
+    # every event in a batch, so they are read off the instance rather than
+    # recomputed per row.
+    #
+    # BLANK_DIMENSIONS comes first so every row in the batch has the same keys.
+    # `insert_all` builds a single multi-row VALUES statement and rejects rows
+    # whose shapes differ, and no two events carry the same dimensions — a floor
+    # plan click has no building, an amenity click has neither.
+    def build_event_row(name:, event_type:, metadata:, occurred_at:)
+      dimensions, properties = MapEventContract.split_metadata(metadata)
 
-      # Append complete event with timestamp for chronological reference
-      current[event_name] << raw_event.merge("ts" => now.to_i)
+      MapEventContract::BLANK_DIMENSIONS.merge({
+        session_id:            @session_id,
+        parent_sdk_session_id: @parent_sdk_session_id,
+        community_id:          @community.id,
+        company_id:            @community.company_id,
+        client_type:           @client_type,
+        partner:               @partner,
+        product:               @product,
+        sdk_version:           @sdk_version,
+        name:                  name,
+        action:                MapEventContract.action_for(name, metadata, event_type),
+        event_type:            event_type,
+        occurred_at:           occurred_at,
+        properties:            properties,
+        created_at:            occurred_at
+      }).merge(dimensions)
+    end
 
-      session.full_event = current
+    # One INSERT for the whole batch. `insert_all` skips instantiation,
+    # validation and callbacks, which is what makes a 100-event flush a single
+    # statement — every value in the row was already validated by the contract on
+    # the way in.
+    #
+    # This replaces the old `full_event` blob. That appended each event to a
+    # JSONB column and rewrote the whole column, and its GIN index, on every
+    # five-second flush; nothing ever read it back.
+    #
+    # Analytics is best-effort by design, so a failed insert is logged and
+    # dropped rather than raised. A bad row must never turn a visitor's click
+    # into an error response.
+    def persist_events(rows, session)
+      return if rows.empty?
+
+      rows.each { |row| row[:sdk_session_id] = session&.id }
+      SdkEvent.insert_all(rows)
+    rescue StandardError => e
+      Rails.logger.error("[SdkAnalyticsService#persist_events] #{e.class}: #{e.message}")
     end
 
     def now

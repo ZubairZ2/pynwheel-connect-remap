@@ -11,13 +11,13 @@
       .modal-body
         %p.text-muted.font-size-13
           Toggle which partner listing sites may display this property's Pynwheel interactive map.
-        - Community::MAP_PARTNERS.each do |p|
+        - Partner.registry.each do |p|
           .pc-toggle-row
-            %span.pc-label= p[:label]
+            %span.pc-label= p.label
             .TriSea-technologies-Switch
               %span.pr-15 No
-              = check_box_tag "pc_edit_#{p[:key]}", true, false, class: "pc-edit-toggle", data: { key: p[:key] }
-              %label.label-primary{ for: "pc_edit_#{p[:key]}" }
+              = check_box_tag "pc_edit_#{p.key}", true, false, class: "pc-edit-toggle", data: { key: p.key }
+              %label.label-primary{ for: "pc_edit_#{p.key}" }
               %span.pl-15 Yes
       .modal-footer
         %button.btn.btn-default{ type: "button", data: { dismiss: "modal" } } Cancel
@@ -58,18 +58,130 @@
           %span#pcBulkCount
           selected
       .modal-body
-        %p.text-muted.font-size-13
-          Turn partners on or off, then Apply. The selected properties will be set to
-          %strong exactly
-          these partners — replacing whatever they currently have.
-        - Community::MAP_PARTNERS.each do |p|
+        -# Only the partners picked below are touched. Whatever else a property
+        -# already has is left alone in both directions.
+        .pc-mode-scope
+          %label.pc-radio-row
+            = radio_button_tag :pc_bulk_mode, "add", true, class: "pc-bulk-mode", id: "pcBulkModeAdd"
+            %span
+              %strong Turn the chosen partners on
+              %span.pc-radio-hint Added to every selected property. Partners they already have are kept.
+          %label.pc-radio-row
+            = radio_button_tag :pc_bulk_mode, "remove", false, class: "pc-bulk-mode", id: "pcBulkModeRemove"
+            %span
+              %strong Turn the chosen partners off
+              %span.pc-radio-hint Removed from every selected property. Their other partners are kept.
+        %p.pc-bulk-picker-label Choose the partners
+        - Partner.registry.each do |p|
           .pc-toggle-row
-            %span.pc-label= p[:label]
+            %span.pc-label= p.label
             .TriSea-technologies-Switch
               %span.pr-15 No
-              = check_box_tag "pc_bulk_#{p[:key]}", true, false, class: "pc-bulk-toggle", data: { key: p[:key] }
-              %label.label-primary{ for: "pc_bulk_#{p[:key]}" }
+              = check_box_tag "pc_bulk_#{p.key}", true, false, class: "pc-bulk-toggle", data: { key: p.key }
+              %label.label-primary{ for: "pc_bulk_#{p.key}" }
               %span.pl-15 Yes
+        %p.pc-inline-warn#pcBulkWarn{ style: "display:none;" }
+          %i.fa.fa-exclamation-circle.mr-5
+          Choose at least one partner.
       .modal-footer
         %button.btn.btn-default{ type: "button", data: { dismiss: "modal" } } Cancel
         %button.btn.btn-primary#pcBulkConfirm{ type: "button" } Apply to selected
+
+-# ---------------- Add partner modal ----------------
+-# Adding a partner is a row in the registry, so no deploy is needed to put the
+-# next partner on this screen.
+#pcAddPartnerModal.modal.fade{ tabindex: "-1", role: "dialog" }
+  .modal-dialog{ role: "document" }
+    .modal-content
+      .modal-header
+        %button.close{ type: "button", data: { dismiss: "modal" } }
+          %span &times;
+        %h4.modal-title Add partner
+      .modal-body
+        %p.text-muted.font-size-13
+          The partner gets its own tab here straight away. Generate its API key from
+          that tab once you have agreed the property list.
+        .form-group
+          %label.control-label{ for: "pcPartnerLabel" } Display name
+          = text_field_tag :pc_partner_label, nil, id: "pcPartnerLabel", class: "form-control", placeholder: "e.g. Jonah", autocomplete: "off"
+          %span.help-block.font-size-12 Shown on the tab and on the property rows.
+        .form-group
+          %label.control-label{ for: "pcPartnerKey" } Identifier
+          = text_field_tag :pc_partner_key, nil, id: "pcPartnerKey", class: "form-control", placeholder: "jonah", autocomplete: "off"
+          %span.help-block.font-size-12
+            Lowercase letters, numbers and underscores. Used in the API and in stored
+            data, so it cannot be changed later.
+        .pc-inline-error#pcAddPartnerError
+      .modal-footer
+        %button.btn.btn-default{ type: "button", data: { dismiss: "modal" } } Cancel
+        %button.btn.btn-primary#pcAddPartnerSave{ type: "button" } Add partner
+
+-# ---------------- Rotate / generate key confirm ----------------
+#pcRotateModal.modal.fade{ tabindex: "-1", role: "dialog" }
+  .modal-dialog{ role: "document" }
+    .modal-content
+      .modal-header
+        %button.close{ type: "button", data: { dismiss: "modal" } }
+          %span &times;
+        %h4.modal-title
+          %i.fa.fa-refresh.mr-10
+          %span#pcRotateTitle Generate API key
+      .modal-body
+        %p#pcRotateBody
+        %p.text-muted.font-size-13
+          The key is shown once, on a link you can send to the partner. Pynwheel never
+          stores a readable copy.
+      .modal-footer
+        %button.btn.btn-default{ type: "button", data: { dismiss: "modal" } } Cancel
+        %button.btn.btn-primary#pcRotateConfirm{ type: "button" } Generate
+
+-# ---------------- One-time key link ----------------
+#pcKeyLinkModal.modal.fade{ tabindex: "-1", role: "dialog", data: { backdrop: "static" } }
+  .modal-dialog{ role: "document" }
+    .modal-content
+      .modal-header
+        %h4.modal-title
+          %i.fa.fa-key.mr-10
+          Send this link to the partner
+      .modal-body
+        %p.text-muted.font-size-13#pcKeyLinkIntro
+        .pc-copy-row
+          = text_field_tag :pc_key_link, nil, id: "pcKeyLink", class: "form-control", readonly: true, onclick: "this.select();"
+          %button.btn.btn-default#pcKeyLinkCopy{ type: "button", title: "Copy link" }
+            %i.fa.fa-copy
+        .pc-key-warning
+          %i.fa.fa-exclamation-triangle.mr-5
+          The link opens once and expires after 72 hours. Nobody — including Pynwheel —
+          can read the key again afterwards; if it is lost, rotate to issue a new one.
+        .pc-email-block
+          %label.control-label{ for: "pcKeyLinkEmail" } Email it to the partner
+          .pc-copy-row
+            = email_field_tag :pc_key_email, nil, id: "pcKeyLinkEmail", class: "form-control", placeholder: "partner@example.com"
+            %button.btn.btn-default#pcKeyLinkSend{ type: "button" }
+              %i.fa.fa-envelope-o.mr-5
+              Send
+          %p.pc-email-status#pcKeyLinkStatus
+      .modal-footer
+        %button.btn.btn-primary{ type: "button", data: { dismiss: "modal" } } Done
+
+-# ---------------- Revoke key confirm ----------------
+#pcRevokeModal.modal.fade{ tabindex: "-1", role: "dialog" }
+  .modal-dialog.modal-sm{ role: "document" }
+    .modal-content
+      .modal-header
+        %button.close{ type: "button", data: { dismiss: "modal" } }
+          %span &times;
+        %h4.modal-title
+          %i.fa.fa-ban.text-danger.mr-10
+          Revoke API key
+      .modal-body
+        %p
+          Revoke
+          %strong#pcRevokePartnerName
+          's API key?
+        %p.text-muted.font-size-13
+          Their API requests start failing immediately. The property associations are
+          kept, so issuing a new key puts them straight back in business.
+      .modal-footer
+        %button.btn.btn-default{ type: "button", data: { dismiss: "modal" } } Cancel
+        %button.btn.btn-danger#pcRevokeConfirm{ type: "button" } Revoke key

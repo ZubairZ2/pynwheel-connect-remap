@@ -2,6 +2,7 @@
 %script{:src => "https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"}
 %script{:src => "https://timmywil.com/panzoom/demo/panzoom.js"}
 = render '/font_awesome_v5'
+= render 'shared/beans_svg_fonts', community: @community
 - content_for :title, "Plot Unit - Pynwheel"
 
 - units_arr = []

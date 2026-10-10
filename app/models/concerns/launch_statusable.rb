@@ -44,6 +44,20 @@ module LaunchStatusable
     IN_PROGRESS
   end
 
+  # For content that can arrive after the record's status was written -- a
+  # property map created before its artwork was uploaded in Connect. Moves a
+  # record still marked in progress on to the status it has now earned, and
+  # leaves every other status alone, so a reviewer's decision is never undone.
+  def advance_launch_status
+    return unless status&.status.eql?(IN_PROGRESS)
+
+    derived = derive_launch_status
+    status.update(status: derived) unless derived.eql?(IN_PROGRESS)
+  rescue StandardError => ex
+    Rails.logger.error("LaunchStatusable: could not advance status for #{self.class.name}##{id} - #{ex.message}")
+    nil
+  end
+
   private
 
   # Mirrors Community#status_string: content complete enough for Pynwheel to

@@ -80,11 +80,38 @@ class DesignSystemConfig < ApplicationRecord
     }
   end
 
+  # The icon above each tab's label, for the SDK payload next to tabLabels.
+  # Stored separately under config_json["tab_icons"], so renaming a tab and
+  # re-iconing it never touch each other:
+  #
+  #   "tab_icons" => { "floor_plans" => { "icon" => "briefcase", "show" => true } }
+  #
+  # Each tab comes out as
+  #
+  #   { icon: "briefcase", isDefault: false, show: true, svg: "<svg…>" }
+  #
+  # A tab with nothing stored (every property until someone opens the picker),
+  # a blank key (Reset to default saves ""), or a key no longer in the set, all
+  # resolve to the stock icon with isDefault: true, and the map keeps drawing
+  # its own built-in component for those — nothing changes on upgrade. `svg` is
+  # still sent for them so other API consumers can draw every tab one way.
+  def to_tab_icons
+    stored = config_json["tab_icons"] || {}
+
+    {
+      units:      tab_icon("units",       stored["units"]),
+      floorPlans: tab_icon("floor_plans", stored["floor_plans"]),
+      amenities:  tab_icon("amenities",   stored["amenities"]),
+      favs:       tab_icon("favs",        stored["favs"])
+    }
+  end
+
   def to_css_vars
     cfg = merged_config
     c   = cfg["colors"]
     {
       "--pyn-primary"           => cv(c["primary"], c["primary_opacity"]),
+      "--pyn-on-primary"        => on_color(c["primary"], c["primary_opacity"]),
       "--pyn-main-font"         => cv(c["main_font"], c["main_font_opacity"]),
       "--pyn-subtext"           => cv(c["subtext"], c["subtext_opacity"]),
       "--pyn-stroke"            => cv(c["stroke_outlines"], c["stroke_outlines_opacity"]),
@@ -96,6 +123,35 @@ class DesignSystemConfig < ApplicationRecord
   end
 
   private
+
+  def tab_icon(tab, cfg)
+    cfg   = cfg.is_a?(Hash) ? cfg : {}
+    stock = MapTabIcons::STOCK.fetch(tab)
+    key   = MapTabIcons.valid?(cfg["icon"]) ? cfg["icon"].to_s : stock
+
+    {
+      icon:      key,
+      isDefault: key == stock,
+      # Shown unless explicitly switched off; "false" covers a form-encoded save.
+      show:      ![false, "false"].include?(cfg["show"]),
+      svg:       MapTabIcons.svg(key)
+    }
+  end
+
+  # Text color readable on top of the primary color: white or near-black,
+  # whichever contrasts more. Translucent primaries are blended over white first.
+  def on_color(hex, opacity)
+    hex = hex.to_s.delete('#')
+    hex = hex.chars.map { |ch| ch * 2 }.join if hex.length == 3
+    return "#ffffff" unless hex.match?(/\A\h{6}/)
+    a = opacity.nil? ? 1.0 : opacity.to_f.clamp(0.0, 1.0)
+    lum = [hex[0, 2], hex[2, 2], hex[4, 2]].map do |h|
+      v = (h.to_i(16) * a + 255 * (1 - a)) / 255.0
+      v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055)**2.4
+    end.zip([0.2126, 0.7152, 0.0722]).sum { |v, w| v * w }
+    dark_lum = 0.0080 # #0f172a
+    (1.05 / (lum + 0.05)) >= ((lum + 0.05) / (dark_lum + 0.05)) ? "#ffffff" : "#0f172a"
+  end
 
   def cv(hex, opacity)
     return hex.to_s if opacity.nil? || opacity.to_f >= 1.0

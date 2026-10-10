@@ -1,33 +1,28 @@
 - content_for :title, "Units - Pynwheel"
 
 :css
-  .units-page { max-width: 1560px; margin: 0 auto; padding: 26px 22px 90px; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #2b2f36; }
-  .units-page h1 { font-size: 25px; font-weight: 650; letter-spacing: -0.015em; margin: 0 0 5px; color: #0f172a; }
-  .units-page .sub { color: #6b7280; font-size: 13.5px; margin: 0; }
-  .units-page .sub .dot { color: #cbd5e1; margin: 0 6px; }
-  .units-page .sub b { color: #374151; font-weight: 600; }
-  .units-page .muted { color: #6b7280; font-size: 13px; }
+  /* Only what is particular to the units grid. The page shell, toolbar, table,
+     badges, pager and the dialogs' shared controls all come from pyn_grid.scss -
+     `.pyn-grid` on the wrapper is what pulls them in. */
+  .units-page .c-unit, .units-page .c-plan { min-width: 148px; }
+  .units-page .c-avail { min-width: 132px; }
+  .units-page .u-plan { color: #1f2937; }
+  .units-page .c-price .cur { color: #a8afba; font-weight: 500; margin-right: 1px; }
 
-  .units-page .page-head { display: flex; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
-  .units-page .page-head .grow { flex: 1; min-width: 260px; }
-  .units-page .head-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  /* the grid marks feed-overriding edits in red, as it always has */
+  .units-page .edited, .units-page .edited * { color: #dd4a39 !important; }
+  .units-page tr.overridden .cell-title { color: #b4402f; }
 
-  .units-page .btn { display: inline-flex; align-items: center; gap: 7px; border: none; border-radius: 6px; padding: 8px 15px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; white-space: nowrap; line-height: 1.3; }
-  .units-page .btn-primary { background: #3558e8; color: #fff; }
-  .units-page .btn-primary:hover { background: #2946c4; color: #fff; }
-  .units-page .btn-ghost { background: #f1f5f9; color: #334155; }
-  .units-page .btn-ghost:hover { background: #e2e8f0; color: #1f2937; }
-  .units-page .btn-success { background: #16a34a; color: #fff; }
+  .units-page .u-thumb { width: 46px; height: 34px; object-fit: cover; border-radius: 5px; border: 1px solid #eef0f3; background: #f8fafc; display: block; }
+  .units-page span.u-thumb.empty { background: repeating-linear-gradient(45deg, #f8fafc, #f8fafc 5px, #f1f5f9 5px, #f1f5f9 10px); }
+
+  /* the shared .locks-field-width class forces 200px !important, which blew this
+     column out; the partial uses .unit-lock-select here instead */
+  .units-page .c-lock { max-width: 170px; }
+  .units-page .c-lock select.unit-lock-select { width: 100%; max-width: 158px; font-size: 12px; height: 30px; padding: 3px 24px 3px 7px; border: 1px solid #dfe3e9; border-radius: 6px; background: #fff; color: #374151; }
+
   .units-page .btn-link { background: none; color: #3558e8; text-decoration: underline; padding: 8px 4px; }
   .units-page .btn-link:hover { background: none; color: #1e3a8a; }
-  .units-page .btn-success:hover { background: #15803d; color: #fff; }
-  .units-page .btn:disabled, .units-page .btn.off { background: #eef1f5; color: #a3acb9; cursor: not-allowed; box-shadow: none; }
-  .units-page .btn:disabled:hover, .units-page .btn.off:hover { background: #eef1f5; color: #a3acb9; }
-
-  /* toolbar */
-  .units-page .toolbar { background: #fff; border: 1px solid #e8ebf0; border-radius: 12px; padding: 13px 15px; margin-bottom: 15px; box-shadow: 0 1px 2px rgba(16,24,40,0.04), 0 1px 3px rgba(16,24,40,0.03); }
-  .units-page .toolbar .row1 { display: flex; gap: 9px; flex-wrap: wrap; align-items: center; }
-  .units-page .toolbar .row2 { display: flex; gap: 9px; flex-wrap: wrap; align-items: center; margin-top: 11px; padding-top: 12px; border-top: 1px solid #f2f4f7; }
 
   /* search field with its own icon and clear affordance */
   .units-page .f-searchwrap { position: relative; flex: 1; min-width: 250px; display: flex; }
@@ -50,26 +45,16 @@
   .units-page .f-hint { margin-top: 9px; font-size: 12px; color: #94a3b8; line-height: 1.6; }
   .units-page .f-hint b { color: #64748b; font-weight: 600; }
   .units-page .f-hint code { background: #f1f5f9; border: 1px solid #e6ebf1; border-radius: 4px; padding: 1px 5px; font-size: 11.5px; color: #475569; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-  .units-page .f-input, .units-page .f-select { padding: 7px 11px; border: 1px solid #dfe3e9; border-radius: 7px; font-size: 13px; background: #fff; color: #1f2937; height: 36px; transition: border-color .12s, box-shadow .12s; }
-  .units-page .f-select:hover, .units-page .f-input:hover { border-color: #c9cfd8; }
-  .units-page .f-select { padding-right: 26px; }
-  .units-page .f-input:focus, .units-page .f-select:focus { outline: none; border-color: #3558e8; box-shadow: 0 0 0 3px rgba(53,88,232,0.12); }
-  .units-page .f-search { flex: 1; min-width: 230px; }
-  .units-page .f-num { width: 92px; }
-  .units-page .f-group { display: inline-flex; align-items: center; gap: 6px; padding: 0 10px 0 11px; border: 1px solid #dfe3e9; border-radius: 7px; height: 36px; background: #fbfcfd; margin: 0; }
-  .units-page .f-group > span { font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: #8b93a1; }
-  .units-page .f-group .f-input { border: none; background: none; height: 32px; padding: 0; width: 60px; }
-  .units-page .f-group .f-input:hover { border: none; }
-  .units-page .f-group .f-input:focus { box-shadow: none; }
-  .units-page .spin { width: 15px; height: 15px; border: 2px solid #e5e7eb; border-top-color: #3558e8; border-radius: 50%; opacity: 0; }
-  .units-page .spin.on { opacity: 1; animation: unitspin 0.7s linear infinite; }
-  @keyframes unitspin { to { transform: rotate(360deg); } }
 
   /* selection bar */
   .units-page .bulkbar { display: none; position: sticky; top: 8px; z-index: 60; margin: 0 0 14px; background: #fff; border: 1px solid #cfdafe; border-radius: 10px; box-shadow: 0 6px 22px rgba(37,63,150,0.14); padding: 11px 14px; }
   .units-page .bulkbar.on { display: block; }
   .units-page .bulkbar-inner { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   .units-page .bb-count { font-size: 13.5px; font-weight: 600; color: #1e3a8a; flex: 1; min-width: 200px; }
+
+  .units-page #select-all-banner { background: #f8fafc; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px; padding: 9px 16px; font-size: 13px; color: #475569; text-align: center; }
+  .units-page #select-all-banner a { color: #3558e8; font-weight: 600; text-decoration: none; margin-left: 6px; }
+  .units-page #select-all-banner a:hover { text-decoration: underline; }
 
   /* mass override dropdown */
   .units-page .mo-menu-wrap { position: relative; }
@@ -79,108 +64,6 @@
   .units-page .mo-menu button:hover { background: #f1f5f9; color: #111827; }
   .units-page .mo-menu .sep { height: 1px; background: #eef0f3; margin: 5px 4px; }
   .units-page .mo-menu .grp { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #9ca3af; padding: 7px 11px 4px; }
-
-  /* meta strip */
-  .units-page .units-meta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin: 0 2px 9px; }
-  .units-page .units-count { font-size: 13px; color: #475569; font-weight: 500; flex: 1; }
-  .units-page .units-page-n { color: #9ca3af; }
-  .units-page .units-perpage { display: inline-flex; align-items: center; gap: 5px; }
-  .units-page .units-perpage .pp { display: inline-flex; align-items: center; justify-content: center; min-width: 30px; height: 26px; padding: 0 7px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 12px; font-weight: 600; color: #64748b; text-decoration: none; background: #fff; }
-  .units-page .units-perpage .pp:hover { background: #f1f5f9; color: #1f2937; }
-  .units-page .units-perpage .pp.on { background: #3558e8; border-color: #3558e8; color: #fff; }
-
-  /* table */
-  /* The card must never become its own vertical scroll box: with "All" that
-     traps every row past the fold inside a viewport-height container. Narrow
-     screens still get horizontal scrolling; from 1280px up the table fits, so
-     overflow goes back to visible and the sticky header can anchor to the
-     viewport instead of to this element. */
-  .units-page .table-wrap { background: #fff; border: 1px solid #e8ebf0; border-radius: 12px; box-shadow: 0 1px 2px rgba(16,24,40,0.04), 0 1px 3px rgba(16,24,40,0.03); overflow-x: auto; }
-  @media (min-width: 1280px) { .units-page .table-wrap { overflow: visible; } }
-  .units-page table.units-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  .units-page .units-table thead th { position: sticky; top: 0; z-index: 5; text-align: left; background: #f8fafc; color: #64748b; font-weight: 650; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.055em; padding: 11px 12px; box-shadow: inset 0 -1px 0 #e8ebf0; white-space: nowrap; }
-  .units-page .units-table thead th:first-child { border-top-left-radius: 12px; }
-  .units-page .units-table thead th:last-child { border-top-right-radius: 12px; }
-  .units-page .units-table thead th.right { text-align: right; }
-  .units-page .units-table thead th.sorted { color: #3558e8; background: #f5f8ff; }
-  .units-page .units-table tbody td { padding: 10px 12px; border-bottom: 1px solid #f4f6f8; vertical-align: middle; }
-  .units-page .units-table tbody td.right { text-align: right; }
-  .units-page .units-table tbody tr:last-child td { border-bottom: none; }
-  .units-page .units-table tbody tr { transition: background .1s; }
-  .units-page .units-table tbody tr:hover { background: #f9fbfd; }
-  .units-page .units-table tbody tr.sel, .units-page .units-table tbody tr.sel:hover { background: #f5f8ff; }
-  .units-page th.cb, .units-page td.cb { width: 34px; padding-right: 0; }
-  .units-page th.flag, .units-page td.flag { width: 1%; white-space: nowrap; text-align: center; padding-left: 8px; padding-right: 8px; }
-  .units-page th.cb input, .units-page td.cb input { width: 15px; height: 15px; cursor: pointer; margin: 0; display: block; }
-
-  .units-page .sort-link { color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
-  .units-page .sort-link:hover { color: #3558e8; }
-  .units-page .sort-caret { width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; }
-  .units-page .sort-caret.asc { border-bottom: 5px solid currentColor; }
-  .units-page .sort-caret.desc { border-top: 5px solid currentColor; }
-  .units-page .sort-caret.none { border-bottom: 5px solid #d5dae2; }
-
-  .units-page .u-name { font-weight: 600; color: #111827; font-size: 13.5px; }
-  .units-page .u-plan { color: #1f2937; }
-  .units-page .u-sub { color: #9ca3af; font-size: 11.5px; margin-top: 2px; white-space: nowrap; }
-  .units-page .c-price { font-variant-numeric: tabular-nums; font-weight: 600; color: #111827; white-space: nowrap; }
-  .units-page .c-price .cur { color: #a8afba; font-weight: 500; margin-right: 1px; }
-  .units-page .c-unit, .units-page .c-plan { min-width: 148px; }
-  .units-page .c-avail { min-width: 132px; }
-  .units-page .u-kv { display: flex; align-items: baseline; gap: 8px; line-height: 1.7; white-space: nowrap; }
-  .units-page .u-kv .k { flex: none; width: 34px; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #c2c8d1; }
-  .units-page .u-kv .v { color: #374151; }
-
-  /* the grid marks feed-overriding edits in red, as it always has */
-  .units-page .edited, .units-page .edited * { color: #dd4a39 !important; }
-  .units-page tr.overridden .u-name { color: #b4402f; }
-
-  .units-page .u-flag { font-weight: 600; font-size: 12px; white-space: nowrap; }
-  .units-page .u-flag .best_in_place { display: inline-block; padding: 2.5px 9px; border-radius: 20px; line-height: 1.45; }
-  .units-page .u-flag.yes .best_in_place { background: #e7f8ed; color: #15803d; }
-  .units-page .u-flag.no .best_in_place, .units-page .u-flag.off .best_in_place { background: #f1f3f6; color: #98a0ad; }
-  .units-page .u-flag.on .best_in_place { background: #eaeffe; color: #3558e8; }
-  .units-page .u-flag.sold .best_in_place { background: #fdf0dd; color: #b45309; }
-
-  .units-page .u-thumb { width: 46px; height: 34px; object-fit: cover; border-radius: 5px; border: 1px solid #eef0f3; background: #f8fafc; display: block; }
-  .units-page span.u-thumb.empty { background: repeating-linear-gradient(45deg, #f8fafc, #f8fafc 5px, #f1f5f9 5px, #f1f5f9 10px); }
-  /* the shared .locks-field-width class forces 200px !important, which blew this
-     column out; the partial uses .unit-lock-select here instead */
-  .units-page .c-lock { max-width: 170px; }
-  .units-page .c-lock select.unit-lock-select { width: 100%; max-width: 158px; font-size: 12px; height: 30px; padding: 3px 24px 3px 7px; border: 1px solid #dfe3e9; border-radius: 6px; background: #fff; color: #374151; }
-  .units-page .u-none { color: #cbd2da; }
-
-  .units-page .u-actions { display: inline-flex; gap: 3px; align-items: center; justify-content: flex-end; }
-  .units-page .u-actions .ico { display: inline-flex; align-items: center; justify-content: center; width: 27px; height: 27px; border-radius: 6px; color: #7c8595; text-decoration: none; font-size: 13px; }
-  .units-page .u-actions .ico:hover { background: #f1f5f9; color: #1f2937; }
-  .units-page .u-actions .ico.danger:hover { background: #fef2f2; color: #b91c1c; }
-  .units-page .u-actions .ico.static { color: #3558e8; cursor: default; }
-  .units-page .u-actions .ico.static:hover { background: none; }
-
-  .units-page .units-empty { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 56px 20px; text-align: center; }
-  .units-page .units-empty-title { font-size: 15px; font-weight: 600; color: #374151; margin: 0 0 5px; }
-
-  .units-page #select-all-banner { background: #f8fafc; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px; padding: 9px 16px; font-size: 13px; color: #475569; text-align: center; }
-  .units-page #select-all-banner a { color: #3558e8; font-weight: 600; text-decoration: none; margin-left: 6px; }
-  .units-page #select-all-banner a:hover { text-decoration: underline; }
-
-  /* will_paginate emits the current page as <em> and disabled prev/next as
-     <span>, so all three need the same box or the current page renders as bare
-     italic text. */
-  .units-page .pager { margin-top: 18px; display: flex; justify-content: center; }
-  .units-page .pagination { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-  .units-page .pagination a, .units-page .pagination em, .units-page .pagination span { display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 32px; padding: 0 10px; box-sizing: border-box; border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; font-size: 13px; font-weight: 600; font-style: normal; line-height: 1; color: #475569; text-decoration: none; }
-  .units-page .pagination a:hover { background: #f1f5f9; border-color: #d7dde5; color: #1f2937; }
-  .units-page .pagination em.current { background: #3558e8; border-color: #3558e8; color: #fff; }
-  .units-page .pagination .disabled { color: #c3cad4; background: #fafbfc; border-color: #eef0f3; }
-  .units-page .pagination .gap { border: none; background: none; min-width: 0; padding: 0 2px; color: #9ca3af; }
-
-  /* notices */
-  .units-page .note-card { display: flex; gap: 10px; align-items: flex-start; background: #fffcf2; border: 1px solid #f6e5b8; color: #8a6420; border-radius: 10px; padding: 10px 13px; font-size: 12.5px; line-height: 1.55; margin-bottom: 14px; }
-  .units-page .note-card a { color: #78500a; font-weight: 600; }
-  .units-page .intro-card { display: flex; gap: 11px; align-items: flex-start; background: #eff4ff; border: 1px solid #cfdafe; color: #1e3a8a; border-radius: 9px; padding: 11px 14px; font-size: 13px; line-height: 1.55; margin-bottom: 14px; }
-  .units-page .note-x { background: none; border: none; color: inherit; opacity: 0.5; font-size: 17px; line-height: 1; cursor: pointer; padding: 0 2px; }
-  .units-page .note-x:hover { opacity: 1; }
 
   /* mass override dialogs */
   .units-page .mo-overlay { display: none; position: fixed; inset: 0; background: rgba(15,17,21,0.5); z-index: 1100; align-items: flex-start; justify-content: center; padding: 68px 20px 40px; overflow-y: auto; }
@@ -268,7 +151,7 @@
 
 %section
   .content
-    .units-page
+    .pyn-grid.units-page
       .page-head
         .grow
           %h1 Units
@@ -292,6 +175,8 @@
               %button{type: "button", "data-mo" => "mo-available"} Available
               %button{type: "button", "data-mo" => "mo-available-date"} Available date
               %button{type: "button", "data-mo" => "mo-sold"} Sold
+              - if SHOW_ON_MAP.include?(@community.data_provider)
+                %button{type: "button", "data-mo" => "mo-show-on-map"} Show on map
               .sep
               .grp Placement
               %button{type: "button", "data-mo" => "mo-floorplan"} Floor plan
@@ -335,34 +220,26 @@
             %i.fa.fa-search.f-searchicon
             %input.f-input.f-search{type: "text", name: "q", value: params[:q], placeholder: "Search unit numbers…", autocomplete: "off"}
             %button.f-searchclear#search-clear{type: "button", title: "Clear search", style: ("display:none" if params[:q].blank?)} &times;
-          = unit_filter_select :floorplan, @filter_options[:floorplans].map { |f| [f.name.presence || "Unnamed Floor Plan", f.provider_floorplan_id] } + [["No floor plan", UnitFilterQuery::NONE]], "All floor plans"
-          = unit_filter_select :bedrooms, @filter_options[:bedrooms].map { |b| [floorplan_bedrooms_label(b), b] }, "All beds"
-          = unit_filter_select :building, @filter_options[:buildings].map { |b| ["Bldg #{b}", b] } + [["No building", UnitFilterQuery::NONE]], "All buildings"
-          = unit_filter_select :floor, @filter_options[:floors].map { |f| ["Floor #{f}", f] } + [["No floor", UnitFilterQuery::NONE]], "All floors"
-          = unit_filter_select :availability, [["Available now", "now"], ["Available later", "upcoming"], ["Available (any date)", "true"], ["Not available", "false"]], "Any availability"
+          = grid_filter_select :floorplan, @filter_options[:floorplans].map { |f| [f.name.presence || "Unnamed Floor Plan", f.provider_floorplan_id] } + [["No floor plan", UnitFilterQuery::NONE]], "All floor plans"
+          = grid_filter_select :bedrooms, @filter_options[:bedrooms].map { |b| [floorplan_bedrooms_label(b), b] }, "All beds"
+          = grid_filter_select :building, @filter_options[:buildings].map { |b| ["Bldg #{b}", b] } + [["No building", UnitFilterQuery::NONE]], "All buildings"
+          = grid_filter_select :floor, @filter_options[:floors].map { |f| ["Floor #{f}", f] } + [["No floor", UnitFilterQuery::NONE]], "All floors"
+          = grid_filter_select :availability, [["Available now", "now"], ["Available later", "upcoming"], ["Available (any date)", "true"], ["Not available", "false"]], "Any availability"
           %span.spin#filter-spin
 
         -# The less-reached-for filters, on their own row. Every one of them stays
         -# on screen: a filter behind a disclosure is a filter nobody finds, and
         -# one already in play would be hiding its own state.
         .row2
-          = unit_filter_select :bathrooms, @filter_options[:bathrooms].map { |b| ["#{floorplan_bathrooms_label(b)} Bath", b] }, "All baths"
-          %label.f-group
-            %span= "Price #{@currency_symbol}"
-            %input.f-input{type: "number", name: "min_price", value: params[:min_price], placeholder: "min", min: 0}
-            %span &ndash;
-            %input.f-input{type: "number", name: "max_price", value: params[:max_price], placeholder: "max", min: 0}
-          %label.f-group
-            %span Sq Ft
-            %input.f-input{type: "number", name: "min_sqft", value: params[:min_sqft], placeholder: "min", min: 0}
-            %span &ndash;
-            %input.f-input{type: "number", name: "max_sqft", value: params[:max_sqft], placeholder: "max", min: 0}
-          = unit_filter_select :sold, [["Sold", "true"], ["Not sold", "false"]], "Sold: any"
-          = unit_filter_select :manual_override, [["Overridden", "true"], ["Not overridden", "false"]], "Override: any"
-          = unit_filter_select :plotted, [["Plotted", "true"], ["Not plotted", "false"]], "Plotting: any"
-          = unit_filter_select :overridden_field, [["Any pinned field", "any"]] + Unit::FEED_OVERRIDE_FLAGS.map { |key, flag| ["Pinned: #{flag[:label]}", key] }, "Field overrides: any"
+          = grid_filter_select :bathrooms, @filter_options[:bathrooms].map { |b| ["#{floorplan_bathrooms_label(b)} Bath", b] }, "All baths"
+          = grid_range_filter "Price #{@currency_symbol}", :min_price, :max_price
+          = grid_range_filter "Sq Ft", :min_sqft, :max_sqft
+          = grid_filter_select :sold, [["Sold", "true"], ["Not sold", "false"]], "Sold: any"
+          = grid_filter_select :manual_override, [["Overridden", "true"], ["Not overridden", "false"]], "Override: any"
+          = grid_filter_select :plotted, [["Plotted", "true"], ["Not plotted", "false"]], "Plotting: any"
+          = grid_filter_select :overridden_field, [["Any pinned field", "any"]] + Unit::FEED_OVERRIDE_FLAGS.map { |key, flag| ["Pinned: #{flag[:label]}", key] }, "Field overrides: any"
           - if @community.enable_locks
-            = unit_filter_select :lock, [["Any lock", "any"], ["No lock", UnitFilterQuery::NONE]] + @filter_options[:lock_providers].map { |p| [lock_provider_label(p), p] }, "Lock: any"
+            = grid_filter_select :lock, [["Any lock", "any"], ["No lock", UnitFilterQuery::NONE]] + @filter_options[:lock_providers].map { |p| [lock_provider_label(p), p] }, "Lock: any"
 
         -# One pill per active filter, so what is narrowing the list is readable
         -# at a glance and removable one at a time - including the ones sitting
@@ -394,14 +271,12 @@
 
     var form     = document.getElementById("unit-filters");
     var results  = document.getElementById("units-results");
-    var spinner  = document.getElementById("filter-spin");
     var bulkbar  = document.getElementById("bulkbar");
     var bbCount  = document.getElementById("bb-count");
     var moOpen   = document.getElementById("mo-open");
     var moLabel  = document.getElementById("mo-open-label");
     var moMenu   = document.getElementById("mo-menu");
     var bbAll    = document.getElementById("bb-all");
-    var DEBOUNCE_MS = 260;
 
     // Selection survives filtering and paging: the grid is swapped over XHR, so
     // holding the ids here (rather than only in the DOM) means a user can build
@@ -411,47 +286,6 @@
     // matching the current filters" itself instead of trusting a list of ids
     // the browser never rendered.
     var selectAllMatching = false;
-
-    // ---- filtering, sorting, paging -------------------------------------
-    var timer = null, inFlight = null, lastQuery = window.location.search;
-
-    function currentQuery() {
-      var params = new URLSearchParams(new FormData(form));
-      Array.from(params.keys()).forEach(function (k) { if (!params.get(k)) params.delete(k); });
-      var qs = params.toString();
-      return qs ? "?" + qs : "";
-    }
-
-    function fetchResults(query) {
-      if (inFlight) inFlight.abort();
-      inFlight = new AbortController();
-      spinner.classList.add("on");
-
-      return fetch(form.action + query, { signal: inFlight.signal, headers: { "X-Requested-With": "XMLHttpRequest" } })
-        .then(function (res) { return res.text(); })
-        .then(function (html) {
-          results.innerHTML = html;
-          afterRender();
-          history.replaceState(null, "", query || window.location.pathname);
-          lastQuery = query;
-        })
-        .catch(function (e) { if (e.name !== "AbortError") window.location.search = query; })
-        .finally(function () { spinner.classList.remove("on"); inFlight = null; });
-    }
-
-    // A filter change redefines the matching set, so a standing "all matching"
-    // choice has to drop with it — it was made against a different set.
-    function applyFilters() {
-      var query = currentQuery();
-      // The pills describe the controls, not the last request, so they are
-      // redrawn before the early return - otherwise clearing a filter back to a
-      // query that has already been fetched leaves a pill on screen for a filter
-      // that is no longer set.
-      syncClear();
-      if (query === lastQuery) return;
-      selectAllMatching = false;
-      fetchResults(query);
-    }
 
     // ---- active filter pills --------------------------------------------
     // Reading the labels straight off the controls means a pill can never drift
@@ -501,7 +335,7 @@
       });
     }
 
-    function syncClear() {
+    function syncChips() {
       var chips = activeFilters();
       chipsList.innerHTML = "";
       chips.forEach(function (chip) {
@@ -518,7 +352,7 @@
         x.className = "chip-x";
         x.innerHTML = "&times;";
         x.title = "Remove this filter";
-        x.addEventListener("click", function () { clearFields(chip.fields); applyFilters(); });
+        x.addEventListener("click", function () { clearFields(chip.fields); grid.apply(); });
         pill.appendChild(x);
         chipsList.appendChild(pill);
       });
@@ -527,38 +361,28 @@
       if (searchX) searchX.style.display = (searchBox && searchBox.value) ? "" : "none";
     }
 
+    // Filtering, sorting and paging are identical on every grid, so they live
+    // in PynGrid; the hooks are where the selection and the pills - which are
+    // not - join in. A filter change redefines the matching set, so a standing
+    // "all matching" choice has to drop with it: it was made against a
+    // different set.
+    var grid = PynGrid.init({
+      form: "#unit-filters",
+      results: "#units-results",
+      spinner: "#filter-spin",
+      clear: "#clear-filters",
+      onBeforeFetch: function () { selectAllMatching = false; },
+      onControlsChange: syncChips,
+      onRender: afterRender
+    });
+
     if (searchX) {
       searchX.addEventListener("click", function () {
         searchBox.value = "";
         searchBox.focus();
-        applyFilters();
+        grid.apply();
       });
     }
-
-    form.addEventListener("submit", function (e) { e.preventDefault(); applyFilters(); });
-    form.addEventListener("input", function () {
-      clearTimeout(timer);
-      timer = setTimeout(applyFilters, DEBOUNCE_MS);
-    });
-    form.addEventListener("change", function () { clearTimeout(timer); applyFilters(); });
-
-    document.getElementById("clear-filters").addEventListener("click", function (e) {
-      e.preventDefault();
-      form.querySelectorAll("input[type=text], input[type=number]").forEach(function (i) { i.value = ""; });
-      form.querySelectorAll("select").forEach(function (s) { s.value = ""; });
-      applyFilters();
-    });
-
-    // Sort headers, pager links and the rows-per-page control are ordinary
-    // links; intercepting them keeps paging on the same XHR path as filtering,
-    // which is what lets a selection span pages.
-    results.addEventListener("click", function (e) {
-      var link = e.target.closest("a[data-remote-nav], .pagination a");
-      if (!link || link.classList.contains("disabled")) return;
-      e.preventDefault();
-      var query = link.getAttribute("href").replace(/^[^?]*/, "");
-      fetchResults(query);
-    });
 
     // ---- selection -------------------------------------------------------
     function rowBoxes() { return Array.prototype.slice.call(results.querySelectorAll(".js-row-cb")); }
@@ -786,7 +610,7 @@
           // value this override is setting - floor, building, sold and
           // manual_override exist on both sides.
           moForm.appendChild(hidden("select_all_matching", "true"));
-          new URLSearchParams(currentQuery()).forEach(function (value, key) {
+          new URLSearchParams(grid.query()).forEach(function (value, key) {
             moForm.appendChild(hidden("scope[" + key + "]", value));
           });
         } else {
@@ -876,8 +700,6 @@
       });
     });
 
-    syncClear();
-    afterRender();
   })();
 
   // Defined once for the whole grid. The lock <select> is rendered per row by

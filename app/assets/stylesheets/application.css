@@ -31,6 +31,8 @@
  *= require zoom-marker
  *= require intlTelInput
  *= require analytics
+ *= require pyn_grid
+ *= require pyn_form
  */
 
 @keyframes shadow-pulse {

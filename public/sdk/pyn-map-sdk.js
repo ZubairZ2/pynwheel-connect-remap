@@ -390,6 +390,7 @@
       clone.style.display = "block";
 
       // Apply global text styles (once per SVG)
+      this._applyBeansSvgFonts();
       this._applyGlobalLabelStyles(clone, this.config.styles.unitLabels);
 
       // AUTO SCALE SVG: fit inside whatever container partner gives
@@ -448,16 +449,29 @@
         ? this._zoomWrapper
         : svgEl;
 
+      // No panzoom `bounds` — it constrains the SVG *element*, whose letterbox
+      // margins let the actual map be dragged fully out of view. _clampToMapEdges
+      // bounds the rendered content instead.
       const pz = panzoom(target, {
         minZoom: 0.5,
         maxZoom: 10,
-        bounds: true,
-        boundsPadding: 0.1,
       });
 
       // Everything else reaches the instance through the SVG, so alias it there.
       svgEl._pz  = pz;
       target._pz = pz;
+
+      // moveTo() fires "pan" synchronously and the transform is only painted on
+      // the next animation frame, so clamping here never shows the overshoot.
+      // The flag stops our own moveTo() from re-entering.
+      let clamping = false;
+      const clamp = () => {
+        if (clamping) return;
+        clamping = true;
+        try { this._clampToMapEdges(svgEl, target); } finally { clamping = false; }
+      };
+      pz.on("pan",  clamp);
+      pz.on("zoom", clamp);
 
       // Defer so the browser finishes layout before we read clientWidth/Height
       setTimeout(() => this._centerSvg(svgEl), 0);
@@ -509,6 +523,71 @@
         }, { threshold: 0 });
         try { io.observe(c); } catch { ioClean(); }
       }
+    },
+
+    // Keep the map graphic's physical edges inside the viewport.
+    // preserveAspectRatio="xMidYMid meet" letterboxes the content inside the SVG,
+    // so the map itself occupies a centred sub-rect derived from the viewBox.
+    // Where the SVG sits is measured, not assumed: the loading spinner leaves the
+    // container a centring flexbox, so on narrow screens the SVG is only as tall
+    // as its aspect ratio and sits mid-container. Assuming it filled the container
+    // shifted the bounds by (scale - 1) × that margin and hid part of the map.
+    // After panzoom's matrix(s,0,0,s,tx,ty) the map spans
+    //   x: [layX + s*offX + tx, layX + s*(offX+w) + tx]   (same for y)
+    // Per axis: when the map is larger than the viewport it must cover it (no
+    // whitespace past an edge); when smaller (zoomed out) it must stay fully
+    // inside. Both reduce to clamping t between the two edge-flush positions.
+    _clampToMapEdges(svgEl, target) {
+      const pz = svgEl && svgEl._pz;
+      const viewport = target && target.parentElement;
+      if (!pz || !viewport) return;
+
+      const vw = viewport.clientWidth;
+      const vh = viewport.clientHeight;
+      const sw = svgEl.clientWidth;
+      const sh = svgEl.clientHeight;
+      if (!vw || !vh || !sw || !sh) return;
+
+      // panzoom updates getTransform() at once but paints the CSS transform on the
+      // next frame, so rects still show the painted one. Measure against that.
+      const css     = getComputedStyle(target).transform;
+      const painted = css && css !== "none" ? new DOMMatrixReadOnly(css) : new DOMMatrixReadOnly();
+      const ps      = painted.a || 1;
+
+      // panzoom transforms from origin 0 0, so with its translate taken out the
+      // bounding rect gives the target's layout position inside the viewport.
+      const tr = target.getBoundingClientRect();
+      const vr = viewport.getBoundingClientRect();
+      const layX = tr.left - vr.left - viewport.clientLeft - painted.e;
+      const layY = tr.top  - vr.top  - viewport.clientTop  - painted.f;
+
+      let offX = 0, offY = 0, w = sw, h = sh;
+      const vb = svgEl.viewBox && svgEl.viewBox.baseVal;
+      if (vb && vb.width > 0 && vb.height > 0) {
+        const fit = Math.min(sw / vb.width, sh / vb.height);
+        w = vb.width  * fit;
+        h = vb.height * fit;
+        offX = (sw - w) / 2;
+        offY = (sh - h) / 2;
+      }
+
+      // Beans: the SVG sits inside the panned wrapper; add its offset there.
+      if (target !== svgEl) {
+        const sr = svgEl.getBoundingClientRect();
+        offX += (sr.left - tr.left) / ps;
+        offY += (sr.top  - tr.top)  / ps;
+      }
+
+      const t = pz.getTransform();
+      const clampAxis = (pos, lay, off, len, view) => {
+        const a = -lay - t.scale * off;                // leading edge flush with viewport start
+        const b = view - lay - t.scale * (off + len);  // trailing edge flush with viewport end
+        return Math.min(Math.max(a, b), Math.max(Math.min(a, b), pos));
+      };
+
+      const x = clampAxis(t.x, layX, offX, w, vw);
+      const y = clampAxis(t.y, layY, offY, h, vh);
+      if (Math.abs(x - t.x) > 0.5 || Math.abs(y - t.y) > 0.5) pz.moveTo(x, y);
     },
 
     _centerSvg(svgEl) {
@@ -1267,6 +1346,28 @@
         if (textStyles.fontColor)  el.style.fill        = textStyles.fontColor;
         el.style.pointerEvents = "none";
       });
+    },
+
+    // "Beans Generated SVG" maps (Figma exports) set font-family="Inter" on every
+    // label with no fallback and no font loaded, so labels fell back to serif.
+    // Only for that CMS toggle: the container gets .pyn-beans-svg, and the rule
+    // (scoped to it, and to labels that ask for Inter) loads once. Same rule as
+    // the CMS map's shared/_beans_svg_fonts.
+    _applyBeansSvgFonts() {
+      const isBeans = this._isBeansSvgMap === true;
+      this.container.classList.toggle("pyn-beans-svg", isBeans);
+      if (!isBeans || document.getElementById("pyn-svg-label-fonts")) return;
+
+      const link = document.createElement("link");
+      link.rel  = "stylesheet";
+      link.href = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap";
+      document.head.appendChild(link);
+
+      const s = document.createElement("style");
+      s.id = "pyn-svg-label-fonts";
+      s.textContent =
+        `.pyn-beans-svg svg text[font-family="Inter" i], .pyn-beans-svg svg tspan[font-family="Inter" i] { font-family: 'Inter', sans-serif; }`;
+      document.head.appendChild(s);
     },
 
     _getActiveSvg() {

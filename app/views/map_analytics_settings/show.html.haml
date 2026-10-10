@@ -1,0 +1,168 @@
+- content_for :title, "Map Analytics - Pynwheel"
+
+= render partial: "map_analytics_settings/styles"
+
+%section.is-home-page.map-analytics
+  .content
+    .map-analytics-head
+      .map-analytics-head-icon
+        %i.fa.fa-line-chart
+      .map-analytics-head-text
+        %h3 Map Analytics
+        %p
+          Send this property's map interactions to the client's own Google Tag Manager.
+          They build the reporting in their GA4; we never need their credentials.
+
+    - if @config[:enabled]
+      .map-analytics-status.map-analytics-status--on
+        %i.fa.fa-check-circle
+        %span
+          Live. This property is sending
+          %b= pluralize(@config[:actions].length, "interaction")
+          to its embedding page
+          - if @config[:targetOrigin]
+            at
+            %b= @config[:targetOrigin]
+          - else
+            (delivered to any embedding page).
+    - else
+      .map-analytics-status.map-analytics-status--off
+        %i.fa.fa-power-off
+        %span
+          Off. The map is tracking normally for Pynwheel's own reports, but sends
+          %b nothing
+          to the client's page.
+
+    = form_tag community_map_analytics_setting_path(@community), method: :put do
+      .box.box-widget.panel-box
+        .box-body
+
+          -# ── 1 ───────────────────────────────────────────────────────────────
+          .map-analytics-step
+            .map-analytics-step-num 1
+            .map-analytics-step-body
+              %h4 Turn the data layer on
+              %p.hint
+                Leave this off until the client has added the relay snippet from step 4.
+                Turning it on changes nothing on our side and nothing the visitor sees.
+              %label.map-analytics-toggle
+                = check_box_tag :enabled, "1", @config[:enabled]
+                %span Send this property's interactions to the embedding page
+
+          -# ── 2 ───────────────────────────────────────────────────────────────
+          .map-analytics-step
+            .map-analytics-step-num 2
+            .map-analytics-step-body
+              %h4 Choose which interactions to send
+              %p.hint
+                The four click-through CTAs are on by default. Everything below them is
+                browsing signal, and each one lands in the client's GA4 as another event
+                they have to name and register, so tick those only when they ask.
+              .map-analytics-actions
+                - @known_actions.each do |action|
+                  %label.map-analytics-action
+                    = check_box_tag "actions[]", action, @config[:actions].include?(action), id: "action_#{action}"
+                    %span
+                      %span.map-analytics-action-name
+                        = Analytics::MapEventContract::ACTION_LABELS[action] || action.humanize
+                        - if @default_actions.include?(action)
+                          %span.map-analytics-badge Default
+                      %span.map-analytics-action-code= action
+                      %span.map-analytics-action-note
+                        Fires on:
+                        = @events_by_action[action].to_a.join(", ")
+
+          -# ── 3 ───────────────────────────────────────────────────────────────
+          .map-analytics-step
+            .map-analytics-step-num 3
+            .map-analytics-step-body
+              %h4
+                Restrict delivery
+                %span.map-analytics-badge Optional
+              %p.hint
+                Leave blank unless the client asks. The payload carries IDs and labels
+                only, never personal data, and their own snippet already checks that the
+                message came from us. Filling this in limits delivery to one host, so a
+                wrong value here stops their tracking silently.
+              .map-analytics-origin
+                = text_field_tag :target_origin, @config[:targetOrigin],
+                                 placeholder: "https://www.clientsite.com"
+
+          -# ── 4 ───────────────────────────────────────────────────────────────
+          .map-analytics-step
+            .map-analytics-step-num 4
+            .map-analytics-step-body
+              %h4 Send the client their setup
+              %p.hint
+                Everything below goes to the client's web team once. Nothing reaches
+                their reports until they have done all three.
+
+              - if @embed_origin.blank?
+                .map-analytics-warn
+                  %i.fa.fa-exclamation-triangle
+                  The map's embed origin is not configured, so the snippet below cannot be
+                  generated. Set
+                  %code PYN_MAP_EMBED_ORIGIN
+                  for this environment to the origin the map iframe is served from. Do not
+                  hand a client a snippet with a guessed origin or a wildcard.
+              - else
+                %p.hint
+                  %b A.
+                  Add this to the page hosting the map iframe, above their GTM container:
+                .map-analytics-snippet
+                  %button.map-analytics-copy{ type: "button", "data-copy-target" => "relay-snippet" } Copy
+                  %pre{ id: "relay-snippet" }
+                    :preserve
+                      &lt;script&gt;
+                        window.addEventListener("message", function (e) {
+                          if (e.origin !== "#{@embed_origin}") return;
+                          if (!e.data || e.data.event !== "pynwheel_map") return;
+                          window.dataLayer = window.dataLayer || [];
+                          window.dataLayer.push(e.data);
+                        });
+                      &lt;/script&gt;
+
+              -# %p.hint
+              -#   %b B.
+              -#   In their Google Tag Manager, one trigger and one tag, built once:
+              -# %ul.map-analytics-checklist
+              -#   %li
+              -#     Trigger: Custom Event, event name
+              -#     %code pynwheel_map
+              -#   %li
+              -#     Tag: GA4 Event, event name
+              -#     %code pynwheel_map
+              -#     , with the
+              -#     %code action
+              -#     field sent as a parameter. It names the clicked thing, like
+              -#     %code 101A_clicked
+              -#     , which GA4 rejects as an event name.
+              -#   %li
+              -#     One Data Layer Variable per field they want to report on
+
+              -# %p.hint
+              -#   %b C.
+              -#   In GA4, register those fields as event-scoped custom dimensions. Skipping
+              -#   this is the usual reason a client says "the data is not arriving" when it is.
+
+              -# %p.hint
+              -#   The full field list and examples are in
+              -#   %code docs/map-analytics-data-layer.md
+              -#   — send that document with the snippet.
+
+          .map-analytics-save
+            %button.btn-save{ type: "submit" } Save settings
+            %span.note Takes effect on the client's next map load. No deploy needed.
+
+:javascript
+  document.querySelectorAll("[data-copy-target]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var el = document.getElementById(btn.getAttribute("data-copy-target"));
+      if (!el) return;
+      navigator.clipboard.writeText(el.innerText.trim()).then(function () {
+        var original = btn.textContent;
+        btn.textContent = "Copied";
+        setTimeout(function () { btn.textContent = original; }, 1500);
+      });
+    });
+  });

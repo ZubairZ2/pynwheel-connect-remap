@@ -102,6 +102,7 @@ class Unit < ApplicationRecord
     "availability" => { column: :availability_is_updated, label: "Availability status" },
     "floor" => { column: :floor_is_updated, label: "Floor" },
     "building" => { column: :building_is_updated, label: "Building" },
+    "show_on_map" => { column: :show_on_map_is_updated, label: "Show on map" },
     "sold" => { column: :sold_is_updated, label: "Sold", display_only: true }
   }.freeze
 
@@ -151,6 +152,21 @@ class Unit < ApplicationRecord
     return false unless available
 
     (available_date || Date.new(0)) <= Date.today
+  end
+
+  # Availability was set to available by hand, so the feed no longer owns it.
+  def pinned_available?
+    available.present? && (available_is_updated.present? || availability_is_updated.present?)
+  end
+
+  # show_on_map value for a feed sync pass. The feed decides it from whether the
+  # provider returned the unit on its available-only pass, but a value set by hand
+  # is kept, and a unit someone marked available by hand must stay on the map even
+  # when the feed disagrees, or visible_on_map_for hides it on the next sync.
+  def feed_show_on_map(limit_result)
+    return show_on_map if show_on_map_is_updated
+
+    limit_result || pinned_available?
   end
 
   # Which availability filter bucket this unit falls into, matching the old map's
@@ -228,21 +244,26 @@ class Unit < ApplicationRecord
     end
   }
 
+  # Provider-specific map visibility. Every branch (including the rescue fallback)
+  # starts from without_hidden_names, so HIDE_UNIT_PATTERN units can never leak
+  # onto the map regardless of provider or credential settings.
   scope :visible_on_map_for, ->(community) {
+    base = without_hidden_names
+
     begin
-      return all unless SHOW_ON_MAP.include?(community.data_provider)
+      return base unless SHOW_ON_MAP.include?(community.data_provider)
 
       case community.data_provider
       when "psi"
-        community.credential&.entrata_available_units_only ? where(show_on_map: true) : all
+        community.credential&.entrata_available_units_only ? base.where(show_on_map: true) : base
       when "yardirentcafe"
-        community.credential&.limit_result ? where(show_on_map: true) : all
+        community.credential&.limit_result ? base.where(show_on_map: true) : base
       else
-        all
+        base
       end
-      
+
     rescue
-      all
+      base
     end
   }
 
@@ -580,8 +601,40 @@ class Unit < ApplicationRecord
     end
   end
 
+  # Overrides the `belongs_to :floorplan` reader declared at the top of this
+  # class. The `floorplan_id` column holds the PMS's own id for the plan, not our
+  # primary key, so the association's join is on the wrong column and the record
+  # has to be resolved through `provider_floorplan_id` instead.
+  #
+  # Memoised because the SDK payload asks a unit for its floor plan around twenty
+  # times over: once directly in SdkPayloadBuilderService#unit_json, and again
+  # inside every get_*/link*_open_in_new_tab? fallback below, each of which
+  # re-reads it through its own `&.` chain. Unmemoised that was ~20 SELECTs per
+  # unit, so a four-figure student-housing property spent tens of thousands of
+  # round trips on one answer -- the bulk of a 14s fetch_data.
+  #
+  # Keyed on the two columns the lookup reads, so reassigning `floorplan_id`
+  # invalidates the cache by itself and a re-import can never serve a stale plan.
+  # A miss is cached too: a unit whose plan is genuinely missing asks once.
   def floorplan
-    Floorplan.find_by(provider_floorplan_id: self.floorplan_id, community_id: self.community_id)
+    key = [floorplan_id, community_id]
+    return @floorplan_lookup.last if @floorplan_lookup && @floorplan_lookup.first == key
+
+    found = Floorplan.find_by(provider_floorplan_id: floorplan_id, community_id: community_id)
+    @floorplan_lookup = [key, found]
+    found
+  end
+
+  # Hands a unit a floor plan that some caller already has in memory, so the
+  # lookup above never runs at all. SdkPayloadBuilderService uses this to serve a
+  # whole property's units from the floor plans loaded once with the community.
+  def preloaded_floorplan=(record)
+    @floorplan_lookup = [[floorplan_id, community_id], record]
+  end
+
+  def reload(*)
+    @floorplan_lookup = nil
+    super
   end
 
   def unit_image
@@ -606,6 +659,12 @@ class Unit < ApplicationRecord
     else
       Wayfinding::VersionBump.community_levels!(community_id)
     end
+  end
+
+  # The source PMS's own unit id (e.g. Entrata's PropertyUnitId), or nil when it
+  # cannot be recovered exactly. See PmsUnitIdResolver.
+  def pms_unit_id
+    PmsUnitIdResolver.call(self)
   end
 
   def unit_market
@@ -721,6 +780,6 @@ class Unit < ApplicationRecord
       end
     end
 
-    { min: base + extra_min, max: base + extra_max }
+    { min: (base + extra_min).round(2), max: (base + extra_max).round(2) }
   end
 end

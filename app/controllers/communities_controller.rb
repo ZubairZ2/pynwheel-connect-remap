@@ -889,6 +889,9 @@ class CommunitiesController < ApplicationController
     @community.enable_unit_type_pricing = params[:enable_unit_type_pricing]
     @community.student_housing_property = params[:student_housing_property].present? ? params[:student_housing_property] : false
     @community.highlight_all_units_on_hover = params[:highlight_all_units_on_hover].present? ? params[:highlight_all_units_on_hover] : false
+    # Posts a hidden "off" ahead of its checkbox, like the PYN-1610 map view
+    # settings below, so a settings form without the toggle leaves it alone.
+    @community.hide_map_unit_numbers = params[:hide_map_unit_numbers] if params.key?(:hide_map_unit_numbers)
     @community.hide_bedrooms_bathrooms = params[:hide_bedrooms_bathrooms]
     @community.hide_square_feet = params[:hide_square_feet]
     @community.hide_availability = params[:hide_availability]
@@ -900,8 +903,16 @@ class CommunitiesController < ApplicationController
     @community.display_manual_additional_fee = params[:display_manual_additional_fee]
     @community.additional_fee = params[:additional_fee]
     @community.default_map_floor = params[:default_map_floor]
+    # Map view settings (PYN-1610). Posted only by the Property Map pages, and
+    # each only while it is on screen -- the toggles carry a hidden "off" value
+    # the way f.check_box does -- so a page without a field leaves it alone.
+    @community.enable_three_d_maps    = params[:enable_three_d_maps]    if params.key?(:enable_three_d_maps)
+    @community.available_map_views    = params[:available_map_views]    if params.key?(:available_map_views)
+    @community.default_map_view       = params[:default_map_view]       if params.key?(:default_map_view)
+    @community.default_satellite_view = params[:default_satellite_view] if params.key?(:default_satellite_view)
 
     if @community.save
+      update_map_type(@community) if @community.saved_change_to_enable_three_d_maps?
       flash[:notice] = "Apartment settings updated successfully."
       redirect_back(fallback_location: root_path)
     else

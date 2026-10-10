@@ -13,6 +13,8 @@ class Sitemap < ApplicationRecord
   include ::S3Acceleration
   include SvgOptimizableMap
 
+  include StoredImageDimensions
+
   mount_uploader :image, SiteMapUploader
   mount_uploader :svg_image, SiteMapUploader
   mount_uploader :label_image, SiteMapUploader
@@ -30,6 +32,10 @@ class Sitemap < ApplicationRecord
   has_many :hallways, as: :parent, dependent: :destroy
   has_many :access_points, class_name: 'Door', as: :attached_with, dependent: :destroy
   include LaunchStatusable
+
+  # An SVG uploaded in Connect lands on a record that may already be marked in
+  # progress; let Launch see the map is ready for review.
+  after_commit :advance_launch_status, on: :update, if: :saved_change_to_svg_image?
 
   validates :image, :presence => {message: "cannot be blank. Please upload site map image first."}, if: -> { image.present? }
 
@@ -67,9 +73,10 @@ class Sitemap < ApplicationRecord
     self.height > 0 ? self.height : self.image.height
   end
 
-  # Launch: the property map form is complete once the map artwork is in.
+  # Launch: the property map form is complete once the map artwork is in,
+  # whether that is a raster image, a design file or an SVG.
   def derive_launch_status
-    launch_status_from(image&.url.present? || file&.url.present?)
+    launch_status_from(image&.url.present? || file&.url.present? || svg_image&.url.present?)
   end
 
   private

@@ -1,4 +1,5 @@
 = render '/font_awesome_v5'
+= render 'shared/beans_svg_fonts', community: @community
 - content_for :title, "Property Map - Pynwheel"
 
 - units_arr = []
@@ -21,6 +22,7 @@
         .box.box-widget.panel-box.add-plan.pt-30
           = form_tag community_save_apartment_settings_path(@community) ,{:class => 'apartment-settings-form'} do
             = hidden_field_tag "community_id", @community.id
+            = render partial: "communities/map_view_settings"
             - if @community.pynwheel_touch_enabled?
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -328,6 +330,8 @@
                     %label.label-primary{:for => "highlight_all_units_on_hover"}
                     %span.pl-15 Yes
 
+              = render partial: "communities/hide_map_unit_numbers_setting"
+
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                   Student Housing Property
@@ -630,6 +634,8 @@
                     %label.label-primary{:for => "highlight_all_units_on_hover"}
                     %span.pl-15 Yes
 
+              = render partial: "communities/hide_map_unit_numbers_setting"
+
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                   Student Housing Property
@@ -697,6 +703,8 @@
 
     - locals[:is_svg] = true
     = render partial: 'sitemaps/svg_or_image_unit_plotting', locals: locals
+
+= render partial: "communities/3d_map_configurations"
 
 #ocrData{data: {ocr_data: @map_ocr_data.to_json, image_dimensions: @dimensions.to_json}}
 

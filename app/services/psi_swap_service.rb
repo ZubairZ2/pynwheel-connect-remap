@@ -142,7 +142,7 @@ class PsiSwapService < BaseService
         building = u["Units"]["Unit"]["BuildingName"]
         unit.building = building.present? ? building.gsub("Building ", "") : ""
         set_availability_url(unit, u, property_id)
-        unit.show_on_map = limit_result
+        unit.show_on_map = unit.feed_show_on_map(limit_result)
         
         unit.save(validate: false)
       else
@@ -202,7 +202,7 @@ class PsiSwapService < BaseService
         unit.building = building.present? ? building.gsub("Building ", "") : ""
 
         set_availability_url(unit, u, property_id)
-        unit.show_on_map = limit_result
+        unit.show_on_map = unit.feed_show_on_map(limit_result)
 
         unit.save(validate: false)
       end
@@ -321,6 +321,12 @@ class PsiSwapService < BaseService
   def fill_psi_pricing_details limit_result
     floorplanHash = Hash.new
     property_ids = @credentials.property_id.split(',') rescue []
+
+    # save_psi_units saved freshly loaded records, so the snapshot taken in
+    # initialize no longer matches the database. The pricing upsert writes every
+    # column of the records it is given, so pricing must work from a fresh copy
+    # or it would put back the old floor plan, IDs and names.
+    @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(@credentials.community_id, "psi")
 
     property_ids.each do |property_id|
       move_in_dates = getMoveInDate(property_id)

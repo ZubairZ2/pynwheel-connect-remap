@@ -1,0 +1,248 @@
+// Chrome shared by the CMS's server-side filtered grids (properties, units).
+//
+// It used to live inline in the units view, which meant a second grid could
+// only be built by copying 240 lines of CSS next to it. Everything generic -
+// the page head, the filter toolbar, the table, the pager, the badges - lives
+// here under `.pyn-grid`; a page keeps only what is genuinely its own.
+//
+// Markup contract: `.pyn-grid` wraps the page, the toolbar is a <form> of
+// `.f-input` / `.f-select` / `.f-group` controls, and the results fragment the
+// toolbar swaps in is a single element the page owns.
+
+$pyn-accent: #3558e8;
+$pyn-accent-dark: #2946c4;
+$pyn-ink: #0f172a;
+$pyn-text: #2b2f36;
+$pyn-muted: #6b7280;
+$pyn-line: #e8ebf0;
+$pyn-line-soft: #f4f6f8;
+$pyn-field: #dfe3e9;
+$pyn-card-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.03);
+
+.pyn-grid {
+  max-width: 1560px;
+  margin: 0 auto;
+  padding: 10px 18px 40px;
+  font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: $pyn-text;
+
+  h1 { font-size: 25px; font-weight: 650; letter-spacing: -0.015em; margin: 0 0 5px; color: $pyn-ink; }
+  .sub { color: $pyn-muted; font-size: 13.5px; margin: 0; }
+  .sub .dot { color: #cbd5e1; margin: 0 6px; }
+  .sub b { color: #374151; font-weight: 600; }
+  .muted { color: $pyn-muted; font-size: 13px; }
+
+  // ---- page head -----------------------------------------------------------
+  // The title and its actions read as one band: centred against each other and
+  // closed off by a rule, so the toolbar below starts a new block rather than
+  // floating in the same expanse of white.
+  .page-head {
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    margin-bottom: 13px; padding-bottom: 11px; border-bottom: 1px solid $pyn-line;
+  }
+  .page-head .grow { flex: 1; min-width: 260px; }
+  .head-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    border: none; border-radius: 6px; padding: 8px 15px;
+    font-size: 13px; font-weight: 600; line-height: 1.3;
+    cursor: pointer; text-decoration: none; white-space: nowrap;
+  }
+  .btn-primary { background: $pyn-accent; color: #fff; &:hover { background: $pyn-accent-dark; color: #fff; } }
+  .btn-ghost { background: #f1f5f9; color: #334155; &:hover { background: #e2e8f0; color: #1f2937; } }
+  .btn-success { background: #16a34a; color: #fff; &:hover { background: #15803d; color: #fff; } }
+  .btn:disabled, .btn.off {
+    background: #eef1f5; color: #a3acb9; cursor: not-allowed; box-shadow: none;
+    &:hover { background: #eef1f5; color: #a3acb9; }
+  }
+
+  // ---- filter toolbar ------------------------------------------------------
+  .toolbar {
+    background: #fff; border: 1px solid $pyn-line; border-radius: 12px;
+    padding: 11px 13px; margin-bottom: 12px; box-shadow: $pyn-card-shadow;
+  }
+  .toolbar .row1 { display: flex; gap: 9px; flex-wrap: wrap; align-items: center; }
+  .toolbar .row2 {
+    display: flex; gap: 9px; flex-wrap: wrap; align-items: center;
+    margin-top: 11px; padding-top: 12px; border-top: 1px solid #f2f4f7;
+  }
+
+  .f-input, .f-select {
+    padding: 7px 11px; border: 1px solid $pyn-field; border-radius: 7px;
+    font-size: 13px; background: #fff; color: #1f2937; height: 36px;
+    transition: border-color .12s, box-shadow .12s;
+    &:hover { border-color: #c9cfd8; }
+    &:focus { outline: none; border-color: $pyn-accent; box-shadow: 0 0 0 3px rgba(53, 88, 232, 0.12); }
+  }
+  .f-select { padding-right: 26px; }
+  .f-search { flex: 1; min-width: 230px; }
+  .f-num { width: 92px; }
+
+  .f-group {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 0 10px 0 11px; border: 1px solid $pyn-field; border-radius: 7px;
+    height: 36px; background: #fbfcfd; margin: 0;
+    > span { font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: #8b93a1; }
+    .f-input {
+      border: none; background: none; height: 32px; padding: 0; width: 60px;
+      &:hover { border: none; }
+      &:focus { box-shadow: none; }
+    }
+  }
+
+  // The toolbar re-requests results as you type; the spinner is the only signal
+  // that a keystroke is still in flight.
+  .spin { width: 15px; height: 15px; border: 2px solid #e5e7eb; border-top-color: $pyn-accent; border-radius: 50%; opacity: 0; }
+  .spin.on { opacity: 1; animation: pyn-grid-spin 0.7s linear infinite; }
+
+  // ---- count / rows-per-page strip ----------------------------------------
+  .grid-meta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin: 0 2px 9px; }
+  .grid-count { font-size: 13px; color: #475569; font-weight: 500; flex: 1; }
+  .grid-page-n { color: #9ca3af; }
+  .grid-perpage { display: inline-flex; align-items: center; gap: 5px; }
+  .grid-perpage .pp {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 30px; height: 26px; padding: 0 7px;
+    border: 1px solid #e5e7eb; border-radius: 6px;
+    font-size: 12px; font-weight: 600; color: #64748b; text-decoration: none; background: #fff;
+    &:hover { background: #f1f5f9; color: #1f2937; }
+    &.on { background: $pyn-accent; border-color: $pyn-accent; color: #fff; }
+  }
+
+  // ---- table ---------------------------------------------------------------
+  // The card must never become its own vertical scroll box: with "All" that
+  // would trap thousands of rows behind an inner scrollbar. It scrolls
+  // horizontally on narrow screens only, and goes fully visible once there is
+  // room, so the sticky header can stick to the page.
+  .table-wrap {
+    background: #fff; border: 1px solid $pyn-line; border-radius: 12px;
+    box-shadow: $pyn-card-shadow; overflow-x: auto;
+  }
+  @media (min-width: 1280px) { .table-wrap { overflow: visible; } }
+
+  table.grid-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .grid-table thead th {
+    position: sticky; top: 0; z-index: 5; text-align: left;
+    background: #f8fafc; color: #64748b; font-weight: 650; font-size: 10.5px;
+    text-transform: uppercase; letter-spacing: 0.055em;
+    padding: 11px 12px; box-shadow: inset 0 -1px 0 $pyn-line; white-space: nowrap;
+    &:first-child { border-top-left-radius: 12px; }
+    &:last-child { border-top-right-radius: 12px; }
+    &.right { text-align: right; }
+    &.sorted { color: $pyn-accent; background: #f5f8ff; }
+  }
+  .grid-table tbody td { padding: 10px 12px; border-bottom: 1px solid $pyn-line-soft; vertical-align: middle; }
+  .grid-table tbody td.right { text-align: right; }
+  .grid-table tbody tr { transition: background .1s; }
+  .grid-table tbody tr:last-child td { border-bottom: none; }
+  .grid-table tbody tr:hover { background: #f9fbfd; }
+  .grid-table tbody tr.sel, .grid-table tbody tr.sel:hover { background: #f5f8ff; }
+
+  th.cb, td.cb { width: 34px; padding-right: 0; }
+  th.cb input, td.cb input { width: 15px; height: 15px; cursor: pointer; margin: 0; display: block; }
+  th.flag, td.flag { width: 1%; white-space: nowrap; text-align: center; padding-left: 8px; padding-right: 8px; }
+
+  .sort-link {
+    color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;
+    &:hover { color: $pyn-accent; }
+  }
+  .sort-caret { width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; }
+  .sort-caret.asc { border-bottom: 5px solid currentColor; }
+  .sort-caret.desc { border-top: 5px solid currentColor; }
+  .sort-caret.none { border-bottom: 5px solid #d5dae2; }
+
+  // ---- cell primitives -----------------------------------------------------
+  .cell-title { font-weight: 600; color: #111827; font-size: 13.5px; text-decoration: none; }
+  a.cell-title:hover { color: $pyn-accent; text-decoration: none; }
+  .cell-sub { color: #9ca3af; font-size: 11.5px; margin-top: 2px; white-space: nowrap; }
+  .cell-none { color: #cbd2da; }
+  .cell-num { font-variant-numeric: tabular-nums; font-weight: 600; color: #111827; white-space: nowrap; }
+  .cell-link { color: #475569; text-decoration: none; &:hover { color: $pyn-accent; text-decoration: none; } }
+
+  // A labelled micro-row inside a cell, for the two or three secondary facts
+  // that would each be a wasted column of their own.
+  .cell-kv { display: flex; align-items: baseline; gap: 8px; line-height: 1.7; white-space: nowrap; }
+  .cell-kv .k { flex: none; width: 34px; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #c2c8d1; }
+  .cell-kv .v { color: #374151; }
+
+  .row-actions { display: inline-flex; gap: 3px; align-items: center; justify-content: flex-end; }
+  .row-actions .ico {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 27px; height: 27px; border-radius: 6px; color: #7c8595; text-decoration: none; font-size: 13px;
+    &:hover { background: #f1f5f9; color: #1f2937; }
+    &.danger:hover { background: #fef2f2; color: #b91c1c; }
+    &.static { color: $pyn-accent; cursor: default; &:hover { background: none; } }
+  }
+
+  // ---- badges --------------------------------------------------------------
+  .pill { display: inline-block; font-size: 12px; font-weight: 600; line-height: 1.45; white-space: nowrap; padding: 2.5px 9px; border-radius: 20px; }
+  // best_in_place renders its own inner element and that is the click target,
+  // so where a pill wraps one the box moves onto the child.
+  .pill:has(> .best_in_place) { padding: 0; }
+  .pill > .best_in_place { display: inline-block; padding: 2.5px 9px; border-radius: 20px; line-height: 1.45; }
+
+  @each $tone, $colors in (
+    "yes":  (#e7f8ed, #15803d),
+    "on":   (#eaeffe, #3558e8),
+    "warn": (#fdf0dd, #b45309),
+    "bad":  (#fdecec, #c0392b),
+    "no":   (#f1f3f6, #98a0ad),
+    "off":  (#f1f3f6, #98a0ad)
+  ) {
+    .pill.#{$tone}, .pill.#{$tone} > .best_in_place {
+      background: nth($colors, 1);
+      color: nth($colors, 2);
+    }
+  }
+
+  // Feature flags, shown several to a cell - squarer and quieter than a status
+  // pill so a row of them doesn't outshout the property name beside it.
+  .tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .tag {
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+    color: #5b6472; background: #eef1f5; border-radius: 4px; padding: 2px 6px; white-space: nowrap;
+  }
+  .tag.accent { background: #eaeffe; color: #3558e8; }
+
+  // ---- empty state / pager -------------------------------------------------
+  .grid-empty { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 56px 20px; text-align: center; }
+  .grid-empty-title { font-size: 15px; font-weight: 600; color: #374151; margin: 0 0 5px; }
+
+  // will_paginate emits the current page as <em> and disabled prev/next as
+  // <span>, so all three need the same box or the current page renders as bare
+  // italic text.
+  .pager { margin-top: 18px; display: flex; justify-content: center; }
+  .pagination { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .pagination a, .pagination em, .pagination span {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 34px; height: 32px; padding: 0 10px; box-sizing: border-box;
+    border: 1px solid #e5e7eb; border-radius: 8px; background: #fff;
+    font-size: 13px; font-weight: 600; font-style: normal; line-height: 1;
+    color: #475569; text-decoration: none;
+  }
+  .pagination a:hover { background: #f1f5f9; border-color: #d7dde5; color: #1f2937; }
+  .pagination em.current { background: $pyn-accent; border-color: $pyn-accent; color: #fff; }
+  .pagination .disabled { color: #c3cad4; background: #fafbfc; border-color: #eef0f3; }
+  .pagination .gap { border: none; background: none; min-width: 0; padding: 0 2px; color: #9ca3af; }
+
+  // ---- notices -------------------------------------------------------------
+  .note-card {
+    display: flex; gap: 10px; align-items: flex-start;
+    background: #fffcf2; border: 1px solid #f6e5b8; color: #8a6420;
+    border-radius: 10px; padding: 10px 13px; font-size: 12.5px; line-height: 1.55; margin-bottom: 14px;
+    a { color: #78500a; font-weight: 600; }
+  }
+  .intro-card {
+    display: flex; gap: 11px; align-items: flex-start;
+    background: #eff4ff; border: 1px solid #cfdafe; color: #1e3a8a;
+    border-radius: 9px; padding: 11px 14px; font-size: 13px; line-height: 1.55; margin-bottom: 14px;
+  }
+  .note-x {
+    background: none; border: none; color: inherit; opacity: 0.5;
+    font-size: 17px; line-height: 1; cursor: pointer; padding: 0 2px;
+    &:hover { opacity: 1; }
+  }
+}
+
+@keyframes pyn-grid-spin { to { transform: rotate(360deg); } }

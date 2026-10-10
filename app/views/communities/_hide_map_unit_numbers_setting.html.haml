@@ -1,0 +1,18 @@
+-# "Hide unit numbers" map setting, on the apartment settings forms.
+-#
+-# Posts a hidden "off" value ahead of its checkbox (as f.check_box does), so
+-# save_apartment_settings updates it only from a form that shows it.
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+    Hide unit numbers
+    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayPricePopover","data-content" => " "}
+      %span#propertyDetailNameText
+        Hides the unit number labels on every floor of the map, on web and touch. Units stay clickable and open their pop-up as usual -- useful where units are plotted as transparent shapes.
+
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .TriSea-technologies-Switch
+      %span.pr-15 No
+      = hidden_field_tag :hide_map_unit_numbers, false, id: nil
+      = check_box_tag :hide_map_unit_numbers, true, @community.hide_map_unit_numbers, class: "apartment-setting-field"
+      %label.label-primary{ for: "hide_map_unit_numbers" }
+      %span.pl-15 Yes

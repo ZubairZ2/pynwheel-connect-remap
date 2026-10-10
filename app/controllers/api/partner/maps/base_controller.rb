@@ -9,27 +9,28 @@ module Api
         INVALID_PROPERTY_MESSAGE = 'Invalid Property ID.'
 
         before_action :validate_api_key
-        before_action :load_partner_name
 
         private
 
-        # The api_key -> partner mapping is sourced from ENV via
-        # Community::MAP_PARTNERS — no database lookup and no cached key registry.
+        # Resolves the incoming X-API-Key to a row in the `partners` table.
+        # `::Partner` is spelled with the leading colons deliberately: we are
+        # inside Api::Partner, which would otherwise shadow the model.
+        #
+        # Sets @partner_record (the registry row) and @partner (its key), which
+        # is what the map and webhook endpoints scope their queries by.
         def validate_api_key
           api_key = request.headers['X-API-Key']
           if api_key.blank?
             return render json: { message: MISSING_KEY_MESSAGE, status: 'failed', code: 401 }, status: :unauthorized
           end
 
-          unless Community.valid_partner_api_key?(api_key)
+          @partner_record = ::Partner.authenticate(api_key)
+          if @partner_record.nil?
             return render json: { message: INVALID_KEY_MESSAGE, status: 'failed', code: 401 }, status: :unauthorized
           end
 
           @api_key = api_key
-        end
-
-        def load_partner_name
-          @partner = Community.partner_for_api_key(@api_key)
+          @partner = @partner_record.key
         end
 
         # Validates a short-lived session token issued by the `authorized` action.

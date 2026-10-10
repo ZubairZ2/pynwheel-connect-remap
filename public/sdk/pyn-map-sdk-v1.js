@@ -1,7 +1,118 @@
 (function (global) {
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // PynAnalytics — internal analytics engine (batched, fire-and-forget)
+  // PYN_EVENT_CONTRACT — reads the published-event contract; defines none of it.
+  //
+  // What a map interaction is called, which of its fields a client receives and
+  // how its action is worded all live in Analytics::MapEventContract, and arrive
+  // with the property payload as property.analytics.contract. This object is the
+  // engine that applies them. Publishing a new interaction, or a new field, is
+  // therefore a server edit: no SDK release, and no cache bust for every client
+  // that loads this file from our CDN.
+  //
+  // It used to be a hand-kept mirror of the Ruby table, and the two drifted: the
+  // mirror keyed map-marker clicks as `unit_marker_click` while the SDK captured
+  // them as `unit_marker`, so no marker click was ever published.
+  //
+  // The contract's shape (see MapEventContract.client_contract):
+  //
+  //   events   { captured name: action | { by, map: { value: action } } }
+  //   fields   [[published key, source], ...]
+  //   idFields [published key, ...]            sent as strings
+  //   subjects { action: [part, ...] }         how the action is worded
+  //
+  // A source is a metadata key, or a list of keys where the first with a value
+  // wins. A subject part is a key read the same way (the published payload
+  // first, then the raw metadata), a list of alternative keys, "?key" for a key
+  // that may be absent, or "=text" for literal text.
+  // ─────────────────────────────────────────────────────────────────────────────
+  var PYN_EVENT_CONTRACT = {
+    // The event name every push carries. Never varies — a property builds one
+    // GTM trigger, once, and tells interactions apart by `action`.
+    EVENT_NAME: 'pynwheel_map',
+
+    // The stable action for a captured event, or null when it has none.
+    //
+    // Clicks only: `unit_marker` is captured for hovers too, and a hover is not
+    // a selection. A missing discriminator resolves to null rather than to a
+    // default, because a wrong action in a client's GA4 is worse than a missing
+    // one — only the missing one is visible to them.
+    actionFor: function (contract, ev) {
+      if (!contract || !contract.events || ev.type !== 'click') return null;
+
+      var entry = contract.events[ev.name];
+      if (!entry) return null;
+      if (typeof entry === 'string') return entry;
+
+      var meta = ev.metadata || {};
+      return (entry.map || {})[meta[entry.by]] || null;
+    },
+
+    // The first of `keys` holding a value, looked up in each bag in turn.
+    // "" counts as no value, the same as null.
+    read: function (keys, bags) {
+      var list = Array.isArray(keys) ? keys : [keys];
+      for (var i = 0; i < list.length; i++) {
+        for (var b = 0; b < bags.length; b++) {
+          var value = bags[b] && bags[b][list[i]];
+          if (value !== undefined && value !== null && value !== '') return value;
+        }
+      }
+      return null;
+    },
+
+    // The action a client's GA4 receives: the clicked thing's name, then
+    // "_clicked". "101-A" becomes "101A_clicked", "Apply Now"
+    // "Apply_Now_clicked", a saved unit "101A_favorite_saved_clicked".
+    //
+    // Any required part without a value, or an action with no subject, falls
+    // back to the stable action — so a push never carries a bare "_clicked", and
+    // an action added on the server without a subject still publishes.
+    displayAction: function (contract, action, payload, meta) {
+      var parts = contract && contract.subjects && contract.subjects[action];
+      if (!Array.isArray(parts) || !parts.length) return action;
+
+      var bags  = [payload, meta || {}];
+      var words = [];
+      for (var i = 0; i < parts.length; i++) {
+        var part = parts[i];
+
+        if (typeof part === 'string' && part.charAt(0) === '=') {
+          words.push(part.slice(1));
+          continue;
+        }
+
+        var optional = typeof part === 'string' && part.charAt(0) === '?';
+        var value    = this.read(optional ? part.slice(1) : part, bags);
+        if (value === null) {
+          if (optional) continue;
+          return action;
+        }
+        words.push(value);
+      }
+
+      var slug = this.slug(words.join(' '));
+      return slug ? slug + '_clicked' : action;
+    },
+
+    // Letters, digits and underscores only: the character set GA4 accepts in a
+    // name. Whitespace becomes an underscore, accents are folded ("Café" to
+    // "Cafe") and anything else is dropped, so "101-A" reads "101A" and
+    // "2 Bed / 2 Bath" reads "2_Bed_2_Bath".
+    slug: function (text) {
+      if (text === null || text === undefined) return '';
+      return String(text)
+        .normalize('NFD').replace(/[̀-ͯ]/g, '')
+        .trim()
+        .replace(/\s+/g, '_')
+        .replace(/[^A-Za-z0-9_]/g, '')
+        .replace(/_+/g, '_')
+        .replace(/^_+|_+$/g, '');
+    }
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // PynAnalytics — internal analytics engine (fan-out, fire-and-forget)
   //
   // Session model:
   //   sdkSessionId  — stable localStorage UUID (user identity / favorites).
@@ -13,10 +124,59 @@
   //   tab hidden  → map_session_background (keepalive flush, session stays open)
   //   tab visible → map_session_active     (session continues)
   //   destroy()   → map_session_end        (true close, keepalive flush)
+  //
+  // Sinks:
+  //   One capture() fans out to every sink in SINKS. BatchSink is Pynwheel's own
+  //   reporting (queued, flushed every 5s); DataLayerSink is the client's GTM
+  //   (immediate, no network). They have opposite latency requirements and must
+  //   not be forced to share a path — a tag manager that learns about a click
+  //   five seconds late has already lost the pageview it belonged to.
+  //
+  //   Adding an integration — Segment, a pixel, a second endpoint — means adding
+  //   one object to SINKS and nothing else. No call site changes.
   // ─────────────────────────────────────────────────────────────────────────────
   var PynAnalytics = (function () {
 
     var IDLE_MS = 2 * 60 * 1000; // 2 minutes
+
+    // ── BatchSink — Pynwheel's own analytics endpoint ────────────────────────
+    // Queues and flushes on a timer. Sessions, counters and the sdk_events fact
+    // table are all fed from here.
+    var BatchSink = {
+      name: 'pynwheel',
+      receive: function (s, ev) {
+        s.queue.push(ev);
+        if (s.queue.length >= 20) _flush(s, false);
+      },
+      flush:   function (s, beacon) { _flush(s, beacon); },
+      destroy: function () {}
+    };
+
+    // ── DataLayerSink — the embedding page's GTM data layer ──────────────────
+    // Emitted the instant the interaction happens. No network call of its own:
+    // in an iframe it posts a message to the parent, which the property's relay
+    // snippet pushes into window.dataLayer; embedded directly it pushes there
+    // itself. One code path serves both embed modes.
+    var DataLayerSink = {
+      name: 'data_layer',
+      receive: function (s, ev) {
+        // Config — and with it the contract that says what is publishable —
+        // arrives with the property payload, after the first events are already
+        // captured. Hold clicks rather than dropping them; configure() decides
+        // which of them publish. Hovers are never published, and capping the
+        // buffer means they could otherwise crowd out a real click. Capped at all
+        // because an unconfigured property must not grow an array forever.
+        if (!s.dataLayerReady) {
+          if (ev.type === 'click' && s.dataLayerPending.length < 25) s.dataLayerPending.push(ev);
+          return;
+        }
+        _emitDataLayer(s, ev);
+      },
+      flush:   function () {},
+      destroy: function () {}
+    };
+
+    var SINKS = [BatchSink, DataLayerSink];
 
     function create(opts) {
       var s = {
@@ -37,7 +197,19 @@
         dead:         false,
         timer:        null,
         idleTimer:    null,
-        onHide:       null
+        onHide:       null,
+
+        // ── Data layer state ──────────────────────────────────────────────────
+        // Ambient property context (company, property, host page URL). Stamped
+        // on every push so no call site has to carry it.
+        context:           {},
+        // { enabled, actions: [], targetOrigin, contract } — server-driven, from
+        // the property payload. Never a client-side default: which events a
+        // property exposes to its own GA4 is that property's decision, and what
+        // those events are is the server contract's, not the SDK's.
+        dataLayerConfig:   { enabled: false, actions: [], targetOrigin: null, contract: null },
+        dataLayerReady:    false,
+        dataLayerPending:  []
       };
 
       s.timer = setInterval(function () { _flush(s, false); }, 5000);
@@ -62,6 +234,26 @@
       return {
         capture:   function (name, type, metadata) { _capture(s, name, type, metadata); },
         sessionId: function ()                      { return s.sessionId; },
+
+        // Called once the property payload lands. Supplies the ambient
+        // dimensions every push carries and the server's data-layer allowlist,
+        // then replays whatever was captured while we were still booting.
+        configure: function (context, dataLayerConfig) {
+          s.context = context || {};
+          var cfg = dataLayerConfig || {};
+          s.dataLayerConfig = {
+            enabled:      cfg.enabled === true,
+            actions:      Array.isArray(cfg.actions) ? cfg.actions : [],
+            targetOrigin: cfg.targetOrigin || null,
+            contract:     cfg.contract || null
+          };
+          s.dataLayerReady = true;
+
+          var pending = s.dataLayerPending;
+          s.dataLayerPending = [];
+          for (var i = 0; i < pending.length; i++) _emitDataLayer(s, pending[i]);
+        },
+
         destroy:   function () {
           if (s.dead) return;
           s.dead = true;
@@ -70,6 +262,7 @@
           document.removeEventListener('visibilitychange', s.onHide);
           // True session end — map is being unmounted / closed.
           s.queue.push({ name: 'map_session_end', type: 'state', ts: Date.now() });
+          for (var i = 0; i < SINKS.length; i++) SINKS[i].destroy(s);
           _flush(s, true);
         }
       };
@@ -93,11 +286,119 @@
       }, IDLE_MS);
     }
 
+    // One event, built once, handed to every sink. Sinks never mutate it.
     function _capture(s, name, type, metadata) {
       if (s.dead) return;
-      s.queue.push({ name: name, type: type || 'click', metadata: _sanitize(metadata), ts: Date.now() });
-      if (s.queue.length >= 20) _flush(s, false);
+
+      var meta = _sanitize(metadata);
+
+      // The host page every event happened on, stamped here rather than at the
+      // call sites. It is ambient — the same for every event in a session — and
+      // resolved once at configure time, so this costs a property read, not a
+      // cross-origin probe per click.
+      if (s.context.page_url && !meta.page_url) meta.page_url = s.context.page_url;
+
+      var ev = {
+        name:     name,
+        type:     type || 'click',
+        metadata: meta,
+        ts:       Date.now()
+      };
+
+      for (var i = 0; i < SINKS.length; i++) {
+        // A failing sink must never take down the others, or the interaction
+        // itself. Analytics is the least important thing on the page.
+        try { SINKS[i].receive(s, ev); } catch (e) {}
+      }
+
       _resetIdle(s);
+    }
+
+    // ── Data layer emission ───────────────────────────────────────────────────
+
+    // Build the published payload and deliver it.
+    //
+    // Every contract field is written on every push, explicitly null when it
+    // does not apply. GTM merges each push into one persistent data layer, so a
+    // key omitted from push #2 keeps the value push #1 left behind: a floor-plan
+    // click after a unit click would otherwise report the unit's building.
+    function _emitDataLayer(s, ev) {
+      var cfg      = s.dataLayerConfig;
+      var contract = cfg.contract;
+      if (!cfg.enabled || !contract) return;
+
+      // The stable action gates publication; the property's allowlist names
+      // stable actions, never the worded ones, so it never depends on free text.
+      var action = PYN_EVENT_CONTRACT.actionFor(contract, ev);
+      if (!action || cfg.actions.indexOf(action) === -1) return;
+
+      var meta    = ev.metadata || {};
+      var ctx     = s.context;
+
+      // `action` is filled in last, once the fields it is named from are known.
+      // Declared here so it still sits second in the object, where a client
+      // reading the push looks for it.
+      //
+      // No schema_version, visitor_id or link_index: those serve our own
+      // reporting, which reads them from sdk_events, and are noise in a client's.
+      var payload = {
+        event:          PYN_EVENT_CONTRACT.EVENT_NAME,
+        action:         null,
+        session_id:     s.sessionId,
+        ts_iso:         new Date(ev.ts).toISOString(),
+        company_id:     _nullable(ctx.company_id),
+        company_name:   _nullable(ctx.company_name),
+        property_id:    _nullable(ctx.property_id),
+        property_name:  _nullable(ctx.property_name),
+        page_url:       _nullable(ctx.page_url)
+      };
+
+      var fields = contract.fields || [];
+      for (var i = 0; i < fields.length; i++) {
+        payload[fields[i][0]] = PYN_EVENT_CONTRACT.read(fields[i][1], [meta]);
+      }
+
+      // Ids go out as strings whatever their source type, so a GA4 dimension
+      // never holds "34" on one event and 34 on the next.
+      var ids = contract.idFields || [];
+      for (var j = 0; j < ids.length; j++) {
+        if (payload[ids[j]] !== null && payload[ids[j]] !== undefined) {
+          payload[ids[j]] = String(payload[ids[j]]);
+        }
+      }
+
+      payload.action = PYN_EVENT_CONTRACT.displayAction(contract, action, payload, meta);
+
+      _deliver(s, payload);
+    }
+
+    // In an iframe: hand the payload to the parent, whose relay snippet pushes
+    // it into their data layer. Embedded directly: push it ourselves. Checking
+    // window.parent !== window rather than a config flag means a property that
+    // changes how it embeds the map needs no change on our side.
+    function _deliver(s, payload) {
+      var framed = false;
+      try { framed = window.parent && window.parent !== window; } catch (e) { framed = true; }
+
+      if (framed) {
+        // '*' unless the property configured an exact origin. The payload is IDs
+        // and labels with no PII, and the receiving page verifies *our* origin in
+        // its relay snippet, which is the check that actually prevents forged
+        // events. A property that wants delivery narrowed sets target_origin.
+        try { window.parent.postMessage(payload, s.dataLayerConfig.targetOrigin || '*'); } catch (e) {}
+        return;
+      }
+
+      try {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push(payload);
+      } catch (e) {}
+    }
+
+    // undefined and '' both become null. GTM treats a missing key as "keep the
+    // previous value", so an absent dimension has to be an explicit null.
+    function _nullable(value) {
+      return (value === undefined || value === '') ? null : value;
     }
 
     function _flush(s, beacon) {
@@ -153,14 +454,24 @@
       };
     }
 
+    // Caps raised, and the key pattern widened to allow digits.
+    //
+    // The previous limits were 15 keys, 300 characters, and /^[a-z_]+$/. A CTA
+    // event now carries 18 dimensions, so the key cap silently discarded roughly
+    // a fifth of every payload; the pattern threw away any key with a number in
+    // it (`link_1_label`); and 300 characters truncates a real apply URL with
+    // query parameters. All three failed without an error anywhere, which is the
+    // worst way for analytics to be wrong. These match the server's limits in
+    // Analytics::MapEventContract exactly.
     function _sanitize(meta) {
       if (!meta || typeof meta !== 'object') return {};
       var out = {}, n = 0;
       for (var k in meta) {
-        if (n >= 15) break;
-        if (!/^[a-z_]{1,50}$/.test(k)) continue;
+        if (n >= 40) break;
+        if (!/^[a-z][a-z0-9_]{0,49}$/.test(k)) continue;
         var v = meta[k];
-        if (typeof v === 'string')  { out[k] = v.slice(0, 300); n++; }
+        if (v === null || v === undefined) continue;
+        if (typeof v === 'string')  { out[k] = v.slice(0, 2000); n++; }
         else if (typeof v === 'number' || typeof v === 'boolean') { out[k] = v; n++; }
       }
       return out;
@@ -201,6 +512,8 @@
                                     // rows are all unrenderable is not refetched on every reopen
     _neighborhoodPromise: null,     // in-flight getNeighborhood() request; deduplicates concurrent calls
     _neighborhoodLoaded: false,     // true once fetched, so a property with no pins is not refetched forever
+    _homescreenPromise: null,       // in-flight getHomescreen() request; deduplicates concurrent calls
+    _homescreenLoaded: false,       // true once fetched (touch only), so a 403 is not retried on every call
     _placesPromises: {},            // { [slug]: Promise } — one in-flight request per category
     _placesLoaded: new Set(),       // slugs already fetched; a Set, not a flag, so an empty
                                     // category is not refetched on every tab switch
@@ -224,6 +537,9 @@
     // pointer may drift from where the hover began before it counts as having
     // left. Same value the CMS map uses.
     _3D_HOVER_EXIT_RADIUS_PX: 30,
+    // Host-driven 3D highlight (right-rail hover) — see the 3D RAIL HOVER section.
+    _3dRailHoverIds: null,   // base unit ids the host asked to bring forward
+    _3dRailHover:    null,   // what was applied: { layer, handle, faded }
     _3dWrapper:     null,
     _3dToggleBtn:   null,
     _zoomInBtn:     null,
@@ -259,6 +575,7 @@
       filters:     null,
       gallery:     null,  // gallery config block from the map payload; see getGalleryConfig()
       galleryList: [],    // gallery summaries without images; populated by getGalleryList()
+      homescreen: null,   // Pynwheel Touch home screen loop; populated by getHomescreen() (src=touch only)
       galleryImages: {},  // { [galleryId]: image[] } — populated per gallery by getGalleryImages()
       neighborhood: [],   // curated pins; populated by getNeighborhood()
       neighborhoodPlaces: {}  // { [slug]: category } — live Google results, per category
@@ -269,6 +586,7 @@
     unitsByPointerIdByMap: {},     // { [mapId]: { [pointerId]: unit } }
     svgCache: {},                  // { [mapId]: SVGElement }
     _svgLoadingPromises: {},       // { [mapId]: Promise } — deduplicates in-flight fetches
+    _missingMaps: new Set(),       // mapIds whose SVG 404'd (none uploaded) — shown as a placeholder
     _lastHoverPid: null,           // last hovered pointer id (for debouncing)
     
     defaultStyles: {
@@ -413,6 +731,10 @@
             return null;
           }
 
+          // 3D-only (PYN-1610): no SVG, raster or panzoom is ever shown, so none
+          // of it is fetched. Resolved to a string the next step routes on.
+          if (this._availableMapViews() === "3d") return "3d";
+
           if (this._isImageMapMode()) {
             // Image map: no SVG to fetch — just need panzoom ready.
             return Promise.all([this._loadFontAwesome(), panZoomReady]);
@@ -424,13 +746,19 @@
         .then(result => {
           if (!result) return;
 
+          if (result === "3d") return this._boot3DOnly();
+
           if (this._isImageMapMode()) {
             return this._bootImageMap();
           }
 
-          if (!this._hasAnyMap()) return this._showError("No maps found.");
-
-          if (!this._mapExists(this.activeMapId)) {
+          if (!this._hasAnyMap()) {
+            // Nothing loaded. If that is only because no floor has artwork yet,
+            // open on the placeholder like the old map does; if a fetch actually
+            // failed, error out so the host can offer a retry.
+            if (!this._bootPlaceholderMapId) return this._showError("No maps found.");
+            this.activeMapId = this._bootPlaceholderMapId;
+          } else if (!this._mapExists(this.activeMapId)) {
             this.activeMapId = this._getDefaultMapId();
           }
 
@@ -469,6 +797,23 @@
       this.config.onReady?.();
     },
 
+    // 3D-only property: straight into the Beans widget, with no 2D map behind it.
+    async _boot3DOnly() {
+      const c = this.container;
+      c.innerHTML      = "";
+      c.style.position = "relative";
+      c.style.overflow = "hidden";
+
+      this._mount3DWrapper();
+      if (this.config.showZoomControls) this._renderZoomControls();
+
+      await this.switchTo3DMap();
+      if (this.config.floor) await this.changeFloor(this.config.floor);
+
+      if (this._analytics) this._captureWithMapType('map_load');
+      this.config.onReady?.();
+    },
+
     // ----------------------------------------------------
     // ANALYTICS — PUBLIC + INTERNAL
     // ----------------------------------------------------
@@ -485,11 +830,147 @@
       this._currentMapType = this.getMapType();
     },
 
-    // Internal: capture with map_type automatically injected.
+    // Internal: capture with map_type and the interacted entity's dimensions
+    // injected.
     _captureWithMapType(name, type, metadata) {
       if (!this._analytics) return;
-      const enhanced = Object.assign({}, metadata, { map_type: this.getMapType() });
-      this._analytics.capture(name, type || 'click', enhanced);
+      const eventType = type || 'click';
+      const enhanced  = Object.assign(
+        {},
+        metadata,
+        this._analyticsDims(name, eventType, metadata),
+        { map_type: this.getMapType() }
+      );
+      this._analytics.capture(name, eventType, enhanced);
+    },
+
+    // ── Analytics enrichment ────────────────────────────────────────────────
+    //
+    // A call site names what was interacted with — a unit id, a floor plan id,
+    // an amenity id, a favourite — and this fills in everything the SDK already
+    // holds about it: provider ids, names, building, floor, the unit's floor
+    // plan and its bedrooms, bathrooms and size. Both sinks receive the result,
+    // so sdk_events stores the same detail a client's GA4 does.
+    //
+    // It lives here rather than at the call sites because there are more than a
+    // dozen of those, and each used to remember a different subset: a favourite
+    // carried only an id, a floor plan card only its id, a marker click a
+    // differently-named id. A new tracked interaction gets every dimension by
+    // sending one id.
+    //
+    // Resolved values win over what the call site sent, because this is the
+    // payload the map rendered from. A call site's value survives only where
+    // nothing resolves — the shared-favorites screen boots without map data.
+    // Click-time facts (link label, link URL, filter value) are never touched.
+    _analyticsDims(name, type, metadata) {
+      // Hovers and lifecycle events are counters only: never stored as rows,
+      // never published. Resolving a unit on every pointer pass buys nothing.
+      if (type === 'hover' || type === 'state') return {};
+
+      const meta = metadata || {};
+      const dims = Object.assign({}, this._ANALYTICS_EVENT_DIMS[name]);
+      const kind = meta.favorite_type;
+      const ref  = (...keys) => {
+        for (const key of keys) {
+          const value = meta[key];
+          if (value !== undefined && value !== null && value !== '') return String(value);
+        }
+        return null;
+      };
+      const favoriteRef = (wanted) => (kind === wanted ? ref('favorited_id') : null);
+      // The payload formats some counts as strings ("1") and others as numbers;
+      // a report must not see both for one field.
+      const num = (value) => {
+        const parsed = value === null || value === undefined || value === '' ? NaN : Number(value);
+        return Number.isFinite(parsed) ? parsed : null;
+      };
+
+      // The share modal names its channel `method`; the published field is
+      // share_target.
+      if (meta.method && !meta.share_target) dims.share_target = meta.method;
+
+      const unit = this._analyticsUnit(ref('unit_id', 'viewed_unit_id') ?? favoriteRef('unit'));
+      if (unit) {
+        const plan = this.getFloorplan(unit.floorplanId);
+        return Object.assign(dims, this._compactDims({
+          unit_id:               unit.unitId,
+          provider_unit_id:      unit.providerUnitId,
+          unit_name:             unit.unitMarketingName ?? unit.unitNumber,
+          building:              unit.building,
+          floor_level:           num(unit.floor),
+          floorplan_id:          plan?.floorplanId,
+          provider_floorplan_id: unit.providerFloorplanId ?? plan?.providerFloorplanId,
+          floorplan_name:        unit.floorplanName ?? plan?.name,
+          bedrooms:              num(unit.bedrooms ?? plan?.bedrooms),
+          bathrooms:             num(unit.bathrooms ?? plan?.bathrooms),
+          // The unit's own size when it has one; the server already falls back
+          // to the floor plan's when it builds the unit.
+          square_footage:        num(unit.square_feet ?? plan?.square_feet)
+        }));
+      }
+
+      const plan = this.getFloorplan(ref('floorplan_id') ?? favoriteRef('floorplan'));
+      if (plan) {
+        return Object.assign(dims, this._compactDims({
+          floorplan_id:          plan.floorplanId,
+          provider_floorplan_id: plan.providerFloorplanId,
+          floorplan_name:        plan.name,
+          bedrooms:              num(plan.bedrooms),
+          bathrooms:             num(plan.bathrooms),
+          square_footage:        num(plan.square_feet)
+        }));
+      }
+
+      const amenityId = ref('amenity_id', 'marker_id') ?? favoriteRef('amenity');
+      const amenity   = amenityId && (this.data.amenities || []).find(a => String(a.amenityId) === amenityId);
+      if (amenity) {
+        return Object.assign(dims, this._compactDims({
+          amenity_id:   amenity.amenityId,
+          amenity_name: amenity.name,
+          floor_level:  num(amenity.floor)
+        }));
+      }
+
+      const imageId = favoriteRef('gallery_image');
+      if (imageId) {
+        const image = this._favState('gallery_image').list.find(i => String(i.id) === imageId);
+        dims.gallery_image_name = image?.name || 'Gallery Image';
+      }
+
+      return dims;
+    },
+
+    // Dimensions an event carries by virtue of its name alone. A new event with
+    // a fixed dimension is one line here.
+    _ANALYTICS_EVENT_DIMS: {
+      save_favorite:   { favorite_state: 'saved' },
+      delete_favorite: { favorite_state: 'deleted' },
+      share_favorites: { shared_entity: 'favorites' },
+      sent_favorite:   { shared_entity: 'favorites' }
+    },
+
+    // The unit an id names. On a student-housing property that id may be one
+    // bedroom's, which unitById maps to its door; the bedroom is the more
+    // precise record, so it is preferred when present.
+    _analyticsUnit(unitId) {
+      if (!unitId) return null;
+      const door = this.unitById?.[unitId];
+      if (!door) return null;
+      const space = Array.isArray(door.spaces)
+        ? door.spaces.find(sp => String(sp.unitId) === unitId)
+        : null;
+      return space || door;
+    },
+
+    // Drops what the payload does not have, so an absent field stays absent
+    // instead of overwriting a value the call site did send.
+    _compactDims(bag) {
+      const out = {};
+      Object.keys(bag).forEach(key => {
+        const value = bag[key];
+        if (value !== undefined && value !== null && value !== '') out[key] = value;
+      });
+      return out;
     },
 
     // Called by React (or any host) to capture events that the SDK cannot
@@ -510,6 +991,12 @@
         sdkVersion:   'v1',
         sdkSessionId: this._sdkSessionId  // stable localStorage UUID for journey linking
       });
+
+      // Normally the property payload arrives after this and configures the
+      // engine itself. On the re-auth path it does not — the payload is already
+      // stored and a fresh engine would sit unconfigured, silently emitting
+      // nothing to the client's data layer.
+      if (this.data.property) this._configureAnalytics();
     },
 
     // ----------------------------------------------------
@@ -765,6 +1252,29 @@
     },
 
     /**
+     * Fetch the Pynwheel Touch home screen. The server answers 403 unless src is
+     * "touch" and the property has Pynwheel Touch enabled; that, like any other
+     * failure, resolves to null.
+     */
+    async _fetchHomescreen() {
+      try {
+        const res = await fetch(`${this._apiBase()}/api/partner/maps/fetch_homescreen?src=touch`, {
+          headers: {
+            "Authorization":    `Bearer ${this._sessionToken}`,
+            "X-SDK-Session-Id": this._sdkSessionId
+          }
+        });
+
+        if (!res.ok) return null;
+
+        const data = await res.json();
+        return data.homescreen || null;
+      } catch {
+        return null;
+      }
+    },
+
+    /**
      * Fetch one gallery's images. A 404 means the id is not this property's, or
      * the gallery feature is off — both resolve to an empty list rather than
      * rejecting, same as every other content fetcher here.
@@ -904,6 +1414,49 @@
       this._indexSpaceConfig();
       this._resolve3DConfig();
       this._applyThemeConfig();
+      this._configureAnalytics();
+    },
+
+    // Hands the analytics engine its ambient context and the property's
+    // data-layer allowlist, and replays anything captured while the payload was
+    // still in flight.
+    //
+    // This is the single choke point both boot paths pass through — the full map
+    // fetch and the config-only boot the standalone touch pages use — so there
+    // is exactly one place where analytics learns which property it is looking
+    // at. Called on every re-fetch too, which is what makes a CMS change to the
+    // allowlist take effect on the next load rather than the next SDK release.
+    _configureAnalytics() {
+      if (!this._analytics) return;
+
+      const property = this.data.property || {};
+
+      this._analytics.configure(
+        {
+          company_id:    property.companyId ?? null,
+          company_name:  property.companyName ?? null,
+          property_id:   property.propertyId ?? null,
+          property_name: property.propertyName ?? null,
+          page_url:      this._hostPageUrl()
+        },
+        property.analytics || { enabled: false, actions: [], targetOrigin: null }
+      );
+    },
+
+    // The URL of the page the visitor is actually on, which is the parent page
+    // when the map is framed — not our own iframe URL, which is meaningless in a
+    // client's report.
+    //
+    // Same-origin parents answer directly. Cross-origin ones throw, and the
+    // referrer is the parent's URL in exactly that case. Both can be empty under
+    // a strict referrer policy, so this returns null rather than a wrong answer.
+    _hostPageUrl() {
+      try {
+        if (!window.parent || window.parent === window) return window.location.href;
+        return window.parent.location.href;
+      } catch (e) {
+        return document.referrer || null;
+      }
     },
 
     _applyThemeConfig() {
@@ -949,6 +1502,19 @@
       if (this.config.enable3DMap          === null) this.config.enable3DMap          = cfg3d?.enabled          === true;
       if (this.config.show3DMap            === null) this.config.show3DMap            = cfg3d?.show3dByDefault  === true;
       if (this.config.defaultSatelliteView === null) this.config.defaultSatelliteView = cfg3d?.defaultSatelliteView === true;
+
+      // The property's "Available map views" setting outranks init() options: a
+      // host can't turn on a view the property doesn't offer.
+      const views = this._availableMapViews();
+      if (views === "2d") this.config.enable3DMap = false;
+      if (views === "3d") this.config.enable3DMap = this.config.show3DMap = true;
+    },
+
+    // "2d" | "3d" | "both". A payload without the field predates the setting,
+    // which behaved as "both".
+    _availableMapViews() {
+      const views = this.data.property?.map?.availableViews;
+      return views === "2d" || views === "3d" ? views : "both";
     },
 
     // The position a space does not carry, because it belongs to the door it is
@@ -1040,28 +1606,51 @@
     // ----------------------------------------------------
 
     // Loads only the map that will be shown immediately, based on configured
-    // floor > server default floor > sitemap > first floorplate.
+    // floor > server default floor > sitemap > lowest floorplate.
+    //
+    // Each candidate is tried in turn until one loads. A floorplate with no SVG
+    // uploaded 404s, and that one floor must not take the whole map down with
+    // "No maps found." -- the old map just shows a placeholder for that floor.
+    // Floorplates go lowest floor first because `floorplates[0]` follows
+    // `number DESC`, which is arbitrary when `number` is unset; the old map
+    // opens on the lowest floor.
     async _loadActiveSVG() {
       const floor = this.config.floor ?? this.data.property?.map?.defaultFloor;
-      let primaryEntry = null;
+      const candidates = [];
+      const add = (mapId, mapType) => {
+        const id = String(mapId);
+        if (!candidates.some(c => c.mapId === id)) candidates.push({ mapId: id, mapType });
+      };
 
       if (floor != null) {
         const fp = this._findFloorplateByFloor(String(floor));
-        if (fp) primaryEntry = { mapId: String(fp.mapId), mapType: fp.mapType || "floorplate" };
+        if (fp) add(fp.mapId, fp.mapType || "floorplate");
       }
 
-      if (!primaryEntry && this.data.sitemap) {
-        primaryEntry = { mapId: String(this.data.sitemap.mapId), mapType: this.data.sitemap.mapType || "sitemap" };
+      if (this.data.sitemap) {
+        add(this.data.sitemap.mapId, this.data.sitemap.mapType || "sitemap");
       }
 
-      if (!primaryEntry && this.data.floorplates.length > 0) {
-        const fp = this.data.floorplates[0];
-        primaryEntry = { mapId: String(fp.mapId), mapType: fp.mapType || "floorplate" };
+      const lowestFloor = fp => {
+        const floors = this._floorsForRange(fp.range);
+        return floors.length ? Math.min(...floors) : Infinity;
+      };
+      (this.data.floorplates || [])
+        .slice()
+        .sort((a, b) => lowestFloor(a) - lowestFloor(b))
+        .forEach(fp => add(fp.mapId, fp.mapType || "floorplate"));
+
+      this._bootPlaceholderMapId = null;
+      for (const { mapId, mapType } of candidates) {
+        const svg = await this._loadSVGIfNeeded(mapId, mapType);
+        if (svg) {
+          this.svgCache[mapId] = svg;
+          return;
+        }
       }
 
-      if (primaryEntry) {
-        const svg = await this._loadSVGIfNeeded(primaryEntry.mapId, primaryEntry.mapType);
-        if (svg) this.svgCache[primaryEntry.mapId] = svg;
+      if (candidates.length && candidates.every(c => this._missingMaps.has(c.mapId))) {
+        this._bootPlaceholderMapId = candidates[0].mapId;
       }
     },
 
@@ -1136,6 +1725,7 @@
     async _loadSVGIfNeeded(mapId, mapType) {
       const id = String(mapId);
       if (this.svgCache[id]) return this.svgCache[id];
+      if (this._missingMaps.has(id)) return null;
 
       if (!this._svgLoadingPromises[id]) {
         this._svgLoadingPromises[id] = this._loadSVG(id, mapType).then(svg => {
@@ -1179,6 +1769,9 @@
         });
 
         if (!response.ok) {
+          // 404 means the floor has no SVG uploaded -- a permanent state for this
+          // session, not a failure worth retrying. Anything else may be transient.
+          if (response.status === 404) this._missingMaps.add(String(mapId));
           throw new Error(`Failed to fetch SVG: ${response.status} ${response.statusText}`);
         }
 
@@ -1225,13 +1818,34 @@
         }
       }
 
-      await Promise.all(pending.map(async ({ mapId, mapType }) => {
-        try {
-          const svg = await this._loadSVGIfNeeded(mapId, mapType);
-          if (svg) this.svgCache[mapId] = svg;
-        } catch {}
+      // Bounded, rather than one Promise.all over the whole list.
+      //
+      // A 27-floor property otherwise fires 27 requests the instant the map
+      // becomes usable. That is more than a browser will open to one origin, so
+      // they queue in the tab; and it is more than a dyno has Puma threads, so
+      // they queue again on the server. Anything the visitor actually asks for
+      // next -- a floor they clicked, a second fetch_data -- lands behind
+      // artwork nobody has looked at yet.
+      //
+      // Four keeps the cache filling quickly while leaving the connection pool
+      // and the server free for whatever the visitor does next. Prefetching is
+      // by definition work nobody is waiting on, so it yields.
+      const queue = pending.slice();
+      const workerCount = Math.min(this.PREFETCH_CONCURRENCY, queue.length);
+
+      await Promise.all(Array.from({ length: workerCount }, async () => {
+        while (queue.length) {
+          const { mapId, mapType } = queue.shift();
+          try {
+            const svg = await this._loadSVGIfNeeded(mapId, mapType);
+            if (svg) this.svgCache[mapId] = svg;
+          } catch {}
+        }
       }));
     },
+
+    // How many floor SVGs to prefetch at once. See _prefetchRemainingMaps.
+    PREFETCH_CONCURRENCY: 4,
 
     _parseSVG(svgText) {
       const parser = new DOMParser();
@@ -1254,6 +1868,13 @@
       c.style.position = "relative";
       this._bgMapLayer  = null;
       this._zoomWrapper = null;
+      this._missingMapPlaceholder = null;
+
+      if (this.activeMapId && this._missingMaps.has(this.activeMapId)) {
+        this._renderMissingMapPlaceholder();
+        this._mount3DWrapper(saved3d);
+        return;
+      }
 
       if (!this.activeMapId || !this._mapExists(this.activeMapId)) return;
 
@@ -1270,7 +1891,9 @@
       clone.style.visibility     = this._3dMode ? "hidden" : "visible";
       clone.style.pointerEvents  = this._3dMode ? "none"   : "";
 
+      this._applyBeansSvgFonts();
       this._applyGlobalLabelStyles(clone, this.config.styles.unitLabels);
+      this._hideUnitNumbers(clone);
 
       clone.removeAttribute("width");
       clone.removeAttribute("height");
@@ -1289,29 +1912,7 @@
         c.appendChild(clone);
       }
 
-      // Restore or create the 3D wrapper
-      if (this.config.enable3DMap) {
-        if (saved3d) {
-          c.appendChild(saved3d);
-          this._3dWrapper = saved3d;
-        } else {
-          const wrapper3d = document.createElement("div");
-          Object.assign(wrapper3d.style, {
-            position: "absolute",
-            top: "0", left: "0", right: "0", bottom: "0",
-            display: "none"
-          });
-          const beansDiv = document.createElement("div");
-          beansDiv.id = "pyn-3d-map";
-          beansDiv.style.width  = "100%";
-          beansDiv.style.height = "100%";
-          wrapper3d.appendChild(beansDiv);
-          c.appendChild(wrapper3d);
-          this._3dWrapper = wrapper3d;
-        }
-        // Sync 3D wrapper visibility to current mode
-        this._3dWrapper.style.display = this._3dMode ? "block" : "none";
-      }
+      this._mount3DWrapper(saved3d);
 
       if (this.config.showZoomControls) {
         this._renderZoomControls();
@@ -1319,6 +1920,53 @@
 
       this._enablePanZoom(clone);
       c.style.overflow   = "hidden";
+    },
+
+    // Stands in for a floor whose SVG was never uploaded -- the new map's
+    // equivalent of the old map's default.jpeg. Hidden in 3D mode, like the SVG.
+    _renderMissingMapPlaceholder() {
+      const box = document.createElement("div");
+      box.className = "pyn-missing-map";
+      box.setAttribute("role", "status");
+      box.innerText = "Map not available for this floor.";
+      Object.assign(box.style, {
+        display:        this._3dMode ? "none" : "flex",
+        alignItems:     "center",
+        justifyContent: "center",
+        width:          "100%",
+        height:         "100%",
+        minHeight:      "200px",
+        fontSize:       "14px",
+        color:          "#6b7280"
+      });
+      this.container.appendChild(box);
+      this._missingMapPlaceholder = box;
+    },
+
+    // Restore or create the 3D wrapper, synced to the current mode.
+    _mount3DWrapper(saved3d) {
+      if (!this.config.enable3DMap) return;
+
+      if (saved3d) {
+        this.container.appendChild(saved3d);
+        this._3dWrapper = saved3d;
+      } else {
+        const wrapper3d = document.createElement("div");
+        wrapper3d.className = "pyn-3d-wrapper";
+        Object.assign(wrapper3d.style, {
+          position: "absolute",
+          top: "0", left: "0", right: "0", bottom: "0",
+          display: "none"
+        });
+        const beansDiv = document.createElement("div");
+        beansDiv.id = "pyn-3d-map";
+        beansDiv.style.width  = "100%";
+        beansDiv.style.height = "100%";
+        wrapper3d.appendChild(beansDiv);
+        this.container.appendChild(wrapper3d);
+        this._3dWrapper = wrapper3d;
+      }
+      this._3dWrapper.style.display = this._3dMode ? "block" : "none";
     },
 
 
@@ -1380,60 +2028,34 @@
       // We must use the *rendered content* bounds from the SVG viewBox, not the SVG element
       // bounds — preserveAspectRatio="xMidYMid meet" letterboxes the content inside the
       // element, so at scale=2 with tx=0 there can be blank SVG background at the top/bottom.
-      let _svgClamping = false;
-      const svgClamp = () => {
-        if (_svgClamping) return;
-        const pz = svgEl._pz;
-        if (!pz) return;
-        const t  = pz.getTransform();
-        const pr = svgEl.parentElement;
-        if (!pr) return;
-        const cw = pr.clientWidth;
-        const ch = pr.clientHeight;
+      const svgClamp = this._makePanClamp(target, (scale) => {
+        const sw = svgEl.clientWidth;
+        const sh = svgEl.clientHeight;
+        if (!sw || !sh) return null;
 
-        // Snap to default when back at base zoom.
-        if (t.scale <= 1.01) {
-          if (Math.abs(t.x) > 0.5 || Math.abs(t.y) > 0.5) {
-            _svgClamping = true;
-            pz.moveTo(0, 0);
-            _svgClamping = false;
-          }
-          return;
-        }
-
-        // Compute rendered content rect inside the SVG element.
         // SVG preserveAspectRatio="xMidYMid meet" scales content to fit while preserving
         // aspect ratio, centering it — the blank margins are NOT part of the map.
-        let cofX = 0, cofY = 0, cfW = cw, cfH = ch;
+        let x = 0, y = 0, w = sw, h = sh;
         const vb = svgEl.viewBox && svgEl.viewBox.baseVal;
         if (vb && vb.width > 0 && vb.height > 0) {
-          const rs = Math.min(cw / vb.width, ch / vb.height);
-          cfW  = vb.width  * rs;
-          cfH  = vb.height * rs;
-          cofX = (cw - cfW) / 2;
-          cofY = (ch - cfH) / 2;
+          const fit = Math.min(sw / vb.width, sh / vb.height);
+          w = vb.width  * fit;
+          h = vb.height * fit;
+          x = (sw - w) / 2;
+          y = (sh - h) / 2;
         }
 
-        // After panzoom matrix(s,0,0,s,tx,ty) the content occupies
-        //   x: [s*cofX + tx ,  s*(cofX+cfW) + tx]
-        //   y: [s*cofY + ty ,  s*(cofY+cfH) + ty]
-        // Clamp so content always covers [0,cw]×[0,ch].
-        const maxX = -t.scale * cofX;
-        const minX =  cw - t.scale * (cofX + cfW);
-        const maxY = -t.scale * cofY;
-        const minY =  ch - t.scale * (cofY + cfH);
-
-        const x = minX > maxX ? (minX + maxX) / 2 : Math.min(maxX, Math.max(minX, t.x));
-        const y = minY > maxY ? (minY + maxY) / 2 : Math.min(maxY, Math.max(minY, t.y));
-
-        if (Math.abs(x - t.x) > 0.5 || Math.abs(y - t.y) > 0.5) {
-          _svgClamping = true;
-          pz.moveTo(x, y);
-          _svgClamping = false;
+        // Beans: the SVG sits inside the panned wrapper; add its offset there.
+        if (target !== svgEl) {
+          const sr = svgEl.getBoundingClientRect();
+          const tr = target.getBoundingClientRect();
+          x += (sr.left - tr.left) / scale;
+          y += (sr.top  - tr.top)  / scale;
         }
-      };
-      // svgEl._pz.on("pan",  svgClamp);
-      svgEl._pz.on("zoom", svgClamp);
+        return { x, y, w, h };
+      });
+      pz.on("pan",  svgClamp);
+      pz.on("zoom", svgClamp);
 
       // Block single-finger touch pan when at default zoom; let two-finger pinch-zoom through.
       const touchBlocker = (e) => {
@@ -1447,6 +2069,61 @@
 
       // Defer so the browser finishes layout before we read clientWidth/Height
       setTimeout(() => this._centerSvg(svgEl), 0);
+    },
+
+    // Build a pan/zoom listener that keeps the map on screen. `getContent(scale)`
+    // returns the map's drawn rect in the target's own untransformed coordinates.
+    // The target's position in the viewport is measured, not assumed: on mobile the
+    // container is still a centring flexbox from the loading spinner, so the SVG is
+    // only as tall as its aspect ratio and sits mid-container. Assuming it filled the
+    // container shifted the clamp by (scale - 1) × that margin, leaving the top or
+    // bottom of the map impossible to drag into view.
+    _makePanClamp(target, getContent) {
+      let clamping = false;
+      return () => {
+        if (clamping) return;
+        const pz = target._pz;
+        const vp = target.parentElement;
+        if (!pz || !vp) return;
+        const t  = pz.getTransform();
+        const cw = vp.clientWidth;
+        const ch = vp.clientHeight;
+        if (!cw || !ch) return;
+
+        let x = 0, y = 0;
+        // Snap to default when back at base zoom.
+        if (t.scale > 1.01) {
+          // panzoom updates getTransform() at once but paints the CSS transform on the
+          // next frame, so rects still show the painted one. Measure against that.
+          const css     = getComputedStyle(target).transform;
+          const painted = css && css !== "none" ? new DOMMatrixReadOnly(css) : new DOMMatrixReadOnly();
+
+          const c = getContent(painted.a || 1);
+          if (!c) return;
+
+          // panzoom transforms from origin 0 0, so with its translate taken out the
+          // bounding rect gives the target's layout position inside the viewport.
+          const tr = target.getBoundingClientRect();
+          const vr = vp.getBoundingClientRect();
+          const lx = tr.left - vr.left - vp.clientLeft - painted.e;
+          const ly = tr.top  - vr.top  - vp.clientTop  - painted.f;
+
+          // The content spans [lay + s*off + pos, lay + s*(off+len) + pos]. Keep it
+          // covering the viewport, or centred on an axis where it's still smaller.
+          const clampAxis = (pos, lay, off, len, view) => {
+            const max = -lay - t.scale * off;
+            const min = view - lay - t.scale * (off + len);
+            return min > max ? (min + max) / 2 : Math.min(max, Math.max(min, pos));
+          };
+          x = clampAxis(t.x, lx, c.x, c.w, cw);
+          y = clampAxis(t.y, ly, c.y, c.h, ch);
+        }
+
+        if (Math.abs(x - t.x) > 0.5 || Math.abs(y - t.y) > 0.5) {
+          clamping = true;
+          try { pz.moveTo(x, y); } finally { clamping = false; }
+        }
+      };
     },
 
     _centerSvg(svgEl) {
@@ -1467,77 +2144,50 @@
     /**
      * Returns a sorted array of floor objects derived from units.
      * Each object: { floor: Number, mapId: String, name: String }
-     * `name` is what the floor should be labelled as: the floorplate's CMS
-     * floor name when one was entered, otherwise the floor number.
+     * `name` is what the floor should be labelled as, verbatim from the CMS
+     * ("-1", "B", "G1", "-A" are all valid). The server decides it
+     * (Floorplate#floor_label, sent as floorplates[].floorLabels), so it always
+     * matches the old map; a floor without a label shows its number.
      * Use with changeFloor(floor) or changeMap(mapId).
      */
     getFloors() {
-      const seen = new Map(); // floor → floorplate mapId
+      const seen = new Map(); // floor → owning floorplate
 
       // Floors are derived EXCLUSIVELY from floorplate ranges, mirroring the old
       // map's `@floorplates.map { |f| f.floors }`. Units are never a source of
       // truth for floors — a unit with a stray/blank/unplotted floor (which
       // coerces to 0) must not conjure a phantom entry the property doesn't have.
-      //
-      // A range mirrors Floorplate#floors: a leading "-" single ("-1"), a span
-      // ("1-5"), a comma list ("1,3,5"), or a single floor ("3").
-      const floorsForRange = (raw) => {
-        const range = String(raw == null ? "" : raw).trim();
-        if (!range) return [];
-        const out = [];
-        if (range[0] === "-") {
-          out.push(parseInt(range, 10));
-        } else if (range.includes("-")) {
-          let [min, max] = range.split("-").map(s => parseInt(s, 10));
-          if (!isNaN(min) && !isNaN(max)) {
-            if (min > max) [min, max] = [max, min];
-            for (let f = min; f <= max; f++) out.push(f);
-          }
-        } else if (range.includes(",")) {
-          range.split(",").forEach(s => {
-            const f = parseInt(s, 10);
-            if (!isNaN(f)) out.push(f);
-          });
-        } else {
-          const f = parseInt(range, 10);
-          if (!isNaN(f)) out.push(f);
-        }
-        return out;
-      };
-
-      const floorplateByMapId = new Map();
-
       (this.data.floorplates || []).forEach(fp => {
-        const mapId = fp.mapId != null ? String(fp.mapId) : null;
-        if (mapId != null) floorplateByMapId.set(mapId, fp);
         // First floorplate to declare a floor owns it.
-        floorsForRange(fp.range).forEach(f => {
-          if (!seen.has(f)) seen.set(f, mapId);
+        this._floorsForRange(fp.range).forEach(f => {
+          if (!seen.has(f)) seen.set(f, fp);
         });
       });
 
-      // Floor labels come from the floorplate the floor resolves to, mirroring the
-      // old map: the CMS floor name only wins when the "Add floor name" toggle is on
-      // AND a name was actually entered; otherwise the floor number is the label.
       return [...seen.entries()]
         .sort(([a], [b]) => a - b)
-        .map(([floor, mapId]) => {
-          const fp        = mapId != null ? floorplateByMapId.get(String(mapId)) : null;
-          const floorName = String(fp && fp.floorName != null ? fp.floorName : "").trim();
-          const name      = (fp && fp.floorNameAdded && floorName) ? floorName : String(floor);
-          return { floor, mapId, name };
-        });
+        .map(([floor, fp]) => ({
+          floor,
+          mapId: fp.mapId != null ? String(fp.mapId) : null,
+          name:  fp.floorLabels?.[String(floor)] ?? String(floor),
+        }));
     },
 
     /**
      * Returns all floorplans for the property.
      * Each object: { floorplanId, name, bedrooms, bathrooms, market_rent, square_feet,
      *                description, description_title, showDescriptionOnCard,
-     *                availability_url, primaryImage, secondaryImage }
+     *                expandDescriptionInPopup, availability_url, primaryImage,
+     *                secondaryImage }
      *
      * showDescriptionOnCard is the CMS "Show on cards" toggle: true when the host
      * should also render `description` as preview text on the floor plan card,
      * rather than only inside the pop-up. False whenever there is no description.
+     *
+     * expandDescriptionInPopup is the CMS "Expand details in pop-ups" toggle: true
+     * when the pop-up should open with `description` already showing, with no
+     * accordion to click. Independent of showDescriptionOnCard, and likewise false
+     * whenever there is no description.
      */
     getFloorplans() {
       return (this.data.floorplans || []).slice();
@@ -1559,7 +2209,7 @@
 
       return (this.data.floorplans || []).find(fp =>
         String(fp.floorplanId) === wanted ||
-        String(fp.spaceConfig?.providerFloorplanId ?? "") === wanted
+        String(fp.providerFloorplanId ?? fp.spaceConfig?.providerFloorplanId ?? "") === wanted
       ) || null;
     },
 
@@ -1587,6 +2237,9 @@
      *
      * These replace the old single `image` field, which flattened the same
      * fallback into one URL and so could never carry the second picture.
+     *
+     * `expandDescriptionInPopup` (see getFloorplans) travels with `description`:
+     * a unit showing its floor plan's Details carries the floor plan's flag.
      *
      * Pass an optional filters object to narrow results:
      *
@@ -1957,6 +2610,7 @@
       // group, so the whole group has to go — hiding the SVG alone would leave the
       // base map floating behind the 3D widget.
       if (this._zoomWrapper) this._zoomWrapper.style.display = "none";
+      if (this._missingMapPlaceholder) this._missingMapPlaceholder.style.display = "none";
       if (this._3dWrapper) this._3dWrapper.style.display = "block";
 
       // Update toggle button label and hide zoom controls (irrelevant in 3D)
@@ -1976,9 +2630,11 @@
      */
     switchTo2DMap() {
       if (!this._3dMode) return;
+      if (this._availableMapViews() === "3d") return;
       // Drop any hover before the mode flag flips, so the consumer is told the
       // tooltip is gone and does not keep a 3D unit hovered on the 2D map.
       this._clear3DHover();
+      this.highlight3DUnits(null);
       this._3dMode = false;
       this._updateCurrentMapType();
       if (this._analytics) this._captureWithMapType('map_2d');
@@ -2001,6 +2657,7 @@
         if (!activeSvg._pz) this._enablePanZoom(activeSvg);
       }
       if (this._zoomWrapper) this._zoomWrapper.style.display = "block";
+      if (this._missingMapPlaceholder) this._missingMapPlaceholder.style.display = "flex";
       if (this._3dWrapper) this._3dWrapper.style.display = "none";
 
       // Update toggle button label and restore zoom controls
@@ -2357,12 +3014,17 @@
       if (!this._beansWidget.workingInstance?.mapView?.ready) return;
 
       try {
+        // The redraw recolours every unit from the filter set, so a rail
+        // highlight's faded colours are handed back first and re-applied on top
+        // of the fresh colours afterwards — never restored over them.
+        this._clear3DRailHover();
         this._beansWidget.setDisplayOptions(opts);
         // setDisplayOptions swaps the options object wholesale and redraw() does
         // not recompute the floor, so the engine has to be told directly.
         // Mirrors reDrawBeansWidget in beans3dHandler.js.
         this._set3DSelectedFloor(this._beans3dFloor);
         this._beansWidget.redraw();
+        this._apply3DRailHover();
       } catch (e) {
         console.warn("PynMapSDK: Could not update 3D filter", e);
       }
@@ -2588,6 +3250,152 @@
       return inside;
     },
 
+    // ----------------------------------------------------
+    // 3D RAIL HOVER
+    // ----------------------------------------------------
+    //
+    // The 3D counterpart of the 2D rail hover: the given units get Esri's own
+    // highlight and every other unit fades back to the building colour. It works
+    // on the graphics Beans drew (engine.markers[ix], keyed by our _beans3dArr
+    // index), so it never touches filteredRows — the filter set stays exactly as
+    // highlightUnits() left it.
+
+    /**
+     * Bring these units forward on the 3D map and fade the rest; null restores.
+     * No-op outside 3D — 2D hosts keep using highlightUnits().
+     *
+     * @param {Array<string|number>|null} unitIds unit or space ids
+     */
+    highlight3DUnits(unitIds) {
+      this._3dRailHoverIds = Array.isArray(unitIds) && unitIds.length > 0
+        ? this._toBaseIds(unitIds.map(String))
+        : null;
+      this._apply3DRailHover();
+    },
+
+    /**
+     * Viewport position of the top-centre of a unit's 3D tile — where a tooltip
+     * should point. Projected from the unit's real elevation and height, so it
+     * holds at any tilt or heading. null when the unit is not drawn (no tile,
+     * floor hidden, engine not ready).
+     *
+     * @returns {{x: number, y: number, onScreen: boolean}|null}
+     */
+    get3DUnitAnchor(unitId) {
+      const engine = this._3dMode ? this._beans3DInstance() : null;
+      const view   = engine?.mapView;
+      if (!view?.ready) return null;
+
+      const [ix] = this._beans3dIndicesForUnitIds(this._toBaseIds([String(unitId)]));
+      const graphic  = engine.markers?.[ix];
+      const centroid = graphic?.geometry?.centroid;
+      if (!centroid) return null;
+
+      // Beans hides every floor above the selected one (floor <= selectedFloor).
+      const { floor, elevation, height } = graphic.attributes || {};
+      if (engine.selectedFloor && Number(floor) > Number(engine.selectedFloor)) return null;
+
+      const opts   = engine.displayOptions || {};
+      const ground = opts.useGroundElevation ? Number(opts.offsetGroundElevation) || 0 : 0;
+      const top    = centroid.clone();
+      top.z    = ground + (Number(elevation) || 0) + (Number(height) || 0);
+      top.hasZ = true;
+
+      const point = view.toScreen(top);
+      if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) return null;
+
+      const rect = view.container.getBoundingClientRect();
+      return {
+        x: rect.left + point.x,
+        y: rect.top + point.y,
+        onScreen: point.x >= 0 && point.y >= 0 && point.x <= rect.width && point.y <= rect.height
+      };
+    },
+
+    /**
+     * Sync the drawn graphics to _3dRailHoverIds.
+     *
+     * Diffed against what is already faded, so moving from one rail card to the
+     * next only recolours the units whose state changed — one applyEdits batch,
+     * not a restore-everything-then-fade-everything round trip per hover.
+     */
+    _apply3DRailHover() {
+      const engine = this._3dMode ? this._beans3DInstance() : null;
+      const layer  = engine?.mapView?.ready ? engine.unitsLayer : null;
+
+      // A full Beans re-render swaps the layer; the old graphics are gone, so
+      // there is nothing left to restore on them.
+      let state = this._3dRailHover;
+      if (state && state.layer !== layer) {
+        state.handle?.remove();
+        state = this._3dRailHover = null;
+      }
+      if (!layer) return;
+
+      const markers = engine.markers || [];
+      const wanted  = new Set(this._3dRailHoverIds ? this._beans3dIndicesForUnitIds(this._3dRailHoverIds) : []);
+      const targets = [...wanted].map(ix => markers[ix]).filter(Boolean);
+      const active  = targets.length > 0;
+
+      if (!state && !active) return;
+      if (!state) {
+        // Beans keeps its own selection halo on currentIx. Esri highlights are
+        // not reference-counted, so ours would take it down unpredictably on
+        // removal — set it aside for the hover and hand it back after.
+        engine.highlight?.remove();
+        state = this._3dRailHover = { layer, handle: null, faded: new Map() };
+      }
+
+      const edits = [];
+      markers.forEach((graphic, ix) => {
+        if (!graphic) return;
+        const fade = active && !wanted.has(ix);
+        const original = state.faded.get(graphic);
+
+        if (fade && original === undefined) {
+          state.faded.set(graphic, graphic.attributes.color);
+          graphic.attributes.color = this._3D_FADED_COLOR;
+          edits.push(graphic);
+        } else if (!fade && original !== undefined) {
+          state.faded.delete(graphic);
+          // A redraw may have recoloured it since; only hand back our own fade.
+          if (graphic.attributes.color === this._3D_FADED_COLOR) {
+            graphic.attributes.color = original;
+            edits.push(graphic);
+          }
+        }
+      });
+      if (edits.length > 0) layer.applyEdits({ updateFeatures: edits }).catch(() => {});
+
+      state.handle?.remove();
+      state.handle = null;
+      if (!active) {
+        this._3dRailHover = null;
+        engine.highlightAndMaybeShowBalloons?.();
+        return;
+      }
+
+      const token = state.token = {};
+      engine.mapView.whenLayerView(layer)
+        .then(layerView => {
+          if (this._3dRailHover === state && state.token === token) state.handle = layerView.highlight(targets);
+        })
+        .catch(() => {});
+    },
+
+    /** Drop the drawn rail highlight, keeping _3dRailHoverIds for a re-apply. */
+    _clear3DRailHover() {
+      const ids = this._3dRailHoverIds;
+      this._3dRailHoverIds = null;
+      this._apply3DRailHover();
+      this._3dRailHoverIds = ids;
+    },
+
+    // The unit layer's first colour stop is Beans' plain building shape (the
+    // `unitShape` stop in makeUnitExtrudeRenderer), so this fades a unit into the
+    // building around it — the same look Beans gives a filtered-out unit.
+    _3D_FADED_COLOR: 1,
+
     _beans3dIndicesForFloor(floorNumber) {
       return this._beans3dArr
         .map((item, i) => {
@@ -2652,7 +3460,18 @@
         if (!mapType) return;
         this._showLoading("Loading floor...");
         const svg = await this._loadSVGIfNeeded(id, mapType);
-        if (!svg) return;
+        // A floor with no SVG uploaded still switches, onto a placeholder, so the
+        // floor the visitor picked is the floor they see. Any other failure puts
+        // back the map that was showing: _showLoading cleared the container, and
+        // returning without re-rendering would leave the spinner up for good.
+        if (!svg && !this._missingMaps.has(id)) {
+          this._renderMaps();
+          this._plotSvgAmenities();
+          this._highlightAllUnits();
+          this._bindUnitEvents();
+          this._bindSvgAmenityEvents();
+          return;
+        }
       }
 
       this.activeMapId   = id;
@@ -3286,7 +4105,7 @@
       wrapper.appendChild(minus);
       wrapper.appendChild(reset);
 
-      if (this.config.enable3DMap) {
+      if (this.config.enable3DMap && this._availableMapViews() === "both") {
         const toggle = document.createElement("div");
         toggle.className = "pyn-3d-toggle";
         toggle.innerText = this._3dMode ? "2D" : "3D";
@@ -3503,35 +4322,97 @@
     },
 
     _findFloorplateByFloor(floorNumber) {
+      if (floorNumber == null || String(floorNumber).trim() === "") return null;
       const fn = Number(floorNumber);
       if (isNaN(fn)) return null;
 
-      for (const fp of this.data.floorplates) {
-        const range = String(fp.range).trim();
+      return (this.data.floorplates || []).find(fp =>
+        this._floorsForRange(fp.range).includes(fn)
+      ) || null;
+    },
 
-        if (range.includes("-")) {
-          const [min, max] = range.split("-").map(Number);
-          if (fn >= min && fn <= max) return fp;
-        } else {
-          if (fn === Number(range)) return fp;
+    // A floorplate range, expanded the same way as Floorplate#floors: a leading
+    // "-" single ("-1"), a span ("1-5"), a comma list ("1,3,5"), or a single
+    // floor ("3"). Every floor lookup goes through this so a basement range like
+    // "-1" is never misread as the span 0..1.
+    _floorsForRange(raw) {
+      const range = String(raw == null ? "" : raw).trim();
+      if (!range) return [];
+      const out = [];
+      if (range[0] === "-") {
+        const f = parseInt(range, 10);
+        if (!isNaN(f)) out.push(f);
+      } else if (range.includes("-")) {
+        let [min, max] = range.split("-").map(s => parseInt(s, 10));
+        if (!isNaN(min) && !isNaN(max)) {
+          if (min > max) [min, max] = [max, min];
+          for (let f = min; f <= max; f++) out.push(f);
         }
+      } else if (range.includes(",")) {
+        range.split(",").forEach(s => {
+          const f = parseInt(s, 10);
+          if (!isNaN(f)) out.push(f);
+        });
+      } else {
+        const f = parseInt(range, 10);
+        if (!isNaN(f)) out.push(f);
       }
-
-      return null;
+      return out;
     },
 
     _applyGlobalLabelStyles(svg, textStyles) {
       if (!svg || svg._pynTextStyled) return;
 
+      // `el.style.fontFamily = undefined` writes the family name "undefined" inline,
+      // which beats the SVG's own font and the Beans Inter rule (_applyBeansSvgFonts).
+      // Beans maps skip it when no font is configured; other maps keep their
+      // existing rendering.
+      const isBeans = this.data.property?.map?.isBeansSvg === true;
+
       const elements = svg.querySelectorAll("text, tspan");
       elements.forEach(el => {
-        el.style.fontFamily   = textStyles?.fontFamily;
+        if (!isBeans || textStyles?.fontFamily) el.style.fontFamily = textStyles?.fontFamily;
         el.style.fontSize     = textStyles?.fontSize;
         el.style.fill         = textStyles?.fontColor;
         el.style.pointerEvents = "none";
       });
 
       svg._pynTextStyled = true;
+    },
+
+    // "Beans Generated SVG" maps (Figma exports) set font-family="Inter" on every
+    // label with no fallback and no font loaded, so labels fell back to serif.
+    // Only for that CMS toggle: the container gets .pyn-beans-svg, and the rule
+    // (scoped to it, and to labels that ask for Inter) loads once. Same rule as
+    // the CMS map's shared/_beans_svg_fonts.
+    _applyBeansSvgFonts() {
+      const isBeans = this.data.property?.map?.isBeansSvg === true;
+      this.container.classList.toggle("pyn-beans-svg", isBeans);
+      if (!isBeans || document.getElementById("pyn-svg-label-fonts")) return;
+
+      const link = document.createElement("link");
+      link.rel  = "stylesheet";
+      link.href = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap";
+      document.head.appendChild(link);
+
+      const s = document.createElement("style");
+      s.id = "pyn-svg-label-fonts";
+      s.textContent =
+        `.pyn-beans-svg svg text[font-family="Inter" i], .pyn-beans-svg svg tspan[font-family="Inter" i] { font-family: 'Inter', sans-serif; }`;
+      document.head.appendChild(s);
+    },
+
+    // CMS "Hide unit numbers": drops the labels that sit in the SVG's unit
+    // groups -- the same _svgShapeCategory test that decides which shapes are
+    // units, so amenity labels and free-standing text stay. Labels already take
+    // no pointer events (_applyGlobalLabelStyles), so the unit shapes keep every
+    // hover, click and pop-up exactly as before.
+    _hideUnitNumbers(svg) {
+      if (!svg || this.data?.property?.map?.hideUnitNumbers !== true) return;
+
+      svg.querySelectorAll("text").forEach(el => {
+        if (this._svgShapeCategory(el) === "unit") el.style.display = "none";
+      });
     },
 
     _getActiveSvg() {
@@ -3573,6 +4454,8 @@
       this._beansWidget        = null;
       this._beans3dArr         = [];
       this._beans3dFloor       = null;
+      this._3dRailHoverIds     = null;
+      this._3dRailHover        = null;
       this._unbind3DHoverTracker();
       this._3dHoveredUnit      = null;
       this._3dHoverOrigin      = null;
@@ -3597,14 +4480,17 @@
       this._galleryImagesLoaded  = new Set();
       this._neighborhoodPromise = null;
       this._neighborhoodLoaded  = false;
+      this._homescreenPromise   = null;
+      this._homescreenLoaded    = false;
       this._placesPromises      = {};
       this._placesLoaded        = new Set();
       this._neighborhoodLimited = false;
-      this.data                = { property: null, sitemap: null, backgroundSvg: null, floorplates: [], units: [], floorplans: [], amenities: [], filters: null, gallery: null, galleryList: [], galleryImages: {}, neighborhood: [], neighborhoodPlaces: {} };
+      this.data                = { property: null, sitemap: null, backgroundSvg: null, floorplates: [], units: [], floorplans: [], amenities: [], filters: null, gallery: null, galleryList: [], galleryImages: {}, homescreen: null, neighborhood: [], neighborhoodPlaces: {} };
       this.unitsByMap          = {};
       this.pointerIdsByMap     = {};
       this.unitsByPointerIdByMap = {};
       this._svgLoadingPromises = {};
+      this._missingMaps        = new Set();
       this._lastHoverPid       = null;
       // svgCache is intentionally preserved to avoid re-fetching on reinit
     },
@@ -3693,6 +4579,9 @@
      * toggle: on, hovering a unit should bring its whole floor plan forward
      * rather than the one unit. getHoverGroupUnits() answers which units those
      * are, and already returns just the hovered unit when the toggle is off.
+     *
+     * `map.hideUnitNumbers` is the CMS "Hide unit numbers" toggle. The SDK
+     * already applies it to the SVGs it renders; hosts need do nothing.
      */
     getPropertyConfig() {
       return this.data.property || null;
@@ -3744,8 +4633,8 @@
      * Set per property on Design -> Custom Design, so a property can call Units
      * "Homes" without a deploy; an unset field comes back as its default label.
      * Pair with getFiltersData().visibility / getPropertyConfig().filters, which
-     * decide whether each tab is shown at all — this only names them, and never
-     * changes a tab's icon or behavior.
+     * decide whether each tab is shown at all — this only names them. Icons are
+     * getTabIcons().
      *
      *   const { units } = PynMapSDK.getTabLabels();
      *   renderTab("units", units);
@@ -3757,6 +4646,35 @@
         amenities:  "Amenities",
         favs:       "Favorites"
       });
+    },
+
+    /**
+     * The CMS icon for each of the map's four tabs, same keys as getTabLabels().
+     *
+     *   { units, floorPlans, amenities, favs }, each
+     *   {
+     *     icon       // key from the predefined set, e.g. "briefcase"
+     *     isDefault  // true = the tab's stock icon; draw your built-in one
+     *     show       // false = label-only tab
+     *     svg        // markup for `icon`, from the server's fixed set
+     *   }
+     *
+     * Set per property on Design -> Custom Design, independent of the label.
+     * A property that never touched it gets every tab isDefault + shown, and
+     * the same before the payload lands (svg is null until then).
+     *
+     *   const { floorPlans } = PynMapSDK.getTabIcons();
+     *   if (floorPlans.show) iconEl.innerHTML = floorPlans.isDefault ? STOCK_GRID : floorPlans.svg;
+     */
+    getTabIcons() {
+      const stock = (icon) => ({ icon, isDefault: true, show: true, svg: null });
+      const icons = this.data.property?.tabIcons || {};
+      return {
+        units:      { ...stock("building"), ...icons.units },
+        floorPlans: { ...stock("grid"),     ...icons.floorPlans },
+        amenities:  { ...stock("dumbbell"), ...icons.amenities },
+        favs:       { ...stock("heart"),    ...icons.favs }
+      };
     },
 
     // ----------------------------------------------------
@@ -3820,6 +4738,38 @@
         .finally(() => { this._galleryListPromise = null; });
 
       return this._galleryListPromise;
+    },
+
+    /**
+     * The Pynwheel Touch home screen loop — the same block data.json serves as
+     * `homescreen`:
+     *
+     *   { images: [{ filename, url }], video, loop_type }   // loop_type: "images" | "video"
+     *
+     * Touch only. Outside src=touch it resolves to null without a request; on
+     * touch the server still returns nothing unless the property has Pynwheel
+     * Touch enabled.
+     *
+     * Memoised for the life of the page, concurrent calls share one request, and
+     * it never throws — any failure resolves to null.
+     *
+     * @param {{ force?: boolean }} [opts]
+     * @returns {Promise<object|null>}
+     */
+    async getHomescreen({ force = false } = {}) {
+      if (this._productSrc !== "touch") return null;
+      if (!force && this._homescreenLoaded) return this.data.homescreen;
+      if (this._homescreenPromise) return this._homescreenPromise;
+
+      this._homescreenPromise = this._fetchHomescreen()
+        .then((homescreen) => {
+          this.data.homescreen   = homescreen;
+          this._homescreenLoaded = true;
+          return homescreen;
+        })
+        .finally(() => { this._homescreenPromise = null; });
+
+      return this._homescreenPromise;
     },
 
     /**
@@ -4205,10 +5155,15 @@
     /**
      * Internal: emit a favorites analytics event.
      *
-     * The names below are ones the server already recognises — 'save_favorite'
-     * becomes the save_favorite_click key that INTERACTION_EVENTS counts, and
-     * 'view_favorites' maps to the "Favorites page" visited-page entry — so they
-     * must stay exactly as written.
+     * 'view_favorites' maps to the server's "Favorites page" visited-page entry,
+     * so it must stay exactly as written.
+     *
+     * Saves and removals are reported under confirmation names, not as
+     * 'save_favorite' / 'delete_favorite'. Those two are the visitor's click,
+     * which the host captures the moment it happens — before a favorites session
+     * even exists — and which analytics_controller counts and a client's GA4
+     * receives. Emitting 'save_favorite' here as well counted every save twice
+     * and published it twice.
      *
      * Metadata is scalars only: the analytics sanitiser silently drops arrays,
      * which is why the ids go over as a joined string.
@@ -4363,7 +5318,7 @@
           if (item) item.isFavorite = true;
         });
 
-        this._captureFavorite("save_favorite", type, ids);
+        this._captureFavorite("favorite_save_confirmed", type, ids);
 
         if (this.config.onFavoriteChange) {
           this.config.onFavoriteChange(ids, "saved", [...set], type);
@@ -4416,7 +5371,7 @@
           if (item) item.isFavorite = false;
         });
 
-        this._captureFavorite("remove_favorite", type, ids);
+        this._captureFavorite("favorite_remove_confirmed", type, ids);
 
         if (this.config.onFavoriteChange) {
           this.config.onFavoriteChange(ids, "deleted", [...set], type);
@@ -4826,48 +5781,21 @@
       });
 
       // Clamp so the image content always covers the container — no background gaps.
-      let _imgClamping = false;
-      const imgClamp = () => {
-        if (_imgClamping) return;
-        const pz = wrapperEl._pz;
-        if (!pz) return;
-        const t  = pz.getTransform();
-        const pr = wrapperEl.parentElement;
-        if (!pr) return;
-        const cw = pr.clientWidth;
-        const ch = pr.clientHeight;
-
-        if (t.scale <= 1.01) {
-          if (Math.abs(t.x) > 0.5 || Math.abs(t.y) > 0.5) {
-            _imgClamping = true;
-            pz.moveTo(0, 0);
-            _imgClamping = false;
-          }
-          return;
-        }
-
-        // Image is contained and centered within the wrapper. Use its actual
-        // rendered size and account for the centering offset ((container - image)/2)
-        // so the cover bounds keep the image edges flush with the container.
+      // The image is contained and centered within the wrapper; its rect relative
+      // to the wrapper, divided by the scale, is where it sits before the transform.
+      const imgClamp = this._makePanClamp(wrapperEl, (scale) => {
         const img = wrapperEl.querySelector(".pyn-map-image");
-        const iw  = img && img.clientWidth  > 0 ? img.clientWidth  : cw;
-        const ih  = img && img.clientHeight > 0 ? img.clientHeight : ch;
-
-        const maxX = -t.scale * (cw - iw) / 2;
-        const minX = cw - t.scale * (cw + iw) / 2;
-        const maxY = -t.scale * (ch - ih) / 2;
-        const minY = ch - t.scale * (ch + ih) / 2;
-
-        const x = minX > maxX ? (minX + maxX) / 2 : Math.min(maxX, Math.max(minX, t.x));
-        const y = minY > maxY ? (minY + maxY) / 2 : Math.min(maxY, Math.max(minY, t.y));
-
-        if (Math.abs(x - t.x) > 0.5 || Math.abs(y - t.y) > 0.5) {
-          _imgClamping = true;
-          pz.moveTo(x, y);
-          _imgClamping = false;
-        }
-      };
-      // wrapperEl._pz.on("pan",  imgClamp);
+        if (!img || !img.clientWidth || !img.clientHeight) return null;
+        const ir = img.getBoundingClientRect();
+        const wr = wrapperEl.getBoundingClientRect();
+        return {
+          x: (ir.left - wr.left) / scale,
+          y: (ir.top  - wr.top)  / scale,
+          w: ir.width  / scale,
+          h: ir.height / scale,
+        };
+      });
+      wrapperEl._pz.on("pan",  imgClamp);
       wrapperEl._pz.on("zoom", imgClamp);
 
       const touchBlocker = (e) => {
@@ -5025,6 +5953,8 @@
       getPropertyConfig()          { return PynMapSDK.getPropertyConfig.call(PynMapSDK); },
       highlightUnits(unitIds)      { return PynMapSDK.highlightUnits.call(PynMapSDK, unitIds); },
       getHoverGroupUnits(unit)     { return PynMapSDK.getHoverGroupUnits.call(PynMapSDK, unit); },
+      highlight3DUnits(unitIds)    { return PynMapSDK.highlight3DUnits.call(PynMapSDK, unitIds); },
+      get3DUnitAnchor(unitId)      { return PynMapSDK.get3DUnitAnchor.call(PynMapSDK, unitId); },
       changeMap(mapId)             { return PynMapSDK.changeMap.call(PynMapSDK, mapId); },
       changeFloor(floorNumber)     { return PynMapSDK.changeFloor.call(PynMapSDK, floorNumber); },
       getFloors()                  { return PynMapSDK.getFloors.call(PynMapSDK); },
@@ -5041,6 +5971,7 @@
       getFiltersData()             { return PynMapSDK.getFiltersData.call(PynMapSDK); },
       getGalleryList(opts)                  { return PynMapSDK.getGalleryList.call(PynMapSDK, opts); },
       getGalleryImages(galleryId, opts)     { return PynMapSDK.getGalleryImages.call(PynMapSDK, galleryId, opts); },
+      getHomescreen(opts)                   { return PynMapSDK.getHomescreen.call(PynMapSDK, opts); },
       getNeighborhood(opts)                 { return PynMapSDK.getNeighborhood.call(PynMapSDK, opts); },
       getNeighborhoodPlaces(category, opts) { return PynMapSDK.getNeighborhoodPlaces.call(PynMapSDK, category, opts); },
       isNeighborhoodLimited()               { return PynMapSDK.isNeighborhoodLimited.call(PynMapSDK); },
@@ -5050,6 +5981,7 @@
       zoomOut()                    { return PynMapSDK.zoomOut.call(PynMapSDK); },
       resetZoom()                  { return PynMapSDK.resetZoom.call(PynMapSDK); },
       getTabLabels()                                        { return PynMapSDK.getTabLabels.call(PynMapSDK); },
+      getTabIcons()                                         { return PynMapSDK.getTabIcons.call(PynMapSDK); },
       getFavoritesConfig()                                  { return PynMapSDK.getFavoritesConfig.call(PynMapSDK); },
       getGalleryConfig()                                    { return PynMapSDK.getGalleryConfig.call(PynMapSDK); },
       getNeighborhoodConfig()                               { return PynMapSDK.getNeighborhoodConfig.call(PynMapSDK); },

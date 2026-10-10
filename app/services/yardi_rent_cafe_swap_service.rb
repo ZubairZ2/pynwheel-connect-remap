@@ -82,7 +82,7 @@ class YardiRentCafeSwapService < BaseService
                 end
 
                 unit.lease_pricing = leasing
-                unit.show_on_map = limit_result
+                unit.show_on_map = unit.feed_show_on_map(limit_result)
                 unit.save
 
               else
@@ -133,7 +133,7 @@ class YardiRentCafeSwapService < BaseService
                 end
 
                 unit.lease_pricing = leasing
-                unit.show_on_map = limit_result
+                unit.show_on_map = unit.feed_show_on_map(limit_result)
                 unit.save
               end
             end

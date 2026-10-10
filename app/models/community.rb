@@ -91,6 +91,8 @@ class Community < ApplicationRecord
   validate :apartment_page_name_length_validate
   validate :gallery_page_name_length_validate
   validate :validate_page_position
+  validates :available_map_views, inclusion: { in: %w[2d 3d both] }, allow_nil: true
+  validates :default_map_view, inclusion: { in: %w[2d 3d] }, allow_nil: true
   validates_with CodeValidatorOnUpdate , on: [:update]
   validates_with CodeValidatorOnCreate , on: [:create]
 
@@ -140,6 +142,22 @@ class Community < ApplicationRecord
 
   scope :real_properties, -> {where.not(name: DUMMY_COMMUNITY_NAME)}
 
+  # The product/feature switches worth seeing at a glance on the properties
+  # list. One table, so the toolbar's "Product" filter and the badges in the
+  # grid can never drift apart - adding a product here adds both. Columns that
+  # are on for effectively every property (enable_locks defaults to true) are
+  # deliberately left out: as a badge they would be pure noise.
+  FEATURES = {
+    "touch" => { column: :touchscreen_app, label: "Touch", title: "Pynwheel Touch" },
+    "self_tour" => { column: :self_tour, label: "Self Tour", title: "Self-guided touring" },
+    "access" => { column: :pynwheel_access, label: "Access", title: "Pynwheel Access" },
+    "sdk_map" => { column: :enable_sdk_map, label: "SDK Map", title: "New SDK map" },
+    "svg_map" => { column: :enable_svg_mode, label: "SVG", title: "SVG map mode" },
+    "calculator" => { column: :enable_pynwheel_pricing_calculator, label: "Calculator", title: "Pynwheel pricing calculator" },
+    "student" => { column: :student_housing_property, label: "Student", title: "Student housing property" }
+  }.freeze
+
+
   scope :active_communities, -> { real_properties.where(locked: false) }
   scope :self_tour_enabled_only, -> { real_properties.where('self_tour = ?', true) }
   scope :desc_created_at, -> { order(created_at: :desc) }
@@ -178,21 +196,12 @@ class Community < ApplicationRecord
     end
   end
 
+  # Resolved through Floorplate#floors so every range format matches the floor
+  # list the map shows. A naive split on "-" read a basement range like "-1" as
+  # 0..1, which stole floors 0 and 1 from their own floorplates.
   def floorplate_for_floor(floor)
     floor = floor.to_i
-
-    floorplates.each do |fp|
-      range_str = fp.range.to_s.strip
-
-      if range_str.include?("-")
-        start_floor, end_floor = range_str.split("-").map(&:to_i)
-        return fp if floor >= start_floor && floor <= end_floor
-      else
-        return fp if floor == range_str.to_i
-      end
-    end
-
-    nil
+    floorplates.detect { |fp| fp.range.present? && fp.floors.include?(floor) }
   end
 
   def have_multi_property_ids?
@@ -814,6 +823,67 @@ class Community < ApplicationRecord
 
   def has_floorplates?
     !is_sitemap
+  end
+
+  # PYN-1610 "Available map views". The stored column is the property's choice;
+  # everything that draws a map reads #resolved_map_views instead, which never
+  # returns a view the property has no map for.
+
+  # A 2D map exists when the artwork the map will actually draw is uploaded: the
+  # SVG in SVG mode, the raster image otherwise. Reads the upload columns only --
+  # no S3 or image decode -- through the cached association every map caller
+  # loads anyway, so it costs no query of its own.
+  def has_2d_map?
+    return @has_2d_map if defined?(@has_2d_map)
+
+    column = enable_svg_mode? ? :svg_image : :image
+    maps = is_sitemap? ? [sitemap].compact : floorplates
+    @has_2d_map = maps.any? { |map| map.read_attribute(column).present? }
+  end
+
+  def has_3d_map?
+    enable_three_d_maps?
+  end
+
+  # The options the settings page offers. A view with no map behind it is left
+  # out entirely, and so is "both" unless both maps exist.
+  def map_view_options
+    options = []
+    options << "2d" if has_2d_map?
+    options << "3d" if has_3d_map?
+    options << "both" if options.size == 2
+    options
+  end
+
+  # The view the map runs in: the saved choice while it is still possible,
+  # otherwise the default -- "both" when both maps exist, else the only one.
+  # A property with neither map configured stays "2d", today's behavior.
+  def resolved_map_views
+    options = map_view_options
+    return available_map_views if options.include?(available_map_views)
+
+    options.last || "2d"
+  end
+
+  def map_view_2d?
+    resolved_map_views != "3d"
+  end
+
+  def map_view_3d?
+    resolved_map_views != "2d"
+  end
+
+  # Only "both" leaves the visitor anything to switch between.
+  def map_view_switcher?
+    resolved_map_views == "both"
+  end
+
+  # The view the map opens in. Only "both" has a choice to make; a single-view
+  # map opens in the one it has.
+  def resolved_default_map_view
+    return resolved_map_views unless map_view_switcher?
+
+    default_map_view == "3d" ? "3d" : "2d"
   end
 
   def property_floor_options
@@ -2057,32 +2127,18 @@ class Community < ApplicationRecord
   # property's Pynwheel map is stored per-property in the `partner_map_settings`
   # JSONB column, e.g. { "apartments" => { "enabled" => true, "enabled_at" => ... } }.
   #
-  # The api_key -> partner mapping lives only in ENV (single source of truth);
-  # partners register requests with the key and we authorize against the toggle.
+  # The partners themselves — the list, their labels, their API keys — live in
+  # the `partners` table. Read the registry straight off Partner.registry; a
+  # partner sends its key, Partner.authenticate resolves it, and we authorize
+  # against this per-property toggle.
   # --------------------------------------------------------------------------
-  MAP_PARTNERS = [
-    { key: "rent",          env: "PARTNER_RENT_API_KEY",          label: "Rent.com" },
-    { key: "apartmentlist", env: "PARTNER_APARTMENTLIST_API_KEY", label: "Apartmentlist.com" },
-    { key: "propexo",       env: "PARTNER_PROPEXO_API_KEY",       label: "Propexo" },
-    { key: "apartments",    env: "PARTNER_APARTMENTS_API_KEY",    label: "Apartments.com" }
-  ].freeze
 
-  MAP_PARTNER_KEYS = MAP_PARTNERS.map { |p| p[:key] }.freeze
-
-  # Registry entry (with the resolved ENV api_key) for a given api_key, or nil.
-  def self.partner_registry_for_api_key(api_key)
-    return nil if api_key.blank?
-    MAP_PARTNERS.find { |p| ENV[p[:env]].present? && ENV[p[:env]] == api_key }
-  end
-
-  # Partner key ("apartments", "rent", ...) for an incoming api_key, or nil.
-  def self.partner_for_api_key(api_key)
-    partner_registry_for_api_key(api_key)&.dig(:key)
-  end
-
-  # True when the api_key matches one of the configured partner ENV keys.
-  def self.valid_partner_api_key?(api_key)
-    partner_registry_for_api_key(api_key).present?
+  # The jsonb predicate for "this property has <partner_key> enabled".
+  # Partner keys are validated slugs (Partner::KEY_FORMAT) and are quoted here
+  # too, so the fragment stays safe everywhere it is composed into a larger
+  # condition.
+  def self.partner_enabled_sql(partner_key)
+    "partner_map_settings -> #{connection.quote(partner_key.to_s)} ->> 'enabled' = 'true'"
   end
 
   # Communities that have enabled the given partner's map embed.
@@ -2092,39 +2148,20 @@ class Community < ApplicationRecord
 
   # Communities that have at least one partner map enabled.
   scope :with_any_partner, -> {
-    where(
-      MAP_PARTNER_KEYS.map { |k| "partner_map_settings -> '#{k}' ->> 'enabled' = 'true'" }.join(" OR ")
-    )
+    keys = Partner.registry_keys
+    keys.empty? ? none : where(keys.map { |k| partner_enabled_sql(k) }.join(" OR "))
   }
 
   # --- Efficient set-based bulk update (single UPDATE, no per-row loads) -------
 
-  # Set the given properties' enabled partners to EXACTLY `partner_keys`,
-  # replacing whatever they currently have. Preserves the existing enabled_at for
-  # partners that were already enabled. One UPDATE. Returns rows affected.
-  def self.bulk_set_partners(community_ids, partner_keys, now: Time.current)
-    ids  = Array(community_ids)
-    keys = Array(partner_keys).map(&:to_s) & MAP_PARTNER_KEYS
-    return 0 if ids.empty?
-
-    if keys.empty?
-      return where(id: ids).update_all(sanitize_sql_array(["partner_map_settings = ?::jsonb", "{}"]))
-    end
-
-    payload = { "enabled" => true, "enabled_at" => now.iso8601 }.to_json
-    pairs = keys.map do |k|
-      "#{connection.quote(k)}, COALESCE(partner_map_settings -> #{connection.quote(k)}, #{connection.quote(payload)}::jsonb)"
-    end.join(", ")
-
-    where(id: ids).update_all("partner_map_settings = jsonb_build_object(#{pairs})")
-  end
-
   # Additively ENABLE the given partners on the properties, leaving any partners
-  # they already have untouched (preserves existing enabled_at). Used by the
-  # bulk CSV/Excel upload flow. One UPDATE. Returns rows affected.
+  # they already have untouched (preserves existing enabled_at). Every bulk path
+  # is additive on purpose: a bulk action names the partners it is turning on, so
+  # it must never silently drop the ones a property already had. One UPDATE.
+  # Returns rows affected.
   def self.bulk_add_partners(community_ids, partner_keys, now: Time.current)
     ids  = Array(community_ids).map(&:to_i).reject(&:zero?).uniq
-    keys = Array(partner_keys).map(&:to_s) & MAP_PARTNER_KEYS
+    keys = Array(partner_keys).map(&:to_s) & Partner.registry_keys
     return 0 if ids.empty? || keys.empty?
 
     payload = { "enabled" => true, "enabled_at" => now.iso8601 }.to_json
@@ -2135,6 +2172,19 @@ class Community < ApplicationRecord
     end
 
     where(id: ids).update_all("partner_map_settings = #{expr}")
+  end
+
+  # The mirror of bulk_add_partners: DISABLE just the given partners, leaving the
+  # rest of each property's assignments alone. One UPDATE. Returns rows affected.
+  def self.bulk_remove_partners(community_ids, partner_keys)
+    ids  = Array(community_ids).map(&:to_i).reject(&:zero?).uniq
+    keys = Array(partner_keys).map(&:to_s) & Partner.registry_keys
+    return 0 if ids.empty? || keys.empty?
+
+    list = keys.map { |k| connection.quote(k) }.join(", ")
+    where(id: ids).update_all(
+      "partner_map_settings = COALESCE(partner_map_settings, '{}'::jsonb) - ARRAY[#{list}]::text[]"
+    )
   end
 
   def partner_map_enabled?(partner_key)
@@ -2152,7 +2202,7 @@ class Community < ApplicationRecord
   # registry key; unknown keys are ignored. Does not save.
   def set_partner_map_enabled(partner_key, enabled)
     key = partner_key.to_s
-    return unless MAP_PARTNER_KEYS.include?(key)
+    return unless Partner.registry_keys.include?(key)
 
     settings = (partner_map_settings || {}).deep_dup
     if enabled
@@ -2278,9 +2328,30 @@ class Community < ApplicationRecord
     map_filter.update!(marketing_units_tab_enabled: false)
   end
 
+  # How many distinct fee strings one community instance will remember. The
+  # realistic count is one or two -- the property fee, plus whatever a unit
+  # overrides it with -- so this is a ceiling for a pathological property that
+  # gives every unit its own markup, not a working size. Past it the method
+  # simply stops caching and keeps answering correctly.
+  SANITIZE_CACHE_LIMIT = 64
+
+  # Memoised per instance because #get_additional_fees calls this once or twice
+  # for every unit in an SDK payload, nearly always on the very same
+  # property-level fee string -- thousands of Loofah parses for one answer.
+  #
+  # strip_tags is pure, so caching on the input is safe. The cache lives on this
+  # one instance and dies with the request that loaded it: nothing is shared
+  # between requests, threads or properties, and it is capped above so a single
+  # community can never grow one unbounded.
   def sanitize_content(content)
     return nil unless content.present?
-    ActionController::Base.helpers.strip_tags(content.to_s.strip).strip
+
+    @sanitize_content_cache ||= {}
+    return @sanitize_content_cache[content] if @sanitize_content_cache.key?(content)
+
+    stripped = ActionController::Base.helpers.strip_tags(content.to_s.strip).strip
+    @sanitize_content_cache[content] = stripped if @sanitize_content_cache.size < SANITIZE_CACHE_LIMIT
+    stripped
   end
 
   def get_lock_info_object lock_object, styling_start, styling_end
