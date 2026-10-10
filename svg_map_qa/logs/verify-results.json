@@ -1,0 +1,122 @@
+{
+  "results": [
+    {
+      "name": "8005 /Floor 1/ plan",
+      "ok": true,
+      "detail": "{\"svg\":true,\"svgViewBox\":\"0 0 1412 932\",\"plotted\":113,\"background\":{\"natural\":\"1412x932\",\"box\":\"left: 0%; top: 0%; width: 100%; height: 100%;\"},\"image\":null,\"missing\":null,\"backgroundError\":null,\"layerSwitch\":[],\"toolbarSub\":\"113 of 113 plotted\",\"interFont\":true,\"planBox\":\"width: 715px; height: 472px\"}"
+    },
+    {
+      "name": "8005 /Floor 2/ plan",
+      "ok": true,
+      "detail": "{\"svg\":true,\"svgViewBox\":\"0 0 1412 932\",\"plotted\":110,\"background\":{\"natural\":\"1412x932\",\"box\":\"left: 0%; top: 0%; width: 100%; height: 100%;\"},\"image\":null,\"missing\":null,\"backgroundError\":null,\"layerSwitch\":[],\"toolbarSub\":\"110 of 110 plotted\",\"interFont\":true,\"planBox\":\"width: 715px; height: 472px\"}"
+    },
+    {
+      "name": "8005 /Floor 3/ plan",
+      "ok": true,
+      "detail": "{\"svg\":true,\"svgViewBox\":\"0 0 1412 932\",\"plotted\":110,\"background\":{\"natural\":\"1412x932\",\"box\":\"left: 0%; top: 0%; width: 100%; height: 100%;\"},\"image\":null,\"missing\":null,\"backgroundError\":null,\"layerSwitch\":[],\"toolbarSub\":\"110 of 110 plotted\",\"interFont\":true,\"planBox\":\"width: 715px; height: 472px\"}"
+    },
+    {
+      "name": "8005 Floor 1 units plotted on polygons",
+      "ok": true,
+      "detail": "plotted polygons 113, toolbar \"113 of 113 plotted\", Inter font true"
+    },
+    {
+      "name": "8005 Wayfinding stays on the SVG with the background",
+      "ok": true,
+      "detail": "{\"svg\":true,\"background\":true}"
+    },
+    {
+      "name": "8005 Floor 1 Detect Hallways",
+      "ok": true,
+      "detail": "Hallways detected on 1 floorplate · 214 points, 322 paths | All buildings · Floor 1 Detected 214 points · 322 paths · traced from the walkway layer, with corridors inferred inside the building outlines · walkways and outlines read from the shared background map · 113 of 113 stops joined | before: 0 POINTS 0 PATHS 0/113 STOPS LINKED | after: 214 POINTS 322 PATHS 113/113 STOPS LINKED"
+    },
+    {
+      "name": "8005 Floor 1 shortest path",
+      "ok": true,
+      "detail": "{\"route\":\"782 SVG units along the plan · 18 points 1 floor · shortest path in green This route uses 1 inferred point(s) not reviewed yet. ANIMATE ROUTE Point by point Moves through every hallway point on the path Stop by stop Glides between stops and pauses at each one Play Route Stop Walk on Floor 1 From 110\",\"error\":null}"
+    },
+    {
+      "name": "8005 Floor 1 Detect again keeps the result",
+      "ok": true,
+      "detail": "Nothing to detect | All buildings · Floor 1 Existing paths kept the paths on this page kept — not overwritten"
+    },
+    {
+      "name": "8005 Floor 1 Undo clears the run",
+      "ok": true,
+      "detail": "undone: 0 POINTS 0 PATHS 0/113 STOPS LINKED"
+    },
+    {
+      "name": "8005 All floorplates Detect",
+      "ok": true,
+      "detail": "Hallways detected on 3 floorplates · 636 points, 962 paths | All buildings · Floor 1 Detected 214 points · 322 paths · traced from the walkway layer, with corridors inferred inside the building outlines · walkways and outlines read from the shared background map · 113 of 113 stops joined All buildings · Floor 2 Detected 211 points · 320 paths · traced from the walkway layer, with corridors inferred inside the building outlines · walkways and outlines read from the shared background map · 110 of 110 stops joined All buildings · Floor 3 Detected 211 points · 320 paths · traced from the walkway layer, with corridors inferred inside the building outlines · walkways and outlines read from the shared background map · 110 of 110 stops joined"
+    },
+    {
+      "name": "8005 Floor 3 route after All",
+      "ok": true,
+      "detail": "{\"route\":\"814 SVG units along the plan · 19 points 1 floor · shortest path in green This route uses 1 inferred point(s) not reviewed yet. ANIMATE ROUTE Point by point Moves through every hallway point on the path Stop by stop Glides between stops and pauses at each one Play Route Stop Walk on Floor 3 From 130\",\"error\":null}"
+    },
+    {
+      "name": "1618 Hazel Floor 1 image renders, no layer switch",
+      "ok": true,
+      "detail": "{\"svg\":false,\"svgViewBox\":null,\"plotted\":0,\"background\":null,\"image\":{\"src\":\"https://images-pynwheel-cms-v2.s3-accelerate.amazonaws.com/uploads/floorplate/image/2241/1\",\"natural\":\"1412x932\"},\"missing\":null,\"backgroundError\":null,\"layerSwitch\":[],\"toolbarSub\":\"6 of 6 plotted\",\"interFont\":false,\"planBox\":\"width: 715px; height: 472px\"}"
+    },
+    {
+      "name": "1618 Hazel All floorplates: every floorplate kept, nothing detected",
+      "ok": true,
+      "detail": "Existing paths kept · 9 paths auto-connected | 1 · Floor 1 Existing paths kept 20 stored hallway points kept — not overwritten · 9 paths auto-connected on this page 1 · Floor 2 Existing paths kept 7 stored hallway points kept — not overwritten 1 · Floor 3 Existing paths kept 7 stored hallway points kept — not overwritten 1 · Floor 4 Existing pat | 20 POINTS 19 PATHS 11/12 STOPS LINKED → 20 POINTS 28 PATHS 12/12 STOPS LINKED"
+    },
+    {
+      "name": "1618 Hazel route still works",
+      "ok": true,
+      "detail": "{\"route\":\"450 px along the plan · 6 points 1 floor · shortest path in green ANIMATE ROUTE Point by point Moves through every hallway point on the path Stop by stop Glides between stops and pauses at each one Play Route Stop Walk on Floor 1 From Tour start to The Lobby · 450 px Arrive at The Lobby Floor 1\",\"error\":null}"
+    },
+    {
+      "name": "no non-GET requests",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "no page errors",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "no console errors",
+      "ok": true,
+      "detail": ""
+    }
+  ],
+  "planRequests": [
+    {
+      "url": "/api/properties/8005/plan-svg?floorplate=4606",
+      "status": 200,
+      "type": "image/svg+xml; charset=utf-8",
+      "length": "",
+      "body": ""
+    },
+    {
+      "url": "/api/properties/8005/plan-svg?background=1",
+      "status": 200,
+      "type": "image/svg+xml; charset=utf-8",
+      "length": "",
+      "body": ""
+    },
+    {
+      "url": "/api/properties/8005/plan-svg?floorplate=4605",
+      "status": 200,
+      "type": "image/svg+xml; charset=utf-8",
+      "length": "",
+      "body": ""
+    },
+    {
+      "url": "/api/properties/8005/plan-svg?floorplate=4604",
+      "status": 200,
+      "type": "image/svg+xml; charset=utf-8",
+      "length": "",
+      "body": ""
+    }
+  ],
+  "writes": [],
+  "pageErrors": [],
+  "consoleErrors": []
+}

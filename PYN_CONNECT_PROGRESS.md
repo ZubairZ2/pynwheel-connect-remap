@@ -2230,3 +2230,45 @@ route 23 ms, tour-route 66 ms, first SVG read 2.2 s then 44 ms, Play Route 60 fp
 change. Fixed on the way: stale per-property selection leaking into tour requests; the 4,832-row
 picker (capped at 120, current property first). Status moves to **NOT READY pending device validation
 only** (rules 1–10 hold with production evidence; iOS/Android remain the owner's).
+
+## 36. SVG maps, dual-map (Beans) rendering, asset delivery and Auto-Detect on real properties (October 10, 2026)
+
+**Brief:** `cypress_company_issue.md` (Alliance / Cypress Terra 8005, Jennifer Demo FP 1412, John Demo 1411, Hazel 1618 as the reference). **Branch:** `fix/svg_dual_map_asset_delivery_and_hallway_detection` from `main` `2fe6f7d66` (the upstream merge). **Report:** `svg_dual_map_asset_delivery_qa_report.md` (root causes, the production data inspected, the test matrix with real ids, safety).
+
+### What was wrong, and where
+
+| Incident | Root cause | Layer |
+|---|---|---|
+| A — "The floor SVG could not be loaded from the CMS" (Cypress Terra) | `pyn-system` runs on the production database with `S3_BUCKET_NAME=staging-pynwheel`; `Connect::UploadUrl` only tried the bucket a property's own raster `standard_image_url`s named, and an all-SVG Beans property has none, so the wrong bucket's 403 reached the page | Rails resolver |
+| A′/A″ — a floor of polygons on nothing; every unit unplotted | A Beans property's floor SVG is units + amenities only over one shared `communities.background_svg_image`; Connect never drew it. Beans sets `pointer_data` and no `floorplate_id`, which Connect read as "on the sitemap" | Canvas; placement; `plotted_unit_count` |
+| B — images missing | The 8005 rows reference no image at all (0 of 339 units, 12 floor plans, 3 floorplates): data, not delivery | — |
+| C — Jennifer floorplate 5 differs between tabs | A page-wide "open on the SVG" default in Plotting vs. the image in Wayfinding; floorplate 1865 holds a Penrose image with 54 units and an unrelated Boca Raton SVG | Layer selection |
+| D/F — Auto-Detect on Cypress Terra / John Demo | Beans files name the footprint `Building_outline`, and Cypress Terra's walkway (`Path`) and outlines live in the background file the detector never read; John Demo's floorplates all have stored hallways (kept by design) and, once cleared, no interior corridors were inferred | Hallway engine |
+| E — Jennifer floors 1–3 / floor 3 | 3638 is a flattened Figma export with no named layers (nothing to read); 1863 genuinely has no SVG | Data; diagnostics |
+| G — Retry dead | The canvas's pan captured the pointer on `pointerdown`, so the button never got its click; the route answered one generic `failed` | Canvas; route |
+
+### Backend
+
+- `Connect::UploadUrl`: configured bucket → the record's family → the property's hint → **every bucket the database's recent raster uploads name** (`known_buckets`, cached a day); first 2xx copy wins; a check that fails no longer keeps a wrong URL and is remembered for five minutes; zero HEADs when the database names no other bucket (production) and none at all under file storage (development — a first version probed there, timed out on this machine's S3 link and starved Puma during the regression run; caught and fixed the same day). Covers the Connect map, the inventory and the Tour App API's level SVGs.
+- `floorplates.json` meta: `beans_svg`; `plotted_unit_count` counts a pointer-placed unit on the floorplate covering its floor when it has no `floorplate_id`.
+- Tests: `test/serializers/connect/upload_url_test.rb` (11), `test/controllers/floorplates_controller_test.rb` (2). Suite 206 runs / 952 assertions on the first pass; the 1 failure + 3 errors are upstream's `PartnerConfigurationsControllerTest` (fails on `main` too). `db/schema.rb` gains the two columns upstream's migrations add.
+
+### Frontend
+
+- `plan-svg` route: `?background=1`; failure classes (`upstream` + S3 status, `timeout`, `network`, `not-svg`, `missing`, `unauthorized`, `listing`) with the file name and host, never a URL; SVG sniffing. `planLoad.ts` turns them into words; the canvas prints the reason under the message.
+- Canvas: the shared background as an `<img>` of a blob under the floor SVG, placed by the two viewBoxes (`backgroundBox`); a notice + Retry when only the background fails; Inter loaded for Beans files; Retry / Show image buttons stop the pan's `pointerdown`.
+- Layers: `MapLevel.dataSpace` (the frame the stored plotting lives in) → `plotLayer` = user's pick per level ?? dataSpace ?? page default; `wayfindingSpace` follows it unless the stored wayfinding data is on the image; a Floor SVG / Floor image switch in the Plotting toolbar for two-file floorplates.
+- Placement: a pointer-placed unit or amenity with no owner stands on the floorplate covering its floor (`importedLevel`).
+- Engine: `detectSvgStructure(root, background)` (background walkways / footprints / obstacles mapped through the viewBoxes), building outlines as footprints, traced + inferred union beside generically named walkway art (`Path`; a labelled `Walkways` layer is traced alone — POC parity kept), `no-layers` diagnosis, `joined` count; the Detect card says where the paths came from and how many stops they reached.
+
+### Validation (CMS :3100 on `pynwheel_audit_clone` — a migrated production clone with Cypress Terra's unit placements synced from the October 10 production read — Connect :3005 from the scratchpad copy, minted super-admin session, `scratchpad/verify.mjs`)
+
+Cypress Terra: floors 1/2/3 render the SVG over the background with 113/110/110 units on their polygons; Detect (this floorplate) 214 points / 322 paths, 113/113 stops joined, from the background's `Path` plus inferred corridors; route 782 units / 18 points; All floorplates 636 / 962; Floor 3 route 814 / 19; retry round with a broken stored name: 403 reported with file + host, Retry re-requests (1 → 2 → 3) and recovers. Jennifer: floorplate 5 on the image in both modes (switchable to its SVG), floors 1–3 "no named layers", floor 3 "no SVG", floors 4–5 42 / 47 traced with "no stop on the SVG". John Demo floor 2: kept 3 (+1 auto-connected), after Clear 175 / 203 with 43/43 joined, route 1,956 units, Undo back to 3. Hazel: 31 kept, route 450 px. Every run: 0 non-GET requests, 0 page errors. Pure specs: `hallways.spec.ts` +6 (incl. the real exports), 50 pass; `tsc` clean; `next build` OK (map route 49.6 kB). Standing real-data map specs on the development pair (`mapCanvas`, `wayfinding`, `mapPlotting`, `hazel`, 31 tests): 30 pass after the resolver fix, the merge repair and the layer-default spec updates; the one left is Hazel's stale "Boardroom · In Stops List" expectation (its only stop is on a visitor's tour).
+
+### Merge fallout repaired in passing
+
+The upstream merge of October 10 (`0e3dfa5bb`, the data-driven partner registry) removed `Community::MAP_PARTNERS`, which `Connect::PropertyDetailSerializer#partners` still named: Property Detail (`communities/:id/edit.json`) answered 500 on `main`. One method now reads `Partner.registry`. The standing real-data specs also learned the new layer default (`mapCanvas`, `mapPlotting`, `hazel` pick "Floor SVG" on a two-file floorplate); Hazel's "Boardroom · In Stops List" expectation is stale in the development dump (its only stop belongs to a visitor's tour), reported, not changed.
+
+### Remaining
+
+Jennifer 3638 (flattened export) and 1865 (another site's SVG) are data problems; inferred breezeways in garden-style buildings are proposals to review; raster-only floorplates still cannot be detected; the `pyn-system` bucket / production-database mismatch is an environment matter the resolver now tolerates. Gaps M20, M23 updated and M25–M27 added in `gaps_map_plotting_feature.md`.

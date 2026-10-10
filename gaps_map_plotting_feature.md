@@ -586,3 +586,54 @@ The backend the gaps below asked for exists now. Status per gap:
 - **M24 Bridges removed by hand, re-detecting a stored floorplate** — resolved: `hallway_attachments` (`detached`, or `explicit` with an optional anchor) and the detect rules above.
 
 Still gaps: M2, M3 (uploads), M4 / M12 (auto-plot), M7, M8, M11, M13, M19, M22, M23.
+
+## Update — October 10, 2026 (SVG maps, dual-map rendering, asset delivery and Auto-Detect on real properties; PYN_CONNECT_PROGRESS.md §36, `svg_dual_map_asset_delivery_qa_report.md`)
+
+- **M20 SVG vs image frame** — unchanged in substance, but the *choice* of frame is now data-driven: a two-file floorplate opens on the frame its stored plotting lives in (`MapLevel.dataSpace`), the user's pick is remembered per level (Floor SVG / Floor image switch), and Wayfinding follows the same layer unless the stored wayfinding data is on the image. Jennifer Demo FP floorplate 5 (a Penrose image with 54 units beside another site's SVG) no longer shows two different maps across the tabs.
+- **M23 No floor SVG has a walkway layer** — narrowed: the production exports do carry walkable art, just not where the POC looked. Beans / Figma properties keep the sidewalk as a stroked `Path` and the building footprints as `Building_outline` in the **shared background file** (`communities.background_svg_image`), and some per-floor exports carry `walkway` / `Walkways`. The detector now reads the floor file and the background together, takes building outlines as footprints, and joins traced walkways with corridors inferred inside the outlines when the walkway art is generically named. Still true for the old CMS floor files (Illustrator exports with `Footprints` and no walkway): inference only.
+
+New gaps:
+
+## Gap: M25. Flattened SVG exports (no named layers)
+
+### Requirement
+Plot units onto, and detect hallways from, a floor SVG.
+
+### Existing DB Data
+Jennifer Demo FP floorplate 3638 (`1350_N_Wells_St__Chicago__IL.svg`, range 1–3): 882 paths, 108 ids all `pattern` / `filter` / `clip` / `image` — no `Units`, no outlines, no walkway, no polygon with an id.
+
+### What Can Be Implemented in Next.js Today
+The file renders; Detect answers "the SVG has no named layers (a flattened export)"; nothing can be plotted on it (no polygon ids).
+
+### What Cannot Be Implemented
+Reading walkways, footprints, rooms or plot targets from a file that names none of them.
+
+### Future Requirement
+Re-export with layer names (Units / Amenities, Building outlines or Footprints, Walkways), or the Beans pipeline's `*_noBG.svg` + background pair.
+
+## Gap: M26. A floor SVG that belongs to another property
+
+### Existing DB Data
+Jennifer Demo FP floorplate 1865 (floor 5) carries `5400_Broken_Sound_NW_Blvd__Boca_Raton__FL.svg`, a whole-property Beans export (every floor in one file, a `Walkways` layer) of another site, beside its Penrose-on-Mass floor image.
+
+### What Can Be Implemented in Next.js Today
+The page opens the floorplate on the image, where its 54 units are plotted, and says so; the SVG stays available behind the layer switch.
+
+### Future Requirement
+Remove or replace the upload in the CMS; Connect cannot tell a wrong file from a right one.
+
+## Gap: M27. Units placed on the SVG by a map import, with no floorplate
+
+### Existing DB Data
+Beans writes `units.pointer_data` (polygon id, tag, x/y) and never `floorplate_id`; Cypress Terra's 333 placed units are on floors 1–3 with no floorplate, and 6 units on floor 0 have no placement and no floorplate at all.
+
+### What Can Be Implemented in Next.js Today
+A pointer-placed unit stands on the floorplate covering its floor (the only one it can be on), and counts as plotted there (`plotted_unit_count`). The 6 floor-0 units are listed as unplotted.
+
+### Why It Requires Backend Persistence/Business Logic
+A unit's floorplate is a column the importer leaves empty; a floor covered by two floorplates (two buildings) would be ambiguous.
+
+### Future Requirement
+The Beans importer (or `api/v2/community_property_map`) setting `floorplate_id` from the floor it places a unit on, as the legacy plotting page does.
+
+Still gaps: M2, M3 (uploads), M4 / M12 (auto-plot), M7, M8, M11, M13, M19, M22, M23 (for the old Illustrator files), M25–M27.

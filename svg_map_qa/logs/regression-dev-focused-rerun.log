@@ -1,0 +1,100 @@
+
+Running 10 tests using 1 worker
+
+[1/10] [chrome] › tests/e2e/hazel.spec.ts:186:7 › Hazel (real data) › Property Detail shows the Hazel record: identity, address, contacts, configuration
+[2/10] [chrome] › tests/e2e/hazel.spec.ts:226:7 › Hazel (real data) › Amenities: the real cards, search, filters, the Edit dialog with its gallery, and the image viewer
+  1) [chrome] › tests/e2e/hazel.spec.ts:226:7 › Hazel (real data) › Amenities: the real cards, search, filters, the Edit dialog with its gallery, and the image viewer 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('.bo-record').filter({ hasText: 'Boardroom' })
+    Expected substring: "In Stops List"
+    Received string:    "Loading image…BoardroomConference RoomPlottedHidden from StopsBuilding1FloorFloor 31Lock ProviderPynwheel AccessVideoNoneGalleryEmptyDescriptionDirectional TextVideo"
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "toContainText" locator('.bo-record').filter({ hasText: 'Boardroom' }) with timeout 5000ms
+      - waiting for locator('.bo-record').filter({ hasText: 'Boardroom' })
+        14 × locator resolved to <article class="bo-record">…</article>
+           - unexpected value "Loading image…BoardroomConference RoomPlottedHidden from StopsBuilding1FloorFloor 31Lock ProviderPynwheel AccessVideoNoneGalleryEmptyDescriptionDirectional TextVideo"
+
+
+      239 |     await expect(boardroom).toContainText('Conference Room');
+      240 |     await expect(boardroom).toContainText('Plotted');
+    > 241 |     await expect(boardroom).toContainText('In Stops List');
+          |                             ^
+      242 |     await expect(boardroom).toContainText('Floor 31');
+      243 |     await expect(boardroom).toContainText('Pynwheel Access');
+      244 |     await expect(boardroom).toContainText('None');
+        at /Users/zubairzulifqar/pynwheel-staging/pyn-connect-web/tests/e2e/hazel.spec.ts:241:29
+
+    Error Context: test-results/hazel-Hazel-real-data-Amen-8f5db-allery-and-the-image-viewer-chrome/error-context.md
+
+
+[3/10] [chrome] › tests/e2e/hazel.spec.ts:484:7 › Hazel (real data) › Map & Plotting: the canvas shows the loading state while a floor SVG streams
+[4/10] [chrome] › tests/e2e/hazel.spec.ts:580:7 › Hazel (real data) › Navigation: Properties → Property Detail → Inventory → Amenities → Map & Plotting ↔ Tour Setup
+[5/10] [chrome] › tests/e2e/mapCanvas.spec.ts:336:7 › Map & Plotting canvas (real data) › Floor SVG: polygons are named by the SVG’s own text, amenity layers are plottable, generated ids never show, artwork text stays
+  2) [chrome] › tests/e2e/mapCanvas.spec.ts:336:7 › Map & Plotting canvas (real data) › Floor SVG: polygons are named by the SVG’s own text, amenity layers are plottable, generated ids never show, artwork text stays 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Array [
+        "0.322",
+    -   "0.263",
+    +   "0.262",
+      ]
+
+    Call Log:
+    - Timeout 5000ms exceeded while waiting on the predicate
+
+      439 |     expect(await relativeTo(svg.locator('text[id="102_2"]'), plan(page))).toEqual(textBefore);
+      440 |     await page.setViewportSize({ width: 1100, height: 900 });
+    > 441 |     await expect.poll(() => relativeTo(svg.locator('text[id="102_2"]'), plan(page))).toEqual(textBefore);
+          |                                                                                      ^
+      442 |     await page.setViewportSize({ width: 1440, height: 960 });
+      443 |     await leavePlan();
+      444 |     await expect(page.locator('.bo-map__polylabel')).toHaveCount(0);
+        at /Users/zubairzulifqar/pynwheel-staging/pyn-connect-web/tests/e2e/mapCanvas.spec.ts:441:86
+
+    Error Context: test-results/mapCanvas-Map-Plotting-can-cfbf1-ver-show-artwork-text-stays-chrome/error-context.md
+
+
+[6/10] [chrome] › tests/e2e/mapCanvas.spec.ts:461:7 › Map & Plotting canvas (real data) › Floor SVG: a real floor file mounts with its polygons and the stored placements fill them, nothing else drawn on top
+[7/10] [chrome] › tests/e2e/mapPlotting.spec.ts:73:7 › Map & Plotting (real data) › plots onto the real floor SVG polygons and runs the Auto Plot wizard read-only
+  3) [chrome] › tests/e2e/mapPlotting.spec.ts:73:7 › Map & Plotting (real data) › plots onto the real floor SVG polygons and runs the Auto Plot wizard read-only 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByTestId('plan-svg')
+    Expected: visible
+    Timeout: 120000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByTestId('plan-svg') with timeout 120000ms
+      - waiting for getByTestId('plan-svg')
+
+
+      89 |     // The real floor SVG mounts with its polygons.
+      90 |     const svgLayer = page.getByTestId('plan-svg');
+    > 91 |     await expect(svgLayer).toBeVisible({ timeout: 120_000 });
+         |                            ^
+      92 |     await expect(svgLayer.locator('svg')).toHaveCount(1, { timeout: 120_000 });
+      93 |     const polygonCount = await svgLayer.locator('polygon[id], path[id], rect[id]').count();
+      94 |     expect(polygonCount).toBeGreaterThan(0);
+        at /Users/zubairzulifqar/pynwheel-staging/pyn-connect-web/tests/e2e/mapPlotting.spec.ts:91:28
+
+    Error Context: test-results/mapPlotting-Map-Plotting-r-844a1--Auto-Plot-wizard-read-only-chrome/error-context.md
+
+
+[8/10] [chrome] › tests/e2e/wayfinding.spec.ts:161:7 › Map & Plotting · Wayfinding (real data) › single floor: the points and paths are the stored hallways; selection, a local drag and Escape
+[9/10] [chrome] › tests/e2e/wayfinding.spec.ts:370:7 › Map & Plotting · Wayfinding (real data) › default editing (no tool): drag, double-click to delete, click to add, drag a path to bend it, double-click a path, Ctrl/Cmd+Z; a tool overrides them
+[10/10] [chrome] › tests/e2e/wayfinding.spec.ts:450:7 › Map & Plotting · Wayfinding (real data) › Find Shortest Path on a detected floor follows the detected corridors; a floorplate with only floor images has nothing to detect
+  3 failed
+    [chrome] › tests/e2e/hazel.spec.ts:226:7 › Hazel (real data) › Amenities: the real cards, search, filters, the Edit dialog with its gallery, and the image viewer 
+    [chrome] › tests/e2e/mapCanvas.spec.ts:336:7 › Map & Plotting canvas (real data) › Floor SVG: polygons are named by the SVG’s own text, amenity layers are plottable, generated ids never show, artwork text stays 
+    [chrome] › tests/e2e/mapPlotting.spec.ts:73:7 › Map & Plotting (real data) › plots onto the real floor SVG polygons and runs the Auto Plot wizard read-only 
+  7 passed (4.8m)

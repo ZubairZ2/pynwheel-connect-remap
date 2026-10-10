@@ -1,0 +1,461 @@
+
+Running 31 tests using 2 workers
+
+[1/31] [chrome] › tests/e2e/hazel.spec.ts:186:7 › Hazel (real data) › Property Detail shows the Hazel record: identity, address, contacts, configuration
+[2/31] [chrome] › tests/e2e/hazel.spec.ts:463:7 › Hazel (real data) › Map & Plotting: 3 floorplates fit without scrolling, 19 scroll
+  1) [chrome] › tests/e2e/hazel.spec.ts:186:7 › Hazel (real data) › Property Detail shows the Hazel record: identity, address, contacts, configuration 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: 'Hazel', level: 2 })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('heading', { name: 'Hazel', level: 2 }) with timeout 5000ms
+      - waiting for getByRole('heading', { name: 'Hazel', level: 2 })
+
+
+      190 |     await hydrated(page);
+      191 |
+    > 192 |     await expect(page.getByRole('heading', { level: 2, name: 'Hazel' })).toBeVisible();
+          |                                                                          ^
+      193 |     await expect(page.getByText(`${facts.company} · Burnaby, BC · ${facts.units} units`)).toBeVisible();
+      194 |     await expect(page.getByText('4733 Hazel St')).toBeVisible();
+      195 |     await expect(page.getByText('Burnaby, BC V5H 0J7')).toBeVisible();
+        at /Users/zubairzulifqar/pynwheel-staging/pyn-connect-web/tests/e2e/hazel.spec.ts:192:74
+
+    Error Context: test-results/hazel-Hazel-real-data-Prop-d160e-ress-contacts-configuration-chrome/error-context.md
+
+
+[3/31] [chrome] › tests/e2e/hazel.spec.ts:211:7 › Hazel (real data) › Inventory carries the counts of every listing
+[4/31] [chrome] › tests/e2e/hazel.spec.ts:226:7 › Hazel (real data) › Amenities: the real cards, search, filters, the Edit dialog with its gallery, and the image viewer
+[5/31] [chrome] › tests/e2e/hazel.spec.ts:484:7 › Hazel (real data) › Map & Plotting: the canvas shows the loading state while a floor SVG streams
+  2) [chrome] › tests/e2e/hazel.spec.ts:226:7 › Hazel (real data) › Amenities: the real cards, search, filters, the Edit dialog with its gallery, and the image viewer 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('.bo-record').filter({ hasText: 'Boardroom' })
+    Expected substring: "In Stops List"
+    Received string:    "Loading image…BoardroomConference RoomPlottedHidden from StopsBuilding1FloorFloor 31Lock ProviderPynwheel AccessVideoNoneGalleryEmptyDescriptionDirectional TextVideo"
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "toContainText" locator('.bo-record').filter({ hasText: 'Boardroom' }) with timeout 5000ms
+      - waiting for locator('.bo-record').filter({ hasText: 'Boardroom' })
+        14 × locator resolved to <article class="bo-record">…</article>
+           - unexpected value "Loading image…BoardroomConference RoomPlottedHidden from StopsBuilding1FloorFloor 31Lock ProviderPynwheel AccessVideoNoneGalleryEmptyDescriptionDirectional TextVideo"
+
+
+      239 |     await expect(boardroom).toContainText('Conference Room');
+      240 |     await expect(boardroom).toContainText('Plotted');
+    > 241 |     await expect(boardroom).toContainText('In Stops List');
+          |                             ^
+      242 |     await expect(boardroom).toContainText('Floor 31');
+      243 |     await expect(boardroom).toContainText('Pynwheel Access');
+      244 |     await expect(boardroom).toContainText('None');
+        at /Users/zubairzulifqar/pynwheel-staging/pyn-connect-web/tests/e2e/hazel.spec.ts:241:29
+
+    Error Context: test-results/hazel-Hazel-real-data-Amen-8f5db-allery-and-the-image-viewer-chrome/error-context.md
+
+
+[6/31] [chrome] › tests/e2e/hazel.spec.ts:335:7 › Hazel (real data) › Amenity image viewer: a loading state while the file streams, and the failure text only when the request fails
+[7/31] [chrome] › tests/e2e/hazel.spec.ts:384:7 › Hazel (real data) › Map & Plotting: one horizontal floorplate strip with working arrows, boundaries and selection over 31 floorplates
+[8/31] [chrome] › tests/e2e/hazel.spec.ts:444:7 › Hazel (real data) › Map & Plotting: a deep link lands on its floorplate, in view, near the middle or at the end
+[9/31] [chrome] › tests/e2e/mapCanvas.spec.ts:109:7 › Map & Plotting canvas (real data) › Manual Plot: OFF, OFF + hover, ON, ON + hover and focus each read; the ON text never loses contrast
+  3) [chrome] › tests/e2e/hazel.spec.ts:484:7 › Hazel (real data) › Map & Plotting: the canvas shows the loading state while a floor SVG streams 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('.bo-map__plan .bo-loading--cover')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('.bo-map__plan .bo-loading--cover') with timeout 5000ms
+      - waiting for locator('.bo-map__plan .bo-loading--cover')
+
+
+      495 |     await hydrated(page, '.bo-map__tool');
+      496 |     const cover = page.locator('.bo-map__plan .bo-loading--cover');
+    > 497 |     await expect(cover).toBeVisible();
+          |                         ^
+      498 |     await expect(cover).toContainText('Loading the floor SVG…');
+      499 |     await expect(page.getByTestId('plan-svg').locator('svg')).toHaveCount(1, { timeout: 120_000 });
+      500 |     await expect(cover).toHaveCount(0);
+        at /Users/zubairzulifqar/pynwheel-staging/pyn-connect-web/tests/e2e/hazel.spec.ts:497:25
+
+    Error Context: test-results/hazel-Hazel-real-data-Map--bf6db-e-while-a-floor-SVG-streams-chrome/error-context.md
+
+
+[10/31] [chrome] › tests/e2e/hazel.spec.ts:504:7 › Hazel (real data) › Tour Setup: the real stops, the Edit Tour Stop dialog, elevators and routing, all local
+[11/31] [chrome] › tests/e2e/hazel.spec.ts:577:7 › Hazel (real data) › Navigation: Properties → Property Detail → Inventory → Amenities → Map & Plotting ↔ Tour Setup
+[12/31] [chrome] › tests/e2e/mapCanvas.spec.ts:159:7 › Map & Plotting canvas (real data) › Zoom: + and − step by 1.3 about the centre, stop at the limits, Reset restores the fitted plan, floors open fitted
+[13/31] [chrome] › tests/e2e/mapCanvas.spec.ts:216:7 › Map & Plotting canvas (real data) › Zoom: the wheel zooms about the pointer without scrolling the page, and dragging the canvas pans it
+[14/31] [chrome] › tests/e2e/mapCanvas.spec.ts:257:7 › Map & Plotting canvas (real data) › Floor image: the legacy markers in the theme colours, the door plus, the hallway nodes and 1px paths, no coordinate text
+[15/31] [chrome] › tests/e2e/mapCanvas.spec.ts:326:7 › Map & Plotting canvas (real data) › Floor SVG: polygons are named by the SVG’s own text, amenity layers are plottable, generated ids never show, artwork text stays
+  4) [chrome] › tests/e2e/mapCanvas.spec.ts:326:7 › Map & Plotting canvas (real data) › Floor SVG: polygons are named by the SVG’s own text, amenity layers are plottable, generated ids never show, artwork text stays 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  getByTestId('plan-svg').locator('svg')
+    Expected: 1
+    Received: 0
+
+    Call log:
+      - Expect "toHaveCount" getByTestId('plan-svg').locator('svg') with timeout 60000ms
+      - waiting for getByTestId('plan-svg').locator('svg')
+        48 × locator resolved to 0 elements
+           - unexpected value "0"
+      - Test timeout of 30000ms exceeded.
+
+
+      336 |     await hydrated(page);
+      337 |     const svg = page.getByTestId('plan-svg');
+    > 338 |     await expect(svg.locator('svg')).toHaveCount(1, { timeout: 60_000 });
+          |                                      ^
+      339 |
+      340 |     // The SVG's own text is the label: the room numbers, the amenity names, the artwork.
+      341 |     await expect(svg.locator('text')).toHaveCount(7);
+        at /Users/zubairzulifqar/pynwheel-staging/pyn-connect-web/tests/e2e/mapCanvas.spec.ts:338:38
+
+    Error Context: test-results/mapCanvas-Map-Plotting-can-cfbf1-ver-show-artwork-text-stays-chrome/error-context.md
+
+
+[16/31] [chrome] › tests/e2e/mapCanvas.spec.ts:450:7 › Map & Plotting canvas (real data) › Floor SVG: a real floor file mounts with its polygons and the stored placements fill them, nothing else drawn on top
+  5) [chrome] › tests/e2e/mapCanvas.spec.ts:450:7 › Map & Plotting canvas (real data) › Floor SVG: a real floor file mounts with its polygons and the stored placements fill them, nothing else drawn on top 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  getByTestId('plan-svg').locator('svg')
+    Expected: 1
+    Received: 0
+    Timeout:  120000ms
+
+    Call log:
+      - Expect "toHaveCount" getByTestId('plan-svg').locator('svg') with timeout 120000ms
+      - waiting for getByTestId('plan-svg').locator('svg')
+        241 × locator resolved to 0 elements
+            - unexpected value "0"
+
+
+      460 |     await hydrated(page);
+      461 |     const svg = page.getByTestId('plan-svg');
+    > 462 |     await expect(svg.locator('svg')).toHaveCount(1, { timeout: 120_000 });
+          |                                      ^
+      463 |     expect(await svg.locator('polygon[id], path[id], rect[id]').count()).toBeGreaterThan(0);
+      464 |     // Each stored pointer fills one shape; no marker sits on a filled polygon; the file's own text is untouched.
+      465 |     await expect(page.locator('[data-plotted]')).toHaveCount(pointers.length, { timeout: 30_000 });
+        at /Users/zubairzulifqar/pynwheel-staging/pyn-connect-web/tests/e2e/mapCanvas.spec.ts:462:38
+
+    Error Context: test-results/mapCanvas-Map-Plotting-can-bd7a7-m-nothing-else-drawn-on-top-chrome/error-context.md
+
+
+[17/31] [chrome] › tests/e2e/mapPlotting.spec.ts:71:7 › Map & Plotting (real data) › plots onto the real floor SVG polygons and runs the Auto Plot wizard read-only
+  6) [chrome] › tests/e2e/hazel.spec.ts:577:7 › Hazel (real data) › Navigation: Properties → Property Detail → Inventory → Amenities → Map & Plotting ↔ Tour Setup 
+
+    Test timeout of 180000ms exceeded.
+
+    Error: locator.click: Test timeout of 180000ms exceeded.
+    Call log:
+      - waiting for getByRole('link', { name: 'Inventory', exact: true }).first()
+
+
+      585 |     await expect(page).toHaveURL(new RegExp(`/properties/${HAZEL}$`));
+      586 |     await hydrated(page);
+    > 587 |     await page.getByRole('link', { name: 'Inventory', exact: true }).first().click();
+          |                                                                              ^
+      588 |     await expect(page).toHaveURL(new RegExp(`/properties/${HAZEL}/inventory`));
+      589 |     await hydrated(page, '.bo-inv__tab');
+      590 |     await page.getByRole('tab', { name: /^Amenities/ }).click();
+        at /Users/zubairzulifqar/pynwheel-staging/pyn-connect-web/tests/e2e/hazel.spec.ts:587:78
+
+    Error Context: test-results/hazel-Hazel-real-data-Navi-f0209-→-Map-Plotting-↔-Tour-Setup-chrome/error-context.md
+
+
+[18/31] [chrome] › tests/e2e/hazel.spec.ts:610:7 › Hazel (real data) › Loading: the shared indicator dims the whole screen from its exact centre while a slow route resolves, then leaves
+  7) [chrome] › tests/e2e/mapPlotting.spec.ts:71:7 › Map & Plotting (real data) › plots onto the real floor SVG polygons and runs the Auto Plot wizard read-only 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: locator('.bo-map__toolbar').getByRole('button')
+    Timeout: 5000ms
+    - Expected  - 2
+    + Received  + 4
+
+      Array [
+    -   /^Auto Plot/,
+    -   /^Manual Plot/,
+    +   "Floor SVG",
+    +   "Background image",
+    +   "Auto Plot",
+    +   "Manual PlotOff",
+      ]
+
+    Call log:
+      - Expect "toHaveText" locator('.bo-map__toolbar').getByRole('button') with timeout 5000ms
+      - waiting for locator('.bo-map__toolbar').getByRole('button')
+        14 × locator resolved to 4 elements
+
+
+      58 |   const expectDesignLayout = async (page: Page) => {
+      59 |     const toolbar = page.locator('.bo-map__toolbar');
+    > 60 |     await expect(toolbar.getByRole('button')).toHaveText([/^Auto Plot/, /^Manual Plot/]);
+         |                                               ^
+      61 |     await expect(toolbar).toContainText(/\d+ of \d+ plotted/);
+      62 |     await expect(page.locator('.bo-map__side > *')).toHaveCount(1);
+      63 |     for (const gone of ['Publish', 'Grid', 'Place Pin', 'Junction', 'Connect', 'Move', 'Start Plotting Hallways', 'Upload SVG', 'Upload Image', 'Remove Plan', 'Run Algorithm (Animated)']) {
+        at expectDesignLayout (/Users/zubairzulifqar/pynwheel-staging/pyn-connect-web/tests/e2e/mapPlotting.spec.ts:60:47)
+        at /Users/zubairzulifqar/pynwheel-staging/pyn-connect-web/tests/e2e/mapPlotting.spec.ts:85:11
+
+    Error Context: test-results/mapPlotting-Map-Plotting-r-844a1--Auto-Plot-wizard-read-only-chrome/error-context.md
+
+
+[19/31] [chrome] › tests/e2e/mapPlotting.spec.ts:171:7 › Map & Plotting (real data) › draws the stored pins and pathway graph on a floor image, and Manual Plot drops a pin on it
+[20/31] [chrome] › tests/e2e/hazel.spec.ts:653:7 › Hazel (real data) › Hydration: Hazel’s screens render the same on the server and in a clean browser
+[21/31] [chrome] › tests/e2e/mapPlotting.spec.ts:202:7 › Map & Plotting (real data) › an unknown property id shows not found
+[22/31] [chrome] › tests/e2e/wayfinding.spec.ts:119:7 › Map & Plotting · Wayfinding (real data) › the toggle: Plotting keeps the plotting UI, Wayfinding switches toolbar and panel on the same canvas
+  8) [chrome] › tests/e2e/mapPlotting.spec.ts:202:7 › Map & Plotting (real data) › an unknown property id shows not found 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.goto: Test timeout of 30000ms exceeded.
+    Call log:
+      - navigating to "http://127.0.0.1:3005/properties/999999999/map", waiting until "load"
+
+
+      202 |   test('an unknown property id shows not found', async ({ page }) => {
+      203 |     await signIn(page);
+    > 204 |     await page.goto('/properties/999999999/map');
+          |                ^
+      205 |     await expect(page.getByText('Property not found')).toBeVisible();
+      206 |   });
+      207 | });
+        at /Users/zubairzulifqar/pynwheel-staging/pyn-connect-web/tests/e2e/mapPlotting.spec.ts:204:16
+
+    Error Context: test-results/mapPlotting-Map-Plotting-r-dbab1-property-id-shows-not-found-chrome/error-context.md
+
+
+[23/31] [chrome] › tests/e2e/wayfinding.spec.ts:161:7 › Map & Plotting · Wayfinding (real data) › single floor: the points and paths are the stored hallways; selection, a local drag and Escape
+  9) [chrome] › tests/e2e/wayfinding.spec.ts:119:7 › Map & Plotting · Wayfinding (real data) › the toggle: Plotting keeps the plotting UI, Wayfinding switches toolbar and panel on the same canvas 
+
+    Test timeout of 240000ms exceeded.
+
+    Error: page.goto: Test timeout of 240000ms exceeded.
+    Call log:
+      - navigating to "http://127.0.0.1:3005/properties/2919/map", waiting until "load"
+
+
+      92 |   const openMap = async (page: Page, id: string) => {
+      93 |     await signIn(page);
+    > 94 |     await page.goto(`/properties/${id}/map`);
+         |                ^
+      95 |     await hydrated(page);
+      96 |   };
+      97 |   const wayfinding = (page: Page) => page.getByTestId('wayfinding-panel');
+        at openMap (/Users/zubairzulifqar/pynwheel-staging/pyn-connect-web/tests/e2e/wayfinding.spec.ts:94:16)
+        at /Users/zubairzulifqar/pynwheel-staging/pyn-connect-web/tests/e2e/wayfinding.spec.ts:121:5
+
+    Error Context: test-results/wayfinding-Map-Plotting-·--1332d-nd-panel-on-the-same-canvas-chrome/error-context.md
+
+
+[24/31] [chrome] › tests/e2e/wayfinding.spec.ts:195:7 › Map & Plotting · Wayfinding (real data) › stacked floorplate: Range groups the floors, paths are shared, each floor links its own units
+  10) [chrome] › tests/e2e/wayfinding.spec.ts:161:7 › Map & Plotting · Wayfinding (real data) › single floor: the points and paths are the stored hallways; selection, a local drag and Escape 
+
+    Test timeout of 240000ms exceeded.
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  getByTestId('wf-point')
+    Expected: 80
+    Received: 0
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" getByTestId('wf-point') with timeout 5000ms
+      - waiting for getByTestId('wf-point')
+        7 × locator resolved to 0 elements
+          - unexpected value "0"
+
+
+      169 |     await expect(page.getByTestId('wf-stack')).toHaveCount(0);
+      170 |     expect(await counts(page)).toMatchObject({ points: target.points, paths: target.paths });
+    > 171 |     await expect(page.getByTestId('wf-point')).toHaveCount(target.points);
+          |                                                ^
+      172 |
+      173 |     // Select a point: the card names it with its connections; Escape lets go.
+      174 |     const point = page.getByTestId('wf-point').nth(Math.floor(target.points / 2));
+        at /Users/zubairzulifqar/pynwheel-staging/pyn-connect-web/tests/e2e/wayfinding.spec.ts:171:48
+
+    Error Context: test-results/wayfinding-Map-Plotting-·--7bcf6-ion-a-local-drag-and-Escape-chrome/error-context.md
+
+
+[25/31] [chrome] › tests/e2e/wayfinding.spec.ts:231:7 › Map & Plotting · Wayfinding (real data) › Test shortest path: This Floor, Floors (through a real elevator), sample, swap, invalid and picker
+  11) [chrome] › tests/e2e/wayfinding.spec.ts:195:7 › Map & Plotting · Wayfinding (real data) › stacked floorplate: Range groups the floors, paths are shared, each floor links its own units 
+
+    Test timeout of 240000ms exceeded.
+
+    Error: page.goto: Test timeout of 240000ms exceeded.
+    Call log:
+      - navigating to "http://127.0.0.1:3005/properties/1839/map", waiting until "load"
+
+
+      92 |   const openMap = async (page: Page, id: string) => {
+      93 |     await signIn(page);
+    > 94 |     await page.goto(`/properties/${id}/map`);
+         |                ^
+      95 |     await hydrated(page);
+      96 |   };
+      97 |   const wayfinding = (page: Page) => page.getByTestId('wayfinding-panel');
+        at openMap (/Users/zubairzulifqar/pynwheel-staging/pyn-connect-web/tests/e2e/wayfinding.spec.ts:94:16)
+        at /Users/zubairzulifqar/pynwheel-staging/pyn-connect-web/tests/e2e/wayfinding.spec.ts:201:5
+
+    Error Context: test-results/wayfinding-Map-Plotting-·--04c2c-h-floor-links-its-own-units-chrome/error-context.md
+
+
+[26/31] [chrome] › tests/e2e/wayfinding.spec.ts:319:7 › Map & Plotting · Wayfinding (real data) › Detect Hallways · All floorplates: floorplates with stored paths keep them (auto-connected only), the rest are read from their floor SVG; Undo restores
+  12) [chrome] › tests/e2e/wayfinding.spec.ts:319:7 › Map & Plotting · Wayfinding (real data) › Detect Hallways · All floorplates: floorplates with stored paths keep them (auto-connected only), the rest are read from their floor SVG; Undo restores 
+
+    Test timeout of 240000ms exceeded.
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.bo-wf__detect--running')
+    Expected: 0
+    Received: 1
+    Timeout:  180000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.bo-wf__detect--running') with timeout 180000ms
+      - waiting for locator('.bo-wf__detect--running')
+        11 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      274 |     await page.getByRole('menuitem', { name: option }).click();
+      275 |     await expect(page.getByTestId('wf-detect')).toBeVisible();
+    > 276 |     await expect(page.locator('.bo-wf__detect--running')).toHaveCount(0, { timeout: 180_000 });
+          |                                                           ^
+      277 |   };
+      278 |   /** The point under a spot that is really on top there (a dense floor overlaps points). */
+      279 |   const topPoint = (page: Page) =>
+        at detect (/Users/zubairzulifqar/pynwheel-staging/pyn-connect-web/tests/e2e/wayfinding.spec.ts:276:59)
+        at /Users/zubairzulifqar/pynwheel-staging/pyn-connect-web/tests/e2e/wayfinding.spec.ts:330:5
+
+    Error Context: test-results/wayfinding-Map-Plotting-·--61f1d-eir-floor-SVG-Undo-restores-chrome/error-context.md
+
+
+[27/31] [chrome] › tests/e2e/wayfinding.spec.ts:370:7 › Map & Plotting · Wayfinding (real data) › default editing (no tool): drag, double-click to delete, click to add, drag a path to bend it, double-click a path, Ctrl/Cmd+Z; a tool overrides them
+  13) [chrome] › tests/e2e/wayfinding.spec.ts:231:7 › Map & Plotting · Wayfinding (real data) › Test shortest path: This Floor, Floors (through a real elevator), sample, swap, invalid and picker 
+
+    Test timeout of 240000ms exceeded.
+
+    Error: page.goto: Test timeout of 240000ms exceeded.
+    Call log:
+      - navigating to "http://127.0.0.1:3005/properties/1839/map", waiting until "load"
+
+
+      92 |   const openMap = async (page: Page, id: string) => {
+      93 |     await signIn(page);
+    > 94 |     await page.goto(`/properties/${id}/map`);
+         |                ^
+      95 |     await hydrated(page);
+      96 |   };
+      97 |   const wayfinding = (page: Page) => page.getByTestId('wayfinding-panel');
+        at openMap (/Users/zubairzulifqar/pynwheel-staging/pyn-connect-web/tests/e2e/wayfinding.spec.ts:94:16)
+        at /Users/zubairzulifqar/pynwheel-staging/pyn-connect-web/tests/e2e/wayfinding.spec.ts:233:5
+
+    Error Context: test-results/wayfinding-Map-Plotting-·--66e60-ple-swap-invalid-and-picker-chrome/error-context.md
+
+
+[28/31] [chrome] › tests/e2e/wayfinding.spec.ts:450:7 › Map & Plotting · Wayfinding (real data) › Find Shortest Path on a detected floor follows the detected corridors; a floorplate with only floor images has nothing to detect
+  14) [chrome] › tests/e2e/wayfinding.spec.ts:450:7 › Map & Plotting · Wayfinding (real data) › Find Shortest Path on a detected floor follows the detected corridors; a floorplate with only floor images has nothing to detect 
+
+    Test timeout of 240000ms exceeded.
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.bo-wf__detect--running')
+    Expected: 0
+    Received: 1
+    Timeout:  180000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.bo-wf__detect--running') with timeout 180000ms
+      - waiting for locator('.bo-wf__detect--running')
+        24 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      274 |     await page.getByRole('menuitem', { name: option }).click();
+      275 |     await expect(page.getByTestId('wf-detect')).toBeVisible();
+    > 276 |     await expect(page.locator('.bo-wf__detect--running')).toHaveCount(0, { timeout: 180_000 });
+          |                                                           ^
+      277 |   };
+      278 |   /** The point under a spot that is really on top there (a dense floor overlaps points). */
+      279 |   const topPoint = (page: Page) =>
+        at detect (/Users/zubairzulifqar/pynwheel-staging/pyn-connect-web/tests/e2e/wayfinding.spec.ts:276:59)
+        at /Users/zubairzulifqar/pynwheel-staging/pyn-connect-web/tests/e2e/wayfinding.spec.ts:459:5
+
+    Error Context: test-results/wayfinding-Map-Plotting-·--03488-mages-has-nothing-to-detect-chrome/error-context.md
+
+
+  15) [chrome] › tests/e2e/wayfinding.spec.ts:370:7 › Map & Plotting · Wayfinding (real data) › default editing (no tool): drag, double-click to delete, click to add, drag a path to bend it, double-click a path, Ctrl/Cmd+Z; a tool overrides them 
+
+    Test timeout of 240000ms exceeded.
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  getByTestId('plan-svg').locator('svg')
+    Expected: 1
+    Received: 0
+    Timeout:  120000ms
+
+    Call log:
+      - Expect "toHaveCount" getByTestId('plan-svg').locator('svg') with timeout 120000ms
+      - waiting for getByTestId('plan-svg').locator('svg')
+        29 × locator resolved to 0 elements
+           - unexpected value "0"
+
+
+      375 |     await page.getByRole('tab', { name: 'Wayfinding' }).click();
+      376 |     await levelTab(page, new RegExp(`Floor ${target.floors[0]}\\b`)).first().click();
+    > 377 |     await expect(page.getByTestId('plan-svg').locator('svg')).toHaveCount(1, { timeout: 120_000 });
+          |                                                               ^
+      378 |     await detect(page, /This floorplate/);
+      379 |     await expect(page.getByTestId('wf-detect-rows')).toContainText('Detected');
+      380 |     const detected = await counts(page);
+        at /Users/zubairzulifqar/pynwheel-staging/pyn-connect-web/tests/e2e/wayfinding.spec.ts:377:63
+
+    Error Context: test-results/wayfinding-Map-Plotting-·--7fa51-Cmd-Z-a-tool-overrides-them-chrome/error-context.md
+
+
+[29/31] [chrome] › tests/e2e/wayfinding.spec.ts:482:7 › Map & Plotting · Wayfinding (real data) › Plot on Map: search, select all, unplot and the counts stay in step with the map
+[30/31] [chrome] › tests/e2e/wayfinding.spec.ts:512:7 › Map & Plotting · Wayfinding (real data) › Additional Stops: the dialog, its validation, Cancel and ×, Add & Place on Map as a temporary stop
+[31/31] [chrome] › tests/e2e/wayfinding.spec.ts:571:7 › Map & Plotting · Wayfinding (real data) › Buildings: a route between floorplates of two buildings
+[chrome] › tests/e2e/wayfinding.spec.ts:512:7 › Map & Plotting · Wayfinding (real data) › Additional Stops: the dialog, its validation, Cancel and ×, Add & Place on Map as a temporary stop
+(node:73511) TimeoutNegativeWarning: -90796.79600000009 is a negative number.
+Timeout duration was set to 1.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  15 failed
+    [chrome] › tests/e2e/hazel.spec.ts:186:7 › Hazel (real data) › Property Detail shows the Hazel record: identity, address, contacts, configuration 
+    [chrome] › tests/e2e/hazel.spec.ts:226:7 › Hazel (real data) › Amenities: the real cards, search, filters, the Edit dialog with its gallery, and the image viewer 
+    [chrome] › tests/e2e/hazel.spec.ts:484:7 › Hazel (real data) › Map & Plotting: the canvas shows the loading state while a floor SVG streams 
+    [chrome] › tests/e2e/hazel.spec.ts:577:7 › Hazel (real data) › Navigation: Properties → Property Detail → Inventory → Amenities → Map & Plotting ↔ Tour Setup 
+    [chrome] › tests/e2e/mapCanvas.spec.ts:326:7 › Map & Plotting canvas (real data) › Floor SVG: polygons are named by the SVG’s own text, amenity layers are plottable, generated ids never show, artwork text stays 
+    [chrome] › tests/e2e/mapCanvas.spec.ts:450:7 › Map & Plotting canvas (real data) › Floor SVG: a real floor file mounts with its polygons and the stored placements fill them, nothing else drawn on top 
+    [chrome] › tests/e2e/mapPlotting.spec.ts:71:7 › Map & Plotting (real data) › plots onto the real floor SVG polygons and runs the Auto Plot wizard read-only 
+    [chrome] › tests/e2e/mapPlotting.spec.ts:202:7 › Map & Plotting (real data) › an unknown property id shows not found 
+    [chrome] › tests/e2e/wayfinding.spec.ts:119:7 › Map & Plotting · Wayfinding (real data) › the toggle: Plotting keeps the plotting UI, Wayfinding switches toolbar and panel on the same canvas 
+    [chrome] › tests/e2e/wayfinding.spec.ts:161:7 › Map & Plotting · Wayfinding (real data) › single floor: the points and paths are the stored hallways; selection, a local drag and Escape 
+    [chrome] › tests/e2e/wayfinding.spec.ts:195:7 › Map & Plotting · Wayfinding (real data) › stacked floorplate: Range groups the floors, paths are shared, each floor links its own units 
+    [chrome] › tests/e2e/wayfinding.spec.ts:231:7 › Map & Plotting · Wayfinding (real data) › Test shortest path: This Floor, Floors (through a real elevator), sample, swap, invalid and picker 
+    [chrome] › tests/e2e/wayfinding.spec.ts:319:7 › Map & Plotting · Wayfinding (real data) › Detect Hallways · All floorplates: floorplates with stored paths keep them (auto-connected only), the rest are read from their floor SVG; Undo restores 
+    [chrome] › tests/e2e/wayfinding.spec.ts:370:7 › Map & Plotting · Wayfinding (real data) › default editing (no tool): drag, double-click to delete, click to add, drag a path to bend it, double-click a path, Ctrl/Cmd+Z; a tool overrides them 
+    [chrome] › tests/e2e/wayfinding.spec.ts:450:7 › Map & Plotting · Wayfinding (real data) › Find Shortest Path on a detected floor follows the detected corridors; a floorplate with only floor images has nothing to detect 
+  16 passed (39.5m)
