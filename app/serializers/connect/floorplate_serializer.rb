@@ -7,10 +7,13 @@ module Connect
   #   - a floorplate's units are Floorplate#fetch_units: visible units whose
   #     floor is one of Floorplate#floors;
   #   - one of those is plotted on it when the unit's `floorplate_id` points
-  #     here and it has a position (Unit#plotted_on_map?: x/y or an SVG pointer);
+  #     here and it has a position (Unit#plotted_on_map?: x/y or an SVG pointer),
+  #     or — a unit placed on a floor SVG by a map import (Beans), which sets
+  #     `pointer_data` and never `floorplate_id` — when it sits on one of this
+  #     floorplate's floors with an SVG pointer and no floorplate of its own;
   #   - its amenities are the ones plotted onto it (`amenityable` = Floorplate).
   class FloorplateSerializer
-    UnitPlacement = Struct.new(:floor, :floorplate_id, :plotted)
+    UnitPlacement = Struct.new(:floor, :floorplate_id, :plotted, :on_svg)
 
     # Both lookups are one query each for the whole property, not per row.
     def self.collection(floorplates, community, base_url:)
@@ -18,7 +21,7 @@ module Connect
 
       units = community.units.visible_units
                        .pluck(:floor, :floorplate_id, :x_plot, :y_plot, Arel.sql("units.pointer_data->>'x_plot'"))
-                       .map { |floor, plate_id, x, y, pointer_x| UnitPlacement.new(floor, plate_id, positioned?(x, y, pointer_x)) }
+                       .map { |floor, plate_id, x, y, pointer_x| UnitPlacement.new(floor, plate_id, positioned?(x, y, pointer_x), pointer_x.present?) }
 
       amenities = Amenity.where(amenityable_type: 'Floorplate', amenityable_id: floorplates.map(&:id))
                          .pluck(:amenityable_id, :x_plot, :y_plot, Arel.sql("amenities.pointer_data->>'x_plot'"))
@@ -66,7 +69,7 @@ module Connect
         svg_width: svg['width'].to_i.positive? ? svg['width'].to_i : nil,
         svg_height: svg['height'].to_i.positive? ? svg['height'].to_i : nil,
         unit_count: here.size,
-        plotted_unit_count: here.count { |unit| unit.plotted && unit.floorplate_id == floorplate.id },
+        plotted_unit_count: here.count { |unit| unit.plotted && plotted_here?(unit) },
         amenity_count: amenities.size,
         plotted_amenity_count: amenities.count { |_, x, y, pointer_x| self.class.positioned?(x, y, pointer_x) },
         updated_at: floorplate.updated_at
@@ -76,6 +79,15 @@ module Connect
     private
 
       attr_reader :floorplate, :units, :amenities, :base_url, :bucket
+
+      # The unit is placed on this floorplate: by its `floorplate_id`, or — with
+      # none, as the map importers leave it — by its SVG pointer on one of the
+      # floorplate's floors (the only floorplate its floor resolves to).
+      def plotted_here?(unit)
+        return unit.floorplate_id == floorplate.id if unit.floorplate_id.present?
+
+        unit.on_svg && floorplate.read_attribute(:svg_image).present?
+      end
 
       # Floorplate#floors reads the first character of `range`, so a floorplate
       # saved without one has no floors rather than an error.

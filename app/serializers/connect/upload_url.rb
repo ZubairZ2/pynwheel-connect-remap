@@ -21,8 +21,37 @@ module Connect
   # bucket the record's (or the property's) standard URLs name — the URL the
   # fog storage produces on staging and production. No file is moved or
   # written; this only chooses which existing URL the JSON carries.
+  #
+  # Which buckets are asked (October 10, 2026): a stored key is looked for on
+  # the configured bucket first, then on the bucket the record's own standard
+  # URL names, then the property's (`bucket_hint`), then on every bucket the
+  # database's recent uploads name (`known_buckets`). The last step is what a
+  # property with no raster upload at all needs: an SVG-only Beans property
+  # (its floor SVGs and shared background are its only files) has no standard
+  # URL anywhere, so before this the configured bucket was the only answer —
+  # and on a CMS whose database came from another environment that bucket
+  # does not hold the file. In production the configured bucket is the one
+  # every standard URL names, so no HEAD is ever sent there.
   module UploadUrl
     module_function
+
+    HEAD_OPEN_TIMEOUT_S = 3
+    HEAD_READ_TIMEOUT_S = 5
+    # A check that could not be made (a timeout, a DNS failure) is remembered
+    # briefly, so an unreachable store costs one timeout per URL in that time
+    # rather than one per request; a definite answer is remembered for a day.
+    FAILED_CHECK_TTL = 5.minutes
+    UNCHECKED = :unchecked
+    # How many of the most recent raster uploads name the buckets this
+    # database's files live on; the last few are enough to see every bucket
+    # an environment has ever written to.
+    KNOWN_BUCKET_SAMPLE = 60
+    KNOWN_BUCKETS_CACHE_KEY = 'connect/upload_url/known_buckets/v1'.freeze
+
+    class << self
+      # The HEAD check, `->(url) { true | false | nil }`; replaced in tests.
+      attr_accessor :http
+    end
 
     # A record's main raster `image`. After every upload the CMS copies the
     # final URL into `standard_image_url` (StandardUrl#set_standard_url), and
@@ -48,6 +77,11 @@ module Connect
       uploader = record.public_send(column)
       url = uploader.url
       url = stored_copy(url, bucket) if url.present? && missing_on_disk?(uploader)
+      # Only a fog store is asked where its file really is: it runs where S3
+      # answers in milliseconds. File storage (development) names the bucket
+      # the database points at and sends nothing — a developer's machine can
+      # take seconds to open a connection to S3, and one probe per upload per
+      # request starved the server's threads (October 10, 2026).
       url = reachable_copy(url, bucket) if url.present? && on_fog?(uploader)
 
       absolute(accelerated(record, url), base_url)
@@ -104,6 +138,27 @@ module Connect
       end
     end
 
+    # The S3 bases this database's files are known to live on, from the most
+    # recent raster uploads' standard URLs (floorplates, floor plans and
+    # amenities — the tables every property with a map writes to), one base
+    # per bucket, most recent first. Remembered for a day; an environment's
+    # buckets do not change under a running process.
+    def known_buckets
+      Rails.cache.fetch(KNOWN_BUCKETS_CACHE_KEY, expires_in: 24.hours) do
+        bases = [Floorplate, Floorplan, Amenity].flat_map do |model|
+          model.where.not(standard_image_url: [nil, '']).order(id: :desc).limit(KNOWN_BUCKET_SAMPLE).pluck(:standard_image_url)
+        end
+        bases.filter_map { |url| s3_base(url) }.uniq { |base| bucket_name(base) }
+      end
+    rescue StandardError => e
+      Rails.logger.warn("[Connect::UploadUrl] known buckets unavailable: #{e.class}: #{e.message}")
+      []
+    end
+
+    def forget_known_buckets!
+      Rails.cache.delete(KNOWN_BUCKETS_CACHE_KEY)
+    end
+
     # True when the uploader keeps files on this machine and the stored file
     # is not there (a database restored from another environment).
     def missing_on_disk?(uploader)
@@ -113,10 +168,13 @@ module Connect
       stored.nil? || !stored.exists?
     end
 
-    # The same stored key on the bucket, when one is known; a fog store writes
-    # the file under the CMS's own upload path, so the key is the local path.
+    # The same stored key on a bucket the database names, when one is known
+    # (the record's family, else the first the environment knows); a fog
+    # store writes the file under the CMS's own upload path, so the key is the
+    # local path. `reachable_copy` then settles which of the known buckets
+    # really holds it.
     def stored_copy(url, bucket)
-      base = bucket.respond_to?(:call) ? bucket.call : bucket
+      base = resolve_bucket(bucket) || known_buckets.first
       return url if base.blank? || !url.start_with?('/')
 
       "#{base}#{url}"
@@ -130,19 +188,34 @@ module Connect
     # but a database copied from another environment holds files that were
     # uploaded to *that* environment's bucket: the Heroku staging CMS keeps
     # `staging-pynwheel` configured while its records' `standard_image_url`s
-    # name `images-pynwheel-cms-v2`, so a gallery photo's URL answers 403
-    # there although the file exists. When the record's family names another
-    # bucket, the two are asked (one HEAD each, remembered for a day) and the
-    # copy that answers wins; the configured URL stays when neither does, or
-    # when the check itself fails.
+    # name `images-pynwheel-cms-v2`, so a floor SVG's URL answers 403 there
+    # although the file exists. When the database names other buckets (the
+    # record's family, the property's, the environment's recent uploads), the
+    # configured URL is asked first (one HEAD, remembered for a day) and, when
+    # it does not answer 2xx — a refusal, a missing object, or a check that
+    # could not be made — the same key is tried on each known bucket in turn;
+    # the first copy that answers wins. The configured URL stays when no copy
+    # does. When the database names no other bucket (production: every
+    # standard URL is on the configured bucket) nothing is asked at all.
     def reachable_copy(url, bucket)
       own = s3_base(url)
-      family = bucket.respond_to?(:call) ? bucket.call : bucket
-      return url if own.nil? || family.blank? || bucket_name(family) == bucket_name(own)
-      return url if reachable?(url) != false
+      return url if own.nil?
 
-      candidate = "#{family}#{url.delete_prefix(own)}"
-      reachable?(candidate) ? candidate : url
+      candidates = ([resolve_bucket(bucket)] + known_buckets).compact.map(&:to_s).uniq.reject { |base| bucket_name(base) == bucket_name(own) }
+      return url if candidates.empty?
+      return url if reachable?(url) == true
+
+      key = url.delete_prefix(own)
+      candidates.each do |base|
+        candidate = "#{base}#{key}"
+        return candidate if reachable?(candidate)
+      end
+      url
+    end
+
+    def resolve_bucket(bucket)
+      base = bucket.respond_to?(:call) ? bucket.call : bucket
+      base.presence
     end
 
     def bucket_name(base)
@@ -152,17 +225,27 @@ module Connect
     end
 
     # true / false from a HEAD of the public URL; nil when the check could not
-    # be made (then the caller keeps what it has). Answers are cached, failures
-    # are not.
+    # be made (then the caller moves on to the next candidate, keeping the
+    # configured URL if none answers). An answer is remembered for a day, a
+    # failed check for FAILED_CHECK_TTL.
     def reachable?(url)
-      Rails.cache.fetch("connect/upload_url/reachable/#{Digest::SHA1.hexdigest(url)}", expires_in: 24.hours, skip_nil: true) do
-        uri = URI.parse(url)
-        Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https', open_timeout: 3, read_timeout: 5) do |http|
-          http.head(uri.request_uri).is_a?(Net::HTTPSuccess)
-        end
-      rescue StandardError
-        nil
+      key = "connect/upload_url/reachable/#{Digest::SHA1.hexdigest(url)}"
+      cached = Rails.cache.read(key)
+      return (cached == UNCHECKED ? nil : cached) unless cached.nil?
+
+      answer = (http || DEFAULT_HTTP).call(url)
+      Rails.cache.write(key, answer.nil? ? UNCHECKED : answer, expires_in: answer.nil? ? FAILED_CHECK_TTL : 24.hours)
+      answer
+    end
+
+    DEFAULT_HTTP = lambda do |url|
+      uri = URI.parse(url)
+      Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https', open_timeout: HEAD_OPEN_TIMEOUT_S, read_timeout: HEAD_READ_TIMEOUT_S) do |http|
+        http.head(uri.request_uri).is_a?(Net::HTTPSuccess)
       end
+    rescue StandardError => e
+      Rails.logger.info("[Connect::UploadUrl] HEAD #{uri&.host}#{uri&.path} could not be checked: #{e.class}")
+      nil
     end
   end
 end
