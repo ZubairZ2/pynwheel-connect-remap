@@ -34,6 +34,16 @@ const FIXTURE_SVG = readFileSync(join(__dirname, 'fixtures', 'floor-labels.svg')
 
 type Json = Record<string, unknown>;
 
+/**
+ * Since October 10, 2026 a floorplate with both files opens on the frame its
+ * stored plotting lives in (the floor image for most of the dump's SVG
+ * properties); these tests are about the floor SVG, so they pick it.
+ */
+const pickFloorSvg = async (page: Page) => {
+  const button = page.getByTestId('layer-switch').getByRole('button', { name: 'Floor SVG' });
+  if (await button.count()) await button.click();
+};
+
 test.describe('Map & Plotting canvas (real data)', () => {
   test.skip(!railsCookie || !user, 'PYN_CONNECT_E2E_RAILS_COOKIE / PYN_CONNECT_E2E_USER not set');
 
@@ -334,6 +344,7 @@ test.describe('Map & Plotting canvas (real data)', () => {
     );
     await page.goto(`/properties/${SVG_PROPERTY}/map?level=floorplate:${plate!.id}`);
     await hydrated(page);
+    await pickFloorSvg(page);
     const svg = page.getByTestId('plan-svg');
     await expect(svg.locator('svg')).toHaveCount(1, { timeout: 60_000 });
 
@@ -427,7 +438,9 @@ test.describe('Map & Plotting canvas (real data)', () => {
     await page.mouse.up();
     expect(await relativeTo(svg.locator('text[id="102_2"]'), plan(page))).toEqual(textBefore);
     await page.setViewportSize({ width: 1100, height: 900 });
-    await expect.poll(() => relativeTo(svg.locator('text[id="102_2"]'), plan(page))).toEqual(textBefore);
+    // The plan is refitted to whole pixels at the new size, so the ratio may move by a thousandth; the text must not move relative to the plan.
+    const close = (a: string[], b: string[]) => a.length === b.length && a.every((value, i) => Math.abs(Number(value) - Number(b[i])) <= 0.002);
+    await expect.poll(async () => close(await relativeTo(svg.locator('text[id="102_2"]'), plan(page)), textBefore)).toBe(true);
     await page.setViewportSize({ width: 1440, height: 960 });
     await leavePlan();
     await expect(page.locator('.bo-map__polylabel')).toHaveCount(0);
@@ -458,6 +471,7 @@ test.describe('Map & Plotting canvas (real data)', () => {
     await signIn(page);
     await page.goto(`/properties/${SVG_PROPERTY}/map?level=floorplate:${plate!.id}`);
     await hydrated(page);
+    await pickFloorSvg(page);
     const svg = page.getByTestId('plan-svg');
     await expect(svg.locator('svg')).toHaveCount(1, { timeout: 120_000 });
     expect(await svg.locator('polygon[id], path[id], rect[id]').count()).toBeGreaterThan(0);

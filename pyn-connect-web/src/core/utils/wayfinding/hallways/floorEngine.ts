@@ -4,6 +4,6 @@
  * snapping — loaded on demand (`import()`), so the Map & Plotting page does
  * not ship it until Detect Hallways runs or a floor's obstacles are needed.
  */
-export { detectHallways, obstaclesOf, type DetectFailure, type DetectedHallways } from './extract';
+export { detectHallways, obstaclesOf, type DetectFailure, type DetectSource, type DetectedHallways } from './extract';
 export { elementCentres } from './svg/elementCentre';
 export { parseSvgTree } from './svg/svgTree';

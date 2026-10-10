@@ -1,6 +1,7 @@
 import { i18n } from '~/resources/i18n';
 import type { InventoryAmenity, InventoryUnit, InventoryUpload } from '~/core/models/data/propertyInventory.data';
 import type { PropertyMap } from '~/core/models/data/propertyMap.data';
+import type { SvgViewBox } from '~/core/utils/map/floorSvg';
 import { naturalCompare, rangeText } from '../inventory/inventoryText';
 import { M, t } from './mapText';
 import type { LocalMapState, PlanOverride, PlanSpace } from './mapState';
@@ -38,6 +39,15 @@ export interface MapLevel {
   /** `svg_metadata`: the size the CMS read from the SVG's own attributes. */
   svgWidth: number | null;
   svgHeight: number | null;
+  /**
+   * The frame the level's stored plotting lives in — what decides which of
+   * two files the level opens on. `raster` when anything is stored in the
+   * floor image's pixels (hallway points, elevators, entry points, access
+   * points, units or amenities with an x / y); else `svg` when units or
+   * amenities sit on the floor SVG's polygons (`pointer_data`); null when
+   * nothing is plotted yet.
+   */
+  dataSpace: PlanSpace | null;
 }
 
 const floorLabel = (floors: number[], range: string | null): string => {
@@ -68,6 +78,61 @@ const stackLabel = (floors: number[]): string => {
   return i18n.t(M.level.namedFloor);
 };
 
+const positioned = (x: number | null, y: number | null): boolean => (x ?? 0) > 0 || (y ?? 0) > 0;
+
+/**
+ * The frame a floorplate's (or the sitemap's) stored plotting is in. The
+ * CMS stores hallways, elevators, entry points, access points and pins in
+ * the floor image's pixels and SVG placements as pointers; the two files
+ * share no frame, so the one that holds the data is the one to open.
+ */
+const dataSpaceOf = (map: PropertyMap, kind: 'floorplate' | 'sitemap', recordId: number, floors: number[]): PlanSpace | null => {
+  const { graph, inventory } = map;
+  const parentType = kind === 'floorplate' ? 'Floorplate' : 'Sitemap';
+  const ownsUnit = (unit: InventoryUnit) => (kind === 'floorplate' ? unit.floorplateId === recordId : unit.floorplateId == null);
+  const ownsAmenity = (amenity: InventoryAmenity) => amenity.ownerType === parentType && (kind === 'sitemap' || amenity.ownerId === recordId);
+  const onFloors = (floor: number | null) => floor != null && floors.includes(floor);
+  const raster =
+    graph.hallways.some((hallway) => hallway.parentType === parentType && hallway.parentId === recordId && hallway.space === 'raster') ||
+    graph.doors.some((door) => door.attachedWithType === parentType && door.attachedWithId === recordId) ||
+    (kind === 'floorplate'
+      ? graph.elevators.some((elevator) => positioned(elevator.xPlot, elevator.yPlot) && (elevator.floorplateId === recordId || elevator.floors.some(onFloors))) ||
+        graph.buildingStartingPoints.some((point) => positioned(point.xPlot, point.yPlot) && onFloors(point.floor ?? 1))
+      : graph.elevators.some((elevator) => positioned(elevator.xPlot, elevator.yPlot) && elevator.sitemapId === recordId)) ||
+    inventory.units.some((unit) => ownsUnit(unit) && positioned(unit.xPlot, unit.yPlot)) ||
+    inventory.amenities.some((amenity) => ownsAmenity(amenity) && positioned(amenity.xPlot, amenity.yPlot));
+  if (raster) return 'raster';
+  const svg =
+    inventory.units.some((unit) => !!unit.svgPointer && (ownsUnit(unit) || (kind === 'floorplate' && unit.floorplateId == null && onFloors(unit.floor)))) ||
+    inventory.amenities.some((amenity) => !!amenity.svgPointer && (ownsAmenity(amenity) || (kind === 'floorplate' && amenity.ownerType == null && onFloors(amenity.floor))));
+  return svg ? 'svg' : null;
+};
+
+/**
+ * The property's shared background map, when the map model composites one:
+ * a Beans-generated property draws every floor SVG (units and amenities
+ * only, transparent) over the one static background the community holds
+ * (`communities.background_svg_image`), as the renter map and the Map SDK do.
+ * A background stored on a property that is not a Beans map is not drawn,
+ * matching that contract.
+ */
+export const backgroundOf = (map: PropertyMap): InventoryUpload | null =>
+  map.inventory.beansSvg && map.inventory.sharedBackground ? map.inventory.sharedBackground : null;
+
+/**
+ * Where the background sits on a floor SVG's plan, as percentages of the
+ * floor's viewBox: the two files are aligned by their coordinate spaces (the
+ * Beans exports share one viewBox exactly; a background with another frame
+ * is placed where its own viewBox falls in the floor's), never by their
+ * boxes.
+ */
+export const backgroundBox = (floor: SvgViewBox, background: SvgViewBox): { left: number; top: number; width: number; height: number } => ({
+  left: ((background.x - floor.x) / floor.w) * 100,
+  top: ((background.y - floor.y) / floor.h) * 100,
+  width: (background.w / floor.w) * 100,
+  height: (background.h / floor.h) * 100
+});
+
 /**
  * One level per floorplate, lowest floor first (the inventory's order), or the
  * single property map. A floorplate with no building shows the property's
@@ -96,7 +161,8 @@ export const generateMapLevels = (map: PropertyMap): MapLevel[] => {
         width: sitemap.width,
         height: sitemap.height,
         svgWidth: null,
-        svgHeight: null
+        svgHeight: null,
+        dataSpace: dataSpaceOf(map, 'sitemap', sitemap.id, [])
       }
     ];
   }
@@ -125,7 +191,8 @@ export const generateMapLevels = (map: PropertyMap): MapLevel[] => {
         width: plate.width,
         height: plate.height,
         svgWidth: plate.svgWidth,
-        svgHeight: plate.svgHeight
+        svgHeight: plate.svgHeight,
+        dataSpace: dataSpaceOf(map, 'floorplate', plate.id, plate.floors)
       } satisfies MapLevel;
     });
 };
@@ -226,30 +293,48 @@ export const planAssets = (level: MapLevel, override: PlanOverride | undefined):
   return { image: image || null, svg: svg || null, has: !!(image || svg) };
 };
 
+type LayerState = Pick<LocalMapState, 'planOverrides' | 'wfSvg' | 'layers' | 'layer'>;
+
 /**
- * The layer Wayfinding works on for a level. The floor image when the level
- * has one: the CMS stores hallways, elevators, entry points and doors in the
- * image's pixels (the Auto Wayfinding page and the plotting page's image
- * section both draw them there), and the two files do not share a frame.
- * The floor SVG when that is all the level has, or when Detect Hallways read
- * the hallways from it on this page — the detected graph is in the SVG's
- * units, so the floor is shown and edited on the SVG. Null without a plan.
+ * The layer a level with both a floor SVG and a floor image plots on: the
+ * user's pick for this level, else the frame its stored plotting lives in
+ * (`dataSpace`), else the page default (the floor SVG: plotting drops onto
+ * its polygons).
  */
-export const wayfindingSpace = (level: MapLevel, state: Pick<LocalMapState, 'planOverrides' | 'wfSvg'>): PlanSpace | null => {
+export const plotLayer = (level: MapLevel, state: LayerState): PlanSpace => state.layers[level.id] ?? level.dataSpace ?? state.layer;
+
+/**
+ * The layer Wayfinding works on for a level — the same map Plotting shows
+ * wherever the data allows, so switching modes never swaps the floor under
+ * the user:
+ *
+ *   - only one file: that one;
+ *   - Detect Hallways read the paths from the floor SVG on this page: the
+ *     SVG (the detected graph is in its units; `wfSvg`);
+ *   - anything stored in the floor image's pixels (hallway points,
+ *     elevators, entry points, access points, raster pins): the image — the
+ *     CMS routes on it (the Auto Wayfinding page and the plotting page's
+ *     image section both draw there), and the two files share no frame;
+ *   - otherwise the layer Plotting is on (`plotLayer`).
+ *
+ * Null without a plan.
+ */
+export const wayfindingSpace = (level: MapLevel, state: LayerState): PlanSpace | null => {
   const assets = planAssets(level, state.planOverrides[level.id]);
-  if (assets.svg && (!assets.image || state.wfSvg[level.id])) return 'svg';
-  if (assets.image) return 'raster';
-  return null;
+  if (!assets.svg) return assets.image ? 'raster' : null;
+  if (!assets.image || state.wfSvg[level.id]) return 'svg';
+  if (level.dataSpace === 'raster') return 'raster';
+  return plotLayer(level, state);
 };
 
-/** The layer the canvas shows for a level: the floor SVG where there is one and the user has not switched; in Wayfinding, the layer its paths live on. */
+/** The layer the canvas shows for a level: in Plotting the one `plotLayer` picks; in Wayfinding, the layer its paths live on. */
 export const activeSpace = (level: MapLevel, state: LocalMapState): PlanSpace => {
   const assets = planAssets(level, state.planOverrides[level.id]);
   if (state.mode === 'wayfind') {
     const space = wayfindingSpace(level, state);
     if (space) return space;
   }
-  if (assets.svg && assets.image) return state.layer;
+  if (assets.svg && assets.image) return plotLayer(level, state);
   return assets.svg ? 'svg' : 'raster';
 };
 

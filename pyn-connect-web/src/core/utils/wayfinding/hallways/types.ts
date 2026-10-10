@@ -62,6 +62,8 @@ export interface RootShape {
 export interface SvgStructureReport {
   /** A labelled walkway layer was found (the POC's `found`). */
   found: boolean;
+  /** How the walkway layer was named: a walkway word (`Walkways`, `Sidewalk`, `Corridor`, `Hallway`), a generic `Path`, or none. */
+  walkwayMatch: 'strong' | 'weak' | 'none';
   walkwayElementType: 'path' | 'group' | 'none';
   walkwayLayerIds: string[];
   walkwayShapes: WalkableShape[];
@@ -72,6 +74,12 @@ export interface SvgStructureReport {
   roomShapes: WalkableShape[];
   viewBox: BBox;
   warnings: HallwayWarning[];
+  /** How many named, visible layers the file (with its background) has at all: 0 is a flattened export, with nothing that says what a walkway, a footprint or a room is. */
+  namedLayers: number;
+  /** Where the footprints came from: a Footprints layer, the building outlines (a Beans export draws each building's footprint as `Building_outline`), or nowhere. */
+  footprintSource: 'footprints' | 'outlines' | null;
+  /** What was read from the shared background map rather than the floor file, when a background was given. */
+  fromBackground: { walkways: boolean; footprints: boolean; obstacles: boolean };
 }
 
 /* ── Phase 3: the graph ─────────────────────────────────────────────── */

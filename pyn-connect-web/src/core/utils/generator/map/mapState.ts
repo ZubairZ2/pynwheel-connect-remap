@@ -1,6 +1,6 @@
 import type { RouteLeg } from '~/core/models/data/propertyMap.data';
 import type { ApRules } from '~/core/utils/map/autoPlotRules';
-import type { FloorSvgDoc } from '~/core/utils/map/floorSvg';
+import type { FloorSvgDoc, SvgViewBox } from '~/core/utils/map/floorSvg';
 import type { EdgeKind, ExtractionSource, ReviewStatus } from '~/core/utils/wayfinding/hallways/types';
 import type { StopTypeId } from '~/core/utils/wayfinding/stopTypes';
 import type { WfRouteResult } from '~/core/utils/wayfinding/wayfindingRoute';
@@ -190,8 +190,37 @@ export interface ConfirmState {
   onConfirm: () => void;
 }
 
-/** A level's floor SVG on this page: being fetched, unreadable, or parsed. */
-export type SvgDocState = { status: 'loading' } | { status: 'failed' } | { status: 'ready'; doc: FloorSvgDoc };
+/**
+ * Why a plan file could not be shown: the plan-svg route's own reasons
+ * (`missing` — nothing stored for the level; `unauthorized`; `listing` — the
+ * CMS listing failed; `upstream` — the storage refused or lacks the file,
+ * with its HTTP status; `timeout`; `network`; `not-svg` — the file is not an
+ * SVG document) plus the browser's (`invalid` — the SVG could not be parsed;
+ * `no-size` — it declares no viewBox or size; `fetch` — the request itself
+ * failed).
+ */
+export type PlanLoadFailure = 'missing' | 'unauthorized' | 'listing' | 'upstream' | 'timeout' | 'network' | 'not-svg' | 'invalid' | 'no-size' | 'fetch';
+
+export interface PlanLoadError {
+  reason: PlanLoadFailure;
+  /** The storage's HTTP status, for `upstream`. */
+  status: number | null;
+  /** The stored file name, when known — never its URL. */
+  file: string | null;
+  /** The host that answered, for `upstream` / `not-svg` (the bucket name tells which environment it was). */
+  host: string | null;
+}
+
+/** A level's floor SVG on this page: being fetched, unreadable (with the reason), or parsed. */
+export type SvgDocState = { status: 'loading' } | { status: 'failed'; error: PlanLoadError } | { status: 'ready'; doc: FloorSvgDoc };
+
+/**
+ * The property's shared background map (a Beans property's one static base
+ * every floor SVG overlays), once asked for: a blob URL the canvas draws
+ * under the floor SVG, with the background's own viewBox so the two are
+ * aligned by their coordinate spaces, not by their boxes.
+ */
+export type BackgroundState = { status: 'loading' } | { status: 'failed'; error: PlanLoadError } | { status: 'ready'; url: string; viewBox: SvgViewBox };
 
 /** The two modes of the screen: plotting units, amenities and stops, or the self-tour's wayfinding paths. */
 export type MapMode = 'plot' | 'wayfind';
@@ -306,9 +335,9 @@ export interface WfDetectRow {
   status: WfDetectStatus;
   points: number;
   paths: number;
-  /** Traced from a walkway layer, or inferred from the footprints and rooms. */
-  source: 'vector' | 'inferred' | null;
-  /** Why it was skipped or found nothing, in a few words. */
+  /** Traced from a walkway layer, inferred from the footprints and rooms, or both joined. */
+  source: 'vector' | 'inferred' | 'both' | null;
+  /** Why it was skipped or found nothing, in a few words; for a detected floorplate, where the paths came from and how many stops they reached. */
   note: string;
 }
 
@@ -346,8 +375,15 @@ export interface LocalMapState {
   levelId: string;
   /** The building the floorplate tabs are filtered to; null shows every level. */
   building: string | null;
-  /** The layer shown when the level has both a floor SVG and a floor image. */
+  /**
+   * The layer a level with both a floor SVG and a floor image shows when the
+   * user has not picked one: the frame its stored plotting lives in decides
+   * (`MapLevel.dataSpace`), and this is the fallback for a level with no
+   * stored plotting at all.
+   */
   layer: PlanSpace;
+  /** The layer the user picked per level (`levelId` → layer), on top of the default above. */
+  layers: Record<string, PlanSpace>;
   tool: MapTool;
   gridOn: boolean;
   selectedPin: PinRef | null;
@@ -393,6 +429,8 @@ export interface LocalMapState {
   measured: Record<string, { w: number; h: number }>;
   /** Each level's floor SVG, once asked for. */
   svgDocs: Record<string, SvgDocState>;
+  /** The property's shared background map, once asked for (null until a level on its SVG needs it). */
+  background: BackgroundState | null;
   ap: AutoPlotState | null;
   apMenuOpen: boolean;
   /** Rules remembered on this page per building ("Use these rules next time"). */
@@ -463,6 +501,7 @@ export const initialLocalMapState = (levelId: string, building: string | null, l
   levelId,
   building,
   layer,
+  layers: {},
   tool: 'select',
   gridOn: false,
   selectedPin: null,
@@ -492,6 +531,7 @@ export const initialLocalMapState = (levelId: string, building: string | null, l
   svgDrag: false,
   measured: {},
   svgDocs: {},
+  background: null,
   ap: null,
   apMenuOpen: false,
   apPatterns: {},

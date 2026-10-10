@@ -175,6 +175,7 @@ export const parseInventoryFloorplates = (payload: unknown) => {
     dataProvider: text(meta.dataProvider),
     lastSync: text(meta.lastSync),
     lockDevices: lockDevicesOf(meta.lockDevices),
+    beansSvg: flag(meta.beansSvg),
     sharedBackground: upload(meta.sharedBackground),
     markers: markersOf(meta.markers),
     sitemap: sitemap

@@ -15,7 +15,7 @@ import { MapCanvas } from './map/MapCanvas';
 import { MapDialogs } from './map/MapDialogs';
 import { PlotPanel } from './map/MapPanels';
 import { WayfindingPanel } from './map/WayfindingPanel';
-import { ModeSwitch, WayfindingToolbar } from './map/WayfindingToolbar';
+import { LayerSwitch, ModeSwitch, WayfindingToolbar } from './map/WayfindingToolbar';
 
 interface Props {
   /** Null when the property was not found, or could not be loaded (then `error` says so). */
@@ -82,6 +82,10 @@ const MapEditor = ({ map, initial }: { map: PropertyMap; initial: MapInitial | n
 
   return (
     <div className="bo-inv bo-map">
+      {/* Beans / Figma exports print their labels in Inter with no fallback; the CMS loads it the same way (shared/_beans_svg_fonts). */}
+      {map.inventory.beansSvg && (
+        <link rel="stylesheet" precedence="default" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
+      )}
       <Breadcrumb
         items={[
           { label: i18n.t(M.breadcrumbRoot), href: APP_ROUTES.properties },
@@ -216,6 +220,7 @@ const MapEditor = ({ map, initial }: { map: PropertyMap; initial: MapInitial | n
               <WayfindingToolbar controller={controller} />
             ) : (
               <>
+            <LayerSwitch controller={controller} />
             <HoverMenu
               className="bo-map__apmenu"
               open={state.apMenuOpen}

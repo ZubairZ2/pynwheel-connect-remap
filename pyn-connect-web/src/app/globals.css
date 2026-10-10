@@ -4397,6 +4397,17 @@ select {
 .bo-map__surface--svg { background: #fff; }
 .bo-map__svglayer { position: absolute; inset: 0; }
 .bo-map__svgdoc { display: block; width: 100%; height: 100%; }
+/* A Beans property's shared background map, drawn under the floor SVG at the place its own viewBox falls in the floor's (MapCanvas). */
+.bo-map__bglayer { position: absolute; display: block; pointer-events: none; user-select: none; z-index: 0; }
+.bo-map__svglayer--over { z-index: 1; }
+.bo-map__bgnotice { position: absolute; left: 12px; top: 12px; z-index: 9; display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: #fff7e6; border: 1px solid #f0c36d; border-radius: 8px; font: 600 11.5px var(--bo-font); color: #7a4b00; max-width: calc(100% - 80px); }
+.bo-map__bgnotice .bo-map__planbtn { height: 24px; padding: 0 8px; }
+.bo-map__missingdetail { display: block; font: 500 11.5px var(--bo-font); color: var(--bo-subtle); max-width: 460px; text-align: center; line-height: 1.4; }
+.bo-map__layers { margin-right: 4px; }
+.bo-map__layers .bo-wf__mode { width: auto; padding: 0 10px; }
+/* Beans exports (Figma) print their labels in Inter with no fallback, as the CMS's shared/_beans_svg_fonts covers them. */
+.bo-map__svgdoc text[font-family='Inter' i],
+.bo-map__svgdoc tspan[font-family='Inter' i] { font-family: 'Inter', sans-serif; }
 .bo-map__missingstack { display: flex; flex-direction: column; align-items: center; gap: 10px; }
 .bo-map__missingactions { display: flex; gap: 8px; }
 .bo-map__polylabels { position: absolute; inset: 0; pointer-events: none; z-index: 3; }

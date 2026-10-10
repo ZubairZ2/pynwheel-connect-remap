@@ -1,4 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 import { expect, test } from '@playwright/test';
 
@@ -9,14 +10,14 @@ import { autoConnectNodes, computeAutoConnectDistance, connectNodeToNearest } fr
 import { bridgeComponentGaps, computeGapBridgeDistance } from '~/core/utils/wayfinding/hallways/bridgeGaps';
 import { buildWayfindingGraph, computeSnapTolerance } from '~/core/utils/wayfinding/hallways/buildGraph';
 import { addNode, confirmNodesAboveConfidence, deleteEdge, deleteNode, moveNode, rerouteEdge, type GraphState, type HallwayNode } from '~/core/utils/wayfinding/hallways/editing';
-import { detectHallways, dropShortComponents, type DetectedHallways } from '~/core/utils/wayfinding/hallways/extract';
+import { detectHallways, dropShortComponents, obstaclesOf, type DetectedHallways } from '~/core/utils/wayfinding/hallways/extract';
 import { polylineLength } from '~/core/utils/wayfinding/hallways/geometry';
 import { buildObstacleIndex } from '~/core/utils/wayfinding/hallways/obstacles';
-import { detectSvgStructure, normalizeId } from '~/core/utils/wayfinding/hallways/svg/detectLayers';
+import { detectSvgStructure, normalizeId, viewBoxMap } from '~/core/utils/wayfinding/hallways/svg/detectLayers';
 import { elementCentres } from '~/core/utils/wayfinding/hallways/svg/elementCentre';
 import { normalizePath, parsePathToSubpaths } from '~/core/utils/wayfinding/hallways/svg/pathData';
 import { flattenShapes } from '~/core/utils/wayfinding/hallways/svg/shapes';
-import type { WayfindingEdge } from '~/core/utils/wayfinding/hallways/types';
+import type { StopCandidate, WayfindingEdge } from '~/core/utils/wayfinding/hallways/types';
 import { polygonEdge, type WfAnchor, type WfPath, type WfPlate, type WfPoint } from '~/core/utils/wayfinding/wayfindingGraph';
 import { computeWayfindingRoute, routeGroups, type WfRouteInput } from '~/core/utils/wayfinding/wayfindingRoute';
 import { readSvgTree } from './helpers/svgTree';
@@ -34,6 +35,36 @@ import { readSvgTree } from './helpers/svgTree';
  */
 
 const POC = process.env.PYN_CONNECT_POC_FIXTURES ?? '/Users/zubairzulifqar/sample_pyn_wheel_map/fixtures';
+/** Real floor exports read from the CMS's production bucket on October 10, 2026 (Cypress Terra, Jennifer Demo FP, John Demo), when they are on this machine. */
+const REAL = process.env.PYN_CONNECT_REAL_SVG_FIXTURES ?? '/private/tmp/claude-501/-Users-zubairzulifqar-pynwheel-staging/6bff5f74-e6f4-4255-a23e-921645ed3527/scratchpad/assets';
+
+/**
+ * A floor file the way Beans / Figma exports one for a property with a shared
+ * background: units and amenities only (polygon + printed number per group),
+ * no footprints, no walkways; the background holds the sidewalk (`Path`, a
+ * stroked centreline) and each building's filled `Building_outline`.
+ */
+const BEANS_FLOOR = `
+  <g id="11305_Grant_Rd"><g id="Amenities"><g id="POOL"><polygon id="Vector_588" points="300,20 340,20 340,40 300,40"/><text>POOL</text></g></g>
+  <g id="Units">
+    <g id="Building_1">
+      <g id="Vector_9"><polygon id="Vector_9" points="40,60 100,60 100,90 40,90"/><text>101</text></g>
+      <g id="Vector_10"><polygon id="Vector_10" points="100,60 160,60 160,90 100,90"/><text>102</text></g>
+      <g id="Vector_11"><polygon id="Vector_11" points="40,120 100,120 100,150 40,150"/><text>103</text></g>
+      <g id="Vector_12"><polygon id="Vector_12" points="100,120 160,120 160,150 100,150"/><text>104</text></g>
+    </g>
+  </g></g>`;
+const BEANS_BACKGROUND = (viewBox = '0 0 400 200', scale = 1) => `
+  <g id="BG"><g id="Road"><path d="M ${0 * scale} ${195 * scale} H ${400 * scale}" stroke="#7F7E78"/></g>
+  <g id="Building_outline"><path id="Building_1" d="M ${40 * scale} ${60 * scale} H ${160 * scale} V ${150 * scale} H ${40 * scale} Z" fill="#F1DFD1" stroke="black" stroke-width="0.5"/></g>
+  <path id="Path" d="M ${20 * scale} ${170 * scale} H ${380 * scale} M ${165 * scale} ${170 * scale} V ${108 * scale}" fill="none" stroke="url(#pattern)" stroke-width="4"/>
+  <g id="ST"><path d="M ${100 * scale} ${150 * scale} h ${10 * scale} v ${5 * scale} h ${-10 * scale} z" fill="#E9CAB1"/></g></g>`;
+const BEANS_STOPS: StopCandidate[] = [
+  { groupId: 'unit:101', label: '101', anchor: { x: 70, y: 75 } },
+  { groupId: 'unit:102', label: '102', anchor: { x: 130, y: 75 } },
+  { groupId: 'unit:103', label: '103', anchor: { x: 70, y: 135 } },
+  { groupId: 'unit:104', label: '104', anchor: { x: 130, y: 135 } }
+];
 
 const svg = (body: string, viewBox = '0 0 400 200') => readSvgTree(`<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}">${body}</svg>`);
 
@@ -172,8 +203,9 @@ test.describe('Hallway engine', () => {
       expect(none).toMatchObject({ ok: false, failure: 'no-hallway-layer', nodes: [], edges: [] });
       const full = detectHallways(svg('<g id="Footprints"><rect x="0" y="0" width="200" height="100"/></g><g id="Units"><rect x="0" y="0" width="200" height="100"/></g>'), []);
       expect(full).toMatchObject({ ok: false, failure: 'no-corridor' });
+      // A file with nothing named at all (empty, or a flattened export) is told apart from one whose layers just lack a walkway.
       const blank = detectHallways(svg(''), []);
-      expect(blank.failure).toBe('no-hallway-layer');
+      expect(blank.failure).toBe('no-layers');
     });
 
     test('short islands (a recess between rooms and the outer wall) are dropped; a corridor is kept', () => {
@@ -435,6 +467,180 @@ test.describe('Hallway engine', () => {
       expect(!same.ok && same.error).toBe('Pick two different places for the start and destination.');
       const off = computeWayfindingRoute(input, groups, `${level.id}@|from`, `${level.id}@|to`);
       expect(!off.ok && off.error).toContain('plotted on the floor image only');
+    });
+  });
+
+  test.describe('Dual-map (shared background) and the real Pynwheel exports (October 10, 2026)', () => {
+    test('a floor file with units only reads its walkways and building outlines from the shared background, and joins corridors inside the buildings to the sidewalk', () => {
+      const floor = svg(BEANS_FLOOR);
+      const alone = detectHallways(floor, BEANS_STOPS);
+      expect(alone.ok).toBe(false);
+      expect(alone.failure).toBe('no-hallway-layer');
+
+      const structure = detectSvgStructure(floor, svg(BEANS_BACKGROUND()));
+      expect(structure.found).toBe(true);
+      expect(structure.walkwayLayerIds).toEqual(['Path']);
+      expect(structure.fromBackground).toEqual({ walkways: true, footprints: true, obstacles: true });
+      expect(structure.footprintSource).toBe('outlines');
+      expect(structure.roomShapes.map((shape) => shape.elementId)).toEqual(['Vector_588', 'Vector_9', 'Vector_10', 'Vector_11', 'Vector_12']);
+      expect(structure.warnings.map((w) => w.code)).toEqual(expect.arrayContaining(['weak-walkway-match', 'walkway-from-background', 'footprints-from-background']));
+
+      const result = detectHallways(floor, BEANS_STOPS, { background: svg(BEANS_BACKGROUND()) });
+      expect(result.ok).toBe(true);
+      expect(result.source).toBe('both');
+      expect(result.fromBackground).toBe(true);
+      expect(result.layers).toEqual(['Path', 'Building outlines', 'Units']);
+      // The sidewalk is traced (confirmed); the corridor between the two unit rows is inferred (pending), and the two are one connected graph.
+      expect(structure.walkwayMatch).toBe('weak');
+      expect(result.nodes.some((n) => n.source === 'vector' && n.review === 'confirmed' && Math.abs(n.y - 170) < 1e-6)).toBe(true);
+      const corridor = result.nodes.filter((n) => n.source === 'inferred');
+      expect(corridor.length).toBeGreaterThan(0);
+      expect(corridor.every((n) => n.review === 'pending' && n.y > 90 && n.y < 120)).toBe(true);
+      expect(result.joined).toBe(4);
+      const parent = new Map<string, string>(result.nodes.map((n) => [n.id, n.id]));
+      const find = (id: string): string => (parent.get(id) === id ? id : find(parent.get(id)!));
+      result.edges.forEach((e) => parent.set(find(e.fromNodeId), find(e.toNodeId)));
+      expect(new Set(result.nodes.map((n) => find(n.id))).size).toBe(1);
+      // The building's outline is an obstacle for synthesised links.
+      expect(result.obstacles.length).toBeGreaterThan(0);
+      expect(obstaclesOf(floor, svg(BEANS_BACKGROUND())).length).toBeGreaterThan(obstaclesOf(floor).length);
+    });
+
+    test('a labelled Walkways layer is the designer’s word: traced alone, with no corridors inferred beside it unless asked', () => {
+      const labelled = svg(BEANS_FLOOR + BEANS_BACKGROUND().replace('id="Path"', 'id="Walkways"'));
+      expect(detectSvgStructure(labelled).walkwayMatch).toBe('strong');
+      const traced = detectHallways(labelled, BEANS_STOPS);
+      expect(traced.source).toBe('vector');
+      expect(traced.nodes.every((n) => n.source === 'vector')).toBe(true);
+      expect(detectHallways(labelled, BEANS_STOPS, { inferBesideWalkways: true }).source).toBe('both');
+      expect(detectHallways(svg(BEANS_FLOOR + BEANS_BACKGROUND()), BEANS_STOPS, { inferBesideWalkways: false }).source).toBe('vector');
+    });
+
+    test('a background drawn in another viewBox is mapped into the floor’s frame', () => {
+      const floor = svg(BEANS_FLOOR);
+      const background = svg(BEANS_BACKGROUND('0 0 800 400', 2), '0 0 800 400');
+      const map = viewBoxMap({ minX: 0, minY: 0, maxX: 800, maxY: 400 }, { minX: 0, minY: 0, maxX: 400, maxY: 200 });
+      expect(map).toEqual({ a: 0.5, b: 0, c: 0, d: 0.5, e: 0, f: 0 });
+      const result = detectHallways(floor, BEANS_STOPS, { background });
+      expect(result.ok).toBe(true);
+      expect(result.nodes.some((n) => n.source === 'vector' && Math.abs(n.y - 170) < 1e-6 && Math.abs(n.x - 20) < 1e-6)).toBe(true);
+      expect(result.viewBox).toEqual({ minX: 0, minY: 0, maxX: 400, maxY: 200 });
+    });
+
+    test('a file whose only outline is the building outline infers its corridors from it', () => {
+      const root = svg(`
+        <g id="BG"><g id="Building_Outline"><path d="M 20 40 H 380 V 160 H 20 Z" fill="#F1DFD1"/><path d="M 20 40 H 380 V 160 H 20 Z" fill="none" stroke="black"/></g></g>
+        <g id="Units"><g id="Floor_2_4">
+          <polygon id="Vector_2416" points="20,40 110,40 110,85 20,85"/><polygon id="Vector_2417" points="110,40 200,40 200,85 110,85"/><polygon id="Vector_2418" points="200,40 290,40 290,85 200,85"/><polygon id="Vector_2419" points="290,40 380,40 380,85 290,85"/>
+          <polygon id="Vector_2420" points="20,115 200,115 200,160 20,160"/><polygon id="Vector_2421" points="200,115 380,115 380,160 200,160"/>
+        </g></g>`);
+      const structure = detectSvgStructure(root);
+      expect(structure.found).toBe(false);
+      expect(structure.footprintSource).toBe('outlines');
+      expect(structure.footprintShapes).toHaveLength(2);
+      const result = detectHallways(root, unitStops);
+      expect(result.ok).toBe(true);
+      expect(result.source).toBe('inferred');
+      expect(result.layers).toEqual(['Building outlines', 'Units']);
+      expect(result.nodes.every((n) => n.review === 'pending' || n.confidence === null)).toBe(true);
+    });
+
+    test('a flattened export with no named layers is told apart from one whose layers just lack a walkway', () => {
+      const flattened = svg(`
+        <path d="M5.5 26.5V96.5L68 95Z" fill="#E6E6E6"/><path d="M100 100 H 200 V 150 Z" fill="#CCC"/><g><path d="M 1 1 L 2 2"/></g>
+        <defs><pattern id="pattern0_1_2"><use transform="scale(0.1)"/></pattern><filter id="filter0_d_1_2"/><clipPath id="clip0_1_2"><rect width="10" height="10"/></clipPath></defs>`);
+      expect(detectSvgStructure(flattened).namedLayers).toBe(0);
+      const none = detectHallways(flattened, []);
+      expect(none.ok).toBe(false);
+      expect(none.failure).toBe('no-layers');
+
+      const named = svg(`<g id="Parking"><rect x="0" y="0" width="10" height="10"/></g><g id="Trees"><rect x="20" y="0" width="5" height="5"/></g>`);
+      expect(detectSvgStructure(named).namedLayers).toBe(2);
+      const layered = detectHallways(named, []);
+      expect(layered.failure).toBe('no-hallway-layer');
+    });
+
+    test.describe('the production exports', () => {
+      const file = (name: string) => join(REAL, name);
+      test.skip(!existsSync(join(REAL, '8005_bg.svg')), `no real exports at ${REAL}`);
+      test.setTimeout(240_000);
+
+      const read = (name: string) => readSvgTree(readFileSync(file(name), 'utf8'));
+      const connected = (result: DetectedHallways) => {
+        const parent = new Map<string, string>(result.nodes.map((n) => [n.id, n.id]));
+        const find = (id: string): string => (parent.get(id) === id ? id : find(parent.get(id)!));
+        result.edges.forEach((e) => parent.set(find(e.fromNodeId), find(e.toNodeId)));
+        return new Set(result.nodes.map((n) => find(n.id))).size;
+      };
+      /** The units of a Beans floor file, aimed at their polygon centres (what the page does with `elementCentres`). */
+      const stopsOf = (root: ReturnType<typeof readSvgTree>): StopCandidate[] => {
+        const centre = elementCentres(root);
+        const out: StopCandidate[] = [];
+        const visit = (el: typeof root, inUnits: boolean) => {
+          const units = inUnits || normalizeId(el.attrs.id) === 'units';
+          if (units && el.tag === 'polygon' && el.attrs.id) {
+            const at = centre(el.attrs.id, null);
+            if (at) out.push({ groupId: `unit:${el.attrs.id}`, label: el.attrs.id, anchor: at });
+          }
+          el.children.forEach((child) => visit(child, units));
+        };
+        visit(root, false);
+        return out;
+      };
+
+      test('Cypress Terra (8005): the floor file alone has nothing; with the shared background its sidewalk is traced, the buildings’ corridors inferred, and every unit joined', () => {
+        const floor = read('8005_4604_floor3.svg');
+        const background = read('8005_bg.svg');
+        const stops = stopsOf(floor);
+        expect(stops.length).toBe(113);
+        const alone = detectHallways(floor, stops);
+        expect(alone.ok).toBe(false);
+        expect(alone.failure).toBe('no-hallway-layer');
+        expect(alone.namedLayers).toBeGreaterThan(0);
+
+        const result = detectHallways(floor, stops, { background });
+        expect(result.ok).toBe(true);
+        expect(result.source).toBe('both');
+        expect(result.fromBackground).toBe(true);
+        expect(result.layers.slice(0, 2)).toEqual(['Path', 'PATH']);
+        expect(result.joined).toBe(113);
+        expect(result.nodes.filter((n) => n.source === 'vector').length).toBeGreaterThan(20);
+        expect(result.nodes.filter((n) => n.source === 'inferred').length).toBeGreaterThan(20);
+        expect(connected(result)).toBeLessThanOrEqual(3);
+        const floor1 = read('8005_4606_floor1.svg');
+        expect(detectHallways(floor1, stopsOf(floor1), { background }).joined).toBe(stopsOf(floor1).length);
+      });
+
+      test('John Demo (1411): a full export traces its Path layer and infers the corridors inside the Building_Outline; every unit of the floor is joined', () => {
+        const floor = read('1411_1867_floor2.svg');
+        const stops = stopsOf(floor);
+        expect(stops.length).toBe(41);
+        const result = detectHallways(floor, stops);
+        expect(result.ok).toBe(true);
+        expect(result.source).toBe('both');
+        expect(result.fromBackground).toBe(false);
+        expect(result.joined).toBe(41);
+        expect(result.nodes.filter((n) => n.source === 'inferred').length).toBeGreaterThan(5);
+      });
+
+      test('Jennifer Demo FP: floors 1–3 is a flattened export (no named layers); floors 4–5 has a walkway layer; floor 5’s file is a whole-property export', () => {
+        const flattened = read('1412_3638_floors1-3.svg');
+        const none = detectHallways(flattened, []);
+        expect(none.ok).toBe(false);
+        expect(none.failure).toBe('no-layers');
+        expect(none.namedLayers).toBe(0);
+
+        const vegas = read('1412_3659_floors4-5.svg');
+        const structure = detectSvgStructure(vegas);
+        expect(structure.found).toBe(true);
+        expect(structure.walkwayLayerIds).toEqual(['walkway']);
+        const result = detectHallways(vegas, stopsOf(vegas));
+        expect(result.ok).toBe(true);
+        expect(['vector', 'both']).toContain(result.source);
+
+        const boca = read('1412_1865_floor5.svg');
+        expect(detectSvgStructure(boca).walkwayLayerIds).toEqual(['Walkways']);
+      });
     });
   });
 });
