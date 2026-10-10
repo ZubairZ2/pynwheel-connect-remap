@@ -185,10 +185,12 @@ module Connect
         properties.map { |name, property_id| { name: name, property_id: property_id, unit_count: unit_counts[property_id] } }
       end
 
-      # PartnerConfigurationsController#enabled_partners, with the labels.
+      # PartnerConfigurationsController#enabled_partners, with the labels. The
+      # partner list is the Partner table's registry (October 2026; it replaced
+      # the Community::MAP_PARTNERS constant), in the tab order it defines.
       def partners
-        Community::MAP_PARTNERS.map do |partner|
-          { key: partner[:key], label: partner[:label], enabled: community.partner_map_enabled?(partner[:key]) }
+        Partner.registry.map do |partner|
+          { key: partner.key, label: partner.label, enabled: community.partner_map_enabled?(partner.key) }
         end
       end
   end
