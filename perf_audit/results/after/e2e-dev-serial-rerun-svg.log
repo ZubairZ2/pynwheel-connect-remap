@@ -1,9 +1,0 @@
-
-Running 4 tests using 1 worker
-
-[1/4] [chrome] › tests/e2e/hazel.spec.ts:484:7 › Hazel (real data) › Map & Plotting: the canvas shows the loading state while a floor SVG streams
-[2/4] [chrome] › tests/e2e/mapCanvas.spec.ts:336:7 › Map & Plotting canvas (real data) › Floor SVG: polygons are named by the SVG’s own text, amenity layers are plottable, generated ids never show, artwork text stays
-[3/4] [chrome] › tests/e2e/mapCanvas.spec.ts:463:7 › Map & Plotting canvas (real data) › Floor SVG: a real floor file mounts with its polygons and the stored placements fill them, nothing else drawn on top
-[4/4] [chrome] › tests/e2e/mapPlotting.spec.ts:73:7 › Map & Plotting (real data) › plots onto the real floor SVG polygons and runs the Auto Plot wizard read-only
-  4 passed (46.7s)
-rerun exit=0

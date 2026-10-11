@@ -1,6 +1,6 @@
 # Pynwheel Connect — performance audit (Next.js, Map & Plotting, Inventory, data loading)
 
-**Date:** October 11, 2026 · **Branch audited:** `main` at `29c056606` (PR #23 merged), working tree untouched · **Scope:** investigation and plan only; no application code was changed · **Evidence folder:** `perf_audit/` (scripts and raw outputs, untracked like `db_compat_audit/` and `svg_map_qa/`)
+**Date:** October 11, 2026 · **Branch audited:** `main` at `29c056606` (PR #23 merged), working tree untouched · **Scope:** investigation and plan only; no application code was changed · **Evidence:** the measurement scripts and raw outputs lived in a `perf_audit/` folder during the audit; it was removed from the repository on request (October 11, 2026) and the numbers below are the record
 
 Every number below is either read from production (Heroku router logs of the owner's own session on October 10, 2026, 17:22–17:46 UTC; Heroku app and add-on metadata; public S3 object headers) or measured locally on the isolated production clone (`pynwheel_audit_clone`, CMS on :3100 in development mode, Connect **production build** on :3005, headless Chrome, minted super-admin session). Where a value could not be collected it is marked **unavailable** with the way to collect it. "Prod" means the Heroku pair `pyn-system` (CMS) + `pyn-system-connect` (Next.js) the owner uses as production.
 
@@ -466,15 +466,15 @@ Everything in P0–P1 benefits every property; nothing targets a single id.
 
 ## I. Before-and-after measurement plan
 
-Capture these **before** implementation (baseline values are in `perf_audit/`), then after each P0/P1 item:
+Capture these **before** implementation (the baseline values are the ones in this report and in PYN_CONNECT_PROGRESS.md §37), then after each P0/P1 item. The scripts named below were the audit's own (a curl bench of the Connect reads and Playwright open-sequence scripts); they are no longer in the repository and would need rewriting from the descriptions here:
 
 | Metric | How | Baseline (this audit) |
 |---|---|---|
-| Rails time, raw bytes, gzip bytes, SQL count per Connect read (8005, 1412, 1411, 1618, 4397, 1105) | `perf_audit/cms-bench.sh` against :3100 on the clone | `cms-bench.out` |
-| Map open: DCL, hydrated, SVG request start, SVG bytes/ttfb/total, plan ready, Rails reads per open; reload, mode switch, floor switch, away-and-back | `perf_audit/perf.mjs` (production build on :3005) | `perf.out` (8005: 2,798 ms; 1412: 7,017 ms) |
-| Map open under 4 Mbps/300 ms and 1.5 Mbps/500 ms; fonts delayed | `perf_audit/perf-wan.mjs` | `perf-wan-results.json` |
-| Inventory, Units tab, search, paging, tab round-trip, Unit Detail, Property Detail | `perf_audit/perf-inventory.mjs`, `perf-followup.mjs` | `perf-inventory-results.json`, `perf-followup-results.json` |
-| SVG parse/mount cost per real export | `perf_audit/parse-cost.mjs` | 10–39 ms |
+| Rails time, raw bytes, gzip bytes, SQL count per Connect read (8005, 1412, 1411, 1618, 4397, 1105) | (former `cms-bench.sh`) against :3100 on the clone | `cms-bench.out` |
+| Map open: DCL, hydrated, SVG request start, SVG bytes/ttfb/total, plan ready, Rails reads per open; reload, mode switch, floor switch, away-and-back | (former `perf.mjs`) (production build on :3005) | `perf.out` (8005: 2,798 ms; 1412: 7,017 ms) |
+| Map open under 4 Mbps/300 ms and 1.5 Mbps/500 ms; fonts delayed | (former `perf-wan.mjs`) | `perf-wan-results.json` |
+| Inventory, Units tab, search, paging, tab round-trip, Unit Detail, Property Detail | (former `perf-inventory.mjs`, `perf-followup.mjs`) | `perf-inventory-results.json`, `perf-followup-results.json` |
+| SVG parse/mount cost per real export | (former `parse-cost.mjs`) | 10–39 ms |
 | Production: service time and bytes of `/properties/:id/map`, `plan-svg`, the five CMS reads; R14 count | `heroku logs --dyno router -a pyn-system-connect`, `-a pyn-system`, `grep R14` | this report §D1 |
 | Production: first-paint and SVG-start times | **unavailable** today — add a `Server-Timing` header to the map page and the plan-svg route, or a tiny RUM beacon (`performance.getEntriesByType('resource')` for plan-svg) posted to a Next route; alternatively the owner records a DevTools Performance trace of one open | — |
 | Rails view/db split in production | **unavailable** (log level) — enable lograge at :info | — |
@@ -495,7 +495,7 @@ Acceptance targets: plan-svg `bytes` ≤ 40 % of the file size; one `floorplates
 - **Not measured:** the Tour Setup screen (same loader as the map, so C5 applies), the Tour App, companies/properties listings (already paged), and any screen on the owner's own `pynwheel_prod` puma.
 - **Save paths were not exercised** (audit was read-only); the router-cache change (P2) must be validated against them.
 
-Scripts, raw outputs and the captured map document are in `perf_audit/` (no session material is included; the scripts expect a minted session JSON whose path is given by `PERF_SCRATCH`).
+The evidence folder (`perf_audit/`) was removed from the repository on request; the measurements in this report and in PYN_CONNECT_PROGRESS.md §37 are the record.
 
 ---
 
